@@ -1,0 +1,63 @@
+<robot name="ct_quadrotor">
+    <link name="world" />
+    <link name="body">
+        <inertial>
+            <origin xyz="0.00000 0.00000 0.00000"/>
+            <mass value="0.50000"/>
+            <inertia ixx="0.03000" iyy="0.03000" izz="0.05000" ixy="-0.00000" ixz="-0.00000" iyz="-0.00000"/>
+        </inertial>
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://ct_models/urdf/QuadrotorWithLoad/quadrotor_base.dae" scale="0.1 0.1 0.1"/>
+                </geometry>
+        </visual>
+    </link>
+    <link name="link1">
+        <inertial>
+            <origin xyz="0.00000 0.00000 -0.05000"/>
+            <mass value="0.10000"/>
+            <inertia ixx="-0.00017" iyy="-0.00017" izz="0.00000" ixy="-0.00000" ixz="-0.00000" iyz="-0.00000"/>
+        </inertial>
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 -0.05"/>
+            <geometry>
+                <cylinder length="0.1" radius="0.01"/>
+            </geometry>
+            <material name="blue">
+                <color rgba="0 0 .8 1"/>
+            </material>
+        </visual>
+    </link>
+    <link name="link2">
+        <inertial>
+            <origin xyz="0.35000 0.00000 0.00000"/>
+            <mass value="0.50000"/>
+            <inertia ixx="0.00001" iyy="-0.04083" izz="-0.04083" ixy="-0.00000" ixz="-0.00000" iyz="-0.00000"/>
+        </inertial>
+        <visual>
+        <origin rpy="0 1.57 0" xyz="0.35 0.0 0.0"/>
+        <geometry>
+           <cylinder length="0.7" radius="0.01"/>
+        </geometry>
+        </visual>
+    </link>
+    <joint name="fbj" type="floating">
+        <parent link="world"/>
+        <child  link="body"/>
+    </joint>
+    <joint name="jA" type="revolute">
+        <origin xyz="0.00000 0.00000 0.00000" rpy="0.0 0.0 0.0"/>
+        <parent link="body"/>
+        <child  link="link1"/>
+        <limit effort="30" velocity="1.0"/>
+        <axis xyz="0 0 1"/>
+    </joint>
+    <joint name="jB" type="revolute">
+        <origin xyz="0.00000 0.00000 -0.10000" rpy="-2.3561944901923457 1.5707962635746238 2.3561944901923457"/>
+        <parent link="link1"/>
+        <child  link="link2"/>
+        <limit effort="30" velocity="1.0"/>
+        <axis xyz="0 0 1"/>
+    </joint>
+</robot>

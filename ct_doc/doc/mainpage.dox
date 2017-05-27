@@ -1,0 +1,123 @@
+/*!
+\mainpage Overview
+
+\section ct1 Control Toolbox
+This is ADRL Control Toolbox, a C++ library for efficient modelling, control and estimation for robotics
+
+\section source_code Source Code
+The source code is available at <a href="https://bitbucket.org/adrlab/ct">https://bitbucket.org/adrlab/ct</a>
+
+\section features Features
+
+\subsection ct_core1 CT Core:
+ - Definitions for dynamic systems (ct::core::System), states (ct::core::StateVector), controls (ct::core::Controller) etc.
+ - Numeric integration (ct::core::Integrator) with various ODE solvers both fixed step (ct::core::IntegratorEuler, ct::core::IntegratorRK4) and variable step (ct::core::IntegratorRK5Variable, ct::core::ODE45)
+ - Common feedback controllers (e.g. ct::core::PIDController)
+ - Derivatives/Jacobians of general functions using Numerical Differentiation (ct::core::JacobianNumDiff) or Auto-Differentiation with code-generation and JIT compilation (ct::core::JacobianCG)
+ 
+\subsection ct_optcon CT Optimal Control
+ - Definitions for Optimal Control Problems (ct::optcon::OptConProblem) and Solvers (ct::optcon::OptConSolver)
+ - ct::optcon::CostFunction toolbox allowing to construct a cost function from file and providing derivatives / quadratic approximations.
+ - ct::optcon::Constraint toolbox for formulating constraints of Optimal Control Problems
+ - Linear and Non-Linear Optimal Control Solvers (ct::optcon::LQR, ct::optcon::TVLQR, ct::optcon::iLQG, ct::optcon::DMS)
+ - Non-Linear Model Predictive Control (ct::optcon::MPC, which can use either iLQG or DMS as solvers)
+ - Interfaces to common NLP Solvers (ct::optcon::SNOPTSolver and ct::optcon::IPOPTSolver)
+  
+\subsection ct_rbd CT Rigid Body Dynamics
+ - Standard models for Rigid Body Dynamics
+ - Definitions for the state of a Rigid Body System expressed as general coordinates (ct::rbd::RBDState)
+ - Routines for different flavors of Forward and Inverse Dynamics (ct::rbd::Dynamics)
+ - Rigid body and end-effector kinematics (ct::rbd::Kinematics) 
+ - Operational Space Controllers
+ - Basic contact model (ct::rbd::ContactModel)
+ - Backend uses <a href="https://bitbucket.org/mfrigerio17/roboticscodegenerator/">RobCoGen</a>, a highly efficient Rigid Body Dynamics library
+
+\subsection ct_models CT Models:
+ - Various standard models for testing and evaluation including UAVs (ct::models::Quadrotor), ground robots, legged robots (ct::models::HyQ), robot arms (ct::models::HyA), inverted pendulums etc.
+ - Means of creating linear approximation of these models
+
+\section gs Getting Started
+@ref getting_started
+
+\section doc Documentation
+This library consists of four main modules
+ - <a href="../../../ct_core/doc/html/index.html">ct_core</a> 
+ - <a href="../../../ct_optcon/doc/html/index.html">ct_optcon</a>
+ - <a href="../../../ct_rbd/doc/html/index.html">ct_rbd</a>
+ - <a href="../../../ct_models/doc/html/index.html">ct_models</a>
+
+Furthermore there are ROS interfaces available
+ - <a href="../../../../ct_ros/ct_ros_msgs/doc/html/index.html">ct_ros_msgs</a> 
+ - <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_nodes</a> 
+
+
+
+\section acknowledgement Acknowledgement
+\subsection contribs Contributors
+ - Michael Neunert
+ - Markus Giftthaler
+ - Markus Stäuble
+ - Farbod Farshidian
+ - Diego Pardo
+ - Timothy Sandy
+ 
+\subsection lead Project Lead and Maintanance: 
+ - Michael Neunert, neunertm ( at ) gmail (dot) com
+ - Markus Giftthaler, mgiftthaler (at) ethz (dot) ch
+
+
+
+
+
+//-----------------------------------------------------------
+
+\page getting_started Getting started 
+
+\section requirements Requirements
+This library is written in C++11. It is tested under Ubuntu 14.04 with
+library versions as provided in the package sources. However, CT should
+also run on other platforms 
+
+\subsection dep Dependencies
+ - C++ compiler with C++11 support
+ - Eigen
+ - catkin (build system, easy to switch to CMakeLists.txt where needed)
+ - boost 1.54
+ 
+\subsection opt_dep Optional Dependencies
+ - lapack (enables Schur method as an alternative to iterative method in ct::optcon::LQR)
+ - clang (faster compilation for large linear models)
+ - ROS Indigo (for ROS bindings, visualization and extended examples), see <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_nodes</a>, <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_msgs</a>
+ - IPOPT or SNOPT (for ct::optcon::SNOPTSolver and ct::optcon::IPOPTSolver as used by ct::optcon::DMS)
+ - qwt (for basic plotting)
+ - Matlab (for Matlab logging)
+
+\section install Installation
+\subsection build_lib Build the library
+
+\code{.sh}
+cd catkin_ws/src
+git clone git@bitbucket.org:adrlab/ct.git
+catkin build -DCMAKE_BUILD_TYPE=RELEASE 
+\endcode
+
+
+\subsection build_doc Build this Documentation
+To build the documentation do
+\code{.sh}
+catkin build -v --make-args doc # build the doc 
+\endcode
+This will build the documentation and open it in your browser.
+
+
+\subsection run_tests Run Unit Tests
+The unit tests are writte as <a href="http://code.google.com/p/googletest/">Google Tests</a>.
+To run unit tests and verify operation execute
+\code{.sh}
+catkin run_tests
+\endcode
+
+*/
+
+
+//-----------------------------------------------------------

@@ -1,0 +1,28 @@
+/*
+ * Dms.h
+ *
+ * Created on: 26.10.2016
+ * 	   Author: mgiftthaler<mgiftthaler@ethz.ch> 
+ * 
+ */
+
+#ifndef DMS_H_CONVENIENCE_
+#define DMS_H_CONVENIENCE_
+
+#include "dms_core/cost_evaluator/CostEvaluatorFull.hpp"
+#include "dms_core/cost_evaluator/CostEvaluatorSimple.hpp"
+
+#include "dms_core/spline/Linear/LinearSpliner.hpp"
+#include "dms_core/spline/ZeroOrderHold/ZeroOrderHoldSpliner.hpp"
+
+#include "dms_core/ControllerDms.h"
+#include "dms_core/DmsDimensions.hpp"
+#include "dms_core/OptVectorDms.hpp"
+#include "dms_core/RKnDerivatives.hpp"
+#include "dms_core/ShotContainer.hpp"
+#include "dms_core/TimeGrid.hpp"
+
+#include "dms_core/DmsSettings.hpp"
+#include "dms_core/DmsSolver.h"
+
+#endif /* DMS_H_CONVENIENCE_ */

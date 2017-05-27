@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+
+	<!-- ================================ Trunk ================================ -->
+	<!-- The xacro macro xacro:hyq_base contains: base and trunk -->
+	<xacro:macro name="hyq_trunk" params="name">
+		<!-- Floating-base Joint -->
+		<joint name="floating_base" type="fixed">
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<parent link="${name}_link"/>
+			<child link="trunk"/>
+		</joint>
+
+		<!-- Links -->
+		<!-- Footprint link -->
+		<link name="${name}_link">
+			<visual>
+				<geometry>
+					<cylinder length="0.01" radius="0.01"/>
+				</geometry>
+			</visual>
+		</link>
+		<!-- Trunk link -->
+		<link name="trunk">
+			<inertial>
+				<origin xyz="${xcom_trunk} ${ycom_trunk} ${zcom_trunk}"/>
+				<mass value="${m_trunk}"/>
+				<inertia ixx="${ixx_trunk}" iyy="${iyy_trunk}" izz="${izz_trunk}"
+						 ixy="${ixy_trunk}" ixz="${ixz_trunk}" iyz="${iyz_trunk}"/>
+			</inertial>
+			<visual>
+				<geometry>
+					<mesh filename="package://ct_models/urdf/HyQ/meshes/trunk/trunk.dae" scale="1 1 1"/>
+				</geometry>
+			</visual>
+			<collision>
+				<geometry>
+					<mesh filename="package://ct_models/urdf/HyQ/meshes/trunk/trunk.dae" scale="1 1 1"/>
+				</geometry>
+			</collision>
+		</link>
+
+		<!-- Extensions -->
+		<xacro:trunk_gazebo name="trunk"/>
+
+	</xacro:macro>
+
+</robot>

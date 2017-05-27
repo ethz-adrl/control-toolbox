@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<!-- ================================== Leg ================================== -->
+	<!-- The xacro macro xacro:hyq_leg contains: hip assembly, upper and lower leg -->
+	<xacro:macro name="hyq_leg" params="name parent *origin reflect_hip reflect_upper reflect_front">
+		<!-- Joints -->
+		<!-- Hip assembly joint -->
+		<joint name="${name}_haa_joint" type="revolute">
+			<insert_block name="origin"/>
+			<parent link="${parent}"/>
+			<child  link="${name}_hipassembly"/>
+			<axis xyz="0 0 1"/>
+			<limit effort="150.0" velocity="12.0" lower="${-7*PI/18}" upper="${PI/6}"/>
+			<dynamics damping="0.1" friction="0" />
+			<safety_controller k_position="100" k_velocity="100"
+							   soft_lower_limit="-10" soft_upper_limit="12.45" />
+		</joint>
+		<!-- Upper leg joint -->
+		<joint name="${name}_hfe_joint" type="revolute">
+			<origin xyz="${d_tbb} 0 0" rpy="${reflect_upper*PI/2} 0 0"/>
+			<parent link="${name}_hipassembly"/>
+			<child  link="${name}_upperleg"/>
+			<axis xyz="0 0 1"/>
+			<limit effort="150.0" velocity="12.0"
+				   lower="${-(1+reflect_front)*5*PI/36-(1-reflect_front)*7*PI/36}"
+				   upper="${(1-reflect_front)*5*PI/36+(1+reflect_front)*7*PI/36}"/>
+			<dynamics damping="0.1" friction="0" />
+			<safety_controller k_position="100" k_velocity="100"
+							   soft_lower_limit="-10" soft_upper_limit="12.45" />
+		</joint>
+		<!-- Lower leg joint -->
+		<joint name="${name}_kfe_joint" type="revolute">
+			<origin xyz="${d_p1p2} 0 0" rpy="0 0 0"/>
+			<parent link="${name}_upperleg"/>
+			<child  link="${name}_lowerleg"/>
+			<axis xyz="0 0 1"/>
+			<limit effort="150.0" velocity="12.0"
+				   lower="${-(1+reflect_front)*7*PI/18+(1-reflect_front)*PI/18}"
+				   upper="${(1-reflect_front)*7*PI/18-(1+reflect_front)*PI/18}"/>
+			<dynamics damping="0.1" friction="0" />
+			<safety_controller k_position="100" k_velocity="100"
+							   soft_lower_limit="-10" soft_upper_limit="12.45" />
+		<!-- Foot joint -->
+		</joint>
+		<joint name="${name}_foot_joint" type="fixed">
+			<origin xyz="0.35 0 0" rpy="${PI/2} 0 ${-PI/2}"/>
+			<parent link="${name}_lowerleg"/>
+			<child  link="${name}_foot"/>
+		</joint>
+
+
+		<!-- Links -->
+		<!-- Hip assembly link -->
+		<link name="${name}_hipassembly">
+			<inertial>
+				<origin xyz="${xcom_hipassembly}
+							 ${reflect_hip*ycom_hipassembly}
+							 ${reflect_hip*zcom_hipassembly}"/>
+				<mass value="${m_hipassembly}"/>
+				<inertia ixx="${ixx_hipassembly}" iyy="${iyy_hipassembly}" izz="${izz_hipassembly}"
+						 ixy="${reflect_hip*reflect_front*ixy_hipassembly}" ixz="${reflect_hip*reflect_front*ixz_hipassembly}" iyz="${iyz_hipassembly}"/>
+			</inertial>
+			<visual>
+				<origin xyz="0 0 0" rpy="${(1-reflect_hip)*PI/2} 0 0"/>
+				<geometry>
+					<mesh filename="package://ct_models/urdf/HyQ/meshes/leg/hipassembly.dae" scale="1 1 1"/>
+				</geometry>
+			</visual>
+			<collision>
+				<origin xyz="0 0 0" rpy="${(1-reflect_hip)*PI/2} 0 0"/>
+				<geometry>
+					<mesh filename="package://ct_models/urdf/HyQ/meshes/leg/hipassembly.dae" scale="1 1 1"/>
+				</geometry>
+			</collision>
+		</link>
+		<!-- Upper leg link -->
+		<link name="${name}_upperleg">
+			<inertial>
+				<origin xyz="${xcom_upperleg} ${reflect_upper*ycom_upperleg} ${zcom_upperleg}"/>
+				<mass value="${m_upperleg}"/>
+				<inertia ixx="${ixx_upperleg}" iyy="${iyy_upperleg}" izz="${izz_upperleg}"
+						 ixy="${reflect_front*ixy_upperleg}" ixz="${reflect_front*ixz_upperleg}" iyz="${iyz_upperleg}"/>
+			</inertial>
+			<visual> 
+				<origin xyz="0 0 0" rpy="${(1-reflect_front)*PI/2} 0 0"/>
+				<geometry>
+					<mesh filename="package://ct_models/urdf/HyQ/meshes/leg/upperleg.dae" scale="1 1 1"/>
+				</geometry>
+			</visual>
+			<collision>
+				<origin xyz="0 0 0" rpy="${(1-reflect_front)*PI/2} 0 0"/>
+				<geometry>
+					<mesh filename="package://ct_models/urdf/HyQ/meshes/leg/upperleg.dae" scale="1 1 1"/>
+				</geometry>
+			</collision>
+		</link>
+		<!-- Lower leg link -->
+		<link name="${name}_lowerleg">
+			<inertial>
+				<origin xyz="${xcom_lowerleg} ${ycom_lowerleg} ${zcom_lowerleg}"/>
+				<mass value="${m_lowerleg}"/>
+				<inertia ixx="${ixx_lowerleg}" iyy="${iyy_lowerleg}" izz="${izz_lowerleg}"
+						 ixy="${ixy_lowerleg}" ixz="${ixz_lowerleg}" iyz="${iyz_lowerleg}"/>
+			</inertial>
+			<visual>
+				<geometry>
+					<mesh filename="package://ct_models/urdf/HyQ/meshes/leg/lowerleg.dae" scale="1 1 1"/>
+				</geometry>
+				<material name="white"/>
+			</visual>
+			<collision>
+				<geometry>
+					<mesh filename="package://ct_models/urdf/HyQ/meshes/leg/lowerleg.dae" scale="1 1 1"/>
+				</geometry>
+			</collision>
+		</link>
+		<!-- Foot link -->
+		<link name="${name}_foot">
+			<inertial>
+				<origin xyz="0 0 0"/>
+				<mass value="0.01"/>
+				<inertia ixx="0.0" iyy="0.0" izz="0.0" ixy="0.0" ixz="0.0" iyz="0.0"/>
+			</inertial>
+			<!--<visual>
+				<origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+				<geometry>
+					<sphere radius="0.021"/>
+				</geometry>
+			</visual>-->
+			<collision>
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+				<geometry>
+					<sphere radius="0.02175"/>
+				</geometry>
+			</collision>
+		</link>
+		
+	</xacro:macro>
+
+</robot>

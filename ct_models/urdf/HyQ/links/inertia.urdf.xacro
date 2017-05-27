@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+
+<robot>
+
+	<property name="PI" value="3.1415926535897931"/>
+
+	<!-- standard distances -->
+	<property name="d_lr" value="0.414"/>
+	<property name="d_fh" value="0.747"/>
+	<property name="d_tbb" value="0.082"/>
+	<property name="d_p1p2" value="0.35"/>
+
+	<!-- Inertial values -->
+	<!-- Trunk with hydraulic system -->
+	<property name="xcom_trunk" value="0.027222"/>
+	<property name="ycom_trunk" value="-0.0000235"/>
+	<property name="zcom_trunk" value="0.042224"/>
+	<property name="m_trunk" value="64.862"/>
+	<property name="ixx_trunk" value="1.688238"/>
+	<property name="iyy_trunk" value="8.665299"/>
+	<property name="izz_trunk" value="9.243560"/>
+	<property name="ixy_trunk" value="-0.028789"/>
+	<property name="ixz_trunk" value="0.277694"/>
+	<property name="iyz_trunk" value="0.003820"/>
+	<!-- Hip assembly -->
+	<property name="xcom_hipassembly" value="0.04263"/>
+	<property name="ycom_hipassembly" value="0.0"/>
+	<property name="zcom_hipassembly" value="0.16931"/>
+	<property name="m_hipassembly" value="2.93"/>
+	<property name="ixx_hipassembly" value="0.134705"/>
+	<property name="iyy_hipassembly" value="0.144171"/>
+	<property name="izz_hipassembly" value="0.011033"/>
+	<property name="ixy_hipassembly" value="0.000036"/>
+	<property name="ixz_hipassembly" value="0.022734"/>
+	<property name="iyz_hipassembly" value="0.000051"/>
+	<!-- Upper leg -->
+	<property name="xcom_upperleg" value="0.15074"/>
+	<property name="ycom_upperleg" value="0.02625"/>
+	<property name="zcom_upperleg" value="0.0"/>
+	<property name="m_upperleg" value="2.638"/>
+	<property name="ixx_upperleg" value="0.005495"/>
+	<property name="iyy_upperleg" value="0.087136"/>
+	<property name="izz_upperleg" value="0.089871"/>
+	<property name="ixy_upperleg" value="-0.007418"/>
+	<property name="ixz_upperleg" value="-0.000102"/>
+	<property name="iyz_upperleg" value="-0.000021"/>
+	<!-- Lower leg -->
+	<property name="xcom_lowerleg" value="0.1254"/>
+	<property name="ycom_lowerleg" value="0.00005"/>
+	<property name="zcom_lowerleg" value="-0.0001"/>
+	<property name="m_lowerleg" value="0.881"/>
+	<property name="ixx_lowerleg" value="0.000468"/>
+	<property name="iyy_lowerleg" value="0.026409"/>
+	<property name="izz_lowerleg" value="0.026181"/>
+	<property name="ixy_lowerleg" value="0.0"/>
+	<property name="ixz_lowerleg" value="0.0"/>
+	<property name="iyz_lowerleg" value="0.0"/>
+
+</robot>

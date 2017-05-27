@@ -1,0 +1,16 @@
+/*
+ * Util.h
+ *
+ * Created on: 26.10.2016
+ * 	   Author: mgiftthaler<mgiftthaler@ethz.ch> 
+ * 
+ */
+
+#ifndef UTIL_H_
+#define UTIL_H_
+
+#include "util/loadTask.hpp"
+#include "util/MatlabInterface.hpp"
+
+
+#endif /* UTIL_H_ */

@@ -1,0 +1,22 @@
+Robot ct_quadrotor
+
+Frames {
+    fr_body, fr_link1, fr_link2, fr_com0, fr_com1, fr_ee
+}
+
+Transforms {
+	base=fr_body, target=fr_link1
+	base=fr_body, target=fr_link2
+    	base=fr_body, target=fr_ee
+    	base=fr_body, target=fr_com0
+    	base=fr_body, target=fr_com1
+    	base=fr_link1, target=fr_body
+	base=fr_link2, target=fr_body
+    	base=fr_ee, target=fr_body
+    	base=fr_com0, target=fr_body
+    	base=fr_com1, target=fr_body
+}
+
+Jacobians {
+	base=fr_body, target=fr_ee
+}

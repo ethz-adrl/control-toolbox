@@ -1,0 +1,72 @@
+Robot ct_HyA
+
+Frames {
+    fr_HyABase, fr_Shoulder_AA, fr_Shoulder_FE, fr_Humerus_R, fr_Elbow_FE, fr_Wrist_R, fr_Wrist_FE, fr_HyABase__COM, fr_Shoulder_AA_COM, fr_Shoulder_FE_COM, fr_Humerus_R_COM, fr_Elbow_FE_COM, fr_Wrist_R_COM, fr_Wrist_FE_COM, fr_ee,
+	fr_Shoulder_AA_CTR, fr_Shoulder_FE_CTR, fr_Humerus_R_CTR, fr_Elbow_FE_CTR, fr_Wrist_R_CTR 
+}
+
+Transforms {
+    
+	base=fr_HyABase, target=fr_Shoulder_AA
+	base=fr_HyABase, target=fr_Shoulder_FE
+	base=fr_HyABase, target=fr_Humerus_R
+	base=fr_HyABase, target=fr_Elbow_FE
+	base=fr_HyABase, target=fr_Wrist_R
+	base=fr_HyABase, target=fr_Wrist_FE
+	base=fr_HyABase, target=fr_ee
+
+	base=fr_HyABase, target=fr_Shoulder_AA_COM
+	base=fr_HyABase, target=fr_Shoulder_FE_COM
+	base=fr_HyABase, target=fr_Humerus_R_COM
+	base=fr_HyABase, target=fr_Elbow_FE_COM
+	base=fr_HyABase, target=fr_Wrist_R_COM
+	base=fr_HyABase, target=fr_Wrist_FE_COM
+
+	base=fr_HyABase, target=fr_Shoulder_AA_CTR
+	base=fr_HyABase, target=fr_Shoulder_FE_CTR
+	base=fr_HyABase, target=fr_Humerus_R_CTR
+	base=fr_HyABase, target=fr_Elbow_FE_CTR
+	base=fr_HyABase, target=fr_Wrist_R_CTR
+	
+	base=fr_Shoulder_FE, target=fr_Wrist_FE
+	base=fr_Humerus_R, target=fr_Wrist_FE
+	base=fr_Elbow_FE, target=fr_Wrist_FE
+	base=fr_Wrist_R, target=fr_Wrist_FE
+
+	base=fr_Shoulder_FE, target=fr_Wrist_FE
+	base=fr_Wrist_FE, target=fr_Shoulder_FE
+
+	base=fr_Shoulder_FE, target=fr_ee
+	base=fr_Humerus_R, target=fr_ee
+	base=fr_Elbow_FE, target=fr_ee
+	base=fr_Wrist_R, target=fr_ee
+	base=fr_Wrist_FE, target=fr_ee
+
+	base=fr_Shoulder_AA, target=fr_HyABase
+	base=fr_Shoulder_FE, target=fr_HyABase
+	base=fr_Humerus_R, target=fr_HyABase
+
+	base=fr_Elbow_FE, target=fr_HyABase
+
+	base=fr_Wrist_R, target=fr_HyABase
+	base=fr_Wrist_FE, target=fr_HyABase
+	base=fr_ee, target=fr_HyABase
+	
+}
+
+Jacobians {
+	base=fr_HyABase, target=fr_ee
+	base=fr_HyABase, target=fr_Wrist_FE_COM
+	base=fr_HyABase, target=fr_Wrist_FE
+	base=fr_HyABase, target=fr_Wrist_R_COM
+	base=fr_HyABase, target=fr_Wrist_R
+	base=fr_HyABase, target=fr_Wrist_R_CTR
+	base=fr_HyABase, target=fr_Elbow_FE_COM
+	base=fr_HyABase, target=fr_Elbow_FE
+	base=fr_HyABase, target=fr_Elbow_FE_CTR
+	base=fr_HyABase, target=fr_Humerus_R_COM
+	base=fr_HyABase, target=fr_Humerus_R
+	base=fr_HyABase, target=fr_Humerus_R_CTR
+	base=fr_HyABase, target=fr_Shoulder_AA_CTR
+	base=fr_HyABase, target=fr_Shoulder_FE_CTR
+}
