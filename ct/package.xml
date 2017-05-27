@@ -1,0 +1,15 @@
+<package>
+  <name>ct</name>
+  <version>1.0.0</version>
+  <description>
+    ADRL Control Toolbox
+  </description>
+  <maintainer email="neunertm@ethz.ch">Michael Neunert</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+   <export>
+   	  <metapackage />
+   </export>
+</package>

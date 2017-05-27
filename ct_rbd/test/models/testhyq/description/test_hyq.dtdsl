@@ -1,0 +1,90 @@
+Robot TestHyQ
+
+Frames {
+    fr_trunk, fr_LF_foot, fr_RF_foot, fr_LH_foot, fr_RH_foot, trunkCOM,
+    fr_LF_lowerleg, fr_RF_lowerleg, fr_LH_lowerleg, fr_RH_lowerleg,
+    fr_LF_hipassembly, fr_LF_upperleg, fr_LF_lowerleg, 
+    fr_RF_hipassembly, fr_RF_upperleg, fr_RF_lowerleg, 
+    fr_LH_hipassembly, fr_LH_upperleg, fr_LH_lowerleg, 
+    fr_RH_hipassembly, fr_RH_upperleg, fr_RH_lowerleg,
+    LF_hipassemblyCOM, LF_upperlegCOM, LF_lowerlegCOM, 
+    RF_hipassemblyCOM, RF_upperlegCOM, RF_lowerlegCOM, 
+    LH_hipassemblyCOM, LH_upperlegCOM, LH_lowerlegCOM, 
+    RH_hipassemblyCOM, RH_upperlegCOM, RH_lowerlegCOM
+}
+
+Transforms {
+	base=fr_trunk, target=fr_LF_hipassembly
+	base=fr_trunk, target=fr_RF_hipassembly
+	base=fr_trunk, target=fr_LH_hipassembly
+	base=fr_trunk, target=fr_RH_hipassembly	
+	base=fr_trunk, target=fr_LF_upperleg
+	base=fr_trunk, target=fr_RF_upperleg
+	base=fr_trunk, target=fr_LH_upperleg
+	base=fr_trunk, target=fr_RH_upperleg	
+	base=fr_trunk, target=fr_LF_lowerleg
+	base=fr_trunk, target=fr_RF_lowerleg
+	base=fr_trunk, target=fr_LH_lowerleg
+	base=fr_trunk, target=fr_RH_lowerleg
+
+	base=fr_LF_hipassembly, target=fr_trunk 
+	base=fr_RF_hipassembly, target=fr_trunk 
+	base=fr_LH_hipassembly, target=fr_trunk 
+	base=fr_RH_hipassembly, target=fr_trunk 
+	base=fr_LF_upperleg, target=fr_trunk 
+	base=fr_RF_upperleg, target=fr_trunk 
+	base=fr_LH_upperleg, target=fr_trunk 
+	base=fr_RH_upperleg, target=fr_trunk 	
+	base=fr_LF_lowerleg, target=fr_trunk 
+	base=fr_RF_lowerleg, target=fr_trunk 
+	base=fr_LH_lowerleg, target=fr_trunk
+	base=fr_RH_lowerleg, target=fr_trunk
+	
+	base=fr_trunk, target=LF_hipassemblyCOM
+	base=fr_trunk, target=RF_hipassemblyCOM
+	base=fr_trunk, target=LH_hipassemblyCOM
+	base=fr_trunk, target=RH_hipassemblyCOM	
+	base=fr_trunk, target=LF_upperlegCOM
+	base=fr_trunk, target=RF_upperlegCOM
+	base=fr_trunk, target=LH_upperlegCOM
+	base=fr_trunk, target=RH_upperlegCOM	
+	base=fr_trunk, target=LF_lowerlegCOM
+	base=fr_trunk, target=RF_lowerlegCOM
+	base=fr_trunk, target=LH_lowerlegCOM
+	base=fr_trunk, target=RH_lowerlegCOM
+	base=fr_LF_lowerleg, target=fr_trunk
+	base=fr_RF_lowerleg, target=fr_trunk
+	base=fr_LH_lowerleg, target=fr_trunk
+	base=fr_RH_lowerleg, target=fr_trunk
+	base=fr_LF_foot, target=fr_LF_lowerleg
+	base=fr_RF_foot, target=fr_RF_lowerleg
+	base=fr_LH_foot, target=fr_LH_lowerleg
+	base=fr_RH_foot, target=fr_RH_lowerleg
+	base=fr_trunk, target=fr_LF_foot
+	base=fr_trunk, target=fr_RF_foot
+	base=fr_trunk, target=fr_LH_foot
+	base=fr_trunk, target=fr_RH_foot
+	base=fr_LF_foot, target=fr_trunk
+	base=fr_RF_foot, target=fr_trunk
+	base=fr_LH_foot, target=fr_trunk
+	base=fr_RH_foot, target=fr_trunk
+}
+
+Jacobians {	
+	base=fr_trunk, target=LF_hipassemblyCOM
+	base=fr_trunk, target=RF_hipassemblyCOM
+	base=fr_trunk, target=LH_hipassemblyCOM
+	base=fr_trunk, target=RH_hipassemblyCOM	
+	base=fr_trunk, target=LF_upperlegCOM
+	base=fr_trunk, target=RF_upperlegCOM
+	base=fr_trunk, target=LH_upperlegCOM
+	base=fr_trunk, target=RH_upperlegCOM	
+	base=fr_trunk, target=LF_lowerlegCOM
+	base=fr_trunk, target=RF_lowerlegCOM
+	base=fr_trunk, target=LH_lowerlegCOM
+	base=fr_trunk, target=RH_lowerlegCOM
+	base=fr_trunk, target=fr_LF_foot
+	base=fr_trunk, target=fr_RF_foot
+	base=fr_trunk, target=fr_LH_foot
+	base=fr_trunk, target=fr_RH_foot
+}

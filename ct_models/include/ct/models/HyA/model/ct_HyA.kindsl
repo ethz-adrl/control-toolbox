@@ -1,0 +1,211 @@
+Robot ct_HyA {
+
+
+RobotBase HyABase {
+	inertia_params {
+		mass = 1.0
+		CoM = (0.0, 0.0, 0.0)
+		Iy=0.0	Ix=0.0	Ixy=0.0	Iz=0.0	Ixz=0.0	Iyz=0.0
+	}
+	children {
+		Shoulder_AA via SAA
+	}
+}
+
+link Shoulder_AA {
+	id = 1
+	inertia_params {
+		mass = 2.688
+		CoM = (-0.000196, -0.000361, 0.003091)
+		Ix=0.004985  Iy=0.007629  Iz=0.004716  Ixy=0.000585  Ixz=-0.000613  Iyz=-0.000894
+		ref_frame = fr_SFE
+	}
+	children {
+		Shoulder_FE via SFE
+	}
+	frames {
+		fr_Shoulder_AA_COM {
+		   translation = (-0.000196, -0.000361, 0.003091)
+		   rotation    = (0.0, 0.0, 0.0)
+		}
+		fr_SFE {
+	       translation = (0.0, 0.0, 0.178)
+			rotation = (PI/2.0, 0.0, 0.0)
+		}
+		fr_Shoulder_AA_CTR {
+	       translation = (0.0, 0.0, 0.089)
+			rotation = (0.0, 0.0, 0.0)
+		}
+		
+	}
+}
+
+
+link Shoulder_FE {
+	id = 2
+	inertia_params {
+		mass = 2.5924192
+		CoM = (-0.003832, -0.023382, 0.0011662)
+		Ix=0.018197  Iy=0.052659  Iz=0.039003  Ixy=-0.002752  Ixz=-0.021739  Iyz= 0.001261
+		ref_frame = fr_HR
+	}
+	children {
+		Humerus_R via HR
+	}
+	frames {
+	   fr_Shoulder_FE_COM {
+	       translation = (-0.003832, -0.023382, 0.0011662)
+	       rotation    = (0.0, 0.0, 0.0)
+	   }
+		fr_HR {
+	       translation = (0.112, 0.0, 0.0)
+			rotation = (0.0, PI/2.0, 0.0)
+		}
+
+		fr_Shoulder_FE_CTR {
+	       translation = (0.056, 0.0, 0.0)
+			rotation = (0.0, 0.0, 0.0)
+		}
+	}
+}
+
+
+link Humerus_R {
+	id = 3
+	inertia_params {
+		mass = 2.327
+		CoM = (-0.025544,0.006180,0.002390)
+		Ix=0.010330  Iy=0.030957  Iz=0.023452  Ixy=-0.000572  Ixz=-0.013406  Iyz=0.000054
+		ref_frame = fr_EFE
+	}
+	children {
+		Elbow_FE via EFE
+	}
+	frames {
+	   fr_Humerus_R_COM {
+	       translation = (-0.002390, 0.006180, -0.025544)
+	       rotation    = (0.0, 0.0, 0.0)
+	   }
+		fr_EFE {
+	       translation = (0.0, 0.0, 0.304)
+			rotation = (0.0, -PI/2.0, 0.0)
+		}
+		fr_Humerus_R_CTR {
+	       translation = (0.0, 0.0, 0.152)
+			rotation = (0.0, 0.0, 0.0)
+		}
+	}
+}
+
+link Elbow_FE {
+	id = 4
+	inertia_params {
+		mass = 1.7423721
+        CoM = (0.0,-0.005,-0.02)
+        Ix=0.081658  Iy=0.004234  Iz=0.081661  Ixy=-0.002292  Ixz=-0.000212  Iyz=-0.002710
+		ref_frame = fr_WR
+	}
+	children {
+		Wrist_R via WR
+	}
+	frames {
+	   	fr_Elbow_FE_COM {
+	       translation = (-0.146648, -0.011245, 0.001022)
+	       rotation    = (0.0, 0.0, 0.0)
+	   	}
+		fr_WR {
+	       translation = (0.112, 0.0, 0.0)
+			rotation = (0.0,PI/2.0, 0.0)
+		}
+		fr_Elbow_FE_CTR {
+	       translation = (0.056, 0.0, 0.0)
+			rotation = (0.0, 0.0, 0.0)
+		}
+	}
+}
+
+link Wrist_R {
+	id = 5
+	inertia_params {
+		mass = 2.1032
+	    CoM = (0.0, 0.0, 0.0275)
+        Ix=0.019432  Iy=0.029115  Iz=0.011046  Ixy=0.001387  Ixz=0.012652  Iyz=0.001243
+	}
+	children {
+		Wrist_FE via WFE
+	}
+	frames {
+	   	fr_Wrist_R_COM {
+	       translation = (0.000397, -0.002608, -0.023167)
+	       rotation    = (0.0, 0.0, 0.0)
+	   	}
+
+		fr_Wrist_R_CTR {
+	       translation = (0.0, 0.0, 0.092)
+			rotation = (0.0, 0.0, 0.0)
+		}
+	}
+}
+
+link Wrist_FE {
+	id = 6
+	inertia_params {
+		mass = 1.5474750
+		CoM = (0.025, 0.0, 0.0)
+		Ix=0.010737  Iy=0.003227  Iz=0.009277  Ixy=-0.000198  Ixz=-0.000015  Iyz=0.000829
+	}
+	children {}
+	frames {
+	   fr_ee {
+	       translation = (0.03, 0.0, 0.0)
+	       rotation    = (0.0, 0.0, 0.0)
+	   }
+	   fr_Wrist_FE_COM {
+	       translation = (-0.078762, -0.010631, -0.000835)
+	       rotation    = (0.0, 0.0, 0.0)
+	   }
+	}
+}
+
+r_joint SAA {
+	ref_frame {
+		translation = (0.0, 0.0, 0.0)
+		rotation = (0.0, 0.0, 0.0)
+	}
+}
+
+r_joint SFE {
+	ref_frame {
+		translation = (0.0, 0.0, 0.178)
+		rotation = (PI/2.0, 0.0, 0.0)
+	}
+}
+
+r_joint HR {
+	ref_frame {
+		translation = (0.112, 0.0, 0.0)
+		rotation = (0.0, PI/2.0, 0.0)
+	}
+}
+r_joint EFE {
+	ref_frame {
+		translation = (0.0, 0.0, 0.304)
+		rotation = (0.0, -PI/2.0, 0.0)
+	}
+}
+
+r_joint WR {
+	ref_frame {
+		translation = (0.112, 0.0, 0.0)
+		rotation = (0.0,PI/2.0, 0.0)
+	}
+}
+
+r_joint WFE {
+	ref_frame {
+		translation = (0.02075, 0.0, 0.184)
+		rotation = (-PI/2.0, 0.0, -PI/2.0)
+	}
+}
+
+}

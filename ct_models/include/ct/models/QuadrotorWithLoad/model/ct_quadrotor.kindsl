@@ -1,0 +1,71 @@
+Robot ct_quadrotor {
+
+RobotBase body floating{
+	inertia_params {
+		mass = 0.5
+		CoM = (0.0, 0.0, 0.0)
+		Ix=0.03	Iy=0.03	Iz=0.05 Ixy=0.0 Ixz=0.0 Iyz=0.0
+	}
+	children {
+		link1 via jA
+	}
+	frames {
+	   fr_com0 {
+	       translation = (0.0, 0.0, 0.0)
+	       rotation    = (0.0, 0.0, 0.0)
+	   	}
+	}
+}
+
+link link1 {
+	id = 1
+	inertia_params {
+		mass = 0.025
+		CoM = (0.0, 0.0, -0.05)
+		Ix=0.00002075  Iy=0.00002075  Iz=0.000001  Ixy=0.0  Ixz=0.0  Iyz=0.0
+	}
+
+	children {
+		link2 via jB
+	}
+frames {
+	   fr_com1 {
+	       translation = (0.0, 0.0, -0.05)
+	       rotation    = (0.0, 0.0, 0.0)
+	   	}
+	}
+}
+
+
+link link2 {
+	id = 2
+	inertia_params {
+		mass = 0.1
+		CoM = (0.35, 0.0, 0.0)
+		Ix=0.0000025 Iy=0.004084  Iz=0.004084  Ixy=0.0  Ixz=0.0  Iyz=0.0
+	}
+	children{}
+	frames {
+	   fr_ee {
+	       translation = (0.7, 0.0, 0.0)
+	       rotation    = (0.0, 0.0, 0.0)
+	   }
+	}
+}
+
+
+r_joint jA {					
+	ref_frame {
+		translation = (0.0, 0.0, 0.0)  
+		rotation = (0.0, 0.0, 0.0)
+	}
+}
+
+r_joint jB {
+	ref_frame {
+		translation = (0.0, 0.0, -0.1) 
+		rotation = (PI/2.0, 0.0, -PI/2.0)
+	}
+}
+
+}

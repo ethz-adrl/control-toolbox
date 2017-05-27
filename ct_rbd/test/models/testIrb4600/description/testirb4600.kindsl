@@ -1,0 +1,184 @@
+Robot testirb4600 {
+
+RobotBase link0 {
+	inertia_params {
+		mass = 0.0
+		CoM = (0.0, 0.0, 0.075)
+		Iy=0.0	Ix=0.0 Iz=0.0 Ixy=0.0 Ixz=0.0 Iyz=0.0
+	}
+	children {
+		link1 via jA
+	}
+	frames {
+	   com0 {
+	       translation = (0.0, 0.0, 0.075)
+	       rotation    = (0.0, 0.0, 0.0)
+	   	}
+	}
+}
+
+link link1 {
+	id = 1
+	inertia_params {
+		mass = 120.0
+		CoM = (0.0, 0.0, 0.0)
+		Ix=2.52  Iy=2.52  Iz=1.8  Ixy=0.0  Ixz=0.0  Iyz=0.0
+        ref_frame = com1
+	}
+
+	children {
+		link2 via jB
+	}
+frames {
+	   com1 {
+	       translation = (0.09, 0.0, 0.25)
+	       rotation    = (0.0, 0.0, 0.0)
+	   	}
+	}
+}
+
+
+link link2 {
+	id = 2
+	inertia_params {
+		mass = 120.0
+		CoM = (0.0, 0.00, 0.0)
+		Ix=0.7 Iy=11.25  Iz=11.75  Ixy=0.0  Ixz=0.0  Iyz=0.0
+        ref_frame = com2
+	}
+
+	children {
+		link3 via jC
+	}
+	frames {
+	   com2 {
+	       translation = (0.47, 0.04, -0.17)
+	       rotation    = (0.0, 0.0, 0.0)
+	   }
+	}
+}
+
+
+link link3 {
+	id = 3
+	inertia_params {
+		mass = 120.0
+		CoM = (0.0, 0.0, 0.0)
+		Ix=3.7  Iy=5.03  Iz=5.03  Ixy=0.0  Ixz=0.0  Iyz=0.0
+        ref_frame = com3
+	}
+
+	children {
+		link4 via jD
+	}
+	frames {
+	   com3 {
+	       translation = (0.035, -0.133, 0.044)
+	       rotation    = (0.0, 0.0, 0.0)
+	   }
+	}
+}
+
+link link4 {
+	id = 4
+	inertia_params {
+		mass = 40.0
+		CoM = (0.0, 0.0, 0.0)
+		Ix=2.0  Iy=2.0  Iz=0.482  Ixy=0.0  Ixz=0.0  Iyz=0.0
+        ref_frame = com4
+	}
+
+	children {
+		link5 via jE
+	}
+	frames {
+	   com4 {
+	       translation = (0.0, 0.0, 0.5)
+	       rotation    = (0.0, 0.0, 0.0)
+	   }
+	}
+}
+
+link link5 {
+	id = 5
+	inertia_params {
+		mass = 10.0
+		CoM = (0.0, 0.0, 0.0)
+		Ix=0.04  Iy=0.04  Iz=0.045  Ixy=0.0  Ixz=0.0  Iyz=0.0
+        ref_frame = com5
+	}
+
+	children {
+		link6 via jF
+	}
+	frames {
+	   com5 {
+	       translation = (0.07, 0.0, 0.0)
+	       rotation    = (0.0, 0.0, 0.0)
+	   }
+	}	
+}
+
+link link6 {
+	id = 6
+	inertia_params {
+		mass = 5.0
+		CoM = (0.081, -0.091, 0.232)
+		Ix=0.014  Iy=0.014  Iz=0.028  Ixy=0.0  Ixz=0.0  Iyz=0.0
+	}
+
+	children {}
+	frames {
+	   fr_ee {
+	       translation = (0.0, 0.0, 0.2)
+	       rotation    = (0.0, 0.0, 0.0)  //roll - pitch - yaw
+	   }
+	 com6 {
+	       translation = (0.0, 0.0, 0.1)
+	       rotation    = (0.0, 0.0, 0.0)  //roll - pitch - yaw
+	   }
+	}
+}
+
+r_joint jA {					
+	ref_frame {
+		translation = (0.0, 0.0, 0.0)  
+		rotation = (0.0, 0.0, 0.0)
+	}
+}
+
+r_joint jB {
+	ref_frame {
+		translation = (0.175, 0.0, 0.495)
+		rotation = (-PI/2.0, 0.0, -PI/2.0)
+	}
+}
+
+r_joint jC {
+	ref_frame {
+		translation = (1.095, 0.0, 0.0)
+		rotation = (0.0, 0.0, PI/2.0)
+	}
+}
+r_joint jD {
+	ref_frame {
+		translation = (0.332, -0.175, 0.0)
+		rotation = (0.0, PI/2.0, 0.0)
+	}
+}
+
+r_joint jE {
+	ref_frame {
+		translation = (0.0, 0.0, 0.939)
+		rotation = (0.0, -PI/2.0, 0.0)
+	}
+}
+
+r_joint jF {
+	ref_frame {
+		translation = (0.243, 0.0, 0.0)
+		rotation = (PI/2.0, PI/2.0, 0.0)
+	}
+}
+
+}

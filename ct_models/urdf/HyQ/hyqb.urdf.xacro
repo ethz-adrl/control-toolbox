@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+
+<robot name="hyq" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<!-- The following included files set up definitions of parts of the robot body -->
+	<xacro:include filename="$(find ct_models)/urdf/HyQ/links/inertia.urdf.xacro"/>
+	<!-- HyQ trunk -->
+	<xacro:include filename="$(find ct_models)/urdf/HyQ/links/trunk.urdf.xacro"/>
+
+	<!-- HyQ legs -->
+	<xacro:include filename="$(find ct_models)/urdf/HyQ/links/leg.urdf.xacro"/>
+
+	<!-- Now we can start using the macros included above to define the actual HyQ -->
+
+	<!-- The first use of a macro. This one was defined in trunk.urdf.xacro above.
+A macro like this will expand to a set of link and joint definitions, and to additional
+Gazebo-related extensions (sensor plugins, etc). The macro takes an argument, name,
+that equals "base", and uses it to generate names for its component links and joints
+(e.g., base_link). The included origin block is also an argument to the macro. By convention,
+the origin block defines where the component is w.r.t its parent (in this case the parent
+is the world frame). For more, see http://www.ros.org/wiki/xacro -->
+
+	<!-- body -->
+	<!-- trunk -->
+	<xacro:hyq_trunk name="base">
+		<origin xyz="-0.443 -0.191 -0.276" rpy="0 0 0"/>
+	</xacro:hyq_trunk>
+
+	<!-- LF leg -->
+	<xacro:hyq_leg
+		name="lf"
+		parent="trunk"
+		reflect_hip="1"
+		reflect_upper="1"
+		reflect_front="1">
+		<origin xyz="${d_fh/2} ${d_lr/2} 0" rpy="0 ${PI/2} ${PI}"/>
+	</xacro:hyq_leg>
+
+	<!-- RF leg -->
+	<xacro:hyq_leg
+		name="rf"
+		parent="trunk"
+		reflect_hip="-1"
+		reflect_upper="-1"
+		reflect_front="1">
+		<origin xyz="${d_fh/2} ${-d_lr/2} 0" rpy="0 ${PI/2} 0"/>
+	</xacro:hyq_leg>
+
+	<!-- LH leg -->
+	<xacro:hyq_leg
+		name="lh"
+		parent="trunk"
+		reflect_hip="-1"
+		reflect_upper="1"
+		reflect_front="-1">
+		<origin xyz="${-d_fh/2} ${d_lr/2} 0" rpy="0 ${PI/2} ${PI}"/>
+	</xacro:hyq_leg>
+
+	<!-- RH leg -->
+	<xacro:hyq_leg
+		name="rh"
+		parent="trunk"
+		reflect_hip="1"
+		reflect_upper="-1"
+		reflect_front="-1">
+		<origin xyz="${-d_fh/2} ${-d_lr/2} 0" rpy="0 ${PI/2} 0"/>
+	</xacro:hyq_leg>
+-->
+
+</robot>
