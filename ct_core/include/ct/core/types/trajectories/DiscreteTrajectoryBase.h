@@ -41,7 +41,9 @@ namespace core {
 /*!
  * This implements a trajectory based on discrete data points which can be evenly or unevenly
  * distributed in time with time stamps associated with each data point. A basic interpolation
- * strategy can evaluate the trajectory also in between data points
+ * strategy can evaluate the trajectory also in between data points.
+ *
+ * An example how to use different features of the discrete trajectory can be found in unit test \ref DiscreteTrajectoryTest.cpp
  *
  * \tparam T type of each point of the trajectory
  * \tparam Alloc allocator for trajectory points

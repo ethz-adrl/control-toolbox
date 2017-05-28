@@ -61,6 +61,8 @@ namespace core {
  * The linearization is computed using Auto Differentiation which is then used by a code generator framework to generate
  * efficient code. For convenience just-in-time compilation is provided. However, you can also generate source code directly.
  *
+ * Unit test \ref CodegenTests.cpp illustrates the use of the ADCodeGenLinearizer.
+ *
  * \warning Depending on the complexity of your system, just-in-time compilation (compileJIT()) can be slow. In that case generate a
  * source code file
  *

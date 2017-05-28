@@ -84,8 +84,8 @@ target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core)
 catkin_add_gtest(InterpolationTest test/InterpolationTest.cpp)
 target_link_libraries(InterpolationTest ${catkin_LIBRARIES})
 
-catkin_add_gtest(TrajectoryTest test/TrajectoryTest.cpp)
-target_link_libraries(TrajectoryTest ${catkin_LIBRARIES})
+catkin_add_gtest(DiscreteTrajectoryTest test/DiscreteTrajectoryTest.cpp)
+target_link_libraries(DiscreteTrajectoryTest ${catkin_LIBRARIES})
 
 catkin_add_gtest(LinspaceTest test/LinspaceTest.cpp)
 target_link_libraries(LinspaceTest ${catkin_LIBRARIES})

@@ -31,12 +31,17 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct{
 namespace core{
 
-	/**
-	 * N denotes the number of points, so you will obtain N-1 intervals
-	 * a is the start of the interval
-	 * b is the end of the interval
+	//! replicates the well-known linspace command from MATLAB in C++
+	/*!
+	 * linspace provides exactly the same properties and functionality like in MATLAB.
+	 *
+	 * - N denotes the number of points, so you will obtain N-1 intervals
+	 * - a is the start of the interval
+	 * - b is the end of the interval
+	 *
+	 * Unit test \ref LinspaceTest.cpp illustrates the use of linspace.
+	 *
 	 * */
-
 	template <typename TRAJECTORY_T>
 	TRAJECTORY_T linspace (const typename TRAJECTORY_T::value_type& a, const typename TRAJECTORY_T::value_type& b, const size_t N) {
 

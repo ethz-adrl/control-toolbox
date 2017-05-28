@@ -124,6 +124,13 @@ TEST(NoiseTest, quantizationNoiseTest)
     ASSERT_NEAR(bias, 0, 1e-2);
 }
 
+
+
+/*!
+ *  \example NoiseTest.cpp
+ *
+ *  This is a trivial test for the Gaussian Noise class but also serves as implementation example
+ */
 int main(int argc, char **argv){
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

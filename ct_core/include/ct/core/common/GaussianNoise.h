@@ -37,6 +37,8 @@ namespace core {
 /*!
  * This class generates random Gaussian noise given a mean and a distribtion. It can
  * either create a single (pseudo) random variable or an entire vector.
+ *
+ * Unit test \ref NoiseTest.cpp illustrates the use of GaussianNoise
  */
 
 class GaussianNoise

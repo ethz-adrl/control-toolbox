@@ -53,8 +53,12 @@ namespace core {
  * \note This is generally the most accurate way to generate the linearization of system dynamics together with ADCodegenLinearizer.
  * However, the latter is much faster. Consider using the latter for production code.
  *
+ * Unit test \ref AutoDiffLinearizerTest.cpp illustrates the use of the AutoDiffLinearizer.
+ *
+ *
  * \warning You should ensure that your ControlledSystem is templated on the scalar type and does not contain branching
  * (if/else statements, switch cases etc.)
+ *
  *
  * \warning This function still has some issues with pure time dependency
  * \todo Make time an Auto-Diff parameter
