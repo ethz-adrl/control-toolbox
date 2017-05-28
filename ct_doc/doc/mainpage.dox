@@ -37,7 +37,7 @@ The source code is available at <a href="https://bitbucket.org/adrlab/ct">https:
  - Means of creating linear approximation of these models
 
 \section gs Getting Started
-@ref getting_started
+In order to get started, please see our \ref install_guide "Installation Guide". Afterwards please check out the \ref tutorials "Tutorials".
 
 \section doc Documentation
 This library consists of four main modules
@@ -65,59 +65,4 @@ Furthermore there are ROS interfaces available
  - Michael Neunert, neunertm ( at ) gmail (dot) com
  - Markus Giftthaler, mgiftthaler (at) ethz (dot) ch
 
-
-
-
-
-//-----------------------------------------------------------
-
-\page getting_started Getting started 
-
-\section requirements Requirements
-This library is written in C++11. It is tested under Ubuntu 14.04 with
-library versions as provided in the package sources. However, CT should
-also run on other platforms 
-
-\subsection dep Dependencies
- - C++ compiler with C++11 support
- - Eigen
- - catkin (build system, easy to switch to CMakeLists.txt where needed)
- - boost 1.54
- 
-\subsection opt_dep Optional Dependencies
- - lapack (enables Schur method as an alternative to iterative method in ct::optcon::LQR)
- - clang (faster compilation for large linear models)
- - ROS Indigo (for ROS bindings, visualization and extended examples), see <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_nodes</a>, <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_msgs</a>
- - IPOPT or SNOPT (for ct::optcon::SNOPTSolver and ct::optcon::IPOPTSolver as used by ct::optcon::DMS)
- - qwt (for basic plotting)
- - Matlab (for Matlab logging)
-
-\section install Installation
-\subsection build_lib Build the library
-
-\code{.sh}
-cd catkin_ws/src
-git clone git@bitbucket.org:adrlab/ct.git
-catkin build -DCMAKE_BUILD_TYPE=RELEASE 
-\endcode
-
-
-\subsection build_doc Build this Documentation
-To build the documentation do
-\code{.sh}
-catkin build -v --make-args doc # build the doc 
-\endcode
-This will build the documentation and open it in your browser.
-
-
-\subsection run_tests Run Unit Tests
-The unit tests are writte as <a href="http://code.google.com/p/googletest/">Google Tests</a>.
-To run unit tests and verify operation execute
-\code{.sh}
-catkin run_tests
-\endcode
-
 */
-
-
-//-----------------------------------------------------------

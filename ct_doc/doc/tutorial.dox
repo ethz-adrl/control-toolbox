@@ -1,0 +1,183 @@
+/*!
+@page tutorials Tutorials
+
+In order to get you started with using the Control Toolbox, there are several useful resources available
+
+- \ref install_guide "Installation Guide"
+- \ref tut_basics "Basics Tutorial"
+- \ref tut_advanced "Advanced Tutorial"
+- \ref tut_examples "Examples"
+
+If you need additional support, feel free to create an issue or contact the developers.
+ 
+\section tut_basics Basic Tutorial
+
+\subsection tut_basics_pkg Creating a ROS package
+CT is middleware free. Therefore, you are not bound to use ROS or catkin. However, for the sake of simplicity we will use catkin in this tutorial.
+Make sure you have succesfully downloaded and compiled CT according to our @ref getting_started instructions. Afterwards go to your catkin workspace
+and create a new package
+
+\code{.sh}
+cd ~/catkin_ws/src
+catkin_create_pkg my_ct_project roscpp ct_core ct_rbd ct_optcon ct_models
+\endcode
+
+In this example, we made \a my_ct_project dependent on all CT packages. This is not strictly necessary, however there is no harm to it either.
+
+
+\subsection tut_basics_exec Creating our first executable
+
+First, we are going to simulate the dynamics of a damped oscillator. Let's create our main file
+
+\code{.cpp}
+#include <ct/core.h>
+
+int main(int argc, char* argv)
+{
+	// a damped oscillator has two states, position and velocity
+	size_t state_dim = ct::core::SecondOrderSystem::STATE_DIM; // = 2
+	
+	// create a state
+	ct::core::StateVector<state_dim> x; 
+	
+	// we initialize it at 0
+	x.setZero();
+	
+	// create our oscillator
+	std::shared_ptr<ct::core::SecondOrderSystem> oscillator(new ct::core::SecondOrderSystem);
+	
+	// create an integrator
+	ct::core::IntegratorRK4<state_dim> integrator(oscillator);
+	
+	// simulate 1000 steps
+	double dt = 0.001;
+	ct::core::Time t0 = 0.0;
+	size_t nSteps = 1000;
+	integrator.integrate_n_steps(x, t0, nSteps, dt);
+	
+	// print the new state
+	std::cout << "state after integration: "<<x.transpose()<<std::endl;
+	
+	return 1;
+}
+\endcode
+
+So what happens in this code? We first include ct/core.h. This includes all relevant headers from CT Core. Other CT modules have similar header files 
+such as \a ct/rbd.h . If you were to include ct/rbd.h you would not have to include ct/core.h anymore. It is automatically included.
+
+Then, we create a state vector and set it to zero. Afterwards, we can create a shared pointer to a ct::core::SecondOrderSystem
+which is a damped oscillator. It is derived from type ct::core::System, which means we can directly plug it into a ct::core::Integrator. Here, we have many
+choices such as ct::core::IntegratorEuler or ct::core::ODE45. Here, we chose a fourth-order Runge-Kutta integrator. We then simulate (integrate) it forward
+for 1 second with a time step of 0.001 seconds. Finally, we print the new state.
+
+
+\subsection tut_basics_system Creating our first system
+In the example above, we have been using an oscillator that is provided with CT. However, we might want to model our own system. Here, we will model
+a simple mass point subject to friction. However, if you are interested in more sophisticated models, especially Rigid Body Dynamics, make sure you 
+check out the tutorials in ct_rbd as well.
+
+First we create our system within a header Masspoint.h
+
+\code{.cpp}
+#include <ct/ct_core.h> // as usual, include CT
+
+// create a class that derives from ct::core::System
+class Masspoint : public ct::core::System<2>
+{
+public:
+	const size_t STATE_DIM = 2;
+	const size_t CONTROL_DIM = 1;
+
+	// constructor
+	Masspoint(double mass, double d) : 
+		mass_(mass),
+		d_(d)
+	{} 
+	
+	// copy constructor
+	Masspoint(const Masspoint& other) :
+		mass_(other.mass_),
+		d_(other.d_)
+	{}
+	
+	// destructor
+	~Masspoint() {}
+	
+	// clone method
+	Masspoint* clone() {
+		new Masspoint(*this); // calls copy constructor
+	}
+	
+	// we override this method which gets called by e.g. the Integrator
+	void computeDynamics(ct::core::System<state_dim>& x, const ct::core::Time& t, ct::core::System<state_dim>& derivative) override
+	{
+		// first part of state derivative is the velocity
+		derivative(0) = x(1);
+		
+		// second part is the acceleration which is caused by damper forces
+		derivative(1) = -d_/mass_ * x (1);
+	}
+	
+private:
+	double mass_;
+	double d_;
+	
+};
+\endcode
+
+As before, we can now integrate this system forward
+
+\code{.cpp}
+#include <ct/core.h>
+#include "Masspoint.h"
+
+int main(int argc, char* argv)
+{
+	// a damped oscillator has two states, position and velocity
+	size_t state_dim = Masspoint::STATE_DIM; // = 2
+	
+	// create a state
+	ct::core::StateVector<state_dim> x; 
+	
+	// we initialize it at 0
+	x.setZero();
+	
+	// create our mass point instance
+	double mass = 1.0;
+	double d = 0.01;
+	std::shared_ptr<Masspoint> masspoint(new ct::core::Masspoint(mass, d));
+	
+	// create an integrator
+	ct::core::IntegratorEuler<state_dim> integrator(masspoint);
+	
+	// simulate 1000 steps
+	double dt = 0.001;
+	ct::core::Time t0 = 0.0;
+	size_t nSteps = 1000;
+	integrator.integrate_n_steps(x, t0, nSteps, dt);
+	
+	// print the new state
+	std::cout << "state after integration: "<<x.transpose()<<std::endl;
+	
+	return 1;
+}
+\endcode
+
+
+\section tut_advanced Advanced Tutorial
+
+\subsection tut_advanced_core CT Core Tutorials
+- @ref core_tut_control "Feedback Control Tutorial"
+- @ref core_tut_linearization "System Linearization Tutorial"
+- @ref core_tut_autodiff "Auto Differentiation and Codegen Tutorial"
+
+\section tut_examples Examples
+
+Apart from the official documentation, each module also comes with examples which are mostly unit tests. These unit tests are usually very self contained
+minimalistic examples and thus serve as good documentation as well.
+
+- CT Core examples
+- CT OptCon examples
+- CT RBD examples
+
+ */
