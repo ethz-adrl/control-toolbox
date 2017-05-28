@@ -8,6 +8,7 @@ The Core Module contains general definitions of systems and system dynamics, con
 \section ct_core_installation Installation and Usage
 CT Core is part of the Control Toolbox suite. See the <a href="../../../ct_core/doc/html/index.html"> CT main documentation</a> for installation and usage instructions.
 
+
 \section acknowledgement Acknowledgement
 
 Project Lead and Maintanance: 
