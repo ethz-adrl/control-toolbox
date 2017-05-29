@@ -7,6 +7,7 @@
 #include <iostream>
 #include <memory>
 
+#include <ct/optcon/dms/Dms>
 #include <ct/optcon/optcon.h>
 
 //#include <ct/optcon/problem/OptConProblem.h>

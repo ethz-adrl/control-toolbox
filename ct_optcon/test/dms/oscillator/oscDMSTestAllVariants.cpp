@@ -7,6 +7,7 @@
 #include <iostream>
 #include <memory>
 
+#include <ct/optcon/dms/Dms>
 #include <ct/optcon/costfunction/CostFunctionQuadraticSimple.hpp>
 
 #include <gtest/gtest.h>

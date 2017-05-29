@@ -7,11 +7,7 @@
 #include <ct/optcon/dms/dms_core/DmsProblem.h>
 #include <ct/optcon/dms/dms_core/DmsSettings.hpp>
 
-#include <ct/optcon/nlp/Nlp.h>
-#include <ct/optcon/nlp/solver/NlpSolver.h>
-#include <ct/optcon/nlp/solver/IpoptSolver.h>
-#include <ct/optcon/nlp/solver/SnoptSolver.h>
-#include <ct/optcon/nlp/solver/NlpSolverSettings.h>
+#include <ct/optcon/nlp/Nlp>
 
 #include <memory>
 
