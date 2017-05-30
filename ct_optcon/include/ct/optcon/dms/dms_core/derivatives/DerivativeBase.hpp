@@ -42,20 +42,24 @@ public:
 	DerivativeBase() = delete;
 
 	DerivativeBase(
-			size_t shotNr,
-			DmsSettings settings,
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
 			std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM>> controlledSystem,
 			std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>> linearSystem,
-			std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct = NULL
+			std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct,
+			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
+			std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
+			std::shared_ptr<TimeGrid> timeGrid,
+			size_t shotNr,
+			DmsSettings settings
 	)
 	:
-		shotNr_(shotNr),
-		settings_(settings),
-		w_(w),
 		system_(controlledSystem),
 		linearSystem_(linearSystem),
 		costFct_(costFct),
+		w_(w),
+		controlSpliner_(controlSpliner),
+		timeGrid_(timeGrid),
+		shotNr_(shotNr),
+		settings_(settings),
 		A_(state_matrix_t::Zero()),
 		B_(state_control_matrix_t::Zero()),
 		state_(state_vector_t::Zero()),
@@ -102,19 +106,22 @@ public:
 
 	virtual time_array_t& timeTrajectory() = 0;
 
-	double getShotStartTime(){return w_->getShotStartTime(shotNr_);}
+	double getShotStartTime() const {return timeGrid_->getShotStartTime(shotNr_);}
 
-	double getShotEndTime(){return w_->getShotEndTime(shotNr_);}
+	double getShotEndTime() const {return timeGrid_->getShotEndTime(shotNr_);}
 
 
 protected:
 
-	size_t shotNr_;
-	DmsSettings settings_;
-	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
 	std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM> > system_;
 	std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>> linearSystem_;
 	std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct_;
+	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
+	std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner_;
+	std::shared_ptr<TimeGrid> timeGrid_;
+
+	size_t shotNr_;
+	DmsSettings settings_;
 
 	state_matrix_t A_;
 	state_control_matrix_t B_;

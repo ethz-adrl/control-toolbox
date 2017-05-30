@@ -45,18 +45,22 @@ public:
 	typedef typename Base::state_control_matrix_array_t state_control_matrix_array_t;
 
 
-	ShotIntegrator(const size_t shotNr,
-			const DmsSettings& settings,
-			std::shared_ptr<OptVectorDms<DerivativeT::STATE_D, DerivativeT::CONTROL_D>> w,
+	ShotIntegrator(
 			std::shared_ptr<ct::core::ControlledSystem<DerivativeT::STATE_D, DerivativeT::CONTROL_D>> controlledSystem,
 			std::shared_ptr<ct::core::LinearSystem<DerivativeT::STATE_D, DerivativeT::CONTROL_D>> linearSystem,
-			std::shared_ptr<ct::optcon::CostFunctionQuadratic<DerivativeT::STATE_D, DerivativeT::CONTROL_D>> costFct) :
+			std::shared_ptr<ct::optcon::CostFunctionQuadratic<DerivativeT::STATE_D, DerivativeT::CONTROL_D>> costFct,
+			std::shared_ptr<OptVectorDms<DerivativeT::STATE_D, DerivativeT::CONTROL_D>> w,
+			std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
+			std::shared_ptr<TimeGrid> timeGrid,
+			const size_t shotNr,
+			const DmsSettings& settings
+			) :
 				settings_(settings),
 				derivatives_(nullptr),
 				integrator_(nullptr)
 	{
-		derivatives_ = std::allocate_shared<DerivativeT, Eigen::aligned_allocator<DerivativeT>>(Eigen::aligned_allocator<DerivativeT>(),
-			shotNr, settings, w, controlledSystem, linearSystem, costFct);
+		derivatives_ = std::allocate_shared<DerivativeT, Eigen::aligned_allocator<DerivativeT>>(
+			Eigen::aligned_allocator<DerivativeT>(), controlledSystem, linearSystem, costFct, w, controlSpliner, timeGrid, shotNr, settings);
 	}
 
 	virtual ~ShotIntegrator(){}

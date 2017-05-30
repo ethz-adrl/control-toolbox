@@ -1,11 +1,12 @@
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::ConstraintsContainerDms(
-		std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>>& shotContainers,
 		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
-		const state_vector_t& x0,
-		const DmsSettings settings,
+		std::shared_ptr<TimeGrid> timeGrid,
+		std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>> shotContainers,
 		std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> constraintsIntermediate,
-		std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> constraintsFinal) 
+		std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> constraintsFinal,
+		const state_vector_t& x0,
+		const DmsSettings settings) 
 	:
 	settings_(settings),
 	shotContainers_(shotContainers)
@@ -62,7 +63,7 @@ ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::ConstraintsContainerDms(
 		// add the timehorizonequalityconstraint
 		std::shared_ptr<TimeHorizonEqualityConstraint<STATE_DIM, CONTROL_DIM>> c_horizon_equal = 
 			std::shared_ptr<TimeHorizonEqualityConstraint<STATE_DIM, CONTROL_DIM>> (
-				new TimeHorizonEqualityConstraint<STATE_DIM, CONTROL_DIM> (w, settings));
+				new TimeHorizonEqualityConstraint<STATE_DIM, CONTROL_DIM> (w, timeGrid, settings));
 
 		c_horizon_equal->initialize(constraintsCount_);
 

@@ -49,12 +49,13 @@ public:
 	typedef typename DIMENSIONS::state_control_matrix_array_t state_control_matrix_array_t;
 
 	ConstraintsContainerDms(
-			std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>>& shotContainers,
 			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
-			const state_vector_t& x0,
-			const DmsSettings settings,
+			std::shared_ptr<TimeGrid> timeGrid,
+			std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>> shotContainers,
 			std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> constraintsIntermediate,
-			std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> constraintsFinal);
+			std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> constraintsFinal,
+			const state_vector_t& x0,
+			const DmsSettings settings);
 
 	~ConstraintsContainerDms() {};
 

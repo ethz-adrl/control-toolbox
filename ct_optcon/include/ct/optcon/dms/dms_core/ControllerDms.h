@@ -47,16 +47,16 @@ public:
 	ControllerDms() = delete;
 
 	ControllerDms(
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
+			std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
 			size_t shotIdx):
-		w_(w),
+		controlSpliner_(controlSpliner),
 		shotIdx_(shotIdx)
 	{}
 
 	/* Important note: when we make a copy of ControllerDms, the underlying optimization
 	 *  vector instance is not copied. We are just handing over the pointer and increasing its reference count */
 	ControllerDms(const ControllerDms& arg):
-			w_(arg.w_),
+			controlSpliner_(arg.controlSpliner_),
 			shotIdx_(arg.shotIdx_)
 	{}
 
@@ -73,7 +73,7 @@ public:
 			const double& t,
 			control_vector_t&  controlAction)
 	{
-		controlAction = w_->getControlFromSpline(t, shotIdx_);
+		controlAction = controlSpliner_->evalSpline(t, shotIdx_);
 		assert(controlAction == controlAction);
 	}
 
@@ -81,7 +81,7 @@ public:
 
 private:
 
-	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
+	std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner_;
 
 	/* index of the shot to which this controller belongs */
 	size_t shotIdx_;

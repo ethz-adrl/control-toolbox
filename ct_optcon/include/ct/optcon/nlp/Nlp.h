@@ -22,23 +22,40 @@ public:
 
 	virtual ~Nlp(){}
 
-	// This function gets called when a new set of variables is provided by the NLPSolver
-	// Define this function for your NLP
+	/**
+	 * @brief      { This function gets called at each update of the primal variables }
+	 */
 	virtual void updateProblem() = 0;
 
 
+	/**
+	 * @brief      { Evaluates the costfunction at the current nlp iteration }
+	 *
+	 * @return     { Scalar value of the resulting cost }
+	 */
 	Number evaluateCostFun(){
 		return costEvaluator_->eval();
 	}
 
-	void evaluateCostGradient(size_t n, MapVecXd& grad){
+	void evaluateCostGradient(const size_t n, MapVecXd& grad){
 		costEvaluator_->evalGradient(n, grad);
 	} 
 
+	/**
+	 * @brief      { function_description }
+	 *
+	 * @param      values  The values
+	 */
 	void evaluateConstraints(MapVecXd& values){
 		constraints_->evalConstraints(values);
 	}
 
+	/**
+	 * @brief      { function_description }
+	 *
+	 * @param[in]  nele_jac  The nele jac
+	 * @param      jac       The jac
+	 */
 	void evaluateConstraintJacobian(const int nele_jac, MapVecXd& jac){
 		constraints_->evalSparseJacobian(jac, nele_jac);
 	}
@@ -47,7 +64,6 @@ public:
 		constraints_->getSparsityPattern(iRow, jCol, nele_jac);
 	}
 
-	// Maybe the virtual can be bypassed
 	size_t getConstraintsCount() const{
 		return constraints_->getConstraintsCount();
 	}
@@ -69,10 +85,12 @@ public:
 		optVariables_->getUpperBounds(upperBound);
 	}
 
-	void setPrimalVars(const MapConstVecXd& x, bool isNew){
-		optVariables_->setPrimalVars(x, isNew);
+	void extractPrimalVars(const MapConstVecXd& x, bool isNew){
 		if(isNew)
+		{
+			optVariables_->setPrimalVars(x);
 			updateProblem();
+		}
 	}
 
 	void getPrimalVars(const size_t n, MapVecXd& x) const{
@@ -87,20 +105,20 @@ public:
 		optVariables_->getDualMultState(m, zMul, zState);
 	}
 
-	void getInitBoundMultipliers(size_t n, MapVecXd& zLow, MapVecXd& zUp) const{
-		optVariables_->getInitBoundMultipliers(n, zLow, zUp);
+	void getBoundMultipliers(size_t n, MapVecXd& zLow, MapVecXd& zUp) const{
+		optVariables_->getBoundMultipliers(n, zLow, zUp);
 	}
 
-	void getInitLambdaVars(size_t m, MapVecXd& lambda) const{
-		optVariables_->getInitLambdaVars(m, lambda);
+	void getLambdaVars(size_t m, MapVecXd& lambda) const{
+		optVariables_->getLambdaVars(m, lambda);
 	}
 
-	void extractSolution(const MapConstVecXd& x, const MapConstVecXd& zL, const MapConstVecXd& zU, const MapConstVecXd& lambda) {
-		optVariables_->setNewSolution(x, zL, zU, lambda);
+	void extractIpoptSolution(const MapConstVecXd& x, const MapConstVecXd& zL, const MapConstVecXd& zU, const MapConstVecXd& lambda) {
+		optVariables_->setNewIpoptSolution(x, zL, zU, lambda);
 	}
 
-	void extractSolution(const MapVecXd& x, const MapVecXd& xMul, const MapVecXi& xState, const MapVecXd& fMul, const MapVecXi& fState) {
-		optVariables_->setNewSolution(x, xMul, xState, fMul, fState);
+	void extractSnoptSolution(const MapVecXd& x, const MapVecXd& xMul, const MapVecXi& xState, const MapVecXd& fMul, const MapVecXi& fState) {
+		optVariables_->setNewSnoptSolution(x, xMul, xState, fMul, fState);
 	}
 
 

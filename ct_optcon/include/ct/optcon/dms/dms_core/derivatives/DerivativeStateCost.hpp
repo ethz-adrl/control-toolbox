@@ -37,15 +37,17 @@ public:
 	DerivativeStateCost() = delete;
 
 	DerivativeStateCost(
-		size_t shotNr,
-		DmsSettings settings,		
-		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
-		std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM>> controlledSystem,
-		std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>> linearSystem,
-		std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct
+			std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM>> controlledSystem,
+			std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>> linearSystem,
+			std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct,
+			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
+			std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
+			std::shared_ptr<TimeGrid> timeGrid,
+			size_t shotNr,
+			DmsSettings settings
 		)
 	:
-		Base(shotNr, settings, w, controlledSystem, linearSystem, costFct)
+		Base(controlledSystem, linearSystem, costFct, w, controlSpliner, timeGrid, shotNr, settings)
 	{}
 
 	virtual ~DerivativeStateCost(){}
@@ -113,7 +115,7 @@ public:
 		size_t count = 0;
 
 		Base::state_ = state.segment(count, STATE_DIM);
-		Base::control_ = Base::w_->getControlFromSpline(t, Base::shotNr_);
+		Base::control_ = Base::controlSpliner_->evalSpline(t, Base::shotNr_);
 		Base::costFct_->setCurrentStateAndControl(Base::state_, Base::control_);
 
 		//State 
@@ -127,7 +129,7 @@ public:
 		virtual void initForIntegration() override
 	{
 		devStart_.setZero();
-		devStart_.segment(0, STATE_DIM) = Base::w_->getState(Base::shotNr_);
+		devStart_.segment(0, STATE_DIM) = Base::w_->getOptimizedState(Base::shotNr_);
 	}
 
 		virtual void wrapUpIntegration() override {}

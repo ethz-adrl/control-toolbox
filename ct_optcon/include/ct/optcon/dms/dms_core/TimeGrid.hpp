@@ -42,7 +42,7 @@ public:
 		makeUniformGrid();
 	}
 
-	void changeShotNr(const size_t numberOfShots)
+	void changeShotCount(const size_t numberOfShots)
 	{
 		numberOfShots_ = numberOfShots;
 		t_.clear();
@@ -110,7 +110,7 @@ public:
 	 * 	 which corresponds to shot index 0.
 	 *
 	 * */
-	const size_t getShotIdx(const ct::core::Time& t)
+	size_t getShotIdx (const ct::core::Time& t) const
 	{
 		auto low = std::upper_bound (t_.begin(), t_.end(), t+10*std::numeric_limits<ct::core::Time>::epsilon());
 
@@ -128,34 +128,40 @@ public:
 
 
 	// get a shot's start time from its index
-	const ct::core::Time& getShotStartTime(const size_t& shot_index){
+	const ct::core::Time getShotStartTime(const size_t shot_index) const{
 		return t_[shot_index];
 	}
 
 	// get a shot's end time from its index
-	const ct::core::Time& getShotEndTime(const size_t& shot_index){
+	const ct::core::Time getShotEndTime(const size_t shot_index) const{
 		return t_[shot_index+1];
 	}
 
 	// get a shot's current duration from its index
-	const ct::core::Time getShotDuration(const size_t& shot_index){
+	const ct::core::Time getShotDuration(const size_t shot_index) const{
 		return (t_[shot_index+1]-t_[shot_index]);
 	}
 
 	// return reference to the time grid vector
-	ct::core::TimeArray& getTimeGrid()
+	const ct::core::TimeArray& toImplementation()
 	{
 		return t_;
 	}
 
 
 	// return the total manoeuver time
-	const ct::core::Time getTtotal()
+	const ct::core::Time getTimeHorizon() const
 	{
-#ifdef DEBUG_TIMEGRID
-		std::cout << "T-Horizon " << t_.back() << "  T at [N] "<< t_[N_] << std::endl;
-#endif
+// #ifdef DEBUG_TIMEGRID
+// 		std::cout << "T-Horizon " << t_.back() << "  T at [N] "<< t_[N_] << std::endl;
+// #endif
 
+// 		return t_.back();
+		return timeHorizon_;
+	}
+
+	const ct::core::Time getOptimizedTimeHorizon() const
+	{
 		return t_.back();
 	}
 

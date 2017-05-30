@@ -36,7 +36,7 @@ public:
 
 	virtual size_t getEvaluation(Eigen::Map<Eigen::VectorXd>& val, size_t count) override
 	{
-		val.segment(count, STATE_DIM) = w_->getState(0) - x_0_;
+		val.segment(count, STATE_DIM) = w_->getOptimizedState(0) - x_0_;
 		return count += STATE_DIM;
 	}
 

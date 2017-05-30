@@ -87,8 +87,8 @@ public:
 	{
 		stateNext_ = shotContainer_->getStateIntegrated();
 		assert(stateNext_ == stateNext_);
-		assert(w_->getState(shotIndex_+1) == w_->getState(shotIndex_+1));
-		val.segment(count, STATE_DIM) = w_->getState(shotIndex_+1) - stateNext_;
+		assert(w_->getOptimizedState(shotIndex_+1) == w_->getOptimizedState(shotIndex_+1));
+		val.segment(count, STATE_DIM) = w_->getOptimizedState(shotIndex_+1) - stateNext_;
 		return count += STATE_DIM;
 	}
 
@@ -212,7 +212,7 @@ public:
 		/* for the derivatives w.r.t. the time optimization variables (t_i) */
 		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
 		{
-			indexNumber += BASE::genBlockIndices(BASE::indexTotal_, w_->getShotDurationIndex(shotIndex_), 
+			indexNumber += BASE::genBlockIndices(BASE::indexTotal_, w_->getTimeSegmentIndex(shotIndex_), 
 				STATE_DIM, 1, iRow_vec, jCol_vec, indexNumber);
 		}
 

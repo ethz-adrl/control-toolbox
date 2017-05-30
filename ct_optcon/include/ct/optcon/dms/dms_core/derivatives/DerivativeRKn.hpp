@@ -41,16 +41,18 @@ public:
 	DerivativeRKn() = delete;
 
 	DerivativeRKn(
-			size_t shotNr,
-			DmsSettings settings,
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
 			std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM>> controlledSystem,
 			std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>> linearSystem,
-			std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct
+			std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct,
+			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
+			std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
+			std::shared_ptr<TimeGrid> timeGrid,
+			size_t shotNr,
+			DmsSettings settings
 	)
 	:
-		Base(shotNr, settings, w, controlledSystem, linearSystem),
-		rknDerivatives_(shotNr, settings, w)
+		Base(controlledSystem, linearSystem, costFct, w, controlSpliner, timeGrid, shotNr, settings),
+		rknDerivatives_(controlSpliner, shotNr, settings)
 	{}
 
 	virtual ~DerivativeRKn(){}
@@ -132,7 +134,7 @@ public:
 	}
 
 
-	const state_vector_t getInitState() {return Base::w_->getState(Base::shotNr_);}
+	const state_vector_t getInitState() {return Base::w_->getOptimizedState(Base::shotNr_);}
 	state_vector_array_t& stateTrajectory() {return stateTraj_;}
 	time_array_t& timeTrajectory() {return timeTraj_;}
 

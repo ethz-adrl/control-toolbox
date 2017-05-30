@@ -28,6 +28,7 @@ public:
 
 	typedef typename DIMENSIONS::state_vector_t state_vector_t;
 	typedef typename DIMENSIONS::state_vector_array_t state_vector_array_t;
+	typedef typename DIMENSIONS::control_vector_t control_vector_t;
 	typedef typename DIMENSIONS::control_vector_array_t control_vector_array_t;
 	typedef typename DIMENSIONS::time_array_t time_array_t;
 	typedef typename DIMENSIONS::state_matrix_t state_matrix_t;
@@ -39,12 +40,13 @@ public:
 	RKnDerivatives() = delete;
 
 	RKnDerivatives(
+			std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
 			size_t shotIdx,
-			const DmsSettings& settings,
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w):
+			const DmsSettings& settings
+			):
 		shotIdx_(shotIdx),
 		settings_(settings),
-		w_(w),
+		controlSpliner_(controlSpliner),
 		x_log_(nullptr),
 		u_log_(nullptr),
 		t_log_(nullptr),
@@ -155,7 +157,7 @@ public:
 		{
 			for(size_t i = 0; i < A_log_->size(); ++i)
 			{
-				control_matrix_t dSpldQ0 = w_->splineDerivative_q_i((*t_log_)[i], shotIdx_);
+				control_matrix_t dSpldQ0 = controlSpliner_->splineDerivative_q_i((*t_log_)[i], shotIdx_);
 
 				double dt_sim = (*t_log_)[i+1]-(*t_log_)[i];
 
@@ -187,22 +189,22 @@ public:
 				// step 1:
 				state_control_matrix_t dK1dQi =
 						(*A_log_)[i*m] * dXdQi_history_.back() +
-						(*B_log_)[i*m] * w_->splineDerivative_q_i((*t_log_)[i*m], shotIdx_);
+						(*B_log_)[i*m] * controlSpliner_->splineDerivative_q_i((*t_log_)[i*m], shotIdx_);
 
 				// step 2:
 				state_control_matrix_t dK2dQi =
 						(*A_log_)[i*m+1] * (dXdQi_history_.back() + h * a_21 * dK1dQi) +
-						(*B_log_)[i*m+1] * w_->splineDerivative_q_i((*t_log_)[i*m+1], shotIdx_);
+						(*B_log_)[i*m+1] * controlSpliner_->splineDerivative_q_i((*t_log_)[i*m+1], shotIdx_);
 
 				// step 3:
 				state_control_matrix_t dK3dQi =
 						(*A_log_)[i*m+2] * (dXdQi_history_.back() + h * a_32 * dK2dQi) +
-						(*B_log_)[i*m+2] * w_->splineDerivative_q_i((*t_log_)[i*m+2], shotIdx_);
+						(*B_log_)[i*m+2] * controlSpliner_->splineDerivative_q_i((*t_log_)[i*m+2], shotIdx_);
 
 				// step 4:
 				state_control_matrix_t dK4dQi =
 						(*A_log_)[i*m+3] * (dXdQi_history_.back() + h * a_43 * dK3dQi) +
-						(*B_log_)[i*m+3] * w_->splineDerivative_q_i((*t_log_)[i*m+3], shotIdx_);
+						(*B_log_)[i*m+3] * controlSpliner_->splineDerivative_q_i((*t_log_)[i*m+3], shotIdx_);
 
 
 				// summation
@@ -236,7 +238,7 @@ public:
 
 			for(size_t i = 0; i < A_log_->size(); ++i)
 			{
-				control_matrix_t dSpldQ1 = w_->splineDerivative_q_iplus1((*t_log_)[i], shotIdx_);
+				control_matrix_t dSpldQ1 = controlSpliner_->splineDerivative_q_iplus1((*t_log_)[i], shotIdx_);
 
 				assert(dSpldQ1 == dSpldQ1);
 
@@ -270,22 +272,22 @@ public:
 				// step 1:
 				state_control_matrix_t dK1dQip1 =
 						(*A_log_)[i*m] * dXdQip1_history_.back() +
-						(*B_log_)[i*m] * w_->splineDerivative_q_iplus1((*t_log_)[i*m], shotIdx_);
+						(*B_log_)[i*m] * controlSpliner_->splineDerivative_q_iplus1((*t_log_)[i*m], shotIdx_);
 
 				// step 2:
 				state_control_matrix_t dK2dQip1 =
 						(*A_log_)[i*m+1] * (dXdQip1_history_.back() + h * a_21 * dK1dQip1) +
-						(*B_log_)[i*m+1] * w_->splineDerivative_q_iplus1((*t_log_)[i*m+1], shotIdx_);
+						(*B_log_)[i*m+1] * controlSpliner_->splineDerivative_q_iplus1((*t_log_)[i*m+1], shotIdx_);
 
 				// step 3:
 				state_control_matrix_t dK3dQip1 =
 						(*A_log_)[i*m+2] * (dXdQip1_history_.back() + h * a_32 * dK2dQip1) +
-						(*B_log_)[i*m+2] * w_->splineDerivative_q_iplus1((*t_log_)[i*m+2], shotIdx_);
+						(*B_log_)[i*m+2] * controlSpliner_->splineDerivative_q_iplus1((*t_log_)[i*m+2], shotIdx_);
 
 				// step 4:
 				state_control_matrix_t dK4dQip1 =
 						(*A_log_)[i*m+3] * (dXdQip1_history_.back() + h * a_43 * dK3dQip1) +
-						(*B_log_)[i*m+3] * w_->splineDerivative_q_iplus1((*t_log_)[i*m+3], shotIdx_);
+						(*B_log_)[i*m+3] * controlSpliner_->splineDerivative_q_iplus1((*t_log_)[i*m+3], shotIdx_);
 
 
 				// summation
@@ -318,7 +320,7 @@ public:
 				{
 					double dt_sim = (*t_log_)[i+1] - (*t_log_)[i];
 					dXdHi_history_.push_back( dXdHi_history_.back() + dt_sim * (
-												(*A_log_)[i] * dXdHi_history_.back() + (*B_log_)[i] * w_->splineDerivative_h_i((*t_log_)[i], shotIdx_) )
+												(*A_log_)[i] * dXdHi_history_.back() + (*B_log_)[i] * controlSpliner_->splineDerivative_h_i((*t_log_)[i], shotIdx_) )
 											);
 				}
 				break;
@@ -345,22 +347,22 @@ public:
 				// step 1:
 				state_vector_t dK1dHi =
 						(*A_log_)[i*m] * dXdHi_history_.back() +
-						(*B_log_)[i*m] * w_->splineDerivative_h_i((*t_log_)[i*m], shotIdx_);
+						(*B_log_)[i*m] * controlSpliner_->splineDerivative_h_i((*t_log_)[i*m], shotIdx_);
 
 				// step 2:
 				state_vector_t dK2dHi =
 						(*A_log_)[i*m+1] * (dXdHi_history_.back() + h * a_21 * dK1dHi) +
-						(*B_log_)[i*m+1] * w_->splineDerivative_h_i((*t_log_)[i*m+1], shotIdx_);
+						(*B_log_)[i*m+1] * controlSpliner_->splineDerivative_h_i((*t_log_)[i*m+1], shotIdx_);
 
 				// step 3:
 				state_vector_t dK3dHi =
 						(*A_log_)[i*m+2] * (dXdHi_history_.back() + h * a_32 * dK2dHi) +
-						(*B_log_)[i*m+2] * w_->splineDerivative_h_i((*t_log_)[i*m+2], shotIdx_);
+						(*B_log_)[i*m+2] * controlSpliner_->splineDerivative_h_i((*t_log_)[i*m+2], shotIdx_);
 
 				// step 4:
 				state_vector_t dK4dHi =
 						(*A_log_)[i*m+3] * (dXdHi_history_.back() + h * a_43 * dK3dHi) +
-						(*B_log_)[i*m+3] * w_->splineDerivative_h_i((*t_log_)[i*m+3], shotIdx_);
+						(*B_log_)[i*m+3] * controlSpliner_->splineDerivative_h_i((*t_log_)[i*m+3], shotIdx_);
 
 				// summation
 				state_vector_t temp =  dXdHi_history_.back() +
@@ -398,9 +400,9 @@ public:
 	}
 
 private:
+	std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner_;
 	const size_t shotIdx_;
 	const DmsSettings settings_;
-	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
 
 	std::shared_ptr<state_vector_array_t> x_log_;
 	std::shared_ptr<control_vector_array_t> u_log_;

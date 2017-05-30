@@ -18,9 +18,8 @@ public:
 	OptVector() = delete;
 
 	OptVector(size_t n) :
-	newXCounter_(0)
+	updateCount_(0)
 	{
-		xInitGuess_.resize(n);
 		x_.resize(n);
 		x_.setZero();
 		xLb_.resize(n);
@@ -31,10 +30,10 @@ public:
 		xMul_.setZero();
 		xState_.resize(n);
 		xState_.setZero();
-		zuInitGuess_.resize(n);
-		zuInitGuess_.setZero();
-		zlInitGuess_.resize(n);
-		zlInitGuess_.setZero();
+		zUpper_.resize(n);
+		zUpper_.setZero();
+		zLow_.resize(n);
+		zLow_.setZero();
 	}
 
 	void resizeConstraintVars(size_t m)
@@ -47,28 +46,36 @@ public:
 
 	~OptVector(){}
 
-	void resize(const size_t size) {
+	 
+	/**
+	 * @brief      { Resizes the primal optimization variables and the underlying duals }
+	 *
+	 * @param[in]  size  The size of the new primal variables
+	 */
+	void resizePrimalVars(const size_t size) {
 		x_.resize(size);
 		xLb_.resize(size);
 		xUb_.resize(size);
-		xInitGuess_.resize(size);
-		boundLowerMultGuess_.resize(size);
-		boundUpperMultGuess_.resize(size);
-		lambdaGuess_.resize(size);
-		zuInitGuess_.resize(size);
-		zlInitGuess_.resize(size);
+		// lowBoundMultiplier_.resize(size);
+		// upperBoundMultiplier_.resize(size);
+		lambda_.resize(size);
+		zUpper_.resize(size);
+		zLow_.resize(size);
 	}
 
+
+	/**
+	 * @brief      Resets the optimization variables
+	 */
 	void setZero() {
 		x_.setZero();
 		xLb_.setZero();
 		xUb_.setZero();
-		xInitGuess_.setZero();
-		boundLowerMultGuess_.setZero();
-		boundUpperMultGuess_.setZero();
-		lambdaGuess_.setZero();
-		zuInitGuess_.setZero();
-		zlInitGuess_.setZero();
+		// lowBoundMultiplier_.setZero();
+		// upperBoundMultiplier_.setZero();
+		lambda_.setZero();
+		zUpper_.setZero();
+		zLow_.setZero();
 	}
 
 	bool checkPrimalVarDimension(unsigned int n)
@@ -112,39 +119,35 @@ public:
 
 	size_t size() const {return x_.size();}
 
-	void getInitPrimalVars(size_t n, MapVecXd& x)  const {
-		assert (n == xInitGuess_.size());
-		x = xInitGuess_;
+	void getBoundMultipliers(size_t n, MapVecXd& low, MapVecXd& up) const {
+		assert(n == zLow_.size());
+		low = zLow_;
+		up = zUpper_;
+	}
+	
+	void getLambdaVars(size_t m, MapVecXd& x) const {
+		assert(m == lambda_.size());
+		x = lambda_;
 	}
 
 	void getPrimalVars(size_t n, MapVecXd& x)  const {
-		assert (n == xInitGuess_.size());
+		assert (n == x_.size());
 		x = x_;
 	}
 
-	void getInitBoundMultipliers(size_t n, MapVecXd& low, MapVecXd& up) const {
-		assert(n == boundLowerMultGuess_.size());
-		low = boundLowerMultGuess_;
-		up = boundUpperMultGuess_;
-	}
-	void getInitLambdaVars(size_t m, MapVecXd& x) const {
-		assert(m == lambdaGuess_.size());
-		x = lambdaGuess_;
-	}
-
-	void setNewSolution(
+	void setNewIpoptSolution(
 		const MapConstVecXd& x, 
 		const MapConstVecXd& zL, 
 		const MapConstVecXd& zU, 
 		const MapConstVecXd& lambda)
 	{
 		x_ = x;
-		zlInitGuess_ = zL;
-		zuInitGuess_ = zU;
-		lambdaGuess_ = lambda;
+		zLow_ = zL;
+		zUpper_ = zU;
+		lambda_ = lambda;
 	}
 
-	void setNewSolution(const MapVecXd& x, const MapVecXd& xMul, 
+	void setNewSnoptSolution(const MapVecXd& x, const MapVecXd& xMul, 
 		const MapVecXi& xState, const MapVecXd& fMul, const MapVecXi& fState)
 	{
 		x_ = x;
@@ -154,33 +157,18 @@ public:
 		zState_ = fState;
 	}
 
-	void setPrimalVars(const MapConstVecXd& x, bool isNew)
+	void setPrimalVars(const MapConstVecXd& x)
 	{
-		if(isNew)
-		{
-			x_ = x;
-			newXCounter_++;
-		}		
-	}
-
-	size_t getCounter() const{
-		return newXCounter_;
-	}
-
-	void setInitGuess(){
-		x_ = xInitGuess_;
-	}
-
-	Eigen::VectorXd getInitGuess() const{
-		return xInitGuess_;
+		x_ = x;
+		updateCount_++;
 	}
 
 	Eigen::VectorXd getPrimalVars() const{
 		return x_;
 	}
 
-	size_t getNewXCounter() const{
-		return newXCounter_;
+	size_t getUpdateCount() const{
+		return updateCount_;
 	}
 
 
@@ -188,20 +176,21 @@ protected:
 	Eigen::VectorXd x_; 	//Primal vars
 	Eigen::VectorXd xLb_;	/*!< lower bound on optimization vector */
 	Eigen::VectorXd xUb_;	/*!< upper bound on optimization vector */
-	Eigen::VectorXd xInitGuess_;
-	Eigen::VectorXd boundLowerMultGuess_;
-	Eigen::VectorXd boundUpperMultGuess_;
-	Eigen::VectorXd zuInitGuess_;
-	Eigen::VectorXd zlInitGuess_;
 
-	// Snopt stuff
-	Eigen::VectorXd lambdaGuess_;
+	// Ipopt variables
+	// Eigen::VectorXd lowBoundMultiplier_;
+	// Eigen::VectorXd upperBoundMultiplier_;
+	Eigen::VectorXd zUpper_;
+	Eigen::VectorXd zLow_;
+	Eigen::VectorXd lambda_;
+
+	// Snopt variables
 	Eigen::VectorXd xMul_;
 	Eigen::VectorXi xState_;
 	Eigen::VectorXd	zMul_;
 	Eigen::VectorXi	zState_;
 
-	size_t newXCounter_;
+	size_t updateCount_;
 
 };
 

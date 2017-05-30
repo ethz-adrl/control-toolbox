@@ -201,13 +201,13 @@ bool IpoptSolver::get_starting_point(Ipopt::Index n, bool init_x, Number* x,
 	{
 		MapVecXd z_lVec(z_L, n);
 		MapVecXd z_uVec(z_U, n);
-		nlp_->getInitBoundMultipliers(n, z_lVec, z_uVec);
+		nlp_->getBoundMultipliers(n, z_lVec, z_uVec);
 	}
 
 	if(init_lambda)
 	{
 		MapVecXd lambdaVec(lambda, m);
-		nlp_->getInitLambdaVars(m, lambdaVec);
+		nlp_->getLambdaVars(m, lambdaVec);
 	}
 
 	// for(size_t i = 0; i< n; ++i)
@@ -227,7 +227,7 @@ bool IpoptSolver::eval_f(Ipopt::Index n, const Number* x, bool new_x, Number& ob
 	std::cout << "... entering eval_f()" << std::endl;
 #endif //DEBUG_PRINT
 	MapConstVecXd xVec(x, n);
-	nlp_->setPrimalVars(xVec, new_x);
+	nlp_->extractPrimalVars(xVec, new_x);
 	obj_value = nlp_->evaluateCostFun();
 	// std::cout << "F IPOPT: " << obj_value << std::endl;
 	assert(obj_value == obj_value);
@@ -247,7 +247,7 @@ bool IpoptSolver::eval_grad_f(Ipopt::Index n, const Number* x, bool new_x, Numbe
 #endif //DEBUG_PRINT
 	MapVecXd grad_fVec(grad_f, n);
 	MapConstVecXd xVec(x, n);
-	nlp_->setPrimalVars(xVec, new_x);
+	nlp_->extractPrimalVars(xVec, new_x);
 	nlp_->evaluateCostGradient(n, grad_fVec);
 
 #ifdef DEBUG_PRINT
@@ -265,7 +265,7 @@ bool IpoptSolver::eval_g(Ipopt::Index n, const Number* x, bool new_x, Ipopt::Ind
 #endif //DEBUG_PRINT
 	assert(m == nlp_->getConstraintsCount());
 	MapConstVecXd xVec(x, n);
-	nlp_->setPrimalVars(xVec, new_x);
+	nlp_->extractPrimalVars(xVec, new_x);
 	MapVecXd gVec(g, m);
 	nlp_->evaluateConstraints(gVec);
 
@@ -316,7 +316,7 @@ bool IpoptSolver::eval_jac_g(Ipopt::Index n, const Number* x, bool new_x,
 #endif //DEBUG_PRINT
 		MapVecXd valVec(values, nele_jac);
 		MapConstVecXd xVec(x, n);
-		nlp_->setPrimalVars(xVec, new_x);
+		nlp_->extractPrimalVars(xVec, new_x);
 		nlp_->evaluateConstraintJacobian(nele_jac, valVec);
 
 
@@ -379,6 +379,6 @@ void IpoptSolver::finalize_solution(Ipopt::SolverReturn status,
 	MapConstVecXd zUVec(z_U, n);
 	MapConstVecXd lambdaVec(lambda, m);
 
-	nlp_->extractSolution(xVec, zLVec, zUVec, lambdaVec);
+	nlp_->extractIpoptSolution(xVec, zLVec, zUVec, lambdaVec);
 }
 

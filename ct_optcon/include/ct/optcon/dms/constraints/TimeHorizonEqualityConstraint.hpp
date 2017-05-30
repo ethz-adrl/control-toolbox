@@ -27,9 +27,11 @@ public:
 
 	TimeHorizonEqualityConstraint(
 		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
+		std::shared_ptr<TimeGrid> timeGrid,
 		DmsSettings settings
 		):
 		w_(w),
+		timeGrid_(timeGrid),
 		settings_(settings)
 	{
 		// lower bound is number of shot times the lower bound for each interval h
@@ -42,7 +44,7 @@ public:
 
 	virtual size_t getEvaluation(Eigen::Map<Eigen::VectorXd>& val, size_t count) override
 	{
-		val(count) = w_->getTtotal() - settings_.T_;
+		val(count) = timeGrid_->getOptimizedTimeHorizon() - settings_.T_;
 		return count += 1;
 	}	
 
@@ -68,7 +70,7 @@ public:
 			size_t indexNumber) override
 	{
 
-		indexNumber += BASE::genBlockIndices(BASE::indexTotal_, w_->getShotDurationIndex(0), 1, settings_.N_, iRow_vec, jCol_vec, indexNumber);
+		indexNumber += BASE::genBlockIndices(BASE::indexTotal_, w_->getTimeSegmentIndex(0), 1, settings_.N_, iRow_vec, jCol_vec, indexNumber);
 		return indexNumber;
 	}
 
@@ -89,6 +91,7 @@ public:
 
 private:
 	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
+	std::shared_ptr<TimeGrid> timeGrid_;
 	DmsSettings settings_;
 
 	//Constraint bounds

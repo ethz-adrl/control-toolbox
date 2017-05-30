@@ -83,25 +83,29 @@ public:
 
 	/* get the state from desired pair number */
 	// const Eigen::VectorBlock<const state_vector_t, STATE_DIM> getState(const size_t pairNum)
-	const state_vector_t getState(const size_t pairNum);
+	state_vector_t getOptimizedState(const size_t pairNum) const;
 
 	/* get a reference to the control corresponding to a desired pair number */
-	const control_vector_t getControl(const size_t pairNum);
+	control_vector_t getOptimizedControl(const size_t pairNum) const;
+
+	double getOptimizedTimeSegment(const size_t pairNum) const;
 
 	// get std::vector of references to all subsequent states in w
-	const state_vector_array_t& getStateSolution();
+	const state_vector_array_t& getOptimizedStates();
 
 
 	// get std::vector of references to all subsequent control input vectors in w
-	const control_vector_array_t& getInputSolution();
+	const control_vector_array_t& getOptimizedInputs();
 
-	const time_array_t& getTimeSolution();
+	const  Eigen::VectorXd& getOptimizedTimeSegments();
 
 	// return starting index in w of the state of a particular pair
-	size_t getStateIndex(const size_t pairNum);
+	size_t getStateIndex(const size_t pairNum) const;
 
 	// return starting index in w of the control of a particular pair
-	size_t getControlIndex(const size_t pairNum);
+	size_t getControlIndex(const size_t pairNum) const;
+
+	size_t getTimeSegmentIndex(const size_t pairNum) const;
 
 	/* return index in w of the time parameter of a particular pair
 	 *
@@ -110,15 +114,15 @@ public:
 	 * Example: for pair 0, which is located at t_0, this function returns
 	 * the index of t_1
 	 * */
-	size_t getShotDurationIndex(const size_t shotNr);
+	// size_t getShotDurationIndex(const size_t shotNr);
 
-	double getShotStartTime(const size_t shotNr);
+	// double getShotStartTime(const size_t shotNr);
 
-	double getShotEndTime(const size_t shotNr);
+	// double getShotEndTime(const size_t shotNr);
 
-	double getShotDuration(const size_t shotNr);
+	// double getShotDuration(const size_t shotNr);
 
-	double getTtotal();
+	// double getTtotal();
 
 
 	/* set each state in w to the same, identical x0 and
@@ -126,19 +130,15 @@ public:
 	 * */
 	void setInitGuess(const state_vector_t& x0, const state_vector_t& x_f, const control_vector_t& u0);
 
-	void setInitGuess(const state_vector_array_t& x_init, const control_vector_array_t& u_init, const time_array_t& t_init = time_array_t(0));
-
-
-	// method that allows the solver to retrieve the initial guess.
-	Eigen::VectorXd getInitGuess();
+	void setInitGuess(const state_vector_array_t& x_init, const control_vector_array_t& u_init);
 
 
 	/* method that allows to tweak the given initial state, use for WARMSTARTING */
-	void updateInitialState(const state_vector_t& newInitialState);
+	void changeInitialState(const state_vector_t& x0);
 
 
 	/* method that allows to tweak the desired terminal state, use for WARMSTARTING */
-	void updateDesiredState(const state_vector_t& newDesiredState);
+	void changeDesiredState(const state_vector_t& xF);
 
 
 	/* set upper bound on times and set lower bound to 0.0 by default
@@ -147,33 +147,33 @@ public:
 	void setShotLowerBounds();
 
 
-	void splineControls();
+	// void splineControls();
 
 
-	control_vector_t getControlFromSpline(const double time, const size_t shotIdx);
+	// control_vector_t getControlFromSpline(const double time, const size_t shotIdx);
 
-	control_vector_t getControlFromSpline(const double time);
+	// control_vector_t getControlFromSpline(const double time);
 
-	size_t new_w_count() const
-	{
-		return getNewXCounter();
-	}
+	// size_t new_w_count() const
+	// {
+	// 	return getNewXCount();
+	// }
 
 
-	/* this method calculates the derivative of the spline w.r.t. the leading q_i in the optimization vector */
-	control_matrix_t splineDerivative_q_i(const double time, const size_t shotIdx) const;
+	// /* this method calculates the derivative of the spline w.r.t. the leading q_i in the optimization vector */
+	// control_matrix_t splineDerivative_q_i(const double time, const size_t shotIdx) const;
 
-	/* this method calculates the derivative of the spline w.r.t. the following q, thus q_(i+1) in the optimization vector */
-	control_matrix_t splineDerivative_q_iplus1(const double time, const size_t shotIdx) const;
+	//  this method calculates the derivative of the spline w.r.t. the following q, thus q_(i+1) in the optimization vector 
+	// control_matrix_t splineDerivative_q_iplus1(const double time, const size_t shotIdx) const;
 
-	control_vector_t splineDerivative_t(const double time, const size_t shotIdx) const;
+	// control_vector_t splineDerivative_t(const double time, const size_t shotIdx) const;
 
-	control_vector_t splineDerivative_h_i(const double time, const size_t shotIdx) const;
+	// control_vector_t splineDerivative_h_i(const double time, const size_t shotIdx) const;
 
 	void activateWarmStart(){performWarmStart_ = true;}
 	void deactivateWarmStart(){performWarmStart_ = false;}
 
-	bool controlInputConstrained() const {return controlInputConstrained_;}
+	// bool controlInputConstrained() const {return controlInputConstrained_;}
 
 	size_t numPairs(){return numPairs_;}
 
@@ -186,12 +186,8 @@ private:
 	DmsSettings settings_;
 
 	size_t numPairs_;
-	bool controlInputConstrained_;
+	// bool controlInputConstrained_;
 	bool performWarmStart_;
-
-	/* splining */
-	std::shared_ptr<SplinerBase<control_vector_t>> spliner_;
-	std::shared_ptr<TimeGrid> timeGrid_;
 
 	/* maps the number of a "pair" to the index in w where ... */
 	std::map<size_t, size_t> pairNumToStateIdx_;			/* ... its state starts */
@@ -200,7 +196,7 @@ private:
 
 	state_vector_array_t stateSolution_;
 	control_vector_array_t inputSolution_;
-	time_array_t timeSolution_;
+	Eigen::VectorXd optimizedTimeSegments_;
 
 };
 

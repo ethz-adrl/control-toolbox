@@ -39,12 +39,14 @@ public:
 
 	CostEvaluatorFull(
 			std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct,
-			std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>> shotInt,
 			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
+			std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
+			std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>> shotInt,
 			DmsSettings settings):
 				costFct_(costFct),
-				shotContainers_(shotInt),
 				w_(w),
+				controlSpliner_(controlSpliner),
+				shotContainers_(shotInt),
 				settings_(settings)
 	{}
 
@@ -64,7 +66,7 @@ public:
 			cost += shotContainer->getCostIntegrated();	
 			
 		// terminal cost
-		costFct_->setCurrentStateAndControl(w_->getState(shotContainers_.size()), control_vector_t::Zero());
+		costFct_->setCurrentStateAndControl(w_->getOptimizedState(shotContainers_.size()), control_vector_t::Zero());
 		cost += costFct_->evaluateTerminal();
 		return cost;
 	}
@@ -107,21 +109,22 @@ public:
 			if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
 			{
 				costFct_->setCurrentStateAndControl(shotContainers_[shotNr]->getStateIntegrated(),
-													w_->getControlFromSpline(shotContainers_[shotNr]->getIntegrationTimeFinal(), shotNr));
-				grad(w_->getShotDurationIndex(shotNr)) = costFct_->evaluateIntermediate() + shotContainers_[shotNr]->getdLdHiIntegrated();
+													controlSpliner_->evalSpline(shotContainers_[shotNr]->getIntegrationTimeFinal(), shotNr));
+				grad(w_->getTimeSegmentIndex(shotNr)) = costFct_->evaluateIntermediate() + shotContainers_[shotNr]->getdLdHiIntegrated();
 			}
 		}
 
 		/* gradient of terminal cost */
-		costFct_->setCurrentStateAndControl(w_->getState(shotContainers_.size()), control_vector_t::Zero());
+		costFct_->setCurrentStateAndControl(w_->getOptimizedState(shotContainers_.size()), control_vector_t::Zero());
 		grad.segment(w_->getStateIndex(settings_.N_), STATE_DIM) += costFct_->stateDerivativeTerminal();// * dXdSi.back();
 	}
 
 private:
 
 	std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct_;
-	std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>> shotContainers_;
 	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
+	std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner_;
+	std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>> shotContainers_;
 
 	const DmsSettings settings_;
 };

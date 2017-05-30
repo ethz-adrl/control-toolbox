@@ -20,8 +20,8 @@ option(MATLAB "Compile with matlab support" OFF)
 option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" OFF)
 option(DEBUG_PRINT "Print debug messages" OFF)
 
-option(BUILD_WITH_IPOPT_SUPPORT "Build with IPOPT support" OFF)
-option(BUILD_WITH_SNOPT_SUPPORT "Build with SNOPT support" OFF)
+option(BUILD_WITH_IPOPT_SUPPORT "Build with IPOPT support" true)
+option(BUILD_WITH_SNOPT_SUPPORT "Build with SNOPT support" true)
 
 if(DEBUG_PRINT)
     message(WARNING "WARNING: Debug Print ON")
@@ -179,7 +179,6 @@ target_link_libraries(iLQGMPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-    
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_optcon.doxyfile)
     set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
 

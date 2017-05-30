@@ -49,18 +49,22 @@ public:
 	ShotContainer() = delete;
 
 	ShotContainer(
-			size_t shotNr,
 			std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM>> controlledSystem,
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
-			DmsSettings settings,
+			std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>> linearSystem,
 			std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct,
-			std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>> linearSystem = nullptr
+			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
+			std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
+			std::shared_ptr<TimeGrid> timeGrid,
+			size_t shotNr,
+			DmsSettings settings
 	):
-		shotNr_(shotNr),
-		costFct_(costFct),
 		controlledSystem_(controlledSystem),
 		linearSystem_(linearSystem),
+		costFct_(costFct),
 		w_(w),
+		controlSpliner_(controlSpliner),
+		timeGrid_(timeGrid),
+		shotNr_(shotNr),
 		settings_(settings),
 		new_w_counter_integration_(0),
 		new_w_counter_integration_with_Sens_(0),
@@ -153,9 +157,9 @@ public:
 	// integrate shot without calculating state sensitivities
 	void integrateShot(double dtInt)
 	{
-		if(w_->new_w_count() != new_w_counter_integration_)
+		if(w_->getUpdateCount() != new_w_counter_integration_)
 		{
-			new_w_counter_integration_ = w_->new_w_count();
+			new_w_counter_integration_ = w_->getUpdateCount();
 			shotIntegrator_->integrate(dtInt);
 			shotIntegrator_->retrieveStateTrajectories(t_history_, x_history_, cost_);
 		}
@@ -164,9 +168,9 @@ public:
 	// integrate shot forward in time and compute sensitivity on-the-fly
 	void integrateShotandComputeSensitivity()
 	{
-		if(w_->new_w_count() != new_w_counter_integration_with_Sens_)
+		if(w_->getUpdateCount() != new_w_counter_integration_with_Sens_)
 		{
-			new_w_counter_integration_with_Sens_ = w_->new_w_count();
+			new_w_counter_integration_with_Sens_ = w_->getUpdateCount();
 			sensitivityIntegrator_->integrate(settings_.dt_sim_);
 			sensitivityIntegrator_->retrieveTrajectories(t_history_, x_history_, dXdSi_history_, dXdQi_history_, dXdQip1_history_, dXdHi_history_, 
 					costGradientSi_, costGradientQi_, costGradientQip1_, costGradientHi_);
@@ -213,7 +217,7 @@ public:
 		u_history_.clear();
 		for(size_t t = 0; t < t_history_.size(); ++t)
 		{
-			u_history_.push_back(w_->getControlFromSpline(t_history_[t], shotNr_));
+			u_history_.push_back(controlSpliner_->evalSpline(t_history_[t], shotNr_));
 		}
 		return u_history_;
 	}
@@ -255,17 +259,16 @@ public:
 
 
 private:
+	std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM>> controlledSystem_;
+	std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct_;
+	std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>> linearSystem_;
+	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
+	std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner_;
+	std::shared_ptr<TimeGrid> timeGrid_;
 
 	const size_t shotNr_; // number/index of this particular shot.
-
-	std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct_;
-	std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM>> controlledSystem_;
-	std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>> linearSystem_;
-
-	// all shots point to the same w
-	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
-
 	const DmsSettings settings_;
+
 	size_t new_w_counter_integration_;
 	size_t new_w_counter_integration_with_Sens_;
 
@@ -296,13 +299,15 @@ private:
 	// helper function, called from constructor
 	template <class C>
 	std::shared_ptr<ShotIntegratorBase<STATE_DIM, CONTROL_DIM>> constructShotIntegrator(){
-		return std::shared_ptr<ShotIntegrator<C>> (new ShotIntegrator<C> (shotNr_, settings_, w_, controlledSystem_, linearSystem_, costFct_));
+		// return std::shared_ptr<ShotIntegrator<C>> (new ShotIntegrator<C> (shotNr_, settings_, w_, controlledSystem_, linearSystem_, costFct_));
+		return std::shared_ptr<ShotIntegrator<C>> (new ShotIntegrator<C> (controlledSystem_, linearSystem_, costFct_, w_, controlSpliner_, timeGrid_, shotNr_ , settings_));
 	}
 
 	// helper function, called from constructor
 	template <class C>
 	std::shared_ptr<ShotIntegratorBase<STATE_DIM, CONTROL_DIM>> constructSensitivityIntegrator(){
-		return std::shared_ptr<ShotIntegrator<C>> (new ShotIntegrator<C> (shotNr_, settings_, w_, controlledSystem_, linearSystem_, costFct_));
+		return std::shared_ptr<ShotIntegrator<C>> (new ShotIntegrator<C> (controlledSystem_, linearSystem_, costFct_, w_, controlSpliner_, timeGrid_, shotNr_ , settings_));
+		// return std::shared_ptr<ShotIntegrator<C>> (new ShotIntegrator<C> (shotNr_, settings_, w_, controlledSystem_, linearSystem_, costFct_));
 	}
 };
 

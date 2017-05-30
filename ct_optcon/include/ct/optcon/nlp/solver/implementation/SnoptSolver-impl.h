@@ -165,7 +165,7 @@ bool SnoptSolver::solve()
 		MapVecXi xStateVec	(memoryPtr_->xstate_, 	n_);
 		MapVecXd fMulVec	(memoryPtr_->Fmul_, 	neF_);
 		MapVecXi fStateVec	(memoryPtr_->Fstate_, 	neF_);	
-		nlp_->extractSolution(xVec, xMulVec, xStateVec, fMulVec, fStateVec);
+		nlp_->extractSnoptSolution(xVec, xMulVec, xStateVec, fMulVec, fStateVec);
 	}
 	
 	return true;
@@ -278,7 +278,7 @@ void SnoptSolver::NLP_Function(SnoptMemory* m,		int    *Status, int *n,    doubl
 	if(*needF > 0 || needG > 0)
 	{
 		Eigen::Map<const Eigen::VectorXd> xVec(&x[0], *n);
-		m->self.nlp_->setPrimalVars(xVec, true);
+		m->self.nlp_->extractPrimalVars(xVec, true);
 	}
 
 	if(*needF > 0)
