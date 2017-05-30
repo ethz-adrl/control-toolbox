@@ -69,8 +69,13 @@ public:
 			Eigen::Map<Eigen::VectorXi>& jCol_vec,
 			size_t indexNumber) override
 	{
-
-		indexNumber += BASE::genBlockIndices(BASE::indexTotal_, w_->getTimeSegmentIndex(0), 1, settings_.N_, iRow_vec, jCol_vec, indexNumber);
+		for(size_t i = 0; i < settings_.N_; ++i)
+		{
+			iRow_vec(indexNumber) = BASE::indexTotal_;
+			jCol_vec(indexNumber) = w_->getTimeSegmentIndex(i);
+			indexNumber += 1;
+		}
+		// indexNumber += BASE::genBlockIndices(BASE::indexTotal_, w_->getTimeSegmentIndex(0), 1, settings_.N_, iRow_vec, jCol_vec, indexNumber);
 		return indexNumber;
 	}
 

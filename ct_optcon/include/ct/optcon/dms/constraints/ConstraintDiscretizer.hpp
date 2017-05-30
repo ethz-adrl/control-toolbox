@@ -25,10 +25,12 @@ public:
 
 	ConstraintDiscretizer(){}
 	ConstraintDiscretizer(
+		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
 		std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> c_continuous,
 		std::vector<size_t> activeInd,
 		size_t N)
 	:
+	w_(w),
 	N_(N),
 	c_continuous_(c_continuous),
 	activeInd_(activeInd)
@@ -122,7 +124,7 @@ public:
 		{
 			indexNumber += c_continuous_->generateSparsityPatternJacobian(iRowLocal_, jColLocal_);
 			iRow_vec.segment(countLocal, nonZeroJacCount_) = iRowLocal_.array() + BASE::indexTotal_ + i * continuousCount_;
-			jCol_vec.segment(countLocal, nonZeroJacCount_) = jColLocal_.array() + ind * (STATE_DIM + CONTROL_DIM);
+			jCol_vec.segment(countLocal, nonZeroJacCount_) = jColLocal_.array() + w_->getStateIndex(ind);
 			countLocal = indexNumber;
 			i++;
 		}
@@ -169,6 +171,7 @@ public:
 
 
 private:
+	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
 	size_t N_;
 	std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> c_continuous_;
 	std::vector<size_t> activeInd_;

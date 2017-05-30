@@ -141,7 +141,7 @@ public:
 			for(size_t i = 0; i < settings_.N_ + 1; ++i)
 				activeInd.push_back(i);
 			constraintsIntermediateLocal_ = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> (
-				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM> (constraintsIntermediate.front(), activeInd, settings_.N_ + 1));
+				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM> (optVariablesDms_, constraintsIntermediate.front(), activeInd, settings_.N_ + 1));
 		}
 
 		if(constraintsFinal.size() > 0)
@@ -150,7 +150,7 @@ public:
 			activeInd.push_back(settings_.N_);
 			std::cout << "setting up final constraints" << std::endl;
 			constraintsFinalLocal_ = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> (
-				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM> (constraintsFinal.front(), activeInd, settings_.N_ + 1));
+				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM> (optVariablesDms_, constraintsFinal.front(), activeInd, settings_.N_ + 1));
 		}
 
 

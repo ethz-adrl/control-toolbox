@@ -46,31 +46,33 @@ OptVectorDms<STATE_DIM, CONTROL_DIM>::OptVectorDms(size_t n, const DmsSettings& 
 	/* set up the mappings from optimization variables to position indices in w.
 	 * If an optimization variable is of vector-type itself, for example s_i,
 	 * the position index points to its first element. */
+	
+	if (settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+		optimizedTimeSegments_.resize(numPairs_ - 1);
 
-	// the first part of the optimization vector is filled with s_i's and q_i's, with i = 0, 1, 2,..., N
+	size_t currIndex = 0;
+
 	for (size_t i = 0; i< numPairs_; i++)
 	{
-		size_t s_index = i*(STATE_DIM+CONTROL_DIM);
-		pairNumToStateIdx_.insert(std::make_pair(i, s_index));
+		// size_t s_index = i*(STATE_DIM+CONTROL_DIM);
+		pairNumToStateIdx_.insert(std::make_pair(i, currIndex));
+		currIndex += STATE_DIM;
 
-		size_t q_index = s_index + STATE_DIM;
-		pairNumToControlIdx_.insert(std::make_pair(i, q_index));
+		// size_t q_index = s_index + STATE_DIM;
+		pairNumToControlIdx_.insert(std::make_pair(i, currIndex));
+		currIndex += CONTROL_DIM;
+
+		if (settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+			if(i < numPairs_-1)
+			{
+				shotNumToShotDurationIdx_.insert(std::make_pair(i, currIndex));
+				currIndex += 1;
+			}	
 	}
 
-
-	/* check if time is to be included as optimization variable*/
 	if (settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-	{
-		optimizedTimeSegments_.resize(numPairs_ - 1);
-		// N additional opt variables for h_0, h_1, ..., h_(N-1)
-		for (size_t i = 0; i < numPairs_ - 1; i++)
-		{
-			size_t h_index = numPairs_*(STATE_DIM + CONTROL_DIM) + i; // the index refers to the shot duration following a pair
-			shotNumToShotDurationIdx_.insert(std::make_pair(i, h_index));
-		}
-
 		setLowerTimeSegmentBounds();
-	}
+
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM>

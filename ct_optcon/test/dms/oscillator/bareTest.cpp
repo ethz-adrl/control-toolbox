@@ -10,20 +10,6 @@
 #include <ct/optcon/dms/Dms>
 #include <ct/optcon/optcon.h>
 
-//#include <ct/optcon/problem/OptConProblem.h>
-//#include <ct/optcon/dms/dms_core/DmsSolver.h>
-//#include <ct/optcon/dms/dms_core/DmsSettings.hpp>
-//#include <ct/optcon/nlp/solver/NlpSolverSettings.h>
-//
-//#include <ct/optcon/constraint/term/ObstacleConstraint.h>
-//#include <ct/optcon/constraint/term/TerminalConstraint.h>
-//#include <ct/optcon/constraint/term/ControlInputConstraint.h>
-//#include <ct/optcon/constraint/term/StateConstraint.h>
-//#include <ct/optcon/constraint/ConstraintContainerAnalytical.h>
-//
-//#include <ct/core/internal/traits/CppADCodegenTrait.h>
-//#include <ct/core/internal/traits/DoubleTrait.h>
-
 
 using namespace ct;
 using namespace core;
@@ -122,7 +108,7 @@ public:
 		OptConProblem<2,1> optProblem(oscillator_, costFunction_);
 		optProblem.setInitialState(x_0_);
 		optProblem.setTimeHorizon(settings_.T_);
-		// optProblem.setIntermediateConstraints(intermediateConstraintsAd_);
+		optProblem.setIntermediateConstraints(intermediateConstraintsAd_);
 		optProblem.setFinalConstraints(finalConstraints_);
 
 		calcInitGuess();
@@ -180,7 +166,7 @@ void runTests()
 	for(int solverType = 0; solverType < NlpSolverSettings::SolverType::num_types_solver; solverType++)
 	{
 		int splineType = 0;
-		int costEvalT = 0;
+		int costEvalT = 1;
 		int optGrid = 0;
 		int integrateSensitivity = 1;
 		// int solverType = 1;
