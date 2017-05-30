@@ -192,7 +192,6 @@ public:
 
 	virtual void updateProblem() override
 	{
-		// optVariablesDms_->update();
 		controlSpliner_->computeSpline(optVariablesDms_->getOptimizedInputs().toImplementation());
 		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
 			timeGrid_->updateTimeGrid(optVariablesDms_->getOptimizedTimeSegments());

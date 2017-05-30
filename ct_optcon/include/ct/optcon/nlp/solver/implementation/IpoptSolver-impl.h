@@ -1,7 +1,7 @@
 // constructor
 IpoptSolver::IpoptSolver(std::shared_ptr<Nlp> nlp, const NlpSolverSettings& settings) :
-		BASE(nlp, settings),
-		settings_(BASE::settings_.ipoptSettings_)
+BASE(nlp, settings),
+settings_(BASE::settings_.ipoptSettings_)
 {
 	//Constructor arguments
 	//Argument 1: create console output
@@ -34,9 +34,9 @@ void IpoptSolver::setSolverOptions() {
 	ipoptApp_->Options()->SetNumericValue("constr_viol_tol", settings_.constr_viol_tol_);
 	// ipoptApp_->Options()->SetNumericValue("constr_viol_tol", 1e-3);
 	// ipoptApp_->Options()->SetIntegerValue("max_iter", 10);
-			// ipoptApp_->Options()->SetNumericValue("resto.tol", 1e-7);
-			// ipoptApp_->Options()->SetNumericValue("acceptable_tol", 1e-7);
-			// ipoptApp_->Options()->SetNumericValue("resto.acceptable_tol", 1e-7);
+	// ipoptApp_->Options()->SetNumericValue("resto.tol", 1e-7);
+	// ipoptApp_->Options()->SetNumericValue("acceptable_tol", 1e-7);
+	// ipoptApp_->Options()->SetNumericValue("resto.acceptable_tol", 1e-7);
 	ipoptApp_->Options()->SetStringValueIfUnset("linear_scaling_on_demand", settings_.linear_scaling_on_demand_);
 	ipoptApp_->Options()->SetStringValueIfUnset("hessian_approximation", settings_.hessian_approximation_);
 	//ipoptApp_->Options()->SetStringValueIfUnset("nlp_scaling_method", "gradient-based");
@@ -187,7 +187,7 @@ bool IpoptSolver::get_starting_point(Ipopt::Index n, bool init_x, Number* x,
 		Ipopt::Index m, bool init_lambda,
 		Number* lambda)
 {
-	#ifdef DEBUG_PRINT
+#ifdef DEBUG_PRINT
 	std::cout << "... entering get_starting_point()" << std::endl;
 #endif //DEBUG_PRINT
 	// We should try these with warmstart
@@ -212,7 +212,7 @@ bool IpoptSolver::get_starting_point(Ipopt::Index n, bool init_x, Number* x,
 
 	// for(size_t i = 0; i< n; ++i)
 	// 	std::cout << "xstart IPOPT: " << x[i] << std::endl;
-	#ifdef DEBUG_PRINT
+#ifdef DEBUG_PRINT
 	std::cout << "... entering get_starting_point()" << std::endl;
 #endif //DEBUG_PRINT
 
@@ -281,14 +281,14 @@ bool IpoptSolver::eval_g(Ipopt::Index n, const Number* x, bool new_x, Ipopt::Ind
 
 // return the structure or values of the jacobian
 bool IpoptSolver::eval_jac_g(Ipopt::Index n, const Number* x, bool new_x,
-			Ipopt::Index m, Ipopt::Index nele_jac, Ipopt::Index* iRow, Ipopt::Index *jCol,
-			Number* values)
+		Ipopt::Index m, Ipopt::Index nele_jac, Ipopt::Index* iRow, Ipopt::Index *jCol,
+		Number* values)
 {
-		// MatlabInterface mi("/home/markusta/Documents/Code/catkin_ws/src/ct/ct_optcon/test/dms/oscillator/matfiles/sparsityPattern.mat");
+	// MatlabInterface mi("/home/markusta/Documents/Code/catkin_ws/src/ct/ct_optcon/test/dms/oscillator/matfiles/sparsityPattern.mat");
 	if (values == NULL)
 	{
 #ifdef DEBUG_PRINT
-	std::cout << "... entering eval_jac_g, values == NULL" << std::endl;
+		std::cout << "... entering eval_jac_g, values == NULL" << std::endl;
 #endif //DEBUG_PRINT
 		// set indices of nonzero elements of the jacobian
 		Eigen::Map<Eigen::VectorXi> iRowVec(iRow, nele_jac);
@@ -306,13 +306,13 @@ bool IpoptSolver::eval_jac_g(Ipopt::Index n, const Number* x, bool new_x,
 		// mi.sendScalarTrajectoryToMatlab(jColVec, "jCol");
 
 
-	std::cout << "... leaving eval_jac_g, values == NULL" << std::endl;
+		std::cout << "... leaving eval_jac_g, values == NULL" << std::endl;
 #endif //DEBUG_PRINT
 	}
 	else
 	{
 #ifdef DEBUG_PRINT
-	std::cout << "... entering eval_jac_g, values != NULL" << std::endl;
+		std::cout << "... entering eval_jac_g, values != NULL" << std::endl;
 #endif //DEBUG_PRINT
 		MapVecXd valVec(values, nele_jac);
 		MapConstVecXd xVec(x, n);
@@ -322,8 +322,8 @@ bool IpoptSolver::eval_jac_g(Ipopt::Index n, const Number* x, bool new_x,
 
 		// std::cout << "valVec: " << valVec.transpose() << std::endl;
 #ifdef DEBUG_PRINT
-		mi.sendScalarTrajectoryToMatlab1(valVec, "val");
-	std::cout << "... leaving eval_jac_g, values != NULL" << std::endl;
+		//		mi.sendScalarTrajectoryToMatlab1(valVec, "val");
+		std::cout << "... leaving eval_jac_g, values != NULL" << std::endl;
 #endif //DEBUG_PRINT
 	}
 
@@ -333,9 +333,9 @@ bool IpoptSolver::eval_jac_g(Ipopt::Index n, const Number* x, bool new_x,
 
 //return the structure or values of the hessian
 bool IpoptSolver::eval_h(Ipopt::Index n, const Number* x, bool new_x,
-			Number obj_factor, Ipopt::Index m, const Number* lambda,
-			bool new_lambda, Ipopt::Index nele_hess, Ipopt::Index* iRow,
-			Ipopt::Index* jCol, Number* values)
+		Number obj_factor, Ipopt::Index m, const Number* lambda,
+		bool new_lambda, Ipopt::Index nele_hess, Ipopt::Index* iRow,
+		Ipopt::Index* jCol, Number* values)
 {
 	std::cerr << "should not be evaluating hessian" << std::endl;
 

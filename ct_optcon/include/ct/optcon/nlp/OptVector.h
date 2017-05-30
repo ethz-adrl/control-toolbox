@@ -56,8 +56,6 @@ public:
 		x_.resize(size);
 		xLb_.resize(size);
 		xUb_.resize(size);
-		// lowBoundMultiplier_.resize(size);
-		// upperBoundMultiplier_.resize(size);
 		lambda_.resize(size);
 		zUpper_.resize(size);
 		zLow_.resize(size);
@@ -71,8 +69,6 @@ public:
 		x_.setZero();
 		xLb_.setZero();
 		xUb_.setZero();
-		// lowBoundMultiplier_.setZero();
-		// upperBoundMultiplier_.setZero();
 		lambda_.setZero();
 		zUpper_.setZero();
 		zLow_.setZero();
@@ -178,8 +174,6 @@ protected:
 	Eigen::VectorXd xUb_;	/*!< upper bound on optimization vector */
 
 	// Ipopt variables
-	// Eigen::VectorXd lowBoundMultiplier_;
-	// Eigen::VectorXd upperBoundMultiplier_;
 	Eigen::VectorXd zUpper_;
 	Eigen::VectorXd zLow_;
 	Eigen::VectorXd lambda_;

@@ -170,12 +170,12 @@ TEST(DmsTest, OscillatorDmsTestAllVariants)
 #endif
 
 #ifdef BUILD_WITH_IPOPT_SUPPORT
-							NlpSolverSettings nlpsettings;
-							nlpsettings.solverType_ = static_cast<NlpSolverSettings::SolverType>(1);	// IPOPT, SNOPT
-							settings.nlpSettings_ = nlpsettings;
-							OscillatorDms oscDms;
-							oscDms.initialize(settings);
-							oscDms.getSolution();
+							NlpSolverSettings nlpsettings_ipopt;
+							nlpsettings_ipopt.solverType_ = static_cast<NlpSolverSettings::SolverType>(1);	// IPOPT, SNOPT
+							settings.nlpSettings_ = nlpsettings_ipopt;
+							OscillatorDms oscDms_ipopt;
+							oscDms_ipopt.initialize(settings);
+							oscDms_ipopt.getSolution();
 #endif		
 				}
 			}

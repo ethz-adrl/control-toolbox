@@ -107,23 +107,6 @@ public:
 
 	size_t getTimeSegmentIndex(const size_t pairNum) const;
 
-	/* return index in w of the time parameter of a particular pair
-	 *
-	 * get index of the time variable which defines the length of the shot
-	 * following this particular pair.
-	 * Example: for pair 0, which is located at t_0, this function returns
-	 * the index of t_1
-	 * */
-	// size_t getShotDurationIndex(const size_t shotNr);
-
-	// double getShotStartTime(const size_t shotNr);
-
-	// double getShotEndTime(const size_t shotNr);
-
-	// double getShotDuration(const size_t shotNr);
-
-	// double getTtotal();
-
 
 	/* set each state in w to the same, identical x0 and
 	 * set each contorl in w to the same, identical u0.
@@ -144,34 +127,7 @@ public:
 	/* set upper bound on times and set lower bound to 0.0 by default
 	 * note: currently it is required to specify this.
 	 * recently: setTimeHorizonUpperBound*/
-	void setShotLowerBounds();
-
-
-	// void splineControls();
-
-
-	// control_vector_t getControlFromSpline(const double time, const size_t shotIdx);
-
-	// control_vector_t getControlFromSpline(const double time);
-
-	// size_t new_w_count() const
-	// {
-	// 	return getNewXCount();
-	// }
-
-
-	// /* this method calculates the derivative of the spline w.r.t. the leading q_i in the optimization vector */
-	// control_matrix_t splineDerivative_q_i(const double time, const size_t shotIdx) const;
-
-	//  this method calculates the derivative of the spline w.r.t. the following q, thus q_(i+1) in the optimization vector 
-	// control_matrix_t splineDerivative_q_iplus1(const double time, const size_t shotIdx) const;
-
-	// control_vector_t splineDerivative_t(const double time, const size_t shotIdx) const;
-
-	// control_vector_t splineDerivative_h_i(const double time, const size_t shotIdx) const;
-
-	void activateWarmStart(){performWarmStart_ = true;}
-	void deactivateWarmStart(){performWarmStart_ = false;}
+	void setLowerTimeSegmentBounds();
 
 	// bool controlInputConstrained() const {return controlInputConstrained_;}
 
@@ -180,15 +136,10 @@ public:
 	// print solution in console
 	void printoutSolution();
 
-	void update();
-
 private:
 	DmsSettings settings_;
 
 	size_t numPairs_;
-	// bool controlInputConstrained_;
-	bool performWarmStart_;
-
 	/* maps the number of a "pair" to the index in w where ... */
 	std::map<size_t, size_t> pairNumToStateIdx_;			/* ... its state starts */
 	std::map<size_t, size_t> pairNumToControlIdx_;  		/* ... its control starts */

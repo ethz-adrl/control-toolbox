@@ -299,7 +299,6 @@ private:
 	// helper function, called from constructor
 	template <class C>
 	std::shared_ptr<ShotIntegratorBase<STATE_DIM, CONTROL_DIM>> constructShotIntegrator(){
-		// return std::shared_ptr<ShotIntegrator<C>> (new ShotIntegrator<C> (shotNr_, settings_, w_, controlledSystem_, linearSystem_, costFct_));
 		return std::shared_ptr<ShotIntegrator<C>> (new ShotIntegrator<C> (controlledSystem_, linearSystem_, costFct_, w_, controlSpliner_, timeGrid_, shotNr_ , settings_));
 	}
 
@@ -307,7 +306,6 @@ private:
 	template <class C>
 	std::shared_ptr<ShotIntegratorBase<STATE_DIM, CONTROL_DIM>> constructSensitivityIntegrator(){
 		return std::shared_ptr<ShotIntegrator<C>> (new ShotIntegrator<C> (controlledSystem_, linearSystem_, costFct_, w_, controlSpliner_, timeGrid_, shotNr_ , settings_));
-		// return std::shared_ptr<ShotIntegrator<C>> (new ShotIntegrator<C> (shotNr_, settings_, w_, controlledSystem_, linearSystem_, costFct_));
 	}
 };
 
