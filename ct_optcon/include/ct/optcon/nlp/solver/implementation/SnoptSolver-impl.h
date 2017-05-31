@@ -54,15 +54,15 @@ void SnoptSolver::fill_memory(SnoptMemory* mem) const
 	MapVecXi jGVecGrad	(mem->jGvar_, 	n_);
 	MapVecXi jGVecJac	(&mem->jGvar_[n_], nlp_->getNonZeroJacobianCount());
 
-	nlp_->getPrimalVars(n_, xVec);
+	nlp_->getOptimizationVars(n_, xVec);
 	nlp_->getVariableBounds(x_lVec, x_uVec, n_);
-	nlp_->getPrimalMultState(n_, xMulVec, xStateVec);
+	nlp_->getOptimizationMultState(n_, xMulVec, xStateVec);
 
 	FVec.setZero();
 	mem->Flow_[0] = std::numeric_limits<double>::lowest();
 	mem->Fupp_[0] = std::numeric_limits<double>::max();
 	nlp_->getConstraintBounds(f_lVec, f_uVec, nlp_->getConstraintsCount());
-	nlp_->getDualMultState(neF_, fMulVec, FStateVec);
+	nlp_->getConstraintsMultState(neF_, fMulVec, FStateVec);
 
 	iAVec.setZero();
 	jAVec.setZero();
@@ -278,7 +278,7 @@ void SnoptSolver::NLP_Function(SnoptMemory* m,		int    *Status, int *n,    doubl
 	if(*needF > 0 || needG > 0)
 	{
 		Eigen::Map<const Eigen::VectorXd> xVec(&x[0], *n);
-		m->self.nlp_->extractPrimalVars(xVec, true);
+		m->self.nlp_->extractOptimizationVars(xVec, true);
 	}
 
 	if(*needF > 0)

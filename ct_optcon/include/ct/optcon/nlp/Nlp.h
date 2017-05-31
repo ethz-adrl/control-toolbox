@@ -35,13 +35,14 @@ namespace ct {
 namespace optcon {
 
 
-/** \defgroup NLP NLP
+/** @defgroup   NLP NLP
  *
- * \brief Non linear program Module
+ * @brief      Non linear program Module
  */
 
 /**
- * \ingroup NLP
+ * @ingroup    NLP
+ *
  * @brief      The NLP base class. This class serves as abstract base class to
  *             use as an interface to the NLP solver IPOPT and SNOPT
  */
@@ -56,8 +57,14 @@ public:
 	typedef Eigen::Map<VectorXi> MapVecXi;
 	typedef Eigen::Map<const VectorXd> MapConstVecXd;
 
+	/**
+	 * @brief      Default constructor
+	 */
 	Nlp(){}
 
+	/**
+	 * @brief      Destructor
+	 */
 	virtual ~Nlp(){}
 
 	/**
@@ -79,45 +86,44 @@ public:
 
 
 	/**
-	 * @brief          { Evaluates the gradient of the costfunction}
+	 * @brief      { Evaluates the gradient of the costfunction}
 	 *
-	 * @param[in]      n     { size of the gradient }
-	 * @param[in, out] grad  The gradient of the cost function
+	 * @param[in]  n     { size of the gradient }
+	 * @param[out] grad  The gradient of the cost function
 	 */
 	void evaluateCostGradient(const size_t n, MapVecXd& grad){
 		costEvaluator_->evalGradient(n, grad);
 	} 
 
 	/**
-	 * @brief          { Evaluates the constraints }
+	 * @brief      { Evaluates the constraints }
 	 *
-	 * @param[in, out] values  The values of the constraint violations, wrapped
-	 *                         as a vector
+	 * @param[out] values  The values of the constraint violations, wrapped as a
+	 *                     vector
 	 */
 	void evaluateConstraints(MapVecXd& values){
 		constraints_->evalConstraints(values);
 	}
 
 	/**
-	 * @brief          { Evaluates the constraint jacobian }
+	 * @brief      { Evaluates the constraint jacobian }
 	 *
-	 * @param[in]      nele_jac  The number of non zeros in the constraint
-	 *                           jacobian
-	 * @param[in, out] jac       The non zero values of the jacobian
+	 * @param[in]  nele_jac  The number of non zeros in the constraint jacobian
+	 * @param[out] jac       The non zero values of the jacobian
 	 */
 	void evaluateConstraintJacobian(const int nele_jac, MapVecXd& jac){
 		constraints_->evalSparseJacobian(jac, nele_jac);
 	}
 
 	/**
-	 * @brief          Gets the sparsity pattern.
+	 * @brief      Gets the sparsity pattern.
 	 *
-	 * @param[in]      nele_jac  The number of non zero elements in the
-	 *                           constraint jacobian
-	 * @param[in, out] iRow      The row indices of the location of the non zero
-	 *                           elements of the constraint jacobian
-	 * @param[in, out] jCol      The column indices of the location of the non
-	 *                           zero elements of the constraint jacobian
+	 * @param[in]  nele_jac  The number of non zero elements in the constraint
+	 *                       jacobian
+	 * @param[out] iRow      The row indices of the location of the non zero
+	 *                       elements of the constraint jacobian
+	 * @param[out] jCol      The column indices of the location of the non zero
+	 *                       elements of the constraint jacobian
 	 */
 	void getSparsityPattern(const int nele_jac, MapVecXi& iRow, MapVecXi& jCol) const{
 		constraints_->getSparsityPattern(iRow, jCol, nele_jac);
@@ -144,11 +150,11 @@ public:
 	}
 
 	/**
-	 * @brief          Reads the bounds of the constraints.
+	 * @brief      Reads the bounds of the constraints.
 	 *
-	 * @param[in, out] lowerBound  The lower constraint bound
-	 * @param[in, out] upperBound  The upper constraint bound
-	 * @param[in]      m           { The size of the constraints }
+	 * @param[out] lowerBound  The lower constraint bound
+	 * @param[out] upperBound  The upper constraint bound
+	 * @param[in]  m           { The size of the constraints }
 	 */
 	void getConstraintBounds(MapVecXd& lowerBound, MapVecXd& upperBound, const size_t m) const
 	{
@@ -164,11 +170,11 @@ public:
 	size_t getVarCount() const {return optVariables_->size();}
 
 	/**
-	 * @brief          Reads the bounds on the Optimization optimization variables.
+	 * @brief      Reads the bounds on the Optimization optimization variables.
 	 *
-	 * @param[in, out] lowerBound  The lower optimization variable bound
-	 * @param[in, out] upperBound  The upper optimization variable bound
-	 * @param[in]      n           { The number of Optimization variables }
+	 * @param[out] lowerBound  The lower optimization variable bound
+	 * @param[out] upperBound  The upper optimization variable bound
+	 * @param[in]  n           { The number of Optimization variables }
 	 */
 	void getVariableBounds(MapVecXd& lowerBound, MapVecXd& upperBound, const size_t n) const{
 		optVariables_->getLowerBounds(lowerBound);
@@ -191,56 +197,56 @@ public:
 	}
 
 	/**
-	 * @brief          Gets the Optimization variables.
+	 * @brief      Gets the Optimization variables.
 	 *
-	 * @param[in]      n     { The number of Optimization variables }
-	 * @param[in, out] x     { The values of the Optimization vars }
+	 * @param[in]  n     { The number of Optimization variables }
+	 * @param[out] x     { The values of the Optimization vars }
 	 */
 	void getOptimizationVars(const size_t n, MapVecXd& x) const{
 		optVariables_->getOptimizationVars(n, x);
 	}
 
 	/**
-	 * @brief          Gets the variable multiplier and the variable state, used
-	 *                 in the NLP solver SNOPT. See the snopt documentation for
-	 *                 further explanations
+	 * @brief      Gets the variable multiplier and the variable state, used in
+	 *             the NLP solver SNOPT. See the snopt documentation for further
+	 *             explanations
 	 *
-	 * @param[in]      n       { The number of Optimization variables  }
-	 * @param[in, out] xMul    The optimization variable multiplier
-	 * @param[in, out] xState  The optimization variable states
+	 * @param[in]  n       { The number of Optimization variables  }
+	 * @param[out] xMul    The optimization variable multiplier
+	 * @param[out] xState  The optimization variable states
 	 */
 	void getOptimizationMultState(const size_t n, Eigen::Map<Eigen::VectorXd>& xMul, Eigen::Map<Eigen::VectorXi>& xState) const{
 		optVariables_->getOptimizationMultState(n, xMul, xState);
 	}
 
 	/**
-	 * @brief          Gets the constraint multiplier and state, used in the NLP
-	 *                 solver SNOPT.
+	 * @brief      Gets the constraint multiplier and state, used in the NLP
+	 *             solver SNOPT.
 	 *
-	 * @param[in]      m       { The number of constraints }
-	 * @param[in, out] zMul    The constraint variable multiplier
-	 * @param[in, out] zState  The constraint variable state
+	 * @param[in]  m       { The number of constraints }
+	 * @param[out] zMul    The constraint variable multiplier
+	 * @param[out] zState  The constraint variable state
 	 */
-	void getConstraintMultState(const size_t m, Eigen::Map<Eigen::VectorXd>& zMul, Eigen::Map<Eigen::VectorXi>& zState) const{
-		optVariables_->getConstraintMultState(m, zMul, zState);
+	void getConstraintsMultState(const size_t m, Eigen::Map<Eigen::VectorXd>& zMul, Eigen::Map<Eigen::VectorXi>& zState) const{
+		optVariables_->getConstraintsMultState(m, zMul, zState);
 	}
 
 	/**
-	 * @brief          Gets the bound multipliers used in the NLP solver IPOPT.
+	 * @brief      Gets the bound multipliers used in the NLP solver IPOPT.
 	 *
-	 * @param[in]      n     { The number of optimization variables }
-	 * @param[in, out] zLow  The value for the lower bound multiplier
-	 * @param[in, out] zUp   The value for the upper bound multiplier
+	 * @param[in]  n     { The number of optimization variables }
+	 * @param[out] zLow  The value for the lower bound multiplier
+	 * @param[out] zUp   The value for the upper bound multiplier
 	 */
 	void getBoundMultipliers(size_t n, MapVecXd& zLow, MapVecXd& zUp) const{
 		optVariables_->getBoundMultipliers(n, zLow, zUp);
 	}
 
 	/**
-	 * @brief          Gets the values of the constraint multipliers.
+	 * @brief      Gets the values of the constraint multipliers.
 	 *
-	 * @param[in]      m       { The number of constraints }
-	 * @param[in, out] lambda  The values of the constraint multipliers
+	 * @param[in]  m       { The number of constraints }
+	 * @param[out] lambda  The values of the constraint multipliers
 	 */
 	void getLambdaVars(size_t m, MapVecXd& lambda) const{
 		optVariables_->getLambdaVars(m, lambda);
@@ -278,10 +284,7 @@ protected:
 	std::shared_ptr<DiscreteConstraintContainerBase> constraints_; //! abstract base class, contains the discretized constraints for the problem
 };
 
-}
-}
-
-
-
+} // namespace optcon
+} // namespace ct
 
 #endif //CT_OPTCON_NLP_NLP_H_

@@ -194,7 +194,7 @@ bool IpoptSolver::get_starting_point(Ipopt::Index n, bool init_x, Number* x,
 	if(init_x)
 	{
 		MapVecXd xVec(x, n);
-		nlp_->getPrimalVars(n, xVec);
+		nlp_->getOptimizationVars(n, xVec);
 	}
 
 	if(init_z)
@@ -227,7 +227,7 @@ bool IpoptSolver::eval_f(Ipopt::Index n, const Number* x, bool new_x, Number& ob
 	std::cout << "... entering eval_f()" << std::endl;
 #endif //DEBUG_PRINT
 	MapConstVecXd xVec(x, n);
-	nlp_->extractPrimalVars(xVec, new_x);
+	nlp_->extractOptimizationVars(xVec, new_x);
 	obj_value = nlp_->evaluateCostFun();
 	// std::cout << "F IPOPT: " << obj_value << std::endl;
 	assert(obj_value == obj_value);
@@ -247,7 +247,7 @@ bool IpoptSolver::eval_grad_f(Ipopt::Index n, const Number* x, bool new_x, Numbe
 #endif //DEBUG_PRINT
 	MapVecXd grad_fVec(grad_f, n);
 	MapConstVecXd xVec(x, n);
-	nlp_->extractPrimalVars(xVec, new_x);
+	nlp_->extractOptimizationVars(xVec, new_x);
 	nlp_->evaluateCostGradient(n, grad_fVec);
 
 #ifdef DEBUG_PRINT
@@ -265,7 +265,7 @@ bool IpoptSolver::eval_g(Ipopt::Index n, const Number* x, bool new_x, Ipopt::Ind
 #endif //DEBUG_PRINT
 	assert(m == nlp_->getConstraintsCount());
 	MapConstVecXd xVec(x, n);
-	nlp_->extractPrimalVars(xVec, new_x);
+	nlp_->extractOptimizationVars(xVec, new_x);
 	MapVecXd gVec(g, m);
 	nlp_->evaluateConstraints(gVec);
 
@@ -316,7 +316,7 @@ bool IpoptSolver::eval_jac_g(Ipopt::Index n, const Number* x, bool new_x,
 #endif //DEBUG_PRINT
 		MapVecXd valVec(values, nele_jac);
 		MapConstVecXd xVec(x, n);
-		nlp_->extractPrimalVars(xVec, new_x);
+		nlp_->extractOptimizationVars(xVec, new_x);
 		nlp_->evaluateConstraintJacobian(nele_jac, valVec);
 
 

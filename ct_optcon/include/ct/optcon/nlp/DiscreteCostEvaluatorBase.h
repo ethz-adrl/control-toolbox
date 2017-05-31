@@ -24,39 +24,51 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-
-/*
- * DiscreteCostEvaluatorBase.hpp
- *
- * Created: 25.02.2016
- * Author: mgiftthaler
- *
- * */
-
-#ifndef CT_OPTCON_DISCRETE_COST_EVALUATOR_BASE_HPP_
-#define CT_OPTCON_DISCRETE_COST_EVALUATOR_BASE_HPP_
+#ifndef CT_OPTCON_NLP_DISCRETE_COST_EVALUATOR_BASE_H_
+#define CT_OPTCON_NLP_DISCRETE_COST_EVALUATOR_BASE_H_
 
 namespace ct {
 namespace optcon {
 
+/**
+ * @ingroup    NLP
+ *
+ * @brief      Implements an abstract base class which evaluates the cost
+ *             function and its gradient in the NLP
+ */
 class DiscreteCostEvaluatorBase{
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	DiscreteCostEvaluatorBase(){};
+	/**
+    * @brief      Default constructor
+    */
+  DiscreteCostEvaluatorBase(){};
 
-	virtual ~DiscreteCostEvaluatorBase(){};
+	/**
+   * @brief     Destructor.
+   */
+  virtual ~DiscreteCostEvaluatorBase(){};
 
-	/* evaluate cost over whole problem, from t = 0 to t = T_final */
-	virtual double eval() = 0;
 
-	/* evaluate gradient for whole optimization vector w */
-	virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::VectorXd>& grad) = 0;
+  /**
+   * @brief      Evaluates the cost function
+   *
+   * @return     The evaluates cost function
+   */
+  virtual double eval() = 0;
+
+	/**
+    * @brief      Evaluates the cost gradient
+    *
+    * @param[in]  grad_length  The size of the gradient vector
+    * @param[out] grad         The values of the gradient
+    */
+  virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::VectorXd>& grad) = 0;
 
 };
 
 } // namespace optcon
 } // namespace ct
 
-#endif //CT_OPTCON_DISCRETE_COST_EVALUATOR_BASE_HPP_
+#endif //CT_OPTCON_NLP_DISCRETE_COST_EVALUATOR_BASE_HPP_

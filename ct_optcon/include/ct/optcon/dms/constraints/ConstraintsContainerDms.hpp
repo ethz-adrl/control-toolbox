@@ -60,14 +60,16 @@ public:
 	~ConstraintsContainerDms() {};
 
 	/* evaluate the constraint violation */
-	virtual void evalConstraints(Eigen::Map<Eigen::VectorXd>& c_local) override;
+	virtual void prepareEvaluation() override;
+	virtual void prepareJacobianEvaluation() override;
+	// virtual void evalConstraints(Eigen::Map<Eigen::VectorXd>& c_local) override;
 
 	/* index the non-zero elements of the constraint jacobian */
-	virtual void getSparsityPattern(Eigen::Map<Eigen::VectorXi>& iRow_vec, Eigen::Map<Eigen::VectorXi>& jCol_vec, const int nnz_jac_g) override;
+	// virtual void getSparsityPattern(Eigen::Map<Eigen::VectorXi>& iRow_vec, Eigen::Map<Eigen::VectorXi>& jCol_vec, const int nnz_jac_g) override;
 
 	/* evaluate the sparse jacobian and write the results into the indexed vector "val"
 	 * This function must use the same indexing functinality as the pattern generator "genIpoptSparsityIndexPattern". */
-	virtual void evalSparseJacobian(Eigen::Map<Eigen::VectorXd>& val, const int nzz_jac_g) override;
+	// virtual void evalSparseJacobian(Eigen::Map<Eigen::VectorXd>& val, const int nzz_jac_g) override;
 
 	void updateTerminalConstraint(const state_vector_t& x_f_new);
 

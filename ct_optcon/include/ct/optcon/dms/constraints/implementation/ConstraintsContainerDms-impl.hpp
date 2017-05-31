@@ -94,57 +94,74 @@ ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::ConstraintsContainerDms(
 
 }
 
-
 template <size_t STATE_DIM, size_t CONTROL_DIM>
-void ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::evalConstraints(Eigen::Map<Eigen::VectorXd>& c_local)
+void ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::prepareEvaluation()
 {
-	c_local.setConstant(0.0); 	// todo: remove?
-	size_t count = 0;
-
 	#pragma omp parallel for num_threads( settings_.nThreads_ )
 	for(auto shotContainer = shotContainers_.begin(); shotContainer < shotContainers_.end(); ++shotContainer){
 		(*shotContainer)->integrateShot(settings_.dt_sim_);
-	}
-
-	for(auto constraint : constraints_)
-		count = constraint->getEvaluation(c_local, count);
-
+	}	
 }
 
+// template <size_t STATE_DIM, size_t CONTROL_DIM>
+// void ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::evalConstraints(Eigen::Map<Eigen::VectorXd>& c_local)
+// {
+// 	c_local.setConstant(0.0); 	// todo: remove?
+// 	size_t count = 0;
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::getSparsityPattern(
-		Eigen::Map<Eigen::VectorXi>& iRow_vec,
-		Eigen::Map<Eigen::VectorXi>& jCol_vec,
-		const int nnz_jac_g)
-{
-	size_t count = 0;
+// 	#pragma omp parallel for num_threads( settings_.nThreads_ )
+// 	for(auto shotContainer = shotContainers_.begin(); shotContainer < shotContainers_.end(); ++shotContainer){
+// 		(*shotContainer)->integrateShot(settings_.dt_sim_);
+// 	}
+
+// 	for(auto constraint : constraints_)
+// 		count = constraint->getEvaluation(c_local, count);
+
+// }
+
+
+// template <size_t STATE_DIM, size_t CONTROL_DIM>
+// void ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::getSparsityPattern(
+// 		Eigen::Map<Eigen::VectorXi>& iRow_vec,
+// 		Eigen::Map<Eigen::VectorXi>& jCol_vec,
+// 		const int nnz_jac_g)
+// {
+// 	size_t count = 0;
 	
-	for(auto constraint : constraints_)
-		count = constraint->genSparsityPattern(iRow_vec, jCol_vec, count);	
+// 	for(auto constraint : constraints_)
+// 		count = constraint->genSparsityPattern(iRow_vec, jCol_vec, count);	
 
-	assert(count == (size_t) nnz_jac_g); //ensure we have entered the right number of elements.
+// 	assert(count == (size_t) nnz_jac_g); //ensure we have entered the right number of elements.
+// }
+// 
+template <size_t STATE_DIM, size_t CONTROL_DIM>
+void ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::prepareJacobianEvaluation()
+{	
+	#pragma omp parallel for num_threads( settings_.nThreads_ )
+	for(auto shotContainer = shotContainers_.begin(); shotContainer < shotContainers_.end(); ++shotContainer){
+		(*shotContainer)->integrateShotandComputeSensitivity();
+	}
 }
 
 
 
 // IMPORTANT: this function must use the same indexing functionality as the pattern generator above.
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::evalSparseJacobian(Eigen::Map<Eigen::VectorXd>& val, const int nzz_jac_g)
-{
-	val.setConstant(0.0); 	// todo: remove?
-	size_t count = 0;
+// template <size_t STATE_DIM, size_t CONTROL_DIM>
+// void ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::evalSparseJacobian(Eigen::Map<Eigen::VectorXd>& val, const int nzz_jac_g)
+// {
+// 	val.setConstant(0.0); 	// todo: remove?
+// 	size_t count = 0;
 	
-	#pragma omp parallel for num_threads( settings_.nThreads_ )
-	for(auto shotContainer = shotContainers_.begin(); shotContainer < shotContainers_.end(); ++shotContainer){
-		(*shotContainer)->integrateShotandComputeSensitivity();
-	}
+// 	#pragma omp parallel for num_threads( settings_.nThreads_ )
+// 	for(auto shotContainer = shotContainers_.begin(); shotContainer < shotContainers_.end(); ++shotContainer){
+// 		(*shotContainer)->integrateShotandComputeSensitivity();
+// 	}
 
-	for(auto constraint : constraints_)
-		count = constraint->evalConstraintJacobian(val, count);	
+// 	for(auto constraint : constraints_)
+// 		count = constraint->evalConstraintJacobian(val, count);	
 
-	assert(count == (size_t) nzz_jac_g); //ensure we have evaluated the right number of elements.
-}
+// 	assert(count == (size_t) nzz_jac_g); //ensure we have evaluated the right number of elements.
+// }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 void ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::updateInitialConstraint(const state_vector_t& x_init_new)
