@@ -53,61 +53,56 @@ public:
 	/**
 	 * @brief          Evaluates to constraint
 	 *
-	 * @param[in, out] val       The value
+	 * @param[in, out] val       The large optimiz
 	 * @param[in]      startInd  The start ind
 	 *
 	 * @return         The evaluation.
 	 */
-	virtual size_t getEvaluation(Eigen::Map<Eigen::VectorXd>& val, size_t startInd) = 0;
 
-	//Writes constraint evaluation inside Optimization Vector
-	virtual size_t evalConstraintJacobian(Eigen::Map<Eigen::VectorXd>& val, size_t startInd) = 0;
+	virtual Eigen::VectorXd eval() = 0;
+	// virtual size_t getEvaluation(Eigen::Map<Eigen::VectorXd>& val, size_t startInd) = 0;
+
+	virtual Eigen::VectorXd evalJacobian() = 0;
+	// virtual size_t evalConstraintJacobian(Eigen::Map<Eigen::VectorXd>& val, size_t startInd) = 0;
 
 	virtual size_t getNumNonZerosJacobian() = 0;
 
-	virtual size_t genSparsityPattern(
-		Eigen::Map<Eigen::VectorXi>& iRow_vec,
-		Eigen::Map<Eigen::VectorXi>& jCol_vec,
-		size_t indexNumber) = 0;
-
-	virtual void getLowerBound(Eigen::VectorXd& c_lb) = 0;
-
-	virtual void getUpperBound(Eigen::VectorXd& c_ub) = 0;
-
 	virtual size_t getConstraintSize() = 0;
 
-	const size_t c_index() const {return indexTotal_;}
+	virtual void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) = 0;
 
-	virtual void initialize(size_t c_index)
-	{
-		indexTotal_ = c_index;
-	}
+	virtual Eigen::VectorXd getLowerBound() = 0;
+	virtual Eigen::VectorXd getUpperBound() = 0;
+
+	// virtual void getLowerBound(Eigen::VectorXd& c_lb) = 0;
+
+	// virtual void getUpperBound(Eigen::VectorXd& c_ub) = 0;
+
+
+	// const size_t c_index() const {return indexTotal_;}
+
+	// virtual void initialize(size_t c_index)
+	// {
+	// 	indexTotal_ = c_index;
+	// }
 
 protected:
 
 	size_t genDiagonalIndices(
-			const size_t row_start,
 			const size_t col_start,
 			const size_t num_elements,
-			Eigen::Map<Eigen::VectorXi>& iRow_vec,
-			Eigen::Map<Eigen::VectorXi>& jCol_vec,
+			Eigen::VectorXi& iRow_vec,
+			Eigen::VectorXi& jCol_vec,
 			const size_t indexNumber);
 
 	size_t genBlockIndices(
-			const size_t row_start,
 			const size_t col_start,
 			const size_t num_rows,
 			const size_t num_cols,
-			Eigen::Map<Eigen::VectorXi>& iRow_vec,
-			Eigen::Map<Eigen::VectorXi>& jCol_vec,
+			Eigen::VectorXi& iRow_vec,
+			Eigen::VectorXi& jCol_vec,
 			const size_t indexNumber);
 
-	size_t evalIblock(
-			Eigen::Map<Eigen::VectorXd>& val,
-			size_t indexNumber,
-			size_t block_length);
-
-	size_t indexTotal_; 	// absolute starting index in the large constraint vector
 };
 
 
@@ -116,11 +111,10 @@ protected:
  * values and the number of elements. This generates a diagonal which goes from the top left corner
  * to the bottom right corner */
 size_t DiscreteConstraintBase::genDiagonalIndices(
-		const size_t row_start,							// matrix row index where we start inserting
 		const size_t col_start,							// matrix col index where we start inserting
 		const size_t num_elements, 						// number of diagonal elements the diag matrix shall have
-		Eigen::Map<Eigen::VectorXi>& iRow_vec,			// big ipopt row index vector
-		Eigen::Map<Eigen::VectorXi>& jCol_vec,			// big ipopt col index vector
+		Eigen::VectorXi& iRow_vec,			// big ipopt row index vector
+		Eigen::VectorXi& jCol_vec,			// big ipopt col index vector
 		const size_t indexNumber						// where we insert the generated indices into the big ipopt index vectors
 )
 {
@@ -132,7 +126,7 @@ size_t DiscreteConstraintBase::genDiagonalIndices(
 	size_t count = 0;
 
 	for(size_t i = 0; i < num_elements; ++i){
-		new_row_indices(count) = row_start+i;
+		new_row_indices(count) = i;
 		new_col_indices(count) = col_start+i;
 		count++;
 	}
@@ -150,12 +144,11 @@ size_t DiscreteConstraintBase::genDiagonalIndices(
  * Resizes the Eigenvectors to the number of elements in the block defined by the starting
  * values and the widths and enters the row- and column indices into the vectors. */
 size_t DiscreteConstraintBase::genBlockIndices(
-		const size_t row_start,                   	// matrix row index where we start inserting
 		const size_t col_start,                   	// matrix col index where we start inserting
 		const size_t num_rows, 						// number of rows the block matrix shall have
 		const size_t num_cols,						// number of cols the block matrix shall have
-		Eigen::Map<Eigen::VectorXi>& iRow_vec,		// big ipopt row index vector
-		Eigen::Map<Eigen::VectorXi>& jCol_vec,	    // big ipopt col index vector
+		Eigen::VectorXi& iRow_vec,		// big ipopt row index vector
+		Eigen::VectorXi& jCol_vec,	    // big ipopt col index vector
 		const size_t indexNumber)					// where we insert the generated indices into the big ipopt index vectors
 {
 	size_t num_gen_indices = num_rows*num_cols;
@@ -167,7 +160,7 @@ size_t DiscreteConstraintBase::genBlockIndices(
 
 	size_t count = 0;
 
-	for(size_t row = row_start; row <row_start+num_rows; ++row){
+	for(size_t row = 0; row <num_rows; ++row){
 		for(size_t col = col_start; col <col_start+num_cols; ++col){
 			new_row_indices(count) = row;
 			new_col_indices(count) = col;
@@ -183,23 +176,6 @@ size_t DiscreteConstraintBase::genBlockIndices(
 	return num_gen_indices;
 }
 
-
-// blockSize denotes the number of elements on the diagonal
-size_t DiscreteConstraintBase::evalIblock(Eigen::Map<Eigen::VectorXd>& val, size_t indexNumber, size_t block_length)
-{
-	// call method to get derivative
-	Eigen::MatrixXd mat = Eigen::MatrixXd::Identity(block_length, block_length);
-
-	// fill into value vector with correct indexing
-	size_t count = indexNumber;
-
-	for(size_t element = 0; element < block_length; ++element){
-		val(count) = mat(element, element);
-		count++;
-	}
-
-	return count;
-}
 
 } // namespace optcon
 } // namespace ct

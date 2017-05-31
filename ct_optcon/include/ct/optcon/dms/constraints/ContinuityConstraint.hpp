@@ -79,22 +79,19 @@ public:
 
 		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
 			nr += STATE_DIM;
-		val_local_.resize(nr);
+		jacLocal_.resize(nr);
 	}
 
 
-	virtual size_t getEvaluation(Eigen::Map<Eigen::VectorXd>& val, size_t count) override
+	virtual Eigen::VectorXd eval() override
 	{
 		stateNext_ = shotContainer_->getStateIntegrated();
 		assert(stateNext_ == stateNext_);
 		assert(w_->getOptimizedState(shotIndex_+1) == w_->getOptimizedState(shotIndex_+1));
-		val.segment(count, STATE_DIM) = w_->getOptimizedState(shotIndex_+1) - stateNext_;
-		return count += STATE_DIM;
+		return w_->getOptimizedState(shotIndex_+1) - stateNext_;
 	}
 
-	virtual size_t evalConstraintJacobian(
-		Eigen::Map<Eigen::VectorXd>& val,
-		size_t count) override
+	virtual Eigen::VectorXd evalJacobian() override
 	{
 		count_local_ = 0;
 		switch (settings_.splineType_)
@@ -123,9 +120,7 @@ public:
 				throw(std::runtime_error("specified invalid spliner type in ContinuityConstraint-class"));
 			}
 		}
-		val.segment(count, count_local_) = val_local_;
-		count += count_local_;
-		return count;
+		return jacLocal_;
 	}
 
 	virtual size_t getNumNonZerosJacobian() override
@@ -159,47 +154,43 @@ public:
 	}
 
 
-	virtual size_t genSparsityPattern(
-			Eigen::Map<Eigen::VectorXi>& iRow_vec,
-			Eigen::Map<Eigen::VectorXi>& jCol_vec,
-			size_t indexNumber) override
+	virtual void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
 	{
-		/* The sparsity pattern for the Jacobian of the continuity constraint is very much dependent on the choices for
-		 * 	splining and integration */
+		size_t indexNumber = 0;
 
 		switch (settings_.splineType_)
 		{
 			case DmsSettings::ZERO_ORDER_HOLD:
 			{
 				// add the big block (derivative w.r.t. state)
-				indexNumber += BASE::genBlockIndices(BASE::indexTotal_, w_->getStateIndex(shotIndex_), 
+				indexNumber += BASE::genBlockIndices(w_->getStateIndex(shotIndex_), 
 					STATE_DIM, STATE_DIM, iRow_vec, jCol_vec, indexNumber);
 
 				// add the smaller block (derivative w.r.t. control)
-				indexNumber += BASE::genBlockIndices(BASE::indexTotal_, w_->getControlIndex(shotIndex_), 
+				indexNumber += BASE::genBlockIndices(w_->getControlIndex(shotIndex_), 
 					STATE_DIM, CONTROL_DIM, iRow_vec, jCol_vec, indexNumber);
 
 				// add the diagonal
-				indexNumber += BASE::genDiagonalIndices(BASE::indexTotal_, w_->getStateIndex(shotIndex_ + 1), 
+				indexNumber += BASE::genDiagonalIndices(w_->getStateIndex(shotIndex_ + 1), 
 					STATE_DIM, iRow_vec, jCol_vec, indexNumber);
 				break;
 			}
 			case DmsSettings::PIECEWISE_LINEAR:
 			{
 				// add the big block (derivative w.r.t. state)
-				indexNumber += BASE::genBlockIndices(BASE::indexTotal_, w_->getStateIndex(shotIndex_), 
+				indexNumber += BASE::genBlockIndices(w_->getStateIndex(shotIndex_), 
 					STATE_DIM, STATE_DIM, iRow_vec, jCol_vec, indexNumber);
 
 				// add the smaller block (derivative w.r.t. control)
-				indexNumber += BASE::genBlockIndices(BASE::indexTotal_, w_->getControlIndex(shotIndex_), 
+				indexNumber += BASE::genBlockIndices(w_->getControlIndex(shotIndex_), 
 					STATE_DIM, CONTROL_DIM, iRow_vec, jCol_vec, indexNumber);
 
 				// add the diagonal
-				indexNumber += BASE::genDiagonalIndices(BASE::indexTotal_,  w_->getStateIndex(shotIndex_ + 1), 
+				indexNumber += BASE::genDiagonalIndices(w_->getStateIndex(shotIndex_ + 1), 
 					STATE_DIM, iRow_vec, jCol_vec, indexNumber);
 
 				// add the fourth block (derivative w.r.t. control)
-				indexNumber += BASE::genBlockIndices(BASE::indexTotal_, w_->getControlIndex(shotIndex_ + 1), 
+				indexNumber += BASE::genBlockIndices(w_->getControlIndex(shotIndex_ + 1), 
 					STATE_DIM, CONTROL_DIM, iRow_vec, jCol_vec, indexNumber);
 				break;
 			}
@@ -212,23 +203,19 @@ public:
 		/* for the derivatives w.r.t. the time optimization variables (t_i) */
 		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
 		{
-			indexNumber += BASE::genBlockIndices(BASE::indexTotal_, w_->getTimeSegmentIndex(shotIndex_), 
+			indexNumber += BASE::genBlockIndices(w_->getTimeSegmentIndex(shotIndex_), 
 				STATE_DIM, 1, iRow_vec, jCol_vec, indexNumber);
 		}
-
-		return indexNumber;
 	}
 
-	virtual void getLowerBound(Eigen::VectorXd& c_lb) override
+	virtual Eigen::VectorXd getLowerBound() override
 	{
-		assert(lb_.size() > 0);
-		c_lb.segment(BASE::indexTotal_, STATE_DIM) = lb_;
+		return lb_;
 	}
 
-	virtual void getUpperBound(Eigen::VectorXd& c_ub) override
+	virtual Eigen::VectorXd getUpperBound() override
 	{
-		assert(lb_.size() > 0);
-		c_ub.segment(BASE::indexTotal_, STATE_DIM) = ub_;
+		return ub_;
 	}
 
 	virtual size_t getConstraintSize() override
@@ -252,7 +239,7 @@ private:
 	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
 	size_t shotIndex_;
 	//The small, local value vector
-	Eigen::VectorXd val_local_;
+	Eigen::VectorXd jacLocal_;
 	size_t count_local_;
 	state_vector_t stateNext_;
 
@@ -294,7 +281,7 @@ void ContinuityConstraint<STATE_DIM, CONTROL_DIM>::computeHblock()
 		}
 	}
 
-	val_local_.segment(count_local_, STATE_DIM) = mat;
+	jacLocal_.segment(count_local_, STATE_DIM) = mat;
 	count_local_ += STATE_DIM;
 }
 
@@ -308,7 +295,7 @@ void ContinuityConstraint<STATE_DIM, CONTROL_DIM>::computeXblock()
 	Eigen::VectorXd dXdSiVec = (Eigen::Map<Eigen::VectorXd> (mat.data(), STATE_DIM*STATE_DIM));
 
 	// fill into value vector with correct indexing
-	val_local_.segment(count_local_, STATE_DIM*STATE_DIM) = dXdSiVec;
+	jacLocal_.segment(count_local_, STATE_DIM*STATE_DIM) = dXdSiVec;
 
 	count_local_ += STATE_DIM*STATE_DIM;
 }
@@ -322,7 +309,7 @@ void ContinuityConstraint<STATE_DIM, CONTROL_DIM>::computeUblock()
 	Eigen::VectorXd dXdQiVec = Eigen::Map<Eigen::VectorXd> (mat.data(), STATE_DIM * CONTROL_DIM);
 
 	// // fill into value vector with correct indexing
-	val_local_.segment(count_local_, STATE_DIM * CONTROL_DIM) = dXdQiVec;
+	jacLocal_.segment(count_local_, STATE_DIM * CONTROL_DIM) = dXdQiVec;
 	count_local_ += STATE_DIM*CONTROL_DIM;
 }
 
@@ -335,7 +322,7 @@ void ContinuityConstraint<STATE_DIM, CONTROL_DIM>::computeUblock_2()
 	Eigen::VectorXd dXdU1Vec = Eigen::Map<Eigen::VectorXd> (mat.data(), STATE_DIM*CONTROL_DIM);
 
 	// fill into value vector with correct indexing
-	val_local_.segment(count_local_, STATE_DIM * CONTROL_DIM) = dXdU1Vec;
+	jacLocal_.segment(count_local_, STATE_DIM * CONTROL_DIM) = dXdU1Vec;
 	count_local_ += STATE_DIM*CONTROL_DIM;
 }
 
@@ -343,7 +330,7 @@ template<size_t STATE_DIM, size_t CONTROL_DIM>
 void ContinuityConstraint<STATE_DIM, CONTROL_DIM>::computeIblock()
 {
 	// fill into value vector with correct indexing
-	val_local_.segment(count_local_, STATE_DIM) = Eigen::VectorXd::Ones(STATE_DIM);
+	jacLocal_.segment(count_local_, STATE_DIM) = Eigen::VectorXd::Ones(STATE_DIM);
 	count_local_ += STATE_DIM;
 }
 

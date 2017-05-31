@@ -27,35 +27,44 @@ public:
 	ConstraintDiscretizer(
 		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
 		std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> c_continuous,
-		std::vector<size_t> activeInd,
-		size_t N)
+		std::vector<size_t> activeInd)
 	:
 	w_(w),
-	N_(N),
 	c_continuous_(c_continuous),
 	activeInd_(activeInd)
 	{
 		continuousCount_ = c_continuous_->getConstraintCount();
 		constraintsLocal_.resize(continuousCount_);
-	}
+		discreteConstraints_.resize(activeInd_.size() * continuousCount_);
+		discreteLowerBound_.resize(activeInd_.size() * continuousCount_);
+		discreteUpperBound_.resize(activeInd_.size() * continuousCount_);
 
-	virtual void initialize(size_t c_index) override
-	{
-		indexTotal_ = c_index;
 		nonZeroJacCount_ = c_continuous_->getConstraintJacobianNonZeroCount();
 		jacLocal_.resize(nonZeroJacCount_);
 		iRowLocal_.resize(nonZeroJacCount_);
 		jColLocal_.resize(nonZeroJacCount_);
+		discreteJac_.resize(activeInd_.size() * nonZeroJacCount_);
+		discreteIRow_.resize(activeInd_.size() * nonZeroJacCount_);
+		discreteJCol_.resize(activeInd_.size() * nonZeroJacCount_);
 	}
+
+	// virtual void initialize(size_t c_index) override
+	// {
+	// 	indexTotal_ = c_index;
+	// 	nonZeroJacCount_ = c_continuous_->getConstraintJacobianNonZeroCount();
+	// 	jacLocal_.resize(nonZeroJacCount_);
+	// 	iRowLocal_.resize(nonZeroJacCount_);
+	// 	jColLocal_.resize(nonZeroJacCount_);
+	// 	discreteJac_.resize(activeInd_.size() * nonZeroJacCount_);
+	// 	discreteIRow_.resize(activeInd_.size() * nonZeroJacCount_);
+	// 	discreteJCol_.resize(activeInd_.size() * nonZeroJacCount_);
+	// }
 
 	void updateTrajectories(
 		const state_vector_array_t& stateTraj,
 		const control_vector_array_t& inputTraj,
 		const time_array_t& timeTraj)
 	{
-		assert(stateTraj.size() == N_);
-		assert(inputTraj.size() == N_);
-		assert(timeTraj.size() == N_);
 		stateTraj_ = stateTraj;
 		inputTraj_ = inputTraj;
 		timeTraj_ = timeTraj;
@@ -74,90 +83,92 @@ public:
 		timeTraj_.push_back(time);
 	}
 
-	virtual size_t getEvaluation(Eigen::Map<Eigen::VectorXd>& val, size_t count) override
+	virtual Eigen::VectorXd eval() override
 	{
 		constraintsLocal_.setZero();
-		size_t countLocalTot = count;
-		size_t countLocal = 0;
+		size_t constraintSize = 0;
+		size_t discreteInd = 0;
 
 		for(auto ind : activeInd_)
 		{			
 			c_continuous_->setTimeStateInput(timeTraj_[ind], stateTraj_[ind], inputTraj_[ind]);
-			c_continuous_->evaluate(constraintsLocal_, countLocal);
-			val.segment(countLocalTot, countLocal) = constraintsLocal_;
-			countLocalTot += countLocal;
+			c_continuous_->evaluate(constraintsLocal_, constraintSize);
+			discreteConstraints_.segment(discreteInd, constraintSize) = constraintsLocal_;
+			discreteInd += constraintSize;
 		}
-		return countLocalTot;
+
+		return discreteConstraints_;
 	}
 
-	virtual size_t evalConstraintJacobian(Eigen::Map<Eigen::VectorXd>& val, size_t count) override
+	virtual Eigen::VectorXd evalJacobian() override
 	{
 		jacLocal_.setZero();
-		size_t countLocalTot = count;
-		size_t countLocal = 0;
+		size_t jacSize = 0;
+		size_t discreteInd = 0;
 
 		for(auto ind : activeInd_)
 		{
 			c_continuous_->setTimeStateInput(timeTraj_[ind], stateTraj_[ind], inputTraj_[ind]);
-			c_continuous_->evalJacSparse(jacLocal_, countLocal);
-			val.segment(countLocalTot, countLocal)  = jacLocal_;
-			countLocalTot += countLocal;
+			c_continuous_->evalJacSparse(jacLocal_, jacSize);
+			discreteJac_.segment(discreteInd, jacSize) = jacLocal_;
+			discreteInd += jacSize;
 		}
 
-		return countLocalTot;		
+		return discreteJac_;		
 	}
 
 	virtual size_t getNumNonZerosJacobian() override
 	{
+		// std::cout << "calling getNumNonZerosJacobian " << activeInd_.size() * nonZeroJacCount_ << std::endl;
 		return activeInd_.size() * nonZeroJacCount_;
 	}
 
-	virtual size_t genSparsityPattern(
-		Eigen::Map<Eigen::VectorXi>& iRow_vec,
-		Eigen::Map<Eigen::VectorXi>& jCol_vec,
-		size_t indexNumber) override
+	virtual void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
 	{
-		size_t countLocal = indexNumber;
+		size_t discreteInd = 0;
+		size_t nnEle = 0;
 		size_t i = 0;
 
 		for(auto ind : activeInd_)
 		{
-			indexNumber += c_continuous_->generateSparsityPatternJacobian(iRowLocal_, jColLocal_);
-			iRow_vec.segment(countLocal, nonZeroJacCount_) = iRowLocal_.array() + BASE::indexTotal_ + i * continuousCount_;
-			jCol_vec.segment(countLocal, nonZeroJacCount_) = jColLocal_.array() + w_->getStateIndex(ind);
-			countLocal = indexNumber;
+			nnEle = c_continuous_->generateSparsityPatternJacobian(iRowLocal_, jColLocal_);
+			discreteIRow_.segment(discreteInd, nnEle) = iRowLocal_.array() + i * continuousCount_;
+			discreteJCol_.segment(discreteInd, nnEle) = jColLocal_.array() + w_->getStateIndex(ind);
+			discreteInd += nnEle;
 			i++;
 		}
-
-		return indexNumber;
+		iRow_vec = discreteIRow_;
+		jCol_vec = discreteJCol_;
 	}
 
-	virtual void getLowerBound(Eigen::VectorXd& c_lb) override
+	virtual Eigen::VectorXd getLowerBound() override
 	{
 		constraintsLocal_.setZero();
-		size_t countLocalTot = BASE::indexTotal_;
-		size_t countLocal = 0;
+		size_t discreteInd = 0;
+		size_t constraintSize = 0;
 
 		for(size_t i = 0; i < activeInd_.size(); ++i)
 		{
-			c_continuous_->getLowerBound(constraintsLocal_, countLocal);
-			c_lb.segment(countLocalTot, countLocal) = constraintsLocal_;
-			countLocalTot += countLocal;
+			c_continuous_->getLowerBound(constraintsLocal_, constraintSize);
+			discreteLowerBound_.segment(discreteInd, constraintSize) = constraintsLocal_;
+			discreteInd += constraintSize;
 		}
+		return discreteLowerBound_;
 	}
 
-	virtual void getUpperBound(Eigen::VectorXd& c_ub) override
+	virtual Eigen::VectorXd getUpperBound() override
 	{
 		constraintsLocal_.setZero();
-		size_t countLocalTot = BASE::indexTotal_;
-		size_t countLocal = 0;
+		size_t discreteInd = 0;
+		size_t constraintSize = 0;
 
 		for(size_t i = 0; i < activeInd_.size(); ++i)
 		{
-			c_continuous_->getUpperBound(constraintsLocal_, countLocal);
-			c_ub.segment(countLocalTot, countLocal) = constraintsLocal_;
-			countLocalTot += countLocal;
+			c_continuous_->getUpperBound(constraintsLocal_, constraintSize);
+			discreteUpperBound_.segment(discreteInd, constraintSize) = constraintsLocal_;
+			discreteInd += constraintSize;
 		}
+		return discreteUpperBound_;
 	}
 
 	virtual size_t getConstraintSize() override
@@ -166,21 +177,29 @@ public:
 		for(size_t i = 0; i < activeInd_.size(); ++i)
 			discreteCount += continuousCount_;
 
+
+		// std::cout << "calling getConstraintSize" << discreteCount << std::endl;
 		return discreteCount; 
 	}
 
 
 private:
 	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
-	size_t N_;
 	std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> c_continuous_;
 	std::vector<size_t> activeInd_;
 	
 	size_t continuousCount_;
 	Eigen::VectorXd constraintsLocal_;
+	Eigen::VectorXd discreteConstraints_;
+	Eigen::VectorXd discreteLowerBound_;
+	Eigen::VectorXd discreteUpperBound_;
+
 	Eigen::VectorXd jacLocal_;
+	Eigen::VectorXd discreteJac_;
 	Eigen::VectorXi iRowLocal_;
+	Eigen::VectorXi discreteIRow_;
 	Eigen::VectorXi jColLocal_;
+	Eigen::VectorXi discreteJCol_;
 
 	// Trajectories, along which the constraints will be discretized 
 	state_vector_array_t stateTraj_;

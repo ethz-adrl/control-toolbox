@@ -35,28 +35,28 @@ public:
 		settings_(settings)
 	{
 		// lower bound is number of shot times the lower bound for each interval h
-		lb_ = settings_.N_ * settings_.h_min_ - settings_.T_;
-		ub_ = 0.0;
+		lb_ << settings_.N_ * settings_.h_min_ - settings_.T_;
+		ub_ << 0.0;
 
 		std::cout << " ... time horizon lower bound: " << settings_.T_ + lb_ << std::endl;
 		std::cout << " ... time horizon upper bound: " << settings_.T_ + ub_ << std::endl;
 	}
 
-	virtual size_t getEvaluation(Eigen::Map<Eigen::VectorXd>& val, size_t count) override
+	virtual Eigen::VectorXd eval() override
 	{
-		val(count) = timeGrid_->getOptimizedTimeHorizon() - settings_.T_;
-		return count += 1;
+		Eigen::Matrix<double, 1, 1> mat;
+		mat << timeGrid_->getOptimizedTimeHorizon() - settings_.T_;
+		return mat;
+		// val(count) = 
+		// return count += 1;
 	}	
 
 	/* currently the constraint jacobian for this constraint can be hacked as a scaled identity block of dimension 1*/
-	virtual size_t evalConstraintJacobian(Eigen::Map<Eigen::VectorXd>& val, size_t count) override
+	virtual Eigen::VectorXd evalJacobian() override
 	{
-		for(size_t i = 0; i < settings_.N_; i++)
-		{
-			val(count) = 1.0;
-			count++;
-		}
-		return count;
+		Eigen::VectorXd one(settings_.N_);
+		one.setConstant(1.0);
+		return one;
 	}
 
 	virtual size_t getNumNonZerosJacobian() override
@@ -64,29 +64,23 @@ public:
 		return settings_.N_;
 	}
 
-	virtual size_t genSparsityPattern(
-			Eigen::Map<Eigen::VectorXi>& iRow_vec,
-			Eigen::Map<Eigen::VectorXi>& jCol_vec,
-			size_t indexNumber) override
+	virtual void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
 	{
 		for(size_t i = 0; i < settings_.N_; ++i)
 		{
-			iRow_vec(indexNumber) = BASE::indexTotal_;
-			jCol_vec(indexNumber) = w_->getTimeSegmentIndex(i);
-			indexNumber += 1;
+			iRow_vec(i) = 0;
+			jCol_vec(i) = w_->getTimeSegmentIndex(i);
 		}
-		// indexNumber += BASE::genBlockIndices(BASE::indexTotal_, w_->getTimeSegmentIndex(0), 1, settings_.N_, iRow_vec, jCol_vec, indexNumber);
-		return indexNumber;
 	}
 
-	virtual void getLowerBound(Eigen::VectorXd& c_lb) override
+	virtual Eigen::VectorXd getLowerBound() override
 	{
-		c_lb(BASE::indexTotal_) = lb_;
+		return lb_;
 	}
 
-	virtual void getUpperBound(Eigen::VectorXd& c_ub) override
+	virtual Eigen::VectorXd getUpperBound() override
 	{
-		c_ub(BASE::indexTotal_) = ub_;
+		return ub_;
 	}
 
 	virtual size_t getConstraintSize() override
@@ -100,8 +94,8 @@ private:
 	DmsSettings settings_;
 
 	//Constraint bounds
-	double lb_;
-	double ub_;
+	Eigen::Matrix<double, 1, 1> lb_;
+	Eigen::Matrix<double, 1, 1> ub_;
 };
 
 } // namespace optcon

@@ -44,78 +44,139 @@ public:
 	typedef Eigen::Map<VectorXd> MapVecXd;
 	typedef Eigen::Map<VectorXi> MapVecXi;
 
-	DiscreteConstraintContainerBase()
-	:
-	constraintsCount_(0),
-	nonZerosJacobianCount_(0)
-	{}
+	DiscreteConstraintContainerBase(){}
+	// :
+	// constraintsCount_(0),
+	// nonZerosJacobianCount_(0)
+	// {}
 
 	virtual ~DiscreteConstraintContainerBase(){}
 
 	virtual void prepareEvaluation() = 0;
+	virtual void prepareJacobianEvaluation() = 0;
 
 	void evalConstraints(Eigen::Map<Eigen::VectorXd>& c_nlp)
 	{
 		prepareEvaluation();
-		size_t count = 0;
+		size_t ind = 0;
 
 		for(auto constraint : constraints_)
-			count = constraint->getEvaluation(c_nlp, count);
+		{
+			size_t cSize = constraint->getConstraintSize();
+			c_nlp.segment(ind, cSize) = constraint->eval();
+			ind += cSize;
+		}
 
-		assert(count == c_nlp.rows()); // or throw an error
+		assert(ind == c_nlp.rows()); // or throw an error
 	}
 
-	void getSparsityPattern(Eigen::Map<Eigen::VectorXi>& iRow_vec, Eigen::Map<Eigen::VectorXi>& jCol_vec, const int nnz_jac_g)
+	void evalSparseJacobian(Eigen::Map<Eigen::VectorXd>& jac_nlp, const int nzz_jac_g)
 	{
-		size_t count = 0;
+		prepareJacobianEvaluation();
+		size_t ind = 0;
+
+		for(auto constraint : constraints_)
+		{
+			size_t nnEle = constraint->getNumNonZerosJacobian();
+			jac_nlp.segment(ind, nnEle) = constraint->evalJacobian();
+			ind += nnEle;
+		}
+
+		assert(ind == (size_t) nzz_jac_g);
+	}
+
+	void getSparsityPattern(Eigen::Map<Eigen::VectorXi>& iRow_nlp, Eigen::Map<Eigen::VectorXi>& jCol_nlp, const int nnz_jac_g)
+	{
+		size_t rowInd = 0;
+		size_t colInd = 0;
+		size_t constraintCount = 0;
 	
 		for(auto constraint : constraints_)
-			count = constraint->genSparsityPattern(iRow_vec, jCol_vec, count);	
+		{
+			size_t nnEle = constraint->getNumNonZerosJacobian();
+			size_t cSize = constraint->getConstraintSize();
+			Eigen::VectorXi iRow;
+			Eigen::VectorXi jCol;
+			iRow.resize(nnEle);
+			jCol.resize(nnEle);
+			constraint->genSparsityPattern(iRow, jCol);
 
-		assert(count == (size_t) nnz_jac_g);
+			iRow_nlp.segment(rowInd, nnEle) = iRow.array() + constraintCount;
+			jCol_nlp.segment(rowInd, nnEle) = jCol;
+			constraintCount += cSize;
+			rowInd += nnEle;
+		}
+
+		assert(rowInd == (size_t) nnz_jac_g);
 	}
 
-	virtual void prepareJacobianEvaluation() = 0;
-
-	void evalSparseJacobian(Eigen::Map<Eigen::VectorXd>& val, const int nzz_jac_g)
+	size_t getConstraintsCount() const
 	{
 		size_t count = 0;
-
 		for(auto constraint : constraints_)
-			count = constraint->evalConstraintJacobian(val, count);	
-
-		assert(count == (size_t) nzz_jac_g);
+			count += constraint->getConstraintSize();
+		return count;
 	}
 
-	const size_t getConstraintsCount() const
+	size_t getNonZerosJacobianCount() const
 	{
-		return constraintsCount_;
+		size_t count = 0;
+		for(auto constraint : constraints_)
+			count += constraint->getNumNonZerosJacobian();
+		return count;
 	}
 
-	const size_t getNonZerosJacobianCount() const
+	void getBounds(Eigen::Map<Eigen::VectorXd>& lowerBound, Eigen::Map<Eigen::VectorXd>& upperBound)
 	{
-		return nonZerosJacobianCount_;
+		size_t ind = 0;
+		for(auto constraint : constraints_)
+		{
+			size_t cSize = constraint->getConstraintSize();
+			lowerBound.segment(ind, cSize) = constraint->getLowerBound();
+			upperBound.segment(ind, cSize) = constraint->getUpperBound();
+			ind += cSize;
+		}		
 	}
 
-	const Eigen::VectorXd getUpperBounds() const
-	{
-		return c_ub_;
-	}
+	// Eigen::VectorXd getUpperBounds() const
+	// {
+	// 	Eigen::VectorXd c_ub;
+	// 	c_ub.resize(getConstraintsCount());
+	// 	size_t ind = 0;
+	// 	for(auto constraint : constraints_)
+	// 	{
+	// 		size_t cSize = constraint->getConstraintSize();
+	// 		c_ub.segment(ind, cSize) = constraint->getUpperBound();
+	// 		ind += cSize;
+	// 	}
 
-	const Eigen::VectorXd getLowerBounds() const
-	{
-		return c_lb_;
-	}
+	// 	return c_ub;
+	// }
+
+	// Eigen::VectorXd getLowerBounds() const
+	// {
+	// 	Eigen::VectorXd c_lb;
+	// 	c_lb.resize(getConstraintsCount());
+	// 	size_t ind = 0;
+	// 	for(auto constraint : constraints_)
+	// 	{
+	// 		size_t cSize = constraint->getConstraintSize();
+	// 		c_lb.segment(ind, cSize) = constraint->getLowerBound();
+	// 		ind += cSize;
+	// 	}
+		
+	// 	return c_lb;	
+	// }
 
 
 protected:
-	size_t constraintsCount_;
-	size_t nonZerosJacobianCount_;
-
 	std::vector<std::shared_ptr<DiscreteConstraintBase>> constraints_;
+	// size_t constraintsCount_;
+	// size_t nonZerosJacobianCount_;
 
-	Eigen::VectorXd c_lb_;
-	Eigen::VectorXd c_ub_;
+
+	// Eigen::VectorXd c_lb_;
+	// Eigen::VectorXd c_ub_;
 
 };
 

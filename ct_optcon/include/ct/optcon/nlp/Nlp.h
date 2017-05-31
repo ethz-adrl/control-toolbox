@@ -158,8 +158,9 @@ public:
 	 */
 	void getConstraintBounds(MapVecXd& lowerBound, MapVecXd& upperBound, const size_t m) const
 	{
-		lowerBound = constraints_->getLowerBounds();
-		upperBound = constraints_->getUpperBounds();
+		constraints_->getBounds(lowerBound, upperBound);
+		// constraints_->getLowerBounds();
+		// constraints_->getUpperBounds();
 	}
 
 	/**

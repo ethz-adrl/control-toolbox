@@ -34,16 +34,17 @@ public:
 
 	void updateConstraint(const state_vector_t& x_i_new) {x_0_ = x_i_new;}
 
-	virtual size_t getEvaluation(Eigen::Map<Eigen::VectorXd>& val, size_t count) override
+	virtual Eigen::VectorXd eval() override
 	{
-		val.segment(count, STATE_DIM) = w_->getOptimizedState(0) - x_0_;
-		return count += STATE_DIM;
+		return w_->getOptimizedState(0) - x_0_;
 	}
 
-	/* currently the constraint jacobian for the initial state constraint ist just the identity matrix*/
-	virtual size_t evalConstraintJacobian(Eigen::Map<Eigen::VectorXd>& val, size_t count) override
+	virtual Eigen::VectorXd evalJacobian() override
 	{
-		return BASE::evalIblock(val, count, STATE_DIM);
+		// state_vector_t jac ;
+		// Eigen::Matrix<double, STATE_DIM, STATE_DIM> matId; matId.setIdentity();
+		// state_vector_t val(Eigen::Map<Eigen::VectorXd>(matId.data(), matId.rows(), matId.cols()));
+		return state_vector_t::Ones();
 	}
 
 	virtual size_t getNumNonZerosJacobian() override
@@ -51,27 +52,20 @@ public:
 		return (size_t) STATE_DIM;
 	}
 
-	virtual size_t genSparsityPattern(
-				Eigen::Map<Eigen::VectorXi>& iRow_vec,
-				Eigen::Map<Eigen::VectorXi>& jCol_vec,
-				size_t indexNumber
-		) override
+	virtual void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
 	{
-		/* The sparsity pattern for the Jacobian of the initial state constraint will be a diagonal */
-		indexNumber += BASE::genDiagonalIndices(BASE::indexTotal_, w_->getStateIndex(0), STATE_DIM, iRow_vec, jCol_vec, indexNumber);
-		return indexNumber;
+		size_t indexNumber = 0;
+		indexNumber += BASE::genDiagonalIndices(w_->getStateIndex(0), STATE_DIM, iRow_vec, jCol_vec, indexNumber);
 	}
 
-	virtual void getLowerBound(Eigen::VectorXd& c_lb) override
+	virtual Eigen::VectorXd getLowerBound() override
 	{
-		assert(lb_.size() > 0);
-		c_lb.segment(BASE::indexTotal_, STATE_DIM) = lb_;
+		return lb_;
 	}
 
-	virtual void getUpperBound(Eigen::VectorXd& c_ub) override
+	virtual Eigen::VectorXd getUpperBound() override
 	{
-		assert(lb_.size() > 0);
-		c_ub.segment(BASE::indexTotal_, STATE_DIM) = ub_;
+		return ub_;
 	}
 
 	virtual size_t getConstraintSize() override
