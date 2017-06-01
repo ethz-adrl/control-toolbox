@@ -167,7 +167,7 @@ public:
 	std::string nlp_scaling_method_;
 	int printLevel_;
 	std::string print_user_options_;
-	double print_frequency_iter_;
+	int print_frequency_iter_;
 	std::string printInfoString_;
 	std::string derivativeTest_;
 	double derivativeTestTol_;

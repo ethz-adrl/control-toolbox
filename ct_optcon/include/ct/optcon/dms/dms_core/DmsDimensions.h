@@ -24,87 +24,47 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_DMS_DMS_CORE_CONTROLLER_H_
-#define CT_OPTCON_DMS_DMS_CORE_CONTROLLER_H_
-
-#include <Eigen/Dense>
-
-#include <ct/core/control/Controller.h>
-#include <ct/optcon/dms/dms_core/OptVectorDms.h>
-
-
-/**
- * \ingroup DMS
- *
- * \brief DMS controller class
- *
- *	Implements a controller to be handed over to a system of type "ControlledSystem". This controller applies the nominal input trajectory designed by the algorithm,
- *	which is either piecewise constant or piecewise linear between the nodes.
- *
- * @tparam STATE_DIM: Dimension of the state vector
- * @tparam INPUT_DIM: Dimension of the control input vector
- *
- */
+#ifndef CT_OPTCON_DMS_DMS_CORE_DIMENSIONS_H_
+#define CT_OPTCON_DMS_DMS_CORE_DIMENSIONS_H_
 
 namespace ct {
 namespace optcon {
 
+/**
+ * @ingroup    DMS
+ *
+ * @brief      Defines basic types used in the DMS algorithm
+ *
+ */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
-class ControllerDms : public ct::core::Controller<STATE_DIM, CONTROL_DIM>
-{
-public:
+class DmsDimensions {
 
+public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef DmsDimensions<STATE_DIM, CONTROL_DIM> DIMENSIONS;
-	typedef typename DIMENSIONS::state_vector_t state_vector_t;
-	typedef typename DIMENSIONS::control_vector_t control_vector_t;
+	typedef ct::core::StateVector<STATE_DIM> state_vector_t;
+	typedef ct::core::StateVectorArray<STATE_DIM> state_vector_array_t;
 
+	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
+	typedef ct::core::StateMatrixArray<STATE_DIM> state_matrix_array_t;
 
-	ControllerDms() = delete;
+	typedef Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> state_control_matrix_t;
+	typedef ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM> state_control_matrix_array_t;
 
-	ControllerDms(
-			std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
-			size_t shotIdx):
-		controlSpliner_(controlSpliner),
-		shotIdx_(shotIdx)
-	{}
+	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
 
+	typedef ct::core::ControlVector<CONTROL_DIM> control_vector_t;
+	typedef ct::core::ControlVectorArray<CONTROL_DIM> control_vector_array_t;
 
-	ControllerDms(const ControllerDms& arg):
-			controlSpliner_(arg.controlSpliner_),
-			shotIdx_(arg.shotIdx_)
-	{}
+	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+	typedef ct::core::ControlMatrixTrajectory<CONTROL_DIM> control_matrix_array_t;
 
-	virtual ~ControllerDms(){}
-
-	virtual ControllerDms<STATE_DIM, CONTROL_DIM>* clone() const override
-	{
-		return new ControllerDms<STATE_DIM, CONTROL_DIM> (*this);
-	}
-
-
-	void computeControl(
-			const state_vector_t& state,
-			const double& t,
-			control_vector_t&  controlAction)
-	{
-		controlAction = controlSpliner_->evalSpline(t, shotIdx_);
-		assert(controlAction == controlAction);
-	}
-
-
-
-private:
-
-	std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner_;
-
-	/* index of the shot to which this controller belongs */
-	size_t shotIdx_;
+	typedef ct::core::Time time_t;
+	typedef ct::core::TimeArray time_array_t;
 
 };
 
 } // namespace optcon
 } // namespace ct
 
-#endif //CT_OPTCON_DMS_DMS_CORE_CONTROLLER_H_
+#endif // CT_OPTCON_DMS_DMS_CORE_DIMENSIONS_H_

@@ -27,16 +27,16 @@ void IpoptSolver::configureDerived(const NlpSolverSettings& settings)
 void IpoptSolver::setSolverOptions() {
 	ipoptApp_->Options()->SetNumericValue("tol", settings_.tol_);
 	ipoptApp_->Options()->SetNumericValue("constr_viol_tol", settings_.constr_viol_tol_);
-	ipoptApp_->Options()->SetIntegerValue("max_iter", settings_.max_iter_);
-	ipoptApp_->Options()->SetNumericValue("resto.tol", settings_.restoTol_);
-	ipoptApp_->Options()->SetNumericValue("acceptable_tol", settings_.acceptableTol_);
-	ipoptApp_->Options()->SetNumericValue("resto.acceptable_tol", settings_.restoAcceptableTol_);
+	// ipoptApp_->Options()->SetIntegerValue("max_iter", settings_.max_iter_);
+	// ipoptApp_->Options()->SetNumericValue("resto.tol", settings_.restoTol_);
+	// ipoptApp_->Options()->SetNumericValue("acceptable_tol", settings_.acceptableTol_);
+	// ipoptApp_->Options()->SetNumericValue("resto.acceptable_tol", settings_.restoAcceptableTol_);
 	ipoptApp_->Options()->SetStringValueIfUnset("linear_scaling_on_demand", settings_.linear_scaling_on_demand_);
 	ipoptApp_->Options()->SetStringValueIfUnset("hessian_approximation", settings_.hessian_approximation_);
-	ipoptApp_->Options()->SetStringValueIfUnset("nlp_scaling_method", settings_.nlp_scaling_method_);
+	// ipoptApp_->Options()->SetStringValueIfUnset("nlp_scaling_method", settings_.nlp_scaling_method_);
 	ipoptApp_->Options()->SetIntegerValue("print_level", settings_.printLevel_); //working now
 	ipoptApp_->Options()->SetStringValueIfUnset("print_user_options", settings_.print_user_options_);
-	ipoptApp_->Options()->SetNumericValue("print_frequency_iter", settings_.print_frequency_iter_);
+	// ipoptApp_->Options()->SetIntegerValue("print_frequency_iter", settings_.print_frequency_iter_);
 	ipoptApp_->Options()->SetStringValueIfUnset("derivative_test", settings_.derivativeTest_);
 	ipoptApp_->Options()->SetIntegerValue("print_level", settings_.printLevel_);
 	ipoptApp_->Options()->SetNumericValue("derivative_test_tol", settings_.derivativeTestTol_);

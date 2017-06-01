@@ -37,7 +37,7 @@ namespace optcon {
 
 /** @defgroup   NLP NLP
  *
- * @brief      Non linear program Module
+ * @brief      The nonlinear program module
  */
 
 /**

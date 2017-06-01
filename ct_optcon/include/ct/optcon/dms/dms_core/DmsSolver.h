@@ -1,11 +1,37 @@
-#ifndef CT_OPTCON_DMS_SOLVER_HPP_
-#define CT_OPTCON_DMS_SOLVER_HPP_
+/***********************************************************************************
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Farbod Farshidian. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
+
+#ifndef CT_OPTCON_DMS_DMS_CORE_SOLVER_H_
+#define CT_OPTCON_DMS_DMS_CORE_SOLVER_H_
 
 #include <ct/optcon/problem/OptConProblem.h>
 #include <ct/optcon/solver/OptConSolver.h>
 
 #include <ct/optcon/dms/dms_core/DmsProblem.h>
-#include <ct/optcon/dms/dms_core/DmsSettings.hpp>
+#include <ct/optcon/dms/dms_core/DmsSettings.h>
 
 #include <ct/optcon/nlp/Nlp>
 
@@ -14,7 +40,18 @@
 namespace ct {
 namespace optcon {
 
+/** @defgroup   DMS DMS
+ *
+ * @brief      The direct multiple shooting module
+ */
 
+
+/**
+ * @ingroup    DMS
+ *
+ * @brief      The DMS policy used as a solution container 
+ *
+ */
 template<size_t STATE_DIM, size_t CONTROL_DIM>
 struct DmsPolicy
 {
@@ -28,6 +65,15 @@ struct DmsPolicy
 	time_array_t tSolution_;
 };
 
+
+/**
+ * @ingroup    DMS
+ *
+ * @brief      Class to solve a specfic DMS problem
+ *
+ * @tparam     STATE_DIM    The state dimension
+ * @tparam     CONTROL_DIM  The control dimension
+ */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 class DmsSolver : public OptConSolver<DmsSolver<STATE_DIM, CONTROL_DIM>,  DmsPolicy<STATE_DIM, CONTROL_DIM>, DmsSettings, STATE_DIM, CONTROL_DIM>
 {
@@ -45,6 +91,12 @@ public:
 
 	typedef DmsPolicy<STATE_DIM, CONTROL_DIM> Policy_t;
 
+	/**
+	 * @brief      Custom constructor, converts the optcon problem to a DMS problem
+	 *
+	 * @param[in]  problem      The optimal control problem	
+	 * @param[in]  settingsDms  The dms settings
+	 */
 	DmsSolver(const OptConProblem<STATE_DIM, CONTROL_DIM> problem, DmsSettings settingsDms) 
 	:
 	nlpSolver_(nullptr),
@@ -66,15 +118,17 @@ public:
 		configure(settingsDms);
 	}
 
+	/**
+	 * @brief      Destructor
+	 */
 	virtual ~DmsSolver(){}
 
-	// initializes the settings dependent stuff...
 	virtual void configure(const DmsSettings& settings) override
 	{
-		dmsProblem_->configure(settings); // only sets settings
+		dmsProblem_->configure(settings);
 		dmsProblem_->changeTimeHorizon(tf_);
 		dmsProblem_->changeInitialState(x0_);
-		nlpSolver_->configure(settings_.nlpSettings_); // initializes the solver
+		nlpSolver_->configure(settings_.nlpSettings_); 
 	}
 
 	virtual bool solve() override
@@ -116,11 +170,15 @@ public:
 	virtual void changeTimeHorizon(const core::Time& tf) override
 	{
 		tf_ = tf;
+		if(dmsProblem_)
+			dmsProblem_->changeTimeHorizon(tf);
 	}
 
 	virtual void changeInitialState(const core::StateVector<STATE_DIM>& x0) override
 	{
 		x0_ = x0;
+		if(dmsProblem_)
+			dmsProblem_->changeInitialState(x0);
 	}
 
 	virtual void changeCostFunction(const typename Base::OptConProblem_t::CostFunctionPtr_t& cf) override
@@ -159,24 +217,27 @@ public:
 		this->getFinalConstraintsInstances().push_back(typename	Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
 	}
 
+	/**
+	 * @brief      Prints out the solution trajectories of the DMS problem
+	 */
 	void printSolution()
 	{
 		dmsProblem_->printSolution();
 	} 
 
 private:
-	std::shared_ptr<DmsProblem<STATE_DIM, CONTROL_DIM>> dmsProblem_;
-	std::shared_ptr<NlpSolver> nlpSolver_;
-	DmsSettings settings_;
+	std::shared_ptr<DmsProblem<STATE_DIM, CONTROL_DIM>> dmsProblem_; /*!<The dms problem*/
+	std::shared_ptr<NlpSolver> nlpSolver_; /*!<The nlp solver for solving the dmsproblem*/
+	DmsSettings settings_; /*!<The dms settings*/
 
-	Policy_t policy_;
-
-	state_vector_t x0_;
-	core::Time tf_;
+	Policy_t policy_; /*!<The solution container*/
+ 
+	state_vector_t x0_; /*!<The initial state for the optimization*/
+	core::Time tf_; /*!<The timehorizon of the problem*/
 };	
 
 
 } // namespace optcon
 } // namespace ct
 
-#endif // CT_OPTCON_DMS_SOLVER_HPP_
+#endif // CT_OPTCON_DMS_SOLVER_H_

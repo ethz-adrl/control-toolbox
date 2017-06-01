@@ -1,5 +1,6 @@
 /***********************************************************************************
-Copyright (c) 2016, Agile & Dexterous Robotics Lab, ETH ZURICH. All rights reserved.
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Farbod Farshidian. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -30,7 +31,7 @@ namespace ct {
 namespace optcon {
 
 /**
- * @ingroup    NLP
+ * @ingroup    DMS
  *
  * @brief      Implements an abstract base class from which all the discrete
  *             custom NLP constraints should derive
@@ -115,8 +116,8 @@ protected:
 	 *
 	 * @param[in]  col_start     The starting column of the jCol vec
 	 * @param[in]  num_elements  The size of the matrix block
-	 * @param      iRow_vec      The resulting row vector
-	 * @param      jCol_vec      The resuling column vector
+	 * @param[out] iRow_vec      The resulting row vector
+	 * @param[out] jCol_vec      The resuling column vector
 	 * @param[in]  indexNumber   The starting inserting index for iRow and jCol
 	 *
 	 * @return     indexnumber plus num_elements
@@ -136,8 +137,8 @@ protected:
 	 * @param[in]  col_start    The starting column of the jCol vec
 	 * @param[in]  num_rows     The number of rows of the matrix block
 	 * @param[in]  num_cols     The number of columns of the matrix block
-	 * @param      iRow_vec     The resulting row vector
-	 * @param      jCol_vec     The resuling column vector
+	 * @param[out] iRow_vec     The resulting row vector
+	 * @param[out] jCol_vec     The resuling column vector
 	 * @param[in]  indexNumber  The starting inserting index for iRow and jCol
 	 *
 	 * @return     The indexnumber plus the number of elements contained in the

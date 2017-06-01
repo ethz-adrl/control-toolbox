@@ -34,7 +34,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IpTNLP.hpp"
 #include "IpIpoptApplication.hpp"
 #include "IpSolveStatistics.hpp"
-#include <ct/optcon/dms/util/MatlabInterface.hpp>
 
 #endif // BUILD_WITH_IPOPT_SUPPORT
 

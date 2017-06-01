@@ -24,87 +24,84 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_DMS_DMS_CORE_CONTROLLER_H_
-#define CT_OPTCON_DMS_DMS_CORE_CONTROLLER_H_
+#ifndef CT_OPTCON_DMS_CORE_ZERO_ORDER_HOLD_SPLINER_H_
+#define CT_OPTCON_DMS_CORE_ZERO_ORDER_HOLD_SPLINER_H_
 
-#include <Eigen/Dense>
-
-#include <ct/core/control/Controller.h>
-#include <ct/optcon/dms/dms_core/OptVectorDms.h>
-
-
-/**
- * \ingroup DMS
- *
- * \brief DMS controller class
- *
- *	Implements a controller to be handed over to a system of type "ControlledSystem". This controller applies the nominal input trajectory designed by the algorithm,
- *	which is either piecewise constant or piecewise linear between the nodes.
- *
- * @tparam STATE_DIM: Dimension of the state vector
- * @tparam INPUT_DIM: Dimension of the control input vector
- *
- */
+#include "ct/optcon/dms/dms_core/spline/SplinerBase.h"
+#include <ct/optcon/dms/dms_core/TimeGrid.h>
 
 namespace ct {
 namespace optcon {
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class ControllerDms : public ct::core::Controller<STATE_DIM, CONTROL_DIM>
+/**
+ * @ingroup    DMS
+ *
+ * @brief      The spline implementation for the zero order hold spliner
+ *
+ * @tparam     T     The vector type to be splined
+ */
+template<class T>
+class ZeroOrderHoldSpliner: public SplinerBase<T>
 {
 public:
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef DmsDimensions<STATE_DIM, CONTROL_DIM> DIMENSIONS;
-	typedef typename DIMENSIONS::state_vector_t state_vector_t;
-	typedef typename DIMENSIONS::control_vector_t control_vector_t;
+	typedef T vector_t;
+	typedef Eigen::Matrix<double, T::DIM, T::DIM> matrix_t;
+	typedef std::vector<vector_t, Eigen::aligned_allocator<vector_t>> vector_array_t;
 
+	ZeroOrderHoldSpliner() = delete;
 
-	ControllerDms() = delete;
-
-	ControllerDms(
-			std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
-			size_t shotIdx):
-		controlSpliner_(controlSpliner),
-		shotIdx_(shotIdx)
+	/**
+	 * @brief      Custom constructor
+	 *
+	 * @param[in]  grid  The DMS timegrid
+	 */
+	ZeroOrderHoldSpliner(std::shared_ptr<TimeGrid> grid):
+		timeGrid_(grid)
 	{}
 
+	virtual ~ZeroOrderHoldSpliner(){}
 
-	ControllerDms(const ControllerDms& arg):
-			controlSpliner_(arg.controlSpliner_),
-			shotIdx_(arg.shotIdx_)
-	{}
-
-	virtual ~ControllerDms(){}
-
-	virtual ControllerDms<STATE_DIM, CONTROL_DIM>* clone() const override
-	{
-		return new ControllerDms<STATE_DIM, CONTROL_DIM> (*this);
+	void computeSpline(const vector_array_t& points) override {
+		zOholds_ = points;
 	}
 
 
-	void computeControl(
-			const state_vector_t& state,
-			const double& t,
-			control_vector_t&  controlAction)
-	{
-		controlAction = controlSpliner_->evalSpline(t, shotIdx_);
-		assert(controlAction == controlAction);
+	// evaluate spline and return vector at interpolation time
+	virtual vector_t evalSpline (const double time, const size_t shotIdx) override {
+		assert(shotIdx < zOholds_.size() );
+		assert(zOholds_[shotIdx] == zOholds_[shotIdx]);
+		return zOholds_[shotIdx];
 	}
 
+	virtual vector_t splineDerivative_t (const double time,  const size_t shotIdx) const override {
+		return vector_t::Zero();
+	}
+
+	virtual vector_t splineDerivative_h_i(const double time, const size_t shotIdx) const override {
+		return vector_t::Zero();
+	}
+
+	virtual matrix_t splineDerivative_q_i (const double time,  const size_t shotIdx) const override {
+		return matrix_t::Identity();
+	}
+
+	virtual matrix_t splineDerivative_q_iplus1(const double time,  const size_t shotIdx) const override {
+		return matrix_t::Zero();
+	}
 
 
 private:
+	// zero order hold variables
+	vector_array_t zOholds_;
 
-	std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner_;
-
-	/* index of the shot to which this controller belongs */
-	size_t shotIdx_;
+	std::shared_ptr<TimeGrid> timeGrid_;
 
 };
 
 } // namespace optcon
 } // namespace ct
 
-#endif //CT_OPTCON_DMS_DMS_CORE_CONTROLLER_H_
+#endif //CT_OPTCON_DMS_CORE_ZERO_ORDER_HOLD_SPLINER_H_
