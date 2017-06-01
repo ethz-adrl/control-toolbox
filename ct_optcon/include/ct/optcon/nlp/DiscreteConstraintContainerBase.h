@@ -32,6 +32,12 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct{
 namespace optcon{
 
+/**
+ * @ingroup    NLP
+ *
+ * @brief      An abstract base class which serves as a container for all the
+ *             discrete constraints used in the NLP
+ */
 class DiscreteConstraintContainerBase
 {
 
@@ -44,17 +50,37 @@ public:
 	typedef Eigen::Map<VectorXd> MapVecXd;
 	typedef Eigen::Map<VectorXi> MapVecXi;
 
+	/**
+	 * @brief      Default constructor
+	 */
 	DiscreteConstraintContainerBase(){}
-	// :
-	// constraintsCount_(0),
-	// nonZerosJacobianCount_(0)
-	// {}
 
+	/**
+	 * @brief      Destructor
+	 */
 	virtual ~DiscreteConstraintContainerBase(){}
 
+	/**
+	 * @brief      Gets called before the constraint evaluation. This method
+	 *             should contain all the calculations needed to evaluate the
+	 *             constraints
+	 */
 	virtual void prepareEvaluation() = 0;
+
+	/**
+	 * @brief      Gets called before the constraint jacobian evaluation. This
+	 *             method should contain all the calculations needed to evaluate
+	 *             the constraint jacobian
+	 */
 	virtual void prepareJacobianEvaluation() = 0;
 
+
+	/**
+	 * @brief      Writes the constraint evaluations into the large constraint
+	 *             optimization vector
+	 *
+	 * @param[out] c_nlp  The constraint vector used in the NLP
+	 */
 	void evalConstraints(Eigen::Map<Eigen::VectorXd>& c_nlp)
 	{
 		prepareEvaluation();
@@ -70,6 +96,13 @@ public:
 		assert(ind == c_nlp.rows()); // or throw an error
 	}
 
+	/**
+	 * @brief      Evaluates the jacobian of the constraints and writes them
+	 *             into the nlp vector
+	 *
+	 * @param[out] jac_nlp    The constraint jacobian vector used in NLP
+	 * @param[in]  nzz_jac_g  The number of non zero elements in the jacobian
+	 */
 	void evalSparseJacobian(Eigen::Map<Eigen::VectorXd>& jac_nlp, const int nzz_jac_g)
 	{
 		prepareJacobianEvaluation();
@@ -78,38 +111,49 @@ public:
 		for(auto constraint : constraints_)
 		{
 			size_t nnEle = constraint->getNumNonZerosJacobian();
-			jac_nlp.segment(ind, nnEle) = constraint->evalJacobian();
+			jac_nlp.segment(ind, nnEle) = constraint->evalSparseJacobian();
 			ind += nnEle;
 		}
 
 		assert(ind == (size_t) nzz_jac_g);
 	}
 
+	/**
+	 * @brief      Retrieves the sparsity pattern of the constraints and writes
+	 *             them into the nlp vectors
+	 *
+	 * @param[out] iRow_nlp   The vector containing the row indices of the non
+	 *                        zero entries of the constraint jacobian
+	 * @param[out] jCol_nlp   The vector containing the column indices of the
+	 *                        non zero entries of the constraint jacobian
+	 * @param[in]  nnz_jac_g  The number of non zero elements in the constraint jacobian
+	 */
 	void getSparsityPattern(Eigen::Map<Eigen::VectorXi>& iRow_nlp, Eigen::Map<Eigen::VectorXi>& jCol_nlp, const int nnz_jac_g)
 	{
-		size_t rowInd = 0;
-		size_t colInd = 0;
+		size_t ind = 0;
 		size_t constraintCount = 0;
 	
 		for(auto constraint : constraints_)
 		{
 			size_t nnEle = constraint->getNumNonZerosJacobian();
 			size_t cSize = constraint->getConstraintSize();
-			Eigen::VectorXi iRow;
-			Eigen::VectorXi jCol;
-			iRow.resize(nnEle);
-			jCol.resize(nnEle);
+			Eigen::VectorXi iRow, jCol;
+			iRow.resize(nnEle); jCol.resize(nnEle);
 			constraint->genSparsityPattern(iRow, jCol);
-
-			iRow_nlp.segment(rowInd, nnEle) = iRow.array() + constraintCount;
-			jCol_nlp.segment(rowInd, nnEle) = jCol;
+			iRow_nlp.segment(ind, nnEle) = iRow.array() + constraintCount;
+			jCol_nlp.segment(ind, nnEle) = jCol;
 			constraintCount += cSize;
-			rowInd += nnEle;
+			ind += nnEle;
 		}
 
-		assert(rowInd == (size_t) nnz_jac_g);
+		assert(ind == (size_t) nnz_jac_g);
 	}
 
+	/**
+	 * @brief      Returns the number of constraints in the NLP
+	 *
+	 * @return     The number of constraint in the NLP
+	 */
 	size_t getConstraintsCount() const
 	{
 		size_t count = 0;
@@ -118,6 +162,11 @@ public:
 		return count;
 	}
 
+	/**
+	 * @brief      Returns the number of non zeros in the constraint jacobian
+	 *
+	 * @return     The number of non zeros in the constraint jacobian
+	 */
 	size_t getNonZerosJacobianCount() const
 	{
 		size_t count = 0;
@@ -126,6 +175,13 @@ public:
 		return count;
 	}
 
+	/**
+	 * @brief      Retrieves the constraint bounds and writes them into the
+	 *             vectors used in the NLP
+	 *
+	 * @param[out]      lowerBound  The lower constraint bound
+	 * @param[out]      upperBound  The lower constraint bound
+	 */
 	void getBounds(Eigen::Map<Eigen::VectorXd>& lowerBound, Eigen::Map<Eigen::VectorXd>& upperBound)
 	{
 		size_t ind = 0;
@@ -138,45 +194,8 @@ public:
 		}		
 	}
 
-	// Eigen::VectorXd getUpperBounds() const
-	// {
-	// 	Eigen::VectorXd c_ub;
-	// 	c_ub.resize(getConstraintsCount());
-	// 	size_t ind = 0;
-	// 	for(auto constraint : constraints_)
-	// 	{
-	// 		size_t cSize = constraint->getConstraintSize();
-	// 		c_ub.segment(ind, cSize) = constraint->getUpperBound();
-	// 		ind += cSize;
-	// 	}
-
-	// 	return c_ub;
-	// }
-
-	// Eigen::VectorXd getLowerBounds() const
-	// {
-	// 	Eigen::VectorXd c_lb;
-	// 	c_lb.resize(getConstraintsCount());
-	// 	size_t ind = 0;
-	// 	for(auto constraint : constraints_)
-	// 	{
-	// 		size_t cSize = constraint->getConstraintSize();
-	// 		c_lb.segment(ind, cSize) = constraint->getLowerBound();
-	// 		ind += cSize;
-	// 	}
-		
-	// 	return c_lb;	
-	// }
-
-
 protected:
-	std::vector<std::shared_ptr<DiscreteConstraintBase>> constraints_;
-	// size_t constraintsCount_;
-	// size_t nonZerosJacobianCount_;
-
-
-	// Eigen::VectorXd c_lb_;
-	// Eigen::VectorXd c_ub_;
+	std::vector<std::shared_ptr<DiscreteConstraintBase>> constraints_; /*!< contains all the constraints of the NLP */
 
 };
 

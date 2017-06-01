@@ -1,5 +1,30 @@
-#ifndef CT_OPTCON_IPOPTSOLVER_H
-#define CT_OPTCON_IPOPTSOLVER_H
+/***********************************************************************************
+Copyright (c) 2016, Agile & Dexterous Robotics Lab, ETH ZURICH. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
+
+#ifndef CT_OPTCON_NLP_SOLVER_IPOPTSOLVER_H_
+#define CT_OPTCON_NLP_SOLVER_IPOPTSOLVER_H_
 
 #include <ct/optcon/nlp/Nlp.h>
 #include "NlpSolver.h"
@@ -20,6 +45,11 @@ namespace optcon {
 
 #ifdef BUILD_WITH_IPOPT_SUPPORT 	// build IPOPT interface
 
+/**
+ * @ingroup    NLP
+ *
+ * @brief      The interface to the NLP solver IPOPT
+ */
 class IpoptSolver : public Ipopt::TNLP, public NlpSolver
 {
 public:
@@ -31,21 +61,25 @@ public:
 	typedef Eigen::Map<VectorXd> MapVecXd;
 	typedef Eigen::Map<const VectorXd> MapConstVecXd;
 
-	/** default constructor */
+	/**
+	 * @brief      Custom constructor
+	 *
+	 * @param[in]  nlp       The nlp
+	 * @param[in]  settings  The nlp settings
+	 */
 	IpoptSolver(std::shared_ptr<Nlp> nlp, const NlpSolverSettings& settings);
 
-	/** default destructor */
+	/**
+	 * @brief      Destructor
+	 */
 	virtual ~IpoptSolver();
 
-	// Inherited from DmsSolverBase
 	virtual bool solve() override;
+
 	virtual void prepareWarmStart(size_t maxIterations) override;
-	//maybe we can get rid of this method as well
-	virtual void updateInitGuess() override {};
-	virtual bool solveSucceeded() override;
+
 	virtual void configureDerived(const NlpSolverSettings& settings) override;
 
-	// Inherited from TNLP
 	/**@name Overloaded from TNLP */
 	//@{
 	/** Method to return some info about the nlp */
@@ -101,21 +135,15 @@ public:
 			Ipopt::IpoptCalculatedQuantities* ip_cq);
 	//@}
 
-	/*virtual bool intermediate_callback(AlgorithmMode mode,
-                                   Ipopt::Index iter, Number obj_value,
-                                   Number inf_pr, Number inf_du,
-                                   Number mu, Number d_norm,
-                                   Number regularization_size,
-                                   Number alpha_du, Number alpha_pr,
-                                   Ipopt::Index ls_trials,
-                                   const IpoptData* ip_data,
-                                   IpoptCalculatedQuantities* ip_cq); */
-
 private:
-	virtual void setSolverOptions() override;
-	std::shared_ptr<Ipopt::IpoptApplication> ipoptApp_;
-	Ipopt::ApplicationReturnStatus status_;
-	IpoptSettings settings_;
+
+	/**
+	 * @brief      Sets the IPOPT solver options.
+	 */
+	void setSolverOptions();
+	std::shared_ptr<Ipopt::IpoptApplication> ipoptApp_;  /*!< A pointer to ipopt*/
+	Ipopt::ApplicationReturnStatus status_; /*!< The return status of IPOPT*/
+	IpoptSettings settings_; /*!< Contains the IPOPT settings*/
 
 	/**@name Methods to block default compiler methods.
 	 * The compiler automatically generates the following three methods.
@@ -147,16 +175,13 @@ public:
 
 	virtual bool solve() override {return false;}
 	virtual void prepareWarmStart(size_t maxIterations) override{}
-	//maybe we can get rid of this method as well
-	virtual void updateInitGuess() override {};
 	virtual bool solveSucceeded() override {return false;}
 	virtual void configureDerived(const NlpSolverSettings& settings) override{}
-private:
-	virtual void setSolverOptions() override{}
 };
 
 #endif // BUILD_WITH_IPOPT_SUPPORT
 
 } // namespace optcon
 } // namespace ct
-#endif // CT_OPTCON_IPOPTSOLVER_H
+
+#endif // CT_OPTCON_NLP_SOLVER_IPOPTSOLVER_H_

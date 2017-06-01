@@ -50,44 +50,77 @@ public:
 	 */
 	virtual ~DiscreteConstraintBase(){}
 
+
 	/**
-	 * @brief          Evaluates to constraint
+	 * @brief      Evaluates the constraint violation
 	 *
-	 * @param[in, out] val       The large optimiz
-	 * @param[in]      startInd  The start ind
-	 *
-	 * @return         The evaluation.
+	 * @return     A vector of the evaluated constraint violation
 	 */
-
 	virtual Eigen::VectorXd eval() = 0;
-	// virtual size_t getEvaluation(Eigen::Map<Eigen::VectorXd>& val, size_t startInd) = 0;
 
-	virtual Eigen::VectorXd evalJacobian() = 0;
-	// virtual size_t evalConstraintJacobian(Eigen::Map<Eigen::VectorXd>& val, size_t startInd) = 0;
+	/**
+	 * @brief      Returns the non zero elements of the eval method with respect
+	 *             to the optimization variables
+	 *
+	 * @return     A vector of the non zero elements of the constraint jacobian
+	 */
+	virtual Eigen::VectorXd evalSparseJacobian() = 0;
 
-	virtual size_t getNumNonZerosJacobian() = 0;
-
+	/**
+	 * @brief      Returns size of the constraint vector
+	 *
+	 * @return     The size of the constraint vector (should be equal to the
+	 *             size of the return value of the eval method)
+	 */
 	virtual size_t getConstraintSize() = 0;
 
+	/**
+	 * @brief      Returns the number of non zero elements of the jacobian
+	 *
+	 * @return     The number of non zero elements of the jacobian (which should
+	 *             be equal to the return value of evalSparseJacobian)
+	 */
+	virtual size_t getNumNonZerosJacobian() = 0;
+
+	/**
+	 * @brief      Returns the sparsity structure of the constraint jacobian
+	 *
+	 * @param[out]      iRow_vec  A vector containing the row indices of the non zero
+	 *                       elements of the constraint jacobian
+	 * @param[out]      jCol_vec  A vector containing the column indices of the non
+	 *                       zero elements of the constraint jacobian
+	 */
 	virtual void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) = 0;
 
+	/**
+	 * @brief      Returns the lower bound of the constraint
+	 *
+	 * @return     The lower constraint bound
+	 */
 	virtual Eigen::VectorXd getLowerBound() = 0;
+
+	/**
+	 * @brief      Returns the upper bound of the constraint
+	 *
+	 * @return     The upper constraint bound
+	 */
 	virtual Eigen::VectorXd getUpperBound() = 0;
-
-	// virtual void getLowerBound(Eigen::VectorXd& c_lb) = 0;
-
-	// virtual void getUpperBound(Eigen::VectorXd& c_ub) = 0;
-
-
-	// const size_t c_index() const {return indexTotal_;}
-
-	// virtual void initialize(size_t c_index)
-	// {
-	// 	indexTotal_ = c_index;
-	// }
 
 protected:
 
+	/**
+	 * @brief      This method generates Row and Column vectors which indicate
+	 *             the sparsity pattern of the constraint jacobian for a
+	 *             quadratic matrix block containing diagonal entries only
+	 *
+	 * @param[in]  col_start     The starting column of the jCol vec
+	 * @param[in]  num_elements  The size of the matrix block
+	 * @param      iRow_vec      The resulting row vector
+	 * @param      jCol_vec      The resuling column vector
+	 * @param[in]  indexNumber   The starting inserting index for iRow and jCol
+	 *
+	 * @return     indexnumber plus num_elements
+	 */
 	size_t genDiagonalIndices(
 			const size_t col_start,
 			const size_t num_elements,
@@ -95,6 +128,21 @@ protected:
 			Eigen::VectorXi& jCol_vec,
 			const size_t indexNumber);
 
+	/**
+	 * @brief      This method generates Row and Column vectors which indicate
+	 *             the sparsity pattern of the constraint jacobian for an
+	 *             arbitrary dense matrix block
+	 *
+	 * @param[in]  col_start    The starting column of the jCol vec
+	 * @param[in]  num_rows     The number of rows of the matrix block
+	 * @param[in]  num_cols     The number of columns of the matrix block
+	 * @param      iRow_vec     The resulting row vector
+	 * @param      jCol_vec     The resuling column vector
+	 * @param[in]  indexNumber  The starting inserting index for iRow and jCol
+	 *
+	 * @return     The indexnumber plus the number of elements contained in the
+	 *             matrix block
+	 */
 	size_t genBlockIndices(
 			const size_t col_start,
 			const size_t num_rows,
@@ -105,17 +153,12 @@ protected:
 
 };
 
-
-/* helper function for indexing the non-zero elements in the constraint jacobian.
- * Resizes the Eigenvectors to the number of elements in the diagonal defined by the starting
- * values and the number of elements. This generates a diagonal which goes from the top left corner
- * to the bottom right corner */
 size_t DiscreteConstraintBase::genDiagonalIndices(
-		const size_t col_start,							// matrix col index where we start inserting
-		const size_t num_elements, 						// number of diagonal elements the diag matrix shall have
-		Eigen::VectorXi& iRow_vec,			// big ipopt row index vector
-		Eigen::VectorXi& jCol_vec,			// big ipopt col index vector
-		const size_t indexNumber						// where we insert the generated indices into the big ipopt index vectors
+		const size_t col_start,
+		const size_t num_elements,
+		Eigen::VectorXi& iRow_vec,
+		Eigen::VectorXi& jCol_vec,
+		const size_t indexNumber
 )
 {
 	Eigen::VectorXi new_row_indices;
@@ -140,16 +183,13 @@ size_t DiscreteConstraintBase::genDiagonalIndices(
 }
 
 
-/* helper function for indexing the non-zero elements in the constraint jacobian.
- * Resizes the Eigenvectors to the number of elements in the block defined by the starting
- * values and the widths and enters the row- and column indices into the vectors. */
 size_t DiscreteConstraintBase::genBlockIndices(
-		const size_t col_start,                   	// matrix col index where we start inserting
-		const size_t num_rows, 						// number of rows the block matrix shall have
-		const size_t num_cols,						// number of cols the block matrix shall have
-		Eigen::VectorXi& iRow_vec,		// big ipopt row index vector
-		Eigen::VectorXi& jCol_vec,	    // big ipopt col index vector
-		const size_t indexNumber)					// where we insert the generated indices into the big ipopt index vectors
+		const size_t col_start,
+		const size_t num_rows,
+		const size_t num_cols,
+		Eigen::VectorXi& iRow_vec,
+		Eigen::VectorXi& jCol_vec,
+		const size_t indexNumber)
 {
 	size_t num_gen_indices = num_rows*num_cols;
 

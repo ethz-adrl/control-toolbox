@@ -52,7 +52,7 @@ public:
 	}	
 
 	/* currently the constraint jacobian for this constraint can be hacked as a scaled identity block of dimension 1*/
-	virtual Eigen::VectorXd evalJacobian() override
+	virtual Eigen::VectorXd evalSparseJacobian() override
 	{
 		Eigen::VectorXd one(settings_.N_);
 		one.setConstant(1.0);

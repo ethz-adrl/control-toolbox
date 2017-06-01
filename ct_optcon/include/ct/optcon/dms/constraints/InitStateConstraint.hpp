@@ -39,11 +39,8 @@ public:
 		return w_->getOptimizedState(0) - x_0_;
 	}
 
-	virtual Eigen::VectorXd evalJacobian() override
+	virtual Eigen::VectorXd evalSparseJacobian() override
 	{
-		// state_vector_t jac ;
-		// Eigen::Matrix<double, STATE_DIM, STATE_DIM> matId; matId.setIdentity();
-		// state_vector_t val(Eigen::Map<Eigen::VectorXd>(matId.data(), matId.rows(), matId.cols()));
 		return state_vector_t::Ones();
 	}
 

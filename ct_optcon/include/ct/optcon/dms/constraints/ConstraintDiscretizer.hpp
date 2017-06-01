@@ -100,7 +100,7 @@ public:
 		return discreteConstraints_;
 	}
 
-	virtual Eigen::VectorXd evalJacobian() override
+	virtual Eigen::VectorXd evalSparseJacobian() override
 	{
 		jacLocal_.setZero();
 		size_t jacSize = 0;

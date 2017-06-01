@@ -91,7 +91,7 @@ public:
 		return w_->getOptimizedState(shotIndex_+1) - stateNext_;
 	}
 
-	virtual Eigen::VectorXd evalJacobian() override
+	virtual Eigen::VectorXd evalSparseJacobian() override
 	{
 		count_local_ = 0;
 		switch (settings_.splineType_)
