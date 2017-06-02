@@ -33,7 +33,8 @@ namespace ct {
 namespace optcon {
 
 /**
- *@ingroup    DMS
+ * @ingroup    DMS
+ *
  * @brief      The derivative size
  *
  * @tparam     STATE_DIM    The state dimension

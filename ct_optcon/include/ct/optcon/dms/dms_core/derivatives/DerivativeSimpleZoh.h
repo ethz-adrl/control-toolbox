@@ -48,6 +48,15 @@ struct DerivativeSimpleZohSize
 };
 
 
+/**
+ * @ingroup    DMS
+ *
+ * @brief      Implementation of the derivatives using the simple costevaluator
+ *             and zero order hold control input splining
+ *
+ * @tparam     STATE_DIM    The state dimension
+ * @tparam     CONTROL_DIM  The control dimension
+ */
 template<size_t STATE_DIM, size_t CONTROL_DIM>
 class DerivativeSimpleZoh : 
 public ct::core::System <DerivativeSimpleZohSize<STATE_DIM, CONTROL_DIM>::SIZE>,

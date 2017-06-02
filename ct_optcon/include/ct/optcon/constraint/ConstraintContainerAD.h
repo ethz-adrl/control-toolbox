@@ -1,12 +1,31 @@
-/*
- * ConstraintAD.h
- * author: 			mgiftthaler@ethz.ch
- * date created: 	04.10.2016
- *
- */
+/***********************************************************************************
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Farbod Farshidian. All rights reserved.
 
-#ifndef CT_OPTCON_CONSTRAINTAD_H_
-#define CT_OPTCON_CONSTRAINTAD_H_
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
+
+#ifndef CT_OPTCON_CONSTRAINTS_CONSTRAINTCONTAINERAD_H_
+#define CT_OPTCON_CONSTRAINTS_CONSTRAINTCONTAINERAD_H_
 
 #include <ct/core/math/JacobianCG.h>
 
@@ -18,14 +37,12 @@ namespace ct {
 namespace optcon {
 
 /**
- * \ingroup Constraint
- *+
- * \brief A class fusing analytical constraint terms and Autodiff constraint terms
+ * @ingroup    Constraint
  *
- * If analytical Jacobians are provided, add the implemented terms as analytical terms.
- * Otherwise overload the term's scalar types with CppAD::AD<double> types and let
- * this class derive the Jacobians automatically.
+ * @brief      Contains all the constraints using with AD generated jacobians
  *
+ * @tparam     STATE_DIM  { description }
+ * @tparam     INPUT_DIM  { description }
  */
 template <size_t STATE_DIM, size_t INPUT_DIM>
 class ConstraintContainerAD : public LinearConstraintContainer<STATE_DIM, INPUT_DIM>{
@@ -56,7 +73,6 @@ public:
 	 *
 	 * START_INDEX: 	in the constraint vector g1 or g2, the START_INDEX describes where the particular constraint term starts
 	 * TERM_DIM	  : 	in the constraint vector g1 or g2, the TERM_DIM describes how many scalar entries this term, starting at START_INDEX, comprises
-	 * TYPE		  :		AD or ANALYTICAL type
 	 * TERM_ID	  :		size_t enumerating the term in it's containing vector. Starts for both AD and analytical terms at 0
 	 *
 	 */
@@ -75,7 +91,7 @@ public:
 	typedef std::vector<std::tuple<size_t, size_t, size_t>> MAP;
 
 	/**
-	 * \brief Basic constructor
+	 * @brief      Basic constructor
 	 */
 	ConstraintContainerAD() :
 	initialized_(false)
@@ -146,10 +162,16 @@ public:
 	virtual ConstraintContainerAD_Raw_Ptr_t clone () const override {return new ConstraintContainerAD(*this);}
 
 	/**
-	 * \brief Destructor
+	 * @brief      Destructor
 	 */
-	~ConstraintContainerAD() {};
+	virtual ~ConstraintContainerAD() {};
 
+	/**
+	 * @brief      Adds a constraint.
+	 *
+	 * @param[in]  constraint  The constraint to be added
+	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
+	 */
 	void addConstraint(std::shared_ptr<tpl::ConstraintBase<STATE_DIM, INPUT_DIM, Scalar>> constraint, bool verbose)
 	{
 		if(verbose){
@@ -167,8 +189,9 @@ public:
 		initialized_ = false;
 	}
 
-	size_t constraintsCount_;
-
+	/**
+	 * @brief      Initializes the constraints using just in time compilation
+	 */
 	void initialize()
 	{
 		jacCG_->compileJIT();
@@ -474,19 +497,19 @@ public:
 
 
 private:
-	/**
-	 * \brief add a term (AD or analytic), and update the mappings between the indicies required to identify it uniquely.
-	 *
-	 * templated on scalar type (double, CppAD::AD<double)
-	 *
-	 * @param term the term which is to be added
-	 * @param term_type	specify term type (AD or Analytical)
-	 * @param verbose set to true if printout desired
-	 * @param stockOfTerms	vector terms of same TERM_TYPE (member variable)
-	 * @param map indices mapping
-	 * @return	term index
-	 */
 
+	/**
+	 * @brief      add a term (AD or analytic), and update the mappings between
+	 *             the indicies required to identify it uniquely.
+	 *
+	 *             templated on scalar type (double, CppAD::AD<double)
+	 *
+	 * @param[in]  constraint          The constraint
+	 * @param      verbose             set to true if printout desired
+	 * @param      stockOfConstraints  vector terms of same TERM_TYPE (member
+	 *                                 variable)
+	 * @param      map                 indices mapping
+	 */
 	void addConstraintAndGenerateIndicies (std::shared_ptr<tpl::ConstraintBase<STATE_DIM, INPUT_DIM, Scalar>> constraint, bool verbose,
 			std::vector<std::shared_ptr<tpl::ConstraintBase<STATE_DIM, INPUT_DIM, Scalar>>>& stockOfConstraints, MAP& map)
 	{
@@ -534,6 +557,8 @@ private:
 	Eigen::MatrixXd jacInput_;
 	size_t nonZerosJac_;
 	bool initialized_;
+	size_t constraintsCount_;
+
 
 	Eigen::Matrix<double, STATE_DIM + INPUT_DIM, 1> var_at_cache_;
 	Eigen::Matrix<double, STATE_DIM + INPUT_DIM, 1> stateControlD_; /** contains x, u in stacked form */

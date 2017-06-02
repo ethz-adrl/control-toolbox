@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_CONSTRAINTCONTAINERBASE_H_
-#define CT_OPTCON_CONSTRAINTCONTAINERBASE_H_
+#ifndef CT_OPTCON_CONSTRAINT_CONSTRAINTCONTAINERBASE_H_
+#define CT_OPTCON_CONSTRAINT_CONSTRAINTCONTAINERBASE_H_
 
 #include <ct/core/types/StateVector.h>
 #include <ct/core/types/ControlVector.h>
@@ -39,18 +39,14 @@ namespace optcon {
  */
 
 /**
- * \ingroup Constraint
- * +
+ * @ingroup    Constraint
  *
- * \brief The ConstraintBase Class is the base class for defining the non-linear optimization constraints.
+ * @brief      The ConstraintBase Class is the base class for defining the
+ *             non-linear optimization constraints.
  *
- * @tparam STATE_DIM: Dimension of the state vector
- * @tparam INPUT_DIM: Dimension of the control input vector
- * @tparam CONSTRAINT2_DIM: Maximum number of pure state constraints
- * @tparam CONSTRAINT1_DIM: Maximum number of state-input constraints
- *
+ * @tparam     STATE_DIM  Dimension of the state vector
+ * @tparam     INPUT_DIM  Dimension of the control input vector
  */
-
 template <size_t STATE_DIM, size_t INPUT_DIM>
 class ConstraintContainerBase
 {
@@ -61,16 +57,12 @@ public:
 	typedef core::StateVector<STATE_DIM> state_vector_t;
 	typedef core::ControlVector<INPUT_DIM> input_vector_t;
 
-	// typedef ConstraintDefinitions<STATE_DIM, INPUT_DIM, CONSTRAINT2_DIM, CONSTRAINT1_DIM> CONSTRAINT_DEFINITIONS;
-
 	typedef ConstraintContainerBase<STATE_DIM, INPUT_DIM>* ConstraintBase_Raw_Ptr_t;
 	typedef std::shared_ptr<ConstraintContainerBase<STATE_DIM, INPUT_DIM>> ConstraintBase_Shared_Ptr_t;
 
-
 	/**
-	 * \brief Default constructor
+	 * @brief      Default constructor, sets state, control and time to zero
 	 *
-	 * Default constructor, sets state, control and time to zero
 	 */
 	ConstraintContainerBase() :
 		t_(0.0)
@@ -80,10 +72,10 @@ public:
 	}
 
 	/**
-	 * \brief copy constructor
-	 *
-	 * Copy constructor
-	 */
+	 @brief      copy constructor
+	
+	 @param[in]  arg   The object to be copied
+	*/
 	ConstraintContainerBase(const ConstraintContainerBase& arg) :
 		t_(arg.t_),
 		x_(arg.x_),
@@ -92,21 +84,21 @@ public:
 		constraintUpperBounds_(arg.constraintUpperBounds_)
 	{}
 
+
 	/**
-	 * \brief Destructor
-	 *
-	 * Destructor
+	 * @brief      Destructor
 	 */
 	virtual ~ConstraintContainerBase() {}
 
 	/**
-	 * This methods updates the current time, state, and input in the class. It also call the user defined update() method,
-	 * which can be used to make the implementation more efficient by executing shared calculations directly at the time of
-	 * updating time, state and control.
+	 * This methods updates the current time, state, and input in the class. It
+	 * also call the user defined update() method, which can be used to make the
+	 * implementation more efficient by executing shared calculations directly
+	 * at the time of updating time, state and control.
 	 *
-	 * @param[in] t current time
-	 * @param[in] x state vector
-	 * @param[in] x input vector
+	 * @param[in]  t     current time
+	 * @param[in]  x     state vector
+	 * @param[in]  u     control vector
 	 */
 	virtual void setTimeStateInput(
 			const double t,
@@ -119,10 +111,12 @@ public:
 		update();
 	}
 
+
 	/**
-	 * This method retrieves the state-input constraint vector
-	 * @param[in] lowerBound The lower bound values for the state-input constraint
-	 * @param[in] upperBound The upper bound values for the state-input constraint
+	 * @brief      This method retrieves the constraint bound
+	 *
+	 * @param[in]  lowerBound  The lower bound
+	 * @param[in]  upperBound  The upper bound
 	 */
 	void setConstraintBounds(
 			const Eigen::VectorXd& lowerBound,
@@ -132,43 +126,54 @@ public:
 		constraintUpperBounds_ = upperBound;
 	}
 
-	Eigen::VectorXd getLowerBounds() const
+	/**
+	 * @brief      Returns the lower bound
+	 *
+	 * @return     The lower bounds.
+	 */
+	virtual Eigen::VectorXd getLowerBound() const
 	{
 		return constraintLowerBounds_;
 	}
 
-	Eigen::VectorXd getUpperBounds() const
+	/**
+	 * @brief      Returns the upper bounds
+	 *
+	 * @return     The upper bounds.
+	 */
+	virtual Eigen::VectorXd getUpperBound() const
 	{
 		return constraintUpperBounds_;
 	}
 
 	/**
-	 * Clones the constraint.
-	 * @return Base pointer to the clone
+	 * @brief      Creates a new instance of the object with same properties than original.
+	 *
+	 * @return     Copy of this object.
 	 */
 	virtual ConstraintBase_Raw_Ptr_t clone() const = 0;
 
+	
 	/**
-	 * This method retrieves the pure state constraint vector
-	 * @param[out] g2  The value of the pure state constraint
-	 * @param[out] nc2 The number of the active pure state constraints
+	 * @brief      Evaluates the constraint
+	 *
+	 * @param[out] g     The constraint violation
+	 * @param[out] n     The size of the constraint
 	 */
 	virtual void evaluate(Eigen::VectorXd& g, size_t& n) = 0;
 
 	/**
-	 * This method retrieves the state-input constraint vector
-	 * @param[out] g1  The value of the state-input constraint vector
-	 * @param[out] nc1 The number of the active state-vector constraints
+	 * @brief      This method returns the constraint type
+	 *
+	 * @param[out]      constraint_types  The constraint type
 	 */
-
 	virtual void getConstraintTypes(std::vector<Eigen::VectorXd>& constraint_types) {};
 
 
 protected:
 
 	/**
-	 * This is called by setTimeStateInput() method class. It can be used for updating the class members with the new state and input.
-	 * May help to make computations more efficient by executing shared calculations here.
+	 * @brief      Updates the constraints
 	 */
 	virtual void update() = 0;
 
