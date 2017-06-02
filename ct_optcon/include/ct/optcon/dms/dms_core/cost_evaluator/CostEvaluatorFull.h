@@ -104,7 +104,7 @@ public:
 
 		#pragma omp parallel for num_threads( settings_.nThreads_ )
 		for(auto shotContainer = shotContainers_.begin(); shotContainer < shotContainers_.end(); ++shotContainer){
-			(*shotContainer)->integrateShot(settings_.dt_sim_);	
+			(*shotContainer)->integrateShot();	
 		}
 
 		for(auto shotContainer : shotContainers_)

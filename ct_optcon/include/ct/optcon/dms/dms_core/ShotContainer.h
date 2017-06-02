@@ -1,13 +1,31 @@
-/*
- * ShotContainer.h
- *
- * Created: 15.01.2016
- * Author: mgiftthaler@ethz.ch
- *
- * */
+/***********************************************************************************
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Farbod Farshidian. All rights reserved.
 
-#ifndef DMS_SHOT_CONTAINER_HPP_
-#define DMS_SHOT_CONTAINER_HPP_
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
+
+#ifndef CT_OPTCON_DMS_CORE_SHOT_CONTAINER_H_
+#define CT_OPTCON_DMS_CORE_SHOT_CONTAINER_H_
 
 #include <cmath>
 #include <functional>
@@ -26,6 +44,15 @@
 namespace ct {
 namespace optcon {
 
+/**
+ * @ingroup    DMS
+ *
+ * @brief      This class performs the state and the sensitivity integration on
+ *             a shot
+ *
+ * @tparam     STATE_DIM    The state dimension
+ * @tparam     CONTROL_DIM  The control dimension
+ */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 class ShotContainer
 {
@@ -48,6 +75,18 @@ public:
 
 	ShotContainer() = delete;
 
+	/**
+	 * @brief      Custom constructor
+	 *
+	 * @param[in]  controlledSystem  The nonlinear system
+	 * @param[in]  linearSystem      The linearized system
+	 * @param[in]  costFct           The costfunction
+	 * @param[in]  w                 The optimization vector
+	 * @param[in]  controlSpliner    The control input spliner
+	 * @param[in]  timeGrid          The timegrid 
+	 * @param[in]  shotNr            The shot number
+	 * @param[in]  settings          The dms settings
+	 */
 	ShotContainer(
 			std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM>> controlledSystem,
 			std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>> linearSystem,
@@ -145,73 +184,112 @@ public:
 		sensitivityIntegrator_->setupSystem();
 	}
 
-
-	// In our setup with quadratic cost functions, we use x_ref = x_final.
-	//Therefore, we update x_ref and x_final here
-	void updateDesiredState(const state_vector_t& x_final)
-	{
-		costFct_->updateReferenceState(x_final);
-		costFct_->updateFinalState(x_final);
-	}
-
-	// integrate shot without calculating state sensitivities
-	void integrateShot(double dtInt)
+	/**
+	 * @brief      Performs the state integration between the shots
+	 */
+	void integrateShot()
 	{
 		if(w_->getUpdateCount() != new_w_counter_integration_)
 		{
 			new_w_counter_integration_ = w_->getUpdateCount();
-			shotIntegrator_->integrate(dtInt);
+			shotIntegrator_->integrate();
 			shotIntegrator_->retrieveStateTrajectories(t_history_, x_history_, cost_);
 		}
 	}
 
-	// integrate shot forward in time and compute sensitivity on-the-fly
+	/**
+	 * @brief      Performs the state and the sensitivity integration between the shots
+	 */
 	void integrateShotandComputeSensitivity()
 	{
 		if(w_->getUpdateCount() != new_w_counter_integration_with_Sens_)
 		{
 			new_w_counter_integration_with_Sens_ = w_->getUpdateCount();
-			sensitivityIntegrator_->integrate(settings_.dt_sim_);
+			sensitivityIntegrator_->integrate();
 			sensitivityIntegrator_->retrieveTrajectories(t_history_, x_history_, dXdSi_history_, dXdQi_history_, dXdQip1_history_, dXdHi_history_, 
 					costGradientSi_, costGradientQi_, costGradientQip1_, costGradientHi_);
 		}
 	}
 
+	/**
+	 * @brief      Returns the integrated state
+	 *
+	 * @return     The integrated state
+	 */
 	const state_vector_t getStateIntegrated()
 	{
 		return x_history_.back();
 	}
 
+	/**
+	 * @brief      Returns the end time of the integration	
+	 *
+	 * @return     The end time of the integration.
+	 */
 	const double getIntegrationTimeFinal()
 	{
 		return t_history_.back();
 	}
 
+	/**
+	 * @brief      Returns the integrated ODE sensitivity with respect to the
+	 *             discretized state s_i
+	 *
+	 * @return     The integrated sensitivity
+	 */
 	const state_matrix_t getdXdSiIntegrated()
 	{
 		return dXdSi_history_.back();
 	}
 
+	/**
+	 * @brief      Returns the integrated ODE sensitivity with respect to the
+	 *             discretized inputs q_i
+	 *
+	 * @return     The integrated sensitivity
+	 */
 	const state_control_matrix_t getdXdQiIntegrated()
 	{
 		return dXdQi_history_.back();
 	}
 
+	/**
+	 * @brief      Returns the integrated ODE sensitivity with respect to the
+	 *             discretized inputs q_{i+1}
+	 *
+	 * @return     The integrated sensitivity
+	 */
 	const state_control_matrix_t getdXdQip1Integrated()
 	{
 		return dXdQip1_history_.back();
 	}
 
+	/**
+	 * @brief      Returns the integrated ODE sensitivity with respect to the
+	 *             time segments h_i
+	 *
+	 * @return     The integrated sensitivity
+	 */
 	const state_vector_t getdXdHiIntegrated()
 	{
 		return dXdHi_history_.back();
 	}
 
+	/**
+	 * @brief      Gets the full integrated state trajectory.
+	 *
+	 * @return     The integrated state trajectory
+	 */
 	const state_vector_array_t& getXHistory() const
 	{		
 		return x_history_;
 	}
 
+	/**
+	 * @brief      Returns the control input trajectory used during the state integration
+	 *
+	 * @return     The control trajectory
+	 */
 	const control_vector_array_t& getUHistory()
 	{
 		u_history_.clear();
@@ -222,37 +300,76 @@ public:
 		return u_history_;
 	}
 
+	/**
+	 * @brief      Returns the time trajectory used during the integration
+	 *
+	 * @return     The time trajectory
+	 */
 	const time_array_t& getTHistory() const
 	{
 		return t_history_;
 	}
 
+	/**
+	 * @brief      Gets the cost integrated.
+	 *
+	 * @return     The integrated cost.
+	 */
 	const double getCostIntegrated() const
 	{
 		return cost_;
 	}
 
+	/**
+	 * @brief      Returns the cost gradient with respect to s_i integrated over
+	 *             the shot
+	 *
+	 * @return     The cost gradient
+	 */
 	const state_vector_t getdLdSiIntegrated() const
 	{
 		return costGradientSi_;
 	}
 
+	/**
+	 * @brief      Returns the cost gradient with respect to q_i integrated over
+	 *             the shot
+	 *
+	 * @return     The cost gradient
+	 */
 	const control_vector_t getdLdQiIntegrated() const
 	{
 		return costGradientQi_;
 	}
 
+	/**
+	 * @brief      Returns to cost gradient with respect to q_{i+1} integrated
+	 *             over the shot
+	 *
+	 * @return     The cost gradient
+	 */
 	const control_vector_t getdLdQip1Integrated() const 
 	{
 		return costGradientQip1_;
 	}
 
+	/**
+	 * @brief      Returns to cost gradient with respect to h_i integrated over
+	 *             the shot
+	 *
+	 * @return     The cost gradient
+	 */
 	const double getdLdHiIntegrated() const
 	{
 		return costGradientHi_;
 	}
 
-	// return pointer to controlled system (controlled with DMS controller)
+	/**
+	 * @brief      Returns a pointer to the nonlinear dynamics used for this
+	 *             shot
+	 *
+	 * @return     The pointer to the nonlinear dynamics
+	 */
 	std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM>> getControlledSystemPtr() {
 		return controlledSystem_;
 	}
@@ -266,7 +383,7 @@ private:
 	std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner_;
 	std::shared_ptr<TimeGrid> timeGrid_;
 
-	const size_t shotNr_; // number/index of this particular shot.
+	const size_t shotNr_; 
 	const DmsSettings settings_;
 
 	size_t new_w_counter_integration_;
@@ -296,13 +413,25 @@ private:
 	std::shared_ptr<ShotIntegratorBase<STATE_DIM, CONTROL_DIM>> shotIntegrator_;
 
 
-	// helper function, called from constructor
+	/**
+	 * @brief      Returns a new shot integrator depending on the derivative type C
+	 *
+	 * @return     The new shot integrator
+	 *
+	 * @tparam     C    The derivative type
+	 */
 	template <class C>
 	std::shared_ptr<ShotIntegratorBase<STATE_DIM, CONTROL_DIM>> constructShotIntegrator(){
 		return std::shared_ptr<ShotIntegrator<C>> (new ShotIntegrator<C> (controlledSystem_, linearSystem_, costFct_, w_, controlSpliner_, timeGrid_, shotNr_ , settings_));
 	}
 
-	// helper function, called from constructor
+	/**
+	 * @brief      Returns a new integrator integrating the sensitivities
+	 *
+	 * @return     The new sensitivity integrator
+	 *
+	 * @tparam     C    The derivative type
+	 */
 	template <class C>
 	std::shared_ptr<ShotIntegratorBase<STATE_DIM, CONTROL_DIM>> constructSensitivityIntegrator(){
 		return std::shared_ptr<ShotIntegrator<C>> (new ShotIntegrator<C> (controlledSystem_, linearSystem_, costFct_, w_, controlSpliner_, timeGrid_, shotNr_ , settings_));
@@ -312,4 +441,4 @@ private:
 } // namespace optcon
 } // namespace ct
 
-#endif
+#endif //CT_OPTCON_DMS_CORE_SHOT_CONTAINER_H_

@@ -1,5 +1,31 @@
-#ifndef DERIVATIVES_VECTORIZED_DERIVATIVES_BASE_HPP_
-#define DERIVATIVES_VECTORIZED_DERIVATIVES_BASE_HPP_
+/***********************************************************************************
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Farbod Farshidian. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
+
+#ifndef CT_OPTCON_DMS_CORE_DERIVATIVES_BASE_H_
+#define CT_OPTCON_DMS_CORE_DERIVATIVES_BASE_H_
 
 #include <functional>
 
@@ -13,6 +39,16 @@
 namespace ct {
 namespace optcon {
 
+/**
+ * @ingroup    DMS
+ *
+ * @brief      Abstract base class to specify the sensitivity vectors to be
+ *             integrated depending on the DMS settings
+ *
+ * @tparam     STATE_DIM       The state dimension
+ * @tparam     CONTROL_DIM     The control dimension
+ * @tparam     DERIVATIVE_DIM  The size of the derivative vector
+ */
 template<size_t STATE_DIM, size_t CONTROL_DIM, size_t DERIVATIVE_DIM>
 class DerivativeBase
 {
@@ -41,6 +77,18 @@ public:
 
 	DerivativeBase() = delete;
 
+	/**
+	 * @brief      Default constructor
+	 *
+	 * @param[in]  controlledSystem  The nonlinear dynamics
+	 * @param[in]  linearSystem      The linearized dynamics
+	 * @param[in]  costFct           The cost function
+	 * @param[in]  w                 The optimization variables
+	 * @param[in]  controlSpliner    The control spliner
+	 * @param[in]  timeGrid          The time grid
+	 * @param[in]  shotNr            The shot number
+	 * @param[in]  settings          The dms settings
+	 */
 	DerivativeBase(
 			std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM>> controlledSystem,
 			std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>> linearSystem,
@@ -75,14 +123,38 @@ public:
 		costControlDer_(control_vector_t::Zero())
 	{}
 
+	/**
+	 * @brief      The destructor
+	 */
 	virtual ~DerivativeBase(){}
 
+	/**
+	 * @brief      Retrieves state and cost trajectories
+	 *
+	 * @param[out]      timeTraj   The time trajectory
+	 * @param[out]      stateTraj  The state trajectory
+	 * @param[out]      cost       The cost trajectory
+	 */
 	virtual void retrieveStateTrajectories(
 			time_array_t& timeTraj,
 			state_vector_array_t& stateTraj,
 			double& cost
 	) = 0;
 
+	/**
+	 * @brief      Retrieves the sensitivity trajectories
+	 *
+	 * @param[out] timeTraj          The time trajectory
+	 * @param[out] stateTraj         The state trajectory
+	 * @param[out] dXdSiTraj         The ODE sensitivity wrt s_i
+	 * @param[out] dXdQiTraj         The ODE sensitivity wrt q_i
+	 * @param[out] dXdQip1Traj       The ODE sensitivity wrt q_{i+1}
+	 * @param[out] dXdHiTraj         The ODE sensitivity wrt h_i
+	 * @param[out] costGradientSi    The cost gradient wrt s_i
+	 * @param[out] costGradientQi    The cost gradient wrt q_i
+	 * @param[out] costGradientQip1  The cost gradient wrt q_{i+1}
+	 * @param[out] costGradientHi    The cost gradient wrt h_i
+	 */
 	virtual void retrieveTrajectories(
 			time_array_t& timeTraj,
 			state_vector_array_t& stateTraj,
@@ -97,17 +169,49 @@ public:
 	) = 0;
 
 
+	/**
+	 * @brief      Initialize objects for the integration
+	 */
 	virtual void initForIntegration() = 0;
+
+	/**
+	 * @brief      Wraps up the integration, gets called after the integration
+	 */
 	virtual void wrapUpIntegration() = 0;
 
+	/**
+	 * @brief      Returns the initial derivative state
+	 *
+	 * @return     The initial derivative state
+	 */
 	virtual const derivative_vector_t getInitState() = 0;
 
+	/**
+	 * @brief      Returns the full derivative trajectory
+	 *
+	 * @return     The derivative trajectory
+	 */
 	virtual derivative_traj_t& stateTrajectory() = 0;
 
+	/**
+	 * @brief      Returns the time trajectory of the integration
+	 *
+	 * @return     The time trajectory of the integration
+	 */
 	virtual time_array_t& timeTrajectory() = 0;
 
+	/**
+	 * @brief      Returns the start time of the current shot
+	 *
+	 * @return     The shot start time
+	 */
 	double getShotStartTime() const {return timeGrid_->getShotStartTime(shotNr_);}
 
+	/**
+	 * @brief      Returns the end time of the current shot
+	 *
+	 * @return     The shot end time
+	 */
 	double getShotEndTime() const {return timeGrid_->getShotEndTime(shotNr_);}
 
 
@@ -140,14 +244,29 @@ protected:
 	state_vector_t costStateDer_;
 	control_vector_t costControlDer_;
 
+	/**
+	 * @brief      Caches the updates A and B matrices
+	 *
+	 * @param[in]  t     The current time
+	 */
 	void updateMatrices(const ct::core::Time t)
 	{
 		A_ = linearSystem_->getDerivativeState(state_, control_, t);
 		B_ = linearSystem_->getDerivativeControl(state_, control_, t);
-		// std::cout << "A: " << A_ << std::endl;
-		// std::cout << "B: " << B_ << std::endl;
 	}
 
+	/**
+	 * @brief          Calculates the state derivative
+	 *
+	 * @param[in]      t           The current time
+	 * @param[in, out] derivative  The total derivative vector
+	 * @param[in]      count       The current index inside the derivative
+	 *                             vector
+	 *
+	 * @tparam         Derived     The size of the derivative vector
+	 *
+	 * @return         The updated derivative vector index
+	 */
 	template<typename Derived>
 	size_t stateDerivative(const ct::core::Time t, Eigen::MatrixBase<Derived>& derivative, size_t count)
 	{
@@ -159,6 +278,16 @@ protected:
 		return count;
 	}
 
+	/**
+	 * @brief      Calculates the ODE sensivitiy wrt to s_i
+	 *
+	 * @param      derivative  The total derivative vector
+	 * @param[in]  count       The current index inside the derivative vector
+	 *
+	 * @tparam     Derived     The size of the derivative vector
+	 *
+	 * @return     The updated derivative vector index
+	 */
 	template<typename Derived>
 	size_t dxdsiDerivative(Eigen::MatrixBase<Derived>& derivative, size_t count)
 	{
@@ -168,6 +297,16 @@ protected:
 		return count;
 	}
 
+	/**
+	 * @brief      Calculates the ODE sensivitiy wrt to q_i
+	 *
+	 * @param      derivative  The total derivative vector
+	 * @param[in]  count       The current index inside the derivative vector
+	 *
+	 * @tparam     Derived     The size of the derivative vector
+	 *
+	 * @return     The updated derivative vector index
+	 */
 	template<typename Derived>
 	size_t dxdqiDerivative(Eigen::MatrixBase<Derived>& derivative, size_t count)
 	{
@@ -177,6 +316,16 @@ protected:
 		return count;
 	}
 
+	/**
+	 * @brief      Calculates the ODE sensivitiy wrt to q_{i+1}
+	 *
+	 * @param      derivative  The total derivative vector
+	 * @param[in]  count       The current index inside the derivative vector
+	 *
+	 * @tparam     Derived     The size of the derivative vector
+	 *
+	 * @return     The updated derivative vector index
+	 */
 	template<typename Derived>
 	size_t dxdqip1Derivative(Eigen::MatrixBase<Derived>& derivative, size_t count)
 	{
@@ -186,6 +335,16 @@ protected:
 		return count;
 	}
 
+	/**
+	 * @brief      Calculates the ODE sensivitiy wrt to h_i
+	 *
+	 * @param      derivative  The total derivative vector
+	 * @param[in]  count       The current index inside the derivative vector
+	 *
+	 * @tparam     Derived     The size of the derivative vector
+	 *
+	 * @return     The updated derivative vector index
+	 */
 	template<typename Derived>
 	size_t dxdhiDerivative(Eigen::MatrixBase<Derived>& derivative, size_t count)
 	{
@@ -195,6 +354,16 @@ protected:
 		return count;
 	}
 
+	/**
+	 * @brief      Calculates the cost gradient wrt time
+	 *
+	 * @param      derivative  The total derivative vector
+	 * @param[in]  count       The current index inside the derivative vector
+	 *
+	 * @tparam     Derived     The size of the derivative vector
+	 *
+	 * @return     The updated derivative vector index
+	 */
 	template<typename Derived>
 	size_t dLDerivative(Eigen::MatrixBase<Derived>& derivative, size_t count)
 	{
@@ -203,6 +372,16 @@ protected:
 		return count;
 	}
 
+	/**
+	 * @brief      Calculates the cost gradient wrt s_i
+	 *
+	 * @param      derivative  The total derivative vector
+	 * @param[in]  count       The current index inside the derivative vector
+	 *
+	 * @tparam     Derived     The size of the derivative vector
+	 *
+	 * @return     The updated derivative vector index
+	 */
 	template<typename Derived>
 	size_t dLdsiDerivative(Eigen::MatrixBase<Derived>& derivative, size_t count)
 	{
@@ -211,6 +390,16 @@ protected:
 		return count;
 	}
 
+	/**
+	 * @brief      Calculates the cost gradient wrt q_i
+	 *
+	 * @param      derivative  The total derivative vector
+	 * @param[in]  count       The current index inside the derivative vector
+	 *
+	 * @tparam     Derived     The size of the derivative vector
+	 *
+	 * @return     The updated derivative vector index
+	 */
 	template<typename Derived>
 	size_t dLdqiDerivative(Eigen::MatrixBase<Derived>& derivative, size_t count)
 	{
@@ -220,6 +409,16 @@ protected:
 		return count;
 	}
 
+	/**
+	 * @brief      Calculates the cost gradient wrt q_{i+1}
+	 *
+	 * @param      derivative  The total derivative vector
+	 * @param[in]  count       The current index inside the derivative vector
+	 *
+	 * @tparam     Derived     The size of the derivative vector
+	 *
+	 * @return     The updated derivative vector index
+	 */
 	template<typename Derived>
 	size_t dLdqip1Derivative(Eigen::MatrixBase<Derived>& derivative, size_t count)
 	{
@@ -229,6 +428,16 @@ protected:
 		return count;
 	}
 
+	/**
+	 * @brief      Calculates the cost gradient wrt h_i
+	 *
+	 * @param      derivative The total derivative vector
+	 * @param[in]  count       The current index inside the derivative vector
+	 *
+	 * @tparam     Derived     The size of the derivative vector
+	 *
+	 * @return     The updated derivative vector index
+	 */
 	template<typename Derived>
 	size_t dldHiDerivative(Eigen::MatrixBase<Derived>& derivative, size_t count)
 	{
