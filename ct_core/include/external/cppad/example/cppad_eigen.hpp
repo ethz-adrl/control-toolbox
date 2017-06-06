@@ -86,6 +86,8 @@ namespace Eigen {
 		// type for nested value inside an AD<Base> expression tree
 		typedef CppAD::AD<Base>   Nested;
 
+		typedef CppAD::AD<Base>   Literal;
+
 		enum {
 			// does not support complex Base types
 			IsComplex             = 0 ,
@@ -121,6 +123,10 @@ namespace Eigen {
 		static CppAD::AD<Base> highest(void)
 		{	return CppAD::numeric_limits< CppAD::AD<Base> >::max(); }
 
+		static const int digits10(void)
+		{	return std::numeric_limits<double>::digits10; }
+
+
 	};
 }
 /* $$
@@ -142,6 +148,10 @@ namespace CppAD {
 		{	return x * x; }
 }
 
+
+#if EIGEN_VERSION_AT_LEAST(3,3,0)
+	// no significant decimals needed for Eigen 3.3
+#else
 namespace Eigen {
 	namespace internal {
 
@@ -162,6 +172,8 @@ namespace Eigen {
 		};
 	}
 }
+#endif
+
 /* $$
 $end
 */
