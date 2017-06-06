@@ -53,8 +53,8 @@ public:
 	typedef Eigen::Matrix<CppAD::AD<CppAD::cg::CG<double> >, IN_DIM, 1> IN_TYPE; //!< function input vector type
 	typedef Eigen::Matrix<CppAD::AD<CppAD::cg::CG<double> >, OUT_DIM, 1> OUT_TYPE; //!< function  output vector type
 
-	typedef CppAD::AD<CppAD::cg::CG<double> > SCALAR; //!< scalar  type
-	typedef typename SCALAR::value_type AD_SCALAR; //!< autodiff scalar type
+	typedef ADCGScalar SCALAR; //!< scalar  type
+	typedef ADCGValueType AD_SCALAR; //!< autodiff scalar type
 
 	typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE; //!< Jacobian type
 	typedef Eigen::Matrix<double, OUT_DIM, IN_DIM, Eigen::RowMajor> JAC_TYPE_ROW_MAJOR; //!< Jocobian type in row-major format

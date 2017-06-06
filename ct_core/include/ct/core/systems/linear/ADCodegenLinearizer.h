@@ -73,9 +73,9 @@ class ADCodegenLinearizer : public internal::ADLinearizerBase<STATE_DIM, CONTROL
 
 public:
 
-	typedef CppAD::AD<CppAD::cg::CG<double> > SCALAR; //!< scalar type
+	typedef ADCGScalar SCALAR; //!< scalar type
+	typedef ADCGValueType AD_SCALAR; //!< Auto-Diff scalar type
 	typedef internal::ADLinearizerBase<STATE_DIM, CONTROL_DIM, SCALAR> Base; //!< base class type
-	typedef CppAD::cg::CG<double> AD_SCALAR; //!< Auto-Diff scalar type
 
 	typedef typename Base::state_vector_t state_vector_t; //!< state vector type
 	typedef typename Base::control_vector_t control_vector_t; //!< control vector type

@@ -30,6 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "types/Time.h"
 
+#include "types/AutoDiff.h"
 #include "types/ControlVector.h"
 #include "types/StateVector.h"
 #include "types/FeedbackMatrix.h"

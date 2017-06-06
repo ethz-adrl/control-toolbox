@@ -75,7 +75,7 @@ public:
 	 */
 	virtual void computeControl(
 			const StateVector<STATE_DIM, SCALAR>& state,
-			const SCALAR& t,
+			const Time& t,
 			ControlVector<CONTROL_DIM, SCALAR>& controlAction) = 0;
 
 

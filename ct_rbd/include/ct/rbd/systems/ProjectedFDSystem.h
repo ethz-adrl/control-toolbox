@@ -45,7 +45,7 @@ public:
 	virtual RBDDynamics& dynamics() override { return dynamics_; }
 	virtual const RBDDynamics& dynamics() const override { return dynamics_; }
 
-	void computeControlledDynamics(
+	virtual void computeControlledDynamics (
 		const core::StateVector<STATE_DIM>& state,
 		const core::Time& t,
 		const core::ControlVector<CONTROL_DIM>& control,

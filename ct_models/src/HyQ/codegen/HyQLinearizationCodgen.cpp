@@ -92,7 +92,7 @@ void generateForwardZeroForwardDynamics()
 
 	try {
 		std::cout << "Generating Forward Zero Code... " << std::endl;
-		jacCG.generateForwardZeroCode("HyQForwardZero", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), false);
+		jacCG.generateForwardZeroCode("HyQForwardZero", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", false);
 	} catch (const std::runtime_error& e)
 	{
 		std::cout << "forward zero code generation failed: "<<e.what()<<std::endl;

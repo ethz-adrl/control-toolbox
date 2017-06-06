@@ -92,7 +92,7 @@ public:
 	 */
 	virtual void computeDynamics(
 			const StateVector<STATE_DIM, SCALAR>& state,
-			const SCALAR& t,
+			const Time& t,
 			StateVector<STATE_DIM, SCALAR>& derivative) = 0;
 
 	//! get the type of system
