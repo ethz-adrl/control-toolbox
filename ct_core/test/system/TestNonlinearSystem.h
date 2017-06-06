@@ -66,9 +66,9 @@ public:
 	}
 
 
-	void computeControlledDynamics(
+	virtual void computeControlledDynamics(
 			const StateVector<2, SCALAR>& state,
-			const SCALAR& t,
+			const Time& t,
 			const ControlVector<1, SCALAR>& control,
 			StateVector<2, SCALAR>& derivative
 	) override

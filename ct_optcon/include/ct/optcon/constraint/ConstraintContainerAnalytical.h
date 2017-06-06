@@ -1,12 +1,31 @@
-/*
- * ConstraintsAnalytical.h
- * author: 			mgiftthaler@ethz.ch
- * date created: 	04.10.2016
- *
- */
+/***********************************************************************************
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Farbod Farshidian. All rights reserved.
 
-#ifndef CT_OPTCON_CONSTRAINTSANALYTICAL_H_
-#define CT_OPTCON_CONSTRAINTSANALYTICAL_H_
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
+
+#ifndef CT_OPTCON_CONSTRAINTS_CONSTRAINTSANALYTICAL_H_
+#define CT_OPTCON_CONSTRAINTS_CONSTRAINTSANALYTICAL_H_
 
 #include <cppad/example/cppad_eigen.hpp>
 
@@ -18,24 +37,14 @@ namespace ct {
 namespace optcon {
 
 /**
- * \ingroup Constraint
- *+
- * \brief A class fusing analytical constraint terms and Autodiff constraint terms
+ * @ingroup    Constraint
  *
- * If analytical Jacobians are provided, add the implemented terms as analytical terms.
- * Otherwise overload the term's scalar types with CppAD::AD<double> types and let
- * this class derive the Jacobians automatically.
+ * @brief      Contains all the constraints using analytically calculated
+ *             jacobians
  *
- * Note: we need to know the constraint dimensions already at object construction time
- *
- * @tparam STATE_DIM: Dimension of the state vector
- * @tparam INPUT_DIM: Dimension of the control input vector
- * @tparam CONSTRAINT2_DIM: Maximum number of pure state constraints
- * @tparam CONSTRAINT1_DIM: Maximum number of state-input constraints
+ * @tparam     STATE_DIM  The state dimension
+ * @tparam     INPUT_DIM  The control dimension
  */
-
-
- // blabla decide on the parameters
 template <size_t STATE_DIM, size_t INPUT_DIM>
 class ConstraintContainerAnalytical : public LinearConstraintContainer<STATE_DIM, INPUT_DIM>{
 
@@ -75,10 +84,11 @@ public:
 	{}
 
 	/**
-	 * \brief Constructor using state, control and time
-	 * @param x state vector
-	 * @param u control vector
-	 * @param t time
+	 * @brief      Constructor using state, control and time
+	 *
+	 * @param      x     state vector
+	 * @param      u     control vector
+	 * @param      t     time
 	 */
 	ConstraintContainerAnalytical(const state_vector_t &x, const input_vector_t &u, const double& t = 0.0)
 	{
@@ -86,8 +96,9 @@ public:
 	}
 
 	/**
-	 * \brief Copy constructor
-	 * @param arg constraint class to copy
+	 * @brief      Copy constructor
+	 *
+	 * @param      arg   constraint class to copy
 	 */
 	ConstraintContainerAnalytical(const ConstraintContainerAnalytical& arg) 
 	:
@@ -110,6 +121,12 @@ public:
 
 	virtual ConstraintContainerAnalytical_Raw_Ptr_t clone () const override {return new ConstraintContainerAnalytical(*this);}
 
+	/**
+	 * @brief      Adds a constraint.
+	 *
+	 * @param[in]  constraint  The constraint to be added
+	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
+	 */
 	void addConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, INPUT_DIM>> constraint, bool verbose)
 	{
 		if(verbose){
@@ -122,14 +139,9 @@ public:
 		initialized_ = false;
 	}
 
-	size_t getConstraintsCount()
-	{
-		size_t count = 0;
-		for(auto constraint : constraintsAnalytical_)
-			count += constraint->getConstraintsCount();
-		return count;
-	}
-
+	/**
+	 * @brief      Initializes the vectors to the correct size
+	 */
 	void initialize()
 	{
 		size_t nnzStateCount = 0;
@@ -501,6 +513,19 @@ public:
 private:
 	virtual void update() override {};	// todo: can we make use of that function ?
 
+
+	/**
+	 * @brief      add a term (AD or analytic), and update the mappings between
+	 *             the indicies required to identify it uniquely.
+	 *
+	 *             templated on scalar type (double, CppAD::AD<double)
+	 *
+	 * @param[in]  constraint          The constraint
+	 * @param      verbose             set to true if printout desired
+	 * @param      stockOfConstraints  vector terms of same TERM_TYPE (member
+	 *                                 variable)
+	 * @param      map                 indices mapping
+	 */
 	void addConstraintAndGenerateIndicies(
 		std::shared_ptr< ConstraintBase<STATE_DIM, INPUT_DIM>> constraint, 
 		TERM_TYPE constraint_type, 

@@ -20,8 +20,6 @@ option(MATLAB "Compile with matlab support" OFF)
 option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" OFF)
 option(DEBUG_PRINT "Print debug messages" OFF)
 
-option(BUILD_WITH_IPOPT_SUPPORT "Build with IPOPT support" OFF)
-option(BUILD_WITH_SNOPT_SUPPORT "Build with SNOPT support" OFF)
 
 if(DEBUG_PRINT)
     message(WARNING "WARNING: Debug Print ON")
@@ -46,24 +44,30 @@ endif(MATLAB)
 set(MATLAB_LIBS ${MATLAB_LIB_DIR})
 
 
-if(BUILD_WITH_IPOPT_SUPPORT)
-    if(NOT DEFINED ENV{IPOPT_SOURCE_DIR})
-        message(FATAL_ERROR "ERROR: Ipopt source directory environment variable not set! Set IPOPT_SOURCE_DIR environment variable!")
-    endif(NOT DEFINED ENV{IPOPT_SOURCE_DIR})
-
+find_package(ipopt)
+if(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
+    set(BUILD_WITH_IPOPT_SUPPORT ON)
     message(WARNING "Build with IPOPT")
-    include_directories( "$ENV{IPOPT_SOURCE_DIR}/build/include/coin")
+    if(ipopt_FOUND)
+      message(WARNING "Using local installation of IPOPT")
+      set(IPOPT_BUILD_DIR ${CMAKE_BINARY_DIR}/build/include/coin)
+    elseif(DEFINED ENV{IPOPT_SOURCE_DIR})
+      message(WARNING "using gLOBAL installation of IPOPT")
+      set(IPOPT_BUILD_DIR $ENV{IPOPT_SOURCE_DIR}/build)
+    else()
+      message(FATAL_ERROR "ERROR: Ipopt source directory environment variable not set! Set IPOPT_SOURCE_DIR environment variable!")
+    endif(ipopt_FOUND)
+
+    include_directories("${IPOPT_BUILD_DIR}/include/coin")
     add_definitions( -DBUILD_WITH_IPOPT_SUPPORT )
-    link_directories($ENV{IPOPT_SOURCE_DIR}/build/lib)
-    set(IPOPT_LIBS ipopt dl coinmumps coinhsl lapack blas
+    link_directories(${IPOPT_BUILD_DIR}/lib)
+    set(IPOPT_LIBS ipopt dl coinmumps coinhsl lapack blas gfortran
         m quadmath coinmetis)
 
-endif(BUILD_WITH_IPOPT_SUPPORT)
+endif(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
 
-if(BUILD_WITH_SNOPT_SUPPORT)
-    if(NOT DEFINED ENV{SNOPT_SOURCE_DIR})
-        message(FATAL_ERROR "ERROR: Snopt source directory environment variable not set! Set SNOPT_SOURCE_DIR environment variable!")
-    endif(NOT DEFINED ENV{SNOPT_SOURCE_DIR})
+if(DEFINED ENV{SNOPT_SOURCE_DIR})
+    set(BUILD_WITH_SNOPT_SUPPORT ON)
     message(WARNING "Build with SNOPT")
     include_directories( "$ENV{SNOPT_SOURCE_DIR}/include")
 
@@ -72,7 +76,7 @@ if(BUILD_WITH_SNOPT_SUPPORT)
     find_library(SNOPT_LIBRARY2 snopt7       $ENV{SNOPT_SOURCE_DIR}/lib REQUIRED)
     set(SNOPT_LIBS ${SNOPT_LIBRARY1} ${SNOPT_LIBRARY2})
 
-endif(BUILD_WITH_SNOPT_SUPPORT)
+endif(DEFINED ENV{SNOPT_SOURCE_DIR})
 
 set(NLP_LIBS ${IPOPT_LIBS} ${SNOPT_LIBS})
 
@@ -89,19 +93,6 @@ include_directories(
    iLQG.msg
 )
 
-## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
-
-## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(

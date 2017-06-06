@@ -1,9 +1,42 @@
-#ifndef CT_OPTCON_OPTVECTOR_HPP_
-#define CT_OPTCON_OPTVECTOR_HPP_
+/***********************************************************************************
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Farbod Farshidian. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
+
+
+#ifndef CT_OPTCON_NLP_OPTVECTOR_H_
+#define CT_OPTCON_NLP_OPTVECTOR_H_
 
 namespace ct {
 namespace optcon {
 
+/**
+ * @ingroup    NLP
+ *
+ * @brief      Class containing and managing all the optimization variables used
+ *             for in the NLP solver IPOPT and SNOPT.
+ */
 class OptVector
 {
 public:
@@ -17,10 +50,15 @@ public:
 
 	OptVector() = delete;
 
-	OptVector(size_t n) :
-	newXCounter_(0)
+	/**
+	 * @brief      { Constructor resizing the vectors of the optimization
+	 *             variables to the correct size }
+	 *
+	 * @param[in]  n     The number of the optimization variables
+	 */
+	OptVector(const size_t n) :
+	updateCount_(0)
 	{
-		xInitGuess_.resize(n);
 		x_.resize(n);
 		x_.setZero();
 		xLb_.resize(n);
@@ -31,12 +69,18 @@ public:
 		xMul_.setZero();
 		xState_.resize(n);
 		xState_.setZero();
-		zuInitGuess_.resize(n);
-		zuInitGuess_.setZero();
-		zlInitGuess_.resize(n);
-		zlInitGuess_.setZero();
+		zUpper_.resize(n);
+		zUpper_.setZero();
+		zLow_.resize(n);
+		zLow_.setZero();
 	}
 
+	/**
+	 * @brief      Resizes the vectors of the constraint variables to the
+	 *             correct size
+	 *
+	 * @param[in]  m     The number of constraints
+	 */
 	void resizeConstraintVars(size_t m)
 	{
 		zMul_.resize(m+1);
@@ -45,33 +89,47 @@ public:
 		zState_.setZero();
 	}
 
-	~OptVector(){}
+	/**
+	 * @brief      Destructor
+	 */
+	virtual ~OptVector(){}
 
-	void resize(const size_t size) {
+	 
+	/**
+	 * @brief      Resizes the vectors of the optimization variables
+	 *
+	 * @param[in]  size  The size of the new optimization variables
+	 */
+	void resizeOptimizationVars(const size_t size) {
 		x_.resize(size);
 		xLb_.resize(size);
 		xUb_.resize(size);
-		xInitGuess_.resize(size);
-		boundLowerMultGuess_.resize(size);
-		boundUpperMultGuess_.resize(size);
-		lambdaGuess_.resize(size);
-		zuInitGuess_.resize(size);
-		zlInitGuess_.resize(size);
+		lambda_.resize(size);
+		zUpper_.resize(size);
+		zLow_.resize(size);
 	}
 
+
+	/**
+	 * @brief      Resets the optimization variables
+	 */
 	void setZero() {
 		x_.setZero();
 		xLb_.setZero();
 		xUb_.setZero();
-		xInitGuess_.setZero();
-		boundLowerMultGuess_.setZero();
-		boundUpperMultGuess_.setZero();
-		lambdaGuess_.setZero();
-		zuInitGuess_.setZero();
-		zlInitGuess_.setZero();
+		lambda_.setZero();
+		zUpper_.setZero();
+		zLow_.setZero();
 	}
 
-	bool checkPrimalVarDimension(unsigned int n)
+	/**
+	 * @brief      Checks if the optimization variables have to correct size
+	 *
+	 * @param[in]  n     The number of optimization variables
+	 *
+	 * @return     returns true of the dimensions match
+	 */
+	bool checkOptimizationVarDimension(const unsigned int n)
 	{
 		bool xDim = x_.size() == n ? true : false;
 		bool xLDim = xLb_.size() == n ? true : false;
@@ -79,72 +137,140 @@ public:
 		return xDim && xLDim && xUDim;
 	}
 
+	/**
+	 * @brief      Sets the optimization variable bounds.
+	 *
+	 * @param[in]  xLb   The lower optimization variable bound
+	 * @param[in]  xUb   The upper optimization variable bound
+	 */
 	void setBounds(const Eigen::VectorXd& xLb, const Eigen::VectorXd& xUb){
 		xLb_ = xLb;
 		xUb_ = xUb;
 	}
 
-	Eigen::VectorXd get() const {
-		return x_;
-	}
 
+	/**
+	 * @brief      Gets the lower bounds of the optimization variables.
+	 *
+	 * @param[out] x     Lower bound
+	 */
 	void getLowerBounds(MapVecXd& x) const {
 		x = xLb_;
 	}
 
+	/**
+	 * @brief      Gets the upper bounds of the optimization variables.
+	 *
+	 * @param[out]      x     The upper bound
+	 */
 	void getUpperBounds(MapVecXd& x) const {
 		x = xUb_;
 	}
 
-	void getPrimalMultState(const size_t n, MapVecXd& xMul, Eigen::Map<Eigen::VectorXi>& xState) const {
+	/**
+	 * @brief      Return the state and the multiplier of the optimization
+	 *             variables, used in the NLP solver SNOPT.
+	 *
+	 * @param[in]  n       { The number of optimization variables }
+	 * @param[out] xMul    The optimization variables multiplier
+	 * @param[out] xState  The optimization variables state
+	 */
+	void getOptimizationMultState(const size_t n, MapVecXd& xMul, Eigen::Map<Eigen::VectorXi>& xState) const {
 		assert(n == xMul_.size());
 		assert(n == xState_.size());
 		xMul = xMul_;
 		xState = xState_;
 	}
 
-	void getDualMultState(const size_t m, MapVecXd& zMul, Eigen::Map<Eigen::VectorXi>& zState) const {
+	/**
+	 * @brief      Gets the constraint multiplier and state, used in the NLP
+	 *             solver SNOPT.
+	 *
+	 * @param[in]  m       { The number of constraints }
+	 * @param[out] zMul    The constraint variable multiplier
+	 * @param[out] zState  The constraint variable state
+	 */
+	void getConstraintsMultState(const size_t m, MapVecXd& zMul, Eigen::Map<Eigen::VectorXi>& zState) const {
 		assert(m == zMul_.size());
 		assert(m == zState_.size());
 		zMul = zMul_;
 		zState = zState_;
 	}
 
+	/**
+	 * @brief      Returns the number of optimization variables
+	 *
+	 * @return     the number of optimization variables
+	 */
 	size_t size() const {return x_.size();}
 
-	void getInitPrimalVars(size_t n, MapVecXd& x)  const {
-		assert (n == xInitGuess_.size());
-		x = xInitGuess_;
+	/**
+	 * @brief      Gets the bound multipliers used in the NLP solver IPOPT.
+	 *
+	 * @param[in]  n     { The number of optimization variables }
+	 * @param[out] low   The value for the lower bound multiplier
+	 * @param[out] up    The value for the upper bound multiplier
+	 */
+	void getBoundMultipliers(size_t n, MapVecXd& low, MapVecXd& up) const {
+		assert(n == zLow_.size());
+		low = zLow_;
+		up = zUpper_;
+	}
+	
+	/**
+	 * @brief      Gets the values of the constraint multipliers.
+	 *
+	 * @param[in]  m     { The number of constraints }
+	 * @param[out] x     The values of the constraint multipliers
+	 */
+	void getLambdaVars(size_t m, MapVecXd& x) const {
+		assert(m == lambda_.size());
+		x = lambda_;
 	}
 
-	void getPrimalVars(size_t n, MapVecXd& x)  const {
-		assert (n == xInitGuess_.size());
+	/**
+	 * @brief      Gets the optimization variables.
+	 *
+	 * @param[in]  n     { The number of optimization variables }
+	 * @param[out]      x     The optimization variables
+	 */
+	void getOptimizationVars(size_t n, MapVecXd& x)  const {
+		assert (n == x_.size());
 		x = x_;
 	}
 
-	void getInitBoundMultipliers(size_t n, MapVecXd& low, MapVecXd& up) const {
-		assert(n == boundLowerMultGuess_.size());
-		low = boundLowerMultGuess_;
-		up = boundUpperMultGuess_;
-	}
-	void getInitLambdaVars(size_t m, MapVecXd& x) const {
-		assert(m == lambdaGuess_.size());
-		x = lambdaGuess_;
-	}
-
-	void setNewSolution(
+	/**
+	 * @brief      Extracts the solution from ipopt and stores them into class
+	 *             variables
+	 *
+	 * @param[in]  x       The optimization variables
+	 * @param[in]  zL      The lower bound multiplier
+	 * @param[in]  zU      The upper bound multiplier
+	 * @param[in]  lambda  The constraint multiplier
+	 */
+	void setNewIpoptSolution(
 		const MapConstVecXd& x, 
 		const MapConstVecXd& zL, 
 		const MapConstVecXd& zU, 
 		const MapConstVecXd& lambda)
 	{
 		x_ = x;
-		zlInitGuess_ = zL;
-		zuInitGuess_ = zU;
-		lambdaGuess_ = lambda;
+		zLow_ = zL;
+		zUpper_ = zU;
+		lambda_ = lambda;
 	}
 
-	void setNewSolution(const MapVecXd& x, const MapVecXd& xMul, 
+	/**
+	 * @brief      Extracts the solution from snopt and stores it into class
+	 *             variables
+	 *
+	 * @param[in]  x       The optimization variables
+	 * @param[in]  xMul    The optimization variables multiplier
+	 * @param[in]  xState  The optimization variables state
+	 * @param[in]  fMul    The constraints multiplier
+	 * @param[in]  fState  The constraints state
+	 */
+	void setNewSnoptSolution(const MapVecXd& x, const MapVecXd& xMul, 
 		const MapVecXi& xState, const MapVecXd& fMul, const MapVecXi& fState)
 	{
 		x_ = x;
@@ -154,54 +280,48 @@ public:
 		zState_ = fState;
 	}
 
-	void setPrimalVars(const MapConstVecXd& x, bool isNew)
+	/**
+	 * @brief      Sets the updates optimization variables from the NLP solver
+	 *             and updates the counter
+	 *
+	 * @param[in]  x     The updates primal variables
+	 */
+	void setOptimizationVars(const MapConstVecXd& x)
 	{
-		if(isNew)
-		{
-			x_ = x;
-			newXCounter_++;
-		}		
+		x_ = x;
+		updateCount_++;
 	}
 
-	size_t getCounter() const{
-		return newXCounter_;
-	}
+	// Eigen::VectorXd getPrimalVars() const{
+	// 	return x_;
+	// }
 
-	void setInitGuess(){
-		x_ = xInitGuess_;
-	}
-
-	Eigen::VectorXd getInitGuess() const{
-		return xInitGuess_;
-	}
-
-	Eigen::VectorXd getPrimalVars() const{
-		return x_;
-	}
-
-	size_t getNewXCounter() const{
-		return newXCounter_;
+	/**
+	 * @brief      Returns the update counter
+	 *
+	 * @return     The update counter
+	 */
+	size_t getUpdateCount() const{
+		return updateCount_;
 	}
 
 
 protected:
-	Eigen::VectorXd x_; 	//Primal vars
+	Eigen::VectorXd x_; 	/*!< The optimization variables */
 	Eigen::VectorXd xLb_;	/*!< lower bound on optimization vector */
 	Eigen::VectorXd xUb_;	/*!< upper bound on optimization vector */
-	Eigen::VectorXd xInitGuess_;
-	Eigen::VectorXd boundLowerMultGuess_;
-	Eigen::VectorXd boundUpperMultGuess_;
-	Eigen::VectorXd zuInitGuess_;
-	Eigen::VectorXd zlInitGuess_;
 
-	// Snopt stuff
-	Eigen::VectorXd lambdaGuess_;
-	Eigen::VectorXd xMul_;
-	Eigen::VectorXi xState_;
-	Eigen::VectorXd	zMul_;
-	Eigen::VectorXi	zState_;
+	Eigen::VectorXd zUpper_; /*!< The upper bound multiplier, used in IPOPT */
+	Eigen::VectorXd zLow_; 	/*!< The lower bound multiplier, used in IPOPT */
+	Eigen::VectorXd lambda_; /*!< The constraint multiplier, used in IPOPT */
 
-	size_t newXCounter_;
+	// Snopt variables
+	Eigen::VectorXd xMul_; 		/*!< The optimization variable multiplier, used in SNOPT */
+	Eigen::VectorXi xState_;	/*!< The optimization variable state, used in SNOPT */
+	Eigen::VectorXd	zMul_;		/*!< The constraint multiplier, used in SNOPT */
+	Eigen::VectorXi	zState_;	/*!< The constraint state, used in SNOPT */
+
+	size_t updateCount_; /*!< The number of optimization variable updates */
 
 };
 
@@ -209,4 +329,4 @@ protected:
 }
 
 
-#endif
+#endif //CT_OPTCON_NLP_OPTVECTOR_HPP_

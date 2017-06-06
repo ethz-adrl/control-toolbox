@@ -1,83 +1,165 @@
-#ifndef DMS_CONSTRAINT_BASE_HPP
-#define DMS_CONSTRAINT_BASE_HPP
+/***********************************************************************************
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Farbod Farshidian. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
+
+#ifndef CT_OPTCON_NLP_CONSTRAINT_BASE_H_
+#define CT_OPTCON_NLP_CONSTRAINT_BASE_H_
 
 namespace ct {
 namespace optcon {
 
+/**
+ * @ingroup    DMS
+ *
+ * @brief      Implements an abstract base class from which all the discrete
+ *             custom NLP constraints should derive
+ */
 class DiscreteConstraintBase{
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+	/**
+	 * @brief      Default constructor
+	 */
 	DiscreteConstraintBase(){}
 
-	~DiscreteConstraintBase(){}
+	/**
+	 * @brief      Destructor
+	 */
+	virtual ~DiscreteConstraintBase(){}
 
-	//Writes constraint evaluation inside Optimization Vector
-	virtual size_t getEvaluation(Eigen::Map<Eigen::VectorXd>& val, size_t count) = 0;
 
-	//Writes constraint evaluation inside Optimization Vector
-	virtual size_t evalConstraintJacobian(Eigen::Map<Eigen::VectorXd>& val, size_t count) = 0;
+	/**
+	 * @brief      Evaluates the constraint violation
+	 *
+	 * @return     A vector of the evaluated constraint violation
+	 */
+	virtual Eigen::VectorXd eval() = 0;
 
-	virtual size_t getNumNonZerosJacobian() = 0;
+	/**
+	 * @brief      Returns the non zero elements of the eval method with respect
+	 *             to the optimization variables
+	 *
+	 * @return     A vector of the non zero elements of the constraint jacobian
+	 */
+	virtual Eigen::VectorXd evalSparseJacobian() = 0;
 
-	virtual size_t genSparsityPattern(
-		Eigen::Map<Eigen::VectorXi>& iRow_vec,
-		Eigen::Map<Eigen::VectorXi>& jCol_vec,
-		size_t indexNumber) = 0;
-
-	virtual void getLowerBound(Eigen::VectorXd& c_lb) = 0;
-
-	virtual void getUpperBound(Eigen::VectorXd& c_ub) = 0;
-
+	/**
+	 * @brief      Returns size of the constraint vector
+	 *
+	 * @return     The size of the constraint vector (should be equal to the
+	 *             size of the return value of the eval method)
+	 */
 	virtual size_t getConstraintSize() = 0;
 
-	const size_t c_index() const {return indexTotal_;}
+	/**
+	 * @brief      Returns the number of non zero elements of the jacobian
+	 *
+	 * @return     The number of non zero elements of the jacobian (which should
+	 *             be equal to the return value of evalSparseJacobian)
+	 */
+	virtual size_t getNumNonZerosJacobian() = 0;
 
-	virtual void initialize(size_t c_index)
-	{
-		indexTotal_ = c_index;
-	}
+	/**
+	 * @brief      Returns the sparsity structure of the constraint jacobian
+	 *
+	 * @param[out]      iRow_vec  A vector containing the row indices of the non zero
+	 *                       elements of the constraint jacobian
+	 * @param[out]      jCol_vec  A vector containing the column indices of the non
+	 *                       zero elements of the constraint jacobian
+	 */
+	virtual void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) = 0;
+
+	/**
+	 * @brief      Returns the lower bound of the constraint
+	 *
+	 * @return     The lower constraint bound
+	 */
+	virtual Eigen::VectorXd getLowerBound() = 0;
+
+	/**
+	 * @brief      Returns the upper bound of the constraint
+	 *
+	 * @return     The upper constraint bound
+	 */
+	virtual Eigen::VectorXd getUpperBound() = 0;
 
 protected:
 
+	/**
+	 * @brief      This method generates Row and Column vectors which indicate
+	 *             the sparsity pattern of the constraint jacobian for a
+	 *             quadratic matrix block containing diagonal entries only
+	 *
+	 * @param[in]  col_start     The starting column of the jCol vec
+	 * @param[in]  num_elements  The size of the matrix block
+	 * @param[out] iRow_vec      The resulting row vector
+	 * @param[out] jCol_vec      The resuling column vector
+	 * @param[in]  indexNumber   The starting inserting index for iRow and jCol
+	 *
+	 * @return     indexnumber plus num_elements
+	 */
 	size_t genDiagonalIndices(
-			const size_t row_start,
 			const size_t col_start,
 			const size_t num_elements,
-			Eigen::Map<Eigen::VectorXi>& iRow_vec,
-			Eigen::Map<Eigen::VectorXi>& jCol_vec,
+			Eigen::VectorXi& iRow_vec,
+			Eigen::VectorXi& jCol_vec,
 			const size_t indexNumber);
 
+	/**
+	 * @brief      This method generates Row and Column vectors which indicate
+	 *             the sparsity pattern of the constraint jacobian for an
+	 *             arbitrary dense matrix block
+	 *
+	 * @param[in]  col_start    The starting column of the jCol vec
+	 * @param[in]  num_rows     The number of rows of the matrix block
+	 * @param[in]  num_cols     The number of columns of the matrix block
+	 * @param[out] iRow_vec     The resulting row vector
+	 * @param[out] jCol_vec     The resuling column vector
+	 * @param[in]  indexNumber  The starting inserting index for iRow and jCol
+	 *
+	 * @return     The indexnumber plus the number of elements contained in the
+	 *             matrix block
+	 */
 	size_t genBlockIndices(
-			const size_t row_start,
 			const size_t col_start,
 			const size_t num_rows,
 			const size_t num_cols,
-			Eigen::Map<Eigen::VectorXi>& iRow_vec,
-			Eigen::Map<Eigen::VectorXi>& jCol_vec,
+			Eigen::VectorXi& iRow_vec,
+			Eigen::VectorXi& jCol_vec,
 			const size_t indexNumber);
 
-	size_t evalIblock(
-			Eigen::Map<Eigen::VectorXd>& val,
-			size_t indexNumber,
-			size_t block_length);
-
-	size_t indexTotal_; 	// absolute starting index in the large constraint vector
 };
 
-
-/* helper function for indexing the non-zero elements in the constraint jacobian.
- * Resizes the Eigenvectors to the number of elements in the diagonal defined by the starting
- * values and the number of elements. This generates a diagonal which goes from the top left corner
- * to the bottom right corner */
 size_t DiscreteConstraintBase::genDiagonalIndices(
-		const size_t row_start,							// matrix row index where we start inserting
-		const size_t col_start,							// matrix col index where we start inserting
-		const size_t num_elements, 						// number of diagonal elements the diag matrix shall have
-		Eigen::Map<Eigen::VectorXi>& iRow_vec,			// big ipopt row index vector
-		Eigen::Map<Eigen::VectorXi>& jCol_vec,			// big ipopt col index vector
-		const size_t indexNumber						// where we insert the generated indices into the big ipopt index vectors
+		const size_t col_start,
+		const size_t num_elements,
+		Eigen::VectorXi& iRow_vec,
+		Eigen::VectorXi& jCol_vec,
+		const size_t indexNumber
 )
 {
 	Eigen::VectorXi new_row_indices;
@@ -88,7 +170,7 @@ size_t DiscreteConstraintBase::genDiagonalIndices(
 	size_t count = 0;
 
 	for(size_t i = 0; i < num_elements; ++i){
-		new_row_indices(count) = row_start+i;
+		new_row_indices(count) = i;
 		new_col_indices(count) = col_start+i;
 		count++;
 	}
@@ -102,17 +184,13 @@ size_t DiscreteConstraintBase::genDiagonalIndices(
 }
 
 
-/* helper function for indexing the non-zero elements in the constraint jacobian.
- * Resizes the Eigenvectors to the number of elements in the block defined by the starting
- * values and the widths and enters the row- and column indices into the vectors. */
 size_t DiscreteConstraintBase::genBlockIndices(
-		const size_t row_start,                   	// matrix row index where we start inserting
-		const size_t col_start,                   	// matrix col index where we start inserting
-		const size_t num_rows, 						// number of rows the block matrix shall have
-		const size_t num_cols,						// number of cols the block matrix shall have
-		Eigen::Map<Eigen::VectorXi>& iRow_vec,		// big ipopt row index vector
-		Eigen::Map<Eigen::VectorXi>& jCol_vec,	    // big ipopt col index vector
-		const size_t indexNumber)					// where we insert the generated indices into the big ipopt index vectors
+		const size_t col_start,
+		const size_t num_rows,
+		const size_t num_cols,
+		Eigen::VectorXi& iRow_vec,
+		Eigen::VectorXi& jCol_vec,
+		const size_t indexNumber)
 {
 	size_t num_gen_indices = num_rows*num_cols;
 
@@ -123,7 +201,7 @@ size_t DiscreteConstraintBase::genBlockIndices(
 
 	size_t count = 0;
 
-	for(size_t row = row_start; row <row_start+num_rows; ++row){
+	for(size_t row = 0; row <num_rows; ++row){
 		for(size_t col = col_start; col <col_start+num_cols; ++col){
 			new_row_indices(count) = row;
 			new_col_indices(count) = col;
@@ -140,24 +218,7 @@ size_t DiscreteConstraintBase::genBlockIndices(
 }
 
 
-// blockSize denotes the number of elements on the diagonal
-size_t DiscreteConstraintBase::evalIblock(Eigen::Map<Eigen::VectorXd>& val, size_t indexNumber, size_t block_length)
-{
-	// call method to get derivative
-	Eigen::MatrixXd mat = Eigen::MatrixXd::Identity(block_length, block_length);
-
-	// fill into value vector with correct indexing
-	size_t count = indexNumber;
-
-	for(size_t element = 0; element < block_length; ++element){
-		val(count) = mat(element, element);
-		count++;
-	}
-
-	return count;
-}
-
 } // namespace optcon
 } // namespace ct
 
-#endif
+#endif //CT_OPTCON_NLP_CONSTRAINT_BASE_H_

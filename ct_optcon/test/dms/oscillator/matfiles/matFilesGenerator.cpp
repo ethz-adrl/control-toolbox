@@ -8,6 +8,7 @@
 #include <iostream>
 #include <memory>
 
+#include <ct/optcon/dms/Dms>
 #include <ct/optcon/optcon.h>
 
 #include "oscDMSTest_settings.h"

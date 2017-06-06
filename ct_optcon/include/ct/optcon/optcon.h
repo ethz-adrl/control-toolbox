@@ -50,6 +50,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lqr/LQR.hpp"
 #include "lqr/FHDTLQR.hpp"
 
-#include "dms/dms.h"
+// #include "dms/dms.h"
 
 #endif /* INCLUDE_CT_OPTCON_OPTCON_H_ */

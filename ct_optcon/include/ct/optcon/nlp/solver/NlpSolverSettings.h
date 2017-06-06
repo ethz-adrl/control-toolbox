@@ -1,5 +1,30 @@
-#ifndef CT_OPTCON_NLPSETTINGS
-#define CT_OPTCON_NLPSETTINGS
+/***********************************************************************************
+Copyright (c) 2016, Agile & Dexterous Robotics Lab, ETH ZURICH. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
+
+#ifndef  CT_OPTCON_NLP_NLP_SOLVER_SETTINGS_H_
+#define  CT_OPTCON_NLP_NLP_SOLVER_SETTINGS_H_
 
 #include <iostream>
 #include <boost/property_tree/ptree.hpp>
@@ -8,10 +33,19 @@
 namespace ct {
 namespace optcon {
 
+/**
+ * @ingroup    NLP
+ *
+ * @brief      SnoptSolver settings. Details about the parameters can be found
+ *             in the SNOPT documentation
+ */
 class SnoptSettings
 {
 public: 
 
+	/**
+	 * @brief      Default constructor, sets the parameters to default values
+	 */
 	SnoptSettings() :
 	scale_option_param_(0),
 	derivative_option_param_(1),
@@ -52,44 +86,69 @@ public:
     int crash_option_;
     int hessian_updates_;
 
+	/**
+	 * @brief      Prints out information about the settings
+	 */
 	void print()
 	{
-		std::cout << "To be filled with something" << std::endl;
+		std::cout << "SNOPT settings:" << std::endl;
 	}
 
+    /**
+     * @brief      Checks whether to settings are filled with meaningful values
+     *
+     * @return     Returns true of the parameters are ok
+     */
     bool parametersOk() const
     {
     	return true;	
     }
 
-    void load(const std::string& filename, bool verbose = true, const std::string& ns = "dms.nlp.snopt") {}
-
-private:
-
+    /**
+     * @brief      Loads the settings from a .info file
+     *
+     * @param[in]  filename  The filename
+     * @param[in]  verbose   True if parameters to be printed out
+     * @param[in]  ns        The namespace in the .info file
+     */
+    void load(const std::string& filename, bool verbose = true, const std::string& ns = "dms.nlp.snopt")
+    {
+    	// to be implemented
+    }
 
 };
 
+/**
+ * @ingroup    NLP
+ *
+ * @brief      IPOPT settings. Details about the parameters can be found
+ *             in the IPOPT documentation
+ */
 class IpoptSettings
 {
 public:
+
+	/**
+	 * @brief      Default constructor, sets the parameters to default values
+	 */
 	IpoptSettings() : 
-	tol_(1e-5),
-	constr_viol_tol_(1e-3),
-	max_iter_(10),
+	tol_(1e-8),
+	constr_viol_tol_(1e-4),
+	max_iter_(3000),
 	restoTol_(1e-7),
-	acceptableTol_(1e-7),
+	acceptableTol_(1e-6),
 	restoAcceptableTol_( 1e-7),
 	linear_scaling_on_demand_("yes"),
 	hessian_approximation_("limited-memory"),
 	nlp_scaling_method_("gradient-based"),
 	printLevel_(5),
 	print_user_options_("no"),
-	print_frequency_iter_(10000),
-	printInfoString_("yes"),
+	print_frequency_iter_(1),
+	printInfoString_("no"),
 	derivativeTest_("first-order"),
 	derivativeTestTol_(1e-4),
 	derivativeTestPerturbation_(1e-8),
-	point_perturbation_radius_(0.1),
+	point_perturbation_radius_(10),
 	checkDerivativesForNaninf_("no"),
 	derivativeTestPrintAll_("no"),
 	linearSystemScaling_("mc19"),
@@ -108,7 +167,7 @@ public:
 	std::string nlp_scaling_method_;
 	int printLevel_;
 	std::string print_user_options_;
-	double print_frequency_iter_;
+	int print_frequency_iter_;
 	std::string printInfoString_;
 	std::string derivativeTest_;
 	double derivativeTestTol_;
@@ -120,26 +179,51 @@ public:
 	std::string linear_solver_;
 	std::string jacobianApproximation_;
 
+	/**
+	 * @brief      Prints out information about the settings
+	 */
 	void print()
 	{
 		std::cout << "To be filled with something" << std::endl;
 	}
 
+    /**
+     * @brief      Checks whether to settings are filled with meaningful values
+     *
+     * @return     Returns true of the parameters are ok
+     */
     bool parametersOk() const
     {
     	return true;
     }
 
-    void load(const std::string& filename, bool verbose = true, const std::string& ns = "dms.nlp.ipopt") {}
+    /**
+     * @brief      Loads the settings from a .info file
+     *
+     * @param[in]  filename  The filename
+     * @param[in]  verbose   True if parameters to be printed out
+     * @param[in]  ns        The namespace in the .info fil
+     */
+    void load(const std::string& filename, bool verbose = true, const std::string& ns = "dms.nlp.ipopt")
+    {
 
-private:
+    }
+
 };
 
+/**
+ * @ingroup    NLP
+ *
+ * @brief      Contains the NLP solver settings
+ */
 class NlpSolverSettings
 {
 public:
 	typedef enum SolverType {IPOPT = 0,	SNOPT = 1, num_types_solver} SolverType_t;
 
+	/**
+	 * @brief      Default constructor, set default settings
+	 */
 	NlpSolverSettings() :
 	solverType_(IPOPT)
 	{}
@@ -148,6 +232,9 @@ public:
     SnoptSettings snoptSettings_;
     IpoptSettings ipoptSettings_;
 
+    /**
+     * @brief      Prints out settings
+     */
     void print()
     {
     	std::cout << "Using nlp solver: " << solverToString[solverType_] << std::endl;
@@ -157,6 +244,11 @@ public:
     		snoptSettings_.print();
     }
 
+     /**
+     * @brief      Checks whether to settings are filled with meaningful values
+     *
+     * @return     Returns true of the parameters are ok
+     */
     bool parametersOk() const
     {
     	if(solverType_ == IPOPT)
@@ -167,6 +259,13 @@ public:
     		return false;
     }
 
+    /**
+     * @brief      Loads the settings from a .info file
+     *
+     * @param[in]  filename  The filename
+     * @param[in]  verbose   True if parameters to be printed out
+     * @param[in]  ns        The namespace in the .info fil
+     */
     void load(const std::string& filename, bool verbose = true, const std::string& ns = "dms.nlp")
     {
 		boost::property_tree::ptree pt;
@@ -189,50 +288,7 @@ private:
 };
 
 
-// void checkNlpSettings(const nlpSolverSettings& settings)
-// {
-//     std::cout << "checking the settings" << std::endl;
-// }
-
-// void loadNlpSettings(const std::string& filename, nlpSolverSettings& settings)
-// {
-// 	boost::property_tree::ptree pt;
-// 	boost::property_tree::read_info(filename, pt);
-
-// 	settings.solverType_ = (SolverType_t) pt.get<unsigned int>("nlp.SolverType");
-// 	settings.checkDerivatives_ = pt.get<bool> ("nlp.CheckDerivatives");
-// 	settings.displayIterationOutput_ = pt.get<bool> ("nlp.DisplayIterationOutput");
-// }
-
-
-// void printNlpSettings(nlpSolverSettings settings)
-// {
-// 	switch(settings.solverType_)
-// 	{
-// 		case IPOPT:
-// 		{
-// 			std::cout << "Using IPOPT for solving the NLP" << std::endl;
-// 			break;
-// 		}
-// 		case SNOPT:
-// 		{
-// 			std::cout << "Using SNOPT for solving the NLP" << std::endl;
-// 			break;
-// 		}
-// 		default:
-// 		{
-// 			throw(std::runtime_error("Unknown NLP solver type, Exiting"));
-// 			break;
-// 		}
-// 	}
-
-// 	if(settings.checkDerivatives_)
-// 		std::cout << "Checking NLP derivatives" << std::endl;
-// 	else
-// 		std::cout << "NOT Checking NLP derivatives" << std::endl;
-
-
 } // namespace optcon
 } // namespace ct
 
-#endif //CT_OPTCON_NLPSETTINGS
+#endif //CT_OPTCON_NLP_NLP_SOLVER_SETTINGS_H_

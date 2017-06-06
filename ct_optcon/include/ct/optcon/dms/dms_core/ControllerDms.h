@@ -1,19 +1,36 @@
-/*
- * ControllerDms.h
- *
- *  Created on: 11.11.2015
- *      Author: mgiftthaler
- *
- *  This class provides an interface to the ct controllers and integrators.
- */
+/***********************************************************************************
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Farbod Farshidian. All rights reserved.
 
-#ifndef DMS_CONTROLLER_H_
-#define DMS_CONTROLLER_H_
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
+
+#ifndef CT_OPTCON_DMS_DMS_CORE_CONTROLLER_H_
+#define CT_OPTCON_DMS_DMS_CORE_CONTROLLER_H_
 
 #include <Eigen/Dense>
 
 #include <ct/core/control/Controller.h>
-#include <ct/optcon/dms/dms_core/OptVectorDms.hpp>
+#include <ct/optcon/dms/dms_core/OptVectorDms.h>
 
 
 /**
@@ -47,16 +64,15 @@ public:
 	ControllerDms() = delete;
 
 	ControllerDms(
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
+			std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
 			size_t shotIdx):
-		w_(w),
+		controlSpliner_(controlSpliner),
 		shotIdx_(shotIdx)
 	{}
 
-	/* Important note: when we make a copy of ControllerDms, the underlying optimization
-	 *  vector instance is not copied. We are just handing over the pointer and increasing its reference count */
+
 	ControllerDms(const ControllerDms& arg):
-			w_(arg.w_),
+			controlSpliner_(arg.controlSpliner_),
 			shotIdx_(arg.shotIdx_)
 	{}
 
@@ -73,7 +89,7 @@ public:
 			const double& t,
 			control_vector_t&  controlAction)
 	{
-		controlAction = w_->getControlFromSpline(t, shotIdx_);
+		controlAction = controlSpliner_->evalSpline(t, shotIdx_);
 		assert(controlAction == controlAction);
 	}
 
@@ -81,7 +97,7 @@ public:
 
 private:
 
-	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
+	std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner_;
 
 	/* index of the shot to which this controller belongs */
 	size_t shotIdx_;
@@ -91,4 +107,4 @@ private:
 } // namespace optcon
 } // namespace ct
 
-#endif
+#endif //CT_OPTCON_DMS_DMS_CORE_CONTROLLER_H_
