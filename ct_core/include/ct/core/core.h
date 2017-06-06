@@ -41,13 +41,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <Eigen/Core>
 #include <Eigen/StdVector>
 
-#include "internal/autodiff/ADHelpers.h"
-#include "internal/autodiff/CGHelpers.h"
-#include "internal/autodiff/SparsityPattern.h"
-
-#include "math/Jacobian.h"
-#include "math/JacobianNumDiff.h"
-#include "math/JacobianCG.h"
 
 #include "Common"
 #include "Types"
@@ -56,6 +49,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Integration"
 
 #include "templateDir.h"
+
+#include "internal/autodiff/ADHelpers.h"
+#include "internal/autodiff/CGHelpers.h"
+#include "internal/autodiff/SparsityPattern.h"
+
+#include "math/Jacobian.h"
+#include "math/JacobianNumDiff.h"
+#include "math/JacobianCG.h"
 
 #ifdef PLOTTING_ENABLED
 #include "plot/plot.h"
