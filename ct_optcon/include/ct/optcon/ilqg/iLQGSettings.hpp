@@ -135,8 +135,9 @@ public:
 		min_cost_improvement(1e-4), // cost needs to be at least 1e-4 better before we assume convergence
 		max_iterations(100),
 		fixedHessianCorrection(false),
-		recordSmallestEigenvalue(true),
+		recordSmallestEigenvalue(false),
 		nThreads(4),
+		nThreadsEigen(4),
     	lineSearchSettings()
     {
     }
@@ -179,7 +180,7 @@ public:
         std::cout<<"fixedHessianCorrection: "<<fixedHessianCorrection<<std::endl;
         std::cout<<"recordSmallestEigenvalue: "<<recordSmallestEigenvalue<<std::endl;
         std::cout<<"epsilon: "<<epsilon<<std::endl;
-        std::cout<<"nThreads: "<<nThreads<<std::endl<<std::endl;
+        std::cout<<"nThreads: "<<nThreads<<std::endl;
         std::cout<<"nThreadsEigen: "<<nThreadsEigen<<std::endl<<std::endl;
 
         lineSearchSettings.print();
@@ -203,6 +204,13 @@ public:
 			std::cout << "iLQG freqency dt should be a multiple of integration frequency dt_sim." << std::endl;
 			return false;
 		}
+
+		if (nThreads > 100 || nThreadsEigen > 100)
+		{
+			std::cout << "Number of threads should not exceed 100." << std::endl;
+			return false;
+		}
+
 		return lineSearchSettings.parametersOk();
     }
 
