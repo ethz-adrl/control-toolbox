@@ -98,7 +98,7 @@ public:
 	 * @param g_dc DC gain on input
 	 * @param controller controller (optional)
 	 */
-	SecondOrderSystem(SCALAR w_n, SCALAR zeta = 1.0, SCALAR g_dc = 1.0, std::shared_ptr<Controller<2,1,SCALAR> > controller = nullptr) :
+	SecondOrderSystem(SCALAR w_n, SCALAR zeta = SCALAR(1.0), SCALAR g_dc = SCALAR(1.0), std::shared_ptr<Controller<2,1,SCALAR> > controller = nullptr) :
 		ControlledSystem<2,1,SCALAR>(controller, SYSTEM_TYPE::SECOND_ORDER),
 		w_n_(w_n),
 		w_n_square_(w_n_ * w_n_),
@@ -127,7 +127,7 @@ public:
 	 * @param zeta damping ratio
 	 * @param g_dc DC gain
 	 */
-	void setDynamics(SCALAR w_n, SCALAR zeta = 1.0, SCALAR g_dc = 1.0)
+	void setDynamics(SCALAR w_n, SCALAR zeta = SCALAR(1.0), SCALAR g_dc = SCALAR(1.0))
 	{
 		w_n_ = w_n;
 		w_n_square_ = w_n_ * w_n_;
@@ -143,7 +143,7 @@ public:
 	 * @param g_dc DC input gain
 	 * @param controller controller (optional)
 	 */
-	SecondOrderSystem(SCALAR k, SCALAR m, SCALAR d, SCALAR g_dc = 1.0, std::shared_ptr<Controller<2,1> > controller = nullptr) :
+	SecondOrderSystem(SCALAR k, SCALAR m, SCALAR d, SCALAR g_dc = SCALAR(1.0), std::shared_ptr<Controller<2,1> > controller = nullptr) :
 		ControlledSystem<2,1>(controller),
 		w_n_(std::sqrt(k/m)),
 		w_n_square_(w_n_ * w_n_),
@@ -159,7 +159,7 @@ public:
 	 * @param control control action
 	 * @param derivative derivative (velocity, acceleration)
 	 */
-	void computeControlledDynamics(
+	virtual void computeControlledDynamics(
 			const StateVector<2, SCALAR>& state,
 			const Time& t,
 			const ControlVector<1, SCALAR>& control,
@@ -205,7 +205,7 @@ private:
 	SCALAR g_dc_; //!< input DC gain
 };
 
-}
+} // namespace tpl
 
 typedef tpl::SecondOrderSystem<double> SecondOrderSystem; //!< harmonic oscillator (double)
 
