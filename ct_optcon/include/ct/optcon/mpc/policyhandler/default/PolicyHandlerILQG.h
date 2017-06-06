@@ -122,6 +122,7 @@ public:
 	 * required for additional post-truncation.
 	 * @param delay 	the delay which is to be truncated away
 	 * @param policy	the resulting, truncated policy
+	 * @param stateTraj the state trajectory to be truncated
 	 * @param effectivelyTruncated the time which was effectively truncated away
 	 * 	(can be different from the input in discrete-time case, for example)
 	 */

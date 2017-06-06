@@ -54,9 +54,9 @@ public:
 
 	//! compute new MPC time horizon
 	/*!
-	 * @param t_since_ended_first_solve.
+	 * @param t_since_ended_first_solve
 	 * 	Time since the first successful solve
-	 * @param t_forward_prediction_stop.
+	 * @param t_forward_prediction_stop
 	 *  Relative time where to stop forward integration w.r.t. previous controller
 	 * @param new_T
 	 *  Resulting, new time horizon provided to the solver

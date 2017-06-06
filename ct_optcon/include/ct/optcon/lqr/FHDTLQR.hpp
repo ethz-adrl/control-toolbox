@@ -36,15 +36,15 @@ namespace optcon {
 
 
 
-/** \defgroup LQR LQR
+/*! \defgroup LQR LQR
  *
  * \brief Linear Quadratic Regulator Module
  * This module holds two verified LQR implementations in C++.
  */
 
-/**
+/*!
  * \ingroup LQR
- *+
+ *
  * \brief Finite-Horizon Discrete Time LQR
  *
  * compute the finite-horizon discrete time LQR solution
@@ -56,8 +56,8 @@ namespace optcon {
  * u_{fb} = -K \cdot (x - x_{ref})
  * \f]
  *
- * @param: STATE_DIM
- * @param: CONTROL_DIM
+ * @tparam STATE_DIM system state dimension
+ * @tparam CONTROL_DIM system input dimension
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 class FHDTLQR

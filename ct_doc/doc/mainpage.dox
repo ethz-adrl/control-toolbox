@@ -7,15 +7,15 @@ This is ADRL Control Toolbox, a C++ library for efficient modelling, control and
 \section source_code Source Code
 The source code is available at <a href="https://bitbucket.org/adrlab/ct">https://bitbucket.org/adrlab/ct</a>
 
-\section features Features
+\section features_overview Features
 
-\subsection ct_core1 CT Core:
+\subsection ct_core_overview CT Core:
  - Definitions for dynamic systems (ct::core::System), states (ct::core::StateVector), controls (ct::core::Controller) etc.
  - Numeric integration (ct::core::Integrator) with various ODE solvers both fixed step (ct::core::IntegratorEuler, ct::core::IntegratorRK4) and variable step (ct::core::IntegratorRK5Variable, ct::core::ODE45)
  - Common feedback controllers (e.g. ct::core::PIDController)
  - Derivatives/Jacobians of general functions using Numerical Differentiation (ct::core::JacobianNumDiff) or Auto-Differentiation with code-generation and JIT compilation (ct::core::JacobianCG)
  
-\subsection ct_optcon CT Optimal Control
+\subsection ct_optcon_overview CT Optimal Control
  - Definitions for Optimal Control Problems (ct::optcon::OptConProblem) and Solvers (ct::optcon::OptConSolver)
  - ct::optcon::CostFunction toolbox allowing to construct a cost function from file and providing derivatives / quadratic approximations.
  - ct::optcon::Constraint toolbox for formulating constraints of Optimal Control Problems
@@ -23,7 +23,7 @@ The source code is available at <a href="https://bitbucket.org/adrlab/ct">https:
  - Non-Linear Model Predictive Control (ct::optcon::MPC, which can use either iLQG or DMS as solvers)
  - Interfaces to common NLP Solvers (ct::optcon::SNOPTSolver and ct::optcon::IPOPTSolver)
   
-\subsection ct_rbd CT Rigid Body Dynamics
+\subsection ct_rbd_overview CT Rigid Body Dynamics
  - Standard models for Rigid Body Dynamics
  - Definitions for the state of a Rigid Body System expressed as general coordinates (ct::rbd::RBDState)
  - Routines for different flavors of Forward and Inverse Dynamics (ct::rbd::Dynamics)
@@ -32,14 +32,14 @@ The source code is available at <a href="https://bitbucket.org/adrlab/ct">https:
  - Basic contact model (ct::rbd::ContactModel)
  - Backend uses <a href="https://bitbucket.org/mfrigerio17/roboticscodegenerator/">RobCoGen</a>, a highly efficient Rigid Body Dynamics library
 
-\subsection ct_models CT Models:
+\subsection ct_models_overview CT Models:
  - Various standard models for testing and evaluation including UAVs (ct::models::Quadrotor), ground robots, legged robots (ct::models::HyQ), robot arms (ct::models::HyA), inverted pendulums etc.
  - Means of creating linear approximation of these models
 
 \section gs Getting Started
 In order to get started, please see our \ref install_guide "Installation Guide". Afterwards please check out the \ref tutorials "Tutorials".
 
-\section doc Documentation
+\section doc_overview Documentation
 This library consists of four main modules
  - <a href="../../../ct_core/doc/html/index.html">ct_core</a> 
  - <a href="../../../ct_optcon/doc/html/index.html">ct_optcon</a>
@@ -52,7 +52,7 @@ Furthermore there are ROS interfaces available
 
 
 
-\section acknowledgement Acknowledgement
+\section ct_doc_acknowledgement Acknowledgement
 \subsection contribs Contributors
  - Michael Neunert
  - Markus Giftthaler
@@ -61,7 +61,7 @@ Furthermore there are ROS interfaces available
  - Diego Pardo
  - Timothy Sandy
  
-\subsection lead Project Lead and Maintanance: 
+\subsection lead_overview Project Lead and Maintanance: 
  - Michael Neunert, neunertm ( at ) gmail (dot) com
  - Markus Giftthaler, mgiftthaler (at) ethz (dot) ch
 

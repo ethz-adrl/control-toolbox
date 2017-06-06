@@ -168,7 +168,7 @@ public:
 	/*!
 	 * Generates the source code, compiles it and dynamically loads the resulting library.
 	 *
-	 * \Note If this function takes a long time, consider generating the source code using
+	 * \note If this function takes a long time, consider generating the source code using
 	 * generateCode() and compile it before runtime.
 	 */
 	void compileJIT()

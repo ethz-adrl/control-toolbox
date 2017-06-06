@@ -8,7 +8,7 @@ The Rigid Body Dynamics (RBD) Module contains helpers for kinematic and dynamic 
 \section ct_rbd_install Installation and Usage
 CT Rigid Body Dynamics is part of the Control Toolbox suite. See the <a href="../../../ct_core/doc/html/index.html">CT main documentation</a> for installation and usage instructions.
 
-\section acknowledgement Acknowledgement
+\section ct_rbd_acknowledgement Acknowledgement
 Project Lead and Maintanance: 
 - Michael Neunert  (neunertm ( at ) gmail.com)
 

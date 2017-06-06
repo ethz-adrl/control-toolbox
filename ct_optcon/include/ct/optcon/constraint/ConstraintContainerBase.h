@@ -49,6 +49,8 @@ namespace optcon {
  * @tparam CONSTRAINT2_DIM: Maximum number of pure state constraints
  * @tparam CONSTRAINT1_DIM: Maximum number of state-input constraints
  *
+ * An example for usage is given in the unit test \ref ConstraintTest.cpp
+ *
  */
 
 template <size_t STATE_DIM, size_t INPUT_DIM>

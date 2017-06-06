@@ -48,8 +48,4 @@ rosrun ct_core ex_DampedOscillatorCustomController
 \note Make sure you have built the examples before trying to run it.
 
 
-
-\endcode
-
-
  */

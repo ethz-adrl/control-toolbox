@@ -32,9 +32,10 @@ namespace optcon{
 
 
 
-/** * \ingroup iLQG
- *+
-  \brief Tester for iLQG
+/*!
+ * \ingroup iLQG
+ *
+ * \brief Tester for iLQG
  * This class is just a helper class that checks the consistency of
  * dynamics, costs and linear systems passed to ilqg_. The reason
  * this class is separate is to keep the iLQGBase class clutter free.

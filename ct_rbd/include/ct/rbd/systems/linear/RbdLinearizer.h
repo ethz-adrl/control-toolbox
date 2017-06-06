@@ -24,16 +24,10 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-/*
- * RbdLinearizer.h
+/*!
+ *  \brief System Linearizer dedicated to Articulated Rigid Body Model.
  *
- *  Created on: 11.06.2016
- *      Author: mgiftthaler
- *      Modified: Michael Neunert
- *
- *  Description:
- *  System Linearizer dedicated to Articulated Rigid Body Model.
- *  Note: this Linearizer is different to the standard system linearizer
+ *  \warning this Linearizer is different to the standard system linearizer
  *  in ct_core. It takes care of additional terms arising from floating-base
  *  systems. If the system is fixed-base, the standard ct_core linearizer
  *  is called.
@@ -259,12 +253,13 @@ private:
 	    return A0;
 	}
 
-	/**
-	 * to map local angular velocity \omega_W expressed in body coordinates, to changes in Euler Angles expressed in an inertial frame q_I
-	 * we have to map them via \dot{q}_I = H \omega_W, where H is the matrix defined in kindr getMappingFromLocalAngularVelocityToDiff.
-	 * You can see the kindr cheat sheet to figure out how to build this matrix. The following code computes the Jacobian of \dot{q}_I
-	 * with respect to \q_I and \omega_W. Thus the lower part of the Jacobian is H and the upper part is dH/dq_I \omega_W. We include
+	/*!
+	 * to map local angular velocity \f$ \omega_W \f$ expressed in body coordinates, to changes in Euler Angles expressed in an inertial frame \f$ q_I \f$
+	 * we have to map them via  \f$ \dot{q}_I = H \omega_W \f$, where \f$ H \f$  is the matrix defined in kindr getMappingFromLocalAngularVelocityToDiff().
+	 * You can see the kindr cheat sheet to figure out how to build this matrix. The following code computes the Jacobian of \f$ \dot{q}_I \f$
+	 * with respect to \f$ q_I \f$ and \f$ \omega_W \f$ . Thus the lower part of the Jacobian is H and the upper part is \f$ dH/dq_I \omega_W \f$ . We include
 	 * both parts for more efficient computation. The following code is computed using auto-diff.
+	 *
 	 * @param eulerAnglesXyz
 	 * @param angularVelocity
 	 * @return

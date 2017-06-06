@@ -77,9 +77,7 @@ public:
 	 * Creates a standard integrator
 	 *
 	 * @param system the system (ODE)
-	 * @param eventHandlers optional event handler
-	 * @param absErrTol optional absolute error tolerance (for variable step solvers)
-	 * @param relErrTol optional relative error tolerance (for variable step solvers)
+	 * @param eventHandlers (optional) standard vector of event handlers
 	 */
 	IntegratorBase(
 		const std::shared_ptr<System<STATE_DIM> >& system,
@@ -104,7 +102,7 @@ public:
 	 *
 	 * \warning Overrides the initial state
 	 *
-	 * @param state initial state, contains the final state after integration
+	 * @param initialState initial state, contains the final state after integration
 	 * @param startTime start time of the integration
 	 * @param numSteps number of steps to integrate forward
 	 * @param dt step size (fixed also for variable step solvers)

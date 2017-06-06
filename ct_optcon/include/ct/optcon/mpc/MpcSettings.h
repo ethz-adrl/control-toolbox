@@ -36,19 +36,19 @@ namespace optcon{
 
 //! select a mode in which MPC is supposed to run
 /*!
- *  * There are four default implementations for time horizon strategies in MPC, which can be selected using the following "MPC_MODE" enum.
+ *  There are four default implementations for time horizon strategies in MPC, which can be selected using the following "MPC_MODE" enum.
  *
- * - FIXED_FINAL_TIME:
+ * - FIXED_FINAL_TIME
  * 		plan until a fixed final time T is reached. Time Horizon will continuously shrink and eventually be zero.
  *
- * - FIXED_FINAL_TIME_WITH_MIN_TIME_HORIZON:
+ * - FIXED_FINAL_TIME_WITH_MIN_TIME_HORIZON
  * 		this option continuously shrinks the time horizon from the initil time horizon until some minimum time is reached.
  * 		This minimum time can be specified in the mpc_settings struct as "minimumTimeHorizonMpc_"
  *
- * - CONSTANT_RECEDING_HORIZON:
+ * - CONSTANT_RECEDING_HORIZON
  * 		Time Horizon remains constant for all times and is equal to the initial time horizon specified in the optimal control problem.
  *
- * - RECEDING_HORIZON_WITH_FIXED_FINAL_TIME:
+ * - RECEDING_HORIZON_WITH_FIXED_FINAL_TIME
  * 		Time Horizon remains constant until a fixed final time is near. It shrinks and eventually becomes zero.
  * 		The overall time horizon gets set trough the initial problem time horizon. The smaller, receding time
  * 		horizon can be specified in the mpc_settings struct as "minimumTimeHorizonMpc_"

@@ -31,15 +31,15 @@ namespace ct {
 namespace optcon {
 
 
-/**
+/*!
  * \ingroup LQR
  *+
  * \brief Dynamic Riccati Equation
  *
  * solves the Dynamic Algebraic Riccati Equation
  *
- * @param: STATE_DIM
- * @param: CONTROL_DIM
+ * @tparam STATE_DIM the system state dimension
+ * @tparam CONTROL_DIM the system control input dimension
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 class DynamicRiccatiEquation {
