@@ -227,7 +227,7 @@ private:
 	LinearPtr_t linearizedSystem_;		//! the linear approximation of the nonlinear system
 
 	ConstraintPtr_t g_;		//! container of all the intermediate constraints of the problem
-	ConstraintPtr_t g_t_;	//! container of all the terminal constraints of the problem??
+	ConstraintPtr_t g_t_;	//! container of all the terminal constraints of the problem
 
 };
 

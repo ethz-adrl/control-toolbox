@@ -1,5 +1,31 @@
-#ifndef CT_OPTCON_SNOPTSOLVER_H
-#define CT_OPTCON_SNOPTSOLVER_H
+/***********************************************************************************
+Copyright (c) 2016, Agile & Dexterous Robotics Lab, ETH ZURICH. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
+
+
+#ifndef CT_OPTCON_NLP_SOLVER_SNOPTSOLVER_H
+#define CT_OPTCON_NLP_SOLVER_SNOPTSOLVER_H
 
 
 #include <ct/optcon/nlp/Nlp.h>
@@ -14,34 +40,53 @@ namespace optcon {
 
 #ifdef BUILD_WITH_SNOPT_SUPPORT 	// build SNOPT interface
 
+/**
+ * @ingroup    NLP
+ *
+ * @brief      Forward declaration
+ */
 class SnoptSolver;
 
+
+/**
+ * @ingroup    NLP
+ *
+ * @brief      Contains all the dynamically allocated memory for SNOPT
+ */
 struct SnoptMemory{
 	typedef double Number;
-    const SnoptSolver& self;
+    const SnoptSolver& self;	/*!<A reference the the Snoptsolver the memory points to*/
 
 
-	Number *x_ 		= nullptr; 	// Primal vars
-	Number *xlow_	= nullptr;	// Primal bounds
-	Number *xupp_	= nullptr;
-	Number *xmul_	= nullptr;	// Dual vars
-	int *xstate_	= nullptr; 	// Primal State
+	Number *x_ 		= nullptr; 	/*!<Optimization variables*/
+	Number *xlow_	= nullptr;	/*!<Lower bound of the optimization variables*/
+	Number *xupp_	= nullptr;	/*!<Upper bound of the optimization variables*/
+	Number *xmul_	= nullptr;	/*!<The optimization variables multiplier*/
+	int *xstate_	= nullptr; 	//*!<The state of the optimization variables*/
 
-	Number *F_    	= nullptr;		//On exit, final value of vector functions
-	Number *Flow_ 	= nullptr;
-	Number *Fupp_ 	= nullptr;
-	Number *Fmul_ 	= nullptr;		//On exit, vector of dual variables
-	int *Fstate_	= nullptr;
+	Number *F_    	= nullptr;		/*!<Nonlinear parts of the costfunction and the constraints*/
+	Number *Flow_ 	= nullptr;		/*!<Lower bound on F*/
+	Number *Fupp_ 	= nullptr;		/*!<Upper bound on F*/
+	Number *Fmul_ 	= nullptr;		/*!<The F multiplier*/
+	int *Fstate_	= nullptr;		/*!<The F state*/
 
-	int *iAfun_ 	= nullptr;
-	int *jAvar_ 	= nullptr;
-	Number *A_  	= nullptr;
-	int *iGfun_		= nullptr;	//Hold row indices of non zero jacobian values
-	int *jGvar_		= nullptr;	//Hold column indices of non zero jacoabian values
+	Number *A_  	= nullptr;		/*!<Contains the linear parts of costfunction and the constraints*/
+	int *iAfun_ 	= nullptr;		/*!<Rows of the sparsity pattern of A*/
+	int *jAvar_ 	= nullptr;		/*!<Columns of the sparsity pattern of A*/
 
-    static std::vector<SnoptMemory*> mempool;
-    int memind;
+	/*!<The sparsity pattern of the costgradient and constraint jacobian*/
+	int *iGfun_		= nullptr;		/*!<Sparsity rows*/
+	int *jGvar_		= nullptr;		/*!<Sparsity columns*/
 
+    static std::vector<SnoptMemory*> mempool; /*!<Containts all the instances of the snopt memory blocks*/
+    int memind; /*!<The index inside the mempool this instance points to*/
+
+    /**
+     * @brief      Custom constructor
+     *
+     * @param[in]  self  A reference to the Snoptsolver the memory is pointing
+     *                   to
+     */
     SnoptMemory(const SnoptSolver& self);
 
     /// Destructor
@@ -49,8 +94,15 @@ struct SnoptMemory{
 
 };
 
-//template tbd
-class SnoptSolver : public NlpSolver //template tbd
+
+/**
+ * @ingroup    NLP
+ *
+ * @brief      The interface to the NLP solver SNOPT. Currently the SnoptA C++
+ *             interface is implemented, which does not require the distinction
+ *             between linear and non linear parts of the userfunction
+ */
+class SnoptSolver : public NlpSolver
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -61,17 +113,52 @@ public:
 	typedef Eigen::Map<const VectorXd> MapConstVecXd;
 	typedef Eigen::Map<Eigen::VectorXi> MapVecXi;
 
+	/**
+	 * @brief      Default constructor
+	 */
+	SnoptSolver(){}
 
+	/**
+	 * @brief      Destructor, releases the memory
+	 */
+	virtual ~SnoptSolver()
+	{
+		free_memory(memoryPtr_);
+	}
+
+
+	/**
+	 * @brief      Custom constructor
+	 *
+	 * @param[in]  nlp       The nlp
+	 * @param[in]  settings  The settings
+	 */
 	SnoptSolver(std::shared_ptr<Nlp> nlp, const NlpSolverSettings& settings);
 
-	// static void snoptCuserfun(	int *mode,  	int *nnObj, 	int *nnCon,
-	// 	   						int *nnJac, 	int *nnL,   	int *negCon, double x[],
-	// 	   						double *fObj,  	double gObj[],
-	// 	   						double fCon[], 	double gCon[], 	int *Status,
-	//    							char    *cu, 	int *lencu,
-	// 	   						int    iu[], 	int *leniu,
-	// 	   						double ru[], 	int *lenru );
 
+	/**
+	 * @brief      The non static NLP function interfacing with the optimization
+	 *             module of the control toolbox
+	 *
+	 * @param      m       A pointer to the dynamic SNOPT memory
+	 * @param      Status  Indicates the first and last call to the method
+	 * @param      n       The number of optimization variables
+	 * @param      x       The optimization variables
+	 * @param      needF   If true, the method needs to provide f
+	 * @param      neF     The length of the F vector
+	 * @param      F       The F vector, containing the costfunction and the
+	 *                     constraints
+	 * @param      needG   If true, the method needs to provide g
+	 * @param      neG     The length of the G vector
+	 * @param      G       The vector of derivatives of F with respect to the
+	 *                     decision variables
+	 * @param      cu      The character array for external user inputs
+	 * @param      lencu   The length of cu
+	 * @param      iu      The integer array for external user inputs
+	 * @param      leniu   The length of ui
+	 * @param      ru      The real array for external user inputs
+	 * @param      lenru   The length of ru
+	 */
 	void NLP_Function(SnoptMemory* m,		int    *Status, int *n,    double x[],
 					        int    *needF,  int *neF,  double F[],
 					        int    *needG,  int *neG,  double G[],
@@ -79,6 +166,27 @@ public:
 					        int    iu[],    int *leniu,
 					        double ru[],    int *lenru ) const;
 
+	/**
+	 * @brief      The static NLP function passed to SNOPT
+	 *
+	 * @param      Status  Indicates the first and last call to the method
+	 * @param      n       The number of optimization variables
+	 * @param      x       The optimization variables
+	 * @param      needF   If true, the method needs to provide f
+	 * @param      neF     The length of the F vector
+	 * @param      F       The F vector, containing the costfunction and the
+	 *                     constraints
+	 * @param      needG   If true, the method needs to provide g
+	 * @param      neG     The length of the G vector
+	 * @param      G       The vector of derivatives of F with respect to the
+	 *                     decision variables
+	 * @param      cu      The character array for external user inputs
+	 * @param      lencu   The length of cu
+	 * @param      iu      The integer array for external user inputs
+	 * @param      leniu   The length of ui
+	 * @param      ru      The real array for external user inputs
+	 * @param      lenru   The length of ru
+	 */
 	static void NLP_Function(int    *Status, int *n,    double x[],
 					         int    *needF,  int *neF,  double F[],
 					         int    *needG,  int *neG,  double G[],
@@ -87,54 +195,82 @@ public:
 					         double ru[],    int *lenru );
 
 	virtual void configureDerived(const NlpSolverSettings& settings) override;
+
 	virtual bool solve() override;
+
 	virtual void prepareWarmStart(size_t maxIterations) override;
-	virtual void updateInitGuess() override;
-	virtual bool solveSucceeded() override;
 
-    SnoptMemory* alloc_memory() const { return new SnoptMemory(*this);}
-
-    void free_memory(SnoptMemory *mem) const { delete mem;}
-
-    void init_memory(SnoptMemory* mem) const;
-
-    void fill_memory(SnoptMemory* mem) const;
-
-	void setupSnoptObjects();
-
-	SnoptSolver(){}
-
-	virtual ~SnoptSolver()
-	{
-		free_memory(memoryPtr_);
-	}
 
 private:
+
+    /**
+     * @brief      Allocates memory for the SNOPT interface
+     *
+     * @return     Pointer to the memory location
+     */
+    SnoptMemory* alloc_memory() const { return new SnoptMemory(*this);}
+
+    /**
+     * @brief      Frees the allocated memory
+     *
+     * @param[in]  mem   The memory to be freed
+     */
+    void free_memory(SnoptMemory *mem) const { delete mem;}
+
+    /**
+     * @brief      Initializes the memory
+     *
+     * @param      mem   The memory
+     */
+    void init_memory(SnoptMemory* mem) const;
+
+    /**
+     * @brief      Fills the memory with values from NLP, gets called before
+     *             solving the NLP
+     *
+     * @param      mem   The memory
+     */
+    void fill_memory(SnoptMemory* mem) const;
+
+	/**
+	 * @brief      Provides SNOPT the information from SNOPT memory, gets called
+	 *             before solving the NLP
+	 */
+	void setupSnoptObjects();
+
+	/**
+	 * @brief      Prints out status messages depending on the snopt status
+	 *
+	 * @param[in]  status  The SNOPT solver status
+	 */
+	void validateSNOPTStatus(const int & status) const;
+
+	/**
+	 * @brief      Sets the solver options.
+	 */
+	void setSolverOptions();
+
 	SnoptSettings settings_;
 	SnoptMemory* memoryPtr_;
 
-	void validateSNOPTStatus(const int & status) const;
-	virtual void setSolverOptions() override;
-
 	snoptProblemA snoptApp_;
 
-	  // Allocate and initialize;
-	int n_ = 0;				// Number of variables in optimization problem
-	int neF_ = 0;			// Number of constraints in optimization problem plus 1 (objective function belongs to constraints)
-	int    ObjRow_  = 0;	// In which row is the objective function
-	Number ObjAdd_  = 0.0;	// Constant to be added to objective function
+	int n_ = 0;				/*!<Number of optimization variables in optimization problem*/
+	int neF_ = 0;			/*!<Number of constraints in optimization problem plus 1 (objective function belongs to constraints)*/
+	int    ObjRow_  = 0;	/*!<Objective function row*/
+	Number ObjAdd_  = 0.0;	/*!<Constant to be added to objective function*/
 
-// If warm, a valid x_start, F_start, xstate, Fstate needs to be provided
-	const int Cold_ = 0, Basis_ = 1, Warm_ = 2;
-	int currStartOption_ = 0;
+	const int Cold_ = 0, Basis_ = 1, Warm_ = 2; /*!<Defines the warmstart options for SNOPT*/
+	int currStartOption_ = Cold_; /*!<The option handed to SNOPT*/
 
-// Linear constraints
-	int lenA_ = 0;
-	int neA_ = 0;
-// Non linear constraints
-	int lenG_ = 0  ;	//Length of iGfun, jGvar
-	int neG_ = 0; // neA and neG must be defined when providing derivatives
-	int status_ = 0;
+
+	int lenA_ = 0; /*!<The dimension of the sparsity pattern for the linear part of the problem. We set it to zero to treat all parts nonlinearly*/
+	int neA_ = 0; /*!<The number of non zeros in A. We set it to zero to treat all parts nonlinearly*/
+
+	int lenG_ = 0; /*!<The dimension of the sparsity pattern for the linear part of the problem. Will be updated later*/
+	int neG_ = 0; /*!<The number of non zeros in G. Will be updated later*/
+
+	int status_ = 0; /*!<The exit status of the SNOPT solver*/
 
 };
 
@@ -152,14 +288,11 @@ public:
 	virtual void configureDerived(const NlpSolverSettings& settings) override{}
 	virtual bool solve() override {return false;}
 	virtual void prepareWarmStart(size_t maxIterations) override{}
-	virtual void updateInitGuess() override{}
-	virtual bool solveSucceeded() override {return false;}
-private:
-	virtual void setSolverOptions() override{}
 };
 
 #endif	// BUILD_WITH_SNOPT_SUPPORT
 
 } // namespace optcon
 } // namespace ct
-#endif
+
+#endif // CT_OPTCON_NLP_SOLVER_SNOPTSOLVER_H

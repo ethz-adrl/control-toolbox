@@ -54,15 +54,15 @@ void SnoptSolver::fill_memory(SnoptMemory* mem) const
 	MapVecXi jGVecGrad	(mem->jGvar_, 	n_);
 	MapVecXi jGVecJac	(&mem->jGvar_[n_], nlp_->getNonZeroJacobianCount());
 
-	nlp_->getPrimalVars(n_, xVec);
+	nlp_->getOptimizationVars(n_, xVec);
 	nlp_->getVariableBounds(x_lVec, x_uVec, n_);
-	nlp_->getPrimalMultState(n_, xMulVec, xStateVec);
+	nlp_->getOptimizationMultState(n_, xMulVec, xStateVec);
 
 	FVec.setZero();
 	mem->Flow_[0] = std::numeric_limits<double>::lowest();
 	mem->Fupp_[0] = std::numeric_limits<double>::max();
 	nlp_->getConstraintBounds(f_lVec, f_uVec, nlp_->getConstraintsCount());
-	nlp_->getDualMultState(neF_, fMulVec, FStateVec);
+	nlp_->getConstraintsMultState(neF_, fMulVec, FStateVec);
 
 	iAVec.setZero();
 	jAVec.setZero();
@@ -70,7 +70,7 @@ void SnoptSolver::fill_memory(SnoptMemory* mem) const
 
 	iGVecFull.setZero();
 	jGVecFull.setZero();
-	// igVecGrad = 0;
+
 	jGVecGrad = Eigen::VectorXi::LinSpaced(n_, 0, n_ - 1);
 	nlp_->getSparsityPattern(nlp_->getNonZeroJacobianCount(), iGVecJac, jGVecJac);
 	iGVecJac += Eigen::VectorXi::Ones(nlp_->getNonZeroJacobianCount());
@@ -81,29 +81,15 @@ void SnoptSolver::configureDerived(const NlpSolverSettings& settings)
 {
 	std::cout << "calling SNOPT configure derived" << std::endl;
 	settings_ = settings.snoptSettings_;
-	// if(BASE::isInitialized_ == true)
-	// {
-	// 	size_t nTmp = nlp_->getVarCount();
-	// 	size_t nefTmp = nlp_->getConstraintsCount() + 1;
-	// 	size_t lenGTmp = n_ + nlp_->getNonZeroJacobianCount();
-	// 	size_t neGTmp = n_ + nlp_->getNonZeroJacobianCount();
-	// 	if(nTmp == n_ && nefTmp == neF_ && lenGTmp == lenG_ && neGTmp == neG_)
-	// 	{
-	// 		setSolverOptions();
-	// 		return;
-	// 	}
-	// }
 
 	n_ 	  = nlp_->getVarCount();
 	neF_  = nlp_->getConstraintsCount() + 1;
 	
-	// Linear constraints, this needs to be updated!!! probably set it to zero
-	lenA_ =	0;//neF_ * n_;		
-	neA_  = 0;//neF_ * n_;
-	// Non linear part of constraints
-	// Gradient plus Constraint Jacobian
+	lenA_ =	0;		
+	neA_  = 0;
+
 	lenG_ =	n_ + nlp_->getNonZeroJacobianCount();
-	neG_  = n_ + nlp_->getNonZeroJacobianCount(); //idk, maybe = 0 tbd
+	neG_  = n_ + nlp_->getNonZeroJacobianCount();
 
 	init_memory(memoryPtr_);
 	setSolverOptions();
@@ -112,8 +98,6 @@ void SnoptSolver::configureDerived(const NlpSolverSettings& settings)
 
 void SnoptSolver::setupSnoptObjects()
 { 
- //  	snoptApp_.setProbName("Snopt_Nlp");         // Give the problem a new name for Snopt.
-	// // snoptApp_.setPrintFile  ( "Toy0.out" );
 	snoptApp_.setProblemSize(n_, neF_);
 	snoptApp_.setObjective(ObjRow_, ObjAdd_);
 	snoptApp_.setX(memoryPtr_->x_, memoryPtr_->xlow_ , memoryPtr_->xupp_, memoryPtr_->xmul_ , memoryPtr_->xstate_);
@@ -121,9 +105,6 @@ void SnoptSolver::setupSnoptObjects()
 	snoptApp_.setA(lenA_, neA_, memoryPtr_->iAfun_, memoryPtr_->jAvar_, memoryPtr_->A_);
 	snoptApp_.setG(lenG_, neG_, memoryPtr_->iGfun_, memoryPtr_->jGvar_);
 	snoptApp_.setUserFun(NLP_Function);
-
-	// nlp_solver->setXNames     ( spt_variable_names, 1 );
-	// nlp_solver->setFNames     ( spt_Fnames, 1 );
 }
 
 void SnoptSolver::setSolverOptions()
@@ -165,7 +146,7 @@ bool SnoptSolver::solve()
 		MapVecXi xStateVec	(memoryPtr_->xstate_, 	n_);
 		MapVecXd fMulVec	(memoryPtr_->Fmul_, 	neF_);
 		MapVecXi fStateVec	(memoryPtr_->Fstate_, 	neF_);	
-		nlp_->extractSolution(xVec, xMulVec, xStateVec, fMulVec, fStateVec);
+		nlp_->extractSnoptSolution(xVec, xMulVec, xStateVec, fMulVec, fStateVec);
 	}
 	
 	return true;
@@ -174,12 +155,6 @@ bool SnoptSolver::solve()
 void SnoptSolver::prepareWarmStart(size_t maxIterations)
 {
 	currStartOption_= Warm_;
-	// std::cout << "Number constraints: " << neF_ << std::endl;
-	// nlp_->activateWarmStart();
-	// nlp_->setInitOptVector(x_, n_);
-	// nlp_->setSnoptConstraints(Flow_, Fupp_, neF_);
-	// Initialize_NLP();
-	// I should get this from the optvector
 	Eigen::Map<Eigen::VectorXi> xState_local(memoryPtr_->xstate_, n_);
 	Eigen::Map<Eigen::VectorXi> Fstate_local(memoryPtr_->Fstate_, neF_);
 	Fstate_local.setConstant(3);
@@ -190,21 +165,6 @@ void SnoptSolver::prepareWarmStart(size_t maxIterations)
   	snoptApp_.setIntParameter("Summary file", 0);
 }
 
-void SnoptSolver::updateInitGuess()
-{
-	// nlp_->setInitOptVector(x_.data(), n_);
-	// nlp_->setSnoptConstraints(Flow_.data(), Fupp_.data(), neF_);
-	// snoptApp_.setX(x_.data(), xlow_.data() , xupp_.data() , xmul_.data() , xstate_.data());
-	// snoptApp_.setF(F_.data(), Flow_.data() , Fupp_.data() , Fmul_.data(), Fstate_.data());
-}
-
-bool SnoptSolver::solveSucceeded()
-{
-	if(status_ == 2)
-		return true;
-	else
-		return false;
-}
 
 void SnoptSolver::validateSNOPTStatus(const int & status) const
 {
@@ -278,7 +238,7 @@ void SnoptSolver::NLP_Function(SnoptMemory* m,		int    *Status, int *n,    doubl
 	if(*needF > 0 || needG > 0)
 	{
 		Eigen::Map<const Eigen::VectorXd> xVec(&x[0], *n);
-		m->self.nlp_->setPrimalVars(xVec, true);
+		m->self.nlp_->extractOptimizationVars(xVec, true);
 	}
 
 	if(*needF > 0)
