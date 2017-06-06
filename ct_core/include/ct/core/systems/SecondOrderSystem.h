@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef SECONDORDERSYSTEM_H_
-#define SECONDORDERSYSTEM_H_
+#ifndef CT_CORE_SECONDORDERSYSTEM_H_
+#define CT_CORE_SECONDORDERSYSTEM_H_
 
 #include <cmath>
 #include <memory>
@@ -76,6 +76,8 @@ namespace tpl
  * \f]
  *
  * is the damping ratio, given mass \f$ m \f$, spring stiffness \f$ k \f$ and damper constant \f$ d \f$.
+ *
+ * An example of how to evaluate the dynamics of this oscillator is provided in unit test \ref SecondOrderSystemTest.cpp
  *
  * \todo rename to damped oscillator
  */

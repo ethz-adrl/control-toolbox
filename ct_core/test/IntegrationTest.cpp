@@ -276,6 +276,12 @@ TEST(IntegrationTest, derivativeTest)
     }
 }
 
+
+/*!
+ *  \example IntegrationTest.cpp
+ *
+ *  This unit test serves as example how to use different steppers from boost odeint for numerical integration.
+ */
 int main(int argc, char **argv){
 	if(argc>2) plotResult=true;
   testing::InitGoogleTest(&argc, argv);

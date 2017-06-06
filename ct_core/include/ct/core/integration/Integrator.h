@@ -62,6 +62,9 @@ namespace core {
  * - @ref IntegratorRK78
  * - @ref IntegratorBulirschStoer
  *
+ * Unit test \ref IntegrationTest.cpp illustrates the use of Integrator.h
+ *
+ *
  * @tparam STATE_DIM the size of the state vector
  * @tparam STEPPER the stepper type
  */

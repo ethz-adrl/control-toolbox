@@ -36,13 +36,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace ct::core;
 
 
-// a trivial test for linspace.
+
 TEST(LinspaceTest, LinspaceTest)
 {
-	std::cout << "LINSPACE TEST"  << std::endl;
-	std::cout << "========================================" << std::endl;
-	std::cout << "========================================" << std::endl;
-
 	StateVector<2> start, end;
 	start << 1, 5;
 	end << 5,1;
@@ -65,6 +61,11 @@ TEST(LinspaceTest, LinspaceTest)
 }
 
 
+/*!
+ *  \example LinspaceTest.cpp
+ *
+ *  This is a trivial test for the linspace-class
+ */
 int main(int argc, char** argv)
 {
 	testing::InitGoogleTest(&argc, argv);

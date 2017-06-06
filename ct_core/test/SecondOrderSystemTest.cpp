@@ -110,6 +110,12 @@ TEST(SecondOrderSystemTest, dynamicsTest)
     }
 }
 
+
+/*!
+ *  \example SecondOrderSystemTest.cpp
+ *
+ *  This is a trivial test for the Oscillator.
+ */
 int main(int argc, char **argv){
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

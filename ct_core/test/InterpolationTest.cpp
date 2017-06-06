@@ -34,10 +34,6 @@ using namespace ct::core;
 
 TEST(InterplationTest, Linear)
 {
-	std::cout << "INTERPOLATION TEST"  << std::endl;
-	std::cout << "========================================" << std::endl;
-	std::cout << "========================================" << std::endl;
-
 	TimeArray timeStamp(5);
 	timeStamp[0] = 0.0;
 	timeStamp[1] = 0.5;
@@ -73,6 +69,11 @@ TEST(InterplationTest, Linear)
 }
 
 
+/*!
+ *  \example InterpolationTest.cpp
+ *
+ *  This unit test tests the interpolation class but also serves as minimal example how to perform interpolation given a data and time array
+ */
 int main(int argc, char** argv)
 {
 	testing::InitGoogleTest(&argc, argv);

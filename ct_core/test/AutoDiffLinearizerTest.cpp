@@ -46,7 +46,12 @@ using namespace ct::core;
 using std::shared_ptr;
 
 
-
+/*!
+ *  \example AutoDiffLinearizerTest.cpp
+ *
+ *  This unit test serves as example how to use the SystemLinearizer (numerical differentiation) and
+ *  the Autodiff-Linearizer (automatic differentiation)
+ */
 TEST(AutoDiffLinearizerTest, SystemLinearizerComparison)
 {
 	const size_t state_dim = TestNonlinearSystem::STATE_DIM;

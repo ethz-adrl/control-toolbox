@@ -105,6 +105,12 @@ TEST(TrajectoryTest, TrajectoryTest)
 }
 
 
+
+/*!
+ *  \example DiscreteTrajectoryTest.cpp
+ *
+ *  This is a trivial test for the Discrete Trajectory class, which checks for basic functionality of its features.
+ */
 int main(int argc, char** argv)
 {
 	testing::InitGoogleTest(&argc, argv);

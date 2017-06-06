@@ -70,6 +70,8 @@ namespace core {
  *  \end{bmatrix}
  * \f]
  *
+ * Examples for using the SystemLinearizer (and the Auto-diff Linearizer) can be found in \ref AutoDiffLinearizerTest.cpp
+ *
  * \note In case your ControlledSystem is templated on scalar type, we suggest using the ADCodegenLinearizer
  * for highest efficiency and accuracy. If this is not the case but your system is a RigidBodySystem you can fall back
  * to the ct::rbd::RBDLinearizer for good accuracy and speed.
