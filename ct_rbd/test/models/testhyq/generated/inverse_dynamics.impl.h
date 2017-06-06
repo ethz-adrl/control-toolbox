@@ -259,40 +259,40 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
     trunk_a = - trunk_Ic.inverse() * trunk_f;
     
     LF_hipassembly_a = xm->fr_LF_hipassembly_X_fr_trunk * trunk_a;
-    jForces(LF_HAA) = (LF_hipassembly_Ic.row(iit::rbd::AZ) * LF_hipassembly_a + LF_hipassembly_f(iit::rbd::AZ))(0);
+    jForces(LF_HAA) = (LF_hipassembly_Ic.row(iit::rbd::AZ) * LF_hipassembly_a + LF_hipassembly_f(iit::rbd::AZ));
     
     LF_upperleg_a = xm->fr_LF_upperleg_X_fr_LF_hipassembly * LF_hipassembly_a;
-    jForces(LF_HFE) = (LF_upperleg_Ic.row(iit::rbd::AZ) * LF_upperleg_a + LF_upperleg_f(iit::rbd::AZ))(0);
+    jForces(LF_HFE) = (LF_upperleg_Ic.row(iit::rbd::AZ) * LF_upperleg_a + LF_upperleg_f(iit::rbd::AZ));
     
     LF_lowerleg_a = xm->fr_LF_lowerleg_X_fr_LF_upperleg * LF_upperleg_a;
-    jForces(LF_KFE) = (LF_lowerleg_Ic.row(iit::rbd::AZ) * LF_lowerleg_a + LF_lowerleg_f(iit::rbd::AZ))(0);
+    jForces(LF_KFE) = (LF_lowerleg_Ic.row(iit::rbd::AZ) * LF_lowerleg_a + LF_lowerleg_f(iit::rbd::AZ));
     
     RF_hipassembly_a = xm->fr_RF_hipassembly_X_fr_trunk * trunk_a;
-    jForces(RF_HAA) = (RF_hipassembly_Ic.row(iit::rbd::AZ) * RF_hipassembly_a + RF_hipassembly_f(iit::rbd::AZ))(0);
+    jForces(RF_HAA) = (RF_hipassembly_Ic.row(iit::rbd::AZ) * RF_hipassembly_a + RF_hipassembly_f(iit::rbd::AZ));
     
     RF_upperleg_a = xm->fr_RF_upperleg_X_fr_RF_hipassembly * RF_hipassembly_a;
-    jForces(RF_HFE) = (RF_upperleg_Ic.row(iit::rbd::AZ) * RF_upperleg_a + RF_upperleg_f(iit::rbd::AZ))(0);
+    jForces(RF_HFE) = (RF_upperleg_Ic.row(iit::rbd::AZ) * RF_upperleg_a + RF_upperleg_f(iit::rbd::AZ));
     
     RF_lowerleg_a = xm->fr_RF_lowerleg_X_fr_RF_upperleg * RF_upperleg_a;
-    jForces(RF_KFE) = (RF_lowerleg_Ic.row(iit::rbd::AZ) * RF_lowerleg_a + RF_lowerleg_f(iit::rbd::AZ))(0);
+    jForces(RF_KFE) = (RF_lowerleg_Ic.row(iit::rbd::AZ) * RF_lowerleg_a + RF_lowerleg_f(iit::rbd::AZ));
     
     LH_hipassembly_a = xm->fr_LH_hipassembly_X_fr_trunk * trunk_a;
-    jForces(LH_HAA) = (LH_hipassembly_Ic.row(iit::rbd::AZ) * LH_hipassembly_a + LH_hipassembly_f(iit::rbd::AZ))(0);
+    jForces(LH_HAA) = (LH_hipassembly_Ic.row(iit::rbd::AZ) * LH_hipassembly_a + LH_hipassembly_f(iit::rbd::AZ));
     
     LH_upperleg_a = xm->fr_LH_upperleg_X_fr_LH_hipassembly * LH_hipassembly_a;
-    jForces(LH_HFE) = (LH_upperleg_Ic.row(iit::rbd::AZ) * LH_upperleg_a + LH_upperleg_f(iit::rbd::AZ))(0);
+    jForces(LH_HFE) = (LH_upperleg_Ic.row(iit::rbd::AZ) * LH_upperleg_a + LH_upperleg_f(iit::rbd::AZ));
     
     LH_lowerleg_a = xm->fr_LH_lowerleg_X_fr_LH_upperleg * LH_upperleg_a;
-    jForces(LH_KFE) = (LH_lowerleg_Ic.row(iit::rbd::AZ) * LH_lowerleg_a + LH_lowerleg_f(iit::rbd::AZ))(0);
+    jForces(LH_KFE) = (LH_lowerleg_Ic.row(iit::rbd::AZ) * LH_lowerleg_a + LH_lowerleg_f(iit::rbd::AZ));
     
     RH_hipassembly_a = xm->fr_RH_hipassembly_X_fr_trunk * trunk_a;
-    jForces(RH_HAA) = (RH_hipassembly_Ic.row(iit::rbd::AZ) * RH_hipassembly_a + RH_hipassembly_f(iit::rbd::AZ))(0);
+    jForces(RH_HAA) = (RH_hipassembly_Ic.row(iit::rbd::AZ) * RH_hipassembly_a + RH_hipassembly_f(iit::rbd::AZ));
     
     RH_upperleg_a = xm->fr_RH_upperleg_X_fr_RH_hipassembly * RH_hipassembly_a;
-    jForces(RH_HFE) = (RH_upperleg_Ic.row(iit::rbd::AZ) * RH_upperleg_a + RH_upperleg_f(iit::rbd::AZ))(0);
+    jForces(RH_HFE) = (RH_upperleg_Ic.row(iit::rbd::AZ) * RH_upperleg_a + RH_upperleg_f(iit::rbd::AZ));
     
     RH_lowerleg_a = xm->fr_RH_lowerleg_X_fr_RH_upperleg * RH_upperleg_a;
-    jForces(RH_KFE) = (RH_lowerleg_Ic.row(iit::rbd::AZ) * RH_lowerleg_a + RH_lowerleg_f(iit::rbd::AZ))(0);
+    jForces(RH_KFE) = (RH_lowerleg_Ic.row(iit::rbd::AZ) * RH_lowerleg_a + RH_lowerleg_f(iit::rbd::AZ));
     
 
     trunk_a += g;
