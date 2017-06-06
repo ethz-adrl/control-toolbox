@@ -13,6 +13,7 @@ Makefile
 Doxyfile
 *.orig
 templateDir.h
+exampleDir.h
 CodegenOutputDirs.h
 ct_core/generated/*
 solution.mat
