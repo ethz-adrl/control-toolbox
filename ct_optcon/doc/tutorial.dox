@@ -1,0 +1,19 @@
+/*!
+@page optcon_tutorials Tutorial
+
+
+\section cure_tut_lqr LQR Control of a Damped Oscillator
+In this example, we will take an existing damped oscillator model, linearize the (already linear) dynamics around the steady state
+ using Auto-Differentiation with Code Generation and finally design an LQR controller based on the linearized model.
+
+\include LQR.cpp
+
+You can run this example with the following command
+
+\code{.sh}
+rosrun ct_optcon ex_LQR
+\endcode
+
+\note Make sure you have built the examples before trying to run it.
+
+ */

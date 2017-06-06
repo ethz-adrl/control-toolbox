@@ -8,7 +8,7 @@ In order to get you started with using the Control Toolbox, there are several us
 - \ref tut_advanced "Advanced Tutorial"
 - \ref tut_examples "Examples"
 
-If you need additional support, feel free to create an issue or contact the developers.
+If you need additional support, feel free to create an issue on Bitbucket or contact the developers.
  
 \section tut_basics Basic Tutorial
 
@@ -86,7 +86,6 @@ class Masspoint : public ct::core::System<2>
 {
 public:
 	const size_t STATE_DIM = 2;
-	const size_t CONTROL_DIM = 1;
 
 	// constructor
 	Masspoint(double mass, double d) : 

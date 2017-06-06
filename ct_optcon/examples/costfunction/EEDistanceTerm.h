@@ -32,7 +32,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/optcon/costfunction/term/TermBase.hpp>
 
-#include "Kinematics.h"
+#include "../../examples/costfunction/Kinematics.h"
 
 
 /*the system consists of a little base, movable in x and y direction, and a 6-dof arm attached to it*/

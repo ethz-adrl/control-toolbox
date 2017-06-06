@@ -1,5 +1,6 @@
 option(USE_CLANG "Use CLANG instead of gcc for faster compilation" false)
 option(USE_INTEL "Use Intel ICC compiler" false)
+option(BUILD_EXAMPLES "Compile all examples for ct" false)
 option(BUILD_HYQ_FULL "Compile all examples for HyQ (takes long, should use clang)" false)
 option(BUILD_HYQ_LINEARIZATION_TIMINGS "Build linearization timing tests for HyQ (takes long, should use clang)" false)
 option(BUILD_HYA_LINEARIZATION_TIMINGS "Build linearization timing tests for HyA (takes long, should use clang)" false)
