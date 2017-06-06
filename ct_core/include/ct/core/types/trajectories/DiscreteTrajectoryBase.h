@@ -109,8 +109,8 @@ public:
 	/*!
 	 * Construct Trajectory from a segment of an existing trajectory
 	 * @param other existing trajectory
-	 * @param t_seg_start time where the trajectory segment to be extracted starts
-	 * @param t_seg_stop time where the trajectory segment to be extracted stops
+	 * @param startIndex index where the trajectory to be extracted starts
+	 * @param endIndex index where the trajectory to be extracted ends
 	 */
 	DiscreteTrajectoryBase(DiscreteTrajectoryBase<T, Alloc>& other, const size_t startIndex, const size_t endIndex):
 		time_(),

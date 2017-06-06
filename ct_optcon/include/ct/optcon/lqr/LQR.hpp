@@ -37,16 +37,19 @@ namespace ct {
 namespace optcon {
 
 
-/** * \ingroup LQR
- *+
+/*!
+ * \ingroup LQR
+ *
  * \brief continuous-time infinite-horizon LQR
+ *
  * Implements continous-time infinite-horizon LQR.
  * Resulting feedback law will take the form
  * \f[
  * u_{fb} = -K \cdot (x - x_{ref})
  * \f]
- * @param STATE_DIM
- * @param CONTROL_DIM
+ *
+ * @tparam STATE_DIM
+ * @tparam CONTROL_DIM
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 class LQR

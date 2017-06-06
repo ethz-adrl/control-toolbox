@@ -38,7 +38,8 @@ namespace optcon{
 
 
 
-/** \defgroup OptConProblem OptConProblem
+/*!
+ * \defgroup OptConProblem OptConProblem
  *
  * \brief Class that defines how to set up an Optimal Control Problem
  *
@@ -211,7 +212,7 @@ public:
 
 	/*!
 	 * Update the current time horizon in the Opt.Control Problem (required for example for replanning)
-	 * @param time
+	 * @param tf new time horizon
 	 */
 	void setTimeHorizon(const core::Time tf){tf_ = tf;}
 

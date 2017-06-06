@@ -39,6 +39,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ConstraintTest.h"
 
 
+/*!
+ * This is an example for using constraints.
+ * \example ConstraintTest.cpp
+ */
 int main(int argc, char **argv){
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();

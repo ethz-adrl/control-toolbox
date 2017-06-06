@@ -39,15 +39,15 @@ extern "C" void dtrsen_(const char* JOB, const char* COMPQ, const int* SELECT, c
 namespace ct {
 namespace optcon {
 
-/**
+/*!
  * \ingroup LQR
  *+
  * \brief Algebraic Riccati Equation
  *
  * solves the Infinite-Horizon Algebraic Riccati Equation
  *
- * @param: STATE_DIM
- * @param: CONTROL_DIM
+ * @tparam STATE_DIM system state dimension
+ * @tparam CONTROL_DIM system control input dimension
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 class AlgebraicRiccatiEquation {

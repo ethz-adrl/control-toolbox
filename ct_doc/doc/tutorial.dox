@@ -14,7 +14,7 @@ If you need additional support, feel free to create an issue on Bitbucket or con
 
 \subsection tut_basics_pkg Creating a ROS package
 CT is middleware free. Therefore, you are not bound to use ROS or catkin. However, for the sake of simplicity we will use catkin in this tutorial.
-Make sure you have succesfully downloaded and compiled CT according to our @ref getting_started instructions. Afterwards go to your catkin workspace
+Make sure you have succesfully downloaded and compiled CT according to our @ref gs instructions. Afterwards go to your catkin workspace
 and create a new package
 
 \code{.sh}

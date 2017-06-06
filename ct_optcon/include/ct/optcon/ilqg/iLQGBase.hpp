@@ -43,24 +43,25 @@ namespace ct{
 namespace optcon{
 
 
-/** \defgroup iLQG iLQG
+/*!
+ * \defgroup iLQG iLQG
  *
  * \brief Sequential Linear Quadratic Optimal Control package
  */
 
-/** * \ingroup iLQG
- *+
-  \brief C++ implementation of iLQG. In fact, this currently implements iLQR.
-
-  The implementation and naming is based on the reference below. In general, the code follows this convention:
-  X  <- Matrix (upper-case in paper)
-  xv <- vector (lower-case bold in paper)
-  x  <- scalar (lower-case in paper)
-
-  Reference:
-  Todorov, E.; Weiwei Li, "A generalized iterative LQG method for locally-optimal feedback control of constrained nonlinear stochastic systems,"
-  American Control Conference, 2005. Proceedings of the 2005 , vol., no., pp.300,306 vol. 1, 8-10 June 2005
-
+/*!
+ * \ingroup iLQG
+ *
+ * \brief C++ implementation of iLQG. In fact, this currently implements iLQR.
+ *
+ *  The implementation and naming is based on the reference below. In general, the code follows this convention:
+ *  X  <- Matrix (upper-case in paper)
+ *  xv <- vector (lower-case bold in paper)
+ *  x  <- scalar (lower-case in paper)
+ *
+ *  Reference:
+ *  Todorov, E.; Weiwei Li, "A generalized iterative LQG method for locally-optimal feedback control of constrained nonlinear stochastic systems,"
+ *  American Control Conference, 2005. Proceedings of the 2005 , vol., no., pp.300,306 vol. 1, 8-10 June 2005
 */
 
 template <size_t STATE_DIM, size_t CONTROL_DIM>
@@ -105,15 +106,15 @@ public:
 
     //! iLQG constructor.
     /*!
-      Sets up iLQG. Dynamics, derivatives of the dynamics as well as the cost function have to be provided.
-      You should pass pointers to instances of classes here that derive from the dynamics, derivatives and costFunction base classes
-
-      \param dynamics pointer to system dynamics
-      \param derivative pointer to system dynamics derivative
-      \param costFunction pointer to cost function and its derivatives
-      \param t_end time horizon for iLQG
-      \param epsilon correction factor for negative eigenvalues in the H matrix
-      \param matlab pointer to Schweizer-Messer Matlab Engine or to a dummy class (if Matlab not used)
+     * Sets up iLQG. Dynamics, derivatives of the dynamics as well as the cost function have to be provided.
+     * You should pass pointers to instances of classes here that derive from the dynamics, derivatives and costFunction base classes
+     *
+     * \param dynamics pointer to system dynamics
+     * \param derivative pointer to system dynamics derivative
+     * \param costFunction pointer to cost function and its derivatives
+     * \param t_end time horizon for iLQG
+     * \param epsilon correction factor for negative eigenvalues in the H matrix
+     * \param matlab pointer to Schweizer-Messer Matlab Engine or to a dummy class (if Matlab not used)
     */
 	iLQGBase(const OptConProblem<STATE_DIM, CONTROL_DIM>& optConProblem,
 			const iLQGSettings& settings) :
@@ -354,9 +355,10 @@ protected:
 
 	//! Computes the linearized Dynamics at a specific point of the trajectory
 	/*!
-	  This function calculates the linearization, i.e. matrices A and B in $\dot{x} = A(x(k)) x + B(x(k)) u$
+	  This function calculates the linearization, i.e. matrices A and B in \f$ \dot{x} = A(x(k)) x + B(x(k)) u \f$
 	  at a specific point of the trajectory
 
+	  \param threadId the id of the worker thread
 	  \param k step k
 	*/
 	void computeLinearizedDynamics(size_t threadId, size_t k);
@@ -365,45 +367,45 @@ protected:
 	/*!
 	  This function calculates the quadratic costs as provided by the costFunction pointer.
 
-	  \param k step k
+	 * \param threadId id of worker thread
+	 * \param k step k
 	*/
 	void computeQuadraticCosts(size_t threadId, size_t k);
 
 	//! Initializes cost to go
 	/*!
-	  This function initializes the cost-to-go function at time K.
-
-	  \param k step k
-	*/
+	 * This function initializes the cost-to-go function at time K.
+     *
+	 */
 	void initializeCostToGo();
 
 
 	//! Computes cost to go
 	/*!
-	  This function computes the cost-to-go function for all times t<t_K
-
-	  \param k step k
-	*/
+	 * This function computes the cost-to-go function for all times t<t_K
+     *
+	 * \param k step k
+	 */
 	void computeCostToGo(size_t k);
 
 	//! Design controller
 	/*!
-	  This function designes the LQR and feedforward controller at time k.
-
-	  \param k step k
-	*/
+	 * This function designes the LQR and feedforward controller at time k.
+     *
+	 * \param k step k
+	 */
 	void designController(size_t k);
 
 
 	//! Compute cost for a given set of state and input trajectory
 	/*!
-	  Compute cost for a given set of state and input trajectory
-
-	  \param threadId the ID of the thread
-	  \param x_local the state trajectory
-	  \param u_local the control trajectory
-	  \param intermediateCost the accumulated intermediate cost
-	  \param finalCost the accumulated final cost
+	 * Compute cost for a given set of state and input trajectory
+     *
+	 * \param threadId the ID of the thread
+	 * \param x_local the state trajectory
+	 * \param u_local the control trajectory
+	 * \param intermediateCost the accumulated intermediate cost
+	 * \param finalCost the accumulated final cost
 	 */
 	void computeCostsOfTrajectory(
 			size_t threadId,
@@ -428,24 +430,24 @@ protected:
 
 	//! Update feedforward controller
 	/*!
-	  This function updates the feedforward Controller based on the previous calculation.
-
-	  \param k step k
-	*/
+	 * This function updates the feedforward Controller based on the previous calculation.
+     *
+	 * \param k step k
+	 */
 	void updateFFController(size_t k);
 
 	//! Print debugging information
 	/*!
-	  This function is automatically called if the DEBUG_PRINT compileflag is set. It prints out important information
-	  like cost etc. after each iteration.
-
-	*/
+	 *  This function is automatically called if the DEBUG_PRINT compileflag is set. It prints out important information
+	 *  like cost etc. after each iteration.
+     *
+	 */
 	void debugPrint();
 
 	//! Send a std::vector of Eigen to Matlab
 	/*!
-	  Tnis is a helper function to efficiently send std::vectors to Matlab.
-	*/
+	 * This is a helper function to efficiently send std::vectors to Matlab.
+	 */
 	template<class V>
 	void matrixToMatlab(V& matrix, std::string variableName);
 

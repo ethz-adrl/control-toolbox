@@ -8,7 +8,7 @@ The Optimal Control Module implements different Trajectory Optimizers, such as S
 \section ct_optcon_install Installation and Usage
 CT Optimal Control is part of the Control Toolbox suite. See the <a href="../../../ct_core/doc/html/index.html">CT main documentation</a> for installation and usage instructions.
 
-\section acknowledgement Acknowledgement
+\section ct_optcon_acknowledgement Acknowledgement
  
 Project Lead and Maintanance: 
  - Michael Neunert, neunertm ( at ) gmail (dot) com

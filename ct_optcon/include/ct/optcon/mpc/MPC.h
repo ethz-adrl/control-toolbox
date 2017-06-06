@@ -180,7 +180,7 @@ public:
 	 * @param timeHorizonStrategy
 	 * 	the time horizon strategy provided by the user
 	 */
-	void setTimeHorizonStrategy(std::shared_ptr<MpcTimeHorizon> strat){timeHorizonStrategy_ = strat;}
+	void setTimeHorizonStrategy(std::shared_ptr<MpcTimeHorizon> timeHorizonStrategy){timeHorizonStrategy_ = strat;}
 
 
 	//! set a new initial guess for the policy

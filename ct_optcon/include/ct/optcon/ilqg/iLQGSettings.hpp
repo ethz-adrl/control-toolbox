@@ -109,10 +109,11 @@ struct iLQGLineSearchSettings {
 
 
 
-/** * \ingroup iLQG
- *+
-  \brief Settings for the iLQG algorithm.
-  */
+/*!
+ * \ingroup iLQG
+ *
+ * \brief Settings for the iLQG algorithm.
+ */
 class iLQGSettings
 {
 public:

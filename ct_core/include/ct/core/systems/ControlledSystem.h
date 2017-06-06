@@ -206,7 +206,7 @@ public:
 	//! start logging control inputs
 	/*!
 	 * \todo remove, this should be implemented in an observer!
-	 * @param state_ptr pointer to array to log control input
+	 * @param ctrl_ptr pointer to array to log control input
 	 */
 	void startLoggingControls(std::shared_ptr<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>> ctrl_ptr)
 	{
@@ -217,7 +217,7 @@ public:
 	//! start logging times
 	/*!
 	 * \todo remove, this should be implemented in an observer!
-	 * @param state_ptr pointer to array to log times
+	 * @param time_ptr pointer to array which logs times
 	 */
 	void startLoggingTimes(std::shared_ptr<ct::core::TimeArray> time_ptr)
 	{
