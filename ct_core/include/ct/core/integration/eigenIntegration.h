@@ -5,22 +5,6 @@
  *      Author: farbod
  */
 
-/*
-  [auto_generated]
-  boost/numeric/odeint/external/eigen/eigen_algebra.hpp
-
-  [begin_description]
-  tba.
-  [end_description]
-
-  Copyright 2013 Christian Shelton
-  Copyright 2013 Karsten Ahnert
-
-  Distributed under the Boost Software License, Version 1.0.
-  (See accompanying file LICENSE_1_0.txt or
-  copy at http://www.boost.org/LICENSE_1_0.txt)
-*/
-
 
 #ifndef BOOST_NUMERIC_ODEINT_EXTERNAL_EIGEN_EIGEN_ALGEBRA_HPP_INCLUDED
 #define BOOST_NUMERIC_ODEINT_EXTERNAL_EIGEN_EIGEN_ALGEBRA_HPP_INCLUDED
@@ -35,6 +19,40 @@
 // how to add, multiply, compute the norm, etc)
 
 namespace Eigen {
+
+
+#if EIGEN_VERSION_AT_LEAST(3,3,0)
+
+// the functions below for Eigen 3.3 unfortunately do not yet return expressions
+
+template<typename D>
+inline const CwiseUnaryOp<internal::scalar_abs_op<typename internal::traits<D>::Scalar>, const D>
+abs(const MatrixBase<D>& x)
+{
+	return x.cwiseAbs();
+}
+
+
+template<typename D>
+inline Matrix<typename internal::traits<D>::Scalar, internal::traits<D>::RowsAtCompileTime, 1>
+operator+(const typename internal::traits<D>::Scalar &s, const MatrixBase<D> &m)
+{
+	Matrix<typename internal::traits<D>::Scalar, internal::traits<D>::RowsAtCompileTime, 1> result = m;
+	result *= s;
+	return result;
+}
+
+template<typename D, typename D2>
+inline Matrix<typename internal::traits<D>::Scalar, internal::traits<D>::RowsAtCompileTime, 1>
+operator/(const MatrixBase<D> &lhs, const MatrixBase<D2> &rhs)
+{
+	Matrix<typename internal::traits<D>::Scalar, internal::traits<D>::RowsAtCompileTime, 1> res;
+	res = (lhs.array() / rhs.array());
+	return res;
+}
+
+
+#else
 
 
 template<typename D>
@@ -90,6 +108,7 @@ abs( const Eigen::MatrixBase< D > &m ) {
     return m.cwiseAbs();
 }
 
+#endif
 
 
 } // end Eigen namespace
