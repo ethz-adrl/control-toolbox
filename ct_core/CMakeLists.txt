@@ -72,6 +72,12 @@ add_library(ct_core
 )
 target_link_libraries(ct_core ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
 
+
+if(BUILD_EXAMPLES)
+    add_executable(ex_DampedOscillatorCustomController examples/DampedOscillatorCustomController.cpp)
+endif()
+
+
 catkin_add_gtest(NoiseTest test/NoiseTest.cpp)
 target_link_libraries(NoiseTest ${catkin_LIBRARIES})
 
@@ -105,7 +111,6 @@ if(QWT_ENABLED)
 #    add_executable(plotQwtTest test/plot/plotQwtTest.cpp)
 #    target_link_libraries(plotQwtTest ${catkin_LIBRARIES} ct_core ${ct_core_extra_libs} pthread)
 endif()
-
 
 
 find_package(Doxygen)

@@ -114,10 +114,22 @@ catkin_package(
    INCLUDE_DIRS
         include
         ${EIGEN_INCLUDE_DIRS}
-   DEPENDS eigen lapack 
-   LIBRARIES lapack
+   DEPENDS eigen lapack dl
+   LIBRARIES lapack dl
    CATKIN_DEPENDS ct_core
 )
+
+
+
+if(BUILD_EXAMPLES)
+    set(CT_OPTCON_EXAMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/examples")
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
+
+    add_executable(ex_LQR examples/LQR.cpp)
+    target_link_libraries(ex_LQR ${catkin_LIBRARIES} lapack dl)
+endif()
+
+
 
 get_filename_component(DMS_OSC_TEST_MAT_DIR "test/dms/oscillator/matfiles" ABSOLUTE)
 configure_file(test/dms/oscillator/oscDMSTest_settings.h.in test/dms/oscillator/oscDMSTest_settings.h)

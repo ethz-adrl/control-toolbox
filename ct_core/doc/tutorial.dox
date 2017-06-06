@@ -1,0 +1,55 @@
+/*!
+@page core_tutorials Tutorial
+
+This tutorial is specific for the Core Module of the Control Toolbox. For installation instructions and an overview see the main CT documentation.
+
+\section core_tut_control Feedback Control Tutorial
+
+In this tutorial, we will take a look how to implement and simulate simple (feedback) controllers.
+
+\subsection cure_tut_pid PID Control
+
+First, we will implement a controller based on a simple PID Controller. There are at least three different ways to realize a PID Controller in CT.
+While there is a ct::core::PIDController, it is only SISO. However, CT assumes all systems and controllers are MIMO. Therefore, if you want to use
+the pre-implemented ct::core::PIDController, you will have to provide a mapping from states to PIDController input and from the output to the control input.
+This is shown in ct::core::SISOArrayController. Alternatively, you can implement your own Controller class which could utilize the ct::core::PIDController
+An example is shown in the \ref core_tut_custom_control "Custom Controller Tutorial". The third and easiest option is to implement the PID controller as
+ a linear state feedback controller of the form \f$ u = K x \f$. Herefore, we can use ct::core::StateFeedbackController.
+ 
+ 
+
+1. Implement your own controller
+
+To implement a controller, we derive from ct::core::Controller. As we will see
+in a bit, this will ensure our feedback controller is interoperable with the rest of the Control Toolbox.
+
+
+\subsection core_tut_custom_control Custom Controller
+
+In this example, we create our own implementation of a controller. We create a controller that has two states and one control input. Our
+control structure will be a PD controller with a feedforward control action.
+Our CustomController.h looks like the following
+
+\include CustomController.h
+
+\note Any ct::core::Integrator will evaluate the controller at every integration step. Therefore, if you wish to implement a Controller with
+a fixed or lower sampling rate, you will have to implement this in your Controller class.
+
+We can now use this controller to control and simulate a damped oscillator again
+
+\include DampedOscillatorCustomController.cpp
+
+You can run this example with the following command
+
+\code{.sh}
+rosrun ct_core ex_DampedOscillatorCustomController
+\endcode
+
+\note Make sure you have built the examples before trying to run it.
+
+
+
+\endcode
+
+
+ */

@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/costfunction/term/TermBase.hpp>
 #include <ct/optcon/costfunction/term/TermOther.hpp>
 
-#include "EEDistanceTerm.h"
+#include "../../examples/costfunction/EEDistanceTerm.h"
 
 int main() {
 	using namespace ct;
