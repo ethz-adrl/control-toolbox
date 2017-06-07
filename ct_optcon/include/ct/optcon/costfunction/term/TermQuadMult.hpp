@@ -37,7 +37,10 @@ namespace optcon {
  *
  * \brief A multiplicative term of type \f$ J = (x^T Q x) (u^T R u) \f$
  *
- * Probably this term is not very useful but we use it for testing
+ * Probably this term is not very useful but we use it for testing.
+ *
+ * An example for using this term is given in \ref CostFunctionTest.cpp
+ *
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename S = double>
 class TermQuadMult : public TermBase<STATE_DIM, CONTROL_DIM, S> {

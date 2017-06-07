@@ -32,8 +32,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/optcon/costfunction/CostFunctionQuadraticTracking.hpp>
 
-using namespace ct;
-using namespace optcon;
+
+namespace ct{
+namespace optcon{
+namespace example{
+
 
 template <size_t state_dim, size_t control_dim>
 void compareCostFunctionOutput(CostFunctionQuadratic<state_dim, control_dim>& costFunction, CostFunctionQuadratic<state_dim, control_dim>& costFunction2)
@@ -112,7 +115,14 @@ TEST(CostFunctionTest, TrackingCfTest)
 }
 
 
+/*!
+ * \example TrackingTest.cpp
+ */
 int main(int argc, char** argv) {
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }
+
+} // namespace example
+} // namespace optcon
+} // namespace ct

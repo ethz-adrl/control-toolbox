@@ -28,13 +28,23 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CT_OPTCON_CONSTRAINTTEST_HPP_
 
 
+namespace ct{
+namespace optcon{
+namespace example{
+
+
+/*!
+ * This is an example for using constraints.
+ * \example ConstraintTest.h
+ */
+
 const bool verbose = true;
 
 const size_t state_dim = 10;
 const size_t input_dim = 8;
 
 
-// example constraint term
+//! A pure state constraint term
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 class PureStateConstraint_Example : public ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
@@ -56,6 +66,8 @@ public:
 		Base(arg),
 		A_(arg.A_) {}
 
+	virtual ~PureStateConstraint_Example(){}
+
 	virtual PureStateConstraint_Example<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override 
 	{ 
 		return new PureStateConstraint_Example(*this);
@@ -75,6 +87,7 @@ private:
 	Eigen::Matrix<double, STATE_DIM, STATE_DIM> A_;
 };
 
+//! A state input constraint term
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 class StateInputConstraint_Example : public ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
@@ -114,8 +127,9 @@ private:
 };
 
 
+//! A simple example with an 1d constraint
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-class ConstraintTerm1 : public ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
+class ConstraintTerm1D : public ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -124,7 +138,7 @@ public:
 	typedef ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 
-	ConstraintTerm1()
+	ConstraintTerm1D()
 	{
 		Base::lb_.resize(term_dim);
 		Base::ub_.resize(term_dim);
@@ -132,7 +146,9 @@ public:
 		Base::ub_.setZero();		
 	}
 
-	virtual ConstraintTerm1<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override {return new ConstraintTerm1<STATE_DIM, CONTROL_DIM, SCALAR>();}
+	virtual ~ConstraintTerm1D(){}
+
+	virtual ConstraintTerm1D<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override {return new ConstraintTerm1D<STATE_DIM, CONTROL_DIM, SCALAR>();}
 
 	virtual size_t getConstraintsCount() override {return term_dim;}
 
@@ -157,8 +173,10 @@ public:
 	}
 };
 
+
+//! A simple example with a 2d constraint
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-class ConstraintTerm2 : public ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
+class ConstraintTerm2D : public ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -167,7 +185,7 @@ public:
 	typedef ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 
-	ConstraintTerm2()
+	ConstraintTerm2D()
 	{
 		Base::lb_.resize(term_dim);
 		Base::ub_.resize(term_dim);
@@ -175,7 +193,9 @@ public:
 		Base::ub_.setZero();		
 	}
 
-	ConstraintTerm2<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override {return new ConstraintTerm2<STATE_DIM, CONTROL_DIM, SCALAR>();}
+	virtual ~ConstraintTerm2D(){}
+
+	ConstraintTerm2D<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override {return new ConstraintTerm2D<STATE_DIM, CONTROL_DIM, SCALAR>();}
 
 	virtual size_t getConstraintsCount() override {return term_dim;}
 
@@ -382,15 +402,15 @@ TEST(comparisonAnalyticAD, comparisonAnalyticAD)
 	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<3, 3>> constraintAN (
 		new ct::optcon::ConstraintContainerAnalytical<3, 3>());
 
-	std::shared_ptr<ConstraintTerm1<3, 3, ScalarCg>> term1_ad (
-		new ConstraintTerm1<3, 3, ScalarCg>()); term1_ad->setName("term1_ad");
-	std::shared_ptr<ConstraintTerm2<3, 3, ScalarCg>> term2_ad (
-		new ConstraintTerm2<3, 3, ScalarCg>()); term2_ad->setName("term2_ad");
+	std::shared_ptr<ConstraintTerm1D<3, 3, ScalarCg>> term1_ad (
+		new ConstraintTerm1D<3, 3, ScalarCg>()); term1_ad->setName("term1_ad");
+	std::shared_ptr<ConstraintTerm2D<3, 3, ScalarCg>> term2_ad (
+		new ConstraintTerm2D<3, 3, ScalarCg>()); term2_ad->setName("term2_ad");
 
-	std::shared_ptr<ConstraintTerm1<3, 3, double>> term1_an (
-		new ConstraintTerm1<3, 3, double>()); term1_an->setName("term1_an");
-	std::shared_ptr<ConstraintTerm2<3, 3, double>> term2_an (
-		new ConstraintTerm2<3, 3, double>()); term2_an->setName("term2_an");
+	std::shared_ptr<ConstraintTerm1D<3, 3, double>> term1_an (
+		new ConstraintTerm1D<3, 3, double>()); term1_an->setName("term1_an");
+	std::shared_ptr<ConstraintTerm2D<3, 3, double>> term2_an (
+		new ConstraintTerm2D<3, 3, double>()); term2_an->setName("term2_an");
 
 
 	std::cout << "Adding terms to constraint_analytic" << std::endl;
@@ -435,5 +455,8 @@ TEST(comparisonAnalyticAD, comparisonAnalyticAD)
 	ASSERT_TRUE(1.0);
 }
 
+} // namespace example
+} // namespace optcon
+} // namespace ct
 
 #endif 

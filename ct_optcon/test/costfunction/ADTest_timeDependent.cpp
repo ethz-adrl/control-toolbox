@@ -35,8 +35,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <gtest/gtest.h>
 
-namespace ct {
-namespace optcon {
+namespace ct{
+namespace optcon{
+namespace example{
 
 /*
  * Define a cost function term of form cost = c*t^2 (x'Qx + u'Ru)
@@ -199,7 +200,15 @@ TEST(AD_TEST_TIME_VAR, AD_TEST_TIME_VAR)
 }
 
 
+/*!
+ * \warning This test illustrates that time-dependency is not yet accounted for when using CppAD!
+ */
 int main(int argc, char **argv){
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }
+
+
+} // namespace example
+} // namespace optcon
+} // namespace ct

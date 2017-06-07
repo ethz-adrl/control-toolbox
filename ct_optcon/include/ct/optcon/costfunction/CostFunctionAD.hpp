@@ -53,6 +53,8 @@ namespace optcon {
  * This cost function can work with both, analytical terms as well as
  * auto-diff terms. For analytical terms it will use provided derivatives
  * and for auto-diff terms derivatives will be computed using auto-diff.
+ *
+ * Unit test \ref ADTest.cpp illustrates the use of a CostFunctionAD.
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 class CostFunctionAD : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM> {

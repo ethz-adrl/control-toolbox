@@ -39,6 +39,8 @@ namespace optcon {
  *
  * \brief A quadratic tracking term of type \f$ J(t) = (x_{ref}(t) - x)^T Q (x_{ref}(t) - x) + (u_{ref}(t) - u)^T R (u_{ref}(t) - u) \f$
  *
+ * An example for using this term is given in unit test \ref TrackingTest.cpp
+ *
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename S = double>
 class TermQuadTracking : public TermBase<STATE_DIM, CONTROL_DIM, S> {

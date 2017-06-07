@@ -42,9 +42,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/constraint/term/TerminalConstraint.h>
 #include <ct/optcon/constraint/ConstraintContainerAnalytical.h> 
 
-using namespace ct;
-using namespace optcon;
-
+namespace ct{
+namespace optcon{
+namespace example{
 
 class OscillatorDms
 {
@@ -204,7 +204,19 @@ TEST(DmsTest, OscillatorDmsTestAllVariants)
 }
 
 
-int main(int argc, char **argv){
+} // namespace example
+} // namespace optcon
+} // namespace ct
+
+
+/*!
+ * This unit test applies Direct Multiple Shooting to an oscillator system. It employs all possible combinations of settings and solvers.
+ * \example oscDMSTestAllVariants.cpp
+ */
+int main(int argc, char **argv)
+{
+	using namespace ct::optcon::example;
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }
+

@@ -48,9 +48,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/matlab.hpp>
 #endif
 
-using namespace ct;
-using namespace optcon;
-
+namespace ct{
+namespace optcon{
+namespace example{
 
 class OscDms
 {
@@ -83,7 +83,7 @@ public:
 	}
 
 	~OscDms(){
-		std::cout << "Oscillator dms destrcutor called" << std::endl;
+		std::cout << "Oscillator dms destructor called" << std::endl;
 	}
 
 	void getIpoptMatlabTrajectories()
@@ -325,7 +325,21 @@ TEST(DmsTest, OscDmsTest)
 #endif // BUILD_WITH_IPOPT_SUPPORT		
 } 
 
-int main(int argc, char **argv){
+
+
+} // namespace example
+} // namespace optcon
+} // namespace ct
+
+/*!
+ * This unit test applies Direct Multiple Shooting to an oscillator system, uses different solvers and compares the outputs.
+ * \example oscDMSTest.cpp
+ */
+int main(int argc, char **argv)
+{
+	using namespace ct::optcon::example;
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }
+
+

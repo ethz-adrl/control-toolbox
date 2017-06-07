@@ -40,8 +40,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 const size_t state_dim = 16;
 const size_t control_dim = 14;
 
-using namespace ct;
-using namespace ct::optcon;
+namespace ct{
+namespace optcon{
+namespace example{
+
 
 template <size_t state_dim, size_t control_dim>
 void compareCostFunctionOutput(CostFunctionQuadratic<state_dim, control_dim>& costFunction, CostFunctionQuadratic<state_dim, control_dim>& costFunction2)
@@ -250,7 +252,15 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 }
 
 
+/*!
+ * This unit test illustrates the use of cost functions and terms
+ * \example CostFunctionTest.cpp
+ */
 int main(int argc, char **argv){
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }
+
+} // namespace example
+} // namespace optcon
+} // namespace ct
