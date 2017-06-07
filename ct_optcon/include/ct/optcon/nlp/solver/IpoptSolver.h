@@ -174,7 +174,6 @@ public:
 
 	virtual bool solve() override {return false;}
 	virtual void prepareWarmStart(size_t maxIterations) override{}
-	virtual bool solveSucceeded() override {return false;}
 	virtual void configureDerived(const NlpSolverSettings& settings) override{}
 };
 
