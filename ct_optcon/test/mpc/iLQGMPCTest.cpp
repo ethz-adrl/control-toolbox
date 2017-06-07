@@ -44,7 +44,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/optcon/matlab.hpp>
 
-
+namespace ct{
+namespace optcon{
+namespace example{
 
 using namespace ct::core;
 using namespace ct::optcon;
@@ -447,9 +449,15 @@ TEST(MPCTest, iLQGMPC)
 	}
 }
 
+} // namespace example
+} // namespace optcon
+} // namespace ct
 
 
-int main(int argc, char **argv){
-	  testing::InitGoogleTest(&argc, argv);
-	  return RUN_ALL_TESTS();
+
+int main(int argc, char **argv)
+{
+	using namespace ct::optcon::example;
+	testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }

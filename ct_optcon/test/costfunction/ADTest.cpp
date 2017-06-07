@@ -32,11 +32,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/costfunction/term/TermOther.hpp>
 
 
-namespace ct{
-namespace optcon{
-namespace example{
-
-
 /*!
  * This example illustrates how to use the AD cost function type and compares it to an analytical counterpart.
  * \example ADTest.cpp
@@ -107,7 +102,4 @@ int main() {
 	return 0;
 }
 
-} // namespace example
-} // namespace optcon
-} // namespace ct
 

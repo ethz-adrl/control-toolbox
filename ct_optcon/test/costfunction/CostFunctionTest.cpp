@@ -252,15 +252,18 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 }
 
 
+} // namespace example
+} // namespace optcon
+} // namespace ct
+
 /*!
  * This unit test illustrates the use of cost functions and terms
  * \example CostFunctionTest.cpp
  */
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
+	using namespace ct::optcon::example;
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }
 
-} // namespace example
-} // namespace optcon
-} // namespace ct

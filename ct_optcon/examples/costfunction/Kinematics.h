@@ -30,6 +30,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <math.h>
 
+namespace ct{
+namespace optcon{
+namespace example{
 
 template<typename SCALAR>
 class AD_Type_fr_link0_X_ee
@@ -98,5 +101,9 @@ public:
 	}
 };
 
+
+} // namespace example
+} // namespace optcon
+} // namespace ct
 
 #endif

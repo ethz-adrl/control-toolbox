@@ -35,6 +35,12 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Bring in gtest
 #include <gtest/gtest.h>
 
+
+namespace ct{
+namespace optcon{
+namespace example{
+
+
 TEST(LQRTest, quadTest)
 {
 //	std::cout << "QUADROTOR TEST"<<std::endl;
@@ -206,7 +212,19 @@ TEST(LQRTest, matlabTest)
 }
 #endif //MATLAB
 
-int main(int argc, char **argv){
+} // namespace example
+} // namespace optcon
+} // namespace ct
+
+
+/*!
+ * This runs the LQR unit test.
+ * \note for a more straight-forward implementation example, visit the tutorial.
+ * \example LqrTest.cpp
+ */
+int main(int argc, char **argv)
+{
+  using namespace ct::optcon::example;
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

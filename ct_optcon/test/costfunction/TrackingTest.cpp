@@ -115,14 +115,19 @@ TEST(CostFunctionTest, TrackingCfTest)
 }
 
 
+} // namespace example
+} // namespace optcon
+} // namespace ct
+
+
 /*!
+ * This unit test tests the tracking cost function and the tracking cost function term.
  * \example TrackingTest.cpp
  */
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
+	using namespace ct::optcon::example;
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }
 
-} // namespace example
-} // namespace optcon
-} // namespace ct

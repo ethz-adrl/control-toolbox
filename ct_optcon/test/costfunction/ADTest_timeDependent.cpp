@@ -136,9 +136,6 @@ protected:
 
 };
 
-} // namespace optcon
-} // namespace ct
-
 
 
 TEST(AD_TEST_TIME_VAR, AD_TEST_TIME_VAR)
@@ -156,8 +153,8 @@ TEST(AD_TEST_TIME_VAR, AD_TEST_TIME_VAR)
 	SCALAR c = 1.0;
 	SCALAR c_f = 2.0;
 
-	std::shared_ptr<ct::optcon::TestTerm<3, 3, SCALAR> > term_intermediate (new ct::optcon::TestTerm<3, 3, SCALAR>(Q, R, c));
-	std::shared_ptr<ct::optcon::TestTerm<3, 3, SCALAR> > term_final (new ct::optcon::TestTerm<3, 3, SCALAR>(Q_f, R_f, c_f));
+	std::shared_ptr<TestTerm<3, 3, SCALAR> > term_intermediate (new TestTerm<3, 3, SCALAR>(Q, R, c));
+	std::shared_ptr<TestTerm<3, 3, SCALAR> > term_final (new TestTerm<3, 3, SCALAR>(Q_f, R_f, c_f));
 
 	// autodiff costfunction
 	std::shared_ptr<ct::optcon::CostFunctionAD<3, 3>> ADcf (new ct::optcon::CostFunctionAD<3, 3>());
@@ -199,16 +196,18 @@ TEST(AD_TEST_TIME_VAR, AD_TEST_TIME_VAR)
 	}
 }
 
+} // namespace example
+} // namespace optcon
+} // namespace ct
 
 /*!
  * \warning This test illustrates that time-dependency is not yet accounted for when using CppAD!
  */
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
+	using namespace ct::optcon::example;
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }
 
 
-} // namespace example
-} // namespace optcon
-} // namespace ct

@@ -43,8 +43,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/optcon/ilqg/iLQGBase.hpp>
 
-//! use this flag to enable debug printouts in the MPC implementation
-//#define DEBUG_PRINT_MPC
+//#define DEBUG_PRINT_MPC	//! use this flag to enable debug printouts in the MPC implementation
+
 
 
 namespace ct{

@@ -143,7 +143,4 @@ int main(int argc, char **argv) {
 		std::cout << "Total delay: 	 " << delta_t_int + delta_t_opt + delta_t_init << std::endl;
 
 	}
-
-
-
 }
