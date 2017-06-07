@@ -111,13 +111,13 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > createCostFuncti
 	Q << 0, 0, 0, 0.1;
 
 	Eigen::Matrix<double, 1, 1> R;
-	R << 0.01;
+	R << 0.001;
 
 	Eigen::Vector2d x_nominal = Eigen::Vector2d::Zero();
 	Eigen::Matrix<double, 1, 1> u_nominal = Eigen::Matrix<double, 1, 1>::Zero();
 
 	Eigen::Matrix2d Q_final;
-	Q_final << 100, 0, 0, 100;
+	Q_final << 1000, 0, 0, 1000;
 
 	std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > quadraticCostFunction(
 			new CostFunctionQuadraticSimple<state_dim, control_dim>(
