@@ -168,7 +168,7 @@ public:
 
 		std::shared_ptr<TerminalConstraint<2,1>> termConstraint(new TerminalConstraint<2,1>(x_final_));
 
-		termConstraint->setName("crazyTerminalConstraint");
+		termConstraint->setName("TerminalConstraint");
 		finalConstraints_->addConstraint(termConstraint, true);
 		finalConstraints_->initialize();
 
@@ -199,7 +199,7 @@ public:
 
 		std::shared_ptr<TerminalConstraint<2,1>> termConstraint(new TerminalConstraint<2,1>(x_final_));
 
-		termConstraint->setName("crazyTerminalConstraint");
+		termConstraint->setName("TerminalConstraint");
 		finalConstraints_->addConstraint(termConstraint, true);
 		finalConstraints_->initialize();
 

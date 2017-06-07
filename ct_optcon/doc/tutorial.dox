@@ -16,4 +16,32 @@ rosrun ct_optcon ex_LQR
 
 \note Make sure you have built the examples before trying to run it.
 
+
+\section optcon_tut_mpc iLQG-MPC of a Damped Oscillator
+
+In this example we show how to use an Optimal Control solver (here iLQG) in combination with the MPC-class for out-of-the box Model Predictive Control.
+
+\include iLQG_MPC.cpp
+
+You can run this example with the following command
+\code{.sh}
+rosrun ct_optcon ex_MPC
+\endcode
+
+
+\section optcon_tut_dms Direct Multiple Shooting for a Damped Oscillator
+
+In this example, we show how to solve an Optimal Control problem for a oscillator system using Direct Multiple Shooting.
+\note This example requires either <a href="https://projects.coin-or.org/Ipopt">IPOPT</a> or 
+<a href="http://www.sbsi-sol-optimize.com/asp/sol_product_snopt.htm">SNOPT</a> to be installed. If you have a global installation 
+of one of these solvers, and an environment variable set, it will be automatically detected. 
+
+\include DMS.cpp
+
+You can run this example with the following command
+\code{.sh}
+rosrun ct_optcon ex_DMS
+\endcode
+
+
  */

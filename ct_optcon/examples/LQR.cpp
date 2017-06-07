@@ -10,7 +10,7 @@
 
 int main(int argc, char** argv)
 {
-	// get the state and control input dimension of a quadrotor
+	// get the state and control input dimension of the oscillator
 	const size_t state_dim = ct::core::SecondOrderSystem::STATE_DIM;
 	const size_t control_dim = ct::core::SecondOrderSystem::CONTROL_DIM;
 

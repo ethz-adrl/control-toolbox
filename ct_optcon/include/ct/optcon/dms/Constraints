@@ -9,10 +9,10 @@
 #ifndef CT_DMS_CONSTRAINTS_H_CONVENIENCE_
 #define CT_DMS_CONSTRAINTS_H_CONVENIENCE_
 
-#include "constraints/ConstraintDiscretizer.hpp"
-#include "constraints/ConstraintsContainerDms.hpp"
-#include "constraints/ContinuityConstraint.hpp"
-#include "constraints/InitStateConstraint.hpp"
-#include "constraints/TimeHorizonEqualityConstraint.hpp"
+#include "constraints/ConstraintDiscretizer.h"
+#include "constraints/ConstraintsContainerDms.h"
+#include "constraints/ContinuityConstraint.h"
+#include "constraints/InitStateConstraint.h"
+#include "constraints/TimeHorizonEqualityConstraint.h"
 
 #endif /* CT_DMS_CONSTRAINTS_H_CONVENIENCE_ */

@@ -47,12 +47,12 @@ set(MATLAB_LIBS ${MATLAB_LIB_DIR})
 find_package(ipopt)
 if(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
     set(BUILD_WITH_IPOPT_SUPPORT ON)
-    message(WARNING "Build with IPOPT")
+    message(WARNING "Found IPOPT - building with IPOPT support")
     if(ipopt_FOUND)
-      message(WARNING "Using local installation of IPOPT")
+      message(WARNING "Using LOCAL installation of IPOPT")
       set(IPOPT_BUILD_DIR ${CMAKE_BINARY_DIR}/build/include/coin)
     elseif(DEFINED ENV{IPOPT_SOURCE_DIR})
-      message(WARNING "using gLOBAL installation of IPOPT")
+      message(WARNING "using GLOBAL installation of IPOPT")
       set(IPOPT_BUILD_DIR $ENV{IPOPT_SOURCE_DIR}/build)
     else()
       message(FATAL_ERROR "ERROR: Ipopt source directory environment variable not set! Set IPOPT_SOURCE_DIR environment variable!")
@@ -68,7 +68,7 @@ endif(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
 
 if(DEFINED ENV{SNOPT_SOURCE_DIR})
     set(BUILD_WITH_SNOPT_SUPPORT ON)
-    message(WARNING "Build with SNOPT")
+    message(WARNING "Found SNOPT - building with SNOPT support")
     include_directories( "$ENV{SNOPT_SOURCE_DIR}/include")
 
     add_definitions( -DBUILD_WITH_SNOPT_SUPPORT )
@@ -113,6 +113,8 @@ catkin_package(
 
 
 if(BUILD_EXAMPLES)
+    message(WARNING "Building with examples.")
+
     set(CT_OPTCON_EXAMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/examples")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
 
@@ -120,7 +122,10 @@ if(BUILD_EXAMPLES)
     target_link_libraries(ex_LQR ${catkin_LIBRARIES} lapack dl)
     
     add_executable(ex_MPC examples/iLQG_MPC.cpp)
-    target_link_libraries(ex_MPC ${catkin_LIBRARIES} lapack dl)
+    target_link_libraries(ex_MPC ${catkin_LIBRARIES})
+    
+    add_executable(ex_DMS examples/DMS.cpp)
+    target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
 endif()
 
 
