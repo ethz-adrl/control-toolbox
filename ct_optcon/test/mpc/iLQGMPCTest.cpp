@@ -111,13 +111,13 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > createCostFuncti
 	Q << 0, 0, 0, 0.1;
 
 	Eigen::Matrix<double, 1, 1> R;
-	R << 0.001;
+	R << 0.01;
 
 	Eigen::Vector2d x_nominal = Eigen::Vector2d::Zero();
 	Eigen::Matrix<double, 1, 1> u_nominal = Eigen::Matrix<double, 1, 1>::Zero();
 
 	Eigen::Matrix2d Q_final;
-	Q_final << 1000, 0, 0, 1000;
+	Q_final << 100, 0, 0, 100;
 
 	std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > quadraticCostFunction(
 			new CostFunctionQuadraticSimple<state_dim, control_dim>(
@@ -290,7 +290,7 @@ TEST(MPCTest, iLQGMPC)
 		// provide initial controller
 		FeedbackArray<state_dim, control_dim> u0_fb(K, FeedbackMatrix<state_dim, control_dim>::Zero());
 
-		ControlVectorArray<control_dim> u0_ff(K, ControlVector<control_dim>::Ones());
+		ControlVectorArray<control_dim> u0_ff(K, ControlVector<control_dim>::Zero());
 
 		ct::core::StateFeedbackController<state_dim, control_dim> initController (u0_ff, u0_fb, ilqg_settings.dt);
 
@@ -343,6 +343,7 @@ TEST(MPCTest, iLQGMPC)
 
 
 		size_t maxNumRuns = 2000;
+		size_t numRuns = 0;
 
 		std::cout << "Starting to run MPC" << std::endl;
 
@@ -382,10 +383,14 @@ TEST(MPCTest, iLQGMPC)
 
 			if(ilqg_mpc.timeHorizonReached() | !success)
 				break;
+
+			numRuns++;
 		}
 
 
 		ilqg_mpc.printMpcSummary();
+
+		ASSERT_GT(numRuns, 10); // make sure that MPC runs more than 10 times
 
 
 		/*
