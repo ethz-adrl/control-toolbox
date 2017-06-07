@@ -41,6 +41,11 @@ namespace optcon{
 
 
 //!  Multi-Threaded implementation of iLQG
+/*!
+ * \ingroup iLQG
+ *
+ *
+ */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 class iLQGMP : public iLQGBase<STATE_DIM, CONTROL_DIM>  {
 

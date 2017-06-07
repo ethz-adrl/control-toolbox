@@ -32,19 +32,24 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct{
 namespace optcon{
 
-//!  Implementation of iLQG
+//!  Single-Threaded Implementation of iLQG/SLQ
 /*!
-  C++ implementation of iLQG. In fact, this currently implements iLQR.
-
-  The implementation and naming is based on the reference below. In general, the code follows this convention:
-  X  <- Matrix (upper-case in paper)
-  xv <- vector (lower-case bold in paper)
-  x  <- scalar (lower-case in paper)
-
-  Reference:
-  Todorov, E.; Weiwei Li, "A generalized iterative LQG method for locally-optimal feedback control of constrained nonlinear stochastic systems,"
-  American Control Conference, 2005. Proceedings of the 2005 , vol., no., pp.300,306 vol. 1, 8-10 June 2005
-
+ * \ingroup iLQG
+ *
+ * C++ implementation of iLQG. In fact, this currently implements iLQR.
+ *
+ * The implementation and naming is based on the reference below. In general, the code follows this convention:
+ * X  <- Matrix (upper-case in paper)
+ * xv <- vector (lower-case bold in paper)
+ * x  <- scalar (lower-case in paper)
+ *
+ * References:
+ * Sideris, Athanasios, and James E. Bobrow. "An efficient sequential linear quadratic algorithm for solving nonlinear optimal control problems."
+ * Proceedings of the American Control Conference, 2005, pp. 2275-2280
+ *
+ * Todorov, E.; Weiwei Li, "A generalized iterative LQG method for locally-optimal feedback control of constrained nonlinear stochastic systems,"
+ * Proceedings of the American Control Conference, 2005, pp.300-306
+ *
 */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 class iLQG : public iLQGBase<STATE_DIM, CONTROL_DIM> {
