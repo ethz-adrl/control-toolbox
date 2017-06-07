@@ -169,7 +169,7 @@ public:
 	) override
 	{
 		derivative(0) = state(1);
-		derivative(1) = g_dc_ * w_n_square_ * control(0) - 2.0 * zeta_ * w_n_ * state(1) - w_n_square_ * state(0);
+		derivative(1) = g_dc_ * control(0) - 2.0 * zeta_ * w_n_ * state(1) - w_n_square_ * state(0);
 	}
 
 	//! check the parameters

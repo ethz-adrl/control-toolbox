@@ -550,7 +550,7 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 
 #ifdef DEBUG_PRINT
 	std::cout<<"CONVERGED: Cost last iteration: "<<lowestCostPrevious<<", current cost: "<< lowestCost_ << std::endl;
-	std::cout<<"CONVERGED: Cost improvement was: "<<(lowestCostPrevious - lowestCost_)/lowestCostPrevious <<" which is lower than convergence criteria: "<<settings_.min_cost_improvement<<std::endl;
+	std::cout<<"CONVERGED: Cost improvement ratio was: "<<(lowestCostPrevious - lowestCost_)/lowestCostPrevious <<"x, which is lower than convergence criteria: "<<settings_.min_cost_improvement<<std::endl;
 #endif //DEBUG_PRINT
 	return false;
 }
