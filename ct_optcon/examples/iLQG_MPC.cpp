@@ -51,10 +51,9 @@ int main(int argc, char **argv)
 	std::shared_ptr<ct::core::ControlledSystem<state_dim, control_dim> > oscillatorDynamics_d(
 			new ct::core::SecondOrderSystem(w_n, 5.0));
 
-	// create an Auto-Differentiation Linearizer with code generation on the quadrotor model
+	// create a System Linearizer
 	std::shared_ptr<ct::core::SystemLinearizer<state_dim, control_dim>> adLinearizer(
 			new ct::core::SystemLinearizer<state_dim, control_dim> (oscillatorDynamics_d));
-
 
 	// load the cost weighting matrices
 	std::shared_ptr<ct::optcon::TermQuadratic<state_dim, control_dim>> intermediateCost (new ct::optcon::TermQuadratic<state_dim, control_dim>());
