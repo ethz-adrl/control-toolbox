@@ -690,17 +690,14 @@ template <size_t STATE_DIM, size_t CONTROL_DIM>
 void iLQGBase<STATE_DIM, CONTROL_DIM>::computeCostToGo(size_t k)
 {
 	S_[k] = Q_[k];
-	//S_[k].noalias() += A_[k].transpose() * S_[k+1] * A_[k];
-	//S_[k].noalias() -= L_[k].transpose() * Hi_[k] * L_[k];
-	S_[k].noalias() += A_[k].transpose() * S_[k+1].template selfadjointView<Eigen::Lower>() * A_[k];
-	S_[k].noalias() -= L_[k].transpose() * Hi_[k].template selfadjointView<Eigen::Lower>() * L_[k];
+	S_[k].noalias() += A_[k].transpose() * S_[k+1] * A_[k];
+	S_[k].noalias() -= L_[k].transpose() * Hi_[k] * L_[k];
 
 	S_[k] = 0.5*(S_[k]+S_[k].transpose()).eval();
 
 	sv_[k] = qv_[k];
 	sv_[k].noalias() += A_[k].transpose() * sv_[k+1];
-	//sv_[k].noalias() += L_[k].transpose() * Hi_[k] * lv_[k];
-	sv_[k].noalias() += L_[k].transpose() * Hi_[k].template selfadjointView<Eigen::Lower>() * lv_[k];
+	sv_[k].noalias() += L_[k].transpose() * Hi_[k] * lv_[k];
 	sv_[k].noalias() += L_[k].transpose() * gv_[k];
 	sv_[k].noalias() += G_[k].transpose() * lv_[k];
 
@@ -761,6 +758,12 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::designController(size_t k)
 
 		Hi_inverse_[k] = -Hi_[k].template selfadjointView<Eigen::Lower>().llt().solve(control_matrix_t::Identity());
 
+		// calculate FB gain update
+		L_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * G_[k];
+
+		// calculate FF update
+		lv_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * gv_[k];
+
 
 	} else {
 
@@ -788,15 +791,13 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::designController(size_t k)
 		// eigenvalue-wise inversion
 		D_inverse.diagonal() = -1.0 * D.diagonal().cwiseInverse();
 		Hi_inverse_[k].noalias() = V * D_inverse * V.transpose();
+
+		// calculate FB gain update
+		L_[k].noalias() = Hi_inverse_[k] * G_[k];
+
+		// calculate FF update
+		lv_[k].noalias() = Hi_inverse_[k] * gv_[k];
 	}
-
-	// calculate FB gain update
-	//L_[k].noalias() = Hi_inverse_[k] * G_[k];
-	L_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * G_[k];
-
-	// calculate FF update
-	//lv_[k].noalias() = Hi_inverse_[k] * gv_[k];
-	lv_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * gv_[k];
 }
 
 

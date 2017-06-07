@@ -48,4 +48,92 @@ rosrun ct_core ex_DampedOscillatorCustomController
 \note Make sure you have built the examples before trying to run it.
 
 
+
+
+\section core_tut_linearization Derivatives/Jacobian/Linearization Tutorial
+
+Often when working with a general nonlinear function \f$ f(x) \f$ we are interested in its Jacobian (derivatives) \f$ J = \frac{df}{dx} \f$.
+
+In order to compute this Jacobian, we are left with four methods
+1. Numerical differentiation, e.g. \f$ A = \frac{f(x+h,u) - f(x)}{h} \f$
+2. Analytical, manually derivation
+3. Symbolic math engine
+4. Auto-Differentiation (with optional codegen)
+
+The different methods are summarized below:
+
+Derivative Method         | Numerical Accuracy | Computation Speed | Setup Time | Error Safe |
+------------------------- | ------------------ | ----------------- | ---------- | ---------- |
+Numeric Differentiation   | -                  | -                 | +++        | +++        |
+Analytical Derivatives    | +++                | ++                | -          | -          |
+Symbolic Math Engine      | +++                | +                 | +          | ++         |
+Automatic Differentiation | +++                | +                 | ++         | ++         |
+Auto-Diff Code Generation | +++                | +++               | ++         | ++         |
+
+Bottom line: Automatic Differentiation is the tool of choice for accurate, yet easy to setup derivatives. For best performance, Automatic Differentiation 
+with code generation (Auto-Diff Codgen) should be used. <b>Auto-Diff Codegen is as accurate as analytical derivatives and equally fast if not faster!</b>.
+For more on this read the following paper:
+
+<em>Michael Neunert, Markus Giftthaler, Marco Frigerio, Claudio Semini, Jonas Buchli (2016). Fast Derivatives of Rigid Body Dynamics for Control, Optimization and Estimation. 
+In 2016 IEEE International Conference on Simulation, Modeling, and Programming for Autonomous Robots (SIMPAR 2016)</em>
+<a href="http://www.adrl.ethz.ch/lib/exe/fetch.php/adrl:publication_list:simpar_preprint.pdf">PDF</a>
+
+\note  Both Auto-Diff and Auto-Diff Codegen require you to template your function on the scalar type. Please see the tutorial \ref core_tut_linearization_scalar_templating 
+for tips and tricks on how to do this easily!
+
+
+\subsection core_tut_linearization_function Jacobian/Derivative of a General Function
+In this tutorial, we will compute the Jacobian (derivative) of a general function using Auto-Diff Codegeneration. For this let's look at the
+unit test found in ct_core/test/math/JacobianCGTest.h
+
+\include JacobianCGTest.h
+
+So what do we see here? In the first test, even though we do code generation, we can evaluate the Jacobian at runtime without recompiling our code. The code gets
+compiled in the background. This gives maximum speed while maintaining flexibility. For simple functions this process is very fast. However, what if our function
+is more complex? In this case, the second tests shows how to generate source code and actually write it to file.
+
+But what is this ct::core::JacobianCG::generateForwardZeroCode()? Well it generates code for the original function. So in the end, it regenerates the function. But why is
+this even relavant? For such a simple example as here, there is probably not a lot of difference. However, for more complex equations, a regenerated function can
+be faster by up to 2x or more. The reason for that is that Auto-Diff builds an expression graph that can optimize the original function. Since it is case dependent
+whether you gain speed or not, you will have to try it out.
+
+
+
+
+\subsection core_tut_linearization_systems Jacobian/Linearization of a Nonlinear System
+
+Often when dealing with nonlinear systems, described by a differential equation of the form \f$ \dot{x} = f(x,u,t) \f$ we wish to compute the linearized form of
+the system around an operating point \f$ x=x_s \f$, \f$ u=u_s \f$. 
+
+\f[
+  \dot{x} = A(x_s, u_s) x + B(x_s, u_s) u
+\f]
+
+with the System's Jacobians with respect to state and input
+
+\f[
+\begin{aligned}
+A &= \frac{df}{dx} |_{x=x_s, u=u_s} \\
+B &= \frac{df}{du} |_{x=x_s, u=u_s}
+\end{aligned}
+\f]
+
+As in the example above, we are left with different methods for computing the Jacobians. In the Control Toolbox the following methods are implemented for linearizing
+a ct::core::System.
+1. Numerical Differentiation, see ct::core::SystemLinearizer
+2. Automatic Differentiation, see ct::core::AutoDiffLinearizer
+3. Auto-Diff Codegen, see ct::core::ADCodegenLinearizer
+
+Again, the same properties as above hold in terms of speed, accuracy, setup time etc. As an example on how to use these different classes, let's again look at a unit
+test, this time at ct_core/test/math/AutoDiffLinearizerTest.cpp. This unit test shows how to use numerical and automatic differentiation to compute the linearization.
+
+\include AutoDiffLinearizerTest.cpp
+
+For an example on how to use Auto-Diff Codegen to compute the linearization, see \ref ADCodegenLinearizerTest.h
+
+\note  Both Auto-Diff and Auto-Diff Codegen require you to template your function on the scalar type. Please see the tutorial \ref core_tut_linearization_scalar_templating 
+for tips and tricks on how to do this easily!
+
+\subsection core_tut_linearization_scalar_templating Templating your System or Function on the Scalar Type
+
  */
