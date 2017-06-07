@@ -1,37 +1,25 @@
-/***********************************************************************************
-Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
-Farbod Farshidian. All rights reserved.
+/*!
+ *  \example JacobianCGTest.h
+ *
+ *  A simple example on how to use Auto-Diff Codegeneration to compute the Jacobian (derivative) of a
+ *  general function \f$ y = f(x) \f$.
+ *
+ *  \note This test gets run by CodegenTests.cpp to ensure all codegen tests do NOT run in parallel.
+ */
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
-      this list of conditions and the following disclaimer in the documentation
-      and/or other materials provided with the distribution.
-    * Neither the name of ETH ZURICH nor the names of its contributors may be used
-      to endorse or promote products derived from this software without specific
-      prior written permission.
+// define the input and output sizes of the function
+const size_t inDim = 3; //!< dimension of x
+const size_t outDim = 2; //!< dimension of y
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************************************************************************************/
-
-
-const size_t inDim = 3;
-const size_t outDim = 2;
-
+//! the Jacobian codegen class
 typedef JacobianCG<inDim, outDim> JacCG;
 
-// gets run by CodegenTests.cpp to ensure all codegen tests do NOT run in parallel
-
+/*!
+ * A general vector-valued function.
+ *
+ * @param x the input
+ * @return output y = f(x)
+ */
 template <typename SCALAR>
 Eigen::Matrix<SCALAR, outDim, 1> testFunction(const Eigen::Matrix<SCALAR, inDim, 1>& x)
 {
@@ -43,6 +31,12 @@ Eigen::Matrix<SCALAR, outDim, 1> testFunction(const Eigen::Matrix<SCALAR, inDim,
 	return y;
 }
 
+/*!
+ * The analytically, manually derived Jacobian of testFunction() used for verification
+ *
+ * @param x the input
+ * @return output y = f(x)
+ */
 template <typename SCALAR>
 Eigen::Matrix<SCALAR, outDim, inDim> jacobianCheck(const Eigen::Matrix<SCALAR, inDim, 1>& x)
 {
@@ -54,24 +48,30 @@ Eigen::Matrix<SCALAR, outDim, inDim> jacobianCheck(const Eigen::Matrix<SCALAR, i
 	return jac;
 }
 
+/*!
+ * Test for just-in-time compilation of the Jacobian and subsequent evaluation of it
+ */
 TEST(JacobianCGTest, JITCompilationTest)
 {
 	try {
+		// create a function handle (also works for class methods, lambdas, function pointers, ...)
 		typename JacCG::Function f = testFunction<CppAD::AD<CppAD::cg::CG<double> > >;
 
+		// initialize the Auto-Diff Codegen Jacobian
 		JacCG jacCG(f);
 
+		// compile the Jacobian
 		jacCG.compileJIT();
 
+		// create an input vector
 		Eigen::Matrix<double, inDim, 1> x;
 
 		for (size_t i=0; i<1000; i++)
 		{
+			// create a random input
 			x.setRandom();
 
-	//		std::cout << "jacCG(x): " << std::endl << jacCG(x) << std::endl;
-	//		std::cout << "jacobianCheck(x): " << std::endl << jacobianCheck(x) << std::endl;
-
+			// verify agains the analytical Jacobian
 			ASSERT_LT((jacCG(x) - jacobianCheck(x)).array().abs().maxCoeff(), 1e-10);
 		}
 	} catch (std::exception& e)
@@ -82,15 +82,21 @@ TEST(JacobianCGTest, JITCompilationTest)
 }
 
 
-
+/*!
+ * Test for writing the codegenerated Jacobian to file
+ */
 TEST(JacobianCGTest, CodegenTest)
 {
+	// create a function handle (also works for class methods, lambdas, function pointers, ...)
 	typename JacCG::Function f = testFunction<CppAD::AD<CppAD::cg::CG<double> > >;
 
+	// initialize the Auto-Diff Codegen Jacobian
 	JacCG jacCG(f);
 
+	// generate code for the Jacobian, similar to jacobianCheck()
 	jacCG.generateCode("TestJacobian");
 
+	// generate code for the actual function, will evaluate to the same as testFunction()
 	jacCG.generateForwardZeroCode("TestForwardZero");
 }
 

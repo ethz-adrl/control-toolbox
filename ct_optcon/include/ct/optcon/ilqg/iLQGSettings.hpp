@@ -37,6 +37,8 @@ namespace optcon {
 
 //! iLQG Line Search Settings
 /*!
+ * \ingroup iLQG
+ *
  * The Line Search Settings are part of the general settings struct and hold parameters to customize the line-search for the iLQG controller update.
  */
 struct iLQGLineSearchSettings {

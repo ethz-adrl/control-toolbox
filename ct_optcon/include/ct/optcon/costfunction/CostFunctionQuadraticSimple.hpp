@@ -32,8 +32,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct{
 namespace optcon{
 
-/**
+/*!
  * \ingroup CostFunction
+ *
+ * \brief A simple quadratic cost function
  *
  * A simple, purely-quadratic cost function of the form
  * \f$ J(x,u,t) = \bar{x}^T Q \bar{x} + \bar{u}^T R \bar{u} + \bar{x}^T_f Q_f \bar{x}^T_f \f$
