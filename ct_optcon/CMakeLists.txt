@@ -118,6 +118,9 @@ if(BUILD_EXAMPLES)
 
     add_executable(ex_LQR examples/LQR.cpp)
     target_link_libraries(ex_LQR ${catkin_LIBRARIES} lapack dl)
+    
+    add_executable(ex_MPC examples/iLQG_MPC.cpp)
+    target_link_libraries(ex_MPC ${catkin_LIBRARIES} lapack dl)
 endif()
 
 

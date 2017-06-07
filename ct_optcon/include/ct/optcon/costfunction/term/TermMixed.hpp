@@ -38,6 +38,7 @@ namespace optcon {
  *
  * \brief A basic quadratic term of type \f$ J = u^T P x \f$
  *
+ *	An example for using this term is given in \ref CostFunctionTest.cpp
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename S = double>
 class TermMixed : public TermBase<STATE_DIM, CONTROL_DIM, S> {

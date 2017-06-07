@@ -71,6 +71,8 @@ struct DmsPolicy
  *
  * @brief      Class to solve a specfic DMS problem
  *
+ * An example employing different DMS solvers is given in unit test \ref oscDMSTest.cpp
+ *
  * @tparam     STATE_DIM    The state dimension
  * @tparam     CONTROL_DIM  The control dimension
  */

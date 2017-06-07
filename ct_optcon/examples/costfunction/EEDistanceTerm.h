@@ -32,8 +32,12 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/optcon/costfunction/term/TermBase.hpp>
 
-#include "../../examples/costfunction/Kinematics.h"
+#include "Kinematics.h"
 
+
+namespace ct{
+namespace optcon{
+namespace example{
 
 /*the system consists of a little base, movable in x and y direction, and a 6-dof arm attached to it*/
 const size_t stateDim_planar = 2;		// state		robot base x,y
@@ -49,6 +53,10 @@ typedef Eigen::Matrix<AD_scalar_t, controlDim_planar, 1> AD_control_vector_t;
 typedef Eigen::Matrix<AD_scalar_t, stateDim_planar, stateDim_planar> AD_state_matrix_t;
 
 
+/*!
+ * This costfunction term penalizes the distance between the end-effector defineded through "Kinematics.h" and a desired goal position
+ * \example EEDistanceTerm.h
+ */
 class EEDistanceTerm : public ct::TermBase < stateDim_planar, controlDim_planar, CppAD::AD<double> >
 {
 public:
@@ -128,6 +136,10 @@ private:
 
 	AD_Type_fr_link0_X_ee<AD_scalar_t> type_fr_link0_X_ee_;
 };
+
+} // namespace example
+} // namespace optcon
+} // namespace ct
 
 
 #endif

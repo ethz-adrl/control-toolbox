@@ -13,25 +13,12 @@
 
 #include "oscDMSTest_settings.h"
 
-//#include <ct/optcon/costfunction/CostFunctionQuadraticSimple.hpp>
-//
-//#include <gtest/gtest.h>
-//#include <ct/core/core.h>
-//
-//#include <ct/optcon/problem/OptConProblem.h>
-//#include <ct/optcon/dms/dms_core/DmsSolver.h>
-//#include <ct/optcon/dms/dms_core/DmsSettings.hpp>
-//#include <ct/optcon/nlp/solver/NlpSolverSettings.h>
-//
-//#include "oscDMSTest_settings.h"
-//
-//#include <ct/optcon/dms/util/MatlabInterface.hpp>
-//
-//#include <ct/optcon/constraint/term/TerminalConstraint.h>
-//#include <ct/optcon/constraint/ConstraintContainerAnalytical.h>
 
+namespace ct{
+namespace optcon{
+namespace example{
 
- using namespace ct;
+using namespace ct;
 using namespace optcon;
 
 
@@ -207,9 +194,18 @@ private:
 	OscDimensions::control_vector_t u_des_;
 };
 
+} // namespace example
+} // namespace optcon
+} // namespace ct
 
+
+/*!
+ * This executable is used to generate the reference matfiles for the unit tests.
+ */
 int main( int argc, char* argv[] )
 {
+
+	using namespace ct::optcon::example;
 
 	MatFilesGenerator oscDms;
 	oscDms.initialize();

@@ -31,8 +31,13 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../../examples/costfunction/EEDistanceTerm.h"
 
-int main() {
-	using namespace ct;
+/*!
+ * This example generates a cost function using the cartesian distance of an end-effector to a target position.
+ */
+int main()
+{
+	using namespace ct::core;
+	using namespace ct::optcon::example;
 
 	// autodiff costfunction
 	std::shared_ptr<CostFunctionAD<stateDim_planar, controlDim_planar>> ADcostFun (new CostFunctionAD<stateDim_planar, controlDim_planar>());
@@ -52,26 +57,26 @@ int main() {
 	Eigen::Vector2d x;
 	Eigen::Matrix<double, controlDim_planar, 1> u;
 
-	x.setZero();
-	u.setZero();
+	x.setRandom();
+	u.setRandom();
 
 	double t = 0.0;
 
 	ADcostFun->setCurrentStateAndControl(x, u, t);
 
-//	std::cout << "evaluateIntermediate() = " 				            << ADcostFun->evaluateIntermediate() 			                << std::endl;
-//	std::cout << "intermediateStateDerivative() = " 		<< ADcostFun->intermediateStateDerivative()  		<< std::endl;
-//	std::cout << "intermediateStateSecondDerivative() = " 	<< ADcostFun->intermediateStateSecondDerivative()  	<< std::endl;
-//	std::cout << "intermediateControlDerivative() = "		<< ADcostFun->intermediateControlDerivative() 		<< std::endl;
-//	std::cout << "intermediateControlSecondDerivative() = " << ADcostFun->intermediateControlSecondDerivative() << std::endl;
-//	std::cout << "intermediateStateControlDerivative() = " 	<< ADcostFun->intermediateStateControlDerivative()  << std::endl;
-//
-//	std::cout << "evaluateTerminal() = " 						<< ADcostFun->terminalCostCost() 					<< std::endl;
-//	std::cout << "finalStateDerivative() = " 				<< ADcostFun->finalStateDerivative()  				<< std::endl;
-//	std::cout << "finalStateSecondDerivative() = " 			<< ADcostFun->finalStateSecondDerivative()  		<< std::endl;
-//	std::cout << "controlDerivativeTerminal() = "				<< ADcostFun->controlDerivativeTerminal() 				<< std::endl;
-//	std::cout << "controlSecondDerivativeTerminal() = " 		<< ADcostFun->controlSecondDerivativeTerminal() 		<< std::endl;
-//	std::cout << "stateControlDerivativeTerminal() = " 		<< ADcostFun->stateControlDerivativeTerminal()  		<< std::endl;
+	std::cout << "evaluateIntermediate() = " 				<< ADcostFun->evaluateIntermediate() 			    << std::endl;
+	std::cout << "intermediateStateDerivative() = " 		<< ADcostFun->intermediateStateDerivative()  		<< std::endl;
+	std::cout << "intermediateStateSecondDerivative() = " 	<< ADcostFun->intermediateStateSecondDerivative()  	<< std::endl;
+	std::cout << "intermediateControlDerivative() = "		<< ADcostFun->intermediateControlDerivative() 		<< std::endl;
+	std::cout << "intermediateControlSecondDerivative() = " << ADcostFun->intermediateControlSecondDerivative() << std::endl;
+	std::cout << "intermediateStateControlDerivative() = " 	<< ADcostFun->intermediateStateControlDerivative()  << std::endl;
+
+	std::cout << "evaluateTerminal() = " 				 	<< ADcostFun->terminalCostCost() 					<< std::endl;
+	std::cout << "finalStateDerivative() = " 				<< ADcostFun->finalStateDerivative()  				<< std::endl;
+	std::cout << "finalStateSecondDerivative() = " 			<< ADcostFun->finalStateSecondDerivative()  		<< std::endl;
+	std::cout << "controlDerivativeTerminal() = "			<< ADcostFun->controlDerivativeTerminal() 			<< std::endl;
+	std::cout << "controlSecondDerivativeTerminal() = " 	<< ADcostFun->controlSecondDerivativeTerminal() 	<< std::endl;
+	std::cout << "stateControlDerivativeTerminal() = " 		<< ADcostFun->stateControlDerivativeTerminal()  	<< std::endl;
 
 	return 0;
 }

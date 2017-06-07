@@ -37,7 +37,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct {
 namespace optcon {
 
-/**
+/*!
  * \ingroup CostFunction
  *
  * \brief An interface for a term, supporting both analytical and auto-diff terms
@@ -45,6 +45,8 @@ namespace optcon {
  * Derive from this term to implement your own term. You only have to implement
  * evaluateIntermediate() if you want to use auto-diff. Otherwise, you have to implement the
  * derivatives as well.
+ *
+ * An example for an implementation of a custom term is given in \ref EEDistanceTerm.h
  **/
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 class TermBase {

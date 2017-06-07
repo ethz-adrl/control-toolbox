@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 	const size_t state_dim = ct::core::SecondOrderSystem::STATE_DIM;
 	const size_t control_dim = ct::core::SecondOrderSystem::CONTROL_DIM;
 
-	// create an auto-differentiable instance of the quadrotor dynamics
+	// create an auto-differentiable instance of the oscillator dynamics
 	ct::core::ADCGScalar w_n(50.0);
 	std::shared_ptr<ct::core::ControlledSystem<state_dim, control_dim, ct::core::ADCGScalar> > oscillatorDynamics(
 			new ct::core::tpl::SecondOrderSystem<ct::core::ADCGScalar>(w_n)
@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 	// compile the linearized model just-in-time
 	adLinearizer.compileJIT();
 
-	// define the linearization point around hovering state
+	// define the linearization point around steady state
 	ct::core::StateVector<state_dim> x; x.setZero();
 	ct::core::ControlVector<control_dim> u; u.setZero();
 	double t = 0.0;

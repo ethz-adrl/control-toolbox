@@ -30,10 +30,12 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/dms/Dms>
 #include <ct/optcon/optcon.h>
 
-
 using namespace ct;
 using namespace core;
-using namespace optcon;
+
+namespace ct{
+namespace optcon{
+namespace example{
 
 
 class OscillatorDms
@@ -113,7 +115,6 @@ public:
 		stateConstraintAd->setName("StateConstraintAd");
 		inputConstraintAd->setName("InputConstraintAd");
 
-		// intermediateConstraints_->addConstraint(obstacleConstraint, true);
 		intermediateConstraintsAd_->addConstraint(inputConstraintAd, true);
 		intermediateConstraintsAd_->addConstraint(stateConstraintAd, true);
 
@@ -128,7 +129,6 @@ public:
 		OptConProblem<2,1> optProblem(oscillator_, costFunction_);
 		optProblem.setInitialState(x_0_);
 		optProblem.setTimeHorizon(settings_.T_);
-		// optProblem.setIntermediateConstraints(intermediateConstraints_);
 		optProblem.setFinalConstraints(finalConstraints_);
 
 		calcInitGuess();
@@ -220,8 +220,13 @@ void runTests()
 	}
 }
 
+} // namespace example
+} // namespace optcon
+} // namespace ct
 
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
+	using namespace ct::optcon::example;
 	runTests();
 	return 1;
 }

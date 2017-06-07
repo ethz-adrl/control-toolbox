@@ -43,6 +43,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  */
 
+
+namespace ct{
+namespace optcon{
+namespace example{
+
 using namespace ct::core;
 using namespace ct::optcon;
 
@@ -53,6 +58,7 @@ const size_t control_dim = 1; // force
 
 const double kStiffness = 10;
 
+//! Dynamics class for the iLQG unit test
 class Dynamics : public ControlledSystem<state_dim, control_dim>
 {
 public:
@@ -75,6 +81,7 @@ public:
 	};
 };
 
+//! Linear system class for the iLQG unit test
 class LinearizedSystem : public LinearSystem<state_dim, control_dim>
 {
 public:
@@ -101,8 +108,9 @@ public:
 			};
 };
 
+//! Create a cost function for the iLQG unit test
 std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > createCostFunction(Eigen::Vector2d& x_final)
-		{
+{
 	Eigen::Matrix2d Q;
 	Q << 0, 0, 0, 1;
 
@@ -120,7 +128,8 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > createCostFuncti
 					Q, R, x_nominal, u_nominal, x_final, Q_final));
 
 	return quadraticCostFunction;
-		}
+}
+
 
 TEST(ILQCTest, SystemLinearizationTest)
 {
@@ -574,7 +583,19 @@ TEST(ILQCTest, PolicyComparison)
 }
 
 
-int main(int argc, char **argv){
+} // namespace example
+} // namespace optcon
+} // namespace ct
+
+
+/*!
+ * This runs the iLQG unit test.
+ * \note for a more straight-forward implementation example, visit the tutorial.
+ * \example iLQGCTest.cpp
+ */
+int main(int argc, char **argv)
+{
+	using namespace ct::optcon::example;
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }

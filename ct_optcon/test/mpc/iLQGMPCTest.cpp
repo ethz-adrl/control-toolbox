@@ -44,7 +44,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/optcon/matlab.hpp>
 
-
+namespace ct{
+namespace optcon{
+namespace example{
 
 using namespace ct::core;
 using namespace ct::optcon;
@@ -288,7 +290,7 @@ TEST(MPCTest, iLQGMPC)
 		// provide initial controller
 		FeedbackArray<state_dim, control_dim> u0_fb(K, FeedbackMatrix<state_dim, control_dim>::Zero());
 
-		ControlVectorArray<control_dim> u0_ff(K, ControlVector<control_dim>::Ones());
+		ControlVectorArray<control_dim> u0_ff(K, ControlVector<control_dim>::Zero());
 
 		ct::core::StateFeedbackController<state_dim, control_dim> initController (u0_ff, u0_fb, ilqg_settings.dt);
 
@@ -341,6 +343,7 @@ TEST(MPCTest, iLQGMPC)
 
 
 		size_t maxNumRuns = 2000;
+		size_t numRuns = 0;
 
 		std::cout << "Starting to run MPC" << std::endl;
 
@@ -380,10 +383,14 @@ TEST(MPCTest, iLQGMPC)
 
 			if(ilqg_mpc.timeHorizonReached() | !success)
 				break;
+
+			numRuns++;
 		}
 
 
 		ilqg_mpc.printMpcSummary();
+
+		ASSERT_GT(numRuns, 10); // make sure that MPC runs more than 10 times
 
 
 		/*
@@ -447,9 +454,15 @@ TEST(MPCTest, iLQGMPC)
 	}
 }
 
+} // namespace example
+} // namespace optcon
+} // namespace ct
 
 
-int main(int argc, char **argv){
-	  testing::InitGoogleTest(&argc, argv);
-	  return RUN_ALL_TESTS();
+
+int main(int argc, char **argv)
+{
+	using namespace ct::optcon::example;
+	testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }

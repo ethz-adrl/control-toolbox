@@ -32,7 +32,12 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct{
 namespace optcon{
 
-
+//! A cost function dedicated to tracking
+/*!
+ * An example for using this cost function is given in unit test \ref TrackingTest.cpp
+ * \warning this is a legacy class which will be removed in a future release.
+ * \todo remove.
+ */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 class CostFunctionQuadraticTracking : public optcon::CostFunctionQuadratic< STATE_DIM, CONTROL_DIM >
 {

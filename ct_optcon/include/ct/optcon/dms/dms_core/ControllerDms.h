@@ -33,7 +33,12 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/dms/dms_core/OptVectorDms.h>
 
 
-/**
+
+namespace ct {
+namespace optcon {
+
+
+/*!
  * \ingroup DMS
  *
  * \brief DMS controller class
@@ -45,10 +50,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @tparam INPUT_DIM: Dimension of the control input vector
  *
  */
-
-namespace ct {
-namespace optcon {
-
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 class ControllerDms : public ct::core::Controller<STATE_DIM, CONTROL_DIM>
 {
