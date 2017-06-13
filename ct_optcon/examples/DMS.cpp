@@ -1,12 +1,13 @@
 
 #include <ct/optcon/optcon.h>
-#include <ct/optcon/dms/dms.h> //!when using DMS, need to include this on top of optcon.h
+#include <ct/optcon/dms/dms.h>
 
 #include "exampleDir.h"
 
 
 /*!
  * This example shows how to use Direct Multiple Shooting with an oscillator system, using IPOPT as NLP solver.
+ * \example DMS.cpp
  */
 int main(int argc, char **argv)
 {
