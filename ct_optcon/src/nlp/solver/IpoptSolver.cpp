@@ -1,3 +1,34 @@
+/***********************************************************************************
+Copyright (c) 2017, Agile & Dexterous Robotics Lab, ETH ZURICH. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
+
+#include <ct/optcon/optcon.h>
+
+namespace ct{
+namespace optcon{
+
+
 IpoptSolver::IpoptSolver(std::shared_ptr<Nlp> nlp, const NlpSolverSettings& settings) :
 BASE(nlp, settings),
 settings_(BASE::settings_.ipoptSettings_)
@@ -8,6 +39,7 @@ settings_(BASE::settings_.ipoptSettings_)
 	ipoptApp_ = std::shared_ptr<Ipopt::IpoptApplication> (new Ipopt::IpoptApplication(true,false));
 }
 
+
 IpoptSolver::~IpoptSolver()
 {
 	// Needed to destruct all the IPOPT memory
@@ -15,6 +47,7 @@ IpoptSolver::~IpoptSolver()
 	this->ReleaseRef(t);
 	delete t;
 }
+
 
 void IpoptSolver::configureDerived(const NlpSolverSettings& settings)
 {
@@ -24,7 +57,9 @@ void IpoptSolver::configureDerived(const NlpSolverSettings& settings)
 	isInitialized_ = true;
 }
 
-void IpoptSolver::setSolverOptions() {
+
+void IpoptSolver::setSolverOptions()
+{
 	ipoptApp_->Options()->SetNumericValue("tol", settings_.tol_);
 	ipoptApp_->Options()->SetNumericValue("constr_viol_tol", settings_.constr_viol_tol_);
 	// ipoptApp_->Options()->SetIntegerValue("max_iter", settings_.max_iter_);
@@ -46,7 +81,9 @@ void IpoptSolver::setSolverOptions() {
 	ipoptApp_->Options()->SetStringValueIfUnset("linear_solver", settings_.linear_solver_);
 }
 
-bool IpoptSolver::solve() {
+
+bool IpoptSolver::solve()
+{
 	status_ = ipoptApp_->Initialize();
 	if (status_ == Ipopt::Solve_Succeeded)
 		std::cout << std::endl << std::endl	<< "*** Initialized successfully -- starting NLP." << std::endl;
@@ -71,6 +108,7 @@ bool IpoptSolver::solve() {
 	}
 }
 
+
 void IpoptSolver::prepareWarmStart(size_t maxIterations)
 {
 	ipoptApp_->Options()->SetStringValue("warm_start_init_point", "yes");
@@ -82,6 +120,7 @@ void IpoptSolver::prepareWarmStart(size_t maxIterations)
 	ipoptApp_->Options()->SetIntegerValue("max_iter", (int)maxIterations);
 	ipoptApp_->Options()->SetStringValue("derivative_test", "none");
 }
+
 
 bool IpoptSolver::get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
 		Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style)
@@ -136,6 +175,7 @@ bool IpoptSolver::get_bounds_info(Ipopt::Index n, Number* x_l, Number* x_u,
 	return true;
 }
 
+
 bool IpoptSolver::get_starting_point(Ipopt::Index n, bool init_x, Number* x,
 		bool init_z, Number* z_L, Number* z_U,
 		Ipopt::Index m, bool init_lambda,
@@ -172,6 +212,7 @@ bool IpoptSolver::get_starting_point(Ipopt::Index n, bool init_x, Number* x,
 	return true;
 }
 
+
 bool IpoptSolver::eval_f(Ipopt::Index n, const Number* x, bool new_x, Number& obj_value)
 {
 #ifdef DEBUG_PRINT
@@ -188,6 +229,7 @@ bool IpoptSolver::eval_f(Ipopt::Index n, const Number* x, bool new_x, Number& ob
 	return true;
 }
 
+
 bool IpoptSolver::eval_grad_f(Ipopt::Index n, const Number* x, bool new_x, Number* grad_f)
 {
 #ifdef DEBUG_PRINT
@@ -203,6 +245,7 @@ bool IpoptSolver::eval_grad_f(Ipopt::Index n, const Number* x, bool new_x, Numbe
 #endif //DEBUG_PRINT
 	return true;
 }
+
 
 bool IpoptSolver::eval_g(Ipopt::Index n, const Number* x, bool new_x, Ipopt::Index m, Number* g)
 {
@@ -223,6 +266,7 @@ bool IpoptSolver::eval_g(Ipopt::Index n, const Number* x, bool new_x, Ipopt::Ind
 
 	return true;
 }
+
 
 bool IpoptSolver::eval_jac_g(Ipopt::Index n, const Number* x, bool new_x,
 		Ipopt::Index m, Ipopt::Index nele_jac, Ipopt::Index* iRow, Ipopt::Index *jCol,
@@ -262,6 +306,7 @@ bool IpoptSolver::eval_jac_g(Ipopt::Index n, const Number* x, bool new_x,
 	return true;
 }
 
+
 bool IpoptSolver::eval_h(Ipopt::Index n, const Number* x, bool new_x,
 		Number obj_factor, Ipopt::Index m, const Number* lambda,
 		bool new_lambda, Ipopt::Index nele_hess, Ipopt::Index* iRow,
@@ -294,6 +339,7 @@ bool IpoptSolver::eval_h(Ipopt::Index n, const Number* x, bool new_x,
 	return true;
 }
 
+
 void IpoptSolver::finalize_solution(Ipopt::SolverReturn status,
 		Ipopt::Index n, const Number* x, const Number* z_L, const Number* z_U,
 		Ipopt::Index m, const Number* g, const Number* lambda,
@@ -311,3 +357,6 @@ void IpoptSolver::finalize_solution(Ipopt::SolverReturn status,
 
 	nlp_->extractIpoptSolution(xVec, zLVec, zUVec, lambdaVec);
 }
+
+} // namespace optcon
+} // namespace ct
