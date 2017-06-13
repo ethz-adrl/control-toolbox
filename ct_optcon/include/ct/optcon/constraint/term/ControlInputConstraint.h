@@ -74,6 +74,8 @@ public:
 		Base::ub_ = uHigh;
 	}
 
+	virtual ~ControlInputConstraint(){}
+
 	virtual ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
 	{
 		return new ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
