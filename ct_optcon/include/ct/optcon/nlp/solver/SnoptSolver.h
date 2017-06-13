@@ -52,8 +52,12 @@ class SnoptSolver;
  * @ingroup    NLP
  *
  * @brief      Contains all the dynamically allocated memory for SNOPT
+ *
+ * For the implementation see ct/ct_optcon/src/nlp/solver/SnoptSolver.cpp
+ *
  */
-struct SnoptMemory{
+struct SnoptMemory
+{
 	typedef double Number;
     const SnoptSolver& self;	/*!<A reference the the Snoptsolver the memory points to*/
 
@@ -93,6 +97,8 @@ struct SnoptMemory{
     ~SnoptMemory();
 
 };
+std::vector<SnoptMemory*> SnoptMemory::mempool;
+
 
 
 /**
@@ -215,7 +221,7 @@ private:
      *
      * @param[in]  mem   The memory to be freed
      */
-    void free_memory(SnoptMemory *mem) const { delete mem;}
+    inline void free_memory(SnoptMemory *mem) const { delete mem;}
 
     /**
      * @brief      Initializes the memory
@@ -274,8 +280,6 @@ private:
 
 };
 
-
-#include "implementation/SnoptSolver-impl.h"
 
 #else	// BUILD_WITH_SNOPT_SUPPORT -- not building with SNOPT support, create dummy class
 

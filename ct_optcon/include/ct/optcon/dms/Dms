@@ -2,6 +2,9 @@
 #ifndef DMS_H_CONVENIENCE_
 #define DMS_H_CONVENIENCE_
 
+#include "dms_core/DmsSettings.h"
+#include "dms_core/DmsSolver.h"
+
 #include "dms_core/cost_evaluator/CostEvaluatorFull.h"
 #include "dms_core/cost_evaluator/CostEvaluatorSimple.h"
 
@@ -14,10 +17,6 @@
 #include "dms_core/RKnDerivatives.h"
 #include "dms_core/ShotContainer.h"
 #include "dms_core/TimeGrid.h"
-
-#include "dms_core/DmsSettings.h"
-
-#include "dms_core/DmsSolver.h"
 
 
 #endif /* DMS_H_CONVENIENCE_ */

@@ -48,6 +48,8 @@ namespace optcon {
  * @ingroup    NLP
  *
  * @brief      The interface to the NLP solver IPOPT
+ *
+ * For the implementation see ct/ct_optcon/src/nlp/solver/IpoptSolver.cpp
  */
 class IpoptSolver : public Ipopt::TNLP, public NlpSolver
 {
@@ -160,8 +162,6 @@ private:
 	//@}
 
 };
-
-#include "implementation/IpoptSolver-impl.h"
 
 #else	// BUILD_WITH_IPOPT_SUPPORT -- not building with IPOPT support, create dummy class
 

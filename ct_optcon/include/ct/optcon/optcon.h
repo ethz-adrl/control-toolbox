@@ -47,7 +47,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ilqg/iLQG.hpp"
 #include "ilqg/iLQGMP.hpp"
 #include "ilqg/iLQGSettings.hpp"
+
 #include "lqr/LQR.hpp"
 #include "lqr/FHDTLQR.hpp"
+
+#include "dms/dms.h"
 
 #endif /* INCLUDE_CT_OPTCON_OPTCON_H_ */

@@ -2,10 +2,10 @@
 #define NLP_H_CONVENIENCE_
 
 
-#include <ct/optcon/nlp/Nlp.h>
-#include <ct/optcon/nlp/solver/NlpSolver.h>
-#include <ct/optcon/nlp/solver/IpoptSolver.h>
-#include <ct/optcon/nlp/solver/SnoptSolver.h>
-#include <ct/optcon/nlp/solver/NlpSolverSettings.h>
+#include "Nlp.h"
+#include "solver/NlpSolver.h"
+#include "solver/IpoptSolver.h"
+#include "solver/SnoptSolver.h"
+#include "solver/NlpSolverSettings.h"
 
 #endif /* NLP_H_CONVENIENCE_ */
