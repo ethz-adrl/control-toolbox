@@ -249,7 +249,6 @@ public:
         parallelBackward.print();
     }
 
-
     //! perform a quick check if the given iLQG settings fulfil minimum requirements
     /*!
      * \warning This check cannot guarantee that the control problem is well parameterized

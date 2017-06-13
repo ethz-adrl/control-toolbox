@@ -28,6 +28,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_OPTCON_ILQG_ILQGBASE_HPP_
 #define INCLUDE_CT_OPTCON_ILQG_ILQGBASE_HPP_
 
+#include <atomic>
+
 #include <ct/core/core.h>
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
 #include <ct/optcon/solver/OptConSolver.h>
@@ -320,6 +322,9 @@ public:
 	double getCost() const override;
 
 protected:
+	virtual void createLQProblem() = 0;
+
+	virtual void backwardPass() = 0;
 
 	//! Computes the linearization of the dynamics along the trajectory. See computeLinearizedDynamics for details
 	virtual void computeLinearizedDynamicsAroundTrajectory() = 0;
@@ -338,6 +343,9 @@ protected:
 	//! run the backward pass (controller design, Riccati-integration)
 	void backwardPass();
 
+	//! build the sequential LQ problems
+	void sequentialLQProblem();
+
 	//! perform line-search and update controller
 	bool lineSearchController();
 
@@ -353,7 +361,8 @@ protected:
 			const ControlVectorArray& u_ff_local,
 			ct::core::StateVectorArray<STATE_DIM>& x_local,
 			ct::core::ControlVectorArray<CONTROL_DIM>& u_local,
-			ct::core::TimeArray& t_local) const;
+			ct::core::TimeArray& t_local,
+			std::atomic_bool* terminationFlag = nullptr) const;
 
 	//! Computes the linearized Dynamics at a specific point of the trajectory
 	/*!
@@ -427,7 +436,8 @@ protected:
 			ct::core::ControlVectorArray<CONTROL_DIM>& u_local,
 			ct::core::TimeArray& t_local,
 			double& intermediateCost,
-			double& finalCost
+			double& finalCost,
+			std::atomic_bool* terminationFlag = nullptr
 	) const;
 
 	//! Update feedforward controller

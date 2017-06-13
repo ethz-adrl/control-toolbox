@@ -25,6 +25,29 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 template <size_t STATE_DIM, size_t CONTROL_DIM>
+void iLQG<STATE_DIM, CONTROL_DIM>::createLQProblem()
+{
+	this->sequentialLQProblem();
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM>
+void iLQG<STATE_DIM, CONTROL_DIM>::backwardPass()
+{
+	// step 3
+	// initialize cost to go (described in step 3)
+	this->initializeCostToGo();
+
+	for (int k=this->K_-1; k>=0; k--) {
+		// design controller
+		this->designController(k);
+
+		// compute cost to go
+		this->computeCostToGo(k);
+	}
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM>
 void iLQG<STATE_DIM, CONTROL_DIM>::computeLinearizedDynamicsAroundTrajectory()
 {
 	for (size_t k=0; k<this->K_; k++)

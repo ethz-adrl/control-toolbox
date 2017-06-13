@@ -210,7 +210,7 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM>::solve()
 		return false;
 	}
 
-	return (numIterations > 1 || foundBetter || (numIterations == 1 && !foundBetter));
+	return true;
 }
 
 
@@ -341,7 +341,8 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM>::rolloutSystem (
 		const ControlVectorArray& u_ff_local,
 		ct::core::StateVectorArray<STATE_DIM>& x_local,
 		ct::core::ControlVectorArray<CONTROL_DIM>& u_local,
-		ct::core::TimeArray& t_local) const
+		ct::core::TimeArray& t_local,
+		std::atomic_bool* terminationFlag) const
 {
 	const double& dt = settings_.dt;
 	const double& dt_sim = settings_.dt_sim;
@@ -362,6 +363,8 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM>::rolloutSystem (
 
 	for (size_t i = 0; i<K_local; i++)
 	{
+		if (terminationFlag && *terminationFlag) return false;
+
 		u_local.push_back( u_ff_local[i] + L_[i] * x0);
 		controller_[threadId]->setControl(u_local.back());
 
@@ -441,6 +444,17 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM>::forwardPass()
 			throw std::runtime_error("Rollout failed. System became unstable");
 	}
 
+	createLQProblem();
+
+	if (settings_.nThreadsEigen > 1)
+		Eigen::setNbThreads(settings_.nThreadsEigen); // restore default Eigen thread number
+
+	return true;
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM>
+void iLQGBase<STATE_DIM, CONTROL_DIM>::sequentialLQProblem()
+{
 	auto start = std::chrono::steady_clock::now();
 	computeLinearizedDynamicsAroundTrajectory();
 	auto end = std::chrono::steady_clock::now();
@@ -456,27 +470,6 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM>::forwardPass()
 #ifdef DEBUG_PRINT
 	std::cout << "Cost computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
-
-	if (settings_.nThreadsEigen > 1)
-		Eigen::setNbThreads(settings_.nThreadsEigen); // restore default Eigen thread number
-
-	return true;
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::backwardPass()
-{
-	// step 3
-	// initialize cost to go (described in step 3)
-	initializeCostToGo();
-
-	for (int k=K_-1; k>=0; k--) {
-		// design controller
-		designController(k);
-
-		// compute cost to go
-		computeCostToGo(k);
-	}
 }
 
 
@@ -605,18 +598,23 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::lineSearchSingleController(
 		ct::core::ControlVectorArray<CONTROL_DIM>& u_local,
 		ct::core::TimeArray& t_local,
 		double& intermediateCost,
-		double& finalCost
+		double& finalCost,
+		std::atomic_bool* terminationFlag
 ) const
 {
+	intermediateCost = std::numeric_limits<double>::max();
+	finalCost = std::numeric_limits<double>::max();
+
+	if (terminationFlag && *terminationFlag) return;
+
 	for (int k=K_-1; k>=0; k--)
 	{
 		u_ff_local[k] = alpha * lv_[k] + u_ff_prev_[k];
 	}
 
-	bool dynamicsGood = rolloutSystem(threadId, u_ff_local, x_local, u_local, t_local);
+	bool dynamicsGood = rolloutSystem(threadId, u_ff_local, x_local, u_local, t_local, terminationFlag);
 
-	intermediateCost = std::numeric_limits<double>::max();
-	finalCost = std::numeric_limits<double>::max();
+	if (terminationFlag && *terminationFlag) return;
 
 	if (dynamicsGood)
 	{
