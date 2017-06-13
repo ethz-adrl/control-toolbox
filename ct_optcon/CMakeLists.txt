@@ -122,7 +122,6 @@ catkin_package(
    LIBRARIES 
         lapack 
         dl 
-        ${NLP_LIBS}
    CATKIN_DEPENDS
         ct_core
 )
