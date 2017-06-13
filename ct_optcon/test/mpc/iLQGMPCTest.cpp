@@ -24,25 +24,16 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#include <chrono>
-
-// Bring in gtest
-#include <gtest/gtest.h>
-
 //#define DEBUG_PRINT
 //#define DEBUG_PRINT_LINESEARCH
 //#define MATLAB_LOG_MPC
 
+#include <chrono>
+#include <gtest/gtest.h>
+
 #include <ct/optcon/optcon.h>
 
-#include <ct/optcon/mpc/MPC.h>
-
-#include <string>
-
 #include "mpcTestSettings.h"
-
-
-#include <ct/optcon/matlab.hpp>
 
 namespace ct{
 namespace optcon{
