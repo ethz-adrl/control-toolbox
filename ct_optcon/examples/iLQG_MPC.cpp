@@ -1,125 +1,109 @@
-/***********************************************************************************
-Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus StÃ¤uble, Diego Pardo,
-Farbod Farshidian. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice,
-      this list of conditions and the following disclaimer in the documentation
-      and/or other materials provided with the distribution.
- * Neither the name of ETH ZURICH nor the names of its contributors may be used
-      to endorse or promote products derived from this software without specific
-      prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- ***************************************************************************************/
 
 #include <ct/optcon/optcon.h>
 #include "exampleDir.h"
 
-
 using namespace ct::core;
 using namespace ct::optcon;
 
-
 /*!
- * This example shows how to use the MPC class. Here, we apply iLQG-MPC to a simple second order system.
+ * This example shows how to use the MPC class. Here, we apply iLQG-MPC to a simple second order system, a damped oscillator.
  *
  * \example iLQG_MPC.cpp
  */
 int main(int argc, char **argv)
 {
+	// get the state and control input dimension of the oscillator
+	const size_t state_dim = ct::core::SecondOrderSystem::STATE_DIM;
+	const size_t control_dim = ct::core::SecondOrderSystem::CONTROL_DIM;
 
-	const size_t state_dim 		= 2; 	// position, velocity
-	const size_t control_dim 	= 1; 	// force
 
-
-	// STEP 1: set up the Optimal Control Problem
+	/* STEP 1: set up the Optimal Control Problem
+	 * First of all, we create instances of the system dynamics, the linearized system and the cost function.
+	 */
 
 	// create a instance of the oscillator dynamics for the optimal control problem
 	double w_n(0.1);
-	std::shared_ptr<ct::core::ControlledSystem<state_dim, control_dim> > oscillatorDynamics_d(
+	std::shared_ptr<ct::core::ControlledSystem<state_dim, control_dim> > oscillatorDynamics(
 			new ct::core::SecondOrderSystem(w_n, 5.0));
 
-	// create a System Linearizer
+	// create a System Linearizer. For simplicity, we use the Num-diff Linearizer.
 	std::shared_ptr<ct::core::SystemLinearizer<state_dim, control_dim>> adLinearizer(
-			new ct::core::SystemLinearizer<state_dim, control_dim> (oscillatorDynamics_d));
+			new ct::core::SystemLinearizer<state_dim, control_dim> (oscillatorDynamics));
 
-	// load the cost weighting matrices
+	// load the cost weighting matrices from file and store them in terms. Note that we define both intermediate and terminal cost
 	std::shared_ptr<ct::optcon::TermQuadratic<state_dim, control_dim>> intermediateCost (new ct::optcon::TermQuadratic<state_dim, control_dim>());
 	std::shared_ptr<ct::optcon::TermQuadratic<state_dim, control_dim>> finalCost (new ct::optcon::TermQuadratic<state_dim, control_dim>());
 	intermediateCost->loadConfigFile(ct::optcon::exampleDir+"/mpcCost.info", "intermediateCost", true);
 	finalCost->loadConfigFile(ct::optcon::exampleDir+"/mpcCost.info", "finalCost", true);
 
-	// create a cost function
+	// create a cost function and add the terms to it.
 	std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction (new CostFunctionAnalytical<state_dim, control_dim>());
 	costFunction->addIntermediateTerm(intermediateCost);
 	costFunction->addFinalTerm(finalCost);
 
-
-	// we choose a random initial state
+	// in this example, we choose a random initial state x0
 	StateVector<state_dim> x0;
 	x0.setRandom();
 
-	// final time in [sec]
+	// and a final time horizon in [sec]
 	ct::core::Time timeHorizon = 3.0;
 
 	// set up and initialize optimal control problem
-	OptConProblem<state_dim, control_dim> optConProblem (oscillatorDynamics_d, costFunction, adLinearizer);
+	OptConProblem<state_dim, control_dim> optConProblem (oscillatorDynamics, costFunction, adLinearizer);
 	optConProblem.setInitialState(x0);
 	optConProblem.setTimeHorizon(timeHorizon);
 
 
 
-	// STEP 2: solve the optimal control problem using iLQG
+	/* STEP 2: solve the optimal control problem using iLQG
+	 * iLQG-MPC works best if it's supplied with a good initial guess. If possible, and given that your
+	 * control system is in a steady state at start, we recommend to solve the full Optimal Control problem
+	 * first, start executing the policy and at the same time re-using the optimal solution as initial guess for MPC.
+	 */
 
+	// initial iLQG settings (default settings except for dt)
 	iLQGSettings ilqg_settings;
 	ilqg_settings.dt = 0.001;
 	ilqg_settings.dt_sim = 0.001;
-	ilqg_settings.lineSearchSettings.active = false;
 
-
-	size_t K = std::round(timeHorizon / ilqg_settings.dt); // number of steps
+	// calculate the number of time steps
+	size_t K = std::round(timeHorizon / ilqg_settings.dt);
 
 	// provide trivial initial controller to iLQG
 	FeedbackArray<state_dim, control_dim> u0_fb(K, FeedbackMatrix<state_dim, control_dim>::Zero());
 	ControlVectorArray<control_dim> u0_ff(K, ControlVector<control_dim>::Zero());
 	ct::core::StateFeedbackController<state_dim, control_dim> initController (u0_ff, u0_fb, ilqg_settings.dt);
 
-	// solve iLQG
+	// create an iLQG instance
 	iLQG<state_dim, control_dim> iLQG_init (optConProblem, ilqg_settings);
 
+	// configure it and set the initial guess
 	iLQG_init.configure(ilqg_settings);
-
 	iLQG_init.setInitialGuess(initController);
 
+	// and finally solve the optimal control problem
 	iLQG_init.solve();
 
-	// obtain the optimal controller, which we will use to initialize MPC
+	// now obtain the optimal controller, which we will use to initialize MPC later on
 	ct::core::StateFeedbackController<state_dim, control_dim> perfectInitController = iLQG_init.getSolution();
 	ct::core::StateTrajectory<state_dim> perfectStateTrajectory = iLQG_init.getStateTrajectory();
 
 
 
-	// STEP 3: set up MPC
+	/* STEP 3: set up MPC
+	 * Next, we set up an MPC instance for the iLQG solver and configure it.
+	 */
 
 	// settings for the ilqg instance used in MPC
 	iLQGSettings ilqg_settings_mpc;
 	ilqg_settings_mpc.dt = 0.001;
 	ilqg_settings_mpc.dt_sim = 0.001;
-	ilqg_settings_mpc.max_iterations = 5; // in MPC-mode, it ususally makes sense to limit the overall number of iLQG iterations
 
-	// mpc specific settings
+	// in MPC-mode, it usually makes sense to limit the overall number of iLQG iterations in order to avoid too unpredictable time variations
+	ilqg_settings_mpc.max_iterations = 5;
+
+
+	// fill in mpc specific settings. For a more detailed description of those, visit ct/optcon/mpc/MpcSettings.h
 	ct::optcon::mpc_settings settings;
 	settings.stateForwardIntegration_ = true;
 	settings.postTruncation_ = true;
@@ -130,21 +114,28 @@ int main(int argc, char **argv)
 	settings.additionalDelayUs_ = 0;
 
 
-	// Create MPC object
+	// Create the iLQG-MPC object
 	MPC<iLQG<state_dim, control_dim>> ilqg_mpc (optConProblem, ilqg_settings_mpc, settings);
 
+	// initialize it using the previously computed initial controller
 	ilqg_mpc.setInitialGuess(perfectInitController);
 
 
 
-	// STEP 4: running MPC
-	// MPC needs to receive time information from your control system. Here, "simulate" it using std::chrono
+	/* STEP 4: running MPC
+	 * Here, we run the MPC loop. Note that the general underlying idea is that you receive a state-estimate
+	 * together with a time-stamp from your robot or system. MPC needs to receive both that time information and
+	 * the state from your control system. Here, "simulate" the time measurement using std::chrono and wrap
+	 * everything into a for-loop.
+	 * The basic idea of operation is that after receiving time and state information, one executes the run() method of MPC.
+	 */
 	auto start_time = std::chrono::high_resolution_clock::now();
 
 
 	// outputs
 	ct::core::StateTrajectory<state_dim> stateTraj;
 
+	// limit the maximum number of runs in this example
 	size_t maxNumRuns = 2000;
 
 	std::cout << "Starting to run MPC" << std::endl;
@@ -165,7 +156,7 @@ int main(int argc, char **argv)
 		// timestamp of the new optimal policy
 		ct::core::Time ts_newPolicy;
 
-		// run one mpc cycle
+		// !!! run one MPC cycle !!! (get new policy by reference)
 		bool success = ilqg_mpc.run(x0, t, newPolicy, ts_newPolicy);
 
 		// retrieve the currently optimal state trajectory
@@ -177,6 +168,7 @@ int main(int argc, char **argv)
 	}
 
 
+	// the summary contains some statistical data about time delays, etc.
 	ilqg_mpc.printMpcSummary();
 
 }

@@ -1,3 +1,74 @@
+/***********************************************************************************
+Copyright (c) 2017, Agile & Dexterous Robotics Lab, ETH ZURICH. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
+
+#include <ct/optcon/optcon.h>
+
+namespace ct{
+namespace optcon{
+
+
+SnoptMemory::SnoptMemory(const SnoptSolver& self) : self(self)
+{
+	// Put in memory pool
+	auto mem_it = std::find(mempool.begin(), mempool.end(), nullptr);
+	if (mem_it==mempool.end()) {
+		// Append to end
+		memind = mempool.size();
+		mempool.push_back(this);
+	}
+	else {
+		// Reuse freed element
+		memind = mem_it - mempool.begin();
+		*mem_it = this;
+	}
+}
+
+
+SnoptMemory::~SnoptMemory()
+{
+	// Remove from memory pool
+	auto mem_it = std::find(mempool.begin(), mempool.end(), this);
+	if (mem_it==mempool.end()) {
+		// Should probably shut down program
+		std::cout << "Error while destroying SNOPT memory" << std::endl;
+	}
+	else {
+		delete []iAfun_;  delete []jAvar_;  delete []A_;
+
+		delete []x_;      delete []xlow_;   delete []xupp_;
+		delete []xmul_;   delete []xstate_;
+
+		delete []F_;      delete []Flow_;   delete []Fupp_;
+		delete []Fmul_;   delete []Fstate_;
+
+		delete []iGfun_;  delete []jGvar_;
+
+		*mem_it = nullptr;
+	}
+}
+
 
 SnoptSolver::SnoptSolver(std::shared_ptr<Nlp> nlp, const NlpSolverSettings& settings) :
 BASE(nlp, settings),
@@ -7,6 +78,7 @@ memoryPtr_(nullptr)
 	memoryPtr_ = alloc_memory();
 	currStartOption_ = Cold_;
 }
+
 
 void SnoptSolver::init_memory(SnoptMemory* mem) const
 {
@@ -29,6 +101,7 @@ void SnoptSolver::init_memory(SnoptMemory* mem) const
 	mem->iGfun_ = new int 	 [lenG_];
 	mem->jGvar_ = new int 	 [lenG_];
 }
+
 
 void SnoptSolver::fill_memory(SnoptMemory* mem) const
 {
@@ -77,6 +150,7 @@ void SnoptSolver::fill_memory(SnoptMemory* mem) const
 
 }
 
+
 void SnoptSolver::configureDerived(const NlpSolverSettings& settings)
 {
 	std::cout << "calling SNOPT configure derived" << std::endl;
@@ -96,6 +170,7 @@ void SnoptSolver::configureDerived(const NlpSolverSettings& settings)
 	BASE::isInitialized_ = true;
 }
 
+
 void SnoptSolver::setupSnoptObjects()
 { 
 	snoptApp_.setProblemSize(n_, neF_);
@@ -106,6 +181,7 @@ void SnoptSolver::setupSnoptObjects()
 	snoptApp_.setG(lenG_, neG_, memoryPtr_->iGfun_, memoryPtr_->jGvar_);
 	snoptApp_.setUserFun(NLP_Function);
 }
+
 
 void SnoptSolver::setSolverOptions()
 {
@@ -151,6 +227,7 @@ bool SnoptSolver::solve()
 	
 	return true;
 }
+
 
 void SnoptSolver::prepareWarmStart(size_t maxIterations)
 {
@@ -212,6 +289,7 @@ void SnoptSolver::validateSNOPTStatus(const int & status) const
 	std::cout << message << std::endl;
 }
 
+
 void SnoptSolver::NLP_Function(int    *Status, int *n,    double x[],
         int    *needF,  int *neF,  double F[],
         int    *needG,  int *neG,  double G[],
@@ -222,6 +300,7 @@ void SnoptSolver::NLP_Function(int    *Status, int *n,    double x[],
 	auto m = SnoptMemory::mempool.at(iu[0]);
 	m->self.NLP_Function(m, Status, n, x, needF, neF, F, needG, neG, G, cu, lencu, iu, leniu, ru, lenru);
 }
+
 
 void SnoptSolver::NLP_Function(SnoptMemory* m,		int    *Status, int *n,    double x[],
 					        int    *needF,  int *neF,  double F[],
@@ -258,41 +337,5 @@ void SnoptSolver::NLP_Function(SnoptMemory* m,		int    *Status, int *n,    doubl
 	}
 }
 
-SnoptMemory::SnoptMemory(const SnoptSolver& self) : self(self) {
-	// Put in memory pool
-	auto mem_it = std::find(mempool.begin(), mempool.end(), nullptr);
-	if (mem_it==mempool.end()) {
-		// Append to end
-		memind = mempool.size();
-		mempool.push_back(this);
-	} 
-	else {
-		// Reuse freed element
-		memind = mem_it - mempool.begin();
-		*mem_it = this;
-	}
-}
-
-SnoptMemory::~SnoptMemory() {
-	// Remove from memory pool
-	auto mem_it = std::find(mempool.begin(), mempool.end(), this);
-	if (mem_it==mempool.end()) {
-		// Should probably shut down program
-		std::cout << "Error while destroying SNOPT memory" << std::endl;
-	} 
-	else {
-		delete []iAfun_;  delete []jAvar_;  delete []A_;
-
-		delete []x_;      delete []xlow_;   delete []xupp_;
-		delete []xmul_;   delete []xstate_;
-
-		delete []F_;      delete []Flow_;   delete []Fupp_;
-		delete []Fmul_;   delete []Fstate_;
-
-		delete []iGfun_;  delete []jGvar_;
-
-		*mem_it = nullptr;
-	}
-}
-
-std::vector<SnoptMemory*> SnoptMemory::mempool;
+} // namespace optcon
+} // namespace ct

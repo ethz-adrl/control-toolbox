@@ -1,5 +1,5 @@
 /***********************************************************************************
-Copyright (c) 2016, Agile & Dexterous Robotics Lab, ETH ZURICH. All rights reserved.
+Copyright (c) 2017, Agile & Dexterous Robotics Lab, ETH ZURICH. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -117,8 +117,8 @@ protected:
 	bool isInitialized_; /*!< Indicates whether the solver is initialized */
 };
 
-} // namespace ct
 } // namespace optcon
+} // namespace ct
 
 
 

@@ -30,6 +30,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/constraint/ConstraintContainerAD.h>
 #include <ct/optcon/nlp/DiscreteConstraintBase.h>
 
+#include <ct/optcon/dms/dms_core/OptVectorDms.h>
+#include <ct/optcon/dms/dms_core/TimeGrid.h>
+#include <ct/optcon/dms/dms_core/spline/SplinerBase.h>
+
 namespace ct {
 namespace optcon {
 
@@ -63,6 +67,11 @@ public:
 	 * @brief      Default constructor
 	 */
 	ConstraintDiscretizer(){}
+
+	/**
+	 * @brief      Destructor
+	 */
+	virtual ~ConstraintDiscretizer(){}
 
 	/**
 	 * @brief      Custom constructor
