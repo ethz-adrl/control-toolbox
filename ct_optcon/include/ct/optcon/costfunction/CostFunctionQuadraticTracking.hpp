@@ -81,7 +81,6 @@ public:
 		Q_(arg.Q_),
 		u_deviation_(arg.u_deviation_),
 		R_(arg.R_),
-		x_final_(arg.x_final_),
 		Q_final_(arg.Q_final_),
 		x_traj_ref_(arg.x_traj_ref_),
 		u_traj_ref_(arg.u_traj_ref_),
@@ -108,19 +107,8 @@ public:
 
 	void updateTrajectories(
 		const core::StateTrajectory<STATE_DIM>& xTraj,
-		const core::ControlTrajectory<CONTROL_DIM>& uTraj,
-		const core::StateVector<STATE_DIM>& x_final)
-	{
-		x_final_ = x_final;
-		x_traj_ref_ = xTraj;
-		u_traj_ref_ = uTraj;
-	}
-
-	void updateTrajectories(
-		const core::StateTrajectory<STATE_DIM>& xTraj,
 		const core::ControlTrajectory<CONTROL_DIM>& uTraj)
 	{
-		x_final_ = xTraj.back();
 		x_traj_ref_ = xTraj;
 		u_traj_ref_ = uTraj;
 	}
@@ -166,14 +154,12 @@ public:
 
 	double evaluateTerminal() override
 	{
-		state_vector_t x_deviation_final = this->x_ - x_final_;
-		return  x_deviation_final.transpose() * Q_final_ * x_deviation_final;
+		return  x_deviation_.transpose() * Q_final_ * x_deviation_;
 	}
 
 	state_vector_t stateDerivativeTerminal() override
 	{
-		state_vector_t x_deviation_final = this->x_ - x_final_;
-		return 2*Q_final_ * x_deviation_final;
+		return 2*Q_final_ * x_deviation_;
 	}
 
 	state_matrix_t stateSecondDerivativeTerminal() override
@@ -189,8 +175,6 @@ protected:
 	
 	control_vector_t u_deviation_;
 	control_matrix_t R_;
-
-	state_vector_t x_final_;
 	state_matrix_t Q_final_;
 
 	// the reference trajectories to be tracked
