@@ -210,7 +210,7 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM>::solve()
 		return false;
 	}
 
-	return true;
+	return (numIterations > 1 || foundBetter || (numIterations == 1 && !foundBetter));
 }
 
 
