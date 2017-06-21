@@ -113,12 +113,31 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::threadWork(size_t threadId)
 			break;
 		}
 
+		case PARALLEL_BACKWARD_PASS:
+		{
+			if (threadId < this->settings_.nThreads-1)
+			{
+#ifdef DEBUG_PRINT_MP
+			std::cout<<"[Thread "<<threadId<<"]: now doing LQ problem building!"<<std::endl;
+#endif // DEBUG_PRINT_MP
+				computeLQProblemWorker(threadId);
+			}
+			lastCompletedTask = PARALLEL_BACKWARD_PASS;
+			break;
+		}
+
 		case SHUTDOWN:
 		{
 #ifdef DEBUG_PRINT_MP
 			std::cout<<"[Thread "<<threadId<<"]: now shutting down!"<<std::endl;
 #endif // DEBUG_PRINT_MP
 			return;
+			break;
+		}
+
+		default:
+		{
+			std::cout << "Warning, worker task has unknown task"<<std::endl;
 			break;
 		}
 		}
@@ -140,7 +159,78 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::launchWorkerThreads()
 	}
 }
 
+template <size_t STATE_DIM, size_t CONTROL_DIM>
+void iLQGMP<STATE_DIM, CONTROL_DIM>::createLQProblem()
+{
+	if (this->settings_.parallelBackward.enabled)
+		parallelLQProblem();
+	else
+		this->sequentialLQProblem();
+}
 
+template <size_t STATE_DIM, size_t CONTROL_DIM>
+void iLQGMP<STATE_DIM, CONTROL_DIM>::parallelLQProblem()
+{
+	Eigen::setNbThreads(1); // disable Eigen multi-threading
+
+	kTaken_ = 0;
+	kCompleted_ = 0;
+	KMax_ = this->K_;
+
+#ifdef DEBUG_PRINT_MP
+	std::cout<<"[MP]: Waking up workers to do parallel backward pass. Will continue immediately"<<std::endl;
+#endif //DEBUG_PRINT_MP
+	workerTask_ = PARALLEL_BACKWARD_PASS;
+	workerWakeUpCondition_.notify_all();
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM>
+void iLQGMP<STATE_DIM, CONTROL_DIM>::backwardPass()
+{
+	// step 3
+	// initialize cost to go (described in step 3)
+	this->initializeCostToGo();
+
+	if (this->settings_.parallelBackward.enabled)
+	{
+		while (kCompleted_ < this->settings_.nThreads*2)
+		{
+			if (this->settings_.parallelBackward.showWarnings)
+			{
+				std::cout << "backward pass waiting for head start" << std::endl;
+			}
+			std::this_thread::sleep_for(std::chrono::microseconds(this->settings_.parallelBackward.pollingTimeoutUs));
+		}
+	}
+
+	for (int k=this->K_-1; k>=0; k--) {
+
+		if (this->settings_.parallelBackward.enabled)
+		{
+			while ((this->K_-1 - k + this->settings_.nThreads*2 > kCompleted_) && (k >= this->settings_.nThreads*2))
+			{
+				if (this->settings_.parallelBackward.showWarnings)
+				{
+					std::cout << "backward pass waiting for LQ problems" << std::endl;
+				}
+				std::this_thread::sleep_for(std::chrono::microseconds(this->settings_.parallelBackward.pollingTimeoutUs));
+			}
+		}
+
+#ifdef DEBUG_PRINT_MP
+		if (k%100 == 0)
+			std::cout<<"[MP]: Solving backward pass for index k "<<k<<std::endl;
+#endif
+
+		// design controller
+		this->designController(k);
+
+		// compute cost to go
+		this->computeCostToGo(k);
+	}
+
+	workerTask_ = IDLE;
+}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM>
@@ -211,7 +301,7 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::lineSearchWorker(size_t threadId)
 		double finalCost;
 
 		typename Base::ControlVectorArray u_ff_local(this->K_);
-		this->lineSearchSingleController(threadId, alpha, u_ff_local, x_local, u_local, t_local, intermediateCost, finalCost);
+		this->lineSearchSingleController(threadId, alpha, u_ff_local, x_local, u_local, t_local, intermediateCost, finalCost, &alphaBestFound_);
 
 		double cost = intermediateCost + finalCost;
 
@@ -304,11 +394,6 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::computeLinearizedDynamicsWorker(size_t thre
 	{
 		size_t k = kTaken_++;
 
-#ifdef DEBUG_PRINT_MP
-		if (k%100 == 0)
-			std::cout<<"[Thread "<<threadId<<"]: Start working on index k "<<k<<std::endl;
-#endif
-
 		if (k >= KMax_)
 		{
 			//kCompleted_++;
@@ -317,7 +402,12 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::computeLinearizedDynamicsWorker(size_t thre
 			return;
 		}
 
-		this->computeLinearizedDynamics(threadId, k);
+#ifdef DEBUG_PRINT_MP
+		if ((k+1)%100 == 0)
+			std::cout<<"[Thread "<<threadId<<"]: Linearizing for index k "<<KMax_ - k - 1<<std::endl;
+#endif
+
+		this->computeLinearizedDynamics(threadId, KMax_-k-1); // linearize backwards
 
 		kCompleted_++;
 	}
@@ -360,10 +450,33 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::computeQuadraticCostsWorker(size_t threadId
 	{
 		size_t k = kTaken_++;
 
+		if (k >= KMax_)
+		{
+			//kCompleted_++;
+			if (kCompleted_.load() >= KMax_)
+				kCompletedCondition_.notify_all();
+			return;
+		}
+
 #ifdef DEBUG_PRINT_MP
-		if (k%100 == 0)
-			std::cout<<"[Thread "<<threadId<<"]: Start working on index k "<<k<<std::endl;
+		if ((k+1)%100 == 0)
+			std::cout<<"[Thread "<<threadId<<"]: Quadratizing cost for index k "<<KMax_ - k - 1<<std::endl;
 #endif
+
+		this->computeQuadraticCosts(threadId, KMax_ - k - 1); // compute cost backwards
+
+		kCompleted_++;
+	}
+}
+
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM>
+void iLQGMP<STATE_DIM, CONTROL_DIM>::computeLQProblemWorker(size_t threadId)
+{
+	while(true)
+	{
+		size_t k = kTaken_++;
 
 		if (k >= KMax_)
 		{
@@ -373,11 +486,18 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::computeQuadraticCostsWorker(size_t threadId
 			return;
 		}
 
-		this->computeQuadraticCosts(threadId, k);
+#ifdef DEBUG_PRINT_MP
+		if ((k+1)%100 == 0)
+			std::cout<<"[Thread "<<threadId<<"]: Building LQ problem for index k "<<KMax_ - k - 1<<std::endl;
+#endif
+
+		this->computeQuadraticCosts(threadId, KMax_-k-1); // compute cost backwards
+		this->computeLinearizedDynamics(threadId, KMax_-k-1); // linearize backwards
 
 		kCompleted_++;
 	}
 }
+
 
 
 }

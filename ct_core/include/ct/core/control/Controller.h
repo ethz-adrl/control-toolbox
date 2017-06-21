@@ -47,6 +47,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class Controller
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	//! Default constructor
 	Controller() {};
 
@@ -75,7 +76,7 @@ public:
 	 */
 	virtual void computeControl(
 			const StateVector<STATE_DIM, SCALAR>& state,
-			const Time& t,
+			const SCALAR& t,
 			ControlVector<CONTROL_DIM, SCALAR>& controlAction) = 0;
 
 

@@ -55,6 +55,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM>
 class LQR
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
 	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_t;

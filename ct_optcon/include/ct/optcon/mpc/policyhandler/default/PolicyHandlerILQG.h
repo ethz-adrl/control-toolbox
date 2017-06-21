@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/core/core.h>
 
-//#define DEBUG_POLICYHANDLER_ILQG
+// #define DEBUG_POLICYHANDLER_ILQG
 
 namespace ct{
 namespace optcon{
@@ -40,7 +40,7 @@ class PolicyHandlerILQG : public PolicyHandler<core::StateFeedbackController<STA
 {
 
 public:
-
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM> StateFeedbackController_t;
 
 	PolicyHandlerILQG(const core::Time& dt):
@@ -53,8 +53,9 @@ public:
 	virtual void designWarmStartingPolicy(
 			const core::Time delay,
 			const core::Time newTimeHorizon,
-			StateFeedbackController_t& policy) override {
-
+			StateFeedbackController_t& policy,
+			core::StateTrajectory<STATE_DIM>& stateTraj) override {
+		
 		// get the current feedback and feedforward from the StateFeedbackController
 		core::FeedbackTrajectory<STATE_DIM, CONTROL_DIM>& FeedbackTraj = policy.getFeedbackTrajectory();
 		core::ControlTrajectory<CONTROL_DIM>& FeedForwardTraj = policy.getFeedforwardTrajectory();

@@ -1,13 +1,6 @@
-/*
- * jacobians.impl.h
- *
- *  Created on: Aug 17, 2016
- *      Author: neunertm
- */
-
 
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Jacobians
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Jacobians
     ()
      : 
     fr_trunk_J_LF_hipassemblyCOM(), 
@@ -31,12 +24,12 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Jacobians
 }
 
 template <typename TRAIT>
-void iit::HyQ::tpl::Jacobians<TRAIT>::updateParameters() {
+void iit::TestHyQ::tpl::Jacobians<TRAIT>::updateParameters() {
 }
 
 
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_hipassemblyCOM::Type_fr_trunk_J_LF_hipassemblyCOM()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_hipassemblyCOM::Type_fr_trunk_J_LF_hipassemblyCOM()
 {
     (*this)(0,0) = - 1.0;
     (*this)(1,0) = 0;
@@ -45,9 +38,9 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_hipassemblyCOM::Type_fr_trun
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_hipassemblyCOM& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_hipassemblyCOM::update(const JState& jState) {
-    SCALAR sin__q_LF_HAA__;
-    SCALAR cos__q_LF_HAA__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_hipassemblyCOM& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_hipassemblyCOM::update(const JState& jState) {
+    Scalar sin__q_LF_HAA__;
+    Scalar cos__q_LF_HAA__;
     
     sin__q_LF_HAA__ = TRAIT::sin( jState(LF_HAA));
     cos__q_LF_HAA__ = TRAIT::cos( jState(LF_HAA));
@@ -57,7 +50,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_hipassemblyCO
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_hipassemblyCOM::Type_fr_trunk_J_RF_hipassemblyCOM()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_hipassemblyCOM::Type_fr_trunk_J_RF_hipassemblyCOM()
 {
     (*this)(0,0) = 1.0;
     (*this)(1,0) = 0;
@@ -66,9 +59,9 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_hipassemblyCOM::Type_fr_trun
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_hipassemblyCOM& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_hipassemblyCOM::update(const JState& jState) {
-    SCALAR sin__q_RF_HAA__;
-    SCALAR cos__q_RF_HAA__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_hipassemblyCOM& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_hipassemblyCOM::update(const JState& jState) {
+    Scalar sin__q_RF_HAA__;
+    Scalar cos__q_RF_HAA__;
     
     sin__q_RF_HAA__ = TRAIT::sin( jState(RF_HAA));
     cos__q_RF_HAA__ = TRAIT::cos( jState(RF_HAA));
@@ -78,7 +71,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_hipassemblyCO
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_hipassemblyCOM::Type_fr_trunk_J_LH_hipassemblyCOM()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_hipassemblyCOM::Type_fr_trunk_J_LH_hipassemblyCOM()
 {
     (*this)(0,0) = - 1.0;
     (*this)(1,0) = 0;
@@ -87,9 +80,9 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_hipassemblyCOM::Type_fr_trun
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_hipassemblyCOM& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_hipassemblyCOM::update(const JState& jState) {
-    SCALAR sin__q_LH_HAA__;
-    SCALAR cos__q_LH_HAA__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_hipassemblyCOM& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_hipassemblyCOM::update(const JState& jState) {
+    Scalar sin__q_LH_HAA__;
+    Scalar cos__q_LH_HAA__;
     
     sin__q_LH_HAA__ = TRAIT::sin( jState(LH_HAA));
     cos__q_LH_HAA__ = TRAIT::cos( jState(LH_HAA));
@@ -99,7 +92,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_hipassemblyCO
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_hipassemblyCOM::Type_fr_trunk_J_RH_hipassemblyCOM()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_hipassemblyCOM::Type_fr_trunk_J_RH_hipassemblyCOM()
 {
     (*this)(0,0) = 1.0;
     (*this)(1,0) = 0;
@@ -108,9 +101,9 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_hipassemblyCOM::Type_fr_trun
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_hipassemblyCOM& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_hipassemblyCOM::update(const JState& jState) {
-    SCALAR sin__q_RH_HAA__;
-    SCALAR cos__q_RH_HAA__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_hipassemblyCOM& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_hipassemblyCOM::update(const JState& jState) {
+    Scalar sin__q_RH_HAA__;
+    Scalar cos__q_RH_HAA__;
     
     sin__q_RH_HAA__ = TRAIT::sin( jState(RH_HAA));
     cos__q_RH_HAA__ = TRAIT::cos( jState(RH_HAA));
@@ -120,7 +113,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_hipassemblyCO
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_upperlegCOM::Type_fr_trunk_J_LF_upperlegCOM()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_upperlegCOM::Type_fr_trunk_J_LF_upperlegCOM()
 {
     (*this)(0,0) = - 1.0;
     (*this)(0,1) = 0;
@@ -130,11 +123,11 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_upperlegCOM::Type_fr_trunk_J
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_upperlegCOM& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_upperlegCOM::update(const JState& jState) {
-    SCALAR sin__q_LF_HAA__;
-    SCALAR sin__q_LF_HFE__;
-    SCALAR cos__q_LF_HAA__;
-    SCALAR cos__q_LF_HFE__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_upperlegCOM& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_upperlegCOM::update(const JState& jState) {
+    Scalar sin__q_LF_HAA__;
+    Scalar sin__q_LF_HFE__;
+    Scalar cos__q_LF_HAA__;
+    Scalar cos__q_LF_HFE__;
     
     sin__q_LF_HAA__ = TRAIT::sin( jState(LF_HAA));
     sin__q_LF_HFE__ = TRAIT::sin( jState(LF_HFE));
@@ -151,7 +144,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_upperlegCOM& 
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_upperlegCOM::Type_fr_trunk_J_RF_upperlegCOM()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_upperlegCOM::Type_fr_trunk_J_RF_upperlegCOM()
 {
     (*this)(0,0) = 1.0;
     (*this)(0,1) = 0;
@@ -161,11 +154,11 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_upperlegCOM::Type_fr_trunk_J
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_upperlegCOM& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_upperlegCOM::update(const JState& jState) {
-    SCALAR sin__q_RF_HAA__;
-    SCALAR sin__q_RF_HFE__;
-    SCALAR cos__q_RF_HAA__;
-    SCALAR cos__q_RF_HFE__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_upperlegCOM& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_upperlegCOM::update(const JState& jState) {
+    Scalar sin__q_RF_HAA__;
+    Scalar sin__q_RF_HFE__;
+    Scalar cos__q_RF_HAA__;
+    Scalar cos__q_RF_HFE__;
     
     sin__q_RF_HAA__ = TRAIT::sin( jState(RF_HAA));
     sin__q_RF_HFE__ = TRAIT::sin( jState(RF_HFE));
@@ -182,7 +175,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_upperlegCOM& 
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_upperlegCOM::Type_fr_trunk_J_LH_upperlegCOM()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_upperlegCOM::Type_fr_trunk_J_LH_upperlegCOM()
 {
     (*this)(0,0) = - 1.0;
     (*this)(0,1) = 0;
@@ -192,11 +185,11 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_upperlegCOM::Type_fr_trunk_J
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_upperlegCOM& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_upperlegCOM::update(const JState& jState) {
-    SCALAR sin__q_LH_HAA__;
-    SCALAR sin__q_LH_HFE__;
-    SCALAR cos__q_LH_HAA__;
-    SCALAR cos__q_LH_HFE__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_upperlegCOM& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_upperlegCOM::update(const JState& jState) {
+    Scalar sin__q_LH_HAA__;
+    Scalar sin__q_LH_HFE__;
+    Scalar cos__q_LH_HAA__;
+    Scalar cos__q_LH_HFE__;
     
     sin__q_LH_HAA__ = TRAIT::sin( jState(LH_HAA));
     sin__q_LH_HFE__ = TRAIT::sin( jState(LH_HFE));
@@ -213,7 +206,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_upperlegCOM& 
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_upperlegCOM::Type_fr_trunk_J_RH_upperlegCOM()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_upperlegCOM::Type_fr_trunk_J_RH_upperlegCOM()
 {
     (*this)(0,0) = 1.0;
     (*this)(0,1) = 0;
@@ -223,11 +216,11 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_upperlegCOM::Type_fr_trunk_J
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_upperlegCOM& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_upperlegCOM::update(const JState& jState) {
-    SCALAR sin__q_RH_HAA__;
-    SCALAR sin__q_RH_HFE__;
-    SCALAR cos__q_RH_HAA__;
-    SCALAR cos__q_RH_HFE__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_upperlegCOM& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_upperlegCOM::update(const JState& jState) {
+    Scalar sin__q_RH_HAA__;
+    Scalar sin__q_RH_HFE__;
+    Scalar cos__q_RH_HAA__;
+    Scalar cos__q_RH_HFE__;
     
     sin__q_RH_HAA__ = TRAIT::sin( jState(RH_HAA));
     sin__q_RH_HFE__ = TRAIT::sin( jState(RH_HFE));
@@ -244,7 +237,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_upperlegCOM& 
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_lowerlegCOM::Type_fr_trunk_J_LF_lowerlegCOM()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_lowerlegCOM::Type_fr_trunk_J_LF_lowerlegCOM()
 {
     (*this)(0,0) = - 1.0;
     (*this)(0,1) = 0;
@@ -255,13 +248,13 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_lowerlegCOM::Type_fr_trunk_J
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_lowerlegCOM& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_lowerlegCOM::update(const JState& jState) {
-    SCALAR sin__q_LF_HAA__;
-    SCALAR sin__q_LF_HFE__;
-    SCALAR sin__q_LF_KFE__;
-    SCALAR cos__q_LF_HAA__;
-    SCALAR cos__q_LF_HFE__;
-    SCALAR cos__q_LF_KFE__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_lowerlegCOM& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_lowerlegCOM::update(const JState& jState) {
+    Scalar sin__q_LF_HAA__;
+    Scalar sin__q_LF_HFE__;
+    Scalar sin__q_LF_KFE__;
+    Scalar cos__q_LF_HAA__;
+    Scalar cos__q_LF_HFE__;
+    Scalar cos__q_LF_KFE__;
     
     sin__q_LF_HAA__ = TRAIT::sin( jState(LF_HAA));
     sin__q_LF_HFE__ = TRAIT::sin( jState(LF_HFE));
@@ -285,7 +278,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LF_lowerlegCOM& 
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_lowerlegCOM::Type_fr_trunk_J_RF_lowerlegCOM()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_lowerlegCOM::Type_fr_trunk_J_RF_lowerlegCOM()
 {
     (*this)(0,0) = 1.0;
     (*this)(0,1) = 0;
@@ -296,13 +289,13 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_lowerlegCOM::Type_fr_trunk_J
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_lowerlegCOM& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_lowerlegCOM::update(const JState& jState) {
-    SCALAR sin__q_RF_HAA__;
-    SCALAR sin__q_RF_HFE__;
-    SCALAR sin__q_RF_KFE__;
-    SCALAR cos__q_RF_HAA__;
-    SCALAR cos__q_RF_HFE__;
-    SCALAR cos__q_RF_KFE__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_lowerlegCOM& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_lowerlegCOM::update(const JState& jState) {
+    Scalar sin__q_RF_HAA__;
+    Scalar sin__q_RF_HFE__;
+    Scalar sin__q_RF_KFE__;
+    Scalar cos__q_RF_HAA__;
+    Scalar cos__q_RF_HFE__;
+    Scalar cos__q_RF_KFE__;
     
     sin__q_RF_HAA__ = TRAIT::sin( jState(RF_HAA));
     sin__q_RF_HFE__ = TRAIT::sin( jState(RF_HFE));
@@ -326,7 +319,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RF_lowerlegCOM& 
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_lowerlegCOM::Type_fr_trunk_J_LH_lowerlegCOM()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_lowerlegCOM::Type_fr_trunk_J_LH_lowerlegCOM()
 {
     (*this)(0,0) = - 1.0;
     (*this)(0,1) = 0;
@@ -337,13 +330,13 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_lowerlegCOM::Type_fr_trunk_J
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_lowerlegCOM& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_lowerlegCOM::update(const JState& jState) {
-    SCALAR sin__q_LH_HAA__;
-    SCALAR sin__q_LH_HFE__;
-    SCALAR sin__q_LH_KFE__;
-    SCALAR cos__q_LH_HAA__;
-    SCALAR cos__q_LH_HFE__;
-    SCALAR cos__q_LH_KFE__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_lowerlegCOM& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_lowerlegCOM::update(const JState& jState) {
+    Scalar sin__q_LH_HAA__;
+    Scalar sin__q_LH_HFE__;
+    Scalar sin__q_LH_KFE__;
+    Scalar cos__q_LH_HAA__;
+    Scalar cos__q_LH_HFE__;
+    Scalar cos__q_LH_KFE__;
     
     sin__q_LH_HAA__ = TRAIT::sin( jState(LH_HAA));
     sin__q_LH_HFE__ = TRAIT::sin( jState(LH_HFE));
@@ -367,7 +360,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_LH_lowerlegCOM& 
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_lowerlegCOM::Type_fr_trunk_J_RH_lowerlegCOM()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_lowerlegCOM::Type_fr_trunk_J_RH_lowerlegCOM()
 {
     (*this)(0,0) = 1.0;
     (*this)(0,1) = 0;
@@ -378,13 +371,13 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_lowerlegCOM::Type_fr_trunk_J
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_lowerlegCOM& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_lowerlegCOM::update(const JState& jState) {
-    SCALAR sin__q_RH_HAA__;
-    SCALAR sin__q_RH_HFE__;
-    SCALAR sin__q_RH_KFE__;
-    SCALAR cos__q_RH_HAA__;
-    SCALAR cos__q_RH_HFE__;
-    SCALAR cos__q_RH_KFE__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_lowerlegCOM& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_lowerlegCOM::update(const JState& jState) {
+    Scalar sin__q_RH_HAA__;
+    Scalar sin__q_RH_HFE__;
+    Scalar sin__q_RH_KFE__;
+    Scalar cos__q_RH_HAA__;
+    Scalar cos__q_RH_HFE__;
+    Scalar cos__q_RH_KFE__;
     
     sin__q_RH_HAA__ = TRAIT::sin( jState(RH_HAA));
     sin__q_RH_HFE__ = TRAIT::sin( jState(RH_HFE));
@@ -408,7 +401,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_RH_lowerlegCOM& 
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LF_foot::Type_fr_trunk_J_fr_LF_foot()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LF_foot::Type_fr_trunk_J_fr_LF_foot()
 {
     (*this)(0,0) = - 1.0;
     (*this)(0,1) = 0;
@@ -419,13 +412,13 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LF_foot::Type_fr_trunk_J_fr_
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LF_foot& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LF_foot::update(const JState& jState) {
-    SCALAR sin__q_LF_HAA__;
-    SCALAR sin__q_LF_HFE__;
-    SCALAR sin__q_LF_KFE__;
-    SCALAR cos__q_LF_HAA__;
-    SCALAR cos__q_LF_HFE__;
-    SCALAR cos__q_LF_KFE__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LF_foot& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LF_foot::update(const JState& jState) {
+    Scalar sin__q_LF_HAA__;
+    Scalar sin__q_LF_HFE__;
+    Scalar sin__q_LF_KFE__;
+    Scalar cos__q_LF_HAA__;
+    Scalar cos__q_LF_HFE__;
+    Scalar cos__q_LF_KFE__;
     
     sin__q_LF_HAA__ = TRAIT::sin( jState(LF_HAA));
     sin__q_LF_HFE__ = TRAIT::sin( jState(LF_HFE));
@@ -449,7 +442,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LF_foot& iit:
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RF_foot::Type_fr_trunk_J_fr_RF_foot()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RF_foot::Type_fr_trunk_J_fr_RF_foot()
 {
     (*this)(0,0) = 1.0;
     (*this)(0,1) = 0;
@@ -460,13 +453,13 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RF_foot::Type_fr_trunk_J_fr_
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RF_foot& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RF_foot::update(const JState& jState) {
-    SCALAR sin__q_RF_HAA__;
-    SCALAR sin__q_RF_HFE__;
-    SCALAR sin__q_RF_KFE__;
-    SCALAR cos__q_RF_HAA__;
-    SCALAR cos__q_RF_HFE__;
-    SCALAR cos__q_RF_KFE__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RF_foot& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RF_foot::update(const JState& jState) {
+    Scalar sin__q_RF_HAA__;
+    Scalar sin__q_RF_HFE__;
+    Scalar sin__q_RF_KFE__;
+    Scalar cos__q_RF_HAA__;
+    Scalar cos__q_RF_HFE__;
+    Scalar cos__q_RF_KFE__;
     
     sin__q_RF_HAA__ = TRAIT::sin( jState(RF_HAA));
     sin__q_RF_HFE__ = TRAIT::sin( jState(RF_HFE));
@@ -490,7 +483,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RF_foot& iit:
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LH_foot::Type_fr_trunk_J_fr_LH_foot()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LH_foot::Type_fr_trunk_J_fr_LH_foot()
 {
     (*this)(0,0) = - 1.0;
     (*this)(0,1) = 0;
@@ -501,13 +494,13 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LH_foot::Type_fr_trunk_J_fr_
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LH_foot& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LH_foot::update(const JState& jState) {
-    SCALAR sin__q_LH_HAA__;
-    SCALAR sin__q_LH_HFE__;
-    SCALAR sin__q_LH_KFE__;
-    SCALAR cos__q_LH_HAA__;
-    SCALAR cos__q_LH_HFE__;
-    SCALAR cos__q_LH_KFE__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LH_foot& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LH_foot::update(const JState& jState) {
+    Scalar sin__q_LH_HAA__;
+    Scalar sin__q_LH_HFE__;
+    Scalar sin__q_LH_KFE__;
+    Scalar cos__q_LH_HAA__;
+    Scalar cos__q_LH_HFE__;
+    Scalar cos__q_LH_KFE__;
     
     sin__q_LH_HAA__ = TRAIT::sin( jState(LH_HAA));
     sin__q_LH_HFE__ = TRAIT::sin( jState(LH_HFE));
@@ -531,7 +524,7 @@ const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_LH_foot& iit:
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RH_foot::Type_fr_trunk_J_fr_RH_foot()
+iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RH_foot::Type_fr_trunk_J_fr_RH_foot()
 {
     (*this)(0,0) = 1.0;
     (*this)(0,1) = 0;
@@ -542,13 +535,13 @@ iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RH_foot::Type_fr_trunk_J_fr_
 }
 
 template <typename TRAIT>
-const typename iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RH_foot& iit::HyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RH_foot::update(const JState& jState) {
-    SCALAR sin__q_RH_HAA__;
-    SCALAR sin__q_RH_HFE__;
-    SCALAR sin__q_RH_KFE__;
-    SCALAR cos__q_RH_HAA__;
-    SCALAR cos__q_RH_HFE__;
-    SCALAR cos__q_RH_KFE__;
+const typename iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RH_foot& iit::TestHyQ::tpl::Jacobians<TRAIT>::Type_fr_trunk_J_fr_RH_foot::update(const JState& jState) {
+    Scalar sin__q_RH_HAA__;
+    Scalar sin__q_RH_HFE__;
+    Scalar sin__q_RH_KFE__;
+    Scalar cos__q_RH_HAA__;
+    Scalar cos__q_RH_HFE__;
+    Scalar cos__q_RH_KFE__;
     
     sin__q_RH_HAA__ = TRAIT::sin( jState(RH_HAA));
     sin__q_RH_HFE__ = TRAIT::sin( jState(RH_HFE));

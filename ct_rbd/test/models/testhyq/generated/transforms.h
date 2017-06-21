@@ -1,15 +1,14 @@
-#ifndef HYQ_TRANSFORMS_H_
-#define HYQ_TRANSFORMS_H_
+#ifndef TESTHYQ_TRANSFORMS_H_
+#define TESTHYQ_TRANSFORMS_H_
 
 #include <Eigen/Dense>
 #include <iit/rbd/TransformsBase.h>
-#include <iit/rbd/traits/DoubleTrait.h>
 #include "declarations.h"
+#include <iit/rbd/traits/DoubleTrait.h>
 #include "kinematics_parameters.h"
 
 namespace iit {
-namespace HyQ {
-
+namespace TestHyQ {
 
 template<typename SCALAR, class M>
 class TransformMotion : public iit::rbd::SpatialTransformBase<tpl::JointState<SCALAR>, M> {
@@ -31,6 +30,7 @@ public:
 
 namespace tpl {
 
+
 /**
  * The class for the 6-by-6 coordinates transformation matrices for
  * spatial motion vectors.
@@ -38,618 +38,692 @@ namespace tpl {
 template <typename TRAIT>
 class MotionTransforms {
 public:
-	typedef typename TRAIT::Scalar SCALAR;
-
-	typedef JointState<SCALAR> JState;
-
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    typedef typename TRAIT::Scalar Scalar;
+
+    typedef JointState<Scalar> JState;
     class Dummy {};
-    typedef typename TransformMotion<SCALAR, Dummy>::MatrixType MatrixType;
+    typedef typename TransformMotion<Scalar, Dummy>::MatrixType MatrixType;
 public:
-    class Type_fr_trunk_X_fr_LF_hipassembly : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_LF_hipassembly>
+    class Type_fr_trunk_X_fr_LF_hipassembly : public TransformMotion<Scalar, Type_fr_trunk_X_fr_LF_hipassembly>
     {
     public:
-		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_hipassembly();
         const Type_fr_trunk_X_fr_LF_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_hipassembly : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_RF_hipassembly>
+    class Type_fr_trunk_X_fr_RF_hipassembly : public TransformMotion<Scalar, Type_fr_trunk_X_fr_RF_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_hipassembly();
         const Type_fr_trunk_X_fr_RF_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_hipassembly : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_LH_hipassembly>
+    class Type_fr_trunk_X_fr_LH_hipassembly : public TransformMotion<Scalar, Type_fr_trunk_X_fr_LH_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_hipassembly();
         const Type_fr_trunk_X_fr_LH_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_hipassembly : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_RH_hipassembly>
+    class Type_fr_trunk_X_fr_RH_hipassembly : public TransformMotion<Scalar, Type_fr_trunk_X_fr_RH_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_hipassembly();
         const Type_fr_trunk_X_fr_RH_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_upperleg : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_LF_upperleg>
+    class Type_fr_trunk_X_fr_LF_upperleg : public TransformMotion<Scalar, Type_fr_trunk_X_fr_LF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_upperleg();
         const Type_fr_trunk_X_fr_LF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_upperleg : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_RF_upperleg>
+    class Type_fr_trunk_X_fr_RF_upperleg : public TransformMotion<Scalar, Type_fr_trunk_X_fr_RF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_upperleg();
         const Type_fr_trunk_X_fr_RF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_upperleg : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_LH_upperleg>
+    class Type_fr_trunk_X_fr_LH_upperleg : public TransformMotion<Scalar, Type_fr_trunk_X_fr_LH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_upperleg();
         const Type_fr_trunk_X_fr_LH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_upperleg : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_RH_upperleg>
+    class Type_fr_trunk_X_fr_RH_upperleg : public TransformMotion<Scalar, Type_fr_trunk_X_fr_RH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_upperleg();
         const Type_fr_trunk_X_fr_RH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_lowerleg : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_LF_lowerleg>
+    class Type_fr_trunk_X_fr_LF_lowerleg : public TransformMotion<Scalar, Type_fr_trunk_X_fr_LF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_lowerleg();
         const Type_fr_trunk_X_fr_LF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_lowerleg : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_RF_lowerleg>
+    class Type_fr_trunk_X_fr_RF_lowerleg : public TransformMotion<Scalar, Type_fr_trunk_X_fr_RF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_lowerleg();
         const Type_fr_trunk_X_fr_RF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_lowerleg : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_LH_lowerleg>
+    class Type_fr_trunk_X_fr_LH_lowerleg : public TransformMotion<Scalar, Type_fr_trunk_X_fr_LH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_lowerleg();
         const Type_fr_trunk_X_fr_LH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_lowerleg : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_RH_lowerleg>
+    class Type_fr_trunk_X_fr_RH_lowerleg : public TransformMotion<Scalar, Type_fr_trunk_X_fr_RH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_lowerleg();
         const Type_fr_trunk_X_fr_RH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_hipassembly_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_LF_hipassembly_X_fr_trunk>
+    class Type_fr_LF_hipassembly_X_fr_trunk : public TransformMotion<Scalar, Type_fr_LF_hipassembly_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_hipassembly_X_fr_trunk();
         const Type_fr_LF_hipassembly_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_hipassembly_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_RF_hipassembly_X_fr_trunk>
+    class Type_fr_RF_hipassembly_X_fr_trunk : public TransformMotion<Scalar, Type_fr_RF_hipassembly_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_hipassembly_X_fr_trunk();
         const Type_fr_RF_hipassembly_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_hipassembly_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_LH_hipassembly_X_fr_trunk>
+    class Type_fr_LH_hipassembly_X_fr_trunk : public TransformMotion<Scalar, Type_fr_LH_hipassembly_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_hipassembly_X_fr_trunk();
         const Type_fr_LH_hipassembly_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_hipassembly_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_RH_hipassembly_X_fr_trunk>
+    class Type_fr_RH_hipassembly_X_fr_trunk : public TransformMotion<Scalar, Type_fr_RH_hipassembly_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_hipassembly_X_fr_trunk();
         const Type_fr_RH_hipassembly_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_upperleg_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_LF_upperleg_X_fr_trunk>
+    class Type_fr_LF_upperleg_X_fr_trunk : public TransformMotion<Scalar, Type_fr_LF_upperleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_upperleg_X_fr_trunk();
         const Type_fr_LF_upperleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_upperleg_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_RF_upperleg_X_fr_trunk>
+    class Type_fr_RF_upperleg_X_fr_trunk : public TransformMotion<Scalar, Type_fr_RF_upperleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_upperleg_X_fr_trunk();
         const Type_fr_RF_upperleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_upperleg_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_LH_upperleg_X_fr_trunk>
+    class Type_fr_LH_upperleg_X_fr_trunk : public TransformMotion<Scalar, Type_fr_LH_upperleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_upperleg_X_fr_trunk();
         const Type_fr_LH_upperleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_upperleg_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_RH_upperleg_X_fr_trunk>
+    class Type_fr_RH_upperleg_X_fr_trunk : public TransformMotion<Scalar, Type_fr_RH_upperleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_upperleg_X_fr_trunk();
         const Type_fr_RH_upperleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_lowerleg_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_LF_lowerleg_X_fr_trunk>
+    class Type_fr_LF_lowerleg_X_fr_trunk : public TransformMotion<Scalar, Type_fr_LF_lowerleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_lowerleg_X_fr_trunk();
         const Type_fr_LF_lowerleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_lowerleg_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_RF_lowerleg_X_fr_trunk>
+    class Type_fr_RF_lowerleg_X_fr_trunk : public TransformMotion<Scalar, Type_fr_RF_lowerleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_lowerleg_X_fr_trunk();
         const Type_fr_RF_lowerleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_lowerleg_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_LH_lowerleg_X_fr_trunk>
+    class Type_fr_LH_lowerleg_X_fr_trunk : public TransformMotion<Scalar, Type_fr_LH_lowerleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_lowerleg_X_fr_trunk();
         const Type_fr_LH_lowerleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_lowerleg_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_RH_lowerleg_X_fr_trunk>
+    class Type_fr_RH_lowerleg_X_fr_trunk : public TransformMotion<Scalar, Type_fr_RH_lowerleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_lowerleg_X_fr_trunk();
         const Type_fr_RH_lowerleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LF_hipassemblyCOM : public TransformMotion<SCALAR, Type_fr_trunk_X_LF_hipassemblyCOM>
+    class Type_fr_trunk_X_LF_hipassemblyCOM : public TransformMotion<Scalar, Type_fr_trunk_X_LF_hipassemblyCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LF_hipassemblyCOM();
         const Type_fr_trunk_X_LF_hipassemblyCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RF_hipassemblyCOM : public TransformMotion<SCALAR, Type_fr_trunk_X_RF_hipassemblyCOM>
+    class Type_fr_trunk_X_RF_hipassemblyCOM : public TransformMotion<Scalar, Type_fr_trunk_X_RF_hipassemblyCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RF_hipassemblyCOM();
         const Type_fr_trunk_X_RF_hipassemblyCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LH_hipassemblyCOM : public TransformMotion<SCALAR, Type_fr_trunk_X_LH_hipassemblyCOM>
+    class Type_fr_trunk_X_LH_hipassemblyCOM : public TransformMotion<Scalar, Type_fr_trunk_X_LH_hipassemblyCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LH_hipassemblyCOM();
         const Type_fr_trunk_X_LH_hipassemblyCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RH_hipassemblyCOM : public TransformMotion<SCALAR, Type_fr_trunk_X_RH_hipassemblyCOM>
+    class Type_fr_trunk_X_RH_hipassemblyCOM : public TransformMotion<Scalar, Type_fr_trunk_X_RH_hipassemblyCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RH_hipassemblyCOM();
         const Type_fr_trunk_X_RH_hipassemblyCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LF_upperlegCOM : public TransformMotion<SCALAR, Type_fr_trunk_X_LF_upperlegCOM>
+    class Type_fr_trunk_X_LF_upperlegCOM : public TransformMotion<Scalar, Type_fr_trunk_X_LF_upperlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LF_upperlegCOM();
         const Type_fr_trunk_X_LF_upperlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RF_upperlegCOM : public TransformMotion<SCALAR, Type_fr_trunk_X_RF_upperlegCOM>
+    class Type_fr_trunk_X_RF_upperlegCOM : public TransformMotion<Scalar, Type_fr_trunk_X_RF_upperlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RF_upperlegCOM();
         const Type_fr_trunk_X_RF_upperlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LH_upperlegCOM : public TransformMotion<SCALAR, Type_fr_trunk_X_LH_upperlegCOM>
+    class Type_fr_trunk_X_LH_upperlegCOM : public TransformMotion<Scalar, Type_fr_trunk_X_LH_upperlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LH_upperlegCOM();
         const Type_fr_trunk_X_LH_upperlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RH_upperlegCOM : public TransformMotion<SCALAR, Type_fr_trunk_X_RH_upperlegCOM>
+    class Type_fr_trunk_X_RH_upperlegCOM : public TransformMotion<Scalar, Type_fr_trunk_X_RH_upperlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RH_upperlegCOM();
         const Type_fr_trunk_X_RH_upperlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LF_lowerlegCOM : public TransformMotion<SCALAR, Type_fr_trunk_X_LF_lowerlegCOM>
+    class Type_fr_trunk_X_LF_lowerlegCOM : public TransformMotion<Scalar, Type_fr_trunk_X_LF_lowerlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LF_lowerlegCOM();
         const Type_fr_trunk_X_LF_lowerlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RF_lowerlegCOM : public TransformMotion<SCALAR, Type_fr_trunk_X_RF_lowerlegCOM>
+    class Type_fr_trunk_X_RF_lowerlegCOM : public TransformMotion<Scalar, Type_fr_trunk_X_RF_lowerlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RF_lowerlegCOM();
         const Type_fr_trunk_X_RF_lowerlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LH_lowerlegCOM : public TransformMotion<SCALAR, Type_fr_trunk_X_LH_lowerlegCOM>
+    class Type_fr_trunk_X_LH_lowerlegCOM : public TransformMotion<Scalar, Type_fr_trunk_X_LH_lowerlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LH_lowerlegCOM();
         const Type_fr_trunk_X_LH_lowerlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RH_lowerlegCOM : public TransformMotion<SCALAR, Type_fr_trunk_X_RH_lowerlegCOM>
+    class Type_fr_trunk_X_RH_lowerlegCOM : public TransformMotion<Scalar, Type_fr_trunk_X_RH_lowerlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RH_lowerlegCOM();
         const Type_fr_trunk_X_RH_lowerlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_foot_X_fr_LF_lowerleg : public TransformMotion<SCALAR, Type_fr_LF_foot_X_fr_LF_lowerleg>
+    class Type_fr_LF_foot_X_fr_LF_lowerleg : public TransformMotion<Scalar, Type_fr_LF_foot_X_fr_LF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_foot_X_fr_LF_lowerleg();
         const Type_fr_LF_foot_X_fr_LF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_foot_X_fr_RF_lowerleg : public TransformMotion<SCALAR, Type_fr_RF_foot_X_fr_RF_lowerleg>
+    class Type_fr_RF_foot_X_fr_RF_lowerleg : public TransformMotion<Scalar, Type_fr_RF_foot_X_fr_RF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_foot_X_fr_RF_lowerleg();
         const Type_fr_RF_foot_X_fr_RF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_foot_X_fr_LH_lowerleg : public TransformMotion<SCALAR, Type_fr_LH_foot_X_fr_LH_lowerleg>
+    class Type_fr_LH_foot_X_fr_LH_lowerleg : public TransformMotion<Scalar, Type_fr_LH_foot_X_fr_LH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_foot_X_fr_LH_lowerleg();
         const Type_fr_LH_foot_X_fr_LH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_foot_X_fr_RH_lowerleg : public TransformMotion<SCALAR, Type_fr_RH_foot_X_fr_RH_lowerleg>
+    class Type_fr_RH_foot_X_fr_RH_lowerleg : public TransformMotion<Scalar, Type_fr_RH_foot_X_fr_RH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_foot_X_fr_RH_lowerleg();
         const Type_fr_RH_foot_X_fr_RH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_foot : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_LF_foot>
+    class Type_fr_trunk_X_fr_LF_foot : public TransformMotion<Scalar, Type_fr_trunk_X_fr_LF_foot>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_foot();
         const Type_fr_trunk_X_fr_LF_foot& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_foot : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_RF_foot>
+    class Type_fr_trunk_X_fr_RF_foot : public TransformMotion<Scalar, Type_fr_trunk_X_fr_RF_foot>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_foot();
         const Type_fr_trunk_X_fr_RF_foot& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_foot : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_LH_foot>
+    class Type_fr_trunk_X_fr_LH_foot : public TransformMotion<Scalar, Type_fr_trunk_X_fr_LH_foot>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_foot();
         const Type_fr_trunk_X_fr_LH_foot& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_foot : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_RH_foot>
+    class Type_fr_trunk_X_fr_RH_foot : public TransformMotion<Scalar, Type_fr_trunk_X_fr_RH_foot>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_foot();
         const Type_fr_trunk_X_fr_RH_foot& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_foot_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_LF_foot_X_fr_trunk>
+    class Type_fr_LF_foot_X_fr_trunk : public TransformMotion<Scalar, Type_fr_LF_foot_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_foot_X_fr_trunk();
         const Type_fr_LF_foot_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_foot_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_RF_foot_X_fr_trunk>
+    class Type_fr_RF_foot_X_fr_trunk : public TransformMotion<Scalar, Type_fr_RF_foot_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_foot_X_fr_trunk();
         const Type_fr_RF_foot_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_foot_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_LH_foot_X_fr_trunk>
+    class Type_fr_LH_foot_X_fr_trunk : public TransformMotion<Scalar, Type_fr_LH_foot_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_foot_X_fr_trunk();
         const Type_fr_LH_foot_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_foot_X_fr_trunk : public TransformMotion<SCALAR, Type_fr_RH_foot_X_fr_trunk>
+    class Type_fr_RH_foot_X_fr_trunk : public TransformMotion<Scalar, Type_fr_RH_foot_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_foot_X_fr_trunk();
         const Type_fr_RH_foot_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_HAA : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_LF_HAA>
+    class Type_fr_trunk_X_fr_LF_HAA : public TransformMotion<Scalar, Type_fr_trunk_X_fr_LF_HAA>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_HAA();
         const Type_fr_trunk_X_fr_LF_HAA& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_HAA : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_RF_HAA>
+    class Type_fr_trunk_X_fr_RF_HAA : public TransformMotion<Scalar, Type_fr_trunk_X_fr_RF_HAA>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_HAA();
         const Type_fr_trunk_X_fr_RF_HAA& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_HAA : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_LH_HAA>
+    class Type_fr_trunk_X_fr_LH_HAA : public TransformMotion<Scalar, Type_fr_trunk_X_fr_LH_HAA>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_HAA();
         const Type_fr_trunk_X_fr_LH_HAA& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_HAA : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_RH_HAA>
+    class Type_fr_trunk_X_fr_RH_HAA : public TransformMotion<Scalar, Type_fr_trunk_X_fr_RH_HAA>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_HAA();
         const Type_fr_trunk_X_fr_RH_HAA& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_HFE : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_LF_HFE>
+    class Type_fr_trunk_X_fr_LF_HFE : public TransformMotion<Scalar, Type_fr_trunk_X_fr_LF_HFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_HFE();
         const Type_fr_trunk_X_fr_LF_HFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_HFE : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_RF_HFE>
+    class Type_fr_trunk_X_fr_RF_HFE : public TransformMotion<Scalar, Type_fr_trunk_X_fr_RF_HFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_HFE();
         const Type_fr_trunk_X_fr_RF_HFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_HFE : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_LH_HFE>
+    class Type_fr_trunk_X_fr_LH_HFE : public TransformMotion<Scalar, Type_fr_trunk_X_fr_LH_HFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_HFE();
         const Type_fr_trunk_X_fr_LH_HFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_HFE : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_RH_HFE>
+    class Type_fr_trunk_X_fr_RH_HFE : public TransformMotion<Scalar, Type_fr_trunk_X_fr_RH_HFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_HFE();
         const Type_fr_trunk_X_fr_RH_HFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_KFE : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_LF_KFE>
+    class Type_fr_trunk_X_fr_LF_KFE : public TransformMotion<Scalar, Type_fr_trunk_X_fr_LF_KFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_KFE();
         const Type_fr_trunk_X_fr_LF_KFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_KFE : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_RF_KFE>
+    class Type_fr_trunk_X_fr_RF_KFE : public TransformMotion<Scalar, Type_fr_trunk_X_fr_RF_KFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_KFE();
         const Type_fr_trunk_X_fr_RF_KFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_KFE : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_LH_KFE>
+    class Type_fr_trunk_X_fr_LH_KFE : public TransformMotion<Scalar, Type_fr_trunk_X_fr_LH_KFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_KFE();
         const Type_fr_trunk_X_fr_LH_KFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_KFE : public TransformMotion<SCALAR, Type_fr_trunk_X_fr_RH_KFE>
+    class Type_fr_trunk_X_fr_RH_KFE : public TransformMotion<Scalar, Type_fr_trunk_X_fr_RH_KFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_KFE();
         const Type_fr_trunk_X_fr_RH_KFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_upperleg_X_fr_LF_hipassembly : public TransformMotion<SCALAR, Type_fr_LF_upperleg_X_fr_LF_hipassembly>
+    class Type_fr_LF_upperleg_X_fr_LF_hipassembly : public TransformMotion<Scalar, Type_fr_LF_upperleg_X_fr_LF_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_upperleg_X_fr_LF_hipassembly();
         const Type_fr_LF_upperleg_X_fr_LF_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_hipassembly_X_fr_LF_upperleg : public TransformMotion<SCALAR, Type_fr_LF_hipassembly_X_fr_LF_upperleg>
+    class Type_fr_LF_hipassembly_X_fr_LF_upperleg : public TransformMotion<Scalar, Type_fr_LF_hipassembly_X_fr_LF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_hipassembly_X_fr_LF_upperleg();
         const Type_fr_LF_hipassembly_X_fr_LF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_lowerleg_X_fr_LF_upperleg : public TransformMotion<SCALAR, Type_fr_LF_lowerleg_X_fr_LF_upperleg>
+    class Type_fr_LF_lowerleg_X_fr_LF_upperleg : public TransformMotion<Scalar, Type_fr_LF_lowerleg_X_fr_LF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_lowerleg_X_fr_LF_upperleg();
         const Type_fr_LF_lowerleg_X_fr_LF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_upperleg_X_fr_LF_lowerleg : public TransformMotion<SCALAR, Type_fr_LF_upperleg_X_fr_LF_lowerleg>
+    class Type_fr_LF_upperleg_X_fr_LF_lowerleg : public TransformMotion<Scalar, Type_fr_LF_upperleg_X_fr_LF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_upperleg_X_fr_LF_lowerleg();
         const Type_fr_LF_upperleg_X_fr_LF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_upperleg_X_fr_RF_hipassembly : public TransformMotion<SCALAR, Type_fr_RF_upperleg_X_fr_RF_hipassembly>
+    class Type_fr_RF_upperleg_X_fr_RF_hipassembly : public TransformMotion<Scalar, Type_fr_RF_upperleg_X_fr_RF_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_upperleg_X_fr_RF_hipassembly();
         const Type_fr_RF_upperleg_X_fr_RF_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_hipassembly_X_fr_RF_upperleg : public TransformMotion<SCALAR, Type_fr_RF_hipassembly_X_fr_RF_upperleg>
+    class Type_fr_RF_hipassembly_X_fr_RF_upperleg : public TransformMotion<Scalar, Type_fr_RF_hipassembly_X_fr_RF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_hipassembly_X_fr_RF_upperleg();
         const Type_fr_RF_hipassembly_X_fr_RF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_lowerleg_X_fr_RF_upperleg : public TransformMotion<SCALAR, Type_fr_RF_lowerleg_X_fr_RF_upperleg>
+    class Type_fr_RF_lowerleg_X_fr_RF_upperleg : public TransformMotion<Scalar, Type_fr_RF_lowerleg_X_fr_RF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_lowerleg_X_fr_RF_upperleg();
         const Type_fr_RF_lowerleg_X_fr_RF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_upperleg_X_fr_RF_lowerleg : public TransformMotion<SCALAR, Type_fr_RF_upperleg_X_fr_RF_lowerleg>
+    class Type_fr_RF_upperleg_X_fr_RF_lowerleg : public TransformMotion<Scalar, Type_fr_RF_upperleg_X_fr_RF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_upperleg_X_fr_RF_lowerleg();
         const Type_fr_RF_upperleg_X_fr_RF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_upperleg_X_fr_LH_hipassembly : public TransformMotion<SCALAR, Type_fr_LH_upperleg_X_fr_LH_hipassembly>
+    class Type_fr_LH_upperleg_X_fr_LH_hipassembly : public TransformMotion<Scalar, Type_fr_LH_upperleg_X_fr_LH_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_upperleg_X_fr_LH_hipassembly();
         const Type_fr_LH_upperleg_X_fr_LH_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_hipassembly_X_fr_LH_upperleg : public TransformMotion<SCALAR, Type_fr_LH_hipassembly_X_fr_LH_upperleg>
+    class Type_fr_LH_hipassembly_X_fr_LH_upperleg : public TransformMotion<Scalar, Type_fr_LH_hipassembly_X_fr_LH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_hipassembly_X_fr_LH_upperleg();
         const Type_fr_LH_hipassembly_X_fr_LH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_lowerleg_X_fr_LH_upperleg : public TransformMotion<SCALAR, Type_fr_LH_lowerleg_X_fr_LH_upperleg>
+    class Type_fr_LH_lowerleg_X_fr_LH_upperleg : public TransformMotion<Scalar, Type_fr_LH_lowerleg_X_fr_LH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_lowerleg_X_fr_LH_upperleg();
         const Type_fr_LH_lowerleg_X_fr_LH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_upperleg_X_fr_LH_lowerleg : public TransformMotion<SCALAR, Type_fr_LH_upperleg_X_fr_LH_lowerleg>
+    class Type_fr_LH_upperleg_X_fr_LH_lowerleg : public TransformMotion<Scalar, Type_fr_LH_upperleg_X_fr_LH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_upperleg_X_fr_LH_lowerleg();
         const Type_fr_LH_upperleg_X_fr_LH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_upperleg_X_fr_RH_hipassembly : public TransformMotion<SCALAR, Type_fr_RH_upperleg_X_fr_RH_hipassembly>
+    class Type_fr_RH_upperleg_X_fr_RH_hipassembly : public TransformMotion<Scalar, Type_fr_RH_upperleg_X_fr_RH_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_upperleg_X_fr_RH_hipassembly();
         const Type_fr_RH_upperleg_X_fr_RH_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_hipassembly_X_fr_RH_upperleg : public TransformMotion<SCALAR, Type_fr_RH_hipassembly_X_fr_RH_upperleg>
+    class Type_fr_RH_hipassembly_X_fr_RH_upperleg : public TransformMotion<Scalar, Type_fr_RH_hipassembly_X_fr_RH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_hipassembly_X_fr_RH_upperleg();
         const Type_fr_RH_hipassembly_X_fr_RH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_lowerleg_X_fr_RH_upperleg : public TransformMotion<SCALAR, Type_fr_RH_lowerleg_X_fr_RH_upperleg>
+    class Type_fr_RH_lowerleg_X_fr_RH_upperleg : public TransformMotion<Scalar, Type_fr_RH_lowerleg_X_fr_RH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_lowerleg_X_fr_RH_upperleg();
         const Type_fr_RH_lowerleg_X_fr_RH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_upperleg_X_fr_RH_lowerleg : public TransformMotion<SCALAR, Type_fr_RH_upperleg_X_fr_RH_lowerleg>
+    class Type_fr_RH_upperleg_X_fr_RH_lowerleg : public TransformMotion<Scalar, Type_fr_RH_upperleg_X_fr_RH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_upperleg_X_fr_RH_lowerleg();
         const Type_fr_RH_upperleg_X_fr_RH_lowerleg& update(const JState&);
     protected:
@@ -746,618 +820,692 @@ protected:
 template <typename TRAIT>
 class ForceTransforms {
 public:
-	typedef typename TRAIT::Scalar SCALAR;
-
-	typedef JointState<SCALAR> JState;
-
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    typedef typename TRAIT::Scalar Scalar;
 
+    typedef JointState<Scalar> JState;
     class Dummy {};
-    typedef typename TransformForce<SCALAR, Dummy>::MatrixType MatrixType;
+    typedef typename TransformForce<Scalar, Dummy>::MatrixType MatrixType;
 public:
-    class Type_fr_trunk_X_fr_LF_hipassembly : public TransformForce<SCALAR, Type_fr_trunk_X_fr_LF_hipassembly>
+    class Type_fr_trunk_X_fr_LF_hipassembly : public TransformForce<Scalar, Type_fr_trunk_X_fr_LF_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_hipassembly();
         const Type_fr_trunk_X_fr_LF_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_hipassembly : public TransformForce<SCALAR, Type_fr_trunk_X_fr_RF_hipassembly>
+    class Type_fr_trunk_X_fr_RF_hipassembly : public TransformForce<Scalar, Type_fr_trunk_X_fr_RF_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_hipassembly();
         const Type_fr_trunk_X_fr_RF_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_hipassembly : public TransformForce<SCALAR, Type_fr_trunk_X_fr_LH_hipassembly>
+    class Type_fr_trunk_X_fr_LH_hipassembly : public TransformForce<Scalar, Type_fr_trunk_X_fr_LH_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_hipassembly();
         const Type_fr_trunk_X_fr_LH_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_hipassembly : public TransformForce<SCALAR, Type_fr_trunk_X_fr_RH_hipassembly>
+    class Type_fr_trunk_X_fr_RH_hipassembly : public TransformForce<Scalar, Type_fr_trunk_X_fr_RH_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_hipassembly();
         const Type_fr_trunk_X_fr_RH_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_upperleg : public TransformForce<SCALAR, Type_fr_trunk_X_fr_LF_upperleg>
+    class Type_fr_trunk_X_fr_LF_upperleg : public TransformForce<Scalar, Type_fr_trunk_X_fr_LF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_upperleg();
         const Type_fr_trunk_X_fr_LF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_upperleg : public TransformForce<SCALAR, Type_fr_trunk_X_fr_RF_upperleg>
+    class Type_fr_trunk_X_fr_RF_upperleg : public TransformForce<Scalar, Type_fr_trunk_X_fr_RF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_upperleg();
         const Type_fr_trunk_X_fr_RF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_upperleg : public TransformForce<SCALAR, Type_fr_trunk_X_fr_LH_upperleg>
+    class Type_fr_trunk_X_fr_LH_upperleg : public TransformForce<Scalar, Type_fr_trunk_X_fr_LH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_upperleg();
         const Type_fr_trunk_X_fr_LH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_upperleg : public TransformForce<SCALAR, Type_fr_trunk_X_fr_RH_upperleg>
+    class Type_fr_trunk_X_fr_RH_upperleg : public TransformForce<Scalar, Type_fr_trunk_X_fr_RH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_upperleg();
         const Type_fr_trunk_X_fr_RH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_lowerleg : public TransformForce<SCALAR, Type_fr_trunk_X_fr_LF_lowerleg>
+    class Type_fr_trunk_X_fr_LF_lowerleg : public TransformForce<Scalar, Type_fr_trunk_X_fr_LF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_lowerleg();
         const Type_fr_trunk_X_fr_LF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_lowerleg : public TransformForce<SCALAR, Type_fr_trunk_X_fr_RF_lowerleg>
+    class Type_fr_trunk_X_fr_RF_lowerleg : public TransformForce<Scalar, Type_fr_trunk_X_fr_RF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_lowerleg();
         const Type_fr_trunk_X_fr_RF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_lowerleg : public TransformForce<SCALAR, Type_fr_trunk_X_fr_LH_lowerleg>
+    class Type_fr_trunk_X_fr_LH_lowerleg : public TransformForce<Scalar, Type_fr_trunk_X_fr_LH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_lowerleg();
         const Type_fr_trunk_X_fr_LH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_lowerleg : public TransformForce<SCALAR, Type_fr_trunk_X_fr_RH_lowerleg>
+    class Type_fr_trunk_X_fr_RH_lowerleg : public TransformForce<Scalar, Type_fr_trunk_X_fr_RH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_lowerleg();
         const Type_fr_trunk_X_fr_RH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_hipassembly_X_fr_trunk : public TransformForce<SCALAR, Type_fr_LF_hipassembly_X_fr_trunk>
+    class Type_fr_LF_hipassembly_X_fr_trunk : public TransformForce<Scalar, Type_fr_LF_hipassembly_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_hipassembly_X_fr_trunk();
         const Type_fr_LF_hipassembly_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_hipassembly_X_fr_trunk : public TransformForce<SCALAR, Type_fr_RF_hipassembly_X_fr_trunk>
+    class Type_fr_RF_hipassembly_X_fr_trunk : public TransformForce<Scalar, Type_fr_RF_hipassembly_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_hipassembly_X_fr_trunk();
         const Type_fr_RF_hipassembly_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_hipassembly_X_fr_trunk : public TransformForce<SCALAR, Type_fr_LH_hipassembly_X_fr_trunk>
+    class Type_fr_LH_hipassembly_X_fr_trunk : public TransformForce<Scalar, Type_fr_LH_hipassembly_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_hipassembly_X_fr_trunk();
         const Type_fr_LH_hipassembly_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_hipassembly_X_fr_trunk : public TransformForce<SCALAR, Type_fr_RH_hipassembly_X_fr_trunk>
+    class Type_fr_RH_hipassembly_X_fr_trunk : public TransformForce<Scalar, Type_fr_RH_hipassembly_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_hipassembly_X_fr_trunk();
         const Type_fr_RH_hipassembly_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_upperleg_X_fr_trunk : public TransformForce<SCALAR, Type_fr_LF_upperleg_X_fr_trunk>
+    class Type_fr_LF_upperleg_X_fr_trunk : public TransformForce<Scalar, Type_fr_LF_upperleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_upperleg_X_fr_trunk();
         const Type_fr_LF_upperleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_upperleg_X_fr_trunk : public TransformForce<SCALAR, Type_fr_RF_upperleg_X_fr_trunk>
+    class Type_fr_RF_upperleg_X_fr_trunk : public TransformForce<Scalar, Type_fr_RF_upperleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_upperleg_X_fr_trunk();
         const Type_fr_RF_upperleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_upperleg_X_fr_trunk : public TransformForce<SCALAR, Type_fr_LH_upperleg_X_fr_trunk>
+    class Type_fr_LH_upperleg_X_fr_trunk : public TransformForce<Scalar, Type_fr_LH_upperleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_upperleg_X_fr_trunk();
         const Type_fr_LH_upperleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_upperleg_X_fr_trunk : public TransformForce<SCALAR, Type_fr_RH_upperleg_X_fr_trunk>
+    class Type_fr_RH_upperleg_X_fr_trunk : public TransformForce<Scalar, Type_fr_RH_upperleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_upperleg_X_fr_trunk();
         const Type_fr_RH_upperleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_lowerleg_X_fr_trunk : public TransformForce<SCALAR, Type_fr_LF_lowerleg_X_fr_trunk>
+    class Type_fr_LF_lowerleg_X_fr_trunk : public TransformForce<Scalar, Type_fr_LF_lowerleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_lowerleg_X_fr_trunk();
         const Type_fr_LF_lowerleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_lowerleg_X_fr_trunk : public TransformForce<SCALAR, Type_fr_RF_lowerleg_X_fr_trunk>
+    class Type_fr_RF_lowerleg_X_fr_trunk : public TransformForce<Scalar, Type_fr_RF_lowerleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_lowerleg_X_fr_trunk();
         const Type_fr_RF_lowerleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_lowerleg_X_fr_trunk : public TransformForce<SCALAR, Type_fr_LH_lowerleg_X_fr_trunk>
+    class Type_fr_LH_lowerleg_X_fr_trunk : public TransformForce<Scalar, Type_fr_LH_lowerleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_lowerleg_X_fr_trunk();
         const Type_fr_LH_lowerleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_lowerleg_X_fr_trunk : public TransformForce<SCALAR, Type_fr_RH_lowerleg_X_fr_trunk>
+    class Type_fr_RH_lowerleg_X_fr_trunk : public TransformForce<Scalar, Type_fr_RH_lowerleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_lowerleg_X_fr_trunk();
         const Type_fr_RH_lowerleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LF_hipassemblyCOM : public TransformForce<SCALAR, Type_fr_trunk_X_LF_hipassemblyCOM>
+    class Type_fr_trunk_X_LF_hipassemblyCOM : public TransformForce<Scalar, Type_fr_trunk_X_LF_hipassemblyCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LF_hipassemblyCOM();
         const Type_fr_trunk_X_LF_hipassemblyCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RF_hipassemblyCOM : public TransformForce<SCALAR, Type_fr_trunk_X_RF_hipassemblyCOM>
+    class Type_fr_trunk_X_RF_hipassemblyCOM : public TransformForce<Scalar, Type_fr_trunk_X_RF_hipassemblyCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RF_hipassemblyCOM();
         const Type_fr_trunk_X_RF_hipassemblyCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LH_hipassemblyCOM : public TransformForce<SCALAR, Type_fr_trunk_X_LH_hipassemblyCOM>
+    class Type_fr_trunk_X_LH_hipassemblyCOM : public TransformForce<Scalar, Type_fr_trunk_X_LH_hipassemblyCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LH_hipassemblyCOM();
         const Type_fr_trunk_X_LH_hipassemblyCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RH_hipassemblyCOM : public TransformForce<SCALAR, Type_fr_trunk_X_RH_hipassemblyCOM>
+    class Type_fr_trunk_X_RH_hipassemblyCOM : public TransformForce<Scalar, Type_fr_trunk_X_RH_hipassemblyCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RH_hipassemblyCOM();
         const Type_fr_trunk_X_RH_hipassemblyCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LF_upperlegCOM : public TransformForce<SCALAR, Type_fr_trunk_X_LF_upperlegCOM>
+    class Type_fr_trunk_X_LF_upperlegCOM : public TransformForce<Scalar, Type_fr_trunk_X_LF_upperlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LF_upperlegCOM();
         const Type_fr_trunk_X_LF_upperlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RF_upperlegCOM : public TransformForce<SCALAR, Type_fr_trunk_X_RF_upperlegCOM>
+    class Type_fr_trunk_X_RF_upperlegCOM : public TransformForce<Scalar, Type_fr_trunk_X_RF_upperlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RF_upperlegCOM();
         const Type_fr_trunk_X_RF_upperlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LH_upperlegCOM : public TransformForce<SCALAR, Type_fr_trunk_X_LH_upperlegCOM>
+    class Type_fr_trunk_X_LH_upperlegCOM : public TransformForce<Scalar, Type_fr_trunk_X_LH_upperlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LH_upperlegCOM();
         const Type_fr_trunk_X_LH_upperlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RH_upperlegCOM : public TransformForce<SCALAR, Type_fr_trunk_X_RH_upperlegCOM>
+    class Type_fr_trunk_X_RH_upperlegCOM : public TransformForce<Scalar, Type_fr_trunk_X_RH_upperlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RH_upperlegCOM();
         const Type_fr_trunk_X_RH_upperlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LF_lowerlegCOM : public TransformForce<SCALAR, Type_fr_trunk_X_LF_lowerlegCOM>
+    class Type_fr_trunk_X_LF_lowerlegCOM : public TransformForce<Scalar, Type_fr_trunk_X_LF_lowerlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LF_lowerlegCOM();
         const Type_fr_trunk_X_LF_lowerlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RF_lowerlegCOM : public TransformForce<SCALAR, Type_fr_trunk_X_RF_lowerlegCOM>
+    class Type_fr_trunk_X_RF_lowerlegCOM : public TransformForce<Scalar, Type_fr_trunk_X_RF_lowerlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RF_lowerlegCOM();
         const Type_fr_trunk_X_RF_lowerlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LH_lowerlegCOM : public TransformForce<SCALAR, Type_fr_trunk_X_LH_lowerlegCOM>
+    class Type_fr_trunk_X_LH_lowerlegCOM : public TransformForce<Scalar, Type_fr_trunk_X_LH_lowerlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LH_lowerlegCOM();
         const Type_fr_trunk_X_LH_lowerlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RH_lowerlegCOM : public TransformForce<SCALAR, Type_fr_trunk_X_RH_lowerlegCOM>
+    class Type_fr_trunk_X_RH_lowerlegCOM : public TransformForce<Scalar, Type_fr_trunk_X_RH_lowerlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RH_lowerlegCOM();
         const Type_fr_trunk_X_RH_lowerlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_foot_X_fr_LF_lowerleg : public TransformForce<SCALAR, Type_fr_LF_foot_X_fr_LF_lowerleg>
+    class Type_fr_LF_foot_X_fr_LF_lowerleg : public TransformForce<Scalar, Type_fr_LF_foot_X_fr_LF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_foot_X_fr_LF_lowerleg();
         const Type_fr_LF_foot_X_fr_LF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_foot_X_fr_RF_lowerleg : public TransformForce<SCALAR, Type_fr_RF_foot_X_fr_RF_lowerleg>
+    class Type_fr_RF_foot_X_fr_RF_lowerleg : public TransformForce<Scalar, Type_fr_RF_foot_X_fr_RF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_foot_X_fr_RF_lowerleg();
         const Type_fr_RF_foot_X_fr_RF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_foot_X_fr_LH_lowerleg : public TransformForce<SCALAR, Type_fr_LH_foot_X_fr_LH_lowerleg>
+    class Type_fr_LH_foot_X_fr_LH_lowerleg : public TransformForce<Scalar, Type_fr_LH_foot_X_fr_LH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_foot_X_fr_LH_lowerleg();
         const Type_fr_LH_foot_X_fr_LH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_foot_X_fr_RH_lowerleg : public TransformForce<SCALAR, Type_fr_RH_foot_X_fr_RH_lowerleg>
+    class Type_fr_RH_foot_X_fr_RH_lowerleg : public TransformForce<Scalar, Type_fr_RH_foot_X_fr_RH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_foot_X_fr_RH_lowerleg();
         const Type_fr_RH_foot_X_fr_RH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_foot : public TransformForce<SCALAR, Type_fr_trunk_X_fr_LF_foot>
+    class Type_fr_trunk_X_fr_LF_foot : public TransformForce<Scalar, Type_fr_trunk_X_fr_LF_foot>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_foot();
         const Type_fr_trunk_X_fr_LF_foot& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_foot : public TransformForce<SCALAR, Type_fr_trunk_X_fr_RF_foot>
+    class Type_fr_trunk_X_fr_RF_foot : public TransformForce<Scalar, Type_fr_trunk_X_fr_RF_foot>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_foot();
         const Type_fr_trunk_X_fr_RF_foot& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_foot : public TransformForce<SCALAR, Type_fr_trunk_X_fr_LH_foot>
+    class Type_fr_trunk_X_fr_LH_foot : public TransformForce<Scalar, Type_fr_trunk_X_fr_LH_foot>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_foot();
         const Type_fr_trunk_X_fr_LH_foot& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_foot : public TransformForce<SCALAR, Type_fr_trunk_X_fr_RH_foot>
+    class Type_fr_trunk_X_fr_RH_foot : public TransformForce<Scalar, Type_fr_trunk_X_fr_RH_foot>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_foot();
         const Type_fr_trunk_X_fr_RH_foot& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_foot_X_fr_trunk : public TransformForce<SCALAR, Type_fr_LF_foot_X_fr_trunk>
+    class Type_fr_LF_foot_X_fr_trunk : public TransformForce<Scalar, Type_fr_LF_foot_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_foot_X_fr_trunk();
         const Type_fr_LF_foot_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_foot_X_fr_trunk : public TransformForce<SCALAR, Type_fr_RF_foot_X_fr_trunk>
+    class Type_fr_RF_foot_X_fr_trunk : public TransformForce<Scalar, Type_fr_RF_foot_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_foot_X_fr_trunk();
         const Type_fr_RF_foot_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_foot_X_fr_trunk : public TransformForce<SCALAR, Type_fr_LH_foot_X_fr_trunk>
+    class Type_fr_LH_foot_X_fr_trunk : public TransformForce<Scalar, Type_fr_LH_foot_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_foot_X_fr_trunk();
         const Type_fr_LH_foot_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_foot_X_fr_trunk : public TransformForce<SCALAR, Type_fr_RH_foot_X_fr_trunk>
+    class Type_fr_RH_foot_X_fr_trunk : public TransformForce<Scalar, Type_fr_RH_foot_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_foot_X_fr_trunk();
         const Type_fr_RH_foot_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_HAA : public TransformForce<SCALAR, Type_fr_trunk_X_fr_LF_HAA>
+    class Type_fr_trunk_X_fr_LF_HAA : public TransformForce<Scalar, Type_fr_trunk_X_fr_LF_HAA>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_HAA();
         const Type_fr_trunk_X_fr_LF_HAA& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_HAA : public TransformForce<SCALAR, Type_fr_trunk_X_fr_RF_HAA>
+    class Type_fr_trunk_X_fr_RF_HAA : public TransformForce<Scalar, Type_fr_trunk_X_fr_RF_HAA>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_HAA();
         const Type_fr_trunk_X_fr_RF_HAA& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_HAA : public TransformForce<SCALAR, Type_fr_trunk_X_fr_LH_HAA>
+    class Type_fr_trunk_X_fr_LH_HAA : public TransformForce<Scalar, Type_fr_trunk_X_fr_LH_HAA>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_HAA();
         const Type_fr_trunk_X_fr_LH_HAA& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_HAA : public TransformForce<SCALAR, Type_fr_trunk_X_fr_RH_HAA>
+    class Type_fr_trunk_X_fr_RH_HAA : public TransformForce<Scalar, Type_fr_trunk_X_fr_RH_HAA>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_HAA();
         const Type_fr_trunk_X_fr_RH_HAA& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_HFE : public TransformForce<SCALAR, Type_fr_trunk_X_fr_LF_HFE>
+    class Type_fr_trunk_X_fr_LF_HFE : public TransformForce<Scalar, Type_fr_trunk_X_fr_LF_HFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_HFE();
         const Type_fr_trunk_X_fr_LF_HFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_HFE : public TransformForce<SCALAR, Type_fr_trunk_X_fr_RF_HFE>
+    class Type_fr_trunk_X_fr_RF_HFE : public TransformForce<Scalar, Type_fr_trunk_X_fr_RF_HFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_HFE();
         const Type_fr_trunk_X_fr_RF_HFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_HFE : public TransformForce<SCALAR, Type_fr_trunk_X_fr_LH_HFE>
+    class Type_fr_trunk_X_fr_LH_HFE : public TransformForce<Scalar, Type_fr_trunk_X_fr_LH_HFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_HFE();
         const Type_fr_trunk_X_fr_LH_HFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_HFE : public TransformForce<SCALAR, Type_fr_trunk_X_fr_RH_HFE>
+    class Type_fr_trunk_X_fr_RH_HFE : public TransformForce<Scalar, Type_fr_trunk_X_fr_RH_HFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_HFE();
         const Type_fr_trunk_X_fr_RH_HFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_KFE : public TransformForce<SCALAR, Type_fr_trunk_X_fr_LF_KFE>
+    class Type_fr_trunk_X_fr_LF_KFE : public TransformForce<Scalar, Type_fr_trunk_X_fr_LF_KFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_KFE();
         const Type_fr_trunk_X_fr_LF_KFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_KFE : public TransformForce<SCALAR, Type_fr_trunk_X_fr_RF_KFE>
+    class Type_fr_trunk_X_fr_RF_KFE : public TransformForce<Scalar, Type_fr_trunk_X_fr_RF_KFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_KFE();
         const Type_fr_trunk_X_fr_RF_KFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_KFE : public TransformForce<SCALAR, Type_fr_trunk_X_fr_LH_KFE>
+    class Type_fr_trunk_X_fr_LH_KFE : public TransformForce<Scalar, Type_fr_trunk_X_fr_LH_KFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_KFE();
         const Type_fr_trunk_X_fr_LH_KFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_KFE : public TransformForce<SCALAR, Type_fr_trunk_X_fr_RH_KFE>
+    class Type_fr_trunk_X_fr_RH_KFE : public TransformForce<Scalar, Type_fr_trunk_X_fr_RH_KFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_KFE();
         const Type_fr_trunk_X_fr_RH_KFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_upperleg_X_fr_LF_hipassembly : public TransformForce<SCALAR, Type_fr_LF_upperleg_X_fr_LF_hipassembly>
+    class Type_fr_LF_upperleg_X_fr_LF_hipassembly : public TransformForce<Scalar, Type_fr_LF_upperleg_X_fr_LF_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_upperleg_X_fr_LF_hipassembly();
         const Type_fr_LF_upperleg_X_fr_LF_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_hipassembly_X_fr_LF_upperleg : public TransformForce<SCALAR, Type_fr_LF_hipassembly_X_fr_LF_upperleg>
+    class Type_fr_LF_hipassembly_X_fr_LF_upperleg : public TransformForce<Scalar, Type_fr_LF_hipassembly_X_fr_LF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_hipassembly_X_fr_LF_upperleg();
         const Type_fr_LF_hipassembly_X_fr_LF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_lowerleg_X_fr_LF_upperleg : public TransformForce<SCALAR, Type_fr_LF_lowerleg_X_fr_LF_upperleg>
+    class Type_fr_LF_lowerleg_X_fr_LF_upperleg : public TransformForce<Scalar, Type_fr_LF_lowerleg_X_fr_LF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_lowerleg_X_fr_LF_upperleg();
         const Type_fr_LF_lowerleg_X_fr_LF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_upperleg_X_fr_LF_lowerleg : public TransformForce<SCALAR, Type_fr_LF_upperleg_X_fr_LF_lowerleg>
+    class Type_fr_LF_upperleg_X_fr_LF_lowerleg : public TransformForce<Scalar, Type_fr_LF_upperleg_X_fr_LF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_upperleg_X_fr_LF_lowerleg();
         const Type_fr_LF_upperleg_X_fr_LF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_upperleg_X_fr_RF_hipassembly : public TransformForce<SCALAR, Type_fr_RF_upperleg_X_fr_RF_hipassembly>
+    class Type_fr_RF_upperleg_X_fr_RF_hipassembly : public TransformForce<Scalar, Type_fr_RF_upperleg_X_fr_RF_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_upperleg_X_fr_RF_hipassembly();
         const Type_fr_RF_upperleg_X_fr_RF_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_hipassembly_X_fr_RF_upperleg : public TransformForce<SCALAR, Type_fr_RF_hipassembly_X_fr_RF_upperleg>
+    class Type_fr_RF_hipassembly_X_fr_RF_upperleg : public TransformForce<Scalar, Type_fr_RF_hipassembly_X_fr_RF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_hipassembly_X_fr_RF_upperleg();
         const Type_fr_RF_hipassembly_X_fr_RF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_lowerleg_X_fr_RF_upperleg : public TransformForce<SCALAR, Type_fr_RF_lowerleg_X_fr_RF_upperleg>
+    class Type_fr_RF_lowerleg_X_fr_RF_upperleg : public TransformForce<Scalar, Type_fr_RF_lowerleg_X_fr_RF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_lowerleg_X_fr_RF_upperleg();
         const Type_fr_RF_lowerleg_X_fr_RF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_upperleg_X_fr_RF_lowerleg : public TransformForce<SCALAR, Type_fr_RF_upperleg_X_fr_RF_lowerleg>
+    class Type_fr_RF_upperleg_X_fr_RF_lowerleg : public TransformForce<Scalar, Type_fr_RF_upperleg_X_fr_RF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_upperleg_X_fr_RF_lowerleg();
         const Type_fr_RF_upperleg_X_fr_RF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_upperleg_X_fr_LH_hipassembly : public TransformForce<SCALAR, Type_fr_LH_upperleg_X_fr_LH_hipassembly>
+    class Type_fr_LH_upperleg_X_fr_LH_hipassembly : public TransformForce<Scalar, Type_fr_LH_upperleg_X_fr_LH_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_upperleg_X_fr_LH_hipassembly();
         const Type_fr_LH_upperleg_X_fr_LH_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_hipassembly_X_fr_LH_upperleg : public TransformForce<SCALAR, Type_fr_LH_hipassembly_X_fr_LH_upperleg>
+    class Type_fr_LH_hipassembly_X_fr_LH_upperleg : public TransformForce<Scalar, Type_fr_LH_hipassembly_X_fr_LH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_hipassembly_X_fr_LH_upperleg();
         const Type_fr_LH_hipassembly_X_fr_LH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_lowerleg_X_fr_LH_upperleg : public TransformForce<SCALAR, Type_fr_LH_lowerleg_X_fr_LH_upperleg>
+    class Type_fr_LH_lowerleg_X_fr_LH_upperleg : public TransformForce<Scalar, Type_fr_LH_lowerleg_X_fr_LH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_lowerleg_X_fr_LH_upperleg();
         const Type_fr_LH_lowerleg_X_fr_LH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_upperleg_X_fr_LH_lowerleg : public TransformForce<SCALAR, Type_fr_LH_upperleg_X_fr_LH_lowerleg>
+    class Type_fr_LH_upperleg_X_fr_LH_lowerleg : public TransformForce<Scalar, Type_fr_LH_upperleg_X_fr_LH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_upperleg_X_fr_LH_lowerleg();
         const Type_fr_LH_upperleg_X_fr_LH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_upperleg_X_fr_RH_hipassembly : public TransformForce<SCALAR, Type_fr_RH_upperleg_X_fr_RH_hipassembly>
+    class Type_fr_RH_upperleg_X_fr_RH_hipassembly : public TransformForce<Scalar, Type_fr_RH_upperleg_X_fr_RH_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_upperleg_X_fr_RH_hipassembly();
         const Type_fr_RH_upperleg_X_fr_RH_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_hipassembly_X_fr_RH_upperleg : public TransformForce<SCALAR, Type_fr_RH_hipassembly_X_fr_RH_upperleg>
+    class Type_fr_RH_hipassembly_X_fr_RH_upperleg : public TransformForce<Scalar, Type_fr_RH_hipassembly_X_fr_RH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_hipassembly_X_fr_RH_upperleg();
         const Type_fr_RH_hipassembly_X_fr_RH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_lowerleg_X_fr_RH_upperleg : public TransformForce<SCALAR, Type_fr_RH_lowerleg_X_fr_RH_upperleg>
+    class Type_fr_RH_lowerleg_X_fr_RH_upperleg : public TransformForce<Scalar, Type_fr_RH_lowerleg_X_fr_RH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_lowerleg_X_fr_RH_upperleg();
         const Type_fr_RH_lowerleg_X_fr_RH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_upperleg_X_fr_RH_lowerleg : public TransformForce<SCALAR, Type_fr_RH_upperleg_X_fr_RH_lowerleg>
+    class Type_fr_RH_upperleg_X_fr_RH_lowerleg : public TransformForce<Scalar, Type_fr_RH_upperleg_X_fr_RH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_upperleg_X_fr_RH_lowerleg();
         const Type_fr_RH_upperleg_X_fr_RH_lowerleg& update(const JState&);
     protected:
@@ -1454,618 +1602,692 @@ protected:
 template <typename TRAIT>
 class HomogeneousTransforms {
 public:
-	typedef typename TRAIT::Scalar SCALAR;
-
-	typedef JointState<SCALAR> JState;
-
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    typedef typename TRAIT::Scalar Scalar;
 
+    typedef JointState<Scalar> JState;
     class Dummy {};
-    typedef typename TransformHomogeneous<SCALAR, Dummy>::MatrixType MatrixType;
+    typedef typename TransformHomogeneous<Scalar, Dummy>::MatrixType MatrixType;
 public:
-    class Type_fr_trunk_X_fr_LF_hipassembly : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_LF_hipassembly>
+    class Type_fr_trunk_X_fr_LF_hipassembly : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_LF_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_hipassembly();
         const Type_fr_trunk_X_fr_LF_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_hipassembly : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_RF_hipassembly>
+    class Type_fr_trunk_X_fr_RF_hipassembly : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_RF_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_hipassembly();
         const Type_fr_trunk_X_fr_RF_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_hipassembly : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_LH_hipassembly>
+    class Type_fr_trunk_X_fr_LH_hipassembly : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_LH_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_hipassembly();
         const Type_fr_trunk_X_fr_LH_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_hipassembly : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_RH_hipassembly>
+    class Type_fr_trunk_X_fr_RH_hipassembly : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_RH_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_hipassembly();
         const Type_fr_trunk_X_fr_RH_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_upperleg : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_LF_upperleg>
+    class Type_fr_trunk_X_fr_LF_upperleg : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_LF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_upperleg();
         const Type_fr_trunk_X_fr_LF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_upperleg : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_RF_upperleg>
+    class Type_fr_trunk_X_fr_RF_upperleg : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_RF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_upperleg();
         const Type_fr_trunk_X_fr_RF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_upperleg : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_LH_upperleg>
+    class Type_fr_trunk_X_fr_LH_upperleg : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_LH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_upperleg();
         const Type_fr_trunk_X_fr_LH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_upperleg : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_RH_upperleg>
+    class Type_fr_trunk_X_fr_RH_upperleg : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_RH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_upperleg();
         const Type_fr_trunk_X_fr_RH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_lowerleg : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_LF_lowerleg>
+    class Type_fr_trunk_X_fr_LF_lowerleg : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_LF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_lowerleg();
         const Type_fr_trunk_X_fr_LF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_lowerleg : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_RF_lowerleg>
+    class Type_fr_trunk_X_fr_RF_lowerleg : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_RF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_lowerleg();
         const Type_fr_trunk_X_fr_RF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_lowerleg : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_LH_lowerleg>
+    class Type_fr_trunk_X_fr_LH_lowerleg : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_LH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_lowerleg();
         const Type_fr_trunk_X_fr_LH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_lowerleg : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_RH_lowerleg>
+    class Type_fr_trunk_X_fr_RH_lowerleg : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_RH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_lowerleg();
         const Type_fr_trunk_X_fr_RH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_hipassembly_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_LF_hipassembly_X_fr_trunk>
+    class Type_fr_LF_hipassembly_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_LF_hipassembly_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_hipassembly_X_fr_trunk();
         const Type_fr_LF_hipassembly_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_hipassembly_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_RF_hipassembly_X_fr_trunk>
+    class Type_fr_RF_hipassembly_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_RF_hipassembly_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_hipassembly_X_fr_trunk();
         const Type_fr_RF_hipassembly_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_hipassembly_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_LH_hipassembly_X_fr_trunk>
+    class Type_fr_LH_hipassembly_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_LH_hipassembly_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_hipassembly_X_fr_trunk();
         const Type_fr_LH_hipassembly_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_hipassembly_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_RH_hipassembly_X_fr_trunk>
+    class Type_fr_RH_hipassembly_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_RH_hipassembly_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_hipassembly_X_fr_trunk();
         const Type_fr_RH_hipassembly_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_upperleg_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_LF_upperleg_X_fr_trunk>
+    class Type_fr_LF_upperleg_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_LF_upperleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_upperleg_X_fr_trunk();
         const Type_fr_LF_upperleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_upperleg_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_RF_upperleg_X_fr_trunk>
+    class Type_fr_RF_upperleg_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_RF_upperleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_upperleg_X_fr_trunk();
         const Type_fr_RF_upperleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_upperleg_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_LH_upperleg_X_fr_trunk>
+    class Type_fr_LH_upperleg_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_LH_upperleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_upperleg_X_fr_trunk();
         const Type_fr_LH_upperleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_upperleg_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_RH_upperleg_X_fr_trunk>
+    class Type_fr_RH_upperleg_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_RH_upperleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_upperleg_X_fr_trunk();
         const Type_fr_RH_upperleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_lowerleg_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_LF_lowerleg_X_fr_trunk>
+    class Type_fr_LF_lowerleg_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_LF_lowerleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_lowerleg_X_fr_trunk();
         const Type_fr_LF_lowerleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_lowerleg_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_RF_lowerleg_X_fr_trunk>
+    class Type_fr_RF_lowerleg_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_RF_lowerleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_lowerleg_X_fr_trunk();
         const Type_fr_RF_lowerleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_lowerleg_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_LH_lowerleg_X_fr_trunk>
+    class Type_fr_LH_lowerleg_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_LH_lowerleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_lowerleg_X_fr_trunk();
         const Type_fr_LH_lowerleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_lowerleg_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_RH_lowerleg_X_fr_trunk>
+    class Type_fr_RH_lowerleg_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_RH_lowerleg_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_lowerleg_X_fr_trunk();
         const Type_fr_RH_lowerleg_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LF_hipassemblyCOM : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_LF_hipassemblyCOM>
+    class Type_fr_trunk_X_LF_hipassemblyCOM : public TransformHomogeneous<Scalar, Type_fr_trunk_X_LF_hipassemblyCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LF_hipassemblyCOM();
         const Type_fr_trunk_X_LF_hipassemblyCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RF_hipassemblyCOM : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_RF_hipassemblyCOM>
+    class Type_fr_trunk_X_RF_hipassemblyCOM : public TransformHomogeneous<Scalar, Type_fr_trunk_X_RF_hipassemblyCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RF_hipassemblyCOM();
         const Type_fr_trunk_X_RF_hipassemblyCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LH_hipassemblyCOM : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_LH_hipassemblyCOM>
+    class Type_fr_trunk_X_LH_hipassemblyCOM : public TransformHomogeneous<Scalar, Type_fr_trunk_X_LH_hipassemblyCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LH_hipassemblyCOM();
         const Type_fr_trunk_X_LH_hipassemblyCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RH_hipassemblyCOM : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_RH_hipassemblyCOM>
+    class Type_fr_trunk_X_RH_hipassemblyCOM : public TransformHomogeneous<Scalar, Type_fr_trunk_X_RH_hipassemblyCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RH_hipassemblyCOM();
         const Type_fr_trunk_X_RH_hipassemblyCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LF_upperlegCOM : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_LF_upperlegCOM>
+    class Type_fr_trunk_X_LF_upperlegCOM : public TransformHomogeneous<Scalar, Type_fr_trunk_X_LF_upperlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LF_upperlegCOM();
         const Type_fr_trunk_X_LF_upperlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RF_upperlegCOM : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_RF_upperlegCOM>
+    class Type_fr_trunk_X_RF_upperlegCOM : public TransformHomogeneous<Scalar, Type_fr_trunk_X_RF_upperlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RF_upperlegCOM();
         const Type_fr_trunk_X_RF_upperlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LH_upperlegCOM : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_LH_upperlegCOM>
+    class Type_fr_trunk_X_LH_upperlegCOM : public TransformHomogeneous<Scalar, Type_fr_trunk_X_LH_upperlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LH_upperlegCOM();
         const Type_fr_trunk_X_LH_upperlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RH_upperlegCOM : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_RH_upperlegCOM>
+    class Type_fr_trunk_X_RH_upperlegCOM : public TransformHomogeneous<Scalar, Type_fr_trunk_X_RH_upperlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RH_upperlegCOM();
         const Type_fr_trunk_X_RH_upperlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LF_lowerlegCOM : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_LF_lowerlegCOM>
+    class Type_fr_trunk_X_LF_lowerlegCOM : public TransformHomogeneous<Scalar, Type_fr_trunk_X_LF_lowerlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LF_lowerlegCOM();
         const Type_fr_trunk_X_LF_lowerlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RF_lowerlegCOM : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_RF_lowerlegCOM>
+    class Type_fr_trunk_X_RF_lowerlegCOM : public TransformHomogeneous<Scalar, Type_fr_trunk_X_RF_lowerlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RF_lowerlegCOM();
         const Type_fr_trunk_X_RF_lowerlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_LH_lowerlegCOM : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_LH_lowerlegCOM>
+    class Type_fr_trunk_X_LH_lowerlegCOM : public TransformHomogeneous<Scalar, Type_fr_trunk_X_LH_lowerlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_LH_lowerlegCOM();
         const Type_fr_trunk_X_LH_lowerlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_RH_lowerlegCOM : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_RH_lowerlegCOM>
+    class Type_fr_trunk_X_RH_lowerlegCOM : public TransformHomogeneous<Scalar, Type_fr_trunk_X_RH_lowerlegCOM>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_RH_lowerlegCOM();
         const Type_fr_trunk_X_RH_lowerlegCOM& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_foot_X_fr_LF_lowerleg : public TransformHomogeneous<SCALAR, Type_fr_LF_foot_X_fr_LF_lowerleg>
+    class Type_fr_LF_foot_X_fr_LF_lowerleg : public TransformHomogeneous<Scalar, Type_fr_LF_foot_X_fr_LF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_foot_X_fr_LF_lowerleg();
         const Type_fr_LF_foot_X_fr_LF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_foot_X_fr_RF_lowerleg : public TransformHomogeneous<SCALAR, Type_fr_RF_foot_X_fr_RF_lowerleg>
+    class Type_fr_RF_foot_X_fr_RF_lowerleg : public TransformHomogeneous<Scalar, Type_fr_RF_foot_X_fr_RF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_foot_X_fr_RF_lowerleg();
         const Type_fr_RF_foot_X_fr_RF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_foot_X_fr_LH_lowerleg : public TransformHomogeneous<SCALAR, Type_fr_LH_foot_X_fr_LH_lowerleg>
+    class Type_fr_LH_foot_X_fr_LH_lowerleg : public TransformHomogeneous<Scalar, Type_fr_LH_foot_X_fr_LH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_foot_X_fr_LH_lowerleg();
         const Type_fr_LH_foot_X_fr_LH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_foot_X_fr_RH_lowerleg : public TransformHomogeneous<SCALAR, Type_fr_RH_foot_X_fr_RH_lowerleg>
+    class Type_fr_RH_foot_X_fr_RH_lowerleg : public TransformHomogeneous<Scalar, Type_fr_RH_foot_X_fr_RH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_foot_X_fr_RH_lowerleg();
         const Type_fr_RH_foot_X_fr_RH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_foot : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_LF_foot>
+    class Type_fr_trunk_X_fr_LF_foot : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_LF_foot>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_foot();
         const Type_fr_trunk_X_fr_LF_foot& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_foot : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_RF_foot>
+    class Type_fr_trunk_X_fr_RF_foot : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_RF_foot>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_foot();
         const Type_fr_trunk_X_fr_RF_foot& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_foot : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_LH_foot>
+    class Type_fr_trunk_X_fr_LH_foot : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_LH_foot>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_foot();
         const Type_fr_trunk_X_fr_LH_foot& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_foot : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_RH_foot>
+    class Type_fr_trunk_X_fr_RH_foot : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_RH_foot>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_foot();
         const Type_fr_trunk_X_fr_RH_foot& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_foot_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_LF_foot_X_fr_trunk>
+    class Type_fr_LF_foot_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_LF_foot_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_foot_X_fr_trunk();
         const Type_fr_LF_foot_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_foot_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_RF_foot_X_fr_trunk>
+    class Type_fr_RF_foot_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_RF_foot_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_foot_X_fr_trunk();
         const Type_fr_RF_foot_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_foot_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_LH_foot_X_fr_trunk>
+    class Type_fr_LH_foot_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_LH_foot_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_foot_X_fr_trunk();
         const Type_fr_LH_foot_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_foot_X_fr_trunk : public TransformHomogeneous<SCALAR, Type_fr_RH_foot_X_fr_trunk>
+    class Type_fr_RH_foot_X_fr_trunk : public TransformHomogeneous<Scalar, Type_fr_RH_foot_X_fr_trunk>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_foot_X_fr_trunk();
         const Type_fr_RH_foot_X_fr_trunk& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_HAA : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_LF_HAA>
+    class Type_fr_trunk_X_fr_LF_HAA : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_LF_HAA>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_HAA();
         const Type_fr_trunk_X_fr_LF_HAA& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_HAA : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_RF_HAA>
+    class Type_fr_trunk_X_fr_RF_HAA : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_RF_HAA>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_HAA();
         const Type_fr_trunk_X_fr_RF_HAA& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_HAA : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_LH_HAA>
+    class Type_fr_trunk_X_fr_LH_HAA : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_LH_HAA>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_HAA();
         const Type_fr_trunk_X_fr_LH_HAA& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_HAA : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_RH_HAA>
+    class Type_fr_trunk_X_fr_RH_HAA : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_RH_HAA>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_HAA();
         const Type_fr_trunk_X_fr_RH_HAA& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_HFE : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_LF_HFE>
+    class Type_fr_trunk_X_fr_LF_HFE : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_LF_HFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_HFE();
         const Type_fr_trunk_X_fr_LF_HFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_HFE : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_RF_HFE>
+    class Type_fr_trunk_X_fr_RF_HFE : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_RF_HFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_HFE();
         const Type_fr_trunk_X_fr_RF_HFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_HFE : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_LH_HFE>
+    class Type_fr_trunk_X_fr_LH_HFE : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_LH_HFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_HFE();
         const Type_fr_trunk_X_fr_LH_HFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_HFE : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_RH_HFE>
+    class Type_fr_trunk_X_fr_RH_HFE : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_RH_HFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_HFE();
         const Type_fr_trunk_X_fr_RH_HFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LF_KFE : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_LF_KFE>
+    class Type_fr_trunk_X_fr_LF_KFE : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_LF_KFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LF_KFE();
         const Type_fr_trunk_X_fr_LF_KFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RF_KFE : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_RF_KFE>
+    class Type_fr_trunk_X_fr_RF_KFE : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_RF_KFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RF_KFE();
         const Type_fr_trunk_X_fr_RF_KFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_LH_KFE : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_LH_KFE>
+    class Type_fr_trunk_X_fr_LH_KFE : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_LH_KFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_LH_KFE();
         const Type_fr_trunk_X_fr_LH_KFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_trunk_X_fr_RH_KFE : public TransformHomogeneous<SCALAR, Type_fr_trunk_X_fr_RH_KFE>
+    class Type_fr_trunk_X_fr_RH_KFE : public TransformHomogeneous<Scalar, Type_fr_trunk_X_fr_RH_KFE>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_trunk_X_fr_RH_KFE();
         const Type_fr_trunk_X_fr_RH_KFE& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_upperleg_X_fr_LF_hipassembly : public TransformHomogeneous<SCALAR, Type_fr_LF_upperleg_X_fr_LF_hipassembly>
+    class Type_fr_LF_upperleg_X_fr_LF_hipassembly : public TransformHomogeneous<Scalar, Type_fr_LF_upperleg_X_fr_LF_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_upperleg_X_fr_LF_hipassembly();
         const Type_fr_LF_upperleg_X_fr_LF_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_hipassembly_X_fr_LF_upperleg : public TransformHomogeneous<SCALAR, Type_fr_LF_hipassembly_X_fr_LF_upperleg>
+    class Type_fr_LF_hipassembly_X_fr_LF_upperleg : public TransformHomogeneous<Scalar, Type_fr_LF_hipassembly_X_fr_LF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_hipassembly_X_fr_LF_upperleg();
         const Type_fr_LF_hipassembly_X_fr_LF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_lowerleg_X_fr_LF_upperleg : public TransformHomogeneous<SCALAR, Type_fr_LF_lowerleg_X_fr_LF_upperleg>
+    class Type_fr_LF_lowerleg_X_fr_LF_upperleg : public TransformHomogeneous<Scalar, Type_fr_LF_lowerleg_X_fr_LF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_lowerleg_X_fr_LF_upperleg();
         const Type_fr_LF_lowerleg_X_fr_LF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LF_upperleg_X_fr_LF_lowerleg : public TransformHomogeneous<SCALAR, Type_fr_LF_upperleg_X_fr_LF_lowerleg>
+    class Type_fr_LF_upperleg_X_fr_LF_lowerleg : public TransformHomogeneous<Scalar, Type_fr_LF_upperleg_X_fr_LF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LF_upperleg_X_fr_LF_lowerleg();
         const Type_fr_LF_upperleg_X_fr_LF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_upperleg_X_fr_RF_hipassembly : public TransformHomogeneous<SCALAR, Type_fr_RF_upperleg_X_fr_RF_hipassembly>
+    class Type_fr_RF_upperleg_X_fr_RF_hipassembly : public TransformHomogeneous<Scalar, Type_fr_RF_upperleg_X_fr_RF_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_upperleg_X_fr_RF_hipassembly();
         const Type_fr_RF_upperleg_X_fr_RF_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_hipassembly_X_fr_RF_upperleg : public TransformHomogeneous<SCALAR, Type_fr_RF_hipassembly_X_fr_RF_upperleg>
+    class Type_fr_RF_hipassembly_X_fr_RF_upperleg : public TransformHomogeneous<Scalar, Type_fr_RF_hipassembly_X_fr_RF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_hipassembly_X_fr_RF_upperleg();
         const Type_fr_RF_hipassembly_X_fr_RF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_lowerleg_X_fr_RF_upperleg : public TransformHomogeneous<SCALAR, Type_fr_RF_lowerleg_X_fr_RF_upperleg>
+    class Type_fr_RF_lowerleg_X_fr_RF_upperleg : public TransformHomogeneous<Scalar, Type_fr_RF_lowerleg_X_fr_RF_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_lowerleg_X_fr_RF_upperleg();
         const Type_fr_RF_lowerleg_X_fr_RF_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RF_upperleg_X_fr_RF_lowerleg : public TransformHomogeneous<SCALAR, Type_fr_RF_upperleg_X_fr_RF_lowerleg>
+    class Type_fr_RF_upperleg_X_fr_RF_lowerleg : public TransformHomogeneous<Scalar, Type_fr_RF_upperleg_X_fr_RF_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RF_upperleg_X_fr_RF_lowerleg();
         const Type_fr_RF_upperleg_X_fr_RF_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_upperleg_X_fr_LH_hipassembly : public TransformHomogeneous<SCALAR, Type_fr_LH_upperleg_X_fr_LH_hipassembly>
+    class Type_fr_LH_upperleg_X_fr_LH_hipassembly : public TransformHomogeneous<Scalar, Type_fr_LH_upperleg_X_fr_LH_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_upperleg_X_fr_LH_hipassembly();
         const Type_fr_LH_upperleg_X_fr_LH_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_hipassembly_X_fr_LH_upperleg : public TransformHomogeneous<SCALAR, Type_fr_LH_hipassembly_X_fr_LH_upperleg>
+    class Type_fr_LH_hipassembly_X_fr_LH_upperleg : public TransformHomogeneous<Scalar, Type_fr_LH_hipassembly_X_fr_LH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_hipassembly_X_fr_LH_upperleg();
         const Type_fr_LH_hipassembly_X_fr_LH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_lowerleg_X_fr_LH_upperleg : public TransformHomogeneous<SCALAR, Type_fr_LH_lowerleg_X_fr_LH_upperleg>
+    class Type_fr_LH_lowerleg_X_fr_LH_upperleg : public TransformHomogeneous<Scalar, Type_fr_LH_lowerleg_X_fr_LH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_lowerleg_X_fr_LH_upperleg();
         const Type_fr_LH_lowerleg_X_fr_LH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_LH_upperleg_X_fr_LH_lowerleg : public TransformHomogeneous<SCALAR, Type_fr_LH_upperleg_X_fr_LH_lowerleg>
+    class Type_fr_LH_upperleg_X_fr_LH_lowerleg : public TransformHomogeneous<Scalar, Type_fr_LH_upperleg_X_fr_LH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_LH_upperleg_X_fr_LH_lowerleg();
         const Type_fr_LH_upperleg_X_fr_LH_lowerleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_upperleg_X_fr_RH_hipassembly : public TransformHomogeneous<SCALAR, Type_fr_RH_upperleg_X_fr_RH_hipassembly>
+    class Type_fr_RH_upperleg_X_fr_RH_hipassembly : public TransformHomogeneous<Scalar, Type_fr_RH_upperleg_X_fr_RH_hipassembly>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_upperleg_X_fr_RH_hipassembly();
         const Type_fr_RH_upperleg_X_fr_RH_hipassembly& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_hipassembly_X_fr_RH_upperleg : public TransformHomogeneous<SCALAR, Type_fr_RH_hipassembly_X_fr_RH_upperleg>
+    class Type_fr_RH_hipassembly_X_fr_RH_upperleg : public TransformHomogeneous<Scalar, Type_fr_RH_hipassembly_X_fr_RH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_hipassembly_X_fr_RH_upperleg();
         const Type_fr_RH_hipassembly_X_fr_RH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_lowerleg_X_fr_RH_upperleg : public TransformHomogeneous<SCALAR, Type_fr_RH_lowerleg_X_fr_RH_upperleg>
+    class Type_fr_RH_lowerleg_X_fr_RH_upperleg : public TransformHomogeneous<Scalar, Type_fr_RH_lowerleg_X_fr_RH_upperleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_lowerleg_X_fr_RH_upperleg();
         const Type_fr_RH_lowerleg_X_fr_RH_upperleg& update(const JState&);
     protected:
     };
     
-    class Type_fr_RH_upperleg_X_fr_RH_lowerleg : public TransformHomogeneous<SCALAR, Type_fr_RH_upperleg_X_fr_RH_lowerleg>
+    class Type_fr_RH_upperleg_X_fr_RH_lowerleg : public TransformHomogeneous<Scalar, Type_fr_RH_upperleg_X_fr_RH_lowerleg>
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Type_fr_RH_upperleg_X_fr_RH_lowerleg();
         const Type_fr_RH_upperleg_X_fr_RH_lowerleg& update(const JState&);
     protected:
@@ -2155,7 +2377,7 @@ protected:
 
 }; //class 'HomogeneousTransforms'
 
-} // namespace tpl
+}
 
 using MotionTransforms = tpl::MotionTransforms<rbd::DoubleTrait>;
 using ForceTransforms = tpl::ForceTransforms<rbd::DoubleTrait>;
@@ -2164,8 +2386,6 @@ using HomogeneousTransforms = tpl::HomogeneousTransforms<rbd::DoubleTrait>;
 }
 }
 
-#include "transforms_motion.impl.h"
-#include "transforms_force.impl.h"
-#include "transforms_homogeneous.impl.h"
+#include "transforms.impl.h"
 
 #endif

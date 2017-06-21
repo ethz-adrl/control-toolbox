@@ -1,20 +1,19 @@
-#ifndef IIT_ROBOT_HYQ_DECLARATIONS_H_
-#define IIT_ROBOT_HYQ_DECLARATIONS_H_
+#ifndef IIT_ROBOT_TESTHYQ_DECLARATIONS_H_
+#define IIT_ROBOT_TESTHYQ_DECLARATIONS_H_
 
-#include <Eigen/Dense>
+#include <iit/rbd/rbd.h>
 
 namespace iit {
-namespace HyQ {
+namespace TestHyQ {
 
 static const int JointSpaceDimension = 12;
 static const int jointsCount = 12;
 /** The total number of rigid bodies of this robot, including the base */
 static const int linksCount  = 13;
 
-
 namespace tpl {
 template <typename SCALAR>
-using Column12d = Eigen::Matrix<SCALAR, 12, 1>;
+using Column12d = iit::rbd::PlainMatrix<SCALAR, 12, 1>;
 
 template <typename SCALAR>
 using JointState = Column12d<SCALAR>;

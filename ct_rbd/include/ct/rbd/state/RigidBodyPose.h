@@ -47,6 +47,7 @@ template<typename SCALAR = double>
 class RigidBodyPose
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	enum STORAGE_TYPE
 	{
@@ -68,6 +69,8 @@ public:
 
 	RigidBodyPose(const kindr::EulerAnglesXyz<SCALAR>& orientationEulerXyz, const Position3Tpl& position, STORAGE_TYPE storage = EULER) :
 		storage_(storage),
+		quat_(),
+		euler_(),
 		position_(position)
 	{
 		setFromEulerAnglesXyz(orientationEulerXyz);
@@ -75,6 +78,8 @@ public:
 
 	RigidBodyPose(const kindr::RotationQuaternion<SCALAR>& orientationQuat, const Position3Tpl& position, STORAGE_TYPE storage = EULER) :
 		storage_(storage),
+		quat_(),
+		euler_(),
 		position_(position)
 	{
 		setFromRotationQuaternion(orientationQuat);

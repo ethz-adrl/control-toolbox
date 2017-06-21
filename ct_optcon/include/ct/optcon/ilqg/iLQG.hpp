@@ -88,6 +88,10 @@ public:
 
 
 private:
+	void createLQProblem() override;
+
+	void backwardPass() override;
+
 	void computeQuadraticCostsAroundTrajectory() override;
 
 	void computeLinearizedDynamicsAroundTrajectory() override;

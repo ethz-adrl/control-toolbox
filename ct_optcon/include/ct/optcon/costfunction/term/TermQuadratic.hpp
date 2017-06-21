@@ -86,7 +86,9 @@ public:
 	
 	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) override;
 
-	void updateReferenceState (const Eigen::Matrix<S, STATE_DIM, 1>& newRefState) override{ x_ref_ = newRefState;}
+	virtual void updateReferenceState (const Eigen::Matrix<S, STATE_DIM, 1>& newRefState) override{ x_ref_ = newRefState;}
+
+	virtual Eigen::Matrix<SCALAR, STATE_DIM, 1> getReferenceState() const override {return x_ref_;}
 
 protected:
 	state_matrix_t Q_;

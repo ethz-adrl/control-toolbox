@@ -43,8 +43,11 @@ namespace tpl {
 template<typename SCALAR = double>
 class RigidBodyState {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	RigidBodyState(typename RigidBodyPose<SCALAR>::STORAGE_TYPE storage = RigidBodyPose<SCALAR>::QUAT) :
-		pose_(storage)
+		pose_(storage),
+		velocities_()
 	{
 	}
 
