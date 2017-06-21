@@ -154,7 +154,7 @@ protected:
 
 };
 
-size_t DiscreteConstraintBase::genDiagonalIndices(
+inline size_t DiscreteConstraintBase::genDiagonalIndices(
 		const size_t col_start,
 		const size_t num_elements,
 		Eigen::VectorXi& iRow_vec,
@@ -184,7 +184,7 @@ size_t DiscreteConstraintBase::genDiagonalIndices(
 }
 
 
-size_t DiscreteConstraintBase::genBlockIndices(
+inline size_t DiscreteConstraintBase::genBlockIndices(
 		const size_t col_start,
 		const size_t num_rows,
 		const size_t num_cols,

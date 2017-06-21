@@ -1,5 +1,5 @@
-#ifndef IIT_HYQ_JSIM_H_
-#define IIT_HYQ_JSIM_H_
+#ifndef IIT_TESTHYQ_JSIM_H_
+#define IIT_TESTHYQ_JSIM_H_
 
 #include <iit/rbd/rbd.h>
 #include <iit/rbd/StateDependentMatrix.h>
@@ -7,45 +7,45 @@
 #include "declarations.h"
 #include "transforms.h"
 #include "inertia_properties.h"
+#include <iit/rbd/robcogen_commons.h>
+#include <iit/rbd/traits/DoubleTrait.h>
+
 
 namespace iit {
-namespace HyQ {
+namespace TestHyQ {
 namespace dyn {
 
-namespace tpl{
+namespace tpl {
 
 /**
- * The type of the Joint Space Inertia Matrix (JSIM) of the robot HyQ.
+ * The type of the Joint Space Inertia Matrix (JSIM) of the robot TestHyQ.
  */
-template<class TRAIT>
-class JSIM : public rbd::StateDependentMatrix<iit::HyQ::JointState, 18, 18, JSIM<TRAIT>>
+template <typename TRAIT>
+class JSIM : public iit::rbd::StateDependentMatrix<iit::TestHyQ::tpl::JointState<typename TRAIT::Scalar>, 18, 18, JSIM<TRAIT>>
 {
     public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
-        typedef rbd::StateDependentMatrix<iit::HyQ::JointState, 18, 18, JSIM<TRAIT>> Base;
+        typedef iit::rbd::StateDependentMatrix<iit::TestHyQ::tpl::JointState<typename TRAIT::Scalar>, 18, 18, JSIM<TRAIT>> Base;
     public:
-        typedef typename TRAIT::Scalar SCALAR;
-        typedef typename Base::Scalar Scalar;
+    	typedef typename TRAIT::Scalar Scalar;
+    	typedef typename iit::TestHyQ::tpl::JointState<Scalar> JointState;
+    	typedef iit::rbd::Core<Scalar> CoreS;
         typedef typename Base::Index Index;
-        typedef Eigen::Matrix<SCALAR,18,18> MatrixType;
+        typedef typename iit::rbd::PlainMatrix<Scalar, 18, 18> MatrixType;
         /** The type of the F sub-block of the floating-base JSIM */
         typedef const Eigen::Block<const MatrixType,6,12> BlockF_t;
         /** The type of the fixed-base sub-block of the JSIM */
         typedef const Eigen::Block<const MatrixType,12,12> BlockFixedBase_t;
         typedef InertiaProperties<TRAIT> IProperties;
-        typedef iit::HyQ::tpl::ForceTransforms<TRAIT> FTransforms;
-        typedef iit::rbd::tpl::InertiaMatrixDense<SCALAR> InertiaMatrix;
-
-
-
+        typedef iit::TestHyQ::tpl::ForceTransforms<TRAIT> FTransforms;
+        typedef iit::rbd::tpl::InertiaMatrixDense<Scalar> InertiaMatrix;
 
     public:
         JSIM(IProperties&, FTransforms&);
         ~JSIM() {}
 
-        const JSIM& update(const iit::HyQ::JointState&);
+        const JSIM& update(const JointState&);
 
 
         /**
@@ -124,37 +124,34 @@ class JSIM : public rbd::StateDependentMatrix<iit::HyQ::JointState, 18, 18, JSIM
         MatrixType inverse;
 };
 
-template<class TRAIT>
+template <typename TRAIT>
 inline const typename JSIM<TRAIT>::MatrixType& JSIM<TRAIT>::getL() const {
     return L;
 }
 
-template<class TRAIT>
+template <typename TRAIT>
 inline const typename JSIM<TRAIT>::MatrixType& JSIM<TRAIT>::getInverse() const {
     return inverse;
 }
 
-template<class TRAIT>
+template <typename TRAIT>
 inline const typename JSIM<TRAIT>::InertiaMatrix& JSIM<TRAIT>::getWholeBodyInertia() const {
     return trunk_Ic;
 }
 
-template<class TRAIT>
+template <typename TRAIT>
 inline const typename JSIM<TRAIT>::BlockF_t JSIM<TRAIT>::getF() const {
-    return JSIM<TRAIT>::block<6,12>(0,6);
+    return JSIM<TRAIT>:: template block<6,12>(0,6);
 }
 
-
-template<class TRAIT>
+template <typename TRAIT>
 inline const typename JSIM<TRAIT>::BlockFixedBase_t JSIM<TRAIT>::getFixedBaseBlock() const{
-    return JSIM<TRAIT>::block<12,12>(6,6);
+    return JSIM<TRAIT>:: template block<12,12>(6,6);
 }
 
-
-} // namespace tpl
+}
 
 typedef tpl::JSIM<rbd::DoubleTrait> JSIM;
-
 
 }
 }

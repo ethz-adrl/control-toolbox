@@ -29,7 +29,7 @@ namespace dyn {
  * call to setJointStatus()), so that it would be useless to compute them again.
  */
 
-namespace tpl{
+namespace tpl {
 
 template <typename TRAIT>
 class ForwardDynamics {
@@ -37,19 +37,19 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     // Convenient type aliases:
 
-    typedef typename TRAIT::Scalar SCALAR;
+    typedef typename TRAIT::Scalar Scalar;
 
-    typedef iit::rbd::Core<SCALAR> CoreS;
-
-    typedef LinkDataMap<typename CoreS::ForceVector> ExtForces;
+    typedef iit::rbd::Core<Scalar> CoreS;
+    
     typedef typename CoreS::ForceVector Force;
+    typedef LinkDataMap<Force> ExtForces;
     typedef typename CoreS::VelocityVector Velocity;
     typedef typename CoreS::VelocityVector Acceleration;
     typedef typename CoreS::Column6D Column6DS;
-    typedef typename iit::HyQ::tpl::JointState<SCALAR> JointState;
+    typedef typename iit::HyQ::tpl::JointState<Scalar> JointState;
     typedef typename CoreS::Matrix66 Matrix66S;
     
-    typedef iit::rbd::tpl::InertiaMatrixDense<SCALAR> InertiaMatrix;
+    typedef iit::rbd::tpl::InertiaMatrixDense<Scalar> InertiaMatrix;
     typedef iit::HyQ::tpl::MotionTransforms<TRAIT> MTransforms;
 
 public:
@@ -108,8 +108,8 @@ private:
     Force    LF_hipassembly_p;
 
     Column6DS LF_hipassembly_U;
-    SCALAR LF_hipassembly_D;
-    SCALAR LF_hipassembly_u;
+    Scalar LF_hipassembly_D;
+    Scalar LF_hipassembly_u;
     // Link 'LF_upperleg' :
     Matrix66S LF_upperleg_AI;
     Velocity LF_upperleg_a;
@@ -118,8 +118,8 @@ private:
     Force    LF_upperleg_p;
 
     Column6DS LF_upperleg_U;
-    SCALAR LF_upperleg_D;
-    SCALAR LF_upperleg_u;
+    Scalar LF_upperleg_D;
+    Scalar LF_upperleg_u;
     // Link 'LF_lowerleg' :
     Matrix66S LF_lowerleg_AI;
     Velocity LF_lowerleg_a;
@@ -128,8 +128,8 @@ private:
     Force    LF_lowerleg_p;
 
     Column6DS LF_lowerleg_U;
-    SCALAR LF_lowerleg_D;
-    SCALAR LF_lowerleg_u;
+    Scalar LF_lowerleg_D;
+    Scalar LF_lowerleg_u;
     // Link 'RF_hipassembly' :
     Matrix66S RF_hipassembly_AI;
     Velocity RF_hipassembly_a;
@@ -138,8 +138,8 @@ private:
     Force    RF_hipassembly_p;
 
     Column6DS RF_hipassembly_U;
-    SCALAR RF_hipassembly_D;
-    SCALAR RF_hipassembly_u;
+    Scalar RF_hipassembly_D;
+    Scalar RF_hipassembly_u;
     // Link 'RF_upperleg' :
     Matrix66S RF_upperleg_AI;
     Velocity RF_upperleg_a;
@@ -148,8 +148,8 @@ private:
     Force    RF_upperleg_p;
 
     Column6DS RF_upperleg_U;
-    SCALAR RF_upperleg_D;
-    SCALAR RF_upperleg_u;
+    Scalar RF_upperleg_D;
+    Scalar RF_upperleg_u;
     // Link 'RF_lowerleg' :
     Matrix66S RF_lowerleg_AI;
     Velocity RF_lowerleg_a;
@@ -158,8 +158,8 @@ private:
     Force    RF_lowerleg_p;
 
     Column6DS RF_lowerleg_U;
-    SCALAR RF_lowerleg_D;
-    SCALAR RF_lowerleg_u;
+    Scalar RF_lowerleg_D;
+    Scalar RF_lowerleg_u;
     // Link 'LH_hipassembly' :
     Matrix66S LH_hipassembly_AI;
     Velocity LH_hipassembly_a;
@@ -168,8 +168,8 @@ private:
     Force    LH_hipassembly_p;
 
     Column6DS LH_hipassembly_U;
-    SCALAR LH_hipassembly_D;
-    SCALAR LH_hipassembly_u;
+    Scalar LH_hipassembly_D;
+    Scalar LH_hipassembly_u;
     // Link 'LH_upperleg' :
     Matrix66S LH_upperleg_AI;
     Velocity LH_upperleg_a;
@@ -178,8 +178,8 @@ private:
     Force    LH_upperleg_p;
 
     Column6DS LH_upperleg_U;
-    SCALAR LH_upperleg_D;
-    SCALAR LH_upperleg_u;
+    Scalar LH_upperleg_D;
+    Scalar LH_upperleg_u;
     // Link 'LH_lowerleg' :
     Matrix66S LH_lowerleg_AI;
     Velocity LH_lowerleg_a;
@@ -188,8 +188,8 @@ private:
     Force    LH_lowerleg_p;
 
     Column6DS LH_lowerleg_U;
-    SCALAR LH_lowerleg_D;
-    SCALAR LH_lowerleg_u;
+    Scalar LH_lowerleg_D;
+    Scalar LH_lowerleg_u;
     // Link 'RH_hipassembly' :
     Matrix66S RH_hipassembly_AI;
     Velocity RH_hipassembly_a;
@@ -198,8 +198,8 @@ private:
     Force    RH_hipassembly_p;
 
     Column6DS RH_hipassembly_U;
-    SCALAR RH_hipassembly_D;
-    SCALAR RH_hipassembly_u;
+    Scalar RH_hipassembly_D;
+    Scalar RH_hipassembly_u;
     // Link 'RH_upperleg' :
     Matrix66S RH_upperleg_AI;
     Velocity RH_upperleg_a;
@@ -208,8 +208,8 @@ private:
     Force    RH_upperleg_p;
 
     Column6DS RH_upperleg_U;
-    SCALAR RH_upperleg_D;
-    SCALAR RH_upperleg_u;
+    Scalar RH_upperleg_D;
+    Scalar RH_upperleg_u;
     // Link 'RH_lowerleg' :
     Matrix66S RH_lowerleg_AI;
     Velocity RH_lowerleg_a;
@@ -218,8 +218,8 @@ private:
     Force    RH_lowerleg_p;
 
     Column6DS RH_lowerleg_U;
-    SCALAR RH_lowerleg_D;
-    SCALAR RH_lowerleg_u;
+    Scalar RH_lowerleg_D;
+    Scalar RH_lowerleg_u;
 private:
     static const ExtForces zeroExtForces;
 };
@@ -253,7 +253,7 @@ inline void ForwardDynamics<TRAIT>::fd(
     fd(qdd, trunk_a, trunk_v, g, qd, tau, fext);
 }
 
-} // namespace tpl
+}
 
 typedef tpl::ForwardDynamics<rbd::DoubleTrait> ForwardDynamics;
 

@@ -44,7 +44,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // these will be undefined later, DO NOT USE!
 
-#define ROBCOGEN_NS HyQ // defines the NS of the robot in robcogen, e.g. iit::<ROBCOGEN_NS>
+#define ROBCOGEN_NS TestHyQ // defines the NS of the robot in robcogen, e.g. iit::<ROBCOGEN_NS>
 #define TARGET_NS TestHyQ // defines the NS where all robot definitions go. Here ct::models::TestHyQ. This defines ct::models::TestHyQ::Dynamics etc.
 
 // define all links of the robot, names as in robcogen

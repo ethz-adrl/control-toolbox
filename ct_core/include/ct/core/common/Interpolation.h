@@ -128,7 +128,7 @@ public:
 	const DiscreteArray_t* getDataPtr() {return dataPtr_;}
 
 
-	void interpolate(const Time& enquiryTime, Data_T& enquiryData, int greatestLessTimeStampIndex = -1) {
+	void interpolate(const Time& enquiryTime, Data_T& enquiryData, int greatestLessTimeStampIndex = -1){
 
 		if (zeroFunction_==true)  {
 			enquiryData.setZero();
@@ -186,7 +186,7 @@ public:
 	void changeInterpolationType(const InterpolationType& type){ type_ = type;}
 
 
-	size_t findIndex(const double& enquiryTime) {
+	size_t findIndex(const double enquiryTime) {
 
 		int index = -1;
 

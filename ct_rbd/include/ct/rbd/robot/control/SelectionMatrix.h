@@ -45,6 +45,8 @@ template <size_t CONTROL_DIM, size_t STATE_DIM>
 class SelectionMatrix : public Eigen::Matrix<double, CONTROL_DIM, STATE_DIM>
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	SelectionMatrix() = delete;
 
 	SelectionMatrix(const SelectionMatrix& other) :
@@ -52,7 +54,8 @@ public:
 	{
 	}
 
-	SelectionMatrix(bool floatingBase)
+	SelectionMatrix(bool floatingBase) :
+		Eigen::Matrix<double, CONTROL_DIM, STATE_DIM>()
 	{
 		setIdentity(floatingBase);
 	}

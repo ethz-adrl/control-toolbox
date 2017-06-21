@@ -42,6 +42,8 @@ template<typename SCALAR = double>
 class RigidBodyVelocities : private kindr::TwistLinearVelocityLocalAngularVelocity<SCALAR>
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	typedef Eigen::Matrix<SCALAR, 6, 1> Vector6;
 
 	using kindr::TwistLinearVelocityLocalAngularVelocity<SCALAR>::getTranslationalVelocity;

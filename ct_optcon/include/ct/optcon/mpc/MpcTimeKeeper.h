@@ -242,7 +242,7 @@ public:
 	 * the returned time can be used to synchronize the calls to optimal control problems
 	 * @return time elapsed
 	 */
-	const core::Time timeSincePreviousSuccessfulSolve() {
+	core::Time timeSincePreviousSuccessfulSolve() {
 		if(firstRun_)
 			return 0.0;
 		else{
@@ -251,6 +251,20 @@ public:
 		}
 	}
 
+
+	//! retrieve the time that elapsed since the first successful solve() call to an Optimal Control Problem
+	/*!
+	 * the returned time can be used externally, for example to update cost functions
+	 * @return time elapsed
+	 */
+	const core::Time timeSinceFirstSuccessfulSolve() {
+		if(firstRun_)
+			return 0.0;
+		else{
+			firstSolveTimer_.stop();
+			return firstSolveTimer_.getElapsedTime();
+		}
+	}
 
 	//! obtain the delay which was measured during solving the optimal control problem
 	const core::Time& getMeasuredDelay() const {return lastMeasuredDelay_;}
@@ -273,7 +287,7 @@ private:
 	 * The delay to be applied is the sum of fixed and variable components.
 	 * @return delay to be applied
 	 */
-	const core::Time computeDelayToApply() {
+	core::Time computeDelayToApply() {
 
 		core::Time fixedDelay = 1e-6 * mpc_settings_.additionalDelayUs_;
 		core::Time variableDelay = 0.0;

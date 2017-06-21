@@ -40,6 +40,7 @@ class StateDependentMatrix  :
     private:
         typedef PlainMatrix<typename State::Scalar, Rows, Cols> Base;
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         /** The type of the coefficients of this matrix */
         typedef typename Base::Scalar Scalar;
         /** The type of row/column indices of this matrix */
@@ -58,6 +59,7 @@ class StateDependentMatrix  :
 
         using StateDependentBase<State, ActualMatrix>::operator();
         using MatrixType::operator();
+        using MatrixType::setZero;
 };
 
 

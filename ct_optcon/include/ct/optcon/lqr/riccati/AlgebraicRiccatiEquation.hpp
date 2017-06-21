@@ -27,9 +27,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef ALGEBRAICRICCATIEQUATION_HPP_
 #define ALGEBRAICRICCATIEQUATION_HPP_
 
-#include <iostream>
 #include <ct/core/core.h>
-
+#include <iostream>
 
 // Schur reordering from Lapack
 extern "C" void dtrsen_(const char* JOB, const char* COMPQ, const int* SELECT, const int* N, const double* T, const int* LDT, const double* Q, const int* LDQ,
@@ -53,6 +52,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM>
 class AlgebraicRiccatiEquation {
 
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
 	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
 	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_state_matrix_t;

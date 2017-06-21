@@ -30,7 +30,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <memory>
 #include <thread>
-#include <atomic>
 #include <mutex>
 #include <condition_variable>
 
@@ -88,6 +87,9 @@ public:
 
 
 private:
+	void createLQProblem() override;
+
+	void backwardPass() override;
 
 	void computeQuadraticCostsAroundTrajectory() override;
 
@@ -101,6 +103,7 @@ private:
 		LINE_SEARCH,
 		LINEARIZE_DYNAMICS,
 		COMPUTE_COST,
+		PARALLEL_BACKWARD_PASS,
 		SHUTDOWN
 	};
 
@@ -116,6 +119,11 @@ private:
 	 */
 	void threadWork(size_t threadId);
 
+	//! Creates the LQ Problem in parallel
+	/*!
+	  The Dynamics are linearized and the cost function is quadratized in parallel
+	 */
+	void parallelLQProblem();
 
 	//! Line search for new controller using multi-threading
 	/*!
@@ -147,6 +155,14 @@ private:
 	 */
 	void computeQuadraticCostsWorker(size_t threadId);
 
+	//! Creates the linear quadratic problem
+	/*!
+	  This function calculates the quadratic costs as provided by the costFunction pointer as well as the linearized dynamics.
+
+	  \param k step k
+	 */
+	void computeLQProblemWorker(size_t threadId);
+
 
 	std::vector<std::thread, Eigen::aligned_allocator<std::thread>> workerThreads_;
 	std::atomic_bool workersActive_;
@@ -157,6 +173,9 @@ private:
 
 	std::mutex kCompletedMutex_;
 	std::condition_variable kCompletedCondition_;
+
+	std::mutex kCompletedMutexCost_;
+	std::condition_variable kCompletedConditionCost_;
 
 	std::mutex lineSearchResultMutex_;
 	std::mutex alphaBestFoundMutex_;
@@ -171,6 +190,7 @@ private:
 
 	std::atomic_size_t kTaken_;
 	std::atomic_size_t kCompleted_;
+
 	size_t KMax_;
 
 	Eigen::SelfAdjointEigenSolver<typename Base::control_matrix_t> eigenvalueSolver_;

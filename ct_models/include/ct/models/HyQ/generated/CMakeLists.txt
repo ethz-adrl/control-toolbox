@@ -36,13 +36,8 @@ set(HEADERS ./declarations.h
             ./inertia_properties.h
             ./dynamics_parameters.h
             ./miscellaneous.h)
-set(SOURCES ./transforms.cpp
-            ./jacobians.cpp
-            ./jsim.cpp
-            ./inverse_dynamics.cpp
-            ./forward_dynamics.cpp
-            ./inertia_properties.cpp
-            ./miscellaneous.cpp)
+set(SOURCES ./miscellaneous.cpp)
+            
 
 # Include directories
 include_directories(${EIGEN_ROOT})

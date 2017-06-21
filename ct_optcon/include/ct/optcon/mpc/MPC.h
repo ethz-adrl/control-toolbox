@@ -83,7 +83,7 @@ template<typename OPTCON_SOLVER>
 class MPC {
 
 public:
-
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	static const size_t STATE_DIM = OPTCON_SOLVER::STATE_D;
 	static const size_t CONTROL_DIM = OPTCON_SOLVER::CONTROL_D;
 
@@ -198,6 +198,15 @@ public:
 	bool timeHorizonReached() { return timeKeeper_.finalPointReached();}
 
 
+	//! retrieve the time that elapsed since the first successful solve() call to an Optimal Control Problem
+	/*!
+	 * the returned time can be used externally, for example to update cost functions
+	 * @return time elapsed
+	 */
+	const core::Time timeSinceFirstSuccessfulSolve()
+	{
+		return timeKeeper_.timeSinceFirstSuccessfulSolve();
+	}
 
 
 	//! perform forward integration of the measured system state, to compensate for expected or already occured time lags
@@ -304,7 +313,7 @@ public:
 
 
 		// Calculate new initial guess / warm-starting policy
-		policyHandler_->designWarmStartingPolicy(t_forward_stop, newTimeHorizon, currentPolicy_);
+		policyHandler_->designWarmStartingPolicy(t_forward_stop, newTimeHorizon, currentPolicy_, stateTrajectory_);
 
 		// todo: remove this after through testing
 		if(t_forward_stop < t_forward_start)
@@ -324,6 +333,7 @@ public:
 
 			// get optimized policy and state trajectory from OptConSolver
 			currentPolicy_ = solver_.getSolution();
+
 			stateTrajectory_ = solver_.getStateTrajectory();
 
 			// obtain the time which passed since the previous successful solve
@@ -409,6 +419,10 @@ public:
 		timeHorizonStrategy_->updateSettings(settings);
 	}
 
+	void setStateTrajectory(const core::StateTrajectory<STATE_DIM>& x)
+	{
+		stateTrajectory_ = x;
+	}
 
 	//! obtain the solution state trajectory from the solver
 	const core::StateTrajectory<STATE_DIM> getStateTrajectory() const {return stateTrajectory_; }
@@ -467,7 +481,7 @@ private:
 		core::Time dtInit = 0.0001;
 
 		// create temporary integrator object
-		core::ODE45<STATE_DIM> newInt (dynamics_);
+		core::IntegratorRK4<STATE_DIM> newInt (dynamics_);
 
 		// adaptive pre-integration
 		newInt.integrate_adaptive(state, startTime, stopTime, dtInit);

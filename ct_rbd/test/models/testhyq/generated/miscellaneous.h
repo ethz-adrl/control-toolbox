@@ -1,11 +1,11 @@
-#ifndef IIT_ROBCOGEN__HYQ_MISCELLANEOUS_H_
-#define IIT_ROBCOGEN__HYQ_MISCELLANEOUS_H_
+#ifndef IIT_ROBCOGEN__TESTHYQ_MISCELLANEOUS_H_
+#define IIT_ROBCOGEN__TESTHYQ_MISCELLANEOUS_H_
 
 #include "inertia_properties.h"
 #include "transforms.h"
 
 namespace iit {
-namespace HyQ {
+namespace TestHyQ {
 
 /** \name Center of mass calculation
  * Computes the Center Of Mass (COM) position of the whole robot, in

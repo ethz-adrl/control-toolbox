@@ -44,20 +44,20 @@ class InverseDynamics {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef typename TRAIT::Scalar SCALAR;
+    typedef typename TRAIT::Scalar Scalar;
 
-    typedef iit::rbd::Core<SCALAR> CoreS;
+    typedef iit::rbd::Core<Scalar> CoreS;
 
     typedef typename CoreS::ForceVector Force;
     typedef LinkDataMap<Force> ExtForces;
     typedef typename CoreS::VelocityVector Velocity;
     typedef typename CoreS::VelocityVector Acceleration;
-    typedef iit::rbd::tpl::InertiaMatrixDense<SCALAR> InertiaMatrix;
-    typedef iit::HyQ::tpl::JointState<SCALAR> JointState;
+    typedef iit::rbd::tpl::InertiaMatrixDense<Scalar> InertiaMatrix;
+    typedef iit::HyQ::tpl::JointState<Scalar> JointState;
     typedef typename CoreS::Matrix66 Matrix66s;
     typedef iit::HyQ::tpl::MotionTransforms<TRAIT> MTransforms;
-    typedef InertiaProperties<TRAIT> IProperties;            
-
+    typedef InertiaProperties<TRAIT> IProperties;
+            
 public:
     /**
      * Default constructor
@@ -361,7 +361,7 @@ inline void InverseDynamics<TRAIT>::id_fully_actuated(
         baseAccel, qd, qdd, fext);
 }
 
-} // namespace tpl
+}
 
 typedef tpl::InverseDynamics<rbd::DoubleTrait> InverseDynamics;
 

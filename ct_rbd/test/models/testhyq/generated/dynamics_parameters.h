@@ -1,13 +1,13 @@
-#ifndef _HYQ_RUNTIME_INERTIA_PARAMETERS_
-#define _HYQ_RUNTIME_INERTIA_PARAMETERS_
+#ifndef _TESTHYQ_RUNTIME_INERTIA_PARAMETERS_
+#define _TESTHYQ_RUNTIME_INERTIA_PARAMETERS_
 
 namespace iit {
-namespace HyQ {
+namespace TestHyQ {
 namespace dyn {
 /**
  * \defgroup dynparams Dynamics-parameters
  * Facilities related to the parameters of the inertia properties of the
- * robot HyQ.
+ * robot TestHyQ.
  *
  * Inertia parameters are non-constants used in the robot model, where the
  * inertia properties (mass, center of mass, intertia tensor) of the links
@@ -22,7 +22,7 @@ namespace dyn {
  */
 
     /**
-     * A container for the set of non-constant inertia parameters of the robot HyQ
+     * A container for the set of non-constant inertia parameters of the robot TestHyQ
      * \ingroup dynparams
      */
     struct RuntimeInertiaParams {
@@ -30,7 +30,7 @@ namespace dyn {
 
     /**
      * The interface for classes that can compute the actual value of the
-     * non-constant inertia parameters of the robot HyQ.
+     * non-constant inertia parameters of the robot TestHyQ.
      * \ingroup dynparams
      */
     class RuntimeParamsGetter {

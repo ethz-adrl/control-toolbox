@@ -40,10 +40,11 @@ using namespace ct::rbd;
 
 TEST(DynamicsTestHyQ, forward_dynamics_test)
 {
+	typedef float valType;
 
-	std::shared_ptr<TestHyQ::Kinematics>  kyn(new TestHyQ::Kinematics);
+	std::shared_ptr<TestHyQ::tpl::Kinematics<valType>>  kyn(new TestHyQ::tpl::Kinematics<valType>);
 
-	typedef TestHyQ::Dynamics Dyn;
+	typedef TestHyQ::tpl::Dynamics<valType> Dyn;
 
 	Dyn testdynamics(kyn);
 
@@ -51,6 +52,7 @@ TEST(DynamicsTestHyQ, forward_dynamics_test)
 	using ForceVector_t		= typename Dyn::ForceVector_t;
 	using RBDState_t		= typename Dyn::RBDState_t;
 	using RBDAcceleration_t = typename Dyn::RBDAcceleration_t;
+	using RigidBodyAcceleration_t = typename Dyn::RigidBodyAcceleration_t;
 	using JointAcceleration_t= typename Dyn::JointAcceleration_t;
 	using ExtLinkForces_t		= typename Dyn::ExtLinkForces_t;
 	using EE_in_contact_t = typename Dyn::EE_in_contact_t;
@@ -66,7 +68,7 @@ TEST(DynamicsTestHyQ, forward_dynamics_test)
 
 	testdynamics.FloatingBaseForwardDynamics(hyq_state,torque_u, ext_forces, hyq_xd);
 
-	RigidBodyAcceleration base_a;
+	RigidBodyAcceleration_t base_a;
 	JointAcceleration_t qdd;
 	testdynamics.FloatingBaseID(hyq_state,qdd,ext_forces,torque_u,base_a);
 

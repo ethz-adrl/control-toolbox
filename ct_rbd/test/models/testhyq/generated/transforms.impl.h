@@ -1,7 +1,7 @@
 
 // Constructors
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::MotionTransforms
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::MotionTransforms
     ()
      :
     fr_trunk_X_fr_LF_hipassembly(),
@@ -84,11 +84,11 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::MotionTransforms
     updateParameters();
 }
 template <typename TRAIT>
-void iit::HyQ::tpl::MotionTransforms<TRAIT>::updateParameters() {
+void iit::TestHyQ::tpl::MotionTransforms<TRAIT>::updateParameters() {
 }
 
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::ForceTransforms
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::ForceTransforms
     ()
      :
     fr_trunk_X_fr_LF_hipassembly(),
@@ -171,11 +171,11 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::ForceTransforms
     updateParameters();
 }
 template <typename TRAIT>
-void iit::HyQ::tpl::ForceTransforms<TRAIT>::updateParameters() {
+void iit::TestHyQ::tpl::ForceTransforms<TRAIT>::updateParameters() {
 }
 
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::HomogeneousTransforms
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::HomogeneousTransforms
     ()
      :
     fr_trunk_X_fr_LF_hipassembly(),
@@ -258,11 +258,11 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::HomogeneousTransforms
     updateParameters();
 }
 template <typename TRAIT>
-void iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::updateParameters() {
+void iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::updateParameters() {
 }
 
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::Type_fr_trunk_X_fr_LF_hipassembly()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::Type_fr_trunk_X_fr_LF_hipassembly()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -288,7 +288,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::Type_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::update(const JState& q) {
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HAA__;
     
@@ -312,7 +312,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hip
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::Type_fr_trunk_X_fr_RF_hipassembly()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::Type_fr_trunk_X_fr_RF_hipassembly()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -338,7 +338,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::Type_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::update(const JState& q) {
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HAA__;
     
@@ -362,7 +362,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hip
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::Type_fr_trunk_X_fr_LH_hipassembly()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::Type_fr_trunk_X_fr_LH_hipassembly()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -388,7 +388,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::Type_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::update(const JState& q) {
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HAA__;
     
@@ -412,7 +412,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hip
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::Type_fr_trunk_X_fr_RH_hipassembly()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::Type_fr_trunk_X_fr_RH_hipassembly()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -438,7 +438,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::Type_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::update(const JState& q) {
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HAA__;
     
@@ -462,7 +462,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hip
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::Type_fr_trunk_X_fr_LF_upperleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::Type_fr_trunk_X_fr_LF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -477,7 +477,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HFE__;
@@ -516,7 +516,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upp
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::Type_fr_trunk_X_fr_RF_upperleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::Type_fr_trunk_X_fr_RF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -531,7 +531,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HFE__;
@@ -570,7 +570,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upp
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::Type_fr_trunk_X_fr_LH_upperleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::Type_fr_trunk_X_fr_LH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -585,7 +585,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HFE__;
@@ -624,7 +624,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upp
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::Type_fr_trunk_X_fr_RH_upperleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::Type_fr_trunk_X_fr_RH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -639,7 +639,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HFE__;
@@ -678,7 +678,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upp
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::Type_fr_trunk_X_fr_LF_lowerleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::Type_fr_trunk_X_fr_LF_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -693,7 +693,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -736,7 +736,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_low
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::Type_fr_trunk_X_fr_RF_lowerleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::Type_fr_trunk_X_fr_RF_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -751,7 +751,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -794,7 +794,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_low
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::Type_fr_trunk_X_fr_LH_lowerleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::Type_fr_trunk_X_fr_LH_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -809,7 +809,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -852,7 +852,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_low
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::Type_fr_trunk_X_fr_RH_lowerleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::Type_fr_trunk_X_fr_RH_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -867,7 +867,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -910,7 +910,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_low
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::Type_fr_LF_hipassembly_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::Type_fr_LF_hipassembly_X_fr_trunk()
 {
     (*this)(0,0) = 0;
     (*this)(0,3) = 0;
@@ -936,7 +936,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::Type_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HAA__;
     
@@ -960,7 +960,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::Type_fr_RF_hipassembly_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::Type_fr_RF_hipassembly_X_fr_trunk()
 {
     (*this)(0,0) = 0;
     (*this)(0,3) = 0;
@@ -986,7 +986,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::Type_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HAA__;
     
@@ -1010,7 +1010,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::Type_fr_LH_hipassembly_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::Type_fr_LH_hipassembly_X_fr_trunk()
 {
     (*this)(0,0) = 0;
     (*this)(0,3) = 0;
@@ -1036,7 +1036,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::Type_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HAA__;
     
@@ -1060,7 +1060,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::Type_fr_RH_hipassembly_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::Type_fr_RH_hipassembly_X_fr_trunk()
 {
     (*this)(0,0) = 0;
     (*this)(0,3) = 0;
@@ -1086,7 +1086,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::Type_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HAA__;
     
@@ -1110,7 +1110,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::Type_fr_LF_upperleg_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::Type_fr_LF_upperleg_X_fr_trunk()
 {
     (*this)(0,3) = 0;
     (*this)(0,4) = 0;
@@ -1125,7 +1125,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::Type_fr_
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HFE__;
@@ -1164,7 +1164,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::Type_fr_RF_upperleg_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::Type_fr_RF_upperleg_X_fr_trunk()
 {
     (*this)(0,3) = 0;
     (*this)(0,4) = 0;
@@ -1179,7 +1179,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::Type_fr_
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HFE__;
@@ -1218,7 +1218,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::Type_fr_LH_upperleg_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::Type_fr_LH_upperleg_X_fr_trunk()
 {
     (*this)(0,3) = 0;
     (*this)(0,4) = 0;
@@ -1233,7 +1233,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::Type_fr_
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HFE__;
@@ -1272,7 +1272,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::Type_fr_RH_upperleg_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::Type_fr_RH_upperleg_X_fr_trunk()
 {
     (*this)(0,3) = 0;
     (*this)(0,4) = 0;
@@ -1287,7 +1287,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::Type_fr_
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HFE__;
@@ -1326,7 +1326,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::Type_fr_LF_lowerleg_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::Type_fr_LF_lowerleg_X_fr_trunk()
 {
     (*this)(0,3) = 0;
     (*this)(0,4) = 0;
@@ -1341,7 +1341,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::Type_fr_
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -1384,7 +1384,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::Type_fr_RF_lowerleg_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::Type_fr_RF_lowerleg_X_fr_trunk()
 {
     (*this)(0,3) = 0;
     (*this)(0,4) = 0;
@@ -1399,7 +1399,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::Type_fr_
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -1442,7 +1442,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::Type_fr_LH_lowerleg_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::Type_fr_LH_lowerleg_X_fr_trunk()
 {
     (*this)(0,3) = 0;
     (*this)(0,4) = 0;
@@ -1457,7 +1457,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::Type_fr_
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -1500,7 +1500,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::Type_fr_RH_lowerleg_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::Type_fr_RH_lowerleg_X_fr_trunk()
 {
     (*this)(0,3) = 0;
     (*this)(0,4) = 0;
@@ -1515,7 +1515,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::Type_fr_
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -1558,7 +1558,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::Type_fr_trunk_X_LF_hipassemblyCOM()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::Type_fr_trunk_X_LF_hipassemblyCOM()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -1582,7 +1582,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::Type_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::update(const JState& q) {
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HAA__;
     
@@ -1608,7 +1608,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_hipass
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::Type_fr_trunk_X_RF_hipassemblyCOM()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::Type_fr_trunk_X_RF_hipassemblyCOM()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -1632,7 +1632,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::Type_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::update(const JState& q) {
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HAA__;
     
@@ -1658,7 +1658,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_hipass
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::Type_fr_trunk_X_LH_hipassemblyCOM()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::Type_fr_trunk_X_LH_hipassemblyCOM()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -1682,7 +1682,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::Type_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::update(const JState& q) {
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HAA__;
     
@@ -1708,7 +1708,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_hipass
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::Type_fr_trunk_X_RH_hipassemblyCOM()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::Type_fr_trunk_X_RH_hipassemblyCOM()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -1732,7 +1732,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::Type_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::update(const JState& q) {
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HAA__;
     
@@ -1758,7 +1758,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_hipass
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::Type_fr_trunk_X_LF_upperlegCOM()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::Type_fr_trunk_X_LF_upperlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -1773,7 +1773,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HFE__;
@@ -1812,7 +1812,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_upperl
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::Type_fr_trunk_X_RF_upperlegCOM()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::Type_fr_trunk_X_RF_upperlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -1827,7 +1827,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HFE__;
@@ -1866,7 +1866,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_upperl
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::Type_fr_trunk_X_LH_upperlegCOM()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::Type_fr_trunk_X_LH_upperlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -1881,7 +1881,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HFE__;
@@ -1920,7 +1920,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_upperl
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::Type_fr_trunk_X_RH_upperlegCOM()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::Type_fr_trunk_X_RH_upperlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -1935,7 +1935,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HFE__;
@@ -1974,7 +1974,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_upperl
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::Type_fr_trunk_X_LF_lowerlegCOM()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::Type_fr_trunk_X_LF_lowerlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -1989,7 +1989,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -2032,7 +2032,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerl
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::Type_fr_trunk_X_RF_lowerlegCOM()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::Type_fr_trunk_X_RF_lowerlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -2047,7 +2047,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -2090,7 +2090,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerl
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::Type_fr_trunk_X_LH_lowerlegCOM()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::Type_fr_trunk_X_LH_lowerlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -2105,7 +2105,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -2148,7 +2148,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerl
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::Type_fr_trunk_X_RH_lowerlegCOM()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::Type_fr_trunk_X_RH_lowerlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -2163,7 +2163,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::Type_fr_
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -2188,25 +2188,25 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerl
     (*this)(2,2) =  sin__q_RH_HAA__;
     (*this)(3,0) = (((( 0.207 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__) *  cos__q_RH_KFE__) - ((( 0.207 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) *  sin__q_RH_KFE__));
     (*this)(3,1) = ((((- 0.207 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__) *  sin__q_RH_KFE__) - ((( 0.207 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) *  cos__q_RH_KFE__));
-    (*this)(3,2) = ((((((( 5.0E-4 *  cos__q_RH_HFE__) - ( 0.1254 *  sin__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((( 5.0E-4 *  sin__q_RH_HFE__) + ( 0.1254 *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + ( 0.35 *  cos__q_RH_HFE__)) - ( 0.207 *  sin__q_RH_HAA__)) +  0.08);
+    (*this)(3,2) = ((((((( 0.001 *  cos__q_RH_HFE__) - ( 0.125 *  sin__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((( 0.001 *  sin__q_RH_HFE__) + ( 0.125 *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + ( 0.35 *  cos__q_RH_HFE__)) - ( 0.207 *  sin__q_RH_HAA__)) +  0.08);
     (*this)(3,3) = ((- cos__q_RH_HFE__ *  sin__q_RH_KFE__) - ( sin__q_RH_HFE__ *  cos__q_RH_KFE__));
     (*this)(3,4) = (( sin__q_RH_HFE__ *  sin__q_RH_KFE__) - ( cos__q_RH_HFE__ *  cos__q_RH_KFE__));
-    (*this)(4,0) = ((((((( 0.3735 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) + (( 0.08 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) + ( 0.35 *  cos__q_RH_HAA__)) *  sin__q_RH_KFE__) + (((( 0.08 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 0.3735 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + ( 5.0E-4 *  cos__q_RH_HAA__));
-    (*this)(4,1) = (((((( 0.3735 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__) - (( 0.08 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((((( 0.3735 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) + (( 0.08 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) + ( 0.35 *  cos__q_RH_HAA__)) *  cos__q_RH_KFE__)) + ( 0.1254 *  cos__q_RH_HAA__));
-    (*this)(4,2) = ((((((( 5.0E-4 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) + (( 0.1254 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + (((( 0.1254 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 5.0E-4 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + (( 0.35 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__)) + ( 0.3735 *  sin__q_RH_HAA__));
+    (*this)(4,0) = ((((((( 0.3735 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) + (( 0.08 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) + ( 0.35 *  cos__q_RH_HAA__)) *  sin__q_RH_KFE__) + (((( 0.08 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 0.3735 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + ( 0.001 *  cos__q_RH_HAA__));
+    (*this)(4,1) = (((((( 0.3735 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__) - (( 0.08 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((((( 0.3735 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) + (( 0.08 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) + ( 0.35 *  cos__q_RH_HAA__)) *  cos__q_RH_KFE__)) + ( 0.125 *  cos__q_RH_HAA__));
+    (*this)(4,2) = ((((((( 0.001 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) + (( 0.125 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + (((( 0.125 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 0.001 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + (( 0.35 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__)) + ( 0.3735 *  sin__q_RH_HAA__));
     (*this)(4,3) = ((( sin__q_RH_HAA__ *  cos__q_RH_HFE__) *  cos__q_RH_KFE__) - (( sin__q_RH_HAA__ *  sin__q_RH_HFE__) *  sin__q_RH_KFE__));
     (*this)(4,4) = (((- sin__q_RH_HAA__ *  cos__q_RH_HFE__) *  sin__q_RH_KFE__) - (( sin__q_RH_HAA__ *  sin__q_RH_HFE__) *  cos__q_RH_KFE__));
     (*this)(4,5) =  cos__q_RH_HAA__;
-    (*this)(5,0) = ((((((( 0.3735 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) + ((( 0.08 *  sin__q_RH_HAA__) -  0.207) *  cos__q_RH_HFE__)) + ( 0.35 *  sin__q_RH_HAA__)) *  sin__q_RH_KFE__) + ((((( 0.08 *  sin__q_RH_HAA__) -  0.207) *  sin__q_RH_HFE__) - (( 0.3735 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + ( 5.0E-4 *  sin__q_RH_HAA__));
-    (*this)(5,1) = (((((( 0.207 - ( 0.08 *  sin__q_RH_HAA__)) *  sin__q_RH_HFE__) + (( 0.3735 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((((( 0.3735 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) + ((( 0.08 *  sin__q_RH_HAA__) -  0.207) *  cos__q_RH_HFE__)) + ( 0.35 *  sin__q_RH_HAA__)) *  cos__q_RH_KFE__)) + ( 0.1254 *  sin__q_RH_HAA__));
-    (*this)(5,2) = (((((((- 5.0E-4 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 0.1254 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + (((( 5.0E-4 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__) - (( 0.1254 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__)) *  cos__q_RH_KFE__)) - (( 0.35 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__)) - ( 0.3735 *  cos__q_RH_HAA__));
+    (*this)(5,0) = ((((((( 0.3735 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) + ((( 0.08 *  sin__q_RH_HAA__) -  0.207) *  cos__q_RH_HFE__)) + ( 0.35 *  sin__q_RH_HAA__)) *  sin__q_RH_KFE__) + ((((( 0.08 *  sin__q_RH_HAA__) -  0.207) *  sin__q_RH_HFE__) - (( 0.3735 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + ( 0.001 *  sin__q_RH_HAA__));
+    (*this)(5,1) = (((((( 0.207 - ( 0.08 *  sin__q_RH_HAA__)) *  sin__q_RH_HFE__) + (( 0.3735 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((((( 0.3735 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) + ((( 0.08 *  sin__q_RH_HAA__) -  0.207) *  cos__q_RH_HFE__)) + ( 0.35 *  sin__q_RH_HAA__)) *  cos__q_RH_KFE__)) + ( 0.125 *  sin__q_RH_HAA__));
+    (*this)(5,2) = (((((((- 0.001 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 0.125 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + (((( 0.001 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__) - (( 0.125 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__)) *  cos__q_RH_KFE__)) - (( 0.35 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__)) - ( 0.3735 *  cos__q_RH_HAA__));
     (*this)(5,3) = ((( cos__q_RH_HAA__ *  sin__q_RH_HFE__) *  sin__q_RH_KFE__) - (( cos__q_RH_HAA__ *  cos__q_RH_HFE__) *  cos__q_RH_KFE__));
     (*this)(5,4) = ((( cos__q_RH_HAA__ *  cos__q_RH_HFE__) *  sin__q_RH_KFE__) + (( cos__q_RH_HAA__ *  sin__q_RH_HFE__) *  cos__q_RH_KFE__));
     (*this)(5,5) =  sin__q_RH_HAA__;
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::Type_fr_LF_foot_X_fr_LF_lowerleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::Type_fr_LF_foot_X_fr_LF_lowerleg()
 {
     (*this)(0,0) = 1;
     (*this)(0,1) = 0;
@@ -2246,11 +2246,11 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::Type_f
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::Type_fr_RF_foot_X_fr_RF_lowerleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::Type_fr_RF_foot_X_fr_RF_lowerleg()
 {
     (*this)(0,0) = 1;
     (*this)(0,1) = 0;
@@ -2290,11 +2290,11 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::Type_f
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::Type_fr_LH_foot_X_fr_LH_lowerleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::Type_fr_LH_foot_X_fr_LH_lowerleg()
 {
     (*this)(0,0) = 1;
     (*this)(0,1) = 0;
@@ -2334,11 +2334,11 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::Type_f
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::Type_fr_RH_foot_X_fr_RH_lowerleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::Type_fr_RH_foot_X_fr_RH_lowerleg()
 {
     (*this)(0,0) = 1;
     (*this)(0,1) = 0;
@@ -2378,11 +2378,11 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::Type_f
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::Type_fr_trunk_X_fr_LF_foot()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::Type_fr_trunk_X_fr_LF_foot()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -2397,7 +2397,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::Type_fr_trun
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -2440,7 +2440,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foo
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::Type_fr_trunk_X_fr_RF_foot()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::Type_fr_trunk_X_fr_RF_foot()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -2455,7 +2455,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::Type_fr_trun
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -2498,7 +2498,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foo
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::Type_fr_trunk_X_fr_LH_foot()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::Type_fr_trunk_X_fr_LH_foot()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -2513,7 +2513,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::Type_fr_trun
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -2556,7 +2556,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foo
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::Type_fr_trunk_X_fr_RH_foot()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::Type_fr_trunk_X_fr_RH_foot()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -2571,7 +2571,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::Type_fr_trun
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -2614,7 +2614,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foo
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::Type_fr_LF_foot_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::Type_fr_LF_foot_X_fr_trunk()
 {
     (*this)(0,3) = 0;
     (*this)(0,4) = 0;
@@ -2629,7 +2629,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::Type_fr_LF_f
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -2672,7 +2672,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trun
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::Type_fr_RF_foot_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::Type_fr_RF_foot_X_fr_trunk()
 {
     (*this)(0,3) = 0;
     (*this)(0,4) = 0;
@@ -2687,7 +2687,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::Type_fr_RF_f
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -2730,7 +2730,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trun
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::Type_fr_LH_foot_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::Type_fr_LH_foot_X_fr_trunk()
 {
     (*this)(0,3) = 0;
     (*this)(0,4) = 0;
@@ -2745,7 +2745,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::Type_fr_LH_f
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -2788,7 +2788,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trun
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::Type_fr_RH_foot_X_fr_trunk()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::Type_fr_RH_foot_X_fr_trunk()
 {
     (*this)(0,3) = 0;
     (*this)(0,4) = 0;
@@ -2803,7 +2803,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::Type_fr_RH_f
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -2846,7 +2846,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trun
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::Type_fr_trunk_X_fr_LF_HAA()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::Type_fr_trunk_X_fr_LF_HAA()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -2886,11 +2886,11 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::Type_fr_trunk
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::Type_fr_trunk_X_fr_RF_HAA()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::Type_fr_trunk_X_fr_RF_HAA()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -2930,11 +2930,11 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::Type_fr_trunk
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::Type_fr_trunk_X_fr_LH_HAA()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::Type_fr_trunk_X_fr_LH_HAA()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -2974,11 +2974,11 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::Type_fr_trunk
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::Type_fr_trunk_X_fr_RH_HAA()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::Type_fr_trunk_X_fr_RH_HAA()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -3018,11 +3018,11 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::Type_fr_trunk
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::Type_fr_trunk_X_fr_LF_HFE()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::Type_fr_trunk_X_fr_LF_HFE()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = - 1.0;
@@ -3046,7 +3046,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::Type_fr_trunk
     (*this)(5,4) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::update(const JState& q) {
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HAA__;
     
@@ -3072,7 +3072,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::Type_fr_trunk_X_fr_RF_HFE()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::Type_fr_trunk_X_fr_RF_HFE()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = - 1.0;
@@ -3096,7 +3096,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::Type_fr_trunk
     (*this)(5,4) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::update(const JState& q) {
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HAA__;
     
@@ -3122,7 +3122,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::Type_fr_trunk_X_fr_LH_HFE()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::Type_fr_trunk_X_fr_LH_HFE()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = - 1.0;
@@ -3146,7 +3146,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::Type_fr_trunk
     (*this)(5,4) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::update(const JState& q) {
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HAA__;
     
@@ -3172,7 +3172,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::Type_fr_trunk_X_fr_RH_HFE()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::Type_fr_trunk_X_fr_RH_HFE()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = - 1.0;
@@ -3196,7 +3196,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::Type_fr_trunk
     (*this)(5,4) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::update(const JState& q) {
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HAA__;
     
@@ -3222,7 +3222,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::Type_fr_trunk_X_fr_LF_KFE()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::Type_fr_trunk_X_fr_LF_KFE()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -3237,7 +3237,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::Type_fr_trunk
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HFE__;
@@ -3276,7 +3276,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::Type_fr_trunk_X_fr_RF_KFE()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::Type_fr_trunk_X_fr_RF_KFE()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -3291,7 +3291,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::Type_fr_trunk
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HFE__;
@@ -3330,7 +3330,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::Type_fr_trunk_X_fr_LH_KFE()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::Type_fr_trunk_X_fr_LH_KFE()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -3345,7 +3345,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::Type_fr_trunk
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HFE__;
@@ -3384,7 +3384,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::Type_fr_trunk_X_fr_RH_KFE()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::Type_fr_trunk_X_fr_RH_KFE()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -3399,7 +3399,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::Type_fr_trunk
     (*this)(3,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HFE__;
@@ -3438,7 +3438,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly::Type_fr_LF_upperleg_X_fr_LF_hipassembly()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly::Type_fr_LF_upperleg_X_fr_LF_hipassembly()
 {
     (*this)(0,1) = 0;
     (*this)(0,3) = 0;
@@ -3468,7 +3468,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly:
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar cos__q_LF_HFE__;
     
@@ -3488,7 +3488,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg::Type_fr_LF_hipassembly_X_fr_LF_upperleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg::Type_fr_LF_hipassembly_X_fr_LF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -3518,7 +3518,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg:
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar cos__q_LF_HFE__;
     
@@ -3538,7 +3538,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_hipassembly_X_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg::Type_fr_LF_lowerleg_X_fr_LF_upperleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg::Type_fr_LF_lowerleg_X_fr_LF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -3568,7 +3568,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg::Ty
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar cos__q_LF_KFE__;
     
@@ -3588,7 +3588,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg::Type_fr_LF_upperleg_X_fr_LF_lowerleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg::Type_fr_LF_upperleg_X_fr_LF_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -3618,7 +3618,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg::Ty
     (*this)(5,5) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar cos__q_LF_KFE__;
     
@@ -3638,7 +3638,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly::Type_fr_RF_upperleg_X_fr_RF_hipassembly()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly::Type_fr_RF_upperleg_X_fr_RF_hipassembly()
 {
     (*this)(0,1) = 0;
     (*this)(0,3) = 0;
@@ -3668,7 +3668,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly:
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar cos__q_RF_HFE__;
     
@@ -3688,7 +3688,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg::Type_fr_RF_hipassembly_X_fr_RF_upperleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg::Type_fr_RF_hipassembly_X_fr_RF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -3718,7 +3718,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg:
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar cos__q_RF_HFE__;
     
@@ -3738,7 +3738,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_hipassembly_X_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg::Type_fr_RF_lowerleg_X_fr_RF_upperleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg::Type_fr_RF_lowerleg_X_fr_RF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -3768,7 +3768,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg::Ty
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar cos__q_RF_KFE__;
     
@@ -3788,7 +3788,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg::Type_fr_RF_upperleg_X_fr_RF_lowerleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg::Type_fr_RF_upperleg_X_fr_RF_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -3818,7 +3818,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg::Ty
     (*this)(5,5) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar cos__q_RF_KFE__;
     
@@ -3838,7 +3838,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly::Type_fr_LH_upperleg_X_fr_LH_hipassembly()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly::Type_fr_LH_upperleg_X_fr_LH_hipassembly()
 {
     (*this)(0,1) = 0;
     (*this)(0,3) = 0;
@@ -3868,7 +3868,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly:
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar cos__q_LH_HFE__;
     
@@ -3888,7 +3888,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg::Type_fr_LH_hipassembly_X_fr_LH_upperleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg::Type_fr_LH_hipassembly_X_fr_LH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -3918,7 +3918,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg:
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar cos__q_LH_HFE__;
     
@@ -3938,7 +3938,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_hipassembly_X_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg::Type_fr_LH_lowerleg_X_fr_LH_upperleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg::Type_fr_LH_lowerleg_X_fr_LH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -3968,7 +3968,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg::Ty
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar cos__q_LH_KFE__;
     
@@ -3988,7 +3988,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg::Type_fr_LH_upperleg_X_fr_LH_lowerleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg::Type_fr_LH_upperleg_X_fr_LH_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -4018,7 +4018,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg::Ty
     (*this)(5,5) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar cos__q_LH_KFE__;
     
@@ -4038,7 +4038,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly::Type_fr_RH_upperleg_X_fr_RH_hipassembly()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly::Type_fr_RH_upperleg_X_fr_RH_hipassembly()
 {
     (*this)(0,1) = 0;
     (*this)(0,3) = 0;
@@ -4068,7 +4068,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly:
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar cos__q_RH_HFE__;
     
@@ -4088,7 +4088,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg::Type_fr_RH_hipassembly_X_fr_RH_upperleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg::Type_fr_RH_hipassembly_X_fr_RH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -4118,7 +4118,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg:
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar cos__q_RH_HFE__;
     
@@ -4138,7 +4138,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_hipassembly_X_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg::Type_fr_RH_lowerleg_X_fr_RH_upperleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg::Type_fr_RH_lowerleg_X_fr_RH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -4168,7 +4168,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg::Ty
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar cos__q_RH_KFE__;
     
@@ -4188,7 +4188,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg::Type_fr_RH_upperleg_X_fr_RH_lowerleg()
+iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg::Type_fr_RH_upperleg_X_fr_RH_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -4218,7 +4218,7 @@ iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg::Ty
     (*this)(5,5) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg& iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg& iit::TestHyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar cos__q_RH_KFE__;
     
@@ -4239,7 +4239,7 @@ const typename iit::HyQ::tpl::MotionTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_
 }
 
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::Type_fr_trunk_X_fr_LF_hipassembly()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::Type_fr_trunk_X_fr_LF_hipassembly()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -4265,7 +4265,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::Type_f
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::update(const JState& q) {
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HAA__;
     
@@ -4289,7 +4289,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipa
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::Type_fr_trunk_X_fr_RF_hipassembly()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::Type_fr_trunk_X_fr_RF_hipassembly()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -4315,7 +4315,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::Type_f
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::update(const JState& q) {
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HAA__;
     
@@ -4339,7 +4339,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipa
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::Type_fr_trunk_X_fr_LH_hipassembly()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::Type_fr_trunk_X_fr_LH_hipassembly()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -4365,7 +4365,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::Type_f
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::update(const JState& q) {
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HAA__;
     
@@ -4389,7 +4389,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipa
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::Type_fr_trunk_X_fr_RH_hipassembly()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::Type_fr_trunk_X_fr_RH_hipassembly()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -4415,7 +4415,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::Type_f
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::update(const JState& q) {
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HAA__;
     
@@ -4439,7 +4439,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipa
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::Type_fr_trunk_X_fr_LF_upperleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::Type_fr_trunk_X_fr_LF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -4454,7 +4454,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HFE__;
@@ -4493,7 +4493,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_uppe
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::Type_fr_trunk_X_fr_RF_upperleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::Type_fr_trunk_X_fr_RF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -4508,7 +4508,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HFE__;
@@ -4547,7 +4547,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_uppe
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::Type_fr_trunk_X_fr_LH_upperleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::Type_fr_trunk_X_fr_LH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -4562,7 +4562,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HFE__;
@@ -4601,7 +4601,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_uppe
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::Type_fr_trunk_X_fr_RH_upperleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::Type_fr_trunk_X_fr_RH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -4616,7 +4616,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HFE__;
@@ -4655,7 +4655,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_uppe
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::Type_fr_trunk_X_fr_LF_lowerleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::Type_fr_trunk_X_fr_LF_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -4670,7 +4670,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -4713,7 +4713,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowe
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::Type_fr_trunk_X_fr_RF_lowerleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::Type_fr_trunk_X_fr_RF_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -4728,7 +4728,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -4771,7 +4771,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowe
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::Type_fr_trunk_X_fr_LH_lowerleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::Type_fr_trunk_X_fr_LH_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -4786,7 +4786,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -4829,7 +4829,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowe
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::Type_fr_trunk_X_fr_RH_lowerleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::Type_fr_trunk_X_fr_RH_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -4844,7 +4844,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -4887,7 +4887,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowe
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::Type_fr_LF_hipassembly_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::Type_fr_LF_hipassembly_X_fr_trunk()
 {
     (*this)(0,0) = 0;
     (*this)(1,0) = 0;
@@ -4913,7 +4913,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::Type_f
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HAA__;
     
@@ -4937,7 +4937,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_f
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::Type_fr_RF_hipassembly_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::Type_fr_RF_hipassembly_X_fr_trunk()
 {
     (*this)(0,0) = 0;
     (*this)(1,0) = 0;
@@ -4963,7 +4963,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::Type_f
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HAA__;
     
@@ -4987,7 +4987,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_f
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::Type_fr_LH_hipassembly_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::Type_fr_LH_hipassembly_X_fr_trunk()
 {
     (*this)(0,0) = 0;
     (*this)(1,0) = 0;
@@ -5013,7 +5013,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::Type_f
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HAA__;
     
@@ -5037,7 +5037,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_f
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::Type_fr_RH_hipassembly_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::Type_fr_RH_hipassembly_X_fr_trunk()
 {
     (*this)(0,0) = 0;
     (*this)(1,0) = 0;
@@ -5063,7 +5063,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::Type_f
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HAA__;
     
@@ -5087,7 +5087,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_f
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::Type_fr_LF_upperleg_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::Type_fr_LF_upperleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -5102,7 +5102,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::Type_fr_L
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HFE__;
@@ -5141,7 +5141,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_t
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::Type_fr_RF_upperleg_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::Type_fr_RF_upperleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -5156,7 +5156,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::Type_fr_R
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HFE__;
@@ -5195,7 +5195,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_t
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::Type_fr_LH_upperleg_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::Type_fr_LH_upperleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -5210,7 +5210,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::Type_fr_L
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HFE__;
@@ -5249,7 +5249,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_t
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::Type_fr_RH_upperleg_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::Type_fr_RH_upperleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -5264,7 +5264,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::Type_fr_R
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HFE__;
@@ -5303,7 +5303,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_t
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::Type_fr_LF_lowerleg_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::Type_fr_LF_lowerleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -5318,7 +5318,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::Type_fr_L
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -5361,7 +5361,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_t
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::Type_fr_RF_lowerleg_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::Type_fr_RF_lowerleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -5376,7 +5376,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::Type_fr_R
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -5419,7 +5419,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_t
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::Type_fr_LH_lowerleg_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::Type_fr_LH_lowerleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -5434,7 +5434,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::Type_fr_L
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -5477,7 +5477,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_t
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::Type_fr_RH_lowerleg_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::Type_fr_RH_lowerleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -5492,7 +5492,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::Type_fr_R
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -5535,7 +5535,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_t
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::Type_fr_trunk_X_LF_hipassemblyCOM()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::Type_fr_trunk_X_LF_hipassemblyCOM()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -5559,7 +5559,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::Type_f
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::update(const JState& q) {
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HAA__;
     
@@ -5585,7 +5585,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_hipasse
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::Type_fr_trunk_X_RF_hipassemblyCOM()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::Type_fr_trunk_X_RF_hipassemblyCOM()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -5609,7 +5609,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::Type_f
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::update(const JState& q) {
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HAA__;
     
@@ -5635,7 +5635,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_hipasse
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::Type_fr_trunk_X_LH_hipassemblyCOM()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::Type_fr_trunk_X_LH_hipassemblyCOM()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -5659,7 +5659,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::Type_f
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::update(const JState& q) {
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HAA__;
     
@@ -5685,7 +5685,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_hipasse
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::Type_fr_trunk_X_RH_hipassemblyCOM()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::Type_fr_trunk_X_RH_hipassemblyCOM()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -5709,7 +5709,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::Type_f
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::update(const JState& q) {
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HAA__;
     
@@ -5735,7 +5735,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_hipasse
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::Type_fr_trunk_X_LF_upperlegCOM()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::Type_fr_trunk_X_LF_upperlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -5750,7 +5750,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HFE__;
@@ -5789,7 +5789,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_upperle
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::Type_fr_trunk_X_RF_upperlegCOM()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::Type_fr_trunk_X_RF_upperlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -5804,7 +5804,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HFE__;
@@ -5843,7 +5843,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_upperle
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::Type_fr_trunk_X_LH_upperlegCOM()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::Type_fr_trunk_X_LH_upperlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -5858,7 +5858,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HFE__;
@@ -5897,7 +5897,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_upperle
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::Type_fr_trunk_X_RH_upperlegCOM()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::Type_fr_trunk_X_RH_upperlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -5912,7 +5912,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HFE__;
@@ -5951,7 +5951,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_upperle
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::Type_fr_trunk_X_LF_lowerlegCOM()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::Type_fr_trunk_X_LF_lowerlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -5966,7 +5966,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -6009,7 +6009,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerle
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::Type_fr_trunk_X_RF_lowerlegCOM()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::Type_fr_trunk_X_RF_lowerlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -6024,7 +6024,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -6067,7 +6067,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerle
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::Type_fr_trunk_X_LH_lowerlegCOM()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::Type_fr_trunk_X_LH_lowerlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -6082,7 +6082,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -6125,7 +6125,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerle
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::Type_fr_trunk_X_RH_lowerlegCOM()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::Type_fr_trunk_X_RH_lowerlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -6140,7 +6140,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::Type_fr_t
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -6159,19 +6159,19 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerle
     (*this)(0,1) = (( sin__q_RH_HFE__ *  sin__q_RH_KFE__) - ( cos__q_RH_HFE__ *  cos__q_RH_KFE__));
     (*this)(0,3) = (((( 0.207 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__) *  cos__q_RH_KFE__) - ((( 0.207 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) *  sin__q_RH_KFE__));
     (*this)(0,4) = ((((- 0.207 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__) *  sin__q_RH_KFE__) - ((( 0.207 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) *  cos__q_RH_KFE__));
-    (*this)(0,5) = ((((((( 5.0E-4 *  cos__q_RH_HFE__) - ( 0.1254 *  sin__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((( 5.0E-4 *  sin__q_RH_HFE__) + ( 0.1254 *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + ( 0.35 *  cos__q_RH_HFE__)) - ( 0.207 *  sin__q_RH_HAA__)) +  0.08);
+    (*this)(0,5) = ((((((( 0.001 *  cos__q_RH_HFE__) - ( 0.125 *  sin__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((( 0.001 *  sin__q_RH_HFE__) + ( 0.125 *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + ( 0.35 *  cos__q_RH_HFE__)) - ( 0.207 *  sin__q_RH_HAA__)) +  0.08);
     (*this)(1,0) = ((( sin__q_RH_HAA__ *  cos__q_RH_HFE__) *  cos__q_RH_KFE__) - (( sin__q_RH_HAA__ *  sin__q_RH_HFE__) *  sin__q_RH_KFE__));
     (*this)(1,1) = (((- sin__q_RH_HAA__ *  cos__q_RH_HFE__) *  sin__q_RH_KFE__) - (( sin__q_RH_HAA__ *  sin__q_RH_HFE__) *  cos__q_RH_KFE__));
     (*this)(1,2) =  cos__q_RH_HAA__;
-    (*this)(1,3) = ((((((( 0.3735 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) + (( 0.08 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) + ( 0.35 *  cos__q_RH_HAA__)) *  sin__q_RH_KFE__) + (((( 0.08 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 0.3735 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + ( 5.0E-4 *  cos__q_RH_HAA__));
-    (*this)(1,4) = (((((( 0.3735 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__) - (( 0.08 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((((( 0.3735 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) + (( 0.08 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) + ( 0.35 *  cos__q_RH_HAA__)) *  cos__q_RH_KFE__)) + ( 0.1254 *  cos__q_RH_HAA__));
-    (*this)(1,5) = ((((((( 5.0E-4 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) + (( 0.1254 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + (((( 0.1254 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 5.0E-4 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + (( 0.35 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__)) + ( 0.3735 *  sin__q_RH_HAA__));
+    (*this)(1,3) = ((((((( 0.3735 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) + (( 0.08 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) + ( 0.35 *  cos__q_RH_HAA__)) *  sin__q_RH_KFE__) + (((( 0.08 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 0.3735 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + ( 0.001 *  cos__q_RH_HAA__));
+    (*this)(1,4) = (((((( 0.3735 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__) - (( 0.08 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((((( 0.3735 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) + (( 0.08 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) + ( 0.35 *  cos__q_RH_HAA__)) *  cos__q_RH_KFE__)) + ( 0.125 *  cos__q_RH_HAA__));
+    (*this)(1,5) = ((((((( 0.001 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) + (( 0.125 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + (((( 0.125 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 0.001 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + (( 0.35 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__)) + ( 0.3735 *  sin__q_RH_HAA__));
     (*this)(2,0) = ((( cos__q_RH_HAA__ *  sin__q_RH_HFE__) *  sin__q_RH_KFE__) - (( cos__q_RH_HAA__ *  cos__q_RH_HFE__) *  cos__q_RH_KFE__));
     (*this)(2,1) = ((( cos__q_RH_HAA__ *  cos__q_RH_HFE__) *  sin__q_RH_KFE__) + (( cos__q_RH_HAA__ *  sin__q_RH_HFE__) *  cos__q_RH_KFE__));
     (*this)(2,2) =  sin__q_RH_HAA__;
-    (*this)(2,3) = ((((((( 0.3735 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) + ((( 0.08 *  sin__q_RH_HAA__) -  0.207) *  cos__q_RH_HFE__)) + ( 0.35 *  sin__q_RH_HAA__)) *  sin__q_RH_KFE__) + ((((( 0.08 *  sin__q_RH_HAA__) -  0.207) *  sin__q_RH_HFE__) - (( 0.3735 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + ( 5.0E-4 *  sin__q_RH_HAA__));
-    (*this)(2,4) = (((((( 0.207 - ( 0.08 *  sin__q_RH_HAA__)) *  sin__q_RH_HFE__) + (( 0.3735 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((((( 0.3735 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) + ((( 0.08 *  sin__q_RH_HAA__) -  0.207) *  cos__q_RH_HFE__)) + ( 0.35 *  sin__q_RH_HAA__)) *  cos__q_RH_KFE__)) + ( 0.1254 *  sin__q_RH_HAA__));
-    (*this)(2,5) = (((((((- 5.0E-4 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 0.1254 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + (((( 5.0E-4 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__) - (( 0.1254 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__)) *  cos__q_RH_KFE__)) - (( 0.35 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__)) - ( 0.3735 *  cos__q_RH_HAA__));
+    (*this)(2,3) = ((((((( 0.3735 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) + ((( 0.08 *  sin__q_RH_HAA__) -  0.207) *  cos__q_RH_HFE__)) + ( 0.35 *  sin__q_RH_HAA__)) *  sin__q_RH_KFE__) + ((((( 0.08 *  sin__q_RH_HAA__) -  0.207) *  sin__q_RH_HFE__) - (( 0.3735 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + ( 0.001 *  sin__q_RH_HAA__));
+    (*this)(2,4) = (((((( 0.207 - ( 0.08 *  sin__q_RH_HAA__)) *  sin__q_RH_HFE__) + (( 0.3735 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((((( 0.3735 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) + ((( 0.08 *  sin__q_RH_HAA__) -  0.207) *  cos__q_RH_HFE__)) + ( 0.35 *  sin__q_RH_HAA__)) *  cos__q_RH_KFE__)) + ( 0.125 *  sin__q_RH_HAA__));
+    (*this)(2,5) = (((((((- 0.001 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 0.125 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + (((( 0.001 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__) - (( 0.125 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__)) *  cos__q_RH_KFE__)) - (( 0.35 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__)) - ( 0.3735 *  cos__q_RH_HAA__));
     (*this)(3,3) = ((- cos__q_RH_HFE__ *  sin__q_RH_KFE__) - ( sin__q_RH_HFE__ *  cos__q_RH_KFE__));
     (*this)(3,4) = (( sin__q_RH_HFE__ *  sin__q_RH_KFE__) - ( cos__q_RH_HFE__ *  cos__q_RH_KFE__));
     (*this)(4,3) = ((( sin__q_RH_HAA__ *  cos__q_RH_HFE__) *  cos__q_RH_KFE__) - (( sin__q_RH_HAA__ *  sin__q_RH_HFE__) *  sin__q_RH_KFE__));
@@ -6183,7 +6183,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerle
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::Type_fr_LF_foot_X_fr_LF_lowerleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::Type_fr_LF_foot_X_fr_LF_lowerleg()
 {
     (*this)(0,0) = 1;
     (*this)(0,1) = 0;
@@ -6223,11 +6223,11 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::Type_fr
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::Type_fr_RF_foot_X_fr_RF_lowerleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::Type_fr_RF_foot_X_fr_RF_lowerleg()
 {
     (*this)(0,0) = 1;
     (*this)(0,1) = 0;
@@ -6267,11 +6267,11 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::Type_fr
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::Type_fr_LH_foot_X_fr_LH_lowerleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::Type_fr_LH_foot_X_fr_LH_lowerleg()
 {
     (*this)(0,0) = 1;
     (*this)(0,1) = 0;
@@ -6311,11 +6311,11 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::Type_fr
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::Type_fr_RH_foot_X_fr_RH_lowerleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::Type_fr_RH_foot_X_fr_RH_lowerleg()
 {
     (*this)(0,0) = 1;
     (*this)(0,1) = 0;
@@ -6355,11 +6355,11 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::Type_fr
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::Type_fr_trunk_X_fr_LF_foot()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::Type_fr_trunk_X_fr_LF_foot()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -6374,7 +6374,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::Type_fr_trunk
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -6417,7 +6417,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::Type_fr_trunk_X_fr_RF_foot()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::Type_fr_trunk_X_fr_RF_foot()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -6432,7 +6432,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::Type_fr_trunk
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -6475,7 +6475,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::Type_fr_trunk_X_fr_LH_foot()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::Type_fr_trunk_X_fr_LH_foot()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -6490,7 +6490,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::Type_fr_trunk
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -6533,7 +6533,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::Type_fr_trunk_X_fr_RH_foot()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::Type_fr_trunk_X_fr_RH_foot()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -6548,7 +6548,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::Type_fr_trunk
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -6591,7 +6591,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::Type_fr_LF_foot_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::Type_fr_LF_foot_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -6606,7 +6606,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::Type_fr_LF_fo
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -6649,7 +6649,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::Type_fr_RF_foot_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::Type_fr_RF_foot_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -6664,7 +6664,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::Type_fr_RF_fo
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -6707,7 +6707,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::Type_fr_LH_foot_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::Type_fr_LH_foot_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -6722,7 +6722,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::Type_fr_LH_fo
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -6765,7 +6765,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::Type_fr_RH_foot_X_fr_trunk()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::Type_fr_RH_foot_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -6780,7 +6780,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::Type_fr_RH_fo
     (*this)(5,3) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -6823,7 +6823,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::Type_fr_trunk_X_fr_LF_HAA()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::Type_fr_trunk_X_fr_LF_HAA()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -6863,11 +6863,11 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::Type_fr_trunk_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::Type_fr_trunk_X_fr_RF_HAA()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::Type_fr_trunk_X_fr_RF_HAA()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -6907,11 +6907,11 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::Type_fr_trunk_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::Type_fr_trunk_X_fr_LH_HAA()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::Type_fr_trunk_X_fr_LH_HAA()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -6951,11 +6951,11 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::Type_fr_trunk_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::Type_fr_trunk_X_fr_RH_HAA()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::Type_fr_trunk_X_fr_RH_HAA()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -6995,11 +6995,11 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::Type_fr_trunk_
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::Type_fr_trunk_X_fr_LF_HFE()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::Type_fr_trunk_X_fr_LF_HFE()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = - 1.0;
@@ -7023,7 +7023,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::Type_fr_trunk_
     (*this)(5,4) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::update(const JState& q) {
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HAA__;
     
@@ -7049,7 +7049,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE&
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::Type_fr_trunk_X_fr_RF_HFE()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::Type_fr_trunk_X_fr_RF_HFE()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = - 1.0;
@@ -7073,7 +7073,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::Type_fr_trunk_
     (*this)(5,4) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::update(const JState& q) {
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HAA__;
     
@@ -7099,7 +7099,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE&
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::Type_fr_trunk_X_fr_LH_HFE()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::Type_fr_trunk_X_fr_LH_HFE()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = - 1.0;
@@ -7123,7 +7123,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::Type_fr_trunk_
     (*this)(5,4) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::update(const JState& q) {
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HAA__;
     
@@ -7149,7 +7149,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE&
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::Type_fr_trunk_X_fr_RH_HFE()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::Type_fr_trunk_X_fr_RH_HFE()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = - 1.0;
@@ -7173,7 +7173,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::Type_fr_trunk_
     (*this)(5,4) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::update(const JState& q) {
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HAA__;
     
@@ -7199,7 +7199,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE&
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::Type_fr_trunk_X_fr_LF_KFE()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::Type_fr_trunk_X_fr_LF_KFE()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -7214,7 +7214,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::Type_fr_trunk_
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HFE__;
@@ -7253,7 +7253,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE&
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::Type_fr_trunk_X_fr_RF_KFE()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::Type_fr_trunk_X_fr_RF_KFE()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -7268,7 +7268,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::Type_fr_trunk_
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HFE__;
@@ -7307,7 +7307,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE&
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::Type_fr_trunk_X_fr_LH_KFE()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::Type_fr_trunk_X_fr_LH_KFE()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -7322,7 +7322,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::Type_fr_trunk_
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HFE__;
@@ -7361,7 +7361,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE&
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::Type_fr_trunk_X_fr_RH_KFE()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::Type_fr_trunk_X_fr_RH_KFE()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -7376,7 +7376,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::Type_fr_trunk_
     (*this)(5,2) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HFE__;
@@ -7415,7 +7415,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE&
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly::Type_fr_LF_upperleg_X_fr_LF_hipassembly()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly::Type_fr_LF_upperleg_X_fr_LF_hipassembly()
 {
     (*this)(0,1) = 0;
     (*this)(0,3) = 0;
@@ -7445,7 +7445,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly::
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar cos__q_LF_HFE__;
     
@@ -7465,7 +7465,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg::Type_fr_LF_hipassembly_X_fr_LF_upperleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg::Type_fr_LF_hipassembly_X_fr_LF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -7495,7 +7495,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg::
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar cos__q_LF_HFE__;
     
@@ -7515,7 +7515,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_hipassembly_X_f
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg::Type_fr_LF_lowerleg_X_fr_LF_upperleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg::Type_fr_LF_lowerleg_X_fr_LF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -7545,7 +7545,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg::Typ
     (*this)(5,5) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar cos__q_LF_KFE__;
     
@@ -7565,7 +7565,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg::Type_fr_LF_upperleg_X_fr_LF_lowerleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg::Type_fr_LF_upperleg_X_fr_LF_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -7595,7 +7595,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg::Typ
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar cos__q_LF_KFE__;
     
@@ -7615,7 +7615,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly::Type_fr_RF_upperleg_X_fr_RF_hipassembly()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly::Type_fr_RF_upperleg_X_fr_RF_hipassembly()
 {
     (*this)(0,1) = 0;
     (*this)(0,3) = 0;
@@ -7645,7 +7645,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly::
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar cos__q_RF_HFE__;
     
@@ -7665,7 +7665,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg::Type_fr_RF_hipassembly_X_fr_RF_upperleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg::Type_fr_RF_hipassembly_X_fr_RF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -7695,7 +7695,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg::
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar cos__q_RF_HFE__;
     
@@ -7715,7 +7715,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_hipassembly_X_f
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg::Type_fr_RF_lowerleg_X_fr_RF_upperleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg::Type_fr_RF_lowerleg_X_fr_RF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -7745,7 +7745,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg::Typ
     (*this)(5,5) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar cos__q_RF_KFE__;
     
@@ -7765,7 +7765,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg::Type_fr_RF_upperleg_X_fr_RF_lowerleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg::Type_fr_RF_upperleg_X_fr_RF_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -7795,7 +7795,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg::Typ
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar cos__q_RF_KFE__;
     
@@ -7815,7 +7815,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly::Type_fr_LH_upperleg_X_fr_LH_hipassembly()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly::Type_fr_LH_upperleg_X_fr_LH_hipassembly()
 {
     (*this)(0,1) = 0;
     (*this)(0,3) = 0;
@@ -7845,7 +7845,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly::
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar cos__q_LH_HFE__;
     
@@ -7865,7 +7865,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg::Type_fr_LH_hipassembly_X_fr_LH_upperleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg::Type_fr_LH_hipassembly_X_fr_LH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -7895,7 +7895,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg::
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar cos__q_LH_HFE__;
     
@@ -7915,7 +7915,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_hipassembly_X_f
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg::Type_fr_LH_lowerleg_X_fr_LH_upperleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg::Type_fr_LH_lowerleg_X_fr_LH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -7945,7 +7945,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg::Typ
     (*this)(5,5) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar cos__q_LH_KFE__;
     
@@ -7965,7 +7965,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg::Type_fr_LH_upperleg_X_fr_LH_lowerleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg::Type_fr_LH_upperleg_X_fr_LH_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -7995,7 +7995,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg::Typ
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar cos__q_LH_KFE__;
     
@@ -8015,7 +8015,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly::Type_fr_RH_upperleg_X_fr_RH_hipassembly()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly::Type_fr_RH_upperleg_X_fr_RH_hipassembly()
 {
     (*this)(0,1) = 0;
     (*this)(0,3) = 0;
@@ -8045,7 +8045,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly::
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar cos__q_RH_HFE__;
     
@@ -8065,7 +8065,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg::Type_fr_RH_hipassembly_X_fr_RH_upperleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg::Type_fr_RH_hipassembly_X_fr_RH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -8095,7 +8095,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg::
     (*this)(5,5) = 0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar cos__q_RH_HFE__;
     
@@ -8115,7 +8115,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_hipassembly_X_f
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg::Type_fr_RH_lowerleg_X_fr_RH_upperleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg::Type_fr_RH_lowerleg_X_fr_RH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -8145,7 +8145,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg::Typ
     (*this)(5,5) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar cos__q_RH_KFE__;
     
@@ -8165,7 +8165,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg::Type_fr_RH_upperleg_X_fr_RH_lowerleg()
+iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg::Type_fr_RH_upperleg_X_fr_RH_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0;
@@ -8195,7 +8195,7 @@ iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg::Typ
     (*this)(5,5) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg& iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg& iit::TestHyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar cos__q_RH_KFE__;
     
@@ -8216,7 +8216,7 @@ const typename iit::HyQ::tpl::ForceTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_R
 }
 
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::Type_fr_trunk_X_fr_LF_hipassembly()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::Type_fr_trunk_X_fr_LF_hipassembly()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -8232,7 +8232,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_hipassembly::update(const JState& q) {
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HAA__;
     
@@ -8246,7 +8246,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::Type_fr_trunk_X_fr_RF_hipassembly()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::Type_fr_trunk_X_fr_RF_hipassembly()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -8262,7 +8262,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_hipassembly::update(const JState& q) {
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HAA__;
     
@@ -8276,7 +8276,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::Type_fr_trunk_X_fr_LH_hipassembly()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::Type_fr_trunk_X_fr_LH_hipassembly()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -8292,7 +8292,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_hipassembly::update(const JState& q) {
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HAA__;
     
@@ -8306,7 +8306,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::Type_fr_trunk_X_fr_RH_hipassembly()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::Type_fr_trunk_X_fr_RH_hipassembly()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -8322,7 +8322,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_hipassembly::update(const JState& q) {
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HAA__;
     
@@ -8336,7 +8336,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::Type_fr_trunk_X_fr_LF_upperleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::Type_fr_trunk_X_fr_LF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0.3735;
@@ -8346,7 +8346,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_upperleg::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HFE__;
@@ -8370,7 +8370,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::Type_fr_trunk_X_fr_RF_upperleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::Type_fr_trunk_X_fr_RF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0.3735;
@@ -8380,7 +8380,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_upperleg::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HFE__;
@@ -8404,7 +8404,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::Type_fr_trunk_X_fr_LH_upperleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::Type_fr_trunk_X_fr_LH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = - 0.3735;
@@ -8414,7 +8414,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_upperleg::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HFE__;
@@ -8438,7 +8438,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::Type_fr_trunk_X_fr_RH_upperleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::Type_fr_trunk_X_fr_RH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = - 0.3735;
@@ -8448,7 +8448,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_upperleg::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HFE__;
@@ -8472,7 +8472,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::Type_fr_trunk_X_fr_LF_lowerleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::Type_fr_trunk_X_fr_LF_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -8481,7 +8481,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_lowerleg::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -8510,7 +8510,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::Type_fr_trunk_X_fr_RF_lowerleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::Type_fr_trunk_X_fr_RF_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -8519,7 +8519,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_lowerleg::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -8548,7 +8548,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::Type_fr_trunk_X_fr_LH_lowerleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::Type_fr_trunk_X_fr_LH_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -8557,7 +8557,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_lowerleg::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -8586,7 +8586,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::Type_fr_trunk_X_fr_RH_lowerleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::Type_fr_trunk_X_fr_RH_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -8595,7 +8595,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_lowerleg::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -8624,7 +8624,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::Type_fr_LF_hipassembly_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::Type_fr_LF_hipassembly_X_fr_trunk()
 {
     (*this)(0,0) = 0;
     (*this)(1,0) = 0;
@@ -8638,7 +8638,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HAA__;
     
@@ -8654,7 +8654,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassemb
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::Type_fr_RF_hipassembly_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::Type_fr_RF_hipassembly_X_fr_trunk()
 {
     (*this)(0,0) = 0;
     (*this)(1,0) = 0;
@@ -8668,7 +8668,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HAA__;
     
@@ -8684,7 +8684,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassemb
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::Type_fr_LH_hipassembly_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::Type_fr_LH_hipassembly_X_fr_trunk()
 {
     (*this)(0,0) = 0;
     (*this)(1,0) = 0;
@@ -8698,7 +8698,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HAA__;
     
@@ -8714,7 +8714,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassemb
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::Type_fr_RH_hipassembly_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::Type_fr_RH_hipassembly_X_fr_trunk()
 {
     (*this)(0,0) = 0;
     (*this)(1,0) = 0;
@@ -8728,7 +8728,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HAA__;
     
@@ -8744,7 +8744,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassemb
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::Type_fr_LF_upperleg_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::Type_fr_LF_upperleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -8753,7 +8753,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HFE__;
@@ -8778,7 +8778,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::Type_fr_RF_upperleg_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::Type_fr_RF_upperleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -8787,7 +8787,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HFE__;
@@ -8812,7 +8812,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::Type_fr_LH_upperleg_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::Type_fr_LH_upperleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -8821,7 +8821,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HFE__;
@@ -8846,7 +8846,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::Type_fr_RH_upperleg_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::Type_fr_RH_upperleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -8855,7 +8855,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HFE__;
@@ -8880,7 +8880,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::Type_fr_LF_lowerleg_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::Type_fr_LF_lowerleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -8889,7 +8889,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -8918,7 +8918,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::Type_fr_RF_lowerleg_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::Type_fr_RF_lowerleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -8927,7 +8927,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -8956,7 +8956,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::Type_fr_LH_lowerleg_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::Type_fr_LH_lowerleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -8965,7 +8965,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -8994,7 +8994,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::Type_fr_RH_lowerleg_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::Type_fr_RH_lowerleg_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -9003,7 +9003,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -9032,7 +9032,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::Type_fr_trunk_X_LF_hipassemblyCOM()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::Type_fr_trunk_X_LF_hipassemblyCOM()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -9046,7 +9046,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_hipassemblyCOM::update(const JState& q) {
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HAA__;
     
@@ -9062,7 +9062,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_h
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::Type_fr_trunk_X_RF_hipassemblyCOM()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::Type_fr_trunk_X_RF_hipassemblyCOM()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -9076,7 +9076,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_hipassemblyCOM::update(const JState& q) {
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HAA__;
     
@@ -9092,7 +9092,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_h
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::Type_fr_trunk_X_LH_hipassemblyCOM()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::Type_fr_trunk_X_LH_hipassemblyCOM()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -9106,7 +9106,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_hipassemblyCOM::update(const JState& q) {
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HAA__;
     
@@ -9122,7 +9122,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_h
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::Type_fr_trunk_X_RH_hipassemblyCOM()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::Type_fr_trunk_X_RH_hipassemblyCOM()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -9136,7 +9136,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_hipassemblyCOM::update(const JState& q) {
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HAA__;
     
@@ -9152,7 +9152,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_h
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::Type_fr_trunk_X_LF_upperlegCOM()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::Type_fr_trunk_X_LF_upperlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -9161,7 +9161,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_upperlegCOM::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HFE__;
@@ -9186,7 +9186,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_u
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::Type_fr_trunk_X_RF_upperlegCOM()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::Type_fr_trunk_X_RF_upperlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -9195,7 +9195,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_upperlegCOM::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HFE__;
@@ -9220,7 +9220,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_u
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::Type_fr_trunk_X_LH_upperlegCOM()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::Type_fr_trunk_X_LH_upperlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -9229,7 +9229,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_upperlegCOM::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HFE__;
@@ -9254,7 +9254,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_u
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::Type_fr_trunk_X_RH_upperlegCOM()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::Type_fr_trunk_X_RH_upperlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -9263,7 +9263,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_upperlegCOM::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HFE__;
@@ -9288,7 +9288,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_u
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::Type_fr_trunk_X_LF_lowerlegCOM()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::Type_fr_trunk_X_LF_lowerlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -9297,7 +9297,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_lowerlegCOM::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -9326,7 +9326,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LF_l
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::Type_fr_trunk_X_RF_lowerlegCOM()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::Type_fr_trunk_X_RF_lowerlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -9335,7 +9335,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_lowerlegCOM::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -9364,7 +9364,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RF_l
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::Type_fr_trunk_X_LH_lowerlegCOM()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::Type_fr_trunk_X_LH_lowerlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -9373,7 +9373,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_lowerlegCOM::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -9402,7 +9402,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_LH_l
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::Type_fr_trunk_X_RH_lowerlegCOM()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::Type_fr_trunk_X_RH_lowerlegCOM()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -9411,7 +9411,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::Typ
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_lowerlegCOM::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -9428,19 +9428,19 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_RH_l
     
     (*this)(0,0) = ((- cos__q_RH_HFE__ *  sin__q_RH_KFE__) - ( sin__q_RH_HFE__ *  cos__q_RH_KFE__));
     (*this)(0,1) = (( sin__q_RH_HFE__ *  sin__q_RH_KFE__) - ( cos__q_RH_HFE__ *  cos__q_RH_KFE__));
-    (*this)(0,3) = ((((((- 5.0E-4 *  sin__q_RH_HFE__) - ( 0.1254 *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((( 5.0E-4 *  cos__q_RH_HFE__) - ( 0.1254 *  sin__q_RH_HFE__)) *  cos__q_RH_KFE__)) - ( 0.35 *  sin__q_RH_HFE__)) -  0.3735);
+    (*this)(0,3) = ((((((- 0.001 *  sin__q_RH_HFE__) - ( 0.125 *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((( 0.001 *  cos__q_RH_HFE__) - ( 0.125 *  sin__q_RH_HFE__)) *  cos__q_RH_KFE__)) - ( 0.35 *  sin__q_RH_HFE__)) -  0.3735);
     (*this)(1,0) = ((( sin__q_RH_HAA__ *  cos__q_RH_HFE__) *  cos__q_RH_KFE__) - (( sin__q_RH_HAA__ *  sin__q_RH_HFE__) *  sin__q_RH_KFE__));
     (*this)(1,1) = (((- sin__q_RH_HAA__ *  cos__q_RH_HFE__) *  sin__q_RH_KFE__) - (( sin__q_RH_HAA__ *  sin__q_RH_HFE__) *  cos__q_RH_KFE__));
     (*this)(1,2) =  cos__q_RH_HAA__;
-    (*this)(1,3) = (((((((( 5.0E-4 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__) - (( 0.1254 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__)) *  sin__q_RH_KFE__) + (((( 5.0E-4 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) + (( 0.1254 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + (( 0.35 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) + ( 0.08 *  sin__q_RH_HAA__)) -  0.207);
+    (*this)(1,3) = (((((((( 0.001 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__) - (( 0.125 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__)) *  sin__q_RH_KFE__) + (((( 0.001 *  sin__q_RH_HAA__) *  sin__q_RH_HFE__) + (( 0.125 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) + (( 0.35 *  sin__q_RH_HAA__) *  cos__q_RH_HFE__)) + ( 0.08 *  sin__q_RH_HAA__)) -  0.207);
     (*this)(2,0) = ((( cos__q_RH_HAA__ *  sin__q_RH_HFE__) *  sin__q_RH_KFE__) - (( cos__q_RH_HAA__ *  cos__q_RH_HFE__) *  cos__q_RH_KFE__));
     (*this)(2,1) = ((( cos__q_RH_HAA__ *  cos__q_RH_HFE__) *  sin__q_RH_KFE__) + (( cos__q_RH_HAA__ *  sin__q_RH_HFE__) *  cos__q_RH_KFE__));
     (*this)(2,2) =  sin__q_RH_HAA__;
-    (*this)(2,3) = ((((((( 0.1254 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 5.0E-4 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((((- 5.0E-4 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 0.1254 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) - (( 0.35 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) - ( 0.08 *  cos__q_RH_HAA__));
+    (*this)(2,3) = ((((((( 0.125 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 0.001 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) *  sin__q_RH_KFE__) + ((((- 0.001 *  cos__q_RH_HAA__) *  sin__q_RH_HFE__) - (( 0.125 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) *  cos__q_RH_KFE__)) - (( 0.35 *  cos__q_RH_HAA__) *  cos__q_RH_HFE__)) - ( 0.08 *  cos__q_RH_HAA__));
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::Type_fr_LF_foot_X_fr_LF_lowerleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::Type_fr_LF_foot_X_fr_LF_lowerleg()
 {
     (*this)(0,0) = 1;
     (*this)(0,1) = 0;
@@ -9460,11 +9460,11 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::T
     (*this)(3,3) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr_LF_lowerleg::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::Type_fr_RF_foot_X_fr_RF_lowerleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::Type_fr_RF_foot_X_fr_RF_lowerleg()
 {
     (*this)(0,0) = 1;
     (*this)(0,1) = 0;
@@ -9484,11 +9484,11 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::T
     (*this)(3,3) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr_RF_lowerleg::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::Type_fr_LH_foot_X_fr_LH_lowerleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::Type_fr_LH_foot_X_fr_LH_lowerleg()
 {
     (*this)(0,0) = 1;
     (*this)(0,1) = 0;
@@ -9508,11 +9508,11 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::T
     (*this)(3,3) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr_LH_lowerleg::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::Type_fr_RH_foot_X_fr_RH_lowerleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::Type_fr_RH_foot_X_fr_RH_lowerleg()
 {
     (*this)(0,0) = 1;
     (*this)(0,1) = 0;
@@ -9532,11 +9532,11 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::T
     (*this)(3,3) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr_RH_lowerleg::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::Type_fr_trunk_X_fr_LF_foot()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::Type_fr_trunk_X_fr_LF_foot()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -9545,7 +9545,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::Type_fr
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_foot::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -9574,7 +9574,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::Type_fr_trunk_X_fr_RF_foot()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::Type_fr_trunk_X_fr_RF_foot()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -9583,7 +9583,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::Type_fr
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_foot::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -9612,7 +9612,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::Type_fr_trunk_X_fr_LH_foot()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::Type_fr_trunk_X_fr_LH_foot()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -9621,7 +9621,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::Type_fr
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_foot::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -9650,7 +9650,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::Type_fr_trunk_X_fr_RH_foot()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::Type_fr_trunk_X_fr_RH_foot()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -9659,7 +9659,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::Type_fr
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_foot::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -9688,7 +9688,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::Type_fr_LF_foot_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::Type_fr_LF_foot_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -9697,7 +9697,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::Type_fr
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
@@ -9726,7 +9726,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_foot_X_fr
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::Type_fr_RF_foot_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::Type_fr_RF_foot_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -9735,7 +9735,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::Type_fr
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
@@ -9764,7 +9764,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_foot_X_fr
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::Type_fr_LH_foot_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::Type_fr_LH_foot_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -9773,7 +9773,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::Type_fr
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
@@ -9802,7 +9802,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_foot_X_fr
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::Type_fr_RH_foot_X_fr_trunk()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::Type_fr_RH_foot_X_fr_trunk()
 {
     (*this)(2,0) = 0;
     (*this)(3,0) = 0;
@@ -9811,7 +9811,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::Type_fr
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr_trunk::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
@@ -9840,7 +9840,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_foot_X_fr
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::Type_fr_trunk_X_fr_LF_HAA()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::Type_fr_trunk_X_fr_LF_HAA()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -9860,11 +9860,11 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::Type_fr_
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HAA::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::Type_fr_trunk_X_fr_RF_HAA()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::Type_fr_trunk_X_fr_RF_HAA()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -9884,11 +9884,11 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::Type_fr_
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HAA::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::Type_fr_trunk_X_fr_LH_HAA()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::Type_fr_trunk_X_fr_LH_HAA()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -9908,11 +9908,11 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::Type_fr_
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HAA::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::Type_fr_trunk_X_fr_RH_HAA()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::Type_fr_trunk_X_fr_RH_HAA()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = 0;
@@ -9932,11 +9932,11 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::Type_fr_
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HAA::update(const JState& q) {
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::Type_fr_trunk_X_fr_LF_HFE()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::Type_fr_trunk_X_fr_LF_HFE()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = - 1.0;
@@ -9950,7 +9950,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::Type_fr_
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_HFE::update(const JState& q) {
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HAA__;
     
@@ -9966,7 +9966,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::Type_fr_trunk_X_fr_RF_HFE()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::Type_fr_trunk_X_fr_RF_HFE()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = - 1.0;
@@ -9980,7 +9980,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::Type_fr_
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_HFE::update(const JState& q) {
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HAA__;
     
@@ -9996,7 +9996,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::Type_fr_trunk_X_fr_LH_HFE()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::Type_fr_trunk_X_fr_LH_HFE()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = - 1.0;
@@ -10010,7 +10010,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::Type_fr_
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_HFE::update(const JState& q) {
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HAA__;
     
@@ -10026,7 +10026,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::Type_fr_trunk_X_fr_RH_HFE()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::Type_fr_trunk_X_fr_RH_HFE()
 {
     (*this)(0,0) = 0;
     (*this)(0,1) = - 1.0;
@@ -10040,7 +10040,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::Type_fr_
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_HFE::update(const JState& q) {
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HAA__;
     
@@ -10056,7 +10056,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::Type_fr_trunk_X_fr_LF_KFE()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::Type_fr_trunk_X_fr_LF_KFE()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -10065,7 +10065,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::Type_fr_
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LF_KFE::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar sin__q_LF_HAA__;
     Scalar cos__q_LF_HFE__;
@@ -10090,7 +10090,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::Type_fr_trunk_X_fr_RF_KFE()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::Type_fr_trunk_X_fr_RF_KFE()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -10099,7 +10099,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::Type_fr_
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RF_KFE::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar sin__q_RF_HAA__;
     Scalar cos__q_RF_HFE__;
@@ -10124,7 +10124,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::Type_fr_trunk_X_fr_LH_KFE()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::Type_fr_trunk_X_fr_LH_KFE()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -10133,7 +10133,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::Type_fr_
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_LH_KFE::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar sin__q_LH_HAA__;
     Scalar cos__q_LH_HFE__;
@@ -10158,7 +10158,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_L
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::Type_fr_trunk_X_fr_RH_KFE()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::Type_fr_trunk_X_fr_RH_KFE()
 {
     (*this)(0,2) = 0;
     (*this)(3,0) = 0;
@@ -10167,7 +10167,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::Type_fr_
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_RH_KFE::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar sin__q_RH_HAA__;
     Scalar cos__q_RH_HFE__;
@@ -10192,7 +10192,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_trunk_X_fr_R
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly::Type_fr_LF_upperleg_X_fr_LF_hipassembly()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly::Type_fr_LF_upperleg_X_fr_LF_hipassembly()
 {
     (*this)(0,1) = 0;
     (*this)(1,1) = 0;
@@ -10206,7 +10206,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipasse
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_hipassembly::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar cos__q_LF_HFE__;
     
@@ -10222,7 +10222,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg::Type_fr_LF_hipassembly_X_fr_LF_upperleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg::Type_fr_LF_hipassembly_X_fr_LF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0.08;
@@ -10238,7 +10238,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_uppe
     (*this)(3,3) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassembly_X_fr_LF_upperleg::update(const JState& q) {
     Scalar sin__q_LF_HFE__;
     Scalar cos__q_LF_HFE__;
     
@@ -10252,7 +10252,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_hipassemb
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg::Type_fr_LF_lowerleg_X_fr_LF_upperleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg::Type_fr_LF_lowerleg_X_fr_LF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(1,2) = 0;
@@ -10266,7 +10266,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperle
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_X_fr_LF_upperleg::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar cos__q_LF_KFE__;
     
@@ -10282,7 +10282,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_lowerleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg::Type_fr_LF_upperleg_X_fr_LF_lowerleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg::Type_fr_LF_upperleg_X_fr_LF_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0.35;
@@ -10298,7 +10298,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerle
     (*this)(3,3) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_X_fr_LF_lowerleg::update(const JState& q) {
     Scalar sin__q_LF_KFE__;
     Scalar cos__q_LF_KFE__;
     
@@ -10312,7 +10312,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LF_upperleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly::Type_fr_RF_upperleg_X_fr_RF_hipassembly()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly::Type_fr_RF_upperleg_X_fr_RF_hipassembly()
 {
     (*this)(0,1) = 0;
     (*this)(1,1) = 0;
@@ -10326,7 +10326,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipasse
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_hipassembly::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar cos__q_RF_HFE__;
     
@@ -10342,7 +10342,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg::Type_fr_RF_hipassembly_X_fr_RF_upperleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg::Type_fr_RF_hipassembly_X_fr_RF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0.08;
@@ -10358,7 +10358,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_uppe
     (*this)(3,3) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassembly_X_fr_RF_upperleg::update(const JState& q) {
     Scalar sin__q_RF_HFE__;
     Scalar cos__q_RF_HFE__;
     
@@ -10372,7 +10372,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_hipassemb
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg::Type_fr_RF_lowerleg_X_fr_RF_upperleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg::Type_fr_RF_lowerleg_X_fr_RF_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(1,2) = 0;
@@ -10386,7 +10386,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperle
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_X_fr_RF_upperleg::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar cos__q_RF_KFE__;
     
@@ -10402,7 +10402,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_lowerleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg::Type_fr_RF_upperleg_X_fr_RF_lowerleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg::Type_fr_RF_upperleg_X_fr_RF_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0.35;
@@ -10418,7 +10418,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerle
     (*this)(3,3) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_X_fr_RF_lowerleg::update(const JState& q) {
     Scalar sin__q_RF_KFE__;
     Scalar cos__q_RF_KFE__;
     
@@ -10432,7 +10432,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RF_upperleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly::Type_fr_LH_upperleg_X_fr_LH_hipassembly()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly::Type_fr_LH_upperleg_X_fr_LH_hipassembly()
 {
     (*this)(0,1) = 0;
     (*this)(1,1) = 0;
@@ -10446,7 +10446,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipasse
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_hipassembly::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar cos__q_LH_HFE__;
     
@@ -10462,7 +10462,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg::Type_fr_LH_hipassembly_X_fr_LH_upperleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg::Type_fr_LH_hipassembly_X_fr_LH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0.08;
@@ -10478,7 +10478,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_uppe
     (*this)(3,3) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassembly_X_fr_LH_upperleg::update(const JState& q) {
     Scalar sin__q_LH_HFE__;
     Scalar cos__q_LH_HFE__;
     
@@ -10492,7 +10492,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_hipassemb
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg::Type_fr_LH_lowerleg_X_fr_LH_upperleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg::Type_fr_LH_lowerleg_X_fr_LH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(1,2) = 0;
@@ -10506,7 +10506,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperle
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_X_fr_LH_upperleg::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar cos__q_LH_KFE__;
     
@@ -10522,7 +10522,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_lowerleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg::Type_fr_LH_upperleg_X_fr_LH_lowerleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg::Type_fr_LH_upperleg_X_fr_LH_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0.35;
@@ -10538,7 +10538,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerle
     (*this)(3,3) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_X_fr_LH_lowerleg::update(const JState& q) {
     Scalar sin__q_LH_KFE__;
     Scalar cos__q_LH_KFE__;
     
@@ -10552,7 +10552,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_LH_upperleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly::Type_fr_RH_upperleg_X_fr_RH_hipassembly()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly::Type_fr_RH_upperleg_X_fr_RH_hipassembly()
 {
     (*this)(0,1) = 0;
     (*this)(1,1) = 0;
@@ -10566,7 +10566,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipasse
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_hipassembly::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar cos__q_RH_HFE__;
     
@@ -10582,7 +10582,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg::Type_fr_RH_hipassembly_X_fr_RH_upperleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg::Type_fr_RH_hipassembly_X_fr_RH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0.08;
@@ -10598,7 +10598,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_uppe
     (*this)(3,3) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassembly_X_fr_RH_upperleg::update(const JState& q) {
     Scalar sin__q_RH_HFE__;
     Scalar cos__q_RH_HFE__;
     
@@ -10612,7 +10612,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_hipassemb
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg::Type_fr_RH_lowerleg_X_fr_RH_upperleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg::Type_fr_RH_lowerleg_X_fr_RH_upperleg()
 {
     (*this)(0,2) = 0;
     (*this)(1,2) = 0;
@@ -10626,7 +10626,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperle
     (*this)(3,3) = 1.0;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_X_fr_RH_upperleg::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar cos__q_RH_KFE__;
     
@@ -10642,7 +10642,7 @@ const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_lowerleg_
     return *this;
 }
 template <typename TRAIT>
-iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg::Type_fr_RH_upperleg_X_fr_RH_lowerleg()
+iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg::Type_fr_RH_upperleg_X_fr_RH_lowerleg()
 {
     (*this)(0,2) = 0;
     (*this)(0,3) = 0.35;
@@ -10658,7 +10658,7 @@ iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerle
     (*this)(3,3) = 1;
 }
 template <typename TRAIT>
-const typename iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg& iit::HyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg::update(const JState& q) {
+const typename iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg& iit::TestHyQ::tpl::HomogeneousTransforms<TRAIT>::Type_fr_RH_upperleg_X_fr_RH_lowerleg::update(const JState& q) {
     Scalar sin__q_RH_KFE__;
     Scalar cos__q_RH_KFE__;
     

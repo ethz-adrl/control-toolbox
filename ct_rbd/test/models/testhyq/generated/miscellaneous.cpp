@@ -1,10 +1,10 @@
 #include <iit/rbd/utils.h>
 #include "miscellaneous.h"
 
-using namespace iit::HyQ;
-using namespace iit::HyQ::dyn;
+using namespace iit::TestHyQ;
+using namespace iit::TestHyQ::dyn;
 
-iit::rbd::Vector3d iit::HyQ::getWholeBodyCOM(
+iit::rbd::Vector3d iit::TestHyQ::getWholeBodyCOM(
     const InertiaProperties& inertiaProps,
     const HomogeneousTransforms& ht)
 {
@@ -71,7 +71,7 @@ iit::rbd::Vector3d iit::HyQ::getWholeBodyCOM(
     return tmpSum / inertiaProps.getTotalMass();
 }
 
-iit::rbd::Vector3d iit::HyQ::getWholeBodyCOM(
+iit::rbd::Vector3d iit::TestHyQ::getWholeBodyCOM(
     const InertiaProperties& inertiaProps,
     const JointState& q,
     HomogeneousTransforms& ht)

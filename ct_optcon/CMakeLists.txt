@@ -44,6 +44,10 @@ endif(MATLAB)
 set(MATLAB_LIBS ${MATLAB_LIB_DIR})
 
 
+## dummy NLP libs
+set(NLP_LIBS "")
+
+
 ## include IPOPT
 find_package(ipopt)
 if(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
@@ -122,6 +126,7 @@ catkin_package(
    LIBRARIES 
         lapack 
         dl 
+        ${NLP_LIBS}
    CATKIN_DEPENDS
         ct_core
 )
