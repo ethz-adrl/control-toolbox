@@ -343,9 +343,6 @@ protected:
 	//! build the sequential LQ problems
 	void sequentialLQProblem();
 
-	//! build the sequential LQ problems
-	void sequentialLQProblem();
-
 	//! perform line-search and update controller
 	bool lineSearchController();
 
