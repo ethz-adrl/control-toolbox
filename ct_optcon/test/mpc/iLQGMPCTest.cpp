@@ -305,6 +305,7 @@ TEST(MPCTest, iLQGMPC)
 		ilqg_settings_mpc.dt = 0.001;
 		ilqg_settings_mpc.dt_sim = 0.001;
 		ilqg_settings_mpc.max_iterations = 5;
+		ilqg_settings_mpc.discretization = iLQGSettings::FORWARD_EULER;
 
 
 		// mpc specific settings

@@ -62,12 +62,9 @@ public:
 
 	RigidBodyPose(STORAGE_TYPE storage = EULER) :
 		storage_(storage),
-		quat_(), // for CppAD cg compatibility
-		euler_(),
-		position_()
+		quat_(SCALAR(1.0),SCALAR(0.0),SCALAR(0.0),SCALAR(0.0)), // for CppAD cg compatibility
+		euler_(SCALAR(0.0),SCALAR(0.0),SCALAR(0.0))
 	{
-		quat_.setIdentity();
-		euler_.setIdentity();
 	}
 
 	RigidBodyPose(const kindr::EulerAnglesXyz<SCALAR>& orientationEulerXyz, const Position3Tpl& position, STORAGE_TYPE storage = EULER) :

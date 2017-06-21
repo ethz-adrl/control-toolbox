@@ -340,8 +340,8 @@ protected:
 	//! run the forward pass (forward rollout and linear-quadratic approximation)
 	bool forwardPass();
 
-	//! run the backward pass (controller design, Riccati-integration)
-	void backwardPass();
+	//! build the sequential LQ problems
+	void sequentialLQProblem();
 
 	//! build the sequential LQ problems
 	void sequentialLQProblem();
