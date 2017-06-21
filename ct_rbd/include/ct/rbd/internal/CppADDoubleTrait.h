@@ -34,6 +34,9 @@ namespace ct {
 namespace rbd {
 namespace internal{
 
+/*!
+ * \brief Trait providing basic mathematical operations for CppAD datatypes
+ */
 struct CppADDoubleTrait {
 
 	typedef CppAD::AD<double> Scalar;

@@ -39,8 +39,7 @@ namespace tpl{
   */
 
 
-/**
- * @class StateBase
+/*!
  *
  * \ingroup State
  *
