@@ -406,8 +406,8 @@ TEST(MPCTest, iLQGMPC)
 //			std::cout << "x_ref: " << refState.transpose() << std::endl;
 //			std::cout << "x_mpc: " << mpcTrajInitState.transpose() << std::endl;
 
-			ASSERT_LT(std::fabs((refState-mpcTrajInitState)(0)), 0.3);	// max pos deviation
-			ASSERT_LT(std::fabs((refState-mpcTrajInitState)(1)), 0.3);	// max vel deviation
+			ASSERT_LT(std::fabs((refState-mpcTrajInitState)(0)), 1.0);	// max pos deviation
+			ASSERT_LT(std::fabs((refState-mpcTrajInitState)(1)), 1.0);	// max vel deviation
 		}
 
 
