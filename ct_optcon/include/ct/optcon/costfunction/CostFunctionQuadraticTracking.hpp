@@ -108,6 +108,16 @@ public:
 
 	void updateTrajectories(
 		const core::StateTrajectory<STATE_DIM>& xTraj,
+		const core::ControlTrajectory<CONTROL_DIM>& uTraj,
+		const core::StateVector<STATE_DIM>& x_final)
+	{
+		x_final_ = x_final;
+		x_traj_ref_ = xTraj;
+		u_traj_ref_ = uTraj;
+	}
+
+	void updateTrajectories(
+		const core::StateTrajectory<STATE_DIM>& xTraj,
 		const core::ControlTrajectory<CONTROL_DIM>& uTraj)
 	{
 		x_final_ = xTraj.back();
