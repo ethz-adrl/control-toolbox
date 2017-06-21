@@ -193,7 +193,7 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::backwardPass()
 
 	if (this->settings_.parallelBackward.enabled)
 	{
-		while (kCompleted_ < this->settings_.nThreads*2)
+		while (kCompleted_ < this->settings_.nThreads*2 && kCompleted_ < this->K_)
 		{
 			if (this->settings_.parallelBackward.showWarnings)
 			{
