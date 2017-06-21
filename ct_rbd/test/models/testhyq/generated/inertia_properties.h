@@ -1,7 +1,6 @@
-#ifndef IIT_ROBOT_HYQ_INERTIA_PROPERTIES_H_
-#define IIT_ROBOT_HYQ_INERTIA_PROPERTIES_H_
+#ifndef IIT_ROBOT_TESTHYQ_INERTIA_PROPERTIES_H_
+#define IIT_ROBOT_TESTHYQ_INERTIA_PROPERTIES_H_
 
-#include <Eigen/Dense>
 #include <iit/rbd/rbd.h>
 #include <iit/rbd/InertiaMatrix.h>
 #include <iit/rbd/utils.h>
@@ -10,10 +9,10 @@
 #include "declarations.h"
 
 namespace iit {
-namespace HyQ {
+namespace TestHyQ {
 /**
  * This namespace encloses classes and functions related to the Dynamics
- * of the robot HyQ.
+ * of the robot TestHyQ.
  */
 namespace dyn {
 
@@ -26,12 +25,12 @@ class InertiaProperties {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-		typedef typename TRAIT::Scalar SCALAR;
+        typedef typename TRAIT::Scalar Scalar;
+        typedef iit::rbd::Core<Scalar> CoreS;
+        typedef iit::rbd::tpl::InertiaMatrixDense<Scalar> IMatrix;
+        typedef typename CoreS::Vector3 Vec3d;
 
-		typedef iit::rbd::tpl::InertiaMatrixDense<SCALAR> IMatrix;
-        typedef Eigen::Matrix<SCALAR, 3, 1> Vec3d;
-
-		InertiaProperties();
+        InertiaProperties();
         ~InertiaProperties();
         const IMatrix& getTensor_trunk() const;
         const IMatrix& getTensor_LF_hipassembly() const;
@@ -46,19 +45,19 @@ class InertiaProperties {
         const IMatrix& getTensor_RH_hipassembly() const;
         const IMatrix& getTensor_RH_upperleg() const;
         const IMatrix& getTensor_RH_lowerleg() const;
-        SCALAR getMass_trunk() const;
-        SCALAR getMass_LF_hipassembly() const;
-        SCALAR getMass_LF_upperleg() const;
-        SCALAR getMass_LF_lowerleg() const;
-        SCALAR getMass_RF_hipassembly() const;
-        SCALAR getMass_RF_upperleg() const;
-        SCALAR getMass_RF_lowerleg() const;
-        SCALAR getMass_LH_hipassembly() const;
-        SCALAR getMass_LH_upperleg() const;
-        SCALAR getMass_LH_lowerleg() const;
-        SCALAR getMass_RH_hipassembly() const;
-        SCALAR getMass_RH_upperleg() const;
-        SCALAR getMass_RH_lowerleg() const;
+        Scalar getMass_trunk() const;
+        Scalar getMass_LF_hipassembly() const;
+        Scalar getMass_LF_upperleg() const;
+        Scalar getMass_LF_lowerleg() const;
+        Scalar getMass_RF_hipassembly() const;
+        Scalar getMass_RF_upperleg() const;
+        Scalar getMass_RF_lowerleg() const;
+        Scalar getMass_LH_hipassembly() const;
+        Scalar getMass_LH_upperleg() const;
+        Scalar getMass_LH_lowerleg() const;
+        Scalar getMass_RH_hipassembly() const;
+        Scalar getMass_RH_upperleg() const;
+        Scalar getMass_RH_lowerleg() const;
         const Vec3d& getCOM_trunk() const;
         const Vec3d& getCOM_LF_hipassembly() const;
         const Vec3d& getCOM_LF_upperleg() const;
@@ -72,7 +71,7 @@ class InertiaProperties {
         const Vec3d& getCOM_RH_hipassembly() const;
         const Vec3d& getCOM_RH_upperleg() const;
         const Vec3d& getCOM_RH_lowerleg() const;
-        SCALAR getTotalMass() const;
+        Scalar getTotalMass() const;
 
     private:
 
@@ -104,7 +103,6 @@ class InertiaProperties {
         Vec3d com_RH_lowerleg;
 };
 
-
 template <typename TRAIT>
 inline InertiaProperties<TRAIT>::~InertiaProperties() {}
 
@@ -112,209 +110,171 @@ template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::IMatrix& InertiaProperties<TRAIT>::getTensor_trunk() const {
     return this->tensor_trunk;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::IMatrix& InertiaProperties<TRAIT>::getTensor_LF_hipassembly() const {
     return this->tensor_LF_hipassembly;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::IMatrix& InertiaProperties<TRAIT>::getTensor_LF_upperleg() const {
     return this->tensor_LF_upperleg;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::IMatrix& InertiaProperties<TRAIT>::getTensor_LF_lowerleg() const {
     return this->tensor_LF_lowerleg;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::IMatrix& InertiaProperties<TRAIT>::getTensor_RF_hipassembly() const {
     return this->tensor_RF_hipassembly;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::IMatrix& InertiaProperties<TRAIT>::getTensor_RF_upperleg() const {
     return this->tensor_RF_upperleg;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::IMatrix& InertiaProperties<TRAIT>::getTensor_RF_lowerleg() const {
     return this->tensor_RF_lowerleg;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::IMatrix& InertiaProperties<TRAIT>::getTensor_LH_hipassembly() const {
     return this->tensor_LH_hipassembly;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::IMatrix& InertiaProperties<TRAIT>::getTensor_LH_upperleg() const {
     return this->tensor_LH_upperleg;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::IMatrix& InertiaProperties<TRAIT>::getTensor_LH_lowerleg() const {
     return this->tensor_LH_lowerleg;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::IMatrix& InertiaProperties<TRAIT>::getTensor_RH_hipassembly() const {
     return this->tensor_RH_hipassembly;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::IMatrix& InertiaProperties<TRAIT>::getTensor_RH_upperleg() const {
     return this->tensor_RH_upperleg;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::IMatrix& InertiaProperties<TRAIT>::getTensor_RH_lowerleg() const {
     return this->tensor_RH_lowerleg;
 }
-
 template <typename TRAIT>
-inline typename InertiaProperties<TRAIT>::SCALAR InertiaProperties<TRAIT>::getMass_trunk() const {
+inline typename InertiaProperties<TRAIT>::Scalar InertiaProperties<TRAIT>::getMass_trunk() const {
     return this->tensor_trunk.getMass();
 }
-
 template <typename TRAIT>
-inline typename InertiaProperties<TRAIT>::SCALAR InertiaProperties<TRAIT>::getMass_LF_hipassembly() const {
+inline typename InertiaProperties<TRAIT>::Scalar InertiaProperties<TRAIT>::getMass_LF_hipassembly() const {
     return this->tensor_LF_hipassembly.getMass();
 }
-
 template <typename TRAIT>
-inline typename InertiaProperties<TRAIT>::SCALAR InertiaProperties<TRAIT>::getMass_LF_upperleg() const {
+inline typename InertiaProperties<TRAIT>::Scalar InertiaProperties<TRAIT>::getMass_LF_upperleg() const {
     return this->tensor_LF_upperleg.getMass();
 }
-
 template <typename TRAIT>
-inline typename InertiaProperties<TRAIT>::SCALAR InertiaProperties<TRAIT>::getMass_LF_lowerleg() const {
+inline typename InertiaProperties<TRAIT>::Scalar InertiaProperties<TRAIT>::getMass_LF_lowerleg() const {
     return this->tensor_LF_lowerleg.getMass();
 }
-
 template <typename TRAIT>
-inline typename InertiaProperties<TRAIT>::SCALAR InertiaProperties<TRAIT>::getMass_RF_hipassembly() const {
+inline typename InertiaProperties<TRAIT>::Scalar InertiaProperties<TRAIT>::getMass_RF_hipassembly() const {
     return this->tensor_RF_hipassembly.getMass();
 }
-
 template <typename TRAIT>
-inline typename InertiaProperties<TRAIT>::SCALAR InertiaProperties<TRAIT>::getMass_RF_upperleg() const {
+inline typename InertiaProperties<TRAIT>::Scalar InertiaProperties<TRAIT>::getMass_RF_upperleg() const {
     return this->tensor_RF_upperleg.getMass();
 }
-
 template <typename TRAIT>
-inline typename InertiaProperties<TRAIT>::SCALAR InertiaProperties<TRAIT>::getMass_RF_lowerleg() const {
+inline typename InertiaProperties<TRAIT>::Scalar InertiaProperties<TRAIT>::getMass_RF_lowerleg() const {
     return this->tensor_RF_lowerleg.getMass();
 }
-
 template <typename TRAIT>
-inline typename InertiaProperties<TRAIT>::SCALAR InertiaProperties<TRAIT>::getMass_LH_hipassembly() const {
+inline typename InertiaProperties<TRAIT>::Scalar InertiaProperties<TRAIT>::getMass_LH_hipassembly() const {
     return this->tensor_LH_hipassembly.getMass();
 }
-
 template <typename TRAIT>
-inline typename InertiaProperties<TRAIT>::SCALAR InertiaProperties<TRAIT>::getMass_LH_upperleg() const {
+inline typename InertiaProperties<TRAIT>::Scalar InertiaProperties<TRAIT>::getMass_LH_upperleg() const {
     return this->tensor_LH_upperleg.getMass();
 }
-
 template <typename TRAIT>
-inline typename InertiaProperties<TRAIT>::SCALAR InertiaProperties<TRAIT>::getMass_LH_lowerleg() const {
+inline typename InertiaProperties<TRAIT>::Scalar InertiaProperties<TRAIT>::getMass_LH_lowerleg() const {
     return this->tensor_LH_lowerleg.getMass();
 }
-
 template <typename TRAIT>
-inline typename InertiaProperties<TRAIT>::SCALAR InertiaProperties<TRAIT>::getMass_RH_hipassembly() const {
+inline typename InertiaProperties<TRAIT>::Scalar InertiaProperties<TRAIT>::getMass_RH_hipassembly() const {
     return this->tensor_RH_hipassembly.getMass();
 }
-
 template <typename TRAIT>
-inline typename InertiaProperties<TRAIT>::SCALAR InertiaProperties<TRAIT>::getMass_RH_upperleg() const {
+inline typename InertiaProperties<TRAIT>::Scalar InertiaProperties<TRAIT>::getMass_RH_upperleg() const {
     return this->tensor_RH_upperleg.getMass();
 }
-
 template <typename TRAIT>
-inline typename InertiaProperties<TRAIT>::SCALAR InertiaProperties<TRAIT>::getMass_RH_lowerleg() const {
+inline typename InertiaProperties<TRAIT>::Scalar InertiaProperties<TRAIT>::getMass_RH_lowerleg() const {
     return this->tensor_RH_lowerleg.getMass();
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::Vec3d& InertiaProperties<TRAIT>::getCOM_trunk() const {
     return this->com_trunk;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::Vec3d& InertiaProperties<TRAIT>::getCOM_LF_hipassembly() const {
     return this->com_LF_hipassembly;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::Vec3d& InertiaProperties<TRAIT>::getCOM_LF_upperleg() const {
     return this->com_LF_upperleg;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::Vec3d& InertiaProperties<TRAIT>::getCOM_LF_lowerleg() const {
     return this->com_LF_lowerleg;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::Vec3d& InertiaProperties<TRAIT>::getCOM_RF_hipassembly() const {
     return this->com_RF_hipassembly;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::Vec3d& InertiaProperties<TRAIT>::getCOM_RF_upperleg() const {
     return this->com_RF_upperleg;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::Vec3d& InertiaProperties<TRAIT>::getCOM_RF_lowerleg() const {
     return this->com_RF_lowerleg;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::Vec3d& InertiaProperties<TRAIT>::getCOM_LH_hipassembly() const {
     return this->com_LH_hipassembly;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::Vec3d& InertiaProperties<TRAIT>::getCOM_LH_upperleg() const {
     return this->com_LH_upperleg;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::Vec3d& InertiaProperties<TRAIT>::getCOM_LH_lowerleg() const {
     return this->com_LH_lowerleg;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::Vec3d& InertiaProperties<TRAIT>::getCOM_RH_hipassembly() const {
     return this->com_RH_hipassembly;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::Vec3d& InertiaProperties<TRAIT>::getCOM_RH_upperleg() const {
     return this->com_RH_upperleg;
 }
-
 template <typename TRAIT>
 inline const typename InertiaProperties<TRAIT>::Vec3d& InertiaProperties<TRAIT>::getCOM_RH_lowerleg() const {
     return this->com_RH_lowerleg;
 }
 
 template <typename TRAIT>
-inline typename InertiaProperties<TRAIT>::SCALAR InertiaProperties<TRAIT>::getTotalMass() const {
+inline typename InertiaProperties<TRAIT>::Scalar InertiaProperties<TRAIT>::getTotalMass() const {
     return 47.376 + 2.93 + 2.638 + 0.881 + 2.93 + 2.638 + 0.881 + 2.93 + 2.638 + 0.881 + 2.93 + 2.638 + 0.881;
 }
 
-} // namespace tpl
+}
 
 using InertiaProperties = tpl::InertiaProperties<rbd::DoubleTrait>;
 
-} // namespace dyn
-} // namespace HyQ
-} // namespace iit
+}
+}
+}
 
 #include "inertia_properties.impl.h"
 

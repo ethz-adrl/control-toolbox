@@ -63,6 +63,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM>
 class FHDTLQR
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef core::ControlVector<CONTROL_DIM> control_vector_t;
 	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;

@@ -182,6 +182,7 @@ public:
 	void setName(const std::string termName){name_=termName;}
 
 	virtual void updateReferenceState (const Eigen::Matrix<SCALAR, STATE_DIM, 1>& newRefState){}
+	virtual Eigen::Matrix<SCALAR, STATE_DIM, 1> getReferenceState() const {throw std::runtime_error("getReferenceState is not implemented for the current term!");}
 
 protected:
 };

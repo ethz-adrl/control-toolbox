@@ -242,7 +242,7 @@ public:
 	 * the returned time can be used to synchronize the calls to optimal control problems
 	 * @return time elapsed
 	 */
-	const core::Time timeSincePreviousSuccessfulSolve() {
+	core::Time timeSincePreviousSuccessfulSolve() {
 		if(firstRun_)
 			return 0.0;
 		else{
@@ -287,7 +287,7 @@ private:
 	 * The delay to be applied is the sum of fixed and variable components.
 	 * @return delay to be applied
 	 */
-	const core::Time computeDelayToApply() {
+	core::Time computeDelayToApply() {
 
 		core::Time fixedDelay = 1e-6 * mpc_settings_.additionalDelayUs_;
 		core::Time variableDelay = 0.0;

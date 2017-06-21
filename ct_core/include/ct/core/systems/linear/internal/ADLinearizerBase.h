@@ -122,7 +122,7 @@ protected:
 
 		state_vector_ad_t dxFixed;
 
-		nonlinearSystem_->computeControlledDynamics(xFixed, 0.0, uFixed, dxFixed);
+		nonlinearSystem_->computeControlledDynamics(xFixed, SCALAR(0.0), uFixed, dxFixed);
 
 		// output vector, needs to be dynamic size
 		Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> dx(STATE_DIM);

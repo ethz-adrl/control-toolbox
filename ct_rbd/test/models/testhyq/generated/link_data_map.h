@@ -1,10 +1,10 @@
-#ifndef IIT_HYQ_LINK_DATA_MAP_H_
-#define IIT_HYQ_LINK_DATA_MAP_H_
+#ifndef IIT_TESTHYQ_LINK_DATA_MAP_H_
+#define IIT_TESTHYQ_LINK_DATA_MAP_H_
 
 #include "declarations.h"
 
 namespace iit {
-namespace HyQ {
+namespace TestHyQ {
 
 /**
  * A very simple container to associate a generic data item to each link
@@ -14,6 +14,7 @@ private:
     T data[linksCount];
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
     LinkDataMap() {};
     LinkDataMap(const T& defaultValue);
     LinkDataMap(const LinkDataMap& rhs);

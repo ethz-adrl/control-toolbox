@@ -41,6 +41,7 @@ template <size_t NUM_OUTPUTS, size_t NUM_JOINTS, typename SCALAR>
 class JacobianBase
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef RBDState<NUM_JOINTS, SCALAR>		 				state_t;
 	typedef Eigen::Matrix<SCALAR, NUM_OUTPUTS, 6+NUM_JOINTS> 	jacobian_t;
 	typedef Eigen::Matrix<SCALAR, 6+NUM_JOINTS, NUM_OUTPUTS> 	jacobian_inv_t;

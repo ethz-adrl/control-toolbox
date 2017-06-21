@@ -35,6 +35,8 @@ namespace rbd {
 template <class RBD>
 class FloatingBaseTransforms {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	FloatingBaseTransforms(std::shared_ptr<RBD> rbdContainer) :
 		rbdContainer_(rbdContainer)
 	{}

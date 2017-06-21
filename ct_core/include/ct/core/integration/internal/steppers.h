@@ -84,6 +84,31 @@ using adams_bashforth_uncontrolled_t =
 		double, 								// typename time
 		boost::numeric::odeint::vector_space_algebra> ;
 
+/*****************************************************************************
+ * Defining the symplectic steppers
+ *****************************************************************************/
+
+//! A symplictic rk type stepper		
+template<size_t POS_DIM, size_t VEL_DIM>
+using symplectic_rk_t = boost::numeric::odeint::symplectic_rkn_sb3a_mclachlan<
+		Eigen::Matrix<double, POS_DIM, 1>,
+		Eigen::Matrix<double, POS_DIM, 1>, 
+		double,
+		Eigen::Matrix<double, POS_DIM, 1>,
+		Eigen::Matrix<double, POS_DIM, 1>,
+		double,
+		boost::numeric::odeint::vector_space_algebra>;
+
+// Symplectic euler stepper
+template<size_t POS_DIM, size_t VEL_DIM>
+using symplectic_euler_t = boost::numeric::odeint::symplectic_euler<
+		Eigen::Matrix<double, POS_DIM, 1>,
+		Eigen::Matrix<double, POS_DIM, 1>, 
+		double,
+		Eigen::Matrix<double, POS_DIM, 1>,
+		Eigen::Matrix<double, POS_DIM, 1>,
+		double,
+		boost::numeric::odeint::vector_space_algebra>;
 
 /*****************************************************************************
  * Defining the (implicit) steppers

@@ -158,29 +158,31 @@ TEST(MPCTest, PreIntegratorTest)
 		iLQG<state_dim, control_dim> iLQG_init (optConProblem, ilqg_settings);
 		iLQG_init.configure(ilqg_settings);
 		iLQG_init.setInitialGuess(initController);
-		iLQG_init.solve();
+		bool boolInitSuccess = iLQG_init.solve();
 
 		// obtain the 'perfect' init controller from first iLQG solver
 		ct::core::StateFeedbackController<state_dim, control_dim> perfectInitController = iLQG_init.getSolution();
 		auto perfectStateTrajectory = iLQG_init.getStateTrajectory();
 
 
-		// settings for SECOND ILQG INSTANCE which will run in MPC
+ 		// settings for SECOND ILQG INSTANCE which will run in MPC
 		iLQGSettings ilqg_settings_mpc;
 		ilqg_settings_mpc.dt = 0.001;
 		ilqg_settings_mpc.dt_sim = 0.001;
 		ilqg_settings_mpc.max_iterations = 10;
+
 
 		ct::optcon::mpc_settings settings_mpc;
 		settings_mpc.stateForwardIntegration_ = true;
 		settings_mpc.postTruncation_ = false;
 
 
-		// MPC instance
+ 		// MPC instance
 		MPC<iLQG<state_dim, control_dim>> ilqg_mpc (optConProblem, ilqg_settings_mpc, settings_mpc);
 
-		// initialize it with perfect initial guess
+ 		// initialize it with perfect initial guess
 		ilqg_mpc.setInitialGuess(perfectInitController);
+		ilqg_mpc.setStateTrajectory(perfectStateTrajectory);
 
 
 		ct::core::Time t = 0.0;	// init time
@@ -206,32 +208,31 @@ TEST(MPCTest, PreIntegratorTest)
 				ASSERT_NEAR(mpcStateTrajectory[i](1), perfectStateTrajectory[i](1), 0.2);	// velocities
 		}
 
-
-		// test the forward integration scheme with external controller
+ 		// test the forward integration scheme with external controller
 		std::shared_ptr<ct::core::StateFeedbackController<state_dim, control_dim>> prevController (new ct::core::StateFeedbackController<state_dim, control_dim>(newPolicy));
-		for(size_t i = 0; i<mpcStateTrajectory.size(); i++)
+		for(size_t i = 0; i<mpcStateTrajectory.size(); i += 200)
 		{
 			ct::core::StateVector<state_dim> state = mpcStateTrajectory.front();
 			ilqg_mpc.doPreIntegration(0.0, i*ilqg_settings_mpc.dt, state, prevController);
 
 			ASSERT_LT(fabs((state(0)- mpcStateTrajectory[i](0))), 0.03); 	// position is allowed to vary 3 cm
 
-//			std::cout << "pre-int state " << state.transpose() << std::endl;
-//			std::cout << "nominal state " << x_traj[i].transpose() << std::endl;
+			// std::cout << "pre-int state " << state.transpose() << std::endl;
+			// std::cout << "nominal state " << x_traj[i].transpose() << std::endl;
 		}
 
 
 
 		// test the forward integration scheme with internal controller
-		for(size_t i = 0; i<mpcStateTrajectory.size(); i++)
+		for(size_t i = 0; i<mpcStateTrajectory.size(); i += 200)
 		{
 			ct::core::StateVector<state_dim> state = mpcStateTrajectory.front();
 			ilqg_mpc.doPreIntegration(0.0, i*ilqg_settings_mpc.dt, state);
 
 			ASSERT_LT(fabs((state(0)- mpcStateTrajectory[i](0))), 0.03); 	// position is allowed to vary 1 cm
 
-//			std::cout << "pre-int state " << state.transpose() << std::endl;
-//			std::cout << "nominal state " << x_traj[i].transpose() << std::endl;
+			// std::cout << "pre-int state " << state.transpose() << std::endl;
+			// std::cout << "nominal state " << x_traj[i].transpose() << std::endl;
 		}
 
 
@@ -304,6 +305,7 @@ TEST(MPCTest, iLQGMPC)
 		ilqg_settings_mpc.dt = 0.001;
 		ilqg_settings_mpc.dt_sim = 0.001;
 		ilqg_settings_mpc.max_iterations = 5;
+		ilqg_settings_mpc.discretization = iLQGSettings::FORWARD_EULER;
 
 
 		// mpc specific settings
@@ -321,6 +323,7 @@ TEST(MPCTest, iLQGMPC)
 		MPC<iLQG<state_dim, control_dim>> ilqg_mpc (optConProblem, ilqg_settings_mpc, settings);
 
 		ilqg_mpc.setInitialGuess(perfectInitController);
+		ilqg_mpc.setStateTrajectory(perfectStateTrajectory);
 
 
 		// fake the time -- here the start time
@@ -372,7 +375,7 @@ TEST(MPCTest, iLQGMPC)
 			}
 
 
-			if(ilqg_mpc.timeHorizonReached() | !success)
+			if(ilqg_mpc.timeHorizonReached() || !success)
 				break;
 
 			numRuns++;

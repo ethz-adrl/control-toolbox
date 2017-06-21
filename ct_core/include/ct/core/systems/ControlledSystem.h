@@ -159,7 +159,7 @@ public:
 	 */
 	virtual void computeDynamics(
 			const StateVector<STATE_DIM, SCALAR>& state,
-			const Time& t,
+			const SCALAR& t,
 			StateVector<STATE_DIM, SCALAR>& derivative) override
 	{
 		ControlVector<CONTROL_DIM, SCALAR> controlAction;
@@ -186,7 +186,7 @@ public:
 
 	virtual void computeControlledDynamics(
 			const StateVector<STATE_DIM, SCALAR>& state,
-			const Time& t,
+			const SCALAR& t,
 			const ControlVector<CONTROL_DIM, SCALAR>& control,
 			StateVector<STATE_DIM, SCALAR>& derivative
 	) = 0;
@@ -250,7 +250,7 @@ protected:
 
 	std::shared_ptr<ct::core::StateVectorArray<STATE_DIM, SCALAR>> state_evolution_; //!< container for logging the state
 	std::shared_ptr<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>> control_evolution_; //!< container for logging the control
-	std::shared_ptr<ct::core::TimeArray> time_evolution_;  //!< container for logging the time
+	std::shared_ptr<ct::core::tpl::TimeArray<SCALAR>> time_evolution_;  //!< container for logging the time
 
 };
 

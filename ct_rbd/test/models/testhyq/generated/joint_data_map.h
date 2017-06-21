@@ -1,10 +1,10 @@
-#ifndef IIT_HYQ_JOINT_DATA_MAP_H_
-#define IIT_HYQ_JOINT_DATA_MAP_H_
+#ifndef IIT_TESTHYQ_JOINT_DATA_MAP_H_
+#define IIT_TESTHYQ_JOINT_DATA_MAP_H_
 
 #include "declarations.h"
 
 namespace iit {
-namespace HyQ {
+namespace TestHyQ {
 
 /**
  * A very simple container to associate a generic data item to each joint
@@ -13,8 +13,6 @@ template<typename T> class JointDataMap {
 private:
     T data[jointsCount];
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
     JointDataMap() {};
     JointDataMap(const T& defaultValue);
     JointDataMap(const JointDataMap& rhs);

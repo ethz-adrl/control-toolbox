@@ -42,11 +42,13 @@ template <size_t NUM_OUTPUTS, size_t NUM_JOINTS, typename SCALAR>
 class OperationalJacobianBase : public JacobianBase<NUM_OUTPUTS, NUM_JOINTS, SCALAR>
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef std::shared_ptr<OperationalJacobianBase<NUM_OUTPUTS, NUM_JOINTS, SCALAR> > 	ptr;
 	typedef typename JacobianBase<NUM_OUTPUTS, NUM_JOINTS, SCALAR>::state_t 			state_t;
 	typedef typename JacobianBase<NUM_OUTPUTS, NUM_JOINTS, SCALAR>::jacobian_t 			jacobian_t;
 	typedef typename JacobianBase<NUM_OUTPUTS, NUM_JOINTS, SCALAR>::jacobian_inv_t		jacobian_inv_t;
 	typedef Eigen::Matrix<SCALAR, 6+NUM_JOINTS, 6+NUM_JOINTS> 					square_matrix_t;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>				MatrixXs;
 	
 
 	OperationalJacobianBase()  {
@@ -92,7 +94,7 @@ public:
 		if(JdagerUpdated_==true)  return Jdager_;
 
 		JdagerUpdated_ = true;
-		Jdager_ = W_*J().transpose() * (J()*W_*J().transpose()).ldlt().solve(Eigen::MatrixXd::Identity(NUM_OUTPUTS,NUM_OUTPUTS));
+		Jdager_ = W_*J().transpose() * (J()*W_*J().transpose()).ldlt().solve(MatrixXs::Identity(NUM_OUTPUTS,NUM_OUTPUTS));
 		return Jdager_;
 	}
 
@@ -100,8 +102,8 @@ public:
 		if(JdagerUpdated_==true)  return Jdager_;
 
 		JdagerUpdated_ = true;
-	    Eigen::JacobiSVD<Eigen::MatrixXd> svd(J(), Eigen::ComputeThinU | Eigen::ComputeThinV);
-	    Eigen::Matrix<double, Eigen::Dynamic, 1> sing_values (svd.matrixV().cols(),1); // size of E has same size as columns of V
+	    Eigen::JacobiSVD<MatrixXs> svd(J(), Eigen::ComputeThinU | Eigen::ComputeThinV);
+	    Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> sing_values (svd.matrixV().cols(),1); // size of E has same size as columns of V
 	    sing_values = (svd.singularValues().array()>1e-9).select(svd.singularValues().array().inverse(), 0);
 	    Jdager_ = svd.matrixV() * sing_values.asDiagonal() * svd.matrixU().transpose();
     	return Jdager_;

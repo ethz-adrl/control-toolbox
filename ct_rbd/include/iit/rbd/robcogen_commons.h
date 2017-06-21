@@ -248,7 +248,7 @@ void transformInertia(
     Scalar comAz = I_A(AY,LX)/mass;
 
     // The relative position of the CoM wrt B (in A coordinates)
-    Vector3d p(comAx-rx, comAy-ry, comAz-rz);
+    typename Core<Scalar>::Vector3 p(comAx-rx, comAy-ry, comAz-rz);
 
     // Pre-computation of some recurring squares
     Scalar cx2 = comAx*comAx;
@@ -275,7 +275,7 @@ void transformInertia(
     internal::SymmMat3x3Coefficients<Scalar> I3x3_B;
     internal::rot_symmetric_EAET<Scalar>(E, I_translated, I3x3_B);
     // Rotate the CoM vector
-    Vector3d p_B(
+    typename Core<Scalar>::Vector3 p_B(
             E.XX*p(X) + E.XY*p(Y) + E.XZ*p(Z),
             E.YX*p(X) + E.YY*p(Y) + E.YZ*p(Z),
             E.ZX*p(X) + E.ZY*p(Y) + E.ZZ*p(Z)

@@ -1,10 +1,10 @@
-#ifndef _HYQ_DEFAULT_GETTER_INERTIA_PARAMETERS_
-#define _HYQ_DEFAULT_GETTER_INERTIA_PARAMETERS_
+#ifndef _TESTHYQ_DEFAULT_GETTER_INERTIA_PARAMETERS_
+#define _TESTHYQ_DEFAULT_GETTER_INERTIA_PARAMETERS_
 
 #include "dynamics_parameters.h"
 
 namespace iit {
-namespace HyQ {
+namespace TestHyQ {
 namespace dyn {
 
 class DefaultParamsGetter : public RuntimeParamsGetter

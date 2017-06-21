@@ -47,7 +47,7 @@ public:
 	} 
 
 	virtual bool isActiveAtTime(const double t) override {
-		return (t >= mu_ - 3 * sigma_ && t< mu_ + 3 * sigma_); //which includes 99.73% of the gaussian - well enough for a cutoff
+		return true;
 	}
 
 	virtual double computeActivation(const double t) override {
