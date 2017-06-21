@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_MPCSETTINGS_H_
-#define CT_MPCSETTINGS_H_
+#ifndef CT_OPTCON_MPCSETTINGS_H_
+#define CT_OPTCON_MPCSETTINGS_H_
 
 #include <ct/core/core.h>
 
@@ -151,8 +151,10 @@ struct mpc_settings{
  * 	path of the file you wish to load from
  * @param settings
  *  the loaded settings
+ *
+ *  @todo make part of mpc_settings struct
  */
-void loadMpcSettings(const std::string& filename, mpc_settings& settings)
+inline void loadMpcSettings(const std::string& filename, mpc_settings& settings)
 {
 	boost::property_tree::ptree pt;
 	boost::property_tree::read_info(filename, pt);

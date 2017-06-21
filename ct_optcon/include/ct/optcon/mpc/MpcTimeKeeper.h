@@ -252,6 +252,20 @@ public:
 	}
 
 
+	//! retrieve the time that elapsed since the first successful solve() call to an Optimal Control Problem
+	/*!
+	 * the returned time can be used externally, for example to update cost functions
+	 * @return time elapsed
+	 */
+	const core::Time timeSinceFirstSuccessfulSolve() {
+		if(firstRun_)
+			return 0.0;
+		else{
+			firstSolveTimer_.stop();
+			return firstSolveTimer_.getElapsedTime();
+		}
+	}
+
 	//! obtain the delay which was measured during solving the optimal control problem
 	const core::Time& getMeasuredDelay() const {return lastMeasuredDelay_;}
 

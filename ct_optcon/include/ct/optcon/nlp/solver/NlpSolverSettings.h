@@ -114,6 +114,7 @@ public:
     void load(const std::string& filename, bool verbose = true, const std::string& ns = "dms.nlp.snopt")
     {
     	// to be implemented
+    	std::cout << "Trying to load SNOPT settings. Not impl yet" << std::endl;
     }
 
 };
@@ -206,7 +207,7 @@ public:
      */
     void load(const std::string& filename, bool verbose = true, const std::string& ns = "dms.nlp.ipopt")
     {
-
+    	std::cout << "Trying to load IPOPT settings. Not impl yet." << std::endl;
     }
 
 };
@@ -277,7 +278,7 @@ public:
 
 		if (verbose)
 		{
-			std::cout << "Loaded DMS config from "<<filename<<": "<<std::endl;
+			std::cout << "Loaded NLP Solver settings from "<<filename<<": "<<std::endl;
 			print();
 		}
     }

@@ -1,7 +1,6 @@
 #ifndef DMS_STABILISER_TASK_COMMON_HPP_
 #define DMS_STABILISER_TASK_COMMON_HPP_
 
-#include <ct/optcon/dms/dms_core/DmsSettings.hpp>
 
 namespace ct {
 namespace optcon {

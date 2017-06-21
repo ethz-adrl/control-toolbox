@@ -198,6 +198,15 @@ public:
 	bool timeHorizonReached() { return timeKeeper_.finalPointReached();}
 
 
+	//! retrieve the time that elapsed since the first successful solve() call to an Optimal Control Problem
+	/*!
+	 * the returned time can be used externally, for example to update cost functions
+	 * @return time elapsed
+	 */
+	const core::Time timeSinceFirstSuccessfulSolve()
+	{
+		return timeKeeper_.timeSinceFirstSuccessfulSolve();
+	}
 
 
 	//! perform forward integration of the measured system state, to compensate for expected or already occured time lags
