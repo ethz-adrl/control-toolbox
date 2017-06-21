@@ -179,7 +179,8 @@ public:
 			std::cout << "Loaded DMS config from "<<filename<<": "<<std::endl;
 			print();
 		}
-//		nlpSettings_.load(filename, verbose, ns + ".nlp");
+
+//		nlpSettings_.load(filename, verbose, ns + ".nlp"); // todo bring in again
     }
 
 private:
