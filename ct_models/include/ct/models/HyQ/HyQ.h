@@ -66,22 +66,22 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CT_N_EE 4
 
 // definition of an end-effector
-#define CT_EE0 LF_foot //name of end-effector. Same as frame in RobCoGen
+#define CT_EE0 fr_LF_foot //name of end-effector. Same as frame in RobCoGen
 #define CT_EE0_IS_ON_LINK 3 // to which link is the end-effector rigidly attached to?
 #define CT_EE0_FIRST_JOINT 0 // which is the first joint in the kinematic chain from base to end-effector?
 #define CT_EE0_LAST_JOINT 2 // which is the last joint in the kinematic chain? THEY NEED TO BE IN ORDER, NO GAPS ALLOWED!
 
-#define CT_EE1 RF_foot
+#define CT_EE1 fr_RF_foot
 #define CT_EE1_IS_ON_LINK 6
 #define CT_EE1_FIRST_JOINT 3
 #define CT_EE1_LAST_JOINT 5
 
-#define CT_EE2 LH_foot
+#define CT_EE2 fr_LH_foot
 #define CT_EE2_IS_ON_LINK 9
 #define CT_EE2_FIRST_JOINT 6
 #define CT_EE2_LAST_JOINT 8
 
-#define CT_EE3 RH_foot
+#define CT_EE3 fr_RH_foot
 #define CT_EE3_IS_ON_LINK 12
 #define CT_EE3_FIRST_JOINT 9
 #define CT_EE3_LAST_JOINT 11

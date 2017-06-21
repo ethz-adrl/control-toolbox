@@ -14,7 +14,7 @@ namespace optcon {
 class TimeActivationBase
 {
 public:
-	TimeActivationBase() {}
+	TimeActivationBase(){}
 	virtual ~TimeActivationBase() {}
 
 	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false){ 

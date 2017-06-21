@@ -1,14 +1,10 @@
-namespace iit {
-namespace HyQ {
-namespace dyn {
-
 // Initialization of static-const data
-template<typename TRAIT>
-const typename iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::ExtForces
-iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::zeroExtForces(Force::Zero());
+template <typename TRAIT>
+const typename iit::TestHyQ::dyn::tpl::InverseDynamics<TRAIT>::ExtForces
+iit::TestHyQ::dyn::tpl::InverseDynamics<TRAIT>::zeroExtForces(Force::Zero());
 
 template <typename TRAIT>
-iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics(IProperties& inertia, MTransforms& transforms) :
+iit::TestHyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics(IProperties& inertia, MTransforms& transforms) :
     inertiaProps( & inertia ),
     xm( & transforms ),
     LF_hipassembly_I(inertiaProps->getTensor_LF_hipassembly() ),
@@ -31,7 +27,7 @@ iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics(IProperties& inertia
         RH_lowerleg_Ic(RH_lowerleg_I)
 {
 #ifndef EIGEN_NO_DEBUG
-    std::cout << "Robot HyQ, InverseDynamics<TRAIT>::InverseDynamics()" << std::endl;
+    std::cout << "Robot TestHyQ, InverseDynamics<TRAIT>::InverseDynamics()" << std::endl;
     std::cout << "Compiled with Eigen debug active" << std::endl;
 #endif
     LF_hipassembly_v.setZero();
@@ -51,7 +47,7 @@ iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics(IProperties& inertia
 }
 
 template <typename TRAIT>
-void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
+void iit::TestHyQ::dyn::tpl::InverseDynamics<TRAIT>::id(
     JointState& jForces, Acceleration& trunk_a,
     const Acceleration& g, const Velocity& trunk_v,
     const JointState& qd, const JointState& qdd,
@@ -71,7 +67,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
     LF_hipassembly_v = ((xm->fr_LF_hipassembly_X_fr_trunk) * trunk_v);
     LF_hipassembly_v(iit::rbd::AZ) += qd(LF_HAA);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(LF_hipassembly_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LF_hipassembly_v, vcross);
     
     LF_hipassembly_a = (vcross.col(iit::rbd::AZ) * qd(LF_HAA));
     LF_hipassembly_a(iit::rbd::AZ) += qdd(LF_HAA);
@@ -82,7 +78,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
     LF_upperleg_v = ((xm->fr_LF_upperleg_X_fr_LF_hipassembly) * LF_hipassembly_v);
     LF_upperleg_v(iit::rbd::AZ) += qd(LF_HFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(LF_upperleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LF_upperleg_v, vcross);
     
     LF_upperleg_a = (xm->fr_LF_upperleg_X_fr_LF_hipassembly) * LF_hipassembly_a + vcross.col(iit::rbd::AZ) * qd(LF_HFE);
     LF_upperleg_a(iit::rbd::AZ) += qdd(LF_HFE);
@@ -93,7 +89,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
     LF_lowerleg_v = ((xm->fr_LF_lowerleg_X_fr_LF_upperleg) * LF_upperleg_v);
     LF_lowerleg_v(iit::rbd::AZ) += qd(LF_KFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(LF_lowerleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LF_lowerleg_v, vcross);
     
     LF_lowerleg_a = (xm->fr_LF_lowerleg_X_fr_LF_upperleg) * LF_upperleg_a + vcross.col(iit::rbd::AZ) * qd(LF_KFE);
     LF_lowerleg_a(iit::rbd::AZ) += qdd(LF_KFE);
@@ -104,7 +100,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
     RF_hipassembly_v = ((xm->fr_RF_hipassembly_X_fr_trunk) * trunk_v);
     RF_hipassembly_v(iit::rbd::AZ) += qd(RF_HAA);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(RF_hipassembly_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RF_hipassembly_v, vcross);
     
     RF_hipassembly_a = (vcross.col(iit::rbd::AZ) * qd(RF_HAA));
     RF_hipassembly_a(iit::rbd::AZ) += qdd(RF_HAA);
@@ -115,7 +111,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
     RF_upperleg_v = ((xm->fr_RF_upperleg_X_fr_RF_hipassembly) * RF_hipassembly_v);
     RF_upperleg_v(iit::rbd::AZ) += qd(RF_HFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(RF_upperleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RF_upperleg_v, vcross);
     
     RF_upperleg_a = (xm->fr_RF_upperleg_X_fr_RF_hipassembly) * RF_hipassembly_a + vcross.col(iit::rbd::AZ) * qd(RF_HFE);
     RF_upperleg_a(iit::rbd::AZ) += qdd(RF_HFE);
@@ -126,7 +122,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
     RF_lowerleg_v = ((xm->fr_RF_lowerleg_X_fr_RF_upperleg) * RF_upperleg_v);
     RF_lowerleg_v(iit::rbd::AZ) += qd(RF_KFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(RF_lowerleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RF_lowerleg_v, vcross);
     
     RF_lowerleg_a = (xm->fr_RF_lowerleg_X_fr_RF_upperleg) * RF_upperleg_a + vcross.col(iit::rbd::AZ) * qd(RF_KFE);
     RF_lowerleg_a(iit::rbd::AZ) += qdd(RF_KFE);
@@ -137,7 +133,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
     LH_hipassembly_v = ((xm->fr_LH_hipassembly_X_fr_trunk) * trunk_v);
     LH_hipassembly_v(iit::rbd::AZ) += qd(LH_HAA);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(LH_hipassembly_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LH_hipassembly_v, vcross);
     
     LH_hipassembly_a = (vcross.col(iit::rbd::AZ) * qd(LH_HAA));
     LH_hipassembly_a(iit::rbd::AZ) += qdd(LH_HAA);
@@ -148,7 +144,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
     LH_upperleg_v = ((xm->fr_LH_upperleg_X_fr_LH_hipassembly) * LH_hipassembly_v);
     LH_upperleg_v(iit::rbd::AZ) += qd(LH_HFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(LH_upperleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LH_upperleg_v, vcross);
     
     LH_upperleg_a = (xm->fr_LH_upperleg_X_fr_LH_hipassembly) * LH_hipassembly_a + vcross.col(iit::rbd::AZ) * qd(LH_HFE);
     LH_upperleg_a(iit::rbd::AZ) += qdd(LH_HFE);
@@ -159,7 +155,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
     LH_lowerleg_v = ((xm->fr_LH_lowerleg_X_fr_LH_upperleg) * LH_upperleg_v);
     LH_lowerleg_v(iit::rbd::AZ) += qd(LH_KFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(LH_lowerleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LH_lowerleg_v, vcross);
     
     LH_lowerleg_a = (xm->fr_LH_lowerleg_X_fr_LH_upperleg) * LH_upperleg_a + vcross.col(iit::rbd::AZ) * qd(LH_KFE);
     LH_lowerleg_a(iit::rbd::AZ) += qdd(LH_KFE);
@@ -170,7 +166,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
     RH_hipassembly_v = ((xm->fr_RH_hipassembly_X_fr_trunk) * trunk_v);
     RH_hipassembly_v(iit::rbd::AZ) += qd(RH_HAA);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(RH_hipassembly_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RH_hipassembly_v, vcross);
     
     RH_hipassembly_a = (vcross.col(iit::rbd::AZ) * qd(RH_HAA));
     RH_hipassembly_a(iit::rbd::AZ) += qdd(RH_HAA);
@@ -181,7 +177,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
     RH_upperleg_v = ((xm->fr_RH_upperleg_X_fr_RH_hipassembly) * RH_hipassembly_v);
     RH_upperleg_v(iit::rbd::AZ) += qd(RH_HFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(RH_upperleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RH_upperleg_v, vcross);
     
     RH_upperleg_a = (xm->fr_RH_upperleg_X_fr_RH_hipassembly) * RH_hipassembly_a + vcross.col(iit::rbd::AZ) * qd(RH_HFE);
     RH_upperleg_a(iit::rbd::AZ) += qdd(RH_HFE);
@@ -192,7 +188,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
     RH_lowerleg_v = ((xm->fr_RH_lowerleg_X_fr_RH_upperleg) * RH_upperleg_v);
     RH_lowerleg_v(iit::rbd::AZ) += qd(RH_KFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(RH_lowerleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RH_lowerleg_v, vcross);
     
     RH_lowerleg_a = (xm->fr_RH_lowerleg_X_fr_RH_upperleg) * RH_upperleg_a + vcross.col(iit::rbd::AZ) * qd(RH_KFE);
     RH_lowerleg_a(iit::rbd::AZ) += qdd(RH_KFE);
@@ -299,7 +295,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::InverseDynamics::id(
 }
 
 template <typename TRAIT>
-void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::G_terms_fully_actuated(
+void iit::TestHyQ::dyn::tpl::InverseDynamics<TRAIT>::G_terms_fully_actuated(
     Force& baseWrench, JointState& jForces,
     const Acceleration& g)
 {
@@ -350,91 +346,91 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::G_terms_fully_actuated(
 }
 
 template <typename TRAIT>
-void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::C_terms_fully_actuated(
+void iit::TestHyQ::dyn::tpl::InverseDynamics<TRAIT>::C_terms_fully_actuated(
     Force& baseWrench, JointState& jForces,
     const Velocity& trunk_v, const JointState& qd)
 {
     // Link 'LF_hipassembly'
     LF_hipassembly_v = ((xm->fr_LF_hipassembly_X_fr_trunk) * trunk_v);
     LF_hipassembly_v(iit::rbd::AZ) += qd(LF_HAA);
-    iit::rbd::motionCrossProductMx<SCALAR>(LF_hipassembly_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LF_hipassembly_v, vcross);
     LF_hipassembly_a = (vcross.col(iit::rbd::AZ) * qd(LF_HAA));
     LF_hipassembly_f = LF_hipassembly_I * LF_hipassembly_a + iit::rbd::vxIv(LF_hipassembly_v, LF_hipassembly_I);
     
     // Link 'LF_upperleg'
     LF_upperleg_v = ((xm->fr_LF_upperleg_X_fr_LF_hipassembly) * LF_hipassembly_v);
     LF_upperleg_v(iit::rbd::AZ) += qd(LF_HFE);
-    iit::rbd::motionCrossProductMx<SCALAR>(LF_upperleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LF_upperleg_v, vcross);
     LF_upperleg_a = (xm->fr_LF_upperleg_X_fr_LF_hipassembly) * LF_hipassembly_a + vcross.col(iit::rbd::AZ) * qd(LF_HFE);
     LF_upperleg_f = LF_upperleg_I * LF_upperleg_a + iit::rbd::vxIv(LF_upperleg_v, LF_upperleg_I);
     
     // Link 'LF_lowerleg'
     LF_lowerleg_v = ((xm->fr_LF_lowerleg_X_fr_LF_upperleg) * LF_upperleg_v);
     LF_lowerleg_v(iit::rbd::AZ) += qd(LF_KFE);
-    iit::rbd::motionCrossProductMx<SCALAR>(LF_lowerleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LF_lowerleg_v, vcross);
     LF_lowerleg_a = (xm->fr_LF_lowerleg_X_fr_LF_upperleg) * LF_upperleg_a + vcross.col(iit::rbd::AZ) * qd(LF_KFE);
     LF_lowerleg_f = LF_lowerleg_I * LF_lowerleg_a + iit::rbd::vxIv(LF_lowerleg_v, LF_lowerleg_I);
     
     // Link 'RF_hipassembly'
     RF_hipassembly_v = ((xm->fr_RF_hipassembly_X_fr_trunk) * trunk_v);
     RF_hipassembly_v(iit::rbd::AZ) += qd(RF_HAA);
-    iit::rbd::motionCrossProductMx<SCALAR>(RF_hipassembly_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RF_hipassembly_v, vcross);
     RF_hipassembly_a = (vcross.col(iit::rbd::AZ) * qd(RF_HAA));
     RF_hipassembly_f = RF_hipassembly_I * RF_hipassembly_a + iit::rbd::vxIv(RF_hipassembly_v, RF_hipassembly_I);
     
     // Link 'RF_upperleg'
     RF_upperleg_v = ((xm->fr_RF_upperleg_X_fr_RF_hipassembly) * RF_hipassembly_v);
     RF_upperleg_v(iit::rbd::AZ) += qd(RF_HFE);
-    iit::rbd::motionCrossProductMx<SCALAR>(RF_upperleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RF_upperleg_v, vcross);
     RF_upperleg_a = (xm->fr_RF_upperleg_X_fr_RF_hipassembly) * RF_hipassembly_a + vcross.col(iit::rbd::AZ) * qd(RF_HFE);
     RF_upperleg_f = RF_upperleg_I * RF_upperleg_a + iit::rbd::vxIv(RF_upperleg_v, RF_upperleg_I);
     
     // Link 'RF_lowerleg'
     RF_lowerleg_v = ((xm->fr_RF_lowerleg_X_fr_RF_upperleg) * RF_upperleg_v);
     RF_lowerleg_v(iit::rbd::AZ) += qd(RF_KFE);
-    iit::rbd::motionCrossProductMx<SCALAR>(RF_lowerleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RF_lowerleg_v, vcross);
     RF_lowerleg_a = (xm->fr_RF_lowerleg_X_fr_RF_upperleg) * RF_upperleg_a + vcross.col(iit::rbd::AZ) * qd(RF_KFE);
     RF_lowerleg_f = RF_lowerleg_I * RF_lowerleg_a + iit::rbd::vxIv(RF_lowerleg_v, RF_lowerleg_I);
     
     // Link 'LH_hipassembly'
     LH_hipassembly_v = ((xm->fr_LH_hipassembly_X_fr_trunk) * trunk_v);
     LH_hipassembly_v(iit::rbd::AZ) += qd(LH_HAA);
-    iit::rbd::motionCrossProductMx<SCALAR>(LH_hipassembly_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LH_hipassembly_v, vcross);
     LH_hipassembly_a = (vcross.col(iit::rbd::AZ) * qd(LH_HAA));
     LH_hipassembly_f = LH_hipassembly_I * LH_hipassembly_a + iit::rbd::vxIv(LH_hipassembly_v, LH_hipassembly_I);
     
     // Link 'LH_upperleg'
     LH_upperleg_v = ((xm->fr_LH_upperleg_X_fr_LH_hipassembly) * LH_hipassembly_v);
     LH_upperleg_v(iit::rbd::AZ) += qd(LH_HFE);
-    iit::rbd::motionCrossProductMx<SCALAR>(LH_upperleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LH_upperleg_v, vcross);
     LH_upperleg_a = (xm->fr_LH_upperleg_X_fr_LH_hipassembly) * LH_hipassembly_a + vcross.col(iit::rbd::AZ) * qd(LH_HFE);
     LH_upperleg_f = LH_upperleg_I * LH_upperleg_a + iit::rbd::vxIv(LH_upperleg_v, LH_upperleg_I);
     
     // Link 'LH_lowerleg'
     LH_lowerleg_v = ((xm->fr_LH_lowerleg_X_fr_LH_upperleg) * LH_upperleg_v);
     LH_lowerleg_v(iit::rbd::AZ) += qd(LH_KFE);
-    iit::rbd::motionCrossProductMx<SCALAR>(LH_lowerleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LH_lowerleg_v, vcross);
     LH_lowerleg_a = (xm->fr_LH_lowerleg_X_fr_LH_upperleg) * LH_upperleg_a + vcross.col(iit::rbd::AZ) * qd(LH_KFE);
     LH_lowerleg_f = LH_lowerleg_I * LH_lowerleg_a + iit::rbd::vxIv(LH_lowerleg_v, LH_lowerleg_I);
     
     // Link 'RH_hipassembly'
     RH_hipassembly_v = ((xm->fr_RH_hipassembly_X_fr_trunk) * trunk_v);
     RH_hipassembly_v(iit::rbd::AZ) += qd(RH_HAA);
-    iit::rbd::motionCrossProductMx<SCALAR>(RH_hipassembly_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RH_hipassembly_v, vcross);
     RH_hipassembly_a = (vcross.col(iit::rbd::AZ) * qd(RH_HAA));
     RH_hipassembly_f = RH_hipassembly_I * RH_hipassembly_a + iit::rbd::vxIv(RH_hipassembly_v, RH_hipassembly_I);
     
     // Link 'RH_upperleg'
     RH_upperleg_v = ((xm->fr_RH_upperleg_X_fr_RH_hipassembly) * RH_hipassembly_v);
     RH_upperleg_v(iit::rbd::AZ) += qd(RH_HFE);
-    iit::rbd::motionCrossProductMx<SCALAR>(RH_upperleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RH_upperleg_v, vcross);
     RH_upperleg_a = (xm->fr_RH_upperleg_X_fr_RH_hipassembly) * RH_hipassembly_a + vcross.col(iit::rbd::AZ) * qd(RH_HFE);
     RH_upperleg_f = RH_upperleg_I * RH_upperleg_a + iit::rbd::vxIv(RH_upperleg_v, RH_upperleg_I);
     
     // Link 'RH_lowerleg'
     RH_lowerleg_v = ((xm->fr_RH_lowerleg_X_fr_RH_upperleg) * RH_upperleg_v);
     RH_lowerleg_v(iit::rbd::AZ) += qd(RH_KFE);
-    iit::rbd::motionCrossProductMx<SCALAR>(RH_lowerleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RH_lowerleg_v, vcross);
     RH_lowerleg_a = (xm->fr_RH_lowerleg_X_fr_RH_upperleg) * RH_upperleg_a + vcross.col(iit::rbd::AZ) * qd(RH_KFE);
     RH_lowerleg_f = RH_lowerleg_I * RH_lowerleg_a + iit::rbd::vxIv(RH_lowerleg_v, RH_lowerleg_I);
     
@@ -447,7 +443,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::C_terms_fully_actuated(
 }
 
 template <typename TRAIT>
-void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
+void iit::TestHyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
         Force& baseWrench, JointState& jForces,
         const Acceleration& g, const Velocity& trunk_v, const Acceleration& baseAccel,
         const JointState& qd, const JointState& qdd, const ExtForces& fext)
@@ -458,7 +454,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
     LF_hipassembly_v = ((xm->fr_LF_hipassembly_X_fr_trunk) * trunk_v);
     LF_hipassembly_v(iit::rbd::AZ) += qd(LF_HAA);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(LF_hipassembly_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LF_hipassembly_v, vcross);
     
     LF_hipassembly_a = (xm->fr_LF_hipassembly_X_fr_trunk) * trunk_a + vcross.col(iit::rbd::AZ) * qd(LF_HAA);
     LF_hipassembly_a(iit::rbd::AZ) += qdd(LF_HAA);
@@ -469,7 +465,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
     LF_upperleg_v = ((xm->fr_LF_upperleg_X_fr_LF_hipassembly) * LF_hipassembly_v);
     LF_upperleg_v(iit::rbd::AZ) += qd(LF_HFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(LF_upperleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LF_upperleg_v, vcross);
     
     LF_upperleg_a = (xm->fr_LF_upperleg_X_fr_LF_hipassembly) * LF_hipassembly_a + vcross.col(iit::rbd::AZ) * qd(LF_HFE);
     LF_upperleg_a(iit::rbd::AZ) += qdd(LF_HFE);
@@ -480,7 +476,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
     LF_lowerleg_v = ((xm->fr_LF_lowerleg_X_fr_LF_upperleg) * LF_upperleg_v);
     LF_lowerleg_v(iit::rbd::AZ) += qd(LF_KFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(LF_lowerleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LF_lowerleg_v, vcross);
     
     LF_lowerleg_a = (xm->fr_LF_lowerleg_X_fr_LF_upperleg) * LF_upperleg_a + vcross.col(iit::rbd::AZ) * qd(LF_KFE);
     LF_lowerleg_a(iit::rbd::AZ) += qdd(LF_KFE);
@@ -491,7 +487,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
     RF_hipassembly_v = ((xm->fr_RF_hipassembly_X_fr_trunk) * trunk_v);
     RF_hipassembly_v(iit::rbd::AZ) += qd(RF_HAA);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(RF_hipassembly_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RF_hipassembly_v, vcross);
     
     RF_hipassembly_a = (xm->fr_RF_hipassembly_X_fr_trunk) * trunk_a + vcross.col(iit::rbd::AZ) * qd(RF_HAA);
     RF_hipassembly_a(iit::rbd::AZ) += qdd(RF_HAA);
@@ -502,7 +498,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
     RF_upperleg_v = ((xm->fr_RF_upperleg_X_fr_RF_hipassembly) * RF_hipassembly_v);
     RF_upperleg_v(iit::rbd::AZ) += qd(RF_HFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(RF_upperleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RF_upperleg_v, vcross);
     
     RF_upperleg_a = (xm->fr_RF_upperleg_X_fr_RF_hipassembly) * RF_hipassembly_a + vcross.col(iit::rbd::AZ) * qd(RF_HFE);
     RF_upperleg_a(iit::rbd::AZ) += qdd(RF_HFE);
@@ -513,7 +509,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
     RF_lowerleg_v = ((xm->fr_RF_lowerleg_X_fr_RF_upperleg) * RF_upperleg_v);
     RF_lowerleg_v(iit::rbd::AZ) += qd(RF_KFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(RF_lowerleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RF_lowerleg_v, vcross);
     
     RF_lowerleg_a = (xm->fr_RF_lowerleg_X_fr_RF_upperleg) * RF_upperleg_a + vcross.col(iit::rbd::AZ) * qd(RF_KFE);
     RF_lowerleg_a(iit::rbd::AZ) += qdd(RF_KFE);
@@ -524,7 +520,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
     LH_hipassembly_v = ((xm->fr_LH_hipassembly_X_fr_trunk) * trunk_v);
     LH_hipassembly_v(iit::rbd::AZ) += qd(LH_HAA);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(LH_hipassembly_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LH_hipassembly_v, vcross);
     
     LH_hipassembly_a = (xm->fr_LH_hipassembly_X_fr_trunk) * trunk_a + vcross.col(iit::rbd::AZ) * qd(LH_HAA);
     LH_hipassembly_a(iit::rbd::AZ) += qdd(LH_HAA);
@@ -535,7 +531,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
     LH_upperleg_v = ((xm->fr_LH_upperleg_X_fr_LH_hipassembly) * LH_hipassembly_v);
     LH_upperleg_v(iit::rbd::AZ) += qd(LH_HFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(LH_upperleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LH_upperleg_v, vcross);
     
     LH_upperleg_a = (xm->fr_LH_upperleg_X_fr_LH_hipassembly) * LH_hipassembly_a + vcross.col(iit::rbd::AZ) * qd(LH_HFE);
     LH_upperleg_a(iit::rbd::AZ) += qdd(LH_HFE);
@@ -546,7 +542,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
     LH_lowerleg_v = ((xm->fr_LH_lowerleg_X_fr_LH_upperleg) * LH_upperleg_v);
     LH_lowerleg_v(iit::rbd::AZ) += qd(LH_KFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(LH_lowerleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(LH_lowerleg_v, vcross);
     
     LH_lowerleg_a = (xm->fr_LH_lowerleg_X_fr_LH_upperleg) * LH_upperleg_a + vcross.col(iit::rbd::AZ) * qd(LH_KFE);
     LH_lowerleg_a(iit::rbd::AZ) += qdd(LH_KFE);
@@ -557,7 +553,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
     RH_hipassembly_v = ((xm->fr_RH_hipassembly_X_fr_trunk) * trunk_v);
     RH_hipassembly_v(iit::rbd::AZ) += qd(RH_HAA);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(RH_hipassembly_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RH_hipassembly_v, vcross);
     
     RH_hipassembly_a = (xm->fr_RH_hipassembly_X_fr_trunk) * trunk_a + vcross.col(iit::rbd::AZ) * qd(RH_HAA);
     RH_hipassembly_a(iit::rbd::AZ) += qdd(RH_HAA);
@@ -568,7 +564,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
     RH_upperleg_v = ((xm->fr_RH_upperleg_X_fr_RH_hipassembly) * RH_hipassembly_v);
     RH_upperleg_v(iit::rbd::AZ) += qd(RH_HFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(RH_upperleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RH_upperleg_v, vcross);
     
     RH_upperleg_a = (xm->fr_RH_upperleg_X_fr_RH_hipassembly) * RH_hipassembly_a + vcross.col(iit::rbd::AZ) * qd(RH_HFE);
     RH_upperleg_a(iit::rbd::AZ) += qdd(RH_HFE);
@@ -579,7 +575,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
     RH_lowerleg_v = ((xm->fr_RH_lowerleg_X_fr_RH_upperleg) * RH_upperleg_v);
     RH_lowerleg_v(iit::rbd::AZ) += qd(RH_KFE);
     
-    iit::rbd::motionCrossProductMx<SCALAR>(RH_lowerleg_v, vcross);
+    iit::rbd::motionCrossProductMx<Scalar>(RH_lowerleg_v, vcross);
     
     RH_lowerleg_a = (xm->fr_RH_lowerleg_X_fr_RH_upperleg) * RH_upperleg_a + vcross.col(iit::rbd::AZ) * qd(RH_KFE);
     RH_lowerleg_a(iit::rbd::AZ) += qdd(RH_KFE);
@@ -596,7 +592,7 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::id_fully_actuated(
 }
 
 template <typename TRAIT>
-void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::secondPass_fullyActuated(JointState& jForces)
+void iit::TestHyQ::dyn::tpl::InverseDynamics<TRAIT>::secondPass_fullyActuated(JointState& jForces)
 {
     // Link 'RH_lowerleg'
     jForces(RH_KFE) = RH_lowerleg_f(iit::rbd::AZ);
@@ -636,6 +632,3 @@ void iit::HyQ::dyn::tpl::InverseDynamics<TRAIT>::secondPass_fullyActuated(JointS
     trunk_f += xm->fr_LF_hipassembly_X_fr_trunk.transpose() * LF_hipassembly_f;
 }
 
-}
-}
-}

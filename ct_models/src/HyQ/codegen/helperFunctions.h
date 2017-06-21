@@ -109,7 +109,7 @@ Eigen::Matrix<SCALAR, state_dim, 1> hyqContactModelForwardDynamics(const Eigen::
 	system.setContactModel(contactModel);
 	ct::core::StateVector<state_dim, SCALAR> y;
 
-	system.computeControlledDynamics(x.segment(0, state_dim), 0.0, x.segment(state_dim, control_dim), y);
+	system.computeControlledDynamics(x.segment(0, state_dim), SCALAR(0.0), x.segment(state_dim, control_dim), y);
 
 	return y;
 }

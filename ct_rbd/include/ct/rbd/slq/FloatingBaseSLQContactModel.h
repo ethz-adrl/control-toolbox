@@ -75,7 +75,7 @@ public:
 	) :
 		system_(system),
 		linearizedSystem_(linearizedSystem),
-		costFunction_(new CostFunction(costFunctionFile, true)),
+		costFunction_(new CostFunction(costFunctionFile, false)),
 		optConProblem_(system_, costFunction_, linearizedSystem_),
 		iteration_(0)
 	{
@@ -132,6 +132,11 @@ public:
 	void changeCostFunction(std::shared_ptr<CostFunction> costFunction)
 	{
 		ilqg_->changeCostFunction(costFunction);
+	}
+
+	std::shared_ptr<iLQGBase> getSolver()
+	{
+		return ilqg_;
 	}
 
 private:

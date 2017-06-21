@@ -22,7 +22,11 @@ namespace rbd {
  */
 template<class State, class ActualMatrix>
 class RotationTransformBase : public StateDependentMatrix<State, 3, 3, ActualMatrix>
-{};
+{
+public:
+	RotationTransformBase() : StateDependentMatrix<State, 3, 3, ActualMatrix>() {}
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
 
 /**
  * A 4x4 specialization of StateDependentMatrix, to be used as a base class for
@@ -30,7 +34,11 @@ class RotationTransformBase : public StateDependentMatrix<State, 3, 3, ActualMat
  */
 template<class State, class ActualMatrix>
 class HomogeneousTransformBase : public StateDependentMatrix<State, 4, 4, ActualMatrix>
-{};
+{
+public:
+	HomogeneousTransformBase() : StateDependentMatrix<State, 4, 4, ActualMatrix>() {}
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
 
 /**
  * A 6x6 specialization of StateDependentMatrix, to be used as a base class for
@@ -38,7 +46,11 @@ class HomogeneousTransformBase : public StateDependentMatrix<State, 4, 4, Actual
  */
 template<class State, class ActualMatrix>
 class SpatialTransformBase : public StateDependentMatrix<State, 6, 6, ActualMatrix>
-{};
+{
+public:
+	SpatialTransformBase() : StateDependentMatrix<State, 6, 6, ActualMatrix>() {}
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
 
 /**
  * A 6xCols specialization of StateDependentMatrix, to be used as a base class
@@ -46,7 +58,12 @@ class SpatialTransformBase : public StateDependentMatrix<State, 6, 6, ActualMatr
  */
 template<class State, int Cols, class ActualMatrix>
 class JacobianBase : public StateDependentMatrix<State, 6, Cols, ActualMatrix>
-{};
+{
+public:
+	JacobianBase() : StateDependentMatrix<State, 6, Cols, ActualMatrix>() {}
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
+
 
 
 

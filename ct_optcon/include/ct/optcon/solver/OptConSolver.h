@@ -218,6 +218,11 @@ public:
 		throw std::runtime_error("The current solver does not support final constraints!");
 	}
 
+	virtual double getCost() const
+	{
+		throw std::runtime_error("Get cost not implemented");
+	}
+
 
 	/*!
 	 * \brief Direct accessor to the system instances

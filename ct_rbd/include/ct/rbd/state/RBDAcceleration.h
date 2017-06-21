@@ -62,8 +62,7 @@ public:
 
 	RBDAcceleration()
 	{
-		baseStateDerivative_.setZero();
-		jointStateDerivative_.setZero();
+		setZero();
 	}
 
 	RBDAcceleration(const RigidBodyAcceleration_t& baseStateDerivative, const JointAcceleration<NJOINTS, SCALAR>& jointStateDerivative) :
@@ -125,6 +124,12 @@ public:
         base().getTranslationalAcceleration().toImplementation(),
         joints().getAcceleration();
     return ddq;
+  }
+
+  void setZero()
+  {
+	  baseStateDerivative_.setZero();
+	  jointStateDerivative_.setZero();
   }
 
 	static RBDAcceleration<NJOINTS, SCALAR> Zero() {

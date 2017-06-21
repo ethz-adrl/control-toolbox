@@ -1,7 +1,7 @@
 
 
 //Implementation of default constructor
-template<typename TRAIT>
+template <typename TRAIT>
 iit::HyQ::dyn::tpl::JSIM<TRAIT>::JSIM(IProperties& inertiaProperties, FTransforms& forceTransforms) :
     linkInertias(inertiaProperties),
     frcTransf( &forceTransforms ),
@@ -49,7 +49,7 @@ const typename iit::HyQ::dyn::tpl::JSIM<TRAIT>& iit::HyQ::dyn::tpl::JSIM<TRAIT>:
     // "Bottom-up" loop to update the inertia-composite property of each link, for the current configuration
 
     // Link RH_lowerleg:
-    iit::rbd::transformInertia(RH_lowerleg_Ic, frcTransf -> fr_RH_upperleg_X_fr_RH_lowerleg, Ic_spare);
+    iit::rbd::transformInertia<Scalar>(RH_lowerleg_Ic, frcTransf -> fr_RH_upperleg_X_fr_RH_lowerleg, Ic_spare);
     RH_upperleg_Ic += Ic_spare;
 
     Fcol(RH_KFE) = RH_lowerleg_Ic.col(iit::rbd::AZ);
@@ -64,7 +64,7 @@ const typename iit::HyQ::dyn::tpl::JSIM<TRAIT>& iit::HyQ::dyn::tpl::JSIM<TRAIT>:
     Fcol(RH_KFE) = frcTransf -> fr_trunk_X_fr_RH_hipassembly * Fcol(RH_KFE);
 
     // Link RH_upperleg:
-    iit::rbd::transformInertia(RH_upperleg_Ic, frcTransf -> fr_RH_hipassembly_X_fr_RH_upperleg, Ic_spare);
+    iit::rbd::transformInertia<Scalar>(RH_upperleg_Ic, frcTransf -> fr_RH_hipassembly_X_fr_RH_upperleg, Ic_spare);
     RH_hipassembly_Ic += Ic_spare;
 
     Fcol(RH_HFE) = RH_upperleg_Ic.col(iit::rbd::AZ);
@@ -76,7 +76,7 @@ const typename iit::HyQ::dyn::tpl::JSIM<TRAIT>& iit::HyQ::dyn::tpl::JSIM<TRAIT>:
     Fcol(RH_HFE) = frcTransf -> fr_trunk_X_fr_RH_hipassembly * Fcol(RH_HFE);
 
     // Link RH_hipassembly:
-    iit::rbd::transformInertia(RH_hipassembly_Ic, frcTransf -> fr_trunk_X_fr_RH_hipassembly, Ic_spare);
+    iit::rbd::transformInertia<Scalar>(RH_hipassembly_Ic, frcTransf -> fr_trunk_X_fr_RH_hipassembly, Ic_spare);
     trunk_Ic += Ic_spare;
 
     Fcol(RH_HAA) = RH_hipassembly_Ic.col(iit::rbd::AZ);
@@ -85,7 +85,7 @@ const typename iit::HyQ::dyn::tpl::JSIM<TRAIT>& iit::HyQ::dyn::tpl::JSIM<TRAIT>:
     Fcol(RH_HAA) = frcTransf -> fr_trunk_X_fr_RH_hipassembly * Fcol(RH_HAA);
 
     // Link LH_lowerleg:
-    iit::rbd::transformInertia(LH_lowerleg_Ic, frcTransf -> fr_LH_upperleg_X_fr_LH_lowerleg, Ic_spare);
+    iit::rbd::transformInertia<Scalar>(LH_lowerleg_Ic, frcTransf -> fr_LH_upperleg_X_fr_LH_lowerleg, Ic_spare);
     LH_upperleg_Ic += Ic_spare;
 
     Fcol(LH_KFE) = LH_lowerleg_Ic.col(iit::rbd::AZ);
@@ -100,7 +100,7 @@ const typename iit::HyQ::dyn::tpl::JSIM<TRAIT>& iit::HyQ::dyn::tpl::JSIM<TRAIT>:
     Fcol(LH_KFE) = frcTransf -> fr_trunk_X_fr_LH_hipassembly * Fcol(LH_KFE);
 
     // Link LH_upperleg:
-    iit::rbd::transformInertia(LH_upperleg_Ic, frcTransf -> fr_LH_hipassembly_X_fr_LH_upperleg, Ic_spare);
+    iit::rbd::transformInertia<Scalar>(LH_upperleg_Ic, frcTransf -> fr_LH_hipassembly_X_fr_LH_upperleg, Ic_spare);
     LH_hipassembly_Ic += Ic_spare;
 
     Fcol(LH_HFE) = LH_upperleg_Ic.col(iit::rbd::AZ);
@@ -112,7 +112,7 @@ const typename iit::HyQ::dyn::tpl::JSIM<TRAIT>& iit::HyQ::dyn::tpl::JSIM<TRAIT>:
     Fcol(LH_HFE) = frcTransf -> fr_trunk_X_fr_LH_hipassembly * Fcol(LH_HFE);
 
     // Link LH_hipassembly:
-    iit::rbd::transformInertia(LH_hipassembly_Ic, frcTransf -> fr_trunk_X_fr_LH_hipassembly, Ic_spare);
+    iit::rbd::transformInertia<Scalar>(LH_hipassembly_Ic, frcTransf -> fr_trunk_X_fr_LH_hipassembly, Ic_spare);
     trunk_Ic += Ic_spare;
 
     Fcol(LH_HAA) = LH_hipassembly_Ic.col(iit::rbd::AZ);
@@ -121,7 +121,7 @@ const typename iit::HyQ::dyn::tpl::JSIM<TRAIT>& iit::HyQ::dyn::tpl::JSIM<TRAIT>:
     Fcol(LH_HAA) = frcTransf -> fr_trunk_X_fr_LH_hipassembly * Fcol(LH_HAA);
 
     // Link RF_lowerleg:
-    iit::rbd::transformInertia(RF_lowerleg_Ic, frcTransf -> fr_RF_upperleg_X_fr_RF_lowerleg, Ic_spare);
+    iit::rbd::transformInertia<Scalar>(RF_lowerleg_Ic, frcTransf -> fr_RF_upperleg_X_fr_RF_lowerleg, Ic_spare);
     RF_upperleg_Ic += Ic_spare;
 
     Fcol(RF_KFE) = RF_lowerleg_Ic.col(iit::rbd::AZ);
@@ -136,7 +136,7 @@ const typename iit::HyQ::dyn::tpl::JSIM<TRAIT>& iit::HyQ::dyn::tpl::JSIM<TRAIT>:
     Fcol(RF_KFE) = frcTransf -> fr_trunk_X_fr_RF_hipassembly * Fcol(RF_KFE);
 
     // Link RF_upperleg:
-    iit::rbd::transformInertia(RF_upperleg_Ic, frcTransf -> fr_RF_hipassembly_X_fr_RF_upperleg, Ic_spare);
+    iit::rbd::transformInertia<Scalar>(RF_upperleg_Ic, frcTransf -> fr_RF_hipassembly_X_fr_RF_upperleg, Ic_spare);
     RF_hipassembly_Ic += Ic_spare;
 
     Fcol(RF_HFE) = RF_upperleg_Ic.col(iit::rbd::AZ);
@@ -148,7 +148,7 @@ const typename iit::HyQ::dyn::tpl::JSIM<TRAIT>& iit::HyQ::dyn::tpl::JSIM<TRAIT>:
     Fcol(RF_HFE) = frcTransf -> fr_trunk_X_fr_RF_hipassembly * Fcol(RF_HFE);
 
     // Link RF_hipassembly:
-    iit::rbd::transformInertia(RF_hipassembly_Ic, frcTransf -> fr_trunk_X_fr_RF_hipassembly, Ic_spare);
+    iit::rbd::transformInertia<Scalar>(RF_hipassembly_Ic, frcTransf -> fr_trunk_X_fr_RF_hipassembly, Ic_spare);
     trunk_Ic += Ic_spare;
 
     Fcol(RF_HAA) = RF_hipassembly_Ic.col(iit::rbd::AZ);
@@ -157,7 +157,7 @@ const typename iit::HyQ::dyn::tpl::JSIM<TRAIT>& iit::HyQ::dyn::tpl::JSIM<TRAIT>:
     Fcol(RF_HAA) = frcTransf -> fr_trunk_X_fr_RF_hipassembly * Fcol(RF_HAA);
 
     // Link LF_lowerleg:
-    iit::rbd::transformInertia(LF_lowerleg_Ic, frcTransf -> fr_LF_upperleg_X_fr_LF_lowerleg, Ic_spare);
+    iit::rbd::transformInertia<Scalar>(LF_lowerleg_Ic, frcTransf -> fr_LF_upperleg_X_fr_LF_lowerleg, Ic_spare);
     LF_upperleg_Ic += Ic_spare;
 
     Fcol(LF_KFE) = LF_lowerleg_Ic.col(iit::rbd::AZ);
@@ -172,7 +172,7 @@ const typename iit::HyQ::dyn::tpl::JSIM<TRAIT>& iit::HyQ::dyn::tpl::JSIM<TRAIT>:
     Fcol(LF_KFE) = frcTransf -> fr_trunk_X_fr_LF_hipassembly * Fcol(LF_KFE);
 
     // Link LF_upperleg:
-    iit::rbd::transformInertia(LF_upperleg_Ic, frcTransf -> fr_LF_hipassembly_X_fr_LF_upperleg, Ic_spare);
+    iit::rbd::transformInertia<Scalar>(LF_upperleg_Ic, frcTransf -> fr_LF_hipassembly_X_fr_LF_upperleg, Ic_spare);
     LF_hipassembly_Ic += Ic_spare;
 
     Fcol(LF_HFE) = LF_upperleg_Ic.col(iit::rbd::AZ);
@@ -184,7 +184,7 @@ const typename iit::HyQ::dyn::tpl::JSIM<TRAIT>& iit::HyQ::dyn::tpl::JSIM<TRAIT>:
     Fcol(LF_HFE) = frcTransf -> fr_trunk_X_fr_LF_hipassembly * Fcol(LF_HFE);
 
     // Link LF_hipassembly:
-    iit::rbd::transformInertia(LF_hipassembly_Ic, frcTransf -> fr_trunk_X_fr_LF_hipassembly, Ic_spare);
+    iit::rbd::transformInertia<Scalar>(LF_hipassembly_Ic, frcTransf -> fr_trunk_X_fr_LF_hipassembly, Ic_spare);
     trunk_Ic += Ic_spare;
 
     Fcol(LF_HAA) = LF_hipassembly_Ic.col(iit::rbd::AZ);

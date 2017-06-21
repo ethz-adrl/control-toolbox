@@ -1,7 +1,6 @@
-#ifndef IIT_HYQ_INVERSE_DYNAMICS_H_
-#define IIT_HYQ_INVERSE_DYNAMICS_H_
+#ifndef IIT_TESTHYQ_INVERSE_DYNAMICS_H_
+#define IIT_TESTHYQ_INVERSE_DYNAMICS_H_
 
-#include <Eigen/Dense>
 #include <iit/rbd/rbd.h>
 #include <iit/rbd/InertiaMatrix.h>
 #include <iit/rbd/utils.h>
@@ -14,13 +13,11 @@
 #include "link_data_map.h"
 
 namespace iit {
-namespace HyQ {
+namespace TestHyQ {
 namespace dyn {
 
-namespace tpl {
-
 /**
- * The Inverse Dynamics routine for the robot HyQ.
+ * The Inverse Dynamics routine for the robot TestHyQ.
  *
  * In addition to the full Newton-Euler algorithm, specialized versions to compute
  * only certain terms are provided.
@@ -32,31 +29,39 @@ namespace tpl {
  * sake of efficiency, in case the motion transforms of the robot have already
  * been updated elsewhere with the most recent configuration (eg by a call to
  * setJointStatus()), so that it is useless to compute them again.
+ *
+ * Whenever present, the external forces parameter is a set of external
+ * wrenches acting on the robot links. Each wrench must be expressed in
+ * the reference frame of the link it is excerted on.
  */
+
+namespace tpl {
+
 template <typename TRAIT>
 class InverseDynamics {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef typename TRAIT::Scalar SCALAR;
+    typedef typename TRAIT::Scalar Scalar;
 
-    typedef iit::rbd::Core<SCALAR> CoreS;
+    typedef iit::rbd::Core<Scalar> CoreS;
 
     typedef typename CoreS::ForceVector Force;
+    typedef LinkDataMap<Force> ExtForces;
     typedef typename CoreS::VelocityVector Velocity;
     typedef typename CoreS::VelocityVector Acceleration;
-    typedef iit::rbd::tpl::InertiaMatrixDense<SCALAR> InertiaMatrix;
-    typedef LinkDataMap<Force> ExtForces;
-    typedef iit::HyQ::tpl::JointState<SCALAR> JointState;
+    typedef iit::rbd::tpl::InertiaMatrixDense<Scalar> InertiaMatrix;
+    typedef iit::TestHyQ::tpl::JointState<Scalar> JointState;
     typedef typename CoreS::Matrix66 Matrix66s;
-    typedef iit::HyQ::tpl::MotionTransforms<TRAIT> MTransforms;
+    typedef iit::TestHyQ::tpl::MotionTransforms<TRAIT> MTransforms;
     typedef InertiaProperties<TRAIT> IProperties;
+            
 public:
     /**
      * Default constructor
      * \param in the inertia properties of the links
      * \param tr the container of all the spatial motion transforms of
-     *     the robot HyQ, which will be used by this instance
+     *     the robot TestHyQ, which will be used by this instance
      *     to compute inverse-dynamics.
      */
     InverseDynamics(IProperties& in, MTransforms& tr);
@@ -354,12 +359,13 @@ inline void InverseDynamics<TRAIT>::id_fully_actuated(
         baseAccel, qd, qdd, fext);
 }
 
-} // namespace tpl
+}
 
 typedef tpl::InverseDynamics<rbd::DoubleTrait> InverseDynamics;
 
 }
 }
+
 }
 
 #include "inverse_dynamics.impl.h"

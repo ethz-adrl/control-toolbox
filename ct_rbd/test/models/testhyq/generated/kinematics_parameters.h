@@ -1,8 +1,8 @@
-#ifndef _HYQ_PARAMETERS_GETTERS_
-#define _HYQ_PARAMETERS_GETTERS_
+#ifndef _TESTHYQ_PARAMETERS_GETTERS_
+#define _TESTHYQ_PARAMETERS_GETTERS_
 
 namespace iit {
-namespace HyQ {
+namespace TestHyQ {
 
 
 

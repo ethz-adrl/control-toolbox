@@ -34,7 +34,7 @@ template<typename POLICY, size_t STATE_DIM, size_t CONTROL_DIM>
 class PolicyHandler{
 
 public:
-
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	PolicyHandler(){}
 
 	virtual ~PolicyHandler(){}
@@ -56,7 +56,8 @@ public:
 	virtual void designWarmStartingPolicy(
 			const core::Time delay,
 			const core::Time TimeHorizon,
-			POLICY& policy)
+			POLICY& policy,
+			core::StateTrajectory<STATE_DIM>& stateTraj)
 	{
 		policy = initialPolicy_;
 	}

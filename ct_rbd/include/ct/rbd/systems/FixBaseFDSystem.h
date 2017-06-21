@@ -93,7 +93,7 @@ public:
 
 	virtual void computeControlledDynamics(
 		const core::StateVector<STATE_DIM, SCALAR>& state,
-		const core::Time& t,
+		const SCALAR& t,
 		const core::ControlVector<CONTROL_DIM, SCALAR>& control,
 		core::StateVector<STATE_DIM, SCALAR>& derivative
 

@@ -27,7 +27,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_RBD_ROBOT_SYSTEMS_FLOATINGBASEFDSYSTEM_H_
 #define INCLUDE_CT_RBD_ROBOT_SYSTEMS_FLOATINGBASEFDSYSTEM_H_
 
-#include <ct/core/systems/ControlledSystem.h>
+#include <ct/core/systems/SymplecticSystem.h>
 #include <ct/rbd/state/RigidBodyPose.h>
 #include <ct/rbd/physics/EEContactModel.h>
 
@@ -43,7 +43,7 @@ namespace rbd {
 template <class RBDDynamics, bool QUAT_INTEGRATION = false, bool EE_ARE_CONTROL_INPUTS = false>
 class FloatingBaseFDSystem :
 		public RBDSystem<RBDDynamics, QUAT_INTEGRATION>,
-		public core::ControlledSystem<RBDDynamics::NSTATE+QUAT_INTEGRATION, RBDDynamics::NJOINTS+EE_ARE_CONTROL_INPUTS*RBDDynamics::N_EE*3, typename RBDDynamics::SCALAR>
+		public core::SymplecticSystem<RBDDynamics::NSTATE / 2 + QUAT_INTEGRATION, RBDDynamics::NSTATE / 2, RBDDynamics::NJOINTS+EE_ARE_CONTROL_INPUTS*RBDDynamics::N_EE*3, typename RBDDynamics::SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -60,7 +60,7 @@ public:
 	typedef core::StateVector<STATE_DIM, SCALAR> StateVector;
 	typedef core::ControlVector<CONTROL_DIM, SCALAR> ControlVector;
 
-	typedef core::ControlledSystem<RBDDynamics::NSTATE+QUAT_INTEGRATION, RBDDynamics::NJOINTS+EE_ARE_CONTROL_INPUTS*N_EE*3, SCALAR> Base;
+	typedef core::SymplecticSystem<RBDDynamics::NSTATE / 2 + QUAT_INTEGRATION, RBDDynamics::NSTATE / 2, CONTROL_DIM, SCALAR> Base;
 
 	using ContactModel = ct::rbd::EEContactModel<Kinematics>;
 
@@ -68,15 +68,15 @@ public:
 		Base(),
 		dynamics_(),
 		eeContactModel_(nullptr)
-	{};
+	{}
 
 	FloatingBaseFDSystem(const FloatingBaseFDSystem<RBDDynamics, QUAT_INTEGRATION, EE_ARE_CONTROL_INPUTS>& other) :
 		Base(other),
 		dynamics_(other.dynamics_),
 		eeContactModel_(other.eeContactModel_->clone())
-	{};
+	{}
 
-	virtual ~FloatingBaseFDSystem() {};
+	virtual ~FloatingBaseFDSystem() {}
 
 	virtual FloatingBaseFDSystem<RBDDynamics, QUAT_INTEGRATION, EE_ARE_CONTROL_INPUTS>* clone() const override{
 		return new FloatingBaseFDSystem<RBDDynamics, QUAT_INTEGRATION, EE_ARE_CONTROL_INPUTS>(*this);
@@ -87,45 +87,61 @@ public:
 
 	void setContactModel(const std::shared_ptr<ContactModel>& contactModel) { eeContactModel_ = contactModel; }
 
-	void computeControlledDynamics(
-		const core::StateVector<STATE_DIM, SCALAR>& state,
-		const core::Time& t,
-		const core::ControlVector<CONTROL_DIM, SCALAR>& control,
-		core::StateVector<STATE_DIM, SCALAR>& derivative
 
+	virtual void computePdot(
+			const StateVector& x,
+			const core::StateVector<RBDDynamics::NSTATE / 2, SCALAR>& v,
+			const ControlVector& control,
+			core::StateVector<RBDDynamics::NSTATE / 2 + QUAT_INTEGRATION, SCALAR>& pDot
+		) override
+	{
+		StateVector xLocal = x;
+
+		xLocal.tail(RBDDynamics::NSTATE / 2) = v;
+
+		typename RBDDynamics::RBDState_t rbdCached = RBDStateFromVector(xLocal);
+
+		typename RBDDynamics::RBDAcceleration_t xd;
+
+		pDot = toStateDerivative<QUAT_INTEGRATION>(xd, rbdCached).head(RBDDynamics::NSTATE / 2 + QUAT_INTEGRATION);
+	}
+
+	virtual void computeVdot(
+		const StateVector& x,
+		const core::StateVector<RBDDynamics::NSTATE / 2 + QUAT_INTEGRATION, SCALAR>& p,
+		const ControlVector& control,
+		core::StateVector<RBDDynamics::NSTATE / 2, SCALAR>& vDot
 	) override
 	{
-		typename RBDDynamics::RBDState_t x = RBDStateFromVector(state);
+		StateVector xLocal = x;
+		xLocal.head(RBDDynamics::NSTATE / 2 + QUAT_INTEGRATION) = p;
 
+		// Cache updated rbd state
+		typename RBDDynamics::RBDState_t rbdCached = RBDStateFromVector(xLocal);
 		typename RBDDynamics::ExtLinkForces_t linkForces(Eigen::Matrix<SCALAR, 6, 1>::Zero());
 
 		std::array<typename Kinematics::EEForceLinear, N_EE> eeForcesW;
 		eeForcesW.fill(Kinematics::EEForceLinear::Zero());
 
 		if (eeContactModel_)
-			eeForcesW = eeContactModel_->computeContactForces(x);
+			eeForcesW = eeContactModel_->computeContactForces(rbdCached);
 
 		if (EE_ARE_CONTROL_INPUTS)
-		{
 			for (size_t i=0; i<N_EE; i++)
-			{
 				eeForcesW[i] += control.template segment<3>(RBDDynamics::NJOINTS + i*3);
-			}
-		}
 
-		mapEndeffectorForcesToLinkForces(x, eeForcesW, linkForces);
+		mapEndeffectorForcesToLinkForces(rbdCached, eeForcesW, linkForces);
 
 		typename RBDDynamics::RBDAcceleration_t xd;
 
 		dynamics_.FloatingBaseForwardDynamics(
-				x,
+				rbdCached,
 				control.template head<RBDDynamics::NJOINTS>(),
 				linkForces,
 				xd);
 
-		derivative = toStateDerivative<QUAT_INTEGRATION>(xd, x);
+		vDot = toStateDerivative<QUAT_INTEGRATION>(xd, rbdCached).tail(RBDDynamics::NSTATE / 2);
 	}
-
 
 	/**
 	 * Maps the end-effector forces expressed in the world to the link frame as required by robcogen.
@@ -191,9 +207,24 @@ public:
 		return acceleration.toStateUpdateVectorEulerXyz(state);
 	}
 
+	template <bool T>
+	core::StateVector<STATE_DIM, SCALAR> toStateVector(
+			const typename RBDDynamics::RBDState_t& state,
+			typename std::enable_if<T, bool>::type = true)
+	{
+		return state.toStateVectorQuaternion();
+	}
+
+	template <bool T>
+	core::StateVector<STATE_DIM, SCALAR> toStateVector(
+			const typename RBDDynamics::RBDState_t& state,
+			typename std::enable_if<!T, bool>::type = true)
+	{
+		return state.toStateVectorEulerXyz();
+	}
+
 private:
 	RBDDynamics dynamics_;
-
 	std::shared_ptr<ContactModel> eeContactModel_;
 
 };

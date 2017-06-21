@@ -99,6 +99,7 @@ public:
 	using Base::operator[];
 	using Base::size;
 	using Base::resize;
+	using Base::reserve;
 	using Base::at;
 	using Base::pop_back;
 	using Base::push_back;

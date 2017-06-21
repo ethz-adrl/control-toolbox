@@ -68,8 +68,11 @@ public:
 	 *
 	 * @param type type of system
 	 */
-	System(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL) :
-	    type_(type)
+	System(
+		const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL,
+		bool isSymplectic = false) :
+	    type_(type),
+	    isSymplectic_(isSymplectic)
 	{}
 
 	//! copy constructor
@@ -92,7 +95,7 @@ public:
 	 */
 	virtual void computeDynamics(
 			const StateVector<STATE_DIM, SCALAR>& state,
-			const Time& t,
+			const SCALAR& t,
 			StateVector<STATE_DIM, SCALAR>& derivative) = 0;
 
 	//! get the type of system
@@ -101,9 +104,17 @@ public:
 	 */
 	SYSTEM_TYPE getType() const { return type_; }
 
+	/**
+	 * @brief      Determines if the system is in symplectic form .
+	 *
+	 * @return     True if symplectic, False otherwise.
+	 */
+	bool isSymplectic() const { return isSymplectic_; }
+
 protected:
 
 	SYSTEM_TYPE type_; //!< type of system
+	bool isSymplectic_;
 };
 
 } // core

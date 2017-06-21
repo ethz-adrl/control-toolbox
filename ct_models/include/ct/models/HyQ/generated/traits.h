@@ -14,33 +14,33 @@
 namespace iit {
 namespace HyQ {
 
-namespace tpl{
+namespace tpl {
 
 template <typename SCALAR>
 struct Traits {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
+    
     typedef SCALAR S;
 
     typedef typename iit::rbd::tpl::TraitSelector<SCALAR>::Trait Trait;
 
-    typedef typename HyQ::tpl::JointState<SCALAR> JointState;
+    typedef typename iit::HyQ::tpl::JointState<SCALAR> JointState;
 
-    typedef typename HyQ::JointIdentifiers JointID;
-    typedef typename HyQ::LinkIdentifiers  LinkID;
+    typedef typename iit::HyQ::JointIdentifiers JointID;
+    typedef typename iit::HyQ::LinkIdentifiers  LinkID;
 
-    typedef typename HyQ::tpl::HomogeneousTransforms<Trait> HomogeneousTransforms;
-    typedef typename HyQ::tpl::MotionTransforms<Trait> MotionTransforms;
-    typedef typename HyQ::tpl::ForceTransforms<Trait> ForceTransforms;
-    typedef typename HyQ::tpl::Jacobians<Trait> Jacobians;
+    typedef typename iit::HyQ::tpl::HomogeneousTransforms<Trait> HomogeneousTransforms;
+    typedef typename iit::HyQ::tpl::MotionTransforms<Trait> MotionTransforms;
+    typedef typename iit::HyQ::tpl::ForceTransforms<Trait> ForceTransforms;
+    typedef typename iit::HyQ::tpl::Jacobians<Trait> Jacobians;
 
-    typedef typename HyQ::dyn::tpl::InertiaProperties<Trait> InertiaProperties;
-    typedef typename HyQ::dyn::tpl::ForwardDynamics<Trait> FwdDynEngine;
-    typedef typename HyQ::dyn::tpl::InverseDynamics<Trait> InvDynEngine;
-    typedef typename HyQ::dyn::tpl::JSIM<Trait> JSIM;
+    typedef typename iit::HyQ::dyn::tpl::InertiaProperties<Trait> InertiaProperties;
+    typedef typename iit::HyQ::dyn::tpl::ForwardDynamics<Trait> FwdDynEngine;
+    typedef typename iit::HyQ::dyn::tpl::InverseDynamics<Trait> InvDynEngine;
+    typedef typename iit::HyQ::dyn::tpl::JSIM<Trait> JSIM;
 
-    static const int joints_count = HyQ::jointsCount;
-    static const int links_count  = HyQ::linksCount;
+    static const int joints_count = iit::HyQ::jointsCount;
+    static const int links_count  = iit::HyQ::linksCount;
     static const bool floating_base = true;
 
     static inline const JointID* orderedJointIDs();
@@ -49,14 +49,14 @@ struct Traits {
 
 template <typename SCALAR>
 inline const typename Traits<SCALAR>::JointID*  Traits<SCALAR>::orderedJointIDs() {
-    return HyQ::orderedJointIDs;
+    return iit::HyQ::orderedJointIDs;
 }
 template <typename SCALAR>
 inline const typename Traits<SCALAR>::LinkID*  Traits<SCALAR>::orderedLinkIDs() {
-    return HyQ::orderedLinkIDs;
+    return iit::HyQ::orderedLinkIDs;
 }
 
-} // namespace tpl
+}
 
 typedef tpl::Traits<double> Traits;
 

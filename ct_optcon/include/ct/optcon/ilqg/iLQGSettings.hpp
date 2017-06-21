@@ -109,7 +109,61 @@ struct iLQGLineSearchSettings {
 	}
 };
 
+struct ParallelBackwardSettings {
 
+	ParallelBackwardSettings ()
+    {
+        enabled = false;
+        showWarnings = false;
+        pollingTimeoutUs = 100;
+    }
+
+    bool parametersOk(size_t nThreadsTotal) const {
+    	if (pollingTimeoutUs < 10)
+    	{
+    		std::cout << "Polling timeout is smaller than 10 us. Consider increasing it."<<std::endl;
+    	}
+        return (pollingTimeoutUs >= 10);
+    }
+
+    bool enabled;   /*!< Flag whether to use parallel backward */
+    bool showWarnings; /*!< Show speed warnings if cost or linearization threads are not fast enough */
+	size_t pollingTimeoutUs;
+
+    void print()
+    {
+        std::cout<<"Parallel Backward Settings: "<<std::endl;
+        std::cout<<"=====================" <<std::endl;
+        std::cout<<"enabled: "<<enabled<<std::endl;
+        std::cout<<"showWarnings: "<<showWarnings<<std::endl;
+        std::cout<<"pollingTimeoutUs: "<<pollingTimeoutUs<<std::endl;
+    }
+
+    void load(const std::string& filename, bool verbose = true, const std::string& ns = "parallel_backward_pass")
+	{
+		if (verbose)
+			std::cout << "Trying to load parallel backward pass settings from "<<filename<<": "<<std::endl;
+
+		boost::property_tree::ptree pt;
+		boost::property_tree::read_info(filename, pt);
+
+		try {
+			enabled = pt.get<bool>(ns +".enabled");
+		} catch (...) {}
+		try {
+			showWarnings = pt.get<bool>(ns +".showWarnings");
+		} catch (...) {}
+		try {
+			pollingTimeoutUs = pt.get<size_t>(ns +".pollingTimeoutUs");
+		} catch (...) {}
+
+		if (verbose)
+		{
+			std::cout << "Loaded parallel backward settings from "<<filename<<": "<<std::endl;
+			print();
+		}
+	}
+};
 
 /*!
  * \ingroup iLQG
@@ -119,12 +173,9 @@ struct iLQGLineSearchSettings {
 class iLQGSettings
 {
 public:
-
-	//! enum indicating which integrator to use for the iLQG forward rollout
-    enum INTEGRATOR {
-    	EULER = 0,  //! trivial fixed time-step explicit EULER stepper (not recommended)
-    	RK4 = 1		//! fixed time-step RK4 stepper (recommended for best accuracy to speed trade-off)
-    };
+    //! enum indicating which integrator to use for the iLQG forward rollout
+    enum INTEGRATOR { EULER = 0, RK4 = 1, EULER_SYM = 2, RK_SYM = 3};
+    enum DISCRETIZATION { FORWARD_EULER = 0, BACKWARD_EULER = 1, TUSTIN = 2 };
 
     //! iLQG Settings default constructor
     /*!
@@ -132,6 +183,7 @@ public:
      */
     iLQGSettings() :
     	integrator(RK4),
+        discretization(BACKWARD_EULER),
 		epsilon(1e-5),
 		dt(0.001),
 		dt_sim(0.001),
@@ -140,13 +192,15 @@ public:
 		fixedHessianCorrection(false),
 		recordSmallestEigenvalue(false),
 		nThreads(4),
-		nThreadsEigen(4),
-    	lineSearchSettings()
+		nThreadsEigen(1),
+    	lineSearchSettings(),
+		parallelBackward()
     {
     }
 
     INTEGRATOR integrator;	//! which integrator to use during the iLQG forward rollout
-    double epsilon;			//! Eigenvalue correction factor for Hessian regularization
+	DISCRETIZATION discretization;    
+	double epsilon;			//! Eigenvalue correction factor for Hessian regularization
     double dt;				//! sampling time for the control input (seconds)
     double dt_sim;			//! sampling time for the forward simulation (seconds) \warning dt_sim needs to be an integer multiple of dt.
     double min_cost_improvement;	//! minimum cost improvement between two interations to assume convergence
@@ -156,6 +210,7 @@ public:
     size_t nThreads; //! number of threads, for MP version
     size_t nThreadsEigen; //! number of threads for eigen parallelization (applies both to MP and standard)
     iLQGLineSearchSettings lineSearchSettings; //! the line search settings
+	ParallelBackwardSettings parallelBackward; //! do the backward pass in parallel with building the LQ problems (experimental)
 
 
     //! compute the number of discrete time steps for the current optimal control problem
@@ -177,6 +232,7 @@ public:
         std::cout<<"iLQG Settings: "<<std::endl;
         std::cout<<"==============="<<std::endl;
         std::cout<<"integrator: "<<integratorToString[integrator]<<std::endl;
+        std::cout<<"discretization: " << discretizationToString[discretization]<<std::endl;
         std::cout<<"dt: "<<dt<<std::endl;
         std::cout<<"dt_sim: "<<dt_sim<<std::endl;
         std::cout<<"maxIter: "<<max_iterations<<std::endl;
@@ -187,6 +243,10 @@ public:
         std::cout<<"nThreadsEigen: "<<nThreadsEigen<<std::endl<<std::endl;
 
         lineSearchSettings.print();
+
+        std::cout<<std::endl;
+
+        parallelBackward.print();
     }
 
 
@@ -213,8 +273,7 @@ public:
 			std::cout << "Number of threads should not exceed 100." << std::endl;
 			return false;
 		}
-
-		return lineSearchSettings.parametersOk();
+		return (lineSearchSettings.parametersOk() && parallelBackward.parametersOk(nThreads));
     }
 
 
@@ -259,6 +318,22 @@ public:
 					std::cout << it->first << std::endl;
 				}
 			}
+
+            std::string discretizationStr = pt.get<std::string>(ns + ".discretization");
+            if (stringToDiscretization.find(discretizationStr) != stringToDiscretization.end())
+            {
+                discretization = stringToDiscretization[discretizationStr];
+            }
+            else
+            {
+                std::cout << "Invalid discretization specified in config, should be one of the following:" << std::endl;
+
+                for(auto it = stringToDiscretization.begin(); it != stringToDiscretization.end(); it++)
+                {
+                    std::cout << it->first << std::endl;
+                }
+            }
+
 		} catch (...)
 		{}
 
@@ -284,6 +359,7 @@ public:
 		}
 
 		lineSearchSettings.load(filename, verbose, ns+".line_search");
+		parallelBackward.load(filename, verbose, ns+".parallel_backward_pass");
     }
 
 
@@ -302,8 +378,12 @@ public:
     }
 
 private:
-    std::map<INTEGRATOR, std::string> integratorToString = {{EULER, "Euler"}, {RK4 , "Runge-Kutta 4th order"}};
-    std::map<std::string, INTEGRATOR> stringToIntegrator = {{"Euler", EULER}, {"RK4", RK4}};
+    std::map<INTEGRATOR, std::string> integratorToString = {{EULER, "Euler"}, {RK4 , "Runge-Kutta 4th order"}, {EULER_SYM, "Symplectic Euler"}, {RK_SYM, "Symplectic Runge Kutta"}};
+    std::map<std::string, INTEGRATOR> stringToIntegrator = {{"Euler", EULER}, {"RK4", RK4}, {"Euler_Sym", EULER_SYM}, {"Rk_Sym", RK_SYM}};
+
+    std::map<DISCRETIZATION, std::string> discretizationToString = {{FORWARD_EULER, "Forward_euler"}, {BACKWARD_EULER, "Backward_euler"}, {TUSTIN, "Tustin"}};
+    std::map<std::string, DISCRETIZATION> stringToDiscretization = {{"Forward_euler", FORWARD_EULER}, {"Backward_euler", BACKWARD_EULER}, {"Tustin", TUSTIN}};
+
 
 };
 

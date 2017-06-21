@@ -126,6 +126,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::changeNonlinearSystem(const typename Base
 	this->getNonlinearSystemsInstances().resize(settings_.nThreads+1);
 	integratorsRK4_.resize(settings_.nThreads+1);
 	integratorsEuler_.resize(settings_.nThreads+1);
+	integratorsEulerSymplectic_.resize(settings_.nThreads+1);
+	integratorsRkSymplectic_.resize(settings_.nThreads+1);
 
 	for (size_t i = 0; i<settings_.nThreads+1; i++)
 	{
@@ -138,6 +140,15 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::changeNonlinearSystem(const typename Base
 
 		integratorsRK4_[i] = std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM> > (new ct::core::IntegratorRK4<STATE_DIM>(this->getNonlinearSystemsInstances()[i]));
 		integratorsEuler_[i] = std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM> >(new ct::core::IntegratorEuler<STATE_DIM>(this->getNonlinearSystemsInstances()[i]));
+		if(this->getNonlinearSystemsInstances()[i]->isSymplectic())
+		{
+			integratorsEulerSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>>(
+									new ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>(
+										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>> (this->getNonlinearSystemsInstances()[i])));
+			integratorsRkSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>>(
+									new ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>(
+										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>> (this->getNonlinearSystemsInstances()[i])));
+		}
 	}
 	reset(); // since system changed, we have to start fresh, i.e. with a rollout
 }
@@ -186,6 +197,9 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM>::solve()
 	try{
 		while (foundBetter && numIterations < settings_.max_iterations)
 		{
+#ifdef DEBUG_PRINT
+			std::cout << "running iteration: " << numIterations+1 << std::endl;
+#endif //DEBUG_PRINT
 			foundBetter = runIteration();
 
 			numIterations++;
@@ -196,7 +210,7 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM>::solve()
 		return false;
 	}
 
-	return true;
+	return (numIterations > 1 || foundBetter || (numIterations == 1 && !foundBetter));
 }
 
 
@@ -365,6 +379,14 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM>::rolloutSystem (
 			else if(settings_.integrator == iLQGSettings::RK4)
 			{
 				integratorsRK4_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
+			}
+			else if(settings_.integrator == iLQGSettings::EULER_SYM)
+			{
+				integratorsEulerSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
+			}
+			else if(settings_.integrator == iLQGSettings::RK_SYM)
+			{
+				integratorsRkSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
 			}
 			else
 				throw std::runtime_error("invalid integration mode selected.");
@@ -637,10 +659,37 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::computeCostsOfTrajectory(
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 void iLQGBase<STATE_DIM, CONTROL_DIM>::computeLinearizedDynamics(size_t threadId, size_t k)
 {
-	A_[k] = state_matrix_t::Identity();
-	A_[k] += settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_[k], k*settings_.dt);
-
-	B_[k] = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_[k], k*settings_.dt);
+	switch(settings_.discretization)
+	{
+		case iLQGSettings::FORWARD_EULER:
+		{
+			A_[k] = state_matrix_t::Identity();
+			A_[k] += settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_[k], k*settings_.dt);
+			B_[k] = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_[k], k*settings_.dt);
+			break;
+		}
+		case iLQGSettings::BACKWARD_EULER:
+		{
+			state_matrix_t aNew = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_[k], k*settings_.dt);
+			state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
+			A_[k] = aNewInv;
+			B_[k] = aNewInv * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_[k], k*settings_.dt);
+			break;
+		}
+		case iLQGSettings::TUSTIN:
+		{
+			state_matrix_t aNew = 0.5 * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_[k], k*settings_.dt);
+			state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
+			A_[k] = aNewInv * (state_matrix_t::Identity() + aNew);
+			B_[k] = aNewInv * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_[k], k*settings_.dt);
+			break;
+		}
+		default:
+		{
+			throw std::runtime_error("Unknown discretization scheme");
+			break;
+		}
+	}
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM>
@@ -867,6 +916,12 @@ const core::ControlTrajectory<CONTROL_DIM> iLQGBase<STATE_DIM, CONTROL_DIM>::get
 	t_control.pop_back();
 
 	return core::ControlTrajectory<CONTROL_DIM> (t_control, u_);
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM>
+double iLQGBase<STATE_DIM, CONTROL_DIM>::getCost() const
+{
+	return lowestCost_;
 }
 
 

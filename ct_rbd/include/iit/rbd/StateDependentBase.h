@@ -32,6 +32,7 @@ template<class State, class Actual>
 class StateDependentBase
 {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         /**
          * Updates this object according to the given state.
          * The actual logic of the update must be implemented in the update()

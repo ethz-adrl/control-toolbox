@@ -296,8 +296,28 @@ TEST(ILQCTest, SingleCoreTest)
 				// check linearization
 				for (size_t j=0; j<xRollout.size()-1; j++)
 				{
-					LinearizedSystem::state_matrix_t A_analytic = LinearizedSystem::state_matrix_t::Identity() + ilqg_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
-					LinearizedSystem::state_control_matrix_t B_analytic = ilqg_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
+					LinearizedSystem::state_matrix_t A_analytic;
+					LinearizedSystem::state_control_matrix_t B_analytic;
+
+					if(ilqg_settings.discretization == iLQGSettings::FORWARD_EULER)
+					{
+						A_analytic = LinearizedSystem::state_matrix_t::Identity() + ilqg_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
+						B_analytic = ilqg_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);	
+					}
+					else if(ilqg_settings.discretization == iLQGSettings::BACKWARD_EULER)
+					{
+						LinearizedSystem::state_matrix_t aNew = ilqg_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
+						LinearizedSystem::state_matrix_t aNewInv = (LinearizedSystem::state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
+						A_analytic = aNewInv;
+						B_analytic = aNewInv * ilqg_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
+					}
+					else if(ilqg_settings.discretization == iLQGSettings::TUSTIN)
+					{
+						LinearizedSystem::state_matrix_t aNew = 0.5 * ilqg_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
+						LinearizedSystem::state_matrix_t aNewInv = (LinearizedSystem::state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
+						A_analytic = aNewInv * (LinearizedSystem::state_matrix_t::Identity() + aNew);
+						B_analytic = aNewInv * ilqg_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
+					}
 
 					ASSERT_LT(
 							(A[j]-A_analytic).array().abs().maxCoeff(),
