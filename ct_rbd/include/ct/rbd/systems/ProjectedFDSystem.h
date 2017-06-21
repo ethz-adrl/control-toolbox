@@ -31,7 +31,7 @@ namespace rbd {
  * \f$ \dot{x} = f(x,u) \f$ using projected forward dynamics as implemented in ProjectedDynamics.
  * To do so, we define the state as
  * \f[
- * 	x = [ {}_W q_B ~ {}_W p_B ~ \theta_J ~ {}_B \omega_B ~ {}_B v_B ~ \dot{theta}_J ]^T
+ * 	x = [ {}_W q_B ~ {}_W p_B ~ \theta_J ~ {}_B \omega_B ~ {}_B v_B ~ \dot{\theta}_J ]^T
  * \f]
  *
  * where \f$ {}_W q_B \f$ is the base orientation and \f$ {}_W p_B \f$ is the base position,
@@ -48,15 +48,15 @@ namespace rbd {
  * {}_B \ddot{q}_c = P M^{-1} (J^T_c \lambda + S^T \tau - G - C)
  * \f]
  *
- * where \f$ {}_B \ddot{q}_c = [ {}_B \dot{\omega}_B ~ {}_B \dot{v}_B ~ \ddot{theta}_J ]^T \f$
+ * where \f$ {}_B \ddot{q}_c = [ {}_B \dot{\omega}_B ~ {}_B \dot{v}_B ~ \ddot{\theta}_J ]^T \f$
  * are the generalized coordinates expressed in the base frame.
  *
  * The system dynamics then become:
  *
  * \f[
  * \begin{aligned}
- * 	\dot{x} &= [ {}_W \dot{q}_B ~ {}_W \dot{p}_B ~ \dot{theta}_J ~ {}_B \dot{\omega}_B ~ {}_B \dot{v}_B ~ \ddot{theta}_J ]^T \newline
- *          &= [ H_WB {}_B \omega_B ~ R_WB  {}_B v_B ~ \dot{theta}_J ~ P M^{-1} (J^T_c \lambda + S^T \tau - G - C)]^T
+ * 	\dot{x} &= [ {}_W \dot{q}_B ~ {}_W \dot{p}_B ~ \dot{\theta}_J ~ {}_B \dot{\omega}_B ~ {}_B \dot{v}_B ~ \ddot{\theta}_J ]^T \\
+ *          &= [ H_{WB} {}_B \omega_B ~ R_{WB}  {}_B v_B ~ \dot{\theta}_J ~ P M^{-1} (J^T_c \lambda + S^T \tau - G - C)]^T
  * \end{aligned}
  * \f]
  */
