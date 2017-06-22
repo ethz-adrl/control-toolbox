@@ -163,10 +163,11 @@ public:
 	}
 
 
-	/**
+	/*!
 	 * \brief Get the end-effector Jacobian expressed in the base frame
-	 * @param
-	 * @return
+	 * @param eeId endeffector ID
+	 * @param jointPosition current joint position
+	 * @return Jacobian of the endeffector expressed in the base frame
 	 */
 	Jacobian getJacobianBaseEEbyId(size_t eeId, const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
 	{
@@ -186,6 +187,13 @@ public:
 //	 */
 	// ForceTransform getForceTransformEEBaseById(size_t eeId, const typename JointState<NJOINTS>::Position& jointPosition);
 
+	/*!
+	 * \brief Get the endeffector position expressed in the base frame
+	 *
+	 * @param eeId endeffector ID
+	 * @param jointPosition current joint position
+	 * @return position of the endeffector expressed in the base frame
+	 */
 	Position3Tpl getEEPositionInBase(size_t eeId, const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
 	{
 		return Position3Tpl(getHomogeneousTransformBaseEEById(eeId, jointPosition).template topRightCorner<3,1>());

@@ -36,7 +36,9 @@ namespace ct {
 namespace rbd {
 namespace internal{
 
-
+/*!
+ * \brief Trait providing basic mathematical operations for CppAD Codegeneration datatypes
+ */
 class CppADCodegenTrait {
 
 public:

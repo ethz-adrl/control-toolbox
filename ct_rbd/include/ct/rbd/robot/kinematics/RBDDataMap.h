@@ -12,9 +12,10 @@ namespace ct {
 namespace rbd {
 
 /**
- * A very simple container to associate N generic data item T
+ * \brief A very simple container to associate N generic data item T
  */
-template<typename T, size_t N> class RBDDataMap {
+template<typename T, size_t N>
+class RBDDataMap {
 private:
     T data[N];
 public:

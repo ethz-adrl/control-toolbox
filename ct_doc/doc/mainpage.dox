@@ -65,4 +65,8 @@ Furthermore there are ROS interfaces available
  - Michael Neunert, neunertm ( at ) gmail (dot) com
  - Markus Giftthaler, mgiftthaler (at) ethz (dot) ch
 
+This software has been developed at the Agile & Dexterous Robotics Lab at ETH Zurich. The development has been made possible through 
+financial support from the Swiss National Science Foundation through a Swiss National Science Foundation Professorship award to 
+Jonas Buchli and the National Competence Centers in Research (NCCR) Robotics and Digital Fabrication.
+
 */

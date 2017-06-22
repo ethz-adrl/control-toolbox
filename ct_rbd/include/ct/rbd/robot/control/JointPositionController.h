@@ -28,18 +28,17 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define JOINTPOSITIONCONTROLLER_H_
 
 #include <vector>
-
 #include <ct/core/control/siso/PIDController.h>
 
-#include "WholeBodyController.h"
 
 namespace ct {
 namespace rbd {
 
 /**
- * @class JointPositionController
+ * \brief A joint position controller using a PID controller for all joints
+ *
+ * \tparam NJOINTS number of joints of the robot
  */
-
 template <size_t NJOINTS>
 class JointPositionController : public ct::core::Controller<2*NJOINTS, NJOINTS>
 {

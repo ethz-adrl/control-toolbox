@@ -26,8 +26,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 namespace ct {
-namespace common {
-namespace math {
+namespace rbd {
 
 template<size_t ROWS, size_t COLS>
 JacobiSingularity<ROWS,COLS>::JacobiSingularity(const Jacobian& J)
@@ -97,7 +96,6 @@ JacobiSingularity<ROWS,COLS>::calc_joint_vel(const EndeffectorVelocities& des_ee
 }
 
 
+} // namespace rbd
 } // namespace ct
-} // namespace common
-} // namespace math
 

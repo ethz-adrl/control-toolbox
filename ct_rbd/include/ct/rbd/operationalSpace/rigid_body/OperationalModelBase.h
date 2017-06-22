@@ -42,7 +42,7 @@ namespace rbd {
 
 /**
  * \ingroup OS
- * @Brief  This is the base class for the operational space model which gives access to the model parameter.
+ * \Brief  This is the base class for the operational space model which gives access to the model parameter.
  * The model is assumed to have the following form:
  * \f$ M \ddot{x} + C + G = S^\top \tau + J_c^\top  \lambda \f$
  * where \f$ \ddot{x} \f$ is the acceleration of the operational space coordinate.
