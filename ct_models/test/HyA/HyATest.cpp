@@ -33,13 +33,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <gtest/gtest.h>
 
 #include <ct/core/core.h>
+#include <ct/rbd/rbd.h>
 
-#include <ct/rbd/systems/linear/RbdLinearizer.h>
-#include "ct/rbd/systems/FixBaseFDSystem.h"
-// #include "ct/rbd/systems/FloatingBaseFDSystem.h"
-
-#include "ct/models/HyA/RobCoGenHyA.h"
-// #include "ct/models/HyA/codegen/HyALinearized.h"
+#include "ct/models/HyA/HyA.h"
 
 using namespace ct;
 using namespace ct::rbd;
