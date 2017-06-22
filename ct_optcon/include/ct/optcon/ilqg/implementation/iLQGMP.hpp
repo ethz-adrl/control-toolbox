@@ -135,6 +135,14 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::threadWork(size_t threadId)
 			break;
 		}
 
+		case IDLE:
+		{
+#ifdef DEBUG_PRINT_MP
+			std::cout<<"[Thread "<<threadId<<"]: is idle, going to sleep!"<<std::endl;
+#endif // DEBUG_PRINT_MP
+			break;
+		}
+
 		default:
 		{
 			std::cout << "Warning, worker task has unknown task"<<std::endl;
