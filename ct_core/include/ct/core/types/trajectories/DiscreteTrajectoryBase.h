@@ -76,7 +76,6 @@ public:
 		data_(data),
 		interp_(type)
 	{
-		initialize();
 	}
 
 	//! constructor for uniformly spaced trajectories
@@ -93,7 +92,6 @@ public:
 			interp_(type)
 	{
 		time_ = TimeArray(deltaT, data.size()+1, t0);
-		initialize();
 	}
 
 	//! copy constructor
@@ -102,7 +100,6 @@ public:
 		data_(other.data_),
 		interp_(other.interp_.getInterpolationType())
 	{
-		initialize();
 	}
 
 	//! extraction constructor
@@ -120,29 +117,19 @@ public:
 		TimeArray time_temp;
 		DiscreteArray<T, Alloc> data_temp;
 
-		for(size_t i = startIndex; i<=endIndex; i++){
+		for(size_t i = startIndex; i<=endIndex; i++)
+		{
 			time_temp.push_back(other.time_[i]);
 			data_temp.push_back(other.data_[i]);
 		}
 
 		time_ = time_temp;
 		data_ = data_temp;
-
-		initialize();
 	}
 
-	//! destructor
+	//! Destructor
 	virtual ~DiscreteTrajectoryBase() {};
 
-	//! initialize the interpolation
-	/*!
-	 * \todo the interpolation should not keep references. Then this function can be removed.
-	 */
-	void initialize() {
-		interp_.reset();
-		interp_.setTimeStamp(&time_);
-		interp_.setData(&data_);
-	}
 
 	//! set the data array
 	/*!
@@ -150,7 +137,6 @@ public:
 	 */
 	void setData(const DiscreteArray<T, Alloc>& data) {
 		data_ = data;
-		initialize();
 	}
 
 	//! set the interpolation strategy
@@ -167,7 +153,6 @@ public:
 	 */
 	void setTime(const TimeArray& time) {
 		time_ = time;
-		initialize();
 	}
 
 	//! shift the trajectory forward in time
@@ -178,7 +163,6 @@ public:
 	 */
 	void shiftTime(const Time& dt) {
 		time_.addOffset(-dt);
-		initialize();
 	}
 
 	//! evaluate the trajectory at a certain time
@@ -188,9 +172,10 @@ public:
 	 * @param time stamp at which to evaluate the trajectory
 	 * @return trajectory value
 	 */
-	virtual T eval(const Time& time) override {
+	virtual T eval(const Time& evalTime) override
+	{
 		T result;
-		interp_.interpolate(time, result);
+		interp_.interpolate(time_, data_, evalTime, result);
 		return result;
 	}
 
@@ -251,14 +236,12 @@ public:
 			time_.push_back(time+time_.back());
 
 		data_.push_back(data);
-		initialize();
 	}
 
 	//! Remove the last data and time pair
 	void pop_back(){
 		time_.pop_back();
 		data_.pop_back();
-		initialize();
 	}
 
 	//! Erase front elements and optionally shift the trajectory in time
@@ -276,7 +259,6 @@ public:
 	void clear() {
 		data_.clear();
 		time_.clear();
-		interp_.reset();
 	}
 
 	//! Swap two trajectories
@@ -288,8 +270,6 @@ public:
 	void swapData(DiscreteTrajectoryBase& other){
 		time_.swap(other.time_);
 		data_.swap(other.data_);
-		initialize();
-		other.initialize();
 	}
 
 	//! assignment operator
@@ -301,7 +281,6 @@ public:
 	    time_ = other.time_;
 	    data_ = other.data_;
 	    interp_.changeInterpolationType (other.interp_.getInterpolationType());
-	    initialize();
 
 	    return *this;
 	}
@@ -311,11 +290,11 @@ public:
 
 	//! get the index associated with a certain time
 	/*!
-	 * If the exact time is not stored, the interpolater will find the corresponding index.
+	 * If the exact time is not stored, the interpolation will find the corresponding index.
 	 * @param t time to search for
 	 * @return according index
 	 */
-	size_t getIndexFromTime(const core::Time& t) {return interp_.findIndex(t);}
+	size_t getIndexFromTime(const core::Time& t) {return interp_.findIndex(time_, t);}
 
 	//! get the data array
 	DiscreteArray<T, Alloc>& getDataArray() {return data_;}

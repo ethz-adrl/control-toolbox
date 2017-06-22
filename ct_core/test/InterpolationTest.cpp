@@ -48,7 +48,7 @@ TEST(InterplationTest, Linear)
 	data[3] << 3.0, 0.0;
 	data[4] << 4.0, 0.0;
 
-	ct::core::Interpolation<StateVector<2>> linInterpolation(&timeStamp, &data);
+	ct::core::Interpolation<StateVector<2>> linInterpolation(InterpolationType::LIN);
 
 
 	for(int i=1; i< 5; i++)
@@ -56,7 +56,7 @@ TEST(InterplationTest, Linear)
 		double enquiryTime = 0.5*i;
 
 		StateVector<2> enquiryData;
-		linInterpolation.interpolate(enquiryTime, enquiryData);
+		linInterpolation.interpolate(timeStamp, data, enquiryTime, enquiryData);
 
 		std::cout << "At time " << enquiryTime << "\t data is " <<  enquiryData.transpose() << std::endl;
 
