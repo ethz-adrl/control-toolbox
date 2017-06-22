@@ -63,127 +63,109 @@ public:
 	 * @param type The interpolation strategy to use
 	 */
 	Interpolation(const InterpolationType& type = LIN)
-
 	: index_(0),
-	  timeStampPtr_(NULL),
-	  dataPtr_(NULL),
 	  type_(type)
 	{}
 
-	//! Constructor with time and data array
-	/*!
-	 * Initializes the interpolator with a time and data array (vector)
-	 * @param timeStampPtr The time array
-	 * @param dataPtr The data array
-	 * @param type The interpolation strategy
-	 */
-	Interpolation(const TimeArray* timeStampPtr, const DiscreteArray_t* dataPtr, const InterpolationType& type = LIN)
 
-	: index_(0),
-	  timeStampPtr_(timeStampPtr),
-	  dataPtr_(dataPtr),
-	  type_(type)
-	{
-		// todo: check if time and data are the same length
-	}
-
+	//! Copy Constructor
 	Interpolation(const Interpolation& arg):
 		index_(arg.index_),
-		timeStampPtr_(arg.timeStampPtr_),
-		dataPtr_(arg.dataPtr_),
 		type_(arg.type_)
 	{}
 
-	void reset()
+
+	//! This method performs the interpolation
+	/*!
+	 * @param timeArray timing information of the data points
+	 * @param dataArray	the data points in form of a DiscreteArray
+	 * @param enquiryTime the time where to evaluate the interpolation
+	 * @param enquiryData the result of the interpolation
+	 * @param greatestLessTimeStampIndex the smallest index corresponding to a time smaller than the inquired Time
+	 */
+	void interpolate(const TimeArray& timeArray, const DiscreteArray_t& dataArray,
+			const Time& enquiryTime, Data_T& enquiryData, int greatestLessTimeStampIndex = -1)
 	{
-		index_ = 0;
-	}
+		if (timeArray.size()==0)
+			throw std::runtime_error("Interpolation.h : TimeArray is size 0.");
 
-	void setTimeStamp(const TimeArray* timeStampPtr)
-	{
-		reset();
-		timeStampPtr_ = timeStampPtr;
-	}
+		if (dataArray.size()==0)
+			throw std::runtime_error("Interpolation.h : DataArray is size 0.");
 
-	void setData(const DiscreteArray_t* dataPtr)
-	{
-		reset();
-		dataPtr_ = dataPtr;
-	}
-
-	const TimeArray* getTimeStampPtr() {return timeStampPtr_;}
+		if (timeArray.size()!=dataArray.size())
+			throw std::runtime_error("Interpolation.h : The size of timeStamp vector (="+std::to_string(timeArray.size())+") is not equal to the size of data vector (="+std::to_string(dataArray.size())+").");
 
 
-	const DiscreteArray_t* getDataPtr() {return dataPtr_;}
-
-
-	void interpolate(const Time& enquiryTime, Data_T& enquiryData, int greatestLessTimeStampIndex = -1)
-	{
-		if (timeStampPtr_==NULL)  throw std::runtime_error("timeStampPtr is not initialized.");
-		if (dataPtr_==NULL)       throw std::runtime_error("dataPtr is not initialized.");
-
-		if (timeStampPtr_->size()==0)
-			throw std::runtime_error("Interpolation.h : Interpolation is not initialized.");
-
-		if (timeStampPtr_->size()!=dataPtr_->size())
-			throw std::runtime_error("Interpolation.h : The size of timeStamp vector (="+std::to_string(timeStampPtr_->size())+") is not equal to the size of data vector (="+std::to_string(dataPtr_->size())+").");
-
-		if (timeStampPtr_->size()==1)  {
-			enquiryData = dataPtr_->front();
+		// treat special case of trajectory length equal 1
+		if (dataArray.size()==1)
+		{
+			enquiryData = dataArray.front();
 			return;
 		}
 
 		size_t ind;
 		if (greatestLessTimeStampIndex == -1)
-			ind = findIndex(enquiryTime);
-		else {
+			ind = findIndex(timeArray, enquiryTime);
+		else
+		{
 			ind = greatestLessTimeStampIndex;
 			index_ = greatestLessTimeStampIndex;
 		}
 
-		if (enquiryTime<timeStampPtr_->front()) {
-			enquiryData = dataPtr_->front();
+		if (enquiryTime < timeArray.front())
+		{
+			enquiryData = dataArray.front();
 			return;
 		}
 
-		if (ind==timeStampPtr_->size()-1) {
-			enquiryData = dataPtr_->back();
+		if (ind == timeArray.size()-1) {
+			enquiryData = dataArray.back();
 			return;
 		}
 
-		double alpha = (enquiryTime-timeStampPtr_->at(ind+1)) / (timeStampPtr_->at(ind)-timeStampPtr_->at(ind+1));
+		double alpha = (enquiryTime - timeArray.at(ind+1)) / (timeArray.at(ind)-timeArray.at(ind+1));
 
 
 		if(type_ == InterpolationType::LIN)
-			enquiryData = alpha*dataPtr_->at(ind) + (1-alpha)*dataPtr_->at(ind+1);
+			enquiryData = alpha*dataArray.at(ind) + (1-alpha)*dataArray.at(ind+1);
 		else if(type_ == InterpolationType::ZOH)
-			enquiryData = dataPtr_->at(ind);
+			enquiryData = dataArray.at(ind);
 		else
 			throw std::runtime_error("Unknown Interpolation type!");
 	}
 
 
+	//! access the greatest index which is smaller than the inquired interpolation time
 	size_t getGreatestLessTimeStampIndex() { return index_; }
 
+
+	//! get the employed interpolation type
 	InterpolationType getInterpolationType() const {return type_;}
 
+	//! change the interpolation type
 	void changeInterpolationType(const InterpolationType& type){ type_ = type;}
 
-
-	size_t findIndex(const double enquiryTime) {
+	//! find an index corresponding to a certain inquiry time
+	size_t findIndex(const TimeArray& timeArray, const Time& enquiryTime) {
 
 		int index = -1;
 
-		if (timeStampPtr_->at(index_) > enquiryTime) {
-			for (int i=index_; i>=0; i--)  {
+		if (timeArray.at(index_) > enquiryTime)
+		{
+			for (int i=index_; i>=0; i--)
+			{
 				index = i;
-				if (timeStampPtr_->at(i) <= enquiryTime)
+				if (timeArray.at(i) <= enquiryTime)
 					break;
 			}
-		} else {
-			for (int i=index_; i<timeStampPtr_->size(); i++) {
+		}
+		else
+		{
+			for (int i=index_; i<timeArray.size(); i++)
+			{
 				index = i;
-				if (timeStampPtr_->at(i) > enquiryTime) {
+				if (timeArray.at(i) > enquiryTime)
+				{
 					index = i-1;
 					break;
 				}
@@ -203,9 +185,6 @@ public:
 protected:
 
 	size_t index_;
-
-	const TimeArray* timeStampPtr_;
-	const DiscreteArray_t* dataPtr_;
 
 	InterpolationType type_;
 
