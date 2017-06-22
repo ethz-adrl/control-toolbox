@@ -135,6 +135,14 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::threadWork(size_t threadId)
 			break;
 		}
 
+		case IDLE:
+		{
+#ifdef DEBUG_PRINT_MP
+			std::cout<<"[Thread "<<threadId<<"]: is idle, going to sleep!"<<std::endl;
+#endif // DEBUG_PRINT_MP
+			break;
+		}
+
 		default:
 		{
 			std::cout << "Warning, worker task has unknown task"<<std::endl;
@@ -193,7 +201,7 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::backwardPass()
 
 	if (this->settings_.parallelBackward.enabled)
 	{
-		while (kCompleted_ < this->settings_.nThreads*2)
+		while (kCompleted_ < this->settings_.nThreads*2 && kCompleted_ < this->K_)
 		{
 			if (this->settings_.parallelBackward.showWarnings)
 			{

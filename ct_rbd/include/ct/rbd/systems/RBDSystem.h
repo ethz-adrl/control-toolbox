@@ -31,7 +31,7 @@ namespace ct {
 namespace rbd {
 
 /**
- * This is a common class for an RBDSystem
+ * \brief This is a common interface class for an RBDSystem
  */
 template <class RBDDynamics, bool QUAT_INTEGRATION = false>
 class RBDSystem

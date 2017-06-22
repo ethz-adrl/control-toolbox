@@ -37,7 +37,7 @@ namespace tpl {
 
 /**
  * \ingroup OS
- * @Brief This is a class for expressing the RBD equations of an articulated robot as an operational model.
+ * \brief This is a class for expressing the RBD equations of an articulated robot as an operational model.
  * It uses the RBDContainer class as an interface to access the generated code for an articulated robot.
  */
 template <class RBDContainer, size_t NUM_CONTACTPOINTS, typename SCALAR = double>
@@ -65,7 +65,7 @@ public:
 
 	~OperationalModelRBD() {}
 
-	/**
+	/*!
 	 * This method updates the class member variables using the current state.
 	 * @param state The current state
 	 */
