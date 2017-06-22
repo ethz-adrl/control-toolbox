@@ -26,7 +26,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/rbd/rbd.h>
 
-#include <ct/models/HyA/RobCoGenHyA.h>
+#include <ct/models/HyA/HyA.h>
 #include <ct/models/HyA/codegen/HyALinearizedForward.h>
 #include <ct/models/HyA/codegen/HyALinearizedReverse.h>
 
