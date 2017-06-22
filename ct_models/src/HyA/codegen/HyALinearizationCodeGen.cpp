@@ -31,7 +31,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cmath>
 #include <memory>
 
-#include <ct/models/HyA/RobCoGenHyA.h>
+#include <ct/models/HyA/HyA.h>
 #include <ct/rbd/systems/FixBaseFDSystem.h>
 
 #include <ct/models/CodegenOutputDirs.h>
