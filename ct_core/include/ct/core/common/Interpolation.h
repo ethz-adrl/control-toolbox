@@ -65,7 +65,6 @@ public:
 	Interpolation(const InterpolationType& type = LIN)
 
 	: index_(0),
-	  zeroFunction_(false),
 	  timeStampPtr_(NULL),
 	  dataPtr_(NULL),
 	  type_(type)
@@ -81,7 +80,6 @@ public:
 	Interpolation(const TimeArray* timeStampPtr, const DiscreteArray_t* dataPtr, const InterpolationType& type = LIN)
 
 	: index_(0),
-	  zeroFunction_(false),
 	  timeStampPtr_(timeStampPtr),
 	  dataPtr_(dataPtr),
 	  type_(type)
@@ -91,7 +89,6 @@ public:
 
 	Interpolation(const Interpolation& arg):
 		index_(arg.index_),
-		zeroFunction_(arg.zeroFunction_),
 		timeStampPtr_(arg.timeStampPtr_),
 		dataPtr_(arg.dataPtr_),
 		type_(arg.type_)
@@ -100,7 +97,6 @@ public:
 	void reset()
 	{
 		index_ = 0;
-		zeroFunction_ = false;
 	}
 
 	void setTimeStamp(const TimeArray* timeStampPtr)
@@ -115,26 +111,14 @@ public:
 		dataPtr_ = dataPtr;
 	}
 
-	void setZero()
-	{
-		reset();
-		zeroFunction_ = true;
-	}
-
-
 	const TimeArray* getTimeStampPtr() {return timeStampPtr_;}
 
 
 	const DiscreteArray_t* getDataPtr() {return dataPtr_;}
 
 
-	void interpolate(const Time& enquiryTime, Data_T& enquiryData, int greatestLessTimeStampIndex = -1){
-
-		if (zeroFunction_==true)  {
-			enquiryData.setZero();
-			return;
-		}
-
+	void interpolate(const Time& enquiryTime, Data_T& enquiryData, int greatestLessTimeStampIndex = -1)
+	{
 		if (timeStampPtr_==NULL)  throw std::runtime_error("timeStampPtr is not initialized.");
 		if (dataPtr_==NULL)       throw std::runtime_error("dataPtr is not initialized.");
 
@@ -219,7 +203,6 @@ public:
 protected:
 
 	size_t index_;
-	bool zeroFunction_;
 
 	const TimeArray* timeStampPtr_;
 	const DiscreteArray_t* dataPtr_;
@@ -232,4 +215,4 @@ protected:
 } // namespace ct
 } // namespace core
 
-#endif /* Interpolation_H_ */
+#endif /* CT_CORE_INTERPOLATION_H_ */
