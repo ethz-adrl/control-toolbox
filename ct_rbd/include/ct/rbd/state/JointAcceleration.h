@@ -31,12 +31,10 @@ namespace ct {
 namespace rbd {
 namespace tpl {
 
-/**
- * @class JointStateDerivative
- *
+/*!
  * \ingroup State
  *
- * @brief joint acceleration
+ * \brief joint acceleration
  */
 template <size_t NJOINTS, typename SCALAR>
 class JointAcceleration

@@ -39,8 +39,43 @@ namespace ct {
 namespace rbd {
 
 
-/**
- * Soft contact model that only uses end-effector positions/velocities to compute the contact force
+/*!
+ * \brief A soft contact model that only uses end-effector positions/velocities to compute the contact force
+ *
+ * This contact model computes forces/torques at the endeffectors given the current state of the robot expressed
+ * in generalized coordinates
+ *
+ * \f[ {}_W \lambda = f(q, \dot{q}) \f]
+ *
+ * The contact model assumes a plane with fixed orientation located at the origin (0, 0, 0). The contact dynamics
+ * are a combination of a spring-damper perpendicular and a damper in parallel to the surface. The force expressed
+ * in world coordinates without velocity smoothing or normal force smoothing is defined as
+ *
+ * \f[ {}_W \lambda = f(q, \dot{q}) = - k ({}_W x_z - z_{offset}) - d {}_W \dot{x}  \f]
+ *
+ * where \f$ {}_W x_z \f$ is the ground penetration with respect to an offset \f$ z_{offset} \f$ expressed in world
+ * coordinates and \f$ \dot{x} \f$ is the velocity of the endeffector.
+ *
+ * In case normal force smoothing is activated, the first term becomes
+ *
+ * \f[ {}_W \lambda_n =  k e^{-\alpha_n {}_W x_z} \f]
+ *
+ * In case velocity smoothing is activated, the second term becomes
+ *
+ * \f[ {}_W \lambda_t =  s({}_W x_z, \dot{x}) ~  d {}_W \dot{x}_{xy} \f]
+ *
+ * where the smoothing coefficient is one of the following
+ *
+ * 1. sigmoid
+ * \f[  s({}_W x_z, \dot{x}) = \frac{1}{1 + e^{{}_W x_z \alpha}} \f]
+ *
+ * 2. tanh (same as sigmoid but computed differently)
+ * \f[  s({}_W x_z, \dot{x}) = \frac{1}{2} tanh(-\frac{1}{2} {}_W x_z \alpha) + \frac{1}{2} \f]
+ *
+ * 3. abs
+ * \f[  s({}_W x_z, \dot{x}) = - \frac{1}{2} \frac{{}_W x_z \alpha}{1 + abs(-{}_W x_z \alpha)} + \frac{1}{2} \f]
+ *
+ * \tparam Kinematics the Kinematics implementation of the robot
  */
 template <class Kinematics>
 class EEContactModel
@@ -63,13 +98,26 @@ public:
 
 
 
+	/*!
+	 * \brief the type of velcity smoothing
+	 */
 	enum VELOCITY_SMOOTHING {
-		NONE = 0,
-		SIGMOID = 1,
-		TANH = 2,
-		ABS = 3
+		NONE = 0,   //!< none
+		SIGMOID = 1,//!< sigmoid
+		TANH = 2,   //!< tanh
+		ABS = 3     //!< abs
 	};
 
+	/*!
+	 * \brief Default constructor
+	 * @param k stiffness of vertical spring
+	 * @param d damper coefficient
+	 * @param alpha velocity smoothing coefficient
+	 * @param alpha_n normal force smoothing coefficient
+	 * @param zOffset z offset of the plane with respect to (0, 0, 0)
+	 * @param smoothing the type of velocity smoothing
+	 * @param kinematics instance of the kinematics (optionally). Should be provided for efficiency when using Auto-Diff.
+	 */
 	EEContactModel(
 			const SCALAR& k = SCALAR(5000),
 			const SCALAR& d = SCALAR(500.0),
@@ -90,6 +138,10 @@ public:
 			EEactive_[i] = true;
 	}
 
+	/*!
+	 * \brief Clone operator
+	 * @param other instance to clone
+	 */
 	EEContactModel(const EEContactModel& other) :
 		kinematics_(other.kinematics_->clone()),
 		smoothing_(other.smoothing_),
@@ -108,7 +160,7 @@ public:
 
 
 	/**
-	 * Sets which end-effectors can have forces excerted on them
+	 * \brief Sets which end-effectors can have forces excerted on them
 	 * @param activeMap flags of active end-effectors
 	 */
 	void setActiveEE(const ActiveMap& activeMap)
@@ -117,7 +169,7 @@ public:
 	}
 
 	/**
-	 * Computes the contact forces given a state of the robot. Returns forces expressed in the world frame
+	 * \brief Computes the contact forces given a state of the robot. Returns forces expressed in the world frame
 	 * @param state The state of the robot
 	 * @return End-effector forces expressed in the world frame
 	 */
@@ -156,7 +208,7 @@ public:
 
 private:
 	/**
-	 * Checks if end-effector is in contact. Currently assumes this is the case for negative z
+	 * \brief Checks if end-effector is in contact. Currently assumes this is the case for negative z
 	 * @param eePenetration The surface penetration of the end-effector
 	 * @return flag if the end-effector is in contact
 	 */
@@ -170,7 +222,7 @@ private:
 
 
 	/**
-	 * Computes the surface penetration. Currently assumes the surface is at height z = 0.
+	 * \brief Computes the surface penetration. Currently assumes the surface is at height z = 0.
 	 * @param eeId ID of the end-effector
 	 * @param basePose Position of the robot base
 	 * @param jointPosition Joint position of the robot
@@ -187,6 +239,12 @@ private:
 		return penetration;
 	}
 
+	/*!
+	 * \brief Compute the endeffector force based on penetration and velocity
+	 * @param eePenetration end-effector penetration
+	 * @param eeVelocity end-effector velocity
+	 * @return resulting force vecttor
+	 */
 	EEForceLinear computeEEForce(const Vector3s& eePenetration, const Velocity3S& eeVelocity)
 	{
 		EEForceLinear eeForce;
@@ -200,6 +258,11 @@ private:
 		return eeForce;
 	}
 
+	/*!
+	 * \brief Smoothes out the endeffector forces
+	 * @param eeForce endeffector force to modify
+	 * @param eePenetration penetration of the surface
+	 */
 	void smoothEEForce(EEForceLinear& eeForce, const Vector3s& eePenetration)
 	{
 		switch(smoothing_)
@@ -221,6 +284,12 @@ private:
 		}
 	}
 
+	/*!
+	 * \brief computes the damper force \f$ \lambda = d \dot{x} \f$
+	 * @param force force to be computed
+	 * @param eePenetration endeffector penetration of the surface
+	 * @param eeVelocity endeffector velocity
+	 */
 	void computeDamperForce(EEForceLinear& force, const Vector3s& eePenetration, const Velocity3S& eeVelocity)
 	{
 		force = -d_ * eeVelocity.toImplementation();
@@ -238,17 +307,19 @@ private:
 	}
 
 
+	//! Instance of the kinematics
 	std::shared_ptr<Kinematics> kinematics_;
 
+	//! Type of velocity smoothing
 	VELOCITY_SMOOTHING smoothing_;
 
-	SCALAR k_;
-	SCALAR d_;
-	SCALAR alpha_;
-	SCALAR alpha_n_;
-	SCALAR zOffset_;
+	SCALAR k_; //!< spring constant
+	SCALAR d_; //!< damper constant
+	SCALAR alpha_; //!< velocity smoothing coefficient
+	SCALAR alpha_n_; //!< normal force smoothing coefficient
+	SCALAR zOffset_; //!< vertical offset of the contact pane
 
-	ActiveMap EEactive_;
+	ActiveMap EEactive_; //!< stores which endeffectors are active, i.e. can make contact
 };
 
 

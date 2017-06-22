@@ -44,6 +44,16 @@ namespace ct{
 namespace rbd{
 
 
+/*!
+ * \brief A costfunction term that defines a cost in task space
+ *
+ * This cost function adds a quadratic penalty on the position offset of an endeffector to a desired position
+ *
+ * \tparam KINEMATICS kinematics of the system
+ * \tparam FB true if system is a floating base robot
+ * \tparam STATE_DIM state dimensionality of the system
+ * \tparam CONTROL_DIM control dimensionality of the system
+ */
 template<class KINEMATICS, bool FB, size_t STATE_DIM, size_t CONTROL_DIM>
 class TermTaskspace : public optcon::TermBase <STATE_DIM, CONTROL_DIM, CppAD::AD<double>>
 {

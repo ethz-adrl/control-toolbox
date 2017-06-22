@@ -31,8 +31,15 @@ namespace ct {
 namespace rbd {
 
 /**
- * Selection Matrix for a Rigid Body Dynamics System
- * This matrix maps control inputs to the states
+ * \brief Selection Matrix for a Rigid Body Dynamics System
+ *
+ * This matrix maps control inputs to the states used in standard rigid body dynamics formulations such as
+ *
+ * \f[
+ *  M \ddot{q} + C + G = S^T \tau + J_c \lambda
+ * \f]
+ *
+ * where \f$ S \f$ is the selection matrix.
  */
 template <size_t CONTROL_DIM, size_t STATE_DIM>
 class SelectionMatrix : public Eigen::Matrix<double, CONTROL_DIM, STATE_DIM>

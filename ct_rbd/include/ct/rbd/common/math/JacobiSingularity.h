@@ -28,9 +28,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define COMMON_MATH_JACOBI_SINGULARITY_H_
 
 namespace ct {
-namespace common {
-namespace math {
+namespace rbd {
 
+/*!
+ * \brief A class computing codition numbers and singular velues of a Jacobian
+ *
+ * \tparam ROWS number of rows
+ * \tparam CLOS number of colums
+ */
 template<size_t ROWS, size_t COLS>
 class JacobiSingularity
 {
@@ -59,7 +64,7 @@ public:
 
   /**
    * The manipulability describes the freedom of the endeffector for a given
-   * configuration. w(q) = sqrt(det(J*J'))
+   * configuration. \f$ w(q) = \sqrt(det(J*J')) \f$
    *
    * @param method can be calculated directly as described in Siciliano p. 153
    *               or multiplying the singular values of the Jacobian
@@ -69,7 +74,7 @@ public:
 
   /**
    * Singular values are used if eigenvalues are not available, as in non-
-   * square matrices. With Single Value Decomposition (SVD) J = U*S*V.
+   * square matrices. With Single Value Decomposition (SVD) \f$ J = U S V \f$.
    * See Siciliano p. 577
    * @return the diagonals in S
    */
@@ -81,7 +86,7 @@ public:
    * In general the Jacobian is not a square matrix, so the inverse is not
    * defined since there exist either no solution (skinny Matrix) or infinitely
    * many (fat Matrix). This function computes the pseudo inverse
-   * J† = J' * (J*J')^(-1) which chooses the "minimum norm" solution out of the
+   * \f$ J^\dagger = \f$J'  (J J')^{-1} \f$ which chooses the "minimum norm" solution out of the
    * pool of infinitely many solutions. (see Siciliano p. 125).
    *
    * @param des_ee_vel desired endeffector velocity
@@ -94,8 +99,7 @@ private:
 };
 
 
-} // namespace math
-} // namespace common
+} // namespace rbd
 } // namespace ct
 
 

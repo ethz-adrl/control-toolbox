@@ -30,7 +30,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/core/core.h>
 #include <ct/rbd/internal/TraitSelectorSpecs.h>
 
-#include <ct/rbd/common/Color.h>
 #include <ct/rbd/common/SpatialForceVector.h>
 
 #include <ct/rbd/state/RBDState.h>

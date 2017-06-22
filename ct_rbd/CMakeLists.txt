@@ -21,7 +21,6 @@ catkin_package(
         include/ct/rbd
         test
    LIBRARIES 
-        ct_rbd
    CATKIN_DEPENDS roscpp ct_core ct_optcon kindr
 )
 
@@ -33,13 +32,6 @@ include_directories(
     include
     test
 )
-
-
-add_library( ct_rbd
-    src/common/Color.cpp
-)
-
-add_dependencies(ct_rbd ${catkin_EXPORTED_TARGETS})
 
 
 ## TESTING    
