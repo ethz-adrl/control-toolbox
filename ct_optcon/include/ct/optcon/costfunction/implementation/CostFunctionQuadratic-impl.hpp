@@ -25,36 +25,36 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>::state_vector_t CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>::stateDerivativeIntermediateNumDiff()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediateNumDiff()
 {
 	state_vector_t dFdx = state_vector_t::Zero();
 	state_vector_t x_local;
 	control_vector_t u_local; 
-	double t_local;
+	SCALAR t_local;
 	this->getCurrentStateAndControl(x_local, u_local, t_local);
-	double dxdt_ref = this->evaluateIntermediate();
+	SCALAR dxdt_ref = this->evaluateIntermediate();
 
 	for (size_t i=0; i < STATE_DIM; ++i)
 	{
 		// inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
-		double h = eps_ * std::max(std::abs(x_local(i)), 1.0);
-		volatile double x_ph = x_local(i) + h;
-		double dxp = x_ph - x_local(i);
+		SCALAR h = eps_ * std::max(std::abs(x_local(i)), 1.0);
+		volatile SCALAR x_ph = x_local(i) + h;
+		SCALAR dxp = x_ph - x_local(i);
 
 		state_vector_t x_perturbed = x_local;
 		x_perturbed(i) =  x_ph;
 
 		// get evaluation of f(x,u)
 		this->setCurrentStateAndControl(x_perturbed, u_local, t_local);
-		double dxdt = this->evaluateIntermediate();
+		SCALAR dxdt = this->evaluateIntermediate();
 
 		if (doubleSidedDerivative_)
 		{
-			double dxdt_low;
+			SCALAR dxdt_low;
 
-			volatile double x_mh = x_local(i) - h;
-			double dxm = x_local(i) - x_mh;
+			volatile SCALAR x_mh = x_local(i) - h;
+			SCALAR dxm = x_local(i) - x_mh;
 
 			x_perturbed = x_local;
 			x_perturbed(i) = x_mh;
@@ -71,36 +71,36 @@ typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>::state_vector_t CostFunct
 	return dFdx;		
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>::control_vector_t CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>::controlDerivativeIntermediateNumDiff()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeIntermediateNumDiff()
 {
 	control_vector_t dFdu = control_vector_t::Zero();
 	state_vector_t x_local;
 	control_vector_t u_local; 
-	double t_local;
+	SCALAR t_local;
 	this->getCurrentStateAndControl(x_local, u_local, t_local);
-	double dxdt_ref = this->evaluateIntermediate();
+	SCALAR dxdt_ref = this->evaluateIntermediate();
 
 	for (size_t i=0; i < CONTROL_DIM; ++i)
 	{
 		// inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
-		double h = eps_ * std::max(std::abs(u_local(i)), 1.0);
-		volatile double u_ph = u_local(i) + h;
-		double dup = u_ph - u_local(i);
+		SCALAR h = eps_ * std::max(std::abs(u_local(i)), 1.0);
+		volatile SCALAR u_ph = u_local(i) + h;
+		SCALAR dup = u_ph - u_local(i);
 
 		control_vector_t u_perturbed = u_local;
 		u_perturbed(i) =  u_ph;
 
 		// get evaluation of f(x,u)
 		this->setCurrentStateAndControl(x_local, u_perturbed, t_local);
-		double dxdt = this->evaluateIntermediate();
+		SCALAR dxdt = this->evaluateIntermediate();
 
 		if (doubleSidedDerivative_)
 		{
-			double dxdt_low;
+			SCALAR dxdt_low;
 
-			volatile double u_mh = u_local(i) - h;
-			double dum = u_local(i) - u_mh;
+			volatile SCALAR u_mh = u_local(i) - h;
+			SCALAR dum = u_local(i) - u_mh;
 
 			u_perturbed = u_local;
 			u_perturbed(i) = u_mh;

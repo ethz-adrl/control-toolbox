@@ -52,7 +52,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 class TermBase {
 private:
 	std::string name_;
-	std::shared_ptr<TimeActivationBase> c_i_;
+	std::shared_ptr<tpl::TimeActivationBase<SCALAR>> c_i_;
 
 public:
 	CT_OPTCON_DEFINE_TERM_TYPES
@@ -64,7 +64,7 @@ public:
 	TermBase(std::string name = "Unnamed") 
 	: 
 	name_(name),
-	c_i_(std::shared_ptr<TimeActivationBase> (new TimeActivationBase()))
+	c_i_(std::shared_ptr<tpl::TimeActivationBase<SCALAR>> (new tpl::TimeActivationBase<SCALAR>()))
 	{}
 
 	/**
@@ -98,7 +98,7 @@ public:
 	virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) = 0;
 
 	// Todo: Make sure this gets only called by the analytical costfunction!!
-	double eval(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double& t)
+	SCALAR eval(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t)
 	{
 		return computeActivation(t) * evaluate(x, u , t);
 	}
@@ -115,7 +115,7 @@ public:
 		return c_i_->isActiveAtTime(t);
 	}
 
-	double computeActivation(double t)
+	SCALAR computeActivation(SCALAR t)
 	{
  		return c_i_->computeActivation(t); 		 
 	}
@@ -132,7 +132,7 @@ public:
 
 	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) { throw std::runtime_error("This cost function element is not implemented for the given term. Please use either auto-diff cost function or implement the analytical derivatives manually."); }  // a pure virtual function for daa loading
 
-	void setTimeActivation(std::shared_ptr<TimeActivationBase> c_i, bool verbose = false)
+	void setTimeActivation(std::shared_ptr<tpl::TimeActivationBase<SCALAR>> c_i, bool verbose = false)
 	{
 		c_i_ = c_i;
 		if(verbose)
@@ -147,8 +147,8 @@ public:
 		try{
 			std::string activationKind = pt.get<std::string>(termName + ".time_activation" + ".kind");
 			boost::algorithm::to_lower(activationKind);
-			std::shared_ptr<TimeActivationBase> c_i;
-			CT_LOADABLE_TIME_ACTIVATIONS;
+			std::shared_ptr<tpl::TimeActivationBase<SCALAR>> c_i;
+			CT_LOADABLE_TIME_ACTIVATIONS(SCALAR);
 			c_i->loadConfigFile(filename, termName + ".time_activation", verbose);
 			if(!c_i){
 				throw std::runtime_error("Activation type \""+ activationKind+ "\" not supported");

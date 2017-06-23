@@ -214,7 +214,7 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM>::loadFromConfigFile(const std::strin
 		std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term;
 		std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double> > > termAD;
 
-		CT_LOADABLE_TERMS_ANALYTICAL;
+		CT_LOADABLE_TERMS_ANALYTICAL(double);
 		CT_LOADABLE_TERMS_AD;
 
 		if(!term && !termAD){

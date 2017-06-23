@@ -44,15 +44,15 @@ namespace optcon {
  * \brief A base function for cost functions. All cost functions should derive from this.
  *
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class CostFunction
 {
 public:
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef core::StateVector<STATE_DIM> state_vector_t;
-	typedef core::ControlVector<CONTROL_DIM> control_vector_t;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 
 	/**
 	 * \brief Default constructor
@@ -89,7 +89,7 @@ public:
 	 * Clones the cost function.
 	 * @return Base pointer to the clone
 	 */
- 	virtual CostFunction<STATE_DIM, CONTROL_DIM>* clone () const = 0;
+ 	virtual CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const = 0;
 
 	/**
 	 * Set the current state, control and time of the cost function. In this function, the user can add pre-computations
@@ -98,7 +98,7 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	virtual void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const double& t = 0.0) {
+	virtual void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const SCALAR& t = 0.0) {
 		x_ = x;
 		u_ = u;
 		t_ = t + t_shift_;
@@ -113,7 +113,7 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	virtual void getCurrentStateAndControl(Eigen::Matrix<double, STATE_DIM, 1> &x, Eigen::Matrix<double, CONTROL_DIM, 1> &u, double& t) const
+	virtual void getCurrentStateAndControl(Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, SCALAR& t) const
 	{
 		x = this->x_;
 		u = this->u_;
@@ -124,19 +124,19 @@ public:
 	 * \brief evaluate intermediate costs
 	 *
 	 * Evaluates the running/intermediate cost function for the control, state and time set in setCurrentStateAndControl()
-	 * @return double costs
+	 * @return costs
 	 */
-	virtual double evaluateIntermediate() = 0;
+	virtual SCALAR evaluateIntermediate() = 0;
 
 	/**
 	 * \brief evaluate terminal costs
 	 *
 	 * Evaluates the terminal cost for a given state and control set in setCurrentStateAndControl(). This usually ignores time.
-	 * @return double costs
+	 * @return costs
 	 */
-	virtual double evaluateTerminal() = 0;
+	virtual SCALAR evaluateTerminal() = 0;
 
-	virtual void shiftTime(const double t)
+	virtual void shiftTime(const SCALAR t)
 	{
 		t_shift_ = t;
 	}
@@ -145,9 +145,9 @@ public:
 protected:
 	state_vector_t x_; /** state vector */
 	control_vector_t u_; /** control vector */
-	double t_; /** time */
+	SCALAR t_; /** time */
 
-	double t_shift_;
+	SCALAR t_shift_;
 };
 
 } // namespace optcon

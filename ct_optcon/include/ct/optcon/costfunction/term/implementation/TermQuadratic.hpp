@@ -79,8 +79,8 @@ void TermQuadratic<STATE_DIM, CONTROL_DIM, S>::setWeights(const state_matrix_dou
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
 void TermQuadratic<STATE_DIM, CONTROL_DIM, S>::setStateAndControlReference(
-		const core::StateVector<STATE_DIM>& x_ref,
-		const core::ControlVector<CONTROL_DIM>& u_ref)
+		const core::StateVector<STATE_DIM, S>& x_ref,
+		const core::ControlVector<CONTROL_DIM, S>& u_ref)
 {
 	x_ref_ = x_ref.template cast<S>();
 	u_ref_ = u_ref.template cast<S>();

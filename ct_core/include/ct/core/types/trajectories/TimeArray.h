@@ -40,7 +40,7 @@ namespace tpl {
 /*!
  * \todo This is just a duplicate of a scalar array. Remove.
  */
-template <typename SCALAR = double>
+template <typename SCALAR>
 class TimeArray : public ScalarArray<SCALAR>
 {
 public:

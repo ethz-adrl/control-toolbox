@@ -49,18 +49,18 @@ namespace optcon {
  * and second order derivatives. This cost function assumes that analytical derivatives
  * for all terms are available.
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class CostFunctionAnalytical : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM> {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class CostFunctionAnalytical : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	
-	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
 
-	typedef core::StateVector<STATE_DIM> state_vector_t;
-	typedef core::ControlVector<CONTROL_DIM> control_vector_t;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 
 	/**
 	 * \brief Basic constructor
@@ -73,8 +73,8 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	CostFunctionAnalytical(const state_vector_t &x, const control_vector_t &u, const double& t = 0.0) :
-		CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>(x, u, t)
+	CostFunctionAnalytical(const state_vector_t &x, const control_vector_t &u, const SCALAR& t = 0.0) :
+		CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(x, u, t)
 	{};
 
 	/**
@@ -82,7 +82,7 @@ public:
 	 * @param arg cost function to copy
 	 */
 	CostFunctionAnalytical(const CostFunctionAnalytical& arg):
-		CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>(arg){}
+		CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(arg){}
 
 	/**
 	 * \brief Constructor loading function from file
@@ -97,7 +97,7 @@ public:
 	 * Deep-cloning of cost function
 	 * @return base pointer to clone
 	 */
-	CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>* clone () const {
+	CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const {
 		return new CostFunctionAnalytical(*this);
 	}
 
@@ -106,11 +106,11 @@ public:
 	 */
 	~CostFunctionAnalytical() {};
 
-	size_t addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term, bool verbose = false) override;
-	size_t addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term, bool verbose = false) override;
+	size_t addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false) override;
+	size_t addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false) override;
 
-    double evaluateIntermediate() override;
-    double evaluateTerminal() override;
+    SCALAR evaluateIntermediate() override;
+    SCALAR evaluateTerminal() override;
 
     state_vector_t stateDerivativeIntermediate() override;
     state_vector_t stateDerivativeTerminal() override;

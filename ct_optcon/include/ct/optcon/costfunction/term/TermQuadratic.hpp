@@ -65,7 +65,7 @@ public:
 
 	void setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R);
 
-	void setStateAndControlReference(const core::StateVector<STATE_DIM>& x_ref, const core::ControlVector<CONTROL_DIM>& u_ref);
+	void setStateAndControlReference(const core::StateVector<STATE_DIM, S>& x_ref, const core::ControlVector<CONTROL_DIM, S>& u_ref);
 
 	S evaluate(const Eigen::Matrix<S, STATE_DIM, 1> &x, const Eigen::Matrix<S, CONTROL_DIM, 1> &u, const S& t) override;
 	
