@@ -138,16 +138,16 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeNonlinearSystem(const typen
 		if(controller_[i] == nullptr)
 			throw std::runtime_error("Controller not defined");
 
-		integratorsRK4_[i] = std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM> > (new ct::core::IntegratorRK4<STATE_DIM>(this->getNonlinearSystemsInstances()[i]));
-		integratorsEuler_[i] = std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM> >(new ct::core::IntegratorEuler<STATE_DIM>(this->getNonlinearSystemsInstances()[i]));
+		integratorsRK4_[i] = std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > (new ct::core::IntegratorRK4<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
+		integratorsEuler_[i] = std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM, SCALAR> >(new ct::core::IntegratorEuler<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
 		if(this->getNonlinearSystemsInstances()[i]->isSymplectic())
 		{
-			integratorsEulerSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>>(
-									new ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>(
-										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>> (this->getNonlinearSystemsInstances()[i])));
-			integratorsRkSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>>(
-									new ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>(
-										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>> (this->getNonlinearSystemsInstances()[i])));
+			integratorsEulerSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
+									new ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
+										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (this->getNonlinearSystemsInstances()[i])));
+			integratorsRkSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
+									new ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
+										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (this->getNonlinearSystemsInstances()[i])));
 		}
 	}
 	reset(); // since system changed, we have to start fresh, i.e. with a rollout

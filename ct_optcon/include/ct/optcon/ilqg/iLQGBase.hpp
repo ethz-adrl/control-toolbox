@@ -237,7 +237,7 @@ public:
 	 * control that generates the optimal trajectory.
 	 * @return
 	 */
-	const core::ControlTrajectory<CONTROL_DIM, SCALAR> getControlTrajectory() const override;
+	const core::ControlTrajectory<CONTROL_DIM, SCALAR, SCALAR> getControlTrajectory() const override;
 
 
 	/*!

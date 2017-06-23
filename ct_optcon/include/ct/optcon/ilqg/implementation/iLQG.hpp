@@ -92,7 +92,7 @@ SCALAR iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::performLineSearch()
 
 		iterations++;
 
-		ct::core::ControlVectorArray<CONTROL_DIM> u_ff_search(this->K_);
+		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_ff_search(this->K_);
 
 		for (int k=this->K_-1; k>=0; k--)
 		{
@@ -102,7 +102,7 @@ SCALAR iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::performLineSearch()
 
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_search(this->K_+1);
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_search(this->K_);
-		ct::core::TimeArray t_search(this->K_+1);
+		ct::core::tpl::TimeArray<SCALAR> t_search(this->K_+1);
 		x_search[0] = this->x_[0];
 
 		bool dynamicsGood = this->rolloutSystem(this->settings_.nThreads, u_ff_search, x_search, u_search, t_search);
