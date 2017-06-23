@@ -46,7 +46,7 @@ enum InterpolationType {
  * @tparam Alloc_Data An optional allocator for the data type
  * @tparam Alloc_Time An optional allocator for the time data type
  */
-template <typename Data_T, class Alloc_Data=Eigen::aligned_allocator<Data_T>, class Alloc_Time=Eigen::aligned_allocator<double>>
+template <typename Data_T, class Alloc_Data=Eigen::aligned_allocator<Data_T>>
 class Interpolation {
 
 public:
