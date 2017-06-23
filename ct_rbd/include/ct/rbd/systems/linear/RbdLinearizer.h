@@ -137,8 +137,8 @@ public:
 			Base::getDerivativeState(x,u,t);
 
 			// since we express base pose in world but base twist in body coordinates, we have to modify the top part
-			kindr::EulerAnglesXyzF eulerXyz(x.template topRows<3>());
-			kindr::RotationMatrixF R_WB_kindr(eulerXyz);
+			kindr::EulerAnglesXyz<SCALAR> eulerXyz(x.template topRows<3>());
+			kindr::RotationMatrix<SCALAR> R_WB_kindr(eulerXyz);
 
 			Eigen::Matrix<SCALAR, 3, 6> jacAngVel = jacobianOfAngularVelocityMapping(x.template topRows<3>(), x.template segment<3>(STATE_DIM/2)).transpose();
 
