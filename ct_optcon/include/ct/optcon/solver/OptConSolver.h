@@ -223,12 +223,6 @@ public:
 		throw std::runtime_error("Get cost not implemented");
 	}
 
-	virtual double getCost() const
-	{
-		throw std::runtime_error("Get cost not implemented");
-	}
-
-
 	/*!
 	 * \brief Direct accessor to the system instances
 	 *

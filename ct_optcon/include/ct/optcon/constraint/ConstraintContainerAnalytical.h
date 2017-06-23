@@ -428,7 +428,6 @@ public:
 
 			jColTot.conservativeResize(count + nonZerosInput);
 			jColTot.segment(count, nonZerosInput) = jColLocal;
-			std::cout << "asd" << 123 << std::endl;
 
 			count += nonZerosInput;
 		}
