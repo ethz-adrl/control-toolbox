@@ -86,7 +86,7 @@ public:
 	typedef tpl::RigidBodyAcceleration<SCALAR> RigidBodyAcceleration_t;
 
 	// currently assumes our input is the joint dimension and we only affect acceleration
-	typedef SelectionMatrix<NJOINTS, NSTATE/2> SelectionMatrix_t;
+	typedef SelectionMatrix<NJOINTS, NSTATE/2, SCALAR> SelectionMatrix_t;
 
 	// From the container
 	typedef typename RBD::LinkForceMap ExtLinkForces_t;

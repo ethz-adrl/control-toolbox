@@ -34,7 +34,7 @@ namespace ct {
 namespace core {
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-using FeedbackTrajectory = DiscreteTrajectoryBase<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>;
+using FeedbackTrajectory = DiscreteTrajectoryBase<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>, Eigen::aligned_allocator<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>, SCALAR>;
 
 } // namespace core
 } // namespace ct

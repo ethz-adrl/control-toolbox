@@ -34,7 +34,7 @@ namespace ct {
 namespace core {
 
 template <size_t CONTROL_DIM, typename SCALAR = double>
-using ControlTrajectory = DiscreteTrajectoryBase<ControlVector<CONTROL_DIM, SCALAR> >;
+using ControlTrajectory = DiscreteTrajectoryBase<ControlVector<CONTROL_DIM, SCALAR>, Eigen::aligned_allocator<ControlVector<CONTROL_DIM, SCALAR>>, SCALAR>;
 
 }
 }

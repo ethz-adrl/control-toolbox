@@ -184,10 +184,10 @@ private:
  *******************************************************************/
 
 template <size_t POS_DIM, size_t VEL_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-using IntegratorSymplecticEuler = IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, internal::symplectic_euler_t<POS_DIM, VEL_DIM>, SCALAR>;
+using IntegratorSymplecticEuler = IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, internal::symplectic_euler_t<POS_DIM, VEL_DIM, SCALAR>, SCALAR>;
 
 template <size_t POS_DIM, size_t VEL_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-using IntegratorSymplecticRk = IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, internal::symplectic_rk_t<POS_DIM, VEL_DIM>, SCALAR>;
+using IntegratorSymplecticRk = IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, internal::symplectic_rk_t<POS_DIM, VEL_DIM, SCALAR>, SCALAR>;
 
 }
 }

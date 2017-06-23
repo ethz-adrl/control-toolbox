@@ -81,8 +81,8 @@ public:
 	StateFeedbackController(
 			const ControlVectorArray<CONTROL_DIM, SCALAR>& uff,
 			const FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K,
-			const double& deltaT,
-			const double& t0 = 0.0,
+			const SCALAR& deltaT,
+			const SCALAR& t0 = 0.0,
 			const InterpolationType& intType = ZOH
 	) :
 		uff_(uff, deltaT, t0, intType),
@@ -128,7 +128,7 @@ public:
 	void update(
 			const DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>& uff,
 			const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>& K,
-			const TimeArray& times) {
+			const tpl::TimeArray<SCALAR>& times) {
 		uff_.setData(uff);
 		uff_.setTime(times);
 		K_.setData(K);
@@ -142,7 +142,7 @@ public:
 	const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM>, SCALAR> & K() const { return K_.getDataArray(); }
 
 	//! get time array
-	const TimeArray& time() const {return uff_.getTimeArray();}
+	const tpl::TimeArray<SCALAR>& time() const {return uff_.getTimeArray();}
 
 	//! get a reference to the feedforward trajectory
 	ControlTrajectory<CONTROL_DIM, SCALAR>& getFeedforwardTrajectory() { return uff_; }
