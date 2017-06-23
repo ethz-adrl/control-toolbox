@@ -43,7 +43,7 @@ namespace core {
  *
  * @tparam STATE_DIM dimensionality of the state vector
  */
-template <size_t STATE_DIM>
+template <size_t STATE_DIM, typename SCALAR = double>
 class EventHandler
 {
 public:
@@ -63,7 +63,7 @@ public:
 	 * @param t current time
 	 * @return true if an event has happened
 	 */
-	virtual bool checkEvent(const StateVector<STATE_DIM>& state, const Time& t) = 0;
+	virtual bool checkEvent(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR& t) = 0;
 
 	//! handle the event
 	/*!
@@ -71,7 +71,7 @@ public:
 	 * @param state current state of the system
 	 * @param t current time
 	 */
-	virtual void handleEvent(const StateVector<STATE_DIM>& state, const Time& t) = 0;
+	virtual void handleEvent(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR& t) = 0;
 
 private:
 };

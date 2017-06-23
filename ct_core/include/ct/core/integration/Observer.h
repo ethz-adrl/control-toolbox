@@ -35,7 +35,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct {
 namespace core {
 
-template <size_t STATE_DIM>
+template <size_t STATE_DIM, typename SCALAR>
 class IntegratorBase;
 
 //! Observer for Integrator
@@ -45,22 +45,22 @@ class IntegratorBase;
  *
  * @tparam STATE_DIM The size of the state vector
  */
-template <size_t STATE_DIM>
+template <size_t STATE_DIM, typename SCALAR = double>
 class Observer
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	friend class IntegratorBase<STATE_DIM>;
+	friend class IntegratorBase<STATE_DIM, SCALAR>;
 
-	typedef std::vector<std::shared_ptr<EventHandler<STATE_DIM>>, Eigen::aligned_allocator<std::shared_ptr<EventHandler<STATE_DIM>>>> EventHandlerPtrVector;
+	typedef std::vector<std::shared_ptr<EventHandler<STATE_DIM, SCALAR>>, Eigen::aligned_allocator<std::shared_ptr<EventHandler<STATE_DIM, SCALAR>>>> EventHandlerPtrVector;
 
 	//! default constructor
 	/*!
 	 * @param eventHandlers vector of event handlers
 	 */
 	Observer(const EventHandlerPtrVector& eventHandlers) :
-		observeWrap([this](const StateVector<STATE_DIM>& x, const Time& t){this->observe(x,t); })
+		observeWrap([this](const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t){this->observe(x,t); })
 	{
 		// fixme: somehow works if using assignment operator, but not if using constructing
 		eventHandlers_ = eventHandlers;
@@ -81,7 +81,7 @@ public:
 	 * @param x current state
 	 * @param t current time
 	 */
-	void observe(const StateVector<STATE_DIM>& x, const Time& t)
+	void observe(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)
 	{
 		if (timeTrajectory_.size() > 0 && t <= timeTrajectory_.back())
 		{
@@ -99,13 +99,13 @@ public:
 	}
 
 	//! Lambda to pass to odeint (odeint takes copies of the observer so we can't pass the class
-	std::function<void (const StateVector<STATE_DIM>& x, const Time& t)> observeWrap;
+	std::function<void (const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)> observeWrap;
 
 private:
 	EventHandlerPtrVector eventHandlers_; //! list of event handlers
 
-	StateVectorArray<STATE_DIM> stateTrajectory_; //! state trajectory for recording
-	TimeArray timeTrajectory_; //! time trajectory for recording
+	StateVectorArray<STATE_DIM, SCALAR> stateTrajectory_; //! state trajectory for recording
+	tpl::TimeArray<SCALAR> timeTrajectory_; //! time trajectory for recording
 
 };
 

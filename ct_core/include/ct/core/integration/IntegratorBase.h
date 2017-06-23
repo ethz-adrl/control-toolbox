@@ -50,7 +50,7 @@ namespace core {
  *
  * @tparam STATE_DIM state dimensionality
  */
-template <size_t STATE_DIM>
+template <size_t STATE_DIM, typename SCALAR = double>
 class IntegratorBase
 {
 public:
@@ -61,15 +61,15 @@ public:
 	{
 		//! default constructor
 		IntegratorSettings() :
-			absErrTol(1e-9),
-			relErrTol(1e-6)
+			absErrTol(SCALAR(1e-9)),
+			relErrTol(SCALAR(1e-6))
 		{
 		}
-		double absErrTol; //! absolute tolerance
-		double relErrTol; //! relative tolerance
+		SCALAR absErrTol; //! absolute tolerance
+		SCALAR relErrTol; //! relative tolerance
 	};
 
-	typedef std::shared_ptr<EventHandler<STATE_DIM>> EventHandlerPtr;
+	typedef std::shared_ptr<EventHandler<STATE_DIM, SCALAR>> EventHandlerPtr;
 	typedef std::vector<EventHandlerPtr, Eigen::aligned_allocator<EventHandlerPtr>> EventHandlerPtrVector;
 
 	//! constructor
@@ -80,7 +80,7 @@ public:
 	 * @param eventHandlers (optional) standard vector of event handlers
 	 */
 	IntegratorBase(
-		const std::shared_ptr<System<STATE_DIM> >& system,
+		const std::shared_ptr<System<STATE_DIM, SCALAR> >& system,
 		const EventHandlerPtrVector& eventHandlers = EventHandlerPtrVector(0)) :
 			observer_(eventHandlers),
 			system_(system),
@@ -110,12 +110,12 @@ public:
 	 * @param timeTrajectory time trajectory corresponding to state trajectory
 	 */
 	virtual void integrate_n_steps(
-		StateVector<STATE_DIM>& initialState,
-		const Time& startTime,
+		StateVector<STATE_DIM, SCALAR>& initialState,
+		const SCALAR& startTime,
 		size_t numSteps,
-		double dt,
-		StateVectorArray<STATE_DIM>& stateTrajectory,
-		TimeArray& timeTrajectory
+		SCALAR dt,
+		StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
+		tpl::TimeArray<SCALAR>& timeTrajectory
 	) = 0;
 
 	//! Equidistant integration based on number of time steps and step length
@@ -131,10 +131,10 @@ public:
 	 * @param dt step size (fixed also for variable step solvers)
 	 */
 	virtual void integrate_n_steps(
-		StateVector<STATE_DIM>& state,
-		const Time& startTime,
+		StateVector<STATE_DIM, SCALAR>& state,
+		const SCALAR& startTime,
 		size_t numSteps,
-		double dt
+		SCALAR dt
 	) = 0;
 
 	//! Equidistant integration based on initial and final time as well as step length
@@ -152,12 +152,12 @@ public:
 	 * @param timeTrajectory time trajectory corresponding to state trajectory
 	 */
 	virtual void integrate_const(
-		StateVector<STATE_DIM>& state,
-		const Time& startTime,
-		const Time& finalTime,
-		double dt,
-		StateVectorArray<STATE_DIM>& stateTrajectory,
-		TimeArray& timeTrajectory
+		StateVector<STATE_DIM, SCALAR>& state,
+		const SCALAR& startTime,
+		const SCALAR& finalTime,
+		SCALAR dt,
+		StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
+		tpl::TimeArray<SCALAR>& timeTrajectory
 	) = 0;
 
 	//! Equidistant integration based on initial and final time as well as step length
@@ -171,10 +171,10 @@ public:
 	 * @param dt step size (fixed also for variable step solvers)
 	 */
 	virtual void integrate_const(
-		StateVector<STATE_DIM>& state,
-		const Time& startTime,
-		const Time& finalTime,
-		double dt
+		StateVector<STATE_DIM, SCALAR>& state,
+		const SCALAR& startTime,
+		const SCALAR& finalTime,
+		SCALAR dt
 	) = 0;
 
 	//! integrate forward from an initial to a final time using an adaptive scheme
@@ -195,12 +195,12 @@ public:
 	 * @param dtInitial step size (initial guess, for fixed step integrators it is fixed)
 	 */
 	virtual void integrate_adaptive(
-		StateVector<STATE_DIM>& state,
-		const Time& startTime,
-		const Time& finalTime,
-		StateVectorArray<STATE_DIM>& stateTrajectory,
-		TimeArray& timeTrajectory,
-		double dtInitial
+		StateVector<STATE_DIM, SCALAR>& state,
+		const SCALAR& startTime,
+		const SCALAR& finalTime,
+		StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
+		tpl::TimeArray<SCALAR>& timeTrajectory,
+		SCALAR dtInitial
 	) = 0;
 
 	//! integrate forward from an initial to a final time using an adaptive scheme
@@ -217,10 +217,10 @@ public:
 	 * @param dtInitial step size (initial guess, for fixed step integrators it is fixed)
 	 */
 	virtual void integrate_adaptive(
-		StateVector<STATE_DIM>& state,
-		const Time& startTime,
-		const Time& finalTime,
-		double dtInitial = 0.01
+		StateVector<STATE_DIM, SCALAR>& state,
+		const SCALAR& startTime,
+		const SCALAR& finalTime,
+		SCALAR dtInitial = SCALAR(0.01)
 	) = 0;
 
 	//! Integrate system using a given time trajectory
@@ -235,28 +235,28 @@ public:
 	 * @param dtInitial an initial guess for a time step (fixed for fixed step integrators)
 	 */
 	virtual void integrate_times(
-		StateVector<STATE_DIM>& state,
-		const TimeArray& timeTrajectory,
-		StateVectorArray<STATE_DIM>& stateTrajectory,
-        double dtInitial = 0.01
+		StateVector<STATE_DIM, SCALAR>& state,
+		const tpl::TimeArray<SCALAR>& timeTrajectory,
+		StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
+        SCALAR dtInitial = SCALAR(0.01)
 	) = 0;
 
 
 protected:
 
-	 void retrieveTrajectoriesFromObserver(StateVectorArray<STATE_DIM>& stateTrajectory, TimeArray& timeTrajectory)
+	 void retrieveTrajectoriesFromObserver(StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory, tpl::TimeArray<SCALAR>& timeTrajectory)
 	 {
 		 stateTrajectory.swap(observer_.stateTrajectory_);
 		 timeTrajectory.swap(observer_.timeTrajectory_);
 	 }
-	 void retrieveStateVectorArrayFromObserver(StateVectorArray<STATE_DIM>& stateTrajectory)
+	 void retrieveStateVectorArrayFromObserver(StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory)
 	 {
 		 stateTrajectory.swap(observer_.stateTrajectory_);
 	 }
 
-	Observer<STATE_DIM> observer_; //! observer
+	Observer<STATE_DIM, SCALAR> observer_; //! observer
 
-	std::shared_ptr<System<STATE_DIM> > system_; //! pointer to the system
+	std::shared_ptr<System<STATE_DIM, SCALAR> > system_; //! pointer to the system
 
 	EventHandlerPtrVector eventHandlers_; //! vector of event handlers
 
