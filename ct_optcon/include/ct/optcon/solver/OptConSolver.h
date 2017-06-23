@@ -96,10 +96,10 @@ public:
 		changeNonlinearSystem(optConProblem.getNonlinearSystem());
 		changeLinearSystem(optConProblem.getLinearSystem());
 		
-		if(optConProblem.getIntermediateConstraints())
-			changeIntermediateConstraints(optConProblem.getIntermediateConstraints());
-		if(optConProblem.getFinalConstraints())
-			changeFinalConstraints(optConProblem.getFinalConstraints());
+		if(optConProblem.getStateInputConstraints())
+			changeStateInputConstraints(optConProblem.getStateInputConstraints());
+		if(optConProblem.getPureStateConstraints())
+			changePureStateConstraints(optConProblem.getPureStateConstraints());
 
 	}
 
@@ -208,14 +208,19 @@ public:
 	 */
 	virtual void changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin) = 0;
 
-	virtual void changeIntermediateConstraints(const typename OptConProblem_t::ConstraintPtr_t con) 
+	virtual void changeStateInputConstraints(const typename OptConProblem_t::ConstraintPtr_t con) 
 	{
-		throw std::runtime_error("The current solver does not support intermediate constraints!");
+		throw std::runtime_error("The current solver does not support state input constraints!");
 	}
 
-	virtual void changeFinalConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
+	virtual void changePureStateConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
 	{
-		throw std::runtime_error("The current solver does not support final constraints!");
+		throw std::runtime_error("The current solver does not support pure state constraints!");
+	}
+
+	virtual double getCost() const
+	{
+		throw std::runtime_error("Get cost not implemented");
 	}
 
 	virtual double getCost() const
@@ -263,13 +268,13 @@ public:
 
 	const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const { return costFunctions_; }
 
-	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getIntermediateConstraintsInstances() { return constraintsIntermediate_; }
+	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() { return stateInputConstraints_; }
 
-	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getIntermediateConstraintsInstances() const { return constraintsIntermediate_; }
+	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const { return stateInputConstraints_; }
 
-	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getFinalConstraintsInstances() { return constraintsFinal_; }
+	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() { return pureStateConstraints_; }
 
-	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getFinalConstraintsInstances() const { return constraintsFinal_; }
+	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const { return pureStateConstraints_; }
 
 
 
@@ -277,8 +282,8 @@ protected:
 	std::vector<typename OptConProblem_t::DynamicsPtr_t> systems_;
 	std::vector<typename OptConProblem_t::LinearPtr_t> linearSystems_;
 	std::vector<typename OptConProblem_t::CostFunctionPtr_t> costFunctions_;
-	std::vector<typename OptConProblem_t::ConstraintPtr_t> constraintsIntermediate_;
-	std::vector<typename OptConProblem_t::ConstraintPtr_t> constraintsFinal_;
+	std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints_;
+	std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints_;
 
 };
 

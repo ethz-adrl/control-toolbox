@@ -97,8 +97,8 @@ public:
 		controlledSystem_(nonlinDynamics),
 		costFunction_(costFunction),
 		linearizedSystem_(linearSystem),
-		g_(nullptr),
-		g_t_(nullptr)
+		stateInputConstraints_(nullptr),
+		pureStateConstraints_(nullptr)
 	{
 		if(linearSystem == nullptr)	// no linearization provided
 		{
@@ -178,20 +178,20 @@ public:
 	 * set intermediate constraints
 	 * @param constraint pointer to intermediate constraint
 	 */
-	void setIntermediateConstraints(const ConstraintPtr_t constraint) { g_ = constraint;}
+	void setStateInputConstraints(const ConstraintPtr_t constraint) { stateInputConstraints_ = constraint;}
 
 	/*!
 	 * set final constraints
 	 * @param constraint pointer to a final constraint
 	 */
-	void setFinalConstraints(const ConstraintPtr_t constraint) { g_t_ = constraint;}
+	void setPureStateConstraints(const ConstraintPtr_t constraint) { pureStateConstraints_ = constraint;}
 
 
 	//! retrieve intermediate constraints
-	const ConstraintPtr_t getIntermediateConstraints() const { return g_; }
+	const ConstraintPtr_t getStateInputConstraints() const { return stateInputConstraints_; }
 
 	//! retrieve final constraints
-	const ConstraintPtr_t getFinalConstraints() const { return g_t_; }
+	const ConstraintPtr_t getPureStateConstraints() const { return pureStateConstraints_; }
 
 	/*!
 	 * get initial state (called by solvers)
@@ -227,8 +227,8 @@ private:
 	CostFunctionPtr_t costFunction_;	//! a quadratic cost function
 	LinearPtr_t linearizedSystem_;		//! the linear approximation of the nonlinear system
 
-	ConstraintPtr_t g_;		//! container of all the intermediate constraints of the problem
-	ConstraintPtr_t g_t_;	//! container of all the terminal constraints of the problem
+	ConstraintPtr_t stateInputConstraints_;		//! container of all the intermediate constraints of the problem
+	ConstraintPtr_t pureStateConstraints_;	//! container of all the terminal constraints of the problem
 
 };
 

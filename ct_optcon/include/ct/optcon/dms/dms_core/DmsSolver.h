@@ -106,9 +106,10 @@ public:
 	{
 		// Create system, linearsystem and costfunction instances 
 		this->setProblem(problem);
+
 		dmsProblem_ = std::shared_ptr<DmsProblem<STATE_DIM, CONTROL_DIM>> (new DmsProblem<STATE_DIM, CONTROL_DIM>
 				(settingsDms, this->systems_, this->linearSystems_, this->costFunctions_, 
-					this->constraintsIntermediate_, this->constraintsFinal_, x0_));
+					this->stateInputConstraints_, this->pureStateConstraints_, x0_));
 
 		if(settingsDms.nlpSettings_.solverType_ == NlpSolverSettings::SNOPT)
 			nlpSolver_ = std::shared_ptr<SnoptSolver>(new SnoptSolver(dmsProblem_, settingsDms.nlpSettings_));
@@ -209,14 +210,14 @@ public:
 				this->getLinearSystemsInstances()[i] = typename Base::OptConProblem_t::LinearPtr_t(lin->clone());
 	}
 
-	virtual void changeIntermediateConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
+	virtual void changeStateInputConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
 	{
-		this->getIntermediateConstraintsInstances().push_back(typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
+		this->getStateInputConstraintsInstances().push_back(typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
 	}
 
-	virtual void changeFinalConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
+	virtual void changePureStateConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
 	{
-		this->getFinalConstraintsInstances().push_back(typename	Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
+		this->getPureStateConstraintsInstances().push_back(typename	Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
 	}
 
 	/**

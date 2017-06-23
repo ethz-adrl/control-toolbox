@@ -102,12 +102,12 @@ public:
 		getCollisionPointJacobian_(arg.getCollisionPointJacobian_)
 		{}
 
-	virtual size_t getConstraintsCount() override
+	virtual size_t getConstraintSize() const override
 	{
 		return 1;
 	}
 
-	virtual VectorXs evaluate() override
+	virtual Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR t) override
 	{
 		Eigen::Vector3d collision_frame_position;
 		getCollisionPointPosition_(this->xAd_, collision_frame_position);
@@ -137,7 +137,7 @@ public:
 		return val_;	
 	}
 
-	virtual Eigen::MatrixXd JacobianState() override
+	virtual Eigen::MatrixXd jacobianState() override
 	{
 		Eigen::Vector3d state;
 
@@ -167,16 +167,11 @@ public:
 		return jac_;
 	}
 
-	virtual Eigen::MatrixXd JacobianInput() override
+	virtual Eigen::MatrixXd jacobianInput() override
 	{
 		return Eigen::Matrix<double, 1, CONTROL_DIM>::Zero();
 	}
 
-	// return term type (either 0 for inequality or 1 for equality)
-	virtual int getConstraintType() override
-	{
-		return 0;
-	}
 
 private:
 	std::shared_ptr<Obstacle3d> obstacle_;

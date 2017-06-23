@@ -74,40 +74,37 @@ public:
 		Base::ub_ = uHigh;
 	}
 
-	virtual ~ControlInputConstraint(){}
-
 	virtual ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
 	{
 		return new ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
 	}
 
-	virtual size_t getConstraintsCount() override
+	virtual size_t getConstraintSize() const override
 	{
 		return CONTROL_DIM;
 	}
 
-	virtual VectorXs evaluate() override
+	virtual Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR t) override
 	{
-		return this->uAd_;
+		return u;
 	}
 
-	virtual Eigen::MatrixXd JacobianState() override
+	virtual Eigen::MatrixXd jacobianState() override
 	{
 		return Eigen::Matrix<double, CONTROL_DIM, STATE_DIM>::Zero();
 	}
 
-	virtual Eigen::MatrixXd JacobianInput() override
+	virtual Eigen::MatrixXd jacobianInput() override
 	{
-		jac_.setIdentity();
-		return jac_;
+		return Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM>::Identity();
 	}
 
-	virtual size_t getNumNonZerosJacobianState() override
+	virtual size_t getNumNonZerosJacobianState() const override
 	{
 		return 0;
 	}
 	
-	virtual size_t getNumNonZerosJacobianInput() override
+	virtual size_t getNumNonZerosJacobianInput() const override
 	{
 		return CONTROL_DIM;
 	}
@@ -122,14 +119,6 @@ public:
 		this->genDiagonalIndices(CONTROL_DIM, rows, cols);
 	}
 
-	// return term type (either 0 for inequality or 1 for equality)
-	virtual int getConstraintType() override
-	{
-		return 0;
-	}
-
-private:
-	Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> jac_; 
 };
 
 } // namespace tpl

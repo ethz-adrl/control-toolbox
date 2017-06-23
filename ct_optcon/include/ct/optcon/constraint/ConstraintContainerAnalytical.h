@@ -43,44 +43,23 @@ namespace optcon {
  *             jacobians
  *
  * @tparam     STATE_DIM  The state dimension
- * @tparam     INPUT_DIM  The control dimension
+ * @tparam     CONTROL_DIM  The control dimension
  */
-template <size_t STATE_DIM, size_t INPUT_DIM>
-class ConstraintContainerAnalytical : public LinearConstraintContainer<STATE_DIM, INPUT_DIM>{
+template <size_t STATE_DIM, size_t CONTROL_DIM>
+class ConstraintContainerAnalytical : public LinearConstraintContainer<STATE_DIM, CONTROL_DIM>{
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef Eigen::VectorXd VectorXd;
-	typedef Eigen::VectorXi VectorXi;
-	typedef Eigen::MatrixXd MatrixXd;
-
 	typedef core::StateVector<STATE_DIM>   state_vector_t;
-	typedef core::ControlVector<INPUT_DIM> input_vector_t;
+	typedef core::ControlVector<CONTROL_DIM> input_vector_t;
 
-	typedef ConstraintBase<STATE_DIM, INPUT_DIM> Base;
-	typedef std::shared_ptr<ConstraintBase<STATE_DIM, INPUT_DIM>> ConstraintBase_Shared_Ptr_t;
-
-	typedef ConstraintContainerAnalytical<STATE_DIM, INPUT_DIM>* ConstraintContainerAnalytical_Raw_Ptr_t;
-
-	enum TERM_TYPE {
-		AD = 0,   //!< AD
-		ANALYTICAL = 1//!< ANALYTICAL
-	};
-
-	enum MAP_DATA {
-		START_INDEX = 0,//!< START_INDEX
-		TERM_DIM,       //!< TERM_DIM
-		TYPE,           //!< TYPE
-		TERM_ID         //!< TERM_ID
-	};
-
-	typedef std::vector<std::tuple<size_t, size_t, TERM_TYPE, size_t>> MAP;
-
+	typedef ConstraintContainerAnalytical<STATE_DIM, CONTROL_DIM>* ConstraintContainerAnalytical_Raw_Ptr_t;
 
 	ConstraintContainerAnalytical()
 	:
-	initialized_(false)
+	initializedIntermediate_(false),
+	initializedTerminal_(false)
 	{}
 
 	/**
@@ -91,9 +70,10 @@ public:
 	 * @param      t     time
 	 */
 	ConstraintContainerAnalytical(const state_vector_t &x, const input_vector_t &u, const double& t = 0.0)
-	{
-		initialized_ = false;
-	}
+	:
+	initializedIntermediate_(false),
+	initializedTerminal_(false)	
+	{}
 
 	/**
 	 * @brief      Copy constructor
@@ -102,21 +82,30 @@ public:
 	 */
 	ConstraintContainerAnalytical(const ConstraintContainerAnalytical& arg) 
 	:
-	constraintsMap_(arg.constraintsMap_),
-	eval_(arg.eval_),
-	evalJacSparse_(arg.evalJacSparse_),
-	evalJacDense_(arg.evalJacDense_),
-	evalJacStateSparse_(arg.evalJacStateSparse_),
-	evalJacStateDense_(arg.evalJacStateDense_),
-	evalJacInputSparse_(arg.evalJacInputSparse_),
-	evalJacInputDense_(arg.evalJacInputDense_),
-	initialized_(arg.initialized_)
+	evalIntermediate_(arg.evalIntermediate_),
+	evalTerminal_(arg.evalTerminal_),
+	constraintsIntermediate_(arg.constraintsIntermediate_),
+	initializedIntermediate_(arg.initializedIntermediate_),
+	evalJacSparseStateIntermediate_(arg.evalJacSparseStateIntermediate_),
+	evalJacSparseInputIntermediate_(arg.evalJacSparseInputIntermediate_),
+	evalJacDenseStateIntermediate_(arg.evalJacDenseStateIntermediate_),
+	evalJacDenseInputIntermediate_(arg.evalJacDenseInputIntermediate_),
+	constraintsTerminal_(arg.constraintsTerminal_),
+	initializedTerminal_(arg.initializedTerminal_),
+	evalJacSparseStateTerminal_(arg.evalJacSparseStateTerminal_),
+	evalJacSparseInputTerminal_(arg.evalJacSparseInputTerminal_),
+	evalJacDenseStateTerminal_(arg.evalJacDenseStateTerminal_),
+	evalJacDenseInputTerminal_(arg.evalJacDenseInputTerminal_)
 	{
 		// vectors of terms can be resized easily
-		constraintsAnalytical_.resize(arg.constraintsAnalytical_.size());
+		constraintsIntermediate_.resize(arg.constraintsIntermediate_.size());
+		constraintsTerminal_.resize(arg.constraintsTerminal_.size());
 
-		for(size_t i = 0; i < constraintsAnalytical_.size(); ++i)
-			constraintsAnalytical_[i] = std::shared_ptr< ConstraintBase<STATE_DIM, INPUT_DIM>> (arg.constraintsAnalytical_[i]->clone());
+		for(size_t i = 0; i < constraintsIntermediate_.size(); ++i)
+			constraintsIntermediate_[i] = std::shared_ptr< ConstraintBase<STATE_DIM, CONTROL_DIM>> (arg.constraintsIntermediate_[i]->clone());
+
+		for(size_t i = 0; i < constraintsTerminal_.size(); ++i)
+			constraintsTerminal_[i] = std::shared_ptr< ConstraintBase<STATE_DIM, CONTROL_DIM>> (arg.constraintsTerminal_[i]->clone());
 	}
 
 	virtual ConstraintContainerAnalytical_Raw_Ptr_t clone () const override {return new ConstraintContainerAnalytical(*this);}
@@ -127,232 +116,252 @@ public:
 	 * @param[in]  constraint  The constraint to be added
 	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
 	 */
-	void addConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, INPUT_DIM>> constraint, bool verbose)
+	void addIntermediateConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>> constraint, bool verbose)
 	{
+		constraintsIntermediate_.push_back(constraint);
 		if(verbose){
 			std::string name;
 			constraint->getName(name);
 			std::cout<<"''" << name << "'' added as Analytical state input constraint ";
 		}
+		initializedIntermediate_ = false;
+	}
 
-		addConstraintAndGenerateIndicies(constraint, ANALYTICAL, verbose, constraintsAnalytical_, constraintsMap_);
-		initialized_ = false;
+	void addTerminalConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>> constraint, bool verbose)
+	{
+		constraintsTerminal_.push_back(constraint);
+		if(verbose){
+			std::string name;
+			constraint->getName(name);
+			std::cout<<"''" << name << "'' added as Analytical state input constraint ";
+		}
+		initializedTerminal_ = false;
 	}
 
 	/**
 	 * @brief      Initializes the vectors to the correct size
 	 */
-	void initialize()
-	{
-		size_t nnzStateCount = 0;
-		size_t nnzInputCount = 0;
-		for(auto map : constraintsMap_)
-		{
-			const size_t constraint_id = std::get<TERM_ID>(map);
-			const size_t start_index = std::get<START_INDEX>(map);
-			const size_t constraint_dim = constraintsAnalytical_[constraint_id]->getConstraintsCount();
-			const size_t nonZerosState = constraintsAnalytical_[constraint_id]->getNumNonZerosJacobianState();
-			const size_t nonZerosInput = constraintsAnalytical_[constraint_id]->getNumNonZerosJacobianInput();
 
-			eval_.conservativeResize(start_index + constraint_dim);
-			evalJacSparse_.conservativeResize(nnzStateCount + nnzInputCount + nonZerosState + nonZerosInput);
-			evalJacDense_.conservativeResize(start_index + constraint_dim, STATE_DIM + INPUT_DIM);
-			evalJacStateSparse_.conservativeResize(nnzStateCount + nonZerosState);
-			evalJacStateDense_.conservativeResize(start_index + constraint_dim, STATE_DIM);
-			evalJacInputSparse_.conservativeResize(nnzInputCount + nonZerosInput);
-			evalJacInputDense_.conservativeResize(start_index + constraint_dim, INPUT_DIM);
-			nnzStateCount += nonZerosState;
-			nnzInputCount += nonZerosInput;
-		}
-		initialized_ = true;
+
+	// TODO: Fill the base class bound containers!!!!!!
+
+
+
+	virtual void initialize() override
+	{
+		initializeIntermediate();
+		initializeTerminal();
 	}
 
-	virtual void evaluate(VectorXd& g, size_t& count) override
+	virtual Eigen::VectorXd evaluateIntermediate() override
 	{
-		if(!initialized_)
+		if(!initializedIntermediate_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
-		count = 0;
-		for(auto map : constraintsMap_)
+		size_t count = 0;
+		for(auto constraint : constraintsIntermediate_)
 		{
-			const size_t constraint_id = std::get<TERM_ID>(map);
-			const size_t start_index = std::get<START_INDEX>(map);
-			const size_t constraint_dim = constraintsAnalytical_[constraint_id]->getConstraintsCount();
-			eval_.segment(start_index, constraint_dim) = constraintsAnalytical_[constraint_id]->evaluate();
+			size_t constraint_dim = constraint->getConstraintSize();
+			evalIntermediate_.segment(count, constraint_dim) = constraint->eval();
 			count += constraint_dim;
 		}
-		g = eval_;		
+		return evalIntermediate_;		
 	}
 
-	virtual void getLowerBound(VectorXd& lb, size_t& count) override
+	virtual Eigen::VectorXd evaluateTerminal() override
 	{
-		count = 0;
-		VectorXd lbLocal;
-
-		for(auto map : constraintsMap_)
-		{
-			const size_t constraint_id = std::get<TERM_ID>(map);
-			const size_t start_index = std::get<START_INDEX>(map);
-
-			// evaluate analytical constraint
-			const size_t constraint_dim = constraintsAnalytical_[constraint_id]->getConstraintsCount();
-			lbLocal.conservativeResize(start_index + constraint_dim);
-			lbLocal.segment(start_index, constraint_dim) = constraintsAnalytical_[constraint_id]->getLowerBound();
-			count += constraint_dim;
-		}
-		lb = lbLocal;	
-	}
-
-	virtual void getUpperBound(VectorXd& ub, size_t& count) override
-	{
-		count = 0;
-		VectorXd ubLocal;
-
-		for(auto map : constraintsMap_)
-		{
-			const size_t constraint_id = std::get<TERM_ID>(map);
-			const size_t start_index = std::get<START_INDEX>(map);
-
-			// evaluate analytical constraint
-			const size_t constraint_dim = constraintsAnalytical_[constraint_id]->getConstraintsCount();
-			ubLocal.conservativeResize(start_index + constraint_dim);
-			ubLocal.segment(start_index, constraint_dim) = constraintsAnalytical_[constraint_id]->getUpperBound();
-			count += constraint_dim;
-		}
-		ub = ubLocal;
-	}
-
-	virtual void evalJacSparse(VectorXd& jacVec, size_t& count) override
-	{
-		if(!initialized_)
+		if(!initializedTerminal_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
-		count = 0;
-		for(auto map : constraintsMap_)
+		size_t count = 0;
+		for(auto constraint : constraintsTerminal_)
 		{
-			const size_t constraint_id = std::get<TERM_ID>(map);
+			size_t constraint_dim = constraint->getConstraintSize();
+			evalTerminal_.segment(count, constraint_dim) = constraint->eval();
+			count += constraint_dim;
+		}
+		return evalTerminal_;		
+	}
 
-			const size_t nonZerosState = constraintsAnalytical_[constraint_id]->getNumNonZerosJacobianState();
-			const size_t nonZerosInput = constraintsAnalytical_[constraint_id]->getNumNonZerosJacobianInput();
+	virtual size_t getIntermediateConstraintsCount() override
+	{
+		size_t count = 0;
+
+		for(auto constraint : constraintsIntermediate_)
+			count += constraint->getConstraintSize();
+
+		return count;
+	}
+
+	virtual size_t getTerminalConstraintsCount() override
+	{
+		size_t count = 0;
+		for(auto constraint : constraintsTerminal_)
+			count += constraint->getConstraintSize();
+
+		return count;
+	}
+
+	virtual Eigen::VectorXd jacobianStateSparseIntermediate() override
+	{
+		if(!initializedIntermediate_)
+			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+
+		size_t count = 0;
+		for(auto constraint : constraintsIntermediate_)
+		{
+			size_t nonZerosState = constraint->getNumNonZerosJacobianState();
 
 			if(nonZerosState != 0)
 			{
-				evalJacSparse_.segment(count, nonZerosState) = constraintsAnalytical_[constraint_id]->jacobianStateSparse();
+				evalJacSparseStateIntermediate_.segment(count, nonZerosState) = constraint->jacobianStateSparse();
 				count += nonZerosState;
 			}
-			if(nonZerosInput != 0)
-			{
-				evalJacSparse_.segment(count, nonZerosInput) = constraintsAnalytical_[constraint_id]->jacobianInputSparse();
-				count += nonZerosInput;				
-			}
+
 		}
-		jacVec = evalJacSparse_;
+		return evalJacSparseStateIntermediate_;
 	}
 
-	virtual Eigen::MatrixXd evalJacDense() override
+	virtual Eigen::MatrixXd jacobianStateIntermediate() override
 	{
-		if(!initialized_)
+		if(!initializedIntermediate_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::MatrixXd jacLocal;
-		for(auto map : constraintsMap_)
-		{
-			const size_t constraint_id = std::get<TERM_ID>(map);
-			const size_t start_index = std::get<START_INDEX>(map);
-			const size_t constraint_dim = constraintsAnalytical_[constraint_id]->getConstraintsCount();
-
-			evalJacDense_.block(start_index, 0, constraint_dim, STATE_DIM) = constraintsAnalytical_[constraint_id]->JacobianState();
-			evalJacDense_.block(start_index, STATE_DIM, constraint_dim, INPUT_DIM) = constraintsAnalytical_[constraint_id]->JacobianInput();			
-		}
-
-		return evalJacDense_;
-	}
-
-	virtual void evalJacStateSparse(VectorXd& jacVec, size_t& count) override
-	{
-		if(!initialized_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		count = 0;
-
-		for(auto map : constraintsMap_)
-		{
-			const size_t constraint_id = std::get<TERM_ID>(map);
-			// evaluate analytical jacobian
-			const size_t sparseJacDim = constraintsAnalytical_[constraint_id]->getNumNonZerosJacobianState();
-			evalJacStateSparse_.segment(count, sparseJacDim) = constraintsAnalytical_[constraint_id]->jacobianStateSparse();
-			count += sparseJacDim;
-		}
-		jacVec = evalJacStateSparse_;
-	}
-
-	virtual Eigen::MatrixXd evalJacStateDense() override
-	{
-		if(!initialized_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
 		size_t count = 0;
-		for(auto map : constraintsMap_)
+		for(auto constraint : constraintsIntermediate_)
 		{
-			const size_t constraint_id = std::get<TERM_ID>(map);
-			const size_t start_index = std::get<START_INDEX>(map);
-			const size_t constraint_dim = constraintsAnalytical_[constraint_id]->getConstraintsCount();
+			size_t constraint_dim = constraint->getConstraintSize();
+			evalJacDenseStateIntermediate_.block(count, 0, constraint_dim, STATE_DIM) = constraint->jacobianState();
 			count += constraint_dim;
-			evalJacStateDense_.block(start_index, 0, constraint_dim, STATE_DIM) = constraintsAnalytical_[constraint_id]->JacobianState();
 		}
 
-		return evalJacStateDense_;		
+		return evalJacDenseStateIntermediate_;
 	}
 
-	virtual void evalJacInputSparse(VectorXd& jacVec, size_t& count) override
+	virtual Eigen::VectorXd jacobianStateSparseTerminal() override
 	{
-		if(!initialized_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		count = 0;	
-		for(auto map : constraintsMap_)
-		{
-			const size_t constraint_id = std::get<TERM_ID>(map);
-			const size_t sparseJacDim = constraintsAnalytical_[constraint_id]->getNumNonZerosJacobianInput();
-			evalJacInputSparse_.segment(count, sparseJacDim) = constraintsAnalytical_[constraint_id]->jacobianInputSparse();
-			count += sparseJacDim;
-		}
-		jacVec = evalJacInputSparse_;
-	}
-
-	virtual Eigen::MatrixXd evalJacInputDense() override
-	{
-		if(!initialized_)
+		if(!initializedTerminal_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		size_t count = 0;
-		for(auto map : constraintsMap_)
+		for(auto constraint : constraintsTerminal_)
 		{
-			const size_t constraint_id = std::get<TERM_ID>(map);
-			const size_t start_index = std::get<START_INDEX>(map);
-			const size_t constraint_dim = constraintsAnalytical_[constraint_id]->getConstraintsCount();
+			size_t nonZerosState = constraint->getNumNonZerosJacobianState();
+
+			if(nonZerosState != 0)
+			{
+				evalJacSparseStateTerminal_.segment(count, nonZerosState) = constraint->jacobianStateSparse();
+				count += nonZerosState;
+			}
+
+		}
+		return evalJacSparseStateTerminal_;	
+	}
+
+
+	virtual Eigen::MatrixXd jacobianStateTerminal() override
+	{
+		if(!initializedTerminal_)
+			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+
+		size_t count = 0;
+		for(auto constraint : constraintsTerminal_)
+		{
+			size_t constraint_dim = constraint->getConstraintSize();
+			evalJacDenseStateTerminal_.block(count, 0, constraint_dim, STATE_DIM) = constraint->jacobianState();
 			count += constraint_dim;
-			evalJacInputDense_.block(start_index, 0, constraint_dim, INPUT_DIM) = constraintsAnalytical_[constraint_id]->JacobianInput();
 		}
 
-		return evalJacInputDense_;		
+		return evalJacDenseStateTerminal_;
 	}
 
-	virtual size_t generateSparsityPatternJacobianState(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
+	virtual Eigen::VectorXd jacobianInputSparseIntermediate() override
 	{
-		VectorXi iRowLocal;
-		VectorXi jColLocal;
-		VectorXi iRowTot;
-		VectorXi jColTot;
+		if(!initializedIntermediate_)
+			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+
+		size_t count = 0;
+		for(auto constraint : constraintsIntermediate_)
+		{
+			size_t nonZerosInput = constraint->getNumNonZerosJacobianInput();
+
+			if(nonZerosInput != 0)
+			{
+				evalJacSparseInputIntermediate_.segment(count, nonZerosInput) = constraint->jacobianInputSparse();
+				count += nonZerosInput;				
+			}
+		}
+		return evalJacSparseInputIntermediate_;
+	}
+
+	virtual Eigen::MatrixXd jacobianInputIntermediate() override
+	{
+		if(!initializedIntermediate_)
+			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+
+		size_t count = 0;
+		for(auto constraint : constraintsIntermediate_)
+		{
+			size_t constraint_dim = constraint->getConstraintSize();
+			evalJacDenseInputIntermediate_.block(count, 0, constraint_dim, CONTROL_DIM) = constraint->jacobianInput();
+			count += constraint_dim;			
+		}
+
+		return evalJacDenseInputIntermediate_;
+	}
+
+	virtual Eigen::VectorXd jacobianInputSparseTerminal() override
+	{
+		if(!initializedTerminal_)
+			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+
+		size_t count = 0;
+		for(auto constraint : constraintsTerminal_)
+		{
+			size_t nonZerosInput = constraint->getNumNonZerosJacobianInput();
+
+			if(nonZerosInput != 0)
+			{
+				evalJacSparseInputTerminal_.segment(count, nonZerosInput) = constraint->jacobianInputSparse();
+				count += nonZerosInput;				
+			}
+		}
+		return evalJacSparseInputTerminal_;
+	}
+
+	virtual Eigen::MatrixXd jacobianInputTerminal() override
+	{
+		if(!initializedTerminal_)
+			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+
+		size_t count = 0;
+		for(auto constraint : constraintsTerminal_)
+		{
+			size_t constraint_dim = constraint->getConstraintSize();
+			evalJacDenseInputTerminal_.block(count, 0, constraint_dim, CONTROL_DIM) = constraint->jacobianInput();
+			count += constraint_dim;			
+		}
+
+		return evalJacDenseInputTerminal_;
+	}
+
+	virtual void sparsityPatternStateIntermediate(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
+	{
+		if(!initializedIntermediate_)
+			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+
+		Eigen::VectorXi iRowLocal;
+		Eigen::VectorXi jColLocal;
+		Eigen::VectorXi iRowTot;
+		Eigen::VectorXi jColTot;
 
 		size_t count = 0;
 
-		for(auto map : constraintsMap_)
+		for(auto constraint : constraintsIntermediate_)
 		{
-			const size_t constraint_id = std::get<TERM_ID>(map);
-
-			size_t nonZerosState = constraintsAnalytical_[constraint_id]->getNumNonZerosJacobianState();
-			constraintsAnalytical_[constraint_id]->sparsityPatternState(iRowLocal, jColLocal);
+			size_t nonZerosState = constraint->getNumNonZerosJacobianState();
+			constraint->sparsityPatternState(iRowLocal, jColLocal);
 
 			iRowTot.conservativeResize(count + nonZerosState);
 			iRowTot.segment(count, nonZerosState) = iRowLocal;
@@ -365,24 +374,85 @@ public:
 
 		iRows = iRowTot;
 		jCols = jColTot;
-		return count;
 	}
 
-	virtual size_t generateSparsityPatternJacobianInput(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
+	virtual void sparsityPatternStateTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
 	{
-		VectorXi iRowLocal;
-		VectorXi jColLocal;
-		VectorXi iRowTot;
-		VectorXi jColTot;
+		if(!initializedTerminal_)
+			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+
+		Eigen::VectorXi iRowLocal;
+		Eigen::VectorXi jColLocal;
+		Eigen::VectorXi iRowTot;
+		Eigen::VectorXi jColTot;
 
 		size_t count = 0;
 
-		for(auto map : constraintsMap_)
+		for(auto constraint : constraintsTerminal_)
 		{
-			const size_t constraint_id = std::get<TERM_ID>(map);
+			size_t nonZerosState = constraint->getNumNonZerosJacobianState();
+			constraint->sparsityPatternState(iRowLocal, jColLocal);
 
-			const size_t nonZerosInput = constraintsAnalytical_[constraint_id]->getNumNonZerosJacobianInput();
-			constraintsAnalytical_[constraint_id]->sparsityPatternInput(iRowLocal, jColLocal);
+			iRowTot.conservativeResize(count + nonZerosState);
+			iRowTot.segment(count, nonZerosState) = iRowLocal;
+
+			jColTot.conservativeResize(count + nonZerosState);
+			jColTot.segment(count, nonZerosState) = jColLocal;
+
+			count += nonZerosState;
+		}
+
+		iRows = iRowTot;
+		jCols = jColTot;
+	}
+
+	virtual void sparsityPatternInputIntermediate(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
+	{
+		if(!initializedIntermediate_)
+			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+
+		Eigen::VectorXi iRowLocal;
+		Eigen::VectorXi jColLocal;
+		Eigen::VectorXi iRowTot;
+		Eigen::VectorXi jColTot;
+
+		size_t count = 0;
+
+		for(auto constraint : constraintsIntermediate_)
+		{
+			size_t nonZerosInput = constraint->getNumNonZerosJacobianInput();
+			constraint->sparsityPatternInput(iRowLocal, jColLocal);
+
+			iRowTot.conservativeResize(count + nonZerosInput);
+			iRowTot.segment(count, nonZerosInput) = iRowLocal;
+
+			jColTot.conservativeResize(count + nonZerosInput);
+			jColTot.segment(count, nonZerosInput) = jColLocal;
+			std::cout << "asd" << 123 << std::endl;
+
+			count += nonZerosInput;
+		}
+
+		iRows = iRowTot;
+		jCols = jColTot;
+	}
+
+	virtual void sparsityPatternInputTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
+	{
+		if(!initializedTerminal_)
+			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+
+		Eigen::VectorXi iRowLocal;
+		Eigen::VectorXi jColLocal;
+		Eigen::VectorXi iRowTot;
+		Eigen::VectorXi jColTot;
+
+		size_t count = 0;
+
+		for(auto constraint : constraintsTerminal_)
+		{
+			size_t nonZerosInput = constraint->getNumNonZerosJacobianInput();
+			constraint->sparsityPatternInput(iRowLocal, jColLocal);
 
 			iRowTot.conservativeResize(count + nonZerosInput);
 			iRowTot.segment(count, nonZerosInput) = iRowLocal;
@@ -395,173 +465,99 @@ public:
 
 		iRows = iRowTot;
 		jCols = jColTot;
-		return count;
 	}
 
-	virtual size_t generateSparsityPatternJacobian(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
+	virtual size_t getJacobianStateNonZeroCountIntermediate() override
 	{
-		VectorXi iRowLocal;
-		VectorXi jColLocal;
-		VectorXi iRowTot;
-		VectorXi jColTot;
+		if(!initializedIntermediate_)
+			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
-		size_t nonZeroCount = 0;
-		size_t constraintCount = 0;
-		for(auto map : constraintsMap_)
-		{
-			const size_t constraint_id = std::get<TERM_ID>(map);
-			const size_t constraint_dim = constraintsAnalytical_[constraint_id]->getConstraintsCount();
-			const size_t nonZerosState = constraintsAnalytical_[constraint_id]->getNumNonZerosJacobianState();
-			const size_t nonZerosInput = constraintsAnalytical_[constraint_id]->getNumNonZerosJacobianInput();
-
-			if(nonZerosState != 0)
-			{	
-				iRowLocal.resize(nonZerosState);
-				jColLocal.resize(nonZerosState);
-				constraintsAnalytical_[constraint_id]->sparsityPatternState(iRowLocal, jColLocal);
-
-				iRowTot.conservativeResize(nonZeroCount + nonZerosState);
-				iRowTot.segment(nonZeroCount, nonZerosState) = iRowLocal.array() + constraintCount;
-
-				jColTot.conservativeResize(nonZeroCount + nonZerosState);
-				jColTot.segment(nonZeroCount, nonZerosState) = jColLocal;
-				nonZeroCount += nonZerosState;				
-			}
-
-			if(nonZerosInput != 0)
-			{
-				iRowLocal.resize(nonZerosInput);
-				jColLocal.resize(nonZerosInput);
-				constraintsAnalytical_[constraint_id]->sparsityPatternInput(iRowLocal, jColLocal);
-
-				iRowTot.conservativeResize(nonZeroCount + nonZerosInput);
-				iRowTot.segment(nonZeroCount, nonZerosInput) = iRowLocal.array() + constraintCount;
-
-				jColTot.conservativeResize(nonZeroCount + nonZerosInput);
-				jColTot.segment(nonZeroCount, nonZerosInput) = jColLocal.array() + STATE_DIM;
-				nonZeroCount += nonZerosInput;
-			}
-
-			if(nonZerosState != 0 || nonZerosInput != 0)
-				constraintCount += constraint_dim;
-
-		}
-
-		iRows = iRowTot;
-		jCols = jColTot;
-
-		return nonZeroCount;
-	}
-
-	virtual void getConstraintTypes(VectorXd& constraint_types) override
-	{
-		for(auto map : constraintsMap_)
-		{
-			const size_t constraint_id = std::get<TERM_ID>(map);
-			const size_t start_index = std::get<START_INDEX>(map);
-
-			const size_t constraint_dim = constraintsAnalytical_[constraint_id]->getConstraintsCount();
-			constraint_types.segment(start_index, constraint_dim) = constraintsAnalytical_[constraint_id]->getConstraintType() * Eigen::VectorXd::Ones(constraint_dim);;
-		}
-	}
-
-	virtual void setTimeStateInput(const double t, const state_vector_t& x, const input_vector_t& u)  override
-	{
-		for(auto constraint : constraintsAnalytical_)
-		{
-			constraint->setTimeStateInputDouble(x, u, t);
-			constraint->setTimeStateInputAd(x, u, t);
-		}
-	}
-
-	virtual size_t getConstraintJacobianNonZeroCount() override
-	{
-		return getConstraintJacobianStateNonZeroCount() + getConstraintJacobianInputNonZeroCount();
-	}
-
-	virtual size_t getConstraintJacobianStateNonZeroCount() override
-	{
 		size_t count = 0;
-		for(auto constraint : constraintsAnalytical_)
-		{
+		for(auto constraint : constraintsIntermediate_)
 			count += constraint->getNumNonZerosJacobianState();
-		}
+
 		return count;
 	}
 
-	virtual size_t getConstraintJacobianInputNonZeroCount() override
+	virtual size_t getJacobianStateNonZeroCountTerminal() override
 	{
+		if(!initializedTerminal_)
+			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+
 		size_t count = 0;
-		for(auto constraint : constraintsAnalytical_)
-		{
+		for(auto constraint : constraintsTerminal_)
+			count += constraint->getNumNonZerosJacobianState();
+
+		return count;
+	}
+
+	virtual size_t getJacobianInputNonZeroCountIntermediate() override
+	{
+		if(!initializedIntermediate_)
+			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");	
+
+		size_t count = 0;
+		for(auto constraint : constraintsIntermediate_)
 			count += constraint->getNumNonZerosJacobianInput();
-		}
+
 		return count;
 	}
 
-	virtual size_t getConstraintCount() override
+	virtual size_t getJacobianInputNonZeroCountTerminal() override
 	{
+		if(!initializedTerminal_)
+			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");	
+
 		size_t count = 0;
-		for(auto constraint : constraintsAnalytical_)
-		{
-			count += constraint->getConstraintsCount();
-		}
+		for(auto constraint : constraintsTerminal_)
+			count += constraint->getNumNonZerosJacobianInput();
+		
 		return count;
 	}
 
 
 private:
-	virtual void update() override {};	// todo: can we make use of that function ?
+	virtual void update() override {}
 
+	void initializeIntermediate()
+	{	
+		evalIntermediate_.resize(getIntermediateConstraintsCount());
+		evalJacSparseStateIntermediate_.resize(getJacobianStateNonZeroCountIntermediate());
+		evalJacSparseInputIntermediate_.resize(getJacobianInputNonZeroCountIntermediate());
+		evalJacDenseStateIntermediate_.resize(getIntermediateConstraintsCount(), STATE_DIM);
+		evalJacDenseInputIntermediate_.resize(getIntermediateConstraintsCount(), CONTROL_DIM);
 
-	/**
-	 * @brief      add a term (AD or analytic), and update the mappings between
-	 *             the indicies required to identify it uniquely.
-	 *
-	 *             templated on scalar type (double, CppAD::AD<double)
-	 *
-	 * @param[in]  constraint          The constraint
-	 * @param      verbose             set to true if printout desired
-	 * @param      stockOfConstraints  vector terms of same TERM_TYPE (member
-	 *                                 variable)
-	 * @param      map                 indices mapping
-	 */
-	void addConstraintAndGenerateIndicies(
-		std::shared_ptr< ConstraintBase<STATE_DIM, INPUT_DIM>> constraint, 
-		TERM_TYPE constraint_type, 
-		bool verbose,
-		std::vector<std::shared_ptr< ConstraintBase<STATE_DIM, INPUT_DIM>>>& stockOfConstraints,
-		MAP& map)
-	{
-		stockOfConstraints.push_back(constraint);
-		size_t newConstraintId = stockOfConstraints.size()-1;
-		size_t constraint_dim = constraint->getConstraintsCount();
-
-		size_t startingIndex = 0;
-
-		// check if map already has value...
-		if(map.size()>0)
-			startingIndex += (std::get<START_INDEX>(map.back()) + std::get<TERM_DIM>(map.back()));
-
-		auto constraintStartAndDim = std::make_tuple(startingIndex, constraint_dim, constraint_type, newConstraintId);
-
-		map.push_back(constraintStartAndDim);
-
-		if(verbose){
-			std::cout << "with starting index " << startingIndex <<", and dimension " << constraint_dim << std::endl;
-		}
+		initializedIntermediate_ = true;
 	}
 
-	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, INPUT_DIM>>> constraintsAnalytical_;
-	MAP constraintsMap_;	/** map containing starting_index, length of constraint sub-vector, constraint type and constraint Id for pure state constraint */
-	Eigen::VectorXd eval_;
-	VectorXd evalJacSparse_;
-	Eigen::MatrixXd evalJacDense_;
-	VectorXd evalJacStateSparse_;
-	Eigen::MatrixXd evalJacStateDense_;
-	VectorXd evalJacInputSparse_;
-	Eigen::MatrixXd evalJacInputDense_;
-	bool initialized_;
+	void initializeTerminal()
+	{
+		evalTerminal_.resize(getTerminalConstraintsCount());
+		evalJacSparseStateTerminal_.resize(getJacobianStateNonZeroCountTerminal());
+		evalJacSparseInputTerminal_.resize(getJacobianInputNonZeroCountTerminal());
+		evalJacDenseStateTerminal_.resize(getTerminalConstraintsCount(), STATE_DIM);
+		evalJacDenseInputTerminal_.resize(getTerminalConstraintsCount(), CONTROL_DIM);
+
+		initializedTerminal_ = true;
+	}
+
+	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>>> constraintsIntermediate_;
+	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>>> constraintsTerminal_;
+
+	bool initializedIntermediate_;
+	bool initializedTerminal_;
+
+	Eigen::VectorXd evalIntermediate_;
+	Eigen::VectorXd evalJacSparseStateIntermediate_;
+	Eigen::VectorXd evalJacSparseInputIntermediate_;
+	Eigen::VectorXd evalJacDenseStateIntermediate_;
+	Eigen::VectorXd evalJacDenseInputIntermediate_;
+
+	Eigen::VectorXd evalTerminal_;
+	Eigen::VectorXd evalJacSparseStateTerminal_;
+	Eigen::VectorXd evalJacSparseInputTerminal_;
+	Eigen::VectorXd evalJacDenseStateTerminal_;
+	Eigen::VectorXd evalJacDenseInputTerminal_;
 
 };
 

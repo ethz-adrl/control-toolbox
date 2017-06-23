@@ -39,21 +39,20 @@ namespace optcon {
  */
 
 /**
- * \ingroup Constraint
- * +
+ * @ingroup    Constraint
+ * + { list_item_description }
  *
- * \brief The ConstraintBase Class is the base class for defining the non-linear optimization constraints.
+ * @brief      The ConstraintBase Class is the base class for defining the
+ *             non-linear optimization constraints.
  *
- * @tparam STATE_DIM: Dimension of the state vector
- * @tparam INPUT_DIM: Dimension of the control input vector
- * @tparam CONSTRAINT2_DIM: Maximum number of pure state constraints
- * @tparam CONSTRAINT1_DIM: Maximum number of state-input constraints
+ * @tparam     STATE_DIM  Dimension of the state vector
+ * @tparam     CONTROL_DIM  Dimension of the control input vector
  *
- * An example for usage is given in the unit test \ref ConstraintTest.h
- *
+ *             An example for usage is given in the unit test @ref
+ *             ConstraintTest.h
  */
 
-template <size_t STATE_DIM, size_t INPUT_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM>
 class ConstraintContainerBase
 {
 public:
@@ -61,13 +60,9 @@ public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef core::StateVector<STATE_DIM> state_vector_t;
-	typedef core::ControlVector<INPUT_DIM> input_vector_t;
+	typedef core::ControlVector<CONTROL_DIM> input_vector_t;
 
-	// typedef ConstraintDefinitions<STATE_DIM, INPUT_DIM, CONSTRAINT2_DIM, CONSTRAINT1_DIM> CONSTRAINT_DEFINITIONS;
-
-	typedef ConstraintContainerBase<STATE_DIM, INPUT_DIM>* ConstraintBase_Raw_Ptr_t;
-	typedef std::shared_ptr<ConstraintContainerBase<STATE_DIM, INPUT_DIM>> ConstraintBase_Shared_Ptr_t;
-
+	typedef ConstraintContainerBase<STATE_DIM, CONTROL_DIM>* ConstraintBase_Raw_Ptr_t;
 
 	/**
 	 * \brief Default constructor
@@ -75,11 +70,10 @@ public:
 	 * Default constructor, sets state, control and time to zero
 	 */
 	ConstraintContainerBase() :
+		x_(state_vector_t::Zero()),
+		u_(input_vector_t::Zero()),
 		t_(0.0)
-	{
-		x_.setZero();
-		u_.setZero();
-	}
+	{}
 
 	/**
 	 * \brief copy constructor
@@ -87,11 +81,13 @@ public:
 	 * Copy constructor
 	 */
 	ConstraintContainerBase(const ConstraintContainerBase& arg) :
-		t_(arg.t_),
 		x_(arg.x_),
 		u_(arg.u_),
-		constraintLowerBounds_(arg.constraintLowerBounds_),
-		constraintUpperBounds_(arg.constraintUpperBounds_)
+		t_(arg.t_),
+		lowerBoundsIntermediate_(arg.lowerBoundsIntermediate_),
+		lowerBoundsFinal_(arg.lowerBoundsFinal_),
+		upperBoundsIntermediate_(arg.upperBoundsIntermediate_),
+		upperBoundsFinal_(arg.upperBoundsFinal_)
 	{}
 
 	/**
@@ -102,6 +98,12 @@ public:
 	virtual ~ConstraintContainerBase() {}
 
 	/**
+	 * Clones the constraint.
+	 * @return Base pointer to the clone
+	 */
+	virtual ConstraintBase_Raw_Ptr_t clone() const = 0;
+
+	/**
 	 * This methods updates the current time, state, and input in the class. It also call the user defined update() method,
 	 * which can be used to make the implementation more efficient by executing shared calculations directly at the time of
 	 * updating time, state and control.
@@ -110,10 +112,7 @@ public:
 	 * @param[in] x state vector
 	 * @param[in] x input vector
 	 */
-	virtual void setTimeStateInput(
-			const double t,
-			const state_vector_t& x,
-			const input_vector_t& u)
+	virtual void setCurrentStateAndControl(const state_vector_t& x,	const input_vector_t& u, const double t = 0.0)
 	{
 		t_ = t;
 		x_ = x;
@@ -121,65 +120,52 @@ public:
 		update();
 	}
 
-	/**
-	 * This method retrieves the state-input constraint vector
-	 * @param[in] lowerBound The lower bound values for the state-input constraint
-	 * @param[in] upperBound The upper bound values for the state-input constraint
-	 */
-	void setConstraintBounds(
-			const Eigen::VectorXd& lowerBound,
-			const Eigen::VectorXd& upperBound)
+	virtual Eigen::VectorXd evaluateIntermediate() = 0;
+
+	virtual Eigen::VectorXd evaluateTerminal() = 0;
+
+	virtual size_t getIntermediateConstraintsCount() = 0;
+
+	virtual size_t getTerminalConstraintsCount() = 0;
+
+	size_t getConstraintsCount()
 	{
-		constraintLowerBounds_ = lowerBound;
-		constraintUpperBounds_ = upperBound;
+		return getIntermediateConstraintsCount() + getTerminalConstraintsCount();
 	}
 
-	Eigen::VectorXd getLowerBounds() const
+	Eigen::VectorXd getLowerBoundsIntermediate() const
 	{
-		return constraintLowerBounds_;
+		return lowerBoundsIntermediate_;
 	}
 
-	Eigen::VectorXd getUpperBounds() const
+	Eigen::VectorXd getLowerBoundsTerminal() const
 	{
-		return constraintUpperBounds_;
+		return lowerBoundsFinal_;
 	}
 
-	/**
-	 * Clones the constraint.
-	 * @return Base pointer to the clone
-	 */
-	virtual ConstraintBase_Raw_Ptr_t clone() const = 0;
 
-	/**
-	 * This method retrieves the pure state constraint vector
-	 * @param[out] g2  The value of the pure state constraint
-	 * @param[out] nc2 The number of the active pure state constraints
-	 */
-	virtual void evaluate(Eigen::VectorXd& g, size_t& n) = 0;
+	Eigen::VectorXd getUpperBoundsIntermediate() const
+	{
+		return upperBoundsIntermediate_;
+	}
 
-	/**
-	 * This method retrieves the state-input constraint vector
-	 * @param[out] g1  The value of the state-input constraint vector
-	 * @param[out] nc1 The number of the active state-vector constraints
-	 */
-
-	virtual void getConstraintTypes(std::vector<Eigen::VectorXd>& constraint_types) {};
+	Eigen::VectorXd getUpperBoundsTerminal() const
+	{	
+		return upperBoundsFinal_;
+	}
 
 
 protected:
-
-	/**
-	 * This is called by setTimeStateInput() method class. It can be used for updating the class members with the new state and input.
-	 * May help to make computations more efficient by executing shared calculations here.
-	 */
 	virtual void update() = 0;
 
-	double t_;			    /** time */
 	state_vector_t   x_;	/** state vector */
 	input_vector_t u_;		/** control vector */
+	double t_;			    /** time */
 
-	Eigen::VectorXd constraintLowerBounds_;
-	Eigen::VectorXd constraintUpperBounds_;
+	Eigen::VectorXd lowerBoundsIntermediate_;
+	Eigen::VectorXd lowerBoundsFinal_;
+	Eigen::VectorXd upperBoundsIntermediate_;
+	Eigen::VectorXd upperBoundsFinal_;
 };
 
 
