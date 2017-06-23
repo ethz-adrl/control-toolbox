@@ -64,7 +64,7 @@ public:
       You should pass pointers to instances of classes here that derive from the dynamics, derivatives and costFunction base classes
 
 	 */
-	iLQGMP( const OptConProblem<STATE_DIM, CONTROL_DIM>& optConProblem,
+	iLQGMP( const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 			const iLQGSettings& settings) :
 
 			Base(optConProblem, settings)
@@ -73,7 +73,7 @@ public:
 		launchWorkerThreads();
 	}
 
-	iLQGMP(const OptConProblem<STATE_DIM, CONTROL_DIM>& optConProblem,
+	iLQGMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 		 const std::string& settingsFile,
 		 bool verbose = true,
 		 const std::string& ns = "ilqg") :

@@ -55,7 +55,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::setInitialGuess(const Policy_t& i
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeTimeHorizon(const core::Time& tf)
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeTimeHorizon(const SCALAR& tf)
 {
 	if (tf < 0)
 		throw std::runtime_error("negative time horizon specified");
@@ -89,7 +89,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeTimeHorizon(const core::Tim
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeInitialState(const core::StateVector<STATE_DIM>& x0)
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0)
 {
 	if (x_.size() == 0)
 		x_.resize(1);
@@ -318,7 +318,7 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 const typename iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::Policy_t& iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::getSolution()
 {
-	core::TimeArray t_temp = t_;
+	TimeArray t_temp = t_;
 	t_temp.pop_back();
 
 	policy_.update(u_ff_, L_, t_temp);
@@ -341,7 +341,7 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::rolloutSystem (
 		const ControlVectorArray& u_ff_local,
 		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
-		ct::core::TimeArray& t_local,
+		ct::core::tpl::TimeArray<SCALAR>& t_local,
 		std::atomic_bool* terminationFlag) const
 {
 	const scalar_t& dt = settings_.dt;
@@ -596,7 +596,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchSingleController(
 		ControlVectorArray& u_ff_local,
 		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
-		ct::core::TimeArray& t_local,
+		ct::core::tpl::TimeArray<SCALAR>& t_local,
 		scalar_t& intermediateCost,
 		scalar_t& finalCost,
 		std::atomic_bool* terminationFlag
@@ -906,18 +906,18 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-const core::ControlTrajectory<CONTROL_DIM> iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::getControlTrajectory() const
+const core::ControlTrajectory<CONTROL_DIM, SCALAR> iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::getControlTrajectory() const
 {
 	// TODO this method currently copies the time array (suboptimal)
 
-	core::TimeArray t_control = t_;
+	core::tpl::TimeArray<SCALAR> t_control = t_;
 	t_control.pop_back();
 
-	return core::ControlTrajectory<CONTROL_DIM> (t_control, u_);
+	return core::ControlTrajectory<CONTROL_DIM, SCALAR> (t_control, u_);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-double iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::getCost() const
+SCALAR iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::getCost() const
 {
 	return lowestCost_;
 }
