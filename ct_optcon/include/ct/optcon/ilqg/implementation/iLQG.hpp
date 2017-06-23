@@ -24,14 +24,14 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQG<STATE_DIM, CONTROL_DIM>::createLQProblem()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::createLQProblem()
 {
 	this->sequentialLQProblem();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQG<STATE_DIM, CONTROL_DIM>::backwardPass()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
 {
 	// step 3
 	// initialize cost to go (described in step 3)
@@ -47,8 +47,8 @@ void iLQG<STATE_DIM, CONTROL_DIM>::backwardPass()
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQG<STATE_DIM, CONTROL_DIM>::computeLinearizedDynamicsAroundTrajectory()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory()
 {
 	for (size_t k=0; k<this->K_; k++)
 	{
@@ -59,8 +59,8 @@ void iLQG<STATE_DIM, CONTROL_DIM>::computeLinearizedDynamicsAroundTrajectory()
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQG<STATE_DIM, CONTROL_DIM>::computeQuadraticCostsAroundTrajectory()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory()
 {
 	for (size_t k=0; k<this->K_; k++)
 	{
@@ -71,8 +71,8 @@ void iLQG<STATE_DIM, CONTROL_DIM>::computeQuadraticCostsAroundTrajectory()
 
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-double iLQG<STATE_DIM, CONTROL_DIM>::performLineSearch()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+SCALAR iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::performLineSearch()
 {
 #ifdef DEBUG_PRINT_LINESEARCH
 	std::cout<<"Starting line search."<<std::endl;
@@ -100,8 +100,8 @@ double iLQG<STATE_DIM, CONTROL_DIM>::performLineSearch()
 		}
 
 
-		ct::core::StateVectorArray<STATE_DIM> x_search(this->K_+1);
-		ct::core::ControlVectorArray<CONTROL_DIM> u_search(this->K_);
+		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_search(this->K_+1);
+		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_search(this->K_);
 		ct::core::TimeArray t_search(this->K_+1);
 		x_search[0] = this->x_[0];
 

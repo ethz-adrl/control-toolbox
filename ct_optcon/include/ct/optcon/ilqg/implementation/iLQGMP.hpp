@@ -28,8 +28,8 @@ namespace ct {
 namespace optcon {
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-iLQGMP<STATE_DIM, CONTROL_DIM>::~iLQGMP()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::~iLQGMP()
 {
 	workersActive_ = false;
 	workerTask_ = SHUTDOWN;
@@ -50,8 +50,8 @@ iLQGMP<STATE_DIM, CONTROL_DIM>::~iLQGMP()
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGMP<STATE_DIM, CONTROL_DIM>::threadWork(size_t threadId)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::threadWork(size_t threadId)
 {
 #ifdef DEBUG_PRINT_MP
 	std::cout<<"[Thread "<<threadId<<"]: launched"<<std::endl;
@@ -155,8 +155,8 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::threadWork(size_t threadId)
 	}
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGMP<STATE_DIM, CONTROL_DIM>::launchWorkerThreads()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::launchWorkerThreads()
 {
 	workersActive_ = true;
 	workerTask_ = IDLE;
@@ -167,8 +167,8 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::launchWorkerThreads()
 	}
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGMP<STATE_DIM, CONTROL_DIM>::createLQProblem()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::createLQProblem()
 {
 	if (this->settings_.parallelBackward.enabled)
 		parallelLQProblem();
@@ -176,8 +176,8 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::createLQProblem()
 		this->sequentialLQProblem();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGMP<STATE_DIM, CONTROL_DIM>::parallelLQProblem()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::parallelLQProblem()
 {
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
 
@@ -192,8 +192,8 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::parallelLQProblem()
 	workerWakeUpCondition_.notify_all();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGMP<STATE_DIM, CONTROL_DIM>::backwardPass()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
 {
 	// step 3
 	// initialize cost to go (described in step 3)
@@ -241,8 +241,8 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::backwardPass()
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-double iLQGMP<STATE_DIM, CONTROL_DIM>::performLineSearch()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+SCALAR iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::performLineSearch()
 {
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
 
@@ -281,8 +281,8 @@ double iLQGMP<STATE_DIM, CONTROL_DIM>::performLineSearch()
 } // end linesearch
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGMP<STATE_DIM, CONTROL_DIM>::lineSearchWorker(size_t threadId)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchWorker(size_t threadId)
 {
 	while(true)
 	{
@@ -305,13 +305,13 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::lineSearchWorker(size_t threadId)
 
 		x_local[0] = this->x_[0];
 
-		double intermediateCost;
-		double finalCost;
+		SCALAR intermediateCost;
+		SCALAR finalCost;
 
 		typename Base::ControlVectorArray u_ff_local(this->K_);
 		this->lineSearchSingleController(threadId, alpha, u_ff_local, x_local, u_local, t_local, intermediateCost, finalCost, &alphaBestFound_);
 
-		double cost = intermediateCost + finalCost;
+		SCALAR cost = intermediateCost + finalCost;
 
 		lineSearchResultMutex_.lock();
 		if (cost < this->lowestCost_)
@@ -367,8 +367,8 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::lineSearchWorker(size_t threadId)
 
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGMP<STATE_DIM, CONTROL_DIM>::computeLinearizedDynamicsAroundTrajectory()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory()
 {
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
 
@@ -395,8 +395,8 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::computeLinearizedDynamicsAroundTrajectory()
 #endif //DEBUG_PRINT_MP
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGMP<STATE_DIM, CONTROL_DIM>::computeLinearizedDynamicsWorker(size_t threadId)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamicsWorker(size_t threadId)
 {
 	while(true)
 	{
@@ -423,8 +423,8 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::computeLinearizedDynamicsWorker(size_t thre
 
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGMP<STATE_DIM, CONTROL_DIM>::computeQuadraticCostsAroundTrajectory()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory()
 {
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
 
@@ -451,8 +451,8 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::computeQuadraticCostsAroundTrajectory()
 #endif //DEBUG_PRINT_MP
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGMP<STATE_DIM, CONTROL_DIM>::computeQuadraticCostsWorker(size_t threadId)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::computeQuadraticCostsWorker(size_t threadId)
 {
 	while(true)
 	{
@@ -479,8 +479,8 @@ void iLQGMP<STATE_DIM, CONTROL_DIM>::computeQuadraticCostsWorker(size_t threadId
 
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGMP<STATE_DIM, CONTROL_DIM>::computeLQProblemWorker(size_t threadId)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::computeLQProblemWorker(size_t threadId)
 {
 	while(true)
 	{

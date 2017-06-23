@@ -51,14 +51,14 @@ namespace optcon{
  * Proceedings of the American Control Conference, 2005, pp.300-306
  *
 */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class iLQG : public iLQGBase<STATE_DIM, CONTROL_DIM> {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class iLQG : public iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR> {
 
 public:
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef iLQGBase<STATE_DIM, CONTROL_DIM> Base;
+	typedef iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
 	typedef typename Base::Policy_t Policy_t;
 	typedef typename Base::Settings_t Settings_t;
@@ -96,7 +96,7 @@ private:
 
 	void computeLinearizedDynamicsAroundTrajectory() override;
 
-	double performLineSearch() override;
+	SCALAR performLineSearch() override;
 
 };
 
