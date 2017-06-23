@@ -154,7 +154,7 @@ public:
 		if(verbose){
 			std::string name;
 			constraint->getName(name);
-			std::cout<<"''" << name << "'' added as Analytical state input constraint ";
+			std::cout<<"''" << name << "'' added as AD intermediate constraint " << std::endl;
 		}
 
 		fIntermediate_ = [&] (const Eigen::Matrix<Scalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
@@ -172,7 +172,7 @@ public:
 		if(verbose){
 			std::string name;
 			constraint->getName(name);
-			std::cout<<"''" << name << "'' added as Analytical state input constraint ";
+			std::cout<<"''" << name << "'' added as AD terminal constraint " << std::endl;
 		}
 
 		fTerminal_ = [&] (const Eigen::Matrix<Scalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
@@ -189,8 +189,10 @@ public:
 	 */
 	virtual void initialize() override
 	{
-		initializeIntermediate();
-		initializeTerminal();
+		if(constraintsIntermediate_.size() > 0)
+			initializeIntermediate();
+		if(constraintsTerminal_.size() > 0)
+			initializeTerminal();
 	}
 
 
@@ -393,7 +395,7 @@ private:
 
 		for(auto constraint : constraintsIntermediate_)
 		{
-			size_t constraint_dim = constraint->getIntermediateConstraintsCount();
+			size_t constraint_dim = constraint->getConstraintSize();
 			gLocal.conservativeResize(count + constraint_dim);
 			gLocal.segment(count, constraint_dim) = constraint->evaluate(stateinput.segment(0,STATE_DIM), stateinput.segment(STATE_DIM, CONTROL_DIM), Scalar(0.0));
 			count += constraint_dim;
@@ -408,7 +410,7 @@ private:
 
 		for(auto constraint : constraintsTerminal_)
 		{
-			size_t constraint_dim = constraint->getTerminalConstraintsCount();
+			size_t constraint_dim = constraint->getConstraintSize();
 			gLocal.conservativeResize(count + constraint_dim);
 			gLocal.segment(count, constraint_dim) = constraint->evaluate(stateinput.segment(0,STATE_DIM), stateinput.segment(STATE_DIM, CONTROL_DIM), Scalar(0.0));
 			count += constraint_dim;
@@ -435,6 +437,19 @@ private:
 		sparsityStateIntermediateCols_.resize(nonZerosState);
 		sparsityInputIntermediateRows_.resize(nonZerosInput);
 		sparsityInputIntermediateCols_.resize(nonZerosInput);
+
+		size_t count = 0;
+
+		this->lowerBoundsIntermediate_.resize(getIntermediateConstraintsCount());
+		this->upperBoundsIntermediate_.resize(getIntermediateConstraintsCount());
+
+		for(auto constraint : constraintsIntermediate_)
+		{
+			size_t constraintSize = constraint->getConstraintSize();
+			this->lowerBoundsIntermediate_.segment(count, constraintSize) = constraint->getLowerBound();
+			this->upperBoundsIntermediate_.segment(count, constraintSize) = constraint->getUpperBound();
+			count += constraintSize;
+		}
 
 		size_t stateIndex = 0;
 		size_t inputIndex = 0;
@@ -477,6 +492,19 @@ private:
 		sparsityStateTerminalCols_.resize(nonZerosState);
 		sparsityInputTerminalRows_.resize(nonZerosInput);
 		sparsityInputTerminalCols_.resize(nonZerosInput);
+
+		size_t count = 0;
+
+		this->lowerBoundsTerminal_.resize(getTerminalConstraintsCount());
+		this->upperBoundsTerminal_.resize(getTerminalConstraintsCount());
+
+		for(auto constraint : constraintsTerminal_)
+		{
+			size_t constraintSize = constraint->getConstraintSize();
+			this->lowerBoundsTerminal_.segment(count, constraintSize) = constraint->getLowerBound();
+			this->upperBoundsTerminal_.segment(count, constraintSize) = constraint->getUpperBound();
+			count += constraintSize;
+		}
 
 		size_t stateIndex = 0;
 		size_t inputIndex = 0;

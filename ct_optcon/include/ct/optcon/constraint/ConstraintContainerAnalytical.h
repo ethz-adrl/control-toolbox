@@ -122,7 +122,7 @@ public:
 		if(verbose){
 			std::string name;
 			constraint->getName(name);
-			std::cout<<"''" << name << "'' added as Analytical state input constraint ";
+			std::cout<<"''" << name << "'' added as Analytical intermediate constraint " << std::endl;
 		}
 		initializedIntermediate_ = false;
 	}
@@ -133,7 +133,7 @@ public:
 		if(verbose){
 			std::string name;
 			constraint->getName(name);
-			std::cout<<"''" << name << "'' added as Analytical state input constraint ";
+			std::cout<<"''" << name << "'' added as Analytical terminal constraint " << std::endl;
 		}
 		initializedTerminal_ = false;
 	}
@@ -149,8 +149,10 @@ public:
 
 	virtual void initialize() override
 	{
-		initializeIntermediate();
-		initializeTerminal();
+		if(constraintsIntermediate_.size() > 0)
+			initializeIntermediate();
+		if(constraintsTerminal_.size() > 0)
+			initializeTerminal();
 	}
 
 	virtual Eigen::VectorXd evaluateIntermediate() override
@@ -162,7 +164,7 @@ public:
 		for(auto constraint : constraintsIntermediate_)
 		{
 			size_t constraint_dim = constraint->getConstraintSize();
-			evalIntermediate_.segment(count, constraint_dim) = constraint->eval();
+			evalIntermediate_.segment(count, constraint_dim) = constraint->eval(this->x_, this->u_, this->t_);
 			count += constraint_dim;
 		}
 		return evalIntermediate_;		
@@ -177,7 +179,7 @@ public:
 		for(auto constraint : constraintsTerminal_)
 		{
 			size_t constraint_dim = constraint->getConstraintSize();
-			evalTerminal_.segment(count, constraint_dim) = constraint->eval();
+			evalTerminal_.segment(count, constraint_dim) = constraint->eval(this->x_, this->u_, this->t_);
 			count += constraint_dim;
 		}
 		return evalTerminal_;		
@@ -214,7 +216,7 @@ public:
 
 			if(nonZerosState != 0)
 			{
-				evalJacSparseStateIntermediate_.segment(count, nonZerosState) = constraint->jacobianStateSparse();
+				evalJacSparseStateIntermediate_.segment(count, nonZerosState) = constraint->jacobianStateSparse(this->x_, this->u_, this->t_);
 				count += nonZerosState;
 			}
 
@@ -232,7 +234,7 @@ public:
 		for(auto constraint : constraintsIntermediate_)
 		{
 			size_t constraint_dim = constraint->getConstraintSize();
-			evalJacDenseStateIntermediate_.block(count, 0, constraint_dim, STATE_DIM) = constraint->jacobianState();
+			evalJacDenseStateIntermediate_.block(count, 0, constraint_dim, STATE_DIM) = constraint->jacobianState(this->x_, this->u_, this->t_);
 			count += constraint_dim;
 		}
 
@@ -251,7 +253,7 @@ public:
 
 			if(nonZerosState != 0)
 			{
-				evalJacSparseStateTerminal_.segment(count, nonZerosState) = constraint->jacobianStateSparse();
+				evalJacSparseStateTerminal_.segment(count, nonZerosState) = constraint->jacobianStateSparse(this->x_, this->u_, this->t_);
 				count += nonZerosState;
 			}
 
@@ -269,7 +271,7 @@ public:
 		for(auto constraint : constraintsTerminal_)
 		{
 			size_t constraint_dim = constraint->getConstraintSize();
-			evalJacDenseStateTerminal_.block(count, 0, constraint_dim, STATE_DIM) = constraint->jacobianState();
+			evalJacDenseStateTerminal_.block(count, 0, constraint_dim, STATE_DIM) = constraint->jacobianState(this->x_, this->u_, this->t_);
 			count += constraint_dim;
 		}
 
@@ -288,7 +290,7 @@ public:
 
 			if(nonZerosInput != 0)
 			{
-				evalJacSparseInputIntermediate_.segment(count, nonZerosInput) = constraint->jacobianInputSparse();
+				evalJacSparseInputIntermediate_.segment(count, nonZerosInput) = constraint->jacobianInputSparse(this->x_, this->u_, this->t_);
 				count += nonZerosInput;				
 			}
 		}
@@ -304,7 +306,7 @@ public:
 		for(auto constraint : constraintsIntermediate_)
 		{
 			size_t constraint_dim = constraint->getConstraintSize();
-			evalJacDenseInputIntermediate_.block(count, 0, constraint_dim, CONTROL_DIM) = constraint->jacobianInput();
+			evalJacDenseInputIntermediate_.block(count, 0, constraint_dim, CONTROL_DIM) = constraint->jacobianInput(this->x_, this->u_, this->t_);
 			count += constraint_dim;			
 		}
 
@@ -323,7 +325,7 @@ public:
 
 			if(nonZerosInput != 0)
 			{
-				evalJacSparseInputTerminal_.segment(count, nonZerosInput) = constraint->jacobianInputSparse();
+				evalJacSparseInputTerminal_.segment(count, nonZerosInput) = constraint->jacobianInputSparse(this->x_, this->u_, this->t_);
 				count += nonZerosInput;				
 			}
 		}
@@ -339,7 +341,7 @@ public:
 		for(auto constraint : constraintsTerminal_)
 		{
 			size_t constraint_dim = constraint->getConstraintSize();
-			evalJacDenseInputTerminal_.block(count, 0, constraint_dim, CONTROL_DIM) = constraint->jacobianInput();
+			evalJacDenseInputTerminal_.block(count, 0, constraint_dim, CONTROL_DIM) = constraint->jacobianInput(this->x_, this->u_, this->t_);
 			count += constraint_dim;			
 		}
 
@@ -468,8 +470,8 @@ public:
 
 	virtual size_t getJacobianStateNonZeroCountIntermediate() override
 	{
-		if(!initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+		// if(!initializedIntermediate_)
+		// 	throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		size_t count = 0;
 		for(auto constraint : constraintsIntermediate_)
@@ -480,8 +482,8 @@ public:
 
 	virtual size_t getJacobianStateNonZeroCountTerminal() override
 	{
-		if(!initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+		// if(!initializedTerminal_)
+		// 	throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		size_t count = 0;
 		for(auto constraint : constraintsTerminal_)
@@ -492,8 +494,8 @@ public:
 
 	virtual size_t getJacobianInputNonZeroCountIntermediate() override
 	{
-		if(!initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");	
+		// if(!initializedIntermediate_)
+		// 	throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");	
 
 		size_t count = 0;
 		for(auto constraint : constraintsIntermediate_)
@@ -504,8 +506,8 @@ public:
 
 	virtual size_t getJacobianInputNonZeroCountTerminal() override
 	{
-		if(!initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");	
+		// if(!initializedTerminal_)
+		// 	throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");	
 
 		size_t count = 0;
 		for(auto constraint : constraintsTerminal_)
@@ -519,12 +521,25 @@ private:
 	virtual void update() override {}
 
 	void initializeIntermediate()
-	{	
+	{
 		evalIntermediate_.resize(getIntermediateConstraintsCount());
 		evalJacSparseStateIntermediate_.resize(getJacobianStateNonZeroCountIntermediate());
 		evalJacSparseInputIntermediate_.resize(getJacobianInputNonZeroCountIntermediate());
 		evalJacDenseStateIntermediate_.resize(getIntermediateConstraintsCount(), STATE_DIM);
 		evalJacDenseInputIntermediate_.resize(getIntermediateConstraintsCount(), CONTROL_DIM);
+
+		size_t count = 0;
+
+		this->lowerBoundsIntermediate_.resize(getIntermediateConstraintsCount());
+		this->upperBoundsIntermediate_.resize(getIntermediateConstraintsCount());
+
+		for(auto constraint : constraintsIntermediate_)
+		{
+			size_t constraintSize = constraint->getConstraintSize();
+			this->lowerBoundsIntermediate_.segment(count, constraintSize) = constraint->getLowerBound();
+			this->upperBoundsIntermediate_.segment(count, constraintSize) = constraint->getUpperBound();
+			count += constraintSize;
+		}
 
 		initializedIntermediate_ = true;
 	}
@@ -536,6 +551,19 @@ private:
 		evalJacSparseInputTerminal_.resize(getJacobianInputNonZeroCountTerminal());
 		evalJacDenseStateTerminal_.resize(getTerminalConstraintsCount(), STATE_DIM);
 		evalJacDenseInputTerminal_.resize(getTerminalConstraintsCount(), CONTROL_DIM);
+
+		size_t count = 0;
+
+		this->lowerBoundsTerminal_.resize(getTerminalConstraintsCount());
+		this->upperBoundsTerminal_.resize(getTerminalConstraintsCount());
+
+		for(auto constraint : constraintsTerminal_)
+		{
+			size_t constraintSize = constraint->getConstraintSize();
+			this->lowerBoundsTerminal_.segment(count, constraintSize) = constraint->getLowerBound();
+			this->upperBoundsTerminal_.segment(count, constraintSize) = constraint->getUpperBound();
+			count += constraintSize;
+		}
 
 		initializedTerminal_ = true;
 	}
@@ -549,14 +577,14 @@ private:
 	Eigen::VectorXd evalIntermediate_;
 	Eigen::VectorXd evalJacSparseStateIntermediate_;
 	Eigen::VectorXd evalJacSparseInputIntermediate_;
-	Eigen::VectorXd evalJacDenseStateIntermediate_;
-	Eigen::VectorXd evalJacDenseInputIntermediate_;
+	Eigen::MatrixXd evalJacDenseStateIntermediate_;
+	Eigen::MatrixXd evalJacDenseInputIntermediate_;
 
 	Eigen::VectorXd evalTerminal_;
 	Eigen::VectorXd evalJacSparseStateTerminal_;
 	Eigen::VectorXd evalJacSparseInputTerminal_;
-	Eigen::VectorXd evalJacDenseStateTerminal_;
-	Eigen::VectorXd evalJacDenseInputTerminal_;
+	Eigen::MatrixXd evalJacDenseStateTerminal_;
+	Eigen::MatrixXd evalJacDenseInputTerminal_;
 
 };
 

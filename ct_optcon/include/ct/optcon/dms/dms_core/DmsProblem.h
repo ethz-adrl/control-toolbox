@@ -132,7 +132,7 @@ public:
 			
 		if(stateInputConstraints.size() > 0 || pureStateConstraints.size() > 0)
 			discretizedConstraints_ = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> (
-				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM> (optVariablesDms_, controlSpliner_, timeGrid_));
+				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM> (optVariablesDms_, controlSpliner_, timeGrid_, settings_.N_));
 
 		if(stateInputConstraints.size() > 0)
 			discretizedConstraints_->setStateInputConstraints(stateInputConstraints.front());
@@ -189,7 +189,7 @@ public:
 		optVariables_ = optVariablesDms_;
 
 		constraints_ = std::shared_ptr<ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>> (
-			new ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>(optVariablesDms_, timeGrid_, shotContainers_, stateInputConstraintsLocal_, pureStateConstraintsLocal_, x0, settings_));
+			new ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>(optVariablesDms_, timeGrid_, shotContainers_, discretizedConstraints_, x0, settings_));
 
 		optVariables_->resizeConstraintVars(getConstraintsCount());
 	}

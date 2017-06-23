@@ -85,9 +85,9 @@ public:
 		u_(arg.u_),
 		t_(arg.t_),
 		lowerBoundsIntermediate_(arg.lowerBoundsIntermediate_),
-		lowerBoundsFinal_(arg.lowerBoundsFinal_),
+		lowerBoundsTerminal_(arg.lowerBoundsTerminal_),
 		upperBoundsIntermediate_(arg.upperBoundsIntermediate_),
-		upperBoundsFinal_(arg.upperBoundsFinal_)
+		upperBoundsTerminal_(arg.upperBoundsTerminal_)
 	{}
 
 	/**
@@ -140,7 +140,7 @@ public:
 
 	Eigen::VectorXd getLowerBoundsTerminal() const
 	{
-		return lowerBoundsFinal_;
+		return lowerBoundsTerminal_;
 	}
 
 
@@ -151,7 +151,7 @@ public:
 
 	Eigen::VectorXd getUpperBoundsTerminal() const
 	{	
-		return upperBoundsFinal_;
+		return upperBoundsTerminal_;
 	}
 
 
@@ -163,9 +163,9 @@ protected:
 	double t_;			    /** time */
 
 	Eigen::VectorXd lowerBoundsIntermediate_;
-	Eigen::VectorXd lowerBoundsFinal_;
+	Eigen::VectorXd lowerBoundsTerminal_;
 	Eigen::VectorXd upperBoundsIntermediate_;
-	Eigen::VectorXd upperBoundsFinal_;
+	Eigen::VectorXd upperBoundsTerminal_;
 };
 
 

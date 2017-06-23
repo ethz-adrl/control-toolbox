@@ -260,37 +260,37 @@ public:
 		size_t discreteInd = 0;
 		size_t nnEle = 0;
 		
-		Eigen::VectorXd iRowStateIntermediate(stateInputConstraints_->getJacobianStateNonZeroCountIntermediate());
-		Eigen::VectorXd jColStateIntermediate(stateInputConstraints_->getJacobianStateNonZeroCountIntermediate());
-		Eigen::VectorXd iRowInputIntermediate(stateInputConstraints_->getJacobianInputNonZeroCountIntermediate());
-		Eigen::VectorXd jColInputIntermediate(stateInputConstraints_->getJacobianInputNonZeroCountIntermediate()); 
-		Eigen::VectorXd iRowStateIntermediate2(pureStateConstraints_->getJacobianStateNonZeroCountIntermediate());
-		Eigen::VectorXd jColStateIntermediate2(pureStateConstraints_->getJacobianStateNonZeroCountIntermediate());
-		Eigen::VectorXd iRowInputIntermediate2(pureStateConstraints_->getJacobianInputNonZeroCountIntermediate());
-		Eigen::VectorXd jColInputIntermediate2(pureStateConstraints_->getJacobianInputNonZeroCountIntermediate());
+		Eigen::VectorXi iRowStateIntermediate(stateInputConstraints_->getJacobianStateNonZeroCountIntermediate());
+		Eigen::VectorXi jColStateIntermediate(stateInputConstraints_->getJacobianStateNonZeroCountIntermediate());
+		Eigen::VectorXi iRowInputIntermediate(stateInputConstraints_->getJacobianInputNonZeroCountIntermediate());
+		Eigen::VectorXi jColInputIntermediate(stateInputConstraints_->getJacobianInputNonZeroCountIntermediate()); 
+		Eigen::VectorXi iRowStateIntermediate2(pureStateConstraints_->getJacobianStateNonZeroCountIntermediate());
+		Eigen::VectorXi jColStateIntermediate2(pureStateConstraints_->getJacobianStateNonZeroCountIntermediate());
+		Eigen::VectorXi iRowInputIntermediate2(pureStateConstraints_->getJacobianInputNonZeroCountIntermediate());
+		Eigen::VectorXi jColInputIntermediate2(pureStateConstraints_->getJacobianInputNonZeroCountIntermediate());
 
 		for(size_t n = 0; n < N_ + 1; ++n)
 		{
 			nnEle = stateInputConstraints_->getJacobianStateNonZeroCountIntermediate();
-			stateInputConstraints_->sparsityPatternStateIntermediate();
+			stateInputConstraints_->sparsityPatternStateIntermediate(iRowStateIntermediate, jColStateIntermediate);
 			discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate.array() + discreteInd;
 			discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate.array() + w_->getStateIndex(n);
 			discreteInd += nnEle;
 
 			nnEle = stateInputConstraints_->getJacobianInputNonZeroCountIntermediate();
-			stateInputConstraints_->sparsityPatternInputIntermediate();
+			stateInputConstraints_->sparsityPatternInputIntermediate(iRowInputIntermediate, jColInputIntermediate);
 			discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate.array() + discreteInd;
 			discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate.array() + w_->getControlIndex(n);
 			discreteInd += nnEle;
 
 			nnEle = pureStateConstraints_->getJacobianStateNonZeroCountIntermediate();
-			pureStateConstraints_->sparsityPatternStateIntermediate();
+			pureStateConstraints_->sparsityPatternStateIntermediate(iRowStateIntermediate2, jColStateIntermediate2);
 			discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate2.array() + discreteInd;
 			discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate2.array() + w_->getStateIndex(n);
 			discreteInd += nnEle;
 
 			nnEle = pureStateConstraints_->getJacobianInputNonZeroCountIntermediate();
-			pureStateConstraints_->sparsityPatternInputIntermediate();
+			pureStateConstraints_->sparsityPatternInputIntermediate(iRowInputIntermediate2, jColInputIntermediate2);
 			discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate2.array() + discreteInd;
 			discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate2.array() + w_->getControlIndex(n);
 			discreteInd += nnEle;	
@@ -306,25 +306,25 @@ public:
 		jColInputIntermediate2.resize(pureStateConstraints_->getJacobianInputNonZeroCountIntermediate());		
 
 		nnEle = stateInputConstraints_->getJacobianStateNonZeroCountTerminal();
-		stateInputConstraints_->sparsityPatternStateTerminal();
+		stateInputConstraints_->sparsityPatternStateTerminal(iRowStateIntermediate, jColStateIntermediate);
 		discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate.array() + discreteInd;
 		discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate.array() + w_->getStateIndex(N_);
 		discreteInd += nnEle;
 
 		nnEle = stateInputConstraints_->getJacobianInputNonZeroCountTerminal();
-		stateInputConstraints_->sparsityPatternInputTerminal();
+		stateInputConstraints_->sparsityPatternInputTerminal(iRowInputIntermediate, jColInputIntermediate);
 		discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate.array() + discreteInd;
 		discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate.array() + w_->getControlIndex(N_);
 		discreteInd += nnEle;
 
 		nnEle = pureStateConstraints_->getJacobianStateNonZeroCountTerminal();
-		pureStateConstraints_->sparsityPatternStateTerminal();
+		pureStateConstraints_->sparsityPatternStateTerminal(iRowStateIntermediate2, jColStateIntermediate2);
 		discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate2.array() + discreteInd;
 		discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate2.array() + w_->getStateIndex(N_);
 		discreteInd += nnEle;
 
 		nnEle = pureStateConstraints_->getJacobianInputNonZeroCountTerminal();
-		pureStateConstraints_->sparsityPatternInputTerminal();
+		pureStateConstraints_->sparsityPatternInputTerminal(iRowInputIntermediate2, jColInputIntermediate2);
 		discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate2.array() + discreteInd;
 		discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate2.array() + w_->getControlIndex(N_);
 		discreteInd += nnEle;	
@@ -341,19 +341,19 @@ public:
 
 		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			constraintSize = stateInputConstraints_.getIntermediateConstraintsCount();
+			constraintSize = stateInputConstraints_->getIntermediateConstraintsCount();
 			discreteLowerBound_.segment(discreteInd, constraintSize) = stateInputConstraints_->getLowerBoundsIntermediate();
 			discreteInd += constraintSize;
-			constraintSize = pureStateConstraints_.getIntermediateConstraintsCount();
+			constraintSize = pureStateConstraints_->getIntermediateConstraintsCount();
 			discreteLowerBound_.segment(discreteInd, constraintSize) = pureStateConstraints_->getLowerBoundsIntermediate();
 			discreteInd += constraintSize;
 		}
 
-		constraintSize = stateInputConstraints_.getTerminalConstraintsCount();
+		constraintSize = stateInputConstraints_->getTerminalConstraintsCount();
 		discreteLowerBound_.segment(discreteInd, constraintSize) = stateInputConstraints_->getLowerBoundsTerminal();
 		discreteInd += constraintSize;
 
-		constraintSize = pureStateConstraints_.getTerminalConstraintsCount();
+		constraintSize = pureStateConstraints_->getTerminalConstraintsCount();
 		discreteLowerBound_.segment(discreteInd, constraintSize) = pureStateConstraints_->getLowerBoundsTerminal();
 		discreteInd += constraintSize;
 
@@ -368,19 +368,19 @@ public:
 
 		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			constraintSize = stateInputConstraints_.getIntermediateConstraintsCount();
+			constraintSize = stateInputConstraints_->getIntermediateConstraintsCount();
 			discreteUpperBound_.segment(discreteInd, constraintSize) = stateInputConstraints_->getUpperBoundsIntermediate();
 			discreteInd += constraintSize;
-			constraintSize = pureStateConstraints_.getIntermediateConstraintsCount();
+			constraintSize = pureStateConstraints_->getIntermediateConstraintsCount();
 			discreteUpperBound_.segment(discreteInd, constraintSize) = pureStateConstraints_->getUpperBoundsIntermediate();
 			discreteInd += constraintSize;
 		}
 
-		constraintSize = stateInputConstraints_.getTerminalConstraintsCount();
+		constraintSize = stateInputConstraints_->getTerminalConstraintsCount();
 		discreteUpperBound_.segment(discreteInd, constraintSize) = stateInputConstraints_->getUpperBoundsTerminal();
 		discreteInd += constraintSize;
 
-		constraintSize = pureStateConstraints_.getTerminalConstraintsCount();
+		constraintSize = pureStateConstraints_->getTerminalConstraintsCount();
 		discreteUpperBound_.segment(discreteInd, constraintSize) = pureStateConstraints_->getUpperBoundsTerminal();
 		discreteInd += constraintSize;
 

@@ -88,12 +88,12 @@ public:
 		return x - xF_;
 	}
 
-	virtual Eigen::MatrixXd jacobianState() override
+	virtual Eigen::MatrixXd jacobianState(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override
 	{
 		return Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Identity();
 	}
 
-	virtual Eigen::MatrixXd jacobianInput() override
+	virtual Eigen::MatrixXd jacobianInput(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override
 	{
 		return Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM>::Zero();
 	}
@@ -107,7 +107,7 @@ public:
 		return 0;
 	}
 
-	virtual Eigen::VectorXd jacobianStateSparse() override
+	virtual Eigen::VectorXd jacobianStateSparse(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override
 	{
 		return core::StateVector<STATE_DIM>::Ones();
 	}

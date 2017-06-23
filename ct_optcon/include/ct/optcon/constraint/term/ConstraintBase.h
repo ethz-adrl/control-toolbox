@@ -123,7 +123,7 @@ public:
 	 *
 	 * @return     The constraint jacobian
 	 */
-	virtual Eigen::MatrixXd jacobianState() 
+	virtual Eigen::MatrixXd jacobianState(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) 
 	{ 
 		throw std::runtime_error("This constraint function element is not implemented for the given term."
 		"Please use either auto-diff cost function or implement the analytical derivatives manually."); 
@@ -134,7 +134,7 @@ public:
 	 *
 	 * @return     The constraint jacobian
 	 */
-	virtual Eigen::MatrixXd jacobianInput() 
+	virtual Eigen::MatrixXd jacobianInput(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) 
 	{ 
 		throw std::runtime_error("This constraint function element is not implemented for the given term." 
 		"Please use either auto-diff cost function or implement the analytical derivatives manually."); 
@@ -205,9 +205,12 @@ public:
 	 *
 	 * @return     The sparse constraint jacobian
 	 */
-	virtual Eigen::VectorXd jacobianStateSparse()
+	virtual Eigen::VectorXd jacobianStateSparse(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t)
 	{
-		Eigen::VectorXd jac(Eigen::Map<Eigen::VectorXd>(jacobianState().data(), jacobianState().rows() * jacobianState().cols()));
+		Eigen::MatrixXd jacState = jacobianState(x, u, t);
+
+		Eigen::VectorXd jac(Eigen::Map<Eigen::VectorXd>(jacState.data(), jacState.rows() * jacState.cols()));
+
 		return jac;
 	}
 
@@ -218,9 +221,11 @@ public:
 	 *
 	 * @return     The sparse constraint jacobian
 	 */
-	virtual Eigen::VectorXd jacobianInputSparse()
+	virtual Eigen::VectorXd jacobianInputSparse(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t)
 	{
-		Eigen::VectorXd jac(Eigen::Map<Eigen::VectorXd>(jacobianInput().data(), jacobianInput().rows() * jacobianInput().cols()));
+		Eigen::MatrixXd jacInput = jacobianInput(x, u, t);
+
+		Eigen::VectorXd jac(Eigen::Map<Eigen::VectorXd>(jacInput.data(), jacInput.rows() * jacInput.cols()));
 		return jac;
 	}
 
