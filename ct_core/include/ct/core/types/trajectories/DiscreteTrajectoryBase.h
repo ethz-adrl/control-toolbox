@@ -91,7 +91,7 @@ public:
 			data_(data),
 			interp_(type)
 	{
-		time_ = TimeArray(deltaT, data.size()+1, t0);
+		time_ = TimeArray(deltaT, data.size(), t0);
 	}
 
 	//! copy constructor
