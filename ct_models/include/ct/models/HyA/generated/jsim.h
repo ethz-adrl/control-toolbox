@@ -21,7 +21,7 @@ namespace tpl{
  * The type of the Joint Space Inertia Matrix (JSIM) of the robot ct_HyA.
  */
 template <class TRAIT>
-class JSIM : public iit::rbd::StateDependentMatrix<iit::ct_HyA::JointState, 6, 6, JSIM<TRAIT>>
+class JSIM : public iit::rbd::StateDependentMatrix<iit::ct_HyA::tpl::JointState<typename TRAIT::Scalar>, 6, 6, JSIM<TRAIT>>
 {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -34,12 +34,14 @@ class JSIM : public iit::rbd::StateDependentMatrix<iit::ct_HyA::JointState, 6, 6
         typedef InertiaProperties<TRAIT> IProperties;
         typedef iit::ct_HyA::tpl::ForceTransforms<TRAIT> FTransforms;
         typedef iit::rbd::tpl::InertiaMatrixDense<SCALAR> InertiaMatrix;
+        typedef iit::ct_HyA::tpl::JointState<SCALAR> JointState;
+        typedef typename iit::rbd::Core<SCALAR>::ForceVector ForceVector;
 
     public:
         JSIM(IProperties&, FTransforms&);
         ~JSIM() {}
 
-        const JSIM& update(const iit::ct_HyA::JointState&);
+        const JSIM& update(const JointState&);
 
 
         /**
