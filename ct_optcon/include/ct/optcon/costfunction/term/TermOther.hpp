@@ -43,7 +43,7 @@ namespace optcon {
  * Probably this term is not very useful but we use it for testing
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
-class TermOther : public TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double> > {
+class TermOther : public TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>, double > {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -57,7 +57,7 @@ public:
 	TermOther() {}
 
 	TermOther(const TermOther& arg):
-		TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double> > (arg)
+		TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>, double > (arg)
 	{
 		a_ = arg.a_;
 		R_ = arg.R_;

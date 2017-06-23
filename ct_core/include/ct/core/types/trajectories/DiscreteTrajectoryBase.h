@@ -76,7 +76,6 @@ public:
 		data_(data),
 		interp_(type)
 	{
-		initialize();
 	}
 
 	//! constructor for uniformly spaced trajectories

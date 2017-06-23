@@ -139,7 +139,7 @@ public:
 	const DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>& uff() const { return uff_.getDataArray(); }
 
 	//! get feedback array (without timings
-	const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM>, SCALAR> & K() const { return K_.getDataArray(); }
+	const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>> & K() const { return K_.getDataArray(); }
 
 	//! get time array
 	const tpl::TimeArray<SCALAR>& time() const {return uff_.getTimeArray();}

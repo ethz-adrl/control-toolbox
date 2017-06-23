@@ -82,8 +82,8 @@ void loadMatrixCF(const std::string& filename, const std::string& matrixName, Ei
 	}
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename costFuncType>
-void addTerm (const std::string& filename, std::string& currentTerm, int currentTermType, std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, costFuncType *costFunc, bool verbose = false)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename TIME_SCALAR, typename costFuncType>
+void addTerm (const std::string& filename, std::string& currentTerm, int currentTermType, std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, TIME_SCALAR> > term, costFuncType *costFunc, bool verbose = false)
 {
 	switch (currentTermType){
 	case 0:

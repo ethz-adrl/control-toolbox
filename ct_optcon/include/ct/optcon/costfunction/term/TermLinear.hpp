@@ -42,8 +42,8 @@ namespace optcon {
  *
  * Probably this term is not very useful but we use it for testing
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class TermLinear : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR> {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double, typename TIME_SCALAR = double>
+class TermLinear : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR, TIME_SCALAR> {
 
 public:
 
@@ -57,8 +57,8 @@ public:
 
 	TermLinear(const TermLinear& arg);
 
-	TermLinear<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override{
-		return new TermLinear<STATE_DIM, CONTROL_DIM, SCALAR> (*this);
+	TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, TIME_SCALAR>* clone () const override{
+		return new TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, TIME_SCALAR> (*this);
 	}
 
 	~TermLinear();
