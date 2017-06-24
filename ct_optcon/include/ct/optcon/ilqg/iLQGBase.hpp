@@ -66,11 +66,18 @@ namespace optcon{
  *  American Control Conference, 2005. Proceedings of the 2005 , vol., no., pp.300,306 vol. 1, 8-10 June 2005
 */
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class iLQGBase : public OptConSolver<iLQGBase<STATE_DIM, CONTROL_DIM>, core::StateFeedbackController<STATE_DIM, CONTROL_DIM>, iLQGSettings,  STATE_DIM, CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class iLQGBase : public OptConSolver<
+		iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>,
+		core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>,
+		iLQGSettings,
+		STATE_DIM,
+		CONTROL_DIM,
+		SCALAR
+	>
 {
 	//! this is a tester class that tests iLQG and thus needs access to internal members
-	friend class iLQGTester<iLQGBase<STATE_DIM, CONTROL_DIM>>;
+	friend class iLQGTester<iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>>;
 
 public:
 
@@ -80,30 +87,30 @@ public:
 	static const size_t CONTROL_D = CONTROL_DIM;
 
 	typedef iLQGSettings Settings_t;
-	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM> Policy_t;
+	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 
-	typedef OptConSolver<iLQGBase, core::StateFeedbackController<STATE_DIM, CONTROL_DIM>, iLQGSettings, STATE_DIM, CONTROL_DIM> Base;
+	typedef OptConSolver<iLQGBase, Policy_t, iLQGSettings, STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
-	typedef ct::core::StateVectorArray<STATE_DIM> StateVectorArray;
-	typedef ct::core::ControlVectorArray<CONTROL_DIM> ControlVectorArray;
+	typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
+	typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
 
-	typedef ct::core::ControlMatrix<CONTROL_DIM> ControlMatrix;
-	typedef ct::core::ControlMatrixArray<CONTROL_DIM> ControlMatrixArray;
-	typedef ct::core::StateMatrixArray<STATE_DIM> StateMatrixArray;
-	typedef ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM> StateControlMatrixArray;
-	typedef ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> FeedbackArray;
-	typedef ct::core::TimeArray TimeArray;
+	typedef ct::core::ControlMatrix<CONTROL_DIM, SCALAR> ControlMatrix;
+	typedef ct::core::ControlMatrixArray<CONTROL_DIM, SCALAR> ControlMatrixArray;
+	typedef ct::core::StateMatrixArray<STATE_DIM, SCALAR> StateMatrixArray;
+	typedef ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> StateControlMatrixArray;
+	typedef ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> FeedbackArray;
+	typedef ct::core::tpl::TimeArray<SCALAR> TimeArray;
 
-	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
 
-	typedef core::StateVector<STATE_DIM> state_vector_t;
-	typedef core::ControlVector<CONTROL_DIM> control_vector_t;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 
 
-	typedef double scalar_t;
-	typedef std::vector<double> scalar_array_t;
+	typedef SCALAR scalar_t;
+	typedef std::vector<SCALAR> scalar_array_t;
 
 
     //! iLQG constructor.
@@ -118,7 +125,7 @@ public:
      * \param epsilon correction factor for negative eigenvalues in the H matrix
      * \param matlab pointer to Schweizer-Messer Matlab Engine or to a dummy class (if Matlab not used)
     */
-	iLQGBase(const OptConProblem<STATE_DIM, CONTROL_DIM>& optConProblem,
+	iLQGBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 			const iLQGSettings& settings) :
 
 		    integratorsRK4_(settings.nThreads+1),
@@ -149,14 +156,14 @@ public:
 	{
 		for (size_t i=0; i<settings.nThreads+1; i++)
 		{
-			controller_[i] = std::shared_ptr<core::ConstantController<STATE_DIM, CONTROL_DIM> > (new core::ConstantController<STATE_DIM, CONTROL_DIM>());
+			controller_[i] = std::shared_ptr<core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR> > (new core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>());
 		}
 
 		configure(settings);
 		this->setProblem(optConProblem);
 	}
 
-	iLQGBase(const OptConProblem<STATE_DIM, CONTROL_DIM>& optConProblem,
+	iLQGBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 			 const std::string& settingsFile,
 			 bool verbose = true,
 			 const std::string& ns = "ilqg") :
@@ -214,14 +221,14 @@ public:
 	 * Get the optimized trajectory to the optimal control problem
 	 * @return
 	 */
-	const core::StateTrajectory<STATE_DIM> getStateTrajectory() const override { return core::StateTrajectory<STATE_DIM>(t_, x_); }
+	const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const override { return core::StateTrajectory<STATE_DIM, SCALAR>(t_, x_); }
 
 
 	/*!
 	 * Get the optimized trajectory to the optimal control problem
 	 * @return
 	 */
-	const core::StateVectorArray<STATE_DIM>& getStates() const { return  x_; }
+	const core::StateVectorArray<STATE_DIM, SCALAR>& getStates() const { return  x_; }
 
 
 	/*!
@@ -230,21 +237,21 @@ public:
 	 * control that generates the optimal trajectory.
 	 * @return
 	 */
-	const core::ControlTrajectory<CONTROL_DIM> getControlTrajectory() const override;
+	const core::ControlTrajectory<CONTROL_DIM, SCALAR, SCALAR> getControlTrajectory() const override;
 
 
 	/*!
 	 * Get the time indeces corresponding to the solution
 	 * @return
 	 */
-	const core::TimeArray& getTimeArray() const { return t_; }
+	const core::tpl::TimeArray<SCALAR>& getTimeArray() const { return t_; }
 
 
 	/*! get the current Optimal Control Problem Time Horizon
 	 *
 	 * @return time horizon
 	 */
-	core::Time getTimeHorizon() const override { return K_*settings_.dt; }
+	SCALAR getTimeHorizon() const override { return K_*settings_.dt; }
 
 
 	/*!
@@ -259,7 +266,7 @@ public:
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct time horizon set.
 	 */
-	void changeTimeHorizon(const core::Time& tf) override;
+	void changeTimeHorizon(const SCALAR& tf) override;
 
 
 	/*!
@@ -268,7 +275,7 @@ public:
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct initial state set
 	 */
-	void changeInitialState(const core::StateVector<STATE_DIM>& x0) override;
+	void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0) override;
 
 	/*!
 	 * \brief Change the cost function
@@ -319,7 +326,7 @@ public:
 	*/
 	void logToMatlab();
 
-	double getCost() const override;
+	SCALAR getCost() const override;
 
 protected:
 	virtual void createLQProblem() = 0;
@@ -332,7 +339,7 @@ protected:
 	//! Computes the quadratic approximation of the cost function along the trajectory
 	virtual void computeQuadraticCostsAroundTrajectory() = 0;
 
-	virtual double performLineSearch() = 0;
+	virtual SCALAR performLineSearch() = 0;
 
 	//! check problem for consistency
 	void checkProblem();
@@ -347,7 +354,7 @@ protected:
 	bool lineSearchController();
 
 	//! learn the currently optimal line-search parameter (for adaptive line-search)
-	double learnAlpha(const double& alpha);
+	SCALAR learnAlpha(const SCALAR& alpha);
 
     //! Rollout of nonlinear dynamics
     /*!
@@ -356,9 +363,9 @@ protected:
 	bool rolloutSystem(
 			size_t threadId,
 			const ControlVectorArray& u_ff_local,
-			ct::core::StateVectorArray<STATE_DIM>& x_local,
-			ct::core::ControlVectorArray<CONTROL_DIM>& u_local,
-			ct::core::TimeArray& t_local,
+			ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+			ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+			ct::core::tpl::TimeArray<SCALAR>& t_local,
 			std::atomic_bool* terminationFlag = nullptr) const;
 
 	//! Computes the linearized Dynamics at a specific point of the trajectory
@@ -417,8 +424,8 @@ protected:
 	 */
 	void computeCostsOfTrajectory(
 			size_t threadId,
-			const core::StateVectorArray<STATE_DIM>& x_local,
-			const core::ControlVectorArray<CONTROL_DIM>& u_local,
+			const core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+			const core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
 			scalar_t& intermediateCost,
 			scalar_t& finalCost
 	) const;
@@ -427,13 +434,13 @@ protected:
 	//! Check if controller with particular alpha is better
 	void lineSearchSingleController(
 			size_t threadId,
-			double alpha,
+			scalar_t alpha,
 			ControlVectorArray& u_ff_local,
-			ct::core::StateVectorArray<STATE_DIM>& x_local,
-			ct::core::ControlVectorArray<CONTROL_DIM>& u_local,
-			ct::core::TimeArray& t_local,
-			double& intermediateCost,
-			double& finalCost,
+			ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+			ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+			ct::core::tpl::TimeArray<SCALAR>& t_local,
+			scalar_t& intermediateCost,
+			scalar_t& finalCost,
 			std::atomic_bool* terminationFlag = nullptr
 	) const;
 
@@ -461,25 +468,25 @@ protected:
 	void matrixToMatlab(V& matrix, std::string variableName);
 
 
-	typedef std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM> > IntegratorRK4Ptr;
+	typedef std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > IntegratorRK4Ptr;
     std::vector<IntegratorRK4Ptr, Eigen::aligned_allocator<IntegratorRK4Ptr> > integratorsRK4_; //! Runge-Kutta-4 Integrators
 
-    typedef std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM> > IntegratorEulerPtr;
+    typedef std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM, SCALAR> > IntegratorEulerPtr;
     std::vector<IntegratorEulerPtr, Eigen::aligned_allocator<IntegratorEulerPtr> > integratorsEuler_;
 
-	typedef std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM> > IntegratorSymplecticEulerPtr;
+	typedef std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR> > IntegratorSymplecticEulerPtr;
 	std::vector<IntegratorSymplecticEulerPtr, Eigen::aligned_allocator<IntegratorSymplecticEulerPtr> > integratorsEulerSymplectic_;
 
-	typedef std::shared_ptr<ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>> IntegratorSymplecticRkPtr;
+	typedef std::shared_ptr<ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR> > IntegratorSymplecticRkPtr;
 	std::vector<IntegratorSymplecticRkPtr, Eigen::aligned_allocator<IntegratorSymplecticRkPtr > > integratorsRkSymplectic_;
 
-    typedef std::shared_ptr<core::ConstantController<STATE_DIM, CONTROL_DIM> > ConstantControllerPtr;
+    typedef std::shared_ptr<core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR> > ConstantControllerPtr;
     std::vector<ConstantControllerPtr, Eigen::aligned_allocator<ConstantControllerPtr> > controller_;	//! the constant controller for forward-integration during one time-step
 
     //! The policy. currently only for returning the result, should eventually replace L_ and u_ff_ (todo)
     iLQGBase::Policy_t policy_;
 
-    ct::core::TimeArray t_; //! the time trajectory
+    ct::core::tpl::TimeArray<SCALAR> t_; //! the time trajectory
 
     bool initialized_;
     bool configured_;
@@ -530,7 +537,7 @@ protected:
 
 	Eigen::SelfAdjointEigenSolver<control_matrix_t> eigenvalueSolver_; //! Eigenvalue solver, used for inverting the Hessian and for regularization
 
-	iLQGTester<iLQGBase<STATE_DIM, CONTROL_DIM>> iLQGTester_;
+	iLQGTester<iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>> iLQGTester_;
 
 #ifdef MATLAB
 	matlab::MatFile matFile_;

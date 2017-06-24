@@ -42,8 +42,8 @@ namespace optcon {
  * An example for using this term is given in \ref CostFunctionTest.cpp
  *
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S = double>
-class TermQuadMult : public TermBase<STATE_DIM, CONTROL_DIM, S> {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S = double, typename TIME_SCALAR = double>
+class TermQuadMult : public TermBase<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR> {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -63,7 +63,7 @@ public:
 
 	~TermQuadMult();
 	
-	TermQuadMult<STATE_DIM, CONTROL_DIM, S>* clone () const override;
+	TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>* clone () const override;
 
 	void setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R);
 	void setStateAndControlReference(const core::StateVector<STATE_DIM>& x_ref, core::ControlVector<CONTROL_DIM>& u_ref);

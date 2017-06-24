@@ -26,8 +26,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 // add terms
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-size_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term, bool verbose)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+size_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose)
 { 
 	this->intermediateCostAnalytical_.push_back(term);
 	if(verbose){
@@ -39,8 +39,8 @@ size_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::addIntermediateTerm (std:
 	return this->intermediateCostAnalytical_.size()-1;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-size_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term,  bool verbose)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+size_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term,  bool verbose)
 { 
 	this->finalCostAnalytical_.push_back(term);
 	if(verbose){
@@ -52,8 +52,8 @@ size_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::addFinalTerm (std::shared
 	return this->finalCostAnalytical_.size()-1;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::loadFromConfigFile(const std::string& filename, bool verbose){
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(const std::string& filename, bool verbose){
 	this->intermediateCostAnalytical_.clear();
 	this->finalCostAnalytical_.clear();
 
@@ -81,9 +81,9 @@ void CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::loadFromConfigFile(const st
 			}
 		}
 
-		std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term;
+		std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term;
 
-		CT_LOADABLE_TERMS_ANALYTICAL;
+		CT_LOADABLE_TERMS_ANALYTICAL(SCALAR);
 
 		if(!term){
 			throw std::runtime_error("Term type \""+ termKind+ "\" not supported");
@@ -96,10 +96,10 @@ void CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::loadFromConfigFile(const st
 }
 
 // evaluate
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-double CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::evaluateIntermediate()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+SCALAR CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateIntermediate()
 {
-	double y = 0.;
+	SCALAR y = 0.;
 		
 	for(auto it : this->intermediateCostAnalytical_)
 	{
@@ -110,10 +110,10 @@ double CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::evaluateIntermediate()
 	return y;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-double CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::evaluateTerminal()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+SCALAR CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateTerminal()
 {
-	double y = 0.;
+	SCALAR y = 0.;
 
 	for(auto it : this->finalCostAnalytical_)
 		y += it->evaluate(this->x_, this->u_, this->t_);
@@ -122,8 +122,8 @@ double CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::evaluateTerminal()
 }
 
 // get state derivatives
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::state_vector_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::stateDerivativeIntermediate()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediate()
 {
 	state_vector_t derivative;
 	derivative.setZero();
@@ -137,8 +137,8 @@ typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::state_vector_t CostFunc
 	return derivative;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::state_vector_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::stateDerivativeTerminal()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeTerminal()
 {
 	state_vector_t derivative;
 	derivative.setZero();
@@ -150,8 +150,8 @@ typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::state_vector_t CostFunc
 }
 
 // get state second derivatives
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::state_matrix_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::stateSecondDerivativeIntermediate()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::state_matrix_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::stateSecondDerivativeIntermediate()
 {
 	state_matrix_t derivative;
 	derivative.setZero(); 
@@ -165,8 +165,8 @@ typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::state_matrix_t CostFunc
 	return derivative;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::state_matrix_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::stateSecondDerivativeTerminal()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::state_matrix_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::stateSecondDerivativeTerminal()
 {
 	state_matrix_t derivative;
 	derivative.setZero();
@@ -178,8 +178,8 @@ typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::state_matrix_t CostFunc
 }
 
 // get control derivatives
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::control_vector_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::controlDerivativeIntermediate()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeIntermediate()
 {
 	control_vector_t derivative;
 	derivative.setZero();
@@ -193,8 +193,8 @@ typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::control_vector_t CostFu
 	return derivative;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::control_vector_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::controlDerivativeTerminal()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeTerminal()
 {
 	control_vector_t derivative;
 	derivative.setZero();
@@ -206,8 +206,8 @@ typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::control_vector_t CostFu
 }
 
 // get control second derivatives
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::control_matrix_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::controlSecondDerivativeIntermediate()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivativeIntermediate()
 {
 	control_matrix_t derivative;
 	derivative.setZero();
@@ -221,8 +221,8 @@ typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::control_matrix_t CostFu
 	return derivative;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::control_matrix_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::controlSecondDerivativeTerminal()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivativeTerminal()
 {
 	control_matrix_t derivative;
 	derivative.setZero();
@@ -234,8 +234,8 @@ typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::control_matrix_t CostFu
 }
 
 // get state-control derivatives
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::control_state_matrix_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::stateControlDerivativeIntermediate()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_matrix_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeIntermediate()
 {
 	control_state_matrix_t derivative;
 	derivative.setZero(); 
@@ -249,8 +249,8 @@ typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::control_state_matrix_t 
 	return derivative;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::control_state_matrix_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM>::stateControlDerivativeTerminal()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_matrix_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeTerminal()
 {
 	control_state_matrix_t derivative;
 	derivative.setZero();

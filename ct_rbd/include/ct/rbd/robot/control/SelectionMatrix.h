@@ -41,8 +41,8 @@ namespace rbd {
  *
  * where \f$ S \f$ is the selection matrix.
  */
-template <size_t CONTROL_DIM, size_t STATE_DIM>
-class SelectionMatrix : public Eigen::Matrix<double, CONTROL_DIM, STATE_DIM>
+template <size_t CONTROL_DIM, size_t STATE_DIM, typename SCALAR = double>
+class SelectionMatrix : public Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -50,12 +50,12 @@ public:
 	SelectionMatrix() = delete;
 
 	SelectionMatrix(const SelectionMatrix& other) :
-		Eigen::Matrix<double, CONTROL_DIM, STATE_DIM>(other)
+		Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>(other)
 	{
 	}
 
 	SelectionMatrix(bool floatingBase) :
-		Eigen::Matrix<double, CONTROL_DIM, STATE_DIM>()
+		Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>()
 	{
 		setIdentity(floatingBase);
 	}

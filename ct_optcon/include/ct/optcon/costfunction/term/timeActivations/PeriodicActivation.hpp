@@ -13,17 +13,19 @@
 
 namespace ct {
 namespace optcon {
+namespace tpl{
 
-class PeriodicActivation : public TimeActivationBase
+template <typename SCALAR>
+class PeriodicActivation : public TimeActivationBase<SCALAR>
 {
 public:
 	PeriodicActivation(){}
 
 	PeriodicActivation(
-			const double active_percentage,
-			const double period,
-			const double activation_offset,
-			const double period_offset) :
+			const SCALAR active_percentage,
+			const SCALAR period,
+			const SCALAR activation_offset,
+			const SCALAR period_offset) :
 		active_percentage_(active_percentage),
 		period_(period),
 		activation_offset_(activation_offset),
@@ -44,11 +46,11 @@ public:
 		boost::property_tree::ptree pt;
 		boost::property_tree::read_info(filename, pt); 
 
-		active_percentage_ = pt.get<double>(termName + ".active_percentage");
-		period_ = pt.get<double>(termName + ".period");
-		activation_offset_ = pt.get<double>(termName + ".activation_offset");
-		period_offset_ = pt.get<double>(termName + ".period_offset");
-		t_end_ = pt.get<double>(termName + ".t_end");
+		active_percentage_ = pt.get<SCALAR>(termName + ".active_percentage");
+		period_ = pt.get<SCALAR>(termName + ".period");
+		activation_offset_ = pt.get<SCALAR>(termName + ".activation_offset");
+		period_offset_ = pt.get<SCALAR>(termName + ".period_offset");
+		t_end_ = pt.get<SCALAR>(termName + ".t_end");
 
 		if(activation_offset_ + active_percentage_ * period_ > period_)
 		{
@@ -57,19 +59,19 @@ public:
 	} 
 
 	// to verify
-	virtual bool isActiveAtTime(const double t) override {
+	virtual bool isActiveAtTime(const SCALAR t) override {
 		bool active = false;
 		if(t >= period_offset_ && t < t_end_)
 		{
-			double t0 = t - period_offset_;
-			double t0norm = std::fmod(t0, period_);
+			SCALAR t0 = t - period_offset_;
+			SCALAR t0norm = std::fmod(t0, period_);
 			if(t0norm >= activation_offset_ && t0norm < (activation_offset_ + active_percentage_ * period_))
 				active = true;
 		}
 		return active;
 	}
 
-	virtual double computeActivation(const double t) override { return 1.0; }
+	virtual SCALAR computeActivation(const SCALAR t) override { return 1.0; }
 
 	virtual void printInfo() override
 	{
@@ -80,12 +82,16 @@ public:
 	}
 
 private:
-	double active_percentage_; // how much of the cycle is the time active
-	double period_; // what is the period
-	double activation_offset_; // how much is the activation offset WITHIN the period
-	double period_offset_; // how much is the period offset to t=0?
-	double t_end_;
+	SCALAR active_percentage_; // how much of the cycle is the time active
+	SCALAR period_; // what is the period
+	SCALAR activation_offset_; // how much is the activation offset WITHIN the period
+	SCALAR period_offset_; // how much is the period offset to t=0?
+	SCALAR t_end_;
 };
+
+}
+
+typedef tpl::PeriodicActivation<double> PeriodicActivation;
 
 }
 }

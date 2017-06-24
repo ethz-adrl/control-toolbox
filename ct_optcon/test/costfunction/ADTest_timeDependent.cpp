@@ -49,7 +49,7 @@ namespace example{
  * */
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename S = double>
-class TestTerm : public TermBase<STATE_DIM, CONTROL_DIM, S> {
+class TestTerm : public TermBase<STATE_DIM, CONTROL_DIM, S, double> {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -70,7 +70,7 @@ public:
 	}
 
 	TestTerm(const TestTerm& arg):
-		TermBase<STATE_DIM, CONTROL_DIM, S>(arg),
+		TermBase<STATE_DIM, CONTROL_DIM, S, double>(arg),
 		Q_(arg.Q_),
 		R_(arg.R_),
 		c_(arg.c_),

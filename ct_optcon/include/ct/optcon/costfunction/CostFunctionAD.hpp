@@ -69,6 +69,8 @@ public:
 	typedef core::StateVector<STATE_DIM> 	 state_vector_t;
 	typedef core::ControlVector<CONTROL_DIM> control_vector_t;
 
+	typedef TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>, double> TermBaseAD;
+
 	/**
 	 * \brief Basic constructor
 	 */
@@ -130,7 +132,7 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-	size_t addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double> > > term, bool verbose = false);
+	size_t addIntermediateTerm (std::shared_ptr< TermBaseAD > term, bool verbose = false);
 
 	/**
 	 * \brief Add a final, auto-differentiable term
@@ -141,7 +143,7 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-	size_t addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double> > > term, bool verbose = false);
+	size_t addFinalTerm (std::shared_ptr< TermBaseAD > term, bool verbose = false);
 
 	size_t addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term, bool verbose = false) override;
 	size_t addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term, bool verbose = false) override;
@@ -171,8 +173,8 @@ public:
 
 private:
 	//containers
-	std::vector<std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>>>> intermediateCostAD_; /** container holding intermediate AD terms **/
-	std::vector<std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>>>> finalCostAD_; /** container holding final AD terms **/
+	std::vector<std::shared_ptr< TermBaseAD>> intermediateCostAD_; /** container holding intermediate AD terms **/
+	std::vector<std::shared_ptr< TermBaseAD>> finalCostAD_; /** container holding final AD terms **/
 
 	//variables
 	Eigen::Matrix<double, Eigen::Dynamic, 1> var_; /** An auto-diff variable **/
@@ -187,10 +189,10 @@ private:
 	 * @param costAD The AD term
 	 * @param functionAD Expression (AD function)
 	 */
-	void recordTerm(const std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double> > > &costAD, CppAD::ADFun<double>& functionAD);
+	void recordTerm(const std::shared_ptr< TermBaseAD > &costAD, CppAD::ADFun<double>& functionAD);
 
 
-	double evaluateCost(std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>>>>& termsAD,
+	double evaluateCost(std::vector<std::shared_ptr<TermBaseAD>>& termsAD,
 			std::vector<std::shared_ptr<CppAD::ADFun<double>>>& functionAD,
 			std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, double>>>& termsAnalytical);
 
@@ -208,12 +210,12 @@ private:
 	 * @param functionAD vector of AD functions to compute derivative of
 	 * @param result resulting derivative
 	 */
-	void reverseADTerms(std::vector< std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double> > > > & termsAD,
+	void reverseADTerms(std::vector< std::shared_ptr< TermBaseAD > > & termsAD,
 			std::vector<std::shared_ptr<CppAD::ADFun<double>>> &functionAD,
 			Eigen::Matrix<double, STATE_DIM + CONTROL_DIM +1, 1>& result);
 
 
-	void getHessians(std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>>>>& termsAD,
+	void getHessians(std::vector<std::shared_ptr<TermBaseAD>>& termsAD,
 			std::vector<std::shared_ptr<CppAD::ADFun<double>>>& functionAD,
 			std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, double>>>& termsAnalytical,
 			Eigen::Matrix<double, STATE_DIM,   STATE_DIM>&   hessian_state_,

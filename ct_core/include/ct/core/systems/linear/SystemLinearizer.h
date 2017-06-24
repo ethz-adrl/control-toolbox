@@ -79,18 +79,18 @@ namespace core {
  * @tparam dimension of state vector
  * @tparam dimension of control vector
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class SystemLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class SystemLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef StateVector<STATE_DIM> state_vector_t; //!< state vector type
-	typedef ControlVector<CONTROL_DIM>  control_vector_t; //!< control vector type
+	typedef StateVector<STATE_DIM, SCALAR> state_vector_t; //!< state vector type
+	typedef ControlVector<CONTROL_DIM, SCALAR>  control_vector_t; //!< control vector type
 
-	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t; //!< state Jacobian type (A)
-	typedef Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> state_control_matrix_t; //! control Jacobian type (B)
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t; //!< state Jacobian type (A)
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t; //! control Jacobian type (B)
 
 	//! default constructor
 	/*!
@@ -100,9 +100,9 @@ public:
 	 * @param doubleSidedDerivative if true, double sided numerical differentiation is used
 	 */
 	SystemLinearizer(
-			std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM> > nonlinearSystem,
+			std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> > nonlinearSystem,
 			bool doubleSidedDerivative = true):
-		LinearSystem<STATE_DIM, CONTROL_DIM>(nonlinearSystem->getType()),
+		LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(nonlinearSystem->getType()),
 		nonlinearSystem_(nonlinearSystem),
 		doubleSidedDerivative_(doubleSidedDerivative)
 	{
@@ -127,12 +127,12 @@ public:
 			dFdu_.template topRows<STATE_DIM/2>().setZero();
 		}
 
-		eps_ = sqrt(Eigen::NumTraits<double>::epsilon() );
+		eps_ = sqrt(Eigen::NumTraits<SCALAR>::epsilon() );
 	}
 
 	//! copy constructor
 	SystemLinearizer(const SystemLinearizer& arg):
-		LinearSystem<STATE_DIM, CONTROL_DIM> (arg),
+		LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> (arg),
 		nonlinearSystem_(arg.nonlinearSystem_->clone()),
 		dFdx_(arg.dFdx_),
 		dFdu_(arg.dFdu_),
@@ -146,8 +146,8 @@ public:
 	virtual ~SystemLinearizer(){}
 
 	//! deep cloning
-	SystemLinearizer<STATE_DIM, CONTROL_DIM>* clone() const override {
-		return new SystemLinearizer<STATE_DIM, CONTROL_DIM>(*this);
+	SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override {
+		return new SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
 	}
 
 	//! get the Jacobian with respect to the state
@@ -164,7 +164,7 @@ public:
 	 * @param t time
 	 * @return Jacobian wrt state
 	 */
-	virtual const state_matrix_t& getDerivativeState(const state_vector_t& x, const control_vector_t& u, const double t = 0.0) override {
+	virtual const state_matrix_t& getDerivativeState(const state_vector_t& x, const control_vector_t& u, const SCALAR t = 0.0) override {
 
 		nonlinearSystem_->computeControlledDynamics(x, t, u, dxdt_ref_);
 
@@ -173,9 +173,9 @@ public:
 			state_vector_t dxdt;
 
 			// inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
-			double h = eps_ * std::max(std::abs(x(i)), 1.0);
-			volatile double x_ph = x(i) + h;
-			double dxp = x_ph - x(i);
+			SCALAR h = eps_ * std::max(std::abs(x(i)), SCALAR(1.0));
+			volatile SCALAR x_ph = x(i) + h;
+			SCALAR dxp = x_ph - x(i);
 
 			state_vector_t x_perturbed = x;
 			x_perturbed(i) =  x_ph;
@@ -187,8 +187,8 @@ public:
 			{
 				state_vector_t dxdt_low;
 
-				volatile double x_mh = x(i) - h;
-				double dxm = x(i) - x_mh;
+				volatile SCALAR x_mh = x(i) - h;
+				SCALAR dxm = x(i) - x_mh;
 
 				x_perturbed = x;
 				x_perturbed(i) = x_mh;
@@ -237,7 +237,7 @@ public:
 	 * @param t time
 	 * @return Jacobian wrt input
 	 */
-	virtual const state_control_matrix_t& getDerivativeControl(const state_vector_t& x, const control_vector_t& u, const double t = 0.0) override
+	virtual const state_control_matrix_t& getDerivativeControl(const state_vector_t& x, const control_vector_t& u, const SCALAR t = 0.0) override
 	{
 
 		nonlinearSystem_->computeControlledDynamics(x, t, u, dxdt_ref_);
@@ -247,9 +247,9 @@ public:
 			state_vector_t dxdt;
 
 			// inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
-			double h = eps_ * std::max(std::abs(u(i)), 1.0);
-			volatile double u_ph = u(i) + h;
-			double dup = u_ph - u(i);
+			SCALAR h = eps_ * std::max(std::abs(u(i)), SCALAR(1.0));
+			volatile SCALAR u_ph = u(i) + h;
+			SCALAR dup = u_ph - u(i);
 
 			control_vector_t u_perturbed = u;
 			u_perturbed(i) =  u_ph;
@@ -261,8 +261,8 @@ public:
 			{
 				state_vector_t dxdt_low;
 
-				volatile double u_mh = u(i) - h;
-				double dum = u_ph - u(i);
+				volatile SCALAR u_mh = u(i) - h;
+				SCALAR dum = u_ph - u(i);
 
 				u_perturbed = u;
 				u_perturbed(i) = u_mh;
@@ -300,15 +300,15 @@ public:
 
 protected:
 
-	std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM>> nonlinearSystem_; //!< instance of non-linear system
+	std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> nonlinearSystem_; //!< instance of non-linear system
 
 	state_matrix_t dFdx_; //!< Jacobian wrt state
 	state_control_matrix_t dFdu_; //!< Jacobian wrt input
 
-	StateVector<STATE_DIM> dxdt_ref_; //!< reference state for numerical differentiation
+	StateVector<STATE_DIM, SCALAR> dxdt_ref_; //!< reference state for numerical differentiation
 
 
-	double eps_; //!< perturbation for numerical differentiation
+	SCALAR eps_; //!< perturbation for numerical differentiation
 
 	bool doubleSidedDerivative_; //!< flag if double sided numerical differentiation should be used
 

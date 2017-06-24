@@ -15,7 +15,7 @@ iit::ct_HyA::dyn::tpl::JSIM<TRAIT>::JSIM(IProperties& inertiaProperties, FTransf
 
 template <typename TRAIT>
 const typename iit::ct_HyA::dyn::tpl::JSIM<TRAIT>& iit::ct_HyA::dyn::tpl::JSIM<TRAIT>::update(const JointState& state) {
-    static iit::rbd::ForceVector F;
+    ForceVector F;
 
     // Precomputes only once the coordinate transforms:
     frcTransf -> fr_Wrist_R_X_fr_Wrist_FE(state);

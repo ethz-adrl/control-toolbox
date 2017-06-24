@@ -40,8 +40,8 @@ namespace optcon {
  *  An example for using this term is given in \ref CostFunctionTest.cpp
  *
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S = double>
-class TermQuadratic : public TermBase<STATE_DIM, CONTROL_DIM, S> {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S = double, typename TIME_SCALAR = S>
+class TermQuadratic : public TermBase<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR> {
 
 public:
 	typedef S SCALAR;
@@ -61,11 +61,11 @@ public:
 
 	virtual ~TermQuadratic(){}
 	
-	virtual TermQuadratic<STATE_DIM, CONTROL_DIM, S>* clone () const override;
+	virtual TermQuadratic<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>* clone () const override;
 
 	void setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R);
 
-	void setStateAndControlReference(const core::StateVector<STATE_DIM>& x_ref, const core::ControlVector<CONTROL_DIM>& u_ref);
+	void setStateAndControlReference(const core::StateVector<STATE_DIM, S>& x_ref, const core::ControlVector<CONTROL_DIM, S>& u_ref);
 
 	S evaluate(const Eigen::Matrix<S, STATE_DIM, 1> &x, const Eigen::Matrix<S, CONTROL_DIM, 1> &u, const S& t) override;
 	

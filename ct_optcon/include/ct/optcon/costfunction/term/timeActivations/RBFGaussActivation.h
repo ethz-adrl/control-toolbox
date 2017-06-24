@@ -14,13 +14,15 @@
 
 namespace ct {
 namespace optcon {
+namespace tpl {
 
-class RBFGaussActivation : public TimeActivationBase
+template <typename SCALAR>
+class RBFGaussActivation : public TimeActivationBase<SCALAR>
 {
 public:
 	RBFGaussActivation(){}
 
-	RBFGaussActivation(const double mu, const double sigma) :
+	RBFGaussActivation(const SCALAR mu, const SCALAR sigma) :
 		mu_(mu),
 		sigma_(sigma)
 	{
@@ -39,18 +41,18 @@ public:
 	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) override {
 		boost::property_tree::ptree pt;
 		boost::property_tree::read_info(filename, pt); 
-		mu_ = pt.get<double>(termName + ".mu");
-		sigma_ = pt.get<double>(termName + ".sigma");
+		mu_ = pt.get<SCALAR>(termName + ".mu");
+		sigma_ = pt.get<SCALAR>(termName + ".sigma");
 		// factors used for efficient computeActivation calculation
 		sigma2inv_ = - 1.0 / (2.0 * sigma_ * sigma_);
 		factor_ = 1.0 / sqrt(2.0 * M_PI * sigma_ * sigma_); 
 	} 
 
-	virtual bool isActiveAtTime(const double t) override {
+	virtual bool isActiveAtTime(const SCALAR t) override {
 		return true;
 	}
 
-	virtual double computeActivation(const double t) override {
+	virtual SCALAR computeActivation(const SCALAR t) override {
 	 	return factor_ * exp((t - mu_)*(t - mu_) * sigma2inv_); 
 	}
 
@@ -61,11 +63,15 @@ public:
 	}
 
 private:
-	double mu_;
-	double sigma_;
-	double sigma2inv_;
-	double factor_;
+	SCALAR mu_;
+	SCALAR sigma_;
+	SCALAR sigma2inv_;
+	SCALAR factor_;
 };
+
+}
+
+typedef tpl::RBFGaussActivation<double> RBFGaussActivation;
 
 }
 }

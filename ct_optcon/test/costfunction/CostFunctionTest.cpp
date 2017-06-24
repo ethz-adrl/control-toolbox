@@ -80,7 +80,7 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 	CostFunctionAD<state_dim, control_dim> costFunctionAD;
 
 	std::shared_ptr<TermQuadratic<state_dim, control_dim, double> > termQuadratic(new TermQuadratic<state_dim, control_dim>);
-	std::shared_ptr<TermQuadratic<state_dim, control_dim, CppAD::AD<double> > > termQuadraticAD(new TermQuadratic<state_dim, control_dim, CppAD::AD<double>>);
+	std::shared_ptr<TermQuadratic<state_dim, control_dim, CppAD::AD<double>, double > > termQuadraticAD(new TermQuadratic<state_dim, control_dim, CppAD::AD<double>, double>);
 
 	double t_on = 0.5;
 	double t_off = 1.5;
@@ -120,7 +120,7 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 		termQuadratic->setWeights(Q, R);
 		termQuadraticAD->setWeights(Q, R);
 		termQuadratic->setStateAndControlReference(x_ref, u_ref);
-		termQuadraticAD->setStateAndControlReference(x_ref, u_ref);
+		termQuadraticAD->setStateAndControlReference(x_ref.template cast<CppAD::AD<double>>(), u_ref.template cast<CppAD::AD<double>>());
 
 		costFunctionAD.termChanged(termIdAD);
 
