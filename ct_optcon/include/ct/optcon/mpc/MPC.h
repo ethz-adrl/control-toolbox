@@ -404,6 +404,8 @@ public:
 		timeHorizonStrategy_->updateInitialTimeHorizon(newTimeHorizon);
 
 		solver_.changeTimeHorizon(newTimeHorizon);
+
+		timeKeeper_.initialize();
 	}
 
 
