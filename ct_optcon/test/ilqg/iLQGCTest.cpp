@@ -188,6 +188,7 @@ TEST(ILQCTest, SingleCoreTest)
 		x_final << 20, 0;
 
 		iLQGSettings ilqg_settings;
+		ilqg_settings.epsilon = 0.0;
 		ilqg_settings.nThreads = 4;
 		ilqg_settings.max_iterations = 50;
 		ilqg_settings.recordSmallestEigenvalue = true;
@@ -380,6 +381,7 @@ TEST(ILQCTest, InstancesComparison)
 		x_final << 20, 0;
 
 		iLQGSettings ilqg_settings;
+		ilqg_settings.epsilon = 0.0;
 		ilqg_settings.nThreads = 4;
 		ilqg_settings.max_iterations = 50;
 		ilqg_settings.recordSmallestEigenvalue = true;
@@ -496,6 +498,7 @@ TEST(ILQCTest, PolicyComparison)
 		x_final << 20, 0;
 
 		iLQGSettings ilqg_settings;
+		ilqg_settings.epsilon = 0.0;
 		ilqg_settings.nThreads = 4;
 		ilqg_settings.max_iterations = 50;
 		ilqg_settings.recordSmallestEigenvalue = true;
