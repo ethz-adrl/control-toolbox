@@ -114,7 +114,7 @@ public:
 		data_(),
 		interp_(other.interp_.getInterpolationType())
 	{
-		TimeArray time_temp;
+		tpl::TimeArray<SCALAR> time_temp;
 		DiscreteArray<T, Alloc> data_temp;
 
 		for(size_t i = startIndex; i<=endIndex; i++)
