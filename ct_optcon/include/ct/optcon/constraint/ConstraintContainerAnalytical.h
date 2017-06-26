@@ -353,15 +353,18 @@ public:
 		for(auto constraint : constraintsIntermediate_)
 		{
 			size_t nonZerosState = constraint->getNumNonZerosJacobianState();
-			constraint->sparsityPatternState(iRowLocal, jColLocal);
+			if(nonZerosState > 0)
+			{
+				constraint->sparsityPatternState(iRowLocal, jColLocal);
 
-			iRowTot.conservativeResize(count + nonZerosState);
-			iRowTot.segment(count, nonZerosState) = iRowLocal;
+				iRowTot.conservativeResize(count + nonZerosState);
+				iRowTot.segment(count, nonZerosState) = iRowLocal;
 
-			jColTot.conservativeResize(count + nonZerosState);
-			jColTot.segment(count, nonZerosState) = jColLocal;
+				jColTot.conservativeResize(count + nonZerosState);
+				jColTot.segment(count, nonZerosState) = jColLocal;
 
-			count += nonZerosState;
+				count += nonZerosState;
+			}
 		}
 
 		iRows = iRowTot;
@@ -383,15 +386,18 @@ public:
 		for(auto constraint : constraintsTerminal_)
 		{
 			size_t nonZerosState = constraint->getNumNonZerosJacobianState();
-			constraint->sparsityPatternState(iRowLocal, jColLocal);
+			if(nonZerosState > 0)
+			{
+				constraint->sparsityPatternState(iRowLocal, jColLocal);
 
-			iRowTot.conservativeResize(count + nonZerosState);
-			iRowTot.segment(count, nonZerosState) = iRowLocal;
+				iRowTot.conservativeResize(count + nonZerosState);
+				iRowTot.segment(count, nonZerosState) = iRowLocal;
 
-			jColTot.conservativeResize(count + nonZerosState);
-			jColTot.segment(count, nonZerosState) = jColLocal;
+				jColTot.conservativeResize(count + nonZerosState);
+				jColTot.segment(count, nonZerosState) = jColLocal;
 
-			count += nonZerosState;
+				count += nonZerosState;
+			}
 		}
 
 		iRows = iRowTot;
@@ -412,15 +418,18 @@ public:
 		for(auto constraint : constraintsIntermediate_)
 		{
 			size_t nonZerosInput = constraint->getNumNonZerosJacobianInput();
-			constraint->sparsityPatternInput(iRowLocal, jColLocal);
+			if(nonZerosInput > 0)
+			{
+				constraint->sparsityPatternInput(iRowLocal, jColLocal);
 
-			iRowTot.conservativeResize(count + nonZerosInput);
-			iRowTot.segment(count, nonZerosInput) = iRowLocal;
+				iRowTot.conservativeResize(count + nonZerosInput);
+				iRowTot.segment(count, nonZerosInput) = iRowLocal;
 
-			jColTot.conservativeResize(count + nonZerosInput);
-			jColTot.segment(count, nonZerosInput) = jColLocal;
+				jColTot.conservativeResize(count + nonZerosInput);
+				jColTot.segment(count, nonZerosInput) = jColLocal;
 
-			count += nonZerosInput;
+				count += nonZerosInput;
+			}
 		}
 
 		iRows = iRowTot;
@@ -442,15 +451,18 @@ public:
 		for(auto constraint : constraintsTerminal_)
 		{
 			size_t nonZerosInput = constraint->getNumNonZerosJacobianInput();
-			constraint->sparsityPatternInput(iRowLocal, jColLocal);
+			if(nonZerosInput > 0)
+			{
+				constraint->sparsityPatternInput(iRowLocal, jColLocal);
 
-			iRowTot.conservativeResize(count + nonZerosInput);
-			iRowTot.segment(count, nonZerosInput) = iRowLocal;
+				iRowTot.conservativeResize(count + nonZerosInput);
+				iRowTot.segment(count, nonZerosInput) = iRowLocal;
 
-			jColTot.conservativeResize(count + nonZerosInput);
-			jColTot.segment(count, nonZerosInput) = jColLocal;
+				jColTot.conservativeResize(count + nonZerosInput);
+				jColTot.segment(count, nonZerosInput) = jColLocal;
 
-			count += nonZerosInput;
+				count += nonZerosInput;
+			}
 		}
 
 		iRows = iRowTot;
@@ -528,23 +540,26 @@ private:
 
 	void initializeIntermediate()
 	{
-		evalIntermediate_.resize(getIntermediateConstraintsCount()); evalIntermediate_.setZero();
-		evalJacSparseStateIntermediate_.resize(getJacobianStateNonZeroCountIntermediate()); evalJacSparseStateIntermediate_.setZero();
-		evalJacSparseInputIntermediate_.resize(getJacobianInputNonZeroCountIntermediate()); evalJacSparseInputIntermediate_.setZero();
-		evalJacDenseStateIntermediate_.resize(getIntermediateConstraintsCount(), STATE_DIM); evalJacDenseStateIntermediate_.setZero();
-		evalJacDenseInputIntermediate_.resize(getIntermediateConstraintsCount(), CONTROL_DIM); evalJacDenseInputIntermediate_.setZero();
-
-		size_t count = 0;
-
-		this->lowerBoundsIntermediate_.resize(getIntermediateConstraintsCount()); this->lowerBoundsIntermediate_.setZero();
-		this->upperBoundsIntermediate_.resize(getIntermediateConstraintsCount()); this->upperBoundsIntermediate_.setZero();
-
-		for(auto constraint : constraintsIntermediate_)
+		if(getIntermediateConstraintsCount() > 0)
 		{
-			size_t constraintSize = constraint->getConstraintSize();
-			this->lowerBoundsIntermediate_.segment(count, constraintSize) = constraint->getLowerBound();
-			this->upperBoundsIntermediate_.segment(count, constraintSize) = constraint->getUpperBound();
-			count += constraintSize;
+			evalIntermediate_.resize(getIntermediateConstraintsCount()); evalIntermediate_.setZero();
+			evalJacSparseStateIntermediate_.resize(getJacobianStateNonZeroCountIntermediate()); evalJacSparseStateIntermediate_.setZero();
+			evalJacSparseInputIntermediate_.resize(getJacobianInputNonZeroCountIntermediate()); evalJacSparseInputIntermediate_.setZero();
+			evalJacDenseStateIntermediate_.resize(getIntermediateConstraintsCount(), STATE_DIM); evalJacDenseStateIntermediate_.setZero();
+			evalJacDenseInputIntermediate_.resize(getIntermediateConstraintsCount(), CONTROL_DIM); evalJacDenseInputIntermediate_.setZero();
+
+			size_t count = 0;
+
+			this->lowerBoundsIntermediate_.resize(getIntermediateConstraintsCount()); this->lowerBoundsIntermediate_.setZero();
+			this->upperBoundsIntermediate_.resize(getIntermediateConstraintsCount()); this->upperBoundsIntermediate_.setZero();
+
+			for(auto constraint : constraintsIntermediate_)
+			{
+				size_t constraintSize = constraint->getConstraintSize();
+				this->lowerBoundsIntermediate_.segment(count, constraintSize) = constraint->getLowerBound();
+				this->upperBoundsIntermediate_.segment(count, constraintSize) = constraint->getUpperBound();
+				count += constraintSize;
+			}
 		}
 
 		initializedIntermediate_ = true;
@@ -552,23 +567,26 @@ private:
 
 	void initializeTerminal()
 	{
-		evalTerminal_.resize(getTerminalConstraintsCount()); evalTerminal_.setZero();
-		evalJacSparseStateTerminal_.resize(getJacobianStateNonZeroCountTerminal()); evalJacSparseStateTerminal_.setZero();
-		evalJacSparseInputTerminal_.resize(getJacobianInputNonZeroCountTerminal()); evalJacSparseInputTerminal_.setZero();
-		evalJacDenseStateTerminal_.resize(getTerminalConstraintsCount(), STATE_DIM); evalJacDenseStateTerminal_.setZero();
-		evalJacDenseInputTerminal_.resize(getTerminalConstraintsCount(), CONTROL_DIM); evalJacDenseInputTerminal_.setZero();
-
-		size_t count = 0;
-
-		this->lowerBoundsTerminal_.resize(getTerminalConstraintsCount()); this->lowerBoundsTerminal_.setZero();
-		this->upperBoundsTerminal_.resize(getTerminalConstraintsCount()); this->upperBoundsTerminal_.setZero();
-
-		for(auto constraint : constraintsTerminal_)
+		if(getTerminalConstraintsCount() > 0)
 		{
-			size_t constraintSize = constraint->getConstraintSize();
-			this->lowerBoundsTerminal_.segment(count, constraintSize) = constraint->getLowerBound();
-			this->upperBoundsTerminal_.segment(count, constraintSize) = constraint->getUpperBound();
-			count += constraintSize;
+			evalTerminal_.resize(getTerminalConstraintsCount()); evalTerminal_.setZero();
+			evalJacSparseStateTerminal_.resize(getJacobianStateNonZeroCountTerminal()); evalJacSparseStateTerminal_.setZero();
+			evalJacSparseInputTerminal_.resize(getJacobianInputNonZeroCountTerminal()); evalJacSparseInputTerminal_.setZero();
+			evalJacDenseStateTerminal_.resize(getTerminalConstraintsCount(), STATE_DIM); evalJacDenseStateTerminal_.setZero();
+			evalJacDenseInputTerminal_.resize(getTerminalConstraintsCount(), CONTROL_DIM); evalJacDenseInputTerminal_.setZero();
+
+			size_t count = 0;
+
+			this->lowerBoundsTerminal_.resize(getTerminalConstraintsCount()); this->lowerBoundsTerminal_.setZero();
+			this->upperBoundsTerminal_.resize(getTerminalConstraintsCount()); this->upperBoundsTerminal_.setZero();
+
+			for(auto constraint : constraintsTerminal_)
+			{
+				size_t constraintSize = constraint->getConstraintSize();
+				this->lowerBoundsTerminal_.segment(count, constraintSize) = constraint->getLowerBound();
+				this->upperBoundsTerminal_.segment(count, constraintSize) = constraint->getUpperBound();
+				count += constraintSize;
+			}
 		}
 
 		initializedTerminal_ = true;

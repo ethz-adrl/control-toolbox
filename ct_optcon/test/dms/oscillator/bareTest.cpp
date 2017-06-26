@@ -113,9 +113,9 @@ public:
 		stateInputConstraintsAd_->addIntermediateConstraint(inputConstraintAd, true);
 		stateInputConstraintsAd_->addIntermediateConstraint(stateConstraintAd, true);
 
-		pureStateConstraints_->addIntermediateConstraint(stateConstraint, true);
-		stateInputConstraints_->addIntermediateConstraint(inputConstraint, true);
 		pureStateConstraints_->addTerminalConstraint(termConstraint, true);
+		stateInputConstraints_->addIntermediateConstraint(inputConstraint, true);
+		stateInputConstraints_->addIntermediateConstraint(stateConstraint, true);
 
 		pureStateConstraints_->initialize();
 		stateInputConstraints_->initialize();
@@ -124,7 +124,7 @@ public:
 		OptConProblem<2,1> optProblem(oscillator_, costFunction_);
 		optProblem.setInitialState(x_0_);
 		optProblem.setTimeHorizon(settings_.T_);
-		// optProblem.setStateInputConstraints(stateInputConstraints_);
+		optProblem.setStateInputConstraints(stateInputConstraints_);
 		optProblem.setPureStateConstraints(pureStateConstraints_);
 
 		calcInitGuess();

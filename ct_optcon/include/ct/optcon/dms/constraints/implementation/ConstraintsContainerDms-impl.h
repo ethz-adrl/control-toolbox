@@ -64,11 +64,6 @@ ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::ConstraintsContainerDms(
 		constraints_.push_back(discretizedConstraints); 
 	}
 
-	// if(constraintsFinal)
-	// {
-	// 	std::cout << "Adding final constraints" << std::endl;
-	// 	constraints_.push_back(constraintsFinal); 		
-	// }
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM>

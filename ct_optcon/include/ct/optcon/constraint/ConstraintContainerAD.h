@@ -190,17 +190,15 @@ public:
 	 */
 	virtual void initialize() override
 	{
-		if(constraintsIntermediate_.size() > 0)
-			initializeIntermediate();
-		if(constraintsTerminal_.size() > 0)
-			initializeTerminal();
+		initializeIntermediate();
+		initializeTerminal();
 	}
 
 
 	virtual Eigen::VectorXd evaluateIntermediate() override
 	{
 		if(!initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+			throw std::runtime_error("evaluateIntermediateConstraints not initialized yet. Call 'initialize()' before");
 
 
 		return intermediateCodegen_->forwardZero(stateControlD_);	
@@ -209,7 +207,7 @@ public:
 	virtual Eigen::VectorXd evaluateTerminal() override
 	{
 		if(!initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+			throw std::runtime_error("evaluateTerminalConstraints not initialized yet. Call 'initialize()' before");
 
 		return terminalCodegen_->forwardZero(stateControlD_);
 	}
@@ -239,7 +237,10 @@ public:
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::MatrixXd jacTot = intermediateCodegen_->operator()(stateControlD_);
-		Eigen::VectorXd jacSparse;
+
+		// std::cout << "jacTot" << std::endl;
+
+		Eigen::VectorXd jacSparse; jacSparse.resize(getJacobianStateNonZeroCountIntermediate());
 		for(size_t i = 0; i < getJacobianStateNonZeroCountIntermediate(); ++i)
 			jacSparse(i) = (jacTot.template leftCols<STATE_DIM>())(sparsityStateIntermediateRows_(i), sparsityStateIntermediateCols_(i));
 
@@ -261,7 +262,7 @@ public:
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::MatrixXd jacTot = terminalCodegen_->operator()(stateControlD_);
-		Eigen::VectorXd jacSparse;
+		Eigen::VectorXd jacSparse; jacSparse.resize(getJacobianStateNonZeroCountTerminal());
 		for(size_t i = 0; i < getJacobianStateNonZeroCountTerminal(); ++i)
 			jacSparse(i) = (jacTot.template leftCols<STATE_DIM>())(sparsityStateTerminalRows_(i), sparsityStateTerminalCols_(i));
 
@@ -280,7 +281,7 @@ public:
 	virtual Eigen::VectorXd jacobianInputSparseIntermediate() override
 	{
 		Eigen::MatrixXd jacTot = intermediateCodegen_->operator()(stateControlD_);
-		Eigen::VectorXd jacSparse;
+		Eigen::VectorXd jacSparse; jacSparse.resize(getJacobianInputNonZeroCountIntermediate());
 		for(size_t i = 0; i < getJacobianInputNonZeroCountIntermediate(); ++i)
 			jacSparse(i) = (jacTot.template rightCols<CONTROL_DIM>())(sparsityInputIntermediateRows_(i), sparsityInputIntermediateCols_(i));
 
@@ -302,7 +303,7 @@ public:
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::MatrixXd jacTot = terminalCodegen_->operator()(stateControlD_);
-		Eigen::VectorXd jacSparse;
+		Eigen::VectorXd jacSparse; jacSparse.resize(getJacobianInputNonZeroCountTerminal());
 		for(size_t i = 0; i < getJacobianInputNonZeroCountTerminal(); ++i)
 			jacSparse(i) = (jacTot.template rightCols<CONTROL_DIM>())(sparsityInputTerminalRows_(i), sparsityInputTerminalCols_(i));
 
@@ -425,51 +426,55 @@ private:
 		Eigen::VectorXi sparsityRows;
 		Eigen::VectorXi sparsityCols;
 
-		intermediateCodegen_->compileJIT();
-		intermediateCodegen_->getSparsityPattern(sparsityRows, sparsityCols);
-
-		std::cout << "sparsityPattern: " << std::endl << intermediateCodegen_->getSparsityPattern() << std::endl;
-		assert(sparsityRows.rows() == sparsityRows.rows());
-		
-		int nonZerosState = (sparsityCols.array() < STATE_DIM).count();
-		int nonZerosInput = (sparsityCols.array() >= STATE_DIM).count();
-
-		sparsityStateIntermediateRows_.resize(nonZerosState);
-		sparsityStateIntermediateCols_.resize(nonZerosState);
-		sparsityInputIntermediateRows_.resize(nonZerosInput);
-		sparsityInputIntermediateCols_.resize(nonZerosInput);
-
-		size_t count = 0;
-
-		this->lowerBoundsIntermediate_.resize(getIntermediateConstraintsCount());
-		this->upperBoundsIntermediate_.resize(getIntermediateConstraintsCount());
-
-		for(auto constraint : constraintsIntermediate_)
+		if(getIntermediateConstraintsCount() > 0)
 		{
-			size_t constraintSize = constraint->getConstraintSize();
-			this->lowerBoundsIntermediate_.segment(count, constraintSize) = constraint->getLowerBound();
-			this->upperBoundsIntermediate_.segment(count, constraintSize) = constraint->getUpperBound();
-			count += constraintSize;
-		}
+			intermediateCodegen_->compileJIT();
+			intermediateCodegen_->getSparsityPattern(sparsityRows, sparsityCols);
 
-		size_t stateIndex = 0;
-		size_t inputIndex = 0;
+			std::cout << "sparsityPattern Intermediate: " << std::endl << intermediateCodegen_->getSparsityPattern() << std::endl;
+			assert(sparsityRows.rows() == sparsityRows.rows());
+			
+			int nonZerosState = (sparsityCols.array() < STATE_DIM).count();
+			int nonZerosInput = (sparsityCols.array() >= STATE_DIM).count();
 
-		for(size_t i = 0; i < sparsityRows.rows(); ++i)
-		{
-			if(sparsityCols(i) < STATE_DIM)
-			{	
-				sparsityStateIntermediateRows_(stateIndex) = sparsityRows(i);
-				sparsityStateIntermediateCols_(stateIndex) = sparsityCols(i);
-				stateIndex++;
-			}
-			else
+			sparsityStateIntermediateRows_.resize(nonZerosState);
+			sparsityStateIntermediateCols_.resize(nonZerosState);
+			sparsityInputIntermediateRows_.resize(nonZerosInput);
+			sparsityInputIntermediateCols_.resize(nonZerosInput);
+
+			size_t count = 0;
+
+			this->lowerBoundsIntermediate_.resize(getIntermediateConstraintsCount());
+			this->upperBoundsIntermediate_.resize(getIntermediateConstraintsCount());
+
+			for(auto constraint : constraintsIntermediate_)
 			{
-				sparsityInputIntermediateRows_(inputIndex) = sparsityRows(i);
-				sparsityInputIntermediateCols_(inputIndex) = sparsityCols(i) - STATE_DIM;
-				inputIndex++;
+				size_t constraintSize = constraint->getConstraintSize();
+				this->lowerBoundsIntermediate_.segment(count, constraintSize) = constraint->getLowerBound();
+				this->upperBoundsIntermediate_.segment(count, constraintSize) = constraint->getUpperBound();
+				count += constraintSize;
 			}
+
+			size_t stateIndex = 0;
+			size_t inputIndex = 0;
+
+			for(size_t i = 0; i < sparsityRows.rows(); ++i)
+			{
+				if(sparsityCols(i) < STATE_DIM)
+				{	
+					sparsityStateIntermediateRows_(stateIndex) = sparsityRows(i);
+					sparsityStateIntermediateCols_(stateIndex) = sparsityCols(i);
+					stateIndex++;
+				}
+				else
+				{
+					sparsityInputIntermediateRows_(inputIndex) = sparsityRows(i);
+					sparsityInputIntermediateCols_(inputIndex) = sparsityCols(i) - STATE_DIM;
+					inputIndex++;
+				}
+			}	
 		}
+
 
 		initializedIntermediate_ = true;
 	}
@@ -479,52 +484,56 @@ private:
 		Eigen::VectorXi sparsityRows;
 		Eigen::VectorXi sparsityCols;
 
-		terminalCodegen_->compileJIT();
-		terminalCodegen_->getSparsityPattern(sparsityRows, sparsityCols);
-
-		// jacCG_->getSparsityPattern();/
-		std::cout << "sparsityPattern: " << std::endl << terminalCodegen_->getSparsityPattern() << std::endl;
-		assert(sparsityRows.rows() == sparsityRows.rows());
-
-		int nonZerosState = (sparsityCols.array() < STATE_DIM).count();
-		int nonZerosInput = (sparsityCols.array() >= STATE_DIM).count();
-
-		sparsityStateTerminalRows_.resize(nonZerosState);
-		sparsityStateTerminalCols_.resize(nonZerosState);
-		sparsityInputTerminalRows_.resize(nonZerosInput);
-		sparsityInputTerminalCols_.resize(nonZerosInput);
-
-		size_t count = 0;
-
-		this->lowerBoundsTerminal_.resize(getTerminalConstraintsCount());
-		this->upperBoundsTerminal_.resize(getTerminalConstraintsCount());
-
-		for(auto constraint : constraintsTerminal_)
+		if(getTerminalConstraintsCount() > 0)
 		{
-			size_t constraintSize = constraint->getConstraintSize();
-			this->lowerBoundsTerminal_.segment(count, constraintSize) = constraint->getLowerBound();
-			this->upperBoundsTerminal_.segment(count, constraintSize) = constraint->getUpperBound();
-			count += constraintSize;
-		}
+			terminalCodegen_->compileJIT();
+			terminalCodegen_->getSparsityPattern(sparsityRows, sparsityCols);
 
-		size_t stateIndex = 0;
-		size_t inputIndex = 0;
+			// jacCG_->getSparsityPattern();/
+			std::cout << "sparsityPattern Terminal: " << std::endl << terminalCodegen_->getSparsityPattern() << std::endl;
+			assert(sparsityRows.rows() == sparsityRows.rows());
 
-		for(size_t i = 0; i < sparsityRows.rows(); ++i)
-		{
-			if(sparsityCols(i) < STATE_DIM)
-			{	
-				sparsityStateTerminalRows_(stateIndex) = sparsityRows(i);
-				sparsityStateTerminalCols_(stateIndex) = sparsityCols(i);
-				stateIndex++;
-			}
-			else
+			int nonZerosState = (sparsityCols.array() < STATE_DIM).count();
+			int nonZerosInput = (sparsityCols.array() >= STATE_DIM).count();
+
+			sparsityStateTerminalRows_.resize(nonZerosState);
+			sparsityStateTerminalCols_.resize(nonZerosState);
+			sparsityInputTerminalRows_.resize(nonZerosInput);
+			sparsityInputTerminalCols_.resize(nonZerosInput);
+
+			size_t count = 0;
+
+			this->lowerBoundsTerminal_.resize(getTerminalConstraintsCount());
+			this->upperBoundsTerminal_.resize(getTerminalConstraintsCount());
+
+			for(auto constraint : constraintsTerminal_)
 			{
-				sparsityInputTerminalRows_(inputIndex) = sparsityRows(i);
-				sparsityInputTerminalCols_(inputIndex) = sparsityCols(i) - STATE_DIM;
-				inputIndex++;
+				size_t constraintSize = constraint->getConstraintSize();
+				this->lowerBoundsTerminal_.segment(count, constraintSize) = constraint->getLowerBound();
+				this->upperBoundsTerminal_.segment(count, constraintSize) = constraint->getUpperBound();
+				count += constraintSize;
+			}
+
+			size_t stateIndex = 0;
+			size_t inputIndex = 0;
+
+			for(size_t i = 0; i < sparsityRows.rows(); ++i)
+			{
+				if(sparsityCols(i) < STATE_DIM)
+				{	
+					sparsityStateTerminalRows_(stateIndex) = sparsityRows(i);
+					sparsityStateTerminalCols_(stateIndex) = sparsityCols(i);
+					stateIndex++;
+				}
+				else
+				{
+					sparsityInputTerminalRows_(inputIndex) = sparsityRows(i);
+					sparsityInputTerminalCols_(inputIndex) = sparsityCols(i) - STATE_DIM;
+					inputIndex++;
+				}
 			}
 		}
+
 
 		initializedTerminal_ = true;
 	}
