@@ -49,7 +49,7 @@ namespace core {
  * \tparam Alloc allocator for trajectory points
  */
 template <class T, class Alloc = Eigen::aligned_allocator<T>, typename SCALAR = double>
-class DiscreteTrajectoryBase : public TrajectoryBase<T>
+class DiscreteTrajectoryBase : public TrajectoryBase<T, SCALAR>
 {
 
 public:
@@ -172,7 +172,7 @@ public:
 	 * @param time stamp at which to evaluate the trajectory
 	 * @return trajectory value
 	 */
-	virtual T eval(const Time& evalTime) override
+	virtual T eval(const SCALAR& evalTime) override
 	{
 		T result;
 		interp_.interpolate(time_, data_, evalTime, result);
