@@ -97,7 +97,6 @@ struct SnoptMemory
     ~SnoptMemory();
 
 };
-std::vector<SnoptMemory*> SnoptMemory::mempool;
 
 
 
