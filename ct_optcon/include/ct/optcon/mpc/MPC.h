@@ -88,9 +88,10 @@ public:
 	static const size_t CONTROL_DIM = OPTCON_SOLVER::CONTROL_D;
 
 
+	typedef typename OPTCON_SOLVER::Scalar_t Scalar_t;
 	typedef typename OPTCON_SOLVER::Policy_t Policy_t;
 
-	typedef OptConProblem<STATE_DIM, CONTROL_DIM> OptConProblem_t;
+	typedef OptConProblem<STATE_DIM, CONTROL_DIM, Scalar_t> OptConProblem_t;
 
 
 
@@ -114,7 +115,7 @@ public:
 			const OptConProblem_t& problem,
 			const typename OPTCON_SOLVER::Settings_t& solverSettings,
 			const mpc_settings& mpcsettings = mpc_settings(),
-			std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM>> customPolicyHandler = nullptr,
+			std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> customPolicyHandler = nullptr,
 			std::shared_ptr<MpcTimeHorizon> customTimeHorizon = nullptr):
 
 				solver_(problem, solverSettings),
@@ -122,7 +123,7 @@ public:
 				dynamics_ (problem.getNonlinearSystem()->clone()),
 				firstRun_(true),
 				runCallCounter_(0),
-				policyHandler_(new PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM>())
+				policyHandler_(new PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>())
 	{
 
 		// =========== INIT WARM START STRATEGY =============
@@ -136,10 +137,10 @@ public:
 			}
 			else
 			{
-				if (std::is_base_of<iLQGBase<STATE_DIM, CONTROL_DIM>, OPTCON_SOLVER>::value)
+				if (std::is_base_of<iLQGBase<STATE_DIM, CONTROL_DIM, Scalar_t>, OPTCON_SOLVER>::value)
 				{
 					// default policy handler for standard discrete-time iLQG implementation
-					policyHandler_ = std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM>> (new PolicyHandlerILQG<STATE_DIM, CONTROL_DIM>(solverSettings.dt));
+					policyHandler_ = std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> (new PolicyHandlerILQG<STATE_DIM, CONTROL_DIM, Scalar_t>(solverSettings.dt));
 				}
 				else
 				{
@@ -224,8 +225,8 @@ public:
 	void doPreIntegration(
 			const core::Time& t_forward_start,
 			const core::Time& t_forward_stop,
-			core::StateVector<STATE_DIM>& x_start,
-			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM>> forwardIntegrationController = nullptr)
+			core::StateVector<STATE_DIM, Scalar_t>& x_start,
+			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr)
 	{
 
 		if(mpc_settings_.stateForwardIntegration_ == true)
@@ -263,11 +264,11 @@ public:
 	 * 		the last iteration.
 	 * @return true if solve was successful, false otherwise.
 	 */
-	bool run(const core::StateVector<STATE_DIM>& x,
+	bool run(const core::StateVector<STATE_DIM, Scalar_t>& x,
 			const core::Time x_ts,
 			Policy_t& newPolicy,
 			core::Time& newPolicy_ts,
-			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM>> forwardIntegrationController = nullptr)
+			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr)
 	{
 
 #ifdef DEBUG_PRINT_MPC
@@ -288,7 +289,7 @@ public:
 		const ct::core::Time currTimeHorizon = solver_.getTimeHorizon();
 		core::Time newTimeHorizon;
 
-		core::StateVector<STATE_DIM> x_start = x;
+		core::StateVector<STATE_DIM, Scalar_t> x_start = x;
 
 
 		if(firstRun_)
@@ -427,7 +428,7 @@ public:
 	}
 
 	//! obtain the solution state trajectory from the solver
-	const core::StateTrajectory<STATE_DIM> getStateTrajectory() const {return stateTrajectory_; }
+	const core::StateTrajectory<STATE_DIM, Scalar_t> getStateTrajectory() const {return stateTrajectory_; }
 
 
 	//! printout simple statistical data
@@ -475,15 +476,15 @@ private:
 	void integrateForward(
 			const core::Time startTime,
 			const core::Time stopTime,
-			core::StateVector<STATE_DIM>& state,
-			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM>>& controller)
+			core::StateVector<STATE_DIM, Scalar_t>& state,
+			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>>& controller)
 	{
 		dynamics_->setController(controller);
 
 		core::Time dtInit = 0.0001;
 
 		// create temporary integrator object
-		core::IntegratorRK4<STATE_DIM> newInt (dynamics_);
+		core::IntegratorRK4<STATE_DIM, Scalar_t> newInt (dynamics_);
 
 		// adaptive pre-integration
 		newInt.integrate_adaptive(state, startTime, stopTime, dtInit);
@@ -494,7 +495,7 @@ private:
 
 	Policy_t currentPolicy_;	//! currently optimal policy, initial guess respectively
 
-	std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM>> policyHandler_;	//! policy handler, which takes care of warm-starting
+	std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> policyHandler_;	//! policy handler, which takes care of warm-starting
 
 	std::shared_ptr<MpcTimeHorizon> timeHorizonStrategy_;	//! time horizon strategy, e.g. receding horizon optimal control
 
@@ -506,7 +507,7 @@ private:
 
 	typename OPTCON_SOLVER::OptConProblem_t::DynamicsPtr_t dynamics_;	//! dynamics instance for forward integration
 
-	core::StateTrajectory<STATE_DIM> stateTrajectory_;	//! state solution trajectory
+	core::StateTrajectory<STATE_DIM, Scalar_t> stateTrajectory_;	//! state solution trajectory
 
 	size_t runCallCounter_;	//! counter which gets incremented at every call of the run() method
 

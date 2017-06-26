@@ -30,11 +30,13 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct{
 namespace optcon{
 
-template<typename POLICY, size_t STATE_DIM, size_t CONTROL_DIM>
+template<typename POLICY, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class PolicyHandler{
 
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	PolicyHandler(){}
 
 	virtual ~PolicyHandler(){}
@@ -54,10 +56,10 @@ public:
 	 * 	the current policy, to be overwritten with the warm start
 	 */
 	virtual void designWarmStartingPolicy(
-			const core::Time delay,
-			const core::Time TimeHorizon,
+			const SCALAR& delay,
+			const SCALAR& TimeHorizon,
 			POLICY& policy,
-			core::StateTrajectory<STATE_DIM>& stateTraj)
+			core::StateTrajectory<STATE_DIM, SCALAR>& stateTraj)
 	{
 		policy = initialPolicy_;
 	}
@@ -76,10 +78,10 @@ public:
 	 * the time which was truncated away
 	 */
 	virtual void truncateSolutionFront(
-			const core::Time& delay,
+			const SCALAR& delay,
 			POLICY& policy,
-			core::StateTrajectory<STATE_DIM>& traj,
-			core::Time& effectivelyTruncated) {}
+			core::StateTrajectory<STATE_DIM, SCALAR>& traj,
+			SCALAR& effectivelyTruncated) {}
 
 
 	//! set new policy to policy handler
