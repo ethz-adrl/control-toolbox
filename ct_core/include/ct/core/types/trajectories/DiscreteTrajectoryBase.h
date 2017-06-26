@@ -286,7 +286,7 @@ public:
 	}
 
 	//! get the time stamp at a certain index
-	const Time& getTimeFromIndex(const size_t& ind) const {return time_[ind];}
+	const SCALAR& getTimeFromIndex(const size_t& ind) const {return time_[ind];}
 
 	//! get the index associated with a certain time
 	/*!

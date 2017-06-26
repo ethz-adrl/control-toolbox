@@ -116,7 +116,7 @@ public:
 			const typename OPTCON_SOLVER::Settings_t& solverSettings,
 			const mpc_settings& mpcsettings = mpc_settings(),
 			std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> customPolicyHandler = nullptr,
-			std::shared_ptr<MpcTimeHorizon> customTimeHorizon = nullptr):
+			std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> customTimeHorizon = nullptr):
 
 				solver_(problem, solverSettings),
 				mpc_settings_(mpcsettings),
@@ -158,14 +158,14 @@ public:
 		}
 		else
 		{
-			const core::Time initTimeHorizon = solver_.getTimeHorizon();
+			const Scalar_t initTimeHorizon = solver_.getTimeHorizon();
 
-			timeHorizonStrategy_ = std::shared_ptr<MpcTimeHorizon> (new MpcTimeHorizon(mpc_settings_, initTimeHorizon));
+			timeHorizonStrategy_ = std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> (new tpl::MpcTimeHorizon<Scalar_t>(mpc_settings_, initTimeHorizon));
 		}
 
 
 		// ==============  INIT MPC TIME KEEPER ==============
-		timeKeeper_ = MpcTimeKeeper(timeHorizonStrategy_, mpc_settings_);
+		timeKeeper_ = tpl::MpcTimeKeeper<Scalar_t>(timeHorizonStrategy_, mpc_settings_);
 	}
 
 
@@ -181,7 +181,7 @@ public:
 	 * @param timeHorizonStrategy
 	 * 	the time horizon strategy provided by the user
 	 */
-	void setTimeHorizonStrategy(std::shared_ptr<MpcTimeHorizon> timeHorizonStrategy){timeHorizonStrategy_ = timeHorizonStrategy;}
+	void setTimeHorizonStrategy(std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> timeHorizonStrategy){timeHorizonStrategy_ = timeHorizonStrategy;}
 
 
 	//! set a new initial guess for the policy
@@ -204,7 +204,7 @@ public:
 	 * the returned time can be used externally, for example to update cost functions
 	 * @return time elapsed
 	 */
-	const core::Time timeSinceFirstSuccessfulSolve()
+	const Scalar_t timeSinceFirstSuccessfulSolve()
 	{
 		return timeKeeper_.timeSinceFirstSuccessfulSolve();
 	}
@@ -223,8 +223,8 @@ public:
 	 *  (optional) external controller for forward integration
 	 */
 	void doPreIntegration(
-			const core::Time& t_forward_start,
-			const core::Time& t_forward_stop,
+			const Scalar_t& t_forward_start,
+			const Scalar_t& t_forward_stop,
 			core::StateVector<STATE_DIM, Scalar_t>& x_start,
 			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr)
 	{
@@ -265,9 +265,9 @@ public:
 	 * @return true if solve was successful, false otherwise.
 	 */
 	bool run(const core::StateVector<STATE_DIM, Scalar_t>& x,
-			const core::Time x_ts,
+			const Scalar_t x_ts,
 			Policy_t& newPolicy,
-			core::Time& newPolicy_ts,
+			Scalar_t& newPolicy_ts,
 			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr)
 	{
 
@@ -283,11 +283,11 @@ public:
 
 
 		// local variables
-		core::Time t_forward_start;
-		core::Time t_forward_stop;
+		Scalar_t t_forward_start;
+		Scalar_t t_forward_stop;
 
-		const ct::core::Time currTimeHorizon = solver_.getTimeHorizon();
-		core::Time newTimeHorizon;
+		const Scalar_t currTimeHorizon = solver_.getTimeHorizon();
+		Scalar_t newTimeHorizon;
 
 		core::StateVector<STATE_DIM, Scalar_t> x_start = x;
 
@@ -338,7 +338,7 @@ public:
 			stateTrajectory_ = solver_.getStateTrajectory();
 
 			// obtain the time which passed since the previous successful solve
-			core::Time dtp = timeKeeper_.timeSincePreviousSuccessfulSolve();
+			Scalar_t dtp = timeKeeper_.timeSincePreviousSuccessfulSolve();
 
 			// post-truncation may be an option of the solve-call took longer than the estimated delay
 			if(mpc_settings_.postTruncation_){
@@ -346,14 +346,14 @@ public:
 				if(dtp > t_forward_stop && !firstRun_)
 				{
 					// the time-difference to be account for by post-truncation
-					core::Time dt_post_truncation = dtp-t_forward_stop;
+					Scalar_t dt_post_truncation = dtp-t_forward_stop;
 
 #ifdef DEBUG_PRINT_MPC
 					std::cout << "DEBUG_PRINT_MPC: additional post-truncation about "<< dt_post_truncation << " [sec]." << std::endl;
 #endif //DEBUG_PRINT_MPC
 
 					// the time which was effectively truncated away (e.g. discrete-time case)
-					core::Time dt_truncated_eff;
+					Scalar_t dt_truncated_eff;
 
 					policyHandler_->truncateSolutionFront(dt_post_truncation, currentPolicy_, stateTrajectory_, dt_truncated_eff);
 
@@ -395,7 +395,7 @@ public:
 
 
 	//! reset the mpc problem and provide new problem time horizon (mandatory)
-	void resetMpc(const core::Time& newTimeHorizon){
+	void resetMpc(const Scalar_t& newTimeHorizon){
 
 		firstRun_ = true;
 
@@ -422,7 +422,7 @@ public:
 		timeHorizonStrategy_->updateSettings(settings);
 	}
 
-	void setStateTrajectory(const core::StateTrajectory<STATE_DIM>& x)
+	void setStateTrajectory(const core::StateTrajectory<STATE_DIM, Scalar_t>& x)
 	{
 		stateTrajectory_ = x;
 	}
@@ -474,14 +474,14 @@ private:
 	 *  the controller to be used for forward propagation
 	 */
 	void integrateForward(
-			const core::Time startTime,
-			const core::Time stopTime,
+			const Scalar_t startTime,
+			const Scalar_t stopTime,
 			core::StateVector<STATE_DIM, Scalar_t>& state,
 			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>>& controller)
 	{
 		dynamics_->setController(controller);
 
-		core::Time dtInit = 0.0001;
+		Scalar_t dtInit = 0.0001;
 
 		// create temporary integrator object
 		core::IntegratorRK4<STATE_DIM, Scalar_t> newInt (dynamics_);
@@ -497,9 +497,9 @@ private:
 
 	std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> policyHandler_;	//! policy handler, which takes care of warm-starting
 
-	std::shared_ptr<MpcTimeHorizon> timeHorizonStrategy_;	//! time horizon strategy, e.g. receding horizon optimal control
+	std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> timeHorizonStrategy_;	//! time horizon strategy, e.g. receding horizon optimal control
 
-	MpcTimeKeeper timeKeeper_;	//! time keeper
+	tpl::MpcTimeKeeper<Scalar_t> timeKeeper_;	//! time keeper
 
 	mpc_settings mpc_settings_;	//! mpc settings
 

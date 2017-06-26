@@ -118,7 +118,7 @@ public:
 			return;
 		}
 
-		if (ind == timeArray.size()-1) {
+		if (ind == (int)timeArray.size()-1) {
 			enquiryData = dataArray.back();
 			return;
 		}
@@ -163,7 +163,7 @@ public:
 		}
 		else
 		{
-			for (int i=index_; i<timeArray.size(); i++)
+			for (int i=index_; i<(int)timeArray.size(); i++)
 			{
 				index = i;
 				if (timeArray.at(i) > enquiryTime)

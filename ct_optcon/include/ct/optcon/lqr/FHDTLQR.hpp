@@ -116,7 +116,7 @@ public:
 		const control_vector_array_t& u_trajectory,
 		const state_matrix_array_t& A,
 		const control_gain_matrix_array_t& B,
-		double dt,
+		SCALAR dt,
 		control_feedback_array_t& K,
 		bool performNumericalChecks = true
 	)
@@ -145,7 +145,7 @@ public:
 			const state_vector_array_t& x_trajectory,
 			const control_vector_array_t& u_trajectory,
 			std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> > derivatives,
-			double dt,
+			SCALAR dt,
 			control_feedback_array_t& K,
 			bool performNumericalChecks = true
 		)
@@ -185,7 +185,7 @@ private:
 			const state_vector_array_t& x_trajectory,
 			const control_vector_array_t& u_trajectory,
 			size_t N,
-			double dt,
+			SCALAR dt,
 			std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> >& derivatives,
 			state_matrix_array_t& A,
 			control_gain_matrix_array_t& B
@@ -228,7 +228,7 @@ private:
 		const state_matrix_array_t& A,
 		const control_gain_matrix_array_t& B,
 		size_t N,
-		double dt,
+		SCALAR dt,
 		control_feedback_array_t& K,
 		bool performNumericalChecks = true
 	)

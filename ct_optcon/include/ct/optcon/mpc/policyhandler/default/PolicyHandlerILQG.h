@@ -36,7 +36,7 @@ namespace optcon{
 
 //! the default policy handler for SLQ
 template<size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-class PolicyHandlerILQG : public PolicyHandler<core::StateFeedbackController<STATE_DIM, CONTROL_DIM>, STATE_DIM, CONTROL_DIM, SCALAR>
+class PolicyHandlerILQG : public PolicyHandler<core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>, STATE_DIM, CONTROL_DIM, SCALAR>
 {
 
 public:
