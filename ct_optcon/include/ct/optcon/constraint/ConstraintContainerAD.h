@@ -99,6 +99,7 @@ public:
 	 */
 	ConstraintContainerAD(const ConstraintContainerAD& arg)
 	:
+	LinearConstraintContainer<STATE_DIM, CONTROL_DIM>(arg),
 	constraintsIntermediate_(arg.constraintsIntermediate_),
 	constraintsTerminal_(arg.constraintsTerminal_),
 	intermediateCodegen_(arg.intermediateCodegen_),
@@ -428,7 +429,7 @@ private:
 		intermediateCodegen_->getSparsityPattern(sparsityRows, sparsityCols);
 
 		std::cout << "sparsityPattern: " << std::endl << intermediateCodegen_->getSparsityPattern() << std::endl;
-		assert(sparsityRows_.rows() == sparsityCols_.rows());
+		assert(sparsityRows.rows() == sparsityRows.rows());
 		
 		int nonZerosState = (sparsityCols.array() < STATE_DIM).count();
 		int nonZerosInput = (sparsityCols.array() >= STATE_DIM).count();
@@ -483,7 +484,7 @@ private:
 
 		// jacCG_->getSparsityPattern();/
 		std::cout << "sparsityPattern: " << std::endl << terminalCodegen_->getSparsityPattern() << std::endl;
-		assert(sparsityRows_.rows() == sparsityCols_.rows());
+		assert(sparsityRows.rows() == sparsityRows.rows());
 
 		int nonZerosState = (sparsityCols.array() < STATE_DIM).count();
 		int nonZerosInput = (sparsityCols.array() >= STATE_DIM).count();

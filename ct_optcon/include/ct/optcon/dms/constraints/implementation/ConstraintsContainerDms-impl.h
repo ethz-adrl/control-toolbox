@@ -60,7 +60,7 @@ ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::ConstraintsContainerDms(
 
 	if(discretizedConstraints)
 	{
-		std::cout << "Adding intermediate constraints" << std::endl;
+		std::cout << "Adding discretized constraints" << std::endl;
 		constraints_.push_back(discretizedConstraints); 
 	}
 

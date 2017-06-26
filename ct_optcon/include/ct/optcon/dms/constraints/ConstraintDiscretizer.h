@@ -87,247 +87,188 @@ public:
 		std::shared_ptr<TimeGrid> timeGrid,
 		size_t N
 		)
-		// std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> c_continuous,
-		// std::vector<size_t> activeInd)
 	:
 	w_(w),
 	controlSpliner_(controlSpliner),
 	timeGrid_(timeGrid),
 	N_(N),
 	constraintsCount_(0),
-	nonZeroJacCount_(0)
-	// activeInd_(activeInd)
-	{
-		// continuousCount_ = c_continuous_->getConstraintCount();
-		// constraintsLocal_.resize(continuousCount_);
-		// discreteConstraints_.resize(activeInd_.size() * continuousCount_);
-		// discreteLowerBound_.resize(activeInd_.size() * continuousCount_);
-		// discreteUpperBound_.resize(activeInd_.size() * continuousCount_);
-
-		// nonZeroJacCount_ = c_continuous_->getConstraintJacobianNonZeroCount();
-		// jacLocal_.resize(nonZeroJacCount_);
-		// iRowLocal_.resize(nonZeroJacCount_);
-		// jColLocal_.resize(nonZeroJacCount_);
-		// discreteJac_.resize(activeInd_.size() * nonZeroJacCount_);
-		// discreteIRow_.resize(activeInd_.size() * nonZeroJacCount_);
-		// discreteJCol_.resize(activeInd_.size() * nonZeroJacCount_);
-	}
+	constraintsIntermediateCount_(0),
+	constraintsTerminalCount_(0),
+	nonZeroJacCount_(0),
+	nonZeroJacCountIntermediate_(0),
+	nonZeroJacCountTerminal_(0)
+	{}
 
 
 	void setStateInputConstraints(std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> stateInputConstraints)
 	{
-		stateInputConstraints_ = stateInputConstraints;
-		constraintsCount_ += stateInputConstraints_->getConstraintsCount();
-		constraintsLocal_.resize(constraintsCount_);
-		discreteConstraints_.resize(N_ * constraintsCount_);
-		discreteLowerBound_.resize(N_ * constraintsCount_);
-		discreteUpperBound_.resize(N_ * constraintsCount_);
+		constraints_.push_back(stateInputConstraints);
+		constraintsIntermediateCount_ += stateInputConstraints->getIntermediateConstraintsCount();
+		constraintsTerminalCount_ += stateInputConstraints->getTerminalConstraintsCount();
+		constraintsCount_ = N_ * constraintsIntermediateCount_ + constraintsTerminalCount_;
 
-		nonZeroJacCount_ += stateInputConstraints_->getJacNonZeroCount();
-		jacLocal_.resize(nonZeroJacCount_);
-		iRowLocal_.resize(nonZeroJacCount_);
-		jColLocal_.resize(nonZeroJacCount_);
-		discreteJac_.resize(N_ * nonZeroJacCount_);
-		discreteIRow_.resize(N_ * nonZeroJacCount_);
-		discreteJCol_.resize(N_ * nonZeroJacCount_);		
+		discreteConstraints_.resize(constraintsCount_);
+		discreteLowerBound_.resize(constraintsCount_);
+		discreteUpperBound_.resize(constraintsCount_);
+
+		nonZeroJacCountIntermediate_ += stateInputConstraints->getJacobianStateNonZeroCountIntermediate();
+		nonZeroJacCountTerminal_ += stateInputConstraints->getJacobianStateNonZeroCountTerminal();
+		nonZeroJacCount_ = N_ * nonZeroJacCountIntermediate_ + nonZeroJacCountTerminal_;
+
+		discreteJac_.resize(nonZeroJacCount_);
+		discreteIRow_.resize(nonZeroJacCount_);
+		discreteJCol_.resize(nonZeroJacCount_);		
 	}
 
 	void setPureStateConstraints(std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> pureStateConstraints)
 	{
-		pureStateConstraints_ = pureStateConstraints;
-		constraintsCount_ += pureStateConstraints_->getConstraintsCount();
-		constraintsLocal_.resize(constraintsCount_);
-		discreteConstraints_.resize(N_ * constraintsCount_);
-		discreteLowerBound_.resize(N_ * constraintsCount_);
-		discreteUpperBound_.resize(N_ * constraintsCount_);
+		constraints_.push_back(pureStateConstraints);
+		constraintsIntermediateCount_ += pureStateConstraints->getIntermediateConstraintsCount();
+		constraintsTerminalCount_ += pureStateConstraints->getTerminalConstraintsCount();
+		constraintsCount_ = N_ * constraintsIntermediateCount_ + constraintsTerminalCount_;
 
-		nonZeroJacCount_ += pureStateConstraints_->getJacNonZeroCount();
-		jacLocal_.resize(nonZeroJacCount_);
-		iRowLocal_.resize(nonZeroJacCount_);
-		jColLocal_.resize(nonZeroJacCount_);
-		discreteJac_.resize(N_ * nonZeroJacCount_);
-		discreteIRow_.resize(N_ * nonZeroJacCount_);
-		discreteJCol_.resize(N_ * nonZeroJacCount_);	
+		discreteConstraints_.resize(constraintsCount_);
+		discreteLowerBound_.resize(constraintsCount_);
+		discreteUpperBound_.resize(constraintsCount_);
+
+		nonZeroJacCountIntermediate_ += pureStateConstraints->getJacobianStateNonZeroCountIntermediate();
+		nonZeroJacCountTerminal_ += pureStateConstraints->getJacobianStateNonZeroCountTerminal();
+
+		nonZeroJacCount_ = N_ * nonZeroJacCountIntermediate_ + nonZeroJacCountTerminal_;
+
+		discreteJac_.resize(nonZeroJacCount_);
+		discreteIRow_.resize(nonZeroJacCount_);
+		discreteJCol_.resize(nonZeroJacCount_);	
 	}
 
 	virtual Eigen::VectorXd eval() override
 	{
-		// constraintsLocal_.setZero();
 		size_t constraintSize = 0;
 		size_t discreteInd = 0;
-		// Eigen::VectorXd evalStateInput;
-		// Eigen::VectorXd evalPureState;
 
 		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			double tShot = timeGrid_->getShotStartTime(n);			
-			stateInputConstraints_->setCurrentStateAndControl(w_->getOptimizedState(n), controlSpliner_->evalSpline(tShot, n), tShot);
-			pureStateConstraints_->setCurrentStateAndControl(w_->getOptimizedState(n), controlSpliner_->evalSpline(tShot, n), tShot);
+			double tShot = timeGrid_->getShotStartTime(n);
+			for(auto constraint : constraints_)
+			{
+				constraint->setCurrentStateAndControl(w_->getOptimizedState(n), controlSpliner_->evalSpline(tShot, n), tShot);
+				constraintSize = constraint->getIntermediateConstraintsCount();
+				discreteConstraints_.segment(discreteInd, constraintSize) = constraint->evaluateIntermediate();
+				discreteInd += constraintSize;
 
-			// evalStateInput = ;
-			constraintSize = stateInputConstraints_->getIntermediateConstraintsCount();
-			discreteConstraints_.segment(discreteInd, constraintSize) = stateInputConstraints_->evaluateIntermediate();
-			discreteInd += constraintSize;
+			}			
+		}
 
-			// evalPureState = ;
-			constraintSize = pureStateConstraints_->getIntermediateConstraintsCount();
-			discreteConstraints_.segment(discreteInd, constraintSize) = pureStateConstraints_->evaluateIntermediate();
+		for(auto constraint : constraints_)
+		{
+			constraintSize = constraint->getTerminalConstraintsCount();
+			discreteConstraints_.segment(discreteInd, constraintSize) = constraint->evaluateTerminal();
 			discreteInd += constraintSize;
 		}
 
-		// evalStateInput = ;
-		constraintSize = stateInputConstraints_->getTerminalConstraintsCount();
-		discreteConstraints_.segment(discreteInd, constraintSize) = stateInputConstraints_->evaluateTerminal();
-		discreteInd += constraintSize;
-
-		// evalPureState = ;
-		constraintSize = pureStateConstraints_->getTerminalConstraintsCount();
-		discreteConstraints_.segment(discreteInd, constraintSize) = pureStateConstraints_->evaluateTerminal();
-		discreteInd += constraintSize;
+		// std::cout << "discreteConstraints eval:" << discreteConstraints_.transpose() << std::endl;
 
 		return discreteConstraints_;
 	}
 
 	virtual Eigen::VectorXd evalSparseJacobian() override
 	{
-		// jacLocal_.setZero();
 		size_t jacSize = 0;
 		size_t discreteInd = 0;
-		// Eigen::VectorXd jacStateInput;
-		// Eigen::VectorXd jacPureState;
 
-		// Eigen::VectorXd jacStateInput2;
-		// Eigen::VectorXd jacPureState2;
-
-		for(size_t n = 0; n < N_; ++n)
+		for(size_t n = 0; n < N_ + 1; ++n)
 		{
 			double tShot = timeGrid_->getShotStartTime(n);
-			stateInputConstraints_->setCurrentStateAndControl(w_->getOptimizedState(n), controlSpliner_->evalSpline(tShot, n), tShot);
-			pureStateConstraints_->setCurrentStateAndControl(w_->getOptimizedState(n), controlSpliner_->evalSpline(tShot, n), tShot);
 
-			// jacStateInput = ;
-			jacSize = stateInputConstraints_->getJacobianStateNonZeroCountIntermediate();
-			discreteJac_.segment(discreteInd, jacSize) = stateInputConstraints_->jacobianStateSparseIntermediate();
-			discreteInd += jacSize;
+			for(auto constraint : constraints_)
+			{
 
-			// jacStateInput2 = ;
-			jacSize = stateInputConstraints_->getJacobianInputNonZeroCountIntermediate();
-			discreteJac_.segment(discreteInd, jacSize) = stateInputConstraints_->jacobianInputSparseIntermediate();
-			discreteInd += jacSize;
-			
-			// jacPureState = ;
-			jacSize =  pureStateConstraints_->getJacobianStateNonZeroCountIntermediate();
-			discreteJac_.segment(discreteInd, jacSize) = pureStateConstraints_->jacobianStateSparseIntermediate();
-			discreteInd += jacSize;
+				constraint->setCurrentStateAndControl(w_->getOptimizedState(n), controlSpliner_->evalSpline(tShot, n), tShot);
+				jacSize = constraint->getJacobianStateNonZeroCountIntermediate();
+				discreteJac_.segment(discreteInd, jacSize) = constraint->jacobianStateSparseIntermediate();
+				discreteInd += jacSize;
+				jacSize = constraint->getJacobianInputNonZeroCountIntermediate();
+				discreteJac_.segment(discreteInd, jacSize) = constraint->jacobianInputSparseIntermediate();
+				discreteInd += jacSize;	
+			}
 
-			// jacPureState2 = ;
-			jacSize =  pureStateConstraints_->getJacobianInputNonZeroCountIntermediate();
-			discreteJac_.segment(discreteInd, jacSize) = pureStateConstraints_->jacobianInputSparseIntermediate();
-			discreteInd += jacSize;		
 		}
 
+		for(auto constraint : constraints_)
+		{
+			jacSize = constraint->getJacobianStateNonZeroCountTerminal();
+			discreteJac_.segment(discreteInd, jacSize) = constraint->jacobianStateSparseTerminal();
+			discreteInd += jacSize;
+			jacSize = constraint->getJacobianInputNonZeroCountTerminal();
+			discreteJac_.segment(discreteInd, jacSize) = constraint->jacobianInputSparseTerminal();
+			discreteInd += jacSize;
+		}
 
-		// jacStateInput = ;
-		jacSize = stateInputConstraints_->getJacobianStateNonZeroCountTerminal();
-		discreteJac_.segment(discreteInd, jacSize) = stateInputConstraints_->jacobianStateSparseTerminal();
-		discreteInd += jacSize;
-
-		// jacStateInput2 = ;
-		jacSize = stateInputConstraints_->getJacobianInputNonZeroCountTerminal();
-		discreteJac_.segment(discreteInd, jacSize) = stateInputConstraints_->jacobianInputSparseTerminal();
-		discreteInd += jacSize;
-
-		// jacPureState = ;
-		jacSize =  pureStateConstraints_->getJacobianStateNonZeroCountTerminal();
-		discreteJac_.segment(discreteInd, jacSize) = pureStateConstraints_->jacobianStateSparseTerminal();
-		discreteInd += jacSize;
-
-		// jacPureState2 = ;
-		jacSize =  pureStateConstraints_->getJacobianInputNonZeroCountTerminal();
-		discreteJac_.segment(discreteInd, jacSize) = pureStateConstraints_->jacobianInputSparseTerminal();
-		discreteInd += jacSize;
+		// std::cout << "discreteJac eval: " << discreteJac_.transpose() << std::endl;
 
 		return discreteJac_;		
 	}
 
 	virtual size_t getNumNonZerosJacobian() override
 	{
-		return N_ * nonZeroJacCount_;
+		return nonZeroJacCount_;
 	}
 
 	virtual void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
 	{
 		size_t discreteInd = 0;
 		size_t nnEle = 0;
-		
-		Eigen::VectorXi iRowStateIntermediate(stateInputConstraints_->getJacobianStateNonZeroCountIntermediate());
-		Eigen::VectorXi jColStateIntermediate(stateInputConstraints_->getJacobianStateNonZeroCountIntermediate());
-		Eigen::VectorXi iRowInputIntermediate(stateInputConstraints_->getJacobianInputNonZeroCountIntermediate());
-		Eigen::VectorXi jColInputIntermediate(stateInputConstraints_->getJacobianInputNonZeroCountIntermediate()); 
-		Eigen::VectorXi iRowStateIntermediate2(pureStateConstraints_->getJacobianStateNonZeroCountIntermediate());
-		Eigen::VectorXi jColStateIntermediate2(pureStateConstraints_->getJacobianStateNonZeroCountIntermediate());
-		Eigen::VectorXi iRowInputIntermediate2(pureStateConstraints_->getJacobianInputNonZeroCountIntermediate());
-		Eigen::VectorXi jColInputIntermediate2(pureStateConstraints_->getJacobianInputNonZeroCountIntermediate());
-
+	
 		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			nnEle = stateInputConstraints_->getJacobianStateNonZeroCountIntermediate();
-			stateInputConstraints_->sparsityPatternStateIntermediate(iRowStateIntermediate, jColStateIntermediate);
-			discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate.array() + discreteInd;
-			discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate.array() + w_->getStateIndex(n);
-			discreteInd += nnEle;
 
-			nnEle = stateInputConstraints_->getJacobianInputNonZeroCountIntermediate();
-			stateInputConstraints_->sparsityPatternInputIntermediate(iRowInputIntermediate, jColInputIntermediate);
-			discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate.array() + discreteInd;
-			discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate.array() + w_->getControlIndex(n);
-			discreteInd += nnEle;
+			for(auto constraint : constraints_)
+			{
+				Eigen::VectorXi iRowStateIntermediate(constraint->getJacobianStateNonZeroCountIntermediate());
+				Eigen::VectorXi jColStateIntermediate(constraint->getJacobianStateNonZeroCountIntermediate());
+				Eigen::VectorXi iRowInputIntermediate(constraint->getJacobianInputNonZeroCountIntermediate());
+				Eigen::VectorXi jColInputIntermediate(constraint->getJacobianInputNonZeroCountIntermediate()); 
 
-			nnEle = pureStateConstraints_->getJacobianStateNonZeroCountIntermediate();
-			pureStateConstraints_->sparsityPatternStateIntermediate(iRowStateIntermediate2, jColStateIntermediate2);
-			discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate2.array() + discreteInd;
-			discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate2.array() + w_->getStateIndex(n);
-			discreteInd += nnEle;
+				nnEle = constraint->getJacobianStateNonZeroCountIntermediate();
+				constraint->sparsityPatternStateIntermediate(iRowStateIntermediate, jColStateIntermediate);
+				discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate.array() + discreteInd;
+				discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate.array() + w_->getStateIndex(n);
+				discreteInd += nnEle;
 
-			nnEle = pureStateConstraints_->getJacobianInputNonZeroCountIntermediate();
-			pureStateConstraints_->sparsityPatternInputIntermediate(iRowInputIntermediate2, jColInputIntermediate2);
-			discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate2.array() + discreteInd;
-			discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate2.array() + w_->getControlIndex(n);
-			discreteInd += nnEle;	
+				nnEle = constraint->getJacobianInputNonZeroCountIntermediate();
+				constraint->sparsityPatternInputIntermediate(iRowInputIntermediate, jColInputIntermediate);
+				discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate.array() + discreteInd;
+				discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate.array() + w_->getControlIndex(n);
+				discreteInd += nnEle;
+
+			}
+
 		}
 
-		iRowStateIntermediate.resize(stateInputConstraints_->getJacobianStateNonZeroCountIntermediate());
-		jColStateIntermediate.resize(stateInputConstraints_->getJacobianStateNonZeroCountIntermediate());
-		iRowInputIntermediate.resize(stateInputConstraints_->getJacobianInputNonZeroCountIntermediate());
-		jColInputIntermediate.resize(stateInputConstraints_->getJacobianInputNonZeroCountIntermediate()); 
-		iRowStateIntermediate2.resize(pureStateConstraints_->getJacobianStateNonZeroCountIntermediate());
-		jColStateIntermediate2.resize(pureStateConstraints_->getJacobianStateNonZeroCountIntermediate());
-		iRowInputIntermediate2.resize(pureStateConstraints_->getJacobianInputNonZeroCountIntermediate());
-		jColInputIntermediate2.resize(pureStateConstraints_->getJacobianInputNonZeroCountIntermediate());		
+		for(auto constraint : constraints_)
+		{
+			Eigen::VectorXi iRowStateIntermediate(constraint->getJacobianStateNonZeroCountTerminal());
+			Eigen::VectorXi jColStateIntermediate(constraint->getJacobianStateNonZeroCountTerminal());
+			Eigen::VectorXi iRowInputIntermediate(constraint->getJacobianInputNonZeroCountTerminal());
+			Eigen::VectorXi jColInputIntermediate(constraint->getJacobianInputNonZeroCountTerminal()); 
 
-		nnEle = stateInputConstraints_->getJacobianStateNonZeroCountTerminal();
-		stateInputConstraints_->sparsityPatternStateTerminal(iRowStateIntermediate, jColStateIntermediate);
-		discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate.array() + discreteInd;
-		discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate.array() + w_->getStateIndex(N_);
-		discreteInd += nnEle;
+			nnEle = constraint->getJacobianStateNonZeroCountTerminal();
+			constraint->sparsityPatternStateTerminal(iRowStateIntermediate, jColStateIntermediate);
+			discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate.array() + discreteInd;
+			discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate.array() + w_->getStateIndex(N_);
+			discreteInd += nnEle;
 
-		nnEle = stateInputConstraints_->getJacobianInputNonZeroCountTerminal();
-		stateInputConstraints_->sparsityPatternInputTerminal(iRowInputIntermediate, jColInputIntermediate);
-		discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate.array() + discreteInd;
-		discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate.array() + w_->getControlIndex(N_);
-		discreteInd += nnEle;
+			nnEle = constraint->getJacobianInputNonZeroCountTerminal();
+			constraint->sparsityPatternInputTerminal(iRowInputIntermediate, jColInputIntermediate);
+			discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate.array() + discreteInd;
+			discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate.array() + w_->getControlIndex(N_);
+			discreteInd += nnEle;
+			
+		}
 
-		nnEle = pureStateConstraints_->getJacobianStateNonZeroCountTerminal();
-		pureStateConstraints_->sparsityPatternStateTerminal(iRowStateIntermediate2, jColStateIntermediate2);
-		discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate2.array() + discreteInd;
-		discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate2.array() + w_->getStateIndex(N_);
-		discreteInd += nnEle;
-
-		nnEle = pureStateConstraints_->getJacobianInputNonZeroCountTerminal();
-		pureStateConstraints_->sparsityPatternInputTerminal(iRowInputIntermediate2, jColInputIntermediate2);
-		discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate2.array() + discreteInd;
-		discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate2.array() + w_->getControlIndex(N_);
-		discreteInd += nnEle;	
+		// std::cout << "iRow_vec: " << discreteIRow_.transpose() << std::endl;
+		// std::cout << "jCol_vec: " << discreteJCol_.transpose() << std::endl;
 
 		iRow_vec = discreteIRow_;
 		jCol_vec = discreteJCol_;
@@ -335,69 +276,62 @@ public:
 
 	virtual Eigen::VectorXd getLowerBound() override
 	{
-		constraintsLocal_.setZero();
 		size_t discreteInd = 0;
 		size_t constraintSize = 0;
 
 		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			constraintSize = stateInputConstraints_->getIntermediateConstraintsCount();
-			discreteLowerBound_.segment(discreteInd, constraintSize) = stateInputConstraints_->getLowerBoundsIntermediate();
-			discreteInd += constraintSize;
-			constraintSize = pureStateConstraints_->getIntermediateConstraintsCount();
-			discreteLowerBound_.segment(discreteInd, constraintSize) = pureStateConstraints_->getLowerBoundsIntermediate();
+			for(auto constraint : constraints_)
+			{
+				constraintSize = constraint->getIntermediateConstraintsCount();
+				discreteLowerBound_.segment(discreteInd, constraintSize) = constraint->getLowerBoundsIntermediate();
+				discreteInd += constraintSize;
+			}
+		}
+
+		for(auto constraint : constraints_)
+		{
+			constraintSize = constraint->getTerminalConstraintsCount();
+			discreteLowerBound_.segment(discreteInd, constraintSize) = constraint->getLowerBoundsTerminal();
 			discreteInd += constraintSize;
 		}
 
-		constraintSize = stateInputConstraints_->getTerminalConstraintsCount();
-		discreteLowerBound_.segment(discreteInd, constraintSize) = stateInputConstraints_->getLowerBoundsTerminal();
-		discreteInd += constraintSize;
+		// std::cout << "lower bound: " << discreteLowerBound_.transpose() << std::endl;
 
-		constraintSize = pureStateConstraints_->getTerminalConstraintsCount();
-		discreteLowerBound_.segment(discreteInd, constraintSize) = pureStateConstraints_->getLowerBoundsTerminal();
-		discreteInd += constraintSize;
 
 		return discreteLowerBound_;
 	}
 
 	virtual Eigen::VectorXd getUpperBound() override
 	{
-		constraintsLocal_.setZero();
 		size_t discreteInd = 0;
 		size_t constraintSize = 0;
 
 		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			constraintSize = stateInputConstraints_->getIntermediateConstraintsCount();
-			discreteUpperBound_.segment(discreteInd, constraintSize) = stateInputConstraints_->getUpperBoundsIntermediate();
-			discreteInd += constraintSize;
-			constraintSize = pureStateConstraints_->getIntermediateConstraintsCount();
-			discreteUpperBound_.segment(discreteInd, constraintSize) = pureStateConstraints_->getUpperBoundsIntermediate();
+			for(auto constraint : constraints_)
+			{
+				constraintSize = constraint->getIntermediateConstraintsCount();
+				discreteUpperBound_.segment(discreteInd, constraintSize) = constraint->getUpperBoundsIntermediate();
+				discreteInd += constraintSize;
+			}
+		}
+
+		for(auto constraint : constraints_)
+		{
+			constraintSize = constraint->getTerminalConstraintsCount();
+			discreteUpperBound_.segment(discreteInd, constraintSize) = constraint->getUpperBoundsTerminal();
 			discreteInd += constraintSize;
 		}
 
-		constraintSize = stateInputConstraints_->getTerminalConstraintsCount();
-		discreteUpperBound_.segment(discreteInd, constraintSize) = stateInputConstraints_->getUpperBoundsTerminal();
-		discreteInd += constraintSize;
-
-		constraintSize = pureStateConstraints_->getTerminalConstraintsCount();
-		discreteUpperBound_.segment(discreteInd, constraintSize) = pureStateConstraints_->getUpperBoundsTerminal();
-		discreteInd += constraintSize;
+		// std::cout << "upper bound: " << discreteUpperBound_.transpose() << std::endl;
 
 		return discreteUpperBound_;
 	}
 
 	virtual size_t getConstraintSize() override
 	{
-		size_t discreteCount = 0;
-
-		for(size_t i = 0; i < N_; ++i)
-		{
-			discreteCount += stateInputConstraints_->getConstraintsCount();
-			discreteCount += pureStateConstraints_->getConstraintsCount();
-		}
-
-		return discreteCount; 
+		return constraintsCount_;
 	}
 
 
@@ -407,23 +341,23 @@ private:
 	std::shared_ptr<TimeGrid> timeGrid_; 
 	size_t N_;
 
-	std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> stateInputConstraints_;
-	std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> pureStateConstraints_;
+	std::vector<std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>>> constraints_;
 	
 	size_t constraintsCount_;
-	Eigen::VectorXd constraintsLocal_;
+	size_t constraintsIntermediateCount_;
+	size_t constraintsTerminalCount_;
+
 	Eigen::VectorXd discreteConstraints_;
 	Eigen::VectorXd discreteLowerBound_;
 	Eigen::VectorXd discreteUpperBound_;
 
-	Eigen::VectorXd jacLocal_;
 	Eigen::VectorXd discreteJac_;
-	Eigen::VectorXi iRowLocal_;
 	Eigen::VectorXi discreteIRow_;
-	Eigen::VectorXi jColLocal_;
 	Eigen::VectorXi discreteJCol_;
 
 	size_t nonZeroJacCount_;
+	size_t nonZeroJacCountIntermediate_; 
+	size_t nonZeroJacCountTerminal_; 
 };
 
 

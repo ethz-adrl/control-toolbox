@@ -68,6 +68,8 @@ public:
 	 * @param[in]  arg   The object to be copied
 	 */
 	LinearConstraintContainer(const LinearConstraintContainer& arg)
+	:
+	ConstraintContainerBase<STATE_DIM, CONTROL_DIM>(arg)
 	{}
 
 	/**

@@ -82,6 +82,7 @@ public:
 	 */
 	ConstraintContainerAnalytical(const ConstraintContainerAnalytical& arg) 
 	:
+	LinearConstraintContainer<STATE_DIM, CONTROL_DIM>(arg),
 	evalIntermediate_(arg.evalIntermediate_),
 	evalTerminal_(arg.evalTerminal_),
 	constraintsIntermediate_(arg.constraintsIntermediate_),
@@ -149,16 +150,15 @@ public:
 
 	virtual void initialize() override
 	{
-		if(constraintsIntermediate_.size() > 0)
+		// if(constraintsIntermediate_.size() > 0)
 			initializeIntermediate();
-		if(constraintsTerminal_.size() > 0)
+		// if(constraintsTerminal_.size() > 0)
 			initializeTerminal();
 	}
 
 	virtual Eigen::VectorXd evaluateIntermediate() override
 	{
-		if(!initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+		checkIntermediateConstraints();
 
 		size_t count = 0;
 		for(auto constraint : constraintsIntermediate_)
@@ -172,8 +172,7 @@ public:
 
 	virtual Eigen::VectorXd evaluateTerminal() override
 	{
-		if(!initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+		checkTerminalConstraints();
 
 		size_t count = 0;
 		for(auto constraint : constraintsTerminal_)
@@ -206,8 +205,7 @@ public:
 
 	virtual Eigen::VectorXd jacobianStateSparseIntermediate() override
 	{
-		if(!initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+		checkIntermediateConstraints();
 
 		size_t count = 0;
 		for(auto constraint : constraintsIntermediate_)
@@ -226,8 +224,7 @@ public:
 
 	virtual Eigen::MatrixXd jacobianStateIntermediate() override
 	{
-		if(!initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+		checkIntermediateConstraints();
 
 		Eigen::MatrixXd jacLocal;
 		size_t count = 0;
@@ -243,8 +240,7 @@ public:
 
 	virtual Eigen::VectorXd jacobianStateSparseTerminal() override
 	{
-		if(!initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+		checkIntermediateConstraints();
 
 		size_t count = 0;
 		for(auto constraint : constraintsTerminal_)
@@ -264,8 +260,7 @@ public:
 
 	virtual Eigen::MatrixXd jacobianStateTerminal() override
 	{
-		if(!initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+		checkIntermediateConstraints();
 
 		size_t count = 0;
 		for(auto constraint : constraintsTerminal_)
@@ -280,8 +275,7 @@ public:
 
 	virtual Eigen::VectorXd jacobianInputSparseIntermediate() override
 	{
-		if(!initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+		checkIntermediateConstraints();
 
 		size_t count = 0;
 		for(auto constraint : constraintsIntermediate_)
@@ -299,8 +293,7 @@ public:
 
 	virtual Eigen::MatrixXd jacobianInputIntermediate() override
 	{
-		if(!initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+		checkIntermediateConstraints();
 
 		size_t count = 0;
 		for(auto constraint : constraintsIntermediate_)
@@ -315,8 +308,7 @@ public:
 
 	virtual Eigen::VectorXd jacobianInputSparseTerminal() override
 	{
-		if(!initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+		checkTerminalConstraints();
 
 		size_t count = 0;
 		for(auto constraint : constraintsTerminal_)
@@ -334,8 +326,7 @@ public:
 
 	virtual Eigen::MatrixXd jacobianInputTerminal() override
 	{
-		if(!initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+		checkTerminalConstraints();
 
 		size_t count = 0;
 		for(auto constraint : constraintsTerminal_)
@@ -350,8 +341,7 @@ public:
 
 	virtual void sparsityPatternStateIntermediate(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
 	{
-		if(!initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+		checkIntermediateConstraints();
 
 		Eigen::VectorXi iRowLocal;
 		Eigen::VectorXi jColLocal;
@@ -381,7 +371,7 @@ public:
 	virtual void sparsityPatternStateTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
 	{
 		if(!initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+			throw std::runtime_error("sparsityPatternStateTerminalConstraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::VectorXi iRowLocal;
 		Eigen::VectorXi jColLocal;
@@ -410,8 +400,7 @@ public:
 
 	virtual void sparsityPatternInputIntermediate(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
 	{
-		if(!initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+		checkIntermediateConstraints();
 
 		Eigen::VectorXi iRowLocal;
 		Eigen::VectorXi jColLocal;
@@ -441,7 +430,7 @@ public:
 	virtual void sparsityPatternInputTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
 	{
 		if(!initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
+			throw std::runtime_error("sparsityPatternInputTerminalConstraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::VectorXi iRowLocal;
 		Eigen::VectorXi jColLocal;
@@ -520,18 +509,35 @@ public:
 private:
 	virtual void update() override {}
 
+	void checkIntermediateConstraints()
+	{
+		if(!initializedIntermediate_)
+			throw std::runtime_error("Error: Intermediate constraints are either empty or not initialized yet. ");
+				// Use the initilize() method to initialize the constraint Container.
+				// Make sure to add at least one constraint with addIntermediateConstraint()");
+	}
+
+	void checkTerminalConstraints()
+	{
+		if(!initializedIntermediate_)
+			throw std::runtime_error("Error: Terminal constraints are either empty or not initialized yet. ");
+				// Use the initilize() method to initialize the constraint Container.
+				// Make sure to add at least one constraint with addTerminalConstraint()");
+	}
+
+
 	void initializeIntermediate()
 	{
-		evalIntermediate_.resize(getIntermediateConstraintsCount());
-		evalJacSparseStateIntermediate_.resize(getJacobianStateNonZeroCountIntermediate());
-		evalJacSparseInputIntermediate_.resize(getJacobianInputNonZeroCountIntermediate());
-		evalJacDenseStateIntermediate_.resize(getIntermediateConstraintsCount(), STATE_DIM);
-		evalJacDenseInputIntermediate_.resize(getIntermediateConstraintsCount(), CONTROL_DIM);
+		evalIntermediate_.resize(getIntermediateConstraintsCount()); evalIntermediate_.setZero();
+		evalJacSparseStateIntermediate_.resize(getJacobianStateNonZeroCountIntermediate()); evalJacSparseStateIntermediate_.setZero();
+		evalJacSparseInputIntermediate_.resize(getJacobianInputNonZeroCountIntermediate()); evalJacSparseInputIntermediate_.setZero();
+		evalJacDenseStateIntermediate_.resize(getIntermediateConstraintsCount(), STATE_DIM); evalJacDenseStateIntermediate_.setZero();
+		evalJacDenseInputIntermediate_.resize(getIntermediateConstraintsCount(), CONTROL_DIM); evalJacDenseInputIntermediate_.setZero();
 
 		size_t count = 0;
 
-		this->lowerBoundsIntermediate_.resize(getIntermediateConstraintsCount());
-		this->upperBoundsIntermediate_.resize(getIntermediateConstraintsCount());
+		this->lowerBoundsIntermediate_.resize(getIntermediateConstraintsCount()); this->lowerBoundsIntermediate_.setZero();
+		this->upperBoundsIntermediate_.resize(getIntermediateConstraintsCount()); this->upperBoundsIntermediate_.setZero();
 
 		for(auto constraint : constraintsIntermediate_)
 		{
@@ -546,16 +552,16 @@ private:
 
 	void initializeTerminal()
 	{
-		evalTerminal_.resize(getTerminalConstraintsCount());
-		evalJacSparseStateTerminal_.resize(getJacobianStateNonZeroCountTerminal());
-		evalJacSparseInputTerminal_.resize(getJacobianInputNonZeroCountTerminal());
-		evalJacDenseStateTerminal_.resize(getTerminalConstraintsCount(), STATE_DIM);
-		evalJacDenseInputTerminal_.resize(getTerminalConstraintsCount(), CONTROL_DIM);
+		evalTerminal_.resize(getTerminalConstraintsCount()); evalTerminal_.setZero();
+		evalJacSparseStateTerminal_.resize(getJacobianStateNonZeroCountTerminal()); evalJacSparseStateTerminal_.setZero();
+		evalJacSparseInputTerminal_.resize(getJacobianInputNonZeroCountTerminal()); evalJacSparseInputTerminal_.setZero();
+		evalJacDenseStateTerminal_.resize(getTerminalConstraintsCount(), STATE_DIM); evalJacDenseStateTerminal_.setZero();
+		evalJacDenseInputTerminal_.resize(getTerminalConstraintsCount(), CONTROL_DIM); evalJacDenseInputTerminal_.setZero();
 
 		size_t count = 0;
 
-		this->lowerBoundsTerminal_.resize(getTerminalConstraintsCount());
-		this->upperBoundsTerminal_.resize(getTerminalConstraintsCount());
+		this->lowerBoundsTerminal_.resize(getTerminalConstraintsCount()); this->lowerBoundsTerminal_.setZero();
+		this->upperBoundsTerminal_.resize(getTerminalConstraintsCount()); this->upperBoundsTerminal_.setZero();
 
 		for(auto constraint : constraintsTerminal_)
 		{
