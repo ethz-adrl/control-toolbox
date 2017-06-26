@@ -159,7 +159,7 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 	CostFunctionAD<state_dim, control_dim> costFunctionAD;
 
 	std::shared_ptr<TermQuadMult<state_dim, control_dim, double> > termQuadMult(new TermQuadMult<state_dim, control_dim>);
-	std::shared_ptr<TermQuadMult<state_dim, control_dim, CppAD::AD<double> > > termQuadMultAD(new TermQuadMult<state_dim, control_dim, CppAD::AD<double>>);
+	std::shared_ptr<TermQuadMult<state_dim, control_dim, CppAD::AD<double>, double > > termQuadMultAD(new TermQuadMult<state_dim, control_dim, CppAD::AD<double>, double>);
 
 	std::shared_ptr<TermMixed<state_dim, control_dim, double > > termMixed (new TermMixed<state_dim, control_dim, double>);
 	std::shared_ptr<TermMixed<state_dim, control_dim, CppAD::AD<double> > > termMixedAD (new TermMixed<state_dim, control_dim, CppAD::AD<double>>);
@@ -172,8 +172,9 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 	double t_final = 2.5;
 
 	std::shared_ptr<PeriodicActivation> c_periodic (new PeriodicActivation(active_percentage, period, activation_offset, period_offset));
+	std::shared_ptr<tpl::PeriodicActivation<CppAD::AD<double>>> c_periodic_ad (new tpl::PeriodicActivation<CppAD::AD<double>>(active_percentage, period, activation_offset, period_offset));
 	termQuadMult->setTimeActivation(c_periodic, true);
-	termQuadMultAD->setTimeActivation(c_periodic, true);
+	termQuadMultAD->setTimeActivation(c_periodic_ad, true);
 
 	costFunction.addIntermediateTerm(termQuadMult);
 	size_t termIdAD = costFunctionAD.addIntermediateTerm(termQuadMultAD);
