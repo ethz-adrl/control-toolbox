@@ -83,8 +83,8 @@ public:
 	 * @param enquiryData the result of the interpolation
 	 * @param greatestLessTimeStampIndex the smallest index corresponding to a time smaller than the inquired Time
 	 */
-	void interpolate(const TimeArray& timeArray, const DiscreteArray_t& dataArray,
-			const Time& enquiryTime, Data_T& enquiryData, int greatestLessTimeStampIndex = -1)
+	void interpolate(const tpl::TimeArray<SCALAR>& timeArray, const DiscreteArray_t& dataArray,
+			const SCALAR& enquiryTime, Data_T& enquiryData, int greatestLessTimeStampIndex = -1)
 	{
 		if (timeArray.size()==0)
 			throw std::runtime_error("Interpolation.h : TimeArray is size 0.");
@@ -146,7 +146,7 @@ public:
 	void changeInterpolationType(const InterpolationType& type){ type_ = type;}
 
 	//! find an index corresponding to a certain inquiry time
-	int findIndex(const TimeArray& timeArray, const Time& enquiryTime) {
+	int findIndex(const tpl::TimeArray<SCALAR>& timeArray, const SCALAR& enquiryTime) {
 
 		int index = -1;
 
