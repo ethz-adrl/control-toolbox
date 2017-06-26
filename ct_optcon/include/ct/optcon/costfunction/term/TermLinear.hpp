@@ -42,7 +42,7 @@ namespace optcon {
  *
  * Probably this term is not very useful but we use it for testing
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double, typename TIME_SCALAR = double>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double, typename TIME_SCALAR = SCALAR>
 class TermLinear : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR, TIME_SCALAR> {
 
 public:
