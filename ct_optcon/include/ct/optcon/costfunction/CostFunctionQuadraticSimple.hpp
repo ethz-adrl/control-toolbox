@@ -111,8 +111,8 @@ public:
 	 * Clones the cost function.
 	 * @return
 	 */
-	CostFunctionQuadraticSimple<STATE_DIM, CONTROL_DIM>* clone () const override {
-		return new CostFunctionQuadraticSimple<STATE_DIM, CONTROL_DIM>(*this);
+	CostFunctionQuadraticSimple<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override {
+		return new CostFunctionQuadraticSimple<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
 	}
 
 	virtual void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const SCALAR& t) override {
