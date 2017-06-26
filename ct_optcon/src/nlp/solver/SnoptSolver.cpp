@@ -337,5 +337,8 @@ void SnoptSolver::NLP_Function(SnoptMemory* m,		int    *Status, int *n,    doubl
 	}
 }
 
+std::vector<SnoptMemory*> SnoptMemory::mempool;
+
+
 } // namespace optcon
 } // namespace ct
