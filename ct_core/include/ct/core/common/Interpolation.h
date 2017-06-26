@@ -103,7 +103,7 @@ public:
 			return;
 		}
 
-		size_t ind;
+		int ind;
 		if (greatestLessTimeStampIndex == -1)
 			ind = findIndex(timeArray, enquiryTime);
 		else
@@ -136,7 +136,7 @@ public:
 
 
 	//! access the greatest index which is smaller than the inquired interpolation time
-	size_t getGreatestLessTimeStampIndex() { return index_; }
+	int getGreatestLessTimeStampIndex() { return index_; }
 
 
 	//! get the employed interpolation type
@@ -146,9 +146,11 @@ public:
 	void changeInterpolationType(const InterpolationType& type){ type_ = type;}
 
 	//! find an index corresponding to a certain inquiry time
-	size_t findIndex(const TimeArray& timeArray, const Time& enquiryTime) {
+	int findIndex(const TimeArray& timeArray, const Time& enquiryTime) {
 
 		int index = -1;
+
+		index_ = std::min(index_, (int) timeArray.size()-1);
 
 		if (timeArray.at(index_) > enquiryTime)
 		{
@@ -184,7 +186,7 @@ public:
 
 protected:
 
-	size_t index_;
+	int index_;
 
 	InterpolationType type_;
 
