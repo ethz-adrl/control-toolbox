@@ -205,7 +205,7 @@ public:
 			discreteInd += jacSize;
 		}
 
-		// std::cout << "discreteJac eval: " << discreteJac_.transpose() << std::endl;
+		std::cout << "discreteJac eval: " << discreteJac_.transpose() << std::endl;
 
 		return discreteJac_;		
 	}
@@ -267,8 +267,8 @@ public:
 			
 		}
 
-		// std::cout << "iRow_vec: " << discreteIRow_.transpose() << std::endl;
-		// std::cout << "jCol_vec: " << discreteJCol_.transpose() << std::endl;
+		std::cout << "iRow_vec: " << discreteIRow_.transpose() << std::endl;
+		std::cout << "jCol_vec: " << discreteJCol_.transpose() << std::endl;
 
 		iRow_vec = discreteIRow_;
 		jCol_vec = discreteJCol_;
@@ -296,7 +296,7 @@ public:
 			discreteInd += constraintSize;
 		}
 
-		// std::cout << "lower bound: " << discreteLowerBound_.transpose() << std::endl;
+		std::cout << "lower bound: " << discreteLowerBound_.transpose() << std::endl;
 
 
 		return discreteLowerBound_;
@@ -324,7 +324,7 @@ public:
 			discreteInd += constraintSize;
 		}
 
-		// std::cout << "upper bound: " << discreteUpperBound_.transpose() << std::endl;
+		std::cout << "upper bound: " << discreteUpperBound_.transpose() << std::endl;
 
 		return discreteUpperBound_;
 	}

@@ -79,6 +79,11 @@ memoryPtr_(nullptr)
 	currStartOption_ = Cold_;
 }
 
+SnoptSolver::~SnoptSolver()
+{
+	free_memory(memoryPtr_);
+}
+
 
 void SnoptSolver::init_memory(SnoptMemory* mem) const
 {
@@ -336,6 +341,8 @@ void SnoptSolver::NLP_Function(SnoptMemory* m,		int    *Status, int *n,    doubl
 		m->self.nlp_->evaluateConstraintJacobian(*neG - grad_len, jacVec);
 	}
 }
+
+std::vector<SnoptMemory*> SnoptMemory::mempool;
 
 } // namespace optcon
 } // namespace ct

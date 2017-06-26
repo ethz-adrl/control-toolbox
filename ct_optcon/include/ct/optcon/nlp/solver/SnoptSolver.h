@@ -97,7 +97,6 @@ struct SnoptMemory
     ~SnoptMemory();
 
 };
-std::vector<SnoptMemory*> SnoptMemory::mempool;
 
 
 
@@ -127,10 +126,10 @@ public:
 	/**
 	 * @brief      Destructor, releases the memory
 	 */
-	virtual ~SnoptSolver()
-	{
-		free_memory(memoryPtr_);
-	}
+	virtual ~SnoptSolver();
+	// {
+	// 	free_memory(memoryPtr_);
+	// }
 
 
 	/**
