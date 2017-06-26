@@ -109,7 +109,7 @@ public:
 	 * @param startIndex index where the trajectory to be extracted starts
 	 * @param endIndex index where the trajectory to be extracted ends
 	 */
-	DiscreteTrajectoryBase(DiscreteTrajectoryBase<T, Alloc>& other, const size_t startIndex, const size_t endIndex):
+	DiscreteTrajectoryBase(DiscreteTrajectoryBase<T, Alloc, SCALAR>& other, const size_t startIndex, const size_t endIndex):
 		time_(),
 		data_(),
 		interp_(other.interp_.getInterpolationType())
