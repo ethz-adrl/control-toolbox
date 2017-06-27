@@ -41,19 +41,19 @@ namespace optcon{
  * \f$ J(x,u,t) = \bar{x}^T Q \bar{x} + \bar{u}^T R \bar{u} + \bar{x}^T_f Q_f \bar{x}^T_f \f$
  * where \f$ \bar{x}, \bar{u} \f$ indicate deviations from a nominal (desired) state and control
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class CostFunctionQuadraticSimple : public CostFunctionQuadratic< STATE_DIM, CONTROL_DIM >
+template <size_t STATE_DIM, size_t CONTROL_DIM,  typename SCALAR = double>
+class CostFunctionQuadraticSimple : public CostFunctionQuadratic< STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> 	state_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> 	control_state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> 	state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> 	control_state_matrix_t;
 
-	typedef core::StateVector<STATE_DIM> 		state_vector_t;
-	typedef core::ControlVector<CONTROL_DIM> 	control_vector_t;
+	typedef core::StateVector<STATE_DIM, SCALAR> 		state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> 	control_vector_t;
 
 	/**
 	 * Constructs a simple, purely quadratic cost function with all zero elements.
@@ -111,11 +111,11 @@ public:
 	 * Clones the cost function.
 	 * @return
 	 */
-	CostFunctionQuadraticSimple<STATE_DIM, CONTROL_DIM>* clone () const override {
-		return new CostFunctionQuadraticSimple<STATE_DIM, CONTROL_DIM>(*this);
+	CostFunctionQuadraticSimple<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override {
+		return new CostFunctionQuadraticSimple<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
 	}
 
-	virtual void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const double& t) override {
+	virtual void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const SCALAR& t) override {
 		this->x_ = x;
 		this->u_ = u;
 		this->t_ = t;
@@ -124,9 +124,9 @@ public:
 		this->u_deviation_ = u - u_nominal_;
 	}
 
-	virtual double evaluateIntermediate() override {
-		double costQ = 0.5 * (x_deviation_.transpose() * Q_ * x_deviation_)(0);
-		double costR = 0.5 * (u_deviation_.transpose() * R_ * u_deviation_)(0);
+	virtual SCALAR evaluateIntermediate() override {
+		SCALAR costQ = 0.5 * (x_deviation_.transpose() * Q_ * x_deviation_)(0);
+		SCALAR costR = 0.5 * (u_deviation_.transpose() * R_ * u_deviation_)(0);
 		return costQ + costR;
 	}
 
@@ -150,7 +150,7 @@ public:
 		return control_state_matrix_t::Zero();
 	}
 
-	virtual double evaluateTerminal() override {
+	virtual SCALAR evaluateTerminal() override {
 		state_vector_t x_deviation_final = this->x_ - x_final_;
 		return 0.5 * x_deviation_final.transpose() * Q_final_ * x_deviation_final;
 	}

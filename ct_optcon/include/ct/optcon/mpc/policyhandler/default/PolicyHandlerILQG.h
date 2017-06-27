@@ -35,15 +35,17 @@ namespace ct{
 namespace optcon{
 
 //! the default policy handler for SLQ
-template<size_t STATE_DIM, size_t CONTROL_DIM>
-class PolicyHandlerILQG : public PolicyHandler<core::StateFeedbackController<STATE_DIM, CONTROL_DIM>, STATE_DIM, CONTROL_DIM>
+template<size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+class PolicyHandlerILQG : public PolicyHandler<core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>, STATE_DIM, CONTROL_DIM, SCALAR>
 {
 
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM> StateFeedbackController_t;
 
-	PolicyHandlerILQG(const core::Time& dt):
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> StateFeedbackController_t;
+
+	PolicyHandlerILQG(const SCALAR& dt):
 		dt_ilqg_(dt)
 	{}
 
@@ -51,14 +53,14 @@ public:
 
 
 	virtual void designWarmStartingPolicy(
-			const core::Time delay,
-			const core::Time newTimeHorizon,
+			const SCALAR& delay,
+			const SCALAR& newTimeHorizon,
 			StateFeedbackController_t& policy,
-			core::StateTrajectory<STATE_DIM>& stateTraj) override {
+			core::StateTrajectory<STATE_DIM, SCALAR>& stateTraj) override {
 		
 		// get the current feedback and feedforward from the StateFeedbackController
-		core::FeedbackTrajectory<STATE_DIM, CONTROL_DIM>& FeedbackTraj = policy.getFeedbackTrajectory();
-		core::ControlTrajectory<CONTROL_DIM>& FeedForwardTraj = policy.getFeedforwardTrajectory();
+		core::FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR>& FeedbackTraj = policy.getFeedbackTrajectory();
+		core::ControlTrajectory<CONTROL_DIM, SCALAR>& FeedForwardTraj = policy.getFeedforwardTrajectory();
 
 		// current number of discrete elements
 		int currentSize = FeedForwardTraj.size();
@@ -128,10 +130,10 @@ public:
 	 * 	(can be different from the input in discrete-time case, for example)
 	 */
 	virtual void truncateSolutionFront(
-			const core::Time& delay,
+			const SCALAR& delay,
 			StateFeedbackController_t& policy,
-			core::StateTrajectory<STATE_DIM>& stateTraj,
-			core::Time& effectivelyTruncated) override {
+			core::StateTrajectory<STATE_DIM, SCALAR>& stateTraj,
+			SCALAR& effectivelyTruncated) override {
 
 		// current controller length
 		size_t currentSize = policy.getFeedforwardTrajectory().size();
@@ -159,7 +161,7 @@ public:
 
 private:
 
-	core::Time dt_ilqg_;
+	SCALAR dt_ilqg_;
 
 };
 

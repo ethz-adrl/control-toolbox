@@ -41,18 +41,18 @@ namespace optcon {
  * @tparam STATE_DIM the system state dimension
  * @tparam CONTROL_DIM the system control input dimension
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class DynamicRiccatiEquation {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	
-	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, 1> control_vector_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
-	typedef Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> control_gain_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_feedback_t;
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, 1> control_vector_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> control_gain_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_feedback_t;
 
 
 	DynamicRiccatiEquation() :
@@ -142,7 +142,7 @@ public:
 
 
 private:
-	double epsilon_;
+	SCALAR epsilon_;
 	Eigen::EigenSolver<control_matrix_t> eigenvalueSolver_;
 
 };

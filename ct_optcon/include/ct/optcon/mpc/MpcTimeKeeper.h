@@ -39,7 +39,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct{
 namespace optcon{
-
+namespace tpl{
 
 
 //! Time Keeper Class for Model Predictive Control
@@ -50,6 +50,7 @@ namespace optcon{
  * - calculates the required shifting times between iterations and due to forward integration (initial state prediction)
  * - update Time Horizons accordingly
  */
+template <typename SCALAR = double>
 class MpcTimeKeeper{
 
 public:
@@ -67,13 +68,13 @@ public:
 	 * @param timeHorizonStrategy the user-specified time horizon strategy, for example fixed time horizon
 	 * @param mpc_settings the mpc_settings as specified by the user
 	 */
-	MpcTimeKeeper(std::shared_ptr<MpcTimeHorizon> timeHorizonStrategy, const mpc_settings& mpc_settings):
+	MpcTimeKeeper(std::shared_ptr<MpcTimeHorizon<SCALAR>> timeHorizonStrategy, const mpc_settings& mpc_settings):
 		mpc_settings_(mpc_settings),
 		initialized_(false),
 		finalPointReached_(false),
 		lastMeasuredDelay_(0.0),
 		maxDelayMeasured_(0.0),
-		minDelayMeasured_(std::numeric_limits<double>::max()),
+		minDelayMeasured_(std::numeric_limits<SCALAR>::max()),
 		summedDelay_(0.0),
 		timeHorizonStrategy_(timeHorizonStrategy),
 		firstRun_(true)
@@ -93,7 +94,7 @@ public:
 
 		lastMeasuredDelay_ = 0.0;
 		maxDelayMeasured_ = 0.0;
-		minDelayMeasured_ = std::numeric_limits<double>::max();
+		minDelayMeasured_ = std::numeric_limits<SCALAR>::max();
 		summedDelay_ = 0.0;
 		finalPointReached_ = false;
 
@@ -114,17 +115,17 @@ public:
 	 * 	time where to stop the forward propagation of the state measurement based on delays and currently optimal policy
 	 */
 	void computeNewTimings(
-			const core::Time current_T,
-			core::Time& new_T,
-			core::Time& t_forw_start,	// relative time to start forward integration
-			core::Time& t_forw_stop)	// relative time to stop forward integration
+			const SCALAR current_T,
+			SCALAR& new_T,
+			SCALAR& t_forw_start,	// relative time to start forward integration
+			SCALAR& t_forw_stop)	// relative time to stop forward integration
 	{
 		if(initialized_ == false)
 			throw std::runtime_error("Error in MPC time keeper: cannot update timings if MpcTimeKeeper not properly initialized.");
 
 
-		core::Time timeSinceEndedLastSolve;
-		core::Time timeSinceEndedFirstSolve;
+		SCALAR timeSinceEndedLastSolve;
+		SCALAR timeSinceEndedFirstSolve;
 
 		if(!firstRun_){
 			lastSolveTimer_.stop();
@@ -145,7 +146,7 @@ public:
 		/**
 		 * estimate the delay from planning, etc.
 		 */
-		core::Time delayToApply = computeDelayToApply();
+		SCALAR delayToApply = computeDelayToApply();
 
 
 		// stopping time relative to previous controller/run
@@ -242,7 +243,7 @@ public:
 	 * the returned time can be used to synchronize the calls to optimal control problems
 	 * @return time elapsed
 	 */
-	core::Time timeSincePreviousSuccessfulSolve() {
+	SCALAR timeSincePreviousSuccessfulSolve() {
 		if(firstRun_)
 			return 0.0;
 		else{
@@ -257,7 +258,7 @@ public:
 	 * the returned time can be used externally, for example to update cost functions
 	 * @return time elapsed
 	 */
-	const core::Time timeSinceFirstSuccessfulSolve() {
+	const SCALAR timeSinceFirstSuccessfulSolve() {
 		if(firstRun_)
 			return 0.0;
 		else{
@@ -267,16 +268,16 @@ public:
 	}
 
 	//! obtain the delay which was measured during solving the optimal control problem
-	const core::Time& getMeasuredDelay() const {return lastMeasuredDelay_;}
+	const SCALAR& getMeasuredDelay() const {return lastMeasuredDelay_;}
 
 	//! get the maximum measured delay (maximum over all cycles)
-	const core::Time& getMaxMeasuredDelay() const {return maxDelayMeasured_;}
+	const SCALAR& getMaxMeasuredDelay() const {return maxDelayMeasured_;}
 
 	//! get the smallest measured delay (minimum over all cycles)
-	const core::Time& getMinMeasuredDelay() const {return minDelayMeasured_;}
+	const SCALAR& getMinMeasuredDelay() const {return minDelayMeasured_;}
 
 	//! get the sum of all measured delays
-	const core::Time& getSummedDelay() const {return summedDelay_;}
+	const SCALAR& getSummedDelay() const {return summedDelay_;}
 
 private:
 
@@ -287,10 +288,10 @@ private:
 	 * The delay to be applied is the sum of fixed and variable components.
 	 * @return delay to be applied
 	 */
-	core::Time computeDelayToApply() {
+	SCALAR computeDelayToApply() {
 
-		core::Time fixedDelay = 1e-6 * mpc_settings_.additionalDelayUs_;
-		core::Time variableDelay = 0.0;
+		SCALAR fixedDelay = 1e-6 * mpc_settings_.additionalDelayUs_;
+		SCALAR variableDelay = 0.0;
 
 		if (mpc_settings_.measureDelay_)	// use variable, measured delay
 			variableDelay = mpc_settings_.delayMeasurementMultiplier_ * lastMeasuredDelay_;
@@ -307,23 +308,28 @@ private:
 
 	bool finalPointReached_;			//! flag indicating that the time horizon has been hit
 
-	core::Timer timer_;					//! timer for measuring the time elapsed during planning, internal, relative time
-	core::Timer lastSolveTimer_;		//! timer to measure how much time elapsed since the last finished solve
-	core::Timer firstSolveTimer_; 		//! timer for measuring how much time elapsed since the first successful plan
+	core::tpl::Timer<SCALAR> timer_;					//! timer for measuring the time elapsed during planning, internal, relative time
+	core::tpl::Timer<SCALAR> lastSolveTimer_;		//! timer to measure how much time elapsed since the last finished solve
+	core::tpl::Timer<SCALAR> firstSolveTimer_; 		//! timer for measuring how much time elapsed since the first successful plan
 
-	core::Time lastMeasuredDelay_;		//! last delay in planning, internal, relative time
-	core::Time maxDelayMeasured_;		//! the max. delay occurred due to planning
-	core::Time minDelayMeasured_;		//! the min. delay occurred due to planning
-	core::Time summedDelay_;			//! sum of all delays measured
+	SCALAR lastMeasuredDelay_;		//! last delay in planning, internal, relative time
+	SCALAR maxDelayMeasured_;		//! the max. delay occurred due to planning
+	SCALAR minDelayMeasured_;		//! the min. delay occurred due to planning
+	SCALAR summedDelay_;			//! sum of all delays measured
 
-	std::shared_ptr<MpcTimeHorizon> timeHorizonStrategy_;	//! time horizon strategy specified by the user, e.g. constant receding horizon
+	std::shared_ptr<MpcTimeHorizon<SCALAR>> timeHorizonStrategy_;	//! time horizon strategy specified by the user, e.g. constant receding horizon
 
 	bool firstRun_;						//! set to true if first run active
 };
 
 
-}
-}
+} // namespace tpl
+
+typedef tpl::MpcTimeKeeper<double> MpcTimeKeeper;
+
+} // namespace optcon
+} // namespace ct
+
 
 
 #endif /* MPCTIMEKEEPER_H_ */

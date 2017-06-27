@@ -59,25 +59,25 @@ namespace optcon {
  * @tparam STATE_DIM system state dimension
  * @tparam CONTROL_DIM system input dimension
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class FHDTLQR
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef core::ControlVector<CONTROL_DIM> control_vector_t;
-	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
-	typedef Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> control_gain_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_feedback_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> control_gain_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_feedback_t;
 
-	typedef core::StateVectorArray<STATE_DIM> state_vector_array_t;
-	typedef core::ControlVectorArray<CONTROL_DIM> control_vector_array_t;
-	typedef ct::core::StateMatrixArray<STATE_DIM> state_matrix_array_t;
+	typedef core::StateVectorArray<STATE_DIM, SCALAR> state_vector_array_t;
+	typedef core::ControlVectorArray<CONTROL_DIM, SCALAR> control_vector_array_t;
+	typedef ct::core::StateMatrixArray<STATE_DIM, SCALAR> state_matrix_array_t;
 
-	typedef ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> control_feedback_array_t;
-	typedef ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM> control_gain_matrix_array_t;
+	typedef ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> control_feedback_array_t;
+	typedef ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> control_gain_matrix_array_t;
 
 
 	//! Constructor
@@ -85,7 +85,7 @@ public:
 	 * @param costFunction the cost function to be used for designing the TVLQR
 	 */
 	FHDTLQR(
-		std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM> > costFunction
+		std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> > costFunction
 	) :
 		costFunction_(costFunction)
 	{}
@@ -116,7 +116,7 @@ public:
 		const control_vector_array_t& u_trajectory,
 		const state_matrix_array_t& A,
 		const control_gain_matrix_array_t& B,
-		double dt,
+		SCALAR dt,
 		control_feedback_array_t& K,
 		bool performNumericalChecks = true
 	)
@@ -144,8 +144,8 @@ public:
 	void designController(
 			const state_vector_array_t& x_trajectory,
 			const control_vector_array_t& u_trajectory,
-			std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM> > derivatives,
-			double dt,
+			std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> > derivatives,
+			SCALAR dt,
 			control_feedback_array_t& K,
 			bool performNumericalChecks = true
 		)
@@ -185,8 +185,8 @@ private:
 			const state_vector_array_t& x_trajectory,
 			const control_vector_array_t& u_trajectory,
 			size_t N,
-			double dt,
-			std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM> >& derivatives,
+			SCALAR dt,
+			std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> >& derivatives,
 			state_matrix_array_t& A,
 			control_gain_matrix_array_t& B
 	)
@@ -228,7 +228,7 @@ private:
 		const state_matrix_array_t& A,
 		const control_gain_matrix_array_t& B,
 		size_t N,
-		double dt,
+		SCALAR dt,
 		control_feedback_array_t& K,
 		bool performNumericalChecks = true
 	)
@@ -262,7 +262,7 @@ private:
 
 		if (performNumericalChecks)
 		{
-			Eigen::VectorXd realEigVals = P.eigenvalues().real();
+			Eigen::Matrix<SCALAR, -1, 1> realEigVals = P.eigenvalues().real();
 			if (realEigVals.minCoeff() < 0.0) { std::cout << "P: " << std::endl << P; throw std::runtime_error("[LQR] Q is not positive semi-definite."); }
 		}
 
@@ -288,8 +288,8 @@ private:
 		}
 	}
 
-	std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM> > costFunction_;	//! a quadratic costfunction for solving the optimal control problem
-	DynamicRiccatiEquation<STATE_DIM, CONTROL_DIM> ricattiEq_;	//! the Riccati Equations
+	std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> > costFunction_;	//! a quadratic costfunction for solving the optimal control problem
+	DynamicRiccatiEquation<STATE_DIM, CONTROL_DIM, SCALAR> ricattiEq_;	//! the Riccati Equations
 };
 
 } // namespace optcon

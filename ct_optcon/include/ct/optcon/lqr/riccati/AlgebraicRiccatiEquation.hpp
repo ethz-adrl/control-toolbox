@@ -150,7 +150,6 @@ public:
 
 private:
 
-	// Implementation based on original one from Diego Pardo!
 	bool solveSchurIterative(const schur_matrix_t& M, state_matrix_t& P, double epsilon = 1e-6, int maxIterations = 100000)
 	{
 		bool converged = false;

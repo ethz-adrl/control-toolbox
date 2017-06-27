@@ -32,18 +32,20 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct{
 namespace optcon{
+namespace tpl{
 
 /*!
  * This class implements the four default strategies for the time horizon in ct's MPC.
  * In case a different time horizon strategy is required, the user can derive from this
  * class and override the virtual functions
  */
+template <typename SCALAR = double>
 class MpcTimeHorizon
 {
 
 public:
 
-	MpcTimeHorizon(const mpc_settings& settings, const core::Time& initialTimeHorizon):
+	MpcTimeHorizon(const mpc_settings& settings, const SCALAR& initialTimeHorizon):
 		mpc_settings_(settings),
 		initialTimeHorizon_(initialTimeHorizon)
 	{}
@@ -63,15 +65,16 @@ public:
 	 * @return true if TimeHorizon reached and MPC should stop
 	 */
 	virtual bool computeNewTimeHorizon(
-			const core::Time& t_since_ended_first_solve,
-			const core::Time& t_forward_prediction_stop,
-			core::Time& new_T) {
+			const SCALAR& t_since_ended_first_solve,
+			const SCALAR& t_forward_prediction_stop,
+			SCALAR& new_T)
+	{
 
 		/**
 		 * compute desired end time and the time we have left from now. Will be ignored below, if not required in the scenario.
 		 */
-		core::Time timeLeft = initialTimeHorizon_ - (t_since_ended_first_solve + t_forward_prediction_stop);
-		timeLeft = std::max(0.0, timeLeft);
+		SCALAR timeLeft = initialTimeHorizon_ - (t_since_ended_first_solve + t_forward_prediction_stop);
+		timeLeft = std::max((SCALAR)0.0, timeLeft);
 
 
 		switch(mpc_settings_.mpc_mode)
@@ -94,7 +97,7 @@ public:
 		case MPC_MODE::FIXED_FINAL_TIME_WITH_MIN_TIME_HORIZON: {
 
 			// std::max() ensures that the time is greater than the mininmum specified time horizon
-			new_T = std::max(mpc_settings_.minimumTimeHorizonMpc_, timeLeft);
+			new_T = std::max((SCALAR)mpc_settings_.minimumTimeHorizonMpc_, timeLeft);
 
 			if(new_T == mpc_settings_.minimumTimeHorizonMpc_)
 				return true;
@@ -103,7 +106,7 @@ public:
 		}
 		case MPC_MODE::RECEDING_HORIZON_WITH_FIXED_FINAL_TIME: {
 
-			new_T = std::min(mpc_settings_.minimumTimeHorizonMpc_, timeLeft);
+			new_T = std::min((SCALAR)mpc_settings_.minimumTimeHorizonMpc_, timeLeft);
 
 			if(new_T == 0.0)
 				return true;
@@ -120,19 +123,23 @@ public:
 
 
 	//! update the time horizon which is used during the first call to the solver
-	void updateInitialTimeHorizon(const core::Time initTimeHorizon){ initialTimeHorizon_ = initTimeHorizon;}
+	void updateInitialTimeHorizon(const SCALAR& initTimeHorizon){ initialTimeHorizon_ = initTimeHorizon;}
 
 
 protected:
 
 	mpc_settings mpc_settings_;
 
-	core::Time initialTimeHorizon_;
+	SCALAR initialTimeHorizon_;
 
 };
 
-}
-}
+} // namespace tpl
+
+typedef tpl::MpcTimeHorizon<double> MpcTimeHorizon;
+
+} // namespace optcon
+} // namespace ct
 
 
 

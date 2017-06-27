@@ -31,11 +31,13 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct{
 namespace core{
+namespace tpl{
 
 //! A timer ("stop watch") to record elapsed time based on the system clock
 /*!
  * Keeps track of time in a stop watch fashion.
  */
+template <typename SCALAR = double>
 class Timer {
 public:
 
@@ -70,7 +72,7 @@ public:
 	 *
 	 * @return time in seconds
 	 */
-	double getElapsedTime() const {
+	SCALAR getElapsedTime() const {
 		return (stop_time.tv_sec - start_time.tv_sec) + (stop_time.tv_usec - start_time.tv_usec)*1e-6;
 	}
 
@@ -89,6 +91,10 @@ private:
 	struct timeval start_time; /*!< start time */
 	struct timeval stop_time; /*!< stop time */
 };
+
+}
+
+typedef tpl::Timer<double> Timer;
 
 }
 }

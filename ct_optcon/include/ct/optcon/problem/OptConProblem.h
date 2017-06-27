@@ -69,6 +69,7 @@ public:
 
 
 	// typedefs
+	typedef ct::core::StateVector<STATE_DIM, SCALAR> state_vector_t;
 	typedef std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> DynamicsPtr_t;
 	typedef std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> LinearPtr_t;
 	typedef std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> CostFunctionPtr_t;
@@ -93,7 +94,7 @@ public:
 			LinearPtr_t linearSystem = nullptr
 	) :
 		tf_(0.0),
-		x0_(ct::core::StateVector<STATE_DIM, SCALAR>::Zero()),
+		x0_(state_vector_t::Zero()),
 		controlledSystem_(nonlinDynamics),
 		costFunction_(costFunction),
 		linearizedSystem_(linearSystem),
@@ -118,7 +119,7 @@ public:
 	 */
 	OptConProblem(
 			const SCALAR& tf,
-			core::StateVector<STATE_DIM, SCALAR> x0,
+			const state_vector_t& x0,
 			DynamicsPtr_t nonlinDynamics,
 			CostFunctionPtr_t costFunction,
 			LinearPtr_t linearSystem = nullptr):
@@ -224,12 +225,12 @@ public:
 	/*!
 	 * get initial state (called by solvers)
 	 * */
-	const core::StateVector<STATE_DIM, SCALAR> getInitialState() const {return x0_;}
+	const state_vector_t getInitialState() const {return x0_;}
 
 	/*!
 	 * set initial state for first subsystem
 	 * */
-	void setInitialState(const core::StateVector<STATE_DIM, SCALAR> x0) {x0_ = x0;}
+	void setInitialState(const state_vector_t& x0) {x0_ = x0;}
 
 
 	/*!
@@ -249,7 +250,7 @@ public:
 private:
 	SCALAR tf_;						//! end time
 
-	ct::core::StateVector<STATE_DIM, SCALAR> x0_;	//! initial state
+	state_vector_t x0_;	//! initial state
 
 	DynamicsPtr_t controlledSystem_;	//! the nonlinear system
 	CostFunctionPtr_t costFunction_;	//! a quadratic cost function
