@@ -101,6 +101,9 @@ public:
 			new optcon::tpl::StateConstraint<2, 1, ScalarCG>(xLow, xHigh));
 		std::shared_ptr<optcon::tpl::ControlInputConstraint<2, 1, ScalarCG>> inputConstraintAd(
 			new optcon::tpl::ControlInputConstraint<2, 1, ScalarCG> (uLow, uHigh));
+		std::shared_ptr<optcon::tpl::TerminalConstraint<2,1, ScalarCG>> termConstraintAd(
+			new optcon::tpl::TerminalConstraint<2,1, ScalarCG>(x_final_));
+
 
 		// obstacleConstraint->setName("crazyObstacleTerm");
 		termConstraint->setName("crazyTerminalConstraint");
@@ -109,9 +112,11 @@ public:
 	
 		stateConstraintAd->setName("StateConstraintAd");
 		inputConstraintAd->setName("InputConstraintAd");
+		termConstraintAd->setName("TerminalConstraintAd");
 
-		stateInputConstraintsAd_->addIntermediateConstraint(inputConstraintAd, true);
 		stateInputConstraintsAd_->addIntermediateConstraint(stateConstraintAd, true);
+		stateInputConstraintsAd_->addIntermediateConstraint(inputConstraintAd, true);
+		stateInputConstraintsAd_->addTerminalConstraint(termConstraintAd, true);
 
 		pureStateConstraints_->addTerminalConstraint(termConstraint, true);
 		stateInputConstraints_->addIntermediateConstraint(inputConstraint, true);
@@ -124,8 +129,8 @@ public:
 		OptConProblem<2,1> optProblem(oscillator_, costFunction_);
 		optProblem.setInitialState(x_0_);
 		optProblem.setTimeHorizon(settings_.T_);
-		optProblem.setStateInputConstraints(stateInputConstraints_);
-		optProblem.setPureStateConstraints(pureStateConstraints_);
+		optProblem.setStateInputConstraints(stateInputConstraintsAd_);
+		// optProblem.setPureStateConstraints(pureStateConstraints_);
 
 		calcInitGuess();
 		dmsPlanner_ = std::shared_ptr<DmsSolver<2,1>> (new DmsSolver<2,1>(optProblem, settings_));

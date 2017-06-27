@@ -171,10 +171,21 @@ public:
 		std::vector<bool> sparsityVec = model_->JacobianSparsityBool();
 		Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(outputDim_, inputDim_);
 
-		assert(sparsityVec.size() == outputDim_ * inputDim_);
+		std::cout << "outputDim_: " << outputDim_ << std::endl;
+		std::cout << "inputDim_: " << inputDim_ << std::endl;
+		std::cout << "sparistyvec size: " << sparsityVec.size() << std::endl;
+
+
+
+		// assert(sparsityVec.size() == outputDim_ * inputDim_);
 		for(size_t row = 0; row < outputDim_; ++row)
 			for(size_t col = 0; col < inputDim_; ++col)
+			{
+				std::cout << "row: " << row << std::endl;
+				std::cout << "col: " << col << std::endl;
+				std::cout << "ele: " << sparsityVec[col + row * inputDim_] << std::endl;
 				sparsityMat(row, col) = sparsityVec[col + row * inputDim_];
+			}
 
 		return sparsityMat;
 	}
@@ -209,7 +220,7 @@ public:
 	 *  This method generates source code for the Jacobian and zero order derivative. It then compiles
 	 *  the source code to a dynamically loadable library that then gets loaded.
 	 */
-	void compileJIT()
+	void compileJIT(const std::string& libName = "jacCGLib")
 	{
 		if (compiled_) return;
 
@@ -220,7 +231,7 @@ public:
 		CppAD::cg::ModelLibraryCSourceGen<double> libcgen(cgen);
 
 		// compile source code
-		CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, "jacCGLib");
+		CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, libName);
 
 		dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler_));
 

@@ -423,12 +423,14 @@ private:
 
 	void initializeIntermediate()
 	{	
+		std::cout << "initializing intermediate" << std::endl;
+
 		Eigen::VectorXi sparsityRows;
 		Eigen::VectorXi sparsityCols;
 
 		if(getIntermediateConstraintsCount() > 0)
 		{
-			intermediateCodegen_->compileJIT();
+			intermediateCodegen_->compileJIT("intermediateConstraints");
 			intermediateCodegen_->getSparsityPattern(sparsityRows, sparsityCols);
 
 			std::cout << "sparsityPattern Intermediate: " << std::endl << intermediateCodegen_->getSparsityPattern() << std::endl;
@@ -477,16 +479,18 @@ private:
 
 
 		initializedIntermediate_ = true;
+		std::cout << "finished initializing intermediate" << std::endl;
 	}
 
 	void initializeTerminal()
 	{
+		std::cout << "initializing terminal" << std::endl;
 		Eigen::VectorXi sparsityRows;
 		Eigen::VectorXi sparsityCols;
 
 		if(getTerminalConstraintsCount() > 0)
 		{
-			terminalCodegen_->compileJIT();
+			terminalCodegen_->compileJIT("terminalConstraints");
 			terminalCodegen_->getSparsityPattern(sparsityRows, sparsityCols);
 
 			// jacCG_->getSparsityPattern();/
@@ -534,8 +538,8 @@ private:
 			}
 		}
 
-
 		initializedTerminal_ = true;
+		std::cout << "successfully intitialized terminal" << std::endl;
 	}
 
 	//containers

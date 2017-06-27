@@ -142,12 +142,6 @@ public:
 	/**
 	 * @brief      Initializes the vectors to the correct size
 	 */
-
-
-	// TODO: Fill the base class bound containers!!!!!!
-
-
-
 	virtual void initialize() override
 	{
 		// if(constraintsIntermediate_.size() > 0)
@@ -349,6 +343,7 @@ public:
 		Eigen::VectorXi jColTot;
 
 		size_t count = 0;
+		size_t constraintCount = 0;
 
 		for(auto constraint : constraintsIntermediate_)
 		{
@@ -358,13 +353,14 @@ public:
 				constraint->sparsityPatternState(iRowLocal, jColLocal);
 
 				iRowTot.conservativeResize(count + nonZerosState);
-				iRowTot.segment(count, nonZerosState) = iRowLocal;
+				iRowTot.segment(count, nonZerosState) = iRowLocal.array() + constraintCount;
 
 				jColTot.conservativeResize(count + nonZerosState);
 				jColTot.segment(count, nonZerosState) = jColLocal;
 
 				count += nonZerosState;
 			}
+			constraintCount += constraint->getConstraintSize();
 		}
 
 		iRows = iRowTot;
@@ -382,6 +378,7 @@ public:
 		Eigen::VectorXi jColTot;
 
 		size_t count = 0;
+		size_t constraintCount = 0;
 
 		for(auto constraint : constraintsTerminal_)
 		{
@@ -391,13 +388,14 @@ public:
 				constraint->sparsityPatternState(iRowLocal, jColLocal);
 
 				iRowTot.conservativeResize(count + nonZerosState);
-				iRowTot.segment(count, nonZerosState) = iRowLocal;
+				iRowTot.segment(count, nonZerosState) = iRowLocal.array() + constraintCount;
 
 				jColTot.conservativeResize(count + nonZerosState);
 				jColTot.segment(count, nonZerosState) = jColLocal;
 
 				count += nonZerosState;
 			}
+			constraintCount += constraint->getConstraintSize();
 		}
 
 		iRows = iRowTot;
@@ -414,6 +412,7 @@ public:
 		Eigen::VectorXi jColTot;
 
 		size_t count = 0;
+		size_t constraintCount = 0;
 
 		for(auto constraint : constraintsIntermediate_)
 		{
@@ -423,13 +422,14 @@ public:
 				constraint->sparsityPatternInput(iRowLocal, jColLocal);
 
 				iRowTot.conservativeResize(count + nonZerosInput);
-				iRowTot.segment(count, nonZerosInput) = iRowLocal;
+				iRowTot.segment(count, nonZerosInput) = iRowLocal.array() + constraintCount;
 
 				jColTot.conservativeResize(count + nonZerosInput);
 				jColTot.segment(count, nonZerosInput) = jColLocal;
 
 				count += nonZerosInput;
 			}
+			constraintCount += constraint->getConstraintSize();
 		}
 
 		iRows = iRowTot;
@@ -447,6 +447,7 @@ public:
 		Eigen::VectorXi jColTot;
 
 		size_t count = 0;
+		size_t constraintCount = 0;
 
 		for(auto constraint : constraintsTerminal_)
 		{
@@ -456,13 +457,14 @@ public:
 				constraint->sparsityPatternInput(iRowLocal, jColLocal);
 
 				iRowTot.conservativeResize(count + nonZerosInput);
-				iRowTot.segment(count, nonZerosInput) = iRowLocal;
+				iRowTot.segment(count, nonZerosInput) = iRowLocal.array() + constraintCount;
 
 				jColTot.conservativeResize(count + nonZerosInput);
 				jColTot.segment(count, nonZerosInput) = jColLocal;
 
 				count += nonZerosInput;
 			}
+			constraintCount += constraint->getConstraintSize();
 		}
 
 		iRows = iRowTot;

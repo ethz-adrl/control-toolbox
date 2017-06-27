@@ -105,9 +105,7 @@ public:
 	{
 		constraints_.push_back(stateInputConstraints);
 		constraintsIntermediateCount_ += (N_ + 1) * stateInputConstraints->getIntermediateConstraintsCount();
-		// std::cout << "constraintsIntermediateCount_ setstateinput: " << constraintsIntermediateCount_ << std::endl;
 		constraintsTerminalCount_ += stateInputConstraints->getTerminalConstraintsCount();
-		std::cout << "constraintsTerminal count setstateinput: " << constraintsTerminalCount_ << std::endl;
 		constraintsCount_ = constraintsIntermediateCount_ + constraintsTerminalCount_;
 
 		discreteConstraints_.resize(constraintsCount_);
@@ -128,9 +126,7 @@ public:
 	{
 		constraints_.push_back(pureStateConstraints);
 		constraintsIntermediateCount_ += (N_ + 1) * pureStateConstraints->getIntermediateConstraintsCount();
-		// std::cout << "constraintsIntermediateCount_ purestate: " << constraintsIntermediateCount_ << std::endl;
 		constraintsTerminalCount_ += pureStateConstraints->getTerminalConstraintsCount();
-		// std::cout << "constraintsTerminalCount_ purestate: " << constraintsTerminalCount_ << std::endl;
 		constraintsCount_ = constraintsIntermediateCount_ + constraintsTerminalCount_;
 
 		discreteConstraints_.resize(constraintsCount_);
@@ -194,10 +190,6 @@ public:
 				jacSize = constraint->getJacobianStateNonZeroCountIntermediate();
 				if(jacSize > 0)
 				{
-					// std::cout << "discreteInd: " << discreteInd << std::endl;
-					// std::cout << "jacSize: " << jacSize << std::endl;
-					// std::cout << "jacobianStateSparseIntermediate: " << constraint->jacobianStateSparseIntermediate().transpose() << std::endl;
-					// std::cout << "discreteJac size: " << discreteJac_.rows() << std::endl;
 					discreteJac_.segment(discreteInd, jacSize) = constraint->jacobianStateSparseIntermediate();
 					discreteInd += jacSize;
 				}
@@ -227,8 +219,6 @@ public:
 			}
 		}
 
-		std::cout << "discreteJac eval: " << discreteJac_.transpose() << std::endl;
-
 		return discreteJac_;		
 	}
 
@@ -240,6 +230,7 @@ public:
 	virtual void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
 	{
 		size_t discreteInd = 0;
+		size_t rowOffset = 0;
 		size_t nnEle = 0;
 	
 		for(size_t n = 0; n < N_ + 1; ++n)
@@ -253,7 +244,7 @@ public:
 					Eigen::VectorXi iRowStateIntermediate(constraint->getJacobianStateNonZeroCountIntermediate());
 					Eigen::VectorXi jColStateIntermediate(constraint->getJacobianStateNonZeroCountIntermediate());
 					constraint->sparsityPatternStateIntermediate(iRowStateIntermediate, jColStateIntermediate);
-					discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate.array() + discreteInd;
+					discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate.array() + rowOffset;
 					discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate.array() + w_->getStateIndex(n);
 					discreteInd += nnEle;
 				}
@@ -264,14 +255,12 @@ public:
 					Eigen::VectorXi iRowInputIntermediate(constraint->getJacobianInputNonZeroCountIntermediate());
 					Eigen::VectorXi jColInputIntermediate(constraint->getJacobianInputNonZeroCountIntermediate()); 
 					constraint->sparsityPatternInputIntermediate(iRowInputIntermediate, jColInputIntermediate);
-					// std::cout << "discreteIRow_ size: " << discreteIRow_.rows() << std::endl;
-					// std::cout << "discreteInd: " << discreteInd << std::endl;
-					// std::cout << "iRowInputIntermediate size: "<< iRowInputIntermediate.rows() << std::endl;
-					// std::cout << "nnEle: " << nnEle << std::endl;
-					discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate.array() + discreteInd;
+					discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate.array() + rowOffset;
 					discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate.array() + w_->getControlIndex(n);
 					discreteInd += nnEle;
 				}
+
+				rowOffset += constraint->getJacobianStateNonZeroCountIntermediate() + constraint->getJacobianInputNonZeroCountIntermediate();
 			}
 		}
 
@@ -283,7 +272,7 @@ public:
 				Eigen::VectorXi iRowStateIntermediate(constraint->getJacobianStateNonZeroCountTerminal());
 				Eigen::VectorXi jColStateIntermediate(constraint->getJacobianStateNonZeroCountTerminal());
 				constraint->sparsityPatternStateTerminal(iRowStateIntermediate, jColStateIntermediate);
-				discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate.array() + discreteInd;
+				discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate.array() + rowOffset;
 				discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate.array() + w_->getStateIndex(N_);
 				discreteInd += nnEle;
 			}
@@ -294,14 +283,12 @@ public:
 				Eigen::VectorXi iRowInputIntermediate(constraint->getJacobianInputNonZeroCountTerminal());
 				Eigen::VectorXi jColInputIntermediate(constraint->getJacobianInputNonZeroCountTerminal()); 
 				constraint->sparsityPatternInputTerminal(iRowInputIntermediate, jColInputIntermediate);
-				discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate.array() + discreteInd;
+				discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate.array() + rowOffset;
 				discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate.array() + w_->getControlIndex(N_);
 				discreteInd += nnEle;
 			}
+			rowOffset += constraint->getJacobianStateNonZeroCountTerminal() + constraint->getJacobianInputNonZeroCountTerminal();
 		}
-
-		std::cout << "iRow_vec: " << discreteIRow_.transpose() << std::endl;
-		std::cout << "jCol_vec: " << discreteJCol_.transpose() << std::endl;
 
 		iRow_vec = discreteIRow_;
 		jCol_vec = discreteJCol_;
@@ -335,9 +322,6 @@ public:
 			}
 		}
 
-		std::cout << "lower bound: " << discreteLowerBound_.transpose() << std::endl;
-
-
 		return discreteLowerBound_;
 	}
 
@@ -368,8 +352,6 @@ public:
 				discreteInd += constraintSize;
 			}
 		}
-
-		std::cout << "upper bound: " << discreteUpperBound_.transpose() << std::endl;
 
 		return discreteUpperBound_;
 	}

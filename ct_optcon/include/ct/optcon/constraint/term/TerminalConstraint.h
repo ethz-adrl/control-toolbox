@@ -95,7 +95,7 @@ public:
 
 	virtual Eigen::MatrixXd jacobianInput(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override
 	{
-		return Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM>::Zero();
+		return Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>::Zero();
 	}
 
 	virtual size_t getNumNonZerosJacobianState() const
