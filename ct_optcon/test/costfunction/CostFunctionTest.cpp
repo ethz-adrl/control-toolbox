@@ -172,9 +172,8 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 	double t_final = 2.5;
 
 	std::shared_ptr<PeriodicActivation> c_periodic (new PeriodicActivation(active_percentage, period, activation_offset, period_offset));
-	std::shared_ptr<tpl::PeriodicActivation<CppAD::AD<double>>> c_periodic_ad (new tpl::PeriodicActivation<CppAD::AD<double>>(active_percentage, period, activation_offset, period_offset));
 	termQuadMult->setTimeActivation(c_periodic, true);
-	termQuadMultAD->setTimeActivation(c_periodic_ad, true);
+	termQuadMultAD->setTimeActivation(c_periodic, true);
 
 	costFunction.addIntermediateTerm(termQuadMult);
 	size_t termIdAD = costFunctionAD.addIntermediateTerm(termQuadMultAD);
