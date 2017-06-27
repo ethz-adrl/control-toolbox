@@ -109,10 +109,20 @@ public:
 			constraintsTerminal_[i] = std::shared_ptr< ConstraintBase<STATE_DIM, CONTROL_DIM>> (arg.constraintsTerminal_[i]->clone());
 	}
 
+	/**
+	 * @brief      Deep-cloning of Constraint
+	 *
+	 * @return     Copy of this object.
+	 */
 	virtual ConstraintContainerAnalytical_Raw_Ptr_t clone () const override {return new ConstraintContainerAnalytical(*this);}
 
 	/**
-	 * @brief      Adds a constraint.
+	 * @brief      Destructor
+	 */
+	virtual ~ConstraintContainerAnalytical(){}
+
+	/**
+	 * @brief      Adds an intermedaite constraint.
 	 *
 	 * @param[in]  constraint  The constraint to be added
 	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
@@ -128,6 +138,12 @@ public:
 		initializedIntermediate_ = false;
 	}
 
+	/**
+	 * @brief      Adds a terminal constraint.
+	 *
+	 * @param[in]  constraint  The constraint to be added
+	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
+	 */
 	void addTerminalConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>> constraint, bool verbose)
 	{
 		constraintsTerminal_.push_back(constraint);
@@ -137,17 +153,6 @@ public:
 			std::cout<<"''" << name << "'' added as Analytical terminal constraint " << std::endl;
 		}
 		initializedTerminal_ = false;
-	}
-
-	/**
-	 * @brief      Initializes the vectors to the correct size
-	 */
-	virtual void initialize() override
-	{
-		// if(constraintsIntermediate_.size() > 0)
-			initializeIntermediate();
-		// if(constraintsTerminal_.size() > 0)
-			initializeTerminal();
 	}
 
 	virtual Eigen::VectorXd evaluateIntermediate() override
@@ -473,9 +478,6 @@ public:
 
 	virtual size_t getJacobianStateNonZeroCountIntermediate() override
 	{
-		// if(!initializedIntermediate_)
-		// 	throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
 		size_t count = 0;
 		for(auto constraint : constraintsIntermediate_)
 			count += constraint->getNumNonZerosJacobianState();
@@ -485,9 +487,6 @@ public:
 
 	virtual size_t getJacobianStateNonZeroCountTerminal() override
 	{
-		// if(!initializedTerminal_)
-		// 	throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
 		size_t count = 0;
 		for(auto constraint : constraintsTerminal_)
 			count += constraint->getNumNonZerosJacobianState();
@@ -497,9 +496,6 @@ public:
 
 	virtual size_t getJacobianInputNonZeroCountIntermediate() override
 	{
-		// if(!initializedIntermediate_)
-		// 	throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");	
-
 		size_t count = 0;
 		for(auto constraint : constraintsIntermediate_)
 			count += constraint->getNumNonZerosJacobianInput();
@@ -509,9 +505,6 @@ public:
 
 	virtual size_t getJacobianInputNonZeroCountTerminal() override
 	{
-		// if(!initializedTerminal_)
-		// 	throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");	
-
 		size_t count = 0;
 		for(auto constraint : constraintsTerminal_)
 			count += constraint->getNumNonZerosJacobianInput();
@@ -519,28 +512,7 @@ public:
 		return count;
 	}
 
-
-private:
-	virtual void update() override {}
-
-	void checkIntermediateConstraints()
-	{
-		if(!initializedIntermediate_)
-			throw std::runtime_error("Error: Intermediate constraints are either empty or not initialized yet. ");
-				// Use the initilize() method to initialize the constraint Container.
-				// Make sure to add at least one constraint with addIntermediateConstraint()");
-	}
-
-	void checkTerminalConstraints()
-	{
-		if(!initializedIntermediate_)
-			throw std::runtime_error("Error: Terminal constraints are either empty or not initialized yet. ");
-				// Use the initilize() method to initialize the constraint Container.
-				// Make sure to add at least one constraint with addTerminalConstraint()");
-	}
-
-
-	void initializeIntermediate()
+	virtual bool initializeIntermediate() override
 	{
 		if(getIntermediateConstraintsCount() > 0)
 		{
@@ -564,10 +536,10 @@ private:
 			}
 		}
 
-		initializedIntermediate_ = true;
+		return true;
 	}
 
-	void initializeTerminal()
+	virtual bool initializeTerminal() override
 	{
 		if(getTerminalConstraintsCount() > 0)
 		{
@@ -591,8 +563,33 @@ private:
 			}
 		}
 
-		initializedTerminal_ = true;
+		return true;
 	}
+
+
+private:
+	virtual void update() override {}
+
+	/**
+	 * @brief      Checks whether the intermediate constraints are initialized.
+	 *             Throws a runtime error if not.
+	 */
+	void checkIntermediateConstraints()
+	{
+		if(!initializedIntermediate_)
+			throw std::runtime_error("Error: Intermediate constraints are either empty or not initialized yet. ");
+	}
+
+	/**
+	 * @brief      Checks whether the terminal constraints are initialized.
+	 *             Throws a runtime error if not.
+	 */
+	void checkTerminalConstraints()
+	{
+		if(!initializedTerminal_)
+			throw std::runtime_error("Error: Terminal constraints are either empty or not initialized yet. ");
+	}
+
 
 	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>>> constraintsIntermediate_;
 	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>>> constraintsTerminal_;

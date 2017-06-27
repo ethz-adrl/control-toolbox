@@ -120,35 +120,83 @@ public:
 		update();
 	}
 
+	/**
+	 * @brief      Evaluates the intermediate constraints
+	 *
+	 * @return     The evaluation of the intermediate constraints
+	 */
 	virtual Eigen::VectorXd evaluateIntermediate() = 0;
 
+	/**
+	 * @brief      Evaluates the terminal constraints
+	 *
+	 * @return     The evaluation of the terminal constraints
+	 */
 	virtual Eigen::VectorXd evaluateTerminal() = 0;
 
+	/**
+	 * @brief      Retrieves the number of intermediate constraints
+	 *
+	 * @return     The number of intermediate constraints
+	 */
 	virtual size_t getIntermediateConstraintsCount() = 0;
 
+	/**
+	 * @brief      Retrieves the number of final constraints
+	 *
+	 * @return     The number of final constraints
+	 */
 	virtual size_t getTerminalConstraintsCount() = 0;
 
+	/**
+	 * @brief      Retrieves the total number of constraints
+	 *
+	 * @return     The total number of constraints
+	 */
 	size_t getConstraintsCount()
 	{
 		return getIntermediateConstraintsCount() + getTerminalConstraintsCount();
 	}
 
+	/**
+	 * @brief      Retrieves the lower constraint bound on the intermediate
+	 *             constraints
+	 *
+	 * @return     The lower bound on the intermediate constraints
+	 */
 	Eigen::VectorXd getLowerBoundsIntermediate() const
 	{
 		return lowerBoundsIntermediate_;
 	}
 
+	/**
+	 * @brief      Retrieves the lower constraint bound on the terminal
+	 *             constraints
+	 *
+	 * @return     The lower bound on the terminal constraints
+	 */
 	Eigen::VectorXd getLowerBoundsTerminal() const
 	{
 		return lowerBoundsTerminal_;
 	}
 
-
+	/**
+	 * @brief      Retrieves the upper constraint bound on the intermediate
+	 *             constraints
+	 *
+	 * @return     The upper bound on the intermediate constraints
+	 */
 	Eigen::VectorXd getUpperBoundsIntermediate() const
 	{
 		return upperBoundsIntermediate_;
 	}
 
+	/**
+	 * @brief      Retrieves the upper constraint bound on the terminal
+	 *             constraints
+	 *
+	 * @return     The upper bound on the terminal constraints
+	 */
 	Eigen::VectorXd getUpperBoundsTerminal() const
 	{	
 		return upperBoundsTerminal_;
@@ -156,6 +204,11 @@ public:
 
 
 protected:
+
+	/**
+	 * @brief      Gets called by the setCurrentStateAndControl method. Can be
+	 *             used to update container properties
+	 */
 	virtual void update() = 0;
 
 	state_vector_t   x_;	/** state vector */

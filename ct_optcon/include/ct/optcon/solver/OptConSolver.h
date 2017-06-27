@@ -208,16 +208,40 @@ public:
 	 */
 	virtual void changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin) = 0;
 
+	/**
+	 * @brief      Change the state input constraints
+	 *
+	 *             This function does not need to be called if
+	 *             setOptConProblem() has been called with an OptConProblem that
+	 *             had the correct linear system
+	 *
+	 * @param[in]  con   The new state input constraints
+	 */
 	virtual void changeStateInputConstraints(const typename OptConProblem_t::ConstraintPtr_t con) 
 	{
 		throw std::runtime_error("The current solver does not support state input constraints!");
 	}
 
+	/**
+	 * @brief      Change the pure state constraints.
+	 *
+	 *             This function does not need to be called if
+	 *             setOptConProblem() has been called with an OptConProblem that
+	 *             had the correct linear system
+	 *
+	 * @param[in]  con   The new pure state constraints
+	 */
 	virtual void changePureStateConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
 	{
 		throw std::runtime_error("The current solver does not support pure state constraints!");
 	}
 
+	/**
+	 * @brief      Returns the absolute cost value of the latest optcon solver
+	 *             iteration
+	 *
+	 * @return     The absolute cost
+	 */
 	virtual double getCost() const
 	{
 		throw std::runtime_error("Get cost not implemented");
@@ -262,10 +286,30 @@ public:
 
 	const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const { return costFunctions_; }
 
+	/**
+	 * @brief      Direct accessor to the state input constraint instances
+	 * 
+	 * \warning{Use this only when performance absolutely matters and if you know what you
+	 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
+	 * in a safe and easy way. You should especially not change the size of the vector or
+	 * modify each entry differently.}
+	 *
+	 * @return     The state input constraint instances
+	 */
 	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() { return stateInputConstraints_; }
 
 	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const { return stateInputConstraints_; }
 
+	/**
+	 * @brief      Direct accessor to the pure state constraints
+	 * 
+	 * \warning{Use this only when performance absolutely matters and if you know what you
+	 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
+	 * in a safe and easy way. You should especially not change the size of the vector or
+	 * modify each entry differently.}
+	 *
+	 * @return     The pure state constraints instances.
+	 */
 	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() { return pureStateConstraints_; }
 
 	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const { return pureStateConstraints_; }

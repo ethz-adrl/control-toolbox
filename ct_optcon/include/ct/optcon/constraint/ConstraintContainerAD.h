@@ -62,8 +62,7 @@ public:
 	/**
 	 * @brief      Basic constructor
 	 */
-	ConstraintContainerAD() :
-	initialized_(false)
+	ConstraintContainerAD()
 	{
 		stateControlD_.setZero();
 
@@ -86,8 +85,7 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	ConstraintContainerAD(const state_vector_t &x, const input_vector_t &u, const double& t = 0.0) :
-	initialized_(false)
+	ConstraintContainerAD(const state_vector_t &x, const input_vector_t &u, const double& t = 0.0) 
 	{
 		//Set to some random number which is != the initguess of the problem
 		stateControlD_ << x, u;
@@ -116,9 +114,6 @@ public:
 	sparsityStateTerminalCols_(arg.sparsityStateTerminalCols_),
 	sparsityInputTerminalRows_(arg.sparsityInputTerminalRows_),
 	sparsityInputTerminalCols_(arg.sparsityInputTerminalCols_),
-	initialized_(arg.initialized_),
-	initializedIntermediate_(arg.initializedIntermediate_),
-	initializedTerminal_(arg.initializedTerminal_),
 	stateControlD_(arg.stateControlD_)
 	{
 		constraintsIntermediate_.resize(arg.constraintsIntermediate_.size());
@@ -133,7 +128,8 @@ public:
 
 	/**
 	 * Deep-cloning of Constraint
-	 * @return base pointer to the clone
+	 *
+	 * @return     base pointer to the clone
 	 */
 	virtual ConstraintContainerAD_Raw_Ptr_t clone () const override {return new ConstraintContainerAD(*this);}
 
@@ -143,12 +139,11 @@ public:
 	virtual ~ConstraintContainerAD() {};
 
 	/**
-	 * @brief      Adds a constraint.
+	 * @brief      Adds an intermediate constraint.
 	 *
-	 * @param[in]  constraint  The constraint to be added
+	 * @param[in]  constraint  The constraint
 	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
 	 */
-
 	void addIntermediateConstraint(std::shared_ptr<tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, Scalar>> constraint, bool verbose)
 	{
 		constraintsIntermediate_.push_back(constraint);
@@ -164,9 +159,15 @@ public:
 
 		intermediateCodegen_->update(fIntermediate_, STATE_DIM + CONTROL_DIM, getIntermediateConstraintsCount());
 
-		initializedIntermediate_ = false;
+		this->initializedIntermediate_ = false;
 	}
 
+	/**
+	 * @brief      Adds a terminal constraint.
+	 *
+	 * @param[in]  constraint  The constraint
+	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
+	 */
 	void addTerminalConstraint(std::shared_ptr<tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, Scalar>> constraint, bool verbose)
 	{
 		constraintsTerminal_.push_back(constraint);
@@ -182,22 +183,13 @@ public:
 
 		terminalCodegen_->update(fTerminal_, STATE_DIM + CONTROL_DIM, getTerminalConstraintsCount());
 
-		initializedTerminal_ = false;
-	}
-
-	/**
-	 * @brief      Initializes the constraints using just in time compilation
-	 */
-	virtual void initialize() override
-	{
-		initializeIntermediate();
-		initializeTerminal();
+		this->initializedTerminal_ = false;
 	}
 
 
 	virtual Eigen::VectorXd evaluateIntermediate() override
 	{
-		if(!initializedIntermediate_)
+		if(!this->initializedIntermediate_)
 			throw std::runtime_error("evaluateIntermediateConstraints not initialized yet. Call 'initialize()' before");
 
 
@@ -206,7 +198,7 @@ public:
 
 	virtual Eigen::VectorXd evaluateTerminal() override
 	{
-		if(!initializedTerminal_)
+		if(!this->initializedTerminal_)
 			throw std::runtime_error("evaluateTerminalConstraints not initialized yet. Call 'initialize()' before");
 
 		return terminalCodegen_->forwardZero(stateControlD_);
@@ -233,7 +225,7 @@ public:
 
 	virtual Eigen::VectorXd jacobianStateSparseIntermediate() override
 	{
-		if(!initializedIntermediate_)
+		if(!this->initializedIntermediate_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::MatrixXd jacTot = intermediateCodegen_->operator()(stateControlD_);
@@ -249,7 +241,7 @@ public:
 
 	virtual Eigen::MatrixXd jacobianStateIntermediate() override
 	{
-		if(!initializedIntermediate_)
+		if(!this->initializedIntermediate_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::MatrixXd jacTot = intermediateCodegen_->operator()(stateControlD_);
@@ -258,7 +250,7 @@ public:
 
 	virtual Eigen::VectorXd jacobianStateSparseTerminal() override
 	{
-		if(!initializedTerminal_)
+		if(!this->initializedTerminal_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::MatrixXd jacTot = terminalCodegen_->operator()(stateControlD_);
@@ -271,7 +263,7 @@ public:
 
 	virtual Eigen::MatrixXd jacobianStateTerminal() override
 	{
-		if(!initializedTerminal_)
+		if(!this->initializedTerminal_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::MatrixXd jacTot = terminalCodegen_->operator()(stateControlD_);
@@ -290,7 +282,7 @@ public:
 
 	virtual Eigen::MatrixXd jacobianInputIntermediate() override
 	{
-		if(!initializedIntermediate_)
+		if(!this->initializedIntermediate_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::MatrixXd jacTot = intermediateCodegen_->operator()(stateControlD_);
@@ -299,7 +291,7 @@ public:
 
 	virtual Eigen::VectorXd jacobianInputSparseTerminal() override
 	{
-		if(!initializedTerminal_)
+		if(!this->initializedTerminal_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::MatrixXd jacTot = terminalCodegen_->operator()(stateControlD_);
@@ -312,7 +304,7 @@ public:
 
 	virtual Eigen::MatrixXd jacobianInputTerminal() override
 	{
-		if(!initializedTerminal_)
+		if(!this->initializedTerminal_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::MatrixXd jacTot = terminalCodegen_->operator()(stateControlD_);
@@ -321,7 +313,7 @@ public:
 
 	virtual void sparsityPatternStateIntermediate(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
 	{
-		if(!initializedIntermediate_)
+		if(!this->initializedIntermediate_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		iRows = sparsityStateIntermediateRows_;
@@ -330,7 +322,7 @@ public:
 
 	virtual void sparsityPatternStateTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
 	{
-		if(!initializedTerminal_)
+		if(!this->initializedTerminal_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		iRows = sparsityStateTerminalRows_;
@@ -339,7 +331,7 @@ public:
 
 	virtual void sparsityPatternInputIntermediate(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
 	{
-		if(!initializedIntermediate_)
+		if(!this->initializedIntermediate_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		iRows = sparsityInputIntermediateRows_;
@@ -348,7 +340,7 @@ public:
 
 	virtual void sparsityPatternInputTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
 	{
-		if(!initializedTerminal_)
+		if(!this->initializedTerminal_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		iRows = sparsityInputTerminalRows_;
@@ -357,7 +349,7 @@ public:
 
 	virtual size_t getJacobianStateNonZeroCountIntermediate() override
 	{
-		if(!initializedIntermediate_)
+		if(!this->initializedIntermediate_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		return sparsityStateIntermediateRows_.rows();
@@ -365,7 +357,7 @@ public:
 
 	virtual size_t getJacobianStateNonZeroCountTerminal() override
 	{
-		if(!initializedTerminal_)
+		if(!this->initializedTerminal_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		return sparsityStateTerminalRows_.rows();
@@ -373,7 +365,7 @@ public:
 
 	virtual size_t getJacobianInputNonZeroCountIntermediate() override
 	{
-		if(!initializedIntermediate_)
+		if(!this->initializedIntermediate_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		return sparsityInputIntermediateRows_.rows();
@@ -381,49 +373,14 @@ public:
 
 	virtual size_t getJacobianInputNonZeroCountTerminal() override
 	{
-		if(!initializedTerminal_)
+		if(!this->initializedTerminal_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
 		return sparsityInputTerminalRows_.rows();
 	}
 
-private:
-	virtual void update() override { stateControlD_ << this->x_, this->u_; }
-
-	Eigen::Matrix<Scalar, Eigen::Dynamic, 1> evaluateIntermediateCodegen(const Eigen::Matrix<Scalar, STATE_DIM + CONTROL_DIM, 1>& stateinput)
-	{
-		size_t count = 0;
-		Eigen::Matrix<Scalar, Eigen::Dynamic, 1> gLocal;
-
-		for(auto constraint : constraintsIntermediate_)
-		{
-			size_t constraint_dim = constraint->getConstraintSize();
-			gLocal.conservativeResize(count + constraint_dim);
-			gLocal.segment(count, constraint_dim) = constraint->evaluate(stateinput.segment(0,STATE_DIM), stateinput.segment(STATE_DIM, CONTROL_DIM), Scalar(0.0));
-			count += constraint_dim;
-		}
-		return gLocal;		
-	}
-
-	Eigen::Matrix<Scalar, Eigen::Dynamic, 1> evaluateTerminalCodegen(const Eigen::Matrix<Scalar, STATE_DIM + CONTROL_DIM, 1>& stateinput)
-	{
-		size_t count = 0;
-		Eigen::Matrix<Scalar, Eigen::Dynamic, 1> gLocal;
-
-		for(auto constraint : constraintsTerminal_)
-		{
-			size_t constraint_dim = constraint->getConstraintSize();
-			gLocal.conservativeResize(count + constraint_dim);
-			gLocal.segment(count, constraint_dim) = constraint->evaluate(stateinput.segment(0,STATE_DIM), stateinput.segment(STATE_DIM, CONTROL_DIM), Scalar(0.0));
-			count += constraint_dim;
-		}
-
-		return gLocal;		
-	}
-
-	void initializeIntermediate()
+	virtual bool initializeIntermediate() override
 	{	
-		std::cout << "initializing intermediate" << std::endl;
 
 		Eigen::VectorXi sparsityRows;
 		Eigen::VectorXi sparsityCols;
@@ -477,14 +434,11 @@ private:
 			}	
 		}
 
-
-		initializedIntermediate_ = true;
-		std::cout << "finished initializing intermediate" << std::endl;
+		return true;
 	}
 
-	void initializeTerminal()
+	virtual bool initializeTerminal() override
 	{
-		std::cout << "initializing terminal" << std::endl;
 		Eigen::VectorXi sparsityRows;
 		Eigen::VectorXi sparsityCols;
 
@@ -538,8 +492,58 @@ private:
 			}
 		}
 
-		initializedTerminal_ = true;
-		std::cout << "successfully intitialized terminal" << std::endl;
+		return true;
+	}	
+
+private:
+	// cache the matrix here, no need to call it at every eval matrix
+	virtual void update() override { stateControlD_ << this->x_, this->u_; }
+
+	/**
+	 * @brief      Helper function to keep track of the constraint evaluation
+	 *             used for cppad codegeneration
+	 *
+	 * @param[in]  stateinput  The stacked state input vector
+	 *
+	 * @return     The evaluated intermediate constraints
+	 */
+	Eigen::Matrix<Scalar, Eigen::Dynamic, 1> evaluateIntermediateCodegen(const Eigen::Matrix<Scalar, STATE_DIM + CONTROL_DIM, 1>& stateinput)
+	{
+		size_t count = 0;
+		Eigen::Matrix<Scalar, Eigen::Dynamic, 1> gLocal;
+
+		for(auto constraint : constraintsIntermediate_)
+		{
+			size_t constraint_dim = constraint->getConstraintSize();
+			gLocal.conservativeResize(count + constraint_dim);
+			gLocal.segment(count, constraint_dim) = constraint->evaluate(stateinput.segment(0,STATE_DIM), stateinput.segment(STATE_DIM, CONTROL_DIM), Scalar(0.0));
+			count += constraint_dim;
+		}
+		return gLocal;		
+	}
+
+	/**
+	 * @brief      Helper function to keep track of the constraint evaluation
+	 *             used for cppad codegeneration
+	 *
+	 * @param[in]  stateinput  The stacked state input vector
+	 *
+	 * @return     The evaluated terminal constraints
+	 */
+	Eigen::Matrix<Scalar, Eigen::Dynamic, 1> evaluateTerminalCodegen(const Eigen::Matrix<Scalar, STATE_DIM + CONTROL_DIM, 1>& stateinput)
+	{
+		size_t count = 0;
+		Eigen::Matrix<Scalar, Eigen::Dynamic, 1> gLocal;
+
+		for(auto constraint : constraintsTerminal_)
+		{
+			size_t constraint_dim = constraint->getConstraintSize();
+			gLocal.conservativeResize(count + constraint_dim);
+			gLocal.segment(count, constraint_dim) = constraint->evaluate(stateinput.segment(0,STATE_DIM), stateinput.segment(STATE_DIM, CONTROL_DIM), Scalar(0.0));
+			count += constraint_dim;
+		}
+
+		return gLocal;		
 	}
 
 	//containers
@@ -564,9 +568,6 @@ private:
 	Eigen::VectorXi sparsityInputTerminalRows_;
 	Eigen::VectorXi sparsityInputTerminalCols_;
 
-	bool initialized_;
-	bool initializedIntermediate_;
-	bool initializedTerminal_;
 
 	Eigen::Matrix<double, STATE_DIM + CONTROL_DIM, 1> stateControlD_; /** contains x, u in stacked form */
 };

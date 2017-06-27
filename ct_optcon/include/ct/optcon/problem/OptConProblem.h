@@ -178,19 +178,47 @@ public:
 	 * set intermediate constraints
 	 * @param constraint pointer to intermediate constraint
 	 */
-	void setStateInputConstraints(const ConstraintPtr_t constraint) { stateInputConstraints_ = constraint;}
+	void setStateInputConstraints(const ConstraintPtr_t constraint)
+	{ 
+		stateInputConstraints_ = constraint;
+		if(!stateInputConstraints_->isInitialized())
+			stateInputConstraints_->initialize();
+		if((stateInputConstraints_->getJacobianInputNonZeroCountIntermediate() + 
+			stateInputConstraints_->getJacobianInputNonZeroCountTerminal()) == 0)
+			std::cout << "WARNING: The state input constraint container does not" <<
+			" contain any elements in the constraint jacobian with respect to the input." <<
+			" Consider adding the constraints as pure state constraints. " << std::endl;
+	}
 
 	/*!
 	 * set final constraints
 	 * @param constraint pointer to a final constraint
 	 */
-	void setPureStateConstraints(const ConstraintPtr_t constraint) { pureStateConstraints_ = constraint;}
+	void setPureStateConstraints(const ConstraintPtr_t constraint)
+	{ 
+		pureStateConstraints_ = constraint;
+		if(!pureStateConstraints_->isInitialized())
+			pureStateConstraints_->initialize();
+		if((pureStateConstraints_->getJacobianInputNonZeroCountIntermediate() + 
+			pureStateConstraints_->getJacobianInputNonZeroCountTerminal()) > 0)
+			throw std::runtime_error("Pure state constraints contain an element with a non zero derivative with respect to control input."
+				" Implement this constraint as state input constraint");
+	}
 
 
-	//! retrieve intermediate constraints
+
+	/**
+	 * @brief      Retrieve the state input constraints
+	 *
+	 * @return     The state input constraints.
+	 */
 	const ConstraintPtr_t getStateInputConstraints() const { return stateInputConstraints_; }
 
-	//! retrieve final constraints
+	/**
+	 * @brief      Retrieves the pure state constraints
+	 *
+	 * @return     The pure state constraints
+	 */
 	const ConstraintPtr_t getPureStateConstraints() const { return pureStateConstraints_; }
 
 	/*!

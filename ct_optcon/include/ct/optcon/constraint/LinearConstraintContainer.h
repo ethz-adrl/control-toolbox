@@ -59,7 +59,10 @@ public:
 	/**
 	 * @brief      Default constructor
 	 */
-	LinearConstraintContainer() {}
+	LinearConstraintContainer() :
+	initializedIntermediate_(false),
+	initializedTerminal_(false)
+	{}
 
 
 	/**
@@ -69,7 +72,9 @@ public:
 	 */
 	LinearConstraintContainer(const LinearConstraintContainer& arg)
 	:
-	ConstraintContainerBase<STATE_DIM, CONTROL_DIM>(arg)
+	ConstraintContainerBase<STATE_DIM, CONTROL_DIM>(arg),
+	initializedIntermediate_(arg.initializedIntermediate_),
+	initializedTerminal_(arg.initializedTerminal_)
 	{}
 
 	/**
@@ -220,6 +225,12 @@ public:
 	 */	
 	virtual size_t getJacobianInputNonZeroCountTerminal() = 0;
 
+	/**
+	 * @brief      Returns the number of non zeros in the constraint jacobian
+	 *             wrt to state and input
+	 *
+	 * @return      The number of the non zeros
+	 */
 	size_t getJacNonZeroCount()
 	{
 		return 	getJacobianStateNonZeroCountIntermediate() + 
@@ -231,7 +242,36 @@ public:
 	/**
 	 * @brief      Initializes the constraint container
 	 */
-	virtual void initialize() = 0;
+	void initialize()
+	{
+		initializedIntermediate_ = initializeIntermediate();
+		initializedTerminal_ = initializeTerminal();
+	}
+
+	/**
+	 * @brief      Initializes the intermediate constraints
+	 *
+	 * @return     Returns true if the initialization was successful
+	 */
+	virtual bool initializeIntermediate() = 0;
+	
+	/**
+	 * @brief      Initializes the terminal constraints
+	 *
+	 * @return     Returns true if the initialization was successful
+	 */
+	virtual bool initializeTerminal() = 0;
+
+	/**
+	 * @brief      Checks if the constraint container is initialized
+	 *
+	 * @return     Returns true if initialized
+	 */
+	bool isInitialized() { return initializedIntermediate_ && initializedTerminal_; }
+
+protected:
+	bool initializedIntermediate_;
+	bool initializedTerminal_;
 };
 
 } // namespace optcon

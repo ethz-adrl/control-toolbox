@@ -122,10 +122,6 @@ public:
 		stateInputConstraints_->addIntermediateConstraint(inputConstraint, true);
 		stateInputConstraints_->addIntermediateConstraint(stateConstraint, true);
 
-		pureStateConstraints_->initialize();
-		stateInputConstraints_->initialize();
-		stateInputConstraintsAd_->initialize();
-
 		OptConProblem<2,1> optProblem(oscillator_, costFunction_);
 		optProblem.setInitialState(x_0_);
 		optProblem.setTimeHorizon(settings_.T_);
