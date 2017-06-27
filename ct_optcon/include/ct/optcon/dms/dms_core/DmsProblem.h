@@ -140,26 +140,6 @@ public:
 		if(pureStateConstraints.size() > 0)
 			discretizedConstraints_->setPureStateConstraints(pureStateConstraints.front());
 
-		// if(stateInputConstraints.size() > 0)
-		// {
-		// 	std::cout << "Setting up intermediate constraints" << std::endl;
-		// 	std::vector<size_t> activeInd;
-		// 	for(size_t i = 0; i < settings_.N_ + 1; ++i)
-		// 		activeInd.push_back(i);
-		// 	stateInputConstraintsLocal_ = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> (
-		// 		new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM> (optVariablesDms_, controlSpliner_, timeGrid_, stateInputConstraints.front(), activeInd));
-		// }
-
-		// if(pureStateConstraints.size() > 0)
-		// {
-		// 	std::vector<size_t> activeInd;
-		// 	activeInd.push_back(settings_.N_);
-		// 	std::cout << "setting up final constraints" << std::endl;
-		// 	pureStateConstraintsLocal_ = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> (
-		// 		new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM> (optVariablesDms_, controlSpliner_, timeGrid_, pureStateConstraints.front(), activeInd));
-		// }
-
-
 		for (size_t shotIdx = 0; shotIdx < settings_.N_; shotIdx++)
 		{
 			std::shared_ptr<ControllerDms<STATE_DIM, CONTROL_DIM>> newController ( new ControllerDms<STATE_DIM, CONTROL_DIM>(controlSpliner_, shotIdx));
@@ -358,8 +338,6 @@ public:
 private:
 	DmsSettings settings_;
 	
-	// std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> stateInputConstraintsLocal_; /*!<The discretized intermediate constraints*/
-	// std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> pureStateConstraintsLocal_; /*!<The discretized final constraints*/
 	std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> discretizedConstraints_;
 
 	std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>> shotContainers_; 
