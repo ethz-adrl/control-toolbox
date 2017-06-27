@@ -38,24 +38,24 @@ namespace optcon{
  * \warning this is a legacy class which will be removed in a future release.
  * \todo remove.
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class CostFunctionQuadraticTracking : public optcon::CostFunctionQuadratic< STATE_DIM, CONTROL_DIM >
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class CostFunctionQuadraticTracking : public optcon::CostFunctionQuadratic< STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef core::StateVector<STATE_DIM> state_vector_t;
-	typedef core::ControlVector<CONTROL_DIM> control_vector_t;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 
-	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_feedback_t;
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_feedback_t;
 
 
-	typedef typename core::StateVectorArray<STATE_DIM> state_vector_array_t;
-	typedef typename core::ControlVectorArray<CONTROL_DIM> control_vector_array_t;
-	typedef typename core::TimeArray time_array_t;
+	typedef typename core::StateVectorArray<STATE_DIM, SCALAR> state_vector_array_t;
+	typedef typename core::ControlVectorArray<CONTROL_DIM, SCALAR> control_vector_array_t;
+	typedef typename core::tpl::TimeArray<SCALAR> time_array_t;
 
 
 	CostFunctionQuadraticTracking(
@@ -76,7 +76,7 @@ public:
 	{}
 
 	CostFunctionQuadraticTracking(const CostFunctionQuadraticTracking& arg) :
-		optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>(arg),
+		optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
 		x_deviation_(arg.x_deviation_),
 		Q_(arg.Q_),
 		u_deviation_(arg.u_deviation_),
@@ -87,13 +87,13 @@ public:
 		trackControlTrajectory_(arg.trackControlTrajectory_)
 	{}
 
-	CostFunctionQuadraticTracking<STATE_DIM, CONTROL_DIM>* clone() const override {
-		return new CostFunctionQuadraticTracking<STATE_DIM, CONTROL_DIM>(*this);
+	CostFunctionQuadraticTracking<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override {
+		return new CostFunctionQuadraticTracking<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
 	}
 
 	virtual ~CostFunctionQuadraticTracking() {}
 
-	virtual void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const double& t) override{
+	virtual void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const SCALAR& t) override{
 		this->x_ = x;
 		this->u_ = u;
 
@@ -106,22 +106,22 @@ public:
 	}
 
 	void updateTrajectories(
-		const core::StateTrajectory<STATE_DIM>& xTraj,
-		const core::ControlTrajectory<CONTROL_DIM>& uTraj)
+		const core::StateTrajectory<STATE_DIM, SCALAR>& xTraj,
+		const core::ControlTrajectory<CONTROL_DIM, SCALAR>& uTraj)
 	{
 		x_traj_ref_ = xTraj;
 		u_traj_ref_ = uTraj;
 	}
 
-	core::StateTrajectory<STATE_DIM>& getReferenceStateTrajectory() {return x_traj_ref_;}
+	core::StateTrajectory<STATE_DIM, SCALAR>& getReferenceStateTrajectory() {return x_traj_ref_;}
 
-	core::ControlTrajectory<CONTROL_DIM>& getReferenceControlTrajectory() {return u_traj_ref_;}
+	core::ControlTrajectory<CONTROL_DIM, SCALAR>& getReferenceControlTrajectory() {return u_traj_ref_;}
 
 
-	double evaluateIntermediate() override
+	SCALAR evaluateIntermediate() override
 	{
-	  double costQ = x_deviation_.transpose() * Q_ * x_deviation_;
-	  double costR = u_deviation_.transpose() * R_ * u_deviation_;
+	  SCALAR costQ = x_deviation_.transpose() * Q_ * x_deviation_;
+	  SCALAR costR = u_deviation_.transpose() * R_ * u_deviation_;
 	  return costQ + costR;
 	}
 
@@ -152,7 +152,7 @@ public:
 	}
 
 
-	double evaluateTerminal() override
+	SCALAR evaluateTerminal() override
 	{
 		return  x_deviation_.transpose() * Q_final_ * x_deviation_;
 	}
@@ -178,8 +178,8 @@ protected:
 	state_matrix_t Q_final_;
 
 	// the reference trajectories to be tracked
-	ct::core::StateTrajectory<STATE_DIM> x_traj_ref_;
-	ct::core::ControlTrajectory<CONTROL_DIM> u_traj_ref_;
+	ct::core::StateTrajectory<STATE_DIM, SCALAR> x_traj_ref_;
+	ct::core::ControlTrajectory<CONTROL_DIM, SCALAR> u_traj_ref_;
 
 	// Option whether the control trajectory deviation shall be penalized or not
 	bool trackControlTrajectory_;

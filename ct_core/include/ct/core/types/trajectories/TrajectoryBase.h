@@ -40,7 +40,7 @@ namespace core {
  *
  * \tparam T data type
  */
-template <class T>
+template <class T, typename SCALAR>
 class TrajectoryBase {
 
 public:
@@ -53,7 +53,7 @@ public:
 	virtual ~TrajectoryBase() {};
 
 	//! evaluate the trajectory at a certain time
-	virtual T eval(const Time& time) = 0;
+	virtual T eval(const SCALAR& time) = 0;
 
 };
 

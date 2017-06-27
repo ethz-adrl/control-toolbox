@@ -159,7 +159,7 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 	CostFunctionAD<state_dim, control_dim> costFunctionAD;
 
 	std::shared_ptr<TermQuadMult<state_dim, control_dim, double> > termQuadMult(new TermQuadMult<state_dim, control_dim>);
-	std::shared_ptr<TermQuadMult<state_dim, control_dim, CppAD::AD<double> > > termQuadMultAD(new TermQuadMult<state_dim, control_dim, CppAD::AD<double>>);
+	std::shared_ptr<TermQuadMult<state_dim, control_dim, CppAD::AD<double>, double > > termQuadMultAD(new TermQuadMult<state_dim, control_dim, CppAD::AD<double>, double>);
 
 	std::shared_ptr<TermMixed<state_dim, control_dim, double > > termMixed (new TermMixed<state_dim, control_dim, double>);
 	std::shared_ptr<TermMixed<state_dim, control_dim, CppAD::AD<double> > > termMixedAD (new TermMixed<state_dim, control_dim, CppAD::AD<double>>);

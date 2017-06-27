@@ -63,6 +63,7 @@ public:
 	typedef POLICY Policy_t;
 	typedef SETTINGS Settings_t;
 	typedef DERIVED Derived;
+	typedef SCALAR Scalar_t;
 
 	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 

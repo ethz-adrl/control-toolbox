@@ -42,7 +42,7 @@ namespace optcon {
  * An example for using this term is given in unit test \ref TrackingTest.cpp
  *
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S = double, typename TIME_SCALAR = double>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S = double, typename TIME_SCALAR = S>
 class TermQuadTracking : public TermBase<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR> {
 
 public:

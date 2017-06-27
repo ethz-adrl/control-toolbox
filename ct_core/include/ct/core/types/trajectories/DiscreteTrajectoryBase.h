@@ -49,7 +49,7 @@ namespace core {
  * \tparam Alloc allocator for trajectory points
  */
 template <class T, class Alloc = Eigen::aligned_allocator<T>, typename SCALAR = double>
-class DiscreteTrajectoryBase : public TrajectoryBase<T>
+class DiscreteTrajectoryBase : public TrajectoryBase<T, SCALAR>
 {
 
 public:
@@ -109,12 +109,12 @@ public:
 	 * @param startIndex index where the trajectory to be extracted starts
 	 * @param endIndex index where the trajectory to be extracted ends
 	 */
-	DiscreteTrajectoryBase(DiscreteTrajectoryBase<T, Alloc>& other, const size_t startIndex, const size_t endIndex):
+	DiscreteTrajectoryBase(DiscreteTrajectoryBase<T, Alloc, SCALAR>& other, const size_t startIndex, const size_t endIndex):
 		time_(),
 		data_(),
 		interp_(other.interp_.getInterpolationType())
 	{
-		TimeArray time_temp;
+		tpl::TimeArray<SCALAR> time_temp;
 		DiscreteArray<T, Alloc> data_temp;
 
 		for(size_t i = startIndex; i<=endIndex; i++)
@@ -172,7 +172,7 @@ public:
 	 * @param time stamp at which to evaluate the trajectory
 	 * @return trajectory value
 	 */
-	virtual T eval(const Time& evalTime) override
+	virtual T eval(const SCALAR& evalTime) override
 	{
 		T result;
 		interp_.interpolate(time_, data_, evalTime, result);
@@ -286,7 +286,7 @@ public:
 	}
 
 	//! get the time stamp at a certain index
-	const Time& getTimeFromIndex(const size_t& ind) const {return time_[ind];}
+	const SCALAR& getTimeFromIndex(const size_t& ind) const {return time_[ind];}
 
 	//! get the index associated with a certain time
 	/*!
