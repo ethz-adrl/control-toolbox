@@ -57,9 +57,6 @@ public:
 	typedef ConstraintContainerAnalytical<STATE_DIM, CONTROL_DIM>* ConstraintContainerAnalytical_Raw_Ptr_t;
 
 	ConstraintContainerAnalytical()
-	:
-	initializedIntermediate_(false),
-	initializedTerminal_(false)
 	{}
 
 	/**
@@ -70,9 +67,6 @@ public:
 	 * @param      t     time
 	 */
 	ConstraintContainerAnalytical(const state_vector_t &x, const input_vector_t &u, const double& t = 0.0)
-	:
-	initializedIntermediate_(false),
-	initializedTerminal_(false)	
 	{}
 
 	/**
@@ -86,13 +80,11 @@ public:
 	evalIntermediate_(arg.evalIntermediate_),
 	evalTerminal_(arg.evalTerminal_),
 	constraintsIntermediate_(arg.constraintsIntermediate_),
-	initializedIntermediate_(arg.initializedIntermediate_),
 	evalJacSparseStateIntermediate_(arg.evalJacSparseStateIntermediate_),
 	evalJacSparseInputIntermediate_(arg.evalJacSparseInputIntermediate_),
 	evalJacDenseStateIntermediate_(arg.evalJacDenseStateIntermediate_),
 	evalJacDenseInputIntermediate_(arg.evalJacDenseInputIntermediate_),
 	constraintsTerminal_(arg.constraintsTerminal_),
-	initializedTerminal_(arg.initializedTerminal_),
 	evalJacSparseStateTerminal_(arg.evalJacSparseStateTerminal_),
 	evalJacSparseInputTerminal_(arg.evalJacSparseInputTerminal_),
 	evalJacDenseStateTerminal_(arg.evalJacDenseStateTerminal_),
@@ -135,7 +127,7 @@ public:
 			constraint->getName(name);
 			std::cout<<"''" << name << "'' added as Analytical intermediate constraint " << std::endl;
 		}
-		initializedIntermediate_ = false;
+		this->initializedIntermediate_ = false;
 	}
 
 	/**
@@ -152,7 +144,7 @@ public:
 			constraint->getName(name);
 			std::cout<<"''" << name << "'' added as Analytical terminal constraint " << std::endl;
 		}
-		initializedTerminal_ = false;
+		this->initializedTerminal_ = false;
 	}
 
 	virtual Eigen::VectorXd evaluateIntermediate() override
@@ -374,7 +366,7 @@ public:
 
 	virtual void sparsityPatternStateTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
 	{
-		if(!initializedTerminal_)
+		if(!this->initializedTerminal_)
 			throw std::runtime_error("sparsityPatternStateTerminalConstraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::VectorXi iRowLocal;
@@ -443,7 +435,7 @@ public:
 
 	virtual void sparsityPatternInputTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
 	{
-		if(!initializedTerminal_)
+		if(!this->initializedTerminal_)
 			throw std::runtime_error("sparsityPatternInputTerminalConstraints not initialized yet. Call 'initialize()' before");
 
 		Eigen::VectorXi iRowLocal;
@@ -576,8 +568,8 @@ private:
 	 */
 	void checkIntermediateConstraints()
 	{
-		if(!initializedIntermediate_)
-			throw std::runtime_error("Error: Intermediate constraints are either empty or not initialized yet. ");
+		if(!this->initializedIntermediate_)
+			throw std::runtime_error("Error: Intermediate constraints are or not initialized yet. ");
 	}
 
 	/**
@@ -586,16 +578,13 @@ private:
 	 */
 	void checkTerminalConstraints()
 	{
-		if(!initializedTerminal_)
-			throw std::runtime_error("Error: Terminal constraints are either empty or not initialized yet. ");
+		if(!this->initializedTerminal_)
+			throw std::runtime_error("Error: Terminal constraints are either not initialized yet. ");
 	}
 
 
 	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>>> constraintsIntermediate_;
 	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>>> constraintsTerminal_;
-
-	bool initializedIntermediate_;
-	bool initializedTerminal_;
 
 	Eigen::VectorXd evalIntermediate_;
 	Eigen::VectorXd evalJacSparseStateIntermediate_;
