@@ -34,8 +34,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct {
 namespace core {
 
-template <size_t STATE_DIM, typename SCALAR = double>
-using StateTrajectory = DiscreteTrajectoryBase<StateVector<STATE_DIM, SCALAR> >;
+template <size_t STATE_DIM, typename SCALAR = double, typename TIME_SCALAR = SCALAR>
+using StateTrajectory = DiscreteTrajectoryBase<StateVector<STATE_DIM, SCALAR>, Eigen::aligned_allocator<StateVector<STATE_DIM, SCALAR>>, TIME_SCALAR>;
 
 }	// core
 }	// ct

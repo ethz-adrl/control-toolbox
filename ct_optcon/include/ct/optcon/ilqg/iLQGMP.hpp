@@ -45,15 +45,15 @@ namespace optcon{
  *
  *
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class iLQGMP : public iLQGBase<STATE_DIM, CONTROL_DIM>  {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class iLQGMP : public iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>  {
 
 public:
 	// Required as class has Eigen members
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 
-	typedef iLQGBase<STATE_DIM, CONTROL_DIM> Base;
+	typedef iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
 	typedef typename Base::Policy_t Policy_t;
 	typedef typename Base::Settings_t Settings_t;
@@ -64,7 +64,7 @@ public:
       You should pass pointers to instances of classes here that derive from the dynamics, derivatives and costFunction base classes
 
 	 */
-	iLQGMP( const OptConProblem<STATE_DIM, CONTROL_DIM>& optConProblem,
+	iLQGMP( const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 			const iLQGSettings& settings) :
 
 			Base(optConProblem, settings)
@@ -73,7 +73,7 @@ public:
 		launchWorkerThreads();
 	}
 
-	iLQGMP(const OptConProblem<STATE_DIM, CONTROL_DIM>& optConProblem,
+	iLQGMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 		 const std::string& settingsFile,
 		 bool verbose = true,
 		 const std::string& ns = "ilqg") :
@@ -95,7 +95,7 @@ private:
 
 	void computeLinearizedDynamicsAroundTrajectory() override;
 
-	double performLineSearch() override;
+	SCALAR performLineSearch() override;
 
 
 	enum WORKER_STATE {

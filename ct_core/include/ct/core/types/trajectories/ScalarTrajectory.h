@@ -37,8 +37,8 @@ namespace core {
 /*!
  * \tparam SCALAR scalar data type
  */
-template<class SCALAR = double>
-class ScalarTrajectory : public DiscreteTrajectoryBase<SCALAR>
+template<class SCALAR = double, class TIME_SCALAR = double>
+class ScalarTrajectory : public DiscreteTrajectoryBase<SCALAR, Eigen::aligned_allocator<SCALAR>, TIME_SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW

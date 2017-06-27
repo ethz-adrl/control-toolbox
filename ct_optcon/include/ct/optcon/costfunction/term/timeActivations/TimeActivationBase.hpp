@@ -11,6 +11,9 @@
 namespace ct {
 namespace optcon {
 
+namespace tpl {
+
+template <typename SCALAR>
 class TimeActivationBase
 {
 public:
@@ -21,17 +24,21 @@ public:
 		return;
 	} 
 
-	virtual bool isActiveAtTime(const double t) { return true; }
+	virtual bool isActiveAtTime(const SCALAR t) { return true; }
 
 	// virtual 
 
-	virtual double computeActivation(const double t) { return double(1.0); }
+	virtual SCALAR computeActivation(const SCALAR t) { return SCALAR(1.0); }
 
 	virtual void printInfo()
 	{
 		std::cout << "Cost Function active at all times" << std::endl;
 	}
 };
+
+}
+
+typedef tpl::TimeActivationBase<double> TimeActivationBase;
 
 }
 }

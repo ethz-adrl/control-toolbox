@@ -51,7 +51,7 @@ namespace optcon{
 /** \defgroup OptConSolver OptConSolver
  * Solver interface for finite horizon optimal control problems
  */
-template <typename DERIVED, typename POLICY, typename SETTINGS, size_t STATE_DIM, size_t CONTROL_DIM>
+template <typename DERIVED, typename POLICY, typename SETTINGS, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class OptConSolver{
 
 public:
@@ -64,7 +64,7 @@ public:
 	typedef SETTINGS Settings_t;
 	typedef DERIVED Derived;
 
-	typedef OptConProblem<STATE_DIM, CONTROL_DIM> OptConProblem_t;
+	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
 
 	OptConSolver() {}
@@ -140,19 +140,19 @@ public:
 	 * Get the optimized trajectory to the optimal control problem
 	 * @return
 	 */
-	virtual const core::StateTrajectory<STATE_DIM> getStateTrajectory() const = 0;
+	virtual const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const = 0;
 
 	/**
 	 * Get the optimal feedforward control input corresponding to the optimal trajectory
 	 * @return
 	 */
-	virtual const core::ControlTrajectory<CONTROL_DIM> getControlTrajectory() const = 0;
+	virtual const core::ControlTrajectory<CONTROL_DIM, SCALAR> getControlTrajectory() const = 0;
 
 	/**
 	 * Get the time indices corresponding to the solution
 	 * @return
 	 */
-	virtual const core::TimeArray& getTimeArray() const = 0;
+	virtual const core::tpl::TimeArray<SCALAR>& getTimeArray() const = 0;
 
 
 	/*!
@@ -165,7 +165,7 @@ public:
 	 * \brief Get the time horizon the solver currently operates on.
 	 *
 	 */
-	virtual core::Time getTimeHorizon() const  = 0;
+	virtual SCALAR getTimeHorizon() const  = 0;
 
 
 	/*!
@@ -174,7 +174,7 @@ public:
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct time horizon set.
 	 */
-	virtual void changeTimeHorizon(const core::Time& tf) = 0;
+	virtual void changeTimeHorizon(const SCALAR& tf) = 0;
 
 	/*!
 	 * \brief Change the initial state for the optimal control problem
@@ -182,7 +182,7 @@ public:
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct initial state set
 	 */
-	virtual void changeInitialState(const core::StateVector<STATE_DIM>& x0) = 0;
+	virtual void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0) = 0;
 
 	/*!
 	 * \brief Change the cost function
@@ -236,16 +236,11 @@ public:
 		throw std::runtime_error("The current solver does not support pure state constraints!");
 	}
 
-	/**
-	 * @brief      Returns the absolute cost value of the latest optcon solver
-	 *             iteration
-	 *
-	 * @return     The absolute cost
-	 */
-	virtual double getCost() const
+	virtual SCALAR getCost() const
 	{
 		throw std::runtime_error("Get cost not implemented");
 	}
+
 
 	/*!
 	 * \brief Direct accessor to the system instances

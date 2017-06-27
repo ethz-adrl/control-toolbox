@@ -57,7 +57,7 @@ namespace ct {
 namespace rbd {
 
 template <class SYSTEM>
-class RbdLinearizer : public ct::core::SystemLinearizer<SYSTEM::STATE_DIM, SYSTEM::CONTROL_DIM>
+class RbdLinearizer : public ct::core::SystemLinearizer<SYSTEM::STATE_DIM, SYSTEM::CONTROL_DIM, typename SYSTEM::SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -65,6 +65,7 @@ public:
 	static const bool FLOATING_BASE = SYSTEM::Dynamics::FB;
 
 	typedef std::shared_ptr<RbdLinearizer<SYSTEM> > Ptr;
+	typedef typename SYSTEM::SCALAR SCALAR;
 
 	static const size_t STATE_DIM = SYSTEM::STATE_DIM;
 	static const size_t CONTROL_DIM = SYSTEM::CONTROL_DIM;
@@ -76,13 +77,13 @@ public:
 		     "CONTROL DIMENSION MISMATCH. RBD LINEARIZER ONLY WORKS FOR FULL JOINT CONTROLLED SYSTEMS.");
 
 
-	typedef ct::core::SystemLinearizer<STATE_DIM, CONTROL_DIM> Base;
+	typedef ct::core::SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
-	typedef ct::core::StateVector<STATE_DIM> state_vector_t;
-	typedef ct::core::ControlVector<CONTROL_DIM>  control_vector_t;
+	typedef ct::core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef ct::core::ControlVector<CONTROL_DIM, SCALAR>  control_vector_t;
 
-	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
-	typedef Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> state_control_matrix_t;
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t;
 
 
 	RbdLinearizer(std::shared_ptr<SYSTEM> RBDSystem,
@@ -122,7 +123,7 @@ public:
 
 
 	const state_matrix_t& getDerivativeState(
-			const state_vector_t& x, const control_vector_t& u, const double t = 0.0
+			const state_vector_t& x, const control_vector_t& u, const SCALAR t = 0.0
 			) override
 	{
 		if(!FLOATING_BASE)
@@ -136,10 +137,10 @@ public:
 			Base::getDerivativeState(x,u,t);
 
 			// since we express base pose in world but base twist in body coordinates, we have to modify the top part
-			kindr::EulerAnglesXyzD eulerXyz(x.template topRows<3>());
-			kindr::RotationMatrixD R_WB_kindr(eulerXyz);
+			kindr::EulerAnglesXyz<SCALAR> eulerXyz(x.template topRows<3>());
+			kindr::RotationMatrix<SCALAR> R_WB_kindr(eulerXyz);
 
-			Eigen::Matrix<double, 3, 6> jacAngVel = jacobianOfAngularVelocityMapping(x.template topRows<3>(), x.template segment<3>(STATE_DIM/2)).transpose();
+			Eigen::Matrix<SCALAR, 3, 6> jacAngVel = jacobianOfAngularVelocityMapping(x.template topRows<3>(), x.template segment<3>(STATE_DIM/2)).transpose();
 
 			//this->dFdx_.template block<3,3>(0,0) = -R_WB_kindr.toImplementation() * JacobianOfRotationMultiplyVector( x.template topRows<3>(), R_WB_kindr.toImplementation()*(x.template segment<3>(STATE_DIM/2) ));
 			this->dFdx_.template block<3,3>(0,0) = jacAngVel.template block<3,3>(0,0);
@@ -160,7 +161,7 @@ public:
 		}
 	}
 
-	const state_control_matrix_t& getDerivativeControl(const state_vector_t& x, const control_vector_t& u, const double t = 0.0) override
+	const state_control_matrix_t& getDerivativeControl(const state_vector_t& x, const control_vector_t& u, const SCALAR t = 0.0) override
 	{
 		const jsim_t& M  = RBDSystem_->dynamics().kinematics().robcogen().jSim().update(x.template segment<NJOINTS>(FLOATING_BASE*6));
 
@@ -207,40 +208,40 @@ protected:
 private:
 
 	// auto generated code
-	Eigen::Matrix3d JacobianOfRotationMultiplyVector(const Eigen::Vector3d& theta, const Eigen::Vector3d& vector)  {
+	Eigen::Matrix<SCALAR, 3, 3> JacobianOfRotationMultiplyVector(const Eigen::Matrix<SCALAR, 3, 1>& theta, const Eigen::Matrix<SCALAR, 3, 1>& vector)  {
 
-	    const double& theta_1 = theta(0);
-	    const double& theta_2 = theta(1);
-	    const double& theta_3 = theta(2);
+	    const SCALAR& theta_1 = theta(0);
+	    const SCALAR& theta_2 = theta(1);
+	    const SCALAR& theta_3 = theta(2);
 
-	    const double& vector_1 = vector(0);
-	    const double& vector_2 = vector(1);
-	    const double& vector_3 = vector(2);
+	    const SCALAR& vector_1 = vector(0);
+	    const SCALAR& vector_2 = vector(1);
+	    const SCALAR& vector_3 = vector(2);
 
 
-	    Eigen::Matrix3d A0;
+	    Eigen::Matrix<SCALAR, 3, 3> A0;
 	    A0.setZero();
 
 
-	    double t2 = cos(theta_1);
-	    double t3 = sin(theta_3);
-	    double t4 = cos(theta_3);
-	    double t5 = sin(theta_1);
-	    double t6 = sin(theta_2);
-	    double t7 = cos(theta_2);
-	    double t8 = t4*t5;
-	    double t9 = t2*t3*t6;
-	    double t10 = t8+t9;
-	    double t11 = t2*t4;
-	    double t12 = t11-t3*t5*t6;
-	    double t13 = t6*vector_1;
-	    double t14 = t2*t7*vector_3;
-	    double t15 = t13+t14-t5*t7*vector_2;
-	    double t16 = t2*t3;
-	    double t17 = t4*t5*t6;
-	    double t18 = t16+t17;
-	    double t19 = t3*t5;
-	    double t20 = t19-t2*t4*t6;
+	    SCALAR t2 = cos(theta_1);
+	    SCALAR t3 = sin(theta_3);
+	    SCALAR t4 = cos(theta_3);
+	    SCALAR t5 = sin(theta_1);
+	    SCALAR t6 = sin(theta_2);
+	    SCALAR t7 = cos(theta_2);
+	    SCALAR t8 = t4*t5;
+	    SCALAR t9 = t2*t3*t6;
+	    SCALAR t10 = t8+t9;
+	    SCALAR t11 = t2*t4;
+	    SCALAR t12 = t11-t3*t5*t6;
+	    SCALAR t13 = t6*vector_1;
+	    SCALAR t14 = t2*t7*vector_3;
+	    SCALAR t15 = t13+t14-t5*t7*vector_2;
+	    SCALAR t16 = t2*t3;
+	    SCALAR t17 = t4*t5*t6;
+	    SCALAR t18 = t16+t17;
+	    SCALAR t19 = t3*t5;
+	    SCALAR t20 = t19-t2*t4*t6;
 	    A0(0,0) = t18*vector_3-t20*vector_2;
 	    A0(0,1) = -t4*t15;
 	    A0(0,2) = t10*vector_3+t12*vector_2-t3*t7*vector_1;
@@ -264,18 +265,18 @@ private:
 	 * @param angularVelocity
 	 * @return
 	 */
-	Eigen::Matrix<double, 6, 3> jacobianOfAngularVelocityMapping(const Eigen::Matrix<double, 3, 1>& eulerAnglesXyz, const Eigen::Matrix<double, 3, 1>& angularVelocity)
+	Eigen::Matrix<SCALAR, 6, 3> jacobianOfAngularVelocityMapping(const Eigen::Matrix<SCALAR, 3, 1>& eulerAnglesXyz, const Eigen::Matrix<SCALAR, 3, 1>& angularVelocity)
 	{
 		using namespace std;
 
-		Eigen::Matrix<double, 6, 1> xAD;
+		Eigen::Matrix<SCALAR, 6, 1> xAD;
 		xAD << eulerAnglesXyz, angularVelocity;
-		const double* x = xAD.data();
+		const SCALAR* x = xAD.data();
 
-		std::array<double, 10> v;
+		std::array<SCALAR, 10> v;
 
-		Eigen::Matrix<double, 6, 3> jac;
-		double* y = jac.data();
+		Eigen::Matrix<SCALAR, 6, 3> jac;
+		SCALAR* y = jac.data();
 
 		y[9] = sin(x[2]);
 		y[10] = cos(x[2]);

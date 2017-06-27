@@ -38,8 +38,8 @@ namespace core {
  * This class is useful to integrate a ControlledSystem forward subject to a
  * constant control input.
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class ConstantController : public Controller<STATE_DIM, CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class ConstantController : public Controller<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -58,11 +58,11 @@ public:
 	 * Initializes the control to a fixed value
 	 * @param u The fixed control signal
 	 */
-	ConstantController(ControlVector<CONTROL_DIM>& u): u_(u) {}
+	ConstantController(ControlVector<CONTROL_DIM, SCALAR>& u): u_(u) {}
 
 	//! Copy constructor
-	ConstantController(const ConstantController<STATE_DIM, CONTROL_DIM>& other) :
-		Controller<STATE_DIM, CONTROL_DIM>(other),
+	ConstantController(const ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>& other) :
+		Controller<STATE_DIM, CONTROL_DIM, SCALAR>(other),
 		u_(other.u_)
 	{}
 
@@ -74,9 +74,9 @@ public:
 	 * Clones the controller. Used for cloning ControlledSystem's
 	 * @return pointer to cloned controller
 	 */
-	ConstantController<STATE_DIM, CONTROL_DIM>* clone() const override
+	ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
 	{
-		return new ConstantController<STATE_DIM, CONTROL_DIM>(*this);
+		return new ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
 	}
 
 	//! Computes current control
@@ -88,9 +88,9 @@ public:
 	 * @param controlAction The (fixed) control action
 	 */
 	void computeControl(
-			const StateVector<STATE_DIM>& state,
-			const Time& t,
-			ControlVector<CONTROL_DIM>& controlAction) override
+			const StateVector<STATE_DIM, SCALAR>& state,
+			const SCALAR& t,
+			ControlVector<CONTROL_DIM, SCALAR>& controlAction) override
 	{
 		controlAction = u_;
 	}
@@ -100,7 +100,7 @@ public:
 	 *
 	 * @param u The fixed control signal
 	 */
-	void setControl(const ControlVector<CONTROL_DIM>& u)
+	void setControl(const ControlVector<CONTROL_DIM, SCALAR>& u)
 	{
 		u_ = u;
 	}
@@ -110,14 +110,14 @@ public:
 	 *
 	 * @param u The control input to write the signal to.
 	 */
-	void getControl(ControlVector<CONTROL_DIM>& u) const
+	void getControl(ControlVector<CONTROL_DIM, SCALAR>& u) const
 	{
 		u = u_;
 	}
 
 
 private:
-	ControlVector<CONTROL_DIM> u_;
+	ControlVector<CONTROL_DIM, SCALAR> u_;
 };
 
 }

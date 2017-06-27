@@ -34,10 +34,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "TermQuadratic.hpp"
 #include "TermQuadMult.hpp"
 
-#define CT_LOADABLE_TERMS_ANALYTICAL \
-	CT_LOADABLE_TERM_ANALYTICAL(TermLinear, "linear") \
-	CT_LOADABLE_TERM_ANALYTICAL(TermQuadratic, "quadratic") \
-    CT_LOADABLE_TERM_ANALYTICAL(TermQuadMult, "quadratic-multiplicative")
+#define CT_LOADABLE_TERMS_ANALYTICAL(SCALAR) \
+	CT_LOADABLE_TERM_ANALYTICAL(SCALAR, TermLinear, "linear") \
+	CT_LOADABLE_TERM_ANALYTICAL(SCALAR, TermQuadratic, "quadratic") \
+    CT_LOADABLE_TERM_ANALYTICAL(SCALAR, TermQuadMult, "quadratic-multiplicative")
 
 
 #endif /* TERMSANALYTICAL_HPP_ */

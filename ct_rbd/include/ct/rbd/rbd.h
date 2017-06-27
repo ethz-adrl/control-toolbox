@@ -38,7 +38,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/rbd/robot/Kinematics.h>
 #include <ct/rbd/robot/Dynamics.h>
 
-
 #include <ct/rbd/robot/control/IDControllerFB.h>
 #include <ct/rbd/robot/control/WholeBodyController.h>
 #include <ct/rbd/robot/control/InfiniteHorizonLQRwithInverseDynamics.h>
@@ -48,6 +47,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/rbd/systems/ProjectedFDSystem.h>
 
 #include <ct/rbd/slq/FloatingBaseSLQContactModel.h>
+#include <ct/rbd/slq/FixBaseSLQ.h>
 
 
 #endif /* INCLUDE_CT_RBD_RBD_H_ */

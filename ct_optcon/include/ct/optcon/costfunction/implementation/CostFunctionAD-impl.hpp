@@ -68,12 +68,12 @@ hessian_control_state_final_(arg.hessian_control_state_final_)
 
 	for(size_t i = 0; i<arg.intermediateCostAD_.size(); i++)
 	{
-		intermediateCostAD_[i] = std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>>> (arg.intermediateCostAD_[i]->clone());
+		intermediateCostAD_[i] = std::shared_ptr< TermBaseAD> (arg.intermediateCostAD_[i]->clone());
 	}
 
 	for(size_t i = 0; i<arg.finalCostAD_.size(); i++)
 	{
-		finalCostAD_[i] = std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>>> (arg.finalCostAD_[i]->clone());
+		finalCostAD_[i] = std::shared_ptr< TermBaseAD> (arg.finalCostAD_[i]->clone());
 	}
 
 	for(size_t i = 0; i<arg.intermediateFunctionAD_.size(); i++)
@@ -114,7 +114,7 @@ size_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::addIntermediateTerm (std::shared_
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM>
-size_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double> > > term, bool verbose)
+size_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::addIntermediateTerm (std::shared_ptr< TermBaseAD > term, bool verbose)
 { 
 	intermediateCostAD_.push_back(term);
 	intermediateFunctionAD_.push_back(std::shared_ptr<CppAD::ADFun<double>>(new CppAD::ADFun<double>));
@@ -143,7 +143,7 @@ size_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::addFinalTerm (std::shared_ptr< Te
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM>
-size_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double> > > term, bool verbose)
+size_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::addFinalTerm (std::shared_ptr< TermBaseAD > term, bool verbose)
 { 
 	finalCostAD_.push_back(term);
 
@@ -212,9 +212,9 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM>::loadFromConfigFile(const std::strin
 		}
 
 		std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term;
-		std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double> > > termAD;
+		std::shared_ptr< TermBaseAD > termAD;
 
-		CT_LOADABLE_TERMS_ANALYTICAL;
+		CT_LOADABLE_TERMS_ANALYTICAL(double);
 		CT_LOADABLE_TERMS_AD;
 
 		if(!term && !termAD){
@@ -247,7 +247,7 @@ double CostFunctionAD<STATE_DIM, CONTROL_DIM>::evaluateTerminal()
 
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 double CostFunctionAD<STATE_DIM, CONTROL_DIM>::evaluateCost(
-		std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>>>>& termsAD,
+		std::vector<std::shared_ptr<TermBaseAD>>& termsAD,
 		std::vector<std::shared_ptr<CppAD::ADFun<double>>>& functionAD,
 		std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, double>>>& termsAnalytical){
 
@@ -341,7 +341,7 @@ typename CostFunctionAD<STATE_DIM, CONTROL_DIM>::control_vector_t CostFunctionAD
 
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 void CostFunctionAD<STATE_DIM, CONTROL_DIM>::getHessians(
-		std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>>>>& termsAD,
+		std::vector<std::shared_ptr<TermBaseAD>>& termsAD,
 		std::vector<std::shared_ptr<CppAD::ADFun<double>>>& functionAD,
 		std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, double>>>& termsAnalytical,
 		Eigen::Matrix<double, STATE_DIM,   STATE_DIM>&   hessian_state_,
@@ -396,7 +396,7 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM>::getHessians(
 
 // record functions
 template <size_t STATE_DIM, size_t CONTROL_DIM>
-void CostFunctionAD<STATE_DIM, CONTROL_DIM>::recordTerm(const std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double> > > &costAD, CppAD::ADFun<double>& functionAD)
+void CostFunctionAD<STATE_DIM, CONTROL_DIM>::recordTerm(const std::shared_ptr< TermBaseAD > &costAD, CppAD::ADFun<double>& functionAD)
 {
 	Eigen::Matrix<CppAD::AD<double>, Eigen::Dynamic, 1> VAR(STATE_DIM + CONTROL_DIM + 1); 	// +1 for the time
 	Eigen::Matrix<CppAD::AD<double>, Eigen::Dynamic, 1> Y(1);
@@ -417,7 +417,7 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM>::recordTerm(const std::shared_ptr< T
 
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 void CostFunctionAD<STATE_DIM, CONTROL_DIM>::reverseADTerms(
-		std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>>>>& termsAD,
+		std::vector<std::shared_ptr<TermBaseAD>>& termsAD,
 		std::vector<std::shared_ptr<CppAD::ADFun<double>>> &functionAD,
 		Eigen::Matrix<double, STATE_DIM + CONTROL_DIM +1, 1>& result){
 

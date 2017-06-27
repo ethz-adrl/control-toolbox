@@ -42,47 +42,45 @@ namespace optcon {
  *
  * Probably this term is not very useful but we use it for testing
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class TermLinear : public TermBase<STATE_DIM, CONTROL_DIM, double> {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double, typename TIME_SCALAR = double>
+class TermLinear : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR, TIME_SCALAR> {
 
 public:
-
-	typedef double SCALAR;
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	
 	CT_OPTCON_DEFINE_TERM_TYPES
 
-	TermLinear(const core::StateVector<STATE_DIM> a, core::ControlVector<CONTROL_DIM> b, const double c = 0.);
+	TermLinear(const core::StateVector<STATE_DIM, SCALAR> a, core::ControlVector<CONTROL_DIM, SCALAR> b, const SCALAR c = 0.);
 
 	TermLinear();
 
 	TermLinear(const TermLinear& arg);
 
-	TermLinear<STATE_DIM, CONTROL_DIM>* clone () const override{
-		return new TermLinear<STATE_DIM, CONTROL_DIM> (*this);
+	TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, TIME_SCALAR>* clone () const override{
+		return new TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, TIME_SCALAR> (*this);
 	}
 
 	~TermLinear();
 
-	double evaluate(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double& t) override;
+	SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
 	
-	core::StateVector<STATE_DIM> stateDerivative(const core::StateVector<STATE_DIM> &x, const core::ControlVector<CONTROL_DIM> &u, const double& t) override;
+	core::StateVector<STATE_DIM, SCALAR> stateDerivative(const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 
-	state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM> &x, const core::ControlVector<CONTROL_DIM> &u, const double& t) override;
+	state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 	
-	core::ControlVector<CONTROL_DIM> controlDerivative(const core::StateVector<STATE_DIM> &x, const core::ControlVector<CONTROL_DIM> &u, const double& t) override;
+	core::ControlVector<CONTROL_DIM, SCALAR> controlDerivative(const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 	
-	control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM> &x, const core::ControlVector<CONTROL_DIM> &u, const double& t) override;
+	control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 
-	control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM> &x, const core::ControlVector<CONTROL_DIM> &u, const double& t) override;
+	control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 	
 	void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) override;  // virtual function for data loading
 
 protected:
-	core::StateVector<STATE_DIM> a_;
-	core::ControlVector<CONTROL_DIM> b_;
-	double c_;
+	core::StateVector<STATE_DIM, SCALAR> a_;
+	core::ControlVector<CONTROL_DIM, SCALAR> b_;
+	SCALAR c_;
 };
 
 #include "implementation/TermLinear.hpp"

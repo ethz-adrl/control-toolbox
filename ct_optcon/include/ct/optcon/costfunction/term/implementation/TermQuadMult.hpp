@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-TermQuadMult<STATE_DIM, CONTROL_DIM, S>::TermQuadMult(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::TermQuadMult(
         const state_matrix_t& Q,
         const control_matrix_t& R) :
         Q_(Q),
@@ -35,16 +35,16 @@ TermQuadMult<STATE_DIM, CONTROL_DIM, S>::TermQuadMult(
     u_ref_.setZero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-TermQuadMult<STATE_DIM, CONTROL_DIM, S>::TermQuadMult() {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::TermQuadMult() {
     Q_.setIdentity();   // default values
     R_.setIdentity();
     x_ref_.setZero();
     u_ref_.setZero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-TermQuadMult<STATE_DIM, CONTROL_DIM, S>::TermQuadMult(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::TermQuadMult(
         const state_matrix_t& Q,
         const control_matrix_t& R,
         const core::StateVector<STATE_DIM, S>& x_ref,
@@ -55,32 +55,32 @@ TermQuadMult<STATE_DIM, CONTROL_DIM, S>::TermQuadMult(
         u_ref_(u_ref)
 {}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-TermQuadMult<STATE_DIM, CONTROL_DIM, S>::TermQuadMult(const TermQuadMult<STATE_DIM, CONTROL_DIM, S>& arg):
-    TermBase<STATE_DIM, CONTROL_DIM, S>(arg),
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::TermQuadMult(const TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>& arg):
+    TermBase<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>(arg),
     Q_(arg.Q_),
     R_(arg.R_),
     x_ref_(arg.x_ref_),
     u_ref_(arg.u_ref_)
 {}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-TermQuadMult<STATE_DIM, CONTROL_DIM, S>* TermQuadMult<STATE_DIM, CONTROL_DIM, S>::clone () const {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>* TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::clone () const {
         return new TermQuadMult(*this);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-TermQuadMult<STATE_DIM, CONTROL_DIM, S>::~TermQuadMult() {}
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::~TermQuadMult() {}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-void TermQuadMult<STATE_DIM, CONTROL_DIM, S>::setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+void TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R)
 {
     Q_ = Q.template cast<S>();
     R_ = R.template cast<S>();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-void TermQuadMult<STATE_DIM, CONTROL_DIM, S>::setStateAndControlReference(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+void TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::setStateAndControlReference(
         const core::StateVector<STATE_DIM>& x_ref,
         core::ControlVector<CONTROL_DIM>& u_ref)
 {
@@ -89,8 +89,8 @@ void TermQuadMult<STATE_DIM, CONTROL_DIM, S>::setStateAndControlReference(
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-S TermQuadMult<STATE_DIM, CONTROL_DIM, S>::evaluate(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+S TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::evaluate(
         const Eigen::Matrix<S, STATE_DIM, 1> &x,
         const Eigen::Matrix<S, CONTROL_DIM, 1> &u,
         const S& t)
@@ -101,8 +101,8 @@ S TermQuadMult<STATE_DIM, CONTROL_DIM, S>::evaluate(
     return (xDiff.transpose() * Q_.template cast<S>() * xDiff)(0,0) * (uDiff.transpose() * R_.template cast<S>() * uDiff)(0,0);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-core::StateVector<STATE_DIM, S> TermQuadMult<STATE_DIM, CONTROL_DIM, S>::stateDerivative(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+core::StateVector<STATE_DIM, S> TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::stateDerivative(
         const core::StateVector<STATE_DIM, S> &x,
         const core::ControlVector<CONTROL_DIM, S> &u,
         const S& t)
@@ -115,8 +115,8 @@ core::StateVector<STATE_DIM, S> TermQuadMult<STATE_DIM, CONTROL_DIM, S>::stateDe
     return (xDiff.transpose() * Q_.transpose() + xDiff.transpose() * Q_)*r;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-typename TermQuadMult<STATE_DIM, CONTROL_DIM, S>::state_matrix_t TermQuadMult<STATE_DIM, CONTROL_DIM, S>::stateSecondDerivative(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+typename TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::state_matrix_t TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::stateSecondDerivative(
 		const core::StateVector<STATE_DIM, S> &x, const core::ControlVector<CONTROL_DIM, S> &u, const S& t)
 {
     core::ControlVector<CONTROL_DIM, S> uDiff = (u-u_ref_);
@@ -126,8 +126,8 @@ typename TermQuadMult<STATE_DIM, CONTROL_DIM, S>::state_matrix_t TermQuadMult<ST
     return (Q_ + Q_.transpose())*r;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-core::ControlVector<CONTROL_DIM, S> TermQuadMult<STATE_DIM, CONTROL_DIM, S>::controlDerivative(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+core::ControlVector<CONTROL_DIM, S> TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::controlDerivative(
 		const core::StateVector<STATE_DIM, S> &x, const core::ControlVector<CONTROL_DIM, S> &u, const S& t)
 {
     core::StateVector<STATE_DIM, S> xDiff = (x-x_ref_);
@@ -138,8 +138,8 @@ core::ControlVector<CONTROL_DIM, S> TermQuadMult<STATE_DIM, CONTROL_DIM, S>::con
     return (uDiff.transpose() * R_.transpose() + uDiff.transpose() * R_)*q;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-typename TermQuadMult<STATE_DIM, CONTROL_DIM, S>::control_matrix_t TermQuadMult<STATE_DIM, CONTROL_DIM, S>::controlSecondDerivative(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+typename TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::control_matrix_t TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::controlSecondDerivative(
 		const core::StateVector<STATE_DIM, S> &x, const core::ControlVector<CONTROL_DIM, S> &u, const S& t)
 {
     core::StateVector<STATE_DIM, S> xDiff = (x-x_ref_);
@@ -149,8 +149,8 @@ typename TermQuadMult<STATE_DIM, CONTROL_DIM, S>::control_matrix_t TermQuadMult<
     return (R_ + R_.transpose())*q;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-typename TermQuadMult<STATE_DIM, CONTROL_DIM, S>::control_state_matrix_t TermQuadMult<STATE_DIM, CONTROL_DIM, S>::stateControlDerivative(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+typename TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::control_state_matrix_t TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::stateControlDerivative(
 		const core::StateVector<STATE_DIM, S> &x, const core::ControlVector<CONTROL_DIM, S> &u, const S& t)
 {
     core::StateVector<STATE_DIM, S> xDiff = (x-x_ref_);
@@ -159,8 +159,8 @@ typename TermQuadMult<STATE_DIM, CONTROL_DIM, S>::control_state_matrix_t TermQua
     return (uDiff.transpose() * R_.transpose() + uDiff.transpose() * R_).transpose()*(xDiff.transpose() * Q_.transpose() + xDiff.transpose() * Q_);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-void TermQuadMult<STATE_DIM, CONTROL_DIM, S>::loadConfigFile(const std::string& filename, const std::string& termName, bool verbose)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
+void TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::loadConfigFile(const std::string& filename, const std::string& termName, bool verbose)
 {
        loadMatrixCF(filename,"Q", Q_,termName);
        loadMatrixCF(filename,"R", R_,termName);

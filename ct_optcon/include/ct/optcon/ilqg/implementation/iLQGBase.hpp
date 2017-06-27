@@ -28,8 +28,8 @@ namespace ct {
 namespace optcon {
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::setInitialGuess(const Policy_t& initialGuess)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::setInitialGuess(const Policy_t& initialGuess)
 {
 	if(initialGuess.K().size() != initialGuess.uff().size())
 	{
@@ -54,8 +54,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::setInitialGuess(const Policy_t& initialGu
 	reset();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::changeTimeHorizon(const core::Time& tf)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeTimeHorizon(const SCALAR& tf)
 {
 	if (tf < 0)
 		throw std::runtime_error("negative time horizon specified");
@@ -88,8 +88,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::changeTimeHorizon(const core::Time& tf)
 	S_.resize(K_+1);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::changeInitialState(const core::StateVector<STATE_DIM>& x0)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0)
 {
 	if (x_.size() == 0)
 		x_.resize(1);
@@ -98,8 +98,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::changeInitialState(const core::StateVecto
 	reset(); // since initial state changed, we have to start fresh, i.e. with a rollout
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::changeCostFunction(const typename Base::OptConProblem_t::CostFunctionPtr_t& cf)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeCostFunction(const typename Base::OptConProblem_t::CostFunctionPtr_t& cf)
 {
 	if (cf == nullptr)
 		throw std::runtime_error("cost function is nullptr");
@@ -117,8 +117,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::changeCostFunction(const typename Base::O
 		computeQuadraticCostsAroundTrajectory();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::changeNonlinearSystem(const typename Base::OptConProblem_t::DynamicsPtr_t& dyn)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeNonlinearSystem(const typename Base::OptConProblem_t::DynamicsPtr_t& dyn)
 {
 	if (dyn == nullptr)
 		throw std::runtime_error("system dynamics are nullptr");
@@ -138,23 +138,23 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::changeNonlinearSystem(const typename Base
 		if(controller_[i] == nullptr)
 			throw std::runtime_error("Controller not defined");
 
-		integratorsRK4_[i] = std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM> > (new ct::core::IntegratorRK4<STATE_DIM>(this->getNonlinearSystemsInstances()[i]));
-		integratorsEuler_[i] = std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM> >(new ct::core::IntegratorEuler<STATE_DIM>(this->getNonlinearSystemsInstances()[i]));
+		integratorsRK4_[i] = std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > (new ct::core::IntegratorRK4<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
+		integratorsEuler_[i] = std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM, SCALAR> >(new ct::core::IntegratorEuler<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
 		if(this->getNonlinearSystemsInstances()[i]->isSymplectic())
 		{
-			integratorsEulerSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>>(
-									new ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>(
-										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>> (this->getNonlinearSystemsInstances()[i])));
-			integratorsRkSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>>(
-									new ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>(
-										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM>> (this->getNonlinearSystemsInstances()[i])));
+			integratorsEulerSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
+									new ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
+										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (this->getNonlinearSystemsInstances()[i])));
+			integratorsRkSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
+									new ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
+										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (this->getNonlinearSystemsInstances()[i])));
 		}
 	}
 	reset(); // since system changed, we have to start fresh, i.e. with a rollout
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::changeLinearSystem(const typename Base::OptConProblem_t::LinearPtr_t& lin)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeLinearSystem(const typename Base::OptConProblem_t::LinearPtr_t& lin)
 {
 	this->getLinearSystemsInstances().resize(settings_.nThreads+1);
 
@@ -169,8 +169,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::changeLinearSystem(const typename Base::O
 
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::checkProblem()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::checkProblem()
 {
 	if (K_==0)
 		throw std::runtime_error("Time horizon too small resulting in 0 iLQG steps");
@@ -188,8 +188,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::checkProblem()
 	}
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-bool iLQGBase<STATE_DIM, CONTROL_DIM>::solve()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::solve()
 {
 	bool foundBetter = true;
 	size_t numIterations = 0;
@@ -214,8 +214,8 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM>::solve()
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::configure(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::configure(
 	const iLQGSettings& settings)
 {
 	if (!settings.parametersOk())
@@ -241,8 +241,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::configure(
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-bool iLQGBase<STATE_DIM, CONTROL_DIM>::runIteration()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 {
 	if (!initialized_)
 		throw std::runtime_error("iLQG is not initialized!");
@@ -315,10 +315,10 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM>::runIteration()
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-const typename iLQGBase<STATE_DIM, CONTROL_DIM>::Policy_t& iLQGBase<STATE_DIM, CONTROL_DIM>::getSolution()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+const typename iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::Policy_t& iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::getSolution()
 {
-	core::TimeArray t_temp = t_;
+	TimeArray t_temp = t_;
 	t_temp.pop_back();
 
 	policy_.update(u_ff_, L_, t_temp);
@@ -326,8 +326,8 @@ const typename iLQGBase<STATE_DIM, CONTROL_DIM>::Policy_t& iLQGBase<STATE_DIM, C
 	return policy_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::retrieveLastLinearizedModel(StateMatrixArray& A, StateControlMatrixArray& B)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::retrieveLastLinearizedModel(StateMatrixArray& A, StateControlMatrixArray& B)
 {
 	// todo fix me!
 	A = A_;
@@ -335,21 +335,21 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::retrieveLastLinearizedModel(StateMatrixAr
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-bool iLQGBase<STATE_DIM, CONTROL_DIM>::rolloutSystem (
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::rolloutSystem (
 		size_t threadId,
 		const ControlVectorArray& u_ff_local,
-		ct::core::StateVectorArray<STATE_DIM>& x_local,
-		ct::core::ControlVectorArray<CONTROL_DIM>& u_local,
-		ct::core::TimeArray& t_local,
+		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+		ct::core::tpl::TimeArray<SCALAR>& t_local,
 		std::atomic_bool* terminationFlag) const
 {
-	const double& dt = settings_.dt;
-	const double& dt_sim = settings_.dt_sim;
+	const scalar_t& dt = settings_.dt;
+	const scalar_t& dt_sim = settings_.dt_sim;
 	const size_t K_local = K_;
 
 	// take a copy since x0 gets overwritten in integrator
-	ct::core::StateVector<STATE_DIM> x0 = x_local[0];
+	ct::core::StateVector<STATE_DIM, SCALAR> x0 = x_local[0];
 
 	// compute number of substeps
 	size_t steps = round(dt/ dt_sim);
@@ -431,8 +431,8 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM>::rolloutSystem (
 
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-bool iLQGBase<STATE_DIM, CONTROL_DIM>::forwardPass()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::forwardPass()
 {
 	// Forward pass according to section V. Summary of the Algorithm of the iLQGMP paper
 
@@ -452,8 +452,8 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM>::forwardPass()
 	return true;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::sequentialLQProblem()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::sequentialLQProblem()
 {
 	auto start = std::chrono::steady_clock::now();
 	computeLinearizedDynamicsAroundTrajectory();
@@ -473,8 +473,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::sequentialLQProblem()
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-bool iLQGBase<STATE_DIM, CONTROL_DIM>::lineSearchController()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchController()
 {
 	// if first iteration, we have to find cost of initial rollout
 	if (iteration_ == 0)
@@ -531,7 +531,7 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 		std::cout<<"[LineSearch]: Cost last rollout: "<<lowestCost_<<std::endl;
 #endif //DEBUG_PRINT_LINESEARCH
 
-		double alphaBest = performLineSearch();
+		scalar_t alphaBest = performLineSearch();
 
 #ifdef DEBUG_PRINT_LINESEARCH
 		std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest<<" . Will use this control."<<std::endl;
@@ -571,10 +571,10 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-double iLQGBase<STATE_DIM, CONTROL_DIM>::learnAlpha(const double& alphaBest)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+SCALAR iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::learnAlpha(const SCALAR& alphaBest)
 {
-	double alphaNew = alphaBest;
+	scalar_t alphaNew = alphaBest;
 
 	if (alphaBest < settings_.lineSearchSettings.alpha_max)
 	{
@@ -589,21 +589,21 @@ double iLQGBase<STATE_DIM, CONTROL_DIM>::learnAlpha(const double& alphaBest)
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::lineSearchSingleController(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchSingleController(
 		size_t threadId,
-		double alpha,
+		scalar_t alpha,
 		ControlVectorArray& u_ff_local,
-		ct::core::StateVectorArray<STATE_DIM>& x_local,
-		ct::core::ControlVectorArray<CONTROL_DIM>& u_local,
-		ct::core::TimeArray& t_local,
-		double& intermediateCost,
-		double& finalCost,
+		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+		ct::core::tpl::TimeArray<SCALAR>& t_local,
+		scalar_t& intermediateCost,
+		scalar_t& finalCost,
 		std::atomic_bool* terminationFlag
 ) const
 {
-	intermediateCost = std::numeric_limits<double>::max();
-	finalCost = std::numeric_limits<double>::max();
+	intermediateCost = std::numeric_limits<scalar_t>::max();
+	finalCost = std::numeric_limits<scalar_t>::max();
 
 	if (terminationFlag && *terminationFlag) return;
 
@@ -628,11 +628,11 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::lineSearchSingleController(
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::computeCostsOfTrajectory(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostsOfTrajectory(
 		size_t threadId,
-		const ct::core::StateVectorArray<STATE_DIM>& x_local,
-		const ct::core::ControlVectorArray<CONTROL_DIM>& u_local,
+		const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+		const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
 		scalar_t& intermediateCost,
 		scalar_t& finalCost
 ) const
@@ -654,8 +654,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::computeCostsOfTrajectory(
 
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::computeLinearizedDynamics(size_t threadId, size_t k)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamics(size_t threadId, size_t k)
 {
 	switch(settings_.discretization)
 	{
@@ -690,10 +690,10 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::computeLinearizedDynamics(size_t threadId
 	}
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::computeQuadraticCosts(size_t threadId, size_t k)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeQuadraticCosts(size_t threadId, size_t k)
 {
-	const double& dt = settings_.dt;
+	const scalar_t& dt = settings_.dt;
 
 	// feed current state and control to cost function
 	this->getCostFunctionInstances()[threadId]->setCurrentStateAndControl(x_[k], u_[k], dt*k);
@@ -715,8 +715,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::computeQuadraticCosts(size_t threadId, si
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::initializeCostToGo()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::initializeCostToGo()
 {
 	// feed current state and control to cost function
 	this->getCostFunctionInstances()[settings_.nThreads]->setCurrentStateAndControl(x_[K_], control_vector_t::Zero(), settings_.dt*K_);
@@ -733,8 +733,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::initializeCostToGo()
 
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::computeCostToGo(size_t k)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostToGo(size_t k)
 {
 	S_[k] = Q_[k];
 	S_[k].noalias() += A_[k].transpose() * S_[k+1] * A_[k];
@@ -750,8 +750,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::computeCostToGo(size_t k)
 
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::designController(size_t k)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 {
 	gv_[k] = rv_[k];
 	gv_[k].noalias() += B_[k].transpose() * sv_[k+1];
@@ -848,8 +848,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::designController(size_t k)
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::debugPrint()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::debugPrint()
 {
 	std::cout<<"iteration "  << iteration_ << std::endl;
 	std::cout<<"============"<< std::endl;
@@ -868,8 +868,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::debugPrint()
 	std::cout<<std::endl;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void iLQGBase<STATE_DIM, CONTROL_DIM>::logToMatlab()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 {
 	// all the variables in MATLAB that are ended by "_"
 	// will be saved in a mat-file
@@ -905,19 +905,19 @@ void iLQGBase<STATE_DIM, CONTROL_DIM>::logToMatlab()
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-const core::ControlTrajectory<CONTROL_DIM> iLQGBase<STATE_DIM, CONTROL_DIM>::getControlTrajectory() const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+const core::ControlTrajectory<CONTROL_DIM, SCALAR> iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::getControlTrajectory() const
 {
 	// TODO this method currently copies the time array (suboptimal)
 
-	core::TimeArray t_control = t_;
+	core::tpl::TimeArray<SCALAR> t_control = t_;
 	t_control.pop_back();
 
-	return core::ControlTrajectory<CONTROL_DIM> (t_control, u_);
+	return core::ControlTrajectory<CONTROL_DIM, SCALAR> (t_control, u_);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-double iLQGBase<STATE_DIM, CONTROL_DIM>::getCost() const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+SCALAR iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::getCost() const
 {
 	return lowestCost_;
 }

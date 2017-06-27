@@ -47,27 +47,27 @@ namespace optcon {
  * \f$ J(x,u,t) = \sum_{n=0}^{N_i} T_{i,n}(x,u,t) + \sum_{n=0}^{N_f} T_{i,f}(x,u,t) \f$
  * These terms can have arbitrary form.
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class CostFunctionQuadratic : public CostFunction<STATE_DIM, CONTROL_DIM> {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class CostFunctionQuadratic : public CostFunction<STATE_DIM, CONTROL_DIM, SCALAR> {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
 
-	typedef core::StateVector<STATE_DIM> state_vector_t;
-	typedef core::ControlVector<CONTROL_DIM> control_vector_t;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 
-	typedef CostFunction<STATE_DIM, CONTROL_DIM> BASE;
+	typedef CostFunction<STATE_DIM, CONTROL_DIM, SCALAR> BASE;
 
 	/**
 	 * Constructor
 	 */
 	CostFunctionQuadratic()
 	{
-		eps_ = sqrt(Eigen::NumTraits<double>::epsilon() );
+		eps_ = sqrt(Eigen::NumTraits<SCALAR>::epsilon() );
 	}
 
 	/**
@@ -76,10 +76,10 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	CostFunctionQuadratic(const state_vector_t &x, const control_vector_t &u, const double& t):
-		CostFunction<STATE_DIM, CONTROL_DIM>(x, u, t)
+	CostFunctionQuadratic(const state_vector_t &x, const control_vector_t &u, const SCALAR& t):
+		CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>(x, u, t)
 	{
-		eps_ = sqrt(Eigen::NumTraits<double>::epsilon() );
+		eps_ = sqrt(Eigen::NumTraits<SCALAR>::epsilon() );
 	}
 
 	/**
@@ -87,7 +87,7 @@ public:
 	 * @param arg other cost function
 	 */
 	CostFunctionQuadratic(const CostFunctionQuadratic& arg):
-		CostFunction<STATE_DIM, CONTROL_DIM>(arg),
+		CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
 		eps_(arg.eps_),
 		doubleSidedDerivative_(arg.doubleSidedDerivative_)
 	{
@@ -96,12 +96,12 @@ public:
 
 		for(size_t i = 0; i<arg.intermediateCostAnalytical_.size(); i++)
 		{
-			intermediateCostAnalytical_[i] = std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, double>> (arg.intermediateCostAnalytical_[i]->clone());
+			intermediateCostAnalytical_[i] = std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> (arg.intermediateCostAnalytical_[i]->clone());
 		}
 
 		for(size_t i = 0; i<arg.finalCostAnalytical_.size(); i++)
 		{
-			finalCostAnalytical_[i] = std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > (arg.finalCostAnalytical_[i]->clone());
+			finalCostAnalytical_[i] = std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > (arg.finalCostAnalytical_[i]->clone());
 		}
 	}
 
@@ -109,7 +109,7 @@ public:
 	 * Clones the cost function.
 	 * @return
 	 */
-	virtual CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>* clone () const = 0;
+	virtual CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const = 0;
 
 	/**
 	 * Destructor
@@ -122,7 +122,7 @@ public:
 	 * @param verbose verbosity flag which enables printout
 	 * @return
 	 */
-	virtual size_t addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term, bool verbose = false) { throw std::runtime_error("not implemented"); };
+	virtual size_t addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false) { throw std::runtime_error("not implemented"); };
 
 	/**
 	 * \brief Adds a final term
@@ -130,7 +130,7 @@ public:
 	 * @param verbose verbosity flag which enables printout
 	 * @return
 	 */
-	virtual size_t addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term, bool verbose = false) { throw std::runtime_error("not implemented"); };
+	virtual size_t addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false) { throw std::runtime_error("not implemented"); };
 
 	/**
 	 * \brief Loads cost function from config file
@@ -234,12 +234,12 @@ public:
 		return (derivative.isApprox(derivativeNd, 1e-6));
 	}
 
-	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, double>> getIntermediateTermById(size_t id)
+	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermById(size_t id)
 	{
 		return intermediateCostAnalytical_[id];
 	}
 
-	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, double>> getFinalTermById(size_t id)
+	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermById(size_t id)
 	{
 		return finalCostAnalytical_[id];
 	}
@@ -250,11 +250,11 @@ protected:
 	state_vector_t stateDerivativeIntermediateNumDiff();
 	control_vector_t controlDerivativeIntermediateNumDiff();
 
-	double eps_;
+	SCALAR eps_;
 	bool doubleSidedDerivative_ = true;
 
-	std::vector < std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > > intermediateCostAnalytical_; /** list of intermediate cost terms for which analytic derivatives are available */
-	std::vector < std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > > finalCostAnalytical_; /** list of final cost terms for which analytic derivatives are available */
+	std::vector < std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > > intermediateCostAnalytical_; /** list of intermediate cost terms for which analytic derivatives are available */
+	std::vector < std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > > finalCostAnalytical_; /** list of final cost terms for which analytic derivatives are available */
 };
 
 #include "implementation/CostFunctionQuadratic-impl.hpp"

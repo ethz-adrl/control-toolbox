@@ -57,7 +57,7 @@ namespace optcon{
  * 	\warning Using numerical differentiation is inefficient and typically slow.
  *
 */
-template<size_t STATE_DIM, size_t CONTROL_DIM>
+template<size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class OptConProblem {
 
 public:
@@ -69,9 +69,9 @@ public:
 
 
 	// typedefs
-	typedef std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM>> DynamicsPtr_t;
-	typedef std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM>> LinearPtr_t;
-	typedef std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> CostFunctionPtr_t;
+	typedef std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> DynamicsPtr_t;
+	typedef std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> LinearPtr_t;
+	typedef std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> CostFunctionPtr_t;
 	typedef std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> ConstraintPtr_t;
 
 	OptConProblem(){}
@@ -93,7 +93,7 @@ public:
 			LinearPtr_t linearSystem = nullptr
 	) :
 		tf_(0.0),
-		x0_(ct::core::StateVector<STATE_DIM>::Zero()),
+		x0_(ct::core::StateVector<STATE_DIM, SCALAR>::Zero()),
 		controlledSystem_(nonlinDynamics),
 		costFunction_(costFunction),
 		linearizedSystem_(linearSystem),
@@ -102,8 +102,8 @@ public:
 	{
 		if(linearSystem == nullptr)	// no linearization provided
 		{
-			linearizedSystem_ = std::shared_ptr<core::SystemLinearizer<STATE_DIM, CONTROL_DIM>> (
-					new core::SystemLinearizer<STATE_DIM, CONTROL_DIM> (controlledSystem_));
+			linearizedSystem_ = std::shared_ptr<core::SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>> (
+					new core::SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR> (controlledSystem_));
 		}
 	}
 
@@ -117,8 +117,8 @@ public:
 	 * @param linearSystem (optional) Linearized System Dynamics.
 	 */
 	OptConProblem(
-			const core::Time& tf,
-			core::StateVector<STATE_DIM> x0,
+			const SCALAR& tf,
+			core::StateVector<STATE_DIM, SCALAR> x0,
 			DynamicsPtr_t nonlinDynamics,
 			CostFunctionPtr_t costFunction,
 			LinearPtr_t linearSystem = nullptr):
@@ -224,32 +224,32 @@ public:
 	/*!
 	 * get initial state (called by solvers)
 	 * */
-	const core::StateVector<STATE_DIM> getInitialState() const {return x0_;}
+	const core::StateVector<STATE_DIM, SCALAR> getInitialState() const {return x0_;}
 
 	/*!
 	 * set initial state for first subsystem
 	 * */
-	void setInitialState(const core::StateVector<STATE_DIM> x0) {x0_ = x0;}
+	void setInitialState(const core::StateVector<STATE_DIM, SCALAR> x0) {x0_ = x0;}
 
 
 	/*!
 	 * get the current time horizon
 	 * @return	Time Horizon
 	 */
-	const ct::core::Time& getTimeHorizon() const {return tf_ ;}
+	const SCALAR& getTimeHorizon() const {return tf_ ;}
 
 	/*!
 	 * Update the current time horizon in the Opt.Control Problem (required for example for replanning)
 	 * @param tf new time horizon
 	 */
-	void setTimeHorizon(const core::Time tf){tf_ = tf;}
+	void setTimeHorizon(const SCALAR& tf){tf_ = tf;}
 
 
 
 private:
-	ct::core::Time tf_;						//! end time
+	SCALAR tf_;						//! end time
 
-	ct::core::StateVector<STATE_DIM> x0_;	//! initial state
+	ct::core::StateVector<STATE_DIM, SCALAR> x0_;	//! initial state
 
 	DynamicsPtr_t controlledSystem_;	//! the nonlinear system
 	CostFunctionPtr_t costFunction_;	//! a quadratic cost function

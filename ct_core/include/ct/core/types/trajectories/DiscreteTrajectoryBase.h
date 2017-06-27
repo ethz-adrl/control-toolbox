@@ -48,7 +48,7 @@ namespace core {
  * \tparam T type of each point of the trajectory
  * \tparam Alloc allocator for trajectory points
  */
-template <class T, class Alloc = Eigen::aligned_allocator<T>>
+template <class T, class Alloc = Eigen::aligned_allocator<T>, typename SCALAR = double>
 class DiscreteTrajectoryBase : public TrajectoryBase<T>
 {
 
@@ -71,7 +71,7 @@ public:
 	 * @param data data points
 	 * @param type interpolation strategy
 	 */
-	DiscreteTrajectoryBase(const TimeArray& time, const DiscreteArray<T, Alloc>& data, const InterpolationType& type = ZOH):
+	DiscreteTrajectoryBase(const tpl::TimeArray<SCALAR>& time, const DiscreteArray<T, Alloc>& data, const InterpolationType& type = ZOH):
 		time_(time),
 		data_(data),
 		interp_(type)
@@ -91,7 +91,7 @@ public:
 			data_(data),
 			interp_(type)
 	{
-		time_ = TimeArray(deltaT, data.size()+1, t0);
+		time_ = tpl::TimeArray<SCALAR>(deltaT, data.size(), t0);
 	}
 
 	//! copy constructor
@@ -151,7 +151,7 @@ public:
 	/*!
 	 * @param time new time stamps
 	 */
-	void setTime(const TimeArray& time) {
+	void setTime(const tpl::TimeArray<SCALAR>& time) {
 		time_ = time;
 	}
 
@@ -294,7 +294,7 @@ public:
 	 * @param t time to search for
 	 * @return according index
 	 */
-	size_t getIndexFromTime(const core::Time& t) {return interp_.findIndex(time_, t);}
+	size_t getIndexFromTime(const SCALAR& t) {return interp_.findIndex(time_, t);}
 
 	//! get the data array
 	DiscreteArray<T, Alloc>& getDataArray() {return data_;}
@@ -303,18 +303,18 @@ public:
 	const DiscreteArray<T, Alloc>& getDataArray() const {return data_;}
 
 	//! get the time array
-	TimeArray& getTimeArray() {return time_;}
+	tpl::TimeArray<SCALAR>& getTimeArray() {return time_;}
 
 	//! get the time array
-	const TimeArray& getTimeArray() const {return time_;}
+	const tpl::TimeArray<SCALAR>& getTimeArray() const {return time_;}
 
 protected:
 
-	TimeArray time_; //!< time array
+	tpl::TimeArray<SCALAR> time_; //!< time array
 
 	DiscreteArray<T, Alloc> data_; //!< data array
 
-	Interpolation<T, Alloc> interp_; //!< interpolation strategy
+	Interpolation<T, Alloc, SCALAR> interp_; //!< interpolation strategy
 
 };
 
