@@ -25,13 +25,13 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::createLQProblem()
+void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::createLQProblem()
 {
 	this->sequentialLQProblem();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
+void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
 {
 	// step 3
 	// initialize cost to go (described in step 3)
@@ -48,7 +48,7 @@ void iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory()
+void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory()
 {
 	for (size_t k=0; k<this->K_; k++)
 	{
@@ -60,7 +60,7 @@ void iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajec
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory()
+void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory()
 {
 	for (size_t k=0; k<this->K_; k++)
 	{
@@ -72,7 +72,7 @@ void iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-SCALAR iLQG<STATE_DIM, CONTROL_DIM, SCALAR>::performLineSearch()
+SCALAR GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::performLineSearch()
 {
 #ifdef DEBUG_PRINT_LINESEARCH
 	std::cout<<"Starting line search."<<std::endl;

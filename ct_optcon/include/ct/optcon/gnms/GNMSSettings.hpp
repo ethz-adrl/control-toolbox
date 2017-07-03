@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_ILQG_SETTINGS_HPP_
-#define INCLUDE_ILQG_SETTINGS_HPP_
+#ifndef INCLUDE_GNMS_SETTINGS_HPP_
+#define INCLUDE_GNMS_SETTINGS_HPP_
 
 #include <map>
 
@@ -35,16 +35,16 @@ namespace ct {
 namespace optcon {
 
 
-//! iLQG Line Search Settings
+//! GNMS Line Search Settings
 /*!
- * \ingroup iLQG
+ * \ingroup GNMS
  *
- * The Line Search Settings are part of the general settings struct and hold parameters to customize the line-search for the iLQG controller update.
+ * The Line Search Settings are part of the general settings struct and hold parameters to customize the line-search for the GNMS controller update.
  */
-struct iLQGLineSearchSettings {
+struct GNMSLineSearchSettings {
 
-	//! default constructor for the iLQG line-search settings
-	iLQGLineSearchSettings ()
+	//! default constructor for the GNMS line-search settings
+	GNMSLineSearchSettings ()
     {
         active = true;
         adaptive = false;
@@ -62,7 +62,7 @@ struct iLQGLineSearchSettings {
     bool active;   /*!< Flag whether or not to perform line search */
     bool adaptive; /*!< Flag whether alpha_0 gets updated based on previous iteration */
     size_t maxIterations;  /*!< Maximum number of iterations during line search */
-    double alpha_0;    /*!< Initial step size for line search. Use 1 for step size as suggested by iLQG */
+    double alpha_0;    /*!< Initial step size for line search. Use 1 for step size as suggested by GNMS */
     double alpha_max;    /*!< Maximum step size for line search. This is the limit when adapting alpha_0. */
     double n_alpha; /*!< Factor by which the line search step size alpha gets multiplied with after each iteration. Usually 0.5 is a good value. */
 
@@ -166,22 +166,22 @@ struct ParallelBackwardSettings {
 };
 
 /*!
- * \ingroup iLQG
+ * \ingroup GNMS
  *
- * \brief Settings for the iLQG algorithm.
+ * \brief Settings for the GNMS algorithm.
  */
-class iLQGSettings
+class GNMSSettings
 {
 public:
-    //! enum indicating which integrator to use for the iLQG forward rollout
+    //! enum indicating which integrator to use for the GNMS forward rollout
     enum INTEGRATOR { EULER = 0, RK4 = 1, EULER_SYM = 2, RK_SYM = 3};
     enum DISCRETIZATION { FORWARD_EULER = 0, BACKWARD_EULER = 1, TUSTIN = 2 };
 
-    //! iLQG Settings default constructor
+    //! GNMS Settings default constructor
     /*!
      * sets all settings to default values.
      */
-    iLQGSettings() :
+    GNMSSettings() :
     	integrator(RK4),
         discretization(BACKWARD_EULER),
 		epsilon(1e-5),
@@ -198,18 +198,18 @@ public:
     {
     }
 
-    INTEGRATOR integrator;	//! which integrator to use during the iLQG forward rollout
+    INTEGRATOR integrator;	//! which integrator to use during the GNMS forward rollout
 	DISCRETIZATION discretization;    
 	double epsilon;			//! Eigenvalue correction factor for Hessian regularization
     double dt;				//! sampling time for the control input (seconds)
     double dt_sim;			//! sampling time for the forward simulation (seconds) \warning dt_sim needs to be an integer multiple of dt.
     double min_cost_improvement;	//! minimum cost improvement between two interations to assume convergence
-    int max_iterations;		//! the maximum admissible number of iLQG main iterations \warning make sure to select this number high enough allow for convergence
+    int max_iterations;		//! the maximum admissible number of GNMS main iterations \warning make sure to select this number high enough allow for convergence
     bool fixedHessianCorrection; //! perform Hessian regularization by incrementing the eigenvalues by epsilon.
     bool recordSmallestEigenvalue;	//! save the smallest eigenvalue of the Hessian
     size_t nThreads; //! number of threads, for MP version
     size_t nThreadsEigen; //! number of threads for eigen parallelization (applies both to MP and standard)
-    iLQGLineSearchSettings lineSearchSettings; //! the line search settings
+    GNMSLineSearchSettings lineSearchSettings; //! the line search settings
 	ParallelBackwardSettings parallelBackward; //! do the backward pass in parallel with building the LQ problems (experimental)
 
 
@@ -226,10 +226,10 @@ public:
     }
 
 
-    //! print the current iLQG settings to console
+    //! print the current GNMS settings to console
     void print()
     {
-        std::cout<<"iLQG Settings: "<<std::endl;
+        std::cout<<"GNMS Settings: "<<std::endl;
         std::cout<<"==============="<<std::endl;
         std::cout<<"integrator: "<<integratorToString[integrator]<<std::endl;
         std::cout<<"discretization: " << discretizationToString[discretization]<<std::endl;
@@ -249,7 +249,7 @@ public:
         parallelBackward.print();
     }
 
-    //! perform a quick check if the given iLQG settings fulfil minimum requirements
+    //! perform a quick check if the given GNMS settings fulfil minimum requirements
     /*!
      * \warning This check cannot guarantee that the control problem is well parameterized
      */
@@ -257,13 +257,13 @@ public:
     {
     	if (dt == 0 || dt_sim == 0)
 		{
-			std::cout << "Either iLQG or simulation timestep is zero." << std::endl;
+			std::cout << "Either GNMS or simulation timestep is zero." << std::endl;
 			return false;
 		}
 
 		if (std::fmod(dt, dt_sim) > 1e-6)
 		{
-			std::cout << "iLQG freqency dt should be a multiple of integration frequency dt_sim." << std::endl;
+			std::cout << "GNMS freqency dt should be a multiple of integration frequency dt_sim." << std::endl;
 			return false;
 		}
 
@@ -276,7 +276,7 @@ public:
     }
 
 
-    //! load iLQG Settings from file
+    //! load GNMS Settings from file
     /*!
      *
      * @param filename path to the settings file
@@ -286,7 +286,7 @@ public:
     void load(const std::string& filename, bool verbose = true, const std::string& ns = "ilqg")
     {
     	if (verbose)
-    		std::cout << "Trying to load iLQG config from "<<filename<<": "<<std::endl;
+    		std::cout << "Trying to load GNMS config from "<<filename<<": "<<std::endl;
 
 		boost::property_tree::ptree pt;
 		boost::property_tree::read_info(filename, pt);
@@ -353,7 +353,7 @@ public:
 
 		if (verbose)
 		{
-			std::cout << "Loaded iLQG config from "<<filename<<": "<<std::endl;
+			std::cout << "Loaded GNMS config from "<<filename<<": "<<std::endl;
 			print();
 		}
 
@@ -369,9 +369,9 @@ public:
      * @param ns (optional) settings namespace
      * @return the newly generated settings struct
      */
-    static iLQGSettings fromConfigFile(const std::string& filename, bool verbose = true, const std::string& ns = "ilqg")
+    static GNMSSettings fromConfigFile(const std::string& filename, bool verbose = true, const std::string& ns = "ilqg")
     {
-    	iLQGSettings settings;
+    	GNMSSettings settings;
     	settings.load(filename, true, ns);
     	return settings;
     }
@@ -394,4 +394,4 @@ private:
 
 
 
-#endif /* INCLUDE_ILQG_SETTINGS_HPP_ */
+#endif /* INCLUDE_GNMS_SETTINGS_HPP_ */

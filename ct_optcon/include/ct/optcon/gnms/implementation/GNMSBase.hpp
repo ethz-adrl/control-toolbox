@@ -29,7 +29,7 @@ namespace optcon {
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::setInitialGuess(const Policy_t& initialGuess)
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::setInitialGuess(const Policy_t& initialGuess)
 {
 	if(initialGuess.K().size() != initialGuess.uff().size())
 	{
@@ -55,7 +55,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::setInitialGuess(const Policy_t& i
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeTimeHorizon(const SCALAR& tf)
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeTimeHorizon(const SCALAR& tf)
 {
 	if (tf < 0)
 		throw std::runtime_error("negative time horizon specified");
@@ -89,7 +89,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeTimeHorizon(const SCALAR& t
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0)
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0)
 {
 	if (x_.size() == 0)
 		x_.resize(1);
@@ -99,7 +99,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeInitialState(const core::St
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeCostFunction(const typename Base::OptConProblem_t::CostFunctionPtr_t& cf)
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeCostFunction(const typename Base::OptConProblem_t::CostFunctionPtr_t& cf)
 {
 	if (cf == nullptr)
 		throw std::runtime_error("cost function is nullptr");
@@ -118,7 +118,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeCostFunction(const typename
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeNonlinearSystem(const typename Base::OptConProblem_t::DynamicsPtr_t& dyn)
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeNonlinearSystem(const typename Base::OptConProblem_t::DynamicsPtr_t& dyn)
 {
 	if (dyn == nullptr)
 		throw std::runtime_error("system dynamics are nullptr");
@@ -154,7 +154,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeNonlinearSystem(const typen
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeLinearSystem(const typename Base::OptConProblem_t::LinearPtr_t& lin)
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeLinearSystem(const typename Base::OptConProblem_t::LinearPtr_t& lin)
 {
 	this->getLinearSystemsInstances().resize(settings_.nThreads+1);
 
@@ -170,10 +170,10 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeLinearSystem(const typename
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::checkProblem()
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::checkProblem()
 {
 	if (K_==0)
-		throw std::runtime_error("Time horizon too small resulting in 0 iLQG steps");
+		throw std::runtime_error("Time horizon too small resulting in 0 GNMS steps");
 
 	if (L_.size() < K_)
 	{
@@ -189,7 +189,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::checkProblem()
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::solve()
+bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::solve()
 {
 	bool foundBetter = true;
 	size_t numIterations = 0;
@@ -206,7 +206,7 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::solve()
 		}
 	}
 	catch(std::exception& e){
-		std::cout << "iLQG solve() did not succeed due to: " << e.what() << std::endl;
+		std::cout << "GNMS solve() did not succeed due to: " << e.what() << std::endl;
 		return false;
 	}
 
@@ -215,17 +215,17 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::solve()
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::configure(
-	const iLQGSettings& settings)
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::configure(
+	const GNMSSettings& settings)
 {
 	if (!settings.parametersOk())
 	{
-		throw(std::runtime_error("iLQGSettings are incorrect. Aborting."));
+		throw(std::runtime_error("GNMSSettings are incorrect. Aborting."));
 	}
 
 	if (settings.nThreads != settings_.nThreads)
 	{
-		throw(std::runtime_error("Number of threads at iLQG cannot be changed after instance has been created."));
+		throw(std::runtime_error("Number of threads at GNMS cannot be changed after instance has been created."));
 	}
 
 	// will be set correctly later
@@ -242,27 +242,27 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::configure(
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
+bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 {
 	if (!initialized_)
-		throw std::runtime_error("iLQG is not initialized!");
+		throw std::runtime_error("GNMS is not initialized!");
 
 	if (!configured_)
-		throw std::runtime_error("iLQG is not configured!");
+		throw std::runtime_error("GNMS is not configured!");
 
 	smallestEigenvalueIteration_ = std::numeric_limits<scalar_t>::infinity();
 
 	checkProblem();
 
 #ifdef DEBUG_PRINT
-	std::cout<<"[iLQG]: #1 ForwardPass"<<std::endl;
+	std::cout<<"[GNMS]: #1 ForwardPass"<<std::endl;
 #endif // DEBUG_PRINT
 	auto start = std::chrono::steady_clock::now();
 	auto startEntire = start;
 	if (!forwardPass())
 	{
 #ifdef DEBUG_PRINT
-		std::cout<<"[iLQG]: System became unstable, aborting iteration."<<std::endl;
+		std::cout<<"[GNMS]: System became unstable, aborting iteration."<<std::endl;
 #endif // DEBUG_PRINT
 		return false;
 	}
@@ -271,7 +271,7 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 	//std::cout << "Forward pass took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
 #ifdef DEBUG_PRINT
-	std::cout<<"[iLQG]: #2 BackwardPass"<<std::endl;
+	std::cout<<"[GNMS]: #2 BackwardPass"<<std::endl;
 #endif // DEBUG_PRINT
 	start = std::chrono::steady_clock::now();
 	backwardPass();
@@ -282,7 +282,7 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 #endif
 
 #ifdef DEBUG_PRINT
-	std::cout<<"[iLQG]: #3 LineSearch"<<std::endl;
+	std::cout<<"[GNMS]: #3 LineSearch"<<std::endl;
 #endif // DEBUG_PRINT
 
 	start = std::chrono::steady_clock::now();
@@ -316,7 +316,7 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-const typename iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::Policy_t& iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::getSolution()
+const typename GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::Policy_t& GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::getSolution()
 {
 	TimeArray t_temp = t_;
 	t_temp.pop_back();
@@ -327,7 +327,7 @@ const typename iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::Policy_t& iLQGBase<STAT
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::retrieveLastLinearizedModel(StateMatrixArray& A, StateControlMatrixArray& B)
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::retrieveLastLinearizedModel(StateMatrixArray& A, StateControlMatrixArray& B)
 {
 	// todo fix me!
 	A = A_;
@@ -336,7 +336,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::retrieveLastLinearizedModel(State
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::rolloutSystem (
+bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::rolloutSystem (
 		size_t threadId,
 		const ControlVectorArray& u_ff_local,
 		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
@@ -375,19 +375,19 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::rolloutSystem (
 				//controller_[threadId]->u() = (u_ff_[threadId][i] + L_[i]*x0);
 			}
 
-			if (settings_.integrator == iLQGSettings::EULER)
+			if (settings_.integrator == GNMSSettings::EULER)
 			{
 				integratorsEuler_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
 			}
-			else if(settings_.integrator == iLQGSettings::RK4)
+			else if(settings_.integrator == GNMSSettings::RK4)
 			{
 				integratorsRK4_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
 			}
-			else if(settings_.integrator == iLQGSettings::EULER_SYM)
+			else if(settings_.integrator == GNMSSettings::EULER_SYM)
 			{
 				integratorsEulerSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
 			}
-			else if(settings_.integrator == iLQGSettings::RK_SYM)
+			else if(settings_.integrator == GNMSSettings::RK_SYM)
 			{
 				integratorsRkSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
 			}
@@ -432,9 +432,9 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::rolloutSystem (
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::forwardPass()
+bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::forwardPass()
 {
-	// Forward pass according to section V. Summary of the Algorithm of the iLQGMP paper
+	// Forward pass according to section V. Summary of the Algorithm of the GNMSMP paper
 
 	// step 1
 	// calculates x_k+1 = x_k + dt * f(x_k,u_k)
@@ -453,7 +453,7 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::forwardPass()
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::sequentialLQProblem()
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::sequentialLQProblem()
 {
 	auto start = std::chrono::steady_clock::now();
 	computeLinearizedDynamicsAroundTrajectory();
@@ -474,7 +474,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::sequentialLQProblem()
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchController()
+bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchController()
 {
 	// if first iteration, we have to find cost of initial rollout
 	if (iteration_ == 0)
@@ -572,7 +572,7 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-SCALAR iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::learnAlpha(const SCALAR& alphaBest)
+SCALAR GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::learnAlpha(const SCALAR& alphaBest)
 {
 	scalar_t alphaNew = alphaBest;
 
@@ -590,7 +590,7 @@ SCALAR iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::learnAlpha(const SCALAR& alphaB
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchSingleController(
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchSingleController(
 		size_t threadId,
 		scalar_t alpha,
 		ControlVectorArray& u_ff_local,
@@ -629,7 +629,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchSingleController(
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostsOfTrajectory(
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostsOfTrajectory(
 		size_t threadId,
 		const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
 		const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
@@ -655,18 +655,18 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostsOfTrajectory(
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamics(size_t threadId, size_t k)
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamics(size_t threadId, size_t k)
 {
 	switch(settings_.discretization)
 	{
-		case iLQGSettings::FORWARD_EULER:
+		case GNMSSettings::FORWARD_EULER:
 		{
 			A_[k] = state_matrix_t::Identity();
 			A_[k] += settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_[k], k*settings_.dt);
 			B_[k] = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_[k], k*settings_.dt);
 			break;
 		}
-		case iLQGSettings::BACKWARD_EULER:
+		case GNMSSettings::BACKWARD_EULER:
 		{
 			state_matrix_t aNew = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_[k], k*settings_.dt);
 			state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
@@ -674,7 +674,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamics(size_t 
 			B_[k] = aNewInv * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_[k], k*settings_.dt);
 			break;
 		}
-		case iLQGSettings::TUSTIN:
+		case GNMSSettings::TUSTIN:
 		{
 			state_matrix_t aNew = 0.5 * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_[k], k*settings_.dt);
 			state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
@@ -691,7 +691,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamics(size_t 
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeQuadraticCosts(size_t threadId, size_t k)
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeQuadraticCosts(size_t threadId, size_t k)
 {
 	const scalar_t& dt = settings_.dt;
 
@@ -716,7 +716,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeQuadraticCosts(size_t thre
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::initializeCostToGo()
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::initializeCostToGo()
 {
 	// feed current state and control to cost function
 	this->getCostFunctionInstances()[settings_.nThreads]->setCurrentStateAndControl(x_[K_], control_vector_t::Zero(), settings_.dt*K_);
@@ -734,7 +734,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::initializeCostToGo()
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostToGo(size_t k)
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostToGo(size_t k)
 {
 	S_[k] = Q_[k];
 	S_[k].noalias() += A_[k].transpose() * S_[k+1] * A_[k];
@@ -751,7 +751,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostToGo(size_t k)
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 {
 	gv_[k] = rv_[k];
 	gv_[k].noalias() += B_[k].transpose() * sv_[k+1];
@@ -849,7 +849,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::debugPrint()
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::debugPrint()
 {
 	std::cout<<"iteration "  << iteration_ << std::endl;
 	std::cout<<"============"<< std::endl;
@@ -869,13 +869,13 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::debugPrint()
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 {
 	// all the variables in MATLAB that are ended by "_"
 	// will be saved in a mat-file
 
 #ifdef MATLAB
-	matFile_.open("iLQGLog"+std::to_string(iteration_)+".mat");
+	matFile_.open("GNMSLog"+std::to_string(iteration_)+".mat");
 
 	matFile_.put("iteration", iteration_);
 	matFile_.put("K", K_);
@@ -906,7 +906,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-const core::ControlTrajectory<CONTROL_DIM, SCALAR> iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::getControlTrajectory() const
+const core::ControlTrajectory<CONTROL_DIM, SCALAR> GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::getControlTrajectory() const
 {
 	// TODO this method currently copies the time array (suboptimal)
 
@@ -917,7 +917,7 @@ const core::ControlTrajectory<CONTROL_DIM, SCALAR> iLQGBase<STATE_DIM, CONTROL_D
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-SCALAR iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::getCost() const
+SCALAR GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::getCost() const
 {
 	return lowestCost_;
 }

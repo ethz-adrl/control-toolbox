@@ -25,17 +25,15 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_OPTCON_ILQG_ILQGBASE_HPP_
-#define INCLUDE_CT_OPTCON_ILQG_ILQGBASE_HPP_
+#ifndef INCLUDE_CT_OPTCON_GNMS_GNMSBASE_HPP_
+#define INCLUDE_CT_OPTCON_GNMS_GNMSBASE_HPP_
 
 #include <atomic>
 
 #include <ct/core/core.h>
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
 #include <ct/optcon/solver/OptConSolver.h>
-#include "iLQGSettings.hpp"
-
-#include "iLQGTester.hpp"
+#include "GNMSSettings.hpp"
 
 #ifdef MATLAB
 #include <ct/optcon/matlab.hpp>
@@ -46,15 +44,15 @@ namespace optcon{
 
 
 /*!
- * \defgroup iLQG iLQG
+ * \defgroup GNMS GNMS
  *
  * \brief Sequential Linear Quadratic Optimal Control package
  */
 
 /*!
- * \ingroup iLQG
+ * \ingroup GNMS
  *
- * \brief C++ implementation of iLQG. In fact, this currently implements iLQR.
+ * \brief C++ implementation of GNMS.
  *
  *  The implementation and naming is based on the reference below. In general, the code follows this convention:
  *  X  <- Matrix (upper-case in paper)
@@ -62,22 +60,18 @@ namespace optcon{
  *  x  <- scalar (lower-case in paper)
  *
  *  Reference:
- *  Todorov, E.; Weiwei Li, "A generalized iterative LQG method for locally-optimal feedback control of constrained nonlinear stochastic systems,"
- *  American Control Conference, 2005. Proceedings of the 2005 , vol., no., pp.300,306 vol. 1, 8-10 June 2005
 */
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class iLQGBase : public OptConSolver<
-		iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>,
+class GNMSBase : public OptConSolver<
+		GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>,
 		core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>,
-		iLQGSettings,
+		GNMSSettings,
 		STATE_DIM,
 		CONTROL_DIM,
 		SCALAR
 	>
 {
-	//! this is a tester class that tests iLQG and thus needs access to internal members
-	friend class iLQGTester<iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>>;
 
 public:
 
@@ -86,10 +80,10 @@ public:
 	static const size_t STATE_D = STATE_DIM;
 	static const size_t CONTROL_D = CONTROL_DIM;
 
-	typedef iLQGSettings Settings_t;
+	typedef GNMSSettings Settings_t;
 	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 
-	typedef OptConSolver<iLQGBase, Policy_t, iLQGSettings, STATE_DIM, CONTROL_DIM, SCALAR> Base;
+	typedef OptConSolver<GNMSBase, Policy_t, GNMSSettings, STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
 	typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
 	typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
@@ -113,20 +107,20 @@ public:
 	typedef std::vector<SCALAR> scalar_array_t;
 
 
-    //! iLQG constructor.
+    //! GNMS constructor.
     /*!
-     * Sets up iLQG. Dynamics, derivatives of the dynamics as well as the cost function have to be provided.
+     * Sets up GNMS. Dynamics, derivatives of the dynamics as well as the cost function have to be provided.
      * You should pass pointers to instances of classes here that derive from the dynamics, derivatives and costFunction base classes
      *
      * \param dynamics pointer to system dynamics
      * \param derivative pointer to system dynamics derivative
      * \param costFunction pointer to cost function and its derivatives
-     * \param t_end time horizon for iLQG
+     * \param t_end time horizon for GNMS
      * \param epsilon correction factor for negative eigenvalues in the H matrix
      * \param matlab pointer to Schweizer-Messer Matlab Engine or to a dummy class (if Matlab not used)
     */
-	iLQGBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
-			const iLQGSettings& settings) :
+	GNMSBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+			const GNMSSettings& settings) :
 
 		    integratorsRK4_(settings.nThreads+1),
 		    integratorsEuler_(settings.nThreads+1),
@@ -152,7 +146,7 @@ public:
 
 			eigenvalueSolver_(CONTROL_DIM),
 
-			iLQGTester_(*this)
+			GNMSTester_(*this)
 	{
 		for (size_t i=0; i<settings.nThreads+1; i++)
 		{
@@ -163,16 +157,16 @@ public:
 		this->setProblem(optConProblem);
 	}
 
-	iLQGBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+	GNMSBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 			 const std::string& settingsFile,
 			 bool verbose = true,
 			 const std::string& ns = "ilqg") :
-			iLQGBase(optConProblem, iLQGSettings::fromConfigFile(settingsFile, verbose, ns))
+			GNMSBase(optConProblem, GNMSSettings::fromConfigFile(settingsFile, verbose, ns))
 	{
 	}
 
 
-	virtual ~iLQGBase() {};
+	virtual ~GNMSBase() {};
 
 
 	//! configure the solver
@@ -180,17 +174,17 @@ public:
 	 * Configure the solver
 	 * @param settings solver settings
 	 */
-	virtual void configure(const iLQGSettings& settings) override;
+	virtual void configure(const GNMSSettings& settings) override;
 
 
 	//! get the current SLQsolver settings
-	const iLQGSettings& getSettings() const { return settings_; }
+	const GNMSSettings& getSettings() const { return settings_; }
 
 
-	//! reset iLQG
+	//! reset GNMS
 	/*!
-	 * \brief reset iLQG
-	 * resets iLQG by setting the iteration count to zero, forcing a new rollout during the next iteration.
+	 * \brief reset GNMS
+	 * resets GNMS by setting the iteration count to zero, forcing a new rollout during the next iteration.
 	 */
 	void reset() {
 		iteration_ = 0;
@@ -308,7 +302,7 @@ public:
 	 */
 	bool testConsistency()
 	{
-		return iLQGTester_.testAllConsistency(true);
+		return GNMSTester_.testAllConsistency(true);
 	}
 
 
@@ -484,7 +478,7 @@ protected:
     std::vector<ConstantControllerPtr, Eigen::aligned_allocator<ConstantControllerPtr> > controller_;	//! the constant controller for forward-integration during one time-step
 
     //! The policy. currently only for returning the result, should eventually replace L_ and u_ff_ (todo)
-    iLQGBase::Policy_t policy_;
+    GNMSBase::Policy_t policy_;
 
     ct::core::tpl::TimeArray<SCALAR> t_; //! the time trajectory
 
@@ -493,7 +487,7 @@ protected:
 
 	size_t iteration_;	/*!< current iteration */
 
-	iLQGSettings settings_;
+	GNMSSettings settings_;
 
 	size_t K_;
 
@@ -537,8 +531,6 @@ protected:
 
 	Eigen::SelfAdjointEigenSolver<control_matrix_t> eigenvalueSolver_; //! Eigenvalue solver, used for inverting the Hessian and for regularization
 
-	iLQGTester<iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>> iLQGTester_;
-
 #ifdef MATLAB
 	matlab::MatFile matFile_;
 #endif //MATLAB
@@ -548,7 +540,7 @@ protected:
 } // namespace optcon
 } // namespace ct
 
-#include "implementation/iLQGBase.hpp"
+#include "implementation/GNMSBase.hpp"
 
 
-#endif /* INCLUDE_CT_OPTCON_ILQG_ILQGBASE_HPP_ */
+#endif /* INCLUDE_CT_OPTCON_GNMS_GNMSBASE_HPP_ */

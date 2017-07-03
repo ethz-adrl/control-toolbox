@@ -24,19 +24,19 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef ILQG_HPP_
-#define ILQG_HPP_
+#ifndef GNMS_HPP_
+#define GNMS_HPP_
 
-#include "iLQGBase.hpp"
+#include "GNMSBase.hpp"
 
 namespace ct{
 namespace optcon{
 
-//!  Single-Threaded Implementation of iLQG/SLQ
+//!  Single-Threaded Implementation of GNMS/SLQ
 /*!
- * \ingroup iLQG
+ * \ingroup GNMS
  *
- * C++ implementation of iLQG. In fact, this currently implements iLQR.
+ * C++ implementation of GNMS. In fact, this currently implements iLQR.
  *
  * The implementation and naming is based on the reference below. In general, the code follows this convention:
  * X  <- Matrix (upper-case in paper)
@@ -52,31 +52,31 @@ namespace optcon{
  *
 */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class iLQG : public iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR> {
+class GNMS : public GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR> {
 
 public:
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+	typedef GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
 	typedef typename Base::Policy_t Policy_t;
 	typedef typename Base::Settings_t Settings_t;
 
-    //! iLQG constructor.
+    //! GNMS constructor.
     /*!
-      Sets up iLQG. Dynamics, derivatives of the dynamics as well as the cost function have to be provided.
+      Sets up GNMS. Dynamics, derivatives of the dynamics as well as the cost function have to be provided.
       You should pass pointers to instances of classes here that derive from the dynamics, derivatives and costFunction base classes
 
     */
-	iLQG(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
-			const iLQGSettings& settings) :
+	GNMS(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+			const GNMSSettings& settings) :
 		Base(optConProblem, settings)
 	{
 
 	}
 
-	iLQG(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+	GNMS(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 		 const std::string& settingsFile,
 		 bool verbose = true,
 		 const std::string& ns = "ilqg") :
@@ -101,10 +101,10 @@ private:
 };
 
 
-#include "implementation/iLQG.hpp"
+#include "implementation/GNMS.hpp"
 
 } // namespace optcon
 } // namespace ct
 
 
-#endif /* ILQG_HPP_ */
+#endif /* GNMS_HPP_ */
