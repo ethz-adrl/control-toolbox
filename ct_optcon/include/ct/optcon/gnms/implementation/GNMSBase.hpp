@@ -71,6 +71,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeTimeHorizon(const SCALAR& t
 	u_.resize(K_);
 	u_ff_.resize(K_);
 	u_ff_prev_.resize(K_);
+	d_.resize(K_);
 	gv_.resize(K_);
 	G_.resize(K_);
 	H_.resize(K_);
