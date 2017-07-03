@@ -81,8 +81,6 @@ public:
 		pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>
 				(new ct::optcon::ConstraintContainerAnalytical<2, 1>());
 
-		// std::shared_ptr<optcon::ObstacleConstraint<2, 1>> obstacleConstraint(
-		// 	new optcon::ObstacleConstraint<2, 1> ());
 		std::shared_ptr<TerminalConstraint<2,1>> termConstraint(new TerminalConstraint<2,1>(x_final_));
 		core::StateVector<2> xLow;
 		core::StateVector<2> xHigh;
@@ -104,9 +102,7 @@ public:
 		std::shared_ptr<optcon::tpl::TerminalConstraint<2,1, ScalarCG>> termConstraintAd(
 			new optcon::tpl::TerminalConstraint<2,1, ScalarCG>(x_final_));
 
-
-		// obstacleConstraint->setName("crazyObstacleTerm");
-		termConstraint->setName("crazyTerminalConstraint");
+		termConstraint->setName("TerminalConstraint");
 		stateConstraint->setName("StateConstraint");
 		inputConstraint->setName("ControlInputConstraint");
 	
@@ -125,8 +121,8 @@ public:
 		OptConProblem<2,1> optProblem(oscillator_, costFunction_);
 		optProblem.setInitialState(x_0_);
 		optProblem.setTimeHorizon(settings_.T_);
-		optProblem.setStateInputConstraints(stateInputConstraintsAd_);
-		// optProblem.setPureStateConstraints(pureStateConstraints_);
+		optProblem.setStateInputConstraints(stateInputConstraints_);
+		optProblem.setPureStateConstraints(pureStateConstraints_);
 
 		calcInitGuess();
 		dmsPlanner_ = std::shared_ptr<DmsSolver<2,1>> (new DmsSolver<2,1>(optProblem, settings_));
@@ -136,7 +132,6 @@ public:
 	void getSolution()
 	{
 		dmsPlanner_->solve();
-		// dmsPlanner_->printSolution();
 	}
 
 
@@ -186,7 +181,7 @@ void runTests()
 		int costEvalT = 1;
 		int optGrid = 0;
 		int integrateSensitivity = 1;
-		// int solverType = 1;
+		
 		// have to manually exclude the following case, which is not implemented
 		if (integrateSensitivity == 0 && costEvalT == DmsSettings::FULL)
 			continue;
