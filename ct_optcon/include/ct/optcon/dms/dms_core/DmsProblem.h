@@ -81,8 +81,8 @@ public:
 	 * @param[in]  systemPtrs               The non linear systems
 	 * @param[in]  linearPtrs               The linearized systems
 	 * @param[in]  costPtrs                 The cost function
-	 * @param[in]  constraintsIntermediate  The intermediate constraints
-	 * @param[in]  constraintsFinal         The final constraints
+	 * @param[in]  stateInputConstraints  The intermediate constraints
+	 * @param[in]  pureStateConstraints         The final constraints
 	 * @param[in]  x0                       The initial state
 	 */
 	DmsProblem(
@@ -90,8 +90,8 @@ public:
 			std::vector<typename OptConProblem_t::DynamicsPtr_t> systemPtrs,
 			std::vector<typename OptConProblem_t::LinearPtr_t> linearPtrs,
 			std::vector<typename OptConProblem_t::CostFunctionPtr_t> costPtrs,
-			std::vector<typename OptConProblem_t::ConstraintPtr_t> constraintsIntermediate,
-			std::vector<typename OptConProblem_t::ConstraintPtr_t> constraintsFinal,
+			std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints,
+			std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints,
 			const state_vector_t& x0
 		) 
 	:
@@ -129,27 +129,16 @@ public:
 
 		optVariablesDms_ = std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>>(
 				new OptVectorDms<STATE_DIM, CONTROL_DIM>(wLength, settings));
+			
+		if(stateInputConstraints.size() > 0 || pureStateConstraints.size() > 0)
+			discretizedConstraints_ = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> (
+				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM> (optVariablesDms_, controlSpliner_, timeGrid_, settings_.N_));
 
-		// We can decide at how many shots the constraints will be active
-		if(constraintsIntermediate.size() > 0)
-		{
-			std::cout << "Setting up intermediate constraints" << std::endl;
-			std::vector<size_t> activeInd;
-			for(size_t i = 0; i < settings_.N_ + 1; ++i)
-				activeInd.push_back(i);
-			constraintsIntermediateLocal_ = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> (
-				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM> (optVariablesDms_, controlSpliner_, timeGrid_, constraintsIntermediate.front(), activeInd));
-		}
+		if(stateInputConstraints.size() > 0)
+			discretizedConstraints_->setStateInputConstraints(stateInputConstraints.front());
 
-		if(constraintsFinal.size() > 0)
-		{
-			std::vector<size_t> activeInd;
-			activeInd.push_back(settings_.N_);
-			std::cout << "setting up final constraints" << std::endl;
-			constraintsFinalLocal_ = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> (
-				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM> (optVariablesDms_, controlSpliner_, timeGrid_, constraintsFinal.front(), activeInd));
-		}
-
+		if(pureStateConstraints.size() > 0)
+			discretizedConstraints_->setPureStateConstraints(pureStateConstraints.front());
 
 		for (size_t shotIdx = 0; shotIdx < settings_.N_; shotIdx++)
 		{
@@ -180,7 +169,7 @@ public:
 		optVariables_ = optVariablesDms_;
 
 		constraints_ = std::shared_ptr<ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>> (
-			new ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>(optVariablesDms_, timeGrid_, shotContainers_, constraintsIntermediateLocal_, constraintsFinalLocal_, x0, settings_));
+			new ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>(optVariablesDms_, timeGrid_, shotContainers_, discretizedConstraints_, x0, settings_));
 
 		optVariables_->resizeConstraintVars(getConstraintsCount());
 	}
@@ -349,8 +338,7 @@ public:
 private:
 	DmsSettings settings_;
 	
-	std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> constraintsIntermediateLocal_; /*!<The discretized intermediate constraints*/
-	std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> constraintsFinalLocal_; /*!<The discretized final constraints*/
+	std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> discretizedConstraints_;
 
 	std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>> shotContainers_; 
 	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> optVariablesDms_; 

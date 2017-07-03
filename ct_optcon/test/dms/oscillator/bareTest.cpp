@@ -72,17 +72,15 @@ public:
 		costFunction_ = std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1>> 
 				(new ct::optcon::CostFunctionQuadraticSimple<2,1>(Q_, R_, x_final_, u_des_, x_final_, Q_final_));
 
-		intermediateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2,1>>
+		stateInputConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2,1>>
 				(new ct::optcon::ConstraintContainerAnalytical<2,1>() );
 
-		intermediateConstraintsAd_ = std::shared_ptr<ct::optcon::ConstraintContainerAD<2,1>>
+		stateInputConstraintsAd_ = std::shared_ptr<ct::optcon::ConstraintContainerAD<2,1>>
 				(new ct::optcon::ConstraintContainerAD<2,1>());
 
-		finalConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>
+		pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>
 				(new ct::optcon::ConstraintContainerAnalytical<2, 1>());
 
-		std::shared_ptr<optcon::ObstacleConstraint<2, 1>> obstacleConstraint(
-			new optcon::ObstacleConstraint<2, 1> ());
 		std::shared_ptr<TerminalConstraint<2,1>> termConstraint(new TerminalConstraint<2,1>(x_final_));
 		core::StateVector<2> xLow;
 		core::StateVector<2> xHigh;
@@ -101,30 +99,30 @@ public:
 			new optcon::tpl::StateConstraint<2, 1, ScalarCG>(xLow, xHigh));
 		std::shared_ptr<optcon::tpl::ControlInputConstraint<2, 1, ScalarCG>> inputConstraintAd(
 			new optcon::tpl::ControlInputConstraint<2, 1, ScalarCG> (uLow, uHigh));
+		std::shared_ptr<optcon::tpl::TerminalConstraint<2,1, ScalarCG>> termConstraintAd(
+			new optcon::tpl::TerminalConstraint<2,1, ScalarCG>(x_final_));
 
-		obstacleConstraint->setName("crazyObstacleTerm");
-		termConstraint->setName("crazyTerminalConstraint");
+		termConstraint->setName("TerminalConstraint");
 		stateConstraint->setName("StateConstraint");
 		inputConstraint->setName("ControlInputConstraint");
 	
 		stateConstraintAd->setName("StateConstraintAd");
 		inputConstraintAd->setName("InputConstraintAd");
+		termConstraintAd->setName("TerminalConstraintAd");
 
-		intermediateConstraintsAd_->addConstraint(inputConstraintAd, true);
-		intermediateConstraintsAd_->addConstraint(stateConstraintAd, true);
+		stateInputConstraintsAd_->addIntermediateConstraint(stateConstraintAd, true);
+		stateInputConstraintsAd_->addIntermediateConstraint(inputConstraintAd, true);
+		stateInputConstraintsAd_->addTerminalConstraint(termConstraintAd, true);
 
-		intermediateConstraints_->addConstraint(stateConstraint, true);
-		intermediateConstraints_->addConstraint(inputConstraint, true);
-		finalConstraints_->addConstraint(termConstraint, true);
-
-		finalConstraints_->initialize();
-		intermediateConstraints_->initialize();
-		intermediateConstraintsAd_->initialize();
+		pureStateConstraints_->addTerminalConstraint(termConstraint, true);
+		stateInputConstraints_->addIntermediateConstraint(inputConstraint, true);
+		stateInputConstraints_->addIntermediateConstraint(stateConstraint, true);
 
 		OptConProblem<2,1> optProblem(oscillator_, costFunction_);
 		optProblem.setInitialState(x_0_);
 		optProblem.setTimeHorizon(settings_.T_);
-		optProblem.setFinalConstraints(finalConstraints_);
+		optProblem.setStateInputConstraints(stateInputConstraints_);
+		optProblem.setPureStateConstraints(pureStateConstraints_);
 
 		calcInitGuess();
 		dmsPlanner_ = std::shared_ptr<DmsSolver<2,1>> (new DmsSolver<2,1>(optProblem, settings_));
@@ -134,7 +132,6 @@ public:
 	void getSolution()
 	{
 		dmsPlanner_->solve();
-		// dmsPlanner_->printSolution();
 	}
 
 
@@ -160,9 +157,9 @@ private:
 	DmsSettings settings_;
 	std::shared_ptr<DmsSolver<2, 1>> dmsPlanner_;
 	std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1> >  costFunction_;
-	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2,1> > intermediateConstraints_;
-	std::shared_ptr<ct::optcon::ConstraintContainerAD<2,1> > intermediateConstraintsAd_;
-	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1> > finalConstraints_;
+	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2,1> > stateInputConstraints_;
+	std::shared_ptr<ct::optcon::ConstraintContainerAD<2,1> > stateInputConstraintsAd_;
+	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1> > pureStateConstraints_;
 
 	OscDimensions::state_vector_t x_0_;
 	OscDimensions::state_vector_t x_final_;
@@ -184,7 +181,7 @@ void runTests()
 		int costEvalT = 1;
 		int optGrid = 0;
 		int integrateSensitivity = 1;
-		// int solverType = 1;
+		
 		// have to manually exclude the following case, which is not implemented
 		if (integrateSensitivity == 0 && costEvalT == DmsSettings::FULL)
 			continue;

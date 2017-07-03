@@ -87,8 +87,7 @@ public:
 			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
 			std::shared_ptr<TimeGrid> timeGrid,
 			std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>> shotContainers,
-			std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> constraintsIntermediate,
-			std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> constraintsFinal,
+			std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> discretizedConstraints,
 			const state_vector_t& x0,
 			const DmsSettings settings);
 

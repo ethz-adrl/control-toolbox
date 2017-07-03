@@ -102,20 +102,20 @@ public:
 		getCollisionPointJacobian_(arg.getCollisionPointJacobian_)
 		{}
 
-	virtual size_t getConstraintsCount() override
+	virtual size_t getConstraintSize() const override
 	{
 		return 1;
 	}
 
-	virtual VectorXs evaluate() override
+	virtual Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR t) override
 	{
 		Eigen::Vector3d collision_frame_position;
-		getCollisionPointPosition_(this->xAd_, collision_frame_position);
+		getCollisionPointPosition_(x, collision_frame_position);
 
-		const Eigen::Vector3d dist = collision_frame_position - obstacle_->getPosition(this->tAd_);
+		const Eigen::Vector3d dist = collision_frame_position - obstacle_->getPosition(t);
 
 		Eigen::Matrix3d R = Eigen::Matrix3d::Zero(); // rotation matrix
-		R = ((obstacle_->getOrientation(this->tAd_)).matrix());
+		R = ((obstacle_->getOrientation(x)).matrix());
 
 		double valLocal = 0.0;
 
@@ -137,18 +137,18 @@ public:
 		return val_;	
 	}
 
-	virtual Eigen::MatrixXd JacobianState() override
+	virtual Eigen::MatrixXd jacobianState(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override
 	{
 		Eigen::Vector3d state;
 
-		getCollisionPointPosition_(this->x_, state);
-		const Eigen::Vector3d dist = state - obstacle_->getPosition(this->t_);
+		getCollisionPointPosition_(x, state);
+		const Eigen::Vector3d dist = state - obstacle_->getPosition(t);
 
 		Eigen::Matrix3d R = Eigen::Matrix3d::Zero(); // rotation matrix
-		R = (obstacle_->getOrientation(this->t_)).matrix();
+		R = (obstacle_->getOrientation(t)).matrix();
 
 		Eigen::Matrix<double, 3, STATE_DIM> dFkdSi;
-		getCollisionPointJacobian_(this->x_, dFkdSi);
+		getCollisionPointJacobian_(x, dFkdSi);
  
 		switch(obstacle_->type())
 		{
@@ -167,16 +167,11 @@ public:
 		return jac_;
 	}
 
-	virtual Eigen::MatrixXd JacobianInput() override
+	virtual Eigen::MatrixXd jacobianInput(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override
 	{
 		return Eigen::Matrix<double, 1, CONTROL_DIM>::Zero();
 	}
 
-	// return term type (either 0 for inequality or 1 for equality)
-	virtual int getConstraintType() override
-	{
-		return 0;
-	}
 
 private:
 	std::shared_ptr<Obstacle3d> obstacle_;

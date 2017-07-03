@@ -42,17 +42,14 @@ namespace tpl {
  * @brief      Base class for the constraints used in this toolbox
  *
  * @tparam     STATE_DIM  The state dimension
- * @tparam     INPUT_DIM  The control dimension
+ * @tparam     CONTROL_DIM  The control dimension
  * @tparam     SCALAR     The Scalar type
  */
-template <size_t STATE_DIM, size_t INPUT_DIM, typename SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 class ConstraintBase {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
-	typedef Eigen::Matrix<int, Eigen::Dynamic, 1> VectorXi;
-	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
-	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
 	/**
 	 * @brief      Custom constructor
@@ -60,16 +57,8 @@ public:
 	 * @param[in]  name  The name of the constraint
 	 */
 	ConstraintBase(std::string name = "Unnamed") :
-		tAd_(SCALAR(0)),
-		xAd_(core::StateVector<STATE_DIM, SCALAR>::Zero()),
-		uAd_(core::ControlVector<INPUT_DIM, SCALAR>::Zero()),
-		t_(0),
-		x_(core::StateVector<STATE_DIM>::Zero()),
-		u_(core::ControlVector<INPUT_DIM>::Zero()),
 		name_(name)
-		{
-
-		}
+	{}
 
 	/**
 	 * @brief      Copy constructor
@@ -77,23 +66,17 @@ public:
 	 * @param[in]  arg   The object to be copied
 	 */
 	ConstraintBase(const ConstraintBase& arg):
-		tAd_(arg.tAd_),
-		xAd_(arg.xAd_),
-		uAd_(arg.uAd_),
-		t_(arg.t_),
-		x_(arg.x_),
-		u_(arg.u_),
 		lb_(arg.lb_),
 		ub_(arg.ub_),
 		name_(arg.name_)
-		{}
+	{}
 
 	/**
 	 * @brief      Creates a new instance of the object with same properties than original.
 	 *
 	 * @return     Copy of this object.
 	 */
-	virtual ConstraintBase<STATE_DIM, INPUT_DIM, SCALAR>* clone () const = 0;
+	virtual ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const = 0;
 
 	/**
 	 * @brief      Destructor
@@ -101,37 +84,30 @@ public:
 	virtual ~ConstraintBase() {}
 
 	/**
-	 * @brief      Sets the SCALAR typed state, control, time
+	 * @brief      The evaluation of the constraint violation. Note this method
+	 *             is SCALAR typed
 	 *
 	 * @param[in]  x     The state vector
 	 * @param[in]  u     The control vector
 	 * @param[in]  t     The time
+	 *
+	 * @return     The constraint violation
 	 */
-	virtual void setTimeStateInputAd(
-			const core::StateVector<STATE_DIM, SCALAR> &x,
-			const core::ControlVector<INPUT_DIM, SCALAR> &u,
-			const SCALAR t){
-		xAd_ = x;
-		uAd_ = u;
-		tAd_ = t;
-	}
+	virtual Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR t) = 0;
 
 	/**
-	 * @brief      Sets the double typed state, control, time
+	 * @brief      This method evaluates to constraint violation. This method
+	 *             should only be called by the analytical constraint container
 	 *
 	 * @param[in]  x     The state vector
 	 * @param[in]  u     The control vector
 	 * @param[in]  t     The time
+	 *
+	 * @return     The constraint violation
 	 */
-	virtual void setTimeStateInputDouble(
-			const core::StateVector<STATE_DIM> &x,
-			const core::ControlVector<INPUT_DIM> &u,
-			const double t
-		)
+	Eigen::VectorXd eval(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t)
 	{
-		x_ = x;
-		u_ = u;
-		t_ = t;
+		return evaluate(x, u, t);
 	}
 
 	/**
@@ -139,29 +115,15 @@ public:
 	 *
 	 * @return     The number of constraints
 	 */
-	virtual size_t getConstraintsCount() = 0;
+	virtual size_t getConstraintSize() const = 0;
 
-	/**
-	 * @brief      The evaluation of the constraint violation. Note this method
-	 *             is SCALAR typed
-	 *
-	 * @return     The constraint violation
-	 */
-	virtual VectorXs evaluate() = 0;
-
-	/**
-	 * @brief      Returns the constraint type (equality or inequality)
-	 *
-	 * @return     The constraint type.
-	 */
-	virtual int getConstraintType() = 0;
 
 	/**
 	 * @brief      Returns the constraint jacobian wrt state
 	 *
 	 * @return     The constraint jacobian
 	 */
-	virtual Eigen::MatrixXd JacobianState() 
+	virtual Eigen::MatrixXd jacobianState(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) 
 	{ 
 		throw std::runtime_error("This constraint function element is not implemented for the given term."
 		"Please use either auto-diff cost function or implement the analytical derivatives manually."); 
@@ -172,7 +134,7 @@ public:
 	 *
 	 * @return     The constraint jacobian
 	 */
-	virtual Eigen::MatrixXd JacobianInput() 
+	virtual Eigen::MatrixXd jacobianInput(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) 
 	{ 
 		throw std::runtime_error("This constraint function element is not implemented for the given term." 
 		"Please use either auto-diff cost function or implement the analytical derivatives manually."); 
@@ -213,85 +175,94 @@ public:
 	void setName(const std::string constraintName) { name_=constraintName; }
 
 	/**
-	 * @brief      Returns the number of nonzeros in the jacobian wrt state
+	 * @brief      Returns the number of nonzeros in the jacobian wrt state. The
+	 *             default implementation assumes a dense matrix with only
+	 *             nonzero elements.
 	 *
 	 * @return     The number of non zeros
 	 */
-	virtual size_t getNumNonZerosJacobianState()
+	virtual size_t getNumNonZerosJacobianState() const
 	{
-		return STATE_DIM * getConstraintsCount();
+		return STATE_DIM * getConstraintSize();
 	}
 
 	/**
-	 * @brief      Returns the number of nonzeros in the jacobian wrt control input
+	 * @brief      Returns the number of nonzeros in the jacobian wrt control
+	 *             input. The default implementation assumes a dense matrix with
+	 *             only nonzero elements
 	 *
 	 * @return     The number of non zeros
 	 */
-	virtual size_t getNumNonZerosJacobianInput()
+	virtual size_t getNumNonZerosJacobianInput() const
 	{
-		return INPUT_DIM * getConstraintsCount();
+		return CONTROL_DIM * getConstraintSize();
 	}
 
 	/**
-	 * @brief      Returns the constraint jacobian wrt state in sparse structure
+	 * @brief      Returns the constraint jacobian wrt state in sparse
+	 *             structure. The default implementation maps the JacobianState
+	 *             matrix to a vector
 	 *
 	 * @return     The sparse constraint jacobian
 	 */
-	virtual Eigen::VectorXd jacobianStateSparse()
+	virtual Eigen::VectorXd jacobianStateSparse(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t)
 	{
-		Eigen::VectorXd jac(Eigen::Map<Eigen::VectorXd>(JacobianState().data(), JacobianState().rows() * JacobianState().cols()));
+		Eigen::MatrixXd jacState = jacobianState(x, u, t);
+
+		Eigen::VectorXd jac(Eigen::Map<Eigen::VectorXd>(jacState.data(), jacState.rows() * jacState.cols()));
+
 		return jac;
 	}
 
 	/**
-	 * @brief      Returns the constraint jacobian wrt control input in sparse structure
+	 * @brief      Returns the constraint jacobian wrt control input in sparse
+	 *             structure. The default implementation maps the JacobianState
+	 *             matrix to a vector
 	 *
 	 * @return     The sparse constraint jacobian
 	 */
-	virtual Eigen::VectorXd jacobianInputSparse()
+	virtual Eigen::VectorXd jacobianInputSparse(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t)
 	{
-		Eigen::VectorXd jac(Eigen::Map<Eigen::VectorXd>(JacobianInput().data(), JacobianInput().rows() * JacobianInput().cols()));
+		Eigen::MatrixXd jacInput = jacobianInput(x, u, t);
+
+		Eigen::VectorXd jac(Eigen::Map<Eigen::VectorXd>(jacInput.data(), jacInput.rows() * jacInput.cols()));
 		return jac;
 	}
 
 
 	/**
-	 * @brief      Generates the sparsity pattern of the jacobian wrt state
+	 * @brief      Generates the sparsity pattern of the jacobian wrt state. The
+	 *             default implementation returns a vector of ones corresponding
+	 *             to the dense jacobianState
 	 *
 	 * @param      rows  The vector of the row indices containing non zero
 	 *                   elements in the constraint jacobian
 	 * @param      cols  The vector of the column indices containing non zero
 	 *                   elements in the constraint jacobian
 	 */
-	virtual void sparsityPatternState(VectorXi& rows, VectorXi& cols)
+	virtual void sparsityPatternState(Eigen::VectorXi& rows, Eigen::VectorXi& cols)
 	{
-		genBlockIndices(getConstraintsCount(), STATE_DIM, rows, cols);
+		genBlockIndices(getConstraintSize(), STATE_DIM, rows, cols);
 
 	}
 
 	/**
-	 * @brief      Generates the sparsity pattern of the jacobian wrt control input
+	 * @brief      Generates the sparsity pattern of the jacobian wrt control
+	 *             input. The default implementation returns a vector of ones
+	 *             corresponding to the dense jacobianInput
 	 *
 	 * @param      rows  The vector of the row indices containing non zero
 	 *                   elements in the constraint jacobian
 	 * @param      cols  The vector of the column indices containing non zero
 	 *                   elements in the constraint jacobian
 	 */
-	virtual void sparsityPatternInput(VectorXi& rows, VectorXi& cols)
+	virtual void sparsityPatternInput(Eigen::VectorXi& rows, Eigen::VectorXi& cols)
 	{
-		genBlockIndices(getConstraintsCount(), INPUT_DIM, rows, cols);	
+		genBlockIndices(getConstraintSize(), CONTROL_DIM, rows, cols);	
 	}
 
 
 protected:
-
-	SCALAR tAd_;
-	core::StateVector<STATE_DIM, SCALAR> xAd_;
-	core::ControlVector<INPUT_DIM, SCALAR> uAd_;
-	double t_;
-	core::StateVector<STATE_DIM> x_;
-	core::ControlVector<INPUT_DIM> u_;
-
 	Eigen::VectorXd lb_; // lower bound on the constraints
 	Eigen::VectorXd ub_; // upper bound on the constraints
 
@@ -357,8 +328,8 @@ private:
 
 } // namespace tpl
 
-template<size_t STATE_DIM, size_t INPUT_DIM>
-using ConstraintBase = tpl::ConstraintBase<STATE_DIM, INPUT_DIM, double>;
+template<size_t STATE_DIM, size_t CONTROL_DIM>
+using ConstraintBase = tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, double>;
 
 } // namespace optcon
 } // namespace ct

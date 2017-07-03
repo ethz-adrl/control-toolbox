@@ -209,7 +209,7 @@ public:
 	 *  This method generates source code for the Jacobian and zero order derivative. It then compiles
 	 *  the source code to a dynamically loadable library that then gets loaded.
 	 */
-	void compileJIT()
+	void compileJIT(const std::string& libName = "threadId" + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id())) )
 	{
 		if (compiled_) return;
 
@@ -220,7 +220,7 @@ public:
 		CppAD::cg::ModelLibraryCSourceGen<double> libcgen(cgen);
 
 		// compile source code
-		CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, "jacCGLib");
+		CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, libName);
 
 		dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler_));
 

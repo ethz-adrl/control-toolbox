@@ -43,24 +43,26 @@ namespace optcon {
  *   non-linear optimization constraints.
  *
  * @tparam     STATE_DIM  Dimension of the state vector
- * @tparam     INPUT_DIM  Dimension of the control input vector
+ * @tparam     CONTROL_DIM  Dimension of the control input vector
  */
-template <size_t STATE_DIM, size_t INPUT_DIM>
-class LinearConstraintContainer : public ConstraintContainerBase<STATE_DIM, INPUT_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM>
+class LinearConstraintContainer : public ConstraintContainerBase<STATE_DIM, CONTROL_DIM>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef core::StateVector<STATE_DIM> state_vector_t;
-	typedef core::ControlVector<INPUT_DIM> input_vector_t;
+	typedef core::ControlVector<CONTROL_DIM> input_vector_t;
 
-	typedef LinearConstraintContainer<STATE_DIM, INPUT_DIM>* LinearConstraintContainer_Raw_Ptr_t;
-	typedef std::shared_ptr<LinearConstraintContainer<STATE_DIM, INPUT_DIM>> LinearConstraintContainer_Shared_Ptr_t;
+	typedef LinearConstraintContainer<STATE_DIM, CONTROL_DIM>* LinearConstraintContainer_Raw_Ptr_t;
 
 	/**
 	 * @brief      Default constructor
 	 */
-	LinearConstraintContainer() {}
+	LinearConstraintContainer() :
+	initializedIntermediate_(false),
+	initializedTerminal_(false)
+	{}
 
 
 	/**
@@ -69,6 +71,10 @@ public:
 	 * @param[in]  arg   The object to be copied
 	 */
 	LinearConstraintContainer(const LinearConstraintContainer& arg)
+	:
+	ConstraintContainerBase<STATE_DIM, CONTROL_DIM>(arg),
+	initializedIntermediate_(arg.initializedIntermediate_),
+	initializedTerminal_(arg.initializedTerminal_)
 	{}
 
 	/**
@@ -84,34 +90,19 @@ public:
 	virtual LinearConstraintContainer_Raw_Ptr_t clone() const = 0;
 
 	/**
-	 * @brief      Overrides the base class implementation
+	 * @brief      Evaluates the constraint jacobian wrt the state using sparse representation
 	 *
-	 * @param[in]  t     The time
-	 * @param[in]  x     The state vector
-	 * @param[in]  u     The control input vector
+	 * @param      jacVec  The sparse jacobian vector
+	 * @param      count   The size of jacVec
 	 */
-	virtual void setTimeStateInput(const double t, const state_vector_t& x, const input_vector_t& u) = 0;
-
-	virtual void evaluate(Eigen::VectorXd& g, size_t& count) = 0;
-
-	virtual void getLowerBound(Eigen::VectorXd& lb, size_t& count) = 0;
-
-	virtual void getUpperBound(Eigen::VectorXd& ub, size_t& count) = 0;
+	virtual Eigen::VectorXd jacobianStateSparseIntermediate() = 0;
 
 	/**
-	 * @brief      Evaluates the jacobian in sparse format
+	 * @brief      Evaluates the constraint jacobian wrt the state
 	 *
-	 * @param[out]      jacVec  The vector of the non zero entries in the jacobian
-	 * @param[out]      count   The size of jacVec
+	 * @return     The jacobian wrt state
 	 */
-	virtual void evalJacSparse(Eigen::VectorXd& jacVec, size_t& count) = 0;
-
-	/**
-	 * @brief      Returns the full jacobian
-	 *
-	 * @return     The full jacobian
-	 */
-	virtual Eigen::MatrixXd evalJacDense() = 0;
+	virtual Eigen::MatrixXd jacobianStateIntermediate() = 0;
 
 	/**
 	 * @brief      Evaluates the constraint jacobian wrt the state using sparse representation
@@ -119,14 +110,14 @@ public:
 	 * @param      jacVec  The sparse jacobian vector
 	 * @param      count   The size of jacVec
 	 */
-	virtual void evalJacStateSparse(Eigen::VectorXd& jacVec, size_t& count) = 0;
+	virtual Eigen::VectorXd jacobianStateSparseTerminal() = 0;
 
 	/**
 	 * @brief      Evaluates the constraint jacobian wrt the state
 	 *
 	 * @return     The jacobian wrt state
 	 */
-	virtual Eigen::MatrixXd evalJacStateDense() = 0;
+	virtual Eigen::MatrixXd jacobianStateTerminal() = 0;
 
 	/**
 	 * @brief      Evaluates the constraint jacobian wrt the control input using sparse representation
@@ -134,26 +125,29 @@ public:
 	 * @param      jacVec  The sparse jacobian vector
 	 * @param      count   The size of jacVec
 	 */
-	virtual void evalJacInputSparse(Eigen::VectorXd& jacVec, size_t& count) = 0;
+	virtual Eigen::VectorXd jacobianInputSparseIntermediate() = 0;
 
 	/**
 	 * @brief      Evaluates the constraint jacobian wrt the control input
 	 *
 	 * @return     The jacobian wrt control
 	 */
-	virtual Eigen::MatrixXd evalJacInputDense() = 0;
+	virtual Eigen::MatrixXd jacobianInputIntermediate() = 0;
 
 	/**
-	 * @brief      Returns the sparsity pattern for the full jacobian
+	 * @brief      Evaluates the constraint jacobian wrt the control input using sparse representation
 	 *
-	 * @param      iRows  The vector of the row indices containing non zero
-	 *                    elements in the constraint jacobian
-	 * @param      jCols  The vector of the column indices containing non zero
-	 *                    elements in the constraint jacobian
-	 *
-	 * @return     The size of iRow and jCols
+	 * @param      jacVec  The sparse jacobian vector
+	 * @param      count   The size of jacVec
 	 */
-	virtual size_t generateSparsityPatternJacobian(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) = 0;
+	virtual Eigen::VectorXd jacobianInputSparseTerminal() = 0;
+
+	/**
+	 * @brief      Evaluates the constraint jacobian wrt the control input
+	 *
+	 * @return     The jacobian wrt control
+	 */
+	virtual Eigen::MatrixXd jacobianInputTerminal() = 0;
 
 	/**
 	 * @brief      Returns the sparsity pattern for the jacobian wrt state
@@ -165,7 +159,19 @@ public:
 	 *
 	 * @return     The size of iRow and jCols
 	 */
-	virtual size_t generateSparsityPatternJacobianState(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) = 0;
+	virtual void sparsityPatternStateIntermediate(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) = 0;
+
+	/**
+	 * @brief      Returns the sparsity pattern for the jacobian wrt state
+	 *
+	 * @param      iRows  The vector of the row indices containing non zero
+	 *                    elements in the constraint jacobian
+	 * @param      jCols  The vector of the column indices containing non zero
+	 *                    elements in the constraint jacobian
+	 *
+	 * @return     The size of iRow and jCols
+	 */
+	virtual void sparsityPatternStateTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) = 0;
 
 	/**
 	 * @brief      Returns the sparsity pattern for the jacobian wrt control
@@ -177,49 +183,95 @@ public:
 	 *
 	 * @return     The size of iRow and jCols
 	 */
-	virtual size_t generateSparsityPatternJacobianInput(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) = 0;
+	virtual void sparsityPatternInputIntermediate(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) = 0;
 
 	/**
-	 * @brief      Returns the number of non zero elements in the full constraint jacobian
+	 * @brief      Returns the sparsity pattern for the jacobian wrt control
 	 *
-	 * @return     The number of the non zeros
+	 * @param      iRows  The vector of the row indices containing non zero
+	 *                    elements in the constraint jacobian
+	 * @param      jCols  The vector of the column indices containing non zero
+	 *                    elements in the constraint jacobian
+	 *
+	 * @return     The size of iRow and jCols
 	 */
-	virtual size_t getConstraintJacobianNonZeroCount() = 0;
+	virtual void sparsityPatternInputTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) = 0;
 
 	/**
 	 * @brief      Returns the number of non zero elements in the constraint jacobian wrt state
 	 *
 	 * @return     The number of the non zeros
 	 */
-	virtual size_t getConstraintJacobianStateNonZeroCount() = 0;
+	virtual size_t getJacobianStateNonZeroCountIntermediate() = 0;
+
+	/**
+	 * @brief      Returns the number of non zero elements in the constraint jacobian wrt state
+	 *
+	 * @return     The number of the non zeros
+	 */
+	virtual size_t getJacobianStateNonZeroCountTerminal() = 0;
 
 	/**
 	 * @brief      Returns the number of non zero elements in the constraint jacobian wrt input
 	 *
 	 * @return     The number of the non zeros
 	 */	
-	virtual size_t getConstraintJacobianInputNonZeroCount() = 0;
+	virtual size_t getJacobianInputNonZeroCountIntermediate() = 0;
 
 	/**
-	 * @brief      Returns the number of constraints
+	 * @brief      Returns the number of non zero elements in the constraint jacobian wrt input
 	 *
-	 * @return     The number of constraints
-	 */
-	virtual size_t getConstraintCount() = 0;
+	 * @return     The number of the non zeros
+	 */	
+	virtual size_t getJacobianInputNonZeroCountTerminal() = 0;
 
 	/**
-	 * @brief      Returns the constraint types
+	 * @brief      Returns the number of non zeros in the constraint jacobian
+	 *             wrt to state and input
 	 *
-	 * @param      constraint_types  The constraint types
+	 * @return      The number of the non zeros
 	 */
-	virtual void getConstraintTypes(Eigen::VectorXd& constraint_types) = 0;
+	size_t getJacNonZeroCount()
+	{
+		return 	getJacobianStateNonZeroCountIntermediate() + 
+				getJacobianStateNonZeroCountTerminal() + 
+				getJacobianInputNonZeroCountIntermediate() +
+				getJacobianInputNonZeroCountTerminal();
+	}
 
+	/**
+	 * @brief      Initializes the constraint container
+	 */
+	void initialize()
+	{
+		initializedIntermediate_ = initializeIntermediate();
+		initializedTerminal_ = initializeTerminal();
+	}
+
+	/**
+	 * @brief      Initializes the intermediate constraints
+	 *
+	 * @return     Returns true if the initialization was successful
+	 */
+	virtual bool initializeIntermediate() = 0;
+	
+	/**
+	 * @brief      Initializes the terminal constraints
+	 *
+	 * @return     Returns true if the initialization was successful
+	 */
+	virtual bool initializeTerminal() = 0;
+
+	/**
+	 * @brief      Checks if the constraint container is initialized
+	 *
+	 * @return     Returns true if initialized
+	 */
+	bool isInitialized() { return initializedIntermediate_ && initializedTerminal_; }
 
 protected:
-	/**
-	 * This is called by setTimeStateInput() method class. It can be used for updating the class members with the new state and input.
-	 */
-	virtual void update() = 0;
+	bool initializedIntermediate_;
+	bool initializedTerminal_;
 };
 
 } // namespace optcon

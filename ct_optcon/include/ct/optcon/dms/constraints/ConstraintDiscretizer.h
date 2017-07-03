@@ -85,43 +85,91 @@ public:
 		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
 		std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
 		std::shared_ptr<TimeGrid> timeGrid,
-		std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> c_continuous,
-		std::vector<size_t> activeInd)
+		size_t N
+		)
 	:
 	w_(w),
 	controlSpliner_(controlSpliner),
 	timeGrid_(timeGrid),
-	c_continuous_(c_continuous),
-	activeInd_(activeInd)
-	{
-		continuousCount_ = c_continuous_->getConstraintCount();
-		constraintsLocal_.resize(continuousCount_);
-		discreteConstraints_.resize(activeInd_.size() * continuousCount_);
-		discreteLowerBound_.resize(activeInd_.size() * continuousCount_);
-		discreteUpperBound_.resize(activeInd_.size() * continuousCount_);
+	N_(N),
+	constraintsCount_(0),
+	constraintsIntermediateCount_(0),
+	constraintsTerminalCount_(0),
+	nonZeroJacCount_(0),
+	nonZeroJacCountIntermediate_(0),
+	nonZeroJacCountTerminal_(0)
+	{}
 
-		nonZeroJacCount_ = c_continuous_->getConstraintJacobianNonZeroCount();
-		jacLocal_.resize(nonZeroJacCount_);
-		iRowLocal_.resize(nonZeroJacCount_);
-		jColLocal_.resize(nonZeroJacCount_);
-		discreteJac_.resize(activeInd_.size() * nonZeroJacCount_);
-		discreteIRow_.resize(activeInd_.size() * nonZeroJacCount_);
-		discreteJCol_.resize(activeInd_.size() * nonZeroJacCount_);
+
+	void setStateInputConstraints(std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> stateInputConstraints)
+	{
+		constraints_.push_back(stateInputConstraints);
+		constraintsIntermediateCount_ += (N_ + 1) * stateInputConstraints->getIntermediateConstraintsCount();
+		constraintsTerminalCount_ += stateInputConstraints->getTerminalConstraintsCount();
+		constraintsCount_ = constraintsIntermediateCount_ + constraintsTerminalCount_;
+
+		discreteConstraints_.resize(constraintsCount_);
+		discreteLowerBound_.resize(constraintsCount_);
+		discreteUpperBound_.resize(constraintsCount_);
+
+		nonZeroJacCountIntermediate_ += (N_ + 1) * 
+			(stateInputConstraints->getJacobianStateNonZeroCountIntermediate() + stateInputConstraints->getJacobianInputNonZeroCountIntermediate());
+		nonZeroJacCountTerminal_ += stateInputConstraints->getJacobianStateNonZeroCountTerminal() + stateInputConstraints->getJacobianInputNonZeroCountTerminal();
+		nonZeroJacCount_ = nonZeroJacCountIntermediate_ + nonZeroJacCountTerminal_;
+
+		discreteJac_.resize(nonZeroJacCount_);
+		discreteIRow_.resize(nonZeroJacCount_);
+		discreteJCol_.resize(nonZeroJacCount_);		
+	}
+
+	void setPureStateConstraints(std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> pureStateConstraints)
+	{
+		constraints_.push_back(pureStateConstraints);
+		constraintsIntermediateCount_ += (N_ + 1) * pureStateConstraints->getIntermediateConstraintsCount();
+		constraintsTerminalCount_ += pureStateConstraints->getTerminalConstraintsCount();
+		constraintsCount_ = constraintsIntermediateCount_ + constraintsTerminalCount_;
+
+		discreteConstraints_.resize(constraintsCount_);
+		discreteLowerBound_.resize(constraintsCount_);
+		discreteUpperBound_.resize(constraintsCount_);
+
+		nonZeroJacCountIntermediate_ += (N_ + 1) * pureStateConstraints->getJacobianStateNonZeroCountIntermediate();
+		nonZeroJacCountTerminal_ += pureStateConstraints->getJacobianStateNonZeroCountTerminal();
+		nonZeroJacCount_ = nonZeroJacCountIntermediate_ + nonZeroJacCountTerminal_;
+
+		discreteJac_.resize(nonZeroJacCount_);
+		discreteIRow_.resize(nonZeroJacCount_);
+		discreteJCol_.resize(nonZeroJacCount_);	
 	}
 
 	virtual Eigen::VectorXd eval() override
 	{
-		constraintsLocal_.setZero();
 		size_t constraintSize = 0;
 		size_t discreteInd = 0;
 
-		for(auto ind : activeInd_)
+		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			double tShot = timeGrid_->getShotStartTime(ind);			
-			c_continuous_->setTimeStateInput(tShot, w_->getOptimizedState(ind), controlSpliner_->evalSpline(tShot, ind));
-			c_continuous_->evaluate(constraintsLocal_, constraintSize);
-			discreteConstraints_.segment(discreteInd, constraintSize) = constraintsLocal_;
-			discreteInd += constraintSize;
+			double tShot = timeGrid_->getShotStartTime(n);
+			for(auto constraint : constraints_)
+			{
+				constraint->setCurrentStateAndControl(w_->getOptimizedState(n), controlSpliner_->evalSpline(tShot, n), tShot);
+				constraintSize = constraint->getIntermediateConstraintsCount();
+				if(constraintSize > 0)
+				{
+					discreteConstraints_.segment(discreteInd, constraintSize) = constraint->evaluateIntermediate();
+					discreteInd += constraintSize;
+				}
+			}			
+		}
+
+		for(auto constraint : constraints_)
+		{
+			constraintSize = constraint->getTerminalConstraintsCount();
+			if(constraintSize > 0)
+			{
+				discreteConstraints_.segment(discreteInd, constraintSize) = constraint->evaluateTerminal();
+				discreteInd += constraintSize;
+			}
 		}
 
 		return discreteConstraints_;
@@ -129,17 +177,46 @@ public:
 
 	virtual Eigen::VectorXd evalSparseJacobian() override
 	{
-		jacLocal_.setZero();
 		size_t jacSize = 0;
 		size_t discreteInd = 0;
 
-		for(auto ind : activeInd_)
+		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			double tShot = timeGrid_->getShotStartTime(ind);
-			c_continuous_->setTimeStateInput(tShot, w_->getOptimizedState(ind), controlSpliner_->evalSpline(tShot, ind));
-			c_continuous_->evalJacSparse(jacLocal_, jacSize);
-			discreteJac_.segment(discreteInd, jacSize) = jacLocal_;
-			discreteInd += jacSize;
+			double tShot = timeGrid_->getShotStartTime(n);
+
+			for(auto constraint : constraints_)
+			{
+				constraint->setCurrentStateAndControl(w_->getOptimizedState(n), controlSpliner_->evalSpline(tShot, n), tShot);
+				jacSize = constraint->getJacobianStateNonZeroCountIntermediate();
+				if(jacSize > 0)
+				{
+					discreteJac_.segment(discreteInd, jacSize) = constraint->jacobianStateSparseIntermediate();
+					discreteInd += jacSize;
+				}
+
+				jacSize = constraint->getJacobianInputNonZeroCountIntermediate();
+				if(jacSize > 0)
+				{
+					discreteJac_.segment(discreteInd, jacSize) = constraint->jacobianInputSparseIntermediate();
+					discreteInd += jacSize;	
+				}
+			}
+		}
+
+		for(auto constraint : constraints_)
+		{
+			jacSize = constraint->getJacobianStateNonZeroCountTerminal();
+			if(jacSize > 0)
+			{
+				discreteJac_.segment(discreteInd, jacSize) = constraint->jacobianStateSparseTerminal();
+				discreteInd += jacSize;
+			}
+			jacSize = constraint->getJacobianInputNonZeroCountTerminal();
+			if(jacSize > 0)
+			{
+				discreteJac_.segment(discreteInd, jacSize) = constraint->jacobianInputSparseTerminal();
+				discreteInd += jacSize;
+			}
 		}
 
 		return discreteJac_;		
@@ -147,64 +224,141 @@ public:
 
 	virtual size_t getNumNonZerosJacobian() override
 	{
-		return activeInd_.size() * nonZeroJacCount_;
+		return nonZeroJacCount_;
 	}
 
 	virtual void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
 	{
 		size_t discreteInd = 0;
+		size_t rowOffset = 0;
 		size_t nnEle = 0;
-		size_t i = 0;
-
-		for(auto ind : activeInd_)
+	
+		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			nnEle = c_continuous_->generateSparsityPatternJacobian(iRowLocal_, jColLocal_);
-			discreteIRow_.segment(discreteInd, nnEle) = iRowLocal_.array() + i * continuousCount_;
-			discreteJCol_.segment(discreteInd, nnEle) = jColLocal_.array() + w_->getStateIndex(ind);
-			discreteInd += nnEle;
-			i++;
+
+			for(auto constraint : constraints_)
+			{
+				nnEle = constraint->getJacobianStateNonZeroCountIntermediate();
+				if(nnEle > 0)
+				{
+					Eigen::VectorXi iRowStateIntermediate(constraint->getJacobianStateNonZeroCountIntermediate());
+					Eigen::VectorXi jColStateIntermediate(constraint->getJacobianStateNonZeroCountIntermediate());
+					constraint->sparsityPatternStateIntermediate(iRowStateIntermediate, jColStateIntermediate);
+					discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate.array() + rowOffset;
+					discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate.array() + w_->getStateIndex(n);
+					discreteInd += nnEle;
+				}
+
+				nnEle = constraint->getJacobianInputNonZeroCountIntermediate();
+				if(nnEle > 0)
+				{
+					Eigen::VectorXi iRowInputIntermediate(constraint->getJacobianInputNonZeroCountIntermediate());
+					Eigen::VectorXi jColInputIntermediate(constraint->getJacobianInputNonZeroCountIntermediate()); 
+					constraint->sparsityPatternInputIntermediate(iRowInputIntermediate, jColInputIntermediate);
+					discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate.array() + rowOffset;
+					discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate.array() + w_->getControlIndex(n);
+					discreteInd += nnEle;
+				}
+
+				rowOffset += constraint->getJacobianStateNonZeroCountIntermediate() + constraint->getJacobianInputNonZeroCountIntermediate();
+			}
 		}
+
+		for(auto constraint : constraints_)
+		{
+			nnEle = constraint->getJacobianStateNonZeroCountTerminal();
+			if(nnEle > 0)
+			{
+				Eigen::VectorXi iRowStateIntermediate(constraint->getJacobianStateNonZeroCountTerminal());
+				Eigen::VectorXi jColStateIntermediate(constraint->getJacobianStateNonZeroCountTerminal());
+				constraint->sparsityPatternStateTerminal(iRowStateIntermediate, jColStateIntermediate);
+				discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate.array() + rowOffset;
+				discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate.array() + w_->getStateIndex(N_);
+				discreteInd += nnEle;
+			}
+
+			nnEle = constraint->getJacobianInputNonZeroCountTerminal();
+			if(nnEle > 0)
+			{
+				Eigen::VectorXi iRowInputIntermediate(constraint->getJacobianInputNonZeroCountTerminal());
+				Eigen::VectorXi jColInputIntermediate(constraint->getJacobianInputNonZeroCountTerminal()); 
+				constraint->sparsityPatternInputTerminal(iRowInputIntermediate, jColInputIntermediate);
+				discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate.array() + rowOffset;
+				discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate.array() + w_->getControlIndex(N_);
+				discreteInd += nnEle;
+			}
+			rowOffset += constraint->getJacobianStateNonZeroCountTerminal() + constraint->getJacobianInputNonZeroCountTerminal();
+		}
+
 		iRow_vec = discreteIRow_;
 		jCol_vec = discreteJCol_;
 	}
 
 	virtual Eigen::VectorXd getLowerBound() override
 	{
-		constraintsLocal_.setZero();
 		size_t discreteInd = 0;
 		size_t constraintSize = 0;
 
-		for(size_t i = 0; i < activeInd_.size(); ++i)
+		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			c_continuous_->getLowerBound(constraintsLocal_, constraintSize);
-			discreteLowerBound_.segment(discreteInd, constraintSize) = constraintsLocal_;
-			discreteInd += constraintSize;
+			for(auto constraint : constraints_)
+			{
+				constraintSize = constraint->getIntermediateConstraintsCount();
+				if(constraintSize > 0)
+				{
+					discreteLowerBound_.segment(discreteInd, constraintSize) = constraint->getLowerBoundsIntermediate();
+					discreteInd += constraintSize;
+				}
+			}
 		}
+
+		for(auto constraint : constraints_)
+		{
+			constraintSize = constraint->getTerminalConstraintsCount();
+			if(constraintSize > 0)
+			{
+				discreteLowerBound_.segment(discreteInd, constraintSize) = constraint->getLowerBoundsTerminal();
+				discreteInd += constraintSize;
+			}
+		}
+
 		return discreteLowerBound_;
 	}
 
 	virtual Eigen::VectorXd getUpperBound() override
 	{
-		constraintsLocal_.setZero();
 		size_t discreteInd = 0;
 		size_t constraintSize = 0;
 
-		for(size_t i = 0; i < activeInd_.size(); ++i)
+		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			c_continuous_->getUpperBound(constraintsLocal_, constraintSize);
-			discreteUpperBound_.segment(discreteInd, constraintSize) = constraintsLocal_;
-			discreteInd += constraintSize;
+			for(auto constraint : constraints_)
+			{
+				constraintSize = constraint->getIntermediateConstraintsCount();
+				if(constraintSize > 0)
+				{
+					discreteUpperBound_.segment(discreteInd, constraintSize) = constraint->getUpperBoundsIntermediate();
+					discreteInd += constraintSize;
+				}
+			}
 		}
+
+		for(auto constraint : constraints_)
+		{
+			constraintSize = constraint->getTerminalConstraintsCount();
+			if(constraintSize > 0)
+			{
+				discreteUpperBound_.segment(discreteInd, constraintSize) = constraint->getUpperBoundsTerminal();
+				discreteInd += constraintSize;
+			}
+		}
+
 		return discreteUpperBound_;
 	}
 
 	virtual size_t getConstraintSize() override
 	{
-		size_t discreteCount = 0;
-		for(size_t i = 0; i < activeInd_.size(); ++i)
-			discreteCount += continuousCount_;
-
-		return discreteCount; 
+		return constraintsCount_;
 	}
 
 
@@ -212,23 +366,25 @@ private:
 	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
 	std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner_;
 	std::shared_ptr<TimeGrid> timeGrid_; 
-	std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> c_continuous_;
-	std::vector<size_t> activeInd_;
+	size_t N_;
+
+	std::vector<std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>>> constraints_;
 	
-	size_t continuousCount_;
-	Eigen::VectorXd constraintsLocal_;
+	size_t constraintsCount_;
+	size_t constraintsIntermediateCount_;
+	size_t constraintsTerminalCount_;
+
 	Eigen::VectorXd discreteConstraints_;
 	Eigen::VectorXd discreteLowerBound_;
 	Eigen::VectorXd discreteUpperBound_;
 
-	Eigen::VectorXd jacLocal_;
 	Eigen::VectorXd discreteJac_;
-	Eigen::VectorXi iRowLocal_;
 	Eigen::VectorXi discreteIRow_;
-	Eigen::VectorXi jColLocal_;
 	Eigen::VectorXi discreteJCol_;
 
 	size_t nonZeroJacCount_;
+	size_t nonZeroJacCountIntermediate_; 
+	size_t nonZeroJacCountTerminal_; 
 };
 
 

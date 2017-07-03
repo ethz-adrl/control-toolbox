@@ -78,37 +78,36 @@ public:
 		xF_(arg.xF_)
 		{}
 
-	virtual size_t getConstraintsCount() override
+	virtual size_t getConstraintSize() const override
 	{
 		return STATE_DIM;
 	}
 
-	virtual VectorXs evaluate() override
+	virtual Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR t) override
 	{
-		return this->xAd_ - xF_;
+		return x - xF_;
 	}
 
-	virtual Eigen::MatrixXd JacobianState() override
+	virtual Eigen::MatrixXd jacobianState(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override
 	{
-		jac_.setIdentity();
-		return jac_;
+		return Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Identity();
 	}
 
-	virtual Eigen::MatrixXd JacobianInput() override
+	virtual Eigen::MatrixXd jacobianInput(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override
 	{
-		return Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM>::Zero();
+		return Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>::Zero();
 	}
 
-	virtual size_t getNumNonZerosJacobianState()
+	virtual size_t getNumNonZerosJacobianState() const
 	{
 		return STATE_DIM;
 	}
-	virtual size_t getNumNonZerosJacobianInput()
+	virtual size_t getNumNonZerosJacobianInput() const
 	{
 		return 0;
 	}
 
-	virtual Eigen::VectorXd jacobianStateSparse() override
+	virtual Eigen::VectorXd jacobianStateSparse(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override
 	{
 		return core::StateVector<STATE_DIM>::Ones();
 	}
@@ -118,16 +117,9 @@ public:
 		this->genDiagonalIndices(STATE_DIM, rows, cols);
 	}	
 
-	// return term type (either 0 for inequality or 1 for equality)
-	virtual int getConstraintType() override
-	{
-		return 0;
-	}
 
 private:
 	core::StateVector<STATE_DIM, SCALAR> xF_;
-	core::StateVector<STATE_DIM> val_;
-	Eigen::Matrix<double, STATE_DIM, STATE_DIM> jac_; 
 };
 
 }

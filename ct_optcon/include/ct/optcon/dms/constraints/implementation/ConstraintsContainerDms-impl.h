@@ -29,8 +29,7 @@ ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::ConstraintsContainerDms(
 		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
 		std::shared_ptr<TimeGrid> timeGrid,
 		std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>> shotContainers,
-		std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> constraintsIntermediate,
-		std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> constraintsFinal,
+		std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> discretizedConstraints,
 		const state_vector_t& x0,
 		const DmsSettings settings) 
 	:
@@ -59,17 +58,12 @@ ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::ConstraintsContainerDms(
 		constraints_.push_back(c_horizon_equal);
 	}
 
-	if(constraintsIntermediate)
+	if(discretizedConstraints)
 	{
-		std::cout << "Adding intermediate constraints" << std::endl;
-		constraints_.push_back(constraintsIntermediate); 
+		std::cout << "Adding discretized constraints" << std::endl;
+		constraints_.push_back(discretizedConstraints); 
 	}
 
-	if(constraintsFinal)
-	{
-		std::cout << "Adding final constraints" << std::endl;
-		constraints_.push_back(constraintsFinal); 		
-	}
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM>
