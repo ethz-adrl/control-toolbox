@@ -767,7 +767,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::debugPrint()
 	std::cout<<std::setprecision(15) << "total cost:                " << intermediateCostBest_ + finalCostBest_ << std::endl;
 	std::cout<<std::setprecision(15) << "total constraint err.norm: " << d_norm_ << std::endl;
 	std::cout<<std::setprecision(15) << "total state update norm:   " << dx_norm_ << std::endl;
-	std::cout<<std::setprecision(15) << "total constraint err.norm: " << du_norm_ << std::endl;
+	std::cout<<std::setprecision(15) << "total control update.norm: " << du_norm_ << std::endl;
 
 	if(settings_.recordSmallestEigenvalue)
 	{
