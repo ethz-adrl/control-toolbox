@@ -31,23 +31,23 @@ namespace optcon {
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::setInitialGuess(const Policy_t& initialGuess)
 {
-	if(initialGuess.K().size() != initialGuess.uff().size())
+	if(initialGuess.getControlVectorArray().size() != initialGuess.getStateVectorArray().size()-1)
 	{
-		std::cout << "Provided initial feedforward and feedback controllers are not equally long.";
-		std::cout << "Feedforward length is "<<initialGuess.uff().size()<<" but feedback length is "<<initialGuess.K().size()<<std::endl;
-		throw(std::runtime_error("Feedforward and feedback controllers not equally long"));
+		std::cout << "Provided initial state and control trajectories are not of correct size. Control should be one shorter than state.";
+		std::cout << "Control length is "<<initialGuess.getControlVectorArray().size()<<" but state length is "<<initialGuess.getStateVectorArray().size()<<std::endl;
+		throw(std::runtime_error("state and control trajectories are not equally long"));
 	}
 
-	if(initialGuess.K().size() < K_){
-		std::cout << "Initial guess length too short. Received length " << initialGuess.K().size() <<", expected " << K_ << std::endl;
+	if(initialGuess.getControlVectorArray().size() < K_){
+		std::cout << "Initial guess length too short. Received length " << initialGuess.getControlVectorArray().size() <<", expected " << K_ << std::endl;
 		throw std::runtime_error("initial control guess to short");
 	}
 
-	if(initialGuess.K().size() > K_)
+	if(initialGuess.getControlVectorArray().size() > K_)
 		std::cout << "Warning, initial control guess too long, will truncate" << std::endl;
 
-	u_ff_ = ControlVectorArray(initialGuess.uff().begin(), initialGuess.uff().begin()+K_);
-	L_ = FeedbackArray(initialGuess.K().begin(), initialGuess.K().begin()+K_);
+	u_ff_ = initialGuess.getControlVectorArray();
+	x_ = initialGuess.getStateVectorArray();
 
 	initialized_ = true;
 
@@ -323,10 +323,8 @@ bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 const typename GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::Policy_t& GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::getSolution()
 {
-	TimeArray t_temp = t_;
-	t_temp.pop_back();
-
-	policy_.update(u_ff_, L_, t_temp);
+	policy_.setControlVectorArray(u_ff_);
+	policy_.setStateVectorArray(x_);
 
 	return policy_;
 }
@@ -523,7 +521,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeSingleDefect(size_t thread
 	else
 	{
 		assert(k==K_ && "k should be K_");
-		d_[K_] = 0;
+		d_[K_].setZero();
 	}
 }
 

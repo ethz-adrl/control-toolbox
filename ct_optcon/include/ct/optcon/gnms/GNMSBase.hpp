@@ -65,7 +65,7 @@ namespace optcon{
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class GNMSBase : public OptConSolver<
 		GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>,
-		core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>,
+		core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR>,
 		GNMSSettings,
 		STATE_DIM,
 		CONTROL_DIM,
@@ -81,7 +81,7 @@ public:
 	static const size_t CONTROL_D = CONTROL_DIM;
 
 	typedef GNMSSettings Settings_t;
-	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
+	typedef core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 
 	typedef OptConSolver<GNMSBase, Policy_t, GNMSSettings, STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
