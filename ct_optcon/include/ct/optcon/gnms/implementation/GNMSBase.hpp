@@ -68,6 +68,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeTimeHorizon(const SCALAR& t
 	A_.resize(K_);
 	B_.resize(K_);
 	x_.resize(K_+1);
+	xShot_.resize(K_+1);
 	u_.resize(K_);
 	u_ff_.resize(K_);
 	u_ff_prev_.resize(K_);
@@ -283,17 +284,19 @@ bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 	std::cout << "Backward pass took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
-#ifdef DEBUG_PRINT
-	std::cout<<"[GNMS]: #3 LineSearch"<<std::endl;
-#endif // DEBUG_PRINT
+//#ifdef DEBUG_PRINT
+//	std::cout<<"[GNMS]: #3 LineSearch"<<std::endl;
+//#endif // DEBUG_PRINT
+//
+//	start = std::chrono::steady_clock::now();
+////	bool foundBetter = lineSearchController();
+//	end = std::chrono::steady_clock::now();
+//	diff = end - start;
+//#ifdef DEBUG_PRINT
+//	std::cout << "Line search took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+//#endif
 
-	start = std::chrono::steady_clock::now();
-	bool foundBetter = lineSearchController();
-	end = std::chrono::steady_clock::now();
-	diff = end - start;
-#ifdef DEBUG_PRINT
-	std::cout << "Line search took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+	bool foundBetter = true;
 
 	if (settings_.nThreadsEigen > 1)
 		Eigen::setNbThreads(settings_.nThreadsEigen); // restore default Eigen thread number
@@ -483,6 +486,8 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::sequentialLQProblem()
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::initializeSingleShot(size_t threadId, size_t k)
 {
+	const double& dt_sim = settings_.dt_sim;
+
 	xShot_[k] = x_[k];
 	if (settings_.integrator == GNMSSettings::EULER)
 	{
@@ -507,7 +512,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::initializeSingleShot(size_t threa
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::updateSingleShot(size_t threadId, size_t k)
 {
-	xShot_[k] += A_[k] * dx_[k] + B_[k] * lv_[x];
+	xShot_[k] += A_[k] * lx_[k] + B_[k] * lv_[k];
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -747,7 +752,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::designStateUpdate(size_t k)
 {
-
+	lx_[k+1] = A_[k] * lx_[k] + B_[k] * lv_[k] + d_[k];
 }
 
 

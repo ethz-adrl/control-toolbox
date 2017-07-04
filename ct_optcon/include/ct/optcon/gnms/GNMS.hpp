@@ -98,11 +98,11 @@ private:
 
 	SCALAR performLineSearch() override;
 
-	void initializeShots();
+	void initializeShots() override;
 
-	void updateShots();
+	void updateShots() override;
 
-	void computeDefects();
+	void computeDefects() override;
 
 };
 

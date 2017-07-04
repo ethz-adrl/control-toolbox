@@ -47,7 +47,7 @@ void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
 	}
 
 
-	for (int k=1; k<K+1; k--)
+	for (int k=0; k<this->K_; k++)
 	{
 		// design controller
 		this->designStateUpdate(k);

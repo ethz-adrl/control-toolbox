@@ -109,9 +109,9 @@ struct GNMSLineSearchSettings {
 	}
 };
 
-struct ParallelBackwardSettings {
+struct ParallelBackwardSettingsGNMS {
 
-	ParallelBackwardSettings ()
+	ParallelBackwardSettingsGNMS ()
     {
         enabled = false;
         showWarnings = false;
@@ -210,7 +210,7 @@ public:
     size_t nThreads; //! number of threads, for MP version
     size_t nThreadsEigen; //! number of threads for eigen parallelization (applies both to MP and standard)
     GNMSLineSearchSettings lineSearchSettings; //! the line search settings
-	ParallelBackwardSettings parallelBackward; //! do the backward pass in parallel with building the LQ problems (experimental)
+	ParallelBackwardSettingsGNMS parallelBackward; //! do the backward pass in parallel with building the LQ problems (experimental)
 
 
     //! compute the number of discrete time steps for the current optimal control problem

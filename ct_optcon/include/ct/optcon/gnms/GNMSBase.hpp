@@ -144,9 +144,7 @@ public:
 			smallestEigenvalue_(std::numeric_limits<scalar_t>::infinity()),
 			smallestEigenvalueIteration_(std::numeric_limits<scalar_t>::infinity()),
 
-			eigenvalueSolver_(CONTROL_DIM),
-
-			GNMSTester_(*this)
+			eigenvalueSolver_(CONTROL_DIM)
 	{
 		for (size_t i=0; i<settings.nThreads+1; i++)
 		{
@@ -305,7 +303,7 @@ public:
 	 */
 	bool testConsistency()
 	{
-		return GNMSTester_.testAllConsistency(true);
+		return true;
 	}
 
 
@@ -337,6 +335,12 @@ protected:
 	virtual void computeQuadraticCostsAroundTrajectory() = 0;
 
 	virtual SCALAR performLineSearch() = 0;
+
+	virtual void updateShots() = 0;
+
+	virtual void initializeShots() = 0;
+
+	virtual void computeDefects() = 0;
 
 	//! check problem for consistency
 	void checkProblem();
@@ -506,6 +510,7 @@ protected:
 	StateControlMatrixArray B_;
 
 	StateVectorArray x_;
+	StateVectorArray xShot_;
 	ControlVectorArray u_;
 	ControlVectorArray u_ff_;
 	ControlVectorArray u_ff_prev_;
