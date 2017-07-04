@@ -767,7 +767,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::debugPrint()
 	std::cout<<std::setprecision(15) << "total cost:                " << intermediateCostBest_ + finalCostBest_ << std::endl;
 	std::cout<<std::setprecision(15) << "total constraint err.norm: " << d_norm_ << std::endl;
 	std::cout<<std::setprecision(15) << "total state update norm:   " << dx_norm_ << std::endl;
-	std::cout<<std::setprecision(15) << "total constraint err.norm: " << du_norm_ << std::endl;
+	std::cout<<std::setprecision(15) << "total control update.norm: " << du_norm_ << std::endl;
 
 	if(settings_.recordSmallestEigenvalue)
 	{
@@ -803,6 +803,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 	matFile_.put("S", S_.toImplementation());
 	matFile_.put("L", L_.toImplementation());
 	matFile_.put("lv", lv_.toImplementation());
+	matFile_.put("lx", lx_.toImplementation());
 	matFile_.put("u_ff", u_ff_.toImplementation());
 	matFile_.put("H", H_.toImplementation());
 	matFile_.put("Hi_", Hi_.toImplementation());
@@ -810,6 +811,8 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 	matFile_.put("G", G_.toImplementation());
 	matFile_.put("gv", gv_.toImplementation());
 	matFile_.put("q", q_);
+	matFile_.put("d", d_.toImplementation());
+	matFile_.put("xShot", xShot_.toImplementation());
 
 	matFile_.close();
 #endif //MATLAB
