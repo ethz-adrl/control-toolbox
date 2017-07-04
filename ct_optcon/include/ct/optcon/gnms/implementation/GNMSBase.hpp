@@ -51,6 +51,8 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::setInitialGuess(const Policy_t& i
 
 	initialized_ = true;
 
+	t_ = TimeArray(settings_.dt_sim, x_.size(), 0.0);
+
 	reset();
 }
 
@@ -465,7 +467,10 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::sequentialLQProblem()
 #endif
 
 	start = std::chrono::steady_clock::now();
-	updateShots();
+	if (iteration_ == 0)
+		initializeShots();
+	else
+		updateShots();
 	end = std::chrono::steady_clock::now();
 	diff = end - start;
 #ifdef DEBUG_PRINT
@@ -486,7 +491,9 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::initializeSingleShot(size_t threa
 {
 	const double& dt_sim = settings_.dt_sim;
 
+	controller_[threadId]->setControl(u_ff_[k]);
 	xShot_[k] = x_[k];
+
 	if (settings_.integrator == GNMSSettings::EULER)
 	{
 		integratorsEuler_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
@@ -768,6 +775,17 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::debugPrint()
 	std::cout<<std::setprecision(15) << "total constraint err.norm: " << d_norm_ << std::endl;
 	std::cout<<std::setprecision(15) << "total state update norm:   " << dx_norm_ << std::endl;
 	std::cout<<std::setprecision(15) << "total control update.norm: " << du_norm_ << std::endl;
+
+	for(size_t i=0; i<K_; i++)
+	{
+		std::cout << "d_[" << i << "]: "<<d_[i].transpose() <<std::endl;
+		std::cout << "xShot_[" << i << "]: "<<xShot_[i].transpose() <<std::endl;
+		std::cout << "x_[" << i << "]: "<<x_[i].transpose() <<std::endl;
+		std::cout << "u_ff_[" << i << "]: "<<u_ff_[i].transpose() <<std::endl;
+		std::cout << "lv_[" << i << "]: "<<lv_[i].transpose() <<std::endl;
+		std::cout << "lx_[" << i << "]: "<<lx_[i].transpose() <<std::endl;
+		std::cout << std::endl <<std::endl;
+	}
 
 	if(settings_.recordSmallestEigenvalue)
 	{

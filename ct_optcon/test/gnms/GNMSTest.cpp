@@ -144,7 +144,7 @@ void singleCore()
 		GNMSSettings gnms_settings;
 		gnms_settings.epsilon = 0.0;
 		gnms_settings.nThreads = 4;
-		gnms_settings.max_iterations = 50;
+		gnms_settings.max_iterations = 3;
 		gnms_settings.recordSmallestEigenvalue = true;
 		gnms_settings.min_cost_improvement = 1e-6;
 
@@ -153,7 +153,7 @@ void singleCore()
 		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = createCostFunction(x_final);
 
 		// times
-		ct::core::Time tf = 3.0;
+		ct::core::Time tf = 0.005;
 		size_t nSteps = std::round(tf / gnms_settings.dt);
 
 		// provide initial guess
@@ -251,6 +251,9 @@ void singleCore()
 				}
 
 				numIterations++;
+
+				if (numIterations>2)
+					return;
 
 				// we should converge in way less than 20 iterations
 				//ASSERT_LT(numIterations, 20);
