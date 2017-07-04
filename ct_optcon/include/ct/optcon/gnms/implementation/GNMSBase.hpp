@@ -434,16 +434,6 @@ bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::rolloutSystem (
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::forwardPass()
 {
-	// Forward pass according to section V. Summary of the Algorithm of the GNMSMP paper
-
-	// step 1
-	// calculates x_k+1 = x_k + dt * f(x_k,u_k)
-	if (iteration_ == 0)
-	{
-		if (!rolloutSystem(settings_.nThreads, u_ff_, x_, u_, t_))
-			throw std::runtime_error("Rollout failed. System became unstable");
-	}
-
 	createLQProblem();
 
 	if (settings_.nThreadsEigen > 1)
@@ -470,162 +460,66 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::sequentialLQProblem()
 #ifdef DEBUG_PRINT
 	std::cout << "Cost computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
-}
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchController()
-{
-	// if first iteration, we have to find cost of initial rollout
-	if (iteration_ == 0)
-	{
-		intermediateCostBest_ = 0.0;
-
-		for (int k=K_-1; k>=0; k--)
-			intermediateCostBest_ += q_[k];
-
-		finalCostBest_ = q_[K_];
-	}
-
-	// lowest cost is cost of last rollout
-	lowestCost_ = intermediateCostBest_ + finalCostBest_;
-	scalar_t lowestCostPrevious = lowestCost_;
-
-	if (!settings_.lineSearchSettings.active)
-	{
-		ControlVectorArray u_ff_local(K_);
-		TimeArray t_local(K_);
-
-		for (int k=K_-1; k>=0; k--)
-		{
-			u_ff_local[k] = lv_[k] - L_[k] * x_[k] + u_[k];
-		}
-
-		bool dynamicsGood = rolloutSystem(settings_.nThreads, u_ff_local, x_, u_, t_local);
-
-		if (dynamicsGood)
-		{
-			intermediateCostBest_ = std::numeric_limits<scalar_t>::max();
-			finalCostBest_ = std::numeric_limits<scalar_t>::max();
-			computeCostsOfTrajectory(settings_.nThreads, x_, u_, intermediateCostBest_, finalCostBest_);
-			lowestCost_ = intermediateCostBest_ + finalCostBest_;
-			u_ff_.swap(u_ff_local);
-			t_.swap(t_local);
-		}
-		else
-		{
+	start = std::chrono::steady_clock::now();
+	updateShots();
+	end = std::chrono::steady_clock::now();
+	diff = end - start;
 #ifdef DEBUG_PRINT
-std::cout<<"CONVERGED: System became unstable!" << std::endl;
-#endif //DEBUG_PRINT
-			return false;
-		}
-	} else
-	{
-		// compute the feedforward control action that leads to the current trajectory
-		for (int k=K_-1; k>=0; k--) {
-			u_ff_prev_[k] = - L_[k] * x_[k] + u_[k];
-		}
-
-#ifdef DEBUG_PRINT_LINESEARCH
-		std::cout<<"[LineSearch]: Starting line search."<<std::endl;
-		std::cout<<"[LineSearch]: Cost last rollout: "<<lowestCost_<<std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
-
-		scalar_t alphaBest = performLineSearch();
-
-#ifdef DEBUG_PRINT_LINESEARCH
-		std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest<<" . Will use this control."<<std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
-
-#ifdef DEBUG_PRINT
-		if (alphaBest == 0.0)
-		{
-			std::cout<<"WARNING: No better control found. Converged."<<std::endl;
-			return false;
-		}
+	std::cout << "Shot integration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
-		if (settings_.lineSearchSettings.adaptive)
-		{
-			// learning alpha
-			#ifdef DEBUG_PRINT_LINESEARCH
-					std::cout<<"[LineSearch]: Adapting alpha. Best alpha: "<<alphaBest<<". Current alpha0: "<<settings_.lineSearchSettings.alpha_0<<std::endl;
-			#endif //DEBUG_PRINT_LINESEARCH
-			settings_.lineSearchSettings.alpha_0 = learnAlpha(alphaBest);
-			#ifdef DEBUG_PRINT_LINESEARCH
-					std::cout<<"[LineSearch]: Adapted new alpha: "<<settings_.lineSearchSettings.alpha_0<<std::endl;
-			#endif //DEBUG_PRINT_LINESEARCH
-		}
-	}
-
-	if ((lowestCostPrevious - lowestCost_)/lowestCostPrevious > settings_.min_cost_improvement)
-	{
-		return true;
-	}
-
+	start = std::chrono::steady_clock::now();
+	computeDefects();
+	end = std::chrono::steady_clock::now();
+	diff = end - start;
 #ifdef DEBUG_PRINT
-	std::cout<<"CONVERGED: Cost last iteration: "<<lowestCostPrevious<<", current cost: "<< lowestCost_ << std::endl;
-	std::cout<<"CONVERGED: Cost improvement ratio was: "<<(lowestCostPrevious - lowestCost_)/lowestCostPrevious <<"x, which is lower than convergence criteria: "<<settings_.min_cost_improvement<<std::endl;
-#endif //DEBUG_PRINT
-	return false;
+	std::cout << "Defects computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
 }
 
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-SCALAR GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::learnAlpha(const SCALAR& alphaBest)
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::initializeSingleShot(size_t threadId, size_t k)
 {
-	scalar_t alphaNew = alphaBest;
-
-	if (alphaBest < settings_.lineSearchSettings.alpha_max)
+	xShot_[k] = x_[k];
+	if (settings_.integrator == GNMSSettings::EULER)
 	{
-		// start with alpha one higher than the best one
-		alphaNew /= settings_.lineSearchSettings.n_alpha;
+		integratorsEuler_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
 	}
-#ifdef DEBUG_PRINT_LINESEARCH
-	std::cout<<"[LineSearch]: Learning alpha. New alpha0: "<<alphaNew<<std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
-
-	return alphaNew;
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchSingleController(
-		size_t threadId,
-		scalar_t alpha,
-		ControlVectorArray& u_ff_local,
-		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
-		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
-		ct::core::tpl::TimeArray<SCALAR>& t_local,
-		scalar_t& intermediateCost,
-		scalar_t& finalCost,
-		std::atomic_bool* terminationFlag
-) const
-{
-	intermediateCost = std::numeric_limits<scalar_t>::max();
-	finalCost = std::numeric_limits<scalar_t>::max();
-
-	if (terminationFlag && *terminationFlag) return;
-
-	for (int k=K_-1; k>=0; k--)
+	else if(settings_.integrator == GNMSSettings::RK4)
 	{
-		u_ff_local[k] = alpha * lv_[k] + u_ff_prev_[k];
+		integratorsRK4_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
 	}
-
-	bool dynamicsGood = rolloutSystem(threadId, u_ff_local, x_local, u_local, t_local, terminationFlag);
-
-	if (terminationFlag && *terminationFlag) return;
-
-	if (dynamicsGood)
+	else if(settings_.integrator == GNMSSettings::EULER_SYM)
 	{
-		computeCostsOfTrajectory(threadId, x_local, u_local, intermediateCost, finalCost);
+		integratorsEulerSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
+	}
+	else if(settings_.integrator == GNMSSettings::RK_SYM)
+	{
+		integratorsRkSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
 	}
 	else
+		throw std::runtime_error("invalid integration mode selected.");
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::updateSingleShot(size_t threadId, size_t k)
+{
+	xShot_[k] += A_[k] * dx_[k] + B_[k] * lv_[x];
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeSingleDefect(size_t threadId, size_t k)
+{
+	if (k<K_)
+		d_[k] = xShot_[k] - x_[k+1];
+	else
 	{
-		std::string msg = std::string("dynamics not good, thread: ") + std::to_string(threadId);
-		std::cout << msg << std::endl;
+		assert(k==K_ && "k should be K_");
+		d_[K_] = 0;
 	}
 }
+
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
