@@ -31,6 +31,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "control/Controller.h"
 #include "control/StateFeedbackController.h"
 #include "control/ConstantController.h"
+#include "control/ConstantTrajectoryController.h"
 #include "control/siso/PIDController.h"
 #include "control/siso/SISOControllerBase.h"
 #include "control/siso/StepInputController.h"
