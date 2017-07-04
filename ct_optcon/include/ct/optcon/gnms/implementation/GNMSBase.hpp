@@ -78,6 +78,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeTimeHorizon(const SCALAR& t
 	Hi_.resize(K_);
 	Hi_inverse_.resize(K_);
 	lv_.resize(K_);
+	lx_.resize(K_+1);
 	L_.resize(K_);
 	P_.resize(K_);
 	q_.resize(K_+1);
@@ -813,7 +814,6 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 		// calculate FF update
 		lv_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * gv_[k];
 
-
 	} else {
 
 		// compute eigenvalues with eigenvectors enabled
@@ -847,6 +847,13 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 		// calculate FF update
 		lv_[k].noalias() = Hi_inverse_[k] * gv_[k];
 	}
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::designStateUpdate(size_t k)
+{
+
 }
 
 

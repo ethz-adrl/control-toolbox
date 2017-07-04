@@ -190,6 +190,9 @@ public:
 		iteration_ = 0;
 		smallestEigenvalue_ = std::numeric_limits<scalar_t>::infinity();
 		smallestEigenvalueIteration_ = std::numeric_limits<scalar_t>::infinity();
+
+		for(size_t i = 0; i<lx_.size(); i++)
+			lx_.setZero();
 	}
 
 
@@ -406,6 +409,10 @@ protected:
 	void designController(size_t k);
 
 
+	//! Design the state update
+	void designStateUpdate(size_t k);
+
+
 	//! Compute cost for a given set of state and input trajectory
 	/*!
 	 * Compute cost for a given set of state and input trajectory
@@ -511,6 +518,8 @@ protected:
 
 	ControlVectorArray lv_;
 	FeedbackArray L_;
+
+	StateVectorArray lx_; // differential update on the state
 
 	FeedbackArray P_;
 

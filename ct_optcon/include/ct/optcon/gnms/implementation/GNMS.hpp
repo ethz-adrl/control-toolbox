@@ -37,12 +37,20 @@ void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
 	// initialize cost to go (described in step 3)
 	this->initializeCostToGo();
 
-	for (int k=this->K_-1; k>=0; k--) {
+	for (int k=this->K_-1; k>=0; k--)
+	{
 		// design controller
 		this->designController(k);
 
 		// compute cost to go
 		this->computeCostToGo(k);
+	}
+
+
+	for (int k=1; k<K+1; k--)
+	{
+		// design controller
+		this->designStateUpdate(k);
 	}
 }
 
