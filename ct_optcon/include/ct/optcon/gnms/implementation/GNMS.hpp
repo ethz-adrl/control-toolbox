@@ -37,6 +37,9 @@ void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
 	// initialize cost to go (described in step 3)
 	this->initializeCostToGo();
 
+	this->du_norm_ = 0;
+	this->dx_norm_ = 0;
+
 	for (int k=this->K_-1; k>=0; k--)
 	{
 		// design controller
@@ -51,6 +54,7 @@ void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
 	{
 		// design controller
 		this->designStateUpdate(k);
+		this->dx_norm_ += this->lx_[k+1].norm();
 	}
 }
 
@@ -96,8 +100,11 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::updateShots()
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeDefects()
 {
+	this->d_norm_ = 0.0;
+
 	for (size_t k=0; k<this->K_; k++) {
 		this->computeSingleDefect(settings_.nThreads, k);
+		this->d_norm_ += d_[k].norm();
 	}
 }
 

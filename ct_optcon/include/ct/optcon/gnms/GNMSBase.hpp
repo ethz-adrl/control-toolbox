@@ -514,8 +514,11 @@ protected:
 	ControlVectorArray u_;
 	ControlVectorArray u_ff_;
 	ControlVectorArray u_ff_prev_;
+	SCALAR dx_norm_;
+	SCALAR du_norm_;
 
 	StateVectorArray d_; // the defects
+	SCALAR d_norm_; 	// sum of the norms of all defects
 
 	ControlVectorArray gv_;
 	FeedbackArray G_;

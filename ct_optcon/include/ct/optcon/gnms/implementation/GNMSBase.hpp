@@ -712,6 +712,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 
 		// calculate FF update
 		lv_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * gv_[k];
+		du_norm_ += lv_[k].norm();
 
 	} else {
 
@@ -745,6 +746,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 
 		// calculate FF update
 		lv_[k].noalias() = Hi_inverse_[k] * gv_[k];
+		du_norm_ += lv_[k].norm();
 	}
 }
 
@@ -762,9 +764,12 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::debugPrint()
 	std::cout<<"iteration "  << iteration_ << std::endl;
 	std::cout<<"============"<< std::endl;
 
-	std::cout<<std::setprecision(15) << "intermediate cost: " << intermediateCostBest_ << std::endl;
-	std::cout<<std::setprecision(15) << "final cost:        " << finalCostBest_ << std::endl;
-	std::cout<<std::setprecision(15) << "total cost:        " << intermediateCostBest_ + finalCostBest_ << std::endl;
+	std::cout<<std::setprecision(15) << "intermediate cost:         " << intermediateCostBest_ << std::endl;
+	std::cout<<std::setprecision(15) << "final cost:                " << finalCostBest_ << std::endl;
+	std::cout<<std::setprecision(15) << "total cost:                " << intermediateCostBest_ + finalCostBest_ << std::endl;
+	std::cout<<std::setprecision(15) << "total constraint err.norm: " << d_norm_ << std::endl;
+	std::cout<<std::setprecision(15) << "total state update norm:   " << dx_norm_ << std::endl;
+	std::cout<<std::setprecision(15) << "total constraint err.norm: " << du_norm_ << std::endl;
 
 	if(settings_.recordSmallestEigenvalue)
 	{
