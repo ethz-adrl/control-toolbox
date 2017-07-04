@@ -25,9 +25,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
 #include <chrono>
+#include <fenv.h>
 
 // Bring in gtest
-#include <gtest/gtest.h>
+//#include <gtest/gtest.h>
 
 #define DEBUG_PRINT
 //#define DEBUG_PRINT_LINESEARCH
@@ -132,9 +133,8 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > createCostFuncti
 
 
 
-TEST(GNMSTest, SingleCoreTest)
+void singleCore()
 {
-	try {
 
 		std::cout << "setting up problem " << std::endl;
 
@@ -198,8 +198,8 @@ TEST(GNMSTest, SingleCoreTest)
 				StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
 				ControlTrajectory<control_dim> uRollout = gnms.getControlTrajectory();
 
-				ASSERT_EQ(xRollout.size(), nSteps+1);
-				ASSERT_EQ(uRollout.size(), nSteps);
+//				ASSERT_EQ(xRollout.size(), nSteps+1);
+//				ASSERT_EQ(uRollout.size(), nSteps);
 
 
 				// test linearization
@@ -208,8 +208,8 @@ TEST(GNMSTest, SingleCoreTest)
 				gnms.retrieveLastLinearizedModel(A, B);
 
 
-				ASSERT_EQ(A.size(), nSteps);
-				ASSERT_EQ(B.size(), nSteps);
+//				ASSERT_EQ(A.size(), nSteps);
+//				ASSERT_EQ(B.size(), nSteps);
 
 
 
@@ -239,21 +239,21 @@ TEST(GNMSTest, SingleCoreTest)
 						B_analytic = aNewInv * gnms_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
 					}
 
-					ASSERT_LT(
-							(A[j]-A_analytic).array().abs().maxCoeff(),
-							1e-6
-					);
-
-					ASSERT_LT(
-							(B[j]-B_analytic).array().abs().maxCoeff(),
-							1e-6
-					);
+//					ASSERT_LT(
+//							(A[j]-A_analytic).array().abs().maxCoeff(),
+//							1e-6
+//					);
+//
+//					ASSERT_LT(
+//							(B[j]-B_analytic).array().abs().maxCoeff(),
+//							1e-6
+//					);
 				}
 
 				numIterations++;
 
 				// we should converge in way less than 20 iterations
-				ASSERT_LT(numIterations, 20);
+				//ASSERT_LT(numIterations, 20);
 			}
 
 			// make sure we are really converged
@@ -263,11 +263,7 @@ TEST(GNMSTest, SingleCoreTest)
 			//ASSERT_FALSE(ilqg_mp.runIteration());
 		}
 
-	} catch (std::exception& e)
-	{
-		std::cout << "caught exception: "<<e.what() <<std::endl;
-		FAIL();
-	}
+
 }
 
 /*
@@ -404,7 +400,8 @@ TEST(GNMSTest, PolicyComparison)
  */
 int main(int argc, char **argv)
 {
-	using namespace ct::optcon::example;
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+	feenableexcept(FE_INVALID | FE_OVERFLOW);
+	ct::optcon::example::singleCore();
+
+	return 1;
 }

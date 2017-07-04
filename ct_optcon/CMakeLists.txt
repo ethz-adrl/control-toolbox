@@ -161,7 +161,7 @@ endif()
 #catkin_add_gtest(iLQGCTest test/ilqg/iLQGCTest.cpp)
 #target_link_libraries(iLQGCTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
 
-catkin_add_gtest(GNMSTest test/gnms/GNMSTest.cpp)
+add_executable(GNMSTest test/gnms/GNMSTest.cpp)
 target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
 #
 #catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
