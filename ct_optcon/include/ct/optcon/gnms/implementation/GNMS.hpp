@@ -104,7 +104,7 @@ void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::computeDefects()
 
 	for (size_t k=0; k<this->K_; k++) {
 		this->computeSingleDefect(this->settings_.nThreads, k);
-		this->d_norm_ += d_[k].norm();
+		this->d_norm_ += this->d_[k].norm();
 	}
 }
 
