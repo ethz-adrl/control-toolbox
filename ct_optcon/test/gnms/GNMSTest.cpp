@@ -172,6 +172,8 @@ TEST(GNMSTest, SingleCoreTest)
 		gnms.configure(gnms_settings);
 		gnms.setInitialGuess(initController);
 
+		std::cout << "running gnms solver" << std::endl;
+
 		size_t nTests = 2;
 		for (size_t i=0; i<nTests; i++)
 		{
