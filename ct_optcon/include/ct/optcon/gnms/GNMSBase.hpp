@@ -347,11 +347,15 @@ protected:
 	//! build the sequential LQ problems
 	void sequentialLQProblem();
 
-	//! perform line-search and update controller
-	bool lineSearchController();
+	//! integrate the individual shots
+	void initializeSingleShot(size_t threadId, size_t k);
 
-	//! learn the currently optimal line-search parameter (for adaptive line-search)
-	SCALAR learnAlpha(const SCALAR& alpha);
+	//! integrate the individual shots
+	void updateSingleShot(size_t threadId, size_t k);
+
+	//! computes the defect between shot and trajectory
+	void computeSingleDefect(size_t threadId, size_t k);
+
 
     //! Rollout of nonlinear dynamics
     /*!

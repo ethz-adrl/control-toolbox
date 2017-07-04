@@ -77,6 +77,30 @@ void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory
 	}
 }
 
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::initializeShots()
+{
+	for (size_t k=0; k<this->K_; k++) {
+		this->initializeSingleShot(settings_.nThreads, k);
+	}
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::updateShots()
+{
+	for (size_t k=0; k<this->K_; k++) {
+		this->updateSingleShot(settings_.nThreads, k);
+	}
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeDefects()
+{
+	for (size_t k=0; k<this->K_; k++) {
+		this->computeSingleDefect(settings_.nThreads, k);
+	}
+}
+
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>

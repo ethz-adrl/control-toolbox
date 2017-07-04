@@ -48,6 +48,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ilqg/iLQGMP.hpp"
 #include "ilqg/iLQGSettings.hpp"
 
+#include "gnms/GNMS.hpp"
+#include "gnms/GNMSSettings.hpp"
+
 #include "lqr/LQR.hpp"
 #include "lqr/FHDTLQR.hpp"
 
