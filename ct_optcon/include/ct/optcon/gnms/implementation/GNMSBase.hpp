@@ -71,6 +71,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeTimeHorizon(const SCALAR& t
 	u_.resize(K_);
 	u_ff_.resize(K_);
 	u_ff_prev_.resize(K_);
+	d_.resize(K_);
 	gv_.resize(K_);
 	G_.resize(K_);
 	H_.resize(K_);
@@ -638,6 +639,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostToGo(size_t k)
 
 	sv_[k] = qv_[k];
 	sv_[k].noalias() += A_[k].transpose() * sv_[k+1];
+	sv_[k].noalias() += A_[k].transpose() * S_[k+1] * d_[k]; // additional riccati term for lifted GNMS
 	sv_[k].noalias() += L_[k].transpose() * Hi_[k] * lv_[k];
 	sv_[k].noalias() += L_[k].transpose() * gv_[k];
 	sv_[k].noalias() += G_[k].transpose() * lv_[k];

@@ -503,6 +503,8 @@ protected:
 	ControlVectorArray u_ff_;
 	ControlVectorArray u_ff_prev_;
 
+	StateVectorArray d_; // the defects
+
 	ControlVectorArray gv_;
 	FeedbackArray G_;
 
