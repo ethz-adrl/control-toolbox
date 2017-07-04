@@ -96,8 +96,6 @@ private:
 
 	void computeLinearizedDynamicsAroundTrajectory() override;
 
-	SCALAR performLineSearch() override;
-
 	void initializeShots() override;
 
 	void updateShots() override;

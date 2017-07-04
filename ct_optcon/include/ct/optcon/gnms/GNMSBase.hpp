@@ -334,8 +334,6 @@ protected:
 	//! Computes the quadratic approximation of the cost function along the trajectory
 	virtual void computeQuadraticCostsAroundTrajectory() = 0;
 
-	virtual SCALAR performLineSearch() = 0;
-
 	virtual void updateShots() = 0;
 
 	virtual void initializeShots() = 0;
@@ -511,7 +509,6 @@ protected:
 
 	StateVectorArray x_;
 	StateVectorArray xShot_;
-	ControlVectorArray u_;
 	ControlVectorArray u_ff_;
 	ControlVectorArray u_ff_prev_;
 	SCALAR dx_norm_;

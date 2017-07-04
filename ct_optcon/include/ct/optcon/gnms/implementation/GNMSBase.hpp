@@ -71,7 +71,6 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeTimeHorizon(const SCALAR& t
 	B_.resize(K_);
 	x_.resize(K_+1);
 	xShot_.resize(K_+1);
-	u_.resize(K_);
 	u_ff_.resize(K_);
 	u_ff_prev_.resize(K_);
 	d_.resize(K_);
@@ -179,12 +178,6 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::checkProblem()
 {
 	if (K_==0)
 		throw std::runtime_error("Time horizon too small resulting in 0 GNMS steps");
-
-	if (L_.size() < K_)
-	{
-		std::cout << "Provided initial feedback controller too short, should be at least "<<K_<<" but is "<<L_.size()<<" long."<<std::endl;
-		throw(std::runtime_error("Provided initial feedback controller too short"));
-	}
 
 	if (u_ff_.size() < K_)
 	{
@@ -568,24 +561,24 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamics(size_t 
 		case GNMSSettings::FORWARD_EULER:
 		{
 			A_[k] = state_matrix_t::Identity();
-			A_[k] += settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_[k], k*settings_.dt);
-			B_[k] = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_[k], k*settings_.dt);
+			A_[k] += settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_ff_[k], k*settings_.dt);
+			B_[k] = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_ff_[k], k*settings_.dt);
 			break;
 		}
 		case GNMSSettings::BACKWARD_EULER:
 		{
-			state_matrix_t aNew = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_[k], k*settings_.dt);
+			state_matrix_t aNew = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_ff_[k], k*settings_.dt);
 			state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
 			A_[k] = aNewInv;
-			B_[k] = aNewInv * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_[k], k*settings_.dt);
+			B_[k] = aNewInv * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_ff_[k], k*settings_.dt);
 			break;
 		}
 		case GNMSSettings::TUSTIN:
 		{
-			state_matrix_t aNew = 0.5 * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_[k], k*settings_.dt);
+			state_matrix_t aNew = 0.5 * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_ff_[k], k*settings_.dt);
 			state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
 			A_[k] = aNewInv * (state_matrix_t::Identity() + aNew);
-			B_[k] = aNewInv * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_[k], k*settings_.dt);
+			B_[k] = aNewInv * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_ff_[k], k*settings_.dt);
 			break;
 		}
 		default:
@@ -602,7 +595,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeQuadraticCosts(size_t thre
 	const scalar_t& dt = settings_.dt;
 
 	// feed current state and control to cost function
-	this->getCostFunctionInstances()[threadId]->setCurrentStateAndControl(x_[k], u_[k], dt*k);
+	this->getCostFunctionInstances()[threadId]->setCurrentStateAndControl(x_[k], u_ff_[k], dt*k);
 
 	// derivative of cost with respect to state
 	q_[k] = this->getCostFunctionInstances()[threadId]->evaluateIntermediate()*dt;
@@ -809,7 +802,6 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 	matFile_.put("iteration", iteration_);
 	matFile_.put("K", K_);
 	matFile_.put("x", x_.toImplementation());
-	matFile_.put("u", u_.toImplementation());
 	matFile_.put("A", A_.toImplementation());
 	matFile_.put("B", B_.toImplementation());
 	matFile_.put("qv", qv_.toImplementation());
@@ -845,7 +837,7 @@ const core::ControlTrajectory<CONTROL_DIM, SCALAR> GNMSBase<STATE_DIM, CONTROL_D
 	core::tpl::TimeArray<SCALAR> t_control = t_;
 	t_control.pop_back();
 
-	return core::ControlTrajectory<CONTROL_DIM, SCALAR> (t_control, u_);
+	return core::ControlTrajectory<CONTROL_DIM, SCALAR> (t_control, u_ff_);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
