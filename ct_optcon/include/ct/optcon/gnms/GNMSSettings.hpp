@@ -188,6 +188,7 @@ public:
 		dt(0.001),
 		dt_sim(0.001),
 		min_cost_improvement(1e-4), // cost needs to be at least 1e-4 better before we assume convergence
+		maxDefectSum(1e-5),
 		max_iterations(100),
 		fixedHessianCorrection(false),
 		recordSmallestEigenvalue(false),
@@ -204,6 +205,7 @@ public:
     double dt;				//! sampling time for the control input (seconds)
     double dt_sim;			//! sampling time for the forward simulation (seconds) \warning dt_sim needs to be an integer multiple of dt.
     double min_cost_improvement;	//! minimum cost improvement between two interations to assume convergence
+    double maxDefectSum;	//! maximum sum of squared defects (assume covergence if lower than this number)
     int max_iterations;		//! the maximum admissible number of GNMS main iterations \warning make sure to select this number high enough allow for convergence
     bool fixedHessianCorrection; //! perform Hessian regularization by incrementing the eigenvalues by epsilon.
     bool recordSmallestEigenvalue;	//! save the smallest eigenvalue of the Hessian
@@ -299,6 +301,7 @@ public:
 		dt = pt.get<double>(ns +".dt");
 		dt_sim = pt.get<double>(ns +".dt_sim");
 		min_cost_improvement = pt.get<double>(ns +".min_cost_improvement");
+		maxDefectSum = pt.get<double>(ns +".maxDefectSum");
 		max_iterations = pt.get<int>(ns +".max_iterations");
 
 		try {

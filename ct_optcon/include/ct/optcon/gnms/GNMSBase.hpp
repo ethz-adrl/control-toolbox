@@ -141,6 +141,9 @@ public:
 			intermediateCostBest_(std::numeric_limits<scalar_t>::infinity()),
 			finalCostBest_(std::numeric_limits<scalar_t>::infinity()),
 
+			intermediateCostPrevious_(std::numeric_limits<scalar_t>::infinity()),
+			finalCostPrevious_(std::numeric_limits<scalar_t>::infinity()),
+
 			smallestEigenvalue_(std::numeric_limits<scalar_t>::infinity()),
 			smallestEigenvalueIteration_(std::numeric_limits<scalar_t>::infinity()),
 
@@ -189,8 +192,25 @@ public:
 		smallestEigenvalue_ = std::numeric_limits<scalar_t>::infinity();
 		smallestEigenvalueIteration_ = std::numeric_limits<scalar_t>::infinity();
 
-		for(size_t i = 0; i<lx_.size(); i++)
-			lx_.setZero();
+		d_norm_ = std::numeric_limits<scalar_t>::infinity();
+
+		lx_.setZero();
+	}
+
+	//! check if GNMS is converged
+	bool isConverged()
+	{
+		// check if sum of norm of all defects is smaller than convergence criterion
+		if (d_norm_ > settings_.maxDefectSum)
+			return false;
+
+		SCALAR previousCost = intermediateCostPrevious_ + finalCostPrevious_;
+		SCALAR newCost = intermediateCostBest_ + finalCostBest_;
+
+		if ( fabs((previousCost - newCost)/previousCost) > settings_.min_cost_improvement)
+			return false;
+
+		return true;
 	}
 
 
@@ -551,6 +571,9 @@ public:
 	scalar_t intermediateCostBest_;
 	scalar_t finalCostBest_;
 	scalar_t lowestCost_;
+
+	scalar_t intermediateCostPrevious_;
+	scalar_t finalCostPrevious_;
 
 	scalar_t smallestEigenvalue_;
 	scalar_t smallestEigenvalueIteration_;
