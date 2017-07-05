@@ -53,6 +53,11 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::setInitialGuess(const Policy_t& i
 
 	t_ = TimeArray(settings_.dt_sim, x_.size(), 0.0);
 
+	// compute costs of the initial guess trajectory
+	computeCostsOfTrajectory(settings_.nThreads, x_, u_ff_, intermediateCostBest_, finalCostBest_);
+	intermediateCostPrevious_ = intermediateCostBest_;
+	finalCostPrevious_ = finalCostBest_;
+
 	reset();
 }
 
@@ -297,7 +302,11 @@ bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 //	std::cout << "Line search took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 //#endif
 
-	bool foundBetter = true;
+
+	// compute cost here
+	intermediateCostPrevious_ = intermediateCostBest_;
+	finalCostPrevious_ = finalCostBest_;
+	computeCostsOfTrajectory(settings_.nThreads, x_, u_ff_, intermediateCostBest_, finalCostBest_);
 
 	if (settings_.nThreadsEigen > 1)
 		Eigen::setNbThreads(settings_.nThreadsEigen); // restore default Eigen thread number
@@ -317,7 +326,8 @@ bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 
 	iteration_++;
 
-	return foundBetter;
+	return (!isConverged());
+;
 }
 
 
@@ -774,14 +784,6 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::designStateUpdate(size_t k)
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::debugPrint()
 {
-	computeCostsOfTrajectory(
-		settings_.nThreads,
-		x_,
-		u_ff_,
-		intermediateCostBest_,
-		finalCostBest_
-	);
-
 	std::cout<<"iteration "  << iteration_ << std::endl;
 	std::cout<<"============"<< std::endl;
 
@@ -821,20 +823,11 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab(const size_t& iterati
 
 #ifdef MATLAB
 
-
-	ct::core::StateVectorArray<STATE_DIM, SCALAR> x_rollout = x_;	// todo remove
-	ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_rollout;
-				ct::core::tpl::TimeArray<SCALAR> t_rollout;
-	rolloutSystem (0, u_ff_, x_rollout, u_rollout, t_rollout); // do an additional rollout and check result of input-only trajectory
-
-
-	std::cout << "Saving to Matlab" << std::endl; // todo: remove when appropriate
 	matFile_.open("GNMSLog"+std::to_string(iteration)+".mat");
 
 	matFile_.put("iteration", iteration);
 	matFile_.put("K", K_);
 	matFile_.put("x", x_.toImplementation());
-	matFile_.put("x_rollout", x_rollout.toImplementation());
 	matFile_.put("t", t_.toEigenTrajectory());
 	matFile_.put("A", A_.toImplementation());
 	matFile_.put("B", B_.toImplementation());
@@ -877,7 +870,7 @@ const core::ControlTrajectory<CONTROL_DIM, SCALAR> GNMSBase<STATE_DIM, CONTROL_D
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 SCALAR GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::getCost() const
 {
-	return lowestCost_;
+	return intermediateCostBest_ + finalCostBest_;
 }
 
 

@@ -222,7 +222,7 @@ void singleCore()
 
 				std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
 				std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
-			if (numIterations>3)
+			if (numIterations>40)
 			{
 				break;
 			}

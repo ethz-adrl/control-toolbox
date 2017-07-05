@@ -141,6 +141,9 @@ public:
 			intermediateCostBest_(std::numeric_limits<scalar_t>::infinity()),
 			finalCostBest_(std::numeric_limits<scalar_t>::infinity()),
 
+			intermediateCostPrevious_(std::numeric_limits<scalar_t>::infinity()),
+			finalCostPrevious_(std::numeric_limits<scalar_t>::infinity()),
+
 			smallestEigenvalue_(std::numeric_limits<scalar_t>::infinity()),
 			smallestEigenvalueIteration_(std::numeric_limits<scalar_t>::infinity()),
 
@@ -189,7 +192,26 @@ public:
 		smallestEigenvalue_ = std::numeric_limits<scalar_t>::infinity();
 		smallestEigenvalueIteration_ = std::numeric_limits<scalar_t>::infinity();
 
+		d_norm_ = std::numeric_limits<scalar_t>::infinity();
+
 		lx_.setZero();
+	}
+
+	//! check if GNMS is converged
+	bool isConverged()
+	{
+		//! check if sum of norm of all defects is smaller than convergence criterion
+		//! @todo in fact, the d_norm_evaluated here was computed before the controller update. For larger problems, might save computation time be re-evaluating the defect here!
+		if (d_norm_ > settings_.maxDefectSum)
+			return false;
+
+		SCALAR previousCost = intermediateCostPrevious_ + finalCostPrevious_;
+		SCALAR newCost = intermediateCostBest_ + finalCostBest_;
+
+		if ( fabs((previousCost - newCost)/previousCost) > settings_.min_cost_improvement)
+			return false;
+
+		return true;
 	}
 
 
@@ -322,8 +344,10 @@ public:
 
 	SCALAR getCost() const override;
 
-//protected: todo: make protected again
-public:
+	SCALAR getTotalDefect() const { return d_norm_;}
+
+protected:
+
 	virtual void createLQProblem() = 0;
 
 	virtual void backwardPass() = 0;
@@ -550,6 +574,9 @@ public:
 	scalar_t intermediateCostBest_;
 	scalar_t finalCostBest_;
 	scalar_t lowestCost_;
+
+	scalar_t intermediateCostPrevious_;
+	scalar_t finalCostPrevious_;
 
 	scalar_t smallestEigenvalue_;
 	scalar_t smallestEigenvalueIteration_;
