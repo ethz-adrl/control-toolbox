@@ -200,7 +200,8 @@ public:
 	//! check if GNMS is converged
 	bool isConverged()
 	{
-		// check if sum of norm of all defects is smaller than convergence criterion
+		//! check if sum of norm of all defects is smaller than convergence criterion
+		//! @todo in fact, the d_norm_evaluated here was computed before the controller update. For larger problems, might save computation time be re-evaluating the defect here!
 		if (d_norm_ > settings_.maxDefectSum)
 			return false;
 
@@ -342,6 +343,8 @@ public:
 	void logToMatlab(const size_t& iteration);
 
 	SCALAR getCost() const override;
+
+	SCALAR getTotalDefect() const { return d_norm_;}
 
 protected:
 

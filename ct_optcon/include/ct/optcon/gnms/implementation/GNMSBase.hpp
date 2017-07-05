@@ -870,7 +870,7 @@ const core::ControlTrajectory<CONTROL_DIM, SCALAR> GNMSBase<STATE_DIM, CONTROL_D
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 SCALAR GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::getCost() const
 {
-	return lowestCost_;
+	return intermediateCostBest_ + finalCostBest_;
 }
 
 
