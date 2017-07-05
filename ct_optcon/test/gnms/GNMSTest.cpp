@@ -113,7 +113,7 @@ public:
 std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > createCostFunction(Eigen::Vector2d& x_final)
 {
 	Eigen::Matrix2d Q;
-	Q << 0, 0, 0, 1;
+	Q << 0, 0, 0, 0;
 
 	Eigen::Matrix<double, 1, 1> R;
 	R << 1.0;
@@ -147,6 +147,15 @@ void singleCore()
 		gnms_settings.max_iterations = 3;
 		gnms_settings.recordSmallestEigenvalue = true;
 		gnms_settings.min_cost_improvement = 1e-6;
+		gnms_settings.fixedHessianCorrection = false;
+
+		iLQGSettings ilqg_settings;
+		ilqg_settings.epsilon = 0.0;
+		ilqg_settings.nThreads = 4;
+		ilqg_settings.max_iterations = 50;
+		ilqg_settings.recordSmallestEigenvalue = true;
+		ilqg_settings.min_cost_improvement = 1e-6;
+		ilqg_settings.fixedHessianCorrection = false;
 
 		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
 		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearizedSystem);
@@ -164,6 +173,10 @@ void singleCore()
 			x0 [i] = x_final*double(i)/double(nSteps);
 		}
 
+		FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
+		ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
+		iLQG<state_dim, control_dim>::Policy_t initControlleriLQG (u0_ff, u0_fb, ilqg_settings.dt);
+
 		GNMS<state_dim, control_dim>::Policy_t initController (u0, x0);
 
 		// construct single-core single subsystem OptCon Problem
@@ -172,110 +185,57 @@ void singleCore()
 
 		std::cout << "initializing gnms solver" << std::endl;
 		GNMS<state_dim, control_dim> gnms(optConProblem, gnms_settings);
+		iLQG<state_dim, control_dim> ilqg(optConProblem, ilqg_settings);
 
 
 		gnms.configure(gnms_settings);
 		gnms.setInitialGuess(initController);
 
+		ilqg.configure(ilqg_settings);
+		ilqg.setInitialGuess(initControlleriLQG);
+
 		std::cout << "running gnms solver" << std::endl;
 
-		size_t nTests = 2;
-		for (size_t i=0; i<nTests; i++)
+
+
+		bool foundBetter = true;
+		size_t numIterations = 0;
+
+		while (foundBetter)
 		{
-			if (i==0)
-				gnms_settings.fixedHessianCorrection = false;
-			else
-				gnms_settings.fixedHessianCorrection = true;
+			foundBetter = gnms.runIteration();
 
-			gnms.configure(gnms_settings);
-			gnms.setInitialGuess(initController);
+			// test trajectories
+			StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
+			ControlTrajectory<control_dim> uRollout = gnms.getControlTrajectory();
 
-			bool foundBetter = true;
-			size_t numIterations = 0;
+			numIterations++;
 
-			while (foundBetter)
+			if (numIterations>40)
 			{
-				// solve
-
-				foundBetter = gnms.runIteration();
-
-				// test trajectories
-				StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
-				ControlTrajectory<control_dim> uRollout = gnms.getControlTrajectory();
-
-//				ASSERT_EQ(xRollout.size(), nSteps+1);
-//				ASSERT_EQ(uRollout.size(), nSteps);
-
-
-				// test linearization
-				GNMS<state_dim, control_dim>::StateMatrixArray A;
-				GNMS<state_dim, control_dim>::StateControlMatrixArray B;
-				gnms.retrieveLastLinearizedModel(A, B);
-
-
-//				ASSERT_EQ(A.size(), nSteps);
-//				ASSERT_EQ(B.size(), nSteps);
-
-
-
-				// check linearization
-				for (size_t j=0; j<xRollout.size()-1; j++)
-				{
-					LinearizedSystem::state_matrix_t A_analytic;
-					LinearizedSystem::state_control_matrix_t B_analytic;
-
-					if(gnms_settings.discretization == GNMSSettings::FORWARD_EULER)
-					{
-						A_analytic = LinearizedSystem::state_matrix_t::Identity() + gnms_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
-						B_analytic = gnms_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
-					}
-					else if(gnms_settings.discretization == GNMSSettings::BACKWARD_EULER)
-					{
-						LinearizedSystem::state_matrix_t aNew = gnms_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
-						LinearizedSystem::state_matrix_t aNewInv = (LinearizedSystem::state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
-						A_analytic = aNewInv;
-						B_analytic = aNewInv * gnms_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
-					}
-					else if(gnms_settings.discretization == GNMSSettings::TUSTIN)
-					{
-						LinearizedSystem::state_matrix_t aNew = 0.5 * gnms_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
-						LinearizedSystem::state_matrix_t aNewInv = (LinearizedSystem::state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
-						A_analytic = aNewInv * (LinearizedSystem::state_matrix_t::Identity() + aNew);
-						B_analytic = aNewInv * gnms_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
-					}
-
-//					ASSERT_LT(
-//							(A[j]-A_analytic).array().abs().maxCoeff(),
-//							1e-6
-//					);
-//
-//					ASSERT_LT(
-//							(B[j]-B_analytic).array().abs().maxCoeff(),
-//							1e-6
-//					);
-				}
-
-				numIterations++;
-
-				if (numIterations>50)
-				{
-					std::cout<<"x final: " << xRollout.back().transpose() << std::endl;
-					return;
-				}
-
-
-				// we should converge in way less than 20 iterations
-				//ASSERT_LT(numIterations, 20);
+				std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
+				std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
+				break;
 			}
-
-			// make sure we are really converged
-			//ASSERT_FALSE(ilqg.runIteration());
-
-			// make sure we are really converged
-			//ASSERT_FALSE(ilqg_mp.runIteration());
 		}
 
+		while (foundBetter)
+		{
+			foundBetter = ilqg.runIteration();
 
+			// test trajectories
+			StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
+			ControlTrajectory<control_dim> uRollout = gnms.getControlTrajectory();
+
+			numIterations++;
+
+			if (numIterations>40)
+			{
+				std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
+				std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
+				break;
+			}
+		}
 }
 
 /*
