@@ -253,7 +253,12 @@ bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 	checkProblem();
 
 #ifdef DEBUG_PRINT
-	std::cout<<"[GNMS]: #1 ForwardPass"<<std::endl;
+//	std::cout << "PREINTEGRATION DEBUG PRINT"<<std::endl;
+//	std::cout << "=========================="<<std::endl;
+//	debugPrint();
+//	std::cout << "=========================="<<std::endl;
+//
+//	std::cout<<"[GNMS]: #1 ForwardPass"<<std::endl;
 #endif // DEBUG_PRINT
 	auto start = std::chrono::steady_clock::now();
 	auto startEntire = start;
@@ -508,6 +513,14 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::initializeSingleShot(size_t threa
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::updateSingleControlAndState(size_t threadId, size_t k)
+{
+	x_[k] += lx_[k];
+	u_ff_[k] += lv_[k];
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::updateSingleShot(size_t threadId, size_t k)
 {
 	xShot_[k] += A_[k] * lx_[k] + B_[k] * lv_[k];
@@ -759,6 +772,14 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::designStateUpdate(size_t k)
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::debugPrint()
 {
+	computeCostsOfTrajectory(
+		settings_.nThreads,
+		x_,
+		u_ff_,
+		intermediateCostBest_,
+		finalCostBest_
+	);
+
 	std::cout<<"iteration "  << iteration_ << std::endl;
 	std::cout<<"============"<< std::endl;
 
@@ -768,17 +789,17 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::debugPrint()
 	std::cout<<std::setprecision(15) << "total constraint err.norm: " << d_norm_ << std::endl;
 	std::cout<<std::setprecision(15) << "total state update norm:   " << dx_norm_ << std::endl;
 	std::cout<<std::setprecision(15) << "total control update.norm: " << du_norm_ << std::endl;
-
-	for(size_t i=0; i<K_; i++)
-	{
-		std::cout << "d_[" << i << "]: "<<d_[i].transpose() <<std::endl;
-		std::cout << "xShot_[" << i << "]: "<<xShot_[i].transpose() <<std::endl;
-		std::cout << "x_[" << i << "]: "<<x_[i].transpose() <<std::endl;
-		std::cout << "u_ff_[" << i << "]: "<<u_ff_[i].transpose() <<std::endl;
-		std::cout << "lv_[" << i << "]: "<<lv_[i].transpose() <<std::endl;
-		std::cout << "lx_[" << i << "]: "<<lx_[i].transpose() <<std::endl;
-		std::cout << std::endl <<std::endl;
-	}
+//
+//	for(size_t i=0; i<K_; i++)
+//	{
+//		std::cout << "d_[" << i << "]: "<<d_[i].transpose() <<std::endl;
+//		std::cout << "xShot_[" << i << "]: "<<xShot_[i].transpose() <<std::endl;
+//		std::cout << "x_[" << i << "]: "<<x_[i].transpose() <<std::endl;
+//		std::cout << "u_ff_[" << i << "]: "<<u_ff_[i].transpose() <<std::endl;
+//		std::cout << "lv_[" << i << "]: "<<lv_[i].transpose() <<std::endl;
+//		std::cout << "lx_[" << i << "]: "<<lx_[i].transpose() <<std::endl;
+//		std::cout << std::endl <<std::endl;
+//	}
 
 	if(settings_.recordSmallestEigenvalue)
 	{

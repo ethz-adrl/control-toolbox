@@ -334,6 +334,8 @@ protected:
 	//! Computes the quadratic approximation of the cost function along the trajectory
 	virtual void computeQuadraticCostsAroundTrajectory() = 0;
 
+	virtual void updateControlAndState() = 0;
+
 	virtual void updateShots() = 0;
 
 	virtual void initializeShots() = 0;
@@ -348,6 +350,9 @@ protected:
 
 	//! build the sequential LQ problems
 	void sequentialLQProblem();
+
+	//! updates the controls and states
+	void updateSingleControlAndState(size_t threadId, size_t k);
 
 	//! integrate the individual shots
 	void initializeSingleShot(size_t threadId, size_t k);

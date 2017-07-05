@@ -96,6 +96,8 @@ private:
 
 	void computeLinearizedDynamicsAroundTrajectory() override;
 
+	void updateControlAndState() override;
+
 	void initializeShots() override;
 
 	void updateShots() override;

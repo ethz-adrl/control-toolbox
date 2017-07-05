@@ -116,13 +116,13 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > createCostFuncti
 	Q << 0, 0, 0, 1;
 
 	Eigen::Matrix<double, 1, 1> R;
-	R << 100.0;
+	R << 1.0;
 
 	Eigen::Vector2d x_nominal = Eigen::Vector2d::Zero();
 	Eigen::Matrix<double, 1, 1> u_nominal = Eigen::Matrix<double, 1, 1>::Zero();
 
 	Eigen::Matrix2d Q_final;
-	Q_final << 10, 0, 0, 10;
+	Q_final << 1000, 0, 0, 10;
 
 	std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > quadraticCostFunction(
 			new CostFunctionQuadraticSimple<state_dim, control_dim>(
@@ -153,12 +153,17 @@ void singleCore()
 		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = createCostFunction(x_final);
 
 		// times
-		ct::core::Time tf = 0.005;
+		ct::core::Time tf = 3.0;
 		size_t nSteps = std::round(tf / gnms_settings.dt);
 
 		// provide initial guess
 		ControlVectorArray<control_dim> u0(nSteps, ControlVector<control_dim>::Zero());
 		StateVectorArray<state_dim>  x0(nSteps+1, StateVector<state_dim>::Zero());
+		for (size_t i=0; i<nSteps+1; i++)
+		{
+			x0 [i] = x_final*double(i)/double(nSteps);
+		}
+
 		GNMS<state_dim, control_dim>::Policy_t initController (u0, x0);
 
 		// construct single-core single subsystem OptCon Problem
@@ -252,8 +257,12 @@ void singleCore()
 
 				numIterations++;
 
-				if (numIterations>2)
+				if (numIterations>50)
+				{
+					std::cout<<"x final: " << xRollout.back().transpose() << std::endl;
 					return;
+				}
+
 
 				// we should converge in way less than 20 iterations
 				//ASSERT_LT(numIterations, 20);

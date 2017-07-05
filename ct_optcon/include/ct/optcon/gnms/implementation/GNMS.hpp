@@ -56,6 +56,8 @@ void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
 		this->designStateUpdate(k);
 		this->dx_norm_ += this->lx_[k+1].norm();
 	}
+
+	this->updateControlAndState();
 }
 
 
@@ -79,6 +81,18 @@ void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory
 		// compute quadratic cost
 		this->computeQuadraticCosts(this->settings_.nThreads, k);
 	}
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::updateControlAndState()
+{
+	for (size_t k=0; k<this->K_; k++)
+	{
+		// compute quadratic cost
+		this->updateSingleControlAndState(this->settings_.nThreads, k);
+	}
+
+	this->x_[this->K_] += this->lx_[this->K_];
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
