@@ -49,5 +49,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/rbd/slq/FloatingBaseSLQContactModel.h>
 #include <ct/rbd/slq/FixBaseSLQ.h>
 
+#include <ct/rbd/gnms/FixBaseGNMS.h>
 
 #endif /* INCLUDE_CT_RBD_RBD_H_ */
