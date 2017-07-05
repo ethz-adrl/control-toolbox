@@ -319,11 +319,12 @@ public:
 	  This function can be used for Debugging. It exports all variables to Matlab after each iteration. It also saves
 	  the Matlab workspace to a .mat file.
 	*/
-	void logToMatlab();
+	void logToMatlab(const size_t& iteration);
 
 	SCALAR getCost() const override;
 
-protected:
+//protected: todo: make protected again
+public:
 	virtual void createLQProblem() = 0;
 
 	virtual void backwardPass() = 0;

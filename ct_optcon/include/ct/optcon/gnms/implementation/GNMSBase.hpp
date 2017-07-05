@@ -252,6 +252,7 @@ bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 
 	checkProblem();
 
+
 #ifdef DEBUG_PRINT
 //	std::cout << "PREINTEGRATION DEBUG PRINT"<<std::endl;
 //	std::cout << "=========================="<<std::endl;
@@ -311,7 +312,7 @@ bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 #endif //DEBUG_PRINT
 
 #ifdef MATLAB_FULL_LOG
-	logToMatlab();
+	logToMatlab(iteration_);
 #endif //MATLAB_FULL_LOG
 
 	iteration_++;
@@ -368,7 +369,7 @@ bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::rolloutSystem (
 	{
 		if (terminationFlag && *terminationFlag) return false;
 
-		u_local.push_back( u_ff_local[i] + L_[i] * x0);
+		u_local.push_back( u_ff_local[i] /*  + L_[i] * x0 */);
 		controller_[threadId]->setControl(u_local.back());
 
 		for (size_t j=0; j<steps; j++)
@@ -516,14 +517,14 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::updateSingleControlAndState(size_t threadId, size_t k)
 {
 	x_[k] += lx_[k];
-	u_ff_[k] += lv_[k];
+	u_ff_[k] += lv_[k] + L_[k] * lx_[k];
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::updateSingleShot(size_t threadId, size_t k)
 {
-	xShot_[k] += A_[k] * lx_[k] + B_[k] * lv_[k];
+	xShot_[k] += (A_[k] + B_[k] * L_[k]) * lx_[k] + B_[k] * lv_[k];
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -533,6 +534,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeSingleDefect(size_t thread
 		d_[k] = xShot_[k] - x_[k+1];
 	else
 	{
+		throw std::runtime_error("d_ should not be evluated for K_");
 		assert(k==K_ && "k should be K_");
 		d_[K_].setZero();
 	}
@@ -765,7 +767,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::designStateUpdate(size_t k)
 {
-	lx_[k+1] = A_[k] * lx_[k] + B_[k] * lv_[k] + d_[k];
+	lx_[k+1] = (A_[k] + B_[k] * L_[k]) * lx_[k]  + B_[k] * lv_[k] + d_[k];
 }
 
 
@@ -812,17 +814,28 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::debugPrint()
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab(const size_t& iteration)
 {
 	// all the variables in MATLAB that are ended by "_"
 	// will be saved in a mat-file
 
 #ifdef MATLAB
-	matFile_.open("GNMSLog"+std::to_string(iteration_)+".mat");
 
-	matFile_.put("iteration", iteration_);
+
+	ct::core::StateVectorArray<STATE_DIM, SCALAR> x_rollout = x_;	// todo remove
+	ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_rollout;
+				ct::core::tpl::TimeArray<SCALAR> t_rollout;
+	rolloutSystem (0, u_ff_, x_rollout, u_rollout, t_rollout); // do an additional rollout and check result of input-only trajectory
+
+
+	std::cout << "Saving to Matlab" << std::endl; // todo: remove when appropriate
+	matFile_.open("GNMSLog"+std::to_string(iteration)+".mat");
+
+	matFile_.put("iteration", iteration);
 	matFile_.put("K", K_);
 	matFile_.put("x", x_.toImplementation());
+	matFile_.put("x_rollout", x_rollout.toImplementation());
+	matFile_.put("t", t_.toEigenTrajectory());
 	matFile_.put("A", A_.toImplementation());
 	matFile_.put("B", B_.toImplementation());
 	matFile_.put("qv", qv_.toImplementation());
