@@ -189,8 +189,7 @@ public:
 		smallestEigenvalue_ = std::numeric_limits<scalar_t>::infinity();
 		smallestEigenvalueIteration_ = std::numeric_limits<scalar_t>::infinity();
 
-		for(size_t i = 0; i<lx_.size(); i++)
-			lx_.setZero();
+		lx_.setZero();
 	}
 
 
