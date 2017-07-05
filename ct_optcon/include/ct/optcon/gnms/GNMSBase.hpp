@@ -343,8 +343,8 @@ public:
 
 	SCALAR getCost() const override;
 
-//protected: todo: make protected again
-public:
+protected:
+
 	virtual void createLQProblem() = 0;
 
 	virtual void backwardPass() = 0;

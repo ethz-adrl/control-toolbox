@@ -823,20 +823,11 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab(const size_t& iterati
 
 #ifdef MATLAB
 
-
-	ct::core::StateVectorArray<STATE_DIM, SCALAR> x_rollout = x_;	// todo remove
-	ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_rollout;
-				ct::core::tpl::TimeArray<SCALAR> t_rollout;
-	rolloutSystem (0, u_ff_, x_rollout, u_rollout, t_rollout); // do an additional rollout and check result of input-only trajectory
-
-
-	std::cout << "Saving to Matlab" << std::endl; // todo: remove when appropriate
 	matFile_.open("GNMSLog"+std::to_string(iteration)+".mat");
 
 	matFile_.put("iteration", iteration);
 	matFile_.put("K", K_);
 	matFile_.put("x", x_.toImplementation());
-	matFile_.put("x_rollout", x_rollout.toImplementation());
 	matFile_.put("t", t_.toEigenTrajectory());
 	matFile_.put("A", A_.toImplementation());
 	matFile_.put("B", B_.toImplementation());
