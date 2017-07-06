@@ -342,6 +342,8 @@ public:
 	*/
 	void logToMatlab(const size_t& iteration);
 
+	void logInitToMatlab();
+
 	SCALAR getCost() const override;
 
 	SCALAR getTotalDefect() const { return d_norm_;}

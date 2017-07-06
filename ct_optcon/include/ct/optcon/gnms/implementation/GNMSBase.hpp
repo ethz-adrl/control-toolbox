@@ -257,6 +257,8 @@ bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 
 	checkProblem();
 
+	logInitToMatlab();
+
 
 #ifdef DEBUG_PRINT
 //	std::cout << "PREINTEGRATION DEBUG PRINT"<<std::endl;
@@ -878,6 +880,24 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab(const size_t& iterati
 	matFile_.put("q"+std::to_string(iteration), q_);
 	matFile_.put("d"+std::to_string(iteration), d_.toImplementation());
 	matFile_.put("xShot"+std::to_string(iteration), xShot_.toImplementation());
+
+	matFile_.close();
+#endif //MATLAB
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::logInitToMatlab()
+{
+	// all the variables in MATLAB that are ended by "_"
+	// will be saved in a mat-file
+
+#ifdef MATLAB
+
+	matFile_.open("GNMSLogInit.mat");
+
+	matFile_.put("xInit", x_.toImplementation());
+	matFile_.put("u_ffInit", u_ff_.toImplementation());
 
 	matFile_.close();
 #endif //MATLAB
