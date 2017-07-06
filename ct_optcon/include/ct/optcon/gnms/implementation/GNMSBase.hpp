@@ -853,6 +853,32 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab(const size_t& iterati
 	matFile_.put("d", d_.toImplementation());
 	matFile_.put("xShot", xShot_.toImplementation());
 
+	// todo temporary, remove later
+	matFile_.put("K"+std::to_string(iteration), K_);
+	matFile_.put("x"+std::to_string(iteration), x_.toImplementation());
+	matFile_.put("t"+std::to_string(iteration), t_.toEigenTrajectory());
+	matFile_.put("A"+std::to_string(iteration), A_.toImplementation());
+	matFile_.put("B"+std::to_string(iteration), B_.toImplementation());
+	matFile_.put("qv"+std::to_string(iteration), qv_.toImplementation());
+	matFile_.put("Q"+std::to_string(iteration), Q_.toImplementation());
+	matFile_.put("P"+std::to_string(iteration), P_.toImplementation());
+	matFile_.put("rv"+std::to_string(iteration), rv_.toImplementation());
+	matFile_.put("R"+std::to_string(iteration), R_.toImplementation());
+	matFile_.put("sv"+std::to_string(iteration), sv_.toImplementation());
+	matFile_.put("S"+std::to_string(iteration), S_.toImplementation());
+	matFile_.put("L"+std::to_string(iteration), L_.toImplementation());
+	matFile_.put("lv"+std::to_string(iteration), lv_.toImplementation());
+	matFile_.put("lx"+std::to_string(iteration), lx_.toImplementation());
+	matFile_.put("u_ff"+std::to_string(iteration), u_ff_.toImplementation());
+	matFile_.put("H"+std::to_string(iteration), H_.toImplementation());
+	matFile_.put("Hi_"+std::to_string(iteration), Hi_.toImplementation());
+	matFile_.put("Hi_inverse"+std::to_string(iteration), Hi_inverse_.toImplementation());
+	matFile_.put("G"+std::to_string(iteration), G_.toImplementation());
+	matFile_.put("gv"+std::to_string(iteration), gv_.toImplementation());
+	matFile_.put("q"+std::to_string(iteration), q_);
+	matFile_.put("d"+std::to_string(iteration), d_.toImplementation());
+	matFile_.put("xShot"+std::to_string(iteration), xShot_.toImplementation());
+
 	matFile_.close();
 #endif //MATLAB
 }
