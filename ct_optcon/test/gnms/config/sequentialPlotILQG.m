@@ -7,8 +7,7 @@ load iLQGLog2.mat
 
 
 %reformat
-t = squeeze(t);
-lv = squeeze(lv);
+t = squeeze(t0);
 
 figure()
 subplot(2,3,1)
@@ -22,7 +21,7 @@ ylabel('x [m]')
 title('position');
 
 subplot(2,3,2)
-plot(t(1:end-1), uInit(1,:), 'k--', 'MarkerSize',1); hold on;
+plot(t(1:end-1), u_ffInit(1,:), 'k--', 'MarkerSize',1); hold on;
 plot(t(1:end-1), u0(1,:), 'k', 'MarkerSize',1); hold on;
 plot(t(1:end-1), u1(1,:), 'b', 'MarkerSize',1); hold on;
 plot(t(1:end-1), u2(1,:), 'r', 'MarkerSize',1); hold on;
@@ -39,26 +38,6 @@ legend('1', '2', '3');
 title('control update')
 xlabel('t [sec]')
 ylabel('F [N]')
-
-subplot(2,3,4)
-plot(t, squeeze(lx0(1,:))); hold on
-plot(t, squeeze(lx1(1,:))); hold on
-plot(t, squeeze(lx2(1,:))); hold on
-title('state update')
-xlabel('t [sec]')
-ylabel('dx [m]')
-legend('1', '2', '3');
-
-
-subplot(2,3,5)
-plot(t(1:end-1), squeeze(d0(1,:))); hold on
-plot(t(1:end-1), squeeze(d1(1,:))); hold on
-plot(t(1:end-1), squeeze(d2(1,:))); hold on
-title('defect')
-xlabel('t [sec]')
-ylabel('d [m]')
-legend('1', '2', '3');
-
 
 
 
