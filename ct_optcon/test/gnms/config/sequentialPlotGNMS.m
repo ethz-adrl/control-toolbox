@@ -59,7 +59,13 @@ xlabel('t [sec]')
 ylabel('d [m]')
 legend('1', '2', '3');
 
-
+subplot(2,3,6)
+plot(1, cost0, 'o'); hold on;
+plot(2, cost1, 'o'); hold on;
+plot(3, cost2, 'o'); hold on;
+title('cost')
+xlabel('iteration')
+ylabel('cost')
 
 
 

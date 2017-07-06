@@ -39,6 +39,14 @@ title('control update')
 xlabel('t [sec]')
 ylabel('F [N]')
 
+subplot(2,3,4)
+plot(1, cost0, 'o'); hold on;
+plot(2, cost1, 'o'); hold on;
+plot(3, cost2, 'o'); hold on;
+title('cost')
+xlabel('iteration')
+ylabel('cost')
+
 
 
 
