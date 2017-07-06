@@ -881,6 +881,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 
 	matFile_.put("iteration"+std::to_string(iteration_), iteration_);
 	matFile_.put("K"+std::to_string(iteration_), K_);
+	matFile_.put("t"+std::to_string(iteration_), t_.toEigenTrajectory());
 	matFile_.put("x"+std::to_string(iteration_), x_.toImplementation());
 	matFile_.put("u"+std::to_string(iteration_), u_.toImplementation());
 	matFile_.put("A"+std::to_string(iteration_), A_.toImplementation());
