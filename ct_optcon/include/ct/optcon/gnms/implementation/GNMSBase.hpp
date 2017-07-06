@@ -672,7 +672,6 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostToGo(size_t k)
 	sv_[k].noalias() += L_[k].transpose() * Hi_[k] * lv_[k];
 	sv_[k].noalias() += L_[k].transpose() * gv_[k];
 	sv_[k].noalias() += G_[k].transpose() * lv_[k];
-
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -680,7 +679,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 {
 	gv_[k] = rv_[k];
 	gv_[k].noalias() += B_[k].transpose() * sv_[k+1];
-	gv_[k].noalias() += B_[k].transpose() * S_[k+1] * d_[k]; // todo: self adjoint view
+	gv_[k].noalias() += B_[k].transpose() * S_[k+1].template selfadjointView<Eigen::Lower>() * d_[k];
 
 	G_[k] = P_[k];
 	//G_[k].noalias() += B_[k].transpose() * S_[k+1] * A_[k];
