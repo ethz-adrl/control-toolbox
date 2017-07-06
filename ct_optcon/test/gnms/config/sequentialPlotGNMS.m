@@ -12,7 +12,7 @@ lv = squeeze(lv);
 
 figure()
 subplot(2,3,1)
-plot(t, xinit(1,:), 'k--', 'MarkerSize',1); hold on;
+plot(t, xInit(1,:), 'k--', 'MarkerSize',1); hold on;
 plot(t, x0(1,:), 'k', 'MarkerSize',1); hold on;
 plot(t, x1(1,:), 'b', 'MarkerSize',1); hold on;
 plot(t, x2(1,:), 'r', 'MarkerSize',1); hold on;
@@ -22,10 +22,10 @@ ylabel('x [m]')
 title('position');
 
 subplot(2,3,2)
-plot(t(1:end-1), uinit(1,:), 'k--', 'MarkerSize',1); hold on;
-plot(t(1:end-1), u0(1,:), 'k', 'MarkerSize',1); hold on;
-plot(t(1:end-1), u1(1,:), 'b', 'MarkerSize',1); hold on;
-plot(t(1:end-1), u2(1,:), 'r', 'MarkerSize',1); hold on;
+plot(t(1:end-1), u_ffInit(1,:), 'k--', 'MarkerSize',1); hold on;
+plot(t(1:end-1), u_ff0(1,:), 'k', 'MarkerSize',1); hold on;
+plot(t(1:end-1), u_ff1(1,:), 'b', 'MarkerSize',1); hold on;
+plot(t(1:end-1), u_ff2(1,:), 'r', 'MarkerSize',1); hold on;
 legend('init', '1', '2', '3');
 xlabel('t [sec]')
 ylabel('x [m]')
