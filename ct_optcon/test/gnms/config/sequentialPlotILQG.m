@@ -1,9 +1,9 @@
 clear all
 close all
-load GNMSLogInit.mat
-load GNMSLog0.mat
-load GNMSLog1.mat
-load GNMSLog2.mat
+load iLQGLogInit.mat
+load iLQGLog0.mat
+load iLQGLog1.mat
+load iLQGLog2.mat
 
 
 %reformat
@@ -22,10 +22,10 @@ ylabel('x [m]')
 title('position');
 
 subplot(2,3,2)
-plot(t(1:end-1), u_ffInit(1,:), 'k--', 'MarkerSize',1); hold on;
-plot(t(1:end-1), u_ff0(1,:), 'k', 'MarkerSize',1); hold on;
-plot(t(1:end-1), u_ff1(1,:), 'b', 'MarkerSize',1); hold on;
-plot(t(1:end-1), u_ff2(1,:), 'r', 'MarkerSize',1); hold on;
+plot(t(1:end-1), uInit(1,:), 'k--', 'MarkerSize',1); hold on;
+plot(t(1:end-1), u0(1,:), 'k', 'MarkerSize',1); hold on;
+plot(t(1:end-1), u1(1,:), 'b', 'MarkerSize',1); hold on;
+plot(t(1:end-1), u2(1,:), 'r', 'MarkerSize',1); hold on;
 legend('init', '1', '2', '3');
 xlabel('t [sec]')
 ylabel('x [m]')
