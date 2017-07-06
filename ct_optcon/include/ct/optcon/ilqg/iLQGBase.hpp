@@ -326,6 +326,8 @@ public:
 	*/
 	void logToMatlab();
 
+	void logInitToMatlab();
+
 	SCALAR getCost() const override;
 
 protected:

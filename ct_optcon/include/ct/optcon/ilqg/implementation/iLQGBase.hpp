@@ -442,6 +442,8 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::forwardPass()
 	{
 		if (!rolloutSystem(settings_.nThreads, u_ff_, x_, u_, t_))
 			throw std::runtime_error("Rollout failed. System became unstable");
+
+		logInitToMatlab();
 	}
 
 	createLQProblem();
@@ -877,28 +879,45 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 #ifdef MATLAB
 	matFile_.open("iLQGLog"+std::to_string(iteration_)+".mat");
 
-	matFile_.put("iteration", iteration_);
-	matFile_.put("K", K_);
-	matFile_.put("x", x_.toImplementation());
-	matFile_.put("u", u_.toImplementation());
-	matFile_.put("A", A_.toImplementation());
-	matFile_.put("B", B_.toImplementation());
-	matFile_.put("qv", qv_.toImplementation());
-	matFile_.put("Q", Q_.toImplementation());
-	matFile_.put("P", P_.toImplementation());
-	matFile_.put("rv", rv_.toImplementation());
-	matFile_.put("R", R_.toImplementation());
-	matFile_.put("sv", sv_.toImplementation());
-	matFile_.put("S", S_.toImplementation());
-	matFile_.put("L", L_.toImplementation());
-	matFile_.put("lv", lv_.toImplementation());
-	matFile_.put("u_ff", u_ff_.toImplementation());
-	matFile_.put("H", H_.toImplementation());
-	matFile_.put("Hi_", Hi_.toImplementation());
-	matFile_.put("Hi_inverse", Hi_inverse_.toImplementation());
-	matFile_.put("G", G_.toImplementation());
-	matFile_.put("gv", gv_.toImplementation());
-	matFile_.put("q", q_);
+	matFile_.put("iteration"+std::to_string(iteration_), iteration_);
+	matFile_.put("K"+std::to_string(iteration_), K_);
+	matFile_.put("x"+std::to_string(iteration_), x_.toImplementation());
+	matFile_.put("u"+std::to_string(iteration_), u_.toImplementation());
+	matFile_.put("A"+std::to_string(iteration_), A_.toImplementation());
+	matFile_.put("B"+std::to_string(iteration_), B_.toImplementation());
+	matFile_.put("qv"+std::to_string(iteration_), qv_.toImplementation());
+	matFile_.put("Q"+std::to_string(iteration_), Q_.toImplementation());
+	matFile_.put("P"+std::to_string(iteration_), P_.toImplementation());
+	matFile_.put("rv"+std::to_string(iteration_), rv_.toImplementation());
+	matFile_.put("R"+std::to_string(iteration_), R_.toImplementation());
+	matFile_.put("sv"+std::to_string(iteration_), sv_.toImplementation());
+	matFile_.put("S"+std::to_string(iteration_), S_.toImplementation());
+	matFile_.put("L"+std::to_string(iteration_), L_.toImplementation());
+	matFile_.put("lv"+std::to_string(iteration_), lv_.toImplementation());
+	matFile_.put("u_ff"+std::to_string(iteration_), u_ff_.toImplementation());
+	matFile_.put("H"+std::to_string(iteration_), H_.toImplementation());
+	matFile_.put("Hi_"+std::to_string(iteration_), Hi_.toImplementation());
+	matFile_.put("Hi_inverse"+std::to_string(iteration_), Hi_inverse_.toImplementation());
+	matFile_.put("G"+std::to_string(iteration_), G_.toImplementation());
+	matFile_.put("gv"+std::to_string(iteration_), gv_.toImplementation());
+	matFile_.put("q"+std::to_string(iteration_), q_);
+
+	matFile_.close();
+#endif //MATLAB
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::logInitToMatlab()
+{
+	// all the variables in MATLAB that are ended by "_"
+	// will be saved in a mat-file
+
+#ifdef MATLAB
+
+	matFile_.open("iLQGLogInit.mat");
+
+	matFile_.put("xInit", x_.toImplementation());
+	matFile_.put("u_ffInit", u_.toImplementation());
 
 	matFile_.close();
 #endif //MATLAB
