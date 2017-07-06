@@ -16,9 +16,9 @@ find_package(Eigen REQUIRED)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall")
 
-option(MATLAB "Compile with matlab support" OFF)
-option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" OFF)
-option(DEBUG_PRINT "Print debug messages" OFF)
+option(MATLAB "Compile with matlab support" ON)
+option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" ON)
+option(DEBUG_PRINT "Print debug messages" ON)
 
 
 if(DEBUG_PRINT)
@@ -34,7 +34,7 @@ endif(MATLAB_FULL_LOG)
 
 if(MATLAB)
     message(WARNING "MATLAB support ON")
-    find_package(matlab_cpp_interface QUIET)
+    find_package(matlab_cpp_interface REQUIRED)
     if(matlab_cpp_interface_FOUND)
         include_directories(${matlab_cpp_interface_INCLUDE_DIRS})
         set(MATLAB_LIB_DIR ${matlab_cpp_interface_LIBRARIES})
