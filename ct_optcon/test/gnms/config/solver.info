@@ -1,5 +1,7 @@
 timeHorizon 5.0
 
+initType    0 ; 0 = zero, 1 = linear, 2 = integrated with zero control action, 3 = random
+
 ilqg
 {
 	integrator RK4
