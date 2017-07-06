@@ -881,6 +881,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab(const size_t& iterati
 	matFile_.put("q"+std::to_string(iteration), q_);
 	matFile_.put("d"+std::to_string(iteration), d_.toImplementation());
 	matFile_.put("xShot"+std::to_string(iteration), xShot_.toImplementation());
+	matFile_.put("cost"+std::to_string(iteration_), getCost());
 
 	matFile_.close();
 #endif //MATLAB

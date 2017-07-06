@@ -902,6 +902,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 	matFile_.put("G"+std::to_string(iteration_), G_.toImplementation());
 	matFile_.put("gv"+std::to_string(iteration_), gv_.toImplementation());
 	matFile_.put("q"+std::to_string(iteration_), q_);
+	matFile_.put("cost"+std::to_string(iteration_), lowestCost_);
 
 	matFile_.close();
 #endif //MATLAB
