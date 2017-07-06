@@ -173,7 +173,7 @@ void singleCore()
 		}
 		case 3: // random
 		{
-			for (size_t i=0; i<nSteps+1; i++)
+			for (size_t i=1; i<nSteps+1; i++)
 			{
 				x0[i].setRandom();
 			}
