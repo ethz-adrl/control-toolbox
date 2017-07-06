@@ -232,6 +232,8 @@ void singleCore()
 		}
 	}
 
+	foundBetter = false;
+
 	numIterations = 0;
 	while (foundBetter)
 	{
