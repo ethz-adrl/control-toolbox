@@ -30,8 +30,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Bring in gtest
 //#include <gtest/gtest.h>
 
+#define MATLAB
+#define MATLAB_FULL_LOG
 
-#define DEBUG_PRINT
+//#define DEBUG_PRINT
 //#define DEBUG_PRINT_LINESEARCH
 
 #include <ct/optcon/optcon.h>
@@ -149,9 +151,10 @@ void singleCore()
 		gnms_settings.recordSmallestEigenvalue = true;
 		gnms_settings.min_cost_improvement = 1e-6;
 		gnms_settings.fixedHessianCorrection = false;
-		gnms_settings.dt = 0.01;
-		gnms_settings.dt_sim = 0.01;
-		gnms_settings.discretization = GNMSSettings::DISCRETIZATION::BACKWARD_EULER;
+		gnms_settings.dt = 0.1;
+		gnms_settings.dt_sim = 0.1;
+		gnms_settings.integrator = GNMSSettings::EULER;
+		gnms_settings.discretization = GNMSSettings::DISCRETIZATION::FORWARD_EULER;
 
 		iLQGSettings ilqg_settings;
 		ilqg_settings.epsilon = 0.0;
@@ -160,10 +163,10 @@ void singleCore()
 		ilqg_settings.recordSmallestEigenvalue = true;
 		ilqg_settings.min_cost_improvement = 1e-6;
 		ilqg_settings.fixedHessianCorrection = false;
-		ilqg_settings.dt = 0.01;
-		ilqg_settings.dt_sim = 0.01;
+		ilqg_settings.dt = 0.1;
+		ilqg_settings.dt_sim = 0.1;
 		ilqg_settings.integrator = iLQGSettings::EULER;
-		ilqg_settings.discretization = iLQGSettings::DISCRETIZATION::BACKWARD_EULER;
+		ilqg_settings.discretization = iLQGSettings::DISCRETIZATION::FORWARD_EULER;
 
 
 		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
@@ -213,6 +216,7 @@ void singleCore()
 		while (foundBetter)
 		{
 			foundBetter = gnms.runIteration();
+			foundBetter = true;
 
 			// test trajectories
 			StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
@@ -220,18 +224,22 @@ void singleCore()
 
 			numIterations++;
 
+			if (numIterations>3)
+			{
 				std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
 				std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
-			if (numIterations>40)
-			{
 				break;
 			}
 		}
 
+		std::cout << "running ilqg solver" << std::endl;
+
 		numIterations = 0;
+		foundBetter = true;
 		while (foundBetter)
 		{
 			foundBetter = ilqg.runIteration();
+			foundBetter = true;
 
 			// test trajectories
 			StateTrajectory<state_dim> xRollout = ilqg.getStateTrajectory();
@@ -239,10 +247,10 @@ void singleCore()
 
 			numIterations++;
 
-				std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
-				std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
 			if (numIterations>3)
 			{
+				std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
+				std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
 				break;
 			}
 		}
