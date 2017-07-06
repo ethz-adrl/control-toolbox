@@ -257,7 +257,8 @@ bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 
 	checkProblem();
 
-	logInitToMatlab();
+	if (iteration_ == 0)
+		logInitToMatlab();
 
 
 #ifdef DEBUG_PRINT
