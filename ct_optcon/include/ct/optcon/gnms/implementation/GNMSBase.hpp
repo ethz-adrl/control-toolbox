@@ -534,7 +534,9 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::updateSingleControlAndState(size_
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::updateSingleShot(size_t threadId, size_t k)
 {
-	xShot_[k] += (A_[k] + B_[k] * L_[k]) * lx_[k] + B_[k] * lv_[k];
+	// Todo: This linear update only works if lx_ and lu_ are small. Otherwise this makes it unstable.
+	//xShot_[k] += (A_[k] + B_[k] * L_[k]) * lx_[k] + B_[k] * lv_[k];
+	initializeSingleShot(this->settings_.nThreads, k);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -544,7 +546,6 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeSingleDefect(size_t thread
 		d_[k] = xShot_[k] - x_[k+1];
 	else
 	{
-		throw std::runtime_error("d_ should not be evluated for K_");
 		assert(k==K_ && "k should be K_");
 		d_[K_].setZero();
 	}
@@ -672,6 +673,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostToGo(size_t k)
 	sv_[k].noalias() += L_[k].transpose() * Hi_[k] * lv_[k];
 	sv_[k].noalias() += L_[k].transpose() * gv_[k];
 	sv_[k].noalias() += G_[k].transpose() * lv_[k];
+
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>

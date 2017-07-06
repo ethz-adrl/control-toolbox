@@ -319,6 +319,8 @@ public:
 				{
 					std::cout << it->first << std::endl;
 				}
+
+				exit(-1);
 			}
 
             std::string discretizationStr = pt.get<std::string>(ns + ".discretization");
@@ -334,6 +336,8 @@ public:
                 {
                     std::cout << it->first << std::endl;
                 }
+
+                exit(-1);
             }
 
 		} catch (...)
