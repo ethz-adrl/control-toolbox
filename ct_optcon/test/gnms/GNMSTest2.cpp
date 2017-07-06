@@ -104,7 +104,7 @@ public:
 	LinearizedSystem* clone() const override
 			{
 		return new LinearizedSystem();
-			};
+			}
 };
 
 
@@ -112,140 +112,149 @@ public:
 
 void singleCore()
 {
+	std::cout << "setting up problem " << std::endl;
 
-		std::cout << "setting up problem " << std::endl;
+	std::string configFile = "solver.info";
+	std::string costFunctionFile = "cost.info";
 
-		std::string configFile = "solver.info";
-		std::string costFunctionFile = "cost.info";
+	Eigen::Matrix<double, 1, 1> x_0;
+	ct::core::loadMatrix(costFunctionFile, "x_0", x_0);
 
-		Eigen::Matrix<double, 1, 1> x_0;
-		ct::core::loadMatrix(costFunctionFile, "x_0", x_0);
+	Eigen::Matrix<double, 1, 1> x_f;
+	ct::core::loadMatrix(costFunctionFile, "term1.x_f.weigths.x_des", x_f);
 
-		Eigen::Matrix<double, 1, 1> x_f;
-		ct::core::loadMatrix(costFunctionFile, "x_0", x_f);
+	GNMSSettings gnms_settings;
+	gnms_settings.load(configFile);
 
-		GNMSSettings gnms_settings;
-		gnms_settings.load(configFile);
+	iLQGSettings ilqg_settings;
+	ilqg_settings.load(configFile);
 
-		iLQGSettings ilqg_settings;
-		ilqg_settings.load(configFile);
+	std::shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
+	std::shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearizedSystem);
+	std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction (new CostFunctionAnalytical<state_dim,control_dim>(costFunctionFile));
 
-		std::shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
-		std::shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearizedSystem);
-		std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = createCostFunction(x_final);
+	// times
+	ct::core::Time tf = 3.0;
+	ct::core::loadScalar(configFile, "timeHorizon", tf);
 
-		// times
-		ct::core::Time tf = 3.0;
-		ct::core::loadScalar(configFile, "timeHorizon", tf);
+	size_t nSteps = ilqg_settings.computeK(tf);
 
-		size_t nSteps = ilqg_settings.computeK(tf);
+	// provide initial guess
+	ControlVectorArray<control_dim> u0(nSteps, ControlVector<control_dim>::Zero());
+	StateVectorArray<state_dim>  x0(nSteps+1, x_0);
 
-		// provide initial guess
-		ControlVectorArray<control_dim> u0(nSteps, ControlVector<control_dim>::Zero());
-		StateVectorArray<state_dim>  x0(nSteps+1, StateVector<state_dim>::Zero());
+	int initType = 0;
+	ct::core::loadScalar(configFile, "initType", initType);
 
-		int initType = 0;
-		ct::core::loadScalar(configFile, "initType", initType);
+	switch(initType)
+	{
+		case 0: // zero
+			break;
 
-		switch(initType)
+		case 1: // linear
 		{
-			case 1: // linear
+			for (size_t i=0; i<nSteps+1; i++)
 			{
-				for (size_t i=0; i<nSteps+1; i++)
-				{
-					x0 [i] = x_f*double(i)/double(nSteps);
-				}
-				break;
+				x0 [i] = x_0 + (x_f-x_0)*double(i)/double(nSteps);
 			}
-			case 2: // integration
-			{
-				shared_ptr<ControlledSystem<state_dim, control_dim> > systemForInit(new Dynamics);
-				ct::core::IntegratorEuler<state_dim> integratorForInit(systemForInit);
-				x0[0] = x_0;
-				for (size_t i = 1; i<nSteps+1; i++)
-				{
-					x0[i] = x0[i-1];
-					integratorForInit.integrate_n_steps(x0[i], 0, 1, ilqg_settings.dt_sim);
-				}
-				break;
-			}
-			case 3: // random
-			{
-				for (size_t i=0; i<nSteps+1; i++)
-				{
-					x0[i].setRandom();
-				}
-				break;
-			}
+			break;
 		}
-
-
-		FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
-		ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
-		iLQG<state_dim, control_dim>::Policy_t initControlleriLQG (u0_ff, u0_fb, ilqg_settings.dt);
-		GNMS<state_dim, control_dim>::Policy_t initController (u0, x0);
-
-		// construct single-core single subsystem OptCon Problem
-		OptConProblem<state_dim, control_dim> optConProblem (tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
-
-
-		std::cout << "initializing gnms solver" << std::endl;
-		GNMS<state_dim, control_dim> gnms(optConProblem, gnms_settings);
-		iLQG<state_dim, control_dim> ilqg(optConProblem, ilqg_settings);
-
-
-		gnms.configure(gnms_settings);
-		gnms.setInitialGuess(initController);
-
-		ilqg.configure(ilqg_settings);
-		ilqg.setInitialGuess(initControlleriLQG);
-
-		std::cout << "running gnms solver" << std::endl;
-
-
-
-		bool foundBetter = true;
-		size_t numIterations = 0;
-
-		while (foundBetter)
+		case 2: // integration
 		{
-			foundBetter = gnms.runIteration();
-
-			// test trajectories
-			StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
-			ControlTrajectory<control_dim> uRollout = gnms.getControlTrajectory();
-
-			numIterations++;
-
-				std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
-				std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
-			if (numIterations>40)
+			shared_ptr<ControlledSystem<state_dim, control_dim> > systemForInit(new Dynamics);
+			ct::core::IntegratorEuler<state_dim> integratorForInit(systemForInit);
+			x0[0] = x_0;
+			for (size_t i = 1; i<nSteps+1; i++)
 			{
-				break;
+				x0[i] = x0[i-1];
+				integratorForInit.integrate_n_steps(x0[i], 0, 1, ilqg_settings.dt_sim);
 			}
+			break;
 		}
-
-		numIterations = 0;
-		while (foundBetter)
+		case 3: // random
 		{
-			foundBetter = ilqg.runIteration();
-
-			// test trajectories
-			StateTrajectory<state_dim> xRollout = ilqg.getStateTrajectory();
-			ControlTrajectory<control_dim> uRollout = ilqg.getControlTrajectory();
-
-			numIterations++;
-
-				std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
-				std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
-			if (numIterations>3)
+			for (size_t i=0; i<nSteps+1; i++)
 			{
-				break;
+				x0[i].setRandom();
 			}
+			break;
 		}
+		default:
+		{
+			throw std::runtime_error("illegal init type");
+			break;
+		}
+	}
+
+
+	FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
+	ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
+	iLQG<state_dim, control_dim>::Policy_t initControlleriLQG (u0_ff, u0_fb, ilqg_settings.dt);
+	GNMS<state_dim, control_dim>::Policy_t initController (u0, x0);
+
+	// construct single-core single subsystem OptCon Problem
+	OptConProblem<state_dim, control_dim> optConProblem (tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
+
+
+	std::cout << "initializing gnms solver" << std::endl;
+	GNMS<state_dim, control_dim> gnms(optConProblem, gnms_settings);
+	iLQG<state_dim, control_dim> ilqg(optConProblem, ilqg_settings);
+
+
+	gnms.configure(gnms_settings);
+	gnms.setInitialGuess(initController);
+
+	ilqg.configure(ilqg_settings);
+	ilqg.setInitialGuess(initControlleriLQG);
+
+	std::cout << "running gnms solver" << std::endl;
+
+
+
+	bool foundBetter = true;
+	size_t numIterations = 0;
+
+	while (foundBetter)
+	{
+		foundBetter = gnms.runIteration();
+
+		// test trajectories
+		StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
+		ControlTrajectory<control_dim> uRollout = gnms.getControlTrajectory();
+
+		numIterations++;
+
+			std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
+			std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
+		if (numIterations>40)
+		{
+			break;
+		}
+	}
+
+	numIterations = 0;
+	while (foundBetter)
+	{
+		foundBetter = ilqg.runIteration();
+
+		// test trajectories
+		StateTrajectory<state_dim> xRollout = ilqg.getStateTrajectory();
+		ControlTrajectory<control_dim> uRollout = ilqg.getControlTrajectory();
+
+		numIterations++;
+
+			std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
+			std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
+		if (numIterations>3)
+		{
+			break;
+		}
+	}
 }
 
-
+}
+}
+}
 
 /*!
  * This runs the GNMS unit test.
@@ -254,7 +263,6 @@ void singleCore()
  */
 int main(int argc, char **argv)
 {
-	feenableexcept(FE_INVALID | FE_OVERFLOW);
 	ct::optcon::example::singleCore();
 
 	return 1;
