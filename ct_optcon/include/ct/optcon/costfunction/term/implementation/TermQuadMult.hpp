@@ -110,7 +110,7 @@ core::StateVector<STATE_DIM, S> TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCA
     core::StateVector<STATE_DIM, S> xDiff = (x-x_ref_);
     core::ControlVector<CONTROL_DIM, S> uDiff = (u-u_ref_);
 
-    S r = (uDiff.transpose() * R_ * uDiff);
+    S r = (uDiff.transpose() * R_ * uDiff)(0,0);
 
     return (xDiff.transpose() * Q_.transpose() + xDiff.transpose() * Q_)*r;
 }
@@ -121,7 +121,7 @@ typename TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::state_matrix_t Te
 {
     core::ControlVector<CONTROL_DIM, S> uDiff = (u-u_ref_);
 
-    S r = (uDiff.transpose() * R_ * uDiff);
+    S r = (uDiff.transpose() * R_ * uDiff)(0,0);
 
     return (Q_ + Q_.transpose())*r;
 }
@@ -133,7 +133,7 @@ core::ControlVector<CONTROL_DIM, S> TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME
     core::StateVector<STATE_DIM, S> xDiff = (x-x_ref_);
     core::ControlVector<CONTROL_DIM, S> uDiff = (u-u_ref_);
 
-    S q = (xDiff.transpose() * Q_ * xDiff);
+    S q = (xDiff.transpose() * Q_ * xDiff)(0,0);
 
     return (uDiff.transpose() * R_.transpose() + uDiff.transpose() * R_)*q;
 }
@@ -144,7 +144,7 @@ typename TermQuadMult<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::control_matrix_t 
 {
     core::StateVector<STATE_DIM, S> xDiff = (x-x_ref_);
 
-    S q = (xDiff.transpose() * Q_ * xDiff);
+    S q = (xDiff.transpose() * Q_ * xDiff)(0,0);
 
     return (R_ + R_.transpose())*q;
 }

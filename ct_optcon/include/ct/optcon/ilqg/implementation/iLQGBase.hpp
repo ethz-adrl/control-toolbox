@@ -126,8 +126,8 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeNonlinearSystem(const typen
 	this->getNonlinearSystemsInstances().resize(settings_.nThreads+1);
 	integratorsRK4_.resize(settings_.nThreads+1);
 	integratorsEuler_.resize(settings_.nThreads+1);
-	integratorsEulerSymplectic_.resize(settings_.nThreads+1);
-	integratorsRkSymplectic_.resize(settings_.nThreads+1);
+//	integratorsEulerSymplectic_.resize(settings_.nThreads+1);
+//	integratorsRkSymplectic_.resize(settings_.nThreads+1);
 
 	for (size_t i = 0; i<settings_.nThreads+1; i++)
 	{
@@ -140,15 +140,15 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeNonlinearSystem(const typen
 
 		integratorsRK4_[i] = std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > (new ct::core::IntegratorRK4<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
 		integratorsEuler_[i] = std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM, SCALAR> >(new ct::core::IntegratorEuler<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
-		if(this->getNonlinearSystemsInstances()[i]->isSymplectic())
-		{
-			integratorsEulerSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
-									new ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
-										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (this->getNonlinearSystemsInstances()[i])));
-			integratorsRkSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
-									new ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
-										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (this->getNonlinearSystemsInstances()[i])));
-		}
+//		if(this->getNonlinearSystemsInstances()[i]->isSymplectic())
+//		{
+//			integratorsEulerSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
+//									new ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
+//										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (this->getNonlinearSystemsInstances()[i])));
+//			integratorsRkSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
+//									new ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
+//										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (this->getNonlinearSystemsInstances()[i])));
+//		}
 	}
 	reset(); // since system changed, we have to start fresh, i.e. with a rollout
 }
@@ -383,14 +383,14 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::rolloutSystem (
 			{
 				integratorsRK4_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
 			}
-			else if(settings_.integrator == iLQGSettings::EULER_SYM)
-			{
-				integratorsEulerSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
-			}
-			else if(settings_.integrator == iLQGSettings::RK_SYM)
-			{
-				integratorsRkSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
-			}
+//			else if(settings_.integrator == iLQGSettings::EULER_SYM)
+//			{
+//				integratorsEulerSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
+//			}
+//			else if(settings_.integrator == iLQGSettings::RK_SYM)
+//			{
+//				integratorsRkSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
+//			}
 			else
 				throw std::runtime_error("invalid integration mode selected.");
 		}
