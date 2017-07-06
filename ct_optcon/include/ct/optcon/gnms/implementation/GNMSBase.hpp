@@ -680,6 +680,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 {
 	gv_[k] = rv_[k];
 	gv_[k].noalias() += B_[k].transpose() * sv_[k+1];
+	gv_[k].noalias() += B_[k].transpose() * S_[k+1] * d_[k]; // todo: self adjoint view
 
 	G_[k] = P_[k];
 	//G_[k].noalias() += B_[k].transpose() * S_[k+1] * A_[k];
