@@ -232,7 +232,7 @@ void singleCore()
 		}
 	}
 
-	foundBetter = false;
+	foundBetter = true;
 
 	numIterations = 0;
 	while (foundBetter)
