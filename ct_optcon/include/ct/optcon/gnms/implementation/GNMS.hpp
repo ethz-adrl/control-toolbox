@@ -108,6 +108,7 @@ void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::updateShots()
 {
 	for (size_t k=0; k<this->K_; k++) {
 		this->updateSingleShot(this->settings_.nThreads, k);
+		//this->initializeSingleShot(this->settings_.nThreads, k);
 	}
 }
 
@@ -116,7 +117,7 @@ void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::computeDefects()
 {
 	this->d_norm_ = 0.0;
 
-	for (size_t k=0; k<this->K_; k++) {
+	for (size_t k=0; k<this->K_+1; k++) {
 		this->computeSingleDefect(this->settings_.nThreads, k);
 		this->d_norm_ += this->d_[k].norm();
 	}
