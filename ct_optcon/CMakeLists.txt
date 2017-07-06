@@ -163,6 +163,9 @@ endif()
 
 add_executable(GNMSTest test/gnms/GNMSTest.cpp)
 target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
+
+add_executable(GNMSTest2 test/gnms/GNMSTest2.cpp)
+target_link_libraries(GNMSTest2 ${catkin_LIBRARIES} ${MATLAB_LIBS})
 #
 #catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
 #target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
