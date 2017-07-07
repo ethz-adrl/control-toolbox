@@ -179,6 +179,14 @@ void singleCore()
 			}
 			break;
 		}
+		case 4: // zero
+		{
+			for (size_t i=1; i<nSteps+1; i++)
+			{
+				x0[i].setZero();
+			}
+			break;
+		}
 		default:
 		{
 			throw std::runtime_error("illegal init type");
@@ -247,7 +255,7 @@ void singleCore()
 
 			std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
 			std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
-		if (numIterations>3)
+		if (numIterations>40)
 		{
 			break;
 		}
