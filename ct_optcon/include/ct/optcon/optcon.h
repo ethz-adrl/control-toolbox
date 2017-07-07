@@ -48,6 +48,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ilqg/iLQGMP.hpp"
 #include "ilqg/iLQGSettings.hpp"
 
+#include "hpipm/HPIPMInterface.hpp"
+
 #include "gnms/GNMS.hpp"
 #include "gnms/GNMSSettings.hpp"
 

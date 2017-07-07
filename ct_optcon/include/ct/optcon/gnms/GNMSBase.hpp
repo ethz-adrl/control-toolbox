@@ -354,6 +354,8 @@ protected:
 
 	virtual void backwardPass() = 0;
 
+	void backwardPassHPIPM();
+
 	//! Computes the linearization of the dynamics along the trajectory. See computeLinearizedDynamics for details
 	virtual void computeLinearizedDynamicsAroundTrajectory() = 0;
 

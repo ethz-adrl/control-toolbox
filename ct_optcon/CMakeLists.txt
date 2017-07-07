@@ -98,6 +98,13 @@ include_directories(
     ${EIGEN_INCLUDE_DIRS} 
     include
     ${catkin_INCLUDE_DIRS}
+    /opt/blasfeo/include
+    /home/neunertm/code/hpipm/include/
+)
+
+link_directories(
+    /home/neunertm/code/hpipm/lib/
+    /opt/blasfeo/lib/
 )
 
 ## Generate messages in the 'msg' folder
@@ -161,11 +168,16 @@ endif()
 #catkin_add_gtest(iLQGCTest test/ilqg/iLQGCTest.cpp)
 #target_link_libraries(iLQGCTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
 
-add_executable(GNMSTest test/gnms/GNMSTest.cpp)
-target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
+#add_executable(GNMSTest test/gnms/GNMSTest.cpp)
+#target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
+#
+#add_executable(GNMSTest2 test/gnms/GNMSTest2.cpp)
+#target_link_libraries(GNMSTest2 ${catkin_LIBRARIES} ${MATLAB_LIBS})
 
-add_executable(GNMSTest2 test/gnms/GNMSTest2.cpp)
-target_link_libraries(GNMSTest2 ${catkin_LIBRARIES} ${MATLAB_LIBS})
+add_executable(HPIPMInterfaceTest test/hpipm/HPIPMInterfaceTest.cpp)
+target_link_libraries(HPIPMInterfaceTest hpipm blasfeo)
+
+
 #
 #catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
 #target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)

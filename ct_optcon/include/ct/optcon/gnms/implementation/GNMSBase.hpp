@@ -660,6 +660,12 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::initializeCostToGo()
 }
 
 
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPassHPIPM()
+{
+
+}
+
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostToGo(size_t k)
