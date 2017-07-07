@@ -19,3 +19,4 @@ ct_core/generated/*
 solution.mat
 *.tag
 *.tmp
+*.mat
