@@ -37,27 +37,27 @@ void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
 	// initialize cost to go (described in step 3)
 	this->initializeCostToGo();
 
-	std::cout << "preparing"<<std::endl;
+	ct::core::Timer timer;
 
 #ifdef HPIPM
-	ct::core::StateVectorArray<STATE_DIM> der(this->K_);
+	ct::core::StateVectorArray<STATE_DIM> b(this->K_);
 	for (int k=0; k<this->K_; k++)
 	{
-		this->getNonlinearSystemsInstances()[this->settings_.nThreads]->computeControlledDynamics(
-				ct::core::StateVector<STATE_DIM>::Zero(),
-				0.0,
-				ct::core::ControlVector<CONTROL_DIM>::Zero(),
-				der[k]
-		);
+//		this->getNonlinearSystemsInstances()[this->settings_.nThreads]->computeControlledDynamics(
+//				ct::core::StateVector<STATE_DIM>::Zero(),
+//				0.0,
+//				ct::core::ControlVector<CONTROL_DIM>::Zero(),
+//				der[k]
+//		);
+		b[k] = this->x_[k+1] - this->A_[k] * this->x_[k] - this->B_[k] * this->u_ff_[k] + this->d_[k];
 	}
-	std::cout << "setting problem"<<std::endl;
 
 	this->HPIPMInterface_.setProblem(
 			this->x_,
 			this->u_ff_,
 			this->A_,
 			this->B_,
-			der,
+			b,
 			this->P_,
 			this->qv_,
 			this->Q_,
@@ -65,20 +65,26 @@ void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
 			this->R_
 	);
 
-	std::cout << "solving problem"<<std::endl;
+
+
+	timer.start();
 
 	this->HPIPMInterface_.solve();
 
-	std::cout << "printing solution"<<std::endl;
-	this->HPIPMInterface_.printSolution();
+	timer.stop();
+	std::cout << "time HPIPM: "<<timer.getElapsedTime()<<std::endl;
 
-	exit(-1);
+
+	//this->HPIPMInterface_.printSolution();
+
 #endif HPIPM
 
 
 
 	this->du_norm_ = 0;
 	this->dx_norm_ = 0;
+
+	timer.start();
 
 	for (int k=this->K_-1; k>=0; k--)
 	{
@@ -97,7 +103,11 @@ void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
 		this->dx_norm_ += this->lx_[k+1].norm();
 	}
 
-	this->updateControlAndState();
+	updateControlAndState();
+
+	timer.stop();
+
+	std::cout << "time CT: "<<timer.getElapsedTime()<<std::endl;
 }
 
 

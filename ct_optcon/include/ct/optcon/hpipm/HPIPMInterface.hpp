@@ -8,6 +8,8 @@
 #ifndef INCLUDE_CT_OPTCON_HPIPM_HPIPMINTERFACE_HPP_
 #define INCLUDE_CT_OPTCON_HPIPM_HPIPMINTERFACE_HPP_
 
+#ifdef HPIPM
+
 #include <blasfeo_target.h>
 #include <blasfeo_common.h>
 #include <blasfeo_v_aux_ext_dep.h>
@@ -158,16 +160,10 @@ public:
 			hA_[i] = A[i].data();
 			hB_[i] = B[i].data();
 			hb_[i] = b[i].data();
-			std::cout << "A["<<i<<"]: "<<std::endl << A[i] << std::endl << std::endl << std::endl;
-			std::cout << "B["<<i<<"]: "<<std::endl << B[i] << std::endl << std::endl << std::endl;
-			std::cout << "b["<<i<<"]: "<<b[i].transpose() << std::endl << std::endl;
 		}
 
 		hb0_ = b[0] + A[0] * x[0];
 		hb_[0] = hb0_.data();
-
-		std::cout << "x0 "<<x[0].transpose() << std::endl << std::endl;
-		std::cout << "b0: "<<hb0_.transpose() << std::endl << std::endl;
 
 		for (size_t i=0; i<N_; i++)
 		{
@@ -178,14 +174,6 @@ public:
 			hq_[i] = hqEigen_[i].data();
 			hrEigen_[i] = rv[i] - R[i]*u[i] - P[i]*x[i];
 			hr_[i] = hrEigen_[i].data();
-
-			std::cout << "Q["<<i<<"]: "<<Q[i]<<std::endl << std::endl;
-			std::cout << "R["<<i<<"]: "<<R[i]<<std::endl << std::endl;
-
-			std::cout << "S["<<i<<"]: "<<P[i]<<std::endl << std::endl;
-
-			std::cout << "q["<<i<<"]: "<<hqEigen_[i].transpose()<<std::endl << std::endl;
-			std::cout << "r["<<i<<"]: "<<hrEigen_[i].transpose()<<std::endl << std::endl;
 		}
 		hQ_[N_] = Q[N_].data();
 		hS_[N_] = nullptr;
@@ -197,9 +185,18 @@ public:
 		hr0_ = hrEigen_[0] + P[0] * x[0];
 		hr_[0] = hr0_.data();
 
-
-
-		std::cout << "r0: "<<hr0_.transpose() << std::endl;
+//		printf("\nQ\n");
+//		d_print_mat(STATE_DIM, STATE_DIM, hQ_[0], STATE_DIM);
+//		printf("\nR\n");
+//		d_print_mat(CONTROL_DIM, CONTROL_DIM, hR_[0], CONTROL_DIM);
+//		printf("\nS\n");
+//		d_print_mat(CONTROL_DIM, STATE_DIM, hS_[0], CONTROL_DIM);
+//		printf("\nq\n");
+//		d_print_mat(1, STATE_DIM, hq_[0], 1);
+//		printf("\nr\n");
+//		d_print_mat(1, CONTROL_DIM, hr_[1], 1);
+//		printf("\nr0\n");
+//		d_print_mat(1, CONTROL_DIM, hr_[0], 1);
 	}
 
 	void solveLinearProblem(
@@ -217,6 +214,23 @@ public:
 
 		StateMatrixArray A(N_, Adt.exp());
 		StateControlMatrixArray B(N_, Ac.inverse() * (A[0] - StateMatrix::Identity()) *  linearSystem.getDerivativeControl(x0, uNom, 0));
+
+//		Eigen::Matrix<double, STATE_DIM, 1> bd;
+//		bd.setConstant(0.1);
+//
+//		Eigen::Matrix<double, STATE_DIM, 1> bc;
+//		bc = (A[0] - StateMatrix::Identity()).inverse() * Ac * bd;
+//
+//		std::cout << "bc: " << bc.transpose() << std::endl;
+//
+//
+//
+//		Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> Brec;
+//		Brec = (A[0] - StateMatrix::Identity()).inverse() * Ac * B[0];
+//
+//		std::cout << "Brec: " << std::endl << Brec << std::endl;
+//		std::cout << "Bc: " << std::endl << linearSystem.getDerivativeControl(x0, uNom, 0) << std::endl;
+
 
 
 		// feed current state and control to cost function
@@ -247,8 +261,36 @@ public:
 
 	void solve()
 	{
-		::d_cvt_colmaj_to_ocp_qp(&hA_[0], &hB_[0], &hb_[0], &hQ_[0], &hS_[0], &hR_[0], &hq_[0], &hr_[0], &hidxb_[0], &hd_lb_[0], &hd_ub_[0], &hC_[0], &hD_[0], &hd_lg_[0], &hd_ug_[0], &qp_);
+//		for (size_t i=0; i<N_+1; i++)
+//		{
+//			if (i<N_)
+//			{
+//				printf("\nA\n");
+//				d_print_mat(STATE_DIM, STATE_DIM, hA_[i], STATE_DIM);
+//				printf("\nB\n");
+//				d_print_mat(STATE_DIM, CONTROL_DIM, hB_[i], STATE_DIM);
+//				printf("\nb\n");
+//				d_print_mat(1, STATE_DIM, hb_[i], 1);
+//			}
+//
+//			printf("\nQ\n");
+//			d_print_mat(STATE_DIM, STATE_DIM, hQ_[i], STATE_DIM);
+//			printf("\nq\n");
+//			d_print_mat(1, STATE_DIM, hq_[i], 1);
+//
+//
+//			if (i<N_)
+//			{
+//				printf("\nR\n");
+//				d_print_mat(CONTROL_DIM, CONTROL_DIM, hR_[i], CONTROL_DIM);
+//				printf("\nS\n");
+//				d_print_mat(CONTROL_DIM, STATE_DIM, hS_[i], CONTROL_DIM);
+//				printf("\nr\n");
+//				d_print_mat(1, CONTROL_DIM, hr_[i], 1);
+//			}
+//		}
 
+		::d_cvt_colmaj_to_ocp_qp(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(), hr_.data(), hidxb_.data(), hd_lb_.data(), hd_ub_.data(), hC_.data(), hD_.data(), hd_lg_.data(), hd_ug_.data(), &qp_);
 		::d_solve_ipm2_hard_ocp_qp(&qp_, &qp_sol_, &workspace_);
 	}
 
@@ -464,6 +506,6 @@ private:
 }
 }
 
-
+#endif
 
 #endif /* INCLUDE_CT_OPTCON_HPIPM_HPIPMINTERFACE_HPP_ */

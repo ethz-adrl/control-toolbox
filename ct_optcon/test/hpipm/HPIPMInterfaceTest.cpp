@@ -98,8 +98,9 @@ public:
 	{
 		A_.setZero();
 		B_.setZero();
-		x0.setZero();
-		x0.setConstant(0.1);
+		b_.setZero();
+
+		b_ << 0.145798, 0.150018, 0.150018, 0.145798, 0.245798, 0.200018, 0.200018, 0.245798;
 
 		static const int pp = state_dim/2; // number of masses
 
@@ -142,19 +143,20 @@ public:
 			ct::core::StateVector<state_dim>& derivative
 	) override
 	{
-		derivative = A_*state + B_*control + x0;
+		derivative = A_*state + B_*control + b_;
 	}
 
 private:
 	ct::core::StateMatrix<state_dim> A_;
 	ct::core::StateControlMatrix<state_dim,control_dim> B_;
-	ct::core::StateVector<state_dim> x0;
+	ct::core::StateVector<state_dim> b_;
 };
 
 void testGNMS();
 
 int main(int argc, char* argv[])
 {
+
 	LinkedMasses system;
 
 	int N = 5;
@@ -188,6 +190,9 @@ int main(int argc, char* argv[])
 	interface.solveLinearProblem(x0, system, costFunction, stateOffset, dt);
 	interface.printSolution();
 
+	std::cout <<std::endl <<std::endl << std::endl;
+	std::cout << "TEST GNMS!!!!!!!!!!!!!!!!!!!!!!!!!!" <<std::endl <<std::endl << std::endl;
+
 	testGNMS();
 
 	return 1;
@@ -210,7 +215,8 @@ void testGNMS()
 
 
 	std::shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new LinkedMasses2);
-	std::shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new ct::core::SystemLinearizer<state_dim,control_dim>(nonlinearSystem));
+	//std::shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new ct::core::SystemLinearizer<state_dim,control_dim>(nonlinearSystem));
+	std::shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinkedMasses);
 
 	StateMatrix<state_dim> Q;
 	Q.setIdentity();
@@ -231,7 +237,7 @@ void testGNMS()
 			new ct::optcon::CostFunctionQuadraticSimple<state_dim, control_dim>(
 					Q, R,
 					-stateOffset, uNom,
-					-stateOffset, Q));
+					-stateOffset, Q*gnms_settings.dt));
 
 	// times
 	int N = 5;

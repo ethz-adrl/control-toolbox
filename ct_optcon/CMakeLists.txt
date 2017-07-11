@@ -174,9 +174,14 @@ endif()
 #add_executable(GNMSTest2 test/gnms/GNMSTest2.cpp)
 #target_link_libraries(GNMSTest2 ${catkin_LIBRARIES} ${MATLAB_LIBS})
 
-add_executable(HPIPMInterfaceTest test/hpipm/HPIPMInterfaceTest.cpp)
-target_link_libraries(HPIPMInterfaceTest hpipm blasfeo ${MATLAB_LIBS})
+#add_executable(HPIPMInterfaceTest test/hpipm/HPIPMInterfaceTest.cpp)
+#target_link_libraries(HPIPMInterfaceTest hpipm blasfeo ${MATLAB_LIBS})
 
+#add_executable(HPIPMInterfaceTest2 test/hpipm/HPIPMInterfaceTest2.cpp)
+#target_link_libraries(HPIPMInterfaceTest2 hpipm blasfeo ${MATLAB_LIBS})
+
+add_executable(HPIPMInterfaceTest3 test/hpipm/HPIPMInterfaceTest3.cpp)
+target_link_libraries(HPIPMInterfaceTest3 hpipm blasfeo ${MATLAB_LIBS})
 
 #
 #catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
