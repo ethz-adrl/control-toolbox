@@ -40,6 +40,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Include file for convenience
 #include <Eigen/Core>
 #include <Eigen/StdVector>
+#include <unsupported/Eigen/MatrixFunctions>
 
 
 #include "Common"

@@ -16,8 +16,8 @@ find_package(Eigen REQUIRED)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall")
 
-option(MATLAB "Compile with matlab support" ON)
-option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" ON)
+option(MATLAB "Compile with matlab support" OFF)
+option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" OFF)
 option(DEBUG_PRINT "Print debug messages" ON)
 
 
@@ -175,7 +175,7 @@ endif()
 #target_link_libraries(GNMSTest2 ${catkin_LIBRARIES} ${MATLAB_LIBS})
 
 add_executable(HPIPMInterfaceTest test/hpipm/HPIPMInterfaceTest.cpp)
-target_link_libraries(HPIPMInterfaceTest hpipm blasfeo)
+target_link_libraries(HPIPMInterfaceTest hpipm blasfeo ${MATLAB_LIBS})
 
 
 #

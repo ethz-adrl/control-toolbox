@@ -50,6 +50,8 @@ template <int STATE_DIM, int CONTROL_DIM>
 class HPIPMInterface
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	static const int state_dim = STATE_DIM;
 	static const int control_dim = CONTROL_DIM;
 
@@ -63,63 +65,82 @@ public:
 	typedef ct::core::StateVectorArray<STATE_DIM> StateVectorArray;
 	typedef ct::core::ControlVectorArray<CONTROL_DIM> ControlVectorArray;
 
-	HPIPMInterface(int N):
-		N_(N),
-
-		nx_(N_+1, STATE_DIM),
-		nu_(N_+1, CONTROL_DIM),
-		nb_(N_+1, 0),
-		ng_(N_+1, 0),
-
-		hA_(N),
-		hB_(N),
-		hb_(N),
-		hQ_(N_+1),
-		hS_(N_+1),
-		hR_(N_+1),
-		hq_(N_+1),
-		hr_(N_+1),
-		hd_lb_(N_+1),
-		hd_ub_(N_+1),
-		hd_lg_(N_+1),
-		hd_ug_(N_+1),
-		hC_(N_+1),
-		hD_(N_+1),
-		hidxb_(N_+1),
-		x0_(nullptr)
+	HPIPMInterface() :
+		x0_(nullptr),
+		N_(-1)
 	{
+		// some zero variables
+		hb0_.setZero();
+		hr0_.setZero();
+
+		arg_.alpha_min = 1e-8;
+		arg_.mu_max = 1e-12;
+		arg_.iter_max = 20;
+		arg_.mu0 = 2.0;
+
+		//changeTimeHorizon(N);
+	}
+
+	~HPIPMInterface()
+	{
+	}
+
+	void changeTimeHorizon(int N)
+	{
+		N_ = N;
+
+		nx_.resize(N_+1, STATE_DIM);
+		nu_.resize(N_+1, CONTROL_DIM);
+		nb_.resize(N_+1, 0);
+		ng_.resize(N_+1, 0);
+
+		hA_.resize(N_);
+		hB_.resize(N_);
+		hb_.resize(N_);
+		hQ_.resize(N_+1);
+		hS_.resize(N_+1);
+		hR_.resize(N_+1);
+		hqEigen_.resize(N_+1);
+		hq_.resize(N_+1);
+		hrEigen_.resize(N_+1);
+		hr_.resize(N_+1);
+		hd_lb_.resize(N_+1);
+		hd_ub_.resize(N_+1);
+		hd_lg_.resize(N_+1);
+		hd_ug_.resize(N_+1);
+		hC_.resize(N_+1);
+		hD_.resize(N_+1);
+		hidxb_.resize(N_+1);
+
 		// initial state is not a decision variable but given
 		nx_[0] = 0;
 
 		// last input is not a decision variable
 		nu_[N] = 0;
 
-		// some zero variables
-		hb0_.setZero();
-		hr0_.setZero();
 
-		int qp_size = ::d_memsize_ocp_qp(N_, &nx_[0], &nu_[0], &nb_[0], &ng_[0]);
-		qp_mem_ = malloc(qp_size);
-		::d_create_ocp_qp(N_, &nx_[0], &nu_[0], &nb_[0], &ng_[0], &qp_, qp_mem_);
+		int qp_size = ::d_memsize_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
+		std::cout << "qp_size: " << qp_size << std::endl;
+		qp_mem_.resize(qp_size);
+		::d_create_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_, qp_mem_.data());
 
-		int qp_sol_size = ::d_memsize_ocp_qp_sol(N_, &nx_[0], &nu_[0], &nb_[0], &ng_[0]);
-		qp_sol_mem_ = malloc(qp_sol_size);
-		::d_create_ocp_qp_sol(N_, &nx_[0], &nu_[0], &nb_[0], &ng_[0], &qp_sol_, qp_sol_mem_);
+		int qp_sol_size = ::d_memsize_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
+		std::cout << "qp_sol_size: " << qp_sol_size << std::endl;
+		qp_sol_mem_.resize(qp_sol_size);
+		::d_create_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_sol_, qp_sol_mem_.data());
 
-		arg_.alpha_min = 1e-8;
-		arg_.mu_max = 1e-12;
-		arg_.iter_max = 20;
-		arg_.mu0 = 2.0;
 		int ipm_size = ::d_memsize_ipm_hard_ocp_qp(&qp_, &arg_);
-		ipm_mem_ = malloc(ipm_size);
-
-		::d_create_ipm_hard_ocp_qp(&qp_, &arg_, &workspace_, ipm_mem_);
+		std::cout << "ipm_size: " << ipm_size << std::endl;
+		ipm_mem_.resize(ipm_size);
+		::d_create_ipm_hard_ocp_qp(&qp_, &arg_, &workspace_, ipm_mem_.data());
 	}
 
 	void setProblem(
-			ct::core::StateVector<STATE_DIM>& x0,
+			StateVectorArray& x,
+			ControlVectorArray& u,
 			StateMatrixArray& A,
 			StateControlMatrixArray& B,
+			StateVectorArray& b,
 			FeedbackArray& P,
 			StateVectorArray& qv,
 			StateMatrixArray& Q,
@@ -127,52 +148,69 @@ public:
 			ControlMatrixArray& R
 	)
 	{
-		std::cout << "A: " << std::endl << A[0] << std::endl;
-		std::cout << "B: " << std::endl << B[0] << std::endl;
+		if (N_ == -1)
+			throw std::runtime_error ("Time horizon not set, please set it first");
 
-
-		std::cout << "Q: "<<std::endl<<Q[0]<<std::endl;
-		std::cout << "R: "<<std::endl<<R[0]<<std::endl;
-		std::cout << "qv: "<<qv[0].transpose()<<std::endl;
-		std::cout << "rv: "<<rv[0].transpose()<<std::endl;
-
-		x0_ = x0.data();
+		x0_ = x[0].data();
 
 		for (size_t i=0; i<N_; i++)
 		{
 			hA_[i] = A[i].data();
 			hB_[i] = B[i].data();
-			hb_[i] = hb0_.data();
+			hb_[i] = b[i].data();
+			std::cout << "A["<<i<<"]: "<<std::endl << A[i] << std::endl << std::endl << std::endl;
+			std::cout << "B["<<i<<"]: "<<std::endl << B[i] << std::endl << std::endl << std::endl;
+			std::cout << "b["<<i<<"]: "<<b[i].transpose() << std::endl << std::endl;
 		}
-		hb0_ = A[0] * x0;
+
+		hb0_ = b[0] + A[0] * x[0];
 		hb_[0] = hb0_.data();
 
-		for (size_t i=0; i<N_+1; i++)
+		std::cout << "x0 "<<x[0].transpose() << std::endl << std::endl;
+		std::cout << "b0: "<<hb0_.transpose() << std::endl << std::endl;
+
+		for (size_t i=0; i<N_; i++)
 		{
 			hQ_[i] = Q[i].data();
 			hS_[i] = P[i].data();
 			hR_[i] = R[i].data();
-			hq_[i] = qv[i].data();
-			hr_[i] = rv[i].data();
+			hqEigen_[i] = qv[i] - Q[i]*x[i] - P[i].transpose()*u[i];
+			hq_[i] = hqEigen_[i].data();
+			hrEigen_[i] = rv[i] - R[i]*u[i] - P[i]*x[i];
+			hr_[i] = hrEigen_[i].data();
+
+			std::cout << "Q["<<i<<"]: "<<Q[i]<<std::endl << std::endl;
+			std::cout << "R["<<i<<"]: "<<R[i]<<std::endl << std::endl;
+
+			std::cout << "S["<<i<<"]: "<<P[i]<<std::endl << std::endl;
+
+			std::cout << "q["<<i<<"]: "<<hqEigen_[i].transpose()<<std::endl << std::endl;
+			std::cout << "r["<<i<<"]: "<<hrEigen_[i].transpose()<<std::endl << std::endl;
 		}
-		hr0_ = P[0] * x0;
+		hQ_[N_] = Q[N_].data();
+		hS_[N_] = nullptr;
+		hR_[N_] = nullptr;
+		hqEigen_[N_] = qv[N_] - Q[N_]*x[N_];
+		hq_[N_] = hqEigen_[N_].data();
+		hr_[N_] = nullptr;
+
+		hr0_ = hrEigen_[0] + P[0] * x[0];
 		hr_[0] = hr0_.data();
+
+
+
+		std::cout << "r0: "<<hr0_.transpose() << std::endl;
 	}
 
-	void setLinearProblem(
+	void solveLinearProblem(
 			ct::core::StateVector<STATE_DIM>& x0,
 			ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>& linearSystem,
 			ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>& costFunction,
+			ct::core::StateVector<STATE_DIM>& stateOffset,
 			double dt
 	)
 	{
-		ct::core::StateVector<STATE_DIM> xNom; xNom.setZero(); // reference state should not matter for linear system
 		ct::core::ControlVector<CONTROL_DIM> uNom; uNom.setZero(); // reference control should not matter for linear system
-
-		/*
-		StateMatrixArray A(N_, StateMatrix::Identity() + dt * linearSystem.getDerivativeState(x0, uNom, 0));
-		StateControlMatrixArray B(N_, dt * linearSystem.getDerivativeControl(x0, uNom, 0));
-		*/
 
 		StateMatrix Ac = linearSystem.getDerivativeState(x0, uNom, 0);
 		StateMatrix Adt = dt * Ac;
@@ -182,32 +220,42 @@ public:
 
 
 		// feed current state and control to cost function
-		costFunction.setCurrentStateAndControl(xNom, uNom, 0);
+		costFunction.setCurrentStateAndControl(x0, uNom, 0);
 
 		// derivative of cost with respect to state
 		StateVectorArray qv(N_+1, costFunction.stateDerivativeIntermediate()*dt);
 		StateMatrixArray Q(N_+1, costFunction.stateSecondDerivativeIntermediate()*dt);
 
 		// derivative of cost with respect to control and state
-		FeedbackArray P(N_+1, costFunction.stateControlDerivativeIntermediate()*dt);
+		FeedbackArray P(N_, costFunction.stateControlDerivativeIntermediate()*dt);
 
 		// derivative of cost with respect to control
-		ControlVectorArray rv(N_+1, costFunction.controlDerivativeIntermediate()*dt);
+		ControlVectorArray rv(N_, costFunction.controlDerivativeIntermediate()*dt);
 
-		ControlMatrixArray R(N_+1, costFunction.controlSecondDerivativeIntermediate()*dt);
+		ControlMatrixArray R(N_, costFunction.controlSecondDerivativeIntermediate()*dt);
 
-		setProblem(x0, A, B, P, qv, Q, rv, R);
+		StateVectorArray b(N_+1, stateOffset);
+
+		StateVectorArray x(N_+1, x0);
+		ControlVectorArray u(N_, uNom);
+
+		setProblem(x, u, A, B, b, P, qv, Q, rv, R);
+		solve();
+
 	}
 
 
 	void solve()
 	{
-		int ii;
-
 		::d_cvt_colmaj_to_ocp_qp(&hA_[0], &hB_[0], &hb_[0], &hQ_[0], &hS_[0], &hR_[0], &hq_[0], &hr_[0], &hidxb_[0], &hd_lb_[0], &hd_ub_[0], &hC_[0], &hD_[0], &hd_lg_[0], &hd_ug_[0], &qp_);
 
 		::d_solve_ipm2_hard_ocp_qp(&qp_, &qp_sol_, &workspace_);
+	}
 
+
+	void printSolution()
+	{
+		int ii;
 
 		double *u[N_+1]; for(ii=0; ii<=N_; ii++) d_zeros(u+ii, nu_[ii], 1);
 		double *x[N_+1]; for(ii=0; ii<=N_; ii++) d_zeros(x+ii, nx_[ii], 1);
@@ -219,7 +267,7 @@ public:
 
 		::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u, x, pi, lam_lb, lam_ub, lam_lg, lam_ug);
 
-		#if 1
+
 			printf("\nsolution\n\n");
 			printf("\nu\n");
 			for(ii=0; ii<=N_; ii++)
@@ -227,6 +275,9 @@ public:
 			printf("\nx\n");
 			for(ii=0; ii<=N_; ii++)
 				d_print_mat(1, nx_[ii], x[ii], 1);
+
+			/*
+		#if 1
 			printf("\npi\n");
 			for(ii=0; ii<N_; ii++)
 				d_print_mat(1, nx_[ii+1], pi[ii], 1);
@@ -290,11 +341,11 @@ public:
 			printf("\nres_mu\n");
 			printf("\n%e\n\n", workspace_.res_mu);
 		#endif
+		*/
 
 			printf("\nipm iter = %d\n", workspace_.iter);
 			printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha\t\tmu\n");
 			::d_print_e_tran_mat(5, workspace_.iter, workspace_.stat, 5);
-
 	}
 
 
@@ -382,7 +433,9 @@ private:
 	std::vector<double*> hQ_;
 	std::vector<double*> hS_;
 	std::vector<double*> hR_;
+	StateVectorArray hqEigen_;
 	std::vector<double*> hq_;
+	ControlVectorArray hrEigen_;
 	std::vector<double*> hr_;
 	Eigen::Matrix<double, control_dim, 1> hr0_;
 
@@ -396,14 +449,14 @@ private:
 	double *x0_; // initial state
 
 
-	void *qp_mem_;
+	std::vector<char> qp_mem_;
 	struct d_ocp_qp qp_;
 
-	void *qp_sol_mem_;
+	std::vector<char> qp_sol_mem_;
 	struct d_ocp_qp_sol qp_sol_;
 
 	struct d_ipm_hard_ocp_qp_arg arg_;
-	void *ipm_mem_;
+	std::vector<char> ipm_mem_;
 	struct d_ipm_hard_ocp_qp_workspace workspace_;
 };
 

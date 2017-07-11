@@ -33,6 +33,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/core/core.h>
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
 #include <ct/optcon/solver/OptConSolver.h>
+
 #include "GNMSSettings.hpp"
 
 #ifdef MATLAB
@@ -104,7 +105,7 @@ public:
 
 
 	typedef SCALAR scalar_t;
-	typedef std::vector<SCALAR> scalar_array_t;
+	typedef std::vector<SCALAR, Eigen::aligned_allocator<SCALAR>> scalar_array_t;
 
 
     //! GNMS constructor.
@@ -146,6 +147,10 @@ public:
 
 			smallestEigenvalue_(std::numeric_limits<scalar_t>::infinity()),
 			smallestEigenvalueIteration_(std::numeric_limits<scalar_t>::infinity()),
+
+#ifdef HPIPM
+			HPIPMInterface_(),
+#endif
 
 			eigenvalueSolver_(CONTROL_DIM)
 	{
@@ -354,7 +359,12 @@ protected:
 
 	virtual void backwardPass() = 0;
 
-	void backwardPassHPIPM();
+	#ifdef HPIPM
+	void backwardPassHPIPM()
+	{
+		HPIPMInterface_.solve();
+	}
+	#endif
 
 	//! Computes the linearization of the dynamics along the trajectory. See computeLinearizedDynamics for details
 	virtual void computeLinearizedDynamicsAroundTrajectory() = 0;
@@ -584,6 +594,10 @@ protected:
 
 	scalar_t smallestEigenvalue_;
 	scalar_t smallestEigenvalueIteration_;
+
+#ifdef HPIPM
+	HPIPMInterface<STATE_DIM, CONTROL_DIM> HPIPMInterface_;
+#endif
 
 	Eigen::SelfAdjointEigenSolver<control_matrix_t> eigenvalueSolver_; //! Eigenvalue solver, used for inverting the Hessian and for regularization
 

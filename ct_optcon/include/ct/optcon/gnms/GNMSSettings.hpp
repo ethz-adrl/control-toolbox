@@ -175,7 +175,7 @@ class GNMSSettings
 public:
     //! enum indicating which integrator to use for the GNMS forward rollout
     enum INTEGRATOR { EULER = 0, RK4 = 1, EULER_SYM = 2, RK_SYM = 3};
-    enum DISCRETIZATION { FORWARD_EULER = 0, BACKWARD_EULER = 1, TUSTIN = 2 };
+    enum DISCRETIZATION { FORWARD_EULER = 0, BACKWARD_EULER = 1, TUSTIN = 2, MATRIX_EXPONENTIAL = 3 };
 
     //! GNMS Settings default constructor
     /*!

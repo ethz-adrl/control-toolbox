@@ -78,7 +78,7 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeTimeHorizon(const SCALAR& t
 	xShot_.resize(K_+1);
 	u_ff_.resize(K_);
 	u_ff_prev_.resize(K_);
-	d_.resize(K_);
+	d_.resize(K_+1);
 	gv_.resize(K_);
 	G_.resize(K_);
 	H_.resize(K_);
@@ -95,6 +95,10 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeTimeHorizon(const SCALAR& t
 	R_.resize(K_);
 	sv_.resize(K_+1);
 	S_.resize(K_+1);
+
+#ifdef HPIPM
+	HPIPMInterface_.changeTimeHorizon(K_);
+#endif
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -610,6 +614,16 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamics(size_t 
 			B_[k] = aNewInv * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_ff_[k], k*settings_.dt);
 			break;
 		}
+		case GNMSSettings::MATRIX_EXPONENTIAL:
+		{
+			state_matrix_t Ac = this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_ff_[k], k*settings_.dt);
+			state_matrix_t Adt = settings_.dt * Ac;
+
+			A_[k] = Adt.exp();
+			B_[k] = Ac.inverse() * (A_[k] - state_matrix_t::Identity()) *  this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_ff_[k], k*settings_.dt);
+			break;
+		}
+
 		default:
 		{
 			throw std::runtime_error("Unknown discretization scheme");
@@ -660,11 +674,6 @@ void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::initializeCostToGo()
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPassHPIPM()
-{
-
-}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>

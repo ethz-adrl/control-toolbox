@@ -37,6 +37,46 @@ void GNMS<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
 	// initialize cost to go (described in step 3)
 	this->initializeCostToGo();
 
+	std::cout << "preparing"<<std::endl;
+
+#ifdef HPIPM
+	ct::core::StateVectorArray<STATE_DIM> der(this->K_);
+	for (int k=0; k<this->K_; k++)
+	{
+		this->getNonlinearSystemsInstances()[this->settings_.nThreads]->computeControlledDynamics(
+				ct::core::StateVector<STATE_DIM>::Zero(),
+				0.0,
+				ct::core::ControlVector<CONTROL_DIM>::Zero(),
+				der[k]
+		);
+	}
+	std::cout << "setting problem"<<std::endl;
+
+	this->HPIPMInterface_.setProblem(
+			this->x_,
+			this->u_ff_,
+			this->A_,
+			this->B_,
+			der,
+			this->P_,
+			this->qv_,
+			this->Q_,
+			this->rv_,
+			this->R_
+	);
+
+	std::cout << "solving problem"<<std::endl;
+
+	this->HPIPMInterface_.solve();
+
+	std::cout << "printing solution"<<std::endl;
+	this->HPIPMInterface_.printSolution();
+
+	exit(-1);
+#endif HPIPM
+
+
+
 	this->du_norm_ = 0;
 	this->dx_norm_ = 0;
 
