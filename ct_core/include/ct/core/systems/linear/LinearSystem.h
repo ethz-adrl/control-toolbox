@@ -45,6 +45,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class LinearSystem : public ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>{
 
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef typename Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t; //!< state Jacobian type
 	typedef typename Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t; //!< input Jacobian type

@@ -59,6 +59,8 @@ template <size_t STATE_DIM, typename SCALAR = double>
 class System
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	typedef SCALAR S; //!< the scalar type
 
 	//! default constructor
