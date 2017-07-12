@@ -5,7 +5,7 @@
  *      Author: neunertm
  */
 
-#define HPIPM
+//#define HPIPM
 
 #include <ct/optcon/optcon.h>
 
