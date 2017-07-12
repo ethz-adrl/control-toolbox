@@ -27,29 +27,12 @@ extern "C"
 
 #include <unsupported/Eigen/MatrixFunctions>
 
-typedef double REAL;
-
-//extern "C"
-//{
-//int d_memsize_ocp_qp(int N, int *nx, int *nu, int *nb, int *ng);
-//void d_create_ocp_qp(int N, int *nx, int *nu, int *nb, int *ng, struct OCP_QP *qp, void *memory);
-//
-//int d_memsize_ocp_qp_sol(int N, int *nx, int *nu, int *nb, int *ng);
-//void d_create_ocp_qp_sol(int N, int *nx, int *nu, int *nb, int *ng, struct OCP_QP_SOL *qp_sol, void *memory);
-//
-//void d_create_ipm_hard_ocp_qp(struct OCP_QP *qp, struct IPM_HARD_OCP_QP_ARG *arg, struct IPM_HARD_OCP_QP_WORKSPACE *workspace, void *mem);
-//void d_solve_ipm2_hard_ocp_qp(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, struct IPM_HARD_OCP_QP_WORKSPACE *ws);
-//
-//void d_cvt_colmaj_to_ocp_qp(REAL **A, REAL **B, REAL **b, REAL **Q, REAL **S, REAL **R, REAL **q, REAL **r, int **idxb, REAL **d_lb, REAL **d_ub, REAL **C, REAL **D, REAL **d_lg, REAL **d_ug, struct OCP_QP *qp);
-//void d_cvt_ocp_qp_sol_to_colmaj(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, REAL **u, REAL **x, REAL **pi, REAL **lam_lb, REAL **lam_ub, REAL **lam_lg, REAL **lam_ug);
-//}
-
 
 namespace ct {
 namespace optcon {
 
 template <int STATE_DIM, int CONTROL_DIM>
-class HPIPMInterface
+class HPIPMInterface : public LQOCSolver<STATE_DIM, CONTROL_DIM>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -87,179 +70,7 @@ public:
 	{
 	}
 
-	void changeTimeHorizon(int N)
-	{
-		N_ = N;
-
-		nx_.resize(N_+1, STATE_DIM);
-		nu_.resize(N_+1, CONTROL_DIM);
-		nb_.resize(N_+1, 0);
-		ng_.resize(N_+1, 0);
-
-		hA_.resize(N_);
-		hB_.resize(N_);
-		hb_.resize(N_);
-		hQ_.resize(N_+1);
-		hS_.resize(N_+1);
-		hR_.resize(N_+1);
-		hqEigen_.resize(N_+1);
-		hq_.resize(N_+1);
-		hrEigen_.resize(N_+1);
-		hr_.resize(N_+1);
-		hd_lb_.resize(N_+1);
-		hd_ub_.resize(N_+1);
-		hd_lg_.resize(N_+1);
-		hd_ug_.resize(N_+1);
-		hC_.resize(N_+1);
-		hD_.resize(N_+1);
-		hidxb_.resize(N_+1);
-
-		// initial state is not a decision variable but given
-		nx_[0] = 0;
-
-		// last input is not a decision variable
-		nu_[N] = 0;
-
-
-		int qp_size = ::d_memsize_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
-		std::cout << "qp_size: " << qp_size << std::endl;
-		qp_mem_.resize(qp_size);
-		::d_create_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_, qp_mem_.data());
-
-		int qp_sol_size = ::d_memsize_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
-		std::cout << "qp_sol_size: " << qp_sol_size << std::endl;
-		qp_sol_mem_.resize(qp_sol_size);
-		::d_create_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_sol_, qp_sol_mem_.data());
-
-		int ipm_size = ::d_memsize_ipm_hard_ocp_qp(&qp_, &arg_);
-		std::cout << "ipm_size: " << ipm_size << std::endl;
-		ipm_mem_.resize(ipm_size);
-		::d_create_ipm_hard_ocp_qp(&qp_, &arg_, &workspace_, ipm_mem_.data());
-	}
-
-	void setProblem(
-			StateVectorArray& x,
-			ControlVectorArray& u,
-			StateMatrixArray& A,
-			StateControlMatrixArray& B,
-			StateVectorArray& b,
-			FeedbackArray& P,
-			StateVectorArray& qv,
-			StateMatrixArray& Q,
-			ControlVectorArray& rv,
-			ControlMatrixArray& R
-	)
-	{
-		if (N_ == -1)
-			throw std::runtime_error ("Time horizon not set, please set it first");
-
-		x0_ = x[0].data();
-
-		for (size_t i=0; i<N_; i++)
-		{
-			hA_[i] = A[i].data();
-			hB_[i] = B[i].data();
-			hb_[i] = b[i].data();
-		}
-
-		hb0_ = b[0] + A[0] * x[0];
-		hb_[0] = hb0_.data();
-
-		for (size_t i=0; i<N_; i++)
-		{
-			hQ_[i] = Q[i].data();
-			hS_[i] = P[i].data();
-			hR_[i] = R[i].data();
-			hqEigen_[i] = qv[i] - Q[i]*x[i] - P[i].transpose()*u[i];
-			hq_[i] = hqEigen_[i].data();
-			hrEigen_[i] = rv[i] - R[i]*u[i] - P[i]*x[i];
-			hr_[i] = hrEigen_[i].data();
-		}
-		hQ_[N_] = Q[N_].data();
-		hS_[N_] = nullptr;
-		hR_[N_] = nullptr;
-		hqEigen_[N_] = qv[N_] - Q[N_]*x[N_];
-		hq_[N_] = hqEigen_[N_].data();
-		hr_[N_] = nullptr;
-
-		hr0_ = hrEigen_[0] + P[0] * x[0];
-		hr_[0] = hr0_.data();
-
-//		printf("\nQ\n");
-//		d_print_mat(STATE_DIM, STATE_DIM, hQ_[0], STATE_DIM);
-//		printf("\nR\n");
-//		d_print_mat(CONTROL_DIM, CONTROL_DIM, hR_[0], CONTROL_DIM);
-//		printf("\nS\n");
-//		d_print_mat(CONTROL_DIM, STATE_DIM, hS_[0], CONTROL_DIM);
-//		printf("\nq\n");
-//		d_print_mat(1, STATE_DIM, hq_[0], 1);
-//		printf("\nr\n");
-//		d_print_mat(1, CONTROL_DIM, hr_[1], 1);
-//		printf("\nr0\n");
-//		d_print_mat(1, CONTROL_DIM, hr_[0], 1);
-	}
-
-	void solveLinearProblem(
-			ct::core::StateVector<STATE_DIM>& x0,
-			ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>& linearSystem,
-			ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>& costFunction,
-			ct::core::StateVector<STATE_DIM>& stateOffset,
-			double dt
-	)
-	{
-		ct::core::ControlVector<CONTROL_DIM> uNom; uNom.setZero(); // reference control should not matter for linear system
-
-		StateMatrix Ac = linearSystem.getDerivativeState(x0, uNom, 0);
-		StateMatrix Adt = dt * Ac;
-
-		StateMatrixArray A(N_, Adt.exp());
-		StateControlMatrixArray B(N_, Ac.inverse() * (A[0] - StateMatrix::Identity()) *  linearSystem.getDerivativeControl(x0, uNom, 0));
-
-//		Eigen::Matrix<double, STATE_DIM, 1> bd;
-//		bd.setConstant(0.1);
-//
-//		Eigen::Matrix<double, STATE_DIM, 1> bc;
-//		bc = (A[0] - StateMatrix::Identity()).inverse() * Ac * bd;
-//
-//		std::cout << "bc: " << bc.transpose() << std::endl;
-//
-//
-//
-//		Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> Brec;
-//		Brec = (A[0] - StateMatrix::Identity()).inverse() * Ac * B[0];
-//
-//		std::cout << "Brec: " << std::endl << Brec << std::endl;
-//		std::cout << "Bc: " << std::endl << linearSystem.getDerivativeControl(x0, uNom, 0) << std::endl;
-
-
-
-		// feed current state and control to cost function
-		costFunction.setCurrentStateAndControl(x0, uNom, 0);
-
-		// derivative of cost with respect to state
-		StateVectorArray qv(N_+1, costFunction.stateDerivativeIntermediate()*dt);
-		StateMatrixArray Q(N_+1, costFunction.stateSecondDerivativeIntermediate()*dt);
-
-		// derivative of cost with respect to control and state
-		FeedbackArray P(N_, costFunction.stateControlDerivativeIntermediate()*dt);
-
-		// derivative of cost with respect to control
-		ControlVectorArray rv(N_, costFunction.controlDerivativeIntermediate()*dt);
-
-		ControlMatrixArray R(N_, costFunction.controlSecondDerivativeIntermediate()*dt);
-
-		StateVectorArray b(N_+1, stateOffset);
-
-		StateVectorArray x(N_+1, x0);
-		ControlVectorArray u(N_, uNom);
-
-		setProblem(x, u, A, B, b, P, qv, Q, rv, R);
-		solve();
-
-	}
-
-
-	void solve()
+	void solve() override
 	{
 //		for (size_t i=0; i<N_+1; i++)
 //		{
@@ -293,6 +104,10 @@ public:
 		::d_cvt_colmaj_to_ocp_qp(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(), hr_.data(), hidxb_.data(), hd_lb_.data(), hd_ub_.data(), hC_.data(), hD_.data(), hd_lg_.data(), hd_ug_.data(), &qp_);
 		::d_solve_ipm2_hard_ocp_qp(&qp_, &qp_sol_, &workspace_);
 	}
+
+	virtual ct::core::StateVectorArray<STATE_DIM> getSolutionState() override { throw std::runtime_error("not implemented"); }
+	virtual ct::core::ControlVectorArray<CONTROL_DIM> getSolutionControl() override { throw std::runtime_error("not implemented"); }
+	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> getFeedback() override { throw std::runtime_error("not implemented"); }
 
 
 	void printSolution()
@@ -390,9 +205,200 @@ public:
 			::d_print_e_tran_mat(5, workspace_.iter, workspace_.stat, 5);
 	}
 
+	void solveLinearProblem(
+			ct::core::StateVector<STATE_DIM>& x0,
+			ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>& linearSystem,
+			ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>& costFunction,
+			ct::core::StateVector<STATE_DIM>& stateOffset,
+			double dt
+	)
+	{
+		ct::core::ControlVector<CONTROL_DIM> uNom; uNom.setZero(); // reference control should not matter for linear system
+
+		StateMatrix Ac = linearSystem.getDerivativeState(x0, uNom, 0);
+		StateMatrix Adt = dt * Ac;
+
+		StateMatrixArray A(N_, Adt.exp());
+		StateControlMatrixArray B(N_, Ac.inverse() * (A[0] - StateMatrix::Identity()) *  linearSystem.getDerivativeControl(x0, uNom, 0));
+
+//		Eigen::Matrix<double, STATE_DIM, 1> bd;
+//		bd.setConstant(0.1);
+//
+//		Eigen::Matrix<double, STATE_DIM, 1> bc;
+//		bc = (A[0] - StateMatrix::Identity()).inverse() * Ac * bd;
+//
+//		std::cout << "bc: " << bc.transpose() << std::endl;
+//
+//
+//
+//		Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> Brec;
+//		Brec = (A[0] - StateMatrix::Identity()).inverse() * Ac * B[0];
+//
+//		std::cout << "Brec: " << std::endl << Brec << std::endl;
+//		std::cout << "Bc: " << std::endl << linearSystem.getDerivativeControl(x0, uNom, 0) << std::endl;
+
+
+
+		// feed current state and control to cost function
+		costFunction.setCurrentStateAndControl(x0, uNom, 0);
+
+		// derivative of cost with respect to state
+		StateVectorArray qv(N_+1, costFunction.stateDerivativeIntermediate()*dt);
+		StateMatrixArray Q(N_+1, costFunction.stateSecondDerivativeIntermediate()*dt);
+
+		// derivative of cost with respect to control and state
+		FeedbackArray P(N_, costFunction.stateControlDerivativeIntermediate()*dt);
+
+		// derivative of cost with respect to control
+		ControlVectorArray rv(N_, costFunction.controlDerivativeIntermediate()*dt);
+
+		ControlMatrixArray R(N_, costFunction.controlSecondDerivativeIntermediate()*dt);
+
+		StateVectorArray b(N_+1, stateOffset);
+
+		StateVectorArray x(N_+1, x0);
+		ControlVectorArray u(N_, uNom);
+
+		setProblem(x, u, A, B, b, P, qv, Q, rv, R);
+		solve();
+
+	}
+
 
 
 private:
+	void setProblemImpl(std::shared_ptr<LQOCProblem>& lqocProblem) override
+	{
+		changeNumberOfStages(lqocProblem->getNumberOfStages);
+		setupHPIPM(
+				lqocProblem->x_,
+				lqocProblem->u_,
+				lqocProblem->A_,
+				lqocProblem->B_,
+				lqocProblem->b_,
+				lqocProblem->P_,
+				lqocProblem->qv_,
+				lqocProblem->Q_,
+				lqocProblem->rv_,
+				lqocProblem->R_);
+	}
+
+
+	void setupHPIPM(
+			StateVectorArray& x,
+			ControlVectorArray& u,
+			StateMatrixArray& A,
+			StateControlMatrixArray& B,
+			StateVectorArray& b,
+			FeedbackArray& P,
+			StateVectorArray& qv,
+			StateMatrixArray& Q,
+			ControlVectorArray& rv,
+			ControlMatrixArray& R
+	)
+	{
+		if (N_ == -1)
+			throw std::runtime_error ("Time horizon not set, please set it first");
+
+		x0_ = x[0].data();
+
+		for (size_t i=0; i<N_; i++)
+		{
+			hA_[i] = A[i].data();
+			hB_[i] = B[i].data();
+			hb_[i] = b[i].data();
+		}
+
+		hb0_ = b[0] + A[0] * x[0];
+		hb_[0] = hb0_.data();
+
+		for (size_t i=0; i<N_; i++)
+		{
+			hQ_[i] = Q[i].data();
+			hS_[i] = P[i].data();
+			hR_[i] = R[i].data();
+			hqEigen_[i] = qv[i] - Q[i]*x[i] - P[i].transpose()*u[i];
+			hq_[i] = hqEigen_[i].data();
+			hrEigen_[i] = rv[i] - R[i]*u[i] - P[i]*x[i];
+			hr_[i] = hrEigen_[i].data();
+		}
+		hQ_[N_] = Q[N_].data();
+		hS_[N_] = nullptr;
+		hR_[N_] = nullptr;
+		hqEigen_[N_] = qv[N_] - Q[N_]*x[N_];
+		hq_[N_] = hqEigen_[N_].data();
+		hr_[N_] = nullptr;
+
+		hr0_ = hrEigen_[0] + P[0] * x[0];
+		hr_[0] = hr0_.data();
+
+//		printf("\nQ\n");
+//		d_print_mat(STATE_DIM, STATE_DIM, hQ_[0], STATE_DIM);
+//		printf("\nR\n");
+//		d_print_mat(CONTROL_DIM, CONTROL_DIM, hR_[0], CONTROL_DIM);
+//		printf("\nS\n");
+//		d_print_mat(CONTROL_DIM, STATE_DIM, hS_[0], CONTROL_DIM);
+//		printf("\nq\n");
+//		d_print_mat(1, STATE_DIM, hq_[0], 1);
+//		printf("\nr\n");
+//		d_print_mat(1, CONTROL_DIM, hr_[1], 1);
+//		printf("\nr0\n");
+//		d_print_mat(1, CONTROL_DIM, hr_[0], 1);
+	}
+
+
+	void changeNumberOfStages(int N)
+	{
+		N_ = N;
+
+		nx_.resize(N_+1, STATE_DIM);
+		nu_.resize(N_+1, CONTROL_DIM);
+		nb_.resize(N_+1, 0);
+		ng_.resize(N_+1, 0);
+
+		hA_.resize(N_);
+		hB_.resize(N_);
+		hb_.resize(N_);
+		hQ_.resize(N_+1);
+		hS_.resize(N_+1);
+		hR_.resize(N_+1);
+		hqEigen_.resize(N_+1);
+		hq_.resize(N_+1);
+		hrEigen_.resize(N_+1);
+		hr_.resize(N_+1);
+		hd_lb_.resize(N_+1);
+		hd_ub_.resize(N_+1);
+		hd_lg_.resize(N_+1);
+		hd_ug_.resize(N_+1);
+		hC_.resize(N_+1);
+		hD_.resize(N_+1);
+		hidxb_.resize(N_+1);
+
+		// initial state is not a decision variable but given
+		nx_[0] = 0;
+
+		// last input is not a decision variable
+		nu_[N] = 0;
+
+
+		int qp_size = ::d_memsize_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
+		std::cout << "qp_size: " << qp_size << std::endl;
+		qp_mem_.resize(qp_size);
+		::d_create_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_, qp_mem_.data());
+
+		int qp_sol_size = ::d_memsize_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
+		std::cout << "qp_sol_size: " << qp_sol_size << std::endl;
+		qp_sol_mem_.resize(qp_sol_size);
+		::d_create_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_sol_, qp_sol_mem_.data());
+
+		int ipm_size = ::d_memsize_ipm_hard_ocp_qp(&qp_, &arg_);
+		std::cout << "ipm_size: " << ipm_size << std::endl;
+		ipm_mem_.resize(ipm_size);
+		::d_create_ipm_hard_ocp_qp(&qp_, &arg_, &workspace_, ipm_mem_.data());
+	}
+
+
+
 	void d_zeros(double **pA, int row, int col)
 	{
 		*pA = (double*)malloc((row*col)*sizeof(double));
