@@ -18,7 +18,9 @@ SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall")
 
 option(MATLAB "Compile with matlab support" OFF)
 option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" OFF)
-option(DEBUG_PRINT "Print debug messages" ON)
+option(DEBUG_PRINT "Print debug messages" OFF)
+
+option(HPIPM "Compile with HPIPM support" OFF)
 
 
 if(DEBUG_PRINT)
@@ -44,9 +46,39 @@ endif(MATLAB)
 set(MATLAB_LIBS ${MATLAB_LIB_DIR})
 
 
+## dummy HPIPM libs
+set(HPIPM_LIBS "")
+
+## include BLASFEO AND HPIPM
+if(HPIPM)
+    message(WARNING "WARNING: Switching HPIPM ON")
+    if(DEFINED ENV{BLASFEO_DIR})
+        if(DEFINED ENV{HPIPM_DIR})
+            message(WARNING "...Found HPIPM and BLASFEO environment variables")
+            
+             set(BLASFEO_DIR $ENV{BLASFEO_DIR})
+             set(HPIPM_DIR $ENV{HPIPM_DIR})
+            
+            include_directories(${BLASFEO_DIR}/include)
+            include_directories(${HPIPM_DIR}/include)
+            link_directories(${BLASFEO_DIR}/lib)
+            link_directories(${HPIPM_DIR}/lib)
+   
+            set(HPIPM_LIBS hpipm blasfeo)
+    
+            add_definitions (-DHPIPM)
+            
+        else(DEFINED ENV{HPIPM_DIR})
+            message(WARNING "WARNING: Trying to build with HPIPM, but no ENV variable for HPIPM found.")
+        endif(DEFINED ENV{HPIPM_DIR})
+    else(DEFINED ENV{BLASFEO_DIR})
+        message(WARNING "WARNING: Trying to build with HPIPM, but no ENV variable for Blasfeo found.")
+    endif(DEFINED ENV{BLASFEO_DIR})
+endif(HPIPM)
+
+
 ## dummy NLP libs
 set(NLP_LIBS "")
-
 
 ## include IPOPT
 find_package(ipopt)
@@ -98,14 +130,8 @@ include_directories(
     ${EIGEN_INCLUDE_DIRS} 
     include
     ${catkin_INCLUDE_DIRS}
-    /opt/blasfeo/include
-    /home/neunertm/code/hpipm/include/
 )
 
-link_directories(
-    /home/neunertm/code/hpipm/lib/
-    /opt/blasfeo/lib/
-)
 
 ## Generate messages in the 'msg' folder
  add_message_files(
@@ -181,7 +207,7 @@ endif()
 #target_link_libraries(HPIPMInterfaceTest2 hpipm blasfeo ${MATLAB_LIBS})
 
 add_executable(HPIPMInterfaceTest3 test/hpipm/HPIPMInterfaceTest3.cpp)
-target_link_libraries(HPIPMInterfaceTest3 hpipm blasfeo ${MATLAB_LIBS})
+target_link_libraries(HPIPMInterfaceTest3 ${HPIPM_LIBS} ${MATLAB_LIBS})
 
 #
 #catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
