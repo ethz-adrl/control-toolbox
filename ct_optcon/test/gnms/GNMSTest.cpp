@@ -145,6 +145,7 @@ void singleCore()
 		x_final << 20, 0;
 
 		NLOptConSettings gnms_settings;
+		gnms_settings.nThreads = 1;
 		gnms_settings.epsilon = 0.0;
 		gnms_settings.nThreads = 4;
 		gnms_settings.max_iterations = 3;
@@ -196,6 +197,7 @@ void singleCore()
 
 
 		std::cout << "initializing gnms solver" << std::endl;
+		gnms_settings.print();
 		NLOptConSolver<state_dim, control_dim> gnms(optConProblem, gnms_settings);
 //		iLQG<state_dim, control_dim> ilqg(optConProblem, ilqg_settings);
 

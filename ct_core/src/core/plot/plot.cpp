@@ -336,15 +336,15 @@ bool subplot(const size_t nrows, const size_t ncols, const size_t plot_number) {
 bool plot(const Eigen::Ref<const Eigen::MatrixXd>& x_raw,
           const Eigen::Ref<const Eigen::MatrixXd>& y_raw,
           const std::map<std::string, std::string>& keywords) {
-  CHECK_EQ(true, x_raw.cols() == 1 || x_raw.rows() == 1);
-  CHECK_EQ(true, y_raw.cols() == 1 || y_raw.rows() == 1);
+  CHECK_EQ(true, (x_raw.cols() == 1) || (x_raw.rows()) == 1);
+  CHECK_EQ(true, (y_raw.cols() == 1) || (y_raw.rows()) == 1);
 
   Eigen::Map<const Eigen::VectorXd> x(
       x_raw.data(), x_raw.rows() == 1 ? x_raw.cols() : x_raw.rows());
   Eigen::Map<const Eigen::VectorXd> y(
       y_raw.data(), y_raw.rows() == 1 ? y_raw.cols() : y_raw.rows());
 
-  CHECK_EQ(true, x.size() == y.size());
+  CHECK_EQ(true, (x.size() == y.size()));
 
   // using python lists
   PyObject* xlist = PyList_New(x.size());
@@ -387,15 +387,15 @@ bool plot(const Eigen::Ref<const Eigen::MatrixXd>& x_raw,
 bool plot(const Eigen::Ref<const Eigen::MatrixXd>& x_raw,
           const Eigen::Ref<const Eigen::MatrixXd>& y_raw,
           const std::string& s) {
-  CHECK_EQ(true, x_raw.cols() == 1 || x_raw.rows() == 1);
-  CHECK_EQ(true, y_raw.cols() == 1 || y_raw.rows() == 1);
+  CHECK_EQ(true, (x_raw.cols() == 1) || (x_raw.rows() == 1));
+  CHECK_EQ(true, (y_raw.cols() == 1) || (y_raw.rows() == 1));
 
   Eigen::Map<const Eigen::VectorXd> x(
       x_raw.data(), x_raw.rows() == 1 ? x_raw.cols() : x_raw.rows());
   Eigen::Map<const Eigen::VectorXd> y(
       y_raw.data(), y_raw.rows() == 1 ? y_raw.cols() : y_raw.rows());
 
-  CHECK_EQ(true, x.size() == y.size());
+  CHECK_EQ(true, (x.size() == y.size()));
 
   PyObject* xlist = PyList_New(x.size());
   PyObject* ylist = PyList_New(y.size());
@@ -429,15 +429,15 @@ bool labelPlot(const std::string& name,
                const Eigen::Ref<const Eigen::MatrixXd>& x_raw,
                const Eigen::Ref<const Eigen::MatrixXd>& y_raw,
                const std::string& format) {
-  CHECK_EQ(true, x_raw.cols() == 1 || x_raw.rows() == 1);
-  CHECK_EQ(true, y_raw.cols() == 1 || y_raw.rows() == 1);
+  CHECK_EQ(true, (x_raw.cols() == 1) || (x_raw.rows() == 1));
+  CHECK_EQ(true, (y_raw.cols() == 1) || (y_raw.rows() == 1));
 
   Eigen::Map<const Eigen::VectorXd> x(
       x_raw.data(), x_raw.rows() == 1 ? x_raw.cols() : x_raw.rows());
   Eigen::Map<const Eigen::VectorXd> y(
       y_raw.data(), y_raw.rows() == 1 ? y_raw.cols() : y_raw.rows());
 
-  CHECK_EQ(true, x.size() == y.size());
+  CHECK_EQ(true, (x.size() == y.size()));
 
   PyObject* kwargs = PyDict_New();
   PyDict_SetItemString(kwargs, "label", PyString_FromString(name.c_str()));
