@@ -68,7 +68,7 @@ struct LineSearchSettings {
 
 
     //! print the current line search settings to console
-    void print()
+    void print() const
     {
         std::cout<<"Line Search Settings: "<<std::endl;
         std::cout<<"=====================" <<std::endl;
@@ -130,7 +130,7 @@ struct ParallelBackwardSettings {
     bool showWarnings; /*!< Show speed warnings if cost or linearization threads are not fast enough */
 	size_t pollingTimeoutUs;
 
-    void print()
+    void print() const
     {
         std::cout<<"Parallel Backward Settings: "<<std::endl;
         std::cout<<"=====================" <<std::endl;
@@ -237,13 +237,13 @@ public:
 
 
     //! print the current NLOptCon settings to console
-    void print()
+    void print() const
     {
         std::cout<<"NLOptCon Settings: "<<std::endl;
         std::cout<<"==============="<<std::endl;
-        std::cout<<"integrator: "<<integratorToString[integrator]<<std::endl;
-        std::cout<<"discretization: " << discretizationToString[discretization]<<std::endl;
-        std::cout<<"solver: " << solverToString[solver]<<std::endl;
+        std::cout<<"integrator: "<<integratorToString.at(integrator)<<std::endl;
+        std::cout<<"discretization: " << discretizationToString.at(discretization)<<std::endl;
+        std::cout<<"solver: " << solverToString.at(solver)<<std::endl;
         std::cout<<"dt: "<<dt<<std::endl;
         std::cout<<"dt_sim: "<<dt_sim<<std::endl;
         std::cout<<"maxIter: "<<max_iterations<<std::endl;

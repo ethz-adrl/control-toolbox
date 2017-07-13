@@ -17,6 +17,9 @@ namespace optcon{
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void NLOptConSolver<STATE_DIM, CONTROL_DIM, SCALAR>::initialize(const OptConProblem_t& optConProblem, const Settings_t& settings)
 {
+	std::cout << "printing settings in NLOptConsolver ..." << std::endl;
+	settings.print();
+
 	if(settings.nThreads > 1)
 		//	nlocBackend_ = std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM>>(new NLOCBackendMP<STATE_DIM, CONTROL_DIM>(optConProblem, settings));
 		throw std::runtime_error("Selection of MP algorithms not implemented");
