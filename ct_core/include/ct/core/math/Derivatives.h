@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_CORE_MATH_JACOBIAN_H_
-#define INCLUDE_CT_CORE_MATH_JACOBIAN_H_
+#ifndef INCLUDE_CT_CORE_MATH_DERIVATIVES_H_
+#define INCLUDE_CT_CORE_MATH_DERIVATIVES_H_
 
 #include <Eigen/Core>
 #include <Eigen/StdVector>
@@ -33,9 +33,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct {
 namespace core {
 
-//! General interface class for a Jacobian
+//! General interface class for a Derivatives
 /*!
- * Interface for a general Jacobian of a vector-valued function. Can be used either
+ * Interface for a general Derivatives of a vector-valued function. Can be used either
  * with fixed size or dynamic size data types
  *
  * @tparam IN_DIM input dimension of function (use Eigen::Dynamic (-1) for dynamic size)
@@ -43,30 +43,38 @@ namespace core {
  * @tparam SCALAR scalar data type
  */
 template <int IN_DIM, int OUT_DIM, typename SCALAR = double>
-class Jacobian {
+class Derivatives {
 public:
-	//! The Jacobian data type
+	//! The Derivatives data type
 	typedef Eigen::Matrix<SCALAR, OUT_DIM, IN_DIM> JAC_TYPE;
 
 	//! The input vector type
-	typedef Eigen::Matrix<SCALAR, IN_DIM, 1> X_TYPE;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> X_TYPE;
 
 	//! default constructor
-	Jacobian() {};
+	Derivatives() {};
 
 	//! default destructor
-	virtual ~Jacobian() {};
+	virtual ~Derivatives() {};
 
 	//! deep copy for derived classes
-	virtual Jacobian<IN_DIM, OUT_DIM, SCALAR>* clone() const = 0;
+	virtual Derivatives<IN_DIM, OUT_DIM, SCALAR>* clone() const = 0;
 
-	//! evaluate Jacobian
+	//! evaluate Derivatives
 	/*!
-	 * Evaluates the Jacobian at a given state
-	 * @param x state at which to evaluate the Jacobian
-	 * @return Jacobian matrix
+	 * Evaluates the Derivatives at a given state
+	 * @param x state at which to evaluate the Derivatives
+	 * @return Derivatives matrix
 	 */
-	virtual JAC_TYPE operator()(const Eigen::VectorXd& x) = 0;
+	virtual JAC_TYPE jacobian(const X_TYPE& x) = 0;
+
+    virtual Eigen::Matrix<double, OUT_DIM, 1> forwardZero(const Eigen::VectorXd& x) {};
+
+    virtual Eigen::Matrix<double, IN_DIM, IN_DIM> hessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) {};
+
+
+
+
 };
 
 } /* namespace core */

@@ -24,29 +24,29 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_CORE_MATH_JACOBIANNUMDIFF_H_
-#define INCLUDE_CT_CORE_MATH_JACOBIANNUMDIFF_H_
+#ifndef INCLUDE_CT_CORE_MATH_DERIVATIVESNUMDIFF_H_
+#define INCLUDE_CT_CORE_MATH_DERIVATIVESNUMDIFF_H_
 
 
 namespace ct {
 namespace core {
 
-//! Jacobian using Num-Diff Codegeneration
+//! Derivatives using Num-Diff Codegeneration
 /*!
- * Uses Num-Diff code generation to compute the Jacobian \f$ J(x_s) = \frac{df}{dx} |_{x=x_s} \f$ of
+ * Uses Num-Diff code generation to compute the Derivatives \f$ J(x_s) = \frac{df}{dx} |_{x=x_s} \f$ of
  * a regular vector-valued mathematical function \f$ y = f(x) \f$ .
  *
  * x has IN_DIM dimension and y has OUT_DIM dimension. Thus, they can be
  * scalar functions (IN_DIM = 1, OUT_DIM = 1), fixed or variable size
  * (IN_DIM = -1, OUT_DIM = -1) functions.
  *
- * \note In fact, this class is called Jacobian but computes also zero order derivatives
+ * \note In fact, this class is called Derivatives but computes also zero order derivatives
  *
  * @tparam IN_DIM Input dimensionality of the function (use Eigen::Dynamic (-1) for dynamic size)
  * @tparam OUT_DIM Output dimensionailty of the function (use Eigen::Dynamic (-1) for dynamic size)
  */
 template <int IN_DIM, int OUT_DIM>
-class JacobianNumDiff : public Jacobian<IN_DIM, OUT_DIM, double>
+class DerivativesNumDiff : public Derivatives<IN_DIM, OUT_DIM, double>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -54,21 +54,21 @@ public:
 	typedef Eigen::Matrix<double, IN_DIM, 1> IN_TYPE; //!< function input vector type
 	typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE; //!< function output vector type
 
-	typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE; //!< Jacobian type
+	typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE; //!< Derivatives type
 
 	typedef std::function<OUT_TYPE(const IN_TYPE&)> Function; //!< function tpye
 
 	//! default constructor
 	/*!
-	 * Generates a Jacobian of a function using numerical differentiation
+	 * Generates a Derivatives of a function using numerical differentiation
 	 *
 	 * Numerical differentiation can either use single sided or double sided derivatives.
 	 * Double sided derivative can be more accurate but is almost twice as expensive.
 	 *
-	 * @param f function to compute Jacobian of
+	 * @param f function to compute Derivatives of
 	 * @param doubleSidedDerivative use double sided differentiation
 	 */
-	JacobianNumDiff(Function& f, bool doubleSidedDerivative = false) :
+	DerivativesNumDiff(Function& f, bool doubleSidedDerivative = false) :
 		f_(f),
 		doubleSidedDerivative_(doubleSidedDerivative)
 	{
@@ -77,17 +77,17 @@ public:
 	}
 
 	//! default destructor
-	virtual ~JacobianNumDiff()
+	virtual ~DerivativesNumDiff()
 	{
 	}
 
 	//! deep cloning
-	JacobianNumDiff* clone() const override { throw std::runtime_error("not implemented"); }
+	DerivativesNumDiff* clone() const override { throw std::runtime_error("not implemented"); }
 
-	//! evaluate Jacobian at a given point
+	//! evaluate Derivatives at a given point
 	/*!
-	 * @param x point at which to evaluate the Jacobian at
-	 * @return Jacobian evaluated at x
+	 * @param x point at which to evaluate the Derivatives at
+	 * @return Derivatives evaluated at x
 	 */
 	JAC_TYPE operator()(const Eigen::VectorXd& x) override
 	{
@@ -143,4 +143,4 @@ private:
 }
 }
 
-#endif /* INCLUDE_CT_CORE_MATH_JACOBIANNUMDIFF_H_ */
+#endif /* INCLUDE_CT_CORE_MATH_DerivativesNUMDIFF_H_ */

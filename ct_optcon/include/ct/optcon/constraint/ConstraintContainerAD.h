@@ -27,7 +27,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCON_CONSTRAINTS_CONSTRAINTCONTAINERAD_H_
 #define CT_OPTCON_CONSTRAINTS_CONSTRAINTCONTAINERAD_H_
 
-#include <ct/core/math/JacobianCG.h>
+#include <ct/core/math/DerivativesCppad.h>
 
 #include "LinearConstraintContainer.h"
 #include "term/ConstraintBase.h"
@@ -50,8 +50,8 @@ class ConstraintContainerAD : public LinearConstraintContainer<STATE_DIM, CONTRO
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef core::JacobianCG<STATE_DIM + CONTROL_DIM, -1> JacCG;
-	typedef typename JacCG::SCALAR Scalar;
+	typedef core::DerivativesCppad<STATE_DIM + CONTROL_DIM, -1> JacCG;
+	typedef typename JacCG::CG_SCALAR Scalar;
 
 	typedef core::StateVector<STATE_DIM>   state_vector_t;
 	typedef core::ControlVector<CONTROL_DIM> input_vector_t;
@@ -228,7 +228,7 @@ public:
 		if(!this->initializedIntermediate_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
-		Eigen::MatrixXd jacTot = intermediateCodegen_->operator()(stateControlD_);
+		Eigen::MatrixXd jacTot = intermediateCodegen_->jacobian(stateControlD_);
 
 		// std::cout << "jacTot" << std::endl;
 
@@ -244,7 +244,7 @@ public:
 		if(!this->initializedIntermediate_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
-		Eigen::MatrixXd jacTot = intermediateCodegen_->operator()(stateControlD_);
+		Eigen::MatrixXd jacTot = intermediateCodegen_->jacobian(stateControlD_);
 		return jacTot.template leftCols<STATE_DIM>();
 	}
 
@@ -253,7 +253,7 @@ public:
 		if(!this->initializedTerminal_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
-		Eigen::MatrixXd jacTot = terminalCodegen_->operator()(stateControlD_);
+		Eigen::MatrixXd jacTot = terminalCodegen_->jacobian(stateControlD_);
 		Eigen::VectorXd jacSparse; jacSparse.resize(getJacobianStateNonZeroCountTerminal());
 		for(size_t i = 0; i < getJacobianStateNonZeroCountTerminal(); ++i)
 			jacSparse(i) = (jacTot.template leftCols<STATE_DIM>())(sparsityStateTerminalRows_(i), sparsityStateTerminalCols_(i));
@@ -266,13 +266,13 @@ public:
 		if(!this->initializedTerminal_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
-		Eigen::MatrixXd jacTot = terminalCodegen_->operator()(stateControlD_);
+		Eigen::MatrixXd jacTot = terminalCodegen_->jacobian(stateControlD_);
 		return jacTot.template leftCols<STATE_DIM>();
 	}
 
 	virtual Eigen::VectorXd jacobianInputSparseIntermediate() override
 	{
-		Eigen::MatrixXd jacTot = intermediateCodegen_->operator()(stateControlD_);
+		Eigen::MatrixXd jacTot = intermediateCodegen_->jacobian(stateControlD_);
 		Eigen::VectorXd jacSparse; jacSparse.resize(getJacobianInputNonZeroCountIntermediate());
 		for(size_t i = 0; i < getJacobianInputNonZeroCountIntermediate(); ++i)
 			jacSparse(i) = (jacTot.template rightCols<CONTROL_DIM>())(sparsityInputIntermediateRows_(i), sparsityInputIntermediateCols_(i));
@@ -285,7 +285,7 @@ public:
 		if(!this->initializedIntermediate_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
-		Eigen::MatrixXd jacTot = intermediateCodegen_->operator()(stateControlD_);
+		Eigen::MatrixXd jacTot = intermediateCodegen_->jacobian(stateControlD_);
 		return jacTot.template rightCols<CONTROL_DIM>();
 	}
 
@@ -294,7 +294,7 @@ public:
 		if(!this->initializedTerminal_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
-		Eigen::MatrixXd jacTot = terminalCodegen_->operator()(stateControlD_);
+		Eigen::MatrixXd jacTot = terminalCodegen_->jacobian(stateControlD_);
 		Eigen::VectorXd jacSparse; jacSparse.resize(getJacobianInputNonZeroCountTerminal());
 		for(size_t i = 0; i < getJacobianInputNonZeroCountTerminal(); ++i)
 			jacSparse(i) = (jacTot.template rightCols<CONTROL_DIM>())(sparsityInputTerminalRows_(i), sparsityInputTerminalCols_(i));
@@ -307,7 +307,7 @@ public:
 		if(!this->initializedTerminal_)
 			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
 
-		Eigen::MatrixXd jacTot = terminalCodegen_->operator()(stateControlD_);
+		Eigen::MatrixXd jacTot = terminalCodegen_->jacobian(stateControlD_);
 		return jacTot.template rightCols<CONTROL_DIM>();
 	}
 
@@ -388,9 +388,9 @@ public:
 		if(getIntermediateConstraintsCount() > 0)
 		{
 			intermediateCodegen_->compileJIT("intermediateConstraints");
-			intermediateCodegen_->getSparsityPattern(sparsityRows, sparsityCols);
+			intermediateCodegen_->getSparsityPatternJacobian(sparsityRows, sparsityCols);
 
-			std::cout << "sparsityPattern Intermediate: " << std::endl << intermediateCodegen_->getSparsityPattern() << std::endl;
+			std::cout << "sparsityPattern Intermediate: " << std::endl << intermediateCodegen_->getSparsityPatternJacobian() << std::endl;
 			assert(sparsityRows.rows() == sparsityRows.rows());
 			
 			int nonZerosState = (sparsityCols.array() < STATE_DIM).count();
@@ -445,10 +445,9 @@ public:
 		if(getTerminalConstraintsCount() > 0)
 		{
 			terminalCodegen_->compileJIT("terminalConstraints");
-			terminalCodegen_->getSparsityPattern(sparsityRows, sparsityCols);
+			terminalCodegen_->getSparsityPatternJacobian(sparsityRows, sparsityCols);
 
-			// jacCG_->getSparsityPattern();/
-			std::cout << "sparsityPattern Terminal: " << std::endl << terminalCodegen_->getSparsityPattern() << std::endl;
+			std::cout << "sparsityPattern Terminal: " << std::endl << terminalCodegen_->getSparsityPatternJacobian() << std::endl;
 			assert(sparsityRows.rows() == sparsityRows.rows());
 
 			int nonZerosState = (sparsityCols.array() < STATE_DIM).count();
@@ -553,8 +552,8 @@ private:
 	std::shared_ptr<JacCG> intermediateCodegen_;
 	std::shared_ptr<JacCG> terminalCodegen_;
 
-	typename JacCG::Function fIntermediate_;
-	typename JacCG::Function fTerminal_;
+	typename JacCG::FUN_TYPE_CG fIntermediate_;
+	typename JacCG::FUN_TYPE_CG fTerminal_;
 
 	Eigen::VectorXi sparsityIntermediateRows_;
 	Eigen::VectorXi sparsityStateIntermediateRows_;

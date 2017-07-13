@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_CORE_FUNCTION_JACOBIANCG_H_
-#define INCLUDE_CT_CORE_FUNCTION_JACOBIANCG_H_
+#ifndef INCLUDE_CT_CORE_FUNCTION_DERIVATIVESCPPAD_H_
+#define INCLUDE_CT_CORE_FUNCTION_DERIVATIVESCPPAD_H_
 
 #include <ct/core/templateDir.h>
 
@@ -47,14 +47,19 @@ namespace core {
  * @tparam OUT_DIM Output dimensionailty of the function (use Eigen::Dynamic (-1) for dynamic size)
  */
 template <int IN_DIM, int OUT_DIM>
-class JacobianCG : public Jacobian<IN_DIM, OUT_DIM, double> // double on purpose!
+class DerivativesCppad : public Derivatives<IN_DIM, OUT_DIM, double> // double on purpose!
 {
 public:
-	typedef Eigen::Matrix<CppAD::AD<CppAD::cg::CG<double> >, IN_DIM, 1> IN_TYPE; //!< function input vector type
-	typedef Eigen::Matrix<CppAD::AD<CppAD::cg::CG<double> >, OUT_DIM, 1> OUT_TYPE; //!< function  output vector type
+	typedef ADScalar AD_SCALAR;
+	typedef ADCGScalar CG_SCALAR; //!< CG_SCALAR  type
+	typedef ADCGValueType CG_VALUE_TYPE; //!< autodiff scalar type
+	                                   
+	typedef Eigen::Matrix<AD_SCALAR, IN_DIM, 1> IN_TYPE_AD; //!< function input vector type
+	typedef Eigen::Matrix<AD_SCALAR, OUT_DIM, 1> OUT_TYPE_AD; //!< function  output vector type	
 
-	typedef ADCGScalar SCALAR; //!< scalar  type
-	typedef ADCGValueType AD_SCALAR; //!< autodiff scalar type
+	typedef Eigen::Matrix<CG_SCALAR, IN_DIM, 1> IN_TYPE_CG; //!< function input vector type
+	typedef Eigen::Matrix<CG_SCALAR, OUT_DIM, 1> OUT_TYPE_CG; //!< function  output vector type
+
 
 	typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE; //!< Jacobian type
 	typedef Eigen::Matrix<double, OUT_DIM, IN_DIM, Eigen::RowMajor> JAC_TYPE_ROW_MAJOR; //!< Jocobian type in row-major format
@@ -62,7 +67,9 @@ public:
 	typedef Eigen::Matrix<double, IN_DIM, 1> IN_TYPE_D; //!< function input vector type double
 	typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE_D; //!< function output vector type
 
-	typedef std::function<OUT_TYPE(const IN_TYPE&)> Function; //!< function type
+
+	typedef std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> FUN_TYPE_CG; //!< function type
+	typedef std::function<OUT_TYPE_AD(const IN_TYPE_AD&)> FUN_TYPE_AD;
 
 	//! default constructor
 	/*!
@@ -75,20 +82,30 @@ public:
 	 * @param inputDim input dimension, must be specified if template parameter IN_DIM is -1 (dynamic)
 	 * @param outputDim output dimension, must be specified if template parameter IN_DIM is -1 (dynamic)
 	 */
-	JacobianCG(Function& f, int inputDim = IN_DIM, int outputDim = OUT_DIM) :
-		f_(f),
+	DerivativesCppad(FUN_TYPE_CG& f, int inputDim = IN_DIM, int outputDim = OUT_DIM) :
+		fCg_(f),
 		compiled_(false),
 		inputDim_(inputDim),
 		outputDim_(outputDim)
 	{
 		if(outputDim_ > 0 && inputDim_ > 0)
-			record();
+			recordCg();
+	}
+
+	DerivativesCppad(FUN_TYPE_AD& f, int inputDim = IN_DIM, int outputDim = OUT_DIM) :
+		fAd_(f),
+		compiled_(false),
+		inputDim_(inputDim),
+		outputDim_(outputDim)
+	{
+		if(outputDim_ > 0 && inputDim_ > 0)
+			recordAd();
 	}
 
 	//! copy constructor
-	JacobianCG(const JacobianCG& arg) 
+	DerivativesCppad(const DerivativesCppad& arg) 
 	:
-		f_(arg.f_),
+		fCg_(arg.fCg_),
 		compiled_(arg.compiled_),
 		inputDim_(arg.inputDim_),
 		outputDim_(arg.outputDim_),
@@ -96,7 +113,7 @@ public:
 	{}
 
 	//! destructor
-	virtual ~JacobianCG()
+	virtual ~DerivativesCppad()
 	{
 	}
 
@@ -109,17 +126,26 @@ public:
 	 * @param inputDim input dimension, must be specified if template parameter IN_DIM is -1 (dynamic)
 	 * @param outputDim output dimension, must be specified if template parameter IN_DIM is -1 (dynamic)
 	 */
-	void update(Function& f, const size_t inputDim = IN_DIM, const size_t outputDim = OUT_DIM)
+	void update(FUN_TYPE_CG& f, const size_t inputDim = IN_DIM, const size_t outputDim = OUT_DIM)
 	{
-		f_ = f;
+		fCg_ = f;
 		outputDim_ = outputDim;
 		inputDim_ = inputDim;
-		record();
+		recordCg();
+		compiled_ = false;
+	}
+
+	void update(FUN_TYPE_AD& f, const size_t inputDim = IN_DIM, const size_t outputDim = OUT_DIM)
+	{
+		fAd_ = f;
+		outputDim_ = outputDim;
+		inputDim_ = inputDim;
+		recordAd();
 		compiled_ = false;
 	}
 
 	//! deep cloning of Jacobian
-	JacobianCG* clone() const override { throw std::runtime_error("not implemented"); }
+	DerivativesCppad* clone() const override { throw std::runtime_error("not implemented"); }
 
 	//! computes zero order derivatives, i.e. evaluates the function
 	/*!
@@ -130,33 +156,65 @@ public:
 	 * @param x parameter to evaluate the function at
 	 * @return value of the function
 	 */
-	OUT_TYPE_D forwardZero(const Eigen::VectorXd& x) {
-		assert(model_->isForwardZeroAvailable() == true);
+	virtual OUT_TYPE_D forwardZero(const Eigen::VectorXd& x) override{
 
-		if(!compiled_)
-			throw std::runtime_error("Called computeJacobian on JacobianCG before compiling. Call 'compile()' before");
-
-		return model_->ForwardZero(x);
+		if(compiled_)
+		{
+			assert(model_->isForwardZeroAvailable() == true);
+			return model_->ForwardZero(x);
+		}
+		else
+			return fAd_.Forward(0, x);
 	}
 
-	//! evaluates the Jacobian at a given state
-	/*!
-	 * \warning Call compileJIT() before calling this function.
-	 * @param x value at which to evaluate the Jacobian at
-	 * @return Jacobian evaluated at x
-	 */
-	JAC_TYPE operator()(const Eigen::VectorXd& x) override {
-		assert(model_->isJacobianAvailable() == true);
-		if(!compiled_)
-			throw std::runtime_error("Called computeJacobian on JacobianCG before compiling. Call 'compile()' before");
-
+	virtual JAC_TYPE jacobian(const Eigen::VectorXd& x) override {
 		if(outputDim_ <= 0)
-			throw std::runtime_error("Outdim dim smaller 0; Define output dim in JacobianCG constructor");
-		
-		Eigen::VectorXd jac = model_->Jacobian(x);
-		Eigen::MatrixXd out(outputDim_, x.rows());
-		out = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>::Map(jac.data(), outputDim_, x.rows());
-		return out;
+			throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+			
+		if(compiled_)
+		{
+			assert(model_->isJacobianAvailable() == true);
+			Eigen::VectorXd jac = model_->Jacobian(x);
+			Eigen::MatrixXd out(outputDim_, x.rows());
+			out = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>::Map(jac.data(), outputDim_, x.rows());
+			return out;
+		}
+		else
+		{
+			Eigen::VectorXd jac = fAd_.Jacobian(x);
+			Eigen::MatrixXd out(outputDim_, x.rows());
+			out = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>::Map(jac.data(), outputDim_, x.rows());
+			return out;
+		}	
+	}
+
+	/**
+	 * @brief      Evaluates the weighted sum of the hessians of the function
+	 *
+	 * @param[in]  x       value at which to evaluate the hessian at
+	 * @param[in]  lambda  value of the weights of the sum of the hessians
+	 *
+	 * @return     { description_of_the_return_value }
+	 */
+	virtual Eigen::Matrix<double, IN_DIM, IN_DIM> hessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) override {
+		if(outputDim_ <= 0)
+			throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+
+		if(compiled_)
+		{
+			assert(model_->isHessianAvailable() == true);
+			Eigen::VectorXd hessian = model_->Hessian(x, lambda);
+			Eigen::MatrixXd out(x.rows(), x.rows());
+			out = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>::Map(hessian.data(), x.rows(), x.rows());
+			return out;
+		}
+		else
+		{
+			Eigen::VectorXd hessian = fAd_.Hessian(x, lambda);
+			Eigen::MatrixXd out(x.rows(), x.rows());
+			out = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>::Map(hessian.data(), x.rows(), x.rows());
+			return out;
+		}
 	}
 
 	//! get Jacobian sparsity pattern
@@ -164,11 +222,26 @@ public:
 	 * Auto-Diff automatically detects the sparsity pattern of the Jacobian. This method returns the pattern.
 	 * @return Sparsity pattern of the Jacobian
 	 */
-	Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> getSparsityPattern()
+	Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> getSparsityPatternJacobian()
 	{
 		assert(model_->isJacobianSparsityAvailable() == true);
 		
 		std::vector<bool> sparsityVec = model_->JacobianSparsityBool();
+		Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(outputDim_, inputDim_);
+
+		assert(sparsityVec.size() == outputDim_ * inputDim_);
+		for(size_t row = 0; row < outputDim_; ++row)
+			for(size_t col = 0; col < inputDim_; ++col)
+				sparsityMat(row, col) = sparsityVec[col + row * inputDim_];
+
+		return sparsityMat;
+	}
+
+	Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> getSparsityPatternHessian()
+	{
+		assert(model_->isHessianSparsityAvailable() == true);
+		
+		std::vector<bool> sparsityVec = model_->HessianSparsityBool();
 		Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(outputDim_, inputDim_);
 
 		assert(sparsityVec.size() == outputDim_ * inputDim_);
@@ -188,7 +261,7 @@ public:
 	 * @param rows row indeces of non-zero entries
 	 * @param columns column indeces of non-zero entries
 	 */
-	void getSparsityPattern(Eigen::VectorXi& rows, Eigen::VectorXi& columns)
+	void getSparsityPatternJacobian(Eigen::VectorXi& rows, Eigen::VectorXi& columns)
 	{
 		assert(model_->isJacobianSparsityAvailable() == true);
 		std::vector<size_t> rowsVec;
@@ -204,6 +277,23 @@ public:
 		columns = colsTmp.cast<int>();
 	}
 
+	void getSparsityPatternHessian(Eigen::VectorXi& rows, Eigen::VectorXi& columns)
+	{
+		assert(model_->isHessianSparsityAvailable() == true);
+		std::vector<size_t> rowsVec;
+		std::vector<size_t> colsVec;
+		Eigen::Matrix<size_t, Eigen::Dynamic, 1> rowsTmp;
+		Eigen::Matrix<size_t, Eigen::Dynamic, 1> colsTmp;
+		model_->HessianSparsity(rowsVec, colsVec);
+		rows.resize(rowsVec.size());
+		columns.resize(colsVec.size());
+		rowsTmp = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(rowsVec.data(), rowsVec.size(), 1);
+		colsTmp = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(colsVec.data(), colsVec.size(), 1);
+		rows = rowsTmp.cast<int>();
+		columns = colsTmp.cast<int>();
+	}
+
+
 	//! Uses just-in-time compilation to compile the Jacobian and other derivatives
 	/*!
 	 *  This method generates source code for the Jacobian and zero order derivative. It then compiles
@@ -213,10 +303,14 @@ public:
 	{
 		if (compiled_) return;
 
-		CppAD::cg::ModelCSourceGen<double> cgen(this->fAD_, "JacobianCG");
+		CppAD::cg::ModelCSourceGen<double> cgen(fCodeGen_, "DerivativesCppad");
 		cgen.setCreateForwardZero(true);
 		cgen.setCreateJacobian(true);
 		cgen.setCreateSparseJacobian(true);
+
+		cgen.setCreateHessian(true);
+		cgen.setCreateSparseHessian(true);
+
 		CppAD::cg::ModelLibraryCSourceGen<double> libcgen(cgen);
 
 		// compile source code
@@ -224,7 +318,7 @@ public:
 
 		dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler_));
 
-		model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("JacobianCG"));
+		model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"));
 
 		compiled_ = true;
 	}
@@ -259,10 +353,10 @@ public:
 		internal::SparsityPattern pattern;
 		pattern.initPattern(sparsity);
 
-		CppAD::vector<AD_SCALAR> jac(IN_DIM*OUT_DIM);
+		CppAD::vector<CG_VALUE_TYPE> jac(IN_DIM*OUT_DIM);
 		std::string codeJac =
 				internal::CGHelpers::generateJacobianCode(
-						this->fAD_,
+						fCodeGen_,
 						inputDim_,
 						jac,
 						pattern,
@@ -298,10 +392,10 @@ public:
 			const std::string& ns2 = "generated",
 			bool ignoreZero = true)
 	{
-		CppAD::vector<AD_SCALAR> forwardZero(OUT_DIM);
+		CppAD::vector<CG_VALUE_TYPE> forwardZero(OUT_DIM);
 		std::string codeJac =
 				internal::CGHelpers::generateForwardZeroCode(
-						this->fAD_,
+						fCodeGen_,
 						inputDim_,
 						forwardZero,
 						tmpVarCount_,
@@ -316,25 +410,46 @@ public:
 private:
 
 	//! record the Auto-Diff terms
-	void record()
+	void recordCg()
 	{
 		// input vector, needs to be dynamic size
-		Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> x(inputDim_);
+		Eigen::Matrix<CG_SCALAR, Eigen::Dynamic, 1> x(inputDim_);
 
 		// declare x as independent
 		CppAD::Independent(x);
 
 		// output vector, needs to be dynamic size
-		Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> y(outputDim_);
+		Eigen::Matrix<CG_SCALAR, Eigen::Dynamic, 1> y(outputDim_);
 
-		y = f_(x);
+		y = fCg_(x);
 
 		// store operation sequence in f: x -> y and stop recording
-		CppAD::ADFun<typename SCALAR::value_type> f(x, y);
+		CppAD::ADFun<typename CG_SCALAR::value_type> fCodeGen(x, y);
 
-		f.optimize();
+		fCodeGen.optimize();
 
-		fAD_ = f;
+		fCodeGen_ = fCodeGen;
+	}
+
+	void recordAd()
+	{
+		// input vector, needs to be dynamic size
+		Eigen::Matrix<AD_SCALAR, Eigen::Dynamic, 1> x(inputDim_);
+
+		// declare x as independent
+		CppAD::Independent(x);
+
+		// output vector, needs to be dynamic size
+		Eigen::Matrix<AD_SCALAR, Eigen::Dynamic, 1> y(outputDim_);
+
+		y = fAd_(x);
+
+		// store operation sequence in f: x -> y and stop recording
+		CppAD::ADFun<double> fAd(x, y);
+
+		fAd.optimize();
+
+		fAd_ = fAd;		
 	}
 
 	//! write code to file
@@ -393,14 +508,15 @@ private:
 		internal::CGHelpers::replaceAll(file, "OUT_DIM", std::to_string(OUT_DIM));
 	}
 
-	std::function<OUT_TYPE(const IN_TYPE&)> f_; //! the function
-
+	std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> fCg_; //! the function
+	                                            //! 
 	bool compiled_; //! flag if Jacobian is compiled
 
 	int inputDim_; //! function input dimension
 	int outputDim_; //! function output dimension
 
-	CppAD::ADFun<typename SCALAR::value_type> fAD_; //!  auto-diff function
+	CppAD::ADFun<typename CG_SCALAR::value_type> fCodeGen_; //!  auto-diff function
+	CppAD::ADFun<double> fAd_;
 
 	CppAD::cg::GccCompiler<double> compiler_; //! compile for codegeneration
 	std::shared_ptr<CppAD::cg::DynamicLib<double>> dynamicLib_; //! dynamic library to load after compilation
@@ -411,4 +527,4 @@ private:
 } /* namespace core */
 } /* namespace ct */
 
-#endif /* INCLUDE_CT_CORE_FUNCTION_JACOBIANCG_H_ */
+#endif /* INCLUDE_CT_CORE_FUNCTION_DERIVATIVESCPPAD_H_ */
