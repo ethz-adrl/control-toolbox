@@ -15,8 +15,13 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 class DiscreteSystem
 {
 public:
+	//! constructor
+	DiscreteSystem(const SYSTEM_TYPE& type = GENERAL):
+		type_(type),
+		isSymplectic_(false)
+	{}
 
-	//! destructor
+	//! desctructor
 	virtual ~DiscreteSystem() {}
 
 	//! deep copy

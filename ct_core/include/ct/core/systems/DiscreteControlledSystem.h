@@ -54,7 +54,7 @@ public:
 	DiscreteControlledSystem(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
 	: 	DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type),
 	  	controller_(nullptr)
-	  	{};
+	{};
 
 	//! constructor
 	/*!
@@ -129,7 +129,7 @@ public:
 		else
 			controlAction.setZero();
 
-		computeControlledDynamics(state, n, controlAction, stateNext);
+		propagateControlledDynamics(state, n, controlAction, stateNext);
 	}
 
 
