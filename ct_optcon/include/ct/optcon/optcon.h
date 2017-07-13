@@ -44,14 +44,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#include "mpc/timehorizon/MpcTimeHorizon.h"
 //#include "mpc/policyhandler/PolicyHandler.h"
 
-//#include "ilqg/iLQG.hpp"
-//#include "ilqg/iLQGMP.hpp"
-//#include "ilqg/iLQGSettings.hpp"
-
 #include "solver/lqp/HPIPMInterface.hpp"
 
-#include "gnms/GNMS_CT.hpp"
 #include "solver/NLOptConSettings.hpp"
+#include "solver/NLOptConSolver.hpp"
 
 #include "lqr/LQR.hpp"
 #include "lqr/FHDTLQR.hpp"

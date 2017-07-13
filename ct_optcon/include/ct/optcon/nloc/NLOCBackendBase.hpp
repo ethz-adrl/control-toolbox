@@ -65,13 +65,14 @@ class NLOCBackendBase
 	static_assert(P_DIM + V_DIM == STATE_DIM, "symplectic dimensions should add up to state dimension");
 
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const size_t state_dim = STATE_DIM;
 	static const size_t control_dim = CONTROL_DIM;
 
 	typedef NLOptConSettings Settings_t;
-	typedef core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
+	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 
 	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 

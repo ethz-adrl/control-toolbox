@@ -31,23 +31,23 @@ namespace optcon {
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::setInitialGuess(const Policy_t& initialGuess)
 {
-	if(initialGuess.getControlVectorArray().size() != initialGuess.getStateVectorArray().size()-1)
+	if(initialGuess.uff().size() != initialGuess.K().size()-1)
 	{
 		std::cout << "Provided initial state and control trajectories are not of correct size. Control should be one shorter than state.";
-		std::cout << "Control length is "<<initialGuess.getControlVectorArray().size()<<" but state length is "<<initialGuess.getStateVectorArray().size()<<std::endl;
+		std::cout << "Control length is "<<initialGuess.uff().size()<<" but state length is "<<initialGuess.x_ref().size()<<std::endl;
 		throw(std::runtime_error("state and control trajectories are not equally long"));
 	}
 
-	if(initialGuess.getControlVectorArray().size() < K_){
-		std::cout << "Initial guess length too short. Received length " << initialGuess.getControlVectorArray().size() <<", expected " << K_ << std::endl;
+	if(initialGuess.uff().size() < K_){
+		std::cout << "Initial guess length too short. Received length " << initialGuess.uff().size() <<", expected " << K_ << std::endl;
 		throw std::runtime_error("initial control guess to short");
 	}
 
-	if(initialGuess.getControlVectorArray().size() > K_)
+	if(initialGuess.uff().size() > K_)
 		std::cout << "Warning, initial control guess too long, will truncate" << std::endl;
 
-	u_ff_ = initialGuess.getControlVectorArray();
-	x_ = initialGuess.getStateVectorArray();
+	u_ff_ = initialGuess.uff();
+	x_ = initialGuess.x_ref();
 
 	initialized_ = true;
 

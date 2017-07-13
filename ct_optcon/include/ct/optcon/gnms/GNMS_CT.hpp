@@ -28,7 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define INCLUDE_CT_OPTCON_SOLVER_GNMS_CT_H_
 
 #include <ct/optcon/solver/NLOptConSettings.hpp>
-#include <ct/optcon/solver/NLOptConSolver.hpp>
+#include <ct/optcon/nloc/NLOCAlgorithm.hpp>
 
 namespace ct{
 namespace optcon{
@@ -39,6 +39,7 @@ class GNMS_CT : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const size_t STATE_D = STATE_DIM;
@@ -48,10 +49,14 @@ public:
 	typedef NLOptConSettings Settings_t;
 	typedef SCALAR Scalar_t;
 
-	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
+	typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR> BASE;
+	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM> Backend_t;
 
-	GNMS_CT(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const Settings_t& settings)
-	{	}
+	GNMS_CT(std::shared_ptr<Backend_t>& backend_, const Settings_t& settings) :
+		BASE(backend_)
+	{
+		configure(settings); // todo: might be redundant????
+	}
 
 	virtual ~GNMS_CT(){}
 

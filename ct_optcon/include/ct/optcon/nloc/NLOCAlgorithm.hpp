@@ -21,7 +21,7 @@ class NLOCAlgorithm
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, SCALAR> Backend_t;
+	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM> Backend_t;
 
 	typedef ct::core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 	typedef NLOptConSettings Settings_t;
@@ -29,17 +29,17 @@ public:
 
 	NLOCAlgorithm(const std::shared_ptr<Backend_t>& backend) :
 		backend_(backend)
-	{	}
+	{}
 
 	virtual ~NLOCAlgorithm(){}
 
 	virtual void configure(const Settings_t& settings)  = 0;
 
-	virtual void prepareIteration() override  = 0;
+	virtual void prepareIteration()  = 0;
 
-	virtual bool finishIteration() override = 0;
+	virtual bool finishIteration() = 0;
 
-	virtual bool runIteration() override = 0;
+	virtual bool runIteration() = 0;
 
 	virtual void setInitialGuess(const Policy_t& initialGuess) = 0;
 

@@ -189,14 +189,14 @@ void singleCore()
 		ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
 //		iLQG<state_dim, control_dim>::Policy_t initControlleriLQG (u0_ff, u0_fb, ilqg_settings.dt);
 
-		GNMS_CT<state_dim, control_dim>::Policy_t initController (u0, x0);
+		NLOptConSolver<state_dim, control_dim>::Policy_t initController (x0, u0, u0_fb, gnms_settings.dt);
 
 		// construct single-core single subsystem OptCon Problem
 		OptConProblem<state_dim, control_dim> optConProblem (tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
 
 
 		std::cout << "initializing gnms solver" << std::endl;
-		GNMS_CT<state_dim, control_dim> gnms(optConProblem, gnms_settings);
+		NLOptConSolver<state_dim, control_dim> gnms(optConProblem, gnms_settings);
 //		iLQG<state_dim, control_dim> ilqg(optConProblem, ilqg_settings);
 
 

@@ -351,7 +351,7 @@ public:
             }
 
             std::string solverStr = pt.get<std::string>(ns + ".solver");
-            if (solverToDiscretization.find(solverStr) != stringToSolver.end())
+            if (stringToSolver.find(solverStr) != stringToSolver.end())
             {
             	solver = stringToSolver[solverStr];
             }

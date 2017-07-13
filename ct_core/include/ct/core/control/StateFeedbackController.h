@@ -79,18 +79,21 @@ public:
 	 * @param intType interpolation type
 	 */
 	StateFeedbackController(
+			const StateVectorArray<STATE_DIM, SCALAR>& x_ref,
 			const ControlVectorArray<CONTROL_DIM, SCALAR>& uff,
 			const FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K,
 			const SCALAR& deltaT,
 			const SCALAR& t0 = 0.0,
 			const InterpolationType& intType = ZOH
 	) :
+		x_ref_(x_ref, deltaT, t0, intType),
 		uff_(uff, deltaT, t0, intType),
 		K_(K, deltaT, t0, intType)
 	{}
 
 	//! copy constructor
 	StateFeedbackController(const StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>& other) :
+		x_ref_(other.x_ref_),
 		uff_(other.uff_),
 		K_(other.K_)
 	{}
@@ -115,7 +118,7 @@ public:
 			const SCALAR& t,
 			ControlVector<CONTROL_DIM, SCALAR>& controlAction) override {
 
-		controlAction = uff_.eval(t) + K_.eval(t) * state;
+		controlAction = uff_.eval(t) + K_.eval(t) * (state-x_ref_.eval(t));
 	}
 
 	//! updates the controller
@@ -126,14 +129,20 @@ public:
 	 * @param times discretization times
 	 */
 	void update(
+			const DiscreteArray<StateVector<STATE_DIM, SCALAR>>& x_ref,
 			const DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>& uff,
 			const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>& K,
 			const tpl::TimeArray<SCALAR>& times) {
+		x_ref_.setData(x_ref),
+		x_ref_.setTime(times),
 		uff_.setData(uff);
 		uff_.setTime(times);
 		K_.setData(K);
 		K_.setTime(times);
 	}
+
+	//! get reference state vector array (without timings)
+	const DiscreteArray<StateVector<STATE_DIM, SCALAR>>& x_ref() const { return x_ref_.getDataArray(); }
 
 	//! get feedforward array (without timings)
 	const DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>& uff() const { return uff_.getDataArray(); }
@@ -143,6 +152,9 @@ public:
 
 	//! get time array
 	const tpl::TimeArray<SCALAR>& time() const {return uff_.getTimeArray();}
+
+	//! get a reference to the feedforward trajectory
+	StateTrajectory<STATE_DIM, SCALAR>& getReferenceStateTrajectory() { return x_ref_; }
 
 	//! get a reference to the feedforward trajectory
 	ControlTrajectory<CONTROL_DIM, SCALAR>& getFeedforwardTrajectory() { return uff_; }
@@ -156,16 +168,18 @@ public:
 	//! get a reference to the feedback trajectory
 	const FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR>& getFeedbackTrajectory() const { return K_;}
 
+
 	//!  extracts a physically meaningful control trajectory from the given state-feedback law and a reference state trajectory
 	void extractControlTrajectory(const StateTrajectory<STATE_DIM, SCALAR>& x_traj, ControlTrajectory<CONTROL_DIM, SCALAR>& u_traj){
 		u_traj.clear();
 
 		for(size_t i = 0; i<x_traj.size()-1; i++){
-			u_traj.push_back(uff_[i]+K_[i]*x_traj[i], x_traj.getTimeFromIndex(i), true);
+			u_traj.push_back(uff_[i]+K_[i]*(x_traj[i]-x_ref_[i]), x_traj.getTimeFromIndex(i), true);
 		}
 	}
 
 private:
+	StateTrajectory<STATE_DIM, SCALAR> x_ref_; //! state reference trajectory
 	ControlTrajectory<CONTROL_DIM, SCALAR> uff_; //! feedforward control trajectory
 	FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR> K_; //! feedback control trajectory
 
