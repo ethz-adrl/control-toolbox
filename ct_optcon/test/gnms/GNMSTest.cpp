@@ -197,6 +197,7 @@ void singleCore()
 
 
 		std::cout << "initializing gnms solver" << std::endl;
+		gnms_settings.print();
 		NLOptConSolver<state_dim, control_dim> gnms(optConProblem, gnms_settings);
 //		iLQG<state_dim, control_dim> ilqg(optConProblem, ilqg_settings);
 
