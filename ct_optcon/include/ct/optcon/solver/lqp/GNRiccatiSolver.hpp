@@ -27,6 +27,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_OPTCON_LQ_GNRICCATISOLVER_HPP_
 #define INCLUDE_CT_OPTCON_LQ_GNRICCATISOLVER_HPP_
 
+#include "LQOCSolver.hpp"
+
 namespace ct {
 namespace optcon {
 
@@ -34,7 +36,7 @@ namespace optcon {
  * This class implements an general Riccati backward pass for solving an unconstrained
  *  linear-quadratic Optimal Control problem
  */
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR = double>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class GNRiccatiSolver : public LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
@@ -44,7 +46,7 @@ public:
 	static const int state_dim = STATE_DIM;
 	static const int control_dim = CONTROL_DIM;
 
-	typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem;
+	typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
 
 	typedef ct::core::StateMatrix<STATE_DIM, SCALAR> StateMatrix;
 	typedef ct::core::StateMatrixArray<STATE_DIM, SCALAR> StateMatrixArray;
@@ -57,7 +59,7 @@ public:
 	typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
 	typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
 
-	GNRiccatiSolver(const std::shared_ptr<LQOCProblem>& lqocProblem = nullptr) :
+	GNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem = nullptr) :
 		LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>(lqocProblem)
 	{}
 
@@ -92,7 +94,7 @@ public:
 	{
 		lx_[0].setZero();
 
-		LQOCProblem& p = *this->lqocProblem_;
+		LQOCProblem_t& p = *this->lqocProblem_;
 
 		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages(); k++)
 			lx_[k+1] = (p.A_[k] + p.B_[k] * L_[k]) * lx_[k]  + p.B_[k] * lv_[k] + p.b_[k];
@@ -106,7 +108,7 @@ public:
 
 protected:
 
-	virtual void setProblemImpl(std::shared_ptr<LQOCProblem>& lqocProblem) override
+	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t>& lqocProblem) override
 	{
 		const int& N = lqocProblem->getNumberOfStages();
 
@@ -128,7 +130,7 @@ protected:
 	{
 		// initialize quadratic approximation of cost to go
 		const int& N = this->lqocProblem_->getNumberOfStages();
-		LQOCProblem& p = *this->lqocProblem_;
+		LQOCProblem_t& p = *this->lqocProblem_;
 
 		S_[N+1] = p.Q_[N+1];
 		sv_[N+1] = p.qv_[N+1];
@@ -136,7 +138,7 @@ protected:
 
 	void computeCostToGo(size_t k)
 	{
-		LQOCProblem& p = *this->lqocProblem_;
+		LQOCProblem_t& p = *this->lqocProblem_;
 
 		S_[k] = p.Q_[k];
 		S_[k].noalias() += p.A_[k].transpose() * S_[k+1] * p.A_[k];
@@ -154,7 +156,7 @@ protected:
 
 	void designController(size_t k)
 	{
-		LQOCProblem& p = *this->lqocProblem_;
+		LQOCProblem_t& p = *this->lqocProblem_;
 
 		gv_[k] = p.rv_[k];
 		gv_[k].noalias() += p.B_[k].transpose() * sv_[k+1];

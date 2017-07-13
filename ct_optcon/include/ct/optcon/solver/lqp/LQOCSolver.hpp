@@ -37,7 +37,7 @@ namespace optcon {
 /*!
  * Base class for solvers to solve an LQOCProblem (both constrained / unconstrained, etc.)
  */
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR = double>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class LQOCSolver
 {
 public:
