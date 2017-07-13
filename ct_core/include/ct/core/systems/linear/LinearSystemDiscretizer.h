@@ -65,6 +65,7 @@ public:
 			const Approximation& approximation = Approximation::FORWARD_EULER,
 			const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL):
 		DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type),
+		linearSystem_(linearSystem),
 		dt_(dt),
 		approximation_(approximation)
 	{}

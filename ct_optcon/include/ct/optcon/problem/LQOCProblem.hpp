@@ -139,6 +139,9 @@ public:
 
 		R_ = core::ControlMatrixArray<CONTROL_DIM, SCALAR>(K_, costFunction.controlSecondDerivativeIntermediate()*dt);
 
+		Q_[K_] = costFunction.stateSecondDerivativeTerminal();
+		qv_[K_] = costFunction.stateDerivativeTerminal();
+
 		x_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_+1, x0);
 		u_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, uNom);
 	}
