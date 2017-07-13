@@ -27,39 +27,35 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_OPTCON_SOLVER_GNMS_CT_H_
 #define INCLUDE_CT_OPTCON_SOLVER_GNMS_CT_H_
 
-#include <ct/optcon/gnms/GNMSSettings.hpp>
-#include <ct/optcon/solver/NLOptConSolver.hpp>
+#include <ct/optcon/solver/NLOptConSettings.hpp>
+#include <ct/optcon/nloc/NLOCAlgorithm.hpp>
 
 namespace ct{
 namespace optcon{
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class GNMS_CT : public NLOptConSolver
-	<
-	GNMS_CT<STATE_DIM, CONTROL_DIM, SCALAR>,
-	ct::core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR>,
-	GNMSSettings, STATE_DIM, CONTROL_DIM, SCALAR
-	>
+class GNMS_CT : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const size_t STATE_D = STATE_DIM;
 	static const size_t CONTROL_D = CONTROL_DIM;
 
 	typedef ct::core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
-	typedef GNMSSettings Settings_t;
-//	typedef DERIVED Derived;
+	typedef NLOptConSettings Settings_t;
 	typedef SCALAR Scalar_t;
 
-	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
+	typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR> BASE;
+	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM> Backend_t;
 
-	GNMS_CT(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const GNMSSettings& settings)
+	GNMS_CT(std::shared_ptr<Backend_t>& backend_, const Settings_t& settings) :
+		BASE(backend_)
 	{
-		// todo: how to decide if single core or multicore here?
-		this->nlocBackend_ = std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM>>(new NLOCBackendST<STATE_DIM, CONTROL_DIM>(optConProblem, settings));
+		configure(settings); // todo: might be redundant????
 	}
 
 	virtual ~GNMS_CT(){}

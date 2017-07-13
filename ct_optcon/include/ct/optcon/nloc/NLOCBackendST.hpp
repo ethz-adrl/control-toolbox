@@ -29,6 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define INCLUDE_CT_OPTCON_NLOC_BACKEND_ST_HPP_
 
 #include "NLOCBackendBase.hpp"
+#include <ct/optcon/solver/NLOptConSettings.hpp>
 
 namespace ct{
 namespace optcon{
@@ -44,7 +45,7 @@ public:
 	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> Base;
 
 	NLOCBackendST(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
-			const GNMSSettings& settings) :
+			const NLOptConSettings& settings) :
 				Base(optConProblem, settings)
 	{}
 

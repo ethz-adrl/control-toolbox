@@ -31,6 +31,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/problem/OptConProblem.h>
 
 #include <ct/optcon/nloc/NLOCBackendST.hpp>
+#include <ct/optcon/gnms/GNMS_CT.hpp>
 
 namespace ct{
 namespace optcon{
@@ -39,8 +40,15 @@ namespace optcon{
 /** \defgroup OptConSolver OptConSolver
  * Solver interface for finite horizon optimal control problems
  */
-template <typename DERIVED, typename POLICY, typename SETTINGS, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class NLOptConSolver : public OptConSolver<DERIVED, POLICY, SETTINGS, STATE_DIM, CONTROL_DIM, SCALAR>{
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class NLOptConSolver : public OptConSolver<
+	NLOptConSolver<STATE_DIM, CONTROL_DIM, SCALAR>,
+	core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>,
+	NLOptConSettings,
+	STATE_DIM,
+	CONTROL_DIM,
+	SCALAR>
+{
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -48,45 +56,64 @@ public:
 	static const size_t STATE_D = STATE_DIM;
 	static const size_t CONTROL_D = CONTROL_DIM;
 
-	typedef POLICY Policy_t;
-	typedef SETTINGS Settings_t;
-	typedef DERIVED Derived;
+	typedef NLOptConSolver<STATE_DIM, CONTROL_DIM, SCALAR> Derived;
+	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
+	typedef NLOptConSettings Settings_t;
 	typedef SCALAR Scalar_t;
 
 	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
 
-	NLOptConSolver() {}
+	NLOptConSolver(const OptConProblem_t& optConProblem, const Settings_t& settings)
+	{
+		initialize(optConProblem, settings);
+	}
 
 	virtual ~NLOptConSolver(){}
 
 	/**
 	 * configures the solver
 	 * */
-	virtual void configure(const Settings_t& settings) = 0;
+	void initialize(const OptConProblem_t& optConProblem, const Settings_t& settings);
+
+	/**
+	 * configures the solver
+	 * */
+	void configure(const Settings_t& settings) override;
 
 
-	virtual void prepareIteration() = 0;
+	virtual void prepareIteration()  {
+		nlocAlgorithm_ -> prepareIteration();
+	}
 
-	virtual bool finishIteration() = 0;
+	virtual bool finishIteration()
+	{
+		return nlocAlgorithm_ -> finishIteration();
+	}
 
 	/**
 	 * run a single iteration of the solver
 	 * @return true if a better solution was found
 	 */
-	virtual bool runIteration() override = 0;
+	virtual bool runIteration()
+	{
+		return nlocAlgorithm_ -> runIteration();
+	}
 
 	/*!
 	 * Set the initial guess used by the solver (not all solvers might support initial guesses)
 	 */
-	virtual void setInitialGuess(const Policy_t& initialGuess) = 0;
+	void setInitialGuess(const Policy_t& initialGuess) override
+	{
+		nlocBackend_ -> setInitialGuess(initialGuess);
+	}
 
 
 	/**
 	 * solve the optimal control problem
 	 * @return true if solve succeeded, false otherwise.
 	 * */
-	virtual bool solve()
+	virtual bool solve() override
 	{
 		bool solved = false;
 
@@ -173,21 +200,39 @@ public:
 	virtual void changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin) override { nlocBackend_->changeLinearSystem(lin); }
 
 
-	virtual SCALAR getCost() const override
-	{
-		{ return nlocBackend_->getCost(); }
-	}
+	virtual SCALAR getCost() const override {return nlocBackend_->getCost(); }
+
+	std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override { return nlocBackend_->getNonlinearSystemsInstances(); }
+
+	const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const override { return nlocBackend_->getNonlinearSystemsInstances(); }
+
+	std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() { return nlocBackend_->getLinearSystemsInstances(); }
+
+	const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const { return nlocBackend_->getLinearSystemsInstances(); }
+
+	std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() { return nlocBackend_->getCostFunctionInstances(); }
+
+	const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const { return nlocBackend_->getCostFunctionInstances(); }
+
+	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() { return nlocBackend_->getStateInputConstraintsInstances(); }
+
+	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const { return nlocBackend_->getStateInputConstraintsInstances(); }
+
+	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() { return nlocBackend_->getPureStateConstraintsInstances(); }
+
+	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const { return nlocBackend_->getPureStateConstraintsInstances(); }
 
 
 protected:
-	std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM>> nlocBackend_;
 
+	std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM>> nlocBackend_;
+	std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM>> nlocAlgorithm_;
 };
 
 
 }
 }
 
-
+#include "implementation/NLOptConSolver-impl.hpp"
 
 #endif /* INCLUDE_CT_OPTCON_SOLVER_NLOPTCONSOLVERBASE_H_ */

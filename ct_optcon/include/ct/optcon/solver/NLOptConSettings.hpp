@@ -177,6 +177,12 @@ public:
     enum INTEGRATOR { EULER = 0, RK4 = 1, EULER_SYM = 2, RK_SYM = 3};
     enum DISCRETIZATION { FORWARD_EULER = 0, BACKWARD_EULER = 1, TUSTIN = 2, MATRIX_EXPONENTIAL = 3 };
 
+    enum SOLVER
+    {
+    	GNMS = 0,
+    	ILQR	// todo: include more
+    };
+
     //! NLOptCon Settings default constructor
     /*!
      * sets all settings to default values.
@@ -184,6 +190,7 @@ public:
     NLOptConSettings() :
     	integrator(RK4),
         discretization(BACKWARD_EULER),
+        solver(GNMS),
 		epsilon(1e-5),
 		dt(0.001),
 		dt_sim(0.001),
@@ -201,6 +208,7 @@ public:
 
     INTEGRATOR integrator;	//! which integrator to use during the NLOptCon forward rollout
 	DISCRETIZATION discretization;    
+	SOLVER solver;    		//! which solver is to be used
 	double epsilon;			//! Eigenvalue correction factor for Hessian regularization
     double dt;				//! sampling time for the control input (seconds)
     double dt_sim;			//! sampling time for the forward simulation (seconds) \warning dt_sim needs to be an integer multiple of dt.
@@ -235,6 +243,7 @@ public:
         std::cout<<"==============="<<std::endl;
         std::cout<<"integrator: "<<integratorToString[integrator]<<std::endl;
         std::cout<<"discretization: " << discretizationToString[discretization]<<std::endl;
+        std::cout<<"solver: " << solverToString[solver]<<std::endl;
         std::cout<<"dt: "<<dt<<std::endl;
         std::cout<<"dt_sim: "<<dt_sim<<std::endl;
         std::cout<<"maxIter: "<<max_iterations<<std::endl;
@@ -306,6 +315,7 @@ public:
 
 		try {
 			nThreads = pt.get<size_t>(ns +".nThreads");
+
 			std::string integratorStr = pt.get<std::string>(ns + ".integrator");
 			if (stringToIntegrator.find(integratorStr) != stringToIntegrator.end())
 			{
@@ -338,6 +348,23 @@ public:
                 }
 
                 exit(-1);
+            }
+
+            std::string solverStr = pt.get<std::string>(ns + ".solver");
+            if (stringToSolver.find(solverStr) != stringToSolver.end())
+            {
+            	solver = stringToSolver[solverStr];
+            }
+            else
+            {
+            	std::cout << "Invalid solver specified in config, should be one of the following:" << std::endl;
+
+            	for(auto it = stringToSolver.begin(); it != stringToSolver.end(); it++)
+            	{
+            		std::cout << it->first << std::endl;
+            	}
+
+            	exit(-1);
             }
 
 		} catch (...)
@@ -390,10 +417,10 @@ private:
     std::map<DISCRETIZATION, std::string> discretizationToString = {{FORWARD_EULER, "Forward_euler"}, {BACKWARD_EULER, "Backward_euler"}, {TUSTIN, "Tustin"}};
     std::map<std::string, DISCRETIZATION> stringToDiscretization = {{"Forward_euler", FORWARD_EULER}, {"Backward_euler", BACKWARD_EULER}, {"Tustin", TUSTIN}};
 
+    std::map<SOLVER, std::string> solverToString = {{GNMS, "GNMS"}, {ILQR, "ILQR"}};
+    std::map<std::string, SOLVER> stringToSolver = {{"GNMS", GNMS}, {"ILQR", ILQR}};
 
 };
-
-
 
 
 }

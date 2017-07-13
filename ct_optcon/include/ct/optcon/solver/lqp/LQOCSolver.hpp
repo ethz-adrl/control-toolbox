@@ -27,6 +27,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_OPTCON_LQ_LQOCSOLVER_HPP_
 #define INCLUDE_CT_OPTCON_LQ_LQOCSOLVER_HPP_
 
+
+#include <ct/optcon/solver/NLOptConSettings.hpp>
+
 namespace ct {
 namespace optcon {
 
@@ -57,13 +60,13 @@ public:
 	 * update the shared_ptr to the LQOCProblem instance and call initialize instance deriving from this class.
 	 * @param lqocProblem
 	 */
-	void setProblem(const std::shared_ptr<LQOCProblem_t>& lqocProblem)
+	void setProblem(std::shared_ptr<LQOCProblem_t>& lqocProblem)
 	{
 		lqocProblem_ = lqocProblem;
-		this->setProblemImpl(lqocProblem);
+		setProblemImpl(lqocProblem);
 	}
 
-//	virtual void configure() = 0;
+	virtual void configure(const NLOptConSettings& settings) = 0;
 
 	virtual void solve() = 0;
 

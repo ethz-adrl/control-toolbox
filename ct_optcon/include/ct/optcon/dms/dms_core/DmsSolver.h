@@ -93,6 +93,8 @@ public:
 
 	typedef DmsPolicy<STATE_DIM, CONTROL_DIM> Policy_t;
 
+	typedef OptConProblem<STATE_DIM, CONTROL_DIM> OptConProblem_t;
+
 	/**
 	 * @brief      Custom constructor, converts the optcon problem to a DMS problem
 	 *
@@ -228,6 +230,77 @@ public:
 		dmsProblem_->printSolution();
 	} 
 
+
+	/*!
+		 * \brief Direct accessor to the system instances
+		 *
+		 * \warning{Use this only when performance absolutely matters and if you know what you
+		 * are doing. Otherwise use e.g. changeNonlinearSystem() to change the system dynamics
+		 * in a safe and easy way. You should especially not change the size of the vector or
+		 * modify each entry differently.}
+		 * @return
+		 */
+		std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override { return systems_; }
+
+		const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const override { return systems_; }
+
+		/*!
+		 * \brief Direct accessor to the linear system instances
+		 *
+		 * \warning{Use this only when performance absolutely matters and if you know what you
+		 * are doing. Otherwise use e.g. changeLinearSystem() to change the system dynamics
+		 * in a safe and easy way. You should especially not change the size of the vector or
+		 * modify each entry differently.}
+		 * @return
+		 */
+		std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() override { return linearSystems_; }
+
+		const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const override { return linearSystems_; }
+
+		/*!
+		 * \brief Direct accessor to the cost function instances
+		 *
+		 * \warning{Use this only when performance absolutely matters and if you know what you
+		 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
+		 * in a safe and easy way. You should especially not change the size of the vector or
+		 * modify each entry differently.}
+		 * @return
+		 */
+		std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() override  { return costFunctions_; }
+
+		const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const override { return costFunctions_; }
+
+		/**
+		 * @brief      Direct accessor to the state input constraint instances
+		 *
+		 * \warning{Use this only when performance absolutely matters and if you know what you
+		 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
+		 * in a safe and easy way. You should especially not change the size of the vector or
+		 * modify each entry differently.}
+		 *
+		 * @return     The state input constraint instances
+		 */
+		std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() override { return stateInputConstraints_; }
+
+		const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const override  { return stateInputConstraints_; }
+
+		/**
+		 * @brief      Direct accessor to the pure state constraints
+		 *
+		 * \warning{Use this only when performance absolutely matters and if you know what you
+		 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
+		 * in a safe and easy way. You should especially not change the size of the vector or
+		 * modify each entry differently.}
+		 *
+		 * @return     The pure state constraints instances.
+		 */
+		std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() override { return pureStateConstraints_; }
+
+		const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const override { return pureStateConstraints_; }
+
+
+
+
 private:
 	std::shared_ptr<DmsProblem<STATE_DIM, CONTROL_DIM>> dmsProblem_; /*!<The dms problem*/
 	std::shared_ptr<NlpSolver> nlpSolver_; /*!<The nlp solver for solving the dmsproblem*/
@@ -237,6 +310,13 @@ private:
  
 	state_vector_t x0_; /*!<The initial state for the optimization*/
 	core::Time tf_; /*!<The timehorizon of the problem*/
+
+
+	std::vector<typename OptConProblem_t::DynamicsPtr_t> systems_;
+	std::vector<typename OptConProblem_t::LinearPtr_t> linearSystems_;
+	std::vector<typename OptConProblem_t::CostFunctionPtr_t> costFunctions_;
+	std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints_;
+	std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints_;
 };	
 
 
