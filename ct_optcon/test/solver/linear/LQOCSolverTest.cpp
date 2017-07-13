@@ -5,7 +5,7 @@
  *      Author: neunertm
  */
 
-#include <ct/core/core.h>
+#include <ct/optcon/optcon.h>
 
 using namespace ct;
 using namespace ct::optcon;
@@ -19,15 +19,15 @@ int main(int argc, char* argv[])
 	const size_t N = 5;
 	const double dt = 0.5;
 
-	std::vector<std::shared_ptr<LQOCSolver>> lqocSolvers;
+	std::vector<std::shared_ptr<LQOCSolver<state_dim, control_dim>>> lqocSolvers;
 
-	std::shared_ptr<LQOCSolver> hpipmSolver(new HPIPMInterface);
-	std::shared_ptr<LQOCSolver> gnRiccatiSolver(new GNRiccatiSolver);
+	std::shared_ptr<LQOCSolver<state_dim, control_dim>> hpipmSolver(new HPIPMInterface<state_dim, control_dim>);
+	std::shared_ptr<LQOCSolver<state_dim, control_dim>> gnRiccatiSolver(new GNRiccatiSolver<state_dim, control_dim>);
 	lqocSolvers.push_back(hpipmSolver);
 	lqocSolvers.push_back(gnRiccatiSolver);
 
 	LQOCProblem<state_dim, control_dim> lqocProblem(5);
-	std::shared_ptr<core::LinearSystem<state_dim, control_dim>> springLoadedMassLinear(new SpringLoadedMassLinear());
+	std::shared_ptr<core::LinearSystem<state_dim, control_dim>> springLoadedMassLinear(new example::DiehlSystemLinear());
 	core::LinearSystemDiscretizer<state_dim, control_dim> discreteSpringLoadedMass(springLoadedMassLinear, dt);
 
 	ct::core::StateVector<state_dim> x0;

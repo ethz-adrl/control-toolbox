@@ -71,8 +71,8 @@ public:
 
 	LinearSystemDiscretizer(const LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>& other) :
 		linearSystem_(other.linearSystem_.clone()),
-		dt_(dt),
-		approximation_(approximation)
+		dt_(other.dt_),
+		approximation_(other.approximation_)
 	{
 	}
 
@@ -93,40 +93,40 @@ public:
 			const int n,
 			const ControlVector<CONTROL_DIM, SCALAR>& u,
 			state_matrix_t& A,
-			control_matrix_t& B) override
+			state_control_matrix_t& B) override
 	{
-		switch(Approximation)
+		switch(approximation_)
 		{
 			case Approximation::FORWARD_EULER:
 			{
 				A = state_matrix_t::Identity();
-				A += dt_ * linearSystem_->getDerivativeState(x, u, k*dt_);
-				B = dt_ * linearSystem_->getDerivativeControl(x, u, k*dt_);
+				A += dt_ * linearSystem_->getDerivativeState(x, u, n*dt_);
+				B = dt_ * linearSystem_->getDerivativeControl(x, u, n*dt_);
 				break;
 			}
 			case Approximation::BACKWARD_EULER:
 			{
-				state_matrix_t aNew = dt_ * linearSystem_->getDerivativeState(x, u, k*dt_);
+				state_matrix_t aNew = dt_ * linearSystem_->getDerivativeState(x, u, n*dt_);
 				A = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
-				B = A * dt_ * linearSystem_->getDerivativeControl(x, u, k*dt_);
+				B = A * dt_ * linearSystem_->getDerivativeControl(x, u, n*dt_);
 				break;
 			}
 			case Approximation::TUSTIN:
 			{
 				// todo: this is probably not correct
-				state_matrix_t aNew = 0.5 * dt_ * linearSystem_->getDerivativeState(x, u, k*dt_);
+				state_matrix_t aNew = 0.5 * dt_ * linearSystem_->getDerivativeState(x, u, n*dt_);
 				state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
 				A = aNewInv * (state_matrix_t::Identity() + aNew);
-				B = aNewInv * dt_ * linearSystem_->getDerivativeControl(x, u, k*dt_);
+				B = aNewInv * dt_ * linearSystem_->getDerivativeControl(x, u, n*dt_);
 				break;
 			}
 			case Approximation::MATRIX_EXPONENTIAL:
 			{
-				StateMatrix Ac = linearSystem.getDerivativeState(x, u, dt*n);
-				StateMatrix Adt = dt * Ac;
+				state_matrix_t Ac = linearSystem_->getDerivativeState(x, u, dt_*n);
+				state_matrix_t Adt = dt_ * Ac;
 
 				A = Adt.exp();
-				B = Ac.inverse() * (A - StateMatrix::Identity()) *  linearSystem_->getDerivativeControl(x, u, dt*n);
+				B = Ac.inverse() * (A - state_matrix_t::Identity()) *  linearSystem_->getDerivativeControl(x, u, dt_*n);
 				break;
 			}
 		}

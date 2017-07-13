@@ -75,7 +75,7 @@ public:
 	 * @param control control input
 	 * @param stateNext propagated state
 	 */
-	virtual void propagateDynamics(
+	virtual void propagateControlledDynamics(
 				const StateVector<STATE_DIM, SCALAR>& state,
 				const int& n,
 				const ControlVector<CONTROL_DIM, SCALAR>& control,
@@ -83,7 +83,7 @@ public:
 		) override
 	{
 		state_matrix_t A;
-		control_matrix_t B;
+		state_control_matrix_t B;
 		this->getAandB(state, n, control, A, B);
 		stateNext = A * state + B * control;
 	}
@@ -93,7 +93,7 @@ public:
 			const int n,
 			const ControlVector<CONTROL_DIM, SCALAR>& u,
 			state_matrix_t& A,
-			control_matrix_t& B)
+			state_control_matrix_t& B)
 	= 0;
 
 };

@@ -113,13 +113,13 @@ public:
 		double dt
 	)
 	{
-		core::StateMatrix<state_dim> A;
-		core::ControlMatrix<state_dim> B;
+		core::StateMatrix<STATE_DIM> A;
+		core::ControlMatrix<STATE_DIM> B;
 		linearSystem.getAandB(A, B);
 
-		A_ = core::StateMatrixArray<state_dim>(K_, A);
-		B_ = core::StateMatrixArray<state_dim>(K_, B);
-		d_ = core::StateVectorArray<state_dim>(K_+1, stateOffset);
+		A_ = core::StateMatrixArray<STATE_DIM>(K_, A);
+		B_ = core::StateMatrixArray<STATE_DIM>(K_, B);
+		d_ = core::StateVectorArray<STATE_DIM>(K_+1, stateOffset);
 
 		ct::core::ControlVector<CONTROL_DIM> uNom; uNom.setZero(); // reference control should not matter for linear system
 

@@ -48,6 +48,7 @@ public:
 
 	typedef ct::core::StateMatrix<STATE_DIM, SCALAR> StateMatrix;
 	typedef ct::core::StateMatrixArray<STATE_DIM, SCALAR> StateMatrixArray;
+	typedef ct::core::ControlVector<CONTROL_DIM, SCALAR> ControlVector;
 	typedef ct::core::ControlMatrix<CONTROL_DIM, SCALAR> ControlMatrix;
 	typedef ct::core::ControlMatrixArray<CONTROL_DIM, SCALAR> ControlMatrixArray;
 	typedef ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> StateControlMatrixArray;
@@ -72,7 +73,7 @@ public:
 
 	virtual void solveSingleStage(int N) override
 	{
-		if (N == lqocProblem->getNumberOfStages + 1)
+		if (N == this->lqocProblem_->getNumberOfStages + 1)
 			initializeCostToGo();
 
 		designController(N);
@@ -87,12 +88,14 @@ public:
 
 
 	// todo: might make sense to update state solution variable somewhere else
-	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() override {
-
+	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() override
+	{
 		lx_[0].setZero();
 
-		for(size_t i = 0; i<lqocProblem_->getNumberOfStages; i++)
-			lx_[k+1] = (A_[k] + B_[k] * L_[k]) * lx_[k]  + B_[k] * lv_[k] + d_[k];
+		LQOCProblem& p = *this->lqocProblem_;
+
+		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages; k++)
+			lx_[k+1] = (p.A_[k] + p.B_[k] * L_[k]) * lx_[k]  + p.B_[k] * lv_[k] + p.d_[k];
 
 		return lx_;
 	}
@@ -124,7 +127,9 @@ protected:
 	void initializeCostToGo()
 	{
 		// initialize quadratic approximation of cost to go
-		const int& N = lqocProblem->getNumberOfStages();
+		const int& N = this->lqocProblem->getNumberOfStages();
+		LQOCProblem& p = *this->lqocProblem_;
+
 		S_[N+1] = p.Q_[N+1];
 		sv_[N+1] = p.qv_[N+1];
 	}
@@ -166,7 +171,7 @@ protected:
 		if(settings_.fixedHessianCorrection)
 		{
 			if (settings_.epsilon > 1e-10)
-				Hi_[k] = H_[k] + settings_.epsilon*control_matrix_t::Identity();
+				Hi_[k] = H_[k] + settings_.epsilon*ControlMatrix::Identity();
 			else
 				Hi_[k] = H_[k];
 
@@ -174,24 +179,24 @@ protected:
 			{
 				// compute eigenvalues with eigenvectors enabled
 				eigenvalueSolver_.compute(Hi_[k], Eigen::ComputeEigenvectors);
-				const control_matrix_t& V = eigenvalueSolver_.eigenvectors().real();
-				const control_vector_t& lambda = eigenvalueSolver_.eigenvalues();
+				const ControlMatrix& V = eigenvalueSolver_.eigenvectors().real();
+				const ControlVector& lambda = eigenvalueSolver_.eigenvalues();
 
 				smallestEigenvalue_ = std::min(smallestEigenvalue_, lambda.minCoeff());
 
 				// Corrected Eigenvalue Matrix
-				control_matrix_t D = control_matrix_t::Zero();
+				ControlMatrix D = ControlMatrix::Zero();
 				// make D positive semi-definite (as described in IV. B.)
 				D.diagonal() = lambda.cwiseMax(settings_.epsilon);
 
 				// reconstruct H
-				control_matrix_t Hi_regular = V * D * V.transpose();
+				ControlMatrix Hi_regular = V * D * V.transpose();
 
 				// invert D
-				control_matrix_t D_inverse = control_matrix_t::Zero();
+				ControlMatrix D_inverse = ControlMatrix::Zero();
 				// eigenvalue-wise inversion
 				D_inverse.diagonal() = -1.0 * D.diagonal().cwiseInverse();
-				control_matrix_t Hi_inverse_regular = V * D_inverse * V.transpose();
+				ControlMatrix Hi_inverse_regular = V * D_inverse * V.transpose();
 
 				if (!Hi_inverse_[k].isApprox(Hi_inverse_regular, 1e-4))
 				{
@@ -201,7 +206,7 @@ protected:
 
 			}
 
-			Hi_inverse_[k] = -Hi_[k].template selfadjointView<Eigen::Lower>().llt().solve(control_matrix_t::Identity());
+			Hi_inverse_[k] = -Hi_[k].template selfadjointView<Eigen::Lower>().llt().solve(ControlMatrix::Identity());
 
 			// calculate FB gain update
 			L_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * G_[k];
@@ -213,8 +218,8 @@ protected:
 
 			// compute eigenvalues with eigenvectors enabled
 			eigenvalueSolver_.compute(H_[k], Eigen::ComputeEigenvectors);
-			const control_matrix_t& V = eigenvalueSolver_.eigenvectors().real();
-			const control_vector_t& lambda = eigenvalueSolver_.eigenvalues();
+			const ControlMatrix& V = eigenvalueSolver_.eigenvectors().real();
+			const ControlVector& lambda = eigenvalueSolver_.eigenvalues();
 
 			if (settings_.recordSmallestEigenvalue)
 			{
@@ -222,7 +227,7 @@ protected:
 			}
 
 			// Corrected Eigenvalue Matrix
-			control_matrix_t D = control_matrix_t::Zero();
+			ControlMatrix D = ControlMatrix::Zero();
 			// make D positive semi-definite (as described in IV. B.)
 			D.diagonal() = lambda.cwiseMax(settings_.epsilon);
 
@@ -230,7 +235,7 @@ protected:
 			Hi_[k].noalias() = V * D * V.transpose();
 
 			// invert D
-			control_matrix_t D_inverse = control_matrix_t::Zero();
+			ControlMatrix D_inverse = ControlMatrix::Zero();
 			// eigenvalue-wise inversion
 			D_inverse.diagonal() = -1.0 * D.diagonal().cwiseInverse();
 			Hi_inverse_[k].noalias() = V * D_inverse * V.transpose();
@@ -240,7 +245,7 @@ protected:
 
 			// calculate FF update
 			lv_[k].noalias() = Hi_inverse_[k] * gv_[k];
-			du_norm_ += lv_[k].norm();
+//			du_norm_ += lv_[k].norm();
 		}
 	}
 
@@ -265,7 +270,7 @@ protected:
 	SCALAR smallestEigenvalue_;
 
 	//! Eigenvalue solver, used for inverting the Hessian and for regularization
-	Eigen::SelfAdjointEigenSolver<ControlMatrix> eigenvalueSolver_;
+	Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM>> eigenvalueSolver_;
 };
 
 

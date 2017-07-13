@@ -45,6 +45,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#include "mpc/policyhandler/PolicyHandler.h"
 
 #include "solver/lqp/HPIPMInterface.hpp"
+#include "solver/lqp/GNRiccatiSolver.hpp"
 
 #include "solver/NLOptConSettings.hpp"
 #include "solver/NLOptConSolver.hpp"

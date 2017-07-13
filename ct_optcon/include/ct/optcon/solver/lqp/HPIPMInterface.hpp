@@ -46,6 +46,7 @@ extern "C"
 
 #include <unsupported/Eigen/MatrixFunctions>
 
+#include "LQOCSolver.hpp"
 
 namespace ct {
 namespace optcon {
@@ -234,7 +235,7 @@ public:
 
 
 private:
-	void setProblemImpl(std::shared_ptr<LQOCProblem>& lqocProblem) override
+	void setProblemImpl(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>>& lqocProblem) override
 	{
 		changeNumberOfStages(lqocProblem->getNumberOfStages);
 		setupHPIPM(
@@ -474,7 +475,7 @@ private:
 	std::vector<char> ipm_mem_;
 	struct d_ipm_hard_ocp_qp_workspace workspace_;
 
-	NLOptConSettings_t settings_;
+	NLOptConSettings settings_;
 };
 
 

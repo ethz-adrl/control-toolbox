@@ -68,7 +68,7 @@ public:
 };
 
 
-std::shared_ptr<core::CostFunctionQuadratic<1, 1> > createDiehlCostFunction(const core::StateVector<1>& x_final)
+std::shared_ptr<CostFunctionQuadratic<1, 1> > createDiehlCostFunction(const core::StateVector<1>& x_final)
 {
 	Eigen::Matrix<double, 1,1 > Q;
 	Q << 1.0;
@@ -82,8 +82,8 @@ std::shared_ptr<core::CostFunctionQuadratic<1, 1> > createDiehlCostFunction(cons
 	Eigen::Matrix<double, 1, 1> Q_final;
 	Q_final << 10.0;
 
-	std::shared_ptr<core::CostFunctionQuadratic<1, 1> > quadraticCostFunction(
-			new core::CostFunctionQuadraticSimple<1, 1>(
+	std::shared_ptr<CostFunctionQuadratic<1, 1> > quadraticCostFunction(
+			new CostFunctionQuadraticSimple<1, 1>(
 					Q, R, x_nominal, u_nominal, x_final, Q_final));
 
 	return quadraticCostFunction;

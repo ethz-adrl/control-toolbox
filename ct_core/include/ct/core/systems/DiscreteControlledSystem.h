@@ -40,7 +40,7 @@ namespace core {
  * @tparam SCALAR scalar type
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class DiscreteControlledSystem : public DiscreteSystem<STATE_DIM, SCALAR>
+class DiscreteControlledSystem : public DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -52,7 +52,7 @@ public:
 	 * @param type system type
 	 */
 	DiscreteControlledSystem(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
-	: 	System<STATE_DIM, SCALAR>(type),
+	: 	DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type),
 	  	controller_(nullptr)
 	  	{};
 
@@ -65,16 +65,16 @@ public:
 	DiscreteControlledSystem(
 			std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR> > controller,
 			const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
-	: 	System<STATE_DIM, SCALAR>(type),
+	: 	DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type),
 	  	controller_(controller)
 	{};
 
 	//! copy constructor
-	DiscreteControlledSystem(const ControlledSystem& arg):
-		System<STATE_DIM, SCALAR>(arg)
+	DiscreteControlledSystem(const ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>& arg):
+		DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg)
 	{
 		if(arg.controller_)
-			controller_ = std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR> > (arg.controller_->clone());
+			controller_ = std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR> > (arg.controller_->clone());
 	}
 
 	//! destructor
