@@ -29,6 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define INCLUDE_CT_CORE_CONTROL_
 
 #include "control/Controller.h"
+#include "control/DiscreteController.h"
 #include "control/StateFeedbackController.h"
 #include "control/ConstantController.h"
 #include "control/ConstantTrajectoryController.h"
