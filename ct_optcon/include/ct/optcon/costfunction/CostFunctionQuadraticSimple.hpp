@@ -152,7 +152,7 @@ public:
 
 	virtual SCALAR evaluateTerminal() override {
 		state_vector_t x_deviation_final = this->x_ - x_final_;
-		return 0.5 * x_deviation_final.transpose() * Q_final_ * x_deviation_final;
+		return 0.5 * (x_deviation_final.transpose() * Q_final_ * x_deviation_final)(0);
 	}
 
 	virtual state_vector_t stateDerivativeTerminal() override {
