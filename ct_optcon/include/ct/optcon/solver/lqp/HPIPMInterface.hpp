@@ -131,8 +131,15 @@ public:
 		::d_solve_ipm2_hard_ocp_qp(&qp_, &qp_sol_, &workspace_);
 	}
 
-	virtual ct::core::StateVectorArray<STATE_DIM> getSolutionState() override { throw std::runtime_error("not implemented"); }
-	virtual ct::core::ControlVectorArray<CONTROL_DIM> getSolutionControl() override { throw std::runtime_error("not implemented"); }
+	virtual ct::core::StateVectorArray<STATE_DIM> getSolutionState() override {
+		::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u_.data(), x_.data(), pi_.data(), lam_lb_.data(), lam_ub_.data(), lam_lg_.data(), lam_ug_.data());
+		hx_[0] = this->lqocProblem_->x_[0];
+		return hx_;
+	}
+	virtual ct::core::ControlVectorArray<CONTROL_DIM> getSolutionControl() override {
+		::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u_.data(), x_.data(), pi_.data(), lam_lb_.data(), lam_ub_.data(), lam_lg_.data(), lam_ug_.data());
+		return hu_;
+	}
 	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> getFeedback() override { throw std::runtime_error("not implemented"); }
 
 
@@ -140,24 +147,16 @@ public:
 	{
 		int ii;
 
-		double *u[N_+1]; for(ii=0; ii<=N_; ii++) d_zeros(u+ii, nu_[ii], 1);
-		double *x[N_+1]; for(ii=0; ii<=N_; ii++) d_zeros(x+ii, nx_[ii], 1);
-		double *pi[N_]; for(ii=0; ii<N_; ii++) d_zeros(pi+ii, nx_[ii+1], 1);
-		double *lam_lb[N_+1]; for(ii=0; ii<=N_; ii++) d_zeros(lam_lb+ii, nb_[ii], 1);
-		double *lam_ub[N_+1]; for(ii=0; ii<=N_; ii++) d_zeros(lam_ub+ii, nb_[ii], 1);
-		double *lam_lg[N_+1]; for(ii=0; ii<=N_; ii++) d_zeros(lam_lg+ii, ng_[ii], 1);
-		double *lam_ug[N_+1]; for(ii=0; ii<=N_; ii++) d_zeros(lam_ug+ii, ng_[ii], 1);
-
-		::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u, x, pi, lam_lb, lam_ub, lam_lg, lam_ug);
+		::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u_.data(), x_.data(), pi_.data(), lam_lb_.data(), lam_ub_.data(), lam_lg_.data(), lam_ug_.data());
 
 
 			printf("\nsolution\n\n");
 			printf("\nu\n");
 			for(ii=0; ii<=N_; ii++)
-				d_print_mat(1, nu_[ii], u[ii], 1);
+				d_print_mat(1, nu_[ii], u_[ii], 1);
 			printf("\nx\n");
 			for(ii=0; ii<=N_; ii++)
-				d_print_mat(1, nx_[ii], x[ii], 1);
+				d_print_mat(1, nx_[ii], x_[ii], 1);
 
 			/*
 		#if 1
@@ -342,6 +341,32 @@ private:
 		hD_.resize(N_+1);
 		hidxb_.resize(N_+1);
 
+
+		u_.resize(N_+1);
+		x_.resize(N_+1);
+		pi_.resize(N_);
+		lam_lb_.resize(N_+1);
+		lam_ub_.resize(N_+1);
+		lam_lg_.resize(N_+1);
+		lam_ug_.resize(N_+1);
+		hx_.resize(N_+1);
+		hpi_.resize(N_);
+		hu_.resize(N_);
+
+		for (size_t i=0; i<N_; i++)
+		{
+			// first state and last input are not optimized
+			x_[i+1] = hx_[i+1].data();
+			u_[i] = hu_[i].data();
+		}
+		for (size_t i=0; i<N_; i++)
+		{
+			pi_[i] = hpi_[i].data();
+		}
+
+		ct::core::StateVectorArray<STATE_DIM> hx;
+		ct::core::ControlVectorArray<CONTROL_DIM> hu;
+
 		// initial state is not a decision variable but given
 		nx_[0] = 0;
 
@@ -464,6 +489,18 @@ private:
 	std::vector<int*> hidxb_;
 	double *x0_; // initial state
 
+	// solution
+	std::vector<double*> u_;
+	std::vector<double*> x_;
+	std::vector<double*> pi_;
+	std::vector<double*> lam_lb_;
+	std::vector<double*> lam_ub_;
+	std::vector<double*> lam_lg_;
+	std::vector<double*> lam_ug_;
+
+	ct::core::StateVectorArray<STATE_DIM> hx_;
+	ct::core::StateVectorArray<STATE_DIM> hpi_;
+	ct::core::ControlVectorArray<CONTROL_DIM> hu_;
 
 	std::vector<char> qp_mem_;
 	struct d_ocp_qp qp_;

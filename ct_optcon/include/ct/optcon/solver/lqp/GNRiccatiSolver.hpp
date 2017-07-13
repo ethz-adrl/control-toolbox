@@ -75,7 +75,7 @@ public:
 
 	virtual void solveSingleStage(int N) override
 	{
-		if (N == this->lqocProblem_->getNumberOfStages() + 1)
+		if (N == this->lqocProblem_->getNumberOfStages()-1)
 			initializeCostToGo();
 
 		designController(N);
@@ -92,17 +92,42 @@ public:
 	// todo: might make sense to update state solution variable somewhere else
 	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() override
 	{
+		LQOCProblem_t& p = *this->lqocProblem_;
+		ct::core::StateVectorArray<STATE_DIM, SCALAR> x = p.x_;
+
 		lx_[0].setZero();
 
-		LQOCProblem_t& p = *this->lqocProblem_;
-
 		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages(); k++)
+		{
 			lx_[k+1] = (p.A_[k] + p.B_[k] * L_[k]) * lx_[k]  + p.B_[k] * lv_[k] + p.b_[k];
+//			std::cout << "A: "<<std::endl<<p.A_[k]<<std::endl<<std::endl;
+//			std::cout << "B: "<<std::endl<<p.B_[k]<<std::endl<<std::endl;
+//			std::cout << "H: "<<std::endl<<H_[k]<<std::endl<<std::endl;
+//			std::cout << "S: "<<std::endl<<S_[k]<<std::endl<<std::endl;
+//			std::cout << "sv: "<<std::endl<<sv_[k]<<std::endl<<std::endl;
+//			std::cout << "L: "<<std::endl<<L_[k]<<std::endl<<std::endl;
+//			std::cout << "lv_: "<<std::endl<<lv_[k].transpose()<<std::endl<<std::endl;
+//
+//			std::cout << std::endl << std::endl;
+			x[k] += lx_[k];
+		}
+		x[p.getNumberOfStages()] += lx_[p.getNumberOfStages()];
 
-		return lx_;
+		return x;
 	}
 
-	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() override { return lv_; }
+	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() override
+	{
+		LQOCProblem_t& p = *this->lqocProblem_;
+
+		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u = p.u_;
+
+		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages()-1; k++)
+		{
+			u[k] += lv_[k] + L_[k] * lx_[k];
+		}
+		return u;
+	}
 
 	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> getFeedback() override { return L_; }
 
@@ -111,6 +136,9 @@ protected:
 	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t>& lqocProblem) override
 	{
 		const int& N = lqocProblem->getNumberOfStages();
+
+		gv_.resize(N);
+		G_.resize(N);
 
 		H_.resize(N);
 		Hi_.resize(N);
@@ -132,8 +160,8 @@ protected:
 		const int& N = this->lqocProblem_->getNumberOfStages();
 		LQOCProblem_t& p = *this->lqocProblem_;
 
-		S_[N+1] = p.Q_[N+1];
-		sv_[N+1] = p.qv_[N+1];
+		S_[N] = p.Q_[N];
+		sv_[N] = p.qv_[N];
 	}
 
 	void computeCostToGo(size_t k)
