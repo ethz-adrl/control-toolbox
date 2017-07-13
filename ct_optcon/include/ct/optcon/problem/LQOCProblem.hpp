@@ -52,7 +52,7 @@ public:
 	}
 
 	//! returns the number of discrete time steps in the LOCP, including terminal stage
-	int getNumStages()
+	int getNumberOfStages()
 	{
 		return K_;
 	}
@@ -64,11 +64,11 @@ public:
 
 		A_.resize(N);
 		B_.resize(N);
+		b_.resize(N);
 
 		x_.resize(N+1);
 		u_.resize(N);
 
-		d_.resize(N);
 		P_.resize(N);
 		q_.resize(N+1);
 		qv_.resize(N+1);
@@ -82,7 +82,7 @@ public:
 	//! affine, time-varying system dynamics in discrete time
 	ct::core::StateMatrixArray<STATE_DIM, SCALAR> A_;
 	ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> B_;
-	ct::core::StateVectorArray<STATE_DIM, SCALAR> d_; //! @todo rename to b_
+	ct::core::StateVectorArray<STATE_DIM, SCALAR> b_;
 
 	//! reference state trajectory
 	ct::core::StateVectorArray<STATE_DIM, SCALAR> x_;
@@ -105,41 +105,42 @@ public:
 	ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> P_;
 
 
-	void setFromLinearQuadraticProblem(
+	void setFromTimeInvariantLinearQuadraticProblem(
 		ct::core::StateVector<STATE_DIM>& x0,
-		ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM>& linearSystem,
-		ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>& costFunction,
+		ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
+		ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
 		ct::core::StateVector<STATE_DIM>& stateOffset,
 		double dt
 	)
 	{
-		core::StateMatrix<STATE_DIM> A;
-		core::ControlMatrix<STATE_DIM> B;
-		linearSystem.getAandB(A, B);
+		ct::core::ControlVector<CONTROL_DIM, SCALAR> uNom; uNom.setZero(); // reference control should not matter for linear system
+
+		core::StateMatrix<STATE_DIM, SCALAR> A;
+		core::ControlMatrix<STATE_DIM, SCALAR> B;
+		linearSystem.getAandB(x0, 0, uNom, A, B);
 
 		A_ = core::StateMatrixArray<STATE_DIM>(K_, A);
-		B_ = core::StateMatrixArray<STATE_DIM>(K_, B);
-		d_ = core::StateVectorArray<STATE_DIM>(K_+1, stateOffset);
+		B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM>(K_, B);
+		b_ = core::StateVectorArray<STATE_DIM>(K_+1, stateOffset);
 
-		ct::core::ControlVector<CONTROL_DIM> uNom; uNom.setZero(); // reference control should not matter for linear system
 
 		// feed current state and control to cost function
 		costFunction.setCurrentStateAndControl(x0, uNom, 0);
 
 		// derivative of cost with respect to state
-		qv_ = StateVectorArray(K_+1, costFunction.stateDerivativeIntermediate()*dt);
-		Q_ = StateMatrixArray(K_+1, costFunction.stateSecondDerivativeIntermediate()*dt);
+		qv_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_+1, costFunction.stateDerivativeIntermediate()*dt);
+		Q_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_+1, costFunction.stateSecondDerivativeIntermediate()*dt);
 
 		// derivative of cost with respect to control and state
-		P_ = FeedbackArray(K_, costFunction.stateControlDerivativeIntermediate()*dt);
+		P_ = core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, costFunction.stateControlDerivativeIntermediate()*dt);
 
 		// derivative of cost with respect to control
-		rv_ = ControlVectorArray(K_, costFunction.controlDerivativeIntermediate()*dt);
+		rv_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, costFunction.controlDerivativeIntermediate()*dt);
 
-		R_ = ControlMatrixArray(K_, costFunction.controlSecondDerivativeIntermediate()*dt);
+		R_ = core::ControlMatrixArray<CONTROL_DIM, SCALAR>(K_, costFunction.controlSecondDerivativeIntermediate()*dt);
 
-		x_ = StateVectorArray(K_+1, x0);
-		u_ = ControlVectorArray(K_, uNom);
+		x_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_+1, x0);
+		u_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, uNom);
 	}
 
 

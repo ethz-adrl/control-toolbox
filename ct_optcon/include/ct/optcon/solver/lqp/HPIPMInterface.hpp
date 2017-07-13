@@ -237,7 +237,7 @@ public:
 private:
 	void setProblemImpl(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>>& lqocProblem) override
 	{
-		changeNumberOfStages(lqocProblem->getNumberOfStages);
+		changeNumberOfStages(lqocProblem->getNumberOfStages());
 		setupHPIPM(
 				lqocProblem->x_,
 				lqocProblem->u_,
