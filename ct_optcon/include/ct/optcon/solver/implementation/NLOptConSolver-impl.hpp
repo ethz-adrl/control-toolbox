@@ -65,4 +65,3 @@ void NLOptConSolver<STATE_DIM, CONTROL_DIM, SCALAR>::configure(const Settings_t&
 } // namespace ct
 
 
-#endif /* NLOPTCONSOLVER_IMPL_HPP_ */
