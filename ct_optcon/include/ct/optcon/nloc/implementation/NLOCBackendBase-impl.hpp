@@ -193,6 +193,21 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 		throw(std::runtime_error("Number of threads at GNMS cannot be changed after instance has been created."));
 	}
 
+	// select the linear quadratic solver based on settings file
+	if(settings.lqocp_solver == NLOptConSettings::LQOCP_SOLVER::GNRICCATI)
+		lqocSolver_ = std::shared_ptr<GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>>();
+	else if (settings.lqocp_solver == NLOptConSettings::LQOCP_SOLVER::HPIPM)
+	{
+#ifdef HPIPM
+		lqocSolver_ = std::shared_ptr<HPIPMInterface<STATE_DIM, CONTROL_DIM>>();
+#else
+		throw std::runtime_error("HPIPM selected but not built.");
+#endif
+	}
+	else
+		throw std::runtime_error("Solver for Linear Quadratic Optimal Control Problem wrongly specified.");
+
+
 	// will be set correctly later
 	Eigen::setNbThreads(settings.nThreadsEigen);
 

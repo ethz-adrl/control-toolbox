@@ -27,6 +27,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_OPTCON_HPIPM_HPIPMINTERFACE_HPP_
 #define INCLUDE_CT_OPTCON_HPIPM_HPIPMINTERFACE_HPP_
 
+#include "LQOCSolver.hpp"
+
 #ifdef HPIPM
 
 #include <blasfeo_target.h>
@@ -46,7 +48,6 @@ extern "C"
 
 #include <unsupported/Eigen/MatrixFunctions>
 
-#include "LQOCSolver.hpp"
 
 namespace ct {
 namespace optcon {
