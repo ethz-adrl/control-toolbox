@@ -27,6 +27,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_OPTCON_LQ_LQOCSOLVER_HPP_
 #define INCLUDE_CT_OPTCON_LQ_LQOCSOLVER_HPP_
 
+
+#include <ct/optcon/solver/NLOptConSettings.hpp>
+
 namespace ct {
 namespace optcon {
 
@@ -63,7 +66,7 @@ public:
 		this->setProblemImpl(lqocProblem);
 	}
 
-	virtual void configure() = 0;
+	virtual void configure(const NLOptConSettings& settings) = 0;
 
 	virtual void solve() = 0;
 

@@ -89,6 +89,12 @@ public:
 	{
 	}
 
+
+	virtual void configure(const NLOptConSettings& settings) override
+	{
+		settings_ = settings;
+	}
+
 	void solve() override
 	{
 //		for (size_t i=0; i<N_+1; i++)
@@ -525,6 +531,8 @@ private:
 	struct d_ipm_hard_ocp_qp_arg arg_;
 	std::vector<char> ipm_mem_;
 	struct d_ipm_hard_ocp_qp_workspace workspace_;
+
+	NLOptConSettings_t settings_;
 };
 
 

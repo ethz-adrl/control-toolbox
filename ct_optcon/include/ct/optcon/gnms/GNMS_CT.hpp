@@ -27,7 +27,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_OPTCON_SOLVER_GNMS_CT_H_
 #define INCLUDE_CT_OPTCON_SOLVER_GNMS_CT_H_
 
-#include <ct/optcon/gnms/GNMSSettings.hpp>
+#include <ct/optcon/solver/NLOptConSettings.hpp>
 #include <ct/optcon/solver/NLOptConSolver.hpp>
 
 namespace ct{
@@ -39,7 +39,7 @@ class GNMS_CT : public NLOptConSolver
 	<
 	GNMS_CT<STATE_DIM, CONTROL_DIM, SCALAR>,
 	ct::core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR>,
-	GNMSSettings, STATE_DIM, CONTROL_DIM, SCALAR
+	NLOptConSettings, STATE_DIM, CONTROL_DIM, SCALAR
 	>
 {
 
@@ -50,13 +50,12 @@ public:
 	static const size_t CONTROL_D = CONTROL_DIM;
 
 	typedef ct::core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
-	typedef GNMSSettings Settings_t;
-//	typedef DERIVED Derived;
+	typedef NLOptConSettings Settings_t;
 	typedef SCALAR Scalar_t;
 
 	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
-	GNMS_CT(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const GNMSSettings& settings)
+	GNMS_CT(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const Settings_t& settings)
 	{
 		// todo: how to decide if single core or multicore here?
 		this->nlocBackend_ = std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM>>(new NLOCBackendST<STATE_DIM, CONTROL_DIM>(optConProblem, settings));

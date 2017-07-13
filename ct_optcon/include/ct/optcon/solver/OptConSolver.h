@@ -244,9 +244,9 @@ public:
 	 * modify each entry differently.}
 	 * @return
 	 */
-	std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() { return systems_; }
+	virtual std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() = 0;
 
-	const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const { return systems_; }
+	virtual const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const = 0;
 
 	/*!
 	 * \brief Direct accessor to the linear system instances
@@ -257,9 +257,9 @@ public:
 	 * modify each entry differently.}
 	 * @return
 	 */
-	std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() { return linearSystems_; }
+	virtual std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() = 0;
 
-	const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const { return linearSystems_; }
+	virtual const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const = 0;
 
 	/*!
 	 * \brief Direct accessor to the cost function instances
@@ -270,9 +270,9 @@ public:
 	 * modify each entry differently.}
 	 * @return
 	 */
-	std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() { return costFunctions_; }
+	virtual std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() = 0;
 
-	const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const { return costFunctions_; }
+	virtual const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const = 0;
 
 	/**
 	 * @brief      Direct accessor to the state input constraint instances
@@ -284,9 +284,9 @@ public:
 	 *
 	 * @return     The state input constraint instances
 	 */
-	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() { return stateInputConstraints_; }
+	virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() = 0;
 
-	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const { return stateInputConstraints_; }
+	virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const = 0;
 
 	/**
 	 * @brief      Direct accessor to the pure state constraints
@@ -298,18 +298,9 @@ public:
 	 *
 	 * @return     The pure state constraints instances.
 	 */
-	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() { return pureStateConstraints_; }
+	virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() = 0;
 
-	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const { return pureStateConstraints_; }
-
-
-
-protected:
-	std::vector<typename OptConProblem_t::DynamicsPtr_t> systems_;
-	std::vector<typename OptConProblem_t::LinearPtr_t> linearSystems_;
-	std::vector<typename OptConProblem_t::CostFunctionPtr_t> costFunctions_;
-	std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints_;
-	std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints_;
+	virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const = 0;
 
 };
 

@@ -128,8 +128,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 	for (size_t i = 0; i<settings_.nThreads+1; i++)
 	{
 		// make a deep copy
-		this->getNonlinearSystemsInstances()[i] = typename Base::OptConProblem_t::DynamicsPtr_t(dyn->clone());
-		this->getNonlinearSystemsInstances()[i]->setController(controller_[i]);
+		systems_[i] = typename Base::OptConProblem_t::DynamicsPtr_t(dyn->clone());
+		systems_[i]->setController(controller_[i]);
 
 		if(controller_[i] == nullptr)
 			throw std::runtime_error("Controller not defined");
@@ -181,7 +181,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::checkProblem
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
-	const GNMSSettings& settings)
+	const Settings_t& settings)
 {
 	if (!settings.parametersOk())
 	{

@@ -39,10 +39,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "solver/OptConSolver.h"
 #include "problem/OptConProblem.h"
 
-#include "mpc/MpcSettings.h"
-#include "mpc/MPC.h"
-#include "mpc/timehorizon/MpcTimeHorizon.h"
-#include "mpc/policyhandler/PolicyHandler.h"
+//#include "mpc/MpcSettings.h"
+//#include "mpc/MPC.h"
+//#include "mpc/timehorizon/MpcTimeHorizon.h"
+//#include "mpc/policyhandler/PolicyHandler.h"
 
 //#include "ilqg/iLQG.hpp"
 //#include "ilqg/iLQGMP.hpp"

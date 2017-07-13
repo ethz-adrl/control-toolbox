@@ -79,7 +79,7 @@ public:
 		computeCostToGo(N);
 	}
 
-	virtual void configure() override
+	virtual void configure(const NLOptConSettings& settings) override
 	{
 		settings_ = settings;
 		H_corrFix_ = settings_.epsilon*ControlMatrix::Identity();
@@ -243,6 +243,8 @@ protected:
 			du_norm_ += lv_[k].norm();
 		}
 	}
+
+	NLOptConSettings settings_;
 
 	ControlVectorArray gv_;
 	FeedbackArray G_;

@@ -70,10 +70,12 @@ public:
 	static const size_t state_dim = STATE_DIM;
 	static const size_t control_dim = CONTROL_DIM;
 
-	typedef GNMSSettings Settings_t;
+	typedef NLOptConSettings Settings_t;
 	typedef core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 
-	typedef OptConSolver<NLOCBackendBase, Policy_t, GNMSSettings, STATE_DIM, CONTROL_DIM, SCALAR> Base;
+	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
+
+	typedef OptConSolver<NLOCBackendBase, Policy_t, Settings_t, STATE_DIM, CONTROL_DIM, SCALAR> Base;
 	typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
 
 	typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
@@ -100,7 +102,7 @@ public:
 
 
 	NLOCBackendBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
-			const GNMSSettings& settings) :
+			const Settings_t& settings) :
 
 		    integratorsRK4_(settings.nThreads+1),
 		    integratorsEuler_(settings.nThreads+1),
@@ -136,7 +138,7 @@ public:
 			 const std::string& settingsFile,
 			 bool verbose = true,
 			 const std::string& ns = "ilqg") :
-			NLOCBackendBase(optConProblem, GNMSSettings::fromConfigFile(settingsFile, verbose, ns))
+			NLOCBackendBase(optConProblem, Settings_t::fromConfigFile(settingsFile, verbose, ns))
 	{}
 
 
@@ -148,11 +150,11 @@ public:
 	 * Configure the solver
 	 * @param settings solver settings
 	 */
-	virtual void configure(const GNMSSettings& settings);
+	virtual void configure(const Settings_t& settings);
 
 
 	//! get the current SLQsolver settings
-	const GNMSSettings& getSettings() const { return settings_; }
+	const Settings_t& getSettings() const { return settings_; }
 
 
 	/*!
@@ -201,6 +203,76 @@ public:
 	 * with an OptConProblem that had the correct linear system
 	 */
 	void changeLinearSystem(const typename Base::OptConProblem_t::LinearPtr_t& lin);
+
+
+
+
+	/*!
+	 * \brief Direct accessor to the system instances
+	 *
+	 * \warning{Use this only when performance absolutely matters and if you know what you
+	 * are doing. Otherwise use e.g. changeNonlinearSystem() to change the system dynamics
+	 * in a safe and easy way. You should especially not change the size of the vector or
+	 * modify each entry differently.}
+	 * @return
+	 */
+	std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() { return systems_; }
+
+	const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const { return systems_; }
+
+	/*!
+	 * \brief Direct accessor to the linear system instances
+	 *
+	 * \warning{Use this only when performance absolutely matters and if you know what you
+	 * are doing. Otherwise use e.g. changeLinearSystem() to change the system dynamics
+	 * in a safe and easy way. You should especially not change the size of the vector or
+	 * modify each entry differently.}
+	 * @return
+	 */
+	std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() { return linearSystems_; }
+
+	const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const { return linearSystems_; }
+
+	/*!
+	 * \brief Direct accessor to the cost function instances
+	 *
+	 * \warning{Use this only when performance absolutely matters and if you know what you
+	 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
+	 * in a safe and easy way. You should especially not change the size of the vector or
+	 * modify each entry differently.}
+	 * @return
+	 */
+	std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() { return costFunctions_; }
+
+	const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const { return costFunctions_; }
+
+	/**
+	 * @brief      Direct accessor to the state input constraint instances
+	 *
+	 * \warning{Use this only when performance absolutely matters and if you know what you
+	 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
+	 * in a safe and easy way. You should especially not change the size of the vector or
+	 * modify each entry differently.}
+	 *
+	 * @return     The state input constraint instances
+	 */
+	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() { return stateInputConstraints_; }
+
+	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const { return stateInputConstraints_; }
+
+	/**
+	 * @brief      Direct accessor to the pure state constraints
+	 *
+	 * \warning{Use this only when performance absolutely matters and if you know what you
+	 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
+	 * in a safe and easy way. You should especially not change the size of the vector or
+	 * modify each entry differently.}
+	 *
+	 * @return     The pure state constraints instances.
+	 */
+	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() { return pureStateConstraints_; }
+
+	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const { return pureStateConstraints_; }
 
 
 	/*!
@@ -410,7 +482,7 @@ protected:
 	typedef std::shared_ptr<ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR> > IntegratorSymplecticRkPtr;
 	std::vector<IntegratorSymplecticRkPtr, Eigen::aligned_allocator<IntegratorSymplecticRkPtr > > integratorsRkSymplectic_;
 
-    typedef std::shared_ptr<core::ConstantController<P_DIM, V_DIM, SCALAR> > ConstantControllerPtr;
+    typedef std::shared_ptr<core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR> > ConstantControllerPtr;
     std::vector<ConstantControllerPtr, Eigen::aligned_allocator<ConstantControllerPtr> > controller_;	//! the constant controller for forward-integration during one time-step
 
     //! The policy. currently only for returning the result, should eventually replace L_ and u_ff_ (todo)
@@ -423,7 +495,7 @@ protected:
 
 	size_t iteration_;	/*!< current iteration */
 
-	GNMSSettings settings_;
+	Settings_t settings_;
 
 	int K_;
 
@@ -464,6 +536,13 @@ protected:
 #ifdef MATLAB
 	matlab::MatFile matFile_;
 #endif //MATLAB
+
+
+	std::vector<typename OptConProblem_t::DynamicsPtr_t> systems_;
+	std::vector<typename OptConProblem_t::LinearPtr_t> linearSystems_;
+	std::vector<typename OptConProblem_t::CostFunctionPtr_t> costFunctions_;
+	std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints_;
+	std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints_;
 };
 
 

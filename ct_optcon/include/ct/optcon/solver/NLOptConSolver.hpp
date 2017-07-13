@@ -173,11 +173,27 @@ public:
 	virtual void changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin) override { nlocBackend_->changeLinearSystem(lin); }
 
 
-	virtual SCALAR getCost() const override
-	{
-		{ return nlocBackend_->getCost(); }
-	}
+	virtual SCALAR getCost() const override {return nlocBackend_->getCost(); }
 
+	std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override { return nlocBackend_->getNonlinearSystemsInstances(); }
+
+	const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const override { return nlocBackend_->getNonlinearSystemsInstances(); }
+
+	std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() { return nlocBackend_->getLinearSystemsInstances(); }
+
+	const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const { return nlocBackend_->getLinearSystemsInstances(); }
+
+	std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() { return nlocBackend_->getCostFunctionInstances(); }
+
+	const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const { return nlocBackend_->getCostFunctionInstances(); }
+
+	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() { return nlocBackend_->getStateInputConstraintsInstances(); }
+
+	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const { return nlocBackend_->getStateInputConstraintsInstances(); }
+
+	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() { return nlocBackend_->getPureStateConstraintsInstances(); }
+
+	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const { return nlocBackend_->getPureStateConstraintsInstances(); }
 
 protected:
 	std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM>> nlocBackend_;
