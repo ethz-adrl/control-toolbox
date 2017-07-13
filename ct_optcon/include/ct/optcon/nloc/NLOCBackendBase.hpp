@@ -114,7 +114,8 @@ public:
 			integratorsRkSymplectic_(settings.nThreads+1),
 
 		    controller_(settings.nThreads+1),
-		    settings_(settings)
+		    settings_(settings),
+		    lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>())
 
 	{
 		for (size_t i=0; i<settings.nThreads+1; i++)
@@ -123,7 +124,6 @@ public:
 		}
 
 		configure(settings);
-
 
 		changeTimeHorizon(optConProblem.getTimeHorizon());
 		changeInitialState(optConProblem.getInitialState());

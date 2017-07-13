@@ -199,7 +199,7 @@ add_executable(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
 target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
 add_executable(GNMSTest test/gnms/GNMSTest.cpp)
-target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
+target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
 #add_executable(GNMSTest test/gnms/GNMSTest.cpp)
 #target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${MATLAB_LIBS})

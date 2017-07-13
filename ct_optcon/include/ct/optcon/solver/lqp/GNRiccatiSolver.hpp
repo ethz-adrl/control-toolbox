@@ -143,7 +143,6 @@ protected:
 		H_.resize(N);
 		Hi_.resize(N);
 		Hi_inverse_.resize(N);
-		H_corrFix_.resize(N);
 
 		lv_.resize(N);
 		L_.resize(N);
