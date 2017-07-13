@@ -24,21 +24,62 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#ifndef INCLUDE_CT_CORE_CONTROL_DISCRETECONTROLLER_H_
+#define INCLUDE_CT_CORE_CONTROL_DISCRETECONTROLLER_H_
 
-#ifndef INCLUDE_CT_CORE_SYSTEMS_
-#define INCLUDE_CT_CORE_SYSTEMS_
+#include <ct/core/types/StateVector.h>
+#include <ct/core/types/ControlVector.h>
 
-#include "systems/System.h"
-#include "systems/ControlledSystem.h"
-#include "systems/SecondOrderSystem.h"
-#include "systems/DiscreteControlledSystem.h"
-#include "systems/ControlledSystem.h"
-#include "systems/linear/LinearSystem.h"
-#include "systems/linear/LTISystem.h"
-#include "systems/linear/SystemLinearizer.h"
-#include "systems/linear/DiscreteLinearSystem.h"
-#include "systems/linear/LinearSystemDiscretizer.h"
-#include "systems/linear/AutoDiffLinearizer.h"
-#include "systems/linear/ADCodegenLinearizer.h"
 
-#endif /* INCLUDE_CT_CORE_SYSTEMS_ */
+namespace ct {
+namespace core {
+
+//! Interface class for all controllers
+/*!
+ * This is a pure interface class for Controllers that can be fed to any
+ * ControlledSystem. Any custom controller should derive from this class
+ * to ensure it is compatible with ControlledSystem and the Integrator.
+ */
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class DiscreteController
+{
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	//! Default constructor
+	DiscreteController() {};
+
+	//! Copy constructor
+	DiscreteController(const DiscreteController& other) {};
+
+	//! Destructor
+	virtual ~DiscreteController() {};
+
+	//! Deep cloning
+	/*!
+	 * Has to be implemented by any custom controller.
+	 */
+	virtual DiscreteController* clone() const = 0;
+
+	//! Compute control signal
+	/*!
+	 * Evaluate the given controller for a given state and time index
+	 * returns the computed control action.
+	 *
+	 * This function has to be implemented by any custom controller
+	 *
+	 * @param state current state of the system
+	 * @param n current time index of the system
+	 * @param controlAction the corresponding control action
+	 */
+	virtual void computeControl(
+			const StateVector<STATE_DIM, SCALAR>& state,
+			const int& n,
+			ControlVector<CONTROL_DIM, SCALAR>& controlAction) = 0;
+};
+
+}  // namespace core
+}  // namespace ct
+
+
+
+#endif /* INCLUDE_CT_CORE_CONTROL_DISCRETECONTROLLER_H_ */
