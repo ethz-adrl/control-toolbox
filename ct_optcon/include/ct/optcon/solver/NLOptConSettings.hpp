@@ -181,11 +181,11 @@ public:
     enum NLOCP_ALGORITHM
     {
     	GNMS = 0,
-    	ILQR	// todo: include more
+    	ILQR = 1	// todo: include more
     };
 
     //! the linear optimal control problem solver in the background
-    enum LQOCP_SOLVER {GNRICCATI = 0, HPIPM };
+    enum LQOCP_SOLVER {GNRICCATI_SOLVER = 0, HPIPM_SOLVER = 1 };
 
 
     //! NLOptCon Settings default constructor
@@ -196,7 +196,7 @@ public:
     	integrator(RK4),
         discretization(BACKWARD_EULER),
         nlocp_algorithm(GNMS),
-        lqocp_solver(GNRICCATI),
+        lqocp_solver(GNRICCATI_SOLVER),
 		epsilon(1e-5),
 		dt(0.001),
 		dt_sim(0.001),
@@ -446,8 +446,8 @@ private:
     std::map<NLOCP_ALGORITHM, std::string> nlocp_algorithmToString = {{GNMS, "GNMS"}, {ILQR, "ILQR"}};
     std::map<std::string, NLOCP_ALGORITHM> stringTonlocp_algorithm = {{"GNMS", GNMS}, {"ILQR", ILQR}};
 
-    std::map<LQOCP_SOLVER, std::string> locp_solverToString = {{GNRICCATI, "GNRICCATI"}, {HPIPM, "HPIPM"}};
-    std::map<std::string, LQOCP_SOLVER> stringTolocp_solver = {{"GNRICCATI", GNRICCATI}, {"HPIPM", HPIPM}};
+    std::map<LQOCP_SOLVER, std::string> locp_solverToString = {{GNRICCATI_SOLVER, "GNRICCATI"}, {HPIPM_SOLVER, "HPIPM"}};
+    std::map<std::string, LQOCP_SOLVER> stringTolocp_solver = {{"GNRICCATI", GNRICCATI_SOLVER}, {"HPIPM", HPIPM_SOLVER}};
 
 };
 

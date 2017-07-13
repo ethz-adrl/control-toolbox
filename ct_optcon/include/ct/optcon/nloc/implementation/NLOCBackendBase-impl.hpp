@@ -194,9 +194,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 	}
 
 	// select the linear quadratic solver based on settings file
-	if(settings.lqocp_solver == NLOptConSettings::LQOCP_SOLVER::GNRICCATI)
+	if(settings.lqocp_solver == NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER)
 		lqocSolver_ = std::shared_ptr<GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>>();
-	else if (settings.lqocp_solver == NLOptConSettings::LQOCP_SOLVER::HPIPM)
+	else if (settings.lqocp_solver == NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER)
 	{
 #ifdef HPIPM
 		lqocSolver_ = std::shared_ptr<HPIPMInterface<STATE_DIM, CONTROL_DIM>>();
