@@ -177,11 +177,16 @@ public:
     enum INTEGRATOR { EULER = 0, RK4 = 1, EULER_SYM = 2, RK_SYM = 3};
     enum DISCRETIZATION { FORWARD_EULER = 0, BACKWARD_EULER = 1, TUSTIN = 2, MATRIX_EXPONENTIAL = 3 };
 
-    enum SOLVER
+    //! the nonlinear optimal control problem solving algorithm
+    enum NLOCP_ALGORITHM
     {
     	GNMS = 0,
     	ILQR	// todo: include more
     };
+
+    //! the linear optimal control problem solver in the background
+    enum LQOCP_SOLVER {GNRICCATI = 0, HPIPM };
+
 
     //! NLOptCon Settings default constructor
     /*!
@@ -190,7 +195,8 @@ public:
     NLOptConSettings() :
     	integrator(RK4),
         discretization(BACKWARD_EULER),
-        solver(GNMS),
+        nlocp_algorithm(GNMS),
+        lqocp_solver(GNRICCATI),
 		epsilon(1e-5),
 		dt(0.001),
 		dt_sim(0.001),
@@ -208,7 +214,8 @@ public:
 
     INTEGRATOR integrator;	//! which integrator to use during the NLOptCon forward rollout
 	DISCRETIZATION discretization;    
-	SOLVER solver;    		//! which solver is to be used
+	NLOCP_ALGORITHM nlocp_algorithm;   //! which nonlinear optimal control algorithm is to be used
+	LQOCP_SOLVER lqocp_solver;	//! the solver for the linear-quadratic optimal control problem
 	double epsilon;			//! Eigenvalue correction factor for Hessian regularization
     double dt;				//! sampling time for the control input (seconds)
     double dt_sim;			//! sampling time for the forward simulation (seconds) \warning dt_sim needs to be an integer multiple of dt.
@@ -217,7 +224,7 @@ public:
     int max_iterations;		//! the maximum admissible number of NLOptCon main iterations \warning make sure to select this number high enough allow for convergence
     bool fixedHessianCorrection; //! perform Hessian regularization by incrementing the eigenvalues by epsilon.
     bool recordSmallestEigenvalue;	//! save the smallest eigenvalue of the Hessian
-    size_t nThreads; //! number of threads, for MP version
+    int nThreads; //! number of threads, for MP version
     size_t nThreadsEigen; //! number of threads for eigen parallelization (applies both to MP and standard)
     LineSearchSettings lineSearchSettings; //! the line search settings
 	ParallelBackwardSettings parallelBackward; //! do the backward pass in parallel with building the LQ problems (experimental)
@@ -243,7 +250,8 @@ public:
         std::cout<<"==============="<<std::endl;
         std::cout<<"integrator: "<<integratorToString.at(integrator)<<std::endl;
         std::cout<<"discretization: " << discretizationToString.at(discretization)<<std::endl;
-        std::cout<<"solver: " << solverToString.at(solver)<<std::endl;
+        std::cout<<"nonlinear OCP algorithm: " << nlocp_algorithmToString.at(nlocp_algorithm)<<std::endl;
+        std::cout<<"linear-quadratic OCP solver: " << locp_solverToString.at(lqocp_solver)<<std::endl;
         std::cout<<"dt: "<<dt<<std::endl;
         std::cout<<"dt_sim: "<<dt_sim<<std::endl;
         std::cout<<"maxIter: "<<max_iterations<<std::endl;
@@ -312,9 +320,9 @@ public:
 		min_cost_improvement = pt.get<double>(ns +".min_cost_improvement");
 		maxDefectSum = pt.get<double>(ns +".maxDefectSum");
 		max_iterations = pt.get<int>(ns +".max_iterations");
+		nThreads = pt.get<int>(ns +".nThreads");
 
 		try {
-			nThreads = pt.get<size_t>(ns +".nThreads");
 
 			std::string integratorStr = pt.get<std::string>(ns + ".integrator");
 			if (stringToIntegrator.find(integratorStr) != stringToIntegrator.end())
@@ -350,16 +358,34 @@ public:
                 exit(-1);
             }
 
-            std::string solverStr = pt.get<std::string>(ns + ".solver");
-            if (stringToSolver.find(solverStr) != stringToSolver.end())
+            std::string nlocp_algorithmStr = pt.get<std::string>(ns + ".nlocp_algorithm");
+            if (stringTonlocp_algorithm.find(nlocp_algorithmStr) != stringTonlocp_algorithm.end())
             {
-            	solver = stringToSolver[solverStr];
+            	nlocp_algorithm = stringTonlocp_algorithm[nlocp_algorithmStr];
             }
             else
             {
-            	std::cout << "Invalid solver specified in config, should be one of the following:" << std::endl;
+            	std::cout << "Invalid nlocp_algorithm specified in config, should be one of the following:" << std::endl;
 
-            	for(auto it = stringToSolver.begin(); it != stringToSolver.end(); it++)
+            	for(auto it = stringTonlocp_algorithm.begin(); it != stringTonlocp_algorithm.end(); it++)
+            	{
+            		std::cout << it->first << std::endl;
+            	}
+
+            	exit(-1);
+            }
+
+
+            std::string locp_solverStr = pt.get<std::string>(ns + ".locp_solver");
+            if (stringTolocp_solver.find(locp_solverStr) != stringTolocp_solver.end())
+            {
+            	lqocp_solver = stringTolocp_solver[locp_solverStr];
+            }
+            else
+            {
+            	std::cout << "Invalid locp_solver specified in config, should be one of the following:" << std::endl;
+
+            	for(auto it = stringTolocp_solver.begin(); it != stringTolocp_solver.end(); it++)
             	{
             		std::cout << it->first << std::endl;
             	}
@@ -417,8 +443,11 @@ private:
     std::map<DISCRETIZATION, std::string> discretizationToString = {{FORWARD_EULER, "Forward_euler"}, {BACKWARD_EULER, "Backward_euler"}, {TUSTIN, "Tustin"}};
     std::map<std::string, DISCRETIZATION> stringToDiscretization = {{"Forward_euler", FORWARD_EULER}, {"Backward_euler", BACKWARD_EULER}, {"Tustin", TUSTIN}};
 
-    std::map<SOLVER, std::string> solverToString = {{GNMS, "GNMS"}, {ILQR, "ILQR"}};
-    std::map<std::string, SOLVER> stringToSolver = {{"GNMS", GNMS}, {"ILQR", ILQR}};
+    std::map<NLOCP_ALGORITHM, std::string> nlocp_algorithmToString = {{GNMS, "GNMS"}, {ILQR, "ILQR"}};
+    std::map<std::string, NLOCP_ALGORITHM> stringTonlocp_algorithm = {{"GNMS", GNMS}, {"ILQR", ILQR}};
+
+    std::map<LQOCP_SOLVER, std::string> locp_solverToString = {{GNRICCATI, "GNRICCATI"}, {HPIPM, "HPIPM"}};
+    std::map<std::string, LQOCP_SOLVER> stringTolocp_solver = {{"GNRICCATI", GNRICCATI}, {"HPIPM", HPIPM}};
 
 };
 

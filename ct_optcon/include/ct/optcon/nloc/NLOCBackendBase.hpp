@@ -36,7 +36,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/optcon/gnms/GNMSSettings.hpp>
 #include <ct/optcon/problem/LQOCProblem.hpp>
-#include <ct/optcon/solver/lqp/LQOCSolver.hpp>
+#include <ct/optcon/solver/lqp/GNRiccatiSolver.hpp>
+#include <ct/optcon/solver/lqp/HPIPMInterface.hpp>
 
 #ifdef MATLAB
 #include <ct/optcon/matlab.hpp>
@@ -77,7 +78,9 @@ public:
 	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
 	typedef OptConSolver<NLOCBackendBase, Policy_t, Settings_t, STATE_DIM, CONTROL_DIM, SCALAR> Base;
+
 	typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
+	typedef LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>  LQOCSolver_t;
 
 	typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
 	typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
@@ -110,7 +113,8 @@ public:
 			integratorsEulerSymplectic_(settings.nThreads+1),
 			integratorsRkSymplectic_(settings.nThreads+1),
 
-		    controller_(settings.nThreads+1)
+		    controller_(settings.nThreads+1),
+		    settings_(settings)
 
 	{
 		for (size_t i=0; i<settings.nThreads+1; i++)
