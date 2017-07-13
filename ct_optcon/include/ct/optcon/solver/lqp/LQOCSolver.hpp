@@ -63,7 +63,7 @@ public:
 		this->setProblemImpl(lqocProblem);
 	}
 
-	virtual void configure() = 0;
+//	virtual void configure() = 0;
 
 	virtual void solve() = 0;
 

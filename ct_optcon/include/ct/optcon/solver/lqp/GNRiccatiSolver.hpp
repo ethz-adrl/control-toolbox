@@ -79,7 +79,7 @@ public:
 		computeCostToGo(N);
 	}
 
-	virtual void configure() override
+	virtual void configure()
 	{
 		settings_ = settings;
 		H_corrFix_ = settings_.epsilon*ControlMatrix::Identity();

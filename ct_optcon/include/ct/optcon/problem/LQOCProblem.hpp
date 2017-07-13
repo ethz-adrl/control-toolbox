@@ -104,6 +104,45 @@ public:
 	//! LQ approximation of the cross terms of the cost function
 	ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> P_;
 
+
+	void setFromLinearQuadraticProblem(
+		ct::core::StateVector<STATE_DIM>& x0,
+		ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM>& linearSystem,
+		ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>& costFunction,
+		ct::core::StateVector<STATE_DIM>& stateOffset,
+		double dt
+	)
+	{
+		core::StateMatrix<state_dim> A;
+		core::ControlMatrix<state_dim> B;
+		linearSystem.getAandB(A, B);
+
+		A_ = core::StateMatrixArray<state_dim>(K_, A);
+		B_ = core::StateMatrixArray<state_dim>(K_, B);
+		d_ = core::StateVectorArray<state_dim>(K_+1, stateOffset);
+
+		ct::core::ControlVector<CONTROL_DIM> uNom; uNom.setZero(); // reference control should not matter for linear system
+
+		// feed current state and control to cost function
+		costFunction.setCurrentStateAndControl(x0, uNom, 0);
+
+		// derivative of cost with respect to state
+		qv_ = StateVectorArray(K_+1, costFunction.stateDerivativeIntermediate()*dt);
+		Q_ = StateMatrixArray(K_+1, costFunction.stateSecondDerivativeIntermediate()*dt);
+
+		// derivative of cost with respect to control and state
+		P_ = FeedbackArray(K_, costFunction.stateControlDerivativeIntermediate()*dt);
+
+		// derivative of cost with respect to control
+		rv_ = ControlVectorArray(K_, costFunction.controlDerivativeIntermediate()*dt);
+
+		R_ = ControlMatrixArray(K_, costFunction.controlSecondDerivativeIntermediate()*dt);
+
+		x_ = StateVectorArray(K_+1, x0);
+		u_ = ControlVectorArray(K_, uNom);
+	}
+
+
 private:
 
 	//! the number of discrete time steps in the LOCP, including terminal stage

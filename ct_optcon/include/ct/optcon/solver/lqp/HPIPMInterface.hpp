@@ -224,64 +224,6 @@ public:
 			::d_print_e_tran_mat(5, workspace_.iter, workspace_.stat, 5);
 	}
 
-	void solveLinearProblem(
-			ct::core::StateVector<STATE_DIM>& x0,
-			ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>& linearSystem,
-			ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>& costFunction,
-			ct::core::StateVector<STATE_DIM>& stateOffset,
-			double dt
-	)
-	{
-		ct::core::ControlVector<CONTROL_DIM> uNom; uNom.setZero(); // reference control should not matter for linear system
-
-		StateMatrix Ac = linearSystem.getDerivativeState(x0, uNom, 0);
-		StateMatrix Adt = dt * Ac;
-
-		StateMatrixArray A(N_, Adt.exp());
-		StateControlMatrixArray B(N_, Ac.inverse() * (A[0] - StateMatrix::Identity()) *  linearSystem.getDerivativeControl(x0, uNom, 0));
-
-//		Eigen::Matrix<double, STATE_DIM, 1> bd;
-//		bd.setConstant(0.1);
-//
-//		Eigen::Matrix<double, STATE_DIM, 1> bc;
-//		bc = (A[0] - StateMatrix::Identity()).inverse() * Ac * bd;
-//
-//		std::cout << "bc: " << bc.transpose() << std::endl;
-//
-//
-//
-//		Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> Brec;
-//		Brec = (A[0] - StateMatrix::Identity()).inverse() * Ac * B[0];
-//
-//		std::cout << "Brec: " << std::endl << Brec << std::endl;
-//		std::cout << "Bc: " << std::endl << linearSystem.getDerivativeControl(x0, uNom, 0) << std::endl;
-
-
-
-		// feed current state and control to cost function
-		costFunction.setCurrentStateAndControl(x0, uNom, 0);
-
-		// derivative of cost with respect to state
-		StateVectorArray qv(N_+1, costFunction.stateDerivativeIntermediate()*dt);
-		StateMatrixArray Q(N_+1, costFunction.stateSecondDerivativeIntermediate()*dt);
-
-		// derivative of cost with respect to control and state
-		FeedbackArray P(N_, costFunction.stateControlDerivativeIntermediate()*dt);
-
-		// derivative of cost with respect to control
-		ControlVectorArray rv(N_, costFunction.controlDerivativeIntermediate()*dt);
-
-		ControlMatrixArray R(N_, costFunction.controlSecondDerivativeIntermediate()*dt);
-
-		StateVectorArray b(N_+1, stateOffset);
-
-		StateVectorArray x(N_+1, x0);
-		ControlVectorArray u(N_, uNom);
-
-		setProblem(x, u, A, B, b, P, qv, Q, rv, R);
-		solve();
-
-	}
 
 
 
