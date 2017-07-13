@@ -25,8 +25,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_OPTCON_GNMS_GNMSBASE_HPP_
-#define INCLUDE_CT_OPTCON_GNMS_GNMSBASE_HPP_
+#ifndef INCLUDE_CT_OPTCON_NLOC_BACKEND_BASE_HPP_
+#define INCLUDE_CT_OPTCON_NLOC_BACKEND_BASE_HPP_
 
 #include <atomic>
 
@@ -45,12 +45,6 @@ namespace optcon{
 
 
 /*!
- * \defgroup GNMS GNMS
- *
- * \brief Sequential Linear Quadratic Optimal Control package
- */
-
-/*!
  * \ingroup GNMS
  *
  * \brief C++ implementation of GNMS.
@@ -60,7 +54,7 @@ namespace optcon{
  *  xv <- vector (lower-case bold in paper)
  *  x  <- scalar (lower-case in paper)
  *
- *  Reference:
+ *  @todo: throw out the symplectic stuff from here
 */
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM = STATE_DIM/2, size_t V_DIM=STATE_DIM/2, typename SCALAR = double>
@@ -127,8 +121,7 @@ public:
 			 bool verbose = true,
 			 const std::string& ns = "ilqg") :
 			NLOCBackendBase(optConProblem, GNMSSettings::fromConfigFile(settingsFile, verbose, ns))
-	{
-	}
+	{}
 
 
 	virtual ~NLOCBackendBase() {};
@@ -301,7 +294,6 @@ protected:
 	 */
 	void initializeCostToGo();
 
-
 	//! Computes cost to go
 	/*!
 	 * This function computes the cost-to-go function for all times t<t_K
@@ -419,7 +411,6 @@ protected:
 	SCALAR d_norm_; 	// sum of the norms of all defects
 
 
-
 	std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> > lqocProblem_;
 
 
@@ -433,12 +424,13 @@ protected:
 	scalar_t smallestEigenvalue_;
 	scalar_t smallestEigenvalueIteration_;
 
+
+	//! if building with HPIPM support, include HPIPM interface
 #ifdef HPIPM
 	HPIPMInterface<STATE_DIM, CONTROL_DIM> HPIPMInterface_;
 #endif
 
-
-
+	//! if building with MATLAB support, include matfile
 #ifdef MATLAB
 	matlab::MatFile matFile_;
 #endif //MATLAB

@@ -92,6 +92,8 @@ public:
 			prepare();
 			solved = finishSolve();
 		}
+
+		return solved;
 	}
 
 	/**
