@@ -24,53 +24,69 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#ifndef INCLUDE_CT_OPTCON_SOLVER_GNMS_CT_H_
+#define INCLUDE_CT_OPTCON_SOLVER_GNMS_CT_H_
+
+#include <ct/optcon/gnms/GNMSSettings.hpp>
+#include <ct/optcon/solver/NLOptConSolver.hpp>
 
 namespace ct{
 namespace optcon{
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::createLQProblem()
-{
-}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solveLQProblem()
-{
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class GNMS_CT : public NLOptConSolver
+	<
+	GNMS_CT<STATE_DIM, CONTROL_DIM, SCALAR>,
+	ct::core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR>,
+	GNMSSettings, STATE_DIM, CONTROL_DIM, SCALAR
+	>
 {
 
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+	static const size_t STATE_D = STATE_DIM;
+	static const size_t CONTROL_D = CONTROL_DIM;
+
+	typedef ct::core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
+	typedef GNMSSettings Settings_t;
+//	typedef DERIVED Derived;
+	typedef SCALAR Scalar_t;
+
+	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
+
+	GNMS_CT(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const GNMSSettings& settings)
+	{
+		// todo: how to decide if single core or multicore here?
+		this->nlocBackend_ = std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM>>(new NLOCBackendST<STATE_DIM, CONTROL_DIM>(optConProblem, settings));
+	}
+
+	virtual ~GNMS_CT(){}
+
+	virtual void configure(const Settings_t& settings) override {
+		throw(std::runtime_error("to be filled"));
+	}
+
+	virtual void prepareIteration() override {
+		throw(std::runtime_error("to be filled"));
+	}
+
+	virtual bool finishIteration() override {
+		throw(std::runtime_error("to be filled"));
+		return true;}
+
+	virtual bool runIteration() override {
+		throw(std::runtime_error("to be filled"));
+		return true;}
+
+	virtual void setInitialGuess(const Policy_t& initialGuess) override {
+		throw(std::runtime_error("to be filled"));
+	}
+
+};
+
+}
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory()
-{
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateControlAndState()
-{
-
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateShots()
-{
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeShots()
-{
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefects()
-{
-}
-
-} // namespace optcon
-} // namespace ct
-
+#endif /* INCLUDE_CT_OPTCON_SOLVER_GNMS_CT_H_ */

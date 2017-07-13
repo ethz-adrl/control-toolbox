@@ -38,6 +38,7 @@ template <int STATE_DIM, int CONTROL_DIM, typename SCALAR = double>
 class GNRiccatiSolver : public LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const int state_dim = STATE_DIM;
@@ -84,8 +85,20 @@ public:
 		H_corrFix_ = settings_.epsilon*ControlMatrix::Identity();
 	}
 
-	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() override { return lx_; }
+
+	// todo: might make sense to update state solution variable somewhere else
+	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() override {
+
+		lx_[0].setZero();
+
+		for(size_t i = 0; i<lqocProblem_->getNumberOfStages; i++)
+			lx_[k+1] = (A_[k] + B_[k] * L_[k]) * lx_[k]  + B_[k] * lv_[k] + d_[k];
+
+		return lx_;
+	}
+
 	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() override { return lv_; }
+
 	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> getFeedback() override { return L_; }
 
 protected:
@@ -132,7 +145,6 @@ protected:
 		sv_[k].noalias() += p.L_[k].transpose() * p.Hi_[k] * p.lv_[k];
 		sv_[k].noalias() += p.L_[k].transpose() * p.gv_[k];
 		sv_[k].noalias() += p.G_[k].transpose() * p.lv_[k];
-
 	}
 
 	void designController(size_t k)

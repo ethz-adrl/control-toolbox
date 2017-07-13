@@ -24,38 +24,68 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#ifndef INCLUDE_CT_OPTCON_SOLVER_ILQR_CT_H_
+#define INCLUDE_CT_OPTCON_SOLVER_ILQR_CT_H_
 
-#ifndef INCLUDE_CT_OPTCON_OPTCON_H_
-#define INCLUDE_CT_OPTCON_OPTCON_H_
+#include <iLQGSettings.hpp>
+#include <ct/optcon/solver/NLOptConSolver.hpp>
 
-#include <ct/core/core.h>
+namespace ct{
+namespace optcon{
 
-#include "costfunction/CostFunctionAD.hpp"
-#include "costfunction/CostFunctionAnalytical.hpp"
-#include "costfunction/CostFunctionQuadraticSimple.hpp"
 
-#include "constraint/constraint.h"
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class iLQR_CT : public NLOptConSolver
+	<
+	iLQR_CT<STATE_DIM, CONTROL_DIM, SCALAR>,
+	ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>,
+	iLQGSettings, STATE_DIM, CONTROL_DIM, SCALAR
+	>
+{
 
-#include "solver/OptConSolver.h"
-#include "problem/OptConProblem.h"
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-#include "mpc/MpcSettings.h"
-#include "mpc/MPC.h"
-#include "mpc/timehorizon/MpcTimeHorizon.h"
-#include "mpc/policyhandler/PolicyHandler.h"
+	static const size_t STATE_D = STATE_DIM;
+	static const size_t CONTROL_D = CONTROL_DIM;
 
-//#include "ilqg/iLQG.hpp"
-//#include "ilqg/iLQGMP.hpp"
-//#include "ilqg/iLQGSettings.hpp"
+	typedef POLICY Policy_t;
+	typedef SETTINGS Settings_t;
+	typedef DERIVED Derived;
+	typedef SCALAR Scalar_t;
 
-#include "solver/lqp/HPIPMInterface.hpp"
+	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
-#include "gnms/GNMS_CT.hpp"
-#include "solver/NLOptConSettings.hpp"
+	iLQR_CT(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const iLQGSettings& settings)
+	{
+		this->nlocBackend_(std::shared_ptr<NLOCBackendBase>(new NLOCBackendST(optConProblem, settings)));
+	}
 
-#include "lqr/LQR.hpp"
-#include "lqr/FHDTLQR.hpp"
+	virtual ~iLQR_CT(){}
 
-#include "dms/dms.h"
+	virtual void configure(const Settings_t& settings) override {
+		throw(std::runtime_error("to be filled"));
+	}
 
-#endif /* INCLUDE_CT_OPTCON_OPTCON_H_ */
+	virtual void prepareIteration() override {
+		throw(std::runtime_error("to be filled"));
+	}
+
+	virtual bool finishIteration() override {
+		throw(std::runtime_error("to be filled"));
+		return true;}
+
+	virtual bool runIteration() override {
+		throw(std::runtime_error("to be filled"));
+		return true;}
+
+	virtual void setInitialGuess(const Policy_t& initialGuess) override {
+		throw(std::runtime_error("to be filled"));
+	}
+
+};
+
+}
+}
+
+#endif /* INCLUDE_CT_OPTCON_SOLVER_ILQR_CT_H_ */

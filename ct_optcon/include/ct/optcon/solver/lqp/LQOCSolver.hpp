@@ -40,13 +40,13 @@ public:
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem;
+	typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
 
 	/*!
 	 * Constructor. Initialize by handing over an LQOCProblem, or otherwise by calling setProblem()
 	 * @param lqocProblem shared_ptr to the LQOCProblem to be solved.
 	 */
-	LQOCSolver(const std::shared_ptr<LQOCProblem>& lqocProblem = nullptr) :
+	LQOCSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem = nullptr) :
 		lqocProblem_(lqocProblem)
 	{}
 
@@ -57,7 +57,7 @@ public:
 	 * update the shared_ptr to the LQOCProblem instance and call initialize instance deriving from this class.
 	 * @param lqocProblem
 	 */
-	void setProblem(const std::shared_ptr<LQOCProblem>& lqocProblem)
+	void setProblem(const std::shared_ptr<LQOCProblem_t>& lqocProblem)
 	{
 		lqocProblem_ = lqocProblem;
 		this->setProblemImpl(lqocProblem);
@@ -67,19 +67,19 @@ public:
 
 	virtual void solve() = 0;
 
-	virtual void solveSingleStage(int N) {
-		throw std::runtime_error("solveSingleStage not available for this solver.");
-	}
+	virtual void solveSingleStage(int N) { throw std::runtime_error("solveSingleStage not available for this solver.");}
 
 	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() = 0;
+
 	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() = 0;
+
 	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> getFeedback() { throw std::runtime_error("this solver does not provide feedback gains"); }
 
 protected:
 
-	virtual void setProblemImpl(std::shared_ptr<LQOCProblem>& lqocProblem) = 0;
+	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t>& lqocProblem) = 0;
 
-	std::shared_ptr<LQOCProblem> lqocProblem_;
+	std::shared_ptr<LQOCProblem_t> lqocProblem_;
 
 };
 

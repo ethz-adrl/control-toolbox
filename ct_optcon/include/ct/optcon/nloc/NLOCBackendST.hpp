@@ -61,7 +61,7 @@ protected:
 
 	virtual void createLQProblem() override;
 
-	virtual void backwardPass() override;
+	virtual void solveLQProblem() override;
 
 	virtual void computeLinearizedDynamicsAroundTrajectory() override;
 

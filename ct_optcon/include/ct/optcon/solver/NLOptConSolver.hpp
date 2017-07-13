@@ -24,12 +24,13 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_OPTCON_SOLVER_NLOPTCONSOLVERBASE_H_
-#define INCLUDE_CT_OPTCON_SOLVER_NLOPTCONSOLVERBASE_H_
+#ifndef INCLUDE_CT_OPTCON_SOLVER_NLOPTCONSOLVER_H_
+#define INCLUDE_CT_OPTCON_SOLVER_NLOPTCONSOLVER_H_
 
 #include <ct/core/core.h>
 #include <ct/optcon/problem/OptConProblem.h>
 
+#include <ct/optcon/nloc/NLOCBackendST.hpp>
 
 namespace ct{
 namespace optcon{
@@ -64,9 +65,10 @@ public:
 	 * */
 	virtual void configure(const Settings_t& settings) = 0;
 
-	virtual void prepare() = 0;
 
-	virtual bool finishSolve() = 0;
+	virtual void prepareIteration() = 0;
+
+	virtual bool finishIteration() = 0;
 
 	/**
 	 * run a single iteration of the solver
@@ -79,6 +81,7 @@ public:
 	 */
 	virtual void setInitialGuess(const Policy_t& initialGuess) = 0;
 
+
 	/**
 	 * solve the optimal control problem
 	 * @return true if solve succeeded, false otherwise.
@@ -89,8 +92,8 @@ public:
 
 		while (!solved)
 		{
-			prepare();
-			solved = finishSolve();
+			prepareIteration();
+			solved = finishIteration();
 		}
 
 		return solved;
@@ -177,7 +180,7 @@ public:
 
 
 protected:
-	std::shared_ptr<NLOCBackendBase> nlocBackend_;
+	std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM>> nlocBackend_;
 
 };
 

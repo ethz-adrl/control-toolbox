@@ -92,8 +92,6 @@ class LinkedMasses2 : public ControlledSystem<state_dim, control_dim>
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-
-
 	LinkedMasses2()
 	{
 		A_.setZero();
@@ -156,7 +154,6 @@ void testGNMS();
 
 int main(int argc, char* argv[])
 {
-
 	LinkedMasses system;
 
 	int N = 5;

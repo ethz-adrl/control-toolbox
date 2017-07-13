@@ -194,6 +194,9 @@ endif()
 #catkin_add_gtest(iLQGCTest test/ilqg/iLQGCTest.cpp)
 #target_link_libraries(iLQGCTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
 
+add_executable(GNMSTest test/gnms/GNMSTest.cpp)
+target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
+
 #add_executable(GNMSTest test/gnms/GNMSTest.cpp)
 #target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
 #
@@ -206,8 +209,8 @@ endif()
 #add_executable(HPIPMInterfaceTest2 test/hpipm/HPIPMInterfaceTest2.cpp)
 #target_link_libraries(HPIPMInterfaceTest2 hpipm blasfeo ${MATLAB_LIBS})
 
-add_executable(HPIPMInterfaceTest3 test/hpipm/HPIPMInterfaceTest3.cpp)
-target_link_libraries(HPIPMInterfaceTest3 ${HPIPM_LIBS} ${MATLAB_LIBS})
+#add_executable(HPIPMInterfaceTest3 test/hpipm/HPIPMInterfaceTest3.cpp)
+#target_link_libraries(HPIPMInterfaceTest3 ${HPIPM_LIBS} ${MATLAB_LIBS})
 
 #
 #catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)

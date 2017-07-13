@@ -30,8 +30,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Bring in gtest
 //#include <gtest/gtest.h>
 
-#define MATLAB
-#define MATLAB_FULL_LOG
+//#define MATLAB
+//#define MATLAB_FULL_LOG
 
 //#define DEBUG_PRINT
 //#define DEBUG_PRINT_LINESEARCH
@@ -144,7 +144,7 @@ void singleCore()
 		Eigen::Vector2d x_final;
 		x_final << 20, 0;
 
-		GNMSSettings gnms_settings;
+		NLOptConSettings gnms_settings;
 		gnms_settings.epsilon = 0.0;
 		gnms_settings.nThreads = 4;
 		gnms_settings.max_iterations = 3;
@@ -153,20 +153,20 @@ void singleCore()
 		gnms_settings.fixedHessianCorrection = false;
 		gnms_settings.dt = 0.1;
 		gnms_settings.dt_sim = 0.1;
-		gnms_settings.integrator = GNMSSettings::EULER;
-		gnms_settings.discretization = GNMSSettings::DISCRETIZATION::FORWARD_EULER;
+		gnms_settings.integrator = NLOptConSettings::EULER;
+		gnms_settings.discretization = NLOptConSettings::DISCRETIZATION::FORWARD_EULER;
 
-		iLQGSettings ilqg_settings;
-		ilqg_settings.epsilon = 0.0;
-		ilqg_settings.nThreads = 4;
-		ilqg_settings.max_iterations = 50;
-		ilqg_settings.recordSmallestEigenvalue = true;
-		ilqg_settings.min_cost_improvement = 1e-6;
-		ilqg_settings.fixedHessianCorrection = false;
-		ilqg_settings.dt = 0.1;
-		ilqg_settings.dt_sim = 0.1;
-		ilqg_settings.integrator = iLQGSettings::EULER;
-		ilqg_settings.discretization = iLQGSettings::DISCRETIZATION::FORWARD_EULER;
+//		iLQGSettings ilqg_settings;
+//		ilqg_settings.epsilon = 0.0;
+//		ilqg_settings.nThreads = 4;
+//		ilqg_settings.max_iterations = 50;
+//		ilqg_settings.recordSmallestEigenvalue = true;
+//		ilqg_settings.min_cost_improvement = 1e-6;
+//		ilqg_settings.fixedHessianCorrection = false;
+//		ilqg_settings.dt = 0.1;
+//		ilqg_settings.dt_sim = 0.1;
+//		ilqg_settings.integrator = iLQGSettings::EULER;
+//		ilqg_settings.discretization = iLQGSettings::DISCRETIZATION::FORWARD_EULER;
 
 
 		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
@@ -187,24 +187,24 @@ void singleCore()
 
 		FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
 		ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
-		iLQG<state_dim, control_dim>::Policy_t initControlleriLQG (u0_ff, u0_fb, ilqg_settings.dt);
+//		iLQG<state_dim, control_dim>::Policy_t initControlleriLQG (u0_ff, u0_fb, ilqg_settings.dt);
 
-		GNMS<state_dim, control_dim>::Policy_t initController (u0, x0);
+		GNMS_CT<state_dim, control_dim>::Policy_t initController (u0, x0);
 
 		// construct single-core single subsystem OptCon Problem
 		OptConProblem<state_dim, control_dim> optConProblem (tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
 
 
 		std::cout << "initializing gnms solver" << std::endl;
-		GNMS<state_dim, control_dim> gnms(optConProblem, gnms_settings);
-		iLQG<state_dim, control_dim> ilqg(optConProblem, ilqg_settings);
+		GNMS_CT<state_dim, control_dim> gnms(optConProblem, gnms_settings);
+//		iLQG<state_dim, control_dim> ilqg(optConProblem, ilqg_settings);
 
 
 		gnms.configure(gnms_settings);
 		gnms.setInitialGuess(initController);
-
-		ilqg.configure(ilqg_settings);
-		ilqg.setInitialGuess(initControlleriLQG);
+//
+//		ilqg.configure(ilqg_settings);
+//		ilqg.setInitialGuess(initControlleriLQG);
 
 		std::cout << "running gnms solver" << std::endl;
 
@@ -232,28 +232,28 @@ void singleCore()
 			}
 		}
 
-		std::cout << "running ilqg solver" << std::endl;
-
-		numIterations = 0;
-		foundBetter = true;
-		while (foundBetter)
-		{
-			foundBetter = ilqg.runIteration();
-			foundBetter = true;
-
-			// test trajectories
-			StateTrajectory<state_dim> xRollout = ilqg.getStateTrajectory();
-			ControlTrajectory<control_dim> uRollout = ilqg.getControlTrajectory();
-
-			numIterations++;
-
-			if (numIterations>3)
-			{
-				std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
-				std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
-				break;
-			}
-		}
+//		std::cout << "running ilqg solver" << std::endl;
+//
+//		numIterations = 0;
+//		foundBetter = true;
+//		while (foundBetter)
+//		{
+//			foundBetter = ilqg.runIteration();
+//			foundBetter = true;
+//
+//			// test trajectories
+//			StateTrajectory<state_dim> xRollout = ilqg.getStateTrajectory();
+//			ControlTrajectory<control_dim> uRollout = ilqg.getControlTrajectory();
+//
+//			numIterations++;
+//
+//			if (numIterations>3)
+//			{
+//				std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
+//				std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
+//				break;
+//			}
+//		}
 }
 
 /*

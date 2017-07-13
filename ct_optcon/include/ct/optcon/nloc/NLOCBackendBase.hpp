@@ -34,7 +34,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
 #include <ct/optcon/solver/OptConSolver.h>
 
-#include "GNMSSettings.hpp"
+#include <ct/optcon/gnms/GNMSSettings.hpp>
+#include <ct/optcon/problem/LQOCProblem.hpp>
+#include <ct/optcon/solver/lqp/LQOCSolver.hpp>
 
 #ifdef MATLAB
 #include <ct/optcon/matlab.hpp>
@@ -72,6 +74,7 @@ public:
 	typedef core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 
 	typedef OptConSolver<NLOCBackendBase, Policy_t, GNMSSettings, STATE_DIM, CONTROL_DIM, SCALAR> Base;
+	typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
 
 	typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
 	typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
@@ -113,8 +116,21 @@ public:
 		}
 
 		configure(settings);
-		this->setProblem(optConProblem);
+
+
+		changeTimeHorizon(optConProblem.getTimeHorizon());
+		changeInitialState(optConProblem.getInitialState());
+		changeCostFunction(optConProblem.getCostFunction());
+		changeNonlinearSystem(optConProblem.getNonlinearSystem());
+		changeLinearSystem(optConProblem.getLinearSystem());
+
+		// to be done
+//		if(optConProblem.getStateInputConstraints())
+//			changeStateInputConstraints(optConProblem.getStateInputConstraints());
+//		if(optConProblem.getPureStateConstraints())
+//			changePureStateConstraints(optConProblem.getPureStateConstraints());
 	}
+
 
 	NLOCBackendBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 			 const std::string& settingsFile,
@@ -132,7 +148,7 @@ public:
 	 * Configure the solver
 	 * @param settings solver settings
 	 */
-	virtual void configure(const GNMSSettings& settings) override;
+	virtual void configure(const GNMSSettings& settings);
 
 
 	//! get the current SLQsolver settings
@@ -142,7 +158,7 @@ public:
 	/*!
 	 * Set the initial guess used by the solver (not all solvers might support initial guesses)
 	 */
-	void setInitialGuess(const Policy_t& initialGuess) override;
+	void setInitialGuess(const Policy_t& initialGuess);
 
 
 	/*!
@@ -151,7 +167,7 @@ public:
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct time horizon set.
 	 */
-	void changeTimeHorizon(const SCALAR& tf) override;
+	void changeTimeHorizon(const SCALAR& tf);
 
 
 	/*!
@@ -160,7 +176,7 @@ public:
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct initial state set
 	 */
-	void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0) override;
+	void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0);
 
 	/*!
 	 * \brief Change the cost function
@@ -168,7 +184,7 @@ public:
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct cost function
 	 */
-	void changeCostFunction(const typename Base::OptConProblem_t::CostFunctionPtr_t& cf) override;
+	void changeCostFunction(const typename Base::OptConProblem_t::CostFunctionPtr_t& cf);
 
 	/*!
 	 * \brief Change the nonlinear system
@@ -176,7 +192,7 @@ public:
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct nonlinear system
 	 */
-	void changeNonlinearSystem(const typename Base::OptConProblem_t::DynamicsPtr_t& dyn) override;
+	void changeNonlinearSystem(const typename Base::OptConProblem_t::DynamicsPtr_t& dyn);
 
 	/*!
 	 * \brief Change the linear system
@@ -184,7 +200,7 @@ public:
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct linear system
 	 */
-	void changeLinearSystem(const typename Base::OptConProblem_t::LinearPtr_t& lin) override;
+	void changeLinearSystem(const typename Base::OptConProblem_t::LinearPtr_t& lin);
 
 
 	/*!
@@ -206,22 +222,33 @@ public:
 
 	void logInitToMatlab();
 
-	SCALAR getCost() const override;
+	SCALAR getCost() const;
 
 	SCALAR getTotalDefect() const { return d_norm_;}
+
+	void reset() {
+		iteration_ = 0;
+		smallestEigenvalue_ = std::numeric_limits<scalar_t>::infinity();
+		smallestEigenvalueIteration_ = std::numeric_limits<scalar_t>::infinity();
+		d_norm_ = std::numeric_limits<scalar_t>::infinity();
+	}
+
+	const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const;
+
+	const core::ControlTrajectory<CONTROL_DIM, SCALAR> getControlTrajectory() const;
 
 protected:
 
 	virtual void createLQProblem() = 0;
 
-	virtual void backwardPass() = 0;
+	virtual void solveLQProblem() = 0; // replaces "backward-pass"
 
-	#ifdef HPIPM
-	void backwardPassHPIPM()
-	{
-		HPIPMInterface_.solve();
-	}
-	#endif
+//	#ifdef HPIPM
+//	void backwardPassHPIPM()
+//	{
+//		HPIPMInterface_.solve();
+//	}
+//	#endif
 
 	//! Computes the linearization of the dynamics along the trajectory. See computeLinearizedDynamics for details
 	virtual void computeLinearizedDynamicsAroundTrajectory() = 0;
@@ -244,7 +271,7 @@ protected:
 	void sequentialLQProblem();
 
 	//! updates the controls and states
-	void updateSingleControlAndState(size_t threadId, size_t k);
+//	void updateSingleControlAndState(size_t threadId, size_t k);
 
 	//! integrate the individual shots
 	void initializeSingleShot(size_t threadId, size_t k);
@@ -312,7 +339,7 @@ protected:
 
 
 	//! Design the state update
-	void designStateUpdate(size_t k);
+//	void designStateUpdate(size_t k); // moves to QP solver
 
 
 	//! Compute cost for a given set of state and input trajectory
@@ -404,6 +431,7 @@ protected:
 	StateVectorArray xShot_;
 	ControlVectorArray u_ff_;
 	ControlVectorArray u_ff_prev_;
+	FeedbackArray	L_;
 	SCALAR dx_norm_;
 	SCALAR du_norm_;
 
@@ -412,6 +440,8 @@ protected:
 
 
 	std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> > lqocProblem_;
+
+	std::shared_ptr<LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR> > lqocSolver_;
 
 
 	scalar_t intermediateCostBest_;
@@ -426,9 +456,9 @@ protected:
 
 
 	//! if building with HPIPM support, include HPIPM interface
-#ifdef HPIPM
-	HPIPMInterface<STATE_DIM, CONTROL_DIM> HPIPMInterface_;
-#endif
+//#ifdef HPIPM
+//	HPIPMInterface<STATE_DIM, CONTROL_DIM> HPIPMInterface_;
+//#endif
 
 	//! if building with MATLAB support, include matfile
 #ifdef MATLAB
