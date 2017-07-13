@@ -92,15 +92,35 @@ public:
 	 */
 	ADCodegenLinearizer(std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> > nonlinearSystem, bool cacheJac = true) :
 		Base(nonlinearSystem),
+		dFdx_(state_matrix_t::Zero()),
+		dFdu_(state_control_matrix_t::Zero()),
 		compiled_(false),
-		cacheJac_(cacheJac)
-	{
-	}
+		cacheJac_(cacheJac),
+		x_at_cache_(state_vector_t::Random()),
+		u_at_cache_(control_vector_t::Random()),
+		maxTempVarCountState_(0),
+		maxTempVarCountControl_(0)
+	{}
+
+	ADCodegenLinearizer(const ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>& arg) :
+		Base(arg.Base),
+		dFdx_(arg.dFdx_),
+		dFdu_(arg.dFdu_),
+		compiled_(arg.compiled_),
+		cacheJac_(arg.cacheJac_),
+		compiler_(arg.compiler_),
+		x_at_cache_(arg.x_at_cache_),
+		u_at_cache_(arg.u_at_cache_),
+		dynamicLib_(arg.dynamicLib_),
+		model_(arg.model_),
+		maxTempVarCountState_(arg.maxTempVarCountState_),
+		maxTempVarCountControl_(arg.maxTempVarCountControl_)
+	{}
 
 	//! deep cloning
 	ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>* clone() const override {
-		throw std::runtime_error("Not implemented");
-		//return new AutoDiffLinearizer<STATE_DIM, CONTROL_DIM>(*this);
+		// throw std::runtime_error("Not implemented");
+		return new ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>(*this);
 	}
 
 	//! get the Jacobian with respect to the state
@@ -122,9 +142,7 @@ public:
 	const state_matrix_t& getDerivativeState(const state_vector_t& x, const control_vector_t& u, const double t = 0.0) override
 	{
 		if(!compiled_)
-		{
 			throw std::runtime_error("Called getDerivativeState on ADCodegenLinearizer before compiling. Call 'compile()' before");
-		}
 
 		// if jacobian is not supposed to be cached or if values change, recompute it
 		if (!cacheJac_ || (x != x_at_cache_ || u != u_at_cache_))
@@ -132,7 +150,7 @@ public:
 
 		return dFdx_;
 
-	}
+	}	
 
 	//! get the Jacobian with respect to the input
 	/*!
