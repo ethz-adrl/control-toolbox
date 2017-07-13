@@ -90,6 +90,7 @@ public:
 
 
 	// todo: might make sense to update state solution variable somewhere else
+	// todo: that's actually a problem: if we called getSolutionControl before getSolutionState(), lx_ would not be updated properly.
 	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() override
 	{
 		LQOCProblem_t& p = *this->lqocProblem_;
