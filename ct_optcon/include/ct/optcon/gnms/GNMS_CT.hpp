@@ -35,12 +35,7 @@ namespace optcon{
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class GNMS_CT : public NLOptConSolver
-	<
-	GNMS_CT<STATE_DIM, CONTROL_DIM, SCALAR>,
-	ct::core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR>,
-	NLOptConSettings, STATE_DIM, CONTROL_DIM, SCALAR
-	>
+class GNMS_CT : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 
 public:
@@ -56,10 +51,7 @@ public:
 	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
 	GNMS_CT(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const Settings_t& settings)
-	{
-		// todo: how to decide if single core or multicore here?
-		this->nlocBackend_ = std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM>>(new NLOCBackendST<STATE_DIM, CONTROL_DIM>(optConProblem, settings));
-	}
+	{	}
 
 	virtual ~GNMS_CT(){}
 

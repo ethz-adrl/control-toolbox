@@ -172,6 +172,8 @@ public:
 	void changeTimeHorizon(const SCALAR& tf);
 
 
+	SCALAR getTimeHorizon() {return K_* settings_.dt ;}
+
 	/*!
 	 * \brief Change the initial state for the optimal control problem
 	 *
@@ -308,6 +310,12 @@ public:
 	const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const;
 
 	const core::ControlTrajectory<CONTROL_DIM, SCALAR> getControlTrajectory() const;
+
+	const Policy_t& getSolution() { return policy_; }
+
+	const TimeArray& getTimeArray() {return t_;}
+
+
 
 protected:
 

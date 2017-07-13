@@ -60,10 +60,10 @@ public:
 	 * update the shared_ptr to the LQOCProblem instance and call initialize instance deriving from this class.
 	 * @param lqocProblem
 	 */
-	void setProblem(const std::shared_ptr<LQOCProblem_t>& lqocProblem)
+	void setProblem(std::shared_ptr<LQOCProblem_t>& lqocProblem)
 	{
 		lqocProblem_ = lqocProblem;
-		this->setProblemImpl(lqocProblem);
+		setProblemImpl(lqocProblem);
 	}
 
 	virtual void configure(const NLOptConSettings& settings) = 0;

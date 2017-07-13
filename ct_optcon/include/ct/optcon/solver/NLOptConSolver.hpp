@@ -63,12 +63,17 @@ public:
 	/**
 	 * configures the solver
 	 * */
-	virtual void configure(const Settings_t& settings) = 0;
+	void configure(const Settings_t& settings) override;
 
 
-	virtual void prepareIteration() = 0;
+	virtual void prepareIteration()  {
+		nlocAlgorithm_ -> prepareIteration();
+	}
 
-	virtual bool finishIteration() = 0;
+	virtual bool finishIteration()
+	{
+		nlocAlgorithm_ -> finishIteration();
+	}
 
 	/**
 	 * run a single iteration of the solver
@@ -197,6 +202,7 @@ public:
 
 protected:
 	std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM>> nlocBackend_;
+	std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM>> nlocAlgorithm_;
 
 };
 
