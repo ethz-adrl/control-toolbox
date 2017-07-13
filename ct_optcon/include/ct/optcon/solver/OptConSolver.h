@@ -25,18 +25,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-/**
- * OptConSolver.hpp
- *
- * Created on: 28.02.2017
- * 	   Author: mgiftthaler<mgiftthaler@ethz.ch> 
- * 
- *
- * Requirements:
- * - returns an optimal controller. These can be different controller types, feedforward only, feedforward-feedback, feedback only,
- * 		therefore it is templated on the controller type
- */
-
 #ifndef CT_OPTCONSOLVER_HPP_
 #define CT_OPTCONSOLVER_HPP_
 
@@ -50,6 +38,10 @@ namespace optcon{
 
 /** \defgroup OptConSolver OptConSolver
  * Solver interface for finite horizon optimal control problems
+ *
+ *  * Requirements:
+ * - returns an optimal controller. These can be different controller types, feedforward only, feedforward-feedback, feedback only,
+ * 		therefore it is templated on the controller type
  */
 template <typename DERIVED, typename POLICY, typename SETTINGS, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class OptConSolver{

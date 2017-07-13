@@ -1,9 +1,28 @@
-/*
- * GNRiccatiSolver.hpp
- *
- *  Created on: Jul 12, 2017
- *      Author: neunertm
- */
+/***********************************************************************************
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Farbod Farshidian. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
 
 #ifndef INCLUDE_CT_OPTCON_LQ_GNRICCATISOLVER_HPP_
 #define INCLUDE_CT_OPTCON_LQ_GNRICCATISOLVER_HPP_
@@ -11,6 +30,10 @@
 namespace ct {
 namespace optcon {
 
+/*!
+ * This class implements an general Riccati backward pass for solving an unconstrained
+ *  linear-quadratic Optimal Control problem
+ */
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR = double>
 class GNRiccatiSolver : public LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>
 {
@@ -66,13 +89,6 @@ public:
 	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> getFeedback() override { return L_; }
 
 protected:
-	void initializeCostToGo()
-	{
-		// initialize quadratic approximation of cost to go
-		const int& N = lqocProblem->getNumberOfStages();
-		S_[N+1] = p.Q_[N+1];
-		sv_[N+1] = p.qv_[N+1];
-	}
 
 	virtual void setProblemImpl(std::shared_ptr<LQOCProblem>& lqocProblem) override
 	{
@@ -90,6 +106,14 @@ protected:
 
 		sv_.resize(N+1);
 		S_.resize(N+1);
+	}
+
+	void initializeCostToGo()
+	{
+		// initialize quadratic approximation of cost to go
+		const int& N = lqocProblem->getNumberOfStages();
+		S_[N+1] = p.Q_[N+1];
+		sv_[N+1] = p.qv_[N+1];
 	}
 
 	void computeCostToGo(size_t k)
@@ -226,7 +250,8 @@ protected:
 
 	SCALAR smallestEigenvalue_;
 
-	Eigen::SelfAdjointEigenSolver<ControlMatrix> eigenvalueSolver_; //! Eigenvalue solver, used for inverting the Hessian and for regularization
+	//! Eigenvalue solver, used for inverting the Hessian and for regularization
+	Eigen::SelfAdjointEigenSolver<ControlMatrix> eigenvalueSolver_;
 };
 
 
