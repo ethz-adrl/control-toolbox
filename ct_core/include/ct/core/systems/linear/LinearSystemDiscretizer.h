@@ -70,7 +70,7 @@ public:
 	{}
 
 	LinearSystemDiscretizer(const LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>& other) :
-		linearSystem_(other.linearSystem_.clone()),
+		linearSystem_(other.linearSystem_->clone()),
 		dt_(other.dt_),
 		approximation_(other.approximation_)
 	{
@@ -80,7 +80,7 @@ public:
 	virtual ~LinearSystemDiscretizer(){};
 
 	//! deep cloning
-	virtual LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() {
+	virtual LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override {
 		return new LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
 	}
 

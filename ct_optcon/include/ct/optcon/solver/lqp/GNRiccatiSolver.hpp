@@ -75,7 +75,7 @@ public:
 
 	virtual void solveSingleStage(int N) override
 	{
-		if (N == this->lqocProblem_->getNumberOfStages + 1)
+		if (N == this->lqocProblem_->getNumberOfStages() + 1)
 			initializeCostToGo();
 
 		designController(N);
@@ -96,8 +96,8 @@ public:
 
 		LQOCProblem_t& p = *this->lqocProblem_;
 
-		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages; k++)
-			lx_[k+1] = (p.A_[k] + p.B_[k] * L_[k]) * lx_[k]  + p.B_[k] * lv_[k] + p.d_[k];
+		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages(); k++)
+			lx_[k+1] = (p.A_[k] + p.B_[k] * L_[k]) * lx_[k]  + p.B_[k] * lv_[k] + p.b_[k];
 
 		return lx_;
 	}
@@ -129,7 +129,7 @@ protected:
 	void initializeCostToGo()
 	{
 		// initialize quadratic approximation of cost to go
-		const int& N = this->lqocProblem->getNumberOfStages();
+		const int& N = this->lqocProblem_->getNumberOfStages();
 		LQOCProblem_t& p = *this->lqocProblem_;
 
 		S_[N+1] = p.Q_[N+1];
@@ -144,31 +144,31 @@ protected:
 		S_[k].noalias() += p.A_[k].transpose() * S_[k+1] * p.A_[k];
 		S_[k].noalias() -= L_[k].transpose() * Hi_[k] * L_[k];
 
-		S_[k] = 0.5*(p.S_[k]+p.S_[k].transpose()).eval();
+		S_[k] = 0.5*(S_[k]+S_[k].transpose()).eval();
 
 		sv_[k] = p.qv_[k];
 		sv_[k].noalias() += p.A_[k].transpose() * sv_[k+1];
-		sv_[k].noalias() += p.A_[k].transpose() * S_[k+1] * p.d_[k]; // additional riccati term for lifted GNMS
-		sv_[k].noalias() += p.L_[k].transpose() * p.Hi_[k] * p.lv_[k];
-		sv_[k].noalias() += p.L_[k].transpose() * p.gv_[k];
-		sv_[k].noalias() += p.G_[k].transpose() * p.lv_[k];
+		sv_[k].noalias() += p.A_[k].transpose() * S_[k+1] * p.b_[k]; // additional riccati term for lifted GNMS
+		sv_[k].noalias() += L_[k].transpose() * Hi_[k] * lv_[k];
+		sv_[k].noalias() += L_[k].transpose() * gv_[k];
+		sv_[k].noalias() += G_[k].transpose() * lv_[k];
 	}
 
 	void designController(size_t k)
 	{
 		LQOCProblem_t& p = *this->lqocProblem_;
 
-		p.gv_[k] = p.rv_[k];
-		p.gv_[k].noalias() += p.B_[k].transpose() * sv_[k+1];
-		p.gv_[k].noalias() += p.B_[k].transpose() * S_[k+1].template selfadjointView<Eigen::Lower>() * p.d_[k];
+		gv_[k] = p.rv_[k];
+		gv_[k].noalias() += p.B_[k].transpose() * sv_[k+1];
+		gv_[k].noalias() += p.B_[k].transpose() * S_[k+1].template selfadjointView<Eigen::Lower>() * p.b_[k];
 
-		p.G_[k] = p.P_[k];
+		G_[k] = p.P_[k];
 		//G_[k].noalias() += B_[k].transpose() * S_[k+1] * A_[k];
-		p.G_[k].noalias() += p.B_[k].transpose() * S_[k+1].template selfadjointView<Eigen::Lower>() * p.A_[k];
+		G_[k].noalias() += p.B_[k].transpose() * S_[k+1].template selfadjointView<Eigen::Lower>() * p.A_[k];
 
-		p.H_[k] = p.R_[k];
+		H_[k] = p.R_[k];
 		//H_[k].noalias() += B_[k].transpose() * S_[k+1] * B_[k];
-		p.H_[k].noalias() += p.B_[k].transpose() * S_[k+1].template selfadjointView<Eigen::Lower>() * p.B_[k];
+		H_[k].noalias() += p.B_[k].transpose() * S_[k+1].template selfadjointView<Eigen::Lower>() * p.B_[k];
 
 		if(settings_.fixedHessianCorrection)
 		{

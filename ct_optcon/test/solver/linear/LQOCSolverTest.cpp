@@ -26,19 +26,19 @@ int main(int argc, char* argv[])
 	lqocSolvers.push_back(hpipmSolver);
 	lqocSolvers.push_back(gnRiccatiSolver);
 
-	LQOCProblem<state_dim, control_dim> lqocProblem(5);
+	std::shared_ptr<LQOCProblem<state_dim, control_dim>> lqocProblem(new LQOCProblem<state_dim, control_dim>(5));
 	std::shared_ptr<core::LinearSystem<state_dim, control_dim>> springLoadedMassLinear(new example::DiehlSystemLinear());
 	core::LinearSystemDiscretizer<state_dim, control_dim> discreteSpringLoadedMass(springLoadedMassLinear, dt);
 
 	ct::core::StateVector<state_dim> x0;
 	x0 << 0.05;
 
-	auto costFunction = createDiehlCostFunction(x0);
+	auto costFunction = example::createDiehlCostFunction(x0);
 
 	ct::core::StateVector<state_dim> b;
 	b << 0.1; // for DiehlSystem
 
-	lqocProblem.setFromLinearQuadraticProblem(
+	lqocProblem->setFromTimeInvariantLinearQuadraticProblem(
 		x0,
 		discreteSpringLoadedMass,
 		*costFunction,

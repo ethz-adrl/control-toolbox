@@ -55,8 +55,8 @@ public:
 	 * @param type system type
 	 */
 	DiscreteLinearSystem(const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL):
-		ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type)
-		{}
+		DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type)
+	{}
 
 	//! destructor
 	virtual ~DiscreteLinearSystem(){};
