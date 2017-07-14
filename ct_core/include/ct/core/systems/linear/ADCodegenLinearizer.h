@@ -103,12 +103,11 @@ public:
 	{}
 
 	ADCodegenLinearizer(const ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>& arg) :
-		Base(arg.Base),
+		Base(arg),
 		dFdx_(arg.dFdx_),
 		dFdu_(arg.dFdu_),
 		compiled_(arg.compiled_),
 		cacheJac_(arg.cacheJac_),
-		compiler_(arg.compiler_),
 		x_at_cache_(arg.x_at_cache_),
 		u_at_cache_(arg.u_at_cache_),
 		dynamicLib_(arg.dynamicLib_),

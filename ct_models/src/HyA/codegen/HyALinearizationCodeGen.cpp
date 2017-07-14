@@ -42,7 +42,7 @@ const size_t njoints = ct::rbd::HyA::Dynamics::NJOINTS;
 
 typedef ct::core::ADCodegenLinearizer<state_dim, control_dim>::SCALAR Scalar;
 typedef ct::rbd::FixBaseFDSystem<ct::rbd::HyA::tpl::Dynamics<Scalar>> HyANonLinearSystem;
-typedef ct::core::JacobianCG<state_dim, control_dim> JacCG;
+typedef ct::core::DerivativesCppad<state_dim, control_dim> JacCG;
 
 template<typename SCALAR>
 using control_vector_t 	= typename ct::rbd::HyA::tpl::Dynamics<SCALAR>::control_vector_t;
@@ -67,13 +67,16 @@ Eigen::Matrix<SCALAR, control_dim, 1> hyaInverseDynamics(const Eigen::Matrix<SCA
 int main(int argc, char **argv){
 	std::shared_ptr<HyANonLinearSystem> hya(new HyANonLinearSystem());
 	ct::core::ADCodegenLinearizer<state_dim, control_dim> adLinearizer(hya);
-	typename JacCG::Function f = hyaInverseDynamics<CppAD::AD<CppAD::cg::CG<double> > >;
+	typename JacCG::FUN_TYPE_CG f = hyaInverseDynamics<CppAD::AD<CppAD::cg::CG<double> > >;
 	JacCG jacCG(f);
 
 	try 
 	{
 		std::cout << "Generating Jacobian of Inverse Dynamics wrt state using reverse mode... " << std::endl;
-		jacCG.generateCode("HyAInverseDynJacReverse", ct::models::HYA_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyA", JacCG::Sparsity::Ones(), true);
+		jacCG.generateJacobianCode("HyAInverseDynJacReverse", ct::models::HYA_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyA", JacCG::Sparsity::Ones(), true);
+
+        std::cout << "Generating Jacobian of Inverse Dynamics wrt state using reverse mode... " << std::endl;
+        jacCG.generateHessianCode("HyAInverseDynHessian", ct::models::HYA_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyA", JacCG::Sparsity::Ones(), true);
 
 		std::cout << "generating using reverse mode" << std::endl;
 		adLinearizer.generateCode("HyALinearizedReverse", ct::models::HYA_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyA", true);

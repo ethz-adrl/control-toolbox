@@ -133,7 +133,7 @@ public:
 			CppAD::vector<AD_SCALAR>& jac,
 			size_t& maxTempVarCount,
 			bool ignoreZero = true,
-			std::string jacName = "jac",
+			std::string jacName = "forwardZero",
 			std::string inputName = "x_in",
 			std::string tempName = "v_")
 	{
@@ -162,6 +162,48 @@ public:
 
 		return code.str();
 	}
+
+	template <typename AD_SCALAR>
+	static std::string generateHessianCode(
+			CppAD::ADFun<AD_SCALAR>& f,
+			const size_t& x_dim,
+			const size_t& w_dim,
+			CppAD::vector<AD_SCALAR>& jac,
+			SparsityPattern& pattern,
+			size_t& maxTempVarCount,
+			bool ignoreZero = true,
+			std::string jacName = "jac",
+			std::string inputName = "x_in",
+			std::string tempName = "v_")
+	{
+		CppAD::cg::CodeHandler<double> codeHandler;
+
+		// input vector, needs to be dynamic size
+		CppAD::vector<AD_SCALAR> input(x_dim);
+		CppAD::vector<AD_SCALAR> weights(w_dim);
+
+		for (size_t i=0; i<input.size(); i++)
+			input[i] = AD_SCALAR(0.0);
+
+		// mark independent as variables
+		codeHandler.makeVariables(input);
+		codeHandler.makeVariables(weights);
+
+		f.SparseHessian(input, weights, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.work());
+
+		CppAD::cg::LanguageC<double> langC("double", 4);
+		langC.setIgnoreZeroDepAssign(true);
+		CppAD::cg::LangCDefaultVariableNameGenerator<double> nameGen(jacName, inputName, tempName);
+
+		std::ostringstream code;
+		codeHandler.generateCode(code, langC, jac, nameGen);
+
+		std::cout << "temporary variables: " << codeHandler.getTemporaryVariableCount()<< std::endl;
+		maxTempVarCount = codeHandler.getTemporaryVariableCount();
+
+		return code.str();
+	}
+
 
 	//! replaces all occurrences of a (sub-)string in a string with a replacement string
 	/*!
