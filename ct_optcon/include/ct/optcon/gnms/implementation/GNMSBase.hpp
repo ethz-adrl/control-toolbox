@@ -334,7 +334,6 @@ bool GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR>::runIteration()
 	iteration_++;
 
 	return (!isConverged());
-;
 }
 
 

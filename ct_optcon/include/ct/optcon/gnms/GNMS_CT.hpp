@@ -45,7 +45,7 @@ public:
 	static const size_t STATE_D = STATE_DIM;
 	static const size_t CONTROL_D = CONTROL_DIM;
 
-	typedef ct::core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
+	typedef ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 	typedef NLOptConSettings Settings_t;
 	typedef SCALAR Scalar_t;
 
@@ -60,24 +60,153 @@ public:
 
 	virtual ~GNMS_CT(){}
 
-	virtual void configure(const Settings_t& settings) override {
+	virtual void configure(const Settings_t& settings) override
+	{
+		std::cout << "calling configure." << std::endl; // todo remove
+		this->backend_->configure(settings);
+	}
+
+	virtual void setInitialGuess(const Policy_t& initialGuess) override
+	{
+		std::cout << "setting init guess" << std::endl; // todo remove
+		this->backend_->setInitialGuess(initialGuess);
+	}
+
+	virtual void prepareIteration() override
+	{
 		throw(std::runtime_error("to be filled"));
 	}
 
-	virtual void prepareIteration() override {
+	virtual bool finishIteration() override
+	{
 		throw(std::runtime_error("to be filled"));
+		return true;
 	}
 
-	virtual bool finishIteration() override {
-		throw(std::runtime_error("to be filled"));
-		return true;}
 
-	virtual bool runIteration() override {
-		throw(std::runtime_error("to be filled"));
-		return true;}
+	virtual bool runIteration() override
+	{
 
-	virtual void setInitialGuess(const Policy_t& initialGuess) override {
-		throw(std::runtime_error("to be filled"));
+		if (!this->backend_->isInitialized())
+			throw std::runtime_error("GNMS is not initialized!");
+
+		if (!this->backend_->isConfigured())
+			throw std::runtime_error("GNMS is not configured!");
+
+		this->backend_->checkProblem();
+
+#ifdef MATLAB_FULL_LOG
+		if (this->backend_->iteration() == 0)
+			this->backend_->logInitToMatlab();
+#endif
+
+
+		// if first iteration, compute shots and rollout and cost!
+		if(this->backend_->iteration() == 0)
+		{
+			std::cout << "Running additional init routine for first iteration !!" << std::endl;
+			this->backend_->initializeShots();
+			this->backend_->computeDefects();
+			this->backend_->updateCosts();
+		}
+
+//#ifdef DEBUG_PRINT
+//		std::cout << "PREINTEGRATION DEBUG PRINT"<<std::endl;
+//		std::cout << "=========================="<<std::endl;
+//		this->backend_->debugPrint();
+//		std::cout << "=========================="<<std::endl;
+//
+//		std::cout<<"[GNMS]: #1 ForwardPass"<<std::endl;
+//#endif // DEBUG_PRINT
+
+		auto start = std::chrono::steady_clock::now();
+		auto startEntire = start;
+		this->backend_->computeLinearizedDynamicsAroundTrajectory();
+		auto end = std::chrono::steady_clock::now();
+		auto diff = end - start;
+#ifdef DEBUG_PRINT
+		std::cout << "Linearizing dynamics took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
+
+		start = std::chrono::steady_clock::now();
+		this->backend_->computeQuadraticCostsAroundTrajectory();
+		end = std::chrono::steady_clock::now();
+		diff = end - start;
+#ifdef DEBUG_PRINT
+		std::cout << "Cost computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
+
+		// todo: where to put this Eigen threading stuff?
+		//		if (settings_.nThreadsEigen > 1)
+		//			Eigen::setNbThreads(settings_.nThreadsEigen); // restore default Eigen thread number
+
+		end = std::chrono::steady_clock::now();
+		diff = end - startEntire;
+#ifdef DEBUG_PRINT
+		std::cout << "Forward pass took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif DEBUG_PRINT
+
+
+#ifdef DEBUG_PRINT
+		std::cout<<"[GNMS]: #2 Solve LQOC Problem"<<std::endl;
+#endif // DEBUG_PRINT
+		start = std::chrono::steady_clock::now();
+		this->backend_->solveLQProblem();
+		end = std::chrono::steady_clock::now();
+		diff = end - start;
+#ifdef DEBUG_PRINT
+		std::cout << "Solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
+
+		// update solutions
+		this->backend_->updateSolutionState();
+		this->backend_->updateSolutionFeedforward();
+//		this->backend_->updateSolutionFeedback();
+
+
+		start = std::chrono::steady_clock::now();
+//		if (this->backend_->iteration() == 0)
+//			this->backend_->initializeShots();
+//		else
+		this->backend_->updateShots(); // todo: clear that
+		end = std::chrono::steady_clock::now();
+		diff = end - start;
+#ifdef DEBUG_PRINT
+		std::cout << "Shot integration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
+
+		start = std::chrono::steady_clock::now();
+		this->backend_->computeDefects();
+		end = std::chrono::steady_clock::now();
+		diff = end - start;
+#ifdef DEBUG_PRINT
+		std::cout << "Defects computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
+
+
+		// compute new costs
+		this->backend_->updateCosts();
+
+		// todo: where to put the whole threading
+		//		if (settings_.nThreadsEigen > 1)
+		//			Eigen::setNbThreads(settings_.nThreadsEigen); // restore default Eigen thread number
+
+		diff = end - startEntire;
+#ifdef DEBUG_PRINT
+		std::cout << "Total iteration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
+
+#ifdef DEBUG_PRINT
+		this->backend_->debugPrint();
+#endif //DEBUG_PRINT
+
+#ifdef MATLAB_FULL_LOG
+		this->backend_->logToMatlab(this->backend_->iteration());
+#endif //MATLAB_FULL_LOG
+
+		this->backend_->iteration()++;
+
+		return (!this->backend_->isConverged());
 	}
 
 };

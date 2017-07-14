@@ -41,7 +41,7 @@ public:
 
 	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM> Backend_t;
 
-	typedef ct::core::ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
+	typedef ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 	typedef NLOptConSettings Settings_t;
 	typedef SCALAR Scalar_t;
 

@@ -31,7 +31,7 @@ namespace optcon {
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::setInitialGuess(const Policy_t& initialGuess)
 {
-	if(initialGuess.uff().size() != initialGuess.K().size()-1)
+	if(initialGuess.uff().size() != initialGuess.x_ref().size()-1)
 	{
 		std::cout << "Provided initial state and control trajectories are not of correct size. Control should be one shorter than state.";
 		std::cout << "Control length is "<<initialGuess.uff().size()<<" but state length is "<<initialGuess.x_ref().size()<<std::endl;
@@ -53,12 +53,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::setInitialGu
 
 	t_ = TimeArray(settings_.dt_sim, x_.size(), 0.0);
 
+	reset();
+
 	// compute costs of the initial guess trajectory
 	computeCostsOfTrajectory(settings_.nThreads, x_, u_ff_, intermediateCostBest_, finalCostBest_);
 	intermediateCostPrevious_ = intermediateCostBest_;
 	finalCostPrevious_ = finalCostBest_;
-
-	reset();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -216,6 +216,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 	Eigen::setNbThreads(settings.nThreadsEigen);
 
 	lqocSolver_->configure(settings);
+
+	settings_ = settings;
+
+	reset();
 
 	configured_ = true;
 }
@@ -549,11 +553,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 	std::cout<<std::setprecision(15) << "total state update norm:   " << dx_norm_ << std::endl;
 	std::cout<<std::setprecision(15) << "total control update.norm: " << du_norm_ << std::endl;
 
-	if(settings_.recordSmallestEigenvalue)
-	{
-		std::cout<<std::setprecision(15) << "smallest eigenvalue this iteration: " << smallestEigenvalueIteration_ << std::endl;
-		std::cout<<std::setprecision(15) << "smallest eigenvalue overall:        " << smallestEigenvalue_ << std::endl;
-	}
+	// todo bring back this
+//	if(settings_.recordSmallestEigenvalue)
+//	{
+//		std::cout<<std::setprecision(15) << "smallest eigenvalue this iteration: " << smallestEigenvalueIteration_ << std::endl;
+//		std::cout<<std::setprecision(15) << "smallest eigenvalue overall:        " << smallestEigenvalue_ << std::endl;
+//	}
 
 	std::cout<<"                   ========" << std::endl;
 	std::cout<<std::endl;
@@ -567,33 +572,37 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 
 #ifdef MATLAB
 
+	LQOCProblem_t& p = *lqocProblem_;
+
 	matFile_.open("GNMSLog"+std::to_string(iteration)+".mat");
 
 	matFile_.put("iteration", iteration);
 	matFile_.put("K", K_);
 	matFile_.put("x", x_.toImplementation());
-	matFile_.put("t", t_.toEigenTrajectory());
-	matFile_.put("A", A_.toImplementation());
-	matFile_.put("B", B_.toImplementation());
-	matFile_.put("qv", qv_.toImplementation());
-	matFile_.put("Q", Q_.toImplementation());
-	matFile_.put("P", P_.toImplementation());
-	matFile_.put("rv", rv_.toImplementation());
-	matFile_.put("R", R_.toImplementation());
-	matFile_.put("sv", sv_.toImplementation());
-	matFile_.put("S", S_.toImplementation());
-	matFile_.put("L", L_.toImplementation());
-	matFile_.put("lv", lv_.toImplementation());
-	matFile_.put("lx", lx_.toImplementation());
 	matFile_.put("u_ff", u_ff_.toImplementation());
-	matFile_.put("H", H_.toImplementation());
-	matFile_.put("Hi_", Hi_.toImplementation());
-	matFile_.put("Hi_inverse", Hi_inverse_.toImplementation());
-	matFile_.put("G", G_.toImplementation());
-	matFile_.put("gv", gv_.toImplementation());
-	matFile_.put("q", q_);
+	matFile_.put("t", t_.toEigenTrajectory());
 	matFile_.put("d", d_.toImplementation());
 	matFile_.put("xShot", xShot_.toImplementation());
+
+	matFile_.put("A", p.A_.toImplementation());
+	matFile_.put("B", p.B_.toImplementation());
+	matFile_.put("qv", p.qv_.toImplementation());
+	matFile_.put("Q", p.Q_.toImplementation());
+	matFile_.put("P", p.P_.toImplementation());
+	matFile_.put("rv", p.rv_.toImplementation());
+	matFile_.put("R", p.R_.toImplementation());
+	matFile_.put("q", p.q_.toEigenTrajectory());
+
+//	matFile_.put("sv", sv_.toImplementation());
+//	matFile_.put("S", S_.toImplementation());
+//	matFile_.put("L", L_.toImplementation());
+//	matFile_.put("lv", lv_.toImplementation());
+//	matFile_.put("lx", lx_.toImplementation());
+//	matFile_.put("H", H_.toImplementation());
+//	matFile_.put("Hi_", Hi_.toImplementation());
+//	matFile_.put("Hi_inverse", Hi_inverse_.toImplementation());
+//	matFile_.put("G", G_.toImplementation());
+//	matFile_.put("gv", gv_.toImplementation());
 
 
 	matFile_.close();

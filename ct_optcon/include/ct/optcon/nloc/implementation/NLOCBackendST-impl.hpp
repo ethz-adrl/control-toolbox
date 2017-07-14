@@ -31,45 +31,88 @@ namespace optcon{
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::createLQProblem()
 {
+	throw std::runtime_error("should not be used. to be deleted.");
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solveLQProblem()
 {
+	this->lqocSolver_->setProblem(this->lqocProblem_);
+	this->lqocSolver_->solve();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory()
 {
-
+	for (size_t k=0; k<this->K_; k++)
+	{
+		this->computeLinearizedDynamics(this->settings_.nThreads, k);
+	}
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory()
 {
+	this->initializeCostToGo();
+
+	for (size_t k=0; k<this->K_; k++)
+	{
+		// compute quadratic cost
+		this->computeQuadraticCosts(this->settings_.nThreads, k);
+	}
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateControlAndState()
+void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionState()
 {
-
+	this->x_ = this->lqocSolver_->getSolutionState();
 }
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedforward()
+{
+	this->u_ff_ = this->lqocSolver_->getSolutionControl();
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedback()
+{
+	this->L_ = this->lqocSolver_->getFeedback();
+}
+
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateShots()
 {
+	for (size_t k=0; k<this->K_; k++)
+	{
+//		this->updateSingleShot(this->settings_.nThreads, k);
+		this->initializeSingleShot(this->settings_.nThreads, k);
+	}
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeShots()
 {
+	for (size_t k=0; k<this->K_; k++)
+	{
+		this->initializeSingleShot(this->settings_.nThreads, k);
+	}
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefects()
 {
+	this->d_norm_ = 0.0;
+
+	for (size_t k=0; k<this->K_+1; k++)
+	{
+		this->computeSingleDefect(this->settings_.nThreads, k);
+		this->d_norm_ += this->d_[k].norm();
+	}
 }
+
 
 } // namespace optcon
 } // namespace ct

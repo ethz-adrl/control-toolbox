@@ -101,16 +101,18 @@ public:
 		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages(); k++)
 		{
 			lx_[k+1] = (p.A_[k] + p.B_[k] * L_[k]) * lx_[k]  + p.B_[k] * lv_[k] + p.b_[k];
+			x[k] += lx_[k];
+
 //			std::cout << "A: "<<std::endl<<p.A_[k]<<std::endl<<std::endl;
 //			std::cout << "B: "<<std::endl<<p.B_[k]<<std::endl<<std::endl;
 //			std::cout << "H: "<<std::endl<<H_[k]<<std::endl<<std::endl;
 //			std::cout << "S: "<<std::endl<<S_[k]<<std::endl<<std::endl;
 //			std::cout << "sv: "<<std::endl<<sv_[k]<<std::endl<<std::endl;
 //			std::cout << "L: "<<std::endl<<L_[k]<<std::endl<<std::endl;
-//			std::cout << "lv_: "<<std::endl<<lv_[k].transpose()<<std::endl<<std::endl;
-//
+			std::cout << "lv_: "<<std::endl<<lv_[k].transpose()<<std::endl<<std::endl;
+			std::cout << "lx_: "<<std::endl<<lx_[k].transpose()<<std::endl<<std::endl;
 //			std::cout << std::endl << std::endl;
-			x[k] += lx_[k];
+
 		}
 		x[p.getNumberOfStages()] += lx_[p.getNumberOfStages()];
 

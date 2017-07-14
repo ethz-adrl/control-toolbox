@@ -305,11 +305,14 @@ public:
 
 	SCALAR getTotalDefect() const { return d_norm_;}
 
-	void reset() {
+	void reset()
+	{
 		iteration_ = 0;
-		smallestEigenvalue_ = std::numeric_limits<scalar_t>::infinity();
-		smallestEigenvalueIteration_ = std::numeric_limits<scalar_t>::infinity();
 		d_norm_ = std::numeric_limits<scalar_t>::infinity();
+		intermediateCostBest_ = std::numeric_limits<scalar_t>::infinity();
+		finalCostBest_ = std::numeric_limits<scalar_t>::infinity();
+		intermediateCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
+		finalCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
 	}
 
 	const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const;
@@ -320,13 +323,45 @@ public:
 
 	const TimeArray& getTimeArray() {return t_;}
 
+	bool isConfigured() {return configured_;}
 
-
-protected:
+	bool isInitialized() {return initialized_;}
 
 	virtual void createLQProblem() = 0;
 
 	virtual void solveLQProblem() = 0; // replaces "backward-pass"
+
+	void updateCosts()
+	{
+		intermediateCostPrevious_ = intermediateCostBest_;
+		finalCostPrevious_ = finalCostBest_;
+		computeCostsOfTrajectory(settings_.nThreads, x_, u_ff_, intermediateCostBest_, finalCostBest_);
+	}
+
+
+	//! check if GNMS is converged @todo move to implementation
+	bool isConverged()
+	{
+		//! check if sum of norm of all defects is smaller than convergence criterion
+		//! @todo in fact, the d_norm_evaluated here was computed before the controller update. For larger problems, might save computation time be re-evaluating the defect here!
+		if (d_norm_ > settings_.maxDefectSum)
+			return false;
+
+		SCALAR previousCost = intermediateCostPrevious_ + finalCostPrevious_;
+		SCALAR newCost = intermediateCostBest_ + finalCostBest_;
+
+		if ( fabs((previousCost - newCost)/previousCost) > settings_.min_cost_improvement)
+			return false;
+
+		return true;
+	}
+
+
+	//! check problem for consistency
+	void checkProblem();
+
+	size_t& iteration() {return iteration_;}
+
 
 //	#ifdef HPIPM
 //	void backwardPassHPIPM()
@@ -335,13 +370,25 @@ protected:
 //	}
 //	#endif
 
+	//! Print debugging information
+	/*!
+	 *  This function is automatically called if the DEBUG_PRINT compileflag is set. It prints out important information
+	 *  like cost etc. after each iteration.
+     *
+	 */
+	void debugPrint();
+
 	//! Computes the linearization of the dynamics along the trajectory. See computeLinearizedDynamics for details
 	virtual void computeLinearizedDynamicsAroundTrajectory() = 0;
 
 	//! Computes the quadratic approximation of the cost function along the trajectory
 	virtual void computeQuadraticCostsAroundTrajectory() = 0;
 
-	virtual void updateControlAndState() = 0;
+	virtual void updateSolutionState() = 0;
+
+	virtual void updateSolutionFeedforward() = 0;
+
+	virtual void updateSolutionFeedback() = 0;
 
 	virtual void updateShots() = 0;
 
@@ -349,11 +396,10 @@ protected:
 
 	virtual void computeDefects() = 0;
 
-	//! check problem for consistency
-	void checkProblem();
+protected:
 
 	//! build the sequential LQ problems
-	void sequentialLQProblem();
+	void sequentialLQProblem(); //todo should not be needed any more
 
 	//! updates the controls and states
 //	void updateSingleControlAndState(size_t threadId, size_t k);
@@ -422,11 +468,6 @@ protected:
 	 */
 	void designController(size_t k);
 
-
-	//! Design the state update
-//	void designStateUpdate(size_t k); // moves to QP solver
-
-
 	//! Compute cost for a given set of state and input trajectory
 	/*!
 	 * Compute cost for a given set of state and input trajectory
@@ -467,13 +508,6 @@ protected:
 	 */
 	void updateFFController(size_t k);
 
-	//! Print debugging information
-	/*!
-	 *  This function is automatically called if the DEBUG_PRINT compileflag is set. It prints out important information
-	 *  like cost etc. after each iteration.
-     *
-	 */
-	void debugPrint();
 
 	//! Send a std::vector of Eigen to Matlab
 	/*!
@@ -536,14 +570,6 @@ protected:
 	scalar_t intermediateCostPrevious_;
 	scalar_t finalCostPrevious_;
 
-	scalar_t smallestEigenvalue_;
-	scalar_t smallestEigenvalueIteration_;
-
-
-	//! if building with HPIPM support, include HPIPM interface
-//#ifdef HPIPM
-//	HPIPMInterface<STATE_DIM, CONTROL_DIM> HPIPMInterface_;
-//#endif
 
 	//! if building with MATLAB support, include matfile
 #ifdef MATLAB

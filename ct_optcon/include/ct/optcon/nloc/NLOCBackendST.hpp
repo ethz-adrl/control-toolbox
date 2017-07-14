@@ -68,7 +68,11 @@ protected:
 
 	virtual void computeQuadraticCostsAroundTrajectory() override;
 
-	virtual void updateControlAndState() override;
+	virtual void updateSolutionState() override;
+
+	virtual void updateSolutionFeedforward() override;
+
+	virtual void updateSolutionFeedback() override;
 
 	virtual void updateShots() override;
 

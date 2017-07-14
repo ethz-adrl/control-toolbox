@@ -33,7 +33,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#define MATLAB
 //#define MATLAB_FULL_LOG
 
-//#define DEBUG_PRINT
+#define DEBUG_PRINT
 //#define DEBUG_PRINT_LINESEARCH
 
 #include <ct/optcon/optcon.h>
@@ -147,7 +147,7 @@ void singleCore()
 		NLOptConSettings gnms_settings;
 		gnms_settings.nThreads = 1;
 		gnms_settings.epsilon = 0.0;
-		gnms_settings.max_iterations = 3;
+		gnms_settings.max_iterations = 2;
 		gnms_settings.recordSmallestEigenvalue = true;
 		gnms_settings.min_cost_improvement = 1e-6;
 		gnms_settings.fixedHessianCorrection = false;
@@ -155,6 +155,8 @@ void singleCore()
 		gnms_settings.dt_sim = 0.1;
 		gnms_settings.integrator = NLOptConSettings::EULER;
 		gnms_settings.discretization = NLOptConSettings::DISCRETIZATION::FORWARD_EULER;
+		gnms_settings.nlocp_algorithm =NLOptConSettings::NLOCP_ALGORITHM::GNMS;
+		gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;
 
 //		iLQGSettings ilqg_settings;
 //		ilqg_settings.epsilon = 0.0;
@@ -182,7 +184,7 @@ void singleCore()
 		StateVectorArray<state_dim>  x0(nSteps+1, StateVector<state_dim>::Zero());
 		for (size_t i=0; i<nSteps+1; i++)
 		{
-			x0 [i] = x_final*double(i)/double(nSteps);
+//			x0 [i] = x_final*double(i)/double(nSteps);
 		}
 
 		FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
@@ -216,7 +218,8 @@ void singleCore()
 		while (foundBetter)
 		{
 			foundBetter = gnms.runIteration();
-			foundBetter = true;
+
+//			foundBetter = true;
 
 			// test trajectories
 			StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
