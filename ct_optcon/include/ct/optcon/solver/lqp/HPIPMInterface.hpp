@@ -272,6 +272,7 @@ private:
 
 		x0_ = x[0].data();
 
+		// transcribe the representation of the affine system to the absolute origin of the linear system
 		for (size_t i=0; i<N_; i++)
 		{
 			hA_[i] = A[i].data();
@@ -280,12 +281,12 @@ private:
 			hb_[i] = bEigen_[i].data();
 		}
 
-		hb0_ = b[0] + x[1] - B[0] * u[0];
+		hb0_ = b[0] + x[1] - B[0] * u[0];	//! this line needs to be transcribed separately (correction for first stage)
 		hb_[0] = hb0_.data();
 
 		for (size_t i=0; i<N_; i++)
 		{
-			// transcription of LQ cost into x-origin coordinates
+			// transcribe the representation of the LQ cost into system x-origin coordinates
 			hQ_[i] = Q[i].data();
 			hS_[i] = P[i].data();
 			hR_[i] = R[i].data();

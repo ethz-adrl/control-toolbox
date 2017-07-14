@@ -15,7 +15,7 @@ ilqg
     maxDefectSum 1e-5
     nThreads 1
     nThreadsEigen 4
-    locp_solver HPIPM_SOLVER
+    locp_solver GNRICCATI_SOLVER
     nlocp_algorithm GNMS
     
     line_search
