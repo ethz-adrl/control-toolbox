@@ -49,6 +49,8 @@ public:
 	static const size_t state_dim = 2; // position, velocity
 	static const size_t control_dim = 1; // force
 
+	static constexpr double kStiffness = 10;
+
 	state_matrix_t A_;
 	state_control_matrix_t B_;
 
@@ -70,6 +72,29 @@ public:
 		return new SpringLoadedMassLinear();
 	};
 };
+
+
+
+std::shared_ptr<CostFunctionQuadratic<2, 1> > createSpringLoadedMassCostFunction(const core::StateVector<2>& x_final)
+{
+	Eigen::Matrix<double, 2,2 > Q;
+	Q << 1.0, 0, 0, 1.0;
+
+	Eigen::Matrix<double, 1, 1> R;
+	R << 1.0;
+
+	Eigen::Matrix<double, 2, 1> x_nominal = x_final;
+	Eigen::Matrix<double, 1, 1> u_nominal; u_nominal.setZero();
+
+	Eigen::Matrix<double, 2, 2> Q_final;
+	Q_final << 10.0 ,0, 0, 10.0;
+
+	std::shared_ptr<CostFunctionQuadratic<2, 1> > quadraticCostFunction(
+			new CostFunctionQuadraticSimple<2, 1>(
+					Q, R, x_nominal, u_nominal, x_final, Q_final));
+
+	return quadraticCostFunction;
+}
 
 }
 }

@@ -109,8 +109,8 @@ public:
 //			std::cout << "S: "<<std::endl<<S_[k]<<std::endl<<std::endl;
 //			std::cout << "sv: "<<std::endl<<sv_[k]<<std::endl<<std::endl;
 //			std::cout << "L: "<<std::endl<<L_[k]<<std::endl<<std::endl;
-			std::cout << "lv_: "<<std::endl<<lv_[k].transpose()<<std::endl<<std::endl;
-			std::cout << "lx_: "<<std::endl<<lx_[k].transpose()<<std::endl<<std::endl;
+//			std::cout << "lv_: "<<std::endl<<lv_[k].transpose()<<std::endl<<std::endl;
+//			std::cout << "lx_: "<<std::endl<<lx_[k].transpose()<<std::endl<<std::endl;
 //			std::cout << std::endl << std::endl;
 
 		}
@@ -125,7 +125,7 @@ public:
 
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u = p.u_;
 
-		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages()-1; k++)
+		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages(); k++)
 		{
 			u[k] += lv_[k] + L_[k] * lx_[k];
 		}

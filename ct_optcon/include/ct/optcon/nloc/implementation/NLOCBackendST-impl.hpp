@@ -37,6 +37,8 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::createLQProble
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solveLQProblem()
 {
+	this->lqocProblem_->x_ = this->x_;
+	this->lqocProblem_->u_ = this->u_ff_;
 	this->lqocSolver_->setProblem(this->lqocProblem_);
 	this->lqocSolver_->solve();
 }
@@ -62,7 +64,6 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 	}
 }
 
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionState()
 {
@@ -73,6 +74,9 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedforward()
 {
 	this->u_ff_ = this->lqocSolver_->getSolutionControl();
+
+	for(size_t i = 0; i<this->u_ff_.size(); i++)
+		std::cout << "lv update ["<<i<<"]: " << this->u_ff_[i].transpose() << std::endl;	//todo: potentially remove
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -109,7 +113,7 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefects
 	for (size_t k=0; k<this->K_+1; k++)
 	{
 		this->computeSingleDefect(this->settings_.nThreads, k);
-		this->d_norm_ += this->d_[k].norm();
+		this->d_norm_ += this->lqocProblem_->b_[k].norm();
 	}
 }
 

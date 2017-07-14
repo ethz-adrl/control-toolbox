@@ -76,8 +76,8 @@ std::shared_ptr<CostFunctionQuadratic<1, 1> > createDiehlCostFunction(const core
 	Eigen::Matrix<double, 1, 1> R;
 	R << 1.0;
 
-	Eigen::Matrix<double, 1, 1> x_nominal = Eigen::Matrix<double, 1, 1>::Zero();
-	Eigen::Matrix<double, 1, 1> u_nominal = Eigen::Matrix<double, 1, 1>::Zero();
+	Eigen::Matrix<double, 1, 1> x_nominal = x_final;
+	Eigen::Matrix<double, 1, 1> u_nominal; u_nominal.setConstant(-0.1); //Eigen::Matrix<double, 1, 1>::Zero();
 
 	Eigen::Matrix<double, 1, 1> Q_final;
 	Q_final << 10.0;

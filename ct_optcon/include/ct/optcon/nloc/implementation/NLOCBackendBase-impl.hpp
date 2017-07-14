@@ -77,7 +77,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
 	xShot_.resize(K_+1);
 	u_ff_.resize(K_);
 	u_ff_prev_.resize(K_);
-	d_.resize(K_+1);
 	L_.resize(K);
 
 	lqocProblem_->changeNumStages(K_);
@@ -136,15 +135,17 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 
 		integratorsRK4_[i] = std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > (new ct::core::IntegratorRK4<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
 		integratorsEuler_[i] = std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM, SCALAR> >(new ct::core::IntegratorEuler<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
-		if(this->getNonlinearSystemsInstances()[i]->isSymplectic())
-		{
-			integratorsEulerSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
-									new ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
-										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (this->getNonlinearSystemsInstances()[i])));
-			integratorsRkSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
-									new ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
-										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (this->getNonlinearSystemsInstances()[i])));
-		}
+
+// @ todo: need to find different solution for that
+//		if(this->getNonlinearSystemsInstances()[i]->isSymplectic())
+//		{
+//			integratorsEulerSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
+//									new ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
+//										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (this->getNonlinearSystemsInstances()[i])));
+//			integratorsRkSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
+//									new ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
+//										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (this->getNonlinearSystemsInstances()[i])));
+//		}
 	}
 	reset(); // since system changed, we have to start fresh, i.e. with a rollout
 }
@@ -376,14 +377,15 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeSi
 	{
 		integratorsRK4_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
 	}
-	else if(settings_.integrator == GNMSSettings::EULER_SYM)
-	{
-		integratorsEulerSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
-	}
-	else if(settings_.integrator == GNMSSettings::RK_SYM)
-	{
-		integratorsRkSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
-	}
+	//! todo need to find different solution for that
+//	else if(settings_.integrator == GNMSSettings::EULER_SYM)
+//	{
+//		integratorsEulerSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
+//	}
+//	else if(settings_.integrator == GNMSSettings::RK_SYM)
+//	{
+//		integratorsRkSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
+//	}
 	else
 		throw std::runtime_error("invalid integration mode selected.");
 }
@@ -408,11 +410,11 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeSingleDefect(size_t threadId, size_t k)
 {
 	if (k<K_)
-		d_[k] = xShot_[k] - x_[k+1];
+		lqocProblem_->b_[k] = xShot_[k] - x_[k+1];
 	else
 	{
 		assert(k==K_ && "k should be K_");
-		d_[K_].setZero();
+		lqocProblem_->b_[K_].setZero();
 	}
 }
 
@@ -536,7 +538,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeCo
 //template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 //void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::designStateUpdate(size_t k)
 //{
-//	lx_[k+1] = (A_[k] + B_[k] * L_[k]) * lx_[k]  + B_[k] * lv_[k] + d_[k];
+//	lx_[k+1] = (A_[k] + B_[k] * L_[k]) * lx_[k]  + B_[k] * lv_[k] + lqocProblem_->b_[k];
 //}
 
 
@@ -581,7 +583,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 	matFile_.put("x", x_.toImplementation());
 	matFile_.put("u_ff", u_ff_.toImplementation());
 	matFile_.put("t", t_.toEigenTrajectory());
-	matFile_.put("d", d_.toImplementation());
+	matFile_.put("d", lqocProblem_->b_.toImplementation());
 	matFile_.put("xShot", xShot_.toImplementation());
 
 	matFile_.put("A", p.A_.toImplementation());

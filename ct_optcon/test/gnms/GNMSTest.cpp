@@ -138,7 +138,6 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > createCostFuncti
 
 void singleCore()
 {
-
 		std::cout << "setting up problem " << std::endl;
 
 		Eigen::Vector2d x_final;
@@ -211,7 +210,6 @@ void singleCore()
 		std::cout << "running gnms solver" << std::endl;
 
 
-
 		bool foundBetter = true;
 		size_t numIterations = 0;
 
@@ -219,7 +217,7 @@ void singleCore()
 		{
 			foundBetter = gnms.runIteration();
 
-//			foundBetter = true;
+			foundBetter = true;
 
 			// test trajectories
 			StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
@@ -227,7 +225,7 @@ void singleCore()
 
 			numIterations++;
 
-			if (numIterations>3)
+			if (numIterations>5)
 			{
 				std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
 				std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;

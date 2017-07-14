@@ -63,7 +63,8 @@ namespace optcon{
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM = STATE_DIM/2, size_t V_DIM=STATE_DIM/2, typename SCALAR = double>
 class NLOCBackendBase
 {
-	static_assert(P_DIM + V_DIM == STATE_DIM, "symplectic dimensions should add up to state dimension");
+	//! @todo this does not make sense (consider case that state_dim and control_dim = 1 )
+//	static_assert(P_DIM + V_DIM == STATE_DIM, "symplectic dimensions should add up to state dimension");
 
 public:
 
@@ -554,7 +555,6 @@ protected:
 	SCALAR dx_norm_;
 	SCALAR du_norm_;
 
-	StateVectorArray d_; // the defects
 	SCALAR d_norm_; 	// sum of the norms of all defects
 
 

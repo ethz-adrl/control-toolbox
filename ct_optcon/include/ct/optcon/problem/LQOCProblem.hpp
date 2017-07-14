@@ -64,7 +64,7 @@ public:
 
 		A_.resize(N);
 		B_.resize(N);
-		b_.resize(N);
+		b_.resize(N+1);
 
 		x_.resize(N+1);
 		u_.resize(N);
@@ -107,17 +107,16 @@ public:
 
 	void setFromTimeInvariantLinearQuadraticProblem(
 		ct::core::StateVector<STATE_DIM>& x0,
+		ct::core::ControlVector<CONTROL_DIM>& u0,
 		ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
 		ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
 		ct::core::StateVector<STATE_DIM>& stateOffset,
 		double dt
 	)
 	{
-		ct::core::ControlVector<CONTROL_DIM, SCALAR> uNom; uNom.setZero(); // reference control should not matter for linear system
-
 		core::StateMatrix<STATE_DIM, SCALAR> A;
-		core::ControlMatrix<STATE_DIM, SCALAR> B;
-		linearSystem.getAandB(x0, 0, uNom, A, B);
+		core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B;
+		linearSystem.getAandB(x0, 0, u0, A, B);
 
 		A_ = core::StateMatrixArray<STATE_DIM>(K_, A);
 		B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM>(K_, B);
@@ -125,7 +124,7 @@ public:
 
 
 		// feed current state and control to cost function
-		costFunction.setCurrentStateAndControl(x0, uNom, 0);
+		costFunction.setCurrentStateAndControl(x0, u0, 0);
 
 		// derivative of cost with respect to state
 		qv_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_+1, costFunction.stateDerivativeIntermediate()*dt);
@@ -143,7 +142,7 @@ public:
 		qv_[K_] = costFunction.stateDerivativeTerminal();
 
 		x_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_+1, x0);
-		u_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, uNom);
+		u_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, u0);
 	}
 
 

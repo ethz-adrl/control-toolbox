@@ -201,11 +201,8 @@ target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_
 add_executable(GNMSTest test/gnms/GNMSTest.cpp)
 target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
-#add_executable(GNMSTest test/gnms/GNMSTest.cpp)
-#target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
-#
-#add_executable(GNMSTest2 test/gnms/GNMSTest2.cpp)
-#target_link_libraries(GNMSTest2 ${catkin_LIBRARIES} ${MATLAB_LIBS})
+add_executable(GNMSTest2 test/gnms/GNMSTest2.cpp)
+target_link_libraries(GNMSTest2 ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
 #add_executable(HPIPMInterfaceTest test/hpipm/HPIPMInterfaceTest.cpp)
 #target_link_libraries(HPIPMInterfaceTest hpipm blasfeo ${MATLAB_LIBS})

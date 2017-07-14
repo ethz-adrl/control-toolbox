@@ -137,10 +137,12 @@ public:
 		hx_[0] = this->lqocProblem_->x_[0];
 		return hx_;
 	}
+
 	virtual ct::core::ControlVectorArray<CONTROL_DIM> getSolutionControl() override {
 		::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u_.data(), x_.data(), pi_.data(), lam_lb_.data(), lam_ub_.data(), lam_lg_.data(), lam_ug_.data());
 		return hu_;
 	}
+
 	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> getFeedback() override { throw std::runtime_error("not implemented"); }
 
 
@@ -274,14 +276,16 @@ private:
 		{
 			hA_[i] = A[i].data();
 			hB_[i] = B[i].data();
-			hb_[i] = b[i].data();
+			bEigen_[i] = b[i] + x[i+1] - A[i]*x[i] - B[i] * u[i];
+			hb_[i] = bEigen_[i].data();
 		}
 
-		hb0_ = b[0] + A[0] * x[0];
+		hb0_ = b[0] + x[1] - B[0] * u[0];
 		hb_[0] = hb0_.data();
 
 		for (size_t i=0; i<N_; i++)
 		{
+			// transcription of LQ cost into x-origin coordinates
 			hQ_[i] = Q[i].data();
 			hS_[i] = P[i].data();
 			hR_[i] = R[i].data();
@@ -290,6 +294,8 @@ private:
 			hrEigen_[i] = rv[i] - R[i]*u[i] - P[i]*x[i];
 			hr_[i] = hrEigen_[i].data();
 		}
+
+		// transcription of LQ cost into x-origin coordinates
 		hQ_[N_] = Q[N_].data();
 		hS_[N_] = nullptr;
 		hR_[N_] = nullptr;
@@ -326,6 +332,7 @@ private:
 
 		hA_.resize(N_);
 		hB_.resize(N_);
+		bEigen_.resize(N_);
 		hb_.resize(N_);
 		hQ_.resize(N_+1);
 		hS_.resize(N_+1);
@@ -469,6 +476,7 @@ private:
 
 	std::vector<double*> hA_; // system state sensitivities
 	std::vector<double*> hB_; // system input sensitivities
+	StateVectorArray bEigen_; // for transcription
 	std::vector<double*> hb_;
 	Eigen::Matrix<double, state_dim, 1> hb0_;
 
