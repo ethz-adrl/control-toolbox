@@ -73,10 +73,12 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolution
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedforward()
 {
+	this->u_ff_prev_ = this->u_ff_; // store previous feedforward for line-search
+
 	this->u_ff_ = this->lqocSolver_->getSolutionControl();
 
-	for(size_t i = 0; i<this->u_ff_.size(); i++)
-		std::cout << "lv update ["<<i<<"]: " << this->u_ff_[i].transpose() << std::endl;	//todo: potentially remove
+//	for(size_t i = 0; i<this->u_ff_.size(); i++)
+//		std::cout << "lv update ["<<i<<"]: " << this->u_ff_[i].transpose() << std::endl;	//todo: potentially remove
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -115,6 +117,85 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefects
 		this->computeSingleDefect(this->settings_.nThreads, k);
 		this->d_norm_ += this->lqocProblem_->b_[k].norm();
 	}
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineSearch()
+{
+#ifdef DEBUG_PRINT_LINESEARCH
+	std::cout<<"Starting line search."<<std::endl;
+	std::cout<<"Cost last rollout: "<<this->lowestCost_<<std::endl;
+#endif //DEBUG_PRINT_LINESEARCH
+
+	// we start with extrapolation
+	double alpha = this->settings_.lineSearchSettings.alpha_0;
+	double alphaBest = 0.0;
+	size_t iterations = 0;
+
+	while (iterations < this->settings_.lineSearchSettings.maxIterations)
+	{
+#ifdef DEBUG_PRINT_LINESEARCH
+		std::cout<<"Iteration: "<< iterations << " with alpha: "<<alpha<< " out of maximum " << this->settings_.lineSearchSettings.maxIterations << " iterations. "<< std::endl;
+#endif
+
+		iterations++;
+
+		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_ff_search(this->K_);
+
+		for (int k=this->K_-1; k>=0; k--)
+		{
+			u_ff_search[k] = alpha * this->u_ff_[k] + (1-alpha) * this->u_ff_prev_[k];
+		}
+
+
+		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_search(this->K_+1);
+		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_search(this->K_);
+		ct::core::tpl::TimeArray<SCALAR> t_search(this->K_+1);
+		x_search[0] = this->x_[0];
+
+		bool dynamicsGood = this->rolloutSystem(this->settings_.nThreads, u_ff_search, x_search, u_search, t_search);
+
+		typename Base::scalar_t cost = std::numeric_limits<typename Base::scalar_t>::max();
+		typename Base::scalar_t intermediateCost = std::numeric_limits<typename Base::scalar_t>::max();
+		typename Base::scalar_t finalCost = std::numeric_limits<typename Base::scalar_t>::max();
+
+		if (dynamicsGood)
+		{
+			this->computeCostsOfTrajectory(this->settings_.nThreads, x_search, u_search, intermediateCost, finalCost);
+
+			cost = intermediateCost + finalCost;
+		}
+
+		if (cost < this->lowestCost_)
+		{
+			if(std::isnan(cost))
+				throw(std::runtime_error("cost is NaN - must not happen since dynamicsGood == true "));
+
+#ifdef DEBUG_PRINT_LINESEARCH
+			std::cout<<"Lower cost found: "<< cost <<" at alpha: "<< alpha << std::endl;
+#endif //DEBUG_PRINT_LINESEARCH
+
+			this->intermediateCostBest_ = intermediateCost;
+			this->finalCostBest_ = finalCost;
+
+			alphaBest = alpha;
+			this->lowestCost_ = cost;
+			this->x_.swap(x_search);
+			this->u_ff_.swap(u_search);
+			this->t_.swap(t_search);
+			break;
+		}
+		else
+		{
+#ifdef DEBUG_PRINT_LINESEARCH
+			std::cout<<"No better cost found: "<<cost<<" at alpha: "<<alpha<<" so trying again."<<std::endl;
+#endif //DEBUG_PRINT_LINESEARCH
+		}
+		alpha = alpha * this->settings_.lineSearchSettings.n_alpha;
+	}
+
+	return alphaBest;
 }
 
 

@@ -213,8 +213,6 @@ public:
 	void changeLinearSystem(const typename Base::OptConProblem_t::LinearPtr_t& lin);
 
 
-
-
 	/*!
 	 * \brief Direct accessor to the system instances
 	 *
@@ -358,6 +356,12 @@ public:
 	}
 
 
+	//! nominal rollout using default thread and member variables for the results.
+	bool nominalRollout()
+	{
+		return rolloutSystem(settings_.nThreads, u_ff_, x_, u_ff_, t_);
+	}
+
 	//! check problem for consistency
 	void checkProblem();
 
@@ -379,6 +383,9 @@ public:
 	 */
 	void debugPrint();
 
+	//! perform line-search and update controller
+	bool lineSearchController();
+
 	//! Computes the linearization of the dynamics along the trajectory. See computeLinearizedDynamics for details
 	virtual void computeLinearizedDynamicsAroundTrajectory() = 0;
 
@@ -396,6 +403,9 @@ public:
 	virtual void initializeShots() = 0;
 
 	virtual void computeDefects() = 0;
+
+	virtual SCALAR performLineSearch() = 0;
+
 
 protected:
 
@@ -426,6 +436,8 @@ protected:
 			ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
 			ct::core::tpl::TimeArray<SCALAR>& t_local,
 			std::atomic_bool* terminationFlag = nullptr) const;
+
+
 
 	//! Computes the linearized Dynamics at a specific point of the trajectory
 	/*!

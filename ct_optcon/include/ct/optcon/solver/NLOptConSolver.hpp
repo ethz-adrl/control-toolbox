@@ -32,6 +32,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/optcon/nloc/NLOCBackendST.hpp>
 #include <ct/optcon/gnms/GNMS_CT.hpp>
+#include <ct/optcon/ilqg/iLQR.hpp> // todo rename folder ilqg to ilqr
 
 namespace ct{
 namespace optcon{

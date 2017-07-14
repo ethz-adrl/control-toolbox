@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_OPTCON_SOLVER_GNMS_CT_H_
-#define INCLUDE_CT_OPTCON_SOLVER_GNMS_CT_H_
+#ifndef INCLUDE_CT_OPTCON_SOLVER_ILQR_CT_H_
+#define INCLUDE_CT_OPTCON_SOLVER_ILQR_CT_H_
 
 #include <ct/optcon/solver/NLOptConSettings.hpp>
 #include <ct/optcon/nloc/NLOCAlgorithm.hpp>
@@ -35,10 +35,9 @@ namespace optcon{
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class GNMS_CT : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR>
+class iLQR : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const size_t STATE_D = STATE_DIM;
@@ -51,17 +50,18 @@ public:
 	typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR> BASE;
 	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM> Backend_t;
 
-	GNMS_CT(std::shared_ptr<Backend_t>& backend_, const Settings_t& settings) :
+
+	iLQR(std::shared_ptr<Backend_t>& backend_, const Settings_t& settings) :
 		BASE(backend_)
 	{
 		configure(settings); // todo: might be redundant????
 	}
 
-	virtual ~GNMS_CT(){}
+	virtual ~iLQR(){}
 
 	virtual void configure(const Settings_t& settings) override
 	{
-		std::cout << "calling configure for GNMS." << std::endl; // todo remove
+		std::cout << "calling configure for iLQR." << std::endl; // todo remove
 		this->backend_->configure(settings);
 	}
 
@@ -71,17 +71,13 @@ public:
 		this->backend_->setInitialGuess(initialGuess);
 	}
 
-	virtual void prepareIteration() override
-	{
+	virtual void prepareIteration() override {
 		throw(std::runtime_error("to be filled"));
 	}
 
-	virtual bool finishIteration() override
-	{
+	virtual bool finishIteration() override {
 		throw(std::runtime_error("to be filled"));
-		return true;
-	}
-
+		return true;}
 
 	virtual bool runIteration() override
 	{
@@ -94,20 +90,21 @@ public:
 
 		this->backend_->checkProblem();
 
-#ifdef MATLAB_FULL_LOG
-		if (this->backend_->iteration() == 0)
-			this->backend_->logInitToMatlab();
-#endif
-
-
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
 		{
 			std::cout << "Running additional init routine for first iteration !!" << std::endl;
-			this->backend_->initializeShots();
-			this->backend_->computeDefects();
+
+			if(!this->backend_->nominalRollout())
+				throw std::runtime_error("Rollout failed. System became unstable");
+
 			this->backend_->updateCosts();
 		}
+
+#ifdef MATLAB_FULL_LOG
+		if (this->backend_->iteration() == 0)
+			this->backend_->logInitToMatlab();
+#endif
 
 //#ifdef DEBUG_PRINT
 //		std::cout << "PREINTEGRATION DEBUG PRINT"<<std::endl;
@@ -160,31 +157,20 @@ public:
 		// update solutions
 		this->backend_->updateSolutionState();
 		this->backend_->updateSolutionFeedforward();
-//		this->backend_->updateSolutionFeedback();
+		this->backend_->updateSolutionFeedback();
 
+		// line-search
+#ifdef DEBUG_PRINT
+		std::cout<<"[iLQG]: #3 LineSearch"<<std::endl;
+#endif // DEBUG_PRINT
 
 		start = std::chrono::steady_clock::now();
-//		if (this->backend_->iteration() == 0)
-//			this->backend_->initializeShots();
-//		else
-		this->backend_->updateShots(); // todo: clear that
+		bool foundBetter = this->backend_->lineSearchController();
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Shot integration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "Line search took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
-
-		start = std::chrono::steady_clock::now();
-		this->backend_->computeDefects();
-		end = std::chrono::steady_clock::now();
-		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "Defects computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
-
-
-		// compute new costs
-		this->backend_->updateCosts();
 
 		// todo: where to put the whole threading
 		//		if (settings_.nThreadsEigen > 1)
@@ -205,7 +191,7 @@ public:
 
 		this->backend_->iteration()++;
 
-		return (!this->backend_->isConverged());
+		return foundBetter;
 	}
 
 };
@@ -213,4 +199,4 @@ public:
 }
 }
 
-#endif /* INCLUDE_CT_OPTCON_SOLVER_GNMS_CT_H_ */
+#endif /* INCLUDE_CT_OPTCON_SOLVER_ILQR_CT_H_ */

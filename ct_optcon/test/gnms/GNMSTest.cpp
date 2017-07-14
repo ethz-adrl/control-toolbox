@@ -147,28 +147,18 @@ void singleCore()
 		gnms_settings.nThreads = 1;
 		gnms_settings.epsilon = 0.0;
 		gnms_settings.max_iterations = 2;
-		gnms_settings.recordSmallestEigenvalue = true;
+		gnms_settings.recordSmallestEigenvalue = false;
 		gnms_settings.min_cost_improvement = 1e-6;
 		gnms_settings.fixedHessianCorrection = false;
 		gnms_settings.dt = 0.1;
 		gnms_settings.dt_sim = 0.1;
 		gnms_settings.integrator = NLOptConSettings::EULER;
 		gnms_settings.discretization = NLOptConSettings::DISCRETIZATION::FORWARD_EULER;
-		gnms_settings.nlocp_algorithm =NLOptConSettings::NLOCP_ALGORITHM::GNMS;
+		gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
 		gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
 
-//		iLQGSettings ilqg_settings;
-//		ilqg_settings.epsilon = 0.0;
-//		ilqg_settings.nThreads = 1;
-//		ilqg_settings.max_iterations = 50;
-//		ilqg_settings.recordSmallestEigenvalue = true;
-//		ilqg_settings.min_cost_improvement = 1e-6;
-//		ilqg_settings.fixedHessianCorrection = false;
-//		ilqg_settings.dt = 0.1;
-//		ilqg_settings.dt_sim = 0.1;
-//		ilqg_settings.integrator = iLQGSettings::EULER;
-//		ilqg_settings.discretization = iLQGSettings::DISCRETIZATION::FORWARD_EULER;
-
+		NLOptConSettings ilqg_settings = gnms_settings;
+		ilqg_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 
 		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
 		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearizedSystem);
@@ -188,7 +178,6 @@ void singleCore()
 
 		FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
 		ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
-//		iLQG<state_dim, control_dim>::Policy_t initControlleriLQG (u0_ff, u0_fb, ilqg_settings.dt);
 
 		NLOptConSolver<state_dim, control_dim>::Policy_t initController (x0, u0, u0_fb, gnms_settings.dt);
 
@@ -198,17 +187,16 @@ void singleCore()
 
 		std::cout << "initializing gnms solver" << std::endl;
 		NLOptConSolver<state_dim, control_dim> gnms(optConProblem, gnms_settings);
-//		iLQG<state_dim, control_dim> ilqg(optConProblem, ilqg_settings);
+		NLOptConSolver<state_dim, control_dim> ilqg(optConProblem, ilqg_settings);
 
 
 		gnms.configure(gnms_settings);
 		gnms.setInitialGuess(initController);
-//
-//		ilqg.configure(ilqg_settings);
-//		ilqg.setInitialGuess(initControlleriLQG);
+
+		ilqg.configure(ilqg_settings);
+		ilqg.setInitialGuess(initController);
 
 		std::cout << "running gnms solver" << std::endl;
-
 
 		bool foundBetter = true;
 		size_t numIterations = 0;
@@ -233,28 +221,28 @@ void singleCore()
 			}
 		}
 
-//		std::cout << "running ilqg solver" << std::endl;
-//
-//		numIterations = 0;
-//		foundBetter = true;
-//		while (foundBetter)
-//		{
-//			foundBetter = ilqg.runIteration();
-//			foundBetter = true;
-//
-//			// test trajectories
-//			StateTrajectory<state_dim> xRollout = ilqg.getStateTrajectory();
-//			ControlTrajectory<control_dim> uRollout = ilqg.getControlTrajectory();
-//
-//			numIterations++;
-//
-//			if (numIterations>3)
-//			{
-//				std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
-//				std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
-//				break;
-//			}
-//		}
+		std::cout << "running ilqg solver" << std::endl;
+
+		numIterations = 0;
+		foundBetter = true;
+		while (foundBetter)
+		{
+			foundBetter = ilqg.runIteration();
+			foundBetter = true;
+
+			// test trajectories
+			StateTrajectory<state_dim> xRollout = ilqg.getStateTrajectory();
+			ControlTrajectory<control_dim> uRollout = ilqg.getControlTrajectory();
+
+			numIterations++;
+
+			if (numIterations>3)
+			{
+				std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
+				std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
+				break;
+			}
+		}
 }
 
 /*

@@ -79,6 +79,9 @@ protected:
 	virtual void initializeShots() override;
 
 	virtual void computeDefects() override;
+
+	SCALAR performLineSearch() override;
+
 };
 
 

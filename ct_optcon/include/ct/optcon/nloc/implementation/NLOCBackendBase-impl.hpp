@@ -227,7 +227,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSystem (
+bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSystem(
 		size_t threadId,
 		const ControlVectorArray& u_ff_local,
 		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
@@ -238,6 +238,10 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 	const scalar_t& dt = settings_.dt;
 	const scalar_t& dt_sim = settings_.dt_sim;
 	const size_t K_local = K_;
+
+	//it's a bit ugly to have this as a temporary variable here, but it avoids making another reference xtrajectory member
+	// todo: maybe find cleaner solution
+	ct::core::StateVectorArray<STATE_DIM, SCALAR> x_ref = x_;
 
 	// take a copy since x0 gets overwritten in integrator
 	ct::core::StateVector<STATE_DIM, SCALAR> x0 = x_local[0];
@@ -256,14 +260,14 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 	{
 		if (terminationFlag && *terminationFlag) return false;
 
-		u_local.push_back( u_ff_local[i] /*  + L_[i] * x0 */);
+		u_local.push_back( u_ff_local[i] + L_[i] * (x0-x_ref[i]));
 		controller_[threadId]->setControl(u_local.back());
 
 		for (size_t j=0; j<steps; j++)
 		{
 			if (steps > 1)
 			{
-				controller_[threadId]->u() = (u_ff_[threadId][i] + L_[i]*x0);
+				controller_[threadId]->setControl(u_local.back() + L_[i]*(x0-x_ref[i]));
 			}
 
 			if (settings_.integrator == GNMSSettings::EULER)
@@ -274,14 +278,15 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 			{
 				integratorsRK4_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
 			}
-			else if(settings_.integrator == GNMSSettings::EULER_SYM)
-			{
-				integratorsEulerSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
-			}
-			else if(settings_.integrator == GNMSSettings::RK_SYM)
-			{
-				integratorsRkSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
-			}
+			// todo: find cleaner solution for symplectic stuff
+//			else if(settings_.integrator == GNMSSettings::EULER_SYM)
+//			{
+//				integratorsEulerSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
+//			}
+//			else if(settings_.integrator == GNMSSettings::RK_SYM)
+//			{
+//				integratorsRkSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
+//			}
 			else
 				throw std::runtime_error("invalid integration mode selected.");
 		}
@@ -658,6 +663,81 @@ SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getCost() 
 	return intermediateCostBest_ + finalCostBest_;
 }
 
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchController()
+{
+	// if first iteration, we have to find cost of initial rollout
+	if (iteration_ == 0)
+	{
+		intermediateCostBest_ = 0.0;
+
+		for (int k=K_-1; k>=0; k--)
+			intermediateCostBest_ += lqocProblem_->q_[k];
+
+		finalCostBest_ = lqocProblem_->q_[K_];
+	}
+
+	// lowest cost is cost of last rollout
+	lowestCost_ = intermediateCostBest_ + finalCostBest_;
+	scalar_t lowestCostPrevious = lowestCost_;
+
+	if (!settings_.lineSearchSettings.active)
+	{
+		ControlVectorArray u_recorded(K_);
+		TimeArray t_local(K_);
+
+		bool dynamicsGood = rolloutSystem(settings_.nThreads, u_ff_, x_, u_recorded, t_local);
+
+		if (dynamicsGood)
+		{
+			intermediateCostBest_ = std::numeric_limits<scalar_t>::max();
+			finalCostBest_ = std::numeric_limits<scalar_t>::max();
+			computeCostsOfTrajectory(settings_.nThreads, x_, u_recorded, intermediateCostBest_, finalCostBest_);
+			lowestCost_ = intermediateCostBest_ + finalCostBest_;
+			u_ff_.swap(u_recorded);
+			t_.swap(t_local);
+		}
+		else
+		{
+#ifdef DEBUG_PRINT
+std::cout<<"CONVERGED: System became unstable!" << std::endl;
+#endif //DEBUG_PRINT
+			return false;
+		}
+	} else
+	{
+#ifdef DEBUG_PRINT_LINESEARCH
+		std::cout<<"[LineSearch]: Starting line search."<<std::endl;
+		std::cout<<"[LineSearch]: Cost last rollout: "<<lowestCost_<<std::endl;
+#endif //DEBUG_PRINT_LINESEARCH
+
+		scalar_t alphaBest = performLineSearch();
+
+#ifdef DEBUG_PRINT_LINESEARCH
+		std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest<<" . Will use this control."<<std::endl;
+#endif //DEBUG_PRINT_LINESEARCH
+
+#ifdef DEBUG_PRINT
+		if (alphaBest == 0.0)
+		{
+			std::cout<<"WARNING: No better control found. Converged."<<std::endl;
+			return false;
+		}
+#endif
+	}
+
+	if ((lowestCostPrevious - lowestCost_)/lowestCostPrevious > settings_.min_cost_improvement)
+	{
+		return true;
+	}
+
+#ifdef DEBUG_PRINT
+	std::cout<<"CONVERGED: Cost last iteration: "<<lowestCostPrevious<<", current cost: "<< lowestCost_ << std::endl;
+	std::cout<<"CONVERGED: Cost improvement ratio was: "<<(lowestCostPrevious - lowestCost_)/lowestCostPrevious <<"x, which is lower than convergence criteria: "<<settings_.min_cost_improvement<<std::endl;
+#endif //DEBUG_PRINT
+	return false;
+}
 
 }
 }
