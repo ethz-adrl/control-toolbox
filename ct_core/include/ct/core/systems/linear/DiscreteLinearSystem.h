@@ -84,22 +84,31 @@ public:
 	{
 		state_matrix_t A;
 		state_control_matrix_t B;
-		this->getAandB(state, n, control, A, B);
+		this->getAandB(state, control, n, A, B);
 		stateNext = A * state + B * control;
 	}
 
+
+	/*!
+	 * retrieve discrete-time linear system matrices A and B.
+	 * @param x	the state setpoint
+	 * @param u the control setpoint
+	 * @param n the time setpoint
+	 * @param A the resulting linear system matrix A
+	 * @param B the resulting linear system matrix B
+	 */
 	virtual void getAandB(
 			const StateVector<STATE_DIM, SCALAR>& x,
-			const int n,
 			const ControlVector<CONTROL_DIM, SCALAR>& u,
+			const int n,
 			state_matrix_t& A,
 			state_control_matrix_t& B)
 	= 0;
 
 };
 
-}
-}
+} // core
+} // ct
 
 
 

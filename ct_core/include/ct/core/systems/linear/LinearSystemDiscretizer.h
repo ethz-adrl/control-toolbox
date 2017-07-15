@@ -45,11 +45,12 @@ class LinearSystemDiscretizer : public DiscreteLinearSystem<STATE_DIM, CONTROL_D
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+	// the type of approximation employed for discretizing the continuous-time system
 	enum class Approximation {
 		FORWARD_EULER = 0,
-		BACKWARD_EULER = 1,
-		TUSTIN = 2,
-		MATRIX_EXPONENTIAL = 3
+		BACKWARD_EULER,
+		TUSTIN,
+		MATRIX_EXPONENTIAL
 	};
 
 	typedef typename Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t; //!< state Jacobian type
@@ -85,14 +86,24 @@ public:
 		return new LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
 	}
 
+	//! update the approximation type for the discrete-time system
 	void setApproximation(const Approximation& approximation) { approximation_ = approximation; }
 
+	//! retrieve the approximation type for the discrete-time system
 	Approximation getApproximation() const { return approximation_; }
 
+	/*!
+	 * compute discrete-time linear system matrices A and B
+	 * @param x	the state setpoint
+	 * @param u the control setpoint
+	 * @param n the time setpoint
+	 * @param A the resulting linear system matrix A
+	 * @param B the resulting linear system matrix B
+	 */
 	virtual void getAandB(
 			const StateVector<STATE_DIM, SCALAR>& x,
-			const int n,
 			const ControlVector<CONTROL_DIM, SCALAR>& u,
+			const int n,
 			state_matrix_t& A,
 			state_control_matrix_t& B) override
 	{
@@ -130,12 +141,20 @@ public:
 				B = Ac.inverse() * (A - state_matrix_t::Identity()) *  linearSystem_->getDerivativeControl(x, u, dt_*n);
 				break;
 			}
+			default:
+				throw std::runtime_error("Unknown Approximation type in LinearSystemDiscretizer.");
 		}
 	}
 
 private:
+
+	//! shared_ptr to a continuous time linear system (system to be discretized)
 	std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem_;
+
+	//! discretization time-step
 	SCALAR dt_;
+
+	//! type of discretization strategy used.
 	Approximation approximation_;
 };
 

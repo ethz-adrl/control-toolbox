@@ -116,7 +116,7 @@ public:
 	{
 		core::StateMatrix<STATE_DIM, SCALAR> A;
 		core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B;
-		linearSystem.getAandB(x0, 0, u0, A, B);
+		linearSystem.getAandB(x0, u0, 0, A, B);
 
 		A_ = core::StateMatrixArray<STATE_DIM>(K_, A);
 		B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM>(K_, B);
