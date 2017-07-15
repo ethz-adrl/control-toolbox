@@ -96,6 +96,7 @@ public:
 	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
 	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
 	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t;
 
 	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
 	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;

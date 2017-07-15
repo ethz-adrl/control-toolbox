@@ -466,18 +466,33 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinea
 		}
 		case GNMSSettings::BACKWARD_EULER:
 		{
-			state_matrix_t aNew = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_ff_[k], k*settings_.dt);
+			//! @todo: backward Euler uses the upcoming time-steps for computing A and B, which requires a hack for the last control input stage
+			size_t k_u = std::min((size_t)K_-1, (size_t)k+1);
+
+			state_matrix_t aNew = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k+1], u_ff_[k_u], (k+1)*settings_.dt);
 			state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
 			p.A_[k] = aNewInv;
-			p.B_[k] = aNewInv * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_ff_[k], k*settings_.dt);
+			p.B_[k] = aNewInv * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k+1], u_ff_[k_u], (k+1)*settings_.dt);
 			break;
 		}
 		case GNMSSettings::TUSTIN:
 		{
-			state_matrix_t aNew = 0.5 * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_ff_[k], k*settings_.dt);
+			//! @todo: I attempted here to implement the tustin rule correctly. Note that it is inefficient, since both ends of the time interval get evaluated.
+			//! @todo most likely still wrong
+
+			size_t k_u = std::min((size_t)K_-1, (size_t)k+1); // todo same problem as above persists here.
+
+			state_matrix_t aNew_front = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_ff_[k], k*settings_.dt);
+			state_matrix_t aNew_back = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k+1], u_ff_[k_u], k*settings_.dt);
+			state_matrix_t aNew = 0.5*(aNew_front + aNew_back);
+
+			state_control_matrix_t bNew_front = this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_ff_[k], k*settings_.dt);
+			state_control_matrix_t bNew_back = this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k+1], u_ff_[k_u], k*settings_.dt);
+			state_control_matrix_t bNew = 0.5*(bNew_front + bNew_back);
+
 			state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
 			p.A_[k] = aNewInv * (state_matrix_t::Identity() + aNew);
-			p.B_[k] = aNewInv * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_ff_[k], k*settings_.dt);
+			p.B_[k] = aNewInv * settings_.dt * bNew;
 			break;
 		}
 		case GNMSSettings::MATRIX_EXPONENTIAL:

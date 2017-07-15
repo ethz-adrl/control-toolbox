@@ -99,6 +99,8 @@ public:
 	 * @param n the time setpoint
 	 * @param A the resulting linear system matrix A
 	 * @param B the resulting linear system matrix B
+	 *
+	 * @todo: this method can be easily misused. Example for backward Euler, the user always has to make sure by himself to put in the next state, control and n????
 	 */
 	virtual void getAandB(
 			const StateVector<STATE_DIM, SCALAR>& x,
@@ -118,14 +120,17 @@ public:
 			}
 			case Approximation::BACKWARD_EULER:
 			{
-				state_matrix_t aNew = dt_ * linearSystem_->getDerivativeState(x, u, n*dt_);
+				//! @todo this is wrong
+
+				state_matrix_t aNew = dt_ * linearSystem_->getDerivativeState(x, u, (n+1)*dt_);
 				A = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
-				B = A * dt_ * linearSystem_->getDerivativeControl(x, u, n*dt_);
+				B = A * dt_ * linearSystem_->getDerivativeControl(x, u, (n+1)*dt_);
 				break;
 			}
 			case Approximation::TUSTIN:
 			{
-				// todo: this is probably not correct
+				//! @todo this is wrong
+
 				state_matrix_t aNew = 0.5 * dt_ * linearSystem_->getDerivativeState(x, u, n*dt_);
 				state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
 				A = aNewInv * (state_matrix_t::Identity() + aNew);

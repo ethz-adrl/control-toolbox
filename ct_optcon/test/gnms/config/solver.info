@@ -4,7 +4,8 @@ initType    0 ; 0 = zero, 1 = linear, 2 = integrated with zero control action, 3
 
 ilqg
 {
-	integrator Euler
+	integrator RK4
+	discretization Matrix_exponential
     dt 0.1
     dt_sim 0.1
     epsilon 1e-6

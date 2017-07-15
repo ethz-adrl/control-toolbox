@@ -440,14 +440,14 @@ private:
     std::map<INTEGRATOR, std::string> integratorToString = {{EULER, "Euler"}, {RK4 , "Runge-Kutta 4th order"}, {EULER_SYM, "Symplectic Euler"}, {RK_SYM, "Symplectic Runge Kutta"}};
     std::map<std::string, INTEGRATOR> stringToIntegrator = {{"Euler", EULER}, {"RK4", RK4}, {"Euler_Sym", EULER_SYM}, {"Rk_Sym", RK_SYM}};
 
-    std::map<DISCRETIZATION, std::string> discretizationToString = {{FORWARD_EULER, "Forward_euler"}, {BACKWARD_EULER, "Backward_euler"}, {TUSTIN, "Tustin"}};
-    std::map<std::string, DISCRETIZATION> stringToDiscretization = {{"Forward_euler", FORWARD_EULER}, {"Backward_euler", BACKWARD_EULER}, {"Tustin", TUSTIN}};
+    std::map<DISCRETIZATION, std::string> discretizationToString = {{FORWARD_EULER, "Forward_euler"}, {BACKWARD_EULER, "Backward_euler"}, {TUSTIN, "Tustin"}, {MATRIX_EXPONENTIAL, "Matrix_exponential"}};
+    std::map<std::string, DISCRETIZATION> stringToDiscretization = {{"Forward_euler", FORWARD_EULER}, {"Backward_euler", BACKWARD_EULER}, {"Tustin", TUSTIN}, {"Matrix_exponential", MATRIX_EXPONENTIAL}};
 
     std::map<NLOCP_ALGORITHM, std::string> nlocp_algorithmToString = {{GNMS, "GNMS"}, {ILQR, "ILQR"}};
     std::map<std::string, NLOCP_ALGORITHM> stringTonlocp_algorithm = {{"GNMS", GNMS}, {"ILQR", ILQR}};
 
-    std::map<LQOCP_SOLVER, std::string> locp_solverToString = {{GNRICCATI_SOLVER, "GNRICCATI"}, {HPIPM_SOLVER, "HPIPM"}};
-    std::map<std::string, LQOCP_SOLVER> stringTolocp_solver = {{"GNRICCATI", GNRICCATI_SOLVER}, {"HPIPM", HPIPM_SOLVER}};
+    std::map<LQOCP_SOLVER, std::string> locp_solverToString = {{GNRICCATI_SOLVER, "GNRICCATI_SOLVER"}, {HPIPM_SOLVER, "HPIPM_SOLVER"}};
+    std::map<std::string, LQOCP_SOLVER> stringTolocp_solver = {{"GNRICCATI_SOLVER", GNRICCATI_SOLVER}, {"HPIPM_SOLVER", HPIPM_SOLVER}};
 
 };
 
