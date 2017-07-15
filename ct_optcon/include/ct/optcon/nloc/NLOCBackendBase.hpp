@@ -83,6 +83,8 @@ public:
 	typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
 	typedef LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>  LQOCSolver_t;
 
+	typedef core::LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR> LinearSystemDiscretizer_t;
+
 	typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
 	typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
 
@@ -114,6 +116,7 @@ public:
 		    integratorsEuler_(settings.nThreads+1),
 			integratorsEulerSymplectic_(settings.nThreads+1),
 			integratorsRkSymplectic_(settings.nThreads+1),
+			linearSystemDiscretizers_(settings.nThreads+1, LinearSystemDiscretizer_t(settings.dt)),
 
 		    controller_(settings.nThreads+1),
 		    settings_(settings),
@@ -591,10 +594,12 @@ protected:
 
 
 	std::vector<typename OptConProblem_t::DynamicsPtr_t> systems_;
+	std::vector<LinearSystemDiscretizer_t> linearSystemDiscretizers_;
 	std::vector<typename OptConProblem_t::LinearPtr_t> linearSystems_;
 	std::vector<typename OptConProblem_t::CostFunctionPtr_t> costFunctions_;
 	std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints_;
 	std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints_;
+
 };
 
 

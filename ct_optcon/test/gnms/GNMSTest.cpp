@@ -153,7 +153,7 @@ void singleCore()
 		gnms_settings.dt = 0.1;
 		gnms_settings.dt_sim = 0.1;
 		gnms_settings.integrator = NLOptConSettings::EULER;
-		gnms_settings.discretization = NLOptConSettings::DISCRETIZATION::FORWARD_EULER;
+		gnms_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
 		gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
 

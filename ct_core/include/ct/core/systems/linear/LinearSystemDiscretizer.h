@@ -32,6 +32,30 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct {
 namespace core {
 
+
+
+struct LinearSystemDiscretizerSettings
+{
+	enum class APPROXIMATION {
+			FORWARD_EULER = 0,
+				BACKWARD_EULER,
+				TUSTIN,
+				MATRIX_EXPONENTIAL
+	};
+
+	LinearSystemDiscretizerSettings(double dt, APPROXIMATION approx):
+		dt_(dt),
+		approximation_(approx)
+	{}
+
+	//! discretization time-step
+	double dt_;
+
+	//! type of discretization strategy used.
+	APPROXIMATION approximation_;
+};
+
+
 //! interface class for a general linear system or linearized system
 /*!
  * Defines the interface for a linear system
@@ -45,52 +69,74 @@ class LinearSystemDiscretizer : public DiscreteLinearSystem<STATE_DIM, CONTROL_D
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	// the type of approximation employed for discretizing the continuous-time system
-	enum class Approximation {
-		FORWARD_EULER = 0,
-		BACKWARD_EULER,
-		TUSTIN,
-		MATRIX_EXPONENTIAL
-	};
-
 	typedef typename Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t; //!< state Jacobian type
 	typedef typename Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t; //!< input Jacobian type
 
-	//! default constructor
-	/*!
-	 * @param type system type
-	 */
-	LinearSystemDiscretizer(
-			const std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem,
-			const SCALAR& dt,
-			const Approximation& approximation = Approximation::FORWARD_EULER,
-			const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL):
-		DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type),
-		linearSystem_(linearSystem),
-		dt_(dt),
-		approximation_(approximation)
-	{}
 
+	//! constructor
+	LinearSystemDiscretizer(
+			const SCALAR& dt,
+			const std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem = nullptr,
+			const LinearSystemDiscretizerSettings::APPROXIMATION& approx = LinearSystemDiscretizerSettings::APPROXIMATION::FORWARD_EULER,
+			const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL):
+				DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type),
+				linearSystem_(linearSystem),
+				settings_(dt, approx)
+				{}
+
+	//! constructor
+	LinearSystemDiscretizer(
+			const LinearSystemDiscretizerSettings& settings,
+			const std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem = nullptr,
+			const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL):
+				DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type),
+				linearSystem_(linearSystem),
+				settings_(settings)
+				{}
+
+	//! copy constructor
 	LinearSystemDiscretizer(const LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>& other) :
-		linearSystem_(other.linearSystem_->clone()),
-		dt_(other.dt_),
-		approximation_(other.approximation_)
+		settings_(other.settings_)
 	{
+		if(other.linearSystem_ != nullptr)
+			linearSystem_ = std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> (other.linearSystem_->clone());
 	}
 
 	//! destructor
 	virtual ~LinearSystemDiscretizer(){};
 
 	//! deep cloning
-	virtual LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override {
+	virtual LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
+	{
 		return new LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
 	}
 
 	//! update the approximation type for the discrete-time system
-	void setApproximation(const Approximation& approximation) { approximation_ = approximation; }
+	void setApproximation(const LinearSystemDiscretizerSettings::APPROXIMATION& approx)
+	{
+		settings_.approximation_ = approx;
+	}
 
 	//! retrieve the approximation type for the discrete-time system
-	Approximation getApproximation() const { return approximation_; }
+	LinearSystemDiscretizerSettings::APPROXIMATION getApproximation() const
+	{
+		return settings_.approximation_;
+	}
+
+	void setLinearSystem(std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem)
+	{
+		linearSystem_ = linearSystem;
+	}
+
+	void setTimeDiscretization(const SCALAR& dt)
+	{
+		settings_.dt_ = dt;
+	}
+
+	void updateSettings(const LinearSystemDiscretizerSettings& settings)
+	{
+		settings_ = settings;
+	}
 
 	/*!
 	 * compute discrete-time linear system matrices A and B
@@ -109,41 +155,44 @@ public:
 			state_matrix_t& A,
 			state_control_matrix_t& B) override
 	{
-		switch(approximation_)
+		if(linearSystem_ == nullptr)
+			throw std::runtime_error("Error in LinearSystemDiscretizer: linearSystem not properly set.");
+
+		switch(settings_.approximation_)
 		{
-			case Approximation::FORWARD_EULER:
+			case LinearSystemDiscretizerSettings::APPROXIMATION::FORWARD_EULER:
 			{
 				A = state_matrix_t::Identity();
-				A += dt_ * linearSystem_->getDerivativeState(x, u, n*dt_);
-				B = dt_ * linearSystem_->getDerivativeControl(x, u, n*dt_);
+				A += settings_.dt_ * linearSystem_->getDerivativeState(x, u, n*settings_.dt_);
+				B = settings_.dt_ * linearSystem_->getDerivativeControl(x, u, n*settings_.dt_);
 				break;
 			}
-			case Approximation::BACKWARD_EULER:
+			case LinearSystemDiscretizerSettings::APPROXIMATION::BACKWARD_EULER:
 			{
 				//! @todo this is wrong
 
-				state_matrix_t aNew = dt_ * linearSystem_->getDerivativeState(x, u, (n+1)*dt_);
+				state_matrix_t aNew = settings_.dt_ * linearSystem_->getDerivativeState(x, u, (n+1)*settings_.dt_);
 				A = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
-				B = A * dt_ * linearSystem_->getDerivativeControl(x, u, (n+1)*dt_);
+				B = A * settings_.dt_ * linearSystem_->getDerivativeControl(x, u, (n+1)*settings_.dt_);
 				break;
 			}
-			case Approximation::TUSTIN:
+			case LinearSystemDiscretizerSettings::APPROXIMATION::TUSTIN:
 			{
 				//! @todo this is wrong
 
-				state_matrix_t aNew = 0.5 * dt_ * linearSystem_->getDerivativeState(x, u, n*dt_);
+				state_matrix_t aNew = 0.5 * settings_.dt_ * linearSystem_->getDerivativeState(x, u, n*settings_.dt_);
 				state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
 				A = aNewInv * (state_matrix_t::Identity() + aNew);
-				B = aNewInv * dt_ * linearSystem_->getDerivativeControl(x, u, n*dt_);
+				B = aNewInv * settings_.dt_ * linearSystem_->getDerivativeControl(x, u, n*settings_.dt_);
 				break;
 			}
-			case Approximation::MATRIX_EXPONENTIAL:
+			case LinearSystemDiscretizerSettings::APPROXIMATION::MATRIX_EXPONENTIAL:
 			{
-				state_matrix_t Ac = linearSystem_->getDerivativeState(x, u, dt_*n);
-				state_matrix_t Adt = dt_ * Ac;
+				state_matrix_t Ac = linearSystem_->getDerivativeState(x, u, settings_.dt_*n);
+				state_matrix_t Adt = settings_.dt_ * Ac;
 
 				A = Adt.exp();
-				B = Ac.inverse() * (A - state_matrix_t::Identity()) *  linearSystem_->getDerivativeControl(x, u, dt_*n);
+				B = Ac.inverse() * (A - state_matrix_t::Identity()) *  linearSystem_->getDerivativeControl(x, u, settings_.dt_*n);
 				break;
 			}
 			default:
@@ -156,11 +205,8 @@ private:
 	//! shared_ptr to a continuous time linear system (system to be discretized)
 	std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem_;
 
-	//! discretization time-step
-	SCALAR dt_;
-
-	//! type of discretization strategy used.
-	Approximation approximation_;
+	//! discretization settings
+	LinearSystemDiscretizerSettings settings_;
 };
 
 

@@ -31,6 +31,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <boost/property_tree/info_parser.hpp>
 
+#include <ct/core/core.h>
+
 namespace ct {
 namespace optcon {
 
@@ -173,9 +175,11 @@ struct ParallelBackwardSettings {
 class NLOptConSettings
 {
 public:
+
+	typedef typename core::LinearSystemDiscretizerSettings::APPROXIMATION APPROXIMATION;
+
     //! enum indicating which integrator to use for the NLOptCon forward rollout
     enum INTEGRATOR { EULER = 0, RK4 = 1, EULER_SYM = 2, RK_SYM = 3};
-    enum DISCRETIZATION { FORWARD_EULER = 0, BACKWARD_EULER = 1, TUSTIN = 2, MATRIX_EXPONENTIAL = 3 };
 
     //! the nonlinear optimal control problem solving algorithm
     enum NLOCP_ALGORITHM
@@ -194,7 +198,7 @@ public:
      */
     NLOptConSettings() :
     	integrator(RK4),
-        discretization(BACKWARD_EULER),
+        discretization(APPROXIMATION::BACKWARD_EULER),
         nlocp_algorithm(GNMS),
         lqocp_solver(GNRICCATI_SOLVER),
 		epsilon(1e-5),
@@ -213,7 +217,7 @@ public:
     }
 
     INTEGRATOR integrator;	//! which integrator to use during the NLOptCon forward rollout
-	DISCRETIZATION discretization;    
+    APPROXIMATION discretization;
 	NLOCP_ALGORITHM nlocp_algorithm;   //! which nonlinear optimal control algorithm is to be used
 	LQOCP_SOLVER lqocp_solver;	//! the solver for the linear-quadratic optimal control problem
 	double epsilon;			//! Eigenvalue correction factor for Hessian regularization
@@ -437,17 +441,60 @@ public:
     }
 
 private:
-    std::map<INTEGRATOR, std::string> integratorToString = {{EULER, "Euler"}, {RK4 , "Runge-Kutta 4th order"}, {EULER_SYM, "Symplectic Euler"}, {RK_SYM, "Symplectic Runge Kutta"}};
-    std::map<std::string, INTEGRATOR> stringToIntegrator = {{"Euler", EULER}, {"RK4", RK4}, {"Euler_Sym", EULER_SYM}, {"Rk_Sym", RK_SYM}};
 
-    std::map<DISCRETIZATION, std::string> discretizationToString = {{FORWARD_EULER, "Forward_euler"}, {BACKWARD_EULER, "Backward_euler"}, {TUSTIN, "Tustin"}, {MATRIX_EXPONENTIAL, "Matrix_exponential"}};
-    std::map<std::string, DISCRETIZATION> stringToDiscretization = {{"Forward_euler", FORWARD_EULER}, {"Backward_euler", BACKWARD_EULER}, {"Tustin", TUSTIN}, {"Matrix_exponential", MATRIX_EXPONENTIAL}};
+    //! mappings for integrator types
+    std::map<INTEGRATOR, std::string> integratorToString = {
+    		{EULER, "Euler"}, {RK4 , "Runge-Kutta 4th order"},
+    		{EULER_SYM, "Symplectic Euler"},
+    		{RK_SYM, "Symplectic Runge Kutta"}
+    };
 
-    std::map<NLOCP_ALGORITHM, std::string> nlocp_algorithmToString = {{GNMS, "GNMS"}, {ILQR, "ILQR"}};
-    std::map<std::string, NLOCP_ALGORITHM> stringTonlocp_algorithm = {{"GNMS", GNMS}, {"ILQR", ILQR}};
+    std::map<std::string, INTEGRATOR> stringToIntegrator = {
+    		{"Euler", EULER},
+    		{"RK4", RK4},
+    		{"Euler_Sym", EULER_SYM},
+    		{"Rk_Sym", RK_SYM}
+    };
 
-    std::map<LQOCP_SOLVER, std::string> locp_solverToString = {{GNRICCATI_SOLVER, "GNRICCATI_SOLVER"}, {HPIPM_SOLVER, "HPIPM_SOLVER"}};
-    std::map<std::string, LQOCP_SOLVER> stringTolocp_solver = {{"GNRICCATI_SOLVER", GNRICCATI_SOLVER}, {"HPIPM_SOLVER", HPIPM_SOLVER}};
+
+    //! mappings for discretization types
+    std::map<APPROXIMATION, std::string> discretizationToString = {
+    		{APPROXIMATION::FORWARD_EULER, "Forward_euler"},
+    		{APPROXIMATION::BACKWARD_EULER, "Backward_euler"},
+    		{APPROXIMATION::TUSTIN, "Tustin"},
+    		{APPROXIMATION::MATRIX_EXPONENTIAL, "Matrix_exponential"}
+    };
+
+    std::map<std::string, APPROXIMATION> stringToDiscretization = {
+    		{"Forward_euler", APPROXIMATION::FORWARD_EULER},
+    		{"Backward_euler", APPROXIMATION::BACKWARD_EULER},
+    		{"Tustin", APPROXIMATION::TUSTIN},
+    		{"Matrix_exponential", APPROXIMATION::MATRIX_EXPONENTIAL}
+    };
+
+
+    //! mappings for algorithm types
+    std::map<NLOCP_ALGORITHM, std::string> nlocp_algorithmToString = {
+    		{GNMS, "GNMS"},
+    		{ILQR, "ILQR"}
+    };
+
+    std::map<std::string, NLOCP_ALGORITHM> stringTonlocp_algorithm = {
+    		{"GNMS", GNMS},
+    		{"ILQR", ILQR}
+    };
+
+
+    //! mappings for linear-quadratic solver types
+    std::map<LQOCP_SOLVER, std::string> locp_solverToString = {
+    		{GNRICCATI_SOLVER, "GNRICCATI_SOLVER"},
+    		{HPIPM_SOLVER, "HPIPM_SOLVER"}
+    };
+
+    std::map<std::string, LQOCP_SOLVER> stringTolocp_solver = {
+    		{"GNRICCATI_SOLVER", GNRICCATI_SOLVER},
+    		{"HPIPM_SOLVER", HPIPM_SOLVER}
+    };
 
 };
 

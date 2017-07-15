@@ -153,12 +153,16 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeLinearSystem(const typename Base::OptConProblem_t::LinearPtr_t& lin)
 {
-	this->getLinearSystemsInstances().resize(settings_.nThreads+1);
+//	linearSystemDiscretizers_.resize(settings_.nThreads+1);
+
+	getLinearSystemsInstances().resize(settings_.nThreads+1);
 
 	for (size_t i = 0; i<settings_.nThreads+1; i++)
 	{
 		// make a deep copy
-		this->getLinearSystemsInstances()[i] = typename Base::OptConProblem_t::LinearPtr_t(lin->clone());
+		getLinearSystemsInstances()[i] = typename OptConProblem_t::LinearPtr_t(lin->clone());
+
+		linearSystemDiscretizers_[i].setLinearSystem(getLinearSystemsInstances()[i]);
 	}
 	// technically a linear system change does not require a new rollout. Hence, we do not reset.
 }
@@ -193,6 +197,14 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 	{
 		throw(std::runtime_error("Number of threads at GNMS cannot be changed after instance has been created."));
 	}
+
+	// update system discretizer with new settings
+	for(size_t i = 0; i< settings.nThreads+1; i++)
+	{
+		linearSystemDiscretizers_[i].setApproximation(settings.discretization);
+		linearSystemDiscretizers_[i].setTimeDiscretization(settings.dt);
+	}
+
 
 	// select the linear quadratic solver based on settings file
 	if(settings.lqocp_solver == NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER)
@@ -457,14 +469,14 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinea
 
 	switch(settings_.discretization)
 	{
-		case GNMSSettings::FORWARD_EULER:
+		case core::LinearSystemDiscretizerSettings::APPROXIMATION::FORWARD_EULER:
 		{
 			p.A_[k] = state_matrix_t::Identity();
 			p.A_[k] += settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_ff_[k], k*settings_.dt);
 			p.B_[k] = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_ff_[k], k*settings_.dt);
 			break;
 		}
-		case GNMSSettings::BACKWARD_EULER:
+		case core::LinearSystemDiscretizerSettings::APPROXIMATION::BACKWARD_EULER:
 		{
 			//! @todo: backward Euler uses the upcoming time-steps for computing A and B, which requires a hack for the last control input stage
 			size_t k_u = std::min((size_t)K_-1, (size_t)k+1);
@@ -475,7 +487,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinea
 			p.B_[k] = aNewInv * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k+1], u_ff_[k_u], (k+1)*settings_.dt);
 			break;
 		}
-		case GNMSSettings::TUSTIN:
+		case core::LinearSystemDiscretizerSettings::APPROXIMATION::TUSTIN:
 		{
 			//! @todo: I attempted here to implement the tustin rule correctly. Note that it is inefficient, since both ends of the time interval get evaluated.
 			//! @todo most likely still wrong
@@ -495,7 +507,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinea
 			p.B_[k] = aNewInv * settings_.dt * bNew;
 			break;
 		}
-		case GNMSSettings::MATRIX_EXPONENTIAL:
+		case core::LinearSystemDiscretizerSettings::APPROXIMATION::MATRIX_EXPONENTIAL:
 		{
 			state_matrix_t Ac = this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_ff_[k], k*settings_.dt);
 			state_matrix_t Adt = settings_.dt * Ac;
