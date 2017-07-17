@@ -68,8 +68,6 @@ public:
 	//! destructor
 	virtual ~ScalarArray(){}
 
-	virtual void setZero() override {std::fill(this->begin(), this->end(), (SCALAR) 0.0);}
-
 	//! convert to an Eigen trajectory
 	std::vector<Eigen::Matrix<SCALAR, 1, 1>, Eigen::aligned_allocator<Eigen::Matrix<SCALAR, 1, 1>>> toEigenTrajectory(){
 		std::vector<Eigen::Matrix<SCALAR, 1, 1>, Eigen::aligned_allocator<Eigen::Matrix<SCALAR, 1, 1>>> eigenTraj;

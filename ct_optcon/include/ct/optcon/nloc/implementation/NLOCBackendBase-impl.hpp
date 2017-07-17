@@ -389,7 +389,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 	if(settings_.closedLoopShooting)
 		L_sim = L_[k];
 
-	controller_[threadId]->updateControlLaw(u_ff_[k], x_[k] /*, L_sim*/);
+	controller_[threadId]->updateControlLaw(u_ff_[k], x_[k], L_sim);
 
 	xShot_[k] = x_[k];
 

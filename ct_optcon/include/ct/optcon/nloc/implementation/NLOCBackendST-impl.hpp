@@ -84,7 +84,7 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolution
 	if(this->settings_.closedLoopShooting)
 		this->L_ = this->lqocSolver_->getFeedback();
 	else
-		this->L_.setZero();
+		this->L_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
 }
 
 

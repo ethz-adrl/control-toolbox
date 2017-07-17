@@ -82,17 +82,17 @@ public:
 	//! set all member variables to zero
 	void setZero()
 	{
-//		A_.setZero();
-//		B_.setZero();
-//		b_.setZero();
-//		x_.setZero();
-//		u_.setZero();
-//		P_.setZero();
-//		q_.setZero();
-//		qv_.setZero();
-//		Q_.setZero();
-//		rv_.setZero();
-//		R_.setZero();
+		A_.setConstant(core::StateMatrix<STATE_DIM>::Zero());
+		B_.setConstant(core::StateControlMatrix<STATE_DIM, CONTROL_DIM>::Zero());
+		b_.setConstant(core::StateVector<STATE_DIM>::Zero());
+		x_.setConstant(core::StateVector<STATE_DIM>::Zero());
+		u_.setConstant(core::ControlVector<CONTROL_DIM>::Zero());
+		P_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM>::Zero());
+		qv_.setConstant(core::StateVector<STATE_DIM>::Zero());
+		Q_.setConstant(core::StateMatrix<STATE_DIM>::Zero());
+		rv_.setConstant(core::ControlVector<CONTROL_DIM>::Zero());
+		R_.setConstant(core::ControlMatrix<CONTROL_DIM>::Zero());
+		q_.setConstant(0.0);
 	}
 
 

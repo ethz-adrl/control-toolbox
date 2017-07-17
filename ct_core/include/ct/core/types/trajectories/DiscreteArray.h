@@ -138,10 +138,10 @@ public:
 	//! rerase an element from the front
 	void eraseFront(const size_t N) {this->erase(this->begin(), this->begin()+N);}
 
-	//! sets all elements to zero.
-	virtual void setZero() {std::fill(this->begin(), this->end(), T::Zero());}
+	//! sets all elements to a constant.
+	void setConstant(const T& data) {std::fill(this->begin(), this->end(), data);}
 
-	//! addas an offest to each element
+	//! add an offset to each element
 	void addOffset(const T& offset) {std::for_each(this->begin(), this->end(), [&](T& val) { val+=offset;});}
 
 private:

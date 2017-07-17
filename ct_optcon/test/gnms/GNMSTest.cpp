@@ -116,16 +116,16 @@ public:
 std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > createCostFunction(Eigen::Vector2d& x_final)
 {
 	Eigen::Matrix2d Q;
-	Q << 0, 0, 0, 0;
+	Q << 0, 0, 0, 1;
 
 	Eigen::Matrix<double, 1, 1> R;
-	R << 1.0;
+	R << 100.0;
 
 	Eigen::Vector2d x_nominal = Eigen::Vector2d::Zero();
 	Eigen::Matrix<double, 1, 1> u_nominal = Eigen::Matrix<double, 1, 1>::Zero();
 
 	Eigen::Matrix2d Q_final;
-	Q_final << 1000, 0, 0, 10;
+	Q_final << 10, 0, 0, 10;
 
 	std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > quadraticCostFunction(
 			new CostFunctionQuadraticSimple<state_dim, control_dim>(
@@ -150,12 +150,12 @@ void singleCore()
 		gnms_settings.recordSmallestEigenvalue = false;
 		gnms_settings.min_cost_improvement = 1e-6;
 		gnms_settings.fixedHessianCorrection = false;
-		gnms_settings.dt = 0.001;
-		gnms_settings.dt_sim = 0.001;
+		gnms_settings.dt = 0.0001;
+		gnms_settings.dt_sim = 0.0001;
 		gnms_settings.integrator = NLOptConSettings::EULER;
 		gnms_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
-		gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
+		gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;
 		gnms_settings.closedLoopShooting = false;
 
 		NLOptConSettings ilqg_settings = gnms_settings;

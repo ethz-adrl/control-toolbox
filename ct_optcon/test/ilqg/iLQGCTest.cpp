@@ -192,10 +192,12 @@ TEST(ILQCTest, SingleCoreTest)
 		ilqg_settings.nThreads = 1;
 		ilqg_settings.max_iterations = 50;
 		ilqg_settings.recordSmallestEigenvalue = false;
+		gnms_settings.fixedHessianCorrection = false;
 		ilqg_settings.min_cost_improvement = 1e-6;
+		ilqg_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		ilqg_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		ilqg_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-		ilqg_settings.closedLoopShooting = false;
+		ilqg_settings.closedLoopShooting = true;
 		ilqg_settings.integrator = NLOptConSettings::RK4;
 
 
