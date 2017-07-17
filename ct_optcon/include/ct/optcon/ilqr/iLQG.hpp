@@ -27,7 +27,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef ILQG_HPP_
 #define ILQG_HPP_
 
-#include "iLQGBase.hpp"
+#include "../ilqr/iLQGBase.hpp"
 
 namespace ct{
 namespace optcon{
@@ -101,7 +101,7 @@ private:
 };
 
 
-#include "implementation/iLQG.hpp"
+#include "../ilqr/implementation/iLQG.hpp"
 
 } // namespace optcon
 } // namespace ct

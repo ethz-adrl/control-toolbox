@@ -33,7 +33,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <mutex>
 #include <condition_variable>
 
-#include "iLQGBase.hpp"
+#include "../ilqr/iLQGBase.hpp"
 
 namespace ct{
 namespace optcon{
@@ -203,6 +203,6 @@ private:
 } // namespace optcon
 } // namespace ct
 
-#include "implementation/iLQGMP.hpp"
+#include "../ilqr/implementation/iLQGMP.hpp"
 
 #endif /* ILQGMP_HPP_ */

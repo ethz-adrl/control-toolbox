@@ -54,7 +54,7 @@ void NLOptConSolver<STATE_DIM, CONTROL_DIM, SCALAR>::configure(const Settings_t&
 	{
 	case NLOptConSettings::NLOCP_ALGORITHM::GNMS:
 		nlocAlgorithm_ = std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM>> (
-				new GNMS_CT<STATE_DIM, CONTROL_DIM, SCALAR>(nlocBackend_, settings) );
+				new GNMS<STATE_DIM, CONTROL_DIM, SCALAR>(nlocBackend_, settings) );
 		break;
 	case NLOptConSettings::NLOCP_ALGORITHM::ILQR:
 		nlocAlgorithm_ = std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM>> (

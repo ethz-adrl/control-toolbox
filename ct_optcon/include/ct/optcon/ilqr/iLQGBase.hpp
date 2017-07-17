@@ -33,9 +33,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/core/core.h>
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
 #include <ct/optcon/solver/OptConSolver.h>
+#include "../ilqr/iLQGTester.hpp"
 #include "iLQGSettings.hpp"
 
-#include "iLQGTester.hpp"
 
 #ifdef MATLAB
 #include <ct/optcon/matlab.hpp>
@@ -550,7 +550,7 @@ protected:
 } // namespace optcon
 } // namespace ct
 
-#include "implementation/iLQGBase.hpp"
+#include "../ilqr/implementation/iLQGBase.hpp"
 
 
 #endif /* INCLUDE_CT_OPTCON_ILQG_ILQGBASE_HPP_ */

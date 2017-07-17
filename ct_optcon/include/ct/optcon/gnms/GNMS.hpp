@@ -24,93 +24,184 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef GNMS_HPP_
-#define GNMS_HPP_
+#ifndef INCLUDE_CT_OPTCON_SOLVER_GNMS_H_
+#define INCLUDE_CT_OPTCON_SOLVER_GNMS_H_
 
-#include "GNMSBase.hpp"
+#include <ct/optcon/solver/NLOptConSettings.hpp>
+#include <ct/optcon/nloc/NLOCAlgorithm.hpp>
 
 namespace ct{
 namespace optcon{
 
-//!  Single-Threaded Implementation of GNMS/SLQ
-/*!
- * \ingroup GNMS
- *
- * C++ implementation of GNMS. In fact, this currently implements iLQR.
- *
- * The implementation and naming is based on the reference below. In general, the code follows this convention:
- * X  <- Matrix (upper-case in paper)
- * xv <- vector (lower-case bold in paper)
- * x  <- scalar (lower-case in paper)
- *
- * References:
- * Sideris, Athanasios, and James E. Bobrow. "An efficient sequential linear quadratic algorithm for solving nonlinear optimal control problems."
- * Proceedings of the American Control Conference, 2005, pp. 2275-2280
- *
- * Todorov, E.; Weiwei Li, "A generalized iterative LQG method for locally-optimal feedback control of constrained nonlinear stochastic systems,"
- * Proceedings of the American Control Conference, 2005, pp.300-306
- *
-*/
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class GNMS : public GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR> {
 
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class GNMS : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR>
+{
 public:
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef GNMSBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+	static const size_t STATE_D = STATE_DIM;
+	static const size_t CONTROL_D = CONTROL_DIM;
 
-	typedef typename Base::Policy_t Policy_t;
-	typedef typename Base::Settings_t Settings_t;
+	typedef ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
+	typedef NLOptConSettings Settings_t;
+	typedef SCALAR Scalar_t;
 
-    //! GNMS constructor.
-    /*!
-      Sets up GNMS. Dynamics, derivatives of the dynamics as well as the cost function have to be provided.
-      You should pass pointers to instances of classes here that derive from the dynamics, derivatives and costFunction base classes
+	typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR> BASE;
+	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM> Backend_t;
 
-    */
-	GNMS(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
-			const GNMSSettings& settings) :
-		Base(optConProblem, settings)
+	GNMS(std::shared_ptr<Backend_t>& backend_, const Settings_t& settings) :
+		BASE(backend_)
 	{
-
+		configure(settings); // todo: might be redundant????
 	}
 
-	GNMS(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
-		 const std::string& settingsFile,
-		 bool verbose = true,
-		 const std::string& ns = "ilqg") :
-		Base(optConProblem, settingsFile, verbose, ns)
+	virtual ~GNMS(){}
+
+	virtual void configure(const Settings_t& settings) override
 	{
+		std::cout << "calling configure for GNMS." << std::endl; // todo remove
+		this->backend_->configure(settings);
+	}
+
+	virtual void setInitialGuess(const Policy_t& initialGuess) override
+	{
+		std::cout << "setting init guess" << std::endl; // todo remove
+		this->backend_->setInitialGuess(initialGuess);
+	}
+
+	virtual void prepareIteration() override
+	{
+		throw(std::runtime_error("to be filled"));
+	}
+
+	virtual bool finishIteration() override
+	{
+		throw(std::runtime_error("to be filled"));
+		return true;
 	}
 
 
+	virtual bool runIteration() override
+	{
+
+		if (!this->backend_->isInitialized())
+			throw std::runtime_error("GNMS is not initialized!");
+
+		if (!this->backend_->isConfigured())
+			throw std::runtime_error("GNMS is not configured!");
+
+		this->backend_->checkProblem();
+
+#ifdef MATLAB_FULL_LOG
+		if (this->backend_->iteration() == 0)
+			this->backend_->logInitToMatlab();
+#endif
 
 
-private:
-	void createLQProblem() override;
+		// if first iteration, compute shots and rollout and cost!
+		if(this->backend_->iteration() == 0)
+		{
+			std::cout << "Running additional init routine for first iteration !!" << std::endl;
+			this->backend_->initializeShots();
+			this->backend_->computeDefects();
+			this->backend_->updateCosts();
+		}
 
-	void backwardPass() override;
+//#ifdef DEBUG_PRINT
+//		std::cout << "PREINTEGRATION DEBUG PRINT"<<std::endl;
+//		std::cout << "=========================="<<std::endl;
+//		this->backend_->debugPrint();
+//		std::cout << "=========================="<<std::endl;
+//
+//		std::cout<<"[GNMS]: #1 ForwardPass"<<std::endl;
+//#endif // DEBUG_PRINT
 
-	void computeQuadraticCostsAroundTrajectory() override;
+		auto start = std::chrono::steady_clock::now();
+		auto startEntire = start;
+		this->backend_->computeLinearizedDynamicsAroundTrajectory();
+		auto end = std::chrono::steady_clock::now();
+		auto diff = end - start;
+#ifdef DEBUG_PRINT
+		std::cout << "Linearizing dynamics took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
 
-	void computeLinearizedDynamicsAroundTrajectory() override;
+		start = std::chrono::steady_clock::now();
+		this->backend_->computeQuadraticCostsAroundTrajectory();
+		end = std::chrono::steady_clock::now();
+		diff = end - start;
+#ifdef DEBUG_PRINT
+		std::cout << "Cost computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
 
-	void updateControlAndState() override;
+		end = std::chrono::steady_clock::now();
+		diff = end - startEntire;
+#ifdef DEBUG_PRINT
+		std::cout << "Forward pass took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif DEBUG_PRINT
 
-	void initializeShots() override;
 
-	void updateShots() override;
+#ifdef DEBUG_PRINT
+		std::cout<<"[GNMS]: #2 Solve LQOC Problem"<<std::endl;
+#endif // DEBUG_PRINT
+		start = std::chrono::steady_clock::now();
+		this->backend_->solveLQProblem();
+		end = std::chrono::steady_clock::now();
+		diff = end - start;
+#ifdef DEBUG_PRINT
+		std::cout << "Solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
 
-	void computeDefects() override;
+		// update solutions
+		this->backend_->updateSolutionState();
+		this->backend_->updateSolutionFeedforward();
+//		this->backend_->updateSolutionFeedback();
+
+
+		start = std::chrono::steady_clock::now();
+//		if (this->backend_->iteration() == 0)
+//			this->backend_->initializeShots();
+//		else
+		this->backend_->updateShots(); // todo: clear that
+		end = std::chrono::steady_clock::now();
+		diff = end - start;
+#ifdef DEBUG_PRINT
+		std::cout << "Shot integration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
+
+		start = std::chrono::steady_clock::now();
+		this->backend_->computeDefects();
+		end = std::chrono::steady_clock::now();
+		diff = end - start;
+#ifdef DEBUG_PRINT
+		std::cout << "Defects computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
+
+		// compute new costs
+		this->backend_->updateCosts();
+
+		diff = end - startEntire;
+#ifdef DEBUG_PRINT
+		std::cout << "Total iteration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
+
+#ifdef DEBUG_PRINT
+		this->backend_->debugPrint();
+#endif //DEBUG_PRINT
+
+#ifdef MATLAB_FULL_LOG
+		this->backend_->logToMatlab(this->backend_->iteration());
+#endif //MATLAB_FULL_LOG
+
+		this->backend_->iteration()++;
+
+		return (!this->backend_->isConverged());
+	}
 
 };
 
+}	// namespace optcon
+}	// namespace ct
 
-#include "implementation/GNMS.hpp"
-
-} // namespace optcon
-} // namespace ct
-
-
-#endif /* GNMS_HPP_ */
+#endif /* INCLUDE_CT_OPTCON_SOLVER_GNMS_H_ */
