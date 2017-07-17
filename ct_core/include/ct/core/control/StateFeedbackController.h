@@ -45,7 +45,7 @@ namespace core {
  *
  * \f[
  *
- * u(x,t) = u_{ff}(t) + K(t) x
+ * u(x,t) = u_{ff}(t) + K(t) (x - x_{ref})
  *
  * \f]
  *
