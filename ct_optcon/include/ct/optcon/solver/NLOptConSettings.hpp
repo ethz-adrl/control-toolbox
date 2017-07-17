@@ -268,8 +268,9 @@ public:
         std::cout<<"recordSmallestEigenvalue: "<<recordSmallestEigenvalue<<std::endl;
         std::cout<<"epsilon: "<<epsilon<<std::endl;
         std::cout<<"nThreads: "<<nThreads<<std::endl;
-        std::cout<<"nThreadsEigen: "<<nThreadsEigen<<std::endl<<std::endl;
-        std::cout<<"loggingPrefix: "<<loggingPrefix<<std::endl<<std::endl;
+        std::cout<<"nThreadsEigen: "<<nThreadsEigen<<std::endl;
+        std::cout<<"loggingPrefix: "<<loggingPrefix<<std::endl;
+        std::cout <<std::endl;
 
         lineSearchSettings.print();
 

@@ -130,16 +130,46 @@ public:
 
 		::d_cvt_colmaj_to_ocp_qp(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(), hr_.data(), hidxb_.data(), hd_lb_.data(), hd_ub_.data(), hC_.data(), hD_.data(), hd_lg_.data(), hd_ug_.data(), &qp_);
 		::d_solve_ipm2_hard_ocp_qp(&qp_, &qp_sol_, &workspace_);
+
+		computeStateAndControlUpdates();
 	}
 
-	virtual ct::core::StateVectorArray<STATE_DIM> getSolutionState() override {
+
+	virtual void computeStateAndControlUpdates() override
+	{
+		LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
+
 		::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u_.data(), x_.data(), pi_.data(), lam_lb_.data(), lam_ub_.data(), lam_lg_.data(), lam_ug_.data());
 		hx_[0] = this->lqocProblem_->x_[0];
+
+
+		this->delta_x_norm_ = 0.0;
+		this->delta_uff_norm_ = 0.0;
+
+		this->lx_[0].setZero();
+
+		for(size_t k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
+		{
+			//! reconstruct control update
+			this->lu_[k] = hu_[k] - p.u_[k];
+
+			//! reconstruct state update
+			this->lx_[k+1] = hx_[k+1] - p.x_[k+1];
+
+			//! compute the norms of the updates
+			this->delta_x_norm_ += this->lx_[k+1].norm();
+			this->delta_uff_norm_ += this->lu_[k].norm();
+		}
+	}
+
+
+	virtual ct::core::StateVectorArray<STATE_DIM> getSolutionState() override
+	{
 		return hx_;
 	}
 
-	virtual ct::core::ControlVectorArray<CONTROL_DIM> getSolutionControl() override {
-		::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u_.data(), x_.data(), pi_.data(), lam_lb_.data(), lam_ub_.data(), lam_lg_.data(), lam_ug_.data());
+	virtual ct::core::ControlVectorArray<CONTROL_DIM> getSolutionControl() override
+	{
 		return hu_;
 	}
 

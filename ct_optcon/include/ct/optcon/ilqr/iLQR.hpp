@@ -158,7 +158,7 @@ public:
 
 		// line-search
 #ifdef DEBUG_PRINT
-		std::cout<<"[iLQG]: #3 LineSearch"<<std::endl;
+		std::cout<<"[iLQR]: #3 LineSearch"<<std::endl;
 #endif // DEBUG_PRINT
 
 		start = std::chrono::steady_clock::now();

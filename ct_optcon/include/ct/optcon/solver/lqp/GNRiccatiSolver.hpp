@@ -72,7 +72,7 @@ public:
 		for (int i=this->lqocProblem_->getNumberOfStages()-1; i>=0; i--)
 			solveSingleStage(i);
 
-		computeStateUpdates();
+		computeStateAndControlUpdates();
 	}
 
 	virtual void solveSingleStage(int N) override
@@ -98,7 +98,7 @@ public:
 
 		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages() +1 ; k++)
 		{
-			x[k] += lx_[k];
+			x[k] += this->lx_[k];
 
 //			std::cout << "A: "<<std::endl<<p.A_[k]<<std::endl<<std::endl;
 //			std::cout << "B: "<<std::endl<<p.B_[k]<<std::endl<<std::endl;
@@ -107,7 +107,7 @@ public:
 //			std::cout << "sv: "<<std::endl<<sv_[k]<<std::endl<<std::endl;
 //			std::cout << "L: "<<std::endl<<L_[k]<<std::endl<<std::endl;
 //			std::cout << "lv_: "<<std::endl<<lv_[k].transpose()<<std::endl<<std::endl;
-//			std::cout << "lx_: "<<std::endl<<lx_[k].transpose()<<std::endl<<std::endl;
+//			std::cout << "lx_: "<<std::endl<<this->lx_[k].transpose()<<std::endl<<std::endl;
 //			std::cout << std::endl << std::endl;
 
 		}
@@ -123,34 +123,49 @@ public:
 
 		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages(); k++)
 		{
-			u[k] += lv_[k] + L_[k] * lx_[k];
+			u[k] += this->lu_[k];
 		}
 		return u;
 	}
 
-	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> getFeedback() override { return L_; }
 
-protected:
+	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> getFeedback() override
+	{
+		return L_;
+	}
 
-	//! compute the state updates.
+
+	//! compute the state and control updates.
 	/*!
 	 * this method is specific to the GN Riccati solver, since the state updates lx_
 	 * need to be completed in an additional forward sweep.
 	 *
 	 * IMPORTANT: you need to call this method at the right place if you're using solveSingleStage() by yourself.
 	 */
-	void computeStateUpdates()
+	virtual void computeStateAndControlUpdates() override
 	{
 		LQOCProblem_t& p = *this->lqocProblem_;
 
-		lx_[0].setZero();
+		this->delta_x_norm_ = 0.0;
+		this->delta_uff_norm_ = 0.0;
+
+		this->lx_[0].setZero();
 
 		for(size_t k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
 		{
-			lx_[k+1] = (p.A_[k] + p.B_[k] * L_[k]) * lx_[k]  + p.B_[k] * lv_[k] + p.b_[k];
+			//! control update rule
+			this->lu_[k] = lv_[k] + L_[k] * this->lx_[k];
+
+			//! state update rule
+			this->lx_[k+1] = (p.A_[k] + p.B_[k] * L_[k]) * this->lx_[k]  + p.B_[k] * lv_[k] + p.b_[k];
+
+			//! compute the norms of the updates
+			this->delta_x_norm_ += this->lx_[k+1].norm();
+			this->delta_uff_norm_ += this->lu_[k].norm();
 		}
 	}
 
+protected:
 
 	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t>& lqocProblem) override
 	{
@@ -166,7 +181,8 @@ protected:
 		lv_.resize(N);
 		L_.resize(N);
 
-		lx_.resize(N+1); // differential update on the state
+		this->lx_.resize(N+1);
+		this->lu_.resize(N);
 
 		sv_.resize(N+1);
 		S_.resize(N+1);
@@ -251,7 +267,6 @@ protected:
 					std::cout << "warning, inverses not identical at "<<k<<std::endl;
 					std::cout << "Hi_inverse_fixed - Hi_inverse_regular: "<<std::endl<<Hi_inverse_[k]-Hi_inverse_regular<<std::endl<<std::endl;
 				}
-
 			}
 
 			Hi_inverse_[k] = -Hi_[k].template selfadjointView<Eigen::Lower>().llt().solve(ControlMatrix::Identity());
@@ -310,8 +325,6 @@ protected:
 	ControlVectorArray lv_;
 	FeedbackArray L_;
 
-	StateVectorArray lx_; // differential update on the state
-
 	StateVectorArray sv_;
 	StateMatrixArray S_;
 
@@ -319,6 +332,7 @@ protected:
 
 	//! Eigenvalue solver, used for inverting the Hessian and for regularization
 	Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM>> eigenvalueSolver_;
+
 };
 
 

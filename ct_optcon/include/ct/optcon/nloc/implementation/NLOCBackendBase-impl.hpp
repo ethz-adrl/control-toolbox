@@ -536,8 +536,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 	std::cout<<std::setprecision(15) << "final cost:                " << finalCostBest_ << std::endl;
 	std::cout<<std::setprecision(15) << "total cost:                " << intermediateCostBest_ + finalCostBest_ << std::endl;
 	std::cout<<std::setprecision(15) << "total constraint err.norm: " << d_norm_ << std::endl;
-	std::cout<<std::setprecision(15) << "total state update norm:   " << dx_norm_ << std::endl;
-	std::cout<<std::setprecision(15) << "total control update.norm: " << du_norm_ << std::endl;
+	std::cout<<std::setprecision(15) << "total state update norm:   " << lqocSolver_->getStateUpdateNorm() << std::endl;
+	std::cout<<std::setprecision(15) << "total control update.norm: " << lqocSolver_->getControlUpdateNorm() << std::endl;
 
 	// todo bring back this
 //	if(settings_.recordSmallestEigenvalue)
@@ -582,8 +582,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 //	matFile_.put("sv", sv_.toImplementation());
 //	matFile_.put("S", S_.toImplementation());
 //	matFile_.put("L", L_.toImplementation());
-//	matFile_.put("lv", lv_.toImplementation());
-//	matFile_.put("lx", lx_.toImplementation());
+	matFile_.put("lv", lqocoSolver_->getControlUpdates().toImplementation());
+	matFile_.put("lx", lqocoSolver_->getStateUpdates().toImplementation());
+	matFile_.put("lv_norm", lqocoSolver_->getControlUpdateNorm());
+	matFile_.put("lx_norm", lqocoSolver_->getStateUpdateNorm());
 //	matFile_.put("H", H_.toImplementation());
 //	matFile_.put("Hi_", Hi_.toImplementation());
 //	matFile_.put("Hi_inverse", Hi_inverse_.toImplementation());

@@ -73,17 +73,33 @@ public:
 
 	virtual void solveSingleStage(int N) { throw std::runtime_error("solveSingleStage not available for this solver.");}
 
+	virtual void computeStateAndControlUpdates() = 0;
+
 	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() = 0;
 
 	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() = 0;
 
 	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> getFeedback() { throw std::runtime_error("this solver does not provide feedback gains"); }
 
+	const SCALAR& getControlUpdateNorm() {return delta_uff_norm_;}
+
+	const SCALAR& getStateUpdateNorm() {return delta_x_norm_;}
+
+	const core::StateVectorArray<STATE_DIM, SCALAR>& getStateUpdates() {return lx_;}
+
+	const core::ControlVectorArray<CONTROL_DIM, SCALAR>& getControlUpdates() {return lu_;}
+
 protected:
 
 	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t>& lqocProblem) = 0;
 
 	std::shared_ptr<LQOCProblem_t> lqocProblem_;
+
+	core::StateVectorArray<STATE_DIM, SCALAR> lx_; // differential update on the state
+	core::ControlVectorArray<CONTROL_DIM, SCALAR> lu_; // differential update on the control
+
+	SCALAR delta_uff_norm_;	//! l2-norm of the control update
+	SCALAR delta_x_norm_;	//! l2-norm of the state update
 
 };
 
