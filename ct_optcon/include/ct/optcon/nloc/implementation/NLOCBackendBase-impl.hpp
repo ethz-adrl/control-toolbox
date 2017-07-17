@@ -99,12 +99,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeCostFu
 	if (cf == nullptr)
 		throw std::runtime_error("cost function is nullptr");
 
-	this->getCostFunctionInstances().resize(settings_.nThreads+1);
+	costFunctions_.resize(settings_.nThreads+1);
 
 	for (size_t i = 0; i<settings_.nThreads+1; i++)
 	{
 		// make a deep copy
-		this->getCostFunctionInstances()[i] = typename Base::OptConProblem_t::CostFunctionPtr_t(cf->clone());
+		costFunctions_[i] = typename Base::OptConProblem_t::CostFunctionPtr_t(cf->clone());
 	}
 
 	// recompute cost if line search is active
@@ -118,7 +118,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 	if (dyn == nullptr)
 		throw std::runtime_error("system dynamics are nullptr");
 
-	this->getNonlinearSystemsInstances().resize(settings_.nThreads+1);
+	systems_.resize(settings_.nThreads+1);
 	integratorsRK4_.resize(settings_.nThreads+1);
 	integratorsEuler_.resize(settings_.nThreads+1);
 	integratorsEulerSymplectic_.resize(settings_.nThreads+1);
@@ -133,18 +133,18 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 		if(controller_[i] == nullptr)
 			throw std::runtime_error("Controller not defined");
 
-		integratorsRK4_[i] = std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > (new ct::core::IntegratorRK4<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
-		integratorsEuler_[i] = std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM, SCALAR> >(new ct::core::IntegratorEuler<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
+		integratorsRK4_[i] = std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > (new ct::core::IntegratorRK4<STATE_DIM, SCALAR>(systems_[i]));
+		integratorsEuler_[i] = std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM, SCALAR> >(new ct::core::IntegratorEuler<STATE_DIM, SCALAR>(systems_[i]));
 
 // @ todo: need to find different solution for that
-//		if(this->getNonlinearSystemsInstances()[i]->isSymplectic())
+//		if(systems_[i]->isSymplectic())
 //		{
 //			integratorsEulerSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
 //									new ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
-//										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (this->getNonlinearSystemsInstances()[i])));
+//										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (systems_[i])));
 //			integratorsRkSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
 //									new ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
-//										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (this->getNonlinearSystemsInstances()[i])));
+//										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (systems_[i])));
 //		}
 	}
 	reset(); // since system changed, we have to start fresh, i.e. with a rollout
@@ -153,16 +153,14 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeLinearSystem(const typename Base::OptConProblem_t::LinearPtr_t& lin)
 {
-//	linearSystemDiscretizers_.resize(settings_.nThreads+1);
-
-	getLinearSystemsInstances().resize(settings_.nThreads+1);
+	linearSystems_.resize(settings_.nThreads+1);
 
 	for (size_t i = 0; i<settings_.nThreads+1; i++)
 	{
 		// make a deep copy
-		getLinearSystemsInstances()[i] = typename OptConProblem_t::LinearPtr_t(lin->clone());
+		linearSystems_[i] = typename OptConProblem_t::LinearPtr_t(lin->clone());
 
-		linearSystemDiscretizers_[i].setLinearSystem(getLinearSystemsInstances()[i]);
+		linearSystemDiscretizers_[i].setLinearSystem(linearSystems_[i]);
 	}
 	// technically a linear system change does not require a new rollout. Hence, we do not reset.
 }
@@ -420,7 +418,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSingle
 {
 	// Todo: This linear update only works if lx_ and lu_ are small. Otherwise this makes it unstable.
 	//xShot_[k] += (A_[k] + B_[k] * L_[k]) * lx_[k] + B_[k] * lv_[k];
-	initializeSingleShot(this->settings_.nThreads, k);
+	initializeSingleShot(settings_.nThreads, k);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -450,15 +448,15 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeCosts
 
 	for (size_t k=0; k<K_; k++) {
 		// feed current state and control to cost function
-		this->getCostFunctionInstances()[threadId]->setCurrentStateAndControl(x_local[k], u_local[k], settings_.dt*k);
+		costFunctions_[threadId]->setCurrentStateAndControl(x_local[k], u_local[k], settings_.dt*k);
 
 		// derivative of cost with respect to state
-		intermediateCost += this->getCostFunctionInstances()[threadId]->evaluateIntermediate();
+		intermediateCost += costFunctions_[threadId]->evaluateIntermediate();
 	}
 	intermediateCost *= settings_.dt;
 
-	this->getCostFunctionInstances()[threadId]->setCurrentStateAndControl(x_local[K_], control_vector_t::Zero(), settings_.dt*K_);
-	finalCost = this->getCostFunctionInstances()[threadId]->evaluateTerminal();
+	costFunctions_[threadId]->setCurrentStateAndControl(x_local[K_], control_vector_t::Zero(), settings_.dt*K_);
+	finalCost = costFunctions_[threadId]->evaluateTerminal();
 }
 
 
@@ -477,6 +475,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinea
 	linearSystemDiscretizers_[threadId].getAandB(x_[k], u_ff_[k], x_[k+1], u_last, (int)k, p.A_[k], p.B_[k]);
 }
 
+
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCosts(size_t threadId, size_t k)
 {
@@ -484,22 +483,22 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadr
 	const scalar_t& dt = settings_.dt;
 
 	// feed current state and control to cost function
-	this->getCostFunctionInstances()[threadId]->setCurrentStateAndControl(x_[k], u_ff_[k], dt*k);
+	costFunctions_[threadId]->setCurrentStateAndControl(x_[k], u_ff_[k], dt*k);
 
 	// derivative of cost with respect to state
-	p.q_[k] = this->getCostFunctionInstances()[threadId]->evaluateIntermediate()*dt;
+	p.q_[k] = costFunctions_[threadId]->evaluateIntermediate()*dt;
 
-	p.qv_[k] = this->getCostFunctionInstances()[threadId]->stateDerivativeIntermediate()*dt;
+	p.qv_[k] = costFunctions_[threadId]->stateDerivativeIntermediate()*dt;
 
-	p.Q_[k] = this->getCostFunctionInstances()[threadId]->stateSecondDerivativeIntermediate()*dt;
+	p.Q_[k] = costFunctions_[threadId]->stateSecondDerivativeIntermediate()*dt;
 
 	// derivative of cost with respect to control and state
-	p.P_[k] = this->getCostFunctionInstances()[threadId]->stateControlDerivativeIntermediate()*dt;
+	p.P_[k] = costFunctions_[threadId]->stateControlDerivativeIntermediate()*dt;
 
 	// derivative of cost with respect to control
-	p.rv_[k] = this->getCostFunctionInstances()[threadId]->controlDerivativeIntermediate()*dt;
+	p.rv_[k] = costFunctions_[threadId]->controlDerivativeIntermediate()*dt;
 
-	p.R_[k] = this->getCostFunctionInstances()[threadId]->controlSecondDerivativeIntermediate()*dt;
+	p.R_[k] = costFunctions_[threadId]->controlSecondDerivativeIntermediate()*dt;
 }
 
 
@@ -509,12 +508,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeCo
 	LQOCProblem_t& p = *lqocProblem_;
 
 	// feed current state and control to cost function
-	this->getCostFunctionInstances()[settings_.nThreads]->setCurrentStateAndControl(x_[K_], control_vector_t::Zero(), settings_.dt*K_);
+	costFunctions_[settings_.nThreads]->setCurrentStateAndControl(x_[K_], control_vector_t::Zero(), settings_.dt*K_);
 
 	// derivative of termination cost with respect to state
-	p.q_[K_] = this->getCostFunctionInstances()[settings_.nThreads]->evaluateTerminal();
-	p.qv_[K_] = this->getCostFunctionInstances()[settings_.nThreads]->stateDerivativeTerminal();
-	p.Q_[K_] = this->getCostFunctionInstances()[settings_.nThreads]->stateSecondDerivativeTerminal();
+	p.q_[K_] = costFunctions_[settings_.nThreads]->evaluateTerminal();
+	p.qv_[K_] = costFunctions_[settings_.nThreads]->stateDerivativeTerminal();
+	p.Q_[K_] = costFunctions_[settings_.nThreads]->stateSecondDerivativeTerminal();
 }
 
 
