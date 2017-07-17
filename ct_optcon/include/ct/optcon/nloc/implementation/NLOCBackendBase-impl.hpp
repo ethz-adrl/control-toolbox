@@ -529,7 +529,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeCo
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 {
-	std::cout<<"iteration "  << iteration_ << std::endl;
+	std::cout<< settings_.loggingPrefix + " iteration "  << iteration_ << std::endl;
 	std::cout<<"============"<< std::endl;
 
 	std::cout<<std::setprecision(15) << "intermediate cost:         " << intermediateCostBest_ << std::endl;

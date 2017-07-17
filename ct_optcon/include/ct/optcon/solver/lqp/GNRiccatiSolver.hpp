@@ -71,6 +71,8 @@ public:
 
 		for (int i=this->lqocProblem_->getNumberOfStages()-1; i>=0; i--)
 			solveSingleStage(i);
+
+		computeStateUpdates();
 	}
 
 	virtual void solveSingleStage(int N) override
@@ -89,18 +91,13 @@ public:
 	}
 
 
-	// todo: might make sense to update state solution variable somewhere else
-	// todo: that's actually a problem: if we called getSolutionControl before getSolutionState(), lx_ would not be updated properly.
 	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() override
 	{
 		LQOCProblem_t& p = *this->lqocProblem_;
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> x = p.x_;
 
-		lx_[0].setZero();
-
-		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages(); k++)
+		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages() +1 ; k++)
 		{
-			lx_[k+1] = (p.A_[k] + p.B_[k] * L_[k]) * lx_[k]  + p.B_[k] * lv_[k] + p.b_[k];
 			x[k] += lx_[k];
 
 //			std::cout << "A: "<<std::endl<<p.A_[k]<<std::endl<<std::endl;
@@ -114,7 +111,6 @@ public:
 //			std::cout << std::endl << std::endl;
 
 		}
-		x[p.getNumberOfStages()] += lx_[p.getNumberOfStages()];
 
 		return x;
 	}
@@ -135,6 +131,26 @@ public:
 	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> getFeedback() override { return L_; }
 
 protected:
+
+	//! compute the state updates.
+	/*!
+	 * this method is specific to the GN Riccati solver, since the state updates lx_
+	 * need to be completed in an additional forward sweep.
+	 *
+	 * IMPORTANT: you need to call this method at the right place if you're using solveSingleStage() by yourself.
+	 */
+	void computeStateUpdates()
+	{
+		LQOCProblem_t& p = *this->lqocProblem_;
+
+		lx_[0].setZero();
+
+		for(size_t k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
+		{
+			lx_[k+1] = (p.A_[k] + p.B_[k] * L_[k]) * lx_[k]  + p.B_[k] * lv_[k] + p.b_[k];
+		}
+	}
+
 
 	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t>& lqocProblem) override
 	{

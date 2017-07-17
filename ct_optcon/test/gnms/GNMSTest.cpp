@@ -157,9 +157,12 @@ void singleCore()
 		gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
 		gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;
 		gnms_settings.closedLoopShooting = false;
+		gnms_settings.loggingPrefix = "GNMS";
 
 		NLOptConSettings ilqg_settings = gnms_settings;
 		ilqg_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
+		ilqg_settings.loggingPrefix = "ILQR";
+
 
 		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
 		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearizedSystem);

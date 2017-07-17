@@ -153,7 +153,6 @@ public:
 #endif
 
 		// update solutions
-		this->backend_->updateSolutionState();
 		this->backend_->updateSolutionFeedforward();
 		this->backend_->updateSolutionFeedback();
 
