@@ -564,7 +564,7 @@ protected:
 	StateVectorArray xShot_;
 	ControlVectorArray u_ff_;
 	ControlVectorArray u_ff_prev_;
-	FeedbackArray	L_;
+	FeedbackArray L_;
 	SCALAR dx_norm_;
 	SCALAR du_norm_;
 

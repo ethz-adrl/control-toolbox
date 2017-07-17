@@ -6,6 +6,7 @@ alg
 {
 	integrator RK4
 	discretization Matrix_exponential
+	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
     dt 0.1
     dt_sim 0.1
     epsilon 1e-6

@@ -156,8 +156,7 @@ public:
 		// update solutions
 		this->backend_->updateSolutionState();
 		this->backend_->updateSolutionFeedforward();
-//		this->backend_->updateSolutionFeedback();
-
+		this->backend_->updateSolutionFeedback();
 
 		start = std::chrono::steady_clock::now();
 		this->backend_->rolloutShots();

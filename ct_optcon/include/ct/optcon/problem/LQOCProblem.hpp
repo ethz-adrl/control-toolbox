@@ -79,6 +79,23 @@ public:
 	}
 
 
+	//! set all member variables to zero
+	void setZero()
+	{
+//		A_.setZero();
+//		B_.setZero();
+//		b_.setZero();
+//		x_.setZero();
+//		u_.setZero();
+//		P_.setZero();
+//		q_.setZero();
+//		qv_.setZero();
+//		Q_.setZero();
+//		rv_.setZero();
+//		R_.setZero();
+	}
+
+
 	//! affine, time-varying system dynamics in discrete time
 	ct::core::StateMatrixArray<STATE_DIM, SCALAR> A_;
 	ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> B_;

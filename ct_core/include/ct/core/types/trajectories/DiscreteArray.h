@@ -139,7 +139,7 @@ public:
 	void eraseFront(const size_t N) {this->erase(this->begin(), this->begin()+N);}
 
 	//! sets all elements to zero.
-	void setZero() {std::fill(this->begin(), this->end(), T::Zero());}
+	virtual void setZero() {std::fill(this->begin(), this->end(), T::Zero());}
 
 	//! addas an offest to each element
 	void addOffset(const T& offset) {std::for_each(this->begin(), this->end(), [&](T& val) { val+=offset;});}

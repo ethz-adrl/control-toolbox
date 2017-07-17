@@ -150,12 +150,13 @@ void singleCore()
 		gnms_settings.recordSmallestEigenvalue = false;
 		gnms_settings.min_cost_improvement = 1e-6;
 		gnms_settings.fixedHessianCorrection = false;
-		gnms_settings.dt = 0.1;
-		gnms_settings.dt_sim = 0.1;
+		gnms_settings.dt = 0.001;
+		gnms_settings.dt_sim = 0.001;
 		gnms_settings.integrator = NLOptConSettings::EULER;
 		gnms_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
 		gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
+		gnms_settings.closedLoopShooting = false;
 
 		NLOptConSettings ilqg_settings = gnms_settings;
 		ilqg_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
@@ -205,20 +206,14 @@ void singleCore()
 		{
 			foundBetter = gnms.runIteration();
 
-			foundBetter = true;
-
 			// test trajectories
 			StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
 			ControlTrajectory<control_dim> uRollout = gnms.getControlTrajectory();
 
 			numIterations++;
 
-			if (numIterations>5)
-			{
-				std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
-				std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
-				break;
-			}
+			std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
+			std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
 		}
 
 		std::cout << "running ilqg solver" << std::endl;
@@ -228,7 +223,6 @@ void singleCore()
 		while (foundBetter)
 		{
 			foundBetter = ilqg.runIteration();
-			foundBetter = true;
 
 			// test trajectories
 			StateTrajectory<state_dim> xRollout = ilqg.getStateTrajectory();
@@ -236,12 +230,8 @@ void singleCore()
 
 			numIterations++;
 
-			if (numIterations>3)
-			{
-				std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
-				std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
-				break;
-			}
+			std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
+			std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
 		}
 }
 

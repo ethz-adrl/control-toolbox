@@ -76,15 +76,15 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolution
 	this->u_ff_prev_ = this->u_ff_; // store previous feedforward for line-search
 
 	this->u_ff_ = this->lqocSolver_->getSolutionControl();
-
-//	for(size_t i = 0; i<this->u_ff_.size(); i++)
-//		std::cout << "lv update ["<<i<<"]: " << this->u_ff_[i].transpose() << std::endl;	//todo: potentially remove
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedback()
 {
-	this->L_ = this->lqocSolver_->getFeedback();
+	if(this->settings_.closedLoopShooting)
+		this->L_ = this->lqocSolver_->getFeedback();
+	else
+		this->L_.setZero();
 }
 
 

@@ -80,6 +80,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
 	L_.resize(K);
 
 	lqocProblem_->changeNumStages(K_);
+	lqocProblem_->setZero();
+
 	lqocSolver_->setProblem(lqocProblem_);
 }
 
@@ -270,39 +272,38 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 	{
 		if (terminationFlag && *terminationFlag) return false;
 
-		u_local.push_back( u_ff_local[i] + L_[i] * (x0-x_ref[i]));
-		controller_[threadId]->updateControlLaw(u_ff_local[i], x_ref[i], L_[i]);
+		// introduce a temporary feedback matrix, and set it to L_ in case of closed-loop shooting
+		core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR> L_sim = core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero();
+		if(settings_.closedLoopShooting)
+			L_sim = L_[i];
 
-		for (size_t j=0; j<steps; j++)
+		u_local.push_back( u_ff_local[i] + L_sim * (x0-x_ref[i]));
+		controller_[threadId]->updateControlLaw(u_ff_local[i], x_ref[i], L_sim);
+
+
+		if (settings_.integrator == Settings_t::EULER)
 		{
-//			if (steps > 1)	// this should be redundant now -- todo: remove
-//			{
-//				controller_[threadId]->setControl(u_local.back() + L_[i]*(x0-x_ref[i]));
-//			}
-
-			if (settings_.integrator == Settings_t::EULER)
-			{
-				integratorsEuler_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
-			}
-			else if(settings_.integrator == Settings_t::RK4)
-			{
-				integratorsRK4_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
-			}
-			// todo: find cleaner solution for symplectic stuff
-//			else if(settings_.integrator == GNMSSettings::EULER_SYM)
-//			{
-//				integratorsEulerSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
-//			}
-//			else if(settings_.integrator == GNMSSettings::RK_SYM)
-//			{
-//				integratorsRkSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
-//			}
-			else
-				throw std::runtime_error("invalid integration mode selected.");
+			integratorsEuler_[threadId]->integrate_n_steps(x0, i*dt, steps, dt_sim);
 		}
+		else if(settings_.integrator == Settings_t::RK4)
+		{
+			integratorsRK4_[threadId]->integrate_n_steps(x0, i*dt, steps, dt_sim);
+		}
+		// todo: find cleaner solution for symplectic stuff
+		//			else if(settings_.integrator == GNMSSettings::EULER_SYM)
+		//			{
+		//				integratorsEulerSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
+		//			}
+		//			else if(settings_.integrator == GNMSSettings::RK_SYM)
+		//			{
+		//				integratorsRkSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
+		//			}
+		else
+			throw std::runtime_error("invalid integration mode selected.");
+
 
 		x_local.push_back(x0);
-		t_local.push_back((i+1)*dt_sim);
+		t_local.push_back((i+1)*dt);
 
 		// check if nan
 		for (size_t k=0; k<STATE_DIM; k++)
@@ -377,29 +378,38 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::sequentialLQ
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingleShot(size_t threadId, size_t k)
 {
+	const double& dt = settings_.dt;
 	const double& dt_sim = settings_.dt_sim;
 
-	controller_[threadId]->updateControlLaw(u_ff_[k], x_[k], L_[k]);
+	// compute number of substeps
+	size_t steps = round(dt/ dt_sim);
+
+	// introduce a temporary feedback matrix, and set it to L_ in case of closed-loop shooting
+	core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR> L_sim = core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero();
+	if(settings_.closedLoopShooting)
+		L_sim = L_[k];
+
+	controller_[threadId]->updateControlLaw(u_ff_[k], x_[k] /*, L_sim*/);
 
 	xShot_[k] = x_[k];
 
 	if (settings_.integrator == Settings_t::EULER)
 	{
-		integratorsEuler_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
+		integratorsEuler_[threadId]->integrate_n_steps(xShot_[k], k*dt, steps, dt_sim);
 	}
 	else if(settings_.integrator == Settings_t::RK4)
 	{
-		integratorsRK4_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
+		integratorsRK4_[threadId]->integrate_n_steps(xShot_[k], k*dt, steps, dt_sim);
 	}
 	//! todo need to find different solution for that
-//	else if(settings_.integrator == GNMSSettings::EULER_SYM)
-//	{
-//		integratorsEulerSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
-//	}
-//	else if(settings_.integrator == GNMSSettings::RK_SYM)
-//	{
-//		integratorsRkSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
-//	}
+	//	else if(settings_.integrator == GNMSSettings::EULER_SYM)
+	//	{
+	//		integratorsEulerSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
+	//	}
+	//	else if(settings_.integrator == GNMSSettings::RK_SYM)
+	//	{
+	//		integratorsRkSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
+	//	}
 	else
 		throw std::runtime_error("invalid integration mode selected.");
 }

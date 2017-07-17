@@ -133,7 +133,7 @@ public:
 	void updateControlLaw(
 			const ControlVector<CONTROL_DIM, SCALAR>& uff,
 			const StateVector<STATE_DIM, SCALAR>& x,
-			const FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>& K)
+			const FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>& K = FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero())
 	{
 		u_ff_ = uff;
 		x_ref_ = x;

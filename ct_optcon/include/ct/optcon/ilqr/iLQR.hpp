@@ -72,11 +72,11 @@ public:
 	}
 
 	virtual void prepareIteration() override {
-		throw(std::runtime_error("to be filled"));
+		throw(std::runtime_error("prepare iteration to be filled"));
 	}
 
 	virtual bool finishIteration() override {
-		throw(std::runtime_error("to be filled"));
+		throw(std::runtime_error("finish iteration to be filled"));
 		return true;}
 
 
@@ -84,10 +84,10 @@ public:
 	{
 
 		if (!this->backend_->isInitialized())
-			throw std::runtime_error("GNMS is not initialized!");
+			throw std::runtime_error("iLQR is not initialized!");
 
 		if (!this->backend_->isConfigured())
-			throw std::runtime_error("GNMS is not configured!");
+			throw std::runtime_error("iLQR is not configured!");
 
 		this->backend_->checkProblem();
 
@@ -113,7 +113,7 @@ public:
 //		this->backend_->debugPrint();
 //		std::cout << "=========================="<<std::endl;
 //
-//		std::cout<<"[GNMS]: #1 ForwardPass"<<std::endl;
+//		std::cout<<"[iLQR]: #1 ForwardPass"<<std::endl;
 //#endif // DEBUG_PRINT
 
 		auto start = std::chrono::steady_clock::now();
@@ -142,7 +142,7 @@ public:
 
 
 #ifdef DEBUG_PRINT
-		std::cout<<"[GNMS]: #2 Solve LQOC Problem"<<std::endl;
+		std::cout<<"[iLQR]: #2 Solve LQOC Problem"<<std::endl;
 #endif // DEBUG_PRINT
 		start = std::chrono::steady_clock::now();
 		this->backend_->solveLQProblem();

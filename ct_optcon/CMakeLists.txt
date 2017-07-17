@@ -191,9 +191,8 @@ endif()
 #catkin_add_gtest(LqrTest test/lqr/LqrTest.cpp)
 #target_link_libraries(LqrTest ${catkin_LIBRARIES} lapack ${MATLAB_LIBS})
 #
-#catkin_add_gtest(iLQGCTest test/ilqg/iLQGCTest.cpp)
-#target_link_libraries(iLQGCTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
-
+catkin_add_gtest(iLQGCTest test/ilqg/iLQGCTest.cpp)
+target_link_libraries(iLQGCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
 add_executable(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
 target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})

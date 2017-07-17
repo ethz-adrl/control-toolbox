@@ -202,6 +202,7 @@ public:
         nlocp_algorithm(GNMS),
         lqocp_solver(GNRICCATI_SOLVER),
 		loggingPrefix("alg"),
+		closedLoopShooting(false), // by default, we do open-loop shooting
 		epsilon(1e-5),
 		dt(0.001),
 		dt_sim(0.001),
@@ -222,6 +223,7 @@ public:
 	NLOCP_ALGORITHM nlocp_algorithm;   //! which nonlinear optimal control algorithm is to be used
 	LQOCP_SOLVER lqocp_solver;	//! the solver for the linear-quadratic optimal control problem
 	std::string loggingPrefix; //! the prefix to be stored before the matfile name for logging
+	bool closedLoopShooting; 	//! use feedback gains during forward integration (true) or not (false)
 	double epsilon;			//! Eigenvalue correction factor for Hessian regularization
     double dt;				//! sampling time for the control input (seconds)
     double dt_sim;			//! sampling time for the forward simulation (seconds) \warning dt_sim needs to be an integer multiple of dt.
@@ -258,6 +260,7 @@ public:
         std::cout<<"discretization: " << discretizationToString.at(discretization)<<std::endl;
         std::cout<<"nonlinear OCP algorithm: " << nlocp_algorithmToString.at(nlocp_algorithm)<<std::endl;
         std::cout<<"linear-quadratic OCP solver: " << locp_solverToString.at(lqocp_solver)<<std::endl;
+        std::cout<<"closed loop shooting: " << closedLoopShooting << std::endl;
         std::cout<<"dt: "<<dt<<std::endl;
         std::cout<<"dt_sim: "<<dt_sim<<std::endl;
         std::cout<<"maxIter: "<<max_iterations<<std::endl;
@@ -329,6 +332,7 @@ public:
 		max_iterations = pt.get<int>(ns +".max_iterations");
 		nThreads = pt.get<int>(ns +".nThreads");
 		loggingPrefix = pt.get<std::string>(ns + ".loggingPrefix");
+		closedLoopShooting = pt.get<bool>(ns + ".closedLoopShooting");
 
 		try {
 
