@@ -467,62 +467,14 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinea
 {
 	LQOCProblem_t& p = *lqocProblem_;
 
-	switch(settings_.discretization)
-	{
-		case core::LinearSystemDiscretizerSettings::APPROXIMATION::FORWARD_EULER:
-		{
-			p.A_[k] = state_matrix_t::Identity();
-			p.A_[k] += settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_ff_[k], k*settings_.dt);
-			p.B_[k] = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_ff_[k], k*settings_.dt);
-			break;
-		}
-		case core::LinearSystemDiscretizerSettings::APPROXIMATION::BACKWARD_EULER:
-		{
-			//! @todo: backward Euler uses the upcoming time-steps for computing A and B, which requires a hack for the last control input stage
-			size_t k_u = std::min((size_t)K_-1, (size_t)k+1);
+	/*!
+	 * @todo
+	 * Note the little 'hack' that is applied here. We need a control input to linearize around for the last stage N.
+	 * Should it be zero? We currently set it to be the second-to-last control input.
+	 */
+	const core::ControlVector<CONTROL_DIM, SCALAR> u_last = u_ff_[std::min((int)k+1, K_-1)];
 
-			state_matrix_t aNew = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k+1], u_ff_[k_u], (k+1)*settings_.dt);
-			state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
-			p.A_[k] = aNewInv;
-			p.B_[k] = aNewInv * settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k+1], u_ff_[k_u], (k+1)*settings_.dt);
-			break;
-		}
-		case core::LinearSystemDiscretizerSettings::APPROXIMATION::TUSTIN:
-		{
-			//! @todo: I attempted here to implement the tustin rule correctly. Note that it is inefficient, since both ends of the time interval get evaluated.
-			//! @todo most likely still wrong
-
-			size_t k_u = std::min((size_t)K_-1, (size_t)k+1); // todo same problem as above persists here.
-
-			state_matrix_t aNew_front = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_ff_[k], k*settings_.dt);
-			state_matrix_t aNew_back = settings_.dt * this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k+1], u_ff_[k_u], k*settings_.dt);
-			state_matrix_t aNew = 0.5*(aNew_front + aNew_back);
-
-			state_control_matrix_t bNew_front = this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_ff_[k], k*settings_.dt);
-			state_control_matrix_t bNew_back = this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k+1], u_ff_[k_u], k*settings_.dt);
-			state_control_matrix_t bNew = 0.5*(bNew_front + bNew_back);
-
-			state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
-			p.A_[k] = aNewInv * (state_matrix_t::Identity() + aNew);
-			p.B_[k] = aNewInv * settings_.dt * bNew;
-			break;
-		}
-		case core::LinearSystemDiscretizerSettings::APPROXIMATION::MATRIX_EXPONENTIAL:
-		{
-			state_matrix_t Ac = this->getLinearSystemsInstances()[threadId]->getDerivativeState(x_[k], u_ff_[k], k*settings_.dt);
-			state_matrix_t Adt = settings_.dt * Ac;
-
-			p.A_[k] = Adt.exp();
-			p.B_[k] = Ac.inverse() * (p.A_[k] - state_matrix_t::Identity()) *  this->getLinearSystemsInstances()[threadId]->getDerivativeControl(x_[k], u_ff_[k], k*settings_.dt);
-			break;
-		}
-
-		default:
-		{
-			throw std::runtime_error("Unknown discretization scheme");
-			break;
-		}
-	}
+	linearSystemDiscretizers_[threadId].getAandB(x_[k], u_ff_[k], x_[k+1], u_last, (int)k, p.A_[k], p.B_[k]);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
