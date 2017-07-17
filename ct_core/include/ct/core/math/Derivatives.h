@@ -45,13 +45,11 @@ namespace core {
 template <int IN_DIM, int OUT_DIM, typename SCALAR = double>
 class Derivatives {
 public:
-	//! The Derivatives data type
-	typedef Eigen::Matrix<SCALAR, OUT_DIM, IN_DIM> JAC_TYPE;
+    typedef Eigen::Matrix<double, IN_DIM, 1> IN_TYPE; //!< function input vector type
+    typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE; //!< function output vector type
+    typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE;
+    typedef Eigen::Matrix<double, IN_DIM, IN_DIM> HES_TYPE;                                     
 
-	//! The input vector type
-	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> X_TYPE;
-
-	//! default constructor
 	Derivatives() {};
 
 	//! default destructor
@@ -60,20 +58,45 @@ public:
 	//! deep copy for derived classes
 	virtual Derivatives<IN_DIM, OUT_DIM, SCALAR>* clone() const = 0;
 
-	//! evaluate Derivatives
-	/*!
-	 * Evaluates the Derivatives at a given state
-	 * @param x state at which to evaluate the Derivatives
-	 * @return Derivatives matrix
-	 */
-	virtual JAC_TYPE jacobian(const X_TYPE& x) = 0;
+    /**
+     * @brief      Evaluates the method itself
+     *
+     * @param[in]  x     The point of evaluation
+     *
+     * @return     The evalution of the method
+     */
+    virtual OUT_TYPE forwardZero(const Eigen::VectorXd& x)
+    {
+       throw std::runtime_error("FUNCTION EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
+    }
 
-    virtual Eigen::Matrix<double, OUT_DIM, 1> forwardZero(const Eigen::VectorXd& x) {};
+    /**
+     * @brief      Evaluates the jacobian with respect to the input
+     *
+     * @param[in]  x     The point of evaluation
+     *
+     * @return     The evaluated jacobian
+     */
+    virtual JAC_TYPE jacobian(const Eigen::VectorXd& x)
+    {
+        throw std::runtime_error("JACOBIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
+    }
 
-    virtual Eigen::Matrix<double, IN_DIM, IN_DIM> hessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) {};
-
-
-
+    /**
+     * @brief      Evaluates the hessian (2nd order derivatives with respect to
+     *             input) of the method. In case of a vector valued function,
+     *             the method returns the weighted sum of the hessians with
+     *             weights w
+     *
+     * @param[in]  x       The point of evaluation
+     * @param[in]  lambda  The weights of the sum
+     *
+     * @return     The evaluated hessian
+     */
+    virtual HES_TYPE hessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda)
+    {
+        throw std::runtime_error("HESSIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
+    }
 
 };
 

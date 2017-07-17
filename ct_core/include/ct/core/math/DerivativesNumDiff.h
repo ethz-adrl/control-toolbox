@@ -51,10 +51,10 @@ class DerivativesNumDiff : public Derivatives<IN_DIM, OUT_DIM, double>
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef Eigen::Matrix<double, IN_DIM, 1> IN_TYPE; //!< function input vector type
-	typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE; //!< function output vector type
-
-	typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE; //!< Derivatives type
+    typedef Eigen::Matrix<double, IN_DIM, 1> IN_TYPE; //!< function input vector type
+    typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE; //!< function output vector type
+    typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE;
+    typedef Eigen::Matrix<double, IN_DIM, IN_DIM> HES_TYPE;  
 
 	typedef std::function<OUT_TYPE(const IN_TYPE&)> Function; //!< function tpye
 
@@ -76,20 +76,36 @@ public:
 
 	}
 
+	DerivativesNumDiff(const DerivativesNumDiff& arg) :
+	f_(arg.f_),
+	doubleSidedDerivative_(arg.doubleSidedDerivative_),
+	eps_(arg.eps_)
+	{
+
+	}
+
 	//! default destructor
 	virtual ~DerivativesNumDiff()
 	{
 	}
 
 	//! deep cloning
-	DerivativesNumDiff* clone() const override { throw std::runtime_error("not implemented"); }
+	DerivativesNumDiff* clone() const override
+	{
+		return new DerivativesNumDiff<IN_DIM, OUT_DIM>(*this);
+	}
+
+	virtual OUT_TYPE forwardZero(const IN_TYPE& x) override
+	{
+		return f_(x);
+	}
 
 	//! evaluate Derivatives at a given point
 	/*!
 	 * @param x point at which to evaluate the Derivatives at
 	 * @return Derivatives evaluated at x
 	 */
-	JAC_TYPE operator()(const Eigen::VectorXd& x) override
+	virtual JAC_TYPE jacobian(const IN_TYPE& x) override
 	{
 		JAC_TYPE jac;
 		OUT_TYPE y_ref;

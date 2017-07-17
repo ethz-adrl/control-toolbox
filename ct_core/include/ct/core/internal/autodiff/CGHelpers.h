@@ -84,8 +84,8 @@ public:
 		// input vector, needs to be dynamic size
 		CppAD::vector<AD_SCALAR> input(x_dim);
 
-		for (size_t i=0; i<input.size(); i++)
-			input[i] = AD_SCALAR(0.0);
+		// for (size_t i=0; i<input.size(); i++)
+		// 	input[i] = AD_SCALAR(0.0);
 
 		// mark independent as variables
 		codeHandler.makeVariables(input);
@@ -96,7 +96,7 @@ public:
 			f.SparseJacobianForward(input, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.workJacobian());
 
 		CppAD::cg::LanguageC<double> langC("double", 4);
-		langC.setIgnoreZeroDepAssign(true);
+		langC.setIgnoreZeroDepAssign(ignoreZero);
 		CppAD::cg::LangCDefaultVariableNameGenerator<double> nameGen(jacName, inputName, tempName);
 
 		std::ostringstream code;
@@ -151,7 +151,7 @@ public:
 		jac = f.Forward(0, input);
 
 		CppAD::cg::LanguageC<double> langC("double", 4);
-		langC.setIgnoreZeroDepAssign(true);
+		langC.setIgnoreZeroDepAssign(ignoreZero);
 		CppAD::cg::LangCDefaultVariableNameGenerator<double> nameGen(jacName, inputName, tempName);
 
 		std::ostringstream code;
@@ -166,10 +166,6 @@ public:
 	template <typename AD_SCALAR>
 	static std::string generateHessianCode(
 			CppAD::ADFun<AD_SCALAR>& f,
-			const size_t& x_dim,
-			const size_t& w_dim,
-			CppAD::vector<AD_SCALAR>& jac,
-			SparsityPattern& pattern,
 			size_t& maxTempVarCount,
 			bool ignoreZero = true,
 			std::string jacName = "hes",
@@ -178,26 +174,35 @@ public:
 	{
 		CppAD::cg::CodeHandler<double> codeHandler;
 
-		// input vector, needs to be dynamic size
-		CppAD::vector<AD_SCALAR> input(x_dim);
-		CppAD::vector<AD_SCALAR> weights(w_dim);
+		size_t m = f.Range();
+    	size_t n = f.Domain();
 
-		for (size_t i=0; i<input.size(); i++)
-			input[i] = AD_SCALAR(0.0);
-
-		// mark independent as variables
+		CppAD::vector<AD_SCALAR> input(n);
 		codeHandler.makeVariables(input);
+		// setting some typical values here.
+		for(size_t i=0; i<input.size(); i++)
+			input[i].setValue(0.0);
+		
+		CppAD::vector<AD_SCALAR> weights(m);
 		codeHandler.makeVariables(weights);
+		// settings some typical values for the weights
+		for(size_t i = 0; i < m; ++i)
+			weights[i].setValue(0.0);
 
-		f.SparseHessian(input, weights, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.workHessian());
+		CppAD::vector<AD_SCALAR> hes = f.Hessian(input, weights);
+
+		// make use of the symmetry of the hessian
+		for (size_t i = 0; i < n; i++)
+		    for (size_t j = 0; j < i; j++)
+		        hes[i * n + j] = hes[j * n + i];
 
 		CppAD::cg::LanguageC<double> langC("double", 4);
-		langC.setIgnoreZeroDepAssign(true);
+		langC.setIgnoreZeroDepAssign(ignoreZero);
 		CppAD::cg::LangCDefaultVariableNameGenerator<double> nameGenTmp(jacName, inputName, tempName);
-		CppAD::cg::LangCDefaultHessianVarNameGenerator<double> nameGen(&nameGenTmp, "w_in", w_dim);
+		CppAD::cg::LangCDefaultHessianVarNameGenerator<double> nameGen(&nameGenTmp, "w_in", m);
 
 		std::ostringstream code;
-		codeHandler.generateCode(code, langC, jac, nameGen);
+		codeHandler.generateCode(code, langC, hes, nameGen);
 
 		std::cout << "temporary variables: " << codeHandler.getTemporaryVariableCount()<< std::endl;
 		maxTempVarCount = codeHandler.getTemporaryVariableCount();

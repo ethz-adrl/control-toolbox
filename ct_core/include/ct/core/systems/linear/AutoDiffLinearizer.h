@@ -161,7 +161,7 @@ protected:
 
 	    Eigen::Matrix<double, Eigen::Dynamic, 1> jac(this->A_entries);
 
-	    this->f_.SparseJacobianForward(input, this->sparsityA_.sparsity(), this->sparsityA_.row(), this->sparsityA_.col(), jac, this->sparsityA_.work());
+	    this->f_.SparseJacobianForward(input, this->sparsityA_.sparsity(), this->sparsityA_.row(), this->sparsityA_.col(), jac, this->sparsityA_.workJacobian());
 
 	    Eigen::Map<Eigen::Matrix<double, STATE_DIM, STATE_DIM>> out(jac.data());
 
@@ -180,7 +180,7 @@ protected:
 
 	    Eigen::Matrix<double, Eigen::Dynamic, 1> jac(this->B_entries);
 
-	    this->f_.SparseJacobianForward(input, this->sparsityB_.sparsity(), this->sparsityB_.row(), this->sparsityB_.col(), jac, this->sparsityB_.work());
+	    this->f_.SparseJacobianForward(input, this->sparsityB_.sparsity(), this->sparsityB_.row(), this->sparsityB_.col(), jac, this->sparsityB_.workJacobian());
 
 	    Eigen::Map<Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>> out(jac.data());
 
