@@ -117,6 +117,9 @@ public:
 
 	CppAD::sparse_hessian_work& workHessian() { return workHessian_; }
 
+	/**
+	 * @brief      Clears the cppad internal work done on the sparsity pattern
+	 */
 	void clearWork()
 	{
 		workJacobian_.clear();

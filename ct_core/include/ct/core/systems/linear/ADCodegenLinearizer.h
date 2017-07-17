@@ -231,7 +231,7 @@ public:
 			bool ignoreZero = true
 			)
 	{		
-		this->sparsityA_.clearWork(); //clear the cppad sparsity work called by a possible method call before
+		this->sparsityA_.clearWork(); //clears the cppad sparsity work called by a possible method call before
 		size_t jacDimension = STATE_DIM * STATE_DIM;
 		std::string codeJacA =
 				internal::CGHelpers::generateJacobianSource(
@@ -245,7 +245,7 @@ public:
 						"x_in",
 						"vX_");
 
-		this->sparsityB_.clearWork(); //clear the cppad sparsity work called by a possible method call before
+		this->sparsityB_.clearWork(); //clears the cppad sparsity work called by a possible method call before
 		jacDimension = STATE_DIM * CONTROL_DIM;
 		std::string codeJacB =
 				internal::CGHelpers::generateJacobianSource(

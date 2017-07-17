@@ -82,7 +82,6 @@ public:
 		CppAD::cg::CodeHandler<double> codeHandler;
 
 		size_t n = f.Domain();
-		size_t m = f.Range();
 
 		CppAD::vector<AD_SCALAR> input(n);
 		codeHandler.makeVariables(input);
@@ -168,6 +167,8 @@ public:
 	template <typename AD_SCALAR>
 	static std::string generateHessianSource(
 			CppAD::ADFun<AD_SCALAR>& f,
+			SparsityPattern& pattern,
+			const size_t hesDim,
 			size_t& maxTempVarCount,
 			bool ignoreZero = true,
 			std::string jacName = "hes",
@@ -191,7 +192,8 @@ public:
 		for(size_t i = 0; i < m; ++i)
 			weights[i].setValue(0.0);
 
-		CppAD::vector<AD_SCALAR> hes = f.Hessian(input, weights);
+		CppAD::vector<AD_SCALAR> hes(hesDim);
+		f.SparseHessian(input, weights, pattern.sparsity(), pattern.row(), pattern.col(), hes, pattern.workHessian());
 
 		// make use of the symmetry of the hessian
 		for (size_t i = 0; i < n; i++)

@@ -398,10 +398,16 @@ public:
 			bool useReverse = true,
 			bool ignoreZero = true)
 	{
+		internal::SparsityPattern pattern;
+		pattern.initPattern(sparsity);
+
+		size_t hesDimension = IN_DIM * IN_DIM;
 
 		std::string codeHes =
 				internal::CGHelpers::generateHessianSource(
 						fCodeGen_,
+						pattern,
+						hesDimension,
 						tmpVarCount_,
 						ignoreZero
 				);
