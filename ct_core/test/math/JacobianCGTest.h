@@ -138,11 +138,11 @@ TEST(JacobianCGTest, CodegenTest)
 	derivativesCppad jacCG(f);
 
 	// generate code for the Jacobian, similar to jacobianCheck()
-	jacCG.generateJacobian("TestJacobian");
+	jacCG.generateJacobianSource("TestJacobian");
 
 	// generate code for the actual function, will evaluate to the same as testFunction()
-	jacCG.generateForwardZero("TestForwardZero");
+	jacCG.generateForwardZeroSource("TestForwardZero");
 
-	jacCG.generateHessian("TestHessian");
+	jacCG.generateHessianSource("TestHessian");
 }
 

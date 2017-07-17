@@ -61,7 +61,7 @@ public:
 
 private:
     JAC_TYPE hessian_;
-    std::array<double, 182> v_;
+    std::array<double, 484> v_;
 };
 
 } /* namespace HyA */

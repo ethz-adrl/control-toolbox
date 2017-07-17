@@ -28,6 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define INCLUDE_CT_CORE_AUTODIFF_CGHELPERS_H_
 
 #include "SparsityPattern.h"
+#include <cppad/local/jacobian.hpp>
 
 namespace ct {
 namespace core {
@@ -67,11 +68,10 @@ public:
 	 * @tparam AD_SCALAR Auto-Diff scalar type which is either a normal AD type or a codegen type
 	 */
 	template <typename AD_SCALAR>
-	static std::string generateJacobianCode(
+	static std::string generateJacobianSource(
 			CppAD::ADFun<AD_SCALAR>& f,
-			const size_t& x_dim,
-			CppAD::vector<AD_SCALAR>& jac,
 			SparsityPattern& pattern,
+			const size_t jacDim,
 			size_t& maxTempVarCount,
 			bool useReverse = false,
 			bool ignoreZero = true,
@@ -81,16 +81,18 @@ public:
 	{
 		CppAD::cg::CodeHandler<double> codeHandler;
 
-		// input vector, needs to be dynamic size
-		CppAD::vector<AD_SCALAR> input(x_dim);
+		size_t n = f.Domain();
+		size_t m = f.Range();
 
-		// for (size_t i=0; i<input.size(); i++)
-		// 	input[i] = AD_SCALAR(0.0);
-
-		// mark independent as variables
+		CppAD::vector<AD_SCALAR> input(n);
 		codeHandler.makeVariables(input);
+		// Initializing to some typical values
+		for(size_t i = 0; i < n; i++)
+			input[i].setValue(0.0);
 
-		if (useReverse)
+		CppAD::vector<AD_SCALAR> jac(jacDim);
+
+		if(useReverse)
 			f.SparseJacobianReverse(input, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.workJacobian());
 		else
 			f.SparseJacobianForward(input, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.workJacobian());
@@ -127,10 +129,8 @@ public:
 	 * @tparam AD_SCALAR Auto-Diff scalar type which is either a normal AD type or a codegen type
 	 */
 	template <typename AD_SCALAR>
-	static std::string generateForwardZeroCode(
+	static std::string generateForwardZeroSource(
 			CppAD::ADFun<AD_SCALAR>& f,
-			const size_t& x_dim,
-			CppAD::vector<AD_SCALAR>& jac,
 			size_t& maxTempVarCount,
 			bool ignoreZero = true,
 			std::string jacName = "forwardZero",
@@ -140,7 +140,9 @@ public:
 		CppAD::cg::CodeHandler<double> codeHandler;
 
 		// input vector, needs to be dynamic size
-		CppAD::vector<AD_SCALAR> input(x_dim);
+		size_t n = f.Domain();
+
+		CppAD::vector<AD_SCALAR> input(n);
 
 		for (size_t i=0; i<input.size(); i++)
 			input[i] = AD_SCALAR(0.0);
@@ -148,14 +150,14 @@ public:
 		// mark independent as variables
 		codeHandler.makeVariables(input);
 
-		jac = f.Forward(0, input);
+		CppAD::vector<AD_SCALAR> forwardZero = f.Forward(0, input);
 
 		CppAD::cg::LanguageC<double> langC("double", 4);
 		langC.setIgnoreZeroDepAssign(ignoreZero);
 		CppAD::cg::LangCDefaultVariableNameGenerator<double> nameGen(jacName, inputName, tempName);
 
 		std::ostringstream code;
-		codeHandler.generateCode(code, langC, jac, nameGen);
+		codeHandler.generateCode(code, langC, forwardZero, nameGen);
 
 		std::cout << "temporary variables: " << codeHandler.getTemporaryVariableCount()<< std::endl;
 		maxTempVarCount = codeHandler.getTemporaryVariableCount();
@@ -164,7 +166,7 @@ public:
 	}
 
 	template <typename AD_SCALAR>
-	static std::string generateHessianCode(
+	static std::string generateHessianSource(
 			CppAD::ADFun<AD_SCALAR>& f,
 			size_t& maxTempVarCount,
 			bool ignoreZero = true,

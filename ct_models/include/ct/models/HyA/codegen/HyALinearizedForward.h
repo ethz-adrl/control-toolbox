@@ -72,8 +72,8 @@ private:
 
 	state_matrix_t dFdx_;
 	state_control_matrix_t dFdu_;
-	std::array<double, 0> vX_;
-	std::array<double, 0> vU_;
+	std::array<double, 392> vX_;
+	std::array<double, 69> vU_;
 
 };
 

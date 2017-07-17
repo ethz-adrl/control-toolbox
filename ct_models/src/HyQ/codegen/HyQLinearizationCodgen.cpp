@@ -54,10 +54,10 @@ void generateInverseDynamics()
 
 	try {
 		std::cout << "Generating Jacobian of Inverse Dynamics wrt state using forward mode... " << std::endl;
-		jacCG.generateJacobianCode("HyQInverseDynJacForward", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), false);
+		jacCG.generateJacobianSource("HyQInverseDynJacForward", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), false);
 
 		std::cout << "Generating Jacobian of Inverse Dynamics wrt state using reverse mode... " << std::endl;
-		jacCG.generateJacobianCode("HyQInverseDynJacReverse", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), true);
+		jacCG.generateJacobianSource("HyQInverseDynJacReverse", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), true);
 	} catch (const std::runtime_error& e)
 	{
 		std::cout << "inverse dynamics code generation failed: "<<e.what()<<std::endl;
@@ -72,10 +72,10 @@ void generateForwardKinematics()
 
 	try {
 		std::cout << "Generating Jacobian of Forward Kinematics wrt state using forward mode... " << std::endl;
-		jacCG.generateJacobianCode("HyQForwardKinJacForward", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), false);
+		jacCG.generateJacobianSource("HyQForwardKinJacForward", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), false);
 
 		std::cout << "Generating Jacobian of Forward Kinematics wrt state using reverse mode... " << std::endl;
-		jacCG.generateJacobianCode("HyQForwardKinJacReverse", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), true);
+		jacCG.generateJacobianSource("HyQForwardKinJacReverse", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), true);
 	} catch (const std::runtime_error& e)
 	{
 		std::cout << "forward kinematics code generation failed: "<<e.what()<<std::endl;
@@ -92,7 +92,7 @@ void generateForwardZeroForwardDynamics()
 
 	try {
 		std::cout << "Generating Forward Zero Code... " << std::endl;
-		jacCG.generateForwardZeroCode("HyQForwardZero", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", false);
+		jacCG.generateForwardZeroSource("HyQForwardZero", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", false);
 	} catch (const std::runtime_error& e)
 	{
 		std::cout << "forward zero code generation failed: "<<e.what()<<std::endl;

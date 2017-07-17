@@ -230,14 +230,14 @@ public:
 			bool useReverse = false,
 			bool ignoreZero = true
 			)
-	{
-		CppAD::vector<AD_SCALAR> jacA(STATE_DIM*STATE_DIM);
+	{		
+		this->sparsityA_.clearWork(); //clear the cppad sparsity work called by a possible method call before
+		size_t jacDimension = STATE_DIM * STATE_DIM;
 		std::string codeJacA =
-				internal::CGHelpers::generateJacobianCode(
+				internal::CGHelpers::generateJacobianSource(
 						this->f_,
-						STATE_DIM+CONTROL_DIM,
-						jacA,
 						this->sparsityA_,
+						jacDimension,
 						maxTempVarCountState_,
 						useReverse,
 						ignoreZero,
@@ -245,13 +245,13 @@ public:
 						"x_in",
 						"vX_");
 
-		CppAD::vector<AD_SCALAR> jacB(STATE_DIM*CONTROL_DIM);
+		this->sparsityB_.clearWork(); //clear the cppad sparsity work called by a possible method call before
+		jacDimension = STATE_DIM * CONTROL_DIM;
 		std::string codeJacB =
-				internal::CGHelpers::generateJacobianCode(
+				internal::CGHelpers::generateJacobianSource(
 						this->f_,
-						STATE_DIM+CONTROL_DIM,
-						jacB,
 						this->sparsityB_,
+						jacDimension,
 						maxTempVarCountControl_,
 						useReverse,
 						ignoreZero,
