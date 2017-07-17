@@ -52,7 +52,8 @@ public:
 	template <int ROWS, int COLS>
 	void initPattern(const Eigen::Matrix<bool, ROWS, COLS>& sparsity)
 	{
-		work_.clear();
+		workJacobian_.clear();
+		workHessian_.clear();
 
 		const size_t rows = sparsity.rows();
 		const size_t cols = sparsity.cols();
@@ -113,13 +114,16 @@ public:
 	 * This method returns the "work" area of CppAD sparsity
 	 * @return CppAD sparsity work
 	 */
-	CppAD::sparse_jacobian_work& work() { return work_; }
+	CppAD::sparse_jacobian_work& workJacobian() { return workJacobian_; }
+
+	CppAD::sparse_hessian_work& workHessian() { return workHessian_; }
 
 private:
 	CppAD::vector<bool> sparsity_; //! sparsity in vector representation
 	CppAD::vector<size_t> row_; //! sparsity row indices for row-column representation
 	CppAD::vector<size_t> col_;//! sparsity column indices for row-column representation
-	CppAD::sparse_jacobian_work work_; //! CppAD internal "work"
+	CppAD::sparse_jacobian_work workJacobian_; //! CppAD internal "work"
+    CppAD::sparse_hessian_work workHessian_;
 };
 
 } /* namespace internal */

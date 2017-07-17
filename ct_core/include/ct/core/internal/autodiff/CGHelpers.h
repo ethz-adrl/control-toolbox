@@ -91,9 +91,9 @@ public:
 		codeHandler.makeVariables(input);
 
 		if (useReverse)
-			f.SparseJacobianReverse(input, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.work());
+			f.SparseJacobianReverse(input, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.workJacobian());
 		else
-			f.SparseJacobianForward(input, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.work());
+			f.SparseJacobianForward(input, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.workJacobian());
 
 		CppAD::cg::LanguageC<double> langC("double", 4);
 		langC.setIgnoreZeroDepAssign(true);
@@ -172,7 +172,7 @@ public:
 			SparsityPattern& pattern,
 			size_t& maxTempVarCount,
 			bool ignoreZero = true,
-			std::string jacName = "jac",
+			std::string jacName = "hes",
 			std::string inputName = "x_in",
 			std::string tempName = "v_")
 	{
@@ -189,11 +189,12 @@ public:
 		codeHandler.makeVariables(input);
 		codeHandler.makeVariables(weights);
 
-		f.SparseHessian(input, weights, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.work());
+		f.SparseHessian(input, weights, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.workHessian());
 
 		CppAD::cg::LanguageC<double> langC("double", 4);
 		langC.setIgnoreZeroDepAssign(true);
-		CppAD::cg::LangCDefaultVariableNameGenerator<double> nameGen(jacName, inputName, tempName);
+		CppAD::cg::LangCDefaultVariableNameGenerator<double> nameGenTmp(jacName, inputName, tempName);
+		CppAD::cg::LangCDefaultHessianVarNameGenerator<double> nameGen(&nameGenTmp, "w_in", w_dim);
 
 		std::ostringstream code;
 		codeHandler.generateCode(code, langC, jac, nameGen);

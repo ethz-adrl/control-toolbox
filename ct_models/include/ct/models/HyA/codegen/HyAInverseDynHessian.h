@@ -24,48 +24,48 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_HyAInverseDynJacForward_H_
-#define INCLUDE_HyAInverseDynJacForward_H_
+#ifndef INCLUDE_HESSIAN_NAME_H_
+#define INCLUDE_HESSIAN_NAME_H_
 
-#include <ct/core/math/Derivatives.h>
+#include <ct/core/math/Jacobian.h>
 
 namespace ct {
 namespace models {
 namespace HyA {
 
-class HyAInverseDynJacForward {
+class HESSIAN_NAME : public core::Jacobian<12, 6, double> {
 public:
-	typedef Eigen::Matrix<double, 6, 12> JAC_TYPE;
-	typedef Eigen::Matrix<double, 6, 12, Eigen::RowMajor> JAC_TYPE_ROW_MAJOR;
-	typedef Eigen::Matrix<double, 12, 1> X_TYPE;
+    typedef Eigen::Matrix<double, 12, 12> JAC_TYPE;
+    typedef Eigen::Matrix<double, 12, 12, Eigen::RowMajor> JAC_TYPE_ROW_MAJOR;
+    typedef Eigen::Matrix<double, 12, 1> X_TYPE;
 
-	HyAInverseDynJacForward() {
-		jac_.setZero();
-		v_.fill(0.0);
-	};
+    HESSIAN_NAME() {
+        hessian_.setZero();
+        v_.fill(0.0);
+    };
 
-	HyAInverseDynJacForward(const HyAInverseDynJacForward& other)
-	{
-		jac_.setZero();
-		v_.fill(0.0);
-	}
+    HESSIAN_NAME(const HESSIAN_NAME& other)
+    {
+        hessian_.setZero();
+        v_.fill(0.0);
+    }
 
-	virtual ~HyAInverseDynJacForward() {};
+    virtual ~HESSIAN_NAME() {};
 
-	HyAInverseDynJacForward* clone() const override{
-		return new HyAInverseDynJacForward(*this);
-	}
+    HESSIAN_NAME* clone() const override{
+        return new HESSIAN_NAME(*this);
+    }
 
 
-	JAC_TYPE operator()(const Eigen::VectorXd& x_in) override;
+    JAC_TYPE operator()(const Eigen::VectorXd& x_in, const Eigen::VectorXd& w_in) override;
 
 private:
-	JAC_TYPE jac_;
-	std::array<double, 164> v_;
+    JAC_TYPE hessian_;
+    std::array<double, 182> v_;
 };
 
 } /* namespace HyA */
 } /* namespace models */
 } /* namespace ct */
 
-#endif /* INCLUDE_JACOBIAN_NAME_H_ */
+#endif /* INCLUDE_HESSIAN_NAME_H_ */

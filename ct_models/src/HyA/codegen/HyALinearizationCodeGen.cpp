@@ -75,8 +75,8 @@ int main(int argc, char **argv){
 		std::cout << "Generating Jacobian of Inverse Dynamics wrt state using reverse mode... " << std::endl;
 		jacCG.generateJacobianCode("HyAInverseDynJacReverse", ct::models::HYA_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyA", JacCG::Sparsity::Ones(), true);
 
-        std::cout << "Generating Jacobian of Inverse Dynamics wrt state using reverse mode... " << std::endl;
-        jacCG.generateHessianCode("HyAInverseDynHessian", ct::models::HYA_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyA", JacCG::Sparsity::Ones(), true);
+        std::cout << "Generating Hessian of Inverse Dynamics wrt state using reverse mode... " << std::endl;
+        jacCG.generateHessianCode("HyAInverseDynHessian", ct::models::HYA_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyA", JacCG::HessianSparsity::Ones(), true);
 
 		std::cout << "generating using reverse mode" << std::endl;
 		adLinearizer.generateCode("HyALinearizedReverse", ct::models::HYA_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyA", true);
@@ -85,7 +85,7 @@ int main(int argc, char **argv){
 		adLinearizer.generateCode("HyALinearizedForward", ct::models::HYA_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyA", false);
 
 		std::cout << "Generating Jacobian of Inverse Dynamics wrt state using forward mode... " << std::endl;
-		jacCG.generateCode("HyAInverseDynJacForward", ct::models::HYA_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyA", JacCG::Sparsity::Ones(), false);
+		jacCG.generateJacobianCode("HyAInverseDynJacForward", ct::models::HYA_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyA", JacCG::Sparsity::Ones(), false);
 
 		std::cout<< "... done!" << std::endl;
 

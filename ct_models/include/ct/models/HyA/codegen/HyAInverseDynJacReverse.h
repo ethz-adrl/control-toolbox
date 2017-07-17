@@ -27,13 +27,13 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_HyAInverseDynJacReverse_H_
 #define INCLUDE_HyAInverseDynJacReverse_H_
 
-#include <ct/core/math/Jacobian.h>
+#include <ct/core/math/Derivatives.h>
 
 namespace ct {
 namespace models {
 namespace HyA {
 
-class HyAInverseDynJacReverse : public core::Jacobian<12, 6, double> {
+class HyAInverseDynJacReverse {
 public:
 	typedef Eigen::Matrix<double, 6, 12> JAC_TYPE;
 	typedef Eigen::Matrix<double, 6, 12, Eigen::RowMajor> JAC_TYPE_ROW_MAJOR;
@@ -68,4 +68,4 @@ private:
 } /* namespace models */
 } /* namespace ct */
 
-#endif /* INCLUDE_HyAInverseDynJacReverse_H_ */
+#endif /* INCLUDE_JACOBIAN_NAME_H_ */
