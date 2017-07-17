@@ -135,10 +135,6 @@ public:
 		std::cout << "Cost computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
-		// todo: where to put this Eigen threading stuff?
-		//		if (settings_.nThreadsEigen > 1)
-		//			Eigen::setNbThreads(settings_.nThreadsEigen); // restore default Eigen thread number
-
 		end = std::chrono::steady_clock::now();
 		diff = end - startEntire;
 #ifdef DEBUG_PRINT
@@ -182,13 +178,8 @@ public:
 		std::cout << "Defects computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
-
 		// compute new costs
 		this->backend_->updateCosts();
-
-		// todo: where to put the whole threading
-		//		if (settings_.nThreadsEigen > 1)
-		//			Eigen::setNbThreads(settings_.nThreadsEigen); // restore default Eigen thread number
 
 		diff = end - startEntire;
 #ifdef DEBUG_PRINT
@@ -210,7 +201,7 @@ public:
 
 };
 
-}
-}
+}	// namespace optcon
+}	// namespace ct
 
 #endif /* INCLUDE_CT_OPTCON_SOLVER_GNMS_CT_H_ */

@@ -2,7 +2,7 @@ timeHorizon 3.0
 
 initType    0 ; 0 = zero, 1 = linear, 2 = integrated with zero control action, 3 = random
 
-ilqg
+alg
 {
 	integrator RK4
 	discretization Matrix_exponential
@@ -16,6 +16,7 @@ ilqg
     maxDefectSum 1e-5
     nThreads 1
     nThreadsEigen 4
+    loggingPrefix test
     locp_solver GNRICCATI_SOLVER
     nlocp_algorithm GNMS
     

@@ -34,10 +34,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
 #include <ct/optcon/solver/OptConSolver.h>
 
-#include <ct/optcon/gnms/GNMSSettings.hpp>
 #include <ct/optcon/problem/LQOCProblem.hpp>
 #include <ct/optcon/solver/lqp/GNRiccatiSolver.hpp>
 #include <ct/optcon/solver/lqp/HPIPMInterface.hpp>
+#include <ct/optcon/solver/NLOptConSettings.hpp>
 
 #ifdef MATLAB
 #include <ct/optcon/matlab.hpp>
@@ -147,7 +147,7 @@ public:
 	NLOCBackendBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 			 const std::string& settingsFile,
 			 bool verbose = true,
-			 const std::string& ns = "ilqg") :
+			 const std::string& ns = "alg") :
 			NLOCBackendBase(optConProblem, Settings_t::fromConfigFile(settingsFile, verbose, ns))
 	{}
 
@@ -548,6 +548,8 @@ protected:
 
     typedef std::shared_ptr<core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR> > ConstantControllerPtr;
     std::vector<ConstantControllerPtr, Eigen::aligned_allocator<ConstantControllerPtr> > controller_;	//! the constant controller for forward-integration during one time-step
+
+
 
     //! The policy. currently only for returning the result, should eventually replace L_ and u_ff_ (todo)
     NLOCBackendBase::Policy_t policy_;

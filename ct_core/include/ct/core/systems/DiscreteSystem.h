@@ -55,6 +55,7 @@ public:
 protected:
 
 	SYSTEM_TYPE type_; //!< type of system
+
 	bool isSymplectic_;
 };
 

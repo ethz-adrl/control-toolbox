@@ -172,7 +172,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::checkProblem()
 {
 	if (K_==0)
-		throw std::runtime_error("Time horizon too small resulting in 0 GNMS steps");
+		throw std::runtime_error("Time horizon too small resulting in 0 steps");
 
 	if (u_ff_.size() < K_)
 	{
@@ -188,12 +188,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 {
 	if (!settings.parametersOk())
 	{
-		throw(std::runtime_error("GNMSSettings are incorrect. Aborting."));
+		throw(std::runtime_error("Settings are incorrect. Aborting."));
 	}
 
 	if (settings.nThreads != settings_.nThreads)
 	{
-		throw(std::runtime_error("Number of threads at GNMS cannot be changed after instance has been created."));
+		throw(std::runtime_error("Number of threads cannot be changed after instance has been created."));
 	}
 
 	// update system discretizer with new settings
@@ -222,9 +222,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 	else
 		throw std::runtime_error("Solver for Linear Quadratic Optimal Control Problem wrongly specified.");
 
-
-	// will be set correctly later
-	Eigen::setNbThreads(settings.nThreadsEigen);
+	// set number of Eigen Threads
+	if (settings_.nThreadsEigen > 1)
+		Eigen::setNbThreads(settings.nThreadsEigen);
 
 	lqocSolver_->configure(settings);
 
@@ -280,11 +280,11 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 				controller_[threadId]->setControl(u_local.back() + L_[i]*(x0-x_ref[i]));
 			}
 
-			if (settings_.integrator == GNMSSettings::EULER)
+			if (settings_.integrator == Settings_t::EULER)
 			{
 				integratorsEuler_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
 			}
-			else if(settings_.integrator == GNMSSettings::RK4)
+			else if(settings_.integrator == Settings_t::RK4)
 			{
 				integratorsRK4_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
 			}
@@ -384,11 +384,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeSi
 	controller_[threadId]->setControl(u_ff_[k]);
 	xShot_[k] = x_[k];
 
-	if (settings_.integrator == GNMSSettings::EULER)
+	if (settings_.integrator == Settings_t::EULER)
 	{
 		integratorsEuler_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
 	}
-	else if(settings_.integrator == GNMSSettings::RK4)
+	else if(settings_.integrator == Settings_t::RK4)
 	{
 		integratorsRK4_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
 	}
@@ -559,7 +559,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 
 	LQOCProblem_t& p = *lqocProblem_;
 
-	matFile_.open("GNMSLog"+std::to_string(iteration)+".mat");
+	matFile_.open(settings_.loggingPrefix+"Log"+std::to_string(iteration)+".mat");
 
 	matFile_.put("iteration", iteration);
 	matFile_.put("K", K_);

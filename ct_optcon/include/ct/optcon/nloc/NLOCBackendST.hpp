@@ -35,6 +35,9 @@ namespace ct{
 namespace optcon{
 
 
+/*!
+ * NLOC Backend for Single-Threaded case
+ */
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM = STATE_DIM/2, size_t V_DIM=STATE_DIM/2, typename SCALAR = double>
 class NLOCBackendST : public NLOCBackendBase <STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>
 {
@@ -52,7 +55,7 @@ public:
 	NLOCBackendST(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 			 const std::string& settingsFile,
 			 bool verbose = true,
-			 const std::string& ns = "ilqg") :
+			 const std::string& ns = "alg") :
 			Base(optConProblem, settingsFile, verbose, ns)
 	{}
 

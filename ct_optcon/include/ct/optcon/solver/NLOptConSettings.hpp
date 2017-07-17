@@ -201,6 +201,7 @@ public:
         discretization(APPROXIMATION::BACKWARD_EULER),
         nlocp_algorithm(GNMS),
         lqocp_solver(GNRICCATI_SOLVER),
+		loggingPrefix("alg"),
 		epsilon(1e-5),
 		dt(0.001),
 		dt_sim(0.001),
@@ -220,6 +221,7 @@ public:
     APPROXIMATION discretization;
 	NLOCP_ALGORITHM nlocp_algorithm;   //! which nonlinear optimal control algorithm is to be used
 	LQOCP_SOLVER lqocp_solver;	//! the solver for the linear-quadratic optimal control problem
+	std::string loggingPrefix; //! the prefix to be stored before the matfile name for logging
 	double epsilon;			//! Eigenvalue correction factor for Hessian regularization
     double dt;				//! sampling time for the control input (seconds)
     double dt_sim;			//! sampling time for the forward simulation (seconds) \warning dt_sim needs to be an integer multiple of dt.
@@ -264,6 +266,7 @@ public:
         std::cout<<"epsilon: "<<epsilon<<std::endl;
         std::cout<<"nThreads: "<<nThreads<<std::endl;
         std::cout<<"nThreadsEigen: "<<nThreadsEigen<<std::endl<<std::endl;
+        std::cout<<"loggingPrefix: "<<loggingPrefix<<std::endl<<std::endl;
 
         lineSearchSettings.print();
 
@@ -306,7 +309,7 @@ public:
      * @param verbose print out settings after reading them
      * @param ns (optional) namspace of parameter file
      */
-    void load(const std::string& filename, bool verbose = true, const std::string& ns = "ilqg")
+    void load(const std::string& filename, bool verbose = true, const std::string& ns = "alg")
     {
     	if (verbose)
     		std::cout << "Trying to load NLOptCon config from "<<filename<<": "<<std::endl;
@@ -325,6 +328,7 @@ public:
 		maxDefectSum = pt.get<double>(ns +".maxDefectSum");
 		max_iterations = pt.get<int>(ns +".max_iterations");
 		nThreads = pt.get<int>(ns +".nThreads");
+		loggingPrefix = pt.get<std::string>(ns + ".loggingPrefix");
 
 		try {
 
