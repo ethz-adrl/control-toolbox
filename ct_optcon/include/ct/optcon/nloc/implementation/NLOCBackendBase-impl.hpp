@@ -271,14 +271,14 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 		if (terminationFlag && *terminationFlag) return false;
 
 		u_local.push_back( u_ff_local[i] + L_[i] * (x0-x_ref[i]));
-		controller_[threadId]->setControl(u_local.back());
+		controller_[threadId]->updateControlLaw(u_ff_local[i], x_ref[i], L_[i]);
 
 		for (size_t j=0; j<steps; j++)
 		{
-			if (steps > 1)
-			{
-				controller_[threadId]->setControl(u_local.back() + L_[i]*(x0-x_ref[i]));
-			}
+//			if (steps > 1)	// this should be redundant now -- todo: remove
+//			{
+//				controller_[threadId]->setControl(u_local.back() + L_[i]*(x0-x_ref[i]));
+//			}
 
 			if (settings_.integrator == Settings_t::EULER)
 			{
@@ -340,6 +340,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::sequentialLQProblem()
 {
+	throw std::runtime_error("sequentialLQProblem should currently not be called."); // todo fixme
+
 	auto start = std::chrono::steady_clock::now();
 	computeLinearizedDynamicsAroundTrajectory();
 	auto end = std::chrono::steady_clock::now();
@@ -357,11 +359,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::sequentialLQ
 #endif
 
 	start = std::chrono::steady_clock::now();
-	if (iteration_ == 0)
-		initializeShots();
-	else
-		updateShots();
-	end = std::chrono::steady_clock::now();
+	rolloutShots();
 	diff = end - start;
 #ifdef DEBUG_PRINT
 	std::cout << "Shot integration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
@@ -377,11 +375,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::sequentialLQ
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeSingleShot(size_t threadId, size_t k)
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingleShot(size_t threadId, size_t k)
 {
 	const double& dt_sim = settings_.dt_sim;
 
-	controller_[threadId]->setControl(u_ff_[k]);
+	controller_[threadId]->updateControlLaw(u_ff_[k], x_[k], L_[k]);
+
 	xShot_[k] = x_[k];
 
 	if (settings_.integrator == Settings_t::EULER)
@@ -412,14 +411,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeSi
 //	u_ff_[k] += lv_[k] + L_[k] * lx_[k];
 //}
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSingleShot(size_t threadId, size_t k)
-{
-	// Todo: This linear update only works if lx_ and lu_ are small. Otherwise this makes it unstable.
-	//xShot_[k] += (A_[k] + B_[k] * L_[k]) * lx_[k] + B_[k] * lv_[k];
-	initializeSingleShot(settings_.nThreads, k);
-}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeSingleDefect(size_t threadId, size_t k)
@@ -603,7 +594,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logInitToMat
 
 #ifdef MATLAB
 
-	matFile_.open("GNMSLogInit.mat");
+	matFile_.open(settings_.loggingPrefix+"LogInit.mat");
 
 	matFile_.put("xInit", x_.toImplementation());
 	matFile_.put("u_ffInit", u_ff_.toImplementation());

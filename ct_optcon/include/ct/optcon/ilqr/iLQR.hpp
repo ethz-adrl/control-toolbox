@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_OPTCON_SOLVER_ILQR_CT_H_
-#define INCLUDE_CT_OPTCON_SOLVER_ILQR_CT_H_
+#ifndef INCLUDE_CT_OPTCON_SOLVER_ILQR_H_
+#define INCLUDE_CT_OPTCON_SOLVER_ILQR_H_
 
 #include <ct/optcon/solver/NLOptConSettings.hpp>
 #include <ct/optcon/nloc/NLOCAlgorithm.hpp>
@@ -38,6 +38,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class iLQR : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const size_t STATE_D = STATE_DIM;
@@ -50,24 +51,23 @@ public:
 	typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR> BASE;
 	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM> Backend_t;
 
-
+	//! constructor
 	iLQR(std::shared_ptr<Backend_t>& backend_, const Settings_t& settings) :
 		BASE(backend_)
-	{
-		configure(settings); // todo: might be redundant????
-	}
+	{}
 
+	//! destructor
 	virtual ~iLQR(){}
 
+	//! configure the solver
 	virtual void configure(const Settings_t& settings) override
 	{
-		std::cout << "calling configure for iLQR." << std::endl; // todo remove
 		this->backend_->configure(settings);
 	}
 
+	//! set an initial guess
 	virtual void setInitialGuess(const Policy_t& initialGuess) override
 	{
-		std::cout << "setting init guess" << std::endl; // todo remove
 		this->backend_->setInitialGuess(initialGuess);
 	}
 
@@ -78,6 +78,7 @@ public:
 	virtual bool finishIteration() override {
 		throw(std::runtime_error("to be filled"));
 		return true;}
+
 
 	virtual bool runIteration() override
 	{
@@ -192,4 +193,4 @@ public:
 }
 }
 
-#endif /* INCLUDE_CT_OPTCON_SOLVER_ILQR_CT_H_ */
+#endif /* INCLUDE_CT_OPTCON_SOLVER_ILQR_H_ */

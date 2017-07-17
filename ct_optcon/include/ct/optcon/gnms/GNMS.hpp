@@ -51,23 +51,23 @@ public:
 	typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR> BASE;
 	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM> Backend_t;
 
+	//! constructor
 	GNMS(std::shared_ptr<Backend_t>& backend_, const Settings_t& settings) :
 		BASE(backend_)
-	{
-		configure(settings); // todo: might be redundant????
-	}
+	{}
 
+	//! destructor
 	virtual ~GNMS(){}
 
+	//! configure the solver
 	virtual void configure(const Settings_t& settings) override
 	{
-		std::cout << "calling configure for GNMS." << std::endl; // todo remove
 		this->backend_->configure(settings);
 	}
 
+	//! set an initial guess
 	virtual void setInitialGuess(const Policy_t& initialGuess) override
 	{
-		std::cout << "setting init guess" << std::endl; // todo remove
 		this->backend_->setInitialGuess(initialGuess);
 	}
 
@@ -94,20 +94,20 @@ public:
 
 		this->backend_->checkProblem();
 
-#ifdef MATLAB_FULL_LOG
-		if (this->backend_->iteration() == 0)
-			this->backend_->logInitToMatlab();
-#endif
-
 
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
 		{
 			std::cout << "Running additional init routine for first iteration !!" << std::endl;
-			this->backend_->initializeShots();
+			this->backend_->rolloutShots();
 			this->backend_->computeDefects();
 			this->backend_->updateCosts();
 		}
+
+#ifdef MATLAB_FULL_LOG
+		if (this->backend_->iteration() == 0)
+			this->backend_->logInitToMatlab();
+#endif
 
 //#ifdef DEBUG_PRINT
 //		std::cout << "PREINTEGRATION DEBUG PRINT"<<std::endl;
@@ -160,10 +160,7 @@ public:
 
 
 		start = std::chrono::steady_clock::now();
-//		if (this->backend_->iteration() == 0)
-//			this->backend_->initializeShots();
-//		else
-		this->backend_->updateShots(); // todo: clear that
+		this->backend_->rolloutShots();
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT

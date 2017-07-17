@@ -89,21 +89,11 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolution
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateShots()
+void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots()
 {
 	for (size_t k=0; k<this->K_; k++)
 	{
-//		this->updateSingleShot(this->settings_.nThreads, k);
-		this->initializeSingleShot(this->settings_.nThreads, k);
-	}
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeShots()
-{
-	for (size_t k=0; k<this->K_; k++)
-	{
-		this->initializeSingleShot(this->settings_.nThreads, k);
+		this->rolloutSingleShot(this->settings_.nThreads, k);
 	}
 }
 

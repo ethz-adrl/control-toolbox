@@ -77,9 +77,7 @@ protected:
 
 	virtual void updateSolutionFeedback() override;
 
-	virtual void updateShots() override;
-
-	virtual void initializeShots() override;
+	virtual void rolloutShots() override;
 
 	virtual void computeDefects() override;
 

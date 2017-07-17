@@ -125,7 +125,7 @@ public:
 	{
 		for (size_t i=0; i<settings.nThreads+1; i++)
 		{
-			controller_[i] = std::shared_ptr<core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR> > (new core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>());
+			controller_[i] = ConstantStateFeedbackControllerPtr (new core::ConstantStateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>());
 		}
 
 		configure(settings);
@@ -402,9 +402,7 @@ public:
 
 	virtual void updateSolutionFeedback() = 0;
 
-	virtual void updateShots() = 0;
-
-	virtual void initializeShots() = 0;
+	virtual void rolloutShots() = 0;
 
 	virtual void computeDefects() = 0;
 
@@ -420,10 +418,7 @@ protected:
 //	void updateSingleControlAndState(size_t threadId, size_t k);
 
 	//! integrate the individual shots
-	void initializeSingleShot(size_t threadId, size_t k);
-
-	//! integrate the individual shots
-	void updateSingleShot(size_t threadId, size_t k);
+	void rolloutSingleShot(size_t threadId, size_t k);
 
 	//! computes the defect between shot and trajectory
 	void computeSingleDefect(size_t threadId, size_t k);
@@ -546,8 +541,8 @@ protected:
 	typedef std::shared_ptr<ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR> > IntegratorSymplecticRkPtr;
 	std::vector<IntegratorSymplecticRkPtr, Eigen::aligned_allocator<IntegratorSymplecticRkPtr > > integratorsRkSymplectic_;
 
-    typedef std::shared_ptr<core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR> > ConstantControllerPtr;
-    std::vector<ConstantControllerPtr, Eigen::aligned_allocator<ConstantControllerPtr> > controller_;	//! the constant controller for forward-integration during one time-step
+    typedef std::shared_ptr<core::ConstantStateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> > ConstantStateFeedbackControllerPtr;
+    std::vector<ConstantStateFeedbackControllerPtr, Eigen::aligned_allocator<ConstantStateFeedbackControllerPtr> > controller_;	//! the constant controller for forward-integration during one time-step
 
 
 
