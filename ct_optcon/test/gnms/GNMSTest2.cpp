@@ -223,7 +223,7 @@ void singleCore()
 	bool foundBetter = true;
 	size_t numIterations = 0;
 
-	while (foundBetter)
+	while (numIterations<15)
 	{
 		foundBetter = gnms.runIteration();
 
@@ -233,18 +233,14 @@ void singleCore()
 
 		numIterations++;
 
-			std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
-			std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
-		if (numIterations>5)
-		{
-			break;
-		}
+		std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
+		std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
 	}
 
 	foundBetter = true;
 
 	numIterations = 0;
-	while (foundBetter)
+	while (numIterations<15)
 	{
 		foundBetter = ilqr.runIteration();
 
@@ -254,12 +250,8 @@ void singleCore()
 
 		numIterations++;
 
-			std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
-			std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
-		if (numIterations>40)
-		{
-			break;
-		}
+		std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
+		std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
 	}
 }
 

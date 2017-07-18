@@ -205,7 +205,7 @@ void singleCore()
 		bool foundBetter = true;
 		size_t numIterations = 0;
 
-		while (foundBetter)
+		while (numIterations<15)
 		{
 			foundBetter = gnms.runIteration();
 
@@ -223,7 +223,7 @@ void singleCore()
 
 		numIterations = 0;
 		foundBetter = true;
-		while (foundBetter)
+		while (numIterations<15)
 		{
 			foundBetter = ilqg.runIteration();
 

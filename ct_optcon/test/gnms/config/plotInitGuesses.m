@@ -17,7 +17,8 @@ xlabel('t [sec]')
 title('control');
 
 subplot(3,3,3)
-plot(-1, d_norm, 'o', 'MarkerSize', 8); hold on
+plot(-1, d_norm, 'o', 'MarkerSize', 8);
+hold on; grid on
 title('defect norm')
 xlabel('t [sec]')
 ylabel('d [m]')

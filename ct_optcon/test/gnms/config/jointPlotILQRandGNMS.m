@@ -2,7 +2,7 @@ clear all
 close all
 
 
-numIter = 1;    % number of iterations to be plotted
+numIter = 14;    % number of iterations to be plotted
 
 %% plot the init guess logs
 

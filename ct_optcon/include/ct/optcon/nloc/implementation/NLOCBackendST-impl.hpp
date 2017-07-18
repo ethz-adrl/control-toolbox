@@ -68,6 +68,9 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionState()
 {
 	this->x_ = this->lqocSolver_->getSolutionState();
+
+	//! get state update norm. may be overwritten later, depending on the algorithm
+	this->lx_norm_ = this->lqocSolver_->getStateUpdateNorm();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -76,6 +79,9 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolution
 	this->u_ff_prev_ = this->u_ff_; // store previous feedforward for line-search
 
 	this->u_ff_ = this->lqocSolver_->getSolutionControl();
+
+	//! get control update norm. may be overwritten later, depending on the algorithm
+	this->lu_norm_ = this->lqocSolver_->getControlUpdateNorm();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -169,7 +175,11 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 			this->intermediateCostBest_ = intermediateCost;
 			this->finalCostBest_ = finalCost;
 
+			this->computeControlUpdateNorm(u_search, this->u_ff_prev_);
+			this->computeStateUpdateNorm(x_search, this->x_prev_);
+
 			alphaBest = alpha;
+			this->x_prev_ = x_search;
 			this->lowestCost_ = cost;
 			this->x_.swap(x_search);
 			this->u_ff_.swap(u_search);

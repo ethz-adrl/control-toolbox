@@ -312,6 +312,8 @@ public:
 	{
 		iteration_ = 0;
 		d_norm_ = std::numeric_limits<scalar_t>::infinity();
+		lx_norm_ = std::numeric_limits<scalar_t>::infinity();
+		lu_norm_ = std::numeric_limits<scalar_t>::infinity();
 		intermediateCostBest_ = std::numeric_limits<scalar_t>::infinity();
 		finalCostBest_ = std::numeric_limits<scalar_t>::infinity();
 		intermediateCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
@@ -529,6 +531,25 @@ protected:
 	void matrixToMatlab(V& matrix, std::string variableName);
 
 
+	//! compute the norm of the difference between two control trajectories @todo move to impl
+	void computeControlUpdateNorm(const ct::core::ControlVectorArray<CONTROL_DIM>& u_prev, const ct::core::ControlVectorArray<CONTROL_DIM>& u_new)
+	{
+		lu_norm_ = 0.0;
+
+		for(size_t i = 0; i<u_prev.size(); i++)
+			lu_norm_ += (u_prev[i]-u_new[i]).norm();
+	}
+
+	//! compute the norm of the difference between two state trajectories @todo move to impl
+	void computeStateUpdateNorm(const ct::core::StateVectorArray<STATE_DIM>& x_prev, const ct::core::StateVectorArray<STATE_DIM>& x_new)
+	{
+		lx_norm_ = 0.0;
+
+		for(size_t i = 0; i<x_prev.size(); i++)
+			lx_norm_ += (x_prev[i]-x_new[i]).norm();
+	}
+
+
 	typedef std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > IntegratorRK4Ptr;
     std::vector<IntegratorRK4Ptr, Eigen::aligned_allocator<IntegratorRK4Ptr> > integratorsRK4_; //! Runge-Kutta-4 Integrators
 
@@ -562,11 +583,14 @@ protected:
 
 	StateVectorArray x_;
 	StateVectorArray xShot_;
+	StateVectorArray x_prev_;
 	ControlVectorArray u_ff_;
 	ControlVectorArray u_ff_prev_;
 	FeedbackArray L_;
 
 	SCALAR d_norm_; 	// sum of the norms of all defects
+	SCALAR lx_norm_; 	// sum of the norms of state update
+	SCALAR lu_norm_; 	// sum of the norms of control update
 
 
 	std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> > lqocProblem_;

@@ -48,6 +48,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::setInitialGu
 
 	u_ff_ = initialGuess.uff();
 	x_ = initialGuess.x_ref();
+	x_prev_ = x_;
 
 	initialized_ = true;
 
@@ -74,6 +75,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
 	K_ = K;
 
 	x_.resize(K_+1);
+	x_prev_.resize(K_+1);
 	xShot_.resize(K_+1);
 	u_ff_.resize(K_);
 	u_ff_prev_.resize(K_);
@@ -251,9 +253,6 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 	const scalar_t& dt_sim = settings_.dt_sim;
 	const size_t K_local = K_;
 
-	//it's a bit ugly to have this as a temporary variable here, but it avoids making another reference xtrajectory member
-	// todo: maybe find cleaner solution
-	ct::core::StateVectorArray<STATE_DIM, SCALAR> x_ref = x_;
 
 	// take a copy since x0 gets overwritten in integrator
 	ct::core::StateVector<STATE_DIM, SCALAR> x0 = x_local[0];
@@ -277,8 +276,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 		if(settings_.closedLoopShooting)
 			L_sim = L_[i];
 
-		u_local.push_back( u_ff_local[i] + L_sim * (x0-x_ref[i]));
-		controller_[threadId]->updateControlLaw(u_ff_local[i], x_ref[i], L_sim);
+		u_local.push_back( u_ff_local[i] + L_sim * (x0-x_prev_[i]));
+		controller_[threadId]->updateControlLaw(u_ff_local[i], x_prev_[i], L_sim);
 
 
 		if (settings_.integrator == Settings_t::EULER)
@@ -536,8 +535,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 	std::cout<<std::setprecision(15) << "final cost:                " << finalCostBest_ << std::endl;
 	std::cout<<std::setprecision(15) << "total cost:                " << intermediateCostBest_ + finalCostBest_ << std::endl;
 	std::cout<<std::setprecision(15) << "total constraint err.norm: " << d_norm_ << std::endl;
-	std::cout<<std::setprecision(15) << "total state update norm:   " << lqocSolver_->getStateUpdateNorm() << std::endl;
-	std::cout<<std::setprecision(15) << "total control update.norm: " << lqocSolver_->getControlUpdateNorm() << std::endl;
+	std::cout<<std::setprecision(15) << "total state update norm:   " << lx_norm_ << std::endl;
+	std::cout<<std::setprecision(15) << "total control update.norm: " << lu_norm_ << std::endl;
 
 	// todo bring back this
 //	if(settings_.recordSmallestEigenvalue)
@@ -580,10 +579,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 	matFile_.put("R", p.R_.toImplementation());
 	matFile_.put("q", p.q_.toEigenTrajectory());
 
-	matFile_.put("luff", lqocSolver_->getControlUpdates().toImplementation());
-	matFile_.put("lx", lqocSolver_->getStateUpdates().toImplementation());
-	matFile_.put("lu_norm", lqocSolver_->getControlUpdateNorm());
-	matFile_.put("lx_norm", lqocSolver_->getStateUpdateNorm());
+//	matFile_.put("luff", lqocSolver_->getControlUpdates().toImplementation());	// todo: work those over
+//	matFile_.put("lx", lqocSolver_->getStateUpdates().toImplementation());
+	matFile_.put("lx_norm", lx_norm_);
+	matFile_.put("lu_norm", lu_norm_);
 	matFile_.put("d_norm", d_norm_);
 
 	matFile_.put("cost", getCost());
@@ -688,6 +687,11 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchCo
 			finalCostBest_ = std::numeric_limits<scalar_t>::max();
 			computeCostsOfTrajectory(settings_.nThreads, x_, u_recorded, intermediateCostBest_, finalCostBest_);
 			lowestCost_ = intermediateCostBest_ + finalCostBest_;
+
+			computeControlUpdateNorm(u_recorded, u_ff_prev_);
+			computeStateUpdateNorm(x_prev_, x_);
+
+			x_prev_ = x_;
 			u_ff_.swap(u_recorded);
 			t_.swap(t_local);
 		}
