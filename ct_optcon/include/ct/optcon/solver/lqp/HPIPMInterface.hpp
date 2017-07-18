@@ -269,7 +269,13 @@ public:
 private:
 	void setProblemImpl(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>>& lqocProblem) override
 	{
+
+		auto change_start = std::chrono::steady_clock::now();
 		changeNumberOfStages(lqocProblem->getNumberOfStages());
+		auto change_end = std::chrono::steady_clock::now();
+
+		auto setup_start = std::chrono::steady_clock::now();
+
 		setupHPIPM(
 				lqocProblem->x_,
 				lqocProblem->u_,
@@ -281,6 +287,13 @@ private:
 				lqocProblem->Q_,
 				lqocProblem->rv_,
 				lqocProblem->R_);
+
+		auto setup_end = std::chrono::steady_clock::now();
+
+#ifdef DEBUG_PRINT
+		std::cout << "hpipm change took " <<std::chrono::duration <double, std::milli> (change_end-change_start).count() << " ms" <<std::endl;
+		std::cout << "hpipm setup took " <<std::chrono::duration <double, std::milli> (setup_end-setup_start).count() << " ms" <<std::endl;
+#endif
 	}
 
 
@@ -349,12 +362,16 @@ private:
 //		d_print_mat(1, CONTROL_DIM, hr_[1], 1);
 //		printf("\nr0\n");
 //		d_print_mat(1, CONTROL_DIM, hr_[0], 1);
+
 	}
 
 
 	void changeNumberOfStages(int N)
 	{
 		N_ = N;
+
+		this->lx_.resize(N+1);
+		this->lu_.resize(N);
 
 		nx_.resize(N_+1, STATE_DIM);
 		nu_.resize(N_+1, CONTROL_DIM);
@@ -414,17 +431,23 @@ private:
 
 
 		int qp_size = ::d_memsize_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
+#ifdef DEBUG_PRINT
 		std::cout << "qp_size: " << qp_size << std::endl;
+#endif
 		qp_mem_.resize(qp_size);
 		::d_create_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_, qp_mem_.data());
 
 		int qp_sol_size = ::d_memsize_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
+#ifdef DEBUG_PRINT
 		std::cout << "qp_sol_size: " << qp_sol_size << std::endl;
+#endif
 		qp_sol_mem_.resize(qp_sol_size);
 		::d_create_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_sol_, qp_sol_mem_.data());
 
 		int ipm_size = ::d_memsize_ipm_hard_ocp_qp(&qp_, &arg_);
+#ifdef DEBUG_PRINT
 		std::cout << "ipm_size: " << ipm_size << std::endl;
+#endif
 		ipm_mem_.resize(ipm_size);
 		::d_create_ipm_hard_ocp_qp(&qp_, &arg_, &workspace_, ipm_mem_.data());
 	}

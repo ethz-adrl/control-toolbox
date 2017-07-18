@@ -7,8 +7,8 @@ gnms
 	integrator Euler
 	discretization Matrix_exponential
 	closedLoopShooting 0 					; (1 = closed loop shooting, 0 = open-loop shooting)
-    dt 0.1
-    dt_sim 0.1
+    dt 0.001
+    dt_sim 0.001
     epsilon 1e-6
 	max_iterations 5
     fixedHessianCorrection false
@@ -18,7 +18,8 @@ gnms
     nThreads 1
     nThreadsEigen 4
     loggingPrefix GNMS
-    locp_solver GNRICCATI_SOLVER
+    locp_solver HPIPM_SOLVER
+    ;locp_solver GNRICCATI_SOLVER
     nlocp_algorithm GNMS
     
     line_search
@@ -37,8 +38,8 @@ ilqr
 	integrator Euler
 	discretization Matrix_exponential
 	closedLoopShooting 0 					; (1 = closed loop shooting, 0 = open-loop shooting)
-    dt 0.1
-    dt_sim 0.1
+    dt 0.001
+    dt_sim 0.001
     epsilon 1e-6
 	max_iterations 5
     fixedHessianCorrection false
@@ -48,7 +49,8 @@ ilqr
     nThreads 1
     nThreadsEigen 4
     loggingPrefix ILQR
-    locp_solver GNRICCATI_SOLVER
+    locp_solver HPIPM_SOLVER
+    ;locp_solver GNRICCATI_SOLVER
     nlocp_algorithm ILQR
     
     line_search

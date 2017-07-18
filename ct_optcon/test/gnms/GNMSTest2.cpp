@@ -140,7 +140,8 @@ void singleCore()
 	size_t nSteps = gnms_settings.computeK(tf);
 
 	// provide initial guess
-	ControlVectorArray<control_dim> u0(nSteps, ControlVector<control_dim>::Zero());
+	ControlVector<control_dim> uff_init_guess; uff_init_guess << -(x_0(0) + 1)*x_0(0);
+	ControlVectorArray<control_dim> u0(nSteps, uff_init_guess);
 	StateVectorArray<state_dim>  x0(nSteps+1, x_0);
 
 	int initType = 0;

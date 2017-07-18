@@ -553,10 +553,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(const size_t& iteration)
 {
-	// all the variables in MATLAB that are ended by "_"
-	// will be saved in a mat-file
-
 #ifdef MATLAB
+
+	std::cout << "Logging to Matlab" << std::endl;
 
 	LQOCProblem_t& p = *lqocProblem_;
 
@@ -564,6 +563,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 
 	matFile_.put("iteration", iteration);
 	matFile_.put("K", K_);
+	matFile_.put("dt", settings_.dt);
+	matFile_.put("dt_sim", settings_.dt_sim);
 	matFile_.put("x", x_.toImplementation());
 	matFile_.put("u_ff", u_ff_.toImplementation());
 	matFile_.put("t", t_.toEigenTrajectory());
@@ -579,19 +580,23 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 	matFile_.put("R", p.R_.toImplementation());
 	matFile_.put("q", p.q_.toEigenTrajectory());
 
-//	matFile_.put("sv", sv_.toImplementation());
-//	matFile_.put("S", S_.toImplementation());
-//	matFile_.put("L", L_.toImplementation());
-	matFile_.put("lv", lqocoSolver_->getControlUpdates().toImplementation());
-	matFile_.put("lx", lqocoSolver_->getStateUpdates().toImplementation());
-	matFile_.put("lv_norm", lqocoSolver_->getControlUpdateNorm());
-	matFile_.put("lx_norm", lqocoSolver_->getStateUpdateNorm());
-//	matFile_.put("H", H_.toImplementation());
-//	matFile_.put("Hi_", Hi_.toImplementation());
-//	matFile_.put("Hi_inverse", Hi_inverse_.toImplementation());
-//	matFile_.put("G", G_.toImplementation());
-//	matFile_.put("gv", gv_.toImplementation());
+	matFile_.put("luff", lqocSolver_->getControlUpdates().toImplementation());
+	matFile_.put("lx", lqocSolver_->getStateUpdates().toImplementation());
+	matFile_.put("lu_norm", lqocSolver_->getControlUpdateNorm());
+	matFile_.put("lx_norm", lqocSolver_->getStateUpdateNorm());
+	matFile_.put("d_norm", d_norm_);
 
+	matFile_.put("cost", getCost());
+
+	//! deprecated since now part of solver:
+	//	matFile_.put("sv", sv_.toImplementation());
+	//	matFile_.put("S", S_.toImplementation());
+	//	matFile_.put("L", L_.toImplementation());
+	//	matFile_.put("H", H_.toImplementation());
+	//	matFile_.put("Hi_", Hi_.toImplementation());
+	//	matFile_.put("Hi_inverse", Hi_inverse_.toImplementation());
+	//	matFile_.put("G", G_.toImplementation());
+	//	matFile_.put("gv", gv_.toImplementation());
 
 	matFile_.close();
 #endif //MATLAB
@@ -601,18 +606,25 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logInitToMatlab()
 {
-	// all the variables in MATLAB that are ended by "_"
-	// will be saved in a mat-file
 
 #ifdef MATLAB
 
+	std::cout << "Logging init guess to Matlab" << std::endl;
+
 	matFile_.open(settings_.loggingPrefix+"LogInit.mat");
 
-	matFile_.put("xInit", x_.toImplementation());
-	matFile_.put("u_ffInit", u_ff_.toImplementation());
+	matFile_.put("K", K_);
+	matFile_.put("dt", settings_.dt);
+	matFile_.put("dt_sim", settings_.dt_sim);
+
+	matFile_.put("x", x_.toImplementation());
+	matFile_.put("u_ff", u_ff_.toImplementation());
+	matFile_.put("d", lqocProblem_->b_.toImplementation());
+	matFile_.put("cost", getCost());
+	matFile_.put("d_norm", d_norm_);
 
 	matFile_.close();
-#endif //MATLAB
+#endif
 }
 
 

@@ -59,11 +59,27 @@ int main(int argc, char* argv[])
 				dt
 		);
 
+		auto start_all = std::chrono::steady_clock::now();
+
+		auto start_set = std::chrono::steady_clock::now();
 		lqocSolvers[i]->setProblem(problems[i]);
+		auto end_set = std::chrono::steady_clock::now();
+
+		auto start_solve = std::chrono::steady_clock::now();
 		lqocSolvers[i]->solve();
+		auto end_solve = std::chrono::steady_clock::now();
+
+		auto start_get= std::chrono::steady_clock::now();
 		auto xSol = lqocSolvers[i]->getSolutionState();
 		auto uSol = lqocSolvers[i]->getSolutionControl();
+		auto end_get = std::chrono::steady_clock::now();
 
+		auto end_all = std::chrono::steady_clock::now();
+
+		std::cout << "setProblem() with "<<solverNames[i] << " took " <<std::chrono::duration <double, std::milli> (end_set-start_set).count() << " ms" <<std::endl;
+		std::cout << "solve() with "<<solverNames[i] << " took " <<std::chrono::duration <double, std::milli> (end_solve-start_solve).count() << " ms" <<std::endl;
+		std::cout << "get() with "<<solverNames[i] << " took " <<std::chrono::duration <double, std::milli> (end_get-start_get).count() << " ms" <<std::endl;
+		std::cout << "total call with "<<solverNames[i] << " took " <<std::chrono::duration <double, std::milli> (end_all-start_all).count() << " ms" <<std::endl;
 		std::cout << "Solution for "<<solverNames[i]<<std::endl;
 
 		std::cout << "x:" << std::endl;

@@ -1,15 +1,15 @@
 clear all
-close all
+%close all
 
 
-numIter = 5;    % number of iterations to be plotted
+numIter = 4;    % number of iterations to be plotted
 
 %% plot the init guess logs
-load GNMSLogInit.mat
+load ILQRLogInit.mat
 
 t = linspace(0, (K+2)*dt, K+1);
 
-figure(1)
+figure(2)
 subplot(3,3,1)
 plot(t, x(1,:), 'k', 'MarkerSize',1); hold on;
 xlabel('t [sec]')
@@ -59,11 +59,11 @@ xlabel('iteration')
 for iter= 0:1:numIter
     
     % load the current iteration
-    load(strcat(strcat('GNMSLog', num2str(iter)),'.mat'));
+    load(strcat(strcat('ILQRLog', num2str(iter)),'.mat'));
     
     t=squeeze(t);
         
-    figure(1)
+    figure(2)
     subplot(3,3,1)
     plot(t, x(1,:), 'MarkerSize',1); hold on;
     %legend('init', '1', '2', '3');
