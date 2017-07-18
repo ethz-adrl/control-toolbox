@@ -241,7 +241,7 @@ void timingInverseDynamics()
 	auto start = std::chrono::high_resolution_clock::now();
 	for (size_t i=0; i<nTests; i++)
 	{
-		forwardJacIv[i] = ivLinearForward(x[i]);
+		forwardJacIv[i] = ivLinearForward.jacobian(x[i]);
 	}
 	auto end = std::chrono::high_resolution_clock::now();
 	auto diff = end - start;
@@ -251,7 +251,7 @@ void timingInverseDynamics()
 	start = std::chrono::high_resolution_clock::now();
 	for (size_t i=0; i<nTests; i++)
 	{
-		reverseJacIv[i] = ivLinearReverse(x[i]);
+		reverseJacIv[i] = ivLinearReverse.jacobian(x[i]);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;

@@ -27,40 +27,39 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_HESSIAN_NAME_H_
 #define INCLUDE_HESSIAN_NAME_H_
 
-#include <ct/core/math/Jacobian.h>
+#include <ct/core/math/Derivatives.h>
 
 namespace ct {
 namespace NS1 {
 namespace NS2 {
 
-class HESSIAN_NAME : public core::Jacobian<IN_DIM, OUT_DIM, double> {
+class DERIVATIVE_NAME : public core::Derivatives<IN_DIM, OUT_DIM, double> {
 public:
-    typedef Eigen::Matrix<double, IN_DIM, IN_DIM> JAC_TYPE;
-    typedef Eigen::Matrix<double, IN_DIM, IN_DIM, Eigen::RowMajor> JAC_TYPE_ROW_MAJOR;
+    typedef Eigen::Matrix<double, IN_DIM, IN_DIM> HES_TYPE;
     typedef Eigen::Matrix<double, IN_DIM, 1> X_TYPE;
 
-    HESSIAN_NAME() {
+    DERIVATIVE_NAME() {
         hessian_.setZero();
         v_.fill(0.0);
     };
 
-    HESSIAN_NAME(const HESSIAN_NAME& other)
+    DERIVATIVE_NAME(const DERIVATIVE_NAME& other)
     {
         hessian_.setZero();
         v_.fill(0.0);
     }
 
-    virtual ~HESSIAN_NAME() {};
+    virtual ~DERIVATIVE_NAME() {};
 
-    HESSIAN_NAME* clone() const override{
-        return new HESSIAN_NAME(*this);
+    DERIVATIVE_NAME* clone() const override{
+        return new DERIVATIVE_NAME(*this);
     }
 
 
-    JAC_TYPE operator()(const Eigen::VectorXd& x_in, const Eigen::VectorXd& w_in) override;
+    HES_TYPE hessian(const Eigen::VectorXd& x_in, const Eigen::VectorXd& w_in) override;
 
 private:
-    JAC_TYPE hessian_;
+    HES_TYPE hessian_;
     std::array<double, MAX_COUNT> v_;
 };
 

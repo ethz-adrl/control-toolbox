@@ -112,11 +112,11 @@ endif(BUILD_HYQ_LINEARIZATION_TIMINGS)
 add_executable(HyALinearizationCodegen src/HyA/codegen/HyALinearizationCodeGen.cpp)
 target_link_libraries(HyALinearizationCodegen ${catkin_LIBRARIES})
 
-#add_library(HyALinearizedForward include/ct/models/HyA/codegen/HyALinearizedForward.cpp)
-#target_link_libraries(HyALinearizedForward ${catkin_LIBRARIES} )
-#
-#add_library(HyAJacInverseDynamicsReverse include/ct/models/HyA/codegen/HyAInverseDynJacReverse.cpp)
-#target_link_libraries(HyAJacInverseDynamicsReverse ${catkin_LIBRARIES} )
+add_library(HyALinearizedForward include/ct/models/HyA/codegen/HyALinearizedForward.cpp)
+target_link_libraries(HyALinearizedForward ${catkin_LIBRARIES} )
+
+add_library(HyAJacInverseDynamicsReverse include/ct/models/HyA/codegen/HyAInverseDynJacReverse.cpp)
+target_link_libraries(HyAJacInverseDynamicsReverse ${catkin_LIBRARIES} )
 
 if(BUILD_HYA_LINEARIZATION_TIMINGS)
     add_library(HyALinearizedReverse include/ct/models/HyA/codegen/HyALinearizedReverse.cpp)

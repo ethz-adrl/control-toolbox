@@ -33,10 +33,9 @@ namespace ct {
 namespace NS1 {
 namespace NS2 {
 
-class DERIVATIVE_NAME {
+class DERIVATIVE_NAME : public core::Derivatives<IN_DIM, OUT_DIM, double> {
 public:
 	typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE;
-	typedef Eigen::Matrix<double, OUT_DIM, IN_DIM, Eigen::RowMajor> JAC_TYPE_ROW_MAJOR;
 	typedef Eigen::Matrix<double, IN_DIM, 1> X_TYPE;
 
 	DERIVATIVE_NAME() {
@@ -57,7 +56,7 @@ public:
 	}
 
 
-	JAC_TYPE operator()(const Eigen::VectorXd& x_in) override;
+	JAC_TYPE jacobian(const Eigen::VectorXd& x_in) override;
 
 private:
 	JAC_TYPE jac_;

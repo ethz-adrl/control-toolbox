@@ -27,25 +27,26 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_HyQForwardKinJacReverse_H_
 #define INCLUDE_HyQForwardKinJacReverse_H_
 
-#include <ct/core/math/Jacobian.h>
+#include <ct/core/math/Derivatives.h>
 
 namespace ct {
 namespace models {
 namespace HyQ {
 
-class HyQForwardKinJacReverse : public core::Jacobian<36, 24, double> {
+class HyQForwardKinJacReverse : public core::Derivatives<36, 24, double> {
 public:
 	typedef Eigen::Matrix<double, 24, 36> JAC_TYPE;
-	typedef Eigen::Matrix<double, 24, 36, Eigen::RowMajor> JAC_TYPE_ROW_MAJOR;
 	typedef Eigen::Matrix<double, 36, 1> X_TYPE;
 
 	HyQForwardKinJacReverse() {
 		jac_.setZero();
+		v_.fill(0.0);
 	};
 
 	HyQForwardKinJacReverse(const HyQForwardKinJacReverse& other)
 	{
 		jac_.setZero();
+		v_.fill(0.0);
 	}
 
 	virtual ~HyQForwardKinJacReverse() {};
@@ -55,15 +56,15 @@ public:
 	}
 
 
-	JAC_TYPE operator()(const Eigen::VectorXd& x) override;
+	JAC_TYPE jacobian(const Eigen::VectorXd& x_in) override;
 
 private:
 	JAC_TYPE jac_;
-	std::array<double, 555> v;
+	std::array<double, 637> v_;
 };
 
 } /* namespace HyQ */
 } /* namespace models */
 } /* namespace ct */
 
-#endif /* INCLUDE_HyQForwardKinJacReverse_H_ */
+#endif /* INCLUDE_JACOBIAN_NAME_H_ */

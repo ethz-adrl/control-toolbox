@@ -52,8 +52,8 @@ void timing()
 
 	HyQInverseDynJacForward forwardJac;
 	HyQInverseDynJacReverse reverseJac;
-	ct::core::JacobianNumDiff<IN_DIM, OUT_DIM>::Function idFun = ct::models::HyQ::hyqInverseDynamics<double>;
-	ct::core::JacobianNumDiff<IN_DIM, OUT_DIM> numDiffJac(idFun);
+	ct::core::DerivativesNumDiff<IN_DIM, OUT_DIM>::Function idFun = ct::models::HyQ::hyqInverseDynamics<double>;
+	ct::core::DerivativesNumDiff<IN_DIM, OUT_DIM> numDiffJac(idFun);
 
 
 	std::cout << "input dim: "<<IN_DIM<<", output dim: "<<OUT_DIM<<std::endl;
@@ -67,7 +67,7 @@ void timing()
 	auto start = std::chrono::high_resolution_clock::now();
 	for (size_t i=0; i<nTests; i++)
 	{
-		forward[i] = forwardJac(x[i]);
+		forward[i] = forwardJac.jacobian(x[i]);
 	}
 	auto end = std::chrono::high_resolution_clock::now();
 	auto diff = end - start;
@@ -77,7 +77,7 @@ void timing()
 	start = std::chrono::high_resolution_clock::now();
 	for (size_t i=0; i<nTests; i++)
 	{
-		reverse[i] = reverseJac(x[i]);
+		reverse[i] = reverseJac.jacobian(x[i]);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;
@@ -87,7 +87,7 @@ void timing()
 	start = std::chrono::high_resolution_clock::now();
 	for (size_t i=0; i<nTests; i++)
 	{
-		numDiff[i] = numDiffJac(x[i]);
+		numDiff[i] = numDiffJac.jacobian(x[i]);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;

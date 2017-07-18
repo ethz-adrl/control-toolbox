@@ -31,9 +31,9 @@ namespace models {
 namespace HyA {
 
 
-HyAInverseDynJacForward::JAC_TYPE HyAInverseDynJacForward::operator()(const Eigen::VectorXd& x_in)
+HyAInverseDynJacForward::JAC_TYPE HyAInverseDynJacForward::jacobian(const Eigen::VectorXd& x_in)
 {
-	double* jac = jac_.data();
+    double* jac = jac_.data();
 
     v_[0] = sin(x_in[1]);
     v_[1] = cos(x_in[1]);
@@ -968,7 +968,7 @@ HyAInverseDynJacForward::JAC_TYPE HyAInverseDynJacForward::operator()(const Eige
     jac[67] = v_[13] * v_[103] + v_[28] * v_[44] + v_[52] * v_[109] + v_[25] * v_[69];
 
 
- 	return jac_;
+    return jac_;
 
 }
 

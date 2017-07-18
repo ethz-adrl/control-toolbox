@@ -95,7 +95,7 @@ public:
 		return new DerivativesNumDiff<IN_DIM, OUT_DIM>(*this);
 	}
 
-	virtual OUT_TYPE forwardZero(const IN_TYPE& x) override
+	virtual OUT_TYPE forwardZero(const Eigen::VectorXd& x) override
 	{
 		return f_(x);
 	}
@@ -105,7 +105,7 @@ public:
 	 * @param x point at which to evaluate the Derivatives at
 	 * @return Derivatives evaluated at x
 	 */
-	virtual JAC_TYPE jacobian(const IN_TYPE& x) override
+	virtual JAC_TYPE jacobian(const Eigen::VectorXd& x) override
 	{
 		JAC_TYPE jac;
 		OUT_TYPE y_ref;
