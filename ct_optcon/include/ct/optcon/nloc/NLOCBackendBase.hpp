@@ -331,8 +331,6 @@ public:
 
 	bool isInitialized() {return initialized_;}
 
-	virtual void createLQProblem() = 0;
-
 
 	/*!
 	 * the prepare Solve LQP Problem method is intended for a special use-case: unconstrained GNMS with pre-solving of the

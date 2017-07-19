@@ -63,8 +63,6 @@ public:
 
 protected:
 
-	virtual void createLQProblem() override;
-
 	virtual void computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
 
 	virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
