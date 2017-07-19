@@ -88,23 +88,19 @@ public:
 	state_control_matrix_t B_;
 
 
-	const state_matrix_t& getDerivativeState(const StateVector<state_dim>& x, const ControlVector<control_dim>& u, const double t = 0.0) override
-			{
+	const state_matrix_t& getDerivativeState(const StateVector<state_dim>& x, const ControlVector<control_dim>& u, const double t = 0.0) override {
 		A_ << 1+2*x(0);
 		return A_;
-			}
+	}
 
-	const state_control_matrix_t& getDerivativeControl(const StateVector<state_dim>& x, const ControlVector<control_dim>& u, const double t = 0.0) override
-			{
-
+	const state_control_matrix_t& getDerivativeControl(const StateVector<state_dim>& x, const ControlVector<control_dim>& u, const double t = 0.0) override {
 		B_ << 1;
 		return B_;
-			}
+	}
 
-	LinearizedSystem* clone() const override
-			{
+	LinearizedSystem* clone() const override {
 		return new LinearizedSystem();
-			}
+	}
 };
 
 
@@ -112,6 +108,8 @@ public:
 
 void singleCore()
 {
+	typedef NLOptConSolver<state_dim, control_dim, 1, 0> NLOptConSolver;
+
 	std::cout << "setting up problem " << std::endl;
 
 	std::string configFile = "solver.info";
@@ -198,15 +196,15 @@ void singleCore()
 
 	FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
 	ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
-	NLOptConSolver<state_dim, control_dim>::Policy_t initController (x0, u0, u0_fb, gnms_settings.dt);
+	NLOptConSolver::Policy_t initController (x0, u0, u0_fb, gnms_settings.dt);
 
 	// construct single-core single subsystem OptCon Problem
 	OptConProblem<state_dim, control_dim> optConProblem (tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
 
 
 	std::cout << "initializing solvers" << std::endl;
-	NLOptConSolver<state_dim, control_dim> gnms(optConProblem, gnms_settings);
-	NLOptConSolver<state_dim, control_dim> ilqr(optConProblem, ilqr_settings);
+	NLOptConSolver gnms(optConProblem, gnms_settings);
+	NLOptConSolver ilqr(optConProblem, ilqr_settings);
 
 
 	gnms.configure(gnms_settings);

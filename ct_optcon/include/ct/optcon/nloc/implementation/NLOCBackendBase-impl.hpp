@@ -140,16 +140,18 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 		integratorsRK4_[i] = std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > (new ct::core::IntegratorRK4<STATE_DIM, SCALAR>(systems_[i]));
 		integratorsEuler_[i] = std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM, SCALAR> >(new ct::core::IntegratorEuler<STATE_DIM, SCALAR>(systems_[i]));
 
-// @ todo: need to find different solution for that
-//		if(systems_[i]->isSymplectic())
-//		{
-//			integratorsEulerSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
-//									new ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
-//										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (systems_[i])));
-//			integratorsRkSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
-//									new ct::core::IntegratorSymplecticRk<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>(
-//										std::static_pointer_cast<ct::core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>> (systems_[i])));
-//		}
+		if(systems_[i]->isSymplectic())
+		{
+			//! it only makes sense to compile the following code, if V_DIM > 0 and P_DIM > 0
+#if (V_DIM > 0) && (P_DIM > 0)
+			integratorsEulerSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticEuler<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>(
+									new ct::core::IntegratorSymplecticEuler<P_DIM, V_DIM, CONTROL_DIM, SCALAR>(
+										std::static_pointer_cast<ct::core::SymplecticSystem<P_DIM, V_DIM, CONTROL_DIM, SCALAR>> (systems_[i])));
+			integratorsRkSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>(
+									new ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR>(
+										std::static_pointer_cast<ct::core::SymplecticSystem<P_DIM, V_DIM, CONTROL_DIM, SCALAR>> (systems_[i])));
+#endif
+		}
 	}
 	reset(); // since system changed, we have to start fresh, i.e. with a rollout
 }
@@ -288,15 +290,16 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 		{
 			integratorsRK4_[threadId]->integrate_n_steps(x0, i*dt, steps, dt_sim);
 		}
-		// todo: find cleaner solution for symplectic stuff
-		//			else if(settings_.integrator == GNMSSettings::EULER_SYM)
-		//			{
-		//				integratorsEulerSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
-		//			}
-		//			else if(settings_.integrator == GNMSSettings::RK_SYM)
-		//			{
-		//				integratorsRkSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
-		//			}
+#if P_DIM > 0 && V_DIM > 0
+		else if(settings_.integrator == GNMSSettings::EULER_SYM)
+		{
+			integratorsEulerSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
+		}
+		else if(settings_.integrator == GNMSSettings::RK_SYM)
+		{
+			integratorsRkSymplectic_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
+		}
+#endif
 		else
 			throw std::runtime_error("invalid integration mode selected.");
 
@@ -363,25 +366,19 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 	{
 		integratorsRK4_[threadId]->integrate_n_steps(xShot_[k], k*dt, steps, dt_sim);
 	}
-	//! todo need to find different solution for that
-	//	else if(settings_.integrator == GNMSSettings::EULER_SYM)
-	//	{
-	//		integratorsEulerSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
-	//	}
-	//	else if(settings_.integrator == GNMSSettings::RK_SYM)
-	//	{
-	//		integratorsRkSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
-	//	}
+#if P_DIM > 0 && V_DIM > 0
+		else if(settings_.integrator == GNMSSettings::EULER_SYM)
+		{
+			integratorsEulerSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
+		}
+		else if(settings_.integrator == GNMSSettings::RK_SYM)
+		{
+			integratorsRkSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
+		}
+#endif
 	else
 		throw std::runtime_error("invalid integration mode selected.");
 }
-
-//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-//void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSingleControlAndState(size_t threadId, size_t k)
-//{
-//	x_[k] += lx_[k];
-//	u_ff_[k] += lv_[k] + L_[k] * lx_[k];
-//}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -479,13 +476,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeCo
 	p.Q_[K_] = costFunctions_[settings_.nThreads]->stateSecondDerivativeTerminal();
 }
 
-
-
-//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-//void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::designStateUpdate(size_t k)
-//{
-//	lx_[k+1] = (A_[k] + B_[k] * L_[k]) * lx_[k]  + B_[k] * lv_[k] + lqocProblem_->b_[k];
-//}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>

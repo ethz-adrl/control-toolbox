@@ -41,9 +41,9 @@ namespace optcon{
 /** \defgroup OptConSolver OptConSolver
  * Solver interface for finite horizon optimal control problems
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
 class NLOptConSolver : public OptConSolver<
-	NLOptConSolver<STATE_DIM, CONTROL_DIM, SCALAR>,
+	NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>,
 	core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>,
 	NLOptConSettings,
 	STATE_DIM,
@@ -57,7 +57,7 @@ public:
 	static const size_t STATE_D = STATE_DIM;
 	static const size_t CONTROL_D = CONTROL_DIM;
 
-	typedef NLOptConSolver<STATE_DIM, CONTROL_DIM, SCALAR> Derived;
+	typedef NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> Derived;
 	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 	typedef NLOptConSettings Settings_t;
 	typedef SCALAR Scalar_t;
@@ -226,8 +226,8 @@ public:
 
 protected:
 
-	std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM>> nlocBackend_;
-	std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM>> nlocAlgorithm_;
+	std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>> nlocBackend_;
+	std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>> nlocAlgorithm_;
 };
 
 

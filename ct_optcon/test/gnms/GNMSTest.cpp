@@ -140,6 +140,8 @@ void singleCore()
 {
 		std::cout << "setting up problem " << std::endl;
 
+		typedef NLOptConSolver<state_dim, control_dim, state_dim /2, state_dim /2> NLOptConSolver;
+
 		Eigen::Vector2d x_final;
 		x_final << 20, 0;
 
@@ -183,15 +185,15 @@ void singleCore()
 		FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
 		ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
 
-		NLOptConSolver<state_dim, control_dim>::Policy_t initController (x0, u0, u0_fb, gnms_settings.dt);
+		NLOptConSolver::Policy_t initController (x0, u0, u0_fb, gnms_settings.dt);
 
 		// construct single-core single subsystem OptCon Problem
 		OptConProblem<state_dim, control_dim> optConProblem (tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
 
 
 		std::cout << "initializing gnms solver" << std::endl;
-		NLOptConSolver<state_dim, control_dim> gnms(optConProblem, gnms_settings);
-		NLOptConSolver<state_dim, control_dim> ilqg(optConProblem, ilqg_settings);
+		NLOptConSolver gnms(optConProblem, gnms_settings);
+		NLOptConSolver ilqg(optConProblem, ilqg_settings);
 
 
 		gnms.configure(gnms_settings);

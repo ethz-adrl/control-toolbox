@@ -56,15 +56,11 @@ namespace optcon{
  *  X  <- Matrix (upper-case in paper)
  *  xv <- vector (lower-case bold in paper)
  *  x  <- scalar (lower-case in paper)
- *
- *  @todo: throw out the symplectic stuff from here
-*/
+ */
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM = STATE_DIM/2, size_t V_DIM=STATE_DIM/2, typename SCALAR = double>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
 class NLOCBackendBase
 {
-	//! @todo this does not make sense (consider case that state_dim and control_dim = 1 )
-//	static_assert(P_DIM + V_DIM == STATE_DIM, "symplectic dimensions should add up to state dimension");
 
 public:
 

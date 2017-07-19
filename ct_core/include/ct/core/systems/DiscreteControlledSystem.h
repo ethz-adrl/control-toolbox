@@ -111,6 +111,7 @@ public:
 		return controller_;
 	}
 
+
 	//! propagates the system dynamics forward by one step
 	/*!
 	 * evaluates \f$ x_{n+1} = f(x_n, n) \f$ at a given state and index

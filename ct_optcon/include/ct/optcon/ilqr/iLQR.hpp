@@ -34,8 +34,8 @@ namespace ct{
 namespace optcon{
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class iLQR : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
+class iLQR : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>
 {
 public:
 
@@ -48,8 +48,8 @@ public:
 	typedef NLOptConSettings Settings_t;
 	typedef SCALAR Scalar_t;
 
-	typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, SCALAR> BASE;
-	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM> Backend_t;
+	typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> BASE;
+	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> Backend_t;
 
 	//! constructor
 	iLQR(std::shared_ptr<Backend_t>& backend_, const Settings_t& settings) :
