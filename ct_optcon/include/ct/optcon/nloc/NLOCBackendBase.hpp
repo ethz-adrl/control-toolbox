@@ -341,106 +341,30 @@ public:
 	/*!
 	 * the prepare Solve LQP Problem method is intended for a special use-case: unconstrained GNMS with pre-solving of the
 	 */
-	virtual void prepareSolveLQProblem()
-	{
-		// if solver is HPIPM, there's nothing to prepare
-		if(settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
-		{}
-		// if solver is GNRiccati - we iterate backward up to the first stage
-		else if(settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
-		{
-			lqocProblem_->x_ = x_;
-			lqocProblem_->u_ = u_ff_;
-			lqocSolver_->setProblem(lqocProblem_);
-
-			//iterate backward up to first stage
-			for (int i=this->lqocProblem_->getNumberOfStages()-1; i>=1; i--)
-				lqocSolver_->solveSingleStage(i);
-		}
-		else
-			throw std::runtime_error("unknown solver type in prepareSolveLQProblem()");
-	}
+	virtual void prepareSolveLQProblem();
 
 
-	// todo move to implementation
-	virtual void finishSolveLQProblem()
-	{
-		// if solver is HPIPM, solve the full problem
-		if(settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
-		{
-			solveFullLQProblem();
-		}
-		else if(settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
-		{
-			// if solver is GNRiccati, solve the first stage and get solution
-			lqocProblem_->x_ = x_;
-			lqocProblem_->u_ = u_ff_;
-			lqocSolver_->setProblem(lqocProblem_);
-			lqocSolver_->solveSingleStage(0);
-			lqocSolver_->computeStateAndControlUpdates();
-		}
-		else
-			throw std::runtime_error("unknown solver type in finishSolveLQProblem()");
-	}
-
+	virtual void finishSolveLQProblem();
 
 	/*!
 	 * solve Full LQProblem, e.g. to be used with HPIPM or if we have a constrained problem
-	 * @todo move to implementation
 	 */
-	virtual void solveFullLQProblem()
-	{
-		lqocProblem_->x_ = x_;
-		lqocProblem_->u_ = u_ff_;
-		lqocSolver_->setProblem(lqocProblem_);
-		lqocSolver_->solve();
-	}
+	virtual void solveFullLQProblem();
 
+	//! compute costs of solution candidate
+	void updateCosts();
 
-	void updateCosts()
-	{
-		intermediateCostPrevious_ = intermediateCostBest_;
-		finalCostPrevious_ = finalCostBest_;
-		computeCostsOfTrajectory(settings_.nThreads, x_, u_ff_, intermediateCostBest_, finalCostBest_);
-	}
-
-
-	//! check if GNMS is converged @todo move to implementation
-	bool isConverged()
-	{
-		//! check if sum of norm of all defects is smaller than convergence criterion
-		//! @todo in fact, the d_norm_evaluated here was computed before the controller update. For larger problems, might save computation time be re-evaluating the defect here!
-		if (d_norm_ > settings_.maxDefectSum)
-			return false;
-
-		SCALAR previousCost = intermediateCostPrevious_ + finalCostPrevious_;
-		SCALAR newCost = intermediateCostBest_ + finalCostBest_;
-
-		if ( fabs((previousCost - newCost)/previousCost) > settings_.min_cost_improvement)
-			return false;
-
-		return true;
-	}
-
+	//! check if GNMS is converged
+	bool isConverged();
 
 	//! nominal rollout using default thread and member variables for the results.
-	bool nominalRollout()
-	{
-		return rolloutSystem(settings_.nThreads, u_ff_, x_, u_ff_, t_);
-	}
+	bool nominalRollout() { return rolloutSystem(settings_.nThreads, u_ff_, x_, u_ff_, t_); }
 
 	//! check problem for consistency
 	void checkProblem();
 
 	size_t& iteration() {return iteration_;}
 
-
-//	#ifdef HPIPM
-//	void backwardPassHPIPM()
-//	{
-//		HPIPMInterface_.solve();
-//	}
-//	#endif
 
 	//! Print debugging information
 	/*!
@@ -473,12 +397,6 @@ public:
 
 
 protected:
-
-	//! build the sequential LQ problems
-	void sequentialLQProblem(); //todo should not be needed any more
-
-	//! updates the controls and states
-//	void updateSingleControlAndState(size_t threadId, size_t k);
 
 	//! integrate the individual shots
 	void rolloutSingleShot(size_t threadId, size_t k);
@@ -592,36 +510,14 @@ protected:
 	void matrixToMatlab(V& matrix, std::string variableName);
 
 
-	//! compute the norm of the difference between two control trajectories @todo move to impl
-	void computeControlUpdateNorm(const ct::core::ControlVectorArray<CONTROL_DIM>& u_prev, const ct::core::ControlVectorArray<CONTROL_DIM>& u_new)
-	{
-		lu_norm_ = 0.0;
+	//! compute the norm of the difference between two control trajectories
+	void computeControlUpdateNorm(const ControlVectorArray& u_prev, const ControlVectorArray& u_new);
 
-		for(size_t i = 0; i<u_prev.size(); i++)
-			lu_norm_ += (u_prev[i]-u_new[i]).norm();
-	}
-
-	//! compute the norm of the difference between two state trajectories @todo move to impl
-	void computeStateUpdateNorm(const ct::core::StateVectorArray<STATE_DIM>& x_prev, const ct::core::StateVectorArray<STATE_DIM>& x_new)
-	{
-		lx_norm_ = 0.0;
-
-		for(size_t i = 0; i<x_prev.size(); i++)
-			lx_norm_ += (x_prev[i]-x_new[i]).norm();
-	}
-
+	//! compute the norm of the difference between two state trajectories
+	void computeStateUpdateNorm(const StateVectorArray& x_prev, const StateVectorArray& x_new);
 
 	//! compute the norm of the defects trajectory
-	void computeDefectsNorm()
-	{
-		this->d_norm_ = 0.0;
-
-		for (size_t k=0; k<K_; k++)
-		{
-			this->d_norm_ += this->lqocProblem_->b_[k].norm();
-		}
-	}
-
+	void computeDefectsNorm();
 
 	typedef std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > IntegratorRK4Ptr;
     std::vector<IntegratorRK4Ptr, Eigen::aligned_allocator<IntegratorRK4Ptr> > integratorsRK4_; //! Runge-Kutta-4 Integrators

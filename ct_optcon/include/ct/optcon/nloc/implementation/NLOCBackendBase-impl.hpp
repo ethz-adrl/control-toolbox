@@ -338,43 +338,6 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::sequentialLQProblem()
-{
-	throw std::runtime_error("sequentialLQProblem should currently not be called."); // todo fixme
-
-	auto start = std::chrono::steady_clock::now();
-	computeLinearizedDynamicsAroundTrajectory();
-	auto end = std::chrono::steady_clock::now();
-	auto diff = end - start;
-#ifdef DEBUG_PRINT
-	std::cout << "Linearizing dynamics took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
-
-	start = std::chrono::steady_clock::now();
-	computeQuadraticCostsAroundTrajectory();
-	end = std::chrono::steady_clock::now();
-	diff = end - start;
-#ifdef DEBUG_PRINT
-	std::cout << "Cost computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
-
-	start = std::chrono::steady_clock::now();
-	rolloutShots();
-	diff = end - start;
-#ifdef DEBUG_PRINT
-	std::cout << "Shot integration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
-
-	start = std::chrono::steady_clock::now();
-	computeDefects();
-	end = std::chrono::steady_clock::now();
-	diff = end - start;
-#ifdef DEBUG_PRINT
-	std::cout << "Defects computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingleShot(size_t threadId, size_t k)
 {
 	const double& dt = settings_.dt;
@@ -740,5 +703,118 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 	return false;
 }
 
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareSolveLQProblem()
+{
+	// if solver is HPIPM, there's nothing to prepare
+	if(settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
+	{}
+	// if solver is GNRiccati - we iterate backward up to the first stage
+	else if(settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
+	{
+		lqocProblem_->x_ = x_;
+		lqocProblem_->u_ = u_ff_;
+		lqocSolver_->setProblem(lqocProblem_);
+
+		//iterate backward up to first stage
+		for (int i=this->lqocProblem_->getNumberOfStages()-1; i>=1; i--)
+			lqocSolver_->solveSingleStage(i);
+	}
+	else
+		throw std::runtime_error("unknown solver type in prepareSolveLQProblem()");
 }
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishSolveLQProblem()
+{
+	// if solver is HPIPM, solve the full problem
+	if(settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
+	{
+		solveFullLQProblem();
+	}
+	else if(settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
+	{
+		// if solver is GNRiccati, solve the first stage and get solution
+		lqocProblem_->x_ = x_;
+		lqocProblem_->u_ = u_ff_;
+		lqocSolver_->setProblem(lqocProblem_);
+		lqocSolver_->solveSingleStage(0);
+		lqocSolver_->computeStateAndControlUpdates();
+	}
+	else
+		throw std::runtime_error("unknown solver type in finishSolveLQProblem()");
 }
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solveFullLQProblem()
+{
+	lqocProblem_->x_ = x_;
+	lqocProblem_->u_ = u_ff_;
+	lqocSolver_->setProblem(lqocProblem_);
+	lqocSolver_->solve();
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateCosts()
+{
+	intermediateCostPrevious_ = intermediateCostBest_;
+	finalCostPrevious_ = finalCostBest_;
+	computeCostsOfTrajectory(settings_.nThreads, x_, u_ff_, intermediateCostBest_, finalCostBest_);
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::isConverged()
+{
+	//! check if sum of norm of all defects is smaller than convergence criterion
+	if (d_norm_ > settings_.maxDefectSum)
+		return false;
+
+	SCALAR previousCost = intermediateCostPrevious_ + finalCostPrevious_;
+	SCALAR newCost = intermediateCostBest_ + finalCostBest_;
+
+	if ( fabs((previousCost - newCost)/previousCost) > settings_.min_cost_improvement)
+		return false;
+
+	return true;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeControlUpdateNorm(const ControlVectorArray& u_prev, const ControlVectorArray& u_new)
+{
+	lu_norm_ = 0.0;
+
+	for(size_t i = 0; i<u_prev.size(); i++)
+		lu_norm_ += (u_prev[i]-u_new[i]).norm();
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeStateUpdateNorm(const StateVectorArray& x_prev, const StateVectorArray& x_new)
+{
+	lx_norm_ = 0.0;
+
+	for(size_t i = 0; i<x_prev.size(); i++)
+		lx_norm_ += (x_prev[i]-x_new[i]).norm();
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefectsNorm()
+{
+	this->d_norm_ = 0.0;
+
+	for (size_t k=0; k<K_; k++)
+	{
+		this->d_norm_ += this->lqocProblem_->b_[k].norm();
+	}
+}
+
+} //namespace optcon
+} //namespace ct
