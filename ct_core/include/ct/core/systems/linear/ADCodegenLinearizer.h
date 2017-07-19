@@ -102,6 +102,11 @@ public:
 		maxTempVarCountControl_(0)
 	{}
 
+	/**
+	 * @brief      Copy constructor
+	 *
+	 * @param[in]  arg   The argument
+	 */
 	ADCodegenLinearizer(const ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>& arg) :
 		Base(arg),
 		dFdx_(arg.dFdx_),
@@ -120,7 +125,6 @@ public:
 
 	//! deep cloning
 	ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>* clone() const override {
-		// throw std::runtime_error("Not implemented");
 		return new ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>(*this);
 	}
 
