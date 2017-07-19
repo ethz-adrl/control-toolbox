@@ -188,7 +188,7 @@ public:
 	 * \note If this function takes a long time, consider generating the source code using
 	 * generateCode() and compile it before runtime.
 	 */
-	void compileJIT()
+	void compileJIT(const std::string& libName = "threadId" + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id())) )
 	{
 		if (compiled_) return;
 
@@ -197,8 +197,7 @@ public:
 	    CppAD::cg::ModelLibraryCSourceGen<double> libcgen(cgen);
 
 	    // compile source code
-	    CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, "adCGSystemlib");
-
+	    CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, libName);
 
 	    dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler_));
 

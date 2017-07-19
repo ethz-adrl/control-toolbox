@@ -81,7 +81,9 @@ public:
 		LinearSystem<STATE_DIM, CONTROL_DIM> (arg),
 		nonlinearSystem_(arg.nonlinearSystem_->clone())
 	{
-		initialize();
+		setupSparsityA();
+		setupSparsityB();
+		f_ = arg.f_;
 	}
 
 	//! destructor
@@ -146,6 +148,7 @@ protected:
 		sparsity.template topRows<STATE_DIM>().setOnes();
 
 		sparsityA_.initPattern(sparsity);
+		sparsityA_.clearWork();
 	}
 
 	//! setup the sparsity of the input Jacobian
@@ -158,6 +161,7 @@ protected:
 		sparsity.template bottomRows<CONTROL_DIM>().setOnes();
 
 		sparsityB_.initPattern(sparsity);
+		sparsityB_.clearWork();
 	}
 
 	std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> nonlinearSystem_; //!< instance of the non-linear system

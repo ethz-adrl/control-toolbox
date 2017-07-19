@@ -92,7 +92,9 @@ public:
 
 	//! copy constructor
 	AutoDiffLinearizer(const AutoDiffLinearizer& arg):
-		Base(arg)
+		Base(arg),
+		dFdx_(arg.dFdx_),
+		dFdu_(arg.dFdu_)
 	{
 	}
 

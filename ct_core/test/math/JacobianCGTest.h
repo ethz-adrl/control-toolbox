@@ -75,7 +75,7 @@ TEST(JacobianCGTest, JITCompilationTest)
 		derivativesCppad jacCG(f);
 
 		// compile the Jacobian
-		jacCG.compileJIT();
+		jacCG.compileJIT("jacobianCGLib");
 
 		// create an input vector
 		Eigen::Matrix<double, inDim, 1> x;
@@ -104,7 +104,7 @@ TEST(HessianCGTest, JITHessianTest)
 
 		derivativesCppad hessianCg(f);
 
-		hessianCg.compileJIT();
+		hessianCg.compileJIT("hessianCGLib");
 
 		Eigen::Matrix<double, inDim, 1> x;
 		Eigen::Matrix<double, outDim, 1> w;
