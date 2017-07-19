@@ -63,8 +63,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CT_EE0_LAST_JOINT 5
 
 #include <ct/rbd/robot/robcogen/robcogenHelpers.h>
-// #include <ct/models/HyA/codegen/HyALinearizedForward.h>
-// #include <ct/models/HyA/codegen/HyAInverseDynJacReverse.h>
+#include <ct/models/HyA/codegen/HyALinearizedForward.h>
+#include <ct/models/HyA/codegen/HyAInverseDynJacReverse.h>
 
 #include "HyAUrdfNames.h"
 
