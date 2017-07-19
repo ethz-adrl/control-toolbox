@@ -113,7 +113,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeCostFu
 
 	// recompute cost if line search is active
 	if (iteration_ > 0 && settings_.lineSearchSettings.active)
-		computeQuadraticCostsAroundTrajectory();
+		computeQuadraticCostsAroundTrajectory(0, K_-1);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -528,6 +528,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeCo
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 {
+	computeDefectsNorm();
+
 	std::cout<< settings_.loggingPrefix + " iteration "  << iteration_ << std::endl;
 	std::cout<<"============"<< std::endl;
 
@@ -583,9 +585,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 //	matFile_.put("lx", lqocSolver_->getStateUpdates().toImplementation());
 	matFile_.put("lx_norm", lx_norm_);
 	matFile_.put("lu_norm", lu_norm_);
+	matFile_.put("cost", getCost());
+
+	computeDefectsNorm();
 	matFile_.put("d_norm", d_norm_);
 
-	matFile_.put("cost", getCost());
 
 	//! deprecated since now part of solver:
 	//	matFile_.put("sv", sv_.toImplementation());

@@ -44,20 +44,20 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solveLQProblem
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory()
+void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex)
 {
-	for (size_t k=0; k<this->K_; k++)
+	for (size_t k=firstIndex; k <= lastIndex; k++)
 	{
 		this->computeLinearizedDynamics(this->settings_.nThreads, k);
 	}
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory()
+void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex)
 {
 	this->initializeCostToGo();
 
-	for (size_t k=0; k<this->K_; k++)
+	for (size_t k=firstIndex; k<=lastIndex; k++)
 	{
 		// compute quadratic cost
 		this->computeQuadraticCosts(this->settings_.nThreads, k);
@@ -95,23 +95,20 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolution
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots()
+void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(size_t firstIndex, size_t lastIndex)
 {
-	for (size_t k=0; k<this->K_; k++)
+	for (size_t k=firstIndex; k<=lastIndex; k++)
 	{
 		this->rolloutSingleShot(this->settings_.nThreads, k);
 	}
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefects()
+void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefects(size_t firstIndex, size_t lastIndex)
 {
-	this->d_norm_ = 0.0;
-
-	for (size_t k=0; k<this->K_+1; k++)
+	for (size_t k=firstIndex; k<=lastIndex; k++)
 	{
 		this->computeSingleDefect(this->settings_.nThreads, k);
-		this->d_norm_ += this->lqocProblem_->b_[k].norm();
 	}
 }
 

@@ -71,17 +71,24 @@ public:
 		this->backend_->setInitialGuess(initialGuess);
 	}
 
-	virtual void prepareIteration() override {
-		throw(std::runtime_error("prepare iteration to be filled"));
-	}
 
-	virtual bool finishIteration() override {
-		throw(std::runtime_error("finish iteration to be filled"));
-		return true;}
-
-
+	//! runIteration combines prepareIteration and finishIteration
+	/*!
+	 * For iLQR the separation between prepareIteration and finishIteration would actually not be necessary
+	 * @return
+	 */
 	virtual bool runIteration() override
 	{
+		prepareIteration();
+
+		return finishIteration();
+	}
+
+
+	/*!
+	 * for iLQR, as it is a purely sequential approach, we cannot prepare anything prior to solving,
+	 */
+	virtual void prepareIteration() override {
 
 		if (!this->backend_->isInitialized())
 			throw std::runtime_error("iLQR is not initialized!");
@@ -90,6 +97,17 @@ public:
 			throw std::runtime_error("iLQR is not configured!");
 
 		this->backend_->checkProblem();
+	}
+
+
+	/*!
+	 * for iLQR, finishIteration contains the whole main iLQR iteration.
+	 * @return
+	 */
+	virtual bool finishIteration() override
+	{
+
+		int K = this->backend_->getNumSteps();
 
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
@@ -107,18 +125,10 @@ public:
 			this->backend_->logInitToMatlab();
 #endif
 
-//#ifdef DEBUG_PRINT
-//		std::cout << "PREINTEGRATION DEBUG PRINT"<<std::endl;
-//		std::cout << "=========================="<<std::endl;
-//		this->backend_->debugPrint();
-//		std::cout << "=========================="<<std::endl;
-//
-//		std::cout<<"[iLQR]: #1 ForwardPass"<<std::endl;
-//#endif // DEBUG_PRINT
-
 		auto start = std::chrono::steady_clock::now();
 		auto startEntire = start;
-		this->backend_->computeLinearizedDynamicsAroundTrajectory();
+		//! linearize dynamics around the whole trajectory
+		this->backend_->computeLinearizedDynamicsAroundTrajectory(0, K-1);
 		auto end = std::chrono::steady_clock::now();
 		auto diff = end - start;
 #ifdef DEBUG_PRINT
@@ -126,7 +136,8 @@ public:
 #endif
 
 		start = std::chrono::steady_clock::now();
-		this->backend_->computeQuadraticCostsAroundTrajectory();
+		//! compute the quadratic cost around the whole trajectory
+		this->backend_->computeQuadraticCostsAroundTrajectory(0, K-1);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
@@ -187,9 +198,10 @@ public:
 		return foundBetter;
 	}
 
+
 };
 
-}
-}
+}	// namespace optcon
+}	// namespace ct
 
 #endif /* INCLUDE_CT_OPTCON_SOLVER_ILQR_H_ */

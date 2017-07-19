@@ -71,20 +71,22 @@ public:
 		this->backend_->setInitialGuess(initialGuess);
 	}
 
-	virtual void prepareIteration() override
-	{
-		throw(std::runtime_error("to be filled"));
-	}
 
-	virtual bool finishIteration() override
-	{
-		throw(std::runtime_error("to be filled"));
-		return true;
-	}
-
-
+	//! runIteration combines prepareIteration and finishIteration
+	/*!
+	 * @return foundBetter (false if converged)
+	 */
 	virtual bool runIteration() override
 	{
+		prepareIteration();
+
+		return finishIteration();
+	}
+
+
+	virtual void prepareIteration() override
+	{
+		auto startPrepare = std::chrono::steady_clock::now();
 
 		if (!this->backend_->isInitialized())
 			throw std::runtime_error("GNMS is not initialized!");
@@ -94,13 +96,55 @@ public:
 
 		this->backend_->checkProblem();
 
+		int K = this->backend_->getNumSteps();
+
 
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
 		{
 			std::cout << "Running additional init routine for first iteration !!" << std::endl;
-			this->backend_->rolloutShots();
-			this->backend_->computeDefects();
+			this->backend_->rolloutShots(1, K-1);
+			this->backend_->computeDefects(1, K-1);
+		}
+
+
+		auto start = std::chrono::steady_clock::now();
+		this->backend_->computeLinearizedDynamicsAroundTrajectory(1, K-1);
+		auto end = std::chrono::steady_clock::now();
+		auto diff = end - start;
+#ifdef DEBUG_PRINT
+		std::cout << "Linearizing from index 1 to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
+
+
+		start = std::chrono::steady_clock::now();
+		this->backend_->computeQuadraticCostsAroundTrajectory(1, K-1);
+		end = std::chrono::steady_clock::now();
+		diff = end - start;
+#ifdef DEBUG_PRINT
+		std::cout << "Cost computation for index 1 to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
+
+		auto endPrepare = std::chrono::steady_clock::now();
+#ifdef DEBUG_PRINT
+		std::cout << "GNMS prepareIteration() took "<<std::chrono::duration <double, std::milli> (endPrepare-startPrepare).count() << " ms" << std::endl;
+#endif
+
+	} // prepareIteration()
+
+
+	virtual bool finishIteration() override
+	{
+
+		auto startFinish = std::chrono::steady_clock::now();
+
+		int K = this->backend_->getNumSteps(); // todo fixme this should go away once the realTimeIteration is set up properly
+
+		// if first iteration, compute shots and rollout and cost!
+		if(this->backend_->iteration() == 0)
+		{
+			this->backend_->rolloutShots(0, 0);
+			this->backend_->computeDefects(0, 0);
 			this->backend_->updateCosts();
 		}
 
@@ -109,39 +153,26 @@ public:
 			this->backend_->logInitToMatlab();
 #endif
 
-//#ifdef DEBUG_PRINT
-//		std::cout << "PREINTEGRATION DEBUG PRINT"<<std::endl;
-//		std::cout << "=========================="<<std::endl;
-//		this->backend_->debugPrint();
-//		std::cout << "=========================="<<std::endl;
-//
-//		std::cout<<"[GNMS]: #1 ForwardPass"<<std::endl;
-//#endif // DEBUG_PRINT
-
 		auto start = std::chrono::steady_clock::now();
 		auto startEntire = start;
-		this->backend_->computeLinearizedDynamicsAroundTrajectory();
+		this->backend_->computeLinearizedDynamicsAroundTrajectory(0, 0);
 		auto end = std::chrono::steady_clock::now();
 		auto diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Linearizing dynamics took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "Linearizing for index 0 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
+
 		start = std::chrono::steady_clock::now();
-		this->backend_->computeQuadraticCostsAroundTrajectory();
+		this->backend_->computeQuadraticCostsAroundTrajectory(0, 0);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Cost computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "Cost computation for index 0 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
-		end = std::chrono::steady_clock::now();
-		diff = end - startEntire;
-#ifdef DEBUG_PRINT
-		std::cout << "Forward pass took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif DEBUG_PRINT
 
-
+		//! @ todo fixme need to split this up into prepare() and finish(), too!
 #ifdef DEBUG_PRINT
 		std::cout<<"[GNMS]: #2 Solve LQOC Problem"<<std::endl;
 #endif // DEBUG_PRINT
@@ -159,7 +190,7 @@ public:
 		this->backend_->updateSolutionFeedback();
 
 		start = std::chrono::steady_clock::now();
-		this->backend_->rolloutShots();
+		this->backend_->rolloutShots(0, K-1);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
@@ -167,7 +198,7 @@ public:
 #endif
 
 		start = std::chrono::steady_clock::now();
-		this->backend_->computeDefects();
+		this->backend_->computeDefects(0, K-1);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
@@ -192,8 +223,15 @@ public:
 
 		this->backend_->iteration()++;
 
+		auto endFinish = std::chrono::steady_clock::now();
+#ifdef DEBUG_PRINT
+		std::cout << "GNMS finishIteration() took "<<std::chrono::duration <double, std::milli> (startFinish-endFinish).count() << " ms" << std::endl;
+#endif
+
 		return (!this->backend_->isConverged());
-	}
+
+	} // finishIteration()
+
 
 };
 

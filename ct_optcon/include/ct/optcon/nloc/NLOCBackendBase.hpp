@@ -184,6 +184,9 @@ public:
 
 	SCALAR getTimeHorizon() {return K_* settings_.dt ;}
 
+	int getNumSteps() {return K_;}
+
+
 	/*!
 	 * \brief Change the initial state for the optimal control problem
 	 *
@@ -392,11 +395,11 @@ public:
 	//! perform line-search and update controller
 	bool lineSearchController();
 
-	//! Computes the linearization of the dynamics along the trajectory. See computeLinearizedDynamics for details
-	virtual void computeLinearizedDynamicsAroundTrajectory() = 0;
+	//! Computes the linearization of the dynamics along the trajectory, for the specified indices. See computeLinearizedDynamics for details
+	virtual void computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
 
-	//! Computes the quadratic approximation of the cost function along the trajectory
-	virtual void computeQuadraticCostsAroundTrajectory() = 0;
+	//! Computes the quadratic approximation of the cost function along the trajectory, for the specified indices
+	virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
 
 	virtual void updateSolutionState() = 0;
 
@@ -404,9 +407,9 @@ public:
 
 	virtual void updateSolutionFeedback() = 0;
 
-	virtual void rolloutShots() = 0;
+	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;
 
-	virtual void computeDefects() = 0;
+	virtual void computeDefects(size_t firstIndex, size_t lastIndex) = 0;
 
 	virtual SCALAR performLineSearch() = 0;
 
@@ -547,6 +550,18 @@ protected:
 
 		for(size_t i = 0; i<x_prev.size(); i++)
 			lx_norm_ += (x_prev[i]-x_new[i]).norm();
+	}
+
+
+	//! compute the norm of the defects trajectory
+	void computeDefectsNorm()
+	{
+		this->d_norm_ = 0.0;
+
+		for (size_t k=0; k<K_; k++)
+		{
+			this->d_norm_ += this->lqocProblem_->b_[k].norm();
+		}
 	}
 
 
