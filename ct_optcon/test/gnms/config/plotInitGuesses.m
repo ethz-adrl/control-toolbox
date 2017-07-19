@@ -23,17 +23,17 @@ title('defect norm')
 xlabel('t [sec]')
 ylabel('d [m]')
 
-subplot(3,3,4)
-hold on
-title('state update')
-xlabel('t [sec]')
-ylabel('dx [m]')
-
-subplot(3,3,5)
-hold on;
-title('control update')
-xlabel('t [sec]')
-ylabel('F [N]')
+% subplot(3,3,4)
+% hold on
+% title('state update')
+% xlabel('t [sec]')
+% ylabel('dx [m]')
+% 
+% subplot(3,3,5)
+% hold on;
+% title('control update')
+% xlabel('t [sec]')
+% ylabel('F [N]')
 
 subplot(3,3,6)
 plot(-1, cost, 'o'); hold on;
