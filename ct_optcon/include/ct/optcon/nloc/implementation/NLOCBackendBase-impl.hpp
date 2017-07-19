@@ -504,6 +504,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 	std::cout<<std::endl;
 }
 
+
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(const size_t& iteration)
 {
@@ -542,17 +543,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 
 	computeDefectsNorm();
 	matFile_.put("d_norm", d_norm_);
-
-
-	//! deprecated since now part of solver:
-	//	matFile_.put("sv", sv_.toImplementation());
-	//	matFile_.put("S", S_.toImplementation());
-	//	matFile_.put("L", L_.toImplementation());
-	//	matFile_.put("H", H_.toImplementation());
-	//	matFile_.put("Hi_", Hi_.toImplementation());
-	//	matFile_.put("Hi_inverse", Hi_inverse_.toImplementation());
-	//	matFile_.put("G", G_.toImplementation());
-	//	matFile_.put("gv", gv_.toImplementation());
 
 	matFile_.close();
 #endif //MATLAB

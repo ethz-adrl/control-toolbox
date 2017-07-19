@@ -366,7 +366,6 @@ public:
 	/*!
 	 *  This function is automatically called if the DEBUG_PRINT compileflag is set. It prints out important information
 	 *  like cost etc. after each iteration.
-     *
 	 */
 	void debugPrint();
 
@@ -412,7 +411,6 @@ protected:
 			ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
 			ct::core::tpl::TimeArray<SCALAR>& t_local,
 			std::atomic_bool* terminationFlag = nullptr) const;
-
 
 
 	//! Computes the linearized Dynamics at a specific point of the trajectory

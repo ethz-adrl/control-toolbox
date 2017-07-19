@@ -29,6 +29,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "LQOCSolver.hpp"
 
+#ifdef MATLAB
+#include <ct/optcon/matlab.hpp>
+#endif
+
 namespace ct {
 namespace optcon {
 
@@ -320,6 +324,27 @@ protected:
 		}
 	}
 
+	void logToMatlab()
+	{
+	#ifdef MATLAB_FULL_LOG
+
+		LQOCProblem_t& p = *lqocProblem_;
+
+		matFile_.open("GNRiccatiSolver.mat");
+
+		matFile_.put("sv", sv_.toImplementation());
+		matFile_.put("S", S_.toImplementation());
+		matFile_.put("L", L_.toImplementation());
+		matFile_.put("H", H_.toImplementation());
+		matFile_.put("Hi_", Hi_.toImplementation());
+		matFile_.put("Hi_inverse", Hi_inverse_.toImplementation());
+		matFile_.put("G", G_.toImplementation());
+		matFile_.put("gv", gv_.toImplementation());
+
+		matFile_.close();
+	#endif
+	}
+
 	NLOptConSettings settings_;
 
 	ControlVectorArray gv_;
@@ -340,6 +365,11 @@ protected:
 
 	//! Eigenvalue solver, used for inverting the Hessian and for regularization
 	Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM>> eigenvalueSolver_;
+
+	//! if building with MATLAB support, include matfile
+#ifdef MATLAB
+	matlab::MatFile matFile_;
+#endif //MATLAB
 
 };
 
