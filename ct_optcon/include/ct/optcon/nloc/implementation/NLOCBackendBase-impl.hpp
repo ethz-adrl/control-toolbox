@@ -660,6 +660,11 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 
 		scalar_t alphaBest = performLineSearch();
 
+		// update reference state traj
+		this->computeControlUpdateNorm(this->u_ff_, this->u_ff_prev_);
+		this->computeStateUpdateNorm(this->x_prev_, this->x_);
+		this->x_prev_ = this->x_;
+
 #ifdef DEBUG_PRINT_LINESEARCH
 		std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest<<" . Will use this control."<<std::endl;
 #endif //DEBUG_PRINT_LINESEARCH
@@ -692,32 +697,34 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSingleController(
 		size_t threadId,
 		scalar_t alpha,
-		ControlVectorArray& u_ff_local,
+		ControlVectorArray& u_ff_fullstep,
 		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
-		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_recorded,
 		ct::core::tpl::TimeArray<SCALAR>& t_local,
 		scalar_t& intermediateCost,
 		scalar_t& finalCost,
 		std::atomic_bool* terminationFlag
 ) const
 {
-	intermediateCost = std::numeric_limits<scalar_t>::max();
-	finalCost = std::numeric_limits<scalar_t>::max();
+	intermediateCost =  std::numeric_limits<scalar_t>::infinity();
+	finalCost = std::numeric_limits<scalar_t>::infinity();
 
 	if (terminationFlag && *terminationFlag) return;
 
+	ControlVectorArray u_ff_alpha (K_-1);
+
 	for (int k=K_-1; k>=0; k--)
 	{
-		u_ff_local[k] = alpha * u_ff_[k] + (1-alpha) * u_ff_prev_[k];
+		u_ff_alpha[k] = alpha * u_ff_fullstep[k] + (1-alpha) * u_ff_prev_[k];
 	}
 
-	bool dynamicsGood = rolloutSystem(threadId, u_ff_local, x_local, u_local, t_local, terminationFlag);
+	bool dynamicsGood = rolloutSystem(threadId, u_ff_alpha, x_local, u_recorded, t_local, terminationFlag);
 
 	if (terminationFlag && *terminationFlag) return;
 
 	if (dynamicsGood)
 	{
-		computeCostsOfTrajectory(threadId, x_local, u_local, intermediateCost, finalCost);
+		computeCostsOfTrajectory(threadId, x_local, u_recorded, intermediateCost, finalCost);
 	}
 	else
 	{

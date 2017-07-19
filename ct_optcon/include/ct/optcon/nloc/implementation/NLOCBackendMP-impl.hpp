@@ -488,6 +488,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolution
 	this->u_ff_prev_ = this->u_ff_; // store previous feedforward for line-search
 
 	this->u_ff_ = this->lqocSolver_->getSolutionControl();
+	u_ff_fullstep_ = this->u_ff_;
 
 	//! get control update norm. may be overwritten later, depending on the algorithm
 	this->lu_norm_ = this->lqocSolver_->getControlUpdateNorm();}
@@ -509,39 +510,39 @@ SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 {
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
 
-		alphaProcessed_.clear();
-		alphaTaken_ = 0;
-		alphaBestFound_ = false;
-		alphaExpBest_ = this->settings_.lineSearchSettings.maxIterations;
-		alphaExpMax_ = this->settings_.lineSearchSettings.maxIterations;
-		alphaProcessed_.resize(this->settings_.lineSearchSettings.maxIterations, 0);
+	alphaProcessed_.clear();
+	alphaTaken_ = 0;
+	alphaBestFound_ = false;
+	alphaExpBest_ = this->settings_.lineSearchSettings.maxIterations;
+	alphaExpMax_ = this->settings_.lineSearchSettings.maxIterations;
+	alphaProcessed_.resize(this->settings_.lineSearchSettings.maxIterations, 0);
 
 #ifdef DEBUG_PRINT_MP
-		std::cout<<"[MP]: Waking up workers."<<std::endl;
+	std::cout<<"[MP]: Waking up workers."<<std::endl;
 #endif //DEBUG_PRINT_MP
-		workerTask_ = LINE_SEARCH;
-		workerWakeUpCondition_.notify_all();
+	workerTask_ = LINE_SEARCH;
+	workerWakeUpCondition_.notify_all();
 
 #ifdef DEBUG_PRINT_MP
-		std::cout<<"[MP]: Will sleep now until we have results."<<std::endl;
+	std::cout<<"[MP]: Will sleep now until we have results."<<std::endl;
 #endif //DEBUG_PRINT_MP
-		std::unique_lock<std::mutex> waitLock(alphaBestFoundMutex_);
-		alphaBestFoundCondition_.wait(waitLock, [this]{return alphaBestFound_.load();});
-		waitLock.unlock();
-		workerTask_ = IDLE;
+	std::unique_lock<std::mutex> waitLock(alphaBestFoundMutex_);
+	alphaBestFoundCondition_.wait(waitLock, [this]{return alphaBestFound_.load();});
+	waitLock.unlock();
+	workerTask_ = IDLE;
 #ifdef DEBUG_PRINT_MP
-		std::cout<<"[MP]: Woke up again, should have results now."<<std::endl;
+	std::cout<<"[MP]: Woke up again, should have results now."<<std::endl;
 #endif //DEBUG_PRINT_MP
 
-		double alphaBest = 0.0;
-		if (alphaExpBest_ != alphaExpMax_)
-		{
-			alphaBest = this->settings_.lineSearchSettings.alpha_0 * std::pow(this->settings_.lineSearchSettings.n_alpha, alphaExpBest_);
-		}
+	double alphaBest = 0.0;
+	if (alphaExpBest_ != alphaExpMax_)
+	{
+		alphaBest = this->settings_.lineSearchSettings.alpha_0 * std::pow(this->settings_.lineSearchSettings.n_alpha, alphaExpBest_);
+	}
 
-		return alphaBest;
+	return alphaBest;
 
-		// todo: restore eigen threads here?
+	// todo: restore eigen threads here?
 
 } // end linesearch
 
@@ -566,7 +567,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		// convert to real alpha
 		double alpha = this->settings_.lineSearchSettings.alpha_0 * std::pow(this->settings_.lineSearchSettings.n_alpha, alphaExp);
 		typename Base::StateVectorArray x_local(1);
-		typename Base::ControlVectorArray u_local;
+		typename Base::ControlVectorArray u_recorded;
 		typename Base::TimeArray t_local;
 
 		x_local[0] = this->x_[0];
@@ -574,11 +575,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		SCALAR intermediateCost;
 		SCALAR finalCost;
 
-		typename Base::ControlVectorArray u_ff_local(this->K_);
-		this->lineSearchSingleController(threadId, alpha, u_ff_local, x_local, u_local, t_local, intermediateCost, finalCost, &alphaBestFound_);
-
-		std::cout << "bla"<<intermediateCost << std::endl;
-		std::cout << "bla"<<finalCost << std::endl; // todo remove
+		this->lineSearchSingleController(threadId, alpha, u_ff_fullstep_, x_local, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
 
 		SCALAR cost = intermediateCost + finalCost;
 
@@ -601,7 +598,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 			this->finalCostBest_ = finalCost;
 			this->lowestCost_ = cost;
 			this->x_.swap(x_local);
-			this->u_ff_.swap(u_ff_local);
+			this->u_ff_.swap(u_recorded);
 			this->t_.swap(t_local);
 		} else
 		{

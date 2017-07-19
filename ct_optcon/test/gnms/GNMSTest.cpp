@@ -34,7 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#define MATLAB_FULL_LOG
 
 #define DEBUG_PRINT
-#define DEBUG_PRINT_MP
+//#define DEBUG_PRINT_MP
 //#define DEBUG_PRINT_LINESEARCH
 
 #include <ct/optcon/optcon.h>
@@ -270,7 +270,7 @@ void multiCore()
 		NLOptConSettings ilqg_settings = gnms_settings;
 		ilqg_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		ilqg_settings.loggingPrefix = "ILQR";
-		ilqg_settings.lineSearchSettings.active = false;
+		ilqg_settings.lineSearchSettings.active = true;
 
 
 		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
@@ -283,10 +283,10 @@ void multiCore()
 
 		// provide initial guess
 		ControlVectorArray<control_dim> u0(nSteps, ControlVector<control_dim>::Zero());
-		StateVectorArray<state_dim>  x0(nSteps+1, StateVector<state_dim>::Zero());
+		StateVectorArray<state_dim>  x0(nSteps+1, StateVector<state_dim>::Random());
 		for (size_t i=0; i<nSteps+1; i++)
 		{
-			x0 [i] = x_final*double(i)/double(nSteps);
+//			x0 [i] = x_final*double(i)/double(nSteps);
 		}
 
 		FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
