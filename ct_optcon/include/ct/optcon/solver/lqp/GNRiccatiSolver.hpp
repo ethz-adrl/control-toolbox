@@ -65,6 +65,7 @@ public:
 
 	virtual ~GNRiccatiSolver() {}
 
+
 	virtual void solve() override
 	{
 		smallestEigenvalue_ =  std::numeric_limits<SCALAR>::infinity();
@@ -75,6 +76,7 @@ public:
 		computeStateAndControlUpdates();
 	}
 
+
 	virtual void solveSingleStage(int N) override
 	{
 		if (N == this->lqocProblem_->getNumberOfStages()-1)
@@ -83,6 +85,7 @@ public:
 		designController(N);
 		computeCostToGo(N);
 	}
+
 
 	virtual void configure(const NLOptConSettings& settings) override
 	{
@@ -167,6 +170,10 @@ public:
 
 protected:
 
+	/*!
+	 * resize matrices
+	 * @param lqocProblem
+	 */
 	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t>& lqocProblem) override
 	{
 		const int& N = lqocProblem->getNumberOfStages();
@@ -187,6 +194,7 @@ protected:
 		sv_.resize(N+1);
 		S_.resize(N+1);
 	}
+
 
 	void initializeCostToGo()
 	{

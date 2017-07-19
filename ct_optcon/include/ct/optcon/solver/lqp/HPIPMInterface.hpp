@@ -128,9 +128,13 @@ public:
 //			}
 //		}
 
+		// assemble optimal control problem
 		::d_cvt_colmaj_to_ocp_qp(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(), hr_.data(), hidxb_.data(), hd_lb_.data(), hd_ub_.data(), hC_.data(), hD_.data(), hd_lg_.data(), hd_ug_.data(), &qp_);
+
+		// solve optimal control problem
 		::d_solve_ipm2_hard_ocp_qp(&qp_, &qp_sol_, &workspace_);
 
+		// extract state and control updates
 		computeStateAndControlUpdates();
 	}
 
@@ -139,9 +143,10 @@ public:
 	{
 		LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
 
+		// convert optimal control problem solution to standard column-major representation
 		::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u_.data(), x_.data(), pi_.data(), lam_lb_.data(), lam_ub_.data(), lam_lg_.data(), lam_ug_.data());
-		hx_[0] = this->lqocProblem_->x_[0];
 
+		hx_[0] = this->lqocProblem_->x_[0];
 
 		this->delta_x_norm_ = 0.0;
 		this->delta_uff_norm_ = 0.0;
@@ -173,6 +178,7 @@ public:
 		return hu_;
 	}
 
+	//! to the best of our knowledge, the Feedback matrix cannot be extracted from HPIPM
 	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> getFeedback() override { throw std::runtime_error("not implemented"); }
 
 
@@ -267,14 +273,10 @@ public:
 
 
 private:
+
 	void setProblemImpl(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>>& lqocProblem) override
 	{
-
-		auto change_start = std::chrono::steady_clock::now();
 		changeNumberOfStages(lqocProblem->getNumberOfStages());
-		auto change_end = std::chrono::steady_clock::now();
-
-		auto setup_start = std::chrono::steady_clock::now();
 
 		setupHPIPM(
 				lqocProblem->x_,
@@ -287,15 +289,7 @@ private:
 				lqocProblem->Q_,
 				lqocProblem->rv_,
 				lqocProblem->R_);
-
-		auto setup_end = std::chrono::steady_clock::now();
-
-#ifdef DEBUG_PRINT
-		std::cout << "hpipm change took " <<std::chrono::duration <double, std::milli> (change_end-change_start).count() << " ms" <<std::endl;
-		std::cout << "hpipm setup took " <<std::chrono::duration <double, std::milli> (setup_end-setup_start).count() << " ms" <<std::endl;
-#endif
 	}
-
 
 	void setupHPIPM(
 			StateVectorArray& x,
@@ -368,6 +362,9 @@ private:
 
 	void changeNumberOfStages(int N)
 	{
+		if(N_ == N)
+			return;	// return since problem is already correctly sized (avoid unnecessary memory allocation)
+
 		N_ = N;
 
 		this->lx_.resize(N+1);
@@ -450,6 +447,7 @@ private:
 #endif
 		ipm_mem_.resize(ipm_size);
 		::d_create_ipm_hard_ocp_qp(&qp_, &arg_, &workspace_, ipm_mem_.data());
+
 	}
 
 

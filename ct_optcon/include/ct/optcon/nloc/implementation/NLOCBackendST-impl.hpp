@@ -35,15 +35,6 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::createLQProble
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solveLQProblem()
-{
-	this->lqocProblem_->x_ = this->x_;
-	this->lqocProblem_->u_ = this->u_ff_;
-	this->lqocSolver_->setProblem(this->lqocProblem_);
-	this->lqocSolver_->solve();
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex)
 {
 	for (size_t k=firstIndex; k <= lastIndex; k++)

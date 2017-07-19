@@ -84,6 +84,10 @@ public:
 	}
 
 
+	/*!
+	 * - linearize dynamics for the stages 1 to N-1
+	 * - quadratize cost for stages 1 to N-1
+	 */
 	virtual void prepareIteration() override
 	{
 		auto startPrepare = std::chrono::steady_clock::now();
@@ -130,15 +134,35 @@ public:
 		std::cout << "GNMS prepareIteration() took "<<std::chrono::duration <double, std::milli> (endPrepare-startPrepare).count() << " ms" << std::endl;
 #endif
 
-	} // prepareIteration()
+
+#ifdef DEBUG_PRINT
+		std::cout<<"[GNMS]: Solving prepare stage of LQOC Problem"<<std::endl;
+#endif // DEBUG_PRINT
+		start = std::chrono::steady_clock::now();
+		this->backend_->prepareSolveLQProblem();
+		end = std::chrono::steady_clock::now();
+		diff = end - start;
+#ifdef DEBUG_PRINT
+		std::cout << "Prepare phase of LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
 
 
+	} //! prepareIteration()
+
+
+
+	//! finish iteration for unconstrained GNMS
+	/*!
+	 * - linearize dynamcs for the first stage
+	 * - quadratize cost for the first stage
+	 * @return
+	 */
 	virtual bool finishIteration() override
 	{
 
 		auto startFinish = std::chrono::steady_clock::now();
 
-		int K = this->backend_->getNumSteps(); // todo fixme this should go away once the realTimeIteration is set up properly
+		int K = this->backend_->getNumSteps();
 
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
@@ -154,7 +178,6 @@ public:
 #endif
 
 		auto start = std::chrono::steady_clock::now();
-		auto startEntire = start;
 		this->backend_->computeLinearizedDynamicsAroundTrajectory(0, 0);
 		auto end = std::chrono::steady_clock::now();
 		auto diff = end - start;
@@ -172,16 +195,15 @@ public:
 #endif
 
 
-		//! @ todo fixme need to split this up into prepare() and finish(), too!
 #ifdef DEBUG_PRINT
-		std::cout<<"[GNMS]: #2 Solve LQOC Problem"<<std::endl;
+		std::cout<<"[GNMS]: Finish phase LQOC Problem"<<std::endl;
 #endif // DEBUG_PRINT
 		start = std::chrono::steady_clock::now();
-		this->backend_->solveLQProblem();
+		this->backend_->finishSolveLQProblem();
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "Finish solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 		// update solutions
@@ -208,10 +230,11 @@ public:
 		// compute new costs
 		this->backend_->updateCosts();
 
-		diff = end - startEntire;
+		auto endFinish = std::chrono::steady_clock::now();
 #ifdef DEBUG_PRINT
-		std::cout << "Total iteration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "GNMS finishIteration() took "<<std::chrono::duration <double, std::milli> (endFinish-startFinish).count() << " ms" << std::endl;
 #endif
+
 
 #ifdef DEBUG_PRINT
 		this->backend_->debugPrint();
@@ -223,14 +246,9 @@ public:
 
 		this->backend_->iteration()++;
 
-		auto endFinish = std::chrono::steady_clock::now();
-#ifdef DEBUG_PRINT
-		std::cout << "GNMS finishIteration() took "<<std::chrono::duration <double, std::milli> (startFinish-endFinish).count() << " ms" << std::endl;
-#endif
-
 		return (!this->backend_->isConverged());
 
-	} // finishIteration()
+	} //! finishIteration()
 
 
 };

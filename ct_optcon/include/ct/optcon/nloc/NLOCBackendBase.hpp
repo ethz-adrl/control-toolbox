@@ -337,7 +337,65 @@ public:
 
 	virtual void createLQProblem() = 0;
 
-	virtual void solveLQProblem() = 0; // replaces "backward-pass"
+
+	/*!
+	 * the prepare Solve LQP Problem method is intended for a special use-case: unconstrained GNMS with pre-solving of the
+	 */
+	virtual void prepareSolveLQProblem()
+	{
+		// if solver is HPIPM, there's nothing to prepare
+		if(settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
+		{}
+		// if solver is GNRiccati - we iterate backward up to the first stage
+		else if(settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
+		{
+			lqocProblem_->x_ = x_;
+			lqocProblem_->u_ = u_ff_;
+			lqocSolver_->setProblem(lqocProblem_);
+
+			//iterate backward up to first stage
+			for (int i=this->lqocProblem_->getNumberOfStages()-1; i>=1; i--)
+				lqocSolver_->solveSingleStage(i);
+		}
+		else
+			throw std::runtime_error("unknown solver type in prepareSolveLQProblem()");
+	}
+
+
+	// todo move to implementation
+	virtual void finishSolveLQProblem()
+	{
+		// if solver is HPIPM, solve the full problem
+		if(settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
+		{
+			solveFullLQProblem();
+		}
+		else if(settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
+		{
+			// if solver is GNRiccati, solve the first stage and get solution
+			lqocProblem_->x_ = x_;
+			lqocProblem_->u_ = u_ff_;
+			lqocSolver_->setProblem(lqocProblem_);
+			lqocSolver_->solveSingleStage(0);
+			lqocSolver_->computeStateAndControlUpdates();
+		}
+		else
+			throw std::runtime_error("unknown solver type in finishSolveLQProblem()");
+	}
+
+
+	/*!
+	 * solve Full LQProblem, e.g. to be used with HPIPM or if we have a constrained problem
+	 * @todo move to implementation
+	 */
+	virtual void solveFullLQProblem()
+	{
+		lqocProblem_->x_ = x_;
+		lqocProblem_->u_ = u_ff_;
+		lqocSolver_->setProblem(lqocProblem_);
+		lqocSolver_->solve();
+	}
+
 
 	void updateCosts()
 	{

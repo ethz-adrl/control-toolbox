@@ -156,7 +156,7 @@ public:
 		std::cout<<"[iLQR]: #2 Solve LQOC Problem"<<std::endl;
 #endif // DEBUG_PRINT
 		start = std::chrono::steady_clock::now();
-		this->backend_->solveLQProblem();
+		this->backend_->solveFullLQProblem();
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT

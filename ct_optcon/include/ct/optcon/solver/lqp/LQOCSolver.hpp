@@ -35,7 +35,8 @@ namespace ct {
 namespace optcon {
 
 /*!
- * Base class for solvers to solve an LQOCProblem (both constrained / unconstrained, etc.)
+ * Base class for solvers to solve an LQOCProblem
+ * (both constrained / unconstrained, etc.)
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class LQOCSolver
@@ -57,7 +58,9 @@ public:
 	//! destructor
 	virtual ~LQOCSolver() {}
 
+
 	/*!
+	 * set a new problem
 	 * update the shared_ptr to the LQOCProblem instance and call initialize instance deriving from this class.
 	 * @param lqocProblem
 	 */
@@ -66,6 +69,7 @@ public:
 		lqocProblem_ = lqocProblem;
 		setProblemImpl(lqocProblem);
 	}
+
 
 	virtual void configure(const NLOptConSettings& settings) = 0;
 

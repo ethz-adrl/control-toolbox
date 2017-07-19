@@ -65,8 +65,6 @@ protected:
 
 	virtual void createLQProblem() override;
 
-	virtual void solveLQProblem() override;
-
 	virtual void computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
 
 	virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
@@ -82,7 +80,6 @@ protected:
 	virtual void computeDefects(size_t firstIndex, size_t lastIndex) override;
 
 	SCALAR performLineSearch() override;
-
 };
 
 
