@@ -27,45 +27,44 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_HyQForwardZero_H_
 #define INCLUDE_HyQForwardZero_H_
 
-#include <ct/core/math/Jacobian.h>
+#include <ct/core/math/Derivatives.h>
 
 namespace ct {
 namespace models {
 namespace HyQ {
 
-class HyQForwardZero : public core::Jacobian<1, 36, double> {
+class HyQForwardZero : public core::Derivatives<49, 36, double> {
 public:
-	typedef Eigen::Matrix<double, 36, 1> JAC_TYPE;
-	typedef Eigen::Matrix<double, 36, 1, Eigen::RowMajor> JAC_TYPE_ROW_MAJOR;
-	typedef Eigen::Matrix<double, 49, 1> X_TYPE;
+    typedef Eigen::Matrix<double, 36, 1> OUT_TYPE;
+    typedef Eigen::Matrix<double, 49, 1> X_TYPE;
 
-	HyQForwardZero() {
-		jac_.setZero();
-		v_.fill(0.0);
-	};
+    HyQForwardZero() {
+        eval_.setZero();
+        v_.fill(0.0);
+    };
 
-	HyQForwardZero(const HyQForwardZero& other)
-	{
-		jac_.setZero();
-		v_.fill(0.0);
-	}
+    HyQForwardZero(const HyQForwardZero& other)
+    {
+        eval_.setZero();
+        v_.fill(0.0);
+    }
 
-	virtual ~HyQForwardZero() {};
+    virtual ~HyQForwardZero() {};
 
-	HyQForwardZero* clone() const override{
-		return new HyQForwardZero(*this);
-	}
+    HyQForwardZero* clone() const override{
+        return new HyQForwardZero(*this);
+    }
 
 
-	JAC_TYPE operator()(const Eigen::VectorXd& x_in) override;
+    OUT_TYPE forwardZero(const Eigen::VectorXd& x_in) override;
 
 private:
-	JAC_TYPE jac_;
-	std::array<double, 408> v_;
+    OUT_TYPE eval_;
+    std::array<double, 401> v_;
 };
 
 } /* namespace HyQ */
 } /* namespace models */
 } /* namespace ct */
 
-#endif /* INCLUDE_HyQForwardZero_H_ */
+#endif /* INCLUDE_JACOBIAN_NAME_H_ */

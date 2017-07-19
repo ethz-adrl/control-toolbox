@@ -48,16 +48,16 @@ const size_t njoints = HyQSystemAD::Kinematics::NJOINTS;
 
 void generateInverseDynamics()
 {
-	typedef ct::core::JacobianCG<state_dim+18, control_dim+6> JacCG;
-	typename JacCG::Function f = ct::models::HyQ::hyqInverseDynamics<SCALAR>;
+	typedef ct::core::DerivativesCppad<state_dim+18, control_dim+6> JacCG;
+	typename JacCG::FUN_TYPE_CG f = ct::models::HyQ::hyqInverseDynamics<SCALAR>;
 	JacCG jacCG(f);
 
 	try {
 		std::cout << "Generating Jacobian of Inverse Dynamics wrt state using forward mode... " << std::endl;
-		jacCG.generateCode("HyQInverseDynJacForward", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), false);
+		jacCG.generateJacobianSource("HyQInverseDynJacForward", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), false);
 
 		std::cout << "Generating Jacobian of Inverse Dynamics wrt state using reverse mode... " << std::endl;
-		jacCG.generateCode("HyQInverseDynJacReverse", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), true);
+		jacCG.generateJacobianSource("HyQInverseDynJacReverse", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), true);
 	} catch (const std::runtime_error& e)
 	{
 		std::cout << "inverse dynamics code generation failed: "<<e.what()<<std::endl;
@@ -66,16 +66,16 @@ void generateInverseDynamics()
 
 void generateForwardKinematics()
 {
-	typedef ct::core::JacobianCG<state_dim, 4*6> JacCG;
-	typename JacCG::Function f = ct::models::HyQ::hyqForwardKinematics<SCALAR>;
+	typedef ct::core::DerivativesCppad<state_dim, 4*6> JacCG;
+	typename JacCG::FUN_TYPE_CG f = ct::models::HyQ::hyqForwardKinematics<SCALAR>;
 	JacCG jacCG(f);
 
 	try {
 		std::cout << "Generating Jacobian of Forward Kinematics wrt state using forward mode... " << std::endl;
-		jacCG.generateCode("HyQForwardKinJacForward", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), false);
+		jacCG.generateJacobianSource("HyQForwardKinJacForward", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), false);
 
 		std::cout << "Generating Jacobian of Forward Kinematics wrt state using reverse mode... " << std::endl;
-		jacCG.generateCode("HyQForwardKinJacReverse", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), true);
+		jacCG.generateJacobianSource("HyQForwardKinJacReverse", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", JacCG::Sparsity::Ones(), true);
 	} catch (const std::runtime_error& e)
 	{
 		std::cout << "forward kinematics code generation failed: "<<e.what()<<std::endl;
@@ -84,15 +84,15 @@ void generateForwardKinematics()
 
 void generateForwardZeroForwardDynamics()
 {
-	typedef ct::core::JacobianCG<state_dim+control_dim + 1, state_dim> JacCG;
+	typedef ct::core::DerivativesCppad<state_dim+control_dim + 1, state_dim> JacCG;
 	// Eigen::Matrix<SCALAR, state_dim + control_dim + 1, 1> testInput = Eigen::Matrix<SCALAR, state_dim + control_dim + 1, 1>::Random();
 	// auto asd = ct::models::HyQ::hyqContactModelForwardDynamics<SCALAR>(testInput);
-	typename JacCG::Function f = ct::models::HyQ::hyqContactModelForwardDynamics<SCALAR>;
+	typename JacCG::FUN_TYPE_CG f = ct::models::HyQ::hyqContactModelForwardDynamics<SCALAR>;
 	JacCG jacCG(f);
 
 	try {
 		std::cout << "Generating Forward Zero Code... " << std::endl;
-		jacCG.generateForwardZeroCode("HyQForwardZero", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", false);
+		jacCG.generateForwardZeroSource("HyQForwardZero", ct::models::HYQ_CODEGEN_OUTPUT_DIR, ct::core::CODEGEN_TEMPLATE_DIR, "models", "HyQ", false);
 	} catch (const std::runtime_error& e)
 	{
 		std::cout << "forward zero code generation failed: "<<e.what()<<std::endl;

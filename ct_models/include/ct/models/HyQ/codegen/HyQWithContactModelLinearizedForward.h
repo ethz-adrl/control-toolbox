@@ -29,7 +29,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/core/core.h>
 
-
 namespace ct {
 namespace models {
 namespace HyQ {
@@ -73,7 +72,7 @@ private:
 
 	state_matrix_t dFdx_;
 	state_control_matrix_t dFdu_;
-	std::array<double, 1690> vX_;
+	std::array<double, 1686> vX_;
 	std::array<double, 240> vU_;
 
 };

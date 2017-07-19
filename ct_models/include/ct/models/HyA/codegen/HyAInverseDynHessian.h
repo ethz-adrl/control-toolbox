@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_HyAInverseDynJacReverse_H_
-#define INCLUDE_HyAInverseDynJacReverse_H_
+#ifndef INCLUDE_HESSIAN_NAME_H_
+#define INCLUDE_HESSIAN_NAME_H_
 
 #include <ct/core/math/Derivatives.h>
 
@@ -33,38 +33,38 @@ namespace ct {
 namespace models {
 namespace HyA {
 
-class HyAInverseDynJacReverse : public core::Derivatives<12, 6, double> {
+class HyAInverseDynHessian : public core::Derivatives<12, 6, double> {
 public:
-	typedef Eigen::Matrix<double, 6, 12> JAC_TYPE;
-	typedef Eigen::Matrix<double, 12, 1> X_TYPE;
+    typedef Eigen::Matrix<double, 12, 12> HES_TYPE;
+    typedef Eigen::Matrix<double, 12, 1> X_TYPE;
 
-	HyAInverseDynJacReverse() {
-		jac_.setZero();
-		v_.fill(0.0);
-	};
+    HyAInverseDynHessian() {
+        hessian_.setZero();
+        v_.fill(0.0);
+    };
 
-	HyAInverseDynJacReverse(const HyAInverseDynJacReverse& other)
-	{
-		jac_.setZero();
-		v_.fill(0.0);
-	}
+    HyAInverseDynHessian(const HyAInverseDynHessian& other)
+    {
+        hessian_.setZero();
+        v_.fill(0.0);
+    }
 
-	virtual ~HyAInverseDynJacReverse() {};
+    virtual ~HyAInverseDynHessian() {};
 
-	HyAInverseDynJacReverse* clone() const override{
-		return new HyAInverseDynJacReverse(*this);
-	}
+    HyAInverseDynHessian* clone() const override{
+        return new HyAInverseDynHessian(*this);
+    }
 
 
-	JAC_TYPE jacobian(const Eigen::VectorXd& x_in) override;
+    HES_TYPE hessian(const Eigen::VectorXd& x_in, const Eigen::VectorXd& w_in) override;
 
 private:
-	JAC_TYPE jac_;
-	std::array<double, 289> v_;
+    HES_TYPE hessian_;
+    std::array<double, 351> v_;
 };
 
 } /* namespace HyA */
 } /* namespace models */
 } /* namespace ct */
 
-#endif /* INCLUDE_JACOBIAN_NAME_H_ */
+#endif /* INCLUDE_HESSIAN_NAME_H_ */

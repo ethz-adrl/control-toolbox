@@ -93,7 +93,7 @@ void timing(bool useContactModel)
 	start = std::chrono::high_resolution_clock::now();
 	for (size_t i=0; i<nTests; i++)
 	{
-		forwardZeroFd[i] = hyqForwardZero(xut[i]);
+		forwardZeroFd[i] = hyqForwardZero.forwardZero(xut[i]);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;

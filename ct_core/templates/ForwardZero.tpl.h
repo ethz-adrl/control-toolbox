@@ -24,47 +24,47 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_HyAInverseDynJacReverse_H_
-#define INCLUDE_HyAInverseDynJacReverse_H_
+#ifndef INCLUDE_DERIVATIVE_NAME_H_
+#define INCLUDE_DERIVATIVE_NAME_H_
 
 #include <ct/core/math/Derivatives.h>
 
 namespace ct {
-namespace models {
-namespace HyA {
+namespace NS1 {
+namespace NS2 {
 
-class HyAInverseDynJacReverse : public core::Derivatives<12, 6, double> {
+class DERIVATIVE_NAME : public core::Derivatives<IN_DIM, OUT_DIM, double> {
 public:
-	typedef Eigen::Matrix<double, 6, 12> JAC_TYPE;
-	typedef Eigen::Matrix<double, 12, 1> X_TYPE;
+    typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE;
+    typedef Eigen::Matrix<double, IN_DIM, 1> X_TYPE;
 
-	HyAInverseDynJacReverse() {
-		jac_.setZero();
-		v_.fill(0.0);
-	};
+    DERIVATIVE_NAME() {
+        eval_.setZero();
+        v_.fill(0.0);
+    };
 
-	HyAInverseDynJacReverse(const HyAInverseDynJacReverse& other)
-	{
-		jac_.setZero();
-		v_.fill(0.0);
-	}
+    DERIVATIVE_NAME(const DERIVATIVE_NAME& other)
+    {
+        eval_.setZero();
+        v_.fill(0.0);
+    }
 
-	virtual ~HyAInverseDynJacReverse() {};
+    virtual ~DERIVATIVE_NAME() {};
 
-	HyAInverseDynJacReverse* clone() const override{
-		return new HyAInverseDynJacReverse(*this);
-	}
+    DERIVATIVE_NAME* clone() const override{
+        return new DERIVATIVE_NAME(*this);
+    }
 
 
-	JAC_TYPE jacobian(const Eigen::VectorXd& x_in) override;
+    OUT_TYPE forwardZero(const Eigen::VectorXd& x_in) override;
 
 private:
-	JAC_TYPE jac_;
-	std::array<double, 289> v_;
+    OUT_TYPE eval_;
+    std::array<double, MAX_COUNT> v_;
 };
 
-} /* namespace HyA */
-} /* namespace models */
+} /* namespace NS2 */
+} /* namespace NS1 */
 } /* namespace ct */
 
 #endif /* INCLUDE_JACOBIAN_NAME_H_ */
