@@ -86,7 +86,7 @@ public:
 	 * @param outputDim output dimension, must be specified if template parameter IN_DIM is -1 (dynamic)
 	 */
 	DerivativesCppad(FUN_TYPE_CG& f, int inputDim = IN_DIM, int outputDim = OUT_DIM) :
-		fCg_(f),
+		fCgStd_(f),
 		compiled_(false),
 		inputDim_(inputDim),
 		outputDim_(outputDim)
@@ -96,7 +96,7 @@ public:
 	}
 
 	DerivativesCppad(FUN_TYPE_AD& f, int inputDim = IN_DIM, int outputDim = OUT_DIM) :
-		fAd_(f),
+		fAdStd_(f),
 		compiled_(false),
 		inputDim_(inputDim),
 		outputDim_(outputDim)
@@ -108,12 +108,19 @@ public:
 	//! copy constructor
 	DerivativesCppad(const DerivativesCppad& arg) 
 	:
-		fCg_(arg.fCg_),
+		fCgStd_(arg.fCgStd_),
+		fAdStd_(arg.fAdStd_),
 		compiled_(arg.compiled_),
 		inputDim_(arg.inputDim_),
 		outputDim_(arg.outputDim_),
-		tmpVarCount_(0)
-	{}
+		dynamicLib_(arg.dynamicLib_),
+		tmpVarCount_(arg.tmpVarCount_)
+	{
+		fCgCppad_ = arg.fCgCppad_;
+		fAdCppad_ = arg.fAdCppad_;
+		if(compiled_)
+			model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"));
+	}
 
 	//! destructor
 	virtual ~DerivativesCppad()
@@ -131,7 +138,7 @@ public:
 	 */
 	void update(FUN_TYPE_CG& f, const size_t inputDim = IN_DIM, const size_t outputDim = OUT_DIM)
 	{
-		fCg_ = f;
+		fCgStd_ = f;
 		outputDim_ = outputDim;
 		inputDim_ = inputDim;
 		recordCg();
@@ -140,7 +147,7 @@ public:
 
 	void update(FUN_TYPE_AD& f, const size_t inputDim = IN_DIM, const size_t outputDim = OUT_DIM)
 	{
-		fAd_ = f;
+		fAdStd_ = f;
 		outputDim_ = outputDim;
 		inputDim_ = inputDim;
 		recordAd();
@@ -158,7 +165,7 @@ public:
 			return model_->ForwardZero(x);
 		}
 		else
-			return fAd_.Forward(0, x);
+			return fAdCppad_.Forward(0, x);
 	}
 
 	virtual JAC_TYPE_D jacobian(const Eigen::VectorXd& x) override {
@@ -175,7 +182,7 @@ public:
 		}
 		else
 		{
-			Eigen::VectorXd jac = fAd_.Jacobian(x);
+			Eigen::VectorXd jac = fAdCppad_.Jacobian(x);
 			JAC_TYPE_D out(outputDim_, x.rows());
 			out = JAC_TYPE_ROW_MAJOR::Map(jac.data(), outputDim_, x.rows());
 			return out;
@@ -196,7 +203,7 @@ public:
 		}
 		else
 		{
-			Eigen::VectorXd hessian = fAd_.Hessian(x, lambda);
+			Eigen::VectorXd hessian = fAdCppad_.Hessian(x, lambda);
 			HES_TYPE_D out(x.rows(), x.rows());
 			out = HES_TYPE_ROW_MAJOR::Map(hessian.data(), x.rows(), x.rows());
 			return out;
@@ -289,7 +296,7 @@ public:
 	{
 		if (compiled_) return;
 
-		CppAD::cg::ModelCSourceGen<double> cgen(fCodeGen_, "DerivativesCppad");
+		CppAD::cg::ModelCSourceGen<double> cgen(fCgCppad_, "DerivativesCppad");
 		cgen.setCreateForwardZero(true);
 		cgen.setCreateJacobian(true);
 		cgen.setCreateSparseJacobian(true);
@@ -343,7 +350,7 @@ public:
 
 		std::string codeJac =
 				internal::CGHelpers::generateJacobianSource(
-						fCodeGen_,
+						fCgCppad_,
 						pattern,
 						jacDimension,
 						tmpVarCount_,
@@ -380,7 +387,7 @@ public:
 	{
 		std::string codeJac =
 				internal::CGHelpers::generateForwardZeroSource(
-						fCodeGen_,
+						fCgCppad_,
 						tmpVarCount_,
 						ignoreZero
 				);
@@ -405,7 +412,7 @@ public:
 
 		std::string codeHes =
 				internal::CGHelpers::generateHessianSource(
-						fCodeGen_,
+						fCgCppad_,
 						pattern,
 						hesDimension,
 						tmpVarCount_,
@@ -431,14 +438,14 @@ private:
 		// output vector, needs to be dynamic size
 		Eigen::Matrix<CG_SCALAR, Eigen::Dynamic, 1> y(outputDim_);
 
-		y = fCg_(x);
+		y = fCgStd_(x);
 
 		// store operation sequence in f: x -> y and stop recording
-		CppAD::ADFun<typename CG_SCALAR::value_type> fCodeGen(x, y);
+		CppAD::ADFun<CG_VALUE_TYPE> fCodeGen(x, y);
 
 		fCodeGen.optimize();
 
-		fCodeGen_ = fCodeGen;
+		fCgCppad_ = fCodeGen;
 	}
 
 	void recordAd()
@@ -452,14 +459,14 @@ private:
 		// output vector, needs to be dynamic size
 		Eigen::Matrix<AD_SCALAR, Eigen::Dynamic, 1> y(outputDim_);
 
-		y = fAd_(x);
+		y = fAdStd_(x);
 
 		// store operation sequence in f: x -> y and stop recording
 		CppAD::ADFun<double> fAd(x, y);
 
 		fAd.optimize();
 
-		fAd_ = fAd;		
+		fAdCppad_ = fAd;		
 	}
 
 	//! write code to file
@@ -520,15 +527,16 @@ private:
 		internal::CGHelpers::replaceAll(file, "OUT_DIM", std::to_string(OUT_DIM));
 	}
 
-	std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> fCg_; //! the function
+	std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> fCgStd_; //! the function
+	std::function<OUT_TYPE_AD(const IN_TYPE_AD&)> fAdStd_;
 	                                            //! 
 	bool compiled_; //! flag if Jacobian is compiled
 
 	int inputDim_; //! function input dimension
 	int outputDim_; //! function output dimension
 
-	CppAD::ADFun<typename CG_SCALAR::value_type> fCodeGen_; //!  auto-diff function
-	CppAD::ADFun<double> fAd_;
+	CppAD::ADFun<CG_VALUE_TYPE> fCgCppad_; //!  auto-diff function
+	CppAD::ADFun<double> fAdCppad_;
 
 	CppAD::cg::GccCompiler<double> compiler_; //! compile for codegeneration
 	std::shared_ptr<CppAD::cg::DynamicLib<double>> dynamicLib_; //! dynamic library to load after compilation

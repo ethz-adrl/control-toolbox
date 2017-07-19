@@ -114,7 +114,8 @@ public:
 		maxTempVarCountState_(arg.maxTempVarCountState_),
 		maxTempVarCountControl_(arg.maxTempVarCountControl_)
 	{
-		model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("ADCodegenLinearizer"));
+		if(compiled_)
+			model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("ADCodegenLinearizer"));
 	}
 
 	//! deep cloning

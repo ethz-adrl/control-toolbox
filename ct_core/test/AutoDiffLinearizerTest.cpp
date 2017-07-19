@@ -121,7 +121,7 @@ TEST(AutoDiffLinearizerTestMP, SystemLinearizerComparisonMP)
                 ControlVector<TestNonlinearSystem::CONTROL_DIM> u;
                 double t = 0;
 
-                x.setRandom(); //std::cout << "x: " << x.transpose() << std::endl;
+                x.setRandom();
                 u.setRandom();
 
                 // use the numerical differentiation linearizer
@@ -137,7 +137,6 @@ TEST(AutoDiffLinearizerTestMP, SystemLinearizerComparisonMP)
                 ASSERT_LT((B_system - B_ad).array().abs().maxCoeff(), 1e-5);  
             }));
         }
-
 
         for(auto& thr : threads)
             thr.join();

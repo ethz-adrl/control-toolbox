@@ -130,13 +130,7 @@ TEST(ADCodegenLinearizerTestMP, JITCompilationTestMP)
     SystemLinearizer<state_dim, control_dim> systemLinearizer(oscillator);
 
     ADCodegenLinearizer<state_dim, control_dim> adLinearizer(oscillatorAD);
-    // 
     adLinearizer.compileJIT("ADMPTestLib");
-
-
-    // StateVector<TestNonlinearSystem::STATE_DIM> x;
-    // ControlVector<TestNonlinearSystem::CONTROL_DIM> u;
-    // double t = 0;
 
     size_t nThreads = 4;
     std::vector< std::shared_ptr<ADCodegenLinearizer<state_dim, control_dim>>> adLinearizers;
@@ -183,9 +177,6 @@ TEST(ADCodegenLinearizerTestMP, JITCompilationTestMP)
 
         for(auto& thr : threads)
             thr.join();
-
-        // std::cout << n << std::endl;
     }
-
 }
 
