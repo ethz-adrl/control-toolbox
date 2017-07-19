@@ -29,7 +29,7 @@ namespace ct{
 namespace optcon{
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::startupRoutine()
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::shutdownRoutine()
 {
 	workersActive_ = false;
 	workerTask_ = SHUTDOWN;
@@ -94,6 +94,15 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(siz
 			lastCompletedTask = LINE_SEARCH;
 			break;
 		}
+		case ROLLOUT_SHOTS:
+		{
+#ifdef DEBUG_PRINT_MP
+			std::cout<<"[Thread "<<threadId<<"]: now doing shot rollouts"<<std::endl;
+#endif // DEBUG_PRINT_MP
+			rolloutShotWorker(threadId);
+			lastCompletedTask = ROLLOUT_SHOTS;
+			break;
+		}
 		case LINEARIZE_DYNAMICS:
 		{
 #ifdef DEBUG_PRINT_MP
@@ -112,19 +121,18 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(siz
 			lastCompletedTask = COMPUTE_COST;
 			break;
 		}
-
-		case PARALLEL_BACKWARD_PASS:
-		{
-			if (threadId < this->settings_.nThreads-1)
-			{
-#ifdef DEBUG_PRINT_MP
-			std::cout<<"[Thread "<<threadId<<"]: now doing LQ problem building!"<<std::endl;
-#endif // DEBUG_PRINT_MP
-				computeLQProblemWorker(threadId);
-			}
-			lastCompletedTask = PARALLEL_BACKWARD_PASS;
-			break;
-		}
+//		case PARALLEL_BACKWARD_PASS:
+//		{
+//			if (threadId < this->settings_.nThreads-1)
+//			{
+//#ifdef DEBUG_PRINT_MP
+//			std::cout<<"[Thread "<<threadId<<"]: now doing LQ problem building!"<<std::endl;
+//#endif // DEBUG_PRINT_MP
+//				computeLQProblemWorker(threadId);
+//			}
+//			lastCompletedTask = PARALLEL_BACKWARD_PASS;
+//			break;
+//		}
 
 		case SHUTDOWN:
 		{
@@ -162,107 +170,101 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::launchWorkerTh
 	workersActive_ = true;
 	workerTask_ = IDLE;
 
-	for (size_t i=0; i<this->settings_.nThreads; i++)
+	for (size_t i=0; i < this->settings_.nThreads; i++)
 	{
-		workerThreads_.push_back(std::thread(&iLQGMP::threadWork, this, i));
+		workerThreads_.push_back(std::thread(&NLOCBackendMP::threadWork, this, i));
 	}
 }
 
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::createLQProblem()
-{
-	if (this->settings_.parallelBackward.enabled)
-		parallelLQProblem();
-	else
-		this->sequentialLQProblem();
-}
+//template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+//void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::createLQProblem()
+//{
+//	if (this->settings_.parallelBackward.enabled)
+//		parallelLQProblem();
+//	else
+//		this->sequentialLQProblem();
+//}
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::parallelLQProblem()
+//template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+//void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::parallelLQProblem()
+//{
+//	Eigen::setNbThreads(1); // disable Eigen multi-threading
+//
+//	kTaken_ = 0;
+//	kCompleted_ = 0;
+//	KMax_ = this->K_;
+//
+//#ifdef DEBUG_PRINT_MP
+//	std::cout<<"[MP]: Waking up workers to do parallel backward pass. Will continue immediately"<<std::endl;
+//#endif //DEBUG_PRINT_MP
+//	workerTask_ = PARALLEL_BACKWARD_PASS;
+//	workerWakeUpCondition_.notify_all();
+//}
+
+
+//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+//void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
+//{
+//	// step 3
+//	// initialize cost to go (described in step 3)
+//	this->initializeCostToGo();
+//
+//	if (this->settings_.parallelBackward.enabled)
+//	{
+//		while (kCompleted_ < this->settings_.nThreads*2 && kCompleted_ < this->K_)
+//		{
+//			if (this->settings_.parallelBackward.showWarnings)
+//			{
+//				std::cout << "backward pass waiting for head start" << std::endl;
+//			}
+//			std::this_thread::sleep_for(std::chrono::microseconds(this->settings_.parallelBackward.pollingTimeoutUs));
+//		}
+//	}
+//
+//	for (int k=this->K_-1; k>=0; k--) {
+//
+//		if (this->settings_.parallelBackward.enabled)
+//		{
+//			while ((this->K_-1 - k + this->settings_.nThreads*2 > kCompleted_) && (k >= this->settings_.nThreads*2))
+//			{
+//				if (this->settings_.parallelBackward.showWarnings)
+//				{
+//					std::cout << "backward pass waiting for LQ problems" << std::endl;
+//				}
+//				std::this_thread::sleep_for(std::chrono::microseconds(this->settings_.parallelBackward.pollingTimeoutUs));
+//			}
+//		}
+//
+//#ifdef DEBUG_PRINT_MP
+//		if (k%100 == 0)
+//			std::cout<<"[MP]: Solving backward pass for index k "<<k<<std::endl;
+//#endif
+//
+//		// design controller
+//		this->designController(k);
+//
+//		// compute cost to go
+//		this->computeCostToGo(k);
+//	}
+//
+//	workerTask_ = IDLE;
+//}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex)
 {
+	// todo: special treatment if only one index is to be considered?
+
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
 
 	kTaken_ = 0;
 	kCompleted_ = 0;
-	KMax_ = this->K_;
-
-#ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Waking up workers to do parallel backward pass. Will continue immediately"<<std::endl;
-#endif //DEBUG_PRINT_MP
-	workerTask_ = PARALLEL_BACKWARD_PASS;
-	workerWakeUpCondition_.notify_all();
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
-{
-	// step 3
-	// initialize cost to go (described in step 3)
-	this->initializeCostToGo();
-
-	if (this->settings_.parallelBackward.enabled)
-	{
-		while (kCompleted_ < this->settings_.nThreads*2 && kCompleted_ < this->K_)
-		{
-			if (this->settings_.parallelBackward.showWarnings)
-			{
-				std::cout << "backward pass waiting for head start" << std::endl;
-			}
-			std::this_thread::sleep_for(std::chrono::microseconds(this->settings_.parallelBackward.pollingTimeoutUs));
-		}
-	}
-
-	for (int k=this->K_-1; k>=0; k--) {
-
-		if (this->settings_.parallelBackward.enabled)
-		{
-			while ((this->K_-1 - k + this->settings_.nThreads*2 > kCompleted_) && (k >= this->settings_.nThreads*2))
-			{
-				if (this->settings_.parallelBackward.showWarnings)
-				{
-					std::cout << "backward pass waiting for LQ problems" << std::endl;
-				}
-				std::this_thread::sleep_for(std::chrono::microseconds(this->settings_.parallelBackward.pollingTimeoutUs));
-			}
-		}
-
-#ifdef DEBUG_PRINT_MP
-		if (k%100 == 0)
-			std::cout<<"[MP]: Solving backward pass for index k "<<k<<std::endl;
-#endif
-
-		// design controller
-		this->designController(k);
-
-		// compute cost to go
-		this->computeCostToGo(k);
-	}
-
-	workerTask_ = IDLE;
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solveLQProblem()
-{
-	this->lqocProblem_->x_ = this->x_;
-	this->lqocProblem_->u_ = this->u_ff_;
-	this->lqocSolver_->setProblem(this->lqocProblem_);
-	this->lqocSolver_->solve();
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory()
-{
-	Eigen::setNbThreads(1); // disable Eigen multi-threading
-
-	kTaken_ = 0;
-	kCompleted_ = 0;
-	KMax_ = this->K_;
+	KMax_ = lastIndex;
+	KMin_ = firstIndex;
 
 #ifdef DEBUG_PRINT_MP
 	std::cout<<"[MP]: Waking up workers to do linearization."<<std::endl;
@@ -275,36 +277,38 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 #endif //DEBUG_PRINT_MP
 
 	std::unique_lock<std::mutex> waitLock(kCompletedMutex_);
-	kCompletedCondition_.wait(waitLock, [this]{return kCompleted_.load() >= KMax_;});
+	kCompletedCondition_.wait(waitLock, [this]{return kCompleted_.load() > KMax_ - KMin_;});
 	waitLock.unlock();
 	workerTask_ = IDLE;
 #ifdef DEBUG_PRINT_MP
 	std::cout<<"[MP]: Woke up again, should have linearized dynamics now."<<std::endl;
 #endif //DEBUG_PRINT_MP
+
+	// todo: enable eigen multi-threading again here?
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamicsWorker(size_t threadId)
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsWorker(size_t threadId)
 {
 	while(true)
 	{
 		size_t k = kTaken_++;
 
-		if (k >= KMax_)
+		if (k > KMax_- KMin_)
 		{
 			//kCompleted_++;
-			if (kCompleted_.load() >= KMax_)
+			if (kCompleted_.load() > KMax_-KMin_)
 				kCompletedCondition_.notify_all();
 			return;
 		}
 
 #ifdef DEBUG_PRINT_MP
 		if ((k+1)%100 == 0)
-			std::cout<<"[Thread "<<threadId<<"]: Linearizing for index k "<<KMax_ - k - 1<<std::endl;
+			std::cout<<"[Thread "<<threadId<<"]: Linearizing for index k " << KMax_-k << std::endl;
 #endif
 
-		this->computeLinearizedDynamics(threadId, KMax_-k-1); // linearize backwards
+		this->computeLinearizedDynamics(threadId, KMax_-k); // linearize backwards
 
 		kCompleted_++;
 	}
@@ -312,13 +316,17 @@ void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::computeLinearizedDynamicsWorker(siz
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory()
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex)
 {
+	this->initializeCostToGo();
+
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
 
 	kTaken_ = 0;
 	kCompleted_ = 0;
-	KMax_ = this->K_;
+	KMax_ = lastIndex;
+	KMin_ = firstIndex;
+
 
 #ifdef DEBUG_PRINT_MP
 	std::cout<<"[MP]: Waking up workers to do cost computation."<<std::endl;
@@ -331,64 +339,126 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 #endif //DEBUG_PRINT_MP
 
 	std::unique_lock<std::mutex> waitLock(kCompletedMutex_);
-	kCompletedCondition_.wait(waitLock, [this]{return kCompleted_.load() >= KMax_;});
+	kCompletedCondition_.wait(waitLock, [this]{return kCompleted_.load() > KMax_ - KMin_;});
 	waitLock.unlock();
 	workerTask_ = IDLE;
 #ifdef DEBUG_PRINT_MP
 	std::cout<<"[MP]: Woke up again, should have cost now."<<std::endl;
 #endif //DEBUG_PRINT_MP
+
+	// todo: restore eigen mult-threading here?
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::computeQuadraticCostsWorker(size_t threadId)
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsWorker(size_t threadId)
 {
 	while(true)
 	{
 		size_t k = kTaken_++;
 
-		if (k >= KMax_)
+		if (k > KMax_ - KMin_)
 		{
 			//kCompleted_++;
-			if (kCompleted_.load() >= KMax_)
+			if (kCompleted_.load() > KMax_ - KMin_)
 				kCompletedCondition_.notify_all();
 			return;
 		}
 
 #ifdef DEBUG_PRINT_MP
 		if ((k+1)%100 == 0)
-			std::cout<<"[Thread "<<threadId<<"]: Quadratizing cost for index k "<<KMax_ - k - 1<<std::endl;
+			std::cout<<"[Thread "<<threadId<<"]: Quadratizing cost for index k "<<KMax_ - k <<std::endl;
 #endif
 
-		this->computeQuadraticCosts(threadId, KMax_ - k - 1); // compute cost backwards
+		this->computeQuadraticCosts(threadId, KMax_ - k); // compute cost backwards
 
 		kCompleted_++;
 	}
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::computeLQProblemWorker(size_t threadId)
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLQProblemWorker(size_t threadId)
 {
 	while(true)
 	{
 		size_t k = kTaken_++;
 
-		if (k >= KMax_)
+		if (k > KMax_ - KMin_)
 		{
 			//kCompleted_++;
-			if (kCompleted_.load() >= KMax_)
+			if (kCompleted_.load() > KMax_ - KMin_)
 				kCompletedCondition_.notify_all();
 			return;
 		}
 
 #ifdef DEBUG_PRINT_MP
 		if ((k+1)%100 == 0)
-			std::cout<<"[Thread "<<threadId<<"]: Building LQ problem for index k "<<KMax_ - k - 1<<std::endl;
+			std::cout<<"[Thread "<<threadId<<"]: Building LQ problem for index k "<<KMax_ - k<<std::endl;
 #endif
 
-		this->computeQuadraticCosts(threadId, KMax_-k-1); // compute cost backwards
-		this->computeLinearizedDynamics(threadId, KMax_-k-1); // linearize backwards
+		this->computeQuadraticCosts(threadId, KMax_-k); // compute cost backwards
+		this->computeLinearizedDynamics(threadId, KMax_-k); // linearize backwards
+
+		kCompleted_++;
+	}
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(size_t firstIndex, size_t lastIndex)
+{
+	Eigen::setNbThreads(1); // disable Eigen multi-threading
+
+	kTaken_ = 0;
+	kCompleted_ = 0;
+	KMax_ = lastIndex;
+	KMin_ = firstIndex;
+
+
+#ifdef DEBUG_PRINT_MP
+	std::cout<<"[MP]: Waking up workers to do shot rollouts."<<std::endl;
+#endif //DEBUG_PRINT_MP
+	workerTask_ = ROLLOUT_SHOTS;
+	workerWakeUpCondition_.notify_all();
+
+#ifdef DEBUG_PRINT_MP
+	std::cout<<"[MP]: Will sleep now until we have rolled out all shots."<<std::endl;
+#endif //DEBUG_PRINT_MP
+
+	std::unique_lock<std::mutex> waitLock(kCompletedMutex_);
+	kCompletedCondition_.wait(waitLock, [this]{return kCompleted_.load() > KMax_ - KMin_;}); // todo adapt this
+	waitLock.unlock();
+	workerTask_ = IDLE;
+#ifdef DEBUG_PRINT_MP
+	std::cout<<"[MP]: Woke up again, should have rolled out all shots now."<<std::endl;
+#endif //DEBUG_PRINT_MP
+
+	// todo: re-enable eigen multi-threading here?
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWorker(size_t threadId)
+{
+	while(true)
+	{
+		size_t k = kTaken_++;
+
+		if (k > KMax_ - KMin_)
+		{
+			if (kCompleted_.load() > KMax_ - KMin_)
+				kCompletedCondition_.notify_all();
+			return;
+		}
+
+#ifdef DEBUG_PRINT_MP
+		if ((k+1)%100 == 0)
+			std::cout<<"[Thread "<<threadId<<"]: rolling out shot with index "<<KMax_ - k <<std::endl;
+#endif
+
+		this->rolloutSingleShot(threadId, KMax_ - k);
+		this->computeSingleDefect(threadId, KMax_ - k);
 
 		kCompleted_++;
 	}
@@ -398,61 +468,44 @@ void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::computeLQProblemWorker(size_t threa
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionState()
 {
+	// todo: this is the same as in ST mode. sum them together
+
 	this->x_ = this->lqocSolver_->getSolutionState();
+
+	//! get state update norm. may be overwritten later, depending on the algorithm
+	this->lx_norm_ = this->lqocSolver_->getStateUpdateNorm();
+
+//	std::cout << "printing states in mp "<< std::endl;	// todo remove
+//	for(size_t i = 0; i<this->x_.size(); i++)
+//		std::cout<< this->x_[i].transpose() << std::endl;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedforward()
 {
+	// todo: this is the same as in ST mode. sum them together
+
 	this->u_ff_prev_ = this->u_ff_; // store previous feedforward for line-search
 
 	this->u_ff_ = this->lqocSolver_->getSolutionControl();
 
-//	for(size_t i = 0; i<this->u_ff_.size(); i++)
-//		std::cout << "lv update ["<<i<<"]: " << this->u_ff_[i].transpose() << std::endl;	//todo: potentially remove
-}
+	//! get control update norm. may be overwritten later, depending on the algorithm
+	this->lu_norm_ = this->lqocSolver_->getControlUpdateNorm();}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedback()
 {
-	this->L_ = this->lqocSolver_->getFeedback();
+	// todo: this is the same as in ST mode. sum them together
+
+	if(this->settings_.closedLoopShooting)
+		this->L_ = this->lqocSolver_->getFeedback();
+	else
+		this->L_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateShots()
-{
-	for (size_t k=0; k<this->K_; k++)
-	{
-//		this->updateSingleShot(this->settings_.nThreads, k);
-		this->initializeSingleShot(this->settings_.nThreads, k);
-	}
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeShots()
-{
-	for (size_t k=0; k<this->K_; k++)
-	{
-		this->initializeSingleShot(this->settings_.nThreads, k);
-	}
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefects()
-{
-	this->d_norm_ = 0.0;
-
-	for (size_t k=0; k<this->K_+1; k++)
-	{
-		this->computeSingleDefect(this->settings_.nThreads, k);
-		this->d_norm_ += this->lqocProblem_->b_[k].norm();
-	}
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-SCALAR iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::performLineSearch()
+SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineSearch()
 {
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
 
@@ -488,12 +541,14 @@ SCALAR iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::performLineSearch()
 
 		return alphaBest;
 
+		// todo: restore eigen threads here?
+
 } // end linesearch
 
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchWorker(size_t threadId)
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWorker(size_t threadId)
 {
 	while(true)
 	{
@@ -522,6 +577,9 @@ void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchWorker(size_t threadId)
 		typename Base::ControlVectorArray u_ff_local(this->K_);
 		this->lineSearchSingleController(threadId, alpha, u_ff_local, x_local, u_local, t_local, intermediateCost, finalCost, &alphaBestFound_);
 
+		std::cout << "bla"<<intermediateCost << std::endl;
+		std::cout << "bla"<<finalCost << std::endl; // todo remove
+
 		SCALAR cost = intermediateCost + finalCost;
 
 		lineSearchResultMutex_.lock();
@@ -543,7 +601,6 @@ void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchWorker(size_t threadId)
 			this->finalCostBest_ = finalCost;
 			this->lowestCost_ = cost;
 			this->x_.swap(x_local);
-			this->u_.swap(u_local);
 			this->u_ff_.swap(u_ff_local);
 			this->t_.swap(t_local);
 		} else

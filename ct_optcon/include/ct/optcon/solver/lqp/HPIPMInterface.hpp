@@ -99,8 +99,10 @@ public:
 
 	void solve() override
 	{
+//		// optional printout
 //		for (size_t i=0; i<N_+1; i++)
 //		{
+//			std::cout << "HPIPM matrix printout for stage " << i << std::endl;
 //			if (i<N_)
 //			{
 //				printf("\nA\n");
@@ -126,7 +128,7 @@ public:
 //				printf("\nr\n");
 //				d_print_mat(1, CONTROL_DIM, hr_[i], 1);
 //			}
-//		}
+//		} // end optional printout
 
 		// assemble optimal control problem
 		::d_cvt_colmaj_to_ocp_qp(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(), hr_.data(), hidxb_.data(), hd_lb_.data(), hd_ub_.data(), hC_.data(), hD_.data(), hd_lg_.data(), hd_ug_.data(), &qp_);

@@ -34,6 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#define MATLAB_FULL_LOG
 
 #define DEBUG_PRINT
+#define DEBUG_PRINT_MP
 //#define DEBUG_PRINT_LINESEARCH
 
 #include <ct/optcon/optcon.h>
@@ -152,8 +153,8 @@ void singleCore()
 		gnms_settings.recordSmallestEigenvalue = false;
 		gnms_settings.min_cost_improvement = 1e-6;
 		gnms_settings.fixedHessianCorrection = false;
-		gnms_settings.dt = 0.0001;
-		gnms_settings.dt_sim = 0.0001;
+		gnms_settings.dt = 0.001;
+		gnms_settings.dt_sim = 0.001;
 		gnms_settings.integrator = NLOptConSettings::EULER;
 		gnms_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
@@ -208,6 +209,112 @@ void singleCore()
 		size_t numIterations = 0;
 
 		while (numIterations<3)
+		{
+			foundBetter = gnms.runIteration();
+
+			// test trajectories
+			StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
+			ControlTrajectory<control_dim> uRollout = gnms.getControlTrajectory();
+
+			numIterations++;
+
+			std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
+			std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
+		}
+
+		std::cout << "running ilqg solver" << std::endl;
+
+		numIterations = 0;
+		foundBetter = true;
+		while (numIterations<3)
+		{
+			foundBetter = ilqg.runIteration();
+
+			// test trajectories
+			StateTrajectory<state_dim> xRollout = ilqg.getStateTrajectory();
+			ControlTrajectory<control_dim> uRollout = ilqg.getControlTrajectory();
+
+			numIterations++;
+
+			std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
+			std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
+		}
+}
+
+
+void multiCore()
+{
+		std::cout << "setting up problem " << std::endl;
+
+		typedef NLOptConSolver<state_dim, control_dim, state_dim /2, state_dim /2> NLOptConSolver;
+
+		Eigen::Vector2d x_final;
+		x_final << 20, 0;
+
+		NLOptConSettings gnms_settings;
+		gnms_settings.nThreads = 4;
+		gnms_settings.epsilon = 0.0;
+		gnms_settings.max_iterations = 2;
+		gnms_settings.recordSmallestEigenvalue = false;
+		gnms_settings.min_cost_improvement = 1e-6;
+		gnms_settings.fixedHessianCorrection = false;
+		gnms_settings.dt = 0.001;
+		gnms_settings.dt_sim = 0.001;
+		gnms_settings.integrator = NLOptConSettings::EULER;
+		gnms_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
+		gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
+		gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;
+		gnms_settings.closedLoopShooting = false;
+		gnms_settings.loggingPrefix = "GNMS";
+
+		NLOptConSettings ilqg_settings = gnms_settings;
+		ilqg_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
+		ilqg_settings.loggingPrefix = "ILQR";
+		ilqg_settings.lineSearchSettings.active = false;
+
+
+		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
+		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearizedSystem);
+		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = createCostFunction(x_final);
+
+		// times
+		ct::core::Time tf = 3.0;
+		size_t nSteps = std::round(tf / gnms_settings.dt);
+
+		// provide initial guess
+		ControlVectorArray<control_dim> u0(nSteps, ControlVector<control_dim>::Zero());
+		StateVectorArray<state_dim>  x0(nSteps+1, StateVector<state_dim>::Zero());
+		for (size_t i=0; i<nSteps+1; i++)
+		{
+			x0 [i] = x_final*double(i)/double(nSteps);
+		}
+
+		FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
+		ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
+
+		NLOptConSolver::Policy_t initController (x0, u0, u0_fb, gnms_settings.dt);
+
+		// construct single-core single subsystem OptCon Problem
+		OptConProblem<state_dim, control_dim> optConProblem (tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
+
+
+		std::cout << "initializing gnms solver" << std::endl;
+		NLOptConSolver gnms(optConProblem, gnms_settings);
+		NLOptConSolver ilqg(optConProblem, ilqg_settings);
+
+
+		gnms.configure(gnms_settings);
+		gnms.setInitialGuess(initController);
+
+		ilqg.configure(ilqg_settings);
+		ilqg.setInitialGuess(initController);
+
+		std::cout << "running gnms solver" << std::endl;
+
+		bool foundBetter = true;
+		size_t numIterations = 0;
+
+		while (numIterations<2)
 		{
 			foundBetter = gnms.runIteration();
 
@@ -375,7 +482,8 @@ TEST(GNMSTest, PolicyComparison)
 int main(int argc, char **argv)
 {
 	feenableexcept(FE_INVALID | FE_OVERFLOW);
-	ct::optcon::example::singleCore();
+//	ct::optcon::example::singleCore();
+	ct::optcon::example::multiCore();
 
 	return 1;
 }

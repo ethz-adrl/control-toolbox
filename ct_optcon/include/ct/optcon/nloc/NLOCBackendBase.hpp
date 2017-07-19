@@ -301,10 +301,13 @@ public:
 	*/
 	void logToMatlab(const size_t& iteration);
 
+	//! log the initial guess to Matlab
 	void logInitToMatlab();
 
+	//! return the cost of the solution of the current iteration
 	SCALAR getCost() const;
 
+	//! return the sum of the L2-norm of the defects along the solution candidate
 	SCALAR getTotalDefect() const { return d_norm_;}
 
 	void reset()
@@ -357,8 +360,8 @@ public:
 	//! check problem for consistency
 	void checkProblem();
 
+	//! return the current iteration number
 	size_t& iteration() {return iteration_;}
-
 
 	//! Print debugging information
 	/*!
@@ -476,8 +479,8 @@ protected:
 			size_t threadId,
 			scalar_t alpha,
 			ControlVectorArray& u_ff_local,
-			ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
-			ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+			StateVectorArray& x_local,
+			ControlVectorArray& u_local,
 			ct::core::tpl::TimeArray<SCALAR>& t_local,
 			scalar_t& intermediateCost,
 			scalar_t& finalCost,
@@ -539,7 +542,7 @@ protected:
 
 	Settings_t settings_;
 
-	int K_;
+	int K_; //! the number of stages in the OptConProblem
 
 	StateVectorArray x_;
 	StateVectorArray xShot_;
@@ -548,13 +551,14 @@ protected:
 	ControlVectorArray u_ff_prev_;
 	FeedbackArray L_;
 
-	SCALAR d_norm_; 	// sum of the norms of all defects
-	SCALAR lx_norm_; 	// sum of the norms of state update
-	SCALAR lu_norm_; 	// sum of the norms of control update
+	SCALAR d_norm_; 	//! sum of the norms of all defects
+	SCALAR lx_norm_; 	//! sum of the norms of state update
+	SCALAR lu_norm_; 	//! sum of the norms of control update
 
-
+	//! shared pointer to the linear-quadratic optimal control problem
 	std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> > lqocProblem_;
 
+	//! shared pointer to the linear-quadratic optimal control solver
 	std::shared_ptr<LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR> > lqocSolver_;
 
 
@@ -562,6 +566,7 @@ protected:
 	scalar_t finalCostBest_;
 	scalar_t lowestCost_;
 
+	//! costs of the previous iteration, required to determine convergence
 	scalar_t intermediateCostPrevious_;
 	scalar_t finalCostPrevious_;
 
@@ -572,6 +577,10 @@ protected:
 #endif //MATLAB
 
 
+	/*!
+	 * of the following objects, we have nThreads+1 instantiations in form of a vector.
+	 * Every instantiation is dedicated to a certain thread in the multi-thread implementation
+	 */
 	std::vector<typename OptConProblem_t::DynamicsPtr_t> systems_;
 	std::vector<LinearSystemDiscretizer_t> linearSystemDiscretizers_;
 	std::vector<typename OptConProblem_t::LinearPtr_t> linearSystems_;

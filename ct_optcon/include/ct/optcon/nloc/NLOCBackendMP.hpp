@@ -57,7 +57,8 @@ public:
 			const NLOptConSettings& settings) :
 				Base(optConProblem, settings)
 	{
-		startupRoutine();
+		Eigen::initParallel();
+		launchWorkerThreads();
 	}
 
 	NLOCBackendMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
@@ -66,12 +67,16 @@ public:
 			 const std::string& ns = "alg") :
 			Base(optConProblem, settingsFile, verbose, ns)
 	{
-		startupRoutine();
+		Eigen::initParallel();
+		launchWorkerThreads();
 	}
 
-	virtual ~NLOCBackendMP() {};
+	virtual ~NLOCBackendMP() {
+		shutdownRoutine();
+	};
 
 protected:
+
 
 	virtual void computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
 
@@ -92,13 +97,14 @@ private:
 	enum WORKER_STATE {
 		IDLE,
 		LINE_SEARCH,
+		ROLLOUT_SHOTS,
 		LINEARIZE_DYNAMICS,
 		COMPUTE_COST,
 		PARALLEL_BACKWARD_PASS,
 		SHUTDOWN
 	};
 
-	void startupRoutine();
+	void shutdownRoutine();
 
 	//! Launch all worker thread
 	/*!
@@ -132,13 +138,6 @@ private:
 	 */
 	void computeLinearizedDynamicsWorker(size_t threadId);
 
-	//! Computes the linearized dynamics
-	/*!
-	  This function calculates the linearized dynamics as provided by the derivatives pointer.
-	  \param k step k
-	 */
-	void executeComputeLinearizedDynamics(size_t threadId, size_t k);
-
 
 	//! Computes the quadratic costs
 	/*!
@@ -147,6 +146,10 @@ private:
 	  \param k step k
 	 */
 	void computeQuadraticCostsWorker(size_t threadId);
+
+
+	//! rolls out a shot and computes the defect
+	void rolloutShotWorker(size_t threadId);
 
 	//! Creates the linear quadratic problem
 	/*!
@@ -183,6 +186,9 @@ private:
 
 	std::atomic_size_t kTaken_;
 	std::atomic_size_t kCompleted_;
+
+	size_t KMax_;
+	size_t KMin_;
 
 };
 

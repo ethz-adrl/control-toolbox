@@ -31,6 +31,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/problem/OptConProblem.h>
 
 #include <ct/optcon/nloc/NLOCBackendST.hpp>
+#include <ct/optcon/nloc/NLOCBackendMP.hpp>
+
 #include <ct/optcon/ilqr/iLQR.hpp>
 #include <ct/optcon/gnms/GNMS.hpp>
 

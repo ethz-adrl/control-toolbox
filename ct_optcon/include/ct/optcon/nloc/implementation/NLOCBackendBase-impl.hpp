@@ -384,8 +384,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeSingleDefect(size_t threadId, size_t k)
 {
+	// todo: remove threadId -- not requried here
+
 	if (k<K_)
+	{
 		lqocProblem_->b_[k] = xShot_[k] - x_[k+1];
+	}
 	else
 	{
 		assert(k==K_ && "k should be K_");
@@ -683,6 +687,46 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 
 
 
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSingleController(
+		size_t threadId,
+		scalar_t alpha,
+		ControlVectorArray& u_ff_local,
+		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+		ct::core::tpl::TimeArray<SCALAR>& t_local,
+		scalar_t& intermediateCost,
+		scalar_t& finalCost,
+		std::atomic_bool* terminationFlag
+) const
+{
+	intermediateCost = std::numeric_limits<scalar_t>::max();
+	finalCost = std::numeric_limits<scalar_t>::max();
+
+	if (terminationFlag && *terminationFlag) return;
+
+	for (int k=K_-1; k>=0; k--)
+	{
+		u_ff_local[k] = alpha * u_ff_[k] + (1-alpha) * u_ff_prev_[k];
+	}
+
+	bool dynamicsGood = rolloutSystem(threadId, u_ff_local, x_local, u_local, t_local, terminationFlag);
+
+	if (terminationFlag && *terminationFlag) return;
+
+	if (dynamicsGood)
+	{
+		computeCostsOfTrajectory(threadId, x_local, u_local, intermediateCost, finalCost);
+	}
+	else
+	{
+		std::string msg = std::string("dynamics not good, thread: ") + std::to_string(threadId);
+		std::cout << msg << std::endl;
+	}
+}
+
+
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareSolveLQProblem()
 {
@@ -786,11 +830,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeState
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefectsNorm()
 {
-	this->d_norm_ = 0.0;
+	d_norm_ = 0.0;
 
 	for (size_t k=0; k<K_; k++)
 	{
-		this->d_norm_ += this->lqocProblem_->b_[k].norm();
+		d_norm_ += lqocProblem_->b_[k].norm();
 	}
 }
 
