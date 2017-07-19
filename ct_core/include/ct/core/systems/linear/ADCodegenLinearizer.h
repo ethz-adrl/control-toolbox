@@ -111,10 +111,11 @@ public:
 		x_at_cache_(arg.x_at_cache_),
 		u_at_cache_(arg.u_at_cache_),
 		dynamicLib_(arg.dynamicLib_),
-		model_(arg.model_),
 		maxTempVarCountState_(arg.maxTempVarCountState_),
 		maxTempVarCountControl_(arg.maxTempVarCountControl_)
-	{}
+	{
+		model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("ADCodegenLinearizer"));
+	}
 
 	//! deep cloning
 	ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>* clone() const override {

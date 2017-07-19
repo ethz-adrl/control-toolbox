@@ -149,7 +149,6 @@ TEST(ADCodegenLinearizerTestMP, JITCompilationTestMP)
     }
 
 
-
     size_t runs = 100000;
 
     for(size_t n = 0; n < runs; ++n)
@@ -160,18 +159,16 @@ TEST(ADCodegenLinearizerTestMP, JITCompilationTestMP)
         {
             threads.push_back(std::thread([i, &adLinearizers, &systemLinearizers]()
             {
-                // std::cout << "hellohello" << std::endl;
-                // std::cout << "i: " << i << std::endl;
                 StateVector<TestNonlinearSystem::STATE_DIM> x;
                 ControlVector<TestNonlinearSystem::CONTROL_DIM> u;
                 double t = 0;
 
-                x.setRandom(); //std::cout << "x: " << x.transpose() << std::endl;
+                x.setRandom();
                 u.setRandom();
 
                 // use the numerical differentiation linearizer
-                A_type A_system = adLinearizers[i]->getDerivativeState(x, u, t);
-                B_type B_system = adLinearizers[i]->getDerivativeControl(x, u, t);
+                A_type A_system = systemLinearizers[i]->getDerivativeState(x, u, t);
+                B_type B_system = systemLinearizers[i]->getDerivativeControl(x, u, t);
 
                 // use the auto differentiation linearzier
                 A_type A_ad = adLinearizers[i]->getDerivativeState(x, u, t);
