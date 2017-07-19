@@ -72,8 +72,6 @@ public:
 
 	virtual void solve() override
 	{
-		smallestEigenvalue_ =  std::numeric_limits<SCALAR>::infinity();
-
 		for (int i=this->lqocProblem_->getNumberOfStages()-1; i>=0; i--)
 			solveSingleStage(i);
 
@@ -172,6 +170,8 @@ public:
 		}
 	}
 
+	virtual SCALAR getSmallestEigenvalue() override {return smallestEigenvalue_;}
+
 protected:
 
 	/*!
@@ -202,6 +202,9 @@ protected:
 
 	void initializeCostToGo()
 	{
+		//! since intializeCostToGo is the first call, we initialize the smallestEigenvalue here.
+		smallestEigenvalue_ =  std::numeric_limits<SCALAR>::infinity();
+
 		// initialize quadratic approximation of cost to go
 		const int& N = this->lqocProblem_->getNumberOfStages();
 		LQOCProblem_t& p = *this->lqocProblem_;
@@ -364,7 +367,7 @@ protected:
 	SCALAR smallestEigenvalue_;
 
 	//! Eigenvalue solver, used for inverting the Hessian and for regularization
-	Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM>> eigenvalueSolver_;
+	Eigen::SelfAdjointEigenSolver<Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>> eigenvalueSolver_;
 
 	//! if building with MATLAB support, include matfile
 #ifdef MATLAB

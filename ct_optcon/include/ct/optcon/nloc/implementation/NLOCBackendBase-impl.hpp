@@ -493,12 +493,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 	std::cout<<std::setprecision(15) << "total state update norm:   " << lx_norm_ << std::endl;
 	std::cout<<std::setprecision(15) << "total control update.norm: " << lu_norm_ << std::endl;
 
-	// todo bring back this
-//	if(settings_.recordSmallestEigenvalue)
-//	{
-//		std::cout<<std::setprecision(15) << "smallest eigenvalue this iteration: " << smallestEigenvalueIteration_ << std::endl;
-//		std::cout<<std::setprecision(15) << "smallest eigenvalue overall:        " << smallestEigenvalue_ << std::endl;
-//	}
+	if(settings_.recordSmallestEigenvalue && settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
+	{
+		std::cout<<std::setprecision(15) << "smallest eigenvalue this iteration: " << lqocSolver_->getSmallestEigenvalue() << std::endl;
+	}
 
 	std::cout<<"                   ========" << std::endl;
 	std::cout<<std::endl;

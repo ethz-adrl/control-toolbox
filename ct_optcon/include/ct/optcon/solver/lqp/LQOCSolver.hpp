@@ -77,6 +77,8 @@ public:
 
 	virtual void solveSingleStage(int N) { throw std::runtime_error("solveSingleStage not available for this solver.");}
 
+	virtual SCALAR getSmallestEigenvalue() {throw std::runtime_error("getSmallestEigenvalue not available for this solver.");}
+
 	virtual void computeStateAndControlUpdates() = 0;
 
 	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() = 0;
