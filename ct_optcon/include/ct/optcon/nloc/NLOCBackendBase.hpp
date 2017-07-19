@@ -382,9 +382,8 @@ public:
 
 	virtual void updateSolutionFeedback() = 0;
 
+	//! integrates the specified shots and computes the corresponding defects
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;
-
-	virtual void computeDefects(size_t firstIndex, size_t lastIndex) = 0;
 
 	virtual SCALAR performLineSearch() = 0;
 

@@ -44,7 +44,7 @@ namespace optcon{
 /*!
  * NLOC Backend for the multi-threaded case
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM = STATE_DIM/2, size_t V_DIM=STATE_DIM/2, typename SCALAR = double>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
 class NLOCBackendMP : public NLOCBackendBase <STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>
 {
 public:
@@ -73,25 +73,17 @@ public:
 
 protected:
 
-	virtual void createLQProblem() override;
+	virtual void computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
 
-	virtual void solveLQProblem() override;
+	virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
 
-	virtual void computeLinearizedDynamicsAroundTrajectory() override;
-
-	virtual void computeQuadraticCostsAroundTrajectory() override;
+	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) override;
 
 	virtual void updateSolutionState() override;
 
 	virtual void updateSolutionFeedforward() override;
 
 	virtual void updateSolutionFeedback() override;
-
-	virtual void updateShots() override;
-
-	virtual void initializeShots() override;
-
-	virtual void computeDefects() override;
 
 	SCALAR performLineSearch() override;
 

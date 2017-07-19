@@ -85,15 +85,10 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 {
 	for (size_t k=firstIndex; k<=lastIndex; k++)
 	{
+		// first rollout the shot
 		this->rolloutSingleShot(this->settings_.nThreads, k);
-	}
-}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefects(size_t firstIndex, size_t lastIndex)
-{
-	for (size_t k=firstIndex; k<=lastIndex; k++)
-	{
+		// then compute the corresponding defect
 		this->computeSingleDefect(this->settings_.nThreads, k);
 	}
 }

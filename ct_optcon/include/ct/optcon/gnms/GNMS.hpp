@@ -108,7 +108,6 @@ public:
 		{
 			std::cout << "Running additional init routine for first iteration !!" << std::endl;
 			this->backend_->rolloutShots(1, K-1);
-			this->backend_->computeDefects(1, K-1);
 		}
 
 
@@ -168,7 +167,6 @@ public:
 		if(this->backend_->iteration() == 0)
 		{
 			this->backend_->rolloutShots(0, 0);
-			this->backend_->computeDefects(0, 0);
 			this->backend_->updateCosts();
 		}
 
@@ -220,7 +218,6 @@ public:
 #endif
 
 		start = std::chrono::steady_clock::now();
-		this->backend_->computeDefects(0, K-1);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT

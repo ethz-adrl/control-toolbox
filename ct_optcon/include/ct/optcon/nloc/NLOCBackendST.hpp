@@ -38,7 +38,7 @@ namespace optcon{
 /*!
  * NLOC Backend for Single-Threaded case
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM = STATE_DIM/2, size_t V_DIM=STATE_DIM/2, typename SCALAR = double>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
 class NLOCBackendST : public NLOCBackendBase <STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>
 {
 public:
@@ -67,15 +67,13 @@ protected:
 
 	virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
 
+	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) override;
+
 	virtual void updateSolutionState() override;
 
 	virtual void updateSolutionFeedforward() override;
 
 	virtual void updateSolutionFeedback() override;
-
-	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) override;
-
-	virtual void computeDefects(size_t firstIndex, size_t lastIndex) override;
 
 	SCALAR performLineSearch() override;
 };
