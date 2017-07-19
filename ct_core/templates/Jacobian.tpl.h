@@ -24,40 +24,39 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_JACOBIAN_NAME_H_
-#define INCLUDE_JACOBIAN_NAME_H_
+#ifndef INCLUDE_DERIVATIVE_NAME_H_
+#define INCLUDE_DERIVATIVE_NAME_H_
 
-#include <ct/core/math/Jacobian.h>
+#include <ct/core/math/Derivatives.h>
 
 namespace ct {
 namespace NS1 {
 namespace NS2 {
 
-class JACOBIAN_NAME : public core::Jacobian<IN_DIM, OUT_DIM, double> {
+class DERIVATIVE_NAME : public core::Derivatives<IN_DIM, OUT_DIM, double> {
 public:
 	typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE;
-	typedef Eigen::Matrix<double, OUT_DIM, IN_DIM, Eigen::RowMajor> JAC_TYPE_ROW_MAJOR;
 	typedef Eigen::Matrix<double, IN_DIM, 1> X_TYPE;
 
-	JACOBIAN_NAME() {
+	DERIVATIVE_NAME() {
 		jac_.setZero();
 		v_.fill(0.0);
 	};
 
-	JACOBIAN_NAME(const JACOBIAN_NAME& other)
+	DERIVATIVE_NAME(const DERIVATIVE_NAME& other)
 	{
 		jac_.setZero();
 		v_.fill(0.0);
 	}
 
-	virtual ~JACOBIAN_NAME() {};
+	virtual ~DERIVATIVE_NAME() {};
 
-	JACOBIAN_NAME* clone() const override{
-		return new JACOBIAN_NAME(*this);
+	DERIVATIVE_NAME* clone() const override{
+		return new DERIVATIVE_NAME(*this);
 	}
 
 
-	JAC_TYPE operator()(const Eigen::VectorXd& x_in) override;
+	JAC_TYPE jacobian(const Eigen::VectorXd& x_in) override;
 
 private:
 	JAC_TYPE jac_;

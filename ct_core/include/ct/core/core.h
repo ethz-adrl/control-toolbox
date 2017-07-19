@@ -54,9 +54,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "internal/autodiff/CGHelpers.h"
 #include "internal/autodiff/SparsityPattern.h"
 
-#include "math/Jacobian.h"
-#include "math/JacobianNumDiff.h"
-#include "math/JacobianCG.h"
+#include "math/Derivatives.h"
+#include "math/DerivativesNumDiff.h"
+#include "math/DerivativesCppad.h"
 
 #ifdef PLOTTING_ENABLED
 #include "plot/plot.h"

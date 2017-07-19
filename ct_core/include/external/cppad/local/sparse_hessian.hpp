@@ -611,6 +611,7 @@ size_t ADFun<Base>::SparseHessian(
 		size_t(x.size()) == n ,
 		"SparseHessian: size of x not equal domain dimension for f."
 	);
+
 	CPPAD_ASSERT_KNOWN(
 		size_t(row.size()) == K && size_t(col.size()) == K ,
 		"SparseHessian: either r or c does not have the same size as ehs."

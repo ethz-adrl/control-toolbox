@@ -27,16 +27,15 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_HyAInverseDynJacForward_H_
 #define INCLUDE_HyAInverseDynJacForward_H_
 
-#include <ct/core/math/Jacobian.h>
+#include <ct/core/math/Derivatives.h>
 
 namespace ct {
 namespace models {
 namespace HyA {
 
-class HyAInverseDynJacForward : public core::Jacobian<12, 6, double> {
+class HyAInverseDynJacForward : public core::Derivatives<12, 6, double> {
 public:
 	typedef Eigen::Matrix<double, 6, 12> JAC_TYPE;
-	typedef Eigen::Matrix<double, 6, 12, Eigen::RowMajor> JAC_TYPE_ROW_MAJOR;
 	typedef Eigen::Matrix<double, 12, 1> X_TYPE;
 
 	HyAInverseDynJacForward() {
@@ -57,7 +56,7 @@ public:
 	}
 
 
-	JAC_TYPE operator()(const Eigen::VectorXd& x_in) override;
+	JAC_TYPE jacobian(const Eigen::VectorXd& x_in) override;
 
 private:
 	JAC_TYPE jac_;
@@ -68,4 +67,4 @@ private:
 } /* namespace models */
 } /* namespace ct */
 
-#endif /* INCLUDE_HyAInverseDynJacForward_H_ */
+#endif /* INCLUDE_JACOBIAN_NAME_H_ */

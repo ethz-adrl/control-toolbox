@@ -92,15 +92,40 @@ public:
 	 */
 	ADCodegenLinearizer(std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> > nonlinearSystem, bool cacheJac = true) :
 		Base(nonlinearSystem),
+		dFdx_(state_matrix_t::Zero()),
+		dFdu_(state_control_matrix_t::Zero()),
 		compiled_(false),
-		cacheJac_(cacheJac)
+		cacheJac_(cacheJac),
+		x_at_cache_(state_vector_t::Random()),
+		u_at_cache_(control_vector_t::Random()),
+		maxTempVarCountState_(0),
+		maxTempVarCountControl_(0)
+	{}
+
+	/**
+	 * @brief      Copy constructor
+	 *
+	 * @param[in]  arg   The argument
+	 */
+	ADCodegenLinearizer(const ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>& arg) :
+		Base(arg),
+		dFdx_(arg.dFdx_),
+		dFdu_(arg.dFdu_),
+		compiled_(arg.compiled_),
+		cacheJac_(arg.cacheJac_),
+		x_at_cache_(arg.x_at_cache_),
+		u_at_cache_(arg.u_at_cache_),
+		dynamicLib_(arg.dynamicLib_),
+		maxTempVarCountState_(arg.maxTempVarCountState_),
+		maxTempVarCountControl_(arg.maxTempVarCountControl_)
 	{
+		if(compiled_)
+			model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("ADCodegenLinearizer"));
 	}
 
 	//! deep cloning
 	ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>* clone() const override {
-		throw std::runtime_error("Not implemented");
-		//return new AutoDiffLinearizer<STATE_DIM, CONTROL_DIM>(*this);
+		return new ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>(*this);
 	}
 
 	//! get the Jacobian with respect to the state
@@ -122,9 +147,7 @@ public:
 	const state_matrix_t& getDerivativeState(const state_vector_t& x, const control_vector_t& u, const double t = 0.0) override
 	{
 		if(!compiled_)
-		{
 			throw std::runtime_error("Called getDerivativeState on ADCodegenLinearizer before compiling. Call 'compile()' before");
-		}
 
 		// if jacobian is not supposed to be cached or if values change, recompute it
 		if (!cacheJac_ || (x != x_at_cache_ || u != u_at_cache_))
@@ -132,7 +155,7 @@ public:
 
 		return dFdx_;
 
-	}
+	}	
 
 	//! get the Jacobian with respect to the input
 	/*!
@@ -171,7 +194,7 @@ public:
 	 * \note If this function takes a long time, consider generating the source code using
 	 * generateCode() and compile it before runtime.
 	 */
-	void compileJIT()
+	void compileJIT(const std::string& libName = "threadId" + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id())) )
 	{
 		if (compiled_) return;
 
@@ -180,8 +203,7 @@ public:
 	    CppAD::cg::ModelLibraryCSourceGen<double> libcgen(cgen);
 
 	    // compile source code
-	    CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, "adCGSystemlib");
-
+	    CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, libName);
 
 	    dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler_));
 
@@ -213,14 +235,14 @@ public:
 			bool useReverse = false,
 			bool ignoreZero = true
 			)
-	{
-		CppAD::vector<AD_SCALAR> jacA(STATE_DIM*STATE_DIM);
+	{		
+		this->sparsityA_.clearWork(); //clears the cppad sparsity work called by a possible method call before
+		size_t jacDimension = STATE_DIM * STATE_DIM;
 		std::string codeJacA =
-				internal::CGHelpers::generateJacobianCode(
+				internal::CGHelpers::generateJacobianSource(
 						this->f_,
-						STATE_DIM+CONTROL_DIM,
-						jacA,
 						this->sparsityA_,
+						jacDimension,
 						maxTempVarCountState_,
 						useReverse,
 						ignoreZero,
@@ -228,13 +250,13 @@ public:
 						"x_in",
 						"vX_");
 
-		CppAD::vector<AD_SCALAR> jacB(STATE_DIM*CONTROL_DIM);
+		this->sparsityB_.clearWork(); //clears the cppad sparsity work called by a possible method call before
+		jacDimension = STATE_DIM * CONTROL_DIM;
 		std::string codeJacB =
-				internal::CGHelpers::generateJacobianCode(
+				internal::CGHelpers::generateJacobianSource(
 						this->f_,
-						STATE_DIM+CONTROL_DIM,
-						jacB,
 						this->sparsityB_,
+						jacDimension,
 						maxTempVarCountControl_,
 						useReverse,
 						ignoreZero,

@@ -29,7 +29,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/core/core.h>
 
-
 namespace ct {
 namespace models {
 namespace HyA {
