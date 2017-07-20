@@ -138,7 +138,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeNonlinearSystem(const typen
 		if(controller_[i] == nullptr)
 			throw std::runtime_error("Controller not defined");
 
-		integratorsRK4_[i] = std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > (new ct::core::IntegratorRK4<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
+		integratorsRK4_[i] = std::shared_ptr<ct::core::IntegratorRK4CT<STATE_DIM, SCALAR> > (new ct::core::IntegratorRK4CT<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
 		integratorsEuler_[i] = std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM, SCALAR> >(new ct::core::IntegratorEuler<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
 		if(this->getNonlinearSystemsInstances()[i]->isSymplectic())
 		{
@@ -381,7 +381,7 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::rolloutSystem (
 			}
 			else if(settings_.integrator == iLQGSettings::RK4)
 			{
-				integratorsRK4_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
+				integratorsRK4_[threadId]->integrate(x0, (i*steps+j)*dt_sim, 1, dt_sim);
 			}
 			else if(settings_.integrator == iLQGSettings::EULER_SYM)
 			{

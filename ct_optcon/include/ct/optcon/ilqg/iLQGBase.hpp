@@ -31,6 +31,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <atomic>
 
 #include <ct/core/core.h>
+#include <ct/core/integration/IntegratorCT.h>
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
 #include <ct/optcon/solver/OptConSolver.h>
 #include "iLQGSettings.hpp"
@@ -468,7 +469,7 @@ protected:
 	void matrixToMatlab(V& matrix, std::string variableName);
 
 
-	typedef std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > IntegratorRK4Ptr;
+	typedef std::shared_ptr<ct::core::IntegratorRK4CT<STATE_DIM, SCALAR> > IntegratorRK4Ptr;
     std::vector<IntegratorRK4Ptr, Eigen::aligned_allocator<IntegratorRK4Ptr> > integratorsRK4_; //! Runge-Kutta-4 Integrators
 
     typedef std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM, SCALAR> > IntegratorEulerPtr;
