@@ -46,7 +46,17 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::setInitialGu
 	if(initialGuess.uff().size() > K_)
 		std::cout << "Warning, initial control guess too long, will truncate" << std::endl;
 
+	if(initialGuess.K().size() < K_){
+		std::cout << "Initial feedback length too short. Received length " << initialGuess.K().size() <<", expected " << K_ << std::endl;
+		throw std::runtime_error("initial control guess to short");
+	}
+
+	if(initialGuess.K().size() > K_)
+		std::cout << "Warning, initial feedback guess too long, will truncate" << std::endl;
+
+
 	u_ff_ = initialGuess.uff();
+	L_ = initialGuess.K();
 	x_ = initialGuess.x_ref();
 	x_prev_ = x_;
 
@@ -62,15 +72,16 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::setInitialGu
 	finalCostPrevious_ = finalCostBest_;
 }
 
+
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHorizon(const SCALAR& tf)
 {
+	std::cout << "change time horizon is called " << std::endl;
+
 	if (tf < 0)
 		throw std::runtime_error("negative time horizon specified");
 
 	int K = settings_.computeK(tf);
-
-	if (K == K_) return;
 
 	K_ = K;
 
@@ -86,6 +97,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
 
 	lqocSolver_->setProblem(lqocProblem_);
 }
+
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0)
@@ -440,6 +452,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinea
 	 * Should it be zero? We currently set it to be the second-to-last control input.
 	 */
 	const core::ControlVector<CONTROL_DIM, SCALAR> u_last = u_ff_[std::min((int)k+1, K_-1)];
+
+	assert(lqocProblem_ != nullptr);
+	assert(lqocProblem_ != nullptr);
+
+	assert(&lqocProblem_->A_[k] != nullptr);
+	assert(&lqocProblem_->B_[k] != nullptr);
 
 	linearSystemDiscretizers_[threadId].getAandB(x_[k], u_ff_[k], x_[k+1], u_last, (int)k, p.A_[k], p.B_[k]);
 }
@@ -850,6 +868,22 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefec
 	{
 		d_norm_ += lqocProblem_->b_[k].norm();
 	}
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::retrieveLastLinearizedModel(StateMatrixArray& A, StateControlMatrixArray& B)
+{
+	A = lqocProblem_->A_;
+	B = lqocProblem_->B_;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+const typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::Policy_t& NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getSolution()
+{
+	policy_.update(x_, u_ff_, L_, t_);
+	return policy_;
 }
 
 } //namespace optcon

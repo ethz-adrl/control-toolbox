@@ -116,8 +116,19 @@ public:
 
 		    controller_(settings.nThreads+1),
 		    settings_(settings),
+			K_(0),
+			initialized_(false),
+			configured_(false),
+			iteration_(0),
+			d_norm_(0.0),
+			lx_norm_(0.0),
+			lu_norm_(0.0),
+			intermediateCostBest_(std::numeric_limits<SCALAR>::infinity()),
+			finalCostBest_(std::numeric_limits<SCALAR>::infinity()),
+			lowestCost_(std::numeric_limits<SCALAR>::infinity()),
+			intermediateCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
+			finalCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
 		    lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>())
-
 	{
 		Eigen::initParallel();
 
@@ -134,7 +145,7 @@ public:
 		changeNonlinearSystem(optConProblem.getNonlinearSystem());
 		changeLinearSystem(optConProblem.getLinearSystem());
 
-		// to be done
+		// to be included later
 //		if(optConProblem.getStateInputConstraints())
 //			changeStateInputConstraints(optConProblem.getStateInputConstraints());
 //		if(optConProblem.getPureStateConstraints())
@@ -328,7 +339,8 @@ public:
 
 	const core::ControlTrajectory<CONTROL_DIM, SCALAR> getControlTrajectory() const;
 
-	const Policy_t& getSolution() { return policy_; }
+
+	const Policy_t& getSolution();
 
 	const TimeArray& getTimeArray() {return t_;}
 
@@ -336,6 +348,12 @@ public:
 
 	bool isInitialized() {return initialized_;}
 
+
+	//! Retrieve Last Linearized Model
+	/*!
+	  Retrieve the linearized model computed during the last iteration
+	*/
+	void retrieveLastLinearizedModel(StateMatrixArray& A, StateControlMatrixArray& B);
 
 	/*!
 	 * the prepare Solve LQP Problem method is intended for a special use-case: unconstrained GNMS with pre-solving of the

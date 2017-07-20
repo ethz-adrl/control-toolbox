@@ -65,6 +65,25 @@ void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(con
 	}
 }
 
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+bool NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solve()
+{
+	bool foundBetter = true;
+	size_t numIterations = 0;
+
+	while (foundBetter  && (numIterations < nlocBackend_->getSettings().max_iterations))
+	{
+		prepareIteration();
+
+		foundBetter = finishIteration();
+
+		numIterations++;
+	}
+
+	return (numIterations > 1 || foundBetter || (numIterations == 1 && !foundBetter));
+}
+
 } // namespace optcon
 } // namespace ct
 

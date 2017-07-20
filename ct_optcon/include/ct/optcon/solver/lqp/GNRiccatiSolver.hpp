@@ -181,7 +181,7 @@ protected:
 	 * resize matrices
 	 * @param lqocProblem
 	 */
-	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t>& lqocProblem) override
+	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) override
 	{
 		const int& N = lqocProblem->getNumberOfStages();
 

@@ -64,7 +64,7 @@ public:
 	 * update the shared_ptr to the LQOCProblem instance and call initialize instance deriving from this class.
 	 * @param lqocProblem
 	 */
-	void setProblem(std::shared_ptr<LQOCProblem_t>& lqocProblem)
+	void setProblem(std::shared_ptr<LQOCProblem_t> lqocProblem)
 	{
 		lqocProblem_ = lqocProblem;
 		setProblemImpl(lqocProblem);
@@ -97,7 +97,7 @@ public:
 
 protected:
 
-	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t>& lqocProblem) = 0;
+	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) = 0;
 
 	std::shared_ptr<LQOCProblem_t> lqocProblem_;
 

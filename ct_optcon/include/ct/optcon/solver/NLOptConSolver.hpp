@@ -43,7 +43,7 @@ namespace optcon{
 /** \defgroup OptConSolver OptConSolver
  * Solver interface for finite horizon optimal control problems
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM = STATE_DIM / 2, size_t V_DIM = STATE_DIM / 2, typename SCALAR = double>
 class NLOptConSolver : public OptConSolver<
 	NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>,
 	core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>,
@@ -85,7 +85,8 @@ public:
 	void configure(const Settings_t& settings) override;
 
 
-	virtual void prepareIteration()  {
+	virtual void prepareIteration()
+	{
 		nlocAlgorithm_ -> prepareIteration();
 	}
 
@@ -111,23 +112,10 @@ public:
 		nlocBackend_ -> setInitialGuess(initialGuess);
 	}
 
-
 	/**
 	 * solve the optimal control problem
-	 * @return true if solve succeeded, false otherwise.
 	 * */
-	virtual bool solve() override
-	{
-		bool solved = false;
-
-		while (!solved)
-		{
-			prepareIteration();
-			solved = finishIteration();
-		}
-
-		return solved;
-	}
+	virtual bool solve() override;
 
 	/**
 	 * Get the optimized control policy to the optimal control problem
@@ -202,8 +190,9 @@ public:
 	 */
 	virtual void changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin) override { nlocBackend_->changeLinearSystem(lin); }
 
-
 	virtual SCALAR getCost() const override {return nlocBackend_->getCost(); }
+
+	const std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>>& getBackend() {return nlocBackend_;}
 
 	std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override { return nlocBackend_->getNonlinearSystemsInstances(); }
 

@@ -132,13 +132,21 @@ public:
 			const DiscreteArray<StateVector<STATE_DIM, SCALAR>>& x_ref,
 			const DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>& uff,
 			const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>& K,
-			const tpl::TimeArray<SCALAR>& times) {
+			const tpl::TimeArray<SCALAR>& t)
+	{
+		tpl::TimeArray<SCALAR> tshort = t;
+		tshort.pop_back(); // todo: the copying here is not optimal
+
+		assert(K.size() == tshort.size());
+		assert(uff.size() == tshort.size());
+		assert(x_ref.size() == t.size());
+
 		x_ref_.setData(x_ref),
-		x_ref_.setTime(times),
+		x_ref_.setTime(t),
 		uff_.setData(uff);
-		uff_.setTime(times);
+		uff_.setTime(tshort);
 		K_.setData(K);
-		K_.setTime(times);
+		K_.setTime(tshort);
 	}
 
 	//! get reference state vector array (without timings)
