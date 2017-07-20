@@ -89,8 +89,8 @@ public:
 	Integrator(
 			const std::shared_ptr<System<STATE_DIM, SCALAR> >& system,
 			const typename Base::EventHandlerPtrVector& eventHandlers = typename Base::EventHandlerPtrVector(0),
-			const SCALAR& absErrTol = 1e-9,
-			const SCALAR& relErrTol = 1e-6
+			const SCALAR& absErrTol = SCALAR(1e-9),
+			const SCALAR& relErrTol = SCALAR(1e-6)
 	) :
 		Base(system, eventHandlers)
 	{
@@ -133,7 +133,7 @@ public:
 
 		integrate_n_steps(state, startTime, numSteps, dt);
 
-		Base::retrieveTrajectoriesFromObserver(stateTrajectory, timeTrajectory);
+		Base::retrieveTrajectoriesFromObserver(stateTrajectory, timeTrajectory);	
 	}
 
 	//! Equidistant integration based on number of time steps and step length
