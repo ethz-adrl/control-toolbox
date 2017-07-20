@@ -57,8 +57,7 @@ public:
 			const NLOptConSettings& settings) :
 				Base(optConProblem, settings)
 	{
-		Eigen::initParallel();
-		launchWorkerThreads();
+		startupRoutine();
 	}
 
 	NLOCBackendMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
@@ -67,11 +66,13 @@ public:
 			 const std::string& ns = "alg") :
 			Base(optConProblem, settingsFile, verbose, ns)
 	{
-		Eigen::initParallel();
-		launchWorkerThreads();
+		startupRoutine();
 	}
 
-	virtual ~NLOCBackendMP() {
+
+	//! destructor
+	virtual ~NLOCBackendMP()
+	{
 		shutdownRoutine();
 	};
 
@@ -103,6 +104,8 @@ private:
 		PARALLEL_BACKWARD_PASS,
 		SHUTDOWN
 	};
+
+	void startupRoutine();
 
 	void shutdownRoutine();
 

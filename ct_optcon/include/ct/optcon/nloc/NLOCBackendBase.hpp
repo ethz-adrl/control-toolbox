@@ -119,6 +119,8 @@ public:
 		    lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>())
 
 	{
+		Eigen::initParallel();
+
 		for (size_t i=0; i<settings.nThreads+1; i++)
 		{
 			controller_[i] = ConstantStateFeedbackControllerPtr (new core::ConstantStateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>());

@@ -212,7 +212,7 @@ public:
 		fixedHessianCorrection(false),
 		recordSmallestEigenvalue(false),
 		nThreads(4),
-		nThreadsEigen(1),
+		nThreadsEigen(4),
     	lineSearchSettings(),
 		parallelBackward()
     {
@@ -233,7 +233,7 @@ public:
     bool fixedHessianCorrection; //! perform Hessian regularization by incrementing the eigenvalues by epsilon.
     bool recordSmallestEigenvalue;	//! save the smallest eigenvalue of the Hessian
     int nThreads; //! number of threads, for MP version
-    size_t nThreadsEigen; //! number of threads for eigen parallelization (applies both to MP and standard)
+    size_t nThreadsEigen; //! number of threads for eigen parallelization (applies both to MP and ST) Note. in order to activate Eigen parallelization, compile with '-fopenmp'
     LineSearchSettings lineSearchSettings; //! the line search settings
 	ParallelBackwardSettings parallelBackward; //! do the backward pass in parallel with building the LQ problems (experimental)
 

@@ -34,7 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#define MATLAB_FULL_LOG
 
 #define DEBUG_PRINT
-//#define DEBUG_PRINT_MP
+#define DEBUG_PRINT_MP
 //#define DEBUG_PRINT_LINESEARCH
 
 #include <ct/optcon/optcon.h>
@@ -253,6 +253,7 @@ void multiCore()
 
 		NLOptConSettings gnms_settings;
 		gnms_settings.nThreads = 4;
+		gnms_settings.nThreadsEigen = 4;
 		gnms_settings.epsilon = 0.0;
 		gnms_settings.max_iterations = 2;
 		gnms_settings.recordSmallestEigenvalue = false;
@@ -263,7 +264,7 @@ void multiCore()
 		gnms_settings.integrator = NLOptConSettings::EULER;
 		gnms_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
-		gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;
+		gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
 		gnms_settings.closedLoopShooting = false;
 		gnms_settings.loggingPrefix = "GNMS";
 

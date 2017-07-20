@@ -28,6 +28,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct{
 namespace optcon{
 
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::startupRoutine()
+{
+	launchWorkerThreads();
+}
+
+
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::shutdownRoutine()
 {
@@ -257,9 +265,27 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::launchWorkerTh
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex)
 {
-	// todo: special treatment if only one index is to be considered?
+	/*!
+	 * In special cases, this function may be called for a single index, e.g. for the unconstrained GNMS real-time iteration scheme.
+	 * Then, don't wake up workers, but do single-threaded computation for that single index, and return.
+	 */
+	if(lastIndex == firstIndex)
+	{
+#ifdef DEBUG_PRINT_MP
+	std::cout<<"[MP]: do single threaded linearization for single index " << firstIndex << ". Not waking up workers." << std::endl;
+#endif //DEBUG_PRINT_MP
+		this->computeLinearizedDynamics(this->settings_.nThreads, firstIndex);
+		return;
+	}
 
+
+	/*!
+	 * In case of multiple points to be linearized, start multi-threading:
+	 */
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
+#ifdef DEBUG_PRINT_MP
+	std::cout<<"[MP]: Restricting Eigen to "<< Eigen::nbThreads() << " threads." << std::endl;
+#endif //DEBUG_PRINT_MP
 
 	kTaken_ = 0;
 	kCompleted_ = 0;
@@ -284,7 +310,11 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 	std::cout<<"[MP]: Woke up again, should have linearized dynamics now."<<std::endl;
 #endif //DEBUG_PRINT_MP
 
-	// todo: enable eigen multi-threading again here?
+
+	Eigen::setNbThreads(this->settings_.nThreadsEigen); // restore Eigen multi-threading
+#ifdef DEBUG_PRINT_MP
+	std::cout<<"[MP]: Restoring "<< Eigen::nbThreads() << " Eigen threads." << std::endl;
+#endif //DEBUG_PRINT_MP
 }
 
 
@@ -318,9 +348,31 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex)
 {
+	//! fill terminal cost
 	this->initializeCostToGo();
 
+
+	/*!
+	 * In special cases, this function may be called for a single index, e.g. for the unconstrained GNMS real-time iteration scheme.
+	 * Then, don't wake up workers, but do single-threaded computation for that single index, and return.
+	 */
+	if(lastIndex == firstIndex)
+	{
+#ifdef DEBUG_PRINT_MP
+		std::cout<<"[MP]: do single threaded cost approximation for single index " << firstIndex << ". Not waking up workers." << std::endl;
+#endif //DEBUG_PRINT_MP
+		this->computeQuadraticCosts(this->settings_.nThreads, firstIndex);
+		return;
+	}
+
+
+	/*!
+	 * In case of multiple points to be linearized, start multi-threading:
+	 */
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
+#ifdef DEBUG_PRINT_MP
+	std::cout<<"[MP]: Restricting Eigen to "<< Eigen::nbThreads() << " threads." << std::endl;
+#endif //DEBUG_PRINT_MP
 
 	kTaken_ = 0;
 	kCompleted_ = 0;
@@ -346,7 +398,10 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 	std::cout<<"[MP]: Woke up again, should have cost now."<<std::endl;
 #endif //DEBUG_PRINT_MP
 
-	// todo: restore eigen mult-threading here?
+	Eigen::setNbThreads(this->settings_.nThreadsEigen); // restore Eigen multi-threading
+#ifdef DEBUG_PRINT_MP
+	std::cout<<"[MP]: Restoring "<< Eigen::nbThreads() << " Eigen threads." << std::endl;
+#endif //DEBUG_PRINT_MP
 }
 
 
@@ -408,7 +463,29 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLQProbl
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(size_t firstIndex, size_t lastIndex)
 {
+	/*!
+	 * In special cases, this function may be called for a single index, e.g. for the unconstrained GNMS real-time iteration scheme.
+	 * Then, don't wake up workers, but do single-threaded computation for that single index, and return.
+	 */
+	if(lastIndex == firstIndex)
+	{
+#ifdef DEBUG_PRINT_MP
+		std::cout<<"[MP]: do single threaded shot rollout for single index " << firstIndex << ". Not waking up workers." << std::endl;
+#endif //DEBUG_PRINT_MP
+		this->rolloutSingleShot(this->settings_.nThreads, firstIndex);
+		this->computeSingleDefect(this->settings_.nThreads, firstIndex);
+		return;
+	}
+
+
+	/*!
+	 * In case of multiple points to be linearized, start multi-threading:
+	 */
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
+#ifdef DEBUG_PRINT_MP
+	std::cout<<"[MP]: Restricting Eigen to "<< Eigen::nbThreads() << " threads." << std::endl;
+#endif //DEBUG_PRINT_MP
+
 
 	kTaken_ = 0;
 	kCompleted_ = 0;
@@ -427,14 +504,17 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 #endif //DEBUG_PRINT_MP
 
 	std::unique_lock<std::mutex> waitLock(kCompletedMutex_);
-	kCompletedCondition_.wait(waitLock, [this]{return kCompleted_.load() > KMax_ - KMin_;}); // todo adapt this
+	kCompletedCondition_.wait(waitLock, [this]{return kCompleted_.load() > KMax_ - KMin_;});
 	waitLock.unlock();
 	workerTask_ = IDLE;
 #ifdef DEBUG_PRINT_MP
 	std::cout<<"[MP]: Woke up again, should have rolled out all shots now."<<std::endl;
 #endif //DEBUG_PRINT_MP
 
-	// todo: re-enable eigen multi-threading here?
+	Eigen::setNbThreads(this->settings_.nThreadsEigen); // restore Eigen multi-threading
+#ifdef DEBUG_PRINT_MP
+	std::cout<<"[MP]: Restoring "<< Eigen::nbThreads() << " Eigen threads." << std::endl;
+#endif //DEBUG_PRINT_MP
 }
 
 
@@ -542,7 +622,10 @@ SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 
 	return alphaBest;
 
-	// todo: restore eigen threads here?
+	Eigen::setNbThreads(this->settings_.nThreadsEigen); // restore Eigen multi-threading
+#ifdef DEBUG_PRINT_MP
+	std::cout<<"[MP]: Restoring "<< Eigen::nbThreads() << " Eigen threads." << std::endl;
+#endif //DEBUG_PRINT_MP
 
 } // end linesearch
 

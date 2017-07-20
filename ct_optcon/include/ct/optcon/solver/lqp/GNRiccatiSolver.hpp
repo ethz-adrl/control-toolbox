@@ -65,7 +65,10 @@ public:
 
 	GNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem = nullptr) :
 		LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>(lqocProblem)
-	{}
+	{
+		Eigen::initParallel();
+		Eigen::setNbThreads(settings_.nThreadsEigen);
+	}
 
 	virtual ~GNRiccatiSolver() {}
 

@@ -228,9 +228,14 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 	else
 		throw std::runtime_error("Solver for Linear Quadratic Optimal Control Problem wrongly specified.");
 
-	// set number of Eigen Threads
+	// set number of Eigen Threads (requires -fopenmp)
 	if (settings_.nThreadsEigen > 1)
+	{
 		Eigen::setNbThreads(settings.nThreadsEigen);
+#ifdef DEBUG_PRINT_MP
+	std::cout << "[MP] Eigen using " << Eigen::nbThreads() << " threads." << std::endl;
+#endif
+	}
 
 	lqocSolver_->configure(settings);
 
@@ -728,8 +733,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 	}
 	else
 	{
+#ifdef DEBUG_PRINT
 		std::string msg = std::string("dynamics not good, thread: ") + std::to_string(threadId);
 		std::cout << msg << std::endl;
+#endif
 	}
 }
 
