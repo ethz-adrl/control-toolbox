@@ -626,7 +626,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchCo
 	if (!settings_.lineSearchSettings.active)
 	{
 		ControlVectorArray u_recorded(K_);
-		TimeArray t_local(K_);
+		TimeArray t_local(K_+1);
 
 		bool dynamicsGood = rolloutSystem(settings_.nThreads, u_ff_, x_, u_recorded, t_local);
 
@@ -711,7 +711,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 
 	if (terminationFlag && *terminationFlag) return;
 
-	ControlVectorArray u_ff_alpha (K_-1);
+	ControlVectorArray u_ff_alpha (K_);
 
 	for (int k=K_-1; k>=0; k--)
 	{
