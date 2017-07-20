@@ -70,12 +70,9 @@ public:
     )
     {
         SCALAR time = startTime;
-        StateVector<STATE_DIM, SCALAR> derivate;
-
         for(size_t i = 0; i < numSteps; ++i)
         {
-            system_->computeDynamics(state, time, derivate);
-            stepper_.do_step(derivate, state, time, dt);
+            stepper_.do_step(system_, state, time, dt);
             time += dt;
         }
     }
@@ -91,6 +88,9 @@ private:
 
 template <size_t STATE_DIM, typename SCALAR = double>
 using IntegratorEulerCT = IntegratorCT<STATE_DIM, internal::StepperEulerCT<STATE_DIM, SCALAR>, SCALAR>;
+
+template <size_t STATE_DIM, typename SCALAR = double>
+using IntegratorRK4CT = IntegratorCT<STATE_DIM, internal::StepperRK4CT<STATE_DIM, SCALAR>, SCALAR>;
 
 }
 }
