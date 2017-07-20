@@ -84,6 +84,7 @@ class MPC {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	static const size_t STATE_DIM = OPTCON_SOLVER::STATE_D;
 	static const size_t CONTROL_DIM = OPTCON_SOLVER::CONTROL_D;
 
@@ -247,6 +248,7 @@ public:
 	}
 
 
+
 	//! main MPC run method
 	/*!
 	 * @param x
@@ -271,53 +273,40 @@ public:
 			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr)
 	{
 
-#ifdef DEBUG_PRINT_MPC
-		std::cout << "DEBUG_PRINT_MPC: started run() with state-timestamp " << x_ts << std::endl;
-#endif //DEBUG_PRINT_MPC
+		prepareIteration();
 
+		return finishIteration(x, x_ts, newPolicy, newPolicy_ts, forwardIntegrationController);
+	}
+
+
+	void prepareIteration()
+	{
+#ifdef DEBUG_PRINT_MPC
+		std::cout << "DEBUG_PRINT_MPC: started to prepare MPC iteration() " << std::endl;
+#endif //DEBUG_PRINT_MPC
 
 		runCallCounter_++;
 
-		// initialize the time-stamp for policy which is to be designed
-		newPolicy_ts = x_ts;
-
-
-		// local variables
-		Scalar_t t_forward_start;
-		Scalar_t t_forward_stop;
-
 		const Scalar_t currTimeHorizon = solver_.getTimeHorizon();
 		Scalar_t newTimeHorizon;
-
-		core::StateVector<STATE_DIM, Scalar_t> x_start = x;
 
 
 		if(firstRun_)
 			timeKeeper_.initialize();
 
-
 		timeKeeper_.startDelayMeasurement();
 
+		timeKeeper_.computeNewTimings(currTimeHorizon, newTimeHorizon, t_forward_start_, t_forward_stop_);
 
-		timeKeeper_.computeNewTimings(currTimeHorizon, newTimeHorizon, t_forward_start, t_forward_stop);
-
-
-		if(!firstRun_)
-			doPreIntegration(t_forward_start, t_forward_stop, x_start, forwardIntegrationController);
-
-
-
-		 // update the Optimal Control Solver with new time horizon and state information
+		// update the Optimal Control Solver with new time horizon and state information
 		solver_.changeTimeHorizon(newTimeHorizon);
-
-		solver_.changeInitialState(x_start);
 
 
 		// Calculate new initial guess / warm-starting policy
-		policyHandler_->designWarmStartingPolicy(t_forward_stop, newTimeHorizon, currentPolicy_, stateTrajectory_);
+		policyHandler_->designWarmStartingPolicy(t_forward_stop_, newTimeHorizon, currentPolicy_, stateTrajectory_);
 
 		// todo: remove this after through testing
-		if(t_forward_stop < t_forward_start)
+		if(t_forward_stop_ < t_forward_start_)
 			throw std::runtime_error("ERROR: t_forward_stop < t_forward_start is impossible.");
 
 
@@ -326,11 +315,39 @@ public:
 		 */
 		solver_.setInitialGuess(currentPolicy_);
 
+		solver_.prepareIteration();
+	}
+
+
+	bool finishIteration(
+			const core::StateVector<STATE_DIM, Scalar_t>& x,
+			const Scalar_t x_ts,
+			Policy_t& newPolicy,
+			Scalar_t& newPolicy_ts,
+			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr)
+	{
+
+#ifdef DEBUG_PRINT_MPC
+		std::cout << "DEBUG_PRINT_MPC: started mpc finish Iteration() with state-timestamp " << x_ts << std::endl;
+#endif //DEBUG_PRINT_MPC
+
+		// initialize the time-stamp for policy which is to be designed
+		newPolicy_ts = x_ts;
+
+		core::StateVector<STATE_DIM, Scalar_t> x_start = x;
+
+		// todo preintegrtion goes to finish call
+		if(!firstRun_)
+			doPreIntegration(t_forward_start_, t_forward_stop_, x_start, forwardIntegrationController);
+
+
+		solver_.changeInitialState(x_start); // todo goes to finish call
+
 		bool solveSuccessful = solver_.solve();
 
 		if(solveSuccessful){
 
-			newPolicy_ts = newPolicy_ts + (t_forward_stop-t_forward_start);
+			newPolicy_ts = newPolicy_ts + (t_forward_stop_ - t_forward_start_);
 
 			// get optimized policy and state trajectory from OptConSolver
 			currentPolicy_ = solver_.getSolution();
@@ -343,10 +360,10 @@ public:
 			// post-truncation may be an option of the solve-call took longer than the estimated delay
 			if(mpc_settings_.postTruncation_){
 
-				if(dtp > t_forward_stop && !firstRun_)
+				if(dtp > t_forward_stop_ && !firstRun_)
 				{
 					// the time-difference to be account for by post-truncation
-					Scalar_t dt_post_truncation = dtp-t_forward_stop;
+					Scalar_t dt_post_truncation = dtp-t_forward_stop_;
 
 #ifdef DEBUG_PRINT_MPC
 					std::cout << "DEBUG_PRINT_MPC: additional post-truncation about "<< dt_post_truncation << " [sec]." << std::endl;
@@ -361,7 +378,7 @@ public:
 					newPolicy_ts += dt_truncated_eff;
 
 				}
-				else if (t_forward_stop >= dtp && !firstRun_)
+				else if (t_forward_stop_ >= dtp && !firstRun_)
 				{
 #ifdef DEBUG_PRINT_MPC
 					std::cout << "DEBUG_PRINT_MPC: controller opt faster than pre-integration horizon. Consider tuning pre-integration. " << std::endl;
@@ -392,6 +409,7 @@ public:
 
 		return solveSuccessful;
 	}
+
 
 
 	//! reset the mpc problem and provide new problem time horizon (mandatory)
@@ -490,6 +508,9 @@ private:
 		newInt.integrate_adaptive(state, startTime, stopTime, dtInit);
 	}
 
+	//! timings for pre-integration
+	Scalar_t t_forward_start_;
+	Scalar_t t_forward_stop_;
 
 	OPTCON_SOLVER solver_;	//! optimal control solver employed for mpc
 
