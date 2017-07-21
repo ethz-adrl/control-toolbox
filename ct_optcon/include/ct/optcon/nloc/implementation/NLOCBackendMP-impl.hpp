@@ -4,12 +4,12 @@ Farbod Farshidian. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice,
+ * Redistributions of source code must retain the above copyright notice,
       this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
+ * Redistributions in binary form must reproduce the above copyright notice,
       this list of conditions and the following disclaimer in the documentation
       and/or other materials provided with the distribution.
-    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+ * Neither the name of ETH ZURICH nor the names of its contributors may be used
       to endorse or promote products derived from this software without specific
       prior written permission.
 
@@ -22,7 +22,7 @@ GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWE
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************************************************************************************/
+ ***************************************************************************************/
 
 
 namespace ct{
@@ -65,109 +65,127 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(siz
 	std::cout<<"[Thread "<<threadId<<"]: launched"<<std::endl;
 #endif // DEBUG_PRINT_MP
 
-	WORKER_STATE lastCompletedTask = IDLE;
+
+	// local variables
+	int workerTask_local = IDLE;
+	size_t uniqueProcessID = 0;
+	size_t iteration_local = this->iteration_;
+
 
 	while(workersActive_)
 	{
-#ifdef DEBUG_PRINT_MP
-		std::cout<<"[Thread "<<threadId<<"]: last completed job was: "<<lastCompletedTask<<std::endl;
-		std::cout<<"[Thread "<<threadId<<"]: current job is: "<<workerTask_<<std::endl;
-#endif // DEBUG_PRINT_MP
+		workerTask_local = workerTask_.load();
+		iteration_local = this->iteration_;
 
-		// if job completed in time or IDLE then wait
-		if (lastCompletedTask == workerTask_ || workerTask_ == IDLE)
+#ifdef DEBUG_PRINT_MP
+		printString("[Thread " + std::to_string(threadId) + "]: previous procId: " + std::to_string(uniqueProcessID) +
+				", current procId: " +std::to_string(generateUniqueProcessID(iteration_local, (int) workerTask_local)));
+#endif
+
+
+		/*!
+		 * We want to put the worker to sleep if
+		 * - the workerTask_ is IDLE
+		 * - or we are finished but workerTask_ is not yet reset, thus the process ID is still the same
+		 * */
+		if (workerTask_local == IDLE || uniqueProcessID == generateUniqueProcessID(iteration_local, (int) workerTask_local))
 		{
+#ifdef DEBUG_PRINT_MP
+			printString("[Thread " + std::to_string(threadId) + "]: going to sleep !");
+#endif
+
+			// sleep until the state is not IDLE any more and we have a different process ID than before
 			std::unique_lock<std::mutex> waitLock(workerWakeUpMutex_);
-			workerWakeUpCondition_.wait(waitLock, [this, lastCompletedTask]{
-				return (workerTask_ != IDLE && lastCompletedTask != workerTask_);
-			});
+			while(workerTask_ == IDLE ||  (uniqueProcessID == generateUniqueProcessID(this->iteration_, (int)workerTask_.load()))){
+				workerWakeUpCondition_.wait(waitLock);
+			}
 			waitLock.unlock();
-		}
+
+			workerTask_local = workerTask_.load();
+			iteration_local = this->iteration_;
 
 #ifdef DEBUG_PRINT_MP
-		std::cout<<"[Thread "<<threadId<<"]: woke up!"<<std::endl;
+			printString("[Thread " + std::to_string(threadId) + "]: woke up !");
 #endif // DEBUG_PRINT_MP
+
+
+		}
 
 		if (!workersActive_)
 			break;
 
-		switch((int)workerTask_)
+
+		switch(workerTask_local)
 		{
 		case LINE_SEARCH:
 		{
 #ifdef DEBUG_PRINT_MP
-			std::cout<<"[Thread "<<threadId<<"]: now doing line search!"<<std::endl;
+			printString("[Thread " + std::to_string(threadId) + "]: now busy with LINE_SEARCH !");
 #endif // DEBUG_PRINT_MP
 			lineSearchWorker(threadId);
-			lastCompletedTask = LINE_SEARCH;
+			uniqueProcessID = generateUniqueProcessID (iteration_local, LINE_SEARCH);
 			break;
 		}
 		case ROLLOUT_SHOTS:
 		{
 #ifdef DEBUG_PRINT_MP
-			std::cout<<"[Thread "<<threadId<<"]: now doing shot rollouts"<<std::endl;
+			printString("[Thread " + std::to_string(threadId) + "]: now doing shot rollouts !");
 #endif // DEBUG_PRINT_MP
 			rolloutShotWorker(threadId);
-			lastCompletedTask = ROLLOUT_SHOTS;
+			uniqueProcessID = generateUniqueProcessID (iteration_local, ROLLOUT_SHOTS);
 			break;
 		}
 		case LINEARIZE_DYNAMICS:
 		{
 #ifdef DEBUG_PRINT_MP
-			std::cout<<"[Thread "<<threadId<<"]: now doing linearization!"<<std::endl;
+			printString("[Thread " + std::to_string(threadId) + "]: now doing linearization !");
 #endif // DEBUG_PRINT_MP
 			computeLinearizedDynamicsWorker(threadId);
-			lastCompletedTask = LINEARIZE_DYNAMICS;
+			uniqueProcessID = generateUniqueProcessID (iteration_local, LINEARIZE_DYNAMICS);
 			break;
 		}
 		case COMPUTE_COST:
 		{
 #ifdef DEBUG_PRINT_MP
-			std::cout<<"[Thread "<<threadId<<"]: now doing cost computation!"<<std::endl;
+			printString("[Thread " + std::to_string(threadId) + "]: now doing cost computation !");
 #endif // DEBUG_PRINT_MP
 			computeQuadraticCostsWorker(threadId);
-			lastCompletedTask = COMPUTE_COST;
+			uniqueProcessID = generateUniqueProcessID (iteration_local, COMPUTE_COST);
 			break;
 		}
-//		case PARALLEL_BACKWARD_PASS:
-//		{
-//			if (threadId < this->settings_.nThreads-1)
-//			{
-//#ifdef DEBUG_PRINT_MP
-//			std::cout<<"[Thread "<<threadId<<"]: now doing LQ problem building!"<<std::endl;
-//#endif // DEBUG_PRINT_MP
-//				computeLQProblemWorker(threadId);
-//			}
-//			lastCompletedTask = PARALLEL_BACKWARD_PASS;
-//			break;
-//		}
-
+		//		case PARALLEL_BACKWARD_PASS:
+		//		{
+		//			if (threadId < this->settings_.nThreads-1)
+		//			{
+		//#ifdef DEBUG_PRINT_MP
+		//			std::cout<<"[Thread "<<threadId<<"]: now doing LQ problem building!"<<std::endl;
+		//#endif // DEBUG_PRINT_MP
+		//				computeLQProblemWorker(threadId);
+		//			}
+		//			lastCompletedTask = PARALLEL_BACKWARD_PASS;
+		//			break;
+		//		}
 		case SHUTDOWN:
 		{
 #ifdef DEBUG_PRINT_MP
-			std::cout<<"[Thread "<<threadId<<"]: now shutting down!"<<std::endl;
+			printString("[Thread " + std::to_string(threadId) + "]: now shutting down !");
 #endif // DEBUG_PRINT_MP
 			return;
 			break;
 		}
-
 		case IDLE:
 		{
 #ifdef DEBUG_PRINT_MP
-			std::cout<<"[Thread "<<threadId<<"]: is idle, going to sleep!"<<std::endl;
+			printString("[Thread " + std::to_string(threadId) + "]: is idle. Now going to sleep.");
 #endif // DEBUG_PRINT_MP
 			break;
 		}
-
 		default:
 		{
-			std::cout << "Warning, worker task has unknown task"<<std::endl;
+			printString("[Thread " + std::to_string(threadId) + "]: WARNING: Worker has unknown task !");
 			break;
 		}
 		}
-#ifdef DEBUG_PRINT_MP
-		std::cout<<"[Thread "<<threadId<<"]: done with job. Will wait for next now!"<<std::endl;
-#endif // DEBUG_PRINT_MP
 	}
 }
 
@@ -272,7 +290,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 	if(lastIndex == firstIndex)
 	{
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: do single threaded linearization for single index " << firstIndex << ". Not waking up workers." << std::endl;
+		printString("[MP]: do single threaded linearization for single index "+ std::to_string(firstIndex) + ". Not waking up workers.");
 #endif //DEBUG_PRINT_MP
 		this->computeLinearizedDynamics(this->settings_.nThreads, firstIndex);
 		return;
@@ -284,7 +302,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 	 */
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Restricting Eigen to "<< Eigen::nbThreads() << " threads." << std::endl;
+	printString("[MP]: Restricting Eigen to " + Eigen::nbThreads() + " threads.");
 #endif //DEBUG_PRINT_MP
 
 	kTaken_ = 0;
@@ -293,13 +311,13 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 	KMin_ = firstIndex;
 
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Waking up workers to do linearization."<<std::endl;
+	printString("[MP]: Waking up workers to do linearization.");
 #endif //DEBUG_PRINT_MP
 	workerTask_ = LINEARIZE_DYNAMICS;
 	workerWakeUpCondition_.notify_all();
 
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Will sleep now until we have linearized dynamics."<<std::endl;
+	printString("[MP]: Will sleep now until we have linearized dynamics.");
 #endif //DEBUG_PRINT_MP
 
 	std::unique_lock<std::mutex> waitLock(kCompletedMutex_);
@@ -307,13 +325,13 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 	waitLock.unlock();
 	workerTask_ = IDLE;
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Woke up again, should have linearized dynamics now."<<std::endl;
+	printString("[MP]: Woke up again, should have linearized dynamics now.");
 #endif //DEBUG_PRINT_MP
 
 
 	Eigen::setNbThreads(this->settings_.nThreadsEigen); // restore Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Restoring "<< Eigen::nbThreads() << " Eigen threads." << std::endl;
+	printString("[MP]: Restoring " + Eigen::nbThreads() + " Eigen threads.");
 #endif //DEBUG_PRINT_MP
 }
 
@@ -335,7 +353,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 
 #ifdef DEBUG_PRINT_MP
 		if ((k+1)%100 == 0)
-			std::cout<<"[Thread "<<threadId<<"]: Linearizing for index k " << KMax_-k << std::endl;
+			printString("[Thread " + threadId + "]: Linearizing for index k " + KMax_-k);
 #endif
 
 		this->computeLinearizedDynamics(threadId, KMax_-k); // linearize backwards
@@ -359,7 +377,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 	if(lastIndex == firstIndex)
 	{
 #ifdef DEBUG_PRINT_MP
-		std::cout<<"[MP]: do single threaded cost approximation for single index " << firstIndex << ". Not waking up workers." << std::endl;
+		printString("[MP]: do single threaded cost approximation for single index " + firstIndex + ". Not waking up workers.");
 #endif //DEBUG_PRINT_MP
 		this->computeQuadraticCosts(this->settings_.nThreads, firstIndex);
 		return;
@@ -371,7 +389,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 	 */
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Restricting Eigen to "<< Eigen::nbThreads() << " threads." << std::endl;
+	printString("[MP]: Restricting Eigen to " + Eigen::nbThreads() + " threads.");
 #endif //DEBUG_PRINT_MP
 
 	kTaken_ = 0;
@@ -555,9 +573,9 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolution
 	//! get state update norm. may be overwritten later, depending on the algorithm
 	this->lx_norm_ = this->lqocSolver_->getStateUpdateNorm();
 
-//	std::cout << "printing states in mp "<< std::endl;	// todo remove
-//	for(size_t i = 0; i<this->x_.size(); i++)
-//		std::cout<< this->x_[i].transpose() << std::endl;
+	//	std::cout << "printing states in mp "<< std::endl;	// todo remove
+	//	for(size_t i = 0; i<this->x_.size(); i++)
+	//		std::cout<< this->x_[i].transpose() << std::endl;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>

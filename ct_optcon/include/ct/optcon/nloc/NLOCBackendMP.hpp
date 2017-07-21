@@ -163,6 +163,18 @@ private:
 	void computeLQProblemWorker(size_t threadId);
 
 
+	/*! heuristic that generates a unique id for a process, such that we can manage the tasks.
+	 * Generates a unique identifiers for task, iteration:
+	 * */
+	size_t generateUniqueProcessID (const size_t& iterateNo, const int workerState)
+	{
+		return (10e6*(workerState +1) + iterateNo+1);
+	}
+
+	//! for nice debug printing @todo put in everywhere
+	inline void printString(const std::string& text){std::cout << text << std::endl;}
+
+
 	std::vector<std::thread, Eigen::aligned_allocator<std::thread>> workerThreads_;
 	std::atomic_bool workersActive_;
 	std::atomic_int workerTask_;
