@@ -58,6 +58,8 @@ public:
 
 	static const size_t STATE_D = STATE_DIM;
 	static const size_t CONTROL_D = CONTROL_DIM;
+	static const size_t POS_DIM = P_DIM;
+	static const size_t VEL_DIM = V_DIM;
 
 	typedef NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> Derived;
 	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;

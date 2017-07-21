@@ -58,8 +58,7 @@ public:
 	virtual void designWarmStartingPolicy(
 			const SCALAR& delay,
 			const SCALAR& TimeHorizon,
-			POLICY& policy,
-			core::StateTrajectory<STATE_DIM, SCALAR>& stateTraj)
+			POLICY& policy)
 	{
 		policy = initialPolicy_;
 	}
@@ -72,15 +71,12 @@ public:
 	 * 	the time to truncate away from the solution
 	 * @param policy
 	 *  the policy to be truncated
-	 * @param traj
-	 *  the state trajectory to be truncated
 	 * @param effectivelyTruncated
 	 * the time which was truncated away
 	 */
 	virtual void truncateSolutionFront(
 			const SCALAR& delay,
 			POLICY& policy,
-			core::StateTrajectory<STATE_DIM, SCALAR>& traj,
 			SCALAR& effectivelyTruncated) {}
 
 

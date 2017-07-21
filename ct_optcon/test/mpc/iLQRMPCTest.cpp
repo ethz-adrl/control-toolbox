@@ -25,6 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
 //#define DEBUG_PRINT
+//#define DEBUG_PRINT_MP
 //#define DEBUG_PRINT_LINESEARCH
 //#define MATLAB_LOG_MPC
 
@@ -132,9 +133,9 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim, SCALAR> > createCo
 
 
 /**
- * Test if the MPC - pre integrator gives reasonable results.
+ * Test the MPC pre integrator
  */
-TEST(MPCTest, PreIntegratorTest)
+TEST(MPCTestA, PreIntegratorTest)
 {
 	typedef tpl::Dynamics<double> Dynamics;
 	typedef tpl::LinearizedSystem<double> LinearizedSystem;
@@ -158,21 +159,27 @@ TEST(MPCTest, PreIntegratorTest)
 		optConProblem.setTimeHorizon(timeHorizon);
 
 		// FIRST ILQG INSTANCE FOR CALCULATING THE 'PERFECT' INITIAL GUESS
-		iLQGSettings ilqg_settings;
-		ilqg_settings.dt = 0.001;
-		ilqg_settings.dt_sim = 0.001;
-		ilqg_settings.max_iterations = 100;
+		NLOptConSettings ilqr_settings;
+		ilqr_settings.dt = 0.001;
+		ilqr_settings.dt_sim = 0.001;
+		ilqr_settings.max_iterations = 100;
+		ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
+		ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
+		ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
+		ilqr_settings.closedLoopShooting = false;
+		ilqr_settings.integrator = NLOptConSettings::RK4;
 
 		// number of steps
-		size_t K = std::round(timeHorizon / ilqg_settings.dt);
+		size_t K = std::round(timeHorizon / ilqr_settings.dt);
 
 		// initial controller
 		FeedbackArray<state_dim, control_dim> u0_fb(K, FeedbackMatrix<state_dim, control_dim>::Zero());
 		ControlVectorArray<control_dim> u0_ff(K, ControlVector<control_dim>::Ones());
-		ct::core::StateFeedbackController<state_dim, control_dim> initController (u0_ff, u0_fb, ilqg_settings.dt);
+		StateVectorArray<state_dim> x_ref (K+1, x0);
+		ct::core::StateFeedbackController<state_dim, control_dim> initController (x_ref, u0_ff, u0_fb, ilqr_settings.dt);
 
-		iLQG<state_dim, control_dim> iLQG_init (optConProblem, ilqg_settings);
-		iLQG_init.configure(ilqg_settings);
+		NLOptConSolver<state_dim, control_dim> iLQG_init (optConProblem, ilqr_settings);
+		iLQG_init.configure(ilqr_settings);
 		iLQG_init.setInitialGuess(initController);
 		bool boolInitSuccess = iLQG_init.solve();
 
@@ -180,26 +187,16 @@ TEST(MPCTest, PreIntegratorTest)
 		ct::core::StateFeedbackController<state_dim, control_dim> perfectInitController = iLQG_init.getSolution();
 		auto perfectStateTrajectory = iLQG_init.getStateTrajectory();
 
-
- 		// settings for SECOND ILQG INSTANCE which will run in MPC
-		iLQGSettings ilqg_settings_mpc;
-		ilqg_settings_mpc.dt = 0.001;
-		ilqg_settings_mpc.dt_sim = 0.001;
-		ilqg_settings_mpc.max_iterations = 10;
-
-
+		// mpc settings
 		ct::optcon::mpc_settings settings_mpc;
 		settings_mpc.stateForwardIntegration_ = true;
 		settings_mpc.postTruncation_ = false;
 
-
  		// MPC instance
-		MPC<iLQG<state_dim, control_dim>> ilqg_mpc (optConProblem, ilqg_settings_mpc, settings_mpc);
+		MPC<NLOptConSolver<state_dim, control_dim>> ilqg_mpc (optConProblem, ilqr_settings, settings_mpc);
 
  		// initialize it with perfect initial guess
 		ilqg_mpc.setInitialGuess(perfectInitController);
-		ilqg_mpc.setStateTrajectory(perfectStateTrajectory);
-
 
 		ct::core::Time t = 0.0;	// init time
 
@@ -211,7 +208,7 @@ TEST(MPCTest, PreIntegratorTest)
 		// run one mpc cycle
 		bool success = ilqg_mpc.run(x0, t, newPolicy, ts_newPolicy);
 
-		auto mpcStateTrajectory = ilqg_mpc.getStateTrajectory();
+		auto mpcStateTrajectory = newPolicy.getReferenceStateTrajectory();
 
 
 		// after one mpc cycle the solution should only slightly deviate
@@ -220,8 +217,10 @@ TEST(MPCTest, PreIntegratorTest)
 
 		for(size_t i = 0; i<mpcStateTrajectory.size(); i++)
 		{
-				ASSERT_NEAR(mpcStateTrajectory[i](0), perfectStateTrajectory[i](0), 0.03);	// positions
-				ASSERT_NEAR(mpcStateTrajectory[i](1), perfectStateTrajectory[i](1), 0.2);	// velocities
+//			std::cout << " mpc traj: " << mpcStateTrajectory[i].transpose();
+//			std::cout << "\t nominal state " << perfectStateTrajectory[i].transpose() << std::endl;
+			ASSERT_NEAR(mpcStateTrajectory[i](0), perfectStateTrajectory[i](0), 0.03);	// positions
+			ASSERT_NEAR(mpcStateTrajectory[i](1), perfectStateTrajectory[i](1), 0.2);	// velocities
 		}
 
  		// test the forward integration scheme with external controller
@@ -229,12 +228,9 @@ TEST(MPCTest, PreIntegratorTest)
 		for(size_t i = 0; i<mpcStateTrajectory.size(); i += 200)
 		{
 			ct::core::StateVector<state_dim> state = mpcStateTrajectory.front();
-			ilqg_mpc.doPreIntegration(0.0, i*ilqg_settings_mpc.dt, state, prevController);
+			ilqg_mpc.doPreIntegration(0.0, i*ilqr_settings.dt, state, prevController);
 
 			ASSERT_LT(fabs((state(0)- mpcStateTrajectory[i](0))), 0.03); 	// position is allowed to vary 3 cm
-
-			// std::cout << "pre-int state " << state.transpose() << std::endl;
-			// std::cout << "nominal state " << x_traj[i].transpose() << std::endl;
 		}
 
 
@@ -243,9 +239,9 @@ TEST(MPCTest, PreIntegratorTest)
 		for(size_t i = 0; i<mpcStateTrajectory.size(); i += 200)
 		{
 			ct::core::StateVector<state_dim> state = mpcStateTrajectory.front();
-			ilqg_mpc.doPreIntegration(0.0, i*ilqg_settings_mpc.dt, state);
+			ilqg_mpc.doPreIntegration(0.0, i*ilqr_settings.dt, state);
 
-			ASSERT_LT(fabs((state(0)- mpcStateTrajectory[i](0))), 0.03); 	// position is allowed to vary 1 cm
+			ASSERT_LT(fabs((state(0)- mpcStateTrajectory[i](0))), 0.03); 	// position is allowed to vary a couple of [cm]
 
 			// std::cout << "pre-int state " << state.transpose() << std::endl;
 			// std::cout << "nominal state " << x_traj[i].transpose() << std::endl;
@@ -261,8 +257,7 @@ TEST(MPCTest, PreIntegratorTest)
 
 
 
-
-TEST(MPCTest, iLQGMPC_DoublePrecision)
+TEST(MPCTestB, iLQGMPC_DoublePrecision)
 {
 	typedef tpl::Dynamics<double> Dynamics;
 	typedef tpl::LinearizedSystem<double> LinearizedSystem;
@@ -289,43 +284,46 @@ TEST(MPCTest, iLQGMPC_DoublePrecision)
 
 		// FIRST ILQG INSTANCE FOR CALCULATING THE 'PERFECT' INITIAL GUESS
 
-		iLQGSettings ilqg_settings;
-		ilqg_settings.dt = 0.001;
-		ilqg_settings.dt_sim = 0.001;
-		ilqg_settings.max_iterations = 10000000;
-		ilqg_settings.min_cost_improvement = 0.0;	// strict bounds to reach a solution very close to optimality
+		NLOptConSettings ilqr_settings;
+		ilqr_settings.dt = 0.001;
+		ilqr_settings.dt_sim = 0.001;
+		ilqr_settings.max_iterations = 10000000;
+		ilqr_settings.min_cost_improvement = 0.0;	// strict bounds to reach a solution very close to optimality
+		ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
+		ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
+		ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
+		ilqr_settings.closedLoopShooting = false;
+		ilqr_settings.integrator = NLOptConSettings::RK4;
+		ilqr_settings.lineSearchSettings.active = true;
+		ilqr_settings.nThreads = 2;
 
-		size_t K = std::round(timeHorizon / ilqg_settings.dt); // number of steps
+
+		size_t K = std::round(timeHorizon / ilqr_settings.dt); // number of steps
 
 
 		// provide initial controller
 		FeedbackArray<state_dim, control_dim> u0_fb(K, FeedbackMatrix<state_dim, control_dim>::Zero());
-
 		ControlVectorArray<control_dim> u0_ff(K, ControlVector<control_dim>::Zero());
-
-		ct::core::StateFeedbackController<state_dim, control_dim> initController (u0_ff, u0_fb, ilqg_settings.dt);
+		StateVectorArray<state_dim> x_ref (K+1, x0);
+		ct::core::StateFeedbackController<state_dim, control_dim> initController (x_ref, u0_ff, u0_fb, ilqr_settings.dt);
 
 
 		// solve iLQG and obtain perfect init guess
-		iLQG<state_dim, control_dim> iLQG_init (optConProblem, ilqg_settings);
+		NLOptConSolver<state_dim, control_dim> iLQG_init (optConProblem, ilqr_settings);
 
-		iLQG_init.configure(ilqg_settings);
+		iLQG_init.configure(ilqr_settings);
 
 		iLQG_init.setInitialGuess(initController);
 
 		iLQG_init.solve();
 
 		ct::core::StateFeedbackController<state_dim, control_dim> perfectInitController = iLQG_init.getSolution();
-		ct::core::StateTrajectory<state_dim> perfectStateTrajectory = iLQG_init.getStateTrajectory();
+		ct::core::StateTrajectory<state_dim> perfectStateTrajectory = perfectInitController.getReferenceStateTrajectory();
 
 
 		// settings for the ilqg instance used in MPC
-		iLQGSettings ilqg_settings_mpc;
-		ilqg_settings_mpc.dt = 0.001;
-		ilqg_settings_mpc.dt_sim = 0.001;
-		ilqg_settings_mpc.max_iterations = 5;
-		ilqg_settings_mpc.discretization = iLQGSettings::FORWARD_EULER;
-
+		NLOptConSettings ilqr_settings_mpc = ilqr_settings;
+		ilqr_settings_mpc.max_iterations = 5;
 
 		// mpc specific settings
 		ct::optcon::mpc_settings settings;
@@ -339,11 +337,9 @@ TEST(MPCTest, iLQGMPC_DoublePrecision)
 
 
 		// Create MPC object
-		MPC<iLQG<state_dim, control_dim>> ilqg_mpc (optConProblem, ilqg_settings_mpc, settings);
+		MPC<NLOptConSolver<state_dim, control_dim>> ilqg_mpc (optConProblem, ilqr_settings_mpc, settings);
 
 		ilqg_mpc.setInitialGuess(perfectInitController);
-		ilqg_mpc.setStateTrajectory(perfectStateTrajectory);
-
 
 		// fake the time -- here the start time
 		auto start_time = std::chrono::high_resolution_clock::now();
@@ -371,19 +367,16 @@ TEST(MPCTest, iLQGMPC_DoublePrecision)
 			auto current_time = std::chrono::high_resolution_clock::now();
 			ct::core::Time t = 0.000001*std::chrono::duration_cast<std::chrono::microseconds>(current_time - start_time).count();
 
-
 			// new optimal policy
 			ct::core::StateFeedbackController<state_dim, control_dim> newPolicy;
 
 			// timestamp of the new optimal policy
 			ct::core::Time ts_newPolicy;
 
-
 			// run one mpc cycle
 			bool success = ilqg_mpc.run(x0, t, newPolicy, ts_newPolicy);
 
-
-			tempStateTraj = ilqg_mpc.getStateTrajectory();
+			tempStateTraj = newPolicy.getReferenceStateTrajectory();
 
 			// we save every 20-th trajectory
 			if(i%20 == 0)
@@ -406,13 +399,13 @@ TEST(MPCTest, iLQGMPC_DoublePrecision)
 		ASSERT_GT(numRuns, 10); // make sure that MPC runs more than 10 times
 
 
-		/*
-		 * Intuition:
-		 * The start of every mpc state trajectory must lie on the initial "perfect" state trajectory,
-		 * since we have negligible delays here, a close-to-perfect state 'measurement' and no perturbations.
-		 * the perfect state trajectory above starts at t=0 and the init time-stamp
-		 * of the first MPC solution is the following
-		 * */
+
+//		Intuition:
+//		The start of every mpc state trajectory must lie on the initial "perfect" state trajectory,
+//		since we have negligible delays here, a close-to-perfect state 'measurement' and no perturbations.
+//		the perfect state trajectory above starts at t=0 and the init time-stamp
+//		of the first MPC solution is the following
+
 		ct::core::Time mpcTimeOffset = timeStamps.front();
 		std::cout << "mpc trajectories time offset due to init solve: " << mpcTimeOffset << std::endl;
 
@@ -430,11 +423,11 @@ TEST(MPCTest, iLQGMPC_DoublePrecision)
 		}
 
 
-		/**
-		 * Reasons why this unit test might fail: too high delays.
-		 * - not building in Release Mode ?
-		 * - printouts enabled ?
-		 */
+
+//		 Reasons why this unit test might fail: too high delays.
+//		 - not building in Release Mode ?
+//		 - printouts enabled ?
+
 
 #ifdef MATLAB_LOG_MPC
 #ifdef MATLAB
@@ -470,7 +463,7 @@ TEST(MPCTest, iLQGMPC_DoublePrecision)
 
 
 
-
+/*
 
 TEST(MPCTest, iLQGMPC_SinglePrecision)
 {
@@ -499,13 +492,13 @@ TEST(MPCTest, iLQGMPC_SinglePrecision)
 
 		// FIRST ILQG INSTANCE FOR CALCULATING THE 'PERFECT' INITIAL GUESS
 
-		iLQGSettings ilqg_settings;
-		ilqg_settings.dt = 0.001;
-		ilqg_settings.dt_sim = 0.001;
-		ilqg_settings.max_iterations = 10000000;
-		ilqg_settings.min_cost_improvement = 0.0;	// strict bounds to reach a solution very close to optimality
+		NLOptConSettings ilqr_settings;
+		ilqr_settings.dt = 0.001;
+		ilqr_settings.dt_sim = 0.001;
+		ilqr_settings.max_iterations = 10000000;
+		ilqr_settings.min_cost_improvement = 0.0;	// strict bounds to reach a solution very close to optimality
 
-		size_t K = std::round(timeHorizon / ilqg_settings.dt); // number of steps
+		size_t K = std::round(timeHorizon / ilqr_settings.dt); // number of steps
 
 
 		// provide initial controller
@@ -513,13 +506,13 @@ TEST(MPCTest, iLQGMPC_SinglePrecision)
 
 		ControlVectorArray<control_dim, float> u0_ff(K, ControlVector<control_dim, float>::Zero());
 
-		ct::core::StateFeedbackController<state_dim, control_dim, float> initController (u0_ff, u0_fb, ilqg_settings.dt);
+		ct::core::StateFeedbackController<state_dim, control_dim, float> initController (u0_ff, u0_fb, ilqr_settings.dt);
 
 
 		// solve iLQG and obtain perfect init guess
-		iLQG<state_dim, control_dim, float> iLQG_init (optConProblem, ilqg_settings);
+		iLQG<state_dim, control_dim, float> iLQG_init (optConProblem, ilqr_settings);
 
-		iLQG_init.configure(ilqg_settings);
+		iLQG_init.configure(ilqr_settings);
 
 		iLQG_init.setInitialGuess(initController);
 
@@ -530,11 +523,11 @@ TEST(MPCTest, iLQGMPC_SinglePrecision)
 
 
 		// settings for the ilqg instance used in MPC
-		iLQGSettings ilqg_settings_mpc;
-		ilqg_settings_mpc.dt = 0.001;
-		ilqg_settings_mpc.dt_sim = 0.001;
-		ilqg_settings_mpc.max_iterations = 5;
-		ilqg_settings_mpc.discretization = iLQGSettings::FORWARD_EULER;
+		NLOptConSettings ilqr_settings_mpc;
+		ilqr_settings_mpc.dt = 0.001;
+		ilqr_settings_mpc.dt_sim = 0.001;
+		ilqr_settings_mpc.max_iterations = 5;
+		ilqr_settings_mpc.discretization = NLOptConSettings::FORWARD_EULER;
 
 
 		// mpc specific settings
@@ -549,10 +542,9 @@ TEST(MPCTest, iLQGMPC_SinglePrecision)
 
 
 		// Create MPC object
-		MPC<iLQG<state_dim, control_dim, float>> ilqg_mpc (optConProblem, ilqg_settings_mpc, settings);
+		MPC<iLQG<state_dim, control_dim, float>> ilqg_mpc (optConProblem, ilqr_settings_mpc, settings);
 
 		ilqg_mpc.setInitialGuess(perfectInitController);
-		ilqg_mpc.setStateTrajectory(perfectStateTrajectory);
 
 
 		// fake the time -- here the start time
@@ -616,13 +608,13 @@ TEST(MPCTest, iLQGMPC_SinglePrecision)
 		ASSERT_GT(numRuns, 10); // make sure that MPC runs more than 10 times
 
 
-		/*
-		 * Intuition:
-		 * The start of every mpc state trajectory must lie on the initial "perfect" state trajectory,
-		 * since we have negligible delays here, a close-to-perfect state 'measurement' and no perturbations.
-		 * the perfect state trajectory above starts at t=0 and the init time-stamp
-		 * of the first MPC solution is the following
-		 * */
+
+//		 * Intuition:
+//		 * The start of every mpc state trajectory must lie on the initial "perfect" state trajectory,
+//		 * since we have negligible delays here, a close-to-perfect state 'measurement' and no perturbations.
+//		 * the perfect state trajectory above starts at t=0 and the init time-stamp
+//		 * of the first MPC solution is the following
+
 		float mpcTimeOffset = timeStamps.front();
 		std::cout << "mpc trajectories time offset due to init solve: " << mpcTimeOffset << std::endl;
 
@@ -644,6 +636,8 @@ TEST(MPCTest, iLQGMPC_SinglePrecision)
 		FAIL();
 	}
 }
+
+*/
 
 } // namespace example
 } // namespace optcon

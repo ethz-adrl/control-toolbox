@@ -24,19 +24,17 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef MPC_DEFAULT_POLICYHANDLER_ILQG_H_
-#define MPC_DEFAULT_POLICYHANDLER_ILQG_H_
+#ifndef MPC_DEFAULT_STATEFB_POLICYHANDLER_H_
+#define MPC_DEFAULT_STATEFB_POLICYHANDLER_H_
 
 #include <ct/core/core.h>
-
-// #define DEBUG_POLICYHANDLER_ILQG
 
 namespace ct{
 namespace optcon{
 
 //! the default policy handler for SLQ
 template<size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-class PolicyHandlerILQG : public PolicyHandler<core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>, STATE_DIM, CONTROL_DIM, SCALAR>
+class StateFeedbackPolicyHandler : public PolicyHandler<core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>, STATE_DIM, CONTROL_DIM, SCALAR>
 {
 
 public:
@@ -45,47 +43,49 @@ public:
 
 	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> StateFeedbackController_t;
 
-	PolicyHandlerILQG(const SCALAR& dt):
-		dt_ilqg_(dt)
+	StateFeedbackPolicyHandler(const SCALAR& dt):
+		dt_(dt)
 	{}
 
-	virtual ~PolicyHandlerILQG(){}
+	virtual ~StateFeedbackPolicyHandler(){}
 
 
 	virtual void designWarmStartingPolicy(
 			const SCALAR& delay,
 			const SCALAR& newTimeHorizon,
-			StateFeedbackController_t& policy,
-			core::StateTrajectory<STATE_DIM, SCALAR>& stateTraj) override {
+			StateFeedbackController_t& policy) override {
 		
-		// get the current feedback and feedforward from the StateFeedbackController
+		// get the current reference trajectories from the StateFeedbackController
 		core::FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR>& FeedbackTraj = policy.getFeedbackTrajectory();
 		core::ControlTrajectory<CONTROL_DIM, SCALAR>& FeedForwardTraj = policy.getFeedforwardTrajectory();
+		core::StateTrajectory<STATE_DIM, SCALAR>& StateRefTraj = policy.getReferenceStateTrajectory();
 
 		// current number of discrete elements
 		int currentSize = FeedForwardTraj.size();
 
 		// compute new controller length as a function of the time horizon
-		int Kn_new = std::max(1, (int)std::lround(newTimeHorizon/dt_ilqg_));
+		int Kn_new = std::max(1, (int)std::lround(newTimeHorizon/dt_));
 
 		// compute number indices to be shifted. Note: it does not make sense to shift more entries than are available
 		int num_di = FeedForwardTraj.getIndexFromTime(delay);
 		num_di = std::min(num_di, currentSize-1);
 
 
-#ifdef DEBUG_POLICYHANDLER_ILQG
-		std::cout << "DEBUG_POLICYHANDLER_ILQG: Controller shifting: "<< std::endl <<
+#ifdef DEBUG_POLICYHANDLER
+		std::cout << "DEBUG_POLICYHANDLER: Controller shifting: "<< std::endl <<
 				"delay: " << delay << "  newT: " << newTimeHorizon << std::endl <<
-				" new Discrete Controller has " << Kn_new << " elements, shifted about "
-				<< num_di << " elements." << std::endl;
+				" new Discrete Controller has:  " << std::endl
+				<< Kn_new << " control elements, shifted about " << num_di << " elements." << std::endl
+				<< Kn_new +1 << " state elements, shifted about " << num_di << " elements." << std::endl;
 #endif
 
 
 		// Step 1 - Truncate Front: remove first 'num_di' elements from controller and shift time accordingly
 		if(num_di > 0)
 		{
-			FeedForwardTraj.eraseFront(num_di, num_di*dt_ilqg_);
-			FeedbackTraj.eraseFront(num_di, num_di*dt_ilqg_);
+			FeedForwardTraj.eraseFront(num_di, num_di*dt_);
+			FeedbackTraj.eraseFront(num_di, num_di*dt_);
+			StateRefTraj.eraseFront(num_di, num_di*dt_);
 			currentSize -=num_di;
 		}
 
@@ -97,8 +97,9 @@ public:
 			bool timeIsRelative = true;
 			for(size_t i = 0; i<Kn_new-currentSize; i++)
 			{
-				FeedbackTraj.push_back(FeedbackTraj.back(), dt_ilqg_, timeIsRelative);
-				FeedForwardTraj.push_back(FeedForwardTraj.back(), dt_ilqg_, timeIsRelative);
+				FeedbackTraj.push_back(FeedbackTraj.back(), dt_, timeIsRelative);
+				FeedForwardTraj.push_back(FeedForwardTraj.back(), dt_, timeIsRelative);
+				StateRefTraj.push_back(StateRefTraj.back(), dt_, timeIsRelative);
 			}
 		}
 		else if (Kn_new < currentSize)
@@ -108,14 +109,14 @@ public:
 			{
 				FeedbackTraj.pop_back();
 				FeedForwardTraj.pop_back();
+				StateRefTraj.pop_back();
 			}
 		}
-
 
 		// safety check, which should never be entered
 		if(FeedForwardTraj.size() == 0)
 		{
-			throw std::runtime_error("ERROR in PolicyHandlerILQG.h: new policy should not have size 0.");
+			throw std::runtime_error("ERROR in StateFeedbackPolicyHandler.h: new policy should not have size 0.");
 		}
 	}
 
@@ -125,14 +126,12 @@ public:
 	 * required for additional post-truncation.
 	 * @param delay 	the delay which is to be truncated away
 	 * @param policy	the resulting, truncated policy
-	 * @param stateTraj the state trajectory to be truncated
 	 * @param effectivelyTruncated the time which was effectively truncated away
 	 * 	(can be different from the input in discrete-time case, for example)
 	 */
 	virtual void truncateSolutionFront(
 			const SCALAR& delay,
 			StateFeedbackController_t& policy,
-			core::StateTrajectory<STATE_DIM, SCALAR>& stateTraj,
 			SCALAR& effectivelyTruncated) override {
 
 		// current controller length
@@ -141,12 +140,12 @@ public:
 		size_t num_di = policy.getFeedforwardTrajectory().getIndexFromTime(delay);
 		num_di = std::min(num_di, currentSize-1);
 
-		effectivelyTruncated = num_di * dt_ilqg_;
+		effectivelyTruncated = num_di * dt_;
 
-#ifdef DEBUG_POLICYHANDLER_ILQG
+#ifdef DEBUG_POLICYHANDLER
 		std::cout << "DEBUG_WARMSTART: Current Controller Size:  "<< currentSize << " elements." << std::endl;
 		std::cout << "DEBUG_WARMSTART: Controller truncation: truncation about "<< num_di << " elements." << std::endl;
-		std::cout << "DEBUG_WARMSTART: Controllernew size: "<< currentSize-num_di << " elements." << std::endl;
+		std::cout << "DEBUG_WARMSTART: Controller new size: "<< currentSize-num_di << " elements." << std::endl;
 #endif
 
 		// remove first num_di elements from controller
@@ -154,18 +153,18 @@ public:
 		{
 			policy.getFeedbackTrajectory().eraseFront (num_di, effectivelyTruncated);
 			policy.getFeedforwardTrajectory().eraseFront (num_di, effectivelyTruncated);
-			stateTraj.eraseFront(num_di, effectivelyTruncated);
+			policy.getReferenceStateTrajectory().eraseFront(num_di, effectivelyTruncated);
 		}
 	}
 
 
 private:
 
-	SCALAR dt_ilqg_;
+	SCALAR dt_;
 
 };
 
 }	// namespace optcon
 }	// namespace ct
 
-#endif /* MPC_DEFAULT_POLICYHANDLER_ILQG_H_ */
+#endif /* MPC_DEFAULT_STATEFB_POLICYHANDLER_H_ */

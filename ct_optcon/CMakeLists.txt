@@ -198,15 +198,15 @@ endif()
 #
 #catkin_add_gtest(LqrTest test/lqr/LqrTest.cpp)
 #target_link_libraries(LqrTest ${catkin_LIBRARIES} lapack ${MATLAB_LIBS})
-#
+
 catkin_add_gtest(iLQRTest test/ilqr/iLQRTest.cpp)
 target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
 #add_executable(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
 #target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
-#add_executable(GNMSTest test/gnms/GNMSTest.cpp)
-#target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+add_executable(GNMSTest test/gnms/GNMSTest.cpp)
+target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
 #add_executable(GNMSTest2 test/gnms/GNMSTest2.cpp)
 #target_link_libraries(GNMSTest2 ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
@@ -247,13 +247,13 @@ target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 #
 #add_executable(timeKeeperTest test/mpc/TimeKeeperTest.cpp)
 #target_link_libraries(timeKeeperTest ${catkin_LIBRARIES})
-#
-#get_filename_component(MPC_TEST_MAT_DIR "test/mpc/matfiles" ABSOLUTE)
-#configure_file(test/mpc/mpcTestSettings.h.in test/mpc/mpcTestSettings.h)
-#include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/mpc)
-#
-#catkin_add_gtest(iLQGMPCTest test/mpc/iLQGMPCTest.cpp)
-#target_link_libraries(iLQGMPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
+
+get_filename_component(MPC_TEST_MAT_DIR "test/mpc/matfiles" ABSOLUTE)
+configure_file(test/mpc/mpcTestSettings.h.in test/mpc/mpcTestSettings.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/mpc)
+
+catkin_add_gtest(iLQRMPCTest test/mpc/iLQRMPCTest.cpp)
+target_link_libraries(iLQRMPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
 
 

@@ -37,11 +37,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "MpcTimeKeeper.h"
 
 #include "policyhandler/PolicyHandler.h"
-#include "policyhandler/default/PolicyHandlerILQG.h"
-
 #include "timehorizon/MpcTimeHorizon.h"
 
-#include <ct/optcon/ilqg/iLQGBase.hpp>
+#include <ct/optcon/solver/NLOptConSolver.hpp>
+#include "policyhandler/default/StateFeedbackPolicyHandler.h"
 
 //#define DEBUG_PRINT_MPC	//! use this flag to enable debug printouts in the MPC implementation
 
@@ -88,6 +87,8 @@ public:
 	static const size_t STATE_DIM = OPTCON_SOLVER::STATE_D;
 	static const size_t CONTROL_DIM = OPTCON_SOLVER::CONTROL_D;
 
+	static const size_t P_DIM = OPTCON_SOLVER::POS_DIM;
+	static const size_t V_DIM = OPTCON_SOLVER::VEL_DIM;
 
 	typedef typename OPTCON_SOLVER::Scalar_t Scalar_t;
 	typedef typename OPTCON_SOLVER::Policy_t Policy_t;
@@ -138,10 +139,10 @@ public:
 			}
 			else
 			{
-				if (std::is_base_of<iLQGBase<STATE_DIM, CONTROL_DIM, Scalar_t>, OPTCON_SOLVER>::value)
+				if (std::is_base_of<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, Scalar_t>, OPTCON_SOLVER>::value)
 				{
 					// default policy handler for standard discrete-time iLQG implementation
-					policyHandler_ = std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> (new PolicyHandlerILQG<STATE_DIM, CONTROL_DIM, Scalar_t>(solverSettings.dt));
+					policyHandler_ = std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> (new StateFeedbackPolicyHandler<STATE_DIM, CONTROL_DIM, Scalar_t>(solverSettings.dt));
 				}
 				else
 				{
@@ -303,7 +304,7 @@ public:
 
 
 		// Calculate new initial guess / warm-starting policy
-		policyHandler_->designWarmStartingPolicy(t_forward_stop_, newTimeHorizon, currentPolicy_, stateTrajectory_);
+		policyHandler_->designWarmStartingPolicy(t_forward_stop_, newTimeHorizon, currentPolicy_);
 
 		// todo: remove this after through testing
 		if(t_forward_stop_ < t_forward_start_)
@@ -352,8 +353,6 @@ public:
 			// get optimized policy and state trajectory from OptConSolver
 			currentPolicy_ = solver_.getSolution();
 
-			stateTrajectory_ = solver_.getStateTrajectory();
-
 			// obtain the time which passed since the previous successful solve
 			Scalar_t dtp = timeKeeper_.timeSincePreviousSuccessfulSolve();
 
@@ -372,7 +371,7 @@ public:
 					// the time which was effectively truncated away (e.g. discrete-time case)
 					Scalar_t dt_truncated_eff;
 
-					policyHandler_->truncateSolutionFront(dt_post_truncation, currentPolicy_, stateTrajectory_, dt_truncated_eff);
+					policyHandler_->truncateSolutionFront(dt_post_truncation, currentPolicy_, dt_truncated_eff);
 
 					// update policy timestamp with the truncated time
 					newPolicy_ts += dt_truncated_eff;
@@ -439,14 +438,6 @@ public:
 		timeKeeper_.updateSettings(settings);
 		timeHorizonStrategy_->updateSettings(settings);
 	}
-
-	void setStateTrajectory(const core::StateTrajectory<STATE_DIM, Scalar_t>& x)
-	{
-		stateTrajectory_ = x;
-	}
-
-	//! obtain the solution state trajectory from the solver
-	const core::StateTrajectory<STATE_DIM, Scalar_t> getStateTrajectory() const {return stateTrajectory_; }
 
 
 	//! printout simple statistical data
@@ -527,8 +518,6 @@ private:
 	bool firstRun_;	//! true for first run
 
 	typename OPTCON_SOLVER::OptConProblem_t::DynamicsPtr_t dynamics_;	//! dynamics instance for forward integration
-
-	core::StateTrajectory<STATE_DIM, Scalar_t> stateTrajectory_;	//! state solution trajectory
 
 	size_t runCallCounter_;	//! counter which gets incremented at every call of the run() method
 
