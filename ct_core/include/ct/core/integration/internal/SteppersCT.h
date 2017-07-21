@@ -34,84 +34,88 @@ namespace ct {
 namespace core {
 namespace internal {
 
-template <size_t STATE_DIM, typename SCALAR>
+template <typename SCALAR, typename MatrixType>
 class StepperBaseCT
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     virtual void do_step(
-        const std::shared_ptr<System<STATE_DIM, SCALAR> >& system,
-        StateVector<STATE_DIM, SCALAR>& stateInOut,
+        const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
+        MatrixType& stateInOut,
         const SCALAR time, //is this really required for us?
         const SCALAR dt
         ) = 0;
 
-
 private:
 };
 
 
-template<size_t STATE_DIM, typename SCALAR>
-class StepperEulerCT : public StepperBaseCT<STATE_DIM, SCALAR>
+template<typename SCALAR, typename MatrixType>
+class StepperEulerCT : public StepperBaseCT<SCALAR, MatrixType>
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     StepperEulerCT() :
-    derivative_(StateVector<STATE_DIM, SCALAR>::Zero())
+    derivative_(MatrixType::Zero())
     {
 
     }
 
     virtual void do_step(
-        const std::shared_ptr<System<STATE_DIM, SCALAR> >& system,
-        StateVector<STATE_DIM, SCALAR>& stateInOut,
+        const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
+        MatrixType& stateInOut,
         const SCALAR time,
         const SCALAR dt
         ) override
     {
-        system->computeDynamics(stateInOut, time, derivative_);
+        rhs(stateInOut, time, derivative_);
         stateInOut += dt * derivative_;
     }
 
 private:
-    StateVector<STATE_DIM, SCALAR> derivative_;
+    MatrixType derivative_;
 
 };
 
-template<size_t STATE_DIM, typename SCALAR>
-class StepperRK4CT : public StepperBaseCT<STATE_DIM, SCALAR>
+template<typename SCALAR, typename MatrixType>
+class StepperRK4CT : public StepperBaseCT<SCALAR, MatrixType>
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     StepperRK4CT() :
-    k1_(StateVector<STATE_DIM, SCALAR>::Zero()),
-    k2_(StateVector<STATE_DIM, SCALAR>::Zero()),
-    k3_(StateVector<STATE_DIM, SCALAR>::Zero()),
-    k4_(StateVector<STATE_DIM, SCALAR>::Zero()),
+    k1_(MatrixType::Zero()),
+    k2_(MatrixType::Zero()),
+    k3_(MatrixType::Zero()),
+    k4_(MatrixType::Zero()),
     oneSixth_(SCALAR(1.0 / 6.0))
     {
 
     }
 
     virtual void do_step(
-        const std::shared_ptr<System<STATE_DIM, SCALAR> >& system,
-        StateVector<STATE_DIM, SCALAR>& stateInOut,
+        const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
+        MatrixType& stateInOut,
         const SCALAR time,
         const SCALAR dt
         ) override
     {
         double halfStep = 0.5 * dt;
         double timePlusHalfStep = time + halfStep;
-        system->computeDynamics(stateInOut, time, k1_);
-        system->computeDynamics(stateInOut + halfStep * k1_, timePlusHalfStep, k2_);
-        system->computeDynamics(stateInOut + halfStep * k2_, timePlusHalfStep, k3_);
-        system->computeDynamics(stateInOut + dt * k3_, time + dt, k4_);
+        rhs(stateInOut, time, k1_);
+        rhs(stateInOut + halfStep * k1_, timePlusHalfStep, k2_);
+        rhs(stateInOut + halfStep * k2_, timePlusHalfStep, k3_);
+        rhs(stateInOut + dt * k3_, time + dt, k4_);
         stateInOut += oneSixth_ * dt * (k1_ + 2 * k2_ + 2 * k3_ + k4_);
     }
 
 private:
-    StateVector<STATE_DIM, SCALAR> k1_;
-    StateVector<STATE_DIM, SCALAR> k2_;
-    StateVector<STATE_DIM, SCALAR> k3_;
-    StateVector<STATE_DIM, SCALAR> k4_;
+    MatrixType k1_;
+    MatrixType k2_;
+    MatrixType k3_;
+    MatrixType k4_;
     SCALAR oneSixth_;
 
 };

@@ -39,15 +39,27 @@ namespace core {
 
 
 
-template <size_t STATE_DIM, class Stepper, typename SCALAR = double>
+template <size_t STATE_DIM, typename SCALAR = double>
 class IntegratorCT
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    IntegratorCT(const std::shared_ptr<System<STATE_DIM, SCALAR> >& system) :
-    system_(system)
-    {
 
+    template <typename MatrixType>
+    using StepperEuler = internal::StepperEulerCT<SCALAR, MatrixType>;
+
+
+    IntegratorCT(const std::shared_ptr<System<STATE_DIM, SCALAR> >& system)
+    {
+        setNonlinearSystem(system);
+    }
+
+    void setNonlinearSystem(const std::shared_ptr<System<STATE_DIM, SCALAR>>& system)
+    {
+        system_ = system;
+        xDot_ = [this](const StateVector<STATE_DIM, SCALAR>& x, SCALAR t, StateVector<STATE_DIM, SCALAR>& dxdt) {
+            this->system_->computeDynamics(x, t, dxdt);
+        };       
     }
 
     void integrate(
@@ -59,7 +71,20 @@ public:
             tpl::TimeArray<SCALAR>& timeTrajectory
     )
     {
+        StepperEuler<StateVector<STATE_DIM, SCALAR>> stepper;
+        stateTrajectory.clear();
+        timeTrajectory.clear();
+        SCALAR time = startTime;
+        stateTrajectory.push_back(state);
+        timeTrajectory.push_back(time);
 
+        for(size_t i = 0; i < numSteps; ++i)
+        {
+            stepper.do_step(xDot_, state, time, dt);
+            time += dt;
+            stateTrajectory.push_back(state);
+            timeTrajectory.push_back(time);
+        }
     }
 
     void integrate(
@@ -69,28 +94,28 @@ public:
             SCALAR dt
     )
     {
+        StepperEuler<StateVector<STATE_DIM, SCALAR>> stepper;
         SCALAR time = startTime;
         for(size_t i = 0; i < numSteps; ++i)
         {
-            stepper_.do_step(system_, state, time, dt);
+            stepper.do_step(xDot_, state, time, dt);
             time += dt;
         }
     }
 
 
 private:
-    std::shared_ptr<System<STATE_DIM, SCALAR> > system_; //! pointer to the system
-    Stepper stepper_;
+    std::shared_ptr<System<STATE_DIM, SCALAR> > system_; //! pointer to the system 
 
-
+    std::function<void (const StateVector<STATE_DIM, SCALAR>&, SCALAR, StateVector<STATE_DIM, SCALAR>&)> xDot_;
 };
 
 
-template <size_t STATE_DIM, typename SCALAR = double>
-using IntegratorEulerCT = IntegratorCT<STATE_DIM, internal::StepperEulerCT<STATE_DIM, SCALAR>, SCALAR>;
+// template <size_t STATE_DIM, typename SCALAR = double>
+// using IntegratorEulerCT = IntegratorCT<STATE_DIM, internal::StepperEulerCT<SCALAR, Eigen::Matrix<double, STATE_DIM, 1>>, SCALAR>;
 
-template <size_t STATE_DIM, typename SCALAR = double>
-using IntegratorRK4CT = IntegratorCT<STATE_DIM, internal::StepperRK4CT<STATE_DIM, SCALAR>, SCALAR>;
+// template <size_t STATE_DIM, typename SCALAR = double>
+// using IntegratorRK4CT = IntegratorCT<STATE_DIM, internal::StepperRK4CT<SCALAR, Eigen::Matrix<double, STATE_DIM, 1>>, SCALAR>;
 
 }
 }

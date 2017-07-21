@@ -31,6 +31,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ShotIntegratorBase.h"
 #include <ct/optcon/dms/dms_core/OptVectorDms.h>
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
+#include <ct/core/integration/IntegratorCT.h>
 
 namespace ct{
 namespace optcon{
@@ -47,10 +48,10 @@ class ShotIntegrator : public ShotIntegratorBase<DerivativeT::STATE_D, Derivativ
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef ShotIntegratorBase<DerivativeT::STATE_D, DerivativeT::CONTROL_D> Base;
-	using IntegratorBase = ct::core::IntegratorBase<DerivativeT::derivativeSize_>;
-	using IntegratorEuler =  ct::core::IntegratorEuler<DerivativeT::derivativeSize_>;
-	using IntegratorRK4 = ct::core::IntegratorRK4<DerivativeT::derivativeSize_>;
-	using IntegratorRK5Var = ct::core::IntegratorRK5Variable<DerivativeT::derivativeSize_>;
+	using IntegratorBase = ct::core::IntegratorRK4CT<DerivativeT::derivativeSize_>;
+	// using IntegratorEuler =  ct::core::IntegratorEuler<DerivativeT::derivativeSize_>;
+	// using IntegratorRK4 = ct::core::IntegratorRK4CT<DerivativeT::derivativeSize_>;
+	// using IntegratorRK5Var = ct::core::IntegratorRK5Variable<DerivativeT::derivativeSize_>;
 
 	typedef std::shared_ptr<ct::core::EventHandler<DerivativeT::derivativeSize_>> EventHandlerPtr;
 
@@ -91,32 +92,35 @@ public:
 
 
 	virtual void setupSystem() override {
-		switch(settings_.integrationType_)
-		{
-		case DmsSettings::EULER:
-		{
-			integrator_ = std::allocate_shared<IntegratorEuler, Eigen::aligned_allocator<IntegratorEuler>>
-							(Eigen::aligned_allocator<IntegratorEuler>(), derivatives_);
-			break;
-		}
-		case DmsSettings::RK4:
-		{
-			integrator_ = std::allocate_shared<IntegratorRK4, Eigen::aligned_allocator<IntegratorRK4>>
-							(Eigen::aligned_allocator<IntegratorRK4>(), derivatives_);
-			break;
-		}
-		case DmsSettings::RK5:
-		{
-			integrator_ = std::allocate_shared<IntegratorRK5Var, Eigen::aligned_allocator<IntegratorRK5Var>>
-							(Eigen::aligned_allocator<IntegratorRK5Var>(), derivatives_, EventHandlePtrVec(0), settings_.absErrTol_, settings_.relErrTol_);
-			break;
-		}
-		default:
-		{
-			std::cerr << "... ERROR: unknown integration type. Exiting" << std::endl;
-			exit(0);
-		}
-		}
+		// switch(settings_.integrationType_)
+		// {
+		// case DmsSettings::EULER:
+		// {
+		// 	integrator_ = std::allocate_shared<IntegratorEuler, Eigen::aligned_allocator<IntegratorEuler>>
+		// 					(Eigen::aligned_allocator<IntegratorEuler>(), derivatives_);
+		// 	break;
+		// }
+		// case DmsSettings::RK4:
+		// {
+		// 	integrator_ = std::allocate_shared<IntegratorRK4, Eigen::aligned_allocator<IntegratorRK4>>
+		// 					(Eigen::aligned_allocator<IntegratorRK4>(), derivatives_);
+		// 	break;
+		// }
+		// case DmsSettings::RK5:
+		// {
+		// 	integrator_ = std::allocate_shared<IntegratorRK5Var, Eigen::aligned_allocator<IntegratorRK5Var>>
+		// 					(Eigen::aligned_allocator<IntegratorRK5Var>(), derivatives_, EventHandlePtrVec(0), settings_.absErrTol_, settings_.relErrTol_);
+		// 	break;
+		// }
+		// 
+		integrator_ = std::allocate_shared<IntegratorBase, Eigen::aligned_allocator<IntegratorBase>>
+						(Eigen::aligned_allocator<IntegratorBase>(), derivatives_);
+		// default:
+		// {
+		// 	std::cerr << "... ERROR: unknown integration type. Exiting" << std::endl;
+		// 	exit(0);
+		// }
+		// }
 	}
 
 
@@ -131,10 +135,13 @@ public:
 
 		ct::core::StateVector<DerivativeT::derivativeSize_> initState = derivatives_->getInitState();
 
-		integrator_->integrate_adaptive(initState, t_shot_start, t_shot_end,
-				derivatives_->stateTrajectory(),
-				derivatives_->timeTrajectory(),
-				settings_.dt_sim_);
+		// integrator_->integrate_adaptive(initState, t_shot_start, t_shot_end,
+		// 		derivatives_->stateTrajectory(),
+		// 		derivatives_->timeTrajectory(),
+		// 		settings_.dt_sim_);
+		size_t nSteps = (t_shot_end - t_shot_start) / settings_.dt_sim_;
+		integrator_->integrate(initState, t_shot_start, nSteps, settings_.dt_sim_, derivatives_->stateTrajectory(), derivatives_->timeTrajectory());
+
 
 		derivatives_->wrapUpIntegration(); // ... process variables
 	}

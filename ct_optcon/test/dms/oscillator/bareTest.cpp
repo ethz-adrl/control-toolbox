@@ -131,7 +131,12 @@ public:
 
 	void getSolution()
 	{
+		Timer t;
+		t.start();
 		dmsPlanner_->solve();
+		t.stop();
+		std::cout << "Time for solution: " << t.getElapsedTime() << std::endl;
+
 	}
 
 

@@ -142,7 +142,7 @@ public:
 	linear_scaling_on_demand_("yes"),
 	hessian_approximation_("limited-memory"),
 	nlp_scaling_method_("gradient-based"),
-	printLevel_(5),
+	printLevel_(2),
 	print_user_options_("no"),
 	print_frequency_iter_(1),
 	printInfoString_("no"),
