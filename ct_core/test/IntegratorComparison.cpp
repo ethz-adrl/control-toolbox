@@ -83,7 +83,7 @@ TEST(IntegrationTest, derivativeTest)
         std::shared_ptr<IntegratorBase<state_dim> > integratorRk4Odeint;
         integratorRk4Odeint = std::shared_ptr<IntegratorRK4<state_dim> > (new IntegratorRK4<state_dim>(oscillator));
 
-        IntegratorCT<state_dim> integratorEulerCT(oscillator);
+        IntegratorCT<state_dim, control_dim> integratorEulerCT(oscillator);
         // IntegratorRK4CT<state_dim> integratorRK4CT(oscillator);
 
         StateVector<state_dim> stateEulerCT; stateEulerCT << 1.0, 0.0;

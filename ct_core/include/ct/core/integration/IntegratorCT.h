@@ -32,6 +32,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/core/types/trajectories/TimeArray.h>
 #include <ct/core/types/trajectories/StateVectorArray.h>
 #include <ct/core/systems/System.h>
+#include <ct/core/systems/linear/LinearSystem.h>
 #include <ct/core/integration/internal/SteppersCT.h>
 
 namespace ct {
@@ -39,31 +40,59 @@ namespace core {
 
 
 
-template <size_t STATE_DIM, typename SCALAR = double>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class IntegratorCT
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    typedef StateVector<STATE_DIM, SCALAR> state_vector;
+    typedef ControlVector<CONTROL_DIM, SCALAR> control_vector;
+    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix;
+    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix;
+    typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix;
 
+    // Need a solution to switch between steppers...
     template <typename MatrixType>
     using StepperEuler = internal::StepperEulerCT<SCALAR, MatrixType>;
 
-
     IntegratorCT(const std::shared_ptr<System<STATE_DIM, SCALAR> >& system)
+    :
+    cacheData_(false)
     {
         setNonlinearSystem(system);
+    }
+
+    // or prepare for sensitivity integration...
+    void setLinearSystem(const std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem)
+    {
+        linearSystem_ = linearSystem;
+        cacheData_ = true;
+        // Need to cache the derivatives and determine the correct indices (maybe switch to the trajectories....)
+        dX0dot_ = [this](const state_matrix& dX0dtIn, const SCALAR t, state_matrix& dX0dt){
+            dX0dt = arrayA_.front() * dX0dtIn;
+        };
+
+        dU0dot_ = [this](const state_control_matrix& dU0dtIn, const SCALAR t, state_control_matrix& dU0dt){
+            dU0dt = arrayA_.front() * dU0dtIn + arrayB_.front() * control_matrix::Identity(); // dudU0 need to figure out how to get this derivative
+        }; 
     }
 
     void setNonlinearSystem(const std::shared_ptr<System<STATE_DIM, SCALAR>>& system)
     {
         system_ = system;
-        xDot_ = [this](const StateVector<STATE_DIM, SCALAR>& x, SCALAR t, StateVector<STATE_DIM, SCALAR>& dxdt) {
+        xDot_ = [this](const state_vector& x, const SCALAR t, state_vector& dxdt) {
             this->system_->computeDynamics(x, t, dxdt);
+            if(cacheData_)
+            {
+                statesCached_.push_back(x);
+                controlsCached_.push_back(control_vector::Zero());
+                timesCached_.push_back(t);
+            }
         };       
     }
 
     void integrate(
-            StateVector<STATE_DIM, SCALAR>& state,
+            state_vector& state,
             const SCALAR& startTime,
             size_t numSteps,
             SCALAR dt,
@@ -71,7 +100,8 @@ public:
             tpl::TimeArray<SCALAR>& timeTrajectory
     )
     {
-        StepperEuler<StateVector<STATE_DIM, SCALAR>> stepper;
+        StepperEuler<state_vector> stepper;
+        clearCache();
         stateTrajectory.clear();
         timeTrajectory.clear();
         SCALAR time = startTime;
@@ -88,13 +118,14 @@ public:
     }
 
     void integrate(
-            StateVector<STATE_DIM, SCALAR>& state,
+            state_vector& state,
             const SCALAR& startTime,
             size_t numSteps,
             SCALAR dt
     )
     {
-        StepperEuler<StateVector<STATE_DIM, SCALAR>> stepper;
+        StepperEuler<state_vector> stepper;
+        clearCache();
         SCALAR time = startTime;
         for(size_t i = 0; i < numSteps; ++i)
         {
@@ -103,11 +134,89 @@ public:
         }
     }
 
+    // Need some a method to ensure no double caching 
+    void integrateSensitivityDX0(
+        state_matrix& dX0,
+        const SCALAR& startTime,
+        size_t numSteps,
+        SCALAR dt
+        )
+    {
+        StepperEuler<state_matrix> stepper;
+        clearMatrixCache();
+        cacheA();
+        cacheB();
+        SCALAR time = startTime;
+        dX0.setIdentity();
+        for(size_t i = 0; i < numSteps; ++i)
+        {
+            stepper.do_step(dX0dot_, dX0, time, dt);
+            time += dt;
+        }
+    }
+
+    void integrateSensitivityDU0(
+        state_control_matrix& dU0,
+        const SCALAR& startTime,
+        size_t numSteps,
+        SCALAR dt
+        )
+    {
+        StepperEuler<state_matrix> stepper;
+        // clearMatrixCache();
+        // cacheA();
+        // cacheB();
+        SCALAR time = startTime;
+        dU0.setZero();
+        for(size_t i = 0; i < numSteps; ++i)
+        {
+            stepper.do_step(dU0dot_, dU0, time, dt);
+            time += dt;
+        }
+    }
+
 
 private:
-    std::shared_ptr<System<STATE_DIM, SCALAR> > system_; //! pointer to the system 
+    void clearCache()
+    {
+        statesCached_.clear();
+        controlsCached_.clear();
+        timesCached_.clear();
+    }
 
-    std::function<void (const StateVector<STATE_DIM, SCALAR>&, SCALAR, StateVector<STATE_DIM, SCALAR>&)> xDot_;
+    void cacheA()
+    {
+        arrayA_.push_back(linearSystem_->getDerivativeState(statesCached_.front(), controlsCached_.front(), timesCached_.front()));
+    }
+
+    void cacheB()
+    {
+        arrayB_.push_back(linearSystem_->getDerivativeControl(statesCached_.front(), controlsCached_.front(), timesCached_.front()));
+    }
+
+    void clearMatrixCache()
+    {
+        arrayA_.clear();
+        arrayB_.clear();
+    }
+
+    std::shared_ptr<System<STATE_DIM, SCALAR> > system_; //! pointer to the system 
+    std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> > linearSystem_;                                                     
+
+    // Integrate the function
+    std::function<void (const state_vector&, const SCALAR, state_vector&)> xDot_;
+
+    // Sensitivities
+    std::function<void (const state_matrix&, const SCALAR, state_matrix&)> dX0dot_;
+    std::function<void (const state_control_matrix&, const SCALAR, state_control_matrix&)> dU0dot_;
+
+    // Cache
+    bool cacheData_;
+    StateVectorArray<STATE_DIM, SCALAR> statesCached_;
+    ControlVectorArray<CONTROL_DIM, SCALAR> controlsCached_;
+    tpl::TimeArray<SCALAR> timesCached_;
+    StateMatrixArray<STATE_DIM, SCALAR> arrayA_;
+    StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> arrayB_;
 };
 
 
