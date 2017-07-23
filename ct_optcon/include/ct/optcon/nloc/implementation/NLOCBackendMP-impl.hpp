@@ -62,7 +62,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(size_t threadId)
 {
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[Thread "<<threadId<<"]: launched"<<std::endl;
+	printString("[Thread "+std::to_string(threadId)+"]: launched");
 #endif // DEBUG_PRINT_MP
 
 
@@ -107,8 +107,6 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(siz
 #ifdef DEBUG_PRINT_MP
 			printString("[Thread " + std::to_string(threadId) + "]: woke up !");
 #endif // DEBUG_PRINT_MP
-
-
 		}
 
 		if (!workersActive_)
@@ -302,7 +300,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 	 */
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
-	printString("[MP]: Restricting Eigen to " + Eigen::nbThreads() + " threads.");
+	printString("[MP]: Restricting Eigen to " + std::to_string(Eigen::nbThreads()) + " threads.");
 #endif //DEBUG_PRINT_MP
 
 	kTaken_ = 0;
@@ -331,7 +329,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 
 	Eigen::setNbThreads(this->settings_.nThreadsEigen); // restore Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
-	printString("[MP]: Restoring " + Eigen::nbThreads() + " Eigen threads.");
+	printString("[MP]: Restoring " + std::to_string(Eigen::nbThreads()) + " Eigen threads.");
 #endif //DEBUG_PRINT_MP
 }
 
@@ -353,7 +351,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 
 #ifdef DEBUG_PRINT_MP
 		if ((k+1)%100 == 0)
-			printString("[Thread " + threadId + "]: Linearizing for index k " + KMax_-k);
+			printString("[Thread " + std::to_string(threadId) + "]: Linearizing for index k " + std::to_string ( KMax_-k ));
 #endif
 
 		this->computeLinearizedDynamics(threadId, KMax_-k); // linearize backwards
@@ -377,7 +375,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 	if(lastIndex == firstIndex)
 	{
 #ifdef DEBUG_PRINT_MP
-		printString("[MP]: do single threaded cost approximation for single index " + firstIndex + ". Not waking up workers.");
+		printString("[MP]: do single threaded cost approximation for single index " + std::to_string(firstIndex) + ". Not waking up workers.");
 #endif //DEBUG_PRINT_MP
 		this->computeQuadraticCosts(this->settings_.nThreads, firstIndex);
 		return;
@@ -389,7 +387,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 	 */
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
-	printString("[MP]: Restricting Eigen to " + Eigen::nbThreads() + " threads.");
+	printString("[MP]: Restricting Eigen to " + std::to_string(Eigen::nbThreads()) + " threads.");
 #endif //DEBUG_PRINT_MP
 
 	kTaken_ = 0;
@@ -418,7 +416,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 
 	Eigen::setNbThreads(this->settings_.nThreadsEigen); // restore Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Restoring "<< Eigen::nbThreads() << " Eigen threads." << std::endl;
+	printString("[MP]: Restoring " + std::to_string(Eigen::nbThreads()) + " Eigen threads.");
 #endif //DEBUG_PRINT_MP
 }
 
@@ -440,7 +438,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 
 #ifdef DEBUG_PRINT_MP
 		if ((k+1)%100 == 0)
-			std::cout<<"[Thread "<<threadId<<"]: Quadratizing cost for index k "<<KMax_ - k <<std::endl;
+			printString("[Thread "+std::to_string(threadId)+"]: Quadratizing cost for index k "+std::to_string(KMax_ - k ));
 #endif
 
 		this->computeQuadraticCosts(threadId, KMax_ - k); // compute cost backwards
@@ -467,7 +465,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLQProbl
 
 #ifdef DEBUG_PRINT_MP
 		if ((k+1)%100 == 0)
-			std::cout<<"[Thread "<<threadId<<"]: Building LQ problem for index k "<<KMax_ - k<<std::endl;
+			printString("[Thread " + std::to_string(threadId) + "]: Building LQ problem for index k " + std::to_string(KMax_ - k));
 #endif
 
 		this->computeQuadraticCosts(threadId, KMax_-k); // compute cost backwards
@@ -488,7 +486,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 	if(lastIndex == firstIndex)
 	{
 #ifdef DEBUG_PRINT_MP
-		std::cout<<"[MP]: do single threaded shot rollout for single index " << firstIndex << ". Not waking up workers." << std::endl;
+		printString("[MP]: do single threaded shot rollout for single index " + std::to_string(firstIndex) + ". Not waking up workers.");
 #endif //DEBUG_PRINT_MP
 		this->rolloutSingleShot(this->settings_.nThreads, firstIndex);
 		this->computeSingleDefect(this->settings_.nThreads, firstIndex);
@@ -501,7 +499,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 	 */
 	Eigen::setNbThreads(1); // disable Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Restricting Eigen to "<< Eigen::nbThreads() << " threads." << std::endl;
+	printString("[MP]: Restricting Eigen to " + std::to_string (Eigen::nbThreads())  + " threads.");
 #endif //DEBUG_PRINT_MP
 
 
@@ -531,7 +529,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 
 	Eigen::setNbThreads(this->settings_.nThreadsEigen); // restore Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Restoring "<< Eigen::nbThreads() << " Eigen threads." << std::endl;
+	printString("[MP]: Restoring " + std::to_string(Eigen::nbThreads()) + " Eigen threads.");
 #endif //DEBUG_PRINT_MP
 }
 
@@ -552,7 +550,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWo
 
 #ifdef DEBUG_PRINT_MP
 		if ((k+1)%100 == 0)
-			std::cout<<"[Thread "<<threadId<<"]: rolling out shot with index "<<KMax_ - k <<std::endl;
+			printString("[Thread " + std::to_string(threadId) + "]: rolling out shot with index " + std::to_string(KMax_ - k));
 #endif
 
 		this->rolloutSingleShot(threadId, KMax_ - k);
@@ -572,17 +570,11 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolution
 
 	//! get state update norm. may be overwritten later, depending on the algorithm
 	this->lx_norm_ = this->lqocSolver_->getStateUpdateNorm();
-
-	//	std::cout << "printing states in mp "<< std::endl;	// todo remove
-	//	for(size_t i = 0; i<this->x_.size(); i++)
-	//		std::cout<< this->x_[i].transpose() << std::endl;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedforward()
 {
-	// todo: this is the same as in ST mode. sum them together
-
 	this->u_ff_prev_ = this->u_ff_; // store previous feedforward for line-search
 
 	this->u_ff_ = this->lqocSolver_->getSolutionControl();
@@ -642,7 +634,7 @@ SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 
 	Eigen::setNbThreads(this->settings_.nThreadsEigen); // restore Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Restoring "<< Eigen::nbThreads() << " Eigen threads." << std::endl;
+	printString("[MP]: Restoring " + std::to_string(Eigen::nbThreads()) + " Eigen threads.");
 #endif //DEBUG_PRINT_MP
 
 } // end linesearch
@@ -657,7 +649,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		size_t alphaExp = alphaTaken_++;
 
 #ifdef DEBUG_PRINT_MP
-		std::cout<<"[Thread "<<threadId<<"]: Taking alpha index "<<alphaExp<<std::endl;
+		printString("[Thread "+ std::to_string(threadId)+"]: Taking alpha index " + std::to_string(alphaExp));
 #endif
 
 		if (alphaExp >= alphaExpMax_ || alphaBestFound_)
@@ -691,7 +683,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 			}
 
 #ifdef DEBUG_PRINT_LINESEARCH
-			std::cout<<"[LineSearch, Thread "<<threadId<<"]: Lower cost found: "<<cost<<" at alpha: "<<alpha<<std::endl;
+			printString("[LineSearch, Thread " + std::to_string(threadId) + "]: Lower cost found: " + std::to_string(cost) + " at alpha: " + std::to_string(alpha));
 #endif //DEBUG_PRINT_LINESEARCH
 
 			alphaExpBest_ = alphaExp;
@@ -704,7 +696,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		} else
 		{
 #ifdef DEBUG_PRINT_LINESEARCH
-			std::cout<<"[LineSearch, Thread "<<threadId<<"]: No lower cost found, cost "<<cost<<" at alpha "<<alpha<<" . Best cost was "<<this->lowestCost_ <<std::endl;
+			printString("[LineSearch, Thread " + std::to_string(threadId) + "]: No lower cost found, cost " + std::to_string(cost) +" at alpha "
+					+ std::to_string(alpha)+" . Best cost was " + std::to_string(this->lowestCost_));
 #endif //DEBUG_PRINT_LINESEARCH
 		}
 
