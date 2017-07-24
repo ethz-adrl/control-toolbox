@@ -46,9 +46,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/rbd/systems/FloatingBaseFDSystem.h>
 #include <ct/rbd/systems/ProjectedFDSystem.h>
 
-#include <ct/rbd/slq/FloatingBaseSLQContactModel.h>
-#include <ct/rbd/slq/FixBaseSLQ.h>
-
-#include <ct/rbd/gnms/FixBaseGNMS.h>
+#include <ct/rbd/nloc/FloatingBaseNLOCContactModel.h>
+#include <ct/rbd/nloc/FixBaseNLOC.h>
 
 #endif /* INCLUDE_CT_RBD_RBD_H_ */

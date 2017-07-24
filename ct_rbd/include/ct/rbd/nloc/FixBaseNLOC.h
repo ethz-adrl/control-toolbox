@@ -24,54 +24,49 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_SLQ_FLOATINGBASESLQCONTACTMODEL_H_
-#define INCLUDE_CT_RBD_SLQ_FLOATINGBASESLQCONTACTMODEL_H_
-
-#include <ct/core/systems/linear/SystemLinearizer.h>
+#ifndef INCLUDE_CT_RBD_NLOC_FIXBASENLOC_H_
+#define INCLUDE_CT_RBD_NLOC_FIXBASENLOC_H_
 
 #include <ct/optcon/optcon.h>
 
-#include <ct/rbd/systems/FloatingBaseFDSystem.h>
-#include <ct/rbd/systems/linear/RbdLinearizer.h>
+#include <ct/rbd/systems/FixBaseFDSystem.h>
 
 
 namespace ct{
 namespace rbd {
 
 /**
- * \brief SLQ for floating base systems with an explicit contact model.
+ * \brief NLOC for fixed base systems without an explicit contact model.
  */
-template <class RBDDynamics>
-class FloatingBaseSLQContactModel
+template <class RBDDynamics, typename SCALAR = double>
+class FixBaseNLOC
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	static const bool quatIntegration = false;
 	static const bool eeForcesAreControlInputs = false;
 
-	typedef FloatingBaseFDSystem<RBDDynamics, false, false> FBSystem;
-	typedef ct::core::LinearSystem<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> LinearizedSystem;
-	typedef ct::rbd::RbdLinearizer<FBSystem> RBDLinearizer;
-	typedef ct::core::SystemLinearizer<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> SystemLinearizer;
+	typedef FixBaseFDSystem<RBDDynamics, eeForcesAreControlInputs> FBSystem;
+	typedef ct::core::LinearSystem<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> LinearizedSystem;
+	typedef ct::rbd::RbdLinearizer<FBSystem> SystemLinearizer;
 
-	typedef ct::optcon::iLQGBase<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> iLQGBase;
-	typedef ct::optcon::iLQG<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> iLQG;
-	typedef ct::optcon::iLQGMP<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> iLQGMP;
+	typedef ct::optcon::NLOptConSolver<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, FBSystem::STATE_DIM/2, FBSystem::STATE_DIM/2, SCALAR> NLOptConSolver;
 
-	typedef typename iLQG::StateVectorArray StateVectorArray;
-	typedef typename iLQG::FeedbackArray FeedbackArray;
-	typedef typename iLQG::ControlVectorArray ControlVectorArray;
+	typedef typename NLOptConSolver::StateVector StateVector;
+	typedef typename NLOptConSolver::FeedbackMatrix FeedbackMatrix;
+	typedef typename NLOptConSolver::ControlVector ControlVector;
+	typedef typename NLOptConSolver::StateVectorArray StateVectorArray;
+	typedef typename NLOptConSolver::FeedbackArray FeedbackArray;
+	typedef typename NLOptConSolver::ControlVectorArray ControlVectorArray;
 
-	typedef ct::optcon::CostFunctionAnalytical<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> CostFunction;
+	typedef ct::optcon::CostFunctionAnalytical<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> CostFunction;
 
 
-	FloatingBaseSLQContactModel(
+	FixBaseNLOC(
 			const std::string& costFunctionFile,
 			const std::string& settingsFile,
 			std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
-			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr,
-			bool useMP = true
+			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr
 	) :
 		system_(system),
 		linearizedSystem_(linearizedSystem),
@@ -79,29 +74,26 @@ public:
 		optConProblem_(system_, costFunction_, linearizedSystem_),
 		iteration_(0)
 	{
-		if (useMP)
-			ilqg_ = std::shared_ptr<iLQGMP>(new iLQGMP(optConProblem_, settingsFile));
-		else
-			ilqg_ = std::shared_ptr<iLQG>(new iLQG(optConProblem_, settingsFile));
-
+			solver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settingsFile));
 	}
 
 	void initialize(
-			const typename RBDDynamics::RBDState_t& x0,
+			const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x0,
 			const core::Time& tf,
-	            FeedbackArray u0_fb = FeedbackArray(),
-	            ControlVectorArray u0_ff = ControlVectorArray())
+			StateVectorArray x_ref = StateVectorArray(),
+			FeedbackArray u0_fb = FeedbackArray(),
+			ControlVectorArray u0_ff = ControlVectorArray())
 	{
-		typename iLQG::Policy_t policy(u0_ff, u0_fb, getSettings().dt);
+		typename NLOptConSolver::Policy_t policy(x_ref, u0_ff, u0_fb, getSettings().dt);
 
-		ilqg_->changeTimeHorizon(tf);
-		ilqg_->setInitialGuess(policy);
-		ilqg_->changeInitialState(x0.toStateVectorEulerXyz());
+		solver_->changeTimeHorizon(tf);
+		solver_->setInitialGuess(policy);
+		solver_->changeInitialState(x0.toImplementation());
 	}
 
 	bool runIteration()
 	{
-		bool foundBetter = ilqg_->runIteration();
+		bool foundBetter = solver_->runIteration();
 
 		iteration_++;
 		return foundBetter;
@@ -109,34 +101,34 @@ public:
 
 	const StateVectorArray& retrieveLastRollout()
 	{
-		return ilqg_->getStates();
+		return solver_->getStates();
 	}
 
 	const core::TimeArray& getTimeArray()
 	{
-		return ilqg_->getStateTrajectory().getTimeArray();
+		return solver_->getStateTrajectory().getTimeArray();
 	}
 
 	const FeedbackArray& getFeedbackArray()
 	{
-		return ilqg_->getSolution().K();
+		return solver_->getSolution().K();
 	}
 
 	const ControlVectorArray& getControlVectorArray()
 	{
-		return ilqg_->getSolution().uff();
-	}		
+		return solver_->getSolution().uff();
+	}
 
-	const typename iLQGBase::Settings_t& getSettings() const { return ilqg_->getSettings(); }
+	const typename NLOptConSolver::Settings_t& getSettings() const { return solver_->getSettings(); }
 
 	void changeCostFunction(std::shared_ptr<CostFunction> costFunction)
 	{
-		ilqg_->changeCostFunction(costFunction);
+		solver_->changeCostFunction(costFunction);
 	}
 
-	std::shared_ptr<iLQGBase> getSolver()
+	std::shared_ptr<NLOptConSolver> getSolver()
 	{
-		return ilqg_;
+		return solver_;
 	}
 
 private:
@@ -145,9 +137,9 @@ private:
 	std::shared_ptr<LinearizedSystem> linearizedSystem_;
 	std::shared_ptr<CostFunction> costFunction_;
 
-	optcon::OptConProblem<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> optConProblem_;
+	optcon::OptConProblem<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> optConProblem_;
 
-	std::shared_ptr<iLQGBase> ilqg_;
+	std::shared_ptr<NLOptConSolver> solver_;
 
 	size_t iteration_;
 
@@ -157,4 +149,4 @@ private:
 }
 }
 
-#endif /* INCLUDE_CT_RBD_SLQ_FLOATINGBASESLQCONTACTMODEL_H_ */
+#endif /* INCLUDE_CT_RBD_NLOC_FIXBASENLOC_H_ */

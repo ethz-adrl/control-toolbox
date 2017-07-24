@@ -191,62 +191,61 @@ if(BUILD_EXAMPLES)
 endif()
 
 
-#
-#get_filename_component(DMS_OSC_TEST_MAT_DIR "test/dms/oscillator/matfiles" ABSOLUTE)
-#configure_file(test/dms/oscillator/oscDMSTest_settings.h.in test/dms/oscillator/oscDMSTest_settings.h)
-#include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/dms/oscillator)
-#
-#catkin_add_gtest(LqrTest test/lqr/LqrTest.cpp)
-#target_link_libraries(LqrTest ${catkin_LIBRARIES} lapack ${MATLAB_LIBS})
+
+get_filename_component(DMS_OSC_TEST_MAT_DIR "test/dms/oscillator/matfiles" ABSOLUTE)
+configure_file(test/dms/oscillator/oscDMSTest_settings.h.in test/dms/oscillator/oscDMSTest_settings.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/dms/oscillator)
+
+catkin_add_gtest(LqrTest test/lqr/LqrTest.cpp)
+target_link_libraries(LqrTest ${catkin_LIBRARIES} lapack ${MATLAB_LIBS})
 
 catkin_add_gtest(iLQRTest test/ilqr/iLQRTest.cpp)
 target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
-#add_executable(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
-#target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+add_executable(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
+target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
 add_executable(GNMSTest test/gnms/GNMSTest.cpp)
 target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
-#add_executable(GNMSTest2 test/gnms/GNMSTest2.cpp)
-#target_link_libraries(GNMSTest2 ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+add_executable(GNMSTest2 test/gnms/GNMSTest2.cpp)
+target_link_libraries(GNMSTest2 ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
-#add_executable(HPIPMInterfaceTest test/hpipm/HPIPMInterfaceTest.cpp)
+#add_executable(HPIPMInterfaceTest test/hpipm/HPIPMInterfaceTest.cpp)	# todo make unit test
 #target_link_libraries(HPIPMInterfaceTest hpipm blasfeo ${MATLAB_LIBS})
 
-#add_executable(HPIPMInterfaceTest2 test/hpipm/HPIPMInterfaceTest2.cpp)
+#add_executable(HPIPMInterfaceTest2 test/hpipm/HPIPMInterfaceTest2.cpp) # todo make unit test
 #target_link_libraries(HPIPMInterfaceTest2 hpipm blasfeo ${MATLAB_LIBS})
 
-#add_executable(HPIPMInterfaceTest3 test/hpipm/HPIPMInterfaceTest3.cpp)
+#add_executable(HPIPMInterfaceTest3 test/hpipm/HPIPMInterfaceTest3.cpp)# todo make unit test
 #target_link_libraries(HPIPMInterfaceTest3 ${HPIPM_LIBS} ${MATLAB_LIBS})
 
-#
-#catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
-#target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
-#
-#catkin_add_gtest(CostFunctionTest test/costfunction/CostFunctionTest.cpp)
-#target_link_libraries(CostFunctionTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
-#
-#catkin_add_gtest(CfTracking test/costfunction/TrackingTest.cpp)
-#target_link_libraries(CfTracking ${catkin_LIBRARIES})
-#
-#catkin_add_gtest(ADTest_timeVar test/costfunction/ADTest_timeDependent.cpp)
-#target_link_libraries(ADTest_timeVar ${catkin_LIBRARIES})
-#
-#catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
-#target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-#
-#catkin_add_gtest(dms_test_all_var test/dms/oscillator/oscDMSTestAllVariants.cpp)
-#target_link_libraries(dms_test_all_var ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-#
-#add_executable(bareTest test/dms/oscillator/bareTest.cpp)
-#target_link_libraries(bareTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS} dl)
-#
-#add_executable(matFilesGenerator test/dms/oscillator/matfiles/matFilesGenerator.cpp)
-#target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-#
-#add_executable(timeKeeperTest test/mpc/TimeKeeperTest.cpp)
-#target_link_libraries(timeKeeperTest ${catkin_LIBRARIES})
+catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
+target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
+
+catkin_add_gtest(CostFunctionTest test/costfunction/CostFunctionTest.cpp)
+target_link_libraries(CostFunctionTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
+
+catkin_add_gtest(CfTracking test/costfunction/TrackingTest.cpp)
+target_link_libraries(CfTracking ${catkin_LIBRARIES})
+
+catkin_add_gtest(ADTest_timeVar test/costfunction/ADTest_timeDependent.cpp)
+target_link_libraries(ADTest_timeVar ${catkin_LIBRARIES})
+
+catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
+target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
+
+catkin_add_gtest(dms_test_all_var test/dms/oscillator/oscDMSTestAllVariants.cpp)
+target_link_libraries(dms_test_all_var ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
+
+add_executable(bareTest test/dms/oscillator/bareTest.cpp)
+target_link_libraries(bareTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS} dl)
+
+add_executable(matFilesGenerator test/dms/oscillator/matfiles/matFilesGenerator.cpp)
+target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
+
+add_executable(timeKeeperTest test/mpc/TimeKeeperTest.cpp)
+target_link_libraries(timeKeeperTest ${catkin_LIBRARIES})
 
 get_filename_component(MPC_TEST_MAT_DIR "test/mpc/matfiles" ABSOLUTE)
 configure_file(test/mpc/mpcTestSettings.h.in test/mpc/mpcTestSettings.h)
