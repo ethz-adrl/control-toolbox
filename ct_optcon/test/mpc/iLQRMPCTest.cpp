@@ -158,7 +158,7 @@ TEST(MPCTestA, PreIntegratorTest)
 		optConProblem.setInitialState(x0);
 		optConProblem.setTimeHorizon(timeHorizon);
 
-		// FIRST ILQG INSTANCE FOR CALCULATING THE 'PERFECT' INITIAL GUESS
+		// FIRST ILQR INSTANCE FOR CALCULATING THE 'PERFECT' INITIAL GUESS
 		NLOptConSettings ilqr_settings;
 		ilqr_settings.dt = 0.001;
 		ilqr_settings.dt_sim = 0.001;
@@ -178,14 +178,14 @@ TEST(MPCTestA, PreIntegratorTest)
 		StateVectorArray<state_dim> x_ref (K+1, x0);
 		ct::core::StateFeedbackController<state_dim, control_dim> initController (x_ref, u0_ff, u0_fb, ilqr_settings.dt);
 
-		NLOptConSolver<state_dim, control_dim> iLQG_init (optConProblem, ilqr_settings);
-		iLQG_init.configure(ilqr_settings);
-		iLQG_init.setInitialGuess(initController);
-		bool boolInitSuccess = iLQG_init.solve();
+		NLOptConSolver<state_dim, control_dim> iLQR_init (optConProblem, ilqr_settings);
+		iLQR_init.configure(ilqr_settings);
+		iLQR_init.setInitialGuess(initController);
+		bool boolInitSuccess = iLQR_init.solve();
 
-		// obtain the 'perfect' init controller from first iLQG solver
-		ct::core::StateFeedbackController<state_dim, control_dim> perfectInitController = iLQG_init.getSolution();
-		auto perfectStateTrajectory = iLQG_init.getStateTrajectory();
+		// obtain the 'perfect' init controller from first iLQR solver
+		ct::core::StateFeedbackController<state_dim, control_dim> perfectInitController = iLQR_init.getSolution();
+		auto perfectStateTrajectory = iLQR_init.getStateTrajectory();
 
 		// mpc settings
 		ct::optcon::mpc_settings settings_mpc;
@@ -193,10 +193,10 @@ TEST(MPCTestA, PreIntegratorTest)
 		settings_mpc.postTruncation_ = false;
 
  		// MPC instance
-		MPC<NLOptConSolver<state_dim, control_dim>> ilqg_mpc (optConProblem, ilqr_settings, settings_mpc);
+		MPC<NLOptConSolver<state_dim, control_dim>> ilqr_mpc (optConProblem, ilqr_settings, settings_mpc);
 
  		// initialize it with perfect initial guess
-		ilqg_mpc.setInitialGuess(perfectInitController);
+		ilqr_mpc.setInitialGuess(perfectInitController);
 
 		ct::core::Time t = 0.0;	// init time
 
@@ -206,7 +206,7 @@ TEST(MPCTestA, PreIntegratorTest)
 
 
 		// run one mpc cycle
-		bool success = ilqg_mpc.run(x0, t, newPolicy, ts_newPolicy);
+		bool success = ilqr_mpc.run(x0, t, newPolicy, ts_newPolicy);
 
 		auto mpcStateTrajectory = newPolicy.getReferenceStateTrajectory();
 
@@ -228,7 +228,7 @@ TEST(MPCTestA, PreIntegratorTest)
 		for(size_t i = 0; i<mpcStateTrajectory.size(); i += 200)
 		{
 			ct::core::StateVector<state_dim> state = mpcStateTrajectory.front();
-			ilqg_mpc.doPreIntegration(0.0, i*ilqr_settings.dt, state, prevController);
+			ilqr_mpc.doPreIntegration(0.0, i*ilqr_settings.dt, state, prevController);
 
 			ASSERT_LT(fabs((state(0)- mpcStateTrajectory[i](0))), 0.03); 	// position is allowed to vary 3 cm
 		}
@@ -239,7 +239,7 @@ TEST(MPCTestA, PreIntegratorTest)
 		for(size_t i = 0; i<mpcStateTrajectory.size(); i += 200)
 		{
 			ct::core::StateVector<state_dim> state = mpcStateTrajectory.front();
-			ilqg_mpc.doPreIntegration(0.0, i*ilqr_settings.dt, state);
+			ilqr_mpc.doPreIntegration(0.0, i*ilqr_settings.dt, state);
 
 			ASSERT_LT(fabs((state(0)- mpcStateTrajectory[i](0))), 0.03); 	// position is allowed to vary a couple of [cm]
 
@@ -257,7 +257,7 @@ TEST(MPCTestA, PreIntegratorTest)
 
 
 
-TEST(MPCTestB, iLQGMPC_DoublePrecision)
+TEST(MPCTestB, iLQRMPC_DoublePrecision)
 {
 	typedef tpl::Dynamics<double> Dynamics;
 	typedef tpl::LinearizedSystem<double> LinearizedSystem;
@@ -282,7 +282,7 @@ TEST(MPCTestB, iLQGMPC_DoublePrecision)
 		optConProblem.setInitialState(x0);
 
 
-		// FIRST ILQG INSTANCE FOR CALCULATING THE 'PERFECT' INITIAL GUESS
+		// FIRST ILQR INSTANCE FOR CALCULATING THE 'PERFECT' INITIAL GUESS
 
 		NLOptConSettings ilqr_settings;
 		ilqr_settings.dt = 0.001;
@@ -308,20 +308,20 @@ TEST(MPCTestB, iLQGMPC_DoublePrecision)
 		ct::core::StateFeedbackController<state_dim, control_dim> initController (x_ref, u0_ff, u0_fb, ilqr_settings.dt);
 
 
-		// solve iLQG and obtain perfect init guess
-		NLOptConSolver<state_dim, control_dim> iLQG_init (optConProblem, ilqr_settings);
+		// solve iLQR and obtain perfect init guess
+		NLOptConSolver<state_dim, control_dim> iLQR_init (optConProblem, ilqr_settings);
 
-		iLQG_init.configure(ilqr_settings);
+		iLQR_init.configure(ilqr_settings);
 
-		iLQG_init.setInitialGuess(initController);
+		iLQR_init.setInitialGuess(initController);
 
-		iLQG_init.solve();
+		iLQR_init.solve();
 
-		ct::core::StateFeedbackController<state_dim, control_dim> perfectInitController = iLQG_init.getSolution();
+		ct::core::StateFeedbackController<state_dim, control_dim> perfectInitController = iLQR_init.getSolution();
 		ct::core::StateTrajectory<state_dim> perfectStateTrajectory = perfectInitController.getReferenceStateTrajectory();
 
 
-		// settings for the ilqg instance used in MPC
+		// settings for the ilqr instance used in MPC
 		NLOptConSettings ilqr_settings_mpc = ilqr_settings;
 		ilqr_settings_mpc.max_iterations = 5;
 
@@ -337,9 +337,9 @@ TEST(MPCTestB, iLQGMPC_DoublePrecision)
 
 
 		// Create MPC object
-		MPC<NLOptConSolver<state_dim, control_dim>> ilqg_mpc (optConProblem, ilqr_settings_mpc, settings);
+		MPC<NLOptConSolver<state_dim, control_dim>> ilqr_mpc (optConProblem, ilqr_settings_mpc, settings);
 
-		ilqg_mpc.setInitialGuess(perfectInitController);
+		ilqr_mpc.setInitialGuess(perfectInitController);
 
 		// fake the time -- here the start time
 		auto start_time = std::chrono::high_resolution_clock::now();
@@ -374,7 +374,7 @@ TEST(MPCTestB, iLQGMPC_DoublePrecision)
 			ct::core::Time ts_newPolicy;
 
 			// run one mpc cycle
-			bool success = ilqg_mpc.run(x0, t, newPolicy, ts_newPolicy);
+			bool success = ilqr_mpc.run(x0, t, newPolicy, ts_newPolicy);
 
 			tempStateTraj = newPolicy.getReferenceStateTrajectory();
 
@@ -387,14 +387,14 @@ TEST(MPCTestB, iLQGMPC_DoublePrecision)
 			}
 
 
-			if(ilqg_mpc.timeHorizonReached() || !success)
+			if(ilqr_mpc.timeHorizonReached() || !success)
 				break;
 
 			numRuns++;
 		}
 
 
-		ilqg_mpc.printMpcSummary();
+		ilqr_mpc.printMpcSummary();
 
 		ASSERT_GT(numRuns, 10); // make sure that MPC runs more than 10 times
 
@@ -463,9 +463,8 @@ TEST(MPCTestB, iLQGMPC_DoublePrecision)
 
 
 
-/*
 
-TEST(MPCTest, iLQGMPC_SinglePrecision)
+TEST(MPCTest, iLQRMPC_SinglePrecision)
 {
 	typedef tpl::Dynamics<float> Dynamics;
 	typedef tpl::LinearizedSystem<float> LinearizedSystem;
@@ -490,61 +489,63 @@ TEST(MPCTest, iLQGMPC_SinglePrecision)
 		optConProblem.setInitialState(x0);
 
 
-		// FIRST ILQG INSTANCE FOR CALCULATING THE 'PERFECT' INITIAL GUESS
+		// FIRST ILQR INSTANCE FOR CALCULATING THE 'PERFECT' INITIAL GUESS
 
 		NLOptConSettings ilqr_settings;
 		ilqr_settings.dt = 0.001;
 		ilqr_settings.dt_sim = 0.001;
 		ilqr_settings.max_iterations = 10000000;
 		ilqr_settings.min_cost_improvement = 0.0;	// strict bounds to reach a solution very close to optimality
+		ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
+		ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
+		ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER; // not that the floating-point precision test will only run with this solver (HPIPM only supports double)
+		ilqr_settings.closedLoopShooting = false;
+		ilqr_settings.integrator = NLOptConSettings::RK4;
+		ilqr_settings.lineSearchSettings.active = true;
+		ilqr_settings.nThreads = 2;
+
 
 		size_t K = std::round(timeHorizon / ilqr_settings.dt); // number of steps
 
 
 		// provide initial controller
 		FeedbackArray<state_dim, control_dim, float> u0_fb(K, FeedbackMatrix<state_dim, control_dim, float>::Zero());
-
 		ControlVectorArray<control_dim, float> u0_ff(K, ControlVector<control_dim, float>::Zero());
-
-		ct::core::StateFeedbackController<state_dim, control_dim, float> initController (u0_ff, u0_fb, ilqr_settings.dt);
-
-
-		// solve iLQG and obtain perfect init guess
-		iLQG<state_dim, control_dim, float> iLQG_init (optConProblem, ilqr_settings);
-
-		iLQG_init.configure(ilqr_settings);
-
-		iLQG_init.setInitialGuess(initController);
-
-		iLQG_init.solve();
-
-		ct::core::StateFeedbackController<state_dim, control_dim, float> perfectInitController = iLQG_init.getSolution();
-		ct::core::StateTrajectory<state_dim, float> perfectStateTrajectory = iLQG_init.getStateTrajectory();
+		StateVectorArray<state_dim, float> x_ref (K+1, x0);
+		ct::core::StateFeedbackController<state_dim, control_dim, float> initController (x_ref, u0_ff, u0_fb, ilqr_settings.dt);
 
 
-		// settings for the ilqg instance used in MPC
-		NLOptConSettings ilqr_settings_mpc;
-		ilqr_settings_mpc.dt = 0.001;
-		ilqr_settings_mpc.dt_sim = 0.001;
+		// solve iLQR and obtain perfect init guess
+		NLOptConSolver<state_dim, control_dim, state_dim/2, state_dim/2, float> iLQR_init (optConProblem, ilqr_settings);
+
+		iLQR_init.configure(ilqr_settings);
+
+		iLQR_init.setInitialGuess(initController);
+
+		iLQR_init.solve();
+
+		ct::core::StateFeedbackController<state_dim, control_dim, float> perfectInitController = iLQR_init.getSolution();
+		ct::core::StateTrajectory<state_dim, float> perfectStateTrajectory = perfectInitController.getReferenceStateTrajectory();
+
+
+		// settings for the ilqr instance used in MPC
+		NLOptConSettings ilqr_settings_mpc = ilqr_settings;
 		ilqr_settings_mpc.max_iterations = 5;
-		ilqr_settings_mpc.discretization = NLOptConSettings::FORWARD_EULER;
-
 
 		// mpc specific settings
 		ct::optcon::mpc_settings settings;
 		settings.stateForwardIntegration_ = true;
-		settings.postTruncation_ = true;
+		settings.postTruncation_ = false;
 		settings.measureDelay_ = true;
 		settings.delayMeasurementMultiplier_ = 1.0;
 		settings.mpc_mode = ct::optcon::MPC_MODE::FIXED_FINAL_TIME;
 		settings.coldStart_ = false;
 		settings.additionalDelayUs_ = 0;
 
-
 		// Create MPC object
-		MPC<iLQG<state_dim, control_dim, float>> ilqg_mpc (optConProblem, ilqr_settings_mpc, settings);
+		MPC<NLOptConSolver<state_dim, control_dim, state_dim/2, state_dim/2, float>> ilqr_mpc (optConProblem, ilqr_settings_mpc, settings);
 
-		ilqg_mpc.setInitialGuess(perfectInitController);
+		ilqr_mpc.setInitialGuess(perfectInitController);
 
 
 		// fake the time -- here the start time
@@ -582,10 +583,10 @@ TEST(MPCTest, iLQGMPC_SinglePrecision)
 
 
 			// run one mpc cycle
-			bool success = ilqg_mpc.run(x0, t, newPolicy, ts_newPolicy);
+			bool success = ilqr_mpc.run(x0, t, newPolicy, ts_newPolicy);
 
 
-			tempStateTraj = ilqg_mpc.getStateTrajectory();
+			tempStateTraj = newPolicy.getReferenceStateTrajectory();
 
 			// we save every 20-th trajectory
 			if(i%20 == 0)
@@ -596,14 +597,14 @@ TEST(MPCTest, iLQGMPC_SinglePrecision)
 			}
 
 
-			if(ilqg_mpc.timeHorizonReached() || !success)
+			if(ilqr_mpc.timeHorizonReached() || !success)
 				break;
 
 			numRuns++;
 		}
 
 
-		ilqg_mpc.printMpcSummary();
+		ilqr_mpc.printMpcSummary();
 
 		ASSERT_GT(numRuns, 10); // make sure that MPC runs more than 10 times
 
@@ -637,7 +638,6 @@ TEST(MPCTest, iLQGMPC_SinglePrecision)
 	}
 }
 
-*/
 
 } // namespace example
 } // namespace optcon

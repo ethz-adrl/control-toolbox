@@ -82,17 +82,17 @@ public:
 	//! set all member variables to zero
 	void setZero()
 	{
-		A_.setConstant(core::StateMatrix<STATE_DIM>::Zero());
-		B_.setConstant(core::StateControlMatrix<STATE_DIM, CONTROL_DIM>::Zero());
-		b_.setConstant(core::StateVector<STATE_DIM>::Zero());
-		x_.setConstant(core::StateVector<STATE_DIM>::Zero());
-		u_.setConstant(core::ControlVector<CONTROL_DIM>::Zero());
-		P_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM>::Zero());
-		qv_.setConstant(core::StateVector<STATE_DIM>::Zero());
-		Q_.setConstant(core::StateMatrix<STATE_DIM>::Zero());
-		rv_.setConstant(core::ControlVector<CONTROL_DIM>::Zero());
-		R_.setConstant(core::ControlMatrix<CONTROL_DIM>::Zero());
-		q_.setConstant(0.0);
+		A_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Zero());
+		B_.setConstant(core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
+		b_.setConstant(core::StateVector<STATE_DIM, SCALAR>::Zero());
+		x_.setConstant(core::StateVector<STATE_DIM, SCALAR>::Zero());
+		u_.setConstant(core::ControlVector<CONTROL_DIM, SCALAR>::Zero());
+		P_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
+		qv_.setConstant(core::StateVector<STATE_DIM, SCALAR>::Zero());
+		Q_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Zero());
+		rv_.setConstant(core::ControlVector<CONTROL_DIM, SCALAR>::Zero());
+		R_.setConstant(core::ControlMatrix<CONTROL_DIM, SCALAR>::Zero());
+		q_.setConstant((SCALAR)0.0);
 	}
 
 
@@ -135,9 +135,9 @@ public:
 		core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B;
 		linearSystem.getAandB(x0, u0, 0, A, B);
 
-		A_ = core::StateMatrixArray<STATE_DIM>(K_, A);
-		B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM>(K_, B);
-		b_ = core::StateVectorArray<STATE_DIM>(K_+1, stateOffset);
+		A_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_, A);
+		B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, B);
+		b_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_+1, stateOffset);
 
 
 		// feed current state and control to cost function

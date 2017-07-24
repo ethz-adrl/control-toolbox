@@ -112,7 +112,7 @@ public:
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
 		{
-			std::cout << "Running additional init routine for first iteration !!" << std::endl;
+//			std::cout << "Running additional init routine for first iteration !!" << std::endl;
 
 			if(!this->backend_->nominalRollout())
 				throw std::runtime_error("Rollout failed. System became unstable");
