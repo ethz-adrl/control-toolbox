@@ -149,12 +149,12 @@ public:
 		diff = end - startEntire;
 #ifdef DEBUG_PRINT
 		std::cout << "Forward pass took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif DEBUG_PRINT
+#endif
 
 
 #ifdef DEBUG_PRINT
 		std::cout<<"[iLQR]: #2 Solve LQOC Problem"<<std::endl;
-#endif // DEBUG_PRINT
+#endif
 		start = std::chrono::steady_clock::now();
 		this->backend_->solveFullLQProblem();
 		end = std::chrono::steady_clock::now();
@@ -170,7 +170,7 @@ public:
 		// line-search
 #ifdef DEBUG_PRINT
 		std::cout<<"[iLQR]: #3 LineSearch"<<std::endl;
-#endif // DEBUG_PRINT
+#endif
 
 		start = std::chrono::steady_clock::now();
 		bool foundBetter = this->backend_->lineSearchController();
@@ -187,11 +187,11 @@ public:
 
 #ifdef DEBUG_PRINT
 		this->backend_->debugPrint();
-#endif //DEBUG_PRINT
+#endif
 
 #ifdef MATLAB_FULL_LOG
 		this->backend_->logToMatlab(this->backend_->iteration());
-#endif //MATLAB_FULL_LOG
+#endif
 
 		this->backend_->iteration()++;
 
