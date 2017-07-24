@@ -50,6 +50,9 @@ public:
 	typedef ct::core::LinearSystem<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> LinearizedSystem;
 	typedef ct::rbd::RbdLinearizer<FBSystem> SystemLinearizer;
 
+	typedef typename RBDDynamics::JointAcceleration_t JointAcceleration_t;
+	typedef typename RBDDynamics::ExtLinkForces_t ExtLinkForces_t;
+
 	//! @ todo: introduce templates for P_DIM and V_DIM
 	typedef ct::optcon::NLOptConSolver<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, FBSystem::STATE_DIM/2, FBSystem::STATE_DIM/2, SCALAR> NLOptConSolver;
 
@@ -91,6 +94,61 @@ public:
 		nlocSolver_->setInitialGuess(policy);
 		nlocSolver_->changeInitialState(x0.toImplementation());
 	}
+
+
+	//! initialize fixed-base robot with a steady pose using inverse dynamics torques as feedforward
+	void initializeSteadyPose(
+			const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x0,
+			const core::Time& tf,
+			const int N,
+			FeedbackMatrix K = FeedbackMatrix::Zero())
+	{
+		StateVectorArray x_ref = StateVectorArray(N+1, x0.toImplementation());
+
+		ControlVector uff;
+		computeIDTorques(x0, uff);
+		ControlVectorArray u0_ff = ControlVectorArray(N, uff);
+
+		FeedbackArray u0_fb (N, K);
+
+		typename NLOptConSolver::Policy_t policy(x_ref, u0_ff, u0_fb, getSettings().dt);
+
+		nlocSolver_->changeTimeHorizon(tf);
+		nlocSolver_->setInitialGuess(policy);
+		nlocSolver_->changeInitialState(x0.toImplementation());
+	}
+
+
+	//! initialize fixed-base robot with a directly interpolated state trajectory and corresponding ID torques
+	void initializeDirectInterpolation(
+			const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x0,
+			const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& xf,
+			const core::Time& tf,
+			const int N,
+			FeedbackMatrix K = FeedbackMatrix::Zero())
+	{
+		ControlVector uff;
+
+		StateVectorArray x_ref = StateVectorArray(N+1);
+		ControlVectorArray u0_ff = ControlVectorArray(N);
+
+		for (int i=0; i<N+1; i++)
+		{
+			x_ref [i] = x0.toImplementation() + (xf.toImplementation()-x0.toImplementation()) * SCALAR(i)/SCALAR(N);
+
+			if(i<N)
+			computeIDTorques(x_ref[i], u0_ff[i]);
+		}
+
+		FeedbackArray u0_fb (N, K);
+
+		typename NLOptConSolver::Policy_t policy(x_ref, u0_ff, u0_fb, getSettings().dt);
+
+		nlocSolver_->changeTimeHorizon(tf);
+		nlocSolver_->setInitialGuess(policy);
+		nlocSolver_->changeInitialState(x0.toImplementation());
+	}
+
 
 	bool runIteration()
 	{
@@ -136,6 +194,16 @@ public:
 	}
 
 private:
+
+	//! compute fix-base inverse dynamics torques for initialization
+	void computeIDTorques(const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x, ControlVector& u)
+	{
+		//! zero external link forces and acceleration
+		typename RBDDynamics::ExtLinkForces_t linkForces(Eigen::Matrix<SCALAR, 6, 1>::Zero());
+		typename RBDDynamics::JointAcceleration_t jAcc (Eigen::Matrix<SCALAR, 6, 1>::Zero());
+
+		system_->dynamics().FixBaseID(x, jAcc, linkForces, u);
+	}
 
 	std::shared_ptr<FBSystem> system_;
 	std::shared_ptr<LinearizedSystem> linearizedSystem_;
