@@ -153,8 +153,10 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 			this->intermediateCostBest_ = intermediateCost;
 			this->finalCostBest_ = finalCost;
 
+#if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
 			this->computeControlUpdateNorm(u_search, this->u_ff_prev_);
 			this->computeStateUpdateNorm(x_search, this->x_prev_);
+#endif
 
 			alphaBest = alpha;
 			this->x_prev_ = x_search;

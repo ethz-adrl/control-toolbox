@@ -686,10 +686,16 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 			printString("[LineSearch, Thread " + std::to_string(threadId) + "]: Lower cost found: " + std::to_string(cost) + " at alpha: " + std::to_string(alpha));
 #endif //DEBUG_PRINT_LINESEARCH
 
+#if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
+			this->computeControlUpdateNorm(u_recorded, this->u_ff_prev_);
+			this->computeStateUpdateNorm(x_local, this->x_prev_);
+#endif
+
 			alphaExpBest_ = alphaExp;
 			this->intermediateCostBest_ = intermediateCost;
 			this->finalCostBest_ = finalCost;
 			this->lowestCost_ = cost;
+			this->x_prev_ = x_local;
 			this->x_.swap(x_local);
 			this->u_ff_.swap(u_recorded);
 			this->t_.swap(t_local);

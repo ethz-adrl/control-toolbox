@@ -506,6 +506,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeCo
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 {
+
 	computeDefectsNorm();
 
 	std::cout<< settings_.loggingPrefix + " iteration "  << iteration_ << std::endl;
@@ -658,8 +659,10 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchCo
 			computeCostsOfTrajectory(settings_.nThreads, x_, u_recorded, intermediateCostBest_, finalCostBest_);
 			lowestCost_ = intermediateCostBest_ + finalCostBest_;
 
+#if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
 			computeControlUpdateNorm(u_recorded, u_ff_prev_);
 			computeStateUpdateNorm(x_prev_, x_);
+#endif
 
 			x_prev_ = x_;
 			u_ff_.swap(u_recorded);
@@ -680,11 +683,6 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 #endif //DEBUG_PRINT_LINESEARCH
 
 		scalar_t alphaBest = performLineSearch();
-
-		// update reference state traj
-		this->computeControlUpdateNorm(this->u_ff_, this->u_ff_prev_);
-		this->computeStateUpdateNorm(this->x_prev_, this->x_);
-		this->x_prev_ = this->x_;
 
 #ifdef DEBUG_PRINT_LINESEARCH
 		std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest<<" . Will use this control."<<std::endl;
