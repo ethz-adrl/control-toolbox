@@ -66,6 +66,7 @@ public:
 	typedef ct::optcon::CostFunctionAnalytical<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> CostFunction;
 
 
+	//! constructor for loading nloc settings from file
 	FixBaseNLOC(
 			const std::string& costFunctionFile,
 			const std::string& settingsFile,
@@ -80,6 +81,24 @@ public:
 	{
 			nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settingsFile));
 	}
+
+
+	//! constructor which directly takes the nloc settings
+	FixBaseNLOC(
+			const std::string& costFunctionFile,
+			const typename NLOptConSolver::Settings_t& nlocSettings,
+			std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
+			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr
+	) :
+		system_(system),
+		linearizedSystem_(linearizedSystem),
+		costFunction_(new CostFunction(costFunctionFile, false)),
+		optConProblem_(system_, costFunction_, linearizedSystem_),
+		iteration_(0)
+	{
+			nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, nlocSettings));
+	}
+
 
 	void initialize(
 			const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x0,
