@@ -38,6 +38,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct {
 namespace core {
 
+enum IntegrationTypeCT
+{
+    EULER, RK4
+};
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
@@ -55,11 +59,45 @@ public:
     template <typename MatrixType>
     using StepperEuler = internal::StepperEulerCT<SCALAR, MatrixType>;
 
-    IntegratorCT(const std::shared_ptr<System<STATE_DIM, SCALAR> >& system)
+    IntegratorCT(
+        const std::shared_ptr<System<STATE_DIM, SCALAR> >& system,
+        const IntegrationTypeCT stepperType = IntegrationTypeCT::EULER)
     :
     cacheData_(false)
     {
         setNonlinearSystem(system);
+        initialize(stepperType);
+    }
+
+    void initialize(const IntegrationTypeCT stepperType)
+    {
+        switch(stepperType)
+        {
+            case EULER:
+            {
+                stepperState_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, state_vector>>(
+                    new internal::StepperEulerCT<SCALAR, state_vector>());
+                stepperDX0_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, state_matrix>>(
+                    new internal::StepperEulerCT<SCALAR, state_matrix>());
+                stepperDU0_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, state_control_matrix>>(
+                    new internal::StepperEulerCT<SCALAR, state_control_matrix>());
+                break;
+            }
+
+            case RK4:
+            {
+                stepperState_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, state_vector>>(
+                    new internal::StepperRK4CT<SCALAR, state_vector>());
+                stepperDX0_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, state_matrix>>(
+                    new internal::StepperRK4CT<SCALAR, state_matrix>());
+                stepperDU0_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, state_control_matrix>>(
+                    new internal::StepperRK4CT<SCALAR, state_control_matrix>());
+                break;
+            }
+
+            default:
+                throw std::runtime_error("Invalid CT integration type");
+        }
     }
 
     // or prepare for sensitivity integration...
@@ -100,7 +138,6 @@ public:
             tpl::TimeArray<SCALAR>& timeTrajectory
     )
     {
-        StepperEuler<state_vector> stepper;
         clearCache();
         stateTrajectory.clear();
         timeTrajectory.clear();
@@ -110,7 +147,7 @@ public:
 
         for(size_t i = 0; i < numSteps; ++i)
         {
-            stepper.do_step(xDot_, state, time, dt);
+            stepperState_->do_step(xDot_, state, time, dt);
             time += dt;
             stateTrajectory.push_back(state);
             timeTrajectory.push_back(time);
@@ -124,12 +161,11 @@ public:
             SCALAR dt
     )
     {
-        StepperEuler<state_vector> stepper;
         clearCache();
         SCALAR time = startTime;
         for(size_t i = 0; i < numSteps; ++i)
         {
-            stepper.do_step(xDot_, state, time, dt);
+            stepperState_->do_step(xDot_, state, time, dt);
             time += dt;
         }
     }
@@ -142,7 +178,6 @@ public:
         SCALAR dt
         )
     {
-        StepperEuler<state_matrix> stepper;
         clearMatrixCache();
         cacheA();
         cacheB();
@@ -150,7 +185,7 @@ public:
         dX0.setIdentity();
         for(size_t i = 0; i < numSteps; ++i)
         {
-            stepper.do_step(dX0dot_, dX0, time, dt);
+            stepperDX0_->do_step(dX0dot_, dX0, time, dt);
             time += dt;
         }
     }
@@ -162,7 +197,6 @@ public:
         SCALAR dt
         )
     {
-        StepperEuler<state_matrix> stepper;
         // clearMatrixCache();
         // cacheA();
         // cacheB();
@@ -170,7 +204,7 @@ public:
         dU0.setZero();
         for(size_t i = 0; i < numSteps; ++i)
         {
-            stepper.do_step(dU0dot_, dU0, time, dt);
+            stepperDU0_->do_step(dU0dot_, dU0, time, dt);
             time += dt;
         }
     }
@@ -217,6 +251,10 @@ private:
     tpl::TimeArray<SCALAR> timesCached_;
     StateMatrixArray<STATE_DIM, SCALAR> arrayA_;
     StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> arrayB_;
+
+    std::shared_ptr<internal::StepperBaseCT<SCALAR, state_vector>> stepperState_;
+    std::shared_ptr<internal::StepperBaseCT<SCALAR, state_matrix>> stepperDX0_;
+    std::shared_ptr<internal::StepperBaseCT<SCALAR, state_control_matrix>> stepperDU0_;
 };
 
 

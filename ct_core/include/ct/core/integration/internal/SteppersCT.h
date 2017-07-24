@@ -40,12 +40,6 @@ class StepperBaseCT
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    // void initialize()
-    // {
-    //     dataCached_.clear();
-    //     timeCached_.clear();
-    // }
-
     virtual void do_step(
         const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
         MatrixType& stateInOut,
@@ -54,8 +48,7 @@ public:
         ) = 0;
 
 protected:
-    // std::vector<MatrixType, Eigen::aligned_allocator<MatrixType>> dataCached_;
-    // std::vector<SCALAR> timeCached_;
+    
 };
 
 

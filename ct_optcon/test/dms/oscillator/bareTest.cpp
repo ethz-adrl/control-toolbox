@@ -182,8 +182,8 @@ void runTests()
 {
 	for(int solverType = 0; solverType < NlpSolverSettings::SolverType::num_types_solver; solverType++)
 	{
-		int splineType = 1;
-		int costEvalT = 1;
+		int splineType = 0;
+		int costEvalT = 0;
 		int optGrid = 0;
 		int integrateSensitivity = 1;
 		

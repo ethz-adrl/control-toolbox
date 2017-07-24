@@ -48,7 +48,7 @@ class ShotIntegrator : public ShotIntegratorBase<DerivativeT::STATE_D, Derivativ
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef ShotIntegratorBase<DerivativeT::STATE_D, DerivativeT::CONTROL_D> Base;
-	using IntegratorBase = ct::core::IntegratorRK4CT<DerivativeT::derivativeSize_>;
+	using IntegratorBase = ct::core::IntegratorCT<DerivativeT::derivativeSize_, 1>;
 	// using IntegratorEuler =  ct::core::IntegratorEuler<DerivativeT::derivativeSize_>;
 	// using IntegratorRK4 = ct::core::IntegratorRK4CT<DerivativeT::derivativeSize_>;
 	// using IntegratorRK5Var = ct::core::IntegratorRK5Variable<DerivativeT::derivativeSize_>;
@@ -80,47 +80,51 @@ public:
 			const size_t shotNr,
 			const DmsSettings& settings
 			) :
+				shotNr_(shotNr)
 				settings_(settings),
 				derivatives_(nullptr),
 				integrator_(nullptr)
 	{
 		derivatives_ = std::allocate_shared<DerivativeT, Eigen::aligned_allocator<DerivativeT>>(
 			Eigen::aligned_allocator<DerivativeT>(), controlledSystem, linearSystem, costFct, w, controlSpliner, timeGrid, shotNr, settings);
+
 	}
 
 	virtual ~ShotIntegrator(){}
 
 
 	virtual void setupSystem() override {
-		// switch(settings_.integrationType_)
-		// {
-		// case DmsSettings::EULER:
-		// {
-		// 	integrator_ = std::allocate_shared<IntegratorEuler, Eigen::aligned_allocator<IntegratorEuler>>
-		// 					(Eigen::aligned_allocator<IntegratorEuler>(), derivatives_);
-		// 	break;
-		// }
-		// case DmsSettings::RK4:
-		// {
-		// 	integrator_ = std::allocate_shared<IntegratorRK4, Eigen::aligned_allocator<IntegratorRK4>>
-		// 					(Eigen::aligned_allocator<IntegratorRK4>(), derivatives_);
-		// 	break;
-		// }
-		// case DmsSettings::RK5:
-		// {
-		// 	integrator_ = std::allocate_shared<IntegratorRK5Var, Eigen::aligned_allocator<IntegratorRK5Var>>
-		// 					(Eigen::aligned_allocator<IntegratorRK5Var>(), derivatives_, EventHandlePtrVec(0), settings_.absErrTol_, settings_.relErrTol_);
-		// 	break;
-		// }
-		// 
-		integrator_ = std::allocate_shared<IntegratorBase, Eigen::aligned_allocator<IntegratorBase>>
-						(Eigen::aligned_allocator<IntegratorBase>(), derivatives_);
-		// default:
-		// {
-		// 	std::cerr << "... ERROR: unknown integration type. Exiting" << std::endl;
-		// 	exit(0);
-		// }
-		// }
+		switch(settings_.integrationType_)
+		{
+			case DmsSettings::EULER:
+			{
+				// integrator_ = std::allocate_shared<IntegratorEuler, Eigen::aligned_allocator<IntegratorEuler>>
+				// 				(Eigen::aligned_allocator<IntegratorEuler>(), derivatives_);
+				integrator_ = std::allocate_shared<IntegratorBase, Eigen::aligned_allocator<IntegratorBase>>
+						(Eigen::aligned_allocator<IntegratorBase>(), derivatives_, core::IntegrationTypeCT::EULER);
+				break;
+			}
+			case DmsSettings::RK4:
+			{
+				// integrator_ = std::allocate_shared<IntegratorRK4, Eigen::aligned_allocator<IntegratorRK4>>
+				// 				(Eigen::aligned_allocator<IntegratorRK4>(), derivatives_);
+				integrator_ = std::allocate_shared<IntegratorBase, Eigen::aligned_allocator<IntegratorBase>>
+						(Eigen::aligned_allocator<IntegratorBase>(), derivatives_, core::IntegrationTypeCT::RK4);
+				break;
+			}
+			// case DmsSettings::RK5:
+			// {
+			// 	integrator_ = std::allocate_shared<IntegratorRK5Var, Eigen::aligned_allocator<IntegratorRK5Var>>
+			// 					(Eigen::aligned_allocator<IntegratorRK5Var>(), derivatives_, EventHandlePtrVec(0), settings_.absErrTol_, settings_.relErrTol_);
+			// 	break;
+			// }
+			// 
+			default:
+			{
+				std::cerr << "... ERROR: unknown integration type. Exiting" << std::endl;
+				exit(0);
+			}
+		}
 	}
 
 
@@ -133,7 +137,7 @@ public:
 		double t_shot_start = derivatives_->getShotStartTime();
 		double t_shot_end = derivatives_->getShotEndTime();
 
-		ct::core::StateVector<DerivativeT::derivativeSize_> initState = derivatives_->getInitState();
+		ct::core::StateVector<DerivativeT::derivativeSize_> initState = w_->getOptimizedState(shotNr);
 
 		// integrator_->integrate_adaptive(initState, t_shot_start, t_shot_end,
 		// 		derivatives_->stateTrajectory(),

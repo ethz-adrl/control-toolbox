@@ -121,6 +121,39 @@ public:
 	{
 		if(shotNr_ >= settings.N_) throw std::runtime_error("Dms Shot Integrator: shot index >= settings.N_ - check your settings.");
 
+		switch(settings_.integrationType_)
+		{
+			case DmsSettings::EULER:
+			{
+				// integrator_ = std::allocate_shared<IntegratorEuler, Eigen::aligned_allocator<IntegratorEuler>>
+				// 				(Eigen::aligned_allocator<IntegratorEuler>(), derivatives_);
+				integratorCT_ = std::allocate_shared<ct::core::IntegratorCT<STATE_DIM, CONTROL_DIM>, Eigen::aligned_allocator<ct::core::IntegratorCT<STATE_DIM, CONTROL_DIM>>>
+						(Eigen::aligned_allocator<ct::core::IntegratorCT<STATE_DIM, CONTROL_DIM>>(), controlledSystem_, core::IntegrationTypeCT::EULER);
+				break;
+			}
+			case DmsSettings::RK4:
+			{
+				// integrator_ = std::allocate_shared<IntegratorRK4, Eigen::aligned_allocator<IntegratorRK4>>
+				// 				(Eigen::aligned_allocator<IntegratorRK4>(), derivatives_);
+				integratorCT_ = std::allocate_shared<ct::core::IntegratorCT<STATE_DIM, CONTROL_DIM>, Eigen::aligned_allocator<ct::core::IntegratorCT<STATE_DIM, CONTROL_DIM>>>
+						(Eigen::aligned_allocator<ct::core::IntegratorCT<STATE_DIM, CONTROL_DIM>>(), controlledSystem_, core::IntegrationTypeCT::RK4);
+				break;
+			}
+			// case DmsSettings::RK5:
+			// {
+			// 	integrator_ = std::allocate_shared<IntegratorRK5Var, Eigen::aligned_allocator<IntegratorRK5Var>>
+			// 					(Eigen::aligned_allocator<IntegratorRK5Var>(), derivatives_, EventHandlePtrVec(0), settings_.absErrTol_, settings_.relErrTol_);
+			// 	break;
+			// }
+			// 
+			default:
+			{
+				std::cerr << "... ERROR: unknown integration type. Exiting" << std::endl;
+				exit(0);
+			}
+		}
+
+
 
 		if(settings.costEvaluationType_ == DmsSettings::SIMPLE)
 			shotIntegrator_ = constructShotIntegrator<DerivativeState<STATE_DIM, CONTROL_DIM>>();
@@ -192,8 +225,15 @@ public:
 		if(w_->getUpdateCount() != new_w_counter_integration_)
 		{
 			new_w_counter_integration_ = w_->getUpdateCount();
-			shotIntegrator_->integrate();
-			shotIntegrator_->retrieveStateTrajectories(t_history_, x_history_, cost_);
+
+			double t_shot_start = timeGrid_->getShotStartTime();
+			double t_shot_end = timeGrid_->getShotEndTime();
+
+			ct::core::StateVector<DerivativeT::derivativeSize_> initState = w_->getInitState();	
+						
+			integratorCT_->integrate();
+			// shotIntegrator_->integrate();
+			// shotIntegrator_->retrieveStateTrajectories(t_history_, x_history_, cost_);
 		}
 	}
 
@@ -411,6 +451,8 @@ private:
 	//Integrators
 	std::shared_ptr<ShotIntegratorBase<STATE_DIM, CONTROL_DIM>> sensitivityIntegrator_;
 	std::shared_ptr<ShotIntegratorBase<STATE_DIM, CONTROL_DIM>> shotIntegrator_;
+
+	std::shared_ptr<ct::core::IntegratorCT<STATE_DIM, CONTROL_DIM>> integratorCT_;
 
 
 	/**
