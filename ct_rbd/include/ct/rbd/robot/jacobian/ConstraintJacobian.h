@@ -74,7 +74,7 @@ public:
 	virtual void getJacobianOrigin(const RBDState_t& state, jacobian_t& Jc)
 	{
 		Jc.setZero();
-		for(int ee = 0; ee < ee_indices_.size() ; ee ++)
+		for(size_t ee = 0; ee < ee_indices_.size() ; ee ++)
 		{
 			if(eeInContact_[ee_indices_[ee]])
 			{
