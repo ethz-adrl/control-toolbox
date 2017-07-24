@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "LQOCSolver.hpp"
 
-#ifdef MATLAB
+#ifdef MATLAB_FULL_LOG
 #include <ct/optcon/matlab.hpp>
 #endif
 
@@ -104,7 +104,7 @@ public:
 		LQOCProblem_t& p = *this->lqocProblem_;
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> x = p.x_;
 
-		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages() +1 ; k++)
+		for(int k = 0; k<this->lqocProblem_->getNumberOfStages() +1 ; k++)
 		{
 			x[k] += this->lx_[k];
 
@@ -129,7 +129,7 @@ public:
 
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u = p.u_;
 
-		for(size_t k = 0; k<this->lqocProblem_->getNumberOfStages(); k++)
+		for(int k = 0; k<this->lqocProblem_->getNumberOfStages(); k++)
 		{
 			u[k] += this->lu_[k];
 		}
@@ -159,7 +159,7 @@ public:
 
 		this->lx_[0].setZero();
 
-		for(size_t k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
+		for(int k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
 		{
 			//! control update rule
 			this->lu_[k] = lv_[k] + L_[k] * this->lx_[k];
@@ -326,15 +326,12 @@ protected:
 
 			// calculate FF update
 			lv_[k].noalias() = Hi_inverse_[k] * gv_[k];
-//			du_norm_ += lv_[k].norm();
 		}
 	}
 
 	void logToMatlab()
 	{
 	#ifdef MATLAB_FULL_LOG
-
-		LQOCProblem_t& p = *lqocProblem_;
 
 		matFile_.open("GNRiccatiSolver.mat");
 
@@ -373,7 +370,7 @@ protected:
 	Eigen::SelfAdjointEigenSolver<Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>> eigenvalueSolver_;
 
 	//! if building with MATLAB support, include matfile
-#ifdef MATLAB
+#ifdef MATLAB_FULL_LOG
 	matlab::MatFile matFile_;
 #endif //MATLAB
 

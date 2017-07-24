@@ -194,7 +194,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::launchWorkerTh
 	workersActive_ = true;
 	workerTask_ = IDLE;
 
-	for (size_t i=0; i < this->settings_.nThreads; i++)
+	for (int i=0; i < this->settings_.nThreads; i++)
 	{
 		workerThreads_.push_back(std::thread(&NLOCBackendMP::threadWork, this, i));
 	}

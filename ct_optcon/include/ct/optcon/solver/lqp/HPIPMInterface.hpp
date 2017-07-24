@@ -72,8 +72,8 @@ public:
 	typedef ct::core::ControlVectorArray<CONTROL_DIM> ControlVectorArray;
 
 	HPIPMInterface() :
-		x0_(nullptr),
-		N_(-1)
+		N_(-1),
+		x0_(nullptr)
 	{
 		// some zero variables
 		hb0_.setZero();
@@ -155,7 +155,7 @@ public:
 
 		this->lx_[0].setZero();
 
-		for(size_t k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
+		for(int k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
 		{
 			//! reconstruct control update
 			this->lu_[k] = hu_[k] - p.u_[k];
@@ -312,7 +312,7 @@ private:
 		x0_ = x[0].data();
 
 		// transcribe the representation of the affine system to the absolute origin of the linear system
-		for (size_t i=0; i<N_; i++)
+		for (int i=0; i<N_; i++)
 		{
 			hA_[i] = A[i].data();
 			hB_[i] = B[i].data();
@@ -323,7 +323,7 @@ private:
 		hb0_ = b[0] + x[1] - B[0] * u[0];	//! this line needs to be transcribed separately (correction for first stage)
 		hb_[0] = hb0_.data();
 
-		for (size_t i=0; i<N_; i++)
+		for (int i=0; i<N_; i++)
 		{
 			// transcribe the representation of the LQ cost into system x-origin coordinates
 			hQ_[i] = Q[i].data();
@@ -408,13 +408,13 @@ private:
 		hpi_.resize(N_);
 		hu_.resize(N_);
 
-		for (size_t i=0; i<N_; i++)
+		for (int i=0; i<N_; i++)
 		{
 			// first state and last input are not optimized
 			x_[i+1] = hx_[i+1].data();
 			u_[i] = hu_[i].data();
 		}
-		for (size_t i=0; i<N_; i++)
+		for (int i=0; i<N_; i++)
 		{
 			pi_[i] = hpi_[i].data();
 		}

@@ -70,7 +70,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 bool NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solve()
 {
 	bool foundBetter = true;
-	size_t numIterations = 0;
+	int numIterations = 0;
 
 	while (foundBetter  && (numIterations < nlocBackend_->getSettings().max_iterations))
 	{

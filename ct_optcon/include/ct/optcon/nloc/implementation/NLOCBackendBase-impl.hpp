@@ -38,20 +38,20 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::setInitialGu
 		throw(std::runtime_error("state and control trajectories are not equally long"));
 	}
 
-	if(initialGuess.uff().size() < K_){
+	if(initialGuess.uff().size() < (size_t)K_){
 		std::cout << "Initial guess length too short. Received length " << initialGuess.uff().size() <<", expected " << K_ << std::endl;
 		throw std::runtime_error("initial control guess to short");
 	}
 
-	if(initialGuess.uff().size() > K_)
+	if(initialGuess.uff().size() > (size_t)K_)
 		std::cout << "Warning, initial control guess too long, will truncate" << std::endl;
 
-	if(initialGuess.K().size() < K_){
+	if(initialGuess.K().size() < (size_t)K_){
 		std::cout << "Initial feedback length too short. Received length " << initialGuess.K().size() <<", expected " << K_ << std::endl;
 		throw std::runtime_error("initial control guess to short");
 	}
 
-	if(initialGuess.K().size() > K_)
+	if(initialGuess.K().size() > (size_t)K_)
 		std::cout << "Warning, initial feedback guess too long, will truncate" << std::endl;
 
 
@@ -115,7 +115,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeCostFu
 
 	costFunctions_.resize(settings_.nThreads+1);
 
-	for (size_t i = 0; i<settings_.nThreads+1; i++)
+	for (int i = 0; i<settings_.nThreads+1; i++)
 	{
 		// make a deep copy
 		costFunctions_[i] = typename Base::OptConProblem_t::CostFunctionPtr_t(cf->clone());
@@ -138,7 +138,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 	integratorsEulerSymplectic_.resize(settings_.nThreads+1);
 	integratorsRkSymplectic_.resize(settings_.nThreads+1);
 
-	for (size_t i = 0; i<settings_.nThreads+1; i++)
+	for (int i = 0; i<settings_.nThreads+1; i++)
 	{
 		// make a deep copy
 		systems_[i] = typename Base::OptConProblem_t::DynamicsPtr_t(dyn->clone());
@@ -171,7 +171,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeLinear
 {
 	linearSystems_.resize(settings_.nThreads+1);
 
-	for (size_t i = 0; i<settings_.nThreads+1; i++)
+	for (int i = 0; i<settings_.nThreads+1; i++)
 	{
 		// make a deep copy
 		linearSystems_[i] = typename OptConProblem_t::LinearPtr_t(lin->clone());
@@ -190,7 +190,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::checkProblem
 	if (K_==0)
 		throw std::runtime_error("Time horizon too small resulting in 0 steps");
 
-	if (u_ff_.size() < K_)
+	if (u_ff_.size() < (size_t)K_)
 	{
 		std::cout << "Provided initial feed forward controller too short, should be at least "<<K_<<" but is " << u_ff_.size() <<" long."<<std::endl;
 		throw(std::runtime_error("Provided initial feed forward controller too short"));
@@ -213,7 +213,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 	}
 
 	// update system discretizer with new settings
-	for(size_t i = 0; i< settings.nThreads+1; i++)
+	for(int i = 0; i< settings.nThreads+1; i++)
 	{
 		linearSystemDiscretizers_[i].setApproximation(settings.discretization);
 		linearSystemDiscretizers_[i].setTimeDiscretization(settings.dt);
@@ -401,7 +401,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeSingl
 {
 	// todo: remove threadId -- not requried here
 
-	if (k<K_)
+	if (k< (size_t)K_)
 	{
 		lqocProblem_->b_[k] = xShot_[k] - x_[k+1];
 	}
@@ -425,7 +425,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeCosts
 {
 	intermediateCost = 0;
 
-	for (size_t k=0; k<K_; k++) {
+	for (size_t k=0; k<(size_t)K_; k++)
+	{
 		// feed current state and control to cost function
 		costFunctions_[threadId]->setCurrentStateAndControl(x_local[k], u_local[k], settings_.dt*k);
 
@@ -532,7 +533,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(const size_t& iteration)
 {
-#ifdef MATLAB
+#ifdef MATLAB_FULL_LOG
 
 	std::cout << "Logging to Matlab" << std::endl;
 
@@ -569,7 +570,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 	matFile_.put("d_norm", d_norm_);
 
 	matFile_.close();
-#endif //MATLAB
+#endif //MATLAB_FULL_LOG
 }
 
 
@@ -860,7 +861,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefec
 {
 	d_norm_ = 0.0;
 
-	for (size_t k=0; k<K_; k++)
+	for (int k=0; k<K_; k++)
 	{
 		d_norm_ += lqocProblem_->b_[k].norm();
 	}
