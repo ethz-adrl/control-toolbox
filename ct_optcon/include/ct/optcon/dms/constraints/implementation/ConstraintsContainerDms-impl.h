@@ -80,7 +80,7 @@ void ConstraintsContainerDms<STATE_DIM, CONTROL_DIM>::prepareJacobianEvaluation(
 {	
 	#pragma omp parallel for num_threads( settings_.nThreads_ )
 	for(auto shotContainer = shotContainers_.begin(); shotContainer < shotContainers_.end(); ++shotContainer){
-		(*shotContainer)->integrateShotandComputeSensitivity();
+		(*shotContainer)->integrateSensitivities();
 	}
 }
 

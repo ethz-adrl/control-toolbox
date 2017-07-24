@@ -125,7 +125,10 @@ public:
 
 		size_t wLength = (settings.N_ + 1)*(STATE_DIM + CONTROL_DIM);
 		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-			wLength += settings_.N_;
+		{
+			throw std::runtime_error("Currently we do not support adaptive time gridding");
+			// wLength += settings_.N_;
+		}
 
 		optVariablesDms_ = std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>>(
 				new OptVectorDms<STATE_DIM, CONTROL_DIM>(wLength, settings));
@@ -182,11 +185,14 @@ public:
 	virtual void updateProblem() override
 	{
 		controlSpliner_->computeSpline(optVariablesDms_->getOptimizedInputs().toImplementation());
-		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-		{
-			// std::cout << "optVariablesDms_->getOptimizedTimeSegments(): " << optVariablesDms_->getOptimizedTimeSegments().transpose() << std::endl;
-			timeGrid_->updateTimeGrid(optVariablesDms_->getOptimizedTimeSegments());
-		}
+		for(auto shotContainer : shotContainers_)
+			shotContainer->reset();
+		
+		// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+		// {
+		// 	// std::cout << "optVariablesDms_->getOptimizedTimeSegments(): " << optVariablesDms_->getOptimizedTimeSegments().transpose() << std::endl;
+		// 	timeGrid_->updateTimeGrid(optVariablesDms_->getOptimizedTimeSegments());
+		// }
 	}
 
 	/**

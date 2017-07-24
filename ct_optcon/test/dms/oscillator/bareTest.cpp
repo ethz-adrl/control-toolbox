@@ -194,14 +194,14 @@ void runTests()
 		DmsSettings settings;
 		settings.N_ = 25;
 		settings.T_ = 5.0;
-		settings.nThreads_ = 4;
+		settings.nThreads_ = 1;
 		settings.terminalStateConstraint_ = 1;
 		settings.splineType_ = static_cast<DmsSettings::SplineType>(splineType);	// ZOH, PWL
 		settings.costEvaluationType_ =  static_cast<DmsSettings::CostEvaluationType>(costEvalT);	// SIMPLE, FULL
 		settings.objectiveType_ = static_cast<DmsSettings::ObjectiveType>(optGrid);	// keep grid, opt. grid
 		settings.h_min_ = 0.1;
 		settings.integrationType_ = DmsSettings::RK4;
-		settings.dt_sim_ = 0.01;
+		settings.dt_sim_ = 0.05;
 		settings.integrateSens_ =  static_cast<DmsSettings::IntegrationType>(integrateSensitivity);
 		settings.absErrTol_ = 1e-6;
 		settings.relErrTol_ = 1e-6;

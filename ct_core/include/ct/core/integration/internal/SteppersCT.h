@@ -58,11 +58,11 @@ class StepperEulerCT : public StepperBaseCT<SCALAR, MatrixType>
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    StepperEulerCT() :
-    derivative_(MatrixType::Zero())
-    {
+    StepperEulerCT(){}
+    // derivative_(MatrixType::Zero())
+    // {
 
-    }
+    // }
 
     virtual void do_step(
         const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
@@ -87,10 +87,10 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     StepperRK4CT() :
-    k1_(MatrixType::Zero()),
-    k2_(MatrixType::Zero()),
-    k3_(MatrixType::Zero()),
-    k4_(MatrixType::Zero()),
+    // k1_(MatrixType::Zero()),
+    // k2_(MatrixType::Zero()),
+    // k3_(MatrixType::Zero()),
+    // k4_(MatrixType::Zero()),
     oneSixth_(SCALAR(1.0 / 6.0))
     {
 

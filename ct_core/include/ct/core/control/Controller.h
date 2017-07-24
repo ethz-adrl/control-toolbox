@@ -79,6 +79,26 @@ public:
 			const SCALAR& t,
 			ControlVector<CONTROL_DIM, SCALAR>& controlAction) = 0;
 
+    /**
+     * @brief      Returns the the derivative of the control with respect to the initial control input u0
+     *
+     * @return     The derivative u 0.
+     */
+    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR time)
+    {
+        throw std::runtime_error("getDerivativeU0() not implemented for the current controller");
+    }
+
+    /**
+     * @brief      Returns the derivative of the control with respect to the final control input uf
+     *
+     * @return     The derivative uf.
+     */
+    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeUf(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR time)
+    {
+        throw std::runtime_error("getDerivativeUf() not implemented for the current controller");
+    }
+
 
 };
 

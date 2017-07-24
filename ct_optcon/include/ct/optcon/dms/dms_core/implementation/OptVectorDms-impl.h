@@ -33,8 +33,8 @@ OptVectorDms<STATE_DIM, CONTROL_DIM>::OptVectorDms(size_t n, const DmsSettings& 
 		settings_(settings),
 		numPairs_(settings.N_+1)
 {	
-	if (settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-		optimizedTimeSegments_.resize(numPairs_ - 1);
+	// if (settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+	// 	optimizedTimeSegments_.resize(numPairs_ - 1);
 
 	size_t currIndex = 0;
 
@@ -46,16 +46,16 @@ OptVectorDms<STATE_DIM, CONTROL_DIM>::OptVectorDms(size_t n, const DmsSettings& 
 		pairNumToControlIdx_.insert(std::make_pair(i, currIndex));
 		currIndex += CONTROL_DIM;
 
-		if (settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-			if(i < numPairs_-1)
-			{
-				shotNumToShotDurationIdx_.insert(std::make_pair(i, currIndex));
-				currIndex += 1;
-			}	
+		// if (settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+		// 	if(i < numPairs_-1)
+		// 	{
+		// 		shotNumToShotDurationIdx_.insert(std::make_pair(i, currIndex));
+		// 		currIndex += 1;
+		// 	}	
 	}
 
-	if (settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-		setLowerTimeSegmentBounds();
+	// if (settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+	// 	setLowerTimeSegmentBounds();
 
 }
 
@@ -171,14 +171,14 @@ void OptVectorDms<STATE_DIM, CONTROL_DIM>::setInitGuess(const state_vector_t& x0
 		x_.segment(q_index , CONTROL_DIM) = u0;
 	}
 
-	if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-	{
-		for (size_t i = 0; i< numPairs_ - 1; i++)
-		{
-			size_t h_index = getTimeSegmentIndex(i);
-			x_(h_index) = (double)settings_.T_ / (double)settings_.N_;
-		}
-	}
+	// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+	// {
+	// 	for (size_t i = 0; i< numPairs_ - 1; i++)
+	// 	{
+	// 		size_t h_index = getTimeSegmentIndex(i);
+	// 		x_(h_index) = (double)settings_.T_ / (double)settings_.N_;
+	// 	}
+	// }
 }
 
 
@@ -199,14 +199,14 @@ void OptVectorDms<STATE_DIM, CONTROL_DIM>::setInitGuess(
 			x_.segment(q_index , CONTROL_DIM) = u_init[i];
 		}
 
-		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-		{
-			for (size_t i = 0; i< numPairs_ - 1; i++)
-			{
-				size_t h_index = getTimeSegmentIndex(i);
-				x_(h_index) = (double)settings_.T_ / (double)settings_.N_;
-			}
-		}
+		// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+		// {
+		// 	for (size_t i = 0; i< numPairs_ - 1; i++)
+		// 	{
+		// 		size_t h_index = getTimeSegmentIndex(i);
+		// 		x_(h_index) = (double)settings_.T_ / (double)settings_.N_;
+		// 	}
+		// }
 
 		// std::cout << "x_ init: " << x_.transpose() << std::endl;
 }

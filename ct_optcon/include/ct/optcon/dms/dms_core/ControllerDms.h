@@ -94,6 +94,15 @@ public:
 		assert(controlAction == controlAction);
 	}
 
+    virtual core::ControlMatrix<CONTROL_DIM> getDerivativeU0(const state_vector_t& state, const double time) override
+    {
+        return controlSpliner_->splineDerivative_q_i(time, shotIdx_);
+    }
+
+    virtual core::ControlMatrix<CONTROL_DIM> getDerivativeUf(const state_vector_t& state, const double time) override
+    {
+        return controlSpliner_->splineDerivative_q_iplus1(time, shotIdx_);
+    }
 
 
 private:

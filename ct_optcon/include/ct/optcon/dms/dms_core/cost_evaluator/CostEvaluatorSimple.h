@@ -146,25 +146,25 @@ void CostEvaluatorSimple<STATE_DIM, CONTROL_DIM>::evalGradient(size_t grad_lengt
 		grad.segment(w_->getStateIndex(i), STATE_DIM) += phi_(i) * costFct_->stateDerivativeIntermediate();
 		grad.segment(w_->getControlIndex(i), CONTROL_DIM) += phi_(i)*costFct_->controlDerivativeIntermediate() ;
 
-		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID && i < settings_.N_)
-		{
-			if(settings_.splineType_ == DmsSettings::ZERO_ORDER_HOLD)
-			{
-				costFct_->setCurrentStateAndControl(w_->getOptimizedState(i), w_->getOptimizedControl(i));
-				double dJdH = phi_diff_h_(i) * costFct_->evaluateIntermediate();
-				size_t idx = w_->getTimeSegmentIndex(i);
-				grad(idx) = dJdH;
-			}
+		// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID && i < settings_.N_)
+		// {
+		// 	if(settings_.splineType_ == DmsSettings::ZERO_ORDER_HOLD)
+		// 	{
+		// 		costFct_->setCurrentStateAndControl(w_->getOptimizedState(i), w_->getOptimizedControl(i));
+		// 		double dJdH = phi_diff_h_(i) * costFct_->evaluateIntermediate();
+		// 		size_t idx = w_->getTimeSegmentIndex(i);
+		// 		grad(idx) = dJdH;
+		// 	}
 
-			else if(settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
-			{
-				costFct_->setCurrentStateAndControl(w_->getOptimizedState(i), w_->getOptimizedControl(i));
-				double dJdH = 0.5 * costFct_->evaluateIntermediate();
-				costFct_->setCurrentStateAndControl(w_->getOptimizedState(i+1), w_->getOptimizedControl(i+1));
-				dJdH += 0.5 * costFct_->evaluateIntermediate();
-				grad(w_->getTimeSegmentIndex(i)) = dJdH;
-			}
-		}	
+		// 	else if(settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
+		// 	{
+		// 		costFct_->setCurrentStateAndControl(w_->getOptimizedState(i), w_->getOptimizedControl(i));
+		// 		double dJdH = 0.5 * costFct_->evaluateIntermediate();
+		// 		costFct_->setCurrentStateAndControl(w_->getOptimizedState(i+1), w_->getOptimizedControl(i+1));
+		// 		dJdH += 0.5 * costFct_->evaluateIntermediate();
+		// 		grad(w_->getTimeSegmentIndex(i)) = dJdH;
+		// 	}
+		// }	
 	}
 
 	/* gradient of terminal cost */
