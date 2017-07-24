@@ -323,17 +323,17 @@ public:
 
 		try {
 			epsilon = pt.get<double>(ns +".epsilon");
+			min_cost_improvement = pt.get<double>(ns +".min_cost_improvement");
+			maxDefectSum = pt.get<double>(ns +".maxDefectSum");
+			max_iterations = pt.get<int>(ns +".max_iterations");
+			nThreads = pt.get<int>(ns +".nThreads");
+			loggingPrefix = pt.get<std::string>(ns + ".loggingPrefix");
+			closedLoopShooting = pt.get<bool>(ns + ".closedLoopShooting");
 		} catch (...)
 		{}
 
 		dt = pt.get<double>(ns +".dt");
 		dt_sim = pt.get<double>(ns +".dt_sim");
-		min_cost_improvement = pt.get<double>(ns +".min_cost_improvement");
-		maxDefectSum = pt.get<double>(ns +".maxDefectSum");
-		max_iterations = pt.get<int>(ns +".max_iterations");
-		nThreads = pt.get<int>(ns +".nThreads");
-		loggingPrefix = pt.get<std::string>(ns + ".loggingPrefix");
-		closedLoopShooting = pt.get<bool>(ns + ".closedLoopShooting");
 
 		try {
 
