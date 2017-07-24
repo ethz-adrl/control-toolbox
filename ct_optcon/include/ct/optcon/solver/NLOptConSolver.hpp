@@ -54,6 +54,7 @@ class NLOptConSolver : public OptConSolver<
 {
 
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const size_t STATE_D = STATE_DIM;
@@ -65,15 +66,24 @@ public:
 	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 	typedef NLOptConSettings Settings_t;
 	typedef SCALAR Scalar_t;
-
 	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
 
+	//! constructor
 	NLOptConSolver(const OptConProblem_t& optConProblem, const Settings_t& settings)
 	{
 		initialize(optConProblem, settings);
 	}
 
+	//! constructor
+	NLOptConSolver(const OptConProblem_t& optConProblem,
+			 const std::string& settingsFile,
+			 bool verbose = true,
+			 const std::string& ns = "alg") :
+			NLOptConSolver(optConProblem, Settings_t::fromConfigFile(settingsFile, verbose, ns))
+	{}
+
+	//! destructor
 	virtual ~NLOptConSolver(){}
 
 	/**
@@ -87,11 +97,18 @@ public:
 	void configure(const Settings_t& settings) override;
 
 
+	/*!
+	 * execute preparation steps for an iteration, e.g. computation of defects
+	 */
 	virtual void prepareIteration()
 	{
 		nlocAlgorithm_ -> prepareIteration();
 	}
 
+	/*!
+	 * execute finishing step for an iteration, e.g. solving Riccati backward pass.
+	 * @return
+	 */
 	virtual bool finishIteration()
 	{
 		return nlocAlgorithm_ -> finishIteration();
@@ -194,18 +211,28 @@ public:
 
 	virtual SCALAR getCost() const override {return nlocBackend_->getCost(); }
 
+	//! get a reference to the current settings
+	const Settings_t& getSettings() {return nlocBackend_->getSettings();}
+
+	//! get a reference to the backend (@todo this is not optimal)
 	const std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>>& getBackend() {return nlocBackend_;}
 
+	//! get reference to the nonlinear system
 	std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override { return nlocBackend_->getNonlinearSystemsInstances(); }
 
+	//! get constant reference to the nonlinear system
 	const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const override { return nlocBackend_->getNonlinearSystemsInstances(); }
 
+	//! get reference to the linearized system
 	std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() { return nlocBackend_->getLinearSystemsInstances(); }
 
+	//! get constant reference to the linearized system
 	const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const { return nlocBackend_->getLinearSystemsInstances(); }
 
+	//! get reference to the cost function
 	std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() { return nlocBackend_->getCostFunctionInstances(); }
 
+	//! get constant reference to the cost function
 	const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const { return nlocBackend_->getCostFunctionInstances(); }
 
 	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() { return nlocBackend_->getStateInputConstraintsInstances(); }
@@ -219,13 +246,16 @@ public:
 
 protected:
 
+	//! the backend holding all the math operations
 	std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>> nlocBackend_;
+
+	//! the algorithm for sequencing the math operations in correct manner
 	std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>> nlocAlgorithm_;
 };
 
 
-}
-}
+} // namespace optcon
+} // namespace ct
 
 #include "implementation/NLOptConSolver-impl.hpp"
 
