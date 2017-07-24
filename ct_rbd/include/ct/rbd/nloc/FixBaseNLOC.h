@@ -50,14 +50,15 @@ public:
 	typedef ct::core::LinearSystem<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> LinearizedSystem;
 	typedef ct::rbd::RbdLinearizer<FBSystem> SystemLinearizer;
 
+	//! @ todo: introduce templates for P_DIM and V_DIM
 	typedef ct::optcon::NLOptConSolver<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, FBSystem::STATE_DIM/2, FBSystem::STATE_DIM/2, SCALAR> NLOptConSolver;
 
-	typedef typename NLOptConSolver::StateVector StateVector;
-	typedef typename NLOptConSolver::FeedbackMatrix FeedbackMatrix;
-	typedef typename NLOptConSolver::ControlVector ControlVector;
-	typedef typename NLOptConSolver::StateVectorArray StateVectorArray;
-	typedef typename NLOptConSolver::FeedbackArray FeedbackArray;
-	typedef typename NLOptConSolver::ControlVectorArray ControlVectorArray;
+	typedef typename core::StateVector<FBSystem::STATE_DIM, SCALAR> StateVector;
+	typedef typename core::ControlVector<FBSystem::CONTROL_DIM, SCALAR> ControlVector;
+	typedef typename core::FeedbackMatrix<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> FeedbackMatrix;
+	typedef typename core::StateVectorArray<FBSystem::STATE_DIM, SCALAR> StateVectorArray;
+	typedef typename core::ControlVectorArray<FBSystem::CONTROL_DIM, SCALAR> ControlVectorArray;
+	typedef typename core::FeedbackArray<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> FeedbackArray;
 
 	typedef ct::optcon::CostFunctionAnalytical<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> CostFunction;
 
@@ -74,7 +75,7 @@ public:
 		optConProblem_(system_, costFunction_, linearizedSystem_),
 		iteration_(0)
 	{
-			solver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settingsFile));
+			nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settingsFile));
 	}
 
 	void initialize(
@@ -86,14 +87,14 @@ public:
 	{
 		typename NLOptConSolver::Policy_t policy(x_ref, u0_ff, u0_fb, getSettings().dt);
 
-		solver_->changeTimeHorizon(tf);
-		solver_->setInitialGuess(policy);
-		solver_->changeInitialState(x0.toImplementation());
+		nlocSolver_->changeTimeHorizon(tf);
+		nlocSolver_->setInitialGuess(policy);
+		nlocSolver_->changeInitialState(x0.toImplementation());
 	}
 
 	bool runIteration()
 	{
-		bool foundBetter = solver_->runIteration();
+		bool foundBetter = nlocSolver_->runIteration();
 
 		iteration_++;
 		return foundBetter;
@@ -101,34 +102,37 @@ public:
 
 	const StateVectorArray& retrieveLastRollout()
 	{
-		return solver_->getStates();
+		return nlocSolver_->getStates();
 	}
 
 	const core::TimeArray& getTimeArray()
 	{
-		return solver_->getStateTrajectory().getTimeArray();
+		return nlocSolver_->getStateTrajectory().getTimeArray();
 	}
 
 	const FeedbackArray& getFeedbackArray()
 	{
-		return solver_->getSolution().K();
+		return nlocSolver_->getSolution().K();
 	}
 
 	const ControlVectorArray& getControlVectorArray()
 	{
-		return solver_->getSolution().uff();
+		return nlocSolver_->getSolution().uff();
 	}
 
-	const typename NLOptConSolver::Settings_t& getSettings() const { return solver_->getSettings(); }
+	const typename NLOptConSolver::Settings_t& getSettings() const
+	{
+		return nlocSolver_->getSettings();
+	}
 
 	void changeCostFunction(std::shared_ptr<CostFunction> costFunction)
 	{
-		solver_->changeCostFunction(costFunction);
+		nlocSolver_->changeCostFunction(costFunction);
 	}
 
 	std::shared_ptr<NLOptConSolver> getSolver()
 	{
-		return solver_;
+		return nlocSolver_;
 	}
 
 private:
@@ -139,14 +143,14 @@ private:
 
 	optcon::OptConProblem<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> optConProblem_;
 
-	std::shared_ptr<NLOptConSolver> solver_;
+	std::shared_ptr<NLOptConSolver> nlocSolver_;
 
 	size_t iteration_;
 
 
 };
 
-}
-}
+} // namespace rbd
+} // namespace ct
 
 #endif /* INCLUDE_CT_RBD_NLOC_FIXBASENLOC_H_ */
