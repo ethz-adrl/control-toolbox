@@ -27,8 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_RBD_NLOC_FLOATINGBASENLOCCONTACTMODEL_H_
 #define INCLUDE_CT_RBD_NLOC_FLOATINGBASENLOCCONTACTMODEL_H_
 
-#include <ct/core/systems/linear/SystemLinearizer.h>
-
 #include <ct/optcon/optcon.h>
 
 #include <ct/rbd/systems/FloatingBaseFDSystem.h>
@@ -57,13 +55,17 @@ public:
 
 	typedef ct::optcon::NLOptConSolver<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> NLOptConSolver;
 
-	typedef typename NLOptConSolver::StateVectorArray StateVectorArray;
-	typedef typename NLOptConSolver::FeedbackArray FeedbackArray;
-	typedef typename NLOptConSolver::ControlVectorArray ControlVectorArray;
+	typedef typename core::StateVector<FBSystem::STATE_DIM> StateVector;
+	typedef typename core::ControlVector<FBSystem::CONTROL_DIM> ControlVector;
+	typedef typename core::FeedbackMatrix<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> FeedbackMatrix;
+	typedef typename core::StateVectorArray<FBSystem::STATE_DIM> StateVectorArray;
+	typedef typename core::ControlVectorArray<FBSystem::CONTROL_DIM> ControlVectorArray;
+	typedef typename core::FeedbackArray<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> FeedbackArray;
 
 	typedef ct::optcon::CostFunctionAnalytical<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> CostFunction;
 
 
+	//! constructor taking path to the settings file
 	FloatingBaseNLOCContactModel(
 			const std::string& costFunctionFile,
 			const std::string& settingsFile,
@@ -77,6 +79,22 @@ public:
 		iteration_(0)
 	{
 			solver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settingsFile));
+	}
+
+	//! constructor taking settings file directly
+	FloatingBaseNLOCContactModel(
+			const std::string& costFunctionFile,
+			const typename NLOptConSolver::Settings_t& settings,
+			std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
+			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr
+	) :
+		system_(system),
+		linearizedSystem_(linearizedSystem),
+		costFunction_(new CostFunction(costFunctionFile, false)),
+		optConProblem_(system_, costFunction_, linearizedSystem_),
+		iteration_(0)
+	{
+			solver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settings));
 	}
 
 	void initialize(

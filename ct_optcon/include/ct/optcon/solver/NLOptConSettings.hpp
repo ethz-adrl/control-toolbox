@@ -321,19 +321,36 @@ public:
 		boost::property_tree::ptree pt;
 		boost::property_tree::read_info(filename, pt);
 
-		try {
-			epsilon = pt.get<double>(ns +".epsilon");
-			min_cost_improvement = pt.get<double>(ns +".min_cost_improvement");
-			maxDefectSum = pt.get<double>(ns +".maxDefectSum");
-			max_iterations = pt.get<int>(ns +".max_iterations");
-			nThreads = pt.get<int>(ns +".nThreads");
-			loggingPrefix = pt.get<std::string>(ns + ".loggingPrefix");
-			closedLoopShooting = pt.get<bool>(ns + ".closedLoopShooting");
-		} catch (...)
-		{}
+		try {epsilon = pt.get<double>(ns +".epsilon");
+		} catch (...) {}
+		try{min_cost_improvement = pt.get<double>(ns +".min_cost_improvement");
+		} catch (...) {}
+		try{maxDefectSum = pt.get<double>(ns +".maxDefectSum");
+		} catch (...) {}
+		try{max_iterations = pt.get<int>(ns +".max_iterations");
+		} catch (...) {}
+		try{nThreads = pt.get<int>(ns +".nThreads");
+		} catch (...) {}
+		try{loggingPrefix = pt.get<std::string>(ns + ".loggingPrefix");
+		} catch (...) {}
+		try{closedLoopShooting = pt.get<bool>(ns + ".closedLoopShooting");
+		} catch (...) {}
+		try{dt = pt.get<double>(ns +".dt");
+		} catch (...) {}
+		try{dt_sim = pt.get<double>(ns +".dt_sim");
+		} catch (...) {}
+		try{nThreadsEigen = pt.get<size_t>(ns + ".nThreadsEigen");
+		} catch (...) {}
+		try {recordSmallestEigenvalue = pt.get<bool>(ns + ".recordSmallestEigenvalue");
+		} catch (...) {}
+		try {fixedHessianCorrection = pt.get<bool>(ns + ".fixedHessianCorrection");
+		} catch (...) {}
 
-		dt = pt.get<double>(ns +".dt");
-		dt_sim = pt.get<double>(ns +".dt_sim");
+		try {lineSearchSettings.load(filename, verbose, ns+".line_search");
+		} catch (...) {}
+		try{parallelBackward.load(filename, verbose, ns+".parallel_backward_pass");
+		} catch (...) {}
+
 
 		try {
 
@@ -409,29 +426,12 @@ public:
 		} catch (...)
 		{}
 
-		try {
-			nThreadsEigen = pt.get<size_t>(ns + ".nThreadsEigen");
-		} catch (...)
-		{}
-
-		try {
-			recordSmallestEigenvalue = pt.get<bool>(ns + ".recordSmallestEigenvalue");
-		} catch (...)
-		{}
-
-		try {
-			fixedHessianCorrection = pt.get<bool>(ns + ".fixedHessianCorrection");
-		} catch (...)
-		{}
-
 		if (verbose)
 		{
 			std::cout << "Loaded NLOptCon config from "<<filename<<": "<<std::endl;
 			print();
 		}
 
-		lineSearchSettings.load(filename, verbose, ns+".line_search");
-		parallelBackward.load(filename, verbose, ns+".parallel_backward_pass");
     }
 
 
