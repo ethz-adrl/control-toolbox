@@ -213,10 +213,9 @@ public:
         {
             stepperState_->do_step(xDot_, state, time, dt);
             time += dt;
+            stateTrajectory.push_back(state);
+            timeTrajectory.push_back(time);
         }
-
-        stateTrajectory = statesCached_;
-        timeTrajectory = timesCached_;
     }
 
     void integrate(

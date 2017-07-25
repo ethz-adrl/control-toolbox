@@ -381,7 +381,7 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::rolloutSystem (
 			}
 			else if(settings_.integrator == iLQGSettings::RK4)
 			{
-				integratorsRK4_[threadId]->integrate(x0, (i*steps+j)*dt_sim, 1, dt_sim);
+				integratorsRK4_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
 			}
 			else if(settings_.integrator == iLQGSettings::EULER_SYM)
 			{
