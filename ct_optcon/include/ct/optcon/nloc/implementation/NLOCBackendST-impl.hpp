@@ -106,35 +106,26 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 
 		iterations++;
 
-		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_ff_search(this->K_);
-
-		for (int i=this->K_-1; i>=0; i--)
-		{
-			if(this->settings_.closedLoopShooting){
-				u_ff_search[i] = this->u_ff_[i] + alpha * this->lv_[i]; 	// add lv_ if we are doing closed-loop shooting
-			}
-			else
-				u_ff_search[i] = this->u_ff_[i] + alpha * this->lu_[i]; 	// add lu if we are doing open-loop shooting
-		}
-
-
+		typename Base::scalar_t cost = std::numeric_limits<typename Base::scalar_t>::max();
+		typename Base::scalar_t intermediateCost = std::numeric_limits<typename Base::scalar_t>::max();
+		typename Base::scalar_t finalCost = std::numeric_limits<typename Base::scalar_t>::max();
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_search(this->K_+1);
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_recorded(this->K_);
 		ct::core::tpl::TimeArray<SCALAR> t_search(this->K_+1);
 		x_search[0] = this->x_[0];
 
-		bool dynamicsGood = this->rolloutSystem(this->settings_.nThreads, u_ff_search, x_search, u_recorded, t_search);
 
-		typename Base::scalar_t cost = std::numeric_limits<typename Base::scalar_t>::max();
-		typename Base::scalar_t intermediateCost = std::numeric_limits<typename Base::scalar_t>::max();
-		typename Base::scalar_t finalCost = std::numeric_limits<typename Base::scalar_t>::max();
-
-		if (dynamicsGood)
+		if(this->settings_.closedLoopShooting)
 		{
-			this->computeCostsOfTrajectory(this->settings_.nThreads, x_search, u_recorded, intermediateCost, finalCost);
-
-			cost = intermediateCost + finalCost;
+			//! search with lv_ update if we are doing closed-loop shooting
+			this->lineSearchSingleController(this->settings_.nThreads, alpha, this->lv_, x_search, u_recorded, t_search, intermediateCost, finalCost);
 		}
+		else{
+			//! search with whole lu_ update if we are doing closed-loop shooting
+			this->lineSearchSingleController(this->settings_.nThreads, alpha, this->lu_, x_search, u_recorded, t_search, intermediateCost, finalCost);
+		}
+
+		cost = intermediateCost + finalCost;
 
 		if (cost < this->lowestCost_)
 		{

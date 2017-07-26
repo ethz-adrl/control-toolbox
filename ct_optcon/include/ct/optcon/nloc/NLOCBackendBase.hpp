@@ -537,9 +537,9 @@ protected:
 
 	//! Check if controller with particular alpha is better
 	void lineSearchSingleController(
-			size_t threadId,
-			scalar_t alpha,
-			ControlVectorArray& u_ff_update,
+			const size_t threadId,
+			const scalar_t alpha,
+			const ControlVectorArray& u_ff_update,
 			StateVectorArray& x_local,
 			ControlVectorArray& u_local,
 			ct::core::tpl::TimeArray<SCALAR>& t_local,

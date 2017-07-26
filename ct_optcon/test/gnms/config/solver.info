@@ -37,7 +37,7 @@ ilqr
 {
 	integrator Euler
 	discretization Forward_euler
-	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
+	closedLoopShooting 0 					; (1 = closed loop shooting, 0 = open-loop shooting)
     dt 0.001
     dt_sim 0.001
     epsilon 1e-6
@@ -55,7 +55,7 @@ ilqr
     
     line_search
 	{
-		active false;
+		active true;
 		adaptive false ;
 		maxIterations 10 ;
 		alpha_0 1.0 ;

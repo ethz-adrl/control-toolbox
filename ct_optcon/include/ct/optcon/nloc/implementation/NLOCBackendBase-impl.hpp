@@ -569,7 +569,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 	matFile_.put("lx_norm", lx_norm_);
 	matFile_.put("lu_norm", lu_norm_);
 	matFile_.put("cost", getCost());
-	matFile_.put("alpha", alphaBest_);
+	matFile_.put("alphaStep", alphaBest_);
 
 	computeDefectsNorm();
 	matFile_.put("d_norm", d_norm_);
@@ -737,9 +737,9 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSingleController(
-		size_t threadId,
-		scalar_t alpha,
-		ControlVectorArray& u_ff_update,
+		const size_t threadId,
+		const scalar_t alpha,
+		const ControlVectorArray& u_ff_update,
 		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_recorded,
 		ct::core::tpl::TimeArray<SCALAR>& t_local,
