@@ -55,7 +55,7 @@ ilqr
     
     line_search
 	{
-		active true;
+		active false;
 		adaptive false ;
 		maxIterations 10 ;
 		alpha_0 1.0 ;

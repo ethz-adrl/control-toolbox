@@ -569,6 +569,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 	matFile_.put("lx_norm", lx_norm_);
 	matFile_.put("lu_norm", lu_norm_);
 	matFile_.put("cost", getCost());
+	matFile_.put("alpha", alphaBest_);
 
 	computeDefectsNorm();
 	matFile_.put("d_norm", d_norm_);
@@ -596,6 +597,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logInitToMat
 	matFile_.put("u_ff", u_ff_.toImplementation());
 	matFile_.put("d", lqocProblem_->b_.toImplementation());
 	matFile_.put("cost", getCost());
+
+	computeDefectsNorm();
 	matFile_.put("d_norm", d_norm_);
 
 	matFile_.close();
@@ -683,6 +686,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchCo
 			x_prev_ = x_;
 			u_ff_.swap(u_recorded);
 			t_.swap(t_local);
+			alphaBest_ = 1;
 		}
 		else
 		{
@@ -701,14 +705,14 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 		std::cout<<"[LineSearch]: Cost last rollout: "<<lowestCost_<<std::endl;
 #endif //DEBUG_PRINT_LINESEARCH
 
-		scalar_t alphaBest = performLineSearch();
+		alphaBest_ = performLineSearch();
 
 #ifdef DEBUG_PRINT_LINESEARCH
-		std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest<<" . Will use this control."<<std::endl;
+		std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest_<<" . Will use this control."<<std::endl;
 #endif //DEBUG_PRINT_LINESEARCH
 
 #ifdef DEBUG_PRINT
-		if (alphaBest == 0.0)
+		if (alphaBest_ == 0.0)
 		{
 			std::cout<<"WARNING: No better control found. Converged."<<std::endl;
 			return false;

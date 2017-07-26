@@ -2,7 +2,7 @@ clear all
 close all
 
 
-numIter = 1;    % number of iterations to be plotted
+numIter = 6;    % number of iterations to be plotted
 
 jointNr = 1;
 

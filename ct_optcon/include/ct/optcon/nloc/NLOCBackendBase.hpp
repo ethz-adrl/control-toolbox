@@ -129,7 +129,8 @@ public:
 			intermediateCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
 			finalCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
 		    lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>()),
-			firstRollout_(true)
+			firstRollout_(true),
+			alphaBest_(-1)
 	{
 		Eigen::initParallel();
 
@@ -408,14 +409,21 @@ public:
 	//! Computes the quadratic approximation of the cost function along the trajectory, for the specified indices
 	virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
 
+
+	// todo: want to get rid of those in the long run
 	virtual void updateSolutionState() {
 		x_prev_ = x_;
 		x_ = lqocSolver_->getSolutionState();
+		computeStateUpdateNorm(x_prev_, x_);
 	}
 
+
+	// todo: want to get rid of those in the long run
 	virtual void updateSolutionControl() {
 		u_ff_prev_ = u_ff_;
-		u_ff_ = lqocSolver_->getSolutionControl();}
+		u_ff_ = lqocSolver_->getSolutionControl();
+		computeControlUpdateNorm(u_ff_, u_ff_prev_);
+	}
 
 
 	void getStateUpdates() {lx_ = lqocSolver_->getStateUpdates();}
@@ -648,6 +656,7 @@ protected:
 
 
 	bool firstRollout_;
+	scalar_t alphaBest_;
 
 };
 
