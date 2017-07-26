@@ -102,14 +102,13 @@ target_link_libraries(LinspaceTest ${catkin_LIBRARIES})
 catkin_add_gtest(AutoDiffLinearizerTest test/AutoDiffLinearizerTest.cpp)
 target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES})
 
-## Codegen tests cannot run in parallel. Thus we build and run all codegen tests in one
+# Codegen tests cannot run in parallel. Thus we build and run all codegen tests in one
 catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
 target_link_libraries(CodegenTests ${catkin_LIBRARIES} dl)
 
 ## not really a test
 #add_executable(plotTest test/plot/plotTest.cpp)
 #target_link_libraries(plotTest ${catkin_LIBRARIES} ct_core)
-
 
 if(QWT_ENABLED)
 #    add_executable(plotQwtTest test/plot/plotQwtTest.cpp)

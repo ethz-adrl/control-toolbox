@@ -115,7 +115,6 @@ public:
      */
     void load(const std::string& filename, bool verbose = true, const std::string& ns = "dms.solver.snopt")
     {
-    	// to be implemented
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);
 
@@ -214,7 +213,6 @@ public:
      */
     void load(const std::string& filename, bool verbose = true, const std::string& ns = "dms.nlp.ipopt")
     {
-    	// std::cout << "Trying to load IPOPT settings. Not impl yet." << std::endl;
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);// 
         max_iter_ = pt.get<unsigned int>(ns + ".MaxIterations");
@@ -223,7 +221,6 @@ public:
             derivativeTest_ = "first-order";
         if(!checkDerivatives)
             derivativeTest_ = "none";
-        
     }
 
 };
