@@ -290,7 +290,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 
 		// introduce a temporary feedback matrix, and set it to L_ in case of closed-loop shooting
 		core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR> L_sim = core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero();
-		if(settings_.closedLoopShooting)
+		if(settings_.closedLoopShooting /*|| firstRollout_*/) // todo first rollout with controller //fixme make proper?
 			L_sim = L_[i];
 
 		u_local.push_back( u_ff_local[i] + L_sim * (x0-x_prev_[i]));

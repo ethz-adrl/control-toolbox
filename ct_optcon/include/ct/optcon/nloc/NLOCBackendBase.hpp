@@ -128,7 +128,8 @@ public:
 			lowestCost_(std::numeric_limits<SCALAR>::infinity()),
 			intermediateCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
 			finalCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
-		    lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>())
+		    lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>()),
+			firstRollout_(true)
 	{
 		Eigen::initParallel();
 
@@ -325,6 +326,7 @@ public:
 
 	void reset()
 	{
+		firstRollout_ = true;
 		iteration_ = 0;
 		d_norm_ = std::numeric_limits<scalar_t>::infinity();
 		lx_norm_ = std::numeric_limits<scalar_t>::infinity();
@@ -375,7 +377,14 @@ public:
 	bool isConverged();
 
 	//! nominal rollout using default thread and member variables for the results.
-	bool nominalRollout() { return rolloutSystem(settings_.nThreads, u_ff_, x_, u_ff_, t_); }
+	bool nominalRollout() {
+		ControlVectorArray u_recorded;
+		return rolloutSystem(settings_.nThreads, u_ff_, x_, u_recorded, t_);
+		x_prev_ = x_;
+		u_ff_ = u_recorded;
+		u_ff_prev_ = u_recorded;
+		firstRollout_ = false;
+	}
 
 	//! check problem for consistency
 	void checkProblem();
@@ -607,6 +616,9 @@ protected:
 	std::vector<typename OptConProblem_t::CostFunctionPtr_t> costFunctions_;
 	std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints_;
 	std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints_;
+
+
+	bool firstRollout_;
 
 };
 

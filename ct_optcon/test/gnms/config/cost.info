@@ -50,7 +50,7 @@ term1
 ; initial position
 x_0
 {
-	(0,0)   0.5
+	(0,0)   0.1
 }
 
 

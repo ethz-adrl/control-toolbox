@@ -136,11 +136,9 @@ public:
 		return u;
 	}
 
+	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdate() override {return lv_;}
 
-	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> getFeedback() override
-	{
-		return L_;
-	}
+	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> getFeedback() override {return L_;}
 
 
 	//! compute the state and control updates.
@@ -162,7 +160,7 @@ public:
 		for(int k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
 		{
 			//! control update rule
-			this->lu_[k] = lv_[k] + L_[k] * this->lx_[k];
+			this->lu_[k] = lv_[k] + L_[k] * this->lx_[k]; // todo attention here
 
 			//! state update rule
 			this->lx_[k+1] = (p.A_[k] + p.B_[k] * L_[k]) * this->lx_[k]  + p.B_[k] * lv_[k] + p.b_[k];

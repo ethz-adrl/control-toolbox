@@ -315,7 +315,7 @@ void multiCore()
 		bool foundBetter = true;
 		size_t numIterations = 0;
 
-		while (numIterations<2)
+		while (numIterations<3)
 		{
 			foundBetter = gnms.runIteration();
 
@@ -483,7 +483,7 @@ TEST(GNMSTest, PolicyComparison)
 int main(int argc, char **argv)
 {
 	feenableexcept(FE_INVALID | FE_OVERFLOW);
-//	ct::optcon::example::singleCore();
+	ct::optcon::example::singleCore();
 	ct::optcon::example::multiCore();
 
 	return 1;

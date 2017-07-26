@@ -82,7 +82,6 @@ public:
 	virtual void computeStateAndControlUpdates() = 0;
 
 	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() = 0;
-
 	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() = 0;
 
 	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> getFeedback() { throw std::runtime_error("this solver does not provide feedback gains"); }
@@ -94,6 +93,8 @@ public:
 	const core::StateVectorArray<STATE_DIM, SCALAR>& getStateUpdates() {return lx_;}
 
 	const core::ControlVectorArray<CONTROL_DIM, SCALAR>& getControlUpdates() {return lu_;}
+
+	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdate() {throw std::runtime_error("this solver does not provide a pure feedforward update"); }
 
 protected:
 

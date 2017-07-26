@@ -273,7 +273,6 @@ public:
 
 
 
-
 private:
 
 	void setProblemImpl(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override

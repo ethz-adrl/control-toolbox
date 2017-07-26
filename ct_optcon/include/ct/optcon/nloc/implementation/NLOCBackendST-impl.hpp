@@ -62,7 +62,7 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolution
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedforward()
 {
-	this->u_ff_prev_ = this->u_ff_; // store previous feedforward for line-search
+	this->u_ff_prev_ = this->u_ff_;
 
 	this->u_ff_ = this->lqocSolver_->getSolutionControl();
 
@@ -120,6 +120,8 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		for (int k=this->K_-1; k>=0; k--)
 		{
 			u_ff_search[k] = alpha * this->u_ff_[k] + (1-alpha) * this->u_ff_prev_[k];
+			if(k == 1)
+				std::cout << u_ff_search[k].transpose() << std::endl;
 		}
 
 
