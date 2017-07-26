@@ -20,7 +20,7 @@ option(MATLAB "Compile with matlab support" ON)
 option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" ON)
 option(DEBUG_PRINT "Print debug messages" OFF)
 
-option(HPIPM "Compile with HPIPM support" OFF)
+option(HPIPM "Compile with HPIPM support" ON)
 
 
 if(DEBUG_PRINT)
@@ -54,7 +54,7 @@ if(HPIPM)
     message(STATUS "Switching HPIPM ON")
     if(DEFINED ENV{BLASFEO_DIR})
         if(DEFINED ENV{HPIPM_DIR})
-            message(STATUS "...Found HPIPM and BLASFEO environment variables")
+            message(WARNING "...Found HPIPM and BLASFEO environment variables")
             
              set(BLASFEO_DIR $ENV{BLASFEO_DIR})
              set(HPIPM_DIR $ENV{HPIPM_DIR})
@@ -63,7 +63,10 @@ if(HPIPM)
             include_directories(${HPIPM_DIR}/include)
             link_directories(${BLASFEO_DIR}/lib)
             link_directories(${HPIPM_DIR}/lib)
-   
+            
+            find_library(BLASFEO_LIBRARY blasfeo  ${BLASFEO_DIR}/lib REQUIRED)
+            find_library(HPIPM_LIBRARY hpipm  ${HPIPM_DIR}/lib REQUIRED)
+
             set(HPIPM_LIBS hpipm blasfeo)
     
             add_definitions (-DHPIPM)
@@ -77,7 +80,7 @@ if(HPIPM)
 endif(HPIPM)
 
 
-## dummy NLP libs
+## dummy libs
 set(NLP_LIBS "")
 
 ## include IPOPT
@@ -148,14 +151,18 @@ catkin_package(
    INCLUDE_DIRS
         include
         ${EIGEN_INCLUDE_DIRS}
-   DEPENDS 
+        ${HPIPM_DIR}/include
+        ${BLASFEO_DIR}/include
+   DEPENDS
         eigen 
         lapack 
         dl
-   LIBRARIES 
+   LIBRARIES
         lapack 
-        dl 
+        dl
         ${NLP_LIBS}
+        ${HPIPM_LIBRARY}
+        ${BLASFEO_LIBRARY}
    CATKIN_DEPENDS
         ct_core
 )
