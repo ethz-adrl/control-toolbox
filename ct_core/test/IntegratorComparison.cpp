@@ -109,8 +109,8 @@ TEST(IntegrationTest, derivativeTest)
         t.stop();
         std::cout << "CT RK4 took: " << t.getElapsedTime() << " s for integration" << std::endl;  
 
-        ASSERT_LT((stateRK4CT-stateRK4OdeInt).array().abs().maxCoeff(), 1e-6);
-        ASSERT_LT((stateEulerCT-stateEulerOdeInt).array().abs().maxCoeff(), 1e-6);
+        ASSERT_LT((stateRK4CT-stateRK4OdeInt).array().abs().maxCoeff(), 1e-12);
+        ASSERT_LT((stateEulerCT-stateEulerOdeInt).array().abs().maxCoeff(), 1e-12);
     }
 
 }

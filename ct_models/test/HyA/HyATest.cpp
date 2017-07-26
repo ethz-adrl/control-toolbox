@@ -196,8 +196,8 @@ TEST(IntegratorTest, IntegratorTestHya)
 
 	for(size_t i = 0; i < nTests; ++i)
 	{
-        ASSERT_LT((xRk4CT[i]-xRk4Odeint[i]).array().abs().maxCoeff(), 1e-6);
-        ASSERT_LT((xEulerCt[i]-xEulerOdeint[i]).array().abs().maxCoeff(), 1e-6);
+        ASSERT_LT((xRk4CT[i]-xRk4Odeint[i]).array().abs().maxCoeff(), 1e-12);
+        ASSERT_LT((xEulerCt[i]-xEulerOdeint[i]).array().abs().maxCoeff(), 1e-12);
 	}
 
 
