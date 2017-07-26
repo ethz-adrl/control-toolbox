@@ -33,6 +33,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <gtest/gtest.h>
 
 #include <ct/core/core.h>
+#include <ct/core/integration/IntegratorCT.h>
 #include <ct/rbd/rbd.h>
 
 #include "ct/models/HyA/HyA.h"
@@ -116,6 +117,91 @@ TEST(CodegenLinearizerTest, NumDiffComparison)
 		ASSERT_LT((A_rbd-A_gen).array().abs().maxCoeff(),1e-5);
 		ASSERT_LT((B_rbd-B_gen).array().abs().maxCoeff(),1e-4);
 	}
+}
+
+TEST(IntegratorTest, IntegratorTestHya)
+{
+	typedef FixBaseFDSystem<HyA::Dynamics> HyASystem;
+
+	const size_t STATE_DIM = HyASystem::STATE_DIM;
+	const size_t CONTROL_DIM = HyASystem::CONTROL_DIM;
+
+	std::shared_ptr<HyASystem > hyaSystem(new HyASystem);
+
+
+    std::shared_ptr<core::IntegratorBase<STATE_DIM> > integratorEulerOdeint;
+    integratorEulerOdeint = std::shared_ptr<core::IntegratorEuler<STATE_DIM> >(new core::IntegratorEuler<STATE_DIM>(hyaSystem));
+    std::shared_ptr<core::IntegratorBase<STATE_DIM> > integratorRk4Odeint;
+    integratorRk4Odeint = std::shared_ptr<core::IntegratorRK4<STATE_DIM> > (new core::IntegratorRK4<STATE_DIM>(hyaSystem));
+
+    core::IntegratorCT<STATE_DIM> integratorEulerCT(hyaSystem, core::IntegrationTypeCT::EULER);
+    core::IntegratorCT<STATE_DIM> integratorRK4CT(hyaSystem, core::IntegrationTypeCT::RK4);	
+
+
+    double dt = 0.001;
+    double startTime = 0.0;
+    size_t numSteps = 10;
+
+	size_t nTests = 10000;
+	std::vector<core::StateVector<STATE_DIM>,  Eigen::aligned_allocator<core::StateVector<STATE_DIM>>> xEulerOdeint(nTests), xEulerCt(nTests), xRk4Odeint(nTests), xRk4CT(nTests);
+
+	for(size_t i = 0; i < nTests; ++i)
+	{
+		xEulerOdeint[i].setRandom(); xEulerCt[i] = xEulerOdeint[i];
+		xRk4Odeint[i].setRandom(); xRk4CT[i] = xRk4Odeint[i];
+	}
+
+	auto start = std::chrono::high_resolution_clock::now();
+	for (size_t i=0; i<nTests; i++)
+	{
+		integratorEulerOdeint->integrate_n_steps(xEulerOdeint[i], startTime, numSteps, dt);
+	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+	auto diff = end - start;
+	double msTotal = std::chrono::duration <double, std::micro> (diff).count()/1000.0;
+	std::cout << "integratorEulerOdeint: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+
+
+	start = std::chrono::high_resolution_clock::now();
+	for (size_t i=0; i<nTests; i++)
+	{
+		integratorEulerCT.integrate(xEulerCt[i], startTime, numSteps, dt);
+	}
+	end = std::chrono::high_resolution_clock::now();
+	diff = end - start;
+	msTotal = std::chrono::duration <double, std::micro> (diff).count()/1000.0;
+	std::cout << "integratorEulerCT: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+
+	start = std::chrono::high_resolution_clock::now();
+	for (size_t i=0; i<nTests; i++)
+	{
+		integratorRk4Odeint->integrate_n_steps(xRk4Odeint[i], startTime, numSteps, dt);
+	}
+	end = std::chrono::high_resolution_clock::now();
+	diff = end - start;
+	msTotal = std::chrono::duration <double, std::micro> (diff).count()/1000.0;
+	std::cout << "integratorRk4Odeint: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+
+
+	start = std::chrono::high_resolution_clock::now();
+	for (size_t i=0; i<nTests; i++)
+	{
+		integratorRK4CT.integrate(xRk4CT[i], startTime, numSteps, dt);
+	}
+	end = std::chrono::high_resolution_clock::now();
+	diff = end - start;
+	msTotal = std::chrono::duration <double, std::micro> (diff).count()/1000.0;
+	std::cout << "integratorRK4CT: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+
+
+	for(size_t i = 0; i < nTests; ++i)
+	{
+        ASSERT_LT((xRk4CT[i]-xRk4Odeint[i]).array().abs().maxCoeff(), 1e-6);
+        ASSERT_LT((xEulerCt[i]-xEulerOdeint[i]).array().abs().maxCoeff(), 1e-6);
+	}
+
+
 }
 
 

@@ -145,6 +145,7 @@ public:
 		tStart_ = timeGrid_->getShotStartTime(shotNr_);
 		double t_shot_end = timeGrid_->getShotEndTime(shotNr_);
 
+		// +0.5 needed to avoid rounding errors from double to size_t
 		nSteps_ = double(t_shot_end - tStart_) / double(settings_.dt_sim_) + 0.5;
 		// std::cout << "shotNr_: " << shotNr_ << "\t nSteps: " << nSteps_ << std::endl;
 
