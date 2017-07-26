@@ -50,34 +50,25 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 	}
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionState()
-{
-	this->x_ = this->lqocSolver_->getSolutionState();
-
-	//! get state update norm. may be overwritten later, depending on the algorithm
-	this->lx_norm_ = this->lqocSolver_->getStateUpdateNorm();
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedforward()
-{
-	this->u_ff_prev_ = this->u_ff_;
-
-	this->u_ff_ = this->lqocSolver_->getSolutionControl();
-
-	//! get control update norm. may be overwritten later, depending on the algorithm
-	this->lu_norm_ = this->lqocSolver_->getControlUpdateNorm();
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedback()
-{
-	if(this->settings_.closedLoopShooting)
-		this->L_ = this->lqocSolver_->getFeedback();
-	else
-		this->L_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
-}
+//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+//void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionState()
+//{
+//	this->x_ = this->lqocSolver_->getSolutionState();
+//
+//	//! get state update norm. may be overwritten later, depending on the algorithm
+//	this->lx_norm_ = this->lqocSolver_->getStateUpdateNorm();
+//}
+//
+//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+//void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedforward()
+//{
+//	this->u_ff_prev_ = this->u_ff_;
+//
+//	this->u_ff_ = this->lqocSolver_->getSolutionControl();
+//
+//	//! get control update norm. may be overwritten later, depending on the algorithm
+//	this->lu_norm_ = this->lqocSolver_->getControlUpdateNorm();
+//}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -117,20 +108,22 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_ff_search(this->K_);
 
-		for (int k=this->K_-1; k>=0; k--)
+		for (int i=this->K_-1; i>=0; i--)
 		{
-			u_ff_search[k] = alpha * this->u_ff_[k] + (1-alpha) * this->u_ff_prev_[k];
-			if(k == 1)
-				std::cout << u_ff_search[k].transpose() << std::endl;
+			if(this->settings_.closedLoopShooting){
+				u_ff_search[i] = this->u_ff_[i] + alpha * this->lv_[i]; 	// add lv_ if we are doing closed-loop shooting
+			}
+			else
+				u_ff_search[i] = this->u_ff_[i] + alpha * this->lu_[i]; 	// add lu if we are doing open-loop shooting
 		}
 
 
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_search(this->K_+1);
-		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_search(this->K_);
+		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_recorded(this->K_);
 		ct::core::tpl::TimeArray<SCALAR> t_search(this->K_+1);
 		x_search[0] = this->x_[0];
 
-		bool dynamicsGood = this->rolloutSystem(this->settings_.nThreads, u_ff_search, x_search, u_search, t_search);
+		bool dynamicsGood = this->rolloutSystem(this->settings_.nThreads, u_ff_search, x_search, u_recorded, t_search);
 
 		typename Base::scalar_t cost = std::numeric_limits<typename Base::scalar_t>::max();
 		typename Base::scalar_t intermediateCost = std::numeric_limits<typename Base::scalar_t>::max();
@@ -138,7 +131,7 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 
 		if (dynamicsGood)
 		{
-			this->computeCostsOfTrajectory(this->settings_.nThreads, x_search, u_search, intermediateCost, finalCost);
+			this->computeCostsOfTrajectory(this->settings_.nThreads, x_search, u_recorded, intermediateCost, finalCost);
 
 			cost = intermediateCost + finalCost;
 		}
@@ -156,7 +149,7 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 			this->finalCostBest_ = finalCost;
 
 #if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
-			this->computeControlUpdateNorm(u_search, this->u_ff_prev_);
+			this->computeControlUpdateNorm(u_recorded, this->u_ff_prev_);
 			this->computeStateUpdateNorm(x_search, this->x_prev_);
 #endif
 
@@ -164,7 +157,7 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 			this->x_prev_ = x_search;
 			this->lowestCost_ = cost;
 			this->x_.swap(x_search);
-			this->u_ff_.swap(u_search);
+			this->u_ff_.swap(u_recorded);
 			this->t_.swap(t_search);
 			break;
 		}

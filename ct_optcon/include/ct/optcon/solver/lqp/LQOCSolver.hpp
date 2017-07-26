@@ -94,7 +94,7 @@ public:
 
 	const core::ControlVectorArray<CONTROL_DIM, SCALAR>& getControlUpdates() {return lu_;}
 
-	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdate() {throw std::runtime_error("this solver does not provide a pure feedforward update"); }
+	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdates() {throw std::runtime_error("this solver does not provide a pure feedforward update"); }
 
 protected:
 

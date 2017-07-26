@@ -1,4 +1,4 @@
-function [] = plotInitGuesses( fileName )
+function [] = plotInitGuesses( fileName, color, markerType, jointNr)
 
 load(fileName);
 
@@ -6,13 +6,13 @@ t = linspace(0, (K+2)*dt, K+1);
 
 figure(1)
 subplot(3,3,1)
-plot(t, x(1,:), 'k', 'MarkerSize',1); hold on;
+plot(t, x(jointNr,:), color, 'MarkerSize',1); hold on;
 xlabel('t [sec]')
 ylabel('x [m]')
 title('position');
 
 subplot(3,3,2)
-plot(t(1:end-1), u_ff(1,:), 'k', 'MarkerSize',1); hold on;
+plot(t(1:end-1), u_ff(jointNr,:), color, 'MarkerSize',1); hold on;
 xlabel('t [sec]')
 title('control');
 
@@ -36,7 +36,7 @@ ylabel('d [m]')
 % ylabel('F [N]')
 
 subplot(3,3,6)
-plot(-1, cost, 'o'); hold on;
+plot(-1, cost,  strcat(color,markerType)); hold on;
 title('cost')
 xlabel('iteration')
 ylabel('cost')

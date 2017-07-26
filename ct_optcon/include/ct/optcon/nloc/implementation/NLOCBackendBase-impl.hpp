@@ -83,9 +83,13 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
 
 	K_ = K;
 
+	lx_.resize(K_+1);
 	x_.resize(K_+1);
 	x_prev_.resize(K_+1);
 	xShot_.resize(K_+1);
+
+	lv_.resize(K_);
+	lu_.resize(K_);
 	u_ff_.resize(K_);
 	u_ff_prev_.resize(K_);
 	L_.resize(K);
@@ -290,7 +294,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 
 		// introduce a temporary feedback matrix, and set it to L_ in case of closed-loop shooting
 		core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR> L_sim = core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero();
-		if(settings_.closedLoopShooting /*|| firstRollout_*/) // todo first rollout with controller //fixme make proper?
+		if(settings_.closedLoopShooting || firstRollout_) // todo first rollout with controller //fixme make proper?
 			L_sim = L_[i];
 
 		u_local.push_back( u_ff_local[i] + L_sim * (x0-x_prev_[i]));
@@ -632,7 +636,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchController()
 {
 	// if first iteration, we have to find cost of initial rollout
-	if (iteration_ == 0)
+	if (iteration_ == 0) // todo that should be covered already!
 	{
 		intermediateCostBest_ = 0.0;
 
@@ -648,10 +652,21 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchCo
 
 	if (!settings_.lineSearchSettings.active)
 	{
+		ControlVectorArray uff_local(K_);
 		ControlVectorArray u_recorded(K_);
 		TimeArray t_local(K_+1);
 
-		bool dynamicsGood = rolloutSystem(settings_.nThreads, u_ff_, x_, u_recorded, t_local);
+
+		for(size_t i = 0; i<K_; i++)
+		{
+			if(settings_.closedLoopShooting){
+				uff_local[i] = u_ff_[i] + lv_[i]; 	// add lv_ if we are doing closed-loop shooting
+			}
+			else
+				uff_local[i] = u_ff_[i] + lu_[i]; 	// add lu if we are doing open-loop shooting
+		}
+
+		bool dynamicsGood = rolloutSystem(settings_.nThreads, uff_local, x_, u_recorded, t_local);
 
 		if (dynamicsGood)
 		{
@@ -661,7 +676,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchCo
 			lowestCost_ = intermediateCostBest_ + finalCostBest_;
 
 #if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
-			computeControlUpdateNorm(u_recorded, u_ff_prev_);
+			computeControlUpdateNorm(u_recorded, u_ff_);
 			computeStateUpdateNorm(x_prev_, x_);
 #endif
 
@@ -678,6 +693,9 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 		}
 	} else
 	{
+		//! backup controller that led to current trajectory
+		u_ff_prev_ = u_ff_;
+
 #ifdef DEBUG_PRINT_LINESEARCH
 		std::cout<<"[LineSearch]: Starting line search."<<std::endl;
 		std::cout<<"[LineSearch]: Cost last rollout: "<<lowestCost_<<std::endl;
@@ -717,7 +735,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSingleController(
 		size_t threadId,
 		scalar_t alpha,
-		ControlVectorArray& u_ff_fullstep,
+		ControlVectorArray& u_ff_update,
 		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_recorded,
 		ct::core::tpl::TimeArray<SCALAR>& t_local,
@@ -735,7 +753,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 
 	for (int k=K_-1; k>=0; k--)
 	{
-		u_ff_alpha[k] = alpha * u_ff_fullstep[k] + (1-alpha) * u_ff_prev_[k];
+		u_ff_alpha[k] = alpha * u_ff_update[k] + u_ff_prev_[k];
 	}
 
 	bool dynamicsGood = rolloutSystem(threadId, u_ff_alpha, x_local, u_recorded, t_local, terminationFlag);

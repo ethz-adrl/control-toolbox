@@ -408,11 +408,35 @@ public:
 	//! Computes the quadratic approximation of the cost function along the trajectory, for the specified indices
 	virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
 
-	virtual void updateSolutionState() = 0;
+	virtual void updateSolutionState() {
+		x_prev_ = x_;
+		x_ = lqocSolver_->getSolutionState();
+	}
 
-	virtual void updateSolutionFeedforward() = 0;
+	virtual void updateSolutionControl() {
+		u_ff_prev_ = u_ff_;
+		u_ff_ = lqocSolver_->getSolutionControl();}
 
-	virtual void updateSolutionFeedback() = 0;
+
+	void getStateUpdates() {lx_ = lqocSolver_->getStateUpdates();}
+	void getControlUpdates() {lu_ = lqocSolver_->getControlUpdates();}
+
+	void getFeedforwardUpdates()
+	{
+		if(settings_.closedLoopShooting)
+			lv_ = lqocSolver_->getFeedforwardUpdates();
+		else
+			lv_.setConstant(core::ControlVector<CONTROL_DIM, SCALAR>::Zero()); // todo can eventually go away to save time
+	}
+
+	void getFeedback()
+	{
+		if(settings_.closedLoopShooting)
+			L_ = lqocSolver_->getFeedback();
+		else
+			L_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero()); // todo can eventually go away to save time
+	}
+
 
 	//! integrates the specified shots and computes the corresponding defects
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;
@@ -507,7 +531,7 @@ protected:
 	void lineSearchSingleController(
 			size_t threadId,
 			scalar_t alpha,
-			ControlVectorArray& u_ff_local,
+			ControlVectorArray& u_ff_update,
 			StateVectorArray& x_local,
 			ControlVectorArray& u_local,
 			ct::core::tpl::TimeArray<SCALAR>& t_local,
@@ -573,11 +597,16 @@ protected:
 
 	int K_; //! the number of stages in the OptConProblem
 
+	StateVectorArray lx_;
 	StateVectorArray x_;
 	StateVectorArray xShot_;
 	StateVectorArray x_prev_;
+
+	ControlVectorArray lv_;
+	ControlVectorArray lu_;
 	ControlVectorArray u_ff_;
 	ControlVectorArray u_ff_prev_;
+
 	FeedbackArray L_;
 
 	SCALAR d_norm_; 	//! sum of the norms of all defects

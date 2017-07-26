@@ -560,39 +560,27 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWo
 	}
 }
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionState()
-{
-	// todo: this is the same as in ST mode. sum them together
-
-	this->x_ = this->lqocSolver_->getSolutionState();
-
-	//! get state update norm. may be overwritten later, depending on the algorithm
-	this->lx_norm_ = this->lqocSolver_->getStateUpdateNorm();
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedforward()
-{
-	this->u_ff_prev_ = this->u_ff_; // store previous feedforward for line-search
-
-	this->u_ff_ = this->lqocSolver_->getSolutionControl();
-	u_ff_fullstep_ = this->u_ff_;
-
-	//! get control update norm. may be overwritten later, depending on the algorithm
-	this->lu_norm_ = this->lqocSolver_->getControlUpdateNorm();}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedback()
-{
-	// todo: this is the same as in ST mode. sum them together
-
-	if(this->settings_.closedLoopShooting)
-		this->L_ = this->lqocSolver_->getFeedback();
-	else
-		this->L_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
-}
+//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+//void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionState()
+//{
+//	// todo: this is the same as in ST mode. sum them together
+//
+//	this->x_ = this->lqocSolver_->getSolutionState();
+//
+//	//! get state update norm. may be overwritten later, depending on the algorithm
+//	this->lx_norm_ = this->lqocSolver_->getStateUpdateNorm();
+//}
+//
+//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+//void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedforward()
+//{
+//	this->u_ff_prev_ = this->u_ff_; // store previous feedforward for line-search
+//
+//	this->u_ff_ = this->lqocSolver_->getSolutionControl();
+//	u_ff_fullstep_ = this->u_ff_;
+//
+//	//! get control update norm. may be overwritten later, depending on the algorithm
+//	this->lu_norm_ = this->lqocSolver_->getControlUpdateNorm();}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -668,7 +656,11 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		SCALAR intermediateCost;
 		SCALAR finalCost;
 
-		this->lineSearchSingleController(threadId, alpha, u_ff_fullstep_, x_local, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
+		if(this->settings_.closedLoopShooting)
+			this->lineSearchSingleController(threadId, alpha, this->lv_, x_local, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
+		else
+			this->lineSearchSingleController(threadId, alpha, this->lu_, x_local, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
+
 
 		SCALAR cost = intermediateCost + finalCost;
 

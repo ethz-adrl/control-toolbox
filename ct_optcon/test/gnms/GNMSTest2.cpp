@@ -32,7 +32,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #define DEBUG_PRINT
-//#define DEBUG_PRINT_LINESEARCH
+#define DEBUG_PRINT_LINESEARCH
 
 #include <ct/optcon/optcon.h>
 
@@ -221,7 +221,7 @@ void singleCore()
 	bool foundBetter = true;
 	size_t numIterations = 0;
 
-	while (numIterations<15)
+	while (numIterations<10)
 	{
 		foundBetter = gnms.runIteration();
 
@@ -238,7 +238,7 @@ void singleCore()
 	foundBetter = true;
 
 	numIterations = 0;
-	while (numIterations<15)
+	while (numIterations<10)
 	{
 		foundBetter = ilqr.runIteration();
 

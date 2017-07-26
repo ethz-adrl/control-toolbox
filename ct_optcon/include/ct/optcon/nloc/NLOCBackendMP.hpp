@@ -85,11 +85,11 @@ protected:
 
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) override;
 
-	virtual void updateSolutionState() override;
-
-	virtual void updateSolutionFeedforward() override;
-
-	virtual void updateSolutionFeedback() override;
+//	virtual void updateSolutionState() override;
+//
+//	virtual void updateSolutionFeedforward() override;
+//
+//	virtual void updateSolutionFeedback() override;
 
 	SCALAR performLineSearch() override;
 
@@ -205,7 +205,7 @@ private:
 	size_t KMax_;
 	size_t KMin_;
 
-	typename Base::ControlVectorArray u_ff_fullstep_;
+//	typename Base::ControlVectorArray u_ff_fullstep_;
 
 };
 

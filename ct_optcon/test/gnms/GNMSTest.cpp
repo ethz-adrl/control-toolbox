@@ -163,6 +163,8 @@ void singleCore()
 		gnms_settings.loggingPrefix = "GNMS";
 
 		NLOptConSettings ilqg_settings = gnms_settings;
+		ilqg_settings.closedLoopShooting = true;
+		ilqg_settings.lineSearchSettings.active = false;
 		ilqg_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		ilqg_settings.loggingPrefix = "ILQR";
 
@@ -176,8 +178,10 @@ void singleCore()
 		size_t nSteps = std::round(tf / gnms_settings.dt);
 
 		// provide initial guess
-		ControlVectorArray<control_dim> u0(nSteps, ControlVector<control_dim>::Zero());
-		StateVectorArray<state_dim>  x0(nSteps+1, StateVector<state_dim>::Zero());
+		StateVector<state_dim> initState; initState.setRandom(); initState(1) = 0.0;
+		StateVectorArray<state_dim>  x0(nSteps+1, initState);
+		ControlVector<control_dim> uff; uff << kStiffness * initState(0);
+		ControlVectorArray<control_dim> u0(nSteps, uff);
 		for (size_t i=0; i<nSteps+1; i++)
 		{
 //			x0 [i] = x_final*double(i)/double(nSteps);
@@ -484,7 +488,7 @@ int main(int argc, char **argv)
 {
 	feenableexcept(FE_INVALID | FE_OVERFLOW);
 	ct::optcon::example::singleCore();
-	ct::optcon::example::multiCore();
+//	ct::optcon::example::multiCore();
 
 	return 1;
 }

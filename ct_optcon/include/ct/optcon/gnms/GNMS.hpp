@@ -205,9 +205,10 @@ public:
 #endif
 
 		// update solutions
-		this->backend_->updateSolutionState();
-		this->backend_->updateSolutionFeedforward();
-		this->backend_->updateSolutionFeedback();
+		this->backend_->updateSolutionState();		// note: gnms currently not operational
+		this->backend_->updateSolutionControl();
+//		this->backend_->updateSolutionFeedforward();
+//		this->backend_->updateSolutionFeedback();
 
 		start = std::chrono::steady_clock::now();
 		this->backend_->rolloutShots(0, K-1);

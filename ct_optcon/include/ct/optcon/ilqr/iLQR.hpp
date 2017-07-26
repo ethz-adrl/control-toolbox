@@ -164,8 +164,9 @@ public:
 #endif
 
 		// update solutions
-		this->backend_->updateSolutionFeedforward();
-		this->backend_->updateSolutionFeedback();
+		this->backend_->getFeedforwardUpdates();// todo only when closed loop shooting
+		this->backend_->getFeedback(); 			// todo only when closed loop shooting
+		this->backend_->getControlUpdates(); 	// todo only when open loop shooting
 
 		// line-search
 #ifdef DEBUG_PRINT

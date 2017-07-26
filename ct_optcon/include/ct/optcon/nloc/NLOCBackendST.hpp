@@ -69,11 +69,11 @@ protected:
 
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) override;
 
-	virtual void updateSolutionState() override;
-
-	virtual void updateSolutionFeedforward() override;
-
-	virtual void updateSolutionFeedback() override;
+//	virtual void updateSolutionState() override;
+//
+//	virtual void updateSolutionFeedforward() override;
+//
+//	virtual void updateSolutionFeedback() override;
 
 	SCALAR performLineSearch() override;
 };
