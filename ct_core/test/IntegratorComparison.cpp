@@ -47,15 +47,6 @@ double randomNumber(double min, double max)
 TEST(IntegrationTest, derivativeTest)
 {
     const size_t state_dim = TestNonlinearSystem::STATE_DIM;
-    const size_t control_dim = TestNonlinearSystem::CONTROL_DIM;
-
-    // typedefs for the auto-differentiable system
-    typedef CppAD::AD<double> AD_Scalar;
-    typedef tpl::TestNonlinearSystem<AD_Scalar> TestNonlinearSystemAD;
-
-    // handy typedefs for the Jacobian
-    typedef Eigen::Matrix<double, state_dim, state_dim> A_type;
-    typedef Eigen::Matrix<double, state_dim, control_dim> B_type;
 
     // create two nonlinear systems, one regular one and one auto-differentiable
     // 
@@ -75,7 +66,6 @@ TEST(IntegrationTest, derivativeTest)
         }
         oscillator = shared_ptr<SecondOrderSystem >(new SecondOrderSystem(w_n, zeta));
         oscillator->checkParameters();
-        // shared_ptr<TestNonlinearSystemAD> oscillatorAD(new tpl::TestNonlinearSystem<AD_Scalar>(AD_Scalar(w_n)));
 
         std::shared_ptr<IntegratorBase<state_dim> > integratorEulerOdeint;
         integratorEulerOdeint = std::shared_ptr<IntegratorEuler<state_dim> >(new IntegratorEuler<state_dim>(oscillator));
@@ -118,10 +108,6 @@ TEST(IntegrationTest, derivativeTest)
         integratorRK4CT.integrate(stateRK4CT, startTime, numSteps, dt);
         t.stop();
         std::cout << "CT RK4 took: " << t.getElapsedTime() << " s for integration" << std::endl;  
-
-        std::cout << "stateRK4CT: " << stateRK4CT.transpose() << std::endl;
-        std::cout << "stateEulerCT: " << stateEulerCT.transpose() << std::endl;
-
 
         ASSERT_LT((stateRK4CT-stateRK4OdeInt).array().abs().maxCoeff(), 1e-6);
         ASSERT_LT((stateEulerCT-stateEulerOdeInt).array().abs().maxCoeff(), 1e-6);

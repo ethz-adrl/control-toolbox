@@ -36,10 +36,9 @@ public:
 		settings_.N_ = 25;
 		settings_.T_ = 5.0;
 		settings_.nThreads_ = 2;
-		settings_.terminalStateConstraint_ = 1;
 		settings_.splineType_ = DmsSettings::PIECEWISE_LINEAR;
 		settings_.costEvaluationType_ = DmsSettings::FULL;
-		settings_.objectiveType_ = DmsSettings::OPTIMIZE_GRID;
+		settings_.objectiveType_ = DmsSettings::KEEP_TIME_AND_GRID;
 		settings_.h_min_ = 0.1; // minimum admissible distance between two nodes in [sec]
 		settings_.integrationType_ = DmsSettings::RK4;
 		settings_.dt_sim_ = 0.01;
@@ -68,7 +67,7 @@ public:
 
 	void generateMatFilesIPOPT()
 	{
-		settings_.nlpSettings_.solverType_ = NlpSolverSettings::IPOPT;
+		settings_.solverSettings_.solverType_ = NlpSolverSettings::IPOPT;
 
 		pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>
 				(new ct::optcon::ConstraintContainerAnalytical<2, 1>());
@@ -112,7 +111,7 @@ public:
 
 	void generateMatFilesSNOPT()
 	{
-		settings_.nlpSettings_.solverType_ = NlpSolverSettings::SNOPT;
+		settings_.solverSettings_.solverType_ = NlpSolverSettings::SNOPT;
 
 		pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>
 				(new ct::optcon::ConstraintContainerAnalytical<2, 1>());

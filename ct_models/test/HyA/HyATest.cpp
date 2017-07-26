@@ -33,7 +33,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <gtest/gtest.h>
 
 #include <ct/core/core.h>
-#include <ct/core/integration/IntegratorCT.h>
 #include <ct/rbd/rbd.h>
 
 #include "ct/models/HyA/HyA.h"

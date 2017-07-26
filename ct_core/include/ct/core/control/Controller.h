@@ -80,9 +80,13 @@ public:
 			ControlVector<CONTROL_DIM, SCALAR>& controlAction) = 0;
 
     /**
-     * @brief      Returns the the derivative of the control with respect to the initial control input u0
+     * @brief      Returns the the derivative of the control with respect to the
+     *             initial control input u0
      *
-     * @return     The derivative u 0.
+     * @param[in]  state  The state at which the method will be evaluated
+     * @param[in]  time   The time at which the method will be evaluated
+     *
+     * @return     The derivatives with respect to u0.
      */
     virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR time)
     {
@@ -90,9 +94,13 @@ public:
     }
 
     /**
-     * @brief      Returns the derivative of the control with respect to the final control input uf
+     * @brief      Returns the the derivative of the control with respect to the
+     *             final control input uF
      *
-     * @return     The derivative uf.
+     * @param[in]  state  The state at which the method will be evaluated
+     * @param[in]  time   The time at which the method will be evaluated
+     *
+     * @return     The derivatives with respect to uF.
      */
     virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeUf(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR time)
     {
