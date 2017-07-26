@@ -30,30 +30,43 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/core/systems/ControlledSystem.h>
 #include <ct/core/systems/linear/LinearSystem.h>
-#include <ct/core/integration/IntegratorCT.h>
+#include <ct/core/integration/internal/SteppersCT.h>
 
 namespace ct {
-namespace core {
+namespace optcon {
 
 
+/**
+ * @brief      This class can integrate a controlled system and a costfunction.
+ *             Furthermore, it provides first order derivatives with respect to
+ *             initial state and control
+ *
+ * @tparam     STATE_DIM    The state dimension
+ * @tparam     CONTROL_DIM  The control dimension
+ * @tparam     SCALAR       The scalar type
+ */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class SensitivityIntegratorCT
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    typedef StateVector<STATE_DIM, SCALAR> state_vector;
-    typedef ControlVector<CONTROL_DIM, SCALAR> control_vector;
+    typedef ct::core::StateVector<STATE_DIM, SCALAR> state_vector;
+    typedef ct::core::ControlVector<CONTROL_DIM, SCALAR> control_vector;
     typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix;
     typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix;
     typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix;
-    // typedef IntegratorCT<STATE_DIM, SCALAR> BASE;
 
 
+    /**
+     * @brief      Constructor
+     *
+     * @param[in]  system       The controlled system
+     * @param[in]  stepperType  The integration stepper type
+     */
     SensitivityIntegratorCT(
-        const std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> >& system,
-        const IntegrationTypeCT stepperType = IntegrationTypeCT::EULER)
+        const std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> >& system,
+        const ct::core::IntegrationTypeCT stepperType = ct::core::IntegrationTypeCT::EULER)
     :
-    // BASE(system),
     cacheData_(false),
     cacheSensitivities_(false)
     {
@@ -61,43 +74,51 @@ public:
         initializeDerived(stepperType);
     }
 
-    virtual ~SensitivityIntegratorCT(){}
+    /**
+     * @brief      Destroys the object.
+     */
+    ~SensitivityIntegratorCT(){}
 
-    void initializeDerived(const IntegrationTypeCT stepperType)
+    /**
+     * @brief      Initializes the steppers
+     *
+     * @param[in]  stepperType  The desired integration stepper type
+     */
+    void initializeDerived(const ct::core::IntegrationTypeCT stepperType)
     {
         switch(stepperType)
         {
-            case EULER:
+            case ct::core::IntegrationTypeCT::EULER:
             {
-                stepperState_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, state_vector>>(
-                    new internal::StepperEulerCT<SCALAR, state_vector>());
-                stepperDX0_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, state_matrix>>(
-                    new internal::StepperEulerCT<SCALAR, state_matrix>());
-                stepperDU0_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, state_control_matrix>>(
-                    new internal::StepperEulerCT<SCALAR, state_control_matrix>());
-                stepperCost_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, SCALAR>>(
-                    new internal::StepperEulerCT<SCALAR, SCALAR>());
-                stepperCostDX0_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, state_vector>>(
-                    new internal::StepperEulerCT<SCALAR, state_vector>());
-                stepperCostDU0_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, control_vector>>(
-                    new internal::StepperEulerCT<SCALAR, control_vector>());
+                stepperState_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_vector>>(
+                    new ct::core::internal::StepperEulerCT<SCALAR, state_vector>());
+                stepperDX0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_matrix>>(
+                    new ct::core::internal::StepperEulerCT<SCALAR, state_matrix>());
+                stepperDU0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_control_matrix>>(
+                    new ct::core::internal::StepperEulerCT<SCALAR, state_control_matrix>());
+                stepperCost_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, SCALAR>>(
+                    new ct::core::internal::StepperEulerCT<SCALAR, SCALAR>());
+                stepperCostDX0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_vector>>(
+                    new ct::core::internal::StepperEulerCT<SCALAR, state_vector>());
+                stepperCostDU0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, control_vector>>(
+                    new ct::core::internal::StepperEulerCT<SCALAR, control_vector>());
                 break;
             }
 
-            case RK4:
+            case ct::core::IntegrationTypeCT::RK4:
             {
-                stepperState_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, state_vector>>(
-                    new internal::StepperRK4CT<SCALAR, state_vector>());
-                stepperDX0_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, state_matrix>>(
-                    new internal::StepperRK4CT<SCALAR, state_matrix>());
-                stepperDU0_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, state_control_matrix>>(
-                    new internal::StepperRK4CT<SCALAR, state_control_matrix>());
-                stepperCost_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, SCALAR>>(
-                    new internal::StepperRK4CT<SCALAR, SCALAR>());
-                stepperCostDX0_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, state_vector>>(
-                    new internal::StepperRK4CT<SCALAR, state_vector>());
-                stepperCostDU0_ = std::shared_ptr<internal::StepperBaseCT<SCALAR, control_vector>>(
-                    new internal::StepperRK4CT<SCALAR, control_vector>());
+                stepperState_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_vector>>(
+                    new ct::core::internal::StepperRK4CT<SCALAR, state_vector>());
+                stepperDX0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_matrix>>(
+                    new ct::core::internal::StepperRK4CT<SCALAR, state_matrix>());
+                stepperDU0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_control_matrix>>(
+                    new ct::core::internal::StepperRK4CT<SCALAR, state_control_matrix>());
+                stepperCost_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, SCALAR>>(
+                    new ct::core::internal::StepperRK4CT<SCALAR, SCALAR>());
+                stepperCostDX0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_vector>>(
+                    new ct::core::internal::StepperRK4CT<SCALAR, state_vector>());
+                stepperCostDU0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, control_vector>>(
+                    new ct::core::internal::StepperRK4CT<SCALAR, control_vector>());
                 break;
             }
 
@@ -105,13 +126,19 @@ public:
                 throw std::runtime_error("Invalid CT integration type");
         }
     }
-
-    // or prepare for sensitivity integration...
-    void setLinearSystem(const std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem)
+    
+    /**
+     * @brief      Prepares the integrator to provide first order sensitivity
+     *             generation by setting a linearsystem, enabling state caching
+     *             and settings up the function objects
+     *
+     * @param[in]  linearSystem  The linearized system
+     */
+    void setLinearSystem(const std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem)
     {
         linearSystem_ = linearSystem;
         cacheData_ = true;
-        // Need to cache the derivatives and determine the correct indices (maybe switch to the trajectories....)
+        
         dX0dot_ = [this](const state_matrix& dX0In, const SCALAR t, state_matrix& dX0dt){
             if(cacheSensitivities_)
                 arraydX0_.push_back(dX0In);
@@ -139,7 +166,12 @@ public:
         };
     }
 
-    void setControlledSystem(const std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& controlledSystem)
+    /**
+     * @brief      Changes the controlledsystem to be integrated
+     *
+     * @param[in]  controlledSystem  The new controlled system
+     */
+    void setControlledSystem(const std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& controlledSystem)
     {
         controlledSystem_ = controlledSystem;
         xDot_ = [this](const state_vector& x, const SCALAR t, state_vector& dxdt) {
@@ -157,7 +189,14 @@ public:
         }; 
     }
 
-    void setCostFunction(const std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFun)
+    /**
+     * @brief      Prepares the integrator to provide cost integration and first
+     *             order cost derivatives. This is done by enabling sensitivity
+     *             caching and setting up the function objects
+     *
+     * @param[in]  costFun  The new costfunction
+     */
+    void setCostFunction(const std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFun)
     {
         costFunction_ = costFun;
         cacheSensitivities_ = true;
@@ -191,13 +230,25 @@ public:
         };
     }
 
+    /**
+     * @brief          Integrates the system starting from state and startTime
+     *                 for numSteps integration steps. Returns the full state
+     *                 and time trajectories
+     *
+     * @param[in, out] state            The initial state for integration
+     * @param[in]      startTime        The start time
+     * @param[in]      numSteps         The number steps
+     * @param[in]      dt               The integration timestep
+     * @param[out]     stateTrajectory  The output state trajectory
+     * @param[out]     timeTrajectory   The output time trajectory
+     */
     void integrate(
             state_vector& state,
-            const SCALAR& startTime,
-            size_t numSteps,
-            SCALAR dt,
-            StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
-            tpl::TimeArray<SCALAR>& timeTrajectory
+            const SCALAR startTime,
+            const size_t numSteps,
+            const SCALAR dt,
+            ct::core::StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
+            ct::core::tpl::TimeArray<SCALAR>& timeTrajectory
     )
     {
         clearStates();
@@ -218,11 +269,21 @@ public:
         }
     }
 
+    /**
+     * @brief           Integrates the system starting from state and startTime
+     *                  for numSteps integration steps. Returns only the final
+     *                  state and time
+     *
+     * @param[int, out] state      The initial state for integration
+     * @param[in]       startTime  The start time
+     * @param[in]       numSteps   The number steps
+     * @param[in]       dt         The integration timestep
+     */
     void integrate(
             state_vector& state,
-            const SCALAR& startTime,
-            size_t numSteps,
-            SCALAR dt
+            const SCALAR startTime,
+            const size_t numSteps,
+            const SCALAR dt
     )
     {
         clearStates();
@@ -235,15 +296,23 @@ public:
         }
     }
 
-    // Need some a method to ensure no double caching 
+
+    /**
+     * @brief          Integrates the sensitivity ODE of the integrator with
+     *                 respec to the initial state x0
+     *
+     * @param[in, out] dX0        The sensitivity matrix wrt x0
+     * @param[in]      startTime  The start time
+     * @param[in]      numSteps   The number of integration steps
+     * @param[in]      dt         The integration timestep
+     */
     void integrateSensitivityDX0(
         state_matrix& dX0,
-        const SCALAR& startTime,
-        size_t numSteps,
-        SCALAR dt
+        const SCALAR startTime,
+        const size_t numSteps,
+        const SCALAR dt
         )
     {
-        // clearSensitivities();
         dX0Index_ = 0;
         SCALAR time = startTime;
         dX0.setIdentity();
@@ -254,14 +323,22 @@ public:
         }
     }
 
+    /**
+     * @brief          Integrates the sensitivity ODE of the integrator with
+     *                 respec to the initial control input u0
+     *
+     * @param[in, out] dU0        The sensitivity matrix wrt u0
+     * @param[in]      startTime  The start time
+     * @param[in]      numSteps   The number of integration steps
+     * @param[in]      dt         The integration timestep
+     */
     void integrateSensitivityDU0(
         state_control_matrix& dU0,
-        const SCALAR& startTime,
-        size_t numSteps,
-        SCALAR dt
+        const SCALAR startTime,
+        const size_t numSteps,
+        const SCALAR dt
         )
     {
-        // clearSensitivities();
         dU0Index_ = 0;
         SCALAR time = startTime;
         dU0.setZero();
@@ -272,14 +349,22 @@ public:
         }
     }
 
+    /**
+     * @brief          Integrates the sensitivity ODE of the integrator with
+     *                 respec to the final control input uf
+     *
+     * @param[in, out] dUF        The sensitivity matrix wrt uF
+     * @param[in]      startTime  The start time
+     * @param[in]      numSteps   The number of integration steps
+     * @param[in]      dt         The integration timestep
+     */
     void integrateSensitivityDUf(
         state_control_matrix& dUf,
-        const SCALAR& startTime,
-        size_t numSteps,
-        SCALAR dt
+        const SCALAR startTime,
+        const size_t numSteps,
+        const SCALAR dt
         )
     {
-        // clearSensitivities();
         dU0Index_ = 0;
         SCALAR time = startTime;
         dUf.setZero();
@@ -290,11 +375,20 @@ public:
         }
     }
 
+    /**
+     * @brief          Integrates the costfunction using the states and controls
+     *                 from the costintegration
+     *
+     * @param[in, out] cost       The initial cost
+     * @param[in]      startTime  The start time
+     * @param[in]      numSteps   The number of integration steps
+     * @param[in]      dt         The integration time step
+     */
     void integrateCost(
         SCALAR& cost,
-        const SCALAR& startTime,
-        size_t numSteps,
-        SCALAR dt)
+        const SCALAR startTime,
+        const size_t numSteps,
+        const SCALAR dt)
     {
         SCALAR time = startTime;
         costIndex_ = 0;
@@ -311,14 +405,22 @@ public:
     }
 
 
+    /**
+     * @brief          Integrates the sensitivity of the cost with respect to
+     *                 the initial state x0
+     *
+     * @param[in, out] dX0        The initial cost sensitivity vector
+     * @param[in]      startTime  The start time
+     * @param[in]      numSteps   The number of integration steps
+     * @param[in]      dt         The integration time step
+     */
     void integrateCostSensitivityDX0(
         state_vector& dX0,
-        const SCALAR& startTime,
-        size_t numSteps,
-        SCALAR dt
+        const SCALAR startTime,
+        const size_t numSteps,
+        const SCALAR dt
         )
     {
-        // clearSensitivities();
         costIndex_ = 0;
         SCALAR time = startTime;
         dX0.setZero();
@@ -329,14 +431,22 @@ public:
         }
     }
 
+    /**
+     * @brief          Integrates the sensitivity of the cost with respect to
+     *                 the initial control input u0
+     *
+     * @param[in, out] dU0        The initial cost sensitivity vector
+     * @param[in]      startTime  The start time
+     * @param[in]      numSteps   The number of integration steps
+     * @param[in]      dt         The integration time step
+     */
     void integrateCostSensitivityDU0(
         control_vector& dU0,
-        const SCALAR& startTime,
-        size_t numSteps,
-        SCALAR dt
+        const SCALAR startTime,
+        const size_t numSteps,
+        const SCALAR dt
         )
     {
-        // clearSensitivities();
         costIndex_ = 0;
         SCALAR time = startTime;
         dU0.setZero();
@@ -347,14 +457,22 @@ public:
         }
     }
 
+    /**
+     * @brief          Integrates the sensitivity of the cost with respect to
+     *                 the final control input uF
+     *
+     * @param[in, out] dUf        The initial cost sensitivity vector
+     * @param[in]      startTime  The start time
+     * @param[in]      numSteps   The number of integration steps
+     * @param[in]      dt         The integration time step
+     */
     void integrateCostSensitivityDUf(
         control_vector& dUf,
         const SCALAR& startTime,
-        size_t numSteps,
-        SCALAR dt
+        const size_t numSteps,
+        const SCALAR dt
         )
     {
-        // clearSensitivities();
         costIndex_ = 0;
         SCALAR time = startTime;
         dUf.setZero();
@@ -365,6 +483,10 @@ public:
         }
     }
 
+    /**
+     * @brief      Linearizes the system around the rollout from the state
+     *             interation
+     */
     void linearize()
     {
         for(size_t i = 0; i < statesCached_.size(); ++i)
@@ -374,6 +496,9 @@ public:
         }
     }    
 
+    /**
+     * @brief      Clears the cached states, controls and times
+     */
     void clearStates()
     {
         statesCached_.clear();
@@ -382,6 +507,9 @@ public:
     }
 
 
+    /**
+     * @brief      Clears the cached sensitivities
+     */
     void clearSensitivities()
     {
         arraydX0_.clear();
@@ -390,6 +518,9 @@ public:
     }
 
 
+    /**
+     * @brief      Clears the linearized matrices
+     */
     void clearLinearization()
     {
         arrayA_.clear();
@@ -398,8 +529,8 @@ public:
 
 private:
 
-    std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> controlledSystem_;
-    std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> > linearSystem_;
+    std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> controlledSystem_;
+    std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> > linearSystem_;
     std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> > costFunction_;                                                     
 
     // Integrate the function
@@ -416,23 +547,23 @@ private:
     // Cache
     bool cacheData_;
     bool cacheSensitivities_;
-    StateVectorArray<STATE_DIM, SCALAR> statesCached_;
-    ControlVectorArray<CONTROL_DIM, SCALAR> controlsCached_;
-    tpl::TimeArray<SCALAR> timesCached_;
+    ct::core::StateVectorArray<STATE_DIM, SCALAR> statesCached_;
+    ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> controlsCached_;
+    ct::core::tpl::TimeArray<SCALAR> timesCached_;
 
-    StateMatrixArray<STATE_DIM, SCALAR> arrayA_;
-    StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> arrayB_;
+    ct::core::StateMatrixArray<STATE_DIM, SCALAR> arrayA_;
+    ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> arrayB_;
 
-    StateMatrixArray<STATE_DIM, SCALAR> arraydX0_;
-    StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> arraydU0_;
-    StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> arraydUf_;
+    ct::core::StateMatrixArray<STATE_DIM, SCALAR> arraydX0_;
+    ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> arraydU0_;
+    ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> arraydUf_;
 
-    std::shared_ptr<internal::StepperBaseCT<SCALAR, state_matrix>> stepperDX0_;
-    std::shared_ptr<internal::StepperBaseCT<SCALAR, state_control_matrix>> stepperDU0_;
+    std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_matrix>> stepperDX0_;
+    std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_control_matrix>> stepperDU0_;
 
-    std::shared_ptr<internal::StepperBaseCT<SCALAR, SCALAR>> stepperCost_;
-    std::shared_ptr<internal::StepperBaseCT<SCALAR, state_vector>> stepperCostDX0_;
-    std::shared_ptr<internal::StepperBaseCT<SCALAR, control_vector>> stepperCostDU0_;
+    std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, SCALAR>> stepperCost_;
+    std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_vector>> stepperCostDX0_;
+    std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, control_vector>> stepperCostDU0_;
 
     size_t costIndex_;
     size_t dX0Index_;
@@ -440,7 +571,7 @@ private:
 
     std::function<void (const state_vector&, const SCALAR, state_vector&)> xDot_;
 
-    std::shared_ptr<internal::StepperBaseCT<SCALAR, state_vector>> stepperState_;
+    std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_vector>> stepperState_;
 
 };
 

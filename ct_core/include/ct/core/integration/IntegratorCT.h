@@ -37,12 +37,22 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct {
 namespace core {
 
+/**
+ * @brief      Enum for the stepper type
+ */
 enum IntegrationTypeCT
 {
     EULER, RK4
 };
 
 
+/**
+ * @brief      Class for integrating a system. For now this class only
+ *             implements fixed size steppers.
+ *
+ * @tparam     STATE_DIM  The state dimension
+ * @tparam     SCALAR     The scalar type
+ */
 template <size_t STATE_DIM, typename SCALAR = double>
 class IntegratorCT
 {
@@ -51,6 +61,12 @@ public:
     typedef StateVector<STATE_DIM, SCALAR> state_vector;
 
 
+    /**
+     * @brief      Constructor
+     *
+     * @param[in]  system       The system to be integrated
+     * @param[in]  stepperType  The stepper type
+     */
     IntegratorCT(
         const std::shared_ptr<System<STATE_DIM, SCALAR> >& system,
         const IntegrationTypeCT stepperType = IntegrationTypeCT::EULER)
@@ -59,6 +75,11 @@ public:
         initialize(stepperType);
     }
 
+    /**
+     * @brief      Initializes the integrator, can be used to switch between stepper types
+     *
+     * @param[in]  stepperType  The stepper type
+     */
     void initialize(const IntegrationTypeCT stepperType)
     {
         switch(stepperType)
@@ -82,6 +103,11 @@ public:
         }
     }
 
+    /**
+     * @brief      Sets the system to be integrated, can be used to change the system
+     *
+     * @param[in]  system  The system
+     */
     void setNonlinearSystem(const std::shared_ptr<System<STATE_DIM, SCALAR>>& system)
     {
         system_ = system;
@@ -90,11 +116,23 @@ public:
         };       
     }
 
-    virtual void integrate(
+    /**
+     * @brief          Integrates the system starting from state and startTime
+     *                 for numSteps integration steps. Returns the full state
+     *                 and time trajectories
+     *
+     * @param[in, out] state            The initial state for integration
+     * @param[in]      startTime        The start time
+     * @param[in]      numSteps         The number steps
+     * @param[in]      dt               The integration timestep
+     * @param[out]     stateTrajectory  The output state trajectory
+     * @param[out]     timeTrajectory   The output time trajectory
+     */
+    void integrate(
             state_vector& state,
             const SCALAR& startTime,
-            size_t numSteps,
-            SCALAR dt,
+            const size_t numSteps,
+            const SCALAR dt,
             StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
             tpl::TimeArray<SCALAR>& timeTrajectory
     )
@@ -114,11 +152,21 @@ public:
         }
     }
 
-    virtual void integrate(
+    /**
+     * @brief           Integrates the system starting from state and startTime
+     *                  for numSteps integration steps. Returns only the final
+     *                  state and time
+     *
+     * @param[int, out] state      The initial state for integration
+     * @param[in]       startTime  The start time
+     * @param[in]       numSteps   The number steps
+     * @param[in]       dt         The integration timestep
+     */
+    void integrate(
             state_vector& state,
             const SCALAR& startTime,
-            size_t numSteps,
-            SCALAR dt
+            const size_t numSteps,
+            const SCALAR dt
     )
     {
         SCALAR time = startTime;

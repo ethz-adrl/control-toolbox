@@ -31,7 +31,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 
 #include <ct/core/core.h>
-#include <ct/core/integration/SensitivityIntegratorCT.h>
+#include "SensitivityIntegratorCT.h"
 
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
 
@@ -120,14 +120,14 @@ public:
 		{
 			case DmsSettings::EULER:
 			{
-				integratorCT_ = std::allocate_shared<ct::core::SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>, Eigen::aligned_allocator<ct::core::SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>>
-						(Eigen::aligned_allocator<ct::core::SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>(), controlledSystem_, core::IntegrationTypeCT::EULER);
+				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>, Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>>
+						(Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>(), controlledSystem_, core::IntegrationTypeCT::EULER);
 				break;
 			}
 			case DmsSettings::RK4:
 			{
-				integratorCT_ = std::allocate_shared<ct::core::SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>, Eigen::aligned_allocator<ct::core::SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>>
-						(Eigen::aligned_allocator<ct::core::SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>(), controlledSystem_, core::IntegrationTypeCT::RK4);
+				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>, Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>>
+						(Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>(), controlledSystem_, core::IntegrationTypeCT::RK4);
 				break;
 			}
 			case DmsSettings::RK5:
@@ -424,7 +424,7 @@ private:
 	control_vector_t costGradientQi_;
 	control_vector_t costGradientQip1_;
 
-	std::shared_ptr<ct::core::SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>> integratorCT_;
+	std::shared_ptr<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>> integratorCT_;
 	size_t nSteps_;
 	double tStart_;
 };
