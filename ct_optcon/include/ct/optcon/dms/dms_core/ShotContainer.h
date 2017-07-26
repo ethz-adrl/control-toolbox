@@ -142,6 +142,12 @@ public:
 			}
 		}
 
+		tStart_ = timeGrid_->getShotStartTime(shotNr_);
+		double t_shot_end = timeGrid_->getShotEndTime(shotNr_);
+
+		nSteps_ = double(t_shot_end - tStart_) / double(settings_.dt_sim_) + 0.5;
+		// std::cout << "shotNr_: " << shotNr_ << "\t nSteps: " << nSteps_ << std::endl;
+
 		integratorCT_->setLinearSystem(linearSystem_);
 
 		if(settings_.costEvaluationType_ == DmsSettings::FULL)
@@ -156,15 +162,8 @@ public:
 		if((w_->getUpdateCount() != integrationCount_))
 		{
 			integrationCount_ = w_->getUpdateCount();
-
-			double t_shot_start = timeGrid_->getShotStartTime(shotNr_);
-			double t_shot_end = timeGrid_->getShotEndTime(shotNr_);
-
-			ct::core::StateVector<STATE_DIM> initState = w_->getOptimizedState(shotNr_);	
-
-			size_t nSteps = (t_shot_end - t_shot_start) / settings_.dt_sim_;
-						
-			integratorCT_->integrate(initState, t_shot_start, nSteps, settings_.dt_sim_, x_history_, t_history_);
+			ct::core::StateVector<STATE_DIM> initState = w_->getOptimizedState(shotNr_);
+			integratorCT_->integrate(initState, tStart_, nSteps_, settings_.dt_sim_, x_history_, t_history_);
 		}
 	}
 
@@ -173,16 +172,9 @@ public:
 		if((w_->getUpdateCount() != costIntegrationCount_))
 		{
 			costIntegrationCount_ = w_->getUpdateCount();
-
-			integrateShot();
-
-			double t_shot_start = timeGrid_->getShotStartTime(shotNr_);
-			double t_shot_end = timeGrid_->getShotEndTime(shotNr_);
-
-			size_t nSteps = (t_shot_end - t_shot_start) / settings_.dt_sim_;		
-
+			integrateShot();	
 			cost_ = 0.0;
-			integratorCT_->integrateCost(cost_, t_shot_start, nSteps, settings_.dt_sim_);
+			integratorCT_->integrateCost(cost_, tStart_, nSteps_, settings_.dt_sim_);
 		}
 	}
 
@@ -194,27 +186,17 @@ public:
 		if((w_->getUpdateCount() != sensIntegrationCount_))
 		{
 			sensIntegrationCount_ = w_->getUpdateCount();
-
 			integrateShot();
-
-			double t_shot_start = timeGrid_->getShotStartTime(shotNr_);
-			double t_shot_end = timeGrid_->getShotEndTime(shotNr_);
-
-			size_t nSteps = (t_shot_end - t_shot_start) / settings_.dt_sim_;
-
-
 			dXdSiBack_.setIdentity();
 			dXdQiBack_.setZero();
-
 			integratorCT_->linearize();
-
-			integratorCT_->integrateSensitivityDX0(dXdSiBack_, t_shot_start, nSteps, settings_.dt_sim_);
-			integratorCT_->integrateSensitivityDU0(dXdQiBack_, t_shot_start, nSteps, settings_.dt_sim_);
+			integratorCT_->integrateSensitivityDX0(dXdSiBack_, tStart_, nSteps_, settings_.dt_sim_);
+			integratorCT_->integrateSensitivityDU0(dXdQiBack_, tStart_, nSteps_, settings_.dt_sim_);
 
 			if(settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
 			{
 				dXdQip1Back_.setZero();
-				integratorCT_->integrateSensitivityDUf(dXdQip1Back_, t_shot_start, nSteps, settings_.dt_sim_);
+				integratorCT_->integrateSensitivityDUf(dXdQip1Back_, tStart_, nSteps_, settings_.dt_sim_);
 			}
 		}
 	}
@@ -224,23 +206,16 @@ public:
 		if((w_->getUpdateCount() != costSensIntegrationCount_))
 		{
 			costSensIntegrationCount_ = w_->getUpdateCount();
-
 			integrateSensitivities();
-
-			double t_shot_start = timeGrid_->getShotStartTime(shotNr_);
-			double t_shot_end = timeGrid_->getShotEndTime(shotNr_);
-
-			size_t nSteps = (t_shot_end - t_shot_start) / settings_.dt_sim_;
-
 			costGradientSi_.setZero();
 			costGradientQi_.setZero();
-			integratorCT_->integrateCostSensitivityDX0(costGradientSi_, t_shot_start, nSteps, settings_.dt_sim_);
-			integratorCT_->integrateCostSensitivityDU0(costGradientQi_, t_shot_start, nSteps, settings_.dt_sim_);
+			integratorCT_->integrateCostSensitivityDX0(costGradientSi_, tStart_, nSteps_, settings_.dt_sim_);
+			integratorCT_->integrateCostSensitivityDU0(costGradientQi_, tStart_, nSteps_, settings_.dt_sim_);
 
 			if(settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
 			{
 				costGradientQip1_.setZero();
-				integratorCT_->integrateCostSensitivityDUf(costGradientQip1_, t_shot_start, nSteps, settings_.dt_sim_);
+				integratorCT_->integrateCostSensitivityDUf(costGradientQip1_, tStart_, nSteps_, settings_.dt_sim_);
 			}
 		}
 	}
@@ -449,6 +424,8 @@ private:
 	control_vector_t costGradientQip1_;
 
 	std::shared_ptr<ct::core::SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>> integratorCT_;
+	size_t nSteps_;
+	double tStart_;
 };
 
 } // namespace optcon

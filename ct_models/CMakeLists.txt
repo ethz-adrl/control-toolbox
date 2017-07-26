@@ -40,8 +40,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/CodegenOutputDirs.h
 
 
 ################ HyQ #################
-add_executable(HyQLinearizationCodgen src/HyQ/codegen/HyQLinearizationCodgen.cpp)
-target_link_libraries(HyQLinearizationCodgen ${catkin_LIBRARIES} )
+#add_executable(HyQLinearizationCodgen src/HyQ/codegen/HyQLinearizationCodgen.cpp)
+#target_link_libraries(HyQLinearizationCodgen ${catkin_LIBRARIES} )
 
 if (BUILD_HYQ_FULL)
 	if (NOT USE_CLANG)
@@ -109,8 +109,8 @@ if (BUILD_HYQ_LINEARIZATION_TIMINGS)
 endif(BUILD_HYQ_LINEARIZATION_TIMINGS)
 
 ################ HyA #################
-add_executable(HyALinearizationCodegen src/HyA/codegen/HyALinearizationCodeGen.cpp)
-target_link_libraries(HyALinearizationCodegen ${catkin_LIBRARIES})
+#add_executable(HyALinearizationCodegen src/HyA/codegen/HyALinearizationCodeGen.cpp)
+#target_link_libraries(HyALinearizationCodegen ${catkin_LIBRARIES})
 
 add_library(HyALinearizedForward include/ct/models/HyA/codegen/HyALinearizedForward.cpp)
 target_link_libraries(HyALinearizedForward ${catkin_LIBRARIES} )

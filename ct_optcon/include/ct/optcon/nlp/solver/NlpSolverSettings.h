@@ -92,6 +92,8 @@ public:
 	void print()
 	{
 		std::cout << "SNOPT settings:" << std::endl;
+        std::cout << "Max Major Iterations: " << major_iteration_limit_param_ << std::endl;
+        std::cout << "Max Minor Iterations: " << minor_iteration_limit_param_ << std::endl;
 	}
 
     /**
@@ -111,10 +113,14 @@ public:
      * @param[in]  verbose   True if parameters to be printed out
      * @param[in]  ns        The namespace in the .info file
      */
-    void load(const std::string& filename, bool verbose = true, const std::string& ns = "dms.nlp.snopt")
+    void load(const std::string& filename, bool verbose = true, const std::string& ns = "dms.solver.snopt")
     {
     	// to be implemented
-    	std::cout << "Trying to load SNOPT settings. Not impl yet" << std::endl;
+        boost::property_tree::ptree pt;
+        boost::property_tree::read_info(filename, pt);
+
+        minor_iteration_limit_param_ = pt.get<unsigned int>(ns + ".MaxMinorIterations");
+        major_iteration_limit_param_ = pt.get<unsigned int>(ns + ".MaxMajorIterations");
     }
 
 };
@@ -185,7 +191,8 @@ public:
 	 */
 	void print()
 	{
-		std::cout << "To be filled with something" << std::endl;
+        std::cout << "IPOPT SETTINGS: " << std::endl;
+        std::cout << "MaxIterations: " << max_iter_ << std::endl;
 	}
 
     /**
@@ -207,7 +214,16 @@ public:
      */
     void load(const std::string& filename, bool verbose = true, const std::string& ns = "dms.nlp.ipopt")
     {
-    	std::cout << "Trying to load IPOPT settings. Not impl yet." << std::endl;
+    	// std::cout << "Trying to load IPOPT settings. Not impl yet." << std::endl;
+        boost::property_tree::ptree pt;
+        boost::property_tree::read_info(filename, pt);// 
+        max_iter_ = pt.get<unsigned int>(ns + ".MaxIterations");
+        bool checkDerivatives = pt.get<bool>(ns + ".CheckDerivatives");
+        if(checkDerivatives)
+            derivativeTest_ = "first-order";
+        if(!checkDerivatives)
+            derivativeTest_ = "none";
+        
     }
 
 };
@@ -238,6 +254,10 @@ public:
      */
     void print()
     {
+        std::cout<<"============================================================="<<std::endl;
+        std::cout<<"\tNLP Solver Settings: "<<std::endl;
+        std::cout<<"============================================================="<<std::endl;
+
     	std::cout << "Using nlp solver: " << solverToString[solverType_] << std::endl;
     	if(solverType_ == IPOPT)
     		ipoptSettings_.print();
@@ -267,10 +287,13 @@ public:
      * @param[in]  verbose   True if parameters to be printed out
      * @param[in]  ns        The namespace in the .info fil
      */
-    void load(const std::string& filename, bool verbose = true, const std::string& ns = "dms.nlp")
+    void load(const std::string& filename, bool verbose = true, const std::string& ns = "solver")
     {
 		boost::property_tree::ptree pt;
-		boost::property_tree::read_info(filename, pt);  
+		boost::property_tree::read_info(filename, pt);
+
+        solverType_ = (SolverType) pt.get<unsigned int>(ns + ".SolverType");
+
 		if(solverType_ == IPOPT)
 			ipoptSettings_.load(filename, verbose, ns + ".ipopt");
 		else if(solverType_ == SNOPT)

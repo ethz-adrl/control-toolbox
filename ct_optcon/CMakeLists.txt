@@ -133,9 +133,7 @@ if(BUILD_WITH_SNOPT_SUPPORT)
 endif()
 
 if(BUILD_WITH_IPOPT_SUPPORT)
-    message(WARNING "Calling add library")
     add_library(ct_ipopt_interface src/nlp/solver/IpoptSolver.cpp)
-    message(WARNING "After call")
     target_link_libraries(ct_ipopt_interface ${catkin_LIBRARIES} ${IPOPT_LIBS})
 endif()
 

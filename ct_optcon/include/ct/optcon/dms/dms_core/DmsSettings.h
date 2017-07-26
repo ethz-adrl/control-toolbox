@@ -59,7 +59,6 @@ public:
 	N_(30),
 	T_(5),
 	nThreads_(1),
-	terminalStateConstraint_(true),
 	splineType_(ZERO_ORDER_HOLD),
 	costEvaluationType_(SIMPLE),
 	objectiveType_(KEEP_TIME_AND_GRID),
@@ -74,7 +73,6 @@ public:
 	size_t N_;						// the number of shots
 	double T_;						// the time horizon
 	size_t nThreads_;				// number of threads
-	bool terminalStateConstraint_;	// terminalConstraint active?
 	SplineType_t splineType_;		// spline interpolation type between the nodes
 	CostEvaluationType_t costEvaluationType_;	// the the of costevaluator
 	ObjectiveType_t objectiveType_;				// Timegrid optimization on(expensive) or off?
@@ -85,7 +83,7 @@ public:
 	double absErrTol_;				// the absolute and relative integrator tolerances when using RK5
 	double relErrTol_;
 
-	NlpSolverSettings nlpSettings_;
+	NlpSolverSettings solverSettings_;
 
     void print()
     {
@@ -110,7 +108,7 @@ public:
 
 		std::cout<<"============================================================="<<std::endl;
 
-        nlpSettings_.print();
+        solverSettings_.print();
     }
 
     bool parametersOk() const
@@ -148,7 +146,7 @@ public:
 		if(relErrTol_ <= 1e-20 || relErrTol_ > 1.0)
 			return false;
 
-		return nlpSettings_.parametersOk();
+		return solverSettings_.parametersOk();
     }
 
     void load(const std::string& filename, bool verbose = true, const std::string& ns = "dms")
@@ -162,7 +160,6 @@ public:
 		N_ = pt.get<unsigned int>(ns + ".N");
 		T_ = pt.get<double>(ns + ".T");
 		nThreads_ = pt.get<unsigned int>(ns + ".nThreads");
-		terminalStateConstraint_ = pt.get<bool> (ns + ".TerminalStateConstraint");
 		splineType_ 		= (SplineType_t) pt.get<unsigned int>(ns + ".InterpolationType");
 		costEvaluationType_ = (CostEvaluationType_t) pt.get<unsigned int>(ns + ".CostEvaluationType");
 		objectiveType_ 	= (ObjectiveType_t) pt.get<unsigned int>(ns + ".ObjectiveType");
@@ -174,13 +171,14 @@ public:
 		absErrTol_ = pt.get<double> (ns + ".AbsErrTol");
 		relErrTol_ = pt.get<double> (ns + ".RelErrTol");
 
+		solverSettings_.load(filename, verbose, ns + ".solver"); // todo bring in again
+		                                                         // 
 		if (verbose)
 		{
 			std::cout << "Loaded DMS config from "<<filename<<": "<<std::endl;
 			print();
 		}
 
-//		nlpSettings_.load(filename, verbose, ns + ".nlp"); // todo bring in again
     }
 
 private:

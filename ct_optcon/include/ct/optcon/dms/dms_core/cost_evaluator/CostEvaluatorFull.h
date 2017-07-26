@@ -110,7 +110,7 @@ public:
 		for(auto shotContainer : shotContainers_)
 			cost += shotContainer->getCostIntegrated();	
 			
-		costFct_->setCurrentStateAndControl(w_->getOptimizedState(shotContainers_.size()), control_vector_t::Zero());
+		costFct_->setCurrentStateAndControl(w_->getOptimizedState(settings_.N_), control_vector_t::Zero());
 		cost += costFct_->evaluateTerminal();
 		return cost;
 	}
@@ -159,7 +159,7 @@ public:
 		}
 
 		/* gradient of terminal cost */
-		costFct_->setCurrentStateAndControl(w_->getOptimizedState(shotContainers_.size()), control_vector_t::Zero());
+		costFct_->setCurrentStateAndControl(w_->getOptimizedState(settings_.N_), control_vector_t::Zero());
 		grad.segment(w_->getStateIndex(settings_.N_), STATE_DIM) += costFct_->stateDerivativeTerminal();// * dXdSi.back();
 	}
 

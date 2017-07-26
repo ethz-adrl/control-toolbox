@@ -55,6 +55,7 @@ namespace optcon {
 template<size_t STATE_DIM, size_t CONTROL_DIM>
 struct DmsPolicy
 {
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef DmsDimensions<STATE_DIM, CONTROL_DIM> DIMENSIONS;
 	typedef typename DIMENSIONS::state_vector_array_t state_vector_array_t;	
 	typedef typename DIMENSIONS::control_vector_array_t control_vector_array_t;
@@ -111,10 +112,10 @@ public:
 				(settingsDms, this->systems_, this->linearSystems_, this->costFunctions_, 
 					this->stateInputConstraints_, this->pureStateConstraints_, x0_));
 
-		if(settingsDms.nlpSettings_.solverType_ == NlpSolverSettings::SNOPT)
-			nlpSolver_ = std::shared_ptr<SnoptSolver>(new SnoptSolver(dmsProblem_, settingsDms.nlpSettings_));
-		else if (settingsDms.nlpSettings_.solverType_ == NlpSolverSettings::IPOPT)
-			nlpSolver_ = std::shared_ptr<IpoptSolver> (new IpoptSolver(dmsProblem_, settingsDms.nlpSettings_));
+		if(settingsDms.solverSettings_.solverType_ == NlpSolverSettings::SNOPT)
+			nlpSolver_ = std::shared_ptr<SnoptSolver>(new SnoptSolver(dmsProblem_, settingsDms.solverSettings_));
+		else if (settingsDms.solverSettings_.solverType_ == NlpSolverSettings::IPOPT)
+			nlpSolver_ = std::shared_ptr<IpoptSolver> (new IpoptSolver(dmsProblem_, settingsDms.solverSettings_));
 		else
 			std::cout << "Unknown solver type... Exiting" << std::endl;
 
@@ -131,7 +132,7 @@ public:
 		dmsProblem_->configure(settings);
 		dmsProblem_->changeTimeHorizon(tf_);
 		dmsProblem_->changeInitialState(x0_);
-		nlpSolver_->configure(settings_.nlpSettings_); 
+		nlpSolver_->configure(settings_.solverSettings_); 
 	}
 
 	virtual bool solve() override

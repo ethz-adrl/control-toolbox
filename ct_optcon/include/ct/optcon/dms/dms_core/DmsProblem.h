@@ -243,10 +243,11 @@ public:
 	const state_vector_array_t& getStateTrajectory()
 	{
 		stateSolutionDense_.clear();
+		stateSolutionDense_.push_back(shotContainers_.front()->getXHistory().front());
 		for(auto shotContainer : shotContainers_)
 		{
 			state_vector_array_t x_traj = shotContainer->getXHistory();
-			for(size_t j = 0; j < x_traj.size(); ++j)
+			for(size_t j = 1; j < x_traj.size(); ++j)
 				stateSolutionDense_.push_back(x_traj[j]);
 		}
 		return stateSolutionDense_;
@@ -260,10 +261,11 @@ public:
 	const control_vector_array_t& getInputTrajectory()
 	{
 		inputSolutionDense_.clear();
+		inputSolutionDense_.push_back(shotContainers_.front()->getUHistory().front());
 		for(auto shotContainer : shotContainers_)
 		{
 			control_vector_array_t u_traj = shotContainer->getUHistory();
-			for(size_t j = 0; j < u_traj.size(); ++j)
+			for(size_t j = 1; j < u_traj.size(); ++j)
 				inputSolutionDense_.push_back(u_traj[j]);
 		}
 		return inputSolutionDense_;
@@ -277,10 +279,11 @@ public:
 	const time_array_t& getTimeArray()
 	{
 		timeSolutionDense_.clear();
+		timeSolutionDense_.push_back(shotContainers_.front()->getTHistory().front());
 		for(auto shotContainer : shotContainers_)
 		{
 			time_array_t t_traj = shotContainer->getTHistory();
-			for(size_t j = 0; j < t_traj.size(); ++j)
+			for(size_t j = 1; j < t_traj.size(); ++j)
 				timeSolutionDense_.push_back(t_traj[j]);
 		}
 		return timeSolutionDense_;
