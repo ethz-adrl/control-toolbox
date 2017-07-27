@@ -30,8 +30,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "DiscreteConstraintBase.h"
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
+namespace tpl {
 
 /**
  * @ingroup    NLP
@@ -39,16 +40,16 @@ namespace optcon{
  * @brief      An abstract base class which serves as a container for all the
  *             discrete constraints used in the NLP
  */
+template<typename SCALAR>
 class DiscreteConstraintContainerBase
 {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef double Number;
-	typedef Eigen::Matrix<Number, Eigen::Dynamic, 1> VectorXd;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 	typedef Eigen::Matrix<int, Eigen::Dynamic, 1> VectorXi;
-	typedef Eigen::Map<VectorXd> MapVecXd;
+	typedef Eigen::Map<VectorXs> MapVecXs;
 	typedef Eigen::Map<VectorXi> MapVecXi;
 
 	/**
@@ -82,7 +83,7 @@ public:
 	 *
 	 * @param[out] c_nlp  The constraint vector used in the NLP
 	 */
-	void evalConstraints(Eigen::Map<Eigen::VectorXd>& c_nlp)
+	void evalConstraints(MapVecXs& c_nlp)
 	{
 		prepareEvaluation();
 		size_t ind = 0;
@@ -104,7 +105,7 @@ public:
 	 * @param[out] jac_nlp    The constraint jacobian vector used in NLP
 	 * @param[in]  nzz_jac_g  The number of non zero elements in the jacobian
 	 */
-	void evalSparseJacobian(Eigen::Map<Eigen::VectorXd>& jac_nlp, const int nzz_jac_g)
+	void evalSparseJacobian(MapVecXs& jac_nlp, const int nzz_jac_g)
 	{
 		prepareJacobianEvaluation();
 		size_t ind = 0;
@@ -183,7 +184,7 @@ public:
 	 * @param[out]      lowerBound  The lower constraint bound
 	 * @param[out]      upperBound  The lower constraint bound
 	 */
-	void getBounds(Eigen::Map<Eigen::VectorXd>& lowerBound, Eigen::Map<Eigen::VectorXd>& upperBound)
+	void getBounds(MapVecXs& lowerBound, MapVecXs& upperBound)
 	{
 		size_t ind = 0;
 		for(auto constraint : constraints_)
@@ -196,9 +197,13 @@ public:
 	}
 
 protected:
-	std::vector<std::shared_ptr<DiscreteConstraintBase>> constraints_; /*!< contains all the constraints of the NLP */
+	std::vector<std::shared_ptr<DiscreteConstraintBase<SCALAR>>> constraints_; /*!< contains all the constraints of the NLP */
 
 };
+
+}
+
+typedef	tpl::DiscreteConstraintContainerBase<double> DiscreteConstraintContainerBase;
 
 }
 }

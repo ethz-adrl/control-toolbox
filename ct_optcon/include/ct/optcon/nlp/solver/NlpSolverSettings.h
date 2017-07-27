@@ -122,6 +122,7 @@ public:
         major_iteration_limit_param_ = pt.get<unsigned int>(ns + ".MaxMajorIterations");
         minor_print_level_param_ = pt.get<unsigned int>(ns + ".MinorPrintLevelVerbosity");
         major_print_level_param_ = pt.get<unsigned int>(ns + ".MajorPrintLevelVerbosity");
+        major_optimality_tolerance_param_ = pt.get<double>(ns + ".OptimalityTolerance");
     }
 
 };
@@ -225,6 +226,7 @@ public:
             derivativeTest_ = "none";
 
         printLevel_ = pt.get<unsigned int>(ns + ".Verbosity");
+        tol_ = pt.get<double>(ns + ".OptimalityTolerance");
     }
 
 };

@@ -30,6 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct {
 namespace optcon {
+namespace tpl {
 
 /**
  * @ingroup    NLP
@@ -37,6 +38,7 @@ namespace optcon {
  * @brief      Implements an abstract base class which evaluates the cost
  *             function and its gradient in the NLP
  */
+template<typename SCALAR>
 class DiscreteCostEvaluatorBase{
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -57,7 +59,7 @@ public:
    *
    * @return     The evaluates cost function
    */
-  virtual double eval() = 0;
+  virtual SCALAR eval() = 0;
 
 	/**
     * @brief      Evaluates the cost gradient
@@ -65,9 +67,13 @@ public:
     * @param[in]  grad_length  The size of the gradient vector
     * @param[out] grad         The values of the gradient
     */
-  virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::VectorXd>& grad) = 0;
+  virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>& grad) = 0;
 
 };
+
+}
+
+typedef tpl::DiscreteCostEvaluatorBase<double> DiscreteCostEvaluatorBase;
 
 } // namespace optcon
 } // namespace ct

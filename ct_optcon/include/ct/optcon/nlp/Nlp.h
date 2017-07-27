@@ -33,6 +33,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct {
 namespace optcon {
+namespace tpl {
 
 
 /** @defgroup   NLP NLP
@@ -46,16 +47,16 @@ namespace optcon {
  * @brief      The NLP base class. This class serves as abstract base class to
  *             use as an interface to the NLP solver IPOPT and SNOPT
  */
+template <typename SCALAR>
 class Nlp
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	typedef double Number;
-	typedef Eigen::Matrix<Number, Eigen::Dynamic, 1> VectorXd;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 	typedef Eigen::Matrix<int, Eigen::Dynamic, 1> VectorXi;
-	typedef Eigen::Map<VectorXd> MapVecXd;
+	typedef Eigen::Map<VectorXs> MapVecXs;
 	typedef Eigen::Map<VectorXi> MapVecXi;
-	typedef Eigen::Map<const VectorXd> MapConstVecXd;
+	typedef Eigen::Map<const VectorXs> MapConstVecXs;
 
 	/**
 	 * @brief      Default constructor
@@ -80,7 +81,7 @@ public:
 	 *
 	 * @return     { Scalar value of the resulting cost }
 	 */
-	Number evaluateCostFun(){
+	SCALAR evaluateCostFun(){
 		return costEvaluator_->eval();
 	}
 
@@ -91,7 +92,7 @@ public:
 	 * @param[in]  n     { size of the gradient }
 	 * @param[out] grad  The gradient of the cost function
 	 */
-	void evaluateCostGradient(const size_t n, MapVecXd& grad){
+	void evaluateCostGradient(const size_t n, MapVecXs& grad){
 		costEvaluator_->evalGradient(n, grad);
 	} 
 
@@ -101,7 +102,7 @@ public:
 	 * @param[out] values  The values of the constraint violations, wrapped as a
 	 *                     vector
 	 */
-	void evaluateConstraints(MapVecXd& values){
+	void evaluateConstraints(MapVecXs& values){
 		constraints_->evalConstraints(values);
 	}
 
@@ -111,7 +112,7 @@ public:
 	 * @param[in]  nele_jac  The number of non zeros in the constraint jacobian
 	 * @param[out] jac       The non zero values of the jacobian
 	 */
-	void evaluateConstraintJacobian(const int nele_jac, MapVecXd& jac){
+	void evaluateConstraintJacobian(const int nele_jac, MapVecXs& jac){
 		constraints_->evalSparseJacobian(jac, nele_jac);
 	}
 
@@ -156,7 +157,7 @@ public:
 	 * @param[out] upperBound  The upper constraint bound
 	 * @param[in]  m           { The size of the constraints }
 	 */
-	void getConstraintBounds(MapVecXd& lowerBound, MapVecXd& upperBound, const size_t m) const
+	void getConstraintBounds(MapVecXs& lowerBound, MapVecXs& upperBound, const size_t m) const
 	{
 		constraints_->getBounds(lowerBound, upperBound);
 	}
@@ -175,7 +176,7 @@ public:
 	 * @param[out] upperBound  The upper optimization variable bound
 	 * @param[in]  n           { The number of Optimization variables }
 	 */
-	void getVariableBounds(MapVecXd& lowerBound, MapVecXd& upperBound, const size_t n) const{
+	void getVariableBounds(MapVecXs& lowerBound, MapVecXs& upperBound, const size_t n) const{
 		optVariables_->getLowerBounds(lowerBound);
 		optVariables_->getUpperBounds(upperBound);
 	}
@@ -187,7 +188,7 @@ public:
 	 * @param[in]  x      { The value of the Optimization variables }
 	 * @param[in]  isNew  Indicates whether x differs from a previous call
 	 */
-	void extractOptimizationVars(const MapConstVecXd& x, bool isNew){
+	void extractOptimizationVars(const MapConstVecXs& x, bool isNew){
 		if(isNew)
 		{
 			optVariables_->setOptimizationVars(x);
@@ -201,7 +202,7 @@ public:
 	 * @param[in]  n     { The number of Optimization variables }
 	 * @param[out] x     { The values of the Optimization vars }
 	 */
-	void getOptimizationVars(const size_t n, MapVecXd& x) const{
+	void getOptimizationVars(const size_t n, MapVecXs& x) const{
 		optVariables_->getOptimizationVars(n, x);
 	}
 
@@ -214,7 +215,7 @@ public:
 	 * @param[out] xMul    The optimization variable multiplier
 	 * @param[out] xState  The optimization variable states
 	 */
-	void getOptimizationMultState(const size_t n, Eigen::Map<Eigen::VectorXd>& xMul, Eigen::Map<Eigen::VectorXi>& xState) const{
+	void getOptimizationMultState(const size_t n, MapVecXs& xMul, MapVecXi& xState) const{
 		optVariables_->getOptimizationMultState(n, xMul, xState);
 	}
 
@@ -226,7 +227,7 @@ public:
 	 * @param[out] zMul    The constraint variable multiplier
 	 * @param[out] zState  The constraint variable state
 	 */
-	void getConstraintsMultState(const size_t m, Eigen::Map<Eigen::VectorXd>& zMul, Eigen::Map<Eigen::VectorXi>& zState) const{
+	void getConstraintsMultState(const size_t m, MapVecXs& zMul, MapVecXi& zState) const{
 		optVariables_->getConstraintsMultState(m, zMul, zState);
 	}
 
@@ -237,7 +238,7 @@ public:
 	 * @param[out] zLow  The value for the lower bound multiplier
 	 * @param[out] zUp   The value for the upper bound multiplier
 	 */
-	void getBoundMultipliers(size_t n, MapVecXd& zLow, MapVecXd& zUp) const{
+	void getBoundMultipliers(size_t n, MapVecXs& zLow, MapVecXs& zUp) const{
 		optVariables_->getBoundMultipliers(n, zLow, zUp);
 	}
 
@@ -247,7 +248,7 @@ public:
 	 * @param[in]  m       { The number of constraints }
 	 * @param[out] lambda  The values of the constraint multipliers
 	 */
-	void getLambdaVars(size_t m, MapVecXd& lambda) const{
+	void getLambdaVars(size_t m, MapVecXs& lambda) const{
 		optVariables_->getLambdaVars(m, lambda);
 	}
 
@@ -259,7 +260,7 @@ public:
 	 * @param[in]  zU      The value for the upper bound multiplier
 	 * @param[in]  lambda  The values of the constraint multipliers
 	 */
-	void extractIpoptSolution(const MapConstVecXd& x, const MapConstVecXd& zL, const MapConstVecXd& zU, const MapConstVecXd& lambda) {
+	void extractIpoptSolution(const MapConstVecXs& x, const MapConstVecXs& zL, const MapConstVecXs& zU, const MapConstVecXs& lambda) {
 		optVariables_->setNewIpoptSolution(x, zL, zU, lambda);
 	}
 
@@ -272,16 +273,20 @@ public:
 	 * @param[in]  fMul    The constraint variable multiplier
 	 * @param[in]  fState  The constraint variable state
 	 */
-	void extractSnoptSolution(const MapVecXd& x, const MapVecXd& xMul, const MapVecXi& xState, const MapVecXd& fMul, const MapVecXi& fState) {
+	void extractSnoptSolution(const MapVecXs& x, const MapVecXs& xMul, const MapVecXi& xState, const MapVecXs& fMul, const MapVecXi& fState) {
 		optVariables_->setNewSnoptSolution(x, xMul, xState, fMul, fState);
 	}
 
 
 protected:
-	std::shared_ptr<DiscreteCostEvaluatorBase> costEvaluator_; //! abstract base class, approximates the cost evaluation for the discrete problem
-	std::shared_ptr<OptVector> optVariables_; //! base class, containts the optimization variables used in the NLP solvers
-	std::shared_ptr<DiscreteConstraintContainerBase> constraints_; //! abstract base class, contains the discretized constraints for the problem
+	std::shared_ptr<DiscreteCostEvaluatorBase<SCALAR>> costEvaluator_; //! abstract base class, approximates the cost evaluation for the discrete problem
+	std::shared_ptr<OptVector<SCALAR>> optVariables_; //! base class, containts the optimization variables used in the NLP solvers
+	std::shared_ptr<DiscreteConstraintContainerBase<SCALAR>> constraints_; //! abstract base class, contains the discretized constraints for the problem
 };
+
+}
+
+typedef tpl::Nlp<double> Nlp;
 
 } // namespace optcon
 } // namespace ct

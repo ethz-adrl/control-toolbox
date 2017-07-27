@@ -52,17 +52,18 @@ namespace optcon {
  *             ConstraintTest.h
  */
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class ConstraintContainerBase
 {
 public:
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef core::StateVector<STATE_DIM> state_vector_t;
-	typedef core::ControlVector<CONTROL_DIM> input_vector_t;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> input_vector_t;
 
-	typedef ConstraintContainerBase<STATE_DIM, CONTROL_DIM>* ConstraintBase_Raw_Ptr_t;
+	typedef ConstraintContainerBase<STATE_DIM, CONTROL_DIM, SCALAR>* ConstraintBase_Raw_Ptr_t;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 
 	/**
 	 * \brief Default constructor
@@ -112,7 +113,7 @@ public:
 	 * @param[in] x state vector
 	 * @param[in] x input vector
 	 */
-	virtual void setCurrentStateAndControl(const state_vector_t& x,	const input_vector_t& u, const double t = 0.0)
+	virtual void setCurrentStateAndControl(const state_vector_t& x,	const input_vector_t& u, const SCALAR t = 0.0)
 	{
 		t_ = t;
 		x_ = x;
@@ -125,14 +126,14 @@ public:
 	 *
 	 * @return     The evaluation of the intermediate constraints
 	 */
-	virtual Eigen::VectorXd evaluateIntermediate() = 0;
+	virtual VectorXs evaluateIntermediate() = 0;
 
 	/**
 	 * @brief      Evaluates the terminal constraints
 	 *
 	 * @return     The evaluation of the terminal constraints
 	 */
-	virtual Eigen::VectorXd evaluateTerminal() = 0;
+	virtual VectorXs evaluateTerminal() = 0;
 
 	/**
 	 * @brief      Retrieves the number of intermediate constraints
@@ -164,7 +165,7 @@ public:
 	 *
 	 * @return     The lower bound on the intermediate constraints
 	 */
-	Eigen::VectorXd getLowerBoundsIntermediate() const
+	VectorXs getLowerBoundsIntermediate() const
 	{
 		return lowerBoundsIntermediate_;
 	}
@@ -175,7 +176,7 @@ public:
 	 *
 	 * @return     The lower bound on the terminal constraints
 	 */
-	Eigen::VectorXd getLowerBoundsTerminal() const
+	VectorXs getLowerBoundsTerminal() const
 	{
 		return lowerBoundsTerminal_;
 	}
@@ -186,7 +187,7 @@ public:
 	 *
 	 * @return     The upper bound on the intermediate constraints
 	 */
-	Eigen::VectorXd getUpperBoundsIntermediate() const
+	VectorXs getUpperBoundsIntermediate() const
 	{
 		return upperBoundsIntermediate_;
 	}
@@ -197,7 +198,7 @@ public:
 	 *
 	 * @return     The upper bound on the terminal constraints
 	 */
-	Eigen::VectorXd getUpperBoundsTerminal() const
+	VectorXs getUpperBoundsTerminal() const
 	{	
 		return upperBoundsTerminal_;
 	}
@@ -215,10 +216,10 @@ protected:
 	input_vector_t u_;		/** control vector */
 	double t_;			    /** time */
 
-	Eigen::VectorXd lowerBoundsIntermediate_;
-	Eigen::VectorXd lowerBoundsTerminal_;
-	Eigen::VectorXd upperBoundsIntermediate_;
-	Eigen::VectorXd upperBoundsTerminal_;
+	VectorXs lowerBoundsIntermediate_;
+	VectorXs lowerBoundsTerminal_;
+	VectorXs upperBoundsIntermediate_;
+	VectorXs upperBoundsTerminal_;
 };
 
 

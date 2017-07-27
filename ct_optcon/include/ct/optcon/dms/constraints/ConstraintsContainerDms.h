@@ -55,13 +55,13 @@ namespace optcon {
  * @tparam     STATE_DIM    The state dimension
  * @tparam     CONTROL_DIM  The control dimension
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class ConstraintsContainerDms : public DiscreteConstraintContainerBase
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class ConstraintsContainerDms : public tpl::DiscreteConstraintContainerBase<SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef DmsDimensions<STATE_DIM, CONTROL_DIM> DIMENSIONS;
+	typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
 
 	typedef typename DIMENSIONS::state_vector_t state_vector_t;
 	typedef typename DIMENSIONS::control_vector_t control_vector_t;
@@ -84,10 +84,10 @@ public:
 	 * @param[in]  settings                 The dms settings
 	 */
 	ConstraintsContainerDms(
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
-			std::shared_ptr<TimeGrid> timeGrid,
-			std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>> shotContainers,
-			std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM>> discretizedConstraints,
+			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
+			std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
+			std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>>> shotContainers,
+			std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>> discretizedConstraints,
 			const state_vector_t& x0,
 			const DmsSettings settings);
 
@@ -110,8 +110,8 @@ public:
 private:	
 	const DmsSettings settings_;
 
-	std::shared_ptr<InitStateConstraint<STATE_DIM, CONTROL_DIM>> c_init_;
-	std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>> shotContainers_;
+	std::shared_ptr<InitStateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>> c_init_;
+	std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>>> shotContainers_;
 };
 
 #include "implementation/ConstraintsContainerDms-impl.h"

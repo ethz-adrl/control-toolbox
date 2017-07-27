@@ -44,19 +44,19 @@ namespace optcon {
  * @tparam     STATE_DIM  { description }
  * @tparam     CONTROL_DIM  { description }
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class ConstraintContainerAD : public LinearConstraintContainer<STATE_DIM, CONTROL_DIM>{
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class ConstraintContainerAD : public LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>{
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef core::DerivativesCppad<STATE_DIM + CONTROL_DIM, -1> JacCG;
-	typedef typename JacCG::CG_SCALAR Scalar;
+	typedef typename JacCG::CG_SCALAR CGScalar;
 
-	typedef core::StateVector<STATE_DIM>   state_vector_t;
-	typedef core::ControlVector<CONTROL_DIM> input_vector_t;
+	typedef core::StateVector<STATE_DIM, SCALAR>   state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> input_vector_t;
 
-	typedef ConstraintContainerAD<STATE_DIM, CONTROL_DIM>* ConstraintContainerAD_Raw_Ptr_t;
+	typedef ConstraintContainerAD<STATE_DIM, CONTROL_DIM, SCALAR>* ConstraintContainerAD_Raw_Ptr_t;
 
 
 	/**
@@ -66,11 +66,11 @@ public:
 	{
 		stateControlD_.setZero();
 
-		fIntermediate_ = [&] (const Eigen::Matrix<Scalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
+		fIntermediate_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
 			return this->evaluateIntermediateCodegen(stateinput);	
 		};
 
-		fTerminal_ = [&] (const Eigen::Matrix<Scalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
+		fTerminal_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
 			return this->evaluateTerminalCodegen(stateinput);	
 		};
 
@@ -120,10 +120,10 @@ public:
 		constraintsTerminal_.resize(arg.constraintsTerminal_.size());
 
 		for(size_t i = 0; i < constraintsIntermediate_.size(); ++i)
-			constraintsIntermediate_[i] = std::shared_ptr<tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, Scalar>> (arg.constraintsIntermediate_[i]->clone());
+			constraintsIntermediate_[i] = std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, CGScalar>> (arg.constraintsIntermediate_[i]->clone());
 
 		for(size_t i = 0; i < constraintsTerminal_.size(); ++i)
-			constraintsTerminal_[i] = std::shared_ptr<tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, Scalar>> (arg.constraintsTerminal_[i]->clone());
+			constraintsTerminal_[i] = std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, CGScalar>> (arg.constraintsTerminal_[i]->clone());
 	}
 
 	/**
@@ -144,7 +144,7 @@ public:
 	 * @param[in]  constraint  The constraint
 	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
 	 */
-	void addIntermediateConstraint(std::shared_ptr<tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, Scalar>> constraint, bool verbose)
+	void addIntermediateConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, CGScalar>> constraint, bool verbose)
 	{
 		constraintsIntermediate_.push_back(constraint);
 		if(verbose){
@@ -153,7 +153,7 @@ public:
 			std::cout<<"''" << name << "'' added as AD intermediate constraint " << std::endl;
 		}
 
-		fIntermediate_ = [&] (const Eigen::Matrix<Scalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
+		fIntermediate_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
 			return this->evaluateIntermediateCodegen(stateinput);	
 		};
 
@@ -168,7 +168,7 @@ public:
 	 * @param[in]  constraint  The constraint
 	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
 	 */
-	void addTerminalConstraint(std::shared_ptr<tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, Scalar>> constraint, bool verbose)
+	void addTerminalConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, CGScalar>> constraint, bool verbose)
 	{
 		constraintsTerminal_.push_back(constraint);
 		if(verbose){
@@ -177,7 +177,7 @@ public:
 			std::cout<<"''" << name << "'' added as AD terminal constraint " << std::endl;
 		}
 
-		fTerminal_ = [&] (const Eigen::Matrix<Scalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
+		fTerminal_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
 			return this->evaluateTerminalCodegen(stateinput);	
 		};
 
@@ -506,16 +506,16 @@ private:
 	 *
 	 * @return     The evaluated intermediate constraints
 	 */
-	Eigen::Matrix<Scalar, Eigen::Dynamic, 1> evaluateIntermediateCodegen(const Eigen::Matrix<Scalar, STATE_DIM + CONTROL_DIM, 1>& stateinput)
+	Eigen::Matrix<CGScalar, Eigen::Dynamic, 1> evaluateIntermediateCodegen(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput)
 	{
 		size_t count = 0;
-		Eigen::Matrix<Scalar, Eigen::Dynamic, 1> gLocal;
+		Eigen::Matrix<CGScalar, Eigen::Dynamic, 1> gLocal;
 
 		for(auto constraint : constraintsIntermediate_)
 		{
 			size_t constraint_dim = constraint->getConstraintSize();
 			gLocal.conservativeResize(count + constraint_dim);
-			gLocal.segment(count, constraint_dim) = constraint->evaluate(stateinput.segment(0,STATE_DIM), stateinput.segment(STATE_DIM, CONTROL_DIM), Scalar(0.0));
+			gLocal.segment(count, constraint_dim) = constraint->evaluate(stateinput.segment(0,STATE_DIM), stateinput.segment(STATE_DIM, CONTROL_DIM), CGScalar(0.0));
 			count += constraint_dim;
 		}
 		return gLocal;		
@@ -529,16 +529,16 @@ private:
 	 *
 	 * @return     The evaluated terminal constraints
 	 */
-	Eigen::Matrix<Scalar, Eigen::Dynamic, 1> evaluateTerminalCodegen(const Eigen::Matrix<Scalar, STATE_DIM + CONTROL_DIM, 1>& stateinput)
+	Eigen::Matrix<CGScalar, Eigen::Dynamic, 1> evaluateTerminalCodegen(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput)
 	{
 		size_t count = 0;
-		Eigen::Matrix<Scalar, Eigen::Dynamic, 1> gLocal;
+		Eigen::Matrix<CGScalar, Eigen::Dynamic, 1> gLocal;
 
 		for(auto constraint : constraintsTerminal_)
 		{
 			size_t constraint_dim = constraint->getConstraintSize();
 			gLocal.conservativeResize(count + constraint_dim);
-			gLocal.segment(count, constraint_dim) = constraint->evaluate(stateinput.segment(0,STATE_DIM), stateinput.segment(STATE_DIM, CONTROL_DIM), Scalar(0.0));
+			gLocal.segment(count, constraint_dim) = constraint->evaluate(stateinput.segment(0,STATE_DIM), stateinput.segment(STATE_DIM, CONTROL_DIM), CGScalar(0.0));
 			count += constraint_dim;
 		}
 
@@ -546,8 +546,8 @@ private:
 	}
 
 	//containers
-	std::vector<std::shared_ptr<tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, Scalar>>> constraintsIntermediate_;
-	std::vector<std::shared_ptr<tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, Scalar>>> constraintsTerminal_;
+	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, CGScalar>>> constraintsIntermediate_;
+	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, CGScalar>>> constraintsTerminal_;
 
 	std::shared_ptr<JacCG> intermediateCodegen_;
 	std::shared_ptr<JacCG> terminalCodegen_;

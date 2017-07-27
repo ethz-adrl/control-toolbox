@@ -45,16 +45,18 @@ namespace optcon {
  * @tparam     STATE_DIM  The state dimension
  * @tparam     CONTROL_DIM  The control dimension
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class ConstraintContainerAnalytical : public LinearConstraintContainer<STATE_DIM, CONTROL_DIM>{
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class ConstraintContainerAnalytical : public LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>{
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef core::StateVector<STATE_DIM>   state_vector_t;
-	typedef core::ControlVector<CONTROL_DIM> input_vector_t;
+	typedef core::StateVector<STATE_DIM, SCALAR>   state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> input_vector_t;
 
-	typedef ConstraintContainerAnalytical<STATE_DIM, CONTROL_DIM>* ConstraintContainerAnalytical_Raw_Ptr_t;
+	typedef ConstraintContainerAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* ConstraintContainerAnalytical_Raw_Ptr_t;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs; 
 
 	ConstraintContainerAnalytical()
 	{}
@@ -66,7 +68,7 @@ public:
 	 * @param      u     control vector
 	 * @param      t     time
 	 */
-	ConstraintContainerAnalytical(const state_vector_t &x, const input_vector_t &u, const double& t = 0.0)
+	ConstraintContainerAnalytical(const state_vector_t &x, const input_vector_t &u, const SCALAR& t = 0.0)
 	{}
 
 	/**
@@ -119,7 +121,7 @@ public:
 	 * @param[in]  constraint  The constraint to be added
 	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
 	 */
-	void addIntermediateConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>> constraint, bool verbose)
+	void addIntermediateConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> constraint, bool verbose)
 	{
 		constraintsIntermediate_.push_back(constraint);
 		if(verbose){
@@ -136,7 +138,7 @@ public:
 	 * @param[in]  constraint  The constraint to be added
 	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
 	 */
-	void addTerminalConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>> constraint, bool verbose)
+	void addTerminalConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> constraint, bool verbose)
 	{
 		constraintsTerminal_.push_back(constraint);
 		if(verbose){
@@ -147,7 +149,7 @@ public:
 		this->initializedTerminal_ = false;
 	}
 
-	virtual Eigen::VectorXd evaluateIntermediate() override
+	virtual VectorXs evaluateIntermediate() override
 	{
 		checkIntermediateConstraints();
 
@@ -161,7 +163,7 @@ public:
 		return evalIntermediate_;		
 	}
 
-	virtual Eigen::VectorXd evaluateTerminal() override
+	virtual VectorXs evaluateTerminal() override
 	{
 		checkTerminalConstraints();
 
@@ -194,7 +196,7 @@ public:
 		return count;
 	}
 
-	virtual Eigen::VectorXd jacobianStateSparseIntermediate() override
+	virtual VectorXs jacobianStateSparseIntermediate() override
 	{
 		checkIntermediateConstraints();
 
@@ -213,11 +215,11 @@ public:
 		return evalJacSparseStateIntermediate_;
 	}
 
-	virtual Eigen::MatrixXd jacobianStateIntermediate() override
+	virtual MatrixXs jacobianStateIntermediate() override
 	{
 		checkIntermediateConstraints();
 
-		Eigen::MatrixXd jacLocal;
+		MatrixXs jacLocal;
 		size_t count = 0;
 		for(auto constraint : constraintsIntermediate_)
 		{
@@ -229,7 +231,7 @@ public:
 		return evalJacDenseStateIntermediate_;
 	}
 
-	virtual Eigen::VectorXd jacobianStateSparseTerminal() override
+	virtual VectorXs jacobianStateSparseTerminal() override
 	{
 		checkIntermediateConstraints();
 
@@ -249,7 +251,7 @@ public:
 	}
 
 
-	virtual Eigen::MatrixXd jacobianStateTerminal() override
+	virtual MatrixXs jacobianStateTerminal() override
 	{
 		checkIntermediateConstraints();
 
@@ -264,7 +266,7 @@ public:
 		return evalJacDenseStateTerminal_;
 	}
 
-	virtual Eigen::VectorXd jacobianInputSparseIntermediate() override
+	virtual VectorXs jacobianInputSparseIntermediate() override
 	{
 		checkIntermediateConstraints();
 
@@ -282,7 +284,7 @@ public:
 		return evalJacSparseInputIntermediate_;
 	}
 
-	virtual Eigen::MatrixXd jacobianInputIntermediate() override
+	virtual MatrixXs jacobianInputIntermediate() override
 	{
 		checkIntermediateConstraints();
 
@@ -297,7 +299,7 @@ public:
 		return evalJacDenseInputIntermediate_;
 	}
 
-	virtual Eigen::VectorXd jacobianInputSparseTerminal() override
+	virtual VectorXs jacobianInputSparseTerminal() override
 	{
 		checkTerminalConstraints();
 
@@ -315,7 +317,7 @@ public:
 		return evalJacSparseInputTerminal_;
 	}
 
-	virtual Eigen::MatrixXd jacobianInputTerminal() override
+	virtual MatrixXs jacobianInputTerminal() override
 	{
 		checkTerminalConstraints();
 
@@ -586,17 +588,17 @@ private:
 	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>>> constraintsIntermediate_;
 	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>>> constraintsTerminal_;
 
-	Eigen::VectorXd evalIntermediate_;
-	Eigen::VectorXd evalJacSparseStateIntermediate_;
-	Eigen::VectorXd evalJacSparseInputIntermediate_;
-	Eigen::MatrixXd evalJacDenseStateIntermediate_;
-	Eigen::MatrixXd evalJacDenseInputIntermediate_;
+	VectorXs evalIntermediate_;
+	VectorXs evalJacSparseStateIntermediate_;
+	VectorXs evalJacSparseInputIntermediate_;
+	MatrixXs evalJacDenseStateIntermediate_;
+	MatrixXs evalJacDenseInputIntermediate_;
 
-	Eigen::VectorXd evalTerminal_;
-	Eigen::VectorXd evalJacSparseStateTerminal_;
-	Eigen::VectorXd evalJacSparseInputTerminal_;
-	Eigen::MatrixXd evalJacDenseStateTerminal_;
-	Eigen::MatrixXd evalJacDenseInputTerminal_;
+	VectorXs evalTerminal_;
+	VectorXs evalJacSparseStateTerminal_;
+	VectorXs evalJacSparseInputTerminal_;
+	MatrixXs evalJacDenseStateTerminal_;
+	MatrixXs evalJacDenseInputTerminal_;
 
 };
 

@@ -30,6 +30,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct {
 namespace optcon {
+namespace tpl {
+
 
 /**
  * @ingroup    NLP
@@ -37,16 +39,16 @@ namespace optcon {
  * @brief      Class containing and managing all the optimization variables used
  *             for in the NLP solver IPOPT and SNOPT.
  */
+template<typename SCALAR>
 class OptVector
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	typedef double Number;
-	typedef Eigen::Matrix<Number, Eigen::Dynamic, 1> VectorXd;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 	typedef Eigen::Matrix<int, Eigen::Dynamic, 1> VectorXi;
-	typedef Eigen::Map<VectorXd> MapVecXd;
+	typedef Eigen::Map<VectorXs> MapVecXs;
 	typedef Eigen::Map<VectorXi> MapVecXi;
-	typedef Eigen::Map<const VectorXd> MapConstVecXd;
+	typedef Eigen::Map<const VectorXs> MapConstVecXs;
 
 	OptVector() = delete;
 
@@ -148,7 +150,7 @@ public:
 	 * @param[in]  xLb   The lower optimization variable bound
 	 * @param[in]  xUb   The upper optimization variable bound
 	 */
-	void setBounds(const Eigen::VectorXd& xLb, const Eigen::VectorXd& xUb){
+	void setBounds(const VectorXs& xLb, const VectorXs& xUb){
 		xLb_ = xLb;
 		xUb_ = xUb;
 	}
@@ -159,7 +161,7 @@ public:
 	 *
 	 * @param[out] x     Lower bound
 	 */
-	void getLowerBounds(MapVecXd& x) const {
+	void getLowerBounds(MapVecXs& x) const {
 		x = xLb_;
 	}
 
@@ -168,7 +170,7 @@ public:
 	 *
 	 * @param[out]      x     The upper bound
 	 */
-	void getUpperBounds(MapVecXd& x) const {
+	void getUpperBounds(MapVecXs& x) const {
 		x = xUb_;
 	}
 
@@ -180,7 +182,7 @@ public:
 	 * @param[out] xMul    The optimization variables multiplier
 	 * @param[out] xState  The optimization variables state
 	 */
-	void getOptimizationMultState(const size_t n, MapVecXd& xMul, Eigen::Map<Eigen::VectorXi>& xState) const {
+	void getOptimizationMultState(const size_t n, MapVecXs& xMul, MapVecXi& xState) const {
 		assert(n == xMul_.size());
 		assert(n == xState_.size());
 		xMul = xMul_;
@@ -195,7 +197,7 @@ public:
 	 * @param[out] zMul    The constraint variable multiplier
 	 * @param[out] zState  The constraint variable state
 	 */
-	void getConstraintsMultState(const size_t m, MapVecXd& zMul, Eigen::Map<Eigen::VectorXi>& zState) const {
+	void getConstraintsMultState(const size_t m, MapVecXs& zMul, MapVecXi& zState) const {
 		assert(m == zMul_.size());
 		assert(m == zState_.size());
 		zMul = zMul_;
@@ -216,7 +218,7 @@ public:
 	 * @param[out] low   The value for the lower bound multiplier
 	 * @param[out] up    The value for the upper bound multiplier
 	 */
-	void getBoundMultipliers(size_t n, MapVecXd& low, MapVecXd& up) const {
+	void getBoundMultipliers(size_t n, MapVecXs& low, MapVecXs& up) const {
 		assert(n == zLow_.size());
 		low = zLow_;
 		up = zUpper_;
@@ -228,7 +230,7 @@ public:
 	 * @param[in]  m     { The number of constraints }
 	 * @param[out] x     The values of the constraint multipliers
 	 */
-	void getLambdaVars(size_t m, MapVecXd& x) const {
+	void getLambdaVars(size_t m, MapVecXs& x) const {
 		assert(m == lambda_.size());
 		x = lambda_;
 	}
@@ -239,7 +241,7 @@ public:
 	 * @param[in]  n     { The number of optimization variables }
 	 * @param[out]      x     The optimization variables
 	 */
-	void getOptimizationVars(size_t n, MapVecXd& x)  const {
+	void getOptimizationVars(size_t n, MapVecXs& x)  const {
 		assert (n == x_.size());
 		x = x_;
 	}
@@ -254,10 +256,10 @@ public:
 	 * @param[in]  lambda  The constraint multiplier
 	 */
 	void setNewIpoptSolution(
-		const MapConstVecXd& x, 
-		const MapConstVecXd& zL, 
-		const MapConstVecXd& zU, 
-		const MapConstVecXd& lambda)
+		const MapConstVecXs& x, 
+		const MapConstVecXs& zL, 
+		const MapConstVecXs& zU, 
+		const MapConstVecXs& lambda)
 	{
 		x_ = x;
 		zLow_ = zL;
@@ -275,8 +277,8 @@ public:
 	 * @param[in]  fMul    The constraints multiplier
 	 * @param[in]  fState  The constraints state
 	 */
-	void setNewSnoptSolution(const MapVecXd& x, const MapVecXd& xMul, 
-		const MapVecXi& xState, const MapVecXd& fMul, const MapVecXi& fState)
+	void setNewSnoptSolution(const MapVecXs& x, const MapVecXs& xMul, 
+		const MapVecXi& xState, const MapVecXs& fMul, const MapVecXi& fState)
 	{
 		x_ = x;
 		xMul_ = xMul;
@@ -291,15 +293,12 @@ public:
 	 *
 	 * @param[in]  x     The updates primal variables
 	 */
-	void setOptimizationVars(const MapConstVecXd& x)
+	void setOptimizationVars(const MapConstVecXs& x)
 	{
 		x_ = x;
 		updateCount_++;
 	}
 
-	// Eigen::VectorXd getPrimalVars() const{
-	// 	return x_;
-	// }
 
 	/**
 	 * @brief      Returns the update counter
@@ -312,23 +311,27 @@ public:
 
 
 protected:
-	Eigen::VectorXd x_; 	/*!< The optimization variables */
-	Eigen::VectorXd xLb_;	/*!< lower bound on optimization vector */
-	Eigen::VectorXd xUb_;	/*!< upper bound on optimization vector */
+	VectorXs x_; 	/*!< The optimization variables */
+	VectorXs xLb_;	/*!< lower bound on optimization vector */
+	VectorXs xUb_;	/*!< upper bound on optimization vector */
 
-	Eigen::VectorXd zUpper_; /*!< The upper bound multiplier, used in IPOPT */
-	Eigen::VectorXd zLow_; 	/*!< The lower bound multiplier, used in IPOPT */
-	Eigen::VectorXd lambda_; /*!< The constraint multiplier, used in IPOPT */
+	VectorXs zUpper_; /*!< The upper bound multiplier, used in IPOPT */
+	VectorXs zLow_; 	/*!< The lower bound multiplier, used in IPOPT */
+	VectorXs lambda_; /*!< The constraint multiplier, used in IPOPT */
 
 	// Snopt variables
-	Eigen::VectorXd xMul_; 		/*!< The optimization variable multiplier, used in SNOPT */
-	Eigen::VectorXi xState_;	/*!< The optimization variable state, used in SNOPT */
-	Eigen::VectorXd	zMul_;		/*!< The constraint multiplier, used in SNOPT */
-	Eigen::VectorXi	zState_;	/*!< The constraint state, used in SNOPT */
+	VectorXs xMul_; 		/*!< The optimization variable multiplier, used in SNOPT */
+	VectorXi xState_;	/*!< The optimization variable state, used in SNOPT */
+	VectorXs zMul_;		/*!< The constraint multiplier, used in SNOPT */
+	VectorXi zState_;	/*!< The constraint state, used in SNOPT */
 
 	size_t updateCount_; /*!< The number of optimization variable updates */
 
 };
+
+}
+
+typedef tpl::OptVector<double> OptVector;
 
 }
 }

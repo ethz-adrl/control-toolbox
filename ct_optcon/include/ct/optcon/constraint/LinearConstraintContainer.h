@@ -45,16 +45,18 @@ namespace optcon {
  * @tparam     STATE_DIM  Dimension of the state vector
  * @tparam     CONTROL_DIM  Dimension of the control input vector
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class LinearConstraintContainer : public ConstraintContainerBase<STATE_DIM, CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class LinearConstraintContainer : public ConstraintContainerBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef core::StateVector<STATE_DIM> state_vector_t;
-	typedef core::ControlVector<CONTROL_DIM> input_vector_t;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> input_vector_t;
 
-	typedef LinearConstraintContainer<STATE_DIM, CONTROL_DIM>* LinearConstraintContainer_Raw_Ptr_t;
+	typedef LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>* LinearConstraintContainer_Raw_Ptr_t;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs; 
 
 	/**
 	 * @brief      Default constructor
@@ -72,7 +74,7 @@ public:
 	 */
 	LinearConstraintContainer(const LinearConstraintContainer& arg)
 	:
-	ConstraintContainerBase<STATE_DIM, CONTROL_DIM>(arg),
+	ConstraintContainerBase<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
 	initializedIntermediate_(arg.initializedIntermediate_),
 	initializedTerminal_(arg.initializedTerminal_)
 	{}
@@ -95,14 +97,14 @@ public:
 	 * @param      jacVec  The sparse jacobian vector
 	 * @param      count   The size of jacVec
 	 */
-	virtual Eigen::VectorXd jacobianStateSparseIntermediate() = 0;
+	virtual VectorXs jacobianStateSparseIntermediate() = 0;
 
 	/**
 	 * @brief      Evaluates the constraint jacobian wrt the state
 	 *
 	 * @return     The jacobian wrt state
 	 */
-	virtual Eigen::MatrixXd jacobianStateIntermediate() = 0;
+	virtual MatrixXs jacobianStateIntermediate() = 0;
 
 	/**
 	 * @brief      Evaluates the constraint jacobian wrt the state using sparse representation
@@ -110,14 +112,14 @@ public:
 	 * @param      jacVec  The sparse jacobian vector
 	 * @param      count   The size of jacVec
 	 */
-	virtual Eigen::VectorXd jacobianStateSparseTerminal() = 0;
+	virtual VectorXs jacobianStateSparseTerminal() = 0;
 
 	/**
 	 * @brief      Evaluates the constraint jacobian wrt the state
 	 *
 	 * @return     The jacobian wrt state
 	 */
-	virtual Eigen::MatrixXd jacobianStateTerminal() = 0;
+	virtual MatrixXs jacobianStateTerminal() = 0;
 
 	/**
 	 * @brief      Evaluates the constraint jacobian wrt the control input using sparse representation
@@ -125,14 +127,14 @@ public:
 	 * @param      jacVec  The sparse jacobian vector
 	 * @param      count   The size of jacVec
 	 */
-	virtual Eigen::VectorXd jacobianInputSparseIntermediate() = 0;
+	virtual VectorXs jacobianInputSparseIntermediate() = 0;
 
 	/**
 	 * @brief      Evaluates the constraint jacobian wrt the control input
 	 *
 	 * @return     The jacobian wrt control
 	 */
-	virtual Eigen::MatrixXd jacobianInputIntermediate() = 0;
+	virtual MatrixXs jacobianInputIntermediate() = 0;
 
 	/**
 	 * @brief      Evaluates the constraint jacobian wrt the control input using sparse representation
@@ -140,14 +142,14 @@ public:
 	 * @param      jacVec  The sparse jacobian vector
 	 * @param      count   The size of jacVec
 	 */
-	virtual Eigen::VectorXd jacobianInputSparseTerminal() = 0;
+	virtual VectorXs jacobianInputSparseTerminal() = 0;
 
 	/**
 	 * @brief      Evaluates the constraint jacobian wrt the control input
 	 *
 	 * @return     The jacobian wrt control
 	 */
-	virtual Eigen::MatrixXd jacobianInputTerminal() = 0;
+	virtual MatrixXs jacobianInputTerminal() = 0;
 
 	/**
 	 * @brief      Returns the sparsity pattern for the jacobian wrt state

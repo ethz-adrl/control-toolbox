@@ -57,15 +57,15 @@ namespace optcon {
  * @tparam     STATE_DIM    The state dimension
  * @tparam     CONTROL_DIM  The control dimension
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class OptVectorDms : public OptVector
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class OptVectorDms : public tpl::OptVector<SCALAR>
 {
 public:
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef DmsDimensions<STATE_DIM, CONTROL_DIM> DIMENSIONS;
-	typedef OptVector Base;
+	typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
+	typedef tpl::OptVector<SCALAR> Base;
 
 	typedef typename DIMENSIONS::state_vector_t state_vector_t;
 	typedef typename DIMENSIONS::control_vector_t control_vector_t;
@@ -114,7 +114,7 @@ public:
 	 *
 	 * @return     The optimized time segment.
 	 */
-	double getOptimizedTimeSegment(const size_t pairNum) const;
+	SCALAR getOptimizedTimeSegment(const size_t pairNum) const;
 
 	/**
 	 * @brief      Returns the optimized state for all shots
@@ -135,7 +135,7 @@ public:
 	 *
 	 * @return     The optimized time segments.
 	 */
-	const  Eigen::VectorXd& getOptimizedTimeSegments();
+	const  Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>& getOptimizedTimeSegments();
 
 	/**
 	 * @brief      Returns the starting index for the state at shot pairNum
@@ -230,7 +230,7 @@ private:
 
 	state_vector_array_t stateSolution_;
 	control_vector_array_t inputSolution_;
-	Eigen::VectorXd optimizedTimeSegments_;
+	Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> optimizedTimeSegments_;
 
 };
 

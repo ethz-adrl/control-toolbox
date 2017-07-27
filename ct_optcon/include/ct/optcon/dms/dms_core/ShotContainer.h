@@ -51,13 +51,13 @@ namespace optcon {
  * @tparam     STATE_DIM    The state dimension
  * @tparam     CONTROL_DIM  The control dimension
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class ShotContainer
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef DmsDimensions<STATE_DIM, CONTROL_DIM> DIMENSIONS;
+	typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
 
 	typedef typename DIMENSIONS::state_vector_t state_vector_t;
 	typedef typename DIMENSIONS::control_vector_t control_vector_t;
@@ -86,12 +86,12 @@ public:
 	 * @param[in]  settings          The dms settings
 	 */
 	ShotContainer(
-			std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM>> controlledSystem,
-			std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>> linearSystem,
-			std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct,
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
-			std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
-			std::shared_ptr<TimeGrid> timeGrid,
+			std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> controlledSystem,
+			std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem,
+			std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct,
+			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
+			std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner,
+			std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
 			size_t shotNr,
 			DmsSettings settings
 	):
@@ -109,7 +109,7 @@ public:
 		costSensIntegrationCount_(0),
 		x_history_(state_vector_array_t(0)),
 		t_history_(time_array_t(0)),
-		cost_(0.0),
+		cost_(SCALAR(0.0)),
 		costGradientSi_(state_vector_t::Zero()),
 		costGradientQi_(control_vector_t::Zero()),
 		costGradientQip1_(control_vector_t::Zero())
@@ -120,14 +120,14 @@ public:
 		{
 			case DmsSettings::EULER:
 			{
-				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>, Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>>
-						(Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>(), controlledSystem_, core::IntegrationTypeCT::EULER);
+				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>, Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>>
+						(Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>(), controlledSystem_, core::IntegrationTypeCT::EULER);
 				break;
 			}
 			case DmsSettings::RK4:
 			{
-				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>, Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>>
-						(Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>(), controlledSystem_, core::IntegrationTypeCT::RK4);
+				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>, Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>>
+						(Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>(), controlledSystem_, core::IntegrationTypeCT::RK4);
 				break;
 			}
 			case DmsSettings::RK5:
@@ -143,10 +143,10 @@ public:
 		}
 
 		tStart_ = timeGrid_->getShotStartTime(shotNr_);
-		double t_shot_end = timeGrid_->getShotEndTime(shotNr_);
+		SCALAR t_shot_end = timeGrid_->getShotEndTime(shotNr_);
 
 		// +0.5 needed to avoid rounding errors from double to size_t
-		nSteps_ = double(t_shot_end - tStart_) / double(settings_.dt_sim_) + 0.5;
+		nSteps_ = SCALAR(t_shot_end - tStart_) / SCALAR(settings_.dt_sim_) + SCALAR(0.5);
 		// std::cout << "shotNr_: " << shotNr_ << "\t nSteps: " << nSteps_ << std::endl;
 
 		integratorCT_->setLinearSystem(linearSystem_);
@@ -243,7 +243,7 @@ public:
 	 *
 	 * @return     The end time of the integration.
 	 */
-	const double getIntegrationTimeFinal()
+	const SCALAR getIntegrationTimeFinal()
 	{
 		return t_history_.back();
 	}
@@ -332,7 +332,7 @@ public:
 	 *
 	 * @return     The integrated cost.
 	 */
-	const double getCostIntegrated() const
+	const SCALAR getCostIntegrated() const
 	{
 		return cost_;
 	}
@@ -387,18 +387,18 @@ public:
 	 *
 	 * @return     The pointer to the nonlinear dynamics
 	 */
-	std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM>> getControlledSystemPtr() {
-		return controlledSystem_;
-	}
+	// std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> getControlledSystemPtr() {
+	// 	return controlledSystem_;
+	// }
 
 
 private:
-	std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM>> controlledSystem_;
-	std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct_;
-	std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>> linearSystem_;
-	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
-	std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner_;
-	std::shared_ptr<TimeGrid> timeGrid_;
+	std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> controlledSystem_;
+	std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct_;
+	std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem_;
+	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w_;
+	std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner_;
+	std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid_;
 
 	const size_t shotNr_; 
 	const DmsSettings settings_;
@@ -419,14 +419,14 @@ private:
 	state_control_matrix_t dXdQip1Back_;
 
 	//Cost and cost gradient
-	double cost_;
+	SCALAR cost_;
 	state_vector_t costGradientSi_;
 	control_vector_t costGradientQi_;
 	control_vector_t costGradientQip1_;
 
-	std::shared_ptr<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>> integratorCT_;
+	std::shared_ptr<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>> integratorCT_;
 	size_t nSteps_;
-	double tStart_;
+	SCALAR tStart_;
 };
 
 } // namespace optcon

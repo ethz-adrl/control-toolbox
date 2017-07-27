@@ -49,6 +49,10 @@ public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
 	typedef ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
@@ -107,7 +111,7 @@ public:
 		return 1;
 	}
 
-	virtual Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR t) override
+	virtual Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
 		Eigen::Vector3d collision_frame_position;
 		getCollisionPointPosition_(x, collision_frame_position);
@@ -137,7 +141,7 @@ public:
 		return val_;	
 	}
 
-	virtual Eigen::MatrixXd jacobianState(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override
+	virtual Eigen::MatrixXd jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
 		Eigen::Vector3d state;
 
@@ -167,7 +171,7 @@ public:
 		return jac_;
 	}
 
-	virtual Eigen::MatrixXd jacobianInput(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override
+	virtual Eigen::MatrixXd jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
 		return Eigen::Matrix<double, 1, CONTROL_DIM>::Zero();
 	}
