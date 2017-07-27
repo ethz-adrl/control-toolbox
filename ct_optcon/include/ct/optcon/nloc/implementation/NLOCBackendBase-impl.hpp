@@ -360,7 +360,25 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingleShot(size_t threadId, size_t k)
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShotsSingleThreaded(size_t threadId, size_t firstIndex, size_t lastIndex,
+		const ControlVectorArray& u_ff_local, const StateVectorArray& x_start, StateVectorArray& xShot, StateVectorArray& d)
+{
+	for (size_t k=firstIndex; k<=lastIndex; k++)
+	{
+		// first rollout the shot
+		rolloutSingleShot(threadId, k, u_ff_local, x_start, xShot);
+
+		// then compute the corresponding defect
+		computeSingleDefect(threadId, k, x_start, xShot, d);
+	}
+}
+
+
+
+// todo: to extend this to multiple shooting with intermediate steps, make a rollout from to function
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingleShot(const size_t threadId, const size_t k,
+		const ControlVectorArray& u_ff_local, const StateVectorArray& x_start, StateVectorArray& xShot) const
 {
 	const double& dt = settings_.dt;
 	const double& dt_sim = settings_.dt_sim;
@@ -373,26 +391,26 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 	if(settings_.closedLoopShooting)
 		L_sim = L_[k];
 
-	controller_[threadId]->updateControlLaw(u_ff_[k], x_[k], L_sim);
+	controller_[threadId]->updateControlLaw(u_ff_local[k], x_start[k], L_sim);
 
-	xShot_[k] = x_[k];
+	xShot[k] = x_start[k];
 
 	if (settings_.integrator == Settings_t::EULER)
 	{
-		integratorsEuler_[threadId]->integrate_n_steps(xShot_[k], k*dt, steps, dt_sim);
+		integratorsEuler_[threadId]->integrate_n_steps(xShot[k], k*dt, steps, dt_sim);
 	}
 	else if(settings_.integrator == Settings_t::RK4)
 	{
-		integratorsRK4_[threadId]->integrate_n_steps(xShot_[k], k*dt, steps, dt_sim);
+		integratorsRK4_[threadId]->integrate_n_steps(xShot[k], k*dt, steps, dt_sim);
 	}
 #if P_DIM > 0 && V_DIM > 0
 		else if(settings_.integrator == GNMSSettings::EULER_SYM)
 		{
-			integratorsEulerSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
+			integratorsEulerSymplectic_[threadId]->integrate_n_steps(xShot[k], k*dt_sim, 1, dt_sim);
 		}
 		else if(settings_.integrator == GNMSSettings::RK_SYM)
 		{
-			integratorsRkSymplectic_[threadId]->integrate_n_steps(xShot_[k], k*dt_sim, 1, dt_sim);
+			integratorsRkSymplectic_[threadId]->integrate_n_steps(xShot[k], k*dt_sim, 1, dt_sim);
 		}
 #endif
 	else
@@ -401,18 +419,19 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeSingleDefect(size_t threadId, size_t k)
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeSingleDefect(size_t threadId, size_t k,
+		const StateVectorArray& x_start, const StateVectorArray& xShot, StateVectorArray& d)
 {
 	// todo: remove threadId -- not requried here
 
 	if (k< (size_t)K_)
 	{
-		lqocProblem_->b_[k] = xShot_[k] - x_[k+1];
+		d[k] = xShot[k] - x_start[k+1];
 	}
 	else
 	{
 		assert(k==K_ && "k should be K_");
-		lqocProblem_->b_[K_].setZero();
+		d[K_].setZero();
 	}
 }
 
@@ -512,7 +531,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 {
 
-	computeDefectsNorm();
+	d_norm_ = computeDefectsNorm(lqocProblem_->b_);
 
 	std::cout<< settings_.loggingPrefix + " iteration "  << iteration_ << std::endl;
 	std::cout<<"============"<< std::endl;
@@ -571,7 +590,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 	matFile_.put("cost", getCost());
 	matFile_.put("alphaStep", alphaBest_);
 
-	computeDefectsNorm();
+	d_norm_ = computeDefectsNorm(lqocProblem_->b_);
 	matFile_.put("d_norm", d_norm_);
 
 	matFile_.close();
@@ -598,7 +617,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logInitToMat
 	matFile_.put("d", lqocProblem_->b_.toImplementation());
 	matFile_.put("cost", getCost());
 
-	computeDefectsNorm();
+	d_norm_ = computeDefectsNorm(lqocProblem_->b_);
 	matFile_.put("d_norm", d_norm_);
 
 	matFile_.close();
@@ -636,18 +655,19 @@ SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getCost() 
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchController()
+bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSingleShooting()
 {
 	// if first iteration, we have to find cost of initial rollout
-	if (iteration_ == 0) // todo that should be covered already!
-	{
-		intermediateCostBest_ = 0.0;
+//	if (iteration_ == 0) // todo that should be covered already!
+//	{
+//		intermediateCostBest_ = 0.0;
+//
+//		for (int k=K_-1; k>=0; k--)
+//			intermediateCostBest_ += lqocProblem_->q_[k];
+//
+//		finalCostBest_ = lqocProblem_->q_[K_];
+//	}
 
-		for (int k=K_-1; k>=0; k--)
-			intermediateCostBest_ += lqocProblem_->q_[k];
-
-		finalCostBest_ = lqocProblem_->q_[K_];
-	}
 
 	// lowest cost is cost of last rollout
 	lowestCost_ = intermediateCostBest_ + finalCostBest_;
@@ -736,7 +756,7 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSingleController(
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineSearchSingleShooting(
 		const size_t threadId,
 		const scalar_t alpha,
 		const ControlVectorArray& u_ff_update,
@@ -776,6 +796,148 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 #endif
 	}
 }
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMultipleShooting()
+{
+//	if (iteration_ == 0) // todo that should be covered already!
+//	{
+//		intermediateCostBest_ = 0.0;
+//
+//		for (int k=K_-1; k>=0; k--)
+//			intermediateCostBest_ += lqocProblem_->q_[k];
+//
+//		finalCostBest_ = lqocProblem_->q_[K_];
+//
+//		d_norm_ = computeDefectsNorm(lqocProblem_->b_);
+//	}
+
+
+	// lowest cost
+	scalar_t lowestCostPrevious;
+
+	if (!settings_.lineSearchSettings.active)	//! do full step updates
+	{
+		// lowest cost is cost of last rollout
+		lowestCostPrevious = intermediateCostBest_ + finalCostBest_;
+
+		for(size_t i = 0; i<K_; i++)
+		{
+			u_ff_[i] += lu_[i];
+		}
+
+		for(size_t i = 0; i<K_+1; i++)
+		{
+			x_[i] += lx_[i];
+		}
+
+		rolloutShots(0, K_-1);
+
+		updateCosts();
+
+		lowestCost_ = intermediateCostBest_ + finalCostBest_;
+
+#if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
+		computeControlUpdateNorm(u_ff_prev_, u_ff_);
+		computeStateUpdateNorm(x_prev_, x_);
+#endif
+		x_prev_ = x_;
+		alphaBest_ = 1;
+	}
+	else //! do line search over a merit function trading off costs and constraint violations
+	{
+		// merit of previous trajectory
+		lowestCost_ = intermediateCostBest_ + finalCostBest_ + d_norm_ * settings_.meritFunctionRho;
+
+		//! backup controller that led to current trajectory
+		u_ff_prev_ = u_ff_;
+		x_prev_ = x_;
+
+#ifdef DEBUG_PRINT_LINESEARCH
+		std::cout<<"[LineSearch]: Starting line search."<<std::endl;
+		std::cout<<"[LineSearch]: Cost of last rollout:\t"<<intermediateCostBest_ + finalCostBest_<<std::endl;
+		std::cout<<"[LineSearch]: Defect norm last rollout:\t"<<d_norm_<<std::endl;
+		std::cout<<"[LineSearch]: Merit of last rollout:\t"<<lowestCost_<<std::endl;
+#endif //DEBUG_PRINT_LINESEARCH
+
+		alphaBest_ = performLineSearch();
+
+#ifdef DEBUG_PRINT_LINESEARCH
+		std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest_<<", with trade-off "<<std::endl;
+		std::cout<<"[LineSearch]: Cost:\t"<<intermediateCostBest_ + finalCostBest_<<std::endl;
+		std::cout<<"[LineSearch]: Defect norm:\t"<<d_norm_<<std::endl;
+#endif //DEBUG_PRINT_LINESEARCH
+
+#ifdef DEBUG_PRINT
+		if (alphaBest_ == 0.0)
+		{
+			std::cout<<"WARNING: No better control found. Converged."<<std::endl;
+		}
+#endif
+	}
+}
+
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineSearchMultipleShooting(
+		const size_t threadId,
+		const scalar_t alpha,
+		const ControlVectorArray& u_ff_update,
+		const StateVectorArray& x_update,
+		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_recorded,
+		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_recorded,
+		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_recorded,
+		ct::core::tpl::TimeArray<SCALAR>& t_local,
+		scalar_t& intermediateCost,
+		scalar_t& finalCost,
+		scalar_t& defectNorm,
+		std::atomic_bool* terminationFlag
+) const
+{
+	intermediateCost =  std::numeric_limits<scalar_t>::infinity();
+	finalCost = std::numeric_limits<scalar_t>::infinity();
+	defectNorm = std::numeric_limits<scalar_t>::infinity();
+
+	if (terminationFlag && *terminationFlag) return;
+
+	ControlVectorArray u_ff_alpha (K_);
+
+	//! update feedforward
+	for (int k=K_-1; k>=0; k--)
+	{
+		u_ff_alpha[k] = alpha * u_ff_update[k] + u_ff_prev_[k];
+	}
+
+	//! update state decision variables
+	for (int k=K_; k>=0; k--)
+	{
+		x_recorded[k] = alpha * x_update[k] + x_prev_[k];
+	}
+
+	if (terminationFlag && *terminationFlag) return;
+
+	// compute costs
+	computeCostsOfTrajectory(threadId, x_recorded, u_ff_alpha, intermediateCost, finalCost);
+
+	if (terminationFlag && *terminationFlag) return;
+
+	// rollout shots
+	ct::core::StateVectorArray<STATE_DIM, SCALAR> defects;
+	rolloutShotsSingleThreaded(threadId, 0, K_-1, u_ff_alpha, x_recorded, x_shot_recorded, defects);
+
+	if (terminationFlag && *terminationFlag) return;
+
+	// compute defects norm
+	defectNorm = computeDefectsNorm(defects);
+
+	// form a merit from that
+
+	if (terminationFlag && *terminationFlag) return;
+}
+
+
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -879,14 +1041,15 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeState
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefectsNorm()
+SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefectsNorm(const StateVectorArray& d)
 {
-	d_norm_ = 0.0;
+	SCALAR d_norm = 0.0;
 
 	for (int k=0; k<K_; k++)
 	{
-		d_norm_ += lqocProblem_->b_[k].norm();
+		d_norm += d[k].norm();
 	}
+	return d_norm;
 }
 
 
@@ -904,6 +1067,9 @@ const typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::Po
 	policy_.update(x_, u_ff_, L_, t_);
 	return policy_;
 }
+
+
+
 
 } //namespace optcon
 } //namespace ct

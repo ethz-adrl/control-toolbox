@@ -160,6 +160,7 @@ void singleCore()
 		gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
 		gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
 		gnms_settings.closedLoopShooting = false;
+		gnms_settings.lineSearchSettings.active = false;
 		gnms_settings.loggingPrefix = "GNMS";
 
 		NLOptConSettings ilqg_settings = gnms_settings;

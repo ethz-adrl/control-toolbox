@@ -400,8 +400,11 @@ public:
 	 */
 	void debugPrint();
 
-	//! perform line-search and update controller
-	bool lineSearchController();
+	//! perform line-search and update controller for single shooting
+	bool lineSearchSingleShooting();
+
+	//! perform line-search and update controller for multiple shooting
+	void lineSearchMultipleShooting();
 
 	//! Computes the linearization of the dynamics along the trajectory, for the specified indices. See computeLinearizedDynamics for details
 	virtual void computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
@@ -411,19 +414,19 @@ public:
 
 
 	// todo: want to get rid of those in the long run
-	virtual void updateSolutionState() {
-		x_prev_ = x_;
-		x_ = lqocSolver_->getSolutionState();
-		computeStateUpdateNorm(x_prev_, x_);
-	}
-
-
-	// todo: want to get rid of those in the long run
-	virtual void updateSolutionControl() {
-		u_ff_prev_ = u_ff_;
-		u_ff_ = lqocSolver_->getSolutionControl();
-		computeControlUpdateNorm(u_ff_, u_ff_prev_);
-	}
+//	virtual void updateSolutionState() {
+//		x_prev_ = x_;
+//		x_ = lqocSolver_->getSolutionState();
+//		computeStateUpdateNorm(x_prev_, x_);
+//	}
+//
+//
+//	// todo: want to get rid of those in the long run
+//	virtual void updateSolutionControl() {
+//		u_ff_prev_ = u_ff_;
+//		u_ff_ = lqocSolver_->getSolutionControl();
+//		computeControlUpdateNorm(u_ff_, u_ff_prev_);
+//	}
 
 
 	void getStateUpdates() {lx_ = lqocSolver_->getStateUpdates();}
@@ -449,16 +452,28 @@ public:
 	//! integrates the specified shots and computes the corresponding defects
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;
 
+	void rolloutShotsSingleThreaded(size_t threadId, size_t firstIndex, size_t lastIndex, const ControlVectorArray& u_ff_local,
+			const StateVectorArray& x_start, StateVectorArray& xShot, StateVectorArray& d);
+
 	virtual SCALAR performLineSearch() = 0;
 
 
 protected:
 
+	void rolloutSingleShot(const size_t threadId, const size_t k){
+		rolloutSingleShot(threadId, k, this->u_ff_, this->x_, this->xShot_);
+	}
+
 	//! integrate the individual shots
-	void rolloutSingleShot(size_t threadId, size_t k);
+	void rolloutSingleShot(const size_t threadId, const size_t k,
+			const ControlVectorArray& u_ff_local, const StateVectorArray& x_start, StateVectorArray& xShot) const;
+
+	void computeSingleDefect(size_t threadId, size_t k){
+		computeSingleDefect(threadId, k, this->x_, this->xShot_, this->lqocProblem_->b_);
+	}
 
 	//! computes the defect between shot and trajectory
-	void computeSingleDefect(size_t threadId, size_t k);
+	void computeSingleDefect(size_t threadId, size_t k, const StateVectorArray& x_start, const StateVectorArray& xShot, StateVectorArray& d);
 
 
     //! Rollout of nonlinear dynamics
@@ -536,7 +551,7 @@ protected:
 
 
 	//! Check if controller with particular alpha is better
-	void lineSearchSingleController(
+	void executeLineSearchSingleShooting(
 			const size_t threadId,
 			const scalar_t alpha,
 			const ControlVectorArray& u_ff_update,
@@ -547,6 +562,23 @@ protected:
 			scalar_t& finalCost,
 			std::atomic_bool* terminationFlag = nullptr
 	) const;
+
+
+	void executeLineSearchMultipleShooting(
+			const size_t threadId,
+			const scalar_t alpha,
+			const ControlVectorArray& u_ff_update,
+			const StateVectorArray& x_update,
+			ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_recorded,
+			ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_recorded,
+			ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_recorded,
+			ct::core::tpl::TimeArray<SCALAR>& t_local,
+			scalar_t& intermediateCost,
+			scalar_t& finalCost,
+			scalar_t& defectNorm,
+			std::atomic_bool* terminationFlag = nullptr
+	) const;
+
 
 	//! Update feedforward controller
 	/*!
@@ -572,7 +604,7 @@ protected:
 	void computeStateUpdateNorm(const StateVectorArray& x_prev, const StateVectorArray& x_new);
 
 	//! compute the norm of the defects trajectory
-	void computeDefectsNorm();
+	SCALAR computeDefectsNorm(const StateVectorArray& d);
 
 	typedef std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > IntegratorRK4Ptr;
     std::vector<IntegratorRK4Ptr, Eigen::aligned_allocator<IntegratorRK4Ptr> > integratorsRK4_; //! Runge-Kutta-4 Integrators

@@ -309,7 +309,7 @@ void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchWorker(size_t threadId)
 		SCALAR finalCost;
 
 		typename Base::ControlVectorArray u_ff_local(this->K_);
-		this->lineSearchSingleController(threadId, alpha, u_ff_local, x_local, u_local, t_local, intermediateCost, finalCost, &alphaBestFound_);
+		this->executeLineSearchSingleShooting(threadId, alpha, u_ff_local, x_local, u_local, t_local, intermediateCost, finalCost, &alphaBestFound_);
 
 		SCALAR cost = intermediateCost + finalCost;
 

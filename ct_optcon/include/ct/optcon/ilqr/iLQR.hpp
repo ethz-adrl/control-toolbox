@@ -174,7 +174,7 @@ public:
 #endif
 
 		start = std::chrono::steady_clock::now();
-		bool foundBetter = this->backend_->lineSearchController();
+		bool foundBetter = this->backend_->lineSearchSingleShooting();
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT

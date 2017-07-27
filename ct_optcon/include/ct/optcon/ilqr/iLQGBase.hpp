@@ -434,7 +434,7 @@ protected:
 
 
 	//! Check if controller with particular alpha is better
-	void lineSearchSingleController(
+	void executeLineSearchSingleShooting(
 			size_t threadId,
 			scalar_t alpha,
 			ControlVectorArray& u_ff_local,

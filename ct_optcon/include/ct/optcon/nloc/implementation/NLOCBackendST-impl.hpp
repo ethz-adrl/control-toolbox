@@ -50,6 +50,20 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 	}
 }
 
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(size_t firstIndex, size_t lastIndex)
+{
+	for (size_t k=firstIndex; k<=lastIndex; k++)
+	{
+		// first rollout the shot
+		this->rolloutSingleShot(this->settings_.nThreads, k);
+
+		// then compute the corresponding defect
+		this->computeSingleDefect(this->settings_.nThreads, k);
+	}
+}
+
 //template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 //void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionState()
 //{
@@ -70,19 +84,6 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 //	this->lu_norm_ = this->lqocSolver_->getControlUpdateNorm();
 //}
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(size_t firstIndex, size_t lastIndex)
-{
-	for (size_t k=firstIndex; k<=lastIndex; k++)
-	{
-		// first rollout the shot
-		this->rolloutSingleShot(this->settings_.nThreads, k);
-
-		// then compute the corresponding defect
-		this->computeSingleDefect(this->settings_.nThreads, k);
-	}
-}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -118,11 +119,11 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		if(this->settings_.closedLoopShooting)
 		{
 			//! search with lv_ update if we are doing closed-loop shooting
-			this->lineSearchSingleController(this->settings_.nThreads, alpha, this->lv_, x_search, u_recorded, t_search, intermediateCost, finalCost);
+			this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, this->lv_, x_search, u_recorded, t_search, intermediateCost, finalCost);
 		}
 		else{
 			//! search with whole lu_ update if we are doing closed-loop shooting
-			this->lineSearchSingleController(this->settings_.nThreads, alpha, this->lu_, x_search, u_recorded, t_search, intermediateCost, finalCost);
+			this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, this->lu_, x_search, u_recorded, t_search, intermediateCost, finalCost);
 		}
 
 		cost = intermediateCost + finalCost;

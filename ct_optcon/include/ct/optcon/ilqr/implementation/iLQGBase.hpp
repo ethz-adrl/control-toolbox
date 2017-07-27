@@ -592,7 +592,7 @@ SCALAR iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::learnAlpha(const SCALAR& alphaB
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::lineSearchSingleController(
+void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::executeLineSearchSingleShooting(
 		size_t threadId,
 		scalar_t alpha,
 		ControlVectorArray& u_ff_local,

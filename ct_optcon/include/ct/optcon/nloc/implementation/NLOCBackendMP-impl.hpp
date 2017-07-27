@@ -488,8 +488,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 #ifdef DEBUG_PRINT_MP
 		printString("[MP]: do single threaded shot rollout for single index " + std::to_string(firstIndex) + ". Not waking up workers.");
 #endif //DEBUG_PRINT_MP
-		this->rolloutSingleShot(this->settings_.nThreads, firstIndex);
-		this->computeSingleDefect(this->settings_.nThreads, firstIndex);
+		this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->xShot_);
+		this->computeSingleDefect(this->settings_.nThreads, firstIndex, this->x_, this->xShot_, this->lqocProblem_->b_);
 		return;
 	}
 
@@ -553,8 +553,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWo
 			printString("[Thread " + std::to_string(threadId) + "]: rolling out shot with index " + std::to_string(KMax_ - k));
 #endif
 
-		this->rolloutSingleShot(threadId, KMax_ - k);
-		this->computeSingleDefect(threadId, KMax_ - k);
+		this->rolloutSingleShot(threadId, KMax_ - k, this->u_ff_, this->x_, this->xShot_);
+		this->computeSingleDefect(threadId, KMax_ - k, this->x_, this->xShot_, this->lqocProblem_->b_);
 
 		kCompleted_++;
 	}
@@ -657,9 +657,9 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		SCALAR finalCost;
 
 		if(this->settings_.closedLoopShooting)
-			this->lineSearchSingleController(threadId, alpha, this->lv_, x_local, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
+			this->executeLineSearchSingleShooting(threadId, alpha, this->lv_, x_local, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
 		else
-			this->lineSearchSingleController(threadId, alpha, this->lu_, x_local, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
+			this->executeLineSearchSingleShooting(threadId, alpha, this->lu_, x_local, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
 
 
 		SCALAR cost = intermediateCost + finalCost;

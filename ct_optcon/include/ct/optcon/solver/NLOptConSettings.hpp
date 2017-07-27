@@ -208,6 +208,7 @@ public:
 		dt_sim(0.001),
 		min_cost_improvement(1e-4), // cost needs to be at least 1e-4 better before we assume convergence
 		maxDefectSum(1e-5),
+		meritFunctionRho(1.0),
 		max_iterations(100),
 		fixedHessianCorrection(false),
 		recordSmallestEigenvalue(false),
@@ -229,6 +230,7 @@ public:
     double dt_sim;			//! sampling time for the forward simulation (seconds) \warning dt_sim needs to be an integer multiple of dt.
     double min_cost_improvement;	//! minimum cost improvement between two interations to assume convergence
     double maxDefectSum;	//! maximum sum of squared defects (assume covergence if lower than this number)
+    double meritFunctionRho; //! trade off between constraint violation and cost for a merit function
     int max_iterations;		//! the maximum admissible number of NLOptCon main iterations \warning make sure to select this number high enough allow for convergence
     bool fixedHessianCorrection; //! perform Hessian regularization by incrementing the eigenvalues by epsilon.
     bool recordSmallestEigenvalue;	//! save the smallest eigenvalue of the Hessian
@@ -254,8 +256,8 @@ public:
     //! print the current NLOptCon settings to console
     void print() const
     {
-        std::cout<<"NLOptCon Settings: "<<std::endl;
-        std::cout<<"==============="<<std::endl;
+        std::cout<<"======================= NLOptCon Settings ====================="<<std::endl;
+        std::cout<<"==============================================================="<<std::endl;
         std::cout<<"integrator: "<<integratorToString.at(integrator)<<std::endl;
         std::cout<<"discretization: " << discretizationToString.at(discretization)<<std::endl;
         std::cout<<"nonlinear OCP algorithm: " << nlocp_algorithmToString.at(nlocp_algorithm)<<std::endl;
@@ -264,6 +266,9 @@ public:
         std::cout<<"dt: "<<dt<<std::endl;
         std::cout<<"dt_sim: "<<dt_sim<<std::endl;
         std::cout<<"maxIter: "<<max_iterations<<std::endl;
+        std::cout<<"min cost improvement: "<<min_cost_improvement<<std::endl;
+        std::cout<<"max defect sum: "<<maxDefectSum<<std::endl;
+        std::cout<<"merit function rho: "<<meritFunctionRho<<std::endl;
         std::cout<<"fixedHessianCorrection: "<<fixedHessianCorrection<<std::endl;
         std::cout<<"recordSmallestEigenvalue: "<<recordSmallestEigenvalue<<std::endl;
         std::cout<<"epsilon: "<<epsilon<<std::endl;
@@ -277,6 +282,7 @@ public:
         std::cout<<std::endl;
 
         parallelBackward.print();
+        std::cout<<"==============================================================="<<std::endl;
     }
 
     //! perform a quick check if the given NLOptCon settings fulfil minimum requirements
@@ -326,6 +332,8 @@ public:
 		try{min_cost_improvement = pt.get<double>(ns +".min_cost_improvement");
 		} catch (...) {}
 		try{maxDefectSum = pt.get<double>(ns +".maxDefectSum");
+		} catch (...) {}
+		try{meritFunctionRho = pt.get<double>(ns +".meritFunctionRho");
 		} catch (...) {}
 		try{max_iterations = pt.get<int>(ns +".max_iterations");
 		} catch (...) {}
@@ -442,7 +450,7 @@ public:
      * @param ns (optional) settings namespace
      * @return the newly generated settings struct
      */
-    static NLOptConSettings fromConfigFile(const std::string& filename, bool verbose = true, const std::string& ns = "ilqg")
+    static NLOptConSettings fromConfigFile(const std::string& filename, bool verbose = true, const std::string& ns = "alg")
     {
     	NLOptConSettings settings;
     	settings.load(filename, true, ns);

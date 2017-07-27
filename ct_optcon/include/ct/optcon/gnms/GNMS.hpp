@@ -204,29 +204,22 @@ public:
 		std::cout << "Finish solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
-		// update solutions
-		this->backend_->updateSolutionState();		// note: gnms currently not operational
-		this->backend_->updateSolutionControl();
-//		this->backend_->getFeedforwardUpdates();// todo only when closed loop shooting
-		this->backend_->getFeedback(); 			// todo only when closed loop shooting
+
+		//! update solutions
+		this->backend_->getFeedforwardUpdates();
+		this->backend_->getFeedback();
+		this->backend_->getControlUpdates();
+		this->backend_->getStateUpdates();
+
 
 		start = std::chrono::steady_clock::now();
-		this->backend_->rolloutShots(0, K-1);
+		this->backend_->lineSearchMultipleShooting();
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Shot integration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[GNMS]: Line search took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
-		start = std::chrono::steady_clock::now();
-		end = std::chrono::steady_clock::now();
-		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "Defects computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
-
-		// compute new costs
-		this->backend_->updateCosts();
 
 		auto endFinish = std::chrono::steady_clock::now();
 #ifdef DEBUG_PRINT
