@@ -89,11 +89,6 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineSearch()
 {
-#ifdef DEBUG_PRINT_LINESEARCH
-	std::cout<<"Starting line search."<<std::endl;
-	std::cout<<"Cost last rollout: "<<this->lowestCost_<<std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
-
 	// we start with extrapolation
 	double alpha = this->settings_.lineSearchSettings.alpha_0;
 	double alphaBest = 0.0;
@@ -102,7 +97,7 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 	while (iterations < this->settings_.lineSearchSettings.maxIterations)
 	{
 #ifdef DEBUG_PRINT_LINESEARCH
-		std::cout<<"Iteration: "<< iterations << " with alpha: "<<alpha<< " out of maximum " << this->settings_.lineSearchSettings.maxIterations << " iterations. "<< std::endl;
+		std::cout<<"[LineSearch]: Iteration: "<< iterations << ", try alpha: "<<alpha<< " out of maximum " << this->settings_.lineSearchSettings.maxIterations << " iterations. "<< std::endl;
 #endif
 
 		iterations++;
@@ -110,35 +105,72 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		typename Base::scalar_t cost = std::numeric_limits<typename Base::scalar_t>::max();
 		typename Base::scalar_t intermediateCost = std::numeric_limits<typename Base::scalar_t>::max();
 		typename Base::scalar_t finalCost = std::numeric_limits<typename Base::scalar_t>::max();
+		typename Base::scalar_t defectNorm = std::numeric_limits<typename Base::scalar_t>::max();
+
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_search(this->K_+1);
+		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_shot_search(this->K_+1);
+		ct::core::StateVectorArray<STATE_DIM, SCALAR> defects_recorded(this->K_+1, ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_recorded(this->K_);
-		ct::core::tpl::TimeArray<SCALAR> t_search(this->K_+1);
+		ct::core::tpl::TimeArray<SCALAR> t_search(this->K_+1); // todo get rid of t_search
 		x_search[0] = this->x_[0];
 
 
-		if(this->settings_.closedLoopShooting)
+
+		switch(this->settings_.nlocp_algorithm)
 		{
-			//! search with lv_ update if we are doing closed-loop shooting
-			this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, this->lv_, x_search, u_recorded, t_search, intermediateCost, finalCost);
+		case NLOptConSettings::NLOCP_ALGORITHM::GNMS :
+		{
+			this->executeLineSearchMultipleShooting(this->settings_.nThreads, alpha, this->lu_, this->lx_, x_search, x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm);
+			break;
 		}
-		else{
-			//! search with whole lu_ update if we are doing closed-loop shooting
-			this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, this->lu_, x_search, u_recorded, t_search, intermediateCost, finalCost);
+		case NLOptConSettings::NLOCP_ALGORITHM::ILQR :
+		{
+			defectNorm = 0.0;
+
+			if(this->settings_.closedLoopShooting)
+			{
+				//! search with lv_ update if we are doing closed-loop shooting
+				this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, this->lv_, x_search, u_recorded, t_search, intermediateCost, finalCost);
+			}
+			else{
+				//! search with whole lu_ update if we are doing closed-loop shooting
+				this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, this->lu_, x_search, u_recorded, t_search, intermediateCost, finalCost);
+			}
+			break;
+		}
+		default :
+			throw std::runtime_error("Algorithm type unknown in performLineSearch()!");
 		}
 
-		cost = intermediateCost + finalCost;
 
-		if (cost < this->lowestCost_)
+		cost = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm;
+
+		//! catch the case that a rollout might be unstable
+		if(std::isnan(cost) || cost >= this->lowestCost_ ) // todo: alternatively cost >= (this->lowestCost_*(1 - 1e-3*alpha)), study this
 		{
-			if(std::isnan(cost))
-				throw(std::runtime_error("cost is NaN - must not happen since dynamicsGood == true "));
+#ifdef DEBUG_PRINT_LINESEARCH
+			std::cout<<"[LineSearch]: No better cost/merit found at alpha "<< alpha << ":" << std::endl;
+			std::cout<<"[LineSearch]: Cost:\t"<<intermediateCost + finalCost<<std::endl;
+			std::cout<<"[LineSearch]: Defect:\t"<<defectNorm<<std::endl;
+			std::cout<<"[LineSearch]: Merit:\t"<<cost<<std::endl;
+
+#endif //DEBUG_PRINT_LINESEARCH
+
+			//! compute new alpha
+			alpha = alpha * this->settings_.lineSearchSettings.n_alpha;
+		}
+		else
+		{
+			//! cost < this->lowestCost_ , better merit/cost found!
 
 #ifdef DEBUG_PRINT_LINESEARCH
-			std::cout<<"Lower cost found: "<< cost <<" at alpha: "<< alpha << std::endl;
+			std::cout<<"Lower cost/merit found at alpha: "<< alpha << ":" << std::endl;
+			std::cout<<"merit: " << cost << "cost "<<intermediateCost + finalCost<<", defect " << defectNorm << " at alpha: "<< alpha << std::endl;
 #endif //DEBUG_PRINT_LINESEARCH
 
 			this->intermediateCostBest_ = intermediateCost;
 			this->finalCostBest_ = finalCost;
+			this->d_norm_ = defectNorm;
 
 #if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
 			this->computeControlUpdateNorm(u_recorded, this->u_ff_prev_);
@@ -149,18 +181,12 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 			this->x_prev_ = x_search;
 			this->lowestCost_ = cost;
 			this->x_.swap(x_search);
+			this->xShot_.swap(x_shot_search);
 			this->u_ff_.swap(u_recorded);
-			this->t_.swap(t_search);
+			this->lqocProblem_->b_.swap(defects_recorded);
 			break;
 		}
-		else
-		{
-#ifdef DEBUG_PRINT_LINESEARCH
-			std::cout<<"No better cost found: "<<cost<<" at alpha: "<<alpha<<" so trying again."<<std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
-		}
-		alpha = alpha * this->settings_.lineSearchSettings.n_alpha;
-	}
+	} //! end while
 
 	return alphaBest;
 }

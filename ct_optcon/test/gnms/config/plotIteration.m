@@ -1,4 +1,4 @@
-function [] = plotIteration( fileName , iter, color, markerType, jointNr)
+function [] = plotIteration( fileName , iter, color, markerType, jointNr, plotDefect)
 
 load(fileName);
 
@@ -17,12 +17,14 @@ subplot(3,3,2)
 plot(t(1:end-1), u_ff(jointNr,:), color, 'MarkerSize',1); hold on;
 %    legend('init', '1', '2', '3');
 
-subplot(3,3,3)
+if plotDefect
+subplot(3,3,3, 'YScale', 'log')
 plot(iter, d_norm, strcat(color,markerType), 'MarkerSize', 8); hold on
 % legend('1', '2', '3');
+end
 
 subplot(3,3,4)
-%plot(t, squeeze(lx(1,:)), color); hold on
+plot(iter, alphaStep, strcat(color,markerType), 'MarkerSize', 8); hold on
 %legend('1', '2', '3');
 
 subplot(3,3,5)
@@ -30,13 +32,13 @@ subplot(3,3,5)
 %legend('1', '2', '3');
 
 subplot(3,3,6)
-plot(iter, cost, strcat(color,markerType), 'MarkerSize', 8); hold on;
+plot(iter, cost, strcat(color,markerType), 'MarkerSize', 8);
 
 subplot(3,3,7)
-plot(iter, lx_norm, strcat(color,markerType), 'MarkerSize', 8);hold on;
+plot(iter, lx_norm, strcat(color,markerType), 'MarkerSize', 8);
 
 subplot(3,3,8)
-plot(iter, lu_norm, strcat(color,markerType), 'MarkerSize', 8);hold on;
-lu_norm
+plot(iter, lu_norm, strcat(color,markerType), 'MarkerSize', 8);
+
 end
 

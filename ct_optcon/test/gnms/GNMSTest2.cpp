@@ -199,12 +199,13 @@ void singleCore()
 	NLOptConSolver::Policy_t initController (x0, u0, u0_fb, gnms_settings.dt);
 
 	// construct single-core single subsystem OptCon Problem
-	OptConProblem<state_dim, control_dim> optConProblem (tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
+	OptConProblem<state_dim, control_dim> optConProblem1 (tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
+	OptConProblem<state_dim, control_dim> optConProblem2 (tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
 
 
 	std::cout << "initializing solvers" << std::endl;
-	NLOptConSolver gnms(optConProblem, gnms_settings);
-	NLOptConSolver ilqr(optConProblem, ilqr_settings);
+	NLOptConSolver gnms(optConProblem1, gnms_settings);
+	NLOptConSolver ilqr(optConProblem2, ilqr_settings);
 
 
 	gnms.configure(gnms_settings);
@@ -215,13 +216,12 @@ void singleCore()
 
 
 
-	std::cout << "running gnms solver" << std::endl;
-
+	std::cout << "============ running solver 1 ==============" << std::endl;
 
 	bool foundBetter = true;
 	size_t numIterations = 0;
 
-	while (numIterations<10)
+	while (numIterations < gnms_settings.max_iterations)
 	{
 		foundBetter = gnms.runIteration();
 
@@ -235,10 +235,11 @@ void singleCore()
 		std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
 	}
 
-	foundBetter = true;
+	std::cout << "============ running solver 2 ==============" << std::endl;
 
+	foundBetter = true;
 	numIterations = 0;
-	while (numIterations<10)
+	while (numIterations < ilqr_settings.max_iterations)
 	{
 		foundBetter = ilqr.runIteration();
 

@@ -453,28 +453,24 @@ public:
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;
 
 	void rolloutShotsSingleThreaded(size_t threadId, size_t firstIndex, size_t lastIndex, const ControlVectorArray& u_ff_local,
-			const StateVectorArray& x_start, StateVectorArray& xShot, StateVectorArray& d);
+			const StateVectorArray& x_start, StateVectorArray& xShot, StateVectorArray& d) const;
 
 	virtual SCALAR performLineSearch() = 0;
 
 
 protected:
 
-	void rolloutSingleShot(const size_t threadId, const size_t k){
-		rolloutSingleShot(threadId, k, this->u_ff_, this->x_, this->xShot_);
-	}
-
 	//! integrate the individual shots
-	void rolloutSingleShot(const size_t threadId, const size_t k,
-			const ControlVectorArray& u_ff_local, const StateVectorArray& x_start, StateVectorArray& xShot) const;
-
-	void computeSingleDefect(size_t threadId, size_t k){
-		computeSingleDefect(threadId, k, this->x_, this->xShot_, this->lqocProblem_->b_);
-	}
+	void rolloutSingleShot(const size_t threadId, const size_t k, const ControlVectorArray& u_ff_local, const StateVectorArray& x_start, StateVectorArray& xShot) const;
 
 	//! computes the defect between shot and trajectory
-	void computeSingleDefect(size_t threadId, size_t k, const StateVectorArray& x_start, const StateVectorArray& xShot, StateVectorArray& d);
+	void computeSingleDefect(size_t threadId, size_t k, const StateVectorArray& x_start, const StateVectorArray& xShot, StateVectorArray& d) const;
 
+	//! rollout single shot for nominal case // todo try to replace
+	void rolloutSingleShot(const size_t threadId, const size_t k) {rolloutSingleShot(threadId, k, this->u_ff_, this->x_, this->xShot_); }
+
+	//! compute single defect for nominal case // todo try to replace
+	void computeSingleDefect(size_t threadId, size_t k){ computeSingleDefect(threadId, k, this->x_, this->xShot_, this->lqocProblem_->b_);}
 
     //! Rollout of nonlinear dynamics
     /*!
@@ -571,8 +567,8 @@ protected:
 			const StateVectorArray& x_update,
 			ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_recorded,
 			ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_recorded,
+			ct::core::StateVectorArray<STATE_DIM, SCALAR>& defects_recorded,
 			ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_recorded,
-			ct::core::tpl::TimeArray<SCALAR>& t_local,
 			scalar_t& intermediateCost,
 			scalar_t& finalCost,
 			scalar_t& defectNorm,
@@ -604,7 +600,7 @@ protected:
 	void computeStateUpdateNorm(const StateVectorArray& x_prev, const StateVectorArray& x_new);
 
 	//! compute the norm of the defects trajectory
-	SCALAR computeDefectsNorm(const StateVectorArray& d);
+	SCALAR computeDefectsNorm(const StateVectorArray& d) const;
 
 	typedef std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > IntegratorRK4Ptr;
     std::vector<IntegratorRK4Ptr, Eigen::aligned_allocator<IntegratorRK4Ptr> > integratorsRK4_; //! Runge-Kutta-4 Integrators

@@ -1,4 +1,4 @@
-function [] = plotInitGuesses( fileName, color, markerType, jointNr)
+function [] = plotInitGuesses(fileName, color, markerType, jointNr, plotDefect)
 
 load(fileName);
 
@@ -16,18 +16,21 @@ plot(t(1:end-1), u_ff(jointNr,:), color, 'MarkerSize',1); hold on;
 xlabel('t [sec]')
 title('control');
 
+
+if plotDefect
 subplot(3,3,3)
 plot(-1, d_norm, 'o', 'MarkerSize', 8);
 hold on; grid on
 title('defect norm')
 xlabel('t [sec]')
 ylabel('d [m]')
+end
 
-% subplot(3,3,4)
-% hold on
-% title('state update')
-% xlabel('t [sec]')
-% ylabel('dx [m]')
+ subplot(3,3,4)
+ hold on
+ title('stepsize')
+ xlabel('iter')
+ ylabel('alpha')
 % 
 % subplot(3,3,5)
 % hold on;
