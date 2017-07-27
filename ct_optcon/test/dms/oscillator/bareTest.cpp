@@ -38,7 +38,8 @@ class OscillatorDms
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef CppAD::AD<CppAD::cg::CG<double> > ScalarCG;
+	// typedef CppAD::AD<CppAD::cg::CG<double> > ScalarCG;
+	typedef double ScalarCG;
 
 	typedef DmsDimensions<2,1> OscDimensions;
 
@@ -95,12 +96,12 @@ public:
 		std::shared_ptr<ControlInputConstraint<2,1>> inputConstraint(new ControlInputConstraint<2,1>(uLow, uHigh));
 		std::shared_ptr<StateConstraint<2,1>> stateConstraint(new StateConstraint<2,1>(xLow, xHigh));
 
-		std::shared_ptr<optcon::tpl::StateConstraint<2, 1, ScalarCG>> stateConstraintAd(
-			new optcon::tpl::StateConstraint<2, 1, ScalarCG>(xLow, xHigh));
-		std::shared_ptr<optcon::tpl::ControlInputConstraint<2, 1, ScalarCG>> inputConstraintAd(
-			new optcon::tpl::ControlInputConstraint<2, 1, ScalarCG> (uLow, uHigh));
-		std::shared_ptr<optcon::tpl::TerminalConstraint<2,1, ScalarCG>> termConstraintAd(
-			new optcon::tpl::TerminalConstraint<2,1, ScalarCG>(x_final_));
+		std::shared_ptr<optcon::StateConstraint<2, 1>> stateConstraintAd(
+			new optcon::StateConstraint<2, 1>(xLow, xHigh));
+		std::shared_ptr<optcon::ControlInputConstraint<2, 1>> inputConstraintAd(
+			new optcon::ControlInputConstraint<2, 1> (uLow, uHigh));
+		std::shared_ptr<optcon::TerminalConstraint<2,1>> termConstraintAd(
+			new optcon::TerminalConstraint<2,1>(x_final_));
 
 		termConstraint->setName("TerminalConstraint");
 		stateConstraint->setName("StateConstraint");

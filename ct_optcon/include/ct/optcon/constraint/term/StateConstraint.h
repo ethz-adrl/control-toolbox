@@ -63,8 +63,8 @@ public:
 	 * @param[in]  xHigh  The upper state bound
 	 */
 	StateConstraint(
-		const core::StateVector<STATE_DIM>& xLow,
-		const core::StateVector<STATE_DIM>& xHigh)
+		const state_vector_t& xLow,
+		const state_vector_t& xHigh)
 	{
 		Base::lb_.resize(STATE_DIM);
 		Base::ub_.resize(STATE_DIM);
@@ -84,6 +84,14 @@ public:
 	}
 
 	virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
+	{
+		return x;
+	}
+
+	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t) override
 	{
 		return x;
 	}
@@ -109,7 +117,7 @@ public:
 
 	virtual VectorXs jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
-		return core::StateVector<STATE_DIM>::Ones();
+		return state_vector_t::Ones();
 	}
 
 	virtual void sparsityPatternState(VectorXi& rows, VectorXi& cols) override

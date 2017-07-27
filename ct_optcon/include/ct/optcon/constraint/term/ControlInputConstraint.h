@@ -91,12 +91,20 @@ public:
 		return u;
 	}
 
-	virtual Eigen::MatrixXd jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
+	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t) override
+	{
+		return u;
+	}
+
+	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
 		return Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>::Zero();
 	}
 
-	virtual Eigen::MatrixXd jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
+	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
 		return Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>::Identity();
 	}
@@ -111,7 +119,7 @@ public:
 		return CONTROL_DIM;
 	}
 
-	virtual Eigen::VectorXd jacobianInputSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
+	virtual VectorXs jacobianInputSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
 		return core::ControlVector<CONTROL_DIM, SCALAR>::Ones();
 	}

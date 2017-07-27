@@ -65,13 +65,13 @@ public:
 		Base::lb_.resize(1);
 		Base::ub_.resize(1);
 		Base::lb_(0) = 0.0;
-		Base::ub_(0) = std::numeric_limits<double>::max();
+		Base::ub_(0) = std::numeric_limits<SCALAR>::max();
 	}
 
 	ObstacleConstraint(
 			std::shared_ptr<Obstacle3d> obstacle,
 			std::function<void (const core::StateVector<STATE_DIM>&, Eigen::Vector3d&)> getPosition,
-			std::function<void (const core::StateVector<STATE_DIM>&, Eigen::Matrix<double, 3, STATE_DIM>&)> getJacobian)
+			std::function<void (const core::StateVector<STATE_DIM>&, Eigen::Matrix<SCALAR, 3, STATE_DIM>&)> getJacobian)
 	:
 		obstacle_(obstacle),
 		getCollisionPointPosition_(getPosition),
@@ -80,7 +80,7 @@ public:
 		this->lb_.resize(1);
 		this->ub_.resize(1);
 		this->lb_(0) = 0.0;
-		this->ub_(0) = std::numeric_limits<double>::max();
+		this->ub_(0) = std::numeric_limits<SCALAR>::max();
 
 		selectionMatrix_squared_.setZero();
 		if(obstacle_->type() == Ellipsoidal3d)
@@ -121,7 +121,7 @@ public:
 		Eigen::Matrix3d R = Eigen::Matrix3d::Zero(); // rotation matrix
 		R = ((obstacle_->getOrientation(x)).matrix());
 
-		double valLocal = 0.0;
+		SCALAR valLocal = SCALAR(0.0);
 
 		switch(obstacle_->type())
 		{
@@ -141,7 +141,7 @@ public:
 		return val_;	
 	}
 
-	virtual Eigen::MatrixXd jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
+	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
 		Eigen::Vector3d state;
 
@@ -151,7 +151,7 @@ public:
 		Eigen::Matrix3d R = Eigen::Matrix3d::Zero(); // rotation matrix
 		R = (obstacle_->getOrientation(t)).matrix();
 
-		Eigen::Matrix<double, 3, STATE_DIM> dFkdSi;
+		Eigen::Matrix<SCALAR, 3, STATE_DIM> dFkdSi;
 		getCollisionPointJacobian_(x, dFkdSi);
  
 		switch(obstacle_->type())
@@ -171,9 +171,9 @@ public:
 		return jac_;
 	}
 
-	virtual Eigen::MatrixXd jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
+	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
-		return Eigen::Matrix<double, 1, CONTROL_DIM>::Zero();
+		return Eigen::Matrix<SCALAR, 1, CONTROL_DIM>::Zero();
 	}
 
 
@@ -183,7 +183,7 @@ private:
 	Eigen::Matrix3d selectionMatrix_squared_;
 
 	std::function<void (const core::StateVector<STATE_DIM>&, Eigen::Vector3d&)> getCollisionPointPosition_;
-	std::function<void (const core::StateVector<STATE_DIM>&, Eigen::Matrix<double, 3, STATE_DIM>&)> getCollisionPointJacobian_;
+	std::function<void (const core::StateVector<STATE_DIM>&, Eigen::Matrix<SCALAR, 3, STATE_DIM>&)> getCollisionPointJacobian_;
 
 	core::StateVector<1, SCALAR> val_;
 	Eigen::Matrix<SCALAR, 1, STATE_DIM> jac_;

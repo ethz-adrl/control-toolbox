@@ -62,12 +62,12 @@ public:
 	 */
 	TerminalConstraint(const core::StateVector<STATE_DIM, SCALAR> xf)
 	{
-		xF_ = xf.template cast<SCALAR>();
+		xF_ = xf;
 		Base::lb_.resize(STATE_DIM);
 		Base::ub_.resize(STATE_DIM);
 		// The terminal state constraint is treated as equality constraint, therefore, ub = lb
-		Base::lb_.setConstant(0.0);
-		Base::ub_.setConstant(0.0);
+		Base::lb_.setConstant(SCALAR(0.0));
+		Base::ub_.setConstant(SCALAR(0.0));
 	}
 
 	virtual TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
@@ -90,12 +90,20 @@ public:
 		return x - xF_;
 	}
 
-	virtual Eigen::MatrixXd jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
+	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t) override
+	{
+		return x - xF_.template cast<ct::core::ADCGScalar>();
+	}
+
+	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
 		return Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>::Identity();
 	}
 
-	virtual Eigen::MatrixXd jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
+	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
 		return Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM>::Zero();
 	}
@@ -109,7 +117,7 @@ public:
 		return 0;
 	}
 
-	virtual Eigen::VectorXd jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
+	virtual VectorXs jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
 		return core::StateVector<STATE_DIM, SCALAR>::Ones();
 	}

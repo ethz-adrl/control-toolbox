@@ -157,7 +157,7 @@ public:
 		for(auto constraint : constraintsIntermediate_)
 		{
 			size_t constraint_dim = constraint->getConstraintSize();
-			evalIntermediate_.segment(count, constraint_dim) = constraint->eval(this->x_, this->u_, this->t_);
+			evalIntermediate_.segment(count, constraint_dim) = constraint->evaluate(this->x_, this->u_, this->t_);
 			count += constraint_dim;
 		}
 		return evalIntermediate_;		
@@ -171,7 +171,7 @@ public:
 		for(auto constraint : constraintsTerminal_)
 		{
 			size_t constraint_dim = constraint->getConstraintSize();
-			evalTerminal_.segment(count, constraint_dim) = constraint->eval(this->x_, this->u_, this->t_);
+			evalTerminal_.segment(count, constraint_dim) = constraint->evaluate(this->x_, this->u_, this->t_);
 			count += constraint_dim;
 		}
 		return evalTerminal_;		

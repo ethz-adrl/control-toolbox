@@ -45,14 +45,17 @@ const size_t input_dim = 8;
 
 
 //! A pure state constraint term
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-class PureStateConstraint_Example : public ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class PureStateConstraint_Example : public ct::optcon::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
-	typedef ct::optcon::tpl::ConstraintBase<state_dim, input_dim, SCALAR> Base;
+	typedef ct::optcon::ConstraintBase<state_dim, input_dim, SCALAR> Base;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;	
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
 	PureStateConstraint_Example()
 	{
@@ -75,31 +78,42 @@ public:
 
 	virtual size_t getConstraintSize() const override {return STATE_DIM;}
 
-	virtual VectorXs evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR t) override
+	virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	 {
-	 	return A_.template cast<SCALAR>() * x;
+	 	return A_ * x;
 	 }
 
-	virtual Eigen::MatrixXd jacobianState(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override 
+	 virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t) override
+	{
+		return A_.template cast<ct::core::ADCGScalar>() * x;
+	}
+
+	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override 
 	{
 		return A_;
 	}
 
-	void setA(const Eigen::Matrix<double, STATE_DIM, STATE_DIM>& A){A_ = A;}
+	void setA(const Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>& A){A_ = A;}
 
 private:
-	Eigen::Matrix<double, STATE_DIM, STATE_DIM> A_;
+	Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> A_;
 };
 
 //! A state input constraint term
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-class StateInputConstraint_Example : public ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class StateInputConstraint_Example : public ct::optcon::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
-	typedef ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+	typedef ct::optcon::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
 	StateInputConstraint_Example()
 	{
@@ -110,7 +124,7 @@ public:
 	}
 
 	StateInputConstraint_Example(const StateInputConstraint_Example& arg):
-		ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
+		ct::optcon::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
 		A_(arg.A_),
 		B_(arg.B_)
 		{
@@ -124,42 +138,54 @@ public:
 
 	virtual size_t getConstraintSize() const override {return CONTROL_DIM;}
 
-	VectorXs evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR t) 
+	VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) 
 	{
-		return (A_.template cast<SCALAR>() * x + B_.template cast<SCALAR>() * u);
+		return A_ * x + B_ * u;
 	}
 
-	virtual Eigen::MatrixXd jacobianState(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override 
+	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t) override
+	{
+		return (A_.template cast<ct::core::ADCGScalar>() * x + B_.template cast<ct::core::ADCGScalar>() * u);
+	}	
+
+	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override 
 	{
 		return A_;
 	}
 
-	virtual Eigen::MatrixXd jacobianInput(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override 
+	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override 
 	{
 		return B_;
 	}
 
-	void setAB(const Eigen::Matrix<double, CONTROL_DIM, STATE_DIM>& A, const Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> B){
+	void setAB(const Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>& A, const Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> B){
 		A_ = A;
 		B_ = B;
 	}
 
 private:
-	Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> A_;
-	Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> B_;
+	Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> A_;
+	Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> B_;
 };
 
 
 //! A simple example with an 1d constraint
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-class ConstraintTerm1D : public ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class ConstraintTerm1D : public ct::optcon::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	const static size_t term_dim = 1;
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
-	typedef ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+	typedef typename ct::core::tpl::TraitSelector<ct::core::ADCGScalar>::Trait TraitCG;
+	typedef ct::optcon::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;	
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
 	ConstraintTerm1D()
 	{
@@ -175,37 +201,51 @@ public:
 
 	virtual size_t getConstraintSize() const override {return term_dim;}
 
-	virtual VectorXs evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR t) override 
+	virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override 
 	{
 		Eigen::Matrix<SCALAR, term_dim, 1>  constr_violation;
 		constr_violation.template segment<1>(0) << (u(1)*Trait::cos(x(2)) - u(0)*Trait::sin(x(2)) - u(2));
 		return constr_violation;
 	}
 
-	virtual Eigen::MatrixXd jacobianState(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override{
-		Eigen::Matrix<double, term_dim, STATE_DIM> jac; jac.setZero();
-		jac << 0.0, 0.0, -u(1)*sin(x(2)) - u(0)*cos(x(2));
+	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t) override
+	{
+		Eigen::Matrix<ct::core::ADCGScalar, term_dim, 1>  constr_violation;
+		constr_violation.template segment<1>(0) << (u(1)*TraitCG::cos(x(2)) - u(0)*TraitCG::sin(x(2)) - u(2));
+		return constr_violation;
+	}	
+
+	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override{
+		Eigen::Matrix<SCALAR, term_dim, STATE_DIM> jac; jac.setZero();
+		jac << SCALAR(0.0), SCALAR(0.0), -u(1)*sin(x(2)) - u(0)*cos(x(2));
 		return jac;
 	}
 
-	virtual Eigen::MatrixXd jacobianInput(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override{
-		Eigen::Matrix<double, term_dim, CONTROL_DIM> jac; jac.setZero();
-		jac << -sin(x(2)), cos(x(2)), -1.0;
+	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override{
+		Eigen::Matrix<SCALAR, term_dim, CONTROL_DIM> jac; jac.setZero();
+		jac << -sin(x(2)), cos(x(2)), SCALAR(-1.0);
 		return jac;
 	}
 };
 
 
 //! A simple example with a 2d constraint
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-class ConstraintTerm2D : public ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class ConstraintTerm2D : public ct::optcon::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	const static size_t term_dim = 2;
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
-	typedef ct::optcon::tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+	typedef typename ct::core::tpl::TraitSelector<ct::core::ADCGScalar>::Trait TraitCG;
+	typedef ct::optcon::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;	
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
 	ConstraintTerm2D()
 	{
@@ -221,23 +261,34 @@ public:
 
 	virtual size_t getConstraintSize() const override {return term_dim;}
 
-	virtual VectorXs evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR t) override {
+	virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override {
 		Eigen::Matrix<SCALAR, term_dim, 1>  constr_violation;
 		constr_violation(0) = (u(1)*Trait::cos(x(2)) - u(0)*Trait::sin(x(2)) - u(2));
 		constr_violation(1) = (u(2)*Trait::cos(x(1)) - u(2)*Trait::sin(x(1)) - u(1));
 		return constr_violation;
 	}
 
-	virtual Eigen::MatrixXd jacobianState(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override {
-		Eigen::Matrix<double, term_dim, STATE_DIM> jac; jac.setZero();
+	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t) override
+	{
+		Eigen::Matrix<ct::core::ADCGScalar, term_dim, 1>  constr_violation;
+		constr_violation(0) = (u(1)*TraitCG::cos(x(2)) - u(0)*TraitCG::sin(x(2)) - u(2));
+		constr_violation(1) = (u(2)*TraitCG::cos(x(1)) - u(2)*TraitCG::sin(x(1)) - u(1));
+		return constr_violation;
+	}		
+
+	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override {
+		Eigen::Matrix<SCALAR, term_dim, STATE_DIM> jac; jac.setZero();
 		jac.row(0) << 0.0, 0.0, -u(1)*sin(x(2)) - u(0)*cos(x(2));
 		jac.row(1) << 0.0, -(u(2))*sin(x(1)) - u(2)*cos(x(1)), 0.0;
 
 		return jac;
 	}
 
-	virtual Eigen::MatrixXd jacobianInput(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override {
-		Eigen::Matrix<double, term_dim, CONTROL_DIM> jac; jac.setZero();
+	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override {
+		Eigen::Matrix<SCALAR, term_dim, CONTROL_DIM> jac; jac.setZero();
 		jac.row(0) << -sin(x(2)), cos(x(2)), -1.0;
 		jac.row(1) << 0.0, -1.0,  cos(x(1)) - sin(x(1));
 		return jac;
@@ -256,8 +307,8 @@ TEST(pureStateConstraintTest, pureStateConstraintTest)
 
 	Eigen::Matrix<double, state_dim, state_dim> A; A.setRandom();
 
-	std::shared_ptr<PureStateConstraint_Example<state_dim, input_dim, ScalarCg>> term1_ad ( 
-		new PureStateConstraint_Example<state_dim, input_dim, ScalarCg>());
+	std::shared_ptr<PureStateConstraint_Example<state_dim, input_dim>> term1_ad ( 
+		new PureStateConstraint_Example<state_dim, input_dim>());
 	term1_ad->setName("term1_ad");
 	term1_ad->setA(A);
 
@@ -342,8 +393,8 @@ TEST(stateInputConstraintTest, stateInputConstraintTest)
 	Eigen::Matrix<double, input_dim, state_dim> A; A.setRandom();
 	Eigen::Matrix<double, input_dim, input_dim> B; B.setRandom();
 
-	std::shared_ptr<StateInputConstraint_Example<state_dim, input_dim, ScalarCg>> term1_ad ( 
-		new StateInputConstraint_Example<state_dim, input_dim, ScalarCg>());
+	std::shared_ptr<StateInputConstraint_Example<state_dim, input_dim>> term1_ad ( 
+		new StateInputConstraint_Example<state_dim, input_dim>());
 	term1_ad->setName("term1_ad");
 	term1_ad->setAB(A, B);
 
@@ -418,10 +469,10 @@ TEST(comparisonAnalyticAD, comparisonAnalyticAD)
 	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<3, 3>> constraintAN (
 		new ct::optcon::ConstraintContainerAnalytical<3, 3>());
 
-	std::shared_ptr<ConstraintTerm1D<3, 3, ScalarCg>> term1_ad (
-		new ConstraintTerm1D<3, 3, ScalarCg>()); term1_ad->setName("term1_ad");
-	std::shared_ptr<ConstraintTerm2D<3, 3, ScalarCg>> term2_ad (
-		new ConstraintTerm2D<3, 3, ScalarCg>()); term2_ad->setName("term2_ad");
+	std::shared_ptr<ConstraintTerm1D<3, 3>> term1_ad (
+		new ConstraintTerm1D<3, 3>()); term1_ad->setName("term1_ad");
+	std::shared_ptr<ConstraintTerm2D<3, 3>> term2_ad (
+		new ConstraintTerm2D<3, 3>()); term2_ad->setName("term2_ad");
 
 	std::shared_ptr<ConstraintTerm1D<3, 3, double>> term1_an (
 		new ConstraintTerm1D<3, 3, double>()); term1_an->setName("term1_an");

@@ -100,20 +100,15 @@ public:
 	 */
 	virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) = 0;
 
-	/**
-	 * @brief      This method evaluates to constraint violation. This method
-	 *             should only be called by the analytical constraint container
-	 *
-	 * @param[in]  x     The state vector
-	 * @param[in]  u     The control vector
-	 * @param[in]  t     The time
-	 *
-	 * @return     The constraint violation
-	 */
-	VectorXs eval(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
+	// This is a hack
+	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t)
 	{
-		return evaluate(x, u, t);
+		throw std::runtime_error("Term " + name_ + " has no Implementation of evaluateCppaCg.");
 	}
+
 
 	/**
 	 * @brief      Returns the number of constraints
