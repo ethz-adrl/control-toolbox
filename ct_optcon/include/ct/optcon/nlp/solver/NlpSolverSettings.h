@@ -120,6 +120,8 @@ public:
 
         minor_iteration_limit_param_ = pt.get<unsigned int>(ns + ".MaxMinorIterations");
         major_iteration_limit_param_ = pt.get<unsigned int>(ns + ".MaxMajorIterations");
+        minor_print_level_param_ = pt.get<unsigned int>(ns + ".MinorPrintLevelVerbosity");
+        major_print_level_param_ = pt.get<unsigned int>(ns + ".MajorPrintLevelVerbosity");
     }
 
 };
@@ -221,6 +223,8 @@ public:
             derivativeTest_ = "first-order";
         if(!checkDerivatives)
             derivativeTest_ = "none";
+
+        printLevel_ = pt.get<unsigned int>(ns + ".Verbosity");
     }
 
 };
