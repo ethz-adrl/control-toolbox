@@ -375,7 +375,7 @@ public:
 	void updateCosts();
 
 	//! check if GNMS is converged
-	bool isConverged();
+//	bool isConverged();
 
 	//! nominal rollout using default thread and member variables for the results.
 	bool nominalRollout() {
@@ -404,7 +404,7 @@ public:
 	bool lineSearchSingleShooting();
 
 	//! perform line-search and update controller for multiple shooting
-	void lineSearchMultipleShooting();
+	bool lineSearchMultipleShooting();
 
 	//! Computes the linearization of the dynamics along the trajectory, for the specified indices. See computeLinearizedDynamics for details
 	virtual void computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;

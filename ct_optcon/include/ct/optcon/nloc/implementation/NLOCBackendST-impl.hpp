@@ -62,28 +62,9 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 		// then compute the corresponding defect
 		this->computeSingleDefect(this->settings_.nThreads, k);
 	}
+
+	this->d_norm_ = this->computeDefectsNorm(this->lqocProblem_->b_);
 }
-
-//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-//void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionState()
-//{
-//	this->x_ = this->lqocSolver_->getSolutionState();
-//
-//	//! get state update norm. may be overwritten later, depending on the algorithm
-//	this->lx_norm_ = this->lqocSolver_->getStateUpdateNorm();
-//}
-//
-//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-//void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedforward()
-//{
-//	this->u_ff_prev_ = this->u_ff_;
-//
-//	this->u_ff_ = this->lqocSolver_->getSolutionControl();
-//
-//	//! get control update norm. may be overwritten later, depending on the algorithm
-//	this->lu_norm_ = this->lqocSolver_->getControlUpdateNorm();
-//}
-
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>

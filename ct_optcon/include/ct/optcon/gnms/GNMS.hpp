@@ -213,7 +213,7 @@ public:
 
 
 		start = std::chrono::steady_clock::now();
-		this->backend_->lineSearchMultipleShooting();
+		bool foundBetter = this->backend_->lineSearchMultipleShooting();
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
@@ -237,7 +237,7 @@ public:
 
 		this->backend_->iteration()++;
 
-		return (!this->backend_->isConverged());
+		return foundBetter;
 
 	} //! finishIteration()
 
