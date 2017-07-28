@@ -665,6 +665,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 
 	//! backup controller that led to current trajectory
 	u_ff_prev_ = u_ff_;
+	x_prev_ = x_;
 
 	if (!settings_.lineSearchSettings.active)
 	{
@@ -675,7 +676,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 
 		for(int i = 0; i< K_; i++)
 		{
-			if(settings_.closedLoopShooting){
+			if(settings_.closedLoopShooting)
+			{
 				uff_local[i] = u_ff_[i] + lv_[i]; 	// add lv_ if we are doing closed-loop shooting
 			}
 			else
@@ -732,8 +734,7 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 #endif
 	}
 
-//	if ((lowestCostPrevious - lowestCost_)/lowestCostPrevious > settings_.min_cost_improvement)
-	if ( fabs((lowestCostPrevious - lowestCost_)/lowestCostPrevious) > settings_.min_cost_improvement)
+	if ((lowestCostPrevious - lowestCost_)/lowestCostPrevious > settings_.min_cost_improvement)
 	{
 		return true;
 	}

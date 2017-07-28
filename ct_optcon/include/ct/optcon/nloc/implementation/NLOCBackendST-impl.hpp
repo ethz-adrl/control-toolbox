@@ -160,7 +160,7 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 			this->intermediateCostBest_ = intermediateCost;
 			this->finalCostBest_ = finalCost;
 			this->d_norm_ = defectNorm;
-			this->x_prev_ = x_search;
+//			this->x_prev_ = x_search;
 			this->lowestCost_ = cost;
 			this->x_.swap(x_search);
 			this->xShot_.swap(x_shot_search);
