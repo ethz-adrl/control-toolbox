@@ -543,6 +543,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 	std::cout<<std::setprecision(15) << "total defect:\t" << d_norm_ << std::endl;
 	std::cout<<std::setprecision(15) << "total lx norm:\t" << lx_norm_ << std::endl;
 	std::cout<<std::setprecision(15) << "total lu norm:\t" << lu_norm_ << std::endl;
+	std::cout<<std::setprecision(15) << "step-size(alpha):\t" << alphaBest_ << std::endl;
 
 	if(settings_.recordSmallestEigenvalue && settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
 	{
