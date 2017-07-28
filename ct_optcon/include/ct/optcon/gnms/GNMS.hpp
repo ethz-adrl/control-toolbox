@@ -161,7 +161,7 @@ public:
 
 		auto startFinish = std::chrono::steady_clock::now();
 
-		int K = this->backend_->getNumSteps();
+//		int K = this->backend_->getNumSteps(); // todo remove
 
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
@@ -213,7 +213,7 @@ public:
 
 
 		start = std::chrono::steady_clock::now();
-		this->backend_->lineSearchMultipleShooting();
+		bool foundBetter = this->backend_->lineSearchMultipleShooting();
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
@@ -237,7 +237,7 @@ public:
 
 		this->backend_->iteration()++;
 
-		return (!this->backend_->isConverged());
+		return foundBetter;
 
 	} //! finishIteration()
 

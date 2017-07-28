@@ -62,28 +62,9 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 		// then compute the corresponding defect
 		this->computeSingleDefect(this->settings_.nThreads, k);
 	}
+
+	this->d_norm_ = this->computeDefectsNorm(this->lqocProblem_->b_);
 }
-
-//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-//void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionState()
-//{
-//	this->x_ = this->lqocSolver_->getSolutionState();
-//
-//	//! get state update norm. may be overwritten later, depending on the algorithm
-//	this->lx_norm_ = this->lqocSolver_->getStateUpdateNorm();
-//}
-//
-//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-//void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedforward()
-//{
-//	this->u_ff_prev_ = this->u_ff_;
-//
-//	this->u_ff_ = this->lqocSolver_->getSolutionControl();
-//
-//	//! get control update norm. may be overwritten later, depending on the algorithm
-//	this->lu_norm_ = this->lqocSolver_->getControlUpdateNorm();
-//}
-
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -102,16 +83,18 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 
 		iterations++;
 
-		typename Base::scalar_t cost = std::numeric_limits<typename Base::scalar_t>::max();
-		typename Base::scalar_t intermediateCost = std::numeric_limits<typename Base::scalar_t>::max();
-		typename Base::scalar_t finalCost = std::numeric_limits<typename Base::scalar_t>::max();
-		typename Base::scalar_t defectNorm = std::numeric_limits<typename Base::scalar_t>::max();
+		SCALAR cost = std::numeric_limits<SCALAR>::max();
+		SCALAR intermediateCost = std::numeric_limits<SCALAR>::max();
+		SCALAR finalCost = std::numeric_limits<SCALAR>::max();
+		SCALAR defectNorm = std::numeric_limits<SCALAR>::max();
 
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_search(this->K_+1);
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_shot_search(this->K_+1);
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> defects_recorded(this->K_+1, ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_recorded(this->K_);
 		ct::core::tpl::TimeArray<SCALAR> t_search(this->K_+1); // todo get rid of t_search
+
+		//! set init state
 		x_search[0] = this->x_[0];
 
 
@@ -168,9 +151,6 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 			std::cout<<"merit: " << cost << "cost "<<intermediateCost + finalCost<<", defect " << defectNorm << " at alpha: "<< alpha << std::endl;
 #endif //DEBUG_PRINT_LINESEARCH
 
-			this->intermediateCostBest_ = intermediateCost;
-			this->finalCostBest_ = finalCost;
-			this->d_norm_ = defectNorm;
 
 #if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
 			this->computeControlUpdateNorm(u_recorded, this->u_ff_prev_);
@@ -178,6 +158,9 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 #endif
 
 			alphaBest = alpha;
+			this->intermediateCostBest_ = intermediateCost;
+			this->finalCostBest_ = finalCost;
+			this->d_norm_ = defectNorm;
 			this->x_prev_ = x_search;
 			this->lowestCost_ = cost;
 			this->x_.swap(x_search);

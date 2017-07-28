@@ -560,28 +560,6 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWo
 	}
 }
 
-//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-//void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionState()
-//{
-//	// todo: this is the same as in ST mode. sum them together
-//
-//	this->x_ = this->lqocSolver_->getSolutionState();
-//
-//	//! get state update norm. may be overwritten later, depending on the algorithm
-//	this->lx_norm_ = this->lqocSolver_->getStateUpdateNorm();
-//}
-//
-//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-//void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateSolutionFeedforward()
-//{
-//	this->u_ff_prev_ = this->u_ff_; // store previous feedforward for line-search
-//
-//	this->u_ff_ = this->lqocSolver_->getSolutionControl();
-//	u_ff_fullstep_ = this->u_ff_;
-//
-//	//! get control update norm. may be overwritten later, depending on the algorithm
-//	this->lu_norm_ = this->lqocSolver_->getControlUpdateNorm();}
-
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineSearch()
@@ -594,6 +572,7 @@ SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 	alphaExpBest_ = this->settings_.lineSearchSettings.maxIterations;
 	alphaExpMax_ = this->settings_.lineSearchSettings.maxIterations;
 	alphaProcessed_.resize(this->settings_.lineSearchSettings.maxIterations, 0);
+	lowestCostPrevious_ = this->lowestCost_;
 
 #ifdef DEBUG_PRINT_MP
 	std::cout<<"[MP]: Waking up workers."<<std::endl;
@@ -618,12 +597,18 @@ SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		alphaBest = this->settings_.lineSearchSettings.alpha_0 * std::pow(this->settings_.lineSearchSettings.n_alpha, alphaExpBest_);
 	}
 
-	return alphaBest;
-
 	Eigen::setNbThreads(this->settings_.nThreadsEigen); // restore Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
 	printString("[MP]: Restoring " + std::to_string(Eigen::nbThreads()) + " Eigen threads.");
 #endif //DEBUG_PRINT_MP
+
+#if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
+	this->computeControlUpdateNorm(this->u_ff_, this->u_ff_prev_);
+	this->computeStateUpdateNorm(this->x_, this->x_prev_);
+#endif
+	this->x_prev_ = this->x_;
+
+	return alphaBest;
 
 } // end linesearch
 
@@ -645,27 +630,55 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 			return;
 		}
 
-		// convert to real alpha
+		//! convert to real alpha
 		double alpha = this->settings_.lineSearchSettings.alpha_0 * std::pow(this->settings_.lineSearchSettings.n_alpha, alphaExp);
-		typename Base::StateVectorArray x_local(1);
-		typename Base::ControlVectorArray u_recorded;
-		typename Base::TimeArray t_local;
 
-		x_local[0] = this->x_[0];
+		//! local variables
+		SCALAR cost = std::numeric_limits<SCALAR>::max();
+		SCALAR intermediateCost = std::numeric_limits<SCALAR>::max();
+		SCALAR finalCost = std::numeric_limits<SCALAR>::max();
+		SCALAR defectNorm = std::numeric_limits<SCALAR>::max();
+		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_search(this->K_+1);
+		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_shot_search(this->K_+1);
+		ct::core::StateVectorArray<STATE_DIM, SCALAR> defects_recorded(this->K_+1, ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
+		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_recorded(this->K_);
+		typename Base::TimeArray t_local; // todo get rid of time here
 
-		SCALAR intermediateCost;
-		SCALAR finalCost;
-
-		if(this->settings_.closedLoopShooting)
-			this->executeLineSearchSingleShooting(threadId, alpha, this->lv_, x_local, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
-		else
-			this->executeLineSearchSingleShooting(threadId, alpha, this->lu_, x_local, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
+		//! set init state
+		x_search[0] = this->x_prev_[0];
 
 
-		SCALAR cost = intermediateCost + finalCost;
+		switch(this->settings_.nlocp_algorithm)
+		{
+		case NLOptConSettings::NLOCP_ALGORITHM::GNMS :
+		{
+			this->executeLineSearchMultipleShooting(threadId, alpha, this->lu_, this->lx_, x_search, x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, &alphaBestFound_);
+			break;
+		}
+		case NLOptConSettings::NLOCP_ALGORITHM::ILQR :
+		{
+			defectNorm = 0.0;
+
+			if(this->settings_.closedLoopShooting)
+			{
+				//! search with lv_ update if we are doing closed-loop shooting
+				this->executeLineSearchSingleShooting(threadId, alpha, this->lv_, x_search, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
+			}
+			else{
+				//! search with whole lu_ update if we are doing closed-loop shooting
+				this->executeLineSearchSingleShooting(threadId, alpha, this->lu_, x_search, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
+			}
+			break;
+		}
+		default :
+			throw std::runtime_error("Algorithm type unknown in performLineSearch()!");
+		}
+
+
+		cost = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm;
 
 		lineSearchResultMutex_.lock();
-		if (cost < this->lowestCost_)
+		if (cost < lowestCostPrevious_ && !std::isnan(cost))
 		{
 			// make sure we do not alter an existing result
 			if (alphaBestFound_)
@@ -675,27 +688,26 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 			}
 
 #ifdef DEBUG_PRINT_LINESEARCH
-			printString("[LineSearch, Thread " + std::to_string(threadId) + "]: Lower cost found: " + std::to_string(cost) + " at alpha: " + std::to_string(alpha));
+			printString("[LineSearch, Thread " + std::to_string(threadId) + "]: Lower cost/merit found at alpha:"+ std::to_string(alpha));
+			printString("[LineSearch]: Cost:\t" + std::to_string(intermediateCost + finalCost));
+			printString("[LineSearch]: Defect:\t" + std::to_string(defectNorm));
+			printString("[LineSearch]: Merit:\t" + std::to_string(cost));
 #endif //DEBUG_PRINT_LINESEARCH
-
-#if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
-			this->computeControlUpdateNorm(u_recorded, this->u_ff_prev_);
-			this->computeStateUpdateNorm(x_local, this->x_prev_);
-#endif
 
 			alphaExpBest_ = alphaExp;
 			this->intermediateCostBest_ = intermediateCost;
 			this->finalCostBest_ = finalCost;
+			this->d_norm_ = defectNorm;
 			this->lowestCost_ = cost;
-			this->x_prev_ = x_local;
-			this->x_.swap(x_local);
+			this->x_.swap(x_search);
+			this->xShot_.swap(x_shot_search);
 			this->u_ff_.swap(u_recorded);
-			this->t_.swap(t_local);
+			this->lqocProblem_->b_.swap(defects_recorded);
 		} else
 		{
 #ifdef DEBUG_PRINT_LINESEARCH
-			printString("[LineSearch, Thread " + std::to_string(threadId) + "]: No lower cost found, cost " + std::to_string(cost) +" at alpha "
-					+ std::to_string(alpha)+" . Best cost was " + std::to_string(this->lowestCost_));
+			printString("[LineSearch, Thread " + std::to_string(threadId) + "]: No lower cost/merit found, cost " + std::to_string(cost) +" at alpha "
+					+ std::to_string(alpha)+" . Best cost/merit was " + std::to_string(lowestCostPrevious_));
 #endif //DEBUG_PRINT_LINESEARCH
 		}
 

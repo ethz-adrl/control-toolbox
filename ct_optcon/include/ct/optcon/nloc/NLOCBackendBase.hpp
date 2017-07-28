@@ -375,7 +375,7 @@ public:
 	void updateCosts();
 
 	//! check if GNMS is converged
-	bool isConverged();
+//	bool isConverged();
 
 	//! nominal rollout using default thread and member variables for the results.
 	bool nominalRollout() {
@@ -404,7 +404,7 @@ public:
 	bool lineSearchSingleShooting();
 
 	//! perform line-search and update controller for multiple shooting
-	void lineSearchMultipleShooting();
+	bool lineSearchMultipleShooting();
 
 	//! Computes the linearization of the dynamics along the trajectory, for the specified indices. See computeLinearizedDynamics for details
 	virtual void computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
@@ -412,26 +412,13 @@ public:
 	//! Computes the quadratic approximation of the cost function along the trajectory, for the specified indices
 	virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
 
-
-	// todo: want to get rid of those in the long run
-//	virtual void updateSolutionState() {
-//		x_prev_ = x_;
-//		x_ = lqocSolver_->getSolutionState();
-//		computeStateUpdateNorm(x_prev_, x_);
-//	}
-//
-//
-//	// todo: want to get rid of those in the long run
-//	virtual void updateSolutionControl() {
-//		u_ff_prev_ = u_ff_;
-//		u_ff_ = lqocSolver_->getSolutionControl();
-//		computeControlUpdateNorm(u_ff_, u_ff_prev_);
-//	}
-
-
+	//! obtain state update from lqoc solver
 	void getStateUpdates() {lx_ = lqocSolver_->getStateUpdates();}
+
+	//! obtain control update from lqoc solver
 	void getControlUpdates() {lu_ = lqocSolver_->getControlUpdates();}
 
+	//! obtain feedforward only update from lqoc solver, if provided
 	void getFeedforwardUpdates()
 	{
 		if(settings_.closedLoopShooting)
@@ -440,6 +427,7 @@ public:
 			lv_.setConstant(core::ControlVector<CONTROL_DIM, SCALAR>::Zero()); // todo can eventually go away to save time
 	}
 
+	//! obtain feedback update from lqoc solver, if provided
 	void getFeedback()
 	{
 		if(settings_.closedLoopShooting)
@@ -452,9 +440,11 @@ public:
 	//! integrates the specified shots and computes the corresponding defects
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;
 
+	//! do a single threaded rollout and defect computation of the shots - useful for line-search
 	void rolloutShotsSingleThreaded(size_t threadId, size_t firstIndex, size_t lastIndex, const ControlVectorArray& u_ff_local,
 			const StateVectorArray& x_start, StateVectorArray& xShot, StateVectorArray& d) const;
 
+	//! performLineSearch: execute the line search, possibly with different threading schemes
 	virtual SCALAR performLineSearch() = 0;
 
 

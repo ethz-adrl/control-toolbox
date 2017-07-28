@@ -673,7 +673,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 		TimeArray t_local(K_+1);
 
 
-		for(size_t i = 0; i<K_; i++)
+		for(int i = 0; i< K_; i++)
 		{
 			if(settings_.closedLoopShooting){
 				uff_local[i] = u_ff_[i] + lv_[i]; 	// add lv_ if we are doing closed-loop shooting
@@ -708,7 +708,8 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 #endif //DEBUG_PRINT
 			return false;
 		}
-	} else
+	}
+	else
 	{
 
 #ifdef DEBUG_PRINT_LINESEARCH
@@ -789,7 +790,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMultipleShooting()
+bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMultipleShooting()
 {
 
 	// lowest cost
@@ -805,12 +806,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 		// lowest cost is cost of last rollout
 		lowestCostPrevious = intermediateCostBest_ + finalCostBest_;
 
-		for(size_t i = 0; i<K_; i++)
+		for(int i = 0; i< K_; i++)
 		{
 			u_ff_[i] += lu_[i];
 		}
 
-		for(size_t i = 0; i<K_+1; i++)
+		for(int i = 0; i<K_+1; i++)
 		{
 			x_[i] += lx_[i];
 		}
@@ -832,6 +833,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 	{
 		// merit of previous trajectory
 		lowestCost_ = intermediateCostBest_ + finalCostBest_ + d_norm_ * settings_.meritFunctionRho;
+		lowestCostPrevious = lowestCost_;
 
 #ifdef DEBUG_PRINT_LINESEARCH
 		std::cout<<"[LineSearch]: Starting line search."<<std::endl;
@@ -848,13 +850,19 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 		std::cout<<"[LineSearch]: Defect:\t"<<d_norm_<<std::endl;
 #endif //DEBUG_PRINT_LINESEARCH
 
-#ifdef DEBUG_PRINT
 		if (alphaBest_ == 0.0)
 		{
-			std::cout<<"WARNING: No better control found. Converged."<<std::endl;
-		}
+#ifdef DEBUG_PRINT
+			std::cout<<"WARNING: No better control found during line search. Converged."<<std::endl;
 #endif
+			return false;
+		}
 	}
+
+	if ( fabs((lowestCostPrevious - lowestCost_)/lowestCostPrevious) > settings_.min_cost_improvement)
+		return true; //! found better cost
+
+	return false;
 }
 
 
@@ -980,21 +988,21 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateCosts(
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::isConverged()
-{
-	//! check if sum of norm of all defects is smaller than convergence criterion
-	if (d_norm_ > settings_.maxDefectSum)
-		return false;
-
-	SCALAR previousCost = intermediateCostPrevious_ + finalCostPrevious_;
-	SCALAR newCost = intermediateCostBest_ + finalCostBest_;
-
-	if ( fabs((previousCost - newCost)/previousCost) > settings_.min_cost_improvement)
-		return false;
-
-	return true;
-}
+//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+//bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::isConverged()
+//{
+//	//! check if sum of norm of all defects is smaller than convergence criterion
+//	if (d_norm_ > settings_.maxDefectSum)
+//		return false;
+//
+//	SCALAR previousCost = intermediateCostPrevious_ + finalCostPrevious_;
+//	SCALAR newCost = intermediateCostBest_ + finalCostBest_;
+//
+//	if ( fabs((previousCost - newCost)/previousCost) > settings_.min_cost_improvement)
+//		return false;
+//
+//	return true;
+//}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
