@@ -111,6 +111,8 @@ public:
 		solver_->changeInitialState(x0.toStateVectorEulerXyz());
 	}
 
+	void configure(const typename NLOptConSolver::Settings_t& settings) {solver_->configure(settings);}
+
 	bool runIteration()
 	{
 		bool foundBetter = solver_->runIteration();

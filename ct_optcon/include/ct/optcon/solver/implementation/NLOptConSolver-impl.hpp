@@ -50,6 +50,8 @@ void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(con
 	if (nlocBackend_->getSettings().nThreads != settings.nThreads)
 		throw std::runtime_error("cannot switch from ST to MT or vice versa. Please call initialize.");
 
+	nlocBackend_->configure(settings);
+
 	switch(settings.nlocp_algorithm)
 	{
 	case NLOptConSettings::NLOCP_ALGORITHM::GNMS:

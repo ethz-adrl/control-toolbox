@@ -1039,7 +1039,7 @@ SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDef
 
 	for (int k=0; k<K_; k++)
 	{
-		d_norm += d[k].norm();
+		d_norm += d[k].template lpNorm<1>(); // according to Nocedal and Wright, the l1-norm is "exact" (p.435)
 	}
 	return d_norm;
 }
