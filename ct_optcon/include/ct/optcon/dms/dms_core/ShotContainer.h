@@ -93,7 +93,8 @@ public:
 			std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner,
 			std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
 			size_t shotNr,
-			DmsSettings settings
+			DmsSettings settings,
+			size_t nIntegrationSteps
 	):
 		controlledSystem_(controlledSystem),
 		linearSystem_(linearSystem),
@@ -143,10 +144,10 @@ public:
 		}
 
 		tStart_ = timeGrid_->getShotStartTime(shotNr_);
-		SCALAR t_shot_end = timeGrid_->getShotEndTime(shotNr_);
+		// SCALAR t_shot_end = timeGrid_->getShotEndTime(shotNr_);
 
 		// +0.5 needed to avoid rounding errors from double to size_t
-		nSteps_ = SCALAR(t_shot_end - tStart_) / SCALAR(settings_.dt_sim_) + SCALAR(0.5);
+		nSteps_ = nIntegrationSteps;
 		// std::cout << "shotNr_: " << shotNr_ << "\t nSteps: " << nSteps_ << std::endl;
 
 		integratorCT_->setLinearSystem(linearSystem_);
@@ -163,8 +164,8 @@ public:
 		if((w_->getUpdateCount() != integrationCount_))
 		{
 			integrationCount_ = w_->getUpdateCount();
-			ct::core::StateVector<STATE_DIM> initState = w_->getOptimizedState(shotNr_);
-			integratorCT_->integrate(initState, tStart_, nSteps_, settings_.dt_sim_, x_history_, t_history_);
+			state_vector_t initState = w_->getOptimizedState(shotNr_);
+			integratorCT_->integrate(initState, tStart_, nSteps_, SCALAR(settings_.dt_sim_), x_history_, t_history_);
 		}
 	}
 
@@ -174,8 +175,8 @@ public:
 		{
 			costIntegrationCount_ = w_->getUpdateCount();
 			integrateShot();	
-			cost_ = 0.0;
-			integratorCT_->integrateCost(cost_, tStart_, nSteps_, settings_.dt_sim_);
+			cost_ = SCALAR(0.0);
+			integratorCT_->integrateCost(cost_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
 		}
 	}
 
@@ -191,13 +192,13 @@ public:
 			dXdSiBack_.setIdentity();
 			dXdQiBack_.setZero();
 			integratorCT_->linearize();
-			integratorCT_->integrateSensitivityDX0(dXdSiBack_, tStart_, nSteps_, settings_.dt_sim_);
-			integratorCT_->integrateSensitivityDU0(dXdQiBack_, tStart_, nSteps_, settings_.dt_sim_);
+			integratorCT_->integrateSensitivityDX0(dXdSiBack_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
+			integratorCT_->integrateSensitivityDU0(dXdQiBack_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
 
 			if(settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
 			{
 				dXdQip1Back_.setZero();
-				integratorCT_->integrateSensitivityDUf(dXdQip1Back_, tStart_, nSteps_, settings_.dt_sim_);
+				integratorCT_->integrateSensitivityDUf(dXdQip1Back_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
 			}
 		}
 	}
@@ -210,13 +211,13 @@ public:
 			integrateSensitivities();
 			costGradientSi_.setZero();
 			costGradientQi_.setZero();
-			integratorCT_->integrateCostSensitivityDX0(costGradientSi_, tStart_, nSteps_, settings_.dt_sim_);
-			integratorCT_->integrateCostSensitivityDU0(costGradientQi_, tStart_, nSteps_, settings_.dt_sim_);
+			integratorCT_->integrateCostSensitivityDX0(costGradientSi_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
+			integratorCT_->integrateCostSensitivityDU0(costGradientQi_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
 
 			if(settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
 			{
 				costGradientQip1_.setZero();
-				integratorCT_->integrateCostSensitivityDUf(costGradientQip1_, tStart_, nSteps_, settings_.dt_sim_);
+				integratorCT_->integrateCostSensitivityDUf(costGradientQip1_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
 			}
 		}
 	}

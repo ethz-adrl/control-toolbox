@@ -93,8 +93,8 @@ public:
 		shotIndex_(shotIndex),
 		settings_(settings)
 	{
-		lb_.setConstant(0.0);
-		ub_.setConstant(0.0);
+		lb_.setConstant(SCALAR(0.0));
+		ub_.setConstant(SCALAR(0.0));
 
 		size_t nr = 0;
 		

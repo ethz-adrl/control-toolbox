@@ -62,16 +62,16 @@ public:
         return new HyALinearizedForward;
     }
 
-    virtual const state_matrix_t& getDerivativeState(const ct::core::StateVector<12, SCALAR>& x, const ct::core::ControlVector<6, SCALAR>& u, const SCALAR t = 0.0) override;
+    virtual const state_matrix_t& getDerivativeState(const ct::core::StateVector<12, SCALAR>& x, const ct::core::ControlVector<6, SCALAR>& u, const SCALAR t = SCALAR(0.0)) override;
 
-    virtual const state_control_matrix_t& getDerivativeControl(const ct::core::StateVector<12, SCALAR>& x, const ct::core::ControlVector<6, SCALAR>& u, const SCALAR t = 0.0) override;
+    virtual const state_control_matrix_t& getDerivativeControl(const ct::core::StateVector<12, SCALAR>& x, const ct::core::ControlVector<6, SCALAR>& u, const SCALAR t = SCALAR(0.0)) override;
 
 private:
     void initialize() {
         dFdx_.setZero();
         dFdu_.setZero();
-        vX_.fill(0.0);
-        vU_.fill(0.0);
+        vX_.fill(SCALAR(0.0));
+        vU_.fill(SCALAR(0.0));
     }
 
     state_matrix_t dFdx_;

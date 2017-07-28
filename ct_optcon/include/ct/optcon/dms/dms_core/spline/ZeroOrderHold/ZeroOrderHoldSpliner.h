@@ -58,7 +58,7 @@ public:
 	 *
 	 * @param[in]  grid  The DMS timegrid
 	 */
-	ZeroOrderHoldSpliner(std::shared_ptr<TimeGrid> grid):
+	ZeroOrderHoldSpliner(std::shared_ptr<tpl::TimeGrid<SCALAR>> grid):
 		timeGrid_(grid)
 	{}
 

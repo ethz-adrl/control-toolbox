@@ -73,7 +73,7 @@ public:
 	typedef std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> DynamicsPtr_t;
 	typedef std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> LinearPtr_t;
 	typedef std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> CostFunctionPtr_t;
-	typedef std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> ConstraintPtr_t;
+	typedef std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> ConstraintPtr_t;
 
 	OptConProblem(){}
 
@@ -103,8 +103,8 @@ public:
 	{
 		if(linearSystem == nullptr)	// no linearization provided
 		{
-			linearizedSystem_ = std::shared_ptr<core::SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>> (
-					new core::SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR> (controlledSystem_));
+			// linearizedSystem_ = std::shared_ptr<core::SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>> (
+			// 		new core::SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR> (controlledSystem_));
 		}
 	}
 

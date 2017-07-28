@@ -223,7 +223,7 @@ public:
 	 */
 	virtual VectorXs jacobianInputSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 	{
-		Eigen::MatrixXd jacInput = jacobianInput(x, u, t);
+		MatrixXs jacInput = jacobianInput(x, u, t);
 
 		VectorXs jac(Eigen::Map<VectorXs>(jacInput.data(), jacInput.rows() * jacInput.cols()));
 		return jac;

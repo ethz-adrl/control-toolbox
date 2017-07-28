@@ -74,24 +74,24 @@ public:
 		settings_(settings)
 	{
 		// lower bound is number of shot times the lower bound for each interval h
-		lb_ << (settings_.N_ * settings_.h_min_ - settings_.T_);
-		ub_ << 0.0;
+		lb_ << SCALAR(settings_.N_ * settings_.h_min_ - settings_.T_);
+		ub_ << SCALAR(0.0);
 
-		std::cout << " ... time horizon lower bound: " << settings_.T_ + lb_ << std::endl;
-		std::cout << " ... time horizon upper bound: " << settings_.T_ + ub_ << std::endl;
+		std::cout << " ... time horizon lower bound: " << SCALAR(settings_.T_ + lb_(0)) << std::endl;
+		std::cout << " ... time horizon upper bound: " << SCALAR(settings_.T_ + ub_(0)) << std::endl;
 	}
 
 	virtual VectorXs eval() override
 	{
-		Eigen::Matrix<double, 1, 1> mat;
-		mat << (timeGrid_->getOptimizedTimeHorizon() - settings_.T_);
+		Eigen::Matrix<SCALAR, 1, 1> mat;
+		mat << SCALAR(timeGrid_->getOptimizedTimeHorizon() - settings_.T_);
 		return mat;
 	}	
 
 	virtual VectorXs evalSparseJacobian() override
 	{
-		Eigen::VectorXd one(settings_.N_);
-		one.setConstant(1.0);
+		VectorXs one(settings_.N_);
+		one.setConstant(SCALAR(1.0));
 		return one;
 	}
 

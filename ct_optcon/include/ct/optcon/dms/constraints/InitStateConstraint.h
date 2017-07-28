@@ -72,8 +72,8 @@ public:
 		w_(w),
 		x_0_(x0)
 	{
-		lb_.setConstant(0.0);
-		ub_.setConstant(0.0);
+		lb_.setConstant(SCALAR(0.0));
+		ub_.setConstant(SCALAR(0.0));
 	}
 
 	/**

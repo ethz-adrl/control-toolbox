@@ -42,7 +42,7 @@ public:
 		return (t >= t_on_ && t<t_off_);
 	}
 
-	virtual SCALAR computeActivation(const SCALAR t) override { return 1.0; }
+	virtual SCALAR computeActivation(const SCALAR t) override { return SCALAR(1.0); }
 
 	virtual void printInfo() override
 	{

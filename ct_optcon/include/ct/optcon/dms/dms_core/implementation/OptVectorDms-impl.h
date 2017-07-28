@@ -29,7 +29,7 @@ namespace optcon {
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::OptVectorDms(size_t n, const DmsSettings& settings) :
-		OptVector(n),
+		tpl::OptVector<SCALAR>(n),
 		settings_(settings),
 		numPairs_(settings.N_+1)
 {	

@@ -99,7 +99,7 @@ void CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 SCALAR CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateIntermediate()
 {
-	SCALAR y = 0.;
+	SCALAR y = SCALAR(0.0);
 		
 	for(auto it : this->intermediateCostAnalytical_)
 	{
@@ -113,7 +113,7 @@ SCALAR CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateIntermedi
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 SCALAR CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateTerminal()
 {
-	SCALAR y = 0.;
+	SCALAR y = SCALAR(0.0);
 
 	for(auto it : this->finalCostAnalytical_)
 		y += it->evaluate(this->x_, this->u_, this->t_);

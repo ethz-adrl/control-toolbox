@@ -78,7 +78,7 @@ public:
 	 */
 	ConstraintContainerAnalytical(const ConstraintContainerAnalytical& arg) 
 	:
-	LinearConstraintContainer<STATE_DIM, CONTROL_DIM>(arg),
+	LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
 	evalIntermediate_(arg.evalIntermediate_),
 	evalTerminal_(arg.evalTerminal_),
 	constraintsIntermediate_(arg.constraintsIntermediate_),
@@ -97,10 +97,10 @@ public:
 		constraintsTerminal_.resize(arg.constraintsTerminal_.size());
 
 		for(size_t i = 0; i < constraintsIntermediate_.size(); ++i)
-			constraintsIntermediate_[i] = std::shared_ptr< ConstraintBase<STATE_DIM, CONTROL_DIM>> (arg.constraintsIntermediate_[i]->clone());
+			constraintsIntermediate_[i] = std::shared_ptr< ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> (arg.constraintsIntermediate_[i]->clone());
 
 		for(size_t i = 0; i < constraintsTerminal_.size(); ++i)
-			constraintsTerminal_[i] = std::shared_ptr< ConstraintBase<STATE_DIM, CONTROL_DIM>> (arg.constraintsTerminal_[i]->clone());
+			constraintsTerminal_[i] = std::shared_ptr< ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> (arg.constraintsTerminal_[i]->clone());
 	}
 
 	/**
@@ -108,7 +108,8 @@ public:
 	 *
 	 * @return     Copy of this object.
 	 */
-	virtual ConstraintContainerAnalytical_Raw_Ptr_t clone () const override {return new ConstraintContainerAnalytical(*this);}
+	virtual ConstraintContainerAnalytical_Raw_Ptr_t clone () const override {
+		return new ConstraintContainerAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>(*this);}
 
 	/**
 	 * @brief      Destructor
@@ -585,8 +586,8 @@ private:
 	}
 
 
-	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>>> constraintsIntermediate_;
-	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM>>> constraintsTerminal_;
+	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>>> constraintsIntermediate_;
+	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>>> constraintsTerminal_;
 
 	VectorXs evalIntermediate_;
 	VectorXs evalJacSparseStateIntermediate_;

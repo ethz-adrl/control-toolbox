@@ -96,13 +96,13 @@ public:
         const SCALAR dt
         ) override
     {
-        double halfStep = 0.5 * dt;
-        double timePlusHalfStep = time + halfStep;
+        SCALAR halfStep = SCALAR(0.5) * dt;
+        SCALAR timePlusHalfStep = time + halfStep;
         rhs(stateInOut, time, k1_);
         rhs(stateInOut + halfStep * k1_, timePlusHalfStep, k2_);
         rhs(stateInOut + halfStep * k2_, timePlusHalfStep, k3_);
         rhs(stateInOut + dt * k3_, time + dt, k4_);
-        stateInOut += oneSixth_ * dt * (k1_ + 2 * k2_ + 2 * k3_ + k4_);
+        stateInOut += oneSixth_ * dt * (k1_ + SCALAR(2.0) * k2_ + SCALAR(2.0) * k3_ + k4_);
     }
 
 private:

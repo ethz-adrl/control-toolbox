@@ -277,11 +277,20 @@ public:
 		optVariables_->setNewSnoptSolution(x, xMul, xState, fMul, fState);
 	}
 
+	virtual void generateDerivatives()
+	{
+		std::cout << "Compiling Derivatives" << std::endl;
+		useGeneratedDerivatives_ = true;
+	}
+
 
 protected:
 	std::shared_ptr<DiscreteCostEvaluatorBase<SCALAR>> costEvaluator_; //! abstract base class, approximates the cost evaluation for the discrete problem
 	std::shared_ptr<OptVector<SCALAR>> optVariables_; //! base class, containts the optimization variables used in the NLP solvers
 	std::shared_ptr<DiscreteConstraintContainerBase<SCALAR>> constraints_; //! abstract base class, contains the discretized constraints for the problem
+	bool useGeneratedDerivatives_;
+	std::shared_ptr<ct::core::DerivativesCppad<-1, -1>> costCodegen_;
+	std::shared_ptr<ct::core::DerivativesCppad<-1, -1>> constraintsCodegen_;
 };
 
 }

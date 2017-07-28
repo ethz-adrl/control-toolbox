@@ -249,6 +249,7 @@ public:
 	{}
 
     SolverType_t solverType_;
+    bool generateDerivatives_;
     SnoptSettings snoptSettings_;
     IpoptSettings ipoptSettings_;
 
@@ -296,6 +297,7 @@ public:
 		boost::property_tree::read_info(filename, pt);
 
         solverType_ = (SolverType) pt.get<unsigned int>(ns + ".SolverType");
+        generateDerivatives_ = pt.get<bool>(ns + ".GenerateDerivatives");
 
 		if(solverType_ == IPOPT)
 			ipoptSettings_.load(filename, verbose, ns + ".ipopt");

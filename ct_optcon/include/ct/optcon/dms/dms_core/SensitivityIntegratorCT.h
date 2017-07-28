@@ -196,7 +196,7 @@ public:
      *
      * @param[in]  costFun  The new costfunction
      */
-    void setCostFunction(const std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFun)
+    void setCostFunction(const std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFun)
     {
         costFunction_ = costFun;
         cacheSensitivities_ = true;

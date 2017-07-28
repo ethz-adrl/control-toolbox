@@ -118,7 +118,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 SCALAR CostEvaluatorSimple<STATE_DIM, CONTROL_DIM, SCALAR>::eval()
 {
 	// updatePhi();
-	SCALAR cost = 0.0;
+	SCALAR cost = SCALAR(0.0);
 	
 	for (size_t i = 0; i < settings_.N_ + 1; ++i)
 	{

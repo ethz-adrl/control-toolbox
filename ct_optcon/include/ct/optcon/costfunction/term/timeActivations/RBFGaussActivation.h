@@ -26,8 +26,8 @@ public:
 		mu_(mu),
 		sigma_(sigma)
 	{
-		sigma2inv_ = 1 / (2 * sigma_ * sigma_);
-		factor_ = 1.0 / sqrt(2.0 * M_PI * sigma_ * sigma_); 
+		sigma2inv_ = SCALAR(1.0) / (SCALAR(2.0) * sigma_ * sigma_);
+		factor_ = SCALAR(1.0) / sqrt(SCALAR(2.0) * M_PI * sigma_ * sigma_); 
 	}
 	virtual ~RBFGaussActivation() {}
 
@@ -44,8 +44,8 @@ public:
 		mu_ = pt.get<SCALAR>(termName + ".mu");
 		sigma_ = pt.get<SCALAR>(termName + ".sigma");
 		// factors used for efficient computeActivation calculation
-		sigma2inv_ = - 1.0 / (2.0 * sigma_ * sigma_);
-		factor_ = 1.0 / sqrt(2.0 * M_PI * sigma_ * sigma_); 
+		sigma2inv_ = - SCALAR(1.0) / (SCALAR(2.0) * sigma_ * sigma_);
+		factor_ = SCALAR(1.0) / sqrt(SCALAR(2.0) * M_PI * sigma_ * sigma_); 
 	} 
 
 	virtual bool isActiveAtTime(const SCALAR t) override {

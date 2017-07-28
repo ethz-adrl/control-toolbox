@@ -150,7 +150,7 @@ public:
 
 		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			double tShot = timeGrid_->getShotStartTime(n);
+			SCALAR tShot = timeGrid_->getShotStartTime(n);
 			for(auto constraint : constraints_)
 			{
 				constraint->setCurrentStateAndControl(w_->getOptimizedState(n), controlSpliner_->evalSpline(tShot, n), tShot);
@@ -183,7 +183,7 @@ public:
 
 		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			double tShot = timeGrid_->getShotStartTime(n);
+			SCALAR tShot = timeGrid_->getShotStartTime(n);
 
 			for(auto constraint : constraints_)
 			{

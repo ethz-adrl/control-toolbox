@@ -73,7 +73,7 @@ public:
 	ConstraintContainerBase() :
 		x_(state_vector_t::Zero()),
 		u_(input_vector_t::Zero()),
-		t_(0.0)
+		t_(SCALAR(0.0))
 	{}
 
 	/**
@@ -113,7 +113,7 @@ public:
 	 * @param[in] x state vector
 	 * @param[in] x input vector
 	 */
-	virtual void setCurrentStateAndControl(const state_vector_t& x,	const input_vector_t& u, const SCALAR t = 0.0)
+	virtual void setCurrentStateAndControl(const state_vector_t& x,	const input_vector_t& u, const SCALAR t = SCALAR(0.0))
 	{
 		t_ = t;
 		x_ = x;
@@ -214,7 +214,7 @@ protected:
 
 	state_vector_t   x_;	/** state vector */
 	input_vector_t u_;		/** control vector */
-	double t_;			    /** time */
+	SCALAR t_;			    /** time */
 
 	VectorXs lowerBoundsIntermediate_;
 	VectorXs lowerBoundsTerminal_;

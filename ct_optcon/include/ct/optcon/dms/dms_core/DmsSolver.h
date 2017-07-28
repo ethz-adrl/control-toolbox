@@ -121,7 +121,58 @@ public:
 			std::cout << "Unknown solver type... Exiting" << std::endl;
 
 		configure(settingsDms);
+		if(settings_.solverSettings_.generateDerivatives_)
+			dmsProblem_->generateDerivatives();
+
 	}
+
+	void setCGProblem(const OptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar> problemCG) 
+	// :
+	// nlpSolver_(nullptr),
+	// settings_(settingsDms)
+	{
+		// Create system, linearsystem and costfunction instances 
+		typedef std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> SysPtrCG;
+		typedef std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> LinearSysPtrCG;
+		typedef std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> CostPtrCG;
+		typedef std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> ConstraintCG;
+		ct::core::StateVector<STATE_DIM, ct::core::ADCGScalar> x0CG = problemCG.getInitialState();		
+
+		std::vector<SysPtrCG> systemsCG;
+		std::vector<LinearSysPtrCG> linearSystemsCG;
+		std::vector<CostPtrCG> costFunctionsCG;
+		std::vector<ConstraintCG> stateInputConstraintsCG;
+		std::vector<ConstraintCG> pureStateConstraintsCG;
+
+		for (size_t i = 0; i<settings_.N_; i++)
+		{
+			// std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> sys = problemCG.getNonlinearSystem();
+			systemsCG.push_back(SysPtrCG(problemCG.getNonlinearSystem()->clone()));
+			linearSystemsCG.push_back(LinearSysPtrCG(problemCG.getLinearSystem()->clone()));
+			costFunctionsCG.push_back(CostPtrCG(problemCG.getCostFunction()->clone()));
+		}
+
+		if(problemCG.getStateInputConstraints())
+			stateInputConstraintsCG.push_back(ConstraintCG(problemCG.getStateInputConstraints()->clone()));
+
+		if(problemCG.getPureStateConstraints())
+			pureStateConstraintsCG.push_back(ConstraintCG(problemCG.getPureStateConstraints()->clone()));		
+
+		dmsProblem_->setCGProblem(systemsCG, linearSystemsCG, costFunctionsCG, stateInputConstraintsCG, pureStateConstraintsCG, x0CG);
+
+		// SNOPT only works for the double type
+		// if(settingsDms.solverSettings_.solverType_ == NlpSolverSettings::SNOPT)
+		// 	nlpSolver_ = std::shared_ptr<SnoptSolver>(new SnoptSolver(dmsProblem_, settingsDms.solverSettings_));
+		// else if (settingsDms.solverSettings_.solverType_ == NlpSolverSettings::IPOPT)
+		// 	nlpSolver_ = std::shared_ptr<IpoptSolver> (new IpoptSolver(dmsProblem_, settingsDms.solverSettings_));
+		// else
+		// 	std::cout << "Unknown solver type... Exiting" << std::endl;
+
+		// configure(settingsDms);
+		// if(settings_.solverSettings_.generateDerivatives_)
+		// 	dmsProblem_->generateDerivatives();
+
+	}	
 
 	/**
 	 * @brief      Destructor

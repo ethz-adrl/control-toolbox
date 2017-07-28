@@ -30,13 +30,13 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "utilities/TimeActivationLoadMacros.h"
 
-#include "PeriodicActivation.hpp"
+// #include "PeriodicActivation.hpp"
 #include "SingleActivation.hpp"
 #include "RBFGaussActivation.h"
 
 #define CT_LOADABLE_TIME_ACTIVATIONS(SCALAR) \
   CT_LOADABLE_TIME_ACTIVATION(SCALAR, SingleActivation, "single") \
-  CT_LOADABLE_TIME_ACTIVATION(SCALAR, PeriodicActivation, "periodic") \
+  // CT_LOADABLE_TIME_ACTIVATION(SCALAR, PeriodicActivation, "periodic") \
   CT_LOADABLE_TIME_ACTIVATION(SCALAR, RBFGaussActivation, "rbf") \
 
 

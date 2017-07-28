@@ -65,8 +65,8 @@ public:
 		x_.setZero();
 		xLb_.resize(n);
 		xUb_.resize(n);
-		xLb_.setConstant(std::numeric_limits<double>::lowest());
-		xUb_.setConstant(std::numeric_limits<double>::max());
+		xLb_.setConstant(std::numeric_limits<SCALAR>::lowest());
+		xUb_.setConstant(std::numeric_limits<SCALAR>::max());
 		xMul_.resize(n);
 		xMul_.setZero();
 		xState_.resize(n);
@@ -294,6 +294,12 @@ public:
 	 * @param[in]  x     The updates primal variables
 	 */
 	void setOptimizationVars(const MapConstVecXs& x)
+	{
+		x_ = x;
+		updateCount_++;
+	}
+
+	void setOptimizationVars(const VectorXs& x)
 	{
 		x_ = x;
 		updateCount_++;

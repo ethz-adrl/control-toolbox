@@ -100,7 +100,7 @@ public:
 
 	virtual SCALAR eval() override
 	{
-		double cost = 0.0;
+		SCALAR cost = SCALAR(0.0);
 
 		#pragma omp parallel for num_threads( settings_.nThreads_ )
 		for(auto shotContainer = shotContainers_.begin(); shotContainer < shotContainers_.end(); ++shotContainer){
