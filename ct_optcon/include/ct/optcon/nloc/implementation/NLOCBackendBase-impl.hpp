@@ -673,7 +673,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 		TimeArray t_local(K_+1);
 
 
-		for(size_t i = 0; i<K_; i++)
+		for(int i = 0; i< K_; i++)
 		{
 			if(settings_.closedLoopShooting){
 				uff_local[i] = u_ff_[i] + lv_[i]; 	// add lv_ if we are doing closed-loop shooting
@@ -708,7 +708,8 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 #endif //DEBUG_PRINT
 			return false;
 		}
-	} else
+	}
+	else
 	{
 
 #ifdef DEBUG_PRINT_LINESEARCH
@@ -805,12 +806,12 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 		// lowest cost is cost of last rollout
 		lowestCostPrevious = intermediateCostBest_ + finalCostBest_;
 
-		for(size_t i = 0; i<K_; i++)
+		for(int i = 0; i< K_; i++)
 		{
 			u_ff_[i] += lu_[i];
 		}
 
-		for(size_t i = 0; i<K_+1; i++)
+		for(int i = 0; i<K_+1; i++)
 		{
 			x_[i] += lx_[i];
 		}
@@ -856,12 +857,12 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 #endif
 			return false;
 		}
-
-		if ( fabs((lowestCostPrevious - lowestCost_)/lowestCostPrevious) > settings_.min_cost_improvement)
-			return true;
-
-		return false;
 	}
+
+	if ( fabs((lowestCostPrevious - lowestCost_)/lowestCostPrevious) > settings_.min_cost_improvement)
+		return true; //! found better cost
+
+	return false;
 }
 
 

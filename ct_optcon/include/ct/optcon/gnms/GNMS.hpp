@@ -161,7 +161,7 @@ public:
 
 		auto startFinish = std::chrono::steady_clock::now();
 
-		int K = this->backend_->getNumSteps();
+//		int K = this->backend_->getNumSteps(); // todo remove
 
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
