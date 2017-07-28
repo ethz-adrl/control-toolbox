@@ -205,7 +205,7 @@ private:
 	size_t KMax_;
 	size_t KMin_;
 
-//	typename Base::ControlVectorArray u_ff_fullstep_;
+	SCALAR lowestCostPrevious_;
 
 };
 

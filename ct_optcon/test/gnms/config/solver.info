@@ -47,8 +47,8 @@ ilqr
     recordSmallestEigenvalue false
     min_cost_improvement 1e-12
     maxDefectSum 1e-5
-    nThreads 2
-    nThreadsEigen 1
+    nThreads 4    
+    nThreadsEigen 4
     loggingPrefix ILQR
     ;locp_solver HPIPM_SOLVER
     locp_solver GNRICCATI_SOLVER
