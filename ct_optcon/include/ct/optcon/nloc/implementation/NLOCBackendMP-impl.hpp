@@ -706,8 +706,10 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		} else
 		{
 #ifdef DEBUG_PRINT_LINESEARCH
-			printString("[LineSearch, Thread " + std::to_string(threadId) + "]: No lower cost/merit found, cost " + std::to_string(cost) +" at alpha "
-					+ std::to_string(alpha)+" . Best cost/merit was " + std::to_string(lowestCostPrevious_));
+			printString("[LineSearch, Thread " + std::to_string(threadId) + "]: NO lower cost/merit found at alpha:"+ std::to_string(alpha));
+			printString("[LineSearch]: Cost:\t" + std::to_string(intermediateCost + finalCost));
+			printString("[LineSearch]: Defect:\t" + std::to_string(defectNorm));
+			printString("[LineSearch]: Merit:\t" + std::to_string(cost));
 #endif //DEBUG_PRINT_LINESEARCH
 		}
 

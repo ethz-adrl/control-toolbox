@@ -436,6 +436,8 @@ public:
 			L_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero()); // todo can eventually go away to save time
 	}
 
+	//! update the nominal defects
+	void updateDefects() {d_norm_ = computeDefectsNorm(lqocProblem_->b_);}
 
 	//! integrates the specified shots and computes the corresponding defects
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;

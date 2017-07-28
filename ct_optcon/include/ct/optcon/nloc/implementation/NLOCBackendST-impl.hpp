@@ -136,7 +136,6 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 			std::cout<<"[LineSearch]: Cost:\t"<<intermediateCost + finalCost<<std::endl;
 			std::cout<<"[LineSearch]: Defect:\t"<<defectNorm<<std::endl;
 			std::cout<<"[LineSearch]: Merit:\t"<<cost<<std::endl;
-
 #endif //DEBUG_PRINT_LINESEARCH
 
 			//! compute new alpha

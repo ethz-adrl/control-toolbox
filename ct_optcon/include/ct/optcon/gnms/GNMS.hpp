@@ -106,7 +106,6 @@ public:
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
 		{
-//			std::cout << "Running additional init routine for first iteration !!" << std::endl;
 			this->backend_->rolloutShots(1, K-1);
 		}
 
@@ -161,13 +160,12 @@ public:
 
 		auto startFinish = std::chrono::steady_clock::now();
 
-//		int K = this->backend_->getNumSteps(); // todo remove
-
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
 		{
 			this->backend_->rolloutShots(0, 0);
 			this->backend_->updateCosts();
+			this->backend_->updateDefects();
 		}
 
 #ifdef MATLAB_FULL_LOG
