@@ -78,8 +78,8 @@ target_link_libraries(EEKinematicsTest ${catkin_LIBRARIES})
 catkin_add_gtest(EEContactModelTest test/physics/EEContactModelTest.cpp)
 target_link_libraries(EEContactModelTest ${catkin_LIBRARIES})
 
-#catkin_add_gtest(TaskSpaceCfTest test/robot/costfunction/TaskspaceCostFunctionTest.cpp)
-#target_link_libraries(TaskSpaceCfTest ${catkin_LIBRARIES})
+catkin_add_gtest(TaskSpaceCfTest test/robot/costfunction/TaskspaceCostFunctionTest.cpp)
+target_link_libraries(TaskSpaceCfTest ${catkin_LIBRARIES})
 
 #catkin_add_gtest(ControllerTests test/robot/control/ControllerTests.cpp)
 #target_link_libraries(ControllerTests ${catkin_LIBRARIES})
