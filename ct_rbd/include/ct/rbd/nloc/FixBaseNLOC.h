@@ -63,7 +63,7 @@ public:
 	typedef typename core::ControlVectorArray<FBSystem::CONTROL_DIM, SCALAR> ControlVectorArray;
 	typedef typename core::FeedbackArray<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> FeedbackArray;
 
-	typedef ct::optcon::CostFunctionAnalytical<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> CostFunction;
+	typedef ct::optcon::CostFunctionAD<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> CostFunction;
 
 
 	//! constructor for loading nloc settings from file
@@ -211,6 +211,7 @@ public:
 	{
 		return nlocSolver_;
 	}
+
 
 private:
 
