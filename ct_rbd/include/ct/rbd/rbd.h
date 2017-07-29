@@ -41,6 +41,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/rbd/robot/control/IDControllerFB.h>
 #include <ct/rbd/robot/control/WholeBodyController.h>
 #include <ct/rbd/robot/control/InfiniteHorizonLQRwithInverseDynamics.h>
+#include <ct/rbd/robot/costfunction/TermTaskspace.hpp>
 
 #include <ct/rbd/systems/FixBaseFDSystem.h>
 #include <ct/rbd/systems/FloatingBaseFDSystem.h>
