@@ -95,7 +95,7 @@ public:
 		xLocal.head(18) = p;
 		Eigen::Matrix<double, STATE_DIM + CONTROL_DIM + 1, 1> xut;
 		xut << xLocal, control, 0.0;
-		vDot = hyqForwardZero_(xut).tail(18);
+		vDot = hyqForwardZero_.forwardZero(xut).tail(18);
 	}
 
 

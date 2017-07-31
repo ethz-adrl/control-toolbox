@@ -165,6 +165,9 @@ public:
 	StateTrajectory<STATE_DIM, SCALAR>& getReferenceStateTrajectory() { return x_ref_; }
 
 	//! get a reference to the feedforward trajectory
+	const StateTrajectory<STATE_DIM, SCALAR>& getReferenceStateTrajectory() const { return x_ref_; }
+
+	//! get a reference to the feedforward trajectory
 	ControlTrajectory<CONTROL_DIM, SCALAR>& getFeedforwardTrajectory() { return uff_; }
 
 	//! get a reference to the feedforward trajectory
