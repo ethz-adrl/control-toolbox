@@ -126,6 +126,11 @@ public:
 		return solver_->getStates();
 	}
 
+	const StateVectorArray& getStateVectorArray()
+	{
+		return solver_->getSolution().x_ref();
+	}
+
 	const core::TimeArray& getTimeArray()
 	{
 		return solver_->getStateTrajectory().getTimeArray();
