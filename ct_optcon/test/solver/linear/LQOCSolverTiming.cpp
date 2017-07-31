@@ -48,8 +48,18 @@ void timeSingleSolve(size_t N)
 	ct::core::StateVector<state_dim> b; b.setZero();
 
 
+
 	for (size_t i=0; i<lqocSolvers.size(); i++)
 	{
+		std::vector<double> setProblemTime;
+		std::vector<double> solveTime;
+		std::vector<double> getTime;
+		std::vector<double> totalTime;
+
+		size_t nRuns = 5;
+
+		for(size_t j = 0; j< nRuns; j++)
+		{
 			problems[i]->setFromTimeInvariantLinearQuadraticProblem(
 					x0,
 					u0,
@@ -76,10 +86,23 @@ void timeSingleSolve(size_t N)
 
 			auto end_all = std::chrono::steady_clock::now();
 
-			std::cout << "setProblem() with "<<solverNames[i] << " took " <<std::chrono::duration <double, std::milli> (end_set-start_set).count() << " ms" <<std::endl;
-			std::cout << "solve() with "<<solverNames[i] << " took " <<std::chrono::duration <double, std::milli> (end_solve-start_solve).count() << " ms" <<std::endl;
-			std::cout << "get() with "<<solverNames[i] << " took " <<std::chrono::duration <double, std::milli> (end_get-start_get).count() << " ms" <<std::endl;
-			std::cout << "total call with "<<solverNames[i] << " took " <<std::chrono::duration <double, std::milli> (end_all-start_all).count() << " ms" <<std::endl;
+			// record times
+			setProblemTime.push_back(std::chrono::duration <double, std::milli> (end_set-start_set).count());
+			solveTime.push_back(std::chrono::duration <double, std::milli> (end_solve-start_solve).count());
+			getTime.push_back(std::chrono::duration <double, std::milli> (end_get-start_get).count());
+			totalTime.push_back(std::chrono::duration <double, std::milli> (end_all-start_all).count());
+		}
+
+			// average times
+			double avgSetTime = std::accumulate(setProblemTime.begin(), setProblemTime.end(), 0.0) / (double) nRuns;
+			double avgSolveTime = std::accumulate(solveTime.begin(), solveTime.end(), 0.0) / (double) nRuns;
+			double avgGetTime = std::accumulate(getTime.begin(), getTime.end(), 0.0) / (double) nRuns;
+			double avgTotalTime = std::accumulate(totalTime.begin(), totalTime.end(), 0.0) / (double) nRuns;
+
+			std::cout << "average setProblem() with "<< solverNames[i] << " took\t" << avgSetTime << " ms" << std::endl;
+			std::cout << "average solve() with "<< solverNames[i] << " took\t" << avgSolveTime << " ms" << std::endl;
+			std::cout << "average get() with "<< solverNames[i] << " took\t" << avgGetTime<< " ms" << std::endl;
+			std::cout << "average total call with "<< solverNames[i] << " took\t" << avgTotalTime << " ms" << std::endl;
 
 //			std::cout << "x:" << std::endl;
 //			for (size_t j=0; j<xSol.size(); j++)

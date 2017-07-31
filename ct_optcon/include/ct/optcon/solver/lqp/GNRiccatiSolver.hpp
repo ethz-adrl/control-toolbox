@@ -182,6 +182,8 @@ protected:
 	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) override
 	{
 		const int& N = lqocProblem->getNumberOfStages();
+		if(gv_.size() == N)
+			return;
 
 		gv_.resize(N);
 		G_.resize(N);
