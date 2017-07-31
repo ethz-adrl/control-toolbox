@@ -456,13 +456,13 @@ protected:
 	void rolloutSingleShot(const size_t threadId, const size_t k, const ControlVectorArray& u_ff_local, const StateVectorArray& x_start, StateVectorArray& xShot) const;
 
 	//! computes the defect between shot and trajectory
-	void computeSingleDefect(size_t threadId, size_t k, const StateVectorArray& x_start, const StateVectorArray& xShot, StateVectorArray& d) const;
+	void computeSingleDefect(size_t k, const StateVectorArray& x_start, const StateVectorArray& xShot, StateVectorArray& d) const;
 
 	//! rollout single shot for nominal case // todo try to replace
 	void rolloutSingleShot(const size_t threadId, const size_t k) {rolloutSingleShot(threadId, k, this->u_ff_, this->x_, this->xShot_); }
 
 	//! compute single defect for nominal case // todo try to replace
-	void computeSingleDefect(size_t threadId, size_t k){ computeSingleDefect(threadId, k, this->x_, this->xShot_, this->lqocProblem_->b_);}
+	void computeSingleDefect(size_t k){ computeSingleDefect(k, this->x_, this->xShot_, this->lqocProblem_->b_);}
 
     //! Rollout of nonlinear dynamics
     /*!

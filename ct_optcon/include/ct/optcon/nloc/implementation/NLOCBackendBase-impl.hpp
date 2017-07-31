@@ -369,13 +369,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots
 		rolloutSingleShot(threadId, k, u_ff_local, x_start, xShot);
 
 		// then compute the corresponding defect
-		computeSingleDefect(threadId, k, x_start, xShot, d);
+		computeSingleDefect(k, x_start, xShot, d);
 	}
 }
 
 
 
-// todo: to extend this to multiple shooting with intermediate steps, make a rollout from to function
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingleShot(const size_t threadId, const size_t k,
 		const ControlVectorArray& u_ff_local, const StateVectorArray& x_start, StateVectorArray& xShot) const
@@ -419,11 +418,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeSingleDefect(size_t threadId, size_t k,
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeSingleDefect(size_t k,
 		const StateVectorArray& x_start, const StateVectorArray& xShot, StateVectorArray& d) const
 {
-	// todo: remove threadId -- not requried here
-
 	if (k< (size_t)K_)
 	{
 		d[k] = xShot[k] - x_start[k+1];
@@ -585,8 +582,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 	matFile_.put("R", p.R_.toImplementation());
 	matFile_.put("q", p.q_.toEigenTrajectory());
 
-//	matFile_.put("luff", lqocSolver_->getControlUpdates().toImplementation());	// todo: work those over
-//	matFile_.put("lx", lqocSolver_->getStateUpdates().toImplementation());
 	matFile_.put("lx_norm", lx_norm_);
 	matFile_.put("lu_norm", lu_norm_);
 	matFile_.put("cost", getCost());
