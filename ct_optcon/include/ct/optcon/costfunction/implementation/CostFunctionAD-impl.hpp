@@ -164,7 +164,8 @@ template <size_t STATE_DIM, size_t CONTROL_DIM>
 void CostFunctionAD<STATE_DIM, CONTROL_DIM>::setCurrentStateAndControl(
 		const state_vector_t &x,
 		const control_vector_t &u,
-		const double& t){
+		const double& t)
+{
 	this->x_ = x;
 	this->u_ = u;
 	this->t_ = t;
@@ -189,7 +190,13 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM>::setCurrentStateAndControl(
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM>
-void CostFunctionAD<STATE_DIM, CONTROL_DIM>::loadFromConfigFile(const std::string& filename, bool verbose){
+void CostFunctionAD<STATE_DIM, CONTROL_DIM>::loadFromConfigFile(const std::string& filename, bool verbose)
+{
+	var_.resize(STATE_DIM + CONTROL_DIM + 1);
+
+	this->intermediateCostAnalytical_.clear();
+	this->finalCostAnalytical_.clear();
+
 	boost::property_tree::ptree pt;
 	boost::property_tree::read_info(filename, pt);
 	int i=0;
@@ -223,8 +230,10 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM>::loadFromConfigFile(const std::strin
 		{
 			if (term)
 				addTerm(filename,currentTerm,currentTermType,term,this,verbose);
-			if (termAD)
+			else if (termAD)
 				addTerm(filename,currentTerm,currentTermType,termAD,this,verbose);
+			else
+				throw std::runtime_error("Term type \""+ termKind+ "\" loaded but unsupported.");
 		}
 		currentTerm = "term"+std::to_string(++i);
 	} while(pt.find(currentTerm)!= pt.not_found());
