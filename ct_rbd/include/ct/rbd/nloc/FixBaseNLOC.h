@@ -62,6 +62,7 @@ public:
 	typedef typename core::StateVectorArray<FBSystem::STATE_DIM, SCALAR> StateVectorArray;
 	typedef typename core::ControlVectorArray<FBSystem::CONTROL_DIM, SCALAR> ControlVectorArray;
 	typedef typename core::FeedbackArray<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> FeedbackArray;
+	typedef typename core::StateFeedbackController<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> StateFeedbackController;
 
 	typedef ct::optcon::CostFunctionAD<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> CostFunction;
 
@@ -71,15 +72,17 @@ public:
 			const std::string& costFunctionFile,
 			const std::string& settingsFile,
 			std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
+			bool verbose = false,
 			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr
 	) :
 		system_(system),
 		linearizedSystem_(linearizedSystem),
-		costFunction_(new CostFunction(costFunctionFile, false)),
+		costFunction_(new CostFunction(costFunctionFile, verbose)),
 		optConProblem_(system_, costFunction_, linearizedSystem_),
 		iteration_(0)
 	{
-			nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settingsFile));
+		optConProblem_.verify();
+		nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settingsFile));
 	}
 
 
@@ -88,15 +91,17 @@ public:
 			const std::string& costFunctionFile,
 			const typename NLOptConSolver::Settings_t& nlocSettings,
 			std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
+			bool verbose = false,
 			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr
 	) :
 		system_(system),
 		linearizedSystem_(linearizedSystem),
-		costFunction_(new CostFunction(costFunctionFile, false)),
+		costFunction_(new CostFunction(costFunctionFile, verbose)),
 		optConProblem_(system_, costFunction_, linearizedSystem_),
 		iteration_(0)
 	{
-			nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, nlocSettings));
+		optConProblem_.verify();
+		nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, nlocSettings));
 	}
 
 
@@ -175,6 +180,10 @@ public:
 
 		iteration_++;
 		return foundBetter;
+	}
+
+	const core::StateFeedbackController<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>& getSolution(){
+		return nlocSolver_->getSolution();
 	}
 
 	const StateVectorArray& retrieveLastRollout()
