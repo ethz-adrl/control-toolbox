@@ -78,33 +78,33 @@ if(BUILD_EXAMPLES)
 endif()
 
 
-catkin_add_gtest(NoiseTest test/NoiseTest.cpp)
-target_link_libraries(NoiseTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(SecondOrderSystemTest test/SecondOrderSystemTest.cpp)
-target_link_libraries(SecondOrderSystemTest ${catkin_LIBRARIES})
+#catkin_add_gtest(NoiseTest test/NoiseTest.cpp)
+#target_link_libraries(NoiseTest ${catkin_LIBRARIES})
+#
+#catkin_add_gtest(SecondOrderSystemTest test/SecondOrderSystemTest.cpp)
+#target_link_libraries(SecondOrderSystemTest ${catkin_LIBRARIES})
 
 catkin_add_gtest(IntegrationTest test/IntegrationTest.cpp)
 target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core)
 
-catkin_add_gtest(IntegratorComparison test/IntegratorComparison.cpp)
-target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
+#catkin_add_gtest(IntegratorComparison test/IntegratorComparison.cpp)
+#target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
 
-catkin_add_gtest(InterpolationTest test/InterpolationTest.cpp)
-target_link_libraries(InterpolationTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(DiscreteTrajectoryTest test/DiscreteTrajectoryTest.cpp)
-target_link_libraries(DiscreteTrajectoryTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(LinspaceTest test/LinspaceTest.cpp)
-target_link_libraries(LinspaceTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(AutoDiffLinearizerTest test/AutoDiffLinearizerTest.cpp)
-target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES})
+#catkin_add_gtest(InterpolationTest test/InterpolationTest.cpp)
+#target_link_libraries(InterpolationTest ${catkin_LIBRARIES})
+#
+#catkin_add_gtest(DiscreteTrajectoryTest test/DiscreteTrajectoryTest.cpp)
+#target_link_libraries(DiscreteTrajectoryTest ${catkin_LIBRARIES})
+#
+#catkin_add_gtest(LinspaceTest test/LinspaceTest.cpp)
+#target_link_libraries(LinspaceTest ${catkin_LIBRARIES})
+#
+#catkin_add_gtest(AutoDiffLinearizerTest test/AutoDiffLinearizerTest.cpp)
+#target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES})
 
 # Codegen tests cannot run in parallel. Thus we build and run all codegen tests in one
-catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
-target_link_libraries(CodegenTests ${catkin_LIBRARIES} dl)
+#catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
+#target_link_libraries(CodegenTests ${catkin_LIBRARIES} dl)
 
 ## not really a test
 #add_executable(plotTest test/plot/plotTest.cpp)

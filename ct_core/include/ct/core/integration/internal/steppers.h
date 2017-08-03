@@ -8,6 +8,8 @@
 #ifndef INCLUDE_CT_CORE_INTEGRATION_INTERNAL_STEPPERS_H_
 #define INCLUDE_CT_CORE_INTEGRATION_INTERNAL_STEPPERS_H_
 
+#include <boost/numeric/odeint.hpp>
+
 namespace ct {
 namespace core {
 namespace internal {

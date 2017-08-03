@@ -29,37 +29,71 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CT_CORE_INTERNAL_STEPPERS_CT_H_
 
 #include <ct/core/systems/System.h>
+#include "stepper2.h"
 
 namespace ct {
 namespace core {
 namespace internal {
 
-template <typename SCALAR, typename MatrixType>
-class StepperBaseCT
+
+template<typename MatrixType, typename SCALAR = double>
+class StepperCTBase : public StepperBase<MatrixType, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    virtual void integrate_n_steps(
+            const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
+            MatrixType& state,
+            const SCALAR& startTime,
+            size_t numSteps,
+            SCALAR dt)
+    {
+        SCALAR time = startTime;
+        for(size_t i = 0; i < numSteps; ++i)
+        {
+            do_step(rhs, state, time, dt);
+            time += dt;
+        }      
+    }
+
+    virtual void integrate_n_steps(
+            const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
+            MatrixType& state,
+            const SCALAR& startTime,
+            size_t numSteps,
+            SCALAR dt,
+            std::function<void (const MatrixType& x, const SCALAR& t)> observer)
+    {
+        SCALAR time = startTime;
+
+        for(size_t i = 0; i < numSteps; ++i)
+        {
+            do_step(rhs, state, time, dt);
+            time += dt;
+            observer(state, time);
+        }
+    }
+
+private:
     virtual void do_step(
         const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
         MatrixType& stateInOut,
         const SCALAR time,
-        const SCALAR dt
-        ) = 0;
-
-protected:
-    
+        const SCALAR dt) = 0;
 };
 
 
-template<typename SCALAR, typename MatrixType>
-class StepperEulerCT : public StepperBaseCT<SCALAR, MatrixType>
+
+template<typename MatrixType, typename SCALAR = double>
+class StepperEulerCT : public StepperCTBase<MatrixType, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     StepperEulerCT(){}
 
+private:
     virtual void do_step(
         const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
         MatrixType& stateInOut,
@@ -71,13 +105,12 @@ public:
         stateInOut += dt * derivative_;
     }
 
-private:
     MatrixType derivative_;
 
 };
 
-template<typename SCALAR, typename MatrixType>
-class StepperRK4CT : public StepperBaseCT<SCALAR, MatrixType>
+template<typename MatrixType, typename SCALAR = double>
+class StepperRK4CT : public StepperCTBase<MatrixType, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -89,6 +122,8 @@ public:
 
     }
 
+private:
+
     virtual void do_step(
         const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
         MatrixType& stateInOut,
@@ -96,16 +131,16 @@ public:
         const SCALAR dt
         ) override
     {
-        double halfStep = 0.5 * dt;
+        double halfStep = SCALAR(0.5) * dt;
         double timePlusHalfStep = time + halfStep;
         rhs(stateInOut, time, k1_);
         rhs(stateInOut + halfStep * k1_, timePlusHalfStep, k2_);
         rhs(stateInOut + halfStep * k2_, timePlusHalfStep, k3_);
         rhs(stateInOut + dt * k3_, time + dt, k4_);
-        stateInOut += oneSixth_ * dt * (k1_ + 2 * k2_ + 2 * k3_ + k4_);
+        stateInOut += oneSixth_ * dt * (k1_ + SCALAR(2.0) * k2_ + SCALAR(2.0) * k3_ + k4_);
     }
 
-private:
+
     MatrixType k1_;
     MatrixType k2_;
     MatrixType k3_;

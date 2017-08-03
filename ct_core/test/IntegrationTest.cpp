@@ -132,12 +132,12 @@ TEST(IntegrationTest, derivativeTest)
             //oscillator->printSystemInfo();
 
             integrators.clear();
-            integrators.push_back(std::shared_ptr<IntegratorEuler<stateSize> >(new IntegratorEuler<stateSize>(oscillator)));
-            integrators.push_back(std::shared_ptr<IntegratorRK4<stateSize> >(new IntegratorRK4<stateSize>(oscillator)));
-            integrators.push_back(std::shared_ptr<IntegratorRK78<stateSize> >(new IntegratorRK78<stateSize>(oscillator)));
-            integrators.push_back(std::shared_ptr<IntegratorRK5Variable<stateSize> >(new IntegratorRK5Variable<stateSize>(oscillator)));
-            integrators.push_back(std::shared_ptr<ODE45<stateSize> >(new ODE45<stateSize>(oscillator)));
-            integrators.push_back(std::shared_ptr<IntegratorModifiedMidpoint<stateSize> >(new IntegratorModifiedMidpoint<stateSize>(oscillator)));
+            // integrators.push_back(std::shared_ptr<IntegratorEuler<stateSize> >(new IntegratorEuler<stateSize>(oscillator)));
+            integrators.push_back(std::shared_ptr<Integrator<stateSize> >(new Integrator<stateSize>(oscillator, RK4)));
+            // integrators.push_back(std::shared_ptr<IntegratorRK78<stateSize> >(new IntegratorRK78<stateSize>(oscillator)));
+            // integrators.push_back(std::shared_ptr<IntegratorRK5Variable<stateSize> >(new IntegratorRK5Variable<stateSize>(oscillator)));
+            // integrators.push_back(std::shared_ptr<ODE45<stateSize> >(new ODE45<stateSize>(oscillator)));
+            // integrators.push_back(std::shared_ptr<IntegratorModifiedMidpoint<stateSize> >(new IntegratorModifiedMidpoint<stateSize>(oscillator)));
 
 
             // define analytical solution
