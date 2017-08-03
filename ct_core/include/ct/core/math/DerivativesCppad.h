@@ -215,6 +215,38 @@ public:
 		}	
 	}
 
+	// there must be a more efficient way to program this...
+	virtual Eigen::VectorXd jacobianSparse(const Eigen::VectorXd& x) override {
+		if(outputDim_ <= 0)
+			throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+			
+		if(compiled_)
+		{
+			assert(model_->isJacobianAvailable() == true);
+			std::vector<size_t> rowsVec;
+			std::vector<size_t> colsVec;
+			model_->JacobianSparsity(rowsVec, colsVec);
+
+			Eigen::VectorXd jac = model_->Jacobian(x);
+			JAC_TYPE_D out(outputDim_, x.rows());
+			out = JAC_TYPE_ROW_MAJOR::Map(jac.data(), outputDim_, x.rows());
+
+			Eigen::VectorXd outSparse; outSparse.resize(rowsVec.size());
+			size_t i = 0;
+			for(size_t row = 0; row < rowsVec.size(); ++row)
+			{
+				outSparse(i) = out(rowsVec[i], colsVec[i]);
+				++i;
+			}
+
+			return outSparse;
+		}
+		else
+		{
+			return fAdCppad_.Jacobian(x);
+		}	
+	}	
+
 	virtual HES_TYPE_D hessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) override {
 		if(outputDim_ <= 0)
 			throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
@@ -290,15 +322,22 @@ public:
 		assert(model_->isJacobianSparsityAvailable() == true);
 		std::vector<size_t> rowsVec;
 		std::vector<size_t> colsVec;
-		Eigen::Matrix<size_t, Eigen::Dynamic, 1> rowsTmp;
-		Eigen::Matrix<size_t, Eigen::Dynamic, 1> colsTmp;
+		// Eigen::Matrix<size_t, Eigen::Dynamic, 1> rowsTmp;
+		// Eigen::Matrix<size_t, Eigen::Dynamic, 1> colsTmp;
 		model_->JacobianSparsity(rowsVec, colsVec);
-		rows.resize(rowsVec.size());
-		columns.resize(colsVec.size());
-		rowsTmp = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(rowsVec.data(), rowsVec.size(), 1);
-		colsTmp = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(colsVec.data(), colsVec.size(), 1);
-		rows = rowsTmp.cast<int>();
-		columns = colsTmp.cast<int>();
+		std::cout << "rowsVecsize: " << rowsVec.size() << std::endl;
+		std::cout << "colsVecsize: " << colsVec.size() << std::endl;
+		std::cout << "rowsVec: " << std::endl;
+		for(size_t i = 0; i < rowsVec.size(); ++i)
+			std::cout << rowsVec[i] << "\t";
+		rows.resize(rowsVec.size()); //rowsTmp.resize(rowsVec.size());
+		columns.resize(colsVec.size()); //colsTmp.resize(rowsVec.size());
+		int* rowsPtr =  (int*)rowsVec.data();
+		int* colsPtr =  (int*)colsVec.data();
+		rows = Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, 1>>(rowsPtr, rowsVec.size(), 1);
+		columns = Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, 1>>(colsPtr, colsVec.size(), 1);
+		// rows = rowsTmp.cast<int>();
+		// columns = colsTmp.cast<int>();
 	}
 
 	//! get Hessian sparsity pattern
@@ -334,25 +373,28 @@ public:
 	void compileJIT(const std::string& libName = "threadId" + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id())) )
 	{
 		if (compiled_) return;
+		std::cout << "Starting to compile " + libName + " library"  << std::endl;
 
 		CppAD::cg::ModelCSourceGen<double> cgen(fCgCppad_, "DerivativesCppad");
 		cgen.setCreateForwardZero(true);
 		cgen.setCreateJacobian(true);
+		// cgen.setCreateForwardOne(true);
 		cgen.setCreateSparseJacobian(true);
 
-		cgen.setCreateHessian(true);
-		cgen.setCreateSparseHessian(true);
+		// cgen.setCreateHessian(true);
+		// cgen.setCreateSparseHessian(true);
 
 		CppAD::cg::ModelLibraryCSourceGen<double> libcgen(cgen);
 
 		// compile source code
 		CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, libName);
 
-		dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler_));
+		dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compilerClang_));
 
 		model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"));
 
 		compiled_ = true;
+		std::cout << "Successfully compiled " << std::endl;
 	}
 
 
@@ -487,20 +529,30 @@ private:
 	void recordCg()
 	{
 		// input vector, needs to be dynamic size
+		std::cout << "inputdim: " << inputDim_ << std::endl;
 		Eigen::Matrix<CG_SCALAR, Eigen::Dynamic, 1> x(inputDim_);
 
 		// declare x as independent
 		CppAD::Independent(x);
 
 		// output vector, needs to be dynamic size
+		std::cout << "outputDim_: " << outputDim_ << std::endl;
 		Eigen::Matrix<CG_SCALAR, Eigen::Dynamic, 1> y(outputDim_);
 
 		y = fCgStd_(x);
 
+		std::cout <<"asd" << std::endl;
+		std::cout << "xCols: " << x.rows() << std::endl;
+		std::cout << "yCols: " << y.rows() << std::endl;
+
 		// store operation sequence in f: x -> y and stop recording
 		CppAD::ADFun<CG_VALUE_TYPE> fCodeGen(x, y);
 
+		std::cout << "fef" << std::endl;
+
 		fCodeGen.optimize();
+
+		std::cout << "ooo" << std::endl;
 
 		fCgCppad_ = fCodeGen;
 	}
@@ -599,6 +651,7 @@ private:
 	CppAD::ADFun<double> fAdCppad_;
 
 	CppAD::cg::GccCompiler<double> compiler_; //! compile for codegeneration
+ 	CppAD::cg::ClangCompiler<double> compilerClang_;
 	std::shared_ptr<CppAD::cg::DynamicLib<double>> dynamicLib_; //! dynamic library to load after compilation
 	std::shared_ptr<CppAD::cg::GenericModel<double>> model_; //! the model
 	size_t tmpVarCount_; //! number of temporary variables in the source code

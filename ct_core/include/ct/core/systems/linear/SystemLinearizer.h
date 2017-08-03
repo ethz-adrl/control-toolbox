@@ -164,7 +164,7 @@ public:
 	 * @param t time
 	 * @return Jacobian wrt state
 	 */
-	virtual const state_matrix_t& getDerivativeState(const state_vector_t& x, const control_vector_t& u, const SCALAR t = 0.0) override {
+	virtual const state_matrix_t& getDerivativeState(const state_vector_t& x, const control_vector_t& u, const SCALAR t = SCALAR(0.0)) override {
 
 		nonlinearSystem_->computeControlledDynamics(x, t, u, dxdt_ref_);
 
@@ -173,8 +173,8 @@ public:
 			state_vector_t dxdt;
 
 			// inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
-			SCALAR h = eps_ * std::max(std::abs(x(i)), SCALAR(1.0));
-			volatile SCALAR x_ph = x(i) + h;
+			SCALAR h = eps_ * std::max(fabs(x(i)), SCALAR(1.0));
+			SCALAR x_ph = x(i) + h;
 			SCALAR dxp = x_ph - x(i);
 
 			state_vector_t x_perturbed = x;
@@ -187,7 +187,7 @@ public:
 			{
 				state_vector_t dxdt_low;
 
-				volatile SCALAR x_mh = x(i) - h;
+				SCALAR x_mh = x(i) - h;
 				SCALAR dxm = x(i) - x_mh;
 
 				x_perturbed = x;
@@ -237,7 +237,7 @@ public:
 	 * @param t time
 	 * @return Jacobian wrt input
 	 */
-	virtual const state_control_matrix_t& getDerivativeControl(const state_vector_t& x, const control_vector_t& u, const SCALAR t = 0.0) override
+	virtual const state_control_matrix_t& getDerivativeControl(const state_vector_t& x, const control_vector_t& u, const SCALAR t = SCALAR(0.0)) override
 	{
 
 		nonlinearSystem_->computeControlledDynamics(x, t, u, dxdt_ref_);
@@ -247,8 +247,8 @@ public:
 			state_vector_t dxdt;
 
 			// inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
-			SCALAR h = eps_ * std::max(std::abs(u(i)), SCALAR(1.0));
-			volatile SCALAR u_ph = u(i) + h;
+			SCALAR h = eps_ * std::max(fabs(u(i)), SCALAR(1.0));
+			SCALAR u_ph = u(i) + h;
 			SCALAR dup = u_ph - u(i);
 
 			control_vector_t u_perturbed = u;
@@ -261,7 +261,7 @@ public:
 			{
 				state_vector_t dxdt_low;
 
-				volatile SCALAR u_mh = u(i) - h;
+				SCALAR u_mh = u(i) - h;
 				SCALAR dum = u_ph - u(i);
 
 				u_perturbed = u;

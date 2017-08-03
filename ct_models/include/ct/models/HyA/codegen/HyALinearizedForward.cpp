@@ -34,7 +34,7 @@ namespace tpl {
 
 template class HyALinearizedForward<float>;
 template class HyALinearizedForward<double>;
-template class HyALinearizedForward<ct::core::ADCGScalar>;
+// template class HyALinearizedForward<ct::core::ADCGScalar>;
 
 }
 }

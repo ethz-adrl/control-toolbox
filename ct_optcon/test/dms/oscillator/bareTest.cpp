@@ -38,8 +38,8 @@ class OscillatorDms
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	// typedef CppAD::AD<CppAD::cg::CG<double> > ScalarCG;
-	typedef double ScalarCG;
+	typedef ct::core::ADCGScalar ScalarCG;
+	// typedef double ScalarCG;
 
 	typedef DmsDimensions<2,1> OscDimensions;
 
@@ -59,6 +59,9 @@ public:
 		settings_.print();
 
 		oscillator_ = std::shared_ptr<ct::core::SecondOrderSystem> (new ct::core::SecondOrderSystem(w_n_, zeta_));
+		std::shared_ptr<ct::core::tpl::SecondOrderSystem<ScalarCG> > oscillatorCG(
+			new ct::core::tpl::SecondOrderSystem<ScalarCG>(ScalarCG(w_n_), ScalarCG(zeta_)));
+
 		x_0_ << 0.0,0.0;
 		x_final_ << 2.0, -1.0;
 		Q_ << 	0.0,0.0,
@@ -73,6 +76,16 @@ public:
 		costFunction_ = std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1>> 
 				(new ct::optcon::CostFunctionQuadraticSimple<2,1>(Q_, R_, x_final_, u_des_, x_final_, Q_final_));
 
+		// std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1, ScalarCG> costFunctionCG(
+		// 	new ct::optcon::CostFunctionQuadraticSimple<2, 1, ScalarCG>(Q_.template cast<ScalarCG>(), R_.template cast<ScalarCG>(), 
+		// 		x_final_.template cast<ScalarCG>(), u_des_.template cast<ScalarCG>(), 
+		// 		x_final_.template cast<ScalarCG>(), Q_final_.template cast<ScalarCG>()));
+
+		std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1, ScalarCG>> costFunctionCG(
+			new ct::optcon::CostFunctionQuadraticSimple<2, 1, ScalarCG>(Q_.cast<ScalarCG>(), R_.cast<ScalarCG>(), 
+				x_final_.cast<ScalarCG>(), u_des_.cast<ScalarCG>(), 
+				x_final_.cast<ScalarCG>(), Q_final_.cast<ScalarCG>()));		
+
 		stateInputConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2,1>>
 				(new ct::optcon::ConstraintContainerAnalytical<2,1>() );
 
@@ -81,6 +94,9 @@ public:
 
 		pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>
 				(new ct::optcon::ConstraintContainerAnalytical<2, 1>());
+
+		std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1, ScalarCG>> pureStateConstraintsCG(
+		new ct::optcon::ConstraintContainerAnalytical<2, 1, ScalarCG>());		
 
 		std::shared_ptr<TerminalConstraint<2,1>> termConstraint(new TerminalConstraint<2,1>(x_final_));
 		core::StateVector<2> xLow;
@@ -103,7 +119,11 @@ public:
 		std::shared_ptr<optcon::TerminalConstraint<2,1>> termConstraintAd(
 			new optcon::TerminalConstraint<2,1>(x_final_));
 
+		std::shared_ptr<optcon::TerminalConstraint<2,1, ScalarCG>> termConstraintCG(
+			new optcon::TerminalConstraint<2,1, ScalarCG>(x_final_.template cast<ScalarCG>()));
+
 		termConstraint->setName("TerminalConstraint");
+		termConstraintCG->setName("TerminalConstraintCG");
 		stateConstraint->setName("StateConstraint");
 		inputConstraint->setName("ControlInputConstraint");
 	
@@ -116,17 +136,26 @@ public:
 		stateInputConstraintsAd_->addTerminalConstraint(termConstraintAd, true);
 
 		pureStateConstraints_->addTerminalConstraint(termConstraint, true);
+		pureStateConstraintsCG->addTerminalConstraint(termConstraintCG, true);
 		stateInputConstraints_->addIntermediateConstraint(inputConstraint, true);
 		stateInputConstraints_->addIntermediateConstraint(stateConstraint, true);
 
 		OptConProblem<2,1> optProblem(oscillator_, costFunction_);
 		optProblem.setInitialState(x_0_);
 		optProblem.setTimeHorizon(settings_.T_);
-		optProblem.setStateInputConstraints(stateInputConstraints_);
+		// optProblem.setStateInputConstraints(stateInputConstraints_);
 		optProblem.setPureStateConstraints(pureStateConstraints_);
 
+
+	    OptConProblem<2,1, ScalarCG> optProblemCG(oscillatorCG, costFunctionCG);
+	    optProblemCG.setInitialState(x_0_.template cast<ScalarCG>());
+	    optProblemCG.setTimeHorizon(ScalarCG(settings.T_));
+	    optProblemCG.setPureStateConstraints(pureStateConstraintsCG); 		
+
 		calcInitGuess();
+		// dmsPlanner_ = std::shared_ptr<DmsSolver<2,1>> (new DmsSolver<2,1>(optProblem, settings_));
 		dmsPlanner_ = std::shared_ptr<DmsSolver<2,1>> (new DmsSolver<2,1>(optProblem, settings_));
+		dmsPlanner_->setCGProblem(optProblemCG);
 		dmsPlanner_->setInitialGuess(initialPolicy_);
 	}
 

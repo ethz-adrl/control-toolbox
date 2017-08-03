@@ -82,6 +82,11 @@ public:
         throw std::runtime_error("JACOBIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
     }
 
+    virtual Eigen::VectorXd jacobianSparse(const Eigen::VectorXd& x)
+    {
+        throw std::runtime_error("SPARSE JACOBIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
+    }
+
     /**
      * @brief      Evaluates the hessian (2nd order derivatives with respect to
      *             input) of the method. In case of a vector valued function,

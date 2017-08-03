@@ -246,6 +246,10 @@ public:
 		x = x_;
 	}
 
+	VectorXs getOptimizationVars()  const {
+		return x_;
+	}
+
 	/**
 	 * @brief      Extracts the solution from ipopt and stores them into class
 	 *             variables

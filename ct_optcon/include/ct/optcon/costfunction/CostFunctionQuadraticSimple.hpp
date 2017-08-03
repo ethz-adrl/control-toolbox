@@ -125,8 +125,8 @@ public:
 	}
 
 	virtual SCALAR evaluateIntermediate() override {
-		SCALAR costQ = 0.5 * (x_deviation_.transpose() * Q_ * x_deviation_)(0);
-		SCALAR costR = 0.5 * (u_deviation_.transpose() * R_ * u_deviation_)(0);
+		SCALAR costQ = SCALAR(0.5) * (x_deviation_.transpose() * Q_ * x_deviation_)(0);
+		SCALAR costR = SCALAR(0.5) * (u_deviation_.transpose() * R_ * u_deviation_)(0);
 		return costQ + costR;
 	}
 
@@ -152,7 +152,7 @@ public:
 
 	virtual SCALAR evaluateTerminal() override {
 		state_vector_t x_deviation_final = this->x_ - x_final_;
-		return 0.5 * x_deviation_final.transpose() * Q_final_ * x_deviation_final;
+		return SCALAR(0.5) * x_deviation_final.transpose() * Q_final_ * x_deviation_final;
 	}
 
 	virtual state_vector_t stateDerivativeTerminal() override {

@@ -98,6 +98,21 @@ public:
 		assert(ind == c_nlp.rows()); // or throw an error
 	}
 
+	void evalConstraints(VectorXs& c_nlp)
+	{
+		prepareEvaluation();
+		size_t ind = 0;
+
+		for(auto constraint : constraints_)
+		{
+			size_t cSize = constraint->getConstraintSize();
+			c_nlp.segment(ind, cSize) = constraint->eval();
+			ind += cSize;
+		}
+
+		assert(ind == c_nlp.rows()); // or throw an error
+	}
+
 	/**
 	 * @brief      Evaluates the jacobian of the constraints and writes them
 	 *             into the nlp vector

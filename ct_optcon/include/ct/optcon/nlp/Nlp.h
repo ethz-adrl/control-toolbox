@@ -82,7 +82,8 @@ public:
 	 * @return     { Scalar value of the resulting cost }
 	 */
 	SCALAR evaluateCostFun(){
-		return costEvaluator_->eval();
+		return costCodegen_->forwardZero(optVariables_->getOptimizationVars())(0);
+		// return costEvaluator_->eval();
 	}
 
 
@@ -93,7 +94,8 @@ public:
 	 * @param[out] grad  The gradient of the cost function
 	 */
 	void evaluateCostGradient(const size_t n, MapVecXs& grad){
-		costEvaluator_->evalGradient(n, grad);
+		grad = costCodegen_->jacobian(optVariables_->getOptimizationVars());
+		// costEvaluator_->evalGradient(n, grad);
 	} 
 
 	/**
@@ -103,7 +105,9 @@ public:
 	 *                     vector
 	 */
 	void evaluateConstraints(MapVecXs& values){
-		constraints_->evalConstraints(values);
+		// constraints_->evalConstraints(values);
+		values = constraintsCodegen_->forwardZero(optVariables_->getOptimizationVars());
+		// std::cout << "values: " << values.transpose() << std::endl;
 	}
 
 	/**
@@ -113,7 +117,11 @@ public:
 	 * @param[out] jac       The non zero values of the jacobian
 	 */
 	void evaluateConstraintJacobian(const int nele_jac, MapVecXs& jac){
-		constraints_->evalSparseJacobian(jac, nele_jac);
+		// constraints_->evalSparseJacobian(jac, nele_jac);
+		// std::cout << "optVars: " << optVariables_->getOptimizationVars().transpose() << std::endl;
+		jac = constraintsCodegen_->jacobianSparse(optVariables_->getOptimizationVars());
+		// std::cout << "jac size: " << jac.rows() << std::endl;
+		// std::cout << "jac: " << jac.transpose() << std::endl;
 	}
 
 	/**
@@ -127,7 +135,19 @@ public:
 	 *                       elements of the constraint jacobian
 	 */
 	void getSparsityPattern(const int nele_jac, MapVecXi& iRow, MapVecXi& jCol) const{
-		constraints_->getSparsityPattern(iRow, jCol, nele_jac);
+		// constraints_->getSparsityPattern(iRow, jCol, nele_jac);
+		// std::cout << "nele_jac: " << nele_jac << std::endl;
+		// std::cout << "irow size: " << iRow.rows() << std::endl;
+		// std::cout << "jcol size: " << jCol.rows() << std::endl;
+		// std::cout << "irow: " << iRow.transpose() << std::endl;
+		Eigen::VectorXi iRow1;
+		Eigen::VectorXi jCol1;
+		constraintsCodegen_->getSparsityPatternJacobian(iRow1, jCol1);
+		iRow = iRow1;
+		jCol = jCol1;
+		// // std::cout << "getSparsityPatternJacobian CPPAD: " << constraintsCodegen_->getSparsityPatternJacobian() << std::endl;
+		std::cout << "irow CPPAD: " << iRow.transpose() << std::endl;
+		std::cout << "jcol CPPAD: " << jCol.transpose() << std::endl;
 	}
 
 	/**
@@ -289,7 +309,7 @@ protected:
 	std::shared_ptr<OptVector<SCALAR>> optVariables_; //! base class, containts the optimization variables used in the NLP solvers
 	std::shared_ptr<DiscreteConstraintContainerBase<SCALAR>> constraints_; //! abstract base class, contains the discretized constraints for the problem
 	bool useGeneratedDerivatives_;
-	std::shared_ptr<ct::core::DerivativesCppad<-1, -1>> costCodegen_;
+	std::shared_ptr<ct::core::DerivativesCppad<-1, 1>> costCodegen_;
 	std::shared_ptr<ct::core::DerivativesCppad<-1, -1>> constraintsCodegen_;
 };
 
