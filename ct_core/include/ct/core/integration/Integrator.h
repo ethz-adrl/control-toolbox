@@ -36,8 +36,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "IntegratorBase.h"
 
-#include "internal/steppers.h"
-#include "internal/stepper2.h"
+#include "internal/StepperBase.h"
+
+// Can insert ifdefs here
 #include "internal/SteppersODEInt.h"
 #include "internal/SteppersCT.h"
 
@@ -111,6 +112,12 @@ public:
 		Base::integratorSettings_.absErrTol = absErrTol;
 		Base::integratorSettings_.relErrTol = relErrTol;
 
+		changeIntegrationType(intType);
+		setupSystem();
+	}
+
+	void changeIntegrationType(const IntegrationType& intType)
+	{
 		switch(intType)
 		{
 			case EULER:
@@ -148,10 +155,14 @@ public:
 			}
 			case ODE45:
 			{
+				integratorStepper_ = std::shared_ptr<internal::StepperODEIntControlled<internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>, Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
+					new internal::StepperODEIntControlled<internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>, Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
 				break;
 			}
 			case RK5VARIABLE:
 			{
+				integratorStepper_ = std::shared_ptr<internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>, Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
+					new internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>, Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());				
 				break;
 			}
 			case RK78:
@@ -173,9 +184,7 @@ public:
 				throw std::runtime_error("Unknown integration type");
 				break;
 			}			    
-		}
-
-		setupSystem();
+		}		
 	}
 
 	//! resets the stepper
@@ -394,134 +403,6 @@ private:
 
 		reset();
 	}
-
-	// template <typename S = Stepper>
-	// typename std::enable_if<std::is_same<S, internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>>::value, void>::type
-	// initializeStepper(const StateVector<STATE_DIM, SCALAR>& initialState, const SCALAR& t, SCALAR dt) {
-
-	// 	/**do nothing, runge_kutta_5_t does not have a init method */
-	// }
-
-
-	// template <typename S = Stepper>
-	// typename std::enable_if<std::is_same<S, internal::dense_runge_kutta5_t<STATE_DIM, SCALAR>>::value, void>::type
-	// initializeStepper(const StateVector<STATE_DIM, SCALAR>& initialState, const SCALAR& t, SCALAR dt) {
-
-	// 	/** dense steppers runge kutta requires initialization */
-	// 	stepper_.initialize(initialState, t, dt);
-	// }
-
-
-	// template <typename S>
-	// typename std::enable_if<std::is_same<S, internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>>::value, void>::type
-	// integrate_adaptive_specialized(
-	// 		StateVector<STATE_DIM, SCALAR>& initialState,
-	// 		const SCALAR& startTime,
-	// 		const SCALAR& finalTime,
-	// 		SCALAR dtInitial) {
-
-	// 	SCALAR startTime_temp = startTime;
-
-	// 	initializeStepper(initialState, startTime_temp, dtInitial);
-
-	// 	boost::numeric::odeint::integrate_adaptive(
-	// 			boost::numeric::odeint::make_controlled<S>(Base::integratorSettings_.absErrTol, Base::integratorSettings_.relErrTol),
-	// 			systemFunction_, initialState, startTime, finalTime, dtInitial, Base::observer_.observeWrap);
-	// }
-
-
-	// template <typename S>
-	// typename std::enable_if<std::is_same<S, internal::dense_runge_kutta5_t<STATE_DIM, SCALAR>>::value, void>::type
-	// integrate_adaptive_specialized(
-	// 		StateVector<STATE_DIM, SCALAR>& initialState,
-	// 		const SCALAR& startTime,
-	// 		const SCALAR& finalTime,
-	// 		SCALAR dtInitial) {
-
-	// 	SCALAR startTime_temp = startTime;
-
-	// 	initializeStepper(initialState, startTime_temp, dtInitial);
-
-	// 	boost::numeric::odeint::integrate_adaptive(
-	// 			boost::numeric::odeint::make_dense_output(
-	// 					Base::integratorSettings_.absErrTol, Base::integratorSettings_.relErrTol, internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>()),
-	// 					systemFunction_, initialState, startTime, finalTime, dtInitial, Base::observer_.observeWrap);
-	// }
-
-
-	// template <typename S>
-	// typename std::enable_if<(
-	// 		std::is_same<S, internal::euler_t<STATE_DIM, SCALAR>>::value ||
-	// 		std::is_same<S, internal::runge_kutta_4_t<STATE_DIM, SCALAR>>::value ||
-	// 		std::is_same<S, internal::modified_midpoint_t<STATE_DIM, SCALAR>>::value ||
-	// 		std::is_same<S, internal::runge_kutta_fehlberg78_t<STATE_DIM, SCALAR>>::value ||
-	// 		std::is_same<S, internal::bulirsch_stoer_t<STATE_DIM, SCALAR>>::value
-	// ), void>::type
-	// integrate_adaptive_specialized(
-	// 		StateVector<STATE_DIM, SCALAR>& initialState,
-	// 		const SCALAR& startTime,
-	// 		const SCALAR& finalTime,
-	// 		SCALAR dtInitial) {
-
-	// 	boost::numeric::odeint::integrate_adaptive(stepper_, systemFunction_, initialState, startTime, finalTime, dtInitial, Base::observer_.observeWrap);
-	// }
-
-
-	// template <typename S>
-	// typename std::enable_if<std::is_same<S, internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>>::value, void>::type
-	// integrate_times_specialized(
-	// 		StateVector<STATE_DIM, SCALAR>& initialState,
-	// 		const tpl::TimeArray<SCALAR>& timeTrajectory,
-	// 		SCALAR dtInitial = SCALAR(0.01)) {
-
-	// 	SCALAR startTime_temp = timeTrajectory.front();
-
-	// 	initializeStepper(initialState, startTime_temp, dtInitial);
-
-	// 	boost::numeric::odeint::integrate_times(
-	// 			boost::numeric::odeint::make_controlled<S>(Base::integratorSettings_.absErrTol, Base::integratorSettings_.relErrTol),
-	// 			systemFunction_, initialState, &timeTrajectory.front(), &timeTrajectory.back()+1, dtInitial, Base::observer_.observeWrap);
-	// }
-
-
-	// template <typename S>
-	// typename std::enable_if<std::is_same<S, internal::dense_runge_kutta5_t<STATE_DIM, SCALAR>>::value, void>::type
-	// integrate_times_specialized(
-	// 		StateVector<STATE_DIM, SCALAR>& initialState,
-	// 		const tpl::TimeArray<SCALAR>& timeTrajectory,
-	// 		SCALAR dtInitial = SCALAR(0.01)) {
-
-	// 	StateVector<STATE_DIM, SCALAR> initialStateInternal = initialState;
-	// 	SCALAR startTime_temp = timeTrajectory.front();
-
-	// 	initializeStepper(initialStateInternal, startTime_temp, dtInitial);
-
-	// 	boost::numeric::odeint::integrate_times(
-	// 			boost::numeric::odeint::make_dense_output(
-	// 					Base::integratorSettings_.absErrTol, Base::integratorSettings_.relErrTol, internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>()),
-	// 					systemFunction_, initialStateInternal, &timeTrajectory.front(), &timeTrajectory.back()+1, dtInitial, Base::observer_.observeWrap);
-	// }
-
-
-	// template <typename S>
-	// typename std::enable_if<(
-	// 		std::is_same<S, internal::euler_t<STATE_DIM, SCALAR>>::value ||
-	// 		std::is_same<S, internal::runge_kutta_4_t<STATE_DIM, SCALAR>>::value ||
-	// 		std::is_same<S, internal::modified_midpoint_t<STATE_DIM, SCALAR>>::value ||
-	// 		std::is_same<S, internal::runge_kutta_fehlberg78_t<STATE_DIM, SCALAR>>::value ||
-	// 		std::is_same<S, internal::bulirsch_stoer_t<STATE_DIM, SCALAR>>::value
-	// ), void>::type
-	// integrate_times_specialized(
-	// 		StateVector<STATE_DIM, SCALAR>& initialState,
-	// 		const tpl::TimeArray<SCALAR>& timeTrajectory,
-	// 		SCALAR dtInitial = SCALAR(0.01)) {
-
-	// 	StateVector<STATE_DIM, SCALAR> initialStateInternal = initialState;
-
-	// 	boost::numeric::odeint::integrate_times(stepper_, systemFunction_, initialStateInternal,
-	// 			&timeTrajectory.front(), &timeTrajectory.back()+1, dtInitial, Base::observer_.observeWrap);
-	// }
-
 
 	std::function<void (const Eigen::Matrix<SCALAR, STATE_DIM, 1>&, Eigen::Matrix<SCALAR, STATE_DIM, 1>&, SCALAR)> systemFunction_; //! the system function to integrate
 	std::shared_ptr<internal::StepperBase<Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>> integratorStepper_;

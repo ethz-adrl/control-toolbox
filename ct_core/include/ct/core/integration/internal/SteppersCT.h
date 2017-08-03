@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CT_CORE_INTERNAL_STEPPERS_CT_H_
 
 #include <ct/core/systems/System.h>
-#include "stepper2.h"
+#include "StepperBase.h"
 
 namespace ct {
 namespace core {
@@ -43,11 +43,11 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     virtual void integrate_n_steps(
-            const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
+            const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
             MatrixType& state,
             const SCALAR& startTime,
             size_t numSteps,
-            SCALAR dt)
+            SCALAR dt) override
     {
         SCALAR time = startTime;
         for(size_t i = 0; i < numSteps; ++i)
@@ -58,12 +58,12 @@ public:
     }
 
     virtual void integrate_n_steps(
-            const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
+            std::function<void (const MatrixType& x, const SCALAR& t)> observe,
+            const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
             MatrixType& state,
             const SCALAR& startTime,
             size_t numSteps,
-            SCALAR dt,
-            std::function<void (const MatrixType& x, const SCALAR& t)> observer)
+            SCALAR dt) override
     {
         SCALAR time = startTime;
 
@@ -71,13 +71,13 @@ public:
         {
             do_step(rhs, state, time, dt);
             time += dt;
-            observer(state, time);
+            observe(state, time);
         }
     }
 
 private:
     virtual void do_step(
-        const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
+        const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
         MatrixType& stateInOut,
         const SCALAR time,
         const SCALAR dt) = 0;
@@ -95,13 +95,13 @@ public:
 
 private:
     virtual void do_step(
-        const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
+        const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
         MatrixType& stateInOut,
         const SCALAR time,
         const SCALAR dt
         ) override
     {
-        rhs(stateInOut, time, derivative_);
+        rhs(stateInOut, derivative_, time);
         stateInOut += dt * derivative_;
     }
 
@@ -125,7 +125,7 @@ public:
 private:
 
     virtual void do_step(
-        const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
+        const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
         MatrixType& stateInOut,
         const SCALAR time,
         const SCALAR dt
@@ -133,10 +133,10 @@ private:
     {
         double halfStep = SCALAR(0.5) * dt;
         double timePlusHalfStep = time + halfStep;
-        rhs(stateInOut, time, k1_);
-        rhs(stateInOut + halfStep * k1_, timePlusHalfStep, k2_);
-        rhs(stateInOut + halfStep * k2_, timePlusHalfStep, k3_);
-        rhs(stateInOut + dt * k3_, time + dt, k4_);
+        rhs(stateInOut, k1_, time);
+        rhs(stateInOut + halfStep * k1_, k2_, timePlusHalfStep);
+        rhs(stateInOut + halfStep * k2_, k3_, timePlusHalfStep);
+        rhs(stateInOut + dt * k3_, k4_, time + dt);
         stateInOut += oneSixth_ * dt * (k1_ + SCALAR(2.0) * k2_ + SCALAR(2.0) * k3_ + k4_);
     }
 

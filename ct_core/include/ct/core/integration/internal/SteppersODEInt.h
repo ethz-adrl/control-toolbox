@@ -29,6 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CT_CORE_INTERNAL_STEPPERS_ODEINT_H_
 
 #include <boost/numeric/odeint.hpp>
+#include "SteppersODEIntDefinitions.h"
 
 namespace ct {
 namespace core {
@@ -40,10 +41,7 @@ class StepperODEInt : public StepperBase<MatrixType, SCALAR>
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    StepperODEInt()
-    {
-
-    }
+    StepperODEInt(){}
 
     virtual void integrate_n_steps(
             const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
@@ -57,7 +55,7 @@ public:
 
     virtual void integrate_n_steps(
             std::function<void (const MatrixType& x, const SCALAR& t)> observer,
-            std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
+            const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
             MatrixType& state,
             const SCALAR& startTime,
             size_t numSteps,
@@ -124,6 +122,113 @@ private:
 
     Stepper stepper_;
 };
+
+
+template <class Stepper, typename MatrixType, typename SCALAR = double>
+class StepperODEIntDenseOutput : public StepperODEInt<Stepper, MatrixType, SCALAR>
+{
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    StepperODEIntDenseOutput(){}  
+
+    virtual void integrate_adaptive(
+            const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
+            MatrixType& state,
+            const SCALAR& startTime,
+            const SCALAR& finalTime,
+            SCALAR dtInitial = SCALAR(0.01)) override
+    {
+        boost::numeric::odeint::integrate_adaptive(
+            boost::numeric::odeint::make_dense_output(SCALAR(1e-8), SCALAR(1e-8), stepper_),
+                rhs, state, startTime, finalTime, dtInitial);
+    }
+
+    virtual void integrate_adaptive(
+            std::function<void (const MatrixType& x, const SCALAR& t)> observer,
+            const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
+            MatrixType& state,
+            const SCALAR& startTime,
+            const SCALAR& finalTime,
+            const SCALAR dtInitial = SCALAR(0.01)) override
+    {
+        boost::numeric::odeint::integrate_adaptive(
+            boost::numeric::odeint::make_dense_output(SCALAR(1e-8), SCALAR(1e-8), stepper_),
+                rhs, state, startTime, finalTime, dtInitial, observer);
+    }
+
+    virtual void integrate_times(
+            std::function<void (const MatrixType& x, const SCALAR& t)> observer,
+            const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
+            MatrixType& state,
+            const tpl::TimeArray<SCALAR>& timeTrajectory,
+            SCALAR dtInitial = SCALAR(0.01)) override
+    {
+        boost::numeric::odeint::integrate_times(
+            boost::numeric::odeint::make_dense_output(SCALAR(1e-8), SCALAR(1e-8), stepper_),
+                rhs, state, &timeTrajectory.front(), &timeTrajectory.back()+1, dtInitial, observer);
+    }
+
+private:
+    Stepper stepper_;
+};
+
+template <class Stepper, typename MatrixType, typename SCALAR = double>
+class StepperODEIntControlled : public StepperODEInt<Stepper, MatrixType, SCALAR>
+{
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    StepperODEIntControlled(){}
+
+    //  boost::numeric::odeint::integrate_adaptive(
+    //          boost::numeric::odeint::make_controlled<S>(Base::integratorSettings_.absErrTol, Base::integratorSettings_.relErrTol),
+    //          systemFunction_, initialState, startTime, finalTime, dtInitial, Base::observer_.observeWrap);
+
+
+    virtual void integrate_adaptive(
+            const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
+            MatrixType& state,
+            const SCALAR& startTime,
+            const SCALAR& finalTime,
+            SCALAR dtInitial = SCALAR(0.01)) override
+    {
+        boost::numeric::odeint::integrate_adaptive(
+            boost::numeric::odeint::make_controlled(SCALAR(1e-8), SCALAR(1e-8), stepper_),
+                rhs, state, startTime, finalTime, dtInitial);
+    }
+
+    virtual void integrate_adaptive(
+            std::function<void (const MatrixType& x, const SCALAR& t)> observer,
+            const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
+            MatrixType& state,
+            const SCALAR& startTime,
+            const SCALAR& finalTime,
+            const SCALAR dtInitial = SCALAR(0.01)) override
+    {
+        boost::numeric::odeint::integrate_adaptive(
+            boost::numeric::odeint::make_controlled(SCALAR(1e-8), SCALAR(1e-8), stepper_),
+                rhs, state, startTime, finalTime, dtInitial, observer);
+    }
+
+    virtual void integrate_times(
+            std::function<void (const MatrixType& x, const SCALAR& t)> observer,
+            const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
+            MatrixType& state,
+            const tpl::TimeArray<SCALAR>& timeTrajectory,
+            SCALAR dtInitial = SCALAR(0.01)) override
+    {
+        boost::numeric::odeint::integrate_times(
+            boost::numeric::odeint::make_controlled(SCALAR(1e-8), SCALAR(1e-8), stepper_),
+                rhs, state, &timeTrajectory.front(), &timeTrajectory.back()+1, dtInitial, observer);
+    }
+
+private:
+
+    Stepper stepper_;
+};
+
+
 
 
 }

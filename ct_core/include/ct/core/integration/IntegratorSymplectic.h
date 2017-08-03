@@ -38,7 +38,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/core/systems/SymplecticSystem.h>
 
-#include "internal/steppers.h"
+#include "internal/SteppersODEIntDefinitions.h"
 
 
 namespace ct {
