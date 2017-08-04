@@ -63,8 +63,8 @@ public:
 		Q_ << 	0.0,0.0,
 				0.0,10.0;
 
-		Q_final_ << 0.0,0.0,
-				0.0,0.0;
+		Q_final_ << 10.0,0.0,
+				0.0,10.0;
 
 		R_ << 0.001;
 		u_des_ << 0.0;
@@ -131,7 +131,12 @@ public:
 
 	void getSolution()
 	{
+		Timer t;
+		t.start();
 		dmsPlanner_->solve();
+		t.stop();
+		std::cout << "Time for solution: " << t.getElapsedTime() << std::endl;
+
 	}
 
 
@@ -177,7 +182,7 @@ void runTests()
 {
 	for(int solverType = 0; solverType < NlpSolverSettings::SolverType::num_types_solver; solverType++)
 	{
-		int splineType = 1;
+		int splineType = 0;
 		int costEvalT = 1;
 		int optGrid = 0;
 		int integrateSensitivity = 1;
@@ -189,21 +194,20 @@ void runTests()
 		DmsSettings settings;
 		settings.N_ = 25;
 		settings.T_ = 5.0;
-		settings.nThreads_ = 4;
-		settings.terminalStateConstraint_ = 1;
+		settings.nThreads_ = 1;
 		settings.splineType_ = static_cast<DmsSettings::SplineType>(splineType);	// ZOH, PWL
 		settings.costEvaluationType_ =  static_cast<DmsSettings::CostEvaluationType>(costEvalT);	// SIMPLE, FULL
 		settings.objectiveType_ = static_cast<DmsSettings::ObjectiveType>(optGrid);	// keep grid, opt. grid
 		settings.h_min_ = 0.1;
 		settings.integrationType_ = DmsSettings::RK4;
-		settings.dt_sim_ = 0.01;
+		settings.dt_sim_ = 0.2;
 		settings.integrateSens_ =  static_cast<DmsSettings::IntegrationType>(integrateSensitivity);
 		settings.absErrTol_ = 1e-6;
 		settings.relErrTol_ = 1e-6;
 
 		NlpSolverSettings nlpsettings;
 		nlpsettings.solverType_ = static_cast<NlpSolverSettings::SolverType>(solverType);	// IPOPT, SNOPT
-		settings.nlpSettings_ = nlpsettings;
+		settings.solverSettings_ = nlpsettings;
 
 		OscillatorDms oscDms;
 		oscDms.initialize(settings);

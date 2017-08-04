@@ -125,7 +125,10 @@ public:
 
 		size_t wLength = (settings.N_ + 1)*(STATE_DIM + CONTROL_DIM);
 		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-			wLength += settings_.N_;
+		{
+			throw std::runtime_error("Currently we do not support adaptive time gridding");
+			// wLength += settings_.N_;
+		}
 
 		optVariablesDms_ = std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>>(
 				new OptVectorDms<STATE_DIM, CONTROL_DIM>(wLength, settings));
@@ -182,11 +185,14 @@ public:
 	virtual void updateProblem() override
 	{
 		controlSpliner_->computeSpline(optVariablesDms_->getOptimizedInputs().toImplementation());
-		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-		{
-			// std::cout << "optVariablesDms_->getOptimizedTimeSegments(): " << optVariablesDms_->getOptimizedTimeSegments().transpose() << std::endl;
-			timeGrid_->updateTimeGrid(optVariablesDms_->getOptimizedTimeSegments());
-		}
+		for(auto shotContainer : shotContainers_)
+			shotContainer->reset();
+		
+		// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+		// {
+		// 	// std::cout << "optVariablesDms_->getOptimizedTimeSegments(): " << optVariablesDms_->getOptimizedTimeSegments().transpose() << std::endl;
+		// 	timeGrid_->updateTimeGrid(optVariablesDms_->getOptimizedTimeSegments());
+		// }
 	}
 
 	/**
@@ -237,10 +243,11 @@ public:
 	const state_vector_array_t& getStateTrajectory()
 	{
 		stateSolutionDense_.clear();
+		stateSolutionDense_.push_back(shotContainers_.front()->getXHistory().front());
 		for(auto shotContainer : shotContainers_)
 		{
 			state_vector_array_t x_traj = shotContainer->getXHistory();
-			for(size_t j = 0; j < x_traj.size(); ++j)
+			for(size_t j = 1; j < x_traj.size(); ++j)
 				stateSolutionDense_.push_back(x_traj[j]);
 		}
 		return stateSolutionDense_;
@@ -254,10 +261,11 @@ public:
 	const control_vector_array_t& getInputTrajectory()
 	{
 		inputSolutionDense_.clear();
+		inputSolutionDense_.push_back(shotContainers_.front()->getUHistory().front());
 		for(auto shotContainer : shotContainers_)
 		{
 			control_vector_array_t u_traj = shotContainer->getUHistory();
-			for(size_t j = 0; j < u_traj.size(); ++j)
+			for(size_t j = 1; j < u_traj.size(); ++j)
 				inputSolutionDense_.push_back(u_traj[j]);
 		}
 		return inputSolutionDense_;
@@ -271,10 +279,11 @@ public:
 	const time_array_t& getTimeArray()
 	{
 		timeSolutionDense_.clear();
+		timeSolutionDense_.push_back(shotContainers_.front()->getTHistory().front());
 		for(auto shotContainer : shotContainers_)
 		{
 			time_array_t t_traj = shotContainer->getTHistory();
-			for(size_t j = 0; j < t_traj.size(); ++j)
+			for(size_t j = 1; j < t_traj.size(); ++j)
 				timeSolutionDense_.push_back(t_traj[j]);
 		}
 		return timeSolutionDense_;

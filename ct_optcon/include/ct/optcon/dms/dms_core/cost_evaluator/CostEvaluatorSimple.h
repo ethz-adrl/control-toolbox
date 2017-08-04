@@ -87,7 +87,7 @@ public:
 				settings_(settings)
 	{
 		phi_.resize(settings_.N_+1);
-		phi_diff_h_ = Eigen::VectorXd::Ones(settings_.N_+1, 1);
+		// phi_diff_h_ = Eigen::VectorXd::Ones(settings_.N_+1, 1);
 		updatePhi();
 	}
 
@@ -109,7 +109,7 @@ private:
 	std::shared_ptr<TimeGrid> timeGrid_;
 	const DmsSettings settings_;
 	Eigen::VectorXd phi_; /* the summation weights */
-	Eigen::VectorXd phi_diff_h_; /* the summation weights for derivative w.r.t h */
+	// Eigen::VectorXd phi_diff_h_; /* the summation weights for derivative w.r.t h */
 };
 
 
@@ -117,13 +117,13 @@ private:
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 double CostEvaluatorSimple<STATE_DIM, CONTROL_DIM>::eval()
 {
-	updatePhi();
+	// updatePhi();
 	double cost = 0.0;
-	// go through all shots and eval cost at nodes
+	
 	for (size_t i = 0; i < settings_.N_ + 1; ++i)
 	{
 		costFct_->setCurrentStateAndControl(w_->getOptimizedState(i), w_->getOptimizedControl(i));
-		cost += phi_(i)*costFct_->evaluateIntermediate();
+		cost += phi_(i) * costFct_->evaluateIntermediate();
 	}
 
 	costFct_->setCurrentStateAndControl(w_->getOptimizedState(settings_.N_), control_vector_t::Zero());
@@ -137,34 +137,33 @@ double CostEvaluatorSimple<STATE_DIM, CONTROL_DIM>::eval()
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 void CostEvaluatorSimple<STATE_DIM, CONTROL_DIM>::evalGradient(size_t grad_length, Eigen::Map<Eigen::VectorXd>& grad)
 {
-	updatePhi();
+	// updatePhi();
 	grad.setZero();
-	// Loop only until N, terminalCost will be added afterwards?
 	for (size_t i = 0; i< settings_.N_ + 1; ++i)
 	{
 		costFct_->setCurrentStateAndControl(w_->getOptimizedState(i), w_->getOptimizedControl(i));
 		grad.segment(w_->getStateIndex(i), STATE_DIM) += phi_(i) * costFct_->stateDerivativeIntermediate();
-		grad.segment(w_->getControlIndex(i), CONTROL_DIM) += phi_(i)*costFct_->controlDerivativeIntermediate() ;
+		grad.segment(w_->getControlIndex(i), CONTROL_DIM) += phi_(i) * costFct_->controlDerivativeIntermediate() ;
 
-		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID && i < settings_.N_)
-		{
-			if(settings_.splineType_ == DmsSettings::ZERO_ORDER_HOLD)
-			{
-				costFct_->setCurrentStateAndControl(w_->getOptimizedState(i), w_->getOptimizedControl(i));
-				double dJdH = phi_diff_h_(i) * costFct_->evaluateIntermediate();
-				size_t idx = w_->getTimeSegmentIndex(i);
-				grad(idx) = dJdH;
-			}
+		// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID && i < settings_.N_)
+		// {
+		// 	if(settings_.splineType_ == DmsSettings::ZERO_ORDER_HOLD)
+		// 	{
+		// 		costFct_->setCurrentStateAndControl(w_->getOptimizedState(i), w_->getOptimizedControl(i));
+		// 		double dJdH = phi_diff_h_(i) * costFct_->evaluateIntermediate();
+		// 		size_t idx = w_->getTimeSegmentIndex(i);
+		// 		grad(idx) = dJdH;
+		// 	}
 
-			else if(settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
-			{
-				costFct_->setCurrentStateAndControl(w_->getOptimizedState(i), w_->getOptimizedControl(i));
-				double dJdH = 0.5 * costFct_->evaluateIntermediate();
-				costFct_->setCurrentStateAndControl(w_->getOptimizedState(i+1), w_->getOptimizedControl(i+1));
-				dJdH += 0.5 * costFct_->evaluateIntermediate();
-				grad(w_->getTimeSegmentIndex(i)) = dJdH;
-			}
-		}	
+		// 	else if(settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
+		// 	{
+		// 		costFct_->setCurrentStateAndControl(w_->getOptimizedState(i), w_->getOptimizedControl(i));
+		// 		double dJdH = 0.5 * costFct_->evaluateIntermediate();
+		// 		costFct_->setCurrentStateAndControl(w_->getOptimizedState(i+1), w_->getOptimizedControl(i+1));
+		// 		dJdH += 0.5 * costFct_->evaluateIntermediate();
+		// 		grad(w_->getTimeSegmentIndex(i)) = dJdH;
+		// 	}
+		// }	
 	}
 
 	/* gradient of terminal cost */
@@ -178,35 +177,27 @@ void CostEvaluatorSimple<STATE_DIM, CONTROL_DIM>::updatePhi()
 	{
 		switch (settings_.splineType_)
 		{
-		case DmsSettings::ZERO_ORDER_HOLD:
-		{
-			// set weights
-			for(size_t i = 0; i < settings_.N_; i++)
-				phi_(i) = (timeGrid_->getShotDuration(i)); // / curr_total_time;
+			case DmsSettings::ZERO_ORDER_HOLD:
+			{
+				for(size_t i = 0; i < settings_.N_; i++)
+					phi_(i) = (timeGrid_->getShotDuration(i));
 
-			// set weight for s_N and q_N to zero
-			phi_(settings_.N_) = 0.0;
-			// phi_diff_h_(settings_.N_) = 0.0;
+				phi_(settings_.N_) = 0.0;
+				break;
+			}
+			case DmsSettings::PIECEWISE_LINEAR:
+			{
+				phi_(0) = 0.5 * (timeGrid_->getShotDuration(0));
 
-			break;
-		}
-		case DmsSettings::PIECEWISE_LINEAR:
-		{
-			// set special weight for s_0
-			phi_(0) = 0.5 * (timeGrid_->getShotDuration(0)); // / curr_total_time;
+				for(size_t i = 1; i < settings_.N_; i++)
+					phi_(i) = 0.5 * (timeGrid_->getShotEndTime(i) - timeGrid_->getShotStartTime(i-1));
 
-			// set weights for s_1, ..., s_(N-1)
-			for(size_t i = 1; i < settings_.N_; i++)
-				phi_(i) = 0.5 * (timeGrid_->getShotDuration(i) + timeGrid_->getShotDuration(i-1));
+				phi_(settings_.N_) = 0.5 * (timeGrid_->getShotDuration(settings_.N_));
+				break;
 
-			// set special weight for s_N
-			phi_(settings_.N_) = 0.5 * (timeGrid_->getShotDuration(settings_.N_-1)) ; // / curr_total_time;
-
-			break;
-
-		}
-		default:
-			throw(std::runtime_error(" ERROR: Unknown spline-type in CostEvaluatorSimple - exiting."));
+			}
+			default:
+				throw(std::runtime_error(" ERROR: Unknown spline-type in CostEvaluatorSimple - exiting."));
 		}
 	}
 

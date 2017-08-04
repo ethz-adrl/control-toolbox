@@ -87,6 +87,9 @@ target_link_libraries(SecondOrderSystemTest ${catkin_LIBRARIES})
 catkin_add_gtest(IntegrationTest test/IntegrationTest.cpp)
 target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core)
 
+catkin_add_gtest(IntegratorComparison test/IntegratorComparison.cpp)
+target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
+
 catkin_add_gtest(InterpolationTest test/InterpolationTest.cpp)
 target_link_libraries(InterpolationTest ${catkin_LIBRARIES})
 
@@ -103,7 +106,7 @@ target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES})
 catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
 target_link_libraries(CodegenTests ${catkin_LIBRARIES} dl)
 
-## not really a test
+# not really a test
 #add_executable(plotTest test/plot/plotTest.cpp)
 #target_link_libraries(plotTest ${catkin_LIBRARIES} ct_core)
 

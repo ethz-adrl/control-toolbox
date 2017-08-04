@@ -89,6 +89,11 @@ public:
 		zState_.setZero();
 	}
 
+	void reset()
+	{
+		updateCount_ = 0;
+	}
+
 	/**
 	 * @brief      Destructor
 	 */

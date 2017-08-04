@@ -113,8 +113,8 @@ public:
 			}
 		}
 
-		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-			nr += STATE_DIM;
+		// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+		// 	nr += STATE_DIM;
 		jacLocal_.resize(nr);
 	}
 
@@ -137,8 +137,8 @@ public:
 				computeXblock();			// add the big block (derivative w.r.t. state s_i)
 				computeUblock(); 		// add the smaller block (derivative w.r.t. control q_i)
 				computeIblock();	// add the diagonal (derivative w.r.t. state s_(i+1))
-				if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-					computeHblock();
+				// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+				// 	computeHblock();
 				break;
 			}
 			case DmsSettings::PIECEWISE_LINEAR:
@@ -147,8 +147,8 @@ public:
 				computeUblock(); 		// add the smaller block (derivative w.r.t. control q_i)
 				computeIblock();	// add the diagonal (derivative w.r.t. state s_(i+1))
 				computeUblock_2(); 	// add the smaller block (derivative w.r.t. control q_(i+1))
-				if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-					computeHblock();
+				// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+				// 	computeHblock();
 				break;
 			}
 			default:
@@ -181,10 +181,10 @@ public:
 		}
 
 		/* the derivatives w.r.t. the time optimization variable (h_i) */
-		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-		{
-			no += STATE_DIM;
-		}
+		// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+		// {
+		// 	no += STATE_DIM;
+		// }
 
 		return no;		
 	}
@@ -237,11 +237,11 @@ public:
 		}
 
 		/* for the derivatives w.r.t. the time optimization variables (t_i) */
-		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-		{
-			indexNumber += BASE::genBlockIndices(w_->getTimeSegmentIndex(shotIndex_), 
-				STATE_DIM, 1, iRow_vec, jCol_vec, indexNumber);
-		}
+		// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+		// {
+		// 	indexNumber += BASE::genBlockIndices(w_->getTimeSegmentIndex(shotIndex_), 
+		// 		STATE_DIM, 1, iRow_vec, jCol_vec, indexNumber);
+		// }
 	}
 
 	virtual Eigen::VectorXd getLowerBound() override
@@ -304,39 +304,39 @@ private:
 };
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void ContinuityConstraint<STATE_DIM, CONTROL_DIM>::computeHblock()
-{
-	// take last elements of state and time
-	state_vector_t state = shotContainer_->getStateIntegrated();
-	ct::core::Time time = shotContainer_->getIntegrationTimeFinal();
+// template <size_t STATE_DIM, size_t CONTROL_DIM>
+// void ContinuityConstraint<STATE_DIM, CONTROL_DIM>::computeHblock()
+// {
+// 	// take last elements of state and time
+// 	state_vector_t state = shotContainer_->getStateIntegrated();
+// 	ct::core::Time time = shotContainer_->getIntegrationTimeFinal();
 
-	// compute derivative
-	state_vector_t mat;
-	state_vector_t dynamics;
-	shotContainer_->getControlledSystemPtr()->computeDynamics(state, time, dynamics);
+// 	// compute derivative
+// 	state_vector_t mat;
+// 	state_vector_t dynamics;
+// 	shotContainer_->getControlledSystemPtr()->computeDynamics(state, time, dynamics);
 
-	switch (settings_.splineType_)
-	{
-		case DmsSettings::ZERO_ORDER_HOLD:
-		{
-			mat = - dynamics;
-			break;
-		}
-		case DmsSettings::PIECEWISE_LINEAR:
-		{
-			mat = -dynamics - shotContainer_->getdXdHiIntegrated();
-			break;
-		}
-		default:
-		{
-			throw(std::runtime_error("specified invalid spliner type in ContinuityConstraint-class"));
-		}
-	}
+// 	switch (settings_.splineType_)
+// 	{
+// 		case DmsSettings::ZERO_ORDER_HOLD:
+// 		{
+// 			mat = - dynamics;
+// 			break;
+// 		}
+// 		case DmsSettings::PIECEWISE_LINEAR:
+// 		{
+// 			mat = -dynamics - shotContainer_->getdXdHiIntegrated();
+// 			break;
+// 		}
+// 		default:
+// 		{
+// 			throw(std::runtime_error("specified invalid spliner type in ContinuityConstraint-class"));
+// 		}
+// 	}
 
-	jacLocal_.segment(count_local_, STATE_DIM) = mat;
-	count_local_ += STATE_DIM;
-}
+// 	jacLocal_.segment(count_local_, STATE_DIM) = mat;
+// 	count_local_ += STATE_DIM;
+// }
 
 
 

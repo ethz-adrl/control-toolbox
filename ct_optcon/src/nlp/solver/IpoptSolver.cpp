@@ -62,7 +62,7 @@ void IpoptSolver::setSolverOptions()
 {
 	ipoptApp_->Options()->SetNumericValue("tol", settings_.tol_);
 	ipoptApp_->Options()->SetNumericValue("constr_viol_tol", settings_.constr_viol_tol_);
-	// ipoptApp_->Options()->SetIntegerValue("max_iter", settings_.max_iter_);
+	ipoptApp_->Options()->SetIntegerValue("max_iter", settings_.max_iter_);
 	// ipoptApp_->Options()->SetNumericValue("resto.tol", settings_.restoTol_);
 	// ipoptApp_->Options()->SetNumericValue("acceptable_tol", settings_.acceptableTol_);
 	// ipoptApp_->Options()->SetNumericValue("resto.acceptable_tol", settings_.restoAcceptableTol_);

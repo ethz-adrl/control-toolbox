@@ -8,6 +8,8 @@
 #ifndef INCLUDE_CT_CORE_INTEGRATION_INTERNAL_STEPPERS_H_
 #define INCLUDE_CT_CORE_INTEGRATION_INTERNAL_STEPPERS_H_
 
+#include <boost/numeric/odeint.hpp>
+
 namespace ct {
 namespace core {
 namespace internal {
@@ -49,11 +51,6 @@ using runge_kutta_dopri5_t = boost::numeric::odeint::runge_kutta_dopri5 <
 		Eigen::Matrix<SCALAR, STATE_DIM, 1>,
 		SCALAR,
 		boost::numeric::odeint::vector_space_algebra>;
-
-//! Dense Output Runge Kutta 4 stepper
-template <size_t STATE_DIM, typename SCALAR = double>
-using dense_runge_kutta5_t = boost::numeric::odeint::dense_output_runge_kutta <
-		boost::numeric::odeint::controlled_runge_kutta <runge_kutta_dopri5_t<STATE_DIM>> >;
 
 //! Runge Kutta Fehlberg 78 stepper
 template <size_t STATE_DIM, typename SCALAR = double>

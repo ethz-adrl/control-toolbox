@@ -104,13 +104,13 @@ public:
 
 		#pragma omp parallel for num_threads( settings_.nThreads_ )
 		for(auto shotContainer = shotContainers_.begin(); shotContainer < shotContainers_.end(); ++shotContainer){
-			(*shotContainer)->integrateShot();	
+			(*shotContainer)->integrateCost();	
 		}
 
 		for(auto shotContainer : shotContainers_)
 			cost += shotContainer->getCostIntegrated();	
 			
-		costFct_->setCurrentStateAndControl(w_->getOptimizedState(shotContainers_.size()), control_vector_t::Zero());
+		costFct_->setCurrentStateAndControl(w_->getOptimizedState(settings_.N_), control_vector_t::Zero());
 		cost += costFct_->evaluateTerminal();
 		return cost;
 	}
@@ -125,7 +125,7 @@ public:
 		// intermediate costs
 		#pragma omp parallel for num_threads( settings_.nThreads_ )
 		for(auto shotContainer = shotContainers_.begin(); shotContainer < shotContainers_.end(); ++shotContainer){
-			(*shotContainer)->integrateShotandComputeSensitivity();
+			(*shotContainer)->integrateCostSensitivities();
 		}
 
 		for (size_t shotNr = 0; shotNr< shotContainers_.size(); ++shotNr)
@@ -150,16 +150,16 @@ public:
 			}
 
 			// H-part.
-			if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-			{
-				costFct_->setCurrentStateAndControl(shotContainers_[shotNr]->getStateIntegrated(),
-													controlSpliner_->evalSpline(shotContainers_[shotNr]->getIntegrationTimeFinal(), shotNr));
-				grad(w_->getTimeSegmentIndex(shotNr)) = costFct_->evaluateIntermediate() + shotContainers_[shotNr]->getdLdHiIntegrated();
-			}
+			// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+			// {
+			// 	costFct_->setCurrentStateAndControl(shotContainers_[shotNr]->getStateIntegrated(),
+			// 										controlSpliner_->evalSpline(shotContainers_[shotNr]->getIntegrationTimeFinal(), shotNr));
+			// 	grad(w_->getTimeSegmentIndex(shotNr)) = costFct_->evaluateIntermediate() + shotContainers_[shotNr]->getdLdHiIntegrated();
+			// }
 		}
 
 		/* gradient of terminal cost */
-		costFct_->setCurrentStateAndControl(w_->getOptimizedState(shotContainers_.size()), control_vector_t::Zero());
+		costFct_->setCurrentStateAndControl(w_->getOptimizedState(settings_.N_), control_vector_t::Zero());
 		grad.segment(w_->getStateIndex(settings_.N_), STATE_DIM) += costFct_->stateDerivativeTerminal();// * dXdSi.back();
 	}
 

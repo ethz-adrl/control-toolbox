@@ -154,51 +154,38 @@ TEST(DmsTest, OscillatorDmsTestAllVariants)
 	{
 		for(int costEvalT = 0; costEvalT < DmsSettings::CostEvaluationType::num_types_costevaluation; costEvalT++)
 		{
-			for(int optGrid = 0; optGrid < DmsSettings::ObjectiveType::num_types_objectives; optGrid++)
-			{
-				for(int integrateSensitivity = 0; integrateSensitivity < 2; integrateSensitivity++)
-				{
 
-						// have to manually exclude the following case, which is not implemented
-						if (integrateSensitivity == 0 && costEvalT == DmsSettings::FULL)
-							continue;
-
-						DmsSettings settings;
-						settings.N_ = 25;
-						settings.T_ = 5.0;
-						settings.nThreads_ = 1;
-						settings.terminalStateConstraint_ = 1;
-						settings.splineType_ = static_cast<DmsSettings::SplineType>(splineType);	// ZOH, PWL
-						settings.costEvaluationType_ =  static_cast<DmsSettings::CostEvaluationType>(costEvalT);	// SIMPLE, FULL
-						settings.objectiveType_ = static_cast<DmsSettings::ObjectiveType>(optGrid);	// keep grid, opt. grid
-						settings.h_min_ = 0.1;
-						settings.integrationType_ = DmsSettings::RK4;
-						settings.dt_sim_ = 0.01;
-						settings.integrateSens_ =  static_cast<DmsSettings::IntegrationType>(integrateSensitivity);
-						settings.absErrTol_ = 1e-6;
-						settings.relErrTol_ = 1e-6;
-
-
+			DmsSettings settings;
+			settings.N_ = 25;
+			settings.T_ = 5.0;
+			settings.nThreads_ = 1;
+			settings.splineType_ = static_cast<DmsSettings::SplineType>(splineType);	// ZOH, PWL
+			settings.costEvaluationType_ =  static_cast<DmsSettings::CostEvaluationType>(costEvalT);	// SIMPLE, FULL
+			settings.objectiveType_ = static_cast<DmsSettings::ObjectiveType>(0);	// keep grid, opt. grid
+			settings.h_min_ = 0.1;
+			settings.integrationType_ = DmsSettings::RK4;
+			settings.dt_sim_ = 0.01;
+			settings.integrateSens_ =  static_cast<DmsSettings::IntegrationType>(1);
+			settings.absErrTol_ = 1e-6;
+			settings.relErrTol_ = 1e-6;
 
 #ifdef BUILD_WITH_SNOPT_SUPPORT
-							NlpSolverSettings nlpsettings;
-							nlpsettings.solverType_ = static_cast<NlpSolverSettings::SolverType>(0);	// IPOPT, SNOPT
-							settings.nlpSettings_ = nlpsettings;
-							OscillatorDms oscDms;
-							oscDms.initialize(settings);
-							oscDms.getSolution();
+			NlpSolverSettings nlpsettings;
+			nlpsettings.solverType_ = static_cast<NlpSolverSettings::SolverType>(0);	// IPOPT, SNOPT
+			settings.solverSettings_ = nlpsettings;
+			OscillatorDms oscDms;
+			oscDms.initialize(settings);
+			oscDms.getSolution();
 #endif
 
 #ifdef BUILD_WITH_IPOPT_SUPPORT
-							NlpSolverSettings nlpsettings_ipopt;
-							nlpsettings_ipopt.solverType_ = static_cast<NlpSolverSettings::SolverType>(1);	// IPOPT, SNOPT
-							settings.nlpSettings_ = nlpsettings_ipopt;
-							OscillatorDms oscDms_ipopt;
-							oscDms_ipopt.initialize(settings);
-							oscDms_ipopt.getSolution();
+			NlpSolverSettings nlpsettings_ipopt;
+			nlpsettings_ipopt.solverType_ = static_cast<NlpSolverSettings::SolverType>(1);	// IPOPT, SNOPT
+			settings.solverSettings_ = nlpsettings_ipopt;
+			OscillatorDms oscDms_ipopt;
+			oscDms_ipopt.initialize(settings);
+			oscDms_ipopt.getSolution();
 #endif		
-				}
-			}
 		}
 	}
 }

@@ -31,15 +31,13 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 
 #include <ct/core/core.h>
+#include "SensitivityIntegratorCT.h"
 
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
 
 #include <ct/optcon/dms/dms_core/DmsDimensions.h>
 #include <ct/optcon/dms/dms_core/OptVectorDms.h>
 #include <ct/optcon/dms/dms_core/ControllerDms.h>
-
-#include "derivatives/derivatives.h"
-#include "derivatives/ShotIntegrator.h"
 
 namespace ct {
 namespace optcon {
@@ -105,83 +103,56 @@ public:
 		timeGrid_(timeGrid),
 		shotNr_(shotNr),
 		settings_(settings),
-		new_w_counter_integration_(0),
-		new_w_counter_integration_with_Sens_(0),
+		integrationCount_(0),
+		costIntegrationCount_(0),
+		sensIntegrationCount_(0),
+		costSensIntegrationCount_(0),
 		x_history_(state_vector_array_t(0)),
 		t_history_(time_array_t(0)),
-		dXdSi_history_(state_matrix_array_t(0)),
-		dXdQi_history_(state_control_matrix_array_t(0)),
-		dXdQip1_history_(state_control_matrix_array_t(0)),
-		dXdHi_history_(state_vector_array_t(0)),
 		cost_(0.0),
 		costGradientSi_(state_vector_t::Zero()),
 		costGradientQi_(control_vector_t::Zero()),
-		costGradientQip1_(control_vector_t::Zero()),
-		costGradientHi_(0.0)
+		costGradientQip1_(control_vector_t::Zero())
 	{
 		if(shotNr_ >= settings.N_) throw std::runtime_error("Dms Shot Integrator: shot index >= settings.N_ - check your settings.");
 
-
-		if(settings.costEvaluationType_ == DmsSettings::SIMPLE)
-			shotIntegrator_ = constructShotIntegrator<DerivativeState<STATE_DIM, CONTROL_DIM>>();
-		else if(settings.costEvaluationType_ == DmsSettings::FULL)
-			shotIntegrator_ = constructShotIntegrator<DerivativeStateCost<STATE_DIM, CONTROL_DIM>>();
-		else
-			throw std::runtime_error("Unknown cost evaluation type!");
-
-		if(!settings.integrateSens_)
+		switch(settings_.integrationType_)
 		{
-			if(settings.costEvaluationType_ == DmsSettings::SIMPLE)
-				sensitivityIntegrator_ = constructSensitivityIntegrator<DerivativeRKn<STATE_DIM, CONTROL_DIM>>();
-
-			else
-				throw(std::runtime_error("RKn Derivatives not implemented with Cost-evaluator 'Full'! Switch to integrated sensitivities or simple cost evaluator."));
-		}
-		else if(settings.integrateSens_)
-		{
-			if(settings.costEvaluationType_ == DmsSettings::SIMPLE && 
-				settings.splineType_ == DmsSettings::ZERO_ORDER_HOLD && 
-				settings.objectiveType_ == DmsSettings::KEEP_TIME_AND_GRID)
-				sensitivityIntegrator_ = constructSensitivityIntegrator<DerivativeSimpleZoh<STATE_DIM, CONTROL_DIM>>();
-
-			else if(settings.costEvaluationType_ == DmsSettings::SIMPLE && 
-				settings.splineType_ == DmsSettings::ZERO_ORDER_HOLD && 
-				settings.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-				sensitivityIntegrator_ = constructSensitivityIntegrator<DerivativeSimpleZohTg<STATE_DIM, CONTROL_DIM>>();
-
-			else if(settings.costEvaluationType_ == DmsSettings::SIMPLE && 
-				settings.splineType_ == DmsSettings::PIECEWISE_LINEAR && 
-				settings.objectiveType_ == DmsSettings::KEEP_TIME_AND_GRID)
-				sensitivityIntegrator_ = constructSensitivityIntegrator<DerivativeSimplePwl<STATE_DIM, CONTROL_DIM>>();
-
-			else if(settings.costEvaluationType_ == DmsSettings::SIMPLE && 
-				settings.splineType_ == DmsSettings::PIECEWISE_LINEAR && 
-				settings.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-				sensitivityIntegrator_ = constructSensitivityIntegrator<DerivativeSimplePwlTg<STATE_DIM, CONTROL_DIM>>();
-
-			else if(settings.costEvaluationType_ == DmsSettings::FULL && 
-				settings.splineType_ == DmsSettings::ZERO_ORDER_HOLD && 
-				settings.objectiveType_ == DmsSettings::KEEP_TIME_AND_GRID)
-				sensitivityIntegrator_ = constructSensitivityIntegrator<DerivativeFullZoh<STATE_DIM, CONTROL_DIM>>();
-
-			else if(settings.costEvaluationType_ == DmsSettings::FULL && 
-				settings.splineType_ == DmsSettings::ZERO_ORDER_HOLD && 
-				settings.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-				sensitivityIntegrator_ = constructSensitivityIntegrator<DerivativeFullZohTg<STATE_DIM, CONTROL_DIM>>();
-
-			else if(settings.costEvaluationType_ == DmsSettings::FULL && 
-				settings.splineType_ == DmsSettings::PIECEWISE_LINEAR && 
-				settings.objectiveType_ == DmsSettings::KEEP_TIME_AND_GRID)
-				sensitivityIntegrator_ = constructSensitivityIntegrator<DerivativeFullPwl<STATE_DIM, CONTROL_DIM>>();
-
-			else if(settings.costEvaluationType_ == DmsSettings::FULL && 
-				settings.splineType_ == DmsSettings::PIECEWISE_LINEAR && 
-				settings.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-				sensitivityIntegrator_ = constructSensitivityIntegrator<DerivativeFullPwlTg<STATE_DIM, CONTROL_DIM>>();
+			case DmsSettings::EULER:
+			{
+				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>, Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>>
+						(Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>(), controlledSystem_, ct::core::EULERCT);
+				break;
+			}
+			case DmsSettings::RK4:
+			{
+				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>, Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>>
+						(Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>(), controlledSystem_, ct::core::RK4CT);
+				break;
+			}
+			case DmsSettings::RK5:
+			{
+				throw std::runtime_error("Currently we do not support adaptive integrators in dms");
+			}
+			
+			default:
+			{
+				std::cerr << "... ERROR: unknown integration type. Exiting" << std::endl;
+				exit(0);
+			}
 		}
 
-		shotIntegrator_->setupSystem();
-		sensitivityIntegrator_->setupSystem();
+		tStart_ = timeGrid_->getShotStartTime(shotNr_);
+		double t_shot_end = timeGrid_->getShotEndTime(shotNr_);
+
+		// +0.5 needed to avoid rounding errors from double to size_t
+		nSteps_ = double(t_shot_end - tStart_) / double(settings_.dt_sim_) + 0.5;
+		// std::cout << "shotNr_: " << shotNr_ << "\t nSteps: " << nSteps_ << std::endl;
+
+		integratorCT_->setLinearSystem(linearSystem_);
+
+		if(settings_.costEvaluationType_ == DmsSettings::FULL)
+			integratorCT_->setCostFunction(costFct_);
 	}
 
 	/**
@@ -189,26 +160,72 @@ public:
 	 */
 	void integrateShot()
 	{
-		if(w_->getUpdateCount() != new_w_counter_integration_)
+		if((w_->getUpdateCount() != integrationCount_))
 		{
-			new_w_counter_integration_ = w_->getUpdateCount();
-			shotIntegrator_->integrate();
-			shotIntegrator_->retrieveStateTrajectories(t_history_, x_history_, cost_);
+			integrationCount_ = w_->getUpdateCount();
+			ct::core::StateVector<STATE_DIM> initState = w_->getOptimizedState(shotNr_);
+			integratorCT_->integrate(initState, tStart_, nSteps_, settings_.dt_sim_, x_history_, t_history_);
+		}
+	}
+
+	void integrateCost()
+	{
+		if((w_->getUpdateCount() != costIntegrationCount_))
+		{
+			costIntegrationCount_ = w_->getUpdateCount();
+			integrateShot();	
+			cost_ = 0.0;
+			integratorCT_->integrateCost(cost_, tStart_, nSteps_, settings_.dt_sim_);
 		}
 	}
 
 	/**
 	 * @brief      Performs the state and the sensitivity integration between the shots
 	 */
-	void integrateShotandComputeSensitivity()
+	void integrateSensitivities()
 	{
-		if(w_->getUpdateCount() != new_w_counter_integration_with_Sens_)
+		if((w_->getUpdateCount() != sensIntegrationCount_))
 		{
-			new_w_counter_integration_with_Sens_ = w_->getUpdateCount();
-			sensitivityIntegrator_->integrate();
-			sensitivityIntegrator_->retrieveTrajectories(t_history_, x_history_, dXdSi_history_, dXdQi_history_, dXdQip1_history_, dXdHi_history_, 
-					costGradientSi_, costGradientQi_, costGradientQip1_, costGradientHi_);
+			sensIntegrationCount_ = w_->getUpdateCount();
+			integrateShot();
+			dXdSiBack_.setIdentity();
+			dXdQiBack_.setZero();
+			integratorCT_->linearize();
+			integratorCT_->integrateSensitivityDX0(dXdSiBack_, tStart_, nSteps_, settings_.dt_sim_);
+			integratorCT_->integrateSensitivityDU0(dXdQiBack_, tStart_, nSteps_, settings_.dt_sim_);
+
+			if(settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
+			{
+				dXdQip1Back_.setZero();
+				integratorCT_->integrateSensitivityDUf(dXdQip1Back_, tStart_, nSteps_, settings_.dt_sim_);
+			}
 		}
+	}
+
+	void integrateCostSensitivities()
+	{
+		if((w_->getUpdateCount() != costSensIntegrationCount_))
+		{
+			costSensIntegrationCount_ = w_->getUpdateCount();
+			integrateSensitivities();
+			costGradientSi_.setZero();
+			costGradientQi_.setZero();
+			integratorCT_->integrateCostSensitivityDX0(costGradientSi_, tStart_, nSteps_, settings_.dt_sim_);
+			integratorCT_->integrateCostSensitivityDU0(costGradientQi_, tStart_, nSteps_, settings_.dt_sim_);
+
+			if(settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
+			{
+				costGradientQip1_.setZero();
+				integratorCT_->integrateCostSensitivityDUf(costGradientQip1_, tStart_, nSteps_, settings_.dt_sim_);
+			}
+		}
+	}
+
+	void reset()
+	{
+		integratorCT_->clearStates();
+		integratorCT_->clearSensitivities();
+		integratorCT_->clearLinearization();
 	}
 
 	/**
@@ -239,7 +256,7 @@ public:
 	 */
 	const state_matrix_t getdXdSiIntegrated()
 	{
-		return dXdSi_history_.back();
+		return dXdSiBack_;
 	}
 
 	/**
@@ -250,7 +267,7 @@ public:
 	 */
 	const state_control_matrix_t getdXdQiIntegrated()
 	{
-		return dXdQi_history_.back();
+		return dXdQiBack_;
 	}
 
 	/**
@@ -261,7 +278,7 @@ public:
 	 */
 	const state_control_matrix_t getdXdQip1Integrated()
 	{
-		return dXdQip1_history_.back();
+		return dXdQip1Back_;
 	}
 
 	/**
@@ -270,10 +287,10 @@ public:
 	 *
 	 * @return     The integrated sensitivity
 	 */
-	const state_vector_t getdXdHiIntegrated()
-	{
-		return dXdHi_history_.back();
-	}
+	// const state_vector_t getdXdHiIntegrated()
+	// {
+	// 	return dXdHi_history_.back();
+	// }
 
 	/**
 	 * @brief      Gets the full integrated state trajectory.
@@ -359,10 +376,10 @@ public:
 	 *
 	 * @return     The cost gradient
 	 */
-	const double getdLdHiIntegrated() const
-	{
-		return costGradientHi_;
-	}
+	// const double getdLdHiIntegrated() const
+	// {
+	// 	return costGradientHi_;
+	// }
 
 	/**
 	 * @brief      Returns a pointer to the nonlinear dynamics used for this
@@ -386,8 +403,10 @@ private:
 	const size_t shotNr_; 
 	const DmsSettings settings_;
 
-	size_t new_w_counter_integration_;
-	size_t new_w_counter_integration_with_Sens_;
+	size_t integrationCount_;
+	size_t costIntegrationCount_;
+	size_t sensIntegrationCount_;
+	size_t costSensIntegrationCount_;
 
 	// Integrated trajectories
 	state_vector_array_t x_history_;
@@ -395,47 +414,19 @@ private:
 	time_array_t t_history_;
 
 	//Sensitivity Trajectories
-	state_matrix_array_t dXdSi_history_;
-	state_control_matrix_array_t dXdQi_history_;
-	state_control_matrix_array_t dXdQip1_history_;
-	state_vector_array_t dXdHi_history_;
+	state_matrix_t dXdSiBack_;
+	state_control_matrix_t dXdQiBack_;
+	state_control_matrix_t dXdQip1Back_;
 
 	//Cost and cost gradient
 	double cost_;
 	state_vector_t costGradientSi_;
 	control_vector_t costGradientQi_;
 	control_vector_t costGradientQip1_;
-	double costGradientHi_;
 
-
-	//Integrators
-	std::shared_ptr<ShotIntegratorBase<STATE_DIM, CONTROL_DIM>> sensitivityIntegrator_;
-	std::shared_ptr<ShotIntegratorBase<STATE_DIM, CONTROL_DIM>> shotIntegrator_;
-
-
-	/**
-	 * @brief      Returns a new shot integrator depending on the derivative type C
-	 *
-	 * @return     The new shot integrator
-	 *
-	 * @tparam     C    The derivative type
-	 */
-	template <class C>
-	std::shared_ptr<ShotIntegratorBase<STATE_DIM, CONTROL_DIM>> constructShotIntegrator(){
-		return std::shared_ptr<ShotIntegrator<C>> (new ShotIntegrator<C> (controlledSystem_, linearSystem_, costFct_, w_, controlSpliner_, timeGrid_, shotNr_ , settings_));
-	}
-
-	/**
-	 * @brief      Returns a new integrator integrating the sensitivities
-	 *
-	 * @return     The new sensitivity integrator
-	 *
-	 * @tparam     C    The derivative type
-	 */
-	template <class C>
-	std::shared_ptr<ShotIntegratorBase<STATE_DIM, CONTROL_DIM>> constructSensitivityIntegrator(){
-		return std::shared_ptr<ShotIntegrator<C>> (new ShotIntegrator<C> (controlledSystem_, linearSystem_, costFct_, w_, controlSpliner_, timeGrid_, shotNr_ , settings_));
-	}
+	std::shared_ptr<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>> integratorCT_;
+	size_t nSteps_;
+	double tStart_;
 };
 
 } // namespace optcon

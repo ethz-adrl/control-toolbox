@@ -493,7 +493,7 @@ private:
 		Scalar_t dtInit = 0.0001;
 
 		// create temporary integrator object
-		core::IntegratorRK4<STATE_DIM, Scalar_t> newInt (dynamics_);
+		core::Integrator<STATE_DIM, Scalar_t> newInt (dynamics_, ct::core::RK4);
 
 		// adaptive pre-integration
 		newInt.integrate_adaptive(state, startTime, stopTime, dtInit);

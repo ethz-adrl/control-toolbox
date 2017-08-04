@@ -118,6 +118,86 @@ TEST(CodegenLinearizerTest, NumDiffComparison)
 	}
 }
 
+TEST(IntegratorTest, IntegratorTestHya)
+{
+	typedef FixBaseFDSystem<HyA::Dynamics> HyASystem;
+
+	const size_t STATE_DIM = HyASystem::STATE_DIM;
+
+	std::shared_ptr<HyASystem > hyaSystem(new HyASystem);
+
+    core::Integrator<STATE_DIM> integratorEulerOdeint(hyaSystem, core::EULER);
+    core::Integrator<STATE_DIM> integratorRk4Odeint(hyaSystem, core::RK4);
+
+    core::Integrator<STATE_DIM> integratorEulerCT(hyaSystem, core::EULERCT);
+    core::Integrator<STATE_DIM> integratorRK4CT(hyaSystem, core::RK4CT);	
+
+    double dt = 0.001;
+    double startTime = 0.0;
+    size_t numSteps = 10;
+
+	size_t nTests = 10000;
+	std::vector<core::StateVector<STATE_DIM>,  Eigen::aligned_allocator<core::StateVector<STATE_DIM>>> xEulerOdeint(nTests), xEulerCt(nTests), xRk4Odeint(nTests), xRk4CT(nTests);
+
+	for(size_t i = 0; i < nTests; ++i)
+	{
+		xEulerOdeint[i].setRandom(); xEulerCt[i] = xEulerOdeint[i];
+		xRk4Odeint[i].setRandom(); xRk4CT[i] = xRk4Odeint[i];
+	}
+
+	auto start = std::chrono::high_resolution_clock::now();
+	for (size_t i=0; i<nTests; i++)
+	{
+		integratorEulerOdeint.integrate_n_steps(xEulerOdeint[i], startTime, numSteps, dt);
+	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+	auto diff = end - start;
+	double msTotal = std::chrono::duration <double, std::micro> (diff).count()/1000.0;
+	std::cout << "integratorEulerOdeint: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+
+
+	start = std::chrono::high_resolution_clock::now();
+	for (size_t i=0; i<nTests; i++)
+	{
+		integratorEulerCT.integrate_n_steps(xEulerCt[i], startTime, numSteps, dt);
+	}
+	end = std::chrono::high_resolution_clock::now();
+	diff = end - start;
+	msTotal = std::chrono::duration <double, std::micro> (diff).count()/1000.0;
+	std::cout << "integratorEulerCT: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+
+	start = std::chrono::high_resolution_clock::now();
+	for (size_t i=0; i<nTests; i++)
+	{
+		integratorRk4Odeint.integrate_n_steps(xRk4Odeint[i], startTime, numSteps, dt);
+	}
+	end = std::chrono::high_resolution_clock::now();
+	diff = end - start;
+	msTotal = std::chrono::duration <double, std::micro> (diff).count()/1000.0;
+	std::cout << "integratorRk4Odeint: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+
+
+	start = std::chrono::high_resolution_clock::now();
+	for (size_t i=0; i<nTests; i++)
+	{
+		integratorRK4CT.integrate_n_steps(xRk4CT[i], startTime, numSteps, dt);
+	}
+	end = std::chrono::high_resolution_clock::now();
+	diff = end - start;
+	msTotal = std::chrono::duration <double, std::micro> (diff).count()/1000.0;
+	std::cout << "integratorRK4CT: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+
+
+	for(size_t i = 0; i < nTests; ++i)
+	{
+        ASSERT_LT((xRk4CT[i]-xRk4Odeint[i]).array().abs().maxCoeff(), 1e-12);
+        ASSERT_LT((xEulerCt[i]-xEulerOdeint[i]).array().abs().maxCoeff(), 1e-12);
+	}
+
+
+}
+
 
 int main(int argc, char **argv){
 	testing::InitGoogleTest(&argc, argv);
