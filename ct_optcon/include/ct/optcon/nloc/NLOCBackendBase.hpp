@@ -43,6 +43,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/matlab.hpp>
 #endif
 
+#define SYMPLECTIC_ENABLED template<size_t V, size_t P> typename std::enable_if<(V > 0 && P > 0), void>::type
+#define SYMPLECTIC_DISABLED template<size_t V, size_t P> typename std::enable_if<(V <= 0 || P <= 0), void>::type
+
 namespace ct{
 namespace optcon{
 
@@ -196,6 +199,15 @@ public:
 	SCALAR getTimeHorizon() {return K_* settings_.dt ;}
 
 	int getNumSteps() {return K_;}
+
+	SYMPLECTIC_ENABLED initializeSymplecticIntegrators(size_t i);
+	SYMPLECTIC_DISABLED initializeSymplecticIntegrators(size_t i) {};
+
+	SYMPLECTIC_ENABLED integrateSymplectic(size_t threadId, ct::core::StateVector<STATE_DIM, SCALAR>& x0, const double& t, const size_t& steps, const double& dt_sim) const;
+	SYMPLECTIC_DISABLED integrateSymplectic(size_t threadId, ct::core::StateVector<STATE_DIM, SCALAR>& x0, const double& t, const size_t& steps, const double& dt_sim) const
+	{
+		throw std::runtime_error("Symplectic integrator selected but invalid dimensions for it. Check V_DIM>1, P_DIM>1");
+	}
 
 
 	/*!
@@ -686,5 +698,8 @@ protected:
 
 #include "implementation/NLOCBackendBase-impl.hpp"
 
+
+#undef SYMPLECTIC_ENABLE
+#undef SYMPLECTIC_DISABLED
 
 #endif /* INCLUDE_CT_OPTCON_GNMS_GNMSBASE_HPP_ */

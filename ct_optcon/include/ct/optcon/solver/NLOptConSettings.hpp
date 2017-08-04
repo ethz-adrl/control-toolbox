@@ -199,6 +199,7 @@ public:
     NLOptConSettings() :
     	integrator(RK4),
         discretization(APPROXIMATION::BACKWARD_EULER),
+		timeVaryingDiscretization(false),
         nlocp_algorithm(GNMS),
         lqocp_solver(GNRICCATI_SOLVER),
 		loggingPrefix("alg"),
@@ -221,6 +222,7 @@ public:
 
     INTEGRATOR integrator;	//! which integrator to use during the NLOptCon forward rollout
     APPROXIMATION discretization;
+    bool timeVaryingDiscretization;
 	NLOCP_ALGORITHM nlocp_algorithm;   //! which nonlinear optimal control algorithm is to be used
 	LQOCP_SOLVER lqocp_solver;	//! the solver for the linear-quadratic optimal control problem
 	std::string loggingPrefix; //! the prefix to be stored before the matfile name for logging
@@ -260,6 +262,7 @@ public:
         std::cout<<"==============================================================="<<std::endl;
         std::cout<<"integrator: "<<integratorToString.at(integrator)<<std::endl;
         std::cout<<"discretization: " << discretizationToString.at(discretization)<<std::endl;
+        std::cout<<"time varying discretization: "<<timeVaryingDiscretization<<std::endl;
         std::cout<<"nonlinear OCP algorithm: " << nlocp_algorithmToString.at(nlocp_algorithm)<<std::endl;
         std::cout<<"linear-quadratic OCP solver: " << locp_solverToString.at(lqocp_solver)<<std::endl;
         std::cout<<"closed loop shooting: " << closedLoopShooting << std::endl;
@@ -328,6 +331,8 @@ public:
 		boost::property_tree::read_info(filename, pt);
 
 		try {epsilon = pt.get<double>(ns +".epsilon");
+		} catch (...) {}
+		try {timeVaryingDiscretization = pt.get<bool>(ns +".timeVaryingDiscretization");
 		} catch (...) {}
 		try{min_cost_improvement = pt.get<double>(ns +".min_cost_improvement");
 		} catch (...) {}
