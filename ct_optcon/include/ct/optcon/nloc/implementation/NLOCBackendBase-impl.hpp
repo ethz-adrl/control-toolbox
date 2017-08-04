@@ -375,6 +375,9 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShotsSingleThreaded(size_t threadId, size_t firstIndex, size_t lastIndex,
 		const ControlVectorArray& u_ff_local, const StateVectorArray& x_start, StateVectorArray& xShot, StateVectorArray& d) const
 {
+	//! make sure all intermediate entries in the defect trajectory are zero
+	d.setConstant(state_vector_t::Zero());
+
 	for (size_t k=firstIndex; k<=lastIndex; k++)
 	{
 		// first rollout the shot
