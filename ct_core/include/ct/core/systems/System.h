@@ -71,10 +71,8 @@ public:
 	 * @param type type of system
 	 */
 	System(
-		const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL,
-		bool isSymplectic = false) :
-	    type_(type),
-	    isSymplectic_(isSymplectic)
+		const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL) :
+	    type_(type)
 	{}
 
 	//! copy constructor
@@ -111,12 +109,11 @@ public:
 	 *
 	 * @return     True if symplectic, False otherwise.
 	 */
-	bool isSymplectic() const { return isSymplectic_; }
+	virtual bool isSymplectic() const { return false; }
 
 protected:
 
 	SYSTEM_TYPE type_; //!< type of system
-	bool isSymplectic_;
 };
 
 } // core

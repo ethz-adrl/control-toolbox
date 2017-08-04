@@ -71,6 +71,8 @@ public:
 	 */
 	virtual SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR>* clone() const override = 0;
 
+	virtual bool isSymplectic() const override { return true; }
+
 
 	virtual void computeControlledDynamics(
 			const StateVector<POS_DIM + VEL_DIM, SCALAR>& state,
