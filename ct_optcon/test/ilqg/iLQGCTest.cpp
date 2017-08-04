@@ -582,8 +582,8 @@ TEST(ILQCTest, PolicyComparison)
 			testSystem2->setController(optController_mp);
 
 			// test integrators, the same as in iLQG
-			ct::core::IntegratorRK4<state_dim> testIntegrator1 (testSystem1);
-			ct::core::IntegratorRK4<state_dim> testIntegrator2 (testSystem2);
+			ct::core::Integrator<state_dim> testIntegrator1 (testSystem1, ct::core::RK4);
+			ct::core::Integrator<state_dim> testIntegrator2 (testSystem2, ct::core::RK4);
 
 			// states
 			ct::core::StateVector<state_dim> x_test_1 = x0;

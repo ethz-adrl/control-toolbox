@@ -28,8 +28,8 @@ TEST(ProjectedFDSystemTest, projected_forward_dynamics_test)
 	std::shared_ptr<ProjectedFDSystem<TestHyQ::Dynamics, true> > dynamicsQuat(new ProjectedFDSystem<TestHyQ::Dynamics, true>);
 	std::shared_ptr<ProjectedFDSystem<TestHyQ::Dynamics, false> > dynamicsEuler(new ProjectedFDSystem<TestHyQ::Dynamics, false>);
 
-	core::IntegratorRK4<STATE_DIM_QUAT> integratorQuat(dynamicsQuat);
-	core::IntegratorRK4<STATE_DIM_EULER> integratorEuler(dynamicsEuler);
+	core::Integrator<STATE_DIM_QUAT> integratorQuat(dynamicsQuat, ct::core::RK4);
+	core::Integrator<STATE_DIM_EULER> integratorEuler(dynamicsEuler, ct::core::RK4);
 
 	TestHyQ::Kinematics kinematics;
 

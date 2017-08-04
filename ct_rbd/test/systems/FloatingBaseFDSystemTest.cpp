@@ -44,8 +44,8 @@ TEST(FloatingBaseFDSystemTest, forward_dynamics_test)
 	std::shared_ptr<core::System<STATE_DIM_QUAT> > dynamicsQuat(new FloatingBaseFDSystem<TestHyQ::Dynamics, true>);
 	std::shared_ptr<core::System<STATE_DIM_EULER> > dynamicsEuler(new FloatingBaseFDSystem<TestHyQ::Dynamics, false>);
 
-	core::IntegratorRK4<STATE_DIM_QUAT> integratorQuat(dynamicsQuat);
-	core::IntegratorRK4<STATE_DIM_EULER> integratorEuler(dynamicsEuler);
+	core::Integrator<STATE_DIM_QUAT> integratorQuat(dynamicsQuat, ct::core::RK4);
+	core::Integrator<STATE_DIM_EULER> integratorEuler(dynamicsEuler, ct::core::RK4);
 
 	RBDState<12> state;
 	state.setRandom();

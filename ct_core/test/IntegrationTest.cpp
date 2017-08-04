@@ -101,7 +101,7 @@ TEST(IntegrationTest, derivativeTest)
         shared_ptr<SecondOrderSystem > oscillator;
 
         // create a 2 state integrator
-        std::vector<std::shared_ptr<IntegratorBase<stateSize> > > integrators;
+        std::vector<std::shared_ptr<Integrator<stateSize> > > integrators;
 
         double dt = 0.0001;
         size_t nTests = 10;

@@ -100,12 +100,12 @@ public:
 
 	//! Lambda to pass to odeint (odeint takes copies of the observer so we can't pass the class
 	std::function<void (const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)> observeWrap;
-
-private:
-	EventHandlerPtrVector eventHandlers_; //! list of event handlers
-
 	StateVectorArray<STATE_DIM, SCALAR> stateTrajectory_; //! state trajectory for recording
 	tpl::TimeArray<SCALAR> timeTrajectory_; //! time trajectory for recording
+private:
+	
+	EventHandlerPtrVector eventHandlers_; //! list of event handlers
+
 
 };
 

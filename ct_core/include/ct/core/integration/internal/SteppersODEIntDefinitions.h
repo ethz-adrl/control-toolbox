@@ -52,11 +52,6 @@ using runge_kutta_dopri5_t = boost::numeric::odeint::runge_kutta_dopri5 <
 		SCALAR,
 		boost::numeric::odeint::vector_space_algebra>;
 
-//! Dense Output Runge Kutta 4 stepper
-template <size_t STATE_DIM, typename SCALAR = double>
-using dense_runge_kutta5_t = boost::numeric::odeint::dense_output_runge_kutta <
-		boost::numeric::odeint::controlled_runge_kutta <runge_kutta_dopri5_t<STATE_DIM>> >;
-
 //! Runge Kutta Fehlberg 78 stepper
 template <size_t STATE_DIM, typename SCALAR = double>
 using runge_kutta_fehlberg78_t = boost::numeric::odeint::runge_kutta_fehlberg78<

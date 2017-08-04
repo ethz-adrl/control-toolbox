@@ -119,11 +119,11 @@ namespace boost {
 namespace numeric {
 namespace odeint {
 
-template<int STATE_DIM>
-struct vector_space_reduce< Eigen::Matrix<double, STATE_DIM, 1> >
+template<int STATE_DIM, typename SCALAR>
+struct vector_space_reduce< Eigen::Matrix<SCALAR, STATE_DIM, 1> >
 {
   template< class Op >
-  double operator()(const Eigen::Matrix<double, STATE_DIM, 1>& x , Op op , double init ) const
+  SCALAR operator()(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x , Op op , SCALAR init ) const
   {
 	  for (int i=0; i<STATE_DIM; i++)
 	  {

@@ -36,15 +36,21 @@ namespace core {
 namespace internal {
 
 
-template<typename MatrixType, typename SCALAR = double>
-class StepperCTBase : public StepperBase<MatrixType, SCALAR>
+/**
+ * @brief      The stepper interface for custom steppers
+ *
+ * @tparam     MATRIX  The Matrix type to be integrated
+ * @tparam     SCALAR  The scalar type
+ */
+template<typename MATRIX, typename SCALAR = double>
+class StepperCTBase : public StepperBase<MATRIX, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     virtual void integrate_n_steps(
-            const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
-            MatrixType& state,
+            const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
+            MATRIX& state,
             const SCALAR& startTime,
             size_t numSteps,
             SCALAR dt) override
@@ -58,9 +64,9 @@ public:
     }
 
     virtual void integrate_n_steps(
-            std::function<void (const MatrixType& x, const SCALAR& t)> observe,
-            const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
-            MatrixType& state,
+            std::function<void (const MATRIX& x, const SCALAR& t)> observe,
+            const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
+            MATRIX& state,
             const SCALAR& startTime,
             size_t numSteps,
             SCALAR dt) override
@@ -75,18 +81,32 @@ public:
         }
     }
 
-private:
+    /**
+     * @brief          Implements a single step of the integration scheme
+     *
+     * @param[in]      rhs         The ODE
+     * @param[in, out] stateInOut  The state
+     * @param[in]      time        The integration time
+     * @param[in]      dt          The integration timestep
+     */
     virtual void do_step(
-        const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
-        MatrixType& stateInOut,
+        const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& stateInOut,
         const SCALAR time,
         const SCALAR dt) = 0;
+    
 };
 
 
 
-template<typename MatrixType, typename SCALAR = double>
-class StepperEulerCT : public StepperCTBase<MatrixType, SCALAR>
+/**
+ * @brief      Custom implementation of the euler stepper
+ *
+ * @tparam     MATRIX  The matrix type
+ * @tparam     SCALAR  The scalar type
+ */
+template<typename MATRIX, typename SCALAR = double>
+class StepperEulerCT : public StepperCTBase<MATRIX, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -95,8 +115,8 @@ public:
 
 private:
     virtual void do_step(
-        const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
-        MatrixType& stateInOut,
+        const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& stateInOut,
         const SCALAR time,
         const SCALAR dt
         ) override
@@ -105,12 +125,18 @@ private:
         stateInOut += dt * derivative_;
     }
 
-    MatrixType derivative_;
+    MATRIX derivative_;
 
 };
 
-template<typename MatrixType, typename SCALAR = double>
-class StepperRK4CT : public StepperCTBase<MatrixType, SCALAR>
+/**
+ * @brief      Custom implementation of the rk4 integration scheme
+ *
+ * @tparam     MATRIX  The matrix type
+ * @tparam     SCALAR  The scalar type
+ */
+template<typename MATRIX, typename SCALAR = double>
+class StepperRK4CT : public StepperCTBase<MATRIX, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -118,15 +144,13 @@ public:
     StepperRK4CT() 
     :
     oneSixth_(SCALAR(1.0 / 6.0))
-    {
-
-    }
+    {}
 
 private:
 
     virtual void do_step(
-        const std::function<void (const MatrixType&, MatrixType&, SCALAR)>& rhs,
-        MatrixType& stateInOut,
+        const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& stateInOut,
         const SCALAR time,
         const SCALAR dt
         ) override
@@ -140,11 +164,10 @@ private:
         stateInOut += oneSixth_ * dt * (k1_ + SCALAR(2.0) * k2_ + SCALAR(2.0) * k3_ + k4_);
     }
 
-
-    MatrixType k1_;
-    MatrixType k2_;
-    MatrixType k3_;
-    MatrixType k4_;
+    MATRIX k1_;
+    MATRIX k2_;
+    MATRIX k3_;
+    MATRIX k4_;
     SCALAR oneSixth_;
 
 };

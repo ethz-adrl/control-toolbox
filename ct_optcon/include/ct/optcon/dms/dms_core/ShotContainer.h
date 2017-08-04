@@ -121,13 +121,13 @@ public:
 			case DmsSettings::EULER:
 			{
 				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>, Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>>
-						(Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>(), controlledSystem_, core::IntegrationTypeCT::EULER);
+						(Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>(), controlledSystem_, ct::core::EULERCT);
 				break;
 			}
 			case DmsSettings::RK4:
 			{
 				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>, Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>>
-						(Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>(), controlledSystem_, core::IntegrationTypeCT::RK4);
+						(Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM>>(), controlledSystem_, ct::core::RK4CT);
 				break;
 			}
 			case DmsSettings::RK5:

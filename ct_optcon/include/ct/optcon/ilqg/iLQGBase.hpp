@@ -31,7 +31,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <atomic>
 
 #include <ct/core/core.h>
-#include <ct/core/integration/IntegratorCT.h>
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
 #include <ct/optcon/solver/OptConSolver.h>
 #include "iLQGSettings.hpp"
@@ -129,8 +128,7 @@ public:
 	iLQGBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 			const iLQGSettings& settings) :
 
-		    integratorsRK4_(settings.nThreads+1),
-		    integratorsEuler_(settings.nThreads+1),
+		    integrators_(settings.nThreads+1),
 
 		    controller_(settings.nThreads+1),
 
@@ -469,11 +467,8 @@ protected:
 	void matrixToMatlab(V& matrix, std::string variableName);
 
 
-	typedef std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > IntegratorRK4Ptr;
-    std::vector<IntegratorRK4Ptr, Eigen::aligned_allocator<IntegratorRK4Ptr> > integratorsRK4_; //! Runge-Kutta-4 Integrators
-
-    typedef std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM, SCALAR> > IntegratorEulerPtr;
-    std::vector<IntegratorEulerPtr, Eigen::aligned_allocator<IntegratorEulerPtr> > integratorsEuler_;
+	typedef std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> > IntegratorPtr;
+    std::vector<IntegratorPtr, Eigen::aligned_allocator<IntegratorPtr> > integrators_; //! Runge-Kutta-4 Integrators
 
 	typedef std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR> > IntegratorSymplecticEulerPtr;
 	std::vector<IntegratorSymplecticEulerPtr, Eigen::aligned_allocator<IntegratorSymplecticEulerPtr> > integratorsEulerSymplectic_;
