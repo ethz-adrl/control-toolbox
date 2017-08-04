@@ -155,8 +155,8 @@ private:
         const SCALAR dt
         ) override
     {
-        double halfStep = SCALAR(0.5) * dt;
-        double timePlusHalfStep = time + halfStep;
+        SCALAR halfStep = SCALAR(0.5) * dt;
+        SCALAR timePlusHalfStep = time + halfStep;
         rhs(stateInOut, k1_, time);
         rhs(stateInOut + halfStep * k1_, k2_, timePlusHalfStep);
         rhs(stateInOut + halfStep * k2_, k3_, timePlusHalfStep);
