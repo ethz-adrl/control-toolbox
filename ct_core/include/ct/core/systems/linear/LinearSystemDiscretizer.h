@@ -174,7 +174,46 @@ public:
 		/*!
 		 * for an LTI system A and B won't change with time n, hence the linearizations result from the following LTV special case.
 		 */
-		getAandB(x, u, x, u, n, A, B);
+		switch(settings_.approximation_)
+		{
+		case LinearSystemDiscretizerSettings::APPROXIMATION::FORWARD_EULER:
+		{
+			forwardEuler(x, u, n, A, B);
+			break;
+		}
+		case LinearSystemDiscretizerSettings::APPROXIMATION::BACKWARD_EULER:
+		{
+			backwardEuler(x, u, n+1, A, B);
+			break;
+		}
+		case LinearSystemDiscretizerSettings::APPROXIMATION::TUSTIN:
+		{
+			/*!
+			 * the Tustin (also known as 'Heun') approximation uses the state and control at the *start* and at the *end*
+			 * of the ZOH interval to generate linear approximations A and B in a trapezoidal fashion.
+			 */
+
+			//! continuous-time A matrices
+			state_matrix_t Ac = settings_.dt_ * linearSystem_->getDerivativeState(x, u, n*settings_.dt_);
+
+			//! the continuous-time B matrices
+			state_control_matrix_t Bc = linearSystem_->getDerivativeControl(x, u, n*settings_.dt_);
+
+			//! tustin approximation
+			state_matrix_t aNewInv = (state_matrix_t::Identity() -  Ac).colPivHouseholderQr().inverse();
+			A = aNewInv * (state_matrix_t::Identity() + Ac);
+			B = aNewInv * settings_.dt_ * Bc;
+
+			break;
+		}
+		case LinearSystemDiscretizerSettings::APPROXIMATION::MATRIX_EXPONENTIAL:
+		{
+			matrixExponential(x, u, n, A, B);
+			break;
+		}
+		default:
+			throw std::runtime_error("Unknown Approximation type in LinearSystemDiscretizer.");
+		}	// end switch
 	}
 
 
@@ -189,7 +228,7 @@ public:
 	 * @param A the resulting linear system matrix A
 	 * @param B the resulting linear system matrix B
 	 */
-	virtual void getAandB(
+	virtual void getAandBTimeVarying(
 			const StateVector<STATE_DIM, SCALAR>& x_n,
 			const ControlVector<CONTROL_DIM, SCALAR>& u_n,
 			const StateVector<STATE_DIM, SCALAR>& x_n_next,
@@ -206,28 +245,12 @@ public:
 		{
 		case LinearSystemDiscretizerSettings::APPROXIMATION::FORWARD_EULER:
 		{
-			/*!
-			 * the Forward Euler approximation uses the state and control at the *start* of the ZOH interval to
-			 * generate linear approximations A and B.
-			 */
-			A = state_matrix_t::Identity();
-			A += settings_.dt_ * linearSystem_->getDerivativeState(x_n, u_n, n*settings_.dt_);
-
-			B = settings_.dt_ * linearSystem_->getDerivativeControl(x_n, u_n, n*settings_.dt_);
-
+			forwardEuler(x_n, u_n, n, A, B);
 			break;
 		}
 		case LinearSystemDiscretizerSettings::APPROXIMATION::BACKWARD_EULER:
 		{
-			/*!
-			 * the Backward Euler approximation uses the state and control at the *end* of the ZOH interval to
-			 * generate linear approximations A and B.
-			 */
-			state_matrix_t aNew = settings_.dt_ * linearSystem_->getDerivativeState(x_n_next, u_n_next, (n+1)*settings_.dt_);
-			A = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
-
-			B = A * settings_.dt_ * linearSystem_->getDerivativeControl(x_n_next, u_n_next, (n+1)*settings_.dt_);
-
+			backwardEuler(x_n_next, u_n_next, n+1, A, B);
 			break;
 		}
 		case LinearSystemDiscretizerSettings::APPROXIMATION::TUSTIN:
@@ -243,27 +266,17 @@ public:
 
 			//! the continuous-time B matrices
 			state_control_matrix_t Bc_front = linearSystem_->getDerivativeControl(x_n, u_n, n*settings_.dt_);
-			state_control_matrix_t Bc_back = linearSystem_->getDerivativeControl(x_n_next, u_n_next, (n+1)*settings_.dt_);
-
-			//! midpoint rule
-			state_matrix_t Ac_mid = 0.5*(Ac_front + Ac_back);
-			state_control_matrix_t Bc_mid = 0.5*(Bc_front + Bc_back);
 
 			//! tustin approximation
-			state_matrix_t aNewInv = (state_matrix_t::Identity() -  Ac_mid).colPivHouseholderQr().inverse();
-			A = aNewInv * (state_matrix_t::Identity() + Ac_mid);
-			B = aNewInv * settings_.dt_ * Bc_mid;
+			state_matrix_t aNewInv = (state_matrix_t::Identity() -  Ac_back).colPivHouseholderQr().inverse();
+			A = aNewInv * (state_matrix_t::Identity() + Ac_front);
+			B = aNewInv * settings_.dt_ * Bc_front;
 
 			break;
 		}
 		case LinearSystemDiscretizerSettings::APPROXIMATION::MATRIX_EXPONENTIAL:
 		{
-			state_matrix_t Ac = linearSystem_->getDerivativeState(x_n, u_n, settings_.dt_*n);
-			state_matrix_t Adt = settings_.dt_ * Ac;
-
-			A = Adt.exp();
-			B = Ac.inverse() * (A - state_matrix_t::Identity()) *  linearSystem_->getDerivativeControl(x_n, u_n, settings_.dt_*n);
-
+			matrixExponential(x_n, u_n, n, A, B);
 			break;
 		}
 		default:
@@ -273,6 +286,57 @@ public:
 
 
 private:
+
+	void forwardEuler(
+			const StateVector<STATE_DIM, SCALAR>& x_n,
+			const ControlVector<CONTROL_DIM, SCALAR>& u_n,
+			const int& n,
+			state_matrix_t& A,
+			state_control_matrix_t& B
+	)
+	{
+		/*!
+		 * the Forward Euler approximation uses the state and control at the *start* of the ZOH interval to
+		 * generate linear approximations A and B.
+		 */
+		A = state_matrix_t::Identity();
+		A += settings_.dt_ * linearSystem_->getDerivativeState(x_n, u_n, n*settings_.dt_);
+
+		B = settings_.dt_ * linearSystem_->getDerivativeControl(x_n, u_n, n*settings_.dt_);
+	}
+
+	void backwardEuler(
+		const StateVector<STATE_DIM, SCALAR>& x_n,
+		const ControlVector<CONTROL_DIM, SCALAR>& u_n,
+		const int& n,
+		state_matrix_t& A,
+		state_control_matrix_t& B
+	)
+	{
+		/*!
+		 * the Backward Euler approximation uses the state and control at the *end* of the ZOH interval to
+		 * generate linear approximations A and B.
+		 */
+		state_matrix_t aNew = settings_.dt_ * linearSystem_->getDerivativeState(x_n, u_n, n*settings_.dt_);
+		A = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
+
+		B = A * settings_.dt_ * linearSystem_->getDerivativeControl(x_n, u_n, n*settings_.dt_);
+	}
+
+	void matrixExponential(
+			const StateVector<STATE_DIM, SCALAR>& x_n,
+			const ControlVector<CONTROL_DIM, SCALAR>& u_n,
+			const int& n,
+			state_matrix_t& A,
+			state_control_matrix_t& B
+	)
+	{
+		state_matrix_t Ac = linearSystem_->getDerivativeState(x_n, u_n, settings_.dt_*n);
+		state_matrix_t Adt = settings_.dt_ * Ac;
+
+		A = Adt.exp();
+		B = Ac.inverse() * (A - state_matrix_t::Identity()) *  linearSystem_->getDerivativeControl(x_n, u_n, settings_.dt_*n);
+	}
 
 	//! shared_ptr to a continuous time linear system (system to be discretized)
 	std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem_;
