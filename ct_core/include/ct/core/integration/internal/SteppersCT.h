@@ -29,55 +29,114 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CT_CORE_INTERNAL_STEPPERS_CT_H_
 
 #include <ct/core/systems/System.h>
+#include "StepperBase.h"
 
 namespace ct {
 namespace core {
 namespace internal {
 
-template <typename SCALAR, typename MatrixType>
-class StepperBaseCT
+
+/**
+ * @brief      The stepper interface for custom steppers
+ *
+ * @tparam     MATRIX  The Matrix type to be integrated
+ * @tparam     SCALAR  The scalar type
+ */
+template<typename MATRIX, typename SCALAR = double>
+class StepperCTBase : public StepperBase<MATRIX, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    virtual void do_step(
-        const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
-        MatrixType& stateInOut,
-        const SCALAR time,
-        const SCALAR dt
-        ) = 0;
+    virtual void integrate_n_steps(
+            const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
+            MATRIX& state,
+            const SCALAR& startTime,
+            size_t numSteps,
+            SCALAR dt) override
+    {
+        SCALAR time = startTime;
+        for(size_t i = 0; i < numSteps; ++i)
+        {
+            do_step(rhs, state, time, dt);
+            time += dt;
+        }      
+    }
 
-protected:
+    virtual void integrate_n_steps(
+            std::function<void (const MATRIX& x, const SCALAR& t)> observe,
+            const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
+            MATRIX& state,
+            const SCALAR& startTime,
+            size_t numSteps,
+            SCALAR dt) override
+    {
+        SCALAR time = startTime;
+
+        for(size_t i = 0; i < numSteps; ++i)
+        {
+            do_step(rhs, state, time, dt);
+            time += dt;
+            observe(state, time);
+        }
+    }
+
+    /**
+     * @brief          Implements a single step of the integration scheme
+     *
+     * @param[in]      rhs         The ODE
+     * @param[in, out] stateInOut  The state
+     * @param[in]      time        The integration time
+     * @param[in]      dt          The integration timestep
+     */
+    virtual void do_step(
+        const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& stateInOut,
+        const SCALAR time,
+        const SCALAR dt) = 0;
     
 };
 
 
-template<typename SCALAR, typename MatrixType>
-class StepperEulerCT : public StepperBaseCT<SCALAR, MatrixType>
+
+/**
+ * @brief      Custom implementation of the euler stepper
+ *
+ * @tparam     MATRIX  The matrix type
+ * @tparam     SCALAR  The scalar type
+ */
+template<typename MATRIX, typename SCALAR = double>
+class StepperEulerCT : public StepperCTBase<MATRIX, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     StepperEulerCT(){}
 
+private:
     virtual void do_step(
-        const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
-        MatrixType& stateInOut,
+        const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& stateInOut,
         const SCALAR time,
         const SCALAR dt
         ) override
     {
-        rhs(stateInOut, time, derivative_);
+        rhs(stateInOut, derivative_, time);
         stateInOut += dt * derivative_;
     }
 
-private:
-    MatrixType derivative_;
+    MATRIX derivative_;
 
 };
 
-template<typename SCALAR, typename MatrixType>
-class StepperRK4CT : public StepperBaseCT<SCALAR, MatrixType>
+/**
+ * @brief      Custom implementation of the rk4 integration scheme
+ *
+ * @tparam     MATRIX  The matrix type
+ * @tparam     SCALAR  The scalar type
+ */
+template<typename MATRIX, typename SCALAR = double>
+class StepperRK4CT : public StepperCTBase<MATRIX, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -85,31 +144,30 @@ public:
     StepperRK4CT() 
     :
     oneSixth_(SCALAR(1.0 / 6.0))
-    {
+    {}
 
-    }
+private:
 
     virtual void do_step(
-        const std::function<void (const MatrixType&, SCALAR, MatrixType&)>& rhs,
-        MatrixType& stateInOut,
+        const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& stateInOut,
         const SCALAR time,
         const SCALAR dt
         ) override
     {
-        SCALAR halfStep = SCALAR(0.5) * dt;
-        SCALAR timePlusHalfStep = time + halfStep;
-        rhs(stateInOut, time, k1_);
-        rhs(stateInOut + halfStep * k1_, timePlusHalfStep, k2_);
-        rhs(stateInOut + halfStep * k2_, timePlusHalfStep, k3_);
-        rhs(stateInOut + dt * k3_, time + dt, k4_);
+        double halfStep = SCALAR(0.5) * dt;
+        double timePlusHalfStep = time + halfStep;
+        rhs(stateInOut, k1_, time);
+        rhs(stateInOut + halfStep * k1_, k2_, timePlusHalfStep);
+        rhs(stateInOut + halfStep * k2_, k3_, timePlusHalfStep);
+        rhs(stateInOut + dt * k3_, k4_, time + dt);
         stateInOut += oneSixth_ * dt * (k1_ + SCALAR(2.0) * k2_ + SCALAR(2.0) * k3_ + k4_);
     }
 
-private:
-    MatrixType k1_;
-    MatrixType k2_;
-    MatrixType k3_;
-    MatrixType k4_;
+    MATRIX k1_;
+    MATRIX k2_;
+    MATRIX k3_;
+    MATRIX k4_;
     SCALAR oneSixth_;
 
 };

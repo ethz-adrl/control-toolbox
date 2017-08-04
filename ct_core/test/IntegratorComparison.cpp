@@ -67,13 +67,13 @@ TEST(IntegrationTest, derivativeTest)
         oscillator = shared_ptr<SecondOrderSystem >(new SecondOrderSystem(w_n, zeta));
         oscillator->checkParameters();
 
-        std::shared_ptr<IntegratorBase<state_dim> > integratorEulerOdeint;
-        integratorEulerOdeint = std::shared_ptr<IntegratorEuler<state_dim> >(new IntegratorEuler<state_dim>(oscillator));
-        std::shared_ptr<IntegratorBase<state_dim> > integratorRk4Odeint;
-        integratorRk4Odeint = std::shared_ptr<IntegratorRK4<state_dim> > (new IntegratorRK4<state_dim>(oscillator));
+        // std::shared_ptr<IntegratorBase<state_dim> > integratorEulerOdeint;
+        Integrator<state_dim> integratorEulerOdeint(oscillator, EULER);
+        // std::shared_ptr<IntegratorBase<state_dim> > integratorRk4Odeint;
+        Integrator<state_dim> integratorRk4Odeint(oscillator, RK4);
 
-        IntegratorCT<state_dim> integratorEulerCT(oscillator, IntegrationTypeCT::EULER);
-        IntegratorCT<state_dim> integratorRK4CT(oscillator, IntegrationTypeCT::RK4);
+        Integrator<state_dim> integratorEulerCT(oscillator, EULERCT);
+        Integrator<state_dim> integratorRK4CT(oscillator, RK4CT);
 
         StateVector<state_dim> stateEulerCT; stateEulerCT << 1.0, 0.0;
         StateVector<state_dim> stateEulerOdeInt; stateEulerOdeInt << 1.0, 0.0;
@@ -86,26 +86,26 @@ TEST(IntegrationTest, derivativeTest)
 
         Timer t;
         t.start();
-        integratorEulerOdeint->integrate_n_steps(stateEulerOdeInt, startTime, numSteps, dt);
+        integratorEulerOdeint.integrate_n_steps(stateEulerOdeInt, startTime, numSteps, dt);
         t.stop();
 
         std::cout << "ODEINT Euler took: " << t.getElapsedTime() << " s for integration" << std::endl;
 
         t.reset();
         t.start();
-        integratorEulerCT.integrate(stateEulerCT, startTime, numSteps, dt);
+        integratorEulerCT.integrate_n_steps(stateEulerCT, startTime, numSteps, dt);
         t.stop();
         std::cout << "CT Euler took: " << t.getElapsedTime() << " s for integration" << std::endl;
 
         t.reset();
         t.start();
-        integratorRk4Odeint->integrate_n_steps(stateRK4OdeInt, startTime, numSteps, dt);
+        integratorRk4Odeint.integrate_n_steps(stateRK4OdeInt, startTime, numSteps, dt);
         t.stop();
         std::cout << "ODEINT RK4 took: " << t.getElapsedTime() << " s for integration" << std::endl;     
         
         t.reset();
         t.start();
-        integratorRK4CT.integrate(stateRK4CT, startTime, numSteps, dt);
+        integratorRK4CT.integrate_n_steps(stateRK4CT, startTime, numSteps, dt);
         t.stop();
         std::cout << "CT RK4 took: " << t.getElapsedTime() << " s for integration" << std::endl;  
 

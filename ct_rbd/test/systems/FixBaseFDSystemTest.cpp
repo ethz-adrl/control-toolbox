@@ -45,7 +45,7 @@ TEST(FixBaseFDSystemTest, forward_dynamics_test)
 
 	std::shared_ptr<core::System<STATE_DIM> > dynamics(new FixBaseFDSystem<TestIrb4600::Dynamics>);
 
-	core::IntegratorRK4<STATE_DIM> integrator(dynamics);
+	core::Integrator<STATE_DIM> integrator(dynamics, ct::core::RK4);
 
 	core::StateVector<12> state;
 	state.setRandom();

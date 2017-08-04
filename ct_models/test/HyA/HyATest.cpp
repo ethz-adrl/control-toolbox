@@ -123,19 +123,14 @@ TEST(IntegratorTest, IntegratorTestHya)
 	typedef FixBaseFDSystem<HyA::Dynamics> HyASystem;
 
 	const size_t STATE_DIM = HyASystem::STATE_DIM;
-	const size_t CONTROL_DIM = HyASystem::CONTROL_DIM;
 
 	std::shared_ptr<HyASystem > hyaSystem(new HyASystem);
 
+    core::Integrator<STATE_DIM> integratorEulerOdeint(hyaSystem, core::EULER);
+    core::Integrator<STATE_DIM> integratorRk4Odeint(hyaSystem, core::RK4);
 
-    std::shared_ptr<core::IntegratorBase<STATE_DIM> > integratorEulerOdeint;
-    integratorEulerOdeint = std::shared_ptr<core::IntegratorEuler<STATE_DIM> >(new core::IntegratorEuler<STATE_DIM>(hyaSystem));
-    std::shared_ptr<core::IntegratorBase<STATE_DIM> > integratorRk4Odeint;
-    integratorRk4Odeint = std::shared_ptr<core::IntegratorRK4<STATE_DIM> > (new core::IntegratorRK4<STATE_DIM>(hyaSystem));
-
-    core::IntegratorCT<STATE_DIM> integratorEulerCT(hyaSystem, core::IntegrationTypeCT::EULER);
-    core::IntegratorCT<STATE_DIM> integratorRK4CT(hyaSystem, core::IntegrationTypeCT::RK4);	
-
+    core::Integrator<STATE_DIM> integratorEulerCT(hyaSystem, core::EULERCT);
+    core::Integrator<STATE_DIM> integratorRK4CT(hyaSystem, core::RK4CT);	
 
     double dt = 0.001;
     double startTime = 0.0;
@@ -153,7 +148,7 @@ TEST(IntegratorTest, IntegratorTestHya)
 	auto start = std::chrono::high_resolution_clock::now();
 	for (size_t i=0; i<nTests; i++)
 	{
-		integratorEulerOdeint->integrate_n_steps(xEulerOdeint[i], startTime, numSteps, dt);
+		integratorEulerOdeint.integrate_n_steps(xEulerOdeint[i], startTime, numSteps, dt);
 	}
 
 	auto end = std::chrono::high_resolution_clock::now();
@@ -165,7 +160,7 @@ TEST(IntegratorTest, IntegratorTestHya)
 	start = std::chrono::high_resolution_clock::now();
 	for (size_t i=0; i<nTests; i++)
 	{
-		integratorEulerCT.integrate(xEulerCt[i], startTime, numSteps, dt);
+		integratorEulerCT.integrate_n_steps(xEulerCt[i], startTime, numSteps, dt);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;
@@ -175,7 +170,7 @@ TEST(IntegratorTest, IntegratorTestHya)
 	start = std::chrono::high_resolution_clock::now();
 	for (size_t i=0; i<nTests; i++)
 	{
-		integratorRk4Odeint->integrate_n_steps(xRk4Odeint[i], startTime, numSteps, dt);
+		integratorRk4Odeint.integrate_n_steps(xRk4Odeint[i], startTime, numSteps, dt);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;
@@ -186,7 +181,7 @@ TEST(IntegratorTest, IntegratorTestHya)
 	start = std::chrono::high_resolution_clock::now();
 	for (size_t i=0; i<nTests; i++)
 	{
-		integratorRK4CT.integrate(xRk4CT[i], startTime, numSteps, dt);
+		integratorRK4CT.integrate_n_steps(xRk4CT[i], startTime, numSteps, dt);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;

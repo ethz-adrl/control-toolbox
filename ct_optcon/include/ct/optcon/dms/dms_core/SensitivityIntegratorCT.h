@@ -65,7 +65,7 @@ public:
      */
     SensitivityIntegratorCT(
         const std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> >& system,
-        const ct::core::IntegrationTypeCT stepperType = ct::core::IntegrationTypeCT::EULER)
+        const ct::core::IntegrationType stepperType = ct::core::IntegrationType::EULERCT)
     :
     cacheData_(false),
     cacheSensitivities_(false)
@@ -84,41 +84,41 @@ public:
      *
      * @param[in]  stepperType  The desired integration stepper type
      */
-    void initializeDerived(const ct::core::IntegrationTypeCT stepperType)
+    void initializeDerived(const ct::core::IntegrationType stepperType)
     {
         switch(stepperType)
         {
-            case ct::core::IntegrationTypeCT::EULER:
+            case ct::core::IntegrationType::EULERCT:
             {
-                stepperState_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_vector>>(
-                    new ct::core::internal::StepperEulerCT<SCALAR, state_vector>());
-                stepperDX0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_matrix>>(
-                    new ct::core::internal::StepperEulerCT<SCALAR, state_matrix>());
-                stepperDU0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_control_matrix>>(
-                    new ct::core::internal::StepperEulerCT<SCALAR, state_control_matrix>());
-                stepperCost_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, SCALAR>>(
+                stepperState_ = std::shared_ptr<ct::core::internal::StepperCTBase<state_vector, SCALAR>>(
+                    new ct::core::internal::StepperEulerCT<state_vector, SCALAR>());
+                stepperDX0_ = std::shared_ptr<ct::core::internal::StepperCTBase<state_matrix, SCALAR>>(
+                    new ct::core::internal::StepperEulerCT<state_matrix, SCALAR>());
+                stepperDU0_ = std::shared_ptr<ct::core::internal::StepperCTBase<state_control_matrix, SCALAR>>(
+                    new ct::core::internal::StepperEulerCT<state_control_matrix, SCALAR>());
+                stepperCost_ = std::shared_ptr<ct::core::internal::StepperCTBase<SCALAR, SCALAR>>(
                     new ct::core::internal::StepperEulerCT<SCALAR, SCALAR>());
-                stepperCostDX0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_vector>>(
-                    new ct::core::internal::StepperEulerCT<SCALAR, state_vector>());
-                stepperCostDU0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, control_vector>>(
-                    new ct::core::internal::StepperEulerCT<SCALAR, control_vector>());
+                stepperCostDX0_ = std::shared_ptr<ct::core::internal::StepperCTBase<state_vector, SCALAR>>(
+                    new ct::core::internal::StepperEulerCT<state_vector, SCALAR>());
+                stepperCostDU0_ = std::shared_ptr<ct::core::internal::StepperCTBase<control_vector, SCALAR>>(
+                    new ct::core::internal::StepperEulerCT<control_vector, SCALAR>());
                 break;
             }
 
-            case ct::core::IntegrationTypeCT::RK4:
+            case ct::core::IntegrationType::RK4CT:
             {
-                stepperState_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_vector>>(
-                    new ct::core::internal::StepperRK4CT<SCALAR, state_vector>());
-                stepperDX0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_matrix>>(
-                    new ct::core::internal::StepperRK4CT<SCALAR, state_matrix>());
-                stepperDU0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_control_matrix>>(
-                    new ct::core::internal::StepperRK4CT<SCALAR, state_control_matrix>());
-                stepperCost_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, SCALAR>>(
+                stepperState_ = std::shared_ptr<ct::core::internal::StepperCTBase<state_vector, SCALAR>>(
+                    new ct::core::internal::StepperRK4CT<state_vector, SCALAR>());
+                stepperDX0_ = std::shared_ptr<ct::core::internal::StepperCTBase<state_matrix, SCALAR>>(
+                    new ct::core::internal::StepperRK4CT<state_matrix, SCALAR>());
+                stepperDU0_ = std::shared_ptr<ct::core::internal::StepperCTBase<state_control_matrix, SCALAR>>(
+                    new ct::core::internal::StepperRK4CT<state_control_matrix, SCALAR>());
+                stepperCost_ = std::shared_ptr<ct::core::internal::StepperCTBase<SCALAR, SCALAR>>(
                     new ct::core::internal::StepperRK4CT<SCALAR, SCALAR>());
-                stepperCostDX0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_vector>>(
-                    new ct::core::internal::StepperRK4CT<SCALAR, state_vector>());
-                stepperCostDU0_ = std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, control_vector>>(
-                    new ct::core::internal::StepperRK4CT<SCALAR, control_vector>());
+                stepperCostDX0_ = std::shared_ptr<ct::core::internal::StepperCTBase<state_vector, SCALAR>>(
+                    new ct::core::internal::StepperRK4CT<state_vector, SCALAR>());
+                stepperCostDU0_ = std::shared_ptr<ct::core::internal::StepperCTBase<control_vector, SCALAR>>(
+                    new ct::core::internal::StepperRK4CT<control_vector, SCALAR>());
                 break;
             }
 
@@ -139,7 +139,7 @@ public:
         linearSystem_ = linearSystem;
         cacheData_ = true;
         
-        dX0dot_ = [this](const state_matrix& dX0In, const SCALAR t, state_matrix& dX0dt){
+        dX0dot_ = [this](const state_matrix& dX0In, state_matrix& dX0dt, const SCALAR t){
             if(cacheSensitivities_)
                 arraydX0_.push_back(dX0In);
 
@@ -147,7 +147,7 @@ public:
             dX0Index_++;
         };
 
-        dU0dot_ = [this](const state_control_matrix& dU0In, const SCALAR t, state_control_matrix& dU0dt){
+        dU0dot_ = [this](const state_control_matrix& dU0In, state_control_matrix& dU0dt, const SCALAR t){
             if(cacheSensitivities_)
                 arraydU0_.push_back(dU0In);
 
@@ -156,7 +156,7 @@ public:
             dU0Index_++;                                                                                  
         };
 
-        dUfdot_ =  [this](const state_control_matrix& dUfIn, const SCALAR t, state_control_matrix& dUfdt){
+        dUfdot_ =  [this](const state_control_matrix& dUfIn, state_control_matrix& dUfdt, const SCALAR t){
             if(cacheSensitivities_)
                 arraydUf_.push_back(dUfIn);
 
@@ -174,7 +174,7 @@ public:
     void setControlledSystem(const std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& controlledSystem)
     {
         controlledSystem_ = controlledSystem;
-        xDot_ = [this](const state_vector& x, const SCALAR t, state_vector& dxdt) {
+        xDot_ = [this](const state_vector& x, state_vector& dxdt, const SCALAR t) {
             control_vector controlAction;
             controlledSystem_->getController()->computeControl(x, t, controlAction);
 
@@ -200,20 +200,20 @@ public:
     {
         costFunction_ = costFun;
         cacheSensitivities_ = true;
-        costDot_ = [this](const SCALAR& costIn, const SCALAR t, SCALAR& cost)
+        costDot_ = [this](const SCALAR& costIn, SCALAR& cost, const SCALAR t)
         {
             costFunction_->setCurrentStateAndControl(statesCached_[costIndex_], controlsCached_[costIndex_], timesCached_[costIndex_]);
             cost = costFunction_->evaluateIntermediate();
             costIndex_++;
         };
 
-        costdX0dot_ = [this](const state_vector& costdX0In, const SCALAR t, state_vector& costdX0dt){
+        costdX0dot_ = [this](const state_vector& costdX0In, state_vector& costdX0dt, const SCALAR t){
             costFunction_->setCurrentStateAndControl(statesCached_[costIndex_], controlsCached_[costIndex_], timesCached_[costIndex_]);
             costdX0dt = arraydX0_[costIndex_].transpose() * costFunction_->stateDerivativeIntermediate();
             costIndex_++;
         };
 
-        costdU0dot_ = [this](const control_vector& costdU0In, const SCALAR t, control_vector& costdU0dt){
+        costdU0dot_ = [this](const control_vector& costdU0In, control_vector& costdU0dt, const SCALAR t){
             costFunction_->setCurrentStateAndControl(statesCached_[costIndex_], controlsCached_[costIndex_], timesCached_[costIndex_]);
             costdU0dt = arraydU0_[costIndex_].transpose() * costFunction_->stateDerivativeIntermediate() + 
                         controlledSystem_->getController()->getDerivativeU0(statesCached_[costIndex_], timesCached_[costIndex_]) * 
@@ -221,7 +221,7 @@ public:
             costIndex_++;
         };
 
-        costdUfdot_ = [this](const control_vector& costdUfIn, const SCALAR t, control_vector& costdUfdt){
+        costdUfdot_ = [this](const control_vector& costdUfIn, control_vector& costdUfdt, const SCALAR t){
             costFunction_->setCurrentStateAndControl(statesCached_[costIndex_], controlsCached_[costIndex_], timesCached_[costIndex_]);
             costdUfdt = arraydUf_[costIndex_].transpose() * costFunction_->stateDerivativeIntermediate() + 
                         controlledSystem_->getController()->getDerivativeUf(statesCached_[costIndex_], timesCached_[costIndex_]) *
@@ -534,15 +534,15 @@ private:
     std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> > costFunction_;                                                     
 
     // Integrate the function
-    std::function<void (const SCALAR, const SCALAR, SCALAR&)> costDot_;
-    std::function<void (const state_vector&, const SCALAR, state_vector&)> costdX0dot_;
-    std::function<void (const control_vector&, const SCALAR, control_vector&)> costdU0dot_;
-    std::function<void (const control_vector&, const SCALAR, control_vector&)> costdUfdot_;
+    std::function<void (const SCALAR, SCALAR&, const SCALAR)> costDot_;
+    std::function<void (const state_vector&, state_vector&, const SCALAR)> costdX0dot_;
+    std::function<void (const control_vector&, control_vector&, const SCALAR)> costdU0dot_;
+    std::function<void (const control_vector&, control_vector&, const SCALAR)> costdUfdot_;
 
     // Sensitivities
-    std::function<void (const state_matrix&, const SCALAR, state_matrix&)> dX0dot_;
-    std::function<void (const state_control_matrix&, const SCALAR, state_control_matrix&)> dU0dot_;
-    std::function<void (const state_control_matrix&, const SCALAR, state_control_matrix&)> dUfdot_;
+    std::function<void (const state_matrix&, state_matrix&, const SCALAR)> dX0dot_;
+    std::function<void (const state_control_matrix&, state_control_matrix&, const SCALAR)> dU0dot_;
+    std::function<void (const state_control_matrix&, state_control_matrix&, const SCALAR)> dUfdot_;
 
     // Cache
     bool cacheData_;
@@ -558,20 +558,20 @@ private:
     ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> arraydU0_;
     ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> arraydUf_;
 
-    std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_matrix>> stepperDX0_;
-    std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_control_matrix>> stepperDU0_;
+    std::shared_ptr<ct::core::internal::StepperCTBase<state_vector, SCALAR>> stepperState_;
+    std::shared_ptr<ct::core::internal::StepperCTBase<state_matrix, SCALAR>> stepperDX0_;
+    std::shared_ptr<ct::core::internal::StepperCTBase<state_control_matrix, SCALAR>> stepperDU0_;
 
-    std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, SCALAR>> stepperCost_;
-    std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_vector>> stepperCostDX0_;
-    std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, control_vector>> stepperCostDU0_;
+    std::shared_ptr<ct::core::internal::StepperCTBase<SCALAR, SCALAR>> stepperCost_;
+    std::shared_ptr<ct::core::internal::StepperCTBase<state_vector, SCALAR>> stepperCostDX0_;
+    std::shared_ptr<ct::core::internal::StepperCTBase<control_vector, SCALAR>> stepperCostDU0_;
 
     size_t costIndex_;
     size_t dX0Index_;
     size_t dU0Index_;
 
-    std::function<void (const state_vector&, const SCALAR, state_vector&)> xDot_;
+    std::function<void (const state_vector&, state_vector&, const SCALAR)> xDot_;
 
-    std::shared_ptr<ct::core::internal::StepperBaseCT<SCALAR, state_vector>> stepperState_;
 
 };
 

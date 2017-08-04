@@ -106,7 +106,7 @@ target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES})
 catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
 target_link_libraries(CodegenTests ${catkin_LIBRARIES} dl)
 
-## not really a test
+# not really a test
 #add_executable(plotTest test/plot/plotTest.cpp)
 #target_link_libraries(plotTest ${catkin_LIBRARIES} ct_core)
 

@@ -124,8 +124,7 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeNonlinearSystem(const typen
 		throw std::runtime_error("system dynamics are nullptr");
 
 	this->getNonlinearSystemsInstances().resize(settings_.nThreads+1);
-	integratorsRK4_.resize(settings_.nThreads+1);
-	integratorsEuler_.resize(settings_.nThreads+1);
+	integrators_.resize(settings_.nThreads+1);
 	integratorsEulerSymplectic_.resize(settings_.nThreads+1);
 	integratorsRkSymplectic_.resize(settings_.nThreads+1);
 
@@ -138,8 +137,16 @@ void iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::changeNonlinearSystem(const typen
 		if(controller_[i] == nullptr)
 			throw std::runtime_error("Controller not defined");
 
-		integratorsRK4_[i] = std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > (new ct::core::IntegratorRK4<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
-		integratorsEuler_[i] = std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM, SCALAR> >(new ct::core::IntegratorEuler<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i]));
+		if (settings_.integrator == iLQGSettings::EULER)
+		{
+			integrators_[i] = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> > (new ct::core::Integrator<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i], ct::core::EULER));
+		}
+		else if(settings_.integrator == iLQGSettings::RK4)
+		{
+			integrators_[i] = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> > (new ct::core::Integrator<STATE_DIM, SCALAR>(this->getNonlinearSystemsInstances()[i], ct::core::RK4));
+		}
+
+
 		if(this->getNonlinearSystemsInstances()[i]->isSymplectic())
 		{
 			integratorsEulerSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticEuler<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR>>(
@@ -375,13 +382,9 @@ bool iLQGBase<STATE_DIM, CONTROL_DIM, SCALAR>::rolloutSystem (
 				//controller_[threadId]->u() = (u_ff_[threadId][i] + L_[i]*x0);
 			}
 
-			if (settings_.integrator == iLQGSettings::EULER)
+			if (settings_.integrator == iLQGSettings::EULER || settings_.integrator == iLQGSettings::RK4)
 			{
-				integratorsEuler_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
-			}
-			else if(settings_.integrator == iLQGSettings::RK4)
-			{
-				integratorsRK4_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
+				integrators_[threadId]->integrate_n_steps(x0, (i*steps+j)*dt_sim, 1, dt_sim);
 			}
 			else if(settings_.integrator == iLQGSettings::EULER_SYM)
 			{
