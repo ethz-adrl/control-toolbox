@@ -325,19 +325,47 @@ public:
 		// Eigen::Matrix<size_t, Eigen::Dynamic, 1> rowsTmp;
 		// Eigen::Matrix<size_t, Eigen::Dynamic, 1> colsTmp;
 		model_->JacobianSparsity(rowsVec, colsVec);
-		std::cout << "rowsVecsize: " << rowsVec.size() << std::endl;
-		std::cout << "colsVecsize: " << colsVec.size() << std::endl;
-		std::cout << "rowsVec: " << std::endl;
-		for(size_t i = 0; i < rowsVec.size(); ++i)
-			std::cout << rowsVec[i] << "\t";
 		rows.resize(rowsVec.size()); //rowsTmp.resize(rowsVec.size());
 		columns.resize(colsVec.size()); //colsTmp.resize(rowsVec.size());
-		int* rowsPtr =  (int*)rowsVec.data();
-		int* colsPtr =  (int*)colsVec.data();
-		rows = Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, 1>>(rowsPtr, rowsVec.size(), 1);
-		columns = Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, 1>>(colsPtr, colsVec.size(), 1);
-		// rows = rowsTmp.cast<int>();
-		// columns = colsTmp.cast<int>();
+		                           
+		Eigen::Matrix<size_t, Eigen::Dynamic, 1> rowsSizeT; rowsSizeT.resize(rowsVec.size());
+		Eigen::Matrix<size_t, Eigen::Dynamic, 1> colsSizeT; colsSizeT.resize(colsVec.size());
+
+		rowsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(rowsVec.data(), rowsVec.size(), 1);
+		colsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(colsVec.data(), colsVec.size(), 1);
+		rows = rowsSizeT.cast<int>();
+		columns = colsSizeT.cast<int>();
+
+		// std::cout << "rowsVecsize: " << rowsVec.size() << std::endl;
+		// std::cout << "colsVecsize: " << colsVec.size() << std::endl;
+		// std::cout << "rowsVec: " << std::endl;
+
+		// for(size_t i = 0; i < rowsVec.size(); ++i)
+		// 	std::cout << rowsVec[i] << "\t";
+
+		// std::cout << std::endl;
+		// std::cout << "colsVec: " << std::endl;
+		// for(size_t i = 0; i < colsVec.size(); ++i)
+		// 	std::cout << colsVec[i] << "\t";
+
+		// std::cout << std::endl;
+
+		// std::cout << "rows size: " << rows.rows() << std::endl;
+		// std::cout << "columns size: " << columns.rows() << std::endl;
+		                                //
+		// int* rowsPtr =  (int*)rowsVec.data();
+		// int* colsPtr =  (int*)colsVec.data();
+		// rows = Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, 1>>(rowsPtr, rowsVec.size(), 1);
+		// columns = Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, 1>>(colsPtr, colsVec.size(), 1);
+	}
+
+	size_t getNumNonZerosJacobian()
+	{
+		assert(model_->isJacobianSparsityAvailable() == true);
+		std::vector<size_t> rowsVec;
+		std::vector<size_t> colsVec;
+		model_->JacobianSparsity(rowsVec, colsVec);
+		return rowsVec.size();
 	}
 
 	//! get Hessian sparsity pattern
@@ -529,30 +557,20 @@ private:
 	void recordCg()
 	{
 		// input vector, needs to be dynamic size
-		std::cout << "inputdim: " << inputDim_ << std::endl;
 		Eigen::Matrix<CG_SCALAR, Eigen::Dynamic, 1> x(inputDim_);
 
 		// declare x as independent
 		CppAD::Independent(x);
 
 		// output vector, needs to be dynamic size
-		std::cout << "outputDim_: " << outputDim_ << std::endl;
 		Eigen::Matrix<CG_SCALAR, Eigen::Dynamic, 1> y(outputDim_);
 
 		y = fCgStd_(x);
 
-		std::cout <<"asd" << std::endl;
-		std::cout << "xCols: " << x.rows() << std::endl;
-		std::cout << "yCols: " << y.rows() << std::endl;
-
 		// store operation sequence in f: x -> y and stop recording
 		CppAD::ADFun<CG_VALUE_TYPE> fCodeGen(x, y);
 
-		std::cout << "fef" << std::endl;
-
 		fCodeGen.optimize();
-
-		std::cout << "ooo" << std::endl;
 
 		fCgCppad_ = fCodeGen;
 	}

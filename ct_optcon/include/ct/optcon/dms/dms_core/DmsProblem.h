@@ -276,39 +276,47 @@ public:
 		std::shared_ptr<ConstraintsContainerDms<STATE_DIM, CONTROL_DIM, ScalarCG>> constraints(
 			new ConstraintsContainerDms<STATE_DIM, CONTROL_DIM, ScalarCG>(optVariablesDms, timeGrid, shotContainers, discretizedConstraints, x0, settings_));
 
-		std::function<Eigen::Matrix<ScalarCG, 1, 1> (const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>&)> fCost = 
-			[&](const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>& xOpt){
-				optVariablesDms->setOptimizationVars(xOpt);
+		if(settings_.solverSettings_.generateCostGradient_)
+		{
+			std::function<Eigen::Matrix<ScalarCG, 1, 1> (const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>&)> fCost = 
+				[&](const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>& xOpt){
+					optVariablesDms->setOptimizationVars(xOpt);
 
-				controlSpliner->computeSpline(optVariablesDms->getOptimizedInputs().toImplementation());
-				for(auto shotContainer : shotContainers)
-					shotContainer->reset();
+					controlSpliner->computeSpline(optVariablesDms->getOptimizedInputs().toImplementation());
+					for(auto shotContainer : shotContainers)
+						shotContainer->reset();
 
-				Eigen::Matrix<ScalarCG,1, 1> out; out << costEvaluator->eval();
-				return out;
-		};
+					Eigen::Matrix<ScalarCG,1, 1> out; out << costEvaluator->eval();
+					return out;
+			};
 
-		std::function<Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1> (const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>&)> fConstraints = 
-			[&](const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>& xOpt){
-				optVariablesDms->setOptimizationVars(xOpt);
+			this->costCodegen_ = std::shared_ptr<ct::core::DerivativesCppad<-1, 1>>(
+				new ct::core::DerivativesCppad<-1, 1>(fCost, this->getVarCount()));
+			this->costCodegen_->compileJIT("dmsCostFunction");
+			this->useGeneratedCostGradient_ = true;
+		}
 
-				controlSpliner->computeSpline(optVariablesDms->getOptimizedInputs().toImplementation());
-				for(auto shotContainer : shotContainers)
-					shotContainer->reset();
+		if(settings_.solverSettings_.generateConstraintJacobian_)
+		{
+			std::function<Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1> (const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>&)> fConstraints = 
+				[&](const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>& xOpt){
+					optVariablesDms->setOptimizationVars(xOpt);
 
-				Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1> out(this->getConstraintsCount());// out.resize(this->getConstraintsCount, 1);
-				constraints->evalConstraints(out);
-				return out;
-		};		
+					controlSpliner->computeSpline(optVariablesDms->getOptimizedInputs().toImplementation());
+					for(auto shotContainer : shotContainers)
+						shotContainer->reset();
 
-		this->costCodegen_ = std::shared_ptr<ct::core::DerivativesCppad<-1, 1>>(
-			new ct::core::DerivativesCppad<-1, 1>(fCost, this->getVarCount()));
-		this->costCodegen_->compileJIT("dmsCostFunction");
+					Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1> out(this->getConstraintsCount());// out.resize(this->getConstraintsCount, 1);
+					constraints->evalConstraints(out);
+					return out;
+			};		
 
-		this->constraintsCodegen_ = std::shared_ptr<ct::core::DerivativesCppad<-1, -1>>(
-			new ct::core::DerivativesCppad<-1, -1>(fConstraints, this->getVarCount(), this->getConstraintsCount()));
-		this->constraintsCodegen_->compileJIT("dmsConstraints");
 
+			this->constraintsCodegen_ = std::shared_ptr<ct::core::DerivativesCppad<-1, -1>>(
+				new ct::core::DerivativesCppad<-1, -1>(fConstraints, this->getVarCount(), this->getConstraintsCount()));
+			this->constraintsCodegen_->compileJIT("dmsConstraints");
+			this->useGeneratedConstraintJacobian_ = true;			
+		}
 	}
 
 	/**

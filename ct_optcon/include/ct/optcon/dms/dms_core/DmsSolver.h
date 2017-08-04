@@ -121,15 +121,9 @@ public:
 			std::cout << "Unknown solver type... Exiting" << std::endl;
 
 		configure(settingsDms);
-		if(settings_.solverSettings_.generateDerivatives_)
-			dmsProblem_->generateDerivatives();
-
 	}
 
 	void setCGProblem(const OptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar> problemCG) 
-	// :
-	// nlpSolver_(nullptr),
-	// settings_(settingsDms)
 	{
 		// Create system, linearsystem and costfunction instances 
 		typedef std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> SysPtrCG;
@@ -171,7 +165,7 @@ public:
 		// configure(settingsDms);
 		// if(settings_.solverSettings_.generateDerivatives_)
 		// 	dmsProblem_->generateDerivatives();
-
+		nlpSolver_->configure(settings_.solverSettings_); 
 	}	
 
 	/**
@@ -184,7 +178,6 @@ public:
 		dmsProblem_->configure(settings);
 		dmsProblem_->changeTimeHorizon(tf_);
 		dmsProblem_->changeInitialState(x0_);
-		nlpSolver_->configure(settings_.solverSettings_); 
 	}
 
 	virtual bool solve() override

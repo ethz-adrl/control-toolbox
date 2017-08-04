@@ -249,7 +249,8 @@ public:
 	{}
 
     SolverType_t solverType_;
-    bool generateDerivatives_;
+    bool generateCostGradient_;
+    bool generateConstraintJacobian_;
     SnoptSettings snoptSettings_;
     IpoptSettings ipoptSettings_;
 
@@ -297,7 +298,8 @@ public:
 		boost::property_tree::read_info(filename, pt);
 
         solverType_ = (SolverType) pt.get<unsigned int>(ns + ".SolverType");
-        generateDerivatives_ = pt.get<bool>(ns + ".GenerateDerivatives");
+        generateCostGradient_ = pt.get<bool>(ns + ".GenerateCostGradient");
+        generateConstraintJacobian_ = pt.get<bool>(ns + ".GenerateConstraintJacobian");
 
 		if(solverType_ == IPOPT)
 			ipoptSettings_.load(filename, verbose, ns + ".ipopt");
