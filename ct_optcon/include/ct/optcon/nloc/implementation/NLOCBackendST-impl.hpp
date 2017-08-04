@@ -63,7 +63,7 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 		this->computeSingleDefect(k);
 	}
 
-	this->d_norm_ = this->computeDefectsNorm(this->lqocProblem_->b_);
+	this->d_norm_ = this->template computeDefectsNorm<1>(this->lqocProblem_->b_);
 }
 
 
@@ -152,8 +152,8 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 
 
 #if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
-			this->computeControlUpdateNorm(u_recorded, this->u_ff_prev_);
-			this->computeStateUpdateNorm(x_search, this->x_prev_);
+			this-> lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2> (u_recorded, this->u_ff_prev_);
+			this-> lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(x_search, this->x_prev_);
 #endif
 
 			alphaBest = alpha;

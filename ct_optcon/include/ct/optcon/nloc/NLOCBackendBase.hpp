@@ -325,18 +325,7 @@ public:
 	//! return the sum of the L2-norm of the defects along the solution candidate
 	SCALAR getTotalDefect() const { return d_norm_;}
 
-	void reset()
-	{
-		firstRollout_ = true;
-		iteration_ = 0;
-		d_norm_ = std::numeric_limits<scalar_t>::infinity();
-		lx_norm_ = std::numeric_limits<scalar_t>::infinity();
-		lu_norm_ = std::numeric_limits<scalar_t>::infinity();
-		intermediateCostBest_ = std::numeric_limits<scalar_t>::infinity();
-		finalCostBest_ = std::numeric_limits<scalar_t>::infinity();
-		intermediateCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
-		finalCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
-	}
+	void reset();
 
 	const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const;
 
@@ -437,7 +426,7 @@ public:
 	}
 
 	//! update the nominal defects
-	void updateDefects() {d_norm_ = computeDefectsNorm(lqocProblem_->b_);}
+	void updateDefects() {d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);}
 
 	//! integrates the specified shots and computes the corresponding defects
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;
@@ -584,15 +573,21 @@ protected:
 	template<class V>
 	void matrixToMatlab(V& matrix, std::string variableName);
 
+	//! compute norm of a discrete array (todo move to core)
+	template<typename ARRAY_TYPE, size_t ORDER = 1>
+	SCALAR computeDiscreteArrayNorm(const ARRAY_TYPE& d) const;
 
-	//! compute the norm of the difference between two control trajectories
-	void computeControlUpdateNorm(const ControlVectorArray& u_prev, const ControlVectorArray& u_new);
-
-	//! compute the norm of the difference between two state trajectories
-	void computeStateUpdateNorm(const StateVectorArray& x_prev, const StateVectorArray& x_new);
+	//! compute norm of difference between two discrete arrays (todo move to core)
+	template<typename ARRAY_TYPE, size_t ORDER = 1>
+	SCALAR computeDiscreteArrayNorm(const ARRAY_TYPE& a, const ARRAY_TYPE& b) const;
 
 	//! compute the norm of the defects trajectory
-	SCALAR computeDefectsNorm(const StateVectorArray& d) const;
+	/*!
+	 * Note that different kind of norms might be favorable for different cases.
+	 * According to Nocedal and Wright, the l1-norm is "exact" (p.435),  the l2-norm is smooth.
+	 */
+	template<size_t ORDER = 1>
+	SCALAR computeDefectsNorm(const StateVectorArray& d) const { return computeDiscreteArrayNorm<StateVectorArray, ORDER>(d);}
 
 	typedef std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > IntegratorRK4Ptr;
     std::vector<IntegratorRK4Ptr, Eigen::aligned_allocator<IntegratorRK4Ptr> > integratorsRK4_; //! Runge-Kutta-4 Integrators

@@ -165,7 +165,6 @@ void singleCore()
 
 		NLOptConSettings ilqg_settings = gnms_settings;
 		ilqg_settings.closedLoopShooting = true;
-		ilqg_settings.lineSearchSettings.active = false;
 		ilqg_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		ilqg_settings.loggingPrefix = "ILQR";
 
@@ -272,11 +271,12 @@ void multiCore()
 		gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
 		gnms_settings.closedLoopShooting = false;
 		gnms_settings.loggingPrefix = "GNMS";
+		gnms_settings.lineSearchSettings.active = false;
 
 		NLOptConSettings ilqg_settings = gnms_settings;
+		ilqg_settings.closedLoopShooting = true;
 		ilqg_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		ilqg_settings.loggingPrefix = "ILQR";
-		ilqg_settings.lineSearchSettings.active = true;
 
 
 		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
@@ -489,7 +489,7 @@ int main(int argc, char **argv)
 {
 	feenableexcept(FE_INVALID | FE_OVERFLOW);
 	ct::optcon::example::singleCore();
-//	ct::optcon::example::multiCore();
+	ct::optcon::example::multiCore();
 
 	return 1;
 }
