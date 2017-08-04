@@ -137,8 +137,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 		throw std::runtime_error("system dynamics are nullptr");
 
 	systems_.resize(settings_.nThreads+1);
-	integratorsRK4_.resize(settings_.nThreads+1);
-	integratorsEuler_.resize(settings_.nThreads+1);
+	integrators_.resize(settings_.nThreads+1);
 	integratorsEulerSymplectic_.resize(settings_.nThreads+1);
 	integratorsRkSymplectic_.resize(settings_.nThreads+1);
 
@@ -151,8 +150,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 		if(controller_[i] == nullptr)
 			throw std::runtime_error("Controller not defined");
 
-		integratorsRK4_[i] = std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > (new ct::core::IntegratorRK4<STATE_DIM, SCALAR>(systems_[i]));
-		integratorsEuler_[i] = std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM, SCALAR> >(new ct::core::IntegratorEuler<STATE_DIM, SCALAR>(systems_[i]));
+		integrators_[i] = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> >(new ct::core::Integrator<STATE_DIM, SCALAR>(systems_[i], settings_.integrator));
 
 		initializeSymplecticIntegrators<V_DIM, P_DIM>(i);
 	}
@@ -304,22 +302,14 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 
 		controller_[threadId]->setControl(u_local.back());
 
-
-		if (settings_.integrator == Settings_t::EULER)
-		{
-			integratorsEuler_[threadId]->integrate_n_steps(x0, i*dt, steps, dt_sim);
-		}
-		else if(settings_.integrator == Settings_t::RK4)
-		{
-			integratorsRK4_[threadId]->integrate_n_steps(x0, i*dt, steps, dt_sim);
-		}
-		else if(settings_.integrator == Settings_t::EULER_SYM  || settings_.integrator == Settings_t::RK_SYM)
+		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM  || settings_.integrator == ct::core::IntegrationType::RK_SYM)
 		{
 			integrateSymplectic<V_DIM, P_DIM>(threadId, x0, i*dt, steps, dt_sim);
 		}
 		else
-			throw std::runtime_error("invalid integration mode selected.");
-
+		{
+			integrators_[threadId]->integrate_n_steps(x0, i*dt, steps, dt_sim);
+		}
 
 		x_local.push_back(x0);
 		t_local.push_back((i+1)*dt);
@@ -368,11 +358,11 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::integrateSymplect
 	if (!systems_[threadId]->isSymplectic())
 		throw std::runtime_error("Trying to integrate using symplectic integrator, but system is not symplectic.");
 
-	if(settings_.integrator == Settings_t::EULER_SYM)
+	if(settings_.integrator == ct::core::IntegrationType::EULER_SYM)
 	{
 		integratorsEulerSymplectic_[threadId]->integrate_n_steps(x0, t, steps, dt_sim);
 	}
-	else if(settings_.integrator == Settings_t::RK_SYM)
+	else if(settings_.integrator == ct::core::IntegrationType::RK_SYM)
 	{
 		integratorsRkSymplectic_[threadId]->integrate_n_steps(x0, t, steps, dt_sim);
 	} else
@@ -420,20 +410,13 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 
 	xShot = x_start;
 
-	if (settings_.integrator == Settings_t::EULER)
-	{
-		integratorsEuler_[threadId]->integrate_n_steps(xShot, k*dt, steps, dt_sim);
-	}
-	else if(settings_.integrator == Settings_t::RK4)
-	{
-		integratorsRK4_[threadId]->integrate_n_steps(xShot, k*dt, steps, dt_sim);
-	}
-	else if(settings_.integrator == Settings_t::EULER_SYM || settings_.integrator == Settings_t::RK_SYM)
+	if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
 	{
 		integrateSymplectic<V_DIM, P_DIM>(threadId, xShot, k*dt_sim, 1, dt_sim);
+	} else
+	{
+		integrators_[threadId]->integrate_n_steps(xShot, k*dt, steps, dt_sim);
 	}
-	else
-		throw std::runtime_error("invalid integration mode selected.");
 }
 
 

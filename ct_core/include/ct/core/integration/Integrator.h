@@ -60,7 +60,9 @@ enum IntegrationType
     RK78,
     BULIRSCHSTOER,
     EULERCT,
-    RK4CT
+    RK4CT,
+	EULER_SYM,
+	RK_SYM
 };
 
 

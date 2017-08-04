@@ -112,8 +112,7 @@ public:
 	NLOCBackendBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 			const Settings_t& settings) :
 
-		    integratorsRK4_(settings.nThreads+1),
-		    integratorsEuler_(settings.nThreads+1),
+		    integrators_(settings.nThreads+1),
 			integratorsEulerSymplectic_(settings.nThreads+1),
 			integratorsRkSymplectic_(settings.nThreads+1),
 			linearSystemDiscretizers_(settings.nThreads+1, LinearSystemDiscretizer_t(settings.dt)),
@@ -607,11 +606,8 @@ protected:
 	template<size_t ORDER = 1>
 	SCALAR computeDefectsNorm(const StateVectorArray& d) const { return computeDiscreteArrayNorm<StateVectorArray, ORDER>(d);}
 
-	typedef std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > IntegratorRK4Ptr;
-    std::vector<IntegratorRK4Ptr, Eigen::aligned_allocator<IntegratorRK4Ptr> > integratorsRK4_; //! Runge-Kutta-4 Integrators
-
-    typedef std::shared_ptr<ct::core::IntegratorEuler<STATE_DIM, SCALAR> > IntegratorEulerPtr;
-    std::vector<IntegratorEulerPtr, Eigen::aligned_allocator<IntegratorEulerPtr> > integratorsEuler_;
+	typedef std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> > IntegratorPtr;
+    std::vector<IntegratorPtr, Eigen::aligned_allocator<IntegratorPtr> > integrators_; //! Runge-Kutta-4 Integrators
 
 	typedef std::shared_ptr<ct::core::IntegratorSymplecticEuler<P_DIM, V_DIM, CONTROL_DIM, SCALAR> > IntegratorSymplecticEulerPtr;
 	std::vector<IntegratorSymplecticEulerPtr, Eigen::aligned_allocator<IntegratorSymplecticEulerPtr> > integratorsEulerSymplectic_;

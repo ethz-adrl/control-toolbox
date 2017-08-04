@@ -178,9 +178,6 @@ public:
 
 	typedef typename core::LinearSystemDiscretizerSettings::APPROXIMATION APPROXIMATION;
 
-    //! enum indicating which integrator to use for the NLOptCon forward rollout
-    enum INTEGRATOR { EULER = 0, RK4 = 1, EULER_SYM = 2, RK_SYM = 3};
-
     //! the nonlinear optimal control problem solving algorithm
     enum NLOCP_ALGORITHM
     {
@@ -197,7 +194,7 @@ public:
      * sets all settings to default values.
      */
     NLOptConSettings() :
-    	integrator(RK4),
+    	integrator(ct::core::IntegrationType::RK4),
         discretization(APPROXIMATION::BACKWARD_EULER),
 		timeVaryingDiscretization(false),
         nlocp_algorithm(GNMS),
@@ -220,7 +217,7 @@ public:
     {
     }
 
-    INTEGRATOR integrator;	//! which integrator to use during the NLOptCon forward rollout
+    ct::core::IntegrationType integrator;	//! which integrator to use during the NLOptCon forward rollout
     APPROXIMATION discretization;
     bool timeVaryingDiscretization;
 	NLOCP_ALGORITHM nlocp_algorithm;   //! which nonlinear optimal control algorithm is to be used
@@ -465,17 +462,32 @@ public:
 private:
 
     //! mappings for integrator types
-    std::map<INTEGRATOR, std::string> integratorToString = {
-    		{EULER, "Euler"}, {RK4 , "Runge-Kutta 4th order"},
-    		{EULER_SYM, "Symplectic Euler"},
-    		{RK_SYM, "Symplectic Runge Kutta"}
+    std::map<ct::core::IntegrationType, std::string> integratorToString = {
+    	    {ct::core::IntegrationType::EULER, "Euler"},
+    	    {ct::core::IntegrationType::RK4, "Runge-Kutta 4th Order"},
+    	    {ct::core::IntegrationType::MODIFIED_MIDPOINT, "Modified midpoint"},
+    	    {ct::core::IntegrationType::ODE45, "ode45"},
+    	    {ct::core::IntegrationType::RK5VARIABLE, "RK5 variable step"},
+    	    {ct::core::IntegrationType::RK78, "RK78"},
+    	    {ct::core::IntegrationType::BULIRSCHSTOER, "Bulirsch-Stoer"},
+    	    {ct::core::IntegrationType::EULERCT, "Euler (CT)"},
+    	    {ct::core::IntegrationType::RK4CT, "Runge-Kutta 4th Order (CT"},
+    		{ct::core::IntegrationType::EULER_SYM, "Symplectic Euler"},
+    		{ct::core::IntegrationType::RK_SYM, "Symplectic Runge Kutta"}
     };
 
-    std::map<std::string, INTEGRATOR> stringToIntegrator = {
-    		{"Euler", EULER},
-    		{"RK4", RK4},
-    		{"Euler_Sym", EULER_SYM},
-    		{"Rk_Sym", RK_SYM}
+    std::map<std::string, ct::core::IntegrationType> stringToIntegrator = {
+    		{"Euler", ct::core::IntegrationType::EULER},
+    		{"RK4", ct::core::IntegrationType::RK4},
+			{"MODIFIED_MIDPOINT", ct::core::IntegrationType::MODIFIED_MIDPOINT},
+			{"ODE45", ct::core::IntegrationType::ODE45},
+			{"RK5VARIABLE", ct::core::IntegrationType::RK5VARIABLE},
+			{"RK78", ct::core::IntegrationType::RK78},
+			{"BULIRSCHSTOER", ct::core::IntegrationType::BULIRSCHSTOER},
+			{"EulerCT", ct::core::IntegrationType::EULERCT},
+			{"RK4CT", ct::core::IntegrationType::RK4CT},
+    		{"Euler_Sym", ct::core::IntegrationType::EULER_SYM},
+    		{"Rk_Sym",ct::core::IntegrationType::RK_SYM}
     };
 
 
