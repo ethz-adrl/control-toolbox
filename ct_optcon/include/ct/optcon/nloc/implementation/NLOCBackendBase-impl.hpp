@@ -292,13 +292,12 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 	{
 		if (terminationFlag && *terminationFlag) return false;
 
-		// introduce a temporary feedback matrix, and set it to L_ in case of closed-loop shooting
-		core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR> L_sim = core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero();
-		if(settings_.closedLoopShooting || firstRollout_) // todo first rollout with controller //fixme make proper?
-			L_sim = L_[i];
+		if(settings_.closedLoopShooting  || firstRollout_)
+			u_local.push_back(u_ff_local[i] + L_[i] * (x0 - x_prev_[i]));
+		else
+			u_local.push_back(u_ff_local[i]);
 
-		u_local.push_back( u_ff_local[i] + L_sim * (x0-x_prev_[i]));
-		controller_[threadId]->updateControlLaw(u_ff_local[i], x_prev_[i], L_sim);
+		controller_[threadId]->setControl(u_local.back());
 
 
 		if (settings_.integrator == Settings_t::EULER)
@@ -366,18 +365,24 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots
 	for (size_t k=firstIndex; k<=lastIndex; k++)
 	{
 		// first rollout the shot
-		rolloutSingleShot(threadId, k, u_ff_local, x_start, xShot);
+		rolloutSingleShot(threadId, k, u_ff_local[k], x_start[k], x_prev_[k], L_[k], xShot[k]);
 
 		// then compute the corresponding defect
-		computeSingleDefect(k, x_start, xShot, d);
+		computeSingleDefect(k, x_start[k], xShot[k+1], d[k]);
 	}
 }
 
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingleShot(const size_t threadId, const size_t k,
-		const ControlVectorArray& u_ff_local, const StateVectorArray& x_start, StateVectorArray& xShot) const
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingleShot(
+		const size_t threadId,
+		const size_t k,
+		const control_vector_t& u_ff_local,
+		const state_vector_t& x_start,
+		const state_vector_t& x_prev,
+		const feedback_matrix_t& L,
+		state_vector_t& xShot) const
 {
 	const double& dt = settings_.dt;
 	const double& dt_sim = settings_.dt_sim;
@@ -385,31 +390,29 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 	// compute number of substeps
 	size_t steps = round(dt/ dt_sim);
 
-	// introduce a temporary feedback matrix, and set it to L_ in case of closed-loop shooting
-	core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR> L_sim = core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero();
 	if(settings_.closedLoopShooting)
-		L_sim = L_[k];
+		controller_[threadId]->setControl(u_ff_local + L * (x_start - x_prev));
+	else
+		controller_[threadId]->setControl(u_ff_local);
 
-	controller_[threadId]->updateControlLaw(u_ff_local[k], x_start[k], L_sim);
-
-	xShot[k] = x_start[k];
+	xShot = x_start;
 
 	if (settings_.integrator == Settings_t::EULER)
 	{
-		integratorsEuler_[threadId]->integrate_n_steps(xShot[k], k*dt, steps, dt_sim);
+		integratorsEuler_[threadId]->integrate_n_steps(xShot, k*dt, steps, dt_sim);
 	}
 	else if(settings_.integrator == Settings_t::RK4)
 	{
-		integratorsRK4_[threadId]->integrate_n_steps(xShot[k], k*dt, steps, dt_sim);
+		integratorsRK4_[threadId]->integrate_n_steps(xShot, k*dt, steps, dt_sim);
 	}
 #if P_DIM > 0 && V_DIM > 0
 		else if(settings_.integrator == GNMSSettings::EULER_SYM)
 		{
-			integratorsEulerSymplectic_[threadId]->integrate_n_steps(xShot[k], k*dt_sim, 1, dt_sim);
+			integratorsEulerSymplectic_[threadId]->integrate_n_steps(xShot, k*dt_sim, 1, dt_sim);
 		}
 		else if(settings_.integrator == GNMSSettings::RK_SYM)
 		{
-			integratorsRkSymplectic_[threadId]->integrate_n_steps(xShot[k], k*dt_sim, 1, dt_sim);
+			integratorsRkSymplectic_[threadId]->integrate_n_steps(xShot, k*dt_sim, 1, dt_sim);
 		}
 #endif
 	else
@@ -419,16 +422,15 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeSingleDefect(size_t k,
-		const StateVectorArray& x_start, const StateVectorArray& xShot, StateVectorArray& d) const
+		const state_vector_t& x_start, const state_vector_t& xShot, state_vector_t& d) const
 {
 	if (k< (size_t)K_)
 	{
-		d[k] = xShot[k] - x_start[k+1];
+		d = xShot - x_start;
 	}
 	else
 	{
-		assert(k==K_ && "k should be K_");
-		d[K_].setZero();
+		d.setZero();
 	}
 }
 

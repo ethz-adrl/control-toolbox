@@ -98,6 +98,7 @@ public:
 
 	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
 	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+	typedef core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR> feedback_matrix_t;
 
 
 	typedef SCALAR scalar_t;
@@ -136,7 +137,7 @@ public:
 
 		for (size_t i=0; i<settings.nThreads+1; i++)
 		{
-			controller_[i] = ConstantStateFeedbackControllerPtr (new core::ConstantStateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>());
+			controller_[i] = ConstantControllerPtr (new core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>());
 		}
 
 		configure(settings);
@@ -442,16 +443,21 @@ public:
 protected:
 
 	//! integrate the individual shots
-	void rolloutSingleShot(const size_t threadId, const size_t k, const ControlVectorArray& u_ff_local, const StateVectorArray& x_start, StateVectorArray& xShot) const;
+	void rolloutSingleShot(
+			const size_t threadId,
+			const size_t k,
+			const control_vector_t& u_ff_local,
+			const state_vector_t& x_start,
+			const state_vector_t& x_prev,
+			const feedback_matrix_t& L,
+			state_vector_t& xShot) const;
 
 	//! computes the defect between shot and trajectory
-	void computeSingleDefect(size_t k, const StateVectorArray& x_start, const StateVectorArray& xShot, StateVectorArray& d) const;
-
-	//! rollout single shot for nominal case // todo try to replace
-	void rolloutSingleShot(const size_t threadId, const size_t k) {rolloutSingleShot(threadId, k, this->u_ff_, this->x_, this->xShot_); }
-
-	//! compute single defect for nominal case // todo try to replace
-	void computeSingleDefect(size_t k){ computeSingleDefect(k, this->x_, this->xShot_, this->lqocProblem_->b_);}
+	void computeSingleDefect(
+			size_t k,
+			const state_vector_t& x_start,
+			const state_vector_t& xShot,
+			state_vector_t& d) const;
 
     //! Rollout of nonlinear dynamics
     /*!
@@ -601,8 +607,8 @@ protected:
 	typedef std::shared_ptr<ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR> > IntegratorSymplecticRkPtr;
 	std::vector<IntegratorSymplecticRkPtr, Eigen::aligned_allocator<IntegratorSymplecticRkPtr > > integratorsRkSymplectic_;
 
-    typedef std::shared_ptr<core::ConstantStateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> > ConstantStateFeedbackControllerPtr;
-    std::vector<ConstantStateFeedbackControllerPtr, Eigen::aligned_allocator<ConstantStateFeedbackControllerPtr> > controller_;	//! the constant controller for forward-integration during one time-step
+    typedef std::shared_ptr<core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR> > ConstantControllerPtr;
+    std::vector<ConstantControllerPtr, Eigen::aligned_allocator<ConstantControllerPtr> > controller_;	//! the constant controller for forward-integration during one time-step
 
 
 

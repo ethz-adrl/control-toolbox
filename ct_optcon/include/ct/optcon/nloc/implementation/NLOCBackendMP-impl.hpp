@@ -488,8 +488,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 #ifdef DEBUG_PRINT_MP
 		printString("[MP]: do single threaded shot rollout for single index " + std::to_string(firstIndex) + ". Not waking up workers.");
 #endif //DEBUG_PRINT_MP
-		this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->xShot_);
-		this->computeSingleDefect(firstIndex, this->x_, this->xShot_, this->lqocProblem_->b_);
+		this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_[firstIndex], this->x_[firstIndex], this->x_prev_[firstIndex], this->L_[firstIndex], this->xShot_[firstIndex]);
+		this->computeSingleDefect(firstIndex, this->x_[firstIndex], this->xShot_[firstIndex+1], this->lqocProblem_->b_[firstIndex]);
 		return;
 	}
 
@@ -553,8 +553,9 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWo
 			printString("[Thread " + std::to_string(threadId) + "]: rolling out shot with index " + std::to_string(KMax_ - k));
 #endif
 
-		this->rolloutSingleShot(threadId, KMax_ - k, this->u_ff_, this->x_, this->xShot_);
-		this->computeSingleDefect(KMax_ - k, this->x_, this->xShot_, this->lqocProblem_->b_);
+		size_t kShot = KMax_ - k;
+		this->rolloutSingleShot(threadId, kShot, this->u_ff_[kShot], this->x_[kShot], this->x_prev_[kShot], this->L_[kShot], this->xShot_[kShot]);
+		this->computeSingleDefect(kShot, this->x_[kShot], this->xShot_[kShot+1], this->lqocProblem_->b_[kShot]);
 
 		kCompleted_++;
 	}
