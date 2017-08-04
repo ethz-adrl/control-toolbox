@@ -101,6 +101,7 @@ public:
 
 	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
 	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+	typedef core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR> feedback_matrix_t;
 
 
 	typedef SCALAR scalar_t;
@@ -139,7 +140,7 @@ public:
 
 		for (size_t i=0; i<settings.nThreads+1; i++)
 		{
-			controller_[i] = ConstantStateFeedbackControllerPtr (new core::ConstantStateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>());
+			controller_[i] = ConstantControllerPtr (new core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>());
 		}
 
 		configure(settings);
@@ -337,18 +338,7 @@ public:
 	//! return the sum of the L2-norm of the defects along the solution candidate
 	SCALAR getTotalDefect() const { return d_norm_;}
 
-	void reset()
-	{
-		firstRollout_ = true;
-		iteration_ = 0;
-		d_norm_ = std::numeric_limits<scalar_t>::infinity();
-		lx_norm_ = std::numeric_limits<scalar_t>::infinity();
-		lu_norm_ = std::numeric_limits<scalar_t>::infinity();
-		intermediateCostBest_ = std::numeric_limits<scalar_t>::infinity();
-		finalCostBest_ = std::numeric_limits<scalar_t>::infinity();
-		intermediateCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
-		finalCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
-	}
+	void reset();
 
 	const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const;
 
@@ -449,7 +439,7 @@ public:
 	}
 
 	//! update the nominal defects
-	void updateDefects() {d_norm_ = computeDefectsNorm(lqocProblem_->b_);}
+	void updateDefects() {d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);}
 
 	//! integrates the specified shots and computes the corresponding defects
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;
@@ -465,16 +455,21 @@ public:
 protected:
 
 	//! integrate the individual shots
-	void rolloutSingleShot(const size_t threadId, const size_t k, const ControlVectorArray& u_ff_local, const StateVectorArray& x_start, StateVectorArray& xShot) const;
+	void rolloutSingleShot(
+			const size_t threadId,
+			const size_t k,
+			const control_vector_t& u_ff_local,
+			const state_vector_t& x_start,
+			const state_vector_t& x_prev,
+			const feedback_matrix_t& L,
+			state_vector_t& xShot) const;
 
 	//! computes the defect between shot and trajectory
-	void computeSingleDefect(size_t k, const StateVectorArray& x_start, const StateVectorArray& xShot, StateVectorArray& d) const;
-
-	//! rollout single shot for nominal case // todo try to replace
-	void rolloutSingleShot(const size_t threadId, const size_t k) {rolloutSingleShot(threadId, k, this->u_ff_, this->x_, this->xShot_); }
-
-	//! compute single defect for nominal case // todo try to replace
-	void computeSingleDefect(size_t k){ computeSingleDefect(k, this->x_, this->xShot_, this->lqocProblem_->b_);}
+	void computeSingleDefect(
+			size_t k,
+			const state_vector_t& x_start,
+			const state_vector_t& xShot,
+			state_vector_t& d) const;
 
     //! Rollout of nonlinear dynamics
     /*!
@@ -596,15 +591,21 @@ protected:
 	template<class V>
 	void matrixToMatlab(V& matrix, std::string variableName);
 
+	//! compute norm of a discrete array (todo move to core)
+	template<typename ARRAY_TYPE, size_t ORDER = 1>
+	SCALAR computeDiscreteArrayNorm(const ARRAY_TYPE& d) const;
 
-	//! compute the norm of the difference between two control trajectories
-	void computeControlUpdateNorm(const ControlVectorArray& u_prev, const ControlVectorArray& u_new);
-
-	//! compute the norm of the difference between two state trajectories
-	void computeStateUpdateNorm(const StateVectorArray& x_prev, const StateVectorArray& x_new);
+	//! compute norm of difference between two discrete arrays (todo move to core)
+	template<typename ARRAY_TYPE, size_t ORDER = 1>
+	SCALAR computeDiscreteArrayNorm(const ARRAY_TYPE& a, const ARRAY_TYPE& b) const;
 
 	//! compute the norm of the defects trajectory
-	SCALAR computeDefectsNorm(const StateVectorArray& d) const;
+	/*!
+	 * Note that different kind of norms might be favorable for different cases.
+	 * According to Nocedal and Wright, the l1-norm is "exact" (p.435),  the l2-norm is smooth.
+	 */
+	template<size_t ORDER = 1>
+	SCALAR computeDefectsNorm(const StateVectorArray& d) const { return computeDiscreteArrayNorm<StateVectorArray, ORDER>(d);}
 
 	typedef std::shared_ptr<ct::core::IntegratorRK4<STATE_DIM, SCALAR> > IntegratorRK4Ptr;
     std::vector<IntegratorRK4Ptr, Eigen::aligned_allocator<IntegratorRK4Ptr> > integratorsRK4_; //! Runge-Kutta-4 Integrators
@@ -618,8 +619,8 @@ protected:
 	typedef std::shared_ptr<ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR> > IntegratorSymplecticRkPtr;
 	std::vector<IntegratorSymplecticRkPtr, Eigen::aligned_allocator<IntegratorSymplecticRkPtr > > integratorsRkSymplectic_;
 
-    typedef std::shared_ptr<core::ConstantStateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> > ConstantStateFeedbackControllerPtr;
-    std::vector<ConstantStateFeedbackControllerPtr, Eigen::aligned_allocator<ConstantStateFeedbackControllerPtr> > controller_;	//! the constant controller for forward-integration during one time-step
+    typedef std::shared_ptr<core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR> > ConstantControllerPtr;
+    std::vector<ConstantControllerPtr, Eigen::aligned_allocator<ConstantControllerPtr> > controller_;	//! the constant controller for forward-integration during one time-step
 
 
 

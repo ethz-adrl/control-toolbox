@@ -158,7 +158,9 @@ public:
 	virtual bool finishIteration() override
 	{
 
+#ifdef DEBUG_PRINT
 		auto startFinish = std::chrono::steady_clock::now();
+#endif
 
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
@@ -218,9 +220,8 @@ public:
 		std::cout << "[GNMS]: Line search took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
-
-		auto endFinish = std::chrono::steady_clock::now();
 #ifdef DEBUG_PRINT
+		auto endFinish = std::chrono::steady_clock::now();
 		std::cout << "GNMS finishIteration() took "<<std::chrono::duration <double, std::milli> (endFinish-startFinish).count() << " ms" << std::endl;
 #endif
 

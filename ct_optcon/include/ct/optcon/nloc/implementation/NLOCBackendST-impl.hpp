@@ -57,13 +57,13 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 	for (size_t k=firstIndex; k<=lastIndex; k++)
 	{
 		// first rollout the shot
-		this->rolloutSingleShot(this->settings_.nThreads, k);
+		this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_[k], this->x_[k], this->x_prev_[k], this->L_[k], this->xShot_[k]);
 
 		// then compute the corresponding defect
-		this->computeSingleDefect(k);
+		this->computeSingleDefect(k, this->x_[k], this->xShot_[k+1], this->lqocProblem_->b_[k]);
 	}
 
-	this->d_norm_ = this->computeDefectsNorm(this->lqocProblem_->b_);
+	this->d_norm_ = this->template computeDefectsNorm<1>(this->lqocProblem_->b_);
 }
 
 
@@ -152,8 +152,8 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 
 
 #if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
-			this->computeControlUpdateNorm(u_recorded, this->u_ff_prev_);
-			this->computeStateUpdateNorm(x_search, this->x_prev_);
+			this-> lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2> (u_recorded, this->u_ff_prev_);
+			this-> lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(x_search, this->x_prev_);
 #endif
 
 			alphaBest = alpha;
