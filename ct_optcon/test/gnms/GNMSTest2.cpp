@@ -161,7 +161,7 @@ void singleCore()
 		case 2: // integration
 		{
 			shared_ptr<ControlledSystem<state_dim, control_dim> > systemForInit(new Dynamics);
-			ct::core::IntegratorEuler<state_dim> integratorForInit(systemForInit);
+			ct::core::Integrator<state_dim> integratorForInit(systemForInit, ilqr_settings.integrator);
 			x0[0] = x_0;
 			for (size_t i = 1; i<nSteps+1; i++)
 			{

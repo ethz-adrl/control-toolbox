@@ -384,7 +384,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots
 		rolloutSingleShot(threadId, k, u_ff_local[k], x_start[k], x_prev_[k], L_[k], xShot[k]);
 
 		// then compute the corresponding defect
-		computeSingleDefect(k, x_start[k], xShot[k+1], d[k]);
+		computeSingleDefect(k, x_start[k+1], xShot[k], d[k]);
 	}
 }
 
@@ -407,7 +407,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 	size_t steps = round(dt/ dt_sim);
 
 	if(settings_.closedLoopShooting)
-		controller_[threadId]->setControl(u_ff_local + L * (x_start - x_prev));
+		throw std::runtime_error("closed-loop shooting not implemented for GNMS.");
+		//controller_[threadId]->setControl(u_ff_local + L * (x_start - x_prev)); // todo this is wrong!
 	else
 		controller_[threadId]->setControl(u_ff_local);
 

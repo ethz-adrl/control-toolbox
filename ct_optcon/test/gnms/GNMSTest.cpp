@@ -35,7 +35,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define DEBUG_PRINT
 //#define DEBUG_PRINT_MP
-//#define DEBUG_PRINT_LINESEARCH
+#define DEBUG_PRINT_LINESEARCH
 
 #include <ct/optcon/optcon.h>
 
@@ -155,7 +155,7 @@ void singleCore()
 		gnms_settings.fixedHessianCorrection = false;
 		gnms_settings.dt = 0.001;
 		gnms_settings.dt_sim = 0.001;
-		gnms_settings.integrator = NLOptConSettings::EULER;
+		gnms_settings.integrator = ct::core::IntegrationType::EULER;
 		gnms_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
 		gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
@@ -178,7 +178,7 @@ void singleCore()
 		size_t nSteps = std::round(tf / gnms_settings.dt);
 
 		// provide initial guess
-		StateVector<state_dim> initState; initState.setRandom(); initState(1) = 0.0;
+		StateVector<state_dim> initState; initState.setZero(); //initState.setRandom(); initState(1) = 0.0;
 		StateVectorArray<state_dim>  x0(nSteps+1, initState);
 		ControlVector<control_dim> uff; uff << kStiffness * initState(0);
 		ControlVectorArray<control_dim> u0(nSteps, uff);
@@ -265,7 +265,7 @@ void multiCore()
 		gnms_settings.fixedHessianCorrection = false;
 		gnms_settings.dt = 0.001;
 		gnms_settings.dt_sim = 0.001;
-		gnms_settings.integrator = NLOptConSettings::EULER;
+		gnms_settings.integrator = ct::core::IntegrationType::EULER;
 		gnms_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
 		gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;

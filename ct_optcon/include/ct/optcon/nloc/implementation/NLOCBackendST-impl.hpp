@@ -60,7 +60,7 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 		this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_[k], this->x_[k], this->x_prev_[k], this->L_[k], this->xShot_[k]);
 
 		// then compute the corresponding defect
-		this->computeSingleDefect(k, this->x_[k], this->xShot_[k+1], this->lqocProblem_->b_[k]);
+		this->computeSingleDefect(k, this->x_[k+1], this->xShot_[k], this->lqocProblem_->b_[k]);
 	}
 
 	this->d_norm_ = this->template computeDefectsNorm<1>(this->lqocProblem_->b_);
