@@ -54,11 +54,18 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(size_t firstIndex, size_t lastIndex)
 {
-	for (size_t k=firstIndex; k<=lastIndex; k++)
+	firstIndex = std::ceil(firstIndex / (size_t)this->K_shot_) * (size_t)this->K_shot_;
+
+	std::cout << "rolling out shot for index " << firstIndex << std::endl;
+
+	for (size_t k=firstIndex; k<=lastIndex; k = k+ this->K_shot_)
 	{
 		// first rollout the shot
-		this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_[k], this->x_[k], this->x_prev_[k], this->L_[k], this->xShot_[k]);
+		this->rolloutSingleShot(this->settings_.nThreads, k, this->K_shot_, this->u_ff_, this->x_, this->x_,
+				this->x_, this->xShot_, this->u_ff_);
+	}
 
+	for (size_t k=firstIndex; k<=lastIndex; k++){
 		// then compute the corresponding defect
 		this->computeSingleDefect(k, this->x_[k+1], this->xShot_[k], this->lqocProblem_->b_[k]);
 	}

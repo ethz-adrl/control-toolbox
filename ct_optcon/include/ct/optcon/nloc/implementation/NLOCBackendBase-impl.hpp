@@ -79,9 +79,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
 	if (tf < 0)
 		throw std::runtime_error("negative time horizon specified");
 
-	int K = settings_.computeK(tf);
-
-	K_ = K;
+	K_ = settings_.computeK(tf);
 
 	lx_.resize(K_+1);
 	x_.resize(K_+1);
@@ -92,7 +90,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
 	lu_.resize(K_);
 	u_ff_.resize(K_);
 	u_ff_prev_.resize(K_);
-	L_.resize(K);
+	L_.resize(K_);
 
 	lqocProblem_->changeNumStages(K_);
 	lqocProblem_->setZero();
@@ -219,6 +217,19 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 		throw(std::runtime_error("Number of threads cannot be changed after instance has been created."));
 	}
 
+	//! compute shot lengths
+	K_shot_ = settings.computeK(settings_.dt_shot);
+
+
+	//! todo: once running stable: insert a check for this at a proper position. Note: since
+	//! we don't have a fixed order for configure() or initilize, need to think where this should go.
+//	if(K_shot_ >= K_)
+//	{
+//		std::cout << "WARNING: K_shot_ cannot be >= K_. Resizing K_shot_ to 1" << std::endl;
+//		K_shot_ = 1;
+//	}
+
+
 	// update system discretizer with new settings
 	for(int i = 0; i< settings.nThreads+1; i++)
 	{
@@ -269,8 +280,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 		size_t threadId,
 		const ControlVectorArray& u_ff_local,
 		const StateVectorArray& x_ref_lqr,
-		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
-		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+		StateVectorArray& x_local,
+		ControlVectorArray& u_local,
 		ct::core::tpl::TimeArray<SCALAR>& t_local,
 		std::atomic_bool* terminationFlag) const
 {
@@ -354,7 +365,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 SYMPLECTIC_ENABLED
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::integrateSymplectic(size_t threadId, ct::core::StateVector<STATE_DIM, SCALAR>& x0, const double& t, const size_t& steps, const double& dt_sim) const
+NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::integrateSymplectic(size_t threadId,
+		ct::core::StateVector<STATE_DIM, SCALAR>& x0, const double& t, const size_t& steps, const double& dt_sim) const
 {
 	if (!systems_[threadId]->isSymplectic())
 		throw std::runtime_error("Trying to integrate using symplectic integrator, but system is not symplectic.");
@@ -374,16 +386,25 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::integrateSymplect
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShotsSingleThreaded(size_t threadId, size_t firstIndex, size_t lastIndex,
-		const ControlVectorArray& u_ff_local, const StateVectorArray& x_start, StateVectorArray& xShot, StateVectorArray& d) const
+		const ControlVectorArray& u_ff_local, const StateVectorArray& x_start, const StateVectorArray& x_ref_lqr,
+		StateVectorArray& x_recorded, StateVectorArray& xShot, ControlVectorArray& u_recorded, StateVectorArray& d) const
 {
 	//! make sure all intermediate entries in the defect trajectory are zero
 	d.setConstant(state_vector_t::Zero());
 
-	for (size_t k=firstIndex; k<=lastIndex; k++)
+	firstIndex = std::ceil(firstIndex / (size_t)this->K_shot_) * (size_t)this->K_shot_;
+
+	std::cout << "DEBUG: rolling out shot for start index " << firstIndex << std::endl;
+
+	for (size_t k=firstIndex; k<=lastIndex; k=k+K_shot_)
 	{
 		// first rollout the shot
-		rolloutSingleShot(threadId, k, u_ff_local[k], x_start[k], x_prev_[k], L_[k], xShot[k]);
+		rolloutSingleShot(threadId, k, K_shot_, u_ff_local, x_start, x_ref_lqr, x_recorded, xShot, u_recorded);
+	}
 
+	// todo: once running, let defect only be coputed for relevant indices
+	for (size_t k=firstIndex; k<=lastIndex; k++)
+	{
 		// then compute the corresponding defect
 		computeSingleDefect(k, x_start[k+1], xShot[k], d[k]);
 	}
@@ -394,33 +415,59 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingleShot(
 		const size_t threadId,
-		const size_t k,
-		const control_vector_t& u_ff_local,
-		const state_vector_t& x_start,
-		const state_vector_t& x_prev,
-		const feedback_matrix_t& L,
-		state_vector_t& xShot) const
+		const size_t k,	//! the starting index of the shot
+		const int nStages,
+		const ControlVectorArray& u_ff_local,
+		const StateVectorArray& x_start,
+		const StateVectorArray& x_ref_lqr,
+		StateVectorArray& x_recorded,
+		StateVectorArray& xShot,		// the value at the end of each integration interval
+		ControlVectorArray& u_recorded
+		)const
 {
 	const double& dt = settings_.dt;
 	const double& dt_sim = settings_.dt_sim;
 
+	if(u_recorded.size() < K_) throw std::runtime_error("rolloutSingleShot: u_recorded is too short.");
+	if(x_recorded.size() < K_+1) throw std::runtime_error("rolloutSingleShot: x_local is too short.");
+	if(xShot.size() < K_+1) throw std::runtime_error("rolloutSingleShot: xShot is too short.");
+
 	// compute number of substeps
-	size_t steps = round(dt/ dt_sim);
+	size_t subSteps = round(dt/ dt_sim);
 
-	if(settings_.closedLoopShooting)
-		throw std::runtime_error("closed-loop shooting not implemented for GNMS.");
-		//controller_[threadId]->setControl(u_ff_local + L * (x_start - x_prev)); // todo this is wrong!
-	else
-		controller_[threadId]->setControl(u_ff_local);
+	x_recorded[k] = x_start[k]; // initialize
+	xShot[k] = x_start[k]; // initialize
 
-	xShot = x_start;
+	int K_stop = k+nStages;
+	if(K_stop > K_)
+		K_stop = K_;
 
-	if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
+	for (int i = k; i<K_stop; i++)
 	{
-		integrateSymplectic<V_DIM, P_DIM>(threadId, xShot, k*dt_sim, 1, dt_sim);
-	} else
-	{
-		integrators_[threadId]->integrate_n_steps(xShot, k*dt, steps, dt_sim);
+		if(i>k)
+		{
+			xShot[i] = xShot[i-1];  // initialize integration variable
+		}
+
+		if(settings_.closedLoopShooting)
+			u_recorded[i] = u_ff_local[i] + L_[i] * (xShot[i] - x_ref_lqr[i]);
+		else
+			u_recorded[i] = u_ff_local[i];
+
+		if(i>k)
+		{
+			x_recorded[i] = xShot[i]; //"overwrite" x_local
+		}
+
+		controller_[threadId]->setControl(u_recorded[i]);
+
+		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
+		{
+			integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], k*dt, 1, dt_sim);
+		} else
+		{
+			integrators_[threadId]->integrate_n_steps(xShot[i], k*dt, subSteps, dt_sim);
+		}
 	}
 }
 
@@ -925,20 +972,18 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 
 	if (terminationFlag && *terminationFlag) return;
 
-	//! compute costs
-	computeCostsOfTrajectory(threadId, x_alpha, u_alpha, intermediateCost, finalCost);
-
-	if (terminationFlag && *terminationFlag) return;
-
 	//! rollout shots
-	rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_shot_alpha, defects_recorded);
+	rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_alpha, x_alpha, x_shot_alpha, u_alpha, defects_recorded);
 
 	if (terminationFlag && *terminationFlag) return;
 
 	//! compute defects norm
 	defectNorm = computeDefectsNorm<1>(defects_recorded);
 
-	//! form a merit from that
+	if (terminationFlag && *terminationFlag) return;
+
+	//! compute costs
+	computeCostsOfTrajectory(threadId, x_alpha, u_alpha, intermediateCost, finalCost);
 
 	if (terminationFlag && *terminationFlag) return;
 }

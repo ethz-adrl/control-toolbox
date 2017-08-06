@@ -6,10 +6,11 @@ gnms
 {
 	integrator Euler
 	discretization Matrix_exponential
-	closedLoopShooting 0 					; (1 = closed loop shooting, 0 = open-loop shooting)
-	stabilizeAroundPreviousSolution	1		; (true / false)
+	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
+	stabilizeAroundPreviousSolution	0		; (true / false)
     dt 0.001
     dt_sim 0.001
+    dt_shot 0.5
     epsilon 1e-6
 	max_iterations 10
     fixedHessianCorrection false
@@ -17,7 +18,7 @@ gnms
     min_cost_improvement 1e-12
     maxDefectSum 1e-5
     meritFunctionRho 1.0
-    nThreads 4
+    nThreads 1
     nThreadsEigen 4
     loggingPrefix GNMS
     ;locp_solver HPIPM_SOLVER
@@ -40,7 +41,7 @@ ilqr
 	integrator Euler
 	discretization Matrix_exponential
 	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
-	stabilizeAroundPreviousSolution	1		; (true / false)
+	stabilizeAroundPreviousSolution	0		; (true / false)
     dt 0.001
     dt_sim 0.001
     epsilon 1e-6

@@ -120,6 +120,7 @@ public:
 		    controller_(settings.nThreads+1),
 		    settings_(settings),
 			K_(0),
+			K_shot_(1),
 			initialized_(false),
 			configured_(false),
 			iteration_(0),
@@ -444,8 +445,15 @@ public:
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;
 
 	//! do a single threaded rollout and defect computation of the shots - useful for line-search
-	void rolloutShotsSingleThreaded(size_t threadId, size_t firstIndex, size_t lastIndex, const ControlVectorArray& u_ff_local,
-			const StateVectorArray& x_start, StateVectorArray& xShot, StateVectorArray& d) const;
+	void rolloutShotsSingleThreaded(size_t threadId,
+			size_t firstIndex, size_t lastIndex,
+			const ControlVectorArray& u_ff_local,
+			const StateVectorArray& x_start,
+			const StateVectorArray& x_ref_lqr,
+			StateVectorArray& x_recorded,
+			StateVectorArray& xShot,
+			ControlVectorArray& u_recorded,
+			StateVectorArray& d) const;
 
 	//! performLineSearch: execute the line search, possibly with different threading schemes
 	virtual SCALAR performLineSearch() = 0;
@@ -457,11 +465,14 @@ protected:
 	void rolloutSingleShot(
 			const size_t threadId,
 			const size_t k,
-			const control_vector_t& u_ff_local,
-			const state_vector_t& x_start,
-			const state_vector_t& x_prev,
-			const feedback_matrix_t& L,
-			state_vector_t& xShot) const;
+			const int nStages,
+			const ControlVectorArray& u_ff_local,
+			const StateVectorArray& x_start,
+			const StateVectorArray& x_ref_lqr,
+			StateVectorArray& x_recorded,
+			StateVectorArray& xShot,
+			ControlVectorArray& u_recorded
+			) const;
 
 	//! computes the defect between shot and trajectory
 	void computeSingleDefect(
@@ -632,7 +643,8 @@ protected:
 
 	Settings_t settings_;
 
-	int K_; //! the number of stages in the OptConProblem
+	int K_; //! the number of stages in the overall OptConProblem
+	int K_shot_; //! for a multiple shooting scenario, the number of stages in a shot (note that the last shot's length may still be different)
 
 	StateVectorArray lx_;
 	StateVectorArray x_;

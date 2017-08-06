@@ -155,6 +155,7 @@ void singleCore()
 		gnms_settings.fixedHessianCorrection = false;
 		gnms_settings.dt = 0.001;
 		gnms_settings.dt_sim = 0.001;
+		gnms_settings.dt_shot = 0.02;
 		gnms_settings.integrator = ct::core::IntegrationType::EULER;
 		gnms_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
@@ -165,7 +166,7 @@ void singleCore()
 
 		NLOptConSettings ilqr_settings = gnms_settings;
 		ilqr_settings.closedLoopShooting = true;
-		ilqr_settings.stabilizeAroundPreviousSolution = true;
+		ilqr_settings.stabilizeAroundPreviousSolution = false;
 		ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		ilqr_settings.loggingPrefix = "ILQR";
 
@@ -370,7 +371,7 @@ int main(int argc, char **argv)
 {
 	feenableexcept(FE_INVALID | FE_OVERFLOW);
 	ct::optcon::example::singleCore();
-	ct::optcon::example::multiCore();
+//	ct::optcon::example::multiCore();
 
 	return 1;
 }

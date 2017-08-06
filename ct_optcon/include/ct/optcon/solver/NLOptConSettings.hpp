@@ -205,6 +205,7 @@ public:
 		epsilon(1e-5),
 		dt(0.001),
 		dt_sim(0.001),
+		dt_shot(0.001),
 		min_cost_improvement(1e-4), // cost needs to be at least 1e-4 better before we assume convergence
 		maxDefectSum(1e-5),
 		meritFunctionRho(1.0),
@@ -228,7 +229,8 @@ public:
 	bool stabilizeAroundPreviousSolution; 	//! stablize around previous solution, may increase stability
 	double epsilon;			//! Eigenvalue correction factor for Hessian regularization
     double dt;				//! sampling time for the control input (seconds)
-    double dt_sim;			//! sampling time for the forward simulation (seconds) \warning dt_sim needs to be an integer multiple of dt.
+    double dt_sim;			//! sampling time for the forward simulation (seconds) \warning dt needs to be an integer multiple of dt_sim.
+    double dt_shot;			//! duration of a shot for all muliple-shooting approaches \warning dt_shot needs to be an integer multiple of dt.
     double min_cost_improvement;	//! minimum cost improvement between two interations to assume convergence
     double maxDefectSum;	//! maximum sum of squared defects (assume covergence if lower than this number)
     double meritFunctionRho; //! trade off between constraint violation and cost for a merit function
@@ -241,11 +243,10 @@ public:
 	ParallelBackwardSettings parallelBackward; //! do the backward pass in parallel with building the LQ problems (experimental)
 
 
-    //! compute the number of discrete time steps for the current optimal control problem
+    //! compute the number of discrete time steps for an arbitrary input time interval
     /*!
-     *
-     * @param timeHorizon the time horizon set in the optimal control problem
-     * @return the new number of steps, minimum 1 steps long
+     * @param timeHorizon the time horizon of interest, e.g. overall optimal control time horizon or shot-length
+     * @return the resulting number of steps, minimum 1 steps long
      */
     int computeK(double timeHorizon) const
     {
@@ -268,6 +269,7 @@ public:
         std::cout<<"stabilizing around previous solution: " << stabilizeAroundPreviousSolution << std::endl;
         std::cout<<"dt: "<<dt<<std::endl;
         std::cout<<"dt_sim: "<<dt_sim<<std::endl;
+        std::cout<<"dt_shot: "<<dt_shot<<std::endl;
         std::cout<<"maxIter: "<<max_iterations<<std::endl;
         std::cout<<"min cost improvement: "<<min_cost_improvement<<std::endl;
         std::cout<<"max defect sum: "<<maxDefectSum<<std::endl;
@@ -294,17 +296,24 @@ public:
      */
     bool parametersOk() const
     {
-    	if (dt == 0 || dt_sim == 0)
+    	if (dt == 0 || dt_sim == 0 || dt_shot == 0)
 		{
-			std::cout << "Either NLOptCon or simulation timestep is zero." << std::endl;
+			std::cout << "Either control-, simulation-, or shot-timestep is zero." << std::endl;
 			return false;
 		}
 
 		if (std::fmod(dt, dt_sim) > 1e-6)
 		{
-			std::cout << "NLOptCon freqency dt should be a multiple of integration frequency dt_sim." << std::endl;
+			std::cout << "control time-step dt should be an integer multiple of simulation time-step dt_sim." << std::endl;
 			return false;
 		}
+
+		// todo this check does not work with fmod. better option?
+//		if (std::fmod(dt_shot, dt) > 1e-5)
+//		{
+//			std::cout << "shot time-step dt_shot should be an integer multiple of control time-step dt." << std::endl;
+//			return false;
+//		}
 
 		if (nThreads > 100 || nThreadsEigen > 100)
 		{
@@ -353,6 +362,8 @@ public:
 		try{dt = pt.get<double>(ns +".dt");
 		} catch (...) {}
 		try{dt_sim = pt.get<double>(ns +".dt_sim");
+		} catch (...) {}
+		try{dt_shot = pt.get<double>(ns +".dt_shot");
 		} catch (...) {}
 		try{nThreadsEigen = pt.get<size_t>(ns + ".nThreadsEigen");
 		} catch (...) {}
