@@ -129,13 +129,64 @@ public:
 	    return *this;
 	}
 
+	//! overload + operator in order to be able to directly sum up two arrays
+	inline DiscreteArray<T, Alloc> operator + (const DiscreteArray<T, Alloc>& rhs) const
+	{
+		assert(this->size() == rhs.size());
+		DiscreteArray<T, Alloc> result (this->size());	//! create result container of correct size
+
+		std::transform (this->begin(), this->end(), rhs.begin(), result.begin(), std::plus<T>());
+		return result;
+	}
+
+	//! overload - operator in order to be able to directly take the difference between two arrays
+	inline DiscreteArray<T, Alloc> operator - (const DiscreteArray<T, Alloc>& rhs) const
+	{
+		assert(this->size() == rhs.size());
+		DiscreteArray<T, Alloc> result (this->size());	//! create result container of correct size
+
+		std::transform (this->begin(), this->end(), rhs.begin(), result.begin(), std::minus<T>());
+		return result;
+	}
+
+	//! overload += operator
+	inline DiscreteArray<T, Alloc>& operator += (const DiscreteArray<T, Alloc>& rhs)
+	{
+		assert(this->size() == rhs.size());
+		std::transform (this->begin(), this->end(), rhs.begin(), this->begin(), std::plus<T>());
+		return *this;
+	}
+
+	//! overload -= operator
+	inline DiscreteArray<T, Alloc>& operator -= (const DiscreteArray<T, Alloc>& rhs)
+	{
+		assert(this->size() == rhs.size());
+		std::transform (this->begin(), this->end(), rhs.begin(), this->begin(), std::minus<T>());
+		return *this;
+	}
+
+	//! todo: how to avoid this code dublication with double/float?
+	inline DiscreteArray<T, Alloc> operator * (const double& scalar) const
+	{
+		DiscreteArray<T, Alloc> result (this->size());	//! create result container of correct size
+		std::transform (this->begin(), this->end(), result.begin(), [scalar](T arg) {return arg * scalar;});
+		return result;
+	}
+	inline DiscreteArray<T, Alloc> operator * (const float& scalar) const
+	{
+		DiscreteArray<T, Alloc> result (this->size());	//! create result container of correct size
+		std::transform (this->begin(), this->end(), result.begin(), [scalar](T arg) {return arg * scalar;});
+		return result;
+	}
+	//! todo implement operator /
+
 	//! returns the underlying std::vector
 	Base& toImplementation() {return *this;}
 
 	//! returns the underlying std::vector
 	const Base& toImplementation() const {return *this;}
 
-	//! rerase an element from the front
+	//! erase an element from the front
 	void eraseFront(const size_t N) {this->erase(this->begin(), this->begin()+N);}
 
 	//! sets all elements to a constant.
