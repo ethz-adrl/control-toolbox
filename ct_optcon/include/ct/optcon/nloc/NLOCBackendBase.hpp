@@ -378,10 +378,10 @@ public:
 	//! check if GNMS is converged
 //	bool isConverged();
 
-	//! nominal rollout using default thread and member variables for the results.
+	//! nominal rollout using default thread and member variables for the results. // todo maybe rename (initial rollout?)
 	bool nominalRollout() {
 		ControlVectorArray u_recorded;
-		return rolloutSystem(settings_.nThreads, u_ff_, x_, u_recorded, t_);
+		return rolloutSystem(settings_.nThreads, u_ff_, x_prev_, x_, u_recorded, t_);
 		x_prev_ = x_;
 		u_ff_ = u_recorded;
 		u_ff_prev_ = u_recorded;
@@ -477,6 +477,7 @@ protected:
 	bool rolloutSystem(
 			size_t threadId,
 			const ControlVectorArray& u_ff_local,
+			const StateVectorArray& x_ref_lqr,
 			ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
 			ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
 			ct::core::tpl::TimeArray<SCALAR>& t_local,
@@ -548,7 +549,6 @@ protected:
 	void executeLineSearchSingleShooting(
 			const size_t threadId,
 			const scalar_t alpha,
-			const ControlVectorArray& u_ff_update,
 			StateVectorArray& x_local,
 			ControlVectorArray& u_local,
 			ct::core::tpl::TimeArray<SCALAR>& t_local,

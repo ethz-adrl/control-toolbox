@@ -109,16 +109,7 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		case NLOptConSettings::NLOCP_ALGORITHM::ILQR :
 		{
 			defectNorm = 0.0;
-
-			if(this->settings_.closedLoopShooting)
-			{
-				//! search with lv_ update if we are doing closed-loop shooting
-				this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, this->lv_, x_search, u_recorded, t_search, intermediateCost, finalCost);
-			}
-			else{
-				//! search with whole lu_ update if we are doing closed-loop shooting
-				this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, this->lu_, x_search, u_recorded, t_search, intermediateCost, finalCost);
-			}
+			this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, x_search, u_recorded, t_search, intermediateCost, finalCost);
 			break;
 		}
 		default :

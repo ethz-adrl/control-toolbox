@@ -268,6 +268,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSystem(
 		size_t threadId,
 		const ControlVectorArray& u_ff_local,
+		const StateVectorArray& x_ref_lqr,
 		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
 		ct::core::tpl::TimeArray<SCALAR>& t_local,
@@ -296,7 +297,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 		if (terminationFlag && *terminationFlag) return false;
 
 		if(settings_.closedLoopShooting  || firstRollout_)
-			u_local.push_back(u_ff_local[i] + L_[i] * (x0 - x_prev_[i]));
+			u_local.push_back(u_ff_local[i] + L_[i] * (x0 - x_ref_lqr[i]));
 		else
 			u_local.push_back(u_ff_local[i]);
 
@@ -678,22 +679,31 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 
 	if (!settings_.lineSearchSettings.active)
 	{
+		StateVectorArray x_ref_lqr_local(K_+1);
 		ControlVectorArray uff_local(K_);
 		ControlVectorArray u_recorded(K_);
 		TimeArray t_local(K_+1);
 
-
-		for(int i = 0; i< K_; i++)
+		if(settings_.closedLoopShooting)
 		{
-			if(settings_.closedLoopShooting)
+			if(settings_.stabilizeAroundPreviousSolution)
 			{
-				uff_local[i] = u_ff_[i] + lv_[i]; 	// add lv_ if we are doing closed-loop shooting
+				uff_local = u_ff_ + lv_; 	// add lv
+				x_ref_lqr_local = x_prev_; 	// stabilize around previous solution
 			}
 			else
-				uff_local[i] = u_ff_[i] + lu_[i]; 	// add lu if we are doing open-loop shooting
+			{
+				uff_local = u_ff_ + lu_; 	// add lu
+				x_ref_lqr_local = x_prev_ + lx_; // stabilize around current solution candidate
+			}
+		}
+		else{ //! open-loop single shooting
+			uff_local = u_ff_ + lu_; 	// add lu if we are doing open-loop shooting
+			//				x_ref_lqr_local = x_prev_ + lx_;
 		}
 
-		bool dynamicsGood = rolloutSystem(settings_.nThreads, uff_local, x_, u_recorded, t_local);
+
+		bool dynamicsGood = rolloutSystem(settings_.nThreads, uff_local, x_ref_lqr_local, x_, u_recorded, t_local);
 
 		if (dynamicsGood)
 		{
@@ -762,7 +772,6 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineSearchSingleShooting(
 		const size_t threadId,
 		const scalar_t alpha,
-		const ControlVectorArray& u_ff_update,
 		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_recorded,
 		ct::core::tpl::TimeArray<SCALAR>& t_local,
@@ -776,14 +785,22 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 
 	if (terminationFlag && *terminationFlag) return;
 
-	ControlVectorArray u_ff_alpha (K_);
+	ControlVectorArray u_ff_alpha;
+	StateVectorArray x_ref_lqr;
 
-	for (int k=K_-1; k>=0; k--)
+	if(settings_.stabilizeAroundPreviousSolution)
 	{
-		u_ff_alpha[k] = alpha * u_ff_update[k] + u_ff_prev_[k];
+		//! if stabilizing about previous solution, chose lv as feedforward increment and x_prev_ as reference for lqr
+		u_ff_alpha = lv_ * alpha + u_ff_prev_;
+		x_ref_lqr = x_prev_;
+	}
+	else{
+		//! if stabilizing about new solution candidate, chose lu as feedforward increment and also increment x_prev_ by lx
+		u_ff_alpha = lu_ * alpha + u_ff_prev_;
+		x_ref_lqr = lx_ * alpha + x_prev_;
 	}
 
-	bool dynamicsGood = rolloutSystem(threadId, u_ff_alpha, x_local, u_recorded, t_local, terminationFlag);
+	bool dynamicsGood = rolloutSystem(threadId, u_ff_alpha, x_ref_lqr, x_local, u_recorded, t_local, terminationFlag);
 
 	if (terminationFlag && *terminationFlag) return;
 
@@ -815,18 +832,12 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 
 	if (!settings_.lineSearchSettings.active)	//! do full step updates
 	{
-		// lowest cost is cost of last rollout
+		//! lowest cost is cost of last rollout
 		lowestCostPrevious = intermediateCostBest_ + finalCostBest_;
 
-		for(int i = 0; i< K_; i++)
-		{
-			u_ff_[i] += lu_[i];
-		}
-
-		for(int i = 0; i<K_+1; i++)
-		{
-			x_[i] += lx_[i];
-		}
+		//! update control and states
+		u_ff_ += lu_;
+		x_ += lx_;
 
 		rolloutShots(0, K_-1);
 
@@ -907,33 +918,27 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 
 
 	//! update feedforward
-	for (int k=K_-1; k>=0; k--)
-	{
-		u_alpha[k] = alpha * u_ff_update[k] + u_ff_prev_[k];
-	}
+	u_alpha = u_ff_update * alpha + u_ff_prev_;
 
 	//! update state decision variables
-	for (int k=K_; k>=0; k--)
-	{
-		x_alpha[k] = alpha * x_update[k] + x_prev_[k];
-	}
+	x_alpha = x_update * alpha + x_prev_;
 
 	if (terminationFlag && *terminationFlag) return;
 
-	// compute costs
+	//! compute costs
 	computeCostsOfTrajectory(threadId, x_alpha, u_alpha, intermediateCost, finalCost);
 
 	if (terminationFlag && *terminationFlag) return;
 
-	// rollout shots
+	//! rollout shots
 	rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_shot_alpha, defects_recorded);
 
 	if (terminationFlag && *terminationFlag) return;
 
-	// compute defects norm
+	//! compute defects norm
 	defectNorm = computeDefectsNorm<1>(defects_recorded);
 
-	// form a merit from that
+	//! form a merit from that
 
 	if (terminationFlag && *terminationFlag) return;
 }

@@ -659,16 +659,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		case NLOptConSettings::NLOCP_ALGORITHM::ILQR :
 		{
 			defectNorm = 0.0;
-
-			if(this->settings_.closedLoopShooting)
-			{
-				//! search with lv_ update if we are doing closed-loop shooting
-				this->executeLineSearchSingleShooting(threadId, alpha, this->lv_, x_search, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
-			}
-			else{
-				//! search with whole lu_ update if we are doing closed-loop shooting
-				this->executeLineSearchSingleShooting(threadId, alpha, this->lu_, x_search, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
-			}
+			this->executeLineSearchSingleShooting(threadId, alpha, x_search, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
 			break;
 		}
 		default :

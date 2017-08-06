@@ -7,6 +7,7 @@ gnms
 	integrator Euler
 	discretization Matrix_exponential
 	closedLoopShooting 0 					; (1 = closed loop shooting, 0 = open-loop shooting)
+	stabilizeAroundPreviousSolution	1		; (true / false)
     dt 0.001
     dt_sim 0.001
     epsilon 1e-6
@@ -25,7 +26,7 @@ gnms
     
     line_search
 	{
-		active true ;
+		active false ;
 		adaptive false ;
 		maxIterations 10 ;
 		alpha_0 1.0 ;
@@ -39,6 +40,7 @@ ilqr
 	integrator Euler
 	discretization Matrix_exponential
 	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
+	stabilizeAroundPreviousSolution	1		; (true / false)
     dt 0.001
     dt_sim 0.001
     epsilon 1e-6
@@ -56,7 +58,7 @@ ilqr
     
     line_search
 	{
-		active true;
+		active false;
 		adaptive false ;
 		maxIterations 10 ;
 		alpha_0 1.0 ;

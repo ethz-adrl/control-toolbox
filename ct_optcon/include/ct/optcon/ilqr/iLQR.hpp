@@ -167,6 +167,7 @@ public:
 		this->backend_->getFeedforwardUpdates();// todo only when closed loop shooting
 		this->backend_->getFeedback(); 			// todo only when closed loop shooting
 		this->backend_->getControlUpdates(); 	// todo only when open loop shooting
+		this->backend_->getStateUpdates();
 
 		// line-search
 #ifdef DEBUG_PRINT

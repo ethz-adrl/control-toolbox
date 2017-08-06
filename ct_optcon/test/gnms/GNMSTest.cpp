@@ -163,10 +163,11 @@ void singleCore()
 		gnms_settings.lineSearchSettings.active = false;
 		gnms_settings.loggingPrefix = "GNMS";
 
-		NLOptConSettings ilqg_settings = gnms_settings;
-		ilqg_settings.closedLoopShooting = true;
-		ilqg_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
-		ilqg_settings.loggingPrefix = "ILQR";
+		NLOptConSettings ilqr_settings = gnms_settings;
+		ilqr_settings.closedLoopShooting = true;
+		ilqr_settings.stabilizeAroundPreviousSolution = true;
+		ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
+		ilqr_settings.loggingPrefix = "ILQR";
 
 
 		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
@@ -198,14 +199,14 @@ void singleCore()
 
 		std::cout << "initializing gnms solver" << std::endl;
 		NLOptConSolver gnms(optConProblem, gnms_settings);
-		NLOptConSolver ilqg(optConProblem, ilqg_settings);
+		NLOptConSolver ilqr(optConProblem, ilqr_settings);
 
 
 		gnms.configure(gnms_settings);
 		gnms.setInitialGuess(initController);
 
-		ilqg.configure(ilqg_settings);
-		ilqg.setInitialGuess(initController);
+		ilqr.configure(ilqr_settings);
+		ilqr.setInitialGuess(initController);
 
 		std::cout << "running gnms solver" << std::endl;
 
@@ -226,22 +227,22 @@ void singleCore()
 			std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
 		}
 
-		std::cout << "running ilqg solver" << std::endl;
+		std::cout << "running ilqr solver" << std::endl;
 
 		numIterations = 0;
 		foundBetter = true;
 		while (numIterations<3)
 		{
-			foundBetter = ilqg.runIteration();
+			foundBetter = ilqr.runIteration();
 
 			// test trajectories
-			StateTrajectory<state_dim> xRollout = ilqg.getStateTrajectory();
-			ControlTrajectory<control_dim> uRollout = ilqg.getControlTrajectory();
+			StateTrajectory<state_dim> xRollout = ilqr.getStateTrajectory();
+			ControlTrajectory<control_dim> uRollout = ilqr.getControlTrajectory();
 
 			numIterations++;
 
-			std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
-			std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
+			std::cout<<"x final iLQR: " << xRollout.back().transpose() << std::endl;
+			std::cout<<"u final iLQR: " << uRollout.back().transpose() << std::endl;
 		}
 }
 
@@ -273,10 +274,10 @@ void multiCore()
 		gnms_settings.loggingPrefix = "GNMS";
 		gnms_settings.lineSearchSettings.active = false;
 
-		NLOptConSettings ilqg_settings = gnms_settings;
-		ilqg_settings.closedLoopShooting = true;
-		ilqg_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
-		ilqg_settings.loggingPrefix = "ILQR";
+		NLOptConSettings ilqr_settings = gnms_settings;
+		ilqr_settings.closedLoopShooting = true;
+		ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
+		ilqr_settings.loggingPrefix = "ILQR";
 
 
 		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
@@ -306,14 +307,14 @@ void multiCore()
 
 		std::cout << "initializing gnms solver" << std::endl;
 		NLOptConSolver gnms(optConProblem, gnms_settings);
-		NLOptConSolver ilqg(optConProblem, ilqg_settings);
+		NLOptConSolver ilqr(optConProblem, ilqr_settings);
 
 
 		gnms.configure(gnms_settings);
 		gnms.setInitialGuess(initController);
 
-		ilqg.configure(ilqg_settings);
-		ilqg.setInitialGuess(initController);
+		ilqr.configure(ilqr_settings);
+		ilqr.setInitialGuess(initController);
 
 		std::cout << "running gnms solver" << std::endl;
 
@@ -334,145 +335,25 @@ void multiCore()
 			std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
 		}
 
-		std::cout << "running ilqg solver" << std::endl;
+		std::cout << "running ilqr solver" << std::endl;
 
 		numIterations = 0;
 		foundBetter = true;
 		while (numIterations<3)
 		{
-			foundBetter = ilqg.runIteration();
+			foundBetter = ilqr.runIteration();
 
 			// test trajectories
-			StateTrajectory<state_dim> xRollout = ilqg.getStateTrajectory();
-			ControlTrajectory<control_dim> uRollout = ilqg.getControlTrajectory();
+			StateTrajectory<state_dim> xRollout = ilqr.getStateTrajectory();
+			ControlTrajectory<control_dim> uRollout = ilqr.getControlTrajectory();
 
 			numIterations++;
 
-			std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
-			std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
+			std::cout<<"x final iLQR: " << xRollout.back().transpose() << std::endl;
+			std::cout<<"u final iLQR: " << uRollout.back().transpose() << std::endl;
 		}
 }
 
-/*
-
-
-TEST(GNMSTest, PolicyComparison)
-{
-	try {
-
-		std::cout << "setting up problem " << std::endl;
-
-		Eigen::Vector2d x_final;
-		x_final << 20, 0;
-
-		GNMSSettings ilqg_settings;
-		ilqg_settings.epsilon = 0.0;
-		ilqg_settings.nThreads = 4;
-		ilqg_settings.max_iterations = 50;
-		ilqg_settings.recordSmallestEigenvalue = true;
-		ilqg_settings.min_cost_improvement = 1e-6;
-
-		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
-		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearizedSystem);
-		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = createCostFunction(x_final);
-
-		// times
-		ct::core::Time tf = 3.0;
-
-		// init state
-		StateVector<state_dim> x0;  x0.setRandom();
-
-		// construct single-core single subsystem OptCon Problem
-		OptConProblem<state_dim, control_dim> optConProblem (tf, x0, nonlinearSystem, costFunction, analyticLinearSystem);
-
-		size_t nSteps = std::round(tf / ilqg_settings.dt);
-
-		std::cout << "initializing ilqg solver" << std::endl;
-		GNMS<state_dim, control_dim> ilqg(optConProblem, ilqg_settings);
-		GNMSMP<state_dim, control_dim> ilqg_mp(optConProblem, ilqg_settings);
-
-
-		// provide initial controller
-		FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
-		ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
-		GNMS<state_dim, control_dim>::Policy_t initController (u0_ff, u0_fb, ilqg_settings.dt);
-
-		ilqg.configure(ilqg_settings);
-		ilqg.setInitialGuess(initController);
-
-		ilqg.solve();
-
-		size_t nTests = 2;
-		for (size_t i=0; i<nTests; i++)
-		{
-			if (i==0)
-				ilqg_settings.lineSearchSettings.active = false;
-			else
-				ilqg_settings.lineSearchSettings.active = true;
-
-			ilqg.configure(ilqg_settings);
-			ilqg_mp.configure(ilqg_settings);
-
-			ilqg.setInitialGuess(initController);
-			ilqg_mp.setInitialGuess(initController);
-
-			bool foundBetter = true;
-			bool foundBetter_mp = true;
-			size_t numIterations = 0;
-
-			while (foundBetter)
-			{
-				// solve
-				foundBetter = ilqg.runIteration();
-				foundBetter_mp = ilqg_mp.runIteration();
-
-				numIterations++;
-
-				// we should converge in way less than 20 iterations
-				ASSERT_LT(numIterations, 20);
-			}
-
-
-			// test trajectories
-			StateTrajectory<state_dim> xRollout = ilqg.getStateTrajectory();
-			StateTrajectory<state_dim> xRollout_mp = ilqg_mp.getStateTrajectory();
-
-			// the optimal controller
-			std::shared_ptr<GNMS<state_dim, control_dim>::Policy_t> optController (new GNMS<state_dim, control_dim>::Policy_t(ilqg.getSolution()));
-			std::shared_ptr<GNMS<state_dim, control_dim>::Policy_t> optController_mp (new GNMS<state_dim, control_dim>::Policy_t(ilqg_mp.getSolution()));
-
-			// two test systems
-			std::shared_ptr<ControlledSystem<state_dim, control_dim> > testSystem1 (new Dynamics);
-			std::shared_ptr<ControlledSystem<state_dim, control_dim> > testSystem2 (new Dynamics);
-
-			// set the controller
-			testSystem1->setController(optController);
-			testSystem2->setController(optController_mp);
-
-			// test integrators, the same as in GNMS
-			ct::core::IntegratorRK4<state_dim> testIntegrator1 (testSystem1);
-			ct::core::IntegratorRK4<state_dim> testIntegrator2 (testSystem2);
-
-			// states
-			ct::core::StateVector<state_dim> x_test_1 = x0;
-			ct::core::StateVector<state_dim> x_test_2 = x0;
-
-			// do forward integration -- should be the same as in
-			testIntegrator1.integrate_n_steps(x_test_1, 0.0, nSteps, ilqg_settings.dt_sim);
-			testIntegrator2.integrate_n_steps(x_test_2, 0.0, nSteps, ilqg_settings.dt_sim);
-
-			ASSERT_LT((x_test_1 - xRollout.back()).array().abs().maxCoeff(), 0.3);
-			ASSERT_LT((x_test_2 - xRollout_mp.back()).array().abs().maxCoeff(), 0.3);
-
-		}
-
-	} catch (std::exception& e)
-	{
-		std::cout << "caught exception: "<<e.what() <<std::endl;
-		FAIL();
-	}
-}
-*/
 
 
 } // namespace example
