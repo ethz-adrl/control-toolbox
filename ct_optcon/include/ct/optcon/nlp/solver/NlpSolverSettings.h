@@ -245,12 +245,16 @@ public:
 	 * @brief      Default constructor, set default settings
 	 */
 	NlpSolverSettings() :
-	solverType_(IPOPT)
+	solverType_(IPOPT),
+    generateCostGradient_(false),
+    generateConstraintJacobian_(false),
+    maxAssignements_(20000)
 	{}
 
     SolverType_t solverType_;
     bool generateCostGradient_;
     bool generateConstraintJacobian_;
+    size_t maxAssignements_;
     SnoptSettings snoptSettings_;
     IpoptSettings ipoptSettings_;
 
@@ -264,6 +268,17 @@ public:
         std::cout<<"============================================================="<<std::endl;
 
     	std::cout << "Using nlp solver: " << solverToString[solverType_] << std::endl;
+        if(generateCostGradient_)
+            std::cout << "Generating Cost Gradient" << std::endl;
+        else
+            std::cout << "Using analytical cost Gradient" << std::endl;
+        if(generateConstraintJacobian_)
+            std::cout << "Generating Constraints Jacobian" << std::endl;
+        else
+            std::cout << "Using anlyitical Constraints Jacobian" << std::endl;
+
+        std::cout << "Max Assignements per generated Function:" << maxAssignements_ << std::endl;
+        // std::cout << ""
     	if(solverType_ == IPOPT)
     		ipoptSettings_.print();
     	else if(solverType_ == SNOPT)
@@ -300,6 +315,7 @@ public:
         solverType_ = (SolverType) pt.get<unsigned int>(ns + ".SolverType");
         generateCostGradient_ = pt.get<bool>(ns + ".GenerateCostGradient");
         generateConstraintJacobian_ = pt.get<bool>(ns + ".GenerateConstraintJacobian");
+        maxAssignements_ = pt.get<unsigned int>(ns + ".MaxAssignements");
 
 		if(solverType_ == IPOPT)
 			ipoptSettings_.load(filename, verbose, ns + ".ipopt");

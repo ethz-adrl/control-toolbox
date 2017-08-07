@@ -108,8 +108,6 @@ public:
 		costIntegrationCount_(0),
 		sensIntegrationCount_(0),
 		costSensIntegrationCount_(0),
-		x_history_(state_vector_array_t(0)),
-		t_history_(time_array_t(0)),
 		cost_(SCALAR(0.0)),
 		costGradientSi_(state_vector_t::Zero()),
 		costGradientQi_(control_vector_t::Zero()),
@@ -395,8 +393,8 @@ public:
 
 private:
 	std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> controlledSystem_;
-	std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct_;
 	std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem_;
+	std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct_;
 	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w_;
 	std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner_;
 	std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid_;

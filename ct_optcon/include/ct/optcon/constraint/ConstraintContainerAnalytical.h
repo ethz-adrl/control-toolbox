@@ -79,14 +79,14 @@ public:
 	ConstraintContainerAnalytical(const ConstraintContainerAnalytical& arg) 
 	:
 	LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
-	evalIntermediate_(arg.evalIntermediate_),
-	evalTerminal_(arg.evalTerminal_),
 	constraintsIntermediate_(arg.constraintsIntermediate_),
+	constraintsTerminal_(arg.constraintsTerminal_),
+	evalIntermediate_(arg.evalIntermediate_),
 	evalJacSparseStateIntermediate_(arg.evalJacSparseStateIntermediate_),
 	evalJacSparseInputIntermediate_(arg.evalJacSparseInputIntermediate_),
 	evalJacDenseStateIntermediate_(arg.evalJacDenseStateIntermediate_),
 	evalJacDenseInputIntermediate_(arg.evalJacDenseInputIntermediate_),
-	constraintsTerminal_(arg.constraintsTerminal_),
+	evalTerminal_(arg.evalTerminal_),
 	evalJacSparseStateTerminal_(arg.evalJacSparseStateTerminal_),
 	evalJacSparseInputTerminal_(arg.evalJacSparseInputTerminal_),
 	evalJacDenseStateTerminal_(arg.evalJacDenseStateTerminal_),
@@ -600,7 +600,6 @@ private:
 	VectorXs evalJacSparseInputTerminal_;
 	MatrixXs evalJacDenseStateTerminal_;
 	MatrixXs evalJacDenseInputTerminal_;
-
 };
 
 

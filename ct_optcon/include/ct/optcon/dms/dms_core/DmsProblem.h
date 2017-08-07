@@ -292,7 +292,7 @@ public:
 
 			this->costCodegen_ = std::shared_ptr<ct::core::DerivativesCppad<-1, 1>>(
 				new ct::core::DerivativesCppad<-1, 1>(fCost, this->getVarCount()));
-			this->costCodegen_->compileJIT("dmsCostFunction");
+			this->costCodegen_->compileJIT("dmsCostFunction", settings_.solverSettings_.maxAssignements_);
 			this->useGeneratedCostGradient_ = true;
 		}
 
@@ -314,7 +314,7 @@ public:
 
 			this->constraintsCodegen_ = std::shared_ptr<ct::core::DerivativesCppad<-1, -1>>(
 				new ct::core::DerivativesCppad<-1, -1>(fConstraints, this->getVarCount(), this->getConstraintsCount()));
-			this->constraintsCodegen_->compileJIT("dmsConstraints");
+			this->constraintsCodegen_->compileJIT("dmsConstraints", settings_.solverSettings_.maxAssignements_);
 			this->useGeneratedConstraintJacobian_ = true;			
 		}
 	}
@@ -384,18 +384,18 @@ public:
 	 */
 	const state_vector_array_t& getStateTrajectory()
 	{
-		stateSolutionDense_.clear();
+		// stateSolutionDense_.clear();
 		// for(auto shotContainer : shotContainers_)
 		// 	shotContainer->integrateShot();
 
-		stateSolutionDense_.push_back(shotContainers_.front()->getXHistory().front());
-		for(auto shotContainer : shotContainers_)
-		{
-			state_vector_array_t x_traj = shotContainer->getXHistory();
-			for(size_t j = 1; j < x_traj.size(); ++j)
-				stateSolutionDense_.push_back(x_traj[j]);
-		}
-		return stateSolutionDense_;
+		// stateSolutionDense_.push_back(shotContainers_.front()->getXHistory().front());
+		// for(auto shotContainer : shotContainers_)
+		// {
+		// 	state_vector_array_t x_traj = shotContainer->getXHistory();
+		// 	for(size_t j = 1; j < x_traj.size(); ++j)
+		// 		stateSolutionDense_.push_back(x_traj[j]);
+		// }
+		return optVariablesDms_->getOptimizedStates();;
 	}
 
 	/**
@@ -405,18 +405,19 @@ public:
 	 */
 	const control_vector_array_t& getInputTrajectory()
 	{
-		inputSolutionDense_.clear();
+		// inputSolutionDense_.clear();
 		// for(auto shotContainer : shotContainers_)
 		// 	shotContainer->integrateShot();
 
-		inputSolutionDense_.push_back(shotContainers_.front()->getUHistory().front());
-		for(auto shotContainer : shotContainers_)
-		{
-			control_vector_array_t u_traj = shotContainer->getUHistory();
-			for(size_t j = 1; j < u_traj.size(); ++j)
-				inputSolutionDense_.push_back(u_traj[j]);
-		}
-		return inputSolutionDense_;
+		// inputSolutionDense_.push_back(shotContainers_.front()->getUHistory().front());
+		// for(auto shotContainer : shotContainers_)
+		// {
+		// 	control_vector_array_t u_traj = shotContainer->getUHistory();
+		// 	for(size_t j = 1; j < u_traj.size(); ++j)
+		// 		inputSolutionDense_.push_back(u_traj[j]);
+		// }
+		// return inputSolutionDense_;
+		return optVariablesDms_->getOptimizedInputs();
 	}
 
 	/**
@@ -426,18 +427,19 @@ public:
 	 */
 	const time_array_t& getTimeArray()
 	{
-		timeSolutionDense_.clear();
+		// timeSolutionDense_.clear();
 		// for(auto shotContainer : shotContainers_)
 		// 	shotContainer->integrateShot();
 
-		timeSolutionDense_.push_back(shotContainers_.front()->getTHistory().front());
-		for(auto shotContainer : shotContainers_)
-		{
-			time_array_t t_traj = shotContainer->getTHistory();
-			for(size_t j = 1; j < t_traj.size(); ++j)
-				timeSolutionDense_.push_back(t_traj[j]);
-		}
-		return timeSolutionDense_;
+		// timeSolutionDense_.push_back(shotContainers_.front()->getTHistory().front());
+		// for(auto shotContainer : shotContainers_)
+		// {
+		// 	time_array_t t_traj = shotContainer->getTHistory();
+		// 	for(size_t j = 1; j < t_traj.size(); ++j)
+		// 		timeSolutionDense_.push_back(t_traj[j]);
+		// }
+		// return timeSolutionDense_;
+		return timeGrid_->toImplementation();
 	}
 
 	/**
