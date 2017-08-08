@@ -58,11 +58,13 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 	for (size_t k=firstIndex; k<=lastIndex; k = k+ this->K_shot_)
 	{
 		// rollout the shot
-		this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_); // todo fixme correct x_lqr_ref here!
+		if(this->settings_.stabilizeAroundPreviousSolution)
+			this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_prev_, this->xShot_);
+		else
+			this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_);
+
 		this->computeSingleDefect(k, this->x_, this->xShot_, this->lqocProblem_->b_);
 	}
-
-	this->d_norm_ = this->template computeDefectsNorm<1>(this->lqocProblem_->b_); // todo this needs to go somewhere else!!!! (unnecessarily called twice in real-time iter scheme)
 }
 
 

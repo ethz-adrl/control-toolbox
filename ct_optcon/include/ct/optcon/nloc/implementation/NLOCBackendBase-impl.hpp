@@ -802,7 +802,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMultipleShooting()
 {
-
 	// lowest cost
 	scalar_t lowestCostPrevious;
 
@@ -899,17 +898,21 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 
 	if (terminationFlag && *terminationFlag) return;
 
-
 	//! update feedforward
 	u_alpha = u_ff_update * alpha + u_ff_prev_;
 
 	//! update state decision variables
 	x_alpha = x_update * alpha + x_prev_;
 
+
 	if (terminationFlag && *terminationFlag) return;
 
 	//! rollout shots
-	rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_alpha, x_shot_alpha, defects_recorded);
+	if(this->settings_.stabilizeAroundPreviousSolution)
+		rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_prev_, x_shot_alpha, defects_recorded);
+	else
+		rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_alpha, x_shot_alpha, defects_recorded);
+
 
 	if (terminationFlag && *terminationFlag) return;
 

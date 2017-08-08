@@ -402,8 +402,11 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 		printString("[MP]: do single threaded shot rollout for single index " + std::to_string(firstIndex) + ". Not waking up workers.");
 #endif //DEBUG_PRINT_MP
 
-		// todo: hand over x or x_prev for lqr reference ????
-		this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_, this->xShot_);
+		if(this->settings_.stabilizeAroundPreviousSolution)
+			this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_prev_, this->xShot_);
+		else
+			this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_, this->xShot_);
+
 		this->computeSingleDefect(firstIndex, this->x_, this->xShot_, this->lqocProblem_->b_);
 		return;
 	}
@@ -470,8 +473,11 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWo
 				printString("[Thread " + std::to_string(threadId) + "]: rolling out shot with index " + std::to_string(KMax_ - k));
 #endif
 
-			// todo hand over x_ or x_prev_ as lqr reference?
-			this->rolloutSingleShot(threadId, kShot, this->u_ff_, this->x_, this->x_, this->xShot_);
+			if(this->settings_.stabilizeAroundPreviousSolution)
+				this->rolloutSingleShot(threadId, kShot, this->u_ff_, this->x_, this->x_, this->xShot_);
+			else
+				this->rolloutSingleShot(threadId, kShot, this->u_ff_, this->x_, this->x_prev_, this->xShot_);
+
 			this->computeSingleDefect(kShot, this->x_, this->xShot_, this->lqocProblem_->b_);
 
 		}
@@ -571,7 +577,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		{
 		case NLOptConSettings::NLOCP_ALGORITHM::GNMS :
 		{
-			this->executeLineSearchMultipleShooting(threadId, alpha, this->lu_, this->lx_, x_search, x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, &alphaBestFound_);
+			this->executeLineSearchMultipleShooting(threadId, alpha, this->lu_, this->lx_, x_search,
+					x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, &alphaBestFound_);
 			break;
 		}
 		case NLOptConSettings::NLOCP_ALGORITHM::ILQR :

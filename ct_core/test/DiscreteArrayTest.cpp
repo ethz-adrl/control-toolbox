@@ -199,8 +199,6 @@ TEST(DiscreteArrayTest, DivisionTest)
 }
 
 
-
-
 int main(int argc, char** argv)
 {
 	testing::InitGoogleTest(&argc, argv);

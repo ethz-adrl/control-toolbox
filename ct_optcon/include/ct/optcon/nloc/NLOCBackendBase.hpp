@@ -59,6 +59,9 @@ namespace optcon{
  *  X  <- Matrix (upper-case in paper)
  *  xv <- vector (lower-case bold in paper)
  *  x  <- scalar (lower-case in paper)
+ *
+ *  TODO (Markus G) once decided if stabilizing shots or whole rollouts about previous or current solution candidate,
+ *  remove one of the implementations for better clarity and more overview
  */
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
@@ -439,7 +442,7 @@ public:
 	void resetDefects() {lqocProblem_->b_.setConstant(state_vector_t::Zero());}
 
 	//! update the nominal defects
-	void updateDefects() {d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);}
+	void computeDefectsNorm() {d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);}
 
 	//! integrates the specified shots and computes the corresponding defects
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;

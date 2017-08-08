@@ -170,7 +170,7 @@ public:
 		{
 			this->backend_->rolloutShots(0, K_shot-1);
 			this->backend_->updateCosts();
-			this->backend_->updateDefects();
+			this->backend_->computeDefectsNorm();
 		}
 
 #ifdef MATLAB_FULL_LOG
