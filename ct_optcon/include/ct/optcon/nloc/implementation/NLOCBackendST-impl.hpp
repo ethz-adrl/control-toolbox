@@ -103,7 +103,11 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		{
 		case NLOptConSettings::NLOCP_ALGORITHM::GNMS :
 		{
-			this->executeLineSearchMultipleShooting(this->settings_.nThreads, alpha, this->lu_, this->lx_, x_search, x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm);
+			if(this->settings_.stabilizeAroundPreviousSolution)
+				this->executeLineSearchMultipleShooting(this->settings_.nThreads, alpha, this->lv_, this->lx_, x_search, x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm);
+			else
+				this->executeLineSearchMultipleShooting(this->settings_.nThreads, alpha, this->lu_, this->lx_, x_search, x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm);
+
 			break;
 		}
 		case NLOptConSettings::NLOCP_ALGORITHM::ILQR :

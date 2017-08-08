@@ -182,7 +182,8 @@ public:
     enum NLOCP_ALGORITHM
     {
     	GNMS = 0,
-    	ILQR = 1	// todo: include more
+    	ILQR,
+		NUM_TYPES
     };
 
     //! the linear optimal control problem solver in the background
@@ -201,7 +202,7 @@ public:
         lqocp_solver(GNRICCATI_SOLVER),
 		loggingPrefix("alg"),
 		closedLoopShooting(false), // by default, we do open-loop shooting
-		stabilizeAroundPreviousSolution(true),
+		stabilizeAroundPreviousSolution(false),
 		epsilon(1e-5),
 		dt(0.001),
 		dt_sim(0.001),

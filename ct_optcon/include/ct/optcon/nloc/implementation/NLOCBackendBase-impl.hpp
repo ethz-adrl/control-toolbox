@@ -328,12 +328,13 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 			u_local[i] += L_[i] * (xShot[i] - x_ref_lqr[i]);
 
 
+		controller_[threadId]->setControl(u_local[i]);
+
 		if(i>k)
 		{
 			x_local[i] = xShot[i]; //"overwrite" x_local
 		}
 
-		controller_[threadId]->setControl(u_local[i]);
 
 		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
 		{
@@ -892,9 +893,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 		std::atomic_bool* terminationFlag
 ) const
 {
-	intermediateCost =  std::numeric_limits<scalar_t>::infinity();
-	finalCost = std::numeric_limits<scalar_t>::infinity();
-	defectNorm = std::numeric_limits<scalar_t>::infinity();
+	intermediateCost =  std::numeric_limits<scalar_t>::max();
+	finalCost = std::numeric_limits<scalar_t>::max();
+	defectNorm = std::numeric_limits<scalar_t>::max();
 
 	if (terminationFlag && *terminationFlag) return;
 
