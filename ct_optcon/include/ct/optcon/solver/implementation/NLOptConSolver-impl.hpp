@@ -71,8 +71,6 @@ void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(con
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 bool NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solve()
 {
-	auto startSolve = std::chrono::steady_clock::now();
-
 	bool foundBetter = true;
 	int numIterations = 0;
 
@@ -82,9 +80,6 @@ bool NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solve()
 
 		numIterations++;
 	}
-
-	auto endSolve = std::chrono::steady_clock::now();
-
 
 	return (numIterations > 1 || foundBetter || (numIterations == 1 && !foundBetter));
 }

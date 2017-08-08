@@ -32,8 +32,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #define DEBUG_PRINT
-#define DEBUG_PRINT_LINESEARCH
-#define MATLAB_FULL_LOG
+//#define DEBUG_PRINT_LINESEARCH
+//#define MATLAB_FULL_LOG
 
 #include <ct/optcon/optcon.h>
 
