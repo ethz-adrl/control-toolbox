@@ -112,8 +112,6 @@ public:
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
 		{
-//			std::cout << "Running additional init routine for first iteration !!" << std::endl;
-
 			if(!this->backend_->nominalRollout())
 				throw std::runtime_error("Rollout failed. System became unstable");
 
@@ -132,7 +130,7 @@ public:
 		auto end = std::chrono::steady_clock::now();
 		auto diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Linearizing dynamics took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[iLQR]: Linearizing dynamics took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 		start = std::chrono::steady_clock::now();
@@ -141,14 +139,14 @@ public:
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Cost computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[iLQR]: Cost computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 
 		end = std::chrono::steady_clock::now();
 		diff = end - startEntire;
 #ifdef DEBUG_PRINT
-		std::cout << "Forward pass took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[iLQR]: Forward pass took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 
@@ -160,7 +158,7 @@ public:
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[iLQR]: Solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 		// update solutions
@@ -179,12 +177,12 @@ public:
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Line search took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[iLQR]: Line search took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 		diff = end - startEntire;
 #ifdef DEBUG_PRINT
-		std::cout << "Total iteration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[iLQR]: finishIteration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 #ifdef DEBUG_PRINT

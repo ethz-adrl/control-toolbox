@@ -115,7 +115,7 @@ public:
 		auto end = std::chrono::steady_clock::now();
 		auto diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Linearizing from index 1 to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[GNMS]: Linearizing from index " << K_shot << " to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 
@@ -124,7 +124,7 @@ public:
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Cost computation for index 1 to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[GNMS]: Cost computation for index " << K_shot << " to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 #ifdef DEBUG_PRINT
@@ -135,12 +135,12 @@ public:
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Prepare phase of LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[GNMS]: Prepare phase of LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 		auto endPrepare = std::chrono::steady_clock::now();
 #ifdef DEBUG_PRINT
-		std::cout << "GNMS prepareIteration() took "<<std::chrono::duration <double, std::milli> (endPrepare-startPrepare).count() << " ms" << std::endl;
+		std::cout << "[GNMS]: prepareIteration() took "<<std::chrono::duration <double, std::milli> (endPrepare-startPrepare).count() << " ms" << std::endl;
 #endif
 
 
@@ -181,7 +181,7 @@ public:
 		auto end = std::chrono::steady_clock::now();
 		auto diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Linearizing for index 0 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[GNMS]: Linearizing for first shot took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 
@@ -190,7 +190,7 @@ public:
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Cost computation for index 0 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[GNMS]: Cost computation for first shot took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 
@@ -202,7 +202,7 @@ public:
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Finish solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[GNMS]: Finish solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 
@@ -223,7 +223,7 @@ public:
 
 #ifdef DEBUG_PRINT
 		auto endFinish = std::chrono::steady_clock::now();
-		std::cout << "GNMS finishIteration() took "<<std::chrono::duration <double, std::milli> (endFinish-startFinish).count() << " ms" << std::endl;
+		std::cout << "[GNMS]: finishIteration() took "<<std::chrono::duration <double, std::milli> (endFinish-startFinish).count() << " ms" << std::endl;
 #endif
 
 

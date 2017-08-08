@@ -120,7 +120,13 @@ public:
 	 */
 	virtual bool runIteration()
 	{
-		return nlocAlgorithm_ -> runIteration();
+		auto startSolve = std::chrono::steady_clock::now();
+		bool success = nlocAlgorithm_ -> runIteration();
+		auto endSolve = std::chrono::steady_clock::now();
+#ifdef DEBUG_PRINT
+		std::cout << "[NLOC]: runIteration() took "<<std::chrono::duration <double, std::milli> (endSolve-startSolve).count() << " ms" << std::endl;
+#endif
+		return success;
 	}
 
 	/*!
