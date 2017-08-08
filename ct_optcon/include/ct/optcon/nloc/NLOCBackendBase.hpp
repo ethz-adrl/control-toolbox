@@ -376,17 +376,13 @@ public:
 	//! compute costs of solution candidate
 	void updateCosts();
 
-	//! check if GNMS is converged
-//	bool isConverged();
-
 	//! nominal rollout using default thread and member variables for the results. // todo maybe rename (initial rollout?)
 	bool nominalRollout() {
-		ControlVectorArray u_recorded;
-		return rolloutSystem(settings_.nThreads, u_ff_, x_prev_, x_, u_recorded, t_);
+		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_prev_, xShot_);
 		x_prev_ = x_;
-		u_ff_ = u_recorded;
-		u_ff_prev_ = u_recorded;
+		u_ff_prev_ = u_ff_;
 		firstRollout_ = false;
+		return success;
 	}
 
 	//! check problem for consistency
@@ -446,13 +442,12 @@ public:
 
 	//! do a single threaded rollout and defect computation of the shots - useful for line-search
 	void rolloutShotsSingleThreaded(size_t threadId,
-			size_t firstIndex, size_t lastIndex,
-			const ControlVectorArray& u_ff_local,
-			const StateVectorArray& x_start,
+			size_t firstIndex,
+			size_t lastIndex,
+			ControlVectorArray& u_ff_local,
+			StateVectorArray& x_local,
 			const StateVectorArray& x_ref_lqr,
-			StateVectorArray& x_recorded,
 			StateVectorArray& xShot,
-			ControlVectorArray& u_recorded,
 			StateVectorArray& d) const;
 
 	//! performLineSearch: execute the line search, possibly with different threading schemes
@@ -462,17 +457,14 @@ public:
 protected:
 
 	//! integrate the individual shots
-	void rolloutSingleShot(
+	bool rolloutSingleShot(
 			const size_t threadId,
 			const size_t k,
-			const int nStages,
-			const ControlVectorArray& u_ff_local,
-			const StateVectorArray& x_start,
+			ControlVectorArray& u_ff_local,
+			StateVectorArray& x_local,
 			const StateVectorArray& x_ref_lqr,
-			StateVectorArray& x_recorded,
 			StateVectorArray& xShot,
-			ControlVectorArray& u_recorded
-			) const;
+			std::atomic_bool* terminationFlag = nullptr ) const;
 
 	//! computes the defect between shot and trajectory
 	void computeSingleDefect(
@@ -480,20 +472,6 @@ protected:
 			const state_vector_t& x_start,
 			const state_vector_t& xShot,
 			state_vector_t& d) const;
-
-    //! Rollout of nonlinear dynamics
-    /*!
-      This rolls out the nonlinear dynamics to obtain the reference trajectory
-    */
-	bool rolloutSystem(
-			size_t threadId,
-			const ControlVectorArray& u_ff_local,
-			const StateVectorArray& x_ref_lqr,
-			ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
-			ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
-			ct::core::tpl::TimeArray<SCALAR>& t_local,
-			std::atomic_bool* terminationFlag = nullptr) const;
-
 
 	//! Computes the linearized Dynamics at a specific point of the trajectory
 	/*!
@@ -562,7 +540,6 @@ protected:
 			const scalar_t alpha,
 			StateVectorArray& x_local,
 			ControlVectorArray& u_local,
-			ct::core::tpl::TimeArray<SCALAR>& t_local,
 			scalar_t& intermediateCost,
 			scalar_t& finalCost,
 			std::atomic_bool* terminationFlag = nullptr

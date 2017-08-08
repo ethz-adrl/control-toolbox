@@ -488,8 +488,10 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 #ifdef DEBUG_PRINT_MP
 		printString("[MP]: do single threaded shot rollout for single index " + std::to_string(firstIndex) + ". Not waking up workers.");
 #endif //DEBUG_PRINT_MP
-		// todo!!
-//		this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_[firstIndex], this->x_[firstIndex], this->x_prev_[firstIndex], this->L_[firstIndex], this->xShot_[firstIndex]);
+
+		// todo: hand over x or x_prev for lqr reference ????
+		// todo how to multi-thread this? how to correct this for longer shots?
+		this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_, this->xShot_);
 		this->computeSingleDefect(firstIndex, this->x_[firstIndex+1], this->xShot_[firstIndex], this->lqocProblem_->b_[firstIndex]);
 		return;
 	}
@@ -555,8 +557,9 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWo
 #endif
 
 		size_t kShot = KMax_ - k;
-		// todo!!!
-//		this->rolloutSingleShot(threadId, kShot, this->u_ff_[kShot], this->x_[kShot], this->x_prev_[kShot], this->L_[kShot], this->xShot_[kShot]);
+		// todo hand over x_ or x_prev_ as lqr reference?
+		// todo how to multi-thread this?
+		this->rolloutSingleShot(threadId, kShot, this->u_ff_, this->x_, this->x_, this->xShot_);
 		this->computeSingleDefect(kShot, this->x_[kShot+1], this->xShot_[kShot], this->lqocProblem_->b_[kShot]);
 
 		kCompleted_++;
@@ -645,7 +648,6 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_shot_search(this->K_+1);
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> defects_recorded(this->K_+1, ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_recorded(this->K_);
-		typename Base::TimeArray t_local; // todo get rid of time here
 
 		//! set init state
 		x_search[0] = this->x_prev_[0];
@@ -661,7 +663,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		case NLOptConSettings::NLOCP_ALGORITHM::ILQR :
 		{
 			defectNorm = 0.0;
-			this->executeLineSearchSingleShooting(threadId, alpha, x_search, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
+			this->executeLineSearchSingleShooting(threadId, alpha, x_search, u_recorded, intermediateCost, finalCost, &alphaBestFound_);
 			break;
 		}
 		default :

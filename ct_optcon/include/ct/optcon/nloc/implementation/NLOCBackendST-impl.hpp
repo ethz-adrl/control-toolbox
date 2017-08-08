@@ -61,8 +61,7 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 	for (size_t k=firstIndex; k<=lastIndex; k = k+ this->K_shot_)
 	{
 		// first rollout the shot
-		this->rolloutSingleShot(this->settings_.nThreads, k, this->K_shot_, this->u_ff_, this->x_, this->x_,
-				this->x_, this->xShot_, this->u_ff_);
+		this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_);
 	}
 
 	for (size_t k=firstIndex; k<=lastIndex; k++){
@@ -99,7 +98,6 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_shot_search(this->K_+1);
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> defects_recorded(this->K_+1, ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_recorded(this->K_);
-		ct::core::tpl::TimeArray<SCALAR> t_search(this->K_+1); // todo get rid of t_search
 
 		//! set init state
 		x_search[0] = this->x_[0];
@@ -116,7 +114,7 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		case NLOptConSettings::NLOCP_ALGORITHM::ILQR :
 		{
 			defectNorm = 0.0;
-			this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, x_search, u_recorded, t_search, intermediateCost, finalCost);
+			this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, x_search, u_recorded, intermediateCost, finalCost);
 			break;
 		}
 		default :

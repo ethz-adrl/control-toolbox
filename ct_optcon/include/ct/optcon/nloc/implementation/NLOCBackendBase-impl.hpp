@@ -81,6 +81,14 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
 
 	K_ = settings_.computeK(tf);
 
+	//! compute shot lengths // todo find clean solution for that
+	if(settings_.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
+		K_shot_ = K_;
+	else
+		K_shot_ = settings_.computeK(settings_.dt_shot);
+
+	t_ = TimeArray(settings_.dt_sim, K_+1, 0.0);
+
 	lx_.resize(K_+1);
 	x_.resize(K_+1);
 	x_prev_.resize(K_+1);
@@ -217,8 +225,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 		throw(std::runtime_error("Number of threads cannot be changed after instance has been created."));
 	}
 
-	//! compute shot lengths
-	K_shot_ = settings.computeK(settings_.dt_shot);
+	//! compute shot lengths // todo find clean solution for that
+	if(settings.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
+		K_shot_ = K_;
+	else
+		K_shot_ = settings.computeK(settings.dt_shot);
 
 
 	//! todo: once running stable: insert a check for this at a proper position. Note: since
@@ -276,55 +287,69 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSystem(
-		size_t threadId,
-		const ControlVectorArray& u_ff_local,
-		const StateVectorArray& x_ref_lqr,
-		StateVectorArray& x_local,
+bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingleShot(
+		const size_t threadId,
+		const size_t k,	//! the starting index of the shot
 		ControlVectorArray& u_local,
-		ct::core::tpl::TimeArray<SCALAR>& t_local,
-		std::atomic_bool* terminationFlag) const
+		StateVectorArray& x_local,
+		const StateVectorArray& x_ref_lqr,
+		StateVectorArray& xShot,		// the value at the end of each integration interval
+		std::atomic_bool* terminationFlag
+		)const
 {
-	const scalar_t& dt = settings_.dt;
-	const scalar_t& dt_sim = settings_.dt_sim;
+	const double& dt = settings_.dt;
+	const double& dt_sim = settings_.dt_sim;
 	const size_t K_local = K_;
 
-
-	// take a copy since x0 gets overwritten in integrator
-	ct::core::StateVector<STATE_DIM, SCALAR> x0 = x_local[0];
+	if(u_local.size() < K_) throw std::runtime_error("rolloutSingleShot: u_local is too short.");
+	if(x_local.size() < K_+1) throw std::runtime_error("rolloutSingleShot: x_local is too short.");
+	if(xShot.size() < K_+1) throw std::runtime_error("rolloutSingleShot: xShot is too short.");
 
 	// compute number of substeps
-	size_t steps = round(dt/ dt_sim);
+	size_t subSteps = round(dt/ dt_sim);
 
-	x_local.clear();
-	t_local.clear();
-	u_local.clear();
+	xShot[k] = x_local[k]; // initialize
 
-	x_local.push_back(x0);
-	t_local.push_back(0.0);
+	if(k==0)
+		std::cout << "K_shot " << K_shot_ << std::endl; // todo remove printout
 
-	for (size_t i = 0; i<K_local; i++)
+	//! determine index where to stop at the latest
+	int K_stop = k+K_shot_;
+	if(K_stop > K_local)
+		K_stop = K_local;
+
+	for (int i = k; i<K_stop; i++)
 	{
 		if (terminationFlag && *terminationFlag) return false;
 
-		if(settings_.closedLoopShooting  || firstRollout_)
-			u_local.push_back(u_ff_local[i] + L_[i] * (x0 - x_ref_lqr[i]));
-		else
-			u_local.push_back(u_ff_local[i]);
-
-		controller_[threadId]->setControl(u_local.back());
-
-		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM  || settings_.integrator == ct::core::IntegrationType::RK_SYM)
+		if(i>k)
 		{
-			integrateSymplectic<V_DIM, P_DIM>(threadId, x0, i*dt, steps, dt_sim);
-		}
-		else
-		{
-			integrators_[threadId]->integrate_n_steps(x0, i*dt, steps, dt_sim);
+			xShot[i] = xShot[i-1];  // initialize integration variable
 		}
 
-		x_local.push_back(x0);
-		t_local.push_back((i+1)*dt);
+		if(settings_.closedLoopShooting) // overwrite control
+			u_local[i] += L_[i] * (xShot[i] - x_ref_lqr[i]);
+
+
+		if(i>k)
+		{
+			x_local[i] = xShot[i]; //"overwrite" x_local
+		}
+
+		controller_[threadId]->setControl(u_local[i]);
+
+		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
+		{
+			integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], k*dt, 1, dt_sim);
+		} else
+		{
+			integrators_[threadId]->integrate_n_steps(xShot[i], k*dt, subSteps, dt_sim);
+		}
+
+
+		if(i == K_local-1)
+			x_local[K_local]=xShot[K_local-1]; // fill in terminal state if required
+
 
 		// check if nan
 		for (size_t k=0; k<STATE_DIM; k++)
@@ -333,7 +358,6 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 			{
 				x_local.resize(K_local+1, ct::core::StateVector<STATE_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
 				u_local.resize(K_local, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
-				t_local.resize(K_local+1, std::numeric_limits<SCALAR>::quiet_NaN());
 				return false;
 			}
 		}
@@ -343,25 +367,16 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSyste
 			{
 				x_local.resize(K_local+1, ct::core::StateVector<STATE_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
 				u_local.resize(K_local, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
-				t_local.resize(K_local+1, std::numeric_limits<SCALAR>::quiet_NaN());
 				std::cout << "control unstable" << std::endl;
 				return false;
 			}
 		}
-	}
 
-	if(x_local.size() != K_local+1) {
-		std::cout << "Error: Rollout did not provide the correct amount of states. Should have been "<<K_+1<<" but was "<<x_local.size()<<std::endl;
-		throw std::runtime_error("Error: Dynamics did not provide the correct amount of states.");
-	}
-
-	if(u_local.size() != K_local) {
-		std::cout << "Error: Rollout did not provide the correct amount of controls. Should have been "<<K_<<" but was "<<u_local.size()<<std::endl;
-		throw std::runtime_error("Error: Dynamics did not provide the correct amount of controls.");
 	}
 
 	return true;
 }
+
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 SYMPLECTIC_ENABLED
@@ -386,8 +401,8 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::integrateSymplect
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShotsSingleThreaded(size_t threadId, size_t firstIndex, size_t lastIndex,
-		const ControlVectorArray& u_ff_local, const StateVectorArray& x_start, const StateVectorArray& x_ref_lqr,
-		StateVectorArray& x_recorded, StateVectorArray& xShot, ControlVectorArray& u_recorded, StateVectorArray& d) const
+		ControlVectorArray& u_ff_local, StateVectorArray& x_local, const StateVectorArray& x_ref_lqr,
+		StateVectorArray& xShot, StateVectorArray& d) const
 {
 	//! make sure all intermediate entries in the defect trajectory are zero
 	d.setConstant(state_vector_t::Zero());
@@ -399,77 +414,17 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots
 	for (size_t k=firstIndex; k<=lastIndex; k=k+K_shot_)
 	{
 		// first rollout the shot
-		rolloutSingleShot(threadId, k, K_shot_, u_ff_local, x_start, x_ref_lqr, x_recorded, xShot, u_recorded);
+		rolloutSingleShot(threadId, k, u_ff_local, x_local, x_ref_lqr, xShot);
 	}
 
 	// todo: once running, let defect only be coputed for relevant indices
 	for (size_t k=firstIndex; k<=lastIndex; k++)
 	{
 		// then compute the corresponding defect
-		computeSingleDefect(k, x_start[k+1], xShot[k], d[k]);
+		computeSingleDefect(k, x_local[k+1], xShot[k], d[k]);
 	}
 }
 
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingleShot(
-		const size_t threadId,
-		const size_t k,	//! the starting index of the shot
-		const int nStages,
-		const ControlVectorArray& u_ff_local,
-		const StateVectorArray& x_start,
-		const StateVectorArray& x_ref_lqr,
-		StateVectorArray& x_recorded,
-		StateVectorArray& xShot,		// the value at the end of each integration interval
-		ControlVectorArray& u_recorded
-		)const
-{
-	const double& dt = settings_.dt;
-	const double& dt_sim = settings_.dt_sim;
-
-	if(u_recorded.size() < K_) throw std::runtime_error("rolloutSingleShot: u_recorded is too short.");
-	if(x_recorded.size() < K_+1) throw std::runtime_error("rolloutSingleShot: x_local is too short.");
-	if(xShot.size() < K_+1) throw std::runtime_error("rolloutSingleShot: xShot is too short.");
-
-	// compute number of substeps
-	size_t subSteps = round(dt/ dt_sim);
-
-	x_recorded[k] = x_start[k]; // initialize
-	xShot[k] = x_start[k]; // initialize
-
-	int K_stop = k+nStages;
-	if(K_stop > K_)
-		K_stop = K_;
-
-	for (int i = k; i<K_stop; i++)
-	{
-		if(i>k)
-		{
-			xShot[i] = xShot[i-1];  // initialize integration variable
-		}
-
-		if(settings_.closedLoopShooting)
-			u_recorded[i] = u_ff_local[i] + L_[i] * (xShot[i] - x_ref_lqr[i]);
-		else
-			u_recorded[i] = u_ff_local[i];
-
-		if(i>k)
-		{
-			x_recorded[i] = xShot[i]; //"overwrite" x_local
-		}
-
-		controller_[threadId]->setControl(u_recorded[i]);
-
-		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
-		{
-			integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], k*dt, 1, dt_sim);
-		} else
-		{
-			integrators_[threadId]->integrate_n_steps(xShot[i], k*dt, subSteps, dt_sim);
-		}
-	}
-}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -728,8 +683,6 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 	{
 		StateVectorArray x_ref_lqr_local(K_+1);
 		ControlVectorArray uff_local(K_);
-		ControlVectorArray u_recorded(K_);
-		TimeArray t_local(K_+1);
 
 		if(settings_.closedLoopShooting)
 		{
@@ -740,8 +693,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 			}
 			else
 			{
-				uff_local = u_ff_ + lu_; 	// add lu
-				x_ref_lqr_local = x_prev_ + lx_; // stabilize around current solution candidate
+				uff_local = u_ff_ + lu_; 			// add lu
+				x_ref_lqr_local = x_prev_ + lx_; 	// stabilize around current solution candidate
 			}
 		}
 		else{ //! open-loop single shooting
@@ -750,24 +703,23 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 		}
 
 
-		bool dynamicsGood = rolloutSystem(settings_.nThreads, uff_local, x_ref_lqr_local, x_, u_recorded, t_local);
+		bool dynamicsGood = rolloutSingleShot(settings_.nThreads, 0, uff_local, x_, x_ref_lqr_local, xShot_);
 
 		if (dynamicsGood)
 		{
 			intermediateCostBest_ = std::numeric_limits<scalar_t>::max();
 			finalCostBest_ = std::numeric_limits<scalar_t>::max();
-			computeCostsOfTrajectory(settings_.nThreads, x_, u_recorded, intermediateCostBest_, finalCostBest_);
+			computeCostsOfTrajectory(settings_.nThreads, x_, uff_local, intermediateCostBest_, finalCostBest_);
 			lowestCost_ = intermediateCostBest_ + finalCostBest_;
 
 #if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
 			//! compute l2 norms of state and control update
-			lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_recorded, u_ff_);
+			lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, uff_local);
 			lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
 #endif
 
 			x_prev_ = x_;
-			u_ff_.swap(u_recorded);
-			t_.swap(t_local);
+			u_ff_.swap(uff_local);
 			alphaBest_ = 1;
 		}
 		else
@@ -820,8 +772,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 		const size_t threadId,
 		const scalar_t alpha,
 		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
-		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_recorded,
-		ct::core::tpl::TimeArray<SCALAR>& t_local,
+		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
 		scalar_t& intermediateCost,
 		scalar_t& finalCost,
 		std::atomic_bool* terminationFlag
@@ -832,28 +783,28 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 
 	if (terminationFlag && *terminationFlag) return;
 
-	ControlVectorArray u_ff_alpha;
 	StateVectorArray x_ref_lqr;
+	StateVectorArray xShot_local(K_+1); // note this is currently only a dummy.
 
 	if(settings_.stabilizeAroundPreviousSolution)
 	{
 		//! if stabilizing about previous solution, chose lv as feedforward increment and x_prev_ as reference for lqr
-		u_ff_alpha = lv_ * alpha + u_ff_prev_;
+		u_local = lv_ * alpha + u_ff_prev_;
 		x_ref_lqr = x_prev_;
 	}
 	else{
 		//! if stabilizing about new solution candidate, chose lu as feedforward increment and also increment x_prev_ by lx
-		u_ff_alpha = lu_ * alpha + u_ff_prev_;
+		u_local = lu_ * alpha + u_ff_prev_;
 		x_ref_lqr = lx_ * alpha + x_prev_;
 	}
 
-	bool dynamicsGood = rolloutSystem(threadId, u_ff_alpha, x_ref_lqr, x_local, u_recorded, t_local, terminationFlag);
+	bool dynamicsGood = rolloutSingleShot(threadId, 0, u_local, x_local, x_ref_lqr, xShot_local, terminationFlag);
 
 	if (terminationFlag && *terminationFlag) return;
 
 	if (dynamicsGood)
 	{
-		computeCostsOfTrajectory(threadId, x_local, u_recorded, intermediateCost, finalCost);
+		computeCostsOfTrajectory(threadId, x_local, u_local, intermediateCost, finalCost);
 	}
 	else
 	{
@@ -973,7 +924,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 	if (terminationFlag && *terminationFlag) return;
 
 	//! rollout shots
-	rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_alpha, x_alpha, x_shot_alpha, u_alpha, defects_recorded);
+	rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_alpha, x_shot_alpha, defects_recorded);
 
 	if (terminationFlag && *terminationFlag) return;
 
