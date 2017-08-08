@@ -41,7 +41,8 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex)
 {
-	this->initializeCostToGo();
+	if(lastIndex == this->K_-1)
+		this->initializeCostToGo();
 
 	for (size_t k=firstIndex; k<=lastIndex; k++)
 	{
@@ -54,22 +55,17 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(size_t firstIndex, size_t lastIndex)
 {
-	firstIndex = std::ceil(firstIndex / (size_t)this->K_shot_) * (size_t)this->K_shot_;
+	// map the user-provided firstIndex to the next following index where a shot starts
+	size_t shotIdx = this->toNextShotIndex(firstIndex);
 
-	std::cout << "rolling out shot for index " << firstIndex << std::endl;
-
-	for (size_t k=firstIndex; k<=lastIndex; k = k+ this->K_shot_)
+	for (size_t k=shotIdx; k<=lastIndex; k = k+ this->K_shot_)
 	{
-		// first rollout the shot
-		this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_);
+		// rollout the shot
+		this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_); // todo fixme correct x_lqr_ref here!
+		this->computeSingleDefect(k, this->x_, this->xShot_, this->lqocProblem_->b_);
 	}
 
-	for (size_t k=firstIndex; k<=lastIndex; k++){
-		// then compute the corresponding defect
-		this->computeSingleDefect(k, this->x_[k+1], this->xShot_[k], this->lqocProblem_->b_[k]);
-	}
-
-	this->d_norm_ = this->template computeDefectsNorm<1>(this->lqocProblem_->b_);
+	this->d_norm_ = this->template computeDefectsNorm<1>(this->lqocProblem_->b_); // todo this needs to go somewhere else!!!! (unnecessarily called twice in real-time iter scheme)
 }
 
 

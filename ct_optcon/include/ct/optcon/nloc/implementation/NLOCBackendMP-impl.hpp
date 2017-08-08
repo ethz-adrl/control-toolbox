@@ -201,83 +201,6 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::launchWorkerTh
 }
 
 
-
-//template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-//void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::createLQProblem()
-//{
-//	if (this->settings_.parallelBackward.enabled)
-//		parallelLQProblem();
-//	else
-//		this->sequentialLQProblem();
-//}
-
-
-//template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-//void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::parallelLQProblem()
-//{
-//	Eigen::setNbThreads(1); // disable Eigen multi-threading
-//
-//	kTaken_ = 0;
-//	kCompleted_ = 0;
-//	KMax_ = this->K_;
-//
-//#ifdef DEBUG_PRINT_MP
-//	std::cout<<"[MP]: Waking up workers to do parallel backward pass. Will continue immediately"<<std::endl;
-//#endif //DEBUG_PRINT_MP
-//	workerTask_ = PARALLEL_BACKWARD_PASS;
-//	workerWakeUpCondition_.notify_all();
-//}
-
-
-//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-//void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
-//{
-//	// step 3
-//	// initialize cost to go (described in step 3)
-//	this->initializeCostToGo();
-//
-//	if (this->settings_.parallelBackward.enabled)
-//	{
-//		while (kCompleted_ < this->settings_.nThreads*2 && kCompleted_ < this->K_)
-//		{
-//			if (this->settings_.parallelBackward.showWarnings)
-//			{
-//				std::cout << "backward pass waiting for head start" << std::endl;
-//			}
-//			std::this_thread::sleep_for(std::chrono::microseconds(this->settings_.parallelBackward.pollingTimeoutUs));
-//		}
-//	}
-//
-//	for (int k=this->K_-1; k>=0; k--) {
-//
-//		if (this->settings_.parallelBackward.enabled)
-//		{
-//			while ((this->K_-1 - k + this->settings_.nThreads*2 > kCompleted_) && (k >= this->settings_.nThreads*2))
-//			{
-//				if (this->settings_.parallelBackward.showWarnings)
-//				{
-//					std::cout << "backward pass waiting for LQ problems" << std::endl;
-//				}
-//				std::this_thread::sleep_for(std::chrono::microseconds(this->settings_.parallelBackward.pollingTimeoutUs));
-//			}
-//		}
-//
-//#ifdef DEBUG_PRINT_MP
-//		if (k%100 == 0)
-//			std::cout<<"[MP]: Solving backward pass for index k "<<k<<std::endl;
-//#endif
-//
-//		// design controller
-//		this->designController(k);
-//
-//		// compute cost to go
-//		this->computeCostToGo(k);
-//	}
-//
-//	workerTask_ = IDLE;
-//}
-
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex)
 {
@@ -489,10 +412,11 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 		printString("[MP]: do single threaded shot rollout for single index " + std::to_string(firstIndex) + ". Not waking up workers.");
 #endif //DEBUG_PRINT_MP
 
+		size_t shotIdx = this->toNextShotIndex(firstIndex);
+
 		// todo: hand over x or x_prev for lqr reference ????
-		// todo how to multi-thread this? how to correct this for longer shots?
-		this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_, this->xShot_);
-		this->computeSingleDefect(firstIndex, this->x_[firstIndex+1], this->xShot_[firstIndex], this->lqocProblem_->b_[firstIndex]);
+		this->rolloutSingleShot(this->settings_.nThreads, shotIdx, this->u_ff_, this->x_, this->x_, this->xShot_);
+		this->computeSingleDefect(shotIdx, this->x_, this->xShot_, this->lqocProblem_->b_);
 		return;
 	}
 
@@ -551,16 +475,19 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWo
 			return;
 		}
 
+		size_t kShot = (KMax_ - k);
+		if(kShot % ((size_t)this->K_shot_) == 0) //! only rollout when we're hitting the beginning of a shot
+		{
 #ifdef DEBUG_PRINT_MP
-		if ((k+1)%100 == 0)
-			printString("[Thread " + std::to_string(threadId) + "]: rolling out shot with index " + std::to_string(KMax_ - k));
+			if ((k+1)%100 == 0)
+				printString("[Thread " + std::to_string(threadId) + "]: rolling out shot with index " + std::to_string(KMax_ - k));
 #endif
 
-		size_t kShot = KMax_ - k;
-		// todo hand over x_ or x_prev_ as lqr reference?
-		// todo how to multi-thread this?
-		this->rolloutSingleShot(threadId, kShot, this->u_ff_, this->x_, this->x_, this->xShot_);
-		this->computeSingleDefect(kShot, this->x_[kShot+1], this->xShot_[kShot], this->lqocProblem_->b_[kShot]);
+			// todo hand over x_ or x_prev_ as lqr reference?
+			this->rolloutSingleShot(threadId, kShot, this->u_ff_, this->x_, this->x_, this->xShot_);
+			this->computeSingleDefect(kShot, this->x_, this->xShot_, this->lqocProblem_->b_);
+
+		}
 
 		kCompleted_++;
 	}

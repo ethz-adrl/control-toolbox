@@ -101,17 +101,19 @@ public:
 		this->backend_->checkProblem();
 
 		int K = this->backend_->getNumSteps();
+		int K_shot = this->backend_->getNumStepsPerShot();
 
+		this->backend_->resetDefects();
 
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
 		{
-			this->backend_->rolloutShots(1, K-1);
+			this->backend_->rolloutShots(K_shot, K-1);
 		}
 
 
 		auto start = std::chrono::steady_clock::now();
-		this->backend_->computeLinearizedDynamicsAroundTrajectory(1, K-1);
+		this->backend_->computeLinearizedDynamicsAroundTrajectory(K_shot, K-1);
 		auto end = std::chrono::steady_clock::now();
 		auto diff = end - start;
 #ifdef DEBUG_PRINT
@@ -120,28 +122,27 @@ public:
 
 
 		start = std::chrono::steady_clock::now();
-		this->backend_->computeQuadraticCostsAroundTrajectory(1, K-1);
+		this->backend_->computeQuadraticCostsAroundTrajectory(K_shot, K-1);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
 		std::cout << "Cost computation for index 1 to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
-		auto endPrepare = std::chrono::steady_clock::now();
-#ifdef DEBUG_PRINT
-		std::cout << "GNMS prepareIteration() took "<<std::chrono::duration <double, std::milli> (endPrepare-startPrepare).count() << " ms" << std::endl;
-#endif
-
-
 #ifdef DEBUG_PRINT
 		std::cout<<"[GNMS]: Solving prepare stage of LQOC Problem"<<std::endl;
 #endif // DEBUG_PRINT
 		start = std::chrono::steady_clock::now();
-		this->backend_->prepareSolveLQProblem();
+		this->backend_->prepareSolveLQProblem(K_shot);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
 		std::cout << "Prepare phase of LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+#endif
+
+		auto endPrepare = std::chrono::steady_clock::now();
+#ifdef DEBUG_PRINT
+		std::cout << "GNMS prepareIteration() took "<<std::chrono::duration <double, std::milli> (endPrepare-startPrepare).count() << " ms" << std::endl;
 #endif
 
 
@@ -158,6 +159,8 @@ public:
 	virtual bool finishIteration() override
 	{
 
+		int K_shot = this->backend_->getNumStepsPerShot();
+
 #ifdef DEBUG_PRINT
 		auto startFinish = std::chrono::steady_clock::now();
 #endif
@@ -165,7 +168,7 @@ public:
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
 		{
-			this->backend_->rolloutShots(0, 0);
+			this->backend_->rolloutShots(0, K_shot-1);
 			this->backend_->updateCosts();
 			this->backend_->updateDefects();
 		}
@@ -176,7 +179,7 @@ public:
 #endif
 
 		auto start = std::chrono::steady_clock::now();
-		this->backend_->computeLinearizedDynamicsAroundTrajectory(0, 0);
+		this->backend_->computeLinearizedDynamicsAroundTrajectory(0, K_shot-1);
 		auto end = std::chrono::steady_clock::now();
 		auto diff = end - start;
 #ifdef DEBUG_PRINT
@@ -185,7 +188,7 @@ public:
 
 
 		start = std::chrono::steady_clock::now();
-		this->backend_->computeQuadraticCostsAroundTrajectory(0, 0);
+		this->backend_->computeQuadraticCostsAroundTrajectory(0, K_shot-1);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
@@ -197,7 +200,7 @@ public:
 		std::cout<<"[GNMS]: Finish phase LQOC Problem"<<std::endl;
 #endif // DEBUG_PRINT
 		start = std::chrono::steady_clock::now();
-		this->backend_->finishSolveLQProblem();
+		this->backend_->finishSolveLQProblem(K_shot-1);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT

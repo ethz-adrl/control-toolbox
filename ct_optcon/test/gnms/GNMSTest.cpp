@@ -149,13 +149,13 @@ void singleCore()
 		NLOptConSettings gnms_settings;
 		gnms_settings.nThreads = 1;
 		gnms_settings.epsilon = 0.0;
-		gnms_settings.max_iterations = 2;
+		gnms_settings.max_iterations = 1;
 		gnms_settings.recordSmallestEigenvalue = false;
 		gnms_settings.min_cost_improvement = 1e-6;
 		gnms_settings.fixedHessianCorrection = false;
 		gnms_settings.dt = 0.001;
 		gnms_settings.dt_sim = 0.001;
-		gnms_settings.dt_shot = 0.02;
+		gnms_settings.dt_shot = 0.002; // should handle a random shot-length
 		gnms_settings.integrator = ct::core::IntegrationType::EULER;
 		gnms_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
@@ -180,7 +180,7 @@ void singleCore()
 		size_t nSteps = std::round(tf / gnms_settings.dt);
 
 		// provide initial guess
-		StateVector<state_dim> initState; initState.setZero(); //initState.setRandom(); initState(1) = 0.0;
+		StateVector<state_dim> initState; initState.setZero(); initState(1) = 1.0;
 		StateVectorArray<state_dim>  x0(nSteps+1, initState);
 		ControlVector<control_dim> uff; uff << kStiffness * initState(0);
 		ControlVectorArray<control_dim> u0(nSteps, uff);
@@ -267,6 +267,7 @@ void multiCore()
 		gnms_settings.fixedHessianCorrection = false;
 		gnms_settings.dt = 0.001;
 		gnms_settings.dt_sim = 0.001;
+		gnms_settings.dt_shot = 0.023;
 		gnms_settings.integrator = ct::core::IntegrationType::EULER;
 		gnms_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
@@ -291,7 +292,8 @@ void multiCore()
 
 		// provide initial guess
 		ControlVectorArray<control_dim> u0(nSteps, ControlVector<control_dim>::Zero());
-		StateVectorArray<state_dim>  x0(nSteps+1, StateVector<state_dim>::Random());
+		StateVector<state_dim> initState; initState.setZero(); initState(1) = 1.0;
+		StateVectorArray<state_dim>  x0(nSteps+1, initState);
 		for (size_t i=0; i<nSteps+1; i++)
 		{
 //			x0 [i] = x_final*double(i)/double(nSteps);
@@ -371,7 +373,7 @@ int main(int argc, char **argv)
 {
 	feenableexcept(FE_INVALID | FE_OVERFLOW);
 	ct::optcon::example::singleCore();
-//	ct::optcon::example::multiCore();
+	ct::optcon::example::multiCore();
 
 	return 1;
 }

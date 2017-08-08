@@ -310,9 +310,6 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 
 	xShot[k] = x_local[k]; // initialize
 
-	if(k==0)
-		std::cout << "K_shot " << K_shot_ << std::endl; // todo remove printout
-
 	//! determine index where to stop at the latest
 	int K_stop = k+K_shot_;
 	if(K_stop > K_local)
@@ -407,21 +404,15 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots
 	//! make sure all intermediate entries in the defect trajectory are zero
 	d.setConstant(state_vector_t::Zero());
 
-	firstIndex = std::ceil(firstIndex / (size_t)this->K_shot_) * (size_t)this->K_shot_;
+	size_t shotIdx = toNextShotIndex(firstIndex);
 
-	std::cout << "DEBUG: rolling out shot for start index " << firstIndex << std::endl;
-
-	for (size_t k=firstIndex; k<=lastIndex; k=k+K_shot_)
+	for (size_t k=shotIdx; k<=lastIndex; k=k+K_shot_)
 	{
 		// first rollout the shot
 		rolloutSingleShot(threadId, k, u_ff_local, x_local, x_ref_lqr, xShot);
-	}
 
-	// todo: once running, let defect only be coputed for relevant indices
-	for (size_t k=firstIndex; k<=lastIndex; k++)
-	{
 		// then compute the corresponding defect
-		computeSingleDefect(k, x_local[k+1], xShot[k], d[k]);
+		computeSingleDefect(k, x_local, xShot, d);
 	}
 }
 
@@ -429,16 +420,16 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeSingleDefect(size_t k,
-		const state_vector_t& x_start, const state_vector_t& xShot, state_vector_t& d) const
+		const StateVectorArray& x_local, const StateVectorArray& xShot, StateVectorArray& d) const
 {
-	if (k< (size_t)K_)
+	//! compute the index where the next shot starts (respect total number of stages)
+	size_t k_next = std::min((size_t)this->K_, k + (size_t)this->K_shot_);
+
+	if (k_next < (size_t)K_)
 	{
-		d = xShot - x_start;
+		d[k_next-1] = xShot[k_next-1] - x_local[k_next];
 	}
-	else
-	{
-		d.setZero();
-	}
+	//! else ... all other entries of d remain zero.
 }
 
 
@@ -684,22 +675,16 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 		StateVectorArray x_ref_lqr_local(K_+1);
 		ControlVectorArray uff_local(K_);
 
-		if(settings_.closedLoopShooting)
+
+		if(settings_.stabilizeAroundPreviousSolution)
 		{
-			if(settings_.stabilizeAroundPreviousSolution)
-			{
-				uff_local = u_ff_ + lv_; 	// add lv
-				x_ref_lqr_local = x_prev_; 	// stabilize around previous solution
-			}
-			else
-			{
-				uff_local = u_ff_ + lu_; 			// add lu
-				x_ref_lqr_local = x_prev_ + lx_; 	// stabilize around current solution candidate
-			}
+			uff_local = u_ff_ + lv_; 	// add lv
+			x_ref_lqr_local = x_prev_; 	// stabilize around previous solution
 		}
-		else{ //! open-loop single shooting
-			uff_local = u_ff_ + lu_; 	// add lu if we are doing open-loop shooting
-			//				x_ref_lqr_local = x_prev_ + lx_;
+		else
+		{
+			uff_local = u_ff_ + lu_; 			// add lu
+			x_ref_lqr_local = x_prev_ + lx_; 	// stabilize around current solution candidate
 		}
 
 
@@ -784,7 +769,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 	if (terminationFlag && *terminationFlag) return;
 
 	StateVectorArray x_ref_lqr;
-	StateVectorArray xShot_local(K_+1); // note this is currently only a dummy.
+	StateVectorArray xShot_local(K_+1); // note this is currently only a dummy (todo nicer solution?)
 
 	if(settings_.stabilizeAroundPreviousSolution)
 	{
@@ -836,6 +821,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 		//! update control and states
 		u_ff_ += lu_;
 		x_ += lx_;
+
+		resetDefects();
 
 		rolloutShots(0, K_-1);
 
@@ -943,7 +930,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareSolveLQProblem()
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareSolveLQProblem(size_t startIndex)
 {
 	// if solver is HPIPM, there's nothing to prepare
 	if(settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
@@ -956,7 +943,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareSolve
 		lqocSolver_->setProblem(lqocProblem_);
 
 		//iterate backward up to first stage
-		for (int i=this->lqocProblem_->getNumberOfStages()-1; i>=1; i--)
+		for (int i=this->lqocProblem_->getNumberOfStages()-1; i>=startIndex; i--)
 			lqocSolver_->solveSingleStage(i);
 	}
 	else
@@ -965,7 +952,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareSolve
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishSolveLQProblem()
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishSolveLQProblem(size_t endIndex)
 {
 	// if solver is HPIPM, solve the full problem
 	if(settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
@@ -978,7 +965,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishSolveL
 		lqocProblem_->x_ = x_;
 		lqocProblem_->u_ = u_ff_;
 		lqocSolver_->setProblem(lqocProblem_);
-		lqocSolver_->solveSingleStage(0);
+
+		for(int i = endIndex; i>=0; i--)
+			lqocSolver_->solveSingleStage(i);
+
 		lqocSolver_->computeStateAndControlUpdates();
 	}
 	else

@@ -200,6 +200,7 @@ public:
 	SCALAR getTimeHorizon() {return K_* settings_.dt ;}
 
 	int getNumSteps() {return K_;}
+	int getNumStepsPerShot() {return K_shot_;}
 
 	SYMPLECTIC_ENABLED initializeSymplecticIntegrators(size_t i);
 	SYMPLECTIC_DISABLED initializeSymplecticIntegrators(size_t i) {};
@@ -363,10 +364,10 @@ public:
 	/*!
 	 * the prepare Solve LQP Problem method is intended for a special use-case: unconstrained GNMS with pre-solving of the
 	 */
-	virtual void prepareSolveLQProblem();
+	virtual void prepareSolveLQProblem(size_t startIndex);
 
 
-	virtual void finishSolveLQProblem();
+	virtual void finishSolveLQProblem(size_t endIndex);
 
 	/*!
 	 * solve Full LQProblem, e.g. to be used with HPIPM or if we have a constrained problem
@@ -434,6 +435,9 @@ public:
 			L_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero()); // todo can eventually go away to save time
 	}
 
+	//! reset all defects to zero
+	void resetDefects() {lqocProblem_->b_.setConstant(state_vector_t::Zero());}
+
 	//! update the nominal defects
 	void updateDefects() {d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);}
 
@@ -456,6 +460,9 @@ public:
 
 protected:
 
+	//! map an index to the starting index of the next shot
+	inline size_t toNextShotIndex(size_t index) const {return ((size_t)std::ceil( (SCALAR)index / (SCALAR)this->K_shot_)) * (size_t)this->K_shot_;}
+
 	//! integrate the individual shots
 	bool rolloutSingleShot(
 			const size_t threadId,
@@ -467,11 +474,17 @@ protected:
 			std::atomic_bool* terminationFlag = nullptr ) const;
 
 	//! computes the defect between shot and trajectory
+	/*!
+	 * @param k			index of the shot under consideration
+	 * @param x_local	the state trajectory
+	 * @param xShot		the shot trajectory
+	 * @param d			the defect trajectory
+	 */
 	void computeSingleDefect(
 			size_t k,
-			const state_vector_t& x_start,
-			const state_vector_t& xShot,
-			state_vector_t& d) const;
+			const StateVectorArray& x_local,
+			const StateVectorArray& xShot,
+			StateVectorArray& d) const;
 
 	//! Computes the linearized Dynamics at a specific point of the trajectory
 	/*!

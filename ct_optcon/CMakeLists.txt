@@ -207,17 +207,17 @@ target_link_libraries(LqrTest ${catkin_LIBRARIES} lapack ${MATLAB_LIBS})
 catkin_add_gtest(iLQRTest test/ilqr/iLQRTest.cpp)
 target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
-add_executable(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
-target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+#add_executable(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
+#target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
-add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
-target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+#add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
+#target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
 add_executable(GNMSTest test/gnms/GNMSTest.cpp)
 target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
-add_executable(GNMSTest2 test/gnms/GNMSTest2.cpp)
-target_link_libraries(GNMSTest2 ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+#add_executable(GNMSTest2 test/gnms/GNMSTest2.cpp)
+#target_link_libraries(GNMSTest2 ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
 #add_executable(HPIPMInterfaceTest test/hpipm/HPIPMInterfaceTest.cpp)	# todo make unit test
 #target_link_libraries(HPIPMInterfaceTest hpipm blasfeo ${MATLAB_LIBS})
