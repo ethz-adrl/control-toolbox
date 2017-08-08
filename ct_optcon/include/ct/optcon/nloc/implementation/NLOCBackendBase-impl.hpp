@@ -995,23 +995,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateCosts(
 }
 
 
-//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-//bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::isConverged()
-//{
-//	//! check if sum of norm of all defects is smaller than convergence criterion
-//	if (d_norm_ > settings_.maxDefectSum)
-//		return false;
-//
-//	SCALAR previousCost = intermediateCostPrevious_ + finalCostPrevious_;
-//	SCALAR newCost = intermediateCostBest_ + finalCostBest_;
-//
-//	if ( fabs((previousCost - newCost)/previousCost) > settings_.min_cost_improvement)
-//		return false;
-//
-//	return true;
-//}
-
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 template <typename ARRAY_TYPE, size_t ORDER>
 SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDiscreteArrayNorm(const ARRAY_TYPE& d) const

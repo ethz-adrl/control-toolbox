@@ -151,18 +151,6 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(siz
 			uniqueProcessID = generateUniqueProcessID (iteration_local, COMPUTE_COST);
 			break;
 		}
-		//		case PARALLEL_BACKWARD_PASS:
-		//		{
-		//			if (threadId < this->settings_.nThreads-1)
-		//			{
-		//#ifdef DEBUG_PRINT_MP
-		//			std::cout<<"[Thread "<<threadId<<"]: now doing LQ problem building!"<<std::endl;
-		//#endif // DEBUG_PRINT_MP
-		//				computeLQProblemWorker(threadId);
-		//			}
-		//			lastCompletedTask = PARALLEL_BACKWARD_PASS;
-		//			break;
-		//		}
 		case SHUTDOWN:
 		{
 #ifdef DEBUG_PRINT_MP
@@ -199,6 +187,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::launchWorkerTh
 		workerThreads_.push_back(std::thread(&NLOCBackendMP::threadWork, this, i));
 	}
 }
+
+
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
