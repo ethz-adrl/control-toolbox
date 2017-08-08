@@ -103,8 +103,6 @@ public:
 		int K = this->backend_->getNumSteps();
 		int K_shot = this->backend_->getNumStepsPerShot();
 
-		this->backend_->resetDefects();
-
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
 		{

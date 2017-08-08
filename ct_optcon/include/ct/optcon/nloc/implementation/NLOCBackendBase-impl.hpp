@@ -327,13 +327,14 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 		if(settings_.closedLoopShooting) // overwrite control
 			u_local[i] += L_[i] * (xShot[i] - x_ref_lqr[i]);
 
-
-		controller_[threadId]->setControl(u_local[i]);
-
+		// this is BAD
 		if(i>k)
 		{
-			x_local[i] = xShot[i]; //"overwrite" x_local
+			x_local[i] = xShot[i-1]; //"overwrite" x_local
 		}
+
+
+		controller_[threadId]->setControl(u_local[i]);
 
 
 		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
@@ -541,7 +542,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 	std::cout<<std::setprecision(15) << "interm. cost:\t" << intermediateCostBest_ << std::endl;
 	std::cout<<std::setprecision(15) << "final cost:\t" << finalCostBest_ << std::endl;
 	std::cout<<std::setprecision(15) << "total cost:\t" << intermediateCostBest_ + finalCostBest_ << std::endl;
-	std::cout<<std::setprecision(15) << "total merit:\t" << intermediateCostBest_ + finalCostBest_ + settings_.meritFunctionRho * d_norm_ << std::endl;
+	std::cout<<std::setprecision(15) << "total merit:\t" << intermediateCostBest_ + finalCostBest_ + settings_.meritFunctionRho * d_norm_l1 << std::endl;
 	std::cout<<std::setprecision(15) << "tot. defect L1:\t" << d_norm_l1 << std::endl;
 	std::cout<<std::setprecision(15) << "tot. defect L2:\t" << d_norm_l2 << std::endl;
 	std::cout<<std::setprecision(15) << "total lx norm:\t" << lx_norm_ << std::endl;

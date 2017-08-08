@@ -16,8 +16,8 @@ find_package(Eigen REQUIRED)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall")
 
-option(MATLAB "Compile with matlab support" OFF)
-option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" OFF)
+option(MATLAB "Compile with matlab support" ON)
+option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" ON)
 option(DEBUG_PRINT "Print debug messages" OFF)
 
 option(HPIPM "Compile with HPIPM support" ON)
@@ -207,14 +207,14 @@ target_link_libraries(LqrTest ${catkin_LIBRARIES} lapack ${MATLAB_LIBS})
 catkin_add_gtest(iLQRTest test/nloc/iLQRTest.cpp)
 target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
-add_executable(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
-target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+#add_executable(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
+#target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
-add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
-target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+#add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
+#target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
-add_executable(GNMSTest test/nloc/GNMSTest.cpp)
-target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+#add_executable(GNMSTest test/nloc/GNMSTest.cpp)
+#target_link_libraries(GNMSTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
 add_executable(GNMSTest2 test/nloc/GNMSTest2.cpp)
 target_link_libraries(GNMSTest2 ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
