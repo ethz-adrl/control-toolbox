@@ -402,14 +402,11 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 		printString("[MP]: do single threaded shot rollout for single index " + std::to_string(firstIndex) + ". Not waking up workers.");
 #endif //DEBUG_PRINT_MP
 
-		size_t shotIdx = this->toNextShotIndex(firstIndex);
-
 		// todo: hand over x or x_prev for lqr reference ????
-		this->rolloutSingleShot(this->settings_.nThreads, shotIdx, this->u_ff_, this->x_, this->x_, this->xShot_);
-		this->computeSingleDefect(shotIdx, this->x_, this->xShot_, this->lqocProblem_->b_);
+		this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_, this->xShot_);
+		this->computeSingleDefect(firstIndex, this->x_, this->xShot_, this->lqocProblem_->b_);
 		return;
 	}
-
 
 	/*!
 	 * In case of multiple points to be linearized, start multi-threading:

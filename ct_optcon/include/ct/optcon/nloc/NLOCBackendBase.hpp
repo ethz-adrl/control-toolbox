@@ -460,9 +460,6 @@ public:
 
 protected:
 
-	//! map an index to the starting index of the next shot
-	inline size_t toNextShotIndex(size_t index) const {return ((size_t)std::ceil( (SCALAR)index / (SCALAR)this->K_shot_)) * (size_t)this->K_shot_;}
-
 	//! integrate the individual shots
 	bool rolloutSingleShot(
 			const size_t threadId,

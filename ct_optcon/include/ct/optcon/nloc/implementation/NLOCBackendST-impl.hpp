@@ -55,10 +55,7 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(size_t firstIndex, size_t lastIndex)
 {
-	// map the user-provided firstIndex to the next following index where a shot starts
-	size_t shotIdx = this->toNextShotIndex(firstIndex);
-
-	for (size_t k=shotIdx; k<=lastIndex; k = k+ this->K_shot_)
+	for (size_t k=firstIndex; k<=lastIndex; k = k+ this->K_shot_)
 	{
 		// rollout the shot
 		this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_); // todo fixme correct x_lqr_ref here!

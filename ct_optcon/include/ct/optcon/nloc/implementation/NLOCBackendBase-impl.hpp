@@ -404,9 +404,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots
 	//! make sure all intermediate entries in the defect trajectory are zero
 	d.setConstant(state_vector_t::Zero());
 
-	size_t shotIdx = toNextShotIndex(firstIndex);
-
-	for (size_t k=shotIdx; k<=lastIndex; k=k+K_shot_)
+	for (size_t k=firstIndex; k<=lastIndex; k=k+K_shot_)
 	{
 		// first rollout the shot
 		rolloutSingleShot(threadId, k, u_ff_local, x_local, x_ref_lqr, xShot);
