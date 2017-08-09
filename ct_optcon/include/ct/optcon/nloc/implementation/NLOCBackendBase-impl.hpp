@@ -150,7 +150,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 		if(controller_[i] == nullptr)
 			throw std::runtime_error("Controller not defined");
 
-		integrators_[i] = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> >(new ct::core::Integrator<STATE_DIM, SCALAR>(systems_[i], settings_.integrator));
+		// if symplectic integrator then don't create normal ones
+		if (settings_.integrator != ct::core::IntegrationType::EULER_SYM  && settings_.integrator != ct::core::IntegrationType::RK_SYM)
+		{
+			integrators_[i] = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> >(new ct::core::Integrator<STATE_DIM, SCALAR>(systems_[i], settings_.integrator));
+		}
 
 		initializeSymplecticIntegrators<V_DIM, P_DIM>(i);
 	}
@@ -226,6 +230,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 		linearSystemDiscretizers_[i].setTimeDiscretization(settings.dt);
 	}
 
+	if(settings.integrator != settings_.integrator)
+	{
+		throw std::runtime_error("Cannot change integration type.");
+	}
 
 	// select the linear quadratic solver based on settings file
 	if(settings.lqocp_solver == NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER)
