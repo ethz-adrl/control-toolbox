@@ -183,14 +183,38 @@ public:
 	//! to the best of our knowledge, the Feedback matrix cannot be extracted from HPIPM
 	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> getFeedback() override
 	{
-		ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> K(this->lqocProblem_->getNumberOfStages());
+		LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
+
+		ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> K(p.getNumberOfStages());
+		Eigen::Matrix<double, control_dim, control_dim> L0;
 		Eigen::Matrix<double, control_dim, control_dim> Lr;
+		Eigen::Matrix<double, control_dim, control_dim> H;
+
+		//stage 0
+		::d_cvt_strmat2mat(Lr.rows(), Lr.cols(), &workspace_.L[0], 0, 0, Lr.data(), Lr.rows());
+		H = Lr.template triangularView<Eigen::Lower>()*Lr.transpose();
+
+		// b pseudo inverse
+		Eigen::Matrix<double, control_dim, state_dim> Bpinv = (p.B_[0].transpose()*p.B_[0]).inverse() * p.B_[0].transpose();
+
+		// reconstruct S
+		Eigen::Matrix<double, state_dim, state_dim> S;
+		S = Bpinv.transpose() * (H - p.R_[0]) * Bpinv;
+
+		// compute G
+		Eigen::Matrix<double, control_dim, state_dim> G;
+		G = p.P_[0];
+		G.noalias() += p.B_[0].transpose() * S * p.A_[0];
+
+		// compute K
+		K[0] = (-H.inverse() * G); // \todo use Lr here instead of H!
+
 		Eigen::Matrix<double, state_dim, control_dim> Ls;
-		for (size_t i=0; i<this->lqocProblem_->getNumberOfStages(); i++)
+		for (size_t i=1; i<this->lqocProblem_->getNumberOfStages(); i++)
 		{
 			::d_cvt_strmat2mat(Lr.rows(), Lr.cols(), &workspace_.L[i], 0, 0, Lr.data(), Lr.rows());
 			::d_cvt_strmat2mat(Ls.rows(), Ls.cols(), &workspace_.L[i], Lr.rows(), 0, Ls.data(), Ls.rows());
-			K[i] = (-Lr.inverse() * Ls.transpose());
+			K[i] = (-Lr.template triangularView<Eigen::Lower>().solve(Ls.transpose()));
 		}
 
 		return K;
