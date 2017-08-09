@@ -62,6 +62,10 @@ public:
 
 	virtual void setInitialGuess(const Policy_t& initialGuess) = 0;
 
+	virtual void prepareMPCIteration()  = 0;
+
+	virtual bool finishMPCIteration() = 0;
+
 protected:
 	std::shared_ptr<Backend_t> backend_;
 

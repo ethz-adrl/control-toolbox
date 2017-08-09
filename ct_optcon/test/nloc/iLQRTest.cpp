@@ -202,7 +202,7 @@ TEST(ILQRTestA, InstancesComparison)
 		ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
 		ilqr_settings.closedLoopShooting = false;
-		ilqr_settings.integrator = NLOptConSettings::RK4;
+		ilqr_settings.integrator = ct::core::IntegrationType::RK4;
 
 		// copy settings for MP case, but change number of threads
 		NLOptConSettings ilqr_settings_mp = ilqr_settings;
@@ -344,7 +344,7 @@ TEST(ILQRTestB, SingleCoreTest)
 		ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
 		ilqr_settings.closedLoopShooting = false;
-		ilqr_settings.integrator = NLOptConSettings::RK4;
+		ilqr_settings.integrator = ct::core::IntegrationType::RK4;
 
 		// copy settings for MP case, but change number of threads
 		NLOptConSettings ilqr_settings_mp = ilqr_settings;
@@ -555,7 +555,7 @@ TEST(ILQRTestC, PolicyComparison)
 		ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-		ilqr_settings.integrator = NLOptConSettings::EULER;
+		ilqr_settings.integrator = ct::core::IntegrationType::EULER;
 		ilqr_settings.closedLoopShooting = false;
 		ilqr_settings.fixedHessianCorrection = false;
 
@@ -653,8 +653,8 @@ TEST(ILQRTestC, PolicyComparison)
 			testSystem2->setController(optController_mp);
 
 			// test integrators, the same as in iLQG
-			ct::core::Integrator<state_dim> testIntegrator1 (testSystem1, ct::core::RK4);
-			ct::core::Integrator<state_dim> testIntegrator2 (testSystem2, ct::core::RK4);
+			ct::core::Integrator<state_dim> testIntegrator1 (testSystem1, ct::core::IntegrationType::RK4);
+			ct::core::Integrator<state_dim> testIntegrator2 (testSystem2, ct::core::IntegrationType::RK4);
 
 			// states
 			ct::core::StateVector<state_dim> x_test_1 = x0;

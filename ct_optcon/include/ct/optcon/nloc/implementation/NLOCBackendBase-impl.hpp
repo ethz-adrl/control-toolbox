@@ -299,11 +299,11 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 {
 	const double& dt = settings_.dt;
 	const double& dt_sim = settings_.dt_sim;
-	const size_t K_local = K_;
+	const int K_local = K_;
 
-	if(u_local.size() < K_) throw std::runtime_error("rolloutSingleShot: u_local is too short.");
-	if(x_local.size() < K_+1) throw std::runtime_error("rolloutSingleShot: x_local is too short.");
-	if(xShot.size() < K_+1) throw std::runtime_error("rolloutSingleShot: xShot is too short.");
+	if(u_local.size() < (size_t)K_) throw std::runtime_error("rolloutSingleShot: u_local is too short.");
+	if(x_local.size() < (size_t)K_+1) throw std::runtime_error("rolloutSingleShot: x_local is too short.");
+	if(xShot.size() < (size_t)K_+1) throw std::runtime_error("rolloutSingleShot: xShot is too short.");
 
 	// compute number of substeps
 	size_t subSteps = round(dt/ dt_sim);
@@ -818,8 +818,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 		lowestCostPrevious = intermediateCostBest_ + finalCostBest_;
 
 		//! update control and states
-		u_ff_ += lu_;
-		x_ += lx_;
+		doFullStepUpdate();
 
 		resetDefects();
 
@@ -1004,7 +1003,7 @@ SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDis
 {
 	SCALAR norm = 0.0;
 
-	for (int k=0; k<d.size(); k++)
+	for (size_t k=0; k<d.size(); k++)
 	{
 		norm += d[k].template lpNorm<ORDER>();
 	}
@@ -1020,7 +1019,7 @@ SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDis
 
 	SCALAR norm = 0.0;
 
-	for (int k=0; k<a.size(); k++)
+	for (size_t k=0; k<a.size(); k++)
 	{
 		norm += (a[k]-b[k]).template lpNorm<ORDER>();
 	}
