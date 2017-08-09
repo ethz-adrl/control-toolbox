@@ -88,7 +88,9 @@ public:
 			initializeCostToGo();
 
 		designController(N);
-		computeCostToGo(N);
+
+		if (N>0)
+			computeCostToGo(N);
 	}
 
 
@@ -160,7 +162,9 @@ public:
 		for(int k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
 		{
 			//! control update rule
-			this->lu_[k] = lv_[k] + L_[k] * this->lx_[k]; // todo attention here
+			this->lu_[k] = lv_[k];
+			if (k>0) // lx is zero for k=0
+				this->lu_[k] += L_[k] * this->lx_[k];
 
 			//! state update rule
 			this->lx_[k+1] = (p.A_[k] + p.B_[k] * L_[k]) * this->lx_[k]  + p.B_[k] * lv_[k] + p.b_[k];
