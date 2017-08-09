@@ -291,6 +291,9 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 	if(K_stop > K_local)
 		K_stop = K_local;
 
+	if(settings_.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
+		K_stop = K_local; //! @todo this is not elegant - need to improve.
+
 	for (int i = k; i<K_stop; i++)
 	{
 		if (terminationFlag && *terminationFlag) return false;

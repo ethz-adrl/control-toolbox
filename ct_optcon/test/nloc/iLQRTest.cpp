@@ -315,7 +315,6 @@ TEST(ILQRTestA, InstancesComparison)
 			// compare controllers for single core and mp case
 			for(size_t i = 0; i<optimalPolicy_comp.uff().size()-1; i++)
 			{
-				std::cout << "looking at i " << i << " out of " << optimalPolicy_comp.uff().size()<< std::endl;
 				ASSERT_NEAR(optimalPolicy_comp.uff()[i](0), optimalPolicy.uff()[i](0), 1e-3);
 
 				ASSERT_NEAR(optimalPolicy_comp.K()[i].array().abs().maxCoeff(), optimalPolicy.K()[i].array().abs().maxCoeff(), 1e-3);
