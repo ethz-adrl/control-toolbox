@@ -85,12 +85,6 @@ protected:
 
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) override;
 
-//	virtual void updateSolutionState() override;
-//
-//	virtual void updateSolutionFeedforward() override;
-//
-//	virtual void updateSolutionFeedback() override;
-
 	SCALAR performLineSearch() override;
 
 private:
@@ -120,12 +114,6 @@ private:
 	  Includes all tasks that a worker will execute
 	 */
 	void threadWork(size_t threadId);
-
-	//! Creates the LQ Problem in parallel
-	/*!
-	  The Dynamics are linearized and the cost function is quadratized in parallel
-	 */
-	void parallelLQProblem();
 
 	//! Line search for new controller using multi-threading
 	/*!

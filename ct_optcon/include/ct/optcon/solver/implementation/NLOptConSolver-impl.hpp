@@ -76,9 +76,7 @@ bool NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solve()
 
 	while (foundBetter  && (numIterations < nlocBackend_->getSettings().max_iterations))
 	{
-		prepareIteration();
-
-		foundBetter = finishIteration();
+		foundBetter =runIteration();
 
 		numIterations++;
 	}

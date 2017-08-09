@@ -4,12 +4,12 @@ Farbod Farshidian. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice,
+ * Redistributions of source code must retain the above copyright notice,
       this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
+ * Redistributions in binary form must reproduce the above copyright notice,
       this list of conditions and the following disclaimer in the documentation
       and/or other materials provided with the distribution.
-    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+ * Neither the name of ETH ZURICH nor the names of its contributors may be used
       to endorse or promote products derived from this software without specific
       prior written permission.
 
@@ -22,7 +22,7 @@ GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWE
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************************************************************************************/
+ ***************************************************************************************/
 
 #ifndef INCLUDE_CT_OPTCON_SOLVER_ILQR_H_
 #define INCLUDE_CT_OPTCON_SOLVER_ILQR_H_
@@ -60,14 +60,12 @@ public:
 	virtual ~iLQR(){}
 
 	//! configure the solver
-	virtual void configure(const Settings_t& settings) override
-	{
+	virtual void configure(const Settings_t& settings) override {
 		this->backend_->configure(settings);
 	}
 
 	//! set an initial guess
-	virtual void setInitialGuess(const Policy_t& initialGuess) override
-	{
+	virtual void setInitialGuess(const Policy_t& initialGuess) override {
 		this->backend_->setInitialGuess(initialGuess);
 	}
 
@@ -77,8 +75,8 @@ public:
 	 * For iLQR the separation between prepareIteration and finishIteration would actually not be necessary
 	 * @return
 	 */
-	virtual bool runIteration() override
-	{
+	virtual bool runIteration() override {
+
 		prepareIteration();
 
 		return finishIteration();
@@ -104,16 +102,13 @@ public:
 	 * for iLQR, finishIteration contains the whole main iLQR iteration.
 	 * @return
 	 */
-	virtual bool finishIteration() override
-	{
+	virtual bool finishIteration() override {
 
 		int K = this->backend_->getNumSteps();
 
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
 		{
-//			std::cout << "Running additional init routine for first iteration !!" << std::endl;
-
 			if(!this->backend_->nominalRollout())
 				throw std::runtime_error("Rollout failed. System became unstable");
 
@@ -132,7 +127,7 @@ public:
 		auto end = std::chrono::steady_clock::now();
 		auto diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Linearizing dynamics took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[iLQR]: Linearizing dynamics took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 		start = std::chrono::steady_clock::now();
@@ -141,14 +136,14 @@ public:
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Cost computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[iLQR]: Cost computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 
 		end = std::chrono::steady_clock::now();
 		diff = end - startEntire;
 #ifdef DEBUG_PRINT
-		std::cout << "Forward pass took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[iLQR]: Forward pass took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 
@@ -160,13 +155,13 @@ public:
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[iLQR]: Solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 		// update solutions
-		this->backend_->getFeedforwardUpdates();// todo only when closed loop shooting
-		this->backend_->getFeedback(); 			// todo only when closed loop shooting
-		this->backend_->getControlUpdates(); 	// todo only when open loop shooting
+		this->backend_->getFeedforwardUpdates();
+		this->backend_->getFeedback();
+		this->backend_->getControlUpdates();
 		this->backend_->getStateUpdates();
 
 		// line-search
@@ -179,12 +174,12 @@ public:
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
 #ifdef DEBUG_PRINT
-		std::cout << "Line search took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[iLQR]: Line search took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 		diff = end - startEntire;
 #ifdef DEBUG_PRINT
-		std::cout << "Total iteration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+		std::cout << "[iLQR]: finishIteration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 #endif
 
 #ifdef DEBUG_PRINT
@@ -200,6 +195,23 @@ public:
 		return foundBetter;
 	}
 
+
+	/*!
+	 * for iLQR, as it is a purely sequential approach, we cannot prepare anything prior to solving,
+	 */
+	virtual void prepareMPCIteration() override {
+		prepareIteration();
+	}
+
+
+	/*!
+	 * for iLQR, finishIteration contains the whole main iLQR iteration.
+	 * @return
+	 */
+	virtual bool finishMPCIteration() override {
+		finishIteration();
+		return true; //! \todo : in MPC always returning true. Unclear how user wants to deal with varying costs, etc.
+	}
 
 };
 

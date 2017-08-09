@@ -316,7 +316,7 @@ public:
 		 */
 		solver_.setInitialGuess(currentPolicy_);
 
-		solver_.prepareIteration();
+		solver_.prepareMPCIteration();
 	}
 
 
@@ -344,7 +344,7 @@ public:
 
 		solver_.changeInitialState(x_start); // todo goes to finish call
 
-		bool solveSuccessful = solver_.solve();
+		bool solveSuccessful = solver_.finishMPCIteration();
 
 		if(solveSuccessful){
 
@@ -493,7 +493,7 @@ private:
 		Scalar_t dtInit = 0.0001;
 
 		// create temporary integrator object
-		core::Integrator<STATE_DIM, Scalar_t> newInt (dynamics_, ct::core::RK4);
+		core::Integrator<STATE_DIM, Scalar_t> newInt (dynamics_, ct::core::IntegrationType::RK4);
 
 		// adaptive pre-integration
 		newInt.integrate_adaptive(state, startTime, stopTime, dtInit);

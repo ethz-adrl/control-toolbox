@@ -32,7 +32,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #define DEBUG_PRINT
-#define DEBUG_PRINT_LINESEARCH
+//#define DEBUG_PRINT_LINESEARCH
+//#define MATLAB_FULL_LOG
 
 #include <ct/optcon/optcon.h>
 
@@ -166,7 +167,8 @@ void singleCore()
 			for (size_t i = 1; i<nSteps+1; i++)
 			{
 				x0[i] = x0[i-1];
-				integratorForInit.integrate_n_steps(x0[i], 0, 1, gnms_settings.dt_sim);
+				double dt_sim = gnms_settings.getSimulationTimestep();
+				integratorForInit.integrate_n_steps(x0[i], 0, 1, dt_sim);
 			}
 			break;
 		}

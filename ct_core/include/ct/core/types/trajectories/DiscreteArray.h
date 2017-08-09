@@ -132,7 +132,9 @@ public:
 	//! overload + operator in order to be able to directly sum up two arrays
 	inline DiscreteArray<T, Alloc> operator + (const DiscreteArray<T, Alloc>& rhs) const
 	{
-		assert(this->size() == rhs.size());
+		if(this->size() != rhs.size())
+			throw std::runtime_error("DiscreteArray.h (operator +): lhs.size() != rhs.size()");
+
 		DiscreteArray<T, Alloc> result (this->size());	//! create result container of correct size
 
 		std::transform (this->begin(), this->end(), rhs.begin(), result.begin(), std::plus<T>());
@@ -142,7 +144,9 @@ public:
 	//! overload - operator in order to be able to directly take the difference between two arrays
 	inline DiscreteArray<T, Alloc> operator - (const DiscreteArray<T, Alloc>& rhs) const
 	{
-		assert(this->size() == rhs.size());
+		if(this->size() != rhs.size())
+			throw std::runtime_error("DiscreteArray.h (operator -): lhs.size() != rhs.size()");
+
 		DiscreteArray<T, Alloc> result (this->size());	//! create result container of correct size
 
 		std::transform (this->begin(), this->end(), rhs.begin(), result.begin(), std::minus<T>());
@@ -152,7 +156,9 @@ public:
 	//! overload += operator
 	inline DiscreteArray<T, Alloc>& operator += (const DiscreteArray<T, Alloc>& rhs)
 	{
-		assert(this->size() == rhs.size());
+		if(this->size() != rhs.size())
+			throw std::runtime_error("DiscreteArray.h (operator +=): lhs.size() != rhs.size()");
+
 		std::transform (this->begin(), this->end(), rhs.begin(), this->begin(), std::plus<T>());
 		return *this;
 	}
@@ -160,25 +166,30 @@ public:
 	//! overload -= operator
 	inline DiscreteArray<T, Alloc>& operator -= (const DiscreteArray<T, Alloc>& rhs)
 	{
-		assert(this->size() == rhs.size());
+		if(this->size() != rhs.size())
+			throw std::runtime_error("DiscreteArray.h (operator -=): lhs.size() != rhs.size()");
+
 		std::transform (this->begin(), this->end(), rhs.begin(), this->begin(), std::minus<T>());
 		return *this;
 	}
 
-	//! todo: how to avoid this code dublication with double/float?
-	inline DiscreteArray<T, Alloc> operator * (const double& scalar) const
+	//! overload * operator
+	template <typename SCALAR>
+	inline DiscreteArray<T, Alloc> operator * (const SCALAR& scalar) const
 	{
 		DiscreteArray<T, Alloc> result (this->size());	//! create result container of correct size
 		std::transform (this->begin(), this->end(), result.begin(), [scalar](T arg) {return arg * scalar;});
 		return result;
 	}
-	inline DiscreteArray<T, Alloc> operator * (const float& scalar) const
+
+	//! overload / operator
+	template <typename SCALAR>
+	inline DiscreteArray<T, Alloc> operator / (const SCALAR& scalar) const
 	{
 		DiscreteArray<T, Alloc> result (this->size());	//! create result container of correct size
-		std::transform (this->begin(), this->end(), result.begin(), [scalar](T arg) {return arg * scalar;});
+		std::transform (this->begin(), this->end(), result.begin(), [scalar](T arg) {return arg / scalar;});
 		return result;
 	}
-	//! todo implement operator /
 
 	//! returns the underlying std::vector
 	Base& toImplementation() {return *this;}

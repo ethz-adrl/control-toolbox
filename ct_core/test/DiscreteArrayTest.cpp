@@ -169,6 +169,34 @@ TEST(DiscreteArrayTest, MultiplicationTest)
 }
 
 
+TEST(DiscreteArrayTest, DivisionTest)
+{
+	const size_t nEl = 10;
+	const size_t state_dim = 2;
+
+	StateVectorArray<state_dim> array1 (nEl);
+
+	for (size_t i = 0; i<nEl; i++){
+		array1[i].setRandom();
+	}
+
+	//! create backups for for later comparison
+	StateVectorArray<state_dim> array1_backup = array1;
+
+	double scalar = 3.141;
+
+	//! test the overloaded operator
+	StateVectorArray<state_dim> result = array1 / scalar;
+
+	for(size_t i = 0; i<nEl; i++){
+
+		//! check that the summation is correct
+		ASSERT_EQ(result[i], (array1_backup[i] / scalar));
+
+		//! check that original rhs elements were not altered
+		ASSERT_EQ(array1[i], array1_backup[i]);
+	}
+}
 
 
 int main(int argc, char** argv)

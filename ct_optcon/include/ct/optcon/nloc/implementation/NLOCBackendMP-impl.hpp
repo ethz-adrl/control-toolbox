@@ -151,18 +151,6 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(siz
 			uniqueProcessID = generateUniqueProcessID (iteration_local, COMPUTE_COST);
 			break;
 		}
-		//		case PARALLEL_BACKWARD_PASS:
-		//		{
-		//			if (threadId < this->settings_.nThreads-1)
-		//			{
-		//#ifdef DEBUG_PRINT_MP
-		//			std::cout<<"[Thread "<<threadId<<"]: now doing LQ problem building!"<<std::endl;
-		//#endif // DEBUG_PRINT_MP
-		//				computeLQProblemWorker(threadId);
-		//			}
-		//			lastCompletedTask = PARALLEL_BACKWARD_PASS;
-		//			break;
-		//		}
 		case SHUTDOWN:
 		{
 #ifdef DEBUG_PRINT_MP
@@ -201,81 +189,6 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::launchWorkerTh
 }
 
 
-
-//template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-//void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::createLQProblem()
-//{
-//	if (this->settings_.parallelBackward.enabled)
-//		parallelLQProblem();
-//	else
-//		this->sequentialLQProblem();
-//}
-
-
-//template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-//void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::parallelLQProblem()
-//{
-//	Eigen::setNbThreads(1); // disable Eigen multi-threading
-//
-//	kTaken_ = 0;
-//	kCompleted_ = 0;
-//	KMax_ = this->K_;
-//
-//#ifdef DEBUG_PRINT_MP
-//	std::cout<<"[MP]: Waking up workers to do parallel backward pass. Will continue immediately"<<std::endl;
-//#endif //DEBUG_PRINT_MP
-//	workerTask_ = PARALLEL_BACKWARD_PASS;
-//	workerWakeUpCondition_.notify_all();
-//}
-
-
-//template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-//void iLQGMP<STATE_DIM, CONTROL_DIM, SCALAR>::backwardPass()
-//{
-//	// step 3
-//	// initialize cost to go (described in step 3)
-//	this->initializeCostToGo();
-//
-//	if (this->settings_.parallelBackward.enabled)
-//	{
-//		while (kCompleted_ < this->settings_.nThreads*2 && kCompleted_ < this->K_)
-//		{
-//			if (this->settings_.parallelBackward.showWarnings)
-//			{
-//				std::cout << "backward pass waiting for head start" << std::endl;
-//			}
-//			std::this_thread::sleep_for(std::chrono::microseconds(this->settings_.parallelBackward.pollingTimeoutUs));
-//		}
-//	}
-//
-//	for (int k=this->K_-1; k>=0; k--) {
-//
-//		if (this->settings_.parallelBackward.enabled)
-//		{
-//			while ((this->K_-1 - k + this->settings_.nThreads*2 > kCompleted_) && (k >= this->settings_.nThreads*2))
-//			{
-//				if (this->settings_.parallelBackward.showWarnings)
-//				{
-//					std::cout << "backward pass waiting for LQ problems" << std::endl;
-//				}
-//				std::this_thread::sleep_for(std::chrono::microseconds(this->settings_.parallelBackward.pollingTimeoutUs));
-//			}
-//		}
-//
-//#ifdef DEBUG_PRINT_MP
-//		if (k%100 == 0)
-//			std::cout<<"[MP]: Solving backward pass for index k "<<k<<std::endl;
-//#endif
-//
-//		// design controller
-//		this->designController(k);
-//
-//		// compute cost to go
-//		this->computeCostToGo(k);
-//	}
-//
-//	workerTask_ = IDLE;
-//}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -488,11 +401,15 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 #ifdef DEBUG_PRINT_MP
 		printString("[MP]: do single threaded shot rollout for single index " + std::to_string(firstIndex) + ". Not waking up workers.");
 #endif //DEBUG_PRINT_MP
-		this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_[firstIndex], this->x_[firstIndex], this->x_prev_[firstIndex], this->L_[firstIndex], this->xShot_[firstIndex]);
-		this->computeSingleDefect(firstIndex, this->x_[firstIndex+1], this->xShot_[firstIndex], this->lqocProblem_->b_[firstIndex]);
+
+		if(this->settings_.stabilizeAroundPreviousSolution)
+			this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_prev_, this->xShot_);
+		else
+			this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_, this->xShot_);
+
+		this->computeSingleDefect(firstIndex, this->x_, this->xShot_, this->lqocProblem_->b_);
 		return;
 	}
-
 
 	/*!
 	 * In case of multiple points to be linearized, start multi-threading:
@@ -548,14 +465,22 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWo
 			return;
 		}
 
+		size_t kShot = (KMax_ - k);
+		if(kShot % ((size_t)this->settings_.K_shot) == 0) //! only rollout when we're meeting the beginning of a shot
+		{
 #ifdef DEBUG_PRINT_MP
-		if ((k+1)%100 == 0)
-			printString("[Thread " + std::to_string(threadId) + "]: rolling out shot with index " + std::to_string(KMax_ - k));
+			if ((k+1)%100 == 0)
+				printString("[Thread " + std::to_string(threadId) + "]: rolling out shot with index " + std::to_string(KMax_ - k));
 #endif
 
-		size_t kShot = KMax_ - k;
-		this->rolloutSingleShot(threadId, kShot, this->u_ff_[kShot], this->x_[kShot], this->x_prev_[kShot], this->L_[kShot], this->xShot_[kShot]);
-		this->computeSingleDefect(kShot, this->x_[kShot+1], this->xShot_[kShot], this->lqocProblem_->b_[kShot]);
+			if(this->settings_.stabilizeAroundPreviousSolution)
+				this->rolloutSingleShot(threadId, kShot, this->u_ff_, this->x_, this->x_, this->xShot_);
+			else
+				this->rolloutSingleShot(threadId, kShot, this->u_ff_, this->x_, this->x_prev_, this->xShot_);
+
+			this->computeSingleDefect(kShot, this->x_, this->xShot_, this->lqocProblem_->b_);
+
+		}
 
 		kCompleted_++;
 	}
@@ -643,7 +568,6 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_shot_search(this->K_+1);
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> defects_recorded(this->K_+1, ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_recorded(this->K_);
-		typename Base::TimeArray t_local; // todo get rid of time here
 
 		//! set init state
 		x_search[0] = this->x_prev_[0];
@@ -653,13 +577,14 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		{
 		case NLOptConSettings::NLOCP_ALGORITHM::GNMS :
 		{
-			this->executeLineSearchMultipleShooting(threadId, alpha, this->lu_, this->lx_, x_search, x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, &alphaBestFound_);
+			this->executeLineSearchMultipleShooting(threadId, alpha, this->lu_, this->lx_, x_search,
+					x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, &alphaBestFound_);
 			break;
 		}
 		case NLOptConSettings::NLOCP_ALGORITHM::ILQR :
 		{
 			defectNorm = 0.0;
-			this->executeLineSearchSingleShooting(threadId, alpha, x_search, u_recorded, t_local, intermediateCost, finalCost, &alphaBestFound_);
+			this->executeLineSearchSingleShooting(threadId, alpha, x_search, u_recorded, intermediateCost, finalCost, &alphaBestFound_);
 			break;
 		}
 		default :
