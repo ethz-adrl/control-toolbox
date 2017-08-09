@@ -422,7 +422,7 @@ public:
 	//! obtain feedforward only update from lqoc solver, if provided
 	void getFeedforwardUpdates()
 	{
-		if(settings_.closedLoopShooting)
+		if(settings_.stabilizeAroundPreviousSolution)
 			lv_ = lqocSolver_->getFeedforwardUpdates();
 		else
 			lv_.setConstant(core::ControlVector<CONTROL_DIM, SCALAR>::Zero()); // todo can eventually go away to save time
