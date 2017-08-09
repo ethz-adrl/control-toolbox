@@ -238,7 +238,7 @@ public:
 	//! get a reference to the current settings
 	const Settings_t& getSettings() {return nlocBackend_->getSettings();}
 
-	//! get a reference to the backend (@todo this is not optimal)
+	//! get a reference to the backend (@todo this is not optimal, allows the user too much access)
 	const std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>>& getBackend() {return nlocBackend_;}
 
 	//! get reference to the nonlinear system

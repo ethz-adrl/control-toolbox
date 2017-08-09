@@ -192,12 +192,15 @@ TEST(ILQRTestA, InstancesComparison)
 		x_final << 20, 0;
 
 		NLOptConSettings ilqr_settings;
+		ilqr_settings.dt = 0.001;
+		ilqr_settings.K_shot = 1;
+		ilqr_settings.K_sim = 1;
 		ilqr_settings.epsilon = 0.0;
 		ilqr_settings.nThreads = 1;
-		ilqr_settings.max_iterations = 50;
+		ilqr_settings.max_iterations = 500;
 		ilqr_settings.recordSmallestEigenvalue = false;
 		ilqr_settings.fixedHessianCorrection = false;
-		ilqr_settings.min_cost_improvement = 1e-6;
+		ilqr_settings.min_cost_improvement = 1e-12;
 		ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
@@ -238,6 +241,15 @@ TEST(ILQRTestA, InstancesComparison)
 
 		ilqr.configure(ilqr_settings);
 		ilqr.setInitialGuess(initController);
+
+		//! check that if retrieving solution now, we exactly get back the init guess.
+		NLOptConSolver::Policy_t mirroredInitguess = ilqr.getSolution();
+		for(size_t i = 0; i<initController.uff().size(); i++)
+		{
+			ASSERT_NEAR(mirroredInitguess.uff()[i](0), initController.uff()[i](0), 1e-3);
+			ASSERT_NEAR(mirroredInitguess.K()[i](0), initController.K()[i](0), 1e-3);
+			ASSERT_NEAR(mirroredInitguess.x_ref()[i](0), initController.x_ref()[i](0), 1e-3);
+		}
 
 		bool foundBetter = true;
 
@@ -303,6 +315,7 @@ TEST(ILQRTestA, InstancesComparison)
 			// compare controllers for single core and mp case
 			for(size_t i = 0; i<optimalPolicy_comp.uff().size()-1; i++)
 			{
+				std::cout << "looking at i " << i << " out of " << optimalPolicy_comp.uff().size()<< std::endl;
 				ASSERT_NEAR(optimalPolicy_comp.uff()[i](0), optimalPolicy.uff()[i](0), 1e-3);
 
 				ASSERT_NEAR(optimalPolicy_comp.K()[i].array().abs().maxCoeff(), optimalPolicy.K()[i].array().abs().maxCoeff(), 1e-3);
@@ -660,9 +673,10 @@ TEST(ILQRTestC, PolicyComparison)
 			ct::core::StateVector<state_dim> x_test_1 = x0;
 			ct::core::StateVector<state_dim> x_test_2 = x0;
 
-			// do forward integration -- should be the same as in
-			testIntegrator1.integrate_n_steps(x_test_1, 0.0, nSteps, ilqr_settings.dt_sim);
-			testIntegrator2.integrate_n_steps(x_test_2, 0.0, nSteps, ilqr_settings.dt_sim);
+			// do forward integration
+			double dt_sim = ilqr_settings.getSimulationTimestep();
+			testIntegrator1.integrate_n_steps(x_test_1, 0.0, nSteps, dt_sim);
+			testIntegrator2.integrate_n_steps(x_test_2, 0.0, nSteps, dt_sim);
 
 			ASSERT_LT((x_test_1 - xRollout.back()).array().abs().maxCoeff(), 0.3);
 			ASSERT_LT((x_test_2 - xRollout_mp.back()).array().abs().maxCoeff(), 0.3);

@@ -466,7 +466,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWo
 		}
 
 		size_t kShot = (KMax_ - k);
-		if(kShot % ((size_t)this->K_shot_) == 0) //! only rollout when we're hitting the beginning of a shot
+		if(kShot % ((size_t)this->settings_.K_shot) == 0) //! only rollout when we're meeting the beginning of a shot
 		{
 #ifdef DEBUG_PRINT_MP
 			if ((k+1)%100 == 0)

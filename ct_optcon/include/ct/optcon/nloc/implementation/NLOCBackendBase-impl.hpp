@@ -62,7 +62,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::setInitialGu
 
 	initialized_ = true;
 
-	t_ = TimeArray(settings_.dt_sim, x_.size(), 0.0);
+	t_ = TimeArray(settings_.dt, x_.size(), 0.0);
 
 	reset();
 
@@ -81,13 +81,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
 
 	K_ = settings_.computeK(tf);
 
-	//! compute shot lengths // todo find clean solution for that
-	if(settings_.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
-		K_shot_ = K_;
-	else
-		K_shot_ = settings_.computeK(settings_.dt_shot);
-
-	t_ = TimeArray(settings_.dt_sim, K_+1, 0.0);
+	t_ = TimeArray(settings_.dt, K_+1, 0.0);
 
 	lx_.resize(K_+1);
 	x_.resize(K_+1);
@@ -225,22 +219,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 		throw(std::runtime_error("Number of threads cannot be changed after instance has been created."));
 	}
 
-	//! compute shot lengths // todo find clean solution for that
-	if(settings.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
-		K_shot_ = K_;
-	else
-		K_shot_ = settings.computeK(settings.dt_shot);
-
-
-	//! todo: once running stable: insert a check for this at a proper position. Note: since
-	//! we don't have a fixed order for configure() or initilize, need to think where this should go.
-//	if(K_shot_ >= K_)
-//	{
-//		std::cout << "WARNING: K_shot_ cannot be >= K_. Resizing K_shot_ to 1" << std::endl;
-//		K_shot_ = 1;
-//	}
-
-
 	// update system discretizer with new settings
 	for(int i = 0; i< settings.nThreads+1; i++)
 	{
@@ -293,25 +271,23 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 		ControlVectorArray& u_local,
 		StateVectorArray& x_local,
 		const StateVectorArray& x_ref_lqr,
-		StateVectorArray& xShot,		// the value at the end of each integration interval
+		StateVectorArray& xShot,		//! the value at the end of each integration interval
 		std::atomic_bool* terminationFlag
 		)const
 {
 	const double& dt = settings_.dt;
-	const double& dt_sim = settings_.dt_sim;
+	const double dt_sim = settings_.getSimulationTimestep();
+	const size_t subSteps = settings_.K_sim;
 	const int K_local = K_;
 
 	if(u_local.size() < (size_t)K_) throw std::runtime_error("rolloutSingleShot: u_local is too short.");
 	if(x_local.size() < (size_t)K_+1) throw std::runtime_error("rolloutSingleShot: x_local is too short.");
 	if(xShot.size() < (size_t)K_+1) throw std::runtime_error("rolloutSingleShot: xShot is too short.");
 
-	// compute number of substeps
-	size_t subSteps = round(dt/ dt_sim);
-
 	xShot[k] = x_local[k]; // initialize
 
 	//! determine index where to stop at the latest
-	int K_stop = k+K_shot_;
+	int K_stop = k+settings_.K_shot;
 	if(K_stop > K_local)
 		K_stop = K_local;
 
@@ -321,16 +297,16 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 
 		if(i>k)
 		{
-			xShot[i] = xShot[i-1];  // initialize integration variable
+			xShot[i] = xShot[i-1];  //! initialize integration variable
 		}
 
 		if(settings_.closedLoopShooting) // overwrite control
 			u_local[i] += L_[i] * (xShot[i] - x_ref_lqr[i]);
 
-		// this is BAD
+		//! @todo: here we override the state trajectory directly (as passed by reference). This is bad.
 		if(i>k)
 		{
-			x_local[i] = xShot[i-1]; //"overwrite" x_local
+			x_local[i] = xShot[i-1]; //!"overwrite" x_local
 		}
 
 
@@ -347,7 +323,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 
 
 		if(i == K_local-1)
-			x_local[K_local]=xShot[K_local-1]; // fill in terminal state if required
+			x_local[K_local]=xShot[K_local-1]; //! fill in terminal state if required
 
 
 		// check if nan
@@ -406,7 +382,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots
 	//! make sure all intermediate entries in the defect trajectory are zero
 	d.setConstant(state_vector_t::Zero());
 
-	for (size_t k=firstIndex; k<=lastIndex; k=k+K_shot_)
+	for (size_t k=firstIndex; k<=lastIndex; k=k+settings_.K_shot)
 	{
 		// first rollout the shot
 		rolloutSingleShot(threadId, k, u_ff_local, x_local, x_ref_lqr, xShot);
@@ -423,9 +399,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeSingl
 		const StateVectorArray& x_local, const StateVectorArray& xShot, StateVectorArray& d) const
 {
 	//! compute the index where the next shot starts (respect total number of stages)
-	size_t k_next = std::min((size_t)this->K_, k + (size_t)this->K_shot_);
+	int k_next = std::min(K_, (int)k + settings_.K_shot);
 
-	if (k_next < (size_t)K_)
+	if (k_next < K_)
 	{
 		d[k_next-1] = xShot[k_next-1] - x_local[k_next];
 	}
@@ -573,7 +549,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
 	matFile_.put("iteration", iteration);
 	matFile_.put("K", K_);
 	matFile_.put("dt", settings_.dt);
-	matFile_.put("dt_sim", settings_.dt_sim);
+	matFile_.put("K_sim", settings_.K_sim);
 	matFile_.put("x", x_.toImplementation());
 	matFile_.put("u_ff", u_ff_.toImplementation());
 	matFile_.put("t", t_.toEigenTrajectory());
@@ -614,7 +590,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logInitToMat
 
 	matFile_.put("K", K_);
 	matFile_.put("dt", settings_.dt);
-	matFile_.put("dt_sim", settings_.dt_sim);
+	matFile_.put("K_sim", settings_.K_sim);
 
 	matFile_.put("x", x_.toImplementation());
 	matFile_.put("u_ff", u_ff_.toImplementation());
@@ -632,7 +608,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logInitToMat
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 const core::ControlTrajectory<CONTROL_DIM, SCALAR> NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getControlTrajectory() const
 {
-	// TODO this method currently copies the time array (suboptimal)
+	// \todo this method currently copies the time array (suboptimal)
 
 	core::tpl::TimeArray<SCALAR> t_control = t_;
 	t_control.pop_back();
@@ -644,7 +620,7 @@ const core::ControlTrajectory<CONTROL_DIM, SCALAR> NLOCBackendBase<STATE_DIM, CO
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 const core::StateTrajectory<STATE_DIM, SCALAR> NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getStateTrajectory() const
 {
-	// TODO this method currently copies the time array (suboptimal)
+	//! \todo this method currently copies the time array (suboptimal)
 
 	core::tpl::TimeArray<SCALAR> t_control = t_;
 
@@ -769,7 +745,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 	if (terminationFlag && *terminationFlag) return;
 
 	StateVectorArray x_ref_lqr;
-	StateVectorArray xShot_local(K_+1); // note this is currently only a dummy (todo nicer solution?)
+	StateVectorArray xShot_local(K_+1); //! note this is currently only a dummy (\todo nicer solution?)
 
 	if(settings_.stabilizeAroundPreviousSolution)
 	{

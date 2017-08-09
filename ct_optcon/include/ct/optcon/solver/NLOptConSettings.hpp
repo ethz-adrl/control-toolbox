@@ -201,13 +201,13 @@ public:
         nlocp_algorithm(GNMS),
         lqocp_solver(GNRICCATI_SOLVER),
 		loggingPrefix("alg"),
-		closedLoopShooting(false), // by default, we do open-loop shooting
+		closedLoopShooting(false), //! by default, we do open-loop shooting
 		stabilizeAroundPreviousSolution(false),
 		epsilon(1e-5),
 		dt(0.001),
-		dt_sim(0.001),
-		dt_shot(0.001),
-		min_cost_improvement(1e-4), // cost needs to be at least 1e-4 better before we assume convergence
+		K_sim(1),	//! by default, there is only one sub-integration step
+		K_shot(1), //! by default the shot length is equal to the control length
+		min_cost_improvement(1e-5), //! cost needs to be at least 1e-5 better before we assume convergence
 		maxDefectSum(1e-5),
 		meritFunctionRho(0.0),
 		max_iterations(100),
@@ -230,8 +230,8 @@ public:
 	bool stabilizeAroundPreviousSolution; 	//! stablize around previous solution, may increase stability
 	double epsilon;			//! Eigenvalue correction factor for Hessian regularization
     double dt;				//! sampling time for the control input (seconds)
-    double dt_sim;			//! sampling time for the forward simulation (seconds) \warning dt needs to be an integer multiple of dt_sim.
-    double dt_shot;			//! duration of a shot for all muliple-shooting approaches \warning dt_shot needs to be an integer multiple of dt.
+    int K_sim;			//! number of sub-integration-steps
+    int K_shot;			//! duration of a shot as an integer multiple of dt
     double min_cost_improvement;	//! minimum cost improvement between two interations to assume convergence
     double maxDefectSum;	//! maximum sum of squared defects (assume covergence if lower than this number)
     double meritFunctionRho; //! trade off between constraint violation and cost for a merit function
@@ -255,6 +255,7 @@ public:
     	return std::max(1, (int)std::lround(timeHorizon / dt));
     }
 
+    double getSimulationTimestep() const {return (dt/(double)K_sim);}
 
     //! print the current NLOptCon settings to console
     void print() const
@@ -266,21 +267,21 @@ public:
         std::cout<<"time varying discretization: "<<timeVaryingDiscretization<<std::endl;
         std::cout<<"nonlinear OCP algorithm: " << nlocp_algorithmToString.at(nlocp_algorithm)<<std::endl;
         std::cout<<"linear-quadratic OCP solver: " << locp_solverToString.at(lqocp_solver)<<std::endl;
-        std::cout<<"closed loop shooting: " << closedLoopShooting << std::endl;
+        std::cout<<"closed loop shooting:\t" << closedLoopShooting << std::endl;
         std::cout<<"stabilizing around previous solution: " << stabilizeAroundPreviousSolution << std::endl;
-        std::cout<<"dt: "<<dt<<std::endl;
-        std::cout<<"dt_sim: "<<dt_sim<<std::endl;
-        std::cout<<"dt_shot: "<<dt_shot<<std::endl;
-        std::cout<<"maxIter: "<<max_iterations<<std::endl;
-        std::cout<<"min cost improvement: "<<min_cost_improvement<<std::endl;
-        std::cout<<"max defect sum: "<<maxDefectSum<<std::endl;
-        std::cout<<"merit function rho: "<<meritFunctionRho<<std::endl;
-        std::cout<<"fixedHessianCorrection: "<<fixedHessianCorrection<<std::endl;
-        std::cout<<"recordSmallestEigenvalue: "<<recordSmallestEigenvalue<<std::endl;
-        std::cout<<"epsilon: "<<epsilon<<std::endl;
-        std::cout<<"nThreads: "<<nThreads<<std::endl;
-        std::cout<<"nThreadsEigen: "<<nThreadsEigen<<std::endl;
-        std::cout<<"loggingPrefix: "<<loggingPrefix<<std::endl;
+        std::cout<<"dt:\t"<<dt<<std::endl;
+        std::cout<<"K_sim:\t"<<K_sim<<std::endl;
+        std::cout<<"K_shot:\t"<<K_shot<<std::endl;
+        std::cout<<"maxIter:\t"<<max_iterations<<std::endl;
+        std::cout<<"min cost improvement:\t"<<min_cost_improvement<<std::endl;
+        std::cout<<"max defect sum:\t"<<maxDefectSum<<std::endl;
+        std::cout<<"merit function rho:\t"<<meritFunctionRho<<std::endl;
+        std::cout<<"fixedHessianCorrection:\t"<<fixedHessianCorrection<<std::endl;
+        std::cout<<"recordSmallestEigenvalue:\t"<<recordSmallestEigenvalue<<std::endl;
+        std::cout<<"epsilon:\t"<<epsilon<<std::endl;
+        std::cout<<"nThreads:\t"<<nThreads<<std::endl;
+        std::cout<<"nThreadsEigen:\t"<<nThreadsEigen<<std::endl;
+        std::cout<<"loggingPrefix:\t"<<loggingPrefix<<std::endl;
         std::cout <<std::endl;
 
         lineSearchSettings.print();
@@ -297,24 +298,26 @@ public:
      */
     bool parametersOk() const
     {
-    	if (dt == 0 || dt_sim == 0 || dt_shot == 0)
+    	if (dt <= 0)
 		{
-			std::cout << "Either control-, simulation-, or shot-timestep is zero." << std::endl;
+			std::cout << "Invalid parameter dt in NLOptConSettings, needs to be > 0. dt currently is " << dt << std::endl;
 			return false;
 		}
 
-		if (std::fmod(dt, dt_sim) > 1e-6)
-		{
-			std::cout << "control time-step dt should be an integer multiple of simulation time-step dt_sim." << std::endl;
-			return false;
-		}
+    	if (K_sim <=0){
+			std::cout << "Invalid parameter K_sim in NLOptConSettings, needs to be >= 1. K_sim currently is " << K_sim << std::endl;
+    		return false;
+    	}
 
-		// todo this check does not work with fmod. better option?
-//		if (std::fmod(dt_shot, dt) > 1e-5)
-//		{
-//			std::cout << "shot time-step dt_shot should be an integer multiple of control time-step dt." << std::endl;
-//			return false;
-//		}
+    	if (K_shot <=0){
+			std::cout << "Invalid parameter K_shot in NLOptConSettings, needs to be >= 1. K_shot currently is " << K_shot << std::endl;
+    		return false;
+    	}
+
+    	if((K_shot >1) && (nlocp_algorithm == ILQR)){
+			std::cout << "Invalid parameter: for iLQR K_shot needs to be 1. K_shot currently is " << K_shot << std::endl;
+    		return false;
+    	}
 
 		if (nThreads > 100 || nThreadsEigen > 100)
 		{
@@ -362,9 +365,9 @@ public:
 		} catch (...) {}
 		try{dt = pt.get<double>(ns +".dt");
 		} catch (...) {}
-		try{dt_sim = pt.get<double>(ns +".dt_sim");
+		try{K_sim = pt.get<int>(ns +".K_sim");
 		} catch (...) {}
-		try{dt_shot = pt.get<double>(ns +".dt_shot");
+		try{K_shot = pt.get<int>(ns +".K_shot");
 		} catch (...) {}
 		try{nThreadsEigen = pt.get<size_t>(ns + ".nThreadsEigen");
 		} catch (...) {}

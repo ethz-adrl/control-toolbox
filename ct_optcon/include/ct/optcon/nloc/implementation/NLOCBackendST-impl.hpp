@@ -55,7 +55,7 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(size_t firstIndex, size_t lastIndex)
 {
-	for (size_t k=firstIndex; k<=lastIndex; k = k+ this->K_shot_)
+	for (size_t k=firstIndex; k<=lastIndex; k = k+ this->settings_.K_shot)
 	{
 		// rollout the shot
 		if(this->settings_.stabilizeAroundPreviousSolution)
