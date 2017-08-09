@@ -209,7 +209,8 @@ public:
 	 * @return
 	 */
 	virtual bool finishMPCIteration() override {
-		return finishIteration();
+		finishIteration();
+		return true; // TODO : in MPC always returning true. Unclear how user wants to deal with varying costs, etc.
 	}
 
 };
