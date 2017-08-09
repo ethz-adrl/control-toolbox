@@ -31,34 +31,44 @@ namespace optcon {
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::setInitialGuess(const Policy_t& initialGuess)
 {
-	if(initialGuess.uff().size() != initialGuess.x_ref().size()-1)
+	if(initialGuess.x_ref().size() < (size_t)K_+1)
 	{
-		std::cout << "Provided initial state and control trajectories are not of correct size. Control should be one shorter than state.";
-		std::cout << "Control length is "<<initialGuess.uff().size()<<" but state length is "<<initialGuess.x_ref().size()<<std::endl;
-		throw(std::runtime_error("state and control trajectories are not equally long"));
+		std::cout << "Initial state guess length too short. Received length " << initialGuess.x_ref().size() <<", expected " << K_+1 << std::endl;
+		throw(std::runtime_error("initial state guess to short"));
 	}
 
 	if(initialGuess.uff().size() < (size_t)K_){
-		std::cout << "Initial guess length too short. Received length " << initialGuess.uff().size() <<", expected " << K_ << std::endl;
+		std::cout << "Initial control guess length too short. Received length " << initialGuess.uff().size() <<", expected " << K_ << std::endl;
 		throw std::runtime_error("initial control guess to short");
 	}
-
-	if(initialGuess.uff().size() > (size_t)K_)
-		std::cout << "Warning, initial control guess too long, will truncate" << std::endl;
 
 	if(initialGuess.K().size() < (size_t)K_){
 		std::cout << "Initial feedback length too short. Received length " << initialGuess.K().size() <<", expected " << K_ << std::endl;
 		throw std::runtime_error("initial control guess to short");
 	}
 
-	if(initialGuess.K().size() > (size_t)K_)
-		std::cout << "Warning, initial feedback guess too long, will truncate" << std::endl;
-
-
 	u_ff_ = initialGuess.uff();
 	L_ = initialGuess.K();
 	x_ = initialGuess.x_ref();
 	x_prev_ = x_;
+
+	if(x_.size() > (size_t)K_+1)
+	{
+		std::cout << "Warning, initial state guess too long. Received length " << x_.size() <<", expected " << K_+1 << ", will truncate" << std::endl;
+		x_.resize(K_+1);
+	}
+
+	if(u_ff_.size() > (size_t)K_)
+	{
+		std::cout << "Warning, initial control guess too long. Received length " << u_ff_.size() <<", expected " << K_ << ", will truncate" << std::endl;
+		u_ff_.resize(K_);
+	}
+
+	if(L_.size() > (size_t)K_)
+	{
+		std::cout << "Warning, initial feedback guess too long. Received length " << L_.size() <<", expected " << K_ << ", will truncate" << std::endl;
+		L_.resize(K_);
+	}
 
 	initialized_ = true;
 

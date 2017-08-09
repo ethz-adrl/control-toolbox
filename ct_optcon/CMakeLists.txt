@@ -267,6 +267,7 @@ catkin_add_gtest(NLOC_MPCTest test/mpc/NLOC_MPCTest.cpp)
 target_link_libraries(NLOC_MPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
 
+
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
     

@@ -15,7 +15,7 @@ using namespace ct::optcon;
 const double dt = 0.1;
 
 template <size_t control_dim, size_t state_dim>
-void timeSingleSolve(size_t N)
+void timeSingleSolve(size_t N, std::vector< std::vector<double> >& loggedSolveTimes)
 {
 	std::cout << "time horizon: "<<N<<std::endl;
 	std::cout << "============= " << std::endl << std::endl;
@@ -28,6 +28,8 @@ void timeSingleSolve(size_t N)
 
 	lqocSolvers.push_back(gnRiccatiSolver);
 	lqocSolvers.push_back(hpipmSolver);
+
+	loggedSolveTimes.resize(lqocSolvers.size());
 
 	std::vector<std::shared_ptr<LQOCProblem<state_dim, control_dim>>> problems;
 	std::shared_ptr<LQOCProblem<state_dim, control_dim>> lqocProblem1(new LQOCProblem<state_dim, control_dim>(N));
@@ -56,7 +58,7 @@ void timeSingleSolve(size_t N)
 		std::vector<double> getTime;
 		std::vector<double> totalTime;
 
-		size_t nRuns = 5;
+		size_t nRuns = 20000/N;
 
 		for(size_t j = 0; j< nRuns; j++)
 		{
@@ -99,6 +101,8 @@ void timeSingleSolve(size_t N)
 			double avgGetTime = std::accumulate(getTime.begin(), getTime.end(), 0.0) / (double) nRuns;
 			double avgTotalTime = std::accumulate(totalTime.begin(), totalTime.end(), 0.0) / (double) nRuns;
 
+			loggedSolveTimes[i].push_back(avgSolveTime);
+
 			std::cout << "average setProblem() with "<< solverNames[i] << " took\t" << avgSetTime << " ms" << std::endl;
 			std::cout << "average solve() with "<< solverNames[i] << " took\t" << avgSolveTime << " ms" << std::endl;
 			std::cout << "average get() with "<< solverNames[i] << " took\t" << avgGetTime<< " ms" << std::endl;
@@ -122,20 +126,44 @@ void timeSingleSolve(size_t N)
 template <size_t control_dim, size_t state_dim>
 void timeSolvers()
 {
-	std::vector<size_t> testTimeHorizons = { 5, 50, 500, 5000, 10000 };
+	std::vector<size_t> testTimeHorizons = { 5, 10, 50, 100, 500, 1000, 2000, 5000, 10000, 15000 };
 
 	std::cout << "Test System: "<<std::endl;
 	std::cout << "============ "<<std::endl;
 	std::cout << "state dim: "<<state_dim<<std::endl;
 	std::cout << "control dim: "<<control_dim<<std::endl;
 
+	std::vector< std::vector<double> > loggedSolveTimes;
+
 
 	for (size_t i=0; i<testTimeHorizons.size(); i++)
 	{
-		timeSingleSolve<control_dim, state_dim>(testTimeHorizons[i]);
+		timeSingleSolve<control_dim, state_dim>(testTimeHorizons[i], loggedSolveTimes);
 	}
 
 	std::cout << std::endl << std::endl << std::endl << std::endl;
+
+	std::cout << "Matlab friendly output:" << std::endl;
+	std::cout << "stages = [";
+	for (size_t i=0; i<testTimeHorizons.size();i++)
+	{
+		std::cout<<testTimeHorizons[i];
+		if (i<testTimeHorizons.size()-1)
+			std::cout<<", ";
+	}
+	std::cout << "];"<<std::endl;
+
+	for (size_t j=0; j<2; j++)
+	{
+		std::cout << "times_solver"<<j<<" = [";
+		for (size_t i=0; i<testTimeHorizons.size();i++)
+		{
+			std::cout<<loggedSolveTimes[j][i];
+			if (i<testTimeHorizons.size()-1)
+				std::cout<<", ";
+		}
+		std::cout << "];"<<std::endl;
+	}
 }
 
 
@@ -145,7 +173,7 @@ int main(int argc, char* argv[])
 	timeSolvers<6,6>();
 	timeSolvers<12,12>();
 	timeSolvers<24,24>();
-	timeSolvers<48,48>();
+	timeSolvers<12,36>();
 
 	return 1;
 }
