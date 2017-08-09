@@ -181,7 +181,20 @@ public:
 	}
 
 	//! to the best of our knowledge, the Feedback matrix cannot be extracted from HPIPM
-	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> getFeedback() override { throw std::runtime_error("not implemented"); }
+	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> getFeedback() override
+	{
+		ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> K(this->lqocProblem_->getNumberOfStages());
+		Eigen::Matrix<double, control_dim, control_dim> Lr;
+		Eigen::Matrix<double, state_dim, control_dim> Ls;
+		for (size_t i=0; i<this->lqocProblem_->getNumberOfStages(); i++)
+		{
+			::d_cvt_strmat2mat(Lr.rows(), Lr.cols(), &workspace_.L[i], 0, 0, Lr.data(), Lr.rows());
+			::d_cvt_strmat2mat(Ls.rows(), Ls.cols(), &workspace_.L[i], Lr.rows(), 0, Ls.data(), Ls.rows());
+			K[i] = (-Lr.inverse() * Ls.transpose());
+		}
+
+		return K;
+	}
 
 
 	void printSolution()

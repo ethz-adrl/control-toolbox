@@ -72,6 +72,7 @@ int main(int argc, char* argv[])
 			auto start_get= std::chrono::steady_clock::now();
 			auto xSol = lqocSolvers[i]->getSolutionState();
 			auto uSol = lqocSolvers[i]->getSolutionControl();
+			auto KSol = lqocSolvers[i]->getFeedback();
 			auto end_get = std::chrono::steady_clock::now();
 
 			auto end_all = std::chrono::steady_clock::now();
@@ -91,6 +92,10 @@ int main(int argc, char* argv[])
 			std::cout << "u:" << std::endl;
 			for (size_t j=0; j<uSol.size(); j++)
 				std::cout<<uSol[j].transpose()<<std::endl;
+
+			std::cout << "K:" << std::endl;
+			for (size_t j=0; j<KSol.size(); j++)
+				std::cout<<KSol[j]<<std::endl<<std::endl;
 
 			std::cout << std::endl << std::endl;
 
