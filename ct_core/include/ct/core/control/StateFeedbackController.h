@@ -137,9 +137,9 @@ public:
 		tpl::TimeArray<SCALAR> tshort = t;
 		tshort.pop_back(); // todo: the copying here is not optimal
 
-		assert(K.size() == tshort.size());
-		assert(uff.size() == tshort.size());
-		assert(x_ref.size() == t.size());
+		if(K.size() != tshort.size()) throw std::runtime_error("StateFeedbackController.h : K.size() != tshort.size()");
+		if(uff.size() != tshort.size()) throw std::runtime_error("StateFeedbackController.h : uff.size() != tshort.size()");
+		if(x_ref.size() != t.size()) throw std::runtime_error("StateFeedbackController.h : x_ref.size() != t.size()");
 
 		x_ref_.setData(x_ref),
 		x_ref_.setTime(t),

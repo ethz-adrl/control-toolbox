@@ -161,12 +161,11 @@ TEST(MPCTestA, PreIntegratorTest)
 		// FIRST ILQR INSTANCE FOR CALCULATING THE 'PERFECT' INITIAL GUESS
 		NLOptConSettings nloc_settings;
 		nloc_settings.dt = 0.001;
-		nloc_settings.dt_sim = 0.001;
 		nloc_settings.max_iterations = 100;
 		nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		nloc_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-		nloc_settings.closedLoopShooting = false;
+		nloc_settings.closedLoopShooting = true;
 		nloc_settings.integrator = ct::core::IntegrationType::RK4;
 
 		// number of steps
@@ -288,8 +287,6 @@ TEST(MPCTestB, NLOC_MPC_DoublePrecision)
 
 			NLOptConSettings nloc_settings;
 			nloc_settings.dt = 0.001;
-			nloc_settings.dt_sim = 0.001;
-			nloc_settings.dt_shot = 0.001;
 			nloc_settings.max_iterations = 100000;
 			nloc_settings.min_cost_improvement = 0.0;	// strict bounds to reach a solution very close to optimality
 			nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
@@ -501,7 +498,6 @@ TEST(MPCTest, iLQRMPC_SinglePrecision)
 
 		NLOptConSettings nloc_settings;
 		nloc_settings.dt = 0.001;
-		nloc_settings.dt_sim = 0.001;
 		nloc_settings.max_iterations = 10000000;
 		nloc_settings.min_cost_improvement = 0.0;	// strict bounds to reach a solution very close to optimality
 		nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;

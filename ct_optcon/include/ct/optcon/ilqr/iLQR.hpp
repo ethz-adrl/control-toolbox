@@ -159,9 +159,9 @@ public:
 #endif
 
 		// update solutions
-		this->backend_->getFeedforwardUpdates();// todo only when closed loop shooting
-		this->backend_->getFeedback(); 			// todo only when closed loop shooting
-		this->backend_->getControlUpdates(); 	// todo only when open loop shooting
+		this->backend_->getFeedforwardUpdates();
+		this->backend_->getFeedback();
+		this->backend_->getControlUpdates();
 		this->backend_->getStateUpdates();
 
 		// line-search
@@ -210,7 +210,7 @@ public:
 	 */
 	virtual bool finishMPCIteration() override {
 		finishIteration();
-		return true; // TODO : in MPC always returning true. Unclear how user wants to deal with varying costs, etc.
+		return true; //! \todo : in MPC always returning true. Unclear how user wants to deal with varying costs, etc.
 	}
 
 };

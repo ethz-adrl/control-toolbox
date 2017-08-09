@@ -167,8 +167,8 @@ void testGaussNewtonMethods()
 	nloc_settings.min_cost_improvement = 1e-6;
 	nloc_settings.fixedHessianCorrection = false;
 	nloc_settings.dt = 0.001;
-	nloc_settings.dt_sim = 0.001;
-	nloc_settings.dt_shot = 0.001;
+	nloc_settings.K_sim = 1;
+	nloc_settings.K_shot = 1;
 	nloc_settings.integrator = ct::core::IntegrationType::EULER;
 	nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 	nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
@@ -261,8 +261,8 @@ void singleCore()
 	gnms_settings.min_cost_improvement = 1e-6;
 	gnms_settings.fixedHessianCorrection = false;
 	gnms_settings.dt = 0.001;
-	gnms_settings.dt_sim = 0.001;
-	gnms_settings.dt_shot = 0.001;
+	gnms_settings.K_sim = 1;
+	gnms_settings.K_shot = 1;
 	gnms_settings.integrator = ct::core::IntegrationType::EULER;
 	gnms_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 	gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
@@ -373,8 +373,8 @@ void multiCore()
 	gnms_settings.min_cost_improvement = 1e-6;
 	gnms_settings.fixedHessianCorrection = false;
 	gnms_settings.dt = 0.001;
-	gnms_settings.dt_sim = 0.001;
-	gnms_settings.dt_shot = 0.023;
+	gnms_settings.K_sim = 1;
+	gnms_settings.K_shot = 23;
 	gnms_settings.integrator = ct::core::IntegrationType::EULER;
 	gnms_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 	gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;

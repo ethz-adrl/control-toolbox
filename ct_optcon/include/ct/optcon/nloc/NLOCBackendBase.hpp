@@ -123,7 +123,6 @@ public:
 		    controller_(settings.nThreads+1),
 		    settings_(settings),
 			K_(0),
-			K_shot_(1),
 			initialized_(false),
 			configured_(false),
 			iteration_(0),
@@ -203,7 +202,7 @@ public:
 	SCALAR getTimeHorizon() {return K_* settings_.dt ;}
 
 	int getNumSteps() {return K_;}
-	int getNumStepsPerShot() {return K_shot_;}
+	int getNumStepsPerShot() {return settings_.K_shot;}
 
 	SYMPLECTIC_ENABLED initializeSymplecticIntegrators(size_t i);
 	SYMPLECTIC_DISABLED initializeSymplecticIntegrators(size_t i) {};
@@ -640,7 +639,6 @@ protected:
 	Settings_t settings_;
 
 	int K_; //! the number of stages in the overall OptConProblem
-	int K_shot_; //! for a multiple shooting scenario, the number of stages in a shot (note that the last shot's length may still be different)
 
 	StateVectorArray lx_;
 	StateVectorArray x_;
