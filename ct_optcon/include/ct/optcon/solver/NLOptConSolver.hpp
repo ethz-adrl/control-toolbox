@@ -114,6 +114,24 @@ public:
 		return nlocAlgorithm_ -> finishIteration();
 	}
 
+
+	/*!
+	 * execute preparation steps for an iteration, e.g. computation of defects
+	 */
+	virtual void prepareMPCIteration()
+	{
+		nlocAlgorithm_ -> prepareMPCIteration();
+	}
+
+	/*!
+	 * execute finishing step for an iteration, e.g. solving Riccati backward pass.
+	 * @return
+	 */
+	virtual bool finishMPCIteration()
+	{
+		return nlocAlgorithm_ -> finishMPCIteration();
+	}
+
 	/**
 	 * run a single iteration of the solver
 	 * @return true if a better solution was found

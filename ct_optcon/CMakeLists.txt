@@ -259,8 +259,8 @@ get_filename_component(MPC_TEST_MAT_DIR "test/mpc/matfiles" ABSOLUTE)
 configure_file(test/mpc/mpcTestSettings.h.in test/mpc/mpcTestSettings.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/mpc)
 
-catkin_add_gtest(iLQRMPCTest test/mpc/iLQRMPCTest.cpp)
-target_link_libraries(iLQRMPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+catkin_add_gtest(NLOC_MPCTest test/mpc/NLOC_MPCTest.cpp)
+target_link_libraries(NLOC_MPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
 
 

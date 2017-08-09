@@ -141,7 +141,7 @@ public:
 	{
 		Eigen::initParallel();
 
-		for (size_t i=0; i<settings.nThreads+1; i++)
+		for (int i=0; i<settings.nThreads+1; i++)
 		{
 			controller_[i] = ConstantControllerPtr (new core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>());
 		}
@@ -460,6 +460,12 @@ public:
 	//! performLineSearch: execute the line search, possibly with different threading schemes
 	virtual SCALAR performLineSearch() = 0;
 
+	//! simple full-step update for state and feedforward control (used for MPC-mode!)
+	void doFullStepUpdate()
+	{
+		u_ff_ += lu_;
+		x_ += lx_;
+	}
 
 protected:
 
