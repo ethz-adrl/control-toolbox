@@ -36,6 +36,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cppad/cppad.hpp>
 #include <cppad/example/cppad_eigen.hpp>
 #include <cppad/example/eigen_mat_inv.hpp>
+#include "internal/autodiff/CppadParallel.h"
 
 // Include file for convenience
 #include <Eigen/Core>

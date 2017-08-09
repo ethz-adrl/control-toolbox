@@ -1,0 +1,126 @@
+/***********************************************************************************
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Farbod Farshidian. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
+
+#ifndef INCLUDE_CT_CORE_INTERNAL_AUTODIFF_CPPADMP_H_
+#define INCLUDE_CT_CORE_INTERNAL_AUTODIFF_CPPADMP_H_
+
+#include <mutex>
+
+namespace ct{
+namespace core{ 
+
+/**
+ * @brief      This class provides static methods to initialize a parallel
+ *             section containing CppAD objects
+ */
+class CppadParallel
+{
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+public:
+
+    /**
+     * @brief      Call this function before entering a parallel section
+     *             containing CppAD objects
+     *
+     * @param[in]  numThreads  The number of threads. Make sure to count the main thread in
+     */
+    static void initParallel(size_t numThreads)
+    {
+        isSequential_ = true;
+        numThreads_ = numThreads;
+
+        CppAD::thread_alloc::parallel_setup(
+            numThreads_, in_parallel, thread_number
+        );
+
+        CppAD::thread_alloc::hold_memory(true);
+        CppAD::parallel_ad<double>();
+        isSequential_ = false;
+    }
+
+    static void resetParallel()
+    {
+        threadMap_.clear();
+        isSequential_ = true;
+        CppAD::thread_alloc::parallel_setup(
+            1, CPPAD_NULL, CPPAD_NULL
+        );
+        CppAD::thread_alloc::hold_memory(false);
+        CppAD::parallel_ad<double>();
+    }
+
+private:
+    CppadParallel(){}
+    static bool isSequential_;
+    static std::map<size_t, size_t> threadMap_;
+    static size_t numThreads_;
+    static std::mutex hashMutex_;
+
+    /**
+     * @brief      This method gets called by Cppad::parallel_setup and
+     *             indicates whether the program is executing a parallel section
+     *
+     * @return     True if in parallel
+     */
+    static bool in_parallel(void)
+    {
+        return !isSequential_;
+    }
+
+    /**
+     * @brief      This method gets called by Cppad::parallel_setup and
+     *             indicates the thread number of the current thread
+     *
+     * @return     The thread number
+     */
+    static size_t thread_number(void)
+    {
+        std::thread::id this_id = std::this_thread::get_id();
+        std::hash<std::thread::id> hasher;
+        size_t hashId = hasher(this_id);
+
+        hashMutex_.lock();
+        if(threadMap_.size() < numThreads_)
+            if(!threadMap_.count(hashId))
+                threadMap_.insert(std::make_pair(hashId, threadMap_.size()));
+
+        size_t threadNum = threadMap_[hashId];
+        hashMutex_.unlock();
+        
+        return threadNum;
+    }
+};
+
+size_t CppadParallel::numThreads_;
+std::map<size_t, size_t> CppadParallel::threadMap_;
+bool CppadParallel::isSequential_;
+std::mutex CppadParallel::hashMutex_;
+
+}
+}
+
+#endif
