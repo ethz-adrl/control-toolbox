@@ -71,7 +71,7 @@ public:
 	typedef ct::core::StateVectorArray<STATE_DIM> StateVectorArray;
 	typedef ct::core::ControlVectorArray<CONTROL_DIM> ControlVectorArray;
 
-	HPIPMInterface() :
+	HPIPMInterface(int N = -1) :
 		N_(-1),
 		x0_(nullptr)
 	{
@@ -84,7 +84,7 @@ public:
 		arg_.iter_max = 20;
 		arg_.mu0 = 2.0;
 
-		//changeTimeHorizon(N);
+		changeNumberOfStages(N);
 	}
 
 	~HPIPMInterface()

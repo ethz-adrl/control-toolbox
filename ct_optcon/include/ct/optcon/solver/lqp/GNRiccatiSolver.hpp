@@ -70,6 +70,11 @@ public:
 		Eigen::setNbThreads(settings_.nThreadsEigen);
 	}
 
+	GNRiccatiSolver(int N)
+	{
+		changeNumberOfStages(N);
+	}
+
 	virtual ~GNRiccatiSolver() {}
 
 
@@ -182,7 +187,14 @@ protected:
 	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) override
 	{
 		const int& N = lqocProblem->getNumberOfStages();
-		if(gv_.size() == N)
+
+		if(gv_.size() != N)
+			changeNumberOfStages(N);
+	}
+
+	void changeNumberOfStages(int N)
+	{
+		if (N<=0)
 			return;
 
 		gv_.resize(N);

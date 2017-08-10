@@ -22,9 +22,16 @@ void timeSingleSolve(size_t N, std::vector< std::vector<double> >& loggedSolveTi
 
 	std::vector<std::shared_ptr<LQOCSolver<state_dim, control_dim>>> lqocSolvers;
 
-	std::shared_ptr<LQOCSolver<state_dim, control_dim>> hpipmSolver(new HPIPMInterface<state_dim, control_dim>);
-	std::shared_ptr<LQOCSolver<state_dim, control_dim>> gnRiccatiSolver(new GNRiccatiSolver<state_dim, control_dim>);
+	std::shared_ptr<LQOCSolver<state_dim, control_dim>> hpipmSolver(new HPIPMInterface<state_dim, control_dim>(N));
+	std::shared_ptr<LQOCSolver<state_dim, control_dim>> gnRiccatiSolver(new GNRiccatiSolver<state_dim, control_dim>(N));
 	std::vector<std::string> solverNames = {"Riccati",  "HPIPM" };
+
+	NLOptConSettings gnRiccatiSolverSettings;
+	gnRiccatiSolverSettings.fixedHessianCorrection = true;
+	gnRiccatiSolverSettings.epsilon = 0;
+	gnRiccatiSolverSettings.recordSmallestEigenvalue = false;
+	gnRiccatiSolverSettings.nThreadsEigen = 1;
+	gnRiccatiSolver->configure(gnRiccatiSolverSettings);
 
 	lqocSolvers.push_back(gnRiccatiSolver);
 	lqocSolvers.push_back(hpipmSolver);
@@ -101,7 +108,7 @@ void timeSingleSolve(size_t N, std::vector< std::vector<double> >& loggedSolveTi
 			double avgGetTime = std::accumulate(getTime.begin(), getTime.end(), 0.0) / (double) nRuns;
 			double avgTotalTime = std::accumulate(totalTime.begin(), totalTime.end(), 0.0) / (double) nRuns;
 
-			loggedSolveTimes[i].push_back(avgSolveTime);
+			loggedSolveTimes[i].push_back(avgTotalTime);
 
 			std::cout << "average setProblem() with "<< solverNames[i] << " took\t" << avgSetTime << " ms" << std::endl;
 			std::cout << "average solve() with "<< solverNames[i] << " took\t" << avgSolveTime << " ms" << std::endl;
