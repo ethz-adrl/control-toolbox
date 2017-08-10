@@ -157,13 +157,14 @@ public:
 
 		for(int k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
 		{
-			//! reconstruct control update
+			// reconstruct control update
 			this->lu_[k] = hu_[k] - p.u_[k];
 
-			//! reconstruct state update
+			// reconstruct state update
 			this->lx_[k+1] = hx_[k+1] - p.x_[k+1];
 
-			//! compute the norms of the updates
+			// compute the norms of the updates
+			// \todo needed?
 			this->delta_x_norm_ += this->lx_[k+1].norm();
 			this->delta_uff_norm_ += this->lu_[k].norm();
 		}
@@ -180,35 +181,34 @@ public:
 		return hu_;
 	}
 
-	//! to the best of our knowledge, the Feedback matrix cannot be extracted from HPIPM
 	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> getFeedback() override
 	{
 		LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
-
 		ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> K(p.getNumberOfStages());
-		Eigen::Matrix<double, control_dim, control_dim> L0;
+
+		// for stage 0, HPIPM does not provide feedback, so we have to construct it
+
+		// step 1: reconstruct H[0]
 		Eigen::Matrix<double, control_dim, control_dim> Lr;
-		Eigen::Matrix<double, control_dim, control_dim> H;
-
-		//stage 0
 		::d_cvt_strmat2mat(Lr.rows(), Lr.cols(), &workspace_.L[0], 0, 0, Lr.data(), Lr.rows());
-		H = Lr.template triangularView<Eigen::Lower>()*Lr.transpose();
+		Eigen::Matrix<double, control_dim, control_dim> H;
+		H = Lr.template triangularView<Eigen::Lower>()*Lr.transpose(); // Lr is cholesky of H
 
-		// b pseudo inverse
-		Eigen::Matrix<double, control_dim, state_dim> Bpinv = (p.B_[0].transpose()*p.B_[0]).inverse() * p.B_[0].transpose();
-
-		// reconstruct S
+		// step2: reconstruct S[1]
+		Eigen::Matrix<double, state_dim, state_dim> Lq;
+		::d_cvt_strmat2mat(Lq.rows(), Lq.cols(), &workspace_.L[1], control_dim, control_dim, Lq.data(), Lq.rows());
 		Eigen::Matrix<double, state_dim, state_dim> S;
-		S = Bpinv.transpose() * (H - p.R_[0]) * Bpinv;
+		S = Lq.template triangularView<Eigen::Lower>()*Lq.transpose(); // Lq is cholesky of S
 
-		// compute G
+		// step3: compute G[0]
 		Eigen::Matrix<double, control_dim, state_dim> G;
 		G = p.P_[0];
 		G.noalias() += p.B_[0].transpose() * S * p.A_[0];
 
-		// compute K
+		// step4: compute K[0]
 		K[0] = (-H.inverse() * G); // \todo use Lr here instead of H!
 
+		// for all other steps we can just read Ls
 		Eigen::Matrix<double, state_dim, control_dim> Ls;
 		for (size_t i=1; i<this->lqocProblem_->getNumberOfStages(); i++)
 		{
@@ -218,6 +218,52 @@ public:
 		}
 
 		return K;
+	}
+
+	virtual ct::core::ControlVectorArray<CONTROL_DIM> getFeedforwardUpdates() override
+	{
+		LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
+		ct::core::ControlVectorArray<CONTROL_DIM> lv(p.getNumberOfStages());
+
+
+		for (size_t i=1; i<this->lqocProblem_->getNumberOfStages(); i++)
+		{
+			// reconstruct H
+			Eigen::Matrix<double, control_dim, control_dim> Lr;
+			::d_cvt_strmat2mat(Lr.rows(), Lr.cols(), &workspace_.L[i], 0, 0, Lr.data(), Lr.rows());
+			Eigen::Matrix<double, control_dim, control_dim> H;
+			H = Lr.template triangularView<Eigen::Lower>()*Lr.transpose(); // Lr is cholesky of H
+
+			// reconstruct S
+			Eigen::Matrix<double, state_dim, state_dim> Lq;
+			::d_cvt_strmat2mat(Lq.rows(), Lq.cols(), &workspace_.L[i+1], control_dim, control_dim, Lq.data(), Lq.rows());
+			Eigen::Matrix<double, state_dim, state_dim> S;
+			S = Lq.template triangularView<Eigen::Lower>()*Lq.transpose(); // Lq is cholesky of S
+
+			// reconstruct sv
+			Eigen::Matrix<double, 1, state_dim> svTranspose;
+			::d_cvt_strmat2mat(svTranspose.rows(), svTranspose.cols(), &workspace_.L[i+1], control_dim+state_dim, control_dim, svTranspose.data(), svTranspose.rows());
+
+
+			Eigen::Matrix<double, 1, control_dim> llTranspose;
+			::d_cvt_strmat2mat(llTranspose.rows(), llTranspose.cols(), &workspace_.L[i], control_dim+state_dim, 0, llTranspose.data(), llTranspose.rows());
+
+			Eigen::Matrix<double, control_dim + state_dim + 1, control_dim+state_dim> L;
+			::d_cvt_strmat2mat(L.rows(), L.cols(), &workspace_.L[i+1], 0, 0, L.data(), L.rows());
+
+			std::cout << "lower left: "<<llTranspose<<std::endl;
+			std::cout << "lower right: "<<svTranspose<<std::endl;
+
+			Eigen::Matrix<double, control_dim, 1> gv;
+			gv = llTranspose.transpose();
+			gv.noalias() += p.B_[i].transpose() * svTranspose.transpose();
+			gv.noalias() += p.B_[i].transpose() * S.template selfadjointView<Eigen::Lower>() * bEigen_[i];
+
+			lv[i] = H.inverse() * gv;
+
+		}
+
+		return lv;
 	}
 
 
@@ -316,6 +362,12 @@ private:
 	{
 		changeNumberOfStages(lqocProblem->getNumberOfStages());
 
+		// we do not need to reset the pointers if
+		bool keepPointers =
+				this->lqocProblem_ && //there was an lqocProblem before
+				this->lqocProblem_->getNumberOfStages() == lqocProblem->getNumberOfStages() && // and the number of states did not change
+				this->lqocProblem_ == lqocProblem;  // and it was the same pointer
+
 		setupHPIPM(
 				lqocProblem->x_,
 				lqocProblem->u_,
@@ -326,7 +378,8 @@ private:
 				lqocProblem->qv_,
 				lqocProblem->Q_,
 				lqocProblem->rv_,
-				lqocProblem->R_);
+				lqocProblem->R_,
+				keepPointers);
 	}
 
 	void setupHPIPM(
@@ -339,7 +392,8 @@ private:
 			StateVectorArray& qv,
 			StateMatrixArray& Q,
 			ControlVectorArray& rv,
-			ControlMatrixArray& R
+			ControlMatrixArray& R,
+			bool keepPointers = false
 	)
 	{
 		if (N_ == -1)
@@ -350,51 +404,43 @@ private:
 		// transcribe the representation of the affine system to the absolute origin of the linear system
 		for (int i=0; i<N_; i++)
 		{
-			hA_[i] = A[i].data();
-			hB_[i] = B[i].data();
 			bEigen_[i] = b[i] + x[i+1] - A[i]*x[i] - B[i] * u[i];
-			hb_[i] = bEigen_[i].data();
 		}
 
 		hb0_ = b[0] + x[1] - B[0] * u[0];	//! this line needs to be transcribed separately (correction for first stage)
-		hb_[0] = hb0_.data();
+
 
 		for (int i=0; i<N_; i++)
 		{
-			// transcribe the representation of the LQ cost into system x-origin coordinates
-			hQ_[i] = Q[i].data();
-			hS_[i] = P[i].data();
-			hR_[i] = R[i].data();
 			hqEigen_[i] = qv[i] - Q[i]*x[i] - P[i].transpose()*u[i];
-			hq_[i] = hqEigen_[i].data();
 			hrEigen_[i] = rv[i] - R[i]*u[i] - P[i]*x[i];
-			hr_[i] = hrEigen_[i].data();
 		}
 
 		// transcription of LQ cost into x-origin coordinates
-		hQ_[N_] = Q[N_].data();
-		hS_[N_] = nullptr;
-		hR_[N_] = nullptr;
 		hqEigen_[N_] = qv[N_] - Q[N_]*x[N_];
-		hq_[N_] = hqEigen_[N_].data();
-		hr_[N_] = nullptr;
-
 		hr0_ = hrEigen_[0] + P[0] * x[0];
-		hr_[0] = hr0_.data();
 
-//		printf("\nQ\n");
-//		d_print_mat(STATE_DIM, STATE_DIM, hQ_[0], STATE_DIM);
-//		printf("\nR\n");
-//		d_print_mat(CONTROL_DIM, CONTROL_DIM, hR_[0], CONTROL_DIM);
-//		printf("\nS\n");
-//		d_print_mat(CONTROL_DIM, STATE_DIM, hS_[0], CONTROL_DIM);
-//		printf("\nq\n");
-//		d_print_mat(1, STATE_DIM, hq_[0], 1);
-//		printf("\nr\n");
-//		d_print_mat(1, CONTROL_DIM, hr_[1], 1);
-//		printf("\nr0\n");
-//		d_print_mat(1, CONTROL_DIM, hr_[0], 1);
 
+		if (!keepPointers)
+		{
+			for (int i=0; i<N_; i++)
+			{
+				hA_[i] = A[i].data();
+				hB_[i] = B[i].data();
+			}
+
+			for (int i=0; i<N_; i++)
+			{
+				// transcribe the representation of the LQ cost into system x-origin coordinates
+				hQ_[i] = Q[i].data();
+				hS_[i] = P[i].data();
+				hR_[i] = R[i].data();
+			}
+			hQ_[N_] = Q[N_].data();
+		}
+
+		// reset lqocProblem pointer, will get set in Base class if needed
+		this->lqocProblem_ = nullptr;
 	}
 
 
@@ -454,6 +500,21 @@ private:
 		{
 			pi_[i] = hpi_[i].data();
 		}
+		for (int i=0; i<N_; i++)
+		{
+			hq_[i] = hqEigen_[i].data();
+			hr_[i] = hrEigen_[i].data();
+			hb_[i] = bEigen_[i].data();
+		}
+
+		hS_[N_] = nullptr;
+		hR_[N_] = nullptr;
+
+		hq_[N_] = hqEigen_[N_].data();
+		hr_[N_] = nullptr;
+
+		hb_[0] = hb0_.data();
+		hr_[0] = hr0_.data();
 
 		ct::core::StateVectorArray<STATE_DIM> hx;
 		ct::core::ControlVectorArray<CONTROL_DIM> hu;

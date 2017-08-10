@@ -66,8 +66,8 @@ public:
 	 */
 	void setProblem(std::shared_ptr<LQOCProblem_t> lqocProblem)
 	{
-		lqocProblem_ = lqocProblem;
 		setProblemImpl(lqocProblem);
+		lqocProblem_ = lqocProblem;
 	}
 
 
@@ -84,7 +84,7 @@ public:
 	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() = 0;
 	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() = 0;
 
-	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> getFeedback() { throw std::runtime_error("this solver does not provide feedback gains"); }
+	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> getFeedback() = 0;
 
 	const SCALAR& getControlUpdateNorm() {return delta_uff_norm_;}
 
@@ -94,7 +94,7 @@ public:
 
 	const core::ControlVectorArray<CONTROL_DIM, SCALAR>& getControlUpdates() {return lu_;}
 
-	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdates() {throw std::runtime_error("this solver does not provide a pure feedforward update"); }
+	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdates() = 0;
 
 protected:
 

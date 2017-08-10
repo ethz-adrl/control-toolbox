@@ -164,12 +164,15 @@ public:
 			//! control update rule
 			this->lu_[k] = lv_[k];
 			if (k>0) // lx is zero for k=0
-				this->lu_[k] += L_[k] * this->lx_[k];
+				this->lu_[k].noalias() += L_[k] * this->lx_[k];
 
 			//! state update rule
-			this->lx_[k+1] = (p.A_[k] + p.B_[k] * L_[k]) * this->lx_[k]  + p.B_[k] * lv_[k] + p.b_[k];
+			this->lx_[k+1] = p.B_[k] * lv_[k] + p.b_[k];
+			if(k>0)
+				this->lx_[k+1].noalias() += (p.A_[k] + p.B_[k] * L_[k]) * this->lx_[k];
 
 			//! compute the norms of the updates
+			//! \todo needed?
 			this->delta_x_norm_ += this->lx_[k+1].norm();
 			this->delta_uff_norm_ += this->lu_[k].norm();
 		}
@@ -186,7 +189,7 @@ protected:
 	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) override
 	{
 		const int& N = lqocProblem->getNumberOfStages();
-		if(gv_.size() == N)
+		if(this->lqocProblem_ && this->lqocProblem_->getNumberOfStages() == N)
 			return;
 
 		gv_.resize(N);
