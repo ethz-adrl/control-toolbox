@@ -515,6 +515,7 @@ private:
     std::map<APPROXIMATION, std::string> discretizationToString = {
     		{APPROXIMATION::FORWARD_EULER, "Forward_euler"},
     		{APPROXIMATION::BACKWARD_EULER, "Backward_euler"},
+    		{APPROXIMATION::SYMPLECTIC_EULER, "Symplectic_euler"},
     		{APPROXIMATION::TUSTIN, "Tustin"},
     		{APPROXIMATION::MATRIX_EXPONENTIAL, "Matrix_exponential"}
     };
@@ -522,6 +523,7 @@ private:
     std::map<std::string, APPROXIMATION> stringToDiscretization = {
     		{"Forward_euler", APPROXIMATION::FORWARD_EULER},
     		{"Backward_euler", APPROXIMATION::BACKWARD_EULER},
+    		{"Symplectic_euler", APPROXIMATION::SYMPLECTIC_EULER},
     		{"Tustin", APPROXIMATION::TUSTIN},
     		{"Matrix_exponential", APPROXIMATION::MATRIX_EXPONENTIAL}
     };

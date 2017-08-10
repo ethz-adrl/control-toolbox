@@ -85,7 +85,7 @@ public:
 	typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
 	typedef LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>  LQOCSolver_t;
 
-	typedef core::LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR> LinearSystemDiscretizer_t;
+	typedef core::LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> LinearSystemDiscretizer_t;
 
 	typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
 	typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;

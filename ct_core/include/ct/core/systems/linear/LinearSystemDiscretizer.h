@@ -29,9 +29,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <unsupported/Eigen/MatrixFunctions>
 
+#define SYMPLECTIC_ENABLED template<size_t V, size_t P> typename std::enable_if<(V > 0 && P > 0), void>::type
+#define SYMPLECTIC_DISABLED template<size_t V, size_t P> typename std::enable_if<(V <= 0 || P <= 0), void>::type
+
 namespace ct {
 namespace core {
-
 
 //! settings for the LinearSystemDiscretizer
 struct LinearSystemDiscretizerSettings
@@ -39,6 +41,7 @@ struct LinearSystemDiscretizerSettings
 	enum class APPROXIMATION {
 			FORWARD_EULER = 0,
 			BACKWARD_EULER,
+			SYMPLECTIC_EULER,
 			TUSTIN,
 			MATRIX_EXPONENTIAL
 	};
@@ -64,7 +67,7 @@ struct LinearSystemDiscretizerSettings
  * \tparam STATE_DIM size of state vector
  * \tparam CONTROL_DIM size of input vector
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM = STATE_DIM/2, size_t V_DIM = STATE_DIM/2, typename SCALAR = double>
 class LinearSystemDiscretizer : public DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>{
 
 public:
@@ -98,7 +101,7 @@ public:
 
 
 	//! copy constructor
-	LinearSystemDiscretizer(const LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>& other) :
+	LinearSystemDiscretizer(const LinearSystemDiscretizer& other) :
 		settings_(other.settings_)
 	{
 		if(other.linearSystem_ != nullptr)
@@ -111,9 +114,9 @@ public:
 
 
 	//! deep cloning
-	virtual LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
+	virtual LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>* clone() const override
 	{
-		return new LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
+		return new LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(*this);
 	}
 
 
@@ -186,6 +189,11 @@ public:
 			backwardEuler(x, u, n+1, A, B);
 			break;
 		}
+		case LinearSystemDiscretizerSettings::APPROXIMATION::SYMPLECTIC_EULER:
+		{
+			symplecticEuler<V_DIM, P_DIM>(x, u, n, A, B);
+			break;
+		}
 		case LinearSystemDiscretizerSettings::APPROXIMATION::TUSTIN:
 		{
 			/*!
@@ -251,6 +259,11 @@ public:
 		case LinearSystemDiscretizerSettings::APPROXIMATION::BACKWARD_EULER:
 		{
 			backwardEuler(x_n_next, u_n_next, n+1, A, B);
+			break;
+		}
+		case LinearSystemDiscretizerSettings::APPROXIMATION::SYMPLECTIC_EULER:
+		{
+			symplecticEuler<V_DIM, P_DIM>(x_n, u_n, n, A, B);
 			break;
 		}
 		case LinearSystemDiscretizerSettings::APPROXIMATION::TUSTIN:
@@ -321,6 +334,102 @@ private:
 		A = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
 
 		B = A * settings_.dt_ * linearSystem_->getDerivativeControl(x_n, u_n, n*settings_.dt_);
+	}
+
+
+	SYMPLECTIC_ENABLED symplecticEuler(
+			const StateVector<STATE_DIM, SCALAR>& x_n,
+			const ControlVector<CONTROL_DIM, SCALAR>& u_n,
+			const int& n,
+			state_matrix_t& A,
+			state_control_matrix_t& B)
+	{
+		const SCALAR& dt =settings_.dt_;
+
+		state_matrix_t Ac  = linearSystem_->getDerivativeState(x_n, u_n, n*dt); // continuous time A matrix
+		state_control_matrix_t Bc = linearSystem_->getDerivativeControl(x_n, u_n, n*dt); // continuous time B matrix
+
+		typedef Eigen::Matrix<SCALAR, P_DIM, P_DIM> p_matrix_t;
+		typedef Eigen::Matrix<SCALAR, V_DIM, V_DIM> v_matrix_t;
+		typedef Eigen::Matrix<SCALAR, P_DIM, V_DIM> p_v_matrix_t;
+		typedef Eigen::Matrix<SCALAR, V_DIM, P_DIM> v_p_matrix_t;
+		typedef Eigen::Matrix<SCALAR, P_DIM, CONTROL_DIM> p_control_matrix_t;
+		typedef Eigen::Matrix<SCALAR, V_DIM, CONTROL_DIM> v_control_matrix_t;
+
+		//! @todo don't copy here
+		//! @todo don't copy here
+		const p_matrix_t A11 = Ac.topLeftCorner(STATE_DIM/2, STATE_DIM/2);
+		const p_v_matrix_t A12 = Ac.topRightCorner(STATE_DIM/2, STATE_DIM/2);
+		const v_p_matrix_t A21 = Ac.bottomLeftCorner(STATE_DIM/2, STATE_DIM/2);
+		const v_matrix_t A22 = Ac.bottomRightCorner(STATE_DIM/2, STATE_DIM/2);
+
+		const p_control_matrix_t B1 = Bc.topRows(STATE_DIM/2);
+		const v_control_matrix_t B2 = Bc.bottomRows(STATE_DIM/2);
+
+		/*!
+		 * Symplectic Euler discretization rule adapted from:
+		 * Prabhakar, A., Flasskamp, K., & Murphey, T. D. (2016). Symplectic integration for optimal ergodic control.
+		 * Proceedings of the IEEE Conference on Decision and Control, 2016(CDC), 2594–2600.
+		 */
+		p_matrix_t Ad11;
+		v_matrix_t Ad22;
+		p_v_matrix_t Ad12;
+		v_p_matrix_t Ad21;
+		p_control_matrix_t Bd1;
+		v_control_matrix_t Bd2;
+
+		/*
+		Ad22 = (v_matrix_t::Identity() - dt * Ac.bottomRightCorner(V_DIM, V_DIM)).inverse();
+		Ad12 = dt* Ac.topRightCorner(P_DIM, V_DIM) *Ad22;
+
+		Ad11 = p_matrix_t::Identity();
+		Ad11.noalias() += dt * Ac.topLeftCorner(P_DIM, P_DIM);
+		Ad11.noalias() += dt* Ad12 * Ac.bottomLeftCorner(V_DIM, P_DIM);
+
+		Ad21 = dt * Ad22 * Ac.bottomLeftCorner(V_DIM, P_DIM);
+
+		Bd1 = dt * Ad12 * Bc.bottomRows(V_DIM) + dt * Bc.topRows(P_DIM);
+		Bd2 = dt * Ad22 * Bc.bottomRows(V_DIM);
+
+		A.topLeftCorner(STATE_DIM/2, STATE_DIM/2) = Ad11;
+		A.topRightCorner(STATE_DIM/2, STATE_DIM/2) = Ad12;
+		A.bottomLeftCorner(STATE_DIM/2, STATE_DIM/2) = Ad21;
+		A.bottomRightCorner(STATE_DIM/2, STATE_DIM/2) = Ad22;
+
+		B.topRows(STATE_DIM/2) = Bd1;
+		B.bottomRows(STATE_DIM/2) = Bd2;
+		*/
+
+		Ad22 = (v_matrix_t::Identity() - dt * A22).inverse();
+		Ad12 = dt* A12 *Ad22;
+
+		Ad11 = p_matrix_t::Identity();
+		Ad11.noalias() += dt * A11;
+		Ad11.noalias() += dt* Ad12 * A21;
+
+		Ad21 = dt * Ad22 * A21;
+
+		Bd1 = dt * Ad12 * B2 + dt * B1;
+		Bd2 = dt * Ad22 * B2;
+
+		A.topLeftCorner(STATE_DIM/2, STATE_DIM/2) = Ad11;
+		A.topRightCorner(STATE_DIM/2, STATE_DIM/2) = Ad12;
+		A.bottomLeftCorner(STATE_DIM/2, STATE_DIM/2) = Ad21;
+		A.bottomRightCorner(STATE_DIM/2, STATE_DIM/2) = Ad22;
+
+		B.topRows(STATE_DIM/2) = Bd1;
+		B.bottomRows(STATE_DIM/2) = Bd2;
+	}
+
+
+	SYMPLECTIC_DISABLED symplecticEuler(
+			const StateVector<STATE_DIM, SCALAR>& x_n,
+			const ControlVector<CONTROL_DIM, SCALAR>& u_n,
+			const int& n,
+			state_matrix_t& A,
+			state_control_matrix_t& B)
+	{
+		throw std::runtime_error("LinearSystemDiscretizer : selected symplecticEuler but System is not symplectic.");
 	}
 
 	void matrixExponential(
