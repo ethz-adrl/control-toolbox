@@ -43,7 +43,7 @@ namespace rbd {
 template <class RBDDynamics, bool EE_ARE_CONTROL_INPUTS = false>
 class FixBaseFDSystem :
 		public RBDSystem<RBDDynamics, false>,
-		public core::ControlledSystem<RBDDynamics::NSTATE, RBDDynamics::NJOINTS+EE_ARE_CONTROL_INPUTS*RBDDynamics::N_EE*3, typename RBDDynamics::SCALAR>
+		public core::SymplecticSystem<RBDDynamics::NSTATE / 2, RBDDynamics::NSTATE / 2, RBDDynamics::NJOINTS+EE_ARE_CONTROL_INPUTS*RBDDynamics::N_EE*3, typename RBDDynamics::SCALAR>
 {
 public:
 	using Dynamics = RBDDynamics;
@@ -57,13 +57,12 @@ public:
 	typedef core::StateVector<STATE_DIM, SCALAR> StateVector;
 	typedef core::ControlVector<CONTROL_DIM, SCALAR> ControlVector;
 
-	typedef core::ControlledSystem<RBDDynamics::NSTATE, RBDDynamics::NJOINTS+EE_ARE_CONTROL_INPUTS*N_EE*3, SCALAR> Base;
+	typedef core::SymplecticSystem<RBDDynamics::NSTATE / 2, RBDDynamics::NSTATE / 2, RBDDynamics::NJOINTS+EE_ARE_CONTROL_INPUTS*RBDDynamics::N_EE*3, SCALAR> Base;
 
 	typedef Eigen::Matrix<SCALAR, RBDDynamics::NJOINTS, RBDDynamics::NJOINTS> DampingMatrix_t;
 
 	FixBaseFDSystem() :
-			Base(core::SYSTEM_TYPE::SECOND_ORDER),
-			artificialJointDamping_(DampingMatrix_t::Identity())
+			Base(core::SYSTEM_TYPE::SECOND_ORDER)
 	{
 		basePose_.setIdentity();
 	}
@@ -73,8 +72,7 @@ public:
 	 * @param dampingMatrix
 	 */
 	FixBaseFDSystem(const DampingMatrix_t& dampingMatrix):
-		Base(core::SYSTEM_TYPE::GENERAL),
-		artificialJointDamping_(dampingMatrix)
+		Base(core::SYSTEM_TYPE::GENERAL)
 	{
 		basePose_.setIdentity();
 	}
@@ -82,8 +80,7 @@ public:
 	FixBaseFDSystem(const FixBaseFDSystem& arg) :
 		Base(arg),
 		basePose_(arg.basePose_),
-		dynamics_(RBDDynamics()),
-		artificialJointDamping_(arg.artificialJointDamping_)
+		dynamics_(RBDDynamics())
 	{}
 
 	virtual ~FixBaseFDSystem(){}
@@ -91,16 +88,26 @@ public:
 	virtual RBDDynamics& dynamics() override { return dynamics_; }
 	virtual const RBDDynamics& dynamics() const override { return dynamics_; }
 
-	virtual void computeControlledDynamics(
-		const core::StateVector<STATE_DIM, SCALAR>& state,
-		const SCALAR& t,
-		const core::ControlVector<CONTROL_DIM, SCALAR>& control,
-		core::StateVector<STATE_DIM, SCALAR>& derivative
+	virtual void computePdot(
+			const core::StateVector<STATE_DIM, SCALAR>& x,
+			const core::StateVector<STATE_DIM / 2, SCALAR>& v,
+			const core::ControlVector<CONTROL_DIM, SCALAR>& control,
+			core::StateVector<STATE_DIM / 2, SCALAR>& pDot) override {
+		pDot = v;
+	}
 
-	) override
-	{
-		typename RBDDynamics::JointState_t jState = state;
+	virtual void computeVdot(
+			const StateVector& x,
+			const core::StateVector<STATE_DIM / 2, SCALAR>& p,
+			const ControlVector& control,
+			core::StateVector<STATE_DIM / 2, SCALAR>& vDot
+	) override {
 
+		typename RBDDynamics::JointState_t jState = x;
+
+		jState.getPositions() = p;
+
+		// Cache updated rbd state
 		typename RBDDynamics::ExtLinkForces_t linkForces(Eigen::Matrix<SCALAR, 6, 1>::Zero());
 
 		// add end effector forces as control inputs (if applicable)
@@ -111,12 +118,11 @@ public:
 				auto endEffector = dynamics_.kinematics().getEndEffector(i);
 				size_t linkId = endEffector.getLinkId();
 				linkForces[static_cast<typename RBDDynamics::ROBCOGEN::LinkIdentifiers>(linkId)] =
-					dynamics_.kinematics().mapForceFromWorldToLink3d(
-						control.template segment<3>(RBDDynamics::NJOINTS + i*3),
-						basePose_, jState.getPositions(), i);
+						dynamics_.kinematics().mapForceFromWorldToLink3d(
+								control.template segment<3>(RBDDynamics::NJOINTS + i*3),
+								basePose_, jState.getPositions(), i);
 			}
 		}
-
 
 		typename RBDDynamics::JointAcceleration_t jAcc;
 
@@ -126,10 +132,9 @@ public:
 				linkForces,
 				jAcc);
 
-		// add artificial joint damping (if applicable)
-		derivative.head(RBDDynamics::NJOINTS) = artificialJointDamping_ * jState.getVelocities();
-		derivative.tail(RBDDynamics::NJOINTS) = jAcc.getAcceleration();
+		vDot =jAcc.getAcceleration();
 	}
+
 
 	virtual FixBaseFDSystem<RBDDynamics, EE_ARE_CONTROL_INPUTS>* clone() const override {
 		return new FixBaseFDSystem<RBDDynamics, EE_ARE_CONTROL_INPUTS> (*this);
@@ -149,9 +154,6 @@ private:
 	tpl::RigidBodyPose<SCALAR> basePose_;
 
 	RBDDynamics dynamics_;
-
-	DampingMatrix_t artificialJointDamping_;
-
 };
 
 } // namespace rbd
