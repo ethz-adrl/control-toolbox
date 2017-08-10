@@ -150,7 +150,7 @@ void SnoptSolver::fill_memory(SnoptMemory* mem) const
 	jGVecFull.setZero();
 
 	jGVecGrad = Eigen::VectorXi::LinSpaced(n_, 0, n_ - 1);
-	nlp_->getSparsityPattern(nlp_->getNonZeroJacobianCount(), iGVecJac, jGVecJac);
+	nlp_->getSparsityPatternJacobian(nlp_->getNonZeroJacobianCount(), iGVecJac, jGVecJac);
 	iGVecJac += Eigen::VectorXi::Ones(nlp_->getNonZeroJacobianCount());
 
 }

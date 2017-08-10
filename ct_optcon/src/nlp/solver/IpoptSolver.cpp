@@ -134,6 +134,8 @@ bool IpoptSolver::get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& n
 	nnz_jac_g = nlp_->getNonZeroJacobianCount();
 	assert(nnz_jac_g==nnz_jac_g);
 
+	nnz_h_lag = nlp_->getNonZeroHessianCount();
+
 	index_style = Ipopt::TNLP::C_STYLE;
 
 #ifdef DEBUG_PRINT
@@ -280,7 +282,7 @@ bool IpoptSolver::eval_jac_g(Ipopt::Index n, const Number* x, bool new_x,
 		// set indices of nonzero elements of the jacobian
 		Eigen::Map<Eigen::VectorXi> iRowVec(iRow, nele_jac);
 		Eigen::Map<Eigen::VectorXi> jColVec(jCol, nele_jac);
-		nlp_->getSparsityPattern(nele_jac, iRowVec, jColVec);
+		nlp_->getSparsityPatternJacobian(nele_jac, iRowVec, jColVec);
 
 
 #ifdef DEBUG_PRINT
@@ -312,7 +314,6 @@ bool IpoptSolver::eval_h(Ipopt::Index n, const Number* x, bool new_x,
 		bool new_lambda, Ipopt::Index nele_hess, Ipopt::Index* iRow,
 		Ipopt::Index* jCol, Number* values)
 {
-	std::cerr << "should not be evaluating hessian" << std::endl;
 
 #ifdef DEBUG_PRINT
 	std::cout << "... entering eval_h()" << std::endl;
@@ -321,11 +322,19 @@ bool IpoptSolver::eval_h(Ipopt::Index n, const Number* x, bool new_x,
 	{
 		// return the structure. This is a symmetric matrix, fill the lower left
 		// triangle only.
+		Eigen::Map<Eigen::VectorXi> iRowVec(iRow, nele_hess);
+		Eigen::Map<Eigen::VectorXi> jColVec(jCol, nele_hess);
+		nlp_->getSparsityPatternHessian(nele_hess, iRowVec, jColVec);
 	}
 	else
 	{
 		// return the values. This is a symmetric matrix, fill the lower left
 		// triangle only
+		MapVecXd valVec(values, nele_hess);
+		MapConstVecXd xVec(x, n);
+		MapConstVecXd lambdaVec(lambda, m);
+		nlp_->extractOptimizationVars(xVec, new_x);
+		nlp_->evaluateHessian(nele_hess, valVec, obj_factor, lambdaVec);
 	}
 
 	// only needed if quasi-newton approximation is not used, hence set to -1 (not used)!

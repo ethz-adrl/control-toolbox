@@ -133,6 +133,29 @@ public:
 			constraints_->evalSparseJacobian(jac, nele_jac);
 	}
 
+	void evaluateHessian(const int nele_hes, MapVecXs& hes, const SCALAR obj_fac, MapConstVecXs& lambda)
+	{
+		if(useGeneratedConstraintJacobian_ && useGeneratedCostGradient_)
+		{
+			Eigen::Matrix<double, 1, 1> mat; mat << obj_fac;
+			if(nele_hes > 0)
+			{
+				// std::cout << "iRowHessian_ size: " << iRowHessian_.rows() << std::endl;
+				VectorXs costHessian = costCodegen_->hessianSparse(optVariables_->getOptimizationVars(), mat, iRowHessian_, jColHessian_);
+				// std::cout << "cost: " << costHessian.transpose() << std::endl;
+				// std::cout << "costHessian size: " << costHessian.rows() << std::endl;
+				// std::cout << "lambda: " << lambda.transpose() << std::endl;
+				// std::cout << "iRowHessian_ size: " << iRowHessian_.rows() << std::endl;
+				VectorXs constraintHessian = constraintsCodegen_->hessianSparse(optVariables_->getOptimizationVars(), lambda, iRowHessian_, jColHessian_);
+				// std::cout << "constraint: " << constraintHessian.transpose()  << std::endl;
+				// std::cout << "constraint Hessian size: " << constraintHessian.rows() << std::endl;
+				hes = costHessian + constraintHessian;
+			}
+		}
+		else
+			throw std::runtime_error("Hessian Evaluation only implemented for codegeneration");
+	}
+
 	/**
 	 * @brief      Gets the sparsity pattern.
 	 *
@@ -143,7 +166,7 @@ public:
 	 * @param[out] jCol      The column indices of the location of the non zero
 	 *                       elements of the constraint jacobian
 	 */
-	void getSparsityPattern(const int nele_jac, MapVecXi& iRow, MapVecXi& jCol) const{
+	void getSparsityPatternJacobian(const int nele_jac, MapVecXi& iRow, MapVecXi& jCol) const{
 		// std::cout << "nele_jac: " << nele_jac << std::endl;
 		// std::cout << "irow Map size: " << iRow.rows() << std::endl;
 		// std::cout << "jCol Map size: " << jCol.rows() << std::endl;
@@ -158,10 +181,47 @@ public:
 
 			iRow = iRow1;
 			jCol = jCol1;
+			// std::cout << "sparsityPatterJacobian" << std::endl;
+			// std::cout << constraintsCodegen_->getSparsityPatternJacobian() << std::endl;
+
+			// std::cout << "sparsityPatterHessian" << std::endl;
+			// std::cout << constraintsCodegen_->getSparsityPatternHessian() << std::endl;
 		}
 		else
 			constraints_->getSparsityPattern(iRow, jCol, nele_jac);
 	}
+
+	void getSparsityPatternHessian(const int nele_hes, MapVecXi& iRow, MapVecXi& jCol) const{
+		// std::cout << "nele_jac: " << nele_jac << std::endl;
+		// std::cout << "irow Map size: " << iRow.rows() << std::endl;
+		// std::cout << "jCol Map size: " << jCol.rows() << std::endl;
+		iRow.setZero();
+		jCol.setZero();
+
+		if(useGeneratedConstraintJacobian_ && useGeneratedCostGradient_)
+		{
+			// Eigen::VectorXi iRowCost;
+			// Eigen::VectorXi jColCost;
+			// Eigen::VectorXi iRowConstraints;
+			// Eigen::VectorXi jColConstraints;
+			// costCodegen_->getSparsityPatternHessian(iRowCost, jColCost);
+			// constraintsCodegen_->getSparsityPatternHessian(iRowConstraints, jColConstraints);
+
+			// construct iRowHessian_, jColHessian_
+
+			// size_t idx = 0;
+			// for(size_t row = 0; row < iRow1.rows(); ++row)
+			// 	for(size_t col = 0; col < row + 1; ++col)
+			// 	{
+			// 		iRow
+			// 	}
+
+			iRow = iRowHessian_;
+			jCol = jColHessian_;
+		}
+		else
+			throw std::runtime_error("Hessian Calculation only available for codegeneration");
+	}	
 
 	/**
 	 * @brief      Returns the number of constraints in the NLP
@@ -185,6 +245,69 @@ public:
 		else
 			return constraints_->getNonZerosJacobianCount();
 	}
+
+	size_t getNonZeroHessianCount() {
+		if(useGeneratedConstraintJacobian_)
+		{
+			// size_t n = getVarCount();
+
+			Eigen::VectorXi iRowCost;
+			Eigen::VectorXi jColCost;
+			Eigen::VectorXi iRowConstraints;
+			Eigen::VectorXi jColConstraints;
+			costCodegen_->getSparsityPatternHessian(iRowCost, jColCost);
+			// std::cout << "iRowCost: " << iRowCost.transpose() << std::endl;
+			// std::cout << "jColCost: " << jColCost.transpose() << std::endl;
+			constraintsCodegen_->getSparsityPatternHessian(iRowConstraints, jColConstraints);
+			// std::cout << "iRowCon: " << iRowConstraints.transpose() << std::endl;
+			// std::cout << "jColCon: " << jColConstraints.transpose() << std::endl;
+
+			std::vector<std::pair<int, int>> sparsityUnion;
+			for(size_t i = 0; i < costCodegen_->getNumNonZerosHessian(); ++i)
+			{
+				sparsityUnion.push_back(std::make_pair(iRowCost(i), jColCost(i)));
+			}
+
+			for(size_t i = 0; i < constraintsCodegen_->getNumNonZerosHessian(); ++i)
+			{
+				bool hasElement = false;
+				for(size_t j = 0; j < costCodegen_->getNumNonZerosHessian(); ++j)
+				{
+					if(std::make_pair(iRowConstraints(i), jColConstraints(i)) == sparsityUnion[i])
+					{
+						hasElement = true;
+						break;
+					}
+				}
+				if(hasElement)
+					continue;
+				else
+					sparsityUnion.push_back(std::make_pair(iRowConstraints(i), jColConstraints(i)));
+			}
+
+			std::vector<int> iRowHessianLocal;
+			std::vector<int> jColHessianLocal;
+			for(size_t j = 0; j < sparsityUnion.size(); ++j)
+			{
+				if(sparsityUnion[j].first >= sparsityUnion[j].second)
+				{
+					iRowHessianLocal.push_back(sparsityUnion[j].first);
+					jColHessianLocal.push_back(sparsityUnion[j].second);
+				}
+			}
+
+			iRowHessian_ = Eigen::Map<Eigen::VectorXi>(iRowHessianLocal.data(), iRowHessianLocal.size(), 1);
+			jColHessian_ = Eigen::Map<Eigen::VectorXi>(jColHessianLocal.data(), jColHessianLocal.size(), 1);
+			// iRowHessian_ = iRowCost;
+			// jColHessian_ = jColCost;
+
+			size_t nonZerosHessian = iRowHessian_.rows();
+			return nonZerosHessian;
+		}
+		// else
+		// 	return constraints_->getNonZerosJacobianCount();
+		return 0;
+	}	
 
 	/**
 	 * @brief      Reads the bounds of the constraints.
@@ -322,6 +445,8 @@ protected:
 	bool useGeneratedConstraintJacobian_;
 	std::shared_ptr<ct::core::DerivativesCppad<-1, 1>> costCodegen_;
 	std::shared_ptr<ct::core::DerivativesCppad<-1, -1>> constraintsCodegen_;
+	Eigen::VectorXi iRowHessian_;
+	Eigen::VectorXi jColHessian_;
 };
 
 }

@@ -103,6 +103,15 @@ public:
         throw std::runtime_error("HESSIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
     }
 
+    virtual Eigen::VectorXd hessianSparse(
+        const Eigen::VectorXd& x, 
+        const Eigen::VectorXd& lambda, 
+        const Eigen::VectorXi& iRow,
+        const Eigen::VectorXi& jCol)
+    {
+        throw std::runtime_error("SPARSE HESSIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
+    }
+
 };
 
 } /* namespace core */

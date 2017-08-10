@@ -222,28 +222,15 @@ public:
 			
 		if(compiled_)
 		{
-			assert(model_->isJacobianAvailable() == true);
-			std::vector<size_t> rowsVec;
-			std::vector<size_t> colsVec;
-			model_->JacobianSparsity(rowsVec, colsVec);
-
-			Eigen::VectorXd jac = model_->SparseJacobian(x);
-			JAC_TYPE_D out(outputDim_, x.rows());
-			out = JAC_TYPE_ROW_MAJOR::Map(jac.data(), outputDim_, x.rows());
-
-			Eigen::VectorXd outSparse; outSparse.resize(rowsVec.size());
-			size_t i = 0;
-			for(size_t row = 0; row < rowsVec.size(); ++row)
-			{
-				outSparse(i) = out(rowsVec[i], colsVec[i]);
-				++i;
-			}
-
-			return outSparse;
+			assert(model_->isSparseJacobianAvailable() == true);
+			std::vector<double> input(x.data(), x.data() + x.rows() * x.cols());
+			std::vector<double> output;
+			model_->SparseJacobian(input, output, sparsityRowsJacobian_, sparsityColsJacobian_);
+			return Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
 		}
 		else
 		{
-			return fAdCppad_.Jacobian(x);
+			return fAdCppad_.SparseJacobian(x);
 		}	
 	}	
 
@@ -267,6 +254,69 @@ public:
 			return out;
 		}
 	}
+
+	// virtual Eigen::VectorXd hessianSparse(
+	// 	const Eigen::VectorXd& x, 
+	// 	const Eigen::VectorXd& lambda, 
+	// 	const Eigen::VectorXi& iRow,
+	// 	const Eigen::VectorXi& jCol) override 
+	// {
+	// 		if(outputDim_ <= 0)
+	// 			throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+
+	// 		if(compiled_)
+	// 		{
+	// 			assert(model_->isSparseHessianAvailable() == true);
+	// 			std::vector<double> input(x.data(), x.data() + x.rows() * x.cols());
+	// 			std::vector<double> lambdaIn(lambda.data(), lambda.data() + lambda.rows() * lambda.cols());
+	// 			std::vector<double> output;
+	// 			std::vector<size_t> iRowStd(iRow.data(), iRow.data() + iRow.rows() * iRow.cols());
+	// 			std::vector<size_t> jColStd(jCol.data(), jCol.data() + jCol.rows() * jCol.cols());
+	// 			model_->SparseHessian(input, lambdaIn, output, iRowStd, jColStd);
+	// 			if(output.size() > 0)
+	// 				return Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
+	// 			else
+	// 			{
+	// 				Eigen::VectorXd zeros(iRow.size()); zeros.setZero();
+	// 				return zeros;
+	// 			} 
+	// 		}	
+	// 		else
+	// 		{
+	// 			return fAdCppad_.SparseHessian(x, lambda);
+	// 		}	
+	// }
+
+	virtual Eigen::VectorXd hessianSparse(
+		const Eigen::VectorXd& x, 
+		const Eigen::VectorXd& lambda, 
+		const Eigen::VectorXi& iRow,
+		const Eigen::VectorXi& jCol) override 
+	{
+			if(outputDim_ <= 0)
+				throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+
+			if(compiled_)
+			{
+				assert(model_->isSparseHessianAvailable() == true);
+				Eigen::VectorXd hes = model_->SparseHessian(x, lambda);
+				Eigen::Matrix<double, IN_DIM, IN_DIM> out(x.rows(), x.rows());
+				out = Eigen::Matrix<double, IN_DIM, IN_DIM, Eigen::RowMajor>::Map(hes.data(), x.rows(), x.rows());
+
+				Eigen::VectorXd outSparse; outSparse.resize(iRow.size());
+				
+				for(size_t i = 0; i < iRow.size(); ++i)
+					outSparse(i) = out(iRow(i), jCol(i));
+
+				return outSparse;
+
+			}	
+			else
+			{
+				return fAdCppad_.SparseHessian(x, lambda);
+			}	
+	}
+
 
 	//! get Jacobian sparsity pattern
 	/*!
@@ -298,12 +348,15 @@ public:
 		assert(model_->isHessianSparsityAvailable() == true);
 		
 		std::vector<bool> sparsityVec = model_->HessianSparsityBool();
-		Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(outputDim_, inputDim_);
+		Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(inputDim_, inputDim_);
 
-		assert(sparsityVec.size() == outputDim_ * inputDim_);
-		for(size_t row = 0; row < outputDim_; ++row)
+		assert(sparsityVec.size() == inputDim_ * inputDim_);
+		for(size_t row = 0; row < inputDim_; ++row)
 			for(size_t col = 0; col < inputDim_; ++col)
+			{
+				// std::cout << "sparsityVec: " << sparsityRowsHessian_[col + row * inputDim_] << std::endl;
 				sparsityMat(row, col) = sparsityVec[col + row * inputDim_];
+			}
 
 		return sparsityMat;
 	}
@@ -320,19 +373,16 @@ public:
 	void getSparsityPatternJacobian(Eigen::VectorXi& rows, Eigen::VectorXi& columns)
 	{
 		assert(model_->isJacobianSparsityAvailable() == true);
-		std::vector<size_t> rowsVec;
-		std::vector<size_t> colsVec;
-		// Eigen::Matrix<size_t, Eigen::Dynamic, 1> rowsTmp;
-		// Eigen::Matrix<size_t, Eigen::Dynamic, 1> colsTmp;
-		model_->JacobianSparsity(rowsVec, colsVec);
-		rows.resize(rowsVec.size()); //rowsTmp.resize(rowsVec.size());
-		columns.resize(colsVec.size()); //colsTmp.resize(rowsVec.size());
-		                           
-		Eigen::Matrix<size_t, Eigen::Dynamic, 1> rowsSizeT; rowsSizeT.resize(rowsVec.size());
-		Eigen::Matrix<size_t, Eigen::Dynamic, 1> colsSizeT; colsSizeT.resize(colsVec.size());
 
-		rowsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(rowsVec.data(), rowsVec.size(), 1);
-		colsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(colsVec.data(), colsVec.size(), 1);
+		rows.resize(sparsityRowsJacobian_.size()); //rowsTmp.resize(rowsVec.size());
+		columns.resize(sparsityColsJacobian_.size()); //colsTmp.resize(rowsVec.size());
+		                           
+		Eigen::Matrix<size_t, Eigen::Dynamic, 1> rowsSizeT; rowsSizeT.resize(sparsityRowsJacobian_.size());
+		Eigen::Matrix<size_t, Eigen::Dynamic, 1> colsSizeT; colsSizeT.resize(sparsityColsJacobian_.size());
+
+		rowsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(sparsityRowsJacobian_.data(), sparsityRowsJacobian_.size(), 1);
+		colsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(sparsityColsJacobian_.data(), sparsityColsJacobian_.size(), 1);
+
 		rows = rowsSizeT.cast<int>();
 		columns = colsSizeT.cast<int>();
 	}
@@ -340,11 +390,14 @@ public:
 	size_t getNumNonZerosJacobian()
 	{
 		assert(model_->isJacobianSparsityAvailable() == true);
-		std::vector<size_t> rowsVec;
-		std::vector<size_t> colsVec;
-		model_->JacobianSparsity(rowsVec, colsVec);
-		return rowsVec.size();
+		return sparsityRowsJacobian_.size();
 	}
+
+	size_t getNumNonZerosHessian()
+	{
+		assert(model_->isJacobianSparsityAvailable() == true);
+		return sparsityRowsHessian_.size();
+	}	
 
 	//! get Hessian sparsity pattern
 	/*!
@@ -357,17 +410,18 @@ public:
 	void getSparsityPatternHessian(Eigen::VectorXi& rows, Eigen::VectorXi& columns)
 	{
 		assert(model_->isHessianSparsityAvailable() == true);
-		std::vector<size_t> rowsVec;
-		std::vector<size_t> colsVec;
-		Eigen::Matrix<size_t, Eigen::Dynamic, 1> rowsTmp;
-		Eigen::Matrix<size_t, Eigen::Dynamic, 1> colsTmp;
-		model_->HessianSparsity(rowsVec, colsVec);
-		rows.resize(rowsVec.size());
-		columns.resize(colsVec.size());
-		rowsTmp = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(rowsVec.data(), rowsVec.size(), 1);
-		colsTmp = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(colsVec.data(), colsVec.size(), 1);
-		rows = rowsTmp.cast<int>();
-		columns = colsTmp.cast<int>();
+
+		rows.resize(sparsityRowsHessian_.size()); //rowsTmp.resize(rowsVec.size());
+		columns.resize(sparsityColsHessian_.size()); //colsTmp.resize(rowsVec.size());
+
+		Eigen::Matrix<size_t, Eigen::Dynamic, 1> rowsSizeT; rowsSizeT.resize(sparsityRowsHessian_.size());
+		Eigen::Matrix<size_t, Eigen::Dynamic, 1> colsSizeT; colsSizeT.resize(sparsityColsHessian_.size());
+
+		rowsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(sparsityRowsHessian_.data(), sparsityRowsHessian_.size(), 1);
+		colsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(sparsityColsHessian_.data(), sparsityColsHessian_.size(), 1);
+
+		rows = rowsSizeT.cast<int>();
+		columns = colsSizeT.cast<int>();
 	}
 
 
@@ -382,16 +436,17 @@ public:
 		std::cout << "Starting to compile " + libName + " library"  << std::endl;
 
 		CppAD::cg::ModelCSourceGen<double> cgen(fCgCppad_, "DerivativesCppad");
-		cgen.setMultiThreading(true);
+		// cgen.setMultiThreading(true);
 		std::cout << "settings maxAssignments: " << maxAssignments << std::endl;
 		cgen.setMaxAssignmentsPerFunc(maxAssignments);
 		// cgen.setCreateForwardZero(true);
-		// cgen.setCreateJacobian(true);
+		cgen.setCreateJacobian(true);
 		// cgen.setCreateForwardOne(true);
 		cgen.setCreateSparseJacobian(true);
 
+		// cgen.setCreateReverseTwo(true);
 		// cgen.setCreateHessian(true);
-		// cgen.setCreateSparseHessian(true);
+		cgen.setCreateSparseHessian(true);
 
 		CppAD::cg::ModelLibraryCSourceGen<double> libcgen(cgen);
 		std::cout << "maxAssignments per fun: " << cgen.getMaxAssignmentsPerFunc() << std::endl;
@@ -405,6 +460,17 @@ public:
 
 		compiled_ = true;
 		std::cout << "Successfully compiled " << std::endl;
+
+		if(model_->isJacobianSparsityAvailable())
+		{
+			model_->JacobianSparsity(sparsityRowsJacobian_, sparsityColsJacobian_);
+		}
+
+		if(model_->isHessianSparsityAvailable())
+		{
+			std::cout << "Retrieving hessian sparsity" << std::endl;
+			model_->HessianSparsity(sparsityRowsHessian_, sparsityColsHessian_);
+		}
 	}
 
 
@@ -534,6 +600,10 @@ public:
 
 
 private:
+	std::vector<size_t> sparsityRowsJacobian_;
+	std::vector<size_t> sparsityColsJacobian_;
+	std::vector<size_t> sparsityRowsHessian_;
+	std::vector<size_t> sparsityColsHessian_;
 
 	//! record the Auto-Diff terms for code generation
 	void recordCg()

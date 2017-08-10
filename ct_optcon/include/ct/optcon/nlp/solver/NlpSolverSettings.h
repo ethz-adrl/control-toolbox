@@ -143,18 +143,18 @@ public:
 	IpoptSettings() : 
 	tol_(1e-8),
 	constr_viol_tol_(1e-4),
-	max_iter_(3000),
+	max_iter_(200),
 	restoTol_(1e-7),
 	acceptableTol_(1e-6),
 	restoAcceptableTol_( 1e-7),
 	linear_scaling_on_demand_("yes"),
-	hessian_approximation_("limited-memory"),
+	hessian_approximation_("exact"),
 	nlp_scaling_method_("gradient-based"),
 	printLevel_(5),
 	print_user_options_("no"),
 	print_frequency_iter_(1),
 	printInfoString_("no"),
-	derivativeTest_("first-order"),
+	derivativeTest_("none"),
 	derivativeTestTol_(1e-4),
 	derivativeTestPerturbation_(1e-8),
 	point_perturbation_radius_(10),
@@ -221,9 +221,14 @@ public:
         max_iter_ = pt.get<unsigned int>(ns + ".MaxIterations");
         bool checkDerivatives = pt.get<bool>(ns + ".CheckDerivatives");
         if(checkDerivatives)
-            derivativeTest_ = "first-order";
+            derivativeTest_ = "second-order";
         if(!checkDerivatives)
             derivativeTest_ = "none";
+        bool exactHessian = pt.get<bool>(ns + ".ExactHessian");
+        if(exactHessian)
+            hessian_approximation_ = "exact";
+        if(!exactHessian)
+            hessian_approximation_ = "limited-memory";
 
         printLevel_ = pt.get<unsigned int>(ns + ".Verbosity");
         tol_ = pt.get<double>(ns + ".OptimalityTolerance");
@@ -246,8 +251,8 @@ public:
 	 */
 	NlpSolverSettings() :
 	solverType_(IPOPT),
-    generateCostGradient_(false),
-    generateConstraintJacobian_(false),
+    generateCostGradient_(true),
+    generateConstraintJacobian_(true),
     maxAssignements_(20000)
 	{}
 

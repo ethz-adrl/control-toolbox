@@ -213,7 +213,7 @@ void runTests()
 	for(int solverType = 0; solverType < NlpSolverSettings::SolverType::num_types_solver; solverType++)
 	{
 		int splineType = 0;
-		int costEvalT = 1;
+		int costEvalT = 0;
 		int optGrid = 0;
 		int integrateSensitivity = 1;
 		
@@ -229,7 +229,7 @@ void runTests()
 		settings.costEvaluationType_ =  static_cast<DmsSettings::CostEvaluationType>(costEvalT);	// SIMPLE, FULL
 		settings.objectiveType_ = static_cast<DmsSettings::ObjectiveType>(optGrid);	// keep grid, opt. grid
 		settings.h_min_ = 0.1;
-		settings.integrationType_ = DmsSettings::RK4;
+		settings.integrationType_ = DmsSettings::EULER;
 		settings.dt_sim_ = 0.2;
 		settings.integrateSens_ =  static_cast<DmsSettings::IntegrationType>(integrateSensitivity);
 		settings.absErrTol_ = 1e-6;
