@@ -349,6 +349,12 @@ private:
 		state_matrix_t Ac  = linearSystem_->getDerivativeState(x_n, u_n, n*dt); // continuous time A matrix
 		state_control_matrix_t Bc = linearSystem_->getDerivativeControl(x_n, u_n, n*dt); // continuous time B matrix
 
+		/*!
+		 * Symplectic Euler discretization rule adapted from:
+		 * Prabhakar, A., Flasskamp, K., & Murphey, T. D. (2016). Symplectic integration for optimal ergodic control.
+		 * Proceedings of the IEEE Conference on Decision and Control, 2016(CDC), 2594–2600.
+		 */
+
 		typedef Eigen::Matrix<SCALAR, P_DIM, P_DIM> p_matrix_t;
 		typedef Eigen::Matrix<SCALAR, V_DIM, V_DIM> v_matrix_t;
 		typedef Eigen::Matrix<SCALAR, P_DIM, V_DIM> p_v_matrix_t;
@@ -356,21 +362,6 @@ private:
 		typedef Eigen::Matrix<SCALAR, P_DIM, CONTROL_DIM> p_control_matrix_t;
 		typedef Eigen::Matrix<SCALAR, V_DIM, CONTROL_DIM> v_control_matrix_t;
 
-		//! @todo don't copy here
-		//! @todo don't copy here
-		const p_matrix_t A11 = Ac.topLeftCorner(STATE_DIM/2, STATE_DIM/2);
-		const p_v_matrix_t A12 = Ac.topRightCorner(STATE_DIM/2, STATE_DIM/2);
-		const v_p_matrix_t A21 = Ac.bottomLeftCorner(STATE_DIM/2, STATE_DIM/2);
-		const v_matrix_t A22 = Ac.bottomRightCorner(STATE_DIM/2, STATE_DIM/2);
-
-		const p_control_matrix_t B1 = Bc.topRows(STATE_DIM/2);
-		const v_control_matrix_t B2 = Bc.bottomRows(STATE_DIM/2);
-
-		/*!
-		 * Symplectic Euler discretization rule adapted from:
-		 * Prabhakar, A., Flasskamp, K., & Murphey, T. D. (2016). Symplectic integration for optimal ergodic control.
-		 * Proceedings of the IEEE Conference on Decision and Control, 2016(CDC), 2594–2600.
-		 */
 		p_matrix_t Ad11;
 		v_matrix_t Ad22;
 		p_v_matrix_t Ad12;
@@ -378,7 +369,6 @@ private:
 		p_control_matrix_t Bd1;
 		v_control_matrix_t Bd2;
 
-		/*
 		Ad22 = (v_matrix_t::Identity() - dt * Ac.bottomRightCorner(V_DIM, V_DIM)).inverse();
 		Ad12 = dt* Ac.topRightCorner(P_DIM, V_DIM) *Ad22;
 
@@ -391,34 +381,13 @@ private:
 		Bd1 = dt * Ad12 * Bc.bottomRows(V_DIM) + dt * Bc.topRows(P_DIM);
 		Bd2 = dt * Ad22 * Bc.bottomRows(V_DIM);
 
-		A.topLeftCorner(STATE_DIM/2, STATE_DIM/2) = Ad11;
-		A.topRightCorner(STATE_DIM/2, STATE_DIM/2) = Ad12;
-		A.bottomLeftCorner(STATE_DIM/2, STATE_DIM/2) = Ad21;
-		A.bottomRightCorner(STATE_DIM/2, STATE_DIM/2) = Ad22;
+		A.topLeftCorner(P_DIM, P_DIM) = Ad11;
+		A.topRightCorner(P_DIM, V_DIM) = Ad12;
+		A.bottomLeftCorner(V_DIM, P_DIM) = Ad21;
+		A.bottomRightCorner(V_DIM, V_DIM) = Ad22;
 
-		B.topRows(STATE_DIM/2) = Bd1;
-		B.bottomRows(STATE_DIM/2) = Bd2;
-		*/
-
-		Ad22 = (v_matrix_t::Identity() - dt * A22).inverse();
-		Ad12 = dt* A12 *Ad22;
-
-		Ad11 = p_matrix_t::Identity();
-		Ad11.noalias() += dt * A11;
-		Ad11.noalias() += dt* Ad12 * A21;
-
-		Ad21 = dt * Ad22 * A21;
-
-		Bd1 = dt * Ad12 * B2 + dt * B1;
-		Bd2 = dt * Ad22 * B2;
-
-		A.topLeftCorner(STATE_DIM/2, STATE_DIM/2) = Ad11;
-		A.topRightCorner(STATE_DIM/2, STATE_DIM/2) = Ad12;
-		A.bottomLeftCorner(STATE_DIM/2, STATE_DIM/2) = Ad21;
-		A.bottomRightCorner(STATE_DIM/2, STATE_DIM/2) = Ad22;
-
-		B.topRows(STATE_DIM/2) = Bd1;
-		B.bottomRows(STATE_DIM/2) = Bd2;
+		B.topRows(P_DIM) = Bd1;
+		B.bottomRows(V_DIM) = Bd2;
 	}
 
 
