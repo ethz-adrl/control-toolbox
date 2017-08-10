@@ -28,6 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define INCLUDE_CT_CORE_FUNCTION_DERIVATIVESCPPAD_H_
 
 #include <ct/core/templateDir.h>
+#include "DerivativesCppadSettings.h"
 
 namespace ct {
 namespace core {
@@ -87,7 +88,13 @@ public:
 	 * @param[in]  outputDim  outputDim output dimension, must be specified if
 	 *                        template parameter IN_DIM is -1 (dynamic)
 	 */
-	DerivativesCppad(FUN_TYPE_CG& f, int inputDim = IN_DIM, int outputDim = OUT_DIM) :
+	DerivativesCppad(
+		const DerivativesCppadSettings settings, 
+		FUN_TYPE_CG& f, 
+		int inputDim = IN_DIM, 
+		int outputDim = OUT_DIM) 
+	:
+		settings_(settings),
 		fCgStd_(f),
 		compiled_(false),
 		inputDim_(inputDim),
@@ -110,7 +117,13 @@ public:
 	 * @param[in]  outputDim  outputDim output dimension, must be specified if
 	 *                        template parameter IN_DIM is -1 (dynamic)
 	 */
-	DerivativesCppad(FUN_TYPE_AD& f, int inputDim = IN_DIM, int outputDim = OUT_DIM) :
+	DerivativesCppad(
+		const DerivativesCppadSettings settings,
+		FUN_TYPE_AD& f, 
+		int inputDim = IN_DIM, 
+		int outputDim = OUT_DIM) 
+	:
+		settings_(settings),
 		fAdStd_(f),
 		compiled_(false),
 		inputDim_(inputDim),
@@ -123,6 +136,7 @@ public:
 	//! copy constructor
 	DerivativesCppad(const DerivativesCppad& arg) 
 	:
+		settings_(arg.settings_),
 		fCgStd_(arg.fCgStd_),
 		fAdStd_(arg.fAdStd_),
 		compiled_(arg.compiled_),
@@ -255,38 +269,6 @@ public:
 		}
 	}
 
-	// virtual Eigen::VectorXd hessianSparse(
-	// 	const Eigen::VectorXd& x, 
-	// 	const Eigen::VectorXd& lambda, 
-	// 	const Eigen::VectorXi& iRow,
-	// 	const Eigen::VectorXi& jCol) override 
-	// {
-	// 		if(outputDim_ <= 0)
-	// 			throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
-
-	// 		if(compiled_)
-	// 		{
-	// 			assert(model_->isSparseHessianAvailable() == true);
-	// 			std::vector<double> input(x.data(), x.data() + x.rows() * x.cols());
-	// 			std::vector<double> lambdaIn(lambda.data(), lambda.data() + lambda.rows() * lambda.cols());
-	// 			std::vector<double> output;
-	// 			std::vector<size_t> iRowStd(iRow.data(), iRow.data() + iRow.rows() * iRow.cols());
-	// 			std::vector<size_t> jColStd(jCol.data(), jCol.data() + jCol.rows() * jCol.cols());
-	// 			model_->SparseHessian(input, lambdaIn, output, iRowStd, jColStd);
-	// 			if(output.size() > 0)
-	// 				return Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
-	// 			else
-	// 			{
-	// 				Eigen::VectorXd zeros(iRow.size()); zeros.setZero();
-	// 				return zeros;
-	// 			} 
-	// 		}	
-	// 		else
-	// 		{
-	// 			return fAdCppad_.SparseHessian(x, lambda);
-	// 		}	
-	// }
-
 	virtual Eigen::VectorXd hessianSparse(
 		const Eigen::VectorXd& x, 
 		const Eigen::VectorXd& lambda, 
@@ -304,7 +286,7 @@ public:
 				out = Eigen::Matrix<double, IN_DIM, IN_DIM, Eigen::RowMajor>::Map(hes.data(), x.rows(), x.rows());
 
 				Eigen::VectorXd outSparse; outSparse.resize(iRow.size());
-				
+
 				for(size_t i = 0; i < iRow.size(); ++i)
 					outSparse(i) = out(iRow(i), jCol(i));
 
@@ -312,9 +294,7 @@ public:
 
 			}	
 			else
-			{
 				return fAdCppad_.SparseHessian(x, lambda);
-			}	
 	}
 
 
@@ -430,31 +410,39 @@ public:
 	 *  This method generates source code for the Jacobian and zero order derivative. It then compiles
 	 *  the source code to a dynamically loadable library that then gets loaded.
 	 */
-	void compileJIT(const std::string& libName = "threadId" + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id())), size_t maxAssignments = 20000)
+	void compileJIT(const std::string& libName = "threadId" + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id())))
 	{
 		if (compiled_) return;
 		std::cout << "Starting to compile " + libName + " library"  << std::endl;
 
 		CppAD::cg::ModelCSourceGen<double> cgen(fCgCppad_, "DerivativesCppad");
-		// cgen.setMultiThreading(true);
-		std::cout << "settings maxAssignments: " << maxAssignments << std::endl;
-		cgen.setMaxAssignmentsPerFunc(maxAssignments);
-		// cgen.setCreateForwardZero(true);
-		cgen.setCreateJacobian(true);
-		// cgen.setCreateForwardOne(true);
-		cgen.setCreateSparseJacobian(true);
 
-		// cgen.setCreateReverseTwo(true);
-		// cgen.setCreateHessian(true);
-		cgen.setCreateSparseHessian(true);
+		cgen.setMultiThreading(settings_.multiThreading_);
+		cgen.setCreateForwardZero(settings_.createForwardZero_);
+		cgen.setCreateForwardOne(settings_.createForwardOne_);
+		cgen.setCreateReverseOne(settings_.createReverseOne_);
+		cgen.setCreateReverseTwo(settings_.createReverseTwo_);
+		cgen.setCreateJacobian(settings_.createJacobian_);
+		cgen.setCreateSparseJacobian(settings_.createSparseJacobian_);
+		cgen.setCreateHessian(settings_.createHessian_);
+		cgen.setCreateSparseHessian(settings_.createSparseHessian_);
+		cgen.setMaxAssignmentsPerFunc(settings_.maxAssignements_);
 
 		CppAD::cg::ModelLibraryCSourceGen<double> libcgen(cgen);
-		std::cout << "maxAssignments per fun: " << cgen.getMaxAssignmentsPerFunc() << std::endl;
 
 		// compile source code
 		CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, libName);
+		if(settings_.compiler_ == DerivativesCppadSettings::GCC)
+		{
+			CppAD::cg::GccCompiler<double> compiler;			
+			dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler));
+		}
 
-		dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compilerClang_));
+		else if(settings_.compiler_ == DerivativesCppadSettings::CLANG)
+		{
+			CppAD::cg::ClangCompiler<double> compiler;
+			dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler));
+		}
 
 		model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"));
 
@@ -462,15 +450,10 @@ public:
 		std::cout << "Successfully compiled " << std::endl;
 
 		if(model_->isJacobianSparsityAvailable())
-		{
 			model_->JacobianSparsity(sparsityRowsJacobian_, sparsityColsJacobian_);
-		}
 
 		if(model_->isHessianSparsityAvailable())
-		{
-			std::cout << "Retrieving hessian sparsity" << std::endl;
 			model_->HessianSparsity(sparsityRowsHessian_, sparsityColsHessian_);
-		}
 	}
 
 
@@ -600,6 +583,7 @@ public:
 
 
 private:
+	DerivativesCppadSettings settings_;
 	std::vector<size_t> sparsityRowsJacobian_;
 	std::vector<size_t> sparsityColsJacobian_;
 	std::vector<size_t> sparsityRowsHessian_;

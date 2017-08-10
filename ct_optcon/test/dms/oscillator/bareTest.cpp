@@ -231,7 +231,6 @@ void runTests()
 		settings.h_min_ = 0.1;
 		settings.integrationType_ = DmsSettings::EULER;
 		settings.dt_sim_ = 0.2;
-		settings.integrateSens_ =  static_cast<DmsSettings::IntegrationType>(integrateSensitivity);
 		settings.absErrTol_ = 1e-6;
 		settings.relErrTol_ = 1e-6;
 

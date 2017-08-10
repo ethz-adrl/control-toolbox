@@ -140,16 +140,8 @@ public:
 			Eigen::Matrix<double, 1, 1> mat; mat << obj_fac;
 			if(nele_hes > 0)
 			{
-				// std::cout << "iRowHessian_ size: " << iRowHessian_.rows() << std::endl;
-				VectorXs costHessian = costCodegen_->hessianSparse(optVariables_->getOptimizationVars(), mat, iRowHessian_, jColHessian_);
-				// std::cout << "cost: " << costHessian.transpose() << std::endl;
-				// std::cout << "costHessian size: " << costHessian.rows() << std::endl;
-				// std::cout << "lambda: " << lambda.transpose() << std::endl;
-				// std::cout << "iRowHessian_ size: " << iRowHessian_.rows() << std::endl;
-				VectorXs constraintHessian = constraintsCodegen_->hessianSparse(optVariables_->getOptimizationVars(), lambda, iRowHessian_, jColHessian_);
-				// std::cout << "constraint: " << constraintHessian.transpose()  << std::endl;
-				// std::cout << "constraint Hessian size: " << constraintHessian.rows() << std::endl;
-				hes = costHessian + constraintHessian;
+				hes = 	costCodegen_->hessianSparse(optVariables_->getOptimizationVars(), mat, iRowHessian_, jColHessian_) +
+						constraintsCodegen_->hessianSparse(optVariables_->getOptimizationVars(), lambda, iRowHessian_, jColHessian_);
 			}
 		}
 		else

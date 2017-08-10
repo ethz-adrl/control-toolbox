@@ -42,7 +42,7 @@ namespace optcon {
 class SnoptSettings
 {
 public: 
-
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	/**
 	 * @brief      Default constructor, sets the parameters to default values
 	 */
@@ -221,7 +221,7 @@ public:
         max_iter_ = pt.get<unsigned int>(ns + ".MaxIterations");
         bool checkDerivatives = pt.get<bool>(ns + ".CheckDerivatives");
         if(checkDerivatives)
-            derivativeTest_ = "second-order";
+            derivativeTest_ = "first-order";
         if(!checkDerivatives)
             derivativeTest_ = "none";
         bool exactHessian = pt.get<bool>(ns + ".ExactHessian");

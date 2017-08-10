@@ -28,6 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define INCLUDE_CT_CORE_MATH_DERIVATIVES_H_
 
 #include <Eigen/Core>
+#include <Eigen/Sparse>
 #include <Eigen/StdVector>
 
 namespace ct {
@@ -45,6 +46,7 @@ namespace core {
 template <int IN_DIM, int OUT_DIM, typename SCALAR = double>
 class Derivatives {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     typedef Eigen::Matrix<double, IN_DIM, 1> IN_TYPE; //!< function input vector type
     typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE; //!< function output vector type
     typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE;
