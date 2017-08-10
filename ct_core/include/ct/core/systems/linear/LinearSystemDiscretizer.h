@@ -349,6 +349,12 @@ private:
 		state_matrix_t Ac  = linearSystem_->getDerivativeState(x_n, u_n, n*dt); // continuous time A matrix
 		state_control_matrix_t Bc = linearSystem_->getDerivativeControl(x_n, u_n, n*dt); // continuous time B matrix
 
+		/*!
+		 * Symplectic Euler discretization rule adapted from:
+		 * Prabhakar, A., Flasskamp, K., & Murphey, T. D. (2016). Symplectic integration for optimal ergodic control.
+		 * Proceedings of the IEEE Conference on Decision and Control, 2016(CDC), 2594–2600.
+		 */
+
 		typedef Eigen::Matrix<SCALAR, P_DIM, P_DIM> p_matrix_t;
 		typedef Eigen::Matrix<SCALAR, V_DIM, V_DIM> v_matrix_t;
 		typedef Eigen::Matrix<SCALAR, P_DIM, V_DIM> p_v_matrix_t;
@@ -356,20 +362,6 @@ private:
 		typedef Eigen::Matrix<SCALAR, P_DIM, CONTROL_DIM> p_control_matrix_t;
 		typedef Eigen::Matrix<SCALAR, V_DIM, CONTROL_DIM> v_control_matrix_t;
 
-		//! @todo don't copy here
-		const p_matrix_t A11 = Ac.topLeftCorner(P_DIM, P_DIM);
-		const p_v_matrix_t A12 = Ac.topRightCorner(P_DIM, V_DIM);
-		const v_p_matrix_t A21 = Ac.bottomLeftCorner(V_DIM, P_DIM);
-		const v_matrix_t A22 = Ac.bottomRightCorner(V_DIM, V_DIM);
-
-		const p_control_matrix_t B1 = Bc.topRows(P_DIM);
-		const v_control_matrix_t B2 = Bc.bottomRows(V_DIM);
-
-		/*!
-		 * Symplectic Euler discretization rule adapted from:
-		 * Prabhakar, A., Flasskamp, K., & Murphey, T. D. (2016). Symplectic integration for optimal ergodic control.
-		 * Proceedings of the IEEE Conference on Decision and Control, 2016(CDC), 2594–2600.
-		 */
 		p_matrix_t Ad11;
 		v_matrix_t Ad22;
 		p_v_matrix_t Ad12;
@@ -377,17 +369,17 @@ private:
 		p_control_matrix_t Bd1;
 		v_control_matrix_t Bd2;
 
-		Ad22 = (v_matrix_t::Identity() - dt * A22).inverse();
-		Ad12 = dt* A12 *Ad22;
+		Ad22 = (v_matrix_t::Identity() - dt * Ac.bottomRightCorner(V_DIM, V_DIM)).inverse();
+		Ad12 = dt* Ac.topRightCorner(P_DIM, V_DIM) *Ad22;
 
 		Ad11 = p_matrix_t::Identity();
-		Ad11.noalias() += dt * A11;
-		Ad11.noalias() += dt* Ad12 * A21;
+		Ad11.noalias() += dt * Ac.topLeftCorner(P_DIM, P_DIM);
+		Ad11.noalias() += dt* Ad12 * Ac.bottomLeftCorner(V_DIM, P_DIM);
 
-		Ad21 = dt * Ad22 * A21;
+		Ad21 = dt * Ad22 * Ac.bottomLeftCorner(V_DIM, P_DIM);
 
-		Bd1 = dt * Ad12 * B2 + dt * B1;
-		Bd2 = dt * Ad22 * B2;
+		Bd1 = dt * Ad12 * Bc.bottomRows(V_DIM) + dt * Bc.topRows(P_DIM);
+		Bd2 = dt * Ad22 * Bc.bottomRows(V_DIM);
 
 		A.topLeftCorner(P_DIM, P_DIM) = Ad11;
 		A.topRightCorner(P_DIM, V_DIM) = Ad12;
