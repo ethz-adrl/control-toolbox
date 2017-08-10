@@ -357,14 +357,13 @@ private:
 		typedef Eigen::Matrix<SCALAR, V_DIM, CONTROL_DIM> v_control_matrix_t;
 
 		//! @todo don't copy here
-		//! @todo don't copy here
-		const p_matrix_t A11 = Ac.topLeftCorner(STATE_DIM/2, STATE_DIM/2);
-		const p_v_matrix_t A12 = Ac.topRightCorner(STATE_DIM/2, STATE_DIM/2);
-		const v_p_matrix_t A21 = Ac.bottomLeftCorner(STATE_DIM/2, STATE_DIM/2);
-		const v_matrix_t A22 = Ac.bottomRightCorner(STATE_DIM/2, STATE_DIM/2);
+		const p_matrix_t A11 = Ac.topLeftCorner(P_DIM, P_DIM);
+		const p_v_matrix_t A12 = Ac.topRightCorner(P_DIM, V_DIM);
+		const v_p_matrix_t A21 = Ac.bottomLeftCorner(V_DIM, P_DIM);
+		const v_matrix_t A22 = Ac.bottomRightCorner(V_DIM, V_DIM);
 
-		const p_control_matrix_t B1 = Bc.topRows(STATE_DIM/2);
-		const v_control_matrix_t B2 = Bc.bottomRows(STATE_DIM/2);
+		const p_control_matrix_t B1 = Bc.topRows(P_DIM);
+		const v_control_matrix_t B2 = Bc.bottomRows(V_DIM);
 
 		/*!
 		 * Symplectic Euler discretization rule adapted from:
@@ -378,28 +377,6 @@ private:
 		p_control_matrix_t Bd1;
 		v_control_matrix_t Bd2;
 
-		/*
-		Ad22 = (v_matrix_t::Identity() - dt * Ac.bottomRightCorner(V_DIM, V_DIM)).inverse();
-		Ad12 = dt* Ac.topRightCorner(P_DIM, V_DIM) *Ad22;
-
-		Ad11 = p_matrix_t::Identity();
-		Ad11.noalias() += dt * Ac.topLeftCorner(P_DIM, P_DIM);
-		Ad11.noalias() += dt* Ad12 * Ac.bottomLeftCorner(V_DIM, P_DIM);
-
-		Ad21 = dt * Ad22 * Ac.bottomLeftCorner(V_DIM, P_DIM);
-
-		Bd1 = dt * Ad12 * Bc.bottomRows(V_DIM) + dt * Bc.topRows(P_DIM);
-		Bd2 = dt * Ad22 * Bc.bottomRows(V_DIM);
-
-		A.topLeftCorner(STATE_DIM/2, STATE_DIM/2) = Ad11;
-		A.topRightCorner(STATE_DIM/2, STATE_DIM/2) = Ad12;
-		A.bottomLeftCorner(STATE_DIM/2, STATE_DIM/2) = Ad21;
-		A.bottomRightCorner(STATE_DIM/2, STATE_DIM/2) = Ad22;
-
-		B.topRows(STATE_DIM/2) = Bd1;
-		B.bottomRows(STATE_DIM/2) = Bd2;
-		*/
-
 		Ad22 = (v_matrix_t::Identity() - dt * A22).inverse();
 		Ad12 = dt* A12 *Ad22;
 
@@ -412,13 +389,13 @@ private:
 		Bd1 = dt * Ad12 * B2 + dt * B1;
 		Bd2 = dt * Ad22 * B2;
 
-		A.topLeftCorner(STATE_DIM/2, STATE_DIM/2) = Ad11;
-		A.topRightCorner(STATE_DIM/2, STATE_DIM/2) = Ad12;
-		A.bottomLeftCorner(STATE_DIM/2, STATE_DIM/2) = Ad21;
-		A.bottomRightCorner(STATE_DIM/2, STATE_DIM/2) = Ad22;
+		A.topLeftCorner(P_DIM, P_DIM) = Ad11;
+		A.topRightCorner(P_DIM, V_DIM) = Ad12;
+		A.bottomLeftCorner(V_DIM, P_DIM) = Ad21;
+		A.bottomRightCorner(V_DIM, V_DIM) = Ad22;
 
-		B.topRows(STATE_DIM/2) = Bd1;
-		B.bottomRows(STATE_DIM/2) = Bd2;
+		B.topRows(P_DIM) = Bd1;
+		B.bottomRows(V_DIM) = Bd2;
 	}
 
 
