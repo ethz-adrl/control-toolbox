@@ -202,7 +202,6 @@ public:
         lqocp_solver(GNRICCATI_SOLVER),
 		loggingPrefix("alg"),
 		closedLoopShooting(false), //! by default, we do open-loop shooting
-		stabilizeAroundPreviousSolution(false),
 		epsilon(1e-5),
 		dt(0.001),
 		K_sim(1),	//! by default, there is only one sub-integration step
@@ -227,7 +226,6 @@ public:
 	LQOCP_SOLVER lqocp_solver;	//! the solver for the linear-quadratic optimal control problem
 	std::string loggingPrefix; //! the prefix to be stored before the matfile name for logging
 	bool closedLoopShooting; 	//! use feedback gains during forward integration (true) or not (false)
-	bool stabilizeAroundPreviousSolution; 	//! stablize around previous solution, may increase stability
 	double epsilon;			//! Eigenvalue correction factor for Hessian regularization
     double dt;				//! sampling time for the control input (seconds)
     int K_sim;			//! number of sub-integration-steps
@@ -268,7 +266,6 @@ public:
         std::cout<<"nonlinear OCP algorithm: " << nlocp_algorithmToString.at(nlocp_algorithm)<<std::endl;
         std::cout<<"linear-quadratic OCP solver: " << locp_solverToString.at(lqocp_solver)<<std::endl;
         std::cout<<"closed loop shooting:\t" << closedLoopShooting << std::endl;
-        std::cout<<"stabilizing around previous solution: " << stabilizeAroundPreviousSolution << std::endl;
         std::cout<<"dt:\t"<<dt<<std::endl;
         std::cout<<"K_sim:\t"<<K_sim<<std::endl;
         std::cout<<"K_shot:\t"<<K_shot<<std::endl;
@@ -360,8 +357,6 @@ public:
 		try{loggingPrefix = pt.get<std::string>(ns + ".loggingPrefix");
 		} catch (...) {}
 		try{closedLoopShooting = pt.get<bool>(ns + ".closedLoopShooting");
-		} catch (...) {}
-		try{stabilizeAroundPreviousSolution = pt.get<bool>(ns + ".stabilizeAroundPreviousSolution");
 		} catch (...) {}
 		try{dt = pt.get<double>(ns +".dt");
 		} catch (...) {}

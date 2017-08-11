@@ -203,7 +203,6 @@ public:
 
 
 		//! update solutions
-		this->backend_->getFeedforwardUpdates();
 		this->backend_->getFeedback();
 		this->backend_->getControlUpdates();
 		this->backend_->getStateUpdates();
@@ -353,7 +352,6 @@ public:
 
 		//! update solutions
 		start = std::chrono::steady_clock::now();
-		this->backend_->getFeedforwardUpdates();
 		this->backend_->getFeedback();
 		this->backend_->getControlUpdates();
 		this->backend_->getStateUpdates();

@@ -159,7 +159,6 @@ public:
 #endif
 
 		// update solutions
-		this->backend_->getFeedforwardUpdates();
 		this->backend_->getFeedback();
 		this->backend_->getControlUpdates();
 		this->backend_->getStateUpdates();
