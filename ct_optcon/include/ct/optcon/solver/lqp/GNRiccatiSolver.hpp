@@ -64,7 +64,8 @@ public:
 	typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
 
 	GNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem = nullptr) :
-		LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>(lqocProblem)
+		LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>(lqocProblem),
+		N_(-1)
 	{
 		Eigen::initParallel();
 		Eigen::setNbThreads(settings_.nThreadsEigen);
@@ -93,7 +94,9 @@ public:
 			initializeCostToGo();
 
 		designController(N);
-		computeCostToGo(N);
+
+		if (N>0)
+			computeCostToGo(N);
 	}
 
 
@@ -165,12 +168,17 @@ public:
 		for(int k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
 		{
 			//! control update rule
-			this->lu_[k] = lv_[k] + L_[k] * this->lx_[k]; // todo attention here
+			this->lu_[k] = lv_[k];
+			if (k>0) // lx is zero for k=0
+				this->lu_[k].noalias() += L_[k] * this->lx_[k];
 
 			//! state update rule
-			this->lx_[k+1] = (p.A_[k] + p.B_[k] * L_[k]) * this->lx_[k]  + p.B_[k] * lv_[k] + p.b_[k];
+			this->lx_[k+1] = p.B_[k] * lv_[k] + p.b_[k];
+			if(k>0)
+				this->lx_[k+1].noalias() += (p.A_[k] + p.B_[k] * L_[k]) * this->lx_[k];
 
 			//! compute the norms of the updates
+			//! \todo needed?
 			this->delta_x_norm_ += this->lx_[k+1].norm();
 			this->delta_uff_norm_ += this->lu_[k].norm();
 		}
@@ -187,15 +195,16 @@ protected:
 	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) override
 	{
 		const int& N = lqocProblem->getNumberOfStages();
+		changeNumberOfStages(N);
 
-		if(gv_.size() != N)
-			changeNumberOfStages(N);
 	}
-
 	void changeNumberOfStages(int N)
 	{
 		if (N<=0)
 			return;
+
+		if(N_ == N)
+	 		return;
 
 		gv_.resize(N);
 		G_.resize(N);
@@ -212,6 +221,8 @@ protected:
 
 		sv_.resize(N+1);
 		S_.resize(N+1);
+
+		N_ = N;
 	}
 
 
@@ -375,6 +386,8 @@ protected:
 
 	StateVectorArray sv_;
 	StateMatrixArray S_;
+
+	int N_;
 
 	SCALAR smallestEigenvalue_;
 
