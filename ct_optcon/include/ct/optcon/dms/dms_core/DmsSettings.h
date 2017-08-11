@@ -165,7 +165,8 @@ public:
 		relErrTol_ = pt.get<double> (ns + ".RelErrTol");
 
 		solverSettings_.load(filename, verbose, ns + ".solver"); // todo bring in again
-		                                                         // 
+		cppadSettings_.load(filename, verbose, ns + ".cppad");
+
 		if (verbose)
 		{
 			std::cout << "Loaded DMS config from "<<filename<<": "<<std::endl;

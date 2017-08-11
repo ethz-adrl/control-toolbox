@@ -234,8 +234,18 @@ void runTests()
 		settings.absErrTol_ = 1e-6;
 		settings.relErrTol_ = 1e-6;
 
+		ct::core::DerivativesCppadSettings cppadSettings;
+		cppadSettings.createSparseJacobian_ = true;
+		cppadSettings.createSparseHessian_ = true;
+		cppadSettings.createForwardZero_ = true;
+
 		NlpSolverSettings nlpsettings;
 		nlpsettings.solverType_ = static_cast<NlpSolverSettings::SolverType>(solverType);	// IPOPT, SNOPT
+	    nlpsettings.useGeneratedCostGradient_ = true;
+	    nlpsettings.useGeneratedConstraintJacobian_ = true;
+	    nlpsettings.ipoptSettings_.hessian_approximation_ = "exact";
+
+	    settings.cppadSettings_ = cppadSettings;                                                                             	
 		settings.solverSettings_ = nlpsettings;
 
 		OscillatorDms oscDms;

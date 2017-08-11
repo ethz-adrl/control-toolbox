@@ -128,7 +128,7 @@ public:
 	 */
 	void evaluateConstraintJacobian(const int nele_jac, MapVecXs& jac){
 		if(useGeneratedConstraintJacobian_)
-			jac = constraintsCodegen_->jacobianSparse(optVariables_->getOptimizationVars());
+			jac = constraintsCodegen_->evaluateSparseJacobian(optVariables_->getOptimizationVars());
 		else
 			constraints_->evalSparseJacobian(jac, nele_jac);
 	}
@@ -140,8 +140,78 @@ public:
 			Eigen::Matrix<double, 1, 1> mat; mat << obj_fac;
 			if(nele_hes > 0)
 			{
-				hes = 	costCodegen_->hessianSparse(optVariables_->getOptimizationVars(), mat, iRowHessian_, jColHessian_) +
-						constraintsCodegen_->hessianSparse(optVariables_->getOptimizationVars(), lambda, iRowHessian_, jColHessian_);
+				hes.setZero();
+
+				VectorXs hesCost;
+				Eigen::VectorXi iRowCost;
+				Eigen::VectorXi jColCost;
+
+				VectorXs hesCon;
+				Eigen::VectorXi iRowCon;
+				Eigen::VectorXi jColCon;
+
+				costCodegen_->sparseHessian(optVariables_->getOptimizationVars(), mat, hesCost, iRowCost, jColCost);
+				constraintsCodegen_->sparseHessian(optVariables_->getOptimizationVars(), lambda, hesCon, iRowCon, jColCon);
+
+				size_t i_cost, i_con, i_sum;
+				i_cost = 0;
+				i_con = 0;
+				i_sum = 0;
+
+				while((i_cost < hesCost.rows()) && (i_con < hesCon.rows()))
+				{
+					if(iRowCost(i_cost) == iRowCon(i_con))
+					{
+						if(jColCost(i_cost) == jColCon(i_con))
+						{
+							hes(i_sum) = hesCost(i_cost) + hesCon(i_con);
+							i_cost++;
+							i_con++;
+							i_sum++;
+						}
+						else if(jColCost(i_cost) < jColCon(i_con))
+						{
+							hes(i_sum) = hesCost(i_cost);
+							i_cost++;
+							i_sum++;
+						}
+						else if(jColCost(i_cost) > jColCon(i_con))
+						{
+							hes(i_sum) = hesCon(i_con);
+							i_con++;
+							i_sum++;							
+						}
+					}
+					else if(iRowCost(i_cost) < iRowCon(i_con))
+					{
+						hes(i_sum) = hesCost(i_cost);
+						i_cost++;
+						i_sum++;
+					}
+					else if(iRowCost(i_cost) > iRowCon(i_con))
+					{
+						hes(i_sum) = hesCon(i_con);
+						i_con++;
+						i_sum++;
+					}
+				}
+
+				if(i_cost < iRowCost.rows())
+				{
+					for(size_t t = i_cost; t < iRowCost.rows(); ++t)
+					{
+						hes(i_sum) = hesCost(t);
+						i_sum++;
+					}
+				}
+				else if(i_con < iRowCon.rows())
+				{
+					for(size_t t = i_con; t < iRowCon.rows(); ++t)
+					{
+						hes(i_sum) = hesCon(t);
+						i_sum++;						
+					}
+				}
 			}
 		}
 		else
@@ -159,9 +229,6 @@ public:
 	 *                       elements of the constraint jacobian
 	 */
 	void getSparsityPatternJacobian(const int nele_jac, MapVecXi& iRow, MapVecXi& jCol) const{
-		// std::cout << "nele_jac: " << nele_jac << std::endl;
-		// std::cout << "irow Map size: " << iRow.rows() << std::endl;
-		// std::cout << "jCol Map size: " << jCol.rows() << std::endl;
 		iRow.setZero();
 		jCol.setZero();
 
@@ -173,41 +240,18 @@ public:
 
 			iRow = iRow1;
 			jCol = jCol1;
-			// std::cout << "sparsityPatterJacobian" << std::endl;
-			// std::cout << constraintsCodegen_->getSparsityPatternJacobian() << std::endl;
-
-			// std::cout << "sparsityPatterHessian" << std::endl;
-			// std::cout << constraintsCodegen_->getSparsityPatternHessian() << std::endl;
 		}
 		else
 			constraints_->getSparsityPattern(iRow, jCol, nele_jac);
 	}
 
 	void getSparsityPatternHessian(const int nele_hes, MapVecXi& iRow, MapVecXi& jCol) const{
-		// std::cout << "nele_jac: " << nele_jac << std::endl;
-		// std::cout << "irow Map size: " << iRow.rows() << std::endl;
-		// std::cout << "jCol Map size: " << jCol.rows() << std::endl;
+
 		iRow.setZero();
 		jCol.setZero();
 
 		if(useGeneratedConstraintJacobian_ && useGeneratedCostGradient_)
 		{
-			// Eigen::VectorXi iRowCost;
-			// Eigen::VectorXi jColCost;
-			// Eigen::VectorXi iRowConstraints;
-			// Eigen::VectorXi jColConstraints;
-			// costCodegen_->getSparsityPatternHessian(iRowCost, jColCost);
-			// constraintsCodegen_->getSparsityPatternHessian(iRowConstraints, jColConstraints);
-
-			// construct iRowHessian_, jColHessian_
-
-			// size_t idx = 0;
-			// for(size_t row = 0; row < iRow1.rows(); ++row)
-			// 	for(size_t col = 0; col < row + 1; ++col)
-			// 	{
-			// 		iRow
-			// 	}
-
 			iRow = iRowHessian_;
 			jCol = jColHessian_;
 		}
@@ -241,64 +285,89 @@ public:
 	size_t getNonZeroHessianCount() {
 		if(useGeneratedConstraintJacobian_)
 		{
-			// size_t n = getVarCount();
-
 			Eigen::VectorXi iRowCost;
 			Eigen::VectorXi jColCost;
-			Eigen::VectorXi iRowConstraints;
-			Eigen::VectorXi jColConstraints;
+			Eigen::VectorXi iRowCon;
+			Eigen::VectorXi jColCon;
 			costCodegen_->getSparsityPatternHessian(iRowCost, jColCost);
 			// std::cout << "iRowCost: " << iRowCost.transpose() << std::endl;
 			// std::cout << "jColCost: " << jColCost.transpose() << std::endl;
-			constraintsCodegen_->getSparsityPatternHessian(iRowConstraints, jColConstraints);
+			constraintsCodegen_->getSparsityPatternHessian(iRowCon, jColCon);
 			// std::cout << "iRowCon: " << iRowConstraints.transpose() << std::endl;
 			// std::cout << "jColCon: " << jColConstraints.transpose() << std::endl;
 
-			std::vector<std::pair<int, int>> sparsityUnion;
-			for(size_t i = 0; i < costCodegen_->getNumNonZerosHessian(); ++i)
-			{
-				sparsityUnion.push_back(std::make_pair(iRowCost(i), jColCost(i)));
-			}
-
-			for(size_t i = 0; i < constraintsCodegen_->getNumNonZerosHessian(); ++i)
-			{
-				bool hasElement = false;
-				for(size_t j = 0; j < costCodegen_->getNumNonZerosHessian(); ++j)
-				{
-					if(std::make_pair(iRowConstraints(i), jColConstraints(i)) == sparsityUnion[i])
-					{
-						hasElement = true;
-						break;
-					}
-				}
-				if(hasElement)
-					continue;
-				else
-					sparsityUnion.push_back(std::make_pair(iRowConstraints(i), jColConstraints(i)));
-			}
-
 			std::vector<int> iRowHessianLocal;
 			std::vector<int> jColHessianLocal;
-			for(size_t j = 0; j < sparsityUnion.size(); ++j)
+			size_t i_cost, i_con;
+			i_cost = 0;
+			i_con = 0;
+
+			while((i_cost < iRowCost.rows()) && (i_con < iRowCon.rows()))
 			{
-				if(sparsityUnion[j].first >= sparsityUnion[j].second)
+				if(iRowCost(i_cost) == iRowCon(i_con))
 				{
-					iRowHessianLocal.push_back(sparsityUnion[j].first);
-					jColHessianLocal.push_back(sparsityUnion[j].second);
+					if(jColCost(i_cost) == jColCon(i_con))
+					{
+						iRowHessianLocal.push_back(iRowCost(i_cost));
+						jColHessianLocal.push_back(jColCost(i_cost));
+						i_cost++;
+						i_con++;
+					}
+					else if(jColCost(i_cost) < jColCon(i_con))
+					{
+						iRowHessianLocal.push_back(iRowCost(i_cost));
+						jColHessianLocal.push_back(jColCost(i_cost));
+						i_cost++;
+					}
+					else if(jColCost(i_cost) > jColCon(i_con))
+					{
+						iRowHessianLocal.push_back(iRowCon(i_con));
+						jColHessianLocal.push_back(jColCon(i_con));
+						i_con++;
+					}
+				}
+				else if(iRowCost(i_cost) < iRowCon(i_con))
+				{
+					iRowHessianLocal.push_back(iRowCost(i_cost));
+					jColHessianLocal.push_back(jColCost(i_cost));
+					i_cost++;
+				}
+				else if(iRowCost(i_cost) > iRowCon(i_con))
+				{
+					iRowHessianLocal.push_back(iRowCon(i_con));
+					jColHessianLocal.push_back(jColCon(i_con));
+					i_con++;
+				}
+			}
+
+			if(i_cost < iRowCost.rows())
+			{
+				for(size_t t = i_cost; t < iRowCost.rows(); ++t)
+				{
+					iRowHessianLocal.push_back(iRowCost(t));
+					jColHessianLocal.push_back(jColCost(t));
+				}
+			}
+			else if(i_con < iRowCon.rows())
+			{
+				for(size_t t = i_con; t < iRowCon.rows(); ++t)
+				{
+					iRowHessianLocal.push_back(iRowCon(t));
+					jColHessianLocal.push_back(jColCon(t));
 				}
 			}
 
 			iRowHessian_ = Eigen::Map<Eigen::VectorXi>(iRowHessianLocal.data(), iRowHessianLocal.size(), 1);
 			jColHessian_ = Eigen::Map<Eigen::VectorXi>(jColHessianLocal.data(), jColHessianLocal.size(), 1);
-			// iRowHessian_ = iRowCost;
-			// jColHessian_ = jColCost;
+
+			std::cout << "iRowHessian_: " << iRowHessian_.transpose() << std::endl;
+			std::cout << "jColHessian_: " << jColHessian_.transpose() << std::endl;
 
 			size_t nonZerosHessian = iRowHessian_.rows();
 			return nonZerosHessian;
 		}
-		// else
-		// 	return constraints_->getNonZerosJacobianCount();
-		return 0;
+		else
+			throw std::runtime_error("Get nonzeros hessian only valid for codegenerated derivatives");
 	}	
 
 	/**
@@ -439,6 +508,12 @@ protected:
 	std::shared_ptr<ct::core::DerivativesCppad<-1, -1>> constraintsCodegen_;
 	Eigen::VectorXi iRowHessian_;
 	Eigen::VectorXi jColHessian_;
+
+	// bool pairCompair(const std::pair<int, int>& firstElement, const std::pair<int, int>& secondElement)
+	// {
+	// 	bool isFirstEleSmaller = firstElement.first < secondElement.first;
+	// 	return firstElement.first < secondElement.first && firstElement.second < secondElement.second;
+	// }
 };
 
 }

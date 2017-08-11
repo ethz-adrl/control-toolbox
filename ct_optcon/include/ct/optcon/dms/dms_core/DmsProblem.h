@@ -222,20 +222,14 @@ public:
 
 		std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, ScalarCG>> discretizedConstraints;
 		if(stateInputConstraints.size() > 0 || pureStateConstraints.size() > 0)
-		{
 			discretizedConstraints = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, ScalarCG>> (
 				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, ScalarCG> (optVariablesDms, controlSpliner, timeGrid, settings_.N_));
-		}
 
 		if(stateInputConstraints.size() > 0)
-		{
 			discretizedConstraints->setStateInputConstraints(stateInputConstraints.front());
-		}
 
 		if(pureStateConstraints.size() > 0)
-		{
 			discretizedConstraints->setPureStateConstraints(pureStateConstraints.front());
-		}
 
 		std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, ScalarCG>>> shotContainers;
 		for (size_t shotIdx = 0; shotIdx < settings_.N_; shotIdx++)
@@ -270,13 +264,12 @@ public:
 				throw(std::runtime_error("Unknown cost evaluation type"));
 		}
 
-		// this->optVariables_ = optVariablesDms_;
 		optVariablesDms->resizeConstraintVars(this->getConstraintsCount());
 
 		std::shared_ptr<ConstraintsContainerDms<STATE_DIM, CONTROL_DIM, ScalarCG>> constraints(
 			new ConstraintsContainerDms<STATE_DIM, CONTROL_DIM, ScalarCG>(optVariablesDms, timeGrid, shotContainers, discretizedConstraints, x0, settings_));
 
-		if(settings_.solverSettings_.generateCostGradient_)
+		if(settings_.solverSettings_.useGeneratedCostGradient_)
 		{
 			std::function<Eigen::Matrix<ScalarCG, 1, 1> (const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>&)> fCost = 
 				[&](const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>& xOpt){
@@ -290,13 +283,15 @@ public:
 					return out;
 			};
 
+			settings_.cppadSettings_.createJacobian_ = true;
+
 			this->costCodegen_ = std::shared_ptr<ct::core::DerivativesCppad<-1, 1>>(
 				new ct::core::DerivativesCppad<-1, 1>(settings_.cppadSettings_, fCost, this->getVarCount()));
 			this->costCodegen_->compileJIT("dmsCostFunction");
 			this->useGeneratedCostGradient_ = true;
 		}
 
-		if(settings_.solverSettings_.generateConstraintJacobian_)
+		if(settings_.solverSettings_.useGeneratedConstraintJacobian_)
 		{
 			std::function<Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1> (const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>&)> fConstraints = 
 				[&](const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>& xOpt){
@@ -306,12 +301,14 @@ public:
 					for(auto shotContainer : shotContainers)
 						shotContainer->reset();
 
+
 					Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1> out(this->getConstraintsCount());// out.resize(this->getConstraintsCount, 1);
 					constraints->evalConstraints(out);
 					return out;
 			};		
 
-
+			settings_.cppadSettings_.createJacobian_ = false;
+			
 			this->constraintsCodegen_ = std::shared_ptr<ct::core::DerivativesCppad<-1, -1>>(
 				new ct::core::DerivativesCppad<-1, -1>(settings_.cppadSettings_, fConstraints, this->getVarCount(), this->getConstraintsCount()));
 			this->constraintsCodegen_->compileJIT("dmsConstraints");

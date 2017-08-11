@@ -148,7 +148,7 @@ public:
 	acceptableTol_(1e-6),
 	restoAcceptableTol_( 1e-7),
 	linear_scaling_on_demand_("yes"),
-	hessian_approximation_("exact"),
+	hessian_approximation_("limited-memory"),
 	nlp_scaling_method_("gradient-based"),
 	printLevel_(5),
 	print_user_options_("no"),
@@ -194,6 +194,7 @@ public:
 	void print()
 	{
         std::cout << "IPOPT SETTINGS: " << std::endl;
+        std::cout << "Using " << hessian_approximation_ << " hessian approximation" << std::endl;
         std::cout << "MaxIterations: " << max_iter_ << std::endl;
 	}
 
@@ -251,15 +252,13 @@ public:
 	 */
 	NlpSolverSettings() :
 	solverType_(IPOPT),
-    generateCostGradient_(true),
-    generateConstraintJacobian_(true),
-    maxAssignements_(20000)
+    useGeneratedCostGradient_(false),
+    useGeneratedConstraintJacobian_(false)
 	{}
 
     SolverType_t solverType_;
-    bool generateCostGradient_;
-    bool generateConstraintJacobian_;
-    size_t maxAssignements_;
+    bool useGeneratedCostGradient_;
+    bool useGeneratedConstraintJacobian_;
     SnoptSettings snoptSettings_;
     IpoptSettings ipoptSettings_;
 
@@ -273,17 +272,15 @@ public:
         std::cout<<"============================================================="<<std::endl;
 
     	std::cout << "Using nlp solver: " << solverToString[solverType_] << std::endl;
-        if(generateCostGradient_)
-            std::cout << "Generating Cost Gradient" << std::endl;
+        if(useGeneratedCostGradient_)
+            std::cout << "Using generated Cost Gradient" << std::endl;
         else
             std::cout << "Using analytical cost Gradient" << std::endl;
-        if(generateConstraintJacobian_)
-            std::cout << "Generating Constraints Jacobian" << std::endl;
+        if(useGeneratedConstraintJacobian_)
+            std::cout << "Using generated Constraints Jacobian" << std::endl;
         else
             std::cout << "Using anlyitical Constraints Jacobian" << std::endl;
 
-        std::cout << "Max Assignements per generated Function:" << maxAssignements_ << std::endl;
-        // std::cout << ""
     	if(solverType_ == IPOPT)
     		ipoptSettings_.print();
     	else if(solverType_ == SNOPT)
@@ -318,9 +315,8 @@ public:
 		boost::property_tree::read_info(filename, pt);
 
         solverType_ = (SolverType) pt.get<unsigned int>(ns + ".SolverType");
-        generateCostGradient_ = pt.get<bool>(ns + ".GenerateCostGradient");
-        generateConstraintJacobian_ = pt.get<bool>(ns + ".GenerateConstraintJacobian");
-        maxAssignements_ = pt.get<unsigned int>(ns + ".MaxAssignements");
+        useGeneratedCostGradient_ = pt.get<bool>(ns + ".UseGeneratedCostGradient");
+        useGeneratedConstraintJacobian_ = pt.get<bool>(ns + ".UseGeneratedConstraintJacobian");
 
 		if(solverType_ == IPOPT)
 			ipoptSettings_.load(filename, verbose, ns + ".ipopt");

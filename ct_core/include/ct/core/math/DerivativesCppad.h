@@ -229,8 +229,7 @@ public:
 		}	
 	}
 
-	// there must be a more efficient way to program this...
-	virtual Eigen::VectorXd jacobianSparse(const Eigen::VectorXd& x) override {
+	virtual Eigen::VectorXd evaluateSparseJacobian(const Eigen::VectorXd& x) override {
 		if(outputDim_ <= 0)
 			throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
 			
@@ -246,7 +245,32 @@ public:
 		{
 			return fAdCppad_.SparseJacobian(x);
 		}	
-	}	
+	}
+
+    virtual void sparseJacobian(
+        const Eigen::VectorXd& x,
+        Eigen::VectorXd& jac,
+        Eigen::VectorXi& iRow,
+        Eigen::VectorXi& jCol)
+    {
+		if(outputDim_ <= 0)
+			throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+			
+		if(compiled_)
+		{
+			assert(model_->isSparseJacobianAvailable() == true);
+			std::vector<double> input(x.data(), x.data() + x.rows() * x.cols());
+			std::vector<double> output;
+			model_->SparseJacobian(input, output, sparsityRowsJacobian_, sparsityColsJacobian_);
+			jac = Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
+			iRow = sparsityRowsJacobianEigen_;
+			jCol = sparsityColsJacobianEigen_;		
+		}
+		else
+		{
+			jac = fAdCppad_.SparseJacobian(x);
+		}    	
+    }	
 
 	virtual HES_TYPE_D hessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) override {
 		if(outputDim_ <= 0)
@@ -269,11 +293,10 @@ public:
 		}
 	}
 
-	virtual Eigen::VectorXd hessianSparse(
+
+	virtual Eigen::VectorXd evaluateSparseHessian(
 		const Eigen::VectorXd& x, 
-		const Eigen::VectorXd& lambda, 
-		const Eigen::VectorXi& iRow,
-		const Eigen::VectorXi& jCol) override 
+		const Eigen::VectorXd& lambda) override 
 	{
 			if(outputDim_ <= 0)
 				throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
@@ -281,20 +304,39 @@ public:
 			if(compiled_)
 			{
 				assert(model_->isSparseHessianAvailable() == true);
-				Eigen::VectorXd hes = model_->SparseHessian(x, lambda);
-				Eigen::Matrix<double, IN_DIM, IN_DIM> out(x.rows(), x.rows());
-				out = Eigen::Matrix<double, IN_DIM, IN_DIM, Eigen::RowMajor>::Map(hes.data(), x.rows(), x.rows());
-
-				Eigen::VectorXd outSparse; outSparse.resize(iRow.size());
-
-				for(size_t i = 0; i < iRow.size(); ++i)
-					outSparse(i) = out(iRow(i), jCol(i));
-
-				return outSparse;
-
+				std::vector<double> input(x.data(), x.data() + x.rows() * x.cols());
+				std::vector<double> inputLambda(lambda.data(), lambda.data() + lambda.rows() * lambda.cols());
+				std::vector<double> output;
+				model_->SparseHessian(input, inputLambda, output, sparsityRowsHessian_, sparsityColsHessian_);
+				return Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
 			}	
 			else
 				return fAdCppad_.SparseHessian(x, lambda);
+	}	
+
+    virtual void sparseHessian(
+        const Eigen::VectorXd& x,
+        const Eigen::VectorXd& lambda,
+        Eigen::VectorXd& hes,
+        Eigen::VectorXi& iRow,
+        Eigen::VectorXi& jCol) override 
+	{
+			if(outputDim_ <= 0)
+				throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+
+			if(compiled_)
+			{
+				assert(model_->isSparseJacobianAvailable() == true);
+				std::vector<double> input(x.data(), x.data() + x.rows() * x.cols());
+				std::vector<double> inputLambda(lambda.data(), lambda.data() + lambda.rows() * lambda.cols());
+				std::vector<double> output;
+				model_->SparseHessian(input, inputLambda, output, sparsityRowsHessian_, sparsityColsHessian_);
+				hes = Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
+				iRow = sparsityRowsHessianEigen_;
+				jCol = sparsityColsHessianEigen_;	
+			}	
+			else
+				hes = fAdCppad_.SparseHessian(x, lambda);
 	}
 
 
@@ -354,25 +396,26 @@ public:
 	{
 		assert(model_->isJacobianSparsityAvailable() == true);
 
-		rows.resize(sparsityRowsJacobian_.size()); //rowsTmp.resize(rowsVec.size());
-		columns.resize(sparsityColsJacobian_.size()); //colsTmp.resize(rowsVec.size());
-		                           
-		Eigen::Matrix<size_t, Eigen::Dynamic, 1> rowsSizeT; rowsSizeT.resize(sparsityRowsJacobian_.size());
-		Eigen::Matrix<size_t, Eigen::Dynamic, 1> colsSizeT; colsSizeT.resize(sparsityColsJacobian_.size());
-
-		rowsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(sparsityRowsJacobian_.data(), sparsityRowsJacobian_.size(), 1);
-		colsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(sparsityColsJacobian_.data(), sparsityColsJacobian_.size(), 1);
-
-		rows = rowsSizeT.cast<int>();
-		columns = colsSizeT.cast<int>();
+		rows = sparsityRowsJacobianEigen_;
+		columns = sparsityColsJacobianEigen_;
 	}
 
+	/**
+	 * @brief      Returns the number of nonzeros in the sparse jacobian
+	 *
+	 * @return     The number of nonzeros in the sparse jacobian
+	 */
 	size_t getNumNonZerosJacobian()
 	{
 		assert(model_->isJacobianSparsityAvailable() == true);
 		return sparsityRowsJacobian_.size();
 	}
 
+	/**
+	 * @brief      Returns the number of nonzeros in the sparse hessian
+	 *
+	 * @return     The number of non zeros in the sparse hessian
+	 */
 	size_t getNumNonZerosHessian()
 	{
 		assert(model_->isJacobianSparsityAvailable() == true);
@@ -391,17 +434,8 @@ public:
 	{
 		assert(model_->isHessianSparsityAvailable() == true);
 
-		rows.resize(sparsityRowsHessian_.size()); //rowsTmp.resize(rowsVec.size());
-		columns.resize(sparsityColsHessian_.size()); //colsTmp.resize(rowsVec.size());
-
-		Eigen::Matrix<size_t, Eigen::Dynamic, 1> rowsSizeT; rowsSizeT.resize(sparsityRowsHessian_.size());
-		Eigen::Matrix<size_t, Eigen::Dynamic, 1> colsSizeT; colsSizeT.resize(sparsityColsHessian_.size());
-
-		rowsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(sparsityRowsHessian_.data(), sparsityRowsHessian_.size(), 1);
-		colsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(sparsityColsHessian_.data(), sparsityColsHessian_.size(), 1);
-
-		rows = rowsSizeT.cast<int>();
-		columns = colsSizeT.cast<int>();
+		rows = sparsityRowsHessianEigen_;
+		columns = sparsityColsHessianEigen_;
 	}
 
 
@@ -450,10 +484,37 @@ public:
 		std::cout << "Successfully compiled " << std::endl;
 
 		if(model_->isJacobianSparsityAvailable())
+		{
 			model_->JacobianSparsity(sparsityRowsJacobian_, sparsityColsJacobian_);
+			sparsityRowsJacobianEigen_.resize(sparsityRowsJacobian_.size()); //rowsTmp.resize(rowsVec.size());
+			sparsityColsJacobianEigen_.resize(sparsityColsJacobian_.size()); //colsTmp.resize(rowsVec.size());
+
+			Eigen::Matrix<size_t, Eigen::Dynamic, 1> rowsSizeT; rowsSizeT.resize(sparsityRowsJacobian_.size());
+			Eigen::Matrix<size_t, Eigen::Dynamic, 1> colsSizeT; colsSizeT.resize(sparsityColsJacobian_.size());
+
+			rowsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(sparsityRowsJacobian_.data(), sparsityRowsJacobian_.size(), 1);
+			colsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(sparsityColsJacobian_.data(), sparsityColsJacobian_.size(), 1);
+
+			sparsityRowsJacobianEigen_ = rowsSizeT.cast<int>();
+			sparsityColsJacobianEigen_ = colsSizeT.cast<int>();
+
+		}
 
 		if(model_->isHessianSparsityAvailable())
+		{
 			model_->HessianSparsity(sparsityRowsHessian_, sparsityColsHessian_);
+			sparsityRowsHessianEigen_.resize(sparsityRowsHessian_.size()); //rowsTmp.resize(rowsVec.size());
+			sparsityColsHessianEigen_.resize(sparsityColsHessian_.size()); //colsTmp.resize(rowsVec.size());
+
+			Eigen::Matrix<size_t, Eigen::Dynamic, 1> rowsSizeT; rowsSizeT.resize(sparsityRowsHessian_.size());
+			Eigen::Matrix<size_t, Eigen::Dynamic, 1> colsSizeT; colsSizeT.resize(sparsityColsHessian_.size());
+
+			rowsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(sparsityRowsHessian_.data(), sparsityRowsHessian_.size(), 1);
+			colsSizeT = Eigen::Map<Eigen::Matrix<size_t, Eigen::Dynamic, 1>>(sparsityColsHessian_.data(), sparsityColsHessian_.size(), 1);
+
+			sparsityRowsHessianEigen_ = rowsSizeT.cast<int>();
+			sparsityColsHessianEigen_ = colsSizeT.cast<int>();
+		}
 	}
 
 
@@ -588,6 +649,11 @@ private:
 	std::vector<size_t> sparsityColsJacobian_;
 	std::vector<size_t> sparsityRowsHessian_;
 	std::vector<size_t> sparsityColsHessian_;
+
+	Eigen::VectorXi sparsityRowsJacobianEigen_;
+	Eigen::VectorXi sparsityColsJacobianEigen_;
+	Eigen::VectorXi sparsityRowsHessianEigen_;
+	Eigen::VectorXi sparsityColsHessianEigen_;
 
 	//! record the Auto-Diff terms for code generation
 	void recordCg()

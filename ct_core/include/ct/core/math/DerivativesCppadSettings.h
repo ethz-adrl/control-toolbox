@@ -99,6 +99,8 @@ public:
         if(createSparseHessian_)
             std::cout << "Generating Sparse Hessian in JIT lib" << std::endl;
 
+        std::cout << "Using " + compilerToString[compiler_] + " to compile the generated derivatives" << std::endl;
+
         std::cout << "Max Assignements per generated Function:" << maxAssignements_ << std::endl;
     }
 

@@ -28,7 +28,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define INCLUDE_CT_CORE_MATH_DERIVATIVES_H_
 
 #include <Eigen/Core>
-#include <Eigen/Sparse>
 #include <Eigen/StdVector>
 
 namespace ct {
@@ -84,7 +83,23 @@ public:
         throw std::runtime_error("JACOBIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
     }
 
-    virtual Eigen::VectorXd jacobianSparse(const Eigen::VectorXd& x)
+    /**
+     * @brief      Returns the evaluated sparse jacobian
+     *
+     * @param[in]  x     The point of evaluation
+     *
+     * @return     The evaluated sparse jacobain
+     */
+    virtual Eigen::VectorXd evaluateSparseJacobian(const Eigen::VectorXd& x)
+    {
+        throw std::runtime_error("SPARSE JACOBIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
+    }
+
+    virtual void sparseJacobian(
+        const Eigen::VectorXd& x,
+        Eigen::VectorXd& jac,
+        Eigen::VectorXi& iRow,
+        Eigen::VectorXi& jCol)
     {
         throw std::runtime_error("SPARSE JACOBIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
     }
@@ -105,13 +120,31 @@ public:
         throw std::runtime_error("HESSIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
     }
 
-    virtual Eigen::VectorXd hessianSparse(
+    /**
+     * @brief      Evaluates the 
+     *
+     * @param[in]  x       { parameter_description }
+     * @param[in]  lambda  The lambda
+     * @param[in]  iRow    The row
+     * @param[in]  jCol    The j col
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual Eigen::VectorXd evaluateSparseHessian(
         const Eigen::VectorXd& x, 
-        const Eigen::VectorXd& lambda, 
-        const Eigen::VectorXi& iRow,
-        const Eigen::VectorXi& jCol)
+        const Eigen::VectorXd& lambda)
     {
         throw std::runtime_error("SPARSE HESSIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
+    }
+
+    virtual void sparseHessian(
+        const Eigen::VectorXd& x,
+        const Eigen::VectorXd& lambda,
+        Eigen::VectorXd& hes,
+        Eigen::VectorXi& iRow,
+        Eigen::VectorXi& jCol)
+    {
+        throw std::runtime_error("SPARSE HESSIAN NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
     }
 
 };
