@@ -346,16 +346,6 @@ private:
 			state_matrix_t& A,
 			state_control_matrix_t& B)
 	{
-		const SCALAR& dt =settings_.dt_;
-
-		StateVector<STATE_DIM, SCALAR> x_interm = x;
-		x_interm.topRows(P_DIM) = x_next.topRows(P_DIM); // we first update the state
-
-		state_matrix_t Ac1  = linearSystem_->getDerivativeState(x, u, n*dt); // continuous time A matrix
-		state_control_matrix_t Bc1 = linearSystem_->getDerivativeControl(x, u, n*dt); // continuous time B matrix
-		state_matrix_t Ac2  = linearSystem_->getDerivativeState(x_interm, u, (n+1)*dt); // continuous time A matrix
-		state_control_matrix_t Bc2 = linearSystem_->getDerivativeControl(x_interm, u, (n+1)*dt); // continuous time B matrix
-
 		typedef Eigen::Matrix<SCALAR, P_DIM, P_DIM> p_matrix_t;
 		typedef Eigen::Matrix<SCALAR, V_DIM, V_DIM> v_matrix_t;
 		typedef Eigen::Matrix<SCALAR, P_DIM, V_DIM> p_v_matrix_t;
@@ -363,67 +353,37 @@ private:
 		typedef Eigen::Matrix<SCALAR, P_DIM, CONTROL_DIM> p_control_matrix_t;
 		typedef Eigen::Matrix<SCALAR, V_DIM, CONTROL_DIM> v_control_matrix_t;
 
-		p_matrix_t A11 = Ac1.topLeftCorner(P_DIM, P_DIM);
-		p_v_matrix_t A12 = Ac1.topRightCorner(P_DIM, V_DIM);
-		v_p_matrix_t A21 = Ac2.bottomLeftCorner(V_DIM, P_DIM);
-		v_matrix_t A22 = Ac2.bottomRightCorner(V_DIM, V_DIM);
-		p_control_matrix_t B1 = Bc1.topRows(P_DIM);
-		v_control_matrix_t B2 = Bc2.bottomRows(V_DIM);
+		const SCALAR& dt =settings_.dt_;
 
+		// our implementation of symplectic integrators first updates the positions, we need to reconstruct an intermediate state accordingly
+		StateVector<STATE_DIM, SCALAR> x_interm = x;
+		x_interm.topRows(P_DIM) = x_next.topRows(P_DIM);
+
+		state_matrix_t Ac1  = linearSystem_->getDerivativeState(x, u, n*dt); // continuous time A matrix for start state and control
+		state_control_matrix_t Bc1 = linearSystem_->getDerivativeControl(x, u, n*dt); // continuous time B matrix for start state and control
+		state_matrix_t Ac2  = linearSystem_->getDerivativeState(x_interm, u, (n+1)*dt); // continuous time A matrix for intermediate state and control
+		state_control_matrix_t Bc2 = linearSystem_->getDerivativeControl(x_interm, u, (n+1)*dt); // continuous time B matrix for intermediate state and control
+
+		// for ease of notation, make a block-wise map to references
+		// elements taken form the linearization at the starting state
+		const Eigen::Ref<const p_matrix_t> A11 		= Ac1.topLeftCorner(P_DIM, P_DIM);
+		const Eigen::Ref<const p_v_matrix_t> A12 	= Ac1.topRightCorner(P_DIM, V_DIM);
+		const Eigen::Ref<const p_control_matrix_t> B1 = Bc1.topRows(P_DIM);
+
+		// elements taken from the linearization at the intermediate state
+		const Eigen::Ref<const v_p_matrix_t> A21 	= Ac2.bottomLeftCorner(V_DIM, P_DIM);
+		const Eigen::Ref<const v_matrix_t> A22 		= Ac2.bottomRightCorner(V_DIM, V_DIM);
+		const Eigen::Ref<const v_control_matrix_t> B2 = Bc2.bottomRows(V_DIM);
+
+		// discrete approximation A matrix
 		A.topLeftCorner(P_DIM, P_DIM) = p_matrix_t::Identity() + dt * A11;
 		A.topRightCorner(P_DIM, V_DIM) = dt * A12;
 		A.bottomLeftCorner(V_DIM, P_DIM) = dt * A21 * (p_matrix_t::Identity() + dt*A11);
 		A.bottomRightCorner(V_DIM, V_DIM) = dt*dt*A21*A12  + v_matrix_t::Identity() + dt* A22;
 
-//		B = dt*Bc1;
+		// discrete approximation B matrix
 		B.topRows(P_DIM) = dt * B1;
 		B.bottomRows(V_DIM) = dt * B2 + dt*dt * A21 * B1;
-
-		/*
-		state_matrix_t Ac  = linearSystem_->getDerivativeState(x_n, u_n, n*dt); // continuous time A matrix
-		state_control_matrix_t Bc = linearSystem_->getDerivativeControl(x_n, u_n, n*dt); // continuous time B matrix
-
-
-//		 * Symplectic Euler discretization rule adapted from:
-//		 * Prabhakar, A., Flasskamp, K., & Murphey, T. D. (2016). Symplectic integration for optimal ergodic control.
-//		 * Proceedings of the IEEE Conference on Decision and Control, 2016(CDC), 2594–2600.
-
-
-		typedef Eigen::Matrix<SCALAR, P_DIM, P_DIM> p_matrix_t;
-		typedef Eigen::Matrix<SCALAR, V_DIM, V_DIM> v_matrix_t;
-		typedef Eigen::Matrix<SCALAR, P_DIM, V_DIM> p_v_matrix_t;
-		typedef Eigen::Matrix<SCALAR, V_DIM, P_DIM> v_p_matrix_t;
-		typedef Eigen::Matrix<SCALAR, P_DIM, CONTROL_DIM> p_control_matrix_t;
-		typedef Eigen::Matrix<SCALAR, V_DIM, CONTROL_DIM> v_control_matrix_t;
-
-		p_matrix_t Ad11;
-		v_matrix_t Ad22;
-		p_v_matrix_t Ad12;
-		v_p_matrix_t Ad21;
-		p_control_matrix_t Bd1;
-		v_control_matrix_t Bd2;
-
-		Ad22 = (v_matrix_t::Identity() - dt * Ac.bottomRightCorner(V_DIM, V_DIM)).inverse();
-		Ad12 = dt* Ac.topRightCorner(P_DIM, V_DIM) *Ad22;
-
-		Ad11 = p_matrix_t::Identity();
-		Ad11.noalias() += dt * Ac.topLeftCorner(P_DIM, P_DIM);
-		Ad11.noalias() += dt* Ad12 * Ac.bottomLeftCorner(V_DIM, P_DIM);
-
-		Ad21 = dt * Ad22 * Ac.bottomLeftCorner(V_DIM, P_DIM);
-
-		Bd1 = dt * Ad12 * Bc.bottomRows(V_DIM) + dt * Bc.topRows(P_DIM);
-		Bd2 = dt * Ad22 * Bc.bottomRows(V_DIM);
-
-		A.topLeftCorner(P_DIM, P_DIM) = Ad11;
-		A.topRightCorner(P_DIM, V_DIM) = Ad12;
-		A.bottomLeftCorner(V_DIM, P_DIM) = Ad21;
-		A.bottomRightCorner(V_DIM, V_DIM) = Ad22;
-
-		B.topRows(P_DIM) = Bd1;
-		B.bottomRows(V_DIM) = Bd2;
-
-		*/
 	}
 
 
