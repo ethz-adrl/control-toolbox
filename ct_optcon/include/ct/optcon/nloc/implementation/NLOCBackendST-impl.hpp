@@ -41,7 +41,8 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex)
 {
-	this->initializeCostToGo();
+	if(lastIndex == this->K_-1)
+		this->initializeCostToGo();
 
 	for (size_t k=firstIndex; k<=lastIndex; k++)
 	{
@@ -54,16 +55,16 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(size_t firstIndex, size_t lastIndex)
 {
-	for (size_t k=firstIndex; k<=lastIndex; k++)
+	for (size_t k=firstIndex; k<=lastIndex; k = k+ this->settings_.K_shot)
 	{
-		// first rollout the shot
-		this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_[k], this->x_[k], this->x_prev_[k], this->L_[k], this->xShot_[k]);
+		// rollout the shot
+		if(this->settings_.stabilizeAroundPreviousSolution)
+			this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_prev_, this->xShot_);
+		else
+			this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_);
 
-		// then compute the corresponding defect
-		this->computeSingleDefect(k, this->x_[k+1], this->xShot_[k], this->lqocProblem_->b_[k]);
+		this->computeSingleDefect(k, this->x_, this->xShot_, this->lqocProblem_->b_);
 	}
-
-	this->d_norm_ = this->template computeDefectsNorm<1>(this->lqocProblem_->b_);
 }
 
 
@@ -92,7 +93,6 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_shot_search(this->K_+1);
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> defects_recorded(this->K_+1, ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_recorded(this->K_);
-		ct::core::tpl::TimeArray<SCALAR> t_search(this->K_+1); // todo get rid of t_search
 
 		//! set init state
 		x_search[0] = this->x_[0];
@@ -103,13 +103,17 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		{
 		case NLOptConSettings::NLOCP_ALGORITHM::GNMS :
 		{
-			this->executeLineSearchMultipleShooting(this->settings_.nThreads, alpha, this->lu_, this->lx_, x_search, x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm);
+			if(this->settings_.stabilizeAroundPreviousSolution)
+				this->executeLineSearchMultipleShooting(this->settings_.nThreads, alpha, this->lv_, this->lx_, x_search, x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm);
+			else
+				this->executeLineSearchMultipleShooting(this->settings_.nThreads, alpha, this->lu_, this->lx_, x_search, x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm);
+
 			break;
 		}
 		case NLOptConSettings::NLOCP_ALGORITHM::ILQR :
 		{
 			defectNorm = 0.0;
-			this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, x_search, u_recorded, t_search, intermediateCost, finalCost);
+			this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, x_search, u_recorded, intermediateCost, finalCost);
 			break;
 		}
 		default :

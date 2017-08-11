@@ -70,6 +70,11 @@ public:
 		Eigen::setNbThreads(settings_.nThreadsEigen);
 	}
 
+	GNRiccatiSolver(int N)
+	{
+		changeNumberOfStages(N);
+	}
+
 	virtual ~GNRiccatiSolver() {}
 
 

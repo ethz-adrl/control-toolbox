@@ -86,12 +86,12 @@ public:
 	}
 
 	//! get A matrix
-	inline StateVector<STATE_DIM> getDerivativeState(){
+	virtual const Eigen::Matrix<double, STATE_DIM, STATE_DIM>& getDerivativeState(const StateVector<STATE_DIM>& x, const ControlVector<CONTROL_DIM>& u, const double t = 0.0) override {
 		return A_;
 	}
 
 	//! get B matrix
-	inline ControlVector<CONTROL_DIM> getDerivativeControl(){
+	virtual const Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>& getDerivativeControl(const StateVector<STATE_DIM>& x, const ControlVector<CONTROL_DIM>& u, const double t = 0.0) override {
 		return B_;
 	}
 

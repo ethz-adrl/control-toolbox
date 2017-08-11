@@ -117,11 +117,30 @@ public:
 		g_dc_(arg.g_dc_)
 	{}
 
+	//! constructor using a more mechanical definition (spring-mass-damping)
+	/*!
+	 * @param k spring stiffness
+	 * @param m mass
+	 * @param d damper constant
+	 * @param g_dc DC input gain
+	 * @param controller controller (optional)
+	 */
+	SecondOrderSystem(SCALAR k, SCALAR m, SCALAR d, SCALAR g_dc, std::shared_ptr<Controller<2,1> > controller = nullptr) :
+		ControlledSystem<2,1>(controller),
+		w_n_(std::sqrt(k/m)),
+		w_n_square_(w_n_ * w_n_),
+		zeta_(d / (2.0 * m  * k)),
+		g_dc_(g_dc)
+	{}
+
 	//! deep copy
 	SecondOrderSystem* clone() const override
 	{
 		return new SecondOrderSystem(*this);
 	}
+
+	//! destructor
+	virtual ~SecondOrderSystem(){}
 
 	//! set the dynamics
 	/*!
@@ -135,23 +154,6 @@ public:
 		w_n_square_ = w_n_ * w_n_;
 		zeta_ = zeta;
 		g_dc_ = g_dc;
-	}
-
-	//! constructor using a more mechanical definition (spring-mass-damping)
-	/*!
-	 * @param k spring stiffness
-	 * @param m mass
-	 * @param d damper constant
-	 * @param g_dc DC input gain
-	 * @param controller controller (optional)
-	 */
-	SecondOrderSystem(SCALAR k, SCALAR m, SCALAR d, SCALAR g_dc = SCALAR(1.0), std::shared_ptr<Controller<2,1> > controller = nullptr) :
-		ControlledSystem<2,1>(controller),
-		w_n_(std::sqrt(k/m)),
-		w_n_square_(w_n_ * w_n_),
-		zeta_(d / (2.0 * m  * k)),
-		g_dc_(g_dc)
-	{
 	}
 
 	//! evaluate the system dynamics

@@ -59,6 +59,9 @@ namespace optcon{
  *  X  <- Matrix (upper-case in paper)
  *  xv <- vector (lower-case bold in paper)
  *  x  <- scalar (lower-case in paper)
+ *
+ *  TODO (Markus G) once decided if stabilizing shots or whole rollouts about previous or current solution candidate,
+ *  remove one of the implementations for better clarity and more overview
  */
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
@@ -137,7 +140,7 @@ public:
 	{
 		Eigen::initParallel();
 
-		for (size_t i=0; i<settings.nThreads+1; i++)
+		for (int i=0; i<settings.nThreads+1; i++)
 		{
 			controller_[i] = ConstantControllerPtr (new core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>());
 		}
@@ -199,6 +202,7 @@ public:
 	SCALAR getTimeHorizon() {return K_* settings_.dt ;}
 
 	int getNumSteps() {return K_;}
+	int getNumStepsPerShot() {return settings_.K_shot;}
 
 	SYMPLECTIC_ENABLED initializeSymplecticIntegrators(size_t i);
 	SYMPLECTIC_DISABLED initializeSymplecticIntegrators(size_t i) {};
@@ -362,10 +366,10 @@ public:
 	/*!
 	 * the prepare Solve LQP Problem method is intended for a special use-case: unconstrained GNMS with pre-solving of the
 	 */
-	virtual void prepareSolveLQProblem();
+	virtual void prepareSolveLQProblem(size_t startIndex);
 
 
-	virtual void finishSolveLQProblem();
+	virtual void finishSolveLQProblem(size_t endIndex);
 
 	/*!
 	 * solve Full LQProblem, e.g. to be used with HPIPM or if we have a constrained problem
@@ -375,17 +379,13 @@ public:
 	//! compute costs of solution candidate
 	void updateCosts();
 
-	//! check if GNMS is converged
-//	bool isConverged();
-
 	//! nominal rollout using default thread and member variables for the results. // todo maybe rename (initial rollout?)
 	bool nominalRollout() {
-		ControlVectorArray u_recorded;
-		return rolloutSystem(settings_.nThreads, u_ff_, x_prev_, x_, u_recorded, t_);
+		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_prev_, xShot_);
 		x_prev_ = x_;
-		u_ff_ = u_recorded;
-		u_ff_prev_ = u_recorded;
+		u_ff_prev_ = u_ff_;
 		firstRollout_ = false;
+		return success;
 	}
 
 	//! check problem for consistency
@@ -422,7 +422,7 @@ public:
 	//! obtain feedforward only update from lqoc solver, if provided
 	void getFeedforwardUpdates()
 	{
-		if(settings_.closedLoopShooting)
+		if(settings_.stabilizeAroundPreviousSolution)
 			lv_ = lqocSolver_->getFeedforwardUpdates();
 		else
 			lv_.setConstant(core::ControlVector<CONTROL_DIM, SCALAR>::Zero()); // todo can eventually go away to save time
@@ -437,52 +437,59 @@ public:
 			L_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero()); // todo can eventually go away to save time
 	}
 
+	//! reset all defects to zero
+	void resetDefects() {lqocProblem_->b_.setConstant(state_vector_t::Zero());}
+
 	//! update the nominal defects
-	void updateDefects() {d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);}
+	void computeDefectsNorm() {d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);}
 
 	//! integrates the specified shots and computes the corresponding defects
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;
 
 	//! do a single threaded rollout and defect computation of the shots - useful for line-search
-	void rolloutShotsSingleThreaded(size_t threadId, size_t firstIndex, size_t lastIndex, const ControlVectorArray& u_ff_local,
-			const StateVectorArray& x_start, StateVectorArray& xShot, StateVectorArray& d) const;
+	void rolloutShotsSingleThreaded(size_t threadId,
+			size_t firstIndex,
+			size_t lastIndex,
+			ControlVectorArray& u_ff_local,
+			StateVectorArray& x_local,
+			const StateVectorArray& x_ref_lqr,
+			StateVectorArray& xShot,
+			StateVectorArray& d) const;
 
 	//! performLineSearch: execute the line search, possibly with different threading schemes
 	virtual SCALAR performLineSearch() = 0;
 
+	//! simple full-step update for state and feedforward control (used for MPC-mode!)
+	void doFullStepUpdate()
+	{
+		u_ff_ += lu_;
+		x_ += lx_;
+	}
 
 protected:
 
 	//! integrate the individual shots
-	void rolloutSingleShot(
+	bool rolloutSingleShot(
 			const size_t threadId,
 			const size_t k,
-			const control_vector_t& u_ff_local,
-			const state_vector_t& x_start,
-			const state_vector_t& x_prev,
-			const feedback_matrix_t& L,
-			state_vector_t& xShot) const;
+			ControlVectorArray& u_ff_local,
+			StateVectorArray& x_local,
+			const StateVectorArray& x_ref_lqr,
+			StateVectorArray& xShot,
+			std::atomic_bool* terminationFlag = nullptr ) const;
 
 	//! computes the defect between shot and trajectory
+	/*!
+	 * @param k			index of the shot under consideration
+	 * @param x_local	the state trajectory
+	 * @param xShot		the shot trajectory
+	 * @param d			the defect trajectory
+	 */
 	void computeSingleDefect(
 			size_t k,
-			const state_vector_t& x_start,
-			const state_vector_t& xShot,
-			state_vector_t& d) const;
-
-    //! Rollout of nonlinear dynamics
-    /*!
-      This rolls out the nonlinear dynamics to obtain the reference trajectory
-    */
-	bool rolloutSystem(
-			size_t threadId,
-			const ControlVectorArray& u_ff_local,
-			const StateVectorArray& x_ref_lqr,
-			ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
-			ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
-			ct::core::tpl::TimeArray<SCALAR>& t_local,
-			std::atomic_bool* terminationFlag = nullptr) const;
-
+			const StateVectorArray& x_local,
+			const StateVectorArray& xShot,
+			StateVectorArray& d) const;
 
 	//! Computes the linearized Dynamics at a specific point of the trajectory
 	/*!
@@ -551,7 +558,6 @@ protected:
 			const scalar_t alpha,
 			StateVectorArray& x_local,
 			ControlVectorArray& u_local,
-			ct::core::tpl::TimeArray<SCALAR>& t_local,
 			scalar_t& intermediateCost,
 			scalar_t& finalCost,
 			std::atomic_bool* terminationFlag = nullptr
@@ -632,7 +638,7 @@ protected:
 
 	Settings_t settings_;
 
-	int K_; //! the number of stages in the OptConProblem
+	int K_; //! the number of stages in the overall OptConProblem
 
 	StateVectorArray lx_;
 	StateVectorArray x_;

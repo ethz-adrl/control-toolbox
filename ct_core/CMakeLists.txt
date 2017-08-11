@@ -88,7 +88,7 @@ catkin_add_gtest(IntegrationTest test/IntegrationTest.cpp)
 target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core)
 
 catkin_add_gtest(IntegratorComparison test/IntegratorComparison.cpp)
-target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core pthread)
+target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
 
 catkin_add_gtest(InterpolationTest test/InterpolationTest.cpp)
 target_link_libraries(InterpolationTest ${catkin_LIBRARIES})

@@ -6,7 +6,7 @@ option(BUILD_HYQ_LINEARIZATION_TIMINGS "Build linearization timing tests for HyQ
 option(BUILD_HYA_LINEARIZATION_TIMINGS "Build linearization timing tests for HyA (takes long, should use clang)" false)
 option(USE_LAPACKE "Use lapacke bindings for Eigen" false)
 option(USE_BLAS "Use blas bindings for Eigen" false)
-
+option(HPIPM "Build HPIPM Optimal Control solver" true)
 
 if (USE_CLANG AND USE_INTEL)
     message (FATAL_ERROR "Please choose either intel or clang compiler or neither.")

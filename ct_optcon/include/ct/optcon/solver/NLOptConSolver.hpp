@@ -114,13 +114,37 @@ public:
 		return nlocAlgorithm_ -> finishIteration();
 	}
 
+
+	/*!
+	 * execute preparation steps for an iteration, e.g. computation of defects
+	 */
+	virtual void prepareMPCIteration()
+	{
+		nlocAlgorithm_ -> prepareMPCIteration();
+	}
+
+	/*!
+	 * execute finishing step for an iteration, e.g. solving Riccati backward pass.
+	 * @return
+	 */
+	virtual bool finishMPCIteration()
+	{
+		return nlocAlgorithm_ -> finishMPCIteration();
+	}
+
 	/**
 	 * run a single iteration of the solver
 	 * @return true if a better solution was found
 	 */
 	virtual bool runIteration()
 	{
-		return nlocAlgorithm_ -> runIteration();
+		auto startSolve = std::chrono::steady_clock::now();
+		bool success = nlocAlgorithm_ -> runIteration();
+		auto endSolve = std::chrono::steady_clock::now();
+#ifdef DEBUG_PRINT
+		std::cout << "[NLOC]: runIteration() took "<<std::chrono::duration <double, std::milli> (endSolve-startSolve).count() << " ms" << std::endl;
+#endif
+		return success;
 	}
 
 	/*!
@@ -214,7 +238,7 @@ public:
 	//! get a reference to the current settings
 	const Settings_t& getSettings() {return nlocBackend_->getSettings();}
 
-	//! get a reference to the backend (@todo this is not optimal)
+	//! get a reference to the backend (@todo this is not optimal, allows the user too much access)
 	const std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>>& getBackend() {return nlocBackend_;}
 
 	//! get reference to the nonlinear system
