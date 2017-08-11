@@ -7,7 +7,6 @@ gnms
 	integrator Euler
 	discretization Matrix_exponential
 	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
-	stabilizeAroundPreviousSolution	0		; (true / false)
     dt 0.001
     dt_sim 0.001
     dt_shot 0.5
@@ -41,7 +40,6 @@ ilqr
 	integrator Euler
 	discretization Matrix_exponential
 	closedLoopShooting 0 					; (1 = closed loop shooting, 0 = open-loop shooting)
-	stabilizeAroundPreviousSolution	0		; (true / false)
     dt 0.001
     dt_sim 0.001
     dt_shot 0.5

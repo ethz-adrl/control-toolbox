@@ -381,7 +381,7 @@ public:
 
 	//! nominal rollout using default thread and member variables for the results. // todo maybe rename (initial rollout?)
 	bool nominalRollout() {
-		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_prev_, xShot_);
+		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_, xShot_);
 		x_prev_ = x_;
 		u_ff_prev_ = u_ff_;
 		firstRollout_ = false;
@@ -418,15 +418,6 @@ public:
 
 	//! obtain control update from lqoc solver
 	void getControlUpdates() {lu_ = lqocSolver_->getControlUpdates();}
-
-	//! obtain feedforward only update from lqoc solver, if provided
-	void getFeedforwardUpdates()
-	{
-		if(settings_.stabilizeAroundPreviousSolution)
-			lv_ = lqocSolver_->getFeedforwardUpdates();
-		else
-			lv_.setConstant(core::ControlVector<CONTROL_DIM, SCALAR>::Zero()); // todo can eventually go away to save time
-	}
 
 	//! obtain feedback update from lqoc solver, if provided
 	void getFeedback()
@@ -645,7 +636,6 @@ protected:
 	StateVectorArray xShot_;
 	StateVectorArray x_prev_;
 
-	ControlVectorArray lv_;
 	ControlVectorArray lu_;
 	ControlVectorArray u_ff_;
 	ControlVectorArray u_ff_prev_;

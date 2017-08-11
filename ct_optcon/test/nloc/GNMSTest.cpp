@@ -172,7 +172,6 @@ void testGaussNewtonMethods()
 	nloc_settings.integrator = ct::core::IntegrationType::EULER;
 	nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 	nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-	nloc_settings.stabilizeAroundPreviousSolution = false;
 
 	// loop through all solver classes
 	for(int algClass = 0; algClass < NLOptConSettings::NLOCP_ALGORITHM::NUM_TYPES; algClass++)
@@ -273,7 +272,6 @@ void singleCore()
 
 	NLOptConSettings ilqr_settings = gnms_settings;
 	ilqr_settings.closedLoopShooting = true;
-	ilqr_settings.stabilizeAroundPreviousSolution = false;
 	ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 	ilqr_settings.loggingPrefix = "ILQR";
 

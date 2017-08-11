@@ -98,7 +98,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
 	x_prev_.resize(K_+1);
 	xShot_.resize(K_+1);
 
-	lv_.resize(K_);
 	lu_.resize(K_);
 	u_ff_.resize(K_);
 	u_ff_prev_.resize(K_);
@@ -672,17 +671,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 		StateVectorArray x_ref_lqr_local(K_+1);
 		ControlVectorArray uff_local(K_);
 
-
-		if(settings_.stabilizeAroundPreviousSolution)
-		{
-			uff_local = u_ff_ + lv_; 	// add lv
-			x_ref_lqr_local = x_prev_; 	// stabilize around previous solution
-		}
-		else
-		{
-			uff_local = u_ff_ + lu_; 			// add lu
-			x_ref_lqr_local = x_prev_ + lx_; 	// stabilize around current solution candidate
-		}
+		uff_local = u_ff_ + lu_; 			// add lu
+		x_ref_lqr_local = x_prev_ + lx_; 	// stabilize around current solution candidate
 
 
 		bool dynamicsGood = rolloutSingleShot(settings_.nThreads, 0, uff_local, x_, x_ref_lqr_local, xShot_);
@@ -768,17 +758,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 	StateVectorArray x_ref_lqr;
 	StateVectorArray xShot_local(K_+1); //! note this is currently only a dummy (\todo nicer solution?)
 
-	if(settings_.stabilizeAroundPreviousSolution)
-	{
-		//! if stabilizing about previous solution, chose lv as feedforward increment and x_prev_ as reference for lqr
-		u_local = lv_ * alpha + u_ff_prev_;
-		x_ref_lqr = x_prev_;
-	}
-	else{
-		//! if stabilizing about new solution candidate, chose lu as feedforward increment and also increment x_prev_ by lx
-		u_local = lu_ * alpha + u_ff_prev_;
-		x_ref_lqr = lx_ * alpha + x_prev_;
-	}
+	//! if stabilizing about new solution candidate, chose lu as feedforward increment and also increment x_prev_ by lx
+	u_local = lu_ * alpha + u_ff_prev_;
+	x_ref_lqr = lx_ * alpha + x_prev_;
 
 	bool dynamicsGood = rolloutSingleShot(threadId, 0, u_local, x_local, x_ref_lqr, xShot_local, terminationFlag);
 
@@ -905,12 +887,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 
 	if (terminationFlag && *terminationFlag) return;
 
-	//! rollout shots
-	if(this->settings_.stabilizeAroundPreviousSolution)
-		rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_prev_, x_shot_alpha, defects_recorded);
-	else
-		rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_alpha, x_shot_alpha, defects_recorded);
-
+	rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_alpha, x_shot_alpha, defects_recorded);
 
 	if (terminationFlag && *terminationFlag) return;
 
