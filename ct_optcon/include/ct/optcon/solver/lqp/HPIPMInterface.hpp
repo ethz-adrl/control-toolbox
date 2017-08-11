@@ -222,44 +222,20 @@ public:
 
 	virtual ct::core::ControlVectorArray<CONTROL_DIM> getFeedforwardUpdates() override
 	{
+		throw std::runtime_error("HPIPMInterface: getFeedforwardUpdates Not implemented");
+
 		LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
 		ct::core::ControlVectorArray<CONTROL_DIM> lv(p.getNumberOfStages());
 
-
 		for (size_t i=1; i<this->lqocProblem_->getNumberOfStages(); i++)
 		{
-			// reconstruct H
 			Eigen::Matrix<double, control_dim, control_dim> Lr;
 			::d_cvt_strmat2mat(Lr.rows(), Lr.cols(), &workspace_.L[i], 0, 0, Lr.data(), Lr.rows());
-			Eigen::Matrix<double, control_dim, control_dim> H;
-			H = Lr.template triangularView<Eigen::Lower>()*Lr.transpose(); // Lr is cholesky of H
-
-			// reconstruct S
-			Eigen::Matrix<double, state_dim, state_dim> Lq;
-			::d_cvt_strmat2mat(Lq.rows(), Lq.cols(), &workspace_.L[i+1], control_dim, control_dim, Lq.data(), Lq.rows());
-			Eigen::Matrix<double, state_dim, state_dim> S;
-			S = Lq.template triangularView<Eigen::Lower>()*Lq.transpose(); // Lq is cholesky of S
-
-			// reconstruct sv
-			Eigen::Matrix<double, 1, state_dim> svTranspose;
-			::d_cvt_strmat2mat(svTranspose.rows(), svTranspose.cols(), &workspace_.L[i+1], control_dim+state_dim, control_dim, svTranspose.data(), svTranspose.rows());
-
 
 			Eigen::Matrix<double, 1, control_dim> llTranspose;
 			::d_cvt_strmat2mat(llTranspose.rows(), llTranspose.cols(), &workspace_.L[i], control_dim+state_dim, 0, llTranspose.data(), llTranspose.rows());
 
-			Eigen::Matrix<double, control_dim + state_dim + 1, control_dim+state_dim> L;
-			::d_cvt_strmat2mat(L.rows(), L.cols(), &workspace_.L[i+1], 0, 0, L.data(), L.rows());
-
-			std::cout << "lower left: "<<llTranspose<<std::endl;
-			std::cout << "lower right: "<<svTranspose<<std::endl;
-
-			Eigen::Matrix<double, control_dim, 1> gv;
-			gv = llTranspose.transpose();
-			gv.noalias() += p.B_[i].transpose() * svTranspose.transpose();
-			gv.noalias() += p.B_[i].transpose() * S.template selfadjointView<Eigen::Lower>() * bEigen_[i];
-
-			lv[i] = H.inverse() * gv;
+			lv[i] = -Lr.transpose().inverse() * llTranspose.transpose();
 
 		}
 
