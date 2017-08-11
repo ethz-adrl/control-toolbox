@@ -64,7 +64,8 @@ public:
 	typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
 
 	GNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem = nullptr) :
-		LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>(lqocProblem)
+		LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>(lqocProblem),
+		N_(-1)
 	{
 		Eigen::initParallel();
 		Eigen::setNbThreads(settings_.nThreadsEigen);
@@ -194,8 +195,16 @@ protected:
 	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) override
 	{
 		const int& N = lqocProblem->getNumberOfStages();
-		if(this->lqocProblem_ && this->lqocProblem_->getNumberOfStages() == N)
+		changeNumberOfStages(N);
+
+	}
+	void changeNumberOfStages(int N)
+	{
+		if (N<=0)
 			return;
+
+		if(N_ == N)
+	 		return;
 
 		gv_.resize(N);
 		G_.resize(N);
@@ -212,6 +221,8 @@ protected:
 
 		sv_.resize(N+1);
 		S_.resize(N+1);
+
+		N_ = N;
 	}
 
 
@@ -375,6 +386,8 @@ protected:
 
 	StateVectorArray sv_;
 	StateMatrixArray S_;
+
+	int N_;
 
 	SCALAR smallestEigenvalue_;
 

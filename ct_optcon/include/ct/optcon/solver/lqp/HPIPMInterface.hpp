@@ -341,7 +341,7 @@ private:
 		// we do not need to reset the pointers if
 		bool keepPointers =
 				this->lqocProblem_ && //there was an lqocProblem before
-				this->lqocProblem_->getNumberOfStages() == lqocProblem->getNumberOfStages() && // and the number of states did not change
+				N_ == lqocProblem->getNumberOfStages() && // and the number of states did not change
 				this->lqocProblem_ == lqocProblem;  // and it was the same pointer
 
 		setupHPIPM(
