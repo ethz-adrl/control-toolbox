@@ -32,9 +32,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#define MATLAB
 //#define MATLAB_FULL_LOG
 
-#define DEBUG_PRINT
 //#define DEBUG_PRINT_MP
-//#define DEBUG_PRINT_LINESEARCH
 
 #include <ct/optcon/optcon.h>
 
@@ -172,6 +170,7 @@ void testGaussNewtonMethods()
 	nloc_settings.integrator = ct::core::IntegrationType::EULER;
 	nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 	nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
+	nloc_settings.printSummary = true;
 
 	// loop through all solver classes
 	for(int algClass = 0; algClass < NLOptConSettings::NLOCP_ALGORITHM::NUM_TYPES; algClass++)
@@ -269,6 +268,8 @@ void singleCore()
 	gnms_settings.closedLoopShooting = false;
 	gnms_settings.lineSearchSettings.active = false;
 	gnms_settings.loggingPrefix = "GNMS";
+	gnms_settings.printSummary = true;
+
 
 	NLOptConSettings ilqr_settings = gnms_settings;
 	ilqr_settings.closedLoopShooting = true;
@@ -380,6 +381,7 @@ void multiCore()
 	gnms_settings.closedLoopShooting = false;
 	gnms_settings.loggingPrefix = "GNMS";
 	gnms_settings.lineSearchSettings.active = false;
+	gnms_settings.printSummary = true;
 
 	NLOptConSettings ilqr_settings = gnms_settings;
 	ilqr_settings.closedLoopShooting = true;

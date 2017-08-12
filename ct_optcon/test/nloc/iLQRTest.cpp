@@ -29,8 +29,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Bring in gtest
 #include <gtest/gtest.h>
 
-//#define DEBUG_PRINT
-//#define DEBUG_PRINT_LINESEARCH
 
 #include <ct/optcon/optcon.h>
 

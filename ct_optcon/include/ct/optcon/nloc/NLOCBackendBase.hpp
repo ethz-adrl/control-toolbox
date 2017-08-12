@@ -39,6 +39,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/solver/lqp/HPIPMInterface.hpp>
 #include <ct/optcon/solver/NLOptConSettings.hpp>
 
+#include "NLOCResults.hpp"
+
 #ifdef MATLAB
 #include <ct/optcon/matlab.hpp>
 #endif
@@ -60,8 +62,6 @@ namespace optcon{
  *  xv <- vector (lower-case bold in paper)
  *  x  <- scalar (lower-case in paper)
  *
- *  TODO (Markus G) once decided if stabilizing shots or whole rollouts about previous or current solution candidate,
- *  remove one of the implementations for better clarity and more overview
  */
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
@@ -118,23 +118,23 @@ public:
 		    integrators_(settings.nThreads+1),
 			integratorsEulerSymplectic_(settings.nThreads+1),
 			integratorsRkSymplectic_(settings.nThreads+1),
-			linearSystemDiscretizers_(settings.nThreads+1, LinearSystemDiscretizer_t(settings.dt)),
 
 		    controller_(settings.nThreads+1),
 		    settings_(settings),
-			K_(0),
 			initialized_(false),
 			configured_(false),
 			iteration_(0),
+			K_(0),
 			d_norm_(0.0),
 			lx_norm_(0.0),
 			lu_norm_(0.0),
+		    lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>()),
 			intermediateCostBest_(std::numeric_limits<SCALAR>::infinity()),
 			finalCostBest_(std::numeric_limits<SCALAR>::infinity()),
 			lowestCost_(std::numeric_limits<SCALAR>::infinity()),
 			intermediateCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
 			finalCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
-		    lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>()),
+			linearSystemDiscretizers_(settings.nThreads+1, LinearSystemDiscretizer_t(settings.dt)),
 			firstRollout_(true),
 			alphaBest_(-1)
 	{
@@ -394,12 +394,12 @@ public:
 	//! return the current iteration number
 	size_t& iteration() {return iteration_;}
 
-	//! Print debugging information
+	//! Print iteration summary
 	/*!
-	 *  This function is automatically called if the DEBUG_PRINT compileflag is set. It prints out important information
+	 *  This function is automatically called if the printSummary settings is on. It prints out important information
 	 *  like cost etc. after each iteration.
 	 */
-	void debugPrint();
+	void printSummary();
 
 	//! perform line-search and update controller for single shooting
 	bool lineSearchSingleShooting();
@@ -456,6 +456,8 @@ public:
 		u_ff_ += lu_;
 		x_ += lx_;
 	}
+
+	void logSummaryToMatlab(const std::string& fileName) {summaryAllIterations_.logToMatlab(fileName);}
 
 protected:
 
@@ -682,6 +684,8 @@ protected:
 
 	bool firstRollout_;
 	scalar_t alphaBest_;
+
+	SummaryAllIterations<SCALAR> summaryAllIterations_;
 
 };
 

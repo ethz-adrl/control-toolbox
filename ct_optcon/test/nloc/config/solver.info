@@ -23,6 +23,8 @@ gnms
     ;locp_solver HPIPM_SOLVER
     locp_solver GNRICCATI_SOLVER
     nlocp_algorithm GNMS
+    debugPrint false
+    printSummary true
     
     line_search
 	{
@@ -31,6 +33,7 @@ gnms
 		maxIterations 10 ;
 		alpha_0 1.0 ;
 		n_alpha 0.5 ;
+		debugPrint false
 	}
 }
 
@@ -55,6 +58,8 @@ ilqr
     ;locp_solver HPIPM_SOLVER
     locp_solver GNRICCATI_SOLVER
     nlocp_algorithm GNMS
+    debugPrint false
+    printSummary true
     
     line_search
 	{
@@ -63,5 +68,6 @@ ilqr
 		maxIterations 10 ;
 		alpha_0 1.0 ;
 		n_alpha 0.5 ;
+		debugPrint false
 	}
 }

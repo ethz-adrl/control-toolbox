@@ -24,9 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-//#define DEBUG_PRINT
 //#define DEBUG_PRINT_MPC
-//#define DEBUG_PRINT_LINESEARCH
 //#define MATLAB_LOG_MPC
 
 #include <chrono>

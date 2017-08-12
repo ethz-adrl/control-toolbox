@@ -526,32 +526,39 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeCo
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::printSummary()
 {
-
 	SCALAR d_norm_l1 = computeDefectsNorm<1>(lqocProblem_->b_);
 	SCALAR d_norm_l2 = computeDefectsNorm<2>(lqocProblem_->b_);
+	SCALAR totalCost = intermediateCostBest_ + finalCostBest_;
+	SCALAR totalMerit = intermediateCostBest_ + finalCostBest_ + settings_.meritFunctionRho * d_norm_l1;
 
-	std::cout<< settings_.loggingPrefix + " iteration "  << iteration_ << std::endl;
-	std::cout<<"============"<< std::endl;
-
-	std::cout<<std::setprecision(15) << "interm. cost:\t" << intermediateCostBest_ << std::endl;
-	std::cout<<std::setprecision(15) << "final cost:\t" << finalCostBest_ << std::endl;
-	std::cout<<std::setprecision(15) << "total cost:\t" << intermediateCostBest_ + finalCostBest_ << std::endl;
-	std::cout<<std::setprecision(15) << "total merit:\t" << intermediateCostBest_ + finalCostBest_ + settings_.meritFunctionRho * d_norm_l1 << std::endl;
-	std::cout<<std::setprecision(15) << "tot. defect L1:\t" << d_norm_l1 << std::endl;
-	std::cout<<std::setprecision(15) << "tot. defect L2:\t" << d_norm_l2 << std::endl;
-	std::cout<<std::setprecision(15) << "total lx norm:\t" << lx_norm_ << std::endl;
-	std::cout<<std::setprecision(15) << "total lu norm:\t" << lu_norm_ << std::endl;
-	std::cout<<std::setprecision(15) << "step-size(alpha):\t" << alphaBest_ << std::endl;
-
+	SCALAR smallestEigenvalue = 0.0;
 	if(settings_.recordSmallestEigenvalue && settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
 	{
-		std::cout<<std::setprecision(15) << "smallest eigenvalue this iteration: " << lqocSolver_->getSmallestEigenvalue() << std::endl;
+		smallestEigenvalue = lqocSolver_->getSmallestEigenvalue();
 	}
 
-	std::cout<<"                   ========" << std::endl;
-	std::cout<<std::endl;
+	summaryAllIterations_.iterations.push_back(iteration_);
+	summaryAllIterations_.defect_l1_norms.push_back(d_norm_l1);
+	summaryAllIterations_.defect_l2_norms.push_back(d_norm_l2);
+	summaryAllIterations_.lx_norms.push_back(lx_norm_);
+	summaryAllIterations_.lu_norms.push_back(lu_norm_);
+	summaryAllIterations_.intermediateCosts.push_back(intermediateCostBest_);
+	summaryAllIterations_.finalCosts.push_back(finalCostBest_);
+	summaryAllIterations_.totalCosts.push_back(totalCost);
+	summaryAllIterations_.merits.push_back(totalMerit);
+	summaryAllIterations_.stepSizes.push_back(alphaBest_);
+	summaryAllIterations_.smallestEigenvalues.push_back(smallestEigenvalue);
+
+	if(settings_.printSummary)
+		summaryAllIterations_.printSummaryLastIteration();
+
+	//! @todo the printing of the smallest eigenvalue is hacky
+	if(settings_.printSummary && settings_.recordSmallestEigenvalue && settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
+	{
+		std::cout<<std::setprecision(15) << "smallest eigenvalue this iteration: " << smallestEigenvalue << std::endl;
+	}
 }
 
 
@@ -684,11 +691,19 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 			computeCostsOfTrajectory(settings_.nThreads, x_, uff_local, intermediateCostBest_, finalCostBest_);
 			lowestCost_ = intermediateCostBest_ + finalCostBest_;
 
-#if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
-			//! compute l2 norms of state and control update
-			lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, uff_local);
-			lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
+			if(settings_.printSummary)
+			{
+				//! compute l2 norms of state and control update
+				lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, uff_local);
+				lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
+			}
+			else{
+#ifdef MATLAB // in case of no debug printing but still logging, need to compute them
+				//! compute l2 norms of state and control update
+				lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, uff_local);
+				lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
 #endif
+			}
 
 			x_prev_ = x_;
 			u_ff_.swap(uff_local);
@@ -696,33 +711,33 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 		}
 		else
 		{
-#ifdef DEBUG_PRINT
-std::cout<<"CONVERGED: System became unstable!" << std::endl;
-#endif //DEBUG_PRINT
+			if(settings_.debugPrint){
+				std::cout<<"CONVERGED: System became unstable!" << std::endl;
+			}
 			return false;
 		}
 	}
 	else
 	{
 
-#ifdef DEBUG_PRINT_LINESEARCH
-		std::cout<<"[LineSearch]: Starting line search."<<std::endl;
-		std::cout<<"[LineSearch]: Cost last rollout: "<<lowestCost_<<std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
+		if(settings_.lineSearchSettings.debugPrint){
+			std::cout<<"[LineSearch]: Starting line search."<<std::endl;
+			std::cout<<"[LineSearch]: Cost last rollout: "<<lowestCost_<<std::endl;
+		}
 
 		alphaBest_ = performLineSearch();
 
-#ifdef DEBUG_PRINT_LINESEARCH
-		std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest_<<" . Will use this control."<<std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
-
-#ifdef DEBUG_PRINT
-		if (alphaBest_ == 0.0)
-		{
-			std::cout<<"WARNING: No better control found. Converged."<<std::endl;
-			return false;
+		if(settings_.lineSearchSettings.debugPrint){
+			std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest_<<" . Will use this control."<<std::endl;
 		}
-#endif
+
+		if(settings_.debugPrint){
+			if (alphaBest_ == 0.0)
+			{
+				std::cout<<"WARNING: No better control found. Converged."<<std::endl;
+				return false;
+			}
+		}
 	}
 
 	if ((lowestCostPrevious - lowestCost_)/lowestCostPrevious > settings_.min_cost_improvement)
@@ -730,10 +745,10 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 		return true;
 	}
 
-#ifdef DEBUG_PRINT
-	std::cout<<"CONVERGED: Cost last iteration: "<<lowestCostPrevious<<", current cost: "<< lowestCost_ << std::endl;
-	std::cout<<"CONVERGED: Cost improvement ratio was: "<<(lowestCostPrevious - lowestCost_)/lowestCostPrevious <<"x, which is lower than convergence criteria: "<<settings_.min_cost_improvement<<std::endl;
-#endif //DEBUG_PRINT
+	if(settings_.debugPrint){
+		std::cout<<"CONVERGED: Cost last iteration: "<<lowestCostPrevious<<", current cost: "<< lowestCost_ << std::endl;
+		std::cout<<"CONVERGED: Cost improvement ratio was: "<<(lowestCostPrevious - lowestCost_)/lowestCostPrevious <<"x, which is lower than convergence criteria: "<<settings_.min_cost_improvement<<std::endl;
+	}
 	return false;
 }
 
@@ -772,10 +787,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 	}
 	else
 	{
-#ifdef DEBUG_PRINT
-		std::string msg = std::string("dynamics not good, thread: ") + std::to_string(threadId);
-		std::cout << msg << std::endl;
-#endif
+		if(settings_.debugPrint){
+			std::string msg = std::string("dynamics not good, thread: ") + std::to_string(threadId);
+			std::cout << msg << std::endl;
+		}
 	}
 }
 
@@ -807,10 +822,16 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 
 		lowestCost_ = intermediateCostBest_ + finalCostBest_;
 
-#if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
-		lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, u_ff_);
-		lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
+		if(settings_.printSummary){
+			lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, u_ff_);
+			lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
+		}
+		else{
+#ifdef MATLAB
+			lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, u_ff_);
+			lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
 #endif
+		}
 		x_prev_ = x_;
 		alphaBest_ = 1;
 	}
@@ -820,26 +841,26 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 		lowestCost_ = intermediateCostBest_ + finalCostBest_ + d_norm_ * settings_.meritFunctionRho;
 		lowestCostPrevious = lowestCost_;
 
-#ifdef DEBUG_PRINT_LINESEARCH
-		std::cout<<"[LineSearch]: Starting line search."<<std::endl;
-		std::cout<<"[LineSearch]: Cost of last rollout:\t"<<intermediateCostBest_ + finalCostBest_<<std::endl;
-		std::cout<<"[LineSearch]: Defect norm last rollout:\t"<<d_norm_<<std::endl;
-		std::cout<<"[LineSearch]: Merit of last rollout:\t"<<lowestCost_<<std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
+		if(settings_.lineSearchSettings.debugPrint){
+			std::cout<<"[LineSearch]: Starting line search."<<std::endl;
+			std::cout<<"[LineSearch]: Cost of last rollout:\t"<<intermediateCostBest_ + finalCostBest_<<std::endl;
+			std::cout<<"[LineSearch]: Defect norm last rollout:\t"<<d_norm_<<std::endl;
+			std::cout<<"[LineSearch]: Merit of last rollout:\t"<<lowestCost_<<std::endl;
+		}
 
 		alphaBest_ = performLineSearch();
 
-#ifdef DEBUG_PRINT_LINESEARCH
-		std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest_<<", with trade-off "<<std::endl;
-		std::cout<<"[LineSearch]: Cost:\t"<<intermediateCostBest_ + finalCostBest_<<std::endl;
-		std::cout<<"[LineSearch]: Defect:\t"<<d_norm_<<std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
+		if(settings_.lineSearchSettings.debugPrint){
+			std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest_<<", with trade-off "<<std::endl;
+			std::cout<<"[LineSearch]: Cost:\t"<<intermediateCostBest_ + finalCostBest_<<std::endl;
+			std::cout<<"[LineSearch]: Defect:\t"<<d_norm_<<std::endl;
+		}
 
 		if (alphaBest_ == 0.0)
 		{
-#ifdef DEBUG_PRINT
-			std::cout<<"WARNING: No better control found during line search. Converged."<<std::endl;
-#endif
+			if(settings_.debugPrint){
+				std::cout<<"WARNING: No better control found during line search. Converged."<<std::endl;
+			}
 			return false;
 		}
 	}
@@ -847,10 +868,10 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 	if ( fabs((lowestCostPrevious - lowestCost_)/lowestCostPrevious) > settings_.min_cost_improvement)
 		return true; //! found better cost
 
-#ifdef DEBUG_PRINT
-	std::cout<<"CONVERGED: Cost last iteration: "<<lowestCostPrevious<<", current cost: "<< lowestCost_ << std::endl;
-	std::cout<<"CONVERGED: Cost improvement ratio was: "<<fabs(lowestCostPrevious - lowestCost_)/lowestCostPrevious <<"x, which is lower than convergence criteria: "<<settings_.min_cost_improvement<<std::endl;
-#endif //DEBUG_PRINT
+	if(settings_.debugPrint){
+		std::cout<<"CONVERGED: Cost last iteration: "<<lowestCostPrevious<<", current cost: "<< lowestCost_ << std::endl;
+		std::cout<<"CONVERGED: Cost improvement ratio was: "<<fabs(lowestCostPrevious - lowestCost_)/lowestCostPrevious <<"x, which is lower than convergence criteria: "<<settings_.min_cost_improvement<<std::endl;
+	}
 	return false;
 }
 
