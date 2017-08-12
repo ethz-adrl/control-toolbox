@@ -522,10 +522,16 @@ SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 	printString("[MP]: Restoring " + std::to_string(Eigen::nbThreads()) + " Eigen threads.");
 #endif //DEBUG_PRINT_MP
 
-#if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)
-	this->lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(this->u_ff_, this->u_ff_prev_);
-	this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(this->x_, this->x_prev_);
+	if(this->settings_.printSummary)
+	{
+		this->lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(this->u_ff_, this->u_ff_prev_);
+		this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(this->x_, this->x_prev_);
+	}else{
+#ifdef MATLAB
+		this->lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(this->u_ff_, this->u_ff_prev_);
+		this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(this->x_, this->x_prev_);
 #endif
+	}
 	this->x_prev_ = this->x_;
 
 	return alphaBest;
