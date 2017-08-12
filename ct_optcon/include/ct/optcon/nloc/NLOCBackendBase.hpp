@@ -62,8 +62,6 @@ namespace optcon{
  *  xv <- vector (lower-case bold in paper)
  *  x  <- scalar (lower-case in paper)
  *
- *  TODO (Markus G) once decided if stabilizing shots or whole rollouts about previous or current solution candidate,
- *  remove one of the implementations for better clarity and more overview
  */
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
