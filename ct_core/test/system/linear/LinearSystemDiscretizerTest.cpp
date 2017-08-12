@@ -213,7 +213,9 @@ TEST(LinearSystemDiscretizerTest, testExplicit)
 }
 
 
-
+/*!
+ * \warning this test only works because it's using a linear system. For a nonlinear system, replace getAandB by the time-varying counterpart!
+ */
 TEST(LinearSystemDiscretizerTest, testSymplectic)
 {
 	double dt = 0.1;
@@ -286,6 +288,7 @@ TEST(LinearSystemDiscretizerTest, testSymplectic)
 
 
 
+
 TEST(LinearSystemDiscretizerTest, testExplicitOsc)
 {
 	double dt = 0.1;
@@ -353,6 +356,9 @@ TEST(LinearSystemDiscretizerTest, testExplicitOsc)
 
 
 
+/*!
+ * \warning this test only works because it's using a linear system. For a nonlinear system, replace getAandB by the time-varying counterpart!
+ */
 TEST(LinearSystemDiscretizerTest, testSymplecticOsc)
 {
 	double dt = 0.1;
