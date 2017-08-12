@@ -39,6 +39,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/solver/lqp/HPIPMInterface.hpp>
 #include <ct/optcon/solver/NLOptConSettings.hpp>
 
+#include "NLOCResults.hpp"
+
 #ifdef MATLAB
 #include <ct/optcon/matlab.hpp>
 #endif
@@ -682,6 +684,8 @@ protected:
 
 	bool firstRollout_;
 	scalar_t alphaBest_;
+
+	SummaryAllIterations<SCALAR> summaryAllIterations_;
 
 };
 

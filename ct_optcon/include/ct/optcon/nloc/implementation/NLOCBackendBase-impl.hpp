@@ -531,27 +531,26 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 
 	SCALAR d_norm_l1 = computeDefectsNorm<1>(lqocProblem_->b_);
 	SCALAR d_norm_l2 = computeDefectsNorm<2>(lqocProblem_->b_);
+	SCALAR totalCost = intermediateCostBest_ + finalCostBest_;
+	SCALAR totalMerit = intermediateCostBest_ + finalCostBest_ + settings_.meritFunctionRho * d_norm_l1;
 
-	std::cout<< settings_.loggingPrefix + " iteration "  << iteration_ << std::endl;
-	std::cout<<"============"<< std::endl;
+	summaryAllIterations_.iterations_.push_back(iteration_);
+	summaryAllIterations_.defect_l1_norms.push_back(d_norm_l1);
+	summaryAllIterations_.defect_l2_norms.push_back(d_norm_l2);
+	summaryAllIterations_.lx_norms.push_back(lx_norm_);
+	summaryAllIterations_.lu_norms.push_back(lu_norm_);
+	summaryAllIterations_.intermediateCosts.push_back(intermediateCostBest_);
+	summaryAllIterations_.finalCosts.push_back(finalCostBest_);
+	summaryAllIterations_.totalCosts.push_back(totalCost);
+	summaryAllIterations_.merits.push_back(totalMerit);
+	summaryAllIterations_.stepSizes.push_back(alphaBest_);
 
-	std::cout<<std::setprecision(15) << "interm. cost:\t" << intermediateCostBest_ << std::endl;
-	std::cout<<std::setprecision(15) << "final cost:\t" << finalCostBest_ << std::endl;
-	std::cout<<std::setprecision(15) << "total cost:\t" << intermediateCostBest_ + finalCostBest_ << std::endl;
-	std::cout<<std::setprecision(15) << "total merit:\t" << intermediateCostBest_ + finalCostBest_ + settings_.meritFunctionRho * d_norm_l1 << std::endl;
-	std::cout<<std::setprecision(15) << "tot. defect L1:\t" << d_norm_l1 << std::endl;
-	std::cout<<std::setprecision(15) << "tot. defect L2:\t" << d_norm_l2 << std::endl;
-	std::cout<<std::setprecision(15) << "total lx norm:\t" << lx_norm_ << std::endl;
-	std::cout<<std::setprecision(15) << "total lu norm:\t" << lu_norm_ << std::endl;
-	std::cout<<std::setprecision(15) << "step-size(alpha):\t" << alphaBest_ << std::endl;
+	summaryAllIterations_.printSummaryLastIteration();
 
 	if(settings_.recordSmallestEigenvalue && settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
 	{
 		std::cout<<std::setprecision(15) << "smallest eigenvalue this iteration: " << lqocSolver_->getSmallestEigenvalue() << std::endl;
 	}
-
-	std::cout<<"                   ========" << std::endl;
-	std::cout<<std::endl;
 }
 
 
