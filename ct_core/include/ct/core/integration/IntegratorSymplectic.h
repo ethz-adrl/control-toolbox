@@ -156,18 +156,19 @@ private:
 		systemFunctionPosition_ = [this](const Eigen::Matrix<SCALAR, VEL_DIM, 1>& v, Eigen::Matrix<SCALAR, POS_DIM, 1>& dxdt) {
 			const StateVector<POS_DIM, SCALAR>& vState(static_cast<const StateVector<POS_DIM, SCALAR>& >(v));
 			StateVector<POS_DIM, SCALAR>& dxdtState(static_cast<StateVector<POS_DIM, SCALAR>& >(dxdt));
+			xCached_.template bottomRows<VEL_DIM>() = v;
 			systemSymplectic_->computePdot(xCached_, vState, dxdtState);
 		};
 
 		systemFunctionVelocity_ = [this](const Eigen::Matrix<SCALAR, POS_DIM, 1>& x, Eigen::Matrix<SCALAR, VEL_DIM, 1>& dvdt) {
 			const StateVector<VEL_DIM, SCALAR>& xState(static_cast<const StateVector<VEL_DIM, SCALAR>& >(x));
 			StateVector<VEL_DIM, SCALAR>& dvdtState(static_cast<StateVector<VEL_DIM, SCALAR>& >(dvdt));
+			xCached_.template topRows<POS_DIM>() = x;
 			systemSymplectic_->computeVdot(xCached_, xState, dvdtState);
 		};
 	}
 
 	StateVector<POS_DIM + VEL_DIM, SCALAR> xCached_; //! The cached state. This will be used for the system function
-	                                         //! calls
 
 	std::function<void (const Eigen::Matrix<SCALAR, POS_DIM, 1>&, Eigen::Matrix<SCALAR, POS_DIM, 1>&)> systemFunctionPosition_; //! the position system function
 	std::function<void (const Eigen::Matrix<SCALAR, VEL_DIM, 1>&, Eigen::Matrix<SCALAR, VEL_DIM, 1>&)> systemFunctionVelocity_; //! the velocity system function

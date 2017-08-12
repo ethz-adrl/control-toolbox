@@ -29,16 +29,20 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <unsupported/Eigen/MatrixFunctions>
 
+#define SYMPLECTIC_ENABLED template<size_t V, size_t P> typename std::enable_if<(V > 0 && P > 0), void>::type
+#define SYMPLECTIC_DISABLED template<size_t V, size_t P> typename std::enable_if<(V <= 0 || P <= 0), void>::type
+
 namespace ct {
 namespace core {
-
 
 //! settings for the LinearSystemDiscretizer
 struct LinearSystemDiscretizerSettings
 {
+	//! different discrete-time approximations to linear systems
 	enum class APPROXIMATION {
 			FORWARD_EULER = 0,
 			BACKWARD_EULER,
+			SYMPLECTIC_EULER,
 			TUSTIN,
 			MATRIX_EXPONENTIAL
 	};
@@ -64,7 +68,7 @@ struct LinearSystemDiscretizerSettings
  * \tparam STATE_DIM size of state vector
  * \tparam CONTROL_DIM size of input vector
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM = STATE_DIM/2, size_t V_DIM = STATE_DIM/2, typename SCALAR = double>
 class LinearSystemDiscretizer : public DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>{
 
 public:
@@ -98,7 +102,7 @@ public:
 
 
 	//! copy constructor
-	LinearSystemDiscretizer(const LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>& other) :
+	LinearSystemDiscretizer(const LinearSystemDiscretizer& other) :
 		settings_(other.settings_)
 	{
 		if(other.linearSystem_ != nullptr)
@@ -111,9 +115,9 @@ public:
 
 
 	//! deep cloning
-	virtual LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
+	virtual LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>* clone() const override
 	{
-		return new LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
+		return new LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(*this);
 	}
 
 
@@ -186,6 +190,11 @@ public:
 			backwardEuler(x, u, n+1, A, B);
 			break;
 		}
+		case LinearSystemDiscretizerSettings::APPROXIMATION::SYMPLECTIC_EULER:
+		{
+			symplecticEuler<V_DIM, P_DIM>(x, u, n, A, B);
+			break;
+		}
 		case LinearSystemDiscretizerSettings::APPROXIMATION::TUSTIN:
 		{
 			/*!
@@ -251,6 +260,11 @@ public:
 		case LinearSystemDiscretizerSettings::APPROXIMATION::BACKWARD_EULER:
 		{
 			backwardEuler(x_n_next, u_n_next, n+1, A, B);
+			break;
+		}
+		case LinearSystemDiscretizerSettings::APPROXIMATION::SYMPLECTIC_EULER:
+		{
+			symplecticEuler<V_DIM, P_DIM>(x_n, u_n, x_n_next, u_n_next, n, A, B);
 			break;
 		}
 		case LinearSystemDiscretizerSettings::APPROXIMATION::TUSTIN:
@@ -323,6 +337,7 @@ private:
 		B = A * settings_.dt_ * linearSystem_->getDerivativeControl(x_n, u_n, n*settings_.dt_);
 	}
 
+
 	void matrixExponential(
 			const StateVector<STATE_DIM, SCALAR>& x_n,
 			const ControlVector<CONTROL_DIM, SCALAR>& u_n,
@@ -336,6 +351,142 @@ private:
 
 		A = Adt.exp();
 		B = Ac.inverse() * (A - state_matrix_t::Identity()) *  linearSystem_->getDerivativeControl(x_n, u_n, settings_.dt_*n);
+	}
+
+
+	//!get the discretized linear system Ax+Bu corresponding for a symplectic integrator with full parameterization
+	/*!
+	 * @param x	state at start of interval
+	 * @param u control at start of interval
+	 * @param x_next state at end of interval
+	 * @param u_next control at end of interval
+	 * @param n time index
+	 * @param A_sym resulting symplectic discrete-time A matrix
+	 * @param B_sym A_sym resulting symplectic discrete-time B matrix
+	 */
+	SYMPLECTIC_ENABLED symplecticEuler(
+			const StateVector<STATE_DIM, SCALAR>& x,
+			const ControlVector<CONTROL_DIM, SCALAR>& u,
+			const StateVector<STATE_DIM, SCALAR>& x_next,
+			const ControlVector<CONTROL_DIM, SCALAR>& u_next,
+			const int& n,
+			state_matrix_t& A_sym,
+			state_control_matrix_t& B_sym)
+	{
+		const SCALAR& dt =settings_.dt_;
+
+		// our implementation of symplectic integrators first updates the positions, we need to reconstruct an intermediate state accordingly
+		StateVector<STATE_DIM, SCALAR> x_interm = x;
+		x_interm.topRows(P_DIM) = x_next.topRows(P_DIM);
+
+		state_matrix_t Ac1  = linearSystem_->getDerivativeState(x, u, n*dt); // continuous time A matrix for start state and control
+		state_control_matrix_t Bc1 = linearSystem_->getDerivativeControl(x, u, n*dt); // continuous time B matrix for start state and control
+		state_matrix_t Ac2  = linearSystem_->getDerivativeState(x_interm, u, n*dt); // continuous time A matrix for intermediate state and control
+		state_control_matrix_t Bc2 = linearSystem_->getDerivativeControl(x_interm, u, n*dt); // continuous time B matrix for intermediate state and control
+
+		getSymplecticEulerApproximation<V_DIM, P_DIM>(Ac1, Ac2, Bc1, Bc2, A_sym, B_sym);
+	}
+
+
+	//!get the discretized linear system Ax+Bu corresponding for a symplectic integrator with reduced
+	/*!
+	 * version without intermediate state. In this method, we do not consider the updated intermediate state from the symplectic integration step
+	 * and compute the discretized A and B matrix using the continuous-time linearization at the starting state and control only.
+	 * \note this approximation is less costly but not 100% correct
+	 * @param x	state at start of interval
+	 * @param u control at start of interval
+	 * @param n time index
+	 * @param A_sym resulting symplectic discrete-time A matrix
+	 * @param B_sym A_sym resulting symplectic discrete-time B matrix
+	 */
+	SYMPLECTIC_ENABLED symplecticEuler(
+			const StateVector<STATE_DIM, SCALAR>& x,
+			const ControlVector<CONTROL_DIM, SCALAR>& u,
+			const int& n,
+			state_matrix_t& A_sym,
+			state_control_matrix_t& B_sym)
+	{
+		const SCALAR& dt =settings_.dt_;
+
+		state_matrix_t Ac1  = linearSystem_->getDerivativeState(x, u, n*dt); // continuous time A matrix for start state and control
+		state_control_matrix_t Bc1 = linearSystem_->getDerivativeControl(x, u, n*dt); // continuous time B matrix for start state and control
+
+		getSymplecticEulerApproximation<V_DIM, P_DIM>(Ac1, Ac1, Bc1, Bc1, A_sym, B_sym);
+	}
+
+
+	//! performs the symplectic Euler approximation
+	/*!
+	 * @param Ac1	continuous-time A matrix at start state and control
+	 * @param Ac2	continuous-time A matrix at intermediate-step state and start control
+	 * @param Bc1	continuous-time B matrix at start state and control
+	 * @param Bc2	continuous-time B matrix at intermediate-step state and start control
+	 * @param A_sym	resulting discrete-time symplectic A matrix
+	 * @param B_sym resulting discrete-time symplectic B matrix
+	 */
+	SYMPLECTIC_ENABLED getSymplecticEulerApproximation(const state_matrix_t& Ac1, const state_matrix_t& Ac2,
+			const state_control_matrix_t& Bc1, const state_control_matrix_t& Bc2, state_matrix_t& A_sym, state_control_matrix_t& B_sym)
+	{
+		const SCALAR& dt =settings_.dt_;
+
+		typedef Eigen::Matrix<SCALAR, P_DIM, P_DIM> p_matrix_t;
+		typedef Eigen::Matrix<SCALAR, V_DIM, V_DIM> v_matrix_t;
+		typedef Eigen::Matrix<SCALAR, P_DIM, V_DIM> p_v_matrix_t;
+		typedef Eigen::Matrix<SCALAR, V_DIM, P_DIM> v_p_matrix_t;
+		typedef Eigen::Matrix<SCALAR, P_DIM, CONTROL_DIM> p_control_matrix_t;
+		typedef Eigen::Matrix<SCALAR, V_DIM, CONTROL_DIM> v_control_matrix_t;
+
+		// for ease of notation, make a block-wise map to references
+		// elements taken form the linearization at the starting state
+		const Eigen::Ref<const p_matrix_t> A11 		= Ac1.topLeftCorner(P_DIM, P_DIM);
+		const Eigen::Ref<const p_v_matrix_t> A12 	= Ac1.topRightCorner(P_DIM, V_DIM);
+		const Eigen::Ref<const p_control_matrix_t> B1 = Bc1.topRows(P_DIM);
+
+		// elements taken from the linearization at the intermediate state
+		const Eigen::Ref<const v_p_matrix_t> A21 	= Ac2.bottomLeftCorner(V_DIM, P_DIM);
+		const Eigen::Ref<const v_matrix_t> A22 		= Ac2.bottomRightCorner(V_DIM, V_DIM);
+		const Eigen::Ref<const v_control_matrix_t> B2 = Bc2.bottomRows(V_DIM);
+
+		// discrete approximation A matrix
+		A_sym.topLeftCorner(P_DIM, P_DIM) = p_matrix_t::Identity() + dt * A11;
+		A_sym.topRightCorner(P_DIM, V_DIM) = dt * A12;
+		A_sym.bottomLeftCorner(V_DIM, P_DIM) = dt * A21 * (p_matrix_t::Identity() + dt*A11);
+		A_sym.bottomRightCorner(V_DIM, V_DIM) = dt*dt*A21*A12  + v_matrix_t::Identity() + dt* A22;
+
+		// discrete approximation B matrix
+		B_sym.topRows(P_DIM) = dt * B1;
+		B_sym.bottomRows(V_DIM) = dt * B2 + dt*dt * A21 * B1;
+	}
+
+
+	//! gets instantiated in case the system is not symplectic
+	SYMPLECTIC_DISABLED symplecticEuler(
+			const StateVector<STATE_DIM, SCALAR>& x_n,
+			const ControlVector<CONTROL_DIM, SCALAR>& u_n,
+			const StateVector<STATE_DIM, SCALAR>& x_next,
+			const ControlVector<CONTROL_DIM, SCALAR>& u_next,
+			const int& n,
+			state_matrix_t& A,
+			state_control_matrix_t& B)
+	{
+		throw std::runtime_error("LinearSystemDiscretizer : selected symplecticEuler but System is not symplectic.");
+	}
+
+	//! gets instantiated in case the system is not symplectic
+	SYMPLECTIC_DISABLED symplecticEuler(
+			const StateVector<STATE_DIM, SCALAR>& x,
+			const ControlVector<CONTROL_DIM, SCALAR>& u,
+			const int& n,
+			state_matrix_t& A_sym,
+			state_control_matrix_t& B_sym)
+	{
+		throw std::runtime_error("LinearSystemDiscretizer : selected symplecticEuler but System is not symplectic.");
+	}
+
+	SYMPLECTIC_DISABLED getSymplecticEulerApproximation(const state_matrix_t& Ac1, const state_matrix_t& Ac2,
+			const state_control_matrix_t& Bc1, const state_control_matrix_t& Bc2, state_matrix_t& A_sym, state_control_matrix_t B_sym)
+	{
+		throw std::runtime_error("LinearSystemDiscretizer : selected symplecticEuler but System is not symplectic.");
 	}
 
 	//! shared_ptr to a continuous time linear system (system to be discretized)
