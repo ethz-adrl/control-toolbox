@@ -56,6 +56,9 @@ struct SummaryAllIterations
 	//! step size
 	std::vector<SCALAR> stepSizes;
 
+	//! smallest eigenvalues
+	std::vector<SCALAR> smallestEigenvalues;
+
 	template <int numPrecision = 12>
 	void printSummaryLastIteration()
 	{

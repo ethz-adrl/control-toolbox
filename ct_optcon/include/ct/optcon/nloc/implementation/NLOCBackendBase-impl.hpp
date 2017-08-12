@@ -526,13 +526,18 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeCo
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::printSummary()
 {
-
 	SCALAR d_norm_l1 = computeDefectsNorm<1>(lqocProblem_->b_);
 	SCALAR d_norm_l2 = computeDefectsNorm<2>(lqocProblem_->b_);
 	SCALAR totalCost = intermediateCostBest_ + finalCostBest_;
 	SCALAR totalMerit = intermediateCostBest_ + finalCostBest_ + settings_.meritFunctionRho * d_norm_l1;
+
+	SCALAR smallestEigenvalue = 0.0;
+	if(settings_.recordSmallestEigenvalue && settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
+	{
+		smallestEigenvalue = lqocSolver_->getSmallestEigenvalue();
+	}
 
 	summaryAllIterations_.iterations_.push_back(iteration_);
 	summaryAllIterations_.defect_l1_norms.push_back(d_norm_l1);
@@ -544,12 +549,15 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::debugPrint()
 	summaryAllIterations_.totalCosts.push_back(totalCost);
 	summaryAllIterations_.merits.push_back(totalMerit);
 	summaryAllIterations_.stepSizes.push_back(alphaBest_);
+	summaryAllIterations_.smallestEigenvalues.push_back(smallestEigenvalue);
 
-	summaryAllIterations_.printSummaryLastIteration();
+	if(settings_.printSummary)
+		summaryAllIterations_.printSummaryLastIteration();
 
-	if(settings_.recordSmallestEigenvalue && settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
+	//! @todo the printing of the smallest eigenvalue is hacky
+	if(settings_.printSummary && settings_.recordSmallestEigenvalue && settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
 	{
-		std::cout<<std::setprecision(15) << "smallest eigenvalue this iteration: " << lqocSolver_->getSmallestEigenvalue() << std::endl;
+		std::cout<<std::setprecision(15) << "smallest eigenvalue this iteration: " << smallestEigenvalue << std::endl;
 	}
 }
 
@@ -695,9 +703,9 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 		}
 		else
 		{
-#ifdef DEBUG_PRINT
-std::cout<<"CONVERGED: System became unstable!" << std::endl;
-#endif //DEBUG_PRINT
+			if(settings_.debugPrint){
+				std::cout<<"CONVERGED: System became unstable!" << std::endl;
+			}
 			return false;
 		}
 	}
@@ -715,13 +723,13 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 		std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest_<<" . Will use this control."<<std::endl;
 #endif //DEBUG_PRINT_LINESEARCH
 
-#ifdef DEBUG_PRINT
-		if (alphaBest_ == 0.0)
-		{
-			std::cout<<"WARNING: No better control found. Converged."<<std::endl;
-			return false;
+		if(settings_.debugPrint){
+			if (alphaBest_ == 0.0)
+			{
+				std::cout<<"WARNING: No better control found. Converged."<<std::endl;
+				return false;
+			}
 		}
-#endif
 	}
 
 	if ((lowestCostPrevious - lowestCost_)/lowestCostPrevious > settings_.min_cost_improvement)
@@ -729,10 +737,10 @@ std::cout<<"CONVERGED: System became unstable!" << std::endl;
 		return true;
 	}
 
-#ifdef DEBUG_PRINT
-	std::cout<<"CONVERGED: Cost last iteration: "<<lowestCostPrevious<<", current cost: "<< lowestCost_ << std::endl;
-	std::cout<<"CONVERGED: Cost improvement ratio was: "<<(lowestCostPrevious - lowestCost_)/lowestCostPrevious <<"x, which is lower than convergence criteria: "<<settings_.min_cost_improvement<<std::endl;
-#endif //DEBUG_PRINT
+	if(settings_.debugPrint){
+		std::cout<<"CONVERGED: Cost last iteration: "<<lowestCostPrevious<<", current cost: "<< lowestCost_ << std::endl;
+		std::cout<<"CONVERGED: Cost improvement ratio was: "<<(lowestCostPrevious - lowestCost_)/lowestCostPrevious <<"x, which is lower than convergence criteria: "<<settings_.min_cost_improvement<<std::endl;
+	}
 	return false;
 }
 
@@ -771,10 +779,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 	}
 	else
 	{
-#ifdef DEBUG_PRINT
-		std::string msg = std::string("dynamics not good, thread: ") + std::to_string(threadId);
-		std::cout << msg << std::endl;
-#endif
+		if(settings_.debugPrint){
+			std::string msg = std::string("dynamics not good, thread: ") + std::to_string(threadId);
+			std::cout << msg << std::endl;
+		}
 	}
 }
 
@@ -836,9 +844,9 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 
 		if (alphaBest_ == 0.0)
 		{
-#ifdef DEBUG_PRINT
-			std::cout<<"WARNING: No better control found during line search. Converged."<<std::endl;
-#endif
+			if(settings_.debugPrint){
+				std::cout<<"WARNING: No better control found during line search. Converged."<<std::endl;
+			}
 			return false;
 		}
 	}
@@ -846,10 +854,10 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 	if ( fabs((lowestCostPrevious - lowestCost_)/lowestCostPrevious) > settings_.min_cost_improvement)
 		return true; //! found better cost
 
-#ifdef DEBUG_PRINT
-	std::cout<<"CONVERGED: Cost last iteration: "<<lowestCostPrevious<<", current cost: "<< lowestCost_ << std::endl;
-	std::cout<<"CONVERGED: Cost improvement ratio was: "<<fabs(lowestCostPrevious - lowestCost_)/lowestCostPrevious <<"x, which is lower than convergence criteria: "<<settings_.min_cost_improvement<<std::endl;
-#endif //DEBUG_PRINT
+	if(settings_.debugPrint){
+		std::cout<<"CONVERGED: Cost last iteration: "<<lowestCostPrevious<<", current cost: "<< lowestCost_ << std::endl;
+		std::cout<<"CONVERGED: Cost improvement ratio was: "<<fabs(lowestCostPrevious - lowestCost_)/lowestCostPrevious <<"x, which is lower than convergence criteria: "<<settings_.min_cost_improvement<<std::endl;
+	}
 	return false;
 }
 

@@ -87,6 +87,9 @@ public:
 	 * - quadratize cost for stages 1 to N-1
 	 */
 	virtual void prepareIteration() override {
+
+		bool debugPrint = this->backend_->getSettings().debugPrint;
+
 		auto startPrepare = std::chrono::steady_clock::now();
 
 		if (!this->backend_->isInitialized())
@@ -111,34 +114,31 @@ public:
 		this->backend_->computeLinearizedDynamicsAroundTrajectory(K_shot, K-1);
 		auto end = std::chrono::steady_clock::now();
 		auto diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS]: Linearizing from index " << K_shot << " to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS]: Linearizing from index " << K_shot << " to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
 
 		start = std::chrono::steady_clock::now();
 		this->backend_->computeQuadraticCostsAroundTrajectory(K_shot, K-1);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS]: Cost computation for index " << K_shot << " to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS]: Cost computation for index " << K_shot << " to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
-#ifdef DEBUG_PRINT
-		std::cout<<"[GNMS]: Solving prepare stage of LQOC Problem"<<std::endl;
-#endif // DEBUG_PRINT
+
+		if(debugPrint)
+			std::cout<<"[GNMS]: Solving prepare stage of LQOC Problem"<<std::endl;
+
 		start = std::chrono::steady_clock::now();
 		this->backend_->prepareSolveLQProblem(K_shot);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS]: Prepare phase of LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS]: Prepare phase of LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
 		auto endPrepare = std::chrono::steady_clock::now();
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS]: prepareIteration() took "<<std::chrono::duration <double, std::milli> (endPrepare-startPrepare).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS]: prepareIteration() took "<<std::chrono::duration <double, std::milli> (endPrepare-startPrepare).count() << " ms" << std::endl;
 
 
 	} //! prepareIteration()
@@ -155,9 +155,9 @@ public:
 
 		int K_shot = this->backend_->getNumStepsPerShot();
 
-#ifdef DEBUG_PRINT
+		bool debugPrint = this->backend_->getSettings().debugPrint;
+
 		auto startFinish = std::chrono::steady_clock::now();
-#endif
 
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
@@ -176,30 +176,28 @@ public:
 		this->backend_->computeLinearizedDynamicsAroundTrajectory(0, K_shot-1);
 		auto end = std::chrono::steady_clock::now();
 		auto diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS]: Linearizing for first shot took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS]: Linearizing for first shot took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
 
 		start = std::chrono::steady_clock::now();
 		this->backend_->computeQuadraticCostsAroundTrajectory(0, K_shot-1);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS]: Cost computation for first shot took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS]: Cost computation for first shot took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
 
-#ifdef DEBUG_PRINT
-		std::cout<<"[GNMS]: Finish phase LQOC Problem"<<std::endl;
-#endif // DEBUG_PRINT
+		if(debugPrint)
+			std::cout<<"[GNMS]: Finish phase LQOC Problem"<<std::endl;
+
 		start = std::chrono::steady_clock::now();
 		this->backend_->finishSolveLQProblem(K_shot-1);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS]: Finish solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS]: Finish solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+
 
 
 		//! update solutions
@@ -212,19 +210,17 @@ public:
 		bool foundBetter = this->backend_->lineSearchMultipleShooting();
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS]: Line search took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
-
-#ifdef DEBUG_PRINT
-		auto endFinish = std::chrono::steady_clock::now();
-		std::cout << "[GNMS]: finishIteration() took "<<std::chrono::duration <double, std::milli> (endFinish-startFinish).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS]: Line search took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
 
-#ifdef DEBUG_PRINT
-		this->backend_->debugPrint();
-#endif //DEBUG_PRINT
+		if(debugPrint){
+			auto endFinish = std::chrono::steady_clock::now();
+			std::cout << "[GNMS]: finishIteration() took "<<std::chrono::duration <double, std::milli> (endFinish-startFinish).count() << " ms" << std::endl;
+		}
+
+
+		this->backend_->printSummary();
 
 #ifdef MATLAB_FULL_LOG
 		this->backend_->logToMatlab(this->backend_->iteration());
@@ -245,6 +241,8 @@ public:
 	 * Therefore: rollout->linearize->solve
 	 */
 	virtual void prepareMPCIteration() override {
+
+		bool debugPrint = this->backend_->getSettings().debugPrint;
 
 		auto startPrepare = std::chrono::steady_clock::now();
 
@@ -267,33 +265,33 @@ public:
 		this->backend_->computeLinearizedDynamicsAroundTrajectory(K_shot, K-1);
 		auto end = std::chrono::steady_clock::now();
 		auto diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS-MPC]: Linearizing from index " << K_shot << " to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS-MPC]: Linearizing from index " << K_shot << " to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+
 
 		start = std::chrono::steady_clock::now();
 		this->backend_->computeQuadraticCostsAroundTrajectory(K_shot, K-1);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS-MPC]: Cost computation for index " << K_shot << " to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS-MPC]: Cost computation for index " << K_shot << " to N-1 took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
-#ifdef DEBUG_PRINT
-		std::cout<<"[GNMS-MPC]: Solving prepare stage of LQOC Problem"<<std::endl;
-#endif // DEBUG_PRINT
+
+		if(debugPrint)
+			std::cout<<"[GNMS-MPC]: Solving prepare stage of LQOC Problem"<<std::endl;
+
 		start = std::chrono::steady_clock::now();
 		this->backend_->prepareSolveLQProblem(K_shot);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS-MPC]: Prepare phase of LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS-MPC]: Prepare phase of LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+
 
 		auto endPrepare = std::chrono::steady_clock::now();
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS-MPC]: prepareIteration() took "<<std::chrono::duration <double, std::milli> (endPrepare-startPrepare).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS-MPC]: prepareIteration() took "<<std::chrono::duration <double, std::milli> (endPrepare-startPrepare).count() << " ms" << std::endl;
+
 
 	} //! prepareMPCIteration()
 
@@ -304,9 +302,10 @@ public:
 
 		int K_shot = this->backend_->getNumStepsPerShot();
 
-#ifdef DEBUG_PRINT
+		bool debugPrint = this->backend_->getSettings().debugPrint;
+
 		auto startFinish = std::chrono::steady_clock::now();
-#endif
+
 
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
@@ -325,30 +324,27 @@ public:
 		this->backend_->computeLinearizedDynamicsAroundTrajectory(0, K_shot-1);
 		auto end = std::chrono::steady_clock::now();
 		auto diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS-MPC]: Linearizing for first shot took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS-MPC]: Linearizing for first shot took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
 
 		start = std::chrono::steady_clock::now();
 		this->backend_->computeQuadraticCostsAroundTrajectory(0, K_shot-1);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS-MPC]: Cost computation for first shot took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS-MPC]: Cost computation for first shot took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
+		if(debugPrint)
+			std::cout<<"[GNMS-MPC]: Finish phase LQOC Problem"<<std::endl;
 
-#ifdef DEBUG_PRINT
-		std::cout<<"[GNMS-MPC]: Finish phase LQOC Problem"<<std::endl;
-#endif // DEBUG_PRINT
 		start = std::chrono::steady_clock::now();
 		this->backend_->finishSolveLQProblem(K_shot-1);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS-MPC]: Finish solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS-MPC]: Finish solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+
 
 		//! update solutions
 		start = std::chrono::steady_clock::now();
@@ -361,19 +357,16 @@ public:
 
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[GNMS-MPC]: Solution update took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
-
-#ifdef DEBUG_PRINT
-		auto endFinish = std::chrono::steady_clock::now();
-		std::cout << "[GNMS-MPC]: finishIteration() took "<<std::chrono::duration <double, std::milli> (endFinish-startFinish).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[GNMS-MPC]: Solution update took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
 
-#ifdef DEBUG_PRINT
-		this->backend_->debugPrint(); // note, this displays the defect of the previous iteration
-#endif //DEBUG_PRINT
+		if(debugPrint){
+			auto endFinish = std::chrono::steady_clock::now();
+			std::cout << "[GNMS-MPC]: finishIteration() took "<<std::chrono::duration <double, std::milli> (endFinish-startFinish).count() << " ms" << std::endl;
+		}
+
+		this->backend_->printSummary();
 
 #ifdef MATLAB_FULL_LOG
 		this->backend_->logToMatlab(this->backend_->iteration());

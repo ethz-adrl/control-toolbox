@@ -106,6 +106,8 @@ public:
 
 		int K = this->backend_->getNumSteps();
 
+		bool debugPrint = this->backend_->getSettings().debugPrint;
+
 		// if first iteration, compute shots and rollout and cost!
 		if(this->backend_->iteration() == 0)
 		{
@@ -126,37 +128,33 @@ public:
 		this->backend_->computeLinearizedDynamicsAroundTrajectory(0, K-1);
 		auto end = std::chrono::steady_clock::now();
 		auto diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[iLQR]: Linearizing dynamics took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[iLQR]: Linearizing dynamics took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+
 
 		start = std::chrono::steady_clock::now();
 		//! compute the quadratic cost around the whole trajectory
 		this->backend_->computeQuadraticCostsAroundTrajectory(0, K-1);
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[iLQR]: Cost computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[iLQR]: Cost computation took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
 
 		end = std::chrono::steady_clock::now();
 		diff = end - startEntire;
-#ifdef DEBUG_PRINT
-		std::cout << "[iLQR]: Forward pass took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[iLQR]: Forward pass took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
+		if(debugPrint)
+			std::cout<<"[iLQR]: #2 Solve LQOC Problem"<<std::endl;
 
-#ifdef DEBUG_PRINT
-		std::cout<<"[iLQR]: #2 Solve LQOC Problem"<<std::endl;
-#endif
 		start = std::chrono::steady_clock::now();
 		this->backend_->solveFullLQProblem();
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[iLQR]: Solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[iLQR]: Solving LQOC problem took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
 		// update solutions
 		this->backend_->getFeedback();
@@ -164,26 +162,21 @@ public:
 		this->backend_->getStateUpdates();
 
 		// line-search
-#ifdef DEBUG_PRINT
-		std::cout<<"[iLQR]: #3 LineSearch"<<std::endl;
-#endif
+		if(debugPrint)
+			std::cout<<"[iLQR]: #3 LineSearch"<<std::endl;
 
 		start = std::chrono::steady_clock::now();
 		bool foundBetter = this->backend_->lineSearchSingleShooting();
 		end = std::chrono::steady_clock::now();
 		diff = end - start;
-#ifdef DEBUG_PRINT
-		std::cout << "[iLQR]: Line search took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[iLQR]: Line search took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
 		diff = end - startEntire;
-#ifdef DEBUG_PRINT
-		std::cout << "[iLQR]: finishIteration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-#endif
+		if(debugPrint)
+			std::cout << "[iLQR]: finishIteration took "<<std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
-#ifdef DEBUG_PRINT
-		this->backend_->debugPrint();
-#endif
+		this->backend_->printSummary();
 
 #ifdef MATLAB_FULL_LOG
 		this->backend_->logToMatlab(this->backend_->iteration());

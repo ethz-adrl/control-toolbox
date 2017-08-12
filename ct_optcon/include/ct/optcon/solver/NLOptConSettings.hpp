@@ -215,7 +215,9 @@ public:
 		nThreads(4),
 		nThreadsEigen(4),
     	lineSearchSettings(),
-		parallelBackward()
+		parallelBackward(),
+		debugPrint(false),
+		printSummary(true)
     {
     }
 
@@ -240,6 +242,8 @@ public:
     size_t nThreadsEigen; //! number of threads for eigen parallelization (applies both to MP and ST) Note. in order to activate Eigen parallelization, compile with '-fopenmp'
     LineSearchSettings lineSearchSettings; //! the line search settings
 	ParallelBackwardSettings parallelBackward; //! do the backward pass in parallel with building the LQ problems (experimental)
+	bool debugPrint;
+	bool printSummary;
 
 
     //! compute the number of discrete time steps for an arbitrary input time interval
@@ -279,6 +283,8 @@ public:
         std::cout<<"nThreads:\t"<<nThreads<<std::endl;
         std::cout<<"nThreadsEigen:\t"<<nThreadsEigen<<std::endl;
         std::cout<<"loggingPrefix:\t"<<loggingPrefix<<std::endl;
+        std::cout<<"debugPrint:\t"<<debugPrint<<std::endl;
+        std::cout<<"printSummary:\t"<<printSummary<<std::endl;
         std::cout <<std::endl;
 
         lineSearchSettings.print();
@@ -357,6 +363,10 @@ public:
 		try{loggingPrefix = pt.get<std::string>(ns + ".loggingPrefix");
 		} catch (...) {}
 		try{closedLoopShooting = pt.get<bool>(ns + ".closedLoopShooting");
+		} catch (...) {}
+		try{debugPrint = pt.get<bool>(ns + ".debugPrint");
+		} catch (...) {}
+		try{printSummary = pt.get<bool>(ns + ".printSummary");
 		} catch (...) {}
 		try{dt = pt.get<double>(ns +".dt");
 		} catch (...) {}

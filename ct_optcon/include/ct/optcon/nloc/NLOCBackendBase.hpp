@@ -396,12 +396,12 @@ public:
 	//! return the current iteration number
 	size_t& iteration() {return iteration_;}
 
-	//! Print debugging information
+	//! Print iteration summary
 	/*!
-	 *  This function is automatically called if the DEBUG_PRINT compileflag is set. It prints out important information
+	 *  This function is automatically called if the printSummary settings is on. It prints out important information
 	 *  like cost etc. after each iteration.
 	 */
-	void debugPrint();
+	void printSummary();
 
 	//! perform line-search and update controller for single shooting
 	bool lineSearchSingleShooting();
