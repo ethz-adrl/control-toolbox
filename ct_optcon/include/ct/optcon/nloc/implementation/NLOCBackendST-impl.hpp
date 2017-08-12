@@ -75,9 +75,8 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 
 	while (iterations < this->settings_.lineSearchSettings.maxIterations)
 	{
-#ifdef DEBUG_PRINT_LINESEARCH
-		std::cout<<"[LineSearch]: Iteration: "<< iterations << ", try alpha: "<<alpha<< " out of maximum " << this->settings_.lineSearchSettings.maxIterations << " iterations. "<< std::endl;
-#endif
+		if(this->settings_.lineSearchSettings.debugPrint)
+			std::cout<<"[LineSearch]: Iteration: "<< iterations << ", try alpha: "<<alpha<< " out of maximum " << this->settings_.lineSearchSettings.maxIterations << " iterations. "<< std::endl;
 
 		iterations++;
 
@@ -120,12 +119,12 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		//! catch the case that a rollout might be unstable
 		if(std::isnan(cost) || cost >= this->lowestCost_ ) // todo: alternatively cost >= (this->lowestCost_*(1 - 1e-3*alpha)), study this
 		{
-#ifdef DEBUG_PRINT_LINESEARCH
-			std::cout<<"[LineSearch]: No better cost/merit found at alpha "<< alpha << ":" << std::endl;
-			std::cout<<"[LineSearch]: Cost:\t"<<intermediateCost + finalCost<<std::endl;
-			std::cout<<"[LineSearch]: Defect:\t"<<defectNorm<<std::endl;
-			std::cout<<"[LineSearch]: Merit:\t"<<cost<<std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
+			if(this->settings_.lineSearchSettings.debugPrint){
+				std::cout<<"[LineSearch]: No better cost/merit found at alpha "<< alpha << ":" << std::endl;
+				std::cout<<"[LineSearch]: Cost:\t"<<intermediateCost + finalCost<<std::endl;
+				std::cout<<"[LineSearch]: Defect:\t"<<defectNorm<<std::endl;
+				std::cout<<"[LineSearch]: Merit:\t"<<cost<<std::endl;
+			}
 
 			//! compute new alpha
 			alpha = alpha * this->settings_.lineSearchSettings.n_alpha;
@@ -134,10 +133,10 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		{
 			//! cost < this->lowestCost_ , better merit/cost found!
 
-#ifdef DEBUG_PRINT_LINESEARCH
-			std::cout<<"Lower cost/merit found at alpha: "<< alpha << ":" << std::endl;
-			std::cout<<"merit: " << cost << "cost "<<intermediateCost + finalCost<<", defect " << defectNorm << " at alpha: "<< alpha << std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
+			if(this->settings_.lineSearchSettings.debugPrint){
+				std::cout<<"Lower cost/merit found at alpha: "<< alpha << ":" << std::endl;
+				std::cout<<"merit: " << cost << "cost "<<intermediateCost + finalCost<<", defect " << defectNorm << " at alpha: "<< alpha << std::endl;
+			}
 
 
 #if defined (MATLAB_FULL_LOG) || defined (DEBUG_PRINT)

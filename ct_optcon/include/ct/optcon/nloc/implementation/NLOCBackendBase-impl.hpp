@@ -712,16 +712,16 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 	else
 	{
 
-#ifdef DEBUG_PRINT_LINESEARCH
-		std::cout<<"[LineSearch]: Starting line search."<<std::endl;
-		std::cout<<"[LineSearch]: Cost last rollout: "<<lowestCost_<<std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
+		if(settings_.lineSearchSettings.debugPrint){
+			std::cout<<"[LineSearch]: Starting line search."<<std::endl;
+			std::cout<<"[LineSearch]: Cost last rollout: "<<lowestCost_<<std::endl;
+		}
 
 		alphaBest_ = performLineSearch();
 
-#ifdef DEBUG_PRINT_LINESEARCH
-		std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest_<<" . Will use this control."<<std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
+		if(settings_.lineSearchSettings.debugPrint){
+			std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest_<<" . Will use this control."<<std::endl;
+		}
 
 		if(settings_.debugPrint){
 			if (alphaBest_ == 0.0)
@@ -827,20 +827,20 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 		lowestCost_ = intermediateCostBest_ + finalCostBest_ + d_norm_ * settings_.meritFunctionRho;
 		lowestCostPrevious = lowestCost_;
 
-#ifdef DEBUG_PRINT_LINESEARCH
-		std::cout<<"[LineSearch]: Starting line search."<<std::endl;
-		std::cout<<"[LineSearch]: Cost of last rollout:\t"<<intermediateCostBest_ + finalCostBest_<<std::endl;
-		std::cout<<"[LineSearch]: Defect norm last rollout:\t"<<d_norm_<<std::endl;
-		std::cout<<"[LineSearch]: Merit of last rollout:\t"<<lowestCost_<<std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
+		if(settings_.lineSearchSettings.debugPrint){
+			std::cout<<"[LineSearch]: Starting line search."<<std::endl;
+			std::cout<<"[LineSearch]: Cost of last rollout:\t"<<intermediateCostBest_ + finalCostBest_<<std::endl;
+			std::cout<<"[LineSearch]: Defect norm last rollout:\t"<<d_norm_<<std::endl;
+			std::cout<<"[LineSearch]: Merit of last rollout:\t"<<lowestCost_<<std::endl;
+		}
 
 		alphaBest_ = performLineSearch();
 
-#ifdef DEBUG_PRINT_LINESEARCH
-		std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest_<<", with trade-off "<<std::endl;
-		std::cout<<"[LineSearch]: Cost:\t"<<intermediateCostBest_ + finalCostBest_<<std::endl;
-		std::cout<<"[LineSearch]: Defect:\t"<<d_norm_<<std::endl;
-#endif //DEBUG_PRINT_LINESEARCH
+		if(settings_.lineSearchSettings.debugPrint){
+			std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest_<<", with trade-off "<<std::endl;
+			std::cout<<"[LineSearch]: Cost:\t"<<intermediateCostBest_ + finalCostBest_<<std::endl;
+			std::cout<<"[LineSearch]: Defect:\t"<<d_norm_<<std::endl;
+		}
 
 		if (alphaBest_ == 0.0)
 		{

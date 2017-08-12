@@ -46,15 +46,15 @@ namespace optcon {
 struct LineSearchSettings {
 
 	//! default constructor for the NLOptCon line-search settings
-	LineSearchSettings ()
-    {
-        active = true;
-        adaptive = false;
-        maxIterations = 10;
-        alpha_0 = 1.0;
-        alpha_max = 1.0;
-        n_alpha = 0.5;
-    }
+	LineSearchSettings ():
+        active(true),
+        adaptive(false),
+		debugPrint(false),
+        maxIterations(10),
+        alpha_0(1.0),
+        alpha_max(1.0),
+        n_alpha(0.5)
+	{}
 
 	//! check if the currently set line-search parameters are meaningful
     bool parametersOk() const {
@@ -67,6 +67,7 @@ struct LineSearchSettings {
     double alpha_0;    /*!< Initial step size for line search. Use 1 for step size as suggested by NLOptCon */
     double alpha_max;    /*!< Maximum step size for line search. This is the limit when adapting alpha_0. */
     double n_alpha; /*!< Factor by which the line search step size alpha gets multiplied with after each iteration. Usually 0.5 is a good value. */
+    bool debugPrint; /*!< Print out debug information during line-search*/
 
 
     //! print the current line search settings to console
@@ -74,12 +75,15 @@ struct LineSearchSettings {
     {
         std::cout<<"Line Search Settings: "<<std::endl;
         std::cout<<"=====================" <<std::endl;
-        std::cout<<"active: "<<active<<std::endl;
-        std::cout<<"adaptive: "<<adaptive<<std::endl;
-        std::cout<<"maxIterations: "<<maxIterations<<std::endl;
-        std::cout<<"alpha_0: "<<alpha_0<<std::endl;
-        std::cout<<"alpha_max: "<<alpha_max<<std::endl;
-        std::cout<<"n_alpha: "<<n_alpha<<std::endl<<std::endl;
+        std::cout<<"active:\t"<<active<<std::endl;
+        std::cout<<"adaptive:\t"<<adaptive<<std::endl;
+        std::cout<<"maxIter:\t"<<maxIterations<<std::endl;
+        std::cout<<"alpha_0:\t"<<alpha_0<<std::endl;
+        std::cout<<"alpha_max:\t"<<alpha_max<<std::endl;
+        std::cout<<"n_alpha:\t"<<n_alpha<<std::endl;
+        std::cout<<"debugPrint:\t"<<debugPrint<<std::endl;
+        std::cout<<"              =======" <<std::endl;
+        std::cout<<std::endl;
     }
 
     //! load line search settings from file
@@ -95,6 +99,7 @@ struct LineSearchSettings {
 		maxIterations = pt.get<size_t>(ns +".maxIterations");
 		alpha_0 = pt.get<double>(ns +".alpha_0");
 		n_alpha = pt.get<double>(ns +".n_alpha");
+		debugPrint = pt.get<bool>(ns +".debugPrint");
 		alpha_max = alpha_0;
 		adaptive = false;
 
