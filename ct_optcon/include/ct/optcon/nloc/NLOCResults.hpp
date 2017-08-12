@@ -28,6 +28,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCON_INCLUDE_CT_OPTCON_NLOC_NLOCRESULTS_HPP_
 #define CT_OPTCON_INCLUDE_CT_OPTCON_NLOC_NLOCRESULTS_HPP_
 
+
+#ifdef MATLAB
+#include <ct/optcon/matlab.hpp>
+#endif
+
 /*!
  * to do log every xth iter
  *
@@ -37,7 +42,7 @@ template <typename SCALAR = double>
 struct SummaryAllIterations
 {
 	//! log of the iterations
-	std::vector<size_t> iterations_;
+	std::vector<size_t> iterations;
 
 	//! different overall defect norms
 	std::vector<SCALAR> defect_l1_norms;
@@ -59,24 +64,53 @@ struct SummaryAllIterations
 	//! smallest eigenvalues
 	std::vector<SCALAR> smallestEigenvalues;
 
-	template <int numPrecision = 12>
+	//! print summary of the last iteration with desired numeric precision
+	template <int NUM_PRECISION = 12>
 	void printSummaryLastIteration()
 	{
-		std::cout<<"NLOC Summary of iteration "  << iterations_.back() << std::endl;
+		std::cout<<"NLOC Summary of iteration "  << iterations.back() << std::endl;
 		std::cout<<"=============================="<< std::endl;
 
-		std::cout<<std::setprecision(numPrecision) << "interm. cost:\t" << intermediateCosts.back() << std::endl;
-		std::cout<<std::setprecision(numPrecision) << "final cost:\t" << finalCosts.back() << std::endl;
-		std::cout<<std::setprecision(numPrecision) << "total cost:\t" << totalCosts.back() << std::endl;
-		std::cout<<std::setprecision(numPrecision) << "total merit:\t" << merits.back() << std::endl;
-		std::cout<<std::setprecision(numPrecision) << "tot. defect L1:\t" << defect_l1_norms.back() << std::endl;
-		std::cout<<std::setprecision(numPrecision) << "tot. defect L2:\t" << defect_l2_norms.back() << std::endl;
-		std::cout<<std::setprecision(numPrecision) << "total lx norm:\t" << lx_norms.back() << std::endl;
-		std::cout<<std::setprecision(numPrecision) << "total lu norm:\t" << lu_norms.back() << std::endl;
-		std::cout<<std::setprecision(numPrecision) << "step-size:\t" << stepSizes.back() << std::endl;
+		std::cout<<std::setprecision(NUM_PRECISION) << "interm. cost:\t" << intermediateCosts.back() << std::endl;
+		std::cout<<std::setprecision(NUM_PRECISION) << "final cost:\t" << finalCosts.back() << std::endl;
+		std::cout<<std::setprecision(NUM_PRECISION) << "total cost:\t" << totalCosts.back() << std::endl;
+		std::cout<<std::setprecision(NUM_PRECISION) << "total merit:\t" << merits.back() << std::endl;
+		std::cout<<std::setprecision(NUM_PRECISION) << "tot. defect L1:\t" << defect_l1_norms.back() << std::endl;
+		std::cout<<std::setprecision(NUM_PRECISION) << "tot. defect L2:\t" << defect_l2_norms.back() << std::endl;
+		std::cout<<std::setprecision(NUM_PRECISION) << "total lx norm:\t" << lx_norms.back() << std::endl;
+		std::cout<<std::setprecision(NUM_PRECISION) << "total lu norm:\t" << lu_norms.back() << std::endl;
+		std::cout<<std::setprecision(NUM_PRECISION) << "step-size:\t" << stepSizes.back() << std::endl;
 		std::cout<<"                   ===========" << std::endl;
 		std::cout<<std::endl;
 	}
+
+
+	void logToMatlab(const std::string& fileName)
+	{
+#ifdef MATLAB
+		std::cout << "Logging NLOC summary to Matlab" << std::endl;
+		matFile_.open(fileName+".mat");
+
+		matFile_.put("iterations", iterations);
+		matFile_.put("defect_l1_norms", defect_l1_norms);
+		matFile_.put("defect_l2_norms", defect_l2_norms);
+		matFile_.put("lx_norms", lx_norms);
+		matFile_.put("lu_norms", lu_norms);
+		matFile_.put("intermediateCosts", intermediateCosts);
+		matFile_.put("finalCosts", finalCosts);
+		matFile_.put("totalCosts", totalCosts);
+		matFile_.put("merits", merits);
+		matFile_.put("stepSizes", stepSizes);
+		matFile_.put("smallestEigenvalues", smallestEigenvalues);
+		matFile_.close();
+#endif
+	}
+
+	//! if building with MATLAB support, include matfile
+#ifdef MATLAB
+	matlab::MatFile matFile_;
+#endif //MATLAB
+
 
 };
 

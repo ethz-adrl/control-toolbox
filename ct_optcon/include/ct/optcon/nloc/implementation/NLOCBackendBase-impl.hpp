@@ -539,7 +539,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::printSummary
 		smallestEigenvalue = lqocSolver_->getSmallestEigenvalue();
 	}
 
-	summaryAllIterations_.iterations_.push_back(iteration_);
+	summaryAllIterations_.iterations.push_back(iteration_);
 	summaryAllIterations_.defect_l1_norms.push_back(d_norm_l1);
 	summaryAllIterations_.defect_l2_norms.push_back(d_norm_l2);
 	summaryAllIterations_.lx_norms.push_back(lx_norm_);
@@ -698,7 +698,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 				lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
 			}
 			else{
-#ifdef MATLAB_FULL_LOG // in case of no debug printing but still logging, need to compute them
+#ifdef MATLAB // in case of no debug printing but still logging, need to compute them
 				//! compute l2 norms of state and control update
 				lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, uff_local);
 				lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
@@ -827,7 +827,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 			lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
 		}
 		else{
-#ifdef MATLAB_FULL_LOG
+#ifdef MATLAB
 			lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, u_ff_);
 			lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
 #endif

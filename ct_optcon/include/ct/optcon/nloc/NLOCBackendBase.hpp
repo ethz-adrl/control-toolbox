@@ -457,6 +457,8 @@ public:
 		x_ += lx_;
 	}
 
+	void logSummaryToMatlab(const std::string& fileName) {summaryAllIterations_.logToMatlab(fileName);}
+
 protected:
 
 	//! integrate the individual shots

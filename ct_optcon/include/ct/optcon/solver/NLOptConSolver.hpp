@@ -267,6 +267,7 @@ public:
 
 	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const { return nlocBackend_->getPureStateConstraintsInstances(); }
 
+	void logSummaryToMatlab(const std::string& fileName){nlocBackend_->logSummaryToMatlab(fileName);}
 
 protected:
 

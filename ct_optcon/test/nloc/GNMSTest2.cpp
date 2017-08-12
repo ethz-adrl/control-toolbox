@@ -30,7 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Bring in gtest
 //#include <gtest/gtest.h>
 
-
+#define MATLAB
 //#define MATLAB_FULL_LOG
 
 #include <ct/optcon/optcon.h>
@@ -235,6 +235,8 @@ void singleCore()
 		std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
 	}
 
+	gnms.logSummaryToMatlab("gnmsSummary");
+
 	std::cout << "============ running solver 2 ==============" << std::endl;
 
 	foundBetter = true;
@@ -252,6 +254,9 @@ void singleCore()
 		std::cout<<"x final iLQG: " << xRollout.back().transpose() << std::endl;
 		std::cout<<"u final iLQG: " << uRollout.back().transpose() << std::endl;
 	}
+
+	ilqr.logSummaryToMatlab("ilqrSummary");
+
 }
 
 }
