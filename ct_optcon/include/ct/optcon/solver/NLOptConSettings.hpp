@@ -282,9 +282,9 @@ public:
         std::cout<<"K_shot:\t"<<K_shot<<std::endl;
         std::cout<<"maxIter:\t"<<max_iterations<<std::endl;
         std::cout<<"min cost improvement:\t"<<min_cost_improvement<<std::endl;
-        std::cout<<"max defect sum:\t"<<maxDefectSum<<std::endl;
-        std::cout<<"merit function rho:\t"<<meritFunctionRho<<std::endl;
-        std::cout<<"fixedHessianCorrection:\t"<<fixedHessianCorrection<<std::endl;
+        std::cout<<"max defect sum:\t" << maxDefectSum <<std::endl;
+        std::cout<<"merit function rho:\t" << meritFunctionRho << std::endl;
+        std::cout<<"fixedHessianCorrection:\t" << fixedHessianCorrection << std::endl;
         std::cout<<"recordSmallestEigenvalue:\t"<<recordSmallestEigenvalue<<std::endl;
         std::cout<<"epsilon:\t"<<epsilon<<std::endl;
         std::cout<<"nThreads:\t"<<nThreads<<std::endl;

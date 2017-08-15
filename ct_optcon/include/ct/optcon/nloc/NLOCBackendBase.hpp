@@ -382,7 +382,7 @@ public:
 
 	//! nominal rollout using default thread and member variables for the results. // todo maybe rename (initial rollout?)
 	bool nominalRollout() {
-		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_, xShot_);
+		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_prev_, xShot_);
 		x_prev_ = x_;
 		u_ff_prev_ = u_ff_;
 		firstRollout_ = false;

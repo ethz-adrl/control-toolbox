@@ -165,8 +165,14 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 		{
 			integrators_[i] = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> >(
 					new ct::core::Integrator<STATE_DIM, SCALAR>(systems_[i], settings_.integrator));
+
+			if(settings_.integrator == ct::core::IntegrationType::EULERCT || settings_.integrator == ct::core::IntegrationType::RK4CT)
+			{
 			sensitivityIntegrators_[i] = std::shared_ptr<ct::core::SimpleSensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR> >(
 					new ct::core::SimpleSensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>(systems_[i], settings_.integrator));
+			}
+			else
+				sensitivityIntegrators_[i] = nullptr;
 		}
 
 		initializeSymplecticIntegrators<V_DIM, P_DIM>(i);
@@ -202,7 +208,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeLinear
 
 		linearSystemDiscretizers_[i].setLinearSystem(linearSystems_[i]);
 
-		sensitivityIntegrators_[i]->setLinearSystem(linearSystems_[i]);
+		if(sensitivityIntegrators_[i])
+			sensitivityIntegrators_[i]->setLinearSystem(linearSystems_[i]);
 	}
 	// technically a linear system change does not require a new rollout. Hence, we do not reset.
 }
@@ -760,10 +767,11 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 			std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest_<<" . Will use this control."<<std::endl;
 		}
 
-		if(settings_.debugPrint){
-			if (alphaBest_ == 0.0)
-			{
-				std::cout<<"WARNING: No better control found. Converged."<<std::endl;
+		if (alphaBest_ == 0.0){
+			if(settings_.debugPrint){
+				{
+					std::cout<<"WARNING: No better control found. Converged."<<std::endl;
+				}
 				return false;
 			}
 		}
