@@ -164,13 +164,14 @@ void testGaussNewtonMethods()
 	nloc_settings.recordSmallestEigenvalue = false;
 	nloc_settings.min_cost_improvement = 1e-6;
 	nloc_settings.fixedHessianCorrection = false;
-	nloc_settings.dt = 0.001;
+	nloc_settings.dt = 0.01;
 	nloc_settings.K_sim = 1;
 	nloc_settings.K_shot = 1;
-	nloc_settings.integrator = ct::core::IntegrationType::EULER;
+	nloc_settings.integrator = ct::core::IntegrationType::EULERCT;
 	nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 	nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
 	nloc_settings.printSummary = true;
+	nloc_settings.useSensitivityIntegrator = true;
 
 	// loop through all solver classes
 	for(int algClass = 0; algClass < NLOptConSettings::NLOCP_ALGORITHM::NUM_TYPES; algClass++)
@@ -187,6 +188,7 @@ void testGaussNewtonMethods()
 			{
 				nloc_settings.lineSearchSettings.active = (bool)toggleLS;
 
+				//! toggle between single and multi-threading
 				for(size_t nThreads = 1; nThreads<5; nThreads=nThreads+3)
 				{
 					nloc_settings.nThreads = nThreads;
@@ -199,7 +201,7 @@ void testGaussNewtonMethods()
 					shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = createCostFunction(x_final);
 
 					// times
-					ct::core::Time tf = 3.0;
+					ct::core::Time tf = 1.0;
 					size_t nSteps = std::round(tf / nloc_settings.dt);
 
 					// provide initial guess
@@ -224,13 +226,14 @@ void testGaussNewtonMethods()
 					solver.configure(nloc_settings);
 					solver.setInitialGuess(initController);
 					solver.runIteration(); // must be converged after 1 iteration
+					solver.runIteration(); // must be converged after 1 iteration
 
 					// test trajectories
 					StateTrajectory<state_dim> xRollout = solver.getStateTrajectory();
 					ControlTrajectory<control_dim> uRollout = solver.getControlTrajectory();
 
-					std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
-					std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
+					std::cout<<"x final: " << xRollout.back().transpose() << std::endl;
+					std::cout<<"u final: " << uRollout.back().transpose() << std::endl;
 
 					// end test solver ===========================================================================
 

@@ -4,12 +4,13 @@ initType    0 ; 0 = zero, 1 = linear, 2 = integrated with zero control action, 3
 
 gnms
 {
-	integrator Euler
+	integrator RK4CT
+	useSensitivityIntegrator true
 	discretization Matrix_exponential
 	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
-    dt 0.001
-    dt_sim 0.001
-    dt_shot 0.5
+    dt 0.1
+    K_shot 10
+    K_sim 1
     epsilon 1e-6
 	max_iterations 10
     fixedHessianCorrection false
@@ -40,12 +41,13 @@ gnms
 
 ilqr
 {
-	integrator Euler
+	integrator EulerCT
+	useSensitivityIntegrator false
 	discretization Matrix_exponential
 	closedLoopShooting 0 					; (1 = closed loop shooting, 0 = open-loop shooting)
-    dt 0.001
-    dt_sim 0.001
-    dt_shot 0.5
+    dt 0.1
+    K_shot 10
+    K_sim 1
     epsilon 1e-6
 	max_iterations 10
     fixedHessianCorrection false

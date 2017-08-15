@@ -31,5 +31,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "integration/IntegratorSymplectic.h"
 #include "integration/EventHandlers/KillIntegrationEventHandler.h"
 #include "integration/EventHandlers/MaxStepsEventHandler.h"
+#include "integration/SimpleSensitivityIntegratorCT.h"
 
 #endif /* INCLUDE_CT_CORE_INTEGRATION_ */

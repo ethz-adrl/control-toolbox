@@ -115,6 +115,10 @@ public:
 		u = u_;
 	}
 
+    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR time) override
+    {
+        return ControlMatrix<CONTROL_DIM, SCALAR>::Identity();
+    }
 
 private:
 	ControlVector<CONTROL_DIM, SCALAR> u_;

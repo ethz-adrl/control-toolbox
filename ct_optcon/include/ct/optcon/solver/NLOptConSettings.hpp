@@ -222,7 +222,8 @@ public:
     	lineSearchSettings(),
 		parallelBackward(),
 		debugPrint(false),
-		printSummary(true)
+		printSummary(true),
+		useSensitivityIntegrator(false)
     {
     }
 
@@ -249,6 +250,7 @@ public:
 	ParallelBackwardSettings parallelBackward; //! do the backward pass in parallel with building the LQ problems (experimental)
 	bool debugPrint;
 	bool printSummary;
+	bool useSensitivityIntegrator;
 
 
     //! compute the number of discrete time steps for an arbitrary input time interval
@@ -290,6 +292,7 @@ public:
         std::cout<<"loggingPrefix:\t"<<loggingPrefix<<std::endl;
         std::cout<<"debugPrint:\t"<<debugPrint<<std::endl;
         std::cout<<"printSummary:\t"<<printSummary<<std::endl;
+        std::cout<<"useSensitivityIntegrator:\t"<<useSensitivityIntegrator<<std::endl;
         std::cout <<std::endl;
 
         lineSearchSettings.print();
@@ -372,6 +375,8 @@ public:
 		try{debugPrint = pt.get<bool>(ns + ".debugPrint");
 		} catch (...) {}
 		try{printSummary = pt.get<bool>(ns + ".printSummary");
+		} catch (...) {}
+		try{useSensitivityIntegrator = pt.get<bool>(ns + ".useSensitivityIntegrator");
 		} catch (...) {}
 		try{dt = pt.get<double>(ns +".dt");
 		} catch (...) {}

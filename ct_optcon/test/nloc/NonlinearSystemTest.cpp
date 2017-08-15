@@ -30,7 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Bring in gtest
 //#include <gtest/gtest.h>
 
-#define MATLAB
+//#define MATLAB
 //#define MATLAB_FULL_LOG
 
 #include <ct/optcon/optcon.h>

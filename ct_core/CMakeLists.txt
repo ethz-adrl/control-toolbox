@@ -89,6 +89,9 @@ target_link_libraries(SecondOrderSystemTest ${catkin_LIBRARIES})
 catkin_add_gtest(IntegrationTest test/IntegrationTest.cpp)
 target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core)
 
+add_executable(SensitivityIntegratorTest test/SensitivityIntegratorTest.cpp)
+target_link_libraries(SensitivityIntegratorTest ${catkin_LIBRARIES} ct_core)
+
 catkin_add_gtest(IntegratorComparison test/IntegratorComparison.cpp)
 target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
 

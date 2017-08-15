@@ -147,6 +147,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 
 	systems_.resize(settings_.nThreads+1);
 	integrators_.resize(settings_.nThreads+1);
+	sensitivityIntegrators_.resize(settings_.nThreads+1);
 	integratorsEulerSymplectic_.resize(settings_.nThreads+1);
 	integratorsRkSymplectic_.resize(settings_.nThreads+1);
 
@@ -162,7 +163,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 		// if symplectic integrator then don't create normal ones
 		if (settings_.integrator != ct::core::IntegrationType::EULER_SYM  && settings_.integrator != ct::core::IntegrationType::RK_SYM)
 		{
-			integrators_[i] = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> >(new ct::core::Integrator<STATE_DIM, SCALAR>(systems_[i], settings_.integrator));
+			integrators_[i] = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> >(
+					new ct::core::Integrator<STATE_DIM, SCALAR>(systems_[i], settings_.integrator));
+			sensitivityIntegrators_[i] = std::shared_ptr<ct::core::SimpleSensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR> >(
+					new ct::core::SimpleSensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>(systems_[i], settings_.integrator));
 		}
 
 		initializeSymplecticIntegrators<V_DIM, P_DIM>(i);
@@ -197,6 +201,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeLinear
 		linearSystems_[i] = typename OptConProblem_t::LinearPtr_t(lin->clone());
 
 		linearSystemDiscretizers_[i].setLinearSystem(linearSystems_[i]);
+
+		sensitivityIntegrators_[i]->setLinearSystem(linearSystems_[i]);
 	}
 	// technically a linear system change does not require a new rollout. Hence, we do not reset.
 }
@@ -335,10 +341,31 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 
 		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
 		{
-			integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], k*dt, 1, dt_sim);
-		} else
+			integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], i*dt, 1, dt_sim);
+		}
+		else if(settings_.useSensitivityIntegrator) //! !!!!!!!!!!!!!!!!!  todo that will not work if using line-search and single shooting in MP case
 		{
-			integrators_[threadId]->integrate_n_steps(xShot[i], k*dt, subSteps, dt_sim);
+			sensitivityIntegrators_[threadId]->integrate_n_steps(xShot[i], i*dt, subSteps, dt_sim);
+
+			// evaluate derivatives here: TODO Fixme that is very hacky
+			LQOCProblem_t& p = *lqocProblem_;
+
+			assert(lqocProblem_ != nullptr);
+
+			assert(&lqocProblem_->A_[i] != nullptr);
+			assert(&lqocProblem_->B_[i] != nullptr);
+
+			assert(lqocProblem_->A_.size() > k);
+			assert(lqocProblem_->B_.size() > k);
+
+			sensitivityIntegrators_[threadId]->linearize();
+			sensitivityIntegrators_[threadId]->integrateSensitivityDX0(p.A_[i], i*dt, subSteps, dt_sim);
+			sensitivityIntegrators_[threadId]->integrateSensitivityDU0(p.B_[i], i*dt, subSteps, dt_sim);
+			sensitivityIntegrators_[threadId]->clearAll();
+		}
+		else
+		{
+			integrators_[threadId]->integrate_n_steps(xShot[i], i*dt, subSteps, dt_sim);
 		}
 
 
@@ -366,7 +393,6 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 				return false;
 			}
 		}
-
 	}
 
 	return true;
@@ -459,6 +485,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeCosts
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamics(size_t threadId, size_t k)
 {
+	if(settings_.useSensitivityIntegrator)	// only if not using the sensitivity integrator (todo: hacky!)
+		return;
+
 	LQOCProblem_t& p = *lqocProblem_;
 
 	/*!

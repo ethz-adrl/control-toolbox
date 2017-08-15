@@ -116,6 +116,7 @@ public:
 			const Settings_t& settings) :
 
 		    integrators_(settings.nThreads+1),
+			sensitivityIntegrators_(settings.nThreads+1),
 			integratorsEulerSymplectic_(settings.nThreads+1),
 			integratorsRkSymplectic_(settings.nThreads+1),
 
@@ -607,6 +608,9 @@ protected:
 
 	typedef std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> > IntegratorPtr;
     std::vector<IntegratorPtr, Eigen::aligned_allocator<IntegratorPtr> > integrators_; //! Runge-Kutta-4 Integrators
+
+	typedef std::shared_ptr<ct::core::SimpleSensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR> > SensitivityIntegratorPtr;
+	std::vector<SensitivityIntegratorPtr, Eigen::aligned_allocator<SensitivityIntegratorPtr > > sensitivityIntegrators_; //! the ct sensitivity integrators
 
 	typedef std::shared_ptr<ct::core::IntegratorSymplecticEuler<P_DIM, V_DIM, CONTROL_DIM, SCALAR> > IntegratorSymplecticEulerPtr;
 	std::vector<IntegratorSymplecticEulerPtr, Eigen::aligned_allocator<IntegratorSymplecticEulerPtr> > integratorsEulerSymplectic_;
