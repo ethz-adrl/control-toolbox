@@ -296,7 +296,7 @@ TEST(MPCTestB, NLOC_MPC_DoublePrecision)
 			nloc_settings.lineSearchSettings.active = false;
 			nloc_settings.nThreads = 1;
 			nloc_settings.nThreadsEigen = 1;
-			nloc_settings.printSummary = true;
+			nloc_settings.printSummary = false;
 			nloc_settings.debugPrint = false;
 			nloc_settings.timeVaryingDiscretization = false;
 
