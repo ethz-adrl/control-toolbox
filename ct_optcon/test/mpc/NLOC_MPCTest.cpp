@@ -284,15 +284,15 @@ TEST(MPCTestB, NLOC_MPC_DoublePrecision)
 			// FIRST ILQR INSTANCE FOR CALCULATING THE 'PERFECT' INITIAL GUESS
 
 			NLOptConSettings nloc_settings;
-			nloc_settings.dt = 0.004;
-			nloc_settings.K_sim = 4;
+			nloc_settings.dt = 0.001;
+			nloc_settings.K_sim = 1;
 			nloc_settings.K_shot = 1;
 			nloc_settings.max_iterations = 10;
 			nloc_settings.min_cost_improvement = 1e-10;	// strict bounds to reach a solution very close to optimality
 			nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 			nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
 			nloc_settings.closedLoopShooting = true;
-			nloc_settings.integrator = ct::core::IntegrationType::EULER;
+			nloc_settings.integrator = ct::core::IntegrationType::RK4;
 			nloc_settings.lineSearchSettings.active = false;
 			nloc_settings.nThreads = 1;
 			nloc_settings.nThreadsEigen = 1;
@@ -419,20 +419,6 @@ TEST(MPCTestB, NLOC_MPC_DoublePrecision)
 			ct::core::Time mpcTimeOffset = timeStamps.front();
 			std::cout << "mpc trajectories time offset due to init solve: " << mpcTimeOffset << std::endl;
 
-			for(size_t i = 0; i< stateTrajContainer.size(); i++)
-			{
-				ct::core::Time relTime = timeStamps[i] - mpcTimeOffset;
-				ct::core::StateVector<state_dim> mpcTrajInitState = stateTrajContainer[i].front();
-				ct::core::StateVector<state_dim> refState = stateTrajContainer[0].eval(relTime);
-
-				//			std::cout << "x_ref: " << refState.transpose() << std::endl;
-				//			std::cout << "x_mpc: " << mpcTrajInitState.transpose() << std::endl;
-
-				ASSERT_LT(std::fabs((refState-mpcTrajInitState)(0)), 1.0);	// max pos deviation
-				ASSERT_LT(std::fabs((refState-mpcTrajInitState)(1)), 1.0);	// max vel deviation
-			}
-
-
 
 			//		 Reasons why this unit test might fail: too high delays.
 			//		 - not building in Release Mode ?
@@ -461,6 +447,19 @@ TEST(MPCTestB, NLOC_MPC_DoublePrecision)
 			matFile.close();
 #endif
 #endif
+
+			for(size_t i = 0; i< stateTrajContainer.size(); i++)
+			{
+				ct::core::Time relTime = timeStamps[i] - mpcTimeOffset;
+				ct::core::StateVector<state_dim> mpcTrajInitState = stateTrajContainer[i].front();
+				ct::core::StateVector<state_dim> refState = stateTrajContainer[0].eval(relTime);
+
+				//			std::cout << "x_ref: " << refState.transpose() << std::endl;
+				//			std::cout << "x_mpc: " << mpcTrajInitState.transpose() << std::endl;
+
+				ASSERT_LT(std::fabs((refState-mpcTrajInitState)(0)), 1.0);	// max pos deviation
+				ASSERT_LT(std::fabs((refState-mpcTrajInitState)(1)), 1.0);	// max vel deviation
+			}
 
 
 		} catch (std::exception& e)
