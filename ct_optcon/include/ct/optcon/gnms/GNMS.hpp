@@ -307,13 +307,10 @@ public:
 		auto startFinish = std::chrono::steady_clock::now();
 
 
-		// if first iteration, compute shots and rollout and cost!
-		if(this->backend_->iteration() == 0)
-		{
-			this->backend_->rolloutShots(0, K_shot-1);
-			this->backend_->updateCosts();   		//! todo: replace by a simple sum after computeQuadraticCostsAround....
-			this->backend_->computeDefectsNorm();	//! todo: we might not need this in MPC
-		}
+		this->backend_->rolloutShots(0, K_shot-1);
+		this->backend_->updateCosts();   		//! todo: replace by a simple sum after computeQuadraticCostsAround....
+		this->backend_->computeDefectsNorm();	//! todo: we might not need this in MPC
+
 
 #ifdef MATLAB_FULL_LOG
 		if (this->backend_->iteration() == 0)

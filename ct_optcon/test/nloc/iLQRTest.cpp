@@ -202,8 +202,11 @@ TEST(ILQRTestA, InstancesComparison)
 		ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-		ilqr_settings.closedLoopShooting = false;
-		ilqr_settings.integrator = ct::core::IntegrationType::RK4;
+		ilqr_settings.closedLoopShooting = true;
+		ilqr_settings.integrator = ct::core::IntegrationType::EULER;
+		ilqr_settings.printSummary = false;
+//		ilqr_settings.lineSearchSettings.debugPrint = true;
+
 
 		// copy settings for MP case, but change number of threads
 		NLOptConSettings ilqr_settings_mp = ilqr_settings;
@@ -263,11 +266,13 @@ TEST(ILQRTestA, InstancesComparison)
 		{
 			if (i==0)
 			{
+				std::cout << "Turning Line-Search off" << std::endl;
 				ilqr_settings.lineSearchSettings.active = false;
 				ilqr_settings_mp.lineSearchSettings.active = false;
 			}
 			else
 			{
+				std::cout << "Turning Line-Search on" << std::endl;
 				ilqr_settings.lineSearchSettings.active = true;
 				ilqr_settings_mp.lineSearchSettings.active = true;
 			}
@@ -353,8 +358,10 @@ TEST(ILQRTestB, SingleCoreTest)
 		ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 		ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-		ilqr_settings.closedLoopShooting = false;
+		ilqr_settings.closedLoopShooting = true;
 		ilqr_settings.integrator = ct::core::IntegrationType::RK4;
+		ilqr_settings.printSummary = false;
+
 
 		// copy settings for MP case, but change number of threads
 		NLOptConSettings ilqr_settings_mp = ilqr_settings;
@@ -566,8 +573,10 @@ TEST(ILQRTestC, PolicyComparison)
 		ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
 		ilqr_settings.integrator = ct::core::IntegrationType::EULER;
-		ilqr_settings.closedLoopShooting = false;
+		ilqr_settings.closedLoopShooting = true;
 		ilqr_settings.fixedHessianCorrection = false;
+		ilqr_settings.printSummary = false;
+
 
 		NLOptConSettings ilqr_settings_mp = ilqr_settings;
 		ilqr_settings_mp.nThreads = 4;
