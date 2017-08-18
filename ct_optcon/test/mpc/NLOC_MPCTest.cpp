@@ -46,7 +46,7 @@ using std::shared_ptr;
 const size_t state_dim = 2; // position, velocity
 const size_t control_dim = 1; // force
 
-const double kStiffness = 10;
+const double kStiffness = 0.1;
 
 namespace tpl {
 
@@ -54,7 +54,7 @@ template <typename SCALAR = double>
 class Dynamics : public ControlledSystem<state_dim, control_dim, SCALAR>
 {
 public:
-	Dynamics() : ControlledSystem<state_dim, control_dim, SCALAR>(SYSTEM_TYPE::SECOND_ORDER) {}
+	Dynamics() : ControlledSystem<state_dim, control_dim, SCALAR>(SYSTEM_TYPE::GENERAL) {}
 
 	void computeControlledDynamics(
 			const StateVector<state_dim, SCALAR>& state,
@@ -108,10 +108,10 @@ template <typename SCALAR = double>
 std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim, SCALAR> > createCostFunction(Eigen::Matrix<SCALAR, 2, 1>& x_final)
 {
 	Eigen::Matrix<SCALAR, 2, 2> Q;
-	Q << 0, 0, 0, 0.1;
+	Q << 0, 0, 0, 1;
 
 	Eigen::Matrix<SCALAR, 1, 1> R;
-	R << 0.001;
+	R << 100;
 
 	Eigen::Matrix<SCALAR, 2, 1> x_nominal; x_nominal.setZero();
 	Eigen::Matrix<SCALAR, 1, 1> u_nominal; u_nominal.setZero();
@@ -164,7 +164,7 @@ TEST(MPCTestA, PreIntegratorTest)
 		nloc_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
 		nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
 		nloc_settings.closedLoopShooting = true;
-		nloc_settings.integrator = ct::core::IntegrationType::RK4;
+		nloc_settings.integrator = ct::core::IntegrationType::EULER;
 
 		// number of steps
 		size_t K = std::round(timeHorizon / nloc_settings.dt);
@@ -284,15 +284,22 @@ TEST(MPCTestB, NLOC_MPC_DoublePrecision)
 			// FIRST ILQR INSTANCE FOR CALCULATING THE 'PERFECT' INITIAL GUESS
 
 			NLOptConSettings nloc_settings;
-			nloc_settings.dt = 0.001;
-			nloc_settings.max_iterations = 100000;
-			nloc_settings.min_cost_improvement = 0.0;	// strict bounds to reach a solution very close to optimality
+			nloc_settings.dt = 0.004;
+			nloc_settings.K_sim = 4;
+			nloc_settings.K_shot = 1;
+			nloc_settings.max_iterations = 10;
+			nloc_settings.min_cost_improvement = 1e-10;	// strict bounds to reach a solution very close to optimality
 			nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 			nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-			nloc_settings.closedLoopShooting = false;
+			nloc_settings.closedLoopShooting = true;
 			nloc_settings.integrator = ct::core::IntegrationType::EULER;
-			nloc_settings.lineSearchSettings.active = true;
-			nloc_settings.nThreads = 2;
+			nloc_settings.lineSearchSettings.active = false;
+			nloc_settings.nThreads = 1;
+			nloc_settings.nThreadsEigen = 1;
+			nloc_settings.printSummary = true;
+			nloc_settings.debugPrint = false;
+			nloc_settings.timeVaryingDiscretization = false;
+
 
 			if(solverType==0)
 				nloc_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;

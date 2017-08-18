@@ -376,11 +376,11 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 	if(settings_.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
 		K_stop = K_local; //! @todo this is not elegant - need to improve.
 
-	for (int i = k; i<K_stop; i++)
+	for (int i = (int)k; i<K_stop; i++)
 	{
 		if (terminationFlag && *terminationFlag) return false;
 
-		if(i>k)
+		if(i> (int)k)
 		{
 			xShot[i] = xShot[i-1];  //! initialize integration variable
 		}
@@ -389,7 +389,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 			u_local[i] += L_[i] * (xShot[i] - x_ref_lqr[i]);
 
 		//! @todo: here we override the state trajectory directly (as passed by reference). This is bad.
-		if(i>k)
+		if(i>(int)k)
 		{
 			x_local[i] = xShot[i-1]; //!"overwrite" x_local
 		}
@@ -735,8 +735,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 	scalar_t lowestCostPrevious = lowestCost_;
 
 	//! backup controller that led to current trajectory
-	u_ff_prev_ = u_ff_;
-	x_prev_ = x_;
+	u_ff_prev_ = u_ff_; // todo note this might be redundant
+	x_prev_ = x_;		// todo note this might be redundant
 
 	if (!settings_.lineSearchSettings.active)
 	{
@@ -789,8 +789,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 	}
 	else
 	{
-
-		if(settings_.lineSearchSettings.debugPrint){
+		if(settings_.lineSearchSettings.debugPrint)
+		{
 			std::cout<<"[LineSearch]: Starting line search."<<std::endl;
 			std::cout<<"[LineSearch]: Cost last rollout: "<<lowestCost_<<std::endl;
 		}
@@ -928,15 +928,17 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 
 		if (alphaBest_ == 0.0)
 		{
-			if(settings_.debugPrint){
+			if(settings_.debugPrint || settings_.printSummary){
 				std::cout<<"WARNING: No better control found during line search. Converged."<<std::endl;
 			}
 			return false;
 		}
 	}
 
-	if ( fabs((lowestCostPrevious - lowestCost_)/lowestCostPrevious) > settings_.min_cost_improvement)
+	if ( (fabs((lowestCostPrevious - lowestCost_)/lowestCostPrevious)) > settings_.min_cost_improvement)
+	{
 		return true; //! found better cost
+	}
 
 	if(settings_.debugPrint){
 		std::cout<<"CONVERGED: Cost last iteration: "<<lowestCostPrevious<<", current cost: "<< lowestCost_ << std::endl;
@@ -1119,6 +1121,29 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::reset()
 	finalCostBest_ = std::numeric_limits<scalar_t>::infinity();
 	intermediateCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
 	finalCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
+}
+
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::doFullStepUpdate()
+{
+	u_ff_ += lu_;
+	x_ += lx_;
+
+	alphaBest_ = 1.0;
+
+	if(settings_.debugPrint || settings_.printSummary)
+	{
+		lx_norm_ = computeDiscreteArrayNorm<StateVectorArray,2>(lx_);
+		lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray,2>(lu_);
+	}
+	else{
+#ifdef MATLAB
+		lx_norm_ = computeDiscreteArrayNorm<StateVectorArray,2>(lx_);
+		lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray,2>(lu_);
+#endif
+	}
 }
 
 

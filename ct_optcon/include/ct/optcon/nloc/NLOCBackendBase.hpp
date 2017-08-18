@@ -450,12 +450,9 @@ public:
 	//! performLineSearch: execute the line search, possibly with different threading schemes
 	virtual SCALAR performLineSearch() = 0;
 
+
 	//! simple full-step update for state and feedforward control (used for MPC-mode!)
-	void doFullStepUpdate()
-	{
-		u_ff_ += lu_;
-		x_ += lx_;
-	}
+	void doFullStepUpdate();
 
 	void logSummaryToMatlab(const std::string& fileName) {summaryAllIterations_.logToMatlab(fileName);}
 
