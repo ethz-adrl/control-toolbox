@@ -743,8 +743,11 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 		StateVectorArray x_ref_lqr_local(K_+1);
 		ControlVectorArray uff_local(K_);
 
-		uff_local = u_ff_ + lu_; 			// add lu
-		x_ref_lqr_local = x_prev_ + lx_; 	// stabilize around current solution candidate
+		ControlVectorArray lv = lqocSolver_->getFeedforwardUpdates();
+
+		uff_local = u_ff_ + lv; 			// add lu
+		x_ref_lqr_local = x_prev_; // + lx_; 	// stabilize around current solution candidate
+
 
 		bool dynamicsGood = simpleRollout(settings_.nThreads, uff_local, x_ref_lqr_local, x_, u_ff_); // todo only for debug
 		uff_local = u_ff_; // todo only for debug
