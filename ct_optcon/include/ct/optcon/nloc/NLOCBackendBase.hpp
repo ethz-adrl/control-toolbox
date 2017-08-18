@@ -471,6 +471,14 @@ protected:
 			StateVectorArray& xShot,
 			std::atomic_bool* terminationFlag = nullptr ) const;
 
+	bool simpleRollout(
+			const size_t threadId,
+			const ControlVectorArray& uff,
+			const StateVectorArray& x_ref_lqr,
+			StateVectorArray& x_local,
+			ControlVectorArray& u_recorded
+			)const;
+
 	//! computes the defect between shot and trajectory
 	/*!
 	 * @param k			index of the shot under consideration

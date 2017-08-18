@@ -282,6 +282,71 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::simpleRollout(
+		const size_t threadId,
+		const ControlVectorArray& uff,
+		const StateVectorArray& x_ref_lqr,
+		StateVectorArray& x_local,
+		ControlVectorArray& u_recorded
+		)const
+{
+	const double& dt = settings_.dt;
+	const double dt_sim = settings_.getSimulationTimestep();
+	const size_t subSteps = settings_.K_sim;
+	const int K_local = K_;
+
+	u_recorded.clear();
+
+	x_local.resize(K_+1);
+	x_local.front() = x_ref_lqr.front();
+
+	if(uff.size() < (size_t)K_) throw std::runtime_error("rolloutSingleShot: u_local is too short.");
+
+
+	for (int i = 1; i<K_local+1; i++)
+	{
+		x_local[i] = x_local[i-1];
+
+		u_recorded.push_back(uff[i-1] + L_[i-1] * (x_local[i-1] - x_ref_lqr[i-1]));
+
+		controller_[threadId]->setControl(u_recorded.back());
+
+
+		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
+		{
+			integrateSymplectic<V_DIM, P_DIM>(threadId, x_local[i], 0, subSteps, dt_sim);
+		} else
+		{
+			integrators_[threadId]->integrate_n_steps(x_local[i], 0, subSteps, dt_sim);
+		}
+
+
+		// check if nan
+		for (size_t k=0; k<STATE_DIM; k++)
+		{
+			if (isnan(x_local[i](k)))
+			{
+				x_local.resize(K_local+1, ct::core::StateVector<STATE_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
+				u_recorded.resize(K_local, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
+				return false;
+			}
+		}
+		for (size_t k=0; k<CONTROL_DIM; k++)
+		{
+			if (isnan(u_recorded.back()(k)))
+			{
+				x_local.resize(K_local+1, ct::core::StateVector<STATE_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
+				u_recorded.resize(K_local, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
+				std::cout << "control unstable" << std::endl;
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingleShot(
 		const size_t threadId,
 		const size_t k,	//! the starting index of the shot
@@ -335,7 +400,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 
 		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
 		{
-			integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], k*dt, 1, dt_sim);
+			integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], k*dt, subSteps, dt_sim);
 		} else
 		{
 			integrators_[threadId]->integrate_n_steps(xShot[i], k*dt, subSteps, dt_sim);
@@ -681,8 +746,10 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 		uff_local = u_ff_ + lu_; 			// add lu
 		x_ref_lqr_local = x_prev_ + lx_; 	// stabilize around current solution candidate
 
+		bool dynamicsGood = simpleRollout(settings_.nThreads, uff_local, x_ref_lqr_local, x_, u_ff_); // todo only for debug
+		uff_local = u_ff_; // todo only for debug
 
-		bool dynamicsGood = rolloutSingleShot(settings_.nThreads, 0, uff_local, x_, x_ref_lqr_local, xShot_);
+//		bool dynamicsGood = rolloutSingleShot(settings_.nThreads, 0, uff_local, x_, x_ref_lqr_local, xShot_);
 
 		if (dynamicsGood)
 		{
