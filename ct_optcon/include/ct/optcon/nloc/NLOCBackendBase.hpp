@@ -381,7 +381,20 @@ public:
 
 	//! nominal rollout using default thread and member variables for the results. // todo maybe rename (initial rollout?)
 	bool nominalRollout() {
-		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_, xShot_);
+
+		StateVectorArray x_lqr_ref = x_;
+		ControlVectorArray u_recorded;
+
+		bool success = simpleRollout(
+				settings_.nThreads,
+				u_ff_,
+				x_lqr_ref, x_,u_recorded
+				);
+		u_ff_ = u_recorded;
+
+//		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_, xShot_);
+
+
 		x_prev_ = x_;
 		u_ff_prev_ = u_ff_;
 		firstRollout_ = false;
