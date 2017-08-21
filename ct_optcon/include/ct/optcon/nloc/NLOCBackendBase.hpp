@@ -135,7 +135,6 @@ public:
 			intermediateCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
 			finalCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
 			linearSystemDiscretizers_(settings.nThreads+1, LinearSystemDiscretizer_t(settings.dt)),
-			firstRollout_(true),
 			alphaBest_(-1)
 	{
 		Eigen::initParallel();
@@ -381,10 +380,11 @@ public:
 
 	//! nominal rollout using default thread and member variables for the results. // todo maybe rename (initial rollout?)
 	bool nominalRollout() {
+
 		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_, xShot_);
+
 		x_prev_ = x_;
 		u_ff_prev_ = u_ff_;
-		firstRollout_ = false;
 		return success;
 	}
 
@@ -467,6 +467,16 @@ protected:
 			const StateVectorArray& x_ref_lqr,
 			StateVectorArray& xShot,
 			std::atomic_bool* terminationFlag = nullptr ) const;
+
+	/*
+	bool simpleRollout(
+			const size_t threadId,
+			const ControlVectorArray& uff,
+			const StateVectorArray& x_ref_lqr,
+			StateVectorArray& x_local,
+			ControlVectorArray& u_recorded
+			)const;
+			*/
 
 	//! computes the defect between shot and trajectory
 	/*!
@@ -678,8 +688,6 @@ protected:
 	std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints_;
 	std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints_;
 
-
-	bool firstRollout_;
 	scalar_t alphaBest_;
 
 	SummaryAllIterations<SCALAR> summaryAllIterations_;
