@@ -382,7 +382,6 @@ public:
 	bool nominalRollout() {
 
 		const StateVectorArray x_lqr_ref = x_;
-		ControlVectorArray u_recorded;
 
 		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_, xShot_);
 
