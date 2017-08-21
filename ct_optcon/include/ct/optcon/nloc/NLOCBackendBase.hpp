@@ -381,8 +381,6 @@ public:
 	//! nominal rollout using default thread and member variables for the results. // todo maybe rename (initial rollout?)
 	bool nominalRollout() {
 
-		const StateVectorArray x_lqr_ref = x_;
-
 		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_, xShot_);
 
 		x_prev_ = x_;
