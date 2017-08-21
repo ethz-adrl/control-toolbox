@@ -58,7 +58,7 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 	for (size_t k=firstIndex; k<=lastIndex; k = k+ this->settings_.K_shot)
 	{
 		// rollout the shot
-		this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_);
+		this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_, true);
 
 		this->computeSingleDefect(k, this->x_, this->xShot_, this->lqocProblem_->b_);
 	}

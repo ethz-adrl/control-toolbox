@@ -35,32 +35,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct {
 namespace core {
 
-//! settings for the LinearSystemDiscretizer
-struct SensitivityApproximationSettings
-{
-	//! different discrete-time approximations to linear systems
-	enum class APPROXIMATION {
-			FORWARD_EULER = 0,
-			BACKWARD_EULER,
-			SYMPLECTIC_EULER,
-			TUSTIN,
-			MATRIX_EXPONENTIAL
-	};
-
-	SensitivityApproximationSettings(double dt, APPROXIMATION approx):
-		dt_(dt),
-		approximation_(approx)
-	{}
-
-	//! discretization time-step
-	double dt_;
-
-	//! type of discretization strategy used.
-	APPROXIMATION approximation_;
-};
-
-
-
 //! interface class for a general linear system or linearized system
 /*!
  * Defines the interface for a linear system
@@ -74,17 +48,15 @@ class SensitivityApproximation : public Sensitivity<STATE_DIM, CONTROL_DIM, SCAL
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef typename Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t; //!< state Jacobian type
-	typedef typename Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t; //!< input Jacobian type
+	typedef StateMatrix<STATE_DIM, SCALAR> state_matrix_t; //!< state Jacobian type
+	typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t; //!< input Jacobian type
 
 
 	//! constructor
 	SensitivityApproximation(
 			const SCALAR& dt,
 			const std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem = nullptr,
-			const SensitivityApproximationSettings::APPROXIMATION& approx = SensitivityApproximationSettings::APPROXIMATION::FORWARD_EULER,
-			const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL):
-				DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type),
+			const SensitivityApproximationSettings::APPROXIMATION& approx = SensitivityApproximationSettings::APPROXIMATION::FORWARD_EULER) :
 				linearSystem_(linearSystem),
 				settings_(dt, approx)
 				{}
@@ -93,9 +65,8 @@ public:
 	//! constructor
 	SensitivityApproximation(
 			const SensitivityApproximationSettings& settings,
-			const std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem = nullptr,
-			const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL):
-				DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type),
+			const std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem = nullptr)
+			:
 				linearSystem_(linearSystem),
 				settings_(settings)
 				{}
@@ -122,7 +93,7 @@ public:
 
 
 	//! update the approximation type for the discrete-time system
-	void setApproximation(const SensitivityApproximationSettings::APPROXIMATION& approx)
+	virtual void setApproximation(const SensitivityApproximationSettings::APPROXIMATION& approx) override
 	{
 		settings_.approximation_ = approx;
 	}
@@ -136,21 +107,21 @@ public:
 
 
 	//! update the linear system
-	void setLinearSystem(std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem)
+	virtual void setLinearSystem(const std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem) override
 	{
 		linearSystem_ = linearSystem;
 	}
 
 
 	//! update the time discretization
-	void setTimeDiscretization(const SCALAR& dt)
+	virtual void setTimeDiscretization(const SCALAR& dt) override
 	{
 		settings_.dt_ = dt;
 	}
 
 
 	//! update the settings
-	void updateSettings(const LinearSystemDiscretizerSettings& settings)
+	void updateSettings(const SensitivityApproximationSettings& settings)
 	{
 		settings_ = settings;
 	}
@@ -162,6 +133,7 @@ public:
 	 * @param x	the state setpoint
 	 * @param u the control setpoint
 	 * @param n the time setpoint
+	 * @param numSteps number of timesteps of trajectory for which to get the sensitivity for
 	 * @param A the resulting linear system matrix A
 	 * @param B the resulting linear system matrix B
 	 */
@@ -169,33 +141,34 @@ public:
 			const StateVector<STATE_DIM, SCALAR>& x,
 			const ControlVector<CONTROL_DIM, SCALAR>& u,
 			const int n,
+			const size_t numSteps,
 			state_matrix_t& A,
 			state_control_matrix_t& B) override
 	{
 		if(linearSystem_ == nullptr)
-			throw std::runtime_error("Error in LinearSystemDiscretizer: linearSystem not properly set.");
+			throw std::runtime_error("Error in SensitivityApproximation: linearSystem not properly set.");
 
 		/*!
 		 * for an LTI system A and B won't change with time n, hence the linearizations result from the following LTV special case.
 		 */
 		switch(settings_.approximation_)
 		{
-		case LinearSystemDiscretizerSettings::APPROXIMATION::FORWARD_EULER:
+		case SensitivityApproximationSettings::APPROXIMATION::FORWARD_EULER:
 		{
 			forwardEuler(x, u, n, A, B);
 			break;
 		}
-		case LinearSystemDiscretizerSettings::APPROXIMATION::BACKWARD_EULER:
+		case SensitivityApproximationSettings::APPROXIMATION::BACKWARD_EULER:
 		{
 			backwardEuler(x, u, n+1, A, B);
 			break;
 		}
-		case LinearSystemDiscretizerSettings::APPROXIMATION::SYMPLECTIC_EULER:
+		case SensitivityApproximationSettings::APPROXIMATION::SYMPLECTIC_EULER:
 		{
 			symplecticEuler<V_DIM, P_DIM>(x, u, n, A, B);
 			break;
 		}
-		case LinearSystemDiscretizerSettings::APPROXIMATION::TUSTIN:
+		case SensitivityApproximationSettings::APPROXIMATION::TUSTIN:
 		{
 			/*!
 			 * the Tustin (also known as 'Heun') approximation uses the state and control at the *start* and at the *end*
@@ -215,13 +188,13 @@ public:
 
 			break;
 		}
-		case LinearSystemDiscretizerSettings::APPROXIMATION::MATRIX_EXPONENTIAL:
+		case SensitivityApproximationSettings::APPROXIMATION::MATRIX_EXPONENTIAL:
 		{
 			matrixExponential(x, u, n, A, B);
 			break;
 		}
 		default:
-			throw std::runtime_error("Unknown Approximation type in LinearSystemDiscretizer.");
+			throw std::runtime_error("Unknown Approximation type in SensitivityApproximation.");
 		}	// end switch
 	}
 
@@ -247,27 +220,27 @@ public:
 //			state_control_matrix_t& B)
 //		{
 //		if(linearSystem_ == nullptr)
-//			throw std::runtime_error("Error in LinearSystemDiscretizer: linearSystem not properly set.");
+//			throw std::runtime_error("Error in SensitivityApproximation: linearSystem not properly set.");
 //
 //
 //		switch(settings_.approximation_)
 //		{
-//		case LinearSystemDiscretizerSettings::APPROXIMATION::FORWARD_EULER:
+//		case SensitivityApproximationSettings::APPROXIMATION::FORWARD_EULER:
 //		{
 //			forwardEuler(x_n, u_n, n, A, B);
 //			break;
 //		}
-//		case LinearSystemDiscretizerSettings::APPROXIMATION::BACKWARD_EULER:
+//		case SensitivityApproximationSettings::APPROXIMATION::BACKWARD_EULER:
 //		{
 //			backwardEuler(x_n_next, u_n_next, n+1, A, B);
 //			break;
 //		}
-//		case LinearSystemDiscretizerSettings::APPROXIMATION::SYMPLECTIC_EULER:
+//		case SensitivityApproximationSettings::APPROXIMATION::SYMPLECTIC_EULER:
 //		{
 //			symplecticEuler<V_DIM, P_DIM>(x_n, u_n, x_n_next, u_n_next, n, A, B);
 //			break;
 //		}
-//		case LinearSystemDiscretizerSettings::APPROXIMATION::TUSTIN:
+//		case SensitivityApproximationSettings::APPROXIMATION::TUSTIN:
 //		{
 //			/*!
 //			 * the Tustin (also known as 'Heun') approximation uses the state and control at the *start* and at the *end*
@@ -288,13 +261,13 @@ public:
 //
 //			break;
 //		}
-//		case LinearSystemDiscretizerSettings::APPROXIMATION::MATRIX_EXPONENTIAL:
+//		case SensitivityApproximationSettings::APPROXIMATION::MATRIX_EXPONENTIAL:
 //		{
 //			matrixExponential(x_n, u_n, n, A, B);
 //			break;
 //		}
 //		default:
-//			throw std::runtime_error("Unknown Approximation type in LinearSystemDiscretizer.");
+//			throw std::runtime_error("Unknown Approximation type in SensitivityApproximation.");
 //		}	// end switch
 //		}
 
@@ -469,7 +442,7 @@ private:
 			state_matrix_t& A,
 			state_control_matrix_t& B)
 	{
-		throw std::runtime_error("LinearSystemDiscretizer : selected symplecticEuler but System is not symplectic.");
+		throw std::runtime_error("SensitivityApproximation : selected symplecticEuler but System is not symplectic.");
 	}
 
 	//! gets instantiated in case the system is not symplectic
@@ -480,20 +453,20 @@ private:
 			state_matrix_t& A_sym,
 			state_control_matrix_t& B_sym)
 	{
-		throw std::runtime_error("LinearSystemDiscretizer : selected symplecticEuler but System is not symplectic.");
+		throw std::runtime_error("SensitivityApproximation : selected symplecticEuler but System is not symplectic.");
 	}
 
 	SYMPLECTIC_DISABLED getSymplecticEulerApproximation(const state_matrix_t& Ac1, const state_matrix_t& Ac2,
 			const state_control_matrix_t& Bc1, const state_control_matrix_t& Bc2, state_matrix_t& A_sym, state_control_matrix_t B_sym)
 	{
-		throw std::runtime_error("LinearSystemDiscretizer : selected symplecticEuler but System is not symplectic.");
+		throw std::runtime_error("SensitivityApproximation : selected symplecticEuler but System is not symplectic.");
 	}
 
 	//! shared_ptr to a continuous time linear system (system to be discretized)
 	std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem_;
 
 	//! discretization settings
-	LinearSystemDiscretizerSettings settings_;
+	SensitivityApproximationSettings settings_;
 };
 
 

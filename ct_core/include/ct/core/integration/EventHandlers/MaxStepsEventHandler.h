@@ -57,6 +57,8 @@ public:
 	//! destructor
 	virtual ~MaxStepsEventHandler() {}
 
+	virtual bool callOnSubsteps() override { return false; }
+
 	//! resets the number of steps taken
 	virtual void reset() override {stepsTaken_ = 0; };
 

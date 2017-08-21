@@ -46,7 +46,7 @@ namespace core{
  * @tparam     SCALAR       The scalar type
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class SensitvityIntegrator : public Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR>
+class SensitivityIntegrator : public Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 
@@ -54,9 +54,9 @@ public:
 
 	typedef ct::core::StateVector<STATE_DIM, SCALAR> state_vector_t;
     typedef ct::core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t;
+	typedef StateMatrix<STATE_DIM, SCALAR> state_matrix_t; //!< state Jacobian type
+	typedef ControlMatrix<CONTROL_DIM, SCALAR> control_matrix_t; //!< state Jacobian type
+	typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t; //!< input Jacobian type
 
     typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM + CONTROL_DIM> sensitivities_matrix_t;
 
@@ -67,23 +67,28 @@ public:
      * @param[in]  system       The controlled system
      * @param[in]  stepperType  The integration stepper type
      */
-    SensitvityIntegrator(
+    SensitivityIntegrator(
+		const SCALAR dt,
 		const std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> >& linearSystem,
 		const std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR> >& controller,
         const ct::core::IntegrationType stepperType = ct::core::IntegrationType::EULERCT,
-		const SCALAR dt) :
+		bool timeVarying = true) :
+        	timeVarying_(timeVarying),
 			dt_(dt),
+			substep_(0),
+			k_(0),
 			controller_(controller)
     {
     	setLinearSystem(linearSystem);
     	setStepper(stepperType);
+    	initStepper();
     }
 
 
     /**
      * @brief      Destroys the object.
      */
-    ~SensitvityIntegrator(){}
+    virtual ~SensitivityIntegrator(){}
 
     /**
      * @brief      Initializes the steppers
@@ -95,12 +100,14 @@ public:
         switch(stepperType)
         {
             case ct::core::IntegrationType::EULERCT:
+            case ct::core::IntegrationType::EULER:
             {
                 stepper_ = std::shared_ptr<ct::core::internal::StepperCTBase<sensitivities_matrix_t, SCALAR>>(
                     new ct::core::internal::StepperEulerCT<sensitivities_matrix_t, SCALAR>());
                 break;
             }
 
+            case ct::core::IntegrationType::RK4:
             case ct::core::IntegrationType::RK4CT:
             {
                 stepper_ = std::shared_ptr<ct::core::internal::StepperCTBase<sensitivities_matrix_t, SCALAR>>(
@@ -120,22 +127,16 @@ public:
      *
      * @param[in]  linearSystem  The linearized system
      */
-    void setLinearSystem(const std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem)
+    virtual void setLinearSystem(const std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem) override
     {
         linearSystem_ = linearSystem;
-        
-        dFdxDot_ = [this](const sensitivities_matrix_t& dX0In, sensitivities_matrix_t& dX0dt, const SCALAR t){
-
-        	size_t i = round(t/dt_);
-
-            state_matrix_t A = linearSystem_->getDerivativeState(*(this->x_)[i], *(this->u_)[i], t);
-            state_control_matrix_t B = linearSystem_->getDerivativeControl(*(this->x_)[i], *(this->u_)[i], t);
-
-            dX0dt.template leftCols<STATE_DIM>() = A * dX0In.template leftCols<STATE_DIM>();
-            dX0dt.template rightCols<CONTROL_DIM>() = B * dX0In.template rightCols<CONTROL_DIM>() +
-				B * controller_->getDerivativeU0(*(this->x_)[i], t);
-        };
     }
+
+	//! update the time discretization
+	virtual void setTimeDiscretization(const SCALAR& dt) override
+	{
+		dt_ = dt;
+	}
 
 
     /**
@@ -148,24 +149,24 @@ public:
      * @param[out]     B          Sensitivity with respect to control
      */
     void integrateSensitivity(
-        const SCALAR startTime,
+        const size_t k,
         const size_t numSteps,
         state_matrix_t& A,
-		state_control_matrix_t& B,
+		state_control_matrix_t& B
         )
     {
-        SCALAR time = startTime;
-
         A.setIdentity();
-        B.setIdentity();
+        B.setZero();
 
         sensitivities_matrix_t AB;
         AB << A, B;
 
+        k_ = k;
+		substep_ = 0;
+
         for(size_t i = 0; i < numSteps; ++i)
         {
-            stepper_->do_step(dFdxDot_, AB, time, dt_);
-            time += dt_;
+            stepper_->do_step(dFdxDot_, AB, k*dt_, dt_);
         }
 
         A = AB.template leftCols<STATE_DIM>();
@@ -177,6 +178,7 @@ public:
 	 * @param x	the state setpoint
 	 * @param u the control setpoint
 	 * @param n the time setpoint
+	 * @param numSteps number of timesteps of trajectory for which to get the sensitivity for
 	 * @param A the resulting linear system matrix A
 	 * @param B the resulting linear system matrix B
 	 */
@@ -184,18 +186,30 @@ public:
 			const StateVector<STATE_DIM, SCALAR>& x,
 			const ControlVector<CONTROL_DIM, SCALAR>& u,
 			const int n,
+			const size_t numSteps,
 			state_matrix_t& A,
 			state_control_matrix_t& B) override
 	{
-		if (!(this->x_) || !(this->u_))
+		if (!(this->xSubstep_) || !(this->uSubstep_))
 			throw std::runtime_error("SensitivityIntegrator.h: Cached trajectories not set.");
-		if (this->x_.size() <=n || this->u_.size() <= n)
+		if (this->xSubstep_->size() <=n || this->uSubstep_->size() <= n)
+		{
+			std::cout << "length x: "<<this->xSubstep_->size()<<std::endl;
+			std::cout << "length u: "<<this->uSubstep_->size()<<std::endl;
+			std::cout << "n: "<<n<<std::endl;
 			throw std::runtime_error("SensitivityIntegrator.h: Cached trajectories too short.");
+		}
 
-		assert(x == this->x_[n] && "cached trajectory does not match provided state");
-		assert(u == this->u_[n] && "cached trajectory does not match provided input");
+		assert(x == this->xSubstep_->operator[](n)->operator[](0) && "cached trajectory does not match provided state");
+		assert(u == this->uSubstep_->operator[](n)->operator[](0) && "cached trajectory does not match provided input");
 
-		integrateSensitivity(n*dt_,	1, A, B);
+		if (!timeVarying_)
+		{
+            Aconst_ = linearSystem_->getDerivativeState(x, u, n*dt_);
+            Bconst_ = linearSystem_->getDerivativeControl(x, u, n*dt_);
+		}
+
+		integrateSensitivity(n,	numSteps, A, B);
 	};
 
 
@@ -203,7 +217,13 @@ public:
 
 
 private:
+	bool timeVarying_;
     double dt_;
+    size_t substep_;
+    size_t k_;
+
+    state_matrix_t Aconst_;
+    state_control_matrix_t Bconst_;
 
     std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> > linearSystem_;
     std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR> > controller_;
@@ -212,6 +232,57 @@ private:
     std::function<void (const sensitivities_matrix_t&, sensitivities_matrix_t&, const SCALAR)> dFdxDot_;
 
     std::shared_ptr<ct::core::internal::StepperCTBase<sensitivities_matrix_t, SCALAR>> stepper_;
+
+
+    inline void integrateSensitivities(
+    		const state_matrix_t& A,
+			const state_control_matrix_t& B,
+			const state_vector_t& x,
+			const sensitivities_matrix_t& dX0In,
+			sensitivities_matrix_t& dX0dt,
+			const SCALAR t)
+    {
+		dX0dt.template leftCols<STATE_DIM>() = A * dX0In.template leftCols<STATE_DIM>();
+		dX0dt.template rightCols<CONTROL_DIM>() = A * dX0In.template rightCols<CONTROL_DIM>() +
+    				B * controller_->getDerivativeU0(x, t);
+    }
+
+    void initStepper()
+    {
+        dFdxDot_ = [this](const sensitivities_matrix_t& dX0In, sensitivities_matrix_t& dX0dt, const SCALAR t)
+        {
+#ifdef DEBUG
+        	if (!this->xSubstep_ || this->xSubstep_->size() <= this->k_)
+        		throw std::runtime_error("substeps not correctly initialized");
+#endif
+
+           	const typename Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR>::StateVectorArrayPtr& xSubstep = this->xSubstep_->operator[](this->k_);
+           	const typename Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR>::ControlVectorArrayPtr& uSubstep = this->uSubstep_->operator[](this->k_);
+
+#ifdef DEBUG
+
+        	if (!xSubstep || xSubstep->size() <= this->substep_)
+        	{
+        		throw std::runtime_error("substeps not correctly initialized");
+        	}
+#endif
+        	const state_vector_t& x = xSubstep->operator[](this->substep_);
+        	const control_vector_t& u = uSubstep->operator[](this->substep_);
+
+            if(timeVarying_)
+            {
+            	state_matrix_t A = linearSystem_->getDerivativeState(x, u, t);
+            	state_control_matrix_t B = linearSystem_->getDerivativeControl(x, u, t);
+
+            	integrateSensitivities(A, B, x, dX0In, dX0dt, t);
+            } else
+            {
+            	integrateSensitivities(Aconst_, Bconst_, x, dX0In, dX0dt, t);
+            }
+
+            this->substep_++;
+        };
+    }
 };
 
 

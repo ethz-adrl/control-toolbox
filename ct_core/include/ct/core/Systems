@@ -37,7 +37,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "systems/linear/LTISystem.h"
 #include "systems/linear/SystemLinearizer.h"
 #include "systems/linear/DiscreteLinearSystem.h"
-#include "systems/linear/LinearSystemDiscretizer.h"
 #include "systems/linear/AutoDiffLinearizer.h"
 #include "systems/linear/ADCodegenLinearizer.h"
 

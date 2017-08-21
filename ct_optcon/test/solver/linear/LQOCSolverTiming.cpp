@@ -46,7 +46,7 @@ void timeSingleSolve(size_t N, std::vector< std::vector<double> >& loggedSolveTi
 	problems.push_back(lqocProblem2);
 
 	std::shared_ptr<core::LinearSystem<state_dim, control_dim>> exampleSystem(new example::MIMOIntegratorLinear<state_dim, control_dim>());
-	core::LinearSystemDiscretizer<state_dim, control_dim> discreteExampleSystem(dt, exampleSystem, core::LinearSystemDiscretizerSettings::APPROXIMATION::MATRIX_EXPONENTIAL);
+	core::SensitivityApproximation<state_dim, control_dim> discreteExampleSystem(dt, exampleSystem, core::SensitivityApproximationSettings::APPROXIMATION::MATRIX_EXPONENTIAL);
 
 	ct::core::ControlVector<control_dim> u0; u0.setRandom();
 	ct::core::StateVector<state_dim> x0; x0.setRandom();

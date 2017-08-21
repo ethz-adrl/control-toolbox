@@ -181,7 +181,7 @@ class NLOptConSettings
 {
 public:
 
-	typedef typename core::LinearSystemDiscretizerSettings::APPROXIMATION APPROXIMATION;
+	typedef typename core::SensitivityApproximationSettings::APPROXIMATION APPROXIMATION;
 
     //! the nonlinear optimal control problem solving algorithm
     enum NLOCP_ALGORITHM

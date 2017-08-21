@@ -53,6 +53,8 @@ public:
 	//! destructor
 	virtual ~EventHandler() {}
 
+	virtual bool callOnSubsteps() = 0;
+
 	//! reset event handler
 	virtual void reset() = 0;
 
@@ -74,6 +76,9 @@ public:
 	virtual void handleEvent(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR& t) = 0;
 
 private:
+
+	StateVectorArray<STATE_DIM, SCALAR> stateTrajectory_; //! state trajectory for recording
+	tpl::TimeArray<SCALAR> timeTrajectory_; //! time trajectory for recording
 };
 
 }

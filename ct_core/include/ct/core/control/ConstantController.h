@@ -110,9 +110,9 @@ public:
 	 *
 	 * @param u The control input to write the signal to.
 	 */
-	void getControl(ControlVector<CONTROL_DIM, SCALAR>& u) const
+	const ControlVector<CONTROL_DIM, SCALAR>& getControl() const
 	{
-		u = u_;
+		return u_;
 	}
 
     virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR time) override

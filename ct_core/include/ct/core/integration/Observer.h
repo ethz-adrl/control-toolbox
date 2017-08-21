@@ -36,7 +36,7 @@ namespace ct {
 namespace core {
 
 template <size_t STATE_DIM, typename SCALAR>
-class IntegratorBase;
+class Integrator;
 
 //! Observer for Integrator
 /*!
@@ -51,7 +51,7 @@ class Observer
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	friend class IntegratorBase<STATE_DIM, SCALAR>;
+	friend class Integrator<STATE_DIM, SCALAR>;
 
 	typedef std::vector<std::shared_ptr<EventHandler<STATE_DIM, SCALAR>>, Eigen::aligned_allocator<std::shared_ptr<EventHandler<STATE_DIM, SCALAR>>>> EventHandlerPtrVector;
 
@@ -60,7 +60,8 @@ public:
 	 * @param eventHandlers vector of event handlers
 	 */
 	Observer(const EventHandlerPtrVector& eventHandlers) :
-		observeWrap([this](const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t){this->observe(x,t); })
+		observeWrap([this](const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t){this->observe(x,t); }),
+		observeWrapWithLogging([this](const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t){ this->log(x,t); this->observe(x,t); })
 	{
 		// fixme: somehow works if using assignment operator, but not if using constructing
 		eventHandlers_ = eventHandlers;
@@ -68,41 +69,55 @@ public:
 
 	//! reset the observer
 	void reset() {
-		stateTrajectory_.clear();
-		timeTrajectory_.clear();
-
 		for(size_t i = 0; i<eventHandlers_.size(); i++)
 			eventHandlers_[i]->reset();
+
+		states_.clear();
+		times_.clear();
 	}
 
 	//! call observer
 	/*!
-	 * Calls the observer with a given state and time. Records state and time.
+	 * Calls the observer at the main steps. Records state and time.
 	 * @param x current state
 	 * @param t current time
 	 */
 	void observe(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)
 	{
-		if (timeTrajectory_.size() > 0 && t <= timeTrajectory_.back())
-		{
-			std::cout << "Integrator Observer: Trying to add time " << t<<", which is smaller or equal than last one "<<timeTrajectory_.back() << std::endl;
-			throw std::runtime_error("observations out of order");
-		}
-
-		stateTrajectory_.push_back(x);
-		timeTrajectory_.push_back(t);
-
 		for(size_t i = 0; i< eventHandlers_.size(); i++){
-			if(eventHandlers_[i]->checkEvent(x, t))
+			if(!eventHandlers_[i]->callOnSubsteps() && eventHandlers_[i]->checkEvent(x, t))
 				eventHandlers_[i]->handleEvent(x, t);
 		}
 	}
 
+	void log(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)
+	{
+		states_.push_back(x);
+		times_.push_back(t);
+	}
+
+	//! call observer
+	/*!
+	 * Calls the observer at integration substeps.
+	 * @param x current state
+	 * @param t current time
+	 */
+	void observeInternal(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)
+	{
+		for(size_t i = 0; i< eventHandlers_.size(); i++){
+			if(eventHandlers_[i]->callOnSubsteps() && eventHandlers_[i]->checkEvent(x, t))
+				eventHandlers_[i]->handleEvent(x, t);
+		}
+	}
+
+private:
 	//! Lambda to pass to odeint (odeint takes copies of the observer so we can't pass the class
 	std::function<void (const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)> observeWrap;
-	StateVectorArray<STATE_DIM, SCALAR> stateTrajectory_; //! state trajectory for recording
-	tpl::TimeArray<SCALAR> timeTrajectory_; //! time trajectory for recording
-private:
+	std::function<void (const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)> observeWrapWithLogging;
+
+	ct::core::StateVectorArray<STATE_DIM, SCALAR> states_; //!< container for logging the state
+	ct::core::tpl::TimeArray<SCALAR> times_;  //!< container for logging the time
+
 	
 	EventHandlerPtrVector eventHandlers_; //! list of event handlers
 

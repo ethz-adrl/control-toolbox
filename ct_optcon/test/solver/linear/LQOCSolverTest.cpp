@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 	problems.push_back(lqocProblem2);
 
 	std::shared_ptr<core::LinearSystem<state_dim, control_dim>> exampleSystem(new example::SpringLoadedMassLinear());
-	core::LinearSystemDiscretizer<state_dim, control_dim> discreteExampleSystem(dt, exampleSystem, core::LinearSystemDiscretizerSettings::APPROXIMATION::MATRIX_EXPONENTIAL);
+	core::SensitivityApproximation<state_dim, control_dim> discreteExampleSystem(dt, exampleSystem, core::SensitivityApproximationSettings::APPROXIMATION::MATRIX_EXPONENTIAL);
 
 	ct::core::ControlVector<control_dim> u0; u0 << 0.1;
 	ct::core::StateVector<state_dim> x0; x0 << 0.2, 0.1;

@@ -86,13 +86,13 @@ target_link_libraries(NoiseTest ${catkin_LIBRARIES})
 catkin_add_gtest(SecondOrderSystemTest test/SecondOrderSystemTest.cpp)
 target_link_libraries(SecondOrderSystemTest ${catkin_LIBRARIES})
 
-catkin_add_gtest(IntegrationTest test/IntegrationTest.cpp)
+catkin_add_gtest(IntegrationTest test/integration/IntegrationTest.cpp)
 target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core)
 
-add_executable(SensitivityIntegratorTest test/SensitivityIntegratorTest.cpp)
-target_link_libraries(SensitivityIntegratorTest ${catkin_LIBRARIES} ct_core)
+add_executable(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
+target_link_libraries(SensitivityTest ${catkin_LIBRARIES} ct_core)
 
-catkin_add_gtest(IntegratorComparison test/IntegratorComparison.cpp)
+catkin_add_gtest(IntegratorComparison test/integration/IntegratorComparison.cpp)
 target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
 
 catkin_add_gtest(InterpolationTest test/InterpolationTest.cpp)
