@@ -135,7 +135,6 @@ public:
 			intermediateCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
 			finalCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
 			linearSystemDiscretizers_(settings.nThreads+1, LinearSystemDiscretizer_t(settings.dt)),
-			firstRollout_(true),
 			alphaBest_(-1)
 	{
 		Eigen::initParallel();
@@ -388,8 +387,11 @@ public:
 		bool success = simpleRollout(
 				settings_.nThreads,
 				u_ff_,
-				x_lqr_ref, x_,u_recorded
+				x_lqr_ref,
+				x_,
+				u_recorded
 				);
+
 		u_ff_ = u_recorded;
 
 //		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_, xShot_);
@@ -397,7 +399,6 @@ public:
 
 		x_prev_ = x_;
 		u_ff_prev_ = u_ff_;
-		firstRollout_ = false;
 		return success;
 	}
 
@@ -699,8 +700,6 @@ protected:
 	std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints_;
 	std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints_;
 
-
-	bool firstRollout_;
 	scalar_t alphaBest_;
 
 	SummaryAllIterations<SCALAR> summaryAllIterations_;

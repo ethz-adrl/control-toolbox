@@ -385,6 +385,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 			xShot[i] = xShot[i-1];  //! initialize integration variable
 		}
 
+		// Todo: the order here is not optimal. In some cases, we will overwrite x_ref_lqr immediately in the next step!
 		if(settings_.closedLoopShooting) // overwrite control
 			u_local[i] += L_[i] * (xShot[i] - x_ref_lqr[i]);
 
@@ -412,18 +413,18 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 
 
 		// check if nan
-		for (size_t k=0; k<STATE_DIM; k++)
+		for (size_t j=0; j<STATE_DIM; j++)
 		{
-			if (isnan(x_local[i](k)))
+			if (isnan(x_local[i](j)))
 			{
 				x_local.resize(K_local+1, ct::core::StateVector<STATE_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
 				u_local.resize(K_local, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
 				return false;
 			}
 		}
-		for (size_t k=0; k<CONTROL_DIM; k++)
+		for (size_t j=0; j<CONTROL_DIM; j++)
 		{
-			if (isnan(u_local[i](k)))
+			if (isnan(u_local[i](j)))
 			{
 				x_local.resize(K_local+1, ct::core::StateVector<STATE_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
 				u_local.resize(K_local, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
@@ -431,7 +432,6 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 				return false;
 			}
 		}
-
 	}
 
 	return true;
@@ -1112,7 +1112,6 @@ const typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::Po
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::reset()
 {
-	firstRollout_ = true;
 	iteration_ = 0;
 	d_norm_ = std::numeric_limits<scalar_t>::infinity();
 	lx_norm_ = std::numeric_limits<scalar_t>::infinity();
