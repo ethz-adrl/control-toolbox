@@ -300,7 +300,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::simpleRollou
 	x_local.resize(K_+1);
 	x_local.front() = x_ref_lqr.front();
 
-	if(uff.size() < (size_t)K_) throw std::runtime_error("rolloutSingleShot: u_local is too short.");
+	if(uff.size() < (size_t)K_) throw std::runtime_error("simpleRollout: u_local is too short.");
 
 
 	for (int i = 1; i<K_local+1; i++)
@@ -378,7 +378,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 
 	for (int i = (int)k; i<K_stop; i++)
 	{
-		if (terminationFlag && *terminationFlag) return false;
+		if (terminationFlag && *terminationFlag)
+			return false;
 
 		if(i> (int)k)
 		{
@@ -401,10 +402,10 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 
 		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
 		{
-			integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], k*dt, subSteps, dt_sim);
+			integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], i*dt, subSteps, dt_sim);
 		} else
 		{
-			integrators_[threadId]->integrate_n_steps(xShot[i], k*dt, subSteps, dt_sim);
+			integrators_[threadId]->integrate_n_steps(xShot[i], i*dt, subSteps, dt_sim);
 		}
 
 
@@ -745,7 +746,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 
 		ControlVectorArray lv = lqocSolver_->getFeedforwardUpdates();
 
-		uff_local = u_ff_ + lv; 			// add lu
+		uff_local = u_ff_ + lv; 			// +lu_; //  add lu
 		x_ref_lqr_local = x_prev_; // + lx_; 	// stabilize around current solution candidate
 
 
@@ -843,9 +844,17 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 	StateVectorArray x_ref_lqr;
 	StateVectorArray xShot_local(K_+1); //! note this is currently only a dummy (\todo nicer solution?)
 
-	//! if stabilizing about new solution candidate, chose lu as feedforward increment and also increment x_prev_ by lx
-	u_local = lu_ * alpha + u_ff_prev_;
-	x_ref_lqr = lx_ * alpha + x_prev_;
+	//! if stabilizing about new solution candidate, chose lu as feedforward increment and also increment x_prev_ by lx_;
+
+	//u_local = lu_ * alpha + u_ff_prev_;	// original version, maybe bring back
+	//x_ref_lqr = lx_ * alpha + x_prev_;	// original version, maybe bring back
+
+	// fixme trying this now:
+	ControlVectorArray lv = lqocSolver_->getFeedforwardUpdates();
+	u_local = lv * alpha + u_ff_prev_;
+	x_ref_lqr = x_prev_;
+
+
 
 	bool dynamicsGood = rolloutSingleShot(threadId, 0, u_local, x_local, x_ref_lqr, xShot_local, terminationFlag);
 
