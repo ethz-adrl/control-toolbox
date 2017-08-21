@@ -226,29 +226,29 @@ if(HPIPM)
     #target_link_libraries(HPIPMInterfaceTest3 ${HPIPM_LIBS} ${MATLAB_LIBS})
 endif(HPIPM)
 
-#add_executable(LinearSystemTest test/nloc/LinearSystemTest.cpp) # todo make unit test
-#target_link_libraries(LinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-#
-#add_executable(NonlinearSystemTest test/nloc/NonlinearSystemTest.cpp)
-#target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-#
-#catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
-#target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
-#
-#catkin_add_gtest(CostFunctionTest test/costfunction/CostFunctionTest.cpp)
-#target_link_libraries(CostFunctionTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
-#
-#catkin_add_gtest(CfTracking test/costfunction/TrackingTest.cpp)
-#target_link_libraries(CfTracking ${catkin_LIBRARIES})
-#
-#catkin_add_gtest(ADTest_timeVar test/costfunction/ADTest_timeDependent.cpp)
-#target_link_libraries(ADTest_timeVar ${catkin_LIBRARIES})
-#
-#catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
-#target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-#
-#catkin_add_gtest(dms_test_all_var test/dms/oscillator/oscDMSTestAllVariants.cpp)
-#target_link_libraries(dms_test_all_var ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
+add_executable(LinearSystemTest test/nloc/LinearSystemTest.cpp) # todo make unit test
+target_link_libraries(LinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+
+add_executable(NonlinearSystemTest test/nloc/NonlinearSystemTest.cpp)
+target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+
+catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
+target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
+
+catkin_add_gtest(CostFunctionTest test/costfunction/CostFunctionTest.cpp)
+target_link_libraries(CostFunctionTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
+
+catkin_add_gtest(CfTracking test/costfunction/TrackingTest.cpp)
+target_link_libraries(CfTracking ${catkin_LIBRARIES})
+
+catkin_add_gtest(ADTest_timeVar test/costfunction/ADTest_timeDependent.cpp)
+target_link_libraries(ADTest_timeVar ${catkin_LIBRARIES})
+
+catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
+target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
+
+catkin_add_gtest(dms_test_all_var test/dms/oscillator/oscDMSTestAllVariants.cpp)
+target_link_libraries(dms_test_all_var ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
 
 #add_executable(bareTest test/dms/oscillator/bareTest.cpp)
 #target_link_libraries(bareTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS} dl)

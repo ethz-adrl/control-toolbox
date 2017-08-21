@@ -281,6 +281,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 }
 
 
+/*
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::simpleRollout(
 		const size_t threadId,
@@ -344,6 +345,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::simpleRollou
 	}
 	return true;
 }
+*/
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -746,9 +748,6 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 
 		uff_local = u_ff_ + lu_; //  add lu
 		x_ref_lqr_local = x_prev_ + lx_; 	// stabilize around current solution candidate
-
-//		bool dynamicsGood = simpleRollout(settings_.nThreads, uff_local, x_ref_lqr_local, x_, u_ff_); // todo only for debug
-//		uff_local = u_ff_; // todo only for debug
 
 		bool dynamicsGood = rolloutSingleShot(settings_.nThreads, 0, uff_local, x_, x_ref_lqr_local, xShot_);
 

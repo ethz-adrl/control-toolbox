@@ -384,21 +384,7 @@ public:
 		const StateVectorArray x_lqr_ref = x_;
 		ControlVectorArray u_recorded;
 
-//		bool success = simpleRollout(
-//				settings_.nThreads,
-//				u_ff_,
-//				x_lqr_ref,
-//				x_,
-//				u_recorded
-//				);
-//
-//		u_ff_ = u_recorded;
-
 		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_, xShot_);
-
-
-//		 StateVectorArray xShotDummy (K_);
-//		 bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_lqr_ref, xShotDummy);
 
 		x_prev_ = x_;
 		u_ff_prev_ = u_ff_;
@@ -485,6 +471,7 @@ protected:
 			StateVectorArray& xShot,
 			std::atomic_bool* terminationFlag = nullptr ) const;
 
+	/*
 	bool simpleRollout(
 			const size_t threadId,
 			const ControlVectorArray& uff,
@@ -492,6 +479,7 @@ protected:
 			StateVectorArray& x_local,
 			ControlVectorArray& u_recorded
 			)const;
+			*/
 
 	//! computes the defect between shot and trajectory
 	/*!
