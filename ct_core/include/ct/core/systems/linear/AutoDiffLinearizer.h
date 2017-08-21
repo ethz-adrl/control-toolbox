@@ -161,7 +161,7 @@ protected:
 		Eigen::Matrix<double, Eigen::Dynamic, 1> input(STATE_DIM+CONTROL_DIM);
 	    input << x, u;
 
-	    Eigen::Matrix<double, Eigen::Dynamic, 1> jac(this->A_entries);
+	    Eigen::Matrix<double, Eigen::Dynamic, 1> jac(this->A_entries);    
 
 	    this->f_.SparseJacobianForward(input, this->sparsityA_.sparsity(), this->sparsityA_.row(), this->sparsityA_.col(), jac, this->sparsityA_.workJacobian());
 
