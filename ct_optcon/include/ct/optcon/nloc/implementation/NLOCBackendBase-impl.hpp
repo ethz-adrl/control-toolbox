@@ -744,10 +744,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 		StateVectorArray x_ref_lqr_local(K_+1);
 		ControlVectorArray uff_local(K_);
 
-		ControlVectorArray lv = lqocSolver_->getFeedforwardUpdates();
-
-		uff_local = u_ff_ + lv; 			// +lu_; //  add lu
-		x_ref_lqr_local = x_prev_; // + lx_; 	// stabilize around current solution candidate
+		uff_local = u_ff_ + lu_; //  add lu
+		x_ref_lqr_local = x_prev_ + lx_; 	// stabilize around current solution candidate
 
 
 		bool dynamicsGood = simpleRollout(settings_.nThreads, uff_local, x_ref_lqr_local, x_, u_ff_); // todo only for debug
@@ -845,16 +843,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 	StateVectorArray xShot_local(K_+1); //! note this is currently only a dummy (\todo nicer solution?)
 
 	//! if stabilizing about new solution candidate, chose lu as feedforward increment and also increment x_prev_ by lx_;
-
-	//u_local = lu_ * alpha + u_ff_prev_;	// original version, maybe bring back
-	//x_ref_lqr = lx_ * alpha + x_prev_;	// original version, maybe bring back
-
-	// fixme trying this now:
-	ControlVectorArray lv = lqocSolver_->getFeedforwardUpdates();
-	u_local = lv * alpha + u_ff_prev_;
-	x_ref_lqr = x_prev_;
-
-
+	u_local = lu_ * alpha + u_ff_prev_;
+	x_ref_lqr = lx_ * alpha + x_prev_;
 
 	bool dynamicsGood = rolloutSingleShot(threadId, 0, u_local, x_local, x_ref_lqr, xShot_local, terminationFlag);
 
