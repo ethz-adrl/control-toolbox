@@ -533,6 +533,7 @@ SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 #endif
 	}
 	this->x_prev_ = this->x_;
+	this->u_ff_prev_ = this->u_ff_;
 
 	return alphaBest;
 

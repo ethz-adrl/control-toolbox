@@ -467,12 +467,9 @@ public:
 	//! performLineSearch: execute the line search, possibly with different threading schemes
 	virtual SCALAR performLineSearch() = 0;
 
+
 	//! simple full-step update for state and feedforward control (used for MPC-mode!)
-	void doFullStepUpdate()
-	{
-		u_ff_ += lu_;
-		x_ += lx_;
-	}
+	void doFullStepUpdate();
 
 	void logSummaryToMatlab(const std::string& fileName) {summaryAllIterations_.logToMatlab(fileName);}
 
@@ -489,6 +486,16 @@ protected:
 			StateSubsteps& substepsX,
 			ControlSubsteps& substepsU,
 			std::atomic_bool* terminationFlag = nullptr ) const;
+
+	/*
+	bool simpleRollout(
+			const size_t threadId,
+			const ControlVectorArray& uff,
+			const StateVectorArray& x_ref_lqr,
+			StateVectorArray& x_local,
+			ControlVectorArray& u_recorded
+			)const;
+			*/
 
 	//! computes the defect between shot and trajectory
 	/*!

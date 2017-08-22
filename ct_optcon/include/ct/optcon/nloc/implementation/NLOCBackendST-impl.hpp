@@ -73,6 +73,10 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 	double alphaBest = 0.0;
 	size_t iterations = 0;
 
+	this->lx_norm_ = 0.0;
+	this->lu_norm_ = 0.0;
+
+
 	while (iterations < this->settings_.lineSearchSettings.maxIterations)
 	{
 		if(this->settings_.lineSearchSettings.debugPrint)
@@ -142,7 +146,8 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 			}
 
 
-			if(this->settings_.printSummary){
+			if(this->settings_.printSummary)
+			{
 				this-> lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2> (u_recorded, this->u_ff_prev_);
 				this-> lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(x_search, this->x_prev_);
 			}else
@@ -157,7 +162,7 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 			this->intermediateCostBest_ = intermediateCost;
 			this->finalCostBest_ = finalCost;
 			this->d_norm_ = defectNorm;
-//			this->x_prev_ = x_search;
+			this->x_prev_ = x_search;
 			this->lowestCost_ = cost;
 			this->x_.swap(x_search);
 			this->xShot_.swap(x_shot_search);

@@ -309,6 +309,73 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 }
 
 
+/*
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::simpleRollout(
+		const size_t threadId,
+		const ControlVectorArray& uff,
+		const StateVectorArray& x_ref_lqr,
+		StateVectorArray& x_local,
+		ControlVectorArray& u_recorded
+		)const
+{
+	const double& dt = settings_.dt;
+	const double dt_sim = settings_.getSimulationTimestep();
+	const size_t subSteps = settings_.K_sim;
+	const int K_local = K_;
+
+	u_recorded.clear();
+
+	x_local.resize(K_+1);
+	x_local.front() = x_ref_lqr.front();
+
+	if(uff.size() < (size_t)K_) throw std::runtime_error("simpleRollout: u_local is too short.");
+
+
+	for (int i = 1; i<K_local+1; i++)
+	{
+		x_local[i] = x_local[i-1];
+
+		u_recorded.push_back(uff[i-1] + L_[i-1] * (x_local[i-1] - x_ref_lqr[i-1]));
+
+		controller_[threadId]->setControl(u_recorded.back());
+
+
+		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
+		{
+			integrateSymplectic<V_DIM, P_DIM>(threadId, x_local[i], 0, subSteps, dt_sim);
+		} else
+		{
+			integrators_[threadId]->integrate_n_steps(x_local[i], 0, subSteps, dt_sim);
+		}
+
+
+		// check if nan
+		for (size_t k=0; k<STATE_DIM; k++)
+		{
+			if (isnan(x_local[i](k)))
+			{
+				x_local.resize(K_local+1, ct::core::StateVector<STATE_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
+				u_recorded.resize(K_local, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
+				return false;
+			}
+		}
+		for (size_t k=0; k<CONTROL_DIM; k++)
+		{
+			if (isnan(u_recorded.back()(k)))
+			{
+				x_local.resize(K_local+1, ct::core::StateVector<STATE_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
+				u_recorded.resize(K_local, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
+				std::cout << "control unstable" << std::endl;
+				return false;
+			}
+		}
+	}
+	return true;
+}
+*/
+
+
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingleShot(
 		const size_t threadId,
@@ -342,22 +409,24 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 		K_stop = K_local; //! @todo this is not elegant - need to improve.
 
 	// for each control step
-	for (int i = k; i<K_stop; i++)
+	for (int i = (int)k; i<K_stop; i++)
 	{
-		if (terminationFlag && *terminationFlag) return false;
+		if (terminationFlag && *terminationFlag)
+			return false;
 
 		substepRecorders_[threadId]->reset();
 
-		if(i>k)
+		if(i> (int)k)
 		{
 			xShot[i] = xShot[i-1];  //! initialize integration variable
 		}
 
+		// Todo: the order here is not optimal. In some cases, we will overwrite x_ref_lqr immediately in the next step!
 		if(settings_.closedLoopShooting) // overwrite control
 			u_local[i] += L_[i] * (xShot[i] - x_ref_lqr[i]);
 
 		//! @todo: here we override the state trajectory directly (as passed by reference). This is bad.
-		if(i>k)
+		if(i>(int)k)
 		{
 			x_local[i] = xShot[i-1]; //!"overwrite" x_local
 		}
@@ -368,9 +437,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 
 		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
 		{
-			integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], i*dt, 1, dt_sim);
-		}
-		else
+			integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], i*dt, subSteps, dt_sim);
+		} else
 		{
 			integrators_[threadId]->integrate_n_steps(xShot[i], i*dt, subSteps, dt_sim);
 		}
@@ -713,17 +781,16 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 	scalar_t lowestCostPrevious = lowestCost_;
 
 	//! backup controller that led to current trajectory
-	u_ff_prev_ = u_ff_;
-	x_prev_ = x_;
+	u_ff_prev_ = u_ff_; // todo note this might be redundant
+	x_prev_ = x_;		// todo note this might be redundant
 
 	if (!settings_.lineSearchSettings.active)
 	{
 		StateVectorArray x_ref_lqr_local(K_+1);
 		ControlVectorArray uff_local(K_);
 
-		uff_local = u_ff_ + lu_; 			// add lu
+		uff_local = u_ff_ + lu_; //  add lu
 		x_ref_lqr_local = x_prev_ + lx_; 	// stabilize around current solution candidate
-
 
 		bool dynamicsGood = rolloutSingleShot(settings_.nThreads, 0, uff_local, x_, x_ref_lqr_local, xShot_, *this->substepsX_, *this->substepsU_);
 
@@ -762,8 +829,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 	}
 	else
 	{
-
-		if(settings_.lineSearchSettings.debugPrint){
+		if(settings_.lineSearchSettings.debugPrint)
+		{
 			std::cout<<"[LineSearch]: Starting line search."<<std::endl;
 			std::cout<<"[LineSearch]: Cost last rollout: "<<lowestCost_<<std::endl;
 		}
@@ -904,15 +971,17 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 
 		if (alphaBest_ == 0.0)
 		{
-			if(settings_.debugPrint){
+			if(settings_.debugPrint || settings_.printSummary){
 				std::cout<<"WARNING: No better control found during line search. Converged."<<std::endl;
 			}
 			return false;
 		}
 	}
 
-	if ( fabs((lowestCostPrevious - lowestCost_)/lowestCostPrevious) > settings_.min_cost_improvement)
+	if ( (fabs((lowestCostPrevious - lowestCost_)/lowestCostPrevious)) > settings_.min_cost_improvement)
+	{
 		return true; //! found better cost
+	}
 
 	if(settings_.debugPrint){
 		std::cout<<"CONVERGED: Cost last iteration: "<<lowestCostPrevious<<", current cost: "<< lowestCost_ << std::endl;
@@ -1097,6 +1166,29 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::reset()
 	finalCostBest_ = std::numeric_limits<scalar_t>::infinity();
 	intermediateCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
 	finalCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
+}
+
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::doFullStepUpdate()
+{
+	u_ff_ += lu_;
+	x_ += lx_;
+
+	alphaBest_ = 1.0;
+
+	if(settings_.debugPrint || settings_.printSummary)
+	{
+		lx_norm_ = computeDiscreteArrayNorm<StateVectorArray,2>(lx_);
+		lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray,2>(lu_);
+	}
+	else{
+#ifdef MATLAB
+		lx_norm_ = computeDiscreteArrayNorm<StateVectorArray,2>(lx_);
+		lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray,2>(lu_);
+#endif
+	}
 }
 
 
