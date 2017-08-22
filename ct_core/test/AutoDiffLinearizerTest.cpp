@@ -75,10 +75,12 @@ TEST(AutoDiffLinearizerTest, SystemLinearizerComparison)
 
 TEST(AutoDiffLinearizerTestMP, SystemLinearizerComparisonMP)
 {
-
     // define the dimensions of the system
     const size_t state_dim = TestNonlinearSystem::STATE_DIM;
     const size_t control_dim = TestNonlinearSystem::CONTROL_DIM;
+    typedef std::shared_ptr<AutoDiffLinearizer<state_dim, control_dim>> AdLinearizerPtr;
+    typedef StateVector<state_dim> StateVector;
+    typedef ControlVector<control_dim> ControlVector;
 
     // typedefs for the auto-differentiable system
     typedef CppAD::AD<double> AD_Scalar;
@@ -114,13 +116,14 @@ TEST(AutoDiffLinearizerTestMP, SystemLinearizerComparisonMP)
 
         for(size_t i = 0; i < numThreads; ++i)
         {
-            threads.push_back(std::thread([i, state_dim, control_dim, &adLinearizer, &systemLinearizers]()
+            threads.push_back(std::thread([i, &adLinearizer, &systemLinearizers]()
             {
                 // The ad objects are initialized here, because they need to be associated with the specfic thread number
-                std::shared_ptr<AutoDiffLinearizer<state_dim, control_dim>> adLinearizerLocal = std::shared_ptr<AutoDiffLinearizer<state_dim, control_dim>>(adLinearizer.clone());
-                StateVector<TestNonlinearSystem::STATE_DIM> x;
-                ControlVector<TestNonlinearSystem::CONTROL_DIM> u;
-                double t = 0;
+                AdLinearizerPtr adLinearizerLocal = AdLinearizerPtr(adLinearizer.clone());
+
+                StateVector x;
+                ControlVector u;
+                double t = 0.0;
 
                 x.setRandom();
                 u.setRandom();
