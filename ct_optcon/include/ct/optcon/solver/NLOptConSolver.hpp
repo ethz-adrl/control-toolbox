@@ -33,8 +33,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/nloc/NLOCBackendST.hpp>
 #include <ct/optcon/nloc/NLOCBackendMP.hpp>
 
-#include <ct/optcon/ilqr/iLQR.hpp>
-#include <ct/optcon/gnms/GNMS.hpp>
+#include <ct/optcon/nloc/algorithms/ilqr/iLQR.hpp>
+#include <ct/optcon/nloc/algorithms/gnms/GNMS.hpp>
 
 namespace ct{
 namespace optcon{
