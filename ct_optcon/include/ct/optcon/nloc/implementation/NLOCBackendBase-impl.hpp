@@ -418,7 +418,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 		// check if nan
 		for (size_t j=0; j<STATE_DIM; j++)
 		{
-			if (isnan(x_local[i](j)))
+			if (std::isnan(x_local[i](j)))
 			{
 				x_local.resize(K_local+1, ct::core::StateVector<STATE_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
 				u_local.resize(K_local, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
@@ -427,7 +427,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 		}
 		for (size_t j=0; j<CONTROL_DIM; j++)
 		{
-			if (isnan(u_local[i](j)))
+			if (std::isnan(u_local[i](j)))
 			{
 				x_local.resize(K_local+1, ct::core::StateVector<STATE_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
 				u_local.resize(K_local, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
