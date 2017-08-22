@@ -77,9 +77,6 @@ if(BUILD_EXAMPLES)
     add_executable(ex_DampedOscillatorCustomController examples/DampedOscillatorCustomController.cpp)
 endif()
 
-catkin_add_gtest(LinearSystemDiscretizerTest test/system/linear/LinearSystemDiscretizerTest.cpp)
-target_link_libraries(LinearSystemDiscretizerTest ${catkin_LIBRARIES})
-
 catkin_add_gtest(NoiseTest test/NoiseTest.cpp)
 target_link_libraries(NoiseTest ${catkin_LIBRARIES})
 

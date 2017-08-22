@@ -190,7 +190,7 @@ public:
 			state_matrix_t& A,
 			state_control_matrix_t& B) override
 	{
-#if DEBUG
+#ifdef DEBUG
 		if (!(this->xSubstep_) || !(this->uSubstep_))
 			throw std::runtime_error("SensitivityIntegrator.h: Cached trajectories not set.");
 		if (this->xSubstep_->size() <=n || this->uSubstep_->size() <= n)
