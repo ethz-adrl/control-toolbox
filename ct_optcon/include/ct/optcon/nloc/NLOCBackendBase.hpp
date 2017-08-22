@@ -93,6 +93,12 @@ public:
 	typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
 	typedef std::shared_ptr<ControlVectorArray> ControlVectorArrayPtr;
 
+	typedef std::vector<StateVectorArrayPtr, Eigen::aligned_allocator<StateVectorArrayPtr>> StateSubsteps;
+	typedef std::shared_ptr<StateSubsteps> StateSubstepsPtr;
+
+	typedef std::vector<ControlVectorArrayPtr, Eigen::aligned_allocator<ControlVectorArrayPtr>> ControlSubsteps;
+	typedef std::shared_ptr<ControlSubsteps> ControlSubstepsPtr;
+
 	typedef ct::core::ControlMatrix<CONTROL_DIM, SCALAR> ControlMatrix;
 	typedef ct::core::ControlMatrixArray<CONTROL_DIM, SCALAR> ControlMatrixArray;
 	typedef ct::core::StateMatrixArray<STATE_DIM, SCALAR> StateMatrixArray;
@@ -134,6 +140,10 @@ public:
 			lx_norm_(0.0),
 			lu_norm_(0.0),
 		    lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>()),
+
+			substepsX_(new StateSubsteps),
+			substepsU_(new ControlSubsteps),
+
 			intermediateCostBest_(std::numeric_limits<SCALAR>::infinity()),
 			finalCostBest_(std::numeric_limits<SCALAR>::infinity()),
 			lowestCost_(std::numeric_limits<SCALAR>::infinity()),
@@ -386,7 +396,7 @@ public:
 
 	//! nominal rollout using default thread and member variables for the results. // todo maybe rename (initial rollout?)
 	bool nominalRollout() {
-		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_prev_, xShot_, true);
+		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_prev_, xShot_, *this->substepsX_, *this->substepsU_);
 		x_prev_ = x_;
 		u_ff_prev_ = u_ff_;
 		firstRollout_ = false;
@@ -451,7 +461,8 @@ public:
 			const StateVectorArray& x_ref_lqr,
 			StateVectorArray& xShot,
 			StateVectorArray& d,
-			bool recordSubsteps);
+			StateSubsteps& substepsX,
+			ControlSubsteps& substepsU) const;
 
 	//! performLineSearch: execute the line search, possibly with different threading schemes
 	virtual SCALAR performLineSearch() = 0;
@@ -475,8 +486,9 @@ protected:
 			StateVectorArray& x_local,
 			const StateVectorArray& x_ref_lqr,
 			StateVectorArray& xShot,
-			bool recordSubsteps,
-			std::atomic_bool* terminationFlag = nullptr );
+			StateSubsteps& substepsX,
+			ControlSubsteps& substepsU,
+			std::atomic_bool* terminationFlag = nullptr ) const;
 
 	//! computes the defect between shot and trajectory
 	/*!
@@ -560,8 +572,10 @@ protected:
 			ControlVectorArray& u_local,
 			scalar_t& intermediateCost,
 			scalar_t& finalCost,
+			StateSubsteps& substepsX,
+			ControlSubsteps& substepsU,
 			std::atomic_bool* terminationFlag = nullptr
-	);
+	) const;
 
 
 	void executeLineSearchMultipleShooting(
@@ -576,8 +590,10 @@ protected:
 			scalar_t& intermediateCost,
 			scalar_t& finalCost,
 			scalar_t& defectNorm,
+			StateSubsteps& substepsX,
+			ControlSubsteps& substepsU,
 			std::atomic_bool* terminationFlag = nullptr
-	);
+	) const;
 
 
 	//! Update feedforward controller
@@ -667,8 +683,8 @@ protected:
 	//! shared pointer to the linear-quadratic optimal control solver
 	std::shared_ptr<LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR> > lqocSolver_;
 
-	std::vector<StateVectorArrayPtr, Eigen::aligned_allocator<StateVectorArrayPtr>> substepsX_;
-	std::vector<ControlVectorArrayPtr, Eigen::aligned_allocator<ControlVectorArrayPtr>> substepsU_;
+	StateSubstepsPtr substepsX_;
+	ControlSubstepsPtr substepsU_;
 
 
 	scalar_t intermediateCostBest_;

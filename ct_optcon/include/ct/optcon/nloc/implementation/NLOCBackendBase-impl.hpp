@@ -103,8 +103,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
 	u_ff_prev_.resize(K_);
 	L_.resize(K_);
 
-	substepsX_.resize(K_+1);
-	substepsU_.resize(K_+1);
+	substepsX_->resize(K_+1);
+	substepsU_->resize(K_+1);
 
 	lqocProblem_->changeNumStages(K_);
 	lqocProblem_->setZero();
@@ -186,8 +186,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 
 			sensitivity_[i] = SensitivityPtr(
 				new ct::core::SensitivityIntegrator<STATE_DIM, CONTROL_DIM, SCALAR>(settings_.getSimulationTimestep(), linearSystems_[i], controller_[i], settings_.integrator, settings_.timeVaryingDiscretization));
-
-			sensitivity_[i]->setSubstepTrajectoryReference(&substepsX_, &substepsU_);
 		} else
 		{
 			sensitivity_[i] = SensitivityPtr(
@@ -319,9 +317,10 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 		StateVectorArray& x_local,
 		const StateVectorArray& x_ref_lqr,
 		StateVectorArray& xShot,		//! the value at the end of each integration interval
-		bool recordSubsteps,
+		StateSubsteps& substepsX,
+		ControlSubsteps& substepsU,
 		std::atomic_bool* terminationFlag
-		)
+		) const
 {
 	const double& dt = settings_.dt;
 	const double dt_sim = settings_.getSimulationTimestep();
@@ -331,8 +330,6 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 	if(u_local.size() < (size_t)K_) throw std::runtime_error("rolloutSingleShot: u_local is too short.");
 	if(x_local.size() < (size_t)K_+1) throw std::runtime_error("rolloutSingleShot: x_local is too short.");
 	if(xShot.size() < (size_t)K_+1) throw std::runtime_error("rolloutSingleShot: xShot is too short.");
-
-	substepRecorders_[threadId]->setEnable(recordSubsteps);
 
 	xShot[k] = x_local[k]; // initialize
 
@@ -349,9 +346,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 	{
 		if (terminationFlag && *terminationFlag) return false;
 
-		// clear substep trajectory
-		if (recordSubsteps)
-			substepRecorders_[threadId]->reset();
+		substepRecorders_[threadId]->reset();
 
 		if(i>k)
 		{
@@ -386,18 +381,18 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 
 
 		// check if nan
-		for (size_t k=0; k<STATE_DIM; k++)
+		for (size_t j=0; j<STATE_DIM; j++)
 		{
-			if (isnan(x_local[i](k)))
+			if (isnan(x_local[i](j)))
 			{
 				x_local.resize(K_local+1, ct::core::StateVector<STATE_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
 				u_local.resize(K_local, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
 				return false;
 			}
 		}
-		for (size_t k=0; k<CONTROL_DIM; k++)
+		for (size_t j=0; j<CONTROL_DIM; j++)
 		{
-			if (isnan(u_local[i](k)))
+			if (isnan(u_local[i](j)))
 			{
 				x_local.resize(K_local+1, ct::core::StateVector<STATE_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
 				u_local.resize(K_local, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
@@ -407,11 +402,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 		}
 
 		// get substeps for sensitivities
-		if (recordSubsteps)
-		{
-			substepsX_[k] = substepRecorders_[threadId]->getSubstates();
-			substepsU_[k] = substepRecorders_[threadId]->getSubcontrols();
-		}
+		substepsX[i] = substepRecorders_[threadId]->getSubstates();
+		substepsU[i] = substepRecorders_[threadId]->getSubcontrols();
 	}
 
 	return true;
@@ -449,7 +441,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots
 		const StateVectorArray& x_ref_lqr,
 		StateVectorArray& xShot,
 		StateVectorArray& d,
-		bool recordSubsteps)
+		StateSubsteps& substepsX,
+		ControlSubsteps& substepsU) const
 {
 	//! make sure all intermediate entries in the defect trajectory are zero
 	d.setConstant(state_vector_t::Zero());
@@ -457,7 +450,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots
 	for (size_t k=firstIndex; k<=lastIndex; k=k+settings_.K_shot)
 	{
 		// first rollout the shot
-		rolloutSingleShot(threadId, k, u_ff_local, x_local, x_ref_lqr, xShot, recordSubsteps);
+		rolloutSingleShot(threadId, k, u_ff_local, x_local, x_ref_lqr, xShot, substepsX, substepsU);
 
 		// then compute the corresponding defect
 		computeSingleDefect(k, x_local, xShot, d);
@@ -528,6 +521,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinea
 	assert(lqocProblem_->A_.size() > k);
 	assert(lqocProblem_->B_.size() > k);
 
+	sensitivity_[threadId]->setSubstepTrajectoryReference(substepsX_.get(), substepsU_.get());
 	sensitivity_[threadId]->getAandB(x_[k], u_ff_[k], (int)k, settings_.K_sim, p.A_[k], p.B_[k]);
 }
 
@@ -731,7 +725,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 		x_ref_lqr_local = x_prev_ + lx_; 	// stabilize around current solution candidate
 
 
-		bool dynamicsGood = rolloutSingleShot(settings_.nThreads, 0, uff_local, x_, x_ref_lqr_local, xShot_, true);
+		bool dynamicsGood = rolloutSingleShot(settings_.nThreads, 0, uff_local, x_, x_ref_lqr_local, xShot_, *this->substepsX_, *this->substepsU_);
 
 		if (dynamicsGood)
 		{
@@ -812,8 +806,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
 		scalar_t& intermediateCost,
 		scalar_t& finalCost,
+		StateSubsteps& substepsX,
+		ControlSubsteps& substepsU,
 		std::atomic_bool* terminationFlag
-)
+) const
 {
 	intermediateCost =  std::numeric_limits<scalar_t>::infinity();
 	finalCost = std::numeric_limits<scalar_t>::infinity();
@@ -823,11 +819,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 	StateVectorArray x_ref_lqr;
 	StateVectorArray xShot_local(K_+1); //! note this is currently only a dummy (\todo nicer solution?)
 
-	//! if stabilizing about new solution candidate, chose lu as feedforward increment and also increment x_prev_ by lx
+	//! if stabilizing about new solution candidate, choose lu as feedforward increment and also increment x_prev_ by lx
 	u_local = lu_ * alpha + u_ff_prev_;
 	x_ref_lqr = lx_ * alpha + x_prev_;
 
-	bool dynamicsGood = rolloutSingleShot(threadId, 0, u_local, x_local, x_ref_lqr, xShot_local, false, terminationFlag);
+	bool dynamicsGood = rolloutSingleShot(threadId, 0, u_local, x_local, x_ref_lqr, xShot_local, substepsX, substepsU, terminationFlag);
 
 	if (terminationFlag && *terminationFlag) return;
 
@@ -940,8 +936,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 		scalar_t& intermediateCost,
 		scalar_t& finalCost,
 		scalar_t& defectNorm,
+		StateSubsteps& substepsX,
+		ControlSubsteps& substepsU,
 		std::atomic_bool* terminationFlag
-)
+) const
 {
 	intermediateCost =  std::numeric_limits<scalar_t>::max();
 	finalCost = std::numeric_limits<scalar_t>::max();
@@ -958,7 +956,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 
 	if (terminationFlag && *terminationFlag) return;
 
-	rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_alpha, x_shot_alpha, defects_recorded, false);
+	rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_alpha, x_shot_alpha, defects_recorded, substepsX, substepsU);
 
 	if (terminationFlag && *terminationFlag) return;
 

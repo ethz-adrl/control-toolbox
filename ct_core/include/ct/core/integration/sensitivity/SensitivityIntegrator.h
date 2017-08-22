@@ -190,6 +190,7 @@ public:
 			state_matrix_t& A,
 			state_control_matrix_t& B) override
 	{
+#if DEBUG
 		if (!(this->xSubstep_) || !(this->uSubstep_))
 			throw std::runtime_error("SensitivityIntegrator.h: Cached trajectories not set.");
 		if (this->xSubstep_->size() <=n || this->uSubstep_->size() <= n)
@@ -199,9 +200,19 @@ public:
 			std::cout << "n: "<<n<<std::endl;
 			throw std::runtime_error("SensitivityIntegrator.h: Cached trajectories too short.");
 		}
+		if (!this->xSubstep_->at(n))
+			throw std::runtime_error("no state substeps available for requested time index");
+		if (!this->uSubstep_->at(n))
+			throw std::runtime_error("no control substeps available for requested time index");
+
+		if (this->xSubstep_->at(n)->size() == 0)
+			throw std::runtime_error("substep state trajectory length for given time index is zero");
+		if (this->uSubstep_->at(n)->size() == 0)
+			throw std::runtime_error("substep control trajectory length for given time index is zero");
 
 		assert(x == this->xSubstep_->operator[](n)->operator[](0) && "cached trajectory does not match provided state");
 		assert(u == this->uSubstep_->operator[](n)->operator[](0) && "cached trajectory does not match provided input");
+#endif DEBUG
 
 		if (!timeVarying_)
 		{

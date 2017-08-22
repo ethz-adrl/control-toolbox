@@ -402,7 +402,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 		printString("[MP]: do single threaded shot rollout for single index " + std::to_string(firstIndex) + ". Not waking up workers.");
 #endif //DEBUG_PRINT_MP
 
-		this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_, this->xShot_, true);
+		this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_, this->xShot_, *this->substepsX_, *this->substepsU_);
 
 		this->computeSingleDefect(firstIndex, this->x_, this->xShot_, this->lqocProblem_->b_);
 		return;
@@ -470,7 +470,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWo
 				printString("[Thread " + std::to_string(threadId) + "]: rolling out shot with index " + std::to_string(KMax_ - k));
 #endif
 
-			this->rolloutSingleShot(threadId, kShot, this->u_ff_, this->x_, this->x_, this->xShot_, true);
+			this->rolloutSingleShot(threadId, kShot, this->u_ff_, this->x_, this->x_, this->xShot_, *this->substepsX_, *this->substepsU_);
 
 			this->computeSingleDefect(kShot, this->x_, this->xShot_, this->lqocProblem_->b_);
 
@@ -568,6 +568,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_shot_search(this->K_+1);
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> defects_recorded(this->K_+1, ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_recorded(this->K_);
+		typename Base::StateSubstepsPtr substepsX = typename Base::StateSubstepsPtr(new typename Base::StateSubsteps(this->K_+1));
+		typename Base::ControlSubstepsPtr substepsU = typename Base::ControlSubstepsPtr(new typename Base::ControlSubsteps(this->K_+1));
 
 		//! set init state
 		x_search[0] = this->x_prev_[0];
@@ -578,13 +580,13 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		case NLOptConSettings::NLOCP_ALGORITHM::GNMS :
 		{
 			this->executeLineSearchMultipleShooting(threadId, alpha, this->lu_, this->lx_, x_search,
-					x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, &alphaBestFound_);
+					x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, *substepsX, *substepsU, &alphaBestFound_);
 			break;
 		}
 		case NLOptConSettings::NLOCP_ALGORITHM::ILQR :
 		{
 			defectNorm = 0.0;
-			this->executeLineSearchSingleShooting(threadId, alpha, x_search, u_recorded, intermediateCost, finalCost, &alphaBestFound_);
+			this->executeLineSearchSingleShooting(threadId, alpha, x_search, u_recorded, intermediateCost, finalCost, *substepsX, *substepsU, &alphaBestFound_);
 			break;
 		}
 		default :
@@ -620,6 +622,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 			this->xShot_.swap(x_shot_search);
 			this->u_ff_.swap(u_recorded);
 			this->lqocProblem_->b_.swap(defects_recorded);
+			this->substepsX_ = substepsX;
+			this->substepsU_ = substepsU;
 		} else
 		{
 			if(this->settings_.lineSearchSettings.debugPrint){
