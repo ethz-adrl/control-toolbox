@@ -165,7 +165,7 @@ void testGaussNewtonMethods()
 	nloc_settings.min_cost_improvement = 1e-6;
 	nloc_settings.fixedHessianCorrection = false;
 	nloc_settings.dt = 0.01;
-	nloc_settings.K_sim = 1;
+	nloc_settings.K_sim = 2;
 	nloc_settings.K_shot = 1;
 	nloc_settings.integrator = ct::core::IntegrationType::EULERCT;
 	nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
