@@ -264,7 +264,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 			break;
 
 		sensitivity_[i]->setApproximation(settings.discretization);
-		sensitivity_[i]->setTimeDiscretization(settings.dt);
+		sensitivity_[i]->setTimeDiscretization(settings.getSimulationTimestep());
 	}
 
 	if(settings.integrator != settings_.integrator)
