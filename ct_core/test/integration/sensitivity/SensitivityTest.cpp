@@ -65,6 +65,7 @@ void testSensitivities(IntegrationType integrationType)
 
 			sensitivities[j]->getAandB(stateBefore,
 				controller->getControl(),
+				state,
 				i,
 				1,
 				A,

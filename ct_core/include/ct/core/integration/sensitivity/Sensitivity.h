@@ -89,6 +89,7 @@ public:
 	virtual void getAandB(
 			const StateVector<STATE_DIM, SCALAR>& x,
 			const ControlVector<CONTROL_DIM, SCALAR>& u,
+			const StateVector<STATE_DIM, SCALAR>& x_next,
 			const int n,
 			size_t numSteps,
 			StateMatrix<STATE_DIM, SCALAR>& A,

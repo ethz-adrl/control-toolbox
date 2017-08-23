@@ -32,6 +32,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/core/systems/linear/LinearSystem.h>
 #include <ct/core/integration/internal/SteppersCT.h>
 
+#define SYMPLECTIC_ENABLED template<size_t V, size_t P> typename std::enable_if<(V > 0 && P > 0), void>::type
+#define SYMPLECTIC_DISABLED template<size_t V, size_t P> typename std::enable_if<(V <= 0 || P <= 0), void>::type
+
 namespace ct {
 namespace core{
 
@@ -45,7 +48,7 @@ namespace core{
  * @tparam     CONTROL_DIM  The control dimension
  * @tparam     SCALAR       The scalar type
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM = STATE_DIM/2, size_t V_DIM = STATE_DIM/2, typename SCALAR = double>
 class SensitivityIntegrator : public Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
@@ -74,6 +77,7 @@ public:
         const ct::core::IntegrationType stepperType = ct::core::IntegrationType::EULERCT,
 		bool timeVarying = true) :
         	timeVarying_(timeVarying),
+			symplectic_(false),
 			dt_(dt),
 			substep_(0),
 			k_(0),
@@ -97,9 +101,12 @@ public:
      */
     void setStepper(const ct::core::IntegrationType stepperType)
     {
+    	symplectic_ = false;
+
         switch(stepperType)
         {
             case ct::core::IntegrationType::EULERCT:
+            case ct::core::IntegrationType::EULER_SYM:
             case ct::core::IntegrationType::EULER:
             {
                 stepper_ = std::shared_ptr<ct::core::internal::StepperCTBase<sensitivities_matrix_t, SCALAR>>(
@@ -116,8 +123,11 @@ public:
             }
 
             default:
-                throw std::runtime_error("Invalid CT integration type");
+                throw std::runtime_error("Integration type not supported by sensitivity integrator");
         }
+
+        if(stepperType == ct::core::IntegrationType::EULER_SYM)
+        	symplectic_ = true;
     }
     
     /**
@@ -185,6 +195,7 @@ public:
 	virtual void getAandB(
 			const StateVector<STATE_DIM, SCALAR>& x,
 			const ControlVector<CONTROL_DIM, SCALAR>& u,
+			const StateVector<STATE_DIM, SCALAR>& x_next,
 			const int n,
 			const size_t numSteps,
 			state_matrix_t& A,
@@ -212,7 +223,9 @@ public:
 
 		assert(x == this->xSubstep_->operator[](n)->operator[](0) && "cached trajectory does not match provided state");
 		assert(u == this->uSubstep_->operator[](n)->operator[](0) && "cached trajectory does not match provided input");
-#endif DEBUG
+#endif
+
+		x_next_ = x_next;
 
 		if (!timeVarying_)
 		{
@@ -229,9 +242,12 @@ public:
 
 private:
 	bool timeVarying_;
+	bool symplectic_;
     double dt_;
     size_t substep_;
     size_t k_;
+
+    state_vector_t x_next_;
 
     state_matrix_t Aconst_;
     state_control_matrix_t Bconst_;
@@ -280,24 +296,104 @@ private:
         	const state_vector_t& x = xSubstep->operator[](this->substep_);
         	const control_vector_t& u = uSubstep->operator[](this->substep_);
 
-            if(timeVarying_)
-            {
-            	state_matrix_t A = linearSystem_->getDerivativeState(x, u, t);
-            	state_control_matrix_t B = linearSystem_->getDerivativeControl(x, u, t);
+        	if (symplectic_)
+        	{
+        		state_matrix_t A_sym;
+        		state_control_matrix_t B_sym;
+        		const state_vector_t* x_next;
 
-            	integrateSensitivities(A, B, x, dX0In, dX0dt, t);
-            } else
-            {
-            	integrateSensitivities(Aconst_, Bconst_, x, dX0In, dX0dt, t);
-            }
+        		if (this->substep_+1 < xSubstep->size())
+        			x_next = &xSubstep->operator[](this->substep_+1);
+        		else
+        			x_next = &x_next_;
+
+        		getSymplecticAandB<V_DIM, P_DIM>(t, x, *x_next, u, A_sym, B_sym);
+
+        		integrateSensitivities(A_sym, B_sym, x, dX0In, dX0dt, t);
+
+        	} else
+        	{
+				if(timeVarying_)
+				{
+					state_matrix_t A = linearSystem_->getDerivativeState(x, u, t);
+					state_control_matrix_t B = linearSystem_->getDerivativeControl(x, u, t);
+
+					integrateSensitivities(A, B, x, dX0In, dX0dt, t);
+				} else
+				{
+					integrateSensitivities(Aconst_, Bconst_, x, dX0In, dX0dt, t);
+				}
+        	}
 
             this->substep_++;
         };
+    }
+
+    SYMPLECTIC_ENABLED getSymplecticAandB(
+    		const SCALAR& t,
+    		const state_vector_t& x,
+			const state_vector_t& x_next,
+			const control_vector_t& u,
+			state_matrix_t& A_sym,
+			state_control_matrix_t& B_sym)
+    {
+		// our implementation of symplectic integrators first updates the positions, we need to reconstruct an intermediate state accordingly
+    	state_vector_t x_interm = x;
+		x_interm.template topRows<P_DIM>() = x_next.template topRows<P_DIM>();
+
+		state_matrix_t Ac1  = linearSystem_->getDerivativeState(x, u, t); // continuous time A matrix for start state and control
+		state_control_matrix_t Bc1 = linearSystem_->getDerivativeControl(x, u, t); // continuous time B matrix for start state and control
+		state_matrix_t Ac2  = linearSystem_->getDerivativeState(x_interm, u, t); // continuous time A matrix for intermediate state and control
+		state_control_matrix_t Bc2 = linearSystem_->getDerivativeControl(x_interm, u, t); // continuous time B matrix for intermediate state and control
+
+
+		typedef Eigen::Matrix<SCALAR, P_DIM, P_DIM> p_matrix_t;
+		typedef Eigen::Matrix<SCALAR, V_DIM, V_DIM> v_matrix_t;
+		typedef Eigen::Matrix<SCALAR, P_DIM, V_DIM> p_v_matrix_t;
+		typedef Eigen::Matrix<SCALAR, V_DIM, P_DIM> v_p_matrix_t;
+		typedef Eigen::Matrix<SCALAR, P_DIM, CONTROL_DIM> p_control_matrix_t;
+		typedef Eigen::Matrix<SCALAR, V_DIM, CONTROL_DIM> v_control_matrix_t;
+
+		// for ease of notation, make a block-wise map to references
+		// elements taken form the linearization at the starting state
+		const Eigen::Ref<const p_matrix_t> A11 		= Ac1.template topLeftCorner<P_DIM, P_DIM>();
+		const Eigen::Ref<const p_v_matrix_t> A12 	= Ac1.template topRightCorner<P_DIM, V_DIM>();
+		const Eigen::Ref<const p_control_matrix_t> B1 = Bc1.template topRows<P_DIM>();
+
+		// elements taken from the linearization at the intermediate state
+		const Eigen::Ref<const v_p_matrix_t> A21 	= Ac2.template bottomLeftCorner<V_DIM, P_DIM>();
+		const Eigen::Ref<const v_matrix_t> A22 		= Ac2.template bottomRightCorner<V_DIM, V_DIM>();
+		const Eigen::Ref<const v_control_matrix_t> B2 = Bc2.template bottomRows<V_DIM>();
+
+		// discrete approximation A matrix
+		A_sym.template topLeftCorner<P_DIM, P_DIM>() = A11;
+		A_sym.template topRightCorner<P_DIM, V_DIM>() = A12;
+		A_sym.template bottomLeftCorner<V_DIM, P_DIM>() = (A21 * (p_matrix_t::Identity() + dt_*A11));
+		A_sym.template bottomRightCorner<V_DIM, V_DIM>() = (A22 + dt_*A21*A12);
+
+		// discrete approximation B matrix
+		B_sym.template topRows<P_DIM>() = B1;
+		B_sym.template bottomRows<V_DIM>() = (B2 + dt_ * A21 * B1);
+	}
+
+    SYMPLECTIC_DISABLED  getSymplecticAandB(
+    		const SCALAR& t,
+    		const state_vector_t& x,
+			const state_vector_t& x_next,
+			const control_vector_t& u,
+			state_matrix_t& A_sym,
+			state_control_matrix_t& B_sym)
+    {
+    	throw std::runtime_error("Cannot compute sensitivities for symplectic system with these dimensions.");
     }
 };
 
 
 }
 }
+
+
+#undef SYMPLECTIC_ENABLED
+#undef SYMPLECTIC_DISABLED
 
 #endif

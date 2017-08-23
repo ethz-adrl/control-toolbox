@@ -140,6 +140,7 @@ public:
 	virtual void getAandB(
 			const StateVector<STATE_DIM, SCALAR>& x,
 			const ControlVector<CONTROL_DIM, SCALAR>& u,
+			const StateVector<STATE_DIM, SCALAR>& x_next,
 			const int n,
 			const size_t numSteps,
 			state_matrix_t& A,
@@ -160,12 +161,12 @@ public:
 		}
 		case SensitivityApproximationSettings::APPROXIMATION::BACKWARD_EULER:
 		{
-			backwardEuler(x, u, n+1, A, B);
+			backwardEuler(x_next, u, n+1, A, B);
 			break;
 		}
 		case SensitivityApproximationSettings::APPROXIMATION::SYMPLECTIC_EULER:
 		{
-			symplecticEuler<V_DIM, P_DIM>(x, u, n, A, B);
+			symplecticEuler<V_DIM, P_DIM>(x, u, x_next, n, A, B);
 			break;
 		}
 		case SensitivityApproximationSettings::APPROXIMATION::TUSTIN:
@@ -176,16 +177,16 @@ public:
 			 */
 
 			//! continuous-time A matrices
-			state_matrix_t Ac = settings_.dt_ * linearSystem_->getDerivativeState(x, u, n*settings_.dt_);
+			state_matrix_t Ac_front = settings_.dt_ * linearSystem_->getDerivativeState(x, u, n*settings_.dt_);
+			state_matrix_t Ac_back = settings_.dt_ * linearSystem_->getDerivativeState(x_next, u, (n+1)*settings_.dt_);
 
 			//! the continuous-time B matrices
-			state_control_matrix_t Bc = linearSystem_->getDerivativeControl(x, u, n*settings_.dt_);
+			state_control_matrix_t Bc_front = linearSystem_->getDerivativeControl(x, u, n*settings_.dt_);
 
 			//! tustin approximation
-			state_matrix_t aNewInv = (state_matrix_t::Identity() -  Ac).colPivHouseholderQr().inverse();
-			A = aNewInv * (state_matrix_t::Identity() + Ac);
-			B = aNewInv * settings_.dt_ * Bc;
-
+			state_matrix_t aNewInv = (state_matrix_t::Identity() -  Ac_back).colPivHouseholderQr().inverse();
+			A = aNewInv * (state_matrix_t::Identity() + Ac_front);
+			B = aNewInv * settings_.dt_ * Bc_front;
 			break;
 		}
 		case SensitivityApproximationSettings::APPROXIMATION::MATRIX_EXPONENTIAL:
@@ -197,79 +198,6 @@ public:
 			throw std::runtime_error("Unknown Approximation type in SensitivityApproximation.");
 		}	// end switch
 	}
-
-
-//	//! get A and B matrix for linear time varying system
-//	/*!
-//	 * compute discrete-time linear system matrices A and B for a linear time-varying system
-//	 * @param x_n the state at the start of the discretization interval
-//	 * @param u_n the control at the start of the discretization interval
-//	 * @param x_n_next the state at the end of the discretization interval
-//	 * @param u_n_next the control at the end of the discretization interval
-//	 * @param n the time setpoint
-//	 * @param A the resulting linear system matrix A
-//	 * @param B the resulting linear system matrix B
-//	 */
-//	virtual void getAandBTimeVarying(
-//			const StateVector<STATE_DIM, SCALAR>& x_n,
-//			const ControlVector<CONTROL_DIM, SCALAR>& u_n,
-//			const StateVector<STATE_DIM, SCALAR>& x_n_next,
-//			const ControlVector<CONTROL_DIM, SCALAR>& u_n_next,
-//			const int& n,
-//			state_matrix_t& A,
-//			state_control_matrix_t& B)
-//		{
-//		if(linearSystem_ == nullptr)
-//			throw std::runtime_error("Error in SensitivityApproximation: linearSystem not properly set.");
-//
-//
-//		switch(settings_.approximation_)
-//		{
-//		case SensitivityApproximationSettings::APPROXIMATION::FORWARD_EULER:
-//		{
-//			forwardEuler(x_n, u_n, n, A, B);
-//			break;
-//		}
-//		case SensitivityApproximationSettings::APPROXIMATION::BACKWARD_EULER:
-//		{
-//			backwardEuler(x_n_next, u_n_next, n+1, A, B);
-//			break;
-//		}
-//		case SensitivityApproximationSettings::APPROXIMATION::SYMPLECTIC_EULER:
-//		{
-//			symplecticEuler<V_DIM, P_DIM>(x_n, u_n, x_n_next, u_n_next, n, A, B);
-//			break;
-//		}
-//		case SensitivityApproximationSettings::APPROXIMATION::TUSTIN:
-//		{
-//			/*!
-//			 * the Tustin (also known as 'Heun') approximation uses the state and control at the *start* and at the *end*
-//			 * of the ZOH interval to generate linear approximations A and B in a trapezoidal fashion.
-//			 */
-//
-//			//! continuous-time A matrices
-//			state_matrix_t Ac_front = settings_.dt_ * linearSystem_->getDerivativeState(x_n, u_n, n*settings_.dt_);
-//			state_matrix_t Ac_back = settings_.dt_ * linearSystem_->getDerivativeState(x_n_next, u_n_next, (n+1)*settings_.dt_);
-//
-//			//! the continuous-time B matrices
-//			state_control_matrix_t Bc_front = linearSystem_->getDerivativeControl(x_n, u_n, n*settings_.dt_);
-//
-//			//! tustin approximation
-//			state_matrix_t aNewInv = (state_matrix_t::Identity() -  Ac_back).colPivHouseholderQr().inverse();
-//			A = aNewInv * (state_matrix_t::Identity() + Ac_front);
-//			B = aNewInv * settings_.dt_ * Bc_front;
-//
-//			break;
-//		}
-//		case SensitivityApproximationSettings::APPROXIMATION::MATRIX_EXPONENTIAL:
-//		{
-//			matrixExponential(x_n, u_n, n, A, B);
-//			break;
-//		}
-//		default:
-//			throw std::runtime_error("Unknown Approximation type in SensitivityApproximation.");
-//		}	// end switch
-//		}
 
 
 private:
@@ -341,7 +269,6 @@ private:
 			const StateVector<STATE_DIM, SCALAR>& x,
 			const ControlVector<CONTROL_DIM, SCALAR>& u,
 			const StateVector<STATE_DIM, SCALAR>& x_next,
-			const ControlVector<CONTROL_DIM, SCALAR>& u_next,
 			const int& n,
 			state_matrix_t& A_sym,
 			state_control_matrix_t& B_sym)
@@ -423,12 +350,12 @@ private:
 		// discrete approximation A matrix
 		A_sym.topLeftCorner(P_DIM, P_DIM) = p_matrix_t::Identity() + dt * A11;
 		A_sym.topRightCorner(P_DIM, V_DIM) = dt * A12;
-		A_sym.bottomLeftCorner(V_DIM, P_DIM) = dt * A21 * (p_matrix_t::Identity() + dt*A11);
-		A_sym.bottomRightCorner(V_DIM, V_DIM) = dt*dt*A21*A12  + v_matrix_t::Identity() + dt* A22;
+		A_sym.bottomLeftCorner(V_DIM, P_DIM) = dt * (A21 * (p_matrix_t::Identity() + dt*A11));
+		A_sym.bottomRightCorner(V_DIM, V_DIM) =  v_matrix_t::Identity() + dt* (A22 + dt*A21*A12);
 
 		// discrete approximation B matrix
 		B_sym.topRows(P_DIM) = dt * B1;
-		B_sym.bottomRows(V_DIM) = dt * B2 + dt*dt * A21 * B1;
+		B_sym.bottomRows(V_DIM) = dt * (B2 + dt * A21 * B1);
 	}
 
 
@@ -437,7 +364,6 @@ private:
 			const StateVector<STATE_DIM, SCALAR>& x_n,
 			const ControlVector<CONTROL_DIM, SCALAR>& u_n,
 			const StateVector<STATE_DIM, SCALAR>& x_next,
-			const ControlVector<CONTROL_DIM, SCALAR>& u_next,
 			const int& n,
 			state_matrix_t& A,
 			state_control_matrix_t& B)
@@ -473,6 +399,10 @@ private:
 
 }	// namespace core
 }	// namespace ct
+
+
+#undef SYMPLECTIC_ENABLED
+#undef SYMPLECTIC_DISABLED
 
 
 

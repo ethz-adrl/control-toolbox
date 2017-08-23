@@ -185,7 +185,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 				throw std::runtime_error("sensitivity integrator only available for Euler and RK4 integrators");
 
 			sensitivity_[i] = SensitivityPtr(
-				new ct::core::SensitivityIntegrator<STATE_DIM, CONTROL_DIM, SCALAR>(settings_.getSimulationTimestep(), linearSystems_[i], controller_[i], settings_.integrator, settings_.timeVaryingDiscretization));
+				new ct::core::SensitivityIntegrator<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(settings_.getSimulationTimestep(), linearSystems_[i], controller_[i], settings_.integrator, settings_.timeVaryingDiscretization));
 		} else
 		{
 			sensitivity_[i] = SensitivityPtr(
@@ -590,7 +590,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinea
 	assert(lqocProblem_->B_.size() > k);
 
 	sensitivity_[threadId]->setSubstepTrajectoryReference(substepsX_.get(), substepsU_.get());
-	sensitivity_[threadId]->getAandB(x_[k], u_ff_[k], (int)k, settings_.K_sim, p.A_[k], p.B_[k]);
+	sensitivity_[threadId]->getAandB(x_[k], u_ff_[k], xShot_[k], (int)k, settings_.K_sim, p.A_[k], p.B_[k]);
 }
 
 

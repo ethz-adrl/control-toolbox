@@ -5,7 +5,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 project (ct_core) 
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -std=c++11 -Wall -Wl,--no-as-needed")
+SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++11 -Wall")
 
 find_package(catkin REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -58,7 +59,6 @@ catkin_package(
         include/external
    LIBRARIES
        ct_core
-   CATKIN_DEPENDS
 )
 
 

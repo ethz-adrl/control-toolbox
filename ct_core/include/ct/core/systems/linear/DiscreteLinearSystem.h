@@ -84,7 +84,7 @@ public:
 	{
 		state_matrix_t A;
 		state_control_matrix_t B;
-		this->getAandB(state, control, n, 1, A, B);
+		this->getAandB(state, control, state, n, 1, A, B);
 		stateNext = A * state + B * control;
 	}
 
@@ -101,6 +101,7 @@ public:
 	virtual void getAandB(
 			const StateVector<STATE_DIM, SCALAR>& x,
 			const ControlVector<CONTROL_DIM, SCALAR>& u,
+			const StateVector<STATE_DIM, SCALAR>& x_next,
 			const int n,
 			size_t numSteps,
 			state_matrix_t& A,
@@ -114,7 +115,7 @@ public:
 			state_matrix_t& A,
 			state_control_matrix_t& B)
 	{
-		getAandB(x, u, n, 1, A, B);
+		getAandB(x, u, x, n, 1, A, B);
 	}
 
 };
