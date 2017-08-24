@@ -42,13 +42,30 @@ class CppadParallel
 
 public:
 
+	static CppadParallel& getInstance()
+	{
+		static CppadParallel instance; // Guaranteed to be destroyed, instantiated on first use.
+		return instance;
+	}
+
+	static void initParallel(size_t numThreads)
+	{
+		CppadParallel::getInstance().initParallelImpl(numThreads);
+	}
+
+	static void resetParallel()
+	{
+		CppadParallel::getInstance().resetParallelImpl();
+	}
+
+private:
     /**
      * @brief      Call this function before entering a parallel section
      *             containing CppAD objects
      *
      * @param[in]  numThreads  The number of threads. Make sure to count the main thread in
      */
-    static void initParallel(size_t numThreads)
+    void initParallelImpl(size_t numThreads)
     {
         isSequential_ = true;
         numThreads_ = numThreads;
@@ -62,7 +79,7 @@ public:
         isSequential_ = false;
     }
 
-    static void resetParallel()
+    void resetParallelImpl()
     {
         threadMap_.clear();
         isSequential_ = true;
@@ -73,22 +90,26 @@ public:
         CppAD::parallel_ad<double>();
     }
 
-private:
-    CppadParallel(){}
-    static bool isSequential_;
-    static std::map<size_t, size_t> threadMap_;
-    static size_t numThreads_;
-    static std::mutex hashMutex_;
+
+    CppadParallel() :
+    	isSequential_(false),
+		numThreads_(100)
+    {}
+
+    bool isSequential_;
+    std::map<size_t, size_t> threadMap_;
+    size_t numThreads_;
+    std::mutex hashMutex_;
 
     /**
      * @brief      This method gets called by Cppad::parallel_setup and
-     *             indicates whether the program is executing a parallel section
+     *             indicates whether the program is executing a parallel section, thus it needs to be static
      *
      * @return     True if in parallel
      */
     static bool in_parallel(void)
     {
-        return !isSequential_;
+        return !(CppadParallel::getInstance().isSequential_);
     }
 
     /**
@@ -103,22 +124,25 @@ private:
         std::hash<std::thread::id> hasher;
         size_t hashId = hasher(this_id);
 
-        hashMutex_.lock();
-        if(threadMap_.size() < numThreads_)
-            if(!threadMap_.count(hashId))
-                threadMap_.insert(std::make_pair(hashId, threadMap_.size()));
+        CppadParallel& instance = CppadParallel::getInstance();
 
-        size_t threadNum = threadMap_[hashId];
-        hashMutex_.unlock();
+        instance.hashMutex_.lock();
+        if(instance.threadMap_.size() < instance.numThreads_)
+            if(!instance.threadMap_.count(hashId))
+            	instance.threadMap_.insert(std::make_pair(hashId, instance.threadMap_.size()));
+
+        size_t threadNum = instance.threadMap_[hashId];
+        instance.hashMutex_.unlock();
         
         return threadNum;
     }
+
+    // singleton stuff
+public:
+    CppadParallel(CppadParallel const&) = delete;
+    void operator=(CppadParallel const&)  = delete;
 };
 
-size_t CppadParallel::numThreads_;
-std::map<size_t, size_t> CppadParallel::threadMap_;
-bool CppadParallel::isSequential_;
-std::mutex CppadParallel::hashMutex_;
 
 }
 }
