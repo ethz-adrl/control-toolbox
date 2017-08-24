@@ -60,6 +60,9 @@ public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef typename std::pair<Eigen::Matrix<SCALAR, POS_DIM, 1>, Eigen::Matrix<SCALAR, VEL_DIM, 1>> pair_t;
 
+	typedef std::shared_ptr<EventHandler<POS_DIM+VEL_DIM, SCALAR>> EventHandlerPtr;
+	typedef std::vector<EventHandlerPtr, Eigen::aligned_allocator<EventHandlerPtr>> EventHandlerPtrVector;
+
 
 	/**
 	 * @brief      The constructor. This integrator can only treat symplectic
@@ -67,8 +70,28 @@ public:
 	 *
 	 * @param[in]  system  A core::system
 	 */
-	IntegratorSymplectic(const std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR> > system) :
-	systemSymplectic_(system)
+	IntegratorSymplectic(
+			const std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR> > system,
+			const EventHandlerPtrVector& eventHandlers = EventHandlerPtrVector(0)
+	) :
+	systemSymplectic_(system),
+	observer_(eventHandlers)
+	{
+		setupSystem();
+	}
+
+	/**
+	 * @brief      The constructor. This integrator can only treat symplectic
+	 *             systems
+	 *
+	 * @param[in]  system  A core::system
+	 */
+	IntegratorSymplectic(
+			const std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR> > system,
+			const EventHandlerPtr& eventHandler
+	) :
+	systemSymplectic_(system),
+	observer_(EventHandlerPtrVector(1, eventHandler))
 	{
 		setupSystem();
 	}
@@ -107,6 +130,7 @@ public:
 			stepper_.do_step(std::make_pair(systemFunctionPosition_, systemFunctionVelocity_), xPair, time, dt);
 			state.head(POS_DIM) = xPair.first();
 			state.tail(VEL_DIM) = xPair.second();
+			observer_.observeInternal(state,time);
 			time += dt;
 			stateTrajectory.push_back(state);
 			timeTrajectory.push_back(time);
@@ -140,9 +164,14 @@ public:
 			stepper_.do_step(std::make_pair(systemFunctionPosition_, systemFunctionVelocity_), xPair, time, dt);
 			state.head(POS_DIM) = xPair.first;
 			state.tail(VEL_DIM) = xPair.second;
+			observer_.observeInternal(state,time);
 			time += dt;
 		}
 
+	}
+
+	void reset() {
+		observer_.reset();
 	}
 
 private:
@@ -176,6 +205,8 @@ private:
 	std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR>> systemSymplectic_;
 
 	Stepper stepper_;
+
+	Observer<POS_DIM+VEL_DIM, SCALAR> observer_; //! observer
 };
 
 
