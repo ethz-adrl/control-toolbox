@@ -104,7 +104,7 @@ TEST(IntegrationTest, derivativeTest)
         std::vector<std::shared_ptr<Integrator<stateSize> > > integrators;
 
         double dt = 0.0001;
-        size_t nTests = 10;
+        size_t nTests = 5;
 
         for (size_t i=0; i<nTests; i++)
         {
