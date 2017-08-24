@@ -132,11 +132,6 @@ if(BUILD_WITH_SNOPT_SUPPORT)
     target_link_libraries(ct_snopt_interface ${catkin_LIBRARIES} ${SNOPT_LIBS})
 endif()
 
-if(BUILD_WITH_IPOPT_SUPPORT)
-    add_library(ct_ipopt_interface src/nlp/solver/IpoptSolver.cpp)
-    target_link_libraries(ct_ipopt_interface ${catkin_LIBRARIES} ${IPOPT_LIBS})
-endif()
-
 
 
 if(BUILD_EXAMPLES)
