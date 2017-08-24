@@ -181,7 +181,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 			if (settings_.integrator != ct::core::IntegrationType::EULER
 					&& settings_.integrator != ct::core::IntegrationType::EULERCT
 					&& settings_.integrator != ct::core::IntegrationType::RK4
-					&& settings_.integrator != ct::core::IntegrationType::RK4CT)
+					&& settings_.integrator != ct::core::IntegrationType::RK4CT
+					&& settings_.integrator != ct::core::IntegrationType::EULER_SYM)
 				throw std::runtime_error("sensitivity integrator only available for Euler and RK4 integrators");
 
 			sensitivity_[i] = SensitivityPtr(
