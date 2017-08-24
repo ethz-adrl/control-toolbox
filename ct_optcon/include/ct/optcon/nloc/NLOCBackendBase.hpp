@@ -85,10 +85,19 @@ public:
 	typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
 	typedef LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>  LQOCSolver_t;
 
-	typedef core::LinearSystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> LinearSystemDiscretizer_t;
+	typedef core::Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR> Sensitivity_t;
 
 	typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
+	typedef std::shared_ptr<StateVectorArray> StateVectorArrayPtr;
+
 	typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
+	typedef std::shared_ptr<ControlVectorArray> ControlVectorArrayPtr;
+
+	typedef std::vector<StateVectorArrayPtr, Eigen::aligned_allocator<StateVectorArrayPtr>> StateSubsteps;
+	typedef std::shared_ptr<StateSubsteps> StateSubstepsPtr;
+
+	typedef std::vector<ControlVectorArrayPtr, Eigen::aligned_allocator<ControlVectorArrayPtr>> ControlSubsteps;
+	typedef std::shared_ptr<ControlSubsteps> ControlSubstepsPtr;
 
 	typedef ct::core::ControlMatrix<CONTROL_DIM, SCALAR> ControlMatrix;
 	typedef ct::core::ControlMatrixArray<CONTROL_DIM, SCALAR> ControlMatrixArray;
@@ -115,26 +124,33 @@ public:
 	NLOCBackendBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 			const Settings_t& settings) :
 
+			substepRecorders_(),
 		    integrators_(settings.nThreads+1),
+			sensitivity_(settings.nThreads+1),
 			integratorsEulerSymplectic_(settings.nThreads+1),
 			integratorsRkSymplectic_(settings.nThreads+1),
 
 		    controller_(settings.nThreads+1),
-		    settings_(settings),
 			initialized_(false),
 			configured_(false),
 			iteration_(0),
+		    settings_(settings),
 			K_(0),
 			d_norm_(0.0),
 			lx_norm_(0.0),
 			lu_norm_(0.0),
 		    lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>()),
+
+			substepsX_(new StateSubsteps),
+			substepsU_(new ControlSubsteps),
+
 			intermediateCostBest_(std::numeric_limits<SCALAR>::infinity()),
 			finalCostBest_(std::numeric_limits<SCALAR>::infinity()),
 			lowestCost_(std::numeric_limits<SCALAR>::infinity()),
 			intermediateCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
 			finalCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
-			linearSystemDiscretizers_(settings.nThreads+1, LinearSystemDiscretizer_t(settings.dt)),
+			linearSystems_(settings.nThreads+1),
+			firstRollout_(true),
 			alphaBest_(-1)
 	{
 		Eigen::initParallel();
@@ -380,11 +396,10 @@ public:
 
 	//! nominal rollout using default thread and member variables for the results. // todo maybe rename (initial rollout?)
 	bool nominalRollout() {
-
-		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_, xShot_);
-
+		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_prev_, xShot_, *this->substepsX_, *this->substepsU_);
 		x_prev_ = x_;
 		u_ff_prev_ = u_ff_;
+		firstRollout_ = false;
 		return success;
 	}
 
@@ -445,7 +460,9 @@ public:
 			StateVectorArray& x_local,
 			const StateVectorArray& x_ref_lqr,
 			StateVectorArray& xShot,
-			StateVectorArray& d) const;
+			StateVectorArray& d,
+			StateSubsteps& substepsX,
+			ControlSubsteps& substepsU) const;
 
 	//! performLineSearch: execute the line search, possibly with different threading schemes
 	virtual SCALAR performLineSearch() = 0;
@@ -455,6 +472,8 @@ public:
 	void doFullStepUpdate();
 
 	void logSummaryToMatlab(const std::string& fileName) {summaryAllIterations_.logToMatlab(fileName);}
+
+	const SummaryAllIterations<SCALAR>& getSummary() const { return summaryAllIterations_; }
 
 protected:
 
@@ -466,6 +485,8 @@ protected:
 			StateVectorArray& x_local,
 			const StateVectorArray& x_ref_lqr,
 			StateVectorArray& xShot,
+			StateSubsteps& substepsX,
+			ControlSubsteps& substepsU,
 			std::atomic_bool* terminationFlag = nullptr ) const;
 
 	/*
@@ -560,6 +581,8 @@ protected:
 			ControlVectorArray& u_local,
 			scalar_t& intermediateCost,
 			scalar_t& finalCost,
+			StateSubsteps& substepsX,
+			ControlSubsteps& substepsU,
 			std::atomic_bool* terminationFlag = nullptr
 	) const;
 
@@ -576,6 +599,8 @@ protected:
 			scalar_t& intermediateCost,
 			scalar_t& finalCost,
 			scalar_t& defectNorm,
+			StateSubsteps& substepsX,
+			ControlSubsteps& substepsU,
 			std::atomic_bool* terminationFlag = nullptr
 	) const;
 
@@ -612,8 +637,14 @@ protected:
 	template<size_t ORDER = 1>
 	SCALAR computeDefectsNorm(const StateVectorArray& d) const { return computeDiscreteArrayNorm<StateVectorArray, ORDER>(d);}
 
+	typedef std::shared_ptr<ct::core::SubstepRecorder<STATE_DIM, CONTROL_DIM, SCALAR>> SubstepRecorderPtr;
+    std::vector<SubstepRecorderPtr, Eigen::aligned_allocator<SubstepRecorderPtr> > substepRecorders_;
+
 	typedef std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> > IntegratorPtr;
     std::vector<IntegratorPtr, Eigen::aligned_allocator<IntegratorPtr> > integrators_; //! Runge-Kutta-4 Integrators
+
+	typedef std::shared_ptr<Sensitivity_t> SensitivityPtr;
+	std::vector<SensitivityPtr, Eigen::aligned_allocator<SensitivityPtr > > sensitivity_; //! the ct sensitivity integrators
 
 	typedef std::shared_ptr<ct::core::IntegratorSymplecticEuler<P_DIM, V_DIM, CONTROL_DIM, SCALAR> > IntegratorSymplecticEulerPtr;
 	std::vector<IntegratorSymplecticEulerPtr, Eigen::aligned_allocator<IntegratorSymplecticEulerPtr> > integratorsEulerSymplectic_;
@@ -661,6 +692,9 @@ protected:
 	//! shared pointer to the linear-quadratic optimal control solver
 	std::shared_ptr<LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR> > lqocSolver_;
 
+	StateSubstepsPtr substepsX_;
+	ControlSubstepsPtr substepsU_;
+
 
 	scalar_t intermediateCostBest_;
 	scalar_t finalCostBest_;
@@ -682,12 +716,13 @@ protected:
 	 * Every instantiation is dedicated to a certain thread in the multi-thread implementation
 	 */
 	std::vector<typename OptConProblem_t::DynamicsPtr_t> systems_;
-	std::vector<LinearSystemDiscretizer_t> linearSystemDiscretizers_;
 	std::vector<typename OptConProblem_t::LinearPtr_t> linearSystems_;
 	std::vector<typename OptConProblem_t::CostFunctionPtr_t> costFunctions_;
 	std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints_;
 	std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints_;
 
+
+	bool firstRollout_;
 	scalar_t alphaBest_;
 
 	SummaryAllIterations<SCALAR> summaryAllIterations_;

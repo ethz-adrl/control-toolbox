@@ -49,11 +49,11 @@ struct LineSearchSettings {
 	LineSearchSettings ():
         active(true),
         adaptive(false),
-		debugPrint(false),
         maxIterations(10),
         alpha_0(1.0),
         alpha_max(1.0),
-        n_alpha(0.5)
+        n_alpha(0.5),
+		debugPrint(false)
 	{}
 
 	//! check if the currently set line-search parameters are meaningful
@@ -181,7 +181,7 @@ class NLOptConSettings
 {
 public:
 
-	typedef typename core::LinearSystemDiscretizerSettings::APPROXIMATION APPROXIMATION;
+	typedef typename core::SensitivityApproximationSettings::APPROXIMATION APPROXIMATION;
 
     //! the nonlinear optimal control problem solving algorithm
     enum NLOCP_ALGORITHM
@@ -222,7 +222,8 @@ public:
     	lineSearchSettings(),
 		parallelBackward(),
 		debugPrint(false),
-		printSummary(true)
+		printSummary(true),
+		useSensitivityIntegrator(false)
     {
     }
 
@@ -249,6 +250,7 @@ public:
 	ParallelBackwardSettings parallelBackward; //! do the backward pass in parallel with building the LQ problems (experimental)
 	bool debugPrint;
 	bool printSummary;
+	bool useSensitivityIntegrator;
 
 
     //! compute the number of discrete time steps for an arbitrary input time interval
@@ -280,9 +282,9 @@ public:
         std::cout<<"K_shot:\t"<<K_shot<<std::endl;
         std::cout<<"maxIter:\t"<<max_iterations<<std::endl;
         std::cout<<"min cost improvement:\t"<<min_cost_improvement<<std::endl;
-        std::cout<<"max defect sum:\t"<<maxDefectSum<<std::endl;
-        std::cout<<"merit function rho:\t"<<meritFunctionRho<<std::endl;
-        std::cout<<"fixedHessianCorrection:\t"<<fixedHessianCorrection<<std::endl;
+        std::cout<<"max defect sum:\t" << maxDefectSum <<std::endl;
+        std::cout<<"merit function rho:\t" << meritFunctionRho << std::endl;
+        std::cout<<"fixedHessianCorrection:\t" << fixedHessianCorrection << std::endl;
         std::cout<<"recordSmallestEigenvalue:\t"<<recordSmallestEigenvalue<<std::endl;
         std::cout<<"epsilon:\t"<<epsilon<<std::endl;
         std::cout<<"nThreads:\t"<<nThreads<<std::endl;
@@ -290,6 +292,7 @@ public:
         std::cout<<"loggingPrefix:\t"<<loggingPrefix<<std::endl;
         std::cout<<"debugPrint:\t"<<debugPrint<<std::endl;
         std::cout<<"printSummary:\t"<<printSummary<<std::endl;
+        std::cout<<"useSensitivityIntegrator:\t"<<useSensitivityIntegrator<<std::endl;
         std::cout <<std::endl;
 
         lineSearchSettings.print();
@@ -372,6 +375,8 @@ public:
 		try{debugPrint = pt.get<bool>(ns + ".debugPrint");
 		} catch (...) {}
 		try{printSummary = pt.get<bool>(ns + ".printSummary");
+		} catch (...) {}
+		try{useSensitivityIntegrator = pt.get<bool>(ns + ".useSensitivityIntegrator");
 		} catch (...) {}
 		try{dt = pt.get<double>(ns +".dt");
 		} catch (...) {}

@@ -103,6 +103,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
 	u_ff_prev_.resize(K_);
 	L_.resize(K_);
 
+	substepsX_->resize(K_+1);
+	substepsU_->resize(K_+1);
+
 	lqocProblem_->changeNumStages(K_);
 	lqocProblem_->setZero();
 
@@ -146,7 +149,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 		throw std::runtime_error("system dynamics are nullptr");
 
 	systems_.resize(settings_.nThreads+1);
+	substepRecorders_.resize(settings_.nThreads+1);
 	integrators_.resize(settings_.nThreads+1);
+	sensitivity_.resize(settings_.nThreads+1);
 	integratorsEulerSymplectic_.resize(settings_.nThreads+1);
 	integratorsRkSymplectic_.resize(settings_.nThreads+1);
 
@@ -156,16 +161,37 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 		systems_[i] = typename Base::OptConProblem_t::DynamicsPtr_t(dyn->clone());
 		systems_[i]->setController(controller_[i]);
 
+		substepRecorders_[i] = std::shared_ptr<ct::core::SubstepRecorder<STATE_DIM, CONTROL_DIM, SCALAR>> (
+				new ct::core::SubstepRecorder<STATE_DIM, CONTROL_DIM, SCALAR>(systems_[i]));
+
 		if(controller_[i] == nullptr)
 			throw std::runtime_error("Controller not defined");
 
 		// if symplectic integrator then don't create normal ones
 		if (settings_.integrator != ct::core::IntegrationType::EULER_SYM  && settings_.integrator != ct::core::IntegrationType::RK_SYM)
 		{
-			integrators_[i] = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> >(new ct::core::Integrator<STATE_DIM, SCALAR>(systems_[i], settings_.integrator));
+			integrators_[i] = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> >(
+					new ct::core::Integrator<STATE_DIM, SCALAR>(systems_[i], settings_.integrator, substepRecorders_[i]));
 		}
-
 		initializeSymplecticIntegrators<V_DIM, P_DIM>(i);
+
+
+		if(settings_.useSensitivityIntegrator)
+		{
+			if (settings_.integrator != ct::core::IntegrationType::EULER
+					&& settings_.integrator != ct::core::IntegrationType::EULERCT
+					&& settings_.integrator != ct::core::IntegrationType::RK4
+					&& settings_.integrator != ct::core::IntegrationType::RK4CT
+					&& settings_.integrator != ct::core::IntegrationType::EULER_SYM)
+				throw std::runtime_error("sensitivity integrator only available for Euler and RK4 integrators");
+
+			sensitivity_[i] = SensitivityPtr(
+				new ct::core::SensitivityIntegrator<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(settings_.getSimulationTimestep(), linearSystems_[i], controller_[i], settings_.integrator, settings_.timeVaryingDiscretization));
+		} else
+		{
+			sensitivity_[i] = SensitivityPtr(
+				new ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(settings_.getSimulationTimestep(), linearSystems_[i], settings_.discretization));
+		}
 	}
 	reset(); // since system changed, we have to start fresh, i.e. with a rollout
 }
@@ -196,7 +222,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeLinear
 		// make a deep copy
 		linearSystems_[i] = typename OptConProblem_t::LinearPtr_t(lin->clone());
 
-		linearSystemDiscretizers_[i].setLinearSystem(linearSystems_[i]);
+		sensitivity_[i]->setLinearSystem(linearSystems_[i]);
 	}
 	// technically a linear system change does not require a new rollout. Hence, we do not reset.
 }
@@ -235,8 +261,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 	// update system discretizer with new settings
 	for(int i = 0; i< settings.nThreads+1; i++)
 	{
-		linearSystemDiscretizers_[i].setApproximation(settings.discretization);
-		linearSystemDiscretizers_[i].setTimeDiscretization(settings.dt);
+		if (!sensitivity_[i])
+			break;
+
+		sensitivity_[i]->setApproximation(settings.discretization);
+		sensitivity_[i]->setTimeDiscretization(settings.getSimulationTimestep());
 	}
 
 	if(settings.integrator != settings_.integrator)
@@ -356,8 +385,10 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 		StateVectorArray& x_local,
 		const StateVectorArray& x_ref_lqr,
 		StateVectorArray& xShot,		//! the value at the end of each integration interval
+		StateSubsteps& substepsX,
+		ControlSubsteps& substepsU,
 		std::atomic_bool* terminationFlag
-		)const
+		) const
 {
 	const double& dt = settings_.dt;
 	const double dt_sim = settings_.getSimulationTimestep();
@@ -378,10 +409,13 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 	if(settings_.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
 		K_stop = K_local; //! @todo this is not elegant - need to improve.
 
+	// for each control step
 	for (int i = (int)k; i<K_stop; i++)
 	{
 		if (terminationFlag && *terminationFlag)
 			return false;
+
+		substepRecorders_[threadId]->reset();
 
 		if(i> (int)k)
 		{
@@ -435,6 +469,10 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 				return false;
 			}
 		}
+
+		// get substeps for sensitivities
+		substepsX[i] = substepRecorders_[threadId]->getSubstates();
+		substepsU[i] = substepRecorders_[threadId]->getSubcontrols();
 	}
 
 	return true;
@@ -463,9 +501,17 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::integrateSymplect
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShotsSingleThreaded(size_t threadId, size_t firstIndex, size_t lastIndex,
-		ControlVectorArray& u_ff_local, StateVectorArray& x_local, const StateVectorArray& x_ref_lqr,
-		StateVectorArray& xShot, StateVectorArray& d) const
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShotsSingleThreaded(
+		size_t threadId,
+		size_t firstIndex,
+		size_t lastIndex,
+		ControlVectorArray& u_ff_local,
+		StateVectorArray& x_local,
+		const StateVectorArray& x_ref_lqr,
+		StateVectorArray& xShot,
+		StateVectorArray& d,
+		StateSubsteps& substepsX,
+		ControlSubsteps& substepsU) const
 {
 	//! make sure all intermediate entries in the defect trajectory are zero
 	d.setConstant(state_vector_t::Zero());
@@ -473,7 +519,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots
 	for (size_t k=firstIndex; k<=lastIndex; k=k+settings_.K_shot)
 	{
 		// first rollout the shot
-		rolloutSingleShot(threadId, k, u_ff_local, x_local, x_ref_lqr, xShot);
+		rolloutSingleShot(threadId, k, u_ff_local, x_local, x_ref_lqr, xShot, substepsX, substepsU);
 
 		// then compute the corresponding defect
 		computeSingleDefect(k, x_local, xShot, d);
@@ -544,10 +590,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinea
 	assert(lqocProblem_->A_.size() > k);
 	assert(lqocProblem_->B_.size() > k);
 
-	if (settings_.timeVaryingDiscretization)
-		linearSystemDiscretizers_[threadId].getAandBTimeVarying(x_[k], u_ff_[k], x_[k+1], u_last, (int)k, p.A_[k], p.B_[k]);
-	else
-		linearSystemDiscretizers_[threadId].getAandB(x_[k], u_ff_[k], (int)k, p.A_[k], p.B_[k]);
+	sensitivity_[threadId]->setSubstepTrajectoryReference(substepsX_.get(), substepsU_.get());
+	sensitivity_[threadId]->getAandB(x_[k], u_ff_[k], xShot_[k], (int)k, settings_.K_sim, p.A_[k], p.B_[k]);
 }
 
 
@@ -749,7 +793,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 		uff_local = u_ff_ + lu_; //  add lu
 		x_ref_lqr_local = x_prev_ + lx_; 	// stabilize around current solution candidate
 
-		bool dynamicsGood = rolloutSingleShot(settings_.nThreads, 0, uff_local, x_, x_ref_lqr_local, xShot_);
+		bool dynamicsGood = rolloutSingleShot(settings_.nThreads, 0, uff_local, x_, x_ref_lqr_local, xShot_, *this->substepsX_, *this->substepsU_);
 
 		if (dynamicsGood)
 		{
@@ -798,10 +842,11 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 			std::cout<<"[LineSearch]: Best control found at alpha: "<<alphaBest_<<" . Will use this control."<<std::endl;
 		}
 
-		if(settings_.debugPrint){
-			if (alphaBest_ == 0.0)
-			{
-				std::cout<<"WARNING: No better control found. Converged."<<std::endl;
+		if (alphaBest_ == 0.0){
+			if(settings_.debugPrint){
+				{
+					std::cout<<"WARNING: No better control found. Converged."<<std::endl;
+				}
 				return false;
 			}
 		}
@@ -829,6 +874,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
 		scalar_t& intermediateCost,
 		scalar_t& finalCost,
+		StateSubsteps& substepsX,
+		ControlSubsteps& substepsU,
 		std::atomic_bool* terminationFlag
 ) const
 {
@@ -840,11 +887,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 	StateVectorArray x_ref_lqr;
 	StateVectorArray xShot_local(K_+1); //! note this is currently only a dummy (\todo nicer solution?)
 
-	//! if stabilizing about new solution candidate, chose lu as feedforward increment and also increment x_prev_ by lx_;
+	//! if stabilizing about new solution candidate, choose lu as feedforward increment and also increment x_prev_ by lx
 	u_local = lu_ * alpha + u_ff_prev_;
 	x_ref_lqr = lx_ * alpha + x_prev_;
 
-	bool dynamicsGood = rolloutSingleShot(threadId, 0, u_local, x_local, x_ref_lqr, xShot_local, terminationFlag);
+	bool dynamicsGood = rolloutSingleShot(threadId, 0, u_local, x_local, x_ref_lqr, xShot_local, substepsX, substepsU, terminationFlag);
 
 	if (terminationFlag && *terminationFlag) return;
 
@@ -959,6 +1006,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 		scalar_t& intermediateCost,
 		scalar_t& finalCost,
 		scalar_t& defectNorm,
+		StateSubsteps& substepsX,
+		ControlSubsteps& substepsU,
 		std::atomic_bool* terminationFlag
 ) const
 {
@@ -977,7 +1026,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 
 	if (terminationFlag && *terminationFlag) return;
 
-	rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_alpha, x_shot_alpha, defects_recorded);
+	rolloutShotsSingleThreaded(threadId, 0, K_-1, u_alpha, x_alpha, x_alpha, x_shot_alpha, defects_recorded, substepsX, substepsU);
 
 	if (terminationFlag && *terminationFlag) return;
 
@@ -1109,6 +1158,7 @@ const typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::Po
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::reset()
 {
+	firstRollout_ = true;
 	iteration_ = 0;
 	d_norm_ = std::numeric_limits<scalar_t>::infinity();
 	lx_norm_ = std::numeric_limits<scalar_t>::infinity();

@@ -27,7 +27,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <gtest/gtest.h>
 #include <ct/core/core.h>
-#include "system/TestNonlinearSystem.h"
+#include "../system/TestNonlinearSystem.h"
 
 
 using namespace ct::core;

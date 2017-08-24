@@ -58,7 +58,7 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 	for (size_t k=firstIndex; k<=lastIndex; k = k+ this->settings_.K_shot)
 	{
 		// rollout the shot
-		this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_);
+		this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_, *this->substepsX_, *this->substepsU_);
 
 		this->computeSingleDefect(k, this->x_, this->xShot_, this->lqocProblem_->b_);
 	}
@@ -94,6 +94,9 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		ct::core::StateVectorArray<STATE_DIM, SCALAR> defects_recorded(this->K_+1, ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_recorded(this->K_);
 
+		typename Base::StateSubstepsPtr substepsX = typename Base::StateSubstepsPtr(new typename Base::StateSubsteps(this->K_+1));
+		typename Base::ControlSubstepsPtr substepsU = typename Base::ControlSubstepsPtr(new typename Base::ControlSubsteps(this->K_+1));
+
 		//! set init state
 		x_search[0] = this->x_[0];
 
@@ -103,14 +106,14 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		{
 		case NLOptConSettings::NLOCP_ALGORITHM::GNMS :
 		{
-			this->executeLineSearchMultipleShooting(this->settings_.nThreads, alpha, this->lu_, this->lx_, x_search, x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm);
+			this->executeLineSearchMultipleShooting(this->settings_.nThreads, alpha, this->lu_, this->lx_, x_search, x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, *substepsX, *substepsU);
 
 			break;
 		}
 		case NLOptConSettings::NLOCP_ALGORITHM::ILQR :
 		{
 			defectNorm = 0.0;
-			this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, x_search, u_recorded, intermediateCost, finalCost);
+			this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, x_search, u_recorded, intermediateCost, finalCost, *substepsX, *substepsU);
 			break;
 		}
 		default :
@@ -165,6 +168,8 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 			this->xShot_.swap(x_shot_search);
 			this->u_ff_.swap(u_recorded);
 			this->lqocProblem_->b_.swap(defects_recorded);
+			this->substepsX_ = substepsX;
+			this->substepsU_ = substepsU;
 			break;
 		}
 	} //! end while

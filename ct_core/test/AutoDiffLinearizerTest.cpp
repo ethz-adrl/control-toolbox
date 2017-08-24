@@ -116,7 +116,7 @@ TEST(AutoDiffLinearizerTestMP, SystemLinearizerComparisonMP)
 
         for(size_t i = 0; i < numThreads; ++i)
         {
-            threads.push_back(std::thread([i, &adLinearizer, &systemLinearizers]()
+            threads.push_back(std::thread([i, state_dim, control_dim, &adLinearizer, &systemLinearizers]()
             {
                 // The ad objects are initialized here, because they need to be associated with the specfic thread number
                 AdLinearizerPtr adLinearizerLocal = AdLinearizerPtr(adLinearizer.clone());

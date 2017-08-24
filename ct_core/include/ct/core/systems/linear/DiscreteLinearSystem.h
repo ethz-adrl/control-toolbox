@@ -47,8 +47,8 @@ class DiscreteLinearSystem : public DiscreteControlledSystem<STATE_DIM, CONTROL_
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef typename Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t; //!< state Jacobian type
-	typedef typename Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t; //!< input Jacobian type
+	typedef StateMatrix<STATE_DIM, SCALAR> state_matrix_t; //!< state Jacobian type
+	typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t; //!< input Jacobian type
 
 	//! default constructor
 	/*!
@@ -84,7 +84,7 @@ public:
 	{
 		state_matrix_t A;
 		state_control_matrix_t B;
-		this->getAandB(state, control, n, A, B);
+		this->getAandB(state, control, state, n, 1, A, B);
 		stateNext = A * state + B * control;
 	}
 
@@ -94,16 +94,29 @@ public:
 	 * @param x	the state setpoint
 	 * @param u the control setpoint
 	 * @param n the time setpoint
+	 * @param numSteps number of timesteps for which to get the sensitivity for
 	 * @param A the resulting linear system matrix A
 	 * @param B the resulting linear system matrix B
 	 */
 	virtual void getAandB(
 			const StateVector<STATE_DIM, SCALAR>& x,
 			const ControlVector<CONTROL_DIM, SCALAR>& u,
+			const StateVector<STATE_DIM, SCALAR>& x_next,
 			const int n,
+			size_t numSteps,
 			state_matrix_t& A,
 			state_control_matrix_t& B)
 	= 0;
+
+	void getAandB(
+			const StateVector<STATE_DIM, SCALAR>& x,
+			const ControlVector<CONTROL_DIM, SCALAR>& u,
+			const int n,
+			state_matrix_t& A,
+			state_control_matrix_t& B)
+	{
+		getAandB(x, u, x, n, 1, A, B);
+	}
 
 };
 

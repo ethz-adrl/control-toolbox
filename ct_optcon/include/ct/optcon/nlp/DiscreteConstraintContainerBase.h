@@ -94,7 +94,7 @@ public:
 			ind += cSize;
 		}
 
-		assert(ind == c_nlp.rows()); // or throw an error
+		assert(static_cast<int>(ind) == c_nlp.rows()); // or throw an error
 	}
 
 	/**
@@ -116,7 +116,7 @@ public:
 			ind += nnEle;
 		}
 
-		assert(ind == (size_t) nzz_jac_g);
+		assert(static_cast<int>(ind) == nzz_jac_g);
 	}
 
 	/**
@@ -147,7 +147,7 @@ public:
 			ind += nnEle;
 		}
 
-		assert(ind == (size_t) nnz_jac_g);
+		assert(static_cast<int>(ind) == nnz_jac_g);
 	}
 
 	/**

@@ -78,10 +78,7 @@ public:
 	 */
 	ControlledSystem(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
 	: 	System<STATE_DIM, SCALAR>(type),
-	  	controller_(nullptr),
-	  	state_evolution_(nullptr),
-	  	control_evolution_(nullptr),
-	  	time_evolution_(nullptr)
+	  	controller_(nullptr)
 	  	{};
 
 	//! constructor
@@ -94,18 +91,15 @@ public:
 			std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR> > controller,
 			const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
 	: 	System<STATE_DIM, SCALAR>(type),
-	  	controller_(controller),
-	  	state_evolution_(nullptr),
-	  	control_evolution_(nullptr),
-	  	time_evolution_(nullptr)
-	  	{};
+	  	controller_(controller)
+	{
+		controlAction_.setZero();
+	};
 
 	//! copy constructor
 	ControlledSystem(const ControlledSystem& arg):
 		System<STATE_DIM, SCALAR>(arg),
-		state_evolution_(nullptr),
-		control_evolution_(nullptr),
-		time_evolution_(nullptr)
+		controlAction_(arg.controlAction_)
 	{
 		if(arg.controller_)
 			controller_ = std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR> > (arg.controller_->clone());
@@ -162,25 +156,12 @@ public:
 			const SCALAR& t,
 			StateVector<STATE_DIM, SCALAR>& derivative) override
 	{
-		ControlVector<CONTROL_DIM, SCALAR> controlAction;
 		if(controller_)
-			controller_->computeControl(state, t, controlAction);
+			controller_->computeControl(state, t, controlAction_);
 		else
-			controlAction.setZero();
+			controlAction_.setZero();
 
-		computeControlledDynamics(state, t, controlAction, derivative);
-
-		// todo: move to observer! This should not be here
-		if(state_evolution_)
-			state_evolution_->push_back(state);
-
-		// todo: move to observer! This should not be here
-		if(control_evolution_)
-			control_evolution_->push_back(controlAction);
-
-		// todo: move to observer! This should not be here
-		if(time_evolution_)
-			time_evolution_->push_back(t);
+		computeControlledDynamics(state, t, controlAction_, derivative);
 	}
 
 
@@ -191,66 +172,14 @@ public:
 			StateVector<STATE_DIM, SCALAR>& derivative
 	) = 0;
 
-
-	//! start logging states
-	/*!
-	 * \todo remove, this should be implemented in an observer!
-	 * @param state_ptr pointer to array to log states
-	 */
-	void startLoggingStates(std::shared_ptr<ct::core::StateVectorArray<STATE_DIM, SCALAR>> state_ptr)
-	{
-		state_evolution_ = state_ptr;
-		state_evolution_->clear();
-	}
-
-	//! start logging control inputs
-	/*!
-	 * \todo remove, this should be implemented in an observer!
-	 * @param ctrl_ptr pointer to array to log control input
-	 */
-	void startLoggingControls(std::shared_ptr<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>> ctrl_ptr)
-	{
-		control_evolution_ = ctrl_ptr;
-		control_evolution_->clear();
-	}
-
-	//! start logging times
-	/*!
-	 * \todo remove, this should be implemented in an observer!
-	 * @param time_ptr pointer to array which logs times
-	 */
-	void startLoggingTimes(std::shared_ptr<ct::core::TimeArray> time_ptr)
-	{
-		time_evolution_ = time_ptr;
-		time_evolution_->clear();
-	}
-
-	//! stop logging states
-	/*!
-	 * \todo remove, this should be implemented in an observer!
-	 */
-	void stopLoggingStates() {state_evolution_ = nullptr;}
-
-	//! stop logging controls
-	/*!
-	 * \todo remove, this should be implemented in an observer!
-	 */
-	void stopLoggingControls() {control_evolution_ = nullptr;}
-
-	//! stop logging times
-	/*!
-	 * \todo remove, this should be implemented in an observer!
-	 */
-	void stopLoggingTimes() {time_evolution_ = nullptr;}
+	ControlVector<CONTROL_DIM, SCALAR> getLastControlAction() { return controlAction_;}
 
 
 
 protected:
 	std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR> > controller_; //!< the controller instance
 
-	std::shared_ptr<ct::core::StateVectorArray<STATE_DIM, SCALAR>> state_evolution_; //!< container for logging the state
-	std::shared_ptr<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>> control_evolution_; //!< container for logging the control
-	std::shared_ptr<ct::core::tpl::TimeArray<SCALAR>> time_evolution_;  //!< container for logging the time
+	ControlVector<CONTROL_DIM, SCALAR> controlAction_;
 
 };
 

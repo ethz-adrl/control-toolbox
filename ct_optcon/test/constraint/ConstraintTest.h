@@ -309,7 +309,6 @@ TEST(pureStateConstraintTest, pureStateConstraintTest)
 		F_ad.setZero();
 		F_cloned.setZero();
 		F_cloned_an.setZero();
-		size_t count = 0;
 
 		F_an = constraintAN->jacobianStateIntermediate();
 		F_ad = constraintAD->jacobianStateIntermediate();
@@ -355,7 +354,6 @@ TEST(stateInputConstraintTest, stateInputConstraintTest)
 
 	/* evaluate constraint */
 	Eigen::VectorXd g1_ad, g1_an;
-	size_t g1_dim_ad, g1_dim_an;
 
 	Eigen::Matrix<double, state_dim, 1> state; state.setRandom();
 	Eigen::Matrix<double, input_dim, 1> input; input.setRandom();
@@ -374,7 +372,6 @@ TEST(stateInputConstraintTest, stateInputConstraintTest)
 
 	Eigen::MatrixXd C_an, C_ad, C_cloned, C_cloned_an;
 	Eigen::MatrixXd D_an, D_ad, D_cloned, D_cloned_an;
-	size_t count = 0;
 
 	C_an = constraintAN->jacobianStateIntermediate();
 	C_ad = constraintAD->jacobianStateIntermediate();
@@ -434,7 +431,6 @@ TEST(comparisonAnalyticAD, comparisonAnalyticAD)
 
 	/* evaluate constraint */
 	Eigen::VectorXd g1_ad, g1_an;
-	size_t g1_dim_ad, g1_dim_an;
 
 	Eigen::Vector3d state = Eigen::Vector3d::Random();
 	Eigen::Vector3d control = Eigen::Vector3d::Random();

@@ -85,8 +85,6 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 	double t_on = 0.5;
 	double t_off = 1.5;
 
-	double t_final = 2.5;
-
 	std::shared_ptr<SingleActivation> c_single (new SingleActivation(t_on, t_off));
 
 	termQuadratic->setTimeActivation(c_single, true);
@@ -168,8 +166,6 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 	double period = 0.5; // what is the period
 	double activation_offset = 0.1; // how much is the activation offset WITHIN the period
 	double period_offset = 0.2; // how much is the period offset to t=0?
-
-	double t_final = 2.5;
 
 	std::shared_ptr<PeriodicActivation> c_periodic (new PeriodicActivation(active_percentage, period, activation_offset, period_offset));
 	termQuadMult->setTimeActivation(c_periodic, true);
