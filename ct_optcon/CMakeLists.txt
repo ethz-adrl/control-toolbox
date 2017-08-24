@@ -227,11 +227,12 @@ if(HPIPM)
     #target_link_libraries(HPIPMInterfaceTest3 ${HPIPM_LIBS} ${MATLAB_LIBS})
 endif(HPIPM)
 
-add_executable(LinearSystemTest test/nloc/LinearSystemTest.cpp) # todo make unit test
-target_link_libraries(LinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
 add_executable(NonlinearSystemTest test/nloc/NonlinearSystemTest.cpp)
 target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+
+catkin_add_gtest(LinearSystemTest test/nloc/LinearSystemTest.cpp)
+target_link_libraries(LinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
 catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
 target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)

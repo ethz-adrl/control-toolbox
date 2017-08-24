@@ -26,8 +26,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <chrono>
 
-// Bring in gtest
-//#include <gtest/gtest.h>
+#include <gtest/gtest.h>
 
 //#define MATLAB
 //#define MATLAB_FULL_LOG
@@ -150,7 +149,7 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > createCostFuncti
  */
 
 
-void testGaussNewtonMethods()
+TEST(LinearSystemsTest, NLOCSolverTest)
 {
 	typedef NLOptConSolver<state_dim, control_dim, state_dim /2, state_dim /2> NLOptConSolver;
 
@@ -228,12 +227,20 @@ void testGaussNewtonMethods()
 					solver.runIteration(); // must be converged after 1 iteration
 					solver.runIteration(); // must be converged after 1 iteration
 
+					const SummaryAllIterations<double>& summary = solver.getBackend()->getSummary();
+
+					ASSERT_TRUE(summary.lx_norms.back() < 1e-12 && summary.lu_norms.back() < 1e-12, "NLOC should be converged in one iteration");
+
+					ASSERT_TRUE(summary.lx_norms.front() > 1e-12 && summary.lx_norms.front() < 1e-12, "NLOC should have improved at least once");
+
+					ASSERT_TRUE(summary.defect_l1_norms.back() < 1e-12 && summary.defect_l1_norms.back() < 1e-12, "NLOC should not have defects in the end");
+
 					// test trajectories
 					StateTrajectory<state_dim> xRollout = solver.getStateTrajectory();
 					ControlTrajectory<control_dim> uRollout = solver.getControlTrajectory();
 
-					std::cout<<"x final: " << xRollout.back().transpose() << std::endl;
-					std::cout<<"u final: " << uRollout.back().transpose() << std::endl;
+//					std::cout<<"x final: " << xRollout.back().transpose() << std::endl;
+//					std::cout<<"u final: " << uRollout.back().transpose() << std::endl;
 
 					// end test solver ===========================================================================
 
@@ -307,7 +314,7 @@ void singleCore()
 	OptConProblem<state_dim, control_dim> optConProblem (tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
 
 
-	std::cout << "initializing gnms solver" << std::endl;
+//	std::cout << "initializing gnms solver" << std::endl;
 	NLOptConSolver gnms(optConProblem, gnms_settings);
 	NLOptConSolver ilqr(optConProblem, ilqr_settings);
 
@@ -318,7 +325,7 @@ void singleCore()
 	ilqr.configure(ilqr_settings);
 	ilqr.setInitialGuess(initController);
 
-	std::cout << "running gnms solver" << std::endl;
+//	std::cout << "running gnms solver" << std::endl;
 
 	bool foundBetter = true;
 	size_t numIterations = 0;
@@ -333,11 +340,11 @@ void singleCore()
 
 		numIterations++;
 
-		std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
-		std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
+//		std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
+//		std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
 	}
 
-	std::cout << "running ilqr solver" << std::endl;
+//	std::cout << "running ilqr solver" << std::endl;
 
 	numIterations = 0;
 	foundBetter = true;
@@ -351,15 +358,15 @@ void singleCore()
 
 		numIterations++;
 
-		std::cout<<"x final iLQR: " << xRollout.back().transpose() << std::endl;
-		std::cout<<"u final iLQR: " << uRollout.back().transpose() << std::endl;
+//		std::cout<<"x final iLQR: " << xRollout.back().transpose() << std::endl;
+//		std::cout<<"u final iLQR: " << uRollout.back().transpose() << std::endl;
 	}
 }
 
 
 void multiCore()
 {
-	std::cout << "setting up problem " << std::endl;
+//	std::cout << "setting up problem " << std::endl;
 
 	typedef NLOptConSolver<state_dim, control_dim, state_dim /2, state_dim /2> NLOptConSolver;
 
@@ -418,7 +425,7 @@ void multiCore()
 	OptConProblem<state_dim, control_dim> optConProblem (tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
 
 
-	std::cout << "initializing gnms solver" << std::endl;
+//	std::cout << "initializing gnms solver" << std::endl;
 	NLOptConSolver gnms(optConProblem, gnms_settings);
 	NLOptConSolver ilqr(optConProblem, ilqr_settings);
 
@@ -444,11 +451,11 @@ void multiCore()
 
 		numIterations++;
 
-		std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
-		std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
+//		std::cout<<"x final GNMS: " << xRollout.back().transpose() << std::endl;
+//		std::cout<<"u final GNMS: " << uRollout.back().transpose() << std::endl;
 	}
 
-	std::cout << "running ilqr solver" << std::endl;
+//	std::cout << "running ilqr solver" << std::endl;
 
 	numIterations = 0;
 	foundBetter = true;
@@ -462,8 +469,8 @@ void multiCore()
 
 		numIterations++;
 
-		std::cout<<"x final iLQR: " << xRollout.back().transpose() << std::endl;
-		std::cout<<"u final iLQR: " << uRollout.back().transpose() << std::endl;
+//		std::cout<<"x final iLQR: " << xRollout.back().transpose() << std::endl;
+//		std::cout<<"u final iLQR: " << uRollout.back().transpose() << std::endl;
 	}
 }
 
@@ -481,8 +488,8 @@ void multiCore()
  */
 int main(int argc, char **argv)
 {
-	for(size_t i = 0; i<100; i++)
-		ct::optcon::example::testGaussNewtonMethods();
+	testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 
 //	ct::optcon::example::singleCore();
 //	ct::optcon::example::multiCore();
