@@ -12,6 +12,8 @@
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
 #include <boost/numeric/odeint/algebra/vector_space_algebra.hpp>
+#include <boost/version.hpp>
+
 
 // Necessary routines for Eigen matrices to work with vector_space_algebra
 // from odeint
@@ -119,6 +121,23 @@ namespace boost {
 namespace numeric {
 namespace odeint {
 
+#if (BOOST_VERSION / 100000 == 1 && BOOST_VERSION / 100 % 1000 > 55)
+
+// new boost
+template<typename B,int S1,int S2,int O, int M1, int M2>
+struct vector_space_norm_inf< Eigen::Matrix<B,S1,S2,O,M1,M2> >
+{
+    typedef B result_type;
+
+    result_type operator()( const Eigen::Matrix<B,S1,S2,O,M1,M2> &m ) const
+    {
+        return m.template lpNorm<Eigen::Infinity>();
+    }
+};
+
+#else
+
+// old boost
 template<int STATE_DIM, typename SCALAR>
 struct vector_space_reduce< Eigen::Matrix<SCALAR, STATE_DIM, 1> >
 {
@@ -132,6 +151,8 @@ struct vector_space_reduce< Eigen::Matrix<SCALAR, STATE_DIM, 1> >
       return init;
   }
 };
+
+#endif
 
 
 } } } // end boost::numeric::odeint namespace
