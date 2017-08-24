@@ -131,10 +131,10 @@ public:
 			integratorsRkSymplectic_(settings.nThreads+1),
 
 		    controller_(settings.nThreads+1),
-		    settings_(settings),
 			initialized_(false),
 			configured_(false),
 			iteration_(0),
+		    settings_(settings),
 			K_(0),
 			d_norm_(0.0),
 			lx_norm_(0.0),
@@ -472,6 +472,8 @@ public:
 	void doFullStepUpdate();
 
 	void logSummaryToMatlab(const std::string& fileName) {summaryAllIterations_.logToMatlab(fileName);}
+
+	const SummaryAllIterations<SCALAR>& getSummary() const { return summaryAllIterations_; }
 
 protected:
 

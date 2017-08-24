@@ -49,11 +49,11 @@ struct LineSearchSettings {
 	LineSearchSettings ():
         active(true),
         adaptive(false),
-		debugPrint(false),
         maxIterations(10),
         alpha_0(1.0),
         alpha_max(1.0),
-        n_alpha(0.5)
+        n_alpha(0.5),
+		debugPrint(false)
 	{}
 
 	//! check if the currently set line-search parameters are meaningful

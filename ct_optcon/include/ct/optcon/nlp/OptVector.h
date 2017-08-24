@@ -181,8 +181,8 @@ public:
 	 * @param[out] xState  The optimization variables state
 	 */
 	void getOptimizationMultState(const size_t n, MapVecXd& xMul, Eigen::Map<Eigen::VectorXi>& xState) const {
-		assert(n == xMul_.size());
-		assert(n == xState_.size());
+		assert(static_cast<int>(n) == xMul_.size());
+		assert(static_cast<int>(n) == xState_.size());
 		xMul = xMul_;
 		xState = xState_;
 	}
@@ -196,8 +196,8 @@ public:
 	 * @param[out] zState  The constraint variable state
 	 */
 	void getConstraintsMultState(const size_t m, MapVecXd& zMul, Eigen::Map<Eigen::VectorXi>& zState) const {
-		assert(m == zMul_.size());
-		assert(m == zState_.size());
+		assert(static_cast<int>(m) == zMul_.size());
+		assert(static_cast<int>(m) == zState_.size());
 		zMul = zMul_;
 		zState = zState_;
 	}
@@ -217,7 +217,7 @@ public:
 	 * @param[out] up    The value for the upper bound multiplier
 	 */
 	void getBoundMultipliers(size_t n, MapVecXd& low, MapVecXd& up) const {
-		assert(n == zLow_.size());
+		assert(static_cast<int>(n) == zLow_.size());
 		low = zLow_;
 		up = zUpper_;
 	}
@@ -229,7 +229,7 @@ public:
 	 * @param[out] x     The values of the constraint multipliers
 	 */
 	void getLambdaVars(size_t m, MapVecXd& x) const {
-		assert(m == lambda_.size());
+		assert(static_cast<int>(m) == lambda_.size());
 		x = lambda_;
 	}
 
@@ -240,7 +240,7 @@ public:
 	 * @param[out]      x     The optimization variables
 	 */
 	void getOptimizationVars(size_t n, MapVecXd& x)  const {
-		assert (n == x_.size());
+		assert (static_cast<int>(n) == x_.size());
 		x = x_;
 	}
 

@@ -218,12 +218,11 @@ void singleCore()
 
 	std::cout << "============ running solver 1 ==============" << std::endl;
 
-	bool foundBetter = true;
-	size_t numIterations = 0;
+	int numIterations = 0;
 
 	while (numIterations < gnms_settings.max_iterations)
 	{
-		foundBetter = gnms.runIteration();
+		gnms.runIteration();
 
 		// test trajectories
 		StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
@@ -239,11 +238,10 @@ void singleCore()
 
 	std::cout << "============ running solver 2 ==============" << std::endl;
 
-	foundBetter = true;
 	numIterations = 0;
 	while (numIterations < ilqr_settings.max_iterations)
 	{
-		foundBetter = ilqr.runIteration();
+		ilqr.runIteration();
 
 		// test trajectories
 		StateTrajectory<state_dim> xRollout = ilqr.getStateTrajectory();
