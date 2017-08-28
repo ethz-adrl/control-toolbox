@@ -40,6 +40,8 @@ class Sensitivity :  public DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	typedef std::shared_ptr<StateVectorArray<STATE_DIM, SCALAR>> StateVectorArrayPtr;
 	typedef std::shared_ptr<ControlVectorArray<CONTROL_DIM, SCALAR>> ControlVectorArrayPtr;
 

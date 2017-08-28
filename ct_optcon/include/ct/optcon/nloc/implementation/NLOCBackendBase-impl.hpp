@@ -190,7 +190,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 		} else
 		{
 			sensitivity_[i] = SensitivityPtr(
-				new ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(settings_.getSimulationTimestep(), linearSystems_[i], settings_.discretization));
+				new ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(settings_.dt, linearSystems_[i], settings_.discretization));
 		}
 	}
 	reset(); // since system changed, we have to start fresh, i.e. with a rollout
@@ -205,7 +205,7 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeSymplec
 		//! it only makes sense to compile the following code, if V_DIM > 0 and P_DIM > 0
 		integratorsEulerSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticEuler<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>(
 								new ct::core::IntegratorSymplecticEuler<P_DIM, V_DIM, CONTROL_DIM, SCALAR>(
-									std::static_pointer_cast<ct::core::SymplecticSystem<P_DIM, V_DIM, CONTROL_DIM, SCALAR>> (systems_[i])));
+									std::static_pointer_cast<ct::core::SymplecticSystem<P_DIM, V_DIM, CONTROL_DIM, SCALAR>> (systems_[i]), substepRecorders_[i]));
 		integratorsRkSymplectic_[i] = std::shared_ptr<ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>(
 								new ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR>(
 									std::static_pointer_cast<ct::core::SymplecticSystem<P_DIM, V_DIM, CONTROL_DIM, SCALAR>> (systems_[i])));
@@ -265,7 +265,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
 			break;
 
 		sensitivity_[i]->setApproximation(settings.discretization);
-		sensitivity_[i]->setTimeDiscretization(settings.getSimulationTimestep());
+
+		if (settings.useSensitivityIntegrator)
+			sensitivity_[i]->setTimeDiscretization(settings.getSimulationTimestep());
+		else
+			sensitivity_[i]->setTimeDiscretization(settings.dt);
 	}
 
 	if(settings.integrator != settings_.integrator)
