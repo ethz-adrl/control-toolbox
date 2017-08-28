@@ -166,7 +166,7 @@ public:
 		}
 		case SensitivityApproximationSettings::APPROXIMATION::SYMPLECTIC_EULER:
 		{
-			symplecticEuler<V_DIM, P_DIM>(x, u, n, A, B);
+			symplecticEuler<V_DIM, P_DIM>(x, u, x_next, n, A, B);
 			break;
 		}
 		case SensitivityApproximationSettings::APPROXIMATION::TUSTIN:
