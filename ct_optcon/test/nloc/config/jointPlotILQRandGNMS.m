@@ -2,7 +2,7 @@ clear all
 close all
 
 
-numIter = 8;    % number of iterations to be plotted
+numIter = 19;    % number of iterations to be plotted
 
 jointNr = 1;
 
@@ -18,8 +18,8 @@ plotInitGuesses('ILQRLogInit.mat', ':r', 'o', markerSize, jointNr, true);
 for iter= 0:1:numIter
     
     % plot the current iteration
-    plotIteration(strcat(strcat('GNMSLog', num2str(iter)),'.mat'), iter, 'k', 'x', markerSize, jointNr, true);
-    plotIteration(strcat(strcat('ILQRLog', num2str(iter)),'.mat'), iter, '--r', 'o', markerSize,jointNr, true);
+    plotIteration(strcat(strcat('ILQRLog', num2str(iter)),'.mat'), iter, 'k', 'x', markerSize, jointNr, true);
+    plotIteration(strcat(strcat('ILQR_GNMS_5Log', num2str(iter)),'.mat'), iter, '--r', 'o', markerSize,jointNr, true);
     
 end
 
@@ -35,7 +35,7 @@ set(gca,'YTick',[])
 set(gca,'XTickLabel','')
 set(gca,'YTickLabel','')
 title('Legend')
-legend('open-loop multiple shooting', 'closed-loop multiple shooting')
+legend('GNMS', 'ILQR')
 legend boxoff
 
 
