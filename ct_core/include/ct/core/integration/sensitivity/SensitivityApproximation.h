@@ -161,12 +161,12 @@ public:
 		}
 		case SensitivityApproximationSettings::APPROXIMATION::BACKWARD_EULER:
 		{
-			backwardEuler(x_next, u, n+1, A, B);
+			backwardEuler(x, u, n+1, A, B);
 			break;
 		}
 		case SensitivityApproximationSettings::APPROXIMATION::SYMPLECTIC_EULER:
 		{
-			symplecticEuler<V_DIM, P_DIM>(x, u, x_next, n, A, B);
+			symplecticEuler<V_DIM, P_DIM>(x, u, n, A, B);
 			break;
 		}
 		case SensitivityApproximationSettings::APPROXIMATION::TUSTIN:
