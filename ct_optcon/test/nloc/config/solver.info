@@ -4,13 +4,13 @@ initType    0 ; 0 = zero, 1 = linear, 2 = integrated with zero control action, 3
 
 gnms
 {
-	integrator RK4CT
+	integrator EulerCT
 	useSensitivityIntegrator true
-	discretization Matrix_exponential
+	discretization Forward_euler
 	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
-    dt 0.1
-    K_shot 10
-    K_sim 1
+    dt 0.01
+    K_shot 1
+    K_sim 10
     epsilon 1e-6
 	max_iterations 10
     fixedHessianCorrection false
@@ -20,12 +20,12 @@ gnms
     meritFunctionRho 1.0
     nThreads 1
     nThreadsEigen 4
-    loggingPrefix GNMS
     ;locp_solver HPIPM_SOLVER
     locp_solver GNRICCATI_SOLVER
-    nlocp_algorithm GNMS
+    nlocp_algorithm ILQR
     debugPrint false
     printSummary true
+    loggingPrefix ILQR
     
     line_search
 	{
@@ -42,12 +42,12 @@ gnms
 ilqr
 {
 	integrator EulerCT
-	useSensitivityIntegrator false
-	discretization Matrix_exponential
-	closedLoopShooting 0 					; (1 = closed loop shooting, 0 = open-loop shooting)
-    dt 0.1
-    K_shot 10
-    K_sim 1
+	useSensitivityIntegrator true
+	discretization Forward_euler
+	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
+    dt 0.01
+    K_shot 60
+    K_sim 10
     epsilon 1e-6
 	max_iterations 10
     fixedHessianCorrection false
@@ -56,12 +56,12 @@ ilqr
     maxDefectSum 1e-5
     nThreads 1    
     nThreadsEigen 4
-    loggingPrefix ILQR
     ;locp_solver HPIPM_SOLVER
     locp_solver GNRICCATI_SOLVER
     nlocp_algorithm GNMS
     debugPrint false
     printSummary true
+    loggingPrefix ILQR_GNMS_5
     
     line_search
 	{

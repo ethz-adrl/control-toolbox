@@ -234,6 +234,9 @@ target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MA
 catkin_add_gtest(LinearSystemTest test/nloc/LinearSystemTest.cpp)
 target_link_libraries(LinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
+add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
+target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+
 catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
 target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
 
