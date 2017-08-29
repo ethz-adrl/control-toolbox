@@ -50,7 +50,7 @@ namespace optcon {
  **/
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename TIME_SCALAR = SCALAR>
 class TermBase {
-private:
+protected:
 	std::string name_;
 	std::shared_ptr<tpl::TimeActivationBase<TIME_SCALAR>> c_i_;
 
@@ -173,7 +173,7 @@ public:
 	 * \brief Returns the name of the term
 	 * @param termName name of the term
 	 */
-	void getName(std::string& termName) const {termName=name_;}
+	const std::string& getName() const {return name_;}
 
 	/**
 	 * \brief Sets the name of the term

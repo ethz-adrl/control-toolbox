@@ -234,15 +234,34 @@ public:
 		return (derivative.isApprox(derivativeNd, 1e-6));
 	}
 
-	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermById(size_t id)
+	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermById(const size_t id)
 	{
 		return intermediateCostAnalytical_[id];
 	}
 
-	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermById(size_t id)
+	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermById(const size_t id)
 	{
 		return finalCostAnalytical_[id];
 	}
+
+	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermByName(const std::string& name)
+	{
+		for(auto term : intermediateCostAnalytical_)
+			if(term->getName() == name)
+				return term;
+
+		throw std::runtime_error("Term " + name + " not found in the costfunction");
+	}
+
+	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermById(const std::string& name)
+	{
+		for(auto term : finalCostAnalytical_)
+			if(term->getName() == name)
+				return term;
+
+		throw std::runtime_error("Term " + name + " not found in the costfunction");
+	}
+
 
 
 protected:
