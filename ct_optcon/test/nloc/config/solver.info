@@ -10,9 +10,9 @@ gnms
 	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
     dt 0.01
     K_shot 1
-    K_sim 10
+    K_sim 1
     epsilon 1e-6
-	max_iterations 20
+	max_iterations 5
     fixedHessianCorrection false
     recordSmallestEigenvalue false
     min_cost_improvement 1e-12
@@ -21,15 +21,15 @@ gnms
     nThreads 1
     nThreadsEigen 4
     ;locp_solver HPIPM_SOLVER
-    locp_solver GNRICCATI_SOLVER
+    locp_solver HPIPM_SOLVER
     nlocp_algorithm ILQR
-    debugPrint false
+    debugPrint true
     printSummary true
     loggingPrefix ILQR
     
     line_search
 	{
-		active false ;
+		active true ;
 		adaptive false ;
 		maxIterations 10 ;
 		alpha_0 1.0 ;
@@ -46,10 +46,10 @@ ilqr
 	discretization Forward_euler
 	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
     dt 0.01
-    K_shot 60
-    K_sim 10
+    K_shot 1
+    K_sim 1
     epsilon 1e-6
-	max_iterations 20
+	max_iterations 5
     fixedHessianCorrection false
     recordSmallestEigenvalue false
     min_cost_improvement 1e-12
@@ -57,9 +57,9 @@ ilqr
     nThreads 1    
     nThreadsEigen 4
     ;locp_solver HPIPM_SOLVER
-    locp_solver GNRICCATI_SOLVER
+    locp_solver HPIPM_SOLVER
     nlocp_algorithm GNMS
-    debugPrint false
+    debugPrint true
     printSummary true
     loggingPrefix ILQR_GNMS_5
     

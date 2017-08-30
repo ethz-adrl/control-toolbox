@@ -181,10 +181,10 @@ public:
 		return hu_;
 	}
 
-	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> getFeedback() override
+	virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM>& K) override
 	{
 		LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
-		ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> K(p.getNumberOfStages());
+		K.resize(p.getNumberOfStages());
 
 		// for stage 0, HPIPM does not provide feedback, so we have to construct it
 
@@ -208,16 +208,15 @@ public:
 		// step4: compute K[0]
 		K[0] = (-H.inverse() * G); // \todo use Lr here instead of H!
 
+
 		// for all other steps we can just read Ls
 		Eigen::Matrix<double, state_dim, control_dim> Ls;
 		for (size_t i=1; i<this->lqocProblem_->getNumberOfStages(); i++)
 		{
 			::d_cvt_strmat2mat(Lr.rows(), Lr.cols(), &workspace_.L[i], 0, 0, Lr.data(), Lr.rows());
 			::d_cvt_strmat2mat(Ls.rows(), Ls.cols(), &workspace_.L[i], Lr.rows(), 0, Ls.data(), Ls.rows());
-			K[i] = (-Lr.template triangularView<Eigen::Lower>().solve(Ls.transpose()));
+			K[i] = (-Ls * Lr.partialPivLu().inverse()).transpose();
 		}
-
-		return K;
 	}
 
 	virtual ct::core::ControlVectorArray<CONTROL_DIM> getFeedforwardUpdates() override
