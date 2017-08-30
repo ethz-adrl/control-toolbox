@@ -105,9 +105,7 @@ size_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::addIntermediateTerm (std::shared_
 { 
 	this->intermediateCostAnalytical_.push_back(term);
 	if(verbose){
-		std::string name;
-		term->getName(name);
-		std::cout<<name+" added as intermediate term"<<std::endl;
+		std::cout<<term->getName()+" added as intermediate term"<<std::endl;
 	}
 
 	return this->intermediateCostAnalytical_.size()-1;
@@ -121,9 +119,7 @@ size_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::addIntermediateTerm (std::shared_
 	recordTerm(intermediateCostAD_.back(), *intermediateFunctionAD_.back());
 
 	if(verbose){
-		std::string name;
-		term->getName(name);
-		std::cout<<name+" added as intermediate AD term"<<std::endl;
+		std::cout<<term->getName()+" added as intermediate AD term"<<std::endl;
 	}
 
 	return intermediateCostAD_.size()-1;
@@ -134,9 +130,7 @@ size_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::addFinalTerm (std::shared_ptr< Te
 { 
 	this->finalCostAnalytical_.push_back(term);
 	if(verbose){
-		std::string name;
-		term->getName(name);
-		std::cout<<name+"added as final term"<<std::endl;
+		std::cout<<term->getName()+"added as final term"<<std::endl;
 	}
 
 	return this->finalCostAnalytical_.size()-1;
@@ -151,9 +145,7 @@ size_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::addFinalTerm (std::shared_ptr< Te
 	recordTerm(finalCostAD_.back(), *finalFunctionAD_.back());
 
 	if(verbose){
-		std::string name;
-		term->getName(name);
-		std::cout<<name+"added as final AD term"<<std::endl;
+		std::cout<<term->getName()+"added as final AD term"<<std::endl;
 	}
 
 	return finalCostAD_.size()-1;

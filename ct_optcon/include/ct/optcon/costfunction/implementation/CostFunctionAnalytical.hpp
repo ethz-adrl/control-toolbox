@@ -31,8 +31,7 @@ size_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateTe
 { 
 	this->intermediateCostAnalytical_.push_back(term);
 	if(verbose){
-		std::string name;
-	    term->getName(name);
+		std::string name = term->getName();
 	    std::cout<<"Trying to add term as intermediate"<<std::endl;
 	}
 
@@ -44,8 +43,7 @@ size_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalTerm (std
 { 
 	this->finalCostAnalytical_.push_back(term);
 	if(verbose){
-		std::string name;
-	    term->getName(name);
+		std::string name = term->getName();
 	    std::cout<<"Trying to add term as final"<<std::endl;
 	}
 
