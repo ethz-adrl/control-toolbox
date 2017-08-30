@@ -75,6 +75,9 @@ public:
 		Base(core::SYSTEM_TYPE::GENERAL)
 	{
 		basePose_.setIdentity();
+		/*
+		 * that is missing currently
+		 * */
 	}
 
 	FixBaseFDSystem(const FixBaseFDSystem& arg) :
