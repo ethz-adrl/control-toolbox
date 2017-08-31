@@ -91,7 +91,7 @@ public:
 
 
 	virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
-			const ct::rbd::JointState<NJOINTS, SCALAR>& robotJointState,
+			const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
 			const BASE::act_state_vector_t& actState) override
 	{
 		// for this simple actuator dynamics model, the controlOutput is just the "position" coordinates of the actuator state

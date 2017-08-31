@@ -58,12 +58,12 @@ public:
 
 	virtual ~ActuatorDynamics() {};
 
-	virtual ActuatorDynamics<ACT_STATE_DIM, NJOINTS, SCALAR>* clone() const override = 0;
+	virtual ActuatorDynamics<NJOINTS, ACT_STATE_DIM, SCALAR>* clone() const override = 0;
 
 	virtual void computePdot(
 			const act_state_vector_t& x,
 			const act_vel_vector_t& v,
-			const ControlVector<NJOINTS, SCALAR>& control,
+			const core::ControlVector<NJOINTS, SCALAR>& control,
 			act_pos_vector_t& pDot
 		) override = 0;
 
@@ -71,7 +71,7 @@ public:
 	virtual void computeVdot(
 			const act_state_vector_t& x,
 			const act_pos_vector_t& p,
-			const ControlVector<NJOINTS, SCALAR>& control,
+			const core::ControlVector<NJOINTS, SCALAR>& control,
 			act_vel_vector_t& vDot
 		) override = 0;
 
@@ -86,7 +86,7 @@ public:
 	 * @param controlOutput control output (output side of actuator)
 	 */
 	virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
-			const ct::rbd::JointState<NJOINTS, SCALAR>& robotJointState,
+			const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
 			const act_state_vector_t& actState) = 0;
 };
 

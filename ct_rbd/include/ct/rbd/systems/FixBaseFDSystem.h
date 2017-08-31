@@ -90,8 +90,7 @@ public:
 	{
 		if (arg.actuatorDynamics_)
 		{
-			actuatorDynamics_ = std::shared_ptr<ActuatorDynamics<NJOINTS, ACTUATOR_STATE_DIM, SCALAR>> (
-					new ActuatorDynamics<NJOINTS, ACTUATOR_STATE_DIM, SCALAR>(arg.actuatorDynamics->clone()));
+			actuatorDynamics_ = std::shared_ptr<ActuatorDynamics<RBDDynamics::NJOINTS, ACTUATOR_STATE_DIM, SCALAR>> (arg.actuatorDynamics_->clone());
 		}
 	}
 
@@ -113,22 +112,25 @@ public:
 			core::StateVector<STATE_DIM/2, SCALAR>& pDot) override
 	{
 		// the top rows hold the RBD velocities ...
-		pDot.template topRows<RBDDynamics::NJOINTS> = v.template topRows<RBDDynamics::NJOINTS>;
+		pDot.template topRows<RBDDynamics::NJOINTS>() = v.template topRows<RBDDynamics::NJOINTS>();
 
 		if(actuatorDynamics_)
 		{
+#if ACTUATOR_STATE_DIM > 0 // todo find clean solution
 			// ... the bottom rows hold the actuator dynamics
-			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>>& actPdot = pDot.bottomRrows<ACTUATOR_STATE_DIM/2>();
+			Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>> actPdot = pDot.template bottomRows<ACTUATOR_STATE_DIM/2>();
 
 			// get references to the current actuator position and velocity states
-			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>>& actPos = x.segment<ACTUATOR_STATE_DIM/2>(RBDDynamics::NJOINTS);
-			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>>& actVel = x.bottomRows<ACTUATOR_STATE_DIM/2>();
+			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>> actPos = x.segment<ACTUATOR_STATE_DIM/2>(RBDDynamics::NJOINTS);
+			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>> actVel = x.template bottomRows<ACTUATOR_STATE_DIM/2>();
 
 			// assemble temporary actuator state
-			core::StateVector<ACTUATOR_STATE_DIM, SCALAR> actState << actPos, actVel;
+			core::StateVector<ACTUATOR_STATE_DIM, SCALAR> actState;
+			actState << actPos, actVel;
 
 			// the controls get remapped to the actuator input
-			actuatorDynamics_->computePdot(actState, actVel, controlIn.topRows<RBDDynamics::NJOINTS>(), actPdot);
+			actuatorDynamics_->computePdot(actState, actVel, controlIn.template topRows<RBDDynamics::NJOINTS>(), actPdot);
+#endif
 		}
 	}
 
@@ -141,31 +143,34 @@ public:
 			core::StateVector<STATE_DIM/2, SCALAR>& vDot) override
 	{
 		// temporary variable for the control (will get modified by the actuator dynamics, if applicable)
-		core::ControlVector<CONTROL_DIM, SCALAR>& control = controlIn;
+		core::ControlVector<CONTROL_DIM, SCALAR> control = controlIn;
 
 		// extract the current RBD joint state from the state vector
 		typename RBDDynamics::JointState_t jState; jState.setZero();
-		jState.getPositions() = p.topRows<RBDDynamics::NJOINTS>();
-		jState.getVelocities() = x.segment<RBDDynamics::NJOINTS>(STATE_DIM/2);
+		jState.getPositions() = p.template topRows<RBDDynamics::NJOINTS>();
+		jState.getVelocities() = x.template segment<RBDDynamics::NJOINTS>(STATE_DIM/2);
 
 
 		if(actuatorDynamics_)
 		{
+#if ACTUATOR_STATE_DIM > 0 // todo find clean solution
 			// ... the bottom rows hold the actuator dynamics
-			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>>& actVdot = vDot.bottomRrows<ACTUATOR_STATE_DIM/2>();
+			Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>> actVdot = vDot.template bottomRows<ACTUATOR_STATE_DIM/2>();
 
 			// get references to the current actuator position and velocity states
-			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>>& actPos = x.segment<ACTUATOR_STATE_DIM/2>(RBDDynamics::NJOINTS);
-			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>>& actVel = x.bottomRows<ACTUATOR_STATE_DIM/2>();
+			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>> actPos = x.segment<ACTUATOR_STATE_DIM/2>(RBDDynamics::NJOINTS);
+			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>> actVel = x.template bottomRows<ACTUATOR_STATE_DIM/2>();
 
 			// assemble temporary actuator state
-			core::StateVector<ACTUATOR_STATE_DIM, SCALAR> actState << actPos, actVel;
+			core::StateVector<ACTUATOR_STATE_DIM, SCALAR> actState;
+			actState << actPos, actVel;
 
-			// the controls get remapped to the actuator input
-			actuatorDynamics_->computeVdot(actState, actPos, controlIn.topRows<RBDDynamics::NJOINTS>(), actVdot);
+			// the input controls get remapped to the actuator input
+			actuatorDynamics_->computeVdot(actState, actPos, controlIn.template topRows<RBDDynamics::NJOINTS>(), actVdot);
 
-			// overwrite control with actuator control output
-			control = actuatorDynamics_->
+			// overwrite control with actuator control output as a function of current robot and actuator states
+			control = actuatorDynamics_->computeControlOutput(jState, actState);
+#endif
 		}
 
 
@@ -203,6 +208,7 @@ public:
 		return new FixBaseFDSystem<RBDDynamics, EE_ARE_CONTROL_INPUTS> (*this);
 	}
 
+	//! transform control systems state vector to a RBDState
 	typename RBDDynamics::RBDState_t RBDStateFromVector(const core::StateVector<STATE_DIM, SCALAR>& state)
 	{
 		typename RBDDynamics::RBDState_t x;
@@ -219,7 +225,7 @@ private:
 
 	RBDDynamics dynamics_;
 
-	std::shared_ptr<ActuatorDynamics<NJOINTS, ACTUATOR_STATE_DIM, SCALAR>> actuatorDynamics_;
+	std::shared_ptr<ActuatorDynamics<RBDDynamics::NJOINTS, ACTUATOR_STATE_DIM, SCALAR>> actuatorDynamics_;
 };
 
 } // namespace rbd
