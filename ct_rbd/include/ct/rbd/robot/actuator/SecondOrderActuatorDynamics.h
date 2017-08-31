@@ -40,6 +40,8 @@ class SecondOrderActuatorDynamics : public ActuatorDynamics <NJOINTS, 2*NJOINTS,
 {
 public:
 
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	typedef ActuatorDynamics <NJOINTS, 2*NJOINTS, SCALAR> BASE;
 
 	//! constructor
@@ -88,13 +90,12 @@ public:
 	}
 
 
-	virtual void computeControlOutput(
-			const ct::rbd::RBDState<NJOINTS, SCALAR>& robotState,
-			const BASE::act_state_vector_t& actState,
-			core::ControlVector<NJOINTS, SCALAR>& controlOutput) override
+	virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
+			const ct::rbd::JointState<NJOINTS, SCALAR>& robotJointState,
+			const BASE::act_state_vector_t& actState) override
 	{
 		// for this simple actuator dynamics model, the controlOutput is just the "position" coordinates of the actuator state
-		controlOutput =  actState.topRows<NJOINTS>();
+		return actState.topRows<NJOINTS>();
 	}
 
 

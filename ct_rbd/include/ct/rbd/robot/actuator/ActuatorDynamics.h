@@ -28,7 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CT_ACTUATORDYNAMICS_H_
 
 #include <ct/core/core.h>
-#include <ct/rbd/state/RBDState.h>
+#include <ct/rbd/state/JointState.h>
 
 namespace ct {
 namespace rbd {
@@ -43,6 +43,8 @@ template <size_t NJOINTS, size_t ACT_STATE_DIM = 2*NJOINTS, typename SCALAR = do
 class ActuatorDynamics : public core::SymplecticSystem<ACT_STATE_DIM/2, ACT_STATE_DIM/2, NJOINTS, SCALAR>
 {
 public:
+
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const size_t ACT_POS_DIM = ACT_STATE_DIM/2;
 	static const size_t ACT_VEL_DIM = ACT_STATE_DIM/2;
@@ -83,10 +85,9 @@ public:
 	 * @param actState current state of the actuators
 	 * @param controlOutput control output (output side of actuator)
 	 */
-	virtual void computeControlOutput(
-			const ct::rbd::RBDState<NJOINTS, SCALAR>& robotState,
-			const act_state_vector_t& actState,
-			core::ControlVector<NJOINTS, SCALAR>& controlOutput) = 0;
+	virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
+			const ct::rbd::JointState<NJOINTS, SCALAR>& robotJointState,
+			const act_state_vector_t& actState) = 0;
 };
 
 

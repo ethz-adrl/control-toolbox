@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/core/systems/ControlledSystem.h>
 #include <ct/rbd/state/RigidBodyPose.h>
-
+#include <ct/rbd/robot/actuator/ActuatorDynamics.h>
 
 #include "RBDSystem.h"
 
@@ -40,75 +40,134 @@ namespace rbd {
  * \brief A fix base rigid body system that uses forward dynamics. The input vector
  * is assumed to consist of joint torques and end effector forces expressed in the world.
  */
-template <class RBDDynamics, bool EE_ARE_CONTROL_INPUTS = false>
+template <class RBDDynamics, size_t ACTUATOR_STATE_DIM = 0, bool EE_ARE_CONTROL_INPUTS = false>
 class FixBaseFDSystem :
 		public RBDSystem<RBDDynamics, false>,
-		public core::SymplecticSystem<RBDDynamics::NSTATE / 2, RBDDynamics::NSTATE / 2, RBDDynamics::NJOINTS+EE_ARE_CONTROL_INPUTS*RBDDynamics::N_EE*3, typename RBDDynamics::SCALAR>
+		public core::SymplecticSystem<
+			RBDDynamics::NJOINTS+ACTUATOR_STATE_DIM/2, 	// position dimension of combined system
+			RBDDynamics::NJOINTS+ACTUATOR_STATE_DIM/2,  // velocity dimension of combined system
+			RBDDynamics::NJOINTS+EE_ARE_CONTROL_INPUTS*RBDDynamics::N_EE*3,  // input dimension of combined system
+			typename RBDDynamics::SCALAR
+			>
 {
 public:
+
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	using Dynamics = RBDDynamics;
 
 	typedef typename RBDDynamics::SCALAR SCALAR;
 
 	const static size_t N_EE = RBDDynamics::N_EE;
-	static const size_t STATE_DIM = RBDDynamics::NSTATE;
-	static const size_t CONTROL_DIM = RBDDynamics::NJOINTS+EE_ARE_CONTROL_INPUTS*RBDDynamics::N_EE*3;
 
-	typedef core::StateVector<STATE_DIM, SCALAR> StateVector;
-	typedef core::ControlVector<CONTROL_DIM, SCALAR> ControlVector;
+	// the combined system consists of the RBD states and the actuator states
+	static const size_t STATE_DIM = RBDDynamics::NSTATE + ACTUATOR_STATE_DIM;
 
-	typedef core::SymplecticSystem<RBDDynamics::NSTATE / 2, RBDDynamics::NSTATE / 2, RBDDynamics::NJOINTS+EE_ARE_CONTROL_INPUTS*RBDDynamics::N_EE*3, SCALAR> Base;
+	// the control inputs are the inputs to the actuators / joint torques + EE forces, if applicable
+	static const size_t CONTROL_DIM = RBDDynamics::NJOINTS + EE_ARE_CONTROL_INPUTS*RBDDynamics::N_EE*3;
 
-	typedef Eigen::Matrix<SCALAR, RBDDynamics::NJOINTS, RBDDynamics::NJOINTS> DampingMatrix_t;
+	typedef core::SymplecticSystem<STATE_DIM / 2, STATE_DIM / 2, CONTROL_DIM, SCALAR> Base;
 
+
+	//! constructor
 	FixBaseFDSystem() :
-			Base(core::SYSTEM_TYPE::SECOND_ORDER)
+			Base(core::SYSTEM_TYPE::SECOND_ORDER),
+			actuatorDynamics_(nullptr)
 	{
 		basePose_.setIdentity();
 	}
 
-	/**
-	 * The system type becomes GENERAL if we introduce artificial damping
-	 * @param dampingMatrix
+
+	//! copy constructor
+	/*!
+	 * take care of explicitly cloning actuatorDynamics, if existent
+	 * @param arg instance of FixBaseFDSystem to be copied.
 	 */
-	FixBaseFDSystem(const DampingMatrix_t& dampingMatrix):
-		Base(core::SYSTEM_TYPE::GENERAL)
-	{
-		basePose_.setIdentity();
-		/*
-		 * that is missing currently
-		 * */
-	}
-
 	FixBaseFDSystem(const FixBaseFDSystem& arg) :
 		Base(arg),
 		basePose_(arg.basePose_),
 		dynamics_(RBDDynamics())
-	{}
-
-	virtual ~FixBaseFDSystem(){}
-
-	virtual RBDDynamics& dynamics() override { return dynamics_; }
-	virtual const RBDDynamics& dynamics() const override { return dynamics_; }
-
-	virtual void computePdot(
-			const core::StateVector<STATE_DIM, SCALAR>& x,
-			const core::StateVector<STATE_DIM / 2, SCALAR>& v,
-			const core::ControlVector<CONTROL_DIM, SCALAR>& control,
-			core::StateVector<STATE_DIM / 2, SCALAR>& pDot) override {
-		pDot = v;
+	{
+		if (arg.actuatorDynamics_)
+		{
+			actuatorDynamics_ = std::shared_ptr<ActuatorDynamics<NJOINTS, ACTUATOR_STATE_DIM, SCALAR>> (
+					new ActuatorDynamics<NJOINTS, ACTUATOR_STATE_DIM, SCALAR>(arg.actuatorDynamics->clone()));
+		}
 	}
 
+	//! destructor
+	virtual ~FixBaseFDSystem(){}
+
+	//! get dynamics
+	virtual RBDDynamics& dynamics() override { return dynamics_; }
+
+	//! get dynamics (const)
+	virtual const RBDDynamics& dynamics() const override { return dynamics_; }
+
+
+	//! compute position derivatives, for both RBD system and actuator dynamics, if applicable
+	virtual void computePdot(
+			const core::StateVector<STATE_DIM, SCALAR>& x,
+			const core::StateVector<STATE_DIM/2, SCALAR>& v,
+			const core::ControlVector<CONTROL_DIM, SCALAR>& controlIn,
+			core::StateVector<STATE_DIM/2, SCALAR>& pDot) override
+	{
+		// the top rows hold the RBD velocities ...
+		pDot.template topRows<RBDDynamics::NJOINTS> = v.template topRows<RBDDynamics::NJOINTS>;
+
+		if(actuatorDynamics_)
+		{
+			// ... the bottom rows hold the actuator dynamics
+			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>>& actPdot = pDot.bottomRrows<ACTUATOR_STATE_DIM/2>();
+
+			// get references to the current actuator position and velocity states
+			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>>& actPos = x.segment<ACTUATOR_STATE_DIM/2>(RBDDynamics::NJOINTS);
+			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>>& actVel = x.bottomRows<ACTUATOR_STATE_DIM/2>();
+
+			// assemble temporary actuator state
+			core::StateVector<ACTUATOR_STATE_DIM, SCALAR> actState << actPos, actVel;
+
+			// the controls get remapped to the actuator input
+			actuatorDynamics_->computePdot(actState, actVel, controlIn.topRows<RBDDynamics::NJOINTS>(), actPdot);
+		}
+	}
+
+
+	//! compute velocity derivatives, for both RBD system and actuator dynamics
 	virtual void computeVdot(
-			const StateVector& x,
-			const core::StateVector<STATE_DIM / 2, SCALAR>& p,
-			const ControlVector& control,
-			core::StateVector<STATE_DIM / 2, SCALAR>& vDot
-	) override {
+			const core::StateVector<STATE_DIM, SCALAR>& x,
+			const core::StateVector<STATE_DIM/2, SCALAR>& p,
+			const core::ControlVector<CONTROL_DIM, SCALAR>& controlIn,
+			core::StateVector<STATE_DIM/2, SCALAR>& vDot) override
+	{
+		// temporary variable for the control (will get modified by the actuator dynamics, if applicable)
+		core::ControlVector<CONTROL_DIM, SCALAR>& control = controlIn;
 
-		typename RBDDynamics::JointState_t jState = x;
+		// extract the current RBD joint state from the state vector
+		typename RBDDynamics::JointState_t jState; jState.setZero();
+		jState.getPositions() = p.topRows<RBDDynamics::NJOINTS>();
+		jState.getVelocities() = x.segment<RBDDynamics::NJOINTS>(STATE_DIM/2);
 
-		jState.getPositions() = p;
+
+		if(actuatorDynamics_)
+		{
+			// ... the bottom rows hold the actuator dynamics
+			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>>& actVdot = vDot.bottomRrows<ACTUATOR_STATE_DIM/2>();
+
+			// get references to the current actuator position and velocity states
+			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>>& actPos = x.segment<ACTUATOR_STATE_DIM/2>(RBDDynamics::NJOINTS);
+			const Eigen::Ref<core::StateVector<ACTUATOR_STATE_DIM/2, SCALAR>>& actVel = x.bottomRows<ACTUATOR_STATE_DIM/2>();
+
+			// assemble temporary actuator state
+			core::StateVector<ACTUATOR_STATE_DIM, SCALAR> actState << actPos, actVel;
+
+			// the controls get remapped to the actuator input
+			actuatorDynamics_->computeVdot(actState, actPos, controlIn.topRows<RBDDynamics::NJOINTS>(), actVdot);
+
+			// overwrite control with actuator control output
+			control = actuatorDynamics_->
+		}
+
 
 		// Cache updated rbd state
 		typename RBDDynamics::ExtLinkForces_t linkForces(Eigen::Matrix<SCALAR, 6, 1>::Zero());
@@ -138,8 +197,9 @@ public:
 		vDot =jAcc.getAcceleration();
 	}
 
-
-	virtual FixBaseFDSystem<RBDDynamics, EE_ARE_CONTROL_INPUTS>* clone() const override {
+	//! deep cloning
+	virtual FixBaseFDSystem<RBDDynamics, EE_ARE_CONTROL_INPUTS>* clone() const override
+	{
 		return new FixBaseFDSystem<RBDDynamics, EE_ARE_CONTROL_INPUTS> (*this);
 	}
 
@@ -154,9 +214,12 @@ public:
 
 private:
 
+	//! a "dummy" base pose, which is always identity/zero for the fix-base case
 	tpl::RigidBodyPose<SCALAR> basePose_;
 
 	RBDDynamics dynamics_;
+
+	std::shared_ptr<ActuatorDynamics<NJOINTS, ACTUATOR_STATE_DIM, SCALAR>> actuatorDynamics_;
 };
 
 } // namespace rbd
