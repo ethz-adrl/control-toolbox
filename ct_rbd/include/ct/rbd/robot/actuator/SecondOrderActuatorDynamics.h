@@ -57,10 +57,10 @@ public:
 
 
 	virtual void computePdot(
-			const BASE::act_state_vector_t& x,
-			const BASE::act_vel_vector_t& v,
+			const typename BASE::act_state_vector_t& x,
+			const typename BASE::act_vel_vector_t& v,
 			const ct::core::ControlVector<NJOINTS, SCALAR>& control,
-			BASE::act_pos_vector_t& pDot
+			typename BASE::act_pos_vector_t& pDot
 		) override
 	{
 		// as the oscillator is symplectic itself, we simply transcribe the velocity coordinates
@@ -69,21 +69,23 @@ public:
 
 
 	virtual void computeVdot(
-			const BASE::act_state_vector_t& x,
-			const BASE::act_pos_vector_t& p,
-			const BASE::ControlVector<NJOINTS, SCALAR>& control,
-			BASE::act_vel_vector_t& vDot
+			const typename BASE::act_state_vector_t& x,
+			const typename BASE::act_pos_vector_t& p,
+			const ct::core::ControlVector<NJOINTS, SCALAR>& control,
+			typename BASE::act_vel_vector_t& vDot
 		) override
 	{
 		// evaluate oscillator dynamics for each joint
 		for (size_t i=0; i<NJOINTS; i++)
 		{
-			Eigen::Vector2d secondOrderState;
-			Eigen::Vector2d secondOrderStateDerivative;
+			core::StateVector<2, SCALAR> secondOrderState;
+			core::StateVector<2, SCALAR> secondOrderStateDerivative;
+			core::ControlVector<1, SCALAR> inputCtrl;
+			inputCtrl(0) = control(i);
 
 			secondOrderState << p(i), x(i+NJOINTS);
 
-			oscillator_.computeControlledDynamics(secondOrderState, 0.0, control(i), secondOrderStateDerivative);
+			oscillator_.computeControlledDynamics(secondOrderState, SCALAR(0.0), inputCtrl, secondOrderStateDerivative);
 
 			vDot(i) = secondOrderStateDerivative(1);
 		}
@@ -92,10 +94,10 @@ public:
 
 	virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
 			const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
-			const BASE::act_state_vector_t& actState) override
+			const typename BASE::act_state_vector_t& actState) override
 	{
 		// for this simple actuator dynamics model, the controlOutput is just the "position" coordinates of the actuator state
-		return actState.topRows<NJOINTS>();
+		return actState.template topRows<NJOINTS>();
 	}
 
 
