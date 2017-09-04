@@ -110,6 +110,14 @@ public:
 	static typename TRANS::MatrixType getTransformBaseLinkById(TRANS& transforms, size_t link_id, const Eigen::Matrix<SCALAR, NJOINTS, 1>& q)
 	{
 	   switch(link_id) {
+	   case 0:
+	   {
+		   typename TRANS::MatrixType identity;
+		   identity.setZero();
+		   identity.template topRightCorner<3,3>().setIdentity();
+		   return identity;
+		   break;
+	   }
 		#ifdef CT_L0
 		   CT_RBD_CASE_HELPER_JOINT_BEGIN_BASE_ID(CT_BASE,CT_L0, 0+1) q CT_RBD_CASE_HELPER_JOINT_END
 		#endif
@@ -194,6 +202,14 @@ public:
 	static typename TRANS::MatrixType getTransformLinkBaseById(TRANS& transforms, size_t link_id, const Eigen::Matrix<SCALAR, NJOINTS, 1>& q)
 	{
 	   switch(link_id) {
+	   case 0:
+	   {
+		   typename TRANS::MatrixType identity;
+		   identity.setZero();
+		   identity.template topRightCorner<3,3>().setIdentity();
+		   return identity;
+		   break;
+	   }
 		#ifdef CT_L0
 		   CT_RBD_CASE_HELPER_JOINT_BEGIN_ID_BASE(CT_BASE,CT_L0, 0+1) q CT_RBD_CASE_HELPER_JOINT_END
 		#endif
