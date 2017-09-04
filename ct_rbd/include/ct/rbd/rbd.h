@@ -38,6 +38,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/rbd/robot/Kinematics.h>
 #include <ct/rbd/robot/Dynamics.h>
 
+#include <ct/rbd/robot/actuator/SecondOrderActuatorDynamics.h>
+
 #include <ct/rbd/robot/control/IDControllerFB.h>
 #include <ct/rbd/robot/control/WholeBodyController.h>
 #include <ct/rbd/robot/control/InfiniteHorizonLQRwithInverseDynamics.h>

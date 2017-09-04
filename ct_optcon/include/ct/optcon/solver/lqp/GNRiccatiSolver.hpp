@@ -146,7 +146,8 @@ public:
 
 	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdates() override {return lv_;}
 
-	virtual ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> getFeedback() override {return L_;}
+	virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM>& K) override {	K = L_;	}
+
 
 
 	//! compute the state and control updates.

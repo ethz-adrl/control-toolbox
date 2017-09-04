@@ -438,7 +438,7 @@ public:
 	void getFeedback()
 	{
 		if(settings_.closedLoopShooting)
-			L_ = lqocSolver_->getFeedback();
+			lqocSolver_->getFeedback(L_);
 		else
 			L_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero()); // todo can eventually go away to save time
 	}

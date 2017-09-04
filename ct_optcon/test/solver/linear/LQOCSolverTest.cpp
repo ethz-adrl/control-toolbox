@@ -72,7 +72,9 @@ int main(int argc, char* argv[])
 			auto start_get= std::chrono::steady_clock::now();
 			auto xSol = lqocSolvers[i]->getSolutionState();
 			auto uSol = lqocSolvers[i]->getSolutionControl();
-			auto KSol = lqocSolvers[i]->getFeedback();
+
+			ct::core::FeedbackArray<state_dim, control_dim> KSol;
+			lqocSolvers[i]->getFeedback(KSol);
 			auto end_get = std::chrono::steady_clock::now();
 
 			auto end_all = std::chrono::steady_clock::now();
