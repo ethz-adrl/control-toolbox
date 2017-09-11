@@ -24,6 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
+#include <ct/optcon/optcon.h>
 #include <chrono>
 #include <fenv.h>
 
@@ -33,7 +34,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#define MATLAB
 //#define MATLAB_FULL_LOG
 
-#include <ct/optcon/optcon.h>
 #include "nloc_test_dir.h"
 
 
