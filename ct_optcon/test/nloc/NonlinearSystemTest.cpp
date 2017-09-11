@@ -34,6 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#define MATLAB_FULL_LOG
 
 #include <ct/optcon/optcon.h>
+#include "nloc_test_dir.h"
 
 
 /* This test implements a 1-Dimensional horizontally moving point mass with mass 1kg and attached to a spring
@@ -111,8 +112,8 @@ void singleCore()
 
 	std::cout << "setting up problem " << std::endl;
 
-	std::string configFile = "solver.info";
-	std::string costFunctionFile = "cost.info";
+	std::string configFile = std::string(NLOC_TEST_DIR) + "/config/solver.info";
+	std::string costFunctionFile = std::string(NLOC_TEST_DIR) + "/config/cost.info";
 
 	Eigen::Matrix<double, 1, 1> x_0;
 	ct::core::loadMatrix(costFunctionFile, "x_0", x_0);
