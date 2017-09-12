@@ -173,7 +173,7 @@ class IpoptSolver : public NlpSolver<SCALAR>
 {
 public:
 	IpoptSolver(){ throw (std::runtime_error("Error - IPOPT interface not compiled.")); }
-	IpoptSolver(std::shared_ptr<Nlp> nlp, NlpSolverSettings settings){
+	IpoptSolver(std::shared_ptr<tpl::Nlp<SCALAR>> nlp, NlpSolverSettings settings){
 		throw (std::runtime_error("Error - IPOPT interface not compiled."));}
 
 	virtual bool solve() override {return false;}
@@ -184,8 +184,8 @@ public:
 #endif // BUILD_WITH_IPOPT_SUPPORT
        // 
 } // namespace tpl
-  // 
-typdef tpl::IpoptSolver<double> IpoptSolver;
+
+typedef tpl::IpoptSolver<double> IpoptSolver;
 
 } // namespace optcon
 } // namespace ct

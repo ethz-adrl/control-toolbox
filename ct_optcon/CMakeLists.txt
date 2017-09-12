@@ -69,7 +69,7 @@ if(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
     set(IPOPT_LIBS ipopt dl coinmumps coinhsl lapack blas gfortran
         m quadmath coinmetis)
         
-    set(CT_IPOPT_LIBS ct_ipopt_interface)
+    #set(CT_IPOPT_LIBS ct_ipopt_interface)
 
 endif(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
 
@@ -88,7 +88,7 @@ if(DEFINED ENV{SNOPT_SOURCE_DIR})
     set(CT_SNOPT_LIBS ct_snopt_interface)
 endif(DEFINED ENV{SNOPT_SOURCE_DIR})
 
-set(NLP_LIBS ${CT_IPOPT_LIBS} ${CT_SNOPT_LIBS})
+set(NLP_LIBS ${IPOPT_LIBS} ${CT_SNOPT_LIBS})
 
 include_directories(
     ${EIGEN_INCLUDE_DIRS} 

@@ -52,7 +52,7 @@ void IpoptSolver<SCALAR>::configureDerived(const NlpSolverSettings& settings)
     std::cout << "calling Ipopt configure derived" << std::endl;
     settings_ = settings.ipoptSettings_;
     setSolverOptions();
-    isInitialized_ = true;
+    this->isInitialized_ = true;
 }
 
 template<typename SCALAR>
@@ -123,16 +123,16 @@ template<typename SCALAR>
 bool IpoptSolver<SCALAR>::get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
         Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style)
 {
-    n = nlp_->getVarCount();
+    n = this->nlp_->getVarCount();
     assert(n == n);
 
-    m = nlp_->getConstraintsCount();
+    m = this->nlp_->getConstraintsCount();
     assert(m == m);
 
-    nnz_jac_g = nlp_->getNonZeroJacobianCount();
+    nnz_jac_g = this->nlp_->getNonZeroJacobianCount();
     assert(nnz_jac_g==nnz_jac_g);
 
-    nnz_h_lag = nlp_->getNonZeroHessianCount();
+    nnz_h_lag = this->nlp_->getNonZeroHessianCount();
 
     index_style = Ipopt::TNLP::C_STYLE;
 
@@ -156,7 +156,7 @@ bool IpoptSolver<SCALAR>::get_bounds_info(Ipopt::Index n, SCALAR* x_l, SCALAR* x
     MapVecXs x_uVec(x_u, n);
     MapVecXs g_lVec(g_l, m);
     MapVecXs g_uVec(g_u, m);
-    nlp_->getVariableBounds(x_lVec, x_uVec, n);
+    this->nlp_->getVariableBounds(x_lVec, x_uVec, n);
     // bounds on optimization vector
     // x_l <= x <= x_u
     assert(x_l == x_l);
@@ -164,7 +164,7 @@ bool IpoptSolver<SCALAR>::get_bounds_info(Ipopt::Index n, SCALAR* x_l, SCALAR* x
     assert(n == n);
 
     // constraints bounds (e.g. for equality constraints = 0)
-    nlp_->getConstraintBounds(g_lVec, g_uVec, m);
+    this->nlp_->getConstraintBounds(g_lVec, g_uVec, m);
     assert(g_l == g_l);
     assert(g_u == g_u);
 
@@ -188,20 +188,20 @@ bool IpoptSolver<SCALAR>::get_starting_point(Ipopt::Index n, bool init_x, SCALAR
     if(init_x)
     {
         MapVecXs xVec(x, n);
-        nlp_->getOptimizationVars(n, xVec);
+        this->nlp_->getOptimizationVars(n, xVec);
     }
 
     if(init_z)
     {
         MapVecXs z_lVec(z_L, n);
         MapVecXs z_uVec(z_U, n);
-        nlp_->getBoundMultipliers(n, z_lVec, z_uVec);
+        this->nlp_->getBoundMultipliers(n, z_lVec, z_uVec);
     }
 
     if(init_lambda)
     {
         MapVecXs lambdaVec(lambda, m);
-        nlp_->getLambdaVars(m, lambdaVec);
+        this->nlp_->getLambdaVars(m, lambdaVec);
     }
 
 
@@ -219,8 +219,8 @@ bool IpoptSolver<SCALAR>::eval_f(Ipopt::Index n, const SCALAR* x, bool new_x, SC
     std::cout << "... entering eval_f()" << std::endl;
 #endif //DEBUG_PRINT
     MapConstVecXs xVec(x, n);
-    nlp_->extractOptimizationVars(xVec, new_x);
-    obj_value = nlp_->evaluateCostFun();
+    this->nlp_->extractOptimizationVars(xVec, new_x);
+    obj_value = this->nlp_->evaluateCostFun();
     assert(obj_value == obj_value);
 
 #ifdef DEBUG_PRINT
@@ -237,8 +237,8 @@ bool IpoptSolver<SCALAR>::eval_grad_f(Ipopt::Index n, const SCALAR* x, bool new_
 #endif //DEBUG_PRINT
     MapVecXs grad_fVec(grad_f, n);
     MapConstVecXs xVec(x, n);
-    nlp_->extractOptimizationVars(xVec, new_x);
-    nlp_->evaluateCostGradient(n, grad_fVec);
+    this->nlp_->extractOptimizationVars(xVec, new_x);
+    this->nlp_->evaluateCostGradient(n, grad_fVec);
 
 #ifdef DEBUG_PRINT
     std::cout << "... leaving eval_grad_f()" << std::endl;
@@ -252,11 +252,11 @@ bool IpoptSolver<SCALAR>::eval_g(Ipopt::Index n, const SCALAR* x, bool new_x, Ip
 #ifdef DEBUG_PRINT
     std::cout << "... entering eval_g()" << std::endl;
 #endif //DEBUG_PRINT
-    assert(m == nlp_->getConstraintsCount());
+    assert(m == this->nlp_->getConstraintsCount());
     MapConstVecXs xVec(x, n);
-    nlp_->extractOptimizationVars(xVec, new_x);
+    this->nlp_->extractOptimizationVars(xVec, new_x);
     MapVecXs gVec(g, m);
-    nlp_->evaluateConstraints(gVec);
+    this->nlp_->evaluateConstraints(gVec);
 
 
 #ifdef DEBUG_PRINT
@@ -280,7 +280,7 @@ bool IpoptSolver<SCALAR>::eval_jac_g(Ipopt::Index n, const SCALAR* x, bool new_x
         // set indices of nonzero elements of the jacobian
         Eigen::Map<Eigen::VectorXi> iRowVec(iRow, nele_jac);
         Eigen::Map<Eigen::VectorXi> jColVec(jCol, nele_jac);
-        nlp_->getSparsityPatternJacobian(nele_jac, iRowVec, jColVec);
+        this->nlp_->getSparsityPatternJacobian(nele_jac, iRowVec, jColVec);
 
 
 #ifdef DEBUG_PRINT
@@ -294,8 +294,8 @@ bool IpoptSolver<SCALAR>::eval_jac_g(Ipopt::Index n, const SCALAR* x, bool new_x
 #endif //DEBUG_PRINT
         MapVecXs valVec(values, nele_jac);
         MapConstVecXs xVec(x, n);
-        nlp_->extractOptimizationVars(xVec, new_x);
-        nlp_->evaluateConstraintJacobian(nele_jac, valVec);
+        this->nlp_->extractOptimizationVars(xVec, new_x);
+        this->nlp_->evaluateConstraintJacobian(nele_jac, valVec);
 
 
 #ifdef DEBUG_PRINT
@@ -322,7 +322,7 @@ bool IpoptSolver<SCALAR>::eval_h(Ipopt::Index n, const SCALAR* x, bool new_x,
         // triangle only.
         Eigen::Map<Eigen::VectorXi> iRowVec(iRow, nele_hess);
         Eigen::Map<Eigen::VectorXi> jColVec(jCol, nele_hess);
-        nlp_->getSparsityPatternHessian(nele_hess, iRowVec, jColVec);
+        this->nlp_->getSparsityPatternHessian(nele_hess, iRowVec, jColVec);
     }
     else
     {
@@ -331,8 +331,8 @@ bool IpoptSolver<SCALAR>::eval_h(Ipopt::Index n, const SCALAR* x, bool new_x,
         MapVecXs valVec(values, nele_hess);
         MapConstVecXs xVec(x, n);
         MapConstVecXs lambdaVec(lambda, m);
-        nlp_->extractOptimizationVars(xVec, new_x);
-        nlp_->evaluateHessian(nele_hess, valVec, obj_factor, lambdaVec);
+        this->nlp_->extractOptimizationVars(xVec, new_x);
+        this->nlp_->evaluateHessian(nele_hess, valVec, obj_factor, lambdaVec);
     }
 
     // only needed if quasi-newton approximation is not used, hence set to -1 (not used)!
@@ -347,7 +347,7 @@ bool IpoptSolver<SCALAR>::eval_h(Ipopt::Index n, const SCALAR* x, bool new_x,
 }
 
 template<typename SCALAR>
-void IpoptSolver<SCALAR>:finalize_solution(Ipopt::SolverReturn status,
+void IpoptSolver<SCALAR>::finalize_solution(Ipopt::SolverReturn status,
         Ipopt::Index n, const SCALAR* x, const SCALAR* z_L, const SCALAR* z_U,
         Ipopt::Index m, const SCALAR* g, const SCALAR* lambda,
         SCALAR obj_value,
@@ -362,5 +362,5 @@ void IpoptSolver<SCALAR>:finalize_solution(Ipopt::SolverReturn status,
     MapConstVecXs zUVec(z_U, n);
     MapConstVecXs lambdaVec(lambda, m);
 
-    nlp_->extractIpoptSolution(xVec, zLVec, zUVec, lambdaVec);
+    this->nlp_->extractIpoptSolution(xVec, zLVec, zUVec, lambdaVec);
 }
