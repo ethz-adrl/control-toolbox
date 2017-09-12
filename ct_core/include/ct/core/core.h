@@ -56,7 +56,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "math/Derivatives.h"
 #include "math/DerivativesNumDiff.h"
-#include "math/DerivativesCppad.h"
+#include "math/DerivativesCppadJIT.h"
+#include "math/DerivativesCppadCG.h"
 
 #ifdef PLOTTING_ENABLED
 #include "plot/plot.h"

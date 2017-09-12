@@ -27,11 +27,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCON_CONSTRAINTS_CONSTRAINTCONTAINERAD_H_
 #define CT_OPTCON_CONSTRAINTS_CONSTRAINTCONTAINERAD_H_
 
-#include <ct/core/math/DerivativesCppad.h>
+#include <ct/core/core.h>
 
 #include "LinearConstraintContainer.h"
 #include "term/ConstraintBase.h"
-#include <ct/core/internal/traits/CppADCodegenTrait.h>
 
 namespace ct {
 namespace optcon {
@@ -50,7 +49,7 @@ class ConstraintContainerAD : public LinearConstraintContainer<STATE_DIM, CONTRO
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef core::DerivativesCppad<STATE_DIM + CONTROL_DIM, -1> JacCG;
+	typedef core::DerivativesCppadJIT<STATE_DIM + CONTROL_DIM, -1> JacCG;
 	typedef typename JacCG::CG_SCALAR CGScalar;
 
 	typedef core::StateVector<STATE_DIM, SCALAR>   state_vector_t;

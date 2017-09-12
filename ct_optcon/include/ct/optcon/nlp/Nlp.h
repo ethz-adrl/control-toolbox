@@ -28,6 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCON_NLP_NLP_H_
 #define CT_OPTCON_NLP_NLP_H_
 
+#include <ct/core/math/DerivativesCppadJIT.h>
 #include "OptVector.h"
 #include "DiscreteConstraintContainerBase.h"
 
@@ -89,8 +90,7 @@ public:
 		if(useGeneratedCostGradient_)
 			return costCodegen_->forwardZero(optVariables_->getOptimizationVars())(0);
 		else
-			return costEvaluator_->eval();
-			
+			return costEvaluator_->eval();	
 	}
 
 
@@ -300,8 +300,8 @@ public:
 			iRowHessian_ = Eigen::Map<Eigen::VectorXi>(iRowHessianLocal.data(), iRowHessianLocal.size(), 1);
 			jColHessian_ = Eigen::Map<Eigen::VectorXi>(jColHessianLocal.data(), jColHessianLocal.size(), 1);
 
-			std::cout << "iRowHessian_: " << iRowHessian_.transpose() << std::endl;
-			std::cout << "jColHessian_: " << jColHessian_.transpose() << std::endl;
+			// std::cout << "iRowHessian_: " << iRowHessian_.transpose() << std::endl;
+			// std::cout << "jColHessian_: " << jColHessian_.transpose() << std::endl;
 
 			size_t nonZerosHessian = iRowHessian_.rows();
 			return nonZerosHessian;
@@ -444,16 +444,10 @@ protected:
 	std::shared_ptr<DiscreteConstraintContainerBase<SCALAR>> constraints_; //! abstract base class, contains the discretized constraints for the problem
 	bool useGeneratedCostGradient_;
 	bool useGeneratedConstraintJacobian_;
-	std::shared_ptr<ct::core::DerivativesCppad<-1, 1>> costCodegen_;
-	std::shared_ptr<ct::core::DerivativesCppad<-1, -1>> constraintsCodegen_;
+	std::shared_ptr<ct::core::DerivativesCppadJIT<-1, 1>> costCodegen_;
+	std::shared_ptr<ct::core::DerivativesCppadJIT<-1, -1>> constraintsCodegen_;
 	Eigen::VectorXi iRowHessian_;
 	Eigen::VectorXi jColHessian_;
-
-	// bool pairCompair(const std::pair<int, int>& firstElement, const std::pair<int, int>& secondElement)
-	// {
-	// 	bool isFirstEleSmaller = firstElement.first < secondElement.first;
-	// 	return firstElement.first < secondElement.first && firstElement.second < secondElement.second;
-	// }
 };
 
 }

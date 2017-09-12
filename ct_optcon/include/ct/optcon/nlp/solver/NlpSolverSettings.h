@@ -154,7 +154,7 @@ public:
 	print_user_options_("no"),
 	print_frequency_iter_(1),
 	printInfoString_("no"),
-	derivativeTest_("second-order"),
+	derivativeTest_("none"),
 	derivativeTestTol_(1e-4),
 	derivativeTestPerturbation_(1e-8),
 	point_perturbation_radius_(10),

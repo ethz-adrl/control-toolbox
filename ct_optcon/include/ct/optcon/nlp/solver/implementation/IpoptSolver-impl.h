@@ -65,7 +65,7 @@ void IpoptSolver<SCALAR>::setSolverOptions()
     // ipoptApp_->Options()->SetNumericValue("acceptable_tol", settings_.acceptableTol_);
     // ipoptApp_->Options()->SetNumericValue("resto.acceptable_tol", settings_.restoAcceptableTol_);
     ipoptApp_->Options()->SetStringValueIfUnset("linear_scaling_on_demand", settings_.linear_scaling_on_demand_);
-    ipoptApp_->Options()->SetStringValueIfUnset("hessian_approximation", "limited-memory");
+    ipoptApp_->Options()->SetStringValueIfUnset("hessian_approximation", settings_.hessian_approximation_);
     // ipoptApp_->Options()->SetStringValueIfUnset("nlp_scaling_method", settings_.nlp_scaling_method_);
     ipoptApp_->Options()->SetIntegerValue("print_level", settings_.printLevel_); //working now
     ipoptApp_->Options()->SetStringValueIfUnset("print_user_options", settings_.print_user_options_);
