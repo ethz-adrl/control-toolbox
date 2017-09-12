@@ -29,6 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <Eigen/Core>
 #include <Eigen/StdVector>
+#include <Eigen/Sparse>
 
 namespace ct {
 namespace core {
@@ -90,7 +91,7 @@ public:
      *
      * @return     The evaluated sparse jacobain
      */
-    virtual Eigen::VectorXd evaluateSparseJacobian(const Eigen::VectorXd& x)
+    virtual Eigen::VectorXd sparseJacobian(const Eigen::VectorXd& x)
     {
         throw std::runtime_error("SPARSE JACOBIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
     }
@@ -100,6 +101,11 @@ public:
         Eigen::VectorXd& jac,
         Eigen::VectorXi& iRow,
         Eigen::VectorXi& jCol)
+    {
+        throw std::runtime_error("SPARSE JACOBIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
+    }
+
+    virtual Eigen::SparseMatrix<double> sparseJacobian()
     {
         throw std::runtime_error("SPARSE JACOBIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
     }
@@ -130,7 +136,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual Eigen::VectorXd evaluateSparseHessian(
+    virtual Eigen::VectorXd sparseHessian(
         const Eigen::VectorXd& x, 
         const Eigen::VectorXd& lambda)
     {
@@ -143,6 +149,11 @@ public:
         Eigen::VectorXd& hes,
         Eigen::VectorXi& iRow,
         Eigen::VectorXi& jCol)
+    {
+        throw std::runtime_error("SPARSE HESSIAN NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
+    }
+
+    virtual Eigen::SparseMatrix<double> sparseHessian1(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda)
     {
         throw std::runtime_error("SPARSE HESSIAN NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
     }

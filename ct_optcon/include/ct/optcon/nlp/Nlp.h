@@ -128,7 +128,7 @@ public:
 	 */
 	void evaluateConstraintJacobian(const int nele_jac, MapVecXs& jac){
 		if(useGeneratedConstraintJacobian_)
-			jac = constraintsCodegen_->evaluateSparseJacobian(optVariables_->getOptimizationVars());
+			jac = constraintsCodegen_->sparseJacobian(optVariables_->getOptimizationVars());
 		else
 			constraints_->evalSparseJacobian(jac, nele_jac);
 	}
@@ -142,76 +142,16 @@ public:
 			{
 				hes.setZero();
 
-				VectorXs hesCost;
-				Eigen::VectorXi iRowCost;
-				Eigen::VectorXi jColCost;
+				Eigen::SparseMatrix<double> hessianCost;
+				Eigen::SparseMatrix<double> hessianConstraints;
+				Eigen::SparseMatrix<double> hessianTotal; 
 
-				VectorXs hesCon;
-				Eigen::VectorXi iRowCon;
-				Eigen::VectorXi jColCon;
+				hessianCost = costCodegen_->sparseHessian1(optVariables_->getOptimizationVars(), mat);
+				hessianConstraints = constraintsCodegen_->sparseHessian1(optVariables_->getOptimizationVars(), lambda);
 
-				costCodegen_->sparseHessian(optVariables_->getOptimizationVars(), mat, hesCost, iRowCost, jColCost);
-				constraintsCodegen_->sparseHessian(optVariables_->getOptimizationVars(), lambda, hesCon, iRowCon, jColCon);
+				hessianTotal = (hessianCost + hessianConstraints).triangularView<Eigen::Lower>();
 
-				size_t i_cost, i_con, i_sum;
-				i_cost = 0;
-				i_con = 0;
-				i_sum = 0;
-
-				while((i_cost < hesCost.rows()) && (i_con < hesCon.rows()))
-				{
-					if(iRowCost(i_cost) == iRowCon(i_con))
-					{
-						if(jColCost(i_cost) == jColCon(i_con))
-						{
-							hes(i_sum) = hesCost(i_cost) + hesCon(i_con);
-							i_cost++;
-							i_con++;
-							i_sum++;
-						}
-						else if(jColCost(i_cost) < jColCon(i_con))
-						{
-							hes(i_sum) = hesCost(i_cost);
-							i_cost++;
-							i_sum++;
-						}
-						else if(jColCost(i_cost) > jColCon(i_con))
-						{
-							hes(i_sum) = hesCon(i_con);
-							i_con++;
-							i_sum++;							
-						}
-					}
-					else if(iRowCost(i_cost) < iRowCon(i_con))
-					{
-						hes(i_sum) = hesCost(i_cost);
-						i_cost++;
-						i_sum++;
-					}
-					else if(iRowCost(i_cost) > iRowCon(i_con))
-					{
-						hes(i_sum) = hesCon(i_con);
-						i_con++;
-						i_sum++;
-					}
-				}
-
-				if(i_cost < iRowCost.rows())
-				{
-					for(size_t t = i_cost; t < iRowCost.rows(); ++t)
-					{
-						hes(i_sum) = hesCost(t);
-						i_sum++;
-					}
-				}
-				else if(i_con < iRowCon.rows())
-				{
-					for(size_t t = i_con; t < iRowCon.rows(); ++t)
-					{
-						hes(i_sum) = hesCon(t);
-						i_sum++;						
-					}
-				}
+				hes = Eigen::Map<Eigen::VectorXd>(hessianTotal.valuePtr(), nele_hes, 1);
 			}
 		}
 		else
