@@ -34,6 +34,7 @@ namespace internal {
 //! Convenience class to handle sparsity patterns, e.g. in Jacobians
 class SparsityPattern {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	//! default constructor
 	SparsityPattern() {};

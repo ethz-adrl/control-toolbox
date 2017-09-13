@@ -5,11 +5,12 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 project (ct_core) 
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -std=c++11 -Wall -Wl,--no-as-needed")
+SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++11 -Wall")
 
 find_package(catkin REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(Boost COMPONENTS  REQUIRED)
+find_package(Boost COMPONENTS REQUIRED)
 
 find_package(PythonLibs QUIET)
 find_package(Qwt QUIET)
@@ -58,7 +59,6 @@ catkin_package(
         include/external
    LIBRARIES
        ct_core
-   CATKIN_DEPENDS
 )
 
 
@@ -77,21 +77,26 @@ if(BUILD_EXAMPLES)
     add_executable(ex_DampedOscillatorCustomController examples/DampedOscillatorCustomController.cpp)
 endif()
 
-
 catkin_add_gtest(NoiseTest test/NoiseTest.cpp)
 target_link_libraries(NoiseTest ${catkin_LIBRARIES})
 
 catkin_add_gtest(SecondOrderSystemTest test/SecondOrderSystemTest.cpp)
 target_link_libraries(SecondOrderSystemTest ${catkin_LIBRARIES})
 
-catkin_add_gtest(IntegrationTest test/IntegrationTest.cpp)
+catkin_add_gtest(IntegrationTest test/integration/IntegrationTest.cpp)
 target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core)
 
-catkin_add_gtest(IntegratorComparison test/IntegratorComparison.cpp)
+add_executable(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
+target_link_libraries(SensitivityTest ${catkin_LIBRARIES} ct_core)
+
+catkin_add_gtest(IntegratorComparison test/integration/IntegratorComparison.cpp)
 target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
 
 catkin_add_gtest(InterpolationTest test/InterpolationTest.cpp)
 target_link_libraries(InterpolationTest ${catkin_LIBRARIES})
+
+catkin_add_gtest(DiscreteArrayTest test/DiscreteArrayTest.cpp)
+target_link_libraries(DiscreteArrayTest ${catkin_LIBRARIES})
 
 catkin_add_gtest(DiscreteTrajectoryTest test/DiscreteTrajectoryTest.cpp)
 target_link_libraries(DiscreteTrajectoryTest ${catkin_LIBRARIES})
@@ -100,11 +105,11 @@ catkin_add_gtest(LinspaceTest test/LinspaceTest.cpp)
 target_link_libraries(LinspaceTest ${catkin_LIBRARIES})
 
 catkin_add_gtest(AutoDiffLinearizerTest test/AutoDiffLinearizerTest.cpp)
-target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES})
+target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} pthread)
 
 # Codegen tests cannot run in parallel. Thus we build and run all codegen tests in one
 catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
-target_link_libraries(CodegenTests ${catkin_LIBRARIES} dl)
+target_link_libraries(CodegenTests ${catkin_LIBRARIES} dl pthread)
 
 # not really a test
 #add_executable(plotTest test/plot/plotTest.cpp)

@@ -60,6 +60,9 @@ public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef typename std::pair<Eigen::Matrix<SCALAR, POS_DIM, 1>, Eigen::Matrix<SCALAR, VEL_DIM, 1>> pair_t;
 
+	typedef std::shared_ptr<EventHandler<POS_DIM+VEL_DIM, SCALAR>> EventHandlerPtr;
+	typedef std::vector<EventHandlerPtr, Eigen::aligned_allocator<EventHandlerPtr>> EventHandlerPtrVector;
+
 
 	/**
 	 * @brief      The constructor. This integrator can only treat symplectic
@@ -67,8 +70,28 @@ public:
 	 *
 	 * @param[in]  system  A core::system
 	 */
-	IntegratorSymplectic(const std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR> > system) :
-	systemSymplectic_(system)
+	IntegratorSymplectic(
+			const std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR> > system,
+			const EventHandlerPtrVector& eventHandlers = EventHandlerPtrVector(0)
+	) :
+	systemSymplectic_(system),
+	observer_(eventHandlers)
+	{
+		setupSystem();
+	}
+
+	/**
+	 * @brief      The constructor. This integrator can only treat symplectic
+	 *             systems
+	 *
+	 * @param[in]  system  A core::system
+	 */
+	IntegratorSymplectic(
+			const std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR> > system,
+			const EventHandlerPtr& eventHandler
+	) :
+	systemSymplectic_(system),
+	observer_(EventHandlerPtrVector(1, eventHandler))
 	{
 		setupSystem();
 	}
@@ -107,6 +130,7 @@ public:
 			stepper_.do_step(std::make_pair(systemFunctionPosition_, systemFunctionVelocity_), xPair, time, dt);
 			state.head(POS_DIM) = xPair.first();
 			state.tail(VEL_DIM) = xPair.second();
+			observer_.observeInternal(state,time);
 			time += dt;
 			stateTrajectory.push_back(state);
 			timeTrajectory.push_back(time);
@@ -140,9 +164,14 @@ public:
 			stepper_.do_step(std::make_pair(systemFunctionPosition_, systemFunctionVelocity_), xPair, time, dt);
 			state.head(POS_DIM) = xPair.first;
 			state.tail(VEL_DIM) = xPair.second;
+			observer_.observeInternal(state,time);
 			time += dt;
 		}
 
+	}
+
+	void reset() {
+		observer_.reset();
 	}
 
 private:
@@ -156,18 +185,19 @@ private:
 		systemFunctionPosition_ = [this](const Eigen::Matrix<SCALAR, VEL_DIM, 1>& v, Eigen::Matrix<SCALAR, POS_DIM, 1>& dxdt) {
 			const StateVector<POS_DIM, SCALAR>& vState(static_cast<const StateVector<POS_DIM, SCALAR>& >(v));
 			StateVector<POS_DIM, SCALAR>& dxdtState(static_cast<StateVector<POS_DIM, SCALAR>& >(dxdt));
+			xCached_.template bottomRows<VEL_DIM>() = v;
 			systemSymplectic_->computePdot(xCached_, vState, dxdtState);
 		};
 
 		systemFunctionVelocity_ = [this](const Eigen::Matrix<SCALAR, POS_DIM, 1>& x, Eigen::Matrix<SCALAR, VEL_DIM, 1>& dvdt) {
 			const StateVector<VEL_DIM, SCALAR>& xState(static_cast<const StateVector<VEL_DIM, SCALAR>& >(x));
 			StateVector<VEL_DIM, SCALAR>& dvdtState(static_cast<StateVector<VEL_DIM, SCALAR>& >(dvdt));
+			xCached_.template topRows<POS_DIM>() = x;
 			systemSymplectic_->computeVdot(xCached_, xState, dvdtState);
 		};
 	}
 
 	StateVector<POS_DIM + VEL_DIM, SCALAR> xCached_; //! The cached state. This will be used for the system function
-	                                         //! calls
 
 	std::function<void (const Eigen::Matrix<SCALAR, POS_DIM, 1>&, Eigen::Matrix<SCALAR, POS_DIM, 1>&)> systemFunctionPosition_; //! the position system function
 	std::function<void (const Eigen::Matrix<SCALAR, VEL_DIM, 1>&, Eigen::Matrix<SCALAR, VEL_DIM, 1>&)> systemFunctionVelocity_; //! the velocity system function
@@ -175,6 +205,8 @@ private:
 	std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR>> systemSymplectic_;
 
 	Stepper stepper_;
+
+	Observer<POS_DIM+VEL_DIM, SCALAR> observer_; //! observer
 };
 
 

@@ -1,0 +1,65 @@
+term0
+{
+	name "intermediate cost"
+	kind "quadratic"   
+	type 0              ; 0 = intermediate, 1 = final
+
+	weights
+	{
+		; state weighting
+		Q
+		{
+			(0,0)   1.0 
+		}
+		R
+		{
+			(0,0)    1.0   
+		}
+
+		x_des
+		{
+			(0,0)   0.0 
+		}
+	}
+}
+
+
+term1
+{
+	name "final cost"
+	kind "quadratic"   
+	type 1              ; 0 = intermediate, 1 = final
+
+	weights
+	{
+		; state weighting
+		Q
+		{
+			(0,0)   10.0 
+		}
+
+		x_des
+		{
+			(0,0)   0.0
+		}
+	}
+}
+
+
+
+; initial position
+x_0
+{
+	(0,0)   2.5
+}
+
+
+K_init
+{
+	(0,0)   0 
+}
+
+
+
+
+

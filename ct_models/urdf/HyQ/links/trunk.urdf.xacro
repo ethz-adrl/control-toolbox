@@ -42,7 +42,7 @@
 		</link>
 
 		<!-- Extensions -->
-		<xacro:trunk_gazebo name="trunk"/>
+		<!-- <xacro:trunk_gazebo name="trunk"/> -->
 
 	</xacro:macro>
 

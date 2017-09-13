@@ -71,6 +71,8 @@ public:
 	 */
 	virtual SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR>* clone() const override = 0;
 
+	virtual bool isSymplectic() const override { return true; }
+
 
 	virtual void computeControlledDynamics(
 			const StateVector<POS_DIM + VEL_DIM, SCALAR>& state,
@@ -82,8 +84,8 @@ public:
 		StateVector<POS_DIM, SCALAR> pDot;
 		StateVector<VEL_DIM, SCALAR> vDot;
 
-		computeVdot(state, state.head(POS_DIM), control, vDot);
 		computePdot(state, state.tail(VEL_DIM), control, pDot);
+		computeVdot(state, state.head(POS_DIM), control, vDot);
 
 		derivative << pDot, vDot;
 	}

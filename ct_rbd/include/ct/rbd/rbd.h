@@ -38,16 +38,18 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/rbd/robot/Kinematics.h>
 #include <ct/rbd/robot/Dynamics.h>
 
+#include <ct/rbd/robot/actuator/SecondOrderActuatorDynamics.h>
+
 #include <ct/rbd/robot/control/IDControllerFB.h>
 #include <ct/rbd/robot/control/WholeBodyController.h>
 #include <ct/rbd/robot/control/InfiniteHorizonLQRwithInverseDynamics.h>
+#include <ct/rbd/robot/costfunction/TermTaskspace.hpp>
 
 #include <ct/rbd/systems/FixBaseFDSystem.h>
 #include <ct/rbd/systems/FloatingBaseFDSystem.h>
 #include <ct/rbd/systems/ProjectedFDSystem.h>
 
-#include <ct/rbd/slq/FloatingBaseSLQContactModel.h>
-#include <ct/rbd/slq/FixBaseSLQ.h>
-
+#include <ct/rbd/nloc/FloatingBaseNLOCContactModel.h>
+#include <ct/rbd/nloc/FixBaseNLOC.h>
 
 #endif /* INCLUDE_CT_RBD_RBD_H_ */

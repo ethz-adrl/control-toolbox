@@ -24,47 +24,90 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef SECONDORDERACTUATORDYNAMICS_H_
-#define SECONDORDERACTUATORDYNAMICS_H_
+#ifndef CT_SECONDORDERACTUATORDYNAMICS_H_
+#define CT_SECONDORDERACTUATORDYNAMICS_H_
+
+#include "ActuatorDynamics.h"
 
 namespace ct {
-namespace robot {
-namespace actuator {
+namespace rbd {
 
-template <size_t NJOINTS>
-class SecondOrderActuatorDynamics : public ActuatorDynamicsBase <2*NJOINTS, NJOINTS>
+/*!
+ * Actuator Dynamics modelled as second order system, an oscillator with damping.
+ */
+template <size_t NJOINTS, typename SCALAR = double>
+class SecondOrderActuatorDynamics : public ActuatorDynamics <NJOINTS, 2*NJOINTS, SCALAR>
 {
 public:
-	SecondOrderActuatorDynamics(double frequency, double damping = 1.0):
-		system_(frequency, damping)
+
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+	typedef ActuatorDynamics <NJOINTS, 2*NJOINTS, SCALAR> BASE;
+
+	//! constructor
+	SecondOrderActuatorDynamics(SCALAR w_n, SCALAR zeta = SCALAR(1.0), SCALAR g_dc = SCALAR(1.0)):
+		oscillator_(w_n, zeta, g_dc)
 	{}
 
-	void calculateStateDerivatives(
-		const robot::actuator::ActuatorState<2*NJOINTS, NJOINTS>& state,
-		const rigidBodyGroup::dynamics::InternalForces<NJOINTS>& control,
-		const double& t,
-		rigidBodyGroup::state::ActuatorState<2*NJOINTS, NJOINTS>& stateDerivative) override
+	//! destructor
+	virtual ~SecondOrderActuatorDynamics(){}
+
+	//! deep cloning
+	virtual SecondOrderActuatorDynamics<NJOINTS, SCALAR>* clone() const override {return new SecondOrderActuatorDynamics(*this);}
+
+
+	virtual void computePdot(
+			const typename BASE::act_state_vector_t& x,
+			const typename BASE::act_vel_vector_t& v,
+			const ct::core::ControlVector<NJOINTS, SCALAR>& control,
+			typename BASE::act_pos_vector_t& pDot
+		) override
 	{
+		// as the oscillator is symplectic itself, we simply transcribe the velocity coordinates
+		pDot = v;
+	}
+
+
+	virtual void computeVdot(
+			const typename BASE::act_state_vector_t& x,
+			const typename BASE::act_pos_vector_t& p,
+			const ct::core::ControlVector<NJOINTS, SCALAR>& control,
+			typename BASE::act_vel_vector_t& vDot
+		) override
+	{
+		// evaluate oscillator dynamics for each joint
 		for (size_t i=0; i<NJOINTS; i++)
 		{
-			Eigen::Vector2d secondOrderState;
-			Eigen::Vector2d secondOrderStateDerivative;
+			core::StateVector<2, SCALAR> secondOrderState;
+			core::StateVector<2, SCALAR> secondOrderStateDerivative;
+			core::ControlVector<1, SCALAR> inputCtrl;
+			inputCtrl(0) = control(i);
 
-			secondOrderState << state(i), state(i+NJOINTS);
-			system_.computeDerivative(secondOrderState, control(i), secondOrderStateDerivative);
+			secondOrderState << p(i), x(i+NJOINTS);
 
-			stateDerivative(i) = secondOrderStateDerivative(0);
-			stateDerivative(i+NJOINTS) = secondOrderStateDerivative(1);
+			oscillator_.computeControlledDynamics(secondOrderState, SCALAR(0.0), inputCtrl, secondOrderStateDerivative);
+
+			vDot(i) = secondOrderStateDerivative(1);
 		}
 	}
 
+
+	virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
+			const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+			const typename BASE::act_state_vector_t& actState) override
+	{
+		// for this simple actuator dynamics model, the controlOutput is just the "position" coordinates of the actuator state
+		return actState.template topRows<NJOINTS>();
+	}
+
+
 private:
-	SecondOrderSystem system_;
+
+	ct::core::SecondOrderSystem oscillator_;
 };
 
 }
 }
-}
 
 
-#endif /* SECONDORDERACTUATORDYNAMICS_H_ */
+#endif /* CT_SECONDORDERACTUATORDYNAMICS_H_ */

@@ -57,6 +57,8 @@ public:
 	//! default destructor
 	virtual ~KillIntegrationEventHandler() {}
 
+	virtual bool callOnSubsteps() override { return false; }
+
 	//! checks the kill flag
 	bool checkEvent(const State_T& state, const double& t) override {
 		return killIntegration_;

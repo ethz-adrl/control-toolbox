@@ -24,6 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#include <ct/core/core.h>
 #include "../../models/testhyq/RobCoGenTestHyQ.h"
 #include <ct/rbd/robot/costfunction/TermTaskspace.hpp>
 #include <ct/optcon/costfunction/CostFunctionAD.hpp>

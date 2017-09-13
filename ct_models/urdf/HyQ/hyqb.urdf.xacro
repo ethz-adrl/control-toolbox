@@ -23,7 +23,7 @@ is the world frame). For more, see http://www.ros.org/wiki/xacro -->
 	<!-- body -->
 	<!-- trunk -->
 	<xacro:hyq_trunk name="base">
-		<origin xyz="-0.443 -0.191 -0.276" rpy="0 0 0"/>
+		<!-- <origin xyz="-0.443 -0.191 -0.276" rpy="0 0 0"/> -->
 	</xacro:hyq_trunk>
 
 	<!-- LF leg -->
@@ -65,6 +65,5 @@ is the world frame). For more, see http://www.ros.org/wiki/xacro -->
 		reflect_front="-1">
 		<origin xyz="${-d_fh/2} ${-d_lr/2} 0" rpy="0 ${PI/2} 0"/>
 	</xacro:hyq_leg>
--->
 
 </robot>

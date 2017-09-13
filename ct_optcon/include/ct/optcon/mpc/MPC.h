@@ -37,11 +37,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "MpcTimeKeeper.h"
 
 #include "policyhandler/PolicyHandler.h"
-#include "policyhandler/default/PolicyHandlerILQG.h"
-
 #include "timehorizon/MpcTimeHorizon.h"
 
-#include <ct/optcon/ilqg/iLQGBase.hpp>
+#include <ct/optcon/solver/NLOptConSolver.hpp>
+#include "policyhandler/default/StateFeedbackPolicyHandler.h"
 
 //#define DEBUG_PRINT_MPC	//! use this flag to enable debug printouts in the MPC implementation
 
@@ -84,9 +83,12 @@ class MPC {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	static const size_t STATE_DIM = OPTCON_SOLVER::STATE_D;
 	static const size_t CONTROL_DIM = OPTCON_SOLVER::CONTROL_D;
 
+	static const size_t P_DIM = OPTCON_SOLVER::POS_DIM;
+	static const size_t V_DIM = OPTCON_SOLVER::VEL_DIM;
 
 	typedef typename OPTCON_SOLVER::Scalar_t Scalar_t;
 	typedef typename OPTCON_SOLVER::Policy_t Policy_t;
@@ -137,10 +139,10 @@ public:
 			}
 			else
 			{
-				if (std::is_base_of<iLQGBase<STATE_DIM, CONTROL_DIM, Scalar_t>, OPTCON_SOLVER>::value)
+				if (std::is_base_of<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, Scalar_t>, OPTCON_SOLVER>::value)
 				{
 					// default policy handler for standard discrete-time iLQG implementation
-					policyHandler_ = std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> (new PolicyHandlerILQG<STATE_DIM, CONTROL_DIM, Scalar_t>(solverSettings.dt));
+					policyHandler_ = std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> (new StateFeedbackPolicyHandler<STATE_DIM, CONTROL_DIM, Scalar_t>(solverSettings.dt));
 				}
 				else
 				{
@@ -247,6 +249,7 @@ public:
 	}
 
 
+
 	//! main MPC run method
 	/*!
 	 * @param x
@@ -271,53 +274,40 @@ public:
 			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr)
 	{
 
-#ifdef DEBUG_PRINT_MPC
-		std::cout << "DEBUG_PRINT_MPC: started run() with state-timestamp " << x_ts << std::endl;
-#endif //DEBUG_PRINT_MPC
+		prepareIteration();
 
+		return finishIteration(x, x_ts, newPolicy, newPolicy_ts, forwardIntegrationController);
+	}
+
+
+	void prepareIteration()
+	{
+#ifdef DEBUG_PRINT_MPC
+		std::cout << "DEBUG_PRINT_MPC: started to prepare MPC iteration() " << std::endl;
+#endif //DEBUG_PRINT_MPC
 
 		runCallCounter_++;
 
-		// initialize the time-stamp for policy which is to be designed
-		newPolicy_ts = x_ts;
-
-
-		// local variables
-		Scalar_t t_forward_start;
-		Scalar_t t_forward_stop;
-
 		const Scalar_t currTimeHorizon = solver_.getTimeHorizon();
 		Scalar_t newTimeHorizon;
-
-		core::StateVector<STATE_DIM, Scalar_t> x_start = x;
 
 
 		if(firstRun_)
 			timeKeeper_.initialize();
 
-
 		timeKeeper_.startDelayMeasurement();
 
+		timeKeeper_.computeNewTimings(currTimeHorizon, newTimeHorizon, t_forward_start_, t_forward_stop_);
 
-		timeKeeper_.computeNewTimings(currTimeHorizon, newTimeHorizon, t_forward_start, t_forward_stop);
-
-
-		if(!firstRun_)
-			doPreIntegration(t_forward_start, t_forward_stop, x_start, forwardIntegrationController);
-
-
-
-		 // update the Optimal Control Solver with new time horizon and state information
+		// update the Optimal Control Solver with new time horizon and state information
 		solver_.changeTimeHorizon(newTimeHorizon);
-
-		solver_.changeInitialState(x_start);
 
 
 		// Calculate new initial guess / warm-starting policy
-		policyHandler_->designWarmStartingPolicy(t_forward_stop, newTimeHorizon, currentPolicy_, stateTrajectory_);
+		policyHandler_->designWarmStartingPolicy(t_forward_stop_, newTimeHorizon, currentPolicy_);
 
 		// todo: remove this after through testing
-		if(t_forward_stop < t_forward_start)
+		if(t_forward_stop_ < t_forward_start_)
 			throw std::runtime_error("ERROR: t_forward_stop < t_forward_start is impossible.");
 
 
@@ -326,16 +316,42 @@ public:
 		 */
 		solver_.setInitialGuess(currentPolicy_);
 
-		bool solveSuccessful = solver_.solve();
+		solver_.prepareMPCIteration();
+	}
+
+
+	bool finishIteration(
+			const core::StateVector<STATE_DIM, Scalar_t>& x,
+			const Scalar_t x_ts,
+			Policy_t& newPolicy,
+			Scalar_t& newPolicy_ts,
+			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr)
+	{
+
+#ifdef DEBUG_PRINT_MPC
+		std::cout << "DEBUG_PRINT_MPC: started mpc finish Iteration() with state-timestamp " << x_ts << std::endl;
+#endif //DEBUG_PRINT_MPC
+
+		// initialize the time-stamp for policy which is to be designed
+		newPolicy_ts = x_ts;
+
+		core::StateVector<STATE_DIM, Scalar_t> x_start = x;
+
+		// todo preintegrtion goes to finish call
+		if(!firstRun_)
+			doPreIntegration(t_forward_start_, t_forward_stop_, x_start, forwardIntegrationController);
+
+
+		solver_.changeInitialState(x_start); // todo goes to finish call
+
+		bool solveSuccessful = solver_.finishMPCIteration();
 
 		if(solveSuccessful){
 
-			newPolicy_ts = newPolicy_ts + (t_forward_stop-t_forward_start);
+			newPolicy_ts = newPolicy_ts + (t_forward_stop_ - t_forward_start_);
 
 			// get optimized policy and state trajectory from OptConSolver
 			currentPolicy_ = solver_.getSolution();
-
-			stateTrajectory_ = solver_.getStateTrajectory();
 
 			// obtain the time which passed since the previous successful solve
 			Scalar_t dtp = timeKeeper_.timeSincePreviousSuccessfulSolve();
@@ -343,10 +359,10 @@ public:
 			// post-truncation may be an option of the solve-call took longer than the estimated delay
 			if(mpc_settings_.postTruncation_){
 
-				if(dtp > t_forward_stop && !firstRun_)
+				if(dtp > t_forward_stop_ && !firstRun_)
 				{
 					// the time-difference to be account for by post-truncation
-					Scalar_t dt_post_truncation = dtp-t_forward_stop;
+					Scalar_t dt_post_truncation = dtp-t_forward_stop_;
 
 #ifdef DEBUG_PRINT_MPC
 					std::cout << "DEBUG_PRINT_MPC: additional post-truncation about "<< dt_post_truncation << " [sec]." << std::endl;
@@ -355,13 +371,13 @@ public:
 					// the time which was effectively truncated away (e.g. discrete-time case)
 					Scalar_t dt_truncated_eff;
 
-					policyHandler_->truncateSolutionFront(dt_post_truncation, currentPolicy_, stateTrajectory_, dt_truncated_eff);
+					policyHandler_->truncateSolutionFront(dt_post_truncation, currentPolicy_, dt_truncated_eff);
 
 					// update policy timestamp with the truncated time
 					newPolicy_ts += dt_truncated_eff;
 
 				}
-				else if (t_forward_stop >= dtp && !firstRun_)
+				else if (t_forward_stop_ >= dtp && !firstRun_)
 				{
 #ifdef DEBUG_PRINT_MPC
 					std::cout << "DEBUG_PRINT_MPC: controller opt faster than pre-integration horizon. Consider tuning pre-integration. " << std::endl;
@@ -394,6 +410,7 @@ public:
 	}
 
 
+
 	//! reset the mpc problem and provide new problem time horizon (mandatory)
 	void resetMpc(const Scalar_t& newTimeHorizon){
 
@@ -421,14 +438,6 @@ public:
 		timeKeeper_.updateSettings(settings);
 		timeHorizonStrategy_->updateSettings(settings);
 	}
-
-	void setStateTrajectory(const core::StateTrajectory<STATE_DIM, Scalar_t>& x)
-	{
-		stateTrajectory_ = x;
-	}
-
-	//! obtain the solution state trajectory from the solver
-	const core::StateTrajectory<STATE_DIM, Scalar_t> getStateTrajectory() const {return stateTrajectory_; }
 
 
 	//! printout simple statistical data
@@ -484,12 +493,15 @@ private:
 		Scalar_t dtInit = 0.0001;
 
 		// create temporary integrator object
-		core::Integrator<STATE_DIM, Scalar_t> newInt (dynamics_, ct::core::RK4);
+		core::Integrator<STATE_DIM, Scalar_t> newInt (dynamics_, ct::core::IntegrationType::RK4);
 
 		// adaptive pre-integration
 		newInt.integrate_adaptive(state, startTime, stopTime, dtInit);
 	}
 
+	//! timings for pre-integration
+	Scalar_t t_forward_start_;
+	Scalar_t t_forward_stop_;
 
 	OPTCON_SOLVER solver_;	//! optimal control solver employed for mpc
 
@@ -506,8 +518,6 @@ private:
 	bool firstRun_;	//! true for first run
 
 	typename OPTCON_SOLVER::OptConProblem_t::DynamicsPtr_t dynamics_;	//! dynamics instance for forward integration
-
-	core::StateTrajectory<STATE_DIM, Scalar_t> stateTrajectory_;	//! state solution trajectory
 
 	size_t runCallCounter_;	//! counter which gets incremented at every call of the run() method
 

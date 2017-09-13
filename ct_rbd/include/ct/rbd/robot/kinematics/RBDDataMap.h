@@ -71,21 +71,21 @@ const T& RBDDataMap<T,N>::operator[](size_t l) const {
 template<typename T , size_t N> inline
 void RBDDataMap<T , N>::copydata(const RBDDataMap& rhs) {
 
-	for(auto id = 0 ; id < N ; ++id)
+	for(size_t id = 0 ; id < N ; ++id)
 		data[id] = rhs[id];
 }
 
 template<typename T, size_t N> inline
 void RBDDataMap<T, N>::assigndata(const T& value) {
 
-	for(auto id = 0 ; id < N ; ++id)
+	for(size_t id = 0 ; id < N ; ++id)
 		data[id] = value;
 }
 
 template<typename T , size_t N> inline
 std::ostream& operator<<(std::ostream& out, const RBDDataMap<T,N>& map) {
 
-	for(auto id = 0 ; id < N ; ++id){
+	for(size_t id = 0 ; id < N ; ++id){
 		out <<"[" << id << "] = " << map[id]  << " " ;
 	}
 	return out;

@@ -14,15 +14,18 @@ find_package(catkin REQUIRED
 find_package(Eigen REQUIRED)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -std=c++11 -Wall -Wl,--no-as-needed")
+SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++11 -Wall")
 
 option(MATLAB "Compile with matlab support" OFF)
 option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" OFF)
 option(DEBUG_PRINT "Print debug messages" OFF)
 
+option(HPIPM "Compile with HPIPM support" OFF)
+
 
 if(DEBUG_PRINT)
-    message(WARNING "WARNING: Debug Print ON")
+    message(STATUS "WARNING: Debug Print ON")
     add_definitions ( -DDEBUG_PRINT )
 endif(DEBUG_PRINT)
 
@@ -33,8 +36,8 @@ if(MATLAB_FULL_LOG)
 endif(MATLAB_FULL_LOG)
 
 if(MATLAB)
-    message(WARNING "MATLAB support ON")
-    find_package(matlab_cpp_interface QUIET)
+    message(STATUS "MATLAB support ON")
+    find_package(matlab_cpp_interface REQUIRED)
     if(matlab_cpp_interface_FOUND)
         include_directories(${matlab_cpp_interface_INCLUDE_DIRS})
         set(MATLAB_LIB_DIR ${matlab_cpp_interface_LIBRARIES})
@@ -44,20 +47,55 @@ endif(MATLAB)
 set(MATLAB_LIBS ${MATLAB_LIB_DIR})
 
 
-## dummy NLP libs
+## dummy HPIPM libs
+set(HPIPM_LIBS "")
+
+## include BLASFEO AND HPIPM
+if(HPIPM)
+    message(STATUS "Switching HPIPM ON")
+    if(DEFINED ENV{BLASFEO_DIR})
+        if(DEFINED ENV{HPIPM_DIR})
+            message(WARNING "...Found HPIPM and BLASFEO environment variables")
+            
+            set(BLASFEO_INCLUDE_DIR $ENV{BLASFEO_DIR}/include)
+            set(HPIPM_INCLUDE_DIR $ENV{HPIPM_DIR}/include)
+            set(BLASFEO_DIR $ENV{BLASFEO_DIR})
+            set(HPIPM_DIR $ENV{HPIPM_DIR})
+                        
+            include_directories(${BLASFEO_INCLUDE_DIR})
+            include_directories(${HPIPM_INCLUDE_DIR})
+            link_directories(${BLASFEO_DIR}/lib)
+            link_directories(${HPIPM_DIR}/lib)
+            
+            find_library(BLASFEO_LIBRARY blasfeo  ${BLASFEO_DIR}/lib REQUIRED)
+            find_library(HPIPM_LIBRARY hpipm  ${HPIPM_DIR}/lib REQUIRED)
+
+            set(HPIPM_LIBS hpipm blasfeo)
+    
+            add_definitions (-DHPIPM)
+            
+        else(DEFINED ENV{HPIPM_DIR})
+            message(WARNING "WARNING: Trying to build with HPIPM, but no ENV variable for HPIPM found.")
+        endif(DEFINED ENV{HPIPM_DIR})
+    else(DEFINED ENV{BLASFEO_DIR})
+        message(WARNING "WARNING: Trying to build with HPIPM, but no ENV variable for Blasfeo found.")
+    endif(DEFINED ENV{BLASFEO_DIR})
+endif(HPIPM)
+
+
+## dummy libs
 set(NLP_LIBS "")
 
-
 ## include IPOPT
-find_package(ipopt)
+find_package(ipopt QUIET)
 if(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
     set(BUILD_WITH_IPOPT_SUPPORT ON)
-    message(WARNING "Found IPOPT - building with IPOPT support")
+    message(STATUS "Found IPOPT - building with IPOPT support")
     if(ipopt_FOUND)
-      message(WARNING "Using LOCAL installation of IPOPT")
+      message(STATUS "Using LOCAL installation of IPOPT")
       set(IPOPT_BUILD_DIR ${CMAKE_BINARY_DIR}/build/include/coin)
     elseif(DEFINED ENV{IPOPT_SOURCE_DIR})
-      message(WARNING "using GLOBAL installation of IPOPT")
+      message(STATUS "using GLOBAL installation of IPOPT")
       set(IPOPT_BUILD_DIR $ENV{IPOPT_SOURCE_DIR}/build)
     else()
       message(FATAL_ERROR "ERROR: Ipopt source directory environment variable not set! Set IPOPT_SOURCE_DIR environment variable!")
@@ -77,7 +115,7 @@ endif(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
 ## include SNOPT
 if(DEFINED ENV{SNOPT_SOURCE_DIR})
     set(BUILD_WITH_SNOPT_SUPPORT ON)
-    message(WARNING "Found SNOPT - building with SNOPT support")
+    message(STATUS "Found SNOPT - building with SNOPT support")
     include_directories( "$ENV{SNOPT_SOURCE_DIR}/include")
 
     add_definitions( -DBUILD_WITH_SNOPT_SUPPORT )
@@ -95,6 +133,7 @@ include_directories(
     include
     ${catkin_INCLUDE_DIRS}
 )
+
 
 ## Generate messages in the 'msg' folder
  add_message_files(
@@ -115,14 +154,18 @@ catkin_package(
    INCLUDE_DIRS
         include
         ${EIGEN_INCLUDE_DIRS}
-   DEPENDS 
+        ${HPIPM_INCLUDE_DIR}
+        ${BLASFEO_INCLUDE_DIR}
+   DEPENDS
         eigen 
         lapack 
         dl
-   LIBRARIES 
+   LIBRARIES
         lapack 
-        dl 
+        dl
         ${NLP_LIBS}
+        ${HPIPM_LIBRARY}
+        ${BLASFEO_LIBRARY}
    CATKIN_DEPENDS
         ct_core
 )
@@ -135,7 +178,7 @@ endif()
 
 
 if(BUILD_EXAMPLES)
-    message(WARNING "Building with examples.")
+    message(STATUS "Building with examples.")
 
     set(CT_OPTCON_EXAMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/examples")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
@@ -151,7 +194,6 @@ if(BUILD_EXAMPLES)
 endif()
 
 
-
 get_filename_component(DMS_OSC_TEST_MAT_DIR "test/dms/oscillator/matfiles" ABSOLUTE)
 configure_file(test/dms/oscillator/oscDMSTest_settings.h.in test/dms/oscillator/oscDMSTest_settings.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/dms/oscillator)
@@ -159,8 +201,39 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/dms/oscillator)
 catkin_add_gtest(LqrTest test/lqr/LqrTest.cpp)
 target_link_libraries(LqrTest ${catkin_LIBRARIES} lapack ${MATLAB_LIBS})
 
-catkin_add_gtest(iLQGCTest test/ilqg/iLQGCTest.cpp)
-target_link_libraries(iLQGCTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
+catkin_add_gtest(iLQRTest test/nloc/iLQRTest.cpp)
+target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+
+if(HPIPM)
+    add_executable(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
+    target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+
+    add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
+    target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+    
+    #add_executable(HPIPMInterfaceTest test/hpipm/HPIPMInterfaceTest.cpp)	# todo make unit test
+    #target_link_libraries(HPIPMInterfaceTest ${HPIPM_LIBS} ${MATLAB_LIBS})
+    
+    #add_executable(HPIPMInterfaceTest2 test/hpipm/HPIPMInterfaceTest2.cpp) # todo make unit test
+    #target_link_libraries(HPIPMInterfaceTest2 ${HPIPM_LIBS} ${MATLAB_LIBS})
+    
+    #add_executable(HPIPMInterfaceTest3 test/hpipm/HPIPMInterfaceTest3.cpp)# todo make unit test
+    #target_link_libraries(HPIPMInterfaceTest3 ${HPIPM_LIBS} ${MATLAB_LIBS})
+endif(HPIPM)
+
+
+get_filename_component(NLOC_TEST_DIR "test/nloc" ABSOLUTE)
+configure_file(test/nloc/nloc_test_dir.h.in test/nloc/nloc_test_dir.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/nloc)
+
+add_executable(NonlinearSystemTest test/nloc/NonlinearSystemTest.cpp)
+target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+
+catkin_add_gtest(LinearSystemTest test/nloc/LinearSystemTest.cpp)
+target_link_libraries(LinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+
+add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
+target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
 catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
 target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
@@ -193,8 +266,8 @@ get_filename_component(MPC_TEST_MAT_DIR "test/mpc/matfiles" ABSOLUTE)
 configure_file(test/mpc/mpcTestSettings.h.in test/mpc/mpcTestSettings.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/mpc)
 
-catkin_add_gtest(iLQGMPCTest test/mpc/iLQGMPCTest.cpp)
-target_link_libraries(iLQGMPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
+catkin_add_gtest(NLOC_MPCTest test/mpc/NLOC_MPCTest.cpp)
+target_link_libraries(NLOC_MPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
 
 

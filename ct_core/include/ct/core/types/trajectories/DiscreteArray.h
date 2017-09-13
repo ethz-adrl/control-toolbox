@@ -129,19 +129,81 @@ public:
 	    return *this;
 	}
 
+	//! overload + operator in order to be able to directly sum up two arrays
+	inline DiscreteArray<T, Alloc> operator + (const DiscreteArray<T, Alloc>& rhs) const
+	{
+		if(this->size() != rhs.size())
+			throw std::runtime_error("DiscreteArray.h (operator +): lhs.size() != rhs.size()");
+
+		DiscreteArray<T, Alloc> result (this->size());	//! create result container of correct size
+
+		std::transform (this->begin(), this->end(), rhs.begin(), result.begin(), std::plus<T>());
+		return result;
+	}
+
+	//! overload - operator in order to be able to directly take the difference between two arrays
+	inline DiscreteArray<T, Alloc> operator - (const DiscreteArray<T, Alloc>& rhs) const
+	{
+		if(this->size() != rhs.size())
+			throw std::runtime_error("DiscreteArray.h (operator -): lhs.size() != rhs.size()");
+
+		DiscreteArray<T, Alloc> result (this->size());	//! create result container of correct size
+
+		std::transform (this->begin(), this->end(), rhs.begin(), result.begin(), std::minus<T>());
+		return result;
+	}
+
+	//! overload += operator
+	inline DiscreteArray<T, Alloc>& operator += (const DiscreteArray<T, Alloc>& rhs)
+	{
+		if(this->size() != rhs.size())
+			throw std::runtime_error("DiscreteArray.h (operator +=): lhs.size() != rhs.size()");
+
+		std::transform (this->begin(), this->end(), rhs.begin(), this->begin(), std::plus<T>());
+		return *this;
+	}
+
+	//! overload -= operator
+	inline DiscreteArray<T, Alloc>& operator -= (const DiscreteArray<T, Alloc>& rhs)
+	{
+		if(this->size() != rhs.size())
+			throw std::runtime_error("DiscreteArray.h (operator -=): lhs.size() != rhs.size()");
+
+		std::transform (this->begin(), this->end(), rhs.begin(), this->begin(), std::minus<T>());
+		return *this;
+	}
+
+	//! overload * operator
+	template <typename SCALAR>
+	inline DiscreteArray<T, Alloc> operator * (const SCALAR& scalar) const
+	{
+		DiscreteArray<T, Alloc> result (this->size());	//! create result container of correct size
+		std::transform (this->begin(), this->end(), result.begin(), [scalar](T arg) {return arg * scalar;});
+		return result;
+	}
+
+	//! overload / operator
+	template <typename SCALAR>
+	inline DiscreteArray<T, Alloc> operator / (const SCALAR& scalar) const
+	{
+		DiscreteArray<T, Alloc> result (this->size());	//! create result container of correct size
+		std::transform (this->begin(), this->end(), result.begin(), [scalar](T arg) {return arg / scalar;});
+		return result;
+	}
+
 	//! returns the underlying std::vector
 	Base& toImplementation() {return *this;}
 
 	//! returns the underlying std::vector
 	const Base& toImplementation() const {return *this;}
 
-	//! rerase an element from the front
+	//! erase an element from the front
 	void eraseFront(const size_t N) {this->erase(this->begin(), this->begin()+N);}
 
-	//! sets all elements to zero.
-	void setZero() {std::fill(this->begin(), this->end(), T::Zero());}
+	//! sets all elements to a constant.
+	void setConstant(const T& data) {std::fill(this->begin(), this->end(), data);}
 
-	//! addas an offest to each element
+	//! add an offset to each element
 	void addOffset(const T& offset) {std::for_each(this->begin(), this->end(), [&](T& val) { val+=offset;});}
 
 private:

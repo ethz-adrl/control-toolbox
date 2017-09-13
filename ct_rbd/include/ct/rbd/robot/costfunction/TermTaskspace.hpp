@@ -48,6 +48,7 @@ namespace rbd{
  * \brief A costfunction term that defines a cost in task space
  *
  * This cost function adds a quadratic penalty on the position offset of an endeffector to a desired position
+ *  @todo add velocity to term
  *
  * \tparam KINEMATICS kinematics of the system
  * \tparam FB true if system is a floating base robot
@@ -55,7 +56,7 @@ namespace rbd{
  * \tparam CONTROL_DIM control dimensionality of the system
  */
 template<class KINEMATICS, bool FB, size_t STATE_DIM, size_t CONTROL_DIM>
-class TermTaskspace : public optcon::TermBase <STATE_DIM, CONTROL_DIM, CppAD::AD<double>>
+class TermTaskspace : public optcon::TermBase <STATE_DIM, CONTROL_DIM, CppAD::AD<double>, double>
 {
 public:
 	typedef CppAD::AD<double> SCALAR;
@@ -70,7 +71,7 @@ public:
 			const core::StateVector<3, SCALAR>& x_des = core::StateVector<3, SCALAR>::Zero(),
 			const std::string& name = "TermTaskSpace")
 	:
-		optcon::TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>>(name),
+		optcon::TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>, double>(name),
 		eeInd_(eeInd),
 		QTaskSpace_(Q),
 		x_ref_(x_des)

@@ -1,0 +1,75 @@
+timeHorizon 3.0
+
+initType    0 ; 0 = zero, 1 = linear, 2 = integrated with zero control action, 3 = random
+
+gnms
+{
+	integrator EulerCT
+	useSensitivityIntegrator true
+	discretization Forward_euler
+	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
+    dt 0.01
+    K_shot 1
+    K_sim 10
+    epsilon 1e-6
+	max_iterations 10
+    fixedHessianCorrection false
+    recordSmallestEigenvalue false
+    min_cost_improvement 1e-12
+    maxDefectSum 1e-5
+    meritFunctionRho 1.0
+    nThreads 1
+    nThreadsEigen 4
+    ;locp_solver HPIPM_SOLVER
+    locp_solver GNRICCATI_SOLVER
+    nlocp_algorithm ILQR
+    debugPrint false
+    printSummary true
+    loggingPrefix ILQR
+    
+    line_search
+	{
+		active false ;
+		adaptive false ;
+		maxIterations 10 ;
+		alpha_0 1.0 ;
+		n_alpha 0.5 ;
+		debugPrint false
+	}
+}
+
+
+ilqr
+{
+	integrator EulerCT
+	useSensitivityIntegrator true
+	discretization Forward_euler
+	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
+    dt 0.01
+    K_shot 60
+    K_sim 10
+    epsilon 1e-6
+	max_iterations 10
+    fixedHessianCorrection false
+    recordSmallestEigenvalue false
+    min_cost_improvement 1e-12
+    maxDefectSum 1e-5
+    nThreads 1    
+    nThreadsEigen 4
+    ;locp_solver HPIPM_SOLVER
+    locp_solver GNRICCATI_SOLVER
+    nlocp_algorithm GNMS
+    debugPrint false
+    printSummary true
+    loggingPrefix ILQR_GNMS_5
+    
+    line_search
+	{
+		active false;
+		adaptive false ;
+		maxIterations 10 ;
+		alpha_0 1.0 ;
+		n_alpha 0.5 ;
+		debugPrint false
+	}
+}

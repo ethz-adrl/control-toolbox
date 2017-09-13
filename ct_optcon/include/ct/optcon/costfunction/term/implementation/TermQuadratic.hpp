@@ -143,6 +143,12 @@ typename TermQuadratic<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::control_state_ma
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
 void TermQuadratic<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::loadConfigFile(const std::string& filename, const std::string& termName, bool verbose)
 {
+		boost::property_tree::ptree pt;
+		try{
+		boost::property_tree::read_info(filename, pt);
+		}catch(...){}
+		this->name_ = pt.get<std::string>(termName +".name.", termName);
+
        loadMatrixCF(filename,"Q", Q_,termName);
        loadMatrixCF(filename,"R", R_,termName);
        loadMatrixCF(filename,"x_des", x_ref_,termName);
