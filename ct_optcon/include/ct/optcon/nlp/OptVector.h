@@ -218,7 +218,8 @@ public:
 	 * @param[out] low   The value for the lower bound multiplier
 	 * @param[out] up    The value for the upper bound multiplier
 	 */
-	void getBoundMultipliers(size_t n, MapVecXs& low, MapVecXs& up) const {
+	void getBoundMultipliers(size_t n, MapVecXs& low, MapVecXs& up) const 
+	{
 		assert(n == zLow_.size());
 		low = zLow_;
 		up = zUpper_;
@@ -241,7 +242,8 @@ public:
 	 * @param[in]  n     { The number of optimization variables }
 	 * @param[out]      x     The optimization variables
 	 */
-	void getOptimizationVars(size_t n, MapVecXs& x)  const {
+	void getOptimizationVars(size_t n, MapVecXs& x)  const 
+	{
 		assert (n == x_.size());
 		x = x_;
 	}

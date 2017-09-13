@@ -25,6 +25,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/optcon/optcon.h>
 
+// #define DEBUG_PRINT
+
 
 template<typename SCALAR>
 IpoptSolver<SCALAR>::IpoptSolver(std::shared_ptr<tpl::Nlp<SCALAR>> nlp, const NlpSolverSettings& settings) :
@@ -83,10 +85,8 @@ template<typename SCALAR>
 bool IpoptSolver<SCALAR>::solve()
 {
     status_ = ipoptApp_->Initialize();
-    if (status_ == Ipopt::Solve_Succeeded)
-        std::cout << std::endl << std::endl << "*** Initialized successfully -- starting NLP." << std::endl;
-    else
-        throw(std::runtime_error("NLP initialization failed"));
+    if (!(status_ == Ipopt::Solve_Succeeded) && !this->isInitialized_)
+        throw(std::runtime_error("NLP initialization failed"));        
 
     // Ask Ipopt to solve the problem
     status_ = ipoptApp_->OptimizeTNLP(this);
@@ -123,8 +123,13 @@ template<typename SCALAR>
 bool IpoptSolver<SCALAR>::get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
         Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style)
 {
+#ifdef DEBUG_PRINT
+    std::cout << "... entering get_nlp_info()" << std::endl;
+#endif
     n = this->nlp_->getVarCount();
     assert(n == n);
+
+    // std::cout << 1 << std::endl;
 
     m = this->nlp_->getConstraintsCount();
     assert(m == m);
@@ -132,7 +137,8 @@ bool IpoptSolver<SCALAR>::get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::
     nnz_jac_g = this->nlp_->getNonZeroJacobianCount();
     assert(nnz_jac_g==nnz_jac_g);
 
-    nnz_h_lag = this->nlp_->getNonZeroHessianCount();
+    if(settings_.hessian_approximation_ == "exact")
+        nnz_h_lag = this->nlp_->getNonZeroHessianCount();
 
     index_style = Ipopt::TNLP::C_STYLE;
 

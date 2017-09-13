@@ -154,8 +154,6 @@ public:
 			pureStateConstraintsCG.push_back(ConstraintCG(problemCG.getPureStateConstraints()->clone()));		
 
 		dmsProblem_->generateAndCompileCode(systemsCG, linearSystemsCG, costFunctionsCG, stateInputConstraintsCG, pureStateConstraintsCG, x0CG);
-
-		nlpSolver_->configure(settings_.solverSettings_); 
 	}	
 
 	/**
@@ -168,6 +166,7 @@ public:
 		dmsProblem_->configure(settings);
 		dmsProblem_->changeTimeHorizon(tf_);
 		dmsProblem_->changeInitialState(x0_);
+		nlpSolver_->configure(settings_.solverSettings_); 
 	}
 
 	virtual bool solve() override

@@ -77,23 +77,6 @@ public:
 	virtual void updateProblem() = 0;
 
 	/**
-	 * @brief      Modifies costCodegen_
-	 */
-	virtual void changeCodegenerationCost()
-	{
-		throw std::runtime_error("Change code generation cost not implemented");
-	}
-
-	/**
-	 * @brief      Modifies constraintCodegen_
-	 */
-	virtual void changeCodegenerationConstraints() 
-	{	
-		throw std::runtime_error("Change codegeneration constraints not implemented");
-	}
-
-
-	/**
 	 * @brief      { Evaluates the costfunction at the current nlp iteration }
 	 *
 	 * @return     { Scalar value of the resulting cost }
@@ -274,7 +257,10 @@ public:
 	size_t getNonZeroHessianCount() 
 	{
 		if(!constraintsCodegen_ || !costCodegen_)
+		{
+			std::cerr << "Error: Exact hessians only work with AD hessian codegeneration" << std::endl;
 			throw std::runtime_error("Error in getNonZeroHessianCount. Codegeneration not initialized");		
+		}
 
 		Eigen::SparseMatrix<double> hessianCost;
 		Eigen::SparseMatrix<double> hessianConstraints;

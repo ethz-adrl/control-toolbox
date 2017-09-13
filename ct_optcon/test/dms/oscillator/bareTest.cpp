@@ -153,7 +153,6 @@ public:
 	    optProblemCG.setPureStateConstraints(pureStateConstraintsCG); 		
 
 		calcInitGuess();
-		// dmsPlanner_ = std::shared_ptr<DmsSolver<2,1>> (new DmsSolver<2,1>(optProblem, settings_));
 		dmsPlanner_ = std::shared_ptr<DmsSolver<2,1>> (new DmsSolver<2,1>(optProblem, settings_));
 		dmsPlanner_->generateAndCompileCode(optProblemCG, settings_.cppadSettings_);
 		dmsPlanner_->setInitialGuess(initialPolicy_);
@@ -244,6 +243,8 @@ void runTests()
 	    nlpsettings.useGeneratedCostGradient_ = true;
 	    nlpsettings.useGeneratedConstraintJacobian_ = true;
 	    nlpsettings.ipoptSettings_.hessian_approximation_ = "exact";
+	   	// nlpsettings.ipoptSettings_.hessian_approximation_ = "limited-memory";
+
 
 	    settings.cppadSettings_ = cppadSettings;                                                                             	
 		settings.solverSettings_ = nlpsettings;

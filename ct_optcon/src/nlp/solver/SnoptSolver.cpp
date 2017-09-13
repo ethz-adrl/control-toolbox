@@ -213,6 +213,8 @@ void SnoptSolver::setSolverOptions()
 
 bool SnoptSolver::solve()
 {
+	if(!this->isInitialized_)
+		throw std::runtime_error("SNOPT was not initialized before. Call NLPSolver->configure()");
 
 	snoptApp_.setUserI(&(memoryPtr_->memind), 1);
 	std::cout << "Ready to solve... " << std::endl;
