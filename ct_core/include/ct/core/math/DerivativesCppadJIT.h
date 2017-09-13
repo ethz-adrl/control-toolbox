@@ -310,6 +310,7 @@ public:
             std::vector<double> output;
             model_->SparseHessian(input, inputLambda, output, sparsityRowsHessian_, sparsityColsHessian_);
             Eigen::SparseMatrix<double> outSparse(x.rows(), x.rows());
+            outSparse.reserve(sparsityRowsHessian_.size());
             std::vector<Eigen::Triplet<double>> triplets;
             for(size_t i = 0; i < output.size(); ++i)
                 triplets.push_back(Eigen::Triplet<double>(sparsityRowsHessianEigen_(i), sparsityColsHessianEigen_(i), output[i]));

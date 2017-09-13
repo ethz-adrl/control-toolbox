@@ -225,80 +225,31 @@ public:
 	size_t getNonZeroHessianCount() {
 		if(useGeneratedConstraintJacobian_)
 		{
-			Eigen::VectorXi iRowCost;
-			Eigen::VectorXi jColCost;
-			Eigen::VectorXi iRowCon;
-			Eigen::VectorXi jColCon;
-			costCodegen_->getSparsityPatternHessian(iRowCost, jColCost);
-			// std::cout << "iRowCost: " << iRowCost.transpose() << std::endl;
-			// std::cout << "jColCost: " << jColCost.transpose() << std::endl;
-			constraintsCodegen_->getSparsityPatternHessian(iRowCon, jColCon);
-			// std::cout << "iRowCon: " << iRowConstraints.transpose() << std::endl;
-			// std::cout << "jColCon: " << jColConstraints.transpose() << std::endl;
+			Eigen::SparseMatrix<double> hessianCost;
+			Eigen::SparseMatrix<double> hessianConstraints;
+			Eigen::SparseMatrix<double> hessianTotal;
 
-			std::vector<int> iRowHessianLocal;
-			std::vector<int> jColHessianLocal;
-			size_t i_cost, i_con;
-			i_cost = 0;
-			i_con = 0;
+			std::vector<int> iRowHessianLocal2;
+			std::vector<int> jColHessianLocal2;
 
-			while((i_cost < iRowCost.rows()) && (i_con < iRowCon.rows()))
-			{
-				if(iRowCost(i_cost) == iRowCon(i_con))
-				{
-					if(jColCost(i_cost) == jColCon(i_con))
-					{
-						iRowHessianLocal.push_back(iRowCost(i_cost));
-						jColHessianLocal.push_back(jColCost(i_cost));
-						i_cost++;
-						i_con++;
-					}
-					else if(jColCost(i_cost) < jColCon(i_con))
-					{
-						iRowHessianLocal.push_back(iRowCost(i_cost));
-						jColHessianLocal.push_back(jColCost(i_cost));
-						i_cost++;
-					}
-					else if(jColCost(i_cost) > jColCon(i_con))
-					{
-						iRowHessianLocal.push_back(iRowCon(i_con));
-						jColHessianLocal.push_back(jColCon(i_con));
-						i_con++;
-					}
-				}
-				else if(iRowCost(i_cost) < iRowCon(i_con))
-				{
-					iRowHessianLocal.push_back(iRowCost(i_cost));
-					jColHessianLocal.push_back(jColCost(i_cost));
-					i_cost++;
-				}
-				else if(iRowCost(i_cost) > iRowCon(i_con))
-				{
-					iRowHessianLocal.push_back(iRowCon(i_con));
-					jColHessianLocal.push_back(jColCon(i_con));
-					i_con++;
-				}
-			}
+			Eigen::VectorXd test(constraints_->getConstraintsCount());
+			Eigen::Matrix<double, 1, 1> aaa; aaa << 1.0;
+			test.setOnes();
 
-			if(i_cost < iRowCost.rows())
-			{
-				for(size_t t = i_cost; t < iRowCost.rows(); ++t)
-				{
-					iRowHessianLocal.push_back(iRowCost(t));
-					jColHessianLocal.push_back(jColCost(t));
-				}
-			}
-			else if(i_con < iRowCon.rows())
-			{
-				for(size_t t = i_con; t < iRowCon.rows(); ++t)
-				{
-					iRowHessianLocal.push_back(iRowCon(t));
-					jColHessianLocal.push_back(jColCon(t));
-				}
-			}
+			hessianCost = costCodegen_->sparseHessian1(optVariables_->getOptimizationVars(), aaa);
+			hessianConstraints = constraintsCodegen_->sparseHessian1(optVariables_->getOptimizationVars(), test);
 
-			iRowHessian_ = Eigen::Map<Eigen::VectorXi>(iRowHessianLocal.data(), iRowHessianLocal.size(), 1);
-			jColHessian_ = Eigen::Map<Eigen::VectorXi>(jColHessianLocal.data(), jColHessianLocal.size(), 1);
+			hessianTotal = (hessianCost + hessianConstraints).triangularView<Eigen::Lower>();
+
+		    for(size_t k = 0; k < hessianTotal.outerSize(); ++k)
+        		for(Eigen::SparseMatrix<double>::InnerIterator it(hessianTotal,k); it; ++it)
+        		{
+		            iRowHessianLocal2.push_back(it.row());
+		            jColHessianLocal2.push_back(it.col());
+        		}		  
+			
+			iRowHessian_ = Eigen::Map<Eigen::VectorXi>(iRowHessianLocal2.data(), iRowHessianLocal2.size(), 1);
+			jColHessian_ = Eigen::Map<Eigen::VectorXi>(jColHessianLocal2.data(), jColHessianLocal2.size(), 1);
 
 			// std::cout << "iRowHessian_: " << iRowHessian_.transpose() << std::endl;
 			// std::cout << "jColHessian_: " << jColHessian_.transpose() << std::endl;
