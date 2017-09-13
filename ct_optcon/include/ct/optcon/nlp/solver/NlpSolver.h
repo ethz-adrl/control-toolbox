@@ -113,6 +113,8 @@ public:
 	 */
 	virtual void prepareWarmStart(const size_t maxIterations) = 0;
 
+	bool isInitialized(){ return isInitialized_; }
+
 protected:
 	std::shared_ptr<Nlp<SCALAR>> nlp_; /*!< The non linear program*/
 	NlpSolverSettings settings_; /*!< The nlp settings */
