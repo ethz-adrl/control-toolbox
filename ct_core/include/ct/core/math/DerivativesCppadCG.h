@@ -49,7 +49,7 @@ namespace core {
  * @tparam OUT_DIM Output dimensionailty of the function (use Eigen::Dynamic (-1) for dynamic size)
  */
 template <int IN_DIM, int OUT_DIM>
-class DerivativesCppadCG : public CppadUtils<IN_DIM, OUT_DIM> // double on purpose!
+class DerivativesCppadCG : public CppadUtils<IN_DIM, OUT_DIM> 
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -106,7 +106,6 @@ public:
     DerivativesCppadCG* clone() const override{
         return new DerivativesCppadCG<IN_DIM, OUT_DIM>(*this);
     }
-
 
     //! Generates code for computing the Jacobian and writes it to file
     /*!

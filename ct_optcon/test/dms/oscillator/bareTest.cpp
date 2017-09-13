@@ -155,7 +155,7 @@ public:
 		calcInitGuess();
 		// dmsPlanner_ = std::shared_ptr<DmsSolver<2,1>> (new DmsSolver<2,1>(optProblem, settings_));
 		dmsPlanner_ = std::shared_ptr<DmsSolver<2,1>> (new DmsSolver<2,1>(optProblem, settings_));
-		dmsPlanner_->setCGProblem(optProblemCG);
+		dmsPlanner_->generateAndCompileCode(optProblemCG, settings_.cppadSettings_);
 		dmsPlanner_->setInitialGuess(initialPolicy_);
 	}
 

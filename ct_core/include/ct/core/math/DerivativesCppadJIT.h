@@ -459,6 +459,9 @@ public:
             dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler));
         }
 
+        // CppAD::cg::SaveFilesModelLibraryProcessor<double> p2(libcgen);
+        // p2.saveSources();
+
         model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"));
 
         compiled_ = true;

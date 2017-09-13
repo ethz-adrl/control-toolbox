@@ -123,7 +123,9 @@ public:
 		configure(settingsDms);
 	}
 
-	void setCGProblem(const OptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar> problemCG) 
+	virtual void generateAndCompileCode(
+		const OptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
+		const ct::core::DerivativesCppadSettings& settings) override
 	{
 		// Create system, linearsystem and costfunction instances 
 		typedef std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> SysPtrCG;
@@ -140,7 +142,6 @@ public:
 
 		for (size_t i = 0; i<settings_.N_; i++)
 		{
-			// std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> sys = problemCG.getNonlinearSystem();
 			systemsCG.push_back(SysPtrCG(problemCG.getNonlinearSystem()->clone()));
 			linearSystemsCG.push_back(LinearSysPtrCG(problemCG.getLinearSystem()->clone()));
 			costFunctionsCG.push_back(CostPtrCG(problemCG.getCostFunction()->clone()));
@@ -152,19 +153,8 @@ public:
 		if(problemCG.getPureStateConstraints())
 			pureStateConstraintsCG.push_back(ConstraintCG(problemCG.getPureStateConstraints()->clone()));		
 
-		dmsProblem_->setCGProblem(systemsCG, linearSystemsCG, costFunctionsCG, stateInputConstraintsCG, pureStateConstraintsCG, x0CG);
+		dmsProblem_->generateAndCompileCode(systemsCG, linearSystemsCG, costFunctionsCG, stateInputConstraintsCG, pureStateConstraintsCG, x0CG);
 
-		// SNOPT only works for the double type
-		// if(settingsDms.solverSettings_.solverType_ == NlpSolverSettings::SNOPT)
-		// 	nlpSolver_ = std::shared_ptr<SnoptSolver>(new SnoptSolver(dmsProblem_, settingsDms.solverSettings_));
-		// else if (settingsDms.solverSettings_.solverType_ == NlpSolverSettings::IPOPT)
-		// 	nlpSolver_ = std::shared_ptr<IpoptSolver> (new IpoptSolver(dmsProblem_, settingsDms.solverSettings_));
-		// else
-		// 	std::cout << "Unknown solver type... Exiting" << std::endl;
-
-		// configure(settingsDms);
-		// if(settings_.solverSettings_.generateDerivatives_)
-		// 	dmsProblem_->generateDerivatives();
 		nlpSolver_->configure(settings_.solverSettings_); 
 	}	
 

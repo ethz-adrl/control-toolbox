@@ -126,24 +126,21 @@ public:
 			// wLength += settings_.N_;
 		}
 
-		optVariablesDms_ = std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>>(
+		this->optVariables_ = std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>>(
 				new OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>(wLength, settings));
+
+		optVariablesDms_ = std::static_pointer_cast<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>>(this->optVariables_);
 			
 		if(stateInputConstraints.size() > 0 || pureStateConstraints.size() > 0)
-		{
 			discretizedConstraints_ = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>> (
 				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR> (optVariablesDms_, controlSpliner_, timeGrid_, settings_.N_));
-		}
 
 		if(stateInputConstraints.size() > 0)
-		{
 			discretizedConstraints_->setStateInputConstraints(stateInputConstraints.front());
-		}
 
 		if(pureStateConstraints.size() > 0)
-		{
 			discretizedConstraints_->setPureStateConstraints(pureStateConstraints.front());
-		}
+
 
 		for (size_t shotIdx = 0; shotIdx < settings_.N_; shotIdx++)
 		{
@@ -169,13 +166,11 @@ public:
 			case DmsSettings::FULL:
 			{
 				this->costEvaluator_ = std::shared_ptr<CostEvaluatorFull<STATE_DIM, CONTROL_DIM, SCALAR>>(
-						new CostEvaluatorFull<STATE_DIM, CONTROL_DIM, SCALAR> (costPtrs.front(),optVariablesDms_ , controlSpliner_, shotContainers_, settings_));	break;
+						new CostEvaluatorFull<STATE_DIM, CONTROL_DIM, SCALAR> (costPtrs.front(),optVariablesDms_ , controlSpliner_, shotContainers_, settings_)); break;
 			}
 			default:
 				throw(std::runtime_error("Unknown cost evaluation type"));
 		}
-
-		this->optVariables_ = optVariablesDms_;
 
 		this->constraints_ = std::shared_ptr<ConstraintsContainerDms<STATE_DIM, CONTROL_DIM, SCALAR>> (
 			new ConstraintsContainerDms<STATE_DIM, CONTROL_DIM, SCALAR>(optVariablesDms_, timeGrid_, shotContainers_, discretizedConstraints_, x0, settings_));
@@ -183,7 +178,7 @@ public:
 		this->optVariables_->resizeConstraintVars(this->getConstraintsCount());
 	}	
 
-	void setCGProblem(
+	void generateAndCompileCode(
 			std::vector<std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>> systemPtrs,
 			std::vector<std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>> linearPtrs,
 			std::vector<std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>> costPtrs,
@@ -288,7 +283,6 @@ public:
 			this->costCodegen_ = std::shared_ptr<ct::core::DerivativesCppadJIT<-1, 1>>(
 				new ct::core::DerivativesCppadJIT<-1, 1>(settings_.cppadSettings_, fCost, this->getVarCount()));
 			this->costCodegen_->compileJIT("dmsCostFunction");
-			this->useGeneratedCostGradient_ = true;
 		}
 
 		if(settings_.solverSettings_.useGeneratedConstraintJacobian_)
@@ -312,7 +306,6 @@ public:
 			this->constraintsCodegen_ = std::shared_ptr<ct::core::DerivativesCppadJIT<-1, -1>>(
 				new ct::core::DerivativesCppadJIT<-1, -1>(settings_.cppadSettings_, fConstraints, this->getVarCount(), this->getConstraintsCount()));
 			this->constraintsCodegen_->compileJIT("dmsConstraints");
-			this->useGeneratedConstraintJacobian_ = true;			
 		}
 	}
 
