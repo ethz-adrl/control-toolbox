@@ -64,7 +64,7 @@ public:
 		if(t >= period_offset_ && t < t_end_)
 		{
 			SCALAR t0 = t - period_offset_;
-			SCALAR t0norm = SCALAR(2.0);//fmod(t0, period_);
+			SCALAR t0norm = fmod(t0, period_);
 			if(t0norm >= activation_offset_ && t0norm < (activation_offset_ + active_percentage_ * period_))
 				active = true;
 		}

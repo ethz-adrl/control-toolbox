@@ -270,7 +270,7 @@ public:
 
 		std::vector<Eigen::Triplet<SCALAR>> tripletsCost;
 	 	std::vector<Eigen::Triplet<SCALAR>> tripletsConstraints;
-		// 	
+	 	
         for(size_t i = 0; i < iRowHessianCost_.rows(); ++i)
             tripletsCost.push_back(Eigen::Triplet<SCALAR>(iRowHessianCost_(i), jColHessianCost_(i), SCALAR(0.1)));
 
