@@ -251,7 +251,7 @@ private:
 		state_matrix_t Ac = linearSystem_->getDerivativeState(x_n, u_n, settings_.dt_*n);
 		state_matrix_t Adt = settings_.dt_ * Ac;
 
-		A = Adt.exp();
+		A.template topLeftCorner<STATE_DIM, STATE_DIM>() = Adt.exp();
 		B.template topLeftCorner<STATE_DIM, CONTROL_DIM>() = Ac.inverse() * (A - state_matrix_t::Identity()) *  linearSystem_->getDerivativeControl(x_n, u_n, settings_.dt_*n);
 	}
 
