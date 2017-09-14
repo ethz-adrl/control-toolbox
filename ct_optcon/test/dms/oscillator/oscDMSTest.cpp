@@ -23,23 +23,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#include <cstring>
-#include <iostream>
-#include <memory>
-
-#include <ct/optcon/dms/Dms>
-#include <ct/optcon/costfunction/CostFunctionQuadraticSimple.hpp>
-
+#include <ct/optcon/optcon.h>
 #include <gtest/gtest.h>
-#include <ct/core/core.h>
-
-#include <ct/optcon/problem/OptConProblem.h>
-#include <ct/optcon/dms/dms_core/DmsSolver.h>
-#include <ct/optcon/dms/dms_core/DmsSettings.h>
-#include <ct/optcon/nlp/solver/NlpSolverSettings.h>
-
-#include <ct/optcon/constraint/term/TerminalConstraint.h>
-#include <ct/optcon/constraint/ConstraintContainerAnalytical.h> 
 
 #include "oscDMSTest_settings.h"
 
@@ -74,7 +59,6 @@ public:
 		settings_.h_min_ = 0.1; // minimum admissible distance between two nodes in [sec]
 		settings_.integrationType_ = DmsSettings::RK4;
 		settings_.dt_sim_ = 0.01;
-		settings_.integrateSens_ = 1;
 		settings_.absErrTol_ = 1e-8;
 		settings_.relErrTol_ = 1e-8;
 
@@ -88,53 +72,28 @@ public:
 	void getIpoptMatlabTrajectories()
 	{
 #ifdef MATLAB
-		size_t trajSize = settings_.N_ + 1;
-		Eigen::MatrixXd stateTraj;
-		stateTraj.resize(2, trajSize);
-		Eigen::MatrixXd inputTraj;
-		inputTraj.resize(1, trajSize);
-		Eigen::VectorXd timeTraj;
-		timeTraj.resize(trajSize);
 		matFileIpopt_.open(matlabPathIPOPT_, matlab::MatFile::READ);
 		assert(matFileIpopt_.isOpen());
-		matFileIpopt_.get("stateDmsIpopt", stateTraj);
-		matFileIpopt_.get("inputDmsIpopt", inputTraj);
-		matFileIpopt_.get("timeDmsIpopt", timeTraj);
-		matFileIpopt_.close();
-
-		for(size_t i = 0; i < stateTraj.cols(); ++i)
-		{
-			stateMatIpopt_.push_back(stateTraj.col(i));
-			inputMatIpopt_.push_back(inputTraj.col(i));
-			timeMatIpopt_.push_back(timeTraj(i));
-		}		
+		matFileIpopt_.get("stateDmsIpopt", stateMatIpopt_.toImplementation());
+		matFileIpopt_.get("inputDmsIpopt", inputMatIpopt_.toImplementation());
+		std::vector<Eigen::Matrix<double, 1, 1>, Eigen::aligned_allocator<Eigen::Matrix<double, 1, 1>>> timeEigen;		
+		matFileIpopt_.get("timeDmsIpopt", timeEigen);
+		timeMatIpopt_.fromEigenTrajectory(timeEigen);
+		matFileIpopt_.close();	
 #endif
 	}
 
 	void getSnoptMatlabTrajectories()
 	{
 #ifdef MATLAB
-		size_t trajSize = settings_.N_ + 1;
-		Eigen::MatrixXd stateTraj;
-		stateTraj.resize(2, trajSize);
-		Eigen::MatrixXd inputTraj;
-		inputTraj.resize(1, trajSize);
-		Eigen::VectorXd timeTraj;
-		timeTraj.resize(trajSize);
-
 		matFileSnopt_.open(matlabPathSNOPT_, matlab::MatFile::READ);
 		assert(matFileSnopt_.isOpen());
-		matFileSnopt_.get("stateDmsSnopt", stateTraj);
-		matFileSnopt_.get("inputDmsSnopt", inputTraj);
-		matFileSnopt_.get("timeDmsSnopt", timeTraj);
+		matFileSnopt_.get("stateDmsSnopt", stateMatSnopt_.toImplementation());
+		matFileSnopt_.get("inputDmsSnopt", inputMatSnopt_.toImplementation());
+		std::vector<Eigen::Matrix<double, 1, 1>, Eigen::aligned_allocator<Eigen::Matrix<double, 1, 1>>> timeEigen;
+		matFileSnopt_.get("timeDmsSnopt", timeEigen);
+		timeMatSnopt_.fromEigenTrajectory(timeEigen);
 		matFileSnopt_.close();
-
-		for(size_t i = 0; i < stateTraj.cols(); ++i)
-		{
-			stateMatSnopt_.push_back(stateTraj.col(i));
-			inputMatSnopt_.push_back(inputTraj.col(i));
-			timeMatSnopt_.push_back(timeTraj(i));
-		}
 #endif
 	}
 
@@ -287,10 +246,10 @@ private:
 	//Solutions loaded from Mat Files
 	OscDimensions::state_vector_array_t stateMatIpopt_;
 	OscDimensions::control_vector_array_t inputMatIpopt_;
-	std::vector<ct::core::Time> timeMatIpopt_;
+	OscDimensions::time_array_t timeMatIpopt_;
 	OscDimensions::state_vector_array_t stateMatSnopt_;
 	OscDimensions::control_vector_array_t inputMatSnopt_;
-	std::vector<ct::core::Time> timeMatSnopt_;
+	OscDimensions::time_array_t timeMatSnopt_;
 
 	//Solution obtained by IPOPT, SNOPT
 	OscDimensions::state_vector_array_t stateSolutionIpopt_;
@@ -336,7 +295,7 @@ TEST(DmsTest, OscDmsTest)
  */
 int main(int argc, char **argv)
 {
-	using namespace ct::optcon::example;
+	// using namespace ct::optcon::example;
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }

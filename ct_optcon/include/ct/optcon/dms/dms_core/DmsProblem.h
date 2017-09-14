@@ -281,8 +281,8 @@ public:
 			settings_.cppadSettings_.createJacobian_ = true;
 
 			this->costCodegen_ = std::shared_ptr<ct::core::DerivativesCppadJIT<-1, 1>>(
-				new ct::core::DerivativesCppadJIT<-1, 1>(settings_.cppadSettings_, fCost, this->getVarCount()));
-			this->costCodegen_->compileJIT("dmsCostFunction");
+				new ct::core::DerivativesCppadJIT<-1, 1>(fCost, this->getVarCount()));
+			this->costCodegen_->compileJIT(settings_.cppadSettings_, "dmsCostFunction");
 		}
 
 		if(settings_.solverSettings_.useGeneratedConstraintJacobian_)
@@ -304,8 +304,8 @@ public:
 			settings_.cppadSettings_.createJacobian_ = false;
 			
 			this->constraintsCodegen_ = std::shared_ptr<ct::core::DerivativesCppadJIT<-1, -1>>(
-				new ct::core::DerivativesCppadJIT<-1, -1>(settings_.cppadSettings_, fConstraints, this->getVarCount(), this->getConstraintsCount()));
-			this->constraintsCodegen_->compileJIT("dmsConstraints");
+				new ct::core::DerivativesCppadJIT<-1, -1>(fConstraints, this->getVarCount(), this->getConstraintsCount()));
+			this->constraintsCodegen_->compileJIT(settings_.cppadSettings_, "dmsConstraints");
 		}
 	}
 

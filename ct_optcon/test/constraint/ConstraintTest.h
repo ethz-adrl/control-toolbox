@@ -298,7 +298,6 @@ public:
 
 TEST(pureStateConstraintTest, pureStateConstraintTest)
 {
-	typedef CppAD::AD<CppAD::cg::CG<double> > ScalarCg;
 	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, input_dim>> constraintAD (
 		new ct::optcon::ConstraintContainerAD<state_dim, input_dim>());
 
@@ -377,7 +376,6 @@ TEST(pureStateConstraintTest, pureStateConstraintTest)
 
 TEST(stateInputConstraintTest, stateInputConstraintTest)
 {
-	typedef CppAD::AD<CppAD::cg::CG<double> > ScalarCg;
 	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, input_dim>> constraintAD (
 		new ct::optcon::ConstraintContainerAD<state_dim, input_dim>());
 	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, input_dim>> constraintAN (
@@ -451,9 +449,6 @@ TEST(stateInputConstraintTest, stateInputConstraintTest)
 
 TEST(comparisonAnalyticAD, comparisonAnalyticAD)
 {
-	typedef ct::optcon::ConstraintBase<3, 3> Base;
-	typedef CppAD::AD<CppAD::cg::CG<double> > ScalarCg;
-
 	std::shared_ptr<ct::optcon::ConstraintContainerAD<3, 3>> constraintAD (
 		new ct::optcon::ConstraintContainerAD<3, 3>());
 

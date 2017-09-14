@@ -75,13 +75,8 @@ public:
 			return this->evaluateTerminalCodegen(stateinput);	
 		};
 
-		ct::core::DerivativesCppadSettings settings;
-		settings.createForwardZero_ = true;
-		settings.createJacobian_ = true;
-		settings.createSparseJacobian_ = true;	
-
-		intermediateCodegen_ = std::shared_ptr<JacCG>(new JacCG(settings, fIntermediate_, STATE_DIM + CONTROL_DIM, getIntermediateConstraintsCount()));
-		terminalCodegen_ = std::shared_ptr<JacCG>(new JacCG(settings, fTerminal_, STATE_DIM + CONTROL_DIM, getTerminalConstraintsCount()));
+		intermediateCodegen_ = std::shared_ptr<JacCG>(new JacCG(fIntermediate_, STATE_DIM + CONTROL_DIM, getIntermediateConstraintsCount()));
+		terminalCodegen_ = std::shared_ptr<JacCG>(new JacCG(fTerminal_, STATE_DIM + CONTROL_DIM, getTerminalConstraintsCount()));
 
 	}
 
@@ -393,7 +388,12 @@ public:
 
 		if(getIntermediateConstraintsCount() > 0)
 		{
-			intermediateCodegen_->compileJIT("intermediateConstraints");
+			ct::core::DerivativesCppadSettings settings;
+			settings.createForwardZero_ = true;
+			settings.createJacobian_ = true;
+			settings.createSparseJacobian_ = true;	
+
+			intermediateCodegen_->compileJIT(settings, "intermediateConstraints");
 			intermediateCodegen_->getSparsityPatternJacobian(sparsityRows, sparsityCols);
 
 			std::cout << "sparsityPattern Intermediate: " << std::endl << intermediateCodegen_->getSparsityPatternJacobian() << std::endl;
@@ -450,7 +450,12 @@ public:
 
 		if(getTerminalConstraintsCount() > 0)
 		{
-			terminalCodegen_->compileJIT("terminalConstraints");
+			ct::core::DerivativesCppadSettings settings;
+			settings.createForwardZero_ = true;
+			settings.createJacobian_ = true;
+			settings.createSparseJacobian_ = true;				
+
+			terminalCodegen_->compileJIT(settings, "terminalConstraints");
 			terminalCodegen_->getSparsityPatternJacobian(sparsityRows, sparsityCols);
 
 			std::cout << "sparsityPattern Terminal: " << std::endl << terminalCodegen_->getSparsityPatternJacobian() << std::endl;

@@ -94,9 +94,9 @@ public:
         int inputDim = IN_DIM, 
         int outputDim = OUT_DIM) 
     :
+        compiled_(false),
         DerivativesBase(),
-        Utils(f, inputDim, outputDim),
-        compiled_(false)
+        Utils(f, inputDim, outputDim)
     {
         if(outputDim > 0 && inputDim > 0)
             this->recordCg();
@@ -120,9 +120,9 @@ public:
         int inputDim = IN_DIM, 
         int outputDim = OUT_DIM) 
     :
+        compiled_(false),
         DerivativesBase(),
-        Utils(f, inputDim, outputDim),
-        compiled_(false)
+        Utils(f, inputDim, outputDim)
     {
         if(outputDim > 0 && inputDim > 0)
             this->recordAd();
@@ -131,10 +131,10 @@ public:
     //! copy constructor
     DerivativesCppadJIT(const DerivativesCppadJIT& arg) 
     :
-        DerivativesBase(arg),
-        Utils(arg),
         compiled_(arg.compiled_),
-        dynamicLib_(arg.dynamicLib_)
+        dynamicLib_(arg.dynamicLib_),
+        DerivativesBase(arg),
+        Utils(arg)
     {
         if(compiled_)
             model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"));
@@ -499,6 +499,8 @@ public:
     }
 
 private:
+    bool compiled_; //! flag if Jacobian is compiled
+
     std::vector<size_t> sparsityRowsJacobian_;
     std::vector<size_t> sparsityColsJacobian_;
     std::vector<size_t> sparsityRowsHessian_;
@@ -509,8 +511,6 @@ private:
     Eigen::VectorXi sparsityRowsHessianEigen_;
     Eigen::VectorXi sparsityColsHessianEigen_;
                                                 //! 
-    bool compiled_; //! flag if Jacobian is compiled
-
     CppAD::cg::GccCompiler<double> compiler_; //! compile for codegeneration
     CppAD::cg::ClangCompiler<double> compilerClang_;
     std::shared_ptr<CppAD::cg::DynamicLib<double>> dynamicLib_; //! dynamic library to load after compilation
