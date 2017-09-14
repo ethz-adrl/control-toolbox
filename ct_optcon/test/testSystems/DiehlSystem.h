@@ -32,7 +32,13 @@ namespace optcon {
 namespace example {
 
 
-//! Dynamics class for the GNMS unit test
+/*!
+ *
+ * We named this system after Prof. Moritz Diehl, who gave it to us as a simple 1-dimensional test system.
+ * The system dynamics are dx/dt = (1+x)x + u + 0.1
+ *
+ */
+//! Dynamics class for the Diehl system
 class DiehlSystem : public core::ControlledSystem<1, 1>
 {
 public:
@@ -57,7 +63,7 @@ public:
 	};
 };
 
-//! Linear system class for the GNMS unit test
+//! Linear system class for the Diehl system
 class DiehlSystemLinear : public core::LinearSystem<1, 1>
 {
 public:
@@ -87,6 +93,7 @@ public:
 };
 
 
+//! create a cost function of appropriate Dimensions for the Diehl system
 std::shared_ptr<CostFunctionQuadratic<1, 1> > createDiehlCostFunction(const core::StateVector<1>& x_final)
 {
 	Eigen::Matrix<double, 1,1 > Q;
