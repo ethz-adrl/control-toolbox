@@ -90,14 +90,12 @@ public:
      *                        template parameter IN_DIM is -1 (dynamic)
      */
     DerivativesCppadJIT(
-        const DerivativesCppadSettings settings, 
         FUN_TYPE_CG& f, 
         int inputDim = IN_DIM, 
         int outputDim = OUT_DIM) 
     :
         DerivativesBase(),
         Utils(f, inputDim, outputDim),
-        settings_(settings),
         compiled_(false)
     {
         if(outputDim > 0 && inputDim > 0)
@@ -118,14 +116,12 @@ public:
      *                        template parameter IN_DIM is -1 (dynamic)
      */
     DerivativesCppadJIT(
-        const DerivativesCppadSettings settings,
         FUN_TYPE_AD& f, 
         int inputDim = IN_DIM, 
         int outputDim = OUT_DIM) 
     :
         DerivativesBase(),
         Utils(f, inputDim, outputDim),
-        settings_(settings),
         compiled_(false)
     {
         if(outputDim > 0 && inputDim > 0)
@@ -137,7 +133,6 @@ public:
     :
         DerivativesBase(arg),
         Utils(arg),
-        settings_(arg.settings_),
         compiled_(arg.compiled_),
         dynamicLib_(arg.dynamicLib_)
     {
@@ -173,7 +168,7 @@ public:
         if(compiled_)
         {
             assert(model_->isJacobianAvailable() == true);
-            Eigen::VectorXd jac = model_->SparseJacobian(x);
+            Eigen::VectorXd jac = model_->Jacobian(x);
             JAC_TYPE_D out(this->outputDim_, x.rows());
             out = JAC_TYPE_ROW_MAJOR::Map(jac.data(), this->outputDim_, x.rows());
             return out;
@@ -425,35 +420,37 @@ public:
      *  This method generates source code for the Jacobian and zero order derivative. It then compiles
      *  the source code to a dynamically loadable library that then gets loaded.
      */
-    void compileJIT(const std::string& libName = "threadId" + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id())))
+    void compileJIT(
+        const DerivativesCppadSettings& settings,
+        const std::string& libName = "threadId" + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id())))
     {
         if (compiled_) return;
         std::cout << "Starting to compile " + libName + " library"  << std::endl;
 
         CppAD::cg::ModelCSourceGen<double> cgen(this->fCgCppad_, "DerivativesCppad");
 
-        cgen.setMultiThreading(settings_.multiThreading_);
-        cgen.setCreateForwardZero(settings_.createForwardZero_);
-        cgen.setCreateForwardOne(settings_.createForwardOne_);
-        cgen.setCreateReverseOne(settings_.createReverseOne_);
-        cgen.setCreateReverseTwo(settings_.createReverseTwo_);
-        cgen.setCreateJacobian(settings_.createJacobian_);
-        cgen.setCreateSparseJacobian(settings_.createSparseJacobian_);
-        cgen.setCreateHessian(settings_.createHessian_);
-        cgen.setCreateSparseHessian(settings_.createSparseHessian_);
-        cgen.setMaxAssignmentsPerFunc(settings_.maxAssignements_);
+        cgen.setMultiThreading(settings.multiThreading_);
+        cgen.setCreateForwardZero(settings.createForwardZero_);
+        cgen.setCreateForwardOne(settings.createForwardOne_);
+        cgen.setCreateReverseOne(settings.createReverseOne_);
+        cgen.setCreateReverseTwo(settings.createReverseTwo_);
+        cgen.setCreateJacobian(settings.createJacobian_);
+        cgen.setCreateSparseJacobian(settings.createSparseJacobian_);
+        cgen.setCreateHessian(settings.createHessian_);
+        cgen.setCreateSparseHessian(settings.createSparseHessian_);
+        cgen.setMaxAssignmentsPerFunc(settings.maxAssignements_);
 
         CppAD::cg::ModelLibraryCSourceGen<double> libcgen(cgen);
 
         // compile source code
         CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, libName);
-        if(settings_.compiler_ == DerivativesCppadSettings::GCC)
+        if(settings.compiler_ == DerivativesCppadSettings::GCC)
         {
             CppAD::cg::GccCompiler<double> compiler;            
             dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler));
         }
 
-        else if(settings_.compiler_ == DerivativesCppadSettings::CLANG)
+        else if(settings.compiler_ == DerivativesCppadSettings::CLANG)
         {
             CppAD::cg::ClangCompiler<double> compiler;
             dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler));
@@ -502,7 +499,6 @@ public:
     }
 
 private:
-    DerivativesCppadSettings settings_;
     std::vector<size_t> sparsityRowsJacobian_;
     std::vector<size_t> sparsityColsJacobian_;
     std::vector<size_t> sparsityRowsHessian_;

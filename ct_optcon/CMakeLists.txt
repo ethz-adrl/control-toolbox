@@ -107,8 +107,6 @@ if(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
     set(IPOPT_LIBS ipopt dl coinmumps coinhsl lapack blas gfortran
         m quadmath coinmetis)
         
-    #set(CT_IPOPT_LIBS ct_ipopt_interface)
-
 endif(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
 
 
@@ -163,7 +161,7 @@ catkin_package(
    LIBRARIES
         lapack 
         dl
-        ${NLP_LIBS}
+        ${CT_SNOPT_LIBS}
         ${HPIPM_LIBRARY}
         ${BLASFEO_LIBRARY}
    CATKIN_DEPENDS

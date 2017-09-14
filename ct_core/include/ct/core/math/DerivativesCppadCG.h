@@ -79,13 +79,11 @@ public:
      *                        template parameter IN_DIM is -1 (dynamic)
      */
     DerivativesCppadCG(
-        const DerivativesCppadSettings settings, 
         FUN_TYPE_CG& f, 
         int inputDim = IN_DIM, 
         int outputDim = OUT_DIM) 
     :
-        Utils(f, inputDim, outputDim),
-        settings_(settings)
+        Utils(f, inputDim, outputDim)
     {
         if(outputDim > 0 && inputDim > 0)
             this->recordCg();
@@ -95,7 +93,6 @@ public:
     DerivativesCppadCG(const DerivativesCppadCG& arg) 
     :
         Utils(arg),
-        settings_(arg.settings_),
         tmpVarCount_(arg.tmpVarCount_)
     {}
 
@@ -103,7 +100,7 @@ public:
     virtual ~DerivativesCppadCG() {}
 
     //! deep cloning of Jacobian
-    DerivativesCppadCG* clone() const override{
+    DerivativesCppadCG* clone() const{
         return new DerivativesCppadCG<IN_DIM, OUT_DIM>(*this);
     }
 
@@ -291,7 +288,6 @@ private:
         internal::CGHelpers::replaceAll(file, "OUT_DIM", std::to_string(OUT_DIM));
     }
 
-    DerivativesCppadSettings settings_;
     size_t tmpVarCount_; //! number of temporary variables in the source code
 };
 

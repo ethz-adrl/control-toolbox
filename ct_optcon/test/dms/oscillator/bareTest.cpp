@@ -245,7 +245,6 @@ void runTests()
 	    nlpsettings.ipoptSettings_.hessian_approximation_ = "exact";
 	   	// nlpsettings.ipoptSettings_.hessian_approximation_ = "limited-memory";
 
-
 	    settings.cppadSettings_ = cppadSettings;                                                                             	
 		settings.solverSettings_ = nlpsettings;
 
