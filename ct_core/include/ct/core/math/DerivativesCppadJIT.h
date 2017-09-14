@@ -94,9 +94,9 @@ public:
         int inputDim = IN_DIM, 
         int outputDim = OUT_DIM) 
     :
-        compiled_(false),
+        Utils(f, inputDim, outputDim),
         DerivativesBase(),
-        Utils(f, inputDim, outputDim)
+        compiled_(false)
     {
         if(outputDim > 0 && inputDim > 0)
             this->recordCg();
@@ -120,9 +120,9 @@ public:
         int inputDim = IN_DIM, 
         int outputDim = OUT_DIM) 
     :
-        compiled_(false),
+        Utils(f, inputDim, outputDim),
         DerivativesBase(),
-        Utils(f, inputDim, outputDim)
+        compiled_(false)
     {
         if(outputDim > 0 && inputDim > 0)
             this->recordAd();
@@ -131,10 +131,10 @@ public:
     //! copy constructor
     DerivativesCppadJIT(const DerivativesCppadJIT& arg) 
     :
-        compiled_(arg.compiled_),
-        dynamicLib_(arg.dynamicLib_),
+        Utils(arg),
         DerivativesBase(arg),
-        Utils(arg)
+        compiled_(arg.compiled_),
+        dynamicLib_(arg.dynamicLib_)
     {
         if(compiled_)
             model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"));
@@ -150,8 +150,8 @@ public:
         return new DerivativesCppadJIT<IN_DIM, OUT_DIM>(*this);
     }
 
-    virtual OUT_TYPE_D forwardZero(const Eigen::VectorXd& x)  {
-
+    virtual OUT_TYPE_D forwardZero(const Eigen::VectorXd& x)  
+    {
         if(compiled_)
         {
             assert(model_->isForwardZeroAvailable() == true);
@@ -161,43 +161,24 @@ public:
             return this->fAdCppad_.Forward(0, x);
     }
 
-    virtual JAC_TYPE_D jacobian(const Eigen::VectorXd& x)   {
+    virtual JAC_TYPE_D jacobian(const Eigen::VectorXd& x)
+    {
         if(this->outputDim_ <= 0)
             throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
-            
+        
+
+        Eigen::VectorXd jac;    
         if(compiled_)
         {
             assert(model_->isJacobianAvailable() == true);
-            Eigen::VectorXd jac = model_->Jacobian(x);
-            JAC_TYPE_D out(this->outputDim_, x.rows());
-            out = JAC_TYPE_ROW_MAJOR::Map(jac.data(), this->outputDim_, x.rows());
-            return out;
+            jac = model_->Jacobian(x);
         }
         else
-        {
-            Eigen::VectorXd jac = this->fAdCppad_.Jacobian(x);
-            JAC_TYPE_D out(this->outputDim_, x.rows());
-            out = JAC_TYPE_ROW_MAJOR::Map(jac.data(), this->outputDim_, x.rows());
-            return out;
-        }   
-    }
+            jac = this->fAdCppad_.Jacobian(x);
 
-    virtual Eigen::VectorXd sparseJacobian(const Eigen::VectorXd& x)   {
-        if(this->outputDim_ <= 0)
-            throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
-            
-        if(compiled_)
-        {
-            assert(model_->isSparseJacobianAvailable() == true);
-            std::vector<double> input(x.data(), x.data() + x.rows() * x.cols());
-            std::vector<double> output;
-            model_->SparseJacobian(input, output, sparsityRowsJacobian_, sparsityColsJacobian_);
-            return Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
-        }
-        else
-        {
-            return this->fAdCppad_.SparseJacobian(x);
-        }   
+        JAC_TYPE_D out(this->outputDim_, x.rows());
+        out = JAC_TYPE_ROW_MAJOR::Map(jac.data(), this->outputDim_, x.rows());
+        return out;  
     }
 
     virtual void sparseJacobian(
@@ -220,10 +201,26 @@ public:
             jCol = sparsityColsJacobianEigen_;      
         }
         else
-        {
             jac = this->fAdCppad_.SparseJacobian(x);
-        }       
-    }   
+    }       
+
+    virtual Eigen::VectorXd sparseJacobianValues(const Eigen::VectorXd& x)
+    {
+        if(this->outputDim_ <= 0)
+            throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+            
+        if(compiled_)
+        {
+            assert(model_->isSparseJacobianAvailable() == true);
+            std::vector<double> input(x.data(), x.data() + x.rows() * x.cols());
+            std::vector<double> output;
+            model_->SparseJacobian(input, output, sparsityRowsJacobian_, sparsityColsJacobian_);
+            return Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
+        }
+        else
+            return this->fAdCppad_.SparseJacobian(x);
+    }
+
 
     virtual HES_TYPE_D hessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda)   {
         if(this->outputDim_ <= 0)
@@ -245,27 +242,6 @@ public:
             return out;
         }
     }
-
-
-    virtual Eigen::VectorXd sparseHessian(
-        const Eigen::VectorXd& x, 
-        const Eigen::VectorXd& lambda)   
-    {
-            if(this->outputDim_ <= 0)
-                throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
-
-            if(compiled_)
-            {
-                assert(model_->isSparseHessianAvailable() == true);
-                std::vector<double> input(x.data(), x.data() + x.rows() * x.cols());
-                std::vector<double> inputLambda(lambda.data(), lambda.data() + lambda.rows() * lambda.cols());
-                std::vector<double> output;
-                model_->SparseHessian(input, inputLambda, output, sparsityRowsHessian_, sparsityColsHessian_);
-                return Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
-            }   
-            else
-                return this->fAdCppad_.SparseHessian(x, lambda);
-    }   
 
     virtual void sparseHessian(
         const Eigen::VectorXd& x,
@@ -290,31 +266,28 @@ public:
         }   
         else
             hes = this->fAdCppad_.SparseHessian(x, lambda);
-    }
+    }    
 
-    virtual Eigen::SparseMatrix<double> sparseHessian1(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda)
+
+    virtual Eigen::VectorXd sparseHessianValues(
+        const Eigen::VectorXd& x, 
+        const Eigen::VectorXd& lambda)   
     {
-        if(this->outputDim_ <= 0)
-            throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+            if(this->outputDim_ <= 0)
+                throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
 
-        if(compiled_)
-        {
-            assert(model_->isSparseJacobianAvailable() == true);
-            std::vector<double> input(x.data(), x.data() + x.rows() * x.cols());
-            std::vector<double> inputLambda(lambda.data(), lambda.data() + lambda.rows() * lambda.cols());
-            std::vector<double> output;
-            model_->SparseHessian(input, inputLambda, output, sparsityRowsHessian_, sparsityColsHessian_);
-            Eigen::SparseMatrix<double> outSparse(x.rows(), x.rows());
-            outSparse.reserve(sparsityRowsHessian_.size());
-            std::vector<Eigen::Triplet<double>> triplets;
-            for(size_t i = 0; i < output.size(); ++i)
-                triplets.push_back(Eigen::Triplet<double>(sparsityRowsHessianEigen_(i), sparsityColsHessianEigen_(i), output[i]));
-
-            outSparse.setFromTriplets(triplets.begin(), triplets.end());
-            return outSparse;
-        }       
-    }
-
+            if(compiled_)
+            {
+                assert(model_->isSparseHessianAvailable() == true);
+                std::vector<double> input(x.data(), x.data() + x.rows() * x.cols());
+                std::vector<double> inputLambda(lambda.data(), lambda.data() + lambda.rows() * lambda.cols());
+                std::vector<double> output;
+                model_->SparseHessian(input, inputLambda, output, sparsityRowsHessian_, sparsityColsHessian_);
+                return Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
+            }   
+            else
+                return this->fAdCppad_.SparseHessian(x, lambda);
+    }   
 
     //! get Jacobian sparsity pattern
     /*!

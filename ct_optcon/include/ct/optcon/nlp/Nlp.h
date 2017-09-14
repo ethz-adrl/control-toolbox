@@ -28,6 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCON_NLP_NLP_H_
 #define CT_OPTCON_NLP_NLP_H_
 
+#include <Eigen/Sparse>
 #include <ct/core/math/DerivativesCppadJIT.h>
 #include "OptVector.h"
 #include "DiscreteConstraintContainerBase.h"
@@ -135,7 +136,7 @@ public:
 			throw std::runtime_error("Error in evaluateConstraintJacobian. Constraints not initialized");
 
 		if(constraintsCodegen_)
-			jac = constraintsCodegen_->sparseJacobian(optVariables_->getOptimizationVars());
+			jac = constraintsCodegen_->sparseJacobianValues(optVariables_->getOptimizationVars());
 		else
 			constraints_->evalSparseJacobian(jac, nele_jac);
 	}
@@ -154,18 +155,20 @@ public:
 			throw std::runtime_error("Error in evaluateHessian. Hessian Evaluation only implemented for codegeneration");
 
 		hes.setZero();
-		Eigen::Matrix<double, 1, 1> mat; mat << obj_fac;
+		Eigen::Matrix<double, 1, 1> omega; omega << obj_fac;
 
-		Eigen::SparseMatrix<double> hessianCost;
-		Eigen::SparseMatrix<double> hessianConstraints;
-		Eigen::SparseMatrix<double> hessianTotal; 
+		Eigen::VectorXd hessianCostValues = costCodegen_->sparseHessianValues(optVariables_->getOptimizationVars(), omega);
+		Eigen::VectorXd hessianConstraintsValues = constraintsCodegen_->sparseHessianValues(optVariables_->getOptimizationVars(), lambda);
 
-		hessianCost = costCodegen_->sparseHessian1(optVariables_->getOptimizationVars(), mat);
-		hessianConstraints = constraintsCodegen_->sparseHessian1(optVariables_->getOptimizationVars(), lambda);
+		for(size_t i = 0; i < hessianCostValues.rows(); ++i)
+			hessianCost_.coeffRef(iRowHessianCost_(i), jColHessianCost_(i)) =  hessianCostValues(i);
 
-		hessianTotal = (hessianCost + hessianConstraints).triangularView<Eigen::Lower>();
+		for(size_t i = 0; i < hessianConstraintsValues.rows(); ++i)
+			hessianConstraints_.coeffRef(iRowHessianConstraints_(i), jColHessianConstraints_(i)) = hessianConstraintsValues(i);
 
-		hes = Eigen::Map<Eigen::VectorXd>(hessianTotal.valuePtr(), nele_hes, 1);			
+		hessianTotal_ = (hessianCost_ + hessianConstraints_).template triangularView<Eigen::Lower>();
+
+		hes = Eigen::Map<Eigen::VectorXd>(hessianTotal_.valuePtr(), nele_hes, 1);			
 	}
 
 	/**
@@ -262,31 +265,37 @@ public:
 			throw std::runtime_error("Error in getNonZeroHessianCount. Codegeneration not initialized");		
 		}
 
-		Eigen::SparseMatrix<double> hessianCost;
-		Eigen::SparseMatrix<double> hessianConstraints;
-		Eigen::SparseMatrix<double> hessianTotal;
+		costCodegen_->getSparsityPatternHessian(iRowHessianCost_, jColHessianCost_);
+		constraintsCodegen_->getSparsityPatternHessian(iRowHessianConstraints_, jColHessianConstraints_);
 
-		std::vector<int> iRowHessianLocal;
-		std::vector<int> jColHessianLocal;
+		std::vector<Eigen::Triplet<SCALAR>> tripletsCost;
+	 	std::vector<Eigen::Triplet<SCALAR>> tripletsConstraints;
+		// 	
+        for(size_t i = 0; i < iRowHessianCost_.rows(); ++i)
+            tripletsCost.push_back(Eigen::Triplet<SCALAR>(iRowHessianCost_(i), jColHessianCost_(i), SCALAR(0.1)));
 
-		Eigen::VectorXd test(constraints_->getConstraintsCount());
-		Eigen::Matrix<double, 1, 1> aaa; aaa << 1.0;
-		test.setOnes();
+        for(size_t i = 0; i < iRowHessianConstraints_.rows(); ++i)
+            tripletsConstraints.push_back(Eigen::Triplet<SCALAR>(iRowHessianConstraints_(i), jColHessianConstraints_(i), SCALAR(0.1)));
+       
+        hessianCost_.resize(optVariables_->size(), optVariables_->size());
+    	hessianCost_.setFromTriplets(tripletsCost.begin(), tripletsCost.end());
+    	hessianConstraints_.resize(optVariables_->size(), optVariables_->size());
+		hessianConstraints_.setFromTriplets(tripletsConstraints.begin(), tripletsConstraints.end());
 
-		hessianCost = costCodegen_->sparseHessian1(optVariables_->getOptimizationVars(), aaa);
-		hessianConstraints = constraintsCodegen_->sparseHessian1(optVariables_->getOptimizationVars(), test);
+		hessianTotal_.resize(optVariables_->size(), optVariables_->size());
+		hessianTotal_ = (hessianCost_ + hessianConstraints_).template triangularView<Eigen::Lower>();
 
-		hessianTotal = (hessianCost + hessianConstraints).triangularView<Eigen::Lower>();
-
-	    for(size_t k = 0; k < hessianTotal.outerSize(); ++k)
-    		for(Eigen::SparseMatrix<double>::InnerIterator it(hessianTotal,k); it; ++it)
+		std::vector<int> iRowHessianStdVec;
+		std::vector<int> jColHessianStdVec;
+	    for(size_t k = 0; k < hessianTotal_.outerSize(); ++k)
+    		for(typename Eigen::SparseMatrix<SCALAR>::InnerIterator it(hessianTotal_,k); it; ++it)
     		{
-	            iRowHessianLocal.push_back(it.row());
-	            jColHessianLocal.push_back(it.col());
-    		}		  
-		
-		iRowHessian_ = Eigen::Map<Eigen::VectorXi>(iRowHessianLocal.data(), iRowHessianLocal.size(), 1);
-		jColHessian_ = Eigen::Map<Eigen::VectorXi>(jColHessianLocal.data(), jColHessianLocal.size(), 1);
+	            iRowHessianStdVec.push_back(it.row());
+	            jColHessianStdVec.push_back(it.col());
+    		}
+
+		iRowHessian_ = Eigen::Map<Eigen::VectorXi>(iRowHessianStdVec.data(), iRowHessianStdVec.size(), 1);
+		jColHessian_ = Eigen::Map<Eigen::VectorXi>(jColHessianStdVec.data(), jColHessianStdVec.size(), 1);		
 
 		size_t nonZerosHessian = iRowHessian_.rows();
 		return nonZerosHessian;
@@ -471,6 +480,10 @@ protected:
 	std::shared_ptr<DiscreteConstraintContainerBase<SCALAR>> constraints_; //! abstract base class, contains the discretized constraints for the problem
 	std::shared_ptr<ct::core::DerivativesCppadJIT<-1, 1>> costCodegen_;
 	std::shared_ptr<ct::core::DerivativesCppadJIT<-1, -1>> constraintsCodegen_;
+
+	Eigen::SparseMatrix<SCALAR> hessianCost_, hessianConstraints_, hessianTotal_;
+
+	Eigen::VectorXi iRowHessianCost_, iRowHessianConstraints_, jColHessianCost_, jColHessianConstraints_;
 	Eigen::VectorXi iRowHessian_;
 	Eigen::VectorXi jColHessian_;
 };

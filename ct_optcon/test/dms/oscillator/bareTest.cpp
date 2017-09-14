@@ -39,7 +39,6 @@ public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef ct::core::ADCGScalar ScalarCG;
-	// typedef double ScalarCG;
 
 	typedef DmsDimensions<2,1> OscDimensions;
 
@@ -75,11 +74,6 @@ public:
 
 		costFunction_ = std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1>> 
 				(new ct::optcon::CostFunctionQuadraticSimple<2,1>(Q_, R_, x_final_, u_des_, x_final_, Q_final_));
-
-		// std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1, ScalarCG> costFunctionCG(
-		// 	new ct::optcon::CostFunctionQuadraticSimple<2, 1, ScalarCG>(Q_.template cast<ScalarCG>(), R_.template cast<ScalarCG>(), 
-		// 		x_final_.template cast<ScalarCG>(), u_des_.template cast<ScalarCG>(), 
-		// 		x_final_.template cast<ScalarCG>(), Q_final_.template cast<ScalarCG>()));
 
 		std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1, ScalarCG>> costFunctionCG(
 			new ct::optcon::CostFunctionQuadraticSimple<2, 1, ScalarCG>(Q_.cast<ScalarCG>(), R_.cast<ScalarCG>(), 
@@ -243,6 +237,7 @@ void runTests()
 	    nlpsettings.useGeneratedCostGradient_ = true;
 	    nlpsettings.useGeneratedConstraintJacobian_ = true;
 	    nlpsettings.ipoptSettings_.hessian_approximation_ = "exact";
+	    nlpsettings.ipoptSettings_.derivativeTest_ = "none";
 	   	// nlpsettings.ipoptSettings_.hessian_approximation_ = "limited-memory";
 
 	    settings.cppadSettings_ = cppadSettings;                                                                             	
