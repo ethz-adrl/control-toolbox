@@ -184,7 +184,8 @@ public:
 			state_control_matrix_t Bc_front = linearSystem_->getDerivativeControl(x, u, n*settings_.dt_);
 
 			//! tustin approximation
-			state_matrix_t aNewInv = (state_matrix_t::Identity() -  Ac_back).colPivHouseholderQr().inverse();
+			state_matrix_t aNewInv;
+			aNewInv.template topLeftCorner<STATE_DIM, STATE_DIM>()= (state_matrix_t::Identity() -  Ac_back).colPivHouseholderQr().inverse();
 			A = aNewInv * (state_matrix_t::Identity() + Ac_front);
 			B = aNewInv * settings_.dt_ * Bc_front;
 			break;
@@ -233,7 +234,7 @@ private:
 		 * generate linear approximations A and B.
 		 */
 		state_matrix_t aNew = settings_.dt_ * linearSystem_->getDerivativeState(x_n, u_n, n*settings_.dt_);
-		A = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
+		A.template topLeftCorner<STATE_DIM, STATE_DIM>() = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
 
 		B = A * settings_.dt_ * linearSystem_->getDerivativeControl(x_n, u_n, n*settings_.dt_);
 	}
@@ -251,7 +252,7 @@ private:
 		state_matrix_t Adt = settings_.dt_ * Ac;
 
 		A = Adt.exp();
-		B = Ac.inverse() * (A - state_matrix_t::Identity()) *  linearSystem_->getDerivativeControl(x_n, u_n, settings_.dt_*n);
+		B.template topLeftCorner<STATE_DIM, CONTROL_DIM>() = Ac.inverse() * (A - state_matrix_t::Identity()) *  linearSystem_->getDerivativeControl(x_n, u_n, settings_.dt_*n);
 	}
 
 
