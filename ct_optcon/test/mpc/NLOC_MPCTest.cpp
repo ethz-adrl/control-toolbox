@@ -33,6 +33,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/optcon.h>
 
 #include "mpcTestSettings.h"
+#include "../testSystems/LinearOscillator.h"
 
 namespace ct{
 namespace optcon{
@@ -43,91 +44,6 @@ using namespace ct::optcon;
 
 using std::shared_ptr;
 
-const size_t state_dim = 2; // position, velocity
-const size_t control_dim = 1; // force
-
-const double kStiffness = 0.1;
-
-namespace tpl {
-
-template <typename SCALAR = double>
-class Dynamics : public ControlledSystem<state_dim, control_dim, SCALAR>
-{
-public:
-	Dynamics() : ControlledSystem<state_dim, control_dim, SCALAR>(SYSTEM_TYPE::GENERAL) {}
-
-	void computeControlledDynamics(
-			const StateVector<state_dim, SCALAR>& state,
-			const SCALAR& t,
-			const ControlVector<control_dim, SCALAR>& control,
-			StateVector<state_dim, SCALAR>& derivative
-	) override
-	{
-		derivative(0) = state(1);
-		derivative(1) = control(0) - kStiffness*state(0); // mass is 1 kg
-	}
-
-	Dynamics<SCALAR>* clone() const override
-	{
-		return new Dynamics<SCALAR>();
-	};
-};
-
-
-template <typename SCALAR = double>
-class LinearizedSystem : public LinearSystem<state_dim, control_dim, SCALAR>
-{
-public:
-
-	typedef core::StateMatrix<state_dim, SCALAR> state_matrix_t;
-	typedef core::StateControlMatrix<state_dim, control_dim, SCALAR> state_control_matrix_t;
-
-	state_matrix_t A_;
-	state_control_matrix_t B_;
-
-	const state_matrix_t& getDerivativeState(const StateVector<state_dim, SCALAR>& x, const ControlVector<control_dim, SCALAR>& u, const SCALAR t = 0.0) override
-	{
-		A_ << 0, 1, -kStiffness, 0;
-		return A_;
-	}
-
-	const state_control_matrix_t& getDerivativeControl(const StateVector<state_dim, SCALAR>& x, const ControlVector<control_dim, SCALAR>& u, const SCALAR t = 0.0) override
-	{
-		B_ << 0, 1;
-		return B_;
-	}
-
-	LinearizedSystem<SCALAR>* clone() const override
-	{
-		return new LinearizedSystem<SCALAR>();
-	};
-};
-
-
-template <typename SCALAR = double>
-std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim, SCALAR> > createCostFunction(Eigen::Matrix<SCALAR, 2, 1>& x_final)
-{
-	Eigen::Matrix<SCALAR, 2, 2> Q;
-	Q << 0, 0, 0, 1;
-
-	Eigen::Matrix<SCALAR, 1, 1> R;
-	R << 100;
-
-	Eigen::Matrix<SCALAR, 2, 1> x_nominal; x_nominal.setZero();
-	Eigen::Matrix<SCALAR, 1, 1> u_nominal; u_nominal.setZero();
-
-	Eigen::Matrix<SCALAR, 2, 2> Q_final;
-	Q_final << 1000, 0, 0, 1000;
-
-	std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim, SCALAR> > quadraticCostFunction(
-			new CostFunctionQuadraticSimple<state_dim, control_dim, SCALAR>(
-					Q, R, x_nominal, u_nominal, x_final, Q_final));
-
-	return quadraticCostFunction;
-}
-
-} // namespace tpl
-
 
 
 /**
@@ -135,8 +51,8 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim, SCALAR> > createCo
  */
 TEST(MPCTestA, PreIntegratorTest)
 {
-	typedef tpl::Dynamics<double> Dynamics;
-	typedef tpl::LinearizedSystem<double> LinearizedSystem;
+	typedef tpl::LinearOscillator<double> LinearOscillator;
+	typedef tpl::LinearOscillatorLinear<double> LinearOscillatorLinear;
 
 	try {
 
@@ -148,9 +64,9 @@ TEST(MPCTestA, PreIntegratorTest)
 
 
 		// set up the Optimal Control Problem
-		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
-		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearizedSystem);
-		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = tpl::createCostFunction<double>(x_final);
+		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new LinearOscillator);
+		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearOscillatorLinear);
+		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = tpl::createCostFunctionLinearOscillator<double>(x_final);
 
 		OptConProblem<state_dim, control_dim> optConProblem (nonlinearSystem, costFunction, analyticLinearSystem);
 		optConProblem.setInitialState(x0);
@@ -256,8 +172,8 @@ TEST(MPCTestA, PreIntegratorTest)
 
 TEST(MPCTestB, NLOC_MPC_DoublePrecision)
 {
-	typedef tpl::Dynamics<double> Dynamics;
-	typedef tpl::LinearizedSystem<double> LinearizedSystem;
+	typedef tpl::LinearOscillator<double> LinearOscillator;
+	typedef tpl::LinearOscillatorLinear<double> LinearOscillatorLinear;
 
 	for(int solverType = 0; solverType<=1; solverType++)
 
@@ -270,9 +186,9 @@ TEST(MPCTestB, NLOC_MPC_DoublePrecision)
 			ct::core::Time timeHorizon = 3.0;
 
 			// set up the Optimal Control Problem
-			shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
-			shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearizedSystem);
-			shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = tpl::createCostFunction<double>(x_final);
+			shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new LinearOscillator);
+			shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearOscillatorLinear);
+			shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = tpl::createCostFunctionLinearOscillator<double>(x_final);
 
 			OptConProblem<state_dim, control_dim> optConProblem (nonlinearSystem, costFunction, analyticLinearSystem);
 
@@ -489,7 +405,7 @@ TEST(MPCTest, iLQRMPC_SinglePrecision)
 		// set up the Optimal Control Problem
 		shared_ptr<ControlledSystem<state_dim, control_dim, float> > nonlinearSystem(new Dynamics);
 		shared_ptr<LinearSystem<state_dim, control_dim, float> > analyticLinearSystem(new LinearizedSystem);
-		shared_ptr<CostFunctionQuadratic<state_dim, control_dim, float> > costFunction = tpl::createCostFunction<float>(x_final);
+		shared_ptr<CostFunctionQuadratic<state_dim, control_dim, float> > costFunction = tpl::createCostFunctionLinearOscillator<float>(x_final);
 
 		OptConProblem<state_dim, control_dim, float> optConProblem (nonlinearSystem, costFunction, analyticLinearSystem);
 

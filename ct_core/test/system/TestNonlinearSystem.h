@@ -60,6 +60,8 @@ public:
 		w_n_(arg.w_n_)
 	{}
 
+	virtual ~TestNonlinearSystem(){}
+
 	TestNonlinearSystem* clone() const override
 	{
 		return new TestNonlinearSystem(*this);
