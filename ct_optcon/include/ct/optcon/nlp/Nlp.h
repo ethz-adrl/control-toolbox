@@ -370,12 +370,12 @@ public:
 	 * @param[in]  n     { The number of Optimization variables }
 	 * @param[out] x     { The values of the Optimization vars }
 	 */
-	void getOptimizationVars(const size_t n, MapVecXs& x) const
+	void getInitialGuess(const size_t n, MapVecXs& x) const
 	{
 		if(!optVariables_)
 			throw std::runtime_error("Error in getOptimizationVars. Optvariables not initialized");
 
-		optVariables_->getOptimizationVars(n, x);
+		optVariables_->getInitialGuess(n, x);
 	}
 
 	/**

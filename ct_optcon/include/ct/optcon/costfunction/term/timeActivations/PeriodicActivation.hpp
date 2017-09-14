@@ -64,19 +64,19 @@ public:
 		if(t >= period_offset_ && t < t_end_)
 		{
 			SCALAR t0 = t - period_offset_;
-			SCALAR t0norm = std::fmod(t0, period_);
+			SCALAR t0norm = SCALAR(2.0);//fmod(t0, period_);
 			if(t0norm >= activation_offset_ && t0norm < (activation_offset_ + active_percentage_ * period_))
 				active = true;
 		}
 		return active;
 	}
 
-	virtual SCALAR computeActivation(const SCALAR t) override { return 1.0; }
+	virtual SCALAR computeActivation(const SCALAR t) override { return SCALAR(1.0); }
 
 	virtual void printInfo() override
 	{
 		std::cout << "Cost function active at periodic times: " <<  std::endl;
-		std:: cout << "Period: " << period_ << "\nOffset after period start:  "  << activation_offset_ << "s" << std::endl;
+		std::cout << "Period: " << period_ << "\nOffset after period start:  "  << activation_offset_ << "s" << std::endl;
 		std::cout << "Offset between t0: "  << period_offset_ << "s" << std::endl;
 		std::cout << "Active for " << 100*active_percentage_ << "% of the period" << std::endl;
 	}

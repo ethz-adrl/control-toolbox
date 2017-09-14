@@ -194,7 +194,7 @@ bool IpoptSolver<SCALAR>::get_starting_point(Ipopt::Index n, bool init_x, SCALAR
     if(init_x)
     {
         MapVecXs xVec(x, n);
-        this->nlp_->getOptimizationVars(n, xVec);
+        this->nlp_->getInitialGuess(n, xVec);
     }
 
     if(init_z)

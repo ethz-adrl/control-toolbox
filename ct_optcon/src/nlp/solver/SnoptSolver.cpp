@@ -132,7 +132,7 @@ void SnoptSolver::fill_memory(SnoptMemory* mem) const
 	MapVecXi jGVecGrad	(mem->jGvar_, 	n_);
 	MapVecXi jGVecJac	(&mem->jGvar_[n_], nlp_->getNonZeroJacobianCount());
 
-	nlp_->getOptimizationVars(n_, xVec);
+	nlp_->getInitialGuess(n_, xVec);
 	nlp_->getVariableBounds(x_lVec, x_uVec, n_);
 	nlp_->getOptimizationMultState(n_, xMulVec, xStateVec);
 

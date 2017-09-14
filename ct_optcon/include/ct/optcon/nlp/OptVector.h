@@ -63,6 +63,7 @@ public:
 	{
 		x_.resize(n);
 		x_.setZero();
+		xInit_.resize(n);
 		xLb_.resize(n);
 		xUb_.resize(n);
 		xLb_.setConstant(std::numeric_limits<SCALAR>::lowest());
@@ -109,6 +110,7 @@ public:
 	 */
 	void resizeOptimizationVars(const size_t size) {
 		x_.resize(size);
+		xInit_.resize(size);
 		xLb_.resize(size);
 		xUb_.resize(size);
 		lambda_.resize(size);
@@ -122,6 +124,7 @@ public:
 	 */
 	void setZero() {
 		x_.setZero();
+		xInit_.setZero();
 		xLb_.setZero();
 		xUb_.setZero();
 		lambda_.setZero();
@@ -252,6 +255,12 @@ public:
 		return x_;
 	}
 
+	void getInitialGuess(size_t n, MapVecXs& x) const 
+	{
+		assert (n == xInit_.size());
+		x = xInit_;
+	}
+
 	/**
 	 * @brief      Extracts the solution from ipopt and stores them into class
 	 *             variables
@@ -324,6 +333,7 @@ public:
 
 protected:
 	VectorXs x_; 	/*!< The optimization variables */
+	VectorXs xInit_;
 	VectorXs xLb_;	/*!< lower bound on optimization vector */
 	VectorXs xUb_;	/*!< upper bound on optimization vector */
 

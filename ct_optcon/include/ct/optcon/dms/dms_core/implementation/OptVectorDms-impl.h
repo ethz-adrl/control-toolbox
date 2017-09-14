@@ -161,14 +161,14 @@ void OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::setInitGuess(const state_vect
 		{
 		case 0:
 		{
-			this->x_.segment(s_index , STATE_DIM) = x0;
+			this->xInit_.segment(s_index , STATE_DIM) = x0;
 			break;
 		}
 		case 1:
-			this->x_.segment(s_index , STATE_DIM) = x0+(x_f-x0)*(i/(numPairs_-1));
+			this->xInit_.segment(s_index , STATE_DIM) = x0+(x_f-x0)*(i/(numPairs_-1));
 				break;
 		}
-		this->x_.segment(q_index , CONTROL_DIM) = u0;
+		this->xInit_.segment(q_index , CONTROL_DIM) = u0;
 	}
 
 	// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
@@ -195,8 +195,8 @@ void OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::setInitGuess(
 			size_t s_index = getStateIndex(i);
 			size_t q_index = getControlIndex(i);
 
-			this->x_.segment(s_index , STATE_DIM) = x_init[i];
-			this->x_.segment(q_index , CONTROL_DIM) = u_init[i];
+			this->xInit_.segment(s_index , STATE_DIM) = x_init[i];
+			this->xInit_.segment(q_index , CONTROL_DIM) = u_init[i];
 		}
 
 		// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
