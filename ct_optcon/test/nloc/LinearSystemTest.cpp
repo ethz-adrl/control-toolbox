@@ -140,11 +140,11 @@ TEST(LinearSystemsTest, NLOCSolverTest)
 
 						const SummaryAllIterations<double>& summary = solver.getBackend()->getSummary();
 
-						ASSERT_TRUE(summary.lx_norms.back() < 1e-12 && summary.lu_norms.back() < 1e-12 && "NLOC should be converged in one iteration");
+						ASSERT_TRUE(summary.lx_norms.back() < 1e-11 && summary.lu_norms.back() < 1e-11 && "NLOC should be converged in one iteration");
 
-						ASSERT_TRUE(summary.lx_norms.front() > 1e-12 && summary.lx_norms.front() > 1e-12 && "NLOC should have improved at least once");
+						ASSERT_TRUE(summary.lx_norms.front() > 1e-11 && summary.lx_norms.front() > 1e-11 && "NLOC should have improved at least once");
 
-						ASSERT_TRUE(summary.defect_l1_norms.back() < 1e-12 && summary.defect_l1_norms.back() < 1e-12 && "NLOC should not have defects in the end");
+						ASSERT_TRUE(summary.defect_l1_norms.back() < 1e-11 && summary.defect_l1_norms.back() < 1e-11 && "NLOC should not have defects in the end");
 
 						// test trajectories
 						StateTrajectory<state_dim> xRollout = solver.getStateTrajectory();
