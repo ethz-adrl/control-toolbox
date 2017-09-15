@@ -34,7 +34,7 @@ namespace example {
 
 /*!
  *
- * We named this system after Prof. Moritz Diehl, who gave it to us as a simple 1-dimensional test system.
+ * We named this system after Prof. Moritz Diehl from the University of Freiburg, who gave it to us as a simple 1-dimensional test system.
  * The system dynamics are dx/dt = (1+x)x + u + 0.1
  *
  */
