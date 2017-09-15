@@ -27,7 +27,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCON_LQR_HPP_
 #define CT_OPTCON_LQR_HPP_
 
-#include <ct/optcon/lqr/riccati/AlgebraicRiccatiEquation.hpp>
+#include "riccati/CARE.hpp"
 
 #ifdef USE_MATLAB_CPP_INTERFACE
 #include <matlabCppInterface/Engine.hpp>
@@ -55,6 +55,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM>
 class LQR
 {
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
@@ -87,7 +88,7 @@ public:
 		control_matrix_t R_inverse;
 		state_matrix_t P;
 
-		bool success = algebraicRiccatiEquation_.solve(Q, R, A, B, P, RisDiagonal, R_inverse, solveRiccatiIteratively);
+		bool success = care_.solve(Q, R, A, B, P, RisDiagonal, R_inverse, solveRiccatiIteratively);
 
 		K = (R_inverse*(B.transpose()*P));
 
@@ -141,7 +142,7 @@ public:
 
 
 private:
-	AlgebraicRiccatiEquation<STATE_DIM, CONTROL_DIM> algebraicRiccatiEquation_;
+	CARE<STATE_DIM, CONTROL_DIM> care_; // continuous-time algebraic riccati equation
 
 #ifdef USE_MATLAB_CPP_INTERFACE
 	matlab::Engine matlabEngine_;

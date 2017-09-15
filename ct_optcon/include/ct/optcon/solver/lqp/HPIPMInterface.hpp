@@ -596,8 +596,8 @@ private:
 	std::vector<int> nx_; // number of states per stage
 	std::vector<int> nu_; // number of inputs per stage
 
-	std::vector<int> nb_; // number of bounds, currently always zero
-	std::vector<int> ng_; // number of general constraints, currently always zero
+	std::vector<int> nb_; // number of box constraints per stage, currently always zero
+	std::vector<int> ng_; // number of general constraints per stage, currently always zero
 
 
 	std::vector<double*> hA_; // system state sensitivities
@@ -606,9 +606,9 @@ private:
 	std::vector<double*> hb_;
 	Eigen::Matrix<double, state_dim, 1> hb0_;
 
-	std::vector<double*> hQ_;
-	std::vector<double*> hS_;
-	std::vector<double*> hR_;
+	std::vector<double*> hQ_; // pure state penalty hessian
+	std::vector<double*> hS_; // cross-terms
+	std::vector<double*> hR_; // pure control penalty hessian
 	StateVectorArray hqEigen_;
 	std::vector<double*> hq_;
 	ControlVectorArray hrEigen_;

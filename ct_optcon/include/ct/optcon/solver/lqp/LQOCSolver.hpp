@@ -84,9 +84,7 @@ public:
 	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() = 0;
 	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() = 0;
 
-	// todo: "return" feedback
 	virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K) = 0;
-
 
 	const SCALAR& getControlUpdateNorm() {return delta_uff_norm_;}
 

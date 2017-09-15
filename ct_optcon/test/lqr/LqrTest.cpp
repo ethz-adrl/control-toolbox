@@ -24,8 +24,11 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#include <ct/core/core.h>
+
 #include <chrono>
 
+#include <ct/optcon/lqr/riccati/DARE.hpp>
 #include <ct/optcon/lqr/LQR.hpp>
 
 #ifdef MATLAB
@@ -39,6 +42,27 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct{
 namespace optcon{
 namespace example{
+
+TEST(LQRTest, DARETest)
+{
+
+	const size_t stateDim = 2;
+	const size_t controlDim = 1;
+
+	Eigen::Matrix<double, stateDim, stateDim> A;
+	Eigen::Matrix<double, stateDim, controlDim> B;
+	Eigen::Matrix<double, stateDim, stateDim> Q;
+	Eigen::Matrix<double, controlDim, controlDim> R;
+	Eigen::Matrix<double, controlDim, stateDim> K;
+
+	A << 1, 1, 1, 0;
+	B << 0 , 1;
+	Q << 1, 0, 0, 1;
+	R << 1;
+
+	ct::optcon::DARE<stateDim, controlDim> dare;
+	Eigen::Matrix<double, stateDim, stateDim> P = dare.computeSteadyStateRiccatiMatrix(Q, R, A, B, K, true);
+}
 
 
 TEST(LQRTest, quadTest)

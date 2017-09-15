@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef ALGEBRAICRICCATIEQUATION_HPP_
-#define ALGEBRAICRICCATIEQUATION_HPP_
+#ifndef CT_CARE_ALGEBRAICRICCATIEQUATION_HPP_
+#define CT_CARE_ALGEBRAICRICCATIEQUATION_HPP_
 
 #include <ct/core/core.h>
 #include <iostream>
@@ -41,18 +41,20 @@ namespace optcon {
 /*!
  * \ingroup LQR
  *+
- * \brief Algebraic Riccati Equation
+ * \brief Continuous-Time Algebraic Riccati Equation
  *
- * solves the Infinite-Horizon Algebraic Riccati Equation
+ * solves the continuous-time Infinite-Horizon Algebraic Riccati Equation
  *
  * @tparam STATE_DIM system state dimension
  * @tparam CONTROL_DIM system control input dimension
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
-class AlgebraicRiccatiEquation {
+class CARE {
 
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
 	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
 	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
@@ -62,7 +64,7 @@ public:
 	typedef Eigen::Matrix<double, 2*STATE_DIM, 2*STATE_DIM> schur_matrix_t;
 	typedef Eigen::Matrix<double, 2*STATE_DIM, STATE_DIM> factor_matrix_t;
 
-	AlgebraicRiccatiEquation()
+	CARE()
 	{
 		// we have to find the optimal work size of schur reordering
 		schur_matrix_t T;
@@ -271,4 +273,4 @@ private:
 }
 
 
-#endif /* ALGEBRAICRICCATIEQUATION_HPP_ */
+#endif /* CT_CARE_ALGEBRAICRICCATIEQUATION_HPP_ */

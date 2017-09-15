@@ -24,8 +24,10 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef DYNAMICRICCATIEQUATION_HPP_
-#define DYNAMICRICCATIEQUATION_HPP_
+#ifndef CT_DYNAMICRICCATIEQUATION_HPP_
+#define CT_DYNAMICRICCATIEQUATION_HPP_
+
+#include <ct/core/core.h>
 
 namespace ct {
 namespace optcon {
