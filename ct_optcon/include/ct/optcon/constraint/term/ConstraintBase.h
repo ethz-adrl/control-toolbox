@@ -100,7 +100,16 @@ public:
 	 */
 	virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) = 0;
 
-	// This is a hack
+	/**
+	 * @brief      The evaluate method used for jit compilation in constraint
+	 *             container ad
+	 *
+	 * @param[in]  x     The state vector
+	 * @param[in]  u     The control vector
+	 * @param[in]  t     The time
+	 *
+	 * @return     The constraint violation
+	 */
 	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
 		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
 		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
