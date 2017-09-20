@@ -57,8 +57,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "internal/autodiff/SparsityPattern.h"
 
 #include "math/Derivatives.h"
+#include "math/DerivativesCppadSettings.h"
 #include "math/DerivativesNumDiff.h"
-#include "math/DerivativesCppad.h"
+#include "math/DerivativesCppadJIT.h"
+#include "math/DerivativesCppadCG.h"
 
 #ifdef PLOTTING_ENABLED
 #include "plot/plot.h"

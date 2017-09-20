@@ -32,6 +32,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/property_tree/info_parser.hpp>
 
 #include <ct/optcon/nlp/solver/NlpSolverSettings.h>
+#include <ct/core/math/DerivativesCppadSettings.h>
 
 namespace ct {
 namespace optcon {
@@ -65,7 +66,6 @@ public:
 	h_min_(0.1),
 	integrationType_(RK4),
 	dt_sim_(0.01),
-	integrateSens_(true),
 	absErrTol_(1e-10),
 	relErrTol_(1e-10)
 	{}
@@ -79,11 +79,11 @@ public:
 	double h_min_; 					// minimum admissible distance between two nodes in [sec]
 	IntegrationType_t integrationType_;			// the integration type between the nodes
 	double dt_sim_;								// and the corresponding integration timestep
-	bool integrateSens_;			// use integrated sensitivities
 	double absErrTol_;				// the absolute and relative integrator tolerances when using RK5
 	double relErrTol_;
 
 	NlpSolverSettings solverSettings_;
+	ct::core::DerivativesCppadSettings cppadSettings_;
 
     void print()
     {
@@ -98,12 +98,6 @@ public:
 		std::cout << "Cost eval: " << costEvalToString[costEvaluationType_] << std::endl;
 		std::cout << "Objective type: " << objTypeToString[objectiveType_] << std::endl;
 		std::cout << "Integration type: " << integratorToString[integrationType_] << std::endl;
-
-		if(integrateSens_)
-			std::cout << "Sensitivities obtained by integrating ODE" << std::endl;
-		else
-			std::cout << "Sensitivities calculated analytically" << std::endl;
-
 		std::cout<<"Simulation timestep dt_sim: "<< dt_sim_ <<std::endl;
 
 		std::cout<<"============================================================="<<std::endl;
@@ -167,12 +161,12 @@ public:
 
 		integrationType_ 	= (IntegrationType_t) pt.get<unsigned int>(ns + ".IntegrationType");
 		dt_sim_ = pt.get<double>(ns + ".dt_sim");
-		integrateSens_ = pt.get<bool> (ns + ".integrateSens");
 		absErrTol_ = pt.get<double> (ns + ".AbsErrTol");
 		relErrTol_ = pt.get<double> (ns + ".RelErrTol");
 
 		solverSettings_.load(filename, verbose, ns + ".solver"); // todo bring in again
-		                                                         // 
+		cppadSettings_.load(filename, verbose, ns + ".cppad");
+
 		if (verbose)
 		{
 			std::cout << "Loaded DMS config from "<<filename<<": "<<std::endl;

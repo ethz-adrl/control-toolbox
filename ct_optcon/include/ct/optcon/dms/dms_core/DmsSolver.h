@@ -52,11 +52,11 @@ namespace optcon {
  * @brief      The DMS policy used as a solution container 
  *
  */
-template<size_t STATE_DIM, size_t CONTROL_DIM>
+template<size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 struct DmsPolicy
 {
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	typedef DmsDimensions<STATE_DIM, CONTROL_DIM> DIMENSIONS;
+	typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
 	typedef typename DIMENSIONS::state_vector_array_t state_vector_array_t;	
 	typedef typename DIMENSIONS::control_vector_array_t control_vector_array_t;
 	typedef typename DIMENSIONS::time_array_t time_array_t;
@@ -77,24 +77,24 @@ struct DmsPolicy
  * @tparam     STATE_DIM    The state dimension
  * @tparam     CONTROL_DIM  The control dimension
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class DmsSolver : public OptConSolver<DmsSolver<STATE_DIM, CONTROL_DIM>,  DmsPolicy<STATE_DIM, CONTROL_DIM>, DmsSettings, STATE_DIM, CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class DmsSolver : public OptConSolver<DmsSolver<STATE_DIM, CONTROL_DIM, SCALAR>,  DmsPolicy<STATE_DIM, CONTROL_DIM, SCALAR>, DmsSettings, STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef OptConSolver<DmsSolver<STATE_DIM, CONTROL_DIM>, DmsPolicy<STATE_DIM, CONTROL_DIM>, DmsSettings, STATE_DIM, CONTROL_DIM> Base;
+	typedef OptConSolver<DmsSolver<STATE_DIM, CONTROL_DIM, SCALAR>, DmsPolicy<STATE_DIM, CONTROL_DIM, SCALAR>, DmsSettings, STATE_DIM, CONTROL_DIM> Base;
 
-	typedef DmsDimensions<STATE_DIM, CONTROL_DIM> DIMENSIONS;
+	typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
 	typedef typename DIMENSIONS::state_vector_t state_vector_t;
 	typedef typename DIMENSIONS::control_vector_array_t control_vector_array_t;
 	typedef typename DIMENSIONS::control_vector_t control_vector_t;
 	typedef typename DIMENSIONS::state_vector_array_t state_vector_array_t;
 	typedef typename DIMENSIONS::time_array_t time_array_t;
 
-	typedef DmsPolicy<STATE_DIM, CONTROL_DIM> Policy_t;
+	typedef DmsPolicy<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 
-	typedef OptConProblem<STATE_DIM, CONTROL_DIM> OptConProblem_t;
+	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
 	/**
 	 * @brief      Custom constructor, converts the optcon problem to a DMS problem
@@ -102,7 +102,7 @@ public:
 	 * @param[in]  problem      The optimal control problem	
 	 * @param[in]  settingsDms  The dms settings
 	 */
-	DmsSolver(const OptConProblem<STATE_DIM, CONTROL_DIM> problem, DmsSettings settingsDms) 
+	DmsSolver(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> problem, DmsSettings settingsDms) 
 	:
 	nlpSolver_(nullptr),
 	settings_(settingsDms)
@@ -110,10 +110,11 @@ public:
 		// Create system, linearsystem and costfunction instances 
 		this->setProblem(problem);
 
-		dmsProblem_ = std::shared_ptr<DmsProblem<STATE_DIM, CONTROL_DIM>> (new DmsProblem<STATE_DIM, CONTROL_DIM>
+		dmsProblem_ = std::shared_ptr<DmsProblem<STATE_DIM, CONTROL_DIM, SCALAR>> (new DmsProblem<STATE_DIM, CONTROL_DIM, SCALAR>
 				(settingsDms, this->systems_, this->linearSystems_, this->costFunctions_, 
 					this->stateInputConstraints_, this->pureStateConstraints_, x0_));
 
+		// SNOPT only works for the double type
 		if(settingsDms.solverSettings_.solverType_ == NlpSolverSettings::SNOPT)
 			nlpSolver_ = std::shared_ptr<SnoptSolver>(new SnoptSolver(dmsProblem_, settingsDms.solverSettings_));
 		else if (settingsDms.solverSettings_.solverType_ == NlpSolverSettings::IPOPT)
@@ -123,6 +124,39 @@ public:
 
 		configure(settingsDms);
 	}
+
+	virtual void generateAndCompileCode(
+		const OptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
+		const ct::core::DerivativesCppadSettings& settings) override
+	{
+		// Create system, linearsystem and costfunction instances 
+		typedef std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> SysPtrCG;
+		typedef std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> LinearSysPtrCG;
+		typedef std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> CostPtrCG;
+		typedef std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> ConstraintCG;
+		ct::core::StateVector<STATE_DIM, ct::core::ADCGScalar> x0CG = problemCG.getInitialState();		
+
+		std::vector<SysPtrCG> systemsCG;
+		std::vector<LinearSysPtrCG> linearSystemsCG;
+		std::vector<CostPtrCG> costFunctionsCG;
+		std::vector<ConstraintCG> stateInputConstraintsCG;
+		std::vector<ConstraintCG> pureStateConstraintsCG;
+
+		for (size_t i = 0; i<settings_.N_; i++)
+		{
+			systemsCG.push_back(SysPtrCG(problemCG.getNonlinearSystem()->clone()));
+			linearSystemsCG.push_back(LinearSysPtrCG(problemCG.getLinearSystem()->clone()));
+			costFunctionsCG.push_back(CostPtrCG(problemCG.getCostFunction()->clone()));
+		}
+
+		if(problemCG.getStateInputConstraints())
+			stateInputConstraintsCG.push_back(ConstraintCG(problemCG.getStateInputConstraints()->clone()));
+
+		if(problemCG.getPureStateConstraints())
+			pureStateConstraintsCG.push_back(ConstraintCG(problemCG.getPureStateConstraints()->clone()));		
+
+		dmsProblem_->generateAndCompileCode(systemsCG, linearSystemsCG, costFunctionsCG, stateInputConstraintsCG, pureStateConstraintsCG, x0CG);
+	}	
 
 	/**
 	 * @brief      Destructor
@@ -134,11 +168,13 @@ public:
 		dmsProblem_->configure(settings);
 		dmsProblem_->changeTimeHorizon(tf_);
 		dmsProblem_->changeInitialState(x0_);
-		nlpSolver_->configure(settings_.solverSettings_); 
 	}
 
 	virtual bool solve() override
 	{
+		if(!nlpSolver_->isInitialized())
+			nlpSolver_->configure(settings_.solverSettings_); 
+
 		return nlpSolver_->solve();
 	}
 
@@ -150,15 +186,15 @@ public:
 		return policy_;
 	}
 
-	virtual const core::StateTrajectory<STATE_DIM> getStateTrajectory() const override {
-		return core::StateTrajectory<STATE_DIM>(dmsProblem_->getTimeArray(), dmsProblem_->getStateTrajectory());
+	virtual const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const override {
+		return core::StateTrajectory<STATE_DIM, SCALAR>(dmsProblem_->getTimeArray(), dmsProblem_->getStateTrajectory());
 	}
 
-	virtual const core::ControlTrajectory<CONTROL_DIM> getControlTrajectory() const override {
-		return core::ControlTrajectory<CONTROL_DIM>(dmsProblem_->getTimeArray(), dmsProblem_->getInputTrajectory());
+	virtual const core::ControlTrajectory<CONTROL_DIM, SCALAR> getControlTrajectory() const override {
+		return core::ControlTrajectory<CONTROL_DIM, SCALAR>(dmsProblem_->getTimeArray(), dmsProblem_->getInputTrajectory());
 	}
 
-	virtual const core::TimeArray& getTimeArray() const override {
+	virtual const core::tpl::TimeArray<SCALAR>& getTimeArray() const override {
 		return dmsProblem_->getTimeArray();
 	}
 
@@ -167,20 +203,20 @@ public:
 		dmsProblem_->setInitialGuess(initialGuess.xSolution_, initialGuess.uSolution_);
 	}
 
-	virtual core::Time getTimeHorizon() const override
+	virtual SCALAR getTimeHorizon() const override
 	{
 		return dmsProblem_->getTimeHorizon();
 	}
 
 
-	virtual void changeTimeHorizon(const core::Time& tf) override
+	virtual void changeTimeHorizon(const SCALAR& tf) override
 	{
 		tf_ = tf;
 		if(dmsProblem_)
 			dmsProblem_->changeTimeHorizon(tf);
 	}
 
-	virtual void changeInitialState(const core::StateVector<STATE_DIM>& x0) override
+	virtual void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0) override
 	{
 		x0_ = x0;
 		if(dmsProblem_)
@@ -229,89 +265,33 @@ public:
 	void printSolution()
 	{
 		dmsProblem_->printSolution();
-	} 
+	}
 
+	virtual std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override { return systems_; }
+	virtual const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const override { return systems_; }
 
-	/*!
-		 * \brief Direct accessor to the system instances
-		 *
-		 * \warning{Use this only when performance absolutely matters and if you know what you
-		 * are doing. Otherwise use e.g. changeNonlinearSystem() to change the system dynamics
-		 * in a safe and easy way. You should especially not change the size of the vector or
-		 * modify each entry differently.}
-		 * @return
-		 */
-		std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override { return systems_; }
+	virtual std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() override { return linearSystems_; }
+	virtual const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const override { return linearSystems_; }
 
-		const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const override { return systems_; }
+	virtual std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() override  { return costFunctions_; }
+	virtual const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const override { return costFunctions_; }
 
-		/*!
-		 * \brief Direct accessor to the linear system instances
-		 *
-		 * \warning{Use this only when performance absolutely matters and if you know what you
-		 * are doing. Otherwise use e.g. changeLinearSystem() to change the system dynamics
-		 * in a safe and easy way. You should especially not change the size of the vector or
-		 * modify each entry differently.}
-		 * @return
-		 */
-		std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() override { return linearSystems_; }
+	virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() override { return stateInputConstraints_; }
+	virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const override  { return stateInputConstraints_; }
 
-		const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const override { return linearSystems_; }
-
-		/*!
-		 * \brief Direct accessor to the cost function instances
-		 *
-		 * \warning{Use this only when performance absolutely matters and if you know what you
-		 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
-		 * in a safe and easy way. You should especially not change the size of the vector or
-		 * modify each entry differently.}
-		 * @return
-		 */
-		std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() override  { return costFunctions_; }
-
-		const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const override { return costFunctions_; }
-
-		/**
-		 * @brief      Direct accessor to the state input constraint instances
-		 *
-		 * \warning{Use this only when performance absolutely matters and if you know what you
-		 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
-		 * in a safe and easy way. You should especially not change the size of the vector or
-		 * modify each entry differently.}
-		 *
-		 * @return     The state input constraint instances
-		 */
-		std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() override { return stateInputConstraints_; }
-
-		const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const override  { return stateInputConstraints_; }
-
-		/**
-		 * @brief      Direct accessor to the pure state constraints
-		 *
-		 * \warning{Use this only when performance absolutely matters and if you know what you
-		 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
-		 * in a safe and easy way. You should especially not change the size of the vector or
-		 * modify each entry differently.}
-		 *
-		 * @return     The pure state constraints instances.
-		 */
-		std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() override { return pureStateConstraints_; }
-
-		const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const override { return pureStateConstraints_; }
-
-
+	virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() override { return pureStateConstraints_; }
+	virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const override { return pureStateConstraints_; }
 
 
 private:
-	std::shared_ptr<DmsProblem<STATE_DIM, CONTROL_DIM>> dmsProblem_; /*!<The dms problem*/
-	std::shared_ptr<NlpSolver> nlpSolver_; /*!<The nlp solver for solving the dmsproblem*/
+	std::shared_ptr<DmsProblem<STATE_DIM, CONTROL_DIM, SCALAR>> dmsProblem_; /*!<The dms problem*/
+	std::shared_ptr<tpl::NlpSolver<SCALAR>> nlpSolver_; /*!<The nlp solver for solving the dmsproblem*/
 	DmsSettings settings_; /*!<The dms settings*/
 
 	Policy_t policy_; /*!<The solution container*/
  
 	state_vector_t x0_; /*!<The initial state for the optimization*/
-	core::Time tf_; /*!<The timehorizon of the problem*/
-
+	SCALAR tf_; /*!<The timehorizon of the problem*/
 
 	std::vector<typename OptConProblem_t::DynamicsPtr_t> systems_;
 	std::vector<typename OptConProblem_t::LinearPtr_t> linearSystems_;

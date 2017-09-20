@@ -55,13 +55,13 @@ namespace optcon {
  * @tparam     STATE_DIM    The state dimension
  * @tparam     CONTROL_DIM  The input dimension
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class CostEvaluatorFull : public DiscreteCostEvaluatorBase
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class CostEvaluatorFull : public tpl::DiscreteCostEvaluatorBase<SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef DmsDimensions<STATE_DIM, CONTROL_DIM> DIMENSIONS;
+	typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
 
 	typedef typename DIMENSIONS::state_vector_t state_vector_t;
 	typedef typename DIMENSIONS::control_vector_t control_vector_t;
@@ -81,10 +81,10 @@ public:
 	 * @param[in]  settings        The dms settings
 	 */
 	CostEvaluatorFull(
-			std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct,
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
-			std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
-			std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>> shotInt,
+			std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct,
+			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
+			std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner,
+			std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>>> shotInt,
 			DmsSettings settings):
 				costFct_(costFct),
 				w_(w),
@@ -98,9 +98,9 @@ public:
 	 */
 	virtual ~CostEvaluatorFull(){}
 
-	virtual double eval() override
+	virtual SCALAR eval() override
 	{
-		double cost = 0.0;
+		SCALAR cost = SCALAR(0.0);
 
 		#pragma omp parallel for num_threads( settings_.nThreads_ )
 		for(auto shotContainer = shotContainers_.begin(); shotContainer < shotContainers_.end(); ++shotContainer){
@@ -115,7 +115,7 @@ public:
 		return cost;
 	}
 
-	virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::VectorXd>& grad) override
+	virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>& grad) override
 	{
 		grad.setZero();
 
@@ -165,10 +165,10 @@ public:
 
 private:
 
-	std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct_;
-	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
-	std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner_;
-	std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>>> shotContainers_;
+	std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct_;
+	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w_;
+	std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner_;
+	std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>>> shotContainers_;
 
 	const DmsSettings settings_;
 };

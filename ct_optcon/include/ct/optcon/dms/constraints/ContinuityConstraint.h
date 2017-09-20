@@ -46,15 +46,15 @@ namespace optcon {
  * @tparam     STATE_DIM    The state dimension
  * @tparam     CONTROL_DIM  The input dimension
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class ContinuityConstraint : public DiscreteConstraintBase
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class ContinuityConstraint : public tpl::DiscreteConstraintBase<SCALAR>
 {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef DiscreteConstraintBase BASE;
-	typedef DmsDimensions<STATE_DIM, CONTROL_DIM> DIMENSIONS;
+	typedef tpl::DiscreteConstraintBase<SCALAR> BASE;
+	typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
 
 	typedef typename DIMENSIONS::state_vector_t state_vector_t;
 	typedef typename DIMENSIONS::control_vector_t control_vector_t;
@@ -64,6 +64,9 @@ public:
 	typedef typename DIMENSIONS::state_matrix_t state_matrix_t;
 	typedef typename DIMENSIONS::state_matrix_array_t state_matrix_array_t;
 	typedef typename DIMENSIONS::state_control_matrix_array_t state_control_matrix_array_t;
+
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
+	typedef Eigen::Matrix< SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
 	/**
 	 * @brief      Default constructor
@@ -79,8 +82,8 @@ public:
 	 * @param[in]  settings       The dms settings
 	 */
 	ContinuityConstraint(
-			std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>> shotContainer,
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
+			std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>> shotContainer,
+			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
 			size_t shotIndex,
 			const DmsSettings settings
 			)
@@ -90,8 +93,8 @@ public:
 		shotIndex_(shotIndex),
 		settings_(settings)
 	{
-		lb_.setConstant(0.0);
-		ub_.setConstant(0.0);
+		lb_.setConstant(SCALAR(0.0));
+		ub_.setConstant(SCALAR(0.0));
 
 		size_t nr = 0;
 		
@@ -119,7 +122,7 @@ public:
 	}
 
 
-	virtual Eigen::VectorXd eval() override
+	virtual VectorXs eval() override
 	{
 		stateNext_ = shotContainer_->getStateIntegrated();
 		assert(stateNext_ == stateNext_);
@@ -127,7 +130,7 @@ public:
 		return w_->getOptimizedState(shotIndex_+1) - stateNext_;
 	}
 
-	virtual Eigen::VectorXd evalSparseJacobian() override
+	virtual VectorXs evalSparseJacobian() override
 	{
 		count_local_ = 0;
 		switch (settings_.splineType_)
@@ -244,12 +247,12 @@ public:
 		// }
 	}
 
-	virtual Eigen::VectorXd getLowerBound() override
+	virtual VectorXs getLowerBound() override
 	{
 		return lb_;
 	}
 
-	virtual Eigen::VectorXd getUpperBound() override
+	virtual VectorXs getUpperBound() override
 	{
 		return ub_;
 	}
@@ -290,12 +293,12 @@ private:
 	 */
 	void computeHblock();
 
-	std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM>> shotContainer_;
-	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
+	std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>> shotContainer_;
+	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w_;
 	size_t shotIndex_;
 	const DmsSettings settings_;
 
-	Eigen::VectorXd jacLocal_;
+	VectorXs jacLocal_;
 	size_t count_local_;
 	state_vector_t stateNext_;
 	
@@ -340,12 +343,12 @@ private:
 
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void ContinuityConstraint<STATE_DIM, CONTROL_DIM>::computeXblock()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void ContinuityConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::computeXblock()
 {
 	state_matrix_t mat = - shotContainer_->getdXdSiIntegrated();
 	mat.transposeInPlace();
-	Eigen::VectorXd dXdSiVec = (Eigen::Map<Eigen::VectorXd> (mat.data(), STATE_DIM*STATE_DIM));
+	VectorXs dXdSiVec = (Eigen::Map<VectorXs> (mat.data(), STATE_DIM*STATE_DIM));
 
 	// fill into value vector with correct indexing
 	jacLocal_.segment(count_local_, STATE_DIM*STATE_DIM) = dXdSiVec;
@@ -354,12 +357,12 @@ void ContinuityConstraint<STATE_DIM, CONTROL_DIM>::computeXblock()
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void ContinuityConstraint<STATE_DIM, CONTROL_DIM>::computeUblock()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void ContinuityConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::computeUblock()
 {
-	Eigen::MatrixXd mat = - shotContainer_->getdXdQiIntegrated();
+	MatrixXs mat = - shotContainer_->getdXdQiIntegrated();
 	mat.transposeInPlace();
-	Eigen::VectorXd dXdQiVec = Eigen::Map<Eigen::VectorXd> (mat.data(), STATE_DIM * CONTROL_DIM);
+	VectorXs dXdQiVec = Eigen::Map<VectorXs> (mat.data(), STATE_DIM * CONTROL_DIM);
 
 	// // fill into value vector with correct indexing
 	jacLocal_.segment(count_local_, STATE_DIM * CONTROL_DIM) = dXdQiVec;
@@ -367,23 +370,23 @@ void ContinuityConstraint<STATE_DIM, CONTROL_DIM>::computeUblock()
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void ContinuityConstraint<STATE_DIM, CONTROL_DIM>::computeUblock_2()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void ContinuityConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::computeUblock_2()
 {
-	Eigen::MatrixXd mat = - shotContainer_->getdXdQip1Integrated();
+	MatrixXs mat = - shotContainer_->getdXdQip1Integrated();
 	mat.transposeInPlace();
-	Eigen::VectorXd dXdU1Vec = Eigen::Map<Eigen::VectorXd> (mat.data(), STATE_DIM*CONTROL_DIM);
+	VectorXs dXdU1Vec = Eigen::Map<VectorXs> (mat.data(), STATE_DIM*CONTROL_DIM);
 
 	// fill into value vector with correct indexing
 	jacLocal_.segment(count_local_, STATE_DIM * CONTROL_DIM) = dXdU1Vec;
 	count_local_ += STATE_DIM*CONTROL_DIM;
 }
 
-template<size_t STATE_DIM, size_t CONTROL_DIM>
-void ContinuityConstraint<STATE_DIM, CONTROL_DIM>::computeIblock()
+template<size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void ContinuityConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::computeIblock()
 {
 	// fill into value vector with correct indexing
-	jacLocal_.segment(count_local_, STATE_DIM) = Eigen::VectorXd::Ones(STATE_DIM);
+	jacLocal_.segment(count_local_, STATE_DIM) = VectorXs::Ones(STATE_DIM);
 	count_local_ += STATE_DIM;
 }
 

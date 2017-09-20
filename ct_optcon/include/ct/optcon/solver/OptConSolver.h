@@ -25,6 +25,18 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
+/**
+ * OptConSolver.hpp
+ *
+ * Created on: 28.02.2017
+ * 	   Author: mgiftthaler<mgiftthaler@ethz.ch> 
+ * 
+ *
+ * Requirements:
+ * - returns an optimal controller. These can be different controller types, feedforward only, feedforward-feedback, feedback only,
+ * 		therefore it is templated on the controller type
+ */
+
 #ifndef CT_OPTCONSOLVER_HPP_
 #define CT_OPTCONSOLVER_HPP_
 
@@ -302,6 +314,34 @@ public:
 
 	virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const = 0;
 
+
+	/**
+	 * @brief      Generates and compiles AD source code which can be used in
+	 *             the solver. This method can be called just before solving the
+	 *             problem, i.e. it can be called from the same executable than
+	 *             the actual solve
+	 *
+	 * @param[in]  problemCG  The optcon problem templated on the AD CG Scalar
+	 * @param[in]  settings   The settings indicating what to generate
+	 */
+	virtual void generateAndCompileCode(
+		const OptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
+		const ct::core::DerivativesCppadSettings& settings)
+	{
+		throw std::runtime_error("Generate and compile code not implemented for this solver");
+	}
+
+	/**
+	 * @brief      Generates source AD source code which can be used in the
+	 *             solver. This method needs to be called ahead of actually
+	 *             solving the problem (e.g. from a different executable)
+	 *
+	 * @param[in]  settings  The settings indicating what to generate
+	 */
+	virtual void generateCode(const ct::core::DerivativesCppadSettings& settings) 
+	{
+		throw std::runtime_error("Generate Code not implemented for this solver");
+	}
 };
 
 

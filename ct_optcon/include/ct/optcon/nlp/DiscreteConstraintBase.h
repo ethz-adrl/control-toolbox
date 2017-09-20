@@ -29,6 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct {
 namespace optcon {
+namespace tpl {
 
 /**
  * @ingroup    DMS
@@ -36,10 +37,12 @@ namespace optcon {
  * @brief      Implements an abstract base class from which all the discrete
  *             custom NLP constraints should derive
  */
+template<typename SCALAR>
 class DiscreteConstraintBase{
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 
 	/**
 	 * @brief      Default constructor
@@ -57,7 +60,7 @@ public:
 	 *
 	 * @return     A vector of the evaluated constraint violation
 	 */
-	virtual Eigen::VectorXd eval() = 0;
+	virtual VectorXs eval() = 0;
 
 	/**
 	 * @brief      Returns the non zero elements of the eval method with respect
@@ -65,7 +68,7 @@ public:
 	 *
 	 * @return     A vector of the non zero elements of the constraint jacobian
 	 */
-	virtual Eigen::VectorXd evalSparseJacobian() = 0;
+	virtual VectorXs evalSparseJacobian() = 0;
 
 	/**
 	 * @brief      Returns size of the constraint vector
@@ -98,14 +101,14 @@ public:
 	 *
 	 * @return     The lower constraint bound
 	 */
-	virtual Eigen::VectorXd getLowerBound() = 0;
+	virtual VectorXs getLowerBound() = 0;
 
 	/**
 	 * @brief      Returns the upper bound of the constraint
 	 *
 	 * @return     The upper constraint bound
 	 */
-	virtual Eigen::VectorXd getUpperBound() = 0;
+	virtual VectorXs getUpperBound() = 0;
 
 protected:
 
@@ -154,7 +157,8 @@ protected:
 
 };
 
-inline size_t DiscreteConstraintBase::genDiagonalIndices(
+template<typename SCALAR>
+inline size_t DiscreteConstraintBase<SCALAR>::genDiagonalIndices(
 		const size_t col_start,
 		const size_t num_elements,
 		Eigen::VectorXi& iRow_vec,
@@ -183,8 +187,8 @@ inline size_t DiscreteConstraintBase::genDiagonalIndices(
 	return count;
 }
 
-
-inline size_t DiscreteConstraintBase::genBlockIndices(
+template<typename SCALAR>
+inline size_t DiscreteConstraintBase<SCALAR>::genBlockIndices(
 		const size_t col_start,
 		const size_t num_rows,
 		const size_t num_cols,
@@ -217,6 +221,9 @@ inline size_t DiscreteConstraintBase::genBlockIndices(
 	return num_gen_indices;
 }
 
+}
+
+typedef tpl::DiscreteConstraintBase<double> DiscreteConstraintBase;
 
 } // namespace optcon
 } // namespace ct

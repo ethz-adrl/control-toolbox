@@ -48,20 +48,21 @@ namespace optcon {
  * @tparam     STATE_DIM    The state dimension
  * @tparam     CONTROL_DIM  The input dimension
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class ConstraintDiscretizer : public DiscreteConstraintBase
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class ConstraintDiscretizer : public tpl::DiscreteConstraintBase<SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef DiscreteConstraintBase BASE;
-	typedef ct::core::StateVector<STATE_DIM> state_vector_t;
-	typedef ct::core::StateVectorArray<STATE_DIM> state_vector_array_t;
+	typedef tpl::DiscreteConstraintBase<SCALAR> BASE;
+	typedef ct::core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> state_vector_array_t;
 
-	typedef ct::core::ControlVector<CONTROL_DIM> control_vector_t;
-	typedef ct::core::ControlVectorArray<CONTROL_DIM> control_vector_array_t;
+	typedef ct::core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+	typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> control_vector_array_t;
 
-	typedef ct::core::TimeArray time_array_t;
+	typedef ct::core::tpl::TimeArray<SCALAR> time_array_t;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 
 	/**
 	 * @brief      Default constructor
@@ -82,9 +83,9 @@ public:
 	 *                           is active
 	 */
 	ConstraintDiscretizer(
-		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
-		std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
-		std::shared_ptr<TimeGrid> timeGrid,
+		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
+		std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner,
+		std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
 		size_t N
 		)
 	:
@@ -101,7 +102,7 @@ public:
 	{}
 
 
-	void setStateInputConstraints(std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> stateInputConstraints)
+	void setStateInputConstraints(std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> stateInputConstraints)
 	{
 		constraints_.push_back(stateInputConstraints);
 		constraintsIntermediateCount_ += (N_ + 1) * stateInputConstraints->getIntermediateConstraintsCount();
@@ -122,7 +123,7 @@ public:
 		discreteJCol_.resize(nonZeroJacCount_);		
 	}
 
-	void setPureStateConstraints(std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>> pureStateConstraints)
+	void setPureStateConstraints(std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> pureStateConstraints)
 	{
 		constraints_.push_back(pureStateConstraints);
 		constraintsIntermediateCount_ += (N_ + 1) * pureStateConstraints->getIntermediateConstraintsCount();
@@ -142,14 +143,14 @@ public:
 		discreteJCol_.resize(nonZeroJacCount_);	
 	}
 
-	virtual Eigen::VectorXd eval() override
+	virtual VectorXs eval() override
 	{
 		size_t constraintSize = 0;
 		size_t discreteInd = 0;
 
 		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			double tShot = timeGrid_->getShotStartTime(n);
+			SCALAR tShot = timeGrid_->getShotStartTime(n);
 			for(auto constraint : constraints_)
 			{
 				constraint->setCurrentStateAndControl(w_->getOptimizedState(n), controlSpliner_->evalSpline(tShot, n), tShot);
@@ -175,14 +176,14 @@ public:
 		return discreteConstraints_;
 	}
 
-	virtual Eigen::VectorXd evalSparseJacobian() override
+	virtual VectorXs evalSparseJacobian() override
 	{
 		size_t jacSize = 0;
 		size_t discreteInd = 0;
 
 		for(size_t n = 0; n < N_ + 1; ++n)
 		{
-			double tShot = timeGrid_->getShotStartTime(n);
+			SCALAR tShot = timeGrid_->getShotStartTime(n);
 
 			for(auto constraint : constraints_)
 			{
@@ -294,7 +295,7 @@ public:
 		jCol_vec = discreteJCol_;
 	}
 
-	virtual Eigen::VectorXd getLowerBound() override
+	virtual VectorXs getLowerBound() override
 	{
 		size_t discreteInd = 0;
 		size_t constraintSize = 0;
@@ -325,7 +326,7 @@ public:
 		return discreteLowerBound_;
 	}
 
-	virtual Eigen::VectorXd getUpperBound() override
+	virtual VectorXs getUpperBound() override
 	{
 		size_t discreteInd = 0;
 		size_t constraintSize = 0;
@@ -363,22 +364,22 @@ public:
 
 
 private:
-	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
-	std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner_;
-	std::shared_ptr<TimeGrid> timeGrid_; 
+	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w_;
+	std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner_;
+	std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid_; 
 	size_t N_;
 
-	std::vector<std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM>>> constraints_;
+	std::vector<std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>>> constraints_;
 	
 	size_t constraintsCount_;
 	size_t constraintsIntermediateCount_;
 	size_t constraintsTerminalCount_;
 
-	Eigen::VectorXd discreteConstraints_;
-	Eigen::VectorXd discreteLowerBound_;
-	Eigen::VectorXd discreteUpperBound_;
+	VectorXs discreteConstraints_;
+	VectorXs discreteLowerBound_;
+	VectorXs discreteUpperBound_;
 
-	Eigen::VectorXd discreteJac_;
+	VectorXs discreteJac_;
 	Eigen::VectorXi discreteIRow_;
 	Eigen::VectorXi discreteJCol_;
 

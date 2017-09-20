@@ -1,17 +1,35 @@
-// #define MATLAB
+/***********************************************************************************
+Copyright (c) 2016, Agile & Dexterous Robotics Lab, ETH ZURICH. All rights reserved.
 
-/*
- * TODO: FIXME -- bring back Matlab interface
- * */
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+      to endorse or promote products derived from this software without specific
+      prior written permission.
 
-#include <cstring>
-#include <iostream>
-#include <memory>
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************************/
 
-#include <ct/optcon/dms/Dms>
 #include <ct/optcon/optcon.h>
 
 #include "oscDMSTest_settings.h"
+
+#ifdef MATLAB
+#include <ct/optcon/matlab.hpp>
+#endif
 
 
 namespace ct{
@@ -42,7 +60,6 @@ public:
 		settings_.h_min_ = 0.1; // minimum admissible distance between two nodes in [sec]
 		settings_.integrationType_ = DmsSettings::RK4;
 		settings_.dt_sim_ = 0.01;
-		settings_.integrateSens_ = 1;
 		settings_.absErrTol_ = 1e-8;
 		settings_.relErrTol_ = 1e-8;
 	}
@@ -100,11 +117,12 @@ public:
 
 
 #ifdef MATLAB
-		MatlabInterface mi(matlabPathIPOPT_);
-		mi.sendMultiDimTrajectoryToMatlab<OscDimensions::state_vector_array_t>(stateSolutionIpopt, 2, "stateDmsIpopt");
-		mi.sendMultiDimTrajectoryToMatlab<OscDimensions::control_vector_array_t>(inputSolutionIpopt, 1, "inputDmsIpopt");
-		// mi.sendMultiDimTrajectoryToMatlab<OscDimensions::time_array_t>(timeSolutionIpopt, 1, "timeDmsIpopt");
-		mi.sendScalarArrayToMatlab(timeSolutionIpopt, "timeDmsIpopt");
+		matlab::MatFile matFile;
+		matFile.open(matlabPathIPOPT_);
+		matFile.put("stateDmsIpopt", stateSolutionIpopt.toImplementation());
+		matFile.put("inputDmsIpopt", inputSolutionIpopt.toImplementation());
+		matFile.put("timeDmsIpopt", timeSolutionIpopt.toEigenTrajectory());
+		matFile.close();
 #endif //MATLAB
 
 	}
@@ -144,10 +162,12 @@ public:
 		timeSolutionSnopt = solutionPolicy_.tSolution_;
 
 #ifdef MATLAB
-		MatlabInterface mi(matlabPathSNOPT_);
-		mi.sendMultiDimTrajectoryToMatlab<OscDimensions::state_vector_array_t>(stateSolutionSnopt, 2, "stateDmsSnopt");
-		mi.sendMultiDimTrajectoryToMatlab<OscDimensions::control_vector_array_t>(inputSolutionSnopt, 1, "inputDmsSnopt");
-		mi.sendScalarArrayToMatlab(timeSolutionSnopt, "timeDmsSnopt");
+		matlab::MatFile matFile;
+		matFile.open(matlabPathSNOPT_);
+		matFile.put("stateDmsSnopt", stateSolutionSnopt.toImplementation());
+		matFile.put("inputDmsSnopt", inputSolutionSnopt.toImplementation());
+		matFile.put("timeDmsSnopt", timeSolutionSnopt.toEigenTrajectory());
+		matFile.close();
 #endif //MATLAB
 	}
 

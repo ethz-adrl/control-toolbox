@@ -31,7 +31,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct {
 namespace optcon {
-namespace tpl {
 
 /**
  * @ingroup    Constraint
@@ -42,13 +41,16 @@ namespace tpl {
  * @tparam     CONTROL_DIM  The control dimension
  * @tparam     SCALAR       The Scalar type
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class TerminalConstraint : public ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
 	typedef ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+
 	typedef Eigen::Matrix<int, Eigen::Dynamic, 1> VectorXi;
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
@@ -58,14 +60,14 @@ public:
 	 *
 	 * @param[in]  xf    The desired terminal state
 	 */
-	TerminalConstraint(const core::StateVector<STATE_DIM> xf)
+	TerminalConstraint(const core::StateVector<STATE_DIM, SCALAR> xf)
 	{
-		xF_ = xf.template cast<SCALAR>();
+		xF_ = xf;
 		Base::lb_.resize(STATE_DIM);
 		Base::ub_.resize(STATE_DIM);
 		// The terminal state constraint is treated as equality constraint, therefore, ub = lb
-		Base::lb_.setConstant(0.0);
-		Base::ub_.setConstant(0.0);
+		Base::lb_.setConstant(SCALAR(0.0));
+		Base::ub_.setConstant(SCALAR(0.0));
 	}
 
 	virtual TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
@@ -83,19 +85,27 @@ public:
 		return STATE_DIM;
 	}
 
-	virtual Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR t) override
+	virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
 		return x - xF_;
 	}
 
-	virtual Eigen::MatrixXd jacobianState(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override
+	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t) override
 	{
-		return Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Identity();
+		return x - xF_.template cast<ct::core::ADCGScalar>();
 	}
 
-	virtual Eigen::MatrixXd jacobianInput(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override
+	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
-		return Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>::Zero();
+		return Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>::Identity();
+	}
+
+	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
+	{
+		return Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM>::Zero();
 	}
 
 	virtual size_t getNumNonZerosJacobianState() const
@@ -107,9 +117,9 @@ public:
 		return 0;
 	}
 
-	virtual Eigen::VectorXd jacobianStateSparse(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) override
+	virtual VectorXs jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
-		return core::StateVector<STATE_DIM>::Ones();
+		return core::StateVector<STATE_DIM, SCALAR>::Ones();
 	}
 
 	virtual void sparsityPatternState(VectorXi& rows, VectorXi& cols) override
@@ -121,11 +131,6 @@ public:
 private:
 	core::StateVector<STATE_DIM, SCALAR> xF_;
 };
-
-}
-
-template<size_t STATE_DIM, size_t INPUT_DIM>
-using TerminalConstraint = tpl::TerminalConstraint<STATE_DIM, INPUT_DIM, double>;
 
 }
 }

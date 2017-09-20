@@ -41,16 +41,17 @@ namespace optcon {
  * @tparam     STATE_DIM    The state dimension
  * @tparam     CONTROL_DIM  The input dimension
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class InitStateConstraint : public DiscreteConstraintBase
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class InitStateConstraint : public tpl::DiscreteConstraintBase<SCALAR>
 {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	typedef DmsDimensions<STATE_DIM, CONTROL_DIM> DIMENSIONS;
+	typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
 
-	typedef DiscreteConstraintBase BASE;
+	typedef tpl::DiscreteConstraintBase<SCALAR> BASE;
 	typedef typename DIMENSIONS::state_vector_t state_vector_t;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 	
 	/**
 	 * @brief      Default constructor
@@ -65,14 +66,14 @@ public:
 	 */
 	InitStateConstraint(
 		const state_vector_t& x0,
-		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w
+		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w
 		)
 	:
 		w_(w),
 		x_0_(x0)
 	{
-		lb_.setConstant(0.0);
-		ub_.setConstant(0.0);
+		lb_.setConstant(SCALAR(0.0));
+		ub_.setConstant(SCALAR(0.0));
 	}
 
 	/**
@@ -82,12 +83,12 @@ public:
 	 */
 	void updateConstraint(const state_vector_t& x0) {x_0_ = x0;}
 
-	virtual Eigen::VectorXd eval() override
+	virtual VectorXs eval() override
 	{
 		return w_->getOptimizedState(0) - x_0_;
 	}
 
-	virtual Eigen::VectorXd evalSparseJacobian() override
+	virtual VectorXs evalSparseJacobian() override
 	{
 		return state_vector_t::Ones();
 	}
@@ -103,12 +104,12 @@ public:
 		indexNumber += BASE::genDiagonalIndices(w_->getStateIndex(0), STATE_DIM, iRow_vec, jCol_vec, indexNumber);
 	}
 
-	virtual Eigen::VectorXd getLowerBound() override
+	virtual VectorXs getLowerBound() override
 	{
 		return lb_;
 	}
 
-	virtual Eigen::VectorXd getUpperBound() override
+	virtual VectorXs getUpperBound() override
 	{
 		return ub_;
 	}
@@ -119,7 +120,7 @@ public:
 	}
 
 private:
-	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
+	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w_;
 	state_vector_t x_0_;
 
 	//Constraint bounds

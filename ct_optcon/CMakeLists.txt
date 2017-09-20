@@ -107,8 +107,6 @@ if(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
     set(IPOPT_LIBS ipopt dl coinmumps coinhsl lapack blas gfortran
         m quadmath coinmetis)
         
-    set(CT_IPOPT_LIBS ct_ipopt_interface)
-
 endif(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
 
 
@@ -126,7 +124,7 @@ if(DEFINED ENV{SNOPT_SOURCE_DIR})
     set(CT_SNOPT_LIBS ct_snopt_interface)
 endif(DEFINED ENV{SNOPT_SOURCE_DIR})
 
-set(NLP_LIBS ${CT_IPOPT_LIBS} ${CT_SNOPT_LIBS})
+set(NLP_LIBS ${IPOPT_LIBS} ${CT_SNOPT_LIBS})
 
 include_directories(
     ${EIGEN_INCLUDE_DIRS} 
@@ -163,7 +161,7 @@ catkin_package(
    LIBRARIES
         lapack 
         dl
-        ${NLP_LIBS}
+        ${CT_SNOPT_LIBS}
         ${HPIPM_LIBRARY}
         ${BLASFEO_LIBRARY}
    CATKIN_DEPENDS
@@ -173,11 +171,6 @@ catkin_package(
 if(BUILD_WITH_SNOPT_SUPPORT)
     add_library(ct_snopt_interface src/nlp/solver/SnoptSolver.cpp)
     target_link_libraries(ct_snopt_interface ${catkin_LIBRARIES} ${SNOPT_LIBS})
-endif()
-
-if(BUILD_WITH_IPOPT_SUPPORT)
-    add_library(ct_ipopt_interface src/nlp/solver/IpoptSolver.cpp)
-    target_link_libraries(ct_ipopt_interface ${catkin_LIBRARIES} ${IPOPT_LIBS})
 endif()
 
 
@@ -263,9 +256,9 @@ target_link_libraries(bareTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS} dl
 
 add_executable(matFilesGenerator test/dms/oscillator/matfiles/matFilesGenerator.cpp)
 target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-
-add_executable(timeKeeperTest test/mpc/TimeKeeperTest.cpp)
-target_link_libraries(timeKeeperTest ${catkin_LIBRARIES})
+#
+#add_executable(timeKeeperTest test/mpc/TimeKeeperTest.cpp)
+#target_link_libraries(timeKeeperTest ${catkin_LIBRARIES})
 
 get_filename_component(MPC_TEST_MAT_DIR "test/mpc/matfiles" ABSOLUTE)
 configure_file(test/mpc/mpcTestSettings.h.in test/mpc/mpcTestSettings.h)

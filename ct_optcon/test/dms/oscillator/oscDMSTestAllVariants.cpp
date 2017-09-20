@@ -23,24 +23,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#include <cstring>
-#include <iostream>
-#include <memory>
-
-#include <ct/optcon/dms/Dms>
-#include <ct/optcon/costfunction/CostFunctionQuadraticSimple.hpp>
-
+#include <ct/optcon/optcon.h>
 #include <gtest/gtest.h>
-#include <ct/core/core.h>
-
-
-#include <ct/optcon/problem/OptConProblem.h>
-#include <ct/optcon/dms/dms_core/DmsSolver.h>
-#include <ct/optcon/dms/dms_core/DmsSettings.h>
-#include <ct/optcon/nlp/solver/NlpSolverSettings.h>
-
-#include <ct/optcon/constraint/term/TerminalConstraint.h>
-#include <ct/optcon/constraint/ConstraintContainerAnalytical.h> 
 
 namespace ct{
 namespace optcon{
@@ -165,7 +149,6 @@ TEST(DmsTest, OscillatorDmsTestAllVariants)
 			settings.h_min_ = 0.1;
 			settings.integrationType_ = DmsSettings::RK4;
 			settings.dt_sim_ = 0.01;
-			settings.integrateSens_ =  static_cast<DmsSettings::IntegrationType>(1);
 			settings.absErrTol_ = 1e-6;
 			settings.relErrTol_ = 1e-6;
 

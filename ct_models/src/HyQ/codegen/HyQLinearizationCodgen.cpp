@@ -48,7 +48,7 @@ const size_t njoints = HyQSystemAD::Kinematics::NJOINTS;
 
 void generateInverseDynamics()
 {
-	typedef ct::core::DerivativesCppad<state_dim+18, control_dim+6> JacCG;
+	typedef ct::core::DerivativesCppadCG<state_dim+18, control_dim+6> JacCG;
 	typename JacCG::FUN_TYPE_CG f = ct::models::HyQ::hyqInverseDynamics<SCALAR>;
 	JacCG jacCG(f);
 
@@ -66,7 +66,7 @@ void generateInverseDynamics()
 
 void generateForwardKinematics()
 {
-	typedef ct::core::DerivativesCppad<state_dim, 4*6> JacCG;
+	typedef ct::core::DerivativesCppadCG<state_dim, 4*6> JacCG;
 	typename JacCG::FUN_TYPE_CG f = ct::models::HyQ::hyqForwardKinematics<SCALAR>;
 	JacCG jacCG(f);
 
@@ -84,7 +84,7 @@ void generateForwardKinematics()
 
 void generateForwardZeroForwardDynamics()
 {
-	typedef ct::core::DerivativesCppad<state_dim+control_dim + 1, state_dim> JacCG;
+	typedef ct::core::DerivativesCppadCG<state_dim+control_dim + 1, state_dim> JacCG;
 	// Eigen::Matrix<SCALAR, state_dim + control_dim + 1, 1> testInput = Eigen::Matrix<SCALAR, state_dim + control_dim + 1, 1>::Random();
 	// auto asd = ct::models::HyQ::hyqContactModelForwardDynamics<SCALAR>(testInput);
 	typename JacCG::FUN_TYPE_CG f = ct::models::HyQ::hyqContactModelForwardDynamics<SCALAR>;

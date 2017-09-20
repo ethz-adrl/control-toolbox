@@ -54,14 +54,14 @@ namespace optcon {
  * @tparam     STATE_DIM    The state dimension
  * @tparam     CONTROL_DIM  The control dimension
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class CostEvaluatorSimple : public DiscreteCostEvaluatorBase
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class CostEvaluatorSimple : public tpl::DiscreteCostEvaluatorBase<SCALAR>
 {
 public:
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef DmsDimensions<STATE_DIM, CONTROL_DIM> DIMENSIONS;
+	typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
 
 	typedef typename DIMENSIONS::state_vector_t state_vector_t;
 	typedef typename DIMENSIONS::control_vector_t control_vector_t;
@@ -77,9 +77,9 @@ public:
 	 * @param[in]  settings  The dms settings
 	 */
 	CostEvaluatorSimple(
-			std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct,
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
-			std::shared_ptr<TimeGrid> timeGrid,
+			std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct,
+			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
+			std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
 			DmsSettings settings):
 				costFct_(costFct),
 				w_(w),
@@ -93,9 +93,9 @@ public:
 
 	virtual ~CostEvaluatorSimple(){}
 
-	virtual double eval() override;
+	virtual SCALAR eval() override;
 
-	virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::VectorXd>& grad) override;
+	virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>& grad) override;
 
 private:
 
@@ -104,21 +104,21 @@ private:
 	 */
 	void updatePhi();
 
-	std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>> costFct_;
-	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
-	std::shared_ptr<TimeGrid> timeGrid_;
+	std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct_;
+	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w_;
+	std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid_;
 	const DmsSettings settings_;
-	Eigen::VectorXd phi_; /* the summation weights */
+	Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> phi_; /* the summation weights */
 	// Eigen::VectorXd phi_diff_h_; /* the summation weights for derivative w.r.t h */
 };
 
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-double CostEvaluatorSimple<STATE_DIM, CONTROL_DIM>::eval()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+SCALAR CostEvaluatorSimple<STATE_DIM, CONTROL_DIM, SCALAR>::eval()
 {
 	// updatePhi();
-	double cost = 0.0;
+	SCALAR cost = SCALAR(0.0);
 	
 	for (size_t i = 0; i < settings_.N_ + 1; ++i)
 	{
@@ -134,8 +134,8 @@ double CostEvaluatorSimple<STATE_DIM, CONTROL_DIM>::eval()
 
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void CostEvaluatorSimple<STATE_DIM, CONTROL_DIM>::evalGradient(size_t grad_length, Eigen::Map<Eigen::VectorXd>& grad)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void CostEvaluatorSimple<STATE_DIM, CONTROL_DIM, SCALAR>::evalGradient(size_t grad_length, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>& grad)
 {
 	// updatePhi();
 	grad.setZero();
@@ -172,8 +172,8 @@ void CostEvaluatorSimple<STATE_DIM, CONTROL_DIM>::evalGradient(size_t grad_lengt
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void CostEvaluatorSimple<STATE_DIM, CONTROL_DIM>::updatePhi()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void CostEvaluatorSimple<STATE_DIM, CONTROL_DIM, SCALAR>::updatePhi()
 	{
 		switch (settings_.splineType_)
 		{
@@ -182,17 +182,17 @@ void CostEvaluatorSimple<STATE_DIM, CONTROL_DIM>::updatePhi()
 				for(size_t i = 0; i < settings_.N_; i++)
 					phi_(i) = (timeGrid_->getShotDuration(i));
 
-				phi_(settings_.N_) = 0.0;
+				phi_(settings_.N_) = SCALAR(0.0);
 				break;
 			}
 			case DmsSettings::PIECEWISE_LINEAR:
 			{
-				phi_(0) = 0.5 * (timeGrid_->getShotDuration(0));
+				phi_(0) = SCALAR(0.5) * (timeGrid_->getShotDuration(0));
 
 				for(size_t i = 1; i < settings_.N_; i++)
-					phi_(i) = 0.5 * (timeGrid_->getShotEndTime(i) - timeGrid_->getShotStartTime(i-1));
+					phi_(i) = SCALAR(0.5) * (timeGrid_->getShotEndTime(i) - timeGrid_->getShotStartTime(i-1));
 
-				phi_(settings_.N_) = 0.5 * (timeGrid_->getShotDuration(settings_.N_));
+				phi_(settings_.N_) = SCALAR(0.5) * (timeGrid_->getShotDuration(settings_.N_));
 				break;
 
 			}

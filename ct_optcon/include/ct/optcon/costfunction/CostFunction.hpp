@@ -98,7 +98,7 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	virtual void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const SCALAR& t = 0.0) {
+	virtual void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const SCALAR& t = SCALAR(0.0)) {
 		x_ = x;
 		u_ = u;
 		t_ = t + t_shift_;

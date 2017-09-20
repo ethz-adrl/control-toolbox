@@ -12,7 +12,8 @@ const size_t inDim = 3; //!< dimension of x
 const size_t outDim = 2; //!< dimension of y
 
 //! the Jacobian codegen class
-typedef DerivativesCppad<inDim, outDim> derivativesCppad;
+typedef DerivativesCppadJIT<inDim, outDim> derivativesCppadJIT;
+typedef DerivativesCppadCG<inDim, outDim> derivativesCppadCG;
 
 /*!
  * A general vector-valued function.
@@ -69,13 +70,16 @@ TEST(JacobianCGTest, JITCompilationTest)
 {
 	try {
 		// create a function handle (also works for class methods, lambdas, function pointers, ...)
-		typename derivativesCppad::FUN_TYPE_CG f = testFunction<derivativesCppad::CG_SCALAR>;
+		typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
 
 		// initialize the Auto-Diff Codegen Jacobian
-		derivativesCppad jacCG(f);
+		derivativesCppadJIT jacCG(f);
+
+		DerivativesCppadSettings settings;
+		settings.createJacobian_ = true;
 
 		// compile the Jacobian
-		jacCG.compileJIT("jacobianCGLib");
+		jacCG.compileJIT(settings, "jacobianCGLib");
 
 		// create an input vector
 		Eigen::Matrix<double, inDim, 1> x;
@@ -100,11 +104,14 @@ TEST(HessianCGTest, JITHessianTest)
 {
 	try
 	{
-		typename derivativesCppad::FUN_TYPE_CG f = testFunction<derivativesCppad::CG_SCALAR>;
+		typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
 
-		derivativesCppad hessianCg(f);
+		derivativesCppadJIT hessianCg(f);
 
-		hessianCg.compileJIT("hessianCGLib");
+		DerivativesCppadSettings settings;
+		settings.createHessian_ = true;		
+
+		hessianCg.compileJIT(settings, "hessianCGLib");
 
 		Eigen::Matrix<double, inDim, 1> x;
 		Eigen::Matrix<double, outDim, 1> w;
@@ -132,10 +139,10 @@ TEST(HessianCGTest, JITHessianTest)
 TEST(JacobianCGTest, CodegenTest)
 {
 	// create a function handle (also works for class methods, lambdas, function pointers, ...)
-	typename derivativesCppad::FUN_TYPE_CG f = testFunction<derivativesCppad::CG_SCALAR>;
+	typename derivativesCppadCG::FUN_TYPE_CG f = testFunction<derivativesCppadCG::CG_SCALAR>;
 
 	// initialize the Auto-Diff Codegen Jacobian
-	derivativesCppad jacCG(f);
+	derivativesCppadCG jacCG(f);
 
 	// generate code for the Jacobian, similar to jacobianCheck()
 	jacCG.generateJacobianSource("TestJacobian");

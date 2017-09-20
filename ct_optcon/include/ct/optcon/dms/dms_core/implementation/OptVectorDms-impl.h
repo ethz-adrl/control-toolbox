@@ -27,9 +27,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct {
 namespace optcon { 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-OptVectorDms<STATE_DIM, CONTROL_DIM>::OptVectorDms(size_t n, const DmsSettings& settings) :
-		OptVector(n),
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::OptVectorDms(size_t n, const DmsSettings& settings) :
+		tpl::OptVector<SCALAR>(n),
 		settings_(settings),
 		numPairs_(settings.N_+1)
 {	
@@ -59,30 +59,30 @@ OptVectorDms<STATE_DIM, CONTROL_DIM>::OptVectorDms(size_t n, const DmsSettings& 
 
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename DmsDimensions<STATE_DIM, CONTROL_DIM>::state_vector_t OptVectorDms<STATE_DIM, CONTROL_DIM>::getOptimizedState(const size_t pairNum) const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getOptimizedState(const size_t pairNum) const
 {
 	size_t index = getStateIndex(pairNum);
-	return (x_.segment(index , STATE_DIM));
+	return (this->x_.segment(index , STATE_DIM));
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename DmsDimensions<STATE_DIM, CONTROL_DIM>::control_vector_t OptVectorDms<STATE_DIM, CONTROL_DIM>::getOptimizedControl(const size_t pairNum) const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getOptimizedControl(const size_t pairNum) const
 {
 	size_t index = getControlIndex(pairNum);
-	return (x_.segment(index, CONTROL_DIM));
+	return (this->x_.segment(index, CONTROL_DIM));
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-double OptVectorDms<STATE_DIM, CONTROL_DIM>::getOptimizedTimeSegment(const size_t pairNum) const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+SCALAR OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getOptimizedTimeSegment(const size_t pairNum) const
 {
 	size_t index = getTimeSegmentIndex(pairNum);
 	// std::cout << "x_(index) : " << x_(index) << std::endl;
-	return x_(index);
+	return this->x_(index);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-const typename DmsDimensions<STATE_DIM, CONTROL_DIM>::state_vector_array_t& OptVectorDms<STATE_DIM, CONTROL_DIM>::getOptimizedStates()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+const typename DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_array_t& OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getOptimizedStates()
 {
 	stateSolution_.clear();
 	for(size_t i = 0 ; i < numPairs_ ; i++ )
@@ -93,8 +93,8 @@ const typename DmsDimensions<STATE_DIM, CONTROL_DIM>::state_vector_array_t& OptV
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-const typename DmsDimensions<STATE_DIM, CONTROL_DIM>::control_vector_array_t& OptVectorDms<STATE_DIM, CONTROL_DIM>::getOptimizedInputs()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+const typename DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_array_t& OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getOptimizedInputs()
 {
 	inputSolution_.clear();
 	for(size_t i = 0 ; i < numPairs_ ; i++ )
@@ -103,8 +103,8 @@ const typename DmsDimensions<STATE_DIM, CONTROL_DIM>::control_vector_array_t& Op
 	return inputSolution_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-const Eigen::VectorXd& OptVectorDms<STATE_DIM, CONTROL_DIM>::getOptimizedTimeSegments()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+const Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>& OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getOptimizedTimeSegments()
 {
 	for(size_t i = 0; i < numPairs_ - 1; ++i)
 		optimizedTimeSegments_(i) = getOptimizedTimeSegment(i);
@@ -113,41 +113,41 @@ const Eigen::VectorXd& OptVectorDms<STATE_DIM, CONTROL_DIM>::getOptimizedTimeSeg
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-size_t OptVectorDms<STATE_DIM, CONTROL_DIM>::getStateIndex(const size_t pairNum) const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+size_t OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getStateIndex(const size_t pairNum) const
 {
 	return pairNumToStateIdx_.find(pairNum)->second;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-size_t OptVectorDms<STATE_DIM, CONTROL_DIM>::getControlIndex(const size_t pairNum) const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+size_t OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getControlIndex(const size_t pairNum) const
 {
 	return pairNumToControlIdx_.find(pairNum)->second;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-size_t OptVectorDms<STATE_DIM, CONTROL_DIM>::getTimeSegmentIndex(const size_t shotNr) const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+size_t OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getTimeSegmentIndex(const size_t shotNr) const
 {
 	return (shotNumToShotDurationIdx_.find(shotNr)->second);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void OptVectorDms<STATE_DIM, CONTROL_DIM>::changeInitialState(const state_vector_t& x0)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::changeInitialState(const state_vector_t& x0)
 {
 	size_t s_index = getStateIndex(0);
-	x_.segment(s_index, STATE_DIM) = x0;
+	this->x_.segment(s_index, STATE_DIM) = x0;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void OptVectorDms<STATE_DIM, CONTROL_DIM>::changeDesiredState(const state_vector_t& xF)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::changeDesiredState(const state_vector_t& xF)
 {
 	size_t s_index = pairNumToStateIdx_.find(settings_.N_)->second;
-	x_.segment(s_index , STATE_DIM) = xF;
+	this->x_.segment(s_index , STATE_DIM) = xF;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void OptVectorDms<STATE_DIM, CONTROL_DIM>::setInitGuess(const state_vector_t& x0, const state_vector_t& x_f, const control_vector_t& u0)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::setInitGuess(const state_vector_t& x0, const state_vector_t& x_f, const control_vector_t& u0)
 {
 	size_t type = 1; // 0 = constant init guess, 1 = linearly interpolated between x0 and x_f
 
@@ -161,14 +161,14 @@ void OptVectorDms<STATE_DIM, CONTROL_DIM>::setInitGuess(const state_vector_t& x0
 		{
 		case 0:
 		{
-			x_.segment(s_index , STATE_DIM) = x0;
+			this->xInit_.segment(s_index , STATE_DIM) = x0;
 			break;
 		}
 		case 1:
-			x_.segment(s_index , STATE_DIM) = x0+(x_f-x0)*(i/(numPairs_-1));
+			this->xInit_.segment(s_index , STATE_DIM) = x0+(x_f-x0)*(i/(numPairs_-1));
 				break;
 		}
-		x_.segment(q_index , CONTROL_DIM) = u0;
+		this->xInit_.segment(q_index , CONTROL_DIM) = u0;
 	}
 
 	// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
@@ -182,8 +182,8 @@ void OptVectorDms<STATE_DIM, CONTROL_DIM>::setInitGuess(const state_vector_t& x0
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void OptVectorDms<STATE_DIM, CONTROL_DIM>::setInitGuess(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::setInitGuess(
 	const state_vector_array_t& x_init, 
 	const control_vector_array_t& u_init)
 {
@@ -195,8 +195,8 @@ void OptVectorDms<STATE_DIM, CONTROL_DIM>::setInitGuess(
 			size_t s_index = getStateIndex(i);
 			size_t q_index = getControlIndex(i);
 
-			x_.segment(s_index , STATE_DIM) = x_init[i];
-			x_.segment(q_index , CONTROL_DIM) = u_init[i];
+			this->xInit_.segment(s_index , STATE_DIM) = x_init[i];
+			this->xInit_.segment(q_index , CONTROL_DIM) = u_init[i];
 		}
 
 		// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
@@ -212,23 +212,23 @@ void OptVectorDms<STATE_DIM, CONTROL_DIM>::setInitGuess(
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void OptVectorDms<STATE_DIM, CONTROL_DIM>::setLowerTimeSegmentBounds()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::setLowerTimeSegmentBounds()
 {
 	for (size_t i = 0; i< numPairs_ - 1; i++)
 	{
 		size_t h_index = shotNumToShotDurationIdx_.find(i)->second;
-		Eigen::Matrix<double, 1, 1> newElement;
+		Eigen::Matrix<SCALAR, 1, 1> newElement;
 		newElement(0,0) = settings_.h_min_ ;
-		xLb_.segment(h_index, 1) = newElement; //0.0;
+		this->xLb_.segment(h_index, 1) = newElement; //0.0;
 		newElement(0,0) = 0.5;
-		xUb_.segment(h_index, 1) = newElement;
+		this->xUb_.segment(h_index, 1) = newElement;
 	}
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void OptVectorDms<STATE_DIM, CONTROL_DIM>::printoutSolution()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::printoutSolution()
 {
 	std::cout << "... printing solutions: " << std::endl;
 	std::cout << "x_solution"<< std::endl;
@@ -244,7 +244,7 @@ void OptVectorDms<STATE_DIM, CONTROL_DIM>::printoutSolution()
 	}
 
 	std::cout << "t_solution"<< std::endl;
-	const Eigen::VectorXd& t_sol = getOptimizedTimeSegments();
+	const Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>& t_sol = getOptimizedTimeSegments();
 	for(size_t i =0; i<t_sol.size(); ++i){
 		std::cout << t_sol[i] << "  ";
 	}

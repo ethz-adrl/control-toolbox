@@ -132,7 +132,7 @@ void SnoptSolver::fill_memory(SnoptMemory* mem) const
 	MapVecXi jGVecGrad	(mem->jGvar_, 	n_);
 	MapVecXi jGVecJac	(&mem->jGvar_[n_], nlp_->getNonZeroJacobianCount());
 
-	nlp_->getOptimizationVars(n_, xVec);
+	nlp_->getInitialGuess(n_, xVec);
 	nlp_->getVariableBounds(x_lVec, x_uVec, n_);
 	nlp_->getOptimizationMultState(n_, xMulVec, xStateVec);
 
@@ -150,7 +150,7 @@ void SnoptSolver::fill_memory(SnoptMemory* mem) const
 	jGVecFull.setZero();
 
 	jGVecGrad = Eigen::VectorXi::LinSpaced(n_, 0, n_ - 1);
-	nlp_->getSparsityPattern(nlp_->getNonZeroJacobianCount(), iGVecJac, jGVecJac);
+	nlp_->getSparsityPatternJacobian(nlp_->getNonZeroJacobianCount(), iGVecJac, jGVecJac);
 	iGVecJac += Eigen::VectorXi::Ones(nlp_->getNonZeroJacobianCount());
 
 }
@@ -213,6 +213,8 @@ void SnoptSolver::setSolverOptions()
 
 bool SnoptSolver::solve()
 {
+	if(!this->isInitialized_)
+		throw std::runtime_error("SNOPT was not initialized before. Call NLPSolver->configure()");
 
 	snoptApp_.setUserI(&(memoryPtr_->memind), 1);
 	std::cout << "Ready to solve... " << std::endl;

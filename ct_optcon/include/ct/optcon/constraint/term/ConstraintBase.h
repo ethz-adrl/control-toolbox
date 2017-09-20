@@ -34,7 +34,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct {
 namespace optcon {
-namespace tpl {
 
 /**
  * @ingroup    Constraint
@@ -45,11 +44,17 @@ namespace tpl {
  * @tparam     CONTROL_DIM  The control dimension
  * @tparam     SCALAR     The Scalar type
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class ConstraintBase {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
+
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs; 
 
 	/**
 	 * @brief      Custom constructor
@@ -93,11 +98,11 @@ public:
 	 *
 	 * @return     The constraint violation
 	 */
-	virtual Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR t) = 0;
+	virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) = 0;
 
 	/**
-	 * @brief      This method evaluates to constraint violation. This method
-	 *             should only be called by the analytical constraint container
+	 * @brief      The evaluate method used for jit compilation in constraint
+	 *             container ad
 	 *
 	 * @param[in]  x     The state vector
 	 * @param[in]  u     The control vector
@@ -105,10 +110,14 @@ public:
 	 *
 	 * @return     The constraint violation
 	 */
-	Eigen::VectorXd eval(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t)
+	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t)
 	{
-		return evaluate(x, u, t);
+		throw std::runtime_error("Term " + name_ + " has no Implementation of evaluateCppaCg.");
 	}
+
 
 	/**
 	 * @brief      Returns the number of constraints
@@ -123,7 +132,7 @@ public:
 	 *
 	 * @return     The constraint jacobian
 	 */
-	virtual Eigen::MatrixXd jacobianState(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) 
+	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) 
 	{ 
 		throw std::runtime_error("This constraint function element is not implemented for the given term."
 		"Please use either auto-diff cost function or implement the analytical derivatives manually."); 
@@ -134,7 +143,7 @@ public:
 	 *
 	 * @return     The constraint jacobian
 	 */
-	virtual Eigen::MatrixXd jacobianInput(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t) 
+	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) 
 	{ 
 		throw std::runtime_error("This constraint function element is not implemented for the given term." 
 		"Please use either auto-diff cost function or implement the analytical derivatives manually."); 
@@ -145,7 +154,7 @@ public:
 	 *
 	 * @return     The lower constraint bound
 	 */
-	virtual Eigen::VectorXd getLowerBound() const
+	virtual VectorXs getLowerBound() const
 	{
 		return lb_;
 	}
@@ -155,7 +164,7 @@ public:
 	 *
 	 * @return     The upper constraint bound
 	 */
-	virtual Eigen::VectorXd getUpperBound() const
+	virtual VectorXs getUpperBound() const
 	{
 		return ub_;
 	}
@@ -205,11 +214,11 @@ public:
 	 *
 	 * @return     The sparse constraint jacobian
 	 */
-	virtual Eigen::VectorXd jacobianStateSparse(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t)
+	virtual VectorXs jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 	{
-		Eigen::MatrixXd jacState = jacobianState(x, u, t);
+		MatrixXs jacState = jacobianState(x, u, t);
 
-		Eigen::VectorXd jac(Eigen::Map<Eigen::VectorXd>(jacState.data(), jacState.rows() * jacState.cols()));
+		VectorXs jac(Eigen::Map<VectorXs>(jacState.data(), jacState.rows() * jacState.cols()));
 
 		return jac;
 	}
@@ -221,11 +230,11 @@ public:
 	 *
 	 * @return     The sparse constraint jacobian
 	 */
-	virtual Eigen::VectorXd jacobianInputSparse(const Eigen::Matrix<double, STATE_DIM, 1> &x, const Eigen::Matrix<double, CONTROL_DIM, 1> &u, const double t)
+	virtual VectorXs jacobianInputSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 	{
-		Eigen::MatrixXd jacInput = jacobianInput(x, u, t);
+		MatrixXs jacInput = jacobianInput(x, u, t);
 
-		Eigen::VectorXd jac(Eigen::Map<Eigen::VectorXd>(jacInput.data(), jacInput.rows() * jacInput.cols()));
+		VectorXs jac(Eigen::Map<VectorXs>(jacInput.data(), jacInput.rows() * jacInput.cols()));
 		return jac;
 	}
 
@@ -263,8 +272,8 @@ public:
 
 
 protected:
-	Eigen::VectorXd lb_; // lower bound on the constraints
-	Eigen::VectorXd ub_; // upper bound on the constraints
+	VectorXs lb_; // lower bound on the constraints
+	VectorXs ub_; // upper bound on the constraints
 
 	/**
 	 * @brief      Generates indices of a diagonal square matrix
@@ -325,11 +334,6 @@ private:
 	std::string name_;
 
 };
-
-} // namespace tpl
-
-template<size_t STATE_DIM, size_t CONTROL_DIM>
-using ConstraintBase = tpl::ConstraintBase<STATE_DIM, CONTROL_DIM, double>;
 
 } // namespace optcon
 } // namespace ct

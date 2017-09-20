@@ -38,7 +38,7 @@ class OscillatorDms
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef CppAD::AD<CppAD::cg::CG<double> > ScalarCG;
+	typedef ct::core::ADCGScalar ScalarCG;
 
 	typedef DmsDimensions<2,1> OscDimensions;
 
@@ -58,6 +58,9 @@ public:
 		settings_.print();
 
 		oscillator_ = std::shared_ptr<ct::core::SecondOrderSystem> (new ct::core::SecondOrderSystem(w_n_, zeta_));
+		std::shared_ptr<ct::core::tpl::SecondOrderSystem<ScalarCG> > oscillatorCG(
+			new ct::core::tpl::SecondOrderSystem<ScalarCG>(ScalarCG(w_n_), ScalarCG(zeta_)));
+
 		x_0_ << 0.0,0.0;
 		x_final_ << 2.0, -1.0;
 		Q_ << 	0.0,0.0,
@@ -72,6 +75,11 @@ public:
 		costFunction_ = std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1>> 
 				(new ct::optcon::CostFunctionQuadraticSimple<2,1>(Q_, R_, x_final_, u_des_, x_final_, Q_final_));
 
+		std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1, ScalarCG>> costFunctionCG(
+			new ct::optcon::CostFunctionQuadraticSimple<2, 1, ScalarCG>(Q_.cast<ScalarCG>(), R_.cast<ScalarCG>(), 
+				x_final_.cast<ScalarCG>(), u_des_.cast<ScalarCG>(), 
+				x_final_.cast<ScalarCG>(), Q_final_.cast<ScalarCG>()));		
+
 		stateInputConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2,1>>
 				(new ct::optcon::ConstraintContainerAnalytical<2,1>() );
 
@@ -80,6 +88,9 @@ public:
 
 		pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>
 				(new ct::optcon::ConstraintContainerAnalytical<2, 1>());
+
+		std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1, ScalarCG>> pureStateConstraintsCG(
+		new ct::optcon::ConstraintContainerAnalytical<2, 1, ScalarCG>());		
 
 		std::shared_ptr<TerminalConstraint<2,1>> termConstraint(new TerminalConstraint<2,1>(x_final_));
 		core::StateVector<2> xLow;
@@ -95,14 +106,18 @@ public:
 		std::shared_ptr<ControlInputConstraint<2,1>> inputConstraint(new ControlInputConstraint<2,1>(uLow, uHigh));
 		std::shared_ptr<StateConstraint<2,1>> stateConstraint(new StateConstraint<2,1>(xLow, xHigh));
 
-		std::shared_ptr<optcon::tpl::StateConstraint<2, 1, ScalarCG>> stateConstraintAd(
-			new optcon::tpl::StateConstraint<2, 1, ScalarCG>(xLow, xHigh));
-		std::shared_ptr<optcon::tpl::ControlInputConstraint<2, 1, ScalarCG>> inputConstraintAd(
-			new optcon::tpl::ControlInputConstraint<2, 1, ScalarCG> (uLow, uHigh));
-		std::shared_ptr<optcon::tpl::TerminalConstraint<2,1, ScalarCG>> termConstraintAd(
-			new optcon::tpl::TerminalConstraint<2,1, ScalarCG>(x_final_));
+		std::shared_ptr<optcon::StateConstraint<2, 1>> stateConstraintAd(
+			new optcon::StateConstraint<2, 1>(xLow, xHigh));
+		std::shared_ptr<optcon::ControlInputConstraint<2, 1>> inputConstraintAd(
+			new optcon::ControlInputConstraint<2, 1> (uLow, uHigh));
+		std::shared_ptr<optcon::TerminalConstraint<2,1>> termConstraintAd(
+			new optcon::TerminalConstraint<2,1>(x_final_));
+
+		std::shared_ptr<optcon::TerminalConstraint<2,1, ScalarCG>> termConstraintCG(
+			new optcon::TerminalConstraint<2,1, ScalarCG>(x_final_.template cast<ScalarCG>()));
 
 		termConstraint->setName("TerminalConstraint");
+		termConstraintCG->setName("TerminalConstraintCG");
 		stateConstraint->setName("StateConstraint");
 		inputConstraint->setName("ControlInputConstraint");
 	
@@ -115,17 +130,25 @@ public:
 		stateInputConstraintsAd_->addTerminalConstraint(termConstraintAd, true);
 
 		pureStateConstraints_->addTerminalConstraint(termConstraint, true);
+		pureStateConstraintsCG->addTerminalConstraint(termConstraintCG, true);
 		stateInputConstraints_->addIntermediateConstraint(inputConstraint, true);
 		stateInputConstraints_->addIntermediateConstraint(stateConstraint, true);
 
 		OptConProblem<2,1> optProblem(oscillator_, costFunction_);
 		optProblem.setInitialState(x_0_);
 		optProblem.setTimeHorizon(settings_.T_);
-		optProblem.setStateInputConstraints(stateInputConstraints_);
+		// optProblem.setStateInputConstraints(stateInputConstraints_);
 		optProblem.setPureStateConstraints(pureStateConstraints_);
+
+
+	    OptConProblem<2,1, ScalarCG> optProblemCG(oscillatorCG, costFunctionCG);
+	    optProblemCG.setInitialState(x_0_.template cast<ScalarCG>());
+	    optProblemCG.setTimeHorizon(ScalarCG(settings.T_));
+	    optProblemCG.setPureStateConstraints(pureStateConstraintsCG); 		
 
 		calcInitGuess();
 		dmsPlanner_ = std::shared_ptr<DmsSolver<2,1>> (new DmsSolver<2,1>(optProblem, settings_));
+		dmsPlanner_->generateAndCompileCode(optProblemCG, settings_.cppadSettings_);
 		dmsPlanner_->setInitialGuess(initialPolicy_);
 	}
 
@@ -183,7 +206,7 @@ void runTests()
 	for(int solverType = 0; solverType < NlpSolverSettings::SolverType::num_types_solver; solverType++)
 	{
 		int splineType = 0;
-		int costEvalT = 1;
+		int costEvalT = 0;
 		int optGrid = 0;
 		int integrateSensitivity = 1;
 		
@@ -199,14 +222,25 @@ void runTests()
 		settings.costEvaluationType_ =  static_cast<DmsSettings::CostEvaluationType>(costEvalT);	// SIMPLE, FULL
 		settings.objectiveType_ = static_cast<DmsSettings::ObjectiveType>(optGrid);	// keep grid, opt. grid
 		settings.h_min_ = 0.1;
-		settings.integrationType_ = DmsSettings::RK4;
+		settings.integrationType_ = DmsSettings::EULER;
 		settings.dt_sim_ = 0.2;
-		settings.integrateSens_ =  static_cast<DmsSettings::IntegrationType>(integrateSensitivity);
 		settings.absErrTol_ = 1e-6;
 		settings.relErrTol_ = 1e-6;
 
+		ct::core::DerivativesCppadSettings cppadSettings;
+		cppadSettings.createSparseJacobian_ = true;
+		cppadSettings.createSparseHessian_ = true;
+		cppadSettings.createForwardZero_ = true;
+
 		NlpSolverSettings nlpsettings;
 		nlpsettings.solverType_ = static_cast<NlpSolverSettings::SolverType>(solverType);	// IPOPT, SNOPT
+	    nlpsettings.useGeneratedCostGradient_ = true;
+	    nlpsettings.useGeneratedConstraintJacobian_ = true;
+	    nlpsettings.ipoptSettings_.hessian_approximation_ = "exact";
+	    nlpsettings.ipoptSettings_.derivativeTest_ = "none";
+	   	// nlpsettings.ipoptSettings_.hessian_approximation_ = "limited-memory";
+
+	    settings.cppadSettings_ = cppadSettings;                                                                             	
 		settings.solverSettings_ = nlpsettings;
 
 		OscillatorDms oscDms;

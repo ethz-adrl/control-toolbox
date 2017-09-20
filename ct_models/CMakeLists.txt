@@ -109,8 +109,8 @@ if (BUILD_HYQ_LINEARIZATION_TIMINGS)
 endif(BUILD_HYQ_LINEARIZATION_TIMINGS)
 
 ################ HyA #################
-add_executable(HyALinearizationCodegen src/HyA/codegen/HyALinearizationCodeGen.cpp)
-target_link_libraries(HyALinearizationCodegen ${catkin_LIBRARIES})
+#add_executable(HyALinearizationCodegen src/HyA/codegen/HyALinearizationCodeGen.cpp)
+#target_link_libraries(HyALinearizationCodegen ${catkin_LIBRARIES})
 
 add_library(HyALinearizedForward include/ct/models/HyA/codegen/HyALinearizedForward.cpp)
 target_link_libraries(HyALinearizedForward ${catkin_LIBRARIES} )

@@ -38,7 +38,7 @@ namespace optcon {
  *
  * @tparam     T     The vector type which will be splined
  */
-template<class T>
+template<class T, typename SCALAR = double>
 class SplinerBase{
 public:
 
@@ -55,7 +55,7 @@ public:
 	virtual ~SplinerBase(){};
 
 	typedef T vector_t;
-	typedef Eigen::Matrix<double, T::DIM, T::DIM> matrix_t;
+	typedef Eigen::Matrix<SCALAR, T::DIM, T::DIM> matrix_t;
 	typedef std::vector<vector_t, Eigen::aligned_allocator<vector_t>> vector_array_t;
 
 
@@ -75,7 +75,7 @@ public:
 	 *
 	 * @return     The splined vector
 	 */
-	virtual vector_t evalSpline (const double time, const size_t shotIdx) = 0;
+	virtual vector_t evalSpline (const SCALAR time, const size_t shotIdx) = 0;
 
 	/**
 	 * @brief      Returns the spline derivatives with respect to time
@@ -85,7 +85,7 @@ public:
 	 *
 	 * @return     The time derivative
 	 */
-	virtual vector_t splineDerivative_t (const double time,  const size_t shotIdx) const = 0;
+	virtual vector_t splineDerivative_t (const SCALAR time,  const size_t shotIdx) const = 0;
 
 	/**
 	 * @brief      Returns the spline derivatives with respect to the time
@@ -96,7 +96,7 @@ public:
 	 *
 	 * @return     The resulting derivative
 	 */
-	virtual vector_t splineDerivative_h_i(const double time, const size_t shotIdx) const = 0;
+	virtual vector_t splineDerivative_h_i(const SCALAR time, const size_t shotIdx) const = 0;
 
 	/**
 	 * @brief      Return the spline derivative with respect to the control
@@ -107,7 +107,7 @@ public:
 	 *
 	 * @return     The resulting derivative
 	 */
-	virtual matrix_t splineDerivative_q_i (const double time,  const size_t shotIdx) const = 0;
+	virtual matrix_t splineDerivative_q_i (const SCALAR time,  const size_t shotIdx) const = 0;
 
 	/**
 	 * @brief      Returns the spline derivative with respect to the control
@@ -118,7 +118,7 @@ public:
 	 *
 	 * @return     The resulting derivative
 	 */
-	virtual matrix_t splineDerivative_q_iplus1(const double time,  const size_t shotIdx) const = 0;
+	virtual matrix_t splineDerivative_q_iplus1(const SCALAR time,  const size_t shotIdx) const = 0;
 
 };
 

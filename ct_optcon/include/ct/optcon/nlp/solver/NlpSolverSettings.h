@@ -42,7 +42,7 @@ namespace optcon {
 class SnoptSettings
 {
 public: 
-
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	/**
 	 * @brief      Default constructor, sets the parameters to default values
 	 */
@@ -120,6 +120,9 @@ public:
 
         minor_iteration_limit_param_ = pt.get<unsigned int>(ns + ".MaxMinorIterations");
         major_iteration_limit_param_ = pt.get<unsigned int>(ns + ".MaxMajorIterations");
+        minor_print_level_param_ = pt.get<unsigned int>(ns + ".MinorPrintLevelVerbosity");
+        major_print_level_param_ = pt.get<unsigned int>(ns + ".MajorPrintLevelVerbosity");
+        major_optimality_tolerance_param_ = pt.get<double>(ns + ".OptimalityTolerance");
     }
 
 };
@@ -140,7 +143,7 @@ public:
 	IpoptSettings() : 
 	tol_(1e-8),
 	constr_viol_tol_(1e-4),
-	max_iter_(3000),
+	max_iter_(200),
 	restoTol_(1e-7),
 	acceptableTol_(1e-6),
 	restoAcceptableTol_( 1e-7),
@@ -151,7 +154,7 @@ public:
 	print_user_options_("no"),
 	print_frequency_iter_(1),
 	printInfoString_("no"),
-	derivativeTest_("first-order"),
+	derivativeTest_("none"),
 	derivativeTestTol_(1e-4),
 	derivativeTestPerturbation_(1e-8),
 	point_perturbation_radius_(10),
@@ -191,6 +194,7 @@ public:
 	void print()
 	{
         std::cout << "IPOPT SETTINGS: " << std::endl;
+        std::cout << "Using " << hessian_approximation_ << " hessian approximation" << std::endl;
         std::cout << "MaxIterations: " << max_iter_ << std::endl;
 	}
 
@@ -221,6 +225,14 @@ public:
             derivativeTest_ = "first-order";
         if(!checkDerivatives)
             derivativeTest_ = "none";
+        bool exactHessian = pt.get<bool>(ns + ".ExactHessian");
+        if(exactHessian)
+            hessian_approximation_ = "exact";
+        if(!exactHessian)
+            hessian_approximation_ = "limited-memory";
+
+        printLevel_ = pt.get<unsigned int>(ns + ".Verbosity");
+        tol_ = pt.get<double>(ns + ".OptimalityTolerance");
     }
 
 };
@@ -239,10 +251,14 @@ public:
 	 * @brief      Default constructor, set default settings
 	 */
 	NlpSolverSettings() :
-	solverType_(IPOPT)
+	solverType_(IPOPT),
+    useGeneratedCostGradient_(false),
+    useGeneratedConstraintJacobian_(false)
 	{}
 
     SolverType_t solverType_;
+    bool useGeneratedCostGradient_;
+    bool useGeneratedConstraintJacobian_;
     SnoptSettings snoptSettings_;
     IpoptSettings ipoptSettings_;
 
@@ -256,6 +272,15 @@ public:
         std::cout<<"============================================================="<<std::endl;
 
     	std::cout << "Using nlp solver: " << solverToString[solverType_] << std::endl;
+        if(useGeneratedCostGradient_)
+            std::cout << "Using generated Cost Gradient" << std::endl;
+        else
+            std::cout << "Using analytical cost Gradient" << std::endl;
+        if(useGeneratedConstraintJacobian_)
+            std::cout << "Using generated Constraints Jacobian" << std::endl;
+        else
+            std::cout << "Using anlyitical Constraints Jacobian" << std::endl;
+
     	if(solverType_ == IPOPT)
     		ipoptSettings_.print();
     	else if(solverType_ == SNOPT)
@@ -290,6 +315,8 @@ public:
 		boost::property_tree::read_info(filename, pt);
 
         solverType_ = (SolverType) pt.get<unsigned int>(ns + ".SolverType");
+        useGeneratedCostGradient_ = pt.get<bool>(ns + ".UseGeneratedCostGradient");
+        useGeneratedConstraintJacobian_ = pt.get<bool>(ns + ".UseGeneratedConstraintJacobian");
 
 		if(solverType_ == IPOPT)
 			ipoptSettings_.load(filename, verbose, ns + ".ipopt");

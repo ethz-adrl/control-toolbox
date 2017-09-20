@@ -42,6 +42,8 @@ class ScalarArray : public DiscreteArray<SCALAR>
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+	typedef std::vector<Eigen::Matrix<SCALAR, 1, 1>, Eigen::aligned_allocator<Eigen::Matrix<SCALAR, 1, 1>>> EigenTraj;
+
 	//! default constructor
 	ScalarArray() {};
 
@@ -68,9 +70,15 @@ public:
 	//! destructor
 	virtual ~ScalarArray(){}
 
+	void fromEigenTrajectory(const EigenTraj in)
+	{
+		for(auto el : in)
+			this->push_back(el(0,0));
+	}	
+
 	//! convert to an Eigen trajectory
-	std::vector<Eigen::Matrix<SCALAR, 1, 1>, Eigen::aligned_allocator<Eigen::Matrix<SCALAR, 1, 1>>> toEigenTrajectory(){
-		std::vector<Eigen::Matrix<SCALAR, 1, 1>, Eigen::aligned_allocator<Eigen::Matrix<SCALAR, 1, 1>>> eigenTraj;
+	EigenTraj toEigenTrajectory(){
+		EigenTraj eigenTraj;
 		for(size_t i = 0; i<this->size(); i++){
 			Eigen::Matrix<SCALAR, 1, 1> newElement;
 			newElement(0,0) = (*this)[i];

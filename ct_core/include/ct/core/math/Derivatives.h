@@ -83,6 +83,35 @@ public:
     }
 
     /**
+     * @brief      Returns the evaluated jacobian in sparse format
+     *
+     * @param[in]  x     The point of evaluation
+     * @param[out]      jac   The non zero values of the jacobian
+     * @param[out]      iRow  The row indices of the non zero values
+     * @param[out]      jCol  The column indices of the non zero values
+     */
+    virtual void sparseJacobian(
+        const Eigen::VectorXd& x,
+        Eigen::VectorXd& jac,
+        Eigen::VectorXi& iRow,
+        Eigen::VectorXi& jCol)
+    {
+        throw std::runtime_error("SPARSE JACOBIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
+    }
+
+    /**
+     * @brief      Returns the non zero values of the jacobian
+     *
+     * @param[in]  x     The point of evaluation
+     *
+     * @return     The non zeros values of the jacobian
+     */
+    virtual Eigen::VectorXd sparseJacobianValues(const Eigen::VectorXd& x)
+    {
+        throw std::runtime_error("SPARSE JACOBIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
+    }    
+
+    /**
      * @brief      Evaluates the hessian (2nd order derivatives with respect to
      *             input) of the method. In case of a vector valued function,
      *             the method returns the weighted sum of the hessians with
@@ -98,6 +127,40 @@ public:
         throw std::runtime_error("HESSIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
     }
 
+    /**
+     * @brief      Returns the weighted sum of hessian of the problem in sparse
+     *             format
+     *
+     * @param[in]  x       The point of evaluation
+     * @param[in]  lambda  The weights of the sum of the hessian
+     * @param      hes     The non zero values of the hessian
+     * @param      iRow    The row indices of the non zero values
+     * @param      jCol    The column indices of the non zero values
+     */
+    virtual void sparseHessian(
+        const Eigen::VectorXd& x,
+        const Eigen::VectorXd& lambda,
+        Eigen::VectorXd& hes,
+        Eigen::VectorXi& iRow,
+        Eigen::VectorXi& jCol)
+    {
+        throw std::runtime_error("SPARSE HESSIAN NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
+    }
+
+    /**
+     * @brief      Returns the non zero elements of the hessian of the problem
+     *
+     * @param[in]  x       The point of evaluation
+     * @param[in]  lambda  The weights of the sum of the hessian
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual Eigen::VectorXd sparseHessianValues(
+        const Eigen::VectorXd& x, 
+        const Eigen::VectorXd& lambda)
+    {
+        throw std::runtime_error("SPARSE HESSIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
+    }
 };
 
 } /* namespace core */

@@ -42,14 +42,15 @@ namespace optcon {
  * @tparam     STATE_DIM    The state dimension
  * @tparam     CONTROL_DIM  The input dimension
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class TimeHorizonEqualityConstraint : public DiscreteConstraintBase
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class TimeHorizonEqualityConstraint : public tpl::DiscreteConstraintBase<SCALAR>
 {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef DiscreteConstraintBase BASE;
+	typedef tpl::DiscreteConstraintBase<double> BASE;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 
 	/**
 	 * @brief      Default constructor
@@ -64,8 +65,8 @@ public:
 	 * @param[in]  settings  The dms settings
 	 */
 	TimeHorizonEqualityConstraint(
-		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w,
-		std::shared_ptr<TimeGrid> timeGrid,
+		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
+		std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
 		DmsSettings settings
 		):
 		w_(w),
@@ -73,24 +74,24 @@ public:
 		settings_(settings)
 	{
 		// lower bound is number of shot times the lower bound for each interval h
-		lb_ << (settings_.N_ * settings_.h_min_ - settings_.T_);
-		ub_ << 0.0;
+		lb_ << SCALAR(settings_.N_ * settings_.h_min_ - settings_.T_);
+		ub_ << SCALAR(0.0);
 
-		std::cout << " ... time horizon lower bound: " << settings_.T_ + lb_ << std::endl;
-		std::cout << " ... time horizon upper bound: " << settings_.T_ + ub_ << std::endl;
+		std::cout << " ... time horizon lower bound: " << SCALAR(settings_.T_ + lb_(0)) << std::endl;
+		std::cout << " ... time horizon upper bound: " << SCALAR(settings_.T_ + ub_(0)) << std::endl;
 	}
 
-	virtual Eigen::VectorXd eval() override
+	virtual VectorXs eval() override
 	{
-		Eigen::Matrix<double, 1, 1> mat;
-		mat << (timeGrid_->getOptimizedTimeHorizon() - settings_.T_);
+		Eigen::Matrix<SCALAR, 1, 1> mat;
+		mat << SCALAR(timeGrid_->getOptimizedTimeHorizon() - settings_.T_);
 		return mat;
 	}	
 
-	virtual Eigen::VectorXd evalSparseJacobian() override
+	virtual VectorXs evalSparseJacobian() override
 	{
-		Eigen::VectorXd one(settings_.N_);
-		one.setConstant(1.0);
+		VectorXs one(settings_.N_);
+		one.setConstant(SCALAR(1.0));
 		return one;
 	}
 
@@ -108,12 +109,12 @@ public:
 		}
 	}
 
-	virtual Eigen::VectorXd getLowerBound() override
+	virtual VectorXs getLowerBound() override
 	{
 		return lb_;
 	}
 
-	virtual Eigen::VectorXd getUpperBound() override
+	virtual VectorXs getUpperBound() override
 	{
 		return ub_;
 	}
@@ -124,13 +125,13 @@ public:
 	}
 
 private:
-	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM>> w_;
-	std::shared_ptr<TimeGrid> timeGrid_;
+	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w_;
+	std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid_;
 	DmsSettings settings_;
 
 	//Constraint bounds
-	Eigen::Matrix<double, 1, 1> lb_;
-	Eigen::Matrix<double, 1, 1> ub_;
+	Eigen::Matrix<SCALAR, 1, 1> lb_;
+	Eigen::Matrix<SCALAR, 1, 1> ub_;
 };
 
 } // namespace optcon

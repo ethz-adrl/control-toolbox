@@ -38,6 +38,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct {
 namespace optcon {
+namespace tpl{
 
 /**
  * @ingroup    DMS
@@ -47,6 +48,7 @@ namespace optcon {
  *
  * We assume that starting time t_0 = 0.0 [sec]
  */
+template <typename SCALAR>
 class TimeGrid
 {
 public:
@@ -60,10 +62,10 @@ public:
 	 * @param[in]  numberOfShots  The number of shots
 	 * @param[in]  timeHorizon    The dms time horizon
 	 */
-	TimeGrid(const size_t numberOfShots, const double timeHorizon):
+	TimeGrid(const size_t numberOfShots, const SCALAR timeHorizon):
 	numberOfShots_(numberOfShots),
 	timeHorizon_(timeHorizon),
-	t_(numberOfShots + 1, 0.0)
+	t_(numberOfShots + 1, SCALAR(0.0))
 	{
 		makeUniformGrid();
 	}
@@ -77,7 +79,7 @@ public:
 	{
 		numberOfShots_ = numberOfShots;
 		t_.clear();
-		t_.resize(numberOfShots_ + 1, 0.0);
+		t_.resize(numberOfShots_ + 1, SCALAR(0.0));
 		makeUniformGrid();
 	}
 
@@ -86,7 +88,7 @@ public:
 	 *
 	 * @param[in]  timeHorizon  The new time horizon
 	 */
-	void changeTimeHorizon(const double timeHorizon)
+	void changeTimeHorizon(const SCALAR timeHorizon)
 	{
 		timeHorizon_ = timeHorizon;
 		makeUniformGrid();
@@ -102,16 +104,16 @@ public:
 	 *
 	 * @param[in]  h_segment  The vector of the new optimized time segments
 	 */
-	void updateTimeGrid(const Eigen::VectorXd& h_segment)
+	void updateTimeGrid(const Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>& h_segment)
 	{
-		t_[0] = 0.0; //by convention (just for documentation)
+		t_[0] = SCALAR(0.0); //by convention (just for documentation)
 
 		for(size_t i = 0; i < (size_t) h_segment.size(); ++i)
 			t_[i+1] = t_[i] + h_segment(i);
 
 #ifdef DEBUG_TIMEGRID
 		std::cout << " ... in updateTimeGrid(). t_ =  ";
-		for(size_t i = 0; i<t_.size(); i++)
+		for(size_t i = 0; i < t_.size(); i++)
 			std::cout << std::setprecision (10) <<t_[i] << "  ";
 
 		std::cout << std::endl;
@@ -125,7 +127,7 @@ public:
 	void makeUniformGrid()
 	{
 		for (size_t i = 0; i < numberOfShots_ + 1; i++)
-			t_[i]	= i * (double)(timeHorizon_/ (double)numberOfShots_);
+			t_[i]	= i * (SCALAR)(timeHorizon_/ (SCALAR)numberOfShots_);
 	}
 
 
@@ -136,7 +138,7 @@ public:
 	 *
 	 * @return     The start time
 	 */
-	const ct::core::Time getShotStartTime(const size_t shot_index) const{
+	const SCALAR getShotStartTime(const size_t shot_index) const{
 		return t_[shot_index];
 	}
 
@@ -147,7 +149,7 @@ public:
 	 *
 	 * @return     The end time
 	 */
-	const ct::core::Time getShotEndTime(const size_t shot_index) const{
+	const SCALAR getShotEndTime(const size_t shot_index) const{
 		return t_[shot_index+1];
 	}
 
@@ -158,7 +160,7 @@ public:
 	 *
 	 * @return     The duration
 	 */
-	const ct::core::Time getShotDuration(const size_t shot_index) const{
+	const SCALAR getShotDuration(const size_t shot_index) const{
 		return (t_[shot_index+1]-t_[shot_index]);
 	}
 
@@ -167,7 +169,7 @@ public:
 	 *
 	 * @return     The underlying TimeArray
 	 */
-	const ct::core::TimeArray& toImplementation()
+	const ct::core::tpl::TimeArray<SCALAR>& toImplementation()
 	{
 		return t_;
 	}
@@ -179,7 +181,7 @@ public:
 	 *
 	 * @return     The initial time horizon
 	 */
-	const ct::core::Time getTimeHorizon() const
+	const SCALAR getTimeHorizon() const
 	{
 		return timeHorizon_;
 	}
@@ -189,7 +191,7 @@ public:
 	 *
 	 * @return     The optimized timehorizon
 	 */
-	const ct::core::Time getOptimizedTimeHorizon() const
+	const SCALAR getOptimizedTimeHorizon() const
 	{
 		return t_.back();
 	}
@@ -197,11 +199,15 @@ public:
 
 private:
 	size_t numberOfShots_;
-	double timeHorizon_;
+	SCALAR timeHorizon_;
 
 	// the individual times of each pair from i=0,..., N
-	ct::core::TimeArray t_;
+	ct::core::tpl::TimeArray<SCALAR> t_;
 };
+
+}
+
+typedef tpl::TimeGrid<double> TimeGrid;
 
 } // namespace optcon
 } // namespace ct
