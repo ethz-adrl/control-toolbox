@@ -59,7 +59,15 @@ public:
 	} 
 
 	// to verify
-	virtual bool isActiveAtTime(const SCALAR t) override {
+	virtual bool isActiveAtTime(const SCALAR t) override 
+	{
+		return isActiveAtTimeSpecialized(t);
+	}
+
+	template<typename S = SCALAR>
+	typename std::enable_if<std::is_same<S, double>::value, bool>::type
+	isActiveAtTimeSpecialized(const SCALAR t)
+	{
 		bool active = false;
 		if(t >= period_offset_ && t < t_end_)
 		{
@@ -68,8 +76,15 @@ public:
 			if(t0norm >= activation_offset_ && t0norm < (activation_offset_ + active_percentage_ * period_))
 				active = true;
 		}
-		return active;
+		return active;		
 	}
+
+	template<typename S = SCALAR>
+	typename std::enable_if<!std::is_same<S, double>::value, bool>::type
+	isActiveAtTimeSpecialized(const SCALAR t)
+	{
+		return true;
+	}		
 
 	virtual SCALAR computeActivation(const SCALAR t) override { return SCALAR(1.0); }
 
