@@ -42,12 +42,10 @@ namespace optcon {
  * An example for using this term is given in unit test \ref TrackingTest.cpp
  *
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S = double, typename TIME_SCALAR = S>
-class TermQuadTracking : public TermBase<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR> {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class TermQuadTracking : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR> {
 
 public:
-	typedef S SCALAR;
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	
 	CT_OPTCON_DEFINE_TERM_TYPES
@@ -65,7 +63,7 @@ public:
 
 	virtual ~TermQuadTracking(){}
 	
-	TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>* clone () const override;
+	TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override;
 
 	void setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R);
 
@@ -73,22 +71,22 @@ public:
 			const core::StateTrajectory<STATE_DIM>& xTraj,
 			const core::ControlTrajectory<CONTROL_DIM>& uTraj);
 
-	S evaluate(const Eigen::Matrix<S, STATE_DIM, 1> &x, const Eigen::Matrix<S, CONTROL_DIM, 1> &u, const S& t) override;
+	SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
 	
-	core::StateVector<STATE_DIM, S> stateDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
+	core::StateVector<STATE_DIM, SCALAR> stateDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 
-	state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
+	state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 	
-	core::ControlVector<CONTROL_DIM, S> controlDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
+	core::ControlVector<CONTROL_DIM, SCALAR> controlDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 	
-	control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
+	control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 
-	control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
+	control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 	
 	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) override;
 
@@ -98,8 +96,8 @@ protected:
 	control_matrix_t R_;
 
 	// the reference trajectories to be tracked
-	ct::core::StateTrajectory<STATE_DIM> x_traj_ref_;
-	ct::core::ControlTrajectory<CONTROL_DIM> u_traj_ref_;
+	ct::core::StateTrajectory<STATE_DIM, SCALAR> x_traj_ref_;
+	ct::core::ControlTrajectory<CONTROL_DIM, SCALAR> u_traj_ref_;
 
 	// Option whether the control trajectory deviation shall be penalized or not
 	bool trackControlTrajectory_;

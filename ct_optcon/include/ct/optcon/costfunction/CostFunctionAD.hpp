@@ -27,8 +27,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCON_COSTFUNCTIONAD_HPP_
 #define CT_OPTCON_COSTFUNCTIONAD_HPP_
 
-#include <external/cppad/example/cppad_eigen.hpp>
-
+#include <ct/core/core.h>
 #include <memory>
 
 #include <boost/property_tree/ptree.hpp>
@@ -39,8 +38,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "utility/utilities.hpp"
 
 #include "term/TermsAnalytical.hpp"
-#include "term/TermsAD.hpp"
-
 
 namespace ct {
 namespace optcon {
@@ -56,20 +53,23 @@ namespace optcon {
  *
  * Unit test \ref ADTest.cpp illustrates the use of a CostFunctionAD.
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class CostFunctionAD : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM> {
-
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class CostFunctionAD : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> 	state_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> 	control_state_matrix_t;
+	typedef core::DerivativesCppadJIT<STATE_DIM + CONTROL_DIM + 1, 1> JacCG;
+	typedef typename JacCG::CG_SCALAR CGScalar;
+	typedef Eigen::Matrix<CGScalar, 1, 1> MatrixCg;
 
-	typedef core::StateVector<STATE_DIM> 	 state_vector_t;
-	typedef core::ControlVector<CONTROL_DIM> control_vector_t;
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> 	state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> 	control_state_matrix_t;
 
-	typedef TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>, double> TermBaseAD;
+	typedef core::StateVector<STATE_DIM, SCALAR> 	 state_vector_t;
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
 	/**
 	 * \brief Basic constructor
@@ -82,7 +82,7 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	CostFunctionAD(const state_vector_t &x, const control_vector_t &u, const double& t = 0.0);
+	CostFunctionAD(const state_vector_t &x, const control_vector_t &u, const SCALAR& t = 0.0);
 
 	/**
 	 * \brief Constructor loading function from file
@@ -97,7 +97,7 @@ public:
 	 * Deep-cloning of cost function
 	 * @return base pointer to clone
 	 */
-	CostFunctionAD<STATE_DIM, CONTROL_DIM>* clone () const {
+	CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const {
 		return new CostFunctionAD(*this);
 	}
 
@@ -123,6 +123,10 @@ public:
 	 */
 	void termChanged(size_t termId);
 
+	void updateIntermediateCosts();
+
+	void updateFinalCosts();
+
 	/**
 	 * \brief Add an intermediate, auto-differentiable term
 	 *
@@ -132,7 +136,7 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-	size_t addIntermediateTerm (std::shared_ptr< TermBaseAD > term, bool verbose = false);
+	size_t addIntermediateTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CGScalar>> term, bool verbose = false) override;
 
 	/**
 	 * \brief Add a final, auto-differentiable term
@@ -143,96 +147,45 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-	size_t addFinalTerm (std::shared_ptr< TermBaseAD > term, bool verbose = false);
+	size_t addFinalTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CGScalar>> term, bool verbose = false) override;
 
-	size_t addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term, bool verbose = false) override;
-	size_t addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term, bool verbose = false) override;
+	void setCurrentStateAndControl(const state_vector_t &x, const control_vector_t &u, const SCALAR& t = 0.0) override;
 
-	void setCurrentStateAndControl(const state_vector_t &x, const control_vector_t &u, const double& t = 0.0) override;
+	void loadFromConfigFile(const std::string& filename, bool verbose = false) override;
 
-	void loadFromConfigFile(const std::string& filename,bool verbose = false) override;
-
-	double evaluateIntermediate() override;
-	double evaluateTerminal() override;
+	SCALAR evaluateIntermediate() override;
+	SCALAR evaluateTerminal() override;
 
 	state_vector_t stateDerivativeIntermediate() override;
 	state_vector_t stateDerivativeTerminal()     override;
 
-	state_matrix_t stateSecondDerivativeIntermediate() override {return hessian_state_intermediate_;}
-	state_matrix_t stateSecondDerivativeTerminal()     override {return hessian_state_final_;}
-
 	control_vector_t controlDerivativeIntermediate() override;
 	control_vector_t controlDerivativeTerminal()     override;
 
-	control_matrix_t controlSecondDerivativeIntermediate() override {return hessian_control_intermediate_;}
-	control_matrix_t controlSecondDerivativeTerminal()     override {return hessian_control_final_;}
+	state_matrix_t stateSecondDerivativeIntermediate() override;
+	state_matrix_t stateSecondDerivativeTerminal()     override;
 
-	control_state_matrix_t stateControlDerivativeIntermediate() override {return hessian_control_state_intermediate_;}
-	control_state_matrix_t stateControlDerivativeTerminal()     override {return hessian_control_state_final_;}
+	control_matrix_t controlSecondDerivativeIntermediate() override;
+	control_matrix_t controlSecondDerivativeTerminal()     override;
+
+	control_state_matrix_t stateControlDerivativeIntermediate() override;
+	control_state_matrix_t stateControlDerivativeTerminal()     override;
 
 
 private:
-	//containers
-	std::vector<std::shared_ptr< TermBaseAD>> intermediateCostAD_; /** container holding intermediate AD terms **/
-	std::vector<std::shared_ptr< TermBaseAD>> finalCostAD_; /** container holding final AD terms **/
+	MatrixCg evaluateIntermediateCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput);
+	MatrixCg evaluateTerminalCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput);
 
-	//variables
-	Eigen::Matrix<double, Eigen::Dynamic, 1> var_; /** An auto-diff variable **/
+	std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CGScalar>>> intermediateTerms_;
+	std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CGScalar>>> finalTerms_;
 
-	// ADFun does not have a copy constructor. The copy constructor would be called though if we were to use a vector of AdFun directly.
-	// Hence, we use vectors of shared_ptrs...
-	std::vector<std::shared_ptr<CppAD::ADFun<double>>> intermediateFunctionAD_; /** AD expressions of each intermediate term **/
-	std::vector<std::shared_ptr<CppAD::ADFun<double>>> finalFunctionAD_; /** AD expressions of each final term **/
+	std::shared_ptr<JacCG> intermediateCostCodegen_;
+	std::shared_ptr<JacCG> finalCostCodegen_;
 
-	/**
-	 * \brief Records expression of an AD term
-	 * @param costAD The AD term
-	 * @param functionAD Expression (AD function)
-	 */
-	void recordTerm(const std::shared_ptr< TermBaseAD > &costAD, CppAD::ADFun<double>& functionAD);
+	typename JacCG::FUN_TYPE_CG intermediateFun_;
+	typename JacCG::FUN_TYPE_CG finalFun_;
 
-
-	double evaluateCost(std::vector<std::shared_ptr<TermBaseAD>>& termsAD,
-			std::vector<std::shared_ptr<CppAD::ADFun<double>>>& functionAD,
-			std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, double>>>& termsAnalytical);
-
-	/**
-	 * \brief Computing first order derivatives using reverse mode
-	 * @param f AD function to compute derivative of
-	 * @return Derivative (Jacobian)
-	 */
-	Eigen::Matrix<double, STATE_DIM + CONTROL_DIM +1, 1> Reverse1(CppAD::ADFun<double> &f);
-
-
-	/**
-	 * \brief Computing first order derivatives using reverse mode for a vector of terms
-	 * @param termsAD vector terms to compute derivative of
-	 * @param functionAD vector of AD functions to compute derivative of
-	 * @param result resulting derivative
-	 */
-	void reverseADTerms(std::vector< std::shared_ptr< TermBaseAD > > & termsAD,
-			std::vector<std::shared_ptr<CppAD::ADFun<double>>> &functionAD,
-			Eigen::Matrix<double, STATE_DIM + CONTROL_DIM +1, 1>& result);
-
-
-	void getHessians(std::vector<std::shared_ptr<TermBaseAD>>& termsAD,
-			std::vector<std::shared_ptr<CppAD::ADFun<double>>>& functionAD,
-			std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, double>>>& termsAnalytical,
-			Eigen::Matrix<double, STATE_DIM,   STATE_DIM>&   hessian_state_,
-			Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM>& hessian_control_,
-			Eigen::Matrix<double, CONTROL_DIM, STATE_DIM>&   hessian_control_state_);
-
-
-	Eigen::Matrix<double, STATE_DIM + CONTROL_DIM +1, 1> reverse1_derivative_intermediate_;
-	Eigen::Matrix<double, STATE_DIM + CONTROL_DIM +1, 1> reverse1_derivative_final_;
-
-	Eigen::Matrix<double, STATE_DIM,   STATE_DIM>   hessian_state_intermediate_;
-	Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> hessian_control_intermediate_;
-	Eigen::Matrix<double, CONTROL_DIM, STATE_DIM>   hessian_control_state_intermediate_;
-
-	Eigen::Matrix<double, STATE_DIM,   STATE_DIM>   hessian_state_final_;
-	Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> hessian_control_final_;
-	Eigen::Matrix<double, CONTROL_DIM, STATE_DIM>   hessian_control_state_final_;
+	Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM, 1> stateControlD_;
 
 };
 

@@ -40,12 +40,10 @@ namespace optcon {
  *
  *	An example for using this term is given in \ref CostFunctionTest.cpp
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S = double>
-class TermMixed : public TermBase<STATE_DIM, CONTROL_DIM, S> {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class TermMixed : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR> {
 
 public:
-	typedef S SCALAR;
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	
 	CT_OPTCON_DEFINE_TERM_TYPES
@@ -54,44 +52,44 @@ public:
 
 	TermMixed(const control_state_matrix_t& P);
 
-	TermMixed(const control_state_matrix_t& P, const core::StateVector<STATE_DIM, S>& x_ref, core::ControlVector<CONTROL_DIM, S>& u_ref);
+	TermMixed(const control_state_matrix_t& P, const core::StateVector<STATE_DIM, SCALAR>& x_ref, core::ControlVector<CONTROL_DIM, SCALAR>& u_ref);
 
 	TermMixed(const TermMixed& arg);
 
 	virtual ~TermMixed(){}
 	
-	TermMixed<STATE_DIM, CONTROL_DIM, S>* clone () const override;
+	TermMixed<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override;
 
 	void setWeights(const control_state_matrix_double_t& P);
 
 	void setStateAndControlReference(const core::StateVector<STATE_DIM>& x_ref, const core::ControlVector<CONTROL_DIM>& u_ref);
 
-	S evaluate(const Eigen::Matrix<S, STATE_DIM, 1> &x, const Eigen::Matrix<S, CONTROL_DIM, 1> &u, const S& t) override;
+	SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
 	
-	core::StateVector<STATE_DIM, S> stateDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
+	core::StateVector<STATE_DIM, SCALAR> stateDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 
-	state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
+	state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 	
-	core::ControlVector<CONTROL_DIM, S> controlDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
+	core::ControlVector<CONTROL_DIM, SCALAR> controlDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 	
-	control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
+	control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 
-	control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
+	control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 	
 	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) override;
 
-	void updateReferenceState (const Eigen::Matrix<S, STATE_DIM, 1>& newRefState) override{ x_ref_ = newRefState;}
+	void updateReferenceState (const Eigen::Matrix<SCALAR, STATE_DIM, 1>& newRefState) override{ x_ref_ = newRefState;}
 
 protected:
 	control_state_matrix_t P_;
 
-	core::StateVector<STATE_DIM, S> x_ref_;
-	core::ControlVector<CONTROL_DIM, S> u_ref_;
+	core::StateVector<STATE_DIM, SCALAR> x_ref_;
+	core::ControlVector<CONTROL_DIM, SCALAR> u_ref_;
 
 };
 

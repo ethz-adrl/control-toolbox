@@ -32,7 +32,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "costfunction/CostFunctionAD.hpp"
 #include "costfunction/CostFunctionAnalytical.hpp"
-#include "costfunction/CostFunctionQuadraticSimple.hpp"
 
 #include "constraint/constraint.h"
 

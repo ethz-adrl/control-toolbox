@@ -29,7 +29,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/costfunction/term/TermBase.hpp>
 #include <ct/costfunction/term/TermLinear.hpp>
 #include <ct/costfunction/term/TermQuadratic.hpp>
-#include <ct/costfunction/term/TermOther.hpp>
 
 
 /*!

@@ -24,168 +24,121 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-CostFunctionAD<STATE_DIM, CONTROL_DIM>::CostFunctionAD() :
-CostFunctionQuadratic<STATE_DIM, CONTROL_DIM> ()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD() :
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> ()
 {
-	var_.resize(STATE_DIM + CONTROL_DIM +1);
+	intermediateFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
+		return this->evaluateIntermediateCg(stateinput);	
+	};
+
+	finalFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
+		return this->evaluateTerminalCg(stateinput);	
+	};
+
+	intermediateCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(intermediateFun_, STATE_DIM + CONTROL_DIM, 1));
+	finalCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(finalFun_, STATE_DIM + CONTROL_DIM, 1));
+
 	setCurrentStateAndControl(this->x_, this->u_, this->t_);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-CostFunctionAD<STATE_DIM, CONTROL_DIM>::CostFunctionAD(const state_vector_t &x, const control_vector_t &u, const double& t) :
-CostFunctionQuadratic<STATE_DIM, CONTROL_DIM> (x,u, t)
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const state_vector_t &x, const control_vector_t &u, const SCALAR& t) :
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> (x,u, t)
 {
-	var_.resize(STATE_DIM + CONTROL_DIM +1);
-	setCurrentStateAndControl(x, u, this->t_);
+	intermediateFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
+		return this->evaluateIntermediateCg(stateinput);	
+	};
+
+	finalFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
+		return this->evaluateTerminalCg(stateinput);	
+	};
+
+	intermediateCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(intermediateFun_, STATE_DIM + CONTROL_DIM, 1));
+	finalCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(finalFun_, STATE_DIM + CONTROL_DIM, 1));
+
+	setCurrentStateAndControl(x, u, t);
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-CostFunctionAD<STATE_DIM, CONTROL_DIM>::CostFunctionAD(const CostFunctionAD& arg):
-CostFunctionQuadratic<STATE_DIM, CONTROL_DIM>(arg),
-var_(arg.var_),
-reverse1_derivative_intermediate_(arg.reverse1_derivative_intermediate_),
-reverse1_derivative_final_(arg.reverse1_derivative_final_),
-hessian_state_intermediate_(arg.hessian_state_intermediate_),
-hessian_control_intermediate_(arg.hessian_control_intermediate_),
-hessian_control_state_intermediate_(arg.hessian_control_state_intermediate_),
-hessian_state_final_(arg.hessian_state_final_),
-hessian_control_final_(arg.hessian_control_final_),
-hessian_control_state_final_(arg.hessian_control_state_final_)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const CostFunctionAD& arg):
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
+stateControlD_(arg.stateControlD_)
 {
-	intermediateCostAD_.resize(arg.intermediateCostAD_.size());
-	finalCostAD_.resize(arg.finalCostAD_.size());
+	intermediateTerms_.resize(arg.intermediateCostAD_.size());
+	finalTerms_.resize(arg.finalCostAD_.size());
 
-	// initialize with a vector of pointers to empty ADFun objects
-	intermediateFunctionAD_ = std::vector<std::shared_ptr<CppAD::ADFun<double>>> (
-			arg.intermediateFunctionAD_.size(), std::shared_ptr<CppAD::ADFun<double>> (new CppAD::ADFun<double> ()));
+	for(size_t i = 0; i < intermediateTerms_.size(); ++i)
+		intermediateTerms_[i] = std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CGScalar>> (arg.intermediateTerms_[i]->clone());
 
-	// initialize with a vector of pointers to empty ADFun objects
-	finalFunctionAD_ = std::vector<std::shared_ptr<CppAD::ADFun<double>>> (
-			arg.finalFunctionAD_.size(), std::shared_ptr<CppAD::ADFun<double>> (new CppAD::ADFun<double> ()));
+	for(size_t i = 0; i < finalTerms_.size(); ++i)
+		finalTerms_[i] = std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CGScalar>> (arg.finalTerms_[i]->clone());
 
-
-	for(size_t i = 0; i<arg.intermediateCostAD_.size(); i++)
-	{
-		intermediateCostAD_[i] = std::shared_ptr< TermBaseAD> (arg.intermediateCostAD_[i]->clone());
-	}
-
-	for(size_t i = 0; i<arg.finalCostAD_.size(); i++)
-	{
-		finalCostAD_[i] = std::shared_ptr< TermBaseAD> (arg.finalCostAD_[i]->clone());
-	}
-
-	for(size_t i = 0; i<arg.intermediateFunctionAD_.size(); i++)
-	{
-		// explicitly copy the elements, not the pointers!
-		*(intermediateFunctionAD_[i]) = *(arg.intermediateFunctionAD_[i]);
-	}
-
-	for(size_t i = 0; i<arg.finalCostAD_.size(); i++)
-	{
-		// explicitly copy the elements, not the pointers!
-
-		if(finalFunctionAD_[i] == nullptr)
-			throw std::runtime_error("is nullptr");
-
-		*(finalFunctionAD_[i]) = *(arg.finalFunctionAD_[i]);
-	}
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void CostFunctionAD<STATE_DIM, CONTROL_DIM>::termChanged(size_t termId) {
-	recordTerm(intermediateCostAD_[termId], *intermediateFunctionAD_[termId]);
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::termChanged(size_t termId) {
+
+	// recordTerm(intermediateCostAD_[termId], *intermediateFunctionAD_[termId]);
 }
 
-// add terms
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-size_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term, bool verbose)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+size_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CGScalar>> term, bool verbose)
 { 
-	this->intermediateCostAnalytical_.push_back(term);
-	if(verbose){
-		std::cout<<term->getName()+" added as intermediate term"<<std::endl;
-	}
+	intermediateTerms_.push_back(term);
 
-	return this->intermediateCostAnalytical_.size()-1;
-}
+	intermediateFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
+		return this->evaluateIntermediateCg(stateinput);	
+	};
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-size_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::addIntermediateTerm (std::shared_ptr< TermBaseAD > term, bool verbose)
-{ 
-	intermediateCostAD_.push_back(term);
-	intermediateFunctionAD_.push_back(std::shared_ptr<CppAD::ADFun<double>>(new CppAD::ADFun<double>));
-	recordTerm(intermediateCostAD_.back(), *intermediateFunctionAD_.back());
+	intermediateCostCodegen_->update(intermediateFun_, STATE_DIM + CONTROL_DIM, 1);
 
 	if(verbose){
 		std::cout<<term->getName()+" added as intermediate AD term"<<std::endl;
 	}
 
-	return intermediateCostAD_.size()-1;
+	return intermediateTerms_.size()-1;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-size_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term, bool verbose)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+size_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CGScalar>> term, bool verbose)
 { 
-	this->finalCostAnalytical_.push_back(term);
-	if(verbose){
-		std::cout<<term->getName()+"added as final term"<<std::endl;
-	}
+	finalTerms_.push_back(term);
 
-	return this->finalCostAnalytical_.size()-1;
-}
+	finalFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
+		return this->evaluateTerminalCg(stateinput);	
+	};
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-size_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::addFinalTerm (std::shared_ptr< TermBaseAD > term, bool verbose)
-{ 
-	finalCostAD_.push_back(term);
-
-	finalFunctionAD_.push_back(std::shared_ptr<CppAD::ADFun<double>>(new CppAD::ADFun<double>));
-	recordTerm(finalCostAD_.back(), *finalFunctionAD_.back());
+	finalCostCodegen_->update(finalFun_, STATE_DIM + CONTROL_DIM, 1);
 
 	if(verbose){
 		std::cout<<term->getName()+"added as final AD term"<<std::endl;
 	}
 
-	return finalCostAD_.size()-1;
+	return finalTerms_.size()-1;
 }
 
 // set state and control
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void CostFunctionAD<STATE_DIM, CONTROL_DIM>::setCurrentStateAndControl(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::setCurrentStateAndControl(
 		const state_vector_t &x,
 		const control_vector_t &u,
-		const double& t)
+		const SCALAR& t)
 {
 	this->x_ = x;
 	this->u_ = u;
 	this->t_ = t;
 
-	var_ << x, u, t;
-
-	// reset some previous results
-	reverse1_derivative_intermediate_.setZero();
-	reverse1_derivative_final_.setZero();
-
-	// perform calculations that are general - reverse terms for first derivatives
-	reverseADTerms(intermediateCostAD_, intermediateFunctionAD_, reverse1_derivative_intermediate_);
-	reverseADTerms(finalCostAD_, finalFunctionAD_, reverse1_derivative_final_);
-
-	// perform calculations that are general - get second derivatives
-	getHessians(intermediateCostAD_, intermediateFunctionAD_, this->intermediateCostAnalytical_,
-			hessian_state_intermediate_, hessian_control_intermediate_, hessian_control_state_intermediate_);
-
-	getHessians(finalCostAD_, finalFunctionAD_, this->finalCostAnalytical_,
-			hessian_state_final_, hessian_control_final_, hessian_control_state_final_);
+	stateControlD_ << x, u;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void CostFunctionAD<STATE_DIM, CONTROL_DIM>::loadFromConfigFile(const std::string& filename, bool verbose)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(const std::string& filename, bool verbose)
 {
-	var_.resize(STATE_DIM + CONTROL_DIM + 1);
-
 	this->intermediateCostAnalytical_.clear();
 	this->finalCostAnalytical_.clear();
 
@@ -210,20 +163,20 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM>::loadFromConfigFile(const std::strin
 			}
 		}
 
-		std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, double> > term;
-		std::shared_ptr< TermBaseAD > termAD;
+		std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term;
+		// std::shared_ptr< TermBaseAD > termAD;
 
-		CT_LOADABLE_TERMS_ANALYTICAL(double);
-		CT_LOADABLE_TERMS_AD;
+		CT_LOADABLE_TERMS_ANALYTICAL(SCALAR);
+		// CT_LOADABLE_TERMS_AD;
 
-		if(!term && !termAD){
+		if(!term){
 			throw std::runtime_error("Term type \""+ termKind+ "\" not supported");
 		} else
 		{
 			if (term)
 				addTerm(filename,currentTerm,currentTermType,term,this,verbose);
-			else if (termAD)
-				addTerm(filename,currentTerm,currentTermType,termAD,this,verbose);
+			// else if (termAD)
+			// 	addTerm(filename,currentTerm,currentTermType,termAD,this,verbose);
 			else
 				throw std::runtime_error("Term type \""+ termKind+ "\" loaded but unsupported.");
 		}
@@ -231,215 +184,118 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM>::loadFromConfigFile(const std::strin
 	} while(pt.find(currentTerm)!= pt.not_found());
 }
 
-
-// evaluate
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-double CostFunctionAD<STATE_DIM, CONTROL_DIM>::evaluateIntermediate()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixCg CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateIntermediateCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput)
 {
-	return evaluateCost(intermediateCostAD_, intermediateFunctionAD_, this->intermediateCostAnalytical_);
+	CGScalar y = CGScalar(0.0);
+		
+	for(auto it : intermediateTerms_)
+		y += it->eval(stateinput.segment(0,STATE_DIM), stateinput.segment(STATE_DIM, CONTROL_DIM), CGScalar(0.0));
+	
+	Eigen::Matrix<CGScalar, 1, 1> out; out << y;
+	return out;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-double CostFunctionAD<STATE_DIM, CONTROL_DIM>::evaluateTerminal()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixCg CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateTerminalCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput)
 {
-	return evaluateCost(finalCostAD_, finalFunctionAD_, this->finalCostAnalytical_);
+	CGScalar y = CGScalar(0.0);
+		
+	for(auto it : finalTerms_)
+		y += it->eval(stateinput.segment(0,STATE_DIM), stateinput.segment(STATE_DIM, CONTROL_DIM), CGScalar(0.0));
+	
+	Eigen::Matrix<CGScalar, 1, 1> out; out << y;
+	return out;
 }
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-double CostFunctionAD<STATE_DIM, CONTROL_DIM>::evaluateCost(
-		std::vector<std::shared_ptr<TermBaseAD>>& termsAD,
-		std::vector<std::shared_ptr<CppAD::ADFun<double>>>& functionAD,
-		std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, double>>>& termsAnalytical){
-
-	double cost = 0.0;
-
-	// analytical part of the cost
-	for(auto it : termsAnalytical)
-	{
-		if (!it->isActiveAtTime(this->t_)) { continue; }
-		cost += it->computeActivation(this->t_) * it->evaluate(this->x_, this->u_, this->t_);
-	}
-
-	// evaluate AD part of the cast via zero-order forward mode
-	for(size_t termsId = 0; termsId < termsAD.size(); termsId++) {
-		if (!termsAD[termsId]->isActiveAtTime(this->t_)) { continue; }
-		CppAD::AD<double> Y = functionAD[termsId]->Forward(0, var_)(0,0);
-		cost += termsAD[termsId]->computeActivation(this->t_) * CppAD::Value(Y);
-		// cost += termsAD[termsId]->CppAD::Value(Y);
-	}
-
-	return cost;
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionAD<STATE_DIM, CONTROL_DIM>::state_vector_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::stateDerivativeIntermediate()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+SCALAR CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateIntermediate()
 {
-	Eigen::Matrix<double, STATE_DIM, 1> derivative;
-	derivative.setZero();
-
-	for(auto it : this->intermediateCostAnalytical_)
-	{
-		if (!it->isActiveAtTime(this->t_)) { continue; }
-		derivative+= it->computeActivation(this->t_) * it->stateDerivative(this->x_, this->u_, this->t_);
-	}
-
-	// add AD part
-	derivative += reverse1_derivative_intermediate_.segment(0, STATE_DIM);
-
-	return derivative;
+	return intermediateCostCodegen_->forwardZero(stateControlD_);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionAD<STATE_DIM, CONTROL_DIM>::state_vector_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::stateDerivativeTerminal()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+SCALAR CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateTerminal()
 {
-	Eigen::Matrix<double, STATE_DIM, 1> derivative;
-	derivative.setZero();
-
-	for(auto it : this->finalCostAnalytical_)
-		derivative+= it->stateDerivative(this->x_, this->u_, this->t_);
-
-	// add AD part
-	derivative += reverse1_derivative_final_.segment(0, STATE_DIM);
-
-	return derivative;
+	return finalCostCodegen_->forwardZero(stateControlD_);
 }
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionAD<STATE_DIM, CONTROL_DIM>::control_vector_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::controlDerivativeIntermediate()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediate()
 {
-	Eigen::Matrix<double, CONTROL_DIM, 1> derivative;
-	derivative.setZero();
-
-	for(auto it : this->intermediateCostAnalytical_)
-	{
-		if (!it->isActiveAtTime(this->t_)) { continue; }
-		derivative+= it->computeActivation(this->t_) * it->controlDerivative(this->x_, this->u_, this->t_);
-	}
-
-	// add AD part
-	derivative += reverse1_derivative_intermediate_.segment(STATE_DIM, CONTROL_DIM);
-
-	return derivative;
+	MatrixXs jacTot = intermediateCostCodegen_->jacobian(stateControlD_);
+	return jacTot.template leftCols<STATE_DIM>();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-typename CostFunctionAD<STATE_DIM, CONTROL_DIM>::control_vector_t CostFunctionAD<STATE_DIM, CONTROL_DIM>::controlDerivativeTerminal()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeTerminal()
 {
-	Eigen::Matrix<double, CONTROL_DIM, 1> derivative;
-	derivative.setZero();
-
-	for(auto it : this->finalCostAnalytical_)
-		derivative+= it->controlDerivative(this->x_, this->u_, this->t_);
-
-	// add AD part
-	derivative += reverse1_derivative_final_.segment(STATE_DIM, CONTROL_DIM);
-
-	return derivative;
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void CostFunctionAD<STATE_DIM, CONTROL_DIM>::getHessians(
-		std::vector<std::shared_ptr<TermBaseAD>>& termsAD,
-		std::vector<std::shared_ptr<CppAD::ADFun<double>>>& functionAD,
-		std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, double>>>& termsAnalytical,
-		Eigen::Matrix<double, STATE_DIM,   STATE_DIM>&   hessian_state_,
-		Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM>& hessian_control_,
-		Eigen::Matrix<double, CONTROL_DIM, STATE_DIM>&   hessian_control_state_){
-
-	Eigen::Matrix<double, Eigen::Dynamic, 1> domain_input(STATE_DIM+CONTROL_DIM+1);
-
-	domain_input << this->x_, this->u_, this->t_;
-
-	Eigen::Matrix<double, Eigen::Dynamic, 1> w (1);
-	w.setConstant(1.0);
-
-	Eigen::VectorXd hessian ((STATE_DIM+CONTROL_DIM+1)*(STATE_DIM+CONTROL_DIM+1)); hessian.setZero();		// temporary data, for evaluation and transcripion only
-
-
-	for (size_t termId=0; termId<termsAD.size(); termId++){
-		if (!termsAD[termId]->isActiveAtTime(this->t_)) { continue; }
-		hessian += termsAD[termId]->computeActivation(this->t_) * functionAD[termId]->Hessian(domain_input, w);
-	}
-
-	// extract pure state hessian, AD part
-	for(size_t i = 0; i< STATE_DIM; i++)
-		for(size_t j = 0; j< STATE_DIM; j++)
-			hessian_state_(i,j) = hessian(i*(STATE_DIM+CONTROL_DIM+1)+j);
-
-	// extract pure control hessian, AD part
-	for(size_t i = STATE_DIM; i< STATE_DIM+CONTROL_DIM; i++)
-		for(size_t j = STATE_DIM; j< STATE_DIM+CONTROL_DIM; j++)
-			hessian_control_(i-STATE_DIM,j-STATE_DIM) = hessian(i*(STATE_DIM+CONTROL_DIM+1)+j);
-
-	// extract mixed control-state hessian, AD part
-	for(size_t i = 0; i< STATE_DIM; i++)
-		for(size_t j = STATE_DIM; j< STATE_DIM+CONTROL_DIM; j++)
-			hessian_control_state_(j-STATE_DIM,i) = hessian(i*(STATE_DIM+CONTROL_DIM+1)+j);
-
-
-	// take into account analytical terms
-	for(size_t termId = 0; termId<termsAnalytical.size(); termId++){
-
-		// extract pure state hessian, AD part
-		hessian_state_ += termsAnalytical[termId]->stateSecondDerivative(this->x_, this->u_, this->t_);
-
-		// extract pure control hessian, AD part
-		hessian_control_ += termsAnalytical[termId]->controlSecondDerivative(this->x_, this->u_, this->t_);
-
-		// extract mixed control-state hessian, AD part
-		hessian_control_state_ += termsAnalytical[termId]->stateControlDerivative(this->x_, this->u_, this->t_);
-	}
+	MatrixXs jacTot = finalCostCodegen_->jacobian(stateControlD_);
+	return jacTot.template leftCols<STATE_DIM>();
 }
 
 
-// record functions
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void CostFunctionAD<STATE_DIM, CONTROL_DIM>::recordTerm(const std::shared_ptr< TermBaseAD > &costAD, CppAD::ADFun<double>& functionAD)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeIntermediate()
 {
-	Eigen::Matrix<CppAD::AD<double>, Eigen::Dynamic, 1> VAR(STATE_DIM + CONTROL_DIM + 1); 	// +1 for the time
-	Eigen::Matrix<CppAD::AD<double>, Eigen::Dynamic, 1> Y(1);
-	Y.setZero();
-
-	CppAD::Independent(VAR);
-
-	Eigen::Matrix<CppAD::AD<double>, STATE_DIM, 1> X = VAR.head<STATE_DIM>();
-	Eigen::Matrix<CppAD::AD<double>, CONTROL_DIM, 1> U = VAR.segment(STATE_DIM, CONTROL_DIM);
-	CppAD::AD<double> T = VAR.tail<1>()(0,0);
-
-	Y(0, 0) += costAD->evaluate(X, U, T);
-
-	functionAD = CppAD::ADFun<double>(VAR, Y);
-	functionAD.optimize();
+	MatrixXs jacTot = intermediateCostCodegen_->jacobian(stateControlD_);
+	return jacTot.template rightCols<CONTROL_DIM>();
 }
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void CostFunctionAD<STATE_DIM, CONTROL_DIM>::reverseADTerms(
-		std::vector<std::shared_ptr<TermBaseAD>>& termsAD,
-		std::vector<std::shared_ptr<CppAD::ADFun<double>>> &functionAD,
-		Eigen::Matrix<double, STATE_DIM + CONTROL_DIM +1, 1>& result){
-
-	result.setZero();
-
-	for(size_t termId = 0; termId<termsAD.size(); termId++){
-		if (!termsAD[termId]->isActiveAtTime(this->t_)) { continue; }
-		result += termsAD[termId]->computeActivation(this->t_) * Reverse1(*functionAD[termId]);
-	}
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-Eigen::Matrix<double, STATE_DIM + CONTROL_DIM +1, 1> CostFunctionAD<STATE_DIM, CONTROL_DIM>::Reverse1(CppAD::ADFun<double> &f)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeTerminal()
 {
-	Eigen::Matrix<double, Eigen::Dynamic, 1> dw(STATE_DIM + CONTROL_DIM +1);	// the derivative weighted by the below weights
-	Eigen::Matrix<double, Eigen::Dynamic, 1> w(1); 								// weighting vector (of size 1 since a cost function has range dimension 1)
-	w << 1.;
+	MatrixXs jacTot = finalCostCodegen_->jacobian(stateControlD_);
+	return jacTot.template rightCols<CONTROL_DIM>();
+}
 
-	f.Forward(0, var_);		// update the independent variables with current input values (corresponds to function evaluation)
-	dw = f.Reverse(1, w);	// compute first order derivative
 
-	return dw;
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::state_matrix_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateSecondDerivativeIntermediate()
+{
+	Eigen::Matrix<SCALAR, 1, 1> w; w << SCALAR(1.0);
+	MatrixXs hesTot = intermediateCostCodegen_->hessian(stateControlD_, w);
+	return hesTot.template block<STATE_DIM, STATE_DIM>(0,0);
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::state_matrix_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateSecondDerivativeTerminal()
+{
+	Eigen::Matrix<SCALAR, 1, 1> w; w << SCALAR(1.0);
+	MatrixXs hesTot = finalCostCodegen_->hessian(stateControlD_, w);
+	return hesTot.template block<STATE_DIM, STATE_DIM>(0,0); 
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivativeIntermediate()
+{
+	Eigen::Matrix<SCALAR, 1, 1> w; w << SCALAR(1.0);
+	MatrixXs hesTot = intermediateCostCodegen_->hessian(stateControlD_, w);
+	return hesTot.template block<CONTROL_DIM, CONTROL_DIM>(STATE_DIM, STATE_DIM); 
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivativeTerminal()
+{
+	Eigen::Matrix<SCALAR, 1, 1> w; w << SCALAR(1.0);
+	MatrixXs hesTot = finalCostCodegen_->hessian(stateControlD_, w);
+	return hesTot.template block<CONTROL_DIM, CONTROL_DIM>(STATE_DIM, STATE_DIM);
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_matrix_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeIntermediate()
+{
+	Eigen::Matrix<SCALAR, 1, 1> w; w << SCALAR(1.0);
+	MatrixXs hesTot = intermediateCostCodegen_->hessian(stateControlD_, w);
+	return hesTot.template block<STATE_DIM, 0>(CONTROL_DIM, STATE_DIM);
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_matrix_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeTerminal()
+{
+	Eigen::Matrix<SCALAR, 1, 1> w; w << SCALAR(1.0);
+	MatrixXs hesTot = finalCostCodegen_->hessian(stateControlD_, w);
+	return hesTot.template block<STATE_DIM, 0>(CONTROL_DIM, STATE_DIM);	
 }

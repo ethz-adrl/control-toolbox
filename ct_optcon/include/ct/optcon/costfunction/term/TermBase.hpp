@@ -48,11 +48,11 @@ namespace optcon {
  *
  * An example for an implementation of a custom term is given in \ref EEDistanceTerm.h
  **/
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename TIME_SCALAR = SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class TermBase {
 protected:
 	std::string name_;
-	std::shared_ptr<tpl::TimeActivationBase<TIME_SCALAR>> c_i_;
+	std::shared_ptr<tpl::TimeActivationBase<SCALAR>> c_i_;
 
 public:
 	CT_OPTCON_DEFINE_TERM_TYPES
@@ -64,7 +64,7 @@ public:
 	TermBase(std::string name = "Unnamed") 
 	: 
 	name_(name),
-	c_i_(std::shared_ptr<tpl::TimeActivationBase<TIME_SCALAR>> (new tpl::TimeActivationBase<TIME_SCALAR>()))
+	c_i_(std::shared_ptr<tpl::TimeActivationBase<SCALAR>> (new tpl::TimeActivationBase<SCALAR>()))
 	{}
 
 	/**
@@ -80,7 +80,7 @@ public:
 	 * \brief Deep-copy term
 	 * @return
 	 */
-	virtual TermBase<STATE_DIM, CONTROL_DIM, SCALAR, TIME_SCALAR>* clone () const = 0;
+	virtual TermBase<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const = 0;
 
 	/**
 	 * \brief Destructor
@@ -97,7 +97,6 @@ public:
 	 */
 	virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) = 0;
 
-	// Todo: Make sure this gets only called by the analytical costfunction!!
 	SCALAR eval(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t)
 	{
 		return computeActivation(t) * evaluate(x, u , t);
@@ -110,12 +109,12 @@ public:
 	 * @param t time
 	 * @return true if term is active at t
 	 */
-	virtual bool isActiveAtTime(TIME_SCALAR t)
+	virtual bool isActiveAtTime(SCALAR t)
 	{
 		return c_i_->isActiveAtTime(t);
 	}
 
-	TIME_SCALAR computeActivation(TIME_SCALAR t)
+	SCALAR computeActivation(SCALAR t)
 	{
  		return c_i_->computeActivation(t); 		 
 	}
@@ -132,14 +131,13 @@ public:
 
 	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) { throw std::runtime_error("This cost function element is not implemented for the given term. Please use either auto-diff cost function or implement the analytical derivatives manually."); }  // a pure virtual function for daa loading
 
-	void setTimeActivation(std::shared_ptr<tpl::TimeActivationBase<TIME_SCALAR>> c_i, bool verbose = false)
+	void setTimeActivation(std::shared_ptr<tpl::TimeActivationBase<SCALAR>> c_i, bool verbose = false)
 	{
 		c_i_ = c_i;
 		if(verbose)
 			c_i_->printInfo();
 	}
 
-	// this needs some testing
 	void loadTimeActivation(const std::string& filename, const std::string& termName, bool verbose = false) {
 		boost::property_tree::ptree pt;
 		boost::property_tree::read_info(filename, pt);
@@ -147,8 +145,8 @@ public:
 		try{
 			std::string activationKind = pt.get<std::string>(termName + ".time_activation" + ".kind");
 			boost::algorithm::to_lower(activationKind);
-			std::shared_ptr<tpl::TimeActivationBase<TIME_SCALAR>> c_i;
-			CT_LOADABLE_TIME_ACTIVATIONS(TIME_SCALAR);
+			std::shared_ptr<tpl::TimeActivationBase<SCALAR>> c_i;
+			CT_LOADABLE_TIME_ACTIVATIONS(SCALAR);
 			c_i->loadConfigFile(filename, termName + ".time_activation", verbose);
 			if(!c_i){
 				throw std::runtime_error("Activation type \""+ activationKind+ "\" not supported");
@@ -165,10 +163,6 @@ public:
 		}
 	}
 
-
-		// throw std::runtime_error("This cost function element is not implemented for the given term. Please
-		//  use either auto-diff cost function or implement the analytical derivatives manually."); }  // a pure virtual function for daa loading
-
 	/**
 	 * \brief Returns the name of the term
 	 * @param termName name of the term
@@ -179,7 +173,7 @@ public:
 	 * \brief Sets the name of the term
 	 * @param termName
 	 */
-	void setName(const std::string termName){name_=termName;}
+	void setName(const std::string& termName){ name_=termName;}
 
 	virtual void updateReferenceState (const Eigen::Matrix<SCALAR, STATE_DIM, 1>& newRefState){}
 	virtual Eigen::Matrix<SCALAR, STATE_DIM, 1> getReferenceState() const {throw std::runtime_error("getReferenceState is not implemented for the current term!");}

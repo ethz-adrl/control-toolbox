@@ -31,7 +31,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/costfunction/term/TermBase.hpp>
 #include <ct/optcon/costfunction/term/TermLinear.hpp>
 #include <ct/optcon/costfunction/term/TermQuadratic.hpp>
-#include <ct/optcon/costfunction/term/TermOther.hpp>
 
 #include <gtest/gtest.h>
 
