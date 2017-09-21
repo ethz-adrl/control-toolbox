@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::TermQuadratic(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::TermQuadratic(
 		const state_matrix_t& Q,
 		const control_matrix_t& R) :
 		Q_(Q),
@@ -35,16 +35,16 @@ TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::TermQuadratic(
 	u_ref_.setZero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::TermQuadratic() {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::TermQuadratic() {
 	Q_.setIdentity();	// default values
 	R_.setIdentity();
 	x_ref_.setZero();
 	u_ref_.setZero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::TermQuadratic(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::TermQuadratic(
 		const state_matrix_t& Q,
 		const control_matrix_t& R,
 		const core::StateVector<STATE_DIM, SCALAR>& x_ref,
@@ -55,30 +55,30 @@ TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::TermQuadratic(
 		u_ref_(u_ref)
 {}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::TermQuadratic(const TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& arg):
-	TermBase<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::TermQuadratic(const TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>& arg):
+	TermBase<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>(arg),
 	Q_(arg.Q_),
 	R_(arg.R_),
 	x_ref_(arg.x_ref_),
 	u_ref_(arg.u_ref_)
 {}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>* TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::clone () const {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>* TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::clone () const {
 		return new TermQuadratic(*this);
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R)
 {
     Q_ = Q.template cast<SCALAR>();
     R_ = R.template cast<SCALAR>();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::setStateAndControlReference(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::setStateAndControlReference(
 		const core::StateVector<STATE_DIM, SCALAR>& x_ref,
 		const core::ControlVector<CONTROL_DIM, SCALAR>& u_ref)
 {
@@ -87,20 +87,20 @@ void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::setStateAndControlReference(
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-SCALAR TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::evaluate(
-		const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x,
-		const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u,
-		const SCALAR& t)
-{
-    Eigen::Matrix<SCALAR, STATE_DIM, 1> xDiff = (x-x_ref_.template cast<SCALAR>());
-    Eigen::Matrix<SCALAR, CONTROL_DIM, 1> uDiff = (u-u_ref_.template cast<SCALAR>());
+// template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+// SCALAR TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::evaluate(
+// 		const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x,
+// 		const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u,
+// 		const SCALAR& t)
+// {
+//     Eigen::Matrix<SCALAR, STATE_DIM, 1> xDiff = (x-x_ref_.template cast<SCALAR>());
+//     Eigen::Matrix<SCALAR, CONTROL_DIM, 1> uDiff = (u-u_ref_.template cast<SCALAR>());
 
-    return (xDiff.transpose() * Q_.template cast<SCALAR>() * xDiff + uDiff.transpose() * R_.template cast<SCALAR>() * uDiff)(0,0);
-}
+//     return (xDiff.transpose() * Q_.template cast<SCALAR>() * xDiff + uDiff.transpose() * R_.template cast<SCALAR>() * uDiff)(0,0);
+// }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ct::core::StateVector<STATE_DIM, SCALAR> TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivative(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+ct::core::StateVector<STATE_DIM, SCALAR> TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::stateDerivative(
 		const ct::core::StateVector<STATE_DIM, SCALAR> &x,
 		const ct::core::ControlVector<CONTROL_DIM, SCALAR> &u,
 		const SCALAR& t)
@@ -110,15 +110,15 @@ ct::core::StateVector<STATE_DIM, SCALAR> TermQuadratic<STATE_DIM, CONTROL_DIM, S
     return xDiff.transpose() * Q_.transpose() + xDiff.transpose() * Q_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::state_matrix_t TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateSecondDerivative(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::state_matrix_t TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::stateSecondDerivative(
 		const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t)
 {
 	return Q_ + Q_.transpose();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-core::ControlVector<CONTROL_DIM, SCALAR> TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivative(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+core::ControlVector<CONTROL_DIM, SCALAR> TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::controlDerivative(
 		const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t)
 {
     core::ControlVector<CONTROL_DIM, SCALAR> uDiff = (u-u_ref_);
@@ -126,22 +126,22 @@ core::ControlVector<CONTROL_DIM, SCALAR> TermQuadratic<STATE_DIM, CONTROL_DIM, S
     return uDiff.transpose() * R_.transpose() + uDiff.transpose() * R_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_t TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivative(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::control_matrix_t TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::controlSecondDerivative(
 		const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t)
 {
 	return R_ + R_.transpose() ;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_matrix_t TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivative(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::control_state_matrix_t TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::stateControlDerivative(
 		const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t)
 {
 	return control_state_matrix_t::Zero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::loadConfigFile(const std::string& filename, const std::string& termName, bool verbose)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::loadConfigFile(const std::string& filename, const std::string& termName, bool verbose)
 {
 		boost::property_tree::ptree pt;
 		try{

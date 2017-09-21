@@ -1,5 +1,5 @@
 /***********************************************************************************
-Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus StÃ¤uble, Diego Pardo,
 Farbod Farshidian. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -111,31 +111,25 @@ public:
 
 //! Create a cost function for the GNMS unit test
 std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > createCostFunction(Eigen::Vector2d& x_final)
-{
-	Eigen::Matrix<double, 2, 2> Q;
+				{
+	Eigen::Matrix2d Q;
 	Q << 0, 0, 0, 1;
 
 	Eigen::Matrix<double, 1, 1> R;
 	R << 100.0;
 
-	ct::core::StateVector<2> x_nominal = ct::core::StateVector<2>::Zero();
-	ct::core::ControlVector<1> u_nominal = ct::core::ControlVector<1>::Zero();
+	Eigen::Vector2d x_nominal = Eigen::Vector2d::Zero();
+	Eigen::Matrix<double, 1, 1> u_nominal = Eigen::Matrix<double, 1, 1>::Zero();
 
-	Eigen::Matrix<double, 2, 2> Q_final;
+	Eigen::Matrix2d Q_final;
 	Q_final << 10, 0, 0, 10;
 
-	std::shared_ptr<TermQuadratic<state_dim, control_dim> > termQuadratic(new TermQuadratic<state_dim, control_dim>(Q, R, x_nominal, u_nominal));
-	std::shared_ptr<TermQuadratic<state_dim, control_dim> > termFinal(new TermQuadratic<state_dim, control_dim>);
-	termFinal->getStateWeight() = Q_final;
-	termFinal->updateReferenceState(x_final);
-
-	std::shared_ptr<CostFunctionAnalytical<state_dim, control_dim> > quadraticCostFunction(new CostFunctionAnalytical<state_dim, control_dim>);
-
-	quadraticCostFunction->addIntermediateTerm(termQuadratic);
-	quadraticCostFunction->addFinalTerm(termFinal);
+	std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > quadraticCostFunction(
+			new CostFunctionQuadraticSimple<state_dim, control_dim>(
+					Q, R, x_nominal, u_nominal, x_final, Q_final));
 
 	return quadraticCostFunction;
-}
+				}
 
 
 

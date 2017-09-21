@@ -124,6 +124,8 @@ public:
 	 */
 	virtual size_t addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false) { throw std::runtime_error("not implemented"); };
 
+	virtual size_t addIntermediateADTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar> > term, bool verbose = false) { throw std::runtime_error("not implemented"); };
+
 	/**
 	 * \brief Adds a final term
 	 * @param term final term
@@ -131,6 +133,7 @@ public:
 	 * @return
 	 */
 	virtual size_t addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false) { throw std::runtime_error("not implemented"); };
+	virtual size_t addFinalADTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar> > term, bool verbose = false) { throw std::runtime_error("not implemented"); };
 
 	/**
 	 * \brief Loads cost function from config file

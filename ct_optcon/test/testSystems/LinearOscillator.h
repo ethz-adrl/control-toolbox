@@ -111,15 +111,18 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim, SCALAR> > createCo
 	Eigen::Matrix<SCALAR, 1, 1> R;
 	R << 100;
 
-	Eigen::Matrix<SCALAR, 2, 1> x_nominal; x_nominal.setZero();
-	Eigen::Matrix<SCALAR, 1, 1> u_nominal; u_nominal.setZero();
+	ct::core::StateVector<2> x_nominal = ct::core::StateVector<2>::Zero();
+	ct::core::ControlVector<1> u_nominal = ct::core::ControlVector<1>::Zero();
 
 	Eigen::Matrix<SCALAR, 2, 2> Q_final;
 	Q_final << 1000, 0, 0, 1000;
 
-	std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim, SCALAR> > quadraticCostFunction(
-			new CostFunctionQuadraticSimple<state_dim, control_dim, SCALAR>(
-					Q, R, x_nominal, u_nominal, x_final, Q_final));
+	std::shared_ptr<TermQuadratic<state_dim, control_dim> > termQuadratic(new TermQuadratic<state_dim, control_dim>(Q, R, x_nominal, u_nominal));
+	std::shared_ptr<TermQuadratic<state_dim, control_dim> > termFinal(new TermQuadratic<state_dim, control_dim>);
+	termFinal->getStateWeight() = Q_final;
+	termFinal->updateReferenceState(x_final);
+
+	std::shared_ptr<CostFunctionAnalytical<state_dim, control_dim> > quadraticCostFunction(new CostFunctionAnalytical<state_dim, control_dim>);		
 
 	return quadraticCostFunction;
 }

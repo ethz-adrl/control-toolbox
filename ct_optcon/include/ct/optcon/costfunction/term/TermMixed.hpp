@@ -40,8 +40,8 @@ namespace optcon {
  *
  *	An example for using this term is given in \ref CostFunctionTest.cpp
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class TermMixed : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR> {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double, typename SCALAR2 = SCALAR>
+class TermMixed : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2> {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -58,14 +58,20 @@ public:
 
 	virtual ~TermMixed(){}
 	
-	TermMixed<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override;
+	TermMixed<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>* clone () const override;
 
 	void setWeights(const control_state_matrix_double_t& P);
 
 	void setStateAndControlReference(const core::StateVector<STATE_DIM>& x_ref, const core::ControlVector<CONTROL_DIM>& u_ref);
 
-	SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
-	
+	SCALAR2 evaluate(const Eigen::Matrix<SCALAR2, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR2, CONTROL_DIM, 1> &u, const SCALAR2& t) override
+	{
+	    Eigen::Matrix<SCALAR2, STATE_DIM, 1> xDiff = (x-x_ref_.template cast<SCALAR2>());
+	    Eigen::Matrix<SCALAR2, CONTROL_DIM, 1> uDiff = (u-u_ref_.template cast<SCALAR2>());
+
+	    return (uDiff.transpose() * P_.template cast<SCALAR2>() * xDiff)(0,0);		
+	}	
+
 	core::StateVector<STATE_DIM, SCALAR> stateDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
 			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 

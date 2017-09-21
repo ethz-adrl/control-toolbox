@@ -224,48 +224,45 @@ get_filename_component(NLOC_TEST_DIR "test/nloc" ABSOLUTE)
 configure_file(test/nloc/nloc_test_dir.h.in test/nloc/nloc_test_dir.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/nloc)
 
-add_executable(NonlinearSystemTest test/nloc/NonlinearSystemTest.cpp)
-target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-
-catkin_add_gtest(LinearSystemTest test/nloc/LinearSystemTest.cpp)
-target_link_libraries(LinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-
-add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
-target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-
-catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
-target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
+#add_executable(NonlinearSystemTest test/nloc/NonlinearSystemTest.cpp)
+#target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+#
+#catkin_add_gtest(LinearSystemTest test/nloc/LinearSystemTest.cpp)
+#target_link_libraries(LinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+#
+#add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
+#target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+#
+#catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
+#target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
 
 catkin_add_gtest(CostFunctionTest test/costfunction/CostFunctionTest.cpp)
-target_link_libraries(CostFunctionTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
+target_link_libraries(CostFunctionTest ${catkin_LIBRARIES} ${MATLAB_LIBS} dl)
 
-catkin_add_gtest(CfTracking test/costfunction/TrackingTest.cpp)
-target_link_libraries(CfTracking ${catkin_LIBRARIES})
+#catkin_add_gtest(ADTest_timeVar test/costfunction/ADTest_timeDependent.cpp)
+#target_link_libraries(ADTest_timeVar ${catkin_LIBRARIES})
 
-catkin_add_gtest(ADTest_timeVar test/costfunction/ADTest_timeDependent.cpp)
-target_link_libraries(ADTest_timeVar ${catkin_LIBRARIES})
-
-catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
-target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-
-catkin_add_gtest(dms_test_all_var test/dms/oscillator/oscDMSTestAllVariants.cpp)
-target_link_libraries(dms_test_all_var ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-
-add_executable(bareTest test/dms/oscillator/bareTest.cpp)
-target_link_libraries(bareTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS} dl)
-
-add_executable(matFilesGenerator test/dms/oscillator/matfiles/matFilesGenerator.cpp)
-target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
+#catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
+#target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
 #
-#add_executable(timeKeeperTest test/mpc/TimeKeeperTest.cpp)
-#target_link_libraries(timeKeeperTest ${catkin_LIBRARIES})
-
-get_filename_component(MPC_TEST_MAT_DIR "test/mpc/matfiles" ABSOLUTE)
-configure_file(test/mpc/mpcTestSettings.h.in test/mpc/mpcTestSettings.h)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/mpc)
-
-catkin_add_gtest(NLOC_MPCTest test/mpc/NLOC_MPCTest.cpp)
-target_link_libraries(NLOC_MPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+#catkin_add_gtest(dms_test_all_var test/dms/oscillator/oscDMSTestAllVariants.cpp)
+#target_link_libraries(dms_test_all_var ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
+#
+#add_executable(bareTest test/dms/oscillator/bareTest.cpp)
+#target_link_libraries(bareTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS} dl)
+#
+#add_executable(matFilesGenerator test/dms/oscillator/matfiles/matFilesGenerator.cpp)
+#target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
+##
+##add_executable(timeKeeperTest test/mpc/TimeKeeperTest.cpp)
+##target_link_libraries(timeKeeperTest ${catkin_LIBRARIES})
+#
+#get_filename_component(MPC_TEST_MAT_DIR "test/mpc/matfiles" ABSOLUTE)
+#configure_file(test/mpc/mpcTestSettings.h.in test/mpc/mpcTestSettings.h)
+#include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/mpc)
+#
+#catkin_add_gtest(NLOC_MPCTest test/mpc/NLOC_MPCTest.cpp)
+#target_link_libraries(NLOC_MPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
 
 

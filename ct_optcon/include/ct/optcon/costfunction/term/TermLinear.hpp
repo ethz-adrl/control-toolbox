@@ -42,8 +42,8 @@ namespace optcon {
  *
  * Probably this term is not very useful but we use it for testing
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class TermLinear : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR> {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double, typename SCALAR2 = SCALAR>
+class TermLinear : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2> {
 
 public:
 
@@ -57,13 +57,18 @@ public:
 
 	TermLinear(const TermLinear& arg);
 
-	TermLinear<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override{
-		return new TermLinear<STATE_DIM, CONTROL_DIM, SCALAR> (*this);
+	TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>* clone () const override{
+		return new TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2> (*this);
 	}
 
 	~TermLinear();
 
-	SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
+	SCALAR2 evaluate(const Eigen::Matrix<SCALAR2, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR2, CONTROL_DIM, 1> &u, const SCALAR2& t) override
+    {
+         Eigen::Matrix<SCALAR2, 1, 1> y_eigen = a_.template cast<SCALAR2>().transpose() * x + b_.template cast<SCALAR2>().transpose() * u;
+         SCALAR2 y = y_eigen(0,0) + SCALAR2(c_);
+         return y;        
+    }
 	
 	core::StateVector<STATE_DIM, SCALAR> stateDerivative(const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 

@@ -48,7 +48,7 @@ namespace optcon {
  *
  * An example for an implementation of a custom term is given in \ref EEDistanceTerm.h
  **/
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double, typename SCALAR2 = SCALAR>
 class TermBase {
 protected:
 	std::string name_;
@@ -80,7 +80,7 @@ public:
 	 * \brief Deep-copy term
 	 * @return
 	 */
-	virtual TermBase<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const = 0;
+	virtual TermBase<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>* clone () const = 0;
 
 	/**
 	 * \brief Destructor
@@ -95,11 +95,19 @@ public:
 	 * @param t time
 	 * @return
 	 */
-	virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) = 0;
+	virtual SCALAR2 evaluate(const Eigen::Matrix<SCALAR2, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR2, CONTROL_DIM, 1> &u, const SCALAR2& t) = 0;
 
 	SCALAR eval(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t)
 	{
 		return computeActivation(t) * evaluate(x, u , t);
+	}
+
+	ct::core::ADCGScalar evalCG(
+		const Eigen::Matrix<ct::core::ADCGScalar, STATE_DIM, 1>& x, 
+		const Eigen::Matrix<ct::core::ADCGScalar, CONTROL_DIM, 1>& u, 
+		const ct::core::ADCGScalar& t)
+	{
+		return evaluate(x, u, t);
 	}
 	
 	/**

@@ -72,29 +72,13 @@ public:
 		R_ << 0.001;
 		u_des_ << 0.0;
 
-		std::shared_ptr<ct::optcon::TermQuadratic<2, 1> > termQuadratic(new ct::optcon::TermQuadratic<2, 1>(Q_, R_, x_final_, u_des_));
-		std::shared_ptr<ct::optcon::TermQuadratic<2, 1> > termFinal(new ct::optcon::TermQuadratic<2, 1>);
-		termFinal->getStateWeight() = Q_final_;
-		termFinal->updateReferenceState(x_final_);
+		costFunction_ = std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1>> 
+				(new ct::optcon::CostFunctionQuadraticSimple<2,1>(Q_, R_, x_final_, u_des_, x_final_, Q_final_));
 
-		costFunction_ = std::shared_ptr<ct::optcon::CostFunctionAnalytical<2,1>> 
-				(new ct::optcon::CostFunctionAnalytical<2,1>);
-
-		costFunction_->addIntermediateTerm(termQuadratic);
-		costFunction_->addFinalTerm(termFinal);
-
-
-		std::shared_ptr<ct::optcon::TermQuadratic<2, 1, ScalarCG> > termQuadraticCg(new ct::optcon::TermQuadratic<2, 1, ScalarCG>(
-			Q_.cast<ScalarCG>(), R_.cast<ScalarCG>(), x_final_.cast<ScalarCG>(), u_des_.cast<ScalarCG>()));
-		std::shared_ptr<ct::optcon::TermQuadratic<2, 1, ScalarCG> > termFinalCg(new ct::optcon::TermQuadratic<2, 1, ScalarCG>);
-		termFinalCg->getStateWeight() = Q_final_.cast<ScalarCG>();
-		termFinalCg->updateReferenceState(x_final_.cast<ScalarCG>());
-
-		std::shared_ptr<ct::optcon::CostFunctionAnalytical<2,1, ScalarCG>> costFunctionCG(
-			new ct::optcon::CostFunctionAnalytical<2, 1, ScalarCG>);	
-
-		costFunctionCG->addIntermediateTerm(termQuadraticCg);
-		costFunctionCG->addFinalTerm(termFinalCg);
+		std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1, ScalarCG>> costFunctionCG(
+			new ct::optcon::CostFunctionQuadraticSimple<2, 1, ScalarCG>(Q_.cast<ScalarCG>(), R_.cast<ScalarCG>(), 
+				x_final_.cast<ScalarCG>(), u_des_.cast<ScalarCG>(), 
+				x_final_.cast<ScalarCG>(), Q_final_.cast<ScalarCG>()));		
 
 		stateInputConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2,1>>
 				(new ct::optcon::ConstraintContainerAnalytical<2,1>() );

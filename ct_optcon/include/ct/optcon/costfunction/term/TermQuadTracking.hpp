@@ -42,8 +42,8 @@ namespace optcon {
  * An example for using this term is given in unit test \ref TrackingTest.cpp
  *
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class TermQuadTracking : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR> {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double, typename SCALAR2 = SCALAR>
+class TermQuadTracking : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2> {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -63,7 +63,7 @@ public:
 
 	virtual ~TermQuadTracking(){}
 	
-	TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override;
+	TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>* clone () const override;
 
 	void setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R);
 
@@ -71,8 +71,20 @@ public:
 			const core::StateTrajectory<STATE_DIM>& xTraj,
 			const core::ControlTrajectory<CONTROL_DIM>& uTraj);
 
-	SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
-	
+    SCALAR2 evaluate(const Eigen::Matrix<SCALAR2, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR2, CONTROL_DIM, 1> &u, const SCALAR2& t) override
+    {
+    Eigen::Matrix<SCALAR2, STATE_DIM, 1> xDiff = x-x_traj_ref_.eval(t).template cast<SCALAR2>();
+
+    Eigen::Matrix<SCALAR2, CONTROL_DIM, 1> uDiff;
+
+    if(trackControlTrajectory_)
+    	uDiff = u-u_traj_ref_.eval(t).template cast<SCALAR2>();
+    else
+    	uDiff = u;
+
+    return (xDiff.transpose() * Q_.template cast<SCALAR2>() * xDiff + uDiff.transpose() * R_.template cast<SCALAR2>() * uDiff)(0,0);    	
+    }	
+ 	
 	core::StateVector<STATE_DIM, SCALAR> stateDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
 			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
 

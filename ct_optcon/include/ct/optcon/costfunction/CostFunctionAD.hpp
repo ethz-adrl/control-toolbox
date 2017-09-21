@@ -58,7 +58,7 @@ class CostFunctionAD : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCAL
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef core::DerivativesCppadJIT<STATE_DIM + CONTROL_DIM + 1, 1> JacCG;
+	typedef core::DerivativesCppadJIT<STATE_DIM + CONTROL_DIM, 1> JacCG;
 	typedef typename JacCG::CG_SCALAR CGScalar;
 	typedef Eigen::Matrix<CGScalar, 1, 1> MatrixCg;
 
@@ -121,7 +121,7 @@ public:
 	 * used in the term. This does **NOT** have to be called if x, u or t change.
 	 * @param termId The ID of the term that changed
 	 */
-	void termChanged(size_t termId);
+	void initialize();
 
 	void updateIntermediateCosts();
 
@@ -136,7 +136,7 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-	size_t addIntermediateTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CGScalar>> term, bool verbose = false) override;
+	size_t addIntermediateADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose = false) override;
 
 	/**
 	 * \brief Add a final, auto-differentiable term
@@ -147,7 +147,7 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-	size_t addFinalTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CGScalar>> term, bool verbose = false) override;
+	size_t addFinalADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose = false) override;
 
 	void setCurrentStateAndControl(const state_vector_t &x, const control_vector_t &u, const SCALAR& t = 0.0) override;
 
@@ -176,8 +176,8 @@ private:
 	MatrixCg evaluateIntermediateCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput);
 	MatrixCg evaluateTerminalCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput);
 
-	std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CGScalar>>> intermediateTerms_;
-	std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, CGScalar>>> finalTerms_;
+	std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>>> intermediateTerms_;
+	std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>>> finalTerms_;
 
 	std::shared_ptr<JacCG> intermediateCostCodegen_;
 	std::shared_ptr<JacCG> finalCostCodegen_;

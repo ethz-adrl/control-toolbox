@@ -1,5 +1,5 @@
 /***********************************************************************************
-Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus StÃ¤uble, Diego Pardo,
 Farbod Farshidian. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
