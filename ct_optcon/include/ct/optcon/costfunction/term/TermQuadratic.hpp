@@ -66,6 +66,11 @@ public:
 
 	void setWeights(const Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>& Q, const Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>& R);
 
+	virtual void printWeights() override
+	{
+		std::cout << "Q_: " << Q_ << std::endl;
+	}
+
 	const state_matrix_t& getStateWeight() const
 	{
 		return Q_;

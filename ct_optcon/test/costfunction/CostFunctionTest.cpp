@@ -72,8 +72,8 @@ void compareCostFunctionOutput(CostFunctionQuadratic<state_dim, control_dim>& co
 
 TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 {
-	const size_t nWeights = 1;
-	const size_t nTests = 1;
+	const size_t nWeights = 2;
+	const size_t nTests = 10;
 
 	CostFunctionAnalytical<state_dim, control_dim> costFunction;
 	CostFunctionAD<state_dim, control_dim> costFunctionAD;
@@ -107,13 +107,13 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 		x_ref.setRandom();
 		u_ref.setRandom();
 
-		// if (i==0)
-		// {
-		// 	Q.setZero();
-		// 	R.setZero();
-		// 	x_ref.setZero();
-		// 	u_ref.setZero();
-		// }
+		if (i==0)
+		{
+			Q.setZero();
+			R.setZero();
+			x_ref.setZero();
+			u_ref.setZero();
+		}
 
 		termQuadratic->setWeights(Q, R);
 		termQuadraticAD->setWeights(Q, R);

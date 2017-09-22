@@ -84,8 +84,9 @@ public:
         inputDim_(inputDim),
         outputDim_(outputDim)
     {
-        if(outputDim_ > 0 && inputDim_ > 0)
-            recordCg();
+        update(f, inputDim, outputDim);
+        // if(outputDim_ > 0 && inputDim_ > 0)
+        //     recordCg();
     }
 
     /*
@@ -143,10 +144,15 @@ public:
      */
     void update(FUN_TYPE_CG& f, const size_t inputDim = IN_DIM, const size_t outputDim = OUT_DIM)
     {
+        std::cout << "Updating CG fun" << std::endl;
         fCgStd_ = f;
         outputDim_ = outputDim;
         inputDim_ = inputDim;
-        recordCg();
+        if(outputDim_ > 0 && inputDim_ > 0)
+        {
+            recordCg();
+            updateDerived();
+        }
     }
 
     //! update the Jacobian with a new function
@@ -163,8 +169,14 @@ public:
         fAdStd_ = f;
         outputDim_ = outputDim;
         inputDim_ = inputDim;
-        recordAd();
+        if(outputDim_ > 0 && inputDim_ > 0)
+        {
+            recordAd();
+            updateDerived();
+        }
     }
+
+    virtual void updateDerived(){};
 
     //! deep cloning of Jacobian
     CppadUtils* clone() const{

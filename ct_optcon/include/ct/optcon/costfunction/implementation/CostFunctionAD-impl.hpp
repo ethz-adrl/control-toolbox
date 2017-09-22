@@ -81,23 +81,24 @@ stateControlD_(arg.stateControlD_)
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::initialize() {
-
+	for(auto it : intermediateTerms_)
+		it->printWeights();	
+	
 	intermediateFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
 		return this->evaluateIntermediateCg(stateinput);	
 	};
 
-	intermediateCostCodegen_->update(intermediateFun_, STATE_DIM + CONTROL_DIM, 1);
 
-		finalFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
+	finalFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
 		return this->evaluateTerminalCg(stateinput);	
 	};
 
+	intermediateCostCodegen_->update(intermediateFun_, STATE_DIM + CONTROL_DIM, 1);
 	finalCostCodegen_->update(finalFun_, STATE_DIM + CONTROL_DIM, 1);
 
 	ct::core::DerivativesCppadSettings settings;
 	settings.createForwardZero_ = true;
 	settings.createJacobian_ = true;
-	// settings.createSparseJacobian_ = true;
 	settings.createHessian_ = true;
 
 	finalCostCodegen_->compileJIT(settings, "finalCosts");

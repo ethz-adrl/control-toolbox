@@ -139,6 +139,8 @@ public:
 
 	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) { throw std::runtime_error("This cost function element is not implemented for the given term. Please use either auto-diff cost function or implement the analytical derivatives manually."); }  // a pure virtual function for daa loading
 
+	virtual void printWeights() {}
+
 	void setTimeActivation(std::shared_ptr<tpl::TimeActivationBase<SCALAR>> c_i, bool verbose = false)
 	{
 		c_i_ = c_i;

@@ -98,8 +98,8 @@ public:
         DerivativesBase(),
         compiled_(false)
     {
-        if(outputDim > 0 && inputDim > 0)
-            this->recordCg();
+        // if(outputDim > 0 && inputDim > 0)
+        //     this->recordCg();
     }
 
     /**
@@ -124,8 +124,8 @@ public:
         DerivativesBase(),
         compiled_(false)
     {
-        if(outputDim > 0 && inputDim > 0)
-            this->recordAd();
+        // if(outputDim > 0 && inputDim > 0)
+        //     this->recordAd();
     }
 
     //! copy constructor
@@ -138,6 +138,13 @@ public:
     {
         if(compiled_)
             model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"));
+    }
+
+    virtual void updateDerived() override
+    {
+        compiled_ = false;
+        dynamicLib_ = nullptr;
+        model_ = nullptr;
     }
 
     //! destructor
@@ -429,8 +436,8 @@ public:
             dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler));
         }
 
-        CppAD::cg::SaveFilesModelLibraryProcessor<double> p2(libcgen);
-        p2.saveSources();
+        // CppAD::cg::SaveFilesModelLibraryProcessor<double> p2(libcgen);
+        // p2.saveSources();
 
         model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"));
 
