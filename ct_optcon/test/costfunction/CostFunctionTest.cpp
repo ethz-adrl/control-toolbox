@@ -72,7 +72,7 @@ void compareCostFunctionOutput(CostFunctionQuadratic<state_dim, control_dim>& co
 
 TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 {
-	const size_t nWeights = 2;
+	const size_t nWeights = 5;
 	const size_t nTests = 10;
 
 	CostFunctionAnalytical<state_dim, control_dim> costFunction;
@@ -148,104 +148,105 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 	}
 }
 
-// TEST(CostFunctionTest, ADQuadMultIntermediateTest)
-// {
-// 	const size_t nWeights = 10;
-// 	const size_t nTests = 10;
+TEST(CostFunctionTest, ADQuadMultIntermediateTest)
+{
+	const size_t nWeights = 3;
+	const size_t nTests = 10;
 
-// 	CostFunctionAnalytical<state_dim, control_dim> costFunction;
-// 	CostFunctionAD<state_dim, control_dim> costFunctionAD;
+	CostFunctionAnalytical<state_dim, control_dim> costFunction;
+	CostFunctionAD<state_dim, control_dim> costFunctionAD;
 
-// 	std::shared_ptr<TermQuadMult<state_dim, control_dim, double> > termQuadMult(new TermQuadMult<state_dim, control_dim>);
-// 	std::shared_ptr<TermQuadMult<state_dim, control_dim, ct::core::ADCGScalar > > termQuadMultAD(new TermQuadMult<state_dim, control_dim, ct::core::ADCGScalar>);
+	std::shared_ptr<TermQuadMult<state_dim, control_dim, double> > termQuadMult(new TermQuadMult<state_dim, control_dim>);
+	std::shared_ptr<TermQuadMult<state_dim, control_dim, double, ct::core::ADCGScalar > > termQuadMultAD(new TermQuadMult<state_dim, control_dim, double, ct::core::ADCGScalar>);
 
-// 	std::shared_ptr<TermMixed<state_dim, control_dim, double > > termMixed (new TermMixed<state_dim, control_dim, double>);
-// 	std::shared_ptr<TermMixed<state_dim, control_dim, ct::core::ADCGScalar > > termMixedAD (new TermMixed<state_dim, control_dim, ct::core::ADCGScalar>);
+	std::shared_ptr<TermMixed<state_dim, control_dim, double > > termMixed (new TermMixed<state_dim, control_dim, double>);
+	std::shared_ptr<TermMixed<state_dim, control_dim, double, ct::core::ADCGScalar > > termMixedAD (new TermMixed<state_dim, control_dim, double, ct::core::ADCGScalar>);
 
-// 	double active_percentage = 0.5; // how much of the cycle is the time active
-// 	double period = 0.5; // what is the period
-// 	double activation_offset = 0.1; // how much is the activation offset WITHIN the period
-// 	double period_offset = 0.2; // how much is the period offset to t=0?
+	double active_percentage = 0.5; // how much of the cycle is the time active
+	double period = 0.5; // what is the period
+	double activation_offset = 0.1; // how much is the activation offset WITHIN the period
+	double period_offset = 0.2; // how much is the period offset to t=0?
 
-// 	std::shared_ptr<PeriodicActivation> c_periodic (new PeriodicActivation(active_percentage, period, activation_offset, period_offset));
-// 	termQuadMult->setTimeActivation(c_periodic, true);
-// 	termQuadMultAD->setTimeActivation(c_periodic, true);
+	std::shared_ptr<PeriodicActivation> c_periodic (new PeriodicActivation(active_percentage, period, activation_offset, period_offset));
+	// termQuadMult->setTimeActivation(c_periodic, true);
+	// termQuadMultAD->setTimeActivation(c_periodic, true);
 
-// 	costFunction.addIntermediateTerm(termQuadMult);
-// 	size_t termIdAD = costFunctionAD.addIntermediateTerm(termQuadMultAD);
+	costFunction.addIntermediateTerm(termQuadMult);
+	size_t termIdAD = costFunctionAD.addIntermediateADTerm(termQuadMultAD);
 
-// 	Eigen::Matrix<double, state_dim, state_dim> Q;
-// 	Eigen::Matrix<double, control_dim, control_dim> R;
-// 	Eigen::Matrix<double, control_dim, state_dim> P;
+	Eigen::Matrix<double, state_dim, state_dim> Q;
+	Eigen::Matrix<double, control_dim, control_dim> R;
+	Eigen::Matrix<double, control_dim, state_dim> P;
 
-// 	core::StateVector<state_dim> x_ref;
-// 	core::ControlVector<control_dim> u_ref;
+	core::StateVector<state_dim> x_ref;
+	core::ControlVector<control_dim> u_ref;
 
-// 	for (size_t i=0; i<nWeights; i++)
-// 	{
-// 		try{
-// 			Q.setRandom();
-// 			R.setRandom();
-// 			P.setRandom();
-// 			x_ref.setRandom();
-// 			u_ref.setRandom();
+	for (size_t i=0; i<nWeights; i++)
+	{
+		try{
+			Q.setRandom();
+			R.setRandom();
+			P.setRandom();
+			x_ref.setRandom();
+			u_ref.setRandom();
 
-// 			if (i==0)
-// 			{
-// 				Q.setZero();
-// 				R.setZero();
-// 				P.setZero();
-// 				x_ref.setZero();
-// 				u_ref.setZero();
-// 			}
+			if (i==0)
+			{
+				Q.setZero();
+				R.setZero();
+				P.setZero();
+				x_ref.setZero();
+				u_ref.setZero();
+			}
 
-// 			if (i==1)
-// 			{
-// 				Q.setIdentity();
-// 				R.setIdentity();
-// 				P.setZero();
-// 				x_ref.setConstant(10.0);
-// 				u_ref.setConstant(10.0);
-// 			}
+			if (i==1)
+			{
+				Q.setIdentity();
+				R.setIdentity();
+				P.setZero();
+				x_ref.setConstant(10.0);
+				u_ref.setConstant(10.0);
+			}
 
-// 			termQuadMult->setWeights(Q, R);
-// 			termQuadMultAD->setWeights(Q, R);
-// 			termQuadMult->setStateAndControlReference(x_ref, u_ref);
-// 			termQuadMultAD->setStateAndControlReference(x_ref, u_ref);
+			termQuadMult->setWeights(Q, R);
+			termQuadMultAD->setWeights(Q, R);
+			termQuadMult->setStateAndControlReference(x_ref, u_ref);
+			termQuadMultAD->setStateAndControlReference(x_ref, u_ref);
 
-// 			costFunctionAD.initialize();
+			costFunctionAD.initialize();
 
-// 			// create cloned cost function
-// 			std::shared_ptr<CostFunctionAD<state_dim, control_dim>> costFunctionAD_clone (costFunctionAD.clone());
+			// create cloned cost function
+			std::shared_ptr<CostFunctionAD<state_dim, control_dim>> costFunctionAD_clone (costFunctionAD.clone());
+			costFunctionAD_clone->initialize();
 
 
-// 			for (size_t j=0; j<nTests; j++)
-// 			{
-// 				core::StateVector<state_dim> x;
-// 				core::ControlVector<control_dim> u;
-// 				x.setRandom();
-// 				u.setRandom();
-// 				double t = 3.14;
+			for (size_t j=0; j<nTests; j++)
+			{
+				core::StateVector<state_dim> x;
+				core::ControlVector<control_dim> u;
+				x.setRandom();
+				u.setRandom();
+				double t = 3.14;
 
-// 				if (j==0)
-// 				{
-// 					x.setZero();
-// 					u.setZero();
-// 				}
+				if (j==0)
+				{
+					x.setZero();
+					u.setZero();
+				}
 
-// 				costFunction.setCurrentStateAndControl(x, u, t);
-// 				costFunctionAD.setCurrentStateAndControl(x, u, t);
-// 				costFunctionAD_clone->setCurrentStateAndControl(x, u, t);
+				costFunction.setCurrentStateAndControl(x, u, t);
+				costFunctionAD.setCurrentStateAndControl(x, u, t);
+				costFunctionAD_clone->setCurrentStateAndControl(x, u, t);
 
-// 				compareCostFunctionOutput(costFunction, costFunctionAD);
-// 				compareCostFunctionOutput(*costFunctionAD_clone, costFunctionAD);
-// 			}
-// 		}
-// 		catch(std::exception& e) {
-// 			FAIL();
-// 		}
-// 	}
-// }
+				compareCostFunctionOutput(costFunction, costFunctionAD);
+				compareCostFunctionOutput(*costFunctionAD_clone, costFunctionAD);
+			}
+		}
+		catch(std::exception& e) {
+			FAIL();
+		}
+	}
+}
 
 
 } // namespace example

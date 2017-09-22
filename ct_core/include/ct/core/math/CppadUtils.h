@@ -144,7 +144,6 @@ public:
      */
     void update(FUN_TYPE_CG& f, const size_t inputDim = IN_DIM, const size_t outputDim = OUT_DIM)
     {
-        std::cout << "Updating CG fun" << std::endl;
         fCgStd_ = f;
         outputDim_ = outputDim;
         inputDim_ = inputDim;

@@ -65,7 +65,9 @@ CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> (x,u, t)
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const CostFunctionAD& arg):
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
-stateControlD_(arg.stateControlD_)
+stateControlD_(arg.stateControlD_),
+intermediateFun_(arg.intermediateFun_),
+finalFun_(arg.finalFun_)
 {
 	intermediateTerms_.resize(arg.intermediateTerms_.size());
 	finalTerms_.resize(arg.finalTerms_.size());
@@ -76,18 +78,17 @@ stateControlD_(arg.stateControlD_)
 	for(size_t i = 0; i < finalTerms_.size(); ++i)
 		finalTerms_[i] = std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> (arg.finalTerms_[i]->clone());
 
+	intermediateCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(intermediateFun_, STATE_DIM + CONTROL_DIM, 1));
+	finalCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(finalFun_, STATE_DIM + CONTROL_DIM, 1));
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::initialize() {
-	for(auto it : intermediateTerms_)
-		it->printWeights();	
-	
+void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::initialize() 
+{	
 	intermediateFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
 		return this->evaluateIntermediateCg(stateinput);	
 	};
-
 
 	finalFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
 		return this->evaluateTerminalCg(stateinput);	
