@@ -37,8 +37,8 @@ TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::TermQuadratic(
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
 TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::TermQuadratic() {
-	Q_.setIdentity();	// default values
-	R_.setIdentity();
+	Q_.setConstant(9999);	// default values
+	R_.setConstant(9999);
 	x_ref_.setZero();
 	u_ref_.setZero();
 }
@@ -71,10 +71,12 @@ TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>* TermQuadratic<STATE_DIM,
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
-void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R)
+void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::setWeights(
+    const Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>& Q, 
+    const Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>& R)
 {
-    Q_ = Q.template cast<SCALAR>();
-    R_ = R.template cast<SCALAR>();
+    Q_ = Q;
+    R_ = R;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
@@ -82,22 +84,22 @@ void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::setStateAndControlR
 		const core::StateVector<STATE_DIM, SCALAR>& x_ref,
 		const core::ControlVector<CONTROL_DIM, SCALAR>& u_ref)
 {
-	x_ref_ = x_ref.template cast<SCALAR>();
-	u_ref_ = u_ref.template cast<SCALAR>();
+	x_ref_ = x_ref;
+	u_ref_ = u_ref;
 }
 
 
-// template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
-// SCALAR TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::evaluate(
-// 		const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x,
-// 		const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u,
-// 		const SCALAR& t)
-// {
-//     Eigen::Matrix<SCALAR, STATE_DIM, 1> xDiff = (x-x_ref_.template cast<SCALAR>());
-//     Eigen::Matrix<SCALAR, CONTROL_DIM, 1> uDiff = (u-u_ref_.template cast<SCALAR>());
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
+SCALAR2 TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::evaluate(
+		const Eigen::Matrix<SCALAR2, STATE_DIM, 1> &x,
+		const Eigen::Matrix<SCALAR2, CONTROL_DIM, 1> &u,
+		const SCALAR2& t)
+{
+    Eigen::Matrix<SCALAR2, STATE_DIM, 1> xDiff = (x-x_ref_.template cast<SCALAR2>());
+    Eigen::Matrix<SCALAR2, CONTROL_DIM, 1> uDiff = (u-u_ref_.template cast<SCALAR2>());
 
-//     return (xDiff.transpose() * Q_.template cast<SCALAR>() * xDiff + uDiff.transpose() * R_.template cast<SCALAR>() * uDiff)(0,0);
-// }
+    return (xDiff.transpose() * Q_.template cast<SCALAR2>() * xDiff + uDiff.transpose() * R_.template cast<SCALAR2>() * uDiff)(0,0);    
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
 ct::core::StateVector<STATE_DIM, SCALAR> TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::stateDerivative(

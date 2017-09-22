@@ -64,7 +64,7 @@ public:
 	
 	virtual TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>* clone () const override;
 
-	void setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R);
+	void setWeights(const Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>& Q, const Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>& R);
 
 	const state_matrix_t& getStateWeight() const
 	{
@@ -88,13 +88,7 @@ public:
 
 	void setStateAndControlReference(const core::StateVector<STATE_DIM, SCALAR>& x_ref, const core::ControlVector<CONTROL_DIM, SCALAR>& u_ref);
 
-    SCALAR2 evaluate(const Eigen::Matrix<SCALAR2, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR2, CONTROL_DIM, 1> &u, const SCALAR2& t) override
-    {
-    Eigen::Matrix<SCALAR2, STATE_DIM, 1> xDiff = (x-x_ref_.template cast<SCALAR2>());
-    Eigen::Matrix<SCALAR2, CONTROL_DIM, 1> uDiff = (u-u_ref_.template cast<SCALAR2>());
-
-    return (xDiff.transpose() * Q_.template cast<SCALAR2>() * xDiff + uDiff.transpose() * R_.template cast<SCALAR2>() * uDiff)(0,0);    	
-    }	
+    SCALAR2 evaluate(const Eigen::Matrix<SCALAR2, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR2, CONTROL_DIM, 1> &u, const SCALAR2& t) override;
  	
 	core::StateVector<STATE_DIM, SCALAR> stateDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
 			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;

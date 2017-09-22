@@ -81,26 +81,33 @@ stateControlD_(arg.stateControlD_)
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::initialize() {
-	ct::core::DerivativesCppadSettings settings;
-	settings.createForwardZero_ = true;
-	settings.createJacobian_ = true;
-	// settings.createSparseJacobian_ = true;
-	settings.createHessian_ = true;
-
-	intermediateCostCodegen_->compileJIT(settings, "intermediateCosts");
-	finalCostCodegen_->compileJIT(settings, "finalCosts");
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-size_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose)
-{ 
-	intermediateTerms_.push_back(term);
 
 	intermediateFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
 		return this->evaluateIntermediateCg(stateinput);	
 	};
 
 	intermediateCostCodegen_->update(intermediateFun_, STATE_DIM + CONTROL_DIM, 1);
+
+		finalFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
+		return this->evaluateTerminalCg(stateinput);	
+	};
+
+	finalCostCodegen_->update(finalFun_, STATE_DIM + CONTROL_DIM, 1);
+
+	ct::core::DerivativesCppadSettings settings;
+	settings.createForwardZero_ = true;
+	settings.createJacobian_ = true;
+	// settings.createSparseJacobian_ = true;
+	settings.createHessian_ = true;
+
+	finalCostCodegen_->compileJIT(settings, "finalCosts");
+	intermediateCostCodegen_->compileJIT(settings, "intermediateCosts");
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+size_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose)
+{ 
+	intermediateTerms_.push_back(term);
 
 	if(verbose){
 		std::cout<<term->getName()+" added as intermediate AD term"<<std::endl;
@@ -113,12 +120,6 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 size_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose)
 { 
 	finalTerms_.push_back(term);
-
-	finalFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
-		return this->evaluateTerminalCg(stateinput);	
-	};
-
-	finalCostCodegen_->update(finalFun_, STATE_DIM + CONTROL_DIM, 1);
 
 	if(verbose){
 		std::cout<<term->getName()+"added as final AD term"<<std::endl;
@@ -295,7 +296,7 @@ typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_matrix_t 
 {
 	Eigen::Matrix<SCALAR, 1, 1> w; w << SCALAR(1.0);
 	MatrixXs hesTot = intermediateCostCodegen_->hessian(stateControlD_, w);
-	return hesTot.template block<CONTROL_DIM, STATE_DIM>(0, STATE_DIM);
+	return hesTot.template block<CONTROL_DIM, STATE_DIM>(STATE_DIM, 0);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -303,5 +304,5 @@ typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_matrix_t 
 {
 	Eigen::Matrix<SCALAR, 1, 1> w; w << SCALAR(1.0);
 	MatrixXs hesTot = finalCostCodegen_->hessian(stateControlD_, w);
-	return hesTot.template block<CONTROL_DIM, STATE_DIM>(0, STATE_DIM);	
+	return hesTot.template block<CONTROL_DIM, STATE_DIM>(STATE_DIM, 0);	
 }

@@ -72,8 +72,8 @@ void compareCostFunctionOutput(CostFunctionQuadratic<state_dim, control_dim>& co
 
 TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 {
-	const size_t nWeights = 10;
-	const size_t nTests = 10;
+	const size_t nWeights = 1;
+	const size_t nTests = 1;
 
 	CostFunctionAnalytical<state_dim, control_dim> costFunction;
 	CostFunctionAD<state_dim, control_dim> costFunctionAD;
@@ -87,8 +87,8 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 
 	std::shared_ptr<SingleActivation> c_single (new SingleActivation(t_on, t_off));
 
-	termQuadratic->setTimeActivation(c_single, true);
-	termQuadraticAD->setTimeActivation(c_single, true);
+	// termQuadratic->setTimeActivation(c_single, true);
+	// termQuadraticAD->setTimeActivation(c_single, true);
 
 	costFunction.addIntermediateTerm(termQuadratic, true);
 	size_t termIdAD = costFunctionAD.addIntermediateADTerm(termQuadraticAD, true);
@@ -107,13 +107,13 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 		x_ref.setRandom();
 		u_ref.setRandom();
 
-		if (i==0)
-		{
-			Q.setZero();
-			R.setZero();
-			x_ref.setZero();
-			u_ref.setZero();
-		}
+		// if (i==0)
+		// {
+		// 	Q.setZero();
+		// 	R.setZero();
+		// 	x_ref.setZero();
+		// 	u_ref.setZero();
+		// }
 
 		termQuadratic->setWeights(Q, R);
 		termQuadraticAD->setWeights(Q, R);
@@ -135,8 +135,8 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 				u.setZero();
 			}
 
-			costFunction.setCurrentStateAndControl(x, u, 0.0);
-			costFunctionAD.setCurrentStateAndControl(x, u, 0.0);
+			costFunction.setCurrentStateAndControl(x, u, 1.0);
+			costFunctionAD.setCurrentStateAndControl(x, u, 1.0);
 
 			compareCostFunctionOutput(costFunction, costFunctionAD);
 		}
