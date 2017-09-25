@@ -81,7 +81,7 @@ void CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(
 
 		std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term;
 
-		CT_LOADABLE_TERMS_ANALYTICAL(SCALAR);
+		CT_LOADABLE_TERMS(SCALAR, SCALAR);
 
 		if(!term){
 			throw std::runtime_error("Term type \""+ termKind+ "\" not supported");

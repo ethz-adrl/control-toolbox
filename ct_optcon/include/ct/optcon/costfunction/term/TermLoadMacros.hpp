@@ -24,17 +24,23 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_UTILITIES_TERMTYPEDEFS_HPP_
-#define INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_UTILITIES_TERMTYPEDEFS_HPP_
 
-#define CT_OPTCON_DEFINE_TERM_TYPES  \
-	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t; \
-	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t; \
-	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t; \
-	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_double_t; \
-	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_double_t; \
-	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_state_matrix_double_t; \
+#ifndef CT_OPTCON_COSTFUNCTION_TERM_HPP_
+#define CT_OPTCON_COSTFUNCTION_TERM_HPP_
+
+#include "TermLinear.hpp"
+#include "TermQuadratic.hpp"
+#include "TermQuadMult.hpp"
+
+#define CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TERM, TERMNAME) \
+    if (termKind==TERMNAME){ \
+      term = std::shared_ptr< TERM<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR> > (new TERM<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>()); \
+      term->setName(TERMNAME); } \
+
+#define CT_LOADABLE_TERMS(SCALAR_EVAL, SCALAR) \
+	CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TermLinear, "linear") \
+	CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TermQuadratic, "quadratic") \
+  CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TermQuadMult, "quadratic-multiplicative")
 
 
-
-#endif /* INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_UTILITIES_TERMTYPEDEFS_HPP_ */
+#endif /* CT_OPTCON_COSTFUNCTION_TERM_HPP_ */

@@ -72,7 +72,7 @@ void compareCostFunctionOutput(CostFunctionQuadratic<state_dim, control_dim>& co
 
 TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 {
-	const size_t nWeights = 5;
+	const size_t nWeights = 2;
 	const size_t nTests = 10;
 
 	CostFunctionAnalytical<state_dim, control_dim> costFunction;
@@ -150,7 +150,7 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 
 TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 {
-	const size_t nWeights = 3;
+	const size_t nWeights = 2;
 	const size_t nTests = 10;
 
 	CostFunctionAnalytical<state_dim, control_dim> costFunction;

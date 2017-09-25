@@ -24,62 +24,61 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
-TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::TermLinear(const core::StateVector<STATE_DIM, SCALAR> a, core::ControlVector<CONTROL_DIM, SCALAR> b, const SCALAR c) : a_(a), b_(b), c_(c) {}
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermLinear(const core::StateVector<STATE_DIM, SCALAR_EVAL> a, core::ControlVector<CONTROL_DIM, SCALAR_EVAL> b, const SCALAR_EVAL c) : a_(a), b_(b), c_(c) {}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
-TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::TermLinear(const TermLinear& arg) :
-	TermBase<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>(arg), a_(arg.a_), b_(arg.b_), c_(arg.c_)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermLinear(const TermLinear& arg) :
+	TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>(arg), a_(arg.a_), b_(arg.b_), c_(arg.c_)
 {}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
-TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::TermLinear() {}
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermLinear() {}
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
-TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::~TermLinear() {}
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::~TermLinear() {}
 
-// template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
-// template<typename SCALAR2>
-// SCALAR2 TermLinear<STATE_DIM, CONTROL_DIM, SCALAR2>::evaluate(const Eigen::Matrix<SCALAR2, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR2, CONTROL_DIM, 1> &u, const SCALAR2& t)
-// {
-// 	Eigen::Matrix<SCALAR2, 1, 1> y_eigen = a_.transpose() * x + b_.transpose() * u;
-// 	SCALAR2 y = y_eigen(0,0) + c_;
-// 	return y;
-// }
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+SCALAR TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t)
+{
+     Eigen::Matrix<SCALAR, 1, 1> y_eigen = a_.template cast<SCALAR>().transpose() * x + b_.template cast<SCALAR>().transpose() * u;
+     SCALAR y = y_eigen(0,0) + SCALAR(c_);
+     return y;  
+}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
-core::StateVector<STATE_DIM, SCALAR> TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::stateDerivative(const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+core::StateVector<STATE_DIM, SCALAR_EVAL> TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t)
 {
 	return a_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
-typename TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::state_matrix_t TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+typename TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::state_matrix_t TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t)
 {
 	return state_matrix_t::Zero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
-core::ControlVector<CONTROL_DIM, SCALAR> TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::controlDerivative(const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+core::ControlVector<CONTROL_DIM, SCALAR_EVAL> TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t)
 {
 	return b_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
-typename TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::control_matrix_t TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+typename TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_matrix_t TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t)
 {
 	return control_matrix_t::Zero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
-typename TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::control_state_matrix_t TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR> &x, const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+typename TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_state_matrix_t TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t)
 {
 	return control_state_matrix_t::Zero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename SCALAR2>
-void TermLinear<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>::loadConfigFile(const std::string& filename, const std::string& termName, bool verbose)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+void TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(const std::string& filename, const std::string& termName, bool verbose)
 {
        // read in the file and put the valus in a_ and b_
        loadMatrixCF(filename,"a", a_,termName);

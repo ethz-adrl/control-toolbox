@@ -82,8 +82,8 @@ void loadMatrixCF(const std::string& filename, const std::string& matrixName, Ei
 	}
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename costFuncType>
-void addTerm (const std::string& filename, std::string& currentTerm, int currentTermType, std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, costFuncType *costFunc, bool verbose = false)
+template <typename TERM_PTR, typename costFuncType>
+void addTerm (const std::string& filename, std::string& currentTerm, int currentTermType, TERM_PTR term, costFuncType *costFunc, bool verbose = false)
 {
 	switch (currentTermType){
 	case 0:
@@ -102,6 +102,28 @@ void addTerm (const std::string& filename, std::string& currentTerm, int current
 	term->loadTimeActivation(filename, currentTerm, verbose);
 	term->loadConfigFile(filename, currentTerm, verbose);
 	std::cout << "Successfully loaded term" << std::endl;
+}
+
+template <typename TERM_PTR, typename costFuncType>
+void addADTerm (const std::string& filename, std::string& currentTerm, int currentTermType, TERM_PTR term, costFuncType *costFunc, bool verbose = false)
+{
+    switch (currentTermType){
+    case 0:
+        costFunc->addIntermediateADTerm(term, verbose);
+        break;
+    case 1:
+        costFunc->addFinalADTerm(term, verbose);
+        break;
+    default:
+        if(verbose){
+            std::cout<<"error code 1 => term type other than term0 and term1 encountered"<<std::endl;
+        }
+        BOOST_PROPERTY_TREE_THROW(boost::property_tree::info_parser::info_parser_error("read error code = ", "", 1));//error code 1 => term type otherthan term0 and term1 encountered
+        break;
+    }
+    term->loadTimeActivation(filename, currentTerm, verbose);
+    term->loadConfigFile(filename, currentTerm, verbose);
+    std::cout << "Successfully loaded term" << std::endl;
 }
 
 } // namespace optcon

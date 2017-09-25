@@ -40,62 +40,61 @@ namespace optcon {
  *
  *	An example for using this term is given in \ref CostFunctionTest.cpp
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double, typename SCALAR2 = SCALAR>
-class TermMixed : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2> {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, typename SCALAR = SCALAR_EVAL>
+class TermMixed : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR> {
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	
-	CT_OPTCON_DEFINE_TERM_TYPES
+    typedef Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM> state_matrix_t;
+    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
+    typedef Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM> state_matrix_double_t;
+    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM> control_matrix_double_t;
+    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, STATE_DIM> control_state_matrix_double_t;
 
 	TermMixed();
 
 	TermMixed(const control_state_matrix_t& P);
 
-	TermMixed(const control_state_matrix_t& P, const core::StateVector<STATE_DIM, SCALAR>& x_ref, core::ControlVector<CONTROL_DIM, SCALAR>& u_ref);
+	TermMixed(const control_state_matrix_t& P, const core::StateVector<STATE_DIM, SCALAR_EVAL>& x_ref, core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref);
 
 	TermMixed(const TermMixed& arg);
 
 	virtual ~TermMixed(){}
 	
-	TermMixed<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR2>* clone () const override;
+	TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone () const override;
 
 	void setWeights(const control_state_matrix_double_t& P);
 
 	void setStateAndControlReference(const core::StateVector<STATE_DIM>& x_ref, const core::ControlVector<CONTROL_DIM>& u_ref);
 
-	SCALAR2 evaluate(const Eigen::Matrix<SCALAR2, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR2, CONTROL_DIM, 1> &u, const SCALAR2& t) override
-	{
-	    Eigen::Matrix<SCALAR2, STATE_DIM, 1> xDiff = (x-x_ref_.template cast<SCALAR2>());
-	    Eigen::Matrix<SCALAR2, CONTROL_DIM, 1> uDiff = (u-u_ref_.template cast<SCALAR2>());
+	SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
 
-	    return (uDiff.transpose() * P_.template cast<SCALAR2>() * xDiff)(0,0);		
-	}	
+	core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
 
-	core::StateVector<STATE_DIM, SCALAR> stateDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
-			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
-
-	state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
-			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
+	state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
 	
-	core::ControlVector<CONTROL_DIM, SCALAR> controlDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
-			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
+	core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
 	
-	control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
-			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
+	control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
 
-	control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR> &x,
-			const core::ControlVector<CONTROL_DIM, SCALAR> &u, const SCALAR& t) override;
+	control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
 	
 	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) override;
 
-	void updateReferenceState (const Eigen::Matrix<SCALAR, STATE_DIM, 1>& newRefState) override{ x_ref_ = newRefState;}
+	void updateReferenceState (const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState) override{ x_ref_ = newRefState;}
 
 protected:
 	control_state_matrix_t P_;
 
-	core::StateVector<STATE_DIM, SCALAR> x_ref_;
-	core::ControlVector<CONTROL_DIM, SCALAR> u_ref_;
+	core::StateVector<STATE_DIM, SCALAR_EVAL> x_ref_;
+	core::ControlVector<CONTROL_DIM, SCALAR_EVAL> u_ref_;
 
 };
 

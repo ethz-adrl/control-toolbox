@@ -34,7 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "CostFunctionQuadratic.hpp"
 #include "utility/utilities.hpp"
 
-#include "term/TermsAnalytical.hpp"
+#include "term/TermLoadMacros.hpp"
 
 
 namespace ct {

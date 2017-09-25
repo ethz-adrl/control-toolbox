@@ -37,7 +37,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "CostFunctionQuadratic.hpp"
 #include "utility/utilities.hpp"
 
-#include "term/TermsAnalytical.hpp"
+#include "term/TermLoadMacros.hpp"
 
 namespace ct {
 namespace optcon {
@@ -58,7 +58,7 @@ class CostFunctionAD : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCAL
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef core::DerivativesCppadJIT<STATE_DIM + CONTROL_DIM, 1> JacCG;
+	typedef core::DerivativesCppadJIT<STATE_DIM + CONTROL_DIM + 1, 1> JacCG;
 	typedef typename JacCG::CG_SCALAR CGScalar;
 	typedef Eigen::Matrix<CGScalar, 1, 1> MatrixCg;
 
@@ -113,19 +113,12 @@ public:
 	 */
 	~CostFunctionAD() {};
 
+
 	/**
-	 * \brief This function should be called when weightings of a term changed.
-	 *
-	 * The AD cost function holds an expression of the term function. If weights changes this currently
-	 * has to be rebuilt. Call this function to inform the cost function about any changes in parameters
-	 * used in the term. This does **NOT** have to be called if x, u or t change.
-	 * @param termId The ID of the term that changed
+	 * @brief      Initializes the AD costfunction, generates and compiles
+	 *             source code
 	 */
 	void initialize();
-
-	void updateIntermediateCosts();
-
-	void updateFinalCosts();
 
 	/**
 	 * \brief Add an intermediate, auto-differentiable term
@@ -173,8 +166,8 @@ public:
 
 
 private:
-	MatrixCg evaluateIntermediateCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput);
-	MatrixCg evaluateTerminalCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput);
+	MatrixCg evaluateIntermediateCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM + 1, 1>& stateInputTime);
+	MatrixCg evaluateTerminalCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM + 1, 1>& stateInputTime);
 
 	std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>>> intermediateTerms_;
 	std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>>> finalTerms_;
@@ -185,7 +178,7 @@ private:
 	typename JacCG::FUN_TYPE_CG intermediateFun_;
 	typename JacCG::FUN_TYPE_CG finalFun_;
 
-	Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM, 1> stateControlD_;
+	Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM + 1, 1> stateControlTime_;
 
 };
 

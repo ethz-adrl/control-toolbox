@@ -196,11 +196,11 @@ get_filename_component(DMS_OSC_TEST_MAT_DIR "test/dms/oscillator/matfiles" ABSOL
 configure_file(test/dms/oscillator/oscDMSTest_settings.h.in test/dms/oscillator/oscDMSTest_settings.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/dms/oscillator)
 
-catkin_add_gtest(LqrTest test/lqr/LqrTest.cpp)
-target_link_libraries(LqrTest ${catkin_LIBRARIES} lapack ${MATLAB_LIBS})
+#catkin_add_gtest(LqrTest test/lqr/LqrTest.cpp)
+#target_link_libraries(LqrTest ${catkin_LIBRARIES} lapack ${MATLAB_LIBS})
 
-catkin_add_gtest(iLQRTest test/nloc/iLQRTest.cpp)
-target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+#catkin_add_gtest(iLQRTest test/nloc/iLQRTest.cpp)
+#target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
 if(HPIPM)
     add_executable(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
@@ -239,8 +239,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/nloc)
 catkin_add_gtest(CostFunctionTest test/costfunction/CostFunctionTest.cpp)
 target_link_libraries(CostFunctionTest ${catkin_LIBRARIES} ${MATLAB_LIBS} dl)
 
-#catkin_add_gtest(ADTest_timeVar test/costfunction/ADTest_timeDependent.cpp)
-#target_link_libraries(ADTest_timeVar ${catkin_LIBRARIES})
+catkin_add_gtest(ADTest_timeVar test/costfunction/ADTest_timeDependent.cpp)
+target_link_libraries(ADTest_timeVar ${catkin_LIBRARIES} dl)
 
 #catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
 #target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
