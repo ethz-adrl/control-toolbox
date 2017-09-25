@@ -203,14 +203,3 @@ TEST(AD_TEST_TIME_VAR, AD_TEST_TIME_VAR)
 } // namespace optcon
 } // namespace ct
 
-/*!
- * \warning This test illustrates that time-dependency is not yet accounted for when using CppAD!
- */
-int main(int argc, char **argv)
-{
-	using namespace ct::optcon::example;
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
-}
-
-

@@ -129,7 +129,7 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-	size_t addIntermediateADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose = false) override;
+	void addIntermediateADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose = false) override;
 
 	/**
 	 * \brief Add a final, auto-differentiable term
@@ -140,7 +140,7 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-	size_t addFinalADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose = false) override;
+	void addFinalADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose = false) override;
 
 	void setCurrentStateAndControl(const state_vector_t &x, const control_vector_t &u, const SCALAR& t = 0.0) override;
 
@@ -169,6 +169,8 @@ private:
 	MatrixCg evaluateIntermediateCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM + 1, 1>& stateInputTime);
 	MatrixCg evaluateTerminalCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM + 1, 1>& stateInputTime);
 
+	Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM + 1, 1> stateControlTime_;
+
 	std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>>> intermediateTerms_;
 	std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>>> finalTerms_;
 
@@ -177,9 +179,6 @@ private:
 
 	typename JacCG::FUN_TYPE_CG intermediateFun_;
 	typename JacCG::FUN_TYPE_CG finalFun_;
-
-	Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM + 1, 1> stateControlTime_;
-
 };
 
 #include "implementation/CostFunctionAD-impl.hpp"

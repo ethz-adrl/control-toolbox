@@ -80,13 +80,11 @@ public:
         int inputDim = IN_DIM, 
         int outputDim = OUT_DIM) 
     :
-        fCgStd_(f),
+        cgStdFun_(f),
         inputDim_(inputDim),
         outputDim_(outputDim)
     {
         update(f, inputDim, outputDim);
-        // if(outputDim_ > 0 && inputDim_ > 0)
-        //     recordCg();
     }
 
     /*
@@ -108,24 +106,23 @@ public:
         int inputDim = IN_DIM, 
         int outputDim = OUT_DIM) 
     :
-        fAdStd_(f),
+        adStdFun_(f),
         inputDim_(inputDim),
         outputDim_(outputDim)
     {
-        if(outputDim_ > 0 && inputDim_ > 0)
-            recordAd();
+        update(f, inputDim, outputDim);
     }
 
     //! copy constructor
     CppadUtils(const CppadUtils& arg) 
     :
-        fCgStd_(arg.fCgStd_),
-        fAdStd_(arg.fAdStd_),
+        cgStdFun_(arg.cgStdFun_),
+        adStdFun_(arg.adStdFun_),
         inputDim_(arg.inputDim_),
         outputDim_(arg.outputDim_)
     {
-        fCgCppad_ = arg.fCgCppad_;
-        fAdCppad_ = arg.fAdCppad_;
+        cgCppadFun_ = arg.cgCppadFun_;
+        adCppadFun_ = arg.adCppadFun_;
     }
 
     //! destructor
@@ -144,7 +141,7 @@ public:
      */
     void update(FUN_TYPE_CG& f, const size_t inputDim = IN_DIM, const size_t outputDim = OUT_DIM)
     {
-        fCgStd_ = f;
+        cgStdFun_ = f;
         outputDim_ = outputDim;
         inputDim_ = inputDim;
         if(outputDim_ > 0 && inputDim_ > 0)
@@ -165,7 +162,7 @@ public:
      */
     void update(FUN_TYPE_AD& f, const size_t inputDim = IN_DIM, const size_t outputDim = OUT_DIM)
     {
-        fAdStd_ = f;
+        adStdFun_ = f;
         outputDim_ = outputDim;
         inputDim_ = inputDim;
         if(outputDim_ > 0 && inputDim_ > 0)
@@ -175,6 +172,9 @@ public:
         }
     }
 
+    /**
+     * @brief      Updates any members of the derived classes after the function object got updated
+     */
     virtual void updateDerived(){};
 
     //! deep cloning of Jacobian
@@ -195,14 +195,14 @@ protected:
         // output vector, needs to be dynamic size
         Eigen::Matrix<CG_SCALAR, Eigen::Dynamic, 1> y(outputDim_);
 
-        y = fCgStd_(x);
+        y = cgStdFun_(x);
 
         // store operation sequence in f: x -> y and stop recording
         CppAD::ADFun<CG_VALUE_TYPE> fCodeGen(x, y);
 
         fCodeGen.optimize();
 
-        fCgCppad_ = fCodeGen;
+        cgCppadFun_ = fCodeGen;
     }
 
     /**
@@ -219,24 +219,24 @@ protected:
         // output vector, needs to be dynamic size
         Eigen::Matrix<AD_SCALAR, Eigen::Dynamic, 1> y(outputDim_);
 
-        y = fAdStd_(x);
+        y = adStdFun_(x);
 
         // store operation sequence in f: x -> y and stop recording
         CppAD::ADFun<double> fAd(x, y);
 
         fAd.optimize();
 
-        fAdCppad_ = fAd;        
+        adCppadFun_ = fAd;        
     }
 
-    std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> fCgStd_; //! the function
-    std::function<OUT_TYPE_AD(const IN_TYPE_AD&)> fAdStd_;
+    std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> cgStdFun_; //! the function
+    std::function<OUT_TYPE_AD(const IN_TYPE_AD&)> adStdFun_;
 
     int inputDim_; //! function input dimension
     int outputDim_; //! function output dimension
 
-    CppAD::ADFun<CG_VALUE_TYPE> fCgCppad_; //!  auto-diff function
-    CppAD::ADFun<double> fAdCppad_;
+    CppAD::ADFun<CG_VALUE_TYPE> cgCppadFun_; //!  auto-diff function
+    CppAD::ADFun<double> adCppadFun_;
 };
 
 } /* namespace core */

@@ -26,7 +26,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD() :
-CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> ()
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> (),
+stateControlTime_(Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM + 1, 1>::Zero())
 {
 	intermediateFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM + 1, 1>& stateInputTime){
 		return this->evaluateIntermediateCg(stateInputTime);	
@@ -47,6 +48,8 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const state_vector_t &x, const control_vector_t &u, const SCALAR& t) :
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> (x,u, t)
 {
+	setCurrentStateAndControl(x, u, t);
+	
 	intermediateFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM + 1, 1>& stateInputTime){
 		return this->evaluateIntermediateCg(stateInputTime);	
 	};
@@ -57,8 +60,6 @@ CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> (x,u, t)
 
 	intermediateCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(intermediateFun_, STATE_DIM + CONTROL_DIM + 1, 1));
 	finalCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(finalFun_, STATE_DIM + CONTROL_DIM + 1, 1));
-
-	setCurrentStateAndControl(x, u, t);
 }
 
 
@@ -107,27 +108,23 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::initialize()
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-size_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose)
+void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose)
 { 
 	intermediateTerms_.push_back(term);
 
 	if(verbose){
 		std::cout<<term->getName()+" added as intermediate AD term"<<std::endl;
 	}
-
-	return intermediateTerms_.size()-1;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-size_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose)
+void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose)
 { 
 	finalTerms_.push_back(term);
 
 	if(verbose){
 		std::cout<<term->getName()+"added as final AD term"<<std::endl;
 	}
-
-	return finalTerms_.size()-1;
 }
 
 // set state and control

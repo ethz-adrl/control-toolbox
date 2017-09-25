@@ -91,7 +91,7 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 	// termQuadraticAD->setTimeActivation(c_single, true);
 
 	costFunction.addIntermediateTerm(termQuadratic, true);
-	size_t termIdAD = costFunctionAD.addIntermediateADTerm(termQuadraticAD, true);
+	costFunctionAD.addIntermediateADTerm(termQuadraticAD, true);
 
 	Eigen::Matrix<double, state_dim, state_dim> Q;
 	Eigen::Matrix<double, control_dim, control_dim> R;
@@ -172,7 +172,7 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 	// termQuadMultAD->setTimeActivation(c_periodic, true);
 
 	costFunction.addIntermediateTerm(termQuadMult);
-	size_t termIdAD = costFunctionAD.addIntermediateADTerm(termQuadMultAD);
+	costFunctionAD.addIntermediateADTerm(termQuadMultAD);
 
 	Eigen::Matrix<double, state_dim, state_dim> Q;
 	Eigen::Matrix<double, control_dim, control_dim> R;
@@ -252,15 +252,4 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 } // namespace example
 } // namespace optcon
 } // namespace ct
-
-/*!
- * This unit test illustrates the use of cost functions and terms
- * \example CostFunctionTest.cpp
- */
-int main(int argc, char **argv)
-{
-	using namespace ct::optcon::example;
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
-}
 

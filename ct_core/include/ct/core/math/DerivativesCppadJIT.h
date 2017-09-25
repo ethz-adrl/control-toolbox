@@ -97,10 +97,7 @@ public:
         Utils(f, inputDim, outputDim),
         DerivativesBase(),
         compiled_(false)
-    {
-        // if(outputDim > 0 && inputDim > 0)
-        //     this->recordCg();
-    }
+    {}
 
     /**
      * @brief      Constructs the derivatives for autodiff without
@@ -123,10 +120,7 @@ public:
         Utils(f, inputDim, outputDim),
         DerivativesBase(),
         compiled_(false)
-    {
-        // if(outputDim > 0 && inputDim > 0)
-        //     this->recordAd();
-    }
+    {}
 
     //! copy constructor
     DerivativesCppadJIT(const DerivativesCppadJIT& arg) 
@@ -165,7 +159,7 @@ public:
             return model_->ForwardZero(x);
         }
         else
-            return this->fAdCppad_.Forward(0, x);
+            return this->adCppadFun_.Forward(0, x);
     }
 
     virtual JAC_TYPE_D jacobian(const Eigen::VectorXd& x)
@@ -181,7 +175,7 @@ public:
             jac = model_->Jacobian(x);
         }
         else
-            jac = this->fAdCppad_.Jacobian(x);
+            jac = this->adCppadFun_.Jacobian(x);
 
         JAC_TYPE_D out(this->outputDim_, x.rows());
         out = JAC_TYPE_ROW_MAJOR::Map(jac.data(), this->outputDim_, x.rows());
@@ -208,7 +202,7 @@ public:
             jCol = sparsityColsJacobianEigen_;      
         }
         else
-            jac = this->fAdCppad_.SparseJacobian(x);
+            jac = this->adCppadFun_.SparseJacobian(x);
     }       
 
     virtual Eigen::VectorXd sparseJacobianValues(const Eigen::VectorXd& x)
@@ -225,7 +219,7 @@ public:
             return Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
         }
         else
-            return this->fAdCppad_.SparseJacobian(x);
+            return this->adCppadFun_.SparseJacobian(x);
     }
 
 
@@ -243,7 +237,7 @@ public:
         }
         else
         {
-            Eigen::VectorXd hessian = this->fAdCppad_.Hessian(x, lambda);
+            Eigen::VectorXd hessian = this->adCppadFun_.Hessian(x, lambda);
             HES_TYPE_D out(x.rows(), x.rows());
             out = HES_TYPE_ROW_MAJOR::Map(hessian.data(), x.rows(), x.rows());
             return out;
@@ -272,7 +266,7 @@ public:
             jCol = sparsityColsHessianEigen_;   
         }   
         else
-            hes = this->fAdCppad_.SparseHessian(x, lambda);
+            hes = this->adCppadFun_.SparseHessian(x, lambda);
     }    
 
 
@@ -293,7 +287,7 @@ public:
                 return Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
             }   
             else
-                return this->fAdCppad_.SparseHessian(x, lambda);
+                return this->adCppadFun_.SparseHessian(x, lambda);
     }   
 
     //! get Jacobian sparsity pattern
@@ -407,7 +401,7 @@ public:
         if (compiled_) return;
         std::cout << "Starting to compile " + libName + " library"  << std::endl;
 
-        CppAD::cg::ModelCSourceGen<double> cgen(this->fCgCppad_, "DerivativesCppad");
+        CppAD::cg::ModelCSourceGen<double> cgen(this->cgCppadFun_, "DerivativesCppad");
 
         cgen.setMultiThreading(settings.multiThreading_);
         cgen.setCreateForwardZero(settings.createForwardZero_);
@@ -436,8 +430,11 @@ public:
             dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler));
         }
 
-        // CppAD::cg::SaveFilesModelLibraryProcessor<double> p2(libcgen);
-        // p2.saveSources();
+        if(settings.generateSourceCode_)
+        {
+            CppAD::cg::SaveFilesModelLibraryProcessor<double> p2(libcgen);
+            p2.saveSources();
+        }
 
         model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"));
 

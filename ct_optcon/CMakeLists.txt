@@ -236,11 +236,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/nloc)
 #catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
 #target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
 
-catkin_add_gtest(CostFunctionTest test/costfunction/CostFunctionTest.cpp)
-target_link_libraries(CostFunctionTest ${catkin_LIBRARIES} ${MATLAB_LIBS} dl)
-
-catkin_add_gtest(ADTest_timeVar test/costfunction/ADTest_timeDependent.cpp)
-target_link_libraries(ADTest_timeVar ${catkin_LIBRARIES} dl)
+catkin_add_gtest(CostFunctionTests test/costfunction/CostFunctionTests.cpp)
+target_link_libraries(CostFunctionTests ${catkin_LIBRARIES} ${MATLAB_LIBS} dl)
 
 #catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
 #target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
