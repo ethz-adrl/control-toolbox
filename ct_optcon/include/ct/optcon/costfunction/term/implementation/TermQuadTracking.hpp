@@ -25,8 +25,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
-TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::TermQuadTracking(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadTracking(
 		const state_matrix_t& Q,
 		const control_matrix_t& R,
 		const core::InterpolationType& stateSplineType,
@@ -39,15 +39,15 @@ TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::TermQuadTracking(
 		trackControlTrajectory_(trackControlTrajectory)
 {}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
-TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::TermQuadTracking() {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadTracking() {
 	Q_.setIdentity();	// default values
 	R_.setIdentity();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
-TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::TermQuadTracking(const TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>& arg):
-	TermBase<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>(arg),
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadTracking(const TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>& arg):
+	TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>(arg),
 	Q_(arg.Q_),
 	R_(arg.R_),
 	x_traj_ref_(arg.x_traj_ref_),
@@ -55,21 +55,21 @@ TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::TermQuadTracking(const
 	trackControlTrajectory_(arg.trackControlTrajectory_)
 {}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
-TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>* TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::clone () const {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::clone () const {
 		return new TermQuadTracking(*this);
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
-void TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+void TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R)
 {
-    Q_ = Q.template cast<S>();
-    R_ = R.template cast<S>();
+    Q_ = Q.template cast<SCALAR_EVAL>();
+    R_ = R.template cast<SCALAR_EVAL>();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
-void TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::setStateAndControlReference(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+void TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::setStateAndControlReference(
 		const core::StateTrajectory<STATE_DIM>& xTraj,
 		const core::ControlTrajectory<CONTROL_DIM>& uTraj)
 {
@@ -78,47 +78,47 @@ void TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::setStateAndContro
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
-S TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::evaluate(
-		const Eigen::Matrix<S, STATE_DIM, 1> &x,
-		const Eigen::Matrix<S, CONTROL_DIM, 1> &u,
-		const S& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+SCALAR TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluate(
+		const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x,
+		const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u,
+		const SCALAR& t)
 {
-    Eigen::Matrix<S, STATE_DIM, 1> xDiff = x-x_traj_ref_.eval(t);
+    Eigen::Matrix<SCALAR, STATE_DIM, 1> xDiff = x-x_traj_ref_.eval(t).template cast<SCALAR>();
 
-    Eigen::Matrix<S, CONTROL_DIM, 1> uDiff;
+    Eigen::Matrix<SCALAR, CONTROL_DIM, 1> uDiff;
 
     if(trackControlTrajectory_)
-    	uDiff = u-u_traj_ref_.eval(t);
+        uDiff = u-u_traj_ref_.eval(t).template cast<SCALAR>();
     else
-    	uDiff = u;
+        uDiff = u;
 
-    return (xDiff.transpose() * Q_.template cast<S>() * xDiff + uDiff.transpose() * R_.template cast<S>() * uDiff)(0,0);
+    return (xDiff.transpose() * Q_.template cast<SCALAR>() * xDiff + uDiff.transpose() * R_.template cast<SCALAR>() * uDiff)(0,0);      
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
-ct::core::StateVector<STATE_DIM, S> TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::stateDerivative(
-		const ct::core::StateVector<STATE_DIM, S> &x,
-		const ct::core::ControlVector<CONTROL_DIM, S> &u,
-		const S& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+ct::core::StateVector<STATE_DIM, SCALAR_EVAL> TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateDerivative(
+		const ct::core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
+		const ct::core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u,
+		const SCALAR_EVAL& t)
 {
-    Eigen::Matrix<S, STATE_DIM, 1> xDiff = x-x_traj_ref_.eval(t);
+    Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> xDiff = x-x_traj_ref_.eval(t);
 
     return xDiff.transpose() * Q_.transpose() + xDiff.transpose() * Q_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
-typename TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::state_matrix_t TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::stateSecondDerivative(
-		const core::StateVector<STATE_DIM, S> &x, const core::ControlVector<CONTROL_DIM, S> &u, const S& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+typename TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::state_matrix_t TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateSecondDerivative(
+		const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t)
 {
 	return Q_ + Q_.transpose();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
-core::ControlVector<CONTROL_DIM, S> TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::controlDerivative(
-		const core::StateVector<STATE_DIM, S> &x, const core::ControlVector<CONTROL_DIM, S> &u, const S& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+core::ControlVector<CONTROL_DIM, SCALAR_EVAL> TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlDerivative(
+		const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t)
 {
-    Eigen::Matrix<S, CONTROL_DIM, 1> uDiff;
+    Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, 1> uDiff;
 
     if(trackControlTrajectory_)
     	uDiff = u-u_traj_ref_.eval(t);
@@ -128,22 +128,22 @@ core::ControlVector<CONTROL_DIM, S> TermQuadTracking<STATE_DIM, CONTROL_DIM, S, 
     return uDiff.transpose() * R_.transpose() + uDiff.transpose() * R_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
-typename TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::control_matrix_t TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::controlSecondDerivative(
-		const core::StateVector<STATE_DIM, S> &x, const core::ControlVector<CONTROL_DIM, S> &u, const S& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+typename TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_matrix_t TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlSecondDerivative(
+		const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t)
 {
 	return R_ + R_.transpose() ;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
-typename TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::control_state_matrix_t TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::stateControlDerivative(
-		const core::StateVector<STATE_DIM, S> &x, const core::ControlVector<CONTROL_DIM, S> &u, const S& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+typename TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_state_matrix_t TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateControlDerivative(
+		const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t)
 {
 	return control_state_matrix_t::Zero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S, typename TIME_SCALAR>
-void TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>::loadConfigFile(const std::string& filename, const std::string& termName, bool verbose)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+void TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(const std::string& filename, const std::string& termName, bool verbose)
 {
        loadMatrixCF(filename,"Q", Q_,termName);
        loadMatrixCF(filename,"R", R_,termName);

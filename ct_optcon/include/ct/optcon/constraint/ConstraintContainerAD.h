@@ -77,7 +77,6 @@ public:
 
 		intermediateCodegen_ = std::shared_ptr<JacCG>(new JacCG(fIntermediate_, STATE_DIM + CONTROL_DIM, getIntermediateConstraintsCount()));
 		terminalCodegen_ = std::shared_ptr<JacCG>(new JacCG(fTerminal_, STATE_DIM + CONTROL_DIM, getTerminalConstraintsCount()));
-
 	}
 
 	/**
@@ -86,7 +85,7 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	ConstraintContainerAD(const state_vector_t &x, const input_vector_t &u, const SCALAR& t = 0.0) 
+	ConstraintContainerAD(const state_vector_t &x, const input_vector_t &u, const SCALAR& t = SCALAR(0.0)) 
 	{
 		//Set to some random number which is != the initguess of the problem
 		stateControlD_ << x, u;

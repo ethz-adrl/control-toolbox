@@ -236,14 +236,8 @@ target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_
 catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
 target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
 
-catkin_add_gtest(CostFunctionTest test/costfunction/CostFunctionTest.cpp)
-target_link_libraries(CostFunctionTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
-
-catkin_add_gtest(CfTracking test/costfunction/TrackingTest.cpp)
-target_link_libraries(CfTracking ${catkin_LIBRARIES})
-
-catkin_add_gtest(ADTest_timeVar test/costfunction/ADTest_timeDependent.cpp)
-target_link_libraries(ADTest_timeVar ${catkin_LIBRARIES})
+catkin_add_gtest(CostFunctionTests test/costfunction/CostFunctionTests.cpp)
+target_link_libraries(CostFunctionTests ${catkin_LIBRARIES} ${MATLAB_LIBS} dl)
 
 catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
 target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
@@ -256,7 +250,7 @@ target_link_libraries(bareTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS} dl
 
 add_executable(matFilesGenerator test/dms/oscillator/matfiles/matFilesGenerator.cpp)
 target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-#
+
 #add_executable(timeKeeperTest test/mpc/TimeKeeperTest.cpp)
 #target_link_libraries(timeKeeperTest ${catkin_LIBRARIES})
 

@@ -59,7 +59,8 @@ public:
     createHessian_(false),
     createSparseHessian_(false),
     maxAssignements_(20000),
-    compiler_(GCC)
+    compiler_(GCC),
+    generateSourceCode_(false)
     {}
 
     bool multiThreading_;
@@ -73,6 +74,7 @@ public:
     bool createSparseHessian_;
     size_t maxAssignements_;
     CompilerType compiler_;
+    bool generateSourceCode_;
     /**
      * @brief      Prints out settings
      */
@@ -102,6 +104,9 @@ public:
         std::cout << "Using " + compilerToString[compiler_] + " to compile the generated derivatives" << std::endl;
 
         std::cout << "Max Assignements per generated Function:" << maxAssignements_ << std::endl;
+
+        if(generateSourceCode_)
+            std::cout << "Generating and saving Source Code" << std::endl;
     }
 
      /**
@@ -136,6 +141,7 @@ public:
         createHessian_          = pt.get<bool>(ns + ".CreateHessian");
         createSparseHessian_    = pt.get<bool>(ns + ".CreateSparseHessian");
         maxAssignements_        = pt.get<unsigned int>(ns + ".MaxAssignements");
+        generateSourceCode_     = pt.get<bool>(ns + ".GenerateSourceCode");
 
         std::string compilerStr = pt.get<std::string>(ns + ".Compiler");
 

@@ -24,26 +24,13 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#include "ADTest_timeDependent.h"
+#include "CostFunctionTest.h"
 
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-CppAD::AD<double> TermOther<STATE_DIM, CONTROL_DIM>::evaluate(const Eigen::Matrix<CppAD::AD<double>, STATE_DIM, 1> &x,
-		const Eigen::Matrix<CppAD::AD<double>, CONTROL_DIM, 1> &u, const CppAD::AD<double>& t)
+
+int main(int argc, char **argv)
 {
-	Eigen::Matrix<CppAD::AD<double>, 1, 1> y_eigen = a_.transpose() * x + x.transpose() * x + u.transpose() * R_ * u; // FIXME: what is this?
-	//Eigen::Matrix<CppAD::AD<double>, 1, 1> y_eigen = u.transpose() * u;
-
-	CppAD::AD<double> y = y_eigen(0,0);
-	return y;
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void TermOther<STATE_DIM, CONTROL_DIM>::loadConfigFile(const std::string& filename, const std::string& termName, bool verbose) 
-{
-	// read in the file and put the valus in a_ and R_
-	loadMatrixCF(filename,"a2", a_,termName);
-	loadMatrixCF(filename,"R2", R_,termName);
-	if(verbose){
-		std::cout<<"Read a as a= \n"<<a_<<std::endl;
-		std::cout<<"Read R as R= \n"<<R_<<std::endl;
-	}
+    using namespace ct::optcon::example;
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

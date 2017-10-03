@@ -27,9 +27,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define EIGEN_INITIALIZE_MATRICES_BY_NAN
 #define DEBUG
 
+#include <ct/optcon/optcon.h>
 #include <gtest/gtest.h>
-
-#include <cppad/example/cppad_eigen.hpp>
 
 #include <ct/optcon/costfunction/CostFunctionAD.hpp>
 #include <ct/optcon/costfunction/CostFunctionAnalytical.hpp>
@@ -73,25 +72,26 @@ void compareCostFunctionOutput(CostFunctionQuadratic<state_dim, control_dim>& co
 
 TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 {
-	const size_t nWeights = 10;
+	const size_t nWeights = 2;
 	const size_t nTests = 10;
 
 	CostFunctionAnalytical<state_dim, control_dim> costFunction;
 	CostFunctionAD<state_dim, control_dim> costFunctionAD;
 
 	std::shared_ptr<TermQuadratic<state_dim, control_dim, double> > termQuadratic(new TermQuadratic<state_dim, control_dim>);
-	std::shared_ptr<TermQuadratic<state_dim, control_dim, CppAD::AD<double>, double > > termQuadraticAD(new TermQuadratic<state_dim, control_dim, CppAD::AD<double>, double>);
+	std::shared_ptr<TermQuadratic<state_dim, control_dim, double, ct::core::ADCGScalar > > termQuadraticAD(
+		new TermQuadratic<state_dim, control_dim, double, ct::core::ADCGScalar>);
 
 	double t_on = 0.5;
 	double t_off = 1.5;
 
 	std::shared_ptr<SingleActivation> c_single (new SingleActivation(t_on, t_off));
 
-	termQuadratic->setTimeActivation(c_single, true);
-	termQuadraticAD->setTimeActivation(c_single, true);
+	// termQuadratic->setTimeActivation(c_single, true);
+	// termQuadraticAD->setTimeActivation(c_single, true);
 
 	costFunction.addIntermediateTerm(termQuadratic, true);
-	size_t termIdAD = costFunctionAD.addIntermediateTerm(termQuadraticAD, true);
+	costFunctionAD.addIntermediateADTerm(termQuadraticAD, true);
 
 	Eigen::Matrix<double, state_dim, state_dim> Q;
 	Eigen::Matrix<double, control_dim, control_dim> R;
@@ -118,9 +118,9 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 		termQuadratic->setWeights(Q, R);
 		termQuadraticAD->setWeights(Q, R);
 		termQuadratic->setStateAndControlReference(x_ref, u_ref);
-		termQuadraticAD->setStateAndControlReference(x_ref.template cast<CppAD::AD<double>>(), u_ref.template cast<CppAD::AD<double>>());
+		termQuadraticAD->setStateAndControlReference(x_ref, u_ref);
 
-		costFunctionAD.termChanged(termIdAD);
+		costFunctionAD.initialize();
 
 		for (size_t j=0; j<nTests; j++)
 		{
@@ -135,8 +135,8 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 				u.setZero();
 			}
 
-			costFunction.setCurrentStateAndControl(x, u, 0.0);
-			costFunctionAD.setCurrentStateAndControl(x, u, 0.0);
+			costFunction.setCurrentStateAndControl(x, u, 1.0);
+			costFunctionAD.setCurrentStateAndControl(x, u, 1.0);
 
 			compareCostFunctionOutput(costFunction, costFunctionAD);
 		}
@@ -150,17 +150,17 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 
 TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 {
-	const size_t nWeights = 10;
+	const size_t nWeights = 2;
 	const size_t nTests = 10;
 
 	CostFunctionAnalytical<state_dim, control_dim> costFunction;
 	CostFunctionAD<state_dim, control_dim> costFunctionAD;
 
 	std::shared_ptr<TermQuadMult<state_dim, control_dim, double> > termQuadMult(new TermQuadMult<state_dim, control_dim>);
-	std::shared_ptr<TermQuadMult<state_dim, control_dim, CppAD::AD<double>, double > > termQuadMultAD(new TermQuadMult<state_dim, control_dim, CppAD::AD<double>, double>);
+	std::shared_ptr<TermQuadMult<state_dim, control_dim, double, ct::core::ADCGScalar > > termQuadMultAD(new TermQuadMult<state_dim, control_dim, double, ct::core::ADCGScalar>);
 
 	std::shared_ptr<TermMixed<state_dim, control_dim, double > > termMixed (new TermMixed<state_dim, control_dim, double>);
-	std::shared_ptr<TermMixed<state_dim, control_dim, CppAD::AD<double> > > termMixedAD (new TermMixed<state_dim, control_dim, CppAD::AD<double>>);
+	std::shared_ptr<TermMixed<state_dim, control_dim, double, ct::core::ADCGScalar > > termMixedAD (new TermMixed<state_dim, control_dim, double, ct::core::ADCGScalar>);
 
 	double active_percentage = 0.5; // how much of the cycle is the time active
 	double period = 0.5; // what is the period
@@ -168,11 +168,11 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 	double period_offset = 0.2; // how much is the period offset to t=0?
 
 	std::shared_ptr<PeriodicActivation> c_periodic (new PeriodicActivation(active_percentage, period, activation_offset, period_offset));
-	termQuadMult->setTimeActivation(c_periodic, true);
-	termQuadMultAD->setTimeActivation(c_periodic, true);
+	// termQuadMult->setTimeActivation(c_periodic, true);
+	// termQuadMultAD->setTimeActivation(c_periodic, true);
 
 	costFunction.addIntermediateTerm(termQuadMult);
-	size_t termIdAD = costFunctionAD.addIntermediateTerm(termQuadMultAD);
+	costFunctionAD.addIntermediateADTerm(termQuadMultAD);
 
 	Eigen::Matrix<double, state_dim, state_dim> Q;
 	Eigen::Matrix<double, control_dim, control_dim> R;
@@ -213,10 +213,11 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 			termQuadMult->setStateAndControlReference(x_ref, u_ref);
 			termQuadMultAD->setStateAndControlReference(x_ref, u_ref);
 
-			costFunctionAD.termChanged(termIdAD);
+			costFunctionAD.initialize();
 
 			// create cloned cost function
 			std::shared_ptr<CostFunctionAD<state_dim, control_dim>> costFunctionAD_clone (costFunctionAD.clone());
+			costFunctionAD_clone->initialize();
 
 
 			for (size_t j=0; j<nTests; j++)
@@ -251,15 +252,4 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 } // namespace example
 } // namespace optcon
 } // namespace ct
-
-/*!
- * This unit test illustrates the use of cost functions and terms
- * \example CostFunctionTest.cpp
- */
-int main(int argc, char **argv)
-{
-	using namespace ct::optcon::example;
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
-}
 

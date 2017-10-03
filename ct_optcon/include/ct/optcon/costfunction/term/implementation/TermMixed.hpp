@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-TermMixed<STATE_DIM, CONTROL_DIM, S>::TermMixed(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermMixed(
 		const control_state_matrix_t& P) :
 		P_(P)
 {
@@ -33,108 +33,108 @@ TermMixed<STATE_DIM, CONTROL_DIM, S>::TermMixed(
 	u_ref_.setZero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-TermMixed<STATE_DIM, CONTROL_DIM, S>::TermMixed() {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermMixed() {
 	P_.setZero();	// default values
 	x_ref_.setZero();
 	u_ref_.setZero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-TermMixed<STATE_DIM, CONTROL_DIM, S>::TermMixed(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermMixed(
 		const control_state_matrix_t& P,
-		const core::StateVector<STATE_DIM, S>& x_ref,
-		core::ControlVector<CONTROL_DIM, S>& u_ref):
+		const core::StateVector<STATE_DIM, SCALAR_EVAL>& x_ref,
+		core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref):
 		P_(P),
 		x_ref_(x_ref),
 		u_ref_(u_ref)
 {}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-TermMixed<STATE_DIM, CONTROL_DIM, S>::TermMixed(const TermMixed<STATE_DIM, CONTROL_DIM, S>& arg):
-	TermBase<STATE_DIM, CONTROL_DIM, S>(arg),
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermMixed(const TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>& arg):
+	TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>(arg),
 	P_(arg.P_),
 	x_ref_(arg.x_ref_),
 	u_ref_(arg.u_ref_)
 {}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-TermMixed<STATE_DIM, CONTROL_DIM, S>* TermMixed<STATE_DIM, CONTROL_DIM, S>::clone () const {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::clone () const {
 		return new TermMixed(*this);
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-void TermMixed<STATE_DIM, CONTROL_DIM, S>::setWeights(const control_state_matrix_double_t& P)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+void TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::setWeights(const control_state_matrix_double_t& P)
 {
-    P_ = P.template cast<S>();
+    P_ = P.template cast<SCALAR_EVAL>();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-void TermMixed<STATE_DIM, CONTROL_DIM, S>::setStateAndControlReference(
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+void TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::setStateAndControlReference(
 		const core::StateVector<STATE_DIM>& x_ref,
 		const core::ControlVector<CONTROL_DIM>& u_ref)
 {
-	x_ref_ = x_ref.template cast<S>();
-	u_ref_ = u_ref.template cast<S>();
+	x_ref_ = x_ref.template cast<SCALAR_EVAL>();
+	u_ref_ = u_ref.template cast<SCALAR_EVAL>();
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-S TermMixed<STATE_DIM, CONTROL_DIM, S>::evaluate(
-		const Eigen::Matrix<S, STATE_DIM, 1> &x,
-		const Eigen::Matrix<S, CONTROL_DIM, 1> &u,
-		const S& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+SCALAR TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluate(
+		const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x,
+		const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u,
+		const SCALAR& t)
 {
-    Eigen::Matrix<S, STATE_DIM, 1> xDiff = (x-x_ref_.template cast<S>());
-    Eigen::Matrix<S, CONTROL_DIM, 1> uDiff = (u-u_ref_.template cast<S>());
+        Eigen::Matrix<SCALAR, STATE_DIM, 1> xDiff = (x-x_ref_.template cast<SCALAR>());
+        Eigen::Matrix<SCALAR, CONTROL_DIM, 1> uDiff = (u-u_ref_.template cast<SCALAR>());
 
-    return (uDiff.transpose() * P_.template cast<S>() * xDiff)(0,0);
+        return (uDiff.transpose() * P_.template cast<SCALAR>() * xDiff)(0,0);   
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-ct::core::StateVector<STATE_DIM, S> TermMixed<STATE_DIM, CONTROL_DIM, S>::stateDerivative(
-		const ct::core::StateVector<STATE_DIM, S> &x,
-		const ct::core::ControlVector<CONTROL_DIM, S> &u,
-		const S& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+ct::core::StateVector<STATE_DIM, SCALAR_EVAL> TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateDerivative(
+		const ct::core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
+		const ct::core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u,
+		const SCALAR_EVAL& t)
 {
-    core::ControlVector<CONTROL_DIM, S> uDiff = (u-u_ref_);
+    core::ControlVector<CONTROL_DIM, SCALAR_EVAL> uDiff = (u-u_ref_);
 
     return  P_.transpose() * uDiff;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-typename TermMixed<STATE_DIM, CONTROL_DIM, S>::state_matrix_t TermMixed<STATE_DIM, CONTROL_DIM, S>::stateSecondDerivative(
-		const core::StateVector<STATE_DIM, S> &x, const core::ControlVector<CONTROL_DIM, S> &u, const S& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+typename TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::state_matrix_t TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateSecondDerivative(
+		const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t)
 {
 	return state_matrix_t::Zero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-core::ControlVector<CONTROL_DIM, S> TermMixed<STATE_DIM, CONTROL_DIM, S>::controlDerivative(
-		const core::StateVector<STATE_DIM, S> &x, const core::ControlVector<CONTROL_DIM, S> &u, const S& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+core::ControlVector<CONTROL_DIM, SCALAR_EVAL> TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlDerivative(
+		const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t)
 {
-    core::StateVector<STATE_DIM, S> xDiff = (x-x_ref_);
+    core::StateVector<STATE_DIM, SCALAR_EVAL> xDiff = (x-x_ref_);
 
     return P_ * xDiff;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-typename TermMixed<STATE_DIM, CONTROL_DIM, S>::control_matrix_t TermMixed<STATE_DIM, CONTROL_DIM, S>::controlSecondDerivative(
-		const core::StateVector<STATE_DIM, S> &x, const core::ControlVector<CONTROL_DIM, S> &u, const S& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+typename TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_matrix_t TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlSecondDerivative(
+		const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t)
 {
 	return control_matrix_t::Zero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-typename TermMixed<STATE_DIM, CONTROL_DIM, S>::control_state_matrix_t TermMixed<STATE_DIM, CONTROL_DIM, S>::stateControlDerivative(
-		const core::StateVector<STATE_DIM, S> &x, const core::ControlVector<CONTROL_DIM, S> &u, const S& t)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+typename TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_state_matrix_t TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateControlDerivative(
+		const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t)
 {
 	return P_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S>
-void TermMixed<STATE_DIM, CONTROL_DIM, S>::loadConfigFile(const std::string& filename, const std::string& termName, bool verbose)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+void TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(const std::string& filename, const std::string& termName, bool verbose)
 {
        loadMatrixCF(filename,"P", P_,termName);
        loadMatrixCF(filename,"x_des", x_ref_,termName);
