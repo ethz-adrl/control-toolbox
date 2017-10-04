@@ -37,18 +37,18 @@ using namespace rbd;
 
 TEST(TaskspaceCostFunctionTests, TaskspaceCostFunctionTest)
 {
-	typedef CppAD::AD<double> size_type;
+	typedef ct::core::ADCGScalar size_type;
 	typedef TestHyQ::tpl::Kinematics<size_type> KinTpl_t;
 	KinTpl_t kynTpl;
 	size_t eeId = 1;
 	const size_t hyqStateDim = 36;
 
-	Eigen::Matrix<size_type, 3, 3> Q;
+	Eigen::Matrix<double, 3, 3> Q;
 	Q.setIdentity();
 
 	std::shared_ptr<optcon::CostFunctionAD<hyqStateDim,12>> Adcf(new optcon::CostFunctionAD<hyqStateDim, 12>());
 	std::shared_ptr<TermTaskspace<KinTpl_t, true, hyqStateDim, 12>> term1(new TermTaskspace<KinTpl_t, true, hyqStateDim, 12>(eeId, Q));
-	Adcf->addIntermediateTerm(term1);
+	Adcf->addIntermediateADTerm(term1, true);
 
 	Eigen::Matrix<double, hyqStateDim, 1> x;
 	Eigen::Matrix<double, 12, 1> u;

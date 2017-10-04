@@ -32,7 +32,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/core/types/ControlVector.h>
 
 #include <ct/optcon/costfunction/term/TermBase.hpp>
-#include <ct/optcon/costfunction/term/utilities/TermTypedefs.hpp>
 #include <ct/optcon/costfunction/utility/utilities.hpp>
 
 #include <iit/rbd/traits/TraitSelector.h>
@@ -56,22 +55,21 @@ namespace rbd{
  * \tparam CONTROL_DIM control dimensionality of the system
  */
 template<class KINEMATICS, bool FB, size_t STATE_DIM, size_t CONTROL_DIM>
-class TermTaskspace : public optcon::TermBase <STATE_DIM, CONTROL_DIM, CppAD::AD<double>, double>
+class TermTaskspace : public optcon::TermBase <STATE_DIM, CONTROL_DIM, double, ct::core::ADCGScalar>
 {
 public:
-	typedef CppAD::AD<double> SCALAR;
+
+	typedef ct::core::ADCGScalar SCALAR;
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	CT_OPTCON_DEFINE_TERM_TYPES
-
 	TermTaskspace(
 			size_t eeInd,
-			const Eigen::Matrix<SCALAR, 3, 3>& Q,
-			const core::StateVector<3, SCALAR>& x_des = core::StateVector<3, SCALAR>::Zero(),
+			const Eigen::Matrix<double, 3, 3>& Q,
+			const core::StateVector<3, double>& x_des = core::StateVector<3, double>::Zero(),
 			const std::string& name = "TermTaskSpace")
 	:
-		optcon::TermBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>, double>(name),
+		optcon::TermBase<STATE_DIM, CONTROL_DIM, double, ct::core::ADCGScalar>(name),
 		eeInd_(eeInd),
 		QTaskSpace_(Q),
 		x_ref_(x_des)
@@ -92,7 +90,7 @@ public:
 		loadConfigFile(configFile, termName, verbose);
 	}
 
-	virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t)
+	virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override
 	{	
 		setStateFromVector<FB>(x);
 	    Eigen::Matrix<SCALAR, 3, 1> xDiff = kinematics_.getEEPositionInWorld(eeInd_, currState_.basePose(), currState_.jointPositions()).toImplementation() - x_ref_.template cast<SCALAR>();
@@ -122,8 +120,8 @@ private:
 	tpl::RBDState<KINEMATICS::NJOINTS, SCALAR> currState_;
 	KINEMATICS kinematics_;
 
-	Eigen::Matrix<SCALAR, 3, 3> QTaskSpace_;
-	ct::core::StateVector<3, SCALAR> x_ref_;
+	Eigen::Matrix<double, 3, 3> QTaskSpace_;
+	ct::core::StateVector<3, double> x_ref_;
 
 	template <bool T>
 	void setStateFromVector(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, typename std::enable_if<T, bool>::type = true)
