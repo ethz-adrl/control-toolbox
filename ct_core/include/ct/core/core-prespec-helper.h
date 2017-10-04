@@ -25,3 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 template class ct::core::Integrator<STATE_DIM_PRESPEC, SCALAR_PRESPEC>;
+
+
+// controller
+template class ct::core::ConstantController<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;

@@ -48,36 +48,27 @@ public:
 	/*!
 	 * Sets the control signal to zero
 	 */
-	ConstantController()
-	{
-		u_.setZero();
-	}
+	ConstantController();
 
 	//! Constructor
 	/*!
 	 * Initializes the control to a fixed value
 	 * @param u The fixed control signal
 	 */
-	ConstantController(ControlVector<CONTROL_DIM, SCALAR>& u): u_(u) {}
+	ConstantController(ControlVector<CONTROL_DIM, SCALAR>& u);
 
 	//! Copy constructor
-	ConstantController(const ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>& other) :
-		Controller<STATE_DIM, CONTROL_DIM, SCALAR>(other),
-		u_(other.u_)
-	{}
+	ConstantController(const ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>& other);
 
 	//! Destructor
-	~ConstantController() {}
+	virtual ~ConstantController();
 
 	//! Clone operator
 	/*!
 	 * Clones the controller. Used for cloning ControlledSystem's
 	 * @return pointer to cloned controller
 	 */
-	ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
-	{
-		return new ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
-	}
+	ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
 
 	//! Computes current control
 	/*!
@@ -90,35 +81,23 @@ public:
 	void computeControl(
 			const StateVector<STATE_DIM, SCALAR>& state,
 			const SCALAR& t,
-			ControlVector<CONTROL_DIM, SCALAR>& controlAction) override
-	{
-		controlAction = u_;
-	}
+			ControlVector<CONTROL_DIM, SCALAR>& controlAction) override;
 
 	//! Sets the control signal
 	/*!
 	 *
 	 * @param u The fixed control signal
 	 */
-	void setControl(const ControlVector<CONTROL_DIM, SCALAR>& u)
-	{
-		u_ = u;
-	}
+	void setControl(const ControlVector<CONTROL_DIM, SCALAR>& u);
 
 	//! Get the fixed control signal
 	/*!
 	 *
 	 * @param u The control input to write the signal to.
 	 */
-	const ControlVector<CONTROL_DIM, SCALAR>& getControl() const
-	{
-		return u_;
-	}
+	const ControlVector<CONTROL_DIM, SCALAR>& getControl() const;
 
-    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR time) override
-    {
-        return ControlMatrix<CONTROL_DIM, SCALAR>::Identity();
-    }
+    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR time) override;
 
 private:
 	ControlVector<CONTROL_DIM, SCALAR> u_;
