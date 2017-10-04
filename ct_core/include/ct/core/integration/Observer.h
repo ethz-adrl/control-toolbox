@@ -59,56 +59,16 @@ public:
 	/*!
 	 * @param eventHandlers vector of event handlers
 	 */
-	Observer(const EventHandlerPtrVector& eventHandlers) :
-		observeWrap([this](const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t){this->observe(x,t); }),
-		observeWrapWithLogging([this](const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t){ this->log(x,t); this->observe(x,t); })
-	{
-		// fixme: somehow works if using assignment operator, but not if using constructing
-		eventHandlers_ = eventHandlers;
-	}
+	Observer(const EventHandlerPtrVector& eventHandlers);
 
 	//! reset the observer
-	void reset() {
-		for(size_t i = 0; i<eventHandlers_.size(); i++)
-			eventHandlers_[i]->reset();
+	void reset();
 
-		states_.clear();
-		times_.clear();
-	}
+	void observe(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t);
 
-	//! call observer
-	/*!
-	 * Calls the observer at the main steps. Records state and time.
-	 * @param x current state
-	 * @param t current time
-	 */
-	void observe(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)
-	{
-		for(size_t i = 0; i< eventHandlers_.size(); i++){
-			if(!eventHandlers_[i]->callOnSubsteps() && eventHandlers_[i]->checkEvent(x, t))
-				eventHandlers_[i]->handleEvent(x, t);
-		}
-	}
+	void log(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t);
 
-	void log(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)
-	{
-		states_.push_back(x);
-		times_.push_back(t);
-	}
-
-	//! call observer
-	/*!
-	 * Calls the observer at integration substeps.
-	 * @param x current state
-	 * @param t current time
-	 */
-	void observeInternal(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)
-	{
-		for(size_t i = 0; i< eventHandlers_.size(); i++){
-			if(eventHandlers_[i]->callOnSubsteps() && eventHandlers_[i]->checkEvent(x, t))
-				eventHandlers_[i]->handleEvent(x, t);
-		}
-	}
+	void observeInternal(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t);
 
 private:
 	//! Lambda to pass to odeint (odeint takes copies of the observer so we can't pass the class

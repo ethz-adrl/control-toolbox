@@ -33,7 +33,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cmath>
 
 #include "EventHandler.h"
-#include "Observer.h"
 #include "eigenIntegration.h"
 
 #include "internal/StepperBase.h"

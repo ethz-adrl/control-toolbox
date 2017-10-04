@@ -24,17 +24,58 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_CORE_INTEGRATION_
-#define INCLUDE_CT_CORE_INTEGRATION_
+#ifndef CT_CORE_OBSERVER_IMPL_H_
+#define CT_CORE_OBSERVER_IMPL_H_
 
-#include "integration/Observer.h"
-#include "integration/Integrator.h"
-#include "integration/IntegratorSymplectic.h"
-#include "integration/EventHandlers/KillIntegrationEventHandler.h"
-#include "integration/EventHandlers/MaxStepsEventHandler.h"
-#include "integration/EventHandlers/SubstepRecorder.h"
-#include "integration/sensitivity/Sensitivity.h"
-#include "integration/sensitivity/SensitivityApproximation.h"
-#include "integration/sensitivity/SensitivityIntegrator.h"
+namespace ct {
+namespace core {
 
-#endif /* INCLUDE_CT_CORE_INTEGRATION_ */
+template <size_t STATE_DIM, typename SCALAR>
+Observer<STATE_DIM, SCALAR>::Observer(const EventHandlerPtrVector& eventHandlers) :
+		observeWrap([this](const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t){this->observe(x,t); }),
+		observeWrapWithLogging([this](const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t){ this->log(x,t); this->observe(x,t); })
+	{
+		// fixme: somehow works if using assignment operator, but not if using constructing
+		eventHandlers_ = eventHandlers;
+	}
+
+template <size_t STATE_DIM, typename SCALAR>
+void Observer<STATE_DIM, SCALAR>::reset()
+{
+		for(size_t i = 0; i<eventHandlers_.size(); i++)
+			eventHandlers_[i]->reset();
+
+		states_.clear();
+		times_.clear();
+	}
+
+template <size_t STATE_DIM, typename SCALAR>
+void Observer<STATE_DIM, SCALAR>::observe(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)
+	{
+		for(size_t i = 0; i< eventHandlers_.size(); i++){
+			if(!eventHandlers_[i]->callOnSubsteps() && eventHandlers_[i]->checkEvent(x, t))
+				eventHandlers_[i]->handleEvent(x, t);
+		}
+	}
+
+template <size_t STATE_DIM, typename SCALAR>
+void Observer<STATE_DIM, SCALAR>::log(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)
+	{
+		states_.push_back(x);
+		times_.push_back(t);
+	}
+
+template <size_t STATE_DIM, typename SCALAR>
+void Observer<STATE_DIM, SCALAR>::observeInternal(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)
+	{
+		for(size_t i = 0; i< eventHandlers_.size(); i++){
+			if(eventHandlers_[i]->callOnSubsteps() && eventHandlers_[i]->checkEvent(x, t))
+				eventHandlers_[i]->handleEvent(x, t);
+		}
+	}
+
+}
+}
+
+
+#endif /* OBSERVER_H_ */

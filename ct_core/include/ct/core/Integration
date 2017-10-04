@@ -27,9 +27,12 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_CORE_INTEGRATION_
 #define INCLUDE_CT_CORE_INTEGRATION_
 
+#include "integration/Observer.h"
+#include "integration/Observer-impl.h"
 #include "integration/Integrator.h"
 #include "integration/Integrator-impl.h"
 #include "integration/IntegratorSymplectic.h"
+#include "integration/IntegratorSymplectic-impl.h"
 #include "integration/EventHandlers/KillIntegrationEventHandler.h"
 #include "integration/EventHandlers/MaxStepsEventHandler.h"
 #include "integration/EventHandlers/SubstepRecorder.h"
