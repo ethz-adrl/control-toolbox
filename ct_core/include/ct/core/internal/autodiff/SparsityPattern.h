@@ -27,6 +27,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_CORE_INTERNAL_AUTODIFF_SPARSITYPATTERN_H_
 #define INCLUDE_CT_CORE_INTERNAL_AUTODIFF_SPARSITYPATTERN_H_
 
+#include <cppad/cppad.hpp>
+#include <Eigen/Core>
+
 namespace ct {
 namespace core {
 namespace internal {
@@ -37,10 +40,10 @@ public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	//! default constructor
-	SparsityPattern() {};
+	SparsityPattern();
 
 	//! destructor
-	virtual ~SparsityPattern() {};
+	virtual ~SparsityPattern();
 
 	//! initialize the pattern
 	/*!
@@ -86,7 +89,7 @@ public:
 	/*!
 	 * @return sparsity pattern vector
 	 */
-	const CppAD::vector<bool>& sparsity() const { return sparsity_; }
+	const CppAD::vector<bool>& sparsity() const;
 
 	//! returns the row indices of a row-column sparsity representation
 	/*!
@@ -96,7 +99,7 @@ public:
 	 * can appear repeatedly in this vector.
 	 * @return row indeces of row-column representation
 	 */
-	const CppAD::vector<size_t>& row() const { return row_; }
+	const CppAD::vector<size_t>& row() const;
 
 	//! returns the column indices of a row-column sparsity representation
 	/*!
@@ -106,7 +109,7 @@ public:
 	 * can appear repeatedly in this vector.
 	 * @return column indeces of row-column representation
 	 */
-	const CppAD::vector<size_t>& col() const { return col_; }
+	const CppAD::vector<size_t>& col() const;
 
 	//! work area for CppAD
 	/*!
@@ -114,18 +117,14 @@ public:
 	 * This method returns the "work" area of CppAD sparsity
 	 * @return CppAD sparsity work
 	 */
-	CppAD::sparse_jacobian_work& workJacobian() { return workJacobian_; }
+	CppAD::sparse_jacobian_work& workJacobian();
 
-	CppAD::sparse_hessian_work& workHessian() { return workHessian_; }
+	CppAD::sparse_hessian_work& workHessian();
 
 	/**
 	 * @brief      Clears the cppad internal work done on the sparsity pattern
 	 */
-	void clearWork()
-	{
-		workJacobian_.clear();
-		workHessian_.clear();
-	}
+	void clearWork();
 
 private:
 	CppAD::vector<bool> sparsity_; //! sparsity in vector representation

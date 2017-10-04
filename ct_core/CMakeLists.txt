@@ -80,6 +80,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h.in ${CM
 add_library(ct_core
    src/core/control/PIDController.cpp
    src/core/plot/plot.cpp
+   src/core/internal/autodiff/SparsityPattern.cpp
 )
 target_link_libraries(ct_core ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
 
@@ -131,11 +132,11 @@ catkin_add_gtest(LinspaceTest test/LinspaceTest.cpp)
 target_link_libraries(LinspaceTest ${catkin_LIBRARIES})
 
 catkin_add_gtest(AutoDiffLinearizerTest test/AutoDiffLinearizerTest.cpp)
-target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} pthread)
+target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} ct_core pthread)
 
 # Codegen tests cannot run in parallel. Thus we build and run all codegen tests in one
 catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
-target_link_libraries(CodegenTests ${catkin_LIBRARIES} dl pthread)
+target_link_libraries(CodegenTests ${catkin_LIBRARIES} ct_core dl pthread)
 
 # not really a test
 #add_executable(plotTest test/plot/plotTest.cpp)
