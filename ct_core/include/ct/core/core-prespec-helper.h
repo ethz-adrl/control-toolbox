@@ -24,7 +24,36 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+// some checks
+#if !defined(STATE_DIM_PRESPEC)
+	static_assert(true, "STATE_DIM_PRESPEC not defined");
+#endif
+
+#if !defined(CONTROL_DIM_PRESPEC)
+	static_assert(true, "CONTROL_DIM_PRESPEC not defined");
+#endif
+
+#ifndef SCALAR_PRESPEC
+#define SCALAR_PR double
+#endif
+
+#ifndef POS_DIM_PRESPEC
+#define POS_DIM_PRESPEC STATE_DIM_PRESPEC/2
+#endif
+
+#ifndef VEL_DIM_PRESPEC
+#define VEL_DIM_PRESPEC STATE_DIM_PRESPEC/2
+#endif
+
+
+// integration
+template class ct::core::Observer<STATE_DIM_PRESPEC, SCALAR_PRESPEC>;
 template class ct::core::Integrator<STATE_DIM_PRESPEC, SCALAR_PRESPEC>;
+
+#if POS_DIM>0 && VEL_DIM_PRESPEC > 0
+template class ct::core::IntegratorSymplecticEuler<POS_DIM_PRESPEC, VEL_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+template class ct::core::IntegratorSymplecticRk<POS_DIM_PRESPEC, VEL_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+#endif
 
 
 // controller
