@@ -58,3 +58,4 @@ template class ct::core::IntegratorSymplecticRk<POS_DIM_PRESPEC, VEL_DIM_PRESPEC
 
 // controller
 template class ct::core::ConstantController<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+template class ct::core::StateFeedbackController<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
