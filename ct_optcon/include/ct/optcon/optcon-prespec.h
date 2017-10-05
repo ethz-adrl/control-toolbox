@@ -50,10 +50,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "solver/NLOptConSettings.hpp"
 #include "solver/NLOptConSolver.hpp"
 
-#include "lqr/LQR.hpp"
-#include "lqr/FHDTLQR.hpp"
 #include "lqr/riccati/CARE.hpp"
 #include "lqr/riccati/DARE.hpp"
+#include "lqr/LQR.hpp"
+#include "lqr/FHDTLQR.hpp"
 
 #include "dms/dms.h"
 

@@ -24,11 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_LQR_HPP_
-#define CT_OPTCON_LQR_HPP_
-
-#include "riccati/CARE.hpp"
-#include "riccati/CARE-impl.hpp"
+#ifndef CT_OPTCON_LQR_IMPL_HPP_
+#define CT_OPTCON_LQR_IMPL_HPP_
 
 #ifdef USE_MATLAB_CPP_INTERFACE
 #include <matlabCppInterface/Engine.hpp>
@@ -37,79 +34,70 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct {
 namespace optcon {
 
-/*!
- * \ingroup LQR
- *
- * \brief continuous-time infinite-horizon LQR
- *
- * Implements continous-time infinite-horizon LQR.
- * Resulting feedback law will take the form
- * \f[
- * u_{fb} = -K \cdot (x - x_{ref})
- * \f]
- *
- * @tparam STATE_DIM
- * @tparam CONTROL_DIM
- */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
-class LQR
+bool LQR<STATE_DIM, CONTROL_DIM>::compute(
+		const state_matrix_t& Q,
+		const control_matrix_t& R,
+		const state_matrix_t& A,
+		const control_gain_matrix_t& B,
+		control_feedback_t& K,
+		bool RisDiagonal,
+		bool solveRiccatiIteratively)
 {
-public:
+	control_matrix_t R_inverse;
+	state_matrix_t P;
 
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	bool success = care_.solve(Q, R, A, B, P, RisDiagonal, R_inverse, solveRiccatiIteratively);
 
-	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
-	typedef Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> control_gain_matrix_t;
-	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_feedback_t;
+	K = (R_inverse*(B.transpose()*P));
 
-	//! design the infinite-horizon LQR controller.
-	/*!
-	 * @param Q state-weighting matrix
-	 * @param R control input weighting matrix
-	 * @param A linear system dynamics matrix A
-	 * @param B linear system dynamics matrix B
-	 * @param K control feedback matrix K (to be designed)
-	 * @param RisDiagonal set to true if R is a diagonal matrix (efficiency boost)
-	 * @param solveRiccatiIteratively
-	 * 	use closed-form solution of the infinite-horizon Riccati Equation
-	 * @return success
-	 */
-	bool compute(
-			const state_matrix_t& Q,
-			const control_matrix_t& R,
-			const state_matrix_t& A,
-			const control_gain_matrix_t& B,
-			control_feedback_t& K,
-			bool RisDiagonal = false,
-			bool solveRiccatiIteratively = false);
+	return success;
+}
 
 #ifdef USE_MATLAB_CPP_INTERFACE
-	//! design the LQR controller in MATLAB
-	/*!
-	 * Note that this controller should be exactly the same
-	 */
-	bool computeMatlab(
+template <size_t STATE_DIM, size_t CONTROL_DIM>
+bool LQR<STATE_DIM, CONTROL_DIM>::computeMatlab(
 			const state_matrix_t& Q,
 			const control_matrix_t& R,
 			const state_matrix_t& A,
 			const control_gain_matrix_t& B,
 			control_feedback_t& K,
-			bool checkControllability = false);
+			bool checkControllability)
+	{
+		if (!matlabEngine_.isInitialized())
+			matlabEngine_.initialize();
+
+		matlabEngine_.put("Q", Q);
+		matlabEngine_.put("R", R);
+		matlabEngine_.put("A", A);
+		matlabEngine_.put("B", B);
+
+		if (checkControllability)
+		{
+			matlabEngine_.executeCommand("Co=ctrb(A,B);");
+			matlabEngine_.executeCommand("unco=length(A)-rank(Co);");
+			int uncontrollableStates = 0;
+			matlabEngine_.get("unco", uncontrollableStates);
+
+			if (uncontrollableStates > 0)
+			{
+				std::cout << "System is not controllable, # uncontrollable states: "<<uncontrollableStates << std::endl;
+			}
+		}
+
+		matlabEngine_.executeCommand("[K,~,~] = lqr(A,B,Q,R);");
+
+		Eigen::MatrixXd Kmatlab;
+		matlabEngine_.get("K", Kmatlab);
+
+		K = Kmatlab;
+
+		return true;
+	}
 #endif //USE_MATLAB_CPP_INTERFACE
-
-
-private:
-	CARE<STATE_DIM, CONTROL_DIM> care_; // continuous-time algebraic riccati equation
-
-#ifdef USE_MATLAB_CPP_INTERFACE
-	matlab::Engine matlabEngine_;
-#endif
-};
 
 
 } // namespace optcon
 } // namespace ct
 
-#endif /* CT_OPTCON_LQR_HPP_ */
+#endif /* CT_OPTCON_LQR_IMPL_HPP_ */
