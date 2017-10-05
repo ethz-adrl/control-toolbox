@@ -46,7 +46,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Common"
 #include "Types"
-#include "Control"
+#include "Control-prespec"
 #include "Systems"
 #include "Integration-prespec"
 

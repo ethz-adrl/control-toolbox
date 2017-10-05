@@ -53,9 +53,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lqr/LQR.hpp"
 #include "lqr/FHDTLQR.hpp"
 #include "lqr/riccati/CARE.hpp"
-#include "lqr/riccati/CARE-impl.hpp"
 #include "lqr/riccati/DARE.hpp"
-#include "lqr/riccati/DARE-impl.hpp"
 
 #include "dms/dms.h"
 

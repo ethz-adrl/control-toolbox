@@ -147,6 +147,13 @@ generate_messages(
   std_msgs  # Or other packages containing msgs
 )
 
+## assemble list of libraries that contain prespecified templates
+set(PRESPEC_LIBS "")
+file(GLOB files "prespec/*.cpp")
+foreach(file ${files})
+  get_filename_component(raw_filename ${file} NAME_WE)
+  LIST(APPEND PRESPEC_LIBS "ct_optcon_${raw_filename}")
+endforeach()
 
 catkin_package(
    INCLUDE_DIRS
@@ -164,15 +171,27 @@ catkin_package(
         ${CT_SNOPT_LIBS}
         ${HPIPM_LIBRARY}
         ${BLASFEO_LIBRARY}
+        ${PRESPEC_LIBS}
    CATKIN_DEPENDS
         ct_core
 )
 
+## build SNOPT library
 if(BUILD_WITH_SNOPT_SUPPORT)
     add_library(ct_snopt_interface src/nlp/solver/SnoptSolver.cpp)
     target_link_libraries(ct_snopt_interface ${catkin_LIBRARIES} ${SNOPT_LIBS})
 endif()
 
+
+##compile template prespec libs
+file(GLOB files "prespec/*.cpp")
+foreach(file ${files})
+  get_filename_component(raw_filename ${file} NAME_WE)
+  add_library(ct_optcon_${raw_filename}
+   ${file}
+  )
+  target_link_libraries(ct_optcon_${raw_filename} ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
+endforeach()
 
 
 if(BUILD_EXAMPLES)
@@ -198,6 +217,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/dms/oscillator)
 
 catkin_add_gtest(LqrTest test/lqr/LqrTest.cpp)
 target_link_libraries(LqrTest ${catkin_LIBRARIES} lapack ${MATLAB_LIBS})
+
+catkin_add_gtest(LqrTestPrespec test/lqr/LqrTestPrespec.cpp)
+target_link_libraries(LqrTestPrespec ${catkin_LIBRARIES} lapack ${MATLAB_LIBS} ${PRESPEC_LIBS})
 
 catkin_add_gtest(iLQRTest test/nloc/iLQRTest.cpp)
 target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})

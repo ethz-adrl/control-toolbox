@@ -24,39 +24,10 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#include <ct/optcon/optcon.h>
 
-#ifndef INCLUDE_CT_OPTCON_OPTCON_H_
-#define INCLUDE_CT_OPTCON_OPTCON_H_
+#define STATE_DIM_PRESPEC 1
+#define CONTROL_DIM_PRESPEC 1
+#define SCALAR_PRESPEC double
 
-#include <ct/core/core.h>
-
-#include "costfunction/CostFunctionAD.hpp"
-#include "costfunction/CostFunctionAnalytical.hpp"
-#include "costfunction/CostFunctionQuadraticSimple.hpp"
-
-#include "constraint/constraint.h"
-
-#include "solver/OptConSolver.h"
-#include "problem/OptConProblem.h"
-
-#include "mpc/MpcSettings.h"
-#include "mpc/MPC.h"
-#include "mpc/timehorizon/MpcTimeHorizon.h"
-#include "mpc/policyhandler/PolicyHandler.h"
-
-#include "solver/lqp/HPIPMInterface.hpp"
-#include "solver/lqp/GNRiccatiSolver.hpp"
-
-#include "solver/NLOptConSettings.hpp"
-#include "solver/NLOptConSolver.hpp"
-
-#include "lqr/LQR.hpp"
-#include "lqr/FHDTLQR.hpp"
-#include "lqr/riccati/CARE.hpp"
-#include "lqr/riccati/CARE-impl.hpp"
-#include "lqr/riccati/DARE.hpp"
-#include "lqr/riccati/DARE-impl.hpp"
-
-#include "dms/dms.h"
-
-#endif /* INCLUDE_CT_OPTCON_OPTCON_H_ */
+#include <ct/optcon/optcon-prespec-helper.h>

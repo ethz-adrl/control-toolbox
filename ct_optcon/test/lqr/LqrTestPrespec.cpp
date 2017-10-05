@@ -28,7 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <chrono>
 
-#include <ct/optcon/optcon.h>
+#include <ct/optcon/optcon-prespec.h>
 
 #ifdef MATLAB
     #include <matlabCppInterface/Engine.hpp>

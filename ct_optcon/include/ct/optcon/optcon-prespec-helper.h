@@ -24,39 +24,28 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+// some checks
+#if !defined(STATE_DIM_PRESPEC)
+	static_assert(true, "STATE_DIM_PRESPEC not defined");
+#endif
 
-#ifndef INCLUDE_CT_OPTCON_OPTCON_H_
-#define INCLUDE_CT_OPTCON_OPTCON_H_
+#if !defined(CONTROL_DIM_PRESPEC)
+	static_assert(true, "CONTROL_DIM_PRESPEC not defined");
+#endif
 
-#include <ct/core/core.h>
+#ifndef SCALAR_PRESPEC
+#define SCALAR_PR double
+#endif
 
-#include "costfunction/CostFunctionAD.hpp"
-#include "costfunction/CostFunctionAnalytical.hpp"
-#include "costfunction/CostFunctionQuadraticSimple.hpp"
+#ifndef POS_DIM_PRESPEC
+#define POS_DIM_PRESPEC STATE_DIM_PRESPEC/2
+#endif
 
-#include "constraint/constraint.h"
+#ifndef VEL_DIM_PRESPEC
+#define VEL_DIM_PRESPEC STATE_DIM_PRESPEC/2
+#endif
 
-#include "solver/OptConSolver.h"
-#include "problem/OptConProblem.h"
 
-#include "mpc/MpcSettings.h"
-#include "mpc/MPC.h"
-#include "mpc/timehorizon/MpcTimeHorizon.h"
-#include "mpc/policyhandler/PolicyHandler.h"
-
-#include "solver/lqp/HPIPMInterface.hpp"
-#include "solver/lqp/GNRiccatiSolver.hpp"
-
-#include "solver/NLOptConSettings.hpp"
-#include "solver/NLOptConSolver.hpp"
-
-#include "lqr/LQR.hpp"
-#include "lqr/FHDTLQR.hpp"
-#include "lqr/riccati/CARE.hpp"
-#include "lqr/riccati/CARE-impl.hpp"
-#include "lqr/riccati/DARE.hpp"
-#include "lqr/riccati/DARE-impl.hpp"
-
-#include "dms/dms.h"
-
-#endif /* INCLUDE_CT_OPTCON_OPTCON_H_ */
+// lqr
+template class ct::optcon::CARE<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC>;
+template class ct::optcon::DARE<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;

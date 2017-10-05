@@ -28,6 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CT_OPTCON_LQR_HPP_
 
 #include "riccati/CARE.hpp"
+#include "riccati/CARE-impl.hpp"
 
 #ifdef USE_MATLAB_CPP_INTERFACE
 #include <matlabCppInterface/Engine.hpp>
@@ -35,7 +36,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct {
 namespace optcon {
-
 
 /*!
  * \ingroup LQR
