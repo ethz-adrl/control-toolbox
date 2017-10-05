@@ -38,6 +38,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "solver/OptConSolver.h"
 #include "problem/OptConProblem.h"
+#include "problem/OptConProblem-impl.h"
 
 #include "mpc/MpcSettings.h"
 #include "mpc/MPC.h"
@@ -49,6 +50,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "solver/NLOptConSettings.hpp"
 #include "solver/NLOptConSolver.hpp"
+#include "solver/NLOptConSolver-impl.hpp"
 
 #include "lqr/riccati/CARE.hpp"
 #include "lqr/riccati/CARE-impl.hpp"

@@ -51,3 +51,10 @@ template class ct::optcon::CARE<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC>;
 template class ct::optcon::DARE<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
 template class ct::optcon::LQR<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC>;
 template class ct::optcon::FHDTLQR<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+
+// problem
+template class ct::optcon::OptConProblem<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+
+// solver
+template class ct::optcon::NLOptConSolver<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, POS_DIM_PRESPEC, VEL_DIM_PRESPEC, SCALAR_PRESPEC>;
+
