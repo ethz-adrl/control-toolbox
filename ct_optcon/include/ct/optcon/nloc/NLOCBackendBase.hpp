@@ -126,71 +126,14 @@ public:
 
 
 
-	NLOCBackendBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
-			const Settings_t& settings) :
-
-			substepRecorders_(),
-		    integrators_(settings.nThreads+1),
-			sensitivity_(settings.nThreads+1),
-			integratorsEulerSymplectic_(settings.nThreads+1),
-			integratorsRkSymplectic_(settings.nThreads+1),
-
-		    controller_(settings.nThreads+1),
-			initialized_(false),
-			configured_(false),
-			iteration_(0),
-		    settings_(settings),
-			K_(0),
-			d_norm_(0.0),
-			lx_norm_(0.0),
-			lu_norm_(0.0),
-		    lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>()),
-
-			substepsX_(new StateSubsteps),
-			substepsU_(new ControlSubsteps),
-
-			intermediateCostBest_(std::numeric_limits<SCALAR>::infinity()),
-			finalCostBest_(std::numeric_limits<SCALAR>::infinity()),
-			lowestCost_(std::numeric_limits<SCALAR>::infinity()),
-			intermediateCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
-			finalCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
-			linearSystems_(settings.nThreads+1),
-			firstRollout_(true),
-			alphaBest_(-1)
-	{
-		Eigen::initParallel();
-
-		for (int i=0; i<settings.nThreads+1; i++)
-		{
-			controller_[i] = ConstantControllerPtr (new core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>());
-		}
-
-		configure(settings);
-
-		changeTimeHorizon(optConProblem.getTimeHorizon());
-		changeInitialState(optConProblem.getInitialState());
-		changeCostFunction(optConProblem.getCostFunction());
-		changeNonlinearSystem(optConProblem.getNonlinearSystem());
-		changeLinearSystem(optConProblem.getLinearSystem());
-
-		// to be included later
-//		if(optConProblem.getStateInputConstraints())
-//			changeStateInputConstraints(optConProblem.getStateInputConstraints());
-//		if(optConProblem.getPureStateConstraints())
-//			changePureStateConstraints(optConProblem.getPureStateConstraints());
-	}
-
+	NLOCBackendBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const Settings_t& settings);
 
 	NLOCBackendBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 			 const std::string& settingsFile,
 			 bool verbose = true,
-			 const std::string& ns = "alg") :
-			NLOCBackendBase(optConProblem, Settings_t::fromConfigFile(settingsFile, verbose, ns))
-	{}
+			 const std::string& ns = "alg");
 
-
-	virtual ~NLOCBackendBase() {};
-
+	virtual ~NLOCBackendBase();
 
 	//! configure the solver
 	/**
@@ -199,10 +142,8 @@ public:
 	 */
 	virtual void configure(const Settings_t& settings);
 
-
 	//! get the current SLQsolver settings
-	const Settings_t& getSettings() const { return settings_; }
-
+	const Settings_t& getSettings() const;
 
 	/*!
 	 * Set the initial guess used by the solver (not all solvers might support initial guesses)
@@ -218,20 +159,17 @@ public:
 	 */
 	void changeTimeHorizon(const SCALAR& tf);
 
+	SCALAR getTimeHorizon();
 
-	SCALAR getTimeHorizon() {return K_* settings_.dt ;}
+	int getNumSteps();
 
-	int getNumSteps() {return K_;}
-	int getNumStepsPerShot() {return settings_.K_shot;}
+	int getNumStepsPerShot();
 
 	SYMPLECTIC_ENABLED initializeSymplecticIntegrators(size_t i);
-	SYMPLECTIC_DISABLED initializeSymplecticIntegrators(size_t i) {};
+	SYMPLECTIC_DISABLED initializeSymplecticIntegrators(size_t i);
 
 	SYMPLECTIC_ENABLED integrateSymplectic(size_t threadId, ct::core::StateVector<STATE_DIM, SCALAR>& x0, const double& t, const size_t& steps, const double& dt_sim) const;
-	SYMPLECTIC_DISABLED integrateSymplectic(size_t threadId, ct::core::StateVector<STATE_DIM, SCALAR>& x0, const double& t, const size_t& steps, const double& dt_sim) const
-	{
-		throw std::runtime_error("Symplectic integrator selected but invalid dimensions for it. Check V_DIM>1, P_DIM>1");
-	}
+	SYMPLECTIC_DISABLED integrateSymplectic(size_t threadId, ct::core::StateVector<STATE_DIM, SCALAR>& x0, const double& t, const size_t& steps, const double& dt_sim) const;
 
 
 	/*!
@@ -276,9 +214,9 @@ public:
 	 * modify each entry differently.}
 	 * @return
 	 */
-	std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() { return systems_; }
+	std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances();
 
-	const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const { return systems_; }
+	const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const;
 
 	/*!
 	 * \brief Direct accessor to the linear system instances
@@ -289,9 +227,9 @@ public:
 	 * modify each entry differently.}
 	 * @return
 	 */
-	std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() { return linearSystems_; }
+	std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances();
 
-	const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const { return linearSystems_; }
+	const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const;
 
 	/*!
 	 * \brief Direct accessor to the cost function instances
@@ -302,9 +240,9 @@ public:
 	 * modify each entry differently.}
 	 * @return
 	 */
-	std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() { return costFunctions_; }
+	std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances();
 
-	const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const { return costFunctions_; }
+	const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const;
 
 	/**
 	 * @brief      Direct accessor to the state input constraint instances
@@ -316,9 +254,9 @@ public:
 	 *
 	 * @return     The state input constraint instances
 	 */
-	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() { return stateInputConstraints_; }
+	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances();
 
-	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const { return stateInputConstraints_; }
+	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const;
 
 	/**
 	 * @brief      Direct accessor to the pure state constraints
@@ -330,19 +268,16 @@ public:
 	 *
 	 * @return     The pure state constraints instances.
 	 */
-	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() { return pureStateConstraints_; }
+	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances();
 
-	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const { return pureStateConstraints_; }
+	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const;
 
 
 	/*!
 	 * Tests consistency of the instance of the dynamics, linear systems and costs. This is not a test for thread safety.
 	 * @return returns true if instances are consistent with each other
 	 */
-	bool testConsistency()
-	{
-		return true;
-	}
+	bool testConsistency();
 
 
 	//! Export all functions to matlab workspace
@@ -359,7 +294,7 @@ public:
 	SCALAR getCost() const;
 
 	//! return the sum of the L2-norm of the defects along the solution candidate
-	SCALAR getTotalDefect() const { return d_norm_;}
+	SCALAR getTotalDefect() const;
 
 	void reset();
 
@@ -370,11 +305,11 @@ public:
 
 	const Policy_t& getSolution();
 
-	const TimeArray& getTimeArray() {return t_;}
+	const TimeArray& getTimeArray();
 
-	bool isConfigured() {return configured_;}
+	bool isConfigured();
 
-	bool isInitialized() {return initialized_;}
+	bool isInitialized();
 
 
 	//! Retrieve Last Linearized Model
@@ -400,19 +335,13 @@ public:
 	void updateCosts();
 
 	//! nominal rollout using default thread and member variables for the results. // todo maybe rename (initial rollout?)
-	bool nominalRollout() {
-		bool success =  rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_prev_, xShot_, *this->substepsX_, *this->substepsU_);
-		x_prev_ = x_;
-		u_ff_prev_ = u_ff_;
-		firstRollout_ = false;
-		return success;
-	}
+	bool nominalRollout();
 
 	//! check problem for consistency
 	void checkProblem();
 
 	//! return the current iteration number
-	size_t& iteration() {return iteration_;}
+	size_t& iteration();
 
 	//! Print iteration summary
 	/*!
@@ -434,25 +363,19 @@ public:
 	virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
 
 	//! obtain state update from lqoc solver
-	void getStateUpdates() {lx_ = lqocSolver_->getStateUpdates();}
+	void getStateUpdates();
 
 	//! obtain control update from lqoc solver
-	void getControlUpdates() {lu_ = lqocSolver_->getControlUpdates();}
+	void getControlUpdates();
 
 	//! obtain feedback update from lqoc solver, if provided
-	void getFeedback()
-	{
-		if(settings_.closedLoopShooting)
-			lqocSolver_->getFeedback(L_);
-		else
-			L_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero()); // todo can eventually go away to save time
-	}
+	void getFeedback();
 
 	//! reset all defects to zero
-	void resetDefects() {lqocProblem_->b_.setConstant(state_vector_t::Zero());}
+	void resetDefects();
 
 	//! update the nominal defects
-	void computeDefectsNorm() {d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);}
+	void computeDefectsNorm();
 
 	//! integrates the specified shots and computes the corresponding defects
 	virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;
@@ -476,9 +399,9 @@ public:
 	//! simple full-step update for state and feedforward control (used for MPC-mode!)
 	void doFullStepUpdate();
 
-	void logSummaryToMatlab(const std::string& fileName) {summaryAllIterations_.logToMatlab(fileName);}
+	void logSummaryToMatlab(const std::string& fileName);
 
-	const SummaryAllIterations<SCALAR>& getSummary() const { return summaryAllIterations_; }
+	const SummaryAllIterations<SCALAR>& getSummary() const;
 
 protected:
 
@@ -640,7 +563,7 @@ protected:
 	 * According to Nocedal and Wright, the l1-norm is "exact" (p.435),  the l2-norm is smooth.
 	 */
 	template<size_t ORDER = 1>
-	SCALAR computeDefectsNorm(const StateVectorArray& d) const { return computeDiscreteArrayNorm<StateVectorArray, ORDER>(d);}
+	SCALAR computeDefectsNorm(const StateVectorArray& d) const;
 
 	typedef std::shared_ptr<ct::core::SubstepRecorder<STATE_DIM, CONTROL_DIM, SCALAR>> SubstepRecorderPtr;
     std::vector<SubstepRecorderPtr, Eigen::aligned_allocator<SubstepRecorderPtr> > substepRecorders_;
@@ -738,10 +661,8 @@ protected:
 } // namespace optcon
 } // namespace ct
 
-#include "implementation/NLOCBackendBase-impl.hpp"
 
-
-#undef SYMPLECTIC_ENABLE
+#undef SYMPLECTIC_ENABLED
 #undef SYMPLECTIC_DISABLED
 
 #endif /* INCLUDE_CT_OPTCON_GNMS_GNMSBASE_HPP_ */

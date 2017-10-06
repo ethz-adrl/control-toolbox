@@ -24,9 +24,31 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#ifndef INCLUDE_CT_OPTCON_NLOC_BACKEND_ST_IMPL_HPP_
+#define INCLUDE_CT_OPTCON_NLOC_BACKEND_ST_IMPL_HPP_
 
 namespace ct{
 namespace optcon{
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendST(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+		const NLOptConSettings& settings) :
+			Base(optConProblem, settings)
+{}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendST(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+		 const std::string& settingsFile,
+		 bool verbose,
+		 const std::string& ns) :
+		Base(optConProblem, settingsFile, verbose, ns)
+{}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::~NLOCBackendST() {};
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -37,6 +59,7 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 		this->computeLinearizedDynamics(this->settings_.nThreads, k);
 	}
 }
+
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex)
@@ -180,4 +203,6 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 
 } // namespace optcon
 } // namespace ct
+
+#endif /* INCLUDE_CT_OPTCON_NLOC_BACKEND_ST_IMPL_HPP_ */
 

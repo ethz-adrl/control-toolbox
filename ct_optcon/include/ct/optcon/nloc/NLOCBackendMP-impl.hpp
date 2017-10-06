@@ -25,9 +25,36 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
 
+#ifndef INCLUDE_CT_OPTCON_NLOC_BACKEND_MP_IMPL_HPP_
+#define INCLUDE_CT_OPTCON_NLOC_BACKEND_MP_IMPL_HPP_
+
 namespace ct{
 namespace optcon{
 
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+		const NLOptConSettings& settings) :
+			Base(optConProblem, settings)
+{
+	startupRoutine();
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+		 const std::string& settingsFile,
+		 bool verbose,
+		 const std::string& ns) :
+		Base(optConProblem, settingsFile, verbose, ns)
+{
+	startupRoutine();
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::~NLOCBackendMP()
+{
+	shutdownRoutine();
+};
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::startupRoutine()
@@ -658,6 +685,21 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 	}
 }
 
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+size_t NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::generateUniqueProcessID (const size_t& iterateNo, const int workerState)
+{
+	return (10e6*(workerState +1) + iterateNo + 1);
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::printString(const std::string& text)
+{
+	std::cout << text << std::endl;
+}
+
+
 } // namespace optcon
 } // namespace ct
 
+
+#endif //INCLUDE_CT_OPTCON_NLOC_BACKEND_MP_IMPL_HPP_
