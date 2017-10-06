@@ -24,17 +24,10 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_CORE_INTEGRATION_
-#define INCLUDE_CT_CORE_INTEGRATION_
 
-#include "integration/Observer.h"
-#include "integration/Integrator.h"
-#include "integration/IntegratorSymplectic.h"
-#include "integration/EventHandlers/KillIntegrationEventHandler.h"
-#include "integration/EventHandlers/MaxStepsEventHandler.h"
-#include "integration/EventHandlers/SubstepRecorder.h"
-#include "integration/sensitivity/Sensitivity.h"
-#include "integration/sensitivity/SensitivityApproximation.h"
-#include "integration/sensitivity/SensitivityIntegrator.h"
+#ifndef INCLUDE_CT_CORE_TYPES_IMPL_
+#define INCLUDE_CT_CORE_TYPES_IMPL_
 
-#endif /* INCLUDE_CT_CORE_INTEGRATION_ */
+// put implementations here
+
+#endif /* INCLUDE_CT_CORE_TYPES_IMPL_ */

@@ -46,9 +46,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Common"
 #include "Types"
-#include "Control-prespec"
+#include "Control"
 #include "Systems"
-#include "Integration-prespec"
+#include "Integration"
 
 #include "templateDir.h"
 
@@ -65,5 +65,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef PLOTTING_ENABLED
 #include "plot/plot.h"
 #endif
+
+/*!
+ * \warning{do not include implementation files in core-prespec.h}
+ */
 
 #endif /* INCLUDE_CT_CORE_ */

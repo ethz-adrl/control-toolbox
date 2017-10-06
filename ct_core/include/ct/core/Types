@@ -25,8 +25,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_CORE_TYPES_H_
-#define INCLUDE_CT_CORE_TYPES_H_
+#ifndef INCLUDE_CT_CORE_TYPES_
+#define INCLUDE_CT_CORE_TYPES_
 
 #include "types/Time.h"
 
@@ -53,4 +53,4 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "types/trajectories/DiscreteTrajectoryBase.h"
 
 
-#endif /* INCLUDE_CT_CORE_TYPES_H_ */
+#endif /* INCLUDE_CT_CORE_TYPES_ */

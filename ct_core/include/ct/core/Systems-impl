@@ -25,19 +25,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_CORE_CONTROL_
-#define INCLUDE_CT_CORE_CONTROL_
+#ifndef INCLUDE_CT_CORE_SYSTEMS_IMPL_
+#define INCLUDE_CT_CORE_SYSTEMS_IMPL_
 
-#include "control/Controller.h"
-#include "control/DiscreteController.h"
-#include "control/StateFeedbackController.h"
-#include "control/ConstantController.h"
-#include "control/ConstantStateFeedbackController.h"
-#include "control/ConstantTrajectoryController.h"
-#include "control/siso/PIDController.h"
-#include "control/siso/SISOControllerBase.h"
-#include "control/siso/StepInputController.h"
-#include "control/siso/SISOArrayController.h"
-#include "control/mimo/LinearFunctions.h"
 
-#endif /* INCLUDE_CT_CORE_CONTROL_ */
+#endif /* INCLUDE_CT_CORE_SYSTEMS_IMPL_ */
