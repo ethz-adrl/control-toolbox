@@ -190,7 +190,7 @@ foreach(file ${files})
   add_library(ct_optcon_${raw_filename}
    ${file}
   )
-  target_link_libraries(ct_optcon_${raw_filename} ${catkin_LIBRARIES} ${MATLAB_LIBS} lapack ${PYTHON_LIBRARY})
+  target_link_libraries(ct_optcon_${raw_filename} ${catkin_LIBRARIES} ${MATLAB_LIBS} lapack)
 endforeach()
 
 

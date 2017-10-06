@@ -25,43 +25,5 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_OPTCON_OPTCON_H_
-#define INCLUDE_CT_OPTCON_OPTCON_H_
-
-#include <ct/core/core.h>
-
-#include "costfunction/CostFunctionAD.hpp"
-#include "costfunction/CostFunctionAnalytical.hpp"
-#include "costfunction/CostFunctionQuadraticSimple.hpp"
-
-#include "constraint/constraint.h"
-
-#include "solver/OptConSolver.h"
-#include "problem/OptConProblem.h"
-#include "problem/OptConProblem-impl.h"
-
-#include "solver/lqp/HPIPMInterface.hpp"
-#include "solver/lqp/GNRiccatiSolver.hpp"
-
-#include "solver/NLOptConSettings.hpp"
-#include "solver/NLOptConSolver.hpp"
-#include "solver/NLOptConSolver-impl.hpp"
-
-#include "lqr/riccati/CARE.hpp"
-#include "lqr/riccati/CARE-impl.hpp"
-#include "lqr/riccati/DARE.hpp"
-#include "lqr/riccati/DARE-impl.hpp"
-#include "lqr/FHDTLQR.hpp"
-#include "lqr/FHDTLQR-impl.hpp"
-#include "lqr/LQR.hpp"
-#include "lqr/LQR-impl.hpp"
-
-#include "dms/dms.h"
-
-#include "mpc/MpcSettings.h"
-#include "mpc/MPC.h"
-#include "mpc/timehorizon/MpcTimeHorizon.h"
-#include "mpc/policyhandler/PolicyHandler.h"
-
-
-#endif /* INCLUDE_CT_OPTCON_OPTCON_H_ */
+// classes here ...
+//template class ct::optcon::CARE<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC>;

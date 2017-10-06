@@ -39,11 +39,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "solver/OptConSolver.h"
 #include "problem/OptConProblem.h"
 
-#include "mpc/MpcSettings.h"
-#include "mpc/MPC.h"
-#include "mpc/timehorizon/MpcTimeHorizon.h"
-#include "mpc/policyhandler/PolicyHandler.h"
-
 #include "solver/lqp/HPIPMInterface.hpp"
 #include "solver/lqp/GNRiccatiSolver.hpp"
 
@@ -56,5 +51,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lqr/FHDTLQR.hpp"
 
 #include "dms/dms.h"
+
+#include "mpc/MpcSettings.h"
+#include "mpc/MPC.h"
+#include "mpc/timehorizon/MpcTimeHorizon.h"
+#include "mpc/policyhandler/PolicyHandler.h"
 
 #endif /* INCLUDE_CT_OPTCON_OPTCON_H_ */

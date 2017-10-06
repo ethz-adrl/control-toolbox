@@ -24,44 +24,32 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-
-#ifndef INCLUDE_CT_OPTCON_OPTCON_H_
-#define INCLUDE_CT_OPTCON_OPTCON_H_
+#ifndef INCLUDE_CT_RBD_RBD_H_
+#define INCLUDE_CT_RBD_RBD_H_
 
 #include <ct/core/core.h>
+#include <ct/rbd/internal/TraitSelectorSpecs.h>
 
-#include "costfunction/CostFunctionAD.hpp"
-#include "costfunction/CostFunctionAnalytical.hpp"
-#include "costfunction/CostFunctionQuadraticSimple.hpp"
+#include <ct/rbd/common/SpatialForceVector.h>
 
-#include "constraint/constraint.h"
+#include <ct/rbd/state/RBDState.h>
 
-#include "solver/OptConSolver.h"
-#include "problem/OptConProblem.h"
-#include "problem/OptConProblem-impl.h"
+#include <ct/rbd/robot/RobCoGenContainer.h>
+#include <ct/rbd/robot/Kinematics.h>
+#include <ct/rbd/robot/Dynamics.h>
 
-#include "solver/lqp/HPIPMInterface.hpp"
-#include "solver/lqp/GNRiccatiSolver.hpp"
+#include <ct/rbd/robot/actuator/SecondOrderActuatorDynamics.h>
 
-#include "solver/NLOptConSettings.hpp"
-#include "solver/NLOptConSolver.hpp"
-#include "solver/NLOptConSolver-impl.hpp"
+#include <ct/rbd/robot/control/IDControllerFB.h>
+#include <ct/rbd/robot/control/WholeBodyController.h>
+#include <ct/rbd/robot/control/InfiniteHorizonLQRwithInverseDynamics.h>
+#include <ct/rbd/robot/costfunction/TermTaskspace.hpp>
 
-#include "lqr/riccati/CARE.hpp"
-#include "lqr/riccati/CARE-impl.hpp"
-#include "lqr/riccati/DARE.hpp"
-#include "lqr/riccati/DARE-impl.hpp"
-#include "lqr/FHDTLQR.hpp"
-#include "lqr/FHDTLQR-impl.hpp"
-#include "lqr/LQR.hpp"
-#include "lqr/LQR-impl.hpp"
+#include <ct/rbd/systems/FixBaseFDSystem.h>
+#include <ct/rbd/systems/FloatingBaseFDSystem.h>
+#include <ct/rbd/systems/ProjectedFDSystem.h>
 
-#include "dms/dms.h"
+#include <ct/rbd/nloc/FloatingBaseNLOCContactModel.h>
+#include <ct/rbd/nloc/FixBaseNLOC.h>
 
-#include "mpc/MpcSettings.h"
-#include "mpc/MPC.h"
-#include "mpc/timehorizon/MpcTimeHorizon.h"
-#include "mpc/policyhandler/PolicyHandler.h"
-
-
-#endif /* INCLUDE_CT_OPTCON_OPTCON_H_ */
+#endif /* INCLUDE_CT_RBD_RBD_H_ */
