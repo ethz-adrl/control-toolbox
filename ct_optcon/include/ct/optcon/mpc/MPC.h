@@ -24,7 +24,6 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-
 #ifndef CT_MPC_H_
 #define CT_MPC_H_
 
@@ -43,7 +42,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "policyhandler/default/StateFeedbackPolicyHandler.h"
 
 //#define DEBUG_PRINT_MPC	//! use this flag to enable debug printouts in the MPC implementation
-
 
 
 namespace ct{
@@ -82,6 +80,7 @@ template<typename OPTCON_SOLVER>
 class MPC {
 
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const size_t STATE_DIM = OPTCON_SOLVER::STATE_D;
@@ -94,7 +93,6 @@ public:
 	typedef typename OPTCON_SOLVER::Policy_t Policy_t;
 
 	typedef OptConProblem<STATE_DIM, CONTROL_DIM, Scalar_t> OptConProblem_t;
-
 
 
 	//! MPC solver constructor
@@ -118,64 +116,14 @@ public:
 			const typename OPTCON_SOLVER::Settings_t& solverSettings,
 			const mpc_settings& mpcsettings = mpc_settings(),
 			std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> customPolicyHandler = nullptr,
-			std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> customTimeHorizon = nullptr):
-
-				solver_(problem, solverSettings),
-				mpc_settings_(mpcsettings),
-				dynamics_ (problem.getNonlinearSystem()->clone()),
-				firstRun_(true),
-				runCallCounter_(0),
-				policyHandler_(new PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>())
-	{
-
-		// =========== INIT WARM START STRATEGY =============
-
-		if(mpc_settings_.coldStart_ == false){
-
-			if(customPolicyHandler)
-			{
-				std::cout << "Initializing MPC with a custom policy handler (warmstarter) provided by the user." << std::endl;
-				policyHandler_ = customPolicyHandler;
-			}
-			else
-			{
-				if (std::is_base_of<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, Scalar_t>, OPTCON_SOLVER>::value)
-				{
-					// default policy handler for standard discrete-time iLQG implementation
-					policyHandler_ = std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> (new StateFeedbackPolicyHandler<STATE_DIM, CONTROL_DIM, Scalar_t>(solverSettings.dt));
-				}
-				else
-				{
-					throw std::runtime_error("ERROR in MPC Constructor -- no default warm start strategy available for the selected controller.");
-				}
-			}
-		}
-
-
-		// ==============  INIT MPC TIME HORIZON STRATEGY ==============
-		if(customTimeHorizon)
-		{
-			std::cout << "Initializing MPC with a custom time-horizon strategy provided by the user." << std::endl;
-			timeHorizonStrategy_ = customTimeHorizon;
-		}
-		else
-		{
-			const Scalar_t initTimeHorizon = solver_.getTimeHorizon();
-
-			timeHorizonStrategy_ = std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> (new tpl::MpcTimeHorizon<Scalar_t>(mpc_settings_, initTimeHorizon));
-		}
-
-
-		// ==============  INIT MPC TIME KEEPER ==============
-		timeKeeper_ = tpl::MpcTimeKeeper<Scalar_t>(timeHorizonStrategy_, mpc_settings_);
-	}
+			std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> customTimeHorizon = nullptr);
 
 
 	//! Allows access to the solver member, required mainly for unit testing.
 	/*!
 	 * @return reference to the optimal control problem solver
 	 */
-	OPTCON_SOLVER& getSolver() {return solver_;};
+	OPTCON_SOLVER& getSolver();
 
 
 	//! Additional method to insert a custom time horizon strategy, independent from the constructor
@@ -183,22 +131,16 @@ public:
 	 * @param timeHorizonStrategy
 	 * 	the time horizon strategy provided by the user
 	 */
-	void setTimeHorizonStrategy(std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> timeHorizonStrategy){timeHorizonStrategy_ = timeHorizonStrategy;}
-
+	void setTimeHorizonStrategy(std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> timeHorizonStrategy);
 
 	//! set a new initial guess for the policy
 	/**
 	 * @param initGuess
 	 */
-	void setInitialGuess(const Policy_t& initGuess){
-		solver_.setInitialGuess(initGuess);
-		policyHandler_->setPolicy(initGuess);
-		currentPolicy_ = initGuess;
-	}
-
+	void setInitialGuess(const Policy_t& initGuess);
 
 	//! Check if final time horizon for this task was reached
-	bool timeHorizonReached() { return timeKeeper_.finalPointReached();}
+	bool timeHorizonReached();
 
 
 	//! retrieve the time that elapsed since the first successful solve() call to an Optimal Control Problem
@@ -206,10 +148,7 @@ public:
 	 * the returned time can be used externally, for example to update cost functions
 	 * @return time elapsed
 	 */
-	const Scalar_t timeSinceFirstSuccessfulSolve()
-	{
-		return timeKeeper_.timeSinceFirstSuccessfulSolve();
-	}
+	const Scalar_t timeSinceFirstSuccessfulSolve();
 
 
 	//! perform forward integration of the measured system state, to compensate for expected or already occured time lags
@@ -228,26 +167,7 @@ public:
 			const Scalar_t& t_forward_start,
 			const Scalar_t& t_forward_stop,
 			core::StateVector<STATE_DIM, Scalar_t>& x_start,
-			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr)
-	{
-
-		if(mpc_settings_.stateForwardIntegration_ == true)
-		{
-
-			if(forwardIntegrationController)
-			{
-				// ... either with a given third-party controller
-				integrateForward(t_forward_start, t_forward_stop, x_start, forwardIntegrationController);
-			}
-			else
-			{
-				// ... or with the controller obtained from the solver (solution of last mpc-run).
-				std::shared_ptr<Policy_t> prevController (new Policy_t(currentPolicy_));
-				integrateForward(t_forward_start, t_forward_stop, x_start, prevController);
-			}
-		}
-	}
-
+			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr);
 
 
 	//! main MPC run method
@@ -271,53 +191,10 @@ public:
 			const Scalar_t x_ts,
 			Policy_t& newPolicy,
 			Scalar_t& newPolicy_ts,
-			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr)
-	{
-
-		prepareIteration();
-
-		return finishIteration(x, x_ts, newPolicy, newPolicy_ts, forwardIntegrationController);
-	}
+			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr);
 
 
-	void prepareIteration()
-	{
-#ifdef DEBUG_PRINT_MPC
-		std::cout << "DEBUG_PRINT_MPC: started to prepare MPC iteration() " << std::endl;
-#endif //DEBUG_PRINT_MPC
-
-		runCallCounter_++;
-
-		const Scalar_t currTimeHorizon = solver_.getTimeHorizon();
-		Scalar_t newTimeHorizon;
-
-
-		if(firstRun_)
-			timeKeeper_.initialize();
-
-		timeKeeper_.startDelayMeasurement();
-
-		timeKeeper_.computeNewTimings(currTimeHorizon, newTimeHorizon, t_forward_start_, t_forward_stop_);
-
-		// update the Optimal Control Solver with new time horizon and state information
-		solver_.changeTimeHorizon(newTimeHorizon);
-
-
-		// Calculate new initial guess / warm-starting policy
-		policyHandler_->designWarmStartingPolicy(t_forward_stop_, newTimeHorizon, currentPolicy_);
-
-		// todo: remove this after through testing
-		if(t_forward_stop_ < t_forward_start_)
-			throw std::runtime_error("ERROR: t_forward_stop < t_forward_start is impossible.");
-
-
-		/**
-		 * re-initialize the OptConSolver and solve the optimal control problem.
-		 */
-		solver_.setInitialGuess(currentPolicy_);
-
-		solver_.prepareMPCIteration();
-	}
+	void prepareIteration();
 
 
 	bool finishIteration(
@@ -325,106 +202,12 @@ public:
 			const Scalar_t x_ts,
 			Policy_t& newPolicy,
 			Scalar_t& newPolicy_ts,
-			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr)
-	{
-
-#ifdef DEBUG_PRINT_MPC
-		std::cout << "DEBUG_PRINT_MPC: started mpc finish Iteration() with state-timestamp " << x_ts << std::endl;
-#endif //DEBUG_PRINT_MPC
-
-		// initialize the time-stamp for policy which is to be designed
-		newPolicy_ts = x_ts;
-
-		core::StateVector<STATE_DIM, Scalar_t> x_start = x;
-
-		// todo preintegrtion goes to finish call
-		if(!firstRun_)
-			doPreIntegration(t_forward_start_, t_forward_stop_, x_start, forwardIntegrationController);
-
-
-		solver_.changeInitialState(x_start); // todo goes to finish call
-
-		bool solveSuccessful = solver_.finishMPCIteration();
-
-		if(solveSuccessful){
-
-			newPolicy_ts = newPolicy_ts + (t_forward_stop_ - t_forward_start_);
-
-			// get optimized policy and state trajectory from OptConSolver
-			currentPolicy_ = solver_.getSolution();
-
-			// obtain the time which passed since the previous successful solve
-			Scalar_t dtp = timeKeeper_.timeSincePreviousSuccessfulSolve();
-
-			// post-truncation may be an option of the solve-call took longer than the estimated delay
-			if(mpc_settings_.postTruncation_){
-
-				if(dtp > t_forward_stop_ && !firstRun_)
-				{
-					// the time-difference to be account for by post-truncation
-					Scalar_t dt_post_truncation = dtp-t_forward_stop_;
-
-#ifdef DEBUG_PRINT_MPC
-					std::cout << "DEBUG_PRINT_MPC: additional post-truncation about "<< dt_post_truncation << " [sec]." << std::endl;
-#endif //DEBUG_PRINT_MPC
-
-					// the time which was effectively truncated away (e.g. discrete-time case)
-					Scalar_t dt_truncated_eff;
-
-					policyHandler_->truncateSolutionFront(dt_post_truncation, currentPolicy_, dt_truncated_eff);
-
-					// update policy timestamp with the truncated time
-					newPolicy_ts += dt_truncated_eff;
-
-				}
-				else if (t_forward_stop_ >= dtp && !firstRun_)
-				{
-#ifdef DEBUG_PRINT_MPC
-					std::cout << "DEBUG_PRINT_MPC: controller opt faster than pre-integration horizon. Consider tuning pre-integration. " << std::endl;
-#endif //DEBUG_PRINT_MPC
-				}
-
-			} // post truncation
-
-		} // solve successful
-
-
-#ifdef DEBUG_PRINT_MPC
-		std::cout << "DEBUG_PRINT_MPC: start timestamp outgoing policy: "<< newPolicy_ts << std::endl;
-		std::cout << "DEBUG_PRINT_MPC: ended run() " << std::endl << std::endl;
-#endif //DEBUG_PRINT_MPC
-
-		// update policy result
-		newPolicy = currentPolicy_;
-
-		// stop the delay measurement. This needs to be the last method called in run().
-		timeKeeper_.stopDelayMeasurement();
-
-		// in the first run, the policy time-stamp needs to be shifted about the solving time
-		if(firstRun_){
-			newPolicy_ts = newPolicy_ts + timeKeeper_.getMeasuredDelay();
-			firstRun_ = false;
-		}
-
-		return solveSuccessful;
-	}
+			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr);
 
 
 
 	//! reset the mpc problem and provide new problem time horizon (mandatory)
-	void resetMpc(const Scalar_t& newTimeHorizon){
-
-		firstRun_ = true;
-
-		runCallCounter_ = 0;
-
-		// reset the time horizon of the strategy
-		timeHorizonStrategy_->updateInitialTimeHorizon(newTimeHorizon);
-
-		solver_.changeTimeHorizon(newTimeHorizon);
-
-		timeKeeper_.initialize();
-	}
+	void resetMpc(const Scalar_t& newTimeHorizon);
 
 
 	//! update the mpc settings in all instances (main class, time keeper class, etc)
@@ -433,35 +216,11 @@ public:
 	 * @param settings
 	 * 	the new mpc settings provided by the user.
 	 */
-	void updateSettings(const mpc_settings& settings) {
-		mpc_settings_ = settings;
-		timeKeeper_.updateSettings(settings);
-		timeHorizonStrategy_->updateSettings(settings);
-	}
+	void updateSettings(const mpc_settings& settings);
 
 
 	//! printout simple statistical data
-	void printMpcSummary()
-	{
-		std::cout << std::endl;
-		std::cout << "================ MPC Summary ================" << std::endl;
-		std::cout << "Number of run() calls:\t\t\t" << runCallCounter_ << std::endl;
-
-		if(mpc_settings_.measureDelay_)
-		{
-			std::cout << "Max measured solving time [sec]:\t" << timeKeeper_.getMaxMeasuredDelay() << std::endl;
-			std::cout << "Min measured solving time [sec]:\t" << timeKeeper_.getMinMeasuredDelay() << std::endl;
-			std::cout << "Total sum of meas. delay [sec]: \t" << timeKeeper_.getSummedDelay() << std::endl;
-			std::cout << "Average measured delay [sec]:   \t" << timeKeeper_.getSummedDelay()/runCallCounter_ << std::endl;
-		}
-		else
-		{
-			std::cout << "Used fixed delay[sec]: \t" << 0.000001*mpc_settings_.fixedDelayUs_<< std::endl;
-		}
-
-		std::cout << "================ End Summary ================" << std::endl;
-		std::cout << std::endl;
-	}
+	void printMpcSummary();
 
 
 private:
@@ -486,18 +245,7 @@ private:
 			const Scalar_t startTime,
 			const Scalar_t stopTime,
 			core::StateVector<STATE_DIM, Scalar_t>& state,
-			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>>& controller)
-	{
-		dynamics_->setController(controller);
-
-		Scalar_t dtInit = 0.0001;
-
-		// create temporary integrator object
-		core::Integrator<STATE_DIM, Scalar_t> newInt (dynamics_, ct::core::IntegrationType::RK4);
-
-		// adaptive pre-integration
-		newInt.integrate_adaptive(state, startTime, stopTime, dtInit);
-	}
+			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>>& controller);
 
 	//! timings for pre-integration
 	Scalar_t t_forward_start_;

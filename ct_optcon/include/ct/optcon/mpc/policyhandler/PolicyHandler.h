@@ -37,9 +37,9 @@ public:
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	PolicyHandler(){}
+	PolicyHandler();
 
-	virtual ~PolicyHandler(){}
+	virtual ~PolicyHandler();
 
 	//! design a warm-starting policy for the optimal control problem solver
 	/*!
@@ -58,10 +58,7 @@ public:
 	virtual void designWarmStartingPolicy(
 			const SCALAR& delay,
 			const SCALAR& TimeHorizon,
-			POLICY& policy)
-	{
-		policy = initialPolicy_;
-	}
+			POLICY& policy);
 
 
 	//! a method required for additional post-truncation.
@@ -77,11 +74,11 @@ public:
 	virtual void truncateSolutionFront(
 			const SCALAR& delay,
 			POLICY& policy,
-			SCALAR& effectivelyTruncated) {}
+			SCALAR& effectivelyTruncated);
 
 
 	//! set new policy to policy handler
-	void setPolicy(const POLICY& newPolicy) {initialPolicy_ = newPolicy;}
+	void setPolicy(const POLICY& newPolicy);
 
 
 protected:

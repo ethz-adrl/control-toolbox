@@ -292,6 +292,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/mpc)
 catkin_add_gtest(NLOC_MPCTest test/mpc/NLOC_MPCTest.cpp)
 target_link_libraries(NLOC_MPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
+catkin_add_gtest(NLOC_MPCTest_prespec test/mpc/NLOC_MPCTest_prespec.cpp)
+target_link_libraries(NLOC_MPCTest_prespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIBS})
 
 
 find_package(Doxygen)

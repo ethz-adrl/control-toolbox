@@ -43,6 +43,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "nloc/NLOCBackendBase.hpp"
 #include "nloc/NLOCBackendST.hpp"
 #include "nloc/NLOCBackendMP.hpp"
+#include "nloc/algorithms/gnms/GNMS.hpp"
+#include "nloc/algorithms/ilqr/iLQR.hpp"
 
 #include "solver/lqp/HPIPMInterface.hpp"
 #include "solver/lqp/GNRiccatiSolver.hpp"
@@ -60,6 +62,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mpc/MPC.h"
 #include "mpc/timehorizon/MpcTimeHorizon.h"
 #include "mpc/policyhandler/PolicyHandler.h"
+#include "mpc/policyhandler/default/StateFeedbackPolicyHandler.h"
 
 /*!
  * \warning{do not include implementation files in optcon-prespec.h}

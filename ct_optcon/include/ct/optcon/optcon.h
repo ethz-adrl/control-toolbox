@@ -42,6 +42,8 @@
 #include "nloc/NLOCBackendBase.hpp"
 #include "nloc/NLOCBackendST.hpp"
 #include "nloc/NLOCBackendMP.hpp"
+#include "nloc/algorithms/gnms/GNMS.hpp"
+#include "nloc/algorithms/ilqr/iLQR.hpp"
 
 #include "solver/lqp/HPIPMInterface.hpp"
 #include "solver/lqp/GNRiccatiSolver.hpp"
@@ -59,6 +61,7 @@
 #include "mpc/MPC.h"
 #include "mpc/timehorizon/MpcTimeHorizon.h"
 #include "mpc/policyhandler/PolicyHandler.h"
+#include "mpc/policyhandler/default/StateFeedbackPolicyHandler.h"
 
 
 // implementations
@@ -82,5 +85,14 @@
 #include "nloc/NLOCBackendBase-impl.hpp"
 #include "nloc/NLOCBackendST-impl.hpp"
 #include "nloc/NLOCBackendMP-impl.hpp"
+#include "nloc/algorithms/gnms/GNMS-impl.hpp"
+#include "nloc/algorithms/ilqr/iLQR-impl.hpp"
+
+//mpc
+#include "mpc/MPC-impl.h"
+#include "mpc/timehorizon/MpcTimeHorizon-impl.h"
+#include "mpc/policyhandler/PolicyHandler-impl.h"
+#include "mpc/policyhandler/default/StateFeedbackPolicyHandler-impl.h"
+
 
 #endif /* INCLUDE_CT_OPTCON_OPTCON_H_ */

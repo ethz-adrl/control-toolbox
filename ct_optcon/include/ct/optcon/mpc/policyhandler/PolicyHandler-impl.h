@@ -24,53 +24,43 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef MPC_DEFAULT_STATEFB_POLICYHANDLER_H_
-#define MPC_DEFAULT_STATEFB_POLICYHANDLER_H_
-
-#include <ct/core/core.h>
+#ifndef MPC_POLICYHANDLER_IMPL_H_
+#define MPC_POLICYHANDLER_IMPL_H_
 
 namespace ct{
 namespace optcon{
 
-//! the default policy handler for iLQR
-template<size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-class StateFeedbackPolicyHandler : public PolicyHandler<core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>, STATE_DIM, CONTROL_DIM, SCALAR>
+template<typename POLICY, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+PolicyHandler<POLICY, STATE_DIM, CONTROL_DIM, SCALAR>::PolicyHandler()
+{}
+
+template<typename POLICY, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+PolicyHandler<POLICY, STATE_DIM, CONTROL_DIM, SCALAR>::~PolicyHandler(){}
+
+template<typename POLICY, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void PolicyHandler<POLICY, STATE_DIM, CONTROL_DIM, SCALAR>::designWarmStartingPolicy(
+		const SCALAR& delay,
+		const SCALAR& TimeHorizon,
+		POLICY& policy)
 {
+	policy = initialPolicy_;
+}
 
-public:
+template<typename POLICY, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void PolicyHandler<POLICY, STATE_DIM, CONTROL_DIM, SCALAR>::truncateSolutionFront(
+		const SCALAR& delay,
+		POLICY& policy,
+		SCALAR& effectivelyTruncated)
+		{}
 
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+template<typename POLICY, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void PolicyHandler<POLICY, STATE_DIM, CONTROL_DIM, SCALAR>::setPolicy(const POLICY& newPolicy)
+{
+	initialPolicy_ = newPolicy;
+}
 
-	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> StateFeedbackController_t;
+} // namespace optcon
+} // namespace ct
 
-	StateFeedbackPolicyHandler(const SCALAR& dt);
 
-	virtual ~StateFeedbackPolicyHandler();
-
-	virtual void designWarmStartingPolicy(
-			const SCALAR& delay,
-			const SCALAR& newTimeHorizon,
-			StateFeedbackController_t& policy) override;
-
-	/*!
-	 * required for additional post-truncation.
-	 * @param delay 	the delay which is to be truncated away
-	 * @param policy	the resulting, truncated policy
-	 * @param effectivelyTruncated the time which was effectively truncated away
-	 * 	(can be different from the input in discrete-time case, for example)
-	 */
-	virtual void truncateSolutionFront(
-			const SCALAR& delay,
-			StateFeedbackController_t& policy,
-			SCALAR& effectivelyTruncated) override;
-
-private:
-
-	SCALAR dt_;
-
-};
-
-}	// namespace optcon
-}	// namespace ct
-
-#endif /* MPC_DEFAULT_STATEFB_POLICYHANDLER_H_ */
+#endif /* MPC_POLICYHANDLER_IMPL_H_ */
