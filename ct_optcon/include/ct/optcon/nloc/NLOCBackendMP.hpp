@@ -35,7 +35,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <condition_variable>
 
 #include "NLOCBackendBase.hpp"
-#include "NLOCBackendBase-impl.hpp"
 #include <ct/optcon/solver/NLOptConSettings.hpp>
 
 namespace ct{

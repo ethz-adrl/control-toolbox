@@ -36,19 +36,23 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "constraint/constraint.h"
 
-#include "solver/OptConSolver.h"
 #include "problem/OptConProblem.h"
+#include "problem/LQOCProblem.hpp"
+#include "solver/OptConSolver.h"
+
+#include "nloc/NLOCBackendBase.hpp"
+#include "nloc/NLOCBackendST.hpp"
+#include "nloc/NLOCBackendMP.hpp"
 
 #include "solver/lqp/HPIPMInterface.hpp"
 #include "solver/lqp/GNRiccatiSolver.hpp"
-
-#include "solver/NLOptConSettings.hpp"
 #include "solver/NLOptConSolver.hpp"
+#include "solver/NLOptConSettings.hpp"
 
 #include "lqr/riccati/CARE.hpp"
 #include "lqr/riccati/DARE.hpp"
-#include "lqr/LQR.hpp"
 #include "lqr/FHDTLQR.hpp"
+#include "lqr/LQR.hpp"
 
 #include "dms/dms.h"
 
@@ -56,5 +60,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mpc/MPC.h"
 #include "mpc/timehorizon/MpcTimeHorizon.h"
 #include "mpc/policyhandler/PolicyHandler.h"
+
+/*!
+ * \warning{do not include implementation files in optcon-prespec.h}
+ */
+
 
 #endif /* INCLUDE_CT_OPTCON_OPTCON_H_ */

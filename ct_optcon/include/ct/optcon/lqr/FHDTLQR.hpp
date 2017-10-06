@@ -27,9 +27,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCON_FHDTLQR_HPP_
 #define CT_OPTCON_FHDTLQR_HPP_
 
+#include <ct/core/core.h>
 #include <ct/optcon/lqr/riccati/DynamicRiccatiEquation.hpp>
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
-#include <ct/core/core.h>
 
 namespace ct {
 namespace optcon {

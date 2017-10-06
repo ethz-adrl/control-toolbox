@@ -31,7 +31,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/solver/NLOptConSettings.hpp>
 
 #include <ct/optcon/problem/LQOCProblem.hpp>
-#include <ct/optcon/problem/LQOCProblem-impl.hpp>
 
 namespace ct {
 namespace optcon {

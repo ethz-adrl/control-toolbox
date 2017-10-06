@@ -29,12 +29,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/core/core.h>
 #include <ct/optcon/problem/OptConProblem.h>
-#include <ct/optcon/problem/OptConProblem-impl.h>
 
 #include <ct/optcon/nloc/NLOCBackendST.hpp>
-#include <ct/optcon/nloc/NLOCBackendST-impl.hpp>
 #include <ct/optcon/nloc/NLOCBackendMP.hpp>
-#include <ct/optcon/nloc/NLOCBackendMP-impl.hpp>
 
 #include <ct/optcon/nloc/algorithms/ilqr/iLQR.hpp>
 #include <ct/optcon/nloc/algorithms/gnms/GNMS.hpp>
