@@ -24,20 +24,10 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_STATEVECTORARRAY_H_
-#define CT_STATEVECTORARRAY_H_
+#include <ct/core/core.h>
 
-#include <ct/core/types/StateVector.h>
+#define STATE_DIM_PRESPEC 12
+#define CONTROL_DIM_PRESPEC 4
+#define SCALAR_PRESPEC double
 
-#include "DiscreteArray.h"
-
-namespace ct {
-namespace core {
-
-template <size_t STATE_DIM, typename SCALAR = double>
-using StateVectorArray = DiscreteArray<StateVector<STATE_DIM, SCALAR> >;
-
-}
-}
-
-#endif /* CT_STATEVECTORARRAY_H_ */
+#include <ct/core/core-prespec-helper.h>

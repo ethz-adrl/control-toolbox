@@ -24,10 +24,16 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_CONTROLMATRIXARRAY_H_
-#define CT_CONTROLMATRIXARRAY_H_
+#ifndef CT_MATRIXARRAY_H_
+#define CT_MATRIXARRAY_H_
 
 #include "../ControlMatrix.h"
+#include "../FeedbackMatrix.h"
+#include "../StateControlMatrix.h"
+#include "../StateMatrix.h"
+#include "../StateVector.h"
+#include "../ControlVector.h"
+
 #include "DiscreteArray.h"
 
 namespace ct {
@@ -35,6 +41,22 @@ namespace core {
 
 template <size_t CONTROL_DIM, typename SCALAR = double>
 using ControlMatrixArray = DiscreteArray< ControlMatrix<CONTROL_DIM, SCALAR> >;
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+using FeedbackArray = DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>;
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+using StateControlMatrixArray = DiscreteArray< StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> >;
+
+template <size_t STATE_DIM, typename SCALAR = double>
+using StateMatrixArray = DiscreteArray<StateMatrix<STATE_DIM, SCALAR> >;
+
+template <size_t STATE_DIM, typename SCALAR = double>
+using StateVectorArray = DiscreteArray<StateVector<STATE_DIM, SCALAR> >;
+
+template <size_t CONTROL_DIM, typename SCALAR = double>
+using ControlVectorArray = DiscreteArray<ControlVector<CONTROL_DIM, SCALAR> >;
+
 
 }
 }

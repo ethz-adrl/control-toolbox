@@ -29,8 +29,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "EventHandler.h"
 
-#include <ct/core/types/trajectories/TimeArray.h>
-#include <ct/core/types/trajectories/StateVectorArray.h>
+#include <ct/core/types/arrays/TimeArray.h>
+#include <ct/core/types/arrays/MatrixArrays.h>
 
 namespace ct {
 namespace core {

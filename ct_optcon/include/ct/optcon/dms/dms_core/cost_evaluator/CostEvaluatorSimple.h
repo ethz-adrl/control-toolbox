@@ -31,15 +31,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <math.h>
 #include <cmath>
 
+#include <ct/core/core.h>
+
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
 
 #include <ct/optcon/dms/dms_core/OptVectorDms.h>
 #include <ct/optcon/dms/dms_core/spline/SplinerBase.h>
 #include <ct/optcon/nlp/DiscreteCostEvaluatorBase.h>
 
-#include <ct/core/types/ControlVector.h>
-#include <ct/core/types/StateVector.h>
-#include <ct/core/types/Time.h>
 
 namespace ct {
 namespace optcon {

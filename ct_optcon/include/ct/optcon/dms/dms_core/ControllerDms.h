@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <Eigen/Dense>
 
-#include <ct/core/control/Controller.h>
+#include <ct/core/core.h>
 #include <ct/optcon/dms/dms_core/OptVectorDms.h>
 
 

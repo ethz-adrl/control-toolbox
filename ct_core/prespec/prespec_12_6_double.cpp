@@ -24,20 +24,10 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_CONTROLMATRIXTRAJECTORY_H_
-#define CT_CONTROLMATRIXTRAJECTORY_H_
+#include <ct/core/core.h>
 
-#include "ControlMatrixArray.h"
-#include "DiscreteTrajectoryBase.h"
+#define STATE_DIM_PRESPEC 12
+#define CONTROL_DIM_PRESPEC 6
+#define SCALAR_PRESPEC double
 
-namespace ct {
-namespace core {
-
-template <size_t CONTROL_DIM, typename SCALAR = double>
-using ControlMatrixTrajectory = DiscreteTrajectoryBase<ControlMatrix<CONTROL_DIM, SCALAR>>;
-
-}	// core
-}	// ct
-
-#endif /* CT_CONTROLMATRIXTRAJECTORY_H_ */
-
+#include <ct/core/core-prespec-helper.h>

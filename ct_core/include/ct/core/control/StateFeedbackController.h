@@ -31,10 +31,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Controller.h"
 
-#include <ct/core/types/trajectories/FeedbackArray.h>
-#include <ct/core/types/trajectories/FeedbackTrajectory.h>
-#include <ct/core/types/trajectories/ControlTrajectory.h>
-#include <ct/core/types/trajectories/StateTrajectory.h>
+#include <ct/core/types/arrays/MatrixArrays.h>
+#include <ct/core/types/trajectories/MatrixTrajectories.h>
 
 namespace ct {
 namespace core {

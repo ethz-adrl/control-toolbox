@@ -24,19 +24,42 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_CONTROLVECTORARRAY_H_
-#define CT_CONTROLVECTORARRAY_H_
+#ifndef CT_MATRIXTRAJECTORIES_H_
+#define CT_MATRIXTRAJECTORIES_H_
 
-#include <ct/core/types/ControlVector.h>
-#include "DiscreteArray.h"
+#include "../ControlMatrix.h"
+#include "../FeedbackMatrix.h"
+#include "../StateControlMatrix.h"
+#include "../StateMatrix.h"
+#include "../StateVector.h"
+#include "../ControlVector.h"
+
+#include "DiscreteTrajectoryBase.h"
 
 namespace ct {
 namespace core {
 
+template <size_t CONTROL_DIM, typename SCALAR = double, typename TIME_SCALAR = SCALAR>
+using ControlTrajectory = DiscreteTrajectoryBase<ControlVector<CONTROL_DIM, SCALAR>, Eigen::aligned_allocator<ControlVector<CONTROL_DIM, SCALAR>>, TIME_SCALAR>;
+
 template <size_t CONTROL_DIM, typename SCALAR = double>
-using ControlVectorArray = DiscreteArray<ControlVector<CONTROL_DIM, SCALAR> >;
+using ControlMatrixTrajectory = DiscreteTrajectoryBase<ControlMatrix<CONTROL_DIM, SCALAR>>;
 
-}
-}
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+using FeedbackTrajectory = DiscreteTrajectoryBase<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>, Eigen::aligned_allocator<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>, SCALAR>;
 
-#endif /* CT_CONTROLVECTORARRAY_H_ */
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+using StateControlMatrixTrajectory =  DiscreteTrajectoryBase<StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>;
+
+template <size_t STATE_DIM, typename SCALAR = double>
+using StateMatrixTrajectory = DiscreteTrajectoryBase<StateMatrix<STATE_DIM, SCALAR>>;
+
+template <size_t STATE_DIM, typename SCALAR = double, typename TIME_SCALAR = SCALAR>
+using StateTrajectory = DiscreteTrajectoryBase<StateVector<STATE_DIM, SCALAR>, Eigen::aligned_allocator<StateVector<STATE_DIM, SCALAR>>, TIME_SCALAR>;
+
+
+}	// core
+}	// ct
+
+#endif /* CT_MATRIXTRAJECTORIES_H_ */
+
