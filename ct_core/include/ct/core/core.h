@@ -40,6 +40,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Include file for convenience
 #include <Eigen/Core>
+#include <Eigen/Sparse>
 #include <Eigen/StdVector>
 #include <unsupported/Eigen/MatrixFunctions>
 
@@ -49,18 +50,12 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Control"
 #include "Systems"
 #include "Integration"
+#include "Geometry"
 
 #include "templateDir.h"
 
-#include "internal/autodiff/ADHelpers.h"
-#include "internal/autodiff/CGHelpers.h"
-#include "internal/autodiff/SparsityPattern.h"
-
-#include "math/Derivatives.h"
-#include "math/DerivativesCppadSettings.h"
-#include "math/DerivativesNumDiff.h"
-#include "math/DerivativesCppadJIT.h"
-#include "math/DerivativesCppadCG.h"
+#include "Internal"
+#include "Math"
 
 #ifdef PLOTTING_ENABLED
 #include "plot/plot.h"
@@ -73,6 +68,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Control-impl"
 #include "Systems-impl"
 #include "Integration-impl"
+#include "Internal-impl"
+#include "Math-impl"
+#include "Geometry-impl"
 
 
 #endif /* CT_INCLUDE_CT_CORE_ */

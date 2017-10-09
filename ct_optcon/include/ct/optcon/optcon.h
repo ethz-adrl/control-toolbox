@@ -66,6 +66,9 @@
 
 // implementations
 
+//constraints
+#include "constraint/constraint-impl.h"
+
 //problem
 #include "problem/OptConProblem-impl.h"
 #include "problem/LQOCProblem-impl.hpp"

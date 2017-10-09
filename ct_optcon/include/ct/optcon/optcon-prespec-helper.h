@@ -55,6 +55,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MPC_POLICY_PRESPEC MPC_SOLVER_PRESPEC::Policy_t
 #endif
 
+
+// constraint terms
+template class ct::optcon::ConstraintBase<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+template class ct::optcon::ControlInputConstraint<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+template class ct::optcon::ObstacleConstraint<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+template class ct::optcon::StateConstraint<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+template class ct::optcon::TerminalConstraint<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+
 // lqr
 template class ct::optcon::CARE<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC>;
 template class ct::optcon::DARE<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;

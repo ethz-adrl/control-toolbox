@@ -24,20 +24,10 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_CONSTRAINT_H_
-#define CT_OPTCON_CONSTRAINT_H_
 
-#include "term/ConstraintBase.h"
-#include "term/ControlInputConstraint.h"
-#include "term/ObstacleConstraint.h"
-#include "term/StateConstraint.h"
-#include "term/TerminalConstraint.h"
+#ifndef INCLUDE_CT_CORE_INTERNAL_IMPL_
+#define INCLUDE_CT_CORE_INTERNAL_IMPL_
 
-#include "ConstraintContainerBase.h"
-#include "LinearConstraintContainer.h"
-#include "EmptyLinearConstraintContainer.h"
-#include "ConstraintContainerAD.h"
-#include "ConstraintContainerAnalytical.h"
+// put implementation files here
 
-
-#endif /* CT_OPTCON_CONSTRAINT_H_ */
+#endif /* INCLUDE_CT_CORE_INTERNAL_IMPL_ */
