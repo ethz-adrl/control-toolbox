@@ -27,8 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCON_CONSTRAINTS_CONSTRAINTCONTAINERAD_H_
 #define CT_OPTCON_CONSTRAINTS_CONSTRAINTCONTAINERAD_H_
 
-#include <ct/core/core.h>
-
 #include "LinearConstraintContainer.h"
 #include "term/ConstraintBase.h"
 
@@ -44,9 +42,11 @@ namespace optcon {
  * @tparam     CONTROL_DIM  { description }
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class ConstraintContainerAD : public LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>{
+class ConstraintContainerAD : public LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>
+{
 
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef core::DerivativesCppadJIT<STATE_DIM + CONTROL_DIM, -1> JacCG;
@@ -63,22 +63,7 @@ public:
 	/**
 	 * @brief      Basic constructor
 	 */
-	ConstraintContainerAD()
-	{
-		stateControlD_.setZero();
-
-		fIntermediate_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
-			return this->evaluateIntermediateCodegen(stateinput);	
-		};
-
-		fTerminal_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
-			return this->evaluateTerminalCodegen(stateinput);	
-		};
-
-		intermediateCodegen_ = std::shared_ptr<JacCG>(new JacCG(fIntermediate_, STATE_DIM + CONTROL_DIM, getIntermediateConstraintsCount()));
-		terminalCodegen_ = std::shared_ptr<JacCG>(new JacCG(fTerminal_, STATE_DIM + CONTROL_DIM, getTerminalConstraintsCount()));
-
-	}
+	ConstraintContainerAD();
 
 	/**
 	 * \brief Constructor using state, control and time
@@ -86,58 +71,25 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	ConstraintContainerAD(const state_vector_t &x, const input_vector_t &u, const SCALAR& t = 0.0) 
-	{
-		//Set to some random number which is != the initguess of the problem
-		stateControlD_ << x, u;
-	}
+	ConstraintContainerAD(const state_vector_t &x, const input_vector_t &u, const SCALAR& t = 0.0) ;
 
 	/**
 	 * \brief Copy constructor
 	 * @param arg constraint class to copy
 	 */
-	ConstraintContainerAD(const ConstraintContainerAD& arg)
-	:
-	LinearConstraintContainer<STATE_DIM, CONTROL_DIM>(arg),
-	constraintsIntermediate_(arg.constraintsIntermediate_),
-	constraintsTerminal_(arg.constraintsTerminal_),
-	intermediateCodegen_(arg.intermediateCodegen_),
-	terminalCodegen_(arg.terminalCodegen_),
-	fIntermediate_(arg.fIntermediate_),
-	fTerminal_(arg.fTerminal_),
-	sparsityIntermediateRows_(arg.sparsityIntermediateRows_),
-	sparsityStateIntermediateRows_(arg.sparsityStateIntermediateRows_),
-	sparsityStateIntermediateCols_(arg.sparsityStateIntermediateCols_),
-	sparsityInputIntermediateRows_(arg.sparsityInputIntermediateRows_),
-	sparsityInputIntermediateCols_(arg.sparsityInputIntermediateCols_),
-	sparsityTerminalRows_(arg.sparsityTerminalRows_),
-	sparsityStateTerminalRows_(arg.sparsityStateTerminalRows_),
-	sparsityStateTerminalCols_(arg.sparsityStateTerminalCols_),
-	sparsityInputTerminalRows_(arg.sparsityInputTerminalRows_),
-	sparsityInputTerminalCols_(arg.sparsityInputTerminalCols_),
-	stateControlD_(arg.stateControlD_)
-	{
-		constraintsIntermediate_.resize(arg.constraintsIntermediate_.size());
-		constraintsTerminal_.resize(arg.constraintsTerminal_.size());
-
-		for(size_t i = 0; i < constraintsIntermediate_.size(); ++i)
-			constraintsIntermediate_[i] = std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> (arg.constraintsIntermediate_[i]->clone());
-
-		for(size_t i = 0; i < constraintsTerminal_.size(); ++i)
-			constraintsTerminal_[i] = std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> (arg.constraintsTerminal_[i]->clone());
-	}
+	ConstraintContainerAD(const ConstraintContainerAD& arg);
 
 	/**
 	 * Deep-cloning of Constraint
 	 *
 	 * @return     base pointer to the clone
 	 */
-	virtual ConstraintContainerAD_Raw_Ptr_t clone () const override {return new ConstraintContainerAD(*this);}
+	virtual ConstraintContainerAD_Raw_Ptr_t clone () const override;
 
 	/**
 	 * @brief      Destructor
 	 */
-	virtual ~ConstraintContainerAD() {};
+	virtual ~ConstraintContainerAD();
 
 	/**
 	 * @brief      Adds an intermediate constraint.
@@ -145,23 +97,7 @@ public:
 	 * @param[in]  constraint  The constraint
 	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
 	 */
-	void addIntermediateConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> constraint, bool verbose)
-	{
-		constraintsIntermediate_.push_back(constraint);
-		if(verbose){
-			std::string name;
-			constraint->getName(name);
-			std::cout<<"''" << name << "'' added as AD intermediate constraint " << std::endl;
-		}
-
-		fIntermediate_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
-			return this->evaluateIntermediateCodegen(stateinput);	
-		};
-
-		intermediateCodegen_->update(fIntermediate_, STATE_DIM + CONTROL_DIM, getIntermediateConstraintsCount());
-
-		this->initializedIntermediate_ = false;
-	}
+	void addIntermediateConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> constraint, bool verbose);
 
 	/**
 	 * @brief      Adds a terminal constraint.
@@ -169,345 +105,55 @@ public:
 	 * @param[in]  constraint  The constraint
 	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
 	 */
-	void addTerminalConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> constraint, bool verbose)
-	{
-		constraintsTerminal_.push_back(constraint);
-		if(verbose){
-			std::string name;
-			constraint->getName(name);
-			std::cout<<"''" << name << "'' added as AD terminal constraint " << std::endl;
-		}
+	void addTerminalConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> constraint, bool verbose);
 
-		fTerminal_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput){
-			return this->evaluateTerminalCodegen(stateinput);	
-		};
+	virtual VectorXs evaluateIntermediate() override;
 
-		terminalCodegen_->update(fTerminal_, STATE_DIM + CONTROL_DIM, getTerminalConstraintsCount());
+	virtual VectorXs evaluateTerminal() override;
 
-		this->initializedTerminal_ = false;
-	}
+	virtual size_t getIntermediateConstraintsCount() override;
 
+	virtual size_t getTerminalConstraintsCount() override;
 
-	virtual VectorXs evaluateIntermediate() override
-	{
-		if(!this->initializedIntermediate_)
-			throw std::runtime_error("evaluateIntermediateConstraints not initialized yet. Call 'initialize()' before");
+	virtual VectorXs jacobianStateSparseIntermediate() override;
 
+	virtual MatrixXs jacobianStateIntermediate() override;
 
-		return intermediateCodegen_->forwardZero(stateControlD_);	
-	}
+	virtual VectorXs jacobianStateSparseTerminal() override;
 
-	virtual VectorXs evaluateTerminal() override
-	{
-		if(!this->initializedTerminal_)
-			throw std::runtime_error("evaluateTerminalConstraints not initialized yet. Call 'initialize()' before");
+	virtual MatrixXs jacobianStateTerminal() override;
 
-		return terminalCodegen_->forwardZero(stateControlD_);
-	}
+	virtual VectorXs jacobianInputSparseIntermediate() override;
 
-	virtual size_t getIntermediateConstraintsCount() override
-	{
-		size_t count = 0;
+	virtual MatrixXs jacobianInputIntermediate() override;
 
-		for(auto constraint : constraintsIntermediate_)
-			count += constraint->getConstraintSize();
-
-		return count;
-	}
-
-	virtual size_t getTerminalConstraintsCount() override
-	{
-		size_t count = 0;
-		for(auto constraint : constraintsTerminal_)
-			count += constraint->getConstraintSize();
-
-		return count;
-	}
-
-	virtual VectorXs jacobianStateSparseIntermediate() override
-	{
-		if(!this->initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		MatrixXs jacTot = intermediateCodegen_->jacobian(stateControlD_);
-
-		// std::cout << "jacTot" << std::endl;
-
-		VectorXs jacSparse; jacSparse.resize(getJacobianStateNonZeroCountIntermediate());
-		for(size_t i = 0; i < getJacobianStateNonZeroCountIntermediate(); ++i)
-			jacSparse(i) = (jacTot.template leftCols<STATE_DIM>())(sparsityStateIntermediateRows_(i), sparsityStateIntermediateCols_(i));
-
-		return jacSparse;
-	}
-
-	virtual MatrixXs jacobianStateIntermediate() override
-	{
-		if(!this->initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		MatrixXs jacTot = intermediateCodegen_->jacobian(stateControlD_);
-		return jacTot.template leftCols<STATE_DIM>();
-	}
-
-	virtual VectorXs jacobianStateSparseTerminal() override
-	{
-		if(!this->initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		MatrixXs jacTot = terminalCodegen_->jacobian(stateControlD_);
-		VectorXs jacSparse; jacSparse.resize(getJacobianStateNonZeroCountTerminal());
-		for(size_t i = 0; i < getJacobianStateNonZeroCountTerminal(); ++i)
-			jacSparse(i) = (jacTot.template leftCols<STATE_DIM>())(sparsityStateTerminalRows_(i), sparsityStateTerminalCols_(i));
-
-		return jacSparse;		
-	}
-
-	virtual MatrixXs jacobianStateTerminal() override
-	{
-		if(!this->initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		MatrixXs jacTot = terminalCodegen_->jacobian(stateControlD_);
-		return jacTot.template leftCols<STATE_DIM>();
-	}
-
-	virtual VectorXs jacobianInputSparseIntermediate() override
-	{
-		MatrixXs jacTot = intermediateCodegen_->jacobian(stateControlD_);
-		VectorXs jacSparse; jacSparse.resize(getJacobianInputNonZeroCountIntermediate());
-		for(size_t i = 0; i < getJacobianInputNonZeroCountIntermediate(); ++i)
-			jacSparse(i) = (jacTot.template rightCols<CONTROL_DIM>())(sparsityInputIntermediateRows_(i), sparsityInputIntermediateCols_(i));
-
-		return jacSparse;
-	}	
-
-	virtual MatrixXs jacobianInputIntermediate() override
-	{
-		if(!this->initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		MatrixXs jacTot = intermediateCodegen_->jacobian(stateControlD_);
-		return jacTot.template rightCols<CONTROL_DIM>();
-	}
-
-	virtual VectorXs jacobianInputSparseTerminal() override
-	{
-		if(!this->initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		MatrixXs jacTot = terminalCodegen_->jacobian(stateControlD_);
-		VectorXs jacSparse; jacSparse.resize(getJacobianInputNonZeroCountTerminal());
-		for(size_t i = 0; i < getJacobianInputNonZeroCountTerminal(); ++i)
-			jacSparse(i) = (jacTot.template rightCols<CONTROL_DIM>())(sparsityInputTerminalRows_(i), sparsityInputTerminalCols_(i));
-
-		return jacSparse;
-	}
-
-	virtual MatrixXs jacobianInputTerminal() override
-	{
-		if(!this->initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		MatrixXs jacTot = terminalCodegen_->jacobian(stateControlD_);
-		return jacTot.template rightCols<CONTROL_DIM>();
-	}
-
-	virtual void sparsityPatternStateIntermediate(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
-	{
-		if(!this->initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		iRows = sparsityStateIntermediateRows_;
-		jCols = sparsityStateIntermediateCols_;
-	}
-
-	virtual void sparsityPatternStateTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
-	{
-		if(!this->initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		iRows = sparsityStateTerminalRows_;
-		jCols = sparsityStateTerminalCols_;
-	}	
-
-	virtual void sparsityPatternInputIntermediate(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
-	{
-		if(!this->initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		iRows = sparsityInputIntermediateRows_;
-		jCols = sparsityInputIntermediateCols_;
-	}	
-
-	virtual void sparsityPatternInputTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override
-	{
-		if(!this->initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		iRows = sparsityInputTerminalRows_;
-		jCols = sparsityInputTerminalCols_;
-	}
-
-	virtual size_t getJacobianStateNonZeroCountIntermediate() override
-	{
-		if(!this->initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		return sparsityStateIntermediateRows_.rows();
-	}
-
-	virtual size_t getJacobianStateNonZeroCountTerminal() override
-	{
-		if(!this->initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		return sparsityStateTerminalRows_.rows();
-	}
-
-	virtual size_t getJacobianInputNonZeroCountIntermediate() override
-	{
-		if(!this->initializedIntermediate_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		return sparsityInputIntermediateRows_.rows();
-	}
-
-	virtual size_t getJacobianInputNonZeroCountTerminal() override
-	{
-		if(!this->initializedTerminal_)
-			throw std::runtime_error("Constraints not initialized yet. Call 'initialize()' before");
-
-		return sparsityInputTerminalRows_.rows();
-	}
-
-	virtual bool initializeIntermediate() override
-	{	
-
-		Eigen::VectorXi sparsityRows;
-		Eigen::VectorXi sparsityCols;
-
-		if(getIntermediateConstraintsCount() > 0)
-		{
-			ct::core::DerivativesCppadSettings settings;
-			settings.createForwardZero_ = true;
-			settings.createJacobian_ = true;
-			settings.createSparseJacobian_ = true;	
-
-			intermediateCodegen_->compileJIT(settings, "intermediateConstraints");
-			intermediateCodegen_->getSparsityPatternJacobian(sparsityRows, sparsityCols);
-
-			std::cout << "sparsityPattern Intermediate: " << std::endl << intermediateCodegen_->getSparsityPatternJacobian() << std::endl;
-			assert(sparsityRows.rows() == sparsityRows.rows());
-			
-			int nonZerosState = (sparsityCols.array() < STATE_DIM).count();
-			int nonZerosInput = (sparsityCols.array() >= STATE_DIM).count();
-
-			sparsityStateIntermediateRows_.resize(nonZerosState);
-			sparsityStateIntermediateCols_.resize(nonZerosState);
-			sparsityInputIntermediateRows_.resize(nonZerosInput);
-			sparsityInputIntermediateCols_.resize(nonZerosInput);
-
-			size_t count = 0;
-
-			this->lowerBoundsIntermediate_.resize(getIntermediateConstraintsCount());
-			this->upperBoundsIntermediate_.resize(getIntermediateConstraintsCount());
-
-			for(auto constraint : constraintsIntermediate_)
-			{
-				size_t constraintSize = constraint->getConstraintSize();
-				this->lowerBoundsIntermediate_.segment(count, constraintSize) = constraint->getLowerBound();
-				this->upperBoundsIntermediate_.segment(count, constraintSize) = constraint->getUpperBound();
-				count += constraintSize;
-			}
-
-			size_t stateIndex = 0;
-			size_t inputIndex = 0;
-
-			for(size_t i = 0; i < sparsityRows.rows(); ++i)
-			{
-				if(sparsityCols(i) < STATE_DIM)
-				{	
-					sparsityStateIntermediateRows_(stateIndex) = sparsityRows(i);
-					sparsityStateIntermediateCols_(stateIndex) = sparsityCols(i);
-					stateIndex++;
-				}
-				else
-				{
-					sparsityInputIntermediateRows_(inputIndex) = sparsityRows(i);
-					sparsityInputIntermediateCols_(inputIndex) = sparsityCols(i) - STATE_DIM;
-					inputIndex++;
-				}
-			}	
-		}
-
-		return true;
-	}
-
-	virtual bool initializeTerminal() override
-	{
-		Eigen::VectorXi sparsityRows;
-		Eigen::VectorXi sparsityCols;
-
-		if(getTerminalConstraintsCount() > 0)
-		{
-			ct::core::DerivativesCppadSettings settings;
-			settings.createForwardZero_ = true;
-			settings.createJacobian_ = true;
-			settings.createSparseJacobian_ = true;				
-
-			terminalCodegen_->compileJIT(settings, "terminalConstraints");
-			terminalCodegen_->getSparsityPatternJacobian(sparsityRows, sparsityCols);
-
-			std::cout << "sparsityPattern Terminal: " << std::endl << terminalCodegen_->getSparsityPatternJacobian() << std::endl;
-			assert(sparsityRows.rows() == sparsityRows.rows());
-
-			int nonZerosState = (sparsityCols.array() < STATE_DIM).count();
-			int nonZerosInput = (sparsityCols.array() >= STATE_DIM).count();
-
-			sparsityStateTerminalRows_.resize(nonZerosState);
-			sparsityStateTerminalCols_.resize(nonZerosState);
-			sparsityInputTerminalRows_.resize(nonZerosInput);
-			sparsityInputTerminalCols_.resize(nonZerosInput);
-
-			size_t count = 0;
-
-			this->lowerBoundsTerminal_.resize(getTerminalConstraintsCount());
-			this->upperBoundsTerminal_.resize(getTerminalConstraintsCount());
-
-			for(auto constraint : constraintsTerminal_)
-			{
-				size_t constraintSize = constraint->getConstraintSize();
-				this->lowerBoundsTerminal_.segment(count, constraintSize) = constraint->getLowerBound();
-				this->upperBoundsTerminal_.segment(count, constraintSize) = constraint->getUpperBound();
-				count += constraintSize;
-			}
-
-			size_t stateIndex = 0;
-			size_t inputIndex = 0;
-
-			for(size_t i = 0; i < sparsityRows.rows(); ++i)
-			{
-				if(sparsityCols(i) < STATE_DIM)
-				{	
-					sparsityStateTerminalRows_(stateIndex) = sparsityRows(i);
-					sparsityStateTerminalCols_(stateIndex) = sparsityCols(i);
-					stateIndex++;
-				}
-				else
-				{
-					sparsityInputTerminalRows_(inputIndex) = sparsityRows(i);
-					sparsityInputTerminalCols_(inputIndex) = sparsityCols(i) - STATE_DIM;
-					inputIndex++;
-				}
-			}
-		}
-
-		return true;
-	}	
+	virtual VectorXs jacobianInputSparseTerminal() override;
+
+	virtual MatrixXs jacobianInputTerminal() override;
+
+	virtual void sparsityPatternStateIntermediate(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override;
+
+	virtual void sparsityPatternStateTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override;
+
+	virtual void sparsityPatternInputIntermediate(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override;
+
+	virtual void sparsityPatternInputTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols) override;
+
+	virtual size_t getJacobianStateNonZeroCountIntermediate() override;
+
+	virtual size_t getJacobianStateNonZeroCountTerminal() override;
+
+	virtual size_t getJacobianInputNonZeroCountIntermediate() override;
+
+	virtual size_t getJacobianInputNonZeroCountTerminal() override;
+
+	virtual bool initializeIntermediate() override;
+
+	virtual bool initializeTerminal() override;
 
 private:
 	// cache the matrix here, no need to call it at every eval matrix
-	virtual void update() override { stateControlD_ << this->x_, this->u_; }
+	virtual void update() override;
 
 	/**
 	 * @brief      Helper function to keep track of the constraint evaluation
@@ -517,20 +163,7 @@ private:
 	 *
 	 * @return     The evaluated intermediate constraints
 	 */
-	Eigen::Matrix<CGScalar, Eigen::Dynamic, 1> evaluateIntermediateCodegen(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput)
-	{
-		size_t count = 0;
-		Eigen::Matrix<CGScalar, Eigen::Dynamic, 1> gLocal;
-
-		for(auto constraint : constraintsIntermediate_)
-		{
-			size_t constraint_dim = constraint->getConstraintSize();
-			gLocal.conservativeResize(count + constraint_dim);
-			gLocal.segment(count, constraint_dim) = constraint->evaluateCppadCg(stateinput.segment(0,STATE_DIM), stateinput.segment(STATE_DIM, CONTROL_DIM), CGScalar(0.0));
-			count += constraint_dim;
-		}
-		return gLocal;		
-	}
+	Eigen::Matrix<CGScalar, Eigen::Dynamic, 1> evaluateIntermediateCodegen(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput);
 
 	/**
 	 * @brief      Helper function to keep track of the constraint evaluation
@@ -540,21 +173,7 @@ private:
 	 *
 	 * @return     The evaluated terminal constraints
 	 */
-	Eigen::Matrix<CGScalar, Eigen::Dynamic, 1> evaluateTerminalCodegen(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput)
-	{
-		size_t count = 0;
-		Eigen::Matrix<CGScalar, Eigen::Dynamic, 1> gLocal;
-
-		for(auto constraint : constraintsTerminal_)
-		{
-			size_t constraint_dim = constraint->getConstraintSize();
-			gLocal.conservativeResize(count + constraint_dim);
-			gLocal.segment(count, constraint_dim) = constraint->evaluateCppadCg(stateinput.segment(0,STATE_DIM), stateinput.segment(STATE_DIM, CONTROL_DIM), CGScalar(0.0));
-			count += constraint_dim;
-		}
-
-		return gLocal;		
-	}
+	Eigen::Matrix<CGScalar, Eigen::Dynamic, 1> evaluateTerminalCodegen(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput);
 
 	//containers
 	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>>> constraintsIntermediate_;
@@ -583,8 +202,7 @@ private:
 };
 
 
-
 }// namespace optcon
 }// namespace ct
 
-#endif
+#endif // CT_OPTCON_CONSTRAINTS_CONSTRAINTCONTAINERAD_H_

@@ -83,20 +83,20 @@ ObstacleConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluate(const state_vector_
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ObstacleConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
+typename ObstacleConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
 ObstacleConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	Eigen::Vector3d xRef;
 	Eigen::Matrix<SCALAR, 3, STATE_DIM> dXRef;
 	xFun_(x, xRef);
 	dXFun_(x, dXRef);
-	VectorXs dist = xRef - obstacle_->getPosition(t);
+	VectorXs dist = xRef - obstacle_->x0();
 	jac_ = 2 * dist.transpose() * obstacle_->S() * obstacle_->A().transpose() * obstacle_->A() * obstacle_->S().transpose() * dXRef;
 	return jac_;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ObstacleConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
+typename ObstacleConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
 ObstacleConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	return Eigen::Matrix<SCALAR, 1, CONTROL_DIM>::Zero();

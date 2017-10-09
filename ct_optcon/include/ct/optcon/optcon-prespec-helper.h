@@ -59,9 +59,15 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // constraint terms
 template class ct::optcon::ConstraintBase<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
 template class ct::optcon::ControlInputConstraint<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
-template class ct::optcon::ObstacleConstraint<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+template class ct::optcon::tpl::ObstacleConstraint<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
 template class ct::optcon::StateConstraint<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
 template class ct::optcon::TerminalConstraint<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+
+// constraints
+template class ct::optcon::ConstraintContainerBase<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+template class ct::optcon::LinearConstraintContainer<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+template class ct::optcon::ConstraintContainerAD<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
+template class ct::optcon::ConstraintContainerAnalytical<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC>;
 
 // lqr
 template class ct::optcon::CARE<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC>;

@@ -64,7 +64,7 @@ size_t TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::getConstraintSize() c
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
+typename TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
 TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	return x - xF_;
@@ -80,14 +80,14 @@ Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> TerminalConstraint<STATE_
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
+typename TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
 TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	return Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>::Identity();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
+typename TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
 TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	return Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM>::Zero();
@@ -106,7 +106,7 @@ size_t TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::getNumNonZerosJacobia
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
+typename TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
 TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	return core::StateVector<STATE_DIM, SCALAR>::Ones();

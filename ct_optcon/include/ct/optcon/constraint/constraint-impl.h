@@ -33,4 +33,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "term/StateConstraint-impl.h"
 #include "term/TerminalConstraint-impl.h"
 
+#include "ConstraintContainerBase-impl.h"
+#include "LinearConstraintContainer-impl.h"
+#include "ConstraintContainerAnalytical-impl.h"
+#include "ConstraintContainerAD-impl.h"
+
 #endif /* CT_OPTCON_CONSTRAINT_IMPL_H_ */

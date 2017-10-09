@@ -53,13 +53,13 @@ StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* StateConstraint<STATE_DIM, CONT
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-size_t getConstraintSize() const
+size_t StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::getConstraintSize() const
 {
 	return STATE_DIM;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
+typename StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
 StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	return x;
@@ -75,14 +75,14 @@ Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> StateConstraint<STATE_DIM
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
+typename StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
 StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	return Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>::Identity();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
+typename StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
 StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	return Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM>::Zero();
@@ -101,7 +101,7 @@ size_t StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::getNumNonZerosJacobianIn
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
+typename StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
 StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	return state_vector_t::Ones();
@@ -113,7 +113,7 @@ void StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::sparsityPatternState(Vecto
 	this->genDiagonalIndices(STATE_DIM, rows, cols);
 }
 
-}
-}
+} // namespace optcon
+} // namespace ct
 
 #endif //CT_OPTCON_CONSTRAINT_TERM_STATE_CONSTRAINT_IMPL_HPP_

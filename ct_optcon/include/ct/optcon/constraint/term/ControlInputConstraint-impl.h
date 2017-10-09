@@ -74,14 +74,14 @@ Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> ControlInputConstraint<ST
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
+typename ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
 ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	return Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>::Zero();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
+typename ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
 ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	return Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>::Identity();
@@ -100,7 +100,7 @@ size_t ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::getNumNonZerosJac
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
+typename ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
 ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInputSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	return core::ControlVector<CONTROL_DIM, SCALAR>::Ones();

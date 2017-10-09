@@ -35,9 +35,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ConstraintContainerBase.h"
 #include "LinearConstraintContainer.h"
-#include "EmptyLinearConstraintContainer.h"
 #include "ConstraintContainerAD.h"
 #include "ConstraintContainerAnalytical.h"
-
 
 #endif /* CT_OPTCON_CONSTRAINT_H_ */

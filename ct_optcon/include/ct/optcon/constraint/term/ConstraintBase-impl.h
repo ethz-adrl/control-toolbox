@@ -56,7 +56,7 @@ Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> ConstraintBase<STATE_DIM,
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
+typename ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
 ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	throw std::runtime_error("This constraint function element is not implemented for the given term."
@@ -64,7 +64,7 @@ ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianState(const state_vector
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
+typename ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
 ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	throw std::runtime_error("This constraint function element is not implemented for the given term."
@@ -72,14 +72,14 @@ ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInput(const state_vector
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
+typename ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
 ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::getLowerBound() const
 {
 	return lb_;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
+typename ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
 ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::getUpperBound() const
 {
 	return ub_;
@@ -110,7 +110,7 @@ size_t ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::getNumNonZerosJacobianInp
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
+typename ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
 ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	MatrixXs jacState = jacobianState(x, u, t);
@@ -121,7 +121,7 @@ ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianStateSparse(const state_
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
+typename ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
 ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInputSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
 	MatrixXs jacInput = jacobianInput(x, u, t);
