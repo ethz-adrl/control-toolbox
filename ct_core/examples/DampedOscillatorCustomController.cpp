@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 	oscillator->setController(controller);
 
 	// create an integrator
-	ct::core::IntegratorRK4<state_dim> integrator(oscillator);
+	ct::core::Integrator<state_dim> integrator(oscillator, ct::core::IntegrationType::RK4);
 
 	// simulate 1000 steps
 	double dt = 0.001;

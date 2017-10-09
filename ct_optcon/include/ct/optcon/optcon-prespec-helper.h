@@ -50,6 +50,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MPC_SOLVER_PRESPEC ct::optcon::NLOptConSolver<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, POS_DIM_PRESPEC, VEL_DIM_PRESPEC, SCALAR_PRESPEC>
 #endif
 
+// the default definition of the MPC policy-type is defined as the policy of the chosen MPC-solver
 #ifndef MPC_POLICY_PRESPEC
 #define MPC_POLICY_PRESPEC MPC_SOLVER_PRESPEC::Policy_t
 #endif
