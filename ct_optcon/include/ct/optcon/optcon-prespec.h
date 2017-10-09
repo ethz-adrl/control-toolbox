@@ -28,7 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_OPTCON_OPTCON_H_
 #define INCLUDE_CT_OPTCON_OPTCON_H_
 
-#include <ct/core/core.h>
+#include <ct/core/core-prespec.h>
 
 #include "costfunction/CostFunctionAD.hpp"
 #include "costfunction/CostFunctionAnalytical.hpp"
