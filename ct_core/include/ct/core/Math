@@ -28,6 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_CORE_MATH_
 #define INCLUDE_CT_CORE_MATH_
 
+#include "math/CppadUtils.h"
 #include "math/Derivatives.h"
 #include "math/DerivativesCppadSettings.h"
 #include "math/DerivativesNumDiff.h"

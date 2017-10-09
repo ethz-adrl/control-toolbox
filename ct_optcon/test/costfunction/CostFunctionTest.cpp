@@ -29,6 +29,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <gtest/gtest.h>
 
+#include <ct/optcon/optcon.h>
+
 #include <cppad/example/cppad_eigen.hpp>
 
 #include <ct/optcon/costfunction/CostFunctionAD.hpp>

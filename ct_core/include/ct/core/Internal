@@ -30,6 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "internal/autodiff/ADHelpers.h"
 #include "internal/autodiff/CGHelpers.h"
+#include "internal/autodiff/CppadParallel.h"
 #include "internal/autodiff/SparsityPattern.h"
 
 #include "internal/traits/TraitSelector.h"

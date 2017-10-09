@@ -26,6 +26,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define EIGEN_INITIALIZE_MATRICES_BY_NAN
 
+#include <ct/core/core.h>
+#include <ct/optcon/optcon.h>
 #include <ct/optcon/costfunction/CostFunctionAD.hpp>
 #include <ct/optcon/costfunction/CostFunctionAnalytical.hpp>
 #include <ct/optcon/costfunction/term/TermBase.hpp>

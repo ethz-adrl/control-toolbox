@@ -51,11 +51,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Systems"
 #include "Integration"
 #include "Geometry"
-
-#include "templateDir.h"
-
 #include "Internal"
 #include "Math"
+
+#include "templateDir.h"
 
 #ifdef PLOTTING_ENABLED
 #include "plot/plot.h"
