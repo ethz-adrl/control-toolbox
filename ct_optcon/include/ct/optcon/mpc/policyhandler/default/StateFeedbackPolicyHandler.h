@@ -27,8 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef MPC_DEFAULT_STATEFB_POLICYHANDLER_H_
 #define MPC_DEFAULT_STATEFB_POLICYHANDLER_H_
 
-#include <ct/core/core.h>
-
 namespace ct{
 namespace optcon{
 

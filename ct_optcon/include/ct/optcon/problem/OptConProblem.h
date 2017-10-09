@@ -24,14 +24,11 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-
 #ifndef CT_OPTIMALCONTROLPROBLEM_H_
 #define CT_OPTIMALCONTROLPROBLEM_H_
 
-#include <ct/core/core.h>
 #include <ct/optcon/constraint/LinearConstraintContainer.h>
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
-
 
 namespace ct{
 namespace optcon{

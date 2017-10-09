@@ -27,11 +27,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_DYNAMICRICCATIEQUATION_HPP_
 #define CT_DYNAMICRICCATIEQUATION_HPP_
 
-#include <ct/core/core.h>
-
 namespace ct {
 namespace optcon {
-
 
 /*!
  * \ingroup LQR

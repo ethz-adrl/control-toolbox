@@ -27,7 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_CARE_ALGEBRAICRICCATIEQUATION_HPP_
 #define CT_CARE_ALGEBRAICRICCATIEQUATION_HPP_
 
-#include <ct/core/core.h>
 #include <iostream>
 
 // Schur reordering from Lapack
