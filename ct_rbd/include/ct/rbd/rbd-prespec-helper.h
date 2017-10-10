@@ -45,3 +45,5 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // classes here ...
 template class ct::rbd::SecondOrderActuatorDynamics<NJOINTS_PRESPEC, SCALAR_PRESPEC>;
 template class ct::rbd::JointPositionController<NJOINTS_PRESPEC>;
+template class ct::rbd::SelectionMatrix<CONTROL_DIM_PRESPEC, STATE_DIM_PRESPEC, SCALAR_PRESPEC>;
+template class ct::rbd::WholeBodyController<NJOINTS_PRESPEC>;

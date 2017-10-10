@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef WholeBodyController_H_
-#define WholeBodyController_H_
+#ifndef CT_RBD_WHOLEBODYCONTROLLER_H_
+#define CT_RBD_WHOLEBODYCONTROLLER_H_
 
 #include "JointPositionController.h"
 
@@ -41,21 +41,15 @@ class WholeBodyController : public ct::core::Controller<2*6 + 2*NJOINTS, NJOINTS
 public:
 	static const size_t STATE_DIM = 2*6 + 2*NJOINTS;
 
-	WholeBodyController() {};
-	virtual ~WholeBodyController() {};
+	WholeBodyController();
 
-	virtual WholeBodyController<NJOINTS>* clone() const override { throw std::runtime_error("Not implemented"); };
+	virtual ~WholeBodyController();
 
-	virtual void computeControl(const core::StateVector<STATE_DIM>& state, const core::Time& t, core::ControlVector<NJOINTS>& control) override
-	{
-		ct::rbd::RBDState<NJOINTS> x;
-		x.fromStateVectorEulerXyz(state);
-		core::StateVector<2*NJOINTS> jState = x.joints().toImplementation();
+	virtual WholeBodyController<NJOINTS>* clone() const override;
 
-		jointController_.computeControl(jState, t, control);
-	}
+	virtual void computeControl(const core::StateVector<STATE_DIM>& state, const core::Time& t, core::ControlVector<NJOINTS>& control) override;
 
-	JointPositionController<NJOINTS>& getJointController() { return jointController_; }
+	JointPositionController<NJOINTS>& getJointController();
 
 
 protected:
@@ -68,4 +62,4 @@ protected:
 
 
 
-#endif /* WholeBodyController_H_ */
+#endif /* CT_RBD_WHOLEBODYCONTROLLER_H_ */
