@@ -4,12 +4,12 @@ Farbod Farshidian. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice,
+ * Redistributions of source code must retain the above copyright notice,
       this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
+ * Redistributions in binary form must reproduce the above copyright notice,
       this list of conditions and the following disclaimer in the documentation
       and/or other materials provided with the distribution.
-    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+ * Neither the name of ETH ZURICH nor the names of its contributors may be used
       to endorse or promote products derived from this software without specific
       prior written permission.
 
@@ -22,27 +22,40 @@ GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWE
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************************************************************************************/
+ ***************************************************************************************/
 
+#ifndef INCLUDE_CT_RBD_ROBOT_ENDEFFECTOR_H_
+#define INCLUDE_CT_RBD_ROBOT_ENDEFFECTOR_H_
 
-#ifndef INCLUDE_CT_RBD_ROBOT_
-#define INCLUDE_CT_RBD_ROBOT_
+namespace ct {
+namespace rbd {
 
+template <size_t NJOINTS, typename SCALAR>
+EndEffector<NJOINTS, SCALAR>::EndEffector() :
+linkId_(999)
+{};
 
-#include "robot/RobCoGenContainer.h"
-#include "robot/Kinematics.h"
-#include "robot/Dynamics.h"
-         
-#include "robot/actuator/SecondOrderActuatorDynamics.h"
-         
-#include "robot/control/IDControllerFB.h"
-#include "robot/control/WholeBodyController.h"
-#include "robot/control/InfiniteHorizonLQRwithInverseDynamics.h"
-#include "robot/control/JointPositionController.h"
-#include "robot/control/SelectionMatrix.h"
+template <size_t NJOINTS, typename SCALAR>
+EndEffector<NJOINTS, SCALAR>::~EndEffector() {};
 
-#include "robot/costfunction/TermTaskspace.hpp"
+template <size_t NJOINTS, typename SCALAR>
+EndEffector<NJOINTS, SCALAR>::EndEffector(const EndEffector& other) :
+	linkId_(other.linkId_)
+{}
 
-#include "robot/kinematics/EndEffector.h"
+template <size_t NJOINTS, typename SCALAR>
+const size_t& EndEffector<NJOINTS, SCALAR>::getLinkId()
+{
+	return linkId_;
+}
 
-#endif /* INCLUDE_CT_RBD_ROBOT_ */
+template <size_t NJOINTS, typename SCALAR>
+void EndEffector<NJOINTS, SCALAR>::setLinkId(size_t linkId)
+{
+	linkId_ = linkId;
+}
+
+} /* namespace rbd */
+} /* namespace ct */
+
+#endif /* INCLUDE_CT_RBD_ROBOT_ENDEFFECTOR_H_ */

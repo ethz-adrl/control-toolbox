@@ -34,4 +34,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "robot/control/SelectionMatrix-impl.h"
 #include "robot/control/WholeBodyController-impl.h"
 
+#include "robot/kinematics/EndEffector-impl.h"
+
 #endif /* INCLUDE_CT_RBD_ROBOT_IMPL_ */

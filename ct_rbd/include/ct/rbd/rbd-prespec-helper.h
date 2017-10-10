@@ -32,18 +32,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NJOINTS_PRESPEC STATE_DIM_PRESPEC/2
 #endif
 
-//// the default system for Fix-base NLOC is defined as the 6 DoF robot HyA
-//#ifndef FIXBASE_DYNAMICS_PRESPEC
-//#define FIXBASE_DYNAMICS_PRESPEC ct::rbd::HyA::tpl::Dynamics<SCALAR_PRESPEC>
-//#endif
-//
-//// the default system for floating-base NLOC is defined as the quadruped HyQ
-//#ifndef FLOATINGBASE_DYNAMICS_PRESPEC
-//#define FLOATINGBASE_DYNAMICS_PRESPEC ct::rbd::HyQ::tpl::Dynamics<SCALAR_PRESPEC>
-//#endif
-
-// classes here ...
 template class ct::rbd::SecondOrderActuatorDynamics<NJOINTS_PRESPEC, SCALAR_PRESPEC>;
 template class ct::rbd::JointPositionController<NJOINTS_PRESPEC>;
 template class ct::rbd::SelectionMatrix<CONTROL_DIM_PRESPEC, STATE_DIM_PRESPEC, SCALAR_PRESPEC>;
 template class ct::rbd::WholeBodyController<NJOINTS_PRESPEC>;
+
+template class ct::rbd::EndEffector<NJOINTS_PRESPEC, SCALAR_PRESPEC>;
