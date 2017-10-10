@@ -31,6 +31,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <gtest/gtest.h>
 
+#include <ct/optcon/optcon.h>
+
 #include <ct/rbd/robot/jacobian/OperationalJacobianBase.h>
 #include <ct/rbd/operationalSpace/rigid_body/OperationalModel.h>
 #include <ct/rbd/operationalSpace/rigid_body/OperationalModelRBD.h>

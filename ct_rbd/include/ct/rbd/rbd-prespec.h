@@ -27,29 +27,19 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_RBD_RBD_H_
 #define INCLUDE_CT_RBD_RBD_H_
 
-#include <ct/core/core.h>
-#include <ct/rbd/internal/TraitSelectorSpecs.h>
+#include <ct/core/core-prespec.h>
+#include <ct/optcon/optcon-prespec.h>
 
-#include <ct/rbd/common/SpatialForceVector.h>
+// declarations
+#include "Internal"
+#include "Common"
+#include "State"
+#include "Robot"
+#include "Systems"
+#include "Nloc"
 
-#include <ct/rbd/state/RBDState.h>
-
-#include <ct/rbd/robot/RobCoGenContainer.h>
-#include <ct/rbd/robot/Kinematics.h>
-#include <ct/rbd/robot/Dynamics.h>
-
-#include <ct/rbd/robot/actuator/SecondOrderActuatorDynamics.h>
-
-#include <ct/rbd/robot/control/IDControllerFB.h>
-#include <ct/rbd/robot/control/WholeBodyController.h>
-#include <ct/rbd/robot/control/InfiniteHorizonLQRwithInverseDynamics.h>
-#include <ct/rbd/robot/costfunction/TermTaskspace.hpp>
-
-#include <ct/rbd/systems/FixBaseFDSystem.h>
-#include <ct/rbd/systems/FloatingBaseFDSystem.h>
-#include <ct/rbd/systems/ProjectedFDSystem.h>
-
-#include <ct/rbd/nloc/FloatingBaseNLOCContactModel.h>
-#include <ct/rbd/nloc/FixBaseNLOC.h>
+/*!
+ * \warning{do not include implementation files in rbd-prespec.h}
+ */
 
 #endif /* INCLUDE_CT_RBD_RBD_H_ */

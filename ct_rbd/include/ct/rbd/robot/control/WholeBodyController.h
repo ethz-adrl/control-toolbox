@@ -27,8 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef WholeBodyController_H_
 #define WholeBodyController_H_
 
-#include <ct/rbd/rbd.h>
-
 #include "JointPositionController.h"
 
 namespace ct {

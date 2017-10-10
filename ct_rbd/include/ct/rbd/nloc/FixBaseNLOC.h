@@ -27,10 +27,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_RBD_NLOC_FIXBASENLOC_H_
 #define INCLUDE_CT_RBD_NLOC_FIXBASENLOC_H_
 
-#include <ct/optcon/optcon.h>
-
 #include <ct/rbd/systems/FixBaseFDSystem.h>
-
 
 namespace ct{
 namespace rbd {
@@ -42,6 +39,7 @@ template <class RBDDynamics, typename SCALAR = double>
 class FixBaseNLOC
 {
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const bool eeForcesAreControlInputs = false;
@@ -73,17 +71,7 @@ public:
 			const std::string& settingsFile,
 			std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
 			bool verbose = false,
-			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr
-	) :
-		system_(system),
-		linearizedSystem_(linearizedSystem),
-		costFunction_(new CostFunction(costFunctionFile, verbose)),
-		optConProblem_(system_, costFunction_, linearizedSystem_),
-		iteration_(0)
-	{
-		optConProblem_.verify();
-		nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settingsFile));
-	}
+			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
 
 
 	//! constructor which directly takes the nloc settings
@@ -92,17 +80,7 @@ public:
 			const typename NLOptConSolver::Settings_t& nlocSettings,
 			std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
 			bool verbose = false,
-			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr
-	) :
-		system_(system),
-		linearizedSystem_(linearizedSystem),
-		costFunction_(new CostFunction(costFunctionFile, verbose)),
-		optConProblem_(system_, costFunction_, linearizedSystem_),
-		iteration_(0)
-	{
-		optConProblem_.verify();
-		nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, nlocSettings));
-	}
+			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
 
 
 	void initialize(
@@ -110,14 +88,7 @@ public:
 			const core::Time& tf,
 			StateVectorArray x_ref = StateVectorArray(),
 			FeedbackArray u0_fb = FeedbackArray(),
-			ControlVectorArray u0_ff = ControlVectorArray())
-	{
-		typename NLOptConSolver::Policy_t policy(x_ref, u0_ff, u0_fb, getSettings().dt);
-
-		nlocSolver_->changeTimeHorizon(tf);
-		nlocSolver_->setInitialGuess(policy);
-		nlocSolver_->changeInitialState(x0.toImplementation());
-	}
+			ControlVectorArray u0_ff = ControlVectorArray());
 
 
 	//! initialize fixed-base robot with a steady pose using inverse dynamics torques as feedforward
@@ -125,22 +96,7 @@ public:
 			const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x0,
 			const core::Time& tf,
 			const int N,
-			FeedbackMatrix K = FeedbackMatrix::Zero())
-	{
-		StateVectorArray x_ref = StateVectorArray(N+1, x0.toImplementation());
-
-		ControlVector uff;
-		computeIDTorques(x0, uff);
-		ControlVectorArray u0_ff = ControlVectorArray(N, uff);
-
-		FeedbackArray u0_fb (N, K);
-
-		typename NLOptConSolver::Policy_t policy(x_ref, u0_ff, u0_fb, getSettings().dt);
-
-		nlocSolver_->changeTimeHorizon(tf);
-		nlocSolver_->setInitialGuess(policy);
-		nlocSolver_->changeInitialState(x0.toImplementation());
-	}
+			FeedbackMatrix K = FeedbackMatrix::Zero());
 
 
 	//! initialize fixed-base robot with a directly interpolated state trajectory and corresponding ID torques
@@ -149,90 +105,32 @@ public:
 			const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& xf,
 			const core::Time& tf,
 			const int N,
-			FeedbackMatrix K = FeedbackMatrix::Zero())
-	{
-		ControlVector uff;
-
-		StateVectorArray x_ref = StateVectorArray(N+1);
-		ControlVectorArray u0_ff = ControlVectorArray(N);
-
-		for (int i=0; i<N+1; i++)
-		{
-			x_ref [i] = x0.toImplementation() + (xf.toImplementation()-x0.toImplementation()) * SCALAR(i)/SCALAR(N);
-
-			if(i<N)
-			computeIDTorques(x_ref[i], u0_ff[i]);
-		}
-
-		FeedbackArray u0_fb (N, K);
-
-		typename NLOptConSolver::Policy_t policy(x_ref, u0_ff, u0_fb, getSettings().dt);
-
-		nlocSolver_->changeTimeHorizon(tf);
-		nlocSolver_->setInitialGuess(policy);
-		nlocSolver_->changeInitialState(x0.toImplementation());
-	}
+			FeedbackMatrix K = FeedbackMatrix::Zero());
 
 
-	bool runIteration()
-	{
-		bool foundBetter = nlocSolver_->runIteration();
+	bool runIteration();
 
-		iteration_++;
-		return foundBetter;
-	}
+	const core::StateFeedbackController<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>& getSolution();
 
-	const core::StateFeedbackController<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>& getSolution(){
-		return nlocSolver_->getSolution();
-	}
+	const StateVectorArray& retrieveLastRollout();
 
-	const StateVectorArray& retrieveLastRollout()
-	{
-		return nlocSolver_->getStates();
-	}
+	const core::TimeArray& getTimeArray();
 
-	const core::TimeArray& getTimeArray()
-	{
-		return nlocSolver_->getStateTrajectory().getTimeArray();
-	}
+	const FeedbackArray& getFeedbackArray();
 
-	const FeedbackArray& getFeedbackArray()
-	{
-		return nlocSolver_->getSolution().K();
-	}
+	const ControlVectorArray& getControlVectorArray();
 
-	const ControlVectorArray& getControlVectorArray()
-	{
-		return nlocSolver_->getSolution().uff();
-	}
+	const typename NLOptConSolver::Settings_t& getSettings() const;
 
-	const typename NLOptConSolver::Settings_t& getSettings() const
-	{
-		return nlocSolver_->getSettings();
-	}
+	void changeCostFunction(std::shared_ptr<CostFunction> costFunction);
 
-	void changeCostFunction(std::shared_ptr<CostFunction> costFunction)
-	{
-		nlocSolver_->changeCostFunction(costFunction);
-	}
-
-	std::shared_ptr<NLOptConSolver> getSolver()
-	{
-		return nlocSolver_;
-	}
+	std::shared_ptr<NLOptConSolver> getSolver();
 
 
 private:
 
 	//! compute fix-base inverse dynamics torques for initialization
-	void computeIDTorques(const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x, ControlVector& u)
-	{
-		//! zero external link forces and acceleration
-		typename RBDDynamics::ExtLinkForces_t linkForces(Eigen::Matrix<SCALAR, 6, 1>::Zero());
-		typename RBDDynamics::JointAcceleration_t jAcc (Eigen::Matrix<SCALAR, 6, 1>::Zero());
-
-		system_->dynamics().FixBaseID(x, jAcc, linkForces, u);
-	}
+	void computeIDTorques(const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x, ControlVector& u);
 
 	std::shared_ptr<FBSystem> system_;
 	std::shared_ptr<LinearizedSystem> linearizedSystem_;
@@ -243,7 +141,6 @@ private:
 	std::shared_ptr<NLOptConSolver> nlocSolver_;
 
 	size_t iteration_;
-
 
 };
 

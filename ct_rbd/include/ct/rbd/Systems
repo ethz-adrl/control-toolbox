@@ -24,25 +24,14 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_RBD_H_
-#define INCLUDE_CT_RBD_RBD_H_
 
-#include <ct/core/core.h>
-#include <ct/optcon/optcon.h>
+#ifndef INCLUDE_CT_RBD_SYSTEMS_
+#define INCLUDE_CT_RBD_SYSTEMS_
 
-// declarations
-#include "Internal"
-#include "Common"
-#include "State"
-#include "Robot"
-#include "Systems"
-#include "Nloc"
+#include "systems/FixBaseFDSystem.h"
+#include "systems/FloatingBaseFDSystem.h"
+#include "systems/ProjectedFDSystem.h"
 
-// implementations
-#include "Internal-impl"
-#include "Common-impl"
-#include "Robot-impl"
-#include "Systems-impl"
-#include "Nloc-impl"
+#include "systems/linear/RbdLinearizer.h"
 
-#endif /* INCLUDE_CT_RBD_RBD_H_ */
+#endif /* INCLUDE_CT_RBD_SYSTEMS_ */

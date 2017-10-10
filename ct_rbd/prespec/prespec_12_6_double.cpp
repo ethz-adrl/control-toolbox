@@ -24,10 +24,10 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#include <ct/optcon/optcon.h>
+#include <ct/rbd/rbd.h>
 
 #define STATE_DIM_PRESPEC 12
 #define CONTROL_DIM_PRESPEC 6
 #define SCALAR_PRESPEC double
 
-#include <ct/optcon/optcon-prespec-helper.h>
+#include <ct/rbd/rbd-prespec-helper.h>

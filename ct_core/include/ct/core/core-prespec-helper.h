@@ -34,7 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #ifndef SCALAR_PRESPEC
-#define SCALAR_PR double
+#define SCALAR_PRESPEC double
 #endif
 
 #ifndef POS_DIM_PRESPEC

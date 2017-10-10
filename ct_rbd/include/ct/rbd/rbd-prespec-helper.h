@@ -24,6 +24,21 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#ifndef SCALAR_PRESPEC
+#define SCALAR_PRESPEC double
+#endif
+
+// the default system for Fix-base NLOC is defined as the 6 DoF robot HyA
+#ifndef FIXBASE_DYNAMICS_PRESPEC
+#define FIXBASE_DYNAMICS_PRESPEC ct::rbd::HyA::tpl::Dynamics<SCALAR_PRESPEC>
+#endif
+
+// the default system for floating-base NLOC is defined as the quadruped HyQ
+#ifndef FLOATINGBASE_DYNAMICS_PRESPEC
+#define FLOATINGBASE_DYNAMICS_PRESPEC ct::rbd::HyQ::tpl::Dynamics<SCALAR_PRESPEC>
+#endif
 
 // classes here ...
-//template class ct::optcon::CARE<STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC>;
+// todo: this will not work here
+//template class ct::rbd::FixBaseNLOC<FIXBASE_DYNAMICS_PRESPEC, SCALAR_PRESPEC>;
+//template class ct::rbd::FloatingBaseNLOCContactModel<FLOATINGBASE_DYNAMICS_PRESPEC>;

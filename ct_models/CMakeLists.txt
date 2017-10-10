@@ -22,11 +22,14 @@ if(BUILD_HYQ_FULL)
     set(ct_model_libs ${ct_model_libs} HyQWithContactModelLinearizedForward HyQForwardZero)
 endif(BUILD_HYQ_FULL)
 
+
 catkin_package(
-    INCLUDE_DIRS include
+    INCLUDE_DIRS 
+        include
     LIBRARIES 
         ${ct_model_libs}
-    CATKIN_DEPENDS ct_rbd
+    CATKIN_DEPENDS 
+        ct_rbd
 )
 
 include_directories(
@@ -133,19 +136,7 @@ if(BUILD_HYA_LINEARIZATION_TIMINGS)
           HyAJacInverseDynamicsReverse  
     ${catkin_LIBRARIES})
 
-
-
-
 endif(BUILD_HYA_LINEARIZATION_TIMINGS)
-
-
-## Unit tests
-catkin_add_gtest(HyaTest test/HyA/HyATest.cpp)
-target_link_libraries(HyaTest  
-    ${catkin_LIBRARIES}
-    HyALinearizedForward
-)
-
 
 
 ################ Quadrotor #################
@@ -163,6 +154,12 @@ target_link_libraries(QuadrotorWithLoadTest
     )
 
 
+## Unit tests
+catkin_add_gtest(HyaTest test/HyA/HyATest.cpp)
+target_link_libraries(HyaTest  
+    ${catkin_LIBRARIES}
+    HyALinearizedForward
+)
 
 
 find_package(Doxygen)

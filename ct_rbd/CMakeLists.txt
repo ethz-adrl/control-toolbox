@@ -31,7 +31,11 @@ catkin_package(
         test
    LIBRARIES
         ${PRESPEC_LIBS}
-   CATKIN_DEPENDS roscpp ct_core ct_optcon kindr
+   CATKIN_DEPENDS 
+       roscpp
+       ct_core
+       ct_optcon
+       kindr
 )
 
 include_directories(

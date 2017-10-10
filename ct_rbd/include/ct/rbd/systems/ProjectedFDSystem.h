@@ -8,7 +8,6 @@
 #ifndef INCLUDE_CT_RBD_ROBOT_SYSTEMS_PROJECTEDFDSYSTEM_H_
 #define INCLUDE_CT_RBD_ROBOT_SYSTEMS_PROJECTEDFDSYSTEM_H_
 
-#include <ct/core/systems/ControlledSystem.h>
 #include <ct/rbd/state/RigidBodyPose.h>
 #include <ct/rbd/physics/EEContactModel.h>
 

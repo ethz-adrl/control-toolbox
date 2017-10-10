@@ -27,7 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_RBD_ROBOT_SYSTEMS_FIXBASEFDSYSTEM_H_
 #define INCLUDE_CT_RBD_ROBOT_SYSTEMS_FIXBASEFDSYSTEM_H_
 
-#include <ct/core/core.h>
 #include <ct/rbd/state/RigidBodyPose.h>
 #include <ct/rbd/robot/actuator/ActuatorDynamics.h>
 

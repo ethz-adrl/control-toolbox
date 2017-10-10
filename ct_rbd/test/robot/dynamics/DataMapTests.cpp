@@ -29,6 +29,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <gtest/gtest.h>
 
+#include <ct/optcon/optcon.h>
+
 #include <ct/rbd/robot/kinematics/RBDDataMap.h>
 #include "../../models/testhyq/RobCoGenTestHyQ.h"
 

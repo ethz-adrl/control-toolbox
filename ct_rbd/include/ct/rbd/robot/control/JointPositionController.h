@@ -28,8 +28,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define JOINTPOSITIONCONTROLLER_H_
 
 #include <vector>
-#include <ct/core/control/siso/PIDController.h>
-
 
 namespace ct {
 namespace rbd {
