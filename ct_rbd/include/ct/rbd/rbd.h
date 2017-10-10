@@ -41,6 +41,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // implementations
 #include "Internal-impl"
 #include "Common-impl"
+#include "State-impl"
 #include "Robot-impl"
 #include "Systems-impl"
 #include "Nloc-impl"

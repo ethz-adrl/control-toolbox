@@ -30,7 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <Eigen/Dense>
 #include <gtest/gtest.h>
 
-#include <ct/optcon/optcon.h>
+#include <ct/rbd/rbd.h>
 
 #include "../../models/testIrb4600/RobCoGenTestIrb4600.h"
 #include "ct/rbd/robot/Dynamics.h"
