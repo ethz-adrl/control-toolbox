@@ -27,6 +27,15 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct {
 namespace rbd {
 
+template <size_t NJOINTS>
+JointPositionController<NJOINTS>* JointPositionController<NJOINTS>::clone() const
+{
+	throw std::runtime_error("RBD: JointPositionController.h, clone() not implemented");
+};
+
+template <size_t NJOINTS>
+JointPositionController<NJOINTS>::~JointPositionController()
+{}
 
 template <size_t NJOINTS>
 JointPositionController<NJOINTS>::JointPositionController(

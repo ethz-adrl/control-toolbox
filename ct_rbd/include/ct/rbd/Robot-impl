@@ -28,6 +28,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_RBD_ROBOT_IMPL_
 #define INCLUDE_CT_RBD_ROBOT_IMPL_
 
-// put implementation files here
+#include "robot/actuator/SecondOrderActuatorDynamics-impl.h"
+
+#include "robot/control/JointPositionController-impl.h"
 
 #endif /* INCLUDE_CT_RBD_ROBOT_IMPL_ */
