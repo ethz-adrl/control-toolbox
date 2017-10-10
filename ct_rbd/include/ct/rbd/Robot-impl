@@ -31,5 +31,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "robot/actuator/SecondOrderActuatorDynamics-impl.h"
 
 #include "robot/control/JointPositionController-impl.h"
+#include "robot/control/SelectionMatrix-impl.h"
 
 #endif /* INCLUDE_CT_RBD_ROBOT_IMPL_ */

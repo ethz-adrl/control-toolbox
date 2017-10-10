@@ -49,33 +49,11 @@ public:
 
 	SelectionMatrix() = delete;
 
-	SelectionMatrix(const SelectionMatrix& other) :
-		Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>(other)
-	{
-	}
+	SelectionMatrix(const SelectionMatrix& other);
 
-	SelectionMatrix(bool floatingBase) :
-		Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>()
-	{
-		setIdentity(floatingBase);
-	}
+	SelectionMatrix(bool floatingBase);
 
-	void setIdentity(bool floatingBase)
-	{
-		this->setZero();
-
-		if (floatingBase)
-		{
-			if (STATE_DIM < 6)
-				throw std::runtime_error("Selection Matrix for floating base systems should at least have 6 columns");
-
-			this->template bottomRightCorner<CONTROL_DIM, STATE_DIM-6>().setIdentity();
-
-		} else
-		{
-			this->template bottomRightCorner<CONTROL_DIM, CONTROL_DIM>().setIdentity();
-		}
-	}
+	void setIdentity(bool floatingBase);
 
 private:
 
@@ -83,7 +61,5 @@ private:
 
 }
 }
-
-
 
 #endif /* INCLUDE_CT_RBD_ROBOT_CONTROL_SELECTIONMATRIX_H_ */

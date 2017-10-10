@@ -38,6 +38,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "robot/control/IDControllerFB.h"
 #include "robot/control/WholeBodyController.h"
 #include "robot/control/InfiniteHorizonLQRwithInverseDynamics.h"
+#include "robot/control/JointPositionController.h"
+#include "robot/control/SelectionMatrix.h"
+
 #include "robot/costfunction/TermTaskspace.hpp"
 
 
