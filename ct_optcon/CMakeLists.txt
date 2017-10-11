@@ -203,7 +203,7 @@ if(BUILD_EXAMPLES)
     add_executable(ex_LQR examples/LQR.cpp)
     target_link_libraries(ex_LQR ${catkin_LIBRARIES} lapack dl)
     
-    add_executable(ex_MPC examples/iLQG_MPC.cpp)
+    add_executable(ex_MPC examples/iLQR_MPC.cpp)
     target_link_libraries(ex_MPC ${catkin_LIBRARIES})
     
     #add_executable(ex_DMS examples/DMS.cpp)

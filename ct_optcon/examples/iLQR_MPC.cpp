@@ -6,9 +6,9 @@ using namespace ct::core;
 using namespace ct::optcon;
 
 /*!
- * This example shows how to use the MPC class. Here, we apply iLQG-MPC to a simple second order system, a damped oscillator.
+ * This example shows how to use the MPC class. Here, we apply iLQR-MPC to a simple second order system, a damped oscillator.
  *
- * \example iLQG_MPC.cpp
+ * \example ilqr_mpc.cpp
  */
 int main(int argc, char **argv)
 {
@@ -55,30 +55,37 @@ int main(int argc, char **argv)
 
 
 
-	/* STEP 2: solve the optimal control problem using iLQG
-	 * iLQG-MPC works best if it's supplied with a good initial guess. If possible, and given that your
+	/* STEP 2: solve the optimal control problem using iLQR
+	 * iLQR-MPC works best if it's supplied with a good initial guess. If possible, and given that your
 	 * control system is in a steady state at start, we recommend to solve the full Optimal Control problem
 	 * first, start executing the policy and at the same time re-using the optimal solution as initial guess for MPC.
 	 */
 
-	// initial iLQG settings (default settings except for dt)
-	iLQGSettings ilqg_settings;
-	ilqg_settings.dt = 0.001;
-	ilqg_settings.dt_sim = 0.001;
+	// initial iLQR settings (default settings except for dt)
+	NLOptConSettings ilqr_settings;
+	ilqr_settings.dt = 0.001;
+	ilqr_settings.epsilon = 0.0;
+	ilqr_settings.max_iterations = 10;
+	ilqr_settings.K_shot = 1;
+	ilqr_settings.integrator = ct::core::IntegrationType::EULERCT;
+	ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
+	ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
+	ilqr_settings.printSummary = true;
 
 	// calculate the number of time steps
-	size_t K = std::round(timeHorizon / ilqg_settings.dt);
+	size_t K = std::round(timeHorizon / ilqr_settings.dt);
 
-	// provide trivial initial controller to iLQG
+	// provide trivial initial controller to iLQR
 	FeedbackArray<state_dim, control_dim> u0_fb(K, FeedbackMatrix<state_dim, control_dim>::Zero());
 	ControlVectorArray<control_dim> u0_ff(K, ControlVector<control_dim>::Zero());
-	ct::core::StateFeedbackController<state_dim, control_dim> initController (u0_ff, u0_fb, ilqg_settings.dt);
+	StateVectorArray<state_dim>  x_ref_init (K+1, x0);
+	NLOptConSolver<state_dim, control_dim>::Policy_t  initController (x_ref_init, u0_ff, u0_fb, ilqr_settings.dt);
 
-	// create an iLQG instance
-	iLQG<state_dim, control_dim> iLQG_init (optConProblem, ilqg_settings);
+	// create an iLQR instance
+	NLOptConSolver<state_dim, control_dim>  iLQG_init (optConProblem, ilqr_settings);
 
 	// configure it and set the initial guess
-	iLQG_init.configure(ilqg_settings);
+	iLQG_init.configure(ilqr_settings);
 	iLQG_init.setInitialGuess(initController);
 
 	// and finally solve the optimal control problem
@@ -91,16 +98,14 @@ int main(int argc, char **argv)
 
 
 	/* STEP 3: set up MPC
-	 * Next, we set up an MPC instance for the iLQG solver and configure it.
+	 * Next, we set up an MPC instance for the iLQR solver and configure it.
 	 */
 
-	// settings for the ilqg instance used in MPC
-	iLQGSettings ilqg_settings_mpc;
-	ilqg_settings_mpc.dt = 0.001;
-	ilqg_settings_mpc.dt_sim = 0.001;
+	// settings for the iLQR instance used in MPC
+	NLOptConSettings ilqr_settings_mpc = ilqr_settings;
 
-	// in MPC-mode, it usually makes sense to limit the overall number of iLQG iterations in order to avoid too unpredictable time variations
-	ilqg_settings_mpc.max_iterations = 5;
+	// in MPC-mode, it usually makes sense to limit the overall number of iLQR iterations (real-time iteration scheme)
+	ilqr_settings_mpc.max_iterations = 1;
 
 
 	// fill in mpc specific settings. For a more detailed description of those, visit ct/optcon/mpc/MpcSettings.h
@@ -114,11 +119,11 @@ int main(int argc, char **argv)
 	settings.additionalDelayUs_ = 0;
 
 
-	// Create the iLQG-MPC object
-	MPC<iLQG<state_dim, control_dim>> ilqg_mpc (optConProblem, ilqg_settings_mpc, settings);
+	// Create the iLQR-MPC object
+	MPC<NLOptConSolver<state_dim, control_dim>> ilqr_mpc (optConProblem, ilqr_settings_mpc, settings);
 
 	// initialize it using the previously computed initial controller
-	ilqg_mpc.setInitialGuess(perfectInitController);
+	ilqr_mpc.setInitialGuess(perfectInitController);
 
 
 
@@ -144,7 +149,7 @@ int main(int argc, char **argv)
 	{
 		// let's for simplicity, assume that the "measured" state is the first state from the optimal trajectory plus some noise
 		if(i>0)
-			x0 = stateTraj.front() + 0.1*StateVector<state_dim>::Random();
+			x0 = 0.1*StateVector<state_dim>::Random();
 
 		// time which has passed since start of MPC
 		auto current_time = std::chrono::high_resolution_clock::now();
@@ -157,18 +162,15 @@ int main(int argc, char **argv)
 		ct::core::Time ts_newPolicy;
 
 		// !!! run one MPC cycle !!! (get new policy by reference)
-		bool success = ilqg_mpc.run(x0, t, newPolicy, ts_newPolicy);
-
-		// retrieve the currently optimal state trajectory
-		stateTraj = ilqg_mpc.getStateTrajectory();
+		bool success = ilqr_mpc.run(x0, t, newPolicy, ts_newPolicy);
 
 		// we break the loop in case the time horizon is reached or solve() failed
-		if(ilqg_mpc.timeHorizonReached() | !success)
+		if(ilqr_mpc.timeHorizonReached() | !success)
 			break;
 	}
 
 
 	// the summary contains some statistical data about time delays, etc.
-	ilqg_mpc.printMpcSummary();
+	ilqr_mpc.printMpcSummary();
 
 }
