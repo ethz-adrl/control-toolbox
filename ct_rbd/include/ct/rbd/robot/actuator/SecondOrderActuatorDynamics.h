@@ -45,15 +45,13 @@ public:
 	typedef ActuatorDynamics <NJOINTS, 2*NJOINTS, SCALAR> BASE;
 
 	//! constructor
-	SecondOrderActuatorDynamics(SCALAR w_n, SCALAR zeta = SCALAR(1.0), SCALAR g_dc = SCALAR(1.0)):
-		oscillator_(w_n, zeta, g_dc)
-	{}
+	SecondOrderActuatorDynamics(SCALAR w_n, SCALAR zeta = SCALAR(1.0), SCALAR g_dc = SCALAR(1.0));
 
 	//! destructor
-	virtual ~SecondOrderActuatorDynamics(){}
+	virtual ~SecondOrderActuatorDynamics();
 
 	//! deep cloning
-	virtual SecondOrderActuatorDynamics<NJOINTS, SCALAR>* clone() const override {return new SecondOrderActuatorDynamics(*this);}
+	virtual SecondOrderActuatorDynamics<NJOINTS, SCALAR>* clone() const override;
 
 
 	virtual void computePdot(
@@ -61,11 +59,7 @@ public:
 			const typename BASE::act_vel_vector_t& v,
 			const ct::core::ControlVector<NJOINTS, SCALAR>& control,
 			typename BASE::act_pos_vector_t& pDot
-		) override
-	{
-		// as the oscillator is symplectic itself, we simply transcribe the velocity coordinates
-		pDot = v;
-	}
+		) override;
 
 
 	virtual void computeVdot(
@@ -73,32 +67,12 @@ public:
 			const typename BASE::act_pos_vector_t& p,
 			const ct::core::ControlVector<NJOINTS, SCALAR>& control,
 			typename BASE::act_vel_vector_t& vDot
-		) override
-	{
-		// evaluate oscillator dynamics for each joint
-		for (size_t i=0; i<NJOINTS; i++)
-		{
-			core::StateVector<2, SCALAR> secondOrderState;
-			core::StateVector<2, SCALAR> secondOrderStateDerivative;
-			core::ControlVector<1, SCALAR> inputCtrl;
-			inputCtrl(0) = control(i);
-
-			secondOrderState << p(i), x(i+NJOINTS);
-
-			oscillator_.computeControlledDynamics(secondOrderState, SCALAR(0.0), inputCtrl, secondOrderStateDerivative);
-
-			vDot(i) = secondOrderStateDerivative(1);
-		}
-	}
+		) override;
 
 
 	virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
 			const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
-			const typename BASE::act_state_vector_t& actState) override
-	{
-		// for this simple actuator dynamics model, the controlOutput is just the "position" coordinates of the actuator state
-		return actState.template topRows<NJOINTS>();
-	}
+			const typename BASE::act_state_vector_t& actState) override;
 
 
 private:

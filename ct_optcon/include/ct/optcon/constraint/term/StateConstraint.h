@@ -27,9 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCON_CONSTRAINT_TERM_STATE_CONSTRAINT_HPP_
 #define CT_OPTCON_CONSTRAINT_TERM_STATE_CONSTRAINT_HPP_
 
-#include "ConstraintBase.h"
-#include <ct/core/types/StateVector.h>
-
 namespace ct {
 namespace optcon {
 
@@ -45,7 +42,9 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class StateConstraint : public ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
 	typedef ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
@@ -64,66 +63,32 @@ public:
 	 */
 	StateConstraint(
 		const state_vector_t& xLow,
-		const state_vector_t& xHigh)
-	{
-		Base::lb_.resize(STATE_DIM);
-		Base::ub_.resize(STATE_DIM);
-		// The terminal state constraint is treated as equality constraint, therefore, ub = lb
-		Base::lb_ = xLow;
-		Base::ub_ = xHigh;
-	}
+		const state_vector_t& xHigh);
 
-	virtual StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
-	{
-		return new StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
-	}
+	virtual ~StateConstraint();
 
-	virtual size_t getConstraintSize() const override
-	{
-		return STATE_DIM;
-	}
+	virtual StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
 
-	virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
-	{
-		return x;
-	}
+	virtual size_t getConstraintSize() const override;
+
+	virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
 	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
 		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
 		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
-		ct::core::ADCGScalar t) override
-	{
-		return x;
-	}
+		ct::core::ADCGScalar t) override;
 
-	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
-	{
-		return Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>::Identity();
-	}
+	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
-	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
-	{
-		return Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM>::Zero();
-	}
+	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
-	virtual size_t getNumNonZerosJacobianState() const override
-	{
-		return STATE_DIM;
-	}
-	virtual size_t getNumNonZerosJacobianInput() const override
-	{
-		return 0;
-	}
+	virtual size_t getNumNonZerosJacobianState() const override;
 
-	virtual VectorXs jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
-	{
-		return state_vector_t::Ones();
-	}
+	virtual size_t getNumNonZerosJacobianInput() const override;
 
-	virtual void sparsityPatternState(VectorXi& rows, VectorXi& cols) override
-	{
-		this->genDiagonalIndices(STATE_DIM, rows, cols);
-	}
+	virtual VectorXs jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
+
+	virtual void sparsityPatternState(VectorXi& rows, VectorXi& cols) override;
 
 };
 

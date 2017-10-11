@@ -27,13 +27,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCON_CONSTRAINT_TERM_CONSTRAINT_OBSTACLE_HPP_
 #define CT_OPTCON_CONSTRAINT_TERM_CONSTRAINT_OBSTACLE_HPP_
 
-#include "ConstraintBase.h"
-#include <ct/core/geometry/Ellipsoid.h>
-
 namespace ct {
 namespace optcon {
 namespace tpl {
-
 
 /**
  * @brief      Class for obstacle constraint.
@@ -46,7 +42,9 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class ObstacleConstraint : public ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
 	typedef ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
@@ -61,59 +59,21 @@ public:
 	ObstacleConstraint(
 			std::shared_ptr<ct::core::tpl::Ellipsoid<SCALAR>> obstacle,
 			std::function<void (const state_vector_t&, Vector3s&)> getPosition,
-			std::function<void (const state_vector_t&, Eigen::Matrix<SCALAR, 3, STATE_DIM>&)> getJacobian)
-	:
-		obstacle_(obstacle),
-		xFun_(getPosition),
-		dXFun_(getJacobian)
-	{
-		this->lb_.resize(1);
-		this->ub_.resize(1);
-		this->lb_(0) = SCALAR(0.0);
-		this->ub_(0) = std::numeric_limits<SCALAR>::max();
-	}	
+			std::function<void (const state_vector_t&, Eigen::Matrix<SCALAR, 3, STATE_DIM>&)> getJacobian);
 
-	virtual ObstacleConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
-	{
-		return new ObstacleConstraint<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
-	}
+	virtual ObstacleConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
 
-	ObstacleConstraint(const ObstacleConstraint& arg):
-		Base(arg),
-		obstacle_(arg.obstacle_),
-		xFun_(arg.xFun_),
-		dXFun_(arg.dXFun_)
-		{}
+	virtual ~ObstacleConstraint();
 
-	virtual size_t getConstraintSize() const override
-	{
-		return 1;
-	}
+	ObstacleConstraint(const ObstacleConstraint& arg);
 
-	virtual Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
-	{
-		Vector3s xRef;
-		xFun_(x, xRef);
-		val_(0) = obstacle_->insideEllipsoid(xRef);
-		return val_;	
-	}
+	virtual size_t getConstraintSize() const override;
 
-	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
-	{
-		Eigen::Vector3d xRef;
-		Eigen::Matrix<SCALAR, 3, STATE_DIM> dXRef;
-		xFun_(x, xRef);
-		dXFun_(x, dXRef);
-		VectorXs dist = xRef - obstacle_->getPosition(t);
-		jac_ = 2 * dist.transpose() * obstacle_->S() * obstacle_->A().transpose() * obstacle_->A() * obstacle_->S().transpose() * dXRef;
-		return jac_;
-	}
+	virtual Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
-	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
-	{
-		return Eigen::Matrix<SCALAR, 1, CONTROL_DIM>::Zero();
-	}
+	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
+	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
 private:
 	std::shared_ptr<ct::core::tpl::Ellipsoid<SCALAR>> obstacle_;
@@ -125,13 +85,13 @@ private:
 	Eigen::Matrix<SCALAR, 1, STATE_DIM> jac_;
 };
 
-}
+} // namespace tpl
 
 template<size_t STATE_DIM, size_t INPUT_DIM>
 using ObstacleConstraint = tpl::ObstacleConstraint<STATE_DIM, INPUT_DIM, double>;
 
-}
-}
+} // namespace optcon
+} // namespace ct
 
 
-#endif //CT_OPTCON_CONSTRAINT_OBSTACLE_HPP_
+#endif //CT_OPTCON_CONSTRAINT_TERM_CONSTRAINT_OBSTACLE_HPP_

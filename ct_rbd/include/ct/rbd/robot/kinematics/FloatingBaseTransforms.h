@@ -40,6 +40,7 @@ public:
 	FloatingBaseTransforms(std::shared_ptr<RBD> rbdContainer) :
 		rbdContainer_(rbdContainer)
 	{}
+
 	virtual ~FloatingBaseTransforms() {};
 
 

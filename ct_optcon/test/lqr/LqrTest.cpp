@@ -28,8 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <chrono>
 
-#include <ct/optcon/lqr/riccati/DARE.hpp>
-#include <ct/optcon/lqr/LQR.hpp>
+#include <ct/optcon/optcon.h>
 
 #ifdef MATLAB
     #include <matlabCppInterface/Engine.hpp>

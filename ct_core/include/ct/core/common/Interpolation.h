@@ -27,8 +27,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_CORE_INTERPOLATION_H_
 #define CT_CORE_INTERPOLATION_H_
 
-#include <ct/core/types/trajectories/TimeArray.h>
-#include <ct/core/types/trajectories/DiscreteArray.h>
+#include <ct/core/types/arrays/DiscreteArray.h>
+#include <ct/core/types/arrays/TimeArray.h>
 
 namespace ct{
 namespace core{

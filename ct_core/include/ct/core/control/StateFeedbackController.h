@@ -31,10 +31,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Controller.h"
 
-#include <ct/core/types/trajectories/FeedbackArray.h>
-#include <ct/core/types/trajectories/FeedbackTrajectory.h>
-#include <ct/core/types/trajectories/ControlTrajectory.h>
-#include <ct/core/types/trajectories/StateTrajectory.h>
+#include <ct/core/types/arrays/MatrixArrays.h>
+#include <ct/core/types/trajectories/MatrixTrajectories.h>
 
 namespace ct {
 namespace core {
@@ -66,7 +64,7 @@ public:
 	typedef Controller<STATE_DIM, CONTROL_DIM, SCALAR> ControllerBase;
 
 	//! default constructor
-	StateFeedbackController(){}
+	StateFeedbackController();
 
 	//! constructor
 	/*!
@@ -84,27 +82,16 @@ public:
 			const FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K,
 			const SCALAR& deltaT,
 			const SCALAR& t0 = 0.0,
-			const InterpolationType& intType = ZOH
-	) :
-		x_ref_(x_ref, deltaT, t0, intType),
-		uff_(uff, deltaT, t0, intType),
-		K_(K, deltaT, t0, intType)
-	{}
+			const InterpolationType& intType = ZOH);
 
 	//! copy constructor
-	StateFeedbackController(const StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>& other) :
-		x_ref_(other.x_ref_),
-		uff_(other.uff_),
-		K_(other.K_)
-	{}
+	StateFeedbackController(const StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>& other);
 
 	//! destructor
-	virtual ~StateFeedbackController() {}
+	virtual ~StateFeedbackController();
 
 	//! deep cloning, required by ControlledSystem
-	StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override {
-		return new StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
-	}
+	StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
 
 	//! computes the control action
 	/*!
@@ -116,10 +103,7 @@ public:
 	virtual void computeControl(
 			const StateVector<STATE_DIM, SCALAR>& state,
 			const SCALAR& t,
-			ControlVector<CONTROL_DIM, SCALAR>& controlAction) override {
-
-		controlAction = uff_.eval(t) + K_.eval(t) * (state-x_ref_.eval(t));
-	}
+			ControlVector<CONTROL_DIM, SCALAR>& controlAction) override;
 
 	//! updates the controller
 	/*!
@@ -132,62 +116,40 @@ public:
 			const DiscreteArray<StateVector<STATE_DIM, SCALAR>>& x_ref,
 			const DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>& uff,
 			const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>& K,
-			const tpl::TimeArray<SCALAR>& t)
-	{
-		tpl::TimeArray<SCALAR> tshort = t;
-		tshort.pop_back(); // todo: the copying here is not optimal
-
-		if(K.size() != tshort.size()) throw std::runtime_error("StateFeedbackController.h : K.size() != tshort.size()");
-		if(uff.size() != tshort.size()) throw std::runtime_error("StateFeedbackController.h : uff.size() != tshort.size()");
-		if(x_ref.size() != t.size()) throw std::runtime_error("StateFeedbackController.h : x_ref.size() != t.size()");
-
-		x_ref_.setData(x_ref),
-		x_ref_.setTime(t),
-		uff_.setData(uff);
-		uff_.setTime(tshort);
-		K_.setData(K);
-		K_.setTime(tshort);
-	}
+			const tpl::TimeArray<SCALAR>& t);
 
 	//! get reference state vector array (without timings)
-	const DiscreteArray<StateVector<STATE_DIM, SCALAR>>& x_ref() const { return x_ref_.getDataArray(); }
+	const DiscreteArray<StateVector<STATE_DIM, SCALAR>>& x_ref() const;
 
 	//! get feedforward array (without timings)
-	const DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>& uff() const { return uff_.getDataArray(); }
+	const DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>& uff() const;
 
 	//! get feedback array (without timings
-	const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>> & K() const { return K_.getDataArray(); }
+	const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>> & K() const;
 
 	//! get time array
-	const tpl::TimeArray<SCALAR>& time() const {return uff_.getTimeArray();}
+	const tpl::TimeArray<SCALAR>& time() const;
 
 	//! get a reference to the feedforward trajectory
-	StateTrajectory<STATE_DIM, SCALAR>& getReferenceStateTrajectory() { return x_ref_; }
+	StateTrajectory<STATE_DIM, SCALAR>& getReferenceStateTrajectory();
 
 	//! get a reference to the feedforward trajectory
-	const StateTrajectory<STATE_DIM, SCALAR>& getReferenceStateTrajectory() const { return x_ref_; }
+	const StateTrajectory<STATE_DIM, SCALAR>& getReferenceStateTrajectory() const;
 
 	//! get a reference to the feedforward trajectory
-	ControlTrajectory<CONTROL_DIM, SCALAR>& getFeedforwardTrajectory() { return uff_; }
+	ControlTrajectory<CONTROL_DIM, SCALAR>& getFeedforwardTrajectory();
 
 	//! get a reference to the feedforward trajectory
-	const ControlTrajectory<CONTROL_DIM, SCALAR>& getFeedforwardTrajectory() const { return uff_; }
+	const ControlTrajectory<CONTROL_DIM, SCALAR>& getFeedforwardTrajectory() const;
 
 	//! get a reference to the feedback trajectory
-	FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR>& getFeedbackTrajectory() { return K_;}
+	FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR>& getFeedbackTrajectory();
 
 	//! get a reference to the feedback trajectory
-	const FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR>& getFeedbackTrajectory() const { return K_;}
-
+	const FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR>& getFeedbackTrajectory() const;
 
 	//!  extracts a physically meaningful control trajectory from the given state-feedback law and a reference state trajectory
-	void extractControlTrajectory(const StateTrajectory<STATE_DIM, SCALAR>& x_traj, ControlTrajectory<CONTROL_DIM, SCALAR>& u_traj){
-		u_traj.clear();
-
-		for(size_t i = 0; i<x_traj.size()-1; i++){
-			u_traj.push_back(uff_[i]+K_[i]*(x_traj[i]-x_ref_[i]), x_traj.getTimeFromIndex(i), true);
-		}
-	}
+	void extractControlTrajectory(const StateTrajectory<STATE_DIM, SCALAR>& x_traj, ControlTrajectory<CONTROL_DIM, SCALAR>& u_traj);
 
 private:
 	StateTrajectory<STATE_DIM, SCALAR> x_ref_; //! state reference trajectory

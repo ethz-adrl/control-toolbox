@@ -48,18 +48,14 @@ public:
 	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> Base;
 
 	NLOCBackendST(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
-			const NLOptConSettings& settings) :
-				Base(optConProblem, settings)
-	{}
+			const NLOptConSettings& settings);
 
 	NLOCBackendST(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 			 const std::string& settingsFile,
 			 bool verbose = true,
-			 const std::string& ns = "alg") :
-			Base(optConProblem, settingsFile, verbose, ns)
-	{}
+			 const std::string& ns = "alg");
 
-	virtual ~NLOCBackendST() {};
+	virtual ~NLOCBackendST();
 
 protected:
 
@@ -75,8 +71,6 @@ protected:
 
 } // namespace optcon
 } // namespace ct
-
-#include "implementation/NLOCBackendST-impl.hpp"
 
 
 #endif /* INCLUDE_CT_OPTCON_NLOC_BACKEND_ST_HPP_ */

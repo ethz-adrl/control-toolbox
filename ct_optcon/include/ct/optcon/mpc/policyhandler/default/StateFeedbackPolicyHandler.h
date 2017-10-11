@@ -27,12 +27,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef MPC_DEFAULT_STATEFB_POLICYHANDLER_H_
 #define MPC_DEFAULT_STATEFB_POLICYHANDLER_H_
 
-#include <ct/core/core.h>
-
 namespace ct{
 namespace optcon{
 
-//! the default policy handler for SLQ
+//! the default policy handler for iLQR
 template<size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 class StateFeedbackPolicyHandler : public PolicyHandler<core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>, STATE_DIM, CONTROL_DIM, SCALAR>
 {
@@ -43,84 +41,14 @@ public:
 
 	typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> StateFeedbackController_t;
 
-	StateFeedbackPolicyHandler(const SCALAR& dt):
-		dt_(dt)
-	{}
+	StateFeedbackPolicyHandler(const SCALAR& dt);
 
-	virtual ~StateFeedbackPolicyHandler(){}
-
+	virtual ~StateFeedbackPolicyHandler();
 
 	virtual void designWarmStartingPolicy(
 			const SCALAR& delay,
 			const SCALAR& newTimeHorizon,
-			StateFeedbackController_t& policy) override {
-		
-		// get the current reference trajectories from the StateFeedbackController
-		core::FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR>& FeedbackTraj = policy.getFeedbackTrajectory();
-		core::ControlTrajectory<CONTROL_DIM, SCALAR>& FeedForwardTraj = policy.getFeedforwardTrajectory();
-		core::StateTrajectory<STATE_DIM, SCALAR>& StateRefTraj = policy.getReferenceStateTrajectory();
-
-		// current number of discrete elements
-		int currentSize = FeedForwardTraj.size();
-
-		// compute new controller length as a function of the time horizon
-		int Kn_new = std::max(1, (int)std::lround(newTimeHorizon/dt_));
-
-		// compute number indices to be shifted. Note: it does not make sense to shift more entries than are available
-		int num_di = FeedForwardTraj.getIndexFromTime(delay);
-		num_di = std::min(num_di, currentSize-1);
-
-
-#ifdef DEBUG_POLICYHANDLER
-		std::cout << "DEBUG_POLICYHANDLER: Controller shifting: "<< std::endl <<
-				"delay: " << delay << "  newT: " << newTimeHorizon << std::endl <<
-				" new Discrete Controller has:  " << std::endl
-				<< Kn_new << " control elements, shifted about " << num_di << " elements." << std::endl
-				<< Kn_new +1 << " state elements, shifted about " << num_di << " elements." << std::endl;
-#endif
-
-
-		// Step 1 - Truncate Front: remove first 'num_di' elements from controller and shift time accordingly
-		if(num_di > 0)
-		{
-			FeedForwardTraj.eraseFront(num_di, num_di*dt_);
-			FeedbackTraj.eraseFront(num_di, num_di*dt_);
-			StateRefTraj.eraseFront(num_di, num_di*dt_);
-			currentSize -=num_di;
-		}
-
-
-		// Step 2 - Resize overall controller
-		if (Kn_new > currentSize)
-		{
-			//extend at back with constant value taken from last element
-			bool timeIsRelative = true;
-			for(size_t i = 0; i<Kn_new-currentSize; i++)
-			{
-				FeedbackTraj.push_back(FeedbackTraj.back(), dt_, timeIsRelative);
-				FeedForwardTraj.push_back(FeedForwardTraj.back(), dt_, timeIsRelative);
-				StateRefTraj.push_back(StateRefTraj.back(), dt_, timeIsRelative);
-			}
-		}
-		else if (Kn_new < currentSize)
-		{
-			// remove elements from back
-			for(size_t i = 0; i< currentSize-Kn_new; i++)
-			{
-				FeedbackTraj.pop_back();
-				FeedForwardTraj.pop_back();
-				StateRefTraj.pop_back();
-			}
-		}
-
-		// safety check, which should never be entered
-		if(FeedForwardTraj.size() == 0)
-		{
-			throw std::runtime_error("ERROR in StateFeedbackPolicyHandler.h: new policy should not have size 0.");
-		}
-	}
-
-
+			StateFeedbackController_t& policy) override;
 
 	/*!
 	 * required for additional post-truncation.
@@ -132,31 +60,7 @@ public:
 	virtual void truncateSolutionFront(
 			const SCALAR& delay,
 			StateFeedbackController_t& policy,
-			SCALAR& effectivelyTruncated) override {
-
-		// current controller length
-		size_t currentSize = policy.getFeedforwardTrajectory().size();
-
-		size_t num_di = policy.getFeedforwardTrajectory().getIndexFromTime(delay);
-		num_di = std::min(num_di, currentSize-1);
-
-		effectivelyTruncated = num_di * dt_;
-
-#ifdef DEBUG_POLICYHANDLER
-		std::cout << "DEBUG_WARMSTART: Current Controller Size:  "<< currentSize << " elements." << std::endl;
-		std::cout << "DEBUG_WARMSTART: Controller truncation: truncation about "<< num_di << " elements." << std::endl;
-		std::cout << "DEBUG_WARMSTART: Controller new size: "<< currentSize-num_di << " elements." << std::endl;
-#endif
-
-		// remove first num_di elements from controller
-		if(num_di > 0 && num_di < currentSize)
-		{
-			policy.getFeedbackTrajectory().eraseFront (num_di, effectivelyTruncated);
-			policy.getFeedforwardTrajectory().eraseFront (num_di, effectivelyTruncated);
-			policy.getReferenceStateTrajectory().eraseFront(num_di, effectivelyTruncated);
-		}
-	}
-
+			SCALAR& effectivelyTruncated) override;
 
 private:
 

@@ -31,8 +31,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <Eigen/Core>
 #include <map>
 
-#include <ct/core/core.h>
-
 #include "TimeGrid.h"
 
 #include <ct/optcon/dms/dms_core/DmsDimensions.h>

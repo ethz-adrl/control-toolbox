@@ -70,21 +70,16 @@ public:
 
 
 	//! constructor
-	NLOptConSolver(const OptConProblem_t& optConProblem, const Settings_t& settings)
-	{
-		initialize(optConProblem, settings);
-	}
+	NLOptConSolver(const OptConProblem_t& optConProblem, const Settings_t& settings);
 
 	//! constructor
 	NLOptConSolver(const OptConProblem_t& optConProblem,
 			 const std::string& settingsFile,
 			 bool verbose = true,
-			 const std::string& ns = "alg") :
-			NLOptConSolver(optConProblem, Settings_t::fromConfigFile(settingsFile, verbose, ns))
-	{}
+			 const std::string& ns = "alg");
 
 	//! destructor
-	virtual ~NLOptConSolver(){}
+	virtual ~NLOptConSolver();
 
 	/**
 	 * configures the solver
@@ -100,62 +95,36 @@ public:
 	/*!
 	 * execute preparation steps for an iteration, e.g. computation of defects
 	 */
-	virtual void prepareIteration()
-	{
-		nlocAlgorithm_ -> prepareIteration();
-	}
+	virtual void prepareIteration();
 
 	/*!
 	 * execute finishing step for an iteration, e.g. solving Riccati backward pass.
 	 * @return
 	 */
-	virtual bool finishIteration()
-	{
-		return nlocAlgorithm_ -> finishIteration();
-	}
+	virtual bool finishIteration();
 
 
 	/*!
 	 * execute preparation steps for an iteration, e.g. computation of defects
 	 */
-	virtual void prepareMPCIteration()
-	{
-		nlocAlgorithm_ -> prepareMPCIteration();
-	}
+	virtual void prepareMPCIteration();
 
 	/*!
 	 * execute finishing step for an iteration, e.g. solving Riccati backward pass.
 	 * @return
 	 */
-	virtual bool finishMPCIteration()
-	{
-		return nlocAlgorithm_ -> finishMPCIteration();
-	}
+	virtual bool finishMPCIteration();
 
 	/**
 	 * run a single iteration of the solver
 	 * @return true if a better solution was found
 	 */
-	virtual bool runIteration()
-	{
-#ifdef DEBUG_PRINT
-		auto startSolve = std::chrono::steady_clock::now();
-#endif
-		bool success = nlocAlgorithm_ -> runIteration();
-#ifdef DEBUG_PRINT
-		auto endSolve = std::chrono::steady_clock::now();
-		std::cout << "[NLOC]: runIteration() took "<<std::chrono::duration <double, std::milli> (endSolve-startSolve).count() << " ms" << std::endl;
-#endif
-		return success;
-	}
+	virtual bool runIteration();
 
 	/*!
 	 * Set the initial guess used by the solver (not all solvers might support initial guesses)
 	 */
-	void setInitialGuess(const Policy_t& initialGuess) override
-	{
-		nlocBackend_ -> setInitialGuess(initialGuess);
-	}
+	void setInitialGuess(const Policy_t& initialGuess) override;
 
 	/**
 	 * solve the optimal control problem
@@ -166,34 +135,31 @@ public:
 	 * Get the optimized control policy to the optimal control problem
 	 * @return
 	 */
-	virtual const Policy_t& getSolution() override { return nlocBackend_->getSolution(); }
+	virtual const Policy_t& getSolution() override;
 
 	/**
 	 * Get the optimized trajectory to the optimal control problem
 	 * @return
 	 */
-	virtual const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const override { return nlocBackend_->getStateTrajectory(); }
+	virtual const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const override;
 
 	/**
 	 * Get the optimal feedforward control input corresponding to the optimal trajectory
 	 * @return
 	 */
-	virtual const core::ControlTrajectory<CONTROL_DIM, SCALAR> getControlTrajectory() const override { return nlocBackend_->getControlTrajectory(); }
+	virtual const core::ControlTrajectory<CONTROL_DIM, SCALAR> getControlTrajectory() const override;
 
 	/**
 	 * Get the time indices corresponding to the solution
 	 * @return
 	 */
-	virtual const core::tpl::TimeArray<SCALAR>& getTimeArray() const override { return nlocBackend_->getTimeArray(); }
-
-
+	virtual const core::tpl::TimeArray<SCALAR>& getTimeArray() const override;
 
 	/*!
 	 * \brief Get the time horizon the solver currently operates on.
 	 *
 	 */
-	virtual SCALAR getTimeHorizon() const override { return nlocBackend_->getTimeHorizon(); }
-
+	virtual SCALAR getTimeHorizon() const override;
 
 	/*!
 	 * \brief Change the time horizon the solver operates on.
@@ -201,7 +167,7 @@ public:
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct time horizon set.
 	 */
-	virtual void changeTimeHorizon(const SCALAR& tf) override { nlocBackend_->changeTimeHorizon(tf); }
+	virtual void changeTimeHorizon(const SCALAR& tf) override;
 
 	/*!
 	 * \brief Change the initial state for the optimal control problem
@@ -209,7 +175,7 @@ public:
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct initial state set
 	 */
-	virtual void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0) override { nlocBackend_->changeInitialState(x0); }
+	virtual void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0) override;
 
 	/*!
 	 * \brief Change the cost function
@@ -217,7 +183,7 @@ public:
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct cost function
 	 */
-	virtual void changeCostFunction(const typename OptConProblem_t::CostFunctionPtr_t& cf) override { nlocBackend_->changeCostFunction(cf); }
+	virtual void changeCostFunction(const typename OptConProblem_t::CostFunctionPtr_t& cf) override;
 
 	/*!
 	 * \brief Change the nonlinear system
@@ -225,7 +191,7 @@ public:
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct nonlinear system
 	 */
-	virtual void changeNonlinearSystem(const typename OptConProblem_t::DynamicsPtr_t& dyn) override { nlocBackend_->changeNonlinearSystem(dyn); }
+	virtual void changeNonlinearSystem(const typename OptConProblem_t::DynamicsPtr_t& dyn) override;
 
 	/*!
 	 * \brief Change the linear system
@@ -233,43 +199,48 @@ public:
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct linear system
 	 */
-	virtual void changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin) override { nlocBackend_->changeLinearSystem(lin); }
+	virtual void changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin) override;
 
-	virtual SCALAR getCost() const override {return nlocBackend_->getCost(); }
+	virtual SCALAR getCost() const override;
 
 	//! get a reference to the current settings
-	const Settings_t& getSettings() {return nlocBackend_->getSettings();}
+	const Settings_t& getSettings();
 
 	//! get a reference to the backend (@todo this is not optimal, allows the user too much access)
-	const std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>>& getBackend() {return nlocBackend_;}
+	const std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>>& getBackend();
 
 	//! get reference to the nonlinear system
-	std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override { return nlocBackend_->getNonlinearSystemsInstances(); }
+	std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override;
 
 	//! get constant reference to the nonlinear system
-	const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const override { return nlocBackend_->getNonlinearSystemsInstances(); }
+	const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const override;
 
 	//! get reference to the linearized system
-	std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() { return nlocBackend_->getLinearSystemsInstances(); }
+	std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() override;
 
 	//! get constant reference to the linearized system
-	const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const { return nlocBackend_->getLinearSystemsInstances(); }
+	const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const override;
 
 	//! get reference to the cost function
-	std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() { return nlocBackend_->getCostFunctionInstances(); }
+	std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() override;
 
 	//! get constant reference to the cost function
-	const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const { return nlocBackend_->getCostFunctionInstances(); }
+	const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const override;
 
-	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() { return nlocBackend_->getStateInputConstraintsInstances(); }
+	//! get reference to the state input constraints
+	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() override;
 
-	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const { return nlocBackend_->getStateInputConstraintsInstances(); }
+	//! get constant reference to the state input constraints
+	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const override;
 
-	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() { return nlocBackend_->getPureStateConstraintsInstances(); }
+	//! get reference to the pure state constraints
+	std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() override;
 
-	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const { return nlocBackend_->getPureStateConstraintsInstances(); }
+	//! get constant reference to the pure state constraints
+	const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const override;
 
-	void logSummaryToMatlab(const std::string& fileName){nlocBackend_->logSummaryToMatlab(fileName);}
+	//! logging a short summary to matlab
+	void logSummaryToMatlab(const std::string& fileName);
 
 protected:
 
@@ -283,7 +254,5 @@ protected:
 
 } // namespace optcon
 } // namespace ct
-
-#include "implementation/NLOptConSolver-impl.hpp"
 
 #endif /* INCLUDE_CT_OPTCON_SOLVER_NLOPTCONSOLVERBASE_H_ */

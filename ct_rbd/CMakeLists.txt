@@ -13,6 +13,15 @@ find_package(Eigen3)
 include_directories(
   ${catkin_INCLUDE_DIRS}  
 )
+
+## assemble list of libraries that contain prespecified templates
+set(PRESPEC_LIBS "")
+file(GLOB files "prespec/*.cpp")
+foreach(file ${files})
+  get_filename_component(raw_filename ${file} NAME_WE)
+  LIST(APPEND PRESPEC_LIBS "ct_rbd_${raw_filename}")
+endforeach()
+
 catkin_package(
    INCLUDE_DIRS
         ${kindr_INCLUDE_DIRS}
@@ -20,8 +29,13 @@ catkin_package(
         include
         include/ct/rbd
         test
-   LIBRARIES 
-   CATKIN_DEPENDS roscpp ct_core ct_optcon kindr
+   LIBRARIES
+        ${PRESPEC_LIBS}
+   CATKIN_DEPENDS 
+       roscpp
+       ct_core
+       ct_optcon
+       kindr
 )
 
 include_directories(
@@ -32,6 +46,18 @@ include_directories(
     include
     test
 )
+
+
+##compile template prespec libs
+file(GLOB files "prespec/*.cpp")
+foreach(file ${files})
+  get_filename_component(raw_filename ${file} NAME_WE)
+  add_library(ct_rbd_${raw_filename}
+   ${file}
+  )
+  target_link_libraries(ct_rbd_${raw_filename} ${catkin_LIBRARIES})
+endforeach()
+
 
 
 ## TESTING    

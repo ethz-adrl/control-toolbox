@@ -28,10 +28,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_CORE_SENSITIVITY_INTEGRATOR_CT_H_
 #define CT_CORE_SENSITIVITY_INTEGRATOR_CT_H_
 
-#include <ct/core/systems/ControlledSystem.h>
-#include <ct/core/systems/linear/LinearSystem.h>
-#include <ct/core/integration/internal/SteppersCT.h>
-
 namespace ct {
 namespace optcon {
 

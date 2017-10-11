@@ -54,27 +54,15 @@ public:
 	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> Base;
 
 	NLOCBackendMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
-			const NLOptConSettings& settings) :
-				Base(optConProblem, settings)
-	{
-		startupRoutine();
-	}
+			const NLOptConSettings& settings);
 
 	NLOCBackendMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
 			 const std::string& settingsFile,
 			 bool verbose = true,
-			 const std::string& ns = "alg") :
-			Base(optConProblem, settingsFile, verbose, ns)
-	{
-		startupRoutine();
-	}
-
+			 const std::string& ns = "alg");
 
 	//! destructor
-	virtual ~NLOCBackendMP()
-	{
-		shutdownRoutine();
-	};
+	virtual ~NLOCBackendMP();
 
 protected:
 
@@ -155,14 +143,10 @@ private:
 	 * Generates a unique identifiers for task, iteration:
 	 * @todo replace by proper hash
 	 * */
-	size_t generateUniqueProcessID (const size_t& iterateNo, const int workerState)
-	{
-		return (10e6*(workerState +1) + iterateNo+1);
-	}
+	size_t generateUniqueProcessID (const size_t& iterateNo, const int workerState);
 
 	//! wrapper method for nice debug printing
-	inline void printString(const std::string& text){std::cout << text << std::endl;}
-
+	void printString(const std::string& text);
 
 	std::vector<std::thread, Eigen::aligned_allocator<std::thread>> workerThreads_;
 	std::atomic_bool workersActive_;
@@ -201,8 +185,6 @@ private:
 
 } // namespace optcon
 } // namespace ct
-
-#include "implementation/NLOCBackendMP-impl.hpp"
 
 
 #endif /* INCLUDE_CT_OPTCON_NLOC_BACKEND_MP_HPP_ */

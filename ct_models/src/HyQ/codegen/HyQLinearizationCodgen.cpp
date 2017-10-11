@@ -24,7 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#include <ct/core/core.h>
+#include <ct/optcon/optcon.h>
 #include <ct/rbd/rbd.h>
 #include <ct/models/HyQ/HyQ.h>
 #include <ct/models/CodegenOutputDirs.h>

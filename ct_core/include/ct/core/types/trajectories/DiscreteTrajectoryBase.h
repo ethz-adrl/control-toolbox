@@ -28,8 +28,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CT_DISCRETETRAJECTORYBASE_H_
 
 #include "TrajectoryBase.h"
-#include "TimeArray.h"
-#include "DiscreteArray.h"
+#include "../arrays/TimeArray.h"
+#include "../arrays/DiscreteArray.h"
 
 #include <ct/core/common/Interpolation.h>
 

@@ -27,9 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCON_MPCSETTINGS_H_
 #define CT_OPTCON_MPCSETTINGS_H_
 
-#include <ct/core/core.h>
-
-
 namespace ct{
 namespace optcon{
 

@@ -27,14 +27,15 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_CORE_LINEARFUNCTIONS_H_
 #define CT_CORE_LINEARFUNCTIONS_H_
 
-#include <ct/core/types/trajectories/DiscreteArray.h>
-#include <ct/core/types/trajectories/TimeArray.h>
+#include <ct/core/types/arrays/DiscreteArray.h>
+#include <ct/core/types/arrays/TimeArray.h>
 
 namespace ct{
 namespace core{
 
 template <int STATE_DIM, int CONTROL_DIM, class SCALAR = double>
-class LinearFunctionMIMO {
+class LinearFunctionMIMO
+{
 
 public:
 
@@ -60,7 +61,8 @@ public:
 
 
 template <int STATE_DIM, int DIM1, int DIM2, class SCALAR = double>
-class GeneralLinearFunction {
+class GeneralLinearFunction
+{
 
 public:
 

@@ -27,7 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_ACTUATORDYNAMICS_H_
 #define CT_ACTUATORDYNAMICS_H_
 
-#include <ct/core/core.h>
 #include <ct/rbd/state/JointState.h>
 
 namespace ct {

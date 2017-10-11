@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_robot_ENDEFFECTOR_H_
-#define INCLUDE_CT_RBD_robot_ENDEFFECTOR_H_
+#ifndef INCLUDE_CT_RBD_ROBOT_ENDEFFECTOR_H_
+#define INCLUDE_CT_RBD_ROBOT_ENDEFFECTOR_H_
 
 #include <ct/rbd/state/JointState.h>
 #include <ct/rbd/state/RigidBodyPose.h>
@@ -39,36 +39,26 @@ public:
 	typedef Eigen::Matrix<SCALAR,6,NJOINTS> jacobian_t;
 	typedef typename JointState<NJOINTS>::Position joint_position_t;
 
-	EndEffector() :
-		linkId_(999)
-	{};
-	virtual ~EndEffector() {};
+	EndEffector();
 
-	EndEffector(const EndEffector& other) :
-		linkId_(other.linkId_)
-	{}
+	virtual ~EndEffector();
 
-	//const RigidBodyPose& getPoseOnLink() const { return poseOnLink_; }
-
-	// already in kinematics...
-//	RigidBodyPose getPoseOnBase(const joint_position_t& jointState) { throw std::runtime_error("Not implemented"); };
-
-
-//	jacobian_t getJacobainBase(const joint_position_t& jointState) { throw std::runtime_error("Not implemented"); };
+	EndEffector(const EndEffector& other);
 
 	/**
 	 * \brief Return the ID of the link to which the end-effector is rigidly attached to
 	 * @return Link ID
 	 */
-	const size_t& getLinkId() { return linkId_; }
+	const size_t& getLinkId();
 
 	/**
 	 * \brief *DO NOT USE*. Set the link id on which an endeffector is on
 	 * @param linkId LinkId to be set
 	 */
-	void setLinkId(size_t linkId) { linkId_ = linkId;} // we should not have this public
+	void setLinkId(size_t linkId); // we should not have this public
 
 private:
+
 	// id of the link that the endeffector is on
 	size_t linkId_;
 };
@@ -76,4 +66,4 @@ private:
 } /* namespace rbd */
 } /* namespace ct */
 
-#endif /* INCLUDE_CT_RBD_robot_ENDEFFECTOR_H_ */
+#endif /* INCLUDE_CT_RBD_ROBOT_ENDEFFECTOR_H_ */

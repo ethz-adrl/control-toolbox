@@ -52,6 +52,14 @@ include_directories (
     ${EIGEN3_INCLUDE_DIR}   
 )
 
+## assemble list of libraries that contain prespecified templates
+set(PRESPEC_LIBS "")
+file(GLOB files "prespec/*.cpp")
+foreach(file ${files})
+  get_filename_component(raw_filename ${file} NAME_WE)
+  LIST(APPEND PRESPEC_LIBS "ct_core_${raw_filename}")
+endforeach()
+
 catkin_package(
    INCLUDE_DIRS
         ${BOOST_INCLUDE_DIRS}
@@ -59,6 +67,7 @@ catkin_package(
         include/external
    LIBRARIES
        ct_core
+       ${PRESPEC_LIBS}
 )
 
 
@@ -69,8 +78,19 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h.in ${CM
 add_library(ct_core
    src/core/control/PIDController.cpp
    src/core/plot/plot.cpp
+   src/core/internal/autodiff/SparsityPattern.cpp
 )
 target_link_libraries(ct_core ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
+
+##compile template prespec libs
+file(GLOB files "prespec/*.cpp")
+foreach(file ${files})
+  get_filename_component(raw_filename ${file} NAME_WE)
+  add_library(ct_core_${raw_filename}
+   ${file}
+  )
+  target_link_libraries(ct_core_${raw_filename} ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
+endforeach()
 
 
 if(BUILD_EXAMPLES)
@@ -83,8 +103,13 @@ target_link_libraries(NoiseTest ${catkin_LIBRARIES})
 catkin_add_gtest(SecondOrderSystemTest test/SecondOrderSystemTest.cpp)
 target_link_libraries(SecondOrderSystemTest ${catkin_LIBRARIES})
 
+# This test is not required to link against PRESPEC_LIBS as it is not using prespec.
+# However, we just test that it does not fail here.
 catkin_add_gtest(IntegrationTest test/integration/IntegrationTest.cpp)
-target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core)
+target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core ${PRESPEC_LIBS})
+
+catkin_add_gtest(IntegrationTestPrespec test/integration/IntegrationTestPrespec.cpp)
+target_link_libraries(IntegrationTestPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIBS})
 
 add_executable(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
 target_link_libraries(SensitivityTest ${catkin_LIBRARIES} ct_core)
@@ -105,11 +130,11 @@ catkin_add_gtest(LinspaceTest test/LinspaceTest.cpp)
 target_link_libraries(LinspaceTest ${catkin_LIBRARIES})
 
 catkin_add_gtest(AutoDiffLinearizerTest test/AutoDiffLinearizerTest.cpp)
-target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} pthread)
+target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} ct_core pthread)
 
 # Codegen tests cannot run in parallel. Thus we build and run all codegen tests in one
 catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
-target_link_libraries(CodegenTests ${catkin_LIBRARIES} dl pthread)
+target_link_libraries(CodegenTests ${catkin_LIBRARIES} ct_core dl pthread)
 
 # not really a test
 #add_executable(plotTest test/plot/plotTest.cpp)

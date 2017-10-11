@@ -28,9 +28,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_RBD_COSTFUNCTION_TERM_TASKSPACE_HPP_
 #define CT_RBD_COSTFUNCTION_TERM_TASKSPACE_HPP_
 
-#include <ct/core/types/StateVector.h>
-#include <ct/core/types/ControlVector.h>
-
 #include <ct/optcon/costfunction/term/TermBase.hpp>
 #include <ct/optcon/costfunction/utility/utilities.hpp>
 

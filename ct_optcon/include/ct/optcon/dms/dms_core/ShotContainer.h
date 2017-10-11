@@ -30,7 +30,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cmath>
 #include <functional>
 
-#include <ct/core/core.h>
 #include "SensitivityIntegratorCT.h"
 
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>

@@ -36,7 +36,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct {
 namespace optcon {
 
-
 /*!
  * \ingroup LQR
  *
@@ -83,17 +82,7 @@ public:
 			const control_gain_matrix_t& B,
 			control_feedback_t& K,
 			bool RisDiagonal = false,
-			bool solveRiccatiIteratively = false)
-	{
-		control_matrix_t R_inverse;
-		state_matrix_t P;
-
-		bool success = care_.solve(Q, R, A, B, P, RisDiagonal, R_inverse, solveRiccatiIteratively);
-
-		K = (R_inverse*(B.transpose()*P));
-
-		return success;
-	}
+			bool solveRiccatiIteratively = false);
 
 #ifdef USE_MATLAB_CPP_INTERFACE
 	//! design the LQR controller in MATLAB
@@ -106,38 +95,7 @@ public:
 			const state_matrix_t& A,
 			const control_gain_matrix_t& B,
 			control_feedback_t& K,
-			bool checkControllability = false)
-	{
-		if (!matlabEngine_.isInitialized())
-			matlabEngine_.initialize();
-
-		matlabEngine_.put("Q", Q);
-		matlabEngine_.put("R", R);
-		matlabEngine_.put("A", A);
-		matlabEngine_.put("B", B);
-
-		if (checkControllability)
-		{
-			matlabEngine_.executeCommand("Co=ctrb(A,B);");
-			matlabEngine_.executeCommand("unco=length(A)-rank(Co);");
-			int uncontrollableStates = 0;
-			matlabEngine_.get("unco", uncontrollableStates);
-
-			if (uncontrollableStates > 0)
-			{
-				std::cout << "System is not controllable, # uncontrollable states: "<<uncontrollableStates << std::endl;
-			}
-		}
-
-		matlabEngine_.executeCommand("[K,~,~] = lqr(A,B,Q,R);");
-
-		Eigen::MatrixXd Kmatlab;
-		matlabEngine_.get("K", Kmatlab);
-
-		K = Kmatlab;
-
-		return true;
-	}
+			bool checkControllability = false);
 #endif //USE_MATLAB_CPP_INTERFACE
 
 
@@ -153,4 +111,4 @@ private:
 } // namespace optcon
 } // namespace ct
 
-#endif /* LQR_HPP_ */
+#endif /* CT_OPTCON_LQR_HPP_ */
