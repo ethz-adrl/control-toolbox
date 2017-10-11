@@ -32,9 +32,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <math.h>
 #include <cmath>
-#include <ct/core/core.h>
-
-#include <ct/core/Types>
 
 namespace ct {
 namespace optcon {

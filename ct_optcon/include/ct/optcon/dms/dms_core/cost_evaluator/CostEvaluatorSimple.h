@@ -31,8 +31,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <math.h>
 #include <cmath>
 
-#include <ct/core/core.h>
-
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
 
 #include <ct/optcon/dms/dms_core/OptVectorDms.h>
