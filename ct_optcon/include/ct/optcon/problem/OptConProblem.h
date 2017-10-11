@@ -24,18 +24,14 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-
 #ifndef CT_OPTIMALCONTROLPROBLEM_H_
 #define CT_OPTIMALCONTROLPROBLEM_H_
 
-#include <ct/core/core.h>
 #include <ct/optcon/constraint/LinearConstraintContainer.h>
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
 
-
 namespace ct{
 namespace optcon{
-
 
 
 /*!
@@ -67,7 +63,6 @@ public:
 	static const size_t STATE_D = STATE_DIM;
 	static const size_t CONTROL_D = CONTROL_DIM;
 
-
 	// typedefs
 	typedef ct::core::StateVector<STATE_DIM, SCALAR> state_vector_t;
 	typedef std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> DynamicsPtr_t;
@@ -75,7 +70,7 @@ public:
 	typedef std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> CostFunctionPtr_t;
 	typedef std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> ConstraintPtr_t;
 
-	OptConProblem(){}
+	OptConProblem();
 
 
 	//! Construct a simple unconstrained Optimal Control Problem
@@ -91,22 +86,7 @@ public:
 	OptConProblem(
 			DynamicsPtr_t nonlinDynamics,
 			CostFunctionPtr_t costFunction,
-			LinearPtr_t linearSystem = nullptr
-	) :
-		tf_(0.0),
-		x0_(state_vector_t::Zero()),
-		controlledSystem_(nonlinDynamics),
-		costFunction_(costFunction),
-		linearizedSystem_(linearSystem),
-		stateInputConstraints_(nullptr),
-		pureStateConstraints_(nullptr)
-	{
-		if(linearSystem == nullptr)	// no linearization provided
-		{
-			linearizedSystem_ = std::shared_ptr<core::SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>> (
-					new core::SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR> (controlledSystem_));
-		}
-	}
+			LinearPtr_t linearSystem = nullptr);
 
 
 	//! Construct a simple unconstrained optimal control problem, with initial state and final time as constructor arguments
@@ -122,129 +102,89 @@ public:
 			const state_vector_t& x0,
 			DynamicsPtr_t nonlinDynamics,
 			CostFunctionPtr_t costFunction,
-			LinearPtr_t linearSystem = nullptr):
-				OptConProblem(nonlinDynamics, costFunction, linearSystem)	// delegating constructor
-	{
-		tf_ = tf;
-		x0_ = x0;
-	}
+			LinearPtr_t linearSystem = nullptr);
 
 
 	//! check if all the ingredients for an unconstrained otpimal control problem are there
-	void verify() const
-	{
-		if(!controlledSystem_) { throw std::runtime_error("Dynamic system not set"); }
-		if(!linearizedSystem_) { throw std::runtime_error("Linearized system not set"); }
-		if(!costFunction_) { throw std::runtime_error("Cost function not set"); }
-		if(tf_ < 0.0) { throw std::runtime_error("Time horizon should not be negative"); }
-	}
-
+	void verify() const;
 
 	/*!
 	 * returns a pointer to the controlled system
 	 * */
-	const DynamicsPtr_t getNonlinearSystem() const { return controlledSystem_; }
-
+	const DynamicsPtr_t getNonlinearSystem() const;
 
 	/*!
 	 * returns a pointer to the linear system approximation
 	 * */
-	const LinearPtr_t getLinearSystem() const { return linearizedSystem_; }
-
+	const LinearPtr_t getLinearSystem() const;
 
 	/*!
 	 * returns a pinter to the cost function
 	 * */
-	const CostFunctionPtr_t getCostFunction() const { return costFunction_; }
-
+	const CostFunctionPtr_t getCostFunction() const;
 
 	/*!
 	 * returns a pointer to the controlled system
 	 * */
-	void setNonlinearSystem(const DynamicsPtr_t dyn) { controlledSystem_ = dyn; }
-
+	void setNonlinearSystem(const DynamicsPtr_t dyn);
 
 	/*!
 	 * returns a pointer to the linear system approximation
 	 * */
-	void setLinearSystem(const LinearPtr_t lin) { linearizedSystem_ = lin; }
-
+	void setLinearSystem(const LinearPtr_t lin);
 
 	/*!
 	 * returns a pinter to the cost function
 	 * */
-	void setCostFunction(const CostFunctionPtr_t cost) { costFunction_ = cost; }
+	void setCostFunction(const CostFunctionPtr_t cost);
 
 	/*!
 	 * set intermediate constraints
 	 * @param constraint pointer to intermediate constraint
 	 */
-	void setStateInputConstraints(const ConstraintPtr_t constraint)
-	{ 
-		stateInputConstraints_ = constraint;
-		if(!stateInputConstraints_->isInitialized())
-			stateInputConstraints_->initialize();
-		if((stateInputConstraints_->getJacobianInputNonZeroCountIntermediate() + 
-			stateInputConstraints_->getJacobianInputNonZeroCountTerminal()) == 0)
-			std::cout << "WARNING: The state input constraint container does not" <<
-			" contain any elements in the constraint jacobian with respect to the input." <<
-			" Consider adding the constraints as pure state constraints. " << std::endl;
-	}
+	void setStateInputConstraints(const ConstraintPtr_t constraint);
 
 	/*!
 	 * set final constraints
 	 * @param constraint pointer to a final constraint
 	 */
-	void setPureStateConstraints(const ConstraintPtr_t constraint)
-	{ 
-		pureStateConstraints_ = constraint;
-		if(!pureStateConstraints_->isInitialized())
-			pureStateConstraints_->initialize();
-		if((pureStateConstraints_->getJacobianInputNonZeroCountIntermediate() + 
-			pureStateConstraints_->getJacobianInputNonZeroCountTerminal()) > 0)
-			throw std::runtime_error("Pure state constraints contain an element with a non zero derivative with respect to control input."
-				" Implement this constraint as state input constraint");
-	}
-
-
+	void setPureStateConstraints(const ConstraintPtr_t constraint);
 
 	/**
 	 * @brief      Retrieve the state input constraints
 	 *
 	 * @return     The state input constraints.
 	 */
-	const ConstraintPtr_t getStateInputConstraints() const { return stateInputConstraints_; }
+	const ConstraintPtr_t getStateInputConstraints() const;
 
 	/**
 	 * @brief      Retrieves the pure state constraints
 	 *
 	 * @return     The pure state constraints
 	 */
-	const ConstraintPtr_t getPureStateConstraints() const { return pureStateConstraints_; }
+	const ConstraintPtr_t getPureStateConstraints() const;
 
 	/*!
 	 * get initial state (called by solvers)
 	 * */
-	const state_vector_t getInitialState() const {return x0_;}
+	const state_vector_t getInitialState() const;
 
 	/*!
 	 * set initial state for first subsystem
 	 * */
-	void setInitialState(const state_vector_t& x0) {x0_ = x0;}
-
+	void setInitialState(const state_vector_t& x0);
 
 	/*!
 	 * get the current time horizon
 	 * @return	Time Horizon
 	 */
-	const SCALAR& getTimeHorizon() const {return tf_ ;}
+	const SCALAR& getTimeHorizon() const;
 
 	/*!
 	 * Update the current time horizon in the Opt.Control Problem (required for example for replanning)
 	 * @param tf new time horizon
 	 */
-	void setTimeHorizon(const SCALAR& tf){tf_ = tf;}
-
+	void setTimeHorizon(const SCALAR& tf);
 
 
 private:

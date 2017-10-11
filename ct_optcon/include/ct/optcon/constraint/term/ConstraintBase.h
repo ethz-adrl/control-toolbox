@@ -27,10 +27,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCON_CONSTRAINT_TERM_CONSTRAINTBASE_H_
 #define CT_OPTCON_CONSTRAINT_TERM_CONSTRAINTBASE_H_
 
-#include <ct/core/core.h>
-#include <Eigen/Sparse>
-#include <ct/core/internal/traits/TraitSelector.h>
-#include <ct/core/internal/traits/TraitSelectorSpecs.h>
+//#include <ct/core/core.h>
+//#include <Eigen/Sparse>
+//#include <ct/core/internal/traits/TraitSelector.h>
+//#include <ct/core/internal/traits/TraitSelectorSpecs.h>
 
 namespace ct {
 namespace optcon {
@@ -45,9 +45,12 @@ namespace optcon {
  * @tparam     SCALAR     The Scalar type
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class ConstraintBase {
+class ConstraintBase
+{
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
 
 	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
@@ -61,20 +64,14 @@ public:
 	 *
 	 * @param[in]  name  The name of the constraint
 	 */
-	ConstraintBase(std::string name = "Unnamed") :
-		name_(name)
-	{}
+	ConstraintBase(std::string name = "Unnamed");
 
 	/**
 	 * @brief      Copy constructor
 	 *
 	 * @param[in]  arg   The object to be copied
 	 */
-	ConstraintBase(const ConstraintBase& arg):
-		lb_(arg.lb_),
-		ub_(arg.ub_),
-		name_(arg.name_)
-	{}
+	ConstraintBase(const ConstraintBase& arg);
 
 	/**
 	 * @brief      Creates a new instance of the object with same properties than original.
@@ -86,7 +83,7 @@ public:
 	/**
 	 * @brief      Destructor
 	 */
-	virtual ~ConstraintBase() {}
+	virtual ~ConstraintBase();
 
 	/**
 	 * @brief      The evaluation of the constraint violation. Note this method
@@ -113,10 +110,7 @@ public:
 	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
 		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
 		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
-		ct::core::ADCGScalar t)
-	{
-		throw std::runtime_error("Term " + name_ + " has no Implementation of evaluateCppaCg.");
-	}
+		ct::core::ADCGScalar t);
 
 
 	/**
@@ -132,56 +126,42 @@ public:
 	 *
 	 * @return     The constraint jacobian
 	 */
-	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) 
-	{ 
-		throw std::runtime_error("This constraint function element is not implemented for the given term."
-		"Please use either auto-diff cost function or implement the analytical derivatives manually."); 
-	}
+	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t);
 
 	/**
 	 * @brief      Returns the constraint jacobian wrt input
 	 *
 	 * @return     The constraint jacobian
 	 */
-	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) 
-	{ 
-		throw std::runtime_error("This constraint function element is not implemented for the given term." 
-		"Please use either auto-diff cost function or implement the analytical derivatives manually."); 
-	}
+	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t);
 
 	/**
 	 * @brief      Returns the lower constraint bound
 	 *
 	 * @return     The lower constraint bound
 	 */
-	virtual VectorXs getLowerBound() const
-	{
-		return lb_;
-	}
+	virtual VectorXs getLowerBound() const;
 
 	/**
 	 * @brief      Returns the upper constraint bound
 	 *
 	 * @return     The upper constraint bound
 	 */
-	virtual VectorXs getUpperBound() const
-	{
-		return ub_;
-	}
+	virtual VectorXs getUpperBound() const;
 
 	/**
 	 * @brief      Returns the constraint name
 	 *
 	 * @param[out]      constraintName  The constraint name
 	 */
-	void getName(std::string& constraintName) const { constraintName=name_; }
+	void getName(std::string& constraintName) const;
 
 	/**
 	 * @brief      Sets the constraint name.
 	 *
 	 * @param[in]  constraintName  The constraint name
 	 */
-	void setName(const std::string constraintName) { name_=constraintName; }
+	void setName(const std::string constraintName);
 
 	/**
 	 * @brief      Returns the number of nonzeros in the jacobian wrt state. The
@@ -190,10 +170,7 @@ public:
 	 *
 	 * @return     The number of non zeros
 	 */
-	virtual size_t getNumNonZerosJacobianState() const
-	{
-		return STATE_DIM * getConstraintSize();
-	}
+	virtual size_t getNumNonZerosJacobianState() const;
 
 	/**
 	 * @brief      Returns the number of nonzeros in the jacobian wrt control
@@ -202,10 +179,7 @@ public:
 	 *
 	 * @return     The number of non zeros
 	 */
-	virtual size_t getNumNonZerosJacobianInput() const
-	{
-		return CONTROL_DIM * getConstraintSize();
-	}
+	virtual size_t getNumNonZerosJacobianInput() const;
 
 	/**
 	 * @brief      Returns the constraint jacobian wrt state in sparse
@@ -214,14 +188,7 @@ public:
 	 *
 	 * @return     The sparse constraint jacobian
 	 */
-	virtual VectorXs jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
-	{
-		MatrixXs jacState = jacobianState(x, u, t);
-
-		VectorXs jac(Eigen::Map<VectorXs>(jacState.data(), jacState.rows() * jacState.cols()));
-
-		return jac;
-	}
+	virtual VectorXs jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t);
 
 	/**
 	 * @brief      Returns the constraint jacobian wrt control input in sparse
@@ -230,13 +197,7 @@ public:
 	 *
 	 * @return     The sparse constraint jacobian
 	 */
-	virtual VectorXs jacobianInputSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
-	{
-		MatrixXs jacInput = jacobianInput(x, u, t);
-
-		VectorXs jac(Eigen::Map<VectorXs>(jacInput.data(), jacInput.rows() * jacInput.cols()));
-		return jac;
-	}
+	virtual VectorXs jacobianInputSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t);
 
 
 	/**
@@ -249,11 +210,7 @@ public:
 	 * @param      cols  The vector of the column indices containing non zero
 	 *                   elements in the constraint jacobian
 	 */
-	virtual void sparsityPatternState(Eigen::VectorXi& rows, Eigen::VectorXi& cols)
-	{
-		genBlockIndices(getConstraintSize(), STATE_DIM, rows, cols);
-
-	}
+	virtual void sparsityPatternState(Eigen::VectorXi& rows, Eigen::VectorXi& cols);
 
 	/**
 	 * @brief      Generates the sparsity pattern of the jacobian wrt control
@@ -265,10 +222,7 @@ public:
 	 * @param      cols  The vector of the column indices containing non zero
 	 *                   elements in the constraint jacobian
 	 */
-	virtual void sparsityPatternInput(Eigen::VectorXi& rows, Eigen::VectorXi& cols)
-	{
-		genBlockIndices(getConstraintSize(), CONTROL_DIM, rows, cols);	
-	}
+	virtual void sparsityPatternInput(Eigen::VectorXi& rows, Eigen::VectorXi& cols);
 
 
 protected:
@@ -285,19 +239,7 @@ protected:
 	void genDiagonalIndices(
 			const size_t num_elements,
 			Eigen::VectorXi& iRow_vec,
-			Eigen::VectorXi& jCol_vec)
-	{
-		iRow_vec.resize(num_elements);
-		jCol_vec.resize(num_elements);
-
-		size_t count = 0;
-
-		for(size_t i = 0; i < num_elements; ++i){
-			iRow_vec(count) = i;
-			jCol_vec(count) = i;
-			count++;
-		}	
-	}
+			Eigen::VectorXi& jCol_vec);
 
 	/**
 	 * @brief      Generates indices of a full matrix
@@ -311,24 +253,7 @@ protected:
 			const size_t num_rows,
 			const size_t num_cols,
 			Eigen::VectorXi& iRow_vec,
-			Eigen::VectorXi& jCol_vec)
-	{
-		size_t num_gen_indices = num_rows*num_cols;
-
-		iRow_vec.resize(num_gen_indices);
-		jCol_vec.resize(num_gen_indices);
-
-		size_t count = 0;
-
-		for(size_t row = 0; row <num_rows; ++row){
-			for(size_t col = 0; col < num_cols; ++col){
-				iRow_vec(count) = row;
-				jCol_vec(count) = col;
-				count++;
-			}
-		}
-	}
-
+			Eigen::VectorXi& jCol_vec);
 
 private:
 	std::string name_;

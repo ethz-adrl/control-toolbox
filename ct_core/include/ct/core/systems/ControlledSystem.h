@@ -30,9 +30,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../control/Controller.h"
 #include "System.h"
 
-#include <ct/core/types/trajectories/StateVectorArray.h>
-#include <ct/core/types/trajectories/ControlVectorArray.h>
-#include <ct/core/types/trajectories/TimeArray.h>
+#include <ct/core/types/arrays/MatrixArrays.h>
+#include <ct/core/types/arrays/TimeArray.h>
+#include <ct/core/types/trajectories/MatrixTrajectories.h>
 
 
 namespace ct {

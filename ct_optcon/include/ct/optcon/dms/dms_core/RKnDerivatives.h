@@ -29,8 +29,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cmath>
 
-#include <ct/core/core.h>
-
 #include <ct/optcon/dms/dms_core/DmsDimensions.h>
 #include <ct/optcon/dms/dms_core/OptVectorDms.h>
 #include <ct/optcon/dms/dms_core/ControllerDms.h>

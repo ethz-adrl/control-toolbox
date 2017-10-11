@@ -27,11 +27,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define EIGEN_INITIALIZE_MATRICES_BY_NAN
 
 #include <gtest/gtest.h>
-#include <ct/core/core.h>
-
-#include <ct/optcon/constraint/term/ConstraintBase.h>
-#include <ct/optcon/constraint/ConstraintContainerAD.h>
-#include <ct/optcon/constraint/ConstraintContainerAnalytical.h>
+#include <ct/optcon/optcon.h>
 
 #include <cmath>
 #include <random>

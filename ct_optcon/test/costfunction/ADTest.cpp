@@ -24,6 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#include <ct/optcon/optcon.h>
+
 #include <ct/costfunction/CostFunctionAD.hpp>
 #include <ct/costfunction/CostFunctionAnalytical.hpp>
 #include <ct/costfunction/term/TermBase.hpp>

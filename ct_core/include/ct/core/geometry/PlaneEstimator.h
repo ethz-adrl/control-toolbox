@@ -86,4 +86,4 @@ private:
 }  // namespace core
 }  // namespace ct
 
-#endif /* HYQB_GROUND_PLANE_INCLUDE_PLANEESTIMATOR_HPP_ */
+#endif /* CT_CORE_PLANEESTIMATOR_H_ */

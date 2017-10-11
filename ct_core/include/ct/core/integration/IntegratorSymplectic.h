@@ -73,12 +73,7 @@ public:
 	IntegratorSymplectic(
 			const std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR> > system,
 			const EventHandlerPtrVector& eventHandlers = EventHandlerPtrVector(0)
-	) :
-	systemSymplectic_(system),
-	observer_(eventHandlers)
-	{
-		setupSystem();
-	}
+	);
 
 	/**
 	 * @brief      The constructor. This integrator can only treat symplectic
@@ -89,12 +84,7 @@ public:
 	IntegratorSymplectic(
 			const std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR> > system,
 			const EventHandlerPtr& eventHandler
-	) :
-	systemSymplectic_(system),
-	observer_(EventHandlerPtrVector(1, eventHandler))
-	{
-		setupSystem();
-	}
+	);
 
 
 	/**
@@ -116,26 +106,7 @@ public:
 			SCALAR dt,
 			StateVectorArray<POS_DIM + VEL_DIM, SCALAR>& stateTrajectory,
 			tpl::TimeArray<SCALAR>& timeTrajectory
-	) {
-		pair_t xPair;
-		xPair.first = state.head(POS_DIM);
-		xPair.second = state.tail(VEL_DIM);
-		SCALAR time = startTime;
-		stateTrajectory.push_back(state);
-		timeTrajectory.push_back(time);
-
-		for(size_t i = 0; i < numSteps; ++i)
-		{
-			xCached_ = state;
-			stepper_.do_step(std::make_pair(systemFunctionPosition_, systemFunctionVelocity_), xPair, time, dt);
-			state.head(POS_DIM) = xPair.first();
-			state.tail(VEL_DIM) = xPair.second();
-			observer_.observeInternal(state,time);
-			time += dt;
-			stateTrajectory.push_back(state);
-			timeTrajectory.push_back(time);
-		}
-	}
+	);
 
 	/**
 	 * @brief        Equidistant integration based on number of time steps and
@@ -152,27 +123,9 @@ public:
 			const SCALAR& startTime,
 			size_t numSteps,
 			SCALAR dt
-	) {
-		pair_t xPair;
-		xPair.first = state.head(POS_DIM);
-		xPair.second = state.tail(VEL_DIM);
-		SCALAR time = startTime;
-		for(size_t i = 0; i < numSteps; ++i)
-		{
+	);
 
-			xCached_ = state;
-			stepper_.do_step(std::make_pair(systemFunctionPosition_, systemFunctionVelocity_), xPair, time, dt);
-			state.head(POS_DIM) = xPair.first;
-			state.tail(VEL_DIM) = xPair.second;
-			observer_.observeInternal(state,time);
-			time += dt;
-		}
-
-	}
-
-	void reset() {
-		observer_.reset();
-	}
+	void reset();
 
 private:
 
@@ -180,23 +133,7 @@ private:
 	 * @brief      Sets up the two system functions which act as a pair of
 	 *             position and velocity update
 	 */
-	void setupSystem() {
-
-		systemFunctionPosition_ = [this](const Eigen::Matrix<SCALAR, VEL_DIM, 1>& v, Eigen::Matrix<SCALAR, POS_DIM, 1>& dxdt) {
-			const StateVector<POS_DIM, SCALAR>& vState(static_cast<const StateVector<POS_DIM, SCALAR>& >(v));
-			StateVector<POS_DIM, SCALAR>& dxdtState(static_cast<StateVector<POS_DIM, SCALAR>& >(dxdt));
-			xCached_.template bottomRows<VEL_DIM>() = v;
-			systemSymplectic_->computePdot(xCached_, vState, dxdtState);
-		};
-
-		systemFunctionVelocity_ = [this](const Eigen::Matrix<SCALAR, POS_DIM, 1>& x, Eigen::Matrix<SCALAR, VEL_DIM, 1>& dvdt) {
-			const StateVector<VEL_DIM, SCALAR>& xState(static_cast<const StateVector<VEL_DIM, SCALAR>& >(x));
-			StateVector<VEL_DIM, SCALAR>& dvdtState(static_cast<StateVector<VEL_DIM, SCALAR>& >(dvdt));
-			xCached_.template topRows<POS_DIM>() = x;
-			systemSymplectic_->computeVdot(xCached_, xState, dvdtState);
-		};
-	}
-
+	void setupSystem();
 	StateVector<POS_DIM + VEL_DIM, SCALAR> xCached_; //! The cached state. This will be used for the system function
 
 	std::function<void (const Eigen::Matrix<SCALAR, POS_DIM, 1>&, Eigen::Matrix<SCALAR, POS_DIM, 1>&)> systemFunctionPosition_; //! the position system function

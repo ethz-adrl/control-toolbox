@@ -32,7 +32,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/property_tree/info_parser.hpp>
 
 #include <ct/optcon/nlp/solver/NlpSolverSettings.h>
-#include <ct/core/math/DerivativesCppadSettings.h>
 
 namespace ct {
 namespace optcon {

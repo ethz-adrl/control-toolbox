@@ -24,8 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef NOISE_H_
-#define NOISE_H_
+#ifndef CT_NOISE_H_
+#define CT_NOISE_H_
 
 #include <time.h>
 #include <random>
@@ -105,4 +105,4 @@ private:
 } // namespace core
 
 
-#endif /* NOISE_H_ */
+#endif /* CT_NOISE_H_ */

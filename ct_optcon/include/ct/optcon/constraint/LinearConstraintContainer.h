@@ -61,10 +61,7 @@ public:
 	/**
 	 * @brief      Default constructor
 	 */
-	LinearConstraintContainer() :
-	initializedIntermediate_(false),
-	initializedTerminal_(false)
-	{}
+	LinearConstraintContainer();
 
 
 	/**
@@ -72,18 +69,12 @@ public:
 	 *
 	 * @param[in]  arg   The object to be copied
 	 */
-	LinearConstraintContainer(const LinearConstraintContainer& arg)
-	:
-	ConstraintContainerBase<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
-	initializedIntermediate_(arg.initializedIntermediate_),
-	initializedTerminal_(arg.initializedTerminal_)
-	{}
-
+	LinearConstraintContainer(const LinearConstraintContainer& arg);
 	/**
 	 * @brief      Destructor
 	 *
 	 */
-	virtual ~LinearConstraintContainer() {}
+	virtual ~LinearConstraintContainer();
 
 	/**
 	 * Clones the linear constraint class
@@ -233,22 +224,11 @@ public:
 	 *
 	 * @return      The number of the non zeros
 	 */
-	size_t getJacNonZeroCount()
-	{
-		return 	getJacobianStateNonZeroCountIntermediate() + 
-				getJacobianStateNonZeroCountTerminal() + 
-				getJacobianInputNonZeroCountIntermediate() +
-				getJacobianInputNonZeroCountTerminal();
-	}
-
+	size_t getJacNonZeroCount();
 	/**
 	 * @brief      Initializes the constraint container
 	 */
-	void initialize()
-	{
-		initializedIntermediate_ = initializeIntermediate();
-		initializedTerminal_ = initializeTerminal();
-	}
+	void initialize();
 
 	/**
 	 * @brief      Initializes the intermediate constraints
@@ -269,7 +249,7 @@ public:
 	 *
 	 * @return     Returns true if initialized
 	 */
-	bool isInitialized() { return initializedIntermediate_ && initializedTerminal_; }
+	bool isInitialized();
 
 protected:
 	bool initializedIntermediate_;

@@ -26,6 +26,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <gtest/gtest.h>
 
+#include <ct/optcon/optcon.h>
+
 #include <ct/optcon/costfunction/CostFunctionAnalytical.hpp>
 #include <ct/optcon/costfunction/term/TermBase.hpp>
 #include <ct/optcon/costfunction/term/TermQuadTracking.hpp>

@@ -40,8 +40,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "generated/transforms.h"
 #include "generated/link_data_map.h"
 
-#include <ct/rbd/rbd.h>
-
 // define namespace and base
 #define ROBCOGEN_NS ct_HyA
 #define TARGET_NS HyA

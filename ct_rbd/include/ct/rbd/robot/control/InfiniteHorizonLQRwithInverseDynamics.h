@@ -27,8 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_RBD_INFINITEHORIZONLQRWITHINVERSEDYNAMICS_H_
 #define CT_RBD_INFINITEHORIZONLQRWITHINVERSEDYNAMICS_H_
 
-#include <ct/core/core.h>
-#include <ct/optcon/lqr/LQR.hpp>
 #include <ct/rbd/systems/FixBaseFDSystem.h>
 
 namespace ct{

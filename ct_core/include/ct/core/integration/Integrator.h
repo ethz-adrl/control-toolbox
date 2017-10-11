@@ -33,7 +33,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cmath>
 
 #include "EventHandler.h"
-#include "Observer.h"
 #include "eigenIntegration.h"
 
 #include "internal/StepperBase.h"
@@ -101,40 +100,19 @@ public:
 	Integrator(
 		const std::shared_ptr<System<STATE_DIM, SCALAR> >& system,
 		const IntegrationType& intType = IntegrationType::EULERCT,
-		const EventHandlerPtrVector& eventHandlers = EventHandlerPtrVector(0))
-	:
-	system_(system),
-	observer_(eventHandlers)
-	{
-		changeIntegrationType(intType);
-		setupSystem();
-	}
+		const EventHandlerPtrVector& eventHandlers = EventHandlerPtrVector(0));
 
 	Integrator(
 		const std::shared_ptr<System<STATE_DIM, SCALAR> >& system,
 		const IntegrationType& intType,
-		const EventHandlerPtr& eventHandler)
-	:
-	system_(system),
-	observer_(EventHandlerPtrVector(1, eventHandler))
-	{
-		changeIntegrationType(intType);
-		setupSystem();
-	}
+		const EventHandlerPtr& eventHandler);
 
 	/**
 	 * @brief      Changes the integration type
 	 *
 	 * @param[in]  intType  The new integration type
 	 */
-	void changeIntegrationType(const IntegrationType& intType)
-	{
-		initializeCTSteppers(intType);
-		initializeAdaptiveSteppers(intType);
-		initializeODEIntSteppers(intType);
-		if(!integratorStepper_)
-			throw std::runtime_error("Unknown integration type");	
-	}
+	void changeIntegrationType(const IntegrationType& intType);
 
 
 	/**
@@ -143,10 +121,7 @@ public:
 	 * @param[in]  absErrTol  The absolute error tolerance
 	 * @param[in]  relErrTol  The relative error tolerance
 	 */
-	void setApadativeErrorTolerances(const SCALAR absErrTol, const SCALAR& relErrTol)
-	{
-		integratorStepper_->setAdaptiveErrorTolerances(absErrTol, relErrTol);
-	}
+	void setApadativeErrorTolerances(const SCALAR absErrTol, const SCALAR& relErrTol);
 
 	//! Equidistant integration based on number of time steps and step length
 	/*!
@@ -168,12 +143,7 @@ public:
 		size_t numSteps,
 		SCALAR dt,
 		StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
-		tpl::TimeArray<SCALAR>& timeTrajectory) 
-	{
-		reset();
-		integratorStepper_->integrate_n_steps(observer_.observeWrapWithLogging, systemFunction_, state, startTime, numSteps, dt);
-		retrieveTrajectoriesFromObserver(stateTrajectory, timeTrajectory);	
-	}
+		tpl::TimeArray<SCALAR>& timeTrajectory);
 
 	//! Equidistant integration based on number of time steps and step length
 	/*!
@@ -191,11 +161,7 @@ public:
 		StateVector<STATE_DIM, SCALAR>& state,
 		const SCALAR& startTime,
 		size_t numSteps,
-		SCALAR dt) 
-	{
-		reset();
-		integratorStepper_->integrate_n_steps(observer_.observeWrap, systemFunction_, state, startTime, numSteps, dt);
-	}
+		SCALAR dt);
 
 	//! Equidistant integration based on initial and final time as well as step length
 	/*!
@@ -217,12 +183,7 @@ public:
 		const SCALAR& finalTime,
 		SCALAR dt,
 		StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
-		tpl::TimeArray<SCALAR>& timeTrajectory) 
-	{
-		reset();
-		integratorStepper_->integrate_const(observer_.observeWrapWithLogging, systemFunction_, state, startTime, finalTime, dt);
-		retrieveTrajectoriesFromObserver(stateTrajectory, timeTrajectory);
-	}
+		tpl::TimeArray<SCALAR>& timeTrajectory);
 
 	//! Equidistant integration based on initial and final time as well as step length
 	/*!
@@ -238,11 +199,7 @@ public:
 			StateVector<STATE_DIM, SCALAR>& state,
 			const SCALAR& startTime,
 			const SCALAR& finalTime,
-			SCALAR dt)
-	{
-		reset();
-		integratorStepper_->integrate_const(observer_.observeWrap, systemFunction_, state, startTime, finalTime, dt);
-	}
+			SCALAR dt);
 
 	//! integrate forward from an initial to a final time using an adaptive scheme
 	/*!
@@ -267,13 +224,7 @@ public:
 			const SCALAR& finalTime,
 			StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
 			tpl::TimeArray<SCALAR>& timeTrajectory,
-			const SCALAR dtInitial = SCALAR(0.01)) 
-	{
-		reset();
-		integratorStepper_->integrate_adaptive(observer_.observeWrapWithLogging, systemFunction_, state, startTime, finalTime, dtInitial);
-		retrieveTrajectoriesFromObserver(stateTrajectory, timeTrajectory);
-		state = stateTrajectory.back();
-	}
+			const SCALAR dtInitial = SCALAR(0.01));
 
 	//! integrate forward from an initial to a final time using an adaptive scheme
 	/*!
@@ -292,11 +243,7 @@ public:
 			StateVector<STATE_DIM, SCALAR>& state,
 			const SCALAR& startTime,
 			const SCALAR& finalTime,
-			SCALAR dtInitial = SCALAR(0.01)) 
-	{
-		reset();
-		integratorStepper_->integrate_adaptive(observer_.observeWrap, systemFunction_, state, startTime, finalTime, dtInitial);
-	}
+			SCALAR dtInitial = SCALAR(0.01));
 
 	//! Integrate system using a given time trajectory
 	/*!
@@ -313,13 +260,7 @@ public:
 			StateVector<STATE_DIM, SCALAR>& state,
 			const tpl::TimeArray<SCALAR>& timeTrajectory,
 			StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
-			SCALAR dtInitial = SCALAR(0.01))
-    {
-
-		reset();
-		integratorStepper_->integrate_times(observer_.observeWrapWithLogging, systemFunction_, state, timeTrajectory, dtInitial);
-		retrieveStateVectorArrayFromObserver(stateTrajectory);
-	}
+			SCALAR dtInitial = SCALAR(0.01));
 
 private:
 
@@ -328,29 +269,7 @@ private:
 	 *
 	 * @param[in]  intType  The integration type
 	 */
-	void initializeCTSteppers(const IntegrationType& intType)
-	{
-		switch(intType)
-		{
-			case EULERCT:
-			{
-				integratorStepper_ = std::shared_ptr<internal::StepperEulerCT<Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
-					new internal::StepperEulerCT<Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
-				break;
-			}
-
-			case RK4CT:
-			{
-				integratorStepper_ = std::shared_ptr<internal::StepperRK4CT<Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
-					new internal::StepperRK4CT<Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
-				break;
-			}
-
-			default:
-				break;
-		}	
-	}
-
+	void initializeCTSteppers(const IntegrationType& intType);
 	/**
 	 * @brief      Initializes the adaptive odeint steppers. The odeint steppers
 	 *             only work for double currently
@@ -374,7 +293,7 @@ private:
 			case RK5VARIABLE:
 			{
 				integratorStepper_ = std::shared_ptr<internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>, Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
-					new internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>, Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());				
+					new internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>, Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
 				break;
 			}
 
@@ -442,15 +361,12 @@ private:
 				break;
 			}
 			default:
-				break;			
-		}		
+				break;
+		}
 	}
 
 	//! resets the observer
-	void reset()
-	{
-		observer_.reset();
-	}
+	void reset();
 
 	/**
 	 * @brief      Retrieves the state and time trajectory from the observer.
@@ -458,34 +374,16 @@ private:
 	 * @param      stateTrajectory  The state trajectory
 	 * @param      timeTrajectory   The time trajectory
 	 */
-	void retrieveTrajectoriesFromObserver(StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory, tpl::TimeArray<SCALAR>& timeTrajectory)
-	{
-		stateTrajectory.swap(observer_.states_);
-		timeTrajectory.swap(observer_.times_);
-	}
+	void retrieveTrajectoriesFromObserver(StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory, tpl::TimeArray<SCALAR>& timeTrajectory);
 	/**
 	 * @brief      Retrieves the state trajectory from the observer
 	 *
 	 * @param      stateTrajectory  The state trajectory
 	 */
-	void retrieveStateVectorArrayFromObserver(StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory)
-	{
-		stateTrajectory.swap(observer_.states_);
-	}
-
+	void retrieveStateVectorArrayFromObserver(StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory);
 
 	//! sets up the lambda function
-	void setupSystem() {
-
-		systemFunction_ = [this]( const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x, Eigen::Matrix<SCALAR, STATE_DIM, 1>& dxdt, SCALAR t) {
-			const StateVector<STATE_DIM, SCALAR>& xState(static_cast<const StateVector<STATE_DIM, SCALAR>& >(x));
-			StateVector<STATE_DIM, SCALAR>& dxdtState(static_cast<StateVector<STATE_DIM, SCALAR>& >(dxdt));
-			system_->computeDynamics(xState, t, dxdtState);
-			observer_.observeInternal(xState, t);
-		};
-
-		reset();
-	}
+	void setupSystem();
 
 	std::shared_ptr<System<STATE_DIM, SCALAR> > system_; //! pointer to the system	
 	std::function<void (const Eigen::Matrix<SCALAR, STATE_DIM, 1>&, Eigen::Matrix<SCALAR, STATE_DIM, 1>&, SCALAR)> systemFunction_; //! the system function to integrate

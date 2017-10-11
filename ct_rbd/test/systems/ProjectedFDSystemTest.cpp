@@ -8,7 +8,6 @@
 #ifndef TEST_SYSTEMS_PROJECTEDFDSYSTEMTEST_CPP_
 #define TEST_SYSTEMS_PROJECTEDFDSYSTEMTEST_CPP_
 
-#include <ct/core/core.h>
 #include <ct/rbd/rbd.h>
 #include <memory>
 #include <array>

@@ -63,92 +63,25 @@ public:
 	typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
 	typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
 
-	GNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem = nullptr) :
-		LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>(lqocProblem),
-		N_(-1)
-	{
-		Eigen::initParallel();
-		Eigen::setNbThreads(settings_.nThreadsEigen);
-	}
+	GNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem = nullptr);
 
-	GNRiccatiSolver(int N)
-	{
-		changeNumberOfStages(N);
-	}
+	GNRiccatiSolver(int N);
 
-	virtual ~GNRiccatiSolver() {}
+	virtual ~GNRiccatiSolver();
 
+	virtual void solve() override;
 
-	virtual void solve() override
-	{
-		for (int i=this->lqocProblem_->getNumberOfStages()-1; i>=0; i--)
-			solveSingleStage(i);
+	virtual void solveSingleStage(int N) override;
 
-		computeStateAndControlUpdates();
-	}
+	virtual void configure(const NLOptConSettings& settings) override;
 
+	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() override;
 
-	virtual void solveSingleStage(int N) override
-	{
-		if (N == this->lqocProblem_->getNumberOfStages()-1)
-			initializeCostToGo();
+	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() override;
 
-		designController(N);
+	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdates() override;
 
-		if (N>0)
-			computeCostToGo(N);
-	}
-
-
-	virtual void configure(const NLOptConSettings& settings) override
-	{
-		settings_ = settings;
-		H_corrFix_ = settings_.epsilon*ControlMatrix::Identity();
-	}
-
-
-	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() override
-	{
-		LQOCProblem_t& p = *this->lqocProblem_;
-		ct::core::StateVectorArray<STATE_DIM, SCALAR> x = p.x_;
-
-		for(int k = 0; k<this->lqocProblem_->getNumberOfStages() +1 ; k++)
-		{
-			x[k] += this->lx_[k];
-
-//			std::cout << "A: "<<std::endl<<p.A_[k]<<std::endl<<std::endl;
-//			std::cout << "B: "<<std::endl<<p.B_[k]<<std::endl<<std::endl;
-//			std::cout << "H: "<<std::endl<<H_[k]<<std::endl<<std::endl;
-//			std::cout << "S: "<<std::endl<<S_[k]<<std::endl<<std::endl;
-//			std::cout << "sv: "<<std::endl<<sv_[k]<<std::endl<<std::endl;
-//			std::cout << "L: "<<std::endl<<L_[k]<<std::endl<<std::endl;
-//			std::cout << "lv_: "<<std::endl<<lv_[k].transpose()<<std::endl<<std::endl;
-//			std::cout << "lx_: "<<std::endl<<this->lx_[k].transpose()<<std::endl<<std::endl;
-//			std::cout << std::endl << std::endl;
-
-		}
-
-		return x;
-	}
-
-	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() override
-	{
-		LQOCProblem_t& p = *this->lqocProblem_;
-
-		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u = p.u_;
-
-		for(int k = 0; k<this->lqocProblem_->getNumberOfStages(); k++)
-		{
-			u[k] += this->lu_[k];
-		}
-		return u;
-	}
-
-	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdates() override {return lv_;}
-
-	virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K) override {	K = L_;	}
-
-
+	virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K) override;
 
 	//! compute the state and control updates.
 	/*!
@@ -157,35 +90,9 @@ public:
 	 *
 	 * IMPORTANT: you need to call this method at the right place if you're using solveSingleStage() by yourself.
 	 */
-	virtual void computeStateAndControlUpdates() override
-	{
-		LQOCProblem_t& p = *this->lqocProblem_;
+	virtual void computeStateAndControlUpdates() override;
 
-		this->delta_x_norm_ = 0.0;
-		this->delta_uff_norm_ = 0.0;
-
-		this->lx_[0].setZero();
-
-		for(int k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
-		{
-			//! control update rule
-			this->lu_[k] = lv_[k];
-			if (k>0) // lx is zero for k=0
-				this->lu_[k].noalias() += L_[k] * this->lx_[k];
-
-			//! state update rule
-			this->lx_[k+1] = p.B_[k] * lv_[k] + p.b_[k];
-			if(k>0)
-				this->lx_[k+1].noalias() += (p.A_[k] + p.B_[k] * L_[k]) * this->lx_[k];
-
-			//! compute the norms of the updates
-			//! \todo needed?
-			this->delta_x_norm_ += this->lx_[k+1].norm();
-			this->delta_uff_norm_ += this->lu_[k].norm();
-		}
-	}
-
-	virtual SCALAR getSmallestEigenvalue() override {return smallestEigenvalue_;}
+	virtual SCALAR getSmallestEigenvalue() override;
 
 protected:
 
@@ -193,184 +100,17 @@ protected:
 	 * resize matrices
 	 * @param lqocProblem
 	 */
-	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) override
-	{
-		const int& N = lqocProblem->getNumberOfStages();
-		changeNumberOfStages(N);
+	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) override;
 
-	}
-	void changeNumberOfStages(int N)
-	{
-		if (N<=0)
-			return;
+	void changeNumberOfStages(int N);
 
-		if(N_ == N)
-	 		return;
+	void initializeCostToGo();
 
-		gv_.resize(N);
-		G_.resize(N);
+	void computeCostToGo(size_t k);
 
-		H_.resize(N);
-		Hi_.resize(N);
-		Hi_inverse_.resize(N);
+	void designController(size_t k);
 
-		lv_.resize(N);
-		L_.resize(N);
-
-		this->lx_.resize(N+1);
-		this->lu_.resize(N);
-
-		sv_.resize(N+1);
-		S_.resize(N+1);
-
-		N_ = N;
-	}
-
-
-	void initializeCostToGo()
-	{
-		//! since intializeCostToGo is the first call, we initialize the smallestEigenvalue here.
-		smallestEigenvalue_ =  std::numeric_limits<SCALAR>::infinity();
-
-		// initialize quadratic approximation of cost to go
-		const int& N = this->lqocProblem_->getNumberOfStages();
-		LQOCProblem_t& p = *this->lqocProblem_;
-
-		S_[N] = p.Q_[N];
-		sv_[N] = p.qv_[N];
-	}
-
-	void computeCostToGo(size_t k)
-	{
-		LQOCProblem_t& p = *this->lqocProblem_;
-
-		S_[k] = p.Q_[k];
-		S_[k].noalias() += p.A_[k].transpose() * S_[k+1] * p.A_[k];
-		S_[k].noalias() -= L_[k].transpose() * Hi_[k] * L_[k];
-
-		S_[k] = 0.5*(S_[k]+S_[k].transpose()).eval();
-
-		sv_[k] = p.qv_[k];
-		sv_[k].noalias() += p.A_[k].transpose() * sv_[k+1];
-		sv_[k].noalias() += p.A_[k].transpose() * S_[k+1] * p.b_[k];
-		sv_[k].noalias() += L_[k].transpose() * Hi_[k] * lv_[k];
-		sv_[k].noalias() += L_[k].transpose() * gv_[k];
-		sv_[k].noalias() += G_[k].transpose() * lv_[k];
-	}
-
-	void designController(size_t k)
-	{
-		LQOCProblem_t& p = *this->lqocProblem_;
-
-		gv_[k] = p.rv_[k];
-		gv_[k].noalias() += p.B_[k].transpose() * sv_[k+1];
-		gv_[k].noalias() += p.B_[k].transpose() * S_[k+1].template selfadjointView<Eigen::Lower>() * p.b_[k];
-
-		G_[k] = p.P_[k];
-		//G_[k].noalias() += B_[k].transpose() * S_[k+1] * A_[k];
-		G_[k].noalias() += p.B_[k].transpose() * S_[k+1].template selfadjointView<Eigen::Lower>() * p.A_[k];
-
-		H_[k] = p.R_[k];
-		//H_[k].noalias() += B_[k].transpose() * S_[k+1] * B_[k];
-		H_[k].noalias() += p.B_[k].transpose() * S_[k+1].template selfadjointView<Eigen::Lower>() * p.B_[k];
-
-		if(settings_.fixedHessianCorrection)
-		{
-			if (settings_.epsilon > 1e-10)
-				Hi_[k] = H_[k] + settings_.epsilon*ControlMatrix::Identity();
-			else
-				Hi_[k] = H_[k];
-
-			if (settings_.recordSmallestEigenvalue)
-			{
-				// compute eigenvalues with eigenvectors enabled
-				eigenvalueSolver_.compute(Hi_[k], Eigen::ComputeEigenvectors);
-				const ControlMatrix& V = eigenvalueSolver_.eigenvectors().real();
-				const ControlVector& lambda = eigenvalueSolver_.eigenvalues();
-
-				smallestEigenvalue_ = std::min(smallestEigenvalue_, lambda.minCoeff());
-
-				// Corrected Eigenvalue Matrix
-				ControlMatrix D = ControlMatrix::Zero();
-				// make D positive semi-definite (as described in IV. B.)
-				D.diagonal() = lambda.cwiseMax(settings_.epsilon);
-
-				// reconstruct H
-				ControlMatrix Hi_regular = V * D * V.transpose();
-
-				// invert D
-				ControlMatrix D_inverse = ControlMatrix::Zero();
-				// eigenvalue-wise inversion
-				D_inverse.diagonal() = -1.0 * D.diagonal().cwiseInverse();
-				ControlMatrix Hi_inverse_regular = V * D_inverse * V.transpose();
-
-				if (!Hi_inverse_[k].isApprox(Hi_inverse_regular, 1e-4))
-				{
-					std::cout << "warning, inverses not identical at "<<k<<std::endl;
-					std::cout << "Hi_inverse_fixed - Hi_inverse_regular: "<<std::endl<<Hi_inverse_[k]-Hi_inverse_regular<<std::endl<<std::endl;
-				}
-			}
-
-			Hi_inverse_[k] = -Hi_[k].template selfadjointView<Eigen::Lower>().llt().solve(ControlMatrix::Identity());
-
-			// calculate FB gain update
-			L_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * G_[k];
-
-			// calculate FF update
-			lv_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * gv_[k];
-
-		} else {
-
-			// compute eigenvalues with eigenvectors enabled
-			eigenvalueSolver_.compute(H_[k], Eigen::ComputeEigenvectors);
-			const ControlMatrix& V = eigenvalueSolver_.eigenvectors().real();
-			const ControlVector& lambda = eigenvalueSolver_.eigenvalues();
-
-			if (settings_.recordSmallestEigenvalue)
-			{
-				smallestEigenvalue_ = std::min(smallestEigenvalue_, lambda.minCoeff());
-			}
-
-			// Corrected Eigenvalue Matrix
-			ControlMatrix D = ControlMatrix::Zero();
-			// make D positive semi-definite (as described in IV. B.)
-			D.diagonal() = lambda.cwiseMax(settings_.epsilon);
-
-			// reconstruct H
-			Hi_[k].noalias() = V * D * V.transpose();
-
-			// invert D
-			ControlMatrix D_inverse = ControlMatrix::Zero();
-			// eigenvalue-wise inversion
-			D_inverse.diagonal() = -1.0 * D.diagonal().cwiseInverse();
-			Hi_inverse_[k].noalias() = V * D_inverse * V.transpose();
-
-			// calculate FB gain update
-			L_[k].noalias() = Hi_inverse_[k] * G_[k];
-
-			// calculate FF update
-			lv_[k].noalias() = Hi_inverse_[k] * gv_[k];
-		}
-	}
-
-	void logToMatlab()
-	{
-	#ifdef MATLAB_FULL_LOG
-
-		matFile_.open("GNRiccatiSolver.mat");
-
-		matFile_.put("sv", sv_.toImplementation());
-		matFile_.put("S", S_.toImplementation());
-		matFile_.put("L", L_.toImplementation());
-		matFile_.put("H", H_.toImplementation());
-		matFile_.put("Hi_", Hi_.toImplementation());
-		matFile_.put("Hi_inverse", Hi_inverse_.toImplementation());
-		matFile_.put("G", G_.toImplementation());
-		matFile_.put("gv", gv_.toImplementation());
-
-		matFile_.close();
-	#endif
-	}
+	void logToMatlab();
 
 	NLOptConSettings settings_;
 
@@ -403,7 +143,7 @@ protected:
 };
 
 
-}
-}
+} // optcon
+} // ct
 
 #endif /* INCLUDE_CT_OPTCON_LQ_GNRICCATISOLVER_HPP_ */

@@ -27,9 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCON_CONSTRAINTCONTAINERBASE_H_
 #define CT_OPTCON_CONSTRAINTCONTAINERBASE_H_
 
-#include <ct/core/types/StateVector.h>
-#include <ct/core/types/ControlVector.h>
-
 namespace ct {
 namespace optcon {
 
@@ -70,33 +67,21 @@ public:
 	 *
 	 * Default constructor, sets state, control and time to zero
 	 */
-	ConstraintContainerBase() :
-		x_(state_vector_t::Zero()),
-		u_(input_vector_t::Zero()),
-		t_(SCALAR(0.0))
-	{}
+	ConstraintContainerBase();
 
 	/**
 	 * \brief copy constructor
 	 *
 	 * Copy constructor
 	 */
-	ConstraintContainerBase(const ConstraintContainerBase& arg) :
-		x_(arg.x_),
-		u_(arg.u_),
-		t_(arg.t_),
-		lowerBoundsIntermediate_(arg.lowerBoundsIntermediate_),
-		lowerBoundsTerminal_(arg.lowerBoundsTerminal_),
-		upperBoundsIntermediate_(arg.upperBoundsIntermediate_),
-		upperBoundsTerminal_(arg.upperBoundsTerminal_)
-	{}
+	ConstraintContainerBase(const ConstraintContainerBase& arg);
 
 	/**
 	 * \brief Destructor
 	 *
 	 * Destructor
 	 */
-	virtual ~ConstraintContainerBase() {}
+	virtual ~ConstraintContainerBase();
 
 	/**
 	 * Clones the constraint.
@@ -113,13 +98,7 @@ public:
 	 * @param[in] x state vector
 	 * @param[in] x input vector
 	 */
-	virtual void setCurrentStateAndControl(const state_vector_t& x,	const input_vector_t& u, const SCALAR t = SCALAR(0.0))
-	{
-		t_ = t;
-		x_ = x;
-		u_ = u;
-		update();
-	}
+	virtual void setCurrentStateAndControl(const state_vector_t& x,	const input_vector_t& u, const SCALAR t = SCALAR(0.0));
 
 	/**
 	 * @brief      Evaluates the intermediate constraints
@@ -154,21 +133,14 @@ public:
 	 *
 	 * @return     The total number of constraints
 	 */
-	size_t getConstraintsCount()
-	{
-		return getIntermediateConstraintsCount() + getTerminalConstraintsCount();
-	}
-
+	size_t getConstraintsCount();
 	/**
 	 * @brief      Retrieves the lower constraint bound on the intermediate
 	 *             constraints
 	 *
 	 * @return     The lower bound on the intermediate constraints
 	 */
-	VectorXs getLowerBoundsIntermediate() const
-	{
-		return lowerBoundsIntermediate_;
-	}
+	VectorXs getLowerBoundsIntermediate() const;
 
 	/**
 	 * @brief      Retrieves the lower constraint bound on the terminal
@@ -176,10 +148,7 @@ public:
 	 *
 	 * @return     The lower bound on the terminal constraints
 	 */
-	VectorXs getLowerBoundsTerminal() const
-	{
-		return lowerBoundsTerminal_;
-	}
+	VectorXs getLowerBoundsTerminal() const;
 
 	/**
 	 * @brief      Retrieves the upper constraint bound on the intermediate
@@ -187,10 +156,7 @@ public:
 	 *
 	 * @return     The upper bound on the intermediate constraints
 	 */
-	VectorXs getUpperBoundsIntermediate() const
-	{
-		return upperBoundsIntermediate_;
-	}
+	VectorXs getUpperBoundsIntermediate() const;
 
 	/**
 	 * @brief      Retrieves the upper constraint bound on the terminal
@@ -198,10 +164,7 @@ public:
 	 *
 	 * @return     The upper bound on the terminal constraints
 	 */
-	VectorXs getUpperBoundsTerminal() const
-	{	
-		return upperBoundsTerminal_;
-	}
+	VectorXs getUpperBoundsTerminal() const;
 
 
 protected:

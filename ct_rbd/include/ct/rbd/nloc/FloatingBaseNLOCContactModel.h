@@ -27,11 +27,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_RBD_NLOC_FLOATINGBASENLOCCONTACTMODEL_H_
 #define INCLUDE_CT_RBD_NLOC_FLOATINGBASENLOCCONTACTMODEL_H_
 
-#include <ct/optcon/optcon.h>
-
 #include <ct/rbd/systems/FloatingBaseFDSystem.h>
 #include <ct/rbd/systems/linear/RbdLinearizer.h>
-
 
 namespace ct{
 namespace rbd {
@@ -70,93 +67,41 @@ public:
 			const std::string& costFunctionFile,
 			const std::string& settingsFile,
 			std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
-			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr
-	) :
-		system_(system),
-		linearizedSystem_(linearizedSystem),
-		costFunction_(new CostFunction(costFunctionFile, false)),
-		optConProblem_(system_, costFunction_, linearizedSystem_),
-		iteration_(0)
-	{
-			solver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settingsFile));
-	}
+			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
 
 	//! constructor taking settings file directly
 	FloatingBaseNLOCContactModel(
 			const std::string& costFunctionFile,
 			const typename NLOptConSolver::Settings_t& settings,
 			std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
-			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr
-	) :
-		system_(system),
-		linearizedSystem_(linearizedSystem),
-		costFunction_(new CostFunction(costFunctionFile, false)),
-		optConProblem_(system_, costFunction_, linearizedSystem_),
-		iteration_(0)
-	{
-			solver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settings));
-	}
+			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
 
 	void initialize(
 			const typename RBDDynamics::RBDState_t& x0,
 			const core::Time& tf,
 			StateVectorArray x_ref = StateVectorArray(),
 			FeedbackArray u0_fb = FeedbackArray(),
-			ControlVectorArray u0_ff = ControlVectorArray())
-	{
-		typename NLOptConSolver::Policy_t policy(x_ref, u0_ff, u0_fb, getSettings().dt);
+			ControlVectorArray u0_ff = ControlVectorArray());
 
-		solver_->changeTimeHorizon(tf);
-		solver_->setInitialGuess(policy);
-		solver_->changeInitialState(x0.toStateVectorEulerXyz());
-	}
+	void configure(const typename NLOptConSolver::Settings_t& settings);
 
-	void configure(const typename NLOptConSolver::Settings_t& settings) {solver_->configure(settings);}
+	bool runIteration();
 
-	bool runIteration()
-	{
-		bool foundBetter = solver_->runIteration();
+	const StateVectorArray& retrieveLastRollout();
 
-		iteration_++;
-		return foundBetter;
-	}
+	const StateVectorArray& getStateVectorArray();
 
-	const StateVectorArray& retrieveLastRollout()
-	{
-		return solver_->getStates();
-	}
+	const core::TimeArray& getTimeArray();
 
-	const StateVectorArray& getStateVectorArray()
-	{
-		return solver_->getSolution().x_ref();
-	}
+	const FeedbackArray& getFeedbackArray();
 
-	const core::TimeArray& getTimeArray()
-	{
-		return solver_->getStateTrajectory().getTimeArray();
-	}
+	const ControlVectorArray& getControlVectorArray();
 
-	const FeedbackArray& getFeedbackArray()
-	{
-		return solver_->getSolution().K();
-	}
+	const typename NLOptConSolver::Settings_t& getSettings() const;
 
-	const ControlVectorArray& getControlVectorArray()
-	{
-		return solver_->getSolution().uff();
-	}		
+	void changeCostFunction(std::shared_ptr<CostFunction> costFunction);
 
-	const typename NLOptConSolver::Settings_t& getSettings() const { return solver_->getSettings(); }
-
-	void changeCostFunction(std::shared_ptr<CostFunction> costFunction)
-	{
-		solver_->changeCostFunction(costFunction);
-	}
-
-	std::shared_ptr<NLOptConSolver> getSolver()
-	{
-		return solver_;
-	}
+	std::shared_ptr<NLOptConSolver> getSolver();
 
 private:
 
