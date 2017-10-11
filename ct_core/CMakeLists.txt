@@ -70,8 +70,6 @@ catkin_package(
        ${PRESPEC_LIBS}
 )
 
-#message(FATAL_ERROR "prespec libs: ${PRESPEC_LIBS}")
-
 
 set(CODEGEN_TEMPLATE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/templates")
 set(CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/generated")
