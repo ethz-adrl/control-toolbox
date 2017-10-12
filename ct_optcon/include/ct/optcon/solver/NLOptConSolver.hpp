@@ -27,7 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_OPTCON_SOLVER_NLOPTCONSOLVER_H_
 #define INCLUDE_CT_OPTCON_SOLVER_NLOPTCONSOLVER_H_
 
-#include <ct/core/core.h>
 #include <ct/optcon/problem/OptConProblem.h>
 
 #include <ct/optcon/nloc/NLOCBackendST.hpp>
