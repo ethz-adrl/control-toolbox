@@ -10,14 +10,17 @@ file(GLOB_RECURSE
           
 
 # Adding clang-format target if executable is found
-find_program(CLANG_FORMAT "clang-format")
-if(CLANG_FORMAT)
+find_program(CLANG_FORMAT_BIN "clang-format-3.9")
+message(${CLANG_FORMAT_BIN})
+if(NOT CLANG_FORMAT_BIN)
+    message(WARNING "CLANG-FORMAT not found")
+else(NOT CLANG_FORMAT_BIN)
   message (WARNING "USING CLANG-FORMAT. This re-formats the source-code in a well-defined style.")
   add_custom_target(
-    clang-format
-    COMMAND /usr/bin/clang-format
+    clang-format ALL
+    COMMAND clang-format-3.9
     -i
-    -style=file
+    -style=Google
     ${ALL_CXX_SOURCE_FILES}
     )
 endif()
