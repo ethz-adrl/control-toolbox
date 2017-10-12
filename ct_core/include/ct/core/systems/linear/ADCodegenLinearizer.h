@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_CORE_SYSTEMS_LINEAR_ADCODEGENLINEARIZER_H_
-#define INCLUDE_CT_CORE_SYSTEMS_LINEAR_ADCODEGENLINEARIZER_H_
+#pragma once
 
 #include "internal/ADLinearizerBase.h"
 #include <ct/core/internal/autodiff/CGHelpers.h> 
@@ -375,4 +374,3 @@ private:
 }
 
 
-#endif /* INCLUDE_CT_CORE_SYSTEMS_LINEAR_ADCODEGENLINEARIZER_H_ */

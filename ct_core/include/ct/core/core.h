@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_INCLUDE_CT_CORE_
-#define CT_INCLUDE_CT_CORE_
+#pragma once
 
 #include <iosfwd>
 #include <vector>
@@ -72,4 +71,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Geometry-impl"
 
 
-#endif /* CT_INCLUDE_CT_CORE_ */

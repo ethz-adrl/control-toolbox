@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_CORE_CONTROL_
-#define INCLUDE_CT_CORE_CONTROL_
+#pragma once
 
 #include "control/Controller.h"
 #include "control/DiscreteController.h"
@@ -40,4 +39,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "control/siso/SISOArrayController.h"
 #include "control/mimo/LinearFunctions.h"
 
-#endif /* INCLUDE_CT_CORE_CONTROL_ */

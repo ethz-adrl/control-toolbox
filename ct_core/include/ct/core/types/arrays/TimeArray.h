@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef CT_TIME_ARRAY_H_
-#define CT_TIME_ARRAY_H_
+#pragma once
 
 #include "../Time.h"
 #include <ct/core/common/linspace.h>
@@ -87,4 +86,3 @@ typedef tpl::TimeArray<double> TimeArray;
 }
 }
 
-#endif /* TIMETRAJECTORY_H_ */

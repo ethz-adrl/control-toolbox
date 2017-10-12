@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_CORE_AUTODIFF_CGHELPERS_H_
-#define INCLUDE_CT_CORE_AUTODIFF_CGHELPERS_H_
+#pragma once
 
 #include "SparsityPattern.h"
 #include <cppad/local/jacobian.hpp>
@@ -322,4 +321,3 @@ public:
 } /* namespace core */
 } /* namespace ct */
 
-#endif /* INCLUDE_CT_CORE_AUTODIFF_CGHELPERS_H_ */

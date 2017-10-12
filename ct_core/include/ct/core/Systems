@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_CORE_SYSTEMS_
-#define INCLUDE_CT_CORE_SYSTEMS_
+#pragma once
 
 #include "systems/System.h"
 #include "systems/ControlledSystem.h"
@@ -40,4 +39,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "systems/linear/AutoDiffLinearizer.h"
 #include "systems/linear/ADCodegenLinearizer.h"
 
-#endif /* INCLUDE_CT_CORE_SYSTEMS_ */

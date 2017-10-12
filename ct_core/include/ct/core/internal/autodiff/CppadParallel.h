@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_CORE_INTERNAL_AUTODIFF_CPPADMP_H_
-#define INCLUDE_CT_CORE_INTERNAL_AUTODIFF_CPPADMP_H_
+#pragma once
 
 #include <mutex>
 
@@ -147,4 +146,3 @@ public:
 }
 }
 
-#endif

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef TIME_H_
-#define TIME_H_
+#pragma once
 
 namespace ct {
 namespace core {
@@ -38,4 +37,3 @@ typedef double Time;
 
 
 
-#endif /* TIME_H_ */

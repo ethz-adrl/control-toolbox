@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_CORE_LINEARFUNCTIONS_H_
-#define CT_CORE_LINEARFUNCTIONS_H_
+#pragma once
 
 #include <ct/core/types/arrays/DiscreteArray.h>
 #include <ct/core/types/arrays/TimeArray.h>
@@ -87,4 +86,3 @@ public:
 } // core
 } // ct
 
-#endif /* CT_CORE_LINEARFUNCTIONS_H_ */

@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_CORE_INTEGRATOR_SYMPLECTIC_H_
-#define CT_CORE_INTEGRATOR_SYMPLECTIC_H_
+#pragma once
 
 #include <type_traits>
 #include <functional>
@@ -161,4 +160,3 @@ using IntegratorSymplecticRk = IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DI
 }
 }
 
-#endif /* CT_CORE_INTEGRATOR_SYMPLECTIC_H_ */

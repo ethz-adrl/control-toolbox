@@ -23,8 +23,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef  CT_CORE_MATH_DERIVATIVESCPPAD_SETTINGS_H_
-#define  CT_CORE_MATH_DERIVATIVESCPPAD_SETTINGS_H_
+#pragma once
 
 #include <iostream>
 #include <boost/property_tree/ptree.hpp>
@@ -165,4 +164,3 @@ private:
 } // namespace core
 } // namespace ct
 
-#endif // CT_CORE_MATH_DERIVATIVESCPPAD_SETTINGS_H_

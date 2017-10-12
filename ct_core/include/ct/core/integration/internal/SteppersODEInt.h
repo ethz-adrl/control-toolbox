@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_CORE_INTERNAL_STEPPERS_ODEINT_H_
-#define CT_CORE_INTERNAL_STEPPERS_ODEINT_H_
+#pragma once
 
 #include <boost/numeric/odeint.hpp>
 #include "SteppersODEIntDefinitions.h"
@@ -252,4 +251,4 @@ private:
 }
 
 
-#endif
+

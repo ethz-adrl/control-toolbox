@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_CORE_CONTROL_STATEFEEDBACKCONTROLLER_H_
-#define CT_CORE_CONTROL_STATEFEEDBACKCONTROLLER_H_
+#pragma once
 
 #include <iostream>
 
@@ -161,4 +160,3 @@ private:
 } // core
 } // ct
 
-#endif /* INCLUDE_CT_CORE_CONTROL_STATEFEEDBACKCONTROLLER_H_ */

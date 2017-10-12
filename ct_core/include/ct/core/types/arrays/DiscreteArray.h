@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_DISCRETE_ARRAY_H_
-#define CT_DISCRETE_ARRAY_H_
+#pragma once
 
 #include <vector>
 #include <iostream>
@@ -213,4 +212,3 @@ private:
 } /* namespace core */
 } /* namespace ct */
 
-#endif /* DISCRETETRAJECTORYBASE_H_ */

@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_CORE_INTEGRATION_EVENTHANDLERS_SUBSTEPRECORDER_H_
-#define INCLUDE_CT_CORE_INTEGRATION_EVENTHANDLERS_SUBSTEPRECORDER_H_
+#pragma once
 
 #include <ct/core/integration/EventHandler.h>
 
@@ -120,4 +119,3 @@ private:
 }
 }
 
-#endif /* INCLUDE_CT_CORE_INTEGRATION_EVENTHANDLERS_SUBSTEPRECORDER_H_ */

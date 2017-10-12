@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_INCLUDE_CT_TEMPLATE_DIR
-#define CT_INCLUDE_CT_TEMPLATE_DIR
+#pragma once
 
 namespace ct {
 namespace core {
@@ -37,4 +36,3 @@ static const std::string CODEGEN_OUTPUT_DIR = "${CODEGEN_OUTPUT_DIR}";
 }
 }
 
-#endif

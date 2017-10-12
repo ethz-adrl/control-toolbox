@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_CORE_SYSTEMS_LINEAR_ADLINEARIZERBASE_H_
-#define INCLUDE_CT_CORE_SYSTEMS_LINEAR_ADLINEARIZERBASE_H_
+#pragma once
 
 #include <cppad/cg.hpp>
 #include <cppad/cppad.hpp>
@@ -179,4 +178,3 @@ protected:
 
 
 
-#endif /* INCLUDE_CT_CORE_SYSTEMS_LINEAR_ADLINEARIZERBASE_H_ */

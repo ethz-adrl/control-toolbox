@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_CORE_INTEGRATOR_H_
-#define CT_CORE_INTEGRATOR_H_
+#pragma once
 
 #include <type_traits>
 #include <functional>
@@ -394,4 +393,3 @@ private:
 }
 }
 
-#endif /* CT_CORE_INTEGRATOR_H_ */

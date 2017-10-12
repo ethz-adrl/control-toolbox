@@ -24,9 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-
-#ifndef CT_CORE_CONTROLMATRIX_H_
-#define CT_CORE_CONTROLMATRIX_H_
+#pragma once
 
 namespace ct {
 namespace core {
@@ -60,4 +58,3 @@ public:
 } /* namespace core */
 } /* namespace ct */
 
-#endif /* CT_CORE_CONTROLMATRIX_H_ */

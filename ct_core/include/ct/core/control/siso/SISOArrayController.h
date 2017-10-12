@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef SISOARRAYCONTROLLER_H_
-#define SISOARRAYCONTROLLER_H_
+#pragma once
 
 #include "../Controller.h"
 
@@ -145,4 +144,3 @@ private:
 } // core
 } // ct
 
-#endif /* SISOARRAYCONTROLLER_H_ */

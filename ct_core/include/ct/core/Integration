@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_CORE_INTEGRATION_
-#define INCLUDE_CT_CORE_INTEGRATION_
+#pragma once
 
 #include "integration/Observer.h"
 #include "integration/Integrator.h"
@@ -37,4 +36,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "integration/sensitivity/SensitivityApproximation.h"
 #include "integration/sensitivity/SensitivityIntegrator.h"
 
-#endif /* INCLUDE_CT_CORE_INTEGRATION_ */

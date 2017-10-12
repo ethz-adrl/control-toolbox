@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_MATRIXTRAJECTORIES_H_
-#define CT_MATRIXTRAJECTORIES_H_
+#pragma once
 
 #include "../ControlMatrix.h"
 #include "../FeedbackMatrix.h"
@@ -61,5 +60,4 @@ using StateTrajectory = DiscreteTrajectoryBase<StateVector<STATE_DIM, SCALAR>, E
 }	// core
 }	// ct
 
-#endif /* CT_MATRIXTRAJECTORIES_H_ */
 

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_CORE_CONTROLLEDSYSTEM_H_
-#define CT_CORE_CONTROLLEDSYSTEM_H_
+#pragma once
 
 #include "../control/Controller.h"
 #include "System.h"
@@ -186,4 +185,3 @@ protected:
 }
 }
 
-#endif /* CT_CORE_CONTROLLEDSYSTEM_H_ */

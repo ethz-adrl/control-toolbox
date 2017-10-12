@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_CORE_MATH_DERIVATIVESNUMDIFF_H_
-#define INCLUDE_CT_CORE_MATH_DERIVATIVESNUMDIFF_H_
+#pragma once
 
 
 namespace ct {
@@ -159,4 +158,3 @@ private:
 }
 }
 
-#endif /* INCLUDE_CT_CORE_MATH_DerivativesNUMDIFF_H_ */

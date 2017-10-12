@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_DISCRETETRAJECTORYBASE_H_
-#define CT_DISCRETETRAJECTORYBASE_H_
+#pragma once
 
 #include "TrajectoryBase.h"
 #include "../arrays/TimeArray.h"
@@ -321,4 +320,3 @@ protected:
 } /* namespace core */
 } /* namespace ct */
 
-#endif

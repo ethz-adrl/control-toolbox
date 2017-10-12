@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef LTISYSTEM_H_
-#define LTISYSTEM_H_
+#pragma once
 
 namespace ct {
 namespace core {
@@ -84,6 +83,8 @@ public:
 	LTISystem<STATE_DIM, CONTROL_DIM>* clone() const override {
 		return new LTISystem<STATE_DIM, CONTROL_DIM>(*this);
 	}
+
+	virtual ~LTISystem(){}
 
 	//! get A matrix
 	virtual const Eigen::Matrix<double, STATE_DIM, STATE_DIM>& getDerivativeState(const StateVector<STATE_DIM>& x, const ControlVector<CONTROL_DIM>& u, const double t = 0.0) override {
@@ -221,4 +222,3 @@ private:
 }
 }
 
-#endif /* LTISYSTEM_H_ */

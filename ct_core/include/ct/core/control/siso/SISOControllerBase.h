@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef SISOCONTROLLERBASE_H_
-#define SISOCONTROLLERBASE_H_
+#pragma once
 
 #include <boost/concept_check.hpp>
 #include <memory>
@@ -79,4 +78,3 @@ protected:
 
 
 
-#endif /* SISOCONTROLLERBASE_H_ */

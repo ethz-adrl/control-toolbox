@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_CORE_FUNCTION_DERIVATIVESCPPAD_JIT_H_
-#define INCLUDE_CT_CORE_FUNCTION_DERIVATIVESCPPAD_JIT_H_
+#pragma once
 
 #include "CppadUtils.h"
 #include "DerivativesCppadSettings.h"
@@ -493,4 +492,3 @@ private:
 } /* namespace core */
 } /* namespace ct */
 
-#endif /* INCLUDE_CT_CORE_FUNCTION_DERIVATIVESCPPAD_H_ */

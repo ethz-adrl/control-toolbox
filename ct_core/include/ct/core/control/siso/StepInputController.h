@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef STEPINPUTCONTROLLER_H_
-#define STEPINPUTCONTROLLER_H_
+#pragma once
 
 #include "SISOControllerBase.h"
 
@@ -102,4 +101,3 @@ private:
 }
 }
 
-#endif /* STEPINPUTCONTROLLER_H_ */

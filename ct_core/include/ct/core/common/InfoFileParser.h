@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_CORE_COMMON_INFOFILEPARSER_H_
-#define INCLUDE_CT_CORE_COMMON_INFOFILEPARSER_H_
+#pragma once
 
 #include <iostream>
 
@@ -147,6 +146,3 @@ void loadMatrix(const std::string& filename, const std::string& matrixName, Eige
 
 }
 }
-
-
-#endif /* INCLUDE_CT_CORE_COMMON_INFOFILEPARSER_H_ */

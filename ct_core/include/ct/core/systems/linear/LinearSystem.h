@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_LINEARSYSTEM_H_
-#define CT_LINEARSYSTEM_H_
+#pragma once
 
 #include <ct/core/types/StateVector.h>
 #include <ct/core/types/ControlVector.h>
@@ -111,7 +110,6 @@ public:
 }
 }
 
-#endif
 
 
 

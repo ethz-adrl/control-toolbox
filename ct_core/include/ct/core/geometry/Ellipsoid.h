@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_CORE_ELLIPSOID_H_
-#define CT_CORE_ELLIPSOID_H_
+#pragma once
 
 namespace ct {
 namespace core {
@@ -102,4 +101,3 @@ typedef tpl::Ellipsoid<double> Ellipsoid;
 } // namespace optcon
 } // namespace ct
 
-#endif

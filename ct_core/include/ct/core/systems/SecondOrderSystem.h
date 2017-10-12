@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_CORE_SECONDORDERSYSTEM_H_
-#define CT_CORE_SECONDORDERSYSTEM_H_
+#pragma once
 
 #include <cmath>
 #include <memory>
@@ -216,4 +215,3 @@ typedef tpl::SecondOrderSystem<double> SecondOrderSystem; //!< harmonic oscillat
 } // namespace core
 } // namespace ct
 
-#endif /* SECONDORDERSYSTEM_H_ */

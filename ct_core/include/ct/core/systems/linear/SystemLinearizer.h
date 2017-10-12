@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef SYSTEMLINEARIZER_H_
-#define SYSTEMLINEARIZER_H_
+#pragma once
 
 
 #include <Eigen/Dense>
@@ -321,4 +320,3 @@ protected:
 }	// ct
 
 
-#endif

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CORE_INTERNAL_TRAITS_CPPADDOUBLETRAIT_H_
-#define INCLUDE_CORE_INTERNAL_TRAITS_CPPADDOUBLETRAIT_H_
+#pragma once
 
 #include <cppad/cppad.hpp>
 #include <cppad/example/cppad_eigen.hpp>
@@ -62,4 +61,3 @@ struct CppADDoubleTrait {
 }
 }
 
-#endif /* INCLUDE_EXTERNAL_IIT_RBD_TRAITS_CPPADDOUBLETRAIT_H_ */

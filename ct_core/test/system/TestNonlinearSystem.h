@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef TESTNONLINEARSYSTEM_H_
-#define TESTNONLINEARSYSTEM_H_
+#pragma once
 
 #include <cmath>
 #include <memory>
@@ -91,4 +90,3 @@ typedef tpl::TestNonlinearSystem<double> TestNonlinearSystem;
 } // namespace core
 } // namespace ct
 
-#endif /* TESTNONLINEARSYSTEM_H_ */

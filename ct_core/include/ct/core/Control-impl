@@ -25,11 +25,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_CORE_CONTROL_IMPL_
-#define INCLUDE_CT_CORE_CONTROL_IMPL_
-
+#pragma once
 
 #include "control/StateFeedbackController-impl.h"
 #include "control/ConstantController-impl.h"
 
-#endif /* INCLUDE_CT_CORE_CONTROL_IMPL_ */

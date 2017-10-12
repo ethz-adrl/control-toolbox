@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_CORE_MAX_STEPS_EVENTHANDLER_H_
-#define CT_CORE_MAX_STEPS_EVENTHANDLER_H_
+#pragma once
 
 #include <ct/core/integration/EventHandler.h>
 
@@ -95,4 +94,3 @@ private:
 } // namespace core
 } // namespace ct
 
-#endif

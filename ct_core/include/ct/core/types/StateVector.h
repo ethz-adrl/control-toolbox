@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_CORE_STATEVECTOR_H_
-#define CT_CORE_STATEVECTOR_H_
+#pragma once
 
 namespace ct {
 namespace core {
@@ -60,4 +59,3 @@ public:
 } /* namespace core */
 } /* namespace ct */
 
-#endif /* CT_CORE_STATEVECTOR_H_ */

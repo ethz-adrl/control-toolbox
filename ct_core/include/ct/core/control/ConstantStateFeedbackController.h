@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_CORE_CONSTANT_STATE_FEEDBACK_CONTROLLER_
-#define CT_CORE_CONSTANT_STATE_FEEDBACK_CONTROLLER_
+#pragma once
 
 #include <ct/core/control/Controller.h>
 #include <ct/core/types/FeedbackMatrix.h>
@@ -157,4 +156,3 @@ private:
 } // namespace core
 } // namespace ct
 
-#endif /* CT_CORE_CONSTANT_STATE_FEEDBACK_CONTROLLER_ */

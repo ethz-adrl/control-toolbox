@@ -5,9 +5,8 @@
  *      Author: farbod
  */
 
+#pragma once
 
-#ifndef BOOST_NUMERIC_ODEINT_EXTERNAL_EIGEN_EIGEN_ALGEBRA_HPP_INCLUDED
-#define BOOST_NUMERIC_ODEINT_EXTERNAL_EIGEN_EIGEN_ALGEBRA_HPP_INCLUDED
 
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
@@ -158,4 +157,3 @@ struct vector_space_reduce< Eigen::Matrix<SCALAR, STATE_DIM, 1> >
 } } } // end boost::numeric::odeint namespace
 
 
-#endif // BOOST_NUMERIC_ODEINT_EXTERNAL_EIGEN_EIGEN_ALGEBRA_HPP_INCLUDED

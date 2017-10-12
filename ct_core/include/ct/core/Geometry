@@ -25,12 +25,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_CORE_GEOMETRY_
-#define INCLUDE_CT_CORE_GEOMETRY_
+#pragma once
 
 #include "geometry/Ellipsoid.h"
 #include "geometry/Plane.h"
 #include "geometry/PlaneEstimator.h"
 
 
-#endif /* INCLUDE_CT_CORE_GEOMETRY_ */

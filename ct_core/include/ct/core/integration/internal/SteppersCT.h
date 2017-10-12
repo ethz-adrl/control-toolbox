@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_CORE_INTERNAL_STEPPERS_CT_H_
-#define CT_CORE_INTERNAL_STEPPERS_CT_H_
+#pragma once
 
 #include <ct/core/systems/System.h>
 #include "StepperBase.h"
@@ -179,4 +178,3 @@ private:
 
 
 
-#endif

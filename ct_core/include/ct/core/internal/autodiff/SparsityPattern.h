@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_CORE_INTERNAL_AUTODIFF_SPARSITYPATTERN_H_
-#define INCLUDE_CT_CORE_INTERNAL_AUTODIFF_SPARSITYPATTERN_H_
+#pragma once
 
 #include <cppad/cppad.hpp>
 #include <Eigen/Core>
@@ -138,4 +137,3 @@ private:
 } /* namespace core */
 } /* namespace ct */
 
-#endif /* INCLUDE_CT_CORE_INTERNAL_AUTODIFF_SPARSITYPATTERN_H_ */

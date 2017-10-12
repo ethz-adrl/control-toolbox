@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_CORE_INTEGRATOR_SYMPLECTIC_IMPL_H_
-#define CT_CORE_INTEGRATOR_SYMPLECTIC_IMPL_H_
+#pragma once
 
 
 namespace ct {
@@ -136,4 +135,3 @@ void IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, Stepper, SCALAR>::setup
 }
 }
 
-#endif /* CT_CORE_INTEGRATOR_SYMPLECTIC_IMPL_H_ */

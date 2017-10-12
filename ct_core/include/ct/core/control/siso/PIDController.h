@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef PIDController_H_
-#define PIDController_H_
+#pragma once
 
 #include <limits>
 #include "SISOControllerBase.h"
@@ -211,4 +210,3 @@ private:
 
 
 
-#endif /* PIDController_H_ */

@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_CORE_SIMPLE_SENSITIVITY_INTEGRATOR_CT_H_
-#define CT_CORE_SIMPLE_SENSITIVITY_INTEGRATOR_CT_H_
+#pragma once
 
 #include <ct/core/systems/ControlledSystem.h>
 #include <ct/core/systems/linear/LinearSystem.h>
@@ -396,4 +395,3 @@ private:
 #undef SYMPLECTIC_ENABLED
 #undef SYMPLECTIC_DISABLED
 
-#endif

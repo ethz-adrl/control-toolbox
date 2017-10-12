@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_CORE_OBSERVER_H_
-#define CT_CORE_OBSERVER_H_
+#pragma once
 
 #include "EventHandler.h"
 
@@ -88,4 +87,3 @@ private:
 }
 
 
-#endif /* OBSERVER_H_ */

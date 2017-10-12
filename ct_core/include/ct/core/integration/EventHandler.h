@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_CORE_EVENTHANDLER_H_
-#define CT_CORE_EVENTHANDLER_H_
+#pragma once
 
 #include <ct/core/types/StateVector.h>
 
@@ -84,4 +83,3 @@ private:
 }
 }
 
-#endif /* EVENTHANDLER_H_ */

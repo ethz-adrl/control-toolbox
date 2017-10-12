@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef CT_CORE_INTERPOLATION_H_
-#define CT_CORE_INTERPOLATION_H_
+#pragma once
 
 #include <ct/core/types/arrays/DiscreteArray.h>
 #include <ct/core/types/arrays/TimeArray.h>
@@ -196,4 +195,3 @@ protected:
 } // namespace ct
 } // namespace core
 
-#endif /* CT_CORE_INTERPOLATION_H_ */

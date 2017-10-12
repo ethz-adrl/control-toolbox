@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
 
-#ifndef CT_CORE_INTEGRATOR_IMPL_H_
-#define CT_CORE_INTEGRATOR_IMPL_H_
+#pragma once
 
 
 namespace ct {
@@ -226,4 +225,3 @@ void Integrator<STATE_DIM, SCALAR>::setupSystem() {
 }
 }
 
-#endif /* CT_CORE_INTEGRATOR_IMPL_H_ */

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_SCALAR_TRAJECTORY_H_
-#define CT_SCALAR_TRAJECTORY_H_
+#pragma once
 
 #include "DiscreteTrajectoryBase.h"
 
@@ -87,4 +86,3 @@ private:
 }
 }
 
-#endif /* CT_SCALAR_TRAJECTORY_H_ */

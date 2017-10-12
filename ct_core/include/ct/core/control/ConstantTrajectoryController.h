@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_CORE_CONSTANT_TRAJECTORY_CONTROLLER_
-#define CT_CORE_CONSTANT_TRAJECTORY_CONTROLLER_
+#pragma once
 
 #include "ct/core/control/Controller.h"
 
@@ -147,4 +146,3 @@ private:
 }
 }
 
-#endif /* CT_CORE_CONSTANT_TRAJECTORY_CONTROLLER_ */
