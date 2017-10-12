@@ -7,6 +7,8 @@ option(BUILD_HYA_LINEARIZATION_TIMINGS "Build linearization timing tests for HyA
 option(USE_LAPACKE "Use lapacke bindings for Eigen" false)
 option(USE_BLAS "Use blas bindings for Eigen" false)
 option(HPIPM "Build HPIPM Optimal Control solver" false)
+option(CLANG_TIDY "Use clang-tidy to analyze code" true)
+option(CLANG_FORMAT "Use clang-format to reformat code" false)
 
 if (USE_CLANG AND USE_INTEL)
     message (FATAL_ERROR "Please choose either intel or clang compiler or neither.")
