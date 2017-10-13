@@ -40,7 +40,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_OPTCONSOLVER_HPP_
 #define CT_OPTCONSOLVER_HPP_
 
-#include <ct/core/core.h>
 #include <ct/optcon/problem/OptConProblem.h>
 
 

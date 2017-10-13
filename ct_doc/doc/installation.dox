@@ -16,6 +16,8 @@ also run on other platforms
 \subsection opt_dep Optional Dependencies
  - lapack (enables Schur method as an alternative to iterative method in ct::optcon::LQR)
  - clang (faster compilation for large linear models)
+ - clang-tidy $ sudo apt-get install clang-tidy-3.9
+ - clang-format $ sudo apt-get install clang-format-3.9
  - ROS Indigo (for ROS bindings, visualization and extended examples), see <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_nodes</a>, <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_msgs</a>
  - IPOPT or SNOPT (for ct::optcon::SNOPTSolver and ct::optcon::IPOPTSolver as used by ct::optcon::DMS)
  - qwt (for basic plotting)
