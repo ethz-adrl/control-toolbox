@@ -7,6 +7,14 @@ file(GLOB_RECURSE
      ALL_CXX_SOURCE_FILES
      *.[chi]pp *.[chi]xx *.cc *.hh *.ii *.[CHI] *.h
      )
+# we exclude external sources from the format- and tidy process     
+set (EXCLUDE_DIR "/external/")
+foreach (TMP_PATH ${ALL_CXX_SOURCE_FILES})
+    string (FIND ${TMP_PATH} ${EXCLUDE_DIR} EXCLUDE_DIR_FOUND)
+    if (NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
+        list (REMOVE_ITEM ${ALL_CXX_SOURCE_FILES} ${TMP_PATH})
+    endif ()
+endforeach(TMP_PATH)
           
 
 # Adding clang-format target if executable is found
