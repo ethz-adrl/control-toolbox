@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.6) 
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 
 project (ct_core) 
 
@@ -53,12 +54,8 @@ include_directories (
 )
 
 ## assemble list of libraries that contain prespecified templates
-set(PRESPEC_LIBS "")
-file(GLOB files "prespec/*.cpp")
-foreach(file ${files})
-  get_filename_component(raw_filename ${file} NAME_WE)
-  LIST(APPEND PRESPEC_LIBS "ct_core_${raw_filename}")
-endforeach()
+configurePrespec("${CMAKE_CURRENT_SOURCE_DIR}/prespec/core_explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_core")
+message(WARNING "Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
 
 catkin_package(
    INCLUDE_DIRS
@@ -67,7 +64,7 @@ catkin_package(
         include/external
    LIBRARIES
        ct_core
-       ${PRESPEC_LIBS}
+       ${PRESPEC_LIB_NAMES}
 )
 
 
@@ -83,13 +80,13 @@ add_library(ct_core
 target_link_libraries(ct_core ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
 
 ##compile template prespec libs
-file(GLOB files "prespec/*.cpp")
-foreach(file ${files})
-  get_filename_component(raw_filename ${file} NAME_WE)
-  add_library(ct_core_${raw_filename}
-   ${file}
+foreach(lib_name ${PRESPEC_LIB_NAMES})
+  #get_filename_component(raw_filename ${file} NAME_WE)
+  message(WARNING "sources for lib ${lib_name}: \n ${${lib_name}_SRCS}")
+  add_library(${lib_name}
+   ${${lib_name}_SRCS}
   )
-  target_link_libraries(ct_core_${raw_filename} ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
+  target_link_libraries(${lib_name} ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
 endforeach()
 
 
