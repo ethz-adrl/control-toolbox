@@ -1,6 +1,8 @@
 CMakeFiles/
 CMakeCache.txt
 *.cmake
+!clang-cxx-dev-tools.cmake
+!compilerSettings.cmake
 *.a
 *.o
 *.so
