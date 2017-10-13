@@ -1,12 +1,5 @@
-/*
- * plotQt.h
- *
- *  Created on: Mar 17, 2017
- *      Author: neunertm
- */
 
-#ifndef INCLUDE_CT_CORE_PLOT_PLOTQWT_H_
-#define INCLUDE_CT_CORE_PLOT_PLOTQWT_H_
+#pragma once
 
 #include <qwt/qwt_plot_curve.h>
 #include <qwt/qwt_plot.h>
@@ -229,4 +222,3 @@ void render()
 }
 
 
-#endif /* INCLUDE_CT_CORE_PLOT_PLOTQWT_H_ */

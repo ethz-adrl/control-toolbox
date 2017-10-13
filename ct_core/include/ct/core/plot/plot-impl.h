@@ -1,12 +1,4 @@
-/*
- * plot-impl.h
- *
- *  Created on: Mar 17, 2017
- *      Author: neunertm
- */
-
-#ifndef INCLUDE_CT_CORE_PLOT_PLOT_IMPL_H_
-#define INCLUDE_CT_CORE_PLOT_PLOT_IMPL_H_
+#pragma once
 
 #ifdef PLOTTING_ENABLED
 // -----------------------------------------------------------------------------
@@ -66,5 +58,3 @@ bool plot(const std::vector<double, ALLOC>& x, const std::vector<double, ALLOC2>
 
 #endif
 
-
-#endif /* INCLUDE_CT_CORE_PLOT_PLOT_IMPL_H_ */
