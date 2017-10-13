@@ -31,6 +31,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/core/types/Time.h>
 #include <ct/core/types/StateVector.h>
 #include <ct/core/types/ControlVector.h>
+#include <ct/core/types/ControlMatrix.h>
 
 
 namespace ct {
