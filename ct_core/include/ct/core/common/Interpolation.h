@@ -123,7 +123,7 @@ public:
 			return;
 		}
 
-		double alpha = (enquiryTime - timeArray.at(ind+1)) / (timeArray.at(ind)-timeArray.at(ind+1));
+		SCALAR alpha = (enquiryTime - timeArray.at(ind+1)) / (timeArray.at(ind)-timeArray.at(ind+1));
 
 
 		if(type_ == InterpolationType::LIN)
@@ -176,7 +176,7 @@ public:
 
 		// throw error if index is wrong
 		if(index < 0)
-			throw std::runtime_error("Interpolation.h : index in protected member findIndex((const double& enquiryTime) not computed properly");
+			throw std::runtime_error("Interpolation.h : index in protected member findIndex((const SCALAR& enquiryTime) not computed properly");
 
 		index_ = index;
 
