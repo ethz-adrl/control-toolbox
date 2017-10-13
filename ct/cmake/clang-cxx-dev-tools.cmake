@@ -29,7 +29,7 @@ if(CLANG_FORMAT)
         clang-format ALL
         COMMAND clang-format-3.9
         -i
-        -style=Google
+        -style=file
         ${ALL_CXX_SOURCE_FILES}
         )
     endif()
