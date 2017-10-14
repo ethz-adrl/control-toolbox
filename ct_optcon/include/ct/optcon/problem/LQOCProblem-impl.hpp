@@ -82,11 +82,11 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero()
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuadraticProblem(
-		ct::core::StateVector<STATE_DIM>& x0,
-		ct::core::ControlVector<CONTROL_DIM>& u0,
+		ct::core::StateVector<STATE_DIM, SCALAR>& x0,
+		ct::core::ControlVector<CONTROL_DIM, SCALAR>& u0,
 		ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
 		ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
-		ct::core::StateVector<STATE_DIM>& stateOffset,
+		ct::core::StateVector<STATE_DIM, SCALAR>& stateOffset,
 		double dt)
 {
 	core::StateMatrix<STATE_DIM, SCALAR> A;

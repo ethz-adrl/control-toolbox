@@ -38,8 +38,8 @@ ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::ControlInputConstraint(
 	Base::lb_.resize(CONTROL_DIM);
 	Base::ub_.resize(CONTROL_DIM);
 	// The terminal state constraint is treated as equality constraint, therefore, ub = lb
-	Base::lb_ = uLow;
-	Base::ub_ = uHigh;
+	Base::lb_ = uLow.template cast<SCALAR>();
+	Base::ub_ = uHigh.template cast<SCALAR>();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
