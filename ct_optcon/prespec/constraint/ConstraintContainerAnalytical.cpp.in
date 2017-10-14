@@ -1,0 +1,6 @@
+#include <ct/optcon/optcon-prespec.h>
+#include <ct/optcon/constraint/ConstraintContainerAnalytical-impl.h>
+
+#if @DOUBLE_OR_FLOAT@
+template class ct::optcon::ConstraintContainerAnalytical<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>;
+#endif

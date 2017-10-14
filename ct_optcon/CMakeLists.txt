@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.6) 
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 
 project (ct_optcon) 
 
@@ -148,12 +149,8 @@ generate_messages(
 )
 
 ## assemble list of libraries that contain prespecified templates
-set(PRESPEC_LIBS "")
-file(GLOB files "prespec/*.cpp")
-foreach(file ${files})
-  get_filename_component(raw_filename ${file} NAME_WE)
-  LIST(APPEND PRESPEC_LIBS "ct_optcon_${raw_filename}")
-endforeach()
+ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_optcon")
+message(WARNING "CT Optcon: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
 
 catkin_package(
    INCLUDE_DIRS
@@ -171,7 +168,7 @@ catkin_package(
         ${CT_SNOPT_LIBS}
         ${HPIPM_LIBRARY}
         ${BLASFEO_LIBRARY}
-        ${PRESPEC_LIBS}
+        ${PRESPEC_LIB_NAMES}
    CATKIN_DEPENDS
         ct_core
 )
@@ -183,15 +180,8 @@ if(BUILD_WITH_SNOPT_SUPPORT)
 endif()
 
 
-##compile template prespec libs
-file(GLOB files "prespec/*.cpp")
-foreach(file ${files})
-  get_filename_component(raw_filename ${file} NAME_WE)
-  add_library(ct_optcon_${raw_filename}
-   ${file}
-  )
-  target_link_libraries(ct_optcon_${raw_filename} ${catkin_LIBRARIES} ${MATLAB_LIBS} lapack)
-endforeach()
+# add libraries for explicit template
+ct_add_explicit_template_libs()
 
 
 if(BUILD_EXAMPLES)

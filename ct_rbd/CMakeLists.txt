@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.6) 
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 
 project (ct_rbd) 
 
@@ -15,12 +16,8 @@ include_directories(
 )
 
 ## assemble list of libraries that contain prespecified templates
-set(PRESPEC_LIBS "")
-file(GLOB files "prespec/*.cpp")
-foreach(file ${files})
-  get_filename_component(raw_filename ${file} NAME_WE)
-  LIST(APPEND PRESPEC_LIBS "ct_rbd_${raw_filename}")
-endforeach()
+ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_rbd")
+message(WARNING "CT RBD: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
 
 catkin_package(
    INCLUDE_DIRS
@@ -30,7 +27,7 @@ catkin_package(
         include/ct/rbd
         test
    LIBRARIES
-        ${PRESPEC_LIBS}
+        ${PRESPEC_LIB_NAMES}
    CATKIN_DEPENDS 
        roscpp
        ct_core
@@ -48,16 +45,8 @@ include_directories(
 )
 
 
-##compile template prespec libs
-file(GLOB files "prespec/*.cpp")
-foreach(file ${files})
-  get_filename_component(raw_filename ${file} NAME_WE)
-  add_library(ct_rbd_${raw_filename}
-   ${file}
-  )
-  target_link_libraries(ct_rbd_${raw_filename} ${catkin_LIBRARIES})
-endforeach()
-
+# add libraries for explicit template
+ct_add_explicit_template_libs()
 
 
 ## TESTING    

@@ -1,0 +1,4 @@
+#include <ct/optcon/optcon-prespec.h>
+#include <ct/optcon/problem/OptConProblem-impl.h>
+
+template class ct::optcon::OptConProblem<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>;

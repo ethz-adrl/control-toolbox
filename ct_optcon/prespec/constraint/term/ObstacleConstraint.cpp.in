@@ -1,0 +1,6 @@
+#include <ct/optcon/optcon-prespec.h>
+#include <ct/optcon/constraint/term/ObstacleConstraint-impl.h>
+
+#if @DOUBLE_OR_FLOAT@
+template class ct::optcon::ObstacleConstraint<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>;
+#endif

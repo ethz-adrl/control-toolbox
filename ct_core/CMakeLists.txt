@@ -54,8 +54,8 @@ include_directories (
 )
 
 ## assemble list of libraries that contain prespecified templates
-configurePrespec("${CMAKE_CURRENT_SOURCE_DIR}/prespec/core_explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_core")
-message(WARNING "Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
+ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_core")
+message(WARNING "CT Core: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
 
 catkin_package(
    INCLUDE_DIRS
@@ -79,16 +79,8 @@ add_library(ct_core
 )
 target_link_libraries(ct_core ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
 
-##compile template prespec libs
-foreach(lib_name ${PRESPEC_LIB_NAMES})
-  #get_filename_component(raw_filename ${file} NAME_WE)
-  message(WARNING "sources for lib ${lib_name}: \n ${${lib_name}_SRCS}")
-  add_library(${lib_name}
-   ${${lib_name}_SRCS}
-  )
-  target_link_libraries(${lib_name} ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
-endforeach()
-
+# add libraries for explicit template
+ct_add_explicit_template_libs()
 
 if(BUILD_EXAMPLES)
     add_executable(ex_DampedOscillatorCustomController examples/DampedOscillatorCustomController.cpp)
