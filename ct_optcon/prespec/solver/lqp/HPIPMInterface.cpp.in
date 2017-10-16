@@ -3,6 +3,8 @@
 
 #if @DOUBLE_OR_FLOAT@
 #ifdef HPIPM
+
 template class ct::optcon::HPIPMInterface<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@>;
-#endif
-#endif
+
+#endif // HPIPM
+#endif // DOUBLE_OR_FLOAT
