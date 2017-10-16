@@ -27,9 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * OptConSolver.hpp
- *
- * Created on: 28.02.2017
- * 	   Author: mgiftthaler<mgiftthaler@ethz.ch> 
  * 
  *
  * Requirements:
@@ -37,8 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 		therefore it is templated on the controller type
  */
 
-#ifndef CT_OPTCONSOLVER_HPP_
-#define CT_OPTCONSOLVER_HPP_
+#pragma once
 
 #include <ct/optcon/problem/OptConProblem.h>
 
@@ -347,6 +343,3 @@ public:
 }
 }
 
-
-
-#endif /* OPTCONSOLVER_HPP_ */

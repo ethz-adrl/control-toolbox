@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef CT_OPTIMALCONTROLPROBLEM_IMPL_H_
-#define CT_OPTIMALCONTROLPROBLEM_IMPL_H_
+#pragma once
 
 namespace ct{
 namespace optcon{
@@ -190,4 +189,3 @@ void OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setTimeHorizon(const SCALAR&
 } // ct
 
 
-#endif /* CT_OPTIMALCONTROLPROBLEM_IMPL_H_ */

@@ -24,9 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_CONSTRAINTTEST_HPP_
-#define CT_OPTCON_CONSTRAINTTEST_HPP_
-
+#pragma once
 
 namespace ct{
 namespace optcon{
@@ -40,8 +38,8 @@ namespace example{
 
 const bool verbose = true;
 
-const size_t state_dim = 10;
-const size_t input_dim = 8;
+const size_t state_dim = 12;
+const size_t control_dim = 4;
 
 
 //! A pure state constraint term
@@ -51,7 +49,7 @@ class PureStateConstraint_Example : public ct::optcon::ConstraintBase<STATE_DIM,
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
-	typedef ct::optcon::ConstraintBase<state_dim, input_dim, SCALAR> Base;
+	typedef ct::optcon::ConstraintBase<state_dim, control_dim, SCALAR> Base;
 	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
 	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;	
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
@@ -298,21 +296,21 @@ public:
 
 TEST(pureStateConstraintTest, pureStateConstraintTest)
 {
-	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, input_dim>> constraintAD (
-		new ct::optcon::ConstraintContainerAD<state_dim, input_dim>());
+	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> constraintAD (
+		new ct::optcon::ConstraintContainerAD<state_dim, control_dim>());
 
-	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, input_dim>> constraintAN (
-		new ct::optcon::ConstraintContainerAnalytical<state_dim, input_dim>());
+	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>> constraintAN (
+		new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
 
 	Eigen::Matrix<double, state_dim, state_dim> A; A.setRandom();
 
-	std::shared_ptr<PureStateConstraint_Example<state_dim, input_dim>> term1_ad ( 
-		new PureStateConstraint_Example<state_dim, input_dim>());
+	std::shared_ptr<PureStateConstraint_Example<state_dim, control_dim>> term1_ad (
+		new PureStateConstraint_Example<state_dim, control_dim>());
 	term1_ad->setName("term1_ad");
 	term1_ad->setA(A);
 
-	std::shared_ptr<PureStateConstraint_Example<state_dim, input_dim, double>> term1_an(
-		 new PureStateConstraint_Example<state_dim, input_dim, double>());
+	std::shared_ptr<PureStateConstraint_Example<state_dim, control_dim, double>> term1_an(
+		 new PureStateConstraint_Example<state_dim, control_dim, double>());
 	term1_an->setName("term1_an");
 	term1_an->setA(A);
 
@@ -321,8 +319,8 @@ TEST(pureStateConstraintTest, pureStateConstraintTest)
 	constraintAN->addIntermediateConstraint(term1_an, verbose);
 	constraintAN->initialize();
 
-	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, input_dim>> constraintAN_cloned (constraintAN->clone());
-	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, input_dim>> constraintAD_cloned (constraintAD->clone());
+	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>> constraintAN_cloned (constraintAN->clone());
+	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> constraintAD_cloned (constraintAD->clone());
 
 	size_t nRuns = 100;
 
@@ -332,7 +330,7 @@ TEST(pureStateConstraintTest, pureStateConstraintTest)
 		Eigen::VectorXd g1_ad, g1_an, g1_ad_cl, g1_an_cl;
 
 		Eigen::Matrix<double, state_dim, 1> state; state.setRandom();
-		Eigen::Matrix<double, input_dim, 1> input; input.setRandom();
+		Eigen::Matrix<double, control_dim, 1> input; input.setRandom();
 
 		std::random_device rd;
 		std::mt19937 gen(rd());
@@ -376,21 +374,21 @@ TEST(pureStateConstraintTest, pureStateConstraintTest)
 
 TEST(stateInputConstraintTest, stateInputConstraintTest)
 {
-	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, input_dim>> constraintAD (
-		new ct::optcon::ConstraintContainerAD<state_dim, input_dim>());
-	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, input_dim>> constraintAN (
-		new ct::optcon::ConstraintContainerAnalytical<state_dim, input_dim>());
+	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> constraintAD (
+		new ct::optcon::ConstraintContainerAD<state_dim, control_dim>());
+	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>> constraintAN (
+		new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
 
-	Eigen::Matrix<double, input_dim, state_dim> A; A.setRandom();
-	Eigen::Matrix<double, input_dim, input_dim> B; B.setRandom();
+	Eigen::Matrix<double, control_dim, state_dim> A; A.setRandom();
+	Eigen::Matrix<double, control_dim, control_dim> B; B.setRandom();
 
-	std::shared_ptr<StateInputConstraint_Example<state_dim, input_dim>> term1_ad ( 
-		new StateInputConstraint_Example<state_dim, input_dim>());
+	std::shared_ptr<StateInputConstraint_Example<state_dim, control_dim>> term1_ad (
+		new StateInputConstraint_Example<state_dim, control_dim>());
 	term1_ad->setName("term1_ad");
 	term1_ad->setAB(A, B);
 
-	std::shared_ptr<StateInputConstraint_Example<state_dim, input_dim, double>> term1_an ( 
-		new StateInputConstraint_Example<state_dim, input_dim, double>());
+	std::shared_ptr<StateInputConstraint_Example<state_dim, control_dim, double>> term1_an (
+		new StateInputConstraint_Example<state_dim, control_dim, double>());
 	term1_an->setName("term1_an");
 	term1_an->setAB(A, B);
 
@@ -405,7 +403,7 @@ TEST(stateInputConstraintTest, stateInputConstraintTest)
 	Eigen::VectorXd g1_ad, g1_an;
 
 	Eigen::Matrix<double, state_dim, 1> state; state.setRandom();
-	Eigen::Matrix<double, input_dim, 1> input; input.setRandom();
+	Eigen::Matrix<double, control_dim, 1> input; input.setRandom();
 	double time = 1.0;
 
 
@@ -428,9 +426,9 @@ TEST(stateInputConstraintTest, stateInputConstraintTest)
 	D_ad = constraintAD->jacobianInputIntermediate();
 
 
-	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, input_dim>> constraintAN_cloned (constraintAN->clone());
+	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>> constraintAN_cloned (constraintAN->clone());
 
-	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, input_dim>> constraintAD_cloned (constraintAD->clone());
+	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> constraintAD_cloned (constraintAD->clone());
 
 	C_cloned_an = constraintAN_cloned->jacobianStateIntermediate();
 	C_cloned = constraintAD_cloned->jacobianStateIntermediate();
@@ -449,21 +447,21 @@ TEST(stateInputConstraintTest, stateInputConstraintTest)
 
 TEST(comparisonAnalyticAD, comparisonAnalyticAD)
 {
-	std::shared_ptr<ct::optcon::ConstraintContainerAD<3, 3>> constraintAD (
-		new ct::optcon::ConstraintContainerAD<3, 3>());
+	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> constraintAD (
+		new ct::optcon::ConstraintContainerAD<state_dim, control_dim>());
 
-	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<3, 3>> constraintAN (
-		new ct::optcon::ConstraintContainerAnalytical<3, 3>());
+	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>> constraintAN (
+		new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
 
-	std::shared_ptr<ConstraintTerm1D<3, 3>> term1_ad (
-		new ConstraintTerm1D<3, 3>()); term1_ad->setName("term1_ad");
-	std::shared_ptr<ConstraintTerm2D<3, 3>> term2_ad (
-		new ConstraintTerm2D<3, 3>()); term2_ad->setName("term2_ad");
+	std::shared_ptr<ConstraintTerm1D<state_dim, control_dim>> term1_ad (
+		new ConstraintTerm1D<state_dim, control_dim>()); term1_ad->setName("term1_ad");
+	std::shared_ptr<ConstraintTerm2D<state_dim, control_dim>> term2_ad (
+		new ConstraintTerm2D<state_dim, control_dim>()); term2_ad->setName("term2_ad");
 
-	std::shared_ptr<ConstraintTerm1D<3, 3, double>> term1_an (
-		new ConstraintTerm1D<3, 3, double>()); term1_an->setName("term1_an");
-	std::shared_ptr<ConstraintTerm2D<3, 3, double>> term2_an (
-		new ConstraintTerm2D<3, 3, double>()); term2_an->setName("term2_an");
+	std::shared_ptr<ConstraintTerm1D<state_dim, control_dim, double>> term1_an (
+		new ConstraintTerm1D<state_dim, control_dim, double>()); term1_an->setName("term1_an");
+	std::shared_ptr<ConstraintTerm2D<state_dim, control_dim, double>> term2_an (
+		new ConstraintTerm2D<state_dim, control_dim, double>()); term2_an->setName("term2_an");
 
 
 	std::cout << "Adding terms to constraint_analytic" << std::endl;
@@ -478,8 +476,8 @@ TEST(comparisonAnalyticAD, comparisonAnalyticAD)
 	/* evaluate constraint */
 	Eigen::VectorXd g1_ad, g1_an;
 
-	Eigen::Vector3d state = Eigen::Vector3d::Random();
-	Eigen::Vector3d control = Eigen::Vector3d::Random();
+	Eigen::Matrix<double, state_dim, 1> state = Eigen::Matrix<double, state_dim, 1>::Random();
+	Eigen::Matrix<double, control_dim, 1> control = Eigen::Matrix<double, control_dim, 1>::Random();
 	double time = 0.5;
 
 	constraintAN->setCurrentStateAndControl(state, control, time);
@@ -511,4 +509,3 @@ TEST(comparisonAnalyticAD, comparisonAnalyticAD)
 } // namespace optcon
 } // namespace ct
 
-#endif 

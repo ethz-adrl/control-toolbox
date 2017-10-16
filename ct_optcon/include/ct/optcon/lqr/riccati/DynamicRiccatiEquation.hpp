@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_DYNAMICRICCATIEQUATION_HPP_
-#define CT_DYNAMICRICCATIEQUATION_HPP_
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -150,4 +149,3 @@ private:
 } // namespace ricatti
 } // namespace lqr
 
-#endif /* DYNAMICRICCATIEQUATION_HPP_ */

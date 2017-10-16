@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef INCLUDE_CT_OPTCON_LQ_GNRICCATISOLVER_IMPL_HPP_
-#define INCLUDE_CT_OPTCON_LQ_GNRICCATISOLVER_IMPL_HPP_
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -357,4 +356,3 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 } // optcon
 } // ct
 
-#endif /* INCLUDE_CT_OPTCON_LQ_GNRICCATISOLVER_IMPL_HPP_ */

@@ -86,7 +86,7 @@ public:
 	 * @param t0 time of first data point
 	 * @param type interpolation time
 	 */
-	DiscreteTrajectoryBase(const DiscreteArray<T, Alloc>& data, const Time& deltaT, const Time& t0, const InterpolationType& type = ZOH):
+	DiscreteTrajectoryBase(const DiscreteArray<T, Alloc>& data, const SCALAR& deltaT, const SCALAR& t0, const InterpolationType& type = ZOH):
 			time_(),
 			data_(data),
 			interp_(type)
@@ -161,7 +161,7 @@ public:
 	 * offset to all time stamps.
 	 * @param dt offset (negative offset will be applied to timestamps)
 	 */
-	void shiftTime(const Time& dt) {
+	void shiftTime(const SCALAR& dt) {
 		time_.addOffset(-dt);
 	}
 
@@ -210,13 +210,13 @@ public:
 
 
 	//! get the time stamp of the first element
-	const Time startTime() const {return time_.front();}
+	const SCALAR startTime() const {return time_.front();}
 
 	//! get the time stamp of the last element
-	const Time finalTime() const {return time_.back();}
+	const SCALAR finalTime() const {return time_.back();}
 
 	//! time duration of the trajectory
-	const Time duration() const {return time_.back() - time_.front();}
+	const SCALAR duration() const {return time_.back() - time_.front();}
 
 
 	//! Add a data and time point at the end
@@ -228,7 +228,7 @@ public:
 	 * 		true: time value is absolute, a simple push_back is sufficient
 	 * 		false: time value is relative to current end of time trajectory
 	 */
-	void push_back(const T& data, const Time& time, const bool timeIsAbsolute){
+	void push_back(const T& data, const SCALAR& time, const bool timeIsAbsolute){
 
 		if(timeIsAbsolute)
 			time_.push_back(time);
@@ -249,7 +249,7 @@ public:
 	 * @param N		number of elements to erase from the front
 	 * @param dt	(optional) shift the time trajectory about dt.
 	 */
-	void eraseFront(const size_t& N, const core::Time& dt = 0.0){
+	void eraseFront(const size_t& N, const SCALAR& dt = 0.0){
 		time_.eraseFront(N);
 		data_.eraseFront(N);
 		shiftTime(dt);

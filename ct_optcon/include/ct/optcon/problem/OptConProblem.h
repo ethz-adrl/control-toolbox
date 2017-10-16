@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTIMALCONTROLPROBLEM_H_
-#define CT_OPTIMALCONTROLPROBLEM_H_
+#pragma once
 
 #include <ct/optcon/constraint/LinearConstraintContainer.h>
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
@@ -204,6 +203,3 @@ private:
 
 }
 }
-
-
-#endif /* OPTIMALCONTROLPROBLEM_H_ */

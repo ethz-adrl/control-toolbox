@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_CARE_ALGEBRAICRICCATIEQUATION_HPP_
-#define CT_CARE_ALGEBRAICRICCATIEQUATION_HPP_
+#pragma once
 
 #include <iostream>
 
@@ -104,6 +103,3 @@ private:
 
 }
 }
-
-
-#endif /* CT_CARE_ALGEBRAICRICCATIEQUATION_HPP_ */

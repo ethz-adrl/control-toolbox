@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef INCLUDE_CT_OPTCON_SOLVER_GNMS_H_
-#define INCLUDE_CT_OPTCON_SOLVER_GNMS_H_
+#pragma once
 
 #include <ct/optcon/solver/NLOptConSettings.hpp>
 #include <ct/optcon/nloc/NLOCAlgorithm.hpp>
@@ -102,4 +101,3 @@ public:
 }	// namespace optcon
 }	// namespace ct
 
-#endif /* INCLUDE_CT_OPTCON_SOLVER_GNMS_H_ */

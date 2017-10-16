@@ -1,0 +1,6 @@
+#include <ct/optcon/optcon-prespec.h>
+#include <ct/optcon/nloc/NLOCBackendMP-impl.hpp>
+
+#if @POS_DIM_PRESPEC@ && @VEL_DIM_PRESPEC@ && @DOUBLE_OR_FLOAT@
+template class ct::optcon::NLOCBackendMP<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @POS_DIM_PRESPEC@, @VEL_DIM_PRESPEC@, @SCALAR_PRESPEC@>;
+#endif

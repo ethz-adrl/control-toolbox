@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 
 project(ct_models)
 
@@ -22,12 +23,16 @@ if(BUILD_HYQ_FULL)
     set(ct_model_libs ${ct_model_libs} HyQWithContactModelLinearizedForward HyQForwardZero)
 endif(BUILD_HYQ_FULL)
 
+## assemble list of libraries that contain prespecified templates
+ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_models")
+message(WARNING "CT Models: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
 
 catkin_package(
     INCLUDE_DIRS 
         include
     LIBRARIES 
         ${ct_model_libs}
+        ${PRESPEC_LIB_NAMES}
     CATKIN_DEPENDS 
         ct_rbd
 )
@@ -41,6 +46,8 @@ set(HYA_CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/HyA/co
 set(HYQ_CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/HyQ/codegen")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/CodegenOutputDirs.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/CodegenOutputDirs.h)
 
+# add libraries for explicit template
+ct_add_explicit_template_libs()
 
 ################ HyQ #################
 add_executable(HyQLinearizationCodgen src/HyQ/codegen/HyQLinearizationCodgen.cpp)
@@ -87,9 +94,9 @@ if (BUILD_HYQ_LINEARIZATION_TIMINGS)
 
 	add_executable(HyQcompareForwardReverseFD src/HyQ/codegen/compareForwardReverseFD.cpp)
 	target_link_libraries( HyQcompareForwardReverseFD 
-    	HyQWithContactModelLinearizedForward 
+   	    HyQWithContactModelLinearizedForward 
     	HyQWithContactModelLinearizedReverse 
-    	HyQBareModelLinearizedForward
+   	    HyQBareModelLinearizedForward
    	 	HyQBareModelLinearizedReverse
     	${catkin_LIBRARIES})
     	

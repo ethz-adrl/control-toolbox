@@ -75,8 +75,8 @@ void IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, Stepper, SCALAR>::integ
 	{
 		xCached_ = state;
 		stepper_.do_step(std::make_pair(systemFunctionPosition_, systemFunctionVelocity_), xPair, time, dt);
-		state.head(POS_DIM) = xPair.first();
-		state.tail(VEL_DIM) = xPair.second();
+		state.head(POS_DIM) = xPair.first;
+		state.tail(VEL_DIM) = xPair.second;
 		observer_.observeInternal(state,time);
 		time += dt;
 		stateTrajectory.push_back(state);

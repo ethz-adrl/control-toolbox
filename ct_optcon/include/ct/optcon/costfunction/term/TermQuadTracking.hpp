@@ -29,8 +29,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "TermBase.hpp"
 
-#include <ct/core/core.h>
-
 namespace ct {
 namespace optcon {
 

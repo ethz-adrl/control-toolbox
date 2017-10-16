@@ -1,0 +1,6 @@
+#include <ct/optcon/optcon-prespec.h>
+#include <ct/optcon/lqr/riccati/DARE-impl.hpp>
+
+#if @DOUBLE_OR_FLOAT@
+template class ct::optcon::DARE<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@>;
+#endif

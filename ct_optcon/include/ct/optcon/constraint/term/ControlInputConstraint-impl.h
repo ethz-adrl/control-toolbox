@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef CT_OPTCON_CONSTRAINT_TERM_CONTROL_INPUT_CONSTRAINT_IMPL_HPP_
-#define CT_OPTCON_CONSTRAINT_TERM_CONTROL_INPUT_CONSTRAINT_IMPL_HPP_
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -38,8 +37,8 @@ ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::ControlInputConstraint(
 	Base::lb_.resize(CONTROL_DIM);
 	Base::ub_.resize(CONTROL_DIM);
 	// The terminal state constraint is treated as equality constraint, therefore, ub = lb
-	Base::lb_ = uLow;
-	Base::ub_ = uHigh;
+	Base::lb_ = uLow.template cast<SCALAR>();
+	Base::ub_ = uHigh.template cast<SCALAR>();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -115,4 +114,3 @@ void ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::sparsityPatternInpu
 }
 }
 
-#endif //CT_OPTCON_CONSTRAINT_TERM_CONTROL_INPUT_CONSTRAINT_IMPL_HPP_

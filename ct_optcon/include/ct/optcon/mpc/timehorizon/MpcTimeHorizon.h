@@ -27,7 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_MPC_TIMEHORIZON_H_
 #define CT_MPC_TIMEHORIZON_H_
 
-#include <ct/core/core.h>
 #include "../MpcSettings.h"
 
 namespace ct{

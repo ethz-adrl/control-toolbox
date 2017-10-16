@@ -24,10 +24,19 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#include <ct/optcon/optcon.h>
+#define EIGEN_INITIALIZE_MATRICES_BY_NAN
 
-#define STATE_DIM_PRESPEC 12
-#define CONTROL_DIM_PRESPEC 4
-#define SCALAR_PRESPEC double
+#include <ct/optcon/optcon-prespec.h>
+#include <gtest/gtest.h>
 
-#include <ct/optcon/optcon-prespec-helper.h>
+#include <cmath>
+#include <random>
+
+#include "ConstraintTest.h"
+
+using namespace ct::optcon::example;
+
+int main(int argc, char **argv){
+	testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
+}

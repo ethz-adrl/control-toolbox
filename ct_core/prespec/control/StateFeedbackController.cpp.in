@@ -1,0 +1,4 @@
+#include <ct/core/core-prespec.h>
+#include <ct/core/control/StateFeedbackController-impl.h>
+
+template class ct::core::StateFeedbackController<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>;

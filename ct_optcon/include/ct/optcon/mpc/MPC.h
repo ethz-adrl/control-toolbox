@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef CT_MPC_H_
-#define CT_MPC_H_
+#pragma once
 
 #include <type_traits>
 
@@ -57,9 +56,6 @@ namespace optcon{
  * \ingroup MPC
  *+
  * \brief Main MPC class.
- *
- * Created on: 28.02.2017
- * 	   Author: mgiftthaler<mgiftthaler@ethz.ch>
  *
  *	This MPC class allows to use any solver that derives from the OptConSolver base class in Model-Predictive-Control fashion.
  *	MPC will automatically construct the solver
@@ -275,4 +271,3 @@ private:
 }	//namespace optcon
 }	//namespace ct
 
-#endif /* CT_MPC_H_ */

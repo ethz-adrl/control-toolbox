@@ -1,0 +1,12 @@
+#include <ct/core/core-prespec.h>
+#include <ct/core/integration/IntegratorSymplectic-impl.h>
+
+#if (@POS_DIM_PRESPEC@ && @VEL_DIM_PRESPEC@ && @DOUBLE_OR_FLOAT@)
+
+// symplectic euler
+template class ct::core::IntegratorSymplectic<@POS_DIM_PRESPEC@, @VEL_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, ct::core::internal::symplectic_euler_t<@POS_DIM_PRESPEC@, @VEL_DIM_PRESPEC@, @SCALAR_PRESPEC@>, @SCALAR_PRESPEC@>;
+
+// symplectic RK4
+template class ct::core::IntegratorSymplectic<@POS_DIM_PRESPEC@, @VEL_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, ct::core::internal::symplectic_rk_t<@POS_DIM_PRESPEC@, @VEL_DIM_PRESPEC@, @SCALAR_PRESPEC@>, @SCALAR_PRESPEC@>;
+
+#endif

@@ -1,0 +1,4 @@
+#include <ct/optcon/optcon-prespec.h>
+#include <ct/optcon/problem/LQOCProblem-impl.hpp>
+
+template class ct::optcon::LQOCProblem<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>;

@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_OPTCON_NLOC_BACKEND_MP_HPP_
-#define INCLUDE_CT_OPTCON_NLOC_BACKEND_MP_HPP_
+#pragma once
 
 #include <iostream>
 #include <memory>
@@ -187,4 +186,3 @@ private:
 } // namespace ct
 
 
-#endif /* INCLUDE_CT_OPTCON_NLOC_BACKEND_MP_HPP_ */
