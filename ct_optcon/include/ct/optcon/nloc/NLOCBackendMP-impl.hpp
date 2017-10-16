@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_OPTCON_NLOC_BACKEND_MP_IMPL_HPP_
-#define INCLUDE_CT_OPTCON_NLOC_BACKEND_MP_IMPL_HPP_
+#pragma once
 
 namespace ct{
 namespace optcon{
@@ -702,4 +701,3 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::printString(co
 } // namespace ct
 
 
-#endif //INCLUDE_CT_OPTCON_NLOC_BACKEND_MP_IMPL_HPP_

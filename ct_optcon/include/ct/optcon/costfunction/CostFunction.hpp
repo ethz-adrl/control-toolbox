@@ -28,7 +28,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CT_OPTCON_COSTFUNCTION_HPP_
 
 #include <vector>
-#include <ct/core/core.h>
 
 namespace ct {
 namespace optcon {

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef INCLUDE_CT_OPTCON_PROBLEM_LQOCPROBLEM_IMPL_H_
-#define INCLUDE_CT_OPTCON_PROBLEM_LQOCPROBLEM_IMPL_H_
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -124,4 +123,3 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
 }	//! ct
 
 
-#endif /* INCLUDE_CT_OPTCON_PROBLEM_LQOCPROBLEM_IMPL_H_ */

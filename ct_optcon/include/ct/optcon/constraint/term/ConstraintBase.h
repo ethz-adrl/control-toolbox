@@ -24,13 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_CONSTRAINT_TERM_CONSTRAINTBASE_H_
-#define CT_OPTCON_CONSTRAINT_TERM_CONSTRAINTBASE_H_
-
-//#include <ct/core/core.h>
-//#include <Eigen/Sparse>
-//#include <ct/core/internal/traits/TraitSelector.h>
-//#include <ct/core/internal/traits/TraitSelectorSpecs.h>
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -263,4 +257,3 @@ private:
 } // namespace optcon
 } // namespace ct
 
-#endif

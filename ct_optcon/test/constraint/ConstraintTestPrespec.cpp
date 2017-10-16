@@ -24,18 +24,19 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#include <ct/optcon/optcon.h>
-#include "LqrTest.h"
+#define EIGEN_INITIALIZE_MATRICES_BY_NAN
 
+#include <ct/optcon/optcon-prespec.h>
+#include <gtest/gtest.h>
 
-/*!
- * This runs the LQR unit test.
- * \note for a more straight-forward implementation example, visit the tutorial.
- * \example LqrTest.cpp
- */
-int main(int argc, char **argv)
-{
-  using namespace ct::optcon::example;
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+#include <cmath>
+#include <random>
+
+#include "ConstraintTest.h"
+
+using namespace ct::optcon::example;
+
+int main(int argc, char **argv){
+	testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }

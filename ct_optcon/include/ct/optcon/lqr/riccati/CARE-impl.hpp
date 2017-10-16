@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_CARE_ALGEBRAICRICCATIEQUATION_IMPL_HPP_
-#define CT_CARE_ALGEBRAICRICCATIEQUATION_IMPL_HPP_
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -225,4 +224,3 @@ bool CARE<STATE_DIM, CONTROL_DIM>::solveSchurDirect(const schur_matrix_t& M, sta
 } // namespace ct
 
 
-#endif /* CT_CARE_ALGEBRAICRICCATIEQUATION_IMPL_HPP_ */

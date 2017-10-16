@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_OPTCON_NLOC_BACKEND_ST_HPP_
-#define INCLUDE_CT_OPTCON_NLOC_BACKEND_ST_HPP_
+#pragma once
 
 #include "NLOCBackendBase.hpp"
 #include <ct/optcon/solver/NLOptConSettings.hpp>
@@ -73,4 +72,3 @@ protected:
 } // namespace ct
 
 
-#endif /* INCLUDE_CT_OPTCON_NLOC_BACKEND_ST_HPP_ */

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_OPTCON_NLOC_BACKEND_ST_IMPL_HPP_
-#define INCLUDE_CT_OPTCON_NLOC_BACKEND_ST_IMPL_HPP_
+#pragma once
 
 namespace ct{
 namespace optcon{
@@ -204,5 +203,4 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 } // namespace optcon
 } // namespace ct
 
-#endif /* INCLUDE_CT_OPTCON_NLOC_BACKEND_ST_IMPL_HPP_ */
 

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_NLOPTCON_SETTINGS_HPP_
-#define INCLUDE_NLOPTCON_SETTINGS_HPP_
+#pragma once
 
 #include <map>
 
@@ -571,6 +570,3 @@ private:
 }
 }
 
-
-
-#endif /* INCLUDE_GNMS_SETTINGS_HPP_ */
