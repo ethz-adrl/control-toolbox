@@ -79,9 +79,9 @@ add_library(ct_core
    src/core/plot/plot.cpp
    src/core/internal/autodiff/SparsityPattern.cpp
 )
-target_link_libraries(ct_core ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
 
 # add libraries for explicit template
+target_link_libraries(ct_core ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
 ct_add_explicit_template_libs()
 
 if(BUILD_EXAMPLES)
@@ -94,13 +94,13 @@ target_link_libraries(NoiseTest ${catkin_LIBRARIES})
 catkin_add_gtest(SecondOrderSystemTest test/SecondOrderSystemTest.cpp)
 target_link_libraries(SecondOrderSystemTest ${catkin_LIBRARIES})
 
-# This test is not required to link against PRESPEC_LIBS as it is not using prespec.
+# This test is not required to link against ${PRESPEC_LIB_NAMES} as it is not using prespec.
 # However, we just test that it does not fail here.
 catkin_add_gtest(IntegrationTest test/integration/IntegrationTest.cpp)
-target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core ${PRESPEC_LIBS})
+target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
 
 catkin_add_gtest(IntegrationTestPrespec test/integration/IntegrationTestPrespec.cpp)
-target_link_libraries(IntegrationTestPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIBS})
+target_link_libraries(IntegrationTestPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
 
 add_executable(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
 target_link_libraries(SensitivityTest ${catkin_LIBRARIES} ct_core)
