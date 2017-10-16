@@ -26,7 +26,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 #pragma once
 
-#include <ct/core/core.h>
+//#include <ct/core/core.h>
 
 namespace ct {
 namespace NS1 {

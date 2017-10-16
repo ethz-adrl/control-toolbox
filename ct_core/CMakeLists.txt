@@ -33,8 +33,6 @@ else()
 endif()
 
 
-
-
 if (PYTHONLIBS_FOUND)
    message(STATUS "Python found")
    include_directories(${PYTHON_INCLUDE_DIRS})
@@ -98,15 +96,16 @@ target_link_libraries(SecondOrderSystemTest ${catkin_LIBRARIES})
 # However, we just test that it does not fail here.
 catkin_add_gtest(IntegrationTest test/integration/IntegrationTest.cpp)
 target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
-
 catkin_add_gtest(IntegrationTestPrespec test/integration/IntegrationTestPrespec.cpp)
 target_link_libraries(IntegrationTestPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
 
-add_executable(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
-target_link_libraries(SensitivityTest ${catkin_LIBRARIES} ct_core)
-
 catkin_add_gtest(IntegratorComparison test/integration/IntegratorComparison.cpp)
 target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
+catkin_add_gtest(IntegratorComparisonPrespec test/integration/IntegratorComparisonPrespec.cpp)
+target_link_libraries(IntegratorComparisonPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
+
+add_executable(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
+target_link_libraries(SensitivityTest ${catkin_LIBRARIES} ct_core)
 
 catkin_add_gtest(InterpolationTest test/InterpolationTest.cpp)
 target_link_libraries(InterpolationTest ${catkin_LIBRARIES})
@@ -127,13 +126,13 @@ target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} ct_core pthread
 catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
 target_link_libraries(CodegenTests ${catkin_LIBRARIES} ct_core dl pthread)
 
-# not really a test
-#add_executable(plotTest test/plot/plotTest.cpp)
-#target_link_libraries(plotTest ${catkin_LIBRARIES} ct_core)
+# not really a test, but serves as example
+add_executable(plotTest test/plot/plotTest.cpp)
+target_link_libraries(plotTest ${catkin_LIBRARIES} ct_core)
 
 if(QWT_ENABLED)
-#    add_executable(plotQwtTest test/plot/plotQwtTest.cpp)
-#    target_link_libraries(plotQwtTest ${catkin_LIBRARIES} ct_core ${ct_core_extra_libs} pthread)
+    add_executable(plotQwtTest test/plot/plotQwtTest.cpp)
+    target_link_libraries(plotQwtTest ${catkin_LIBRARIES} ct_core ${ct_core_extra_libs} pthread)
 endif()
 
 

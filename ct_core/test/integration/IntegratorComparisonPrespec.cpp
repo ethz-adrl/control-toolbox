@@ -25,12 +25,11 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#include <ct/core/core.h>
-#include "IntegrationTest.h"
+#include <ct/core/core-prespec.h>
+#include "IntegratorComparison.h"
 
 
 int main(int argc, char **argv){
-	if(argc>2) plotResult=true;
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

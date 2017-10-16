@@ -24,14 +24,11 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
+
 #include <ct/core/core-prespec.h>
 #include "IntegrationTest.h"
 
-/*!
- *  \example IntegrationTestPrespec.cpp
- *
- *  This unit test serves as example how to use different steppers from boost odeint for numerical integration and employs explicit template pre-compilation
- */
+
 int main(int argc, char **argv){
 	if(argc>2) plotResult=true;
   testing::InitGoogleTest(&argc, argv);
