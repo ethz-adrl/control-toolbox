@@ -46,7 +46,8 @@ namespace core {
  *
  * \tparam T type of each point of the trajectory
  * \tparam Alloc allocator for trajectory points
- */
+ *
+ * */
 template <class T, class Alloc = Eigen::aligned_allocator<T>, typename SCALAR = double>
 class DiscreteTrajectoryBase : public TrajectoryBase<T, SCALAR>
 {
@@ -306,6 +307,20 @@ public:
 
 	//! get the time array
 	const tpl::TimeArray<SCALAR>& getTimeArray() const {return time_;}
+
+
+	//! print out the trajectory
+	/*!
+	 * This is a convenience method allowing to quickly print out a trajectory, e.g. for debugging or for tutorial purposes.
+	 */
+	void print()
+	{
+		assert(time_.size() == data_.size());
+		for(size_t i = 0; i< time_.size(); i++)
+		{
+			std::cout << "time: \t " << time_[i] << std::endl << "data-point: \t" << data_[i] << std::endl;
+		}
+	}
 
 protected:
 

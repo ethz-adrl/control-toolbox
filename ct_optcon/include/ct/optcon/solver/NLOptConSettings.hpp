@@ -255,6 +255,8 @@ public:
     /*!
      * @param timeHorizon the time horizon of interest, e.g. overall optimal control time horizon or shot-length
      * @return the resulting number of steps, minimum 1 steps long
+     *
+     * \todo naming it K is confusing, should better be N.
      */
     int computeK(double timeHorizon) const
     {
