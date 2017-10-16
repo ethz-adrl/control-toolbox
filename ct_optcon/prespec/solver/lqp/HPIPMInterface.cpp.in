@@ -2,5 +2,7 @@
 #include <ct/optcon/solver/lqp/HPIPMInterface-impl.hpp>
 
 #if @DOUBLE_OR_FLOAT@
+#ifdef HPIPM
 template class ct::optcon::HPIPMInterface<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@>;
+#endif
 #endif
