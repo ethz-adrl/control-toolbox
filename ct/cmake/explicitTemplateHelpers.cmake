@@ -35,6 +35,7 @@ function(ct_getDimensionsFromLine LineContent)
 
 endfunction()
 
+
 # reads explicit templates from config file and gathers sources and libs
 function(ct_configure_explicit_templates ConfigFile ConfigDir LibPrefix)
 
@@ -78,6 +79,7 @@ function(ct_configure_explicit_templates ConfigFile ConfigDir LibPrefix)
 
 endfunction()
 
+
 # finds cpp.in files and configures them
 function(ct_configureFiles ConfigDir STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC, POS_DIM_PREPSEC, VEL_DIM_PRESPEC)
     set(CURRENT_SRCS "")
@@ -101,6 +103,7 @@ function(ct_configureFiles ConfigDir STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCA
     set(CURRENT_SRCS "${CURRENT_SRCS}" PARENT_SCOPE)
 endfunction()
 
+
 # creates a target for each explicit template lib and adds its sources to it
 function(ct_add_explicit_template_libs)
     foreach(lib_name ${PRESPEC_LIB_NAMES})
@@ -110,5 +113,13 @@ function(ct_add_explicit_template_libs)
            ${${lib_name}_SRCS}
       )
       target_link_libraries(${lib_name} ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
+    endforeach()
+endfunction()
+
+
+# link external library (for example to link optcon against lapack)
+function(ct_link_external_library extLibs)
+foreach(lib_name ${PRESPEC_LIB_NAMES})
+      target_link_libraries(${lib_name} "${extLibs}")
     endforeach()
 endfunction()

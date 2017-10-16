@@ -182,6 +182,7 @@ endif()
 
 # add libraries for explicit template
 ct_add_explicit_template_libs()
+ct_link_external_library(lapack)
 
 
 if(BUILD_EXAMPLES)
@@ -271,7 +272,7 @@ target_link_libraries(bareTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS} dl
 
 add_executable(matFilesGenerator test/dms/oscillator/matfiles/matFilesGenerator.cpp)
 target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-#
+
 #add_executable(timeKeeperTest test/mpc/TimeKeeperTest.cpp)
 #target_link_libraries(timeKeeperTest ${catkin_LIBRARIES})
 

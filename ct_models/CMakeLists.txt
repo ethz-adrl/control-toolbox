@@ -94,9 +94,9 @@ if (BUILD_HYQ_LINEARIZATION_TIMINGS)
 
 	add_executable(HyQcompareForwardReverseFD src/HyQ/codegen/compareForwardReverseFD.cpp)
 	target_link_libraries( HyQcompareForwardReverseFD 
-    	HyQWithContactModelLinearizedForward 
+   	    HyQWithContactModelLinearizedForward 
     	HyQWithContactModelLinearizedReverse 
-    	HyQBareModelLinearizedForward
+   	    HyQBareModelLinearizedForward
    	 	HyQBareModelLinearizedReverse
     	${catkin_LIBRARIES})
     	
