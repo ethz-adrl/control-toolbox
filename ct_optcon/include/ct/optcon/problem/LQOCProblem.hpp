@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_OPTCON_PROBLEM_LQOCPROBLEM_H_
-#define INCLUDE_CT_OPTCON_PROBLEM_LQOCPROBLEM_H_
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -58,11 +57,11 @@ public:
 	void setZero();
 
 	void setFromTimeInvariantLinearQuadraticProblem(
-		ct::core::StateVector<STATE_DIM>& x0,
-		ct::core::ControlVector<CONTROL_DIM>& u0,
+		ct::core::StateVector<STATE_DIM, SCALAR>& x0,
+		ct::core::ControlVector<CONTROL_DIM, SCALAR>& u0,
 		ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
 		ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
-		ct::core::StateVector<STATE_DIM>& stateOffset,
+		ct::core::StateVector<STATE_DIM, SCALAR>& stateOffset,
 		double dt);
 
 	//! affine, time-varying system dynamics in discrete time
@@ -102,4 +101,3 @@ private:
 
 
 
-#endif /* INCLUDE_CT_OPTCON_PROBLEM_LQOCPROBLEM_H_ */

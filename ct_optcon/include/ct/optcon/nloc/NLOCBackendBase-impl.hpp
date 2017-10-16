@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_OPTCON_NLOC_BACKEND_BASE_IMPL_HPP_
-#define INCLUDE_CT_OPTCON_NLOC_BACKEND_BASE_IMPL_HPP_
+#pragma once
 
 #define SYMPLECTIC_ENABLED template<size_t V, size_t P> typename std::enable_if<(V > 0 && P > 0), void>::type
 #define SYMPLECTIC_DISABLED template<size_t V, size_t P> typename std::enable_if<(V <= 0 || P <= 0), void>::type
@@ -1518,4 +1517,3 @@ SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDef
 #undef SYMPLECTIC_ENABLED
 #undef SYMPLECTIC_DISABLED
 
-#endif /* INCLUDE_CT_OPTCON_GNMS_GNMSBASE_IMPL_HPP_ */

@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6) 
 
-# Including custom cmake rules
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
 project (ct_core) 
@@ -33,8 +33,6 @@ else()
 endif()
 
 
-
-
 if (PYTHONLIBS_FOUND)
    message(STATUS "Python found")
    include_directories(${PYTHON_INCLUDE_DIRS})
@@ -56,12 +54,8 @@ include_directories (
 )
 
 ## assemble list of libraries that contain prespecified templates
-set(PRESPEC_LIBS "")
-file(GLOB files "prespec/*.cpp")
-foreach(file ${files})
-  get_filename_component(raw_filename ${file} NAME_WE)
-  LIST(APPEND PRESPEC_LIBS "ct_core_${raw_filename}")
-endforeach()
+ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_core")
+message(WARNING "CT Core: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
 
 catkin_package(
    INCLUDE_DIRS
@@ -70,7 +64,7 @@ catkin_package(
         include/external
    LIBRARIES
        ct_core
-       ${PRESPEC_LIBS}
+       ${PRESPEC_LIB_NAMES}
 )
 
 
@@ -83,18 +77,10 @@ add_library(ct_core
    src/core/plot/plot.cpp
    src/core/internal/autodiff/SparsityPattern.cpp
 )
+
+# add libraries for explicit template
 target_link_libraries(ct_core ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
-
-##compile template prespec libs
-file(GLOB files "prespec/*.cpp")
-foreach(file ${files})
-  get_filename_component(raw_filename ${file} NAME_WE)
-  add_library(ct_core_${raw_filename}
-   ${file}
-  )
-  target_link_libraries(ct_core_${raw_filename} ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
-endforeach()
-
+ct_add_explicit_template_libs()
 
 if(BUILD_EXAMPLES)
     add_executable(ex_DampedOscillatorCustomController examples/DampedOscillatorCustomController.cpp)
@@ -106,19 +92,20 @@ target_link_libraries(NoiseTest ${catkin_LIBRARIES})
 catkin_add_gtest(SecondOrderSystemTest test/SecondOrderSystemTest.cpp)
 target_link_libraries(SecondOrderSystemTest ${catkin_LIBRARIES})
 
-# This test is not required to link against PRESPEC_LIBS as it is not using prespec.
+# This test is not required to link against ${PRESPEC_LIB_NAMES} as it is not using prespec.
 # However, we just test that it does not fail here.
 catkin_add_gtest(IntegrationTest test/integration/IntegrationTest.cpp)
-target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core ${PRESPEC_LIBS})
-
+target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
 catkin_add_gtest(IntegrationTestPrespec test/integration/IntegrationTestPrespec.cpp)
-target_link_libraries(IntegrationTestPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIBS})
-
-add_executable(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
-target_link_libraries(SensitivityTest ${catkin_LIBRARIES} ct_core)
+target_link_libraries(IntegrationTestPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
 
 catkin_add_gtest(IntegratorComparison test/integration/IntegratorComparison.cpp)
 target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
+catkin_add_gtest(IntegratorComparisonPrespec test/integration/IntegratorComparisonPrespec.cpp)
+target_link_libraries(IntegratorComparisonPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
+
+add_executable(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
+target_link_libraries(SensitivityTest ${catkin_LIBRARIES} ct_core)
 
 catkin_add_gtest(InterpolationTest test/InterpolationTest.cpp)
 target_link_libraries(InterpolationTest ${catkin_LIBRARIES})
@@ -139,13 +126,13 @@ target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} ct_core pthread
 catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
 target_link_libraries(CodegenTests ${catkin_LIBRARIES} ct_core dl pthread)
 
-# not really a test
-#add_executable(plotTest test/plot/plotTest.cpp)
-#target_link_libraries(plotTest ${catkin_LIBRARIES} ct_core)
+# not really a test, but serves as example
+add_executable(plotTest test/plot/plotTest.cpp)
+target_link_libraries(plotTest ${catkin_LIBRARIES} ct_core)
 
 if(QWT_ENABLED)
-#    add_executable(plotQwtTest test/plot/plotQwtTest.cpp)
-#    target_link_libraries(plotQwtTest ${catkin_LIBRARIES} ct_core ${ct_core_extra_libs} pthread)
+    add_executable(plotQwtTest test/plot/plotQwtTest.cpp)
+    target_link_libraries(plotQwtTest ${catkin_LIBRARIES} ct_core ${ct_core_extra_libs} pthread)
 endif()
 
 

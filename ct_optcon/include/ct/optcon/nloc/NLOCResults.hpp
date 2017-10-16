@@ -24,10 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-
-#ifndef CT_OPTCON_INCLUDE_CT_OPTCON_NLOC_NLOCRESULTS_HPP_
-#define CT_OPTCON_INCLUDE_CT_OPTCON_NLOC_NLOCRESULTS_HPP_
-
+#pragma once
 
 #ifdef MATLAB
 #include <ct/optcon/matlab.hpp>
@@ -113,6 +110,3 @@ struct SummaryAllIterations
 
 
 };
-
-
-#endif /* CT_OPTCON_INCLUDE_CT_OPTCON_NLOC_NLOCRESULTS_HPP_ */

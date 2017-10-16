@@ -1,0 +1,12 @@
+#include <ct/optcon/optcon-prespec.h>
+#include <ct/optcon/mpc/policyhandler/PolicyHandler-impl.h>
+
+
+#if @POS_DIM_PRESPEC@ && @VEL_DIM_PRESPEC@ && @DOUBLE_OR_FLOAT@
+
+#define MPC_SOLVER_PRESPEC ct::optcon::NLOptConSolver<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @POS_DIM_PRESPEC@, @VEL_DIM_PRESPEC@, @SCALAR_PRESPEC@>
+#define MPC_POLICY_PRESPEC MPC_SOLVER_PRESPEC::Policy_t
+
+template class ct::optcon::PolicyHandler<MPC_POLICY_PRESPEC, @STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>;
+
+#endif

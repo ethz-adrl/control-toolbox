@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_OPTCON_HPIPM_HPIPMINTERFACE_IMPL_HPP_
-#define INCLUDE_CT_OPTCON_HPIPM_HPIPMINTERFACE_IMPL_HPP_
+#pragma once
 
 #include "LQOCSolver.hpp"
 
@@ -581,4 +580,3 @@ namespace optcon {
 
 #endif
 
-#endif /* INCLUDE_CT_OPTCON_HPIPM_HPIPMINTERFACE_IMPL_HPP_ */

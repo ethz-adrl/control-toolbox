@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef TEST_TESTSYSTEMS_DIEHLSYSTEM_H_
-#define TEST_TESTSYSTEMS_DIEHLSYSTEM_H_
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -119,7 +118,3 @@ std::shared_ptr<CostFunctionQuadratic<1, 1> > createDiehlCostFunction(const core
 }
 }
 }
-
-
-
-#endif /* TEST_TESTSYSTEMS_DIEHLSYSTEM_H_ */

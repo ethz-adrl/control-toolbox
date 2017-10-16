@@ -26,7 +26,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/optcon/optcon-prespec.h>
 #include "LinearSystemTest.h"
-#include <chrono>
 
 /*!
  * This runs the GNMS unit test.

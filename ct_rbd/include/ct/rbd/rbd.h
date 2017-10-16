@@ -27,7 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDE_CT_RBD_RBD_H_
 #define INCLUDE_CT_RBD_RBD_H_
 
-#include <ct/core/core.h>
 #include <ct/optcon/optcon.h>
 
 // declarations

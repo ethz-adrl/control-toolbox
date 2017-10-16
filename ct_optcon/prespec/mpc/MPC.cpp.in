@@ -1,0 +1,9 @@
+#include <ct/optcon/optcon-prespec.h>
+#include <ct/optcon/mpc/MPC-impl.h>
+
+
+// default definition of MPC solver template
+#if @POS_DIM_PRESPEC@ && @VEL_DIM_PRESPEC@ && @DOUBLE_OR_FLOAT@
+	#define MPC_SOLVER_PRESPEC ct::optcon::NLOptConSolver<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @POS_DIM_PRESPEC@, @VEL_DIM_PRESPEC@, @SCALAR_PRESPEC@>
+	template class ct::optcon::MPC<MPC_SOLVER_PRESPEC>;
+#endif

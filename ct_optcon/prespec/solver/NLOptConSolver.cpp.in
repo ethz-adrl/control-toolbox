@@ -1,0 +1,6 @@
+#include <ct/optcon/optcon-prespec.h>
+#include <ct/optcon/solver/NLOptConSolver-impl.hpp>
+
+#if @POS_DIM_PRESPEC@ && @VEL_DIM_PRESPEC@
+template class ct::optcon::NLOptConSolver<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @POS_DIM_PRESPEC@, @VEL_DIM_PRESPEC@, @SCALAR_PRESPEC@>;
+#endif

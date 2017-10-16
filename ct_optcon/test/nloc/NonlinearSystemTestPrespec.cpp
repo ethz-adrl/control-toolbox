@@ -4,12 +4,12 @@ Farbod Farshidian. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice,
+ * Redistributions of source code must retain the above copyright notice,
       this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
+ * Redistributions in binary form must reproduce the above copyright notice,
       this list of conditions and the following disclaimer in the documentation
       and/or other materials provided with the distribution.
-    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+ * Neither the name of ETH ZURICH nor the names of its contributors may be used
       to endorse or promote products derived from this software without specific
       prior written permission.
 
@@ -22,12 +22,13 @@ GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWE
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************************************************************************************/
+ ***************************************************************************************/
 
-#include <ct/core/core.h>
+#include <ct/optcon/optcon-prespec.h>
+#include "NonlinearSystemTest.h"
 
-#define STATE_DIM_PRESPEC 12
-#define CONTROL_DIM_PRESPEC 6
-#define SCALAR_PRESPEC double
 
-#include <ct/core/core-prespec-helper.h>
+int main(int argc, char **argv){
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

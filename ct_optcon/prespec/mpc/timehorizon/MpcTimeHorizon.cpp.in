@@ -1,0 +1,4 @@
+#include <ct/optcon/optcon-prespec.h>
+#include <ct/optcon/mpc/timehorizon/MpcTimeHorizon-impl.h>
+
+template class ct::optcon::tpl::MpcTimeHorizon<@SCALAR_PRESPEC@>;

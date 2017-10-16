@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_LQR_IMPL_HPP_
-#define CT_OPTCON_LQR_IMPL_HPP_
+#pragma once
 
 #ifdef USE_MATLAB_CPP_INTERFACE
 #include <matlabCppInterface/Engine.hpp>
@@ -100,4 +99,3 @@ bool LQR<STATE_DIM, CONTROL_DIM>::computeMatlab(
 } // namespace optcon
 } // namespace ct
 
-#endif /* CT_OPTCON_LQR_IMPL_HPP_ */

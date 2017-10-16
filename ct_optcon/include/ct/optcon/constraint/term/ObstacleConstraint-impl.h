@@ -29,7 +29,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct {
 namespace optcon {
-namespace tpl {
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -86,7 +85,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename ObstacleConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
 ObstacleConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
 {
-	Eigen::Vector3d xRef;
+	Vector3s xRef;
 	Eigen::Matrix<SCALAR, 3, STATE_DIM> dXRef;
 	xFun_(x, xRef);
 	dXFun_(x, dXRef);
@@ -103,7 +102,6 @@ ObstacleConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInput(const state_ve
 }
 
 
-} // namespace tpl
 } // namespace optcon
 } // namespace core
 

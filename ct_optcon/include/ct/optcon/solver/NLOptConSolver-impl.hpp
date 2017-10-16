@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_OPTCON_SOLVER_NLOPTCONSOLVER_IMPL_H_
-#define INCLUDE_CT_OPTCON_SOLVER_NLOPTCONSOLVER_IMPL_H_
+#pragma once
 
 namespace ct{
 namespace optcon{
@@ -55,6 +54,7 @@ NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::~NLOptConSolver()
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initialize(const OptConProblem_t& optConProblem, const Settings_t& settings)
 {
+
 	if(settings.nThreads > 1)
 		nlocBackend_ = std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>>(
 				new NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(optConProblem, settings));
@@ -342,4 +342,3 @@ void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logSummaryToM
 } // namespace ct
 
 
-#endif // INCLUDE_CT_OPTCON_SOLVER_NLOPTCONSOLVER_IMPL_H_

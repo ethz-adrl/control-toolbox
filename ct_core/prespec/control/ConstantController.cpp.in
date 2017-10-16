@@ -1,0 +1,4 @@
+#include <ct/core/core-prespec.h>
+#include <ct/core/control/ConstantController-impl.h>
+
+template class ct::core::ConstantController<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>;

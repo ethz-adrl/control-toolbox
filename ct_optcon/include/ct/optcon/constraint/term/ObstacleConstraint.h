@@ -24,12 +24,10 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_CONSTRAINT_TERM_CONSTRAINT_OBSTACLE_HPP_
-#define CT_OPTCON_CONSTRAINT_TERM_CONSTRAINT_OBSTACLE_HPP_
+#pragma once
 
 namespace ct {
 namespace optcon {
-namespace tpl {
 
 /**
  * @brief      Class for obstacle constraint.
@@ -78,20 +76,14 @@ public:
 private:
 	std::shared_ptr<ct::core::tpl::Ellipsoid<SCALAR>> obstacle_;
 
-	std::function<void (const core::StateVector<STATE_DIM>&, Eigen::Vector3d&)> xFun_;
-	std::function<void (const core::StateVector<STATE_DIM>&, Eigen::Matrix<SCALAR, 3, STATE_DIM>&)> dXFun_;
+	std::function<void (const core::StateVector<STATE_DIM, SCALAR>&, Vector3s&)> xFun_;
+	std::function<void (const core::StateVector<STATE_DIM, SCALAR>&, Eigen::Matrix<SCALAR, 3, STATE_DIM>&)> dXFun_;
 
 	core::StateVector<1, SCALAR> val_;
 	Eigen::Matrix<SCALAR, 1, STATE_DIM> jac_;
 };
 
-} // namespace tpl
-
-template<size_t STATE_DIM, size_t INPUT_DIM>
-using ObstacleConstraint = tpl::ObstacleConstraint<STATE_DIM, INPUT_DIM, double>;
-
 } // namespace optcon
 } // namespace ct
 
 
-#endif //CT_OPTCON_CONSTRAINT_TERM_CONSTRAINT_OBSTACLE_HPP_

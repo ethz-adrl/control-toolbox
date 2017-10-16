@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_OPTCON_NLOC_BACKEND_BASE_HPP_
-#define INCLUDE_CT_OPTCON_NLOC_BACKEND_BASE_HPP_
+#pragma once
 
 #include <atomic>
 
@@ -661,4 +660,3 @@ protected:
 #undef SYMPLECTIC_ENABLED
 #undef SYMPLECTIC_DISABLED
 
-#endif /* INCLUDE_CT_OPTCON_GNMS_GNMSBASE_HPP_ */
