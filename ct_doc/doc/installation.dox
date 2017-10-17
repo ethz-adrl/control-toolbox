@@ -4,17 +4,16 @@
 
 \section requirements Requirements
 This library is written in C++11. It is tested under Ubuntu 14.04 and 16.04 with
-library versions as provided in the package sources. However, CT should
-also run on other platforms 
+library versions as provided in the package sources.
 
 \subsection dep Dependencies
- - C++ compiler with C++11 support
- - Eigen
- - catkin (build system, easy to switch to CMakeLists.txt where needed)
+ - C++ compiler with C++11 support (we recommend gcc-5.4.1 or greater or clang-3.5 or greater)
+ - <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen 3</a>
+ - <a href="http://wiki.ros.org/catkin">catkin</a> (build system, easy to switch to CMakeLists.txt where needed). We recommend using <a href="http://catkin-tools.readthedocs.io/en/latest/verbs/catkin_build.html">catkin_tools</a>
  - boost 1.54 or greater (soon optional)
+ - <a href="http://www.netlib.org/lapack/">lapack</a> (enables Schur method as an alternative to iterative method in ct::optcon::LQR, soon optional)
  
 \subsection opt_dep Optional Dependencies and Bindings
- - lapack (enables Schur method as an alternative to iterative method in ct::optcon::LQR)
  - clang (faster compilation for large linear models) $ sudo apt-get install clang-3.5
  - clang-tidy $ sudo apt-get install clang-tidy-3.9
  - clang-format $ sudo apt-get install clang-format-3.9
