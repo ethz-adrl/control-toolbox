@@ -24,8 +24,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_OPTCON_NLP_SOLVER_SNOPTSOLVER_H
-#define CT_OPTCON_NLP_SOLVER_SNOPTSOLVER_H
+#pragma once
 
 
 #include <ct/optcon/nlp/Nlp.h>
@@ -298,4 +297,3 @@ public:
 } // namespace optcon
 } // namespace ct
 
-#endif // CT_OPTCON_NLP_SOLVER_SNOPTSOLVER_H

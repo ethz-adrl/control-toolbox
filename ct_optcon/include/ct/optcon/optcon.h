@@ -98,4 +98,6 @@
 #include "mpc/policyhandler/default/StateFeedbackPolicyHandler-impl.h"
 
 
+// keep standard header guard (easy debugging)
+// header guard is identical to the one in optcon-prespec.h
 #endif /* INCLUDE_CT_OPTCON_OPTCON_H_ */

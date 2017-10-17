@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef CT_OPTCON_CONSTRAINTS_CONSTRAINTSANALYTICAL_IMPL_H_
-#define CT_OPTCON_CONSTRAINTS_CONSTRAINTSANALYTICAL_IMPL_H_
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -569,4 +568,3 @@ void ConstraintContainerAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::checkTermina
 }// namespace optcon
 }// namespace ct
 
-#endif // CT_OPTCON_CONSTRAINTS_CONSTRAINTSANALYTICAL_IMPL_H_
