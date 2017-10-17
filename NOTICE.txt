@@ -5,3 +5,9 @@ Copyright 2014-2017 Markus Giftthaler, Michael Neunert, Markus Stäuble
 This software has been developed at the Agile & Dexterous Robotics Lab 
 at ETH Zurich.
 
+Software included in any folder named "external" and any subsequent
+subfolders is software developed by third parties and not by the 
+authors above. Thererfore, neither the developers nor the institution
+listed above holds copyright for this external software. Furthermore,
+external software might be distributed under different licences 
+agreements included in the subfolders.
