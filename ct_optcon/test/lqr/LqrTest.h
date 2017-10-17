@@ -137,29 +137,32 @@ TEST(LQRTest, quadTest)
 	bool foundSolutionIterative = lqr.compute(Q, R, A, B, Kiterative, false, true);
 	ASSERT_TRUE(foundSolutionIterative);
 
+#ifdef USE_LAPACK
 	bool foundSolutionDirect = lqr.compute(Q, R, A, B, K, false);
 	ASSERT_TRUE(foundSolutionDirect);
-
 	ASSERT_LT((K - Kiterative).array().abs().maxCoeff(), 1e-4);
+#endif
 
 	int nTests = 1000;
-	auto start = std::chrono::system_clock::now();
+#ifdef USE_LAPACK
+	auto start1 = std::chrono::system_clock::now();
 	for (int i=0; i<nTests; i++)
 	{
 		lqr.compute(Q, R, A, B, K, false);
 	}
-	auto end = std::chrono::system_clock::now();
-	auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-	std::cout << "solved "<<nTests<<" lqr problems with state dimension "<<stateDim<<" in "<<elapsed.count()<<" ms (average: "<<elapsed.count()/static_cast<double>(nTests)<<" ms / lqr)"<<std::endl;
+	auto end1 = std::chrono::system_clock::now();
+	auto elapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end1 - start1);
+	std::cout << "solved "<<nTests<<" lqr problems with state dimension "<<stateDim<<" in "<<elapsed1.count()<<" ms (average: "<<elapsed1.count()/static_cast<double>(nTests)<<" ms / lqr)"<<std::endl;
+#endif
 
-	start = std::chrono::system_clock::now();
+	auto start2 = std::chrono::system_clock::now();
 	for (int i=0; i<nTests; i++)
 	{
 		lqr.compute(Q, R, A, B, Kiterative, false, true);
 	}
-	end = std::chrono::system_clock::now();
-	elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-	std::cout << "solved "<<nTests<<" lqr problems iteratively with state dimension "<<stateDim<<" in "<<elapsed.count()<<" ms (average: "<<elapsed.count()/static_cast<double>(nTests)<<" ms / lqr)"<<std::endl;
+	auto end2 = std::chrono::system_clock::now();
+	auto elapsed2 = std::chrono::duration_cast<std::chrono::milliseconds>(end2 - start2);
+	std::cout << "solved "<<nTests<<" lqr problems iteratively with state dimension "<<stateDim<<" in "<<elapsed2.count()<<" ms (average: "<<elapsed2.count()/static_cast<double>(nTests)<<" ms / lqr)"<<std::endl;
 
 }
 
