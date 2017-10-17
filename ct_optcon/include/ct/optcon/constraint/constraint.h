@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_CONSTRAINT_H_
-#define CT_OPTCON_CONSTRAINT_H_
+#pragma once
 
 #include "term/ConstraintBase.h"
 #include "term/ControlInputConstraint.h"
@@ -38,4 +37,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ConstraintContainerAD.h"
 #include "ConstraintContainerAnalytical.h"
 
-#endif /* CT_OPTCON_CONSTRAINT_H_ */
