@@ -6,61 +6,104 @@ This is ADRL Control Toolbox, a C++ library for efficient modelling, control and
 suggests, it contains several tools to design and evaluate controllers, model dynamical systems and solve optimal control
 problems.
 
+
+\section teaser Why using the CT?
+ A very common tasks for robotics researchers and practitioners is to model robotic systems, implement Equations of Motion, 
+ and develop model-based controllers, estimators, planning algorithms, etc.
+ Sooner or later, one is confronted with questions of efficient implementation, computing derivative information, 
+ formulating constraints or cost functions, or refactoring code to make it fast enough to run on robotic hardware.
+ The Control Toolbox is specifically designed for these tasks. It is entirely written in C++, provides interfaces to 
+ state-of-the art robot modelling software, provides a set of optimal control tools, spanning a range from simple LQR 
+ reference implementations to constrained model predictive control, can auto-differentiate and generate derivative code 
+ for arbitrary functions, and provides a simple way to visualize simulation results using ROS and rviz. The 'ct' has been 
+ successfully used for a large number of hardware experiments, demonstrations and academic publications. The project originated from
+ research conducted at the Agile and Dexterous Robotics Lab at ETH Zürich, but is continuously extended to cover more fields of 
+ applications and algorithms.
+ 
+
 \section source_code Source Code
 The source code is available at <a href="https://bitbucket.org/adrlab/ct">https://bitbucket.org/adrlab/ct</a>
 
-\section features_overview Features
+
+\section features_overview Summary of Features
 
 \subsection ct_core_overview CT Core:
- - Definitions for dynamic systems (ct::core::System), states (ct::core::StateVector), controls (ct::core::Controller) etc.
- - Numeric integration (ct::core::Integrator) with various ODE solvers both fixed step (ct::core::IntegratorEuler, ct::core::IntegratorRK4) and variable step (ct::core::IntegratorRK5Variable, ct::core::ODE45)
- - Common feedback controllers (e.g. ct::core::PIDController)
- - Derivatives/Jacobians of general functions using Numerical Differentiation (ct::core::JacobianNumDiff) or Auto-Differentiation with code-generation and JIT compilation (ct::core::JacobianCG)
+
+ - Definitions of fundamental types for **control** and simulation, such as dynamic systems (ct::core::System), 
+ states (ct::core::StateVector), controls (ct::core::Controller), or trajectories (ct::core::DiscreteTrajectoryBase).
+ - **Numeric integration** (ct::core::Integrator) with various ODE solvers including fixed step (ct::core::IntegratorEuler, ct::core::IntegratorRK4)
+  and variable step (ct::core::IntegratorRK5Variable, ct::core::ODE45) integrators, as well as symplectic (semi-implicit) integrators.
+ - Numerical approximation of Trajectory **Sensitivities** (ct::core::Sensitivity , e.g. by forward-integrating variational differential equations)
+ - Common **feedback controllers** (e.g. ct::core::PIDController)
+ - Derivatives/Jacobians of general functions using **Numerical Differentiation** (ct::core::DerivativesNumDiff) or **Automatic-Differentiation** with 
+ code-generation (ct::core::DerivativesCppadCG) and just-in-time (JIT) compilation (ct::core::DerivativesCppadJIT)
  
+
 \subsection ct_optcon_overview CT Optimal Control
- - Definitions for Optimal Control Problems (ct::optcon::OptConProblem) and Solvers (ct::optcon::OptConSolver)
- - ct::optcon::CostFunction toolbox allowing to construct a cost function from file and providing derivatives / quadratic approximations.
- - ct::optcon::Constraint toolbox for formulating constraints of Optimal Control Problems
- - Linear and Non-Linear Optimal Control Solvers (ct::optcon::LQR, ct::optcon::TVLQR, ct::optcon::iLQG, ct::optcon::DMS)
- - Non-Linear Model Predictive Control (ct::optcon::MPC, which can use either iLQG or DMS as solvers)
- - Interfaces to common NLP Solvers (ct::optcon::SNOPTSolver and ct::optcon::IPOPTSolver)
+
+ - Definitions for **Optimal Control Problems** (ct::optcon::OptConProblem) and **Optimal Control Solvers** (ct::optcon::OptConSolver)
+ - **CostFunction toolbox** allowing to construct cost functions from file and providing first-order and **second-order approximations**, see ct::optcon::CostFunction.
+ - **Constraint toolbox** for formulating constraints of Optimal Control Problems, as well as automatically computing their Jacobians.
+ - reference C++ implementations of the **Linear Quadratic Regulator**, infinite-horizon LQR and time-varying LQR (ct::optcon::LQR, ct::optcon::TVLQR)
+ - **Riccati-solver** (ct::optcon::GNRiccatiSolver) for unconstrained linear-quadratic optimal control problems, interface to high-performance 
+ <a href="https://github.com/giaf/hpipm"> third-party Riccati-solvers</a> for constrained linear-quadratic optimal control problems
+ - **iterative non-linear Optimal Control** solvers, i.e. Gauss-Newton solvers such as iLQR (ct::optcon::iLQR) and 
+ Gauss-Newton Multiple Shooting(ct::optcon::GNMS), constrained direct multiple-shooting (ct::optcon::DmsSolver)
+ - Non-Linear **Model Predictive Control** (ct::optcon::MPC)
+ - Definitions for Nonlinear Programming Problems (**NLPs**, ct::optcon::Nlp) and interfaces to third-party **NLP Solvers** 
+ (ct::optcon::SnoptSolver and ct::optcon::IpoptSolver)
+  
   
 \subsection ct_rbd_overview CT Rigid Body Dynamics
+
  - Standard models for Rigid Body Dynamics
  - Definitions for the state of a Rigid Body System expressed as general coordinates (ct::rbd::RBDState)
- - Routines for different flavors of Forward and Inverse Dynamics (ct::rbd::Dynamics)
- - Rigid body and end-effector kinematics (ct::rbd::Kinematics) 
+ - Routines for different flavors of **Forward** and **Inverse Dynamics** (ct::rbd::Dynamics)
+ - Rigid body and end-effector **kinematics** (ct::rbd::Kinematics, note that we do currently not provide inverse kinematics)
  - Operational Space Controllers
- - Basic contact model (ct::rbd::ContactModel)
+ - Basic soft **auto-differentiable contact model** for arbitrary frames (ct::rbd::EEContactModel)
+ - **Actuator dynamics** (ct::rbd::ActuatorDynamics)
  - Backend uses <a href="https://bitbucket.org/mfrigerio17/roboticscodegenerator/">RobCoGen</a>, a highly efficient Rigid Body Dynamics library
 
+
 \subsection ct_models_overview CT Models:
+
  - Various standard models for testing and evaluation including UAVs (ct::models::Quadrotor), ground robots, legged robots (ct::models::HyQ), robot arms (ct::models::HyA), inverted pendulums etc.
  - Means of creating linear approximation of these models
+ 
+\subsection other_features Further Features:
+
+ - we support explicit template pre-specification, e. g. precompilation of the library for user-specified state and control dimensions.
+ 
 
 \section ae Robot Application Examples
+
 The Control Toolbox has been used for Hardware and Simulation control tasks on flying, walking and ground robots. 
 
 \htmlonly
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Y7-1CBqs4x4" frameborder="0" allowfullscreen></iframe>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/vuCSKtP67E4" frameborder="0" allowfullscreen></iframe>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/rWmw-ERGyz4" frameborder="0" allowfullscreen></iframe>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/rVu1L_tPCoM" frameborder="0" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Y7-1CBqs4x4" frameborder="2" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/vuCSKtP67E4" frameborder="2" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/rWmw-ERGyz4" frameborder="2" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/rVu1L_tPCoM" frameborder="2" allowfullscreen></iframe>
 \endhtmlonly
 
-For details and more cool videos see \ref application_examples "Application Examples".
+For details and more videos see \ref application_examples "Application Examples" and our \ref publications "publications".
+
 
 \section gs Getting Started
-In order to get started, please see our \ref getting_started "Getting Started".
+
+To get started with the control toolbox, please see \ref getting_started "Getting Started".
+
 
 \section doc_overview Documentation
-This library consists of four main modules
+
+This library consists of four main modules with hierarchical dependencies
  - <a href="../../../ct_core/doc/html/index.html">ct_core</a> 
  - <a href="../../../ct_optcon/doc/html/index.html">ct_optcon</a>
  - <a href="../../../ct_rbd/doc/html/index.html">ct_rbd</a>
  - <a href="../../../ct_models/doc/html/index.html">ct_models</a>
 
-Furthermore there are ROS interfaces available
+Furthermore there are examples for ROS interfaces available:
  - <a href="../../../../ct_ros/ct_ros_msgs/doc/html/index.html">ct_ros_msgs</a> 
  - <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_nodes</a> 
 
@@ -86,6 +129,83 @@ This software has been developed at the Agile & Dexterous Robotics Lab at ETH Zu
 financial support from the Swiss National Science Foundation through a Swiss National Science Foundation Professorship award to 
 Jonas Buchli and the National Competence Centers in Research (NCCR) Robotics and Digital Fabrication.
 
-\section licence Licence
+
+\section licence Licence Information
+
+The Control Toolbox is released under the Apache Licence, Version 2.0
+
+\code{.cpp}
+/***************************************************************************
+ * Copyright 2014-2017 Michael Neunert, Markus Giftthaler, Markus Stäuble
+ * All rights reserved.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * 	http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+***************************************************************************/
+\endcode
+   
+
+\section publications Related Publications
+
+This toolbox has been used in, or has helped to realize the following academic publications:
+
+- Markus Giftthaler, Michael Neunert, Markus Stäuble, Jonas Buchli and Moritz Diehl.
+“A Family of iterative Gauss-Newton Shooting Methods for Unconstrained Optimal Control”. 
+Submitted to IEEE Robotics and Automation Letters.
+
+- Michael Neunert, Markus Stäuble, Markus Giftthaler, Dario Bellicoso, Jan Carius, Christian Gehring, Marco Hutter and Jonas Buchli. 
+“Whole Body Model Predictive Control Through Contacts For Quadrupeds”.
+Submitted to IEEE Robotics and Automation Letters.
+
+- Markus Giftthaler and Jonas Buchli.
+“A Projection Approach to Equality Constrained Sequential Linear Quadratic Optimal Control”. 
+2017 IEEE-RAS International Conference on Humanoid Robots, November 15-17, Birmingham, UK.
+
+- Markus Giftthaler, Michael Neunert, Markus Stäuble, Marco Frigerio, Claudio Semini and Jonas Buchli. 
+“Automatic Differentiation of Rigid Body Dynamics for Optimal Control and Estimation”, 
+To appear in Advanced Robotics, SIMPAR special issue. November 2017. 
+<a href="https://arxiv.org/abs/1709.03799">arXiv preprint</a> 
+
+- Michael Neunert, Markus Giftthaler, Marco Frigerio, Claudio Semini and Jonas Buchli. 
+“Fast Derivatives of Rigid Body Dynamics for Control, Optimization and Estimation”, 
+2016 IEEE International Conference on Simulation, Modelling, and Programming for Autonomous Robots, San Francisco. (Best Paper Award). 
+<a href="http://ieeexplore.ieee.org/document/7862380/">IEEE Xplore</a> 
+
+- Michael Neunert, Farbod Farshidian, Alexander W. Winkler, Jonas Buchli
+"Trajectory Optimization Through Contacts and Automatic Gait Discovery for Quadrupeds",
+IEEE Robotics and Automation Letters,
+<a href="http://ieeexplore.ieee.org/document/7845678/">IEEE Xplore</a>
+
+- Michael Neunert, Cédric de Crousaz, Fadri Furrer, Mina Kamel, Farbod Farshidian, Roland Siegwart, Jonas Buchli.
+"Fast nonlinear model predictive control for unified trajectory optimization and tracking",
+2016 IEEE International Conference on Robotics and Automation (ICRA),
+<a href="http://ieeexplore.ieee.org/document/7487274/">IEEE Xplore</a> 
+
+- Markus Giftthaler, Farbod Farshidian, Timothy Sandy, Lukas Stadelmann and Jonas Buchli. 
+“Efficient Kinematic Planning for Mobile Manipulators with Non-holonomic Constraints Using Optimal Control”, 
+IEEE International Conference on Robotics and Automation, 2017, Singapore.
+<a href="https://arxiv.org/abs/1701.08051">arXiv preprint</a> 
+
+- Markus Giftthaler, Timothy Sandy, Kathrin Dörfler, Ian Brooks, Mark Buckingham, Gonzalo Rey, Matthias Kohler, Fabio Gramazio and Jonas Buchli. 
+“Mobile Robotic Fabrication at 1:1 scale: the In situ Fabricator”. Construction Robotics, Springer Journal no. 41693
+<a href="https://arxiv.org/abs/1701.03573">arXiv preprint</a> 
+
+- Timothy Sandy, Markus Giftthaler, Kathrin Dörfler, Matthias Kohler and Jonas Buchli.
+“Autonomous Repositioning and Localization of an In situ Fabricator”, 
+IEEE International Conference on Robotics and Automation 2016, Stockholm, Sweden.
+<a href="http://ieeexplore.ieee.org/document/7487449/">IEEE Xplore</a> 
+
+- Michael Neunert, Farbod Farshidian, Jonas Buchli (2014). Adaptive Real-time Nonlinear Model Predictive Motion Control. 
+In IROS 2014 Workshop on Machine Learning in Planning and Control of Robot Motion
+<a href="http://www.adrl.ethz.ch/archive/p_14_mlpc_mpc_rezero.pdf">preprint</a> 
 
 */
