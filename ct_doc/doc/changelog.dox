@@ -1,0 +1,18 @@
+/*!
+
+\page changelog Change Log
+
+\section cl_v2 Version 2
+Features
+- added GNMS algorithm
+- explicit template instantiation
+- HPIPM support
+- improved Auto-Diff JIT and code-generation support
+- Constraints module
+
+
+\section cl_v1 Version 1
+- initial release
+
+
+*/
