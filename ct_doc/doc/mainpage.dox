@@ -88,4 +88,59 @@ Jonas Buchli and the National Competence Centers in Research (NCCR) Robotics and
 
 \section licence Licence
 
+
+\section publications Related Publications
+
+This toolbox has been used in, or has helped to realize the following academic publications:
+
+- Markus Giftthaler, Michael Neunert, Markus Stäuble, Jonas Buchli and Moritz Diehl.
+“A Family of iterative Gauss-Newton Shooting Methods for Unconstrained Optimal Control”. 
+Submitted to IEEE Robotics and Automation Letters.
+
+- Michael Neunert, Markus Stäuble, Markus Giftthaler, Dario Bellicoso, Jan Carius, Christian Gehring, Marco Hutter and Jonas Buchli. 
+“Whole Body Model Predictive Control Through Contacts For Quadrupeds”.
+Submitted to IEEE Robotics and Automation Letters.
+
+- Markus Giftthaler and Jonas Buchli.
+“A Projection Approach to Equality Constrained Sequential Linear Quadratic Optimal Control”. 
+2017 IEEE-RAS International Conference on Humanoid Robots, November 15-17, Birmingham, UK.
+
+- Markus Giftthaler, Michael Neunert, Markus Stäuble, Marco Frigerio, Claudio Semini and Jonas Buchli. 
+“Automatic Differentiation of Rigid Body Dynamics for Optimal Control and Estimation”, 
+To appear in Advanced Robotics, SIMPAR special issue. November 2017. 
+<a href="https://arxiv.org/abs/1709.03799">arXiv preprint</a> 
+
+- Michael Neunert, Markus Giftthaler, Marco Frigerio, Claudio Semini and Jonas Buchli. 
+“Fast Derivatives of Rigid Body Dynamics for Control, Optimization and Estimation”, 
+2016 IEEE International Conference on Simulation, Modelling, and Programming for Autonomous Robots, San Francisco. (Best Paper Award). 
+<a href="http://ieeexplore.ieee.org/document/7862380/">IEEE Xplore</a> 
+
+- Michael Neunert, Farbod Farshidian, Alexander W. Winkler, Jonas Buchli
+"Trajectory Optimization Through Contacts and Automatic Gait Discovery for Quadrupeds",
+IEEE Robotics and Automation Letters,
+<a href="http://ieeexplore.ieee.org/document/7845678/">IEEE Xplore</a>
+
+- Michael Neunert, Cédric de Crousaz, Fadri Furrer, Mina Kamel, Farbod Farshidian, Roland Siegwart, Jonas Buchli.
+"Fast nonlinear model predictive control for unified trajectory optimization and tracking",
+2016 IEEE International Conference on Robotics and Automation (ICRA),
+<a href="http://ieeexplore.ieee.org/document/7487274/">IEEE Xplore</a> 
+
+- Markus Giftthaler, Farbod Farshidian, Timothy Sandy, Lukas Stadelmann and Jonas Buchli. 
+“Efficient Kinematic Planning for Mobile Manipulators with Non-holonomic Constraints Using Optimal Control”, 
+IEEE International Conference on Robotics and Automation, 2017, Singapore.
+<a href="https://arxiv.org/abs/1701.08051">arXiv preprint</a> 
+
+- Markus Giftthaler, Timothy Sandy, Kathrin Dörfler, Ian Brooks, Mark Buckingham, Gonzalo Rey, Matthias Kohler, Fabio Gramazio and Jonas Buchli. 
+“Mobile Robotic Fabrication at 1:1 scale: the In situ Fabricator”. Construction Robotics, Springer Journal no. 41693
+<a href="https://arxiv.org/abs/1701.03573">arXiv preprint</a> 
+
+- Timothy Sandy, Markus Giftthaler, Kathrin Dörfler, Matthias Kohler and Jonas Buchli.
+“Autonomous Repositioning and Localization of an In situ Fabricator”, 
+IEEE International Conference on Robotics and Automation 2016, Stockholm, Sweden.
+<a href="http://ieeexplore.ieee.org/document/7487449/">IEEE Xplore</a> 
+
+- Michael Neunert, Farbod Farshidian, Jonas Buchli (2014). Adaptive Real-time Nonlinear Model Predictive Motion Control. 
+In IROS 2014 Workshop on Machine Learning in Planning and Control of Robot Motion
+<a href="http://www.adrl.ethz.ch/archive/p_14_mlpc_mpc_rezero.pdf">preprint</a> 
+
 */
