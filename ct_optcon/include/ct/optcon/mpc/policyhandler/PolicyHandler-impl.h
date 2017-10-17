@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef MPC_POLICYHANDLER_IMPL_H_
-#define MPC_POLICYHANDLER_IMPL_H_
+#pragma once
 
 namespace ct{
 namespace optcon{
@@ -63,4 +62,3 @@ void PolicyHandler<POLICY, STATE_DIM, CONTROL_DIM, SCALAR>::setPolicy(const POLI
 } // namespace ct
 
 
-#endif /* MPC_POLICYHANDLER_IMPL_H_ */

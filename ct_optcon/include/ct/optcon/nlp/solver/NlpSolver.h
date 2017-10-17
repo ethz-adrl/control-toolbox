@@ -23,8 +23,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_NLP_SOLVER_NLPSOLVER_H_
-#define CT_OPTCON_NLP_SOLVER_NLPSOLVER_H_
+#pragma once
 
 #include <ct/optcon/nlp/Nlp.h>
 #include "NlpSolverSettings.h"
@@ -130,4 +129,3 @@ typedef tpl::NlpSolver<double> NlpSolver;
 
 
 
-#endif //CT_OPTCON_NLP_SOLVER_NLPSOLVER_H_

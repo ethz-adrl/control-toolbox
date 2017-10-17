@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_MPCSETTINGS_H_
-#define CT_OPTCON_MPCSETTINGS_H_
+#pragma once
 
 namespace ct{
 namespace optcon{
@@ -170,4 +169,3 @@ inline void loadMpcSettings(const std::string& filename, mpc_settings& settings)
 }	// namespace optcon
 }	// namespace ct
 
-#endif /* CT_MPCSETTINGS_H_ */

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_MPC_TIMEHORIZON_H_
-#define CT_MPC_TIMEHORIZON_H_
+#pragma once
 
 #include "../MpcSettings.h"
 
@@ -85,4 +84,3 @@ typedef tpl::MpcTimeHorizon<double> MpcTimeHorizon;
 } // namespace ct
 
 
-#endif /* CT_MPC_TIMEHORIZON_H_ */
