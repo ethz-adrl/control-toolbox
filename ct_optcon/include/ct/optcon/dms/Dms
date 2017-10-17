@@ -1,6 +1,5 @@
 
-#ifndef DMS_H_CONVENIENCE_
-#define DMS_H_CONVENIENCE_
+#pragma once
 
 #include "dms_core/DmsSettings.h"
 #include "dms_core/DmsSolver.h"
@@ -17,6 +16,3 @@
 #include "dms_core/RKnDerivatives.h"
 #include "dms_core/ShotContainer.h"
 #include "dms_core/TimeGrid.h"
-
-
-#endif /* DMS_H_CONVENIENCE_ */

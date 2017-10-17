@@ -25,9 +25,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_RBD_COMMON_IMPL_
-#define INCLUDE_CT_RBD_COMMON_IMPL_
+#pragma once
 
 // put implementation files here
-
-#endif /* INCLUDE_CT_RBD_COMMON_IMPL_ */

@@ -25,9 +25,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_RBD_STATE_
-#define INCLUDE_CT_RBD_STATE_
+#pragma once
 
 #include "state/RBDState.h"
-
-#endif /* INCLUDE_CT_RBD_STATE_ */

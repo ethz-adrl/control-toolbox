@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_OPTCON_DMS_DMS_CORE_PROBLEM_H_
-#define CT_OPTCON_DMS_DMS_CORE_PROBLEM_H_
+#pragma once
 
 
 #include <ct/optcon/problem/OptConProblem.h>
@@ -507,4 +506,3 @@ private:
 } // namespace ct
 
 
-#endif // CT_OPTCON_DMS_PROBLEM_H_

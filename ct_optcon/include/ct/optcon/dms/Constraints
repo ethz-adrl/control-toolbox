@@ -1,18 +1,7 @@
-/*
- * Constraints.h
- *
- * Created on: 26.10.2016
- * 	   Author: mgiftthaler<mgiftthaler@ethz.ch> 
- * 
- */
-
-#ifndef CT_DMS_CONSTRAINTS_H_CONVENIENCE_
-#define CT_DMS_CONSTRAINTS_H_CONVENIENCE_
+#pragma once
 
 #include "constraints/ConstraintDiscretizer.h"
 #include "constraints/ConstraintsContainerDms.h"
 #include "constraints/ContinuityConstraint.h"
 #include "constraints/InitStateConstraint.h"
 #include "constraints/TimeHorizonEqualityConstraint.h"
-
-#endif /* CT_DMS_CONSTRAINTS_H_CONVENIENCE_ */

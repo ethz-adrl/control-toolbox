@@ -1,12 +1,5 @@
-/*
- * ProjectedFDSystem.hpp
- *
- *  Created on: Oct 3, 2016
- *      Author: neunertm
- */
 
-#ifndef INCLUDE_CT_RBD_ROBOT_SYSTEMS_PROJECTEDFDSYSTEM_H_
-#define INCLUDE_CT_RBD_ROBOT_SYSTEMS_PROJECTEDFDSYSTEM_H_
+#pragma once
 
 #include <ct/rbd/state/RigidBodyPose.h>
 #include <ct/rbd/physics/EEContactModel.h>
@@ -156,5 +149,3 @@ private:
 
 } // namespace rbd
 } // namespace ct
-
-#endif /* INCLUDE_CT_RBD_ROBOT_SYSTEMS_PROJECTEDFDSYSTEM_H_ */

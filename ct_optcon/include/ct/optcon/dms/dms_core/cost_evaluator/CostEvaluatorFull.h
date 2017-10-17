@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_DMS_DMS_CORE_COST_EVALUATOR_FULL_H_
-#define CT_OPTCON_DMS_DMS_CORE_COST_EVALUATOR_FULL_H_
+#pragma once
 
 #include <omp.h>
 #include <math.h>
@@ -171,4 +170,3 @@ private:
 } // namespace optcon
 } // namespace ct
 
-#endif //CT_OPTCON_DMS_DMS_CORE_COST_EVALUATOR_FULL_H_

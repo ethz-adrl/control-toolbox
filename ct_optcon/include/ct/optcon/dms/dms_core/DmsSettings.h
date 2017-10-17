@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_DMS_DMS_CORE_SETTINGS_H_
-#define CT_OPTCON_DMS_DMS_CORE_SETTINGS_H_
+#pragma once
 
 #include <map>
 
@@ -185,7 +184,3 @@ private:
 
 }
 }
-
-
-
-#endif /* INCLUDE_DMS_DMS_CORE_SETTINGS_H_ */

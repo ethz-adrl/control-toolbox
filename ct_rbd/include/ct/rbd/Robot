@@ -25,9 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_RBD_ROBOT_
-#define INCLUDE_CT_RBD_ROBOT_
-
+#pragma once
 
 #include "robot/RobCoGenContainer.h"
 #include "robot/Kinematics.h"
@@ -44,5 +42,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "robot/costfunction/TermTaskspace.hpp"
 
 #include "robot/kinematics/EndEffector.h"
-
-#endif /* INCLUDE_CT_RBD_ROBOT_ */

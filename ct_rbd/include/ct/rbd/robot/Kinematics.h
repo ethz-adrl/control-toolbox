@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_ROBOT_KINEMATICS_H_
-#define INCLUDE_CT_RBD_ROBOT_KINEMATICS_H_
+#pragma once
 
 #include <ct/rbd/common/SpatialForceVector.h>
 #include <ct/rbd/state/RBDState.h>
@@ -300,4 +299,3 @@ private:
 } /* namespace rbd */
 } /* namespace ct */
 
-#endif /* INCLUDE_CT_RBD_ROBOT_KINEMATICS_H_ */

@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_CORE_SENSITIVITY_INTEGRATOR_CT_H_
-#define CT_CORE_SENSITIVITY_INTEGRATOR_CT_H_
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -575,4 +574,3 @@ private:
 }
 }
 
-#endif

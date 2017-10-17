@@ -25,13 +25,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_RBD_SYSTEMS_
-#define INCLUDE_CT_RBD_SYSTEMS_
+#pragma once
 
 #include "systems/FixBaseFDSystem.h"
 #include "systems/FloatingBaseFDSystem.h"
 #include "systems/ProjectedFDSystem.h"
 
 #include "systems/linear/RbdLinearizer.h"
-
-#endif /* INCLUDE_CT_RBD_SYSTEMS_ */

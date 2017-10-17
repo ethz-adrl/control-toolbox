@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_OPTCON_DMS_CORE_TIME_GRID_H_
-#define CT_OPTCON_DMS_CORE_TIME_GRID_H_
+#pragma once
 
 //#define DEBUG_TIMEGRID
 
@@ -210,4 +209,3 @@ typedef tpl::TimeGrid<double> TimeGrid;
 } // namespace ct
 
 
-#endif //CT_OPTCON_DMS_CORE_TIME_GRID_H_
