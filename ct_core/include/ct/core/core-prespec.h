@@ -24,7 +24,9 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
-#pragma once
+
+#ifndef INCLUDE_CT_CORE_CORE_H_
+#define INCLUDE_CT_CORE_CORE_H_
 
 #include <iosfwd>
 #include <vector>
@@ -62,4 +64,9 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*!
  * \warning{do not include implementation files in core-prespec.h}
  */
+
+
+// keep standard header guard (easy debugging)
+// header guard is identical to the one in core.h
+#endif // INCLUDE_CT_CORE_CORE_H_
 

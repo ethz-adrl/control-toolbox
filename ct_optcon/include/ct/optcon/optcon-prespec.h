@@ -24,7 +24,6 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-
 #ifndef INCLUDE_CT_OPTCON_OPTCON_H_
 #define INCLUDE_CT_OPTCON_OPTCON_H_
 
@@ -68,5 +67,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * \warning{do not include implementation files in optcon-prespec.h}
  */
 
-
+// keep standard header guard (easy debugging)
+// header guard is identical to the one in optcon.h
 #endif /* INCLUDE_CT_OPTCON_OPTCON_H_ */

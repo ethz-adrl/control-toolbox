@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_OPTCON_NLP_OPTVECTOR_H_
-#define CT_OPTCON_NLP_OPTVECTOR_H_
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -359,4 +358,3 @@ typedef tpl::OptVector<double> OptVector;
 }
 
 
-#endif //CT_OPTCON_NLP_OPTVECTOR_HPP_

@@ -1,6 +1,4 @@
-#ifndef NLP_H_CONVENIENCE_
-#define NLP_H_CONVENIENCE_
-
+#pragma once
 
 #include "Nlp.h"
 #include "solver/NlpSolver.h"
@@ -8,4 +6,3 @@
 #include "solver/SnoptSolver.h"
 #include "solver/NlpSolverSettings.h"
 
-#endif /* NLP_H_CONVENIENCE_ */

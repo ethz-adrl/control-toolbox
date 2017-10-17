@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_OPTCON_NLP_NLP_H_
-#define CT_OPTCON_NLP_NLP_H_
+#pragma once
 
 #include <Eigen/Sparse>
 #include <ct/core/math/DerivativesCppadJIT.h>
@@ -495,4 +494,3 @@ typedef tpl::Nlp<double> Nlp;
 } // namespace optcon
 } // namespace ct
 
-#endif //CT_OPTCON_NLP_NLP_H_

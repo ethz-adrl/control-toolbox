@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_CONSTRAINTS_CONSTRAINTSANALYTICAL_H_
-#define CT_OPTCON_CONSTRAINTS_CONSTRAINTSANALYTICAL_H_
+#pragma once
 
 #include <cppad/example/cppad_eigen.hpp>
 
@@ -185,4 +184,3 @@ private:
 }// namespace optcon
 }// namespace ct
 
-#endif

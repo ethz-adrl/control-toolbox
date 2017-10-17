@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_OPTCON_NLP_DISCRETE_COST_EVALUATOR_BASE_H_
-#define CT_OPTCON_NLP_DISCRETE_COST_EVALUATOR_BASE_H_
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -78,4 +77,3 @@ typedef tpl::DiscreteCostEvaluatorBase<double> DiscreteCostEvaluatorBase;
 } // namespace optcon
 } // namespace ct
 
-#endif //CT_OPTCON_NLP_DISCRETE_COST_EVALUATOR_BASE_HPP_
