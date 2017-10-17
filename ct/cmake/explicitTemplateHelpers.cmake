@@ -60,7 +60,7 @@ function(ct_configure_explicit_templates ConfigFile ConfigDir LibPrefix)
       #message(WARNING "extracted: STATE_DIM=${STATE_DIM_PRESPEC}, CONTROL_DIM=${STATE_DIM_PRESPEC}, SCALAR=${SCALAR_PRESPEC}")
       
       string(REGEX REPLACE "[^0-9a-zA-Z]+" "" SCALAR_PRESPEC_CLEAN ${SCALAR_PRESPEC})
-      set(CURRENT_LIB_NAME "${LibPrefix}-${STATE_DIM_PRESPEC}-${CONTROL_DIM_PRESPEC}-${SCALAR_PRESPEC_CLEAN}")
+      set(CURRENT_LIB_NAME "${LibPrefix}-${STATE_DIM_PRESPEC}-${CONTROL_DIM_PRESPEC}-${SCALAR_PRESPEC_CLEAN}-${POS_DIM_PRESPEC}-${VEL_DIM_PRESPEC}")
       
       if(STATE_DIM_PRESPEC AND CONTROL_DIM_PRESPEC AND SCALAR_PRESPEC)
           #message(WARNING "Will configure now")
