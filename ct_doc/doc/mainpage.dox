@@ -2,7 +2,9 @@
 \mainpage Overview
 
 \section ct1 Control Toolbox
-This is ADRL Control Toolbox, a C++ library for efficient modelling, control and estimation for robotics
+This is ADRL Control Toolbox, a C++ library for efficient modelling, control and estimation for robotics. As the name
+suggests, it contains several tools to design and evaluate controllers, model dynamical systems and solve optimal control
+problems.
 
 \section source_code Source Code
 The source code is available at <a href="https://bitbucket.org/adrlab/ct">https://bitbucket.org/adrlab/ct</a>
@@ -36,8 +38,20 @@ The source code is available at <a href="https://bitbucket.org/adrlab/ct">https:
  - Various standard models for testing and evaluation including UAVs (ct::models::Quadrotor), ground robots, legged robots (ct::models::HyQ), robot arms (ct::models::HyA), inverted pendulums etc.
  - Means of creating linear approximation of these models
 
+\section ae Robot Application Examples
+The Control Toolbox has been used for Hardware and Simulation control tasks on flying, walking and ground robots. 
+
+\htmlonly
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Y7-1CBqs4x4" frameborder="0" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/vuCSKtP67E4" frameborder="0" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/rWmw-ERGyz4" frameborder="0" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/rVu1L_tPCoM" frameborder="0" allowfullscreen></iframe>
+\endhtmlonly
+
+For details and more cool videos see \ref application_examples "Application Examples".
+
 \section gs Getting Started
-In order to get started, please see our \ref install_guide "Installation Guide". Afterwards please check out the \ref tutorials "Tutorials".
+In order to get started, please see our \ref getting_started "Getting Started".
 
 \section doc_overview Documentation
 This library consists of four main modules
@@ -50,7 +64,10 @@ Furthermore there are ROS interfaces available
  - <a href="../../../../ct_ros/ct_ros_msgs/doc/html/index.html">ct_ros_msgs</a> 
  - <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_nodes</a> 
 
-
+\section contact Support
+For any questions, issues or other troubleshooting please either
+- create an issue: https://bitbucket.org/adrlab/ct/issues
+- contact the devs: control-toolbox-dev@googlegroups.com
 
 \section ct_doc_acknowledgement Acknowledgement
 \subsection contribs Contributors
@@ -68,5 +85,7 @@ Furthermore there are ROS interfaces available
 This software has been developed at the Agile & Dexterous Robotics Lab at ETH Zurich. The development has been made possible through 
 financial support from the Swiss National Science Foundation through a Swiss National Science Foundation Professorship award to 
 Jonas Buchli and the National Competence Centers in Research (NCCR) Robotics and Digital Fabrication.
+
+\section licence Licence
 
 */

@@ -3,7 +3,7 @@
 \page install_guide Installation
 
 \section requirements Requirements
-This library is written in C++11. It is tested under Ubuntu 14.04 with
+This library is written in C++11. It is tested under Ubuntu 14.04 and 16.04 with
 library versions as provided in the package sources. However, CT should
 also run on other platforms 
 
@@ -11,15 +11,16 @@ also run on other platforms
  - C++ compiler with C++11 support
  - Eigen
  - catkin (build system, easy to switch to CMakeLists.txt where needed)
- - boost 1.54
+ - boost 1.54 or greater (soon optional)
  
-\subsection opt_dep Optional Dependencies
+\subsection opt_dep Optional Dependencies and Bindings
  - lapack (enables Schur method as an alternative to iterative method in ct::optcon::LQR)
- - clang (faster compilation for large linear models)
+ - clang (faster compilation for large linear models) $ sudo apt-get install clang-3.5
  - clang-tidy $ sudo apt-get install clang-tidy-3.9
  - clang-format $ sudo apt-get install clang-format-3.9
  - ROS Indigo (for ROS bindings, visualization and extended examples), see <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_nodes</a>, <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_msgs</a>
  - IPOPT or SNOPT (for ct::optcon::SNOPTSolver and ct::optcon::IPOPTSolver as used by ct::optcon::DMS)
+ - HPIPM solver (https://github.com/giaf/hpipm) for fast MPC
  - qwt (for basic plotting)
  - Matlab (for Matlab logging)
 
@@ -32,11 +33,26 @@ git clone git@bitbucket.org:adrlab/ct.git
 catkin build -DCMAKE_BUILD_TYPE=RELEASE 
 \endcode
 
+The following additional build flags are available, which can be appended to the build command above
+
+Build Flag  | Default value | Description
+------------- | ------------- | ------------
+-DBUILD_EXAMPLES=<BOOL> | FALSE  | Builds examples for all packages
+-DBUILD_HYQ_FULL=<FALSE> | FALSE | Build HyQ examples and executables (warning: slow with GCC!)
+-DUSE_CLANG=<BOOL> | FALSE  | Use CLANG instead of the default compiler 
+-DCLANG_CXX_COMPILER=<clang-bin> | "/usr/bin/clang++-3.5" | Set clang C++ compiler binary
+-DCLANG_C_COMPILER=<clang-bin> | "/usr/bin/clang-3.5" | Set clang C compiler binary
+-DUSE_INTEL=<BOOL> | FALSE  | Use Intel compiler instead of the default compiler 
+-DINTEL_CXX_COMPILER=<clang-bin> | "/opt/intel/bin/icc" | Set Intel C++ compiler binary
+-DINTEL_C_COMPILER=<clang-bin> | "/opt/intel/bin/icpc" | Set Intel C compiler binary
+-DHPIPM=<BOOL> | FALSE | Compile with HPIPM support (set $BLASFEO_DIR and $HPIPM_DIR environment variables)
+
+
 
 \subsection build_doc Build this Documentation
 To build the documentation do
 \code{.sh}
-catkin build -v --make-args doc # build the doc 
+catkin build ct_doc -v --make-args doc # build the doc 
 \endcode
 This will build the documentation and open it in your browser.
 
