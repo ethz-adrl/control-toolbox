@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef  CT_OPTCON_DMS_CORE_CONSTRAINTS_CONTINUITY_CONSTRAINT_H_
-#define  CT_OPTCON_DMS_CORE_CONSTRAINTS_CONTINUITY_CONSTRAINT_H_
+#pragma once
 
 #include <ct/optcon/nlp/DiscreteConstraintBase.h>
 
@@ -394,4 +393,3 @@ void ContinuityConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::computeIblock()
 } // namespace ct
 
 
-#endif //CT_OPTCON_DMS_CORE_CONSTRAINTS_CONTINUITY_CONSTRAINT_H_

@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_OPTCON_DMS_CORE_CONSTRAINTS_TIME_HORIZON_EQUALITY_CONSTRAINT_H_
-#define CT_OPTCON_DMS_CORE_CONSTRAINTS_TIME_HORIZON_EQUALITY_CONSTRAINT_H_
+#pragma once
 
 #include <ct/optcon/nlp/DiscreteConstraintBase.h>
 
@@ -137,5 +136,4 @@ private:
 } // namespace optcon
 } // namespace ct
 
-#endif //CT_OPTCON_DMS_CORE_CONSTRAINTS_TIME_HORIZON_EQUALITY_CONSTRAINT_H_
 

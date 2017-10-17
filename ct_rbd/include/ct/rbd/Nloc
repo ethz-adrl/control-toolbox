@@ -25,11 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef INCLUDE_CT_RBD_NLOC_
-#define INCLUDE_CT_RBD_NLOC_
+#pragma once
 
 #include "nloc/FixBaseNLOC.h"
 #include "nloc/FloatingBaseNLOCContactModel.h"
-
-
-#endif /* INCLUDE_CT_RBD_NLOC_ */

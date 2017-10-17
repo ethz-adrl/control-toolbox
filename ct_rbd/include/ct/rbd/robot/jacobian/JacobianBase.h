@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_JACOBIANSBASE_H_
-#define CT_JACOBIANSBASE_H_
+#pragma once
 
 #include <ct/rbd/state/RBDState.h>
 
@@ -76,5 +75,3 @@ using JacobianBase = tpl::JacobianBase<NUM_OUTPUTS, NUM_JOINTS, double>;
 
 } // namespace rbd
 } // namespace ct
-
-#endif /* CT_JACOBIANSBASE_H_ */

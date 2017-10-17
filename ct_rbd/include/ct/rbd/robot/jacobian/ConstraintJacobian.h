@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_RBD_CONSTRAINTJACOBIAN_H_
-#define CT_RBD_CONSTRAINTJACOBIAN_H_
+#pragma once
 
 #include <ct/rbd/robot/jacobian/OperationalJacobianBase.h>
 #include <ct/rbd/state/RBDState.h>
@@ -125,4 +124,3 @@ using ConstraintJacobian = tpl::ConstraintJacobian<Kinematics, OUTPUTS, NJOINTS,
 
 } /* namespace rbd*/
 } /* namespace ct*/
-#endif /* _CONSTRAINTJACOBIAN_H_ */

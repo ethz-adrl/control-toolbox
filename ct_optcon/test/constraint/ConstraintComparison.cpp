@@ -24,63 +24,19 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#pragma once
+#define EIGEN_INITIALIZE_MATRICES_BY_NAN
 
-#include "../MpcSettings.h"
+#include <ct/optcon/optcon.h>
+#include <gtest/gtest.h>
 
-namespace ct{
-namespace optcon{
-namespace tpl{
+#include <cmath>
+#include <random>
 
-/*!
- * This class implements the four default strategies for the time horizon in ct's MPC.
- * In case a different time horizon strategy is required, the user can derive from this
- * class and override the virtual functions
- */
-template <typename SCALAR = double>
-class MpcTimeHorizon
-{
+#include "ConstraintComparison.h"
 
-public:
+using namespace ct::optcon::example;
 
-	MpcTimeHorizon(const mpc_settings& settings, const SCALAR& initialTimeHorizon);
-
-	virtual ~MpcTimeHorizon();
-
-	//! compute new MPC time horizon
-	/*!
-	 * @param t_since_ended_first_solve
-	 * 	Time since the first successful solve
-	 * @param t_forward_prediction_stop
-	 *  Relative time where to stop forward integration w.r.t. previous controller
-	 * @param new_T
-	 *  Resulting, new time horizon provided to the solver
-	 * @return true if TimeHorizon reached and MPC should stop
-	 */
-	virtual bool computeNewTimeHorizon(
-			const SCALAR& t_since_ended_first_solve,
-			const SCALAR& t_forward_prediction_stop,
-			SCALAR& new_T);
-
-	void updateSettings(const mpc_settings& mpcsettings);
-
-	//! update the time horizon which is used during the first call to the solver
-	void updateInitialTimeHorizon(const SCALAR& initTimeHorizon);
-
-
-protected:
-
-	mpc_settings mpc_settings_;
-
-	SCALAR initialTimeHorizon_;
-
-};
-
-} // namespace tpl
-
-typedef tpl::MpcTimeHorizon<double> MpcTimeHorizon;
-
-} // namespace optcon
-} // namespace ct
-
-
+int main(int argc, char **argv){
+	testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
+}

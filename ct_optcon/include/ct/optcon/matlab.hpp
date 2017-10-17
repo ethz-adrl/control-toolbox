@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef MATLAB_HPP_
-#define MATLAB_HPP_
+#pragma once
 
 #ifdef MATLAB_FULL_LOG
 	#define MATLAB
@@ -39,6 +38,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	class MatFile{ public: MatFile() {} };
 	} // namespace MATLAB
 #endif //MATLAB
-
-
-#endif /* MATLAB_HPP_ */

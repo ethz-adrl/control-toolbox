@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef RBDDYNAMICS_H_
-#define RBDDYNAMICS_H_
+#pragma once
 
 #include <memory>
 #include <ct/core/systems/ControlledSystem.h>
@@ -337,4 +336,3 @@ ENABLE_FLOAT_BASE_IMPL Dynamics<RBD,NEE>::FloatingBaseFullyActuatedID(const RBDS
 
 } // namespace rbd
 } // namespace ct
-#endif /* RBDDYNAMICS_H_ */

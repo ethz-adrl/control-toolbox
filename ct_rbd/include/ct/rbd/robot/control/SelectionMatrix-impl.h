@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_ROBOT_CONTROL_SELECTIONMATRIX_IMPL_H_
-#define INCLUDE_CT_RBD_ROBOT_CONTROL_SELECTIONMATRIX_IMPL_H_
+#pragma once
 
 namespace ct {
 namespace rbd {
@@ -62,5 +61,3 @@ void SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::setIdentity(bool floatingB
 
 }
 }
-
-#endif /* INCLUDE_CT_RBD_ROBOT_CONTROL_SELECTIONMATRIX_IMPL_H_ */

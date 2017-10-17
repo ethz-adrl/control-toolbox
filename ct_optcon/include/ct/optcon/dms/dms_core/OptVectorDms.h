@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_DMS_DMS_CORE_OPT_VECTOR_DMS_H_
-#define CT_OPTCON_DMS_DMS_CORE_OPT_VECTOR_DMS_H_
+#pragma once
 
 
 #include <Eigen/Core>
@@ -236,4 +235,3 @@ private:
 } // namespace ct
 
 #include "implementation/OptVectorDms-impl.h"
-#endif // CT_OPTCON_DMS_DMS_CORE_OPT_VECTOR_DMS_H_

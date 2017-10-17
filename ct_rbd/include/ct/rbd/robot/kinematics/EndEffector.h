@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_ROBOT_ENDEFFECTOR_H_
-#define INCLUDE_CT_RBD_ROBOT_ENDEFFECTOR_H_
+#pragma once
 
 #include <ct/rbd/state/JointState.h>
 #include <ct/rbd/state/RigidBodyPose.h>
@@ -65,5 +64,3 @@ private:
 
 } /* namespace rbd */
 } /* namespace ct */
-
-#endif /* INCLUDE_CT_RBD_ROBOT_ENDEFFECTOR_H_ */

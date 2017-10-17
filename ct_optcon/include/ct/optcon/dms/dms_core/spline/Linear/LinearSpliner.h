@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_DMS_CORE_LINEAR_SPLINER_DMS_H_
-#define CT_OPTCON_DMS_CORE_LINEAR_SPLINER_DMS_H_
+#pragma once
 
 #include "ct/optcon/dms/dms_core/spline/SplinerBase.h"
 #include <ct/optcon/dms/dms_core/TimeGrid.h>
@@ -151,4 +150,3 @@ private:
 } // namespace optcon
 } // namespace ct
 
-#endif
