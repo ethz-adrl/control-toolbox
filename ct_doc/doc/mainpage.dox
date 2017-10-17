@@ -6,6 +6,20 @@ This is ADRL Control Toolbox, a C++ library for efficient modelling, control and
 suggests, it contains several tools to design and evaluate controllers, model dynamical systems and solve optimal control
 problems.
 
+\section teaser Why using the CT?
+ A very common tasks for robotics researchers and practitioners is to model robotic systems, implement Equations of Motion, 
+ and develop model-based controllers, estimators, planning algorithms, etc.
+ Sooner or later, one is confronted with questions of efficient implementation, computing derivative information, 
+ formulating constraints or cost functions, or refactoring code to make it fast enough to run on robotic hardware.
+ The Control Toolbox is specifically designed for these tasks. It is entirely written in C++, provides interfaces to 
+ state-of-the art robot modelling software, provides a set of optimal control tools, spanning a range from simple LQR 
+ reference implementations to constrained model predictive control, can auto-differentiate and generate derivative code 
+ for arbitrary functions, and provides a simple way to visualize simulation results using ROS and rviz. The 'ct' has been 
+ successfully used for a large number of hardware experiments, demonstrations and academic publications. The project originated from
+ research conducted at the Agile and Dexterous Robotics Lab at ETH Zürich, but is continuously extended to cover more fields of 
+ applications and algorithms.
+ 
+
 \section source_code Source Code
 The source code is available at <a href="https://bitbucket.org/adrlab/ct">https://bitbucket.org/adrlab/ct</a>
 
