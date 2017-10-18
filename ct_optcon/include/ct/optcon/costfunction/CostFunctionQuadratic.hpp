@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_COSTFUNCTION_QUADRATIC_HPP_
-#define CT_OPTCON_COSTFUNCTION_QUADRATIC_HPP_
+#pragma once
 
 #include "CostFunction.hpp"
 #include "term/TermBase.hpp"
@@ -279,10 +278,7 @@ protected:
 	std::vector < std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > > finalCostAnalytical_; /** list of final cost terms for which analytic derivatives are available */
 };
 
-#include "implementation/CostFunctionQuadratic-impl.hpp"
-
 
 } // namespace optcon
 } // namespace ct
 
-#endif // COSTFUNCTION_HPP_
