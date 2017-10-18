@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef CT_SECONDORDERACTUATORDYNAMICS_IMPL_H_
-#define CT_SECONDORDERACTUATORDYNAMICS_IMPL_H_
+#pragma once
 
 namespace ct {
 namespace rbd {
@@ -94,4 +93,3 @@ core::ControlVector<NJOINTS, SCALAR> SecondOrderActuatorDynamics<NJOINTS, SCALAR
 }
 }
 
-#endif /* CT_SECONDORDERACTUATORDYNAMICS_IMPL_H_ */

@@ -24,9 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-
-#ifndef CT_RBD_COSTFUNCTION_TERM_TASKSPACE_HPP_
-#define CT_RBD_COSTFUNCTION_TERM_TASKSPACE_HPP_
+#pragma once
 
 #include <ct/optcon/costfunction/term/TermBase.hpp>
 #include <ct/optcon/costfunction/utility/utilities.hpp>
@@ -137,8 +135,3 @@ private:
 
 } // namespace rbd
 } // namespace ct
-
-
-
-
-#endif // CT_RBD_COSTFUNCTION_TERM_TASKSPACE_HPP_

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_DMS_CORE_CONSTRAINTS_CONSTRAINT_DISCRETIZER_H_
-#define CT_OPTCON_DMS_CORE_CONSTRAINTS_CONSTRAINT_DISCRETIZER_H_
+#pragma once
 
 #include <ct/optcon/constraint/ConstraintContainerAD.h>
 #include <ct/optcon/nlp/DiscreteConstraintBase.h>
@@ -392,6 +391,3 @@ private:
 
 }
 }
-
-
-#endif //CT_OPTCON_DMS_CORE_CONSTRAINTS_CONSTRAINT_DISCRETIZER_H_

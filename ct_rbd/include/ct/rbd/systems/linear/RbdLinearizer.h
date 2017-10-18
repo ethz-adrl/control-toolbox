@@ -34,11 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
 
-#ifndef INCLUDE_CT_RBD_SYSTEMS_LINEAR_RBDLINEARIZER_H_
-#define INCLUDE_CT_RBD_SYSTEMS_LINEAR_RBDLINEARIZER_H_
-
-#ifndef RBDLINEARIZER_H_
-#define RBDLINEARIZER_H_
+#pragma once
 
 #include <memory>
 
@@ -313,13 +309,5 @@ private:
 	}
 };
 
-
 }	// rbd
 }	// ct
-
-
-#endif  // RBDLINEARIZER_H_
-
-
-
-#endif /* INCLUDE_CT_RBD_SYSTEMS_LINEAR_RBDLINEARIZER_H_ */

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef CT_RBD_WHOLEBODYCONTROLLER_IMPL_H_
-#define CT_RBD_WHOLEBODYCONTROLLER_IMPL_H_
+#pragma once
 
 namespace ct {
 namespace rbd {
@@ -61,5 +60,3 @@ JointPositionController<NJOINTS>& WholeBodyController<NJOINTS>::getJointControll
 
 } // namespace rbd
 } // namespace ct
-
-#endif /* CT_RBD_WHOLEBODYCONTROLLER_IMPL_H_ */

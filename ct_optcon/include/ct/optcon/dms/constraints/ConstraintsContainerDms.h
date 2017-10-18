@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_OPTCON_DMS_CORE_CONSTRAINTS_CONSTRAINTS_CONTAINER_DMS_H_
-#define CT_OPTCON_DMS_CORE_CONSTRAINTS_CONSTRAINTS_CONTAINER_DMS_H_
+#pragma once
 
 #include <Eigen/Dense>
 
@@ -118,4 +117,3 @@ private:
 } // namespace optcon
 } // namespace ct
  
-#endif //CT_OPTCON_DMS_CORE_CONSTRAINTS_CONSTRAINTS_CONTAINER_DMS_H_

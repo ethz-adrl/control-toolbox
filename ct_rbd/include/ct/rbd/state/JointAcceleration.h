@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef JOINTSTATEDERIVATIVEBASE_H_
-#define JOINTSTATEDERIVATIVEBASE_H_
+#pragma once
 
 namespace ct {
 namespace rbd {
@@ -85,5 +84,3 @@ using JointAcceleration = tpl::JointAcceleration<NJOINTS, double>;
 
 } // namespace rbd
 } // namespace ct
-
-#endif /* JOINTSTATEDERIVATIVEBASE_H_ */

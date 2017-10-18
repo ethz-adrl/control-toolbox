@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_NLOC_FIXBASENLOC_IMPL_H_
-#define INCLUDE_CT_RBD_NLOC_FIXBASENLOC_IMPL_H_
+#pragma once
 
 namespace ct{
 namespace rbd {
@@ -207,5 +206,3 @@ void FixBaseNLOC<RBDDynamics, SCALAR>::computeIDTorques(const tpl::JointState<FB
 
 } // namespace rbd
 } // namespace ct
-
-#endif /* INCLUDE_CT_RBD_NLOC_FIXBASENLOC_IMPL_H_ */

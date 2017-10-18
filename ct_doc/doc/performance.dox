@@ -1,0 +1,62 @@
+/*!
+
+\page performance Performance Optimization
+
+The Control Toolbox is optimized for performance and, if used correctly, constitutes one of the fastest
+implementation for many state-of-the-art control approaches. This page gives an overview of how to achieve
+best performance.
+
+\section compile_time Optimize Compile Time
+Especially with increasing complexity of your project, compilation time of the CT can become long. However,
+there are some tricks to reduce compilation time
+- make sure you compile in Release mode (catkin build -DCMAKE_BUILD_TYPE=RELEASE)
+- use CLANG instead of gcc. See the build flags in the \ref install "Installation Guide" on how to use clang.
+- use \ref prespec Explicit Template Instantiation
+
+\subsection prespec Explicit Template Instantiation
+The Control Toolbox is a heavily templated library for best runtime performance. However, this means most
+code lives in header files and gets recompiled when any changes are made to the code. Needless to say, that
+this can become cumbersome after some time. However, there is a simple yet effective workaround:
+Explicit template instantiation. The idea is simple: You define the templates that are used before compilation
+and they get compiled into a library. In CT templates are:
+
+Template Parameter 	| Description
+------------------ 	| -----------
+STATE_DIM			| The dimension of the system's system state
+CONTROL_DIM			| The dimension of the system's control input
+SCALAR				| The scalar type used (usually double)
+POS_DIM				| (optional) Dimension of the position vector in a symplectic integrator
+VEL_DIM				| (optional) Dimension of the velocity vector in a symplectic integrator
+
+In case you are multiple systems of different dimensions, you can prespecify each of their dimensions.
+
+To use explicit template instantiation follow these steps:
+1. add your dimensions to ct/ct/config/explicit_templates.cfg . You can set POS_DIM and VEL_DIM to 0 if you
+are not using symplectic integrators.
+2. rerun cmake: catkin build -DCMAKE_BUILD_TYPE=RELEASE --force-cmake
+3. In your executable change the standard CT includes from their regular ones to the prespecified ones,
+e.g. change ''#include <ct/core/core.h>'' to ''#include <ct/core/core_prespec.h>''. Remember to do this for
+optcon and rbd as well.
+
+\section execution_speed Optimize Execution Speed
+- make use of \ref vectorization "Vectorization"
+- use \ref auto-diff Auto-Differentiation with just-in-time compilation or code generation
+- if you do not want to use Auto-Diff, consider using the ct::rbd::RbdLinearizer for linearizing Rigid Body Dynamics
+- use multi-threading for Nonlinear Optimal Control Solvers
+- use HPIPM for running MPC or solving Optimal Control problems
+
+
+\subsection Vectorization
+Vectorization is a processor feature where a Single Instruction is applied to Multiple Data (SIMD). This
+is especially useful for linear algebra operations. CT relies on [Eigen's Vectorization](http://eigen.tuxfamily.org/index.php?title=FAQ) 
+ capabilities. This means CT supports SSE, FMA and AVX2 instructions. 
+
+\warning Please study Eigen's documentation carefully. Especially the part about [memory alignment](
+https://eigen.tuxfamily.org/dox/group__DenseMatrixManipulation__Alignement.html)
+
+To enable vectorization in CT build it with vectorization flags. E.g. if you are on a fairly recent Intel CPU
+the following build command will enable vectorization
+
+    catkin build -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_CXX_FLAGS="-march=native -mtune=native -mavx2 -mfma"
+
+*/

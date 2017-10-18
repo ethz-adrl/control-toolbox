@@ -253,6 +253,10 @@ target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MA
 add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
 target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
+catkin_add_gtest(constraint_comparison test/constraint/ConstraintComparison.cpp)
+target_link_libraries(constraint_comparison ${catkin_LIBRARIES} dl)
+# note that this test does not have a prespec equivalent
+
 catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
 target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
 catkin_add_gtest(constraint_test_prespec test/constraint/ConstraintTestPrespec.cpp)
