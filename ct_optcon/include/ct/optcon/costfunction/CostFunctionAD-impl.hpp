@@ -24,6 +24,12 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#pragma once
+
+namespace ct{
+namespace optcon{
+
+
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD() :
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> (),
@@ -81,6 +87,24 @@ finalFun_(arg.finalFun_)
 
 	intermediateCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(intermediateFun_, STATE_DIM + CONTROL_DIM + 1, 1));
 	finalCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(finalFun_, STATE_DIM + CONTROL_DIM + 1, 1));
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const std::string& filename, bool verbose)
+{
+	loadFromConfigFile(filename, verbose);
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::~CostFunctionAD()
+{};
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>*
+CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::clone () const
+{
+	return new CostFunctionAD(*this);
 }
 
 
@@ -300,4 +324,7 @@ typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_matrix_t 
 	Eigen::Matrix<SCALAR, 1, 1> w; w << SCALAR(1.0);
 	MatrixXs hesTot = finalCostCodegen_->hessian(stateControlTime_, w);
 	return hesTot.template block<CONTROL_DIM, STATE_DIM>(STATE_DIM, 0);	
+}
+
+}
 }

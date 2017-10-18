@@ -89,17 +89,13 @@ public:
 	 * @param filename config file location
 	 * @param verbose flag enabling printouts
 	 */
-	CostFunctionAD(const std::string& filename, bool verbose = false) {
-		loadFromConfigFile(filename, verbose);
-	}
+	CostFunctionAD(const std::string& filename, bool verbose = false);
 
 	/**
 	 * Deep-cloning of cost function
 	 * @return base pointer to clone
 	 */
-	CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const {
-		return new CostFunctionAD(*this);
-	}
+	CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const;
 
 	/**
 	 * \brief Copy constructor
@@ -111,7 +107,7 @@ public:
 	/**
 	 * \brief Destructor
 	 */
-	~CostFunctionAD() {};
+	~CostFunctionAD();
 
 
 	/**
@@ -180,8 +176,6 @@ private:
 	typename JacCG::FUN_TYPE_CG intermediateFun_;
 	typename JacCG::FUN_TYPE_CG finalFun_;
 };
-
-#include "implementation/CostFunctionAD-impl.hpp"
 
 } // namespace optcon
 } // namespace ct

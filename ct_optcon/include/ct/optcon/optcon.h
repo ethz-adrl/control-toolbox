@@ -69,6 +69,7 @@
 // implementations
 //costfunction
 #include "costfunction/CostFunction-impl.hpp"
+#include "costfunction/CostFunctionAD-impl.hpp"
 #include "costfunction/CostFunctionQuadratic-impl.hpp"
 #include "costfunction/CostFunctionQuadraticSimple-impl.hpp"
 
