@@ -1,8 +1,11 @@
 /*!
 
 \page install_guide Installation
+- \subpage requirements
+- \subpage install
 
-\section requirements Requirements
+
+\page requirements Requirements
 This library is written in C++11. It is tested under Ubuntu 14.04 and 16.04 with
 library versions as provided in the package sources.
 
@@ -27,7 +30,7 @@ library versions as provided in the package sources.
  - <a href="https://clang.llvm.org/docs/ClangFormat.html">clang-format</a>, install via $ sudo apt-get install clang-format-3.9
 
 
-\section install Installation
+\page install Compile
 \subsection build_lib Build the library
 
 
@@ -41,15 +44,15 @@ The following additional build flags are available, which can be appended to the
 
 Build Flag  | Default value | Description
 ------------- | ------------- | ------------
--DBUILD_EXAMPLES=<BOOL> | FALSE  | Builds examples for all packages
--DBUILD_HYQ_FULL=<FALSE> | FALSE | Build HyQ examples and executables (warning: slow with GCC!)
--DUSE_CLANG=<BOOL> | FALSE  | Use CLANG instead of the default compiler 
--DCLANG_CXX_COMPILER=<clang-bin> | "/usr/bin/clang++-3.5" | Set clang C++ compiler binary
--DCLANG_C_COMPILER=<clang-bin> | "/usr/bin/clang-3.5" | Set clang C compiler binary
--DUSE_INTEL=<BOOL> | FALSE  | Use Intel compiler instead of the default compiler 
--DINTEL_CXX_COMPILER=<clang-bin> | "/opt/intel/bin/icc" | Set Intel C++ compiler binary
--DINTEL_C_COMPILER=<clang-bin> | "/opt/intel/bin/icpc" | Set Intel C compiler binary
--DHPIPM=<BOOL> | FALSE | Compile with HPIPM support (set $BLASFEO_DIR and $HPIPM_DIR environment variables)
+-DBUILD_EXAMPLES=\<BOOL> | FALSE  | Builds examples for all packages
+-DBUILD_HYQ_FULL=\<FALSE> | FALSE | Build HyQ examples and executables (warning: slow with GCC!)
+-DUSE_CLANG=\<BOOL> | FALSE  | Use CLANG instead of the default compiler 
+-DCLANG_CXX_COMPILER=\<clang-bin> | "/usr/bin/clang++-3.5" | Set clang C++ compiler binary
+-DCLANG_C_COMPILER=\<clang-bin> | "/usr/bin/clang-3.5" | Set clang C compiler binary
+-DUSE_INTEL=\<BOOL> | FALSE  | Use Intel compiler instead of the default compiler 
+-DINTEL_CXX_COMPILER=\<clang-bin> | "/opt/intel/bin/icc" | Set Intel C++ compiler binary
+-DINTEL_C_COMPILER=\<clang-bin> | "/opt/intel/bin/icpc" | Set Intel C compiler binary
+-DHPIPM=\<BOOL> | FALSE | Compile with HPIPM support (set $BLASFEO_DIR and $HPIPM_DIR environment variables)
 
 
 
