@@ -70,6 +70,8 @@
 //costfunction
 #include "costfunction/CostFunction-impl.hpp"
 #include "costfunction/CostFunctionQuadratic-impl.hpp"
+#include "costfunction/CostFunctionQuadraticSimple-impl.hpp"
+
 
 //constraints
 #include "constraint/constraint-impl.h"
