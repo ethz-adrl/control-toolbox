@@ -70,12 +70,14 @@
 //costfunction
 #include "costfunction/CostFunction-impl.hpp"
 #include "costfunction/CostFunctionAD-impl.hpp"
+#include "costfunction/CostFunctionAnalytical-impl.hpp"
 #include "costfunction/CostFunctionQuadratic-impl.hpp"
 #include "costfunction/CostFunctionQuadraticSimple-impl.hpp"
 
 
 //constraints
 #include "constraint/constraint-impl.h"
+#include "costfunction/CostFunctionAnalytical-impl.hpp"
 
 //problem
 #include "problem/OptConProblem-impl.h"
