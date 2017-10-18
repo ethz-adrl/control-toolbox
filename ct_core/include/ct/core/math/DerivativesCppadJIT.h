@@ -300,7 +300,7 @@ public:
         std::vector<bool> sparsityVec = model_->JacobianSparsityBool();
         Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(this->outputDim_, this->inputDim_);
 
-        assert(sparsityVec.size() == this->outputDim_ * this->inputDim_);
+        assert((int)(sparsityVec.size()) == this->outputDim_ * this->inputDim_);
         for(size_t row = 0; row < this->outputDim_; ++row)
             for(size_t col = 0; col < this->inputDim_; ++col)
                 sparsityMat(row, col) = sparsityVec[col + row * this->inputDim_];
