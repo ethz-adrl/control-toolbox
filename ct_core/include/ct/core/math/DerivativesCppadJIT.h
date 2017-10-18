@@ -394,12 +394,18 @@ public:
      */
     void compileJIT(
         const DerivativesCppadSettings& settings,
-        const std::string& libName = "threadId" + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id())))
+        std::string libName = "unnamedLib",
+		bool verbose = false)
     {
         if (compiled_) return;
-        std::cout << "Starting to compile " + libName + " library"  << std::endl;
 
-        CppAD::cg::ModelCSourceGen<double> cgen(this->fCgCppad_, "DerivativesCppad");
+        // assigning a unique identifier to the library in order to avoid race conditions in JIT
+        libName = libName + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id()));
+
+        if (verbose)
+        	std::cout << "Starting to compile " + libName + " library"  << std::endl;
+
+        CppAD::cg::ModelCSourceGen<double> cgen(this->fCgCppad_, "DerivativesCppad"+libName);
 
         cgen.setMultiThreading(settings.multiThreading_);
         cgen.setCreateForwardZero(settings.createForwardZero_);
@@ -431,10 +437,12 @@ public:
         // CppAD::cg::SaveFilesModelLibraryProcessor<double> p2(libcgen);
         // p2.saveSources();
 
-        model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"));
+        model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"+libName));
 
         compiled_ = true;
-        std::cout << "Successfully compiled " << std::endl;
+
+        if(verbose)
+        	std::cout << "Successfully compiled " << libName << std::endl;
 
         if(model_->isJacobianSparsityAvailable())
         {
