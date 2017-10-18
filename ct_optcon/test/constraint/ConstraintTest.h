@@ -134,6 +134,8 @@ public:
 
 	virtual StateInputConstraint_Example<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override {return new StateInputConstraint_Example(*this);}
 
+	virtual ~StateInputConstraint_Example(){}
+
 	virtual size_t getConstraintSize() const override {return CONTROL_DIM;}
 
 	VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) 

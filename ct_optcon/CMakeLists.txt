@@ -84,7 +84,20 @@ if(HPIPM)
 endif(HPIPM)
 
 
-## dummy libs
+## dummy lapack libs
+set(LAPACK_LIBS "")
+find_package(LAPACK QUIET)
+if(LAPACK_FOUND)
+    message(STATUS "Found LAPACK library")
+    set(LAPACK_LIBS lapack)
+    add_definitions (-DCT_USE_LAPACK)
+    set(USE_LAPACK ON)
+else(LAPACK_FOUND)
+    message(WARNING "Could not find LAPACK library")
+endif(LAPACK_FOUND)
+
+
+## dummy nlp libs
 set(NLP_LIBS "")
 
 ## include IPOPT
@@ -163,7 +176,7 @@ catkin_package(
         lapack 
         dl
    LIBRARIES
-        lapack 
+        ${LAPACK_LIBS} 
         dl
         ${CT_SNOPT_LIBS}
         ${HPIPM_LIBRARY}
@@ -182,7 +195,10 @@ endif()
 
 # add libraries for explicit template
 ct_add_explicit_template_libs()
-ct_link_external_library(lapack)
+
+if(USE_LAPACK)
+    ct_link_external_library(${LAPACK_LIBS})
+endif(USE_LAPACK)
 
 
 if(BUILD_EXAMPLES)
@@ -192,7 +208,7 @@ if(BUILD_EXAMPLES)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
 
     add_executable(ex_LQR examples/LQR.cpp)
-    target_link_libraries(ex_LQR ${catkin_LIBRARIES} lapack dl)
+    target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS} dl)
 
     add_executable(ex_NLOC examples/NLOC.cpp)
     target_link_libraries(ex_NLOC ${catkin_LIBRARIES})
@@ -210,9 +226,9 @@ configure_file(test/dms/oscillator/oscDMSTest_settings.h.in test/dms/oscillator/
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/dms/oscillator)
 
 catkin_add_gtest(LqrTest test/lqr/LqrTest.cpp)
-target_link_libraries(LqrTest ${catkin_LIBRARIES} lapack ${MATLAB_LIBS})
+target_link_libraries(LqrTest ${catkin_LIBRARIES} ${LAPACK_LIBS} ${MATLAB_LIBS})
 catkin_add_gtest(LqrTestPrespec test/lqr/LqrTestPrespec.cpp)
-target_link_libraries(LqrTestPrespec ${catkin_LIBRARIES} lapack ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
+target_link_libraries(LqrTestPrespec ${catkin_LIBRARIES} ${LAPACK_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
 
 catkin_add_gtest(iLQRTest test/nloc/iLQRTest.cpp)
 target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})

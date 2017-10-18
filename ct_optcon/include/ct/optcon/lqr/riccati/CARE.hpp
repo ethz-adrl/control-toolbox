@@ -29,9 +29,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 
 // Schur reordering from Lapack
+#ifdef CT_USE_LAPACK
 extern "C" void dtrsen_(const char* JOB, const char* COMPQ, const int* SELECT, const int* N, const double* T, const int* LDT, const double* Q, const int* LDQ,
         double* WR, double* WI, int* M, double* S, double* SEP, double* WORK, const int* LWORK, int* IWORK,
         const int* LIWORK, int* INFO);
+#endif
 
 namespace ct {
 namespace optcon {
