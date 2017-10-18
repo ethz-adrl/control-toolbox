@@ -24,6 +24,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#pragma once
+
 #define EIGEN_INITIALIZE_MATRICES_BY_NAN
 #define DEBUG
 
@@ -38,8 +40,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/costfunction/term/TermQuadMult.hpp>
 #include <ct/optcon/costfunction/term/TermMixed.hpp>
 
-const size_t state_dim = 16;
-const size_t control_dim = 14;
+const size_t state_dim = 12;
+const size_t control_dim = 4;
 
 namespace ct{
 namespace optcon{
@@ -72,7 +74,69 @@ void compareCostFunctionOutput(CostFunctionQuadratic<state_dim, control_dim>& co
 	ASSERT_TRUE(costFunction.controlSecondDerivativeIntermediate().isApprox(costFunction.controlSecondDerivativeIntermediate().transpose()));
 }
 
-TEST(CostFunctionTest, ADQuadraticIntermediateTest)
+
+template <size_t state_dim, size_t control_dim>
+void printCostFunctionOutput(CostFunctionQuadratic<state_dim, control_dim>& costFunction, CostFunctionQuadratic<state_dim, control_dim>& costFunction2)
+{
+	std::cout << "eval intermediate " << std::endl;
+	std::cout << costFunction.evaluateIntermediate() << std::endl << std::endl;
+	std::cout << costFunction2.evaluateIntermediate() << std::endl;
+
+	std::cout << "eval terminal " << std::endl;
+	std::cout << costFunction.evaluateTerminal() << std::endl << std::endl;
+	std::cout << costFunction2.evaluateTerminal() << std::endl;
+
+	std::cout << "eval stateDerivativeIntermediate " << std::endl;
+	std::cout << costFunction.stateDerivativeIntermediate()<< std::endl << std::endl;
+	std::cout << costFunction2.stateDerivativeIntermediate() << std::endl;
+
+	std::cout << "eval stateDerivativeIntermediate " << std::endl;
+	std::cout << costFunction.stateDerivativeTerminal() << std::endl << std::endl;
+	std::cout << costFunction2.stateDerivativeTerminal() << std::endl;
+
+	std::cout << "eval stateSecondDerivativeIntermediate " << std::endl;
+	std::cout << costFunction.stateSecondDerivativeIntermediate() << std::endl << std::endl;
+	std::cout << costFunction2.stateSecondDerivativeIntermediate() << std::endl;
+
+	std::cout << "eval stateSecondDerivativeTerminal " << std::endl;
+	std::cout << costFunction.stateSecondDerivativeTerminal() << std::endl << std::endl;
+	std::cout << costFunction2.stateSecondDerivativeTerminal() << std::endl;
+
+	std::cout << "eval controlDerivativeIntermediate " << std::endl;
+	std::cout << costFunction.controlDerivativeIntermediate() << std::endl << std::endl;
+	std::cout << costFunction2.controlDerivativeIntermediate() << std::endl;
+
+	std::cout << "eval controlDerivativeTerminal " << std::endl;
+	std::cout << costFunction.controlDerivativeTerminal() << std::endl << std::endl;
+	std::cout << costFunction2.controlDerivativeTerminal() << std::endl;
+
+	std::cout << "eval controlSecondDerivativeIntermediate " << std::endl;
+	std::cout << costFunction.controlSecondDerivativeIntermediate() << std::endl << std::endl;
+	std::cout << costFunction2.controlSecondDerivativeIntermediate() << std::endl;
+
+	std::cout << "eval controlSecondDerivativeIntermediate " << std::endl;
+	std::cout << costFunction.controlSecondDerivativeTerminal() << std::endl << std::endl;
+	std::cout << costFunction2.controlSecondDerivativeTerminal() << std::endl;
+
+	std::cout << "eval stateControlDerivativeIntermediate " << std::endl;
+	std::cout << costFunction.stateControlDerivativeIntermediate() << std::endl << std::endl;
+	std::cout << costFunction2.stateControlDerivativeIntermediate() << std::endl;
+
+	std::cout << "eval stateControlDerivativeTerminal " << std::endl;
+	std::cout << costFunction.stateControlDerivativeTerminal() << std::endl << std::endl;
+	std::cout << costFunction2.stateControlDerivativeTerminal() << std::endl;
+
+	std::cout << "eval stateSecondDerivativeIntermediate " << std::endl;
+	std::cout << costFunction.stateSecondDerivativeIntermediate() << std::endl << std::endl;
+	std::cout << costFunction.stateSecondDerivativeIntermediate().transpose() << std::endl;
+
+	std::cout << "eval controlSecondDerivativeIntermediate " << std::endl;
+	std::cout << costFunction.controlSecondDerivativeIntermediate() << std::endl << std::endl;
+	std::cout << costFunction.controlSecondDerivativeIntermediate().transpose() << std::endl;
+}
+
+
+TEST(CostFunctionTest, ADQuadraticTest)
 {
 	const size_t nWeights = 2;
 	const size_t nTests = 10;
@@ -80,22 +144,21 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 	CostFunctionAnalytical<state_dim, control_dim> costFunction;
 	CostFunctionAD<state_dim, control_dim> costFunctionAD;
 
-	std::shared_ptr<TermQuadratic<state_dim, control_dim, double> > termQuadratic(new TermQuadratic<state_dim, control_dim>);
-	std::shared_ptr<TermQuadratic<state_dim, control_dim, double, ct::core::ADCGScalar > > termQuadraticAD(
-		new TermQuadratic<state_dim, control_dim, double, ct::core::ADCGScalar>);
+	// intermediate cost terms
+	std::shared_ptr<TermQuadratic<state_dim, control_dim, double> > termQuadratic_interm(new TermQuadratic<state_dim, control_dim>);
+	std::shared_ptr<TermQuadratic<state_dim, control_dim, double, ct::core::ADCGScalar > > termQuadraticAD_interm (	new TermQuadratic<state_dim, control_dim, double, ct::core::ADCGScalar>);
 
-	double t_on = 0.5;
-	double t_off = 1.5;
+	// final cost terms
+	std::shared_ptr<TermQuadratic<state_dim, control_dim, double> > termQuadratic_final (new TermQuadratic<state_dim, control_dim>);
+	std::shared_ptr<TermQuadratic<state_dim, control_dim, double, ct::core::ADCGScalar > > termQuadraticAD_final (	new TermQuadratic<state_dim, control_dim, double, ct::core::ADCGScalar>);
 
-	std::shared_ptr<SingleActivation> c_single (new SingleActivation(t_on, t_off));
+	costFunction.addIntermediateTerm(termQuadratic_interm, true);
+	costFunctionAD.addIntermediateADTerm(termQuadraticAD_interm, true);
+	costFunction.addFinalTerm(termQuadratic_final, true);
+	costFunctionAD.addFinalADTerm(termQuadraticAD_final, true);
 
-	// termQuadratic->setTimeActivation(c_single, true);
-	// termQuadraticAD->setTimeActivation(c_single, true);
-
-	costFunction.addIntermediateTerm(termQuadratic, true);
-	costFunctionAD.addIntermediateADTerm(termQuadraticAD, true);
-
-	Eigen::Matrix<double, state_dim, state_dim> Q;
+	Eigen::Matrix<double, state_dim, state_dim> Q_interm;
+	Eigen::Matrix<double, state_dim, state_dim> Q_final;
 	Eigen::Matrix<double, control_dim, control_dim> R;
 
 	core::StateVector<state_dim> x_ref;
@@ -104,23 +167,34 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 	for (size_t i=0; i<nWeights; i++)
 	{
 		try{
-		Q.setRandom();
+		Q_interm.setRandom();
+		Q_final.setRandom();
 		R.setRandom();
 		x_ref.setRandom();
 		u_ref.setRandom();
 
 		if (i==0)
 		{
-			Q.setZero();
+			Q_interm.setZero();
+			Q_final.setZero();
 			R.setZero();
 			x_ref.setZero();
 			u_ref.setZero();
 		}
 
-		termQuadratic->setWeights(Q, R);
-		termQuadraticAD->setWeights(Q, R);
-		termQuadratic->setStateAndControlReference(x_ref, u_ref);
-		termQuadraticAD->setStateAndControlReference(x_ref, u_ref);
+		Q_interm += Q_interm.transpose().eval(); // make symmetric
+		R += R.transpose().eval(); // make symmetric
+		Q_final += Q_final.transpose().eval(); // make symmetric
+
+		termQuadratic_interm->setWeights(Q_interm, R);
+		termQuadraticAD_interm->setWeights(Q_interm, R);
+		termQuadratic_interm->setStateAndControlReference(x_ref, u_ref);
+		termQuadraticAD_interm->setStateAndControlReference(x_ref, u_ref);
+
+		termQuadratic_final->setWeights(Q_final, R);
+		termQuadraticAD_final->setWeights(Q_final, R);
+		termQuadratic_final->setStateAndControlReference(x_ref, u_ref);
+		termQuadraticAD_final->setStateAndControlReference(x_ref, u_ref);
 
 		costFunctionAD.initialize();
 
@@ -140,7 +214,19 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 			costFunction.setCurrentStateAndControl(x, u, 1.0);
 			costFunctionAD.setCurrentStateAndControl(x, u, 1.0);
 
+//			printCostFunctionOutput(costFunction, costFunctionAD);
 			compareCostFunctionOutput(costFunction, costFunctionAD);
+
+			// now some manual assertions
+			ASSERT_TRUE(costFunction.stateDerivativeIntermediate().isApprox(2*Q_interm*(x-x_ref)));
+			ASSERT_TRUE(costFunction.stateDerivativeTerminal().isApprox(2*Q_final * (x-x_ref)));
+
+			ASSERT_TRUE(costFunction.stateSecondDerivativeIntermediate().isApprox(2*Q_interm));
+			ASSERT_TRUE(costFunction.stateSecondDerivativeTerminal().isApprox(2*Q_final));
+
+			ASSERT_TRUE(costFunction.controlDerivativeIntermediate().isApprox(2*R*(u-u_ref)));
+
+			ASSERT_TRUE(costFunction.controlSecondDerivativeIntermediate().isApprox(2*R));
 		}
 		}
 		catch(std::exception& e)
@@ -150,9 +236,10 @@ TEST(CostFunctionTest, ADQuadraticIntermediateTest)
 	}
 }
 
-TEST(CostFunctionTest, ADQuadMultIntermediateTest)
+
+TEST(CostFunctionTest, ADQuadMultTest)
 {
-	const size_t nWeights = 2;
+	const size_t nWeights = 3;
 	const size_t nTests = 10;
 
 	CostFunctionAnalytical<state_dim, control_dim> costFunction;
@@ -164,14 +251,6 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 	std::shared_ptr<TermMixed<state_dim, control_dim, double > > termMixed (new TermMixed<state_dim, control_dim, double>);
 	std::shared_ptr<TermMixed<state_dim, control_dim, double, ct::core::ADCGScalar > > termMixedAD (new TermMixed<state_dim, control_dim, double, ct::core::ADCGScalar>);
 
-	double active_percentage = 0.5; // how much of the cycle is the time active
-	double period = 0.5; // what is the period
-	double activation_offset = 0.1; // how much is the activation offset WITHIN the period
-	double period_offset = 0.2; // how much is the period offset to t=0?
-
-	std::shared_ptr<PeriodicActivation> c_periodic (new PeriodicActivation(active_percentage, period, activation_offset, period_offset));
-	// termQuadMult->setTimeActivation(c_periodic, true);
-	// termQuadMultAD->setTimeActivation(c_periodic, true);
 
 	costFunction.addIntermediateTerm(termQuadMult);
 	costFunctionAD.addIntermediateADTerm(termQuadMultAD);
@@ -186,6 +265,7 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 	for (size_t i=0; i<nWeights; i++)
 	{
 		try{
+
 			Q.setRandom();
 			R.setRandom();
 			P.setRandom();
@@ -209,6 +289,9 @@ TEST(CostFunctionTest, ADQuadMultIntermediateTest)
 				x_ref.setConstant(10.0);
 				u_ref.setConstant(10.0);
 			}
+
+			Q += Q.transpose().eval(); // make symmetric
+			R += R.transpose().eval(); // make symmetric
 
 			termQuadMult->setWeights(Q, R);
 			termQuadMultAD->setWeights(Q, R);

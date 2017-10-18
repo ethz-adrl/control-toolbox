@@ -95,7 +95,8 @@ public:
     :
         Utils(f, inputDim, outputDim),
         DerivativesBase(),
-        compiled_(false)
+        compiled_(false),
+		libName_("")
     {}
 
     /**
@@ -118,7 +119,8 @@ public:
     :
         Utils(f, inputDim, outputDim),
         DerivativesBase(),
-        compiled_(false)
+        compiled_(false),
+		libName_("")
     {}
 
     //! copy constructor
@@ -127,15 +129,17 @@ public:
         Utils(arg),
         DerivativesBase(arg),
         compiled_(arg.compiled_),
+		libName_(arg.libName_),
         dynamicLib_(arg.dynamicLib_)
     {
         if(compiled_)
-            model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"));
+            model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"+libName_));
     }
 
     virtual void updateDerived() override
     {
         compiled_ = false;
+        libName_ = "";
         dynamicLib_ = nullptr;
         model_ = nullptr;
     }
@@ -301,7 +305,7 @@ public:
         std::vector<bool> sparsityVec = model_->JacobianSparsityBool();
         Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(this->outputDim_, this->inputDim_);
 
-        assert(sparsityVec.size() == this->outputDim_ * this->inputDim_);
+        assert((int)(sparsityVec.size()) == this->outputDim_ * this->inputDim_);
         for(size_t row = 0; row < this->outputDim_; ++row)
             for(size_t col = 0; col < this->inputDim_; ++col)
                 sparsityMat(row, col) = sparsityVec[col + row * this->inputDim_];
@@ -395,12 +399,18 @@ public:
      */
     void compileJIT(
         const DerivativesCppadSettings& settings,
-        const std::string& libName = "threadId" + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id())))
+        const std::string& libName = "unnamedLib",
+		bool verbose = false)
     {
         if (compiled_) return;
-        std::cout << "Starting to compile " + libName + " library"  << std::endl;
 
-        CppAD::cg::ModelCSourceGen<double> cgen(this->cgCppadFun_, "DerivativesCppad");
+        // assigning a unique identifier to the library in order to avoid race conditions in JIT
+        libName_ = libName + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id()));
+
+//        if (verbose)
+        	std::cout << "Starting to compile " + libName_ + " library"  << std::endl;
+
+        CppAD::cg::ModelCSourceGen<double> cgen(this->cgCppadFun_, "DerivativesCppad"+libName_);
 
         cgen.setMultiThreading(settings.multiThreading_);
         cgen.setCreateForwardZero(settings.createForwardZero_);
@@ -416,7 +426,7 @@ public:
         CppAD::cg::ModelLibraryCSourceGen<double> libcgen(cgen);
 
         // compile source code
-        CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, libName);
+        CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, libName_);
         if(settings.compiler_ == DerivativesCppadSettings::GCC)
         {
             CppAD::cg::GccCompiler<double> compiler;            
@@ -435,10 +445,12 @@ public:
             p2.saveSources();
         }
 
-        model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"));
+        model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad"+libName_));
 
         compiled_ = true;
-        std::cout << "Successfully compiled " << std::endl;
+
+        if(verbose)
+        	std::cout << "Successfully compiled " << libName_ << std::endl;
 
         if(model_->isJacobianSparsityAvailable())
         {
@@ -476,6 +488,7 @@ public:
 
 private:
     bool compiled_; //! flag if Jacobian is compiled
+    std::string libName_; //! a unique name for this library
 
     std::vector<size_t> sparsityRowsJacobian_;
     std::vector<size_t> sparsityColsJacobian_;

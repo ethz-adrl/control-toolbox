@@ -113,12 +113,12 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim, SCALAR> > createCo
 	Eigen::Matrix<SCALAR, 2, 2> Q_final;
 	Q_final << 1000, 0, 0, 1000;
 
-	std::shared_ptr<TermQuadratic<state_dim, control_dim> > termQuadratic(new TermQuadratic<state_dim, control_dim>(Q, R, x_nominal, u_nominal));
-	std::shared_ptr<TermQuadratic<state_dim, control_dim> > termFinal(new TermQuadratic<state_dim, control_dim>);
-	termFinal->getStateWeight() = Q_final;
-	termFinal->updateReferenceState(x_final);
+	std::shared_ptr<TermQuadratic<state_dim, control_dim> > termIntermediate(new TermQuadratic<state_dim, control_dim>(Q, R, x_nominal, u_nominal));
+	std::shared_ptr<TermQuadratic<state_dim, control_dim> > termFinal(new TermQuadratic<state_dim, control_dim> (Q_final, R, x_final, u_nominal));
 
 	std::shared_ptr<CostFunctionAnalytical<state_dim, control_dim> > quadraticCostFunction(new CostFunctionAnalytical<state_dim, control_dim>);		
+	quadraticCostFunction->addIntermediateTerm(termIntermediate);
+	quadraticCostFunction->addFinalTerm(termFinal);
 
 	return quadraticCostFunction;
 }
@@ -128,6 +128,6 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim, SCALAR> > createCo
 typedef tpl::LinearOscillator<double> LinearOscillator;
 typedef tpl::LinearOscillatorLinear<double> LinearOscillatorLinear;
 
-}
-}
-}
+} //example
+} //optcon
+} //ct

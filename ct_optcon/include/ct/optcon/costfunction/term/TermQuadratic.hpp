@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_COSTFUNCTION_TERMQUADRATIC_HPP_
-#define CT_COSTFUNCTION_TERMQUADRATIC_HPP_
+#pragma once
 
 #include "TermBase.hpp"
 
@@ -130,4 +129,3 @@ protected:
 } // namespace optcon
 } // namespace ct
 
-#endif

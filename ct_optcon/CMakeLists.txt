@@ -239,9 +239,6 @@ get_filename_component(NLOC_TEST_DIR "test/nloc" ABSOLUTE)
 configure_file(test/nloc/nloc_test_dir.h.in test/nloc/nloc_test_dir.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/nloc)
 
-add_executable(NonlinearSystemTest test/nloc/NonlinearSystemTest.cpp)
-target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-
 catkin_add_gtest(LinearSystemTest test/nloc/LinearSystemTest.cpp)
 target_link_libraries(LinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 catkin_add_gtest(LinearSystemTestPrespec test/nloc/LinearSystemTestPrespec.cpp)
@@ -262,15 +259,10 @@ target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
 catkin_add_gtest(constraint_test_prespec test/constraint/ConstraintTestPrespec.cpp)
 target_link_libraries(constraint_test_prespec ${catkin_LIBRARIES} dl ${PRESPEC_LIB_NAMES})
 
-catkin_add_gtest(CostFunctionTest test/costfunction/CostFunctionTest.cpp)
-target_link_libraries(CostFunctionTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
+catkin_add_gtest(CostFunctionTests test/costfunction/CostFunctionTests.cpp)
+target_link_libraries(CostFunctionTests ${catkin_LIBRARIES} dl ${MATLAB_LIBS})
 ## todo make prespec cost function tests !!
-
-catkin_add_gtest(CfTracking test/costfunction/TrackingTest.cpp)
-target_link_libraries(CfTracking ${catkin_LIBRARIES})
-
-catkin_add_gtest(ADTest_timeVar test/costfunction/ADTest_timeDependent.cpp)
-target_link_libraries(ADTest_timeVar ${catkin_LIBRARIES})
+## todo make test for tracking term
 
 catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
 target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
@@ -278,12 +270,12 @@ target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
 catkin_add_gtest(dms_test_all_var test/dms/oscillator/oscDMSTestAllVariants.cpp)
 target_link_libraries(dms_test_all_var ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
 
-#add_executable(bareTest test/dms/oscillator/bareTest.cpp)
-#target_link_libraries(bareTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS} dl)
+add_executable(bareTest test/dms/oscillator/bareTest.cpp)
+target_link_libraries(bareTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS} dl)
 
 add_executable(matFilesGenerator test/dms/oscillator/matfiles/matFilesGenerator.cpp)
 target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-#
+
 #add_executable(timeKeeperTest test/mpc/TimeKeeperTest.cpp)
 #target_link_libraries(timeKeeperTest ${catkin_LIBRARIES})
 
