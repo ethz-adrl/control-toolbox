@@ -1,9 +1,13 @@
 /*!
-@page core_tutorials CT Core Tutorial
+@page core_tutorials ct core Tutorials
+
+- \subpage core_tut_control
+- \subpage core_tut_linearization
+- \subpage core_tut_types
 
 This tutorial is specific for the Core Module of the Control Toolbox. For installation instructions and an overview see the main CT documentation.
 
-\section core_tut_control Feedback Control Tutorial
+\page core_tut_control Feedback Control Tutorial
 
 In this tutorial, we will take a look how to implement and simulate simple (feedback) controllers.
 
@@ -50,7 +54,7 @@ rosrun ct_core ex_DampedOscillatorCustomController
 
 
 
-\section core_tut_linearization Derivatives/Jacobian/Linearization Tutorial
+\page core_tut_linearization Derivatives/Jacobian/Linearization Tutorial
 
 Often when working with a general nonlinear function \f$ f(x) \f$ we are interested in its Jacobian (derivatives) \f$ J = \frac{df}{dx} \f$.
 
@@ -137,7 +141,7 @@ for tips and tricks on how to do this easily!
 \subsection core_tut_linearization_scalar_templating Templating your System or Function on the Scalar Type
 
 
-\section core_tut_types Some notes on types
+\page core_tut_types Some notes on types
 
 In ct/core/types, the user will find a variety of predefined variable types that are common in robotics and control. Our definitions of vectors and matrices are based 
 on Eigen and are deliberately chosen to be fixed-size, while discrete array and discrete trajectory types rely on STL std::vectors. 

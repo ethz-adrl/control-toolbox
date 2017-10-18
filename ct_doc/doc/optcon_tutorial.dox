@@ -1,8 +1,12 @@
 /*!
-@page optcon_tutorials Tutorial
+@page optcon_tutorials ct optcon Tutorial
 
+- \subpage optcon_tut_lqr
+- \subpage optcon_tut_mpc
+- \subpage optcon_tut_nloc
+- \subpage optcon_tut_dms
 
-\section optcon_tut_lqr LQR Control of a Damped Oscillator
+\page optcon_tut_lqr LQR Control of a Damped Oscillator
 In this example, we will take an existing damped oscillator model, linearize the (already linear) dynamics around the steady state
  using Auto-Differentiation with Code Generation and finally design an LQR controller based on the linearized model.
 
@@ -17,19 +21,31 @@ rosrun ct_optcon ex_LQR
 \note Make sure you have built the examples before trying to run it.
 
 
-\section optcon_tut_mpc iLQG-MPC of a Damped Oscillator
+\page optcon_tut_nloc NLOC of a Damped Oscillator
 
-In this example we show how to use an Optimal Control solver (here iLQG) in combination with the MPC-class for out-of-the box Model Predictive Control.
+This example shows how to use the nonlinear optimal control solvers iLQR, unconstrained Gauss-Newton-Multiple-Shooting (GNMS),
+as well as the hybrid methods iLQR-GNMS(M), where M denotes the number of multiple-shooting intervals.
 
-\include iLQG_MPC.cpp
+\include NLOC.cpp
 
 You can run this example with the following command
 \code{.sh}
-rosrun ct_optcon ex_MPC
+rosrun ct_optcon ex_NLOC
+\endcode
+
+\page optcon_tut_mpc NLOC-MPC of a Damped Oscillator
+
+In this example we show how to use a Nonlinear Optimal Control solver (here iLQG) in combination with the MPC-class for out-of-the box Model Predictive Control.
+
+\include NLOC_MPC.cpp
+
+You can run this example with the following command
+\code{.sh}
+rosrun ct_optcon ex_NLOC_MPC
 \endcode
 
 
-\section optcon_tut_dms Constrained Direct Multiple Shooting for a Damped Oscillator
+\page optcon_tut_dms Constrained Direct Multiple Shooting for a Damped Oscillator
 
 In this example, we show how to solve an Optimal Control problem for a oscillator system using Direct Multiple Shooting.
 
