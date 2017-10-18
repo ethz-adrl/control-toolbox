@@ -50,7 +50,7 @@ CARE<STATE_DIM, CONTROL_DIM>::CARE()
 	int INFO = 0;
 	int TCols = schur_matrix_t::ColsAtCompileTime;
 
-#ifdef USE_LAPACK
+#ifdef CT_USE_LAPACK
 	dtrsen_("N", "V", &SELECT[0], &TCols, T.data(), &N, U.data(), &N,
 			&WR[0], &WI[0], &MS, &S, &SEP, WORKDUMMY, &LWORK, &IWORKQUERY[0],
 			&LIWORK, &INFO);
@@ -168,7 +168,7 @@ bool CARE<STATE_DIM, CONTROL_DIM>::solveSchurIterative(const schur_matrix_t& M, 
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 bool CARE<STATE_DIM, CONTROL_DIM>::solveSchurDirect(const schur_matrix_t& M, state_matrix_t& P)
 {
-#ifdef USE_LAPACK
+#ifdef CT_USE_LAPACK
 	const bool computeU = true;
 	schur_.compute(M, computeU);
 

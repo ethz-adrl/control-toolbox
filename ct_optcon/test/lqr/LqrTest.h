@@ -137,14 +137,14 @@ TEST(LQRTest, quadTest)
 	bool foundSolutionIterative = lqr.compute(Q, R, A, B, Kiterative, false, true);
 	ASSERT_TRUE(foundSolutionIterative);
 
-#ifdef USE_LAPACK
+#ifdef CT_USE_LAPACK
 	bool foundSolutionDirect = lqr.compute(Q, R, A, B, K, false);
 	ASSERT_TRUE(foundSolutionDirect);
 	ASSERT_LT((K - Kiterative).array().abs().maxCoeff(), 1e-4);
 #endif
 
 	int nTests = 1000;
-#ifdef USE_LAPACK
+#ifdef CT_USE_LAPACK
 	auto start1 = std::chrono::system_clock::now();
 	for (int i=0; i<nTests; i++)
 	{
