@@ -1,9 +1,10 @@
 /*!
-@page tutorials Tutorials
+@page getting_started Getting Started
 
-In order to get you started with using the Control Toolbox, there are several useful resources available
+In order to get you started with using the Control Toolbox, there are several useful resources available. First make sure
+you have installed the Control Toolbox as described in the \ref install_guide "Installation Guide". Afterwards you can
+follow the Tutorials below.
 
-- \ref install_guide "Installation Guide"
 - \ref tut_basics "Basics Tutorial"
 - \ref tut_advanced "Advanced Tutorial"
 - \ref tut_examples "Examples"
@@ -79,7 +80,7 @@ check out the tutorials in ct_rbd as well.
 First we create our system within a header Masspoint.h
 
 \code{.cpp}
-#include <ct/ct_core.h> // as usual, include CT
+#include <ct/core/core.h> // as usual, include CT
 
 // create a class that derives from ct::core::System
 class Masspoint : public ct::core::System<2>
@@ -127,7 +128,7 @@ private:
 As before, we can now integrate this system forward
 
 \code{.cpp}
-#include <ct/core.h>
+#include <ct/core/core.h>
 #include "Masspoint.h"
 
 int main(int argc, char* argv)
@@ -168,7 +169,11 @@ int main(int argc, char* argv)
 \subsection tut_advanced_core CT Core Tutorials
 - @ref core_tut_control "Feedback Control Tutorial"
 - @ref core_tut_linearization "System Linearization Tutorial"
-- @ref core_tut_autodiff "Auto Differentiation and Codegen Tutorial"
+
+\subsection tut_advanced_core CT Core Tutorials
+- @ref optcon_tut_lqr "Designing an LQR controller"
+- @ref optcon_tut_mpc "Designing a non-linear MPC controller"
+- @ref optcon_tut_dms "Constrained Direct Multiple Shooting"
 
 \section tut_examples Examples
 
