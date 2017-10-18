@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_COSTFUNCTION_HPP_
-#define CT_OPTCON_COSTFUNCTION_HPP_
+#pragma once
 
 #include <vector>
 
@@ -58,31 +57,20 @@ public:
 	 *
 	 * Default constructor, sets state, control and time to zero
 	 */
-	CostFunction() :
-		t_(0.0),
-		t_shift_(0.0)
-	{
-		x_.setZero();
-		u_.setZero();
-	};
+	CostFunction();
 
 	/**
 	 * \brief Destructor
 	 *
 	 * Destructor
 	 */
-	virtual ~CostFunction() {};
+	virtual ~CostFunction();
 
 	/**
 	 * \brief Copy constructor
 	 * @param arg other cost function
 	 */
-	CostFunction(const CostFunction& arg) :
-		x_(arg.x_),
-		u_(arg.u_),
-		t_(arg.t_),
-		t_shift_(arg.t_shift_)
-	{}
+	CostFunction(const CostFunction& arg);
 
 	/**
 	 * Clones the cost function.
@@ -97,11 +85,7 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	virtual void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const SCALAR& t = SCALAR(0.0)) {
-		x_ = x;
-		u_ = u;
-		t_ = t + t_shift_;
-	}
+	virtual void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const SCALAR& t = SCALAR(0.0));
 
 	/**
 	 * \brief sets current state, control and time
@@ -112,12 +96,7 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	virtual void getCurrentStateAndControl(Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, SCALAR& t) const
-	{
-		x = this->x_;
-		u = this->u_;
-		t = this->t_;
-	}
+	virtual void getCurrentStateAndControl(Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, SCALAR& t) const;
 
 	/**
 	 * \brief evaluate intermediate costs
@@ -135,10 +114,7 @@ public:
 	 */
 	virtual SCALAR evaluateTerminal() = 0;
 
-	virtual void shiftTime(const SCALAR t)
-	{
-		t_shift_ = t;
-	}
+	virtual void shiftTime(const SCALAR t);
 
 
 protected:
@@ -152,4 +128,3 @@ protected:
 } // namespace optcon
 } // namespace ct
 
-#endif /* COSTFUNCTIONBASE_HPP_ */
