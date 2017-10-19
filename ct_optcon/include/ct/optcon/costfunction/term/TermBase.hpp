@@ -25,12 +25,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_OPTCON_TERMBASE_HPP_
-#define CT_OPTCON_TERMBASE_HPP_
+#pragma once
 
-#include <ct/optcon/costfunction/term/timeActivations/TimeActivationBase.hpp>
 #include <boost/algorithm/string.hpp>   
 
+#include "timeActivations/TimeActivationBase.hpp"
 #include "timeActivations/TimeActivations.h"
 
 namespace ct {
@@ -49,6 +48,7 @@ namespace optcon {
  **/
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, typename SCALAR = SCALAR_EVAL>
 class TermBase {
+
 protected:
 	std::string name_;
 	std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> c_i_;
@@ -65,20 +65,13 @@ public:
 	 * \brief Default constructor
 	 * @param name Name of the term
 	 */
-	TermBase(std::string name = "Unnamed") 
-	: 
-	name_(name),
-	c_i_(std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> (new tpl::TimeActivationBase<SCALAR_EVAL>()))
-	{}
+	TermBase(std::string name = "Unnamed");
 
 	/**
 	 * \brief Copy Cunstructor
 	 * @param arg The term to copy
 	 */
-	TermBase(const TermBase& arg): 
-	name_(arg.name_),
-	c_i_(arg.c_i_)
-	{}
+	TermBase(const TermBase& arg);
 
 	/**
 	 * \brief Deep-copy term
@@ -89,7 +82,7 @@ public:
 	/**
 	 * \brief Destructor
 	 */
-	virtual ~TermBase() {}
+	virtual ~TermBase();
 	
 	/**
 	 * @brief      Evaluates the term at x, u, t
@@ -112,10 +105,7 @@ public:
 	 *
 	 * @return     The evaluatated cost term
 	 */
-	SCALAR_EVAL eval(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, 1> &u, const SCALAR_EVAL& t)
-	{
-		return computeActivation(t) * evaluate(x, u , t);
-	}
+	SCALAR_EVAL eval(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, 1> &u, const SCALAR_EVAL& t);
 
 	/**
 	 * @brief      Used for generating derivatives in costfunctionad. There is
@@ -131,10 +121,7 @@ public:
 	ct::core::ADCGScalar evalCG(
 		const Eigen::Matrix<ct::core::ADCGScalar, STATE_DIM, 1>& x, 
 		const Eigen::Matrix<ct::core::ADCGScalar, CONTROL_DIM, 1>& u, 
-		const ct::core::ADCGScalar& t)
-	{
-		return evaluate(x, u, t);
-	}
+		const ct::core::ADCGScalar& t);
 	
 	/**
 	 * \brief Returns if term is non-zero at a specific time
@@ -143,79 +130,44 @@ public:
 	 * @param t time
 	 * @return true if term is active at t
 	 */
-	virtual bool isActiveAtTime(SCALAR_EVAL t)
-	{
-		return c_i_->isActiveAtTime(t);
-	}
+	virtual bool isActiveAtTime(SCALAR_EVAL t);
 
-	SCALAR_EVAL computeActivation(SCALAR_EVAL t)
-	{
- 		return c_i_->computeActivation(t); 		 
-	}
+	SCALAR_EVAL computeActivation(SCALAR_EVAL t);
 
-	virtual core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) { throw std::runtime_error("This cost function element is not implemented for the given term. Please use either auto-diff cost function or implement the analytical derivatives manually."); }
+	virtual core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t);
 
-	virtual state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) { throw std::runtime_error("This cost function element is not implemented for the given term. Please use either auto-diff cost function or implement the analytical derivatives manually."); }
+	virtual state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t);
 	
-	virtual core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) { throw std::runtime_error("This cost function element is not implemented for the given term. Please use either auto-diff cost function or implement the analytical derivatives manually."); }
+	virtual core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t);
 	
-	virtual control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) { throw std::runtime_error("This cost function element is not implemented for the given term. Please use either auto-diff cost function or implement the analytical derivatives manually."); }
+	virtual control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t);
 
-	virtual control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) { throw std::runtime_error("This cost function element is not implemented for the given term. Please use either auto-diff cost function or implement the analytical derivatives manually."); }
+	virtual control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t);
 
-	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) { throw std::runtime_error("This cost function element is not implemented for the given term. Please use either auto-diff cost function or implement the analytical derivatives manually."); }  // a virtual function for data loading
+	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false);
 
-	void setTimeActivation(std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> c_i, bool verbose = false)
-	{
-		c_i_ = c_i;
-		if(verbose)
-			c_i_->printInfo();
-	}
+	void setTimeActivation(std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> c_i, bool verbose = false);
 
-	void loadTimeActivation(const std::string& filename, const std::string& termName, bool verbose = false) {
-		boost::property_tree::ptree pt;
-		boost::property_tree::read_info(filename, pt);
-
-		try{
-			std::string activationKind = pt.get<std::string>(termName + ".time_activation" + ".kind");
-			boost::algorithm::to_lower(activationKind);
-			std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> c_i;
-			CT_LOADABLE_TIME_ACTIVATIONS(SCALAR_EVAL);
-			c_i->loadConfigFile(filename, termName + ".time_activation", verbose);
-			if(!c_i){
-				throw std::runtime_error("Activation type \""+ activationKind+ "\" not supported");
-			}
-			else{
-				c_i_ = c_i;
-				if(verbose)
-					c_i_->printInfo();
-			}
-		}
-		catch(std::exception& e)
-		{
-			return;
-		}
-	}
+	void loadTimeActivation(const std::string& filename, const std::string& termName, bool verbose = false);
 
 	/**
 	 * \brief Returns the name of the term
 	 * @param termName name of the term
 	 */
-	const std::string& getName() const {return name_;}
+	const std::string& getName() const;
 
 	/**
 	 * \brief Sets the name of the term
 	 * @param termName
 	 */
-	void setName(const std::string& termName){ name_=termName;}
+	void setName(const std::string& termName);
 
-	virtual void updateReferenceState (const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState){}
-	virtual Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> getReferenceState() const {throw std::runtime_error("getReferenceState is not implemented for the current term!");}
+	virtual void updateReferenceState (const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState);
 
-protected:
+	virtual Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> getReferenceState() const;
+
 };
 
 } // namespace optcon
 } // namespace ct
 
-#endif // TERMBASE_HPP_
