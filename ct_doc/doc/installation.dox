@@ -15,10 +15,10 @@ library versions as provided in the package sources.
  - <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen 3</a>
  - <a href="http://wiki.ros.org/catkin">catkin</a> (build system, easy to switch to CMakeLists.txt where needed). We recommend using <a href="http://catkin-tools.readthedocs.io/en/latest/verbs/catkin_build.html">catkin_tools</a>
  - boost 1.54 or greater (soon optional)
- - <a href="http://www.netlib.org/lapack/">lapack</a> (enables Schur method as an alternative to iterative method in ct::optcon::LQR, (soon optional))
 
  
 \subsection opt_dep Optional Dependencies and Bindings
+ - <a href="http://www.netlib.org/lapack/">lapack</a> (enables Schur method as an alternative to iterative method in ct::optcon::LQR)
  - <a href="https://clang.llvm.org/">clang</a> compiler (faster compilation for large linear models), $ sudo apt-get install clang-3.5
  - <a href="http://wiki.ros.org/indigo">ROS Indigo</a> (for ROS bindings, visualization and extended examples), see <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_nodes</a>, <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_msgs</a>
  - <a href="https://projects.coin-or.org/Ipopt">IPOPT</a> or <a href="http://www.sbsi-sol-optimize.com/asp/sol_product_snopt.htm">SNOPT</a>
