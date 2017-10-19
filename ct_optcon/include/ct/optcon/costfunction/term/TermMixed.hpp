@@ -24,9 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-
-#ifndef CT_COSTFUNCTION_TERM_MIXED_HPP_
-#define CT_COSTFUNCTION_TERM_MIXED_HPP_
+#pragma once
 
 #include "TermBase.hpp"
 
@@ -61,7 +59,7 @@ public:
 
 	TermMixed(const TermMixed& arg);
 
-	virtual ~TermMixed(){}
+	virtual ~TermMixed();
 	
 	TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone () const override;
 
@@ -88,7 +86,7 @@ public:
 	
 	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) override;
 
-	void updateReferenceState (const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState) override{ x_ref_ = newRefState;}
+	void updateReferenceState (const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState) override;
 
 protected:
 	control_state_matrix_t P_;
@@ -98,9 +96,7 @@ protected:
 
 };
 
-#include "implementation/TermMixed-impl.hpp"
 
 } // namespace optcon
 } // namespace ct
 
-#endif

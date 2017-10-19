@@ -24,12 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-
 #pragma once
-
-// todo remove cppad includes
-//#include <cppad/cppad.hpp>
-//#include <cppad/example/cppad_eigen.hpp>
 
 #include "TermBase.hpp"
 

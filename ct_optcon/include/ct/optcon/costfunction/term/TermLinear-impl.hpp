@@ -24,6 +24,11 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#pragma once
+
+namespace ct {
+namespace optcon {
+
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermLinear(const core::StateVector<STATE_DIM, SCALAR_EVAL> a, core::ControlVector<CONTROL_DIM, SCALAR_EVAL> b, const SCALAR_EVAL c) : a_(a), b_(b), c_(c) {}
 
@@ -94,4 +99,8 @@ void TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(con
 		   std::cout<<"Read a as a= \n"<<a_<<std::endl;
 		   std::cout<<"Read b as b= \n"<<b_<<std::endl;
        }
+}
+
+
+}
 }

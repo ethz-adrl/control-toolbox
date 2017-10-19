@@ -24,6 +24,11 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#pragma once
+
+namespace ct {
+namespace optcon {
+
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermMixed(
 		const control_state_matrix_t& P) :
@@ -63,6 +68,9 @@ TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* TermMixed<STATE_DIM, CON
 		return new TermMixed(*this);
 }
 
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::~TermMixed()
+{}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 void TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::setWeights(const control_state_matrix_double_t& P)
@@ -144,4 +152,13 @@ void TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(cons
 		   std::cout<<"Read x_ref as x_ref = \n"<<x_ref_.transpose()<<std::endl;
 		   std::cout<<"Read u_ref as u_ref = \n"<<u_ref_.transpose()<<std::endl;
        }
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+void TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::updateReferenceState (const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState)
+{
+	x_ref_ = newRefState;
+}
+
+}
 }
