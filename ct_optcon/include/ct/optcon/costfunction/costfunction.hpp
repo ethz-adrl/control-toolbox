@@ -1,3 +1,7 @@
+/*!
+ * a convenience include file collecting all class declarations related to cost functions
+ */
+
 #pragma once
 
 // time activations

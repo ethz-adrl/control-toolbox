@@ -84,7 +84,7 @@ public:
 	 * @param filename config file location
 	 * @param verbose flag enabling printouts
 	 */
-	CostFunctionAnalytical(const std::string& filename, bool verbose);
+	CostFunctionAnalytical(const std::string& filename, bool verbose = false);
 
 	/**
 	 * Deep-cloning of cost function

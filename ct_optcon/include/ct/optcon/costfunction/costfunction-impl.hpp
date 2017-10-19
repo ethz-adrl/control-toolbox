@@ -1,3 +1,6 @@
+/*!
+ * a convenience include file collecting all class implementations related to cost functions
+ */
 
 #pragma once
 

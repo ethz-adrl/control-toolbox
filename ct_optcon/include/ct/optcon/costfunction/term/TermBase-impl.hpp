@@ -100,7 +100,8 @@ TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateSecondDerivative(
 		}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(
+core::ControlVector<CONTROL_DIM, SCALAR_EVAL>
+TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlDerivative(
 		const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
 		const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u,
 		const SCALAR_EVAL& t)
@@ -140,14 +141,15 @@ void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(
 	throw std::runtime_error("This cost function element is not implemented for the given term. Please use either auto-diff cost function or implement the analytical derivatives manually.");
 		}
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+template<size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL,
+		typename SCALAR>
 void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::setTimeActivation(
 		std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> c_i, bool verbose)
-		{
+{
 	c_i_ = c_i;
-	if(verbose)
+	if (verbose)
 		c_i_->printInfo();
-		}
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadTimeActivation(

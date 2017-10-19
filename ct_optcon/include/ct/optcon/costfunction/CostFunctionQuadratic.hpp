@@ -89,7 +89,7 @@ public:
 	/**
 	 * Destructor
 	 */
-	virtual ~CostFunctionQuadratic() {}
+	virtual ~CostFunctionQuadratic();
 
 	/**
 	 * \brief Adds an intermediate term
@@ -97,9 +97,9 @@ public:
 	 * @param verbose verbosity flag which enables printout
 	 * @return
 	 */
-	virtual size_t addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false) { throw std::runtime_error("not implemented"); };
+	virtual size_t addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false);
 
-	virtual void addIntermediateADTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar> > term, bool verbose = false) { throw std::runtime_error("not implemented"); };
+	virtual void addIntermediateADTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar> > term, bool verbose = false);
 
 	/**
 	 * \brief Adds a final term
@@ -107,15 +107,16 @@ public:
 	 * @param verbose verbosity flag which enables printout
 	 * @return
 	 */
-	virtual size_t addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false) { throw std::runtime_error("not implemented"); };
-	virtual void addFinalADTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar> > term, bool verbose = false) { throw std::runtime_error("not implemented"); };
+	virtual size_t addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false);
+
+	virtual void addFinalADTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar> > term, bool verbose = false);
 
 	/**
 	 * \brief Loads cost function from config file
 	 * @param filename config file location
 	 * @param verbose verbosity flag which enables printout
 	 */
-	virtual void loadFromConfigFile(const std::string& filename, bool verbose = false)  { throw std::runtime_error("not implemented"); };
+	virtual void loadFromConfigFile(const std::string& filename, bool verbose = false);
 
 	/**
 	 * \brief Computes intermediate-cost first-order derivative with respect to state
@@ -153,8 +154,7 @@ public:
 	 * Not available for all cost functions. Throws an exception if not available.
 	 * @return derivative vector (Jacobian)
 	 */
-	virtual control_vector_t controlDerivativeTerminal() { throw std::runtime_error("controlDerivativeTerminal() not implemented in CostFunctionQuadratic"); };
-
+	virtual control_vector_t controlDerivativeTerminal();
 	/**
 	 * \brief Computes intermediate-cost second-order derivative with respect to input
 	 * @return derivative matrix (Jacobian)
@@ -167,7 +167,7 @@ public:
 	 * Not available for all cost functions. Throws an exception if not available.
 	 * @return derivative matrix (Jacobian)
 	 */
-	virtual control_matrix_t controlSecondDerivativeTerminal() { throw std::runtime_error("controlSecondDerivativeTerminal() not implemented"); };
+	virtual control_matrix_t controlSecondDerivativeTerminal();
 
 	/**
 	 * \brief Computes intermediate-cost derivative with respect to state and control
@@ -205,8 +205,11 @@ protected:
 	SCALAR eps_;
 	bool doubleSidedDerivative_ = true;
 
-	std::vector < std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > > intermediateCostAnalytical_; /** list of intermediate cost terms for which analytic derivatives are available */
-	std::vector < std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > > finalCostAnalytical_; /** list of final cost terms for which analytic derivatives are available */
+	/** list of intermediate cost terms for which analytic derivatives are available */
+	std::vector < std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > > intermediateCostAnalytical_;
+
+	/** list of final cost terms for which analytic derivatives are available */
+	std::vector < std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > > finalCostAnalytical_;
 };
 
 
