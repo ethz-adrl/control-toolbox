@@ -5,6 +5,7 @@
 #include "term/TermBase-impl.hpp"
 #include "term/TermLinear-impl.hpp"
 #include "term/TermMixed-impl.hpp"
+#include "term/TermQuadMult-impl.hpp"
 
 // costfunctions
 #include "costfunction/CostFunction-impl.hpp"

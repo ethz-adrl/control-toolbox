@@ -24,6 +24,12 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#pragma once
+
+namespace ct{
+namespace optcon{
+
+
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermQuadMult<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadMult(
         const state_matrix_t& Q,
@@ -173,3 +179,6 @@ void TermQuadMult<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(c
            std::cout<<"Read u_ref as u_ref = \n"<<u_ref_.transpose()<<std::endl;
        }
 }
+
+} // namespace optcon
+} // namespace ct

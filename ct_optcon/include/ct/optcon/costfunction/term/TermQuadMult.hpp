@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_COSTFUNCTION_TERMQUADMULT_HPP_
-#define CT_COSTFUNCTION_TERMQUADMULT_HPP_
+#pragma once
 
 #include "TermBase.hpp"
 
@@ -69,6 +68,7 @@ public:
 	TermQuadMult<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone () const override;
 
 	void setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R);
+
 	void setStateAndControlReference(const core::StateVector<STATE_DIM>& x_ref, core::ControlVector<CONTROL_DIM>& u_ref);
 
     SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
@@ -95,9 +95,6 @@ protected:
 
 };
 
-#include "implementation/TermQuadMult-impl.hpp"
-
 } // namespace optcon
 } // namespace ct
 
-#endif

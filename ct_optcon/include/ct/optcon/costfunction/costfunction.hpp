@@ -1,9 +1,12 @@
 #pragma once
 
+// terms
 #include "term/TermBase.hpp"
 #include "term/TermLinear.hpp"
 #include "term/TermMixed.hpp"
+#include "term/TermQuadMult.hpp"
 
+// costfunctions
 #include "costfunction/CostFunction.hpp"
 #include "costfunction/CostFunctionQuadratic.hpp"
 #include "costfunction/CostFunctionAD.hpp"
