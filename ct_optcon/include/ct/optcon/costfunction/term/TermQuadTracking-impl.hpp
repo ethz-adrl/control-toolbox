@@ -24,6 +24,10 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#pragma once
+
+namespace ct {
+namespace optcon {
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadTracking(
@@ -41,8 +45,10 @@ TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadTracking(
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadTracking() {
-	Q_.setIdentity();	// default values
+	// default values
+	Q_.setIdentity();
 	R_.setIdentity();
+	trackControlTrajectory_ = false;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
@@ -53,6 +59,10 @@ TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadTracking(
 	x_traj_ref_(arg.x_traj_ref_),
 	u_traj_ref_(arg.u_traj_ref_),
 	trackControlTrajectory_(arg.trackControlTrajectory_)
+{}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+virtual TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::~TermQuadTracking()
 {}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
@@ -152,3 +162,7 @@ void TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFi
 		   std::cout<<"Read R as R = \n"<<R_<<std::endl;
        }
 }
+
+}
+}
+

@@ -6,6 +6,7 @@
 #include "term/TermMixed.hpp"
 #include "term/TermQuadratic.hpp"
 #include "term/TermQuadMult.hpp"
+#include "term/TermQuadTracking.hpp"
 
 // costfunctions
 #include "costfunction/CostFunction.hpp"

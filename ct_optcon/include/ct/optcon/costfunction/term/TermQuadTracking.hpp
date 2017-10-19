@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_COSTFUNCTION_TERMQUADTRACKING_HPP_
-#define CT_COSTFUNCTION_TERMQUADTRACKING_HPP_
+#pragma once
 
 #include "TermBase.hpp"
 
@@ -64,7 +63,7 @@ public:
 
 	TermQuadTracking(const TermQuadTracking& arg);
 
-	virtual ~TermQuadTracking(){}
+	virtual ~TermQuadTracking();
 	
 	TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone () const override;
 
@@ -107,9 +106,5 @@ protected:
 
 };
 
-#include "implementation/TermQuadTracking-impl.hpp"
-
 } // namespace optcon
 } // namespace ct
-
-#endif
