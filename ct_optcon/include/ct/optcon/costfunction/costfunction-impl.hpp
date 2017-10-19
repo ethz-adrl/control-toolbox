@@ -10,8 +10,8 @@
 #include "term/TermQuadTracking-impl.hpp"
 
 // costfunctions
-#include "costfunction/CostFunction-impl.hpp"
-#include "costfunction/CostFunctionAD-impl.hpp"
-#include "costfunction/CostFunctionAnalytical-impl.hpp"
-#include "costfunction/CostFunctionQuadratic-impl.hpp"
-#include "costfunction/CostFunctionQuadraticSimple-impl.hpp"
+#include "CostFunction-impl.hpp"
+#include "CostFunctionAD-impl.hpp"
+#include "CostFunctionAnalytical-impl.hpp"
+#include "CostFunctionQuadratic-impl.hpp"
+#include "CostFunctionQuadraticSimple-impl.hpp"

@@ -62,7 +62,7 @@ TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadTracking(
 {}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-virtual TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::~TermQuadTracking()
+TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::~TermQuadTracking()
 {}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>

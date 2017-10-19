@@ -49,7 +49,8 @@ CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAnalytical(c
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const {
+CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>*
+CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::clone () const {
 	return new CostFunctionAnalytical(*this);
 }
 

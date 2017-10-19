@@ -88,7 +88,7 @@ TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateDerivative(
 		}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::state_matrix_t
+typename TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::state_matrix_t
 TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateSecondDerivative(
 		const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
 		const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u,
@@ -111,7 +111,7 @@ core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(
 		}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_matrix_t
+typename TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_matrix_t
 TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlSecondDerivative(
 		const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
 		const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u,
@@ -123,7 +123,7 @@ TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlSecondDerivative(
 		}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_state_matrix_t
+typename TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_state_matrix_t
 TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateControlDerivative(
 		const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u,
 		const SCALAR_EVAL& t)
@@ -152,7 +152,7 @@ void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::setTimeActivation(
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadTimeActivation(
 		const std::string& filename, const std::string& termName, bool verbose)
-		{
+{
 	boost::property_tree::ptree pt;
 	boost::property_tree::read_info(filename, pt);
 
@@ -175,7 +175,7 @@ void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadTimeActivation(
 	{
 		return;
 	}
-		}
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 const std::string& TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::getName() const {return name_;}
@@ -189,7 +189,7 @@ void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::updateReferenceState
 {}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-virtual Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::getReferenceState() const {
+Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::getReferenceState() const {
 	throw std::runtime_error("getReferenceState is not implemented for the current term!");
 }
 

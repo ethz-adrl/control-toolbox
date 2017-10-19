@@ -64,10 +64,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	CostFunctionQuadratic()
-	{
-		eps_ = sqrt(Eigen::NumTraits<SCALAR>::epsilon() );
-	}
+	CostFunctionQuadratic();
 
 	/**
 	 * Constructor given a setpoint
@@ -75,34 +72,13 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	CostFunctionQuadratic(const state_vector_t &x, const control_vector_t &u, const SCALAR& t):
-		CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>(x, u, t)
-	{
-		eps_ = sqrt(Eigen::NumTraits<SCALAR>::epsilon() );
-	}
+	CostFunctionQuadratic(const state_vector_t &x, const control_vector_t &u, const SCALAR& t);
 
 	/**
 	 * Copy constructor
 	 * @param arg other cost function
 	 */
-	CostFunctionQuadratic(const CostFunctionQuadratic& arg):
-		CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
-		eps_(arg.eps_),
-		doubleSidedDerivative_(arg.doubleSidedDerivative_)
-	{
-		intermediateCostAnalytical_.resize(arg.intermediateCostAnalytical_.size());
-		finalCostAnalytical_.resize(arg.finalCostAnalytical_.size());
-
-		for(size_t i = 0; i<arg.intermediateCostAnalytical_.size(); i++)
-		{
-			intermediateCostAnalytical_[i] = std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> (arg.intermediateCostAnalytical_[i]->clone());
-		}
-
-		for(size_t i = 0; i<arg.finalCostAnalytical_.size(); i++)
-		{
-			finalCostAnalytical_[i] = std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > (arg.finalCostAnalytical_[i]->clone());
-		}
-	}
+	CostFunctionQuadratic(const CostFunctionQuadratic& arg);
 
 	/**
 	 * Clones the cost function.
@@ -203,68 +179,23 @@ public:
 	 * \brief Computes final-cost derivative with respect to state and control
 	 * @return derivative matrix (Jacobian)
 	 */
-	virtual control_state_matrix_t stateControlDerivativeTerminal() { throw std::runtime_error("stateControlDerivativeTerminal() not implemented"); };
+	virtual control_state_matrix_t stateControlDerivativeTerminal();
 
-	virtual void updateReferenceState(const state_vector_t& x_ref)
-	{
-		for(auto costIntermediate : intermediateCostAnalytical_)
-			costIntermediate->updateReferenceState(x_ref);
-	}
+	virtual void updateReferenceState(const state_vector_t& x_ref);
 
-	virtual void updateFinalState(const state_vector_t& x_final)
-	{
-		for(auto costFinal : finalCostAnalytical_)
-			costFinal->updateReferenceState(x_final);
-	}
+	virtual void updateFinalState(const state_vector_t& x_final);
 
+	bool stateDerivativeIntermediateTest();
 
-	bool stateDerivativeIntermediateTest()
-	{
-		state_vector_t derivative = stateDerivativeIntermediate();
-		state_vector_t derivativeNd = stateDerivativeIntermediateNumDiff();
-		std::cout << "norm error between derivative/numdiff state : "<<std::endl<<(derivative-derivativeNd).norm()<<std::endl;
+	bool controlDerivativeIntermediateTest();
 
-		return (derivative.isApprox(derivativeNd, 1e-6));
-	}
+	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermById(const size_t id);
 
-	bool controlDerivativeIntermediateTest()
-	{
-		control_vector_t derivative = controlDerivativeIntermediate();
-		control_vector_t derivativeNd = controlDerivativeIntermediateNumDiff();
-		std::cout << "norm error between derivative/numdiff control : "<<std::endl<<(derivative-derivativeNd).norm()<<std::endl;
+	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermById(const size_t id);
 
-		return (derivative.isApprox(derivativeNd, 1e-6));
-	}
+	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermByName(const std::string& name);
 
-	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermById(const size_t id)
-	{
-		return intermediateCostAnalytical_[id];
-	}
-
-	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermById(const size_t id)
-	{
-		return finalCostAnalytical_[id];
-	}
-
-	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermByName(const std::string& name)
-	{
-		for(auto term : intermediateCostAnalytical_)
-			if(term->getName() == name)
-				return term;
-
-		throw std::runtime_error("Term " + name + " not found in the costfunction");
-	}
-
-	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermById(const std::string& name)
-	{
-		for(auto term : finalCostAnalytical_)
-			if(term->getName() == name)
-				return term;
-
-		throw std::runtime_error("Term " + name + " not found in the costfunction");
-	}
-
-
+	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermById(const std::string& name);
 
 protected:
 

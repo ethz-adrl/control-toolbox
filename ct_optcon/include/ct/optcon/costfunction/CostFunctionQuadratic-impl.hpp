@@ -36,6 +36,12 @@ CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionQuadratic()
 	eps_ = sqrt(Eigen::NumTraits<SCALAR>::epsilon() );
 }
 
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionQuadratic(const state_vector_t &x, const control_vector_t &u, const SCALAR& t):
+	CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>(x, u, t)
+{
+	eps_ = sqrt(Eigen::NumTraits<SCALAR>::epsilon() );
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionQuadratic(const CostFunctionQuadratic& arg):
