@@ -108,7 +108,7 @@ public:
 	SCALAR_EVAL eval(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, 1> &u, const SCALAR_EVAL& t);
 
 	/**
-	 * @brief      Used for generating derivatives in costfunctionad. There is
+	 * @brief      Used for generating derivatives in CostFunctionAD. There is
 	 *             currently no support for time dependent terms using the AD
 	 *             costfunction
 	 *
