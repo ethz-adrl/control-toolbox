@@ -25,11 +25,12 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef TERMLINEAR_HPP_
-#define TERMLINEAR_HPP_
+#pragma once
 
-#include <cppad/cppad.hpp>
-#include <cppad/example/cppad_eigen.hpp>
+// todo remove cppad includes
+//#include <cppad/cppad.hpp>
+//#include <cppad/example/cppad_eigen.hpp>
+
 #include "TermBase.hpp"
 
 namespace ct {
@@ -40,7 +41,6 @@ namespace optcon {
  *
  * \brief A linear term of type \f$ J = a x + b u + c \f$
  *
- * Probably this term is not very useful but we use it for testing
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, typename SCALAR = SCALAR_EVAL>
 class TermLinear : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR> {
@@ -61,9 +61,7 @@ public:
 
 	TermLinear(const TermLinear& arg);
 
-	TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone () const override{
-		return new TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR> (*this);
-	}
+	TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone () const override;
 
 	~TermLinear();
 
@@ -87,9 +85,7 @@ protected:
 	SCALAR_EVAL c_;
 };
 
-#include "implementation/TermLinear-impl.hpp"
 
 } // namespace optcon
 } // namespace ct
 
-#endif // TERMLINEAR_HPP_

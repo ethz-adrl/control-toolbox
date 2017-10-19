@@ -33,6 +33,13 @@ TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermLinear(const TermLi
 {}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>*
+TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::clone () const
+{
+	return new TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR> (*this);
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermLinear() {}
 
 

@@ -2,6 +2,7 @@
 #pragma once
 
 #include "term/TermBase-impl.hpp"
+#include "term/TermLinear-impl.hpp"
 
 #include "costfunction/CostFunction-impl.hpp"
 #include "costfunction/CostFunctionAD-impl.hpp"
