@@ -107,7 +107,7 @@ protected:
 
 };
 
-#include "implementation/TermQuadTracking.hpp"
+#include "implementation/TermQuadTracking-impl.hpp"
 
 } // namespace optcon
 } // namespace ct

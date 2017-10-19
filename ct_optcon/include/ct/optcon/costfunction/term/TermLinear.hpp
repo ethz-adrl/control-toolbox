@@ -87,7 +87,7 @@ protected:
 	SCALAR_EVAL c_;
 };
 
-#include "implementation/TermLinear.hpp"
+#include "implementation/TermLinear-impl.hpp"
 
 } // namespace optcon
 } // namespace ct

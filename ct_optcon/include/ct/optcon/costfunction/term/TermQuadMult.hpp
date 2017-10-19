@@ -95,7 +95,7 @@ protected:
 
 };
 
-#include "implementation/TermQuadMult.hpp"
+#include "implementation/TermQuadMult-impl.hpp"
 
 } // namespace optcon
 } // namespace ct

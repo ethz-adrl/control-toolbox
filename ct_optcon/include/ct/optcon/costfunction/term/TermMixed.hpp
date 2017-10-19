@@ -98,7 +98,7 @@ protected:
 
 };
 
-#include "implementation/TermMixed.hpp"
+#include "implementation/TermMixed-impl.hpp"
 
 } // namespace optcon
 } // namespace ct

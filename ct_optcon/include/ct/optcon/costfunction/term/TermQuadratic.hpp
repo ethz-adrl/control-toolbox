@@ -124,7 +124,7 @@ protected:
 
 };
 
-#include "implementation/TermQuadratic.hpp"
+#include "implementation/TermQuadratic-impl.hpp"
 
 } // namespace optcon
 } // namespace ct
