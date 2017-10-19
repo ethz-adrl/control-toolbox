@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef TIMEACTIVATIONS_HPP_
-#define TIMEACTIVATIONS_HPP_
+#pragma once
 
 #include "utilities/TimeActivationLoadMacros.h"
 
@@ -38,6 +37,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   CT_LOADABLE_TIME_ACTIVATION(SCALAR, SingleActivation, "single") \
   CT_LOADABLE_TIME_ACTIVATION(SCALAR, PeriodicActivation, "periodic") \
   CT_LOADABLE_TIME_ACTIVATION(SCALAR, RBFGaussActivation, "rbf") \
-
-
-#endif /* TIMEACTIVATIONS_HPP_ */
