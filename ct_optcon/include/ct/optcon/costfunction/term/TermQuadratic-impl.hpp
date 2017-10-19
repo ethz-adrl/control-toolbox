@@ -24,6 +24,11 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#pragma once
+
+namespace ct {
+namespace optcon {
+
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadratic(
 		const state_matrix_t& Q,
@@ -64,6 +69,11 @@ TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadratic(const 
 	u_ref_(arg.u_ref_)
 {}
 
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::~TermQuadratic(){}
+
+
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::clone () const {
 		return new TermQuadratic(*this);
@@ -77,6 +87,35 @@ void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::setWeights(
 {
     Q_ = Q;
     R_ = R;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+const typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::state_matrix_t&
+TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::getStateWeight() const
+{
+	return Q_;
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::state_matrix_t&
+TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::getStateWeight()
+{
+	return Q_;
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+const typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_matrix_t&
+TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::getControlWeight() const
+{
+	return R_;
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_matrix_t&
+TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::getControlWeight()
+{
+	return R_;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
@@ -162,3 +201,21 @@ void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(
 		   std::cout<<"Read u_des as u_des = \n"<<u_ref_.transpose()<<std::endl;
        }
 }
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::updateReferenceState (const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState)
+{
+	x_ref_ = newRefState;
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>
+TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::getReferenceState() const
+{
+	return x_ref_;
+}
+
+}
+}
+

@@ -4,6 +4,7 @@
 #include "term/TermBase.hpp"
 #include "term/TermLinear.hpp"
 #include "term/TermMixed.hpp"
+#include "term/TermQuadratic.hpp"
 #include "term/TermQuadMult.hpp"
 
 // costfunctions

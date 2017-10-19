@@ -40,9 +40,10 @@ namespace optcon {
  *
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, typename SCALAR = SCALAR_EVAL>
-class TermQuadratic : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR> {
-
+class TermQuadratic : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>
+{
 public:
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	
     typedef Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM> state_matrix_t;
@@ -64,31 +65,20 @@ public:
 
 	TermQuadratic(const TermQuadratic& arg);
 
-	virtual ~TermQuadratic(){}
+	virtual ~TermQuadratic();
 	
 	virtual TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone () const override;
 
-	void setWeights(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM>& Q, const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM>& R);
+	void setWeights(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM>& Q,
+			const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM>& R);
 
-	const state_matrix_t& getStateWeight() const
-	{
-		return Q_;
-	}
+	const state_matrix_t& getStateWeight() const;
 
-	state_matrix_t& getStateWeight()
-	{
-		return Q_;
-	}
+	state_matrix_t& getStateWeight();
 
-	const control_matrix_t& getControlWeight() const
-	{
-		return R_;
-	}
+	const control_matrix_t& getControlWeight() const;
 
-	control_matrix_t& getControlWeight()
-	{
-		return R_;
-	}
+	control_matrix_t& getControlWeight();
 
 	void setStateAndControlReference(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x_ref, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref);
 
@@ -111,9 +101,9 @@ public:
 	
 	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) override;
 
-	virtual void updateReferenceState (const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState) override{ x_ref_ = newRefState;}
+	virtual void updateReferenceState (const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState) override;
 
-	virtual Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> getReferenceState() const override {return x_ref_;}
+	virtual Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> getReferenceState() const override;
 
 protected:
 	state_matrix_t Q_;
@@ -123,8 +113,6 @@ protected:
 	core::ControlVector<CONTROL_DIM, SCALAR_EVAL> u_ref_;
 
 };
-
-#include "implementation/TermQuadratic-impl.hpp"
 
 } // namespace optcon
 } // namespace ct
