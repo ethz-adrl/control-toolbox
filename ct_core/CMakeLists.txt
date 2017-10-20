@@ -84,6 +84,8 @@ ct_add_explicit_template_libs()
 
 if(BUILD_EXAMPLES)
     add_executable(ex_DampedOscillatorCustomController examples/DampedOscillatorCustomController.cpp)
+    add_executable(ex_DampedOscillator examples/DampedOscillator.cpp)
+    add_executable(ex_MasspointIntegration examples/MasspointIntegration.cpp)
 endif()
 
 catkin_add_gtest(NoiseTest test/NoiseTest.cpp)

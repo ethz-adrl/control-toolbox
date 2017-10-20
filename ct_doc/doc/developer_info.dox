@@ -29,16 +29,20 @@ POS_DIM_PRESPEC		| Position dimension for symplectic integrator (default: 0)
 VEL_DIM_PRESPEC		| Velocity dimension for symplectic integrator (default: 0)
 
 You can use these placeholders in the code
-   #if @DOUBLE_OR_FLOAT@
-   template class ct::coreMyClass<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@>;
+\code{.cpp}
+   #if \@DOUBLE_OR_FLOAT\@
+   template class ct::coreMyClass<\@STATE_DIM_PRESPEC\@, \@CONTROL_DIM_PRESPEC\@>;
    #endif
+\endcode
    
 The parser in the CMakeLists.txt would then create the following code out of this
 (for STATE_DIM=3, CONTROL_DIM=2, SCALAR=double)
 
+\code{.cpp}
    #if 1
    template class ct::coreMyClass<3, 2>;
    #endif
+\endcode
    
 \note The parameter DOUBLE_OR_FLOAT is optional but can be used if your class does not compile for Auto-Diff types
 which is often the case if no special care is taken.

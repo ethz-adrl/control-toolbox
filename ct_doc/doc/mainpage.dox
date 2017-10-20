@@ -63,7 +63,7 @@ The source code is available at <a href="https://bitbucket.org/adrlab/ct">https:
  - Operational Space Controllers
  - Basic soft **auto-differentiable contact model** for arbitrary frames (ct::rbd::EEContactModel)
  - **Actuator dynamics** (ct::rbd::ActuatorDynamics)
- - Backend uses <a href="https://bitbucket.org/mfrigerio17/roboticscodegenerator/">RobCoGen</a>, a highly efficient Rigid Body Dynamics library
+ - Backend uses <a href="https://bitbucket.org/mfrigerio17/roboticscodegenerator/">RobCoGen</a> \cite frigerioCodeGen, a highly efficient Rigid Body Dynamics library
 
 
 \subsection ct_models_overview CT Models:

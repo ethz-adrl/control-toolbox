@@ -1,12 +1,14 @@
 /*!
 
 \page performance Performance Optimization
+- \subpage compile_time
+- \subpage execution_speed
 
 The Control Toolbox is optimized for performance and, if used correctly, constitutes one of the fastest
 implementation for many state-of-the-art control approaches. This page gives an overview of how to achieve
 best performance.
 
-\section compile_time Optimize Compile Time
+\page compile_time Optimize Compile Time
 Especially with increasing complexity of your project, compilation time of the CT can become long. However,
 there are some tricks to reduce compilation time
 - make sure you compile in Release mode (catkin build -DCMAKE_BUILD_TYPE=RELEASE)
@@ -35,18 +37,18 @@ To use explicit template instantiation follow these steps:
 are not using symplectic integrators.
 2. rerun cmake: catkin build -DCMAKE_BUILD_TYPE=RELEASE --force-cmake
 3. In your executable change the standard CT includes from their regular ones to the prespecified ones,
-e.g. change ''#include <ct/core/core.h>'' to ''#include <ct/core/core_prespec.h>''. Remember to do this for
+e.g. change \code{.cpp}#include <ct/core/core.h>\endcode to \code{.cpp}#include <ct/core/core-prespec.h>\endcode Remember to do this for
 optcon and rbd as well.
 
-\section execution_speed Optimize Execution Speed
+\page execution_speed Optimize Execution Speed
 - make use of \ref vectorization "Vectorization"
-- use \ref auto-diff Auto-Differentiation with just-in-time compilation or code generation
+- use \ref auto-diff "Auto-Differentiation" with just-in-time compilation or code generation
 - if you do not want to use Auto-Diff, consider using the ct::rbd::RbdLinearizer for linearizing Rigid Body Dynamics
 - use multi-threading for Nonlinear Optimal Control Solvers
 - use HPIPM for running MPC or solving Optimal Control problems
 
 
-\subsection Vectorization
+\subsection vectorization Vectorization
 Vectorization is a processor feature where a Single Instruction is applied to Multiple Data (SIMD). This
 is especially useful for linear algebra operations. CT relies on [Eigen's Vectorization](http://eigen.tuxfamily.org/index.php?title=FAQ) 
  capabilities. This means CT supports SSE, FMA and AVX2 instructions. 
