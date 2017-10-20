@@ -33,12 +33,6 @@ CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAnalytical()
 {};
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAnalytical(
-		const state_vector_t &x, const control_vector_t &u, const SCALAR& t) :
-		CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(x, u, t)
-		{};
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAnalytical(const CostFunctionAnalytical& arg):
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(arg){}
 

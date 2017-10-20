@@ -87,6 +87,23 @@ void TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::setStateAndC
 	u_traj_ref_ = uTraj;
 }
 
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+template<typename SC>
+SC TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evalLocal(
+		const Eigen::Matrix<SC, STATE_DIM, 1> &x, const Eigen::Matrix<SC, CONTROL_DIM, 1> &u, const SC& t)
+{
+    Eigen::Matrix<SC, STATE_DIM, 1> xDiff = x - x_traj_ref_.eval((SCALAR_EVAL)t).template cast<SC>();
+
+    Eigen::Matrix<SC, CONTROL_DIM, 1> uDiff;
+
+    if(trackControlTrajectory_)
+        uDiff = u-u_traj_ref_.eval((SCALAR_EVAL)t).template cast<SC>();
+    else
+        uDiff = u;
+
+    return (xDiff.transpose() * Q_.template cast<SC>() * xDiff + uDiff.transpose() * R_.template cast<SC>() * uDiff)(0,0);
+}
+
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 SCALAR TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluate(
@@ -94,16 +111,7 @@ SCALAR TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluate(
 		const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u,
 		const SCALAR& t)
 {
-    Eigen::Matrix<SCALAR, STATE_DIM, 1> xDiff = x-x_traj_ref_.eval(t).template cast<SCALAR>();
-
-    Eigen::Matrix<SCALAR, CONTROL_DIM, 1> uDiff;
-
-    if(trackControlTrajectory_)
-        uDiff = u-u_traj_ref_.eval(t).template cast<SCALAR>();
-    else
-        uDiff = u;
-
-    return (xDiff.transpose() * Q_.template cast<SCALAR>() * xDiff + uDiff.transpose() * R_.template cast<SCALAR>() * uDiff)(0,0);      
+	return evalLocal<SCALAR>(x,u,t);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>

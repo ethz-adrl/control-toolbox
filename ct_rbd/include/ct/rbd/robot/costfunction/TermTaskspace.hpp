@@ -107,12 +107,15 @@ public:
 			const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u,
 			const SCALAR& t) override
 	{	
-		setStateFromVector<FB>(x);
+		return evalLocal<SCALAR>(x,u,t);
+	}
 
-		Eigen::Matrix<SCALAR, 3, 1> xDiff = kinematics_.getEEPositionInWorld(eeInd_, currState_.basePose(), currState_.jointPositions()).toImplementation() - pos_ref_.template cast<SCALAR>();
-
-		SCALAR cost = (xDiff.transpose() * QTaskSpace_.template cast<SCALAR>() * xDiff)(0,0);
-		return cost;
+	virtual ct::core::ADCGScalar evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t) override
+	{
+		return evalLocal<ct::core::ADCGScalar>(x,u,t);
 	}
 
 
@@ -132,6 +135,23 @@ public:
 
 
 private:
+
+	template<typename SC>
+	SC evalLocal(
+			const Eigen::Matrix<SC, STATE_DIM, 1> &x,
+			const Eigen::Matrix<SC, CONTROL_DIM, 1> &u,
+			const SC& t)
+	{
+		setStateFromVector<FB>(x);
+
+		Eigen::Matrix<SC, 3, 1> xDiff =
+				kinematics_.getEEPositionInWorld(eeInd_, currState_.basePose(), currState_.jointPositions()).toImplementation()
+				- pos_ref_.template cast<SC>();
+
+		SCALAR cost = (xDiff.transpose() * QTaskSpace_.template cast<SC>() * xDiff)(0,0);
+		return cost;
+	}
+
 
 	template <bool T>
 	void setStateFromVector(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, typename std::enable_if<T, bool>::type = true)

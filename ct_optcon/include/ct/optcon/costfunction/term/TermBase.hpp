@@ -41,10 +41,12 @@ namespace optcon {
  * \brief An interface for a term, supporting both analytical and auto-diff terms
  *
  * Derive from this term to implement your own term. You only have to implement
- * evaluateIntermediate() if you want to use auto-diff. Otherwise, you have to implement the
- * derivatives as well.
+ * evaluateCppadCg() if you want to use auto-diff. Otherwise, you need to implement
+ * evaluate() as well as the derivatives. In case you want to go for the most general
+ * implementation, you can implement a local, templated evalLocal() method in derived terms,
+ * which gets called by evaluate() and evaluateCppadCg(), see e.g. TermLinear.
  *
- * An example for an implementation of a custom term is given in \ref EEDistanceTerm.h
+ * An example for an implementation of a custom term is given in \ref TermQuadratic.hpp
  **/
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, typename SCALAR = SCALAR_EVAL>
 class TermBase {
@@ -96,6 +98,20 @@ public:
 	virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) = 0;
 
 	/**
+	 * @brief      The evaluate method used for jit compilation in CostfunctionAD
+	 *
+	 * @param[in]  x     The state vector
+	 * @param[in]  u     The control vector
+	 * @param[in]  t     The time
+	 *
+	 * @return     The evaluated cost
+	 */
+	virtual ct::core::ADCGScalar evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t);
+
+	/**
 	 * @brief      Gets called by the analytical costfunction. Adds time
 	 *             dependent activations on top of the term
 	 *
@@ -106,22 +122,6 @@ public:
 	 * @return     The evaluatated cost term
 	 */
 	SCALAR_EVAL eval(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, 1> &u, const SCALAR_EVAL& t);
-
-	/**
-	 * @brief      Used for generating derivatives in CostFunctionAD. There is
-	 *             currently no support for time dependent terms using the AD
-	 *             costfunction
-	 *
-	 * @param[in]  x     The current state
-	 * @param[in]  u     The current control
-	 * @param[in]  t     The current time
-	 *
-	 * @return     The evaluatated cost term
-	 */
-	ct::core::ADCGScalar evalCG(
-		const Eigen::Matrix<ct::core::ADCGScalar, STATE_DIM, 1>& x, 
-		const Eigen::Matrix<ct::core::ADCGScalar, CONTROL_DIM, 1>& u, 
-		const ct::core::ADCGScalar& t);
 	
 	/**
 	 * \brief Returns if term is non-zero at a specific time

@@ -67,14 +67,6 @@ public:
 	CostFunctionAnalytical();
 
 	/**
-	 * \brief Constructor using state, control and time
-	 * @param x state vector
-	 * @param u control vector
-	 * @param t time
-	 */
-	CostFunctionAnalytical(const state_vector_t &x, const control_vector_t &u, const SCALAR& t = 0.0);
-
-	/**
 	 * \brief Copy constructor
 	 * @param arg cost function to copy
 	 */

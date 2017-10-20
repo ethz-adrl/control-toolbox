@@ -58,10 +58,15 @@ public:
 
 	TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone () const override;
 
-	~TermLinear();
+	virtual ~TermLinear();
 
 	SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
 	
+	virtual ct::core::ADCGScalar evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t) override;
+
 	core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
 
 	state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
@@ -75,6 +80,10 @@ public:
 	void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) override;  // virtual function for data loading
 
 protected:
+
+	template<typename SC>
+	SC evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1> &x, const Eigen::Matrix<SC, CONTROL_DIM, 1> &u, const SC& t);
+
 	core::StateVector<STATE_DIM, SCALAR_EVAL> a_;
 	core::ControlVector<CONTROL_DIM, SCALAR_EVAL> b_;
 	SCALAR_EVAL c_;

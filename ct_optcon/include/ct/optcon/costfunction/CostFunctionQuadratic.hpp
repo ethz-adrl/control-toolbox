@@ -67,14 +67,6 @@ public:
 	CostFunctionQuadratic();
 
 	/**
-	 * Constructor given a setpoint
-	 * @param x state vector
-	 * @param u control vector
-	 * @param t time
-	 */
-	CostFunctionQuadratic(const state_vector_t &x, const control_vector_t &u, const SCALAR& t);
-
-	/**
 	 * Copy constructor
 	 * @param arg other cost function
 	 */

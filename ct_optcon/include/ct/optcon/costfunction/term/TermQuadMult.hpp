@@ -63,7 +63,7 @@ public:
 
 	TermQuadMult(const TermQuadMult& arg);
 
-	~TermQuadMult();
+	virtual ~TermQuadMult();
 	
 	TermQuadMult<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone () const override;
 
@@ -71,7 +71,12 @@ public:
 
 	void setStateAndControlReference(const core::StateVector<STATE_DIM>& x_ref, core::ControlVector<CONTROL_DIM>& u_ref);
 
-    SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
+    virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
+
+	virtual ct::core::ADCGScalar evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t) override;
 
 	core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
 
@@ -87,6 +92,10 @@ public:
 
 
 protected:
+
+	template<typename SC>
+	SC evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1> &x, const Eigen::Matrix<SC, CONTROL_DIM, 1> &u, const SC& t);
+
 	state_matrix_t Q_;
 	control_matrix_t R_;
 

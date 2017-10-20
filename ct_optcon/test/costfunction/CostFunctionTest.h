@@ -29,9 +29,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define EIGEN_INITIALIZE_MATRICES_BY_NAN
 #define DEBUG
 
-#include <ct/optcon/optcon.h>
-#include <gtest/gtest.h>
-
 const size_t state_dim = 12;
 const size_t control_dim = 4;
 

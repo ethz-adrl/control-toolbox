@@ -24,6 +24,9 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#include <gtest/gtest.h>
+#include <ct/optcon/optcon.h>
+
 #include "ADTest_timeDependent.h"
 #include "CostFunctionTest.h"
 
