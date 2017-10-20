@@ -122,6 +122,7 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::initialize()
 	intermediateCostCodegen_->update(intermediateFun_, STATE_DIM + CONTROL_DIM + 1, 1);
 	finalCostCodegen_->update(finalFun_, STATE_DIM + CONTROL_DIM + 1, 1);
 
+	//! @ todo: this should probably become an option (eg. IPOPT can work without cost Hessians)
 	ct::core::DerivativesCppadSettings settings;
 	settings.createForwardZero_ = true;
 	settings.createJacobian_ = true;
@@ -247,7 +248,8 @@ SCALAR CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateTerminal()
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediate()
+typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t
+CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediate()
 {
 	Eigen::Matrix<SCALAR, 1, STATE_DIM + CONTROL_DIM + 1> jacTot = intermediateCostCodegen_->jacobian(stateControlTime_);
 	return jacTot.template leftCols<STATE_DIM>().transpose();
