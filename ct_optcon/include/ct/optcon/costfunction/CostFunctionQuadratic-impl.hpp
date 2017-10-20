@@ -36,7 +36,6 @@ CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionQuadratic()
 	eps_ = sqrt(Eigen::NumTraits<SCALAR>::epsilon() );
 }
 
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionQuadratic(const CostFunctionQuadratic& arg):
 CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
@@ -62,39 +61,59 @@ CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::~CostFunctionQuadratic()
 {}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-size_t CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose)
-{ throw std::runtime_error("not implemented"); };
+size_t CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateTerm (
+		std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose)
+{
+	throw std::runtime_error("not implemented");
+};
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateADTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar> > term, bool verbose)
-{ throw std::runtime_error("not implemented"); };
+void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateADTerm (
+		std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar> > term, bool verbose)
+{
+	throw std::runtime_error("not implemented");
+};
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-size_t CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose)
-{ throw std::runtime_error("not implemented"); };
+size_t CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalTerm (
+		std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose)
+{
+	throw std::runtime_error("not implemented");
+};
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalADTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar> > term, bool verbose)
-{ throw std::runtime_error("not implemented"); };
+void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalADTerm (
+		std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar> > term, bool verbose)
+{
+	throw std::runtime_error("not implemented");
+};
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(const std::string& filename, bool verbose)
-{ throw std::runtime_error("not implemented"); };
+{
+	throw std::runtime_error("not implemented");
+};
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeTerminal()
-{ throw std::runtime_error("controlDerivativeTerminal() not implemented in CostFunctionQuadratic"); };
+{
+	throw std::runtime_error("controlDerivativeTerminal() not implemented in CostFunctionQuadratic");
+};
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_t
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivativeTerminal()
-{ throw std::runtime_error("controlSecondDerivativeTerminal() not implemented"); };
+{
+	throw std::runtime_error("controlSecondDerivativeTerminal() not implemented");
+};
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_matrix_t
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeTerminal()
-{ throw std::runtime_error("stateControlDerivativeTerminal() not implemented"); };
+{
+	throw std::runtime_error("stateControlDerivativeTerminal() not implemented");
+};
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::updateReferenceState(const state_vector_t& x_ref)
@@ -131,19 +150,22 @@ bool CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeInt
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::getIntermediateTermById(const size_t id)
+std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>>
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::getIntermediateTermById(const size_t id)
 {
 	return intermediateCostAnalytical_[id];
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::getFinalTermById(const size_t id)
+std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>>
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::getFinalTermById(const size_t id)
 {
 	return finalCostAnalytical_[id];
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::getIntermediateTermByName(const std::string& name)
+std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>>
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::getIntermediateTermByName(const std::string& name)
 {
 	for(auto term : intermediateCostAnalytical_)
 		if(term->getName() == name)
@@ -153,7 +175,8 @@ std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> CostFunctionQuadratic<
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::getFinalTermById(const std::string& name)
+std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>>
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::getFinalTermById(const std::string& name)
 {
 	for(auto term : finalCostAnalytical_)
 		if(term->getName() == name)
@@ -163,7 +186,8 @@ std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> CostFunctionQuadratic<
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediateNumDiff()
+typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediateNumDiff()
 {
 	state_vector_t dFdx = state_vector_t::Zero();
 	state_vector_t x_local;
@@ -209,7 +233,8 @@ typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t C
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeIntermediateNumDiff()
+typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeIntermediateNumDiff()
 {
 	control_vector_t dFdu = control_vector_t::Zero();
 	state_vector_t x_local;

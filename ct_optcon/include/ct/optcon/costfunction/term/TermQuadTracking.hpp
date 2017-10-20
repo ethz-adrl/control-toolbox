@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_COSTFUNCTION_TERMQUADTRACKING_HPP_
-#define CT_COSTFUNCTION_TERMQUADTRACKING_HPP_
+#pragma once
 
 #include "TermBase.hpp"
 
@@ -37,7 +36,7 @@ namespace optcon {
  *
  * \brief A quadratic tracking term of type \f$ J(t) = (x_{ref}(t) - x)^T Q (x_{ref}(t) - x) + (u_{ref}(t) - u)^T R (u_{ref}(t) - u) \f$
  *
- * An example for using this term is given in unit test \ref TrackingTest.cpp
+ * An example for using this term is given in @todo write new TrackingTest.cpp
  *
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, typename SCALAR = SCALAR_EVAL>
@@ -64,7 +63,7 @@ public:
 
 	TermQuadTracking(const TermQuadTracking& arg);
 
-	virtual ~TermQuadTracking(){}
+	virtual ~TermQuadTracking();
 	
 	TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone () const override;
 
@@ -74,8 +73,8 @@ public:
 			const core::StateTrajectory<STATE_DIM>& xTraj,
 			const core::ControlTrajectory<CONTROL_DIM>& uTraj);
 
-    SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
- 	
+    virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
+
 	core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
 			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
 
@@ -95,6 +94,9 @@ public:
 
 protected:
 
+	template<typename SC>
+	SC evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1> &x, const Eigen::Matrix<SC, CONTROL_DIM, 1> &u, const SC& t);
+
 	state_matrix_t Q_;
 	control_matrix_t R_;
 
@@ -107,9 +109,5 @@ protected:
 
 };
 
-#include "implementation/TermQuadTracking.hpp"
-
 } // namespace optcon
 } // namespace ct
-
-#endif

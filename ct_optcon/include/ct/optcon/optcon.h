@@ -29,11 +29,7 @@
 
 #include <ct/core/core.h>
 
-#include "costfunction/CostFunction.hpp"
-#include "costfunction/CostFunctionQuadratic.hpp"
-#include "costfunction/CostFunctionAD.hpp"
-#include "costfunction/CostFunctionAnalytical.hpp"
-#include "costfunction/CostFunctionQuadraticSimple.hpp"
+#include "costfunction/costfunction.hpp"
 
 #include "constraint/constraint.h"
 
@@ -68,16 +64,10 @@
 
 // implementations
 //costfunction
-#include "costfunction/CostFunction-impl.hpp"
-#include "costfunction/CostFunctionAD-impl.hpp"
-#include "costfunction/CostFunctionAnalytical-impl.hpp"
-#include "costfunction/CostFunctionQuadratic-impl.hpp"
-#include "costfunction/CostFunctionQuadraticSimple-impl.hpp"
-
+#include "costfunction/costfunction-impl.hpp"
 
 //constraints
 #include "constraint/constraint-impl.h"
-#include "costfunction/CostFunctionAnalytical-impl.hpp"
 
 //problem
 #include "problem/OptConProblem-impl.h"

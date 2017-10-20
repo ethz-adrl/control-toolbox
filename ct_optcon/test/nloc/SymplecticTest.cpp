@@ -279,7 +279,7 @@ void symplecticTest()
 	gnms_settings.closedLoopShooting = false;
 	gnms_settings.lineSearchSettings.active = false;
 	gnms_settings.loggingPrefix = "GNMS";
-	gnms_settings.printSummary = true;
+	gnms_settings.printSummary = false;
 
 
 	NLOptConSettings ilqr_settings = gnms_settings;

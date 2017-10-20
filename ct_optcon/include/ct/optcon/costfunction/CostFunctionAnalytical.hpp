@@ -67,14 +67,6 @@ public:
 	CostFunctionAnalytical();
 
 	/**
-	 * \brief Constructor using state, control and time
-	 * @param x state vector
-	 * @param u control vector
-	 * @param t time
-	 */
-	CostFunctionAnalytical(const state_vector_t &x, const control_vector_t &u, const SCALAR& t = 0.0);
-
-	/**
 	 * \brief Copy constructor
 	 * @param arg cost function to copy
 	 */
@@ -84,7 +76,7 @@ public:
 	 * @param filename config file location
 	 * @param verbose flag enabling printouts
 	 */
-	CostFunctionAnalytical(const std::string& filename, bool verbose);
+	CostFunctionAnalytical(const std::string& filename, bool verbose = false);
 
 	/**
 	 * Deep-cloning of cost function

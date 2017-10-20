@@ -51,25 +51,6 @@ stateControlTime_(Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM + 1, 1>::Zero())
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const state_vector_t &x, const control_vector_t &u, const SCALAR& t) :
-CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> (x,u, t)
-{
-	setCurrentStateAndControl(x, u, t);
-	
-	intermediateFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM + 1, 1>& stateInputTime){
-		return this->evaluateIntermediateCg(stateInputTime);	
-	};
-
-	finalFun_ = [&] (const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM + 1, 1>& stateInputTime){
-		return this->evaluateTerminalCg(stateInputTime);	
-	};
-
-	intermediateCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(intermediateFun_, STATE_DIM + CONTROL_DIM + 1, 1));
-	finalCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(finalFun_, STATE_DIM + CONTROL_DIM + 1, 1));
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const CostFunctionAD& arg):
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
 stateControlTime_(arg.stateControlTime_),
@@ -122,6 +103,7 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::initialize()
 	intermediateCostCodegen_->update(intermediateFun_, STATE_DIM + CONTROL_DIM + 1, 1);
 	finalCostCodegen_->update(finalFun_, STATE_DIM + CONTROL_DIM + 1, 1);
 
+	//! @ todo: this should probably become an option (eg. IPOPT can work without cost Hessians)
 	ct::core::DerivativesCppadSettings settings;
 	settings.createForwardZero_ = true;
 	settings.createJacobian_ = true;
@@ -147,7 +129,7 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalADTerm (std::shared
 	finalTerms_.push_back(term);
 
 	if(verbose){
-		std::cout<<term->getName()+"added as final AD term"<<std::endl;
+		std::cout<<term->getName()+" added as final AD term"<<std::endl;
 	}
 }
 
@@ -216,7 +198,7 @@ typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixCg CostFunctionAD
 	CGScalar y = CGScalar(0.0);
 		
 	for(auto it : intermediateTerms_)
-		y += it->evalCG(stateInputTime.segment(0,STATE_DIM), stateInputTime.segment(STATE_DIM, CONTROL_DIM), stateInputTime(STATE_DIM + CONTROL_DIM));
+		y += it->evaluateCppadCg(stateInputTime.segment(0,STATE_DIM), stateInputTime.segment(STATE_DIM, CONTROL_DIM), stateInputTime(STATE_DIM + CONTROL_DIM));
 	
 	Eigen::Matrix<CGScalar, 1, 1> out; out << y;
 	return out;
@@ -228,7 +210,7 @@ typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixCg CostFunctionAD
 	CGScalar y = CGScalar(0.0);
 		
 	for(auto it : finalTerms_)
-		y += it->evalCG(stateInputTime.segment(0,STATE_DIM), stateInputTime.segment(STATE_DIM, CONTROL_DIM), stateInputTime(STATE_DIM + CONTROL_DIM));
+		y += it->evaluateCppadCg(stateInputTime.segment(0,STATE_DIM), stateInputTime.segment(STATE_DIM, CONTROL_DIM), stateInputTime(STATE_DIM + CONTROL_DIM));
 	
 	Eigen::Matrix<CGScalar, 1, 1> out; out << y;
 	return out;
@@ -247,7 +229,8 @@ SCALAR CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateTerminal()
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediate()
+typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t
+CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediate()
 {
 	Eigen::Matrix<SCALAR, 1, STATE_DIM + CONTROL_DIM + 1> jacTot = intermediateCostCodegen_->jacobian(stateControlTime_);
 	return jacTot.template leftCols<STATE_DIM>().transpose();

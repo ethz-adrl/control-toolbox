@@ -1,12 +1,5 @@
-/*
- * PeriodicActivation.hpp
- *
- *  Created on: Feb 10, 2017
- *      Author: neunertm
- */
 
-#ifndef INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_TIMEACTIVATIONS_PERIODICACTIVATION_HPP_
-#define INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_TIMEACTIVATIONS_PERIODICACTIVATION_HPP_
+#pragma once
 
 #include <cmath>
 #include "TimeActivationBase.hpp"
@@ -110,8 +103,3 @@ typedef tpl::PeriodicActivation<double> PeriodicActivation;
 
 }
 }
-
-
-
-
-#endif /* INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_TIMEACTIVATIONS_PERIODICACTIVATION_HPP_ */

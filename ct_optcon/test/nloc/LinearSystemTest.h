@@ -76,7 +76,7 @@ TEST(LinearSystemsTest, NLOCSolverTest)
 	nloc_settings.integrator = ct::core::IntegrationType::EULERCT;
 	nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 	nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-	nloc_settings.printSummary = true;
+	nloc_settings.printSummary = false;
 	nloc_settings.useSensitivityIntegrator = true;
 
 	// loop through all solver classes

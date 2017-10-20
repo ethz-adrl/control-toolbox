@@ -24,6 +24,11 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
+#pragma once
+
+namespace ct {
+namespace optcon {
+
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermLinear(const core::StateVector<STATE_DIM, SCALAR_EVAL> a, core::ControlVector<CONTROL_DIM, SCALAR_EVAL> b, const SCALAR_EVAL c) : a_(a), b_(b), c_(c) {}
 
@@ -33,6 +38,13 @@ TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermLinear(const TermLi
 {}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>*
+TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::clone () const
+{
+	return new TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR> (*this);
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermLinear() {}
 
 
@@ -40,12 +52,29 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename S
 TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::~TermLinear() {}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+template<typename SC>
+SC TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evalLocal(
+		const Eigen::Matrix<SC, STATE_DIM, 1> &x, const Eigen::Matrix<SC, CONTROL_DIM, 1> &u, const SC& t)
+{
+    Eigen::Matrix<SC, 1, 1> y_eigen = a_.template cast<SC>().transpose() * x + b_.template cast<SC>().transpose() * u;
+    SC y = y_eigen(0,0) + SC(c_);
+    return y;
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 SCALAR TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t)
 {
-     Eigen::Matrix<SCALAR, 1, 1> y_eigen = a_.template cast<SCALAR>().transpose() * x + b_.template cast<SCALAR>().transpose() * u;
-     SCALAR y = y_eigen(0,0) + SCALAR(c_);
-     return y;  
+	return evalLocal<SCALAR>(x, u, t);
 }
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+ct::core::ADCGScalar TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluateCppadCg(
+	const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
+	const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+	ct::core::ADCGScalar t)
+	{
+	return evalLocal<ct::core::ADCGScalar>(x, u, t);
+	}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 core::StateVector<STATE_DIM, SCALAR_EVAL> TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t)
@@ -87,4 +116,8 @@ void TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(con
 		   std::cout<<"Read a as a= \n"<<a_<<std::endl;
 		   std::cout<<"Read b as b= \n"<<b_<<std::endl;
        }
+}
+
+
+}
 }

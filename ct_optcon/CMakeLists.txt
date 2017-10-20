@@ -246,6 +246,7 @@ target_link_libraries(LinearSystemTestPrespec ${catkin_LIBRARIES} ${HPIPM_LIBS} 
 
 catkin_add_gtest(NonlinearSystemTest test/nloc/NonlinearSystemTest.cpp)
 target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+#todo make prespec test
 
 add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
 target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
@@ -261,7 +262,6 @@ target_link_libraries(constraint_test_prespec ${catkin_LIBRARIES} dl ${PRESPEC_L
 
 catkin_add_gtest(CostFunctionTests test/costfunction/CostFunctionTests.cpp)
 target_link_libraries(CostFunctionTests ${catkin_LIBRARIES} dl ${MATLAB_LIBS})
-## todo make prespec cost function tests !!
 ## todo make test for tracking term
 
 catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)

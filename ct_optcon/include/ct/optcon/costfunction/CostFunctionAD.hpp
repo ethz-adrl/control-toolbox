@@ -77,14 +77,6 @@ public:
 	CostFunctionAD();
 
 	/**
-	 * \brief Constructor using state, control and time
-	 * @param x state vector
-	 * @param u control vector
-	 * @param t time
-	 */
-	CostFunctionAD(const state_vector_t &x, const control_vector_t &u, const SCALAR& t = 0.0);
-
-	/**
 	 * \brief Constructor loading function from file
 	 * @param filename config file location
 	 * @param verbose flag enabling printouts

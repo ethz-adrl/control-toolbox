@@ -24,7 +24,7 @@ gnms
     locp_solver GNRICCATI_SOLVER
     nlocp_algorithm ILQR
     debugPrint false
-    printSummary true
+    printSummary false
     loggingPrefix ILQR
     
     line_search
@@ -60,7 +60,7 @@ ilqr
     locp_solver GNRICCATI_SOLVER
     nlocp_algorithm GNMS
     debugPrint false
-    printSummary true
+    printSummary false
     loggingPrefix ILQR_GNMS_5
     
     line_search

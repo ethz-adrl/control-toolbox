@@ -28,16 +28,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define EIGEN_INITIALIZE_MATRICES_BY_NAN
 
-#include <ct/core/core.h>
-#include <ct/optcon/optcon.h>
-#include <ct/optcon/costfunction/CostFunctionAD.hpp>
-#include <ct/optcon/costfunction/CostFunctionAnalytical.hpp>
-#include <ct/optcon/costfunction/term/TermBase.hpp>
-#include <ct/optcon/costfunction/term/TermLinear.hpp>
-#include <ct/optcon/costfunction/term/TermQuadratic.hpp>
-
-#include <gtest/gtest.h>
-
 namespace ct{
 namespace optcon{
 namespace example{
@@ -85,7 +75,7 @@ public:
 		u_ref_(arg.u_ref_)
 		{}
 
-	~TestTerm(){}
+	virtual ~TestTerm(){}
 
 	TestTerm<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone () const override {
 		return new TestTerm(*this);
@@ -102,12 +92,15 @@ public:
 		u_ref_ = u_ref;
 	}
 
-	SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override{
+	virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override{
+		return evalLocal<SCALAR>(x,u,t);
+	}
 
-		Eigen::Matrix<SCALAR, STATE_DIM, 1> xDiff = (x-x_ref_.template cast<SCALAR>());
-		Eigen::Matrix<SCALAR, CONTROL_DIM, 1> uDiff = (u-u_ref_.template cast<SCALAR>());
-
-		return ((xDiff.transpose() * Q_.template cast<SCALAR>() * xDiff) *  SCALAR(c_)* t * t + (uDiff.transpose() * R_.template cast<SCALAR>() * uDiff)* SCALAR(c_)* t * t)(0,0);
+	virtual ct::core::ADCGScalar evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
+		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+		ct::core::ADCGScalar t) override {
+		return evalLocal<ct::core::ADCGScalar>(x,u,t);
 	}
 
 
@@ -134,6 +127,16 @@ public:
 
 
 protected:
+
+	template<typename SC>
+	SC evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1> &x, const Eigen::Matrix<SC, CONTROL_DIM, 1> &u, const SC& t)
+	{
+		Eigen::Matrix<SC, STATE_DIM, 1> xDiff = (x-x_ref_.template cast<SC>());
+		Eigen::Matrix<SC, CONTROL_DIM, 1> uDiff = (u-u_ref_.template cast<SC>());
+
+		return ((xDiff.transpose() * Q_.template cast<SC>() * xDiff) *  SC(c_)* t * t + (uDiff.transpose() * R_.template cast<SC>() * uDiff)* SC(c_)* t * t)(0,0);
+	}
+
 	state_matrix_t Q_;
 	control_matrix_t R_;
 	SCALAR_EVAL c_;
