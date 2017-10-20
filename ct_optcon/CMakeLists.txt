@@ -262,7 +262,8 @@ target_link_libraries(constraint_test_prespec ${catkin_LIBRARIES} dl ${PRESPEC_L
 
 catkin_add_gtest(CostFunctionTests test/costfunction/CostFunctionTests.cpp)
 target_link_libraries(CostFunctionTests ${catkin_LIBRARIES} dl ${MATLAB_LIBS})
-## todo make test for tracking term
+catkin_add_gtest(TrackingTermTest test/costfunction/TrackingTest.cpp)
+target_link_libraries(TrackingTermTest ${catkin_LIBRARIES} dl ${MATLAB_LIBS})
 
 catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
 target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
