@@ -145,8 +145,10 @@ public:
 	 */
 	void setFromEulerAnglesXyz(const Vector3Tpl& eulerAngles)
 	{
-		if (storedAsEuler()) { euler_ = kindr::EulerAnglesXyz<SCALAR>(eulerAngles); }
-		else { quat_ = kindr::EulerAnglesXyz<SCALAR>(eulerAngles); }
+		if (storedAsEuler())
+		{ euler_.toImplementation() = eulerAngles; }
+		else
+		{ quat_ = kindr::EulerAnglesXyz<SCALAR>(eulerAngles); }
 	}
 
 	/**
