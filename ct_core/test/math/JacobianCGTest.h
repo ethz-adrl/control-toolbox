@@ -36,8 +36,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 // define the input and output sizes of the function
-const size_t inDim = 3; //!< dimension of x
-const size_t outDim = 2; //!< dimension of y
+const size_t inDim = 3;   //!< dimension of x
+const size_t outDim = 2;  //!< dimension of y
 
 //! the Jacobian codegen class
 typedef DerivativesCppadJIT<inDim, outDim> derivativesCppadJIT;
@@ -54,7 +54,7 @@ Eigen::Matrix<SCALAR, outDim, 1> testFunction(const Eigen::Matrix<SCALAR, inDim,
 {
 	Eigen::Matrix<SCALAR, outDim, 1> y;
 
-	y(0) = 3*x(0) + 2*x(0)*x(0) - x(1)*x(2);
+	y(0) = 3 * x(0) + 2 * x(0) * x(0) - x(1) * x(2);
 	y(1) = x(2) + x(1) + 3;
 
 	return y;
@@ -71,24 +71,21 @@ Eigen::Matrix<SCALAR, outDim, inDim> jacobianCheck(const Eigen::Matrix<SCALAR, i
 {
 	Eigen::Matrix<SCALAR, outDim, inDim> jac;
 
-	jac << 3+4*x(0),    -x(2),     -x(1),
-		   0,              1,        1;
+	jac << 3 + 4 * x(0), -x(2), -x(1), 0, 1, 1;
 
 	return jac;
 }
 
 template <typename SCALAR>
-Eigen::Matrix<SCALAR, inDim, inDim> hessianCheck(const Eigen::Matrix<SCALAR, inDim, 1>& x, const Eigen::Matrix<SCALAR, outDim, 1>& w)
+Eigen::Matrix<SCALAR, inDim, inDim> hessianCheck(const Eigen::Matrix<SCALAR, inDim, 1>& x,
+	const Eigen::Matrix<SCALAR, outDim, 1>& w)
 {
 	Eigen::Matrix<SCALAR, inDim, inDim> hes;
 
-	hes << 	4, 0, 0, 
-			0, 0, -1,
-			0, -1, 0;
+	hes << 4, 0, 0, 0, 0, -1, 0, -1, 0;
 
 	return w(0) * hes;
 }
-
 
 
 /*!
@@ -96,7 +93,8 @@ Eigen::Matrix<SCALAR, inDim, inDim> hessianCheck(const Eigen::Matrix<SCALAR, inD
  */
 TEST(JacobianCGTest, JITCompilationTest)
 {
-	try {
+	try
+	{
 		// create a function handle (also works for class methods, lambdas, function pointers, ...)
 		typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
 
@@ -112,7 +110,7 @@ TEST(JacobianCGTest, JITCompilationTest)
 		// create an input vector
 		Eigen::Matrix<double, inDim, 1> x;
 
-		for (size_t i=0; i<1000; i++)
+		for (size_t i = 0; i < 1000; i++)
 		{
 			// create a random input
 			x.setRandom();
@@ -122,7 +120,7 @@ TEST(JacobianCGTest, JITCompilationTest)
 		}
 	} catch (std::exception& e)
 	{
-		std::cout << "Exception thrown: "<<e.what()<<std::endl;
+		std::cout << "Exception thrown: " << e.what() << std::endl;
 		ASSERT_TRUE(false);
 	}
 }
@@ -137,14 +135,14 @@ TEST(HessianCGTest, JITHessianTest)
 		derivativesCppadJIT hessianCg(f);
 
 		DerivativesCppadSettings settings;
-		settings.createHessian_ = true;		
+		settings.createHessian_ = true;
 
 		hessianCg.compileJIT(settings, "hessianCGLib");
 
 		Eigen::Matrix<double, inDim, 1> x;
 		Eigen::Matrix<double, outDim, 1> w;
 
-		for(size_t i = 0; i < 1000; ++i)
+		for (size_t i = 0; i < 1000; ++i)
 		{
 			x.setRandom();
 			w.setRandom();
@@ -180,4 +178,3 @@ TEST(JacobianCGTest, CodegenTest)
 
 	jacCG.generateHessianSource("TestHessian");
 }
-

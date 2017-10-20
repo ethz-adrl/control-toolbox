@@ -36,8 +36,8 @@ namespace optcon {
  *
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class DmsDimensions {
-
+class DmsDimensions
+{
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -60,9 +60,7 @@ public:
 
 	typedef SCALAR time_t;
 	typedef ct::core::tpl::TimeArray<SCALAR> time_array_t;
-
 };
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

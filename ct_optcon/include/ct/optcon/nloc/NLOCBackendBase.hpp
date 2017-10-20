@@ -44,11 +44,15 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/matlab.hpp>
 #endif
 
-#define SYMPLECTIC_ENABLED template<size_t V, size_t P> typename std::enable_if<(V > 0 && P > 0), void>::type
-#define SYMPLECTIC_DISABLED template<size_t V, size_t P> typename std::enable_if<(V <= 0 || P <= 0), void>::type
+#define SYMPLECTIC_ENABLED        \
+	template <size_t V, size_t P> \
+	typename std::enable_if<(V > 0 && P > 0), void>::type
+#define SYMPLECTIC_DISABLED       \
+	template <size_t V, size_t P> \
+	typename std::enable_if<(V <= 0 || P <= 0), void>::type
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
 
 /*!
@@ -66,9 +70,7 @@ namespace optcon{
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
 class NLOCBackendBase
 {
-
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const size_t state_dim = STATE_DIM;
@@ -82,7 +84,7 @@ public:
 	typedef OptConSolver<NLOCBackendBase, Policy_t, Settings_t, STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
 	typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
-	typedef LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>  LQOCSolver_t;
+	typedef LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR> LQOCSolver_t;
 
 	typedef core::Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR> Sensitivity_t;
 
@@ -119,13 +121,12 @@ public:
 	typedef std::vector<SCALAR, Eigen::aligned_allocator<SCALAR>> scalar_array_t;
 
 
-
 	NLOCBackendBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const Settings_t& settings);
 
 	NLOCBackendBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
-			 const std::string& settingsFile,
-			 bool verbose = true,
-			 const std::string& ns = "alg");
+		const std::string& settingsFile,
+		bool verbose = true,
+		const std::string& ns = "alg");
 
 	virtual ~NLOCBackendBase();
 
@@ -162,8 +163,16 @@ public:
 	SYMPLECTIC_ENABLED initializeSymplecticIntegrators(size_t i);
 	SYMPLECTIC_DISABLED initializeSymplecticIntegrators(size_t i);
 
-	SYMPLECTIC_ENABLED integrateSymplectic(size_t threadId, ct::core::StateVector<STATE_DIM, SCALAR>& x0, const double& t, const size_t& steps, const double& dt_sim) const;
-	SYMPLECTIC_DISABLED integrateSymplectic(size_t threadId, ct::core::StateVector<STATE_DIM, SCALAR>& x0, const double& t, const size_t& steps, const double& dt_sim) const;
+	SYMPLECTIC_ENABLED integrateSymplectic(size_t threadId,
+		ct::core::StateVector<STATE_DIM, SCALAR>& x0,
+		const double& t,
+		const size_t& steps,
+		const double& dt_sim) const;
+	SYMPLECTIC_DISABLED integrateSymplectic(size_t threadId,
+		ct::core::StateVector<STATE_DIM, SCALAR>& x0,
+		const double& t,
+		const size_t& steps,
+		const double& dt_sim) const;
 
 
 	/*!
@@ -376,15 +385,15 @@ public:
 
 	//! do a single threaded rollout and defect computation of the shots - useful for line-search
 	void rolloutShotsSingleThreaded(size_t threadId,
-			size_t firstIndex,
-			size_t lastIndex,
-			ControlVectorArray& u_ff_local,
-			StateVectorArray& x_local,
-			const StateVectorArray& x_ref_lqr,
-			StateVectorArray& xShot,
-			StateVectorArray& d,
-			StateSubsteps& substepsX,
-			ControlSubsteps& substepsU) const;
+		size_t firstIndex,
+		size_t lastIndex,
+		ControlVectorArray& u_ff_local,
+		StateVectorArray& x_local,
+		const StateVectorArray& x_ref_lqr,
+		StateVectorArray& xShot,
+		StateVectorArray& d,
+		StateSubsteps& substepsX,
+		ControlSubsteps& substepsU) const;
 
 	//! performLineSearch: execute the line search, possibly with different threading schemes
 	virtual SCALAR performLineSearch() = 0;
@@ -398,18 +407,16 @@ public:
 	const SummaryAllIterations<SCALAR>& getSummary() const;
 
 protected:
-
 	//! integrate the individual shots
-	bool rolloutSingleShot(
-			const size_t threadId,
-			const size_t k,
-			ControlVectorArray& u_ff_local,
-			StateVectorArray& x_local,
-			const StateVectorArray& x_ref_lqr,
-			StateVectorArray& xShot,
-			StateSubsteps& substepsX,
-			ControlSubsteps& substepsU,
-			std::atomic_bool* terminationFlag = nullptr ) const;
+	bool rolloutSingleShot(const size_t threadId,
+		const size_t k,
+		ControlVectorArray& u_ff_local,
+		StateVectorArray& x_local,
+		const StateVectorArray& x_ref_lqr,
+		StateVectorArray& xShot,
+		StateSubsteps& substepsX,
+		ControlSubsteps& substepsU,
+		std::atomic_bool* terminationFlag = nullptr) const;
 
 	/*
 	bool simpleRollout(
@@ -428,11 +435,10 @@ protected:
 	 * @param xShot		the shot trajectory
 	 * @param d			the defect trajectory
 	 */
-	void computeSingleDefect(
-			size_t k,
-			const StateVectorArray& x_local,
-			const StateVectorArray& xShot,
-			StateVectorArray& d) const;
+	void computeSingleDefect(size_t k,
+		const StateVectorArray& x_local,
+		const StateVectorArray& xShot,
+		StateVectorArray& d) const;
 
 	//! Computes the linearized Dynamics at a specific point of the trajectory
 	/*!
@@ -486,45 +492,39 @@ protected:
 	 * \param intermediateCost the accumulated intermediate cost
 	 * \param finalCost the accumulated final cost
 	 */
-	void computeCostsOfTrajectory(
-			size_t threadId,
-			const core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
-			const core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
-			scalar_t& intermediateCost,
-			scalar_t& finalCost
-	) const;
+	void computeCostsOfTrajectory(size_t threadId,
+		const core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+		const core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+		scalar_t& intermediateCost,
+		scalar_t& finalCost) const;
 
 
 	//! Check if controller with particular alpha is better
-	void executeLineSearchSingleShooting(
-			const size_t threadId,
-			const scalar_t alpha,
-			StateVectorArray& x_local,
-			ControlVectorArray& u_local,
-			scalar_t& intermediateCost,
-			scalar_t& finalCost,
-			StateSubsteps& substepsX,
-			ControlSubsteps& substepsU,
-			std::atomic_bool* terminationFlag = nullptr
-	) const;
+	void executeLineSearchSingleShooting(const size_t threadId,
+		const scalar_t alpha,
+		StateVectorArray& x_local,
+		ControlVectorArray& u_local,
+		scalar_t& intermediateCost,
+		scalar_t& finalCost,
+		StateSubsteps& substepsX,
+		ControlSubsteps& substepsU,
+		std::atomic_bool* terminationFlag = nullptr) const;
 
 
-	void executeLineSearchMultipleShooting(
-			const size_t threadId,
-			const scalar_t alpha,
-			const ControlVectorArray& u_ff_update,
-			const StateVectorArray& x_update,
-			ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_recorded,
-			ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_recorded,
-			ct::core::StateVectorArray<STATE_DIM, SCALAR>& defects_recorded,
-			ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_recorded,
-			scalar_t& intermediateCost,
-			scalar_t& finalCost,
-			scalar_t& defectNorm,
-			StateSubsteps& substepsX,
-			ControlSubsteps& substepsU,
-			std::atomic_bool* terminationFlag = nullptr
-	) const;
+	void executeLineSearchMultipleShooting(const size_t threadId,
+		const scalar_t alpha,
+		const ControlVectorArray& u_ff_update,
+		const StateVectorArray& x_update,
+		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_recorded,
+		ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_recorded,
+		ct::core::StateVectorArray<STATE_DIM, SCALAR>& defects_recorded,
+		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_recorded,
+		scalar_t& intermediateCost,
+		scalar_t& finalCost,
+		scalar_t& defectNorm,
+		StateSubsteps& substepsX,
+		ControlSubsteps& substepsU,
+		std::atomic_bool* terminationFlag = nullptr) const;
 
 
 	//! Update feedforward controller
@@ -540,15 +540,15 @@ protected:
 	/*!
 	 * This is a helper function to efficiently send std::vectors to Matlab.
 	 */
-	template<class V>
+	template <class V>
 	void matrixToMatlab(V& matrix, std::string variableName);
 
 	//! compute norm of a discrete array (todo move to core)
-	template<typename ARRAY_TYPE, size_t ORDER = 1>
+	template <typename ARRAY_TYPE, size_t ORDER = 1>
 	SCALAR computeDiscreteArrayNorm(const ARRAY_TYPE& d) const;
 
 	//! compute norm of difference between two discrete arrays (todo move to core)
-	template<typename ARRAY_TYPE, size_t ORDER = 1>
+	template <typename ARRAY_TYPE, size_t ORDER = 1>
 	SCALAR computeDiscreteArrayNorm(const ARRAY_TYPE& a, const ARRAY_TYPE& b) const;
 
 	//! compute the norm of the defects trajectory
@@ -556,42 +556,47 @@ protected:
 	 * Note that different kind of norms might be favorable for different cases.
 	 * According to Nocedal and Wright, the l1-norm is "exact" (p.435),  the l2-norm is smooth.
 	 */
-	template<size_t ORDER = 1>
+	template <size_t ORDER = 1>
 	SCALAR computeDefectsNorm(const StateVectorArray& d) const;
 
 	typedef std::shared_ptr<ct::core::SubstepRecorder<STATE_DIM, CONTROL_DIM, SCALAR>> SubstepRecorderPtr;
-    std::vector<SubstepRecorderPtr, Eigen::aligned_allocator<SubstepRecorderPtr> > substepRecorders_;
+	std::vector<SubstepRecorderPtr, Eigen::aligned_allocator<SubstepRecorderPtr>> substepRecorders_;
 
-	typedef std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR> > IntegratorPtr;
-    std::vector<IntegratorPtr, Eigen::aligned_allocator<IntegratorPtr> > integrators_; //! Runge-Kutta-4 Integrators
+	typedef std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR>> IntegratorPtr;
+	std::vector<IntegratorPtr, Eigen::aligned_allocator<IntegratorPtr>> integrators_;  //! Runge-Kutta-4 Integrators
 
 	typedef std::shared_ptr<Sensitivity_t> SensitivityPtr;
-	std::vector<SensitivityPtr, Eigen::aligned_allocator<SensitivityPtr > > sensitivity_; //! the ct sensitivity integrators
+	std::vector<SensitivityPtr, Eigen::aligned_allocator<SensitivityPtr>>
+		sensitivity_;  //! the ct sensitivity integrators
 
-	typedef std::shared_ptr<ct::core::IntegratorSymplecticEuler<P_DIM, V_DIM, CONTROL_DIM, SCALAR> > IntegratorSymplecticEulerPtr;
-	std::vector<IntegratorSymplecticEulerPtr, Eigen::aligned_allocator<IntegratorSymplecticEulerPtr> > integratorsEulerSymplectic_;
+	typedef std::shared_ptr<ct::core::IntegratorSymplecticEuler<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>
+		IntegratorSymplecticEulerPtr;
+	std::vector<IntegratorSymplecticEulerPtr, Eigen::aligned_allocator<IntegratorSymplecticEulerPtr>>
+		integratorsEulerSymplectic_;
 
-	typedef std::shared_ptr<ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR> > IntegratorSymplecticRkPtr;
-	std::vector<IntegratorSymplecticRkPtr, Eigen::aligned_allocator<IntegratorSymplecticRkPtr > > integratorsRkSymplectic_;
+	typedef std::shared_ptr<ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>
+		IntegratorSymplecticRkPtr;
+	std::vector<IntegratorSymplecticRkPtr, Eigen::aligned_allocator<IntegratorSymplecticRkPtr>>
+		integratorsRkSymplectic_;
 
-    typedef std::shared_ptr<core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR> > ConstantControllerPtr;
-    std::vector<ConstantControllerPtr, Eigen::aligned_allocator<ConstantControllerPtr> > controller_;	//! the constant controller for forward-integration during one time-step
+	typedef std::shared_ptr<core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>> ConstantControllerPtr;
+	std::vector<ConstantControllerPtr, Eigen::aligned_allocator<ConstantControllerPtr>>
+		controller_;  //! the constant controller for forward-integration during one time-step
 
 
+	//! The policy. currently only for returning the result, should eventually replace L_ and u_ff_ (todo)
+	NLOCBackendBase::Policy_t policy_;
 
-    //! The policy. currently only for returning the result, should eventually replace L_ and u_ff_ (todo)
-    NLOCBackendBase::Policy_t policy_;
+	ct::core::tpl::TimeArray<SCALAR> t_;  //! the time trajectory
 
-    ct::core::tpl::TimeArray<SCALAR> t_; //! the time trajectory
+	bool initialized_;
+	bool configured_;
 
-    bool initialized_;
-    bool configured_;
-
-	size_t iteration_;	/*!< current iteration */
+	size_t iteration_; /*!< current iteration */
 
 	Settings_t settings_;
 
-	int K_; //! the number of stages in the overall OptConProblem
+	int K_;  //! the number of stages in the overall OptConProblem
 
 	StateVectorArray lx_;
 	StateVectorArray x_;
@@ -604,15 +609,15 @@ protected:
 
 	FeedbackArray L_;
 
-	SCALAR d_norm_; 	//! sum of the norms of all defects
-	SCALAR lx_norm_; 	//! sum of the norms of state update
-	SCALAR lu_norm_; 	//! sum of the norms of control update
+	SCALAR d_norm_;   //! sum of the norms of all defects
+	SCALAR lx_norm_;  //! sum of the norms of state update
+	SCALAR lu_norm_;  //! sum of the norms of control update
 
 	//! shared pointer to the linear-quadratic optimal control problem
-	std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> > lqocProblem_;
+	std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>> lqocProblem_;
 
 	//! shared pointer to the linear-quadratic optimal control solver
-	std::shared_ptr<LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR> > lqocSolver_;
+	std::shared_ptr<LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>> lqocSolver_;
 
 	StateSubstepsPtr substepsX_;
 	ControlSubstepsPtr substepsU_;
@@ -627,10 +632,10 @@ protected:
 	scalar_t finalCostPrevious_;
 
 
-	//! if building with MATLAB support, include matfile
+//! if building with MATLAB support, include matfile
 #ifdef MATLAB
 	matlab::MatFile matFile_;
-#endif //MATLAB
+#endif  //MATLAB
 
 
 	/*!
@@ -648,14 +653,12 @@ protected:
 	scalar_t alphaBest_;
 
 	SummaryAllIterations<SCALAR> summaryAllIterations_;
-
 };
 
 
-} // namespace optcon
-} // namespace ct
+}  // namespace optcon
+}  // namespace ct
 
 
 #undef SYMPLECTIC_ENABLED
 #undef SYMPLECTIC_DISABLED
-

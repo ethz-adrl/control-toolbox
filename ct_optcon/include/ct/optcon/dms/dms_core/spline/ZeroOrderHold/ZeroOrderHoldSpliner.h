@@ -39,11 +39,10 @@ namespace optcon {
  *
  * @tparam     T     The vector type to be splined
  */
-template<class T, typename SCALAR = double>
-class ZeroOrderHoldSpliner: public SplinerBase<T, SCALAR>
+template <class T, typename SCALAR = double>
+class ZeroOrderHoldSpliner : public SplinerBase<T, SCALAR>
 {
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef T vector_t;
@@ -57,37 +56,34 @@ public:
 	 *
 	 * @param[in]  grid  The DMS timegrid
 	 */
-	ZeroOrderHoldSpliner(std::shared_ptr<tpl::TimeGrid<SCALAR>> grid):
-		timeGrid_(grid)
-	{}
-
-	virtual ~ZeroOrderHoldSpliner(){}
-
-	void computeSpline(const vector_array_t& points) override {
-		zOholds_ = points;
-	}
-
-
+	ZeroOrderHoldSpliner(std::shared_ptr<tpl::TimeGrid<SCALAR>> grid) : timeGrid_(grid) {}
+	virtual ~ZeroOrderHoldSpliner() {}
+	void computeSpline(const vector_array_t& points) override { zOholds_ = points; }
 	// evaluate spline and return vector at interpolation time
-	virtual vector_t evalSpline (const SCALAR time, const size_t shotIdx) override {
-		assert(shotIdx < zOholds_.size() );
+	virtual vector_t evalSpline(const SCALAR time, const size_t shotIdx) override
+	{
+		assert(shotIdx < zOholds_.size());
 		assert(zOholds_[shotIdx] == zOholds_[shotIdx]);
 		return zOholds_[shotIdx];
 	}
 
-	virtual vector_t splineDerivative_t (const SCALAR time,  const size_t shotIdx) const override {
+	virtual vector_t splineDerivative_t(const SCALAR time, const size_t shotIdx) const override
+	{
 		return vector_t::Zero();
 	}
 
-	virtual vector_t splineDerivative_h_i(const SCALAR time, const size_t shotIdx) const override {
+	virtual vector_t splineDerivative_h_i(const SCALAR time, const size_t shotIdx) const override
+	{
 		return vector_t::Zero();
 	}
 
-	virtual matrix_t splineDerivative_q_i (const SCALAR time,  const size_t shotIdx) const override {
+	virtual matrix_t splineDerivative_q_i(const SCALAR time, const size_t shotIdx) const override
+	{
 		return matrix_t::Identity();
 	}
 
-	virtual matrix_t splineDerivative_q_iplus1(const SCALAR time,  const size_t shotIdx) const override {
+	virtual matrix_t splineDerivative_q_iplus1(const SCALAR time, const size_t shotIdx) const override
+	{
 		return matrix_t::Zero();
 	}
 
@@ -97,9 +93,7 @@ private:
 	vector_array_t zOholds_;
 
 	std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid_;
-
 };
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

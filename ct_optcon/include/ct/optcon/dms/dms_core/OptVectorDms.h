@@ -58,7 +58,6 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class OptVectorDms : public tpl::OptVector<SCALAR>
 {
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
@@ -84,8 +83,7 @@ public:
 	/**
 	 * @brief      Destructor
 	 */
-	virtual ~OptVectorDms(){}
-
+	virtual ~OptVectorDms() {}
 	/**
 	 * @brief      Returns the optimized state for a specific shot
 	 *
@@ -132,7 +130,7 @@ public:
 	 *
 	 * @return     The optimized time segments.
 	 */
-	const  Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>& getOptimizedTimeSegments();
+	const Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>& getOptimizedTimeSegments();
 
 	/**
 	 * @brief      Returns the starting index for the state at shot pairNum
@@ -151,7 +149,7 @@ public:
 	 * @param[in]  pairNum  The shot number
 	 *
 	 * @return     The state index.
-	 */	
+	 */
 	size_t getControlIndex(const size_t pairNum) const;
 
 	/**
@@ -161,7 +159,7 @@ public:
 	 * @param[in]  pairNum  The shot number
 	 *
 	 * @return     The state index.
-	 */	
+	 */
 	size_t getTimeSegmentIndex(const size_t pairNum) const;
 
 
@@ -209,8 +207,7 @@ public:
 	 *
 	 * @return     Number of pairs
 	 */
-	size_t numPairs(){return numPairs_;}
-
+	size_t numPairs() { return numPairs_; }
 	/**
 	 * @brief      Prints out the solution trajectories
 	 */
@@ -221,17 +218,17 @@ private:
 
 	size_t numPairs_;
 	/* maps the number of a "pair" to the index in w where ... */
-	std::map<size_t, size_t> pairNumToStateIdx_;			/* ... its state starts */
-	std::map<size_t, size_t> pairNumToControlIdx_;  		/* ... its control starts */
-	std::map<size_t, size_t> shotNumToShotDurationIdx_;		/* its shot time starts is in w (last element doesn't have one) */
+	std::map<size_t, size_t> pairNumToStateIdx_;   /* ... its state starts */
+	std::map<size_t, size_t> pairNumToControlIdx_; /* ... its control starts */
+	std::map<size_t, size_t>
+		shotNumToShotDurationIdx_; /* its shot time starts is in w (last element doesn't have one) */
 
 	state_vector_array_t stateSolution_;
 	control_vector_array_t inputSolution_;
 	Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> optimizedTimeSegments_;
-
 };
 
-} // namespace optcon
-} // namespace ct
+}  // namespace optcon
+}  // namespace ct
 
 #include "implementation/OptVectorDms-impl.h"

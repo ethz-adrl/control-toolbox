@@ -34,17 +34,17 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace ct::core;
 
 
-
 TEST(DiscreteArrayTest, UnaryPlusMinusTest)
 {
 	const size_t nEl = 10;
 	const size_t state_dim = 2;
 
 	//! create two state vector array and fill them with random elements
-	StateVectorArray<state_dim> array1 (nEl);
-	StateVectorArray<state_dim> array2 (nEl);
+	StateVectorArray<state_dim> array1(nEl);
+	StateVectorArray<state_dim> array2(nEl);
 
-	for (size_t i = 0; i<nEl; i++){
+	for (size_t i = 0; i < nEl; i++)
+	{
 		array1[i].setRandom();
 		array2[i].setRandom();
 	}
@@ -58,8 +58,8 @@ TEST(DiscreteArrayTest, UnaryPlusMinusTest)
 	StateVectorArray<state_dim> array_sum = array1 + array2;
 	StateVectorArray<state_dim> array_diff = array1 - array2;
 
-	for(size_t i = 0; i<nEl; i++){
-
+	for (size_t i = 0; i < nEl; i++)
+	{
 		//! check that the summation is correct
 		ASSERT_EQ(array_sum[i], (array1[i] + array2[i]));
 
@@ -79,10 +79,11 @@ TEST(DiscreteArrayTest, AddAssignTest)
 	const size_t state_dim = 2;
 
 	//! create two state vector array and fill them with random elements
-	StateVectorArray<state_dim> array1 (nEl);
-	StateVectorArray<state_dim> array2 (nEl);
+	StateVectorArray<state_dim> array1(nEl);
+	StateVectorArray<state_dim> array2(nEl);
 
-	for (size_t i = 0; i<nEl; i++){
+	for (size_t i = 0; i < nEl; i++)
+	{
 		array1[i].setRandom();
 		array2[i].setRandom();
 	}
@@ -95,8 +96,8 @@ TEST(DiscreteArrayTest, AddAssignTest)
 	//! test the overloaded operator
 	array1 += array2;
 
-	for(size_t i = 0; i<nEl; i++){
-
+	for (size_t i = 0; i < nEl; i++)
+	{
 		//! check that the summation is correct
 		ASSERT_EQ(array1[i], (array1_backup[i] + array2_backup[i]));
 
@@ -112,10 +113,11 @@ TEST(DiscreteArrayTest, SubstractAssignTest)
 	const size_t state_dim = 2;
 
 	//! create two state vector array and fill them with random elements
-	StateVectorArray<state_dim> array1 (nEl);
-	StateVectorArray<state_dim> array2 (nEl);
+	StateVectorArray<state_dim> array1(nEl);
+	StateVectorArray<state_dim> array2(nEl);
 
-	for (size_t i = 0; i<nEl; i++){
+	for (size_t i = 0; i < nEl; i++)
+	{
 		array1[i].setRandom();
 		array2[i].setRandom();
 	}
@@ -128,8 +130,8 @@ TEST(DiscreteArrayTest, SubstractAssignTest)
 	//! test the overloaded operator
 	array1 -= array2;
 
-	for(size_t i = 0; i<nEl; i++){
-
+	for (size_t i = 0; i < nEl; i++)
+	{
 		//! check that the summation is correct
 		ASSERT_EQ(array1[i], (array1_backup[i] - array2_backup[i]));
 
@@ -144,9 +146,10 @@ TEST(DiscreteArrayTest, MultiplicationTest)
 	const size_t nEl = 10;
 	const size_t state_dim = 2;
 
-	StateVectorArray<state_dim> array1 (nEl);
+	StateVectorArray<state_dim> array1(nEl);
 
-	for (size_t i = 0; i<nEl; i++){
+	for (size_t i = 0; i < nEl; i++)
+	{
 		array1[i].setRandom();
 	}
 
@@ -158,8 +161,8 @@ TEST(DiscreteArrayTest, MultiplicationTest)
 	//! test the overloaded operator
 	StateVectorArray<state_dim> result = array1 * scalar;
 
-	for(size_t i = 0; i<nEl; i++){
-
+	for (size_t i = 0; i < nEl; i++)
+	{
 		//! check that the summation is correct
 		ASSERT_EQ(result[i], (array1_backup[i] * scalar));
 
@@ -174,9 +177,10 @@ TEST(DiscreteArrayTest, DivisionTest)
 	const size_t nEl = 10;
 	const size_t state_dim = 2;
 
-	StateVectorArray<state_dim> array1 (nEl);
+	StateVectorArray<state_dim> array1(nEl);
 
-	for (size_t i = 0; i<nEl; i++){
+	for (size_t i = 0; i < nEl; i++)
+	{
 		array1[i].setRandom();
 	}
 
@@ -188,8 +192,8 @@ TEST(DiscreteArrayTest, DivisionTest)
 	//! test the overloaded operator
 	StateVectorArray<state_dim> result = array1 / scalar;
 
-	for(size_t i = 0; i<nEl; i++){
-
+	for (size_t i = 0; i < nEl; i++)
+	{
 		//! check that the summation is correct
 		ASSERT_EQ(result[i], (array1_backup[i] / scalar));
 

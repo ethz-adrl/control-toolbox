@@ -15,16 +15,16 @@ static const int state_dim = 8;
 static const int control_dim = 3;
 
 void dmcopy(int row, int col, double *A, int lda, double *B, int ldb)
-	{
+{
 	int i, j;
-	for(j=0; j<col; j++)
+	for (j = 0; j < col; j++)
+	{
+		for (i = 0; i < row; i++)
 		{
-		for(i=0; i<row; i++)
-			{
-			B[i+j*ldb] = A[i+j*lda];
-			}
+			B[i + j * ldb] = A[i + j * lda];
 		}
 	}
+}
 
 class LinkedMasses : public LinearSystem<state_dim, control_dim>
 {
@@ -36,51 +36,58 @@ public:
 		A_.setZero();
 		B_.setZero();
 
-		static const int pp = state_dim/2; // number of masses
+		static const int pp = state_dim / 2;  // number of masses
 
-		Eigen::Matrix<double, pp, pp> TEigen; TEigen.setZero();
+		Eigen::Matrix<double, pp, pp> TEigen;
+		TEigen.setZero();
 
 		double *T = TEigen.data();
 		int ii;
-		for(ii=0; ii<pp; ii++) T[ii*(pp+1)] = -2;
-		for(ii=0; ii<pp-1; ii++) T[ii*(pp+1)+1] = 1;
-		for(ii=1; ii<pp; ii++) T[ii*(pp+1)-1] = 1;
+		for (ii = 0; ii < pp; ii++)
+			T[ii * (pp + 1)] = -2;
+		for (ii = 0; ii < pp - 1; ii++)
+			T[ii * (pp + 1) + 1] = 1;
+		for (ii = 1; ii < pp; ii++)
+			T[ii * (pp + 1) - 1] = 1;
 
-		Eigen::Matrix<double, pp, pp> ZEigen; ZEigen.setZero();
+		Eigen::Matrix<double, pp, pp> ZEigen;
+		ZEigen.setZero();
 		double *Z = ZEigen.data();
 
-		Eigen::Matrix<double, pp, pp> IEigen; IEigen.setIdentity();
+		Eigen::Matrix<double, pp, pp> IEigen;
+		IEigen.setIdentity();
 		double *I = IEigen.data();
 
 		double *Ac = A_.data();
 		dmcopy(pp, pp, Z, pp, Ac, state_dim);
-		dmcopy(pp, pp, T, pp, Ac+pp, state_dim);
-		dmcopy(pp, pp, I, pp, Ac+pp*state_dim, state_dim);
-		dmcopy(pp, pp, Z, pp, Ac+pp*(state_dim+1), state_dim);
+		dmcopy(pp, pp, T, pp, Ac + pp, state_dim);
+		dmcopy(pp, pp, I, pp, Ac + pp * state_dim, state_dim);
+		dmcopy(pp, pp, Z, pp, Ac + pp * (state_dim + 1), state_dim);
 
-		Eigen::Matrix<double, control_dim, control_dim> InuEigen; InuEigen.setIdentity();
+		Eigen::Matrix<double, control_dim, control_dim> InuEigen;
+		InuEigen.setIdentity();
 		double *Inu = InuEigen.data();
 
 		double *Bc = B_.data();
-		dmcopy(control_dim, control_dim, Inu, control_dim, Bc+pp, state_dim);
+		dmcopy(control_dim, control_dim, Inu, control_dim, Bc + pp, state_dim);
 	}
 
 
-	const state_matrix_t& getDerivativeState(const StateVector<state_dim>& x, const ControlVector<control_dim>& u, const double t = 0.0) override
+	const state_matrix_t &getDerivativeState(const StateVector<state_dim> &x,
+		const ControlVector<control_dim> &u,
+		const double t = 0.0) override
 	{
 		return A_;
 	}
 
-	const state_control_matrix_t& getDerivativeControl(const StateVector<state_dim>& x, const ControlVector<control_dim>& u, const double t = 0.0) override
+	const state_control_matrix_t &getDerivativeControl(const StateVector<state_dim> &x,
+		const ControlVector<control_dim> &u,
+		const double t = 0.0) override
 	{
 		return B_;
 	}
 
-	LinkedMasses* clone() const override
-	{
-		return new LinkedMasses();
-	};
-
+	LinkedMasses *clone() const override { return new LinkedMasses(); };
 private:
 	state_matrix_t A_;
 	state_control_matrix_t B_;
@@ -100,59 +107,60 @@ public:
 
 		b_ << 0.145798, 0.150018, 0.150018, 0.145798, 0.245798, 0.200018, 0.200018, 0.245798;
 
-		static const int pp = state_dim/2; // number of masses
+		static const int pp = state_dim / 2;  // number of masses
 
-		Eigen::Matrix<double, pp, pp> TEigen; TEigen.setZero();
+		Eigen::Matrix<double, pp, pp> TEigen;
+		TEigen.setZero();
 
 		double *T = TEigen.data();
 		int ii;
-		for(ii=0; ii<pp; ii++) T[ii*(pp+1)] = -2;
-		for(ii=0; ii<pp-1; ii++) T[ii*(pp+1)+1] = 1;
-		for(ii=1; ii<pp; ii++) T[ii*(pp+1)-1] = 1;
+		for (ii = 0; ii < pp; ii++)
+			T[ii * (pp + 1)] = -2;
+		for (ii = 0; ii < pp - 1; ii++)
+			T[ii * (pp + 1) + 1] = 1;
+		for (ii = 1; ii < pp; ii++)
+			T[ii * (pp + 1) - 1] = 1;
 
-		Eigen::Matrix<double, pp, pp> ZEigen; ZEigen.setZero();
+		Eigen::Matrix<double, pp, pp> ZEigen;
+		ZEigen.setZero();
 		double *Z = ZEigen.data();
 
-		Eigen::Matrix<double, pp, pp> IEigen; IEigen.setIdentity();
+		Eigen::Matrix<double, pp, pp> IEigen;
+		IEigen.setIdentity();
 		double *I = IEigen.data();
 
 		double *Ac = A_.data();
 		dmcopy(pp, pp, Z, pp, Ac, state_dim);
-		dmcopy(pp, pp, T, pp, Ac+pp, state_dim);
-		dmcopy(pp, pp, I, pp, Ac+pp*state_dim, state_dim);
-		dmcopy(pp, pp, Z, pp, Ac+pp*(state_dim+1), state_dim);
+		dmcopy(pp, pp, T, pp, Ac + pp, state_dim);
+		dmcopy(pp, pp, I, pp, Ac + pp * state_dim, state_dim);
+		dmcopy(pp, pp, Z, pp, Ac + pp * (state_dim + 1), state_dim);
 
-		Eigen::Matrix<double, control_dim, control_dim> InuEigen; InuEigen.setIdentity();
+		Eigen::Matrix<double, control_dim, control_dim> InuEigen;
+		InuEigen.setIdentity();
 		double *Inu = InuEigen.data();
 
 		double *Bc = B_.data();
-		dmcopy(control_dim, control_dim, Inu, control_dim, Bc+pp, state_dim);
+		dmcopy(control_dim, control_dim, Inu, control_dim, Bc + pp, state_dim);
 	}
 
-	LinkedMasses2* clone() const override
+	LinkedMasses2 *clone() const override { return new LinkedMasses2(); };
+	void computeControlledDynamics(const ct::core::StateVector<state_dim> &state,
+		const double &t,
+		const ct::core::ControlVector<control_dim> &control,
+		ct::core::StateVector<state_dim> &derivative) override
 	{
-		return new LinkedMasses2();
-	};
-
-	void computeControlledDynamics(
-			const ct::core::StateVector<state_dim>& state,
-			const double& t,
-			const ct::core::ControlVector<control_dim>& control,
-			ct::core::StateVector<state_dim>& derivative
-	) override
-	{
-		derivative = A_*state + B_*control + b_;
+		derivative = A_ * state + B_ * control + b_;
 	}
 
 private:
 	ct::core::StateMatrix<state_dim> A_;
-	ct::core::StateControlMatrix<state_dim,control_dim> B_;
+	ct::core::StateControlMatrix<state_dim, control_dim> B_;
 	ct::core::StateVector<state_dim> b_;
 };
 
 void testGNMS();
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 	LinkedMasses system;
 
@@ -170,7 +178,7 @@ int main(int argc, char* argv[])
 	Q *= 2.0;
 	ControlMatrix<control_dim> R;
 	R.setIdentity();
-	R *= 2*2.0;
+	R *= 2 * 2.0;
 
 
 	StateVector<state_dim> stateOffset;
@@ -179,22 +187,20 @@ int main(int argc, char* argv[])
 	ControlVector<control_dim> uNom;
 	uNom.setConstant(-0.1);
 
-	ct::optcon::CostFunctionQuadraticSimple<state_dim, control_dim> costFunction(Q, R,
-			-stateOffset, uNom,
-			-stateOffset, Q);
+	ct::optcon::CostFunctionQuadraticSimple<state_dim, control_dim> costFunction(
+		Q, R, -stateOffset, uNom, -stateOffset, Q);
 
 	interface.changeTimeHorizon(N);
 	interface.solveLinearProblem(x0, system, costFunction, stateOffset, dt);
 	interface.printSolution();
 
-	std::cout <<std::endl <<std::endl << std::endl;
-	std::cout << "TEST GNMS!!!!!!!!!!!!!!!!!!!!!!!!!!" <<std::endl <<std::endl << std::endl;
+	std::cout << std::endl << std::endl << std::endl;
+	std::cout << "TEST GNMS!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl << std::endl << std::endl;
 
 	testGNMS();
 
 	return 1;
 }
-
 
 
 void testGNMS()
@@ -210,17 +216,16 @@ void testGNMS()
 	gnms_settings.max_iterations = 1;
 
 
-
-	std::shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new LinkedMasses2);
+	std::shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new LinkedMasses2);
 	//std::shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new ct::core::SystemLinearizer<state_dim,control_dim>(nonlinearSystem));
-	std::shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinkedMasses);
+	std::shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinkedMasses);
 
 	StateMatrix<state_dim> Q;
 	Q.setIdentity();
 	Q *= 2.0;
 	ControlMatrix<control_dim> R;
 	R.setIdentity();
-	R *= 2*2.0;
+	R *= 2 * 2.0;
 
 
 	StateVector<state_dim> stateOffset;
@@ -230,11 +235,9 @@ void testGNMS()
 	uNom.setConstant(-0.1);
 
 
-	std::shared_ptr<ct::optcon::CostFunctionQuadratic<state_dim, control_dim> > costFunction (
-			new ct::optcon::CostFunctionQuadraticSimple<state_dim, control_dim>(
-					Q, R,
-					-stateOffset, uNom,
-					-stateOffset, Q*gnms_settings.dt));
+	std::shared_ptr<ct::optcon::CostFunctionQuadratic<state_dim, control_dim>> costFunction(
+		new ct::optcon::CostFunctionQuadraticSimple<state_dim, control_dim>(
+			Q, R, -stateOffset, uNom, -stateOffset, Q * gnms_settings.dt));
 
 	// times
 	int N = 5;
@@ -242,12 +245,13 @@ void testGNMS()
 
 	// provide initial guess
 	ControlVectorArray<control_dim> u0(N, ControlVector<control_dim>::Zero());
-	StateVectorArray<state_dim>  x0(N+1, x_0);
+	StateVectorArray<state_dim> x0(N + 1, x_0);
 
-	ct::optcon::GNMS<state_dim, control_dim>::Policy_t initController (u0, x0);
+	ct::optcon::GNMS<state_dim, control_dim>::Policy_t initController(u0, x0);
 
 	// construct single-core single subsystem OptCon Problem
-	ct::optcon::OptConProblem<state_dim, control_dim> optConProblem (tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
+	ct::optcon::OptConProblem<state_dim, control_dim> optConProblem(
+		tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
 
 
 	std::cout << "initializing gnms solver" << std::endl;
@@ -261,9 +265,7 @@ void testGNMS()
 
 	gnms.runIteration();
 
-		// test trajectories
-		StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
-		ControlTrajectory<control_dim> uRollout = gnms.getControlTrajectory();
-
+	// test trajectories
+	StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
+	ControlTrajectory<control_dim> uRollout = gnms.getControlTrajectory();
 }
-

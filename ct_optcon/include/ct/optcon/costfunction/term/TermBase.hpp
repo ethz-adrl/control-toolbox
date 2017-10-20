@@ -27,7 +27,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include <boost/algorithm/string.hpp>   
+#include <boost/algorithm/string.hpp>
 
 #include "timeActivations/TimeActivationBase.hpp"
 #include "timeActivations/TimeActivations.h"
@@ -49,8 +49,8 @@ namespace optcon {
  * An example for an implementation of a custom term is given in \ref TermQuadratic.hpp
  **/
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, typename SCALAR = SCALAR_EVAL>
-class TermBase {
-
+class TermBase
+{
 protected:
 	std::string name_;
 	std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> c_i_;
@@ -79,13 +79,13 @@ public:
 	 * \brief Deep-copy term
 	 * @return
 	 */
-	virtual TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone () const = 0;
+	virtual TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone() const = 0;
 
 	/**
 	 * \brief Destructor
 	 */
 	virtual ~TermBase();
-	
+
 	/**
 	 * @brief      Evaluates the term at x, u, t
 	 *
@@ -95,7 +95,9 @@ public:
 	 *
 	 * @return     The evaluatated cost term
 	 */
-	virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) = 0;
+	virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
+		const Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& u,
+		const SCALAR& t) = 0;
 
 	/**
 	 * @brief      The evaluate method used for jit compilation in CostfunctionAD
@@ -106,8 +108,7 @@ public:
 	 *
 	 * @return     The evaluated cost
 	 */
-	virtual ct::core::ADCGScalar evaluateCppadCg(
-		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
+	virtual ct::core::ADCGScalar evaluateCppadCg(const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
 		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
 		ct::core::ADCGScalar t);
 
@@ -121,8 +122,10 @@ public:
 	 *
 	 * @return     The evaluatated cost term
 	 */
-	SCALAR_EVAL eval(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, 1> &u, const SCALAR_EVAL& t);
-	
+	SCALAR_EVAL eval(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& x,
+		const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, 1>& u,
+		const SCALAR_EVAL& t);
+
 	/**
 	 * \brief Returns if term is non-zero at a specific time
 	 * By default, all terms are evaluated at all times. However, if a term is not active at a certain time, you can overload this
@@ -134,15 +137,27 @@ public:
 
 	SCALAR_EVAL computeActivation(SCALAR_EVAL t);
 
-	virtual core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t);
+	virtual core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(
+		const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+		const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+		const SCALAR_EVAL& t);
 
-	virtual state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t);
-	
-	virtual core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t);
-	
-	virtual control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t);
+	virtual state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+		const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+		const SCALAR_EVAL& t);
 
-	virtual control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t);
+	virtual core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(
+		const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+		const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+		const SCALAR_EVAL& t);
+
+	virtual control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+		const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+		const SCALAR_EVAL& t);
+
+	virtual control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+		const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+		const SCALAR_EVAL& t);
 
 	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false);
 
@@ -162,12 +177,10 @@ public:
 	 */
 	void setName(const std::string& termName);
 
-	virtual void updateReferenceState (const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState);
+	virtual void updateReferenceState(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState);
 
 	virtual Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> getReferenceState() const;
-
 };
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

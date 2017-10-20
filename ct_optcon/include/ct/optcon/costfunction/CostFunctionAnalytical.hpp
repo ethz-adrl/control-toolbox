@@ -49,8 +49,8 @@ namespace optcon {
  * for all terms are available.
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class CostFunctionAnalytical : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> {
-
+class CostFunctionAnalytical : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>
+{
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -82,39 +82,39 @@ public:
 	 * Deep-cloning of cost function
 	 * @return base pointer to clone
 	 */
-	CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const;
+	CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const;
 
 	/**
 	 * Destructor
 	 */
 	~CostFunctionAnalytical();
 
-	size_t addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false) override;
-	size_t addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false) override;
+	size_t addIntermediateTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term,
+		bool verbose = false) override;
+	size_t addFinalTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term, bool verbose = false) override;
 
-    SCALAR evaluateIntermediate() override;
-    SCALAR evaluateTerminal() override;
+	SCALAR evaluateIntermediate() override;
+	SCALAR evaluateTerminal() override;
 
-    state_vector_t stateDerivativeIntermediate() override;
-    state_vector_t stateDerivativeTerminal() override;
+	state_vector_t stateDerivativeIntermediate() override;
+	state_vector_t stateDerivativeTerminal() override;
 
-    state_matrix_t stateSecondDerivativeIntermediate() override;
-    state_matrix_t stateSecondDerivativeTerminal() override;
+	state_matrix_t stateSecondDerivativeIntermediate() override;
+	state_matrix_t stateSecondDerivativeTerminal() override;
 
-    control_vector_t controlDerivativeIntermediate() override;
-    control_vector_t controlDerivativeTerminal() override;
+	control_vector_t controlDerivativeIntermediate() override;
+	control_vector_t controlDerivativeTerminal() override;
 
-    control_matrix_t controlSecondDerivativeIntermediate() override;
-    control_matrix_t controlSecondDerivativeTerminal() override;
+	control_matrix_t controlSecondDerivativeIntermediate() override;
+	control_matrix_t controlSecondDerivativeTerminal() override;
 
-    control_state_matrix_t stateControlDerivativeIntermediate() override;
-    control_state_matrix_t stateControlDerivativeTerminal() override;
+	control_state_matrix_t stateControlDerivativeIntermediate() override;
+	control_state_matrix_t stateControlDerivativeTerminal() override;
 
-	void loadFromConfigFile(const std::string& filename,bool verbose = false) override;
+	void loadFromConfigFile(const std::string& filename, bool verbose = false) override;
 
 private:
 };
 
-} // namespace optcon
-} // namespace cf
-
+}  // namespace optcon
+}  // namespace cf

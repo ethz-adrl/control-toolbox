@@ -29,15 +29,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/solver/NLOptConSettings.hpp>
 #include <ct/optcon/nloc/NLOCAlgorithm.hpp>
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
 class iLQR : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>
 {
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const size_t STATE_D = STATE_DIM;
@@ -81,7 +80,7 @@ public:
 	 * for iLQR, finishIteration contains the whole main iLQR iteration.
 	 * @return
 	 */
-	virtual bool finishIteration() override ;
+	virtual bool finishIteration() override;
 
 
 	/*!
@@ -95,9 +94,7 @@ public:
 	 * @return
 	 */
 	virtual bool finishMPCIteration() override;
-
 };
 
-}	// namespace optcon
-}	// namespace ct
-
+}  // namespace optcon
+}  // namespace ct

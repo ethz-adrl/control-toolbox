@@ -52,7 +52,9 @@ public:
 
 	friend class Integrator<STATE_DIM, SCALAR>;
 
-	typedef std::vector<std::shared_ptr<EventHandler<STATE_DIM, SCALAR>>, Eigen::aligned_allocator<std::shared_ptr<EventHandler<STATE_DIM, SCALAR>>>> EventHandlerPtrVector;
+	typedef std::vector<std::shared_ptr<EventHandler<STATE_DIM, SCALAR>>,
+		Eigen::aligned_allocator<std::shared_ptr<EventHandler<STATE_DIM, SCALAR>>>>
+		EventHandlerPtrVector;
 
 	//! default constructor
 	/*!
@@ -71,19 +73,14 @@ public:
 
 private:
 	//! Lambda to pass to odeint (odeint takes copies of the observer so we can't pass the class
-	std::function<void (const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)> observeWrap;
-	std::function<void (const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)> observeWrapWithLogging;
+	std::function<void(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)> observeWrap;
+	std::function<void(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)> observeWrapWithLogging;
 
-	ct::core::StateVectorArray<STATE_DIM, SCALAR> states_; //!< container for logging the state
-	ct::core::tpl::TimeArray<SCALAR> times_;  //!< container for logging the time
-
-	
-	EventHandlerPtrVector eventHandlers_; //! list of event handlers
+	ct::core::StateVectorArray<STATE_DIM, SCALAR> states_;  //!< container for logging the state
+	ct::core::tpl::TimeArray<SCALAR> times_;                //!< container for logging the time
 
 
+	EventHandlerPtrVector eventHandlers_;  //! list of event handlers
 };
-
 }
 }
-
-

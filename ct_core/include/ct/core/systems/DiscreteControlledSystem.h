@@ -70,9 +70,7 @@ public:
 	 * @param type system type
 	 */
 	DiscreteControlledSystem(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
-	: 	DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type),
-	  	controller_(nullptr)
-	{};
+		: DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type), controller_(nullptr){};
 
 	//! constructor
 	/*!
@@ -80,23 +78,20 @@ public:
 	 * @param controller controller
 	 * @param type system type
 	 */
-	DiscreteControlledSystem(
-			std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR> > controller,
-			const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
-	: 	DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type),
-	  	controller_(controller)
-	{};
+	DiscreteControlledSystem(std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>> controller,
+		const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
+		: DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type), controller_(controller){};
 
 	//! copy constructor
-	DiscreteControlledSystem(const ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>& arg):
-		DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg)
+	DiscreteControlledSystem(const ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>& arg)
+		: DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg)
 	{
-		if(arg.controller_)
-			controller_ = std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR> > (arg.controller_->clone());
+		if (arg.controller_)
+			controller_ = std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>>(arg.controller_->clone());
 	}
 
 	//! destructor
-	virtual ~DiscreteControlledSystem() {};
+	virtual ~DiscreteControlledSystem(){};
 
 	//! deep copy
 	virtual DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override = 0;
@@ -105,7 +100,7 @@ public:
 	/*!
 	 * @param controller new controller
 	 */
-	void setController(const std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR> >& controller)
+	void setController(const std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>>& controller)
 	{
 		controller_ = controller;
 	}
@@ -115,7 +110,7 @@ public:
 	 * \todo remove this function (duplicate of getController() below)
 	 * @param controller controller instance
 	 */
-	void getController(std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR> >& controller) const
+	void getController(std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>>& controller) const
 	{
 		controller = controller_;
 	}
@@ -124,12 +119,7 @@ public:
 	/*!
 	 * @return controller instance
 	 */
-	std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR> > getController()
-	{
-		return controller_;
-	}
-
-
+	std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>> getController() { return controller_; }
 	//! propagates the system dynamics forward by one step
 	/*!
 	 * evaluates \f$ x_{n+1} = f(x_n, n) \f$ at a given state and index
@@ -137,13 +127,12 @@ public:
 	 * @param n time index to propagate the dynamics at
 	 * @param stateNext propagated state
 	 */
-	virtual void propagateDynamics(
-		const StateVector<STATE_DIM, SCALAR>& state,
+	virtual void propagateDynamics(const StateVector<STATE_DIM, SCALAR>& state,
 		const int& n,
 		StateVector<STATE_DIM, SCALAR>& stateNext) override
 	{
 		ControlVector<CONTROL_DIM, SCALAR> controlAction;
-		if(controller_)
+		if (controller_)
 			controller_->computeControl(state, n, controlAction);
 		else
 			controlAction.setZero();
@@ -152,21 +141,14 @@ public:
 	}
 
 
-	virtual void propagateControlledDynamics(
-			const StateVector<STATE_DIM, SCALAR>& state,
-			const int& n,
-			const ControlVector<CONTROL_DIM, SCALAR>& control,
-			StateVector<STATE_DIM, SCALAR>& stateNext
-	) = 0;
+	virtual void propagateControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
+		const int& n,
+		const ControlVector<CONTROL_DIM, SCALAR>& control,
+		StateVector<STATE_DIM, SCALAR>& stateNext) = 0;
 
 
 protected:
-	std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR> > controller_; //!< the controller instance
-
+	std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>> controller_;  //!< the controller instance
 };
-
 }
 }
-
-
-

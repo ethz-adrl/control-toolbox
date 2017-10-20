@@ -28,9 +28,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../MpcSettings.h"
 
-namespace ct{
-namespace optcon{
-namespace tpl{
+namespace ct {
+namespace optcon {
+namespace tpl {
 
 /*!
  * This class implements the four default strategies for the time horizon in ct's MPC.
@@ -40,9 +40,7 @@ namespace tpl{
 template <typename SCALAR = double>
 class MpcTimeHorizon
 {
-
 public:
-
 	MpcTimeHorizon(const mpc_settings& settings, const SCALAR& initialTimeHorizon);
 
 	virtual ~MpcTimeHorizon();
@@ -57,10 +55,9 @@ public:
 	 *  Resulting, new time horizon provided to the solver
 	 * @return true if TimeHorizon reached and MPC should stop
 	 */
-	virtual bool computeNewTimeHorizon(
-			const SCALAR& t_since_ended_first_solve,
-			const SCALAR& t_forward_prediction_stop,
-			SCALAR& new_T);
+	virtual bool computeNewTimeHorizon(const SCALAR& t_since_ended_first_solve,
+		const SCALAR& t_forward_prediction_stop,
+		SCALAR& new_T);
 
 	void updateSettings(const mpc_settings& mpcsettings);
 
@@ -69,18 +66,14 @@ public:
 
 
 protected:
-
 	mpc_settings mpc_settings_;
 
 	SCALAR initialTimeHorizon_;
-
 };
 
-} // namespace tpl
+}  // namespace tpl
 
 typedef tpl::MpcTimeHorizon<double> MpcTimeHorizon;
 
-} // namespace optcon
-} // namespace ct
-
-
+}  // namespace optcon
+}  // namespace ct

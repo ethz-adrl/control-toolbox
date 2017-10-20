@@ -37,10 +37,10 @@ namespace optcon {
  *
  * @tparam     T     The vector type which will be splined
  */
-template<class T, typename SCALAR = double>
-class SplinerBase{
+template <class T, typename SCALAR = double>
+class SplinerBase
+{
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	/**
@@ -74,7 +74,7 @@ public:
 	 *
 	 * @return     The splined vector
 	 */
-	virtual vector_t evalSpline (const SCALAR time, const size_t shotIdx) = 0;
+	virtual vector_t evalSpline(const SCALAR time, const size_t shotIdx) = 0;
 
 	/**
 	 * @brief      Returns the spline derivatives with respect to time
@@ -84,7 +84,7 @@ public:
 	 *
 	 * @return     The time derivative
 	 */
-	virtual vector_t splineDerivative_t (const SCALAR time,  const size_t shotIdx) const = 0;
+	virtual vector_t splineDerivative_t(const SCALAR time, const size_t shotIdx) const = 0;
 
 	/**
 	 * @brief      Returns the spline derivatives with respect to the time
@@ -106,7 +106,7 @@ public:
 	 *
 	 * @return     The resulting derivative
 	 */
-	virtual matrix_t splineDerivative_q_i (const SCALAR time,  const size_t shotIdx) const = 0;
+	virtual matrix_t splineDerivative_q_i(const SCALAR time, const size_t shotIdx) const = 0;
 
 	/**
 	 * @brief      Returns the spline derivative with respect to the control
@@ -117,10 +117,8 @@ public:
 	 *
 	 * @return     The resulting derivative
 	 */
-	virtual matrix_t splineDerivative_q_iplus1(const SCALAR time,  const size_t shotIdx) const = 0;
-
+	virtual matrix_t splineDerivative_q_iplus1(const SCALAR time, const size_t shotIdx) const = 0;
 };
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

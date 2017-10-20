@@ -37,7 +37,7 @@ namespace tpl {
  *
  * @brief      Abstract base class for the NLP solvers
  */
-template<typename SCALAR>
+template <typename SCALAR>
 class NlpSolver
 {
 public:
@@ -46,48 +46,38 @@ public:
 	/**
 	 * @brief      Default constructor
 	 */
-	NlpSolver() :
-	isInitialized_(false)
-	{}
-
+	NlpSolver() : isInitialized_(false) {}
 	/**
 	 * @brief      Custom Constructor 1
 	 *
 	 * @param[in]  nlp   The nlp
 	 */
-	NlpSolver(std::shared_ptr<Nlp<SCALAR>> nlp) 
-	: 
-		nlp_(nlp)
-	{}
-
+	NlpSolver(std::shared_ptr<Nlp<SCALAR>> nlp) : nlp_(nlp) {}
 	/**
 	 * @brief      Custom constructor 2
 	 *
 	 * @param[in]  nlp       The nlp
 	 * @param[in]  settings  Custom user settings
 	 */
-	NlpSolver(std::shared_ptr<Nlp<SCALAR>> nlp, NlpSolverSettings settings) 
-	: 
-		nlp_(nlp),
-		settings_(settings),
-		isInitialized_(false)
-	{}
+	NlpSolver(std::shared_ptr<Nlp<SCALAR>> nlp, NlpSolverSettings settings)
+		: nlp_(nlp), settings_(settings), isInitialized_(false)
+	{
+	}
 
 	/**
 	 * @brief      Destructor
 	 */
 	virtual ~NlpSolver() {}
-
 	/**
 	 * @brief      Configures the solver with new settings
 	 *
 	 * @param[in]  settings  The nlp solver settings
 	 */
-	void configure(const NlpSolverSettings& settings) 
+	void configure(const NlpSolverSettings& settings)
 	{
 		settings_ = settings;
 		configureDerived(settings);
-	} 
+	}
 
 	/**
 	 * @brief      Forwards the settings to the corresponding nlp solver
@@ -112,20 +102,15 @@ public:
 	 */
 	virtual void prepareWarmStart(const size_t maxIterations) = 0;
 
-	bool isInitialized(){ return isInitialized_; }
-
+	bool isInitialized() { return isInitialized_; }
 protected:
 	std::shared_ptr<Nlp<SCALAR>> nlp_; /*!< The non linear program*/
-	NlpSolverSettings settings_; /*!< The nlp settings */
-	bool isInitialized_; /*!< Indicates whether the solver is initialized */
+	NlpSolverSettings settings_;       /*!< The nlp settings */
+	bool isInitialized_;               /*!< Indicates whether the solver is initialized */
 };
-
 }
 
 typedef tpl::NlpSolver<double> NlpSolver;
 
-} // namespace optcon
-} // namespace ct
-
-
-
+}  // namespace optcon
+}  // namespace ct

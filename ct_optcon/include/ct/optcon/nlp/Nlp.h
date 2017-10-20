@@ -63,12 +63,10 @@ public:
 	 * @brief      Default constructor
 	 */
 	Nlp() {}
-
 	/**
 	 * @brief      Destructor
 	 */
-	virtual ~Nlp(){}
-
+	virtual ~Nlp() {}
 	/**
 	 * @brief      { This method gets called at each update of the Optimization
 	 *             variables. This can be used to distribute or rearrange the
@@ -81,14 +79,15 @@ public:
 	 *
 	 * @return     { Scalar value of the resulting cost }
 	 */
-	SCALAR evaluateCostFun(){
-		if(!costCodegen_ && !costEvaluator_)
+	SCALAR evaluateCostFun()
+	{
+		if (!costCodegen_ && !costEvaluator_)
 			throw std::runtime_error("Error in evaluateCostFun. Costevaluator not initialized");
 
-		if(costCodegen_)
+		if (costCodegen_)
 			return costCodegen_->forwardZero(optVariables_->getOptimizationVars())(0);
 		else
-			return costEvaluator_->eval();			
+			return costEvaluator_->eval();
 	}
 
 
@@ -98,15 +97,16 @@ public:
 	 * @param[in]  n     { size of the gradient }
 	 * @param[out] grad  The gradient of the cost function
 	 */
-	void evaluateCostGradient(const size_t n, MapVecXs& grad){
-		if(!costCodegen_ && !costEvaluator_)
+	void evaluateCostGradient(const size_t n, MapVecXs& grad)
+	{
+		if (!costCodegen_ && !costEvaluator_)
 			throw std::runtime_error("Error in evaluateCostGradient. Costevaluator not initialized");
 
-		if(costCodegen_)
+		if (costCodegen_)
 			grad = costCodegen_->jacobian(optVariables_->getOptimizationVars());
 		else
 			costEvaluator_->evalGradient(n, grad);
-	} 
+	}
 
 	/**
 	 * @brief      { Evaluates the constraints }
@@ -114,11 +114,12 @@ public:
 	 * @param[out] values  The values of the constraint violations, wrapped as a
 	 *                     vector
 	 */
-	void evaluateConstraints(MapVecXs& values){
-		if(!constraintsCodegen_ && !constraints_)
+	void evaluateConstraints(MapVecXs& values)
+	{
+		if (!constraintsCodegen_ && !constraints_)
 			throw std::runtime_error("Error in evaluateConstraints. Constraints not initialized");
 
-		if(constraintsCodegen_)
+		if (constraintsCodegen_)
 			values = constraintsCodegen_->forwardZero(optVariables_->getOptimizationVars());
 		else
 			constraints_->evalConstraints(values);
@@ -130,11 +131,12 @@ public:
 	 * @param[in]  nele_jac  The number of non zeros in the constraint jacobian
 	 * @param[out] jac       The non zero values of the jacobian
 	 */
-	void evaluateConstraintJacobian(const int nele_jac, MapVecXs& jac){
-		if(!constraintsCodegen_ && !constraints_)
+	void evaluateConstraintJacobian(const int nele_jac, MapVecXs& jac)
+	{
+		if (!constraintsCodegen_ && !constraints_)
 			throw std::runtime_error("Error in evaluateConstraintJacobian. Constraints not initialized");
 
-		if(constraintsCodegen_)
+		if (constraintsCodegen_)
 			jac = constraintsCodegen_->sparseJacobianValues(optVariables_->getOptimizationVars());
 		else
 			constraints_->evalSparseJacobian(jac, nele_jac);
@@ -150,24 +152,29 @@ public:
 	 */
 	void evaluateHessian(const int nele_hes, MapVecXs& hes, const SCALAR obj_fac, MapConstVecXs& lambda)
 	{
-		if(!constraintsCodegen_ || !costCodegen_)
-			throw std::runtime_error("Error in evaluateHessian. Hessian Evaluation only implemented for codegeneration");
+		if (!constraintsCodegen_ || !costCodegen_)
+			throw std::runtime_error(
+				"Error in evaluateHessian. Hessian Evaluation only implemented for codegeneration");
 
 		hes.setZero();
-		Eigen::Matrix<double, 1, 1> omega; omega << obj_fac;
+		Eigen::Matrix<double, 1, 1> omega;
+		omega << obj_fac;
 
-		Eigen::VectorXd hessianCostValues = costCodegen_->sparseHessianValues(optVariables_->getOptimizationVars(), omega);
-		Eigen::VectorXd hessianConstraintsValues = constraintsCodegen_->sparseHessianValues(optVariables_->getOptimizationVars(), lambda);
+		Eigen::VectorXd hessianCostValues =
+			costCodegen_->sparseHessianValues(optVariables_->getOptimizationVars(), omega);
+		Eigen::VectorXd hessianConstraintsValues =
+			constraintsCodegen_->sparseHessianValues(optVariables_->getOptimizationVars(), lambda);
 
-		for(size_t i = 0; i < hessianCostValues.rows(); ++i)
-			hessianCost_.coeffRef(iRowHessianCost_(i), jColHessianCost_(i)) =  hessianCostValues(i);
+		for (size_t i = 0; i < hessianCostValues.rows(); ++i)
+			hessianCost_.coeffRef(iRowHessianCost_(i), jColHessianCost_(i)) = hessianCostValues(i);
 
-		for(size_t i = 0; i < hessianConstraintsValues.rows(); ++i)
-			hessianConstraints_.coeffRef(iRowHessianConstraints_(i), jColHessianConstraints_(i)) = hessianConstraintsValues(i);
+		for (size_t i = 0; i < hessianConstraintsValues.rows(); ++i)
+			hessianConstraints_.coeffRef(iRowHessianConstraints_(i), jColHessianConstraints_(i)) =
+				hessianConstraintsValues(i);
 
 		hessianTotal_ = (hessianCost_ + hessianConstraints_).template triangularView<Eigen::Lower>();
 
-		hes = Eigen::Map<Eigen::VectorXd>(hessianTotal_.valuePtr(), nele_hes, 1);			
+		hes = Eigen::Map<Eigen::VectorXd>(hessianTotal_.valuePtr(), nele_hes, 1);
 	}
 
 	/**
@@ -180,15 +187,15 @@ public:
 	 * @param[out] jCol      The column indices of the location of the non zero
 	 *                       elements of the constraint jacobian
 	 */
-	void getSparsityPatternJacobian(const int nele_jac, MapVecXi& iRow, MapVecXi& jCol) const 
+	void getSparsityPatternJacobian(const int nele_jac, MapVecXi& iRow, MapVecXi& jCol) const
 	{
-		if(!constraintsCodegen_ && !constraints_)
+		if (!constraintsCodegen_ && !constraints_)
 			throw std::runtime_error("Error in getSparsityPatternJacobian. Constraints not initialized");
 
 		iRow.setZero();
 		jCol.setZero();
 
-		if(constraintsCodegen_)
+		if (constraintsCodegen_)
 		{
 			Eigen::VectorXi iRow1;
 			Eigen::VectorXi jCol1;
@@ -196,8 +203,7 @@ public:
 
 			iRow = iRow1;
 			jCol = jCol1;
-		}
-		else
+		} else
 			constraints_->getSparsityPattern(iRow, jCol, nele_jac);
 	}
 
@@ -210,15 +216,16 @@ public:
 	 */
 	void getSparsityPatternHessian(const int nele_hes, MapVecXi& iRow, MapVecXi& jCol) const
 	{
-		if(!constraintsCodegen_ || !costCodegen_)
-			throw std::runtime_error("Error in getSparsityPatternHessian. Hessian Evaluation only implemented for codegeneration");
+		if (!constraintsCodegen_ || !costCodegen_)
+			throw std::runtime_error(
+				"Error in getSparsityPatternHessian. Hessian Evaluation only implemented for codegeneration");
 
 		iRow.setZero();
 		jCol.setZero();
 
 		iRow = iRowHessian_;
 		jCol = jColHessian_;
-	}	
+	}
 
 	/**
 	 * @brief      Returns the number of constraints in the NLP
@@ -227,9 +234,9 @@ public:
 	 */
 	size_t getConstraintsCount() const
 	{
-		if(!constraints_)
+		if (!constraints_)
 			throw std::runtime_error("Error in getConstraintsCount. Constraints not initialized");
-	
+
 		return constraints_->getConstraintsCount();
 	}
 
@@ -242,10 +249,10 @@ public:
 	 */
 	size_t getNonZeroJacobianCount() const
 	{
-		if(!constraintsCodegen_ && !constraints_)
-			throw std::runtime_error("Error in getNonZeroJacobianCount. Constraints not initialized");		
+		if (!constraintsCodegen_ && !constraints_)
+			throw std::runtime_error("Error in getNonZeroJacobianCount. Constraints not initialized");
 
-		if(constraintsCodegen_)
+		if (constraintsCodegen_)
 			return constraintsCodegen_->getNumNonZerosJacobian();
 		else
 			return constraints_->getNonZerosJacobianCount();
@@ -256,29 +263,30 @@ public:
 	 *
 	 * @return     The number of non zeros in the hessian
 	 */
-	size_t getNonZeroHessianCount() 
+	size_t getNonZeroHessianCount()
 	{
-		if(!constraintsCodegen_ || !costCodegen_)
+		if (!constraintsCodegen_ || !costCodegen_)
 		{
 			std::cerr << "Error: Exact hessians only work with AD hessian codegeneration" << std::endl;
-			throw std::runtime_error("Error in getNonZeroHessianCount. Codegeneration not initialized");		
+			throw std::runtime_error("Error in getNonZeroHessianCount. Codegeneration not initialized");
 		}
 
 		costCodegen_->getSparsityPatternHessian(iRowHessianCost_, jColHessianCost_);
 		constraintsCodegen_->getSparsityPatternHessian(iRowHessianConstraints_, jColHessianConstraints_);
 
 		std::vector<Eigen::Triplet<SCALAR>> tripletsCost;
-	 	std::vector<Eigen::Triplet<SCALAR>> tripletsConstraints;
-	 	
-        for(size_t i = 0; i < iRowHessianCost_.rows(); ++i)
-            tripletsCost.push_back(Eigen::Triplet<SCALAR>(iRowHessianCost_(i), jColHessianCost_(i), SCALAR(0.1)));
+		std::vector<Eigen::Triplet<SCALAR>> tripletsConstraints;
 
-        for(size_t i = 0; i < iRowHessianConstraints_.rows(); ++i)
-            tripletsConstraints.push_back(Eigen::Triplet<SCALAR>(iRowHessianConstraints_(i), jColHessianConstraints_(i), SCALAR(0.1)));
-       
-        hessianCost_.resize(optVariables_->size(), optVariables_->size());
-    	hessianCost_.setFromTriplets(tripletsCost.begin(), tripletsCost.end());
-    	hessianConstraints_.resize(optVariables_->size(), optVariables_->size());
+		for (size_t i = 0; i < iRowHessianCost_.rows(); ++i)
+			tripletsCost.push_back(Eigen::Triplet<SCALAR>(iRowHessianCost_(i), jColHessianCost_(i), SCALAR(0.1)));
+
+		for (size_t i = 0; i < iRowHessianConstraints_.rows(); ++i)
+			tripletsConstraints.push_back(
+				Eigen::Triplet<SCALAR>(iRowHessianConstraints_(i), jColHessianConstraints_(i), SCALAR(0.1)));
+
+		hessianCost_.resize(optVariables_->size(), optVariables_->size());
+		hessianCost_.setFromTriplets(tripletsCost.begin(), tripletsCost.end());
+		hessianConstraints_.resize(optVariables_->size(), optVariables_->size());
 		hessianConstraints_.setFromTriplets(tripletsConstraints.begin(), tripletsConstraints.end());
 
 		hessianTotal_.resize(optVariables_->size(), optVariables_->size());
@@ -286,19 +294,19 @@ public:
 
 		std::vector<int> iRowHessianStdVec;
 		std::vector<int> jColHessianStdVec;
-	    for(size_t k = 0; k < hessianTotal_.outerSize(); ++k)
-    		for(typename Eigen::SparseMatrix<SCALAR>::InnerIterator it(hessianTotal_,k); it; ++it)
-    		{
-	            iRowHessianStdVec.push_back(it.row());
-	            jColHessianStdVec.push_back(it.col());
-    		}
+		for (size_t k = 0; k < hessianTotal_.outerSize(); ++k)
+			for (typename Eigen::SparseMatrix<SCALAR>::InnerIterator it(hessianTotal_, k); it; ++it)
+			{
+				iRowHessianStdVec.push_back(it.row());
+				jColHessianStdVec.push_back(it.col());
+			}
 
 		iRowHessian_ = Eigen::Map<Eigen::VectorXi>(iRowHessianStdVec.data(), iRowHessianStdVec.size(), 1);
-		jColHessian_ = Eigen::Map<Eigen::VectorXi>(jColHessianStdVec.data(), jColHessianStdVec.size(), 1);		
+		jColHessian_ = Eigen::Map<Eigen::VectorXi>(jColHessianStdVec.data(), jColHessianStdVec.size(), 1);
 
 		size_t nonZerosHessian = iRowHessian_.rows();
 		return nonZerosHessian;
-	}	
+	}
 
 	/**
 	 * @brief      Reads the bounds of the constraints.
@@ -309,7 +317,7 @@ public:
 	 */
 	void getConstraintBounds(MapVecXs& lowerBound, MapVecXs& upperBound, const size_t m) const
 	{
-		if(!constraints_)
+		if (!constraints_)
 			throw std::runtime_error("Error in getConstraintBounds. Constraints not initialized");
 
 		constraints_->getBounds(lowerBound, upperBound);
@@ -320,9 +328,9 @@ public:
 	 *
 	 * @return     The number of Optimization variables.
 	 */
-	size_t getVarCount() const 
+	size_t getVarCount() const
 	{
-		if(!optVariables_)
+		if (!optVariables_)
 			throw std::runtime_error("Error in getVarCount. Optvariables not initialized");
 
 		return optVariables_->size();
@@ -337,7 +345,7 @@ public:
 	 */
 	void getVariableBounds(MapVecXs& lowerBound, MapVecXs& upperBound, const size_t n) const
 	{
-		if(!optVariables_)
+		if (!optVariables_)
 			throw std::runtime_error("Error in getVariableBounds. Optvariables not initialized");
 
 		optVariables_->getLowerBounds(lowerBound);
@@ -353,10 +361,10 @@ public:
 	 */
 	void extractOptimizationVars(const MapConstVecXs& x, bool isNew)
 	{
-		if(!optVariables_)
+		if (!optVariables_)
 			throw std::runtime_error("Error in extractOptimizationVars. Optvariables not initialized");
 
-		if(isNew)
+		if (isNew)
 		{
 			optVariables_->setOptimizationVars(x);
 			updateProblem();
@@ -371,7 +379,7 @@ public:
 	 */
 	void getInitialGuess(const size_t n, MapVecXs& x) const
 	{
-		if(!optVariables_)
+		if (!optVariables_)
 			throw std::runtime_error("Error in getOptimizationVars. Optvariables not initialized");
 
 		optVariables_->getInitialGuess(n, x);
@@ -388,7 +396,7 @@ public:
 	 */
 	void getOptimizationMultState(const size_t n, MapVecXs& xMul, MapVecXi& xState) const
 	{
-		if(!optVariables_)
+		if (!optVariables_)
 			throw std::runtime_error("Error in getOptimizationMultState. Optvariables not initialized");
 
 		optVariables_->getOptimizationMultState(n, xMul, xState);
@@ -404,7 +412,7 @@ public:
 	 */
 	void getConstraintsMultState(const size_t m, MapVecXs& zMul, MapVecXi& zState) const
 	{
-		if(!optVariables_)
+		if (!optVariables_)
 			throw std::runtime_error("Error in getConstraintsMultState. Optvariables not initialized");
 
 		optVariables_->getConstraintsMultState(m, zMul, zState);
@@ -419,7 +427,7 @@ public:
 	 */
 	void getBoundMultipliers(size_t n, MapVecXs& zLow, MapVecXs& zUp) const
 	{
-		if(!optVariables_)
+		if (!optVariables_)
 			throw std::runtime_error("Error in getBoundMultipliers. Optvariables not initialized");
 
 		optVariables_->getBoundMultipliers(n, zLow, zUp);
@@ -433,7 +441,7 @@ public:
 	 */
 	void getLambdaVars(size_t m, MapVecXs& lambda) const
 	{
-		if(!optVariables_)
+		if (!optVariables_)
 			throw std::runtime_error("Error in getLambdaVars. Optvariables not initialized");
 
 		optVariables_->getLambdaVars(m, lambda);
@@ -447,9 +455,12 @@ public:
 	 * @param[in]  zU      The value for the upper bound multiplier
 	 * @param[in]  lambda  The values of the constraint multipliers
 	 */
-	void extractIpoptSolution(const MapConstVecXs& x, const MapConstVecXs& zL, const MapConstVecXs& zU, const MapConstVecXs& lambda)
+	void extractIpoptSolution(const MapConstVecXs& x,
+		const MapConstVecXs& zL,
+		const MapConstVecXs& zU,
+		const MapConstVecXs& lambda)
 	{
-		if(!optVariables_)
+		if (!optVariables_)
 			throw std::runtime_error("Error in extractIpoptSolution. Optvariables not initialized");
 
 		optVariables_->setNewIpoptSolution(x, zL, zU, lambda);
@@ -464,9 +475,13 @@ public:
 	 * @param[in]  fMul    The constraint variable multiplier
 	 * @param[in]  fState  The constraint variable state
 	 */
-	void extractSnoptSolution(const MapVecXs& x, const MapVecXs& xMul, const MapVecXi& xState, const MapVecXs& fMul, const MapVecXi& fState)
+	void extractSnoptSolution(const MapVecXs& x,
+		const MapVecXs& xMul,
+		const MapVecXi& xState,
+		const MapVecXs& fMul,
+		const MapVecXi& fState)
 	{
-		if(!optVariables_)
+		if (!optVariables_)
 			throw std::runtime_error("Error in extractSnoptSolution. Optvariables not initialized");
 
 		optVariables_->setNewSnoptSolution(x, xMul, xState, fMul, fState);
@@ -474,9 +489,12 @@ public:
 
 
 protected:
-	std::shared_ptr<DiscreteCostEvaluatorBase<SCALAR>> costEvaluator_; //! abstract base class, approximates the cost evaluation for the discrete problem
-	std::shared_ptr<OptVector<SCALAR>> optVariables_; //! base class, containts the optimization variables used in the NLP solvers
-	std::shared_ptr<DiscreteConstraintContainerBase<SCALAR>> constraints_; //! abstract base class, contains the discretized constraints for the problem
+	std::shared_ptr<DiscreteCostEvaluatorBase<SCALAR>>
+		costEvaluator_;  //! abstract base class, approximates the cost evaluation for the discrete problem
+	std::shared_ptr<OptVector<SCALAR>>
+		optVariables_;  //! base class, containts the optimization variables used in the NLP solvers
+	std::shared_ptr<DiscreteConstraintContainerBase<SCALAR>>
+		constraints_;  //! abstract base class, contains the discretized constraints for the problem
 	std::shared_ptr<ct::core::DerivativesCppadJIT<-1, 1>> costCodegen_;
 	std::shared_ptr<ct::core::DerivativesCppadJIT<-1, -1>> constraintsCodegen_;
 
@@ -486,11 +504,9 @@ protected:
 	Eigen::VectorXi iRowHessian_;
 	Eigen::VectorXi jColHessian_;
 };
-
 }
 
 typedef tpl::Nlp<double> Nlp;
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

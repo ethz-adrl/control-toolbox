@@ -51,7 +51,6 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class ConstantStateFeedbackController : public Controller<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	//! Default constructor
@@ -74,27 +73,22 @@ public:
 	 * @param K the fixed state feedback gain
 	 */
 	ConstantStateFeedbackController(const ControlVector<CONTROL_DIM, SCALAR>& uff,
-			const StateVector<STATE_DIM, SCALAR>& x,
-			const FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>& K):
-				u_ff_(uff),
-				x_ref_(x),
-				K_(K)
-	{}
+		const StateVector<STATE_DIM, SCALAR>& x,
+		const FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>& K)
+		: u_ff_(uff), x_ref_(x), K_(K)
+	{
+	}
 
 
 	//! Copy constructor
-	ConstantStateFeedbackController(const ConstantStateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>& other) :
-		Controller<STATE_DIM, CONTROL_DIM, SCALAR>(other),
-		u_ff_(other.u_ff_),
-		x_ref_(other.x_ref_),
-		K_(other.K_)
-	{}
+	ConstantStateFeedbackController(const ConstantStateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>& other)
+		: Controller<STATE_DIM, CONTROL_DIM, SCALAR>(other), u_ff_(other.u_ff_), x_ref_(other.x_ref_), K_(other.K_)
+	{
+	}
 
 
 	//! Destructor
 	~ConstantStateFeedbackController() {}
-
-
 	//! Clone operator
 	/*!
 	 * Clones the controller. Used for cloning ControlledSystem's
@@ -114,10 +108,9 @@ public:
 	 * @param t The time of the system (ignored)
 	 * @param controlAction The (fixed) control action
 	 */
-	void computeControl(
-			const StateVector<STATE_DIM, SCALAR>& x,
-			const SCALAR& t,
-			ControlVector<CONTROL_DIM, SCALAR>& controlAction) override
+	void computeControl(const StateVector<STATE_DIM, SCALAR>& x,
+		const SCALAR& t,
+		ControlVector<CONTROL_DIM, SCALAR>& controlAction) override
 	{
 		controlAction = u_ff_ + K_ * (x - x_ref_);
 	}
@@ -129,16 +122,15 @@ public:
 	 * @param x The fixed reference state
 	 * @param K the fixed state feedback gain
 	 */
-	void updateControlLaw(
-			const ControlVector<CONTROL_DIM, SCALAR>& uff,
-			const StateVector<STATE_DIM, SCALAR>& x,
-			const FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>& K = FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero())
+	void updateControlLaw(const ControlVector<CONTROL_DIM, SCALAR>& uff,
+		const StateVector<STATE_DIM, SCALAR>& x,
+		const FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>& K =
+			FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero())
 	{
 		u_ff_ = uff;
 		x_ref_ = x;
 		K_ = K;
 	}
-
 
 
 private:
@@ -150,9 +142,7 @@ private:
 
 	//! state feedback matrix
 	FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR> K_;
-
 };
 
-} // namespace core
-} // namespace ct
-
+}  // namespace core
+}  // namespace ct

@@ -36,9 +36,9 @@ namespace tpl {
  * @brief      Implements an abstract base class from which all the discrete
  *             custom NLP constraints should derive
  */
-template<typename SCALAR>
-class DiscreteConstraintBase{
-
+template <typename SCALAR>
+class DiscreteConstraintBase
+{
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
@@ -46,14 +46,11 @@ public:
 	/**
 	 * @brief      Default constructor
 	 */
-	DiscreteConstraintBase(){}
-
+	DiscreteConstraintBase() {}
 	/**
 	 * @brief      Destructor
 	 */
-	virtual ~DiscreteConstraintBase(){}
-
-
+	virtual ~DiscreteConstraintBase() {}
 	/**
 	 * @brief      Evaluates the constraint violation
 	 *
@@ -110,7 +107,6 @@ public:
 	virtual VectorXs getUpperBound() = 0;
 
 protected:
-
 	/**
 	 * @brief      This method generates Row and Column vectors which indicate
 	 *             the sparsity pattern of the constraint jacobian for a
@@ -124,12 +120,11 @@ protected:
 	 *
 	 * @return     indexnumber plus num_elements
 	 */
-	size_t genDiagonalIndices(
-			const size_t col_start,
-			const size_t num_elements,
-			Eigen::VectorXi& iRow_vec,
-			Eigen::VectorXi& jCol_vec,
-			const size_t indexNumber);
+	size_t genDiagonalIndices(const size_t col_start,
+		const size_t num_elements,
+		Eigen::VectorXi& iRow_vec,
+		Eigen::VectorXi& jCol_vec,
+		const size_t indexNumber);
 
 	/**
 	 * @brief      This method generates Row and Column vectors which indicate
@@ -146,24 +141,20 @@ protected:
 	 * @return     The indexnumber plus the number of elements contained in the
 	 *             matrix block
 	 */
-	size_t genBlockIndices(
-			const size_t col_start,
-			const size_t num_rows,
-			const size_t num_cols,
-			Eigen::VectorXi& iRow_vec,
-			Eigen::VectorXi& jCol_vec,
-			const size_t indexNumber);
-
-};
-
-template<typename SCALAR>
-inline size_t DiscreteConstraintBase<SCALAR>::genDiagonalIndices(
-		const size_t col_start,
-		const size_t num_elements,
+	size_t genBlockIndices(const size_t col_start,
+		const size_t num_rows,
+		const size_t num_cols,
 		Eigen::VectorXi& iRow_vec,
 		Eigen::VectorXi& jCol_vec,
-		const size_t indexNumber
-)
+		const size_t indexNumber);
+};
+
+template <typename SCALAR>
+inline size_t DiscreteConstraintBase<SCALAR>::genDiagonalIndices(const size_t col_start,
+	const size_t num_elements,
+	Eigen::VectorXi& iRow_vec,
+	Eigen::VectorXi& jCol_vec,
+	const size_t indexNumber)
 {
 	Eigen::VectorXi new_row_indices;
 	Eigen::VectorXi new_col_indices;
@@ -172,9 +163,10 @@ inline size_t DiscreteConstraintBase<SCALAR>::genDiagonalIndices(
 
 	size_t count = 0;
 
-	for(size_t i = 0; i < num_elements; ++i){
+	for (size_t i = 0; i < num_elements; ++i)
+	{
 		new_row_indices(count) = i;
-		new_col_indices(count) = col_start+i;
+		new_col_indices(count) = col_start + i;
 		count++;
 	}
 
@@ -186,16 +178,15 @@ inline size_t DiscreteConstraintBase<SCALAR>::genDiagonalIndices(
 	return count;
 }
 
-template<typename SCALAR>
-inline size_t DiscreteConstraintBase<SCALAR>::genBlockIndices(
-		const size_t col_start,
-		const size_t num_rows,
-		const size_t num_cols,
-		Eigen::VectorXi& iRow_vec,
-		Eigen::VectorXi& jCol_vec,
-		const size_t indexNumber)
+template <typename SCALAR>
+inline size_t DiscreteConstraintBase<SCALAR>::genBlockIndices(const size_t col_start,
+	const size_t num_rows,
+	const size_t num_cols,
+	Eigen::VectorXi& iRow_vec,
+	Eigen::VectorXi& jCol_vec,
+	const size_t indexNumber)
 {
-	size_t num_gen_indices = num_rows*num_cols;
+	size_t num_gen_indices = num_rows * num_cols;
 
 	Eigen::VectorXi new_row_indices;
 	Eigen::VectorXi new_col_indices;
@@ -204,8 +195,10 @@ inline size_t DiscreteConstraintBase<SCALAR>::genBlockIndices(
 
 	size_t count = 0;
 
-	for(size_t row = 0; row <num_rows; ++row){
-		for(size_t col = col_start; col <col_start+num_cols; ++col){
+	for (size_t row = 0; row < num_rows; ++row)
+	{
+		for (size_t col = col_start; col < col_start + num_cols; ++col)
+		{
 			new_row_indices(count) = row;
 			new_col_indices(count) = col;
 			count++;
@@ -219,11 +212,9 @@ inline size_t DiscreteConstraintBase<SCALAR>::genBlockIndices(
 
 	return num_gen_indices;
 }
-
 }
 
 typedef tpl::DiscreteConstraintBase<double> DiscreteConstraintBase;
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

@@ -26,8 +26,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
 
 //! select a mode in which MPC is supposed to run
@@ -49,21 +49,22 @@ namespace optcon{
  * 		The overall time horizon gets set trough the initial problem time horizon. The smaller, receding time
  * 		horizon can be specified in the mpc_settings struct as "minimumTimeHorizonMpc_"
  */
-enum MPC_MODE{
+enum MPC_MODE
+{
 
-	FIXED_FINAL_TIME = 0,                  //!< FIXED_FINAL_TIME
+	FIXED_FINAL_TIME = 0,  //!< FIXED_FINAL_TIME
 
-	CONSTANT_RECEDING_HORIZON,             //!< CONSTANT_RECEDING_HORIZON
+	CONSTANT_RECEDING_HORIZON,  //!< CONSTANT_RECEDING_HORIZON
 
-	FIXED_FINAL_TIME_WITH_MIN_TIME_HORIZON,//!< FIXED_FINAL_TIME_WITH_MIN_TIME_HORIZON
+	FIXED_FINAL_TIME_WITH_MIN_TIME_HORIZON,  //!< FIXED_FINAL_TIME_WITH_MIN_TIME_HORIZON
 
-	RECEDING_HORIZON_WITH_FIXED_FINAL_TIME //!< RECEDING_HORIZON_WITH_FIXED_FINAL_TIME
+	RECEDING_HORIZON_WITH_FIXED_FINAL_TIME  //!< RECEDING_HORIZON_WITH_FIXED_FINAL_TIME
 };
 
 
 //! MPC Settings struct
-struct mpc_settings{
-
+struct mpc_settings
+{
 	/*!
 	 * State prediction.
 	 * Use state prediction (based on a given delay, the given initial state and a given policy)?
@@ -112,7 +113,7 @@ struct mpc_settings{
 	/*!
 	 * see description of the different modes above
 	 */
-	core::Time minimumTimeHorizonMpc_ = 1.0;	// seconds
+	core::Time minimumTimeHorizonMpc_ = 1.0;  // seconds
 
 	/*!
 	 * cold starting or warm starting.
@@ -137,7 +138,6 @@ struct mpc_settings{
 		std::cout << " coldStart: \t " << coldStart_ << std::endl;
 		std::cout << " ============================== END =================================" << std::endl;
 	}
-
 };
 
 
@@ -166,6 +166,5 @@ inline void loadMpcSettings(const std::string& filename, mpc_settings& settings)
 }
 
 
-}	// namespace optcon
-}	// namespace ct
-
+}  // namespace optcon
+}  // namespace ct

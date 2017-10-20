@@ -34,7 +34,8 @@ namespace core {
 namespace internal {
 
 //! Convenience class to handle sparsity patterns, e.g. in Jacobians
-class SparsityPattern {
+class SparsityPattern
+{
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -60,9 +61,9 @@ public:
 		const size_t rows = sparsity.rows();
 		const size_t cols = sparsity.cols();
 
-		sparsity_.resize(rows*cols);
+		sparsity_.resize(rows * cols);
 
-		for (size_t i=0; i<rows*cols; i++)
+		for (size_t i = 0; i < rows * cols; i++)
 			sparsity_[i] = sparsity.array()(i);
 
 		size_t jacEntries = sparsity.template cast<int>().sum();
@@ -70,11 +71,11 @@ public:
 		row_.resize(jacEntries);
 		col_.resize(jacEntries);
 		size_t count = 0;
-		for (size_t i=0; i<rows; i++)
+		for (size_t i = 0; i < rows; i++)
 		{
-			for(size_t j=0; j<cols; j++)
+			for (size_t j = 0; j < cols; j++)
 			{
-				if (sparsity(i,j))
+				if (sparsity(i, j))
 				{
 					row_[count] = j;
 					col_[count] = i;
@@ -126,14 +127,13 @@ public:
 	void clearWork();
 
 private:
-	CppAD::vector<bool> sparsity_; //! sparsity in vector representation
-	CppAD::vector<size_t> row_; //! sparsity row indices for row-column representation
-	CppAD::vector<size_t> col_;//! sparsity column indices for row-column representation
-	CppAD::sparse_jacobian_work workJacobian_; //! CppAD internal "work"
-    CppAD::sparse_hessian_work workHessian_;
+	CppAD::vector<bool> sparsity_;              //! sparsity in vector representation
+	CppAD::vector<size_t> row_;                 //! sparsity row indices for row-column representation
+	CppAD::vector<size_t> col_;                 //! sparsity column indices for row-column representation
+	CppAD::sparse_jacobian_work workJacobian_;  //! CppAD internal "work"
+	CppAD::sparse_hessian_work workHessian_;
 };
 
 } /* namespace internal */
 } /* namespace core */
 } /* namespace ct */
-

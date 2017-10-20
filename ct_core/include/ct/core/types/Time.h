@@ -32,8 +32,5 @@ namespace core {
 typedef double Time;
 
 
-} // namespace core
-} // namespace ct
-
-
-
+}  // namespace core
+}  // namespace ct

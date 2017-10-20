@@ -41,23 +41,21 @@ namespace core {
  * \tparam T data type
  */
 template <class T, typename SCALAR>
-class TrajectoryBase {
-
+class TrajectoryBase
+{
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	//! default constructor
-	TrajectoryBase(){}
-
+	TrajectoryBase() {}
 	//! destructor
-	virtual ~TrajectoryBase() {};
+	virtual ~TrajectoryBase(){};
 
 	//! evaluate the trajectory at a certain time
 	virtual T eval(const SCALAR& time) = 0;
-
 };
 
 } /* namespace core */
 } /* namespace ct */
 
-#endif // CT_TRAJECTORYBASE_H_
+#endif  // CT_TRAJECTORYBASE_H_

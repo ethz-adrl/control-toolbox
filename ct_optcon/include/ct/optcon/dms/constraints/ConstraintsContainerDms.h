@@ -81,18 +81,17 @@ public:
 	 * @param[in]  x0                       The initial state
 	 * @param[in]  settings                 The dms settings
 	 */
-	ConstraintsContainerDms(
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
-			std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
-			std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>>> shotContainers,
-			std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>> discretizedConstraints,
-			const state_vector_t& x0,
-			const DmsSettings settings);
+	ConstraintsContainerDms(std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
+		std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
+		std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>>> shotContainers,
+		std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>> discretizedConstraints,
+		const state_vector_t& x0,
+		const DmsSettings settings);
 
 	/**
 	 * @brief      Destructor
 	 */
-	virtual ~ConstraintsContainerDms() {};
+	virtual ~ConstraintsContainerDms(){};
 
 	virtual void prepareEvaluation() override;
 
@@ -105,7 +104,7 @@ public:
 	 */
 	void changeInitialConstraint(const state_vector_t& x0);
 
-private:	
+private:
 	const DmsSettings settings_;
 
 	std::shared_ptr<InitStateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>> c_init_;
@@ -114,6 +113,5 @@ private:
 
 #include "implementation/ConstraintsContainerDms-impl.h"
 
-} // namespace optcon
-} // namespace ct
- 
+}  // namespace optcon
+}  // namespace ct

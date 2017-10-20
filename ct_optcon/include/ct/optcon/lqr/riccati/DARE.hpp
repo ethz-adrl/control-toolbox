@@ -42,10 +42,9 @@ namespace optcon {
  * @tparam CONTROL_DIM system control input dimension
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class DARE {
-
+class DARE
+{
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
@@ -67,21 +66,19 @@ public:
 	 * @param eps treshold to stop iterating
 	 * @return steady state riccati matrix P
 	 */
-	state_matrix_t computeSteadyStateRiccatiMatrix(
-			const state_matrix_t& Q,
-			const control_matrix_t& R,
-			const state_matrix_t& A,
-			const control_gain_matrix_t& B,
-			control_feedback_t& K,
-			bool verbose = false,
-			const SCALAR eps = 1e-6,
-			size_t maxIter = 100);
+	state_matrix_t computeSteadyStateRiccatiMatrix(const state_matrix_t& Q,
+		const control_matrix_t& R,
+		const state_matrix_t& A,
+		const control_gain_matrix_t& B,
+		control_feedback_t& K,
+		bool verbose = false,
+		const SCALAR eps = 1e-6,
+		size_t maxIter = 100);
 
 
 private:
 	DynamicRiccatiEquation<STATE_DIM, CONTROL_DIM> dynamicRDE_;
-
 };
 
-}	// namespace optcon
-}	// namespace ct
+}  // namespace optcon
+}  // namespace ct

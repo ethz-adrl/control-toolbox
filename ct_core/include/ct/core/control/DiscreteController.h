@@ -46,13 +46,13 @@ class DiscreteController
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	//! Default constructor
-	DiscreteController() {};
+	DiscreteController(){};
 
 	//! Copy constructor
-	DiscreteController(const DiscreteController& other) {};
+	DiscreteController(const DiscreteController& other){};
 
 	//! Destructor
-	virtual ~DiscreteController() {};
+	virtual ~DiscreteController(){};
 
 	//! Deep cloning
 	/*!
@@ -71,10 +71,9 @@ public:
 	 * @param n current time index of the system
 	 * @param controlAction the corresponding control action
 	 */
-	virtual void computeControl(
-			const StateVector<STATE_DIM, SCALAR>& state,
-			const int& n,
-			ControlVector<CONTROL_DIM, SCALAR>& controlAction) = 0;
+	virtual void computeControl(const StateVector<STATE_DIM, SCALAR>& state,
+		const int& n,
+		ControlVector<CONTROL_DIM, SCALAR>& controlAction) = 0;
 };
 
 }  // namespace core

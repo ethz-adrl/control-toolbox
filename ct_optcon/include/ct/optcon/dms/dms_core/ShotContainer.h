@@ -83,55 +83,60 @@ public:
 	 * @param[in]  shotNr            The shot number
 	 * @param[in]  settings          The dms settings
 	 */
-	ShotContainer(
-			std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> controlledSystem,
-			std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem,
-			std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct,
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
-			std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner,
-			std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
-			size_t shotNr,
-			DmsSettings settings,
-			size_t nIntegrationSteps
-	):
-		controlledSystem_(controlledSystem),
-		linearSystem_(linearSystem),
-		costFct_(costFct),
-		w_(w),
-		controlSpliner_(controlSpliner),
-		timeGrid_(timeGrid),
-		shotNr_(shotNr),
-		settings_(settings),
-		integrationCount_(0),
-		costIntegrationCount_(0),
-		sensIntegrationCount_(0),
-		costSensIntegrationCount_(0),
-		cost_(SCALAR(0.0)),
-		discreteQ_(state_vector_t::Zero()),
-		discreteR_(control_vector_t::Zero()),
-		discreteRNext_(control_vector_t::Zero())
+	ShotContainer(std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> controlledSystem,
+		std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem,
+		std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct,
+		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
+		std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner,
+		std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
+		size_t shotNr,
+		DmsSettings settings,
+		size_t nIntegrationSteps)
+		: controlledSystem_(controlledSystem)
+		, linearSystem_(linearSystem)
+		, costFct_(costFct)
+		, w_(w)
+		, controlSpliner_(controlSpliner)
+		, timeGrid_(timeGrid)
+		, shotNr_(shotNr)
+		, settings_(settings)
+		, integrationCount_(0)
+		, costIntegrationCount_(0)
+		, sensIntegrationCount_(0)
+		, costSensIntegrationCount_(0)
+		, cost_(SCALAR(0.0))
+		, discreteQ_(state_vector_t::Zero())
+		, discreteR_(control_vector_t::Zero())
+		, discreteRNext_(control_vector_t::Zero())
 	{
-		if(shotNr_ >= settings.N_) throw std::runtime_error("Dms Shot Integrator: shot index >= settings.N_ - check your settings.");
+		if (shotNr_ >= settings.N_)
+			throw std::runtime_error("Dms Shot Integrator: shot index >= settings.N_ - check your settings.");
 
-		switch(settings_.integrationType_)
+		switch (settings_.integrationType_)
 		{
 			case DmsSettings::EULER:
 			{
-				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>, Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>>
-						(Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>(), controlledSystem_, core::EULERCT);
+				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>,
+					Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>>(
+					Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>(),
+					controlledSystem_,
+					core::EULERCT);
 				break;
 			}
 			case DmsSettings::RK4:
 			{
-				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>, Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>>
-						(Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>(), controlledSystem_, core::RK4CT);
+				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>,
+					Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>>(
+					Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>(),
+					controlledSystem_,
+					core::RK4CT);
 				break;
 			}
 			case DmsSettings::RK5:
 			{
 				throw std::runtime_error("Currently we do not support adaptive integrators in dms");
 			}
-			
+
 			default:
 			{
 				std::cerr << "... ERROR: unknown integration type. Exiting" << std::endl;
@@ -148,7 +153,7 @@ public:
 
 		integratorCT_->setLinearSystem(linearSystem_);
 
-		if(settings_.costEvaluationType_ == DmsSettings::FULL)
+		if (settings_.costEvaluationType_ == DmsSettings::FULL)
 			integratorCT_->setCostFunction(costFct_);
 	}
 
@@ -157,20 +162,21 @@ public:
 	 */
 	void integrateShot()
 	{
-		if((w_->getUpdateCount() != integrationCount_))
+		if ((w_->getUpdateCount() != integrationCount_))
 		{
 			integrationCount_ = w_->getUpdateCount();
 			state_vector_t initState = w_->getOptimizedState(shotNr_);
-			integratorCT_->integrate(initState, tStart_, nSteps_, SCALAR(settings_.dt_sim_), stateSubsteps_, timeSubsteps_);
+			integratorCT_->integrate(
+				initState, tStart_, nSteps_, SCALAR(settings_.dt_sim_), stateSubsteps_, timeSubsteps_);
 		}
 	}
 
 	void integrateCost()
 	{
-		if((w_->getUpdateCount() != costIntegrationCount_))
+		if ((w_->getUpdateCount() != costIntegrationCount_))
 		{
 			costIntegrationCount_ = w_->getUpdateCount();
-			integrateShot();	
+			integrateShot();
 			cost_ = SCALAR(0.0);
 			integratorCT_->integrateCost(cost_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
 		}
@@ -181,7 +187,7 @@ public:
 	 */
 	void integrateSensitivities()
 	{
-		if((w_->getUpdateCount() != sensIntegrationCount_))
+		if ((w_->getUpdateCount() != sensIntegrationCount_))
 		{
 			sensIntegrationCount_ = w_->getUpdateCount();
 			integrateShot();
@@ -191,7 +197,7 @@ public:
 			integratorCT_->integrateSensitivityDX0(discreteA_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
 			integratorCT_->integrateSensitivityDU0(discreteB_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
 
-			if(settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
+			if (settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
 			{
 				discreteBNext_.setZero();
 				integratorCT_->integrateSensitivityDUf(discreteBNext_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
@@ -201,7 +207,7 @@ public:
 
 	void integrateCostSensitivities()
 	{
-		if((w_->getUpdateCount() != costSensIntegrationCount_))
+		if ((w_->getUpdateCount() != costSensIntegrationCount_))
 		{
 			costSensIntegrationCount_ = w_->getUpdateCount();
 			integrateSensitivities();
@@ -210,7 +216,7 @@ public:
 			integratorCT_->integrateCostSensitivityDX0(discreteQ_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
 			integratorCT_->integrateCostSensitivityDU0(discreteR_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
 
-			if(settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
+			if (settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
 			{
 				discreteRNext_.setZero();
 				integratorCT_->integrateCostSensitivityDUf(discreteRNext_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
@@ -230,54 +236,34 @@ public:
 	 *
 	 * @return     The integrated state
 	 */
-	const state_vector_t getStateIntegrated()
-	{
-		return stateSubsteps_.back();
-	}
-
+	const state_vector_t getStateIntegrated() { return stateSubsteps_.back(); }
 	/**
 	 * @brief      Returns the end time of the integration	
 	 *
 	 * @return     The end time of the integration.
 	 */
-	const SCALAR getIntegrationTimeFinal()
-	{
-		return timeSubsteps_.back();
-	}
-
+	const SCALAR getIntegrationTimeFinal() { return timeSubsteps_.back(); }
 	/**
 	 * @brief      Returns the integrated ODE sensitivity with respect to the
 	 *             discretized state s_i
 	 *
 	 * @return     The integrated sensitivity
 	 */
-	const state_matrix_t getdXdSiIntegrated()
-	{
-		return discreteA_;
-	}
-
+	const state_matrix_t getdXdSiIntegrated() { return discreteA_; }
 	/**
 	 * @brief      Returns the integrated ODE sensitivity with respect to the
 	 *             discretized inputs q_i
 	 *
 	 * @return     The integrated sensitivity
 	 */
-	const state_control_matrix_t getdXdQiIntegrated()
-	{
-		return discreteB_;
-	}
-
+	const state_control_matrix_t getdXdQiIntegrated() { return discreteB_; }
 	/**
 	 * @brief      Returns the integrated ODE sensitivity with respect to the
 	 *             discretized inputs q_{i+1}
 	 *
 	 * @return     The integrated sensitivity
 	 */
-	const state_control_matrix_t getdXdQip1Integrated()
-	{
-		return discreteBNext_;
-	}
-
+	const state_control_matrix_t getdXdQip1Integrated() { return discreteBNext_; }
 	/**
 	 * @brief      Returns the integrated ODE sensitivity with respect to the
 	 *             time segments h_i
@@ -294,11 +280,7 @@ public:
 	 *
 	 * @return     The integrated state trajectory
 	 */
-	const state_vector_array_t& getXHistory() const
-	{		
-		return stateSubsteps_;
-	}
-
+	const state_vector_array_t& getXHistory() const { return stateSubsteps_; }
 	/**
 	 * @brief      Returns the control input trajectory used during the state integration
 	 *
@@ -307,7 +289,7 @@ public:
 	const control_vector_array_t& getUHistory()
 	{
 		inputSubsteps_.clear();
-		for(size_t t = 0; t < timeSubsteps_.size(); ++t)
+		for (size_t t = 0; t < timeSubsteps_.size(); ++t)
 		{
 			inputSubsteps_.push_back(controlSpliner_->evalSpline(timeSubsteps_[t], shotNr_));
 		}
@@ -319,54 +301,34 @@ public:
 	 *
 	 * @return     The time trajectory
 	 */
-	const time_array_t& getTHistory() const
-	{
-		return timeSubsteps_;
-	}
-
+	const time_array_t& getTHistory() const { return timeSubsteps_; }
 	/**
 	 * @brief      Gets the cost integrated.
 	 *
 	 * @return     The integrated cost.
 	 */
-	const SCALAR getCostIntegrated() const
-	{
-		return cost_;
-	}
-
+	const SCALAR getCostIntegrated() const { return cost_; }
 	/**
 	 * @brief      Returns the cost gradient with respect to s_i integrated over
 	 *             the shot
 	 *
 	 * @return     The cost gradient
 	 */
-	const state_vector_t getdLdSiIntegrated() const
-	{
-		return discreteQ_;
-	}
-
+	const state_vector_t getdLdSiIntegrated() const { return discreteQ_; }
 	/**
 	 * @brief      Returns the cost gradient with respect to q_i integrated over
 	 *             the shot
 	 *
 	 * @return     The cost gradient
 	 */
-	const control_vector_t getdLdQiIntegrated() const
-	{
-		return discreteR_;
-	}
-
+	const control_vector_t getdLdQiIntegrated() const { return discreteR_; }
 	/**
 	 * @brief      Returns to cost gradient with respect to q_{i+1} integrated
 	 *             over the shot
 	 *
 	 * @return     The cost gradient
 	 */
-	const control_vector_t getdLdQip1Integrated() const 
-	{
-		return discreteRNext_;
-	}
-
+	const control_vector_t getdLdQip1Integrated() const { return discreteRNext_; }
 	/**
 	 * @brief      Returns to cost gradient with respect to h_i integrated over
 	 *             the shot
@@ -387,7 +349,7 @@ private:
 	std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner_;
 	std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid_;
 
-	const size_t shotNr_; 
+	const size_t shotNr_;
 	const DmsSettings settings_;
 
 	size_t integrationCount_;
@@ -416,6 +378,5 @@ private:
 	SCALAR tStart_;
 };
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

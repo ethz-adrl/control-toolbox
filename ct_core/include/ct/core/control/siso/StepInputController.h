@@ -57,29 +57,19 @@ public:
 	/*!
 	 * Contains the constant gain \f$ g \f$ and the time of the step \f$ t_{step} \f$
 	 */
-	struct Parameters {
-		Parameters(double gain_ = 1.0, double t_step_ = 1.0) :
-			gain(gain_),
-			t_step(t_step_)
-		{}
-
-		double gain; //! gain
-		Time t_step; //! time of step
+	struct Parameters
+	{
+		Parameters(double gain_ = 1.0, double t_step_ = 1.0) : gain(gain_), t_step(t_step_) {}
+		double gain;  //! gain
+		Time t_step;  //! time of step
 	};
 
 	//! default constructor
-	StepInputController(const Parameters& parameters = Parameters()) :
-	    parameters_(parameters)
-	{}
-
+	StepInputController(const Parameters& parameters = Parameters()) : parameters_(parameters) {}
 	//! copy constructor
-	StepInputController(const StepInputController& arg):
-		parameters_(arg.parameters_)
-	{}
-
+	StepInputController(const StepInputController& arg) : parameters_(arg.parameters_) {}
 	//! deep cloning
-	StepInputController* clone() const {return new StepInputController(*this);}
-
+	StepInputController* clone() const { return new StepInputController(*this); }
 	//! computes control input
 	/*!
 	 * Computes the control input. The state parameter gets ignored.
@@ -89,15 +79,11 @@ public:
 	 */
 	double computeControl(const double& state, const Time& t) override
 	{
-		return parameters_.gain*(t >= parameters_.t_step);
+		return parameters_.gain * (t >= parameters_.t_step);
 	}
 
 private:
-	Parameters parameters_; //! parameters of the step function
-
+	Parameters parameters_;  //! parameters of the step function
 };
-
-
 }
 }
-

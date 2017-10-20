@@ -51,21 +51,20 @@ TEST(InterplationTest, Linear)
 	ct::core::Interpolation<StateVector<2>> linInterpolation(InterpolationType::LIN);
 
 
-	for(int i=1; i< 5; i++)
+	for (int i = 1; i < 5; i++)
 	{
-		double enquiryTime = 0.5*i;
+		double enquiryTime = 0.5 * i;
 
 		StateVector<2> enquiryData;
 		linInterpolation.interpolate(timeStamp, data, enquiryTime, enquiryData);
 
-		std::cout << "At time " << enquiryTime << "\t data is " <<  enquiryData.transpose() << std::endl;
+		std::cout << "At time " << enquiryTime << "\t data is " << enquiryData.transpose() << std::endl;
 
 		Eigen::Vector2d nominal_result;
 		nominal_result << double(i), 0.0;
 
 		ASSERT_LT((nominal_result - enquiryData).array().abs().maxCoeff(), 1e-6);
 	}
-
 }
 
 

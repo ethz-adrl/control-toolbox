@@ -32,7 +32,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/info_parser.hpp>
-#include <boost/algorithm/string.hpp>   
+#include <boost/algorithm/string.hpp>
 
 #include "CostFunctionQuadratic.hpp"
 #include "utility/utilities.hpp"
@@ -54,7 +54,8 @@ namespace optcon {
  * Unit test \ref ADTest.cpp illustrates the use of a CostFunctionAD.
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class CostFunctionAD : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> {
+class CostFunctionAD : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>
+{
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -62,11 +63,11 @@ public:
 	typedef typename JacCG::CG_SCALAR CGScalar;
 	typedef Eigen::Matrix<CGScalar, 1, 1> MatrixCg;
 
-	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> 	state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
 	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> 	control_state_matrix_t;
+	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
 
-	typedef core::StateVector<STATE_DIM, SCALAR> 	 state_vector_t;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
 	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
@@ -87,7 +88,7 @@ public:
 	 * Deep-cloning of cost function
 	 * @return base pointer to clone
 	 */
-	CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const;
+	CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const;
 
 	/**
 	 * \brief Copy constructor
@@ -117,7 +118,8 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-	void addIntermediateADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose = false) override;
+	void addIntermediateADTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term,
+		bool verbose = false) override;
 
 	/**
 	 * \brief Add a final, auto-differentiable term
@@ -128,9 +130,10 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-	void addFinalADTerm (std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term, bool verbose = false) override;
+	void addFinalADTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term,
+		bool verbose = false) override;
 
-	void setCurrentStateAndControl(const state_vector_t &x, const control_vector_t &u, const SCALAR& t = 0.0) override;
+	void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const SCALAR& t = 0.0) override;
 
 	void loadFromConfigFile(const std::string& filename, bool verbose = false) override;
 
@@ -138,19 +141,19 @@ public:
 	SCALAR evaluateTerminal() override;
 
 	state_vector_t stateDerivativeIntermediate() override;
-	state_vector_t stateDerivativeTerminal()     override;
+	state_vector_t stateDerivativeTerminal() override;
 
 	control_vector_t controlDerivativeIntermediate() override;
-	control_vector_t controlDerivativeTerminal()     override;
+	control_vector_t controlDerivativeTerminal() override;
 
 	state_matrix_t stateSecondDerivativeIntermediate() override;
-	state_matrix_t stateSecondDerivativeTerminal()     override;
+	state_matrix_t stateSecondDerivativeTerminal() override;
 
 	control_matrix_t controlSecondDerivativeIntermediate() override;
-	control_matrix_t controlSecondDerivativeTerminal()     override;
+	control_matrix_t controlSecondDerivativeTerminal() override;
 
 	control_state_matrix_t stateControlDerivativeIntermediate() override;
-	control_state_matrix_t stateControlDerivativeTerminal()     override;
+	control_state_matrix_t stateControlDerivativeTerminal() override;
 
 
 private:
@@ -169,7 +172,7 @@ private:
 	typename JacCG::FUN_TYPE_CG finalFun_;
 };
 
-} // namespace optcon
-} // namespace ct
+}  // namespace optcon
+}  // namespace ct
 
-#endif // CT_COSTFUNCTIONAD_HPP_
+#endif  // CT_COSTFUNCTIONAD_HPP_

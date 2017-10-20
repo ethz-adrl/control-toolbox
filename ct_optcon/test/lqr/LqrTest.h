@@ -29,20 +29,19 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <chrono>
 
 #ifdef MATLAB
-    #include <matlabCppInterface/Engine.hpp>
+#include <matlabCppInterface/Engine.hpp>
 #endif
 
 // Bring in gtest
 #include <gtest/gtest.h>
 
 
-namespace ct{
-namespace optcon{
-namespace example{
+namespace ct {
+namespace optcon {
+namespace example {
 
 TEST(LQRTest, DARETest)
 {
-
 	const size_t stateDim = 2;
 	const size_t controlDim = 1;
 
@@ -53,7 +52,7 @@ TEST(LQRTest, DARETest)
 	Eigen::Matrix<double, controlDim, stateDim> K;
 
 	A << 1, 1, 1, 0;
-	B << 0 , 1;
+	B << 0, 1;
 	Q << 1, 0, 0, 1;
 	R << 1;
 
@@ -64,9 +63,9 @@ TEST(LQRTest, DARETest)
 
 TEST(LQRTest, quadTest)
 {
-//	std::cout << "QUADROTOR TEST"<<std::endl;
-//	std::cout << "==================================="<<std::endl;
-//	std::cout << "==================================="<<std::endl << std::endl << std::endl;
+	//	std::cout << "QUADROTOR TEST"<<std::endl;
+	//	std::cout << "==================================="<<std::endl;
+	//	std::cout << "==================================="<<std::endl << std::endl << std::endl;
 
 	const size_t stateDim = 12;
 	const size_t controlDim = 4;
@@ -80,55 +79,24 @@ TEST(LQRTest, quadTest)
 
 	ct::optcon::LQR<stateDim, controlDim> lqr;
 
-	Q <<
-		  10,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-		   0,   10,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-		   0,    0, 2000,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-		   0,    0,    0,  0.1,    0,    0,    0,    0,    0,    0,    0,    0,
-		   0,    0,    0,    0,  0.1,    0,    0,    0,    0,    0,    0,    0,
-		   0,    0,    0,    0,    0,  0.5,    0,    0,    0,    0,    0,    0,
-		   0,    0,    0,    0,    0,    0,  0.1,    0,    0,    0,    0,    0,
-		   0,    0,    0,    0,    0,    0,    0,  0.1,    0,    0,    0,    0,
-		   0,    0,    0,    0,    0,    0,    0,    0,    1,    0,    0,    0,
-		   0,    0,    0,    0,    0,    0,    0,    0,    0,  0.2,    0,    0,
-		   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,  0.2,    0,
-		   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0, 0.02;
+	Q << 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2000, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0.02;
 
-	R <<
-		 100,    0,    0,    0,
-		   0, 1000,    0,    0,
-		   0,    0, 1000,    0,
-		   0,    0,    0,  100;
+	R << 100, 0, 0, 0, 0, 1000, 0, 0, 0, 0, 1000, 0, 0, 0, 0, 100;
 
 
-	A <<
-		0,     0,     0,     0,     0,     0,     1,     0,     0,     0,     0,     0,
-	    0,     0,     0,     0,     0,     0,     0,     1,     0,     0,     0,     0,
-	    0,     0,     0,     0,     0,     0,     0,     0,     1,     0,     0,     0,
-	    0,     0,     0,     0,     0,     0,     0,     0,     0,     1,     0,     0,
-	    0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     1,     0,
-	    0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     1,
-	    0,     0,     0,     0,  9.81,     0,     0,     0,     0,     0,     0,     0,
-	    0,     0,     0, -9.81,     0,     0,     0,     0,     0,     0,     0,     0,
-	    0,     0,     0,    -0,    -0,     0,     0,     0,     0,     0,     0,     0,
-	    0,     0,     0,     0,     0,    -0,     0,     0,     0,     0,    -0,    -0,
-	    0,     0,     0,     0,    -0,    -0,     0,     0,     0,     0,     0,     0,
-	    0,     0,     0,     0,     0,     0,     0,     0,     0,    -0,     0,     0;
+	A << 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+		0, 0, 9.81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -9.81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0, -0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, -0, 0, 0, 0, 0, -0, -0, 0, 0, 0, 0, -0, -0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0, 0,
+		0;
 
 
-	B <<
-		  0,       0,       0,       0,
-	      0,       0,       0,       0,
-	      0,       0,       0,       0,
-	      0,       0,       0,       0,
-	      0,       0,       0,       0,
-	      0,       0,       0,       0,
-	      0,       0,       0,       0,
-	     -0,       0,       0,       0,
-	1.39665,       0,       0,       0,
-	      0, 142.857,      -0,       0,
-	      0,       0, 142.857,       0,
-	      0,      -0,       0, 83.3333;
+	B << 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0, 0, 0, 0, 1.39665, 0, 0,
+		0, 0, 142.857, -0, 0, 0, 0, 142.857, 0, 0, -0, 0, 83.3333;
 
 	Kiterative.setZero();
 	K.setZero();
@@ -146,24 +114,26 @@ TEST(LQRTest, quadTest)
 	int nTests = 1000;
 #ifdef CT_USE_LAPACK
 	auto start1 = std::chrono::system_clock::now();
-	for (int i=0; i<nTests; i++)
+	for (int i = 0; i < nTests; i++)
 	{
 		lqr.compute(Q, R, A, B, K, false);
 	}
 	auto end1 = std::chrono::system_clock::now();
 	auto elapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end1 - start1);
-	std::cout << "solved "<<nTests<<" lqr problems with state dimension "<<stateDim<<" in "<<elapsed1.count()<<" ms (average: "<<elapsed1.count()/static_cast<double>(nTests)<<" ms / lqr)"<<std::endl;
+	std::cout << "solved " << nTests << " lqr problems with state dimension " << stateDim << " in " << elapsed1.count()
+			  << " ms (average: " << elapsed1.count() / static_cast<double>(nTests) << " ms / lqr)" << std::endl;
 #endif
 
 	auto start2 = std::chrono::system_clock::now();
-	for (int i=0; i<nTests; i++)
+	for (int i = 0; i < nTests; i++)
 	{
 		lqr.compute(Q, R, A, B, Kiterative, false, true);
 	}
 	auto end2 = std::chrono::system_clock::now();
 	auto elapsed2 = std::chrono::duration_cast<std::chrono::milliseconds>(end2 - start2);
-	std::cout << "solved "<<nTests<<" lqr problems iteratively with state dimension "<<stateDim<<" in "<<elapsed2.count()<<" ms (average: "<<elapsed2.count()/static_cast<double>(nTests)<<" ms / lqr)"<<std::endl;
-
+	std::cout << "solved " << nTests << " lqr problems iteratively with state dimension " << stateDim << " in "
+			  << elapsed2.count() << " ms (average: " << elapsed2.count() / static_cast<double>(nTests) << " ms / lqr)"
+			  << std::endl;
 }
 
 #ifdef MATLAB
@@ -190,14 +160,14 @@ TEST(LQRTest, matlabTest)
 
 	ct::optcon::LQR<stateDim, stateDim> lqr;
 
-//	std::cout << "ARTIFICIAL TEST "<<std::endl;
-//	std::cout << "==================================="<<std::endl;
-//	std::cout << "==================================="<<std::endl << std::endl << std::endl;
+	//	std::cout << "ARTIFICIAL TEST "<<std::endl;
+	//	std::cout << "==================================="<<std::endl;
+	//	std::cout << "==================================="<<std::endl << std::endl << std::endl;
 
-	for (int i=0; i<10; i++)
+	for (int i = 0; i < 10; i++)
 	{
-		std::cout << "Test "<< std::to_string(i)<<std::endl;
-		std::cout << "==================================="<<std::endl;
+		std::cout << "Test " << std::to_string(i) << std::endl;
+		std::cout << "===================================" << std::endl;
 
 		std::cout << "1. Generating problem in Matlab" << std::endl;
 		engine.executeCommand("A = magic(" + stateDimString + ");");
@@ -210,21 +180,25 @@ TEST(LQRTest, matlabTest)
 		std::cout << engine.executeCommand("[K,S,E] = lqr(A,B,Q,R,N);");
 
 		std::cout << "3. Obtaining problem from Matlab" << std::endl;
-		engine.get("A", Ad); A = Ad;
-		engine.get("B", Bd); B = Bd;
-		engine.get("Q", Qd); Q = Qd;
-		engine.get("R", Rd); R = Rd;
+		engine.get("A", Ad);
+		A = Ad;
+		engine.get("B", Bd);
+		B = Bd;
+		engine.get("Q", Qd);
+		Q = Qd;
+		engine.get("R", Rd);
+		R = Rd;
 
 		std::cout << "4. Obtaining LQR solution from Matlab" << std::endl;
 		engine.get("K", K_Matlab);
 
 		std::cout << "5. Computing LQR solution in C++" << std::endl;
 
-        bool foundSolutionDirect = lqr.compute(Q, R, A, B, K_Cpp, false);
-        ASSERT_TRUE(foundSolutionDirect);
+		bool foundSolutionDirect = lqr.compute(Q, R, A, B, K_Cpp, false);
+		ASSERT_TRUE(foundSolutionDirect);
 
 		bool foundSolutionIterative = lqr.compute(Q, R, A, B, K_Cpp_iteratively, false, true);
-        ASSERT_TRUE(foundSolutionIterative);
+		ASSERT_TRUE(foundSolutionIterative);
 
 
 		std::cout << "7. Comparing both solutions" << std::endl;
@@ -234,9 +208,8 @@ TEST(LQRTest, matlabTest)
 		std::cout << std::endl << std::endl << std::endl;
 	}
 }
-#endif //MATLAB
+#endif  //MATLAB
 
-} // namespace example
-} // namespace optcon
-} // namespace ct
-
+}  // namespace example
+}  // namespace optcon
+}  // namespace ct

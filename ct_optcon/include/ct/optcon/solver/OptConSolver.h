@@ -39,8 +39,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/problem/OptConProblem.h>
 
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
 
 /** \defgroup OptConSolver OptConSolver
@@ -50,9 +50,14 @@ namespace optcon{
  * - returns an optimal controller. These can be different controller types, feedforward only, feedforward-feedback, feedback only,
  * 		therefore it is templated on the controller type
  */
-template <typename DERIVED, typename POLICY, typename SETTINGS, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class OptConSolver{
-
+template <typename DERIVED,
+	typename POLICY,
+	typename SETTINGS,
+	size_t STATE_DIM,
+	size_t CONTROL_DIM,
+	typename SCALAR = double>
+class OptConSolver
+{
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -68,9 +73,7 @@ public:
 
 
 	OptConSolver() {}
-
-	virtual ~OptConSolver(){}
-
+	virtual ~OptConSolver() {}
 	/*!
 	 * \brief Assigns the optimal control problem to the solver.
 	 *
@@ -86,8 +89,8 @@ public:
 	 *
 	 * @return returns true if the optimal control structure is valid for the given solver
 	 */
-	virtual void setProblem(const OptConProblem_t& optConProblem) {
-
+	virtual void setProblem(const OptConProblem_t& optConProblem)
+	{
 		optConProblem.verify();
 
 		changeTimeHorizon(optConProblem.getTimeHorizon());
@@ -95,12 +98,11 @@ public:
 		changeCostFunction(optConProblem.getCostFunction());
 		changeNonlinearSystem(optConProblem.getNonlinearSystem());
 		changeLinearSystem(optConProblem.getLinearSystem());
-		
-		if(optConProblem.getStateInputConstraints())
-			changeStateInputConstraints(optConProblem.getStateInputConstraints());
-		if(optConProblem.getPureStateConstraints())
-			changePureStateConstraints(optConProblem.getPureStateConstraints());
 
+		if (optConProblem.getStateInputConstraints())
+			changeStateInputConstraints(optConProblem.getStateInputConstraints());
+		if (optConProblem.getPureStateConstraints())
+			changePureStateConstraints(optConProblem.getPureStateConstraints());
 	}
 
 	/**
@@ -111,7 +113,9 @@ public:
 	/**
 	 * configures the solver from configFile
 	 * */
-	void configureFromFile(const std::string& filename, bool verbose = true, const std::string& ns = DERIVED::SolverName)
+	void configureFromFile(const std::string& filename,
+		bool verbose = true,
+		const std::string& ns = DERIVED::SolverName)
 	{
 		Settings_t settings;
 		settings.load(filename, verbose, ns);
@@ -129,7 +133,6 @@ public:
 	 * @return true if a better solution was found
 	 */
 	virtual bool runIteration() { throw std::runtime_error("runIteration not supported by solver"); }
-
 	/**
 	 * Get the optimized control policy to the optimal control problem
 	 * @return
@@ -165,7 +168,7 @@ public:
 	 * \brief Get the time horizon the solver currently operates on.
 	 *
 	 */
-	virtual SCALAR getTimeHorizon() const  = 0;
+	virtual SCALAR getTimeHorizon() const = 0;
 
 
 	/*!
@@ -217,7 +220,7 @@ public:
 	 *
 	 * @param[in]  con   The new state input constraints
 	 */
-	virtual void changeStateInputConstraints(const typename OptConProblem_t::ConstraintPtr_t con) 
+	virtual void changeStateInputConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
 	{
 		throw std::runtime_error("The current solver does not support state input constraints!");
 	}
@@ -236,12 +239,7 @@ public:
 		throw std::runtime_error("The current solver does not support pure state constraints!");
 	}
 
-	virtual SCALAR getCost() const
-	{
-		throw std::runtime_error("Get cost not implemented");
-	}
-
-
+	virtual SCALAR getCost() const { throw std::runtime_error("Get cost not implemented"); }
 	/*!
 	 * \brief Direct accessor to the system instances
 	 *
@@ -319,8 +317,7 @@ public:
 	 * @param[in]  problemCG  The optcon problem templated on the AD CG Scalar
 	 * @param[in]  settings   The settings indicating what to generate
 	 */
-	virtual void generateAndCompileCode(
-		const OptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
+	virtual void generateAndCompileCode(const OptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
 		const ct::core::DerivativesCppadSettings& settings)
 	{
 		throw std::runtime_error("Generate and compile code not implemented for this solver");
@@ -333,13 +330,10 @@ public:
 	 *
 	 * @param[in]  settings  The settings indicating what to generate
 	 */
-	virtual void generateCode(const ct::core::DerivativesCppadSettings& settings) 
+	virtual void generateCode(const ct::core::DerivativesCppadSettings& settings)
 	{
 		throw std::runtime_error("Generate Code not implemented for this solver");
 	}
 };
-
-
 }
 }
-

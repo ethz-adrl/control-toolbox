@@ -5,14 +5,15 @@
 #include "TermQuadratic.hpp"
 #include "TermQuadMult.hpp"
 
-#define CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TERM, TERMNAME) \
-    if (termKind==TERMNAME){ \
-      term = std::shared_ptr< TERM<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR> > (new TERM<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>()); \
-      term->setName(TERMNAME); } \
+#define CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TERM, TERMNAME)                      \
+	if (termKind == TERMNAME)                                                      \
+	{                                                                              \
+		term = std::shared_ptr<TERM<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>>( \
+			new TERM<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>());              \
+		term->setName(TERMNAME);                                                   \
+	}
 
-#define CT_LOADABLE_TERMS(SCALAR_EVAL, SCALAR) \
-	CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TermLinear, "linear") \
+#define CT_LOADABLE_TERMS(SCALAR_EVAL, SCALAR)                        \
+	CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TermLinear, "linear")       \
 	CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TermQuadratic, "quadratic") \
-  CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TermQuadMult, "quadratic-multiplicative")
-
-
+	CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TermQuadMult, "quadratic-multiplicative")

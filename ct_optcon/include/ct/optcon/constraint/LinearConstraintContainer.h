@@ -55,7 +55,7 @@ public:
 
 	typedef LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>* LinearConstraintContainer_Raw_Ptr_t;
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
-	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs; 
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
 	/**
 	 * @brief      Default constructor
@@ -207,14 +207,14 @@ public:
 	 * @brief      Returns the number of non zero elements in the constraint jacobian wrt input
 	 *
 	 * @return     The number of the non zeros
-	 */	
+	 */
 	virtual size_t getJacobianInputNonZeroCountIntermediate() = 0;
 
 	/**
 	 * @brief      Returns the number of non zero elements in the constraint jacobian wrt input
 	 *
 	 * @return     The number of the non zeros
-	 */	
+	 */
 	virtual size_t getJacobianInputNonZeroCountTerminal() = 0;
 
 	/**
@@ -235,7 +235,7 @@ public:
 	 * @return     Returns true if the initialization was successful
 	 */
 	virtual bool initializeIntermediate() = 0;
-	
+
 	/**
 	 * @brief      Initializes the terminal constraints
 	 *
@@ -255,6 +255,5 @@ protected:
 	bool initializedTerminal_;
 };
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

@@ -43,15 +43,13 @@ namespace optcon {
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class ConstraintContainerAD : public LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>
 {
-
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef core::DerivativesCppadJIT<STATE_DIM + CONTROL_DIM, -1> JacCG;
 	typedef typename JacCG::CG_SCALAR CGScalar;
 
-	typedef core::StateVector<STATE_DIM, SCALAR>   state_vector_t;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
 	typedef core::ControlVector<CONTROL_DIM, SCALAR> input_vector_t;
 
 	typedef ConstraintContainerAD<STATE_DIM, CONTROL_DIM, SCALAR>* ConstraintContainerAD_Raw_Ptr_t;
@@ -70,7 +68,7 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	ConstraintContainerAD(const state_vector_t &x, const input_vector_t &u, const SCALAR& t = 0.0) ;
+	ConstraintContainerAD(const state_vector_t& x, const input_vector_t& u, const SCALAR& t = 0.0);
 
 
 	/**
@@ -84,7 +82,7 @@ public:
 	 *
 	 * @return     base pointer to the clone
 	 */
-	virtual ConstraintContainerAD_Raw_Ptr_t clone () const override;
+	virtual ConstraintContainerAD_Raw_Ptr_t clone() const override;
 
 	/**
 	 * @brief      Destructor
@@ -97,7 +95,8 @@ public:
 	 * @param[in]  constraint  The constraint
 	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
 	 */
-	void addIntermediateConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> constraint, bool verbose);
+	void addIntermediateConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> constraint,
+		bool verbose);
 
 	/**
 	 * @brief      Adds a terminal constraint.
@@ -105,7 +104,8 @@ public:
 	 * @param[in]  constraint  The constraint
 	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
 	 */
-	void addTerminalConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> constraint, bool verbose);
+	void addTerminalConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> constraint,
+		bool verbose);
 
 	virtual VectorXs evaluateIntermediate() override;
 
@@ -163,7 +163,8 @@ private:
 	 *
 	 * @return     The evaluated intermediate constraints
 	 */
-	Eigen::Matrix<CGScalar, Eigen::Dynamic, 1> evaluateIntermediateCodegen(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput);
+	Eigen::Matrix<CGScalar, Eigen::Dynamic, 1> evaluateIntermediateCodegen(
+		const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput);
 
 	/**
 	 * @brief      Helper function to keep track of the constraint evaluation
@@ -173,7 +174,8 @@ private:
 	 *
 	 * @return     The evaluated terminal constraints
 	 */
-	Eigen::Matrix<CGScalar, Eigen::Dynamic, 1> evaluateTerminalCodegen(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput);
+	Eigen::Matrix<CGScalar, Eigen::Dynamic, 1> evaluateTerminalCodegen(
+		const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM, 1>& stateinput);
 
 	//containers
 	std::vector<std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>>> constraintsIntermediate_;
@@ -202,6 +204,5 @@ private:
 };
 
 
-}// namespace optcon
-}// namespace ct
-
+}  // namespace optcon
+}  // namespace ct

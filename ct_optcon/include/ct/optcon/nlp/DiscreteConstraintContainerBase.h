@@ -39,10 +39,9 @@ namespace tpl {
  * @brief      An abstract base class which serves as a container for all the
  *             discrete constraints used in the NLP
  */
-template<typename SCALAR>
+template <typename SCALAR>
 class DiscreteConstraintContainerBase
 {
-
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -54,13 +53,11 @@ public:
 	/**
 	 * @brief      Default constructor
 	 */
-	DiscreteConstraintContainerBase(){}
-
+	DiscreteConstraintContainerBase() {}
 	/**
 	 * @brief      Destructor
 	 */
-	virtual ~DiscreteConstraintContainerBase(){}
-
+	virtual ~DiscreteConstraintContainerBase() {}
 	/**
 	 * @brief      Gets called before the constraint evaluation. This method
 	 *             should contain all the calculations needed to evaluate the
@@ -87,14 +84,14 @@ public:
 		prepareEvaluation();
 		size_t ind = 0;
 
-		for(auto constraint : constraints_)
+		for (auto constraint : constraints_)
 		{
 			size_t cSize = constraint->getConstraintSize();
 			c_nlp.segment(ind, cSize) = constraint->eval();
 			ind += cSize;
 		}
 
-		assert(ind == c_nlp.rows()); // or throw an error
+		assert(ind == c_nlp.rows());  // or throw an error
 	}
 
 	void evalConstraints(VectorXs& c_nlp)
@@ -102,14 +99,14 @@ public:
 		prepareEvaluation();
 		size_t ind = 0;
 
-		for(auto constraint : constraints_)
+		for (auto constraint : constraints_)
 		{
 			size_t cSize = constraint->getConstraintSize();
 			c_nlp.segment(ind, cSize) = constraint->eval();
 			ind += cSize;
 		}
 
-		assert(static_cast<int>(ind) == c_nlp.rows()); // or throw an error
+		assert(static_cast<int>(ind) == c_nlp.rows());  // or throw an error
 	}
 
 	/**
@@ -124,7 +121,7 @@ public:
 		prepareJacobianEvaluation();
 		size_t ind = 0;
 
-		for(auto constraint : constraints_)
+		for (auto constraint : constraints_)
 		{
 			size_t nnEle = constraint->getNumNonZerosJacobian();
 			jac_nlp.segment(ind, nnEle) = constraint->evalSparseJacobian();
@@ -144,17 +141,20 @@ public:
 	 *                        non zero entries of the constraint jacobian
 	 * @param[in]  nnz_jac_g  The number of non zero elements in the constraint jacobian
 	 */
-	void getSparsityPattern(Eigen::Map<Eigen::VectorXi>& iRow_nlp, Eigen::Map<Eigen::VectorXi>& jCol_nlp, const int nnz_jac_g)
+	void getSparsityPattern(Eigen::Map<Eigen::VectorXi>& iRow_nlp,
+		Eigen::Map<Eigen::VectorXi>& jCol_nlp,
+		const int nnz_jac_g)
 	{
 		size_t ind = 0;
 		size_t constraintCount = 0;
-	
-		for(auto constraint : constraints_)
+
+		for (auto constraint : constraints_)
 		{
 			size_t nnEle = constraint->getNumNonZerosJacobian();
 			size_t cSize = constraint->getConstraintSize();
 			Eigen::VectorXi iRow, jCol;
-			iRow.resize(nnEle); jCol.resize(nnEle);
+			iRow.resize(nnEle);
+			jCol.resize(nnEle);
 			constraint->genSparsityPattern(iRow, jCol);
 			iRow_nlp.segment(ind, nnEle) = iRow.array() + constraintCount;
 			jCol_nlp.segment(ind, nnEle) = jCol;
@@ -173,7 +173,7 @@ public:
 	size_t getConstraintsCount() const
 	{
 		size_t count = 0;
-		for(auto constraint : constraints_)
+		for (auto constraint : constraints_)
 			count += constraint->getConstraintSize();
 		return count;
 	}
@@ -186,7 +186,7 @@ public:
 	size_t getNonZerosJacobianCount() const
 	{
 		size_t count = 0;
-		for(auto constraint : constraints_)
+		for (auto constraint : constraints_)
 			count += constraint->getNumNonZerosJacobian();
 		return count;
 	}
@@ -201,25 +201,21 @@ public:
 	void getBounds(MapVecXs& lowerBound, MapVecXs& upperBound)
 	{
 		size_t ind = 0;
-		for(auto constraint : constraints_)
+		for (auto constraint : constraints_)
 		{
 			size_t cSize = constraint->getConstraintSize();
 			lowerBound.segment(ind, cSize) = constraint->getLowerBound();
 			upperBound.segment(ind, cSize) = constraint->getUpperBound();
 			ind += cSize;
-		}		
+		}
 	}
 
 protected:
-	std::vector<std::shared_ptr<DiscreteConstraintBase<SCALAR>>> constraints_; /*!< contains all the constraints of the NLP */
-
+	std::vector<std::shared_ptr<DiscreteConstraintBase<SCALAR>>>
+		constraints_; /*!< contains all the constraints of the NLP */
 };
-
 }
 
-typedef	tpl::DiscreteConstraintContainerBase<double> DiscreteConstraintContainerBase;
-
+typedef tpl::DiscreteConstraintContainerBase<double> DiscreteConstraintContainerBase;
 }
 }
-
-

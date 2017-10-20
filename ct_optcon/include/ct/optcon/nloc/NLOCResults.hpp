@@ -65,20 +65,20 @@ struct SummaryAllIterations
 	template <int NUM_PRECISION = 12>
 	void printSummaryLastIteration()
 	{
-		std::cout<<"NLOC Summary of iteration "  << iterations.back() << std::endl;
-		std::cout<<"=============================="<< std::endl;
+		std::cout << "NLOC Summary of iteration " << iterations.back() << std::endl;
+		std::cout << "==============================" << std::endl;
 
-		std::cout<<std::setprecision(NUM_PRECISION) << "interm. cost:\t" << intermediateCosts.back() << std::endl;
-		std::cout<<std::setprecision(NUM_PRECISION) << "final cost:\t" << finalCosts.back() << std::endl;
-		std::cout<<std::setprecision(NUM_PRECISION) << "total cost:\t" << totalCosts.back() << std::endl;
-		std::cout<<std::setprecision(NUM_PRECISION) << "total merit:\t" << merits.back() << std::endl;
-		std::cout<<std::setprecision(NUM_PRECISION) << "tot. defect L1:\t" << defect_l1_norms.back() << std::endl;
-		std::cout<<std::setprecision(NUM_PRECISION) << "tot. defect L2:\t" << defect_l2_norms.back() << std::endl;
-		std::cout<<std::setprecision(NUM_PRECISION) << "total lx norm:\t" << lx_norms.back() << std::endl;
-		std::cout<<std::setprecision(NUM_PRECISION) << "total lu norm:\t" << lu_norms.back() << std::endl;
-		std::cout<<std::setprecision(NUM_PRECISION) << "step-size:\t" << stepSizes.back() << std::endl;
-		std::cout<<"                   ===========" << std::endl;
-		std::cout<<std::endl;
+		std::cout << std::setprecision(NUM_PRECISION) << "interm. cost:\t" << intermediateCosts.back() << std::endl;
+		std::cout << std::setprecision(NUM_PRECISION) << "final cost:\t" << finalCosts.back() << std::endl;
+		std::cout << std::setprecision(NUM_PRECISION) << "total cost:\t" << totalCosts.back() << std::endl;
+		std::cout << std::setprecision(NUM_PRECISION) << "total merit:\t" << merits.back() << std::endl;
+		std::cout << std::setprecision(NUM_PRECISION) << "tot. defect L1:\t" << defect_l1_norms.back() << std::endl;
+		std::cout << std::setprecision(NUM_PRECISION) << "tot. defect L2:\t" << defect_l2_norms.back() << std::endl;
+		std::cout << std::setprecision(NUM_PRECISION) << "total lx norm:\t" << lx_norms.back() << std::endl;
+		std::cout << std::setprecision(NUM_PRECISION) << "total lu norm:\t" << lu_norms.back() << std::endl;
+		std::cout << std::setprecision(NUM_PRECISION) << "step-size:\t" << stepSizes.back() << std::endl;
+		std::cout << "                   ===========" << std::endl;
+		std::cout << std::endl;
 	}
 
 
@@ -86,7 +86,7 @@ struct SummaryAllIterations
 	{
 #ifdef MATLAB
 		std::cout << "Logging NLOC summary to Matlab" << std::endl;
-		matFile_.open(fileName+".mat");
+		matFile_.open(fileName + ".mat");
 
 		matFile_.put("iterations", iterations);
 		matFile_.put("defect_l1_norms", defect_l1_norms);
@@ -103,10 +103,8 @@ struct SummaryAllIterations
 #endif
 	}
 
-	//! if building with MATLAB support, include matfile
+//! if building with MATLAB support, include matfile
 #ifdef MATLAB
 	matlab::MatFile matFile_;
-#endif //MATLAB
-
-
+#endif  //MATLAB
 };

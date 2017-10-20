@@ -42,7 +42,6 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class ConstraintBase
 {
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
@@ -51,7 +50,7 @@ public:
 	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
-	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs; 
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
 	/**
 	 * @brief      Custom constructor
@@ -72,7 +71,7 @@ public:
 	 *
 	 * @return     Copy of this object.
 	 */
-	virtual ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const = 0;
+	virtual ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const = 0;
 
 	/**
 	 * @brief      Destructor
@@ -102,7 +101,7 @@ public:
 	 * @return     The constraint violation
 	 */
 	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
-		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
 		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
 		ct::core::ADCGScalar t);
 
@@ -220,8 +219,8 @@ public:
 
 
 protected:
-	VectorXs lb_; // lower bound on the constraints
-	VectorXs ub_; // upper bound on the constraints
+	VectorXs lb_;  // lower bound on the constraints
+	VectorXs ub_;  // upper bound on the constraints
 
 	/**
 	 * @brief      Generates indices of a diagonal square matrix
@@ -230,10 +229,7 @@ protected:
 	 * @param[out] iRow_vec      The row vector
 	 * @param[out] jCol_vec      The column vector
 	 */
-	void genDiagonalIndices(
-			const size_t num_elements,
-			Eigen::VectorXi& iRow_vec,
-			Eigen::VectorXi& jCol_vec);
+	void genDiagonalIndices(const size_t num_elements, Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec);
 
 	/**
 	 * @brief      Generates indices of a full matrix
@@ -243,17 +239,14 @@ protected:
 	 * @param[out] iRow_vec  The row vector
 	 * @param[out] jCol_vec  The col vector
 	 */
-	void genBlockIndices(
-			const size_t num_rows,
-			const size_t num_cols,
-			Eigen::VectorXi& iRow_vec,
-			Eigen::VectorXi& jCol_vec);
+	void genBlockIndices(const size_t num_rows,
+		const size_t num_cols,
+		Eigen::VectorXi& iRow_vec,
+		Eigen::VectorXi& jCol_vec);
 
 private:
 	std::string name_;
-
 };
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

@@ -77,10 +77,9 @@ public:
 	 * @param t The time of the system (ignored)
 	 * @param controlAction The (fixed) control action
 	 */
-	void computeControl(
-			const StateVector<STATE_DIM, SCALAR>& state,
-			const SCALAR& t,
-			ControlVector<CONTROL_DIM, SCALAR>& controlAction) override;
+	void computeControl(const StateVector<STATE_DIM, SCALAR>& state,
+		const SCALAR& t,
+		ControlVector<CONTROL_DIM, SCALAR>& controlAction) override;
 
 	//! Sets the control signal
 	/*!
@@ -96,12 +95,11 @@ public:
 	 */
 	const ControlVector<CONTROL_DIM, SCALAR>& getControl() const;
 
-    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR time) override;
+	virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state,
+		const SCALAR time) override;
 
 private:
 	ControlVector<CONTROL_DIM, SCALAR> u_;
 };
-
 }
 }
-

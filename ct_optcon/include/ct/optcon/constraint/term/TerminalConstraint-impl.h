@@ -47,14 +47,15 @@ TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* TerminalConstraint<STATE_DIM
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::TerminalConstraint(const TerminalConstraint& arg):
-		Base(arg),
-		xF_(arg.xF_)
-		{}
+TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::TerminalConstraint(const TerminalConstraint& arg)
+	: Base(arg), xF_(arg.xF_)
+{
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::~TerminalConstraint()
-{}
+{
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 size_t TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::getConstraintSize() const
@@ -64,30 +65,37 @@ size_t TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::getConstraintSize() c
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
-TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
+TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluate(const state_vector_t& x,
+	const control_vector_t& u,
+	const SCALAR t)
 {
 	return x - xF_;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateCppadCg(
-		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
-		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
-		ct::core::ADCGScalar t)
+Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1>
+TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateCppadCg(
+	const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
+	const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+	ct::core::ADCGScalar t)
 {
 	return x - xF_.template cast<ct::core::ADCGScalar>();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
-TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
+TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianState(const state_vector_t& x,
+	const control_vector_t& u,
+	const SCALAR t)
 {
 	return Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>::Identity();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
-TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
+TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInput(const state_vector_t& x,
+	const control_vector_t& u,
+	const SCALAR t)
 {
 	return Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM>::Zero();
 }
@@ -106,7 +114,9 @@ size_t TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::getNumNonZerosJacobia
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
-TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
+TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianStateSparse(const state_vector_t& x,
+	const control_vector_t& u,
+	const SCALAR t)
 {
 	return core::StateVector<STATE_DIM, SCALAR>::Ones();
 }
@@ -116,7 +126,5 @@ void TerminalConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::sparsityPatternState(Ve
 {
 	this->genDiagonalIndices(STATE_DIM, rows, cols);
 }
-
 }
 }
-

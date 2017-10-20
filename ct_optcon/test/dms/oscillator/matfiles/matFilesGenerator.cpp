@@ -32,9 +32,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 
-namespace ct{
-namespace optcon{
-namespace example{
+namespace ct {
+namespace optcon {
+namespace example {
 
 using namespace ct;
 using namespace optcon;
@@ -43,11 +43,9 @@ using namespace optcon;
 class MatFilesGenerator
 {
 public:
-	typedef DmsDimensions<2,1> OscDimensions;
+	typedef DmsDimensions<2, 1> OscDimensions;
 
-	MatFilesGenerator() :
-	w_n_(0.5),
-	zeta_(0.01)
+	MatFilesGenerator() : w_n_(0.5), zeta_(0.01)
 	{
 		matlabPathIPOPT_ = std::string(DATA_DIR) + "/solutionIpopt.mat";
 		matlabPathSNOPT_ = std::string(DATA_DIR) + "/solutionSnopt.mat";
@@ -57,7 +55,7 @@ public:
 		settings_.splineType_ = DmsSettings::PIECEWISE_LINEAR;
 		settings_.costEvaluationType_ = DmsSettings::FULL;
 		settings_.objectiveType_ = DmsSettings::KEEP_TIME_AND_GRID;
-		settings_.h_min_ = 0.1; // minimum admissible distance between two nodes in [sec]
+		settings_.h_min_ = 0.1;  // minimum admissible distance between two nodes in [sec]
 		settings_.integrationType_ = DmsSettings::RK4;
 		settings_.dt_sim_ = 0.01;
 		settings_.absErrTol_ = 1e-8;
@@ -66,41 +64,39 @@ public:
 
 	void initialize()
 	{
-		oscillator_ = std::shared_ptr<ct::core::SecondOrderSystem> (new ct::core::SecondOrderSystem(w_n_, zeta_));
-		x_0_ << 0.0,0.0;
+		oscillator_ = std::shared_ptr<ct::core::SecondOrderSystem>(new ct::core::SecondOrderSystem(w_n_, zeta_));
+		x_0_ << 0.0, 0.0;
 		x_final_ << 2.0, -1.0;
-		Q_ << 	0.0,0.0,
-				0.0,10.0;
+		Q_ << 0.0, 0.0, 0.0, 10.0;
 
-		Q_final_ << 0.0,0.0,
-					0.0,0.0;
+		Q_final_ << 0.0, 0.0, 0.0, 0.0;
 
 		R_ << 0.001;
 		u_des_ << 0.0;
 
-		costFunction_ = std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1>> 
-				(new ct::optcon::CostFunctionQuadraticSimple<2,1>(Q_, R_, x_final_, u_des_, x_final_, Q_final_));
+		costFunction_ = std::shared_ptr<ct::optcon::CostFunctionQuadratic<2, 1>>(
+			new ct::optcon::CostFunctionQuadraticSimple<2, 1>(Q_, R_, x_final_, u_des_, x_final_, Q_final_));
 	}
 
 	void generateMatFilesIPOPT()
 	{
 		settings_.solverSettings_.solverType_ = NlpSolverSettings::IPOPT;
 
-		pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>
-				(new ct::optcon::ConstraintContainerAnalytical<2, 1>());
+		pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
+			new ct::optcon::ConstraintContainerAnalytical<2, 1>());
 
-		std::shared_ptr<TerminalConstraint<2,1>> termConstraint(new TerminalConstraint<2,1>(x_final_));
+		std::shared_ptr<TerminalConstraint<2, 1>> termConstraint(new TerminalConstraint<2, 1>(x_final_));
 
 		termConstraint->setName("crazyTerminalConstraint");
 		pureStateConstraints_->addTerminalConstraint(termConstraint, true);
 
-		OptConProblem<2,1> optProblem(oscillator_, costFunction_);
+		OptConProblem<2, 1> optProblem(oscillator_, costFunction_);
 		optProblem.setInitialState(x_0_);
 
 		optProblem.setTimeHorizon(settings_.T_);
 		optProblem.setPureStateConstraints(pureStateConstraints_);
 
-		dmsPlanner_ = std::shared_ptr<DmsSolver<2,1>> (new DmsSolver<2,1>(optProblem, settings_));
+		dmsPlanner_ = std::shared_ptr<DmsSolver<2, 1>>(new DmsSolver<2, 1>(optProblem, settings_));
 
 		calcInitGuess();
 		dmsPlanner_->setInitialGuess(initialPolicy_);
@@ -123,30 +119,29 @@ public:
 		matFile.put("inputDmsIpopt", inputSolutionIpopt.toImplementation());
 		matFile.put("timeDmsIpopt", timeSolutionIpopt.toEigenTrajectory());
 		matFile.close();
-#endif //MATLAB
-
+#endif  //MATLAB
 	}
 
 	void generateMatFilesSNOPT()
 	{
 		settings_.solverSettings_.solverType_ = NlpSolverSettings::SNOPT;
 
-		pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>
-				(new ct::optcon::ConstraintContainerAnalytical<2, 1>());
+		pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
+			new ct::optcon::ConstraintContainerAnalytical<2, 1>());
 
-		std::shared_ptr<TerminalConstraint<2,1>> termConstraint(new TerminalConstraint<2,1>(x_final_));
+		std::shared_ptr<TerminalConstraint<2, 1>> termConstraint(new TerminalConstraint<2, 1>(x_final_));
 
 		termConstraint->setName("crazyTerminalConstraint");
 		pureStateConstraints_->addTerminalConstraint(termConstraint, true);
 
-		OptConProblem<2,1> optProblem(oscillator_, costFunction_);
+		OptConProblem<2, 1> optProblem(oscillator_, costFunction_);
 		optProblem.setInitialState(x_0_);
 
 		optProblem.setTimeHorizon(settings_.T_);
 		optProblem.setPureStateConstraints(pureStateConstraints_);
 		pureStateConstraints_->initialize();
 
-		dmsPlanner_ = std::shared_ptr<DmsSolver<2,1>> (new DmsSolver<2,1>(optProblem, settings_));
+		dmsPlanner_ = std::shared_ptr<DmsSolver<2, 1>>(new DmsSolver<2, 1>(optProblem, settings_));
 
 		calcInitGuess();
 		dmsPlanner_->setInitialGuess(initialPolicy_);
@@ -168,7 +163,7 @@ public:
 		matFile.put("inputDmsSnopt", inputSolutionSnopt.toImplementation());
 		matFile.put("timeDmsSnopt", timeSolutionSnopt.toEigenTrajectory());
 		matFile.close();
-#endif //MATLAB
+#endif  //MATLAB
 	}
 
 
@@ -177,7 +172,7 @@ private:
 	{
 		x_initguess_.resize(settings_.N_ + 1, OscDimensions::state_vector_t::Zero());
 		u_initguess_.resize(settings_.N_ + 1, OscDimensions::control_vector_t::Zero());
-		for(size_t i = 0; i < settings_.N_ + 1; ++i)
+		for (size_t i = 0; i < settings_.N_ + 1; ++i)
 		{
 			x_initguess_[i] = x_0_ + (x_final_ - x_0_) * (i / settings_.N_);
 		}
@@ -188,15 +183,15 @@ private:
 
 	double w_n_;
 	double zeta_;
-	std::shared_ptr<ct::core::SecondOrderSystem > oscillator_;
+	std::shared_ptr<ct::core::SecondOrderSystem> oscillator_;
 
 	std::string matlabPathIPOPT_;
 	std::string matlabPathSNOPT_;
 
 	DmsSettings settings_;
 	std::shared_ptr<DmsSolver<2, 1>> dmsPlanner_;
-	std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1> >  costFunction_;
-	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1> > pureStateConstraints_;
+	std::shared_ptr<ct::optcon::CostFunctionQuadratic<2, 1>> costFunction_;
+	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>> pureStateConstraints_;
 
 
 	DmsPolicy<2, 1> initialPolicy_;
@@ -212,17 +207,16 @@ private:
 	OscDimensions::control_vector_t u_des_;
 };
 
-} // namespace example
-} // namespace optcon
-} // namespace ct
+}  // namespace example
+}  // namespace optcon
+}  // namespace ct
 
 
 /*!
  * This executable is used to generate the reference matfiles for the unit tests.
  */
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
-
 	using namespace ct::optcon::example;
 
 	MatFilesGenerator oscDms;
@@ -230,12 +224,12 @@ int main( int argc, char* argv[] )
 #ifdef BUILD_WITH_SNOPT_SUPPORT
 	std::cout << "Generating Mat Files using SNOPT:" << std::endl;
 	oscDms.generateMatFilesSNOPT();
-#endif// BUILD_WITH_IPOPT_SUPPORT
+#endif  // BUILD_WITH_IPOPT_SUPPORT
 
 #ifdef BUILD_WITH_IPOPT_SUPPORT
 	std::cout << "Generating Mat Files using IPOPT:" << std::endl;
 	oscDms.generateMatFilesIPOPT();
-#endif // BUILD_WITH_IPOPT_SUPPORT
+#endif  // BUILD_WITH_IPOPT_SUPPORT
 
 	return 0;
 }

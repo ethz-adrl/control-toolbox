@@ -49,12 +49,12 @@ namespace core {
  * @tparam SCALAR the scalar type, i.e. double, int, size_t etc.
  */
 template <typename SCALAR>
-void loadScalar(const std::string& filename, const std::string& scalarName, SCALAR& scalar, const std::string& ns="")
+void loadScalar(const std::string& filename, const std::string& scalarName, SCALAR& scalar, const std::string& ns = "")
 {
-    boost::property_tree::ptree pt;
-    boost::property_tree::read_info(filename, pt);
+	boost::property_tree::ptree pt;
+	boost::property_tree::read_info(filename, pt);
 
-    scalar = pt.get<SCALAR>(ns + scalarName);
+	scalar = pt.get<SCALAR>(ns + scalarName);
 }
 
 /*!
@@ -69,12 +69,16 @@ void loadScalar(const std::string& filename, const std::string& scalarName, SCAL
  * @tparam SCALAR the scalar type, i.e. double, int, size_t etc.
  */
 template <typename SCALAR>
-void loadScalarOptional(const std::string& filename, const std::string& scalarName, SCALAR& scalar, const SCALAR& defaultValue, const std::string& ns="")
+void loadScalarOptional(const std::string& filename,
+	const std::string& scalarName,
+	SCALAR& scalar,
+	const SCALAR& defaultValue,
+	const std::string& ns = "")
 {
-    boost::property_tree::ptree pt;
-    boost::property_tree::read_info(filename, pt);
+	boost::property_tree::ptree pt;
+	boost::property_tree::read_info(filename, pt);
 
-    scalar = pt.get<SCALAR>(ns + scalarName, defaultValue);
+	scalar = pt.get<SCALAR>(ns + scalarName, defaultValue);
 }
 
 /*!
@@ -125,7 +129,10 @@ void loadScalarOptional(const std::string& filename, const std::string& scalarNa
  * @tparam COL numer of columns (needs to be positive!)
  */
 template <typename SCALAR, int ROW, int COL>
-void loadMatrix(const std::string& filename, const std::string& matrixName, Eigen::Matrix<SCALAR, ROW, COL> &matrix, const std::string& ns="")
+void loadMatrix(const std::string& filename,
+	const std::string& matrixName,
+	Eigen::Matrix<SCALAR, ROW, COL>& matrix,
+	const std::string& ns = "")
 {
 	size_t rows = matrix.rows();
 	size_t cols = matrix.cols();
@@ -135,14 +142,15 @@ void loadMatrix(const std::string& filename, const std::string& matrixName, Eige
 
 	double scaling = pt.get<double>(ns + matrixName + ".scaling", 1);
 
-	for (size_t i=0; i<rows; i++)
+	for (size_t i = 0; i < rows; i++)
 	{
-		for (size_t j=0; j<cols; j++)
+		for (size_t j = 0; j < cols; j++)
 		{
-			matrix(i,j) = scaling*pt.get<double>(ns + matrixName + "." + "(" +std::to_string(i) + "," + std::to_string(j) + ")" , 0.0);
+			matrix(i, j) =
+				scaling *
+				pt.get<double>(ns + matrixName + "." + "(" + std::to_string(i) + "," + std::to_string(j) + ")", 0.0);
 		}
 	}
 }
-
 }
 }

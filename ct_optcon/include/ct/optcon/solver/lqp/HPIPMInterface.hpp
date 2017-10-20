@@ -38,8 +38,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <blasfeo_d_aux.h>
 #include <blasfeo_d_blas.h>
 
-extern "C"
-{
+extern "C" {
 #include <hpipm_d_ocp_qp.h>
 #include <hpipm_d_ocp_qp_sol.h>
 #include <hpipm_d_ocp_qp_ipm_hard.h>
@@ -92,51 +91,49 @@ public:
 
 
 private:
-
 	void setProblemImpl(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
 
-	void setupHPIPM(
-			StateVectorArray& x,
-			ControlVectorArray& u,
-			StateMatrixArray& A,
-			StateControlMatrixArray& B,
-			StateVectorArray& b,
-			FeedbackArray& P,
-			StateVectorArray& qv,
-			StateMatrixArray& Q,
-			ControlVectorArray& rv,
-			ControlMatrixArray& R,
-			bool keepPointers = false);
+	void setupHPIPM(StateVectorArray& x,
+		ControlVectorArray& u,
+		StateMatrixArray& A,
+		StateControlMatrixArray& B,
+		StateVectorArray& b,
+		FeedbackArray& P,
+		StateVectorArray& qv,
+		StateMatrixArray& Q,
+		ControlVectorArray& rv,
+		ControlMatrixArray& R,
+		bool keepPointers = false);
 
 	void changeNumberOfStages(int N);
 
-	void d_zeros(double **pA, int row, int col);
+	void d_zeros(double** pA, int row, int col);
 
-	void d_print_mat(int m, int n, double *A, int lda);
+	void d_print_mat(int m, int n, double* A, int lda);
 
 	/* prints a matrix in column-major format (exponential notation) */
-	void d_print_e_mat(int m, int n, double *A, int lda);
+	void d_print_e_mat(int m, int n, double* A, int lda);
 
-	void d_print_e_tran_mat(int row, int col, double *A, int lda);
+	void d_print_e_tran_mat(int row, int col, double* A, int lda);
 
-	int N_; // horizon length
+	int N_;  // horizon length
 
-	std::vector<int> nx_; // number of states per stage
-	std::vector<int> nu_; // number of inputs per stage
+	std::vector<int> nx_;  // number of states per stage
+	std::vector<int> nu_;  // number of inputs per stage
 
-	std::vector<int> nb_; // number of box constraints per stage, currently always zero
-	std::vector<int> ng_; // number of general constraints per stage, currently always zero
+	std::vector<int> nb_;  // number of box constraints per stage, currently always zero
+	std::vector<int> ng_;  // number of general constraints per stage, currently always zero
 
 
-	std::vector<double*> hA_; // system state sensitivities
-	std::vector<double*> hB_; // system input sensitivities
-	StateVectorArray bEigen_; // for transcription
+	std::vector<double*> hA_;  // system state sensitivities
+	std::vector<double*> hB_;  // system input sensitivities
+	StateVectorArray bEigen_;  // for transcription
 	std::vector<double*> hb_;
 	Eigen::Matrix<double, state_dim, 1> hb0_;
 
-	std::vector<double*> hQ_; // pure state penalty hessian
-	std::vector<double*> hS_; // cross-terms
-	std::vector<double*> hR_; // pure control penalty hessian
+	std::vector<double*> hQ_;  // pure state penalty hessian
+	std::vector<double*> hS_;  // cross-terms
+	std::vector<double*> hR_;  // pure control penalty hessian
 	StateVectorArray hqEigen_;
 	std::vector<double*> hq_;
 	ControlVectorArray hrEigen_;
@@ -150,7 +147,7 @@ private:
 	std::vector<double*> hC_;
 	std::vector<double*> hD_;
 	std::vector<int*> hidxb_;
-	double *x0_; // initial state
+	double* x0_;  // initial state
 
 	// solution
 	std::vector<double*> u_;
@@ -179,8 +176,7 @@ private:
 };
 
 
-} // optcon
-} // ct
+}  // optcon
+}  // ct
 
 #endif
-

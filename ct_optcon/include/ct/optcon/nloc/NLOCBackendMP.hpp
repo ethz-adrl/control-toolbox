@@ -36,36 +36,32 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "NLOCBackendBase.hpp"
 #include <ct/optcon/solver/NLOptConSettings.hpp>
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
 
 /*!
  * NLOC Backend for the multi-threaded case
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
-class NLOCBackendMP : public NLOCBackendBase <STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>
+class NLOCBackendMP : public NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>
 {
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> Base;
 
-	NLOCBackendMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
-			const NLOptConSettings& settings);
+	NLOCBackendMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const NLOptConSettings& settings);
 
 	NLOCBackendMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
-			 const std::string& settingsFile,
-			 bool verbose = true,
-			 const std::string& ns = "alg");
+		const std::string& settingsFile,
+		bool verbose = true,
+		const std::string& ns = "alg");
 
 	//! destructor
 	virtual ~NLOCBackendMP();
 
 protected:
-
-
 	virtual void computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
 
 	virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
@@ -75,8 +71,8 @@ protected:
 	SCALAR performLineSearch() override;
 
 private:
-
-	enum WORKER_STATE {
+	enum WORKER_STATE
+	{
 		IDLE,
 		LINE_SEARCH,
 		ROLLOUT_SHOTS,
@@ -142,7 +138,7 @@ private:
 	 * Generates a unique identifiers for task, iteration:
 	 * @todo replace by proper hash
 	 * */
-	size_t generateUniqueProcessID (const size_t& iterateNo, const int workerState);
+	size_t generateUniqueProcessID(const size_t& iterateNo, const int workerState);
 
 	//! wrapper method for nice debug printing
 	void printString(const std::string& text);
@@ -178,11 +174,8 @@ private:
 	size_t KMin_;
 
 	SCALAR lowestCostPrevious_;
-
 };
 
 
-} // namespace optcon
-} // namespace ct
-
-
+}  // namespace optcon
+}  // namespace ct

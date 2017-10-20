@@ -43,7 +43,6 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class GNRiccatiSolver : public LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const int state_dim = STATE_DIM;
@@ -94,7 +93,6 @@ public:
 	virtual SCALAR getSmallestEigenvalue() override;
 
 protected:
-
 	/*!
 	 * resize matrices
 	 * @param lqocProblem
@@ -134,14 +132,12 @@ protected:
 	//! Eigenvalue solver, used for inverting the Hessian and for regularization
 	Eigen::SelfAdjointEigenSolver<Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>> eigenvalueSolver_;
 
-	//! if building with MATLAB support, include matfile
+//! if building with MATLAB support, include matfile
 #ifdef MATLAB_FULL_LOG
 	matlab::MatFile matFile_;
-#endif //MATLAB
-
+#endif  //MATLAB
 };
 
 
-} // optcon
-} // ct
-
+}  // optcon
+}  // ct

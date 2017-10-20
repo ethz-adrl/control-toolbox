@@ -29,25 +29,27 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/core/types/arrays/DiscreteArray.h>
 #include <ct/core/types/arrays/TimeArray.h>
 
-namespace ct{
-namespace core{
+namespace ct {
+namespace core {
 
 template <int STATE_DIM, int CONTROL_DIM, class SCALAR = double>
 class LinearFunctionMIMO
 {
-
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	void swap(LinearFunctionMIMO& arg){
+	void swap(LinearFunctionMIMO& arg)
+	{
 		uff_.swap(arg.uff_);
 		deltaUff_.swap(arg.deltaUff_);
 		k_.swap(arg.k_);
 	}
 
-	void setZero(){
-		uff_.setZero(); deltaUff_.setZero(); k_.setZero();
+	void setZero()
+	{
+		uff_.setZero();
+		deltaUff_.setZero();
+		k_.setZero();
 	}
 
 	TimeArray time_;
@@ -57,24 +59,24 @@ public:
 };
 
 
-
-
 template <int STATE_DIM, int DIM1, int DIM2, class SCALAR = double>
 class GeneralLinearFunction
 {
-
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	void swap(GeneralLinearFunction& arg){
+	void swap(GeneralLinearFunction& arg)
+	{
 		uff_.swap(arg.uff_);
 		deltaUff_.swap(arg.deltaUff_);
 		k_.swap(arg.k_);
 	}
 
-	void setZero(){
-		uff_.setZero(); deltaUff_.setZero(); k_.setZero();
+	void setZero()
+	{
+		uff_.setZero();
+		deltaUff_.setZero();
+		k_.setZero();
 	}
 
 	TimeArray time_;
@@ -83,6 +85,5 @@ public:
 	DiscreteArray<Eigen::Matrix<SCALAR, DIM1, STATE_DIM>> k_;
 };
 
-} // core
-} // ct
-
+}  // core
+}  // ct

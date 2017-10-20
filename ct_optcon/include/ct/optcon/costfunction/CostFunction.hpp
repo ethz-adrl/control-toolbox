@@ -46,8 +46,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class CostFunction
 {
 public:
-
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
 	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
@@ -76,7 +75,7 @@ public:
 	 * Clones the cost function.
 	 * @return Base pointer to the clone
 	 */
- 	virtual CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const = 0;
+	virtual CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const = 0;
 
 	/**
 	 * Set the current state, control and time of the cost function. In this function, the user can add pre-computations
@@ -85,7 +84,9 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	virtual void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const SCALAR& t = SCALAR(0.0));
+	virtual void setCurrentStateAndControl(const state_vector_t& x,
+		const control_vector_t& u,
+		const SCALAR& t = SCALAR(0.0));
 
 	/**
 	 * \brief sets current state, control and time
@@ -96,7 +97,9 @@ public:
 	 * @param u control vector
 	 * @param t time
 	 */
-	virtual void getCurrentStateAndControl(Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, SCALAR& t) const;
+	virtual void getCurrentStateAndControl(Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
+		Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& u,
+		SCALAR& t) const;
 
 	/**
 	 * \brief evaluate intermediate costs
@@ -118,13 +121,12 @@ public:
 
 
 protected:
-	state_vector_t x_; /** state vector */
+	state_vector_t x_;   /** state vector */
 	control_vector_t u_; /** control vector */
-	SCALAR t_; /** time */
+	SCALAR t_;           /** time */
 
 	SCALAR t_shift_;
 };
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

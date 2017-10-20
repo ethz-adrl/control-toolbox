@@ -43,13 +43,12 @@ class SISOControllerBase
 {
 public:
 	//! Default constructor
-	SISOControllerBase() {};
+	SISOControllerBase(){};
 
 	//! Copy constructor
 	SISOControllerBase(const SISOControllerBase& arg) {}
-
 	//! Destructor
-	virtual ~SISOControllerBase() {};
+	virtual ~SISOControllerBase(){};
 
 	//! Deep cloning destructor
 	/*!
@@ -69,12 +68,7 @@ public:
 	virtual double computeControl(const double& state, const core::Time& t) = 0;
 
 protected:
-
-
 };
 
-} // namespace core
-} // namespace ct
-
-
-
+}  // namespace core
+}  // namespace ct

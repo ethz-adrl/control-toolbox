@@ -45,17 +45,17 @@ namespace optcon {
  * @tparam     CONTROL_DIM  The control dimension
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class ConstraintContainerAnalytical : public LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>{
-
+class ConstraintContainerAnalytical : public LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>
+{
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef core::StateVector<STATE_DIM, SCALAR>   state_vector_t;
+	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
 	typedef core::ControlVector<CONTROL_DIM, SCALAR> input_vector_t;
 
 	typedef ConstraintContainerAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* ConstraintContainerAnalytical_Raw_Ptr_t;
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
-	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs; 
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
 	ConstraintContainerAnalytical();
 
@@ -66,7 +66,7 @@ public:
 	 * @param      u     control vector
 	 * @param      t     time
 	 */
-	ConstraintContainerAnalytical(const state_vector_t &x, const input_vector_t &u, const SCALAR& t = 0.0);
+	ConstraintContainerAnalytical(const state_vector_t& x, const input_vector_t& u, const SCALAR& t = 0.0);
 
 	/**
 	 * @brief      Copy constructor
@@ -80,7 +80,7 @@ public:
 	 *
 	 * @return     Copy of this object.
 	 */
-	virtual ConstraintContainerAnalytical_Raw_Ptr_t clone () const override;
+	virtual ConstraintContainerAnalytical_Raw_Ptr_t clone() const override;
 
 	/**
 	 * @brief      Destructor
@@ -93,7 +93,8 @@ public:
 	 * @param[in]  constraint  The constraint to be added
 	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
 	 */
-	void addIntermediateConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> constraint, bool verbose);
+	void addIntermediateConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> constraint,
+		bool verbose);
 
 	/**
 	 * @brief      Adds a terminal constraint.
@@ -101,7 +102,8 @@ public:
 	 * @param[in]  constraint  The constraint to be added
 	 * @param[in]  verbose     Flag indicating whether verbosity is on or off
 	 */
-	void addTerminalConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> constraint, bool verbose);
+	void addTerminalConstraint(std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>> constraint,
+		bool verbose);
 
 	virtual VectorXs evaluateIntermediate() override;
 
@@ -181,6 +183,5 @@ private:
 };
 
 
-}// namespace optcon
-}// namespace ct
-
+}  // namespace optcon
+}  // namespace ct

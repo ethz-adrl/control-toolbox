@@ -26,9 +26,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-namespace ct{
-namespace optcon{
-namespace example{
+namespace ct {
+namespace optcon {
+namespace example {
 
 
 /*!
@@ -51,7 +51,7 @@ public:
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
 	typedef ct::optcon::ConstraintBase<state_dim, control_dim, SCALAR> Base;
 	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
-	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;	
+	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
@@ -63,39 +63,33 @@ public:
 		Base::ub_.setZero();
 	}
 
-	PureStateConstraint_Example(const PureStateConstraint_Example& arg):
-		Base(arg),
-		A_(arg.A_) {}
-
-	virtual ~PureStateConstraint_Example(){}
-
-	virtual PureStateConstraint_Example<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override 
-	{ 
+	PureStateConstraint_Example(const PureStateConstraint_Example& arg) : Base(arg), A_(arg.A_) {}
+	virtual ~PureStateConstraint_Example() {}
+	virtual PureStateConstraint_Example<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
+	{
 		return new PureStateConstraint_Example(*this);
 	}
 
-	virtual size_t getConstraintSize() const override {return STATE_DIM;}
-
+	virtual size_t getConstraintSize() const override { return STATE_DIM; }
 	virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
-	 {
-	 	return A_ * x;
-	 }
+	{
+		return A_ * x;
+	}
 
-	 virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
-		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
 		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
 		ct::core::ADCGScalar t) override
 	{
 		return A_.template cast<ct::core::ADCGScalar>() * x;
 	}
 
-	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override 
+	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
 		return A_;
 	}
 
-	void setA(const Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>& A){A_ = A;}
-
+	void setA(const Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>& A) { A_ = A; }
 private:
 	Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> A_;
 };
@@ -121,47 +115,44 @@ public:
 		Base::ub_.setZero();
 	}
 
-	StateInputConstraint_Example(const StateInputConstraint_Example& arg):
-		ct::optcon::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
-		A_(arg.A_),
-		B_(arg.B_)
-		{
-			Base::lb_.resize(CONTROL_DIM);
-			Base::ub_.resize(CONTROL_DIM);
-			Base::lb_.setZero();
-			Base::ub_.setZero();
-		}
-
-	virtual StateInputConstraint_Example<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override {return new StateInputConstraint_Example(*this);}
-
-	virtual ~StateInputConstraint_Example(){}
-
-	virtual size_t getConstraintSize() const override {return CONTROL_DIM;}
-
-	VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) 
+	StateInputConstraint_Example(const StateInputConstraint_Example& arg)
+		: ct::optcon::ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>(arg), A_(arg.A_), B_(arg.B_)
 	{
-		return A_ * x + B_ * u;
+		Base::lb_.resize(CONTROL_DIM);
+		Base::ub_.resize(CONTROL_DIM);
+		Base::lb_.setZero();
+		Base::ub_.setZero();
 	}
 
+	virtual StateInputConstraint_Example<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
+	{
+		return new StateInputConstraint_Example(*this);
+	}
+
+	virtual ~StateInputConstraint_Example() {}
+	virtual size_t getConstraintSize() const override { return CONTROL_DIM; }
+	VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) { return A_ * x + B_ * u; }
 	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
-		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
 		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
 		ct::core::ADCGScalar t) override
 	{
 		return (A_.template cast<ct::core::ADCGScalar>() * x + B_.template cast<ct::core::ADCGScalar>() * u);
-	}	
+	}
 
-	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override 
+	virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
 		return A_;
 	}
 
-	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override 
+	virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
 	{
 		return B_;
 	}
 
-	void setAB(const Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>& A, const Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> B){
+	void setAB(const Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>& A,
+		const Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> B)
+	{
 		A_ = A;
 		B_ = B;
 	}
@@ -174,21 +165,22 @@ private:
 
 TEST(pureStateConstraintTest, pureStateConstraintTest)
 {
-	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> constraintAD (
+	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> constraintAD(
 		new ct::optcon::ConstraintContainerAD<state_dim, control_dim>());
 
-	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>> constraintAN (
+	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>> constraintAN(
 		new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
 
-	Eigen::Matrix<double, state_dim, state_dim> A; A.setRandom();
+	Eigen::Matrix<double, state_dim, state_dim> A;
+	A.setRandom();
 
-	std::shared_ptr<PureStateConstraint_Example<state_dim, control_dim>> term1_ad (
+	std::shared_ptr<PureStateConstraint_Example<state_dim, control_dim>> term1_ad(
 		new PureStateConstraint_Example<state_dim, control_dim>());
 	term1_ad->setName("term1_ad");
 	term1_ad->setA(A);
 
 	std::shared_ptr<PureStateConstraint_Example<state_dim, control_dim, double>> term1_an(
-		 new PureStateConstraint_Example<state_dim, control_dim, double>());
+		new PureStateConstraint_Example<state_dim, control_dim, double>());
 	term1_an->setName("term1_an");
 	term1_an->setA(A);
 
@@ -197,18 +189,22 @@ TEST(pureStateConstraintTest, pureStateConstraintTest)
 	constraintAN->addIntermediateConstraint(term1_an, verbose);
 	constraintAN->initialize();
 
-	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>> constraintAN_cloned (constraintAN->clone());
-	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> constraintAD_cloned (constraintAD->clone());
+	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>> constraintAN_cloned(
+		constraintAN->clone());
+	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> constraintAD_cloned(
+		constraintAD->clone());
 
 	size_t nRuns = 100;
 
-	for(size_t i = 0; i<nRuns; i++){
-
+	for (size_t i = 0; i < nRuns; i++)
+	{
 		/* evaluate constraint */
 		Eigen::VectorXd g1_ad, g1_an, g1_ad_cl, g1_an_cl;
 
-		Eigen::Matrix<double, state_dim, 1> state; state.setRandom();
-		Eigen::Matrix<double, control_dim, 1> input; input.setRandom();
+		Eigen::Matrix<double, state_dim, 1> state;
+		state.setRandom();
+		Eigen::Matrix<double, control_dim, 1> input;
+		input.setRandom();
 
 		std::random_device rd;
 		std::mt19937 gen(rd());
@@ -242,7 +238,7 @@ TEST(pureStateConstraintTest, pureStateConstraintTest)
 		F_cloned = constraintAD_cloned->jacobianStateIntermediate();
 
 		// compare jacobians
-			
+
 		ASSERT_TRUE(F_an.isApprox(F_ad));
 		ASSERT_TRUE(F_an.isApprox(F_cloned));
 		ASSERT_TRUE(F_an.isApprox(F_cloned_an));
@@ -252,20 +248,22 @@ TEST(pureStateConstraintTest, pureStateConstraintTest)
 
 TEST(stateInputConstraintTest, stateInputConstraintTest)
 {
-	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> constraintAD (
+	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> constraintAD(
 		new ct::optcon::ConstraintContainerAD<state_dim, control_dim>());
-	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>> constraintAN (
+	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>> constraintAN(
 		new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
 
-	Eigen::Matrix<double, control_dim, state_dim> A; A.setRandom();
-	Eigen::Matrix<double, control_dim, control_dim> B; B.setRandom();
+	Eigen::Matrix<double, control_dim, state_dim> A;
+	A.setRandom();
+	Eigen::Matrix<double, control_dim, control_dim> B;
+	B.setRandom();
 
-	std::shared_ptr<StateInputConstraint_Example<state_dim, control_dim>> term1_ad (
+	std::shared_ptr<StateInputConstraint_Example<state_dim, control_dim>> term1_ad(
 		new StateInputConstraint_Example<state_dim, control_dim>());
 	term1_ad->setName("term1_ad");
 	term1_ad->setAB(A, B);
 
-	std::shared_ptr<StateInputConstraint_Example<state_dim, control_dim, double>> term1_an (
+	std::shared_ptr<StateInputConstraint_Example<state_dim, control_dim, double>> term1_an(
 		new StateInputConstraint_Example<state_dim, control_dim, double>());
 	term1_an->setName("term1_an");
 	term1_an->setAB(A, B);
@@ -280,8 +278,10 @@ TEST(stateInputConstraintTest, stateInputConstraintTest)
 	/* evaluate constraint */
 	Eigen::VectorXd g1_ad, g1_an;
 
-	Eigen::Matrix<double, state_dim, 1> state; state.setRandom();
-	Eigen::Matrix<double, control_dim, 1> input; input.setRandom();
+	Eigen::Matrix<double, state_dim, 1> state;
+	state.setRandom();
+	Eigen::Matrix<double, control_dim, 1> input;
+	input.setRandom();
 	double time = 1.0;
 
 
@@ -304,9 +304,11 @@ TEST(stateInputConstraintTest, stateInputConstraintTest)
 	D_ad = constraintAD->jacobianInputIntermediate();
 
 
-	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>> constraintAN_cloned (constraintAN->clone());
+	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>> constraintAN_cloned(
+		constraintAN->clone());
 
-	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> constraintAD_cloned (constraintAD->clone());
+	std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> constraintAD_cloned(
+		constraintAD->clone());
 
 	C_cloned_an = constraintAN_cloned->jacobianStateIntermediate();
 	C_cloned = constraintAD_cloned->jacobianStateIntermediate();
@@ -323,7 +325,6 @@ TEST(stateInputConstraintTest, stateInputConstraintTest)
 	ASSERT_TRUE(D_an.isApprox(D_cloned_an));
 }
 
-} // namespace example
-} // namespace optcon
-} // namespace ct
-
+}  // namespace example
+}  // namespace optcon
+}  // namespace ct

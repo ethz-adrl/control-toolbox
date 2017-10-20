@@ -37,20 +37,20 @@ public:
 
 	static const size_t DIM = CONTROL_DIM;
 
-	ControlVector() {};
-	virtual ~ControlVector() {};
+	ControlVector(){};
+	virtual ~ControlVector(){};
 
 	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, 1> Base;
 
 	// This constructor allows you to construct MyVectorType from Eigen expressions
-	template<typename OtherDerived>
-	ControlVector(const Eigen::MatrixBase<OtherDerived>& other)
-		: Base(other)
-	{ }
+	template <typename OtherDerived>
+	ControlVector(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)
+	{
+	}
 
 	// This method allows you to assign Eigen expressions to MyVectorType
-	template<typename OtherDerived>
-	ControlVector& operator=(const Eigen::MatrixBase <OtherDerived>& other)
+	template <typename OtherDerived>
+	ControlVector& operator=(const Eigen::MatrixBase<OtherDerived>& other)
 	{
 		this->Base::operator=(other);
 		return *this;
@@ -59,4 +59,3 @@ public:
 
 } /* namespace core */
 } /* namespace ct */
-

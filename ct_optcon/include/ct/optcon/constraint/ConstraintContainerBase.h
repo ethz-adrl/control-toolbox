@@ -52,7 +52,6 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class ConstraintContainerBase
 {
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
@@ -97,7 +96,9 @@ public:
 	 * @param[in] x state vector
 	 * @param[in] x input vector
 	 */
-	virtual void setCurrentStateAndControl(const state_vector_t& x,	const input_vector_t& u, const SCALAR t = SCALAR(0.0));
+	virtual void setCurrentStateAndControl(const state_vector_t& x,
+		const input_vector_t& u,
+		const SCALAR t = SCALAR(0.0));
 
 	/**
 	 * @brief      Evaluates the intermediate constraints
@@ -167,16 +168,15 @@ public:
 
 
 protected:
-
 	/**
 	 * @brief      Gets called by the setCurrentStateAndControl method. Can be
 	 *             used to update container properties
 	 */
 	virtual void update() = 0;
 
-	state_vector_t   x_;	/** state vector */
-	input_vector_t u_;		/** control vector */
-	SCALAR t_;			    /** time */
+	state_vector_t x_; /** state vector */
+	input_vector_t u_; /** control vector */
+	SCALAR t_;         /** time */
 
 	VectorXs lowerBoundsIntermediate_;
 	VectorXs lowerBoundsTerminal_;
@@ -185,6 +185,5 @@ protected:
 };
 
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

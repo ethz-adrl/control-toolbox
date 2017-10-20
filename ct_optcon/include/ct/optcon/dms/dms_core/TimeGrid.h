@@ -34,7 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct {
 namespace optcon {
-namespace tpl{
+namespace tpl {
 
 /**
  * @ingroup    DMS
@@ -58,10 +58,8 @@ public:
 	 * @param[in]  numberOfShots  The number of shots
 	 * @param[in]  timeHorizon    The dms time horizon
 	 */
-	TimeGrid(const size_t numberOfShots, const SCALAR timeHorizon):
-	numberOfShots_(numberOfShots),
-	timeHorizon_(timeHorizon),
-	t_(numberOfShots + 1, SCALAR(0.0))
+	TimeGrid(const size_t numberOfShots, const SCALAR timeHorizon)
+		: numberOfShots_(numberOfShots), timeHorizon_(timeHorizon), t_(numberOfShots + 1, SCALAR(0.0))
 	{
 		makeUniformGrid();
 	}
@@ -91,7 +89,6 @@ public:
 	}
 
 
-
 	/**
 	 * @brief      This method updates the timegrid when new optimized time
 	 *             segments arrive from the nlp solver. Only gets called when
@@ -102,15 +99,15 @@ public:
 	 */
 	void updateTimeGrid(const Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>& h_segment)
 	{
-		t_[0] = SCALAR(0.0); //by convention (just for documentation)
+		t_[0] = SCALAR(0.0);  //by convention (just for documentation)
 
-		for(size_t i = 0; i < (size_t) h_segment.size(); ++i)
-			t_[i+1] = t_[i] + h_segment(i);
+		for (size_t i = 0; i < (size_t)h_segment.size(); ++i)
+			t_[i + 1] = t_[i] + h_segment(i);
 
 #ifdef DEBUG_TIMEGRID
 		std::cout << " ... in updateTimeGrid(). t_ =  ";
-		for(size_t i = 0; i < t_.size(); i++)
-			std::cout << std::setprecision (10) <<t_[i] << "  ";
+		for (size_t i = 0; i < t_.size(); i++)
+			std::cout << std::setprecision(10) << t_[i] << "  ";
 
 		std::cout << std::endl;
 #endif
@@ -123,7 +120,7 @@ public:
 	void makeUniformGrid()
 	{
 		for (size_t i = 0; i < numberOfShots_ + 1; i++)
-			t_[i]	= i * (SCALAR)(timeHorizon_/ (SCALAR)numberOfShots_);
+			t_[i] = i * (SCALAR)(timeHorizon_ / (SCALAR)numberOfShots_);
 	}
 
 
@@ -134,10 +131,7 @@ public:
 	 *
 	 * @return     The start time
 	 */
-	const SCALAR getShotStartTime(const size_t shot_index) const{
-		return t_[shot_index];
-	}
-
+	const SCALAR getShotStartTime(const size_t shot_index) const { return t_[shot_index]; }
 	/**
 	 * @brief      Returns the end time of a shot
 	 *
@@ -145,10 +139,7 @@ public:
 	 *
 	 * @return     The end time
 	 */
-	const SCALAR getShotEndTime(const size_t shot_index) const{
-		return t_[shot_index+1];
-	}
-
+	const SCALAR getShotEndTime(const size_t shot_index) const { return t_[shot_index + 1]; }
 	/**
 	 * @brief      Returns to duration of a shot
 	 *
@@ -156,43 +147,25 @@ public:
 	 *
 	 * @return     The duration
 	 */
-	const SCALAR getShotDuration(const size_t shot_index) const{
-		return (t_[shot_index+1]-t_[shot_index]);
-	}
-
+	const SCALAR getShotDuration(const size_t shot_index) const { return (t_[shot_index + 1] - t_[shot_index]); }
 	/**
 	 * @brief      Returns the underlying TimeArray
 	 *
 	 * @return     The underlying TimeArray
 	 */
-	const ct::core::tpl::TimeArray<SCALAR>& toImplementation()
-	{
-		return t_;
-	}
-
-
-
+	const ct::core::tpl::TimeArray<SCALAR>& toImplementation() { return t_; }
 	/**
 	 * @brief      Returns the initial timehorizon of the problem
 	 *
 	 * @return     The initial time horizon
 	 */
-	const SCALAR getTimeHorizon() const
-	{
-		return timeHorizon_;
-	}
-
+	const SCALAR getTimeHorizon() const { return timeHorizon_; }
 	/**
 	 * @brief      Returns the optimized timehorizon
 	 *
 	 * @return     The optimized timehorizon
 	 */
-	const SCALAR getOptimizedTimeHorizon() const
-	{
-		return t_.back();
-	}
-
-
+	const SCALAR getOptimizedTimeHorizon() const { return t_.back(); }
 private:
 	size_t numberOfShots_;
 	SCALAR timeHorizon_;
@@ -200,12 +173,9 @@ private:
 	// the individual times of each pair from i=0,..., N
 	ct::core::tpl::TimeArray<SCALAR> t_;
 };
-
 }
 
 typedef tpl::TimeGrid<double> TimeGrid;
 
-} // namespace optcon
-} // namespace ct
-
-
+}  // namespace optcon
+}  // namespace ct

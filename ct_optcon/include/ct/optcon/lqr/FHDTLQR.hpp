@@ -80,7 +80,7 @@ public:
 	/*!
 	 * @param costFunction the cost function to be used for designing the TVLQR
 	 */
-	FHDTLQR(std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> > costFunction);
+	FHDTLQR(std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFunction);
 
 	~FHDTLQR();
 
@@ -103,8 +103,7 @@ public:
 	 * @param performNumericalChecks
 	 * (optional) perform some numerical checks while solving for K
 	 */
-	void designController(
-		const state_vector_array_t& x_trajectory,
+	void designController(const state_vector_array_t& x_trajectory,
 		const control_vector_array_t& u_trajectory,
 		const state_matrix_array_t& A,
 		const control_gain_matrix_array_t& B,
@@ -128,17 +127,15 @@ public:
 	 * @param performNumericalChecks
 	 * (optional) perform some numerical checks while solving for K
 	 */
-	void designController(
-			const state_vector_array_t& x_trajectory,
-			const control_vector_array_t& u_trajectory,
-			std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> > derivatives,
-			SCALAR dt,
-			control_feedback_array_t& K,
-			bool performNumericalChecks = true);
+	void designController(const state_vector_array_t& x_trajectory,
+		const control_vector_array_t& u_trajectory,
+		std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> derivatives,
+		SCALAR dt,
+		control_feedback_array_t& K,
+		bool performNumericalChecks = true);
 
 
 private:
-
 	//! compute trajectories of A and B matrices along the given reference trajectory using the user-provided derivative instance
 	/*!
 	 *
@@ -157,14 +154,13 @@ private:
 	 * @param B
 	 *  resulting linear state-input matrices B
 	 */
-	void linearizeModel(
-			const state_vector_array_t& x_trajectory,
-			const control_vector_array_t& u_trajectory,
-			size_t N,
-			SCALAR dt,
-			std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> >& derivatives,
-			state_matrix_array_t& A,
-			control_gain_matrix_array_t& B);
+	void linearizeModel(const state_vector_array_t& x_trajectory,
+		const control_vector_array_t& u_trajectory,
+		size_t N,
+		SCALAR dt,
+		std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& derivatives,
+		state_matrix_array_t& A,
+		control_gain_matrix_array_t& B);
 
 
 	//! solve for the LQR feedback gains
@@ -187,8 +183,7 @@ private:
 	 * @param performNumericalChecks
 	 *  (optional) perform some numerical checks while solving
 	 */
-	void solve(
-		const state_vector_array_t& x_trajectory,
+	void solve(const state_vector_array_t& x_trajectory,
 		const control_vector_array_t& u_trajectory,
 		const state_matrix_array_t& A,
 		const control_gain_matrix_array_t& B,
@@ -198,10 +193,10 @@ private:
 		bool performNumericalChecks = true);
 
 
-	std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> > costFunction_;	//! a quadratic costfunction for solving the optimal control problem
-	DynamicRiccatiEquation<STATE_DIM, CONTROL_DIM, SCALAR> ricattiEq_;	//! the Riccati Equations
+	std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>>
+		costFunction_;  //! a quadratic costfunction for solving the optimal control problem
+	DynamicRiccatiEquation<STATE_DIM, CONTROL_DIM, SCALAR> ricattiEq_;  //! the Riccati Equations
 };
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

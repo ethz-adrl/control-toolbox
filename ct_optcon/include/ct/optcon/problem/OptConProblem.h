@@ -29,8 +29,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/constraint/LinearConstraintContainer.h>
 #include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
 
 /*!
@@ -52,11 +52,10 @@ namespace optcon{
  * 	\warning Using numerical differentiation is inefficient and typically slow.
  *
 */
-template<size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class OptConProblem {
-
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class OptConProblem
+{
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const size_t STATE_D = STATE_DIM;
@@ -82,10 +81,7 @@ public:
 	 * @param linearSystem (optional) the linear system holding the dynamics derivatives. If the
 	 * user does not specify the derivatives, they are generated automatically using numerical differentiation. Warning: this is slow
 	 */
-	OptConProblem(
-			DynamicsPtr_t nonlinDynamics,
-			CostFunctionPtr_t costFunction,
-			LinearPtr_t linearSystem = nullptr);
+	OptConProblem(DynamicsPtr_t nonlinDynamics, CostFunctionPtr_t costFunction, LinearPtr_t linearSystem = nullptr);
 
 
 	//! Construct a simple unconstrained optimal control problem, with initial state and final time as constructor arguments
@@ -96,12 +92,11 @@ public:
 	 * @param costFunction A quadratic cost function
 	 * @param linearSystem (optional) Linearized System Dynamics.
 	 */
-	OptConProblem(
-			const SCALAR& tf,
-			const state_vector_t& x0,
-			DynamicsPtr_t nonlinDynamics,
-			CostFunctionPtr_t costFunction,
-			LinearPtr_t linearSystem = nullptr);
+	OptConProblem(const SCALAR& tf,
+		const state_vector_t& x0,
+		DynamicsPtr_t nonlinDynamics,
+		CostFunctionPtr_t costFunction,
+		LinearPtr_t linearSystem = nullptr);
 
 
 	//! check if all the ingredients for an unconstrained otpimal control problem are there
@@ -187,19 +182,16 @@ public:
 
 
 private:
-	SCALAR tf_;						//! end time
+	SCALAR tf_;  //! end time
 
-	state_vector_t x0_;	//! initial state
+	state_vector_t x0_;  //! initial state
 
-	DynamicsPtr_t controlledSystem_;	//! the nonlinear system
-	CostFunctionPtr_t costFunction_;	//! a quadratic cost function
-	LinearPtr_t linearizedSystem_;		//! the linear approximation of the nonlinear system
+	DynamicsPtr_t controlledSystem_;  //! the nonlinear system
+	CostFunctionPtr_t costFunction_;  //! a quadratic cost function
+	LinearPtr_t linearizedSystem_;    //! the linear approximation of the nonlinear system
 
-	ConstraintPtr_t stateInputConstraints_;		//! container of all the intermediate constraints of the problem
-	ConstraintPtr_t pureStateConstraints_;	//! container of all the terminal constraints of the problem
-
+	ConstraintPtr_t stateInputConstraints_;  //! container of all the intermediate constraints of the problem
+	ConstraintPtr_t pureStateConstraints_;   //! container of all the terminal constraints of the problem
 };
-
-
 }
 }

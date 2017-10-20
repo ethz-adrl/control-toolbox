@@ -9,7 +9,7 @@
 int main(int argc, char** argv)
 {
 	// a damped oscillator has two states, position and velocity
-	const size_t state_dim = Masspoint::STATE_DIM; // = 2
+	const size_t state_dim = Masspoint::STATE_DIM;  // = 2
 
 	// create a state
 	ct::core::StateVector<state_dim> x;
@@ -32,7 +32,7 @@ int main(int argc, char** argv)
 	integrator.integrate_n_steps(x, t0, nSteps, dt);
 
 	// print the new state
-	std::cout << "state after integration: "<<x.transpose()<<std::endl;
+	std::cout << "state after integration: " << x.transpose() << std::endl;
 
 	return 1;
 }

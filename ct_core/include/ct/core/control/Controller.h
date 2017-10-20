@@ -49,13 +49,13 @@ class Controller
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	//! Default constructor
-	Controller() {};
+	Controller(){};
 
 	//! Copy constructor
-	Controller(const Controller& other) {};
+	Controller(const Controller& other){};
 
 	//! Destructor
-	virtual ~Controller() {};
+	virtual ~Controller(){};
 
 	//! Deep cloning
 	/*!
@@ -74,12 +74,11 @@ public:
 	 * @param t current time of the system
 	 * @param controlAction the corresponding control action
 	 */
-	virtual void computeControl(
-			const StateVector<STATE_DIM, SCALAR>& state,
-			const SCALAR& t,
-			ControlVector<CONTROL_DIM, SCALAR>& controlAction) = 0;
+	virtual void computeControl(const StateVector<STATE_DIM, SCALAR>& state,
+		const SCALAR& t,
+		ControlVector<CONTROL_DIM, SCALAR>& controlAction) = 0;
 
-    /**
+	/**
      * @brief      Returns the the derivative of the control with respect to the
      *             initial control input u0
      *
@@ -88,12 +87,13 @@ public:
      *
      * @return     The derivatives with respect to u0.
      */
-    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR time)
-    {
-        throw std::runtime_error("getDerivativeU0() not implemented for the current controller");
-    }
+	virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state,
+		const SCALAR time)
+	{
+		throw std::runtime_error("getDerivativeU0() not implemented for the current controller");
+	}
 
-    /**
+	/**
      * @brief      Returns the the derivative of the control with respect to the
      *             final control input uF
      *
@@ -102,15 +102,12 @@ public:
      *
      * @return     The derivatives with respect to uF.
      */
-    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeUf(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR time)
-    {
-        throw std::runtime_error("getDerivativeUf() not implemented for the current controller");
-    }
-
-
+	virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeUf(const StateVector<STATE_DIM, SCALAR>& state,
+		const SCALAR time)
+	{
+		throw std::runtime_error("getDerivativeUf() not implemented for the current controller");
+	}
 };
 
 }  // namespace core
 }  // namespace ct
-
-

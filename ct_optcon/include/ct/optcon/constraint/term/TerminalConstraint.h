@@ -42,7 +42,6 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class TerminalConstraint : public ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
@@ -72,7 +71,7 @@ public:
 	virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
 	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
-		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
 		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
 		ct::core::ADCGScalar t) override;
 
@@ -91,7 +90,5 @@ public:
 private:
 	core::StateVector<STATE_DIM, SCALAR> xF_;
 };
-
 }
 }
-

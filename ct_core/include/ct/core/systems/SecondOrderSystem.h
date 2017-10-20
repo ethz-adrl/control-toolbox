@@ -35,8 +35,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct {
 namespace core {
 
-namespace tpl
-{
+namespace tpl {
 
 //! Describes a damped oscillator
 /*!
@@ -84,9 +83,8 @@ template <typename SCALAR>
 class SecondOrderSystem : public ControlledSystem<2, 1, SCALAR>
 {
 public:
-
-	static const size_t STATE_DIM = 2; //!< state dimension (position, velocity)
-	static const size_t CONTROL_DIM = 1; //!< control dimension (force)
+	static const size_t STATE_DIM = 2;    //!< state dimension (position, velocity)
+	static const size_t CONTROL_DIM = 1;  //!< control dimension (force)
 
 	//! default constructor
 	SecondOrderSystem() = delete;
@@ -99,22 +97,27 @@ public:
 	 * @param g_dc DC gain on input
 	 * @param controller controller (optional)
 	 */
-	SecondOrderSystem(SCALAR w_n, SCALAR zeta = SCALAR(1.0), SCALAR g_dc = SCALAR(1.0), std::shared_ptr<Controller<2,1,SCALAR> > controller = nullptr) :
-		ControlledSystem<2,1,SCALAR>(controller, SYSTEM_TYPE::SECOND_ORDER),
-		w_n_(w_n),
-		w_n_square_(w_n_ * w_n_),
-		zeta_(zeta),
-		g_dc_(g_dc)
-	{}
+	SecondOrderSystem(SCALAR w_n,
+		SCALAR zeta = SCALAR(1.0),
+		SCALAR g_dc = SCALAR(1.0),
+		std::shared_ptr<Controller<2, 1, SCALAR>> controller = nullptr)
+		: ControlledSystem<2, 1, SCALAR>(controller, SYSTEM_TYPE::SECOND_ORDER)
+		, w_n_(w_n)
+		, w_n_square_(w_n_ * w_n_)
+		, zeta_(zeta)
+		, g_dc_(g_dc)
+	{
+	}
 
 	//! copy constructor
-	SecondOrderSystem(const SecondOrderSystem& arg) :
-	    ControlledSystem<2,1,SCALAR>(arg),
-		w_n_(arg.w_n_),
-		w_n_square_(arg.w_n_square_),
-		zeta_(arg.zeta_),
-		g_dc_(arg.g_dc_)
-	{}
+	SecondOrderSystem(const SecondOrderSystem& arg)
+		: ControlledSystem<2, 1, SCALAR>(arg)
+		, w_n_(arg.w_n_)
+		, w_n_square_(arg.w_n_square_)
+		, zeta_(arg.zeta_)
+		, g_dc_(arg.g_dc_)
+	{
+	}
 
 	//! constructor using a more mechanical definition (spring-mass-damping)
 	/*!
@@ -124,23 +127,19 @@ public:
 	 * @param g_dc DC input gain
 	 * @param controller controller (optional)
 	 */
-	SecondOrderSystem(SCALAR k, SCALAR m, SCALAR d, SCALAR g_dc, std::shared_ptr<Controller<2,1> > controller = nullptr) :
-		ControlledSystem<2,1>(controller),
-		w_n_(std::sqrt(k/m)),
-		w_n_square_(w_n_ * w_n_),
-		zeta_(d / (2.0 * m  * k)),
-		g_dc_(g_dc)
-	{}
-
-	//! deep copy
-	SecondOrderSystem* clone() const override
+	SecondOrderSystem(SCALAR k, SCALAR m, SCALAR d, SCALAR g_dc, std::shared_ptr<Controller<2, 1>> controller = nullptr)
+		: ControlledSystem<2, 1>(controller)
+		, w_n_(std::sqrt(k / m))
+		, w_n_square_(w_n_ * w_n_)
+		, zeta_(d / (2.0 * m * k))
+		, g_dc_(g_dc)
 	{
-		return new SecondOrderSystem(*this);
 	}
 
+	//! deep copy
+	SecondOrderSystem* clone() const override { return new SecondOrderSystem(*this); }
 	//! destructor
-	virtual ~SecondOrderSystem(){}
-
+	virtual ~SecondOrderSystem() {}
 	//! set the dynamics
 	/*!
 	 * @param w_n eigenfrequency
@@ -162,12 +161,10 @@ public:
 	 * @param control control action
 	 * @param derivative derivative (velocity, acceleration)
 	 */
-	virtual void computeControlledDynamics(
-			const StateVector<2, SCALAR>& state,
-			const SCALAR& t,
-			const ControlVector<1, SCALAR>& control,
-			StateVector<2, SCALAR>& derivative
-	) override
+	virtual void computeControlledDynamics(const StateVector<2, SCALAR>& state,
+		const SCALAR& t,
+		const ControlVector<1, SCALAR>& control,
+		StateVector<2, SCALAR>& derivative) override
 	{
 		derivative(0) = state(1);
 		derivative(1) = g_dc_ * control(0) - 2.0 * zeta_ * w_n_ * state(1) - w_n_square_ * state(0);
@@ -179,10 +176,26 @@ public:
 	 */
 	bool checkParameters()
 	{
-		if (zeta_ < 0) { std::cout << "Warning: Damping is negative!" << std::endl; return false; }
-		if (w_n_ < 0) { std::cout << "Warning: Frequency w_n is negative!" << std::endl; return false; }
-		if (g_dc_ < 0) { std::cout << "Warning: Steady state gain is negative!" << std::endl; return false; }
-		if (g_dc_ == 0) { std::cout << "Warning: Steady state gain is zero!" << std::endl; return false; }
+		if (zeta_ < 0)
+		{
+			std::cout << "Warning: Damping is negative!" << std::endl;
+			return false;
+		}
+		if (w_n_ < 0)
+		{
+			std::cout << "Warning: Frequency w_n is negative!" << std::endl;
+			return false;
+		}
+		if (g_dc_ < 0)
+		{
+			std::cout << "Warning: Steady state gain is negative!" << std::endl;
+			return false;
+		}
+		if (g_dc_ == 0)
+		{
+			std::cout << "Warning: Steady state gain is zero!" << std::endl;
+			return false;
+		}
 
 		return true;
 	}
@@ -195,23 +208,34 @@ public:
 		std::cout << "DC gain: " << g_dc_ << std::endl;
 
 		std::cout << "System is ";
-		if (zeta_ == 0.0) { std::cout << "undampened" << std::endl; }
-		if (zeta_ == 1.0) { std::cout << "critically damped" << std::endl; }
-		if (zeta_ > 1.0) { std::cout << "overdamped" << std::endl; }
-		if (zeta_ < 1.0) { std::cout << "underdamped" << std::endl; }
+		if (zeta_ == 0.0)
+		{
+			std::cout << "undampened" << std::endl;
+		}
+		if (zeta_ == 1.0)
+		{
+			std::cout << "critically damped" << std::endl;
+		}
+		if (zeta_ > 1.0)
+		{
+			std::cout << "overdamped" << std::endl;
+		}
+		if (zeta_ < 1.0)
+		{
+			std::cout << "underdamped" << std::endl;
+		}
 	}
 
 private:
-	SCALAR w_n_; //!< eigenfrequency
-	SCALAR w_n_square_; //!< eigenfrequency squared
-	SCALAR zeta_; //!< damping ratio
-	SCALAR g_dc_; //!< input DC gain
+	SCALAR w_n_;         //!< eigenfrequency
+	SCALAR w_n_square_;  //!< eigenfrequency squared
+	SCALAR zeta_;        //!< damping ratio
+	SCALAR g_dc_;        //!< input DC gain
 };
 
-} // namespace tpl
+}  // namespace tpl
 
-typedef tpl::SecondOrderSystem<double> SecondOrderSystem; //!< harmonic oscillator (double)
+typedef tpl::SecondOrderSystem<double> SecondOrderSystem;  //!< harmonic oscillator (double)
 
-} // namespace core
-} // namespace ct
-
+}  // namespace core
+}  // namespace ct

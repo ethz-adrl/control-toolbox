@@ -45,7 +45,6 @@ namespace ct {
 namespace optcon {
 
 
-
 /**
  * @ingroup    DMS
  *
@@ -65,7 +64,7 @@ public:
 	typedef typename DIMENSIONS::state_vector_array_t state_vector_array_t;
 	typedef typename DIMENSIONS::time_array_t time_array_t;
 
-	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;	
+	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
 
 	/**
@@ -80,37 +79,34 @@ public:
 	 * @param[in]  pureStateConstraints         The final constraints
 	 * @param[in]  x0                       The initial state
 	 */
-	DmsProblem(
-			DmsSettings settings,
-			std::vector<typename OptConProblem_t::DynamicsPtr_t> systemPtrs,
-			std::vector<typename OptConProblem_t::LinearPtr_t> linearPtrs,
-			std::vector<typename OptConProblem_t::CostFunctionPtr_t> costPtrs,
-			std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints,
-			std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints,
-			const state_vector_t& x0
-		) 
-	:
-		settings_(settings)
+	DmsProblem(DmsSettings settings,
+		std::vector<typename OptConProblem_t::DynamicsPtr_t> systemPtrs,
+		std::vector<typename OptConProblem_t::LinearPtr_t> linearPtrs,
+		std::vector<typename OptConProblem_t::CostFunctionPtr_t> costPtrs,
+		std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints,
+		std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints,
+		const state_vector_t& x0)
+		: settings_(settings)
 	{
 		assert(systemPtrs.size() == settings_.N_);
 		assert(linearPtrs.size() == settings_.N_);
 		assert(costPtrs.size() == settings_.N_);
 		settings_.parametersOk();
 
-		timeGrid_ = std::shared_ptr<tpl::TimeGrid<SCALAR>> (new tpl::TimeGrid<SCALAR> (settings.N_, settings.T_));
+		timeGrid_ = std::shared_ptr<tpl::TimeGrid<SCALAR>>(new tpl::TimeGrid<SCALAR>(settings.N_, settings.T_));
 
-		switch(settings_.splineType_)
+		switch (settings_.splineType_)
 		{
 			case DmsSettings::ZERO_ORDER_HOLD:
 			{
 				controlSpliner_ = std::shared_ptr<ZeroOrderHoldSpliner<control_vector_t, SCALAR>>(
-						new ZeroOrderHoldSpliner<control_vector_t, SCALAR> (timeGrid_));
+					new ZeroOrderHoldSpliner<control_vector_t, SCALAR>(timeGrid_));
 				break;
 			}
 			case DmsSettings::PIECEWISE_LINEAR:
 			{
 				controlSpliner_ = std::shared_ptr<LinearSpliner<control_vector_t, SCALAR>>(
-						new LinearSpliner<control_vector_t, SCALAR> (timeGrid_));
+					new LinearSpliner<control_vector_t, SCALAR>(timeGrid_));
 				break;
 			}
 			default:
@@ -118,126 +114,155 @@ public:
 		}
 
 
-		size_t wLength = (settings.N_ + 1)*(STATE_DIM + CONTROL_DIM);
-		if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
+		size_t wLength = (settings.N_ + 1) * (STATE_DIM + CONTROL_DIM);
+		if (settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
 		{
 			throw std::runtime_error("Currently we do not support adaptive time gridding");
 			// wLength += settings_.N_;
 		}
 
 		this->optVariables_ = std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>>(
-				new OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>(wLength, settings));
+			new OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>(wLength, settings));
 
 		optVariablesDms_ = std::static_pointer_cast<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>>(this->optVariables_);
-			
-		if(stateInputConstraints.size() > 0 || pureStateConstraints.size() > 0)
-			discretizedConstraints_ = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>> (
-				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR> (optVariablesDms_, controlSpliner_, timeGrid_, settings_.N_));
 
-		if(stateInputConstraints.size() > 0)
+		if (stateInputConstraints.size() > 0 || pureStateConstraints.size() > 0)
+			discretizedConstraints_ = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>>(
+				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>(
+					optVariablesDms_, controlSpliner_, timeGrid_, settings_.N_));
+
+		if (stateInputConstraints.size() > 0)
 			discretizedConstraints_->setStateInputConstraints(stateInputConstraints.front());
 
-		if(pureStateConstraints.size() > 0)
+		if (pureStateConstraints.size() > 0)
 			discretizedConstraints_->setPureStateConstraints(pureStateConstraints.front());
 
 
 		for (size_t shotIdx = 0; shotIdx < settings_.N_; shotIdx++)
 		{
-			std::shared_ptr<ControllerDms<STATE_DIM, CONTROL_DIM, SCALAR>> newController (
+			std::shared_ptr<ControllerDms<STATE_DIM, CONTROL_DIM, SCALAR>> newController(
 				new ControllerDms<STATE_DIM, CONTROL_DIM, SCALAR>(controlSpliner_, shotIdx));
 			systemPtrs[shotIdx]->setController(newController);
 			linearPtrs[shotIdx]->setController(newController);
 
-			size_t nIntegrationSteps = (timeGrid_->getShotEndTime(shotIdx) - timeGrid_->getShotStartTime(shotIdx)) / settings_.dt_sim_ + 0.5;
+			size_t nIntegrationSteps =
+				(timeGrid_->getShotEndTime(shotIdx) - timeGrid_->getShotStartTime(shotIdx)) / settings_.dt_sim_ + 0.5;
 
 			shotContainers_.push_back(std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>>(
-				new ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR> (
-					systemPtrs[shotIdx], linearPtrs[shotIdx], costPtrs[shotIdx], optVariablesDms_, controlSpliner_, timeGrid_,  shotIdx, settings_, nIntegrationSteps)));
+				new ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>(systemPtrs[shotIdx],
+					linearPtrs[shotIdx],
+					costPtrs[shotIdx],
+					optVariablesDms_,
+					controlSpliner_,
+					timeGrid_,
+					shotIdx,
+					settings_,
+					nIntegrationSteps)));
 		}
 
 		switch (settings_.costEvaluationType_)
 		{
 			case DmsSettings::SIMPLE:
 			{
-				this->costEvaluator_ = std::shared_ptr<CostEvaluatorSimple<STATE_DIM, CONTROL_DIM, SCALAR>> (
-						new CostEvaluatorSimple<STATE_DIM, CONTROL_DIM, SCALAR>(costPtrs.front(), optVariablesDms_, timeGrid_, settings_)); break;
+				this->costEvaluator_ = std::shared_ptr<CostEvaluatorSimple<STATE_DIM, CONTROL_DIM, SCALAR>>(
+					new CostEvaluatorSimple<STATE_DIM, CONTROL_DIM, SCALAR>(
+						costPtrs.front(), optVariablesDms_, timeGrid_, settings_));
+				break;
 			}
 			case DmsSettings::FULL:
 			{
 				this->costEvaluator_ = std::shared_ptr<CostEvaluatorFull<STATE_DIM, CONTROL_DIM, SCALAR>>(
-						new CostEvaluatorFull<STATE_DIM, CONTROL_DIM, SCALAR> (costPtrs.front(),optVariablesDms_ , controlSpliner_, shotContainers_, settings_)); break;
+					new CostEvaluatorFull<STATE_DIM, CONTROL_DIM, SCALAR>(
+						costPtrs.front(), optVariablesDms_, controlSpliner_, shotContainers_, settings_));
+				break;
 			}
 			default:
 				throw(std::runtime_error("Unknown cost evaluation type"));
 		}
 
-		this->constraints_ = std::shared_ptr<ConstraintsContainerDms<STATE_DIM, CONTROL_DIM, SCALAR>> (
-			new ConstraintsContainerDms<STATE_DIM, CONTROL_DIM, SCALAR>(optVariablesDms_, timeGrid_, shotContainers_, discretizedConstraints_, x0, settings_));
+		this->constraints_ = std::shared_ptr<ConstraintsContainerDms<STATE_DIM, CONTROL_DIM, SCALAR>>(
+			new ConstraintsContainerDms<STATE_DIM, CONTROL_DIM, SCALAR>(
+				optVariablesDms_, timeGrid_, shotContainers_, discretizedConstraints_, x0, settings_));
 
 		this->optVariables_->resizeConstraintVars(this->getConstraintsCount());
-	}	
+	}
 
 	void generateAndCompileCode(
-			std::vector<std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>> systemPtrs,
-			std::vector<std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>> linearPtrs,
-			std::vector<std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>> costPtrs,
-			std::vector<std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>> stateInputConstraints,
-			std::vector<std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>> pureStateConstraints,
-			const ct::core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x0
-		) 
+		std::vector<std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>> systemPtrs,
+		std::vector<std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>> linearPtrs,
+		std::vector<std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>>
+			costPtrs,
+		std::vector<std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>>
+			stateInputConstraints,
+		std::vector<std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>>
+			pureStateConstraints,
+		const ct::core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x0)
 	{
 		typedef ct::core::ADCGScalar ScalarCG;
-		size_t wLength = (settings_.N_ + 1)*(STATE_DIM + CONTROL_DIM);
+		size_t wLength = (settings_.N_ + 1) * (STATE_DIM + CONTROL_DIM);
 
-		std::shared_ptr<tpl::TimeGrid<ScalarCG>> timeGrid(new tpl::TimeGrid<ScalarCG> (settings_.N_, ScalarCG(settings_.T_)));
+		std::shared_ptr<tpl::TimeGrid<ScalarCG>> timeGrid(
+			new tpl::TimeGrid<ScalarCG>(settings_.N_, ScalarCG(settings_.T_)));
 
 		std::shared_ptr<SplinerBase<ct::core::ControlVector<CONTROL_DIM, ScalarCG>, ScalarCG>> controlSpliner;
 
-		switch(settings_.splineType_)
+		switch (settings_.splineType_)
 		{
 			case DmsSettings::ZERO_ORDER_HOLD:
 			{
-				controlSpliner = std::shared_ptr<ZeroOrderHoldSpliner<ct::core::ControlVector<CONTROL_DIM, ScalarCG>, ScalarCG>>(
-						new ZeroOrderHoldSpliner<ct::core::ControlVector<CONTROL_DIM, ScalarCG>, ScalarCG> (timeGrid));
+				controlSpliner =
+					std::shared_ptr<ZeroOrderHoldSpliner<ct::core::ControlVector<CONTROL_DIM, ScalarCG>, ScalarCG>>(
+						new ZeroOrderHoldSpliner<ct::core::ControlVector<CONTROL_DIM, ScalarCG>, ScalarCG>(timeGrid));
 				break;
 			}
 			case DmsSettings::PIECEWISE_LINEAR:
 			{
-				controlSpliner = std::shared_ptr<LinearSpliner<ct::core::ControlVector<CONTROL_DIM, ScalarCG>, ScalarCG>>(
-						new LinearSpliner<ct::core::ControlVector<CONTROL_DIM, ScalarCG>, ScalarCG> (timeGrid));
+				controlSpliner =
+					std::shared_ptr<LinearSpliner<ct::core::ControlVector<CONTROL_DIM, ScalarCG>, ScalarCG>>(
+						new LinearSpliner<ct::core::ControlVector<CONTROL_DIM, ScalarCG>, ScalarCG>(timeGrid));
 				break;
 			}
 			default:
 				throw(std::runtime_error("Unknown spline type"));
 		}
 
-		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, ScalarCG>> optVariablesDms(new OptVectorDms<STATE_DIM, CONTROL_DIM, ScalarCG>(wLength, settings_));
-		
+		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, ScalarCG>> optVariablesDms(
+			new OptVectorDms<STATE_DIM, CONTROL_DIM, ScalarCG>(wLength, settings_));
+
 
 		std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, ScalarCG>> discretizedConstraints;
-		if(stateInputConstraints.size() > 0 || pureStateConstraints.size() > 0)
-			discretizedConstraints = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, ScalarCG>> (
-				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, ScalarCG> (optVariablesDms, controlSpliner, timeGrid, settings_.N_));
+		if (stateInputConstraints.size() > 0 || pureStateConstraints.size() > 0)
+			discretizedConstraints = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, ScalarCG>>(
+				new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, ScalarCG>(
+					optVariablesDms, controlSpliner, timeGrid, settings_.N_));
 
-		if(stateInputConstraints.size() > 0)
+		if (stateInputConstraints.size() > 0)
 			discretizedConstraints->setStateInputConstraints(stateInputConstraints.front());
 
-		if(pureStateConstraints.size() > 0)
+		if (pureStateConstraints.size() > 0)
 			discretizedConstraints->setPureStateConstraints(pureStateConstraints.front());
 
 		std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, ScalarCG>>> shotContainers;
 		for (size_t shotIdx = 0; shotIdx < settings_.N_; shotIdx++)
 		{
-			std::shared_ptr<ControllerDms<STATE_DIM, CONTROL_DIM, ScalarCG>> newController (
+			std::shared_ptr<ControllerDms<STATE_DIM, CONTROL_DIM, ScalarCG>> newController(
 				new ControllerDms<STATE_DIM, CONTROL_DIM, ScalarCG>(controlSpliner, shotIdx));
 			systemPtrs[shotIdx]->setController(newController);
 			linearPtrs[shotIdx]->setController(newController);
 
-			size_t nIntegrationSteps = (timeGrid_->getShotEndTime(shotIdx) - timeGrid_->getShotStartTime(shotIdx)) / settings_.dt_sim_ + 0.5;
+			size_t nIntegrationSteps =
+				(timeGrid_->getShotEndTime(shotIdx) - timeGrid_->getShotStartTime(shotIdx)) / settings_.dt_sim_ + 0.5;
 
 			shotContainers.push_back(std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, ScalarCG>>(
-				new ShotContainer<STATE_DIM, CONTROL_DIM, ScalarCG> (
-					systemPtrs[shotIdx], linearPtrs[shotIdx], costPtrs[shotIdx], optVariablesDms, controlSpliner, timeGrid,  shotIdx, settings_, nIntegrationSteps)));
+				new ShotContainer<STATE_DIM, CONTROL_DIM, ScalarCG>(systemPtrs[shotIdx],
+					linearPtrs[shotIdx],
+					costPtrs[shotIdx],
+					optVariablesDms,
+					controlSpliner,
+					timeGrid,
+					shotIdx,
+					settings_,
+					nIntegrationSteps)));
 		}
 
 		std::shared_ptr<tpl::DiscreteCostEvaluatorBase<ScalarCG>> costEvaluator;
@@ -246,13 +271,17 @@ public:
 		{
 			case DmsSettings::SIMPLE:
 			{
-				costEvaluator = std::shared_ptr<CostEvaluatorSimple<STATE_DIM, CONTROL_DIM, ScalarCG>> (
-						new CostEvaluatorSimple<STATE_DIM, CONTROL_DIM, ScalarCG>(costPtrs.front(), optVariablesDms, timeGrid, settings_)); break;
+				costEvaluator = std::shared_ptr<CostEvaluatorSimple<STATE_DIM, CONTROL_DIM, ScalarCG>>(
+					new CostEvaluatorSimple<STATE_DIM, CONTROL_DIM, ScalarCG>(
+						costPtrs.front(), optVariablesDms, timeGrid, settings_));
+				break;
 			}
 			case DmsSettings::FULL:
 			{
 				costEvaluator = std::shared_ptr<CostEvaluatorFull<STATE_DIM, CONTROL_DIM, ScalarCG>>(
-						new CostEvaluatorFull<STATE_DIM, CONTROL_DIM, ScalarCG> (costPtrs.front(),optVariablesDms , controlSpliner, shotContainers, settings_));	break;
+					new CostEvaluatorFull<STATE_DIM, CONTROL_DIM, ScalarCG>(
+						costPtrs.front(), optVariablesDms, controlSpliner, shotContainers, settings_));
+				break;
 			}
 			default:
 				throw(std::runtime_error("Unknown cost evaluation type"));
@@ -261,20 +290,22 @@ public:
 		optVariablesDms->resizeConstraintVars(this->getConstraintsCount());
 
 		std::shared_ptr<ConstraintsContainerDms<STATE_DIM, CONTROL_DIM, ScalarCG>> constraints(
-			new ConstraintsContainerDms<STATE_DIM, CONTROL_DIM, ScalarCG>(optVariablesDms, timeGrid, shotContainers, discretizedConstraints, x0, settings_));
+			new ConstraintsContainerDms<STATE_DIM, CONTROL_DIM, ScalarCG>(
+				optVariablesDms, timeGrid, shotContainers, discretizedConstraints, x0, settings_));
 
-		if(settings_.solverSettings_.useGeneratedCostGradient_)
+		if (settings_.solverSettings_.useGeneratedCostGradient_)
 		{
-			std::function<Eigen::Matrix<ScalarCG, 1, 1> (const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>&)> fCost = 
-				[&](const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>& xOpt){
-					optVariablesDms->setOptimizationVars(xOpt);
+			std::function<Eigen::Matrix<ScalarCG, 1, 1>(const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>&)> fCost = [&](
+				const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>& xOpt) {
+				optVariablesDms->setOptimizationVars(xOpt);
 
-					controlSpliner->computeSpline(optVariablesDms->getOptimizedInputs().toImplementation());
-					for(auto shotContainer : shotContainers)
-						shotContainer->reset();
+				controlSpliner->computeSpline(optVariablesDms->getOptimizedInputs().toImplementation());
+				for (auto shotContainer : shotContainers)
+					shotContainer->reset();
 
-					Eigen::Matrix<ScalarCG,1, 1> out; out << costEvaluator->eval();
-					return out;
+				Eigen::Matrix<ScalarCG, 1, 1> out;
+				out << costEvaluator->eval();
+				return out;
 			};
 
 			settings_.cppadSettings_.createJacobian_ = true;
@@ -284,26 +315,28 @@ public:
 			this->costCodegen_->compileJIT(settings_.cppadSettings_, "dmsCostFunction");
 		}
 
-		if(settings_.solverSettings_.useGeneratedConstraintJacobian_)
+		if (settings_.solverSettings_.useGeneratedConstraintJacobian_)
 		{
-			std::function<Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1> (const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>&)> fConstraints = 
-				[&](const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>& xOpt){
+			std::function<Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>(const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>&)>
+				fConstraints = [&](const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>& xOpt) {
 					optVariablesDms->setOptimizationVars(xOpt);
 
 					controlSpliner->computeSpline(optVariablesDms->getOptimizedInputs().toImplementation());
-					for(auto shotContainer : shotContainers)
+					for (auto shotContainer : shotContainers)
 						shotContainer->reset();
 
 
-					Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1> out(this->getConstraintsCount());// out.resize(this->getConstraintsCount, 1);
+					Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1> out(
+						this->getConstraintsCount());  // out.resize(this->getConstraintsCount, 1);
 					constraints->evalConstraints(out);
 					return out;
-			};		
+				};
 
 			settings_.cppadSettings_.createJacobian_ = false;
-			
-			this->constraintsCodegen_ = std::shared_ptr<ct::core::DerivativesCppadJIT<-1, -1>>(
-				new ct::core::DerivativesCppadJIT<-1, -1>(fConstraints, this->getVarCount(), this->getConstraintsCount()));
+
+			this->constraintsCodegen_ =
+				std::shared_ptr<ct::core::DerivativesCppadJIT<-1, -1>>(new ct::core::DerivativesCppadJIT<-1, -1>(
+					fConstraints, this->getVarCount(), this->getConstraintsCount()));
 			this->constraintsCodegen_->compileJIT(settings_.cppadSettings_, "dmsConstraints");
 		}
 	}
@@ -311,14 +344,13 @@ public:
 	/**
 	 * @brief      Destructor
 	 */
-	virtual ~DmsProblem(){}
-
+	virtual ~DmsProblem() {}
 	virtual void updateProblem() override
 	{
 		controlSpliner_->computeSpline(optVariablesDms_->getOptimizedInputs().toImplementation());
-		for(auto shotContainer : shotContainers_)
+		for (auto shotContainer : shotContainers_)
 			shotContainer->reset();
-		
+
 		// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
 		// {
 		// 	// std::cout << "optVariablesDms_->getOptimizedTimeSegments(): " << optVariablesDms_->getOptimizedTimeSegments().transpose() << std::endl;
@@ -331,41 +363,25 @@ public:
 	 *
 	 * @param[in]  settings  New dms settings
 	 */
-	void configure(const DmsSettings& settings)
-	{
-		settings_ = settings;
-	}
-
+	void configure(const DmsSettings& settings) { settings_ = settings; }
 	/**
 	 * @brief      Retrieves the solution state trajectory at every shot
 	 *
 	 * @return     The state solution trajectory
 	 */
-	const state_vector_array_t& getStateSolution()
-	{
-		return optVariablesDms_->getOptimizedStates();
-	}
-
+	const state_vector_array_t& getStateSolution() { return optVariablesDms_->getOptimizedStates(); }
 	/**
 	 * @brief      Retrieves the solution control trajectory at every shot
 	 *
 	 * @return     The control solution trajectory
 	 */
-	const control_vector_array_t& getInputSolution()
-	{
-		return optVariablesDms_->getOptimizedInputs();
-	}
-
+	const control_vector_array_t& getInputSolution() { return optVariablesDms_->getOptimizedInputs(); }
 	/**
 	 * @brief      Retrieves the solution time trajectory at every shot
 	 *
 	 * @return     The time solution trajectory
 	 */
-	const time_array_t& getTimeSolution()
-	{
-		return timeGrid_->toImplementation();
-	}
-
+	const time_array_t& getTimeSolution() { return timeGrid_->toImplementation(); }
 	/**
 	 * @brief      Retrieves a dense state solution trajectory
 	 *
@@ -384,7 +400,8 @@ public:
 		// 	for(size_t j = 1; j < x_traj.size(); ++j)
 		// 		stateSolutionDense_.push_back(x_traj[j]);
 		// }
-		return optVariablesDms_->getOptimizedStates();;
+		return optVariablesDms_->getOptimizedStates();
+		;
 	}
 
 	/**
@@ -438,12 +455,11 @@ public:
 	 * @param[in]  u_init_guess  The control trajectory initial guess
 	 * @param[in]  t_init_guess  The time trajectory initial guess
 	 */
-	void setInitialGuess(
-		const state_vector_array_t& x_init_guess,
+	void setInitialGuess(const state_vector_array_t& x_init_guess,
 		const control_vector_array_t& u_init_guess,
 		const time_array_t& t_init_guess = time_array_t(0.0))
 	{
-		optVariablesDms_->setInitGuess(x_init_guess, u_init_guess);	
+		optVariablesDms_->setInitGuess(x_init_guess, u_init_guess);
 	}
 
 	/**
@@ -451,21 +467,13 @@ public:
 	 *
 	 * @return     The time horizon
 	 */
-	const core::Time getTimeHorizon() const 
-	{
-		return timeGrid_->getTimeHorizon();
-	}
-
+	const core::Time getTimeHorizon() const { return timeGrid_->getTimeHorizon(); }
 	/**
 	 * @brief      Updates the timehorizon
 	 *
 	 * @param[in]  tf    The new time horizon
 	 */
-	void changeTimeHorizon(const SCALAR tf)
-	{
-		timeGrid_->changeTimeHorizon(tf);
-	}
-
+	void changeTimeHorizon(const SCALAR tf) { timeGrid_->changeTimeHorizon(tf); }
 	/**
 	 * @brief      Updates the initial state
 	 *
@@ -480,29 +488,22 @@ public:
 	/**
 	 * @brief      Prints the solution trajectories
 	 */
-	void printSolution()
-	{
-		optVariablesDms_->printoutSolution();
-	}
-
-
+	void printSolution() { optVariablesDms_->printoutSolution(); }
 private:
 	DmsSettings settings_;
-	
+
 	std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>> discretizedConstraints_;
 
-	std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>>> shotContainers_; 
-	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> optVariablesDms_; 
-	std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner_; 
-	std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid_; 
+	std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>>> shotContainers_;
+	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> optVariablesDms_;
+	std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner_;
+	std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid_;
 
-	state_vector_array_t stateSolutionDense_; 
+	state_vector_array_t stateSolutionDense_;
 	control_vector_array_t inputSolutionDense_;
 	time_array_t timeSolutionDense_;
 };
 
 
-} // namespace optcon
-} // namespace ct
-
-
+}  // namespace optcon
+}  // namespace ct

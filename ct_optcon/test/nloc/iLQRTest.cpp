@@ -34,7 +34,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../testSystems/LinearOscillator.h"
 
 
-
 /* This test implements a 1-Dimensional horizontally moving point mass with mass 1kg and attached to a spring
  x = [p, pd] // p - position pointing upwards, against gravity, pd - velocity
  dx = f(x,u)
@@ -44,9 +43,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 
-namespace ct{
-namespace optcon{
-namespace example{
+namespace ct {
+namespace optcon {
+namespace example {
 
 using namespace ct::core;
 using namespace ct::optcon;
@@ -56,21 +55,23 @@ using std::shared_ptr;
 
 TEST(ILQRTest, SystemLinearizationTest)
 {
-	shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new LinearOscillator());
-	shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearOscillatorLinear());
-	shared_ptr<LinearSystem<state_dim, control_dim> > numDiffLinearModelGeneral(new SystemLinearizer<state_dim, control_dim>(nonlinearSystem, false));
-	shared_ptr<LinearSystem<state_dim, control_dim> > numDiffLinearModelSecondOrder(new SystemLinearizer<state_dim, control_dim>(nonlinearSystem, true));
+	shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new LinearOscillator());
+	shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearOscillatorLinear());
+	shared_ptr<LinearSystem<state_dim, control_dim>> numDiffLinearModelGeneral(
+		new SystemLinearizer<state_dim, control_dim>(nonlinearSystem, false));
+	shared_ptr<LinearSystem<state_dim, control_dim>> numDiffLinearModelSecondOrder(
+		new SystemLinearizer<state_dim, control_dim>(nonlinearSystem, true));
 	StateVector<state_dim> xRef;
 	ControlVector<control_dim> u;
-	Time t=0;
+	Time t = 0;
 
 	size_t nTests = 100;
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
 		xRef.setRandom();
 
 		// we have to set u in a way that it makes x and equilibrium
-		u(0) = kStiffness*xRef(0);
+		u(0) = kStiffness * xRef(0);
 
 		StateVector<state_dim> dxNonlinear;
 		nonlinearSystem->computeControlledDynamics(xRef, t, u, dxNonlinear);
@@ -84,29 +85,19 @@ TEST(ILQRTest, SystemLinearizationTest)
 		StateVector<state_dim> dxLinearNumDiffSecondOrder;
 		numDiffLinearModelGeneral->computeControlledDynamics(xRef, t, u, dxLinearNumDiffSecondOrder);
 
-		ASSERT_LT(
-				(dxNonlinear-dxLinear).array().abs().maxCoeff(),
-				1e-6
-		);
+		ASSERT_LT((dxNonlinear - dxLinear).array().abs().maxCoeff(), 1e-6);
 
-		ASSERT_LT(
-				(dxNonlinear-dxLinearNumDiffGeneral).array().abs().maxCoeff(),
-				1e-6
-		);
+		ASSERT_LT((dxNonlinear - dxLinearNumDiffGeneral).array().abs().maxCoeff(), 1e-6);
 
-		ASSERT_LT(
-				(dxNonlinear-dxLinearNumDiffSecondOrder).array().abs().maxCoeff(),
-				1e-6
-		);
+		ASSERT_LT((dxNonlinear - dxLinearNumDiffSecondOrder).array().abs().maxCoeff(), 1e-6);
 	}
 }
 
 
-
 TEST(ILQRTestA, InstancesComparison)
 {
-	try {
-
+	try
+	{
 		typedef NLOptConSolver<state_dim, control_dim> NLOptConSolver;
 
 		std::cout << "setting up problem " << std::endl;
@@ -130,25 +121,28 @@ TEST(ILQRTestA, InstancesComparison)
 		ilqr_settings.closedLoopShooting = true;
 		ilqr_settings.integrator = ct::core::IntegrationType::EULER;
 		ilqr_settings.printSummary = false;
-//		ilqr_settings.lineSearchSettings.debugPrint = true;
+		//		ilqr_settings.lineSearchSettings.debugPrint = true;
 
 
 		// copy settings for MP case, but change number of threads
 		NLOptConSettings ilqr_settings_mp = ilqr_settings;
 		ilqr_settings_mp.nThreads = 4;
 
-		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new LinearOscillator());
-		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearOscillatorLinear());
-		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = tpl::createCostFunctionLinearOscillator<double>(x_final);
+		shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new LinearOscillator());
+		shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearOscillatorLinear());
+		shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction =
+			tpl::createCostFunctionLinearOscillator<double>(x_final);
 
 		// times
 		ct::core::Time tf = 3.0;
 
 		// init state
-		StateVector<state_dim> x0;  x0.setRandom();
+		StateVector<state_dim> x0;
+		x0.setRandom();
 
 		// construct single-core single subsystem OptCon Problem
-		OptConProblem<state_dim, control_dim> optConProblem (tf, x0, nonlinearSystem, costFunction, analyticLinearSystem);
+		OptConProblem<state_dim, control_dim> optConProblem(
+			tf, x0, nonlinearSystem, costFunction, analyticLinearSystem);
 
 		size_t nSteps = std::round(tf / ilqr_settings.dt);
 
@@ -162,15 +156,15 @@ TEST(ILQRTestA, InstancesComparison)
 		// provide initial controller
 		FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
 		ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
-		StateVectorArray<state_dim> x_ref (nSteps+1, StateVector<state_dim>::Zero());
-		NLOptConSolver::Policy_t initController (x_ref, u0_ff, u0_fb, ilqr_settings.dt);
+		StateVectorArray<state_dim> x_ref(nSteps + 1, StateVector<state_dim>::Zero());
+		NLOptConSolver::Policy_t initController(x_ref, u0_ff, u0_fb, ilqr_settings.dt);
 
 		ilqr.configure(ilqr_settings);
 		ilqr.setInitialGuess(initController);
 
 		//! check that if retrieving solution now, we exactly get back the init guess.
 		NLOptConSolver::Policy_t mirroredInitguess = ilqr.getSolution();
-		for(size_t i = 0; i<initController.uff().size(); i++)
+		for (size_t i = 0; i < initController.uff().size(); i++)
 		{
 			ASSERT_NEAR(mirroredInitguess.uff()[i](0), initController.uff()[i](0), 1e-3);
 			ASSERT_NEAR(mirroredInitguess.K()[i](0), initController.K()[i](0), 1e-3);
@@ -179,23 +173,21 @@ TEST(ILQRTestA, InstancesComparison)
 
 		bool foundBetter = true;
 
-		while(foundBetter)
+		while (foundBetter)
 			foundBetter = ilqr.runIteration();
 
 		std::cout << "now going into tests" << std::endl;
 
 
-
 		size_t nTests = 2;
-		for (size_t i=0; i<nTests; i++)
+		for (size_t i = 0; i < nTests; i++)
 		{
-			if (i==0)
+			if (i == 0)
 			{
 				std::cout << "Turning Line-Search off" << std::endl;
 				ilqr_settings.lineSearchSettings.active = false;
 				ilqr_settings_mp.lineSearchSettings.active = false;
-			}
-			else
+			} else
 			{
 				std::cout << "Turning Line-Search on" << std::endl;
 				ilqr_settings.lineSearchSettings.active = true;
@@ -232,31 +224,35 @@ TEST(ILQRTestA, InstancesComparison)
 
 
 			// compare controller sizes
-			ASSERT_EQ(optimalPolicy_comp.uff().size(),nSteps);
+			ASSERT_EQ(optimalPolicy_comp.uff().size(), nSteps);
 
 			ASSERT_EQ(optimalPolicy_comp.uff().size(), optimalPolicy.uff().size());
 
 			// compare controller durations
-			ASSERT_EQ(optimalPolicy_comp.getFeedforwardTrajectory().duration(), optimalPolicy.getFeedforwardTrajectory().duration());
+			ASSERT_EQ(optimalPolicy_comp.getFeedforwardTrajectory().duration(),
+				optimalPolicy.getFeedforwardTrajectory().duration());
 
 
 			// compare controllers for single core and mp case
-			for(size_t i = 0; i<optimalPolicy_comp.uff().size()-1; i++)
+			for (size_t i = 0; i < optimalPolicy_comp.uff().size() - 1; i++)
 			{
 				ASSERT_NEAR(optimalPolicy_comp.uff()[i](0), optimalPolicy.uff()[i](0), 1e-3);
 
-				ASSERT_NEAR(optimalPolicy_comp.K()[i].array().abs().maxCoeff(), optimalPolicy.K()[i].array().abs().maxCoeff(), 1e-3);
+				ASSERT_NEAR(optimalPolicy_comp.K()[i].array().abs().maxCoeff(),
+					optimalPolicy.K()[i].array().abs().maxCoeff(),
+					1e-3);
 
 				ASSERT_NEAR(optimalPolicy_mp_comp.uff()[i](0), optimalPolicy_mp.uff()[i](0), 1e-3);
 
-				ASSERT_NEAR(optimalPolicy_mp_comp.K()[i].array().abs().maxCoeff(), optimalPolicy_mp.K()[i].array().abs().maxCoeff(), 1e-3);
+				ASSERT_NEAR(optimalPolicy_mp_comp.K()[i].array().abs().maxCoeff(),
+					optimalPolicy_mp.K()[i].array().abs().maxCoeff(),
+					1e-3);
 			}
-
 		}
 
 	} catch (std::exception& e)
 	{
-		std::cout << "caught exception: "<<e.what() <<std::endl;
+		std::cout << "caught exception: " << e.what() << std::endl;
 		FAIL();
 	}
 }
@@ -264,8 +260,8 @@ TEST(ILQRTestA, InstancesComparison)
 
 TEST(ILQRTestB, SingleCoreTest)
 {
-	try {
-
+	try
+	{
 		typedef NLOptConSolver<state_dim, control_dim> NLOptConSolver;
 		typedef StateMatrix<state_dim> state_matrix_t;
 		typedef StateControlMatrix<state_dim, control_dim> state_control_matrix_t;
@@ -294,18 +290,21 @@ TEST(ILQRTestB, SingleCoreTest)
 		NLOptConSettings ilqr_settings_mp = ilqr_settings;
 		ilqr_settings_mp.nThreads = 4;
 
-		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new LinearOscillator());
-		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearOscillatorLinear());
-		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = tpl::createCostFunctionLinearOscillator<double>(x_final);
+		shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new LinearOscillator());
+		shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearOscillatorLinear());
+		shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction =
+			tpl::createCostFunctionLinearOscillator<double>(x_final);
 
 		// times
 		ct::core::Time tf = 3.0;
 
 		// init state
-		StateVector<state_dim> x0;  x0.setRandom();
+		StateVector<state_dim> x0;
+		x0.setRandom();
 
 		// construct single-core single subsystem OptCon Problem
-		OptConProblem<state_dim, control_dim> optConProblem (tf, x0, nonlinearSystem, costFunction, analyticLinearSystem);
+		OptConProblem<state_dim, control_dim> optConProblem(
+			tf, x0, nonlinearSystem, costFunction, analyticLinearSystem);
 
 		size_t nSteps = std::round(tf / ilqr_settings.dt);
 
@@ -317,35 +316,37 @@ TEST(ILQRTestB, SingleCoreTest)
 		// provide initial controller
 		FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
 		ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
-		StateVectorArray<state_dim> x_ref (nSteps+1, StateVector<state_dim>::Zero());
-		NLOptConSolver::Policy_t initController (x_ref, u0_ff, u0_fb, ilqr_settings.dt);
+		StateVectorArray<state_dim> x_ref(nSteps + 1, StateVector<state_dim>::Zero());
+		NLOptConSolver::Policy_t initController(x_ref, u0_ff, u0_fb, ilqr_settings.dt);
 
 		ilqr.configure(ilqr_settings);
 		ilqr.setInitialGuess(initController);
 
 		bool foundBetter = true;
 
-		while(foundBetter)
+		while (foundBetter)
 			foundBetter = ilqr.runIteration();
 
 
 		size_t nTests = 4;
-		for (size_t i=0; i<nTests; i++)
+		for (size_t i = 0; i < nTests; i++)
 		{
-			if (i==0){
+			if (i == 0)
+			{
 				ilqr_settings.lineSearchSettings.active = false;
 				ilqr_settings_mp.lineSearchSettings.active = false;
-			}
-			else{
+			} else
+			{
 				ilqr_settings.lineSearchSettings.active = true;
 				ilqr_settings_mp.lineSearchSettings.active = true;
 			}
 
-			if (i<2){
+			if (i < 2)
+			{
 				ilqr_settings.fixedHessianCorrection = false;
 				ilqr_settings_mp.fixedHessianCorrection = false;
-			}
-			else{
+			} else
+			{
 				ilqr_settings.fixedHessianCorrection = true;
 				ilqr_settings_mp.fixedHessianCorrection = true;
 			}
@@ -375,10 +376,10 @@ TEST(ILQRTestB, SingleCoreTest)
 				StateTrajectory<state_dim> xRollout_mp = ilqr_mp.getStateTrajectory();
 				ControlTrajectory<control_dim> uRollout_mp = ilqr_mp.getControlTrajectory();
 
-				ASSERT_EQ(xRollout.size(), nSteps+1);
+				ASSERT_EQ(xRollout.size(), nSteps + 1);
 				ASSERT_EQ(uRollout.size(), nSteps);
 
-				ASSERT_EQ(xRollout_mp.size(), nSteps+1);
+				ASSERT_EQ(xRollout_mp.size(), nSteps + 1);
 				ASSERT_EQ(uRollout_mp.size(), nSteps);
 
 
@@ -399,63 +400,50 @@ TEST(ILQRTestB, SingleCoreTest)
 				ASSERT_EQ(B_mp.size(), nSteps);
 
 				// check integration
-				for (size_t j=0; j<xRollout.size()-1; j++)
+				for (size_t j = 0; j < xRollout.size() - 1; j++)
 				{
 					ASSERT_LT((xRollout[j] - xRollout_mp[j]).array().abs().maxCoeff(), 1e-10);
 					ASSERT_LT((uRollout[j] - uRollout_mp[j]).array().abs().maxCoeff(), 1e-10);
 				}
 
 				// check linearization
-				for (size_t j=0; j<xRollout.size()-1; j++)
+				for (size_t j = 0; j < xRollout.size() - 1; j++)
 				{
 					state_matrix_t A_analytic;
 					state_control_matrix_t B_analytic;
 
-					if(ilqr_settings.discretization == NLOptConSettings::APPROXIMATION::FORWARD_EULER)
+					if (ilqr_settings.discretization == NLOptConSettings::APPROXIMATION::FORWARD_EULER)
 					{
-						A_analytic = state_matrix_t::Identity() + ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
-						B_analytic = ilqr_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
-					}
-					else if(ilqr_settings.discretization == NLOptConSettings::APPROXIMATION::BACKWARD_EULER)
+						A_analytic =
+							state_matrix_t::Identity() +
+							ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
+						B_analytic =
+							ilqr_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
+					} else if (ilqr_settings.discretization == NLOptConSettings::APPROXIMATION::BACKWARD_EULER)
 					{
-						state_matrix_t aNew = ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
-						state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
+						state_matrix_t aNew =
+							ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
+						state_matrix_t aNewInv = (state_matrix_t::Identity() - aNew).colPivHouseholderQr().inverse();
 						A_analytic = aNewInv;
-						B_analytic = aNewInv * ilqr_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
-					}
-					else if(ilqr_settings.discretization == NLOptConSettings::APPROXIMATION::TUSTIN)
+						B_analytic = aNewInv * ilqr_settings.dt *
+									 analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
+					} else if (ilqr_settings.discretization == NLOptConSettings::APPROXIMATION::TUSTIN)
 					{
-						state_matrix_t aNew = 0.5 * ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
-						state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
+						state_matrix_t aNew = 0.5 * ilqr_settings.dt *
+											  analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
+						state_matrix_t aNewInv = (state_matrix_t::Identity() - aNew).colPivHouseholderQr().inverse();
 						A_analytic = aNewInv * (state_matrix_t::Identity() + aNew);
-						B_analytic = aNewInv * ilqr_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
+						B_analytic = aNewInv * ilqr_settings.dt *
+									 analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
 					}
 
-					ASSERT_LT(
-							(A[j]-A_analytic).array().abs().maxCoeff(),
-							1e-6
-					);
-					ASSERT_LT(
-							(A_mp[j]-A_analytic).array().abs().maxCoeff(),
-							1e-6
-					);
-					ASSERT_LT(
-							(A_mp[j]-A[j]).array().abs().maxCoeff(),
-							1e-12
-					);
+					ASSERT_LT((A[j] - A_analytic).array().abs().maxCoeff(), 1e-6);
+					ASSERT_LT((A_mp[j] - A_analytic).array().abs().maxCoeff(), 1e-6);
+					ASSERT_LT((A_mp[j] - A[j]).array().abs().maxCoeff(), 1e-12);
 
-					ASSERT_LT(
-							(B[j]-B_analytic).array().abs().maxCoeff(),
-							1e-6
-					);
-					ASSERT_LT(
-							(B_mp[j]-B_analytic).array().abs().maxCoeff(),
-							1e-6
-					);
-					ASSERT_LT(
-							(B_mp[j]-B[j]).array().abs().maxCoeff(),
-							1e-12
-					);
+					ASSERT_LT((B[j] - B_analytic).array().abs().maxCoeff(), 1e-6);
+					ASSERT_LT((B_mp[j] - B_analytic).array().abs().maxCoeff(), 1e-6);
+					ASSERT_LT((B_mp[j] - B[j]).array().abs().maxCoeff(), 1e-12);
 				}
 
 				ASSERT_EQ(foundBetter, foundBetter_mp);
@@ -470,7 +458,7 @@ TEST(ILQRTestB, SingleCoreTest)
 
 	} catch (std::exception& e)
 	{
-		std::cout << "caught exception: "<<e.what() <<std::endl;
+		std::cout << "caught exception: " << e.what() << std::endl;
 		FAIL();
 	}
 }
@@ -478,12 +466,11 @@ TEST(ILQRTestB, SingleCoreTest)
 
 TEST(ILQRTestC, PolicyComparison)
 {
-
 	typedef NLOptConSolver<state_dim, control_dim> NLOptConSolver;
 
 
-	try {
-
+	try
+	{
 		std::cout << "setting up problem " << std::endl;
 
 		Eigen::Vector2d x_final;
@@ -508,9 +495,10 @@ TEST(ILQRTestC, PolicyComparison)
 		ilqr_settings_mp.nThreads = 4;
 
 
-		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new LinearOscillator());
-		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearOscillatorLinear());
-		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = tpl::createCostFunctionLinearOscillator<double>(x_final);
+		shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new LinearOscillator());
+		shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearOscillatorLinear());
+		shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction =
+			tpl::createCostFunctionLinearOscillator<double>(x_final);
 
 		// times
 		ct::core::Time tf = 3.0;
@@ -520,7 +508,8 @@ TEST(ILQRTestC, PolicyComparison)
 		x0.setRandom();
 
 		// construct single-core single subsystem OptCon Problem
-		OptConProblem<state_dim, control_dim> optConProblem (tf, x0, nonlinearSystem, costFunction, analyticLinearSystem);
+		OptConProblem<state_dim, control_dim> optConProblem(
+			tf, x0, nonlinearSystem, costFunction, analyticLinearSystem);
 
 		size_t nSteps = std::round(tf / ilqr_settings.dt);
 
@@ -532,8 +521,8 @@ TEST(ILQRTestC, PolicyComparison)
 		// provide initial controller
 		FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
 		ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
-		StateVectorArray<state_dim> x_ref (nSteps+1, StateVector<state_dim>::Zero());
-		NLOptConSolver::Policy_t initController (x_ref, u0_ff, u0_fb, ilqr_settings.dt);
+		StateVectorArray<state_dim> x_ref(nSteps + 1, StateVector<state_dim>::Zero());
+		NLOptConSolver::Policy_t initController(x_ref, u0_ff, u0_fb, ilqr_settings.dt);
 
 		ilqr.configure(ilqr_settings);
 		ilqr.setInitialGuess(initController);
@@ -544,14 +533,14 @@ TEST(ILQRTestC, PolicyComparison)
 		ilqr_mp.solve();
 
 		size_t nTests = 2;
-		for (size_t i=0; i<nTests; i++)
+		for (size_t i = 0; i < nTests; i++)
 		{
-			if (i==0)
+			if (i == 0)
 			{
 				ilqr_settings.lineSearchSettings.active = false;
 				ilqr_settings_mp.lineSearchSettings.active = false;
-			}
-			else{
+			} else
+			{
 				ilqr_settings.lineSearchSettings.active = true;
 				ilqr_settings_mp.lineSearchSettings.active = true;
 			}
@@ -586,20 +575,21 @@ TEST(ILQRTestC, PolicyComparison)
 			StateTrajectory<state_dim> xRollout_mp = ilqr_mp.getStateTrajectory();
 
 			// the optimal controller
-			std::shared_ptr<NLOptConSolver::Policy_t> optController (new NLOptConSolver::Policy_t(ilqr.getSolution()));
-			std::shared_ptr<NLOptConSolver::Policy_t> optController_mp (new NLOptConSolver::Policy_t(ilqr_mp.getSolution()));
+			std::shared_ptr<NLOptConSolver::Policy_t> optController(new NLOptConSolver::Policy_t(ilqr.getSolution()));
+			std::shared_ptr<NLOptConSolver::Policy_t> optController_mp(
+				new NLOptConSolver::Policy_t(ilqr_mp.getSolution()));
 
 			// two test systems
-			std::shared_ptr<ControlledSystem<state_dim, control_dim> > testSystem1 (new LinearOscillator());
-			std::shared_ptr<ControlledSystem<state_dim, control_dim> > testSystem2 (new LinearOscillator());
+			std::shared_ptr<ControlledSystem<state_dim, control_dim>> testSystem1(new LinearOscillator());
+			std::shared_ptr<ControlledSystem<state_dim, control_dim>> testSystem2(new LinearOscillator());
 
 			// set the controller
 			testSystem1->setController(optController);
 			testSystem2->setController(optController_mp);
 
 			// test integrators, the same as in iLQG
-			ct::core::Integrator<state_dim> testIntegrator1 (testSystem1, ct::core::IntegrationType::RK4);
-			ct::core::Integrator<state_dim> testIntegrator2 (testSystem2, ct::core::IntegrationType::RK4);
+			ct::core::Integrator<state_dim> testIntegrator1(testSystem1, ct::core::IntegrationType::RK4);
+			ct::core::Integrator<state_dim> testIntegrator2(testSystem2, ct::core::IntegrationType::RK4);
 
 			// states
 			ct::core::StateVector<state_dim> x_test_1 = x0;
@@ -612,20 +602,19 @@ TEST(ILQRTestC, PolicyComparison)
 
 			ASSERT_LT((x_test_1 - xRollout.back()).array().abs().maxCoeff(), 0.3);
 			ASSERT_LT((x_test_2 - xRollout_mp.back()).array().abs().maxCoeff(), 0.3);
-
 		}
 
 	} catch (std::exception& e)
 	{
-		std::cout << "caught exception: "<<e.what() <<std::endl;
+		std::cout << "caught exception: " << e.what() << std::endl;
 		FAIL();
 	}
 }
 
 
-} // namespace example
-} // namespace optcon
-} // namespace ct
+}  // namespace example
+}  // namespace optcon
+}  // namespace ct
 
 
 /*!
@@ -633,7 +622,7 @@ TEST(ILQRTestC, PolicyComparison)
  * \note for a more straight-forward implementation example, visit the tutorial.
  * \example iLQGCTest.cpp
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	using namespace ct::optcon::example;
 	testing::InitGoogleTest(&argc, argv);

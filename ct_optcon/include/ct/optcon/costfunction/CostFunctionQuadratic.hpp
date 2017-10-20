@@ -47,8 +47,8 @@ namespace optcon {
  * These terms can have arbitrary form.
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class CostFunctionQuadratic : public CostFunction<STATE_DIM, CONTROL_DIM, SCALAR> {
-
+class CostFunctionQuadratic : public CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>
+{
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -76,7 +76,7 @@ public:
 	 * Clones the cost function.
 	 * @return
 	 */
-	virtual CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const = 0;
+	virtual CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const = 0;
 
 	/**
 	 * Destructor
@@ -89,9 +89,12 @@ public:
 	 * @param verbose verbosity flag which enables printout
 	 * @return
 	 */
-	virtual size_t addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false);
+	virtual size_t addIntermediateTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term,
+		bool verbose = false);
 
-	virtual void addIntermediateADTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar> > term, bool verbose = false);
+	virtual void addIntermediateADTerm(
+		std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar>> term,
+		bool verbose = false);
 
 	/**
 	 * \brief Adds a final term
@@ -99,9 +102,10 @@ public:
 	 * @param verbose verbosity flag which enables printout
 	 * @return
 	 */
-	virtual size_t addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false);
+	virtual size_t addFinalTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term, bool verbose = false);
 
-	virtual void addFinalADTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar> > term, bool verbose = false);
+	virtual void addFinalADTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar>> term,
+		bool verbose = false);
 
 	/**
 	 * \brief Loads cost function from config file
@@ -190,7 +194,6 @@ public:
 	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermById(const std::string& name);
 
 protected:
-
 	state_vector_t stateDerivativeIntermediateNumDiff();
 	control_vector_t controlDerivativeIntermediateNumDiff();
 
@@ -198,13 +201,12 @@ protected:
 	bool doubleSidedDerivative_ = true;
 
 	/** list of intermediate cost terms for which analytic derivatives are available */
-	std::vector < std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > > intermediateCostAnalytical_;
+	std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>>> intermediateCostAnalytical_;
 
 	/** list of final cost terms for which analytic derivatives are available */
-	std::vector < std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > > finalCostAnalytical_;
+	std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>>> finalCostAnalytical_;
 };
 
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

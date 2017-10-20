@@ -49,8 +49,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, class SISOController>
 class SISOArrayController : public Controller<STATE_DIM, CONTROL_DIM>
 {
 public:
-
-	static_assert ( STATE_DIM >= CONTROL_DIM , "STATE_DIM must be greater or equal to CONTROL_DIM" );
+	static_assert(STATE_DIM >= CONTROL_DIM, "STATE_DIM must be greater or equal to CONTROL_DIM");
 
 	//! default constructor
 	/*!
@@ -58,11 +57,11 @@ public:
 	 * @param parameters the parameters for the SISO controller
 	 * @param setpoint the setpoints for the SISO controller
 	 */
-	SISOArrayController(
-			typename SISOController::parameters_t parameters = typename SISOController::parameters_t(),
-			typename SISOController::setpoint_t setpoint = typename SISOController::setpoint_t()):
-		controllers_(CONTROL_DIM, parameters, setpoint)
-	{}
+	SISOArrayController(typename SISOController::parameters_t parameters = typename SISOController::parameters_t(),
+		typename SISOController::setpoint_t setpoint = typename SISOController::setpoint_t())
+		: controllers_(CONTROL_DIM, parameters, setpoint)
+	{
+	}
 
 	//! constructor
 	/*!
@@ -73,19 +72,22 @@ public:
 	 * @param parameters vector of parameters
 	 * @param setpoints vector of setpoints
 	 */
-	SISOArrayController(
-			std::vector<typename SISOController::parameters_t> parameters,
-			std::vector<typename SISOController::setpoint_t> setpoints)
+	SISOArrayController(std::vector<typename SISOController::parameters_t> parameters,
+		std::vector<typename SISOController::setpoint_t> setpoints)
 	{
-		if (parameters.size() != CONTROL_DIM) {
-			throw std::runtime_error("Length of parameters for SISO controllers in SISOArrayController does not match control dimension.");
+		if (parameters.size() != CONTROL_DIM)
+		{
+			throw std::runtime_error(
+				"Length of parameters for SISO controllers in SISOArrayController does not match control dimension.");
 		}
 
-		if (setpoints.size() != CONTROL_DIM) {
-					throw std::runtime_error("Length of setponits for SISO controllers in SISOArrayController does not match control dimension.");
+		if (setpoints.size() != CONTROL_DIM)
+		{
+			throw std::runtime_error(
+				"Length of setponits for SISO controllers in SISOArrayController does not match control dimension.");
 		}
 
-		for (size_t i=0; i<CONTROL_DIM; i++)
+		for (size_t i = 0; i < CONTROL_DIM; i++)
 		{
 			controllers_.push_back(SISOController(parameters[i], setpoints[i]));
 		}
@@ -97,7 +99,7 @@ public:
 	 */
 	SISOArrayController(const SISOArrayController& arg)
 	{
-		for (size_t i=0; i<CONTROL_DIM; i++)
+		for (size_t i = 0; i < CONTROL_DIM; i++)
 		{
 			controllers_.push_back(SISOController(arg.controllers_[i]));
 		}
@@ -105,8 +107,6 @@ public:
 
 	//! destructor
 	~SISOArrayController() {}
-
-
 	//! deep cloning, required for cloning ControlledSystems
 	SISOArrayController<STATE_DIM, CONTROL_DIM, SISOController>* clone() const
 	{
@@ -125,12 +125,11 @@ public:
 	 * @param t the current time
 	 * @param controlAction the resulting control action
 	 */
-	void computeControl(
-			const StateVector<STATE_DIM>& state,
-			const Time& t,
-			ControlVector<CONTROL_DIM>& controlAction) override
+	void computeControl(const StateVector<STATE_DIM>& state,
+		const Time& t,
+		ControlVector<CONTROL_DIM>& controlAction) override
 	{
-		for (size_t i=0; i<CONTROL_DIM; i++)
+		for (size_t i = 0; i < CONTROL_DIM; i++)
 		{
 			controlAction(i) = controllers_[i].computeControl(state(i), t);
 		}
@@ -138,9 +137,8 @@ public:
 
 
 private:
-	std::vector<SISOController> controllers_; //! array of controllers
+	std::vector<SISOController> controllers_;  //! array of controllers
 };
 
-} // core
-} // ct
-
+}  // core
+}  // ct

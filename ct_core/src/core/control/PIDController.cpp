@@ -48,7 +48,7 @@ double PIDController::computeControl(const double& state, const core::Time& t)
 
 	// ** D-Part **
 	// ============
-	double D = parameters_.k_d * (setpoint_.stateDerivativeDesired_ - (state - statePrevious_)/parameters_.dt);
+	double D = parameters_.k_d * (setpoint_.stateDerivativeDesired_ - (state - statePrevious_) / parameters_.dt);
 
 	// ** Controller Output **
 	// =======================
@@ -116,5 +116,5 @@ void PIDController::reset()
 	I_ = 0.0;
 }
 
-} // namespace core
-} // namespace ct
+}  // namespace core
+}  // namespace ct

@@ -31,8 +31,8 @@ namespace core {
 namespace internal {
 
 //! Trait defining basic math functions for float types
-struct FloatTrait {
-
+struct FloatTrait
+{
 	typedef float Scalar;
 
 	inline static Scalar sin(const Scalar& x) { return std::sin(x); }
@@ -43,17 +43,14 @@ struct FloatTrait {
 	inline static Scalar tanh(const Scalar& x) { return std::tanh(x); }
 	inline static Scalar exp(const Scalar& x) { return std::exp(x); }
 	inline static Scalar fabs(const Scalar& x) { return std::fabs(x); }
-
 	//! Solves a linear system of equations using Eigen's inverse functionality
 	template <int Rows, int Cols>
-	inline static Eigen::Matrix<Scalar, Cols, 1> solve(const Eigen::Matrix<Scalar, Rows, Cols>& A, const Eigen::Matrix<Scalar, Rows, 1>& b)
+	inline static Eigen::Matrix<Scalar, Cols, 1> solve(const Eigen::Matrix<Scalar, Rows, Cols>& A,
+		const Eigen::Matrix<Scalar, Rows, 1>& b)
 	{
-		return A.inverse()*b;
+		return A.inverse() * b;
 	}
-
 };
-
 }
 }
 }
-

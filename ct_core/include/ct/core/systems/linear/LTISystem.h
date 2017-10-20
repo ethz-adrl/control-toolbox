@@ -59,55 +59,43 @@ public:
 	 * @param D D matrix
 	 * @return instance of the LTI system
 	 */
-	LTISystem(
-		const Eigen::Matrix<double, STATE_DIM, STATE_DIM>& A,
+	LTISystem(const Eigen::Matrix<double, STATE_DIM, STATE_DIM>& A,
 		const Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>& B,
 		const Eigen::Matrix<double, STATE_DIM, STATE_DIM>& C = Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Identity(),
-		const Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> D = Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>::Zero()
-	) :
-		A_(A),
-		B_(B),
-		C_(C),
-		D_(D)
-	{}
-
-	//! copy constructor
-	LTISystem(const LTISystem& arg):
-			A_(arg.A_),
-			B_(arg.B_),
-			C_(arg.C_),
-			D_(arg.D_)
-	{}
-
-	//! deep clone
-	LTISystem<STATE_DIM, CONTROL_DIM>* clone() const override {
-		return new LTISystem<STATE_DIM, CONTROL_DIM>(*this);
+		const Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> D = Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>::Zero())
+		: A_(A), B_(B), C_(C), D_(D)
+	{
 	}
 
-	virtual ~LTISystem(){}
-
+	//! copy constructor
+	LTISystem(const LTISystem& arg) : A_(arg.A_), B_(arg.B_), C_(arg.C_), D_(arg.D_) {}
+	//! deep clone
+	LTISystem<STATE_DIM, CONTROL_DIM>* clone() const override { return new LTISystem<STATE_DIM, CONTROL_DIM>(*this); }
+	virtual ~LTISystem() {}
 	//! get A matrix
-	virtual const Eigen::Matrix<double, STATE_DIM, STATE_DIM>& getDerivativeState(const StateVector<STATE_DIM>& x, const ControlVector<CONTROL_DIM>& u, const double t = 0.0) override {
+	virtual const Eigen::Matrix<double, STATE_DIM, STATE_DIM>& getDerivativeState(const StateVector<STATE_DIM>& x,
+		const ControlVector<CONTROL_DIM>& u,
+		const double t = 0.0) override
+	{
 		return A_;
 	}
 
 	//! get B matrix
-	virtual const Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>& getDerivativeControl(const StateVector<STATE_DIM>& x, const ControlVector<CONTROL_DIM>& u, const double t = 0.0) override {
+	virtual const Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>& getDerivativeControl(const StateVector<STATE_DIM>& x,
+		const ControlVector<CONTROL_DIM>& u,
+		const double t = 0.0) override
+	{
 		return B_;
 	}
 
 	//! get A matrix
 	Eigen::Matrix<double, STATE_DIM, STATE_DIM>& A() { return A_; }
-
 	//! get B matrix
 	Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>& B() { return B_; }
-
 	//! get C matrix
 	Eigen::Matrix<double, STATE_DIM, STATE_DIM>& C() { return C_; }
-
 	//! get D matrix
 	Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>& D() { return D_; }
-
 	//! computes the system dynamics
 	/*!
 	 * Computes \f$ \dot{x} = Ax + Bu \f$
@@ -116,12 +104,10 @@ public:
 	 * @param control control input
 	 * @param derivative state derivative
 	 */
-	void computeControlledDynamics(
-		const Eigen::Matrix<double, STATE_DIM, 1>& state,
+	void computeControlledDynamics(const Eigen::Matrix<double, STATE_DIM, 1>& state,
 		const Time& t,
 		const Eigen::Matrix<double, CONTROL_DIM, 1>& control,
-		Eigen::Matrix<double, STATE_DIM, 1>& derivative
-	)
+		Eigen::Matrix<double, STATE_DIM, 1>& derivative)
 	{
 		derivative = A_ * state + B_ * control;
 	}
@@ -134,12 +120,10 @@ public:
 	 * @param control control input
 	 * @param output system output (measurement)
 	 */
-	void computeOutput(
-		const Eigen::Matrix<double, STATE_DIM, 1>& state,
+	void computeOutput(const Eigen::Matrix<double, STATE_DIM, 1>& state,
 		const Time& t,
 		const Eigen::Matrix<double, CONTROL_DIM, 1>& control,
-		Eigen::Matrix<double, STATE_DIM, 1>& output
-	)
+		Eigen::Matrix<double, STATE_DIM, 1>& output)
 	{
 		output = C_ * state + D_ * control;
 	}
@@ -152,13 +136,14 @@ public:
 	 *
 	 * @param CO controllability matrix
 	 */
-	void computeControllabilityMatrix(Eigen::Matrix<double, STATE_DIM, STATE_DIM*CONTROL_DIM>& CO)
+	void computeControllabilityMatrix(Eigen::Matrix<double, STATE_DIM, STATE_DIM * CONTROL_DIM>& CO)
 	{
 		CO.block<STATE_DIM, CONTROL_DIM>(0, 0) = B_;
 
-		for (size_t i=1; i<STATE_DIM; i++)
+		for (size_t i = 1; i < STATE_DIM; i++)
 		{
-			CO.block<STATE_DIM, CONTROL_DIM>(0, i*CONTROL_DIM) = A_*CO.block<STATE_DIM, CONTROL_DIM>(0, (i-1) * CONTROL_DIM);
+			CO.block<STATE_DIM, CONTROL_DIM>(0, i * CONTROL_DIM) =
+				A_ * CO.block<STATE_DIM, CONTROL_DIM>(0, (i - 1) * CONTROL_DIM);
 		}
 	}
 
@@ -170,10 +155,10 @@ public:
 	 */
 	bool isControllable()
 	{
-		Eigen::Matrix<double, STATE_DIM, STATE_DIM*CONTROL_DIM> CO;
+		Eigen::Matrix<double, STATE_DIM, STATE_DIM * CONTROL_DIM> CO;
 		computeControllabilityMatrix(CO);
 
-		Eigen::FullPivLU< Eigen::Matrix<double, STATE_DIM, STATE_DIM*CONTROL_DIM> > LUdecomposition(CO);
+		Eigen::FullPivLU<Eigen::Matrix<double, STATE_DIM, STATE_DIM * CONTROL_DIM>> LUdecomposition(CO);
 		return LUdecomposition.rank() == STATE_DIM;
 	}
 
@@ -184,13 +169,14 @@ public:
 	 * Computes the observability matrix to assess observability. See isObservable() for the full test.
 	 * @param O observability matrix
 	 */
-	void computeObservabilityMatrix(Eigen::Matrix<double, STATE_DIM, STATE_DIM*STATE_DIM>& O)
+	void computeObservabilityMatrix(Eigen::Matrix<double, STATE_DIM, STATE_DIM * STATE_DIM>& O)
 	{
 		O.block<STATE_DIM, STATE_DIM>(0, 0) = C_;
 
-		for (size_t i=1; i<STATE_DIM; i++)
+		for (size_t i = 1; i < STATE_DIM; i++)
 		{
-			O.block<STATE_DIM, STATE_DIM>(i*STATE_DIM, 0) = O.block<STATE_DIM, STATE_DIM>(0, (i-1)*STATE_DIM) * A_;
+			O.block<STATE_DIM, STATE_DIM>(i * STATE_DIM, 0) =
+				O.block<STATE_DIM, STATE_DIM>(0, (i - 1) * STATE_DIM) * A_;
 		}
 	}
 
@@ -202,23 +188,20 @@ public:
 	 */
 	bool isObservable()
 	{
-		Eigen::Matrix<double, STATE_DIM, STATE_DIM*STATE_DIM> O;
+		Eigen::Matrix<double, STATE_DIM, STATE_DIM * STATE_DIM> O;
 		computeObservabilityMatrix(O);
 
-		Eigen::FullPivLU< Eigen::Matrix<double, STATE_DIM, STATE_DIM*STATE_DIM> > LUdecomposition(O);
+		Eigen::FullPivLU<Eigen::Matrix<double, STATE_DIM, STATE_DIM * STATE_DIM>> LUdecomposition(O);
 		return LUdecomposition.rank() == STATE_DIM;
 	}
 
 
 private:
+	Eigen::Matrix<double, STATE_DIM, STATE_DIM> A_;    //!< A matrix
+	Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> B_;  //!< B matrix
 
-	Eigen::Matrix<double, STATE_DIM, STATE_DIM> A_; //!< A matrix
-	Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> B_; //!< B matrix
-
-	Eigen::Matrix<double, STATE_DIM, STATE_DIM> C_; //!< C matrix
-	Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> D_; //!< D matrix
+	Eigen::Matrix<double, STATE_DIM, STATE_DIM> C_;    //!< C matrix
+	Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> D_;  //!< D matrix
 };
-
 }
 }
-

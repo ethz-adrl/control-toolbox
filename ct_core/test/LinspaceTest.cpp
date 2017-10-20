@@ -35,12 +35,11 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace ct::core;
 
 
-
 TEST(LinspaceTest, LinspaceTest)
 {
 	StateVector<2> start, end;
 	start << 1, 5;
-	end << 5,1;
+	end << 5, 1;
 
 	size_t nPoints = 5;
 
@@ -51,12 +50,11 @@ TEST(LinspaceTest, LinspaceTest)
 	 * [1 2 3 4 5]
 	 * [5 4 3 2 1]
 	 * */
-	for(int i=0; i<nPoints; i++)
+	for (int i = 0; i < nPoints; i++)
 	{
-		ASSERT_EQ(traj[i](0), i+1);
-		ASSERT_EQ(traj[i](1), 5-i);
+		ASSERT_EQ(traj[i](0), i + 1);
+		ASSERT_EQ(traj[i](1), 5 - i);
 	}
-
 }
 
 

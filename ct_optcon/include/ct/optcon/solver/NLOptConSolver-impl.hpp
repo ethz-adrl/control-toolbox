@@ -26,41 +26,43 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOptConSolver(const OptConProblem_t& optConProblem, const Settings_t& settings)
+NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOptConSolver(const OptConProblem_t& optConProblem,
+	const Settings_t& settings)
 {
 	initialize(optConProblem, settings);
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOptConSolver(
-		const OptConProblem_t& optConProblem,
-		const std::string& settingsFile,
-		bool verbose,
-		const std::string& ns) :
-		NLOptConSolver(optConProblem, Settings_t::fromConfigFile(settingsFile, verbose, ns))
-{}
+NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOptConSolver(const OptConProblem_t& optConProblem,
+	const std::string& settingsFile,
+	bool verbose,
+	const std::string& ns)
+	: NLOptConSolver(optConProblem, Settings_t::fromConfigFile(settingsFile, verbose, ns))
+{
+}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::~NLOptConSolver()
-{}
+{
+}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initialize(const OptConProblem_t& optConProblem, const Settings_t& settings)
+void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initialize(const OptConProblem_t& optConProblem,
+	const Settings_t& settings)
 {
-
-	if(settings.nThreads > 1)
+	if (settings.nThreads > 1)
 		nlocBackend_ = std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>>(
-				new NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(optConProblem, settings));
+			new NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(optConProblem, settings));
 	else
 		nlocBackend_ = std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>>(
-				new NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(optConProblem, settings));
+			new NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(optConProblem, settings));
 
 	configure(settings);
 }
@@ -74,18 +76,18 @@ void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(con
 
 	nlocBackend_->configure(settings);
 
-	switch(settings.nlocp_algorithm)
+	switch (settings.nlocp_algorithm)
 	{
-	case NLOptConSettings::NLOCP_ALGORITHM::GNMS:
-		nlocAlgorithm_ = std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>> (
-				new GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(nlocBackend_, settings) );
-		break;
-	case NLOptConSettings::NLOCP_ALGORITHM::ILQR:
-		nlocAlgorithm_ = std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>> (
-				new iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(nlocBackend_, settings) );
-		break;
-	default:
-		throw std::runtime_error("This algorithm is not implemented in NLOptConSolver.hpp");
+		case NLOptConSettings::NLOCP_ALGORITHM::GNMS:
+			nlocAlgorithm_ = std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>>(
+				new GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(nlocBackend_, settings));
+			break;
+		case NLOptConSettings::NLOCP_ALGORITHM::ILQR:
+			nlocAlgorithm_ = std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>>(
+				new iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(nlocBackend_, settings));
+			break;
+		default:
+			throw std::runtime_error("This algorithm is not implemented in NLOptConSolver.hpp");
 	}
 }
 
@@ -93,28 +95,28 @@ void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(con
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareIteration()
 {
-	nlocAlgorithm_ -> prepareIteration();
+	nlocAlgorithm_->prepareIteration();
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 bool NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishIteration()
 {
-	return nlocAlgorithm_ -> finishIteration();
+	return nlocAlgorithm_->finishIteration();
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareMPCIteration()
 {
-	nlocAlgorithm_ -> prepareMPCIteration();
+	nlocAlgorithm_->prepareMPCIteration();
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 bool NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishMPCIteration()
 {
-	return nlocAlgorithm_ -> finishMPCIteration();
+	return nlocAlgorithm_->finishMPCIteration();
 }
 
 
@@ -124,10 +126,11 @@ bool NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::runIteration(
 #ifdef DEBUG_PRINT
 	auto startSolve = std::chrono::steady_clock::now();
 #endif
-	bool success = nlocAlgorithm_ -> runIteration();
+	bool success = nlocAlgorithm_->runIteration();
 #ifdef DEBUG_PRINT
 	auto endSolve = std::chrono::steady_clock::now();
-	std::cout << "[NLOC]: runIteration() took "<<std::chrono::duration <double, std::milli> (endSolve-startSolve).count() << " ms" << std::endl;
+	std::cout << "[NLOC]: runIteration() took "
+			  << std::chrono::duration<double, std::milli>(endSolve - startSolve).count() << " ms" << std::endl;
 #endif
 	return success;
 }
@@ -136,7 +139,7 @@ bool NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::runIteration(
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::setInitialGuess(const Policy_t& initialGuess)
 {
-	nlocBackend_ -> setInitialGuess(initialGuess);
+	nlocBackend_->setInitialGuess(initialGuess);
 }
 
 
@@ -146,9 +149,9 @@ bool NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solve()
 	bool foundBetter = true;
 	int numIterations = 0;
 
-	while (foundBetter  && (numIterations < nlocBackend_->getSettings().max_iterations))
+	while (foundBetter && (numIterations < nlocBackend_->getSettings().max_iterations))
 	{
-		foundBetter =runIteration();
+		foundBetter = runIteration();
 
 		numIterations++;
 	}
@@ -174,7 +177,8 @@ NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getStateTrajectory
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-const core::ControlTrajectory<CONTROL_DIM, SCALAR> NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getControlTrajectory() const
+const core::ControlTrajectory<CONTROL_DIM, SCALAR>
+NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getControlTrajectory() const
 {
 	return nlocBackend_->getControlTrajectory();
 }
@@ -202,28 +206,32 @@ void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHor
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0)
+void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeInitialState(
+	const core::StateVector<STATE_DIM, SCALAR>& x0)
 {
 	nlocBackend_->changeInitialState(x0);
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeCostFunction(const typename OptConProblem_t::CostFunctionPtr_t& cf)
+void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeCostFunction(
+	const typename OptConProblem_t::CostFunctionPtr_t& cf)
 {
 	nlocBackend_->changeCostFunction(cf);
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlinearSystem(const typename OptConProblem_t::DynamicsPtr_t& dyn)
+void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlinearSystem(
+	const typename OptConProblem_t::DynamicsPtr_t& dyn)
 {
 	nlocBackend_->changeNonlinearSystem(dyn);
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin)
+void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeLinearSystem(
+	const typename OptConProblem_t::LinearPtr_t& lin)
 {
 	nlocBackend_->changeLinearSystem(lin);
 }
@@ -261,7 +269,8 @@ NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getNonlinearSystem
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-const std::vector<typename NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::DynamicsPtr_t>&
+const std::vector<
+	typename NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::DynamicsPtr_t>&
 NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getNonlinearSystemsInstances() const
 {
 	return nlocBackend_->getNonlinearSystemsInstances();
@@ -293,7 +302,8 @@ NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getCostFunctionIns
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-const std::vector<typename NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::CostFunctionPtr_t>&
+const std::vector<
+	typename NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::CostFunctionPtr_t>&
 NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getCostFunctionInstances() const
 {
 	return nlocBackend_->getCostFunctionInstances();
@@ -309,7 +319,8 @@ NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getStateInputConst
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-const std::vector<typename NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::ConstraintPtr_t>&
+const std::vector<
+	typename NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::ConstraintPtr_t>&
 NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getStateInputConstraintsInstances() const
 {
 	return nlocBackend_->getStateInputConstraintsInstances();
@@ -325,7 +336,8 @@ NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getPureStateConstr
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-const std::vector<typename NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::ConstraintPtr_t>&
+const std::vector<
+	typename NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::ConstraintPtr_t>&
 NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getPureStateConstraintsInstances() const
 {
 	return nlocBackend_->getPureStateConstraintsInstances();
@@ -338,7 +350,5 @@ void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logSummaryToM
 	nlocBackend_->logSummaryToMatlab(fileName);
 }
 
-} // namespace optcon
-} // namespace ct
-
-
+}  // namespace optcon
+}  // namespace ct

@@ -34,14 +34,14 @@ namespace core {
 namespace internal {
 
 //! Utility class for Auto-Diff code generation
-class CGHelpers {
+class CGHelpers
+{
 public:
-
 	//! default constructor
-	CGHelpers() {};
+	CGHelpers(){};
 
 	//! destructor
-	virtual ~CGHelpers() {};
+	virtual ~CGHelpers(){};
 
 	//! generate source code for Jacobian
 	/*!
@@ -67,16 +67,15 @@ public:
 	 * @tparam AD_SCALAR Auto-Diff scalar type which is either a normal AD type or a codegen type
 	 */
 	template <typename AD_SCALAR>
-	static std::string generateJacobianSource(
-			CppAD::ADFun<AD_SCALAR>& f,
-			SparsityPattern& pattern,
-			const size_t jacDim,
-			size_t& maxTempVarCount,
-			bool useReverse = false,
-			bool ignoreZero = true,
-			std::string jacName = "jac",
-			std::string inputName = "x_in",
-			std::string tempName = "v_")
+	static std::string generateJacobianSource(CppAD::ADFun<AD_SCALAR>& f,
+		SparsityPattern& pattern,
+		const size_t jacDim,
+		size_t& maxTempVarCount,
+		bool useReverse = false,
+		bool ignoreZero = true,
+		std::string jacName = "jac",
+		std::string inputName = "x_in",
+		std::string tempName = "v_")
 	{
 		CppAD::cg::CodeHandler<double> codeHandler;
 
@@ -85,15 +84,17 @@ public:
 		CppAD::vector<AD_SCALAR> input(n);
 		codeHandler.makeVariables(input);
 		// Initializing to some typical values
-		for(size_t i = 0; i < n; i++)
+		for (size_t i = 0; i < n; i++)
 			input[i].setValue(0.0);
 
 		CppAD::vector<AD_SCALAR> jac(jacDim);
 
-		if(useReverse)
-			f.SparseJacobianReverse(input, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.workJacobian());
+		if (useReverse)
+			f.SparseJacobianReverse(
+				input, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.workJacobian());
 		else
-			f.SparseJacobianForward(input, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.workJacobian());
+			f.SparseJacobianForward(
+				input, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.workJacobian());
 
 		CppAD::cg::LanguageC<double> langC("double", 4);
 		langC.setIgnoreZeroDepAssign(ignoreZero);
@@ -102,7 +103,7 @@ public:
 		std::ostringstream code;
 		codeHandler.generateCode(code, langC, jac, nameGen);
 
-		std::cout << "temporary variables: " << codeHandler.getTemporaryVariableCount()<< std::endl;
+		std::cout << "temporary variables: " << codeHandler.getTemporaryVariableCount() << std::endl;
 		maxTempVarCount = codeHandler.getTemporaryVariableCount();
 
 		return code.str();
@@ -127,13 +128,12 @@ public:
 	 * @tparam AD_SCALAR Auto-Diff scalar type which is either a normal AD type or a codegen type
 	 */
 	template <typename AD_SCALAR>
-	static std::string generateForwardZeroSource(
-			CppAD::ADFun<AD_SCALAR>& f,
-			size_t& maxTempVarCount,
-			bool ignoreZero = true,
-			std::string jacName = "forwardZero",
-			std::string inputName = "x_in",
-			std::string tempName = "v_")
+	static std::string generateForwardZeroSource(CppAD::ADFun<AD_SCALAR>& f,
+		size_t& maxTempVarCount,
+		bool ignoreZero = true,
+		std::string jacName = "forwardZero",
+		std::string inputName = "x_in",
+		std::string tempName = "v_")
 	{
 		CppAD::cg::CodeHandler<double> codeHandler;
 
@@ -142,7 +142,7 @@ public:
 
 		CppAD::vector<AD_SCALAR> input(n);
 
-		for (size_t i=0; i<input.size(); i++)
+		for (size_t i = 0; i < input.size(); i++)
 			input[i] = AD_SCALAR(0.0);
 
 		// mark independent as variables
@@ -157,7 +157,7 @@ public:
 		std::ostringstream code;
 		codeHandler.generateCode(code, langC, forwardZero, nameGen);
 
-		std::cout << "temporary variables: " << codeHandler.getTemporaryVariableCount()<< std::endl;
+		std::cout << "temporary variables: " << codeHandler.getTemporaryVariableCount() << std::endl;
 		maxTempVarCount = codeHandler.getTemporaryVariableCount();
 
 		return code.str();
@@ -186,31 +186,30 @@ public:
 	 * @tparam AD_SCALAR Auto-Diff scalar type which is either a normal AD type or a codegen type
 	 */
 	template <typename AD_SCALAR>
-	static std::string generateHessianSource(
-			CppAD::ADFun<AD_SCALAR>& f,
-			SparsityPattern& pattern,
-			const size_t hesDim,
-			size_t& maxTempVarCount,
-			bool ignoreZero = true,
-			std::string jacName = "hes",
-			std::string inputName = "x_in",
-			std::string tempName = "v_")
+	static std::string generateHessianSource(CppAD::ADFun<AD_SCALAR>& f,
+		SparsityPattern& pattern,
+		const size_t hesDim,
+		size_t& maxTempVarCount,
+		bool ignoreZero = true,
+		std::string jacName = "hes",
+		std::string inputName = "x_in",
+		std::string tempName = "v_")
 	{
 		CppAD::cg::CodeHandler<double> codeHandler;
 
 		size_t m = f.Range();
-    	size_t n = f.Domain();
+		size_t n = f.Domain();
 
 		CppAD::vector<AD_SCALAR> input(n);
 		codeHandler.makeVariables(input);
 		// setting some typical values here.
-		for(size_t i=0; i<input.size(); i++)
+		for (size_t i = 0; i < input.size(); i++)
 			input[i].setValue(0.0);
-		
+
 		CppAD::vector<AD_SCALAR> weights(m);
 		codeHandler.makeVariables(weights);
 		// settings some typical values for the weights
-		for(size_t i = 0; i < m; ++i)
+		for (size_t i = 0; i < m; ++i)
 			weights[i].setValue(0.0);
 
 		CppAD::vector<AD_SCALAR> hes(hesDim);
@@ -218,8 +217,8 @@ public:
 
 		// make use of the symmetry of the hessian
 		for (size_t i = 0; i < n; i++)
-		    for (size_t j = 0; j < i; j++)
-		        hes[i * n + j] = hes[j * n + i];
+			for (size_t j = 0; j < i; j++)
+				hes[i * n + j] = hes[j * n + i];
 
 		CppAD::cg::LanguageC<double> langC("double", 4);
 		langC.setIgnoreZeroDepAssign(ignoreZero);
@@ -229,7 +228,7 @@ public:
 		std::ostringstream code;
 		codeHandler.generateCode(code, langC, hes, nameGen);
 
-		std::cout << "temporary variables: " << codeHandler.getTemporaryVariableCount()<< std::endl;
+		std::cout << "temporary variables: " << codeHandler.getTemporaryVariableCount() << std::endl;
 		maxTempVarCount = codeHandler.getTemporaryVariableCount();
 
 		return code.str();
@@ -277,12 +276,12 @@ public:
 
 		if (!out.good())
 		{
-			std::cout << "Could not open output file for writing "<<outputFile<<std::endl;
+			std::cout << "Could not open output file for writing " << outputFile << std::endl;
 			out.close();
 			throw std::runtime_error("Code generation failed. Exiting.");
 		}
 
-		std::cout << "Writing generated code to file... "<<std::endl;
+		std::cout << "Writing generated code to file... " << std::endl;
 
 		out << content;
 		out.close();
@@ -300,8 +299,8 @@ public:
 
 		if (!t.good())
 		{
-			std::cout << "Could not open template file "<<filename<<std::endl;
-			std::cout << "Code generation failed. Exiting."<<std::endl;
+			std::cout << "Could not open template file " << filename << std::endl;
+			std::cout << "Code generation failed. Exiting." << std::endl;
 			t.close();
 			throw std::runtime_error("Code generation failed. Exiting.");
 		}
@@ -320,4 +319,3 @@ public:
 } /* namespace internal */
 } /* namespace core */
 } /* namespace ct */
-

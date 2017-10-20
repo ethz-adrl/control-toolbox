@@ -39,9 +39,10 @@ class QuantizationNoise
 {
 public:
 	//! The quanitization method
-	enum QuantizationMethod {
+	enum QuantizationMethod
+	{
 		FLOOR, /*!< Enum to round down  */
-		ROUND /*!< Enum to round */
+		ROUND  /*!< Enum to round */
 	};
 
 	//! Default constructor
@@ -50,11 +51,11 @@ public:
 	 * @param quantizationInterval The quantization interval to quantize to
 	 * @param method The quantization method
 	 */
-	QuantizationNoise(double bias = 0.0, double quantizationInterval = 1.0, QuantizationMethod method = FLOOR) :
-		quantizationInterval_(quantizationInterval),
-		quantizationRest_(1, 0.0),
-		bias_(bias),
-		quantizationMethod_(method)
+	QuantizationNoise(double bias = 0.0, double quantizationInterval = 1.0, QuantizationMethod method = FLOOR)
+		: quantizationInterval_(quantizationInterval)
+		, quantizationRest_(1, 0.0)
+		, bias_(bias)
+		, quantizationMethod_(method)
 	{
 	}
 
@@ -66,16 +67,16 @@ public:
 	 * @param value The value to quantize
 	 * @param index The identifier
 	 */
-	void noisify(double& value, size_t index = 0) {
-
+	void noisify(double& value, size_t index = 0)
+	{
 		if (index >= quantizationRest_.size())
 			quantizationRest_.resize(index, 0);
 
 		double currentValue = value + quantizationRest_[index];
-		double nQuantsDouble = currentValue/quantizationInterval_;
+		double nQuantsDouble = currentValue / quantizationInterval_;
 		int nQuants;
 
-		switch(quantizationMethod_)
+		switch (quantizationMethod_)
 		{
 			case FLOOR:
 			{
@@ -97,7 +98,7 @@ public:
 
 		quantizationRest_[index] = currentValue - outputValue;
 
-		value = outputValue +  bias_;
+		value = outputValue + bias_;
 	}
 
 	//! Applies quantization to a vector
@@ -107,8 +108,9 @@ public:
 	 * @param value The value to quantize
 	 */
 	template <size_t size>
-	void noisify(Eigen::Matrix<double, size, 1>& value) {
-		for (size_t i=0; i<size; i++)
+	void noisify(Eigen::Matrix<double, size, 1>& value)
+	{
+		for (size_t i = 0; i < size; i++)
 		{
 			noisify(value(i), i);
 		}
@@ -118,23 +120,14 @@ public:
 	/*!
 	 * Deletes the quantization rest to reset the quantization
 	 */
-	void reset()
-	{
-		quantizationRest_.clear();
-	}
-
-
+	void reset() { quantizationRest_.clear(); }
 private:
-	double quantizationInterval_; /*!< interval for quantization */
-	std::vector<double> quantizationRest_; /*!< tracks the rest of the quantization */
-	double bias_; /*!< a bias to apply */
+	double quantizationInterval_;           /*!< interval for quantization */
+	std::vector<double> quantizationRest_;  /*!< tracks the rest of the quantization */
+	double bias_;                           /*!< a bias to apply */
 	QuantizationMethod quantizationMethod_; /*!< the quantization method */
-
 };
 
 
-} // namespace ct
-} // namespace core
-
-
-
+}  // namespace ct
+}  // namespace core

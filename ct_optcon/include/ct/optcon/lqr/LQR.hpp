@@ -53,7 +53,6 @@ template <size_t STATE_DIM, size_t CONTROL_DIM>
 class LQR
 {
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
@@ -74,32 +73,30 @@ public:
 	 * 	use closed-form solution of the infinite-horizon Riccati Equation
 	 * @return success
 	 */
-	bool compute(
-			const state_matrix_t& Q,
-			const control_matrix_t& R,
-			const state_matrix_t& A,
-			const control_gain_matrix_t& B,
-			control_feedback_t& K,
-			bool RisDiagonal = false,
-			bool solveRiccatiIteratively = false);
+	bool compute(const state_matrix_t& Q,
+		const control_matrix_t& R,
+		const state_matrix_t& A,
+		const control_gain_matrix_t& B,
+		control_feedback_t& K,
+		bool RisDiagonal = false,
+		bool solveRiccatiIteratively = false);
 
 #ifdef USE_MATLAB_CPP_INTERFACE
 	//! design the LQR controller in MATLAB
 	/*!
 	 * Note that this controller should be exactly the same
 	 */
-	bool computeMatlab(
-			const state_matrix_t& Q,
-			const control_matrix_t& R,
-			const state_matrix_t& A,
-			const control_gain_matrix_t& B,
-			control_feedback_t& K,
-			bool checkControllability = false);
-#endif //USE_MATLAB_CPP_INTERFACE
+	bool computeMatlab(const state_matrix_t& Q,
+		const control_matrix_t& R,
+		const state_matrix_t& A,
+		const control_gain_matrix_t& B,
+		control_feedback_t& K,
+		bool checkControllability = false);
+#endif  //USE_MATLAB_CPP_INTERFACE
 
 
 private:
-	CARE<STATE_DIM, CONTROL_DIM> care_; // continuous-time algebraic riccati equation
+	CARE<STATE_DIM, CONTROL_DIM> care_;  // continuous-time algebraic riccati equation
 
 #ifdef USE_MATLAB_CPP_INTERFACE
 	matlab::Engine matlabEngine_;
@@ -107,6 +104,5 @@ private:
 };
 
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

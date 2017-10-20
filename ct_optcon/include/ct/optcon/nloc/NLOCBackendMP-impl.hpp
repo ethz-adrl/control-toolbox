@@ -27,23 +27,25 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
-		const NLOptConSettings& settings) :
-			Base(optConProblem, settings)
+NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendMP(
+	const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+	const NLOptConSettings& settings)
+	: Base(optConProblem, settings)
 {
 	startupRoutine();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
-		 const std::string& settingsFile,
-		 bool verbose,
-		 const std::string& ns) :
-		Base(optConProblem, settingsFile, verbose, ns)
+NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendMP(
+	const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+	const std::string& settingsFile,
+	bool verbose,
+	const std::string& ns)
+	: Base(optConProblem, settingsFile, verbose, ns)
 {
 	startupRoutine();
 }
@@ -70,17 +72,17 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::shutdownRoutin
 	workerWakeUpCondition_.notify_all();
 
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"Shutting down workers"<<std::endl;
-#endif // DEBUG_PRINT_MP
+	std::cout << "Shutting down workers" << std::endl;
+#endif  // DEBUG_PRINT_MP
 
-	for (size_t i=0; i<workerThreads_.size(); i++)
+	for (size_t i = 0; i < workerThreads_.size(); i++)
 	{
 		workerThreads_[i].join();
 	}
 
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"All workers shut down"<<std::endl;
-#endif // DEBUG_PRINT_MP
+	std::cout << "All workers shut down" << std::endl;
+#endif  // DEBUG_PRINT_MP
 }
 
 
@@ -88,8 +90,8 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(size_t threadId)
 {
 #ifdef DEBUG_PRINT_MP
-	printString("[Thread "+std::to_string(threadId)+"]: launched");
-#endif // DEBUG_PRINT_MP
+	printString("[Thread " + std::to_string(threadId) + "]: launched");
+#endif  // DEBUG_PRINT_MP
 
 
 	// local variables
@@ -98,14 +100,15 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(siz
 	size_t iteration_local = this->iteration_;
 
 
-	while(workersActive_)
+	while (workersActive_)
 	{
 		workerTask_local = workerTask_.load();
 		iteration_local = this->iteration_;
 
 #ifdef DEBUG_PRINT_MP
 		printString("[Thread " + std::to_string(threadId) + "]: previous procId: " + std::to_string(uniqueProcessID) +
-				", current procId: " +std::to_string(generateUniqueProcessID(iteration_local, (int) workerTask_local)));
+					", current procId: " +
+					std::to_string(generateUniqueProcessID(iteration_local, (int)workerTask_local)));
 #endif
 
 
@@ -114,7 +117,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(siz
 		 * - the workerTask_ is IDLE
 		 * - or we are finished but workerTask_ is not yet reset, thus the process ID is still the same
 		 * */
-		if (workerTask_local == IDLE || uniqueProcessID == generateUniqueProcessID(iteration_local, (int) workerTask_local))
+		if (workerTask_local == IDLE ||
+			uniqueProcessID == generateUniqueProcessID(iteration_local, (int)workerTask_local))
 		{
 #ifdef DEBUG_PRINT_MP
 			printString("[Thread " + std::to_string(threadId) + "]: going to sleep !");
@@ -122,7 +126,9 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(siz
 
 			// sleep until the state is not IDLE any more and we have a different process ID than before
 			std::unique_lock<std::mutex> waitLock(workerWakeUpMutex_);
-			while(workerTask_ == IDLE ||  (uniqueProcessID == generateUniqueProcessID(this->iteration_, (int)workerTask_.load()))){
+			while (workerTask_ == IDLE ||
+				   (uniqueProcessID == generateUniqueProcessID(this->iteration_, (int)workerTask_.load())))
+			{
 				workerWakeUpCondition_.wait(waitLock);
 			}
 			waitLock.unlock();
@@ -132,71 +138,71 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(siz
 
 #ifdef DEBUG_PRINT_MP
 			printString("[Thread " + std::to_string(threadId) + "]: woke up !");
-#endif // DEBUG_PRINT_MP
+#endif  // DEBUG_PRINT_MP
 		}
 
 		if (!workersActive_)
 			break;
 
 
-		switch(workerTask_local)
+		switch (workerTask_local)
 		{
-		case LINE_SEARCH:
-		{
+			case LINE_SEARCH:
+			{
 #ifdef DEBUG_PRINT_MP
-			printString("[Thread " + std::to_string(threadId) + "]: now busy with LINE_SEARCH !");
-#endif // DEBUG_PRINT_MP
-			lineSearchWorker(threadId);
-			uniqueProcessID = generateUniqueProcessID (iteration_local, LINE_SEARCH);
-			break;
-		}
-		case ROLLOUT_SHOTS:
-		{
+				printString("[Thread " + std::to_string(threadId) + "]: now busy with LINE_SEARCH !");
+#endif  // DEBUG_PRINT_MP
+				lineSearchWorker(threadId);
+				uniqueProcessID = generateUniqueProcessID(iteration_local, LINE_SEARCH);
+				break;
+			}
+			case ROLLOUT_SHOTS:
+			{
 #ifdef DEBUG_PRINT_MP
-			printString("[Thread " + std::to_string(threadId) + "]: now doing shot rollouts !");
-#endif // DEBUG_PRINT_MP
-			rolloutShotWorker(threadId);
-			uniqueProcessID = generateUniqueProcessID (iteration_local, ROLLOUT_SHOTS);
-			break;
-		}
-		case LINEARIZE_DYNAMICS:
-		{
+				printString("[Thread " + std::to_string(threadId) + "]: now doing shot rollouts !");
+#endif  // DEBUG_PRINT_MP
+				rolloutShotWorker(threadId);
+				uniqueProcessID = generateUniqueProcessID(iteration_local, ROLLOUT_SHOTS);
+				break;
+			}
+			case LINEARIZE_DYNAMICS:
+			{
 #ifdef DEBUG_PRINT_MP
-			printString("[Thread " + std::to_string(threadId) + "]: now doing linearization !");
-#endif // DEBUG_PRINT_MP
-			computeLinearizedDynamicsWorker(threadId);
-			uniqueProcessID = generateUniqueProcessID (iteration_local, LINEARIZE_DYNAMICS);
-			break;
-		}
-		case COMPUTE_COST:
-		{
+				printString("[Thread " + std::to_string(threadId) + "]: now doing linearization !");
+#endif  // DEBUG_PRINT_MP
+				computeLinearizedDynamicsWorker(threadId);
+				uniqueProcessID = generateUniqueProcessID(iteration_local, LINEARIZE_DYNAMICS);
+				break;
+			}
+			case COMPUTE_COST:
+			{
 #ifdef DEBUG_PRINT_MP
-			printString("[Thread " + std::to_string(threadId) + "]: now doing cost computation !");
-#endif // DEBUG_PRINT_MP
-			computeQuadraticCostsWorker(threadId);
-			uniqueProcessID = generateUniqueProcessID (iteration_local, COMPUTE_COST);
-			break;
-		}
-		case SHUTDOWN:
-		{
+				printString("[Thread " + std::to_string(threadId) + "]: now doing cost computation !");
+#endif  // DEBUG_PRINT_MP
+				computeQuadraticCostsWorker(threadId);
+				uniqueProcessID = generateUniqueProcessID(iteration_local, COMPUTE_COST);
+				break;
+			}
+			case SHUTDOWN:
+			{
 #ifdef DEBUG_PRINT_MP
-			printString("[Thread " + std::to_string(threadId) + "]: now shutting down !");
-#endif // DEBUG_PRINT_MP
-			return;
-			break;
-		}
-		case IDLE:
-		{
+				printString("[Thread " + std::to_string(threadId) + "]: now shutting down !");
+#endif  // DEBUG_PRINT_MP
+				return;
+				break;
+			}
+			case IDLE:
+			{
 #ifdef DEBUG_PRINT_MP
-			printString("[Thread " + std::to_string(threadId) + "]: is idle. Now going to sleep.");
-#endif // DEBUG_PRINT_MP
-			break;
-		}
-		default:
-		{
-			printString("[Thread " + std::to_string(threadId) + "]: WARNING: Worker has unknown task !");
-			break;
-		}
+				printString("[Thread " + std::to_string(threadId) + "]: is idle. Now going to sleep.");
+#endif  // DEBUG_PRINT_MP
+				break;
+			}
+			default:
+			{
+				printString("[Thread " + std::to_string(threadId) + "]: WARNING: Worker has unknown task !");
+				break;
+			}
 		}
 	}
 }
@@ -208,27 +214,28 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::launchWorkerTh
 	workersActive_ = true;
 	workerTask_ = IDLE;
 
-	for (int i=0; i < this->settings_.nThreads; i++)
+	for (int i = 0; i < this->settings_.nThreads; i++)
 	{
 		workerThreads_.push_back(std::thread(&NLOCBackendMP::threadWork, this, i));
 	}
 }
 
 
-
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex)
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory(
+	size_t firstIndex,
+	size_t lastIndex)
 {
 	/*!
 	 * In special cases, this function may be called for a single index, e.g. for the unconstrained GNMS real-time iteration scheme.
 	 * Then, don't wake up workers, but do single-threaded computation for that single index, and return.
 	 */
-	if(lastIndex == firstIndex)
+	if (lastIndex == firstIndex)
 	{
 #ifdef DEBUG_PRINT_MP
-		printString("[MP]: do single threaded linearization for single index "+ std::to_string(firstIndex) + ". Not waking up workers.");
-#endif //DEBUG_PRINT_MP
+		printString("[MP]: do single threaded linearization for single index " + std::to_string(firstIndex) +
+					". Not waking up workers.");
+#endif  //DEBUG_PRINT_MP
 		this->computeLinearizedDynamics(this->settings_.nThreads, firstIndex);
 		return;
 	}
@@ -237,10 +244,10 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 	/*!
 	 * In case of multiple points to be linearized, start multi-threading:
 	 */
-	Eigen::setNbThreads(1); // disable Eigen multi-threading
+	Eigen::setNbThreads(1);  // disable Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
 	printString("[MP]: Restricting Eigen to " + std::to_string(Eigen::nbThreads()) + " threads.");
-#endif //DEBUG_PRINT_MP
+#endif  //DEBUG_PRINT_MP
 
 	kTaken_ = 0;
 	kCompleted_ = 0;
@@ -249,51 +256,52 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 
 #ifdef DEBUG_PRINT_MP
 	printString("[MP]: Waking up workers to do linearization.");
-#endif //DEBUG_PRINT_MP
+#endif  //DEBUG_PRINT_MP
 	workerTask_ = LINEARIZE_DYNAMICS;
 	workerWakeUpCondition_.notify_all();
 
 #ifdef DEBUG_PRINT_MP
 	printString("[MP]: Will sleep now until we have linearized dynamics.");
-#endif //DEBUG_PRINT_MP
+#endif  //DEBUG_PRINT_MP
 
 	std::unique_lock<std::mutex> waitLock(kCompletedMutex_);
-	kCompletedCondition_.wait(waitLock, [this]{return kCompleted_.load() > KMax_ - KMin_;});
+	kCompletedCondition_.wait(waitLock, [this] { return kCompleted_.load() > KMax_ - KMin_; });
 	waitLock.unlock();
 	workerTask_ = IDLE;
 #ifdef DEBUG_PRINT_MP
 	printString("[MP]: Woke up again, should have linearized dynamics now.");
-#endif //DEBUG_PRINT_MP
+#endif  //DEBUG_PRINT_MP
 
 
-	Eigen::setNbThreads(this->settings_.nThreadsEigen); // restore Eigen multi-threading
+	Eigen::setNbThreads(this->settings_.nThreadsEigen);  // restore Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
 	printString("[MP]: Restoring " + std::to_string(Eigen::nbThreads()) + " Eigen threads.");
-#endif //DEBUG_PRINT_MP
+#endif  //DEBUG_PRINT_MP
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsWorker(size_t threadId)
 {
-	while(true)
+	while (true)
 	{
 		size_t k = kTaken_++;
 
-		if (k > KMax_- KMin_)
+		if (k > KMax_ - KMin_)
 		{
 			//kCompleted_++;
-			if (kCompleted_.load() > KMax_-KMin_)
+			if (kCompleted_.load() > KMax_ - KMin_)
 				kCompletedCondition_.notify_all();
 			return;
 		}
 
 #ifdef DEBUG_PRINT_MP
-		if ((k+1)%100 == 0)
-			printString("[Thread " + std::to_string(threadId) + "]: Linearizing for index k " + std::to_string ( KMax_-k ));
+		if ((k + 1) % 100 == 0)
+			printString(
+				"[Thread " + std::to_string(threadId) + "]: Linearizing for index k " + std::to_string(KMax_ - k));
 #endif
 
-		this->computeLinearizedDynamics(threadId, KMax_-k); // linearize backwards
+		this->computeLinearizedDynamics(threadId, KMax_ - k);  // linearize backwards
 
 		kCompleted_++;
 	}
@@ -301,7 +309,9 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex)
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory(
+	size_t firstIndex,
+	size_t lastIndex)
 {
 	//! fill terminal cost
 	this->initializeCostToGo();
@@ -311,11 +321,12 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 	 * In special cases, this function may be called for a single index, e.g. for the unconstrained GNMS real-time iteration scheme.
 	 * Then, don't wake up workers, but do single-threaded computation for that single index, and return.
 	 */
-	if(lastIndex == firstIndex)
+	if (lastIndex == firstIndex)
 	{
 #ifdef DEBUG_PRINT_MP
-		printString("[MP]: do single threaded cost approximation for single index " + std::to_string(firstIndex) + ". Not waking up workers.");
-#endif //DEBUG_PRINT_MP
+		printString("[MP]: do single threaded cost approximation for single index " + std::to_string(firstIndex) +
+					". Not waking up workers.");
+#endif  //DEBUG_PRINT_MP
 		this->computeQuadraticCosts(this->settings_.nThreads, firstIndex);
 		return;
 	}
@@ -324,10 +335,10 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 	/*!
 	 * In case of multiple points to be linearized, start multi-threading:
 	 */
-	Eigen::setNbThreads(1); // disable Eigen multi-threading
+	Eigen::setNbThreads(1);  // disable Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
 	printString("[MP]: Restricting Eigen to " + std::to_string(Eigen::nbThreads()) + " threads.");
-#endif //DEBUG_PRINT_MP
+#endif  //DEBUG_PRINT_MP
 
 	kTaken_ = 0;
 	kCompleted_ = 0;
@@ -336,34 +347,34 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 
 
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Waking up workers to do cost computation."<<std::endl;
-#endif //DEBUG_PRINT_MP
+	std::cout << "[MP]: Waking up workers to do cost computation." << std::endl;
+#endif  //DEBUG_PRINT_MP
 	workerTask_ = COMPUTE_COST;
 	workerWakeUpCondition_.notify_all();
 
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Will sleep now until we have cost."<<std::endl;
-#endif //DEBUG_PRINT_MP
+	std::cout << "[MP]: Will sleep now until we have cost." << std::endl;
+#endif  //DEBUG_PRINT_MP
 
 	std::unique_lock<std::mutex> waitLock(kCompletedMutex_);
-	kCompletedCondition_.wait(waitLock, [this]{return kCompleted_.load() > KMax_ - KMin_;});
+	kCompletedCondition_.wait(waitLock, [this] { return kCompleted_.load() > KMax_ - KMin_; });
 	waitLock.unlock();
 	workerTask_ = IDLE;
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Woke up again, should have cost now."<<std::endl;
-#endif //DEBUG_PRINT_MP
+	std::cout << "[MP]: Woke up again, should have cost now." << std::endl;
+#endif  //DEBUG_PRINT_MP
 
-	Eigen::setNbThreads(this->settings_.nThreadsEigen); // restore Eigen multi-threading
+	Eigen::setNbThreads(this->settings_.nThreadsEigen);  // restore Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
 	printString("[MP]: Restoring " + std::to_string(Eigen::nbThreads()) + " Eigen threads.");
-#endif //DEBUG_PRINT_MP
+#endif  //DEBUG_PRINT_MP
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsWorker(size_t threadId)
 {
-	while(true)
+	while (true)
 	{
 		size_t k = kTaken_++;
 
@@ -376,11 +387,12 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 		}
 
 #ifdef DEBUG_PRINT_MP
-		if ((k+1)%100 == 0)
-			printString("[Thread "+std::to_string(threadId)+"]: Quadratizing cost for index k "+std::to_string(KMax_ - k ));
+		if ((k + 1) % 100 == 0)
+			printString("[Thread " + std::to_string(threadId) + "]: Quadratizing cost for index k " +
+						std::to_string(KMax_ - k));
 #endif
 
-		this->computeQuadraticCosts(threadId, KMax_ - k); // compute cost backwards
+		this->computeQuadraticCosts(threadId, KMax_ - k);  // compute cost backwards
 
 		kCompleted_++;
 	}
@@ -390,7 +402,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLQProblemWorker(size_t threadId)
 {
-	while(true)
+	while (true)
 	{
 		size_t k = kTaken_++;
 
@@ -403,12 +415,13 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLQProbl
 		}
 
 #ifdef DEBUG_PRINT_MP
-		if ((k+1)%100 == 0)
-			printString("[Thread " + std::to_string(threadId) + "]: Building LQ problem for index k " + std::to_string(KMax_ - k));
+		if ((k + 1) % 100 == 0)
+			printString("[Thread " + std::to_string(threadId) + "]: Building LQ problem for index k " +
+						std::to_string(KMax_ - k));
 #endif
 
-		this->computeQuadraticCosts(threadId, KMax_-k); // compute cost backwards
-		this->computeLinearizedDynamics(threadId, KMax_-k); // linearize backwards
+		this->computeQuadraticCosts(threadId, KMax_ - k);      // compute cost backwards
+		this->computeLinearizedDynamics(threadId, KMax_ - k);  // linearize backwards
 
 		kCompleted_++;
 	}
@@ -422,13 +435,21 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 	 * In special cases, this function may be called for a single index, e.g. for the unconstrained GNMS real-time iteration scheme.
 	 * Then, don't wake up workers, but do single-threaded computation for that single index, and return.
 	 */
-	if(lastIndex == firstIndex)
+	if (lastIndex == firstIndex)
 	{
 #ifdef DEBUG_PRINT_MP
-		printString("[MP]: do single threaded shot rollout for single index " + std::to_string(firstIndex) + ". Not waking up workers.");
-#endif //DEBUG_PRINT_MP
+		printString("[MP]: do single threaded shot rollout for single index " + std::to_string(firstIndex) +
+					". Not waking up workers.");
+#endif  //DEBUG_PRINT_MP
 
-		this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_, this->xShot_, *this->substepsX_, *this->substepsU_);
+		this->rolloutSingleShot(this->settings_.nThreads,
+			firstIndex,
+			this->u_ff_,
+			this->x_,
+			this->x_,
+			this->xShot_,
+			*this->substepsX_,
+			*this->substepsU_);
 
 		this->computeSingleDefect(firstIndex, this->x_, this->xShot_, this->lqocProblem_->b_);
 		return;
@@ -437,10 +458,10 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 	/*!
 	 * In case of multiple points to be linearized, start multi-threading:
 	 */
-	Eigen::setNbThreads(1); // disable Eigen multi-threading
+	Eigen::setNbThreads(1);  // disable Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
-	printString("[MP]: Restricting Eigen to " + std::to_string (Eigen::nbThreads())  + " threads.");
-#endif //DEBUG_PRINT_MP
+	printString("[MP]: Restricting Eigen to " + std::to_string(Eigen::nbThreads()) + " threads.");
+#endif  //DEBUG_PRINT_MP
 
 
 	kTaken_ = 0;
@@ -450,34 +471,34 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 
 
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Waking up workers to do shot rollouts."<<std::endl;
-#endif //DEBUG_PRINT_MP
+	std::cout << "[MP]: Waking up workers to do shot rollouts." << std::endl;
+#endif  //DEBUG_PRINT_MP
 	workerTask_ = ROLLOUT_SHOTS;
 	workerWakeUpCondition_.notify_all();
 
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Will sleep now until we have rolled out all shots."<<std::endl;
-#endif //DEBUG_PRINT_MP
+	std::cout << "[MP]: Will sleep now until we have rolled out all shots." << std::endl;
+#endif  //DEBUG_PRINT_MP
 
 	std::unique_lock<std::mutex> waitLock(kCompletedMutex_);
-	kCompletedCondition_.wait(waitLock, [this]{return kCompleted_.load() > KMax_ - KMin_;});
+	kCompletedCondition_.wait(waitLock, [this] { return kCompleted_.load() > KMax_ - KMin_; });
 	waitLock.unlock();
 	workerTask_ = IDLE;
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Woke up again, should have rolled out all shots now."<<std::endl;
-#endif //DEBUG_PRINT_MP
+	std::cout << "[MP]: Woke up again, should have rolled out all shots now." << std::endl;
+#endif  //DEBUG_PRINT_MP
 
-	Eigen::setNbThreads(this->settings_.nThreadsEigen); // restore Eigen multi-threading
+	Eigen::setNbThreads(this->settings_.nThreadsEigen);  // restore Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
 	printString("[MP]: Restoring " + std::to_string(Eigen::nbThreads()) + " Eigen threads.");
-#endif //DEBUG_PRINT_MP
+#endif  //DEBUG_PRINT_MP
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWorker(size_t threadId)
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShotWorker(size_t threadId)
 {
-	while(true)
+	while (true)
 	{
 		size_t k = kTaken_++;
 
@@ -489,17 +510,18 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWo
 		}
 
 		size_t kShot = (KMax_ - k);
-		if(kShot % ((size_t)this->settings_.K_shot) == 0) //! only rollout when we're meeting the beginning of a shot
+		if (kShot % ((size_t)this->settings_.K_shot) == 0)  //! only rollout when we're meeting the beginning of a shot
 		{
 #ifdef DEBUG_PRINT_MP
-			if ((k+1)%100 == 0)
-				printString("[Thread " + std::to_string(threadId) + "]: rolling out shot with index " + std::to_string(KMax_ - k));
+			if ((k + 1) % 100 == 0)
+				printString("[Thread " + std::to_string(threadId) + "]: rolling out shot with index " +
+							std::to_string(KMax_ - k));
 #endif
 
-			this->rolloutSingleShot(threadId, kShot, this->u_ff_, this->x_, this->x_, this->xShot_, *this->substepsX_, *this->substepsU_);
+			this->rolloutSingleShot(
+				threadId, kShot, this->u_ff_, this->x_, this->x_, this->xShot_, *this->substepsX_, *this->substepsU_);
 
 			this->computeSingleDefect(kShot, this->x_, this->xShot_, this->lqocProblem_->b_);
-
 		}
 
 		kCompleted_++;
@@ -510,7 +532,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>:: rolloutShotWo
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineSearch()
 {
-	Eigen::setNbThreads(1); // disable Eigen multi-threading
+	Eigen::setNbThreads(1);  // disable Eigen multi-threading
 
 	alphaProcessed_.clear();
 	alphaTaken_ = 0;
@@ -521,41 +543,47 @@ SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 	lowestCostPrevious_ = this->lowestCost_;
 
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Waking up workers."<<std::endl;
-#endif //DEBUG_PRINT_MP
+	std::cout << "[MP]: Waking up workers." << std::endl;
+#endif  //DEBUG_PRINT_MP
 	workerTask_ = LINE_SEARCH;
 	workerWakeUpCondition_.notify_all();
 
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Will sleep now until we have results."<<std::endl;
-#endif //DEBUG_PRINT_MP
+	std::cout << "[MP]: Will sleep now until we have results." << std::endl;
+#endif  //DEBUG_PRINT_MP
 	std::unique_lock<std::mutex> waitLock(alphaBestFoundMutex_);
-	alphaBestFoundCondition_.wait(waitLock, [this]{return alphaBestFound_.load();});
+	alphaBestFoundCondition_.wait(waitLock, [this] { return alphaBestFound_.load(); });
 	waitLock.unlock();
 	workerTask_ = IDLE;
 #ifdef DEBUG_PRINT_MP
-	std::cout<<"[MP]: Woke up again, should have results now."<<std::endl;
-#endif //DEBUG_PRINT_MP
+	std::cout << "[MP]: Woke up again, should have results now." << std::endl;
+#endif  //DEBUG_PRINT_MP
 
 	double alphaBest = 0.0;
 	if (alphaExpBest_ != alphaExpMax_)
 	{
-		alphaBest = this->settings_.lineSearchSettings.alpha_0 * std::pow(this->settings_.lineSearchSettings.n_alpha, alphaExpBest_);
+		alphaBest = this->settings_.lineSearchSettings.alpha_0 *
+					std::pow(this->settings_.lineSearchSettings.n_alpha, alphaExpBest_);
 	}
 
-	Eigen::setNbThreads(this->settings_.nThreadsEigen); // restore Eigen multi-threading
+	Eigen::setNbThreads(this->settings_.nThreadsEigen);  // restore Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
 	printString("[MP]: Restoring " + std::to_string(Eigen::nbThreads()) + " Eigen threads.");
-#endif //DEBUG_PRINT_MP
+#endif  //DEBUG_PRINT_MP
 
-	if(this->settings_.printSummary)
+	if (this->settings_.printSummary)
 	{
-		this->lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(this->u_ff_, this->u_ff_prev_);
-		this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(this->x_, this->x_prev_);
-	}else{
+		this->lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(
+			this->u_ff_, this->u_ff_prev_);
+		this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(
+			this->x_, this->x_prev_);
+	} else
+	{
 #ifdef MATLAB
-		this->lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(this->u_ff_, this->u_ff_prev_);
-		this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(this->x_, this->x_prev_);
+		this->lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(
+			this->u_ff_, this->u_ff_prev_);
+		this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(
+			this->x_, this->x_prev_);
 #endif
 	}
 	this->x_prev_ = this->x_;
@@ -563,19 +591,18 @@ SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 
 	return alphaBest;
 
-} // end linesearch
-
+}  // end linesearch
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWorker(size_t threadId)
 {
-	while(true)
+	while (true)
 	{
 		size_t alphaExp = alphaTaken_++;
 
 #ifdef DEBUG_PRINT_MP
-		printString("[Thread "+ std::to_string(threadId)+"]: Taking alpha index " + std::to_string(alphaExp));
+		printString("[Thread " + std::to_string(threadId) + "]: Taking alpha index " + std::to_string(alphaExp));
 #endif
 
 		if (alphaExp >= alphaExpMax_ || alphaBestFound_)
@@ -584,40 +611,64 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		}
 
 		//! convert to real alpha
-		double alpha = this->settings_.lineSearchSettings.alpha_0 * std::pow(this->settings_.lineSearchSettings.n_alpha, alphaExp);
+		double alpha =
+			this->settings_.lineSearchSettings.alpha_0 * std::pow(this->settings_.lineSearchSettings.n_alpha, alphaExp);
 
 		//! local variables
 		SCALAR cost = std::numeric_limits<SCALAR>::max();
 		SCALAR intermediateCost = std::numeric_limits<SCALAR>::max();
 		SCALAR finalCost = std::numeric_limits<SCALAR>::max();
 		SCALAR defectNorm = std::numeric_limits<SCALAR>::max();
-		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_search(this->K_+1);
-		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_shot_search(this->K_+1);
-		ct::core::StateVectorArray<STATE_DIM, SCALAR> defects_recorded(this->K_+1, ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
+		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_search(this->K_ + 1);
+		ct::core::StateVectorArray<STATE_DIM, SCALAR> x_shot_search(this->K_ + 1);
+		ct::core::StateVectorArray<STATE_DIM, SCALAR> defects_recorded(
+			this->K_ + 1, ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
 		ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_recorded(this->K_);
-		typename Base::StateSubstepsPtr substepsX = typename Base::StateSubstepsPtr(new typename Base::StateSubsteps(this->K_+1));
-		typename Base::ControlSubstepsPtr substepsU = typename Base::ControlSubstepsPtr(new typename Base::ControlSubsteps(this->K_+1));
+		typename Base::StateSubstepsPtr substepsX =
+			typename Base::StateSubstepsPtr(new typename Base::StateSubsteps(this->K_ + 1));
+		typename Base::ControlSubstepsPtr substepsU =
+			typename Base::ControlSubstepsPtr(new typename Base::ControlSubsteps(this->K_ + 1));
 
 		//! set init state
 		x_search[0] = this->x_prev_[0];
 
 
-		switch(this->settings_.nlocp_algorithm)
+		switch (this->settings_.nlocp_algorithm)
 		{
-		case NLOptConSettings::NLOCP_ALGORITHM::GNMS :
-		{
-			this->executeLineSearchMultipleShooting(threadId, alpha, this->lu_, this->lx_, x_search,
-					x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, *substepsX, *substepsU, &alphaBestFound_);
-			break;
-		}
-		case NLOptConSettings::NLOCP_ALGORITHM::ILQR :
-		{
-			defectNorm = 0.0;
-			this->executeLineSearchSingleShooting(threadId, alpha, x_search, u_recorded, intermediateCost, finalCost, *substepsX, *substepsU, &alphaBestFound_);
-			break;
-		}
-		default :
-			throw std::runtime_error("Algorithm type unknown in performLineSearch()!");
+			case NLOptConSettings::NLOCP_ALGORITHM::GNMS:
+			{
+				this->executeLineSearchMultipleShooting(threadId,
+					alpha,
+					this->lu_,
+					this->lx_,
+					x_search,
+					x_shot_search,
+					defects_recorded,
+					u_recorded,
+					intermediateCost,
+					finalCost,
+					defectNorm,
+					*substepsX,
+					*substepsU,
+					&alphaBestFound_);
+				break;
+			}
+			case NLOptConSettings::NLOCP_ALGORITHM::ILQR:
+			{
+				defectNorm = 0.0;
+				this->executeLineSearchSingleShooting(threadId,
+					alpha,
+					x_search,
+					u_recorded,
+					intermediateCost,
+					finalCost,
+					*substepsX,
+					*substepsU,
+					&alphaBestFound_);
+				break;
+			}
+			default:
+				throw std::runtime_error("Algorithm type unknown in performLineSearch()!");
 		}
 
 
@@ -633,8 +684,10 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 				break;
 			}
 
-			if(this->settings_.lineSearchSettings.debugPrint){
-				printString("[LineSearch, Thread " + std::to_string(threadId) + "]: Lower cost/merit found at alpha:"+ std::to_string(alpha));
+			if (this->settings_.lineSearchSettings.debugPrint)
+			{
+				printString("[LineSearch, Thread " + std::to_string(threadId) + "]: Lower cost/merit found at alpha:" +
+							std::to_string(alpha));
 				printString("[LineSearch]: Cost:\t" + std::to_string(intermediateCost + finalCost));
 				printString("[LineSearch]: Defect:\t" + std::to_string(defectNorm));
 				printString("[LineSearch]: Merit:\t" + std::to_string(cost));
@@ -653,8 +706,10 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 			this->substepsU_ = substepsU;
 		} else
 		{
-			if(this->settings_.lineSearchSettings.debugPrint){
-				printString("[LineSearch, Thread " + std::to_string(threadId) + "]: NO lower cost/merit found at alpha:"+ std::to_string(alpha));
+			if (this->settings_.lineSearchSettings.debugPrint)
+			{
+				printString("[LineSearch, Thread " + std::to_string(threadId) +
+							"]: NO lower cost/merit found at alpha:" + std::to_string(alpha));
 				printString("[LineSearch]: Cost:\t" + std::to_string(intermediateCost + finalCost));
 				printString("[LineSearch]: Defect:\t" + std::to_string(defectNorm));
 				printString("[LineSearch]: Merit:\t" + std::to_string(cost));
@@ -666,7 +721,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		// we now check if all alphas prior to the best have been processed
 		// this also covers the case that there is no better alpha
 		bool allPreviousAlphasProcessed = true;
-		for (size_t i=0; i<alphaExpBest_; i++)
+		for (size_t i = 0; i < alphaExpBest_; i++)
 		{
 			if (alphaProcessed_[i] != 1)
 			{
@@ -685,9 +740,10 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-size_t NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::generateUniqueProcessID (const size_t& iterateNo, const int workerState)
+size_t NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::generateUniqueProcessID(const size_t& iterateNo,
+	const int workerState)
 {
-	return (10e6*(workerState +1) + iterateNo + 1);
+	return (10e6 * (workerState + 1) + iterateNo + 1);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -697,7 +753,5 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::printString(co
 }
 
 
-} // namespace optcon
-} // namespace ct
-
-
+}  // namespace optcon
+}  // namespace ct

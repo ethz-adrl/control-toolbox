@@ -22,19 +22,22 @@ int main(int argc, char **argv)
 
 	double w_n = 0.1;
 	double zeta = 5.0;
-	std::shared_ptr<ct::core::ControlledSystem<state_dim, control_dim> > oscillatorDynamics(
-			new ct::core::SecondOrderSystem(w_n, zeta));
+	std::shared_ptr<ct::core::ControlledSystem<state_dim, control_dim>> oscillatorDynamics(
+		new ct::core::SecondOrderSystem(w_n, zeta));
 
 	std::shared_ptr<ct::core::SystemLinearizer<state_dim, control_dim>> adLinearizer(
-			new ct::core::SystemLinearizer<state_dim, control_dim> (oscillatorDynamics));
+		new ct::core::SystemLinearizer<state_dim, control_dim>(oscillatorDynamics));
 
-	std::shared_ptr<ct::optcon::TermQuadratic<state_dim, control_dim>> intermediateCost (new ct::optcon::TermQuadratic<state_dim, control_dim>());
-	std::shared_ptr<ct::optcon::TermQuadratic<state_dim, control_dim>> finalCost (new ct::optcon::TermQuadratic<state_dim, control_dim>());
+	std::shared_ptr<ct::optcon::TermQuadratic<state_dim, control_dim>> intermediateCost(
+		new ct::optcon::TermQuadratic<state_dim, control_dim>());
+	std::shared_ptr<ct::optcon::TermQuadratic<state_dim, control_dim>> finalCost(
+		new ct::optcon::TermQuadratic<state_dim, control_dim>());
 	bool verbose = true;
-	intermediateCost->loadConfigFile(ct::optcon::exampleDir+"/mpcCost.info", "intermediateCost", verbose);
-	finalCost->loadConfigFile(ct::optcon::exampleDir+"/mpcCost.info", "finalCost", verbose);
+	intermediateCost->loadConfigFile(ct::optcon::exampleDir + "/mpcCost.info", "intermediateCost", verbose);
+	finalCost->loadConfigFile(ct::optcon::exampleDir + "/mpcCost.info", "finalCost", verbose);
 
-	std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction (new CostFunctionAnalytical<state_dim, control_dim>());
+	std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction(
+		new CostFunctionAnalytical<state_dim, control_dim>());
 	costFunction->addIntermediateTerm(intermediateCost);
 	costFunction->addFinalTerm(finalCost);
 
@@ -43,28 +46,30 @@ int main(int argc, char **argv)
 
 	ct::core::Time timeHorizon = 3.0;
 
-	OptConProblem<state_dim, control_dim> optConProblem (timeHorizon, x0, oscillatorDynamics, costFunction, adLinearizer);
+	OptConProblem<state_dim, control_dim> optConProblem(
+		timeHorizon, x0, oscillatorDynamics, costFunction, adLinearizer);
 
 
 	NLOptConSettings ilqr_settings;
-	ilqr_settings.dt = 0.01;	// the control discretization in [sec]
+	ilqr_settings.dt = 0.01;  // the control discretization in [sec]
 	ilqr_settings.integrator = ct::core::IntegrationType::EULERCT;
 	ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
 	ilqr_settings.max_iterations = 10;
 	ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
-	ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER; // the LQ-problems are solved using a custom Gauss-Newton Riccati solver
+	ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::
+		GNRICCATI_SOLVER;  // the LQ-problems are solved using a custom Gauss-Newton Riccati solver
 	ilqr_settings.printSummary = true;
 
 	size_t K = ilqr_settings.computeK(timeHorizon);
 
 	FeedbackArray<state_dim, control_dim> u0_fb(K, FeedbackMatrix<state_dim, control_dim>::Zero());
 	ControlVectorArray<control_dim> u0_ff(K, ControlVector<control_dim>::Zero());
-	StateVectorArray<state_dim>  x_ref_init (K+1, x0);
-	NLOptConSolver<state_dim, control_dim>::Policy_t initController (x_ref_init, u0_ff, u0_fb, ilqr_settings.dt);
+	StateVectorArray<state_dim> x_ref_init(K + 1, x0);
+	NLOptConSolver<state_dim, control_dim>::Policy_t initController(x_ref_init, u0_ff, u0_fb, ilqr_settings.dt);
 
 
 	// STEP 2-C: create an NLOptConSolver instance
-	NLOptConSolver<state_dim, control_dim>  iLQR (optConProblem, ilqr_settings);
+	NLOptConSolver<state_dim, control_dim> iLQR(optConProblem, ilqr_settings);
 
 	// set the initial guess
 	iLQR.setInitialGuess(initController);
@@ -103,7 +108,7 @@ int main(int argc, char **argv)
 
 
 	// STEP 2 : Create the iLQR-MPC object, based on the optimal control problem and the selected settings.
-	MPC<NLOptConSolver<state_dim, control_dim>> ilqr_mpc (optConProblem, ilqr_settings_mpc, mpc_settings);
+	MPC<NLOptConSolver<state_dim, control_dim>> ilqr_mpc(optConProblem, ilqr_settings_mpc, mpc_settings);
 
 	// initialize it using the previously computed initial controller
 	ilqr_mpc.setInitialGuess(initialSolution);
@@ -127,15 +132,16 @@ int main(int argc, char **argv)
 
 	std::cout << "Starting to run MPC" << std::endl;
 
-	for(size_t i = 0; i<maxNumRuns; i++)
+	for (size_t i = 0; i < maxNumRuns; i++)
 	{
 		// let's for simplicity, assume that the "measured" state is the first state from the optimal trajectory plus some noise
-		if(i>0)
-			x0 = 0.1*StateVector<state_dim>::Random();
+		if (i > 0)
+			x0 = 0.1 * StateVector<state_dim>::Random();
 
 		// time which has passed since start of MPC
 		auto current_time = std::chrono::high_resolution_clock::now();
-		ct::core::Time t = 1e-6 * std::chrono::duration_cast<std::chrono::microseconds>(current_time - start_time).count();
+		ct::core::Time t =
+			1e-6 * std::chrono::duration_cast<std::chrono::microseconds>(current_time - start_time).count();
 
 		// new optimal policy
 		ct::core::StateFeedbackController<state_dim, control_dim> newPolicy;
@@ -147,12 +153,11 @@ int main(int argc, char **argv)
 		bool success = ilqr_mpc.run(x0, t, newPolicy, ts_newPolicy);
 
 		// we break the loop in case the time horizon is reached or solve() failed
-		if(ilqr_mpc.timeHorizonReached() | !success)
+		if (ilqr_mpc.timeHorizonReached() | !success)
 			break;
 	}
 
 
 	// the summary contains some statistical data about time delays, etc.
 	ilqr_mpc.printMpcSummary();
-
 }

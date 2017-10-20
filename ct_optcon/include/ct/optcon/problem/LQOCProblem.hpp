@@ -41,7 +41,6 @@ template <int STATE_DIM, int CONTROL_DIM, typename SCALAR = double>
 class LQOCProblem
 {
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	//! constructor
@@ -56,8 +55,7 @@ public:
 	//! set all member variables to zero
 	void setZero();
 
-	void setFromTimeInvariantLinearQuadraticProblem(
-		ct::core::StateVector<STATE_DIM, SCALAR>& x0,
+	void setFromTimeInvariantLinearQuadraticProblem(ct::core::StateVector<STATE_DIM, SCALAR>& x0,
 		ct::core::ControlVector<CONTROL_DIM, SCALAR>& u0,
 		ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
 		ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
@@ -90,14 +88,9 @@ public:
 	ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> P_;
 
 private:
-
 	//! the number of discrete time steps in the LOCP, including terminal stage
 	int K_;
-
 };
 
-} 	//! optcon
-}	//! ct
-
-
-
+}  //! optcon
+}  //! ct

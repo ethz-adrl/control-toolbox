@@ -31,9 +31,8 @@ namespace optcon {
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::GNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem):
-LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>(lqocProblem),
-N_(-1)
+GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::GNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem)
+	: LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>(lqocProblem), N_(-1)
 {
 	Eigen::initParallel();
 	Eigen::setNbThreads(settings_.nThreadsEigen);
@@ -49,13 +48,14 @@ GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::GNRiccatiSolver(int N)
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::~GNRiccatiSolver()
-{}
+{
+}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::solve()
 {
-	for (int i=this->lqocProblem_->getNumberOfStages()-1; i>=0; i--)
+	for (int i = this->lqocProblem_->getNumberOfStages() - 1; i >= 0; i--)
 		solveSingleStage(i);
 
 	computeStateAndControlUpdates();
@@ -65,12 +65,12 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::solve()
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::solveSingleStage(int N)
 {
-	if (N == this->lqocProblem_->getNumberOfStages()-1)
+	if (N == this->lqocProblem_->getNumberOfStages() - 1)
 		initializeCostToGo();
 
 	designController(N);
 
-	if (N>0)
+	if (N > 0)
 		computeCostToGo(N);
 }
 
@@ -79,7 +79,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::configure(const NLOptConSettings& settings)
 {
 	settings_ = settings;
-	H_corrFix_ = settings_.epsilon*ControlMatrix::Identity();
+	H_corrFix_ = settings_.epsilon * ControlMatrix::Identity();
 }
 
 
@@ -89,7 +89,7 @@ ct::core::StateVectorArray<STATE_DIM, SCALAR> GNRiccatiSolver<STATE_DIM, CONTROL
 	LQOCProblem_t& p = *this->lqocProblem_;
 	ct::core::StateVectorArray<STATE_DIM, SCALAR> x = p.x_;
 
-	for(int k = 0; k<this->lqocProblem_->getNumberOfStages() +1 ; k++)
+	for (int k = 0; k < this->lqocProblem_->getNumberOfStages() + 1; k++)
 	{
 		x[k] += this->lx_[k];
 	}
@@ -105,7 +105,7 @@ ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> GNRiccatiSolver<STATE_DIM, CON
 
 	ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u = p.u_;
 
-	for(int k = 0; k<this->lqocProblem_->getNumberOfStages(); k++)
+	for (int k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
 	{
 		u[k] += this->lu_[k];
 	}
@@ -114,14 +114,16 @@ ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> GNRiccatiSolver<STATE_DIM, CON
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::getFeedforwardUpdates()
+ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>
+GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::getFeedforwardUpdates()
 {
 	return lv_;
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K)
+void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::getFeedback(
+	ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K)
 {
 	K = L_;
 }
@@ -137,21 +139,21 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::computeStateAndControlUpda
 
 	this->lx_[0].setZero();
 
-	for(int k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
+	for (int k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
 	{
 		//! control update rule
 		this->lu_[k] = lv_[k];
-		if (k>0) // lx is zero for k=0
+		if (k > 0)  // lx is zero for k=0
 			this->lu_[k].noalias() += L_[k] * this->lx_[k];
 
 		//! state update rule
-		this->lx_[k+1] = p.B_[k] * lv_[k] + p.b_[k];
-		if(k>0)
-			this->lx_[k+1].noalias() += (p.A_[k] + p.B_[k] * L_[k]) * this->lx_[k];
+		this->lx_[k + 1] = p.B_[k] * lv_[k] + p.b_[k];
+		if (k > 0)
+			this->lx_[k + 1].noalias() += (p.A_[k] + p.B_[k] * L_[k]) * this->lx_[k];
 
 		//! compute the norms of the updates
 		//! \todo needed?
-		this->delta_x_norm_ += this->lx_[k+1].norm();
+		this->delta_x_norm_ += this->lx_[k + 1].norm();
 		this->delta_uff_norm_ += this->lu_[k].norm();
 	}
 }
@@ -175,10 +177,10 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::setProblemImpl(std::shared
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumberOfStages(int N)
 {
-	if (N<=0)
+	if (N <= 0)
 		return;
 
-	if(N_ == N)
+	if (N_ == N)
 		return;
 
 	gv_.resize(N);
@@ -191,11 +193,11 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumberOfStages(int N
 	lv_.resize(N);
 	L_.resize(N);
 
-	this->lx_.resize(N+1);
+	this->lx_.resize(N + 1);
 	this->lu_.resize(N);
 
-	sv_.resize(N+1);
-	S_.resize(N+1);
+	sv_.resize(N + 1);
+	S_.resize(N + 1);
 
 	N_ = N;
 }
@@ -205,7 +207,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::initializeCostToGo()
 {
 	//! since intializeCostToGo is the first call, we initialize the smallestEigenvalue here.
-	smallestEigenvalue_ =  std::numeric_limits<SCALAR>::infinity();
+	smallestEigenvalue_ = std::numeric_limits<SCALAR>::infinity();
 
 	// initialize quadratic approximation of cost to go
 	const int& N = this->lqocProblem_->getNumberOfStages();
@@ -222,14 +224,14 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostToGo(size_t k)
 	LQOCProblem_t& p = *this->lqocProblem_;
 
 	S_[k] = p.Q_[k];
-	S_[k].noalias() += p.A_[k].transpose() * S_[k+1] * p.A_[k];
+	S_[k].noalias() += p.A_[k].transpose() * S_[k + 1] * p.A_[k];
 	S_[k].noalias() -= L_[k].transpose() * Hi_[k] * L_[k];
 
-	S_[k] = 0.5*(S_[k]+S_[k].transpose()).eval();
+	S_[k] = 0.5 * (S_[k] + S_[k].transpose()).eval();
 
 	sv_[k] = p.qv_[k];
-	sv_[k].noalias() += p.A_[k].transpose() * sv_[k+1];
-	sv_[k].noalias() += p.A_[k].transpose() * S_[k+1] * p.b_[k];
+	sv_[k].noalias() += p.A_[k].transpose() * sv_[k + 1];
+	sv_[k].noalias() += p.A_[k].transpose() * S_[k + 1] * p.b_[k];
 	sv_[k].noalias() += L_[k].transpose() * Hi_[k] * lv_[k];
 	sv_[k].noalias() += L_[k].transpose() * gv_[k];
 	sv_[k].noalias() += G_[k].transpose() * lv_[k];
@@ -242,21 +244,21 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 	LQOCProblem_t& p = *this->lqocProblem_;
 
 	gv_[k] = p.rv_[k];
-	gv_[k].noalias() += p.B_[k].transpose() * sv_[k+1];
-	gv_[k].noalias() += p.B_[k].transpose() * S_[k+1].template selfadjointView<Eigen::Lower>() * p.b_[k];
+	gv_[k].noalias() += p.B_[k].transpose() * sv_[k + 1];
+	gv_[k].noalias() += p.B_[k].transpose() * S_[k + 1].template selfadjointView<Eigen::Lower>() * p.b_[k];
 
 	G_[k] = p.P_[k];
 	//G_[k].noalias() += B_[k].transpose() * S_[k+1] * A_[k];
-	G_[k].noalias() += p.B_[k].transpose() * S_[k+1].template selfadjointView<Eigen::Lower>() * p.A_[k];
+	G_[k].noalias() += p.B_[k].transpose() * S_[k + 1].template selfadjointView<Eigen::Lower>() * p.A_[k];
 
 	H_[k] = p.R_[k];
 	//H_[k].noalias() += B_[k].transpose() * S_[k+1] * B_[k];
-	H_[k].noalias() += p.B_[k].transpose() * S_[k+1].template selfadjointView<Eigen::Lower>() * p.B_[k];
+	H_[k].noalias() += p.B_[k].transpose() * S_[k + 1].template selfadjointView<Eigen::Lower>() * p.B_[k];
 
-	if(settings_.fixedHessianCorrection)
+	if (settings_.fixedHessianCorrection)
 	{
 		if (settings_.epsilon > 1e-10)
-			Hi_[k] = H_[k] + settings_.epsilon*ControlMatrix::Identity();
+			Hi_[k] = H_[k] + settings_.epsilon * ControlMatrix::Identity();
 		else
 			Hi_[k] = H_[k];
 
@@ -285,8 +287,10 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 
 			if (!Hi_inverse_[k].isApprox(Hi_inverse_regular, 1e-4))
 			{
-				std::cout << "warning, inverses not identical at "<<k<<std::endl;
-				std::cout << "Hi_inverse_fixed - Hi_inverse_regular: "<<std::endl<<Hi_inverse_[k]-Hi_inverse_regular<<std::endl<<std::endl;
+				std::cout << "warning, inverses not identical at " << k << std::endl;
+				std::cout << "Hi_inverse_fixed - Hi_inverse_regular: " << std::endl
+						  << Hi_inverse_[k] - Hi_inverse_regular << std::endl
+						  << std::endl;
 			}
 		}
 
@@ -298,8 +302,8 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 		// calculate FF update
 		lv_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * gv_[k];
 
-	} else {
-
+	} else
+	{
 		// compute eigenvalues with eigenvectors enabled
 		eigenvalueSolver_.compute(H_[k], Eigen::ComputeEigenvectors);
 		const ControlMatrix& V = eigenvalueSolver_.eigenvectors().real();
@@ -353,6 +357,5 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 #endif
 }
 
-} // optcon
-} // ct
-
+}  // optcon
+}  // ct

@@ -38,7 +38,7 @@ namespace tpl {
  * @brief      Class containing and managing all the optimization variables used
  *             for in the NLP solver IPOPT and SNOPT.
  */
-template<typename SCALAR>
+template <typename SCALAR>
 class OptVector
 {
 public:
@@ -57,8 +57,7 @@ public:
 	 *
 	 * @param[in]  n     The number of the optimization variables
 	 */
-	OptVector(const size_t n) :
-	updateCount_(0)
+	OptVector(const size_t n) : updateCount_(0)
 	{
 		x_.resize(n);
 		x_.setZero();
@@ -85,29 +84,24 @@ public:
 	 */
 	void resizeConstraintVars(size_t m)
 	{
-		zMul_.resize(m+1);
+		zMul_.resize(m + 1);
 		zMul_.setZero();
-		zState_.resize(m+1);
+		zState_.resize(m + 1);
 		zState_.setZero();
 	}
 
-	void reset()
-	{
-		updateCount_ = 0;
-	}
-
+	void reset() { updateCount_ = 0; }
 	/**
 	 * @brief      Destructor
 	 */
-	virtual ~OptVector(){}
-
-	 
+	virtual ~OptVector() {}
 	/**
 	 * @brief      Resizes the vectors of the optimization variables
 	 *
 	 * @param[in]  size  The size of the new optimization variables
 	 */
-	void resizeOptimizationVars(const size_t size) {
+	void resizeOptimizationVars(const size_t size)
+	{
 		x_.resize(size);
 		xInit_.resize(size);
 		xLb_.resize(size);
@@ -121,7 +115,8 @@ public:
 	/**
 	 * @brief      Resets the optimization variables
 	 */
-	void setZero() {
+	void setZero()
+	{
 		x_.setZero();
 		xInit_.setZero();
 		xLb_.setZero();
@@ -152,7 +147,8 @@ public:
 	 * @param[in]  xLb   The lower optimization variable bound
 	 * @param[in]  xUb   The upper optimization variable bound
 	 */
-	void setBounds(const VectorXs& xLb, const VectorXs& xUb){
+	void setBounds(const VectorXs& xLb, const VectorXs& xUb)
+	{
 		xLb_ = xLb;
 		xUb_ = xUb;
 	}
@@ -163,19 +159,13 @@ public:
 	 *
 	 * @param[out] x     Lower bound
 	 */
-	void getLowerBounds(MapVecXs& x) const {
-		x = xLb_;
-	}
-
+	void getLowerBounds(MapVecXs& x) const { x = xLb_; }
 	/**
 	 * @brief      Gets the upper bounds of the optimization variables.
 	 *
 	 * @param[out]      x     The upper bound
 	 */
-	void getUpperBounds(MapVecXs& x) const {
-		x = xUb_;
-	}
-
+	void getUpperBounds(MapVecXs& x) const { x = xUb_; }
 	/**
 	 * @brief      Return the state and the multiplier of the optimization
 	 *             variables, used in the NLP solver SNOPT.
@@ -184,7 +174,8 @@ public:
 	 * @param[out] xMul    The optimization variables multiplier
 	 * @param[out] xState  The optimization variables state
 	 */
-	void getOptimizationMultState(const size_t n, MapVecXs& xMul, MapVecXi& xState) const {
+	void getOptimizationMultState(const size_t n, MapVecXs& xMul, MapVecXi& xState) const
+	{
 		assert(n == xMul_.size());
 		assert(n == xState_.size());
 		xMul = xMul_;
@@ -199,7 +190,8 @@ public:
 	 * @param[out] zMul    The constraint variable multiplier
 	 * @param[out] zState  The constraint variable state
 	 */
-	void getConstraintsMultState(const size_t m, MapVecXs& zMul, MapVecXi& zState) const {
+	void getConstraintsMultState(const size_t m, MapVecXs& zMul, MapVecXi& zState) const
+	{
 		assert(m == zMul_.size());
 		assert(m == zState_.size());
 		zMul = zMul_;
@@ -211,8 +203,7 @@ public:
 	 *
 	 * @return     the number of optimization variables
 	 */
-	size_t size() const {return x_.size();}
-
+	size_t size() const { return x_.size(); }
 	/**
 	 * @brief      Gets the bound multipliers used in the NLP solver IPOPT.
 	 *
@@ -220,20 +211,21 @@ public:
 	 * @param[out] low   The value for the lower bound multiplier
 	 * @param[out] up    The value for the upper bound multiplier
 	 */
-	void getBoundMultipliers(size_t n, MapVecXs& low, MapVecXs& up) const 
+	void getBoundMultipliers(size_t n, MapVecXs& low, MapVecXs& up) const
 	{
 		assert(n == zLow_.size());
 		low = zLow_;
 		up = zUpper_;
 	}
-	
+
 	/**
 	 * @brief      Gets the values of the constraint multipliers.
 	 *
 	 * @param[in]  m     { The number of constraints }
 	 * @param[out] x     The values of the constraint multipliers
 	 */
-	void getLambdaVars(size_t m, MapVecXs& x) const {
+	void getLambdaVars(size_t m, MapVecXs& x) const
+	{
 		assert(m == lambda_.size());
 		x = lambda_;
 	}
@@ -244,19 +236,16 @@ public:
 	 * @param[in]  n     { The number of optimization variables }
 	 * @param[out]      x     The optimization variables
 	 */
-	void getOptimizationVars(size_t n, MapVecXs& x)  const 
+	void getOptimizationVars(size_t n, MapVecXs& x) const
 	{
-		assert (n == x_.size());
+		assert(n == x_.size());
 		x = x_;
 	}
 
-	VectorXs getOptimizationVars()  const {
-		return x_;
-	}
-
-	void getInitialGuess(size_t n, MapVecXs& x) const 
+	VectorXs getOptimizationVars() const { return x_; }
+	void getInitialGuess(size_t n, MapVecXs& x) const
 	{
-		assert (n == xInit_.size());
+		assert(n == xInit_.size());
 		x = xInit_;
 	}
 
@@ -269,10 +258,9 @@ public:
 	 * @param[in]  zU      The upper bound multiplier
 	 * @param[in]  lambda  The constraint multiplier
 	 */
-	void setNewIpoptSolution(
-		const MapConstVecXs& x, 
-		const MapConstVecXs& zL, 
-		const MapConstVecXs& zU, 
+	void setNewIpoptSolution(const MapConstVecXs& x,
+		const MapConstVecXs& zL,
+		const MapConstVecXs& zU,
 		const MapConstVecXs& lambda)
 	{
 		x_ = x;
@@ -291,8 +279,11 @@ public:
 	 * @param[in]  fMul    The constraints multiplier
 	 * @param[in]  fState  The constraints state
 	 */
-	void setNewSnoptSolution(const MapVecXs& x, const MapVecXs& xMul, 
-		const MapVecXi& xState, const MapVecXs& fMul, const MapVecXi& fState)
+	void setNewSnoptSolution(const MapVecXs& x,
+		const MapVecXs& xMul,
+		const MapVecXi& xState,
+		const MapVecXs& fMul,
+		const MapVecXi& fState)
 	{
 		x_ = x;
 		xMul_ = xMul;
@@ -325,36 +316,27 @@ public:
 	 *
 	 * @return     The update counter
 	 */
-	size_t getUpdateCount() const{
-		return updateCount_;
-	}
-
-
+	size_t getUpdateCount() const { return updateCount_; }
 protected:
-	VectorXs x_; 	/*!< The optimization variables */
+	VectorXs x_; /*!< The optimization variables */
 	VectorXs xInit_;
-	VectorXs xLb_;	/*!< lower bound on optimization vector */
-	VectorXs xUb_;	/*!< upper bound on optimization vector */
+	VectorXs xLb_; /*!< lower bound on optimization vector */
+	VectorXs xUb_; /*!< upper bound on optimization vector */
 
 	VectorXs zUpper_; /*!< The upper bound multiplier, used in IPOPT */
-	VectorXs zLow_; 	/*!< The lower bound multiplier, used in IPOPT */
+	VectorXs zLow_;   /*!< The lower bound multiplier, used in IPOPT */
 	VectorXs lambda_; /*!< The constraint multiplier, used in IPOPT */
 
 	// Snopt variables
-	VectorXs xMul_; 		/*!< The optimization variable multiplier, used in SNOPT */
-	VectorXi xState_;	/*!< The optimization variable state, used in SNOPT */
-	VectorXs zMul_;		/*!< The constraint multiplier, used in SNOPT */
-	VectorXi zState_;	/*!< The constraint state, used in SNOPT */
+	VectorXs xMul_;   /*!< The optimization variable multiplier, used in SNOPT */
+	VectorXi xState_; /*!< The optimization variable state, used in SNOPT */
+	VectorXs zMul_;   /*!< The constraint multiplier, used in SNOPT */
+	VectorXi zState_; /*!< The constraint state, used in SNOPT */
 
 	size_t updateCount_; /*!< The number of optimization variable updates */
-
 };
-
 }
 
 typedef tpl::OptVector<double> OptVector;
-
 }
 }
-
-

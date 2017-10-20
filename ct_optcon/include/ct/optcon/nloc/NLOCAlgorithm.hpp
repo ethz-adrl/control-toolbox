@@ -27,16 +27,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
 class NLOCAlgorithm
 {
-
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> Backend_t;
@@ -45,15 +43,11 @@ public:
 	typedef NLOptConSettings Settings_t;
 	typedef SCALAR Scalar_t;
 
-	NLOCAlgorithm(const std::shared_ptr<Backend_t>& backend) :
-		backend_(backend)
-	{}
+	NLOCAlgorithm(const std::shared_ptr<Backend_t>& backend) : backend_(backend) {}
+	virtual ~NLOCAlgorithm() {}
+	virtual void configure(const Settings_t& settings) = 0;
 
-	virtual ~NLOCAlgorithm(){}
-
-	virtual void configure(const Settings_t& settings)  = 0;
-
-	virtual void prepareIteration()  = 0;
+	virtual void prepareIteration() = 0;
 
 	virtual bool finishIteration() = 0;
 
@@ -61,17 +55,12 @@ public:
 
 	virtual void setInitialGuess(const Policy_t& initialGuess) = 0;
 
-	virtual void prepareMPCIteration()  = 0;
+	virtual void prepareMPCIteration() = 0;
 
 	virtual bool finishMPCIteration() = 0;
 
 protected:
 	std::shared_ptr<Backend_t> backend_;
-
 };
-
 }
 }
-
-
-

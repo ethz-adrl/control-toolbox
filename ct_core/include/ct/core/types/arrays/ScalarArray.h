@@ -35,7 +35,7 @@ namespace core {
 /*!
  * This class stores an array of scalar data types.
  */
-template<class SCALAR = double>
+template <class SCALAR = double>
 class ScalarArray : public DiscreteArray<SCALAR>
 {
 public:
@@ -44,7 +44,7 @@ public:
 	typedef std::vector<Eigen::Matrix<SCALAR, 1, 1>, Eigen::aligned_allocator<Eigen::Matrix<SCALAR, 1, 1>>> EigenTraj;
 
 	//! default constructor
-	ScalarArray() {};
+	ScalarArray(){};
 
 	//! resize constructor
 	/*!
@@ -52,44 +52,40 @@ public:
 	 * @param n length of array
 	 * @param value default value
 	 */
-	ScalarArray(size_t n, const SCALAR& value=SCALAR())
-		: DiscreteArray<SCALAR>(n,value)  {};
+	ScalarArray(size_t n, const SCALAR& value = SCALAR()) : DiscreteArray<SCALAR>(n, value){};
 
 	//! copy constructor
-	ScalarArray(const ScalarArray& other)
-		: DiscreteArray<SCALAR>(other)  {};
+	ScalarArray(const ScalarArray& other) : DiscreteArray<SCALAR>(other){};
 
 	//! constructor from std::vector
-	ScalarArray(const std::vector<SCALAR>& arg):
-		DiscreteArray<SCALAR>(){
-		for(size_t i = 0; i<arg.size(); i++)
+	ScalarArray(const std::vector<SCALAR>& arg) : DiscreteArray<SCALAR>()
+	{
+		for (size_t i = 0; i < arg.size(); i++)
 			this->push_back(arg[i]);
 	}
 
 	//! destructor
-	virtual ~ScalarArray(){}
-
+	virtual ~ScalarArray() {}
 	void fromEigenTrajectory(const EigenTraj in)
 	{
-		for(auto el : in)
-			this->push_back(el(0,0));
-	}	
+		for (auto el : in)
+			this->push_back(el(0, 0));
+	}
 
 	//! convert to an Eigen trajectory
-	EigenTraj toEigenTrajectory(){
+	EigenTraj toEigenTrajectory()
+	{
 		EigenTraj eigenTraj;
-		for(size_t i = 0; i<this->size(); i++){
+		for (size_t i = 0; i < this->size(); i++)
+		{
 			Eigen::Matrix<SCALAR, 1, 1> newElement;
-			newElement(0,0) = (*this)[i];
+			newElement(0, 0) = (*this)[i];
 			eigenTraj.push_back(newElement);
 		}
 		return eigenTraj;
 	}
 
 private:
-
 };
-
 }
 }
-

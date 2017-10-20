@@ -49,16 +49,16 @@ class ADLinearizerBase : public LinearSystem<STATE_DIM, CONTROL_DIM>
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	static_assert(
-			(std::is_same<SCALAR, CppAD::AD<double> >::value)
-		 || (std::is_same<SCALAR, CppAD::AD<CppAD::cg::CG<double> > >::value),
-		 "SCALAR template parameter in ADLinearizerBase should either be of CppAD::AD<double> or CppAD::AD<CppAD::cg::double> type");
+	static_assert((std::is_same<SCALAR, CppAD::AD<double>>::value) ||
+					  (std::is_same<SCALAR, CppAD::AD<CppAD::cg::CG<double>>>::value),
+		"SCALAR template parameter in ADLinearizerBase should either be of CppAD::AD<double> or "
+		"CppAD::AD<CppAD::cg::double> type");
 
 	typedef StateVector<STATE_DIM> state_vector_t;
-	typedef ControlVector<CONTROL_DIM>  control_vector_t;
+	typedef ControlVector<CONTROL_DIM> control_vector_t;
 
 	typedef StateVector<STATE_DIM, SCALAR> state_vector_ad_t;
-	typedef ControlVector<CONTROL_DIM, SCALAR>  control_vector_ad_t;
+	typedef ControlVector<CONTROL_DIM, SCALAR> control_vector_ad_t;
 
 	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_t;
 	typedef Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> state_control_matrix_t;
@@ -67,18 +67,15 @@ public:
 	/*!
 	 * @param nonlinearSystem non-linear system to linearize
 	 */
-	ADLinearizerBase(
-			std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> > nonlinearSystem):
-		LinearSystem<STATE_DIM, CONTROL_DIM>(nonlinearSystem->getType()),
-		nonlinearSystem_(nonlinearSystem)
+	ADLinearizerBase(std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> nonlinearSystem)
+		: LinearSystem<STATE_DIM, CONTROL_DIM>(nonlinearSystem->getType()), nonlinearSystem_(nonlinearSystem)
 	{
 		initialize();
 	}
 
 	//! copy constructor
-	ADLinearizerBase(const ADLinearizerBase& arg):
-		LinearSystem<STATE_DIM, CONTROL_DIM> (arg),
-		nonlinearSystem_(arg.nonlinearSystem_->clone())
+	ADLinearizerBase(const ADLinearizerBase& arg)
+		: LinearSystem<STATE_DIM, CONTROL_DIM>(arg), nonlinearSystem_(arg.nonlinearSystem_->clone())
 	{
 		setupSparsityA();
 		setupSparsityB();
@@ -86,14 +83,12 @@ public:
 	}
 
 	//! destructor
-	virtual ~ADLinearizerBase(){}
-
-
+	virtual ~ADLinearizerBase() {}
 protected:
-
-	const size_t A_entries = STATE_DIM*STATE_DIM;	//!< number of entries in the state Jacobian
-	const size_t B_entries = STATE_DIM*CONTROL_DIM; //!< number of entries in the input Jacobian
-	const size_t FullJac_entries = (STATE_DIM+CONTROL_DIM)*STATE_DIM; //!< number of entries in the stacked Jacobian
+	const size_t A_entries = STATE_DIM * STATE_DIM;    //!< number of entries in the state Jacobian
+	const size_t B_entries = STATE_DIM * CONTROL_DIM;  //!< number of entries in the input Jacobian
+	const size_t FullJac_entries =
+		(STATE_DIM + CONTROL_DIM) * STATE_DIM;  //!< number of entries in the stacked Jacobian
 
 	//! initialize all utilities
 	/*!
@@ -142,7 +137,7 @@ protected:
 	{
 		// the derivative is a STATE_DIM*STATE_DIM Matrix:
 		// dF/dx = [ A, B ]^T
-		Eigen::Matrix<bool, STATE_DIM+CONTROL_DIM, STATE_DIM> sparsity;
+		Eigen::Matrix<bool, STATE_DIM + CONTROL_DIM, STATE_DIM> sparsity;
 		sparsity.setZero();
 		sparsity.template topRows<STATE_DIM>().setOnes();
 
@@ -155,7 +150,7 @@ protected:
 	{
 		// the derivative is a STATE_DIM*CONTROL_DIM Matrix:
 		// dF/dx = [ A, B ]^T
-		Eigen::Matrix<bool, STATE_DIM+CONTROL_DIM, STATE_DIM> sparsity;
+		Eigen::Matrix<bool, STATE_DIM + CONTROL_DIM, STATE_DIM> sparsity;
 		sparsity.setZero();
 		sparsity.template bottomRows<CONTROL_DIM>().setOnes();
 
@@ -163,18 +158,14 @@ protected:
 		sparsityB_.clearWork();
 	}
 
-	std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> nonlinearSystem_; //!< instance of the non-linear system
+	std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>>
+		nonlinearSystem_;  //!< instance of the non-linear system
 
-	CppAD::ADFun<typename SCALAR::value_type> f_; //!< Auto-Diff function
+	CppAD::ADFun<typename SCALAR::value_type> f_;  //!< Auto-Diff function
 
-	SparsityPattern sparsityA_; //!< sparsity pattern of the state Jacobian
-	SparsityPattern sparsityB_; //!< sparsity pattern of the input Jacobian
-
+	SparsityPattern sparsityA_;  //!< sparsity pattern of the state Jacobian
+	SparsityPattern sparsityB_;  //!< sparsity pattern of the input Jacobian
 };
-
 }
 }
 }
-
-
-

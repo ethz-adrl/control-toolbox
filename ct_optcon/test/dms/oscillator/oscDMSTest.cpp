@@ -33,19 +33,17 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/matlab.hpp>
 #endif
 
-namespace ct{
-namespace optcon{
-namespace example{
+namespace ct {
+namespace optcon {
+namespace example {
 
 class OscDms
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	typedef DmsDimensions<2,1> OscDimensions;
-	
-	OscDms() :
-		w_n_(0.5),
-		zeta_(0.01)
+	typedef DmsDimensions<2, 1> OscDimensions;
+
+	OscDms() : w_n_(0.5), zeta_(0.01)
 	{
 		matlabPathIPOPT_ = std::string(DATA_DIR) + "/solutionIpopt.mat";
 		matlabPathSNOPT_ = std::string(DATA_DIR) + "/solutionSnopt.mat";
@@ -56,7 +54,7 @@ public:
 		settings_.splineType_ = DmsSettings::PIECEWISE_LINEAR;
 		settings_.costEvaluationType_ = DmsSettings::FULL;
 		settings_.objectiveType_ = DmsSettings::KEEP_TIME_AND_GRID;
-		settings_.h_min_ = 0.1; // minimum admissible distance between two nodes in [sec]
+		settings_.h_min_ = 0.1;  // minimum admissible distance between two nodes in [sec]
 		settings_.integrationType_ = DmsSettings::RK4;
 		settings_.dt_sim_ = 0.01;
 		settings_.absErrTol_ = 1e-8;
@@ -65,10 +63,7 @@ public:
 		settings_.print();
 	}
 
-	~OscDms(){
-		std::cout << "Oscillator dms destructor called" << std::endl;
-	}
-
+	~OscDms() { std::cout << "Oscillator dms destructor called" << std::endl; }
 	void getIpoptMatlabTrajectories()
 	{
 #ifdef MATLAB
@@ -76,10 +71,10 @@ public:
 		assert(matFileIpopt_.isOpen());
 		matFileIpopt_.get("stateDmsIpopt", stateMatIpopt_.toImplementation());
 		matFileIpopt_.get("inputDmsIpopt", inputMatIpopt_.toImplementation());
-		std::vector<Eigen::Matrix<double, 1, 1>, Eigen::aligned_allocator<Eigen::Matrix<double, 1, 1>>> timeEigen;		
+		std::vector<Eigen::Matrix<double, 1, 1>, Eigen::aligned_allocator<Eigen::Matrix<double, 1, 1>>> timeEigen;
 		matFileIpopt_.get("timeDmsIpopt", timeEigen);
 		timeMatIpopt_.fromEigenTrajectory(timeEigen);
-		matFileIpopt_.close();	
+		matFileIpopt_.close();
 #endif
 	}
 
@@ -99,43 +94,39 @@ public:
 
 	void initialize()
 	{
-		oscillator_ = std::shared_ptr<ct::core::SecondOrderSystem> (new ct::core::SecondOrderSystem(w_n_, zeta_));
-		x_0_ << 0.0,0.0;
+		oscillator_ = std::shared_ptr<ct::core::SecondOrderSystem>(new ct::core::SecondOrderSystem(w_n_, zeta_));
+		x_0_ << 0.0, 0.0;
 		x_final_ << 2.0, -1.0;
-		Q_ << 	0.0,0.0,
-				0.0,10.0;
+		Q_ << 0.0, 0.0, 0.0, 10.0;
 
-		Q_final_ << 0.0,0.0,
-					0.0,0.0;
+		Q_final_ << 0.0, 0.0, 0.0, 0.0;
 
 		R_ << 0.001;
 		u_des_ << 0.0;
 
-		costFunction_ = std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1>> 
-				(new ct::optcon::CostFunctionQuadraticSimple<2,1>(Q_, R_, x_final_, u_des_, x_final_, Q_final_));
-
-
+		costFunction_ = std::shared_ptr<ct::optcon::CostFunctionQuadratic<2, 1>>(
+			new ct::optcon::CostFunctionQuadraticSimple<2, 1>(Q_, R_, x_final_, u_des_, x_final_, Q_final_));
 	}
 
 	void getIpoptSolution()
 	{
 		settings_.solverSettings_.solverType_ = NlpSolverSettings::IPOPT;
 
-		pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>
-				(new ct::optcon::ConstraintContainerAnalytical<2, 1>());
+		pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
+			new ct::optcon::ConstraintContainerAnalytical<2, 1>());
 
-		std::shared_ptr<TerminalConstraint<2,1>> termConstraint(new TerminalConstraint<2,1>(x_final_));
+		std::shared_ptr<TerminalConstraint<2, 1>> termConstraint(new TerminalConstraint<2, 1>(x_final_));
 
 		termConstraint->setName("TerminalConstraint");
 		pureStateConstraints_->addTerminalConstraint(termConstraint, true);
 		pureStateConstraints_->initialize();
 
-		OptConProblem<2,1> optProblem(oscillator_, costFunction_);
+		OptConProblem<2, 1> optProblem(oscillator_, costFunction_);
 		optProblem.setInitialState(x_0_);
 
 		optProblem.setTimeHorizon(settings_.T_);
 		optProblem.setPureStateConstraints(pureStateConstraints_);
-		dmsPlanner_ = std::shared_ptr<DmsSolver<2,1>> (new DmsSolver<2,1>(optProblem, settings_));
+		dmsPlanner_ = std::shared_ptr<DmsSolver<2, 1>>(new DmsSolver<2, 1>(optProblem, settings_));
 
 		calcInitGuess();
 		dmsPlanner_->setInitialGuess(initialPolicy_);
@@ -152,21 +143,21 @@ public:
 	{
 		settings_.solverSettings_.solverType_ = NlpSolverSettings::SNOPT;
 
-		pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>
-				(new ct::optcon::ConstraintContainerAnalytical<2, 1>());
+		pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
+			new ct::optcon::ConstraintContainerAnalytical<2, 1>());
 
-		std::shared_ptr<TerminalConstraint<2,1>> termConstraint(new TerminalConstraint<2,1>(x_final_));
+		std::shared_ptr<TerminalConstraint<2, 1>> termConstraint(new TerminalConstraint<2, 1>(x_final_));
 
 		termConstraint->setName("TerminalConstraint");
 		pureStateConstraints_->addTerminalConstraint(termConstraint, true);
 		pureStateConstraints_->initialize();
 
-		OptConProblem<2,1> optProblem(oscillator_, costFunction_);
+		OptConProblem<2, 1> optProblem(oscillator_, costFunction_);
 		optProblem.setInitialState(x_0_);
 
 		optProblem.setTimeHorizon(settings_.T_);
 		optProblem.setPureStateConstraints(pureStateConstraints_);
-		dmsPlanner_ = std::shared_ptr<DmsSolver<2,1>> (new DmsSolver<2,1>(optProblem, settings_));
+		dmsPlanner_ = std::shared_ptr<DmsSolver<2, 1>>(new DmsSolver<2, 1>(optProblem, settings_));
 
 		calcInitGuess();
 		dmsPlanner_->setInitialGuess(initialPolicy_);
@@ -182,7 +173,7 @@ public:
 	{
 #ifdef MATLAB
 		ASSERT_TRUE(stateSolutionIpopt_.size() == stateMatIpopt_.size());
-		for(size_t i = 0; i < stateSolutionIpopt_.size(); ++i)
+		for (size_t i = 0; i < stateSolutionIpopt_.size(); ++i)
 		{
 			ASSERT_TRUE(stateSolutionIpopt_[i].isApprox(stateMatIpopt_[i]));
 			ASSERT_TRUE(inputSolutionIpopt_[i].isApprox(inputMatIpopt_[i]));
@@ -195,9 +186,9 @@ public:
 	{
 #ifdef MATLAB
 		ASSERT_TRUE(stateSolutionSnopt_.size() == stateMatSnopt_.size());
-		for(size_t i = 0; i < stateSolutionSnopt_.size(); ++i)
+		for (size_t i = 0; i < stateSolutionSnopt_.size(); ++i)
 		{
-			ASSERT_TRUE(stateSolutionSnopt_[i].isApprox(stateMatSnopt_[i]));			
+			ASSERT_TRUE(stateSolutionSnopt_[i].isApprox(stateMatSnopt_[i]));
 			ASSERT_TRUE(inputSolutionSnopt_[i].isApprox(inputMatSnopt_[i]));
 			ASSERT_TRUE(timeSolutionSnopt_[i] == timeMatSnopt_[i]);
 		}
@@ -210,7 +201,7 @@ private:
 	{
 		x_initguess_.resize(settings_.N_ + 1, OscDimensions::state_vector_t::Zero());
 		u_initguess_.resize(settings_.N_ + 1, OscDimensions::control_vector_t::Zero());
-		for(size_t i = 0; i < settings_.N_ + 1; ++i)
+		for (size_t i = 0; i < settings_.N_ + 1; ++i)
 		{
 			x_initguess_[i] = x_0_ + (x_final_ - x_0_) * (i / settings_.N_);
 		}
@@ -221,15 +212,15 @@ private:
 
 	double w_n_;
 	double zeta_;
-	std::shared_ptr<ct::core::SecondOrderSystem > oscillator_;
+	std::shared_ptr<ct::core::SecondOrderSystem> oscillator_;
 
 	std::string matlabPathIPOPT_;
 	std::string matlabPathSNOPT_;
 
 	DmsSettings settings_;
 	std::shared_ptr<DmsSolver<2, 1>> dmsPlanner_;
-	std::shared_ptr<ct::optcon::CostFunctionQuadratic<2,1> >  costFunction_;
-	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1> > pureStateConstraints_;
+	std::shared_ptr<ct::optcon::CostFunctionQuadratic<2, 1>> costFunction_;
+	std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>> pureStateConstraints_;
 
 	OscDimensions::state_vector_t x_0_;
 	OscDimensions::state_vector_t x_final_;
@@ -262,8 +253,7 @@ private:
 #ifdef MATLAB
 	matlab::MatFile matFileIpopt_;
 	matlab::MatFile matFileSnopt_;
-#endif //MATLAB
-
+#endif  //MATLAB
 };
 
 TEST(DmsTest, OscDmsTest)
@@ -274,20 +264,19 @@ TEST(DmsTest, OscDmsTest)
 	oscDms.getSnoptMatlabTrajectories();
 	oscDms.getSnoptSolution();
 	oscDms.compareSnoptSolutions();
-#endif// BUILD_WITH_SNOPT_SUPPORT
+#endif  // BUILD_WITH_SNOPT_SUPPORT
 
 #ifdef BUILD_WITH_IPOPT_SUPPORT
 	oscDms.getIpoptMatlabTrajectories();
 	oscDms.getIpoptSolution();
 	oscDms.compareIpoptSolutions();
-#endif // BUILD_WITH_IPOPT_SUPPORT		
-} 
+#endif  // BUILD_WITH_IPOPT_SUPPORT
+}
 
 
-
-} // namespace example
-} // namespace optcon
-} // namespace ct
+}  // namespace example
+}  // namespace optcon
+}  // namespace ct
 
 /*!
  * This unit test applies Direct Multiple Shooting to an oscillator system, uses different solvers and compares the outputs.
@@ -299,5 +288,3 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }
-
-

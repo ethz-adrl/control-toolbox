@@ -48,7 +48,6 @@ namespace optcon {
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class ContinuityConstraint : public tpl::DiscreteConstraintBase<SCALAR>
 {
-
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -65,13 +64,12 @@ public:
 	typedef typename DIMENSIONS::state_control_matrix_array_t state_control_matrix_array_t;
 
 	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
-	typedef Eigen::Matrix< SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
+	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
 	/**
 	 * @brief      Default constructor
 	 */
 	ContinuityConstraint() {}
-
 	/**
 	 * @brief      Custom constructor
 	 *
@@ -80,33 +78,27 @@ public:
 	 * @param[in]  shotIndex      The shot number
 	 * @param[in]  settings       The dms settings
 	 */
-	ContinuityConstraint(
-			std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>> shotContainer,
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
-			size_t shotIndex,
-			const DmsSettings settings
-			)
-	:
-		shotContainer_(shotContainer),
-		w_(w),
-		shotIndex_(shotIndex),
-		settings_(settings)
+	ContinuityConstraint(std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>> shotContainer,
+		std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
+		size_t shotIndex,
+		const DmsSettings settings)
+		: shotContainer_(shotContainer), w_(w), shotIndex_(shotIndex), settings_(settings)
 	{
 		lb_.setConstant(SCALAR(0.0));
 		ub_.setConstant(SCALAR(0.0));
 
 		size_t nr = 0;
-		
+
 		switch (settings_.splineType_)
 		{
 			case DmsSettings::ZERO_ORDER_HOLD:
 			{
-				nr = STATE_DIM*STATE_DIM + STATE_DIM*CONTROL_DIM + STATE_DIM;
+				nr = STATE_DIM * STATE_DIM + STATE_DIM * CONTROL_DIM + STATE_DIM;
 				break;
 			}
 			case DmsSettings::PIECEWISE_LINEAR:
 			{
-				nr = STATE_DIM*STATE_DIM + STATE_DIM*CONTROL_DIM + STATE_DIM + STATE_DIM*CONTROL_DIM;
+				nr = STATE_DIM * STATE_DIM + STATE_DIM * CONTROL_DIM + STATE_DIM + STATE_DIM * CONTROL_DIM;
 				break;
 			}
 			default:
@@ -125,8 +117,8 @@ public:
 	{
 		stateNext_ = shotContainer_->getStateIntegrated();
 		assert(stateNext_ == stateNext_);
-		assert(w_->getOptimizedState(shotIndex_+1) == w_->getOptimizedState(shotIndex_+1));
-		return w_->getOptimizedState(shotIndex_+1) - stateNext_;
+		assert(w_->getOptimizedState(shotIndex_ + 1) == w_->getOptimizedState(shotIndex_ + 1));
+		return w_->getOptimizedState(shotIndex_ + 1) - stateNext_;
 	}
 
 	virtual VectorXs evalSparseJacobian() override
@@ -136,19 +128,19 @@ public:
 		{
 			case DmsSettings::ZERO_ORDER_HOLD:
 			{
-				computeXblock();			// add the big block (derivative w.r.t. state s_i)
-				computeUblock(); 		// add the smaller block (derivative w.r.t. control q_i)
-				computeIblock();	// add the diagonal (derivative w.r.t. state s_(i+1))
+				computeXblock();  // add the big block (derivative w.r.t. state s_i)
+				computeUblock();  // add the smaller block (derivative w.r.t. control q_i)
+				computeIblock();  // add the diagonal (derivative w.r.t. state s_(i+1))
 				// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
 				// 	computeHblock();
 				break;
 			}
 			case DmsSettings::PIECEWISE_LINEAR:
 			{
-				computeXblock();			// add the big block (derivative w.r.t. state s_i)
-				computeUblock(); 		// add the smaller block (derivative w.r.t. control q_i)
-				computeIblock();	// add the diagonal (derivative w.r.t. state s_(i+1))
-				computeUblock_2(); 	// add the smaller block (derivative w.r.t. control q_(i+1))
+				computeXblock();    // add the big block (derivative w.r.t. state s_i)
+				computeUblock();    // add the smaller block (derivative w.r.t. control q_i)
+				computeIblock();    // add the diagonal (derivative w.r.t. state s_(i+1))
+				computeUblock_2();  // add the smaller block (derivative w.r.t. control q_(i+1))
 				// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
 				// 	computeHblock();
 				break;
@@ -168,12 +160,12 @@ public:
 		{
 			case DmsSettings::ZERO_ORDER_HOLD:
 			{
-				no = STATE_DIM*STATE_DIM + STATE_DIM*CONTROL_DIM + STATE_DIM*1;
+				no = STATE_DIM * STATE_DIM + STATE_DIM * CONTROL_DIM + STATE_DIM * 1;
 				break;
 			}
 			case DmsSettings::PIECEWISE_LINEAR:
 			{
-				no = STATE_DIM*STATE_DIM + STATE_DIM*CONTROL_DIM + STATE_DIM*1 + STATE_DIM*CONTROL_DIM;
+				no = STATE_DIM * STATE_DIM + STATE_DIM * CONTROL_DIM + STATE_DIM * 1 + STATE_DIM * CONTROL_DIM;
 				break;
 			}
 			default:
@@ -188,7 +180,7 @@ public:
 		// 	no += STATE_DIM;
 		// }
 
-		return no;		
+		return no;
 	}
 
 
@@ -201,35 +193,35 @@ public:
 			case DmsSettings::ZERO_ORDER_HOLD:
 			{
 				// add the big block (derivative w.r.t. state)
-				indexNumber += BASE::genBlockIndices(w_->getStateIndex(shotIndex_), 
-					STATE_DIM, STATE_DIM, iRow_vec, jCol_vec, indexNumber);
+				indexNumber += BASE::genBlockIndices(
+					w_->getStateIndex(shotIndex_), STATE_DIM, STATE_DIM, iRow_vec, jCol_vec, indexNumber);
 
 				// add the smaller block (derivative w.r.t. control)
-				indexNumber += BASE::genBlockIndices(w_->getControlIndex(shotIndex_), 
-					STATE_DIM, CONTROL_DIM, iRow_vec, jCol_vec, indexNumber);
+				indexNumber += BASE::genBlockIndices(
+					w_->getControlIndex(shotIndex_), STATE_DIM, CONTROL_DIM, iRow_vec, jCol_vec, indexNumber);
 
 				// add the diagonal
-				indexNumber += BASE::genDiagonalIndices(w_->getStateIndex(shotIndex_ + 1), 
-					STATE_DIM, iRow_vec, jCol_vec, indexNumber);
+				indexNumber += BASE::genDiagonalIndices(
+					w_->getStateIndex(shotIndex_ + 1), STATE_DIM, iRow_vec, jCol_vec, indexNumber);
 				break;
 			}
 			case DmsSettings::PIECEWISE_LINEAR:
 			{
 				// add the big block (derivative w.r.t. state)
-				indexNumber += BASE::genBlockIndices(w_->getStateIndex(shotIndex_), 
-					STATE_DIM, STATE_DIM, iRow_vec, jCol_vec, indexNumber);
+				indexNumber += BASE::genBlockIndices(
+					w_->getStateIndex(shotIndex_), STATE_DIM, STATE_DIM, iRow_vec, jCol_vec, indexNumber);
 
 				// add the smaller block (derivative w.r.t. control)
-				indexNumber += BASE::genBlockIndices(w_->getControlIndex(shotIndex_), 
-					STATE_DIM, CONTROL_DIM, iRow_vec, jCol_vec, indexNumber);
+				indexNumber += BASE::genBlockIndices(
+					w_->getControlIndex(shotIndex_), STATE_DIM, CONTROL_DIM, iRow_vec, jCol_vec, indexNumber);
 
 				// add the diagonal
-				indexNumber += BASE::genDiagonalIndices(w_->getStateIndex(shotIndex_ + 1), 
-					STATE_DIM, iRow_vec, jCol_vec, indexNumber);
+				indexNumber += BASE::genDiagonalIndices(
+					w_->getStateIndex(shotIndex_ + 1), STATE_DIM, iRow_vec, jCol_vec, indexNumber);
 
 				// add the fourth block (derivative w.r.t. control)
-				indexNumber += BASE::genBlockIndices(w_->getControlIndex(shotIndex_ + 1), 
-					STATE_DIM, CONTROL_DIM, iRow_vec, jCol_vec, indexNumber);
+				indexNumber += BASE::genBlockIndices(
+					w_->getControlIndex(shotIndex_ + 1), STATE_DIM, CONTROL_DIM, iRow_vec, jCol_vec, indexNumber);
 				break;
 			}
 			default:
@@ -241,28 +233,15 @@ public:
 		/* for the derivatives w.r.t. the time optimization variables (t_i) */
 		// if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
 		// {
-		// 	indexNumber += BASE::genBlockIndices(w_->getTimeSegmentIndex(shotIndex_), 
+		// 	indexNumber += BASE::genBlockIndices(w_->getTimeSegmentIndex(shotIndex_),
 		// 		STATE_DIM, 1, iRow_vec, jCol_vec, indexNumber);
 		// }
 	}
 
-	virtual VectorXs getLowerBound() override
-	{
-		return lb_;
-	}
-
-	virtual VectorXs getUpperBound() override
-	{
-		return ub_;
-	}
-
-	virtual size_t getConstraintSize() override
-	{
-		return STATE_DIM;
-	}
-
+	virtual VectorXs getLowerBound() override { return lb_; }
+	virtual VectorXs getUpperBound() override { return ub_; }
+	virtual size_t getConstraintSize() override { return STATE_DIM; }
 private:
-
 	/**
 	 * @brief      Evaluates the sparse jacobian with respect to the discretized
 	 *             states s_i
@@ -300,9 +279,9 @@ private:
 	VectorXs jacLocal_;
 	size_t count_local_;
 	state_vector_t stateNext_;
-	
+
 	state_vector_t lb_;
-	state_vector_t ub_;	
+	state_vector_t ub_;
 };
 
 
@@ -341,47 +320,46 @@ private:
 // }
 
 
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void ContinuityConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::computeXblock()
 {
-	state_matrix_t mat = - shotContainer_->getdXdSiIntegrated();
+	state_matrix_t mat = -shotContainer_->getdXdSiIntegrated();
 	mat.transposeInPlace();
-	VectorXs dXdSiVec = (Eigen::Map<VectorXs> (mat.data(), STATE_DIM*STATE_DIM));
+	VectorXs dXdSiVec = (Eigen::Map<VectorXs>(mat.data(), STATE_DIM * STATE_DIM));
 
 	// fill into value vector with correct indexing
-	jacLocal_.segment(count_local_, STATE_DIM*STATE_DIM) = dXdSiVec;
+	jacLocal_.segment(count_local_, STATE_DIM * STATE_DIM) = dXdSiVec;
 
-	count_local_ += STATE_DIM*STATE_DIM;
+	count_local_ += STATE_DIM * STATE_DIM;
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void ContinuityConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::computeUblock()
 {
-	MatrixXs mat = - shotContainer_->getdXdQiIntegrated();
+	MatrixXs mat = -shotContainer_->getdXdQiIntegrated();
 	mat.transposeInPlace();
-	VectorXs dXdQiVec = Eigen::Map<VectorXs> (mat.data(), STATE_DIM * CONTROL_DIM);
+	VectorXs dXdQiVec = Eigen::Map<VectorXs>(mat.data(), STATE_DIM * CONTROL_DIM);
 
 	// // fill into value vector with correct indexing
 	jacLocal_.segment(count_local_, STATE_DIM * CONTROL_DIM) = dXdQiVec;
-	count_local_ += STATE_DIM*CONTROL_DIM;
+	count_local_ += STATE_DIM * CONTROL_DIM;
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void ContinuityConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::computeUblock_2()
 {
-	MatrixXs mat = - shotContainer_->getdXdQip1Integrated();
+	MatrixXs mat = -shotContainer_->getdXdQip1Integrated();
 	mat.transposeInPlace();
-	VectorXs dXdU1Vec = Eigen::Map<VectorXs> (mat.data(), STATE_DIM*CONTROL_DIM);
+	VectorXs dXdU1Vec = Eigen::Map<VectorXs>(mat.data(), STATE_DIM * CONTROL_DIM);
 
 	// fill into value vector with correct indexing
 	jacLocal_.segment(count_local_, STATE_DIM * CONTROL_DIM) = dXdU1Vec;
-	count_local_ += STATE_DIM*CONTROL_DIM;
+	count_local_ += STATE_DIM * CONTROL_DIM;
 }
 
-template<size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void ContinuityConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::computeIblock()
 {
 	// fill into value vector with correct indexing
@@ -389,7 +367,5 @@ void ContinuityConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::computeIblock()
 	count_local_ += STATE_DIM;
 }
 
-} // namespace optcon
-} // namespace ct
-
-
+}  // namespace optcon
+}  // namespace ct

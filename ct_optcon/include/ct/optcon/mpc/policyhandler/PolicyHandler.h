@@ -26,14 +26,13 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
-template<typename POLICY, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class PolicyHandler{
-
+template <typename POLICY, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class PolicyHandler
+{
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	PolicyHandler();
@@ -54,10 +53,7 @@ public:
 	 * @param policy
 	 * 	the current policy, to be overwritten with the warm start
 	 */
-	virtual void designWarmStartingPolicy(
-			const SCALAR& delay,
-			const SCALAR& TimeHorizon,
-			POLICY& policy);
+	virtual void designWarmStartingPolicy(const SCALAR& delay, const SCALAR& TimeHorizon, POLICY& policy);
 
 
 	//! a method required for additional post-truncation.
@@ -70,10 +66,7 @@ public:
 	 * @param effectivelyTruncated
 	 * the time which was truncated away
 	 */
-	virtual void truncateSolutionFront(
-			const SCALAR& delay,
-			POLICY& policy,
-			SCALAR& effectivelyTruncated);
+	virtual void truncateSolutionFront(const SCALAR& delay, POLICY& policy, SCALAR& effectivelyTruncated);
 
 
 	//! set new policy to policy handler
@@ -81,13 +74,8 @@ public:
 
 
 protected:
-
-	POLICY initialPolicy_;	//! the initial policy
-
+	POLICY initialPolicy_;  //! the initial policy
 };
 
-}	// namespace optcon
-}	// namespace ct
-
-
-
+}  // namespace optcon
+}  // namespace ct

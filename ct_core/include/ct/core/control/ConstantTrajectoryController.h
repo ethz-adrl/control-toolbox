@@ -47,32 +47,26 @@ public:
 	/*!
 	 * Sets the control signal to zero
 	 */
-	ConstantTrajectoryController()
-	{
-	}
-
+	ConstantTrajectoryController() {}
 	//! Constructor
 	/*!
 	 * Initializes the control to a fixed value
 	 * @param u The fixed control signal
 	 */
-	ConstantTrajectoryController(
-			const ControlVectorArray<CONTROL_DIM, SCALAR>& u,
-			const StateVectorArray<STATE_DIM, SCALAR>& x):
-				uff_(u),
-				x_(x)
-	{}
+	ConstantTrajectoryController(const ControlVectorArray<CONTROL_DIM, SCALAR>& u,
+		const StateVectorArray<STATE_DIM, SCALAR>& x)
+		: uff_(u), x_(x)
+	{
+	}
 
 	//! Copy constructor
-	ConstantTrajectoryController(const ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR>& other) :
-		Controller<STATE_DIM, CONTROL_DIM, SCALAR>(other),
-		x_(other.x_),
-		uff_(other.uff_)
-	{}
+	ConstantTrajectoryController(const ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR>& other)
+		: Controller<STATE_DIM, CONTROL_DIM, SCALAR>(other), x_(other.x_), uff_(other.uff_)
+	{
+	}
 
 	//! Destructor
 	~ConstantTrajectoryController() {}
-
 	//! Clone operator
 	/*!
 	 * Clones the controller. Used for cloning ControlledSystem's
@@ -91,10 +85,9 @@ public:
 	 * @param t The time of the system (ignored)
 	 * @param controlAction The (fixed) control action
 	 */
-	void computeControl(
-			const StateVector<STATE_DIM, SCALAR>& state,
-			const SCALAR& t,
-			ControlVector<CONTROL_DIM, SCALAR>& controlAction) override
+	void computeControl(const StateVector<STATE_DIM, SCALAR>& state,
+		const SCALAR& t,
+		ControlVector<CONTROL_DIM, SCALAR>& controlAction) override
 	{
 		throw std::runtime_error("not implemented");
 	}
@@ -104,45 +97,26 @@ public:
 	 *
 	 * @param u The fixed control signal
 	 */
-	void setControlVectorArray(const ControlVectorArray<CONTROL_DIM, SCALAR>& u)
-	{
-		uff_ = u;
-	}
-
+	void setControlVectorArray(const ControlVectorArray<CONTROL_DIM, SCALAR>& u) { uff_ = u; }
 	//! Get the fixed control signal
 	/*!
 	 */
-	const ControlVectorArray<CONTROL_DIM, SCALAR>& getControlVectorArray() const
-	{
-		return uff_;
-	}
-
+	const ControlVectorArray<CONTROL_DIM, SCALAR>& getControlVectorArray() const { return uff_; }
 	//! Sets the state trajectory
 	/*!
 	 *
 	 * @param u The fixed state trajectory
 	 */
-	void setStateVectorArray(const StateVectorArray<STATE_DIM, SCALAR>& x)
-	{
-		x_ = x;
-	}
-
+	void setStateVectorArray(const StateVectorArray<STATE_DIM, SCALAR>& x) { x_ = x; }
 	//! Get the fixed state trajectory
 	/*!
 	 *
 	 *
 	 */
-	const StateVectorArray<STATE_DIM, SCALAR>& getStateVectorArray() const
-	{
-		return x_;
-	}
-
-
+	const StateVectorArray<STATE_DIM, SCALAR>& getStateVectorArray() const { return x_; }
 private:
-	ControlVectorArray<CONTROL_DIM, SCALAR> uff_; //! feedforward control trajectory
+	ControlVectorArray<CONTROL_DIM, SCALAR> uff_;  //! feedforward control trajectory
 	StateVectorArray<STATE_DIM, SCALAR> x_;
 };
-
 }
 }
-

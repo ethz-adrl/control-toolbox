@@ -34,25 +34,26 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/nloc/algorithms/ilqr/iLQR.hpp>
 #include <ct/optcon/nloc/algorithms/gnms/GNMS.hpp>
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
 
 /** \defgroup OptConSolver OptConSolver
  * Solver interface for finite horizon optimal control problems
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM = STATE_DIM / 2, size_t V_DIM = STATE_DIM / 2, typename SCALAR = double>
-class NLOptConSolver : public OptConSolver<
-	NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>,
-	core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>,
-	NLOptConSettings,
-	STATE_DIM,
-	CONTROL_DIM,
-	SCALAR>
+template <size_t STATE_DIM,
+	size_t CONTROL_DIM,
+	size_t P_DIM = STATE_DIM / 2,
+	size_t V_DIM = STATE_DIM / 2,
+	typename SCALAR = double>
+class NLOptConSolver : public OptConSolver<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>,
+						   core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>,
+						   NLOptConSettings,
+						   STATE_DIM,
+						   CONTROL_DIM,
+						   SCALAR>
 {
-
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static const size_t STATE_D = STATE_DIM;
@@ -72,9 +73,9 @@ public:
 
 	//! constructor
 	NLOptConSolver(const OptConProblem_t& optConProblem,
-			 const std::string& settingsFile,
-			 bool verbose = true,
-			 const std::string& ns = "alg");
+		const std::string& settingsFile,
+		bool verbose = true,
+		const std::string& ns = "alg");
 
 	//! destructor
 	virtual ~NLOptConSolver();
@@ -241,7 +242,6 @@ public:
 	void logSummaryToMatlab(const std::string& fileName);
 
 protected:
-
 	//! the backend holding all the math operations
 	std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>> nlocBackend_;
 
@@ -250,6 +250,5 @@ protected:
 };
 
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

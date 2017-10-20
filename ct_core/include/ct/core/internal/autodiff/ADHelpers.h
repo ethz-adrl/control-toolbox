@@ -33,12 +33,7 @@ namespace core {
 class ADHelpers
 {
 public:
-
 private:
-
 };
-
-
 }
 }
-

@@ -39,24 +39,21 @@ namespace ct {
 namespace core {
 
 template <size_t CONTROL_DIM, typename SCALAR = double>
-using ControlMatrixArray = DiscreteArray< ControlMatrix<CONTROL_DIM, SCALAR> >;
+using ControlMatrixArray = DiscreteArray<ControlMatrix<CONTROL_DIM, SCALAR>>;
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 using FeedbackArray = DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>;
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-using StateControlMatrixArray = DiscreteArray< StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> >;
+using StateControlMatrixArray = DiscreteArray<StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>;
 
 template <size_t STATE_DIM, typename SCALAR = double>
-using StateMatrixArray = DiscreteArray<StateMatrix<STATE_DIM, SCALAR> >;
+using StateMatrixArray = DiscreteArray<StateMatrix<STATE_DIM, SCALAR>>;
 
 template <size_t STATE_DIM, typename SCALAR = double>
-using StateVectorArray = DiscreteArray<StateVector<STATE_DIM, SCALAR> >;
+using StateVectorArray = DiscreteArray<StateVector<STATE_DIM, SCALAR>>;
 
 template <size_t CONTROL_DIM, typename SCALAR = double>
-using ControlVectorArray = DiscreteArray<ControlVector<CONTROL_DIM, SCALAR> >;
-
-
+using ControlVectorArray = DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>;
 }
 }
-

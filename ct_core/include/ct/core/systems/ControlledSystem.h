@@ -76,9 +76,7 @@ public:
 	 * @param type system type
 	 */
 	ControlledSystem(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
-	: 	System<STATE_DIM, SCALAR>(type),
-	  	controller_(nullptr)
-	  	{};
+		: System<STATE_DIM, SCALAR>(type), controller_(nullptr){};
 
 	//! constructor
 	/*!
@@ -86,26 +84,22 @@ public:
 	 * @param controller controller
 	 * @param type system type
 	 */
-	ControlledSystem(
-			std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR> > controller,
-			const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
-	: 	System<STATE_DIM, SCALAR>(type),
-	  	controller_(controller)
+	ControlledSystem(std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller,
+		const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
+		: System<STATE_DIM, SCALAR>(type), controller_(controller)
 	{
 		controlAction_.setZero();
 	};
 
 	//! copy constructor
-	ControlledSystem(const ControlledSystem& arg):
-		System<STATE_DIM, SCALAR>(arg),
-		controlAction_(arg.controlAction_)
+	ControlledSystem(const ControlledSystem& arg) : System<STATE_DIM, SCALAR>(arg), controlAction_(arg.controlAction_)
 	{
-		if(arg.controller_)
-			controller_ = std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR> > (arg.controller_->clone());
+		if (arg.controller_)
+			controller_ = std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR>>(arg.controller_->clone());
 	}
 
 	//! destructor
-	virtual ~ControlledSystem() {};
+	virtual ~ControlledSystem(){};
 
 	//! deep copy
 	virtual ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override = 0;
@@ -114,7 +108,7 @@ public:
 	/*!
 	 * @param controller new controller
 	 */
-	void setController(const std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR> >& controller)
+	void setController(const std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR>>& controller)
 	{
 		controller_ = controller;
 	}
@@ -124,7 +118,7 @@ public:
 	 * \todo remove this function (duplicate of getController() below)
 	 * @param controller controller instance
 	 */
-	void getController(std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR> >& controller) const
+	void getController(std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR>>& controller) const
 	{
 		controller = controller_;
 	}
@@ -133,11 +127,7 @@ public:
 	/*!
 	 * @return controller instance
 	 */
-	std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR> > getController()
-	{
-		return controller_;
-	}
-
+	std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR>> getController() { return controller_; }
 	//! compute the dynamics of the system
 	/*!
 	 * Compute the state derivative by evaluating the system dynamics for a given state. This
@@ -150,12 +140,11 @@ public:
 	 * @param t current time
 	 * @param derivative state derivative
 	 */
-	virtual void computeDynamics(
-			const StateVector<STATE_DIM, SCALAR>& state,
-			const SCALAR& t,
-			StateVector<STATE_DIM, SCALAR>& derivative) override
+	virtual void computeDynamics(const StateVector<STATE_DIM, SCALAR>& state,
+		const SCALAR& t,
+		StateVector<STATE_DIM, SCALAR>& derivative) override
 	{
-		if(controller_)
+		if (controller_)
 			controller_->computeControl(state, t, controlAction_);
 		else
 			controlAction_.setZero();
@@ -164,24 +153,16 @@ public:
 	}
 
 
-	virtual void computeControlledDynamics(
-			const StateVector<STATE_DIM, SCALAR>& state,
-			const SCALAR& t,
-			const ControlVector<CONTROL_DIM, SCALAR>& control,
-			StateVector<STATE_DIM, SCALAR>& derivative
-	) = 0;
+	virtual void computeControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
+		const SCALAR& t,
+		const ControlVector<CONTROL_DIM, SCALAR>& control,
+		StateVector<STATE_DIM, SCALAR>& derivative) = 0;
 
-	ControlVector<CONTROL_DIM, SCALAR> getLastControlAction() { return controlAction_;}
-
-
-
+	ControlVector<CONTROL_DIM, SCALAR> getLastControlAction() { return controlAction_; }
 protected:
-	std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR> > controller_; //!< the controller instance
+	std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller_;  //!< the controller instance
 
 	ControlVector<CONTROL_DIM, SCALAR> controlAction_;
-
 };
-
 }
 }
-

@@ -44,20 +44,14 @@ const size_t controlSize = 1;
 class TestOscillator : public ControlledSystem<2, 1>
 {
 public:
-
-	virtual TestOscillator* clone() const override{
-		return new TestOscillator(*this);
-	}
-
-
-	virtual void computeControlledDynamics(
-			const StateVector<2>& state,
-			const double& t,
-			const ControlVector<1>& control,
-			StateVector<2>& derivative
-	) {
+	virtual TestOscillator* clone() const override { return new TestOscillator(*this); }
+	virtual void computeControlledDynamics(const StateVector<2>& state,
+		const double& t,
+		const ControlVector<1>& control,
+		StateVector<2>& derivative)
+	{
 		derivative(0) = state(1);
-		derivative(1) = control(0) - 10*state(0); // mass is 1 kg
+		derivative(1) = control(0) - 10 * state(0);  // mass is 1 kg
 	}
 };
 
@@ -70,35 +64,37 @@ public:
 	state_control_matrix_t B_;
 
 
-	const state_matrix_t& getDerivativeState(const StateVector<2>& x, const ControlVector<1>& u, const double t = 0.0) override
+	const state_matrix_t& getDerivativeState(const StateVector<2>& x,
+		const ControlVector<1>& u,
+		const double t = 0.0) override
 	{
 		A_ << 0, 1, -10, 0;
 		return A_;
 	}
 
-	const state_control_matrix_t& getDerivativeControl(const StateVector<2>& x, const ControlVector<1>& u, const double t = 0.0) override {
+	const state_control_matrix_t& getDerivativeControl(const StateVector<2>& x,
+		const ControlVector<1>& u,
+		const double t = 0.0) override
+	{
 		B_ << 0, 1;
 		return B_;
 	}
 
-	LinearizedOscillator* clone() const override {
-		return new LinearizedOscillator();
-	};
+	LinearizedOscillator* clone() const override { return new LinearizedOscillator(); };
 };
 
 
 //TEST(IntegrationTest, derivativeTest)
 void test()
 {
-	try {
-
-
+	try
+	{
 		double dt = 0.001;
 
 		// define integration times
 		Time startTime = 0.0;
 		Time finalTime = startTime + 1.0;
-		size_t nsteps = 10; //1.0/dt;
+		size_t nsteps = 10;  //1.0/dt;
 
 		// create an initial state
 		StateVector<stateSize> initialState;
@@ -108,19 +104,20 @@ void test()
 		double w_n = 3.14;
 		double zeta = 0.1;
 
-		shared_ptr<TestOscillator >oscillator (new TestOscillator);
-		shared_ptr<LinearizedOscillator> oscillatorLinearized (new LinearizedOscillator);
+		shared_ptr<TestOscillator> oscillator(new TestOscillator);
+		shared_ptr<LinearizedOscillator> oscillatorLinearized(new LinearizedOscillator);
 
 
-		std::shared_ptr<ConstantController<2,1>> controller(new ConstantController<2,1>);
+		std::shared_ptr<ConstantController<2, 1>> controller(new ConstantController<2, 1>);
 		oscillator->setController(controller);
 
-		ControlVector<1> control; control.setConstant(1.0);
+		ControlVector<1> control;
+		control.setConstant(1.0);
 		controller->setControl(control);
 
 		// create a 2 state integrator
-		std::shared_ptr<SimpleSensitivityIntegratorCT<stateSize, controlSize> > integrator (
-				new SimpleSensitivityIntegratorCT<stateSize, controlSize> (oscillator, ct::core::IntegrationType::EULERCT));
+		std::shared_ptr<SimpleSensitivityIntegratorCT<stateSize, controlSize>> integrator(
+			new SimpleSensitivityIntegratorCT<stateSize, controlSize>(oscillator, ct::core::IntegrationType::EULERCT));
 
 		integrator->setLinearSystem(oscillatorLinearized);
 
@@ -133,24 +130,18 @@ void test()
 
 		std::cout << "init state is " << initialState.transpose() << std::endl;
 
-		integrator->integrate_n_steps(initialState,
-				startTime,
-				nsteps,
-				dt
-		);
+		integrator->integrate_n_steps(initialState, startTime, nsteps, dt);
 
 		std::cout << "resulting state is " << initialState.transpose() << std::endl;
 
 		StateMatrix<2> A, Adiscretizer;
-		StateControlMatrix<2,1> B, Bdiscretizer;
+		StateControlMatrix<2, 1> B, Bdiscretizer;
 
 		integrator->linearize();
 
-		integrator->integrateSensitivityDX0(
-	       A, startTime, nsteps, dt);
+		integrator->integrateSensitivityDX0(A, startTime, nsteps, dt);
 
-		integrator->integrateSensitivityDU0(
-	       B, startTime, nsteps, dt);
+		integrator->integrateSensitivityDU0(B, startTime, nsteps, dt);
 
 
 		std::cout << "A from sens integrator" << std::endl << A << std::endl;
@@ -159,14 +150,10 @@ void test()
 
 		// compare to linear system discretizer discretizer
 
-		LinearSystemDiscretizer<2,1> discretizer(dt, oscillatorLinearized, LinearSystemDiscretizerSettings::APPROXIMATION::FORWARD_EULER);
+		LinearSystemDiscretizer<2, 1> discretizer(
+			dt, oscillatorLinearized, LinearSystemDiscretizerSettings::APPROXIMATION::FORWARD_EULER);
 
-		discretizer.getAandB(
-				initialState,
-				control,
-				0,
-				Adiscretizer,
-				Bdiscretizer);
+		discretizer.getAandB(initialState, control, 0, Adiscretizer, Bdiscretizer);
 
 
 		std::cout << "A from discretizer" << std::endl << Adiscretizer << std::endl;
@@ -221,7 +208,7 @@ void test()
 	} catch (...)
 	{
 		std::cout << "Caught exception." << std::endl;
-//		FAIL();
+		//		FAIL();
 	}
 }
 
@@ -231,7 +218,8 @@ void test()
  *
  *  This unit test serves as example how to use different steppers from boost odeint for numerical integration.
  */
-int main(int argc, char **argv){
+int main(int argc, char** argv)
+{
 	//  testing::InitGoogleTest(&argc, argv);
 	//  return RUN_ALL_TESTS();
 	test();

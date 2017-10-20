@@ -41,7 +41,6 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class StateConstraint : public ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
@@ -60,9 +59,7 @@ public:
 	 * @param[in]  xLow   The lower state bound
 	 * @param[in]  xHigh  The upper state bound
 	 */
-	StateConstraint(
-		const state_vector_t& xLow,
-		const state_vector_t& xHigh);
+	StateConstraint(const state_vector_t& xLow, const state_vector_t& xHigh);
 
 	virtual ~StateConstraint();
 
@@ -73,7 +70,7 @@ public:
 	virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
 	virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
-		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
+		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
 		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
 		ct::core::ADCGScalar t) override;
 
@@ -88,10 +85,6 @@ public:
 	virtual VectorXs jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
 	virtual void sparsityPatternState(VectorXi& rows, VectorXi& cols) override;
-
 };
-
 }
 }
-
-

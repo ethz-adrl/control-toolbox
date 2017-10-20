@@ -43,19 +43,18 @@ template <typename SCALAR>
 class TimeArray : public ScalarArray<SCALAR>
 {
 public:
-
 	//! default constructor
-	TimeArray(){}
-
+	TimeArray() {}
 	//! evenly spaced constructor
 	/*!
 	 * \param dt	the time spacing
 	 * \param N		the number of points, minimum 2
 	 * \param t0	the starting time, defaults to zero
 	 */
-	TimeArray(const SCALAR& dt, const size_t& N, const SCALAR& t0 = 0.0):
-		ScalarArray<SCALAR>(linspace<ScalarArray<SCALAR>>(t0, t0+(N-1)*dt, N))
-		{}
+	TimeArray(const SCALAR& dt, const size_t& N, const SCALAR& t0 = 0.0)
+		: ScalarArray<SCALAR>(linspace<ScalarArray<SCALAR>>(t0, t0 + (N - 1) * dt, N))
+	{
+	}
 
 	//! resize constructor
 	/*!
@@ -63,26 +62,20 @@ public:
 	 * @param n length of array
 	 * @param value default value
 	 */
-	TimeArray(size_t n, const SCALAR& value=SCALAR())
-	: ScalarArray<SCALAR>(n,value)  {};
+	TimeArray(size_t n, const SCALAR& value = SCALAR()) : ScalarArray<SCALAR>(n, value){};
 
 	//! copy constructor
-	TimeArray(const TimeArray& other)
-	: ScalarArray<SCALAR>(other) {};
+	TimeArray(const TimeArray& other) : ScalarArray<SCALAR>(other){};
 
 	//! std::vector constructor
-	TimeArray(const std::vector<SCALAR>& arg):
-		ScalarArray<SCALAR>()
+	TimeArray(const std::vector<SCALAR>& arg) : ScalarArray<SCALAR>()
 	{
-		for(size_t i = 0; i<arg.size(); i++)
+		for (size_t i = 0; i < arg.size(); i++)
 			this->push_back(arg[i]);
 	}
 };
-
 }
 
 typedef tpl::TimeArray<double> TimeArray;
-
 }
 }
-

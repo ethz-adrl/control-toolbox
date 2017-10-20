@@ -31,8 +31,8 @@ namespace optcon {
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::ControlInputConstraint(
-		const core::ControlVector<CONTROL_DIM> uLow,
-		const core::ControlVector<CONTROL_DIM> uHigh)
+	const core::ControlVector<CONTROL_DIM> uLow,
+	const core::ControlVector<CONTROL_DIM> uHigh)
 {
 	Base::lb_.resize(CONTROL_DIM);
 	Base::ub_.resize(CONTROL_DIM);
@@ -43,10 +43,12 @@ ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::ControlInputConstraint(
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::~ControlInputConstraint()
-{}
+{
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::clone() const
+ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::clone()
+	const
 {
 	return new ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
 }
@@ -58,30 +60,38 @@ size_t ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::getConstraintSize
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
+Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluate(
+	const state_vector_t& x,
+	const control_vector_t& u,
+	const SCALAR t)
 {
 	return u;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateCppadCg(
-		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x, 
-		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
-		ct::core::ADCGScalar t)
+Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1>
+ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateCppadCg(
+	const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
+	const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+	ct::core::ADCGScalar t)
 {
 	return u;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
-ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
+ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianState(const state_vector_t& x,
+	const control_vector_t& u,
+	const SCALAR t)
 {
 	return Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>::Zero();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
-ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
+ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInput(const state_vector_t& x,
+	const control_vector_t& u,
+	const SCALAR t)
 {
 	return Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>::Identity();
 }
@@ -100,7 +110,9 @@ size_t ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::getNumNonZerosJac
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
-ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInputSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t)
+ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInputSparse(const state_vector_t& x,
+	const control_vector_t& u,
+	const SCALAR t)
 {
 	return core::ControlVector<CONTROL_DIM, SCALAR>::Ones();
 }
@@ -110,7 +122,5 @@ void ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::sparsityPatternInpu
 {
 	this->genDiagonalIndices(CONTROL_DIM, rows, cols);
 }
-
 }
 }
-

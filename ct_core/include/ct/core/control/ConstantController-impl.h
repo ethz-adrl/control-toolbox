@@ -37,18 +37,21 @@ ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::ConstantController()
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::ConstantController(ControlVector<CONTROL_DIM, SCALAR>& u):
-	u_(u)
-{}
+ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::ConstantController(ControlVector<CONTROL_DIM, SCALAR>& u) : u_(u)
+{
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::ConstantController(const ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>& other) :
-	Controller<STATE_DIM, CONTROL_DIM, SCALAR>(other),
-	u_(other.u_)
-{}
+ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::ConstantController(
+	const ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>& other)
+	: Controller<STATE_DIM, CONTROL_DIM, SCALAR>(other), u_(other.u_)
+{
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::~ConstantController() {}
+ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::~ConstantController()
+{
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>* ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::clone() const
@@ -57,10 +60,9 @@ ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>* ConstantController<STATE_DIM
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::computeControl(
-			const StateVector<STATE_DIM, SCALAR>& state,
-			const SCALAR& t,
-			ControlVector<CONTROL_DIM, SCALAR>& controlAction)
+void ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::computeControl(const StateVector<STATE_DIM, SCALAR>& state,
+	const SCALAR& t,
+	ControlVector<CONTROL_DIM, SCALAR>& controlAction)
 {
 	controlAction = u_;
 }
@@ -78,11 +80,11 @@ const ControlVector<CONTROL_DIM, SCALAR>& ConstantController<STATE_DIM, CONTROL_
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ControlMatrix<CONTROL_DIM, SCALAR> ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR time)
+ControlMatrix<CONTROL_DIM, SCALAR> ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::getDerivativeU0(
+	const StateVector<STATE_DIM, SCALAR>& state,
+	const SCALAR time)
 {
 	return ControlMatrix<CONTROL_DIM, SCALAR>::Identity();
 }
-
 }
 }
-

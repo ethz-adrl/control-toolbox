@@ -32,37 +32,34 @@ namespace ct {
 namespace NS1 {
 namespace NS2 {
 
-class DERIVATIVE_NAME : public core::Derivatives<IN_DIM, OUT_DIM, double> {
+class DERIVATIVE_NAME : public core::Derivatives<IN_DIM, OUT_DIM, double>
+{
 public:
-    typedef Eigen::Matrix<double, IN_DIM, IN_DIM> HES_TYPE;
-    typedef Eigen::Matrix<double, IN_DIM, 1> X_TYPE;
+	typedef Eigen::Matrix<double, IN_DIM, IN_DIM> HES_TYPE;
+	typedef Eigen::Matrix<double, IN_DIM, 1> X_TYPE;
 
-    DERIVATIVE_NAME() {
-        hessian_.setZero();
-        v_.fill(0.0);
-    };
+	DERIVATIVE_NAME()
+	{
+		hessian_.setZero();
+		v_.fill(0.0);
+	};
 
-    DERIVATIVE_NAME(const DERIVATIVE_NAME& other)
-    {
-        hessian_.setZero();
-        v_.fill(0.0);
-    }
+	DERIVATIVE_NAME(const DERIVATIVE_NAME& other)
+	{
+		hessian_.setZero();
+		v_.fill(0.0);
+	}
 
-    virtual ~DERIVATIVE_NAME() {};
+	virtual ~DERIVATIVE_NAME(){};
 
-    DERIVATIVE_NAME* clone() const override{
-        return new DERIVATIVE_NAME(*this);
-    }
-
-
-    HES_TYPE hessian(const Eigen::VectorXd& x_in, const Eigen::VectorXd& w_in) override;
+	DERIVATIVE_NAME* clone() const override { return new DERIVATIVE_NAME(*this); }
+	HES_TYPE hessian(const Eigen::VectorXd& x_in, const Eigen::VectorXd& w_in) override;
 
 private:
-    HES_TYPE hessian_;
-    std::array<double, MAX_COUNT> v_;
+	HES_TYPE hessian_;
+	std::array<double, MAX_COUNT> v_;
 };
 
 } /* namespace NS2 */
 } /* namespace NS1 */
 } /* namespace ct */
-

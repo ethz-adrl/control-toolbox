@@ -45,50 +45,38 @@ namespace core {
 template <size_t POS_DIM, size_t VEL_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class SymplecticSystem : public ControlledSystem<POS_DIM + VEL_DIM, CONTROL_DIM, SCALAR>
 {
-
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	typedef	ControlledSystem<POS_DIM + VEL_DIM, CONTROL_DIM, SCALAR> Base;
+	typedef ControlledSystem<POS_DIM + VEL_DIM, CONTROL_DIM, SCALAR> Base;
 
 	/**
 	 * @brief      Constructor
 	 *
 	 * @param[in]  type  The type of the system
 	 */
-	SymplecticSystem(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
-	:
-	Base(type)
-	{}
-
+	SymplecticSystem(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL) : Base(type) {}
 	/**
 	 * @brief      Constructor
 	 *
 	 * @param[in]  controller  The controller used when integrating the system
 	 * @param[in]  type        The type of the system
 	 */
-	SymplecticSystem(
-		std::shared_ptr<ct::core::Controller<POS_DIM + VEL_DIM, CONTROL_DIM, SCALAR> > controller,
-		const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL
-		)
-	:
-	Base(controller, type)
-	{}
+	SymplecticSystem(std::shared_ptr<ct::core::Controller<POS_DIM + VEL_DIM, CONTROL_DIM, SCALAR>> controller,
+		const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
+		: Base(controller, type)
+	{
+	}
 
 	/**
 	 * @brief      Copy constructor
 	 *
 	 * @param[in]  arg   The argument
 	 */
-	SymplecticSystem(const SymplecticSystem& arg)
-	:
-	ControlledSystem<POS_DIM + VEL_DIM, CONTROL_DIM, SCALAR>(arg)
-	{}
-
+	SymplecticSystem(const SymplecticSystem& arg) : ControlledSystem<POS_DIM + VEL_DIM, CONTROL_DIM, SCALAR>(arg) {}
 	/**
 	 * @brief      Destructor
 	 */
 	virtual ~SymplecticSystem() {}
-
 	/**
 	 * @brief      Creates a new instance of the object with same properties than original.
 	 *
@@ -97,14 +85,10 @@ public:
 	virtual SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR>* clone() const override = 0;
 
 	virtual bool isSymplectic() const override { return true; }
-
-
-	virtual void computeControlledDynamics(
-			const StateVector<POS_DIM + VEL_DIM, SCALAR>& state,
-			const SCALAR& t,
-			const ControlVector<CONTROL_DIM, SCALAR>& control,
-			StateVector<POS_DIM + VEL_DIM, SCALAR>& derivative
-	) override
+	virtual void computeControlledDynamics(const StateVector<POS_DIM + VEL_DIM, SCALAR>& state,
+		const SCALAR& t,
+		const ControlVector<CONTROL_DIM, SCALAR>& control,
+		StateVector<POS_DIM + VEL_DIM, SCALAR>& derivative) override
 	{
 		StateVector<POS_DIM, SCALAR> pDot;
 		StateVector<VEL_DIM, SCALAR> vDot;
@@ -116,7 +100,6 @@ public:
 	}
 
 
-
 	/**
 	 * @brief      Computes the derivative of the position
 	 *
@@ -124,19 +107,17 @@ public:
 	 * @param[in]  v     The updated velocity
 	 * @param[out] pDot  The derivative of the position
 	 */
-	void computePdot(
-		const StateVector<POS_DIM + VEL_DIM, SCALAR>& x,
+	void computePdot(const StateVector<POS_DIM + VEL_DIM, SCALAR>& x,
 		const StateVector<VEL_DIM, SCALAR>& v,
-		StateVector<POS_DIM, SCALAR>& pDot
-	)
+		StateVector<POS_DIM, SCALAR>& pDot)
 	{
 		ControlVector<CONTROL_DIM, SCALAR> controlAction;
-		if(this->controller_)
+		if (this->controller_)
 			this->controller_->computeControl(x, 0.0, controlAction);
 		else
 			controlAction.setZero();
 
-		computePdot(x, v, controlAction, pDot);		
+		computePdot(x, v, controlAction, pDot);
 	}
 
 	/**
@@ -146,19 +127,17 @@ public:
 	 * @param[in]  p     The position
 	 * @param[out]      vDot  The derivative of the velocity
 	 */
-	void computeVdot(
-		const StateVector<POS_DIM + VEL_DIM, SCALAR>& x,
+	void computeVdot(const StateVector<POS_DIM + VEL_DIM, SCALAR>& x,
 		const StateVector<POS_DIM, SCALAR>& p,
-		StateVector<VEL_DIM, SCALAR>& vDot
-	)
+		StateVector<VEL_DIM, SCALAR>& vDot)
 	{
 		ControlVector<CONTROL_DIM, SCALAR> controlAction;
-		if(this->controller_)
+		if (this->controller_)
 			this->controller_->computeControl(x, 0.0, controlAction);
 		else
 			controlAction.setZero();
 
-		computeVdot(x, p, controlAction, vDot);			
+		computeVdot(x, p, controlAction, vDot);
 	}
 
 
@@ -170,12 +149,10 @@ public:
 	 * @param[in]  control  The control input
 	 * @param[out] pDot     The derivative of the position
 	 */
-	virtual void computePdot(
-			const StateVector<POS_DIM + VEL_DIM, SCALAR>& x,
-			const StateVector<VEL_DIM, SCALAR>& v,
-			const ControlVector<CONTROL_DIM, SCALAR>& control,
-			StateVector<POS_DIM, SCALAR>& pDot
-		) = 0;
+	virtual void computePdot(const StateVector<POS_DIM + VEL_DIM, SCALAR>& x,
+		const StateVector<VEL_DIM, SCALAR>& v,
+		const ControlVector<CONTROL_DIM, SCALAR>& control,
+		StateVector<POS_DIM, SCALAR>& pDot) = 0;
 
 	/**
 	 * @brief      Computes the derivative of the velocity
@@ -185,18 +162,13 @@ public:
 	 * @param[in]  control  The control input
 	 * @param[out] vDot     The derivative of the velocity
 	 */
-	virtual void computeVdot(
-			const StateVector<POS_DIM + VEL_DIM, SCALAR>& x,
-			const StateVector<POS_DIM, SCALAR>& p,
-			const ControlVector<CONTROL_DIM, SCALAR>& control,
-			StateVector<VEL_DIM, SCALAR>& vDot
-		) = 0;
+	virtual void computeVdot(const StateVector<POS_DIM + VEL_DIM, SCALAR>& x,
+		const StateVector<POS_DIM, SCALAR>& p,
+		const ControlVector<CONTROL_DIM, SCALAR>& control,
+		StateVector<VEL_DIM, SCALAR>& vDot) = 0;
 
 protected:
-
 };
 
-} // namespace core
-} // namespace ct
-
-
+}  // namespace core
+}  // namespace ct

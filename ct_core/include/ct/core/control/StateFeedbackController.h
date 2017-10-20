@@ -56,7 +56,6 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class StateFeedbackController : public Controller<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	//! The base (interface) class
@@ -75,13 +74,12 @@ public:
 	 * @param t0 initial time
 	 * @param intType interpolation type
 	 */
-	StateFeedbackController(
-			const StateVectorArray<STATE_DIM, SCALAR>& x_ref,
-			const ControlVectorArray<CONTROL_DIM, SCALAR>& uff,
-			const FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K,
-			const SCALAR& deltaT,
-			const SCALAR& t0 = 0.0,
-			const InterpolationType& intType = ZOH);
+	StateFeedbackController(const StateVectorArray<STATE_DIM, SCALAR>& x_ref,
+		const ControlVectorArray<CONTROL_DIM, SCALAR>& uff,
+		const FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K,
+		const SCALAR& deltaT,
+		const SCALAR& t0 = 0.0,
+		const InterpolationType& intType = ZOH);
 
 	//! copy constructor
 	StateFeedbackController(const StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>& other);
@@ -99,10 +97,9 @@ public:
 	 * @param t current time
 	 * @param controlAction resulting control action
 	 */
-	virtual void computeControl(
-			const StateVector<STATE_DIM, SCALAR>& state,
-			const SCALAR& t,
-			ControlVector<CONTROL_DIM, SCALAR>& controlAction) override;
+	virtual void computeControl(const StateVector<STATE_DIM, SCALAR>& state,
+		const SCALAR& t,
+		ControlVector<CONTROL_DIM, SCALAR>& controlAction) override;
 
 	//! updates the controller
 	/*!
@@ -111,11 +108,10 @@ public:
 	 * @param K feedback controller
 	 * @param times discretization times
 	 */
-	void update(
-			const DiscreteArray<StateVector<STATE_DIM, SCALAR>>& x_ref,
-			const DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>& uff,
-			const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>& K,
-			const tpl::TimeArray<SCALAR>& t);
+	void update(const DiscreteArray<StateVector<STATE_DIM, SCALAR>>& x_ref,
+		const DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>& uff,
+		const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>& K,
+		const tpl::TimeArray<SCALAR>& t);
 
 	//! get reference state vector array (without timings)
 	const DiscreteArray<StateVector<STATE_DIM, SCALAR>>& x_ref() const;
@@ -124,7 +120,7 @@ public:
 	const DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>& uff() const;
 
 	//! get feedback array (without timings
-	const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>> & K() const;
+	const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>& K() const;
 
 	//! get time array
 	const tpl::TimeArray<SCALAR>& time() const;
@@ -148,15 +144,14 @@ public:
 	const FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR>& getFeedbackTrajectory() const;
 
 	//!  extracts a physically meaningful control trajectory from the given state-feedback law and a reference state trajectory
-	void extractControlTrajectory(const StateTrajectory<STATE_DIM, SCALAR>& x_traj, ControlTrajectory<CONTROL_DIM, SCALAR>& u_traj);
+	void extractControlTrajectory(const StateTrajectory<STATE_DIM, SCALAR>& x_traj,
+		ControlTrajectory<CONTROL_DIM, SCALAR>& u_traj);
 
 private:
-	StateTrajectory<STATE_DIM, SCALAR> x_ref_; //! state reference trajectory
-	ControlTrajectory<CONTROL_DIM, SCALAR> uff_; //! feedforward control trajectory
-	FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR> K_; //! feedback control trajectory
-
+	StateTrajectory<STATE_DIM, SCALAR> x_ref_;              //! state reference trajectory
+	ControlTrajectory<CONTROL_DIM, SCALAR> uff_;            //! feedforward control trajectory
+	FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR> K_;  //! feedback control trajectory
 };
 
-} // core
-} // ct
-
+}  // core
+}  // ct

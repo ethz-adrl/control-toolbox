@@ -32,19 +32,34 @@ namespace ct {
 namespace core {
 namespace internal {
 
-SparsityPattern::SparsityPattern() {};
+SparsityPattern::SparsityPattern(){};
 
-SparsityPattern::~SparsityPattern() {};
+SparsityPattern::~SparsityPattern(){};
 
-const CppAD::vector<bool>& SparsityPattern::sparsity() const { return sparsity_; }
+const CppAD::vector<bool>& SparsityPattern::sparsity() const
+{
+	return sparsity_;
+}
 
-const CppAD::vector<size_t>& SparsityPattern::row() const { return row_; }
+const CppAD::vector<size_t>& SparsityPattern::row() const
+{
+	return row_;
+}
 
-const CppAD::vector<size_t>& SparsityPattern::col() const { return col_; }
+const CppAD::vector<size_t>& SparsityPattern::col() const
+{
+	return col_;
+}
 
-CppAD::sparse_jacobian_work& SparsityPattern::workJacobian() { return workJacobian_; }
+CppAD::sparse_jacobian_work& SparsityPattern::workJacobian()
+{
+	return workJacobian_;
+}
 
-CppAD::sparse_hessian_work& SparsityPattern::workHessian() { return workHessian_; }
+CppAD::sparse_hessian_work& SparsityPattern::workHessian()
+{
+	return workHessian_;
+}
 
 void SparsityPattern::clearWork()
 {
