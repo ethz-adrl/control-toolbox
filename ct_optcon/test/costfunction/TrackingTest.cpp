@@ -1,5 +1,5 @@
 /***********************************************************************************
-Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus StÃ¤uble, Diego Pardo,
 Farbod Farshidian. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -28,94 +28,57 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/optcon/optcon.h>
 
-#include <ct/optcon/costfunction/CostFunctionAnalytical.hpp>
-#include <ct/optcon/costfunction/term/TermBase.hpp>
-#include <ct/optcon/costfunction/term/TermQuadTracking.hpp>
-
-#include <ct/optcon/costfunction/CostFunctionQuadraticTracking.hpp>
-
-
 namespace ct{
 namespace optcon{
 namespace example{
 
 
-template <size_t state_dim, size_t control_dim>
-void compareCostFunctionOutput(CostFunctionQuadratic<state_dim, control_dim>& costFunction, CostFunctionQuadratic<state_dim, control_dim>& costFunction2)
+/*!
+ * this is simply a little integration test that shows that the tracking cost function term builds and that
+ * its analytic derivatives match NumDiff derivatives.
+ */
+TEST(TrackingTest, TrackingTermTest)
 {
-	ASSERT_NEAR(costFunction.evaluateIntermediate(), costFunction2.evaluateIntermediate(), 1e-7);
+	const size_t state_dim = 12;
+	const size_t control_dim = 4;
 
-	ASSERT_TRUE(costFunction.stateDerivativeIntermediate().isApprox(costFunction2.stateDerivativeIntermediate(), 1e-6));
-
-	ASSERT_TRUE(costFunction.stateSecondDerivativeIntermediate().isApprox(costFunction2.stateSecondDerivativeIntermediate(), 1e-6));
-
-	ASSERT_TRUE(costFunction.controlDerivativeIntermediate().isApprox(costFunction2.controlDerivativeIntermediate(), 1e-6));
-
-	ASSERT_TRUE(costFunction.controlSecondDerivativeIntermediate().isApprox(costFunction2.controlSecondDerivativeIntermediate(), 1e-6));
-
-	ASSERT_TRUE(costFunction.stateControlDerivativeIntermediate().isApprox(costFunction2.stateControlDerivativeIntermediate(), 1e-6));
-
-	// second derivatives have to be symmetric
-	ASSERT_TRUE(costFunction.stateSecondDerivativeIntermediate().isApprox(costFunction.stateSecondDerivativeIntermediate().transpose(), 1e-6));
-	ASSERT_TRUE(costFunction.controlSecondDerivativeIntermediate().isApprox(costFunction.controlSecondDerivativeIntermediate().transpose(), 1e-6));
-}
-
-
-
-TEST(CostFunctionTest, TrackingCfTest)
-{
 	// analytical costfunction
-	std::shared_ptr<CostFunctionAnalytical<3, 3>> ANAcf (new CostFunctionAnalytical<3, 3>());
+	std::shared_ptr<CostFunctionAnalytical<state_dim, control_dim>> costFunction (new CostFunctionAnalytical<state_dim, control_dim>());
 
-	Eigen::Matrix<double, 3, 3> Q;
-	Eigen::Matrix<double, 3, 3> R;
+	Eigen::Matrix<double, state_dim, state_dim> Q;
+	Eigen::Matrix<double, control_dim, control_dim> R;
 	Q.setIdentity();
 	R.setIdentity();
 
-	core::StateTrajectory<3> stateTraj;
-	core::ControlTrajectory<3> controlTraj;
-
-	std::shared_ptr<CostFunctionQuadraticTracking<3, 3>> trackingCf (
-			new CostFunctionQuadraticTracking<3,3>(Q, R, Q, core::InterpolationType::LIN, core::InterpolationType::ZOH, true));
-
-	size_t trajSize = 5;
-
+	// create a reference trajectory and fill it with random values
+	core::StateTrajectory<state_dim> stateTraj;
+	core::ControlTrajectory<control_dim> controlTraj;
+	size_t trajSize = 50;
 	bool timeIsAbsolute = true;
-
 	for(size_t i = 0; i < trajSize; ++i)
 	{
-		stateTraj.push_back(core::StateVector<3>::Random(), double(i), timeIsAbsolute);
-		controlTraj.push_back(core::ControlVector<3>::Random(), double(i), timeIsAbsolute);
+		stateTraj.push_back(core::StateVector<state_dim>::Random(), double(i), timeIsAbsolute);
+		controlTraj.push_back(core::ControlVector<control_dim>::Random(), double(i), timeIsAbsolute);
 	}
 
-	std::shared_ptr< TermQuadTracking<3, 3> > term1 (new TermQuadTracking<3, 3>(Q, R, core::InterpolationType::LIN, core::InterpolationType::ZOH, true));
+	std::shared_ptr< TermQuadTracking<state_dim, control_dim> > trackingTerm (
+			new TermQuadTracking<state_dim, control_dim>(Q, R, core::InterpolationType::LIN, core::InterpolationType::ZOH, true));
 
-	term1->setStateAndControlReference(stateTraj, controlTraj);
-	trackingCf->updateTrajectories(stateTraj, controlTraj);
+	trackingTerm->setStateAndControlReference(stateTraj, controlTraj);
+	costFunction->addIntermediateTerm(trackingTerm);
 
-
-	ANAcf->addIntermediateTerm(term1);
-
-	Eigen::Vector3d x;
-	Eigen::Vector3d u;
-
-	x << -1.0, -2.0, 3.0;
-	u << 1.0, 2.3, -3.1;
-
+	ct::core::StateVector<state_dim> x;
+	ct::core::ControlVector<control_dim> u;
+	x.setRandom();
+	u.setRandom();
 	double t = 0.0;
 
-	ANAcf->setCurrentStateAndControl(x, u, t);
-	trackingCf->setCurrentStateAndControl(x, u, t);
+	costFunction->setCurrentStateAndControl(x, u, t);
 
-	ASSERT_TRUE(ANAcf->stateDerivativeIntermediateTest());
-	ASSERT_TRUE(ANAcf->controlDerivativeIntermediateTest());
+	ASSERT_TRUE(costFunction->stateDerivativeIntermediateTest());
+	ASSERT_TRUE(costFunction->controlDerivativeIntermediateTest());
 
-	ASSERT_TRUE(trackingCf->stateDerivativeIntermediateTest());
-	ASSERT_TRUE(trackingCf->controlDerivativeIntermediateTest());
-
-	compareCostFunctionOutput<3,3>(*ANAcf, *trackingCf);	
 }
-
 
 } // namespace example
 } // namespace optcon

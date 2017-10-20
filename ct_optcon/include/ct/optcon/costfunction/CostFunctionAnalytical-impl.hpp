@@ -4,12 +4,12 @@ Farbod Farshidian. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice,
+ * Redistributions of source code must retain the above copyright notice,
       this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
+ * Redistributions in binary form must reproduce the above copyright notice,
       this list of conditions and the following disclaimer in the documentation
       and/or other materials provided with the distribution.
-    * Neither the name of ETH ZURICH nor the names of its contributors may be used
+ * Neither the name of ETH ZURICH nor the names of its contributors may be used
       to endorse or promote products derived from this software without specific
       prior written permission.
 
@@ -22,7 +22,34 @@ GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWE
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************************************************************************************/
+ ***************************************************************************************/
+
+
+namespace ct {
+namespace optcon {
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAnalytical()
+{};
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAnalytical(const CostFunctionAnalytical& arg):
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(arg){}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAnalytical(const std::string& filename, bool verbose)
+{
+	loadFromConfigFile(filename, verbose);
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>*
+CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::clone () const {
+	return new CostFunctionAnalytical(*this);
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::~CostFunctionAnalytical() {};
 
 
 // add terms
@@ -32,7 +59,7 @@ size_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateTe
 	this->intermediateCostAnalytical_.push_back(term);
 	if(verbose){
 		std::string name = term->getName();
-	    std::cout<<"Trying to add term as intermediate"<<std::endl;
+		std::cout<<"Trying to add term as intermediate"<<std::endl;
 	}
 
 	return this->intermediateCostAnalytical_.size()-1;
@@ -44,7 +71,7 @@ size_t CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalTerm (std
 	this->finalCostAnalytical_.push_back(term);
 	if(verbose){
 		std::string name = term->getName();
-	    std::cout<<"Trying to add term as final"<<std::endl;
+		std::cout<<"Trying to add term as final"<<std::endl;
 	}
 
 	return this->finalCostAnalytical_.size()-1;
@@ -81,7 +108,7 @@ void CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(
 
 		std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term;
 
-		CT_LOADABLE_TERMS_ANALYTICAL(SCALAR);
+		CT_LOADABLE_TERMS(SCALAR, SCALAR);
 
 		if(!term){
 			throw std::runtime_error("Term type \""+ termKind+ "\" not supported");
@@ -98,13 +125,13 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 SCALAR CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateIntermediate()
 {
 	SCALAR y = SCALAR(0.0);
-		
+
 	for(auto it : this->intermediateCostAnalytical_)
 	{
 		if (!it->isActiveAtTime(this->t_)) { continue; }
 		y += it->computeActivation(this->t_) * it->eval(this->x_, this->u_, this->t_);
 	}
-	
+
 	return y;
 }
 
@@ -153,7 +180,7 @@ typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::state_matrix_t 
 {
 	state_matrix_t derivative;
 	derivative.setZero(); 
-	
+
 	for(auto it : this->intermediateCostAnalytical_)
 	{
 		if (!it->isActiveAtTime(this->t_)) { continue; }
@@ -209,7 +236,7 @@ typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_
 {
 	control_matrix_t derivative;
 	derivative.setZero();
-	
+
 	for(auto it : this->intermediateCostAnalytical_)
 	{
 		if (!it->isActiveAtTime(this->t_)) { continue; }
@@ -224,7 +251,7 @@ typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_
 {
 	control_matrix_t derivative;
 	derivative.setZero();
-	
+
 	for(auto it : this->finalCostAnalytical_)
 		derivative += it->controlSecondDerivative(this->x_, this->u_, this->t_);
 
@@ -237,7 +264,7 @@ typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_m
 {
 	control_state_matrix_t derivative;
 	derivative.setZero(); 
-	
+
 	for(auto it : this->intermediateCostAnalytical_)
 	{
 		if (!it->isActiveAtTime(this->t_)) { continue; }
@@ -252,9 +279,13 @@ typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_m
 {
 	control_state_matrix_t derivative;
 	derivative.setZero();
-	
+
 	for(auto it : this->finalCostAnalytical_)
 		derivative += it->stateControlDerivative(this->x_, this->u_, this->t_);
 
 	return derivative;
+}
+
+
+}
 }

@@ -107,15 +107,18 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim, SCALAR> > createCo
 	Eigen::Matrix<SCALAR, 1, 1> R;
 	R << 100;
 
-	Eigen::Matrix<SCALAR, 2, 1> x_nominal; x_nominal.setZero();
-	Eigen::Matrix<SCALAR, 1, 1> u_nominal; u_nominal.setZero();
+	ct::core::StateVector<2> x_nominal = ct::core::StateVector<2>::Zero();
+	ct::core::ControlVector<1> u_nominal = ct::core::ControlVector<1>::Zero();
 
 	Eigen::Matrix<SCALAR, 2, 2> Q_final;
 	Q_final << 1000, 0, 0, 1000;
 
-	std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim, SCALAR> > quadraticCostFunction(
-			new CostFunctionQuadraticSimple<state_dim, control_dim, SCALAR>(
-					Q, R, x_nominal, u_nominal, x_final, Q_final));
+	std::shared_ptr<TermQuadratic<state_dim, control_dim> > termIntermediate(new TermQuadratic<state_dim, control_dim>(Q, R, x_nominal, u_nominal));
+	std::shared_ptr<TermQuadratic<state_dim, control_dim> > termFinal(new TermQuadratic<state_dim, control_dim> (Q_final, R, x_final, u_nominal));
+
+	std::shared_ptr<CostFunctionAnalytical<state_dim, control_dim> > quadraticCostFunction(new CostFunctionAnalytical<state_dim, control_dim>);		
+	quadraticCostFunction->addIntermediateTerm(termIntermediate);
+	quadraticCostFunction->addFinalTerm(termFinal);
 
 	return quadraticCostFunction;
 }
@@ -125,6 +128,6 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim, SCALAR> > createCo
 typedef tpl::LinearOscillator<double> LinearOscillator;
 typedef tpl::LinearOscillatorLinear<double> LinearOscillatorLinear;
 
-}
-}
-}
+} //example
+} //optcon
+} //ct

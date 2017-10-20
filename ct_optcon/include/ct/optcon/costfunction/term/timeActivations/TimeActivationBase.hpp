@@ -1,12 +1,5 @@
-/*
- * TimeActivationBase.hpp
- *
- *  Created on: Feb 10, 2017
- *      Author: neunertm
- */
 
-#ifndef INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_TIMEACTIVATIONS_TIMEACTIVATIONBASE_HPP_
-#define INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_TIMEACTIVATIONS_TIMEACTIVATIONBASE_HPP_
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -42,7 +35,3 @@ typedef tpl::TimeActivationBase<double> TimeActivationBase;
 
 }
 }
-
-
-
-#endif /* INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_TIMEACTIVATIONS_TIMEACTIVATIONBASE_HPP_ */

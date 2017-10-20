@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_RBD_RBDSTATE_H_
-#define CT_RBD_RBDSTATE_H_
+#pragma once
 
 #include "JointState.h"
 #include "RigidBodyState.h"
@@ -70,11 +69,10 @@ public:
 		jointState_.setZero();
 	}
 
-	RBDState(const RBDState& other)
-	{
-		baseState_ = other.baseState_;
-		jointState_ = other.jointState_;
-	}
+	RBDState(const RBDState& other):
+		baseState_(other.baseState_),
+		jointState_(other.jointState_)
+	{}
 
 	RBDState(const RigidBodyState<SCALAR>& baseState, const JointState<NJOINTS>& jointState) :
 		baseState_(baseState),
@@ -271,6 +269,3 @@ using RBDState = tpl::RBDState<NJOINTS, double>;
 
 } // namespace rbd
 } // namespace ct
-
-
-#endif /* CT_RBD_RBDSTATE_H_ */

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_COSTFUNCTION_TERMQUADTRACKING_HPP_
-#define CT_COSTFUNCTION_TERMQUADTRACKING_HPP_
+#pragma once
 
 #include "TermBase.hpp"
 
@@ -37,18 +36,21 @@ namespace optcon {
  *
  * \brief A quadratic tracking term of type \f$ J(t) = (x_{ref}(t) - x)^T Q (x_{ref}(t) - x) + (u_{ref}(t) - u)^T R (u_{ref}(t) - u) \f$
  *
- * An example for using this term is given in unit test \ref TrackingTest.cpp
+ * An example for using this term is given in @todo write new TrackingTest.cpp
  *
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename S = double, typename TIME_SCALAR = S>
-class TermQuadTracking : public TermBase<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR> {
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, typename SCALAR = SCALAR_EVAL>
+class TermQuadTracking : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR> {
 
 public:
-	typedef S SCALAR;
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	
-	CT_OPTCON_DEFINE_TERM_TYPES
+    typedef Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM> state_matrix_t;
+    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
+    typedef Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM> state_matrix_double_t;
+    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM> control_matrix_double_t;
+    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, STATE_DIM> control_state_matrix_double_t;
 
 	TermQuadTracking();
 
@@ -61,9 +63,9 @@ public:
 
 	TermQuadTracking(const TermQuadTracking& arg);
 
-	virtual ~TermQuadTracking(){}
+	virtual ~TermQuadTracking();
 	
-	TermQuadTracking<STATE_DIM, CONTROL_DIM, S, TIME_SCALAR>* clone () const override;
+	TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone () const override;
 
 	void setWeights(const state_matrix_double_t& Q, const control_matrix_double_t& R);
 
@@ -71,42 +73,41 @@ public:
 			const core::StateTrajectory<STATE_DIM>& xTraj,
 			const core::ControlTrajectory<CONTROL_DIM>& uTraj);
 
-	S evaluate(const Eigen::Matrix<S, STATE_DIM, 1> &x, const Eigen::Matrix<S, CONTROL_DIM, 1> &u, const S& t) override;
-	
-	core::StateVector<STATE_DIM, S> stateDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
+    virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
 
-	state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
-	
-	core::ControlVector<CONTROL_DIM, S> controlDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
-	
-	control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
+	core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
 
-	control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, S> &x,
-			const core::ControlVector<CONTROL_DIM, S> &u, const S& t) override;
+	state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
+	
+	core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
+	
+	control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
+
+	control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
+			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
 	
 	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) override;
 
 protected:
 
+	template<typename SC>
+	SC evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1> &x, const Eigen::Matrix<SC, CONTROL_DIM, 1> &u, const SC& t);
+
 	state_matrix_t Q_;
 	control_matrix_t R_;
 
 	// the reference trajectories to be tracked
-	ct::core::StateTrajectory<STATE_DIM> x_traj_ref_;
-	ct::core::ControlTrajectory<CONTROL_DIM> u_traj_ref_;
+	ct::core::StateTrajectory<STATE_DIM, SCALAR_EVAL> x_traj_ref_;
+	ct::core::ControlTrajectory<CONTROL_DIM, SCALAR_EVAL> u_traj_ref_;
 
 	// Option whether the control trajectory deviation shall be penalized or not
 	bool trackControlTrajectory_;
 
 };
 
-#include "implementation/TermQuadTracking.hpp"
-
 } // namespace optcon
 } // namespace ct
-
-#endif

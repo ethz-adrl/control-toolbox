@@ -1,5 +1,5 @@
 /***********************************************************************************
-Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus StÃ¤uble, Diego Pardo,
 Farbod Farshidian. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -24,17 +24,16 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_OPTCON_COSTFUNCTIONANALYTICAL_HPP_
-#define CT_OPTCON_COSTFUNCTIONANALYTICAL_HPP_
+#pragma once
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/info_parser.hpp>
-#include <boost/algorithm/string.hpp>   
+#include <boost/algorithm/string.hpp>
 
 #include "CostFunctionQuadratic.hpp"
 #include "utility/utilities.hpp"
 
-#include "term/TermsAnalytical.hpp"
+#include "term/TermLoadMacros.hpp"
 
 
 namespace ct {
@@ -54,7 +53,7 @@ class CostFunctionAnalytical : public CostFunctionQuadratic<STATE_DIM, CONTROL_D
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	
+
 	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
 	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
 	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
@@ -65,46 +64,30 @@ public:
 	/**
 	 * \brief Basic constructor
 	 */
-	CostFunctionAnalytical() {};
-
-	/**
-	 * \brief Constructor using state, control and time
-	 * @param x state vector
-	 * @param u control vector
-	 * @param t time
-	 */
-	CostFunctionAnalytical(const state_vector_t &x, const control_vector_t &u, const SCALAR& t = 0.0) :
-		CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(x, u, t)
-	{};
+	CostFunctionAnalytical();
 
 	/**
 	 * \brief Copy constructor
 	 * @param arg cost function to copy
 	 */
-	CostFunctionAnalytical(const CostFunctionAnalytical& arg):
-		CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(arg){}
-
+	CostFunctionAnalytical(const CostFunctionAnalytical& arg);
 	/**
 	 * \brief Constructor loading function from file
 	 * @param filename config file location
 	 * @param verbose flag enabling printouts
 	 */
-	CostFunctionAnalytical(const std::string& filename, bool verbose = false) {
-		loadFromConfigFile(filename, verbose);
-	}
+	CostFunctionAnalytical(const std::string& filename, bool verbose = false);
 
 	/**
 	 * Deep-cloning of cost function
 	 * @return base pointer to clone
 	 */
-	CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const {
-		return new CostFunctionAnalytical(*this);
-	}
+	CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const;
 
 	/**
 	 * Destructor
 	 */
-	~CostFunctionAnalytical() {};
+	~CostFunctionAnalytical();
 
 	size_t addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false) override;
 	size_t addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false) override;
@@ -126,15 +109,12 @@ public:
 
     control_state_matrix_t stateControlDerivativeIntermediate() override;
     control_state_matrix_t stateControlDerivativeTerminal() override;
-	
+
 	void loadFromConfigFile(const std::string& filename,bool verbose = false) override;
 
 private:
 };
 
-#include "implementation/CostFunctionAnalytical.hpp"
-
 } // namespace optcon
 } // namespace cf
 
-#endif // COSTFUNCTIONANALYTICAL_HPP_

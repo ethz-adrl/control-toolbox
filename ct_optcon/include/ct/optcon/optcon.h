@@ -29,9 +29,7 @@
 
 #include <ct/core/core.h>
 
-#include "costfunction/CostFunctionAD.hpp"
-#include "costfunction/CostFunctionAnalytical.hpp"
-#include "costfunction/CostFunctionQuadraticSimple.hpp"
+#include "costfunction/costfunction.hpp"
 
 #include "constraint/constraint.h"
 
@@ -65,6 +63,8 @@
 
 
 // implementations
+//costfunction
+#include "costfunction/costfunction-impl.hpp"
 
 //constraints
 #include "constraint/constraint-impl.h"

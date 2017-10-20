@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_robot_STATE_RIGIDBODYPOSE_HPP_
-#define INCLUDE_CT_RBD_robot_STATE_RIGIDBODYPOSE_HPP_
+#pragma once
 
 #include <kindr/Core>
 
@@ -69,8 +68,8 @@ public:
 
 	RigidBodyPose(const kindr::EulerAnglesXyz<SCALAR>& orientationEulerXyz, const Position3Tpl& position, STORAGE_TYPE storage = EULER) :
 		storage_(storage),
-		quat_(),
-		euler_(),
+		quat_(SCALAR(1.0),SCALAR(0.0),SCALAR(0.0),SCALAR(0.0)), // for CppAD cg compatibility
+		euler_(SCALAR(0.0),SCALAR(0.0),SCALAR(0.0)),
 		position_(position)
 	{
 		setFromEulerAnglesXyz(orientationEulerXyz);
@@ -78,8 +77,8 @@ public:
 
 	RigidBodyPose(const kindr::RotationQuaternion<SCALAR>& orientationQuat, const Position3Tpl& position, STORAGE_TYPE storage = EULER) :
 		storage_(storage),
-		quat_(),
-		euler_(),
+		quat_(SCALAR(1.0),SCALAR(0.0),SCALAR(0.0),SCALAR(0.0)), // for CppAD cg compatibility
+		euler_(SCALAR(0.0),SCALAR(0.0),SCALAR(0.0)),
 		position_(position)
 	{
 		setFromRotationQuaternion(orientationQuat);
@@ -136,7 +135,7 @@ public:
 	 */
 	void setFromEulerAnglesXyz(const kindr::EulerAnglesXyz<SCALAR>& eulerAngles)
 	{
-		if (storedAsEuler()) { euler_ = eulerAngles; }
+		if (storedAsEuler()) { euler_.toImplementation() = eulerAngles.toImplementation(); }
 		else { quat_ = eulerAngles; }
 	}
 
@@ -145,8 +144,10 @@ public:
 	 */
 	void setFromEulerAnglesXyz(const Vector3Tpl& eulerAngles)
 	{
-		if (storedAsEuler()) { euler_ = kindr::EulerAnglesXyz<SCALAR>(eulerAngles); }
-		else { quat_ = kindr::EulerAnglesXyz<SCALAR>(eulerAngles); }
+		if (storedAsEuler())
+		{ euler_.toImplementation() = eulerAngles;}
+		else
+		{ quat_ = kindr::EulerAnglesXyz<SCALAR>(eulerAngles); }
 	}
 
 	/**
@@ -279,7 +280,3 @@ typedef tpl::RigidBodyPose<double> RigidBodyPose;
 
 } // namespace rbd
 } // namespace ct
-
-
-
-#endif /* INCLUDE_CT_RBD_robot_STATE_RIGIDBODYPOSE_HPP_ */

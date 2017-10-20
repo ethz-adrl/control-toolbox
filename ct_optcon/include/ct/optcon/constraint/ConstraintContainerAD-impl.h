@@ -45,7 +45,6 @@ ConstraintContainerAD<STATE_DIM, CONTROL_DIM, SCALAR>::ConstraintContainerAD()
 
 	intermediateCodegen_ = std::shared_ptr<JacCG>(new JacCG(fIntermediate_, STATE_DIM + CONTROL_DIM, getIntermediateConstraintsCount()));
 	terminalCodegen_ = std::shared_ptr<JacCG>(new JacCG(fTerminal_, STATE_DIM + CONTROL_DIM, getTerminalConstraintsCount()));
-
 }
 
 
