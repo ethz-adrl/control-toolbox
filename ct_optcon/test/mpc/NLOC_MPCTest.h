@@ -81,6 +81,7 @@ TEST(MPCTestA, PreIntegratorTest)
 		nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
 		nloc_settings.closedLoopShooting = true;
 		nloc_settings.integrator = ct::core::IntegrationType::EULER;
+		nloc_settings.printSummary=false;
 
 		// number of steps
 		size_t K = std::round(timeHorizon / nloc_settings.dt);

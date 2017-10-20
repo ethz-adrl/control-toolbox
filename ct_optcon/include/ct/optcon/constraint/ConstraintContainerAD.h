@@ -72,6 +72,7 @@ public:
 	 */
 	ConstraintContainerAD(const state_vector_t &x, const input_vector_t &u, const SCALAR& t = 0.0) ;
 
+
 	/**
 	 * \brief Copy constructor
 	 * @param arg constraint class to copy

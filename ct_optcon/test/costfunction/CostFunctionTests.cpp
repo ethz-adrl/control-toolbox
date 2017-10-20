@@ -24,17 +24,16 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_UTILITIES_TERMTYPEDEFS_HPP_
-#define INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_UTILITIES_TERMTYPEDEFS_HPP_
+#include <gtest/gtest.h>
+#include <ct/optcon/optcon.h>
 
-#define CT_OPTCON_DEFINE_TERM_TYPES  \
-	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t; \
-	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t; \
-	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t; \
-	typedef Eigen::Matrix<double, STATE_DIM, STATE_DIM> state_matrix_double_t; \
-	typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_double_t; \
-	typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_state_matrix_double_t; \
+#include "ADTest_timeDependent.h"
+#include "CostFunctionTest.h"
 
 
-
-#endif /* INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_UTILITIES_TERMTYPEDEFS_HPP_ */
+int main(int argc, char **argv)
+{
+    using namespace ct::optcon::example;
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}

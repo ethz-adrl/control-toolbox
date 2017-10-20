@@ -1,5 +1,5 @@
 /***********************************************************************************
-Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
+Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus StÃ¤uble, Diego Pardo,
 Farbod Farshidian. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -279,7 +279,7 @@ void symplecticTest()
 	gnms_settings.closedLoopShooting = false;
 	gnms_settings.lineSearchSettings.active = false;
 	gnms_settings.loggingPrefix = "GNMS";
-	gnms_settings.printSummary = true;
+	gnms_settings.printSummary = false;
 
 
 	NLOptConSettings ilqr_settings = gnms_settings;

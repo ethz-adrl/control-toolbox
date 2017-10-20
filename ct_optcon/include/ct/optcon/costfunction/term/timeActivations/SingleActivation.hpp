@@ -1,12 +1,5 @@
-/*
- * SingleActivation.hpp
- *
- *  Created on: Feb 10, 2017
- *      Author: neunertm
- */
 
-#ifndef INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_TIMEACTIVATIONS_SINGLEACTIVATION_HPP_
-#define INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_TIMEACTIVATIONS_SINGLEACTIVATION_HPP_
+#pragma once
 
 #include "TimeActivationBase.hpp"
 
@@ -59,6 +52,3 @@ private:
 typedef tpl::SingleActivation<double> SingleActivation;
 }
 }
-
-
-#endif /* INCLUDE_CT_OPTCON_COSTFUNCTION_TERM_TIMEACTIVATIONS_SINGLEACTIVATION_HPP_ */

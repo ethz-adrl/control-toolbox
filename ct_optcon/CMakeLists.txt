@@ -262,6 +262,7 @@ target_link_libraries(LinearSystemTestPrespec ${catkin_LIBRARIES} ${HPIPM_LIBS} 
 
 catkin_add_gtest(NonlinearSystemTest test/nloc/NonlinearSystemTest.cpp)
 target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+#todo make prespec test
 
 add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
 target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
@@ -275,15 +276,10 @@ target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
 catkin_add_gtest(constraint_test_prespec test/constraint/ConstraintTestPrespec.cpp)
 target_link_libraries(constraint_test_prespec ${catkin_LIBRARIES} dl ${PRESPEC_LIB_NAMES})
 
-catkin_add_gtest(CostFunctionTest test/costfunction/CostFunctionTest.cpp)
-target_link_libraries(CostFunctionTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
-## todo make prespec cost function tests !!
-
-catkin_add_gtest(CfTracking test/costfunction/TrackingTest.cpp)
-target_link_libraries(CfTracking ${catkin_LIBRARIES})
-
-catkin_add_gtest(ADTest_timeVar test/costfunction/ADTest_timeDependent.cpp)
-target_link_libraries(ADTest_timeVar ${catkin_LIBRARIES})
+catkin_add_gtest(CostFunctionTests test/costfunction/CostFunctionTests.cpp)
+target_link_libraries(CostFunctionTests ${catkin_LIBRARIES} dl ${MATLAB_LIBS})
+catkin_add_gtest(TrackingTermTest test/costfunction/TrackingTest.cpp)
+target_link_libraries(TrackingTermTest ${catkin_LIBRARIES} dl ${MATLAB_LIBS})
 
 catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
 target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})

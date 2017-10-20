@@ -82,10 +82,11 @@ public:
         int inputDim = IN_DIM, 
         int outputDim = OUT_DIM) 
     :
-        Utils(f, inputDim, outputDim)
+        Utils(f, inputDim, outputDim),
+        tmpVarCount_(0)
     {
-        if(outputDim > 0 && inputDim > 0)
-            this->recordCg();
+        // if(outputDim > 0 && inputDim > 0)
+        //     this->recordCg();
     }
 
     //! copy constructor
@@ -136,7 +137,7 @@ public:
 
         std::string codeJac =
                 internal::CGHelpers::generateJacobianSource(
-                        this->fCgCppad_,
+                        this->cgCppadFun_,
                         pattern,
                         jacDimension,
                         tmpVarCount_,
@@ -173,7 +174,7 @@ public:
     {
         std::string codeJac =
                 internal::CGHelpers::generateForwardZeroSource(
-                        this->fCgCppad_,
+                        this->cgCppadFun_,
                         tmpVarCount_,
                         ignoreZero
                 );
@@ -216,7 +217,7 @@ public:
 
         std::string codeHes =
                 internal::CGHelpers::generateHessianSource(
-                        this->fCgCppad_,
+                        this->cgCppadFun_,
                         pattern,
                         hesDimension,
                         tmpVarCount_,

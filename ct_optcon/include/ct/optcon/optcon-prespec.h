@@ -29,9 +29,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/core/core-prespec.h>
 
-#include "costfunction/CostFunctionAD.hpp"
-#include "costfunction/CostFunctionAnalytical.hpp"
-#include "costfunction/CostFunctionQuadraticSimple.hpp"
+#include "costfunction/costfunction.hpp"
+#include "costfunction/costfunction-impl.hpp" //temporary solution
 
 #include "constraint/constraint.h"
 

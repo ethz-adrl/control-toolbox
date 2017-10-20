@@ -29,8 +29,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Bring in gtest
 #include <gtest/gtest.h>
 
-
 #include <ct/optcon/optcon.h>
+
+#include "../testSystems/LinearOscillator.h"
+
 
 
 /* This test implements a 1-Dimensional horizontally moving point mass with mass 1kg and attached to a spring
@@ -51,88 +53,11 @@ using namespace ct::optcon;
 
 using std::shared_ptr;
 
-const size_t state_dim = 2; // position, velocity
-const size_t control_dim = 1; // force
-
-const double kStiffness = 10;
-
-//! Dynamics class for the iLQG unit test
-class Dynamics : public ControlledSystem<state_dim, control_dim>
-{
-public:
-	Dynamics() : ControlledSystem<state_dim, control_dim>(SYSTEM_TYPE::SECOND_ORDER) {}
-
-	void computeControlledDynamics(
-			const StateVector<state_dim>& state,
-			const Time& t,
-			const ControlVector<control_dim>& control,
-			StateVector<state_dim>& derivative
-	) override
-	{
-		derivative(0) = state(1);
-		derivative(1) = control(0) - kStiffness*state(0); // mass is 1 kg
-	}
-
-	Dynamics* clone() const override
-	{
-		return new Dynamics();
-	};
-};
-
-//! Linear system class for the iLQG unit test
-class LinearizedSystem : public LinearSystem<state_dim, control_dim>
-{
-public:
-	state_matrix_t A_;
-	state_control_matrix_t B_;
-
-
-	const state_matrix_t& getDerivativeState(const StateVector<state_dim>& x, const ControlVector<control_dim>& u, const double t = 0.0) override
-			{
-		A_ << 0, 1, -kStiffness, 0;
-		return A_;
-			}
-
-	const state_control_matrix_t& getDerivativeControl(const StateVector<state_dim>& x, const ControlVector<control_dim>& u, const double t = 0.0) override
-			{
-
-		B_ << 0, 1;
-		return B_;
-			}
-
-	LinearizedSystem* clone() const override
-			{
-		return new LinearizedSystem();
-			};
-};
-
-//! Create a cost function for the iLQG unit test
-std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > createCostFunction(Eigen::Vector2d& x_final)
-{
-	Eigen::Matrix2d Q;
-	Q << 0, 0, 0, 1;
-
-	Eigen::Matrix<double, 1, 1> R;
-	R << 100.0;
-
-	Eigen::Vector2d x_nominal = Eigen::Vector2d::Zero();
-	Eigen::Matrix<double, 1, 1> u_nominal = Eigen::Matrix<double, 1, 1>::Zero();
-
-	Eigen::Matrix2d Q_final;
-	Q_final << 10, 0, 0, 10;
-
-	std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > quadraticCostFunction(
-			new CostFunctionQuadraticSimple<state_dim, control_dim>(
-					Q, R, x_nominal, u_nominal, x_final, Q_final));
-
-	return quadraticCostFunction;
-}
-
 
 TEST(ILQRTest, SystemLinearizationTest)
 {
-	shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
-	shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearizedSystem);
+	shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new LinearOscillator());
+	shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearOscillatorLinear());
 	shared_ptr<LinearSystem<state_dim, control_dim> > numDiffLinearModelGeneral(new SystemLinearizer<state_dim, control_dim>(nonlinearSystem, false));
 	shared_ptr<LinearSystem<state_dim, control_dim> > numDiffLinearModelSecondOrder(new SystemLinearizer<state_dim, control_dim>(nonlinearSystem, true));
 	StateVector<state_dim> xRef;
@@ -212,9 +137,9 @@ TEST(ILQRTestA, InstancesComparison)
 		NLOptConSettings ilqr_settings_mp = ilqr_settings;
 		ilqr_settings_mp.nThreads = 4;
 
-		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
-		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearizedSystem);
-		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = createCostFunction(x_final);
+		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new LinearOscillator());
+		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearOscillatorLinear());
+		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = tpl::createCostFunctionLinearOscillator<double>(x_final);
 
 		// times
 		ct::core::Time tf = 3.0;
@@ -342,6 +267,8 @@ TEST(ILQRTestB, SingleCoreTest)
 	try {
 
 		typedef NLOptConSolver<state_dim, control_dim> NLOptConSolver;
+		typedef StateMatrix<state_dim> state_matrix_t;
+		typedef StateControlMatrix<state_dim, control_dim> state_control_matrix_t;
 
 		std::cout << "setting up problem " << std::endl;
 
@@ -367,9 +294,9 @@ TEST(ILQRTestB, SingleCoreTest)
 		NLOptConSettings ilqr_settings_mp = ilqr_settings;
 		ilqr_settings_mp.nThreads = 4;
 
-		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
-		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearizedSystem);
-		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = createCostFunction(x_final);
+		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new LinearOscillator());
+		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearOscillatorLinear());
+		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = tpl::createCostFunctionLinearOscillator<double>(x_final);
 
 		// times
 		ct::core::Time tf = 3.0;
@@ -481,26 +408,26 @@ TEST(ILQRTestB, SingleCoreTest)
 				// check linearization
 				for (size_t j=0; j<xRollout.size()-1; j++)
 				{
-					LinearizedSystem::state_matrix_t A_analytic;
-					LinearizedSystem::state_control_matrix_t B_analytic;
+					state_matrix_t A_analytic;
+					state_control_matrix_t B_analytic;
 
 					if(ilqr_settings.discretization == NLOptConSettings::APPROXIMATION::FORWARD_EULER)
 					{
-						A_analytic = LinearizedSystem::state_matrix_t::Identity() + ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
+						A_analytic = state_matrix_t::Identity() + ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
 						B_analytic = ilqr_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
 					}
 					else if(ilqr_settings.discretization == NLOptConSettings::APPROXIMATION::BACKWARD_EULER)
 					{
-						LinearizedSystem::state_matrix_t aNew = ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
-						LinearizedSystem::state_matrix_t aNewInv = (LinearizedSystem::state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
+						state_matrix_t aNew = ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
+						state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
 						A_analytic = aNewInv;
 						B_analytic = aNewInv * ilqr_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
 					}
 					else if(ilqr_settings.discretization == NLOptConSettings::APPROXIMATION::TUSTIN)
 					{
-						LinearizedSystem::state_matrix_t aNew = 0.5 * ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
-						LinearizedSystem::state_matrix_t aNewInv = (LinearizedSystem::state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
-						A_analytic = aNewInv * (LinearizedSystem::state_matrix_t::Identity() + aNew);
+						state_matrix_t aNew = 0.5 * ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
+						state_matrix_t aNewInv = (state_matrix_t::Identity() -  aNew).colPivHouseholderQr().inverse();
+						A_analytic = aNewInv * (state_matrix_t::Identity() + aNew);
 						B_analytic = aNewInv * ilqr_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
 					}
 
@@ -535,10 +462,9 @@ TEST(ILQRTestB, SingleCoreTest)
 
 				numIterations++;
 
-				// we should converge in way less than 20 iterations
-				// todo: note: since this is a linear system, it should actually converge in only 1 iteration.
+				//note: since this is a linear system, it should actually converge in only 1 iteration.
 
-				ASSERT_LT(numIterations, 10);
+				ASSERT_LT(numIterations, 3);
 			}
 		}
 
@@ -582,9 +508,9 @@ TEST(ILQRTestC, PolicyComparison)
 		ilqr_settings_mp.nThreads = 4;
 
 
-		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new Dynamics);
-		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearizedSystem);
-		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = createCostFunction(x_final);
+		shared_ptr<ControlledSystem<state_dim, control_dim> > nonlinearSystem(new LinearOscillator());
+		shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new LinearOscillatorLinear());
+		shared_ptr<CostFunctionQuadratic<state_dim, control_dim> > costFunction = tpl::createCostFunctionLinearOscillator<double>(x_final);
 
 		// times
 		ct::core::Time tf = 3.0;
@@ -664,8 +590,8 @@ TEST(ILQRTestC, PolicyComparison)
 			std::shared_ptr<NLOptConSolver::Policy_t> optController_mp (new NLOptConSolver::Policy_t(ilqr_mp.getSolution()));
 
 			// two test systems
-			std::shared_ptr<ControlledSystem<state_dim, control_dim> > testSystem1 (new Dynamics);
-			std::shared_ptr<ControlledSystem<state_dim, control_dim> > testSystem2 (new Dynamics);
+			std::shared_ptr<ControlledSystem<state_dim, control_dim> > testSystem1 (new LinearOscillator());
+			std::shared_ptr<ControlledSystem<state_dim, control_dim> > testSystem2 (new LinearOscillator());
 
 			// set the controller
 			testSystem1->setController(optController);
@@ -695,7 +621,6 @@ TEST(ILQRTestC, PolicyComparison)
 		FAIL();
 	}
 }
-
 
 
 } // namespace example
