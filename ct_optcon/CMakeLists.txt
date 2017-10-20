@@ -211,8 +211,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/dms/oscillator)
 
 catkin_add_gtest(LqrTest test/lqr/LqrTest.cpp)
 target_link_libraries(LqrTest ${catkin_LIBRARIES} lapack ${MATLAB_LIBS})
-#catkin_add_gtest(LqrTestPrespec test/lqr/LqrTestPrespec.cpp)
-#target_link_libraries(LqrTestPrespec ${catkin_LIBRARIES} lapack ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
+catkin_add_gtest(LqrTestPrespec test/lqr/LqrTestPrespec.cpp)
+target_link_libraries(LqrTestPrespec ${catkin_LIBRARIES} lapack ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
 
 catkin_add_gtest(iLQRTest test/nloc/iLQRTest.cpp)
 target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
@@ -241,11 +241,12 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/nloc)
 
 catkin_add_gtest(LinearSystemTest test/nloc/LinearSystemTest.cpp)
 target_link_libraries(LinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-#catkin_add_gtest(LinearSystemTestPrespec test/nloc/LinearSystemTestPrespec.cpp)
-#target_link_libraries(LinearSystemTestPrespec ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
+catkin_add_gtest(LinearSystemTestPrespec test/nloc/LinearSystemTestPrespec.cpp)
+target_link_libraries(LinearSystemTestPrespec ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
 
 catkin_add_gtest(NonlinearSystemTest test/nloc/NonlinearSystemTest.cpp)
 target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+#todo make prespec test
 
 add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
 target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
@@ -256,12 +257,11 @@ target_link_libraries(constraint_comparison ${catkin_LIBRARIES} dl)
 
 catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
 target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
-#catkin_add_gtest(constraint_test_prespec test/constraint/ConstraintTestPrespec.cpp)
-#target_link_libraries(constraint_test_prespec ${catkin_LIBRARIES} dl ${PRESPEC_LIB_NAMES})
+catkin_add_gtest(constraint_test_prespec test/constraint/ConstraintTestPrespec.cpp)
+target_link_libraries(constraint_test_prespec ${catkin_LIBRARIES} dl ${PRESPEC_LIB_NAMES})
 
 catkin_add_gtest(CostFunctionTests test/costfunction/CostFunctionTests.cpp)
 target_link_libraries(CostFunctionTests ${catkin_LIBRARIES} dl ${MATLAB_LIBS})
-## todo make prespec cost function tests !!
 ## todo make test for tracking term
 
 catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
@@ -285,8 +285,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/mpc)
 
 catkin_add_gtest(NLOC_MPCTest test/mpc/NLOC_MPCTest.cpp)
 target_link_libraries(NLOC_MPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-#catkin_add_gtest(NLOC_MPCTest_prespec test/mpc/NLOC_MPCTest_prespec.cpp)
-#target_link_libraries(NLOC_MPCTest_prespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIB_NAMES})
+catkin_add_gtest(NLOC_MPCTest_prespec test/mpc/NLOC_MPCTest_prespec.cpp)
+target_link_libraries(NLOC_MPCTest_prespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIB_NAMES})
 
 
 find_package(Doxygen)
