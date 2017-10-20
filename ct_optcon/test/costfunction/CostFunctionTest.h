@@ -32,14 +32,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/optcon.h>
 #include <gtest/gtest.h>
 
-#include <cppad/example/cppad_eigen.hpp>
-
-#include <ct/optcon/costfunction/CostFunctionAD.hpp>
-#include <ct/optcon/costfunction/CostFunctionAnalytical.hpp>
-#include <ct/optcon/costfunction/term/TermQuadratic.hpp>
-#include <ct/optcon/costfunction/term/TermQuadMult.hpp>
-#include <ct/optcon/costfunction/term/TermMixed.hpp>
-
 const size_t state_dim = 12;
 const size_t control_dim = 4;
 
