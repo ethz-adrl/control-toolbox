@@ -60,7 +60,8 @@ ct::core::ADCGScalar TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::eval
 		const Eigen::Matrix<ct::core::ADCGScalar, CONTROL_DIM, 1>& u, 
 		const ct::core::ADCGScalar& t)
 		{
-	return evaluate(x, u, t);
+	SCALAR result = evaluate(x.template cast<SCALAR>(), u.template cast<SCALAR>(), (SCALAR)t);
+	return result;
 		}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
