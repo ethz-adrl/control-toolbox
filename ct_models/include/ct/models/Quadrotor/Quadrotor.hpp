@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_MODELS_QUADROTOR_HPP_
-#define CT_MODELS_QUADROTOR_HPP_
+#pragma once
 
 #include <iostream>
 #include <memory>
@@ -59,5 +58,3 @@ public:
 };
 }
 }
-
-#endif /* CT_MODELS_QUADROTOR_HPP_ */

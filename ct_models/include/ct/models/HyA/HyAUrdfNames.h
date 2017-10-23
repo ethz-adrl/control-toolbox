@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_MODELS_HYA_HYQURDFNAMES_H_
-#define INCLUDE_CT_MODELS_HYA_HYQURDFNAMES_H_
+#pragma once
 
 namespace ct {
 namespace models {
@@ -42,5 +41,3 @@ static std::vector<std::string> urdfJointNames()
 }
 }
 }
-
-#endif /* INCLUDE_CT_MODELS_HYA_HYQURDFNAMES_H_ */

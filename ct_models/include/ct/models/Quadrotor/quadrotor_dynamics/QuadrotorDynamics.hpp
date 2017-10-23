@@ -25,8 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#ifndef CT_MODELS_QUADROTOR_DYNAMICS_HPP_
-#define CT_MODELS_QUADROTOR_DYNAMICS_HPP_
+#pragma once
 
 #include <cmath>
 
@@ -39,7 +38,6 @@ namespace models {
 quadrotor::state_matrix_t A_quadrotor(const quadrotor::state_vector_t &x, const quadrotor::control_vector_t &u);
 quadrotor::control_gain_matrix_t B_quadrotor(const quadrotor::state_vector_t &x, const quadrotor::control_vector_t &u);
 quadrotor::state_vector_t quadrotor_ode(const quadrotor::state_vector_t &x, const quadrotor::control_vector_t &u);
-}
-}
 
-#endif /* QUADROTOR_DYNAMICS_HPP_ */
+}  // models
+}  // ct

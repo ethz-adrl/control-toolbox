@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef TEST_MODELS_ROBCOGENHYA_H_
-#define TEST_MODELS_ROBCOGENHYA_H_
+#pragma once
 
 #include <Eigen/Core>
 #include <Eigen/StdVector>
@@ -65,5 +64,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/models/HyA/codegen/HyAInverseDynJacReverse.h>
 
 #include "HyAUrdfNames.h"
-
-#endif /* ROBCOGENHYA_H_ */

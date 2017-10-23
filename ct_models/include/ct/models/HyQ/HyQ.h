@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef HYQ_ROBCOGENHYQ_H_
-#define HYQ_ROBCOGENHYQ_H_
+#pragma once
 
 #include <Eigen/Core>
 #include <Eigen/StdVector>
@@ -92,6 +91,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "HyQUrdfNames.h"
 #include "codegen/HyQWithContactModelLinearizedForward.h"
-
-
-#endif /* THYQ_ROBCOGEHYQ_H_ */

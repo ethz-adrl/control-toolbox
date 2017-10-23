@@ -35,8 +35,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  This is an example of how to use the generated code.
  */
 
-#ifndef HYA_CODEGEN_DERIVATIVE_FULL_JACOBIAN_IV_HPP_
-#define HYA_CODEGEN_DERIVATIVE_FULL_JACOBIAN_IV_HPP_
+#pragma once
 
 #include <ct/core/core.h>
 
@@ -44,5 +43,3 @@ namespace ct_HyA {
 
 Eigen::Matrix<double, 12, 6> computeDIvdqCodegen(const Eigen::Matrix<double, 12, 1>& state);
 }
-
-#endif /* TEST_CODEGEN_DERIVATIVE_FULL_JACOBIAN_HPP_ */
