@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef COMMON_MATH_JACOBI_SINGULARITY_H_
-#define COMMON_MATH_JACOBI_SINGULARITY_H_
+#pragma once
 
 namespace ct {
 namespace rbd {
@@ -108,5 +107,3 @@ private:
 
 
 #include "implementation/JacobiSingularity.h"
-
-#endif /* COMMON_MATH_SINGULARITY_H_ */

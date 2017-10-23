@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_RBD_INFINITEHORIZONLQRWITHINVERSEDYNAMICS_H_
-#define CT_RBD_INFINITEHORIZONLQRWITHINVERSEDYNAMICS_H_
+#pragma once
 
 #include <ct/rbd/systems/FixBaseFDSystem.h>
 
@@ -154,6 +153,3 @@ private:
 };
 }
 }
-
-
-#endif /* CT_RBD_INFINITEHORIZONLQRWITHINVERSEDYNAMICS_H_ */

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_COORDINATEBASE_H_
-#define CT_COORDINATEBASE_H_
+#pragma once
 
 #include <ct/rbd/state/RBDState.h>
 
@@ -53,5 +52,3 @@ private:
 
 }  // namespace rbd
 }  // namespace ct
-
-#endif /* CT_COORDINATEBASE_H_ */

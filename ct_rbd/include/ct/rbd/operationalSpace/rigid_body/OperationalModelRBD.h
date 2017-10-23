@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_RIGIDBODYMODEL_H_
-#define CT_RIGIDBODYMODEL_H_
+#pragma once
 
 #include <ct/rbd/robot/jacobian/FrameJacobian.h>
 #include <ct/rbd/robot/kinematics/EndEffector.h>
@@ -124,5 +123,3 @@ using OperationalModelRBD = tpl::OperationalModelRBD<RBDContainer, NUM_CONTACTPO
 
 }  // end of rbd namespace
 }  // end of os namespace
-
-#endif /* CT_RIGIDBODYMODEL_H_ */

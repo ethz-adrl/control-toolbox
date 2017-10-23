@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef OS_TASKSPACEMODEL_HPP_
-#define OS_TASKSPACEMODEL_HPP_
+#pragma once
 
 #include "OperationalModelBase.h"
 
@@ -149,5 +148,3 @@ inline const OperationalModel<0, 12, 4>::Base::S_t& OperationalModel<0, 12, 4>::
 }
 }
 }
-
-#endif /* TASKSPACEMODEL_HPP_ */

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_SECONDORDERACTUATORDYNAMICS_H_
-#define CT_SECONDORDERACTUATORDYNAMICS_H_
+#pragma once
 
 #include "ActuatorDynamics.h"
 
@@ -75,6 +74,3 @@ private:
 };
 }
 }
-
-
-#endif /* CT_SECONDORDERACTUATORDYNAMICS_H_ */

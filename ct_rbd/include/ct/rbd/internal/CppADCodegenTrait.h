@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_EXTERNAL_IIT_RBD_TRAITS_CPPADCODEGENTRAIT_H_
-#define INCLUDE_EXTERNAL_IIT_RBD_TRAITS_CPPADCODEGENTRAIT_H_
+#pragma once
 
 #include <cppad/cg.hpp>
 #include <cppad/cppad.hpp>
@@ -117,6 +116,3 @@ private:
 }
 }
 }
-
-
-#endif /* INCLUDE_EXTERNAL_IIT_RBD_TRAITS_CPPADCODEGENTRAIT_H_ */

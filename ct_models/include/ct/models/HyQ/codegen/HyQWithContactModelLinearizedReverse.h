@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_HyQWithContactModelLinearizedReverse_H_
-#define CT_HyQWithContactModelLinearizedReverse_H_
+#pragma once
 
 #include <ct/core/core.h>
 
@@ -80,4 +79,3 @@ private:
 }
 }
 
-#endif

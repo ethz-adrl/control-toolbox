@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_RIGIDBODYMODELBASE_H_
-#define CT_RIGIDBODYMODELBASE_H_
+#pragma once
 
 
 #include <ct/rbd/robot/jacobian/OperationalJacobianBase.h>
@@ -136,5 +135,3 @@ protected:
 
 }  // end of rbd namespace
 }  // end of os namespace
-
-#endif /* CT_RIGIDBODYMODELBASE_H_ */

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_MODELS_QUADROTOR_DECLARATIONS_HPP_
-#define CT_MODELS_QUADROTOR_DECLARATIONS_HPP_
+#pragma once
 
 namespace ct {
 namespace models {
@@ -44,4 +43,3 @@ typedef Eigen::Matrix<double, nStates, nControls> control_gain_matrix_t;
 }
 }
 
-#endif /* DECLARATIONS_HPP_ */

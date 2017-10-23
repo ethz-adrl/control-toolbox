@@ -26,13 +26,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include <Eigen/Core>
-
 #include <ct/rbd/rbd.h>
-
-//#include <ct/rbd/robot/RobCoGenContainer.h>
-//#include <ct/rbd/robot/Kinematics.h>
-//#include <ct/rbd/robot/Dynamics.h>
 
 #include "generated/declarations.h"
 #include "generated/forward_dynamics.h"

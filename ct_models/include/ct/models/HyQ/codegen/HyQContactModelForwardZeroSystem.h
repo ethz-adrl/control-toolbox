@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_MODELS_HYQ_CONTACTMODEL_FORWARDZERO_SYSTEM_H_
-#define INCLUDE_CT_MODELS_HYQ_CONTACTMODEL_FORWARDZERO_SYSTEM_H_
+#pragma once
 
 
 #include <ct/core/systems/ControlledSystem.h>
@@ -113,4 +112,3 @@ private:
 }  // namespace models
 }  // namespace ct
 
-#endif /* INCLUDE_CT_MODELS_HYQ_CONTACTMODEL_FORWARDZERO_SYSTEM_H_ */

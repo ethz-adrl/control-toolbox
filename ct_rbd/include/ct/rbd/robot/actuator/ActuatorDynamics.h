@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_ACTUATORDYNAMICS_H_
-#define CT_ACTUATORDYNAMICS_H_
+#pragma once
 
 #include <ct/rbd/state/JointState.h>
 
@@ -87,6 +86,3 @@ public:
 
 }  // namespace rbd
 }  // namespace ct
-
-
-#endif /* CT_ACTUATORDYNAMICS_H_ */

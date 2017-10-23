@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_MODELS_QUADVISPARAMETERS_HPP_
-#define CT_MODELS_QUADVISPARAMETERS_HPP_
+#pragma once
 
 #include <quadrotor_definitions/quadModelParameters.hpp>
 #include <Eigen/Dense>
@@ -58,4 +57,3 @@ const Eigen::Vector3d rotorPositions[N_ROTORS] = {Eigen::Vector3d(arm_len, 0.0, 
 }
 
 
-#endif /* QUADVISPARAMETERS_HPP_ */

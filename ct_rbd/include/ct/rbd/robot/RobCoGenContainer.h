@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_ROBOT_RBDCONTAINER_H_
-#define INCLUDE_CT_RBD_ROBOT_RBDCONTAINER_H_
+#pragma once
 
 #include <kindr/Core>
 #include <ct/rbd/state/JointState.h>
@@ -205,6 +204,3 @@ private:
 
 }  // namespace rbd
 }  // namespace ct
-
-
-#endif /* INCLUDE_CT_RBD_ROBOT_RBDCONTAINER_H_ */
