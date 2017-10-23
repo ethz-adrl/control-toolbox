@@ -87,19 +87,19 @@ bool subplot(const size_t nrows, const size_t ncols, const size_t plot_number);
 
 //! Create an x/y plot with properties as map.
 bool plot(const Eigen::Ref<const Eigen::MatrixXd>& x,
-	const Eigen::Ref<const Eigen::MatrixXd>& y,
-	const std::map<std::string, std::string>& keywords);
+    const Eigen::Ref<const Eigen::MatrixXd>& y,
+    const std::map<std::string, std::string>& keywords);
 
 //! Create an x/y plot with properties in string.
 bool plot(const Eigen::Ref<const Eigen::MatrixXd>& x,
-	const Eigen::Ref<const Eigen::MatrixXd>& y,
-	const std::string& s = "");
+    const Eigen::Ref<const Eigen::MatrixXd>& y,
+    const std::string& s = "");
 
 //! Create an x/y plot with name as label.
 bool labelPlot(const std::string& name,
-	const Eigen::Ref<const Eigen::MatrixXd>& x,
-	const Eigen::Ref<const Eigen::MatrixXd>& y,
-	const std::string& format = "");
+    const Eigen::Ref<const Eigen::MatrixXd>& x,
+    const Eigen::Ref<const Eigen::MatrixXd>& y,
+    const std::string& format = "");
 bool labelPlot(const std::string& name, const Eigen::Ref<const Eigen::MatrixXd>& y, const std::string& format = "");
 
 bool plot(const Eigen::Ref<const Eigen::MatrixXd>& x, const std::string& format = "");
@@ -113,12 +113,12 @@ bool plot(const std::vector<double, ALLOC>& y, const std::string& format = "");
 
 template <typename ALLOC, typename ALLOC2>
 bool plot(const std::vector<double, ALLOC>& x,
-	const std::vector<double, ALLOC2>& y,
-	const std::map<std::string, std::string>& keywords);
+    const std::vector<double, ALLOC2>& y,
+    const std::map<std::string, std::string>& keywords);
 
 bool plot(const std::vector<double>& x,
-	const Eigen::Ref<const Eigen::MatrixXd>& y,
-	const std::map<std::string, std::string>& keywords);
+    const Eigen::Ref<const Eigen::MatrixXd>& y,
+    const std::map<std::string, std::string>& keywords);
 
 template <typename ALLOC, typename ALLOC2>
 bool plot(const std::vector<double, ALLOC>& x, const std::vector<double, ALLOC2>& y, const std::string& s = "");
@@ -126,14 +126,14 @@ bool plot(const std::vector<double, ALLOC>& x, const std::vector<double, ALLOC2>
 bool plot(const std::vector<double>& x, const Eigen::Ref<const Eigen::MatrixXd>& y, const std::string& s = "");
 
 bool labelPlot(const std::string& name,
-	const std::vector<double>& x,
-	const std::vector<double>& y,
-	const std::string& format = "");
+    const std::vector<double>& x,
+    const std::vector<double>& y,
+    const std::string& format = "");
 
 bool labelPlot(const std::string& name,
-	const std::vector<double>& x,
-	const Eigen::Ref<const Eigen::MatrixXd>& y,
-	const std::string& format = "");
+    const std::vector<double>& x,
+    const Eigen::Ref<const Eigen::MatrixXd>& y,
+    const std::string& format = "");
 //! @}
 
 // -----------------------------------------------------------------------------

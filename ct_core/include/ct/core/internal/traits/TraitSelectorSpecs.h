@@ -37,13 +37,13 @@ namespace tpl {
 template <>
 struct TraitSelector<CppAD::AD<double>>
 {
-	typedef internal::CppADDoubleTrait Trait;
+    typedef internal::CppADDoubleTrait Trait;
 };
 
 template <>
 struct TraitSelector<CppAD::AD<CppAD::cg::CG<double>>>
 {
-	typedef internal::CppADCodegenTrait Trait;
+    typedef internal::CppADCodegenTrait Trait;
 };
 
 

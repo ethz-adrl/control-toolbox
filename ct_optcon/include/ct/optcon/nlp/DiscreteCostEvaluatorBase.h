@@ -41,33 +41,33 @@ template <typename SCALAR>
 class DiscreteCostEvaluatorBase
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	/**
+    /**
     * @brief      Default constructor
     */
-	DiscreteCostEvaluatorBase(){};
+    DiscreteCostEvaluatorBase(){};
 
-	/**
+    /**
    * @brief     Destructor.
    */
-	virtual ~DiscreteCostEvaluatorBase(){};
+    virtual ~DiscreteCostEvaluatorBase(){};
 
 
-	/**
+    /**
    * @brief      Evaluates the cost function
    *
    * @return     The evaluates cost function
    */
-	virtual SCALAR eval() = 0;
+    virtual SCALAR eval() = 0;
 
-	/**
+    /**
     * @brief      Evaluates the cost gradient
     *
     * @param[in]  grad_length  The size of the gradient vector
     * @param[out] grad         The values of the gradient
     */
-	virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>& grad) = 0;
+    virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>& grad) = 0;
 };
 }
 

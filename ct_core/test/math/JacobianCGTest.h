@@ -52,12 +52,12 @@ typedef DerivativesCppadCG<inDim, outDim> derivativesCppadCG;
 template <typename SCALAR>
 Eigen::Matrix<SCALAR, outDim, 1> testFunction(const Eigen::Matrix<SCALAR, inDim, 1>& x)
 {
-	Eigen::Matrix<SCALAR, outDim, 1> y;
+    Eigen::Matrix<SCALAR, outDim, 1> y;
 
-	y(0) = 3 * x(0) + 2 * x(0) * x(0) - x(1) * x(2);
-	y(1) = x(2) + x(1) + 3;
+    y(0) = 3 * x(0) + 2 * x(0) * x(0) - x(1) * x(2);
+    y(1) = x(2) + x(1) + 3;
 
-	return y;
+    return y;
 }
 
 /*!
@@ -69,22 +69,22 @@ Eigen::Matrix<SCALAR, outDim, 1> testFunction(const Eigen::Matrix<SCALAR, inDim,
 template <typename SCALAR>
 Eigen::Matrix<SCALAR, outDim, inDim> jacobianCheck(const Eigen::Matrix<SCALAR, inDim, 1>& x)
 {
-	Eigen::Matrix<SCALAR, outDim, inDim> jac;
+    Eigen::Matrix<SCALAR, outDim, inDim> jac;
 
-	jac << 3 + 4 * x(0), -x(2), -x(1), 0, 1, 1;
+    jac << 3 + 4 * x(0), -x(2), -x(1), 0, 1, 1;
 
-	return jac;
+    return jac;
 }
 
 template <typename SCALAR>
 Eigen::Matrix<SCALAR, inDim, inDim> hessianCheck(const Eigen::Matrix<SCALAR, inDim, 1>& x,
-	const Eigen::Matrix<SCALAR, outDim, 1>& w)
+    const Eigen::Matrix<SCALAR, outDim, 1>& w)
 {
-	Eigen::Matrix<SCALAR, inDim, inDim> hes;
+    Eigen::Matrix<SCALAR, inDim, inDim> hes;
 
-	hes << 4, 0, 0, 0, 0, -1, 0, -1, 0;
+    hes << 4, 0, 0, 0, 0, -1, 0, -1, 0;
 
-	return w(0) * hes;
+    return w(0) * hes;
 }
 
 
@@ -93,69 +93,69 @@ Eigen::Matrix<SCALAR, inDim, inDim> hessianCheck(const Eigen::Matrix<SCALAR, inD
  */
 TEST(JacobianCGTest, JITCompilationTest)
 {
-	try
-	{
-		// create a function handle (also works for class methods, lambdas, function pointers, ...)
-		typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
+    try
+    {
+        // create a function handle (also works for class methods, lambdas, function pointers, ...)
+        typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
 
-		// initialize the Auto-Diff Codegen Jacobian
-		derivativesCppadJIT jacCG(f);
+        // initialize the Auto-Diff Codegen Jacobian
+        derivativesCppadJIT jacCG(f);
 
-		DerivativesCppadSettings settings;
-		settings.createJacobian_ = true;
+        DerivativesCppadSettings settings;
+        settings.createJacobian_ = true;
 
-		// compile the Jacobian
-		jacCG.compileJIT(settings, "jacobianCGLib");
+        // compile the Jacobian
+        jacCG.compileJIT(settings, "jacobianCGLib");
 
-		// create an input vector
-		Eigen::Matrix<double, inDim, 1> x;
+        // create an input vector
+        Eigen::Matrix<double, inDim, 1> x;
 
-		for (size_t i = 0; i < 1000; i++)
-		{
-			// create a random input
-			x.setRandom();
+        for (size_t i = 0; i < 1000; i++)
+        {
+            // create a random input
+            x.setRandom();
 
-			// verify agains the analytical Jacobian
-			ASSERT_LT((jacCG.jacobian(x) - jacobianCheck(x)).array().abs().maxCoeff(), 1e-10);
-		}
-	} catch (std::exception& e)
-	{
-		std::cout << "Exception thrown: " << e.what() << std::endl;
-		ASSERT_TRUE(false);
-	}
+            // verify agains the analytical Jacobian
+            ASSERT_LT((jacCG.jacobian(x) - jacobianCheck(x)).array().abs().maxCoeff(), 1e-10);
+        }
+    } catch (std::exception& e)
+    {
+        std::cout << "Exception thrown: " << e.what() << std::endl;
+        ASSERT_TRUE(false);
+    }
 }
 
 
 TEST(HessianCGTest, JITHessianTest)
 {
-	try
-	{
-		typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
+    try
+    {
+        typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
 
-		derivativesCppadJIT hessianCg(f);
+        derivativesCppadJIT hessianCg(f);
 
-		DerivativesCppadSettings settings;
-		settings.createHessian_ = true;
+        DerivativesCppadSettings settings;
+        settings.createHessian_ = true;
 
-		hessianCg.compileJIT(settings, "hessianCGLib");
+        hessianCg.compileJIT(settings, "hessianCGLib");
 
-		Eigen::Matrix<double, inDim, 1> x;
-		Eigen::Matrix<double, outDim, 1> w;
+        Eigen::Matrix<double, inDim, 1> x;
+        Eigen::Matrix<double, outDim, 1> w;
 
-		for (size_t i = 0; i < 1000; ++i)
-		{
-			x.setRandom();
-			w.setRandom();
+        for (size_t i = 0; i < 1000; ++i)
+        {
+            x.setRandom();
+            w.setRandom();
 
-			ASSERT_LT((hessianCg.hessian(x, w) - hessianCheck(x, w)).array().abs().maxCoeff(), 1e-10);
-		}
+            ASSERT_LT((hessianCg.hessian(x, w) - hessianCheck(x, w)).array().abs().maxCoeff(), 1e-10);
+        }
 
 
-	} catch (std::exception& e)
-	{
-		std::cout << "Exception thrown: " << e.what() << std::endl;
-		ASSERT_TRUE(false);
-	}
+    } catch (std::exception& e)
+    {
+        std::cout << "Exception thrown: " << e.what() << std::endl;
+        ASSERT_TRUE(false);
+    }
 }
 
 
@@ -164,17 +164,17 @@ TEST(HessianCGTest, JITHessianTest)
  */
 TEST(JacobianCGTest, CodegenTest)
 {
-	// create a function handle (also works for class methods, lambdas, function pointers, ...)
-	typename derivativesCppadCG::FUN_TYPE_CG f = testFunction<derivativesCppadCG::CG_SCALAR>;
+    // create a function handle (also works for class methods, lambdas, function pointers, ...)
+    typename derivativesCppadCG::FUN_TYPE_CG f = testFunction<derivativesCppadCG::CG_SCALAR>;
 
-	// initialize the Auto-Diff Codegen Jacobian
-	derivativesCppadCG jacCG(f);
+    // initialize the Auto-Diff Codegen Jacobian
+    derivativesCppadCG jacCG(f);
 
-	// generate code for the Jacobian, similar to jacobianCheck()
-	jacCG.generateJacobianSource("TestJacobian");
+    // generate code for the Jacobian, similar to jacobianCheck()
+    jacCG.generateJacobianSource("TestJacobian");
 
-	// generate code for the actual function, will evaluate to the same as testFunction()
-	jacCG.generateForwardZeroSource("TestForwardZero");
+    // generate code for the actual function, will evaluate to the same as testFunction()
+    jacCG.generateForwardZeroSource("TestForwardZero");
 
-	jacCG.generateHessianSource("TestHessian");
+    jacCG.generateHessianSource("TestHessian");
 }

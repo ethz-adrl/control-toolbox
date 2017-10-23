@@ -38,6 +38,6 @@ using namespace ct::optcon::example;
 
 int main(int argc, char **argv)
 {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

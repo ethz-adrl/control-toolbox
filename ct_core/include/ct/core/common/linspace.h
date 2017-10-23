@@ -42,22 +42,22 @@ namespace core {
 	 * */
 template <typename TRAJECTORY_T>
 TRAJECTORY_T linspace(const typename TRAJECTORY_T::value_type& a,
-	const typename TRAJECTORY_T::value_type& b,
-	const size_t N)
+    const typename TRAJECTORY_T::value_type& b,
+    const size_t N)
 {
-	if (N < 1)
-		throw std::runtime_error("ERROR in CT_LINSPACE: N<1.");
+    if (N < 1)
+        throw std::runtime_error("ERROR in CT_LINSPACE: N<1.");
 
-	typename TRAJECTORY_T::value_type h = (b - a) / (N - 1);
-	TRAJECTORY_T traj(N);
+    typename TRAJECTORY_T::value_type h = (b - a) / (N - 1);
+    TRAJECTORY_T traj(N);
 
-	typename TRAJECTORY_T::iterator it;
-	typename TRAJECTORY_T::value_type val;
+    typename TRAJECTORY_T::iterator it;
+    typename TRAJECTORY_T::value_type val;
 
-	for (it = traj.begin(), val = a; it != traj.end(); ++it, val += h)
-		*it = val;
+    for (it = traj.begin(), val = a; it != traj.end(); ++it, val += h)
+        *it = val;
 
-	return traj;
+    return traj;
 }
 
 }  // namespace core

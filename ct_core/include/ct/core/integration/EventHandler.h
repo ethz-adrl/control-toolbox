@@ -46,35 +46,35 @@ template <size_t STATE_DIM, typename SCALAR = double>
 class EventHandler
 {
 public:
-	//! Default constructor
-	EventHandler() {}
-	//! destructor
-	virtual ~EventHandler() {}
-	virtual bool callOnSubsteps() = 0;
+    //! Default constructor
+    EventHandler() {}
+    //! destructor
+    virtual ~EventHandler() {}
+    virtual bool callOnSubsteps() = 0;
 
-	//! reset event handler
-	virtual void reset() = 0;
+    //! reset event handler
+    virtual void reset() = 0;
 
-	//! check if an event has happened
-	/*!
+    //! check if an event has happened
+    /*!
 	 * checks if an event has happened and whether handleEvent() needs to be called
 	 * @param state current state of the system
 	 * @param t current time
 	 * @return true if an event has happened
 	 */
-	virtual bool checkEvent(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR& t) = 0;
+    virtual bool checkEvent(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR& t) = 0;
 
-	//! handle the event
-	/*!
+    //! handle the event
+    /*!
 	 * does something with an event that just occurred
 	 * @param state current state of the system
 	 * @param t current time
 	 */
-	virtual void handleEvent(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR& t) = 0;
+    virtual void handleEvent(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR& t) = 0;
 
 private:
-	StateVectorArray<STATE_DIM, SCALAR> stateTrajectory_;  //! state trajectory for recording
-	tpl::TimeArray<SCALAR> timeTrajectory_;                //! time trajectory for recording
+    StateVectorArray<STATE_DIM, SCALAR> stateTrajectory_;  //! state trajectory for recording
+    tpl::TimeArray<SCALAR> timeTrajectory_;                //! time trajectory for recording
 };
 }
 }

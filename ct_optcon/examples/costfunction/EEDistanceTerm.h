@@ -60,74 +60,74 @@ typedef Eigen::Matrix<AD_scalar_t, stateDim_planar, stateDim_planar> AD_state_ma
 class EEDistanceTerm : public ct::TermBase<stateDim_planar, controlDim_planar, CppAD::AD<double>>
 {
 public:
-	EEDistanceTerm(const Eigen::Vector3d& desEEpos, const Eigen::Matrix<double, 3, 3>& Q)
-	{
-		for (size_t i = 0; i < 3; i++)
-		{
-			EE_desired_(i) = desEEpos(i);
-		}
+    EEDistanceTerm(const Eigen::Vector3d& desEEpos, const Eigen::Matrix<double, 3, 3>& Q)
+    {
+        for (size_t i = 0; i < 3; i++)
+        {
+            EE_desired_(i) = desEEpos(i);
+        }
 
-		for (size_t j = 0; j < 3; j++)
-		{
-			for (size_t i = 0; i < 3; i++)
-			{
-				Q_(j, i) = Q(j, i);
-			}
-		}
+        for (size_t j = 0; j < 3; j++)
+        {
+            for (size_t i = 0; i < 3; i++)
+            {
+                Q_(j, i) = Q(j, i);
+            }
+        }
 
-		std::cout << "Q for ee term" << std::endl << Q_ << std::endl;
-		std::cout << "ee_desired in ee term" << std::endl << EE_desired_ << std::endl;
-	}
+        std::cout << "Q for ee term" << std::endl << Q_ << std::endl;
+        std::cout << "ee_desired in ee term" << std::endl << EE_desired_ << std::endl;
+    }
 
-	EEDistanceTerm(const EEDistanceTerm& arg)
-		: ct::TermBase<stateDim_planar, controlDim_planar, CppAD::AD<double>>(arg),
-		  Q_(arg.Q_),
-		  EE_desired_(arg.EE_desired_),
-		  type_fr_link0_X_ee_(arg.type_fr_link0_X_ee_)
-	{
-	}
+    EEDistanceTerm(const EEDistanceTerm& arg)
+        : ct::TermBase<stateDim_planar, controlDim_planar, CppAD::AD<double>>(arg),
+          Q_(arg.Q_),
+          EE_desired_(arg.EE_desired_),
+          type_fr_link0_X_ee_(arg.type_fr_link0_X_ee_)
+    {
+    }
 
-	std::shared_ptr<ct::TermBase<stateDim_planar, controlDim_planar, AD_scalar_t>> clone() const override
-	{
-		return std::shared_ptr<ct::TermBase<stateDim_planar, controlDim_planar, AD_scalar_t>>(
-			new EEDistanceTerm(*this));
-	}
+    std::shared_ptr<ct::TermBase<stateDim_planar, controlDim_planar, AD_scalar_t>> clone() const override
+    {
+        return std::shared_ptr<ct::TermBase<stateDim_planar, controlDim_planar, AD_scalar_t>>(
+            new EEDistanceTerm(*this));
+    }
 
-	~EEDistanceTerm() {}
-	AD_scalar_t evaluateIntermediate(const AD_state_vector_t& x, const AD_control_vector_t& u, double t) override
-	{
-		AD_joint_state_t jointState = u.segment(2, 6);
+    ~EEDistanceTerm() {}
+    AD_scalar_t evaluateIntermediate(const AD_state_vector_t& x, const AD_control_vector_t& u, double t) override
+    {
+        AD_joint_state_t jointState = u.segment(2, 6);
 
-		AD_position_t EE_pos_diff = EE_desired_ - getEEPositionsWorld(x, jointState);
+        AD_position_t EE_pos_diff = EE_desired_ - getEEPositionsWorld(x, jointState);
 
-		AD_scalar_t cost_EE_pos = (EE_pos_diff.transpose() * Q_ * EE_pos_diff);
+        AD_scalar_t cost_EE_pos = (EE_pos_diff.transpose() * Q_ * EE_pos_diff);
 
-		return cost_EE_pos;
-	}
+        return cost_EE_pos;
+    }
 
 
-	AD_position_t getEEPositionsWorld(const AD_state_vector_t& basePose, const AD_joint_state_t& q)
-	{
-		AD_position_t B_rEE = type_fr_link0_X_ee_.get_position(q);
+    AD_position_t getEEPositionsWorld(const AD_state_vector_t& basePose, const AD_joint_state_t& q)
+    {
+        AD_position_t B_rEE = type_fr_link0_X_ee_.get_position(q);
 
-		// transform from base to world
+        // transform from base to world
 
-		AD_position_t W_r_W0_B0;
-		W_r_W0_B0(0) = basePose(0);  // x coordinate base
-		W_r_W0_B0(1) = basePose(1);  // y coordinate base
-		W_r_W0_B0(2) = 0;            // z coordinate base
+        AD_position_t W_r_W0_B0;
+        W_r_W0_B0(0) = basePose(0);  // x coordinate base
+        W_r_W0_B0(1) = basePose(1);  // y coordinate base
+        W_r_W0_B0(2) = 0;            // z coordinate base
 
-		AD_position_t posWorld = W_r_W0_B0 + B_rEE;
+        AD_position_t posWorld = W_r_W0_B0 + B_rEE;
 
-		return posWorld;
-	}
+        return posWorld;
+    }
 
 
 private:
-	AD_rotation_matrix_t Q_;
-	AD_position_t EE_desired_;
+    AD_rotation_matrix_t Q_;
+    AD_position_t EE_desired_;
 
-	AD_Type_fr_link0_X_ee<AD_scalar_t> type_fr_link0_X_ee_;
+    AD_Type_fr_link0_X_ee<AD_scalar_t> type_fr_link0_X_ee_;
 };
 
 }  // namespace example

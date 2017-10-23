@@ -38,33 +38,33 @@ SparsityPattern::~SparsityPattern(){};
 
 const CppAD::vector<bool>& SparsityPattern::sparsity() const
 {
-	return sparsity_;
+    return sparsity_;
 }
 
 const CppAD::vector<size_t>& SparsityPattern::row() const
 {
-	return row_;
+    return row_;
 }
 
 const CppAD::vector<size_t>& SparsityPattern::col() const
 {
-	return col_;
+    return col_;
 }
 
 CppAD::sparse_jacobian_work& SparsityPattern::workJacobian()
 {
-	return workJacobian_;
+    return workJacobian_;
 }
 
 CppAD::sparse_hessian_work& SparsityPattern::workHessian()
 {
-	return workHessian_;
+    return workHessian_;
 }
 
 void SparsityPattern::clearWork()
 {
-	workJacobian_.clear();
-	workHessian_.clear();
+    workJacobian_.clear();
+    workHessian_.clear();
 }
 
 } /* namespace internal */

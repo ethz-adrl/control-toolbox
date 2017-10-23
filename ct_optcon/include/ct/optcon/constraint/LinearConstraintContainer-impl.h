@@ -31,16 +31,16 @@ namespace optcon {
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::LinearConstraintContainer()
-	: initializedIntermediate_(false), initializedTerminal_(false)
+    : initializedIntermediate_(false), initializedTerminal_(false)
 {
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::LinearConstraintContainer(
-	const LinearConstraintContainer& arg)
-	: ConstraintContainerBase<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
-	  initializedIntermediate_(arg.initializedIntermediate_),
-	  initializedTerminal_(arg.initializedTerminal_)
+    const LinearConstraintContainer& arg)
+    : ConstraintContainerBase<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
+      initializedIntermediate_(arg.initializedIntermediate_),
+      initializedTerminal_(arg.initializedTerminal_)
 {
 }
 
@@ -52,22 +52,22 @@ LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::~LinearConstraintCont
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 size_t LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::getJacNonZeroCount()
 {
-	return getJacobianStateNonZeroCountIntermediate() + getJacobianStateNonZeroCountTerminal() +
-		   getJacobianInputNonZeroCountIntermediate() + getJacobianInputNonZeroCountTerminal();
+    return getJacobianStateNonZeroCountIntermediate() + getJacobianStateNonZeroCountTerminal() +
+           getJacobianInputNonZeroCountIntermediate() + getJacobianInputNonZeroCountTerminal();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::initialize()
 {
-	initializedIntermediate_ = initializeIntermediate();
-	initializedTerminal_ = initializeTerminal();
+    initializedIntermediate_ = initializeIntermediate();
+    initializedTerminal_ = initializeTerminal();
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 bool LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::isInitialized()
 {
-	return initializedIntermediate_ && initializedTerminal_;
+    return initializedIntermediate_ && initializedTerminal_;
 }
 
 }  // namespace optcon

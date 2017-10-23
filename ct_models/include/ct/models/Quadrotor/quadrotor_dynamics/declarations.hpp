@@ -42,4 +42,3 @@ typedef Eigen::Matrix<double, nStates, nControls> control_gain_matrix_t;
 }
 }
 }
-

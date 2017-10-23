@@ -45,7 +45,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define ROBCOGEN_NS HyQ  // defines the NS of the robot in robcogen, e.g. iit::<ROBCOGEN_NS>
 #define TARGET_NS \
-	HyQ  // defines the NS where all robot definitions go. Here ct::models::TestHyQ. This defines ct::models::TestHyQ::Dynamics etc.
+    HyQ  // defines the NS where all robot definitions go. Here ct::models::TestHyQ. This defines ct::models::TestHyQ::Dynamics etc.
 
 // define all links of the robot, names as in robcogen
 #define CT_BASE fr_trunk  // base link name
@@ -70,7 +70,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CT_EE0_IS_ON_LINK 3   // to which link is the end-effector rigidly attached to?
 #define CT_EE0_FIRST_JOINT 0  // which is the first joint in the kinematic chain from base to end-effector?
 #define CT_EE0_LAST_JOINT \
-	2  // which is the last joint in the kinematic chain? THEY NEED TO BE IN ORDER, NO GAPS ALLOWED!
+    2  // which is the last joint in the kinematic chain? THEY NEED TO BE IN ORDER, NO GAPS ALLOWED!
 
 #define CT_EE1 fr_RF_foot
 #define CT_EE1_IS_ON_LINK 6

@@ -41,26 +41,26 @@ template <typename SCALAR = double>
 class RigidBodyVelocities : private kindr::TwistLinearVelocityLocalAngularVelocity<SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef Eigen::Matrix<SCALAR, 6, 1> Vector6;
+    typedef Eigen::Matrix<SCALAR, 6, 1> Vector6;
 
-	using kindr::TwistLinearVelocityLocalAngularVelocity<SCALAR>::getTranslationalVelocity;
-	using kindr::TwistLinearVelocityLocalAngularVelocity<SCALAR>::getRotationalVelocity;
-	using kindr::TwistLinearVelocityLocalAngularVelocity<SCALAR>::setZero;
+    using kindr::TwistLinearVelocityLocalAngularVelocity<SCALAR>::getTranslationalVelocity;
+    using kindr::TwistLinearVelocityLocalAngularVelocity<SCALAR>::getRotationalVelocity;
+    using kindr::TwistLinearVelocityLocalAngularVelocity<SCALAR>::setZero;
 
-	Vector6 getVector() const
-	{
-		Vector6 vector6;
-		vector6 << getRotationalVelocity().toImplementation(), getTranslationalVelocity().toImplementation();
-		return vector6;
-	}
+    Vector6 getVector() const
+    {
+        Vector6 vector6;
+        vector6 << getRotationalVelocity().toImplementation(), getTranslationalVelocity().toImplementation();
+        return vector6;
+    }
 
-	void setVector(const Vector6& vector6)
-	{
-		getRotationalVelocity().toImplementation() = vector6.template head<3>();
-		getTranslationalVelocity().toImplementation() = vector6.template tail<3>();
-	}
+    void setVector(const Vector6& vector6)
+    {
+        getRotationalVelocity().toImplementation() = vector6.template head<3>();
+        getTranslationalVelocity().toImplementation() = vector6.template tail<3>();
+    }
 
 private:
 };

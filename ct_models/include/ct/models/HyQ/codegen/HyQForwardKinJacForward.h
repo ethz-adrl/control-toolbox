@@ -35,32 +35,31 @@ namespace HyQ {
 class HyQForwardKinJacForward : public core::Derivatives<36, 24, double>
 {
 public:
-	typedef Eigen::Matrix<double, 24, 36> JAC_TYPE;
-	typedef Eigen::Matrix<double, 36, 1> X_TYPE;
+    typedef Eigen::Matrix<double, 24, 36> JAC_TYPE;
+    typedef Eigen::Matrix<double, 36, 1> X_TYPE;
 
-	HyQForwardKinJacForward()
-	{
-		jac_.setZero();
-		v_.fill(0.0);
-	};
+    HyQForwardKinJacForward()
+    {
+        jac_.setZero();
+        v_.fill(0.0);
+    };
 
-	HyQForwardKinJacForward(const HyQForwardKinJacForward& other)
-	{
-		jac_.setZero();
-		v_.fill(0.0);
-	}
+    HyQForwardKinJacForward(const HyQForwardKinJacForward& other)
+    {
+        jac_.setZero();
+        v_.fill(0.0);
+    }
 
-	virtual ~HyQForwardKinJacForward(){};
+    virtual ~HyQForwardKinJacForward(){};
 
-	HyQForwardKinJacForward* clone() const override { return new HyQForwardKinJacForward(*this); }
-	JAC_TYPE jacobian(const Eigen::VectorXd& x_in) override;
+    HyQForwardKinJacForward* clone() const override { return new HyQForwardKinJacForward(*this); }
+    JAC_TYPE jacobian(const Eigen::VectorXd& x_in) override;
 
 private:
-	JAC_TYPE jac_;
-	std::array<double, 442> v_;
+    JAC_TYPE jac_;
+    std::array<double, 442> v_;
 };
 
 } /* namespace HyQ */
 } /* namespace models */
 } /* namespace ct */
-

@@ -41,66 +41,66 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class LQOCSolver
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
+    typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
 
-	/*!
+    /*!
 	 * Constructor. Initialize by handing over an LQOCProblem, or otherwise by calling setProblem()
 	 * @param lqocProblem shared_ptr to the LQOCProblem to be solved.
 	 */
-	LQOCSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem = nullptr) : lqocProblem_(lqocProblem) {}
-	//! destructor
-	virtual ~LQOCSolver() {}
-	/*!
+    LQOCSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem = nullptr) : lqocProblem_(lqocProblem) {}
+    //! destructor
+    virtual ~LQOCSolver() {}
+    /*!
 	 * set a new problem
 	 * update the shared_ptr to the LQOCProblem instance and call initialize instance deriving from this class.
 	 * @param lqocProblem
 	 */
-	void setProblem(std::shared_ptr<LQOCProblem_t> lqocProblem)
-	{
-		setProblemImpl(lqocProblem);
-		lqocProblem_ = lqocProblem;
-	}
+    void setProblem(std::shared_ptr<LQOCProblem_t> lqocProblem)
+    {
+        setProblemImpl(lqocProblem);
+        lqocProblem_ = lqocProblem;
+    }
 
 
-	virtual void configure(const NLOptConSettings& settings) = 0;
+    virtual void configure(const NLOptConSettings& settings) = 0;
 
-	virtual void solve() = 0;
+    virtual void solve() = 0;
 
-	virtual void solveSingleStage(int N)
-	{
-		throw std::runtime_error("solveSingleStage not available for this solver.");
-	}
+    virtual void solveSingleStage(int N)
+    {
+        throw std::runtime_error("solveSingleStage not available for this solver.");
+    }
 
-	virtual SCALAR getSmallestEigenvalue()
-	{
-		throw std::runtime_error("getSmallestEigenvalue not available for this solver.");
-	}
+    virtual SCALAR getSmallestEigenvalue()
+    {
+        throw std::runtime_error("getSmallestEigenvalue not available for this solver.");
+    }
 
-	virtual void computeStateAndControlUpdates() = 0;
+    virtual void computeStateAndControlUpdates() = 0;
 
-	virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() = 0;
-	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() = 0;
+    virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() = 0;
+    virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() = 0;
 
-	virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K) = 0;
+    virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K) = 0;
 
-	const SCALAR& getControlUpdateNorm() { return delta_uff_norm_; }
-	const SCALAR& getStateUpdateNorm() { return delta_x_norm_; }
-	const core::StateVectorArray<STATE_DIM, SCALAR>& getStateUpdates() { return lx_; }
-	const core::ControlVectorArray<CONTROL_DIM, SCALAR>& getControlUpdates() { return lu_; }
-	virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdates() = 0;
+    const SCALAR& getControlUpdateNorm() { return delta_uff_norm_; }
+    const SCALAR& getStateUpdateNorm() { return delta_x_norm_; }
+    const core::StateVectorArray<STATE_DIM, SCALAR>& getStateUpdates() { return lx_; }
+    const core::ControlVectorArray<CONTROL_DIM, SCALAR>& getControlUpdates() { return lu_; }
+    virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdates() = 0;
 
 protected:
-	virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) = 0;
+    virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) = 0;
 
-	std::shared_ptr<LQOCProblem_t> lqocProblem_;
+    std::shared_ptr<LQOCProblem_t> lqocProblem_;
 
-	core::StateVectorArray<STATE_DIM, SCALAR> lx_;      // differential update on the state
-	core::ControlVectorArray<CONTROL_DIM, SCALAR> lu_;  // differential update on the control
+    core::StateVectorArray<STATE_DIM, SCALAR> lx_;      // differential update on the state
+    core::ControlVectorArray<CONTROL_DIM, SCALAR> lu_;  // differential update on the control
 
-	SCALAR delta_uff_norm_;  //! l2-norm of the control update
-	SCALAR delta_x_norm_;    //! l2-norm of the state update
+    SCALAR delta_uff_norm_;  //! l2-norm of the control update
+    SCALAR delta_x_norm_;    //! l2-norm of the state update
 };
 }
 }

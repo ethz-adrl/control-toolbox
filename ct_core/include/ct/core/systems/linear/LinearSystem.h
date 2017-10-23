@@ -44,28 +44,28 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class LinearSystem : public ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef typename Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;            //!< state Jacobian type
-	typedef typename Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t;  //!< input Jacobian type
+    typedef typename Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;            //!< state Jacobian type
+    typedef typename Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t;  //!< input Jacobian type
 
-	//! default constructor
-	/*!
+    //! default constructor
+    /*!
 	 * @param type system type
 	 */
-	LinearSystem(const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL)
-		: ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type)
-	{
-	}
+    LinearSystem(const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL)
+        : ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type)
+    {
+    }
 
-	//! destructor
-	virtual ~LinearSystem(){};
+    //! destructor
+    virtual ~LinearSystem(){};
 
-	//! deep cloning
-	virtual LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const = 0;
+    //! deep cloning
+    virtual LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const = 0;
 
-	//! compute the system dynamics
-	/*!
+    //! compute the system dynamics
+    /*!
 	 * This computes the system dynamics
 	 * \f[
 	 *  \dot{x} = Ax + Bu
@@ -75,37 +75,37 @@ public:
 	 * @param control control input
 	 * @param derivative state derivative
 	 */
-	virtual void computeControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
-		const SCALAR& t,
-		const ControlVector<CONTROL_DIM, SCALAR>& control,
-		StateVector<STATE_DIM, SCALAR>& derivative) override
-	{
-		// x_dot(t) = A(x,u,t) * x(t) + B(x,u,t) * u(t)
+    virtual void computeControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
+        const SCALAR& t,
+        const ControlVector<CONTROL_DIM, SCALAR>& control,
+        StateVector<STATE_DIM, SCALAR>& derivative) override
+    {
+        // x_dot(t) = A(x,u,t) * x(t) + B(x,u,t) * u(t)
 
-		derivative = getDerivativeState(state, control, t) * state + getDerivativeControl(state, control, t) * control;
-	}
+        derivative = getDerivativeState(state, control, t) * state + getDerivativeControl(state, control, t) * control;
+    }
 
-	//! get the A matrix of a linear system
-	/*!
+    //! get the A matrix of a linear system
+    /*!
 	 * @param x state vector (required for linearizing non-linear systems, ignored for pure linear system)
 	 * @param u input vector (required for linearizing non-linear systems, ignored for pure linear system)
 	 * @param t current time
 	 * @return A matrix
 	 */
-	virtual const state_matrix_t& getDerivativeState(const StateVector<STATE_DIM, SCALAR>& x,
-		const ControlVector<CONTROL_DIM, SCALAR>& u,
-		const SCALAR t = 0.0) = 0;
+    virtual const state_matrix_t& getDerivativeState(const StateVector<STATE_DIM, SCALAR>& x,
+        const ControlVector<CONTROL_DIM, SCALAR>& u,
+        const SCALAR t = 0.0) = 0;
 
-	//! get the B matrix of a linear system
-	/*!
+    //! get the B matrix of a linear system
+    /*!
 	 * @param x state vector (required for linearizing non-linear systems, ignored for pure linear system)
 	 * @param u input vector (required for linearizing non-linear systems, ignored for pure linear system)
 	 * @param t current time
 	 * @return B matrix
 	 */
-	virtual const state_control_matrix_t& getDerivativeControl(const StateVector<STATE_DIM, SCALAR>& x,
-		const ControlVector<CONTROL_DIM, SCALAR>& u,
-		const SCALAR t = 0.0) = 0;
+    virtual const state_control_matrix_t& getDerivativeControl(const StateVector<STATE_DIM, SCALAR>& x,
+        const ControlVector<CONTROL_DIM, SCALAR>& u,
+        const SCALAR t = 0.0) = 0;
 };
 }
 }

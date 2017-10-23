@@ -47,24 +47,24 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class Controller
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	//! Default constructor
-	Controller(){};
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    //! Default constructor
+    Controller(){};
 
-	//! Copy constructor
-	Controller(const Controller& other){};
+    //! Copy constructor
+    Controller(const Controller& other){};
 
-	//! Destructor
-	virtual ~Controller(){};
+    //! Destructor
+    virtual ~Controller(){};
 
-	//! Deep cloning
-	/*!
+    //! Deep cloning
+    /*!
 	 * Has to be implemented by any custom controller.
 	 */
-	virtual Controller* clone() const = 0;
+    virtual Controller* clone() const = 0;
 
-	//! Compute control signal
-	/*!
+    //! Compute control signal
+    /*!
 	 * Evaluate the given controller for a given state and time
 	 * returns the computed control action.
 	 *
@@ -74,11 +74,11 @@ public:
 	 * @param t current time of the system
 	 * @param controlAction the corresponding control action
 	 */
-	virtual void computeControl(const StateVector<STATE_DIM, SCALAR>& state,
-		const SCALAR& t,
-		ControlVector<CONTROL_DIM, SCALAR>& controlAction) = 0;
+    virtual void computeControl(const StateVector<STATE_DIM, SCALAR>& state,
+        const SCALAR& t,
+        ControlVector<CONTROL_DIM, SCALAR>& controlAction) = 0;
 
-	/**
+    /**
      * @brief      Returns the the derivative of the control with respect to the
      *             initial control input u0
      *
@@ -87,13 +87,13 @@ public:
      *
      * @return     The derivatives with respect to u0.
      */
-	virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state,
-		const SCALAR time)
-	{
-		throw std::runtime_error("getDerivativeU0() not implemented for the current controller");
-	}
+    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state,
+        const SCALAR time)
+    {
+        throw std::runtime_error("getDerivativeU0() not implemented for the current controller");
+    }
 
-	/**
+    /**
      * @brief      Returns the the derivative of the control with respect to the
      *             final control input uF
      *
@@ -102,11 +102,11 @@ public:
      *
      * @return     The derivatives with respect to uF.
      */
-	virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeUf(const StateVector<STATE_DIM, SCALAR>& state,
-		const SCALAR time)
-	{
-		throw std::runtime_error("getDerivativeUf() not implemented for the current controller");
-	}
+    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeUf(const StateVector<STATE_DIM, SCALAR>& state,
+        const SCALAR time)
+    {
+        throw std::runtime_error("getDerivativeUf() not implemented for the current controller");
+    }
 };
 
 }  // namespace core

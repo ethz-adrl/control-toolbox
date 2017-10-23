@@ -44,38 +44,38 @@ template <size_t STATE_DIM>
 class KillIntegrationEventHandler : public EventHandler<STATE_DIM>
 {
 public:
-	typedef Eigen::Matrix<double, STATE_DIM, 1> State_T;
+    typedef Eigen::Matrix<double, STATE_DIM, 1> State_T;
 
-	//! default constructor
-	/*!
+    //! default constructor
+    /*!
 	 * sets kill event to false
 	 */
-	KillIntegrationEventHandler() : killIntegration_(false) {}
-	//! default destructor
-	virtual ~KillIntegrationEventHandler() {}
-	virtual bool callOnSubsteps() override { return false; }
-	//! checks the kill flag
-	bool checkEvent(const State_T& state, const double& t) override { return killIntegration_; }
-	//! interrupts integration
-	/*!
+    KillIntegrationEventHandler() : killIntegration_(false) {}
+    //! default destructor
+    virtual ~KillIntegrationEventHandler() {}
+    virtual bool callOnSubsteps() override { return false; }
+    //! checks the kill flag
+    bool checkEvent(const State_T& state, const double& t) override { return killIntegration_; }
+    //! interrupts integration
+    /*!
 	 * interrupts the integration by throwing a std::runtime_error
 	 * @param state current state (ignored)
 	 * @param t current time (ignored)
 	 */
-	void handleEvent(const State_T& state, const double& t) override
-	{
-		/* throw an exception which stops the integration */
-		throw std::runtime_error("Integration terminated due to external event specified by user.");
-	}
+    void handleEvent(const State_T& state, const double& t) override
+    {
+        /* throw an exception which stops the integration */
+        throw std::runtime_error("Integration terminated due to external event specified by user.");
+    }
 
-	//! enables killing at next call
-	void setEvent() { killIntegration_ = true; }
-	//! disable killing at next call
-	void resetEvent() { killIntegration_ = false; }
-	//! resets kill flag to false
-	virtual void reset() override { resetEvent(); };
+    //! enables killing at next call
+    void setEvent() { killIntegration_ = true; }
+    //! disable killing at next call
+    void resetEvent() { killIntegration_ = false; }
+    //! resets kill flag to false
+    virtual void reset() override { resetEvent(); };
 private:
-	bool killIntegration_;  //! kill flag
+    bool killIntegration_;  //! kill flag
 };
 
 }  // namespace core

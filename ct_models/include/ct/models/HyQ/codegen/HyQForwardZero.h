@@ -35,32 +35,31 @@ namespace HyQ {
 class HyQForwardZero : public core::Derivatives<49, 36, double>
 {
 public:
-	typedef Eigen::Matrix<double, 36, 1> OUT_TYPE;
-	typedef Eigen::Matrix<double, 49, 1> X_TYPE;
+    typedef Eigen::Matrix<double, 36, 1> OUT_TYPE;
+    typedef Eigen::Matrix<double, 49, 1> X_TYPE;
 
-	HyQForwardZero()
-	{
-		eval_.setZero();
-		v_.fill(0.0);
-	};
+    HyQForwardZero()
+    {
+        eval_.setZero();
+        v_.fill(0.0);
+    };
 
-	HyQForwardZero(const HyQForwardZero& other)
-	{
-		eval_.setZero();
-		v_.fill(0.0);
-	}
+    HyQForwardZero(const HyQForwardZero& other)
+    {
+        eval_.setZero();
+        v_.fill(0.0);
+    }
 
-	virtual ~HyQForwardZero(){};
+    virtual ~HyQForwardZero(){};
 
-	HyQForwardZero* clone() const override { return new HyQForwardZero(*this); }
-	OUT_TYPE forwardZero(const Eigen::VectorXd& x_in) override;
+    HyQForwardZero* clone() const override { return new HyQForwardZero(*this); }
+    OUT_TYPE forwardZero(const Eigen::VectorXd& x_in) override;
 
 private:
-	OUT_TYPE eval_;
-	std::array<double, 401> v_;
+    OUT_TYPE eval_;
+    std::array<double, 401> v_;
 };
 
 } /* namespace HyQ */
 } /* namespace models */
 } /* namespace ct */
-

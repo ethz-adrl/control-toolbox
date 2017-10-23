@@ -43,13 +43,13 @@ EndEffector<NJOINTS, SCALAR>::EndEffector(const EndEffector& other) : linkId_(ot
 template <size_t NJOINTS, typename SCALAR>
 const size_t& EndEffector<NJOINTS, SCALAR>::getLinkId()
 {
-	return linkId_;
+    return linkId_;
 }
 
 template <size_t NJOINTS, typename SCALAR>
 void EndEffector<NJOINTS, SCALAR>::setLinkId(size_t linkId)
 {
-	linkId_ = linkId;
+    linkId_ = linkId;
 }
 
 } /* namespace rbd */

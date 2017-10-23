@@ -59,34 +59,34 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class FHDTLQR
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
-	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
-	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
-	typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> control_gain_matrix_t;
-	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_feedback_t;
+    typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
+    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
+    typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> control_gain_matrix_t;
+    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_feedback_t;
 
-	typedef core::StateVectorArray<STATE_DIM, SCALAR> state_vector_array_t;
-	typedef core::ControlVectorArray<CONTROL_DIM, SCALAR> control_vector_array_t;
-	typedef ct::core::StateMatrixArray<STATE_DIM, SCALAR> state_matrix_array_t;
+    typedef core::StateVectorArray<STATE_DIM, SCALAR> state_vector_array_t;
+    typedef core::ControlVectorArray<CONTROL_DIM, SCALAR> control_vector_array_t;
+    typedef ct::core::StateMatrixArray<STATE_DIM, SCALAR> state_matrix_array_t;
 
-	typedef ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> control_feedback_array_t;
-	typedef ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> control_gain_matrix_array_t;
+    typedef ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> control_feedback_array_t;
+    typedef ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> control_gain_matrix_array_t;
 
 
-	//! Constructor
-	/*!
+    //! Constructor
+    /*!
 	 * @param costFunction the cost function to be used for designing the TVLQR
 	 */
-	FHDTLQR(std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFunction);
+    FHDTLQR(std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFunction);
 
-	~FHDTLQR();
+    ~FHDTLQR();
 
 
-	//! design a time-varying feedback trajectory using user-provided matrices A and B
-	/*!
+    //! design a time-varying feedback trajectory using user-provided matrices A and B
+    /*!
 	 *
 	 * @param x_trajectory
 	 * 	state reference trajectory
@@ -103,17 +103,17 @@ public:
 	 * @param performNumericalChecks
 	 * (optional) perform some numerical checks while solving for K
 	 */
-	void designController(const state_vector_array_t& x_trajectory,
-		const control_vector_array_t& u_trajectory,
-		const state_matrix_array_t& A,
-		const control_gain_matrix_array_t& B,
-		SCALAR dt,
-		control_feedback_array_t& K,
-		bool performNumericalChecks = true);
+    void designController(const state_vector_array_t& x_trajectory,
+        const control_vector_array_t& u_trajectory,
+        const state_matrix_array_t& A,
+        const control_gain_matrix_array_t& B,
+        SCALAR dt,
+        control_feedback_array_t& K,
+        bool performNumericalChecks = true);
 
 
-	//! design a time-varying feedback trajectory using a user-provided derivative-pointer
-	/*!
+    //! design a time-varying feedback trajectory using a user-provided derivative-pointer
+    /*!
 	 * @param x_trajectory
 	 * 	state reference trajectory
 	 * @param u_trajectory
@@ -127,17 +127,17 @@ public:
 	 * @param performNumericalChecks
 	 * (optional) perform some numerical checks while solving for K
 	 */
-	void designController(const state_vector_array_t& x_trajectory,
-		const control_vector_array_t& u_trajectory,
-		std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> derivatives,
-		SCALAR dt,
-		control_feedback_array_t& K,
-		bool performNumericalChecks = true);
+    void designController(const state_vector_array_t& x_trajectory,
+        const control_vector_array_t& u_trajectory,
+        std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> derivatives,
+        SCALAR dt,
+        control_feedback_array_t& K,
+        bool performNumericalChecks = true);
 
 
 private:
-	//! compute trajectories of A and B matrices along the given reference trajectory using the user-provided derivative instance
-	/*!
+    //! compute trajectories of A and B matrices along the given reference trajectory using the user-provided derivative instance
+    /*!
 	 *
 	 * @param x_trajectory
 	 * 	state reference trajectory
@@ -154,17 +154,17 @@ private:
 	 * @param B
 	 *  resulting linear state-input matrices B
 	 */
-	void linearizeModel(const state_vector_array_t& x_trajectory,
-		const control_vector_array_t& u_trajectory,
-		size_t N,
-		SCALAR dt,
-		std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& derivatives,
-		state_matrix_array_t& A,
-		control_gain_matrix_array_t& B);
+    void linearizeModel(const state_vector_array_t& x_trajectory,
+        const control_vector_array_t& u_trajectory,
+        size_t N,
+        SCALAR dt,
+        std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& derivatives,
+        state_matrix_array_t& A,
+        control_gain_matrix_array_t& B);
 
 
-	//! solve for the LQR feedback gains
-	/*!
+    //! solve for the LQR feedback gains
+    /*!
 	 *
 	 * @param x_trajectory
 	 * 	state reference trajectory
@@ -183,19 +183,19 @@ private:
 	 * @param performNumericalChecks
 	 *  (optional) perform some numerical checks while solving
 	 */
-	void solve(const state_vector_array_t& x_trajectory,
-		const control_vector_array_t& u_trajectory,
-		const state_matrix_array_t& A,
-		const control_gain_matrix_array_t& B,
-		size_t N,
-		SCALAR dt,
-		control_feedback_array_t& K,
-		bool performNumericalChecks = true);
+    void solve(const state_vector_array_t& x_trajectory,
+        const control_vector_array_t& u_trajectory,
+        const state_matrix_array_t& A,
+        const control_gain_matrix_array_t& B,
+        size_t N,
+        SCALAR dt,
+        control_feedback_array_t& K,
+        bool performNumericalChecks = true);
 
 
-	std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>>
-		costFunction_;  //! a quadratic costfunction for solving the optimal control problem
-	DynamicRiccatiEquation<STATE_DIM, CONTROL_DIM, SCALAR> ricattiEq_;  //! the Riccati Equations
+    std::shared_ptr<CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>>
+        costFunction_;  //! a quadratic costfunction for solving the optimal control problem
+    DynamicRiccatiEquation<STATE_DIM, CONTROL_DIM, SCALAR> ricattiEq_;  //! the Riccati Equations
 };
 
 }  // namespace optcon

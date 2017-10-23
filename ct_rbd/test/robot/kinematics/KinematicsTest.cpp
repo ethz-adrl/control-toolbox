@@ -43,29 +43,29 @@ using namespace rbd;
 
 TEST(TestHyQKinematics, transformTest)
 {
-	TestHyQ::Kinematics kyn;
-	EndEffector<TestHyQ::Kinematics::NJOINTS> eeTest;
+    TestHyQ::Kinematics kyn;
+    EndEffector<TestHyQ::Kinematics::NJOINTS> eeTest;
 
-	for (size_t i = 0; i < TestHyQ::Kinematics::NUM_EE; i++)
-	{
-		eeTest = kyn.getEndEffector(i);
-	}
+    for (size_t i = 0; i < TestHyQ::Kinematics::NUM_EE; i++)
+    {
+        eeTest = kyn.getEndEffector(i);
+    }
 
-	JointState<TestHyQ::Kinematics::NJOINTS> hyqJointState;
+    JointState<TestHyQ::Kinematics::NJOINTS> hyqJointState;
 
-	RigidBodyPose hyqPose;
+    RigidBodyPose hyqPose;
 
-	hyqJointState.setRandom();
-	hyqPose.setRandom();
+    hyqJointState.setRandom();
+    hyqPose.setRandom();
 
-	size_t ind = 1;
+    size_t ind = 1;
 
-	kindr::Position3D pos = kyn.getEEPositionInWorld(ind, hyqPose, hyqJointState.getPositions());
+    kindr::Position3D pos = kyn.getEEPositionInWorld(ind, hyqPose, hyqJointState.getPositions());
 }
 
 
 int main(int argc, char **argv)
 {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

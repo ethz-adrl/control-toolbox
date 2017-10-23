@@ -44,55 +44,55 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class InitStateConstraint : public tpl::DiscreteConstraintBase<SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
 
-	typedef tpl::DiscreteConstraintBase<SCALAR> BASE;
-	typedef typename DIMENSIONS::state_vector_t state_vector_t;
-	typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
+    typedef tpl::DiscreteConstraintBase<SCALAR> BASE;
+    typedef typename DIMENSIONS::state_vector_t state_vector_t;
+    typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
 
-	/**
+    /**
 	 * @brief      Default constructor
 	 */
-	InitStateConstraint() {}
-	/**
+    InitStateConstraint() {}
+    /**
 	 * @brief      Custom constructor
 	 *
 	 * @param[in]  x0    The initial state
 	 * @param[in]  w     The optimization variables
 	 */
-	InitStateConstraint(const state_vector_t& x0, std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w)
-		: w_(w), x_0_(x0)
-	{
-		lb_.setConstant(SCALAR(0.0));
-		ub_.setConstant(SCALAR(0.0));
-	}
+    InitStateConstraint(const state_vector_t& x0, std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w)
+        : w_(w), x_0_(x0)
+    {
+        lb_.setConstant(SCALAR(0.0));
+        ub_.setConstant(SCALAR(0.0));
+    }
 
-	/**
+    /**
 	 * @brief      Updates the constraint
 	 *
 	 * @param[in]  x0    The new initial state
 	 */
-	void updateConstraint(const state_vector_t& x0) { x_0_ = x0; }
-	virtual VectorXs eval() override { return w_->getOptimizedState(0) - x_0_; }
-	virtual VectorXs evalSparseJacobian() override { return state_vector_t::Ones(); }
-	virtual size_t getNumNonZerosJacobian() override { return (size_t)STATE_DIM; }
-	virtual void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
-	{
-		size_t indexNumber = 0;
-		indexNumber += BASE::genDiagonalIndices(w_->getStateIndex(0), STATE_DIM, iRow_vec, jCol_vec, indexNumber);
-	}
+    void updateConstraint(const state_vector_t& x0) { x_0_ = x0; }
+    virtual VectorXs eval() override { return w_->getOptimizedState(0) - x_0_; }
+    virtual VectorXs evalSparseJacobian() override { return state_vector_t::Ones(); }
+    virtual size_t getNumNonZerosJacobian() override { return (size_t)STATE_DIM; }
+    virtual void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
+    {
+        size_t indexNumber = 0;
+        indexNumber += BASE::genDiagonalIndices(w_->getStateIndex(0), STATE_DIM, iRow_vec, jCol_vec, indexNumber);
+    }
 
-	virtual VectorXs getLowerBound() override { return lb_; }
-	virtual VectorXs getUpperBound() override { return ub_; }
-	virtual size_t getConstraintSize() override { return STATE_DIM; }
+    virtual VectorXs getLowerBound() override { return lb_; }
+    virtual VectorXs getUpperBound() override { return ub_; }
+    virtual size_t getConstraintSize() override { return STATE_DIM; }
 private:
-	std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w_;
-	state_vector_t x_0_;
+    std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w_;
+    state_vector_t x_0_;
 
-	//Constraint bounds
-	state_vector_t lb_;  // lower bound
-	state_vector_t ub_;  // upper bound
+    //Constraint bounds
+    state_vector_t lb_;  // lower bound
+    state_vector_t ub_;  // upper bound
 };
 
 }  // namespace optcon

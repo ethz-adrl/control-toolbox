@@ -38,7 +38,7 @@ namespace matlab {
 class MatFile
 {
 public:
-	MatFile() {}
+    MatFile() {}
 };
 }  // namespace MATLAB
 #endif  //MATLAB

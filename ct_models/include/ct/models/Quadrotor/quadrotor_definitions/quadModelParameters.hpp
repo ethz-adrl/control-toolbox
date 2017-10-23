@@ -57,5 +57,3 @@ const Eigen::Vector4d kMs(kM, kM, kM, kM);
 }  // namespace quadrotor
 }  // namespace models
 }  // namespace ct
-
-

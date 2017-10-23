@@ -44,15 +44,15 @@ template <class T, typename SCALAR>
 class TrajectoryBase
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	//! default constructor
-	TrajectoryBase() {}
-	//! destructor
-	virtual ~TrajectoryBase(){};
+    //! default constructor
+    TrajectoryBase() {}
+    //! destructor
+    virtual ~TrajectoryBase(){};
 
-	//! evaluate the trajectory at a certain time
-	virtual T eval(const SCALAR& time) = 0;
+    //! evaluate the trajectory at a certain time
+    virtual T eval(const SCALAR& time) = 0;
 };
 
 } /* namespace core */

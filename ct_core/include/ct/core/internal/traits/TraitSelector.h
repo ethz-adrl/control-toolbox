@@ -42,13 +42,13 @@ struct TraitSelector
 template <>
 struct TraitSelector<double>
 {
-	typedef internal::DoubleTrait Trait;
+    typedef internal::DoubleTrait Trait;
 };
 
 template <>
 struct TraitSelector<float>
 {
-	typedef internal::FloatTrait Trait;
+    typedef internal::FloatTrait Trait;
 };
 
 }  //namespace tpl

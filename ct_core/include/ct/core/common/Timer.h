@@ -40,51 +40,51 @@ template <typename SCALAR = double>
 class Timer
 {
 public:
-	//! Default constructor
-	Timer()
-	{
-		start_time.tv_sec = 0;
-		start_time.tv_usec = 0;
-		stop_time.tv_sec = 0;
-		stop_time.tv_usec = 0;
-	}
+    //! Default constructor
+    Timer()
+    {
+        start_time.tv_sec = 0;
+        start_time.tv_usec = 0;
+        stop_time.tv_sec = 0;
+        stop_time.tv_usec = 0;
+    }
 
-	//! Trigger start.
-	/*!
+    //! Trigger start.
+    /*!
 	 * Starts the time measurement.
 	 * Can be re-triggered without calling stop(). Simply overrides the start timestamp.
 	 */
-	inline void start() { gettimeofday(&start_time, NULL); }
-	//! Trigger stop
-	/*!
+    inline void start() { gettimeofday(&start_time, NULL); }
+    //! Trigger stop
+    /*!
 	 * Stops the time measurement.
 	 */
-	inline void stop() { gettimeofday(&stop_time, NULL); }
-	//! Get the elapsed time between calls to start() and stop()
-	/*!
+    inline void stop() { gettimeofday(&stop_time, NULL); }
+    //! Get the elapsed time between calls to start() and stop()
+    /*!
 	 *
 	 * @return time in seconds
 	 */
-	SCALAR getElapsedTime() const
-	{
-		return (stop_time.tv_sec - start_time.tv_sec) + (stop_time.tv_usec - start_time.tv_usec) * 1e-6;
-	}
+    SCALAR getElapsedTime() const
+    {
+        return (stop_time.tv_sec - start_time.tv_sec) + (stop_time.tv_usec - start_time.tv_usec) * 1e-6;
+    }
 
-	//! Resets the clock.
-	/*!
+    //! Resets the clock.
+    /*!
 	 * Not needed to be called after start()/stop() calls.
 	 */
-	void reset()
-	{
-		start_time.tv_sec = 0;
-		start_time.tv_usec = 0;
-		stop_time.tv_sec = 0;
-		stop_time.tv_usec = 0;
-	}
+    void reset()
+    {
+        start_time.tv_sec = 0;
+        start_time.tv_usec = 0;
+        stop_time.tv_sec = 0;
+        stop_time.tv_usec = 0;
+    }
 
 private:
-	struct timeval start_time; /*!< start time */
-	struct timeval stop_time;  /*!< stop time */
+    struct timeval start_time; /*!< start time */
+    struct timeval stop_time;  /*!< stop time */
 };
 }
 

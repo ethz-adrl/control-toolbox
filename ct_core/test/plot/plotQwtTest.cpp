@@ -31,15 +31,15 @@ using namespace ct::core::plotQwt;
 
 int main(int argc, char* argv[])
 {
-	FigurePtr fig = createFigure();
+    FigurePtr fig = createFigure();
 
-	std::vector<double> y = {1, 3, 4, -1, 2, 4, 5};
+    std::vector<double> y = {1, 3, 4, -1, 2, 4, 5};
 
-	fig->plot(y);
+    fig->plot(y);
 
-	fig->draw();
+    fig->draw();
 
-	render();
+    render();
 
-	return 1;
+    return 1;
 }

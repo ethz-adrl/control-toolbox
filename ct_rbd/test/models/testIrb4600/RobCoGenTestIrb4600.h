@@ -44,7 +44,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define ROBCOGEN_NS testirb4600  // defines the NS of the robot in robcogen, e.g. iit::<ROBCOGEN_NS>
 #define TARGET_NS \
-	TestIrb4600  // defines the NS where all robot definitions go. Here ct::rbd::TestIrb4600. This defines ct::rbd::TestIrb4600::Dynamics etc.
+    TestIrb4600  // defines the NS where all robot definitions go. Here ct::rbd::TestIrb4600. This defines ct::rbd::TestIrb4600::Dynamics etc.
 
 
 // define the links

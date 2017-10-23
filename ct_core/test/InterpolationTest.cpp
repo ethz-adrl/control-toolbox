@@ -34,37 +34,37 @@ using namespace ct::core;
 
 TEST(InterplationTest, Linear)
 {
-	TimeArray timeStamp(5);
-	timeStamp[0] = 0.0;
-	timeStamp[1] = 0.5;
-	timeStamp[2] = 1.0;
-	timeStamp[3] = 1.5;
-	timeStamp[4] = 2.0;
+    TimeArray timeStamp(5);
+    timeStamp[0] = 0.0;
+    timeStamp[1] = 0.5;
+    timeStamp[2] = 1.0;
+    timeStamp[3] = 1.5;
+    timeStamp[4] = 2.0;
 
-	StateVectorArray<2> data(5);
-	data[0] << 0.0, 0.0;
-	data[1] << 1.0, 0.0;
-	data[2] << 2.0, 0.0;
-	data[3] << 3.0, 0.0;
-	data[4] << 4.0, 0.0;
+    StateVectorArray<2> data(5);
+    data[0] << 0.0, 0.0;
+    data[1] << 1.0, 0.0;
+    data[2] << 2.0, 0.0;
+    data[3] << 3.0, 0.0;
+    data[4] << 4.0, 0.0;
 
-	ct::core::Interpolation<StateVector<2>> linInterpolation(InterpolationType::LIN);
+    ct::core::Interpolation<StateVector<2>> linInterpolation(InterpolationType::LIN);
 
 
-	for (int i = 1; i < 5; i++)
-	{
-		double enquiryTime = 0.5 * i;
+    for (int i = 1; i < 5; i++)
+    {
+        double enquiryTime = 0.5 * i;
 
-		StateVector<2> enquiryData;
-		linInterpolation.interpolate(timeStamp, data, enquiryTime, enquiryData);
+        StateVector<2> enquiryData;
+        linInterpolation.interpolate(timeStamp, data, enquiryTime, enquiryData);
 
-		std::cout << "At time " << enquiryTime << "\t data is " << enquiryData.transpose() << std::endl;
+        std::cout << "At time " << enquiryTime << "\t data is " << enquiryData.transpose() << std::endl;
 
-		Eigen::Vector2d nominal_result;
-		nominal_result << double(i), 0.0;
+        Eigen::Vector2d nominal_result;
+        nominal_result << double(i), 0.0;
 
-		ASSERT_LT((nominal_result - enquiryData).array().abs().maxCoeff(), 1e-6);
-	}
+        ASSERT_LT((nominal_result - enquiryData).array().abs().maxCoeff(), 1e-6);
+    }
 }
 
 
@@ -75,6 +75,6 @@ TEST(InterplationTest, Linear)
  */
 int main(int argc, char** argv)
 {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

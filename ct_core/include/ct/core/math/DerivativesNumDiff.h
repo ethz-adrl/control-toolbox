@@ -48,17 +48,17 @@ template <int IN_DIM, int OUT_DIM>
 class DerivativesNumDiff : public Derivatives<IN_DIM, OUT_DIM, double>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef Eigen::Matrix<double, IN_DIM, 1> IN_TYPE;    //!< function input vector type
-	typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE;  //!< function output vector type
-	typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE;
-	typedef Eigen::Matrix<double, IN_DIM, IN_DIM> HES_TYPE;
+    typedef Eigen::Matrix<double, IN_DIM, 1> IN_TYPE;    //!< function input vector type
+    typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE;  //!< function output vector type
+    typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE;
+    typedef Eigen::Matrix<double, IN_DIM, IN_DIM> HES_TYPE;
 
-	typedef std::function<OUT_TYPE(const IN_TYPE&)> Function;  //!< function tpye
+    typedef std::function<OUT_TYPE(const IN_TYPE&)> Function;  //!< function tpye
 
-	//! default constructor
-	/*!
+    //! default constructor
+    /*!
 	 * Generates a Derivatives of a function using numerical differentiation
 	 *
 	 * Numerical differentiation can either use single sided or double sided derivatives.
@@ -67,75 +67,75 @@ public:
 	 * @param f function to compute Derivatives of
 	 * @param doubleSidedDerivative use double sided differentiation
 	 */
-	DerivativesNumDiff(Function& f, bool doubleSidedDerivative = false)
-		: f_(f), doubleSidedDerivative_(doubleSidedDerivative)
-	{
-		eps_ = sqrt(Eigen::NumTraits<double>::epsilon());
-	}
+    DerivativesNumDiff(Function& f, bool doubleSidedDerivative = false)
+        : f_(f), doubleSidedDerivative_(doubleSidedDerivative)
+    {
+        eps_ = sqrt(Eigen::NumTraits<double>::epsilon());
+    }
 
-	DerivativesNumDiff(const DerivativesNumDiff& arg)
-		: f_(arg.f_), doubleSidedDerivative_(arg.doubleSidedDerivative_), eps_(arg.eps_)
-	{
-	}
+    DerivativesNumDiff(const DerivativesNumDiff& arg)
+        : f_(arg.f_), doubleSidedDerivative_(arg.doubleSidedDerivative_), eps_(arg.eps_)
+    {
+    }
 
-	//! default destructor
-	virtual ~DerivativesNumDiff() {}
-	//! deep cloning
-	DerivativesNumDiff* clone() const override { return new DerivativesNumDiff<IN_DIM, OUT_DIM>(*this); }
-	virtual OUT_TYPE forwardZero(const Eigen::VectorXd& x) override { return f_(x); }
-	//! evaluate Derivatives at a given point
-	/*!
+    //! default destructor
+    virtual ~DerivativesNumDiff() {}
+    //! deep cloning
+    DerivativesNumDiff* clone() const override { return new DerivativesNumDiff<IN_DIM, OUT_DIM>(*this); }
+    virtual OUT_TYPE forwardZero(const Eigen::VectorXd& x) override { return f_(x); }
+    //! evaluate Derivatives at a given point
+    /*!
 	 * @param x point at which to evaluate the Derivatives at
 	 * @return Derivatives evaluated at x
 	 */
-	virtual JAC_TYPE jacobian(const Eigen::VectorXd& x) override
-	{
-		JAC_TYPE jac;
-		OUT_TYPE y_ref;
+    virtual JAC_TYPE jacobian(const Eigen::VectorXd& x) override
+    {
+        JAC_TYPE jac;
+        OUT_TYPE y_ref;
 
-		if (!doubleSidedDerivative_)
-		{
-			y_ref = f_(x);
-		}
+        if (!doubleSidedDerivative_)
+        {
+            y_ref = f_(x);
+        }
 
-		for (size_t i = 0; i < x.rows(); ++i)
-		{
-			// inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
-			double h = eps_ * std::max(std::abs(x(i)), 1.0);
-			volatile double x_ph = x(i) + h;
-			double dxp = x_ph - x(i);
+        for (size_t i = 0; i < x.rows(); ++i)
+        {
+            // inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
+            double h = eps_ * std::max(std::abs(x(i)), 1.0);
+            volatile double x_ph = x(i) + h;
+            double dxp = x_ph - x(i);
 
-			IN_TYPE x_perturbed = x;
-			x_perturbed(i) = x_ph;
+            IN_TYPE x_perturbed = x;
+            x_perturbed(i) = x_ph;
 
-			// get evaluation of f(x,u)
-			OUT_TYPE y_perturbed = f_(x_perturbed);
+            // get evaluation of f(x,u)
+            OUT_TYPE y_perturbed = f_(x_perturbed);
 
-			if (doubleSidedDerivative_)
-			{
-				volatile double x_mh = x(i) - h;
-				double dxm = x(i) - x_mh;
+            if (doubleSidedDerivative_)
+            {
+                volatile double x_mh = x(i) - h;
+                double dxm = x(i) - x_mh;
 
-				x_perturbed = x;
-				x_perturbed(i) = x_mh;
-				OUT_TYPE y_perturbed_low = f_(x_perturbed);
+                x_perturbed = x;
+                x_perturbed(i) = x_mh;
+                OUT_TYPE y_perturbed_low = f_(x_perturbed);
 
-				jac.template col(i) = (y_perturbed - y_perturbed_low) / (dxp + dxm);
-			}
-			else
-			{
-				jac.template col(i) = (y_perturbed - y_ref) / dxp;
-			}
-		}
+                jac.template col(i) = (y_perturbed - y_perturbed_low) / (dxp + dxm);
+            }
+            else
+            {
+                jac.template col(i) = (y_perturbed - y_ref) / dxp;
+            }
+        }
 
-		return jac;
-	}
+        return jac;
+    }
 
 private:
-	std::function<OUT_TYPE(const IN_TYPE&)> f_;  //!< the function
+    std::function<OUT_TYPE(const IN_TYPE&)> f_;  //!< the function
 
-	bool doubleSidedDerivative_;  //!< if true, will use double sided differentiation
-	double eps_;                  //!< the perturbation to apply for numerical differentiation
+    bool doubleSidedDerivative_;  //!< if true, will use double sided differentiation
+    double eps_;                  //!< the perturbation to apply for numerical differentiation
 };
 }
 }

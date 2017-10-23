@@ -35,46 +35,45 @@ namespace HyQ {
 class HyQWithContactModelLinearizedForward : public ct::core::LinearSystem<36, 12>
 {
 public:
-	typedef typename Eigen::Matrix<double, 36, 36> state_matrix_t;
-	typedef typename Eigen::Matrix<double, 36, 12> state_control_matrix_t;
+    typedef typename Eigen::Matrix<double, 36, 36> state_matrix_t;
+    typedef typename Eigen::Matrix<double, 36, 12> state_control_matrix_t;
 
-	HyQWithContactModelLinearizedForward(const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL)
-		: ct::core::LinearSystem<36, 12>(type)
-	{
-		initialize();
-	}
+    HyQWithContactModelLinearizedForward(const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL)
+        : ct::core::LinearSystem<36, 12>(type)
+    {
+        initialize();
+    }
 
-	HyQWithContactModelLinearizedForward(const HyQWithContactModelLinearizedForward& other) { initialize(); }
-	virtual ~HyQWithContactModelLinearizedForward(){};
+    HyQWithContactModelLinearizedForward(const HyQWithContactModelLinearizedForward& other) { initialize(); }
+    virtual ~HyQWithContactModelLinearizedForward(){};
 
-	virtual HyQWithContactModelLinearizedForward* clone() const override
-	{
-		return new HyQWithContactModelLinearizedForward;
-	}
+    virtual HyQWithContactModelLinearizedForward* clone() const override
+    {
+        return new HyQWithContactModelLinearizedForward;
+    }
 
-	virtual const state_matrix_t& getDerivativeState(const ct::core::StateVector<36>& x,
-		const ct::core::ControlVector<12>& u,
-		const double t = 0.0) override;
+    virtual const state_matrix_t& getDerivativeState(const ct::core::StateVector<36>& x,
+        const ct::core::ControlVector<12>& u,
+        const double t = 0.0) override;
 
-	virtual const state_control_matrix_t& getDerivativeControl(const ct::core::StateVector<36>& x,
-		const ct::core::ControlVector<12>& u,
-		const double t = 0.0) override;
+    virtual const state_control_matrix_t& getDerivativeControl(const ct::core::StateVector<36>& x,
+        const ct::core::ControlVector<12>& u,
+        const double t = 0.0) override;
 
 private:
-	void initialize()
-	{
-		dFdx_.setZero();
-		dFdu_.setZero();
-		vX_.fill(0.0);
-		vU_.fill(0.0);
-	}
+    void initialize()
+    {
+        dFdx_.setZero();
+        dFdu_.setZero();
+        vX_.fill(0.0);
+        vU_.fill(0.0);
+    }
 
-	state_matrix_t dFdx_;
-	state_control_matrix_t dFdu_;
-	std::array<double, 1686> vX_;
-	std::array<double, 240> vU_;
+    state_matrix_t dFdx_;
+    state_control_matrix_t dFdu_;
+    std::array<double, 1686> vX_;
+    std::array<double, 240> vU_;
 };
 }
 }
 }
-

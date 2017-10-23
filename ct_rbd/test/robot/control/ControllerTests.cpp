@@ -36,7 +36,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 TEST(RbdControllerTests, RbdControllerTests)
 {
-	/*
+    /*
 	const size_t state_dim   = ct::rbd::FixBaseFDSystem<ct::rbd::TestIrb4600::Dynamics>::STATE_DIM;
 	const size_t control_dim = ct::rbd::FixBaseFDSystem<ct::rbd::TestIrb4600::Dynamics>::CONTROL_DIM;
 
@@ -52,6 +52,6 @@ TEST(RbdControllerTests, RbdControllerTests)
 
 int main(int argc, char **argv)
 {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

@@ -45,5 +45,5 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct_HyA {
 
 Eigen::Matrix<double, 6, 6> computeQddTauCodegen(const Eigen::Matrix<double, 12, 1>& state,
-	const Eigen::Matrix<double, 6, 1>& tau);
+    const Eigen::Matrix<double, 6, 1>& tau);
 }

@@ -37,24 +37,24 @@ using namespace ct::core;
 
 TEST(LinspaceTest, LinspaceTest)
 {
-	StateVector<2> start, end;
-	start << 1, 5;
-	end << 5, 1;
+    StateVector<2> start, end;
+    start << 1, 5;
+    end << 5, 1;
 
-	size_t nPoints = 5;
+    size_t nPoints = 5;
 
-	StateVectorArray<2> traj = linspace<StateVectorArray<2>>(start, end, nPoints);
+    StateVectorArray<2> traj = linspace<StateVectorArray<2>>(start, end, nPoints);
 
-	// the desired result is
-	/*
+    // the desired result is
+    /*
 	 * [1 2 3 4 5]
 	 * [5 4 3 2 1]
 	 * */
-	for (int i = 0; i < nPoints; i++)
-	{
-		ASSERT_EQ(traj[i](0), i + 1);
-		ASSERT_EQ(traj[i](1), 5 - i);
-	}
+    for (int i = 0; i < nPoints; i++)
+    {
+        ASSERT_EQ(traj[i](0), i + 1);
+        ASSERT_EQ(traj[i](1), 5 - i);
+    }
 }
 
 
@@ -65,6 +65,6 @@ TEST(LinspaceTest, LinspaceTest)
  */
 int main(int argc, char** argv)
 {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

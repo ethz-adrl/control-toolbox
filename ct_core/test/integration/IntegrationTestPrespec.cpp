@@ -31,8 +31,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int main(int argc, char **argv)
 {
-	if (argc > 2)
-		plotResult = true;
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+    if (argc > 2)
+        plotResult = true;
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

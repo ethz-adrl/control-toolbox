@@ -52,66 +52,66 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class CostFunctionAnalytical : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
-	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
+    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
+    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
 
-	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
-	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+    typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+    typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 
-	/**
+    /**
 	 * \brief Basic constructor
 	 */
-	CostFunctionAnalytical();
+    CostFunctionAnalytical();
 
-	/**
+    /**
 	 * \brief Copy constructor
 	 * @param arg cost function to copy
 	 */
-	CostFunctionAnalytical(const CostFunctionAnalytical& arg);
-	/**
+    CostFunctionAnalytical(const CostFunctionAnalytical& arg);
+    /**
 	 * \brief Constructor loading function from file
 	 * @param filename config file location
 	 * @param verbose flag enabling printouts
 	 */
-	CostFunctionAnalytical(const std::string& filename, bool verbose = false);
+    CostFunctionAnalytical(const std::string& filename, bool verbose = false);
 
-	/**
+    /**
 	 * Deep-cloning of cost function
 	 * @return base pointer to clone
 	 */
-	CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const;
+    CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const;
 
-	/**
+    /**
 	 * Destructor
 	 */
-	~CostFunctionAnalytical();
+    ~CostFunctionAnalytical();
 
-	size_t addIntermediateTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term,
-		bool verbose = false) override;
-	size_t addFinalTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term, bool verbose = false) override;
+    size_t addIntermediateTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term,
+        bool verbose = false) override;
+    size_t addFinalTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term, bool verbose = false) override;
 
-	SCALAR evaluateIntermediate() override;
-	SCALAR evaluateTerminal() override;
+    SCALAR evaluateIntermediate() override;
+    SCALAR evaluateTerminal() override;
 
-	state_vector_t stateDerivativeIntermediate() override;
-	state_vector_t stateDerivativeTerminal() override;
+    state_vector_t stateDerivativeIntermediate() override;
+    state_vector_t stateDerivativeTerminal() override;
 
-	state_matrix_t stateSecondDerivativeIntermediate() override;
-	state_matrix_t stateSecondDerivativeTerminal() override;
+    state_matrix_t stateSecondDerivativeIntermediate() override;
+    state_matrix_t stateSecondDerivativeTerminal() override;
 
-	control_vector_t controlDerivativeIntermediate() override;
-	control_vector_t controlDerivativeTerminal() override;
+    control_vector_t controlDerivativeIntermediate() override;
+    control_vector_t controlDerivativeTerminal() override;
 
-	control_matrix_t controlSecondDerivativeIntermediate() override;
-	control_matrix_t controlSecondDerivativeTerminal() override;
+    control_matrix_t controlSecondDerivativeIntermediate() override;
+    control_matrix_t controlSecondDerivativeTerminal() override;
 
-	control_state_matrix_t stateControlDerivativeIntermediate() override;
-	control_state_matrix_t stateControlDerivativeTerminal() override;
+    control_state_matrix_t stateControlDerivativeIntermediate() override;
+    control_state_matrix_t stateControlDerivativeTerminal() override;
 
-	void loadFromConfigFile(const std::string& filename, bool verbose = false) override;
+    void loadFromConfigFile(const std::string& filename, bool verbose = false) override;
 
 private:
 };

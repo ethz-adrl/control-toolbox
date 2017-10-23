@@ -35,29 +35,29 @@ namespace NS2 {
 class DERIVATIVE_NAME : public core::Derivatives<IN_DIM, OUT_DIM, double>
 {
 public:
-	typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE;
-	typedef Eigen::Matrix<double, IN_DIM, 1> X_TYPE;
+    typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE;
+    typedef Eigen::Matrix<double, IN_DIM, 1> X_TYPE;
 
-	DERIVATIVE_NAME()
-	{
-		eval_.setZero();
-		v_.fill(0.0);
-	};
+    DERIVATIVE_NAME()
+    {
+        eval_.setZero();
+        v_.fill(0.0);
+    };
 
-	DERIVATIVE_NAME(const DERIVATIVE_NAME& other)
-	{
-		eval_.setZero();
-		v_.fill(0.0);
-	}
+    DERIVATIVE_NAME(const DERIVATIVE_NAME& other)
+    {
+        eval_.setZero();
+        v_.fill(0.0);
+    }
 
-	virtual ~DERIVATIVE_NAME(){};
+    virtual ~DERIVATIVE_NAME(){};
 
-	DERIVATIVE_NAME* clone() const override { return new DERIVATIVE_NAME(*this); }
-	OUT_TYPE forwardZero(const Eigen::VectorXd& x_in) override;
+    DERIVATIVE_NAME* clone() const override { return new DERIVATIVE_NAME(*this); }
+    OUT_TYPE forwardZero(const Eigen::VectorXd& x_in) override;
 
 private:
-	OUT_TYPE eval_;
-	std::array<double, MAX_COUNT> v_;
+    OUT_TYPE eval_;
+    std::array<double, MAX_COUNT> v_;
 };
 
 } /* namespace NS2 */

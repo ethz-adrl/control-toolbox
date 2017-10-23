@@ -44,28 +44,28 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class DiscreteLinearSystem : public DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef StateMatrix<STATE_DIM, SCALAR> state_matrix_t;                              //!< state Jacobian type
-	typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;  //!< input Jacobian type
+    typedef StateMatrix<STATE_DIM, SCALAR> state_matrix_t;                              //!< state Jacobian type
+    typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;  //!< input Jacobian type
 
-	//! default constructor
-	/*!
+    //! default constructor
+    /*!
 	 * @param type system type
 	 */
-	DiscreteLinearSystem(const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL)
-		: DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type)
-	{
-	}
+    DiscreteLinearSystem(const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL)
+        : DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type)
+    {
+    }
 
-	//! destructor
-	virtual ~DiscreteLinearSystem(){};
+    //! destructor
+    virtual ~DiscreteLinearSystem(){};
 
-	//! deep cloning
-	virtual DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const = 0;
+    //! deep cloning
+    virtual DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const = 0;
 
-	//! compute the system dynamics
-	/*!
+    //! compute the system dynamics
+    /*!
 	 * This computes the system dynamics
 	 * \f[
 	 *  x_{n+1} = Ax_n + Bu_n
@@ -75,19 +75,19 @@ public:
 	 * @param control control input
 	 * @param stateNext propagated state
 	 */
-	virtual void propagateControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
-		const int& n,
-		const ControlVector<CONTROL_DIM, SCALAR>& control,
-		StateVector<STATE_DIM, SCALAR>& stateNext) override
-	{
-		state_matrix_t A;
-		state_control_matrix_t B;
-		this->getAandB(state, control, state, n, 1, A, B);
-		stateNext = A * state + B * control;
-	}
+    virtual void propagateControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
+        const int& n,
+        const ControlVector<CONTROL_DIM, SCALAR>& control,
+        StateVector<STATE_DIM, SCALAR>& stateNext) override
+    {
+        state_matrix_t A;
+        state_control_matrix_t B;
+        this->getAandB(state, control, state, n, 1, A, B);
+        stateNext = A * state + B * control;
+    }
 
 
-	/*!
+    /*!
 	 * retrieve discrete-time linear system matrices A and B.
 	 * @param x	the state setpoint
 	 * @param u the control setpoint
@@ -96,22 +96,22 @@ public:
 	 * @param A the resulting linear system matrix A
 	 * @param B the resulting linear system matrix B
 	 */
-	virtual void getAandB(const StateVector<STATE_DIM, SCALAR>& x,
-		const ControlVector<CONTROL_DIM, SCALAR>& u,
-		const StateVector<STATE_DIM, SCALAR>& x_next,
-		const int n,
-		size_t numSteps,
-		state_matrix_t& A,
-		state_control_matrix_t& B) = 0;
+    virtual void getAandB(const StateVector<STATE_DIM, SCALAR>& x,
+        const ControlVector<CONTROL_DIM, SCALAR>& u,
+        const StateVector<STATE_DIM, SCALAR>& x_next,
+        const int n,
+        size_t numSteps,
+        state_matrix_t& A,
+        state_control_matrix_t& B) = 0;
 
-	void getAandB(const StateVector<STATE_DIM, SCALAR>& x,
-		const ControlVector<CONTROL_DIM, SCALAR>& u,
-		const int n,
-		state_matrix_t& A,
-		state_control_matrix_t& B)
-	{
-		getAandB(x, u, x, n, 1, A, B);
-	}
+    void getAandB(const StateVector<STATE_DIM, SCALAR>& x,
+        const ControlVector<CONTROL_DIM, SCALAR>& u,
+        const int n,
+        state_matrix_t& A,
+        state_control_matrix_t& B)
+    {
+        getAandB(x, u, x, n, 1, A, B);
+    }
 };
 
 }  // core

@@ -41,12 +41,12 @@ template <typename SCALAR = double>
 class MpcTimeHorizon
 {
 public:
-	MpcTimeHorizon(const mpc_settings& settings, const SCALAR& initialTimeHorizon);
+    MpcTimeHorizon(const mpc_settings& settings, const SCALAR& initialTimeHorizon);
 
-	virtual ~MpcTimeHorizon();
+    virtual ~MpcTimeHorizon();
 
-	//! compute new MPC time horizon
-	/*!
+    //! compute new MPC time horizon
+    /*!
 	 * @param t_since_ended_first_solve
 	 * 	Time since the first successful solve
 	 * @param t_forward_prediction_stop
@@ -55,20 +55,20 @@ public:
 	 *  Resulting, new time horizon provided to the solver
 	 * @return true if TimeHorizon reached and MPC should stop
 	 */
-	virtual bool computeNewTimeHorizon(const SCALAR& t_since_ended_first_solve,
-		const SCALAR& t_forward_prediction_stop,
-		SCALAR& new_T);
+    virtual bool computeNewTimeHorizon(const SCALAR& t_since_ended_first_solve,
+        const SCALAR& t_forward_prediction_stop,
+        SCALAR& new_T);
 
-	void updateSettings(const mpc_settings& mpcsettings);
+    void updateSettings(const mpc_settings& mpcsettings);
 
-	//! update the time horizon which is used during the first call to the solver
-	void updateInitialTimeHorizon(const SCALAR& initTimeHorizon);
+    //! update the time horizon which is used during the first call to the solver
+    void updateInitialTimeHorizon(const SCALAR& initTimeHorizon);
 
 
 protected:
-	mpc_settings mpc_settings_;
+    mpc_settings mpc_settings_;
 
-	SCALAR initialTimeHorizon_;
+    SCALAR initialTimeHorizon_;
 };
 
 }  // namespace tpl

@@ -37,10 +37,10 @@ template <class RBDDynamics, bool QUAT_INTEGRATION = false>
 class RBDSystem
 {
 public:
-	RBDSystem() {}
-	virtual ~RBDSystem() {}
-	virtual RBDDynamics& dynamics() = 0;
-	virtual const RBDDynamics& dynamics() const = 0;
+    RBDSystem() {}
+    virtual ~RBDSystem() {}
+    virtual RBDDynamics& dynamics() = 0;
+    virtual const RBDDynamics& dynamics() const = 0;
 
 private:
 };
