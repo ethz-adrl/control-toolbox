@@ -38,9 +38,9 @@ LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::LinearConstraintConta
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::LinearConstraintContainer(
 	const LinearConstraintContainer& arg)
-	: ConstraintContainerBase<STATE_DIM, CONTROL_DIM, SCALAR>(arg)
-	, initializedIntermediate_(arg.initializedIntermediate_)
-	, initializedTerminal_(arg.initializedTerminal_)
+	: ConstraintContainerBase<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
+	  initializedIntermediate_(arg.initializedIntermediate_),
+	  initializedTerminal_(arg.initializedTerminal_)
 {
 }
 

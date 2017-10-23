@@ -83,16 +83,16 @@ public:
 		std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner,
 		std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
 		size_t N)
-		: w_(w)
-		, controlSpliner_(controlSpliner)
-		, timeGrid_(timeGrid)
-		, N_(N)
-		, constraintsCount_(0)
-		, constraintsIntermediateCount_(0)
-		, constraintsTerminalCount_(0)
-		, nonZeroJacCount_(0)
-		, nonZeroJacCountIntermediate_(0)
-		, nonZeroJacCountTerminal_(0)
+		: w_(w),
+		  controlSpliner_(controlSpliner),
+		  timeGrid_(timeGrid),
+		  N_(N),
+		  constraintsCount_(0),
+		  constraintsIntermediateCount_(0),
+		  constraintsTerminalCount_(0),
+		  nonZeroJacCount_(0),
+		  nonZeroJacCountIntermediate_(0),
+		  nonZeroJacCountTerminal_(0)
 	{
 	}
 

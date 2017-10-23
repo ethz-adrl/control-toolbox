@@ -92,22 +92,22 @@ public:
 		size_t shotNr,
 		DmsSettings settings,
 		size_t nIntegrationSteps)
-		: controlledSystem_(controlledSystem)
-		, linearSystem_(linearSystem)
-		, costFct_(costFct)
-		, w_(w)
-		, controlSpliner_(controlSpliner)
-		, timeGrid_(timeGrid)
-		, shotNr_(shotNr)
-		, settings_(settings)
-		, integrationCount_(0)
-		, costIntegrationCount_(0)
-		, sensIntegrationCount_(0)
-		, costSensIntegrationCount_(0)
-		, cost_(SCALAR(0.0))
-		, discreteQ_(state_vector_t::Zero())
-		, discreteR_(control_vector_t::Zero())
-		, discreteRNext_(control_vector_t::Zero())
+		: controlledSystem_(controlledSystem),
+		  linearSystem_(linearSystem),
+		  costFct_(costFct),
+		  w_(w),
+		  controlSpliner_(controlSpliner),
+		  timeGrid_(timeGrid),
+		  shotNr_(shotNr),
+		  settings_(settings),
+		  integrationCount_(0),
+		  costIntegrationCount_(0),
+		  sensIntegrationCount_(0),
+		  costSensIntegrationCount_(0),
+		  cost_(SCALAR(0.0)),
+		  discreteQ_(state_vector_t::Zero()),
+		  discreteR_(control_vector_t::Zero()),
+		  discreteRNext_(control_vector_t::Zero())
 	{
 		if (shotNr_ >= settings.N_)
 			throw std::runtime_error("Dms Shot Integrator: shot index >= settings.N_ - check your settings.");

@@ -37,13 +37,13 @@ ConstraintContainerBase<STATE_DIM, CONTROL_DIM, SCALAR>::ConstraintContainerBase
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 ConstraintContainerBase<STATE_DIM, CONTROL_DIM, SCALAR>::ConstraintContainerBase(const ConstraintContainerBase& arg)
-	: x_(arg.x_)
-	, u_(arg.u_)
-	, t_(arg.t_)
-	, lowerBoundsIntermediate_(arg.lowerBoundsIntermediate_)
-	, lowerBoundsTerminal_(arg.lowerBoundsTerminal_)
-	, upperBoundsIntermediate_(arg.upperBoundsIntermediate_)
-	, upperBoundsTerminal_(arg.upperBoundsTerminal_)
+	: x_(arg.x_),
+	  u_(arg.u_),
+	  t_(arg.t_),
+	  lowerBoundsIntermediate_(arg.lowerBoundsIntermediate_),
+	  lowerBoundsTerminal_(arg.lowerBoundsTerminal_),
+	  upperBoundsIntermediate_(arg.upperBoundsIntermediate_),
+	  upperBoundsTerminal_(arg.upperBoundsTerminal_)
 {
 }
 

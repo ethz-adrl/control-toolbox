@@ -44,19 +44,19 @@ ConstraintContainerAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::ConstraintContain
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 ConstraintContainerAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::ConstraintContainerAnalytical(
 	const ConstraintContainerAnalytical& arg)
-	: LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>(arg)
-	, constraintsIntermediate_(arg.constraintsIntermediate_)
-	, constraintsTerminal_(arg.constraintsTerminal_)
-	, evalIntermediate_(arg.evalIntermediate_)
-	, evalJacSparseStateIntermediate_(arg.evalJacSparseStateIntermediate_)
-	, evalJacSparseInputIntermediate_(arg.evalJacSparseInputIntermediate_)
-	, evalJacDenseStateIntermediate_(arg.evalJacDenseStateIntermediate_)
-	, evalJacDenseInputIntermediate_(arg.evalJacDenseInputIntermediate_)
-	, evalTerminal_(arg.evalTerminal_)
-	, evalJacSparseStateTerminal_(arg.evalJacSparseStateTerminal_)
-	, evalJacSparseInputTerminal_(arg.evalJacSparseInputTerminal_)
-	, evalJacDenseStateTerminal_(arg.evalJacDenseStateTerminal_)
-	, evalJacDenseInputTerminal_(arg.evalJacDenseInputTerminal_)
+	: LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
+	  constraintsIntermediate_(arg.constraintsIntermediate_),
+	  constraintsTerminal_(arg.constraintsTerminal_),
+	  evalIntermediate_(arg.evalIntermediate_),
+	  evalJacSparseStateIntermediate_(arg.evalJacSparseStateIntermediate_),
+	  evalJacSparseInputIntermediate_(arg.evalJacSparseInputIntermediate_),
+	  evalJacDenseStateIntermediate_(arg.evalJacDenseStateIntermediate_),
+	  evalJacDenseInputIntermediate_(arg.evalJacDenseInputIntermediate_),
+	  evalTerminal_(arg.evalTerminal_),
+	  evalJacSparseStateTerminal_(arg.evalJacSparseStateTerminal_),
+	  evalJacSparseInputTerminal_(arg.evalJacSparseInputTerminal_),
+	  evalJacDenseStateTerminal_(arg.evalJacDenseStateTerminal_),
+	  evalJacDenseInputTerminal_(arg.evalJacDenseInputTerminal_)
 {
 	// vectors of terms can be resized easily
 	constraintsIntermediate_.resize(arg.constraintsIntermediate_.size());

@@ -116,11 +116,11 @@ public:
 
 	//! copy constructor
 	DerivativesCppadJIT(const DerivativesCppadJIT& arg)
-		: Utils(arg)
-		, DerivativesBase(arg)
-		, compiled_(arg.compiled_)
-		, libName_(arg.libName_)
-		, dynamicLib_(arg.dynamicLib_)
+		: Utils(arg),
+		  DerivativesBase(arg),
+		  compiled_(arg.compiled_),
+		  libName_(arg.libName_),
+		  dynamicLib_(arg.dynamicLib_)
 	{
 		if (compiled_)
 			model_ =

@@ -31,11 +31,11 @@ namespace core {
 
 template <size_t STATE_DIM, typename SCALAR>
 Observer<STATE_DIM, SCALAR>::Observer(const EventHandlerPtrVector& eventHandlers)
-	: observeWrap([this](const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t) { this->observe(x, t); })
-	, observeWrapWithLogging([this](const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t) {
-		this->log(x, t);
-		this->observe(x, t);
-	})
+	: observeWrap([this](const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t) { this->observe(x, t); }),
+	  observeWrapWithLogging([this](const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t) {
+		  this->log(x, t);
+		  this->observe(x, t);
+	  })
 {
 	// fixme: somehow works if using assignment operator, but not if using constructing
 	eventHandlers_ = eventHandlers;

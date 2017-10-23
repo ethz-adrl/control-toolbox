@@ -46,24 +46,24 @@ public:
 	 * @brief      Default constructor, sets the parameters to default values
 	 */
 	SnoptSettings()
-		: scale_option_param_(0)
-		, derivative_option_param_(1)
-		, verify_level_param_(-1)
-		, major_iteration_limit_param_(500)
-		, minor_iteration_limit_param_(500)
-		, iteration_limit_param_(5000)
-		, major_optimality_tolerance_param_(1e-6)
-		, major_feasibility_tolerance_param_(1e-6)
-		, minor_feasibility_tolerance_param_(1e-6)
-		, print_file_param_(0)
-		, minor_print_level_param_(0)
-		, major_print_level_param_(0)
-		, new_basis_file_param_(0)
-		, old_basis_file_param_(0)
-		, backup_basis_file_param_(0)
-		, line_search_tolerance_param_(0.9)
-		, crash_option_(3)
-		, hessian_updates_(5)
+		: scale_option_param_(0),
+		  derivative_option_param_(1),
+		  verify_level_param_(-1),
+		  major_iteration_limit_param_(500),
+		  minor_iteration_limit_param_(500),
+		  iteration_limit_param_(5000),
+		  major_optimality_tolerance_param_(1e-6),
+		  major_feasibility_tolerance_param_(1e-6),
+		  minor_feasibility_tolerance_param_(1e-6),
+		  print_file_param_(0),
+		  minor_print_level_param_(0),
+		  major_print_level_param_(0),
+		  new_basis_file_param_(0),
+		  old_basis_file_param_(0),
+		  backup_basis_file_param_(0),
+		  line_search_tolerance_param_(0.9),
+		  crash_option_(3),
+		  hessian_updates_(5)
 	{
 	}
 
@@ -135,28 +135,28 @@ public:
 	 * @brief      Default constructor, sets the parameters to default values
 	 */
 	IpoptSettings()
-		: tol_(1e-8)
-		, constr_viol_tol_(1e-4)
-		, max_iter_(200)
-		, restoTol_(1e-7)
-		, acceptableTol_(1e-6)
-		, restoAcceptableTol_(1e-7)
-		, linear_scaling_on_demand_("yes")
-		, hessian_approximation_("limited-memory")
-		, nlp_scaling_method_("gradient-based")
-		, printLevel_(5)
-		, print_user_options_("no")
-		, print_frequency_iter_(1)
-		, printInfoString_("no")
-		, derivativeTest_("none")
-		, derivativeTestTol_(1e-4)
-		, derivativeTestPerturbation_(1e-8)
-		, point_perturbation_radius_(10)
-		, checkDerivativesForNaninf_("no")
-		, derivativeTestPrintAll_("no")
-		, linearSystemScaling_("mc19")
-		, linear_solver_("ma57")
-		, jacobianApproximation_("finite-difference-values")
+		: tol_(1e-8),
+		  constr_viol_tol_(1e-4),
+		  max_iter_(200),
+		  restoTol_(1e-7),
+		  acceptableTol_(1e-6),
+		  restoAcceptableTol_(1e-7),
+		  linear_scaling_on_demand_("yes"),
+		  hessian_approximation_("limited-memory"),
+		  nlp_scaling_method_("gradient-based"),
+		  printLevel_(5),
+		  print_user_options_("no"),
+		  print_frequency_iter_(1),
+		  printInfoString_("no"),
+		  derivativeTest_("none"),
+		  derivativeTestTol_(1e-4),
+		  derivativeTestPerturbation_(1e-8),
+		  point_perturbation_radius_(10),
+		  checkDerivativesForNaninf_("no"),
+		  derivativeTestPrintAll_("no"),
+		  linearSystemScaling_("mc19"),
+		  linear_solver_("ma57"),
+		  jacobianApproximation_("finite-difference-values")
 	{
 	}
 

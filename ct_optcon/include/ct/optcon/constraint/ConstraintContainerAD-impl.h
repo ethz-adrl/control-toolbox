@@ -62,24 +62,24 @@ ConstraintContainerAD<STATE_DIM, CONTROL_DIM, SCALAR>::ConstraintContainerAD(con
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 ConstraintContainerAD<STATE_DIM, CONTROL_DIM, SCALAR>::ConstraintContainerAD(const ConstraintContainerAD& arg)
-	: LinearConstraintContainer<STATE_DIM, CONTROL_DIM>(arg)
-	, constraintsIntermediate_(arg.constraintsIntermediate_)
-	, constraintsTerminal_(arg.constraintsTerminal_)
-	, intermediateCodegen_(arg.intermediateCodegen_)
-	, terminalCodegen_(arg.terminalCodegen_)
-	, fIntermediate_(arg.fIntermediate_)
-	, fTerminal_(arg.fTerminal_)
-	, sparsityIntermediateRows_(arg.sparsityIntermediateRows_)
-	, sparsityStateIntermediateRows_(arg.sparsityStateIntermediateRows_)
-	, sparsityStateIntermediateCols_(arg.sparsityStateIntermediateCols_)
-	, sparsityInputIntermediateRows_(arg.sparsityInputIntermediateRows_)
-	, sparsityInputIntermediateCols_(arg.sparsityInputIntermediateCols_)
-	, sparsityTerminalRows_(arg.sparsityTerminalRows_)
-	, sparsityStateTerminalRows_(arg.sparsityStateTerminalRows_)
-	, sparsityStateTerminalCols_(arg.sparsityStateTerminalCols_)
-	, sparsityInputTerminalRows_(arg.sparsityInputTerminalRows_)
-	, sparsityInputTerminalCols_(arg.sparsityInputTerminalCols_)
-	, stateControlD_(arg.stateControlD_)
+	: LinearConstraintContainer<STATE_DIM, CONTROL_DIM>(arg),
+	  constraintsIntermediate_(arg.constraintsIntermediate_),
+	  constraintsTerminal_(arg.constraintsTerminal_),
+	  intermediateCodegen_(arg.intermediateCodegen_),
+	  terminalCodegen_(arg.terminalCodegen_),
+	  fIntermediate_(arg.fIntermediate_),
+	  fTerminal_(arg.fTerminal_),
+	  sparsityIntermediateRows_(arg.sparsityIntermediateRows_),
+	  sparsityStateIntermediateRows_(arg.sparsityStateIntermediateRows_),
+	  sparsityStateIntermediateCols_(arg.sparsityStateIntermediateCols_),
+	  sparsityInputIntermediateRows_(arg.sparsityInputIntermediateRows_),
+	  sparsityInputIntermediateCols_(arg.sparsityInputIntermediateCols_),
+	  sparsityTerminalRows_(arg.sparsityTerminalRows_),
+	  sparsityStateTerminalRows_(arg.sparsityStateTerminalRows_),
+	  sparsityStateTerminalCols_(arg.sparsityStateTerminalCols_),
+	  sparsityInputTerminalRows_(arg.sparsityInputTerminalRows_),
+	  sparsityInputTerminalCols_(arg.sparsityInputTerminalCols_),
+	  stateControlD_(arg.stateControlD_)
 {
 	constraintsIntermediate_.resize(arg.constraintsIntermediate_.size());
 	constraintsTerminal_.resize(arg.constraintsTerminal_.size());

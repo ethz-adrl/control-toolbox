@@ -52,10 +52,10 @@ public:
 	 * @param method The quantization method
 	 */
 	QuantizationNoise(double bias = 0.0, double quantizationInterval = 1.0, QuantizationMethod method = FLOOR)
-		: quantizationInterval_(quantizationInterval)
-		, quantizationRest_(1, 0.0)
-		, bias_(bias)
-		, quantizationMethod_(method)
+		: quantizationInterval_(quantizationInterval),
+		  quantizationRest_(1, 0.0),
+		  bias_(bias),
+		  quantizationMethod_(method)
 	{
 	}
 

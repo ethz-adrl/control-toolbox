@@ -43,37 +43,34 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendBase(
 	const Settings_t& settings)
 	:
 
-	substepRecorders_()
-	, integrators_(settings.nThreads + 1)
-	, sensitivity_(settings.nThreads + 1)
-	, integratorsEulerSymplectic_(settings.nThreads + 1)
-	, integratorsRkSymplectic_(settings.nThreads + 1)
-	,
+	  substepRecorders_(),
+	  integrators_(settings.nThreads + 1),
+	  sensitivity_(settings.nThreads + 1),
+	  integratorsEulerSymplectic_(settings.nThreads + 1),
+	  integratorsRkSymplectic_(settings.nThreads + 1),
 
-	controller_(settings.nThreads + 1)
-	, initialized_(false)
-	, configured_(false)
-	, iteration_(0)
-	, settings_(settings)
-	, K_(0)
-	, d_norm_(0.0)
-	, lx_norm_(0.0)
-	, lu_norm_(0.0)
-	, lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>())
-	,
+	  controller_(settings.nThreads + 1),
+	  initialized_(false),
+	  configured_(false),
+	  iteration_(0),
+	  settings_(settings),
+	  K_(0),
+	  d_norm_(0.0),
+	  lx_norm_(0.0),
+	  lu_norm_(0.0),
+	  lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>()),
 
-	substepsX_(new StateSubsteps)
-	, substepsU_(new ControlSubsteps)
-	,
+	  substepsX_(new StateSubsteps),
+	  substepsU_(new ControlSubsteps),
 
-	intermediateCostBest_(std::numeric_limits<SCALAR>::infinity())
-	, finalCostBest_(std::numeric_limits<SCALAR>::infinity())
-	, lowestCost_(std::numeric_limits<SCALAR>::infinity())
-	, intermediateCostPrevious_(std::numeric_limits<SCALAR>::infinity())
-	, finalCostPrevious_(std::numeric_limits<SCALAR>::infinity())
-	, linearSystems_(settings.nThreads + 1)
-	, firstRollout_(true)
-	, alphaBest_(-1)
+	  intermediateCostBest_(std::numeric_limits<SCALAR>::infinity()),
+	  finalCostBest_(std::numeric_limits<SCALAR>::infinity()),
+	  lowestCost_(std::numeric_limits<SCALAR>::infinity()),
+	  intermediateCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
+	  finalCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
+	  linearSystems_(settings.nThreads + 1),
+	  firstRollout_(true),
+	  alphaBest_(-1)
 {
 	Eigen::initParallel();
 

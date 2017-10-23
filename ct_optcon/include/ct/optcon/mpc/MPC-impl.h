@@ -37,12 +37,12 @@ MPC<OPTCON_SOLVER>::MPC(const OptConProblem_t& problem,
 	std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> customTimeHorizon)
 	:
 
-	solver_(problem, solverSettings)
-	, mpc_settings_(mpcsettings)
-	, dynamics_(problem.getNonlinearSystem()->clone())
-	, firstRun_(true)
-	, runCallCounter_(0)
-	, policyHandler_(new PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>())
+	  solver_(problem, solverSettings),
+	  mpc_settings_(mpcsettings),
+	  dynamics_(problem.getNonlinearSystem()->clone()),
+	  firstRun_(true),
+	  runCallCounter_(0),
+	  policyHandler_(new PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>())
 {
 	// =========== INIT WARM START STRATEGY =============
 

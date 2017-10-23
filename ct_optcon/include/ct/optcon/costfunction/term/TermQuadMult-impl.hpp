@@ -59,11 +59,11 @@ TermQuadMult<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadMult(const st
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermQuadMult<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadMult(const TermQuadMult& arg)
-	: TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>(arg)
-	, Q_(arg.Q_)
-	, R_(arg.R_)
-	, x_ref_(arg.x_ref_)
-	, u_ref_(arg.u_ref_)
+	: TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>(arg),
+	  Q_(arg.Q_),
+	  R_(arg.R_),
+	  x_ref_(arg.x_ref_),
+	  u_ref_(arg.u_ref_)
 {
 }
 

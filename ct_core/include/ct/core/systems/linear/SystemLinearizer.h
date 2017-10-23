@@ -99,9 +99,9 @@ public:
 	 */
 	SystemLinearizer(std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> nonlinearSystem,
 		bool doubleSidedDerivative = true)
-		: LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(nonlinearSystem->getType())
-		, nonlinearSystem_(nonlinearSystem)
-		, doubleSidedDerivative_(doubleSidedDerivative)
+		: LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(nonlinearSystem->getType()),
+		  nonlinearSystem_(nonlinearSystem),
+		  doubleSidedDerivative_(doubleSidedDerivative)
 	{
 		if (nonlinearSystem == nullptr)
 			throw std::runtime_error("SystemLinearizer: Nonlinear system is nullptr!");
@@ -129,14 +129,14 @@ public:
 
 	//! copy constructor
 	SystemLinearizer(const SystemLinearizer& arg)
-		: LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg)
-		, nonlinearSystem_(arg.nonlinearSystem_->clone())
-		, dFdx_(arg.dFdx_)
-		, dFdu_(arg.dFdu_)
-		, dxdt_ref_(arg.dxdt_ref_)
-		, eps_(arg.eps_)
-		, doubleSidedDerivative_(arg.doubleSidedDerivative_)
-		, isSecondOrderSystem_(arg.getType() == SECOND_ORDER)
+		: LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
+		  nonlinearSystem_(arg.nonlinearSystem_->clone()),
+		  dFdx_(arg.dFdx_),
+		  dFdu_(arg.dFdu_),
+		  dxdt_ref_(arg.dxdt_ref_),
+		  eps_(arg.eps_),
+		  doubleSidedDerivative_(arg.doubleSidedDerivative_),
+		  isSecondOrderSystem_(arg.getType() == SECOND_ORDER)
 	{
 	}
 

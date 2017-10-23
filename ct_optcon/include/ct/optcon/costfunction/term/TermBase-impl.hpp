@@ -32,8 +32,8 @@ namespace optcon {
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermBase(std::string name)
-	: name_(name)
-	, c_i_(std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>>(new tpl::TimeActivationBase<SCALAR_EVAL>()))
+	: name_(name),
+	  c_i_(std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>>(new tpl::TimeActivationBase<SCALAR_EVAL>()))
 {
 }
 

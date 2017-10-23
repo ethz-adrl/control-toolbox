@@ -49,18 +49,18 @@ public:
      * @brief      Default constructor, set default settings
      */
 	DerivativesCppadSettings()
-		: multiThreading_(false)
-		, createForwardZero_(false)
-		, createForwardOne_(false)
-		, createReverseOne_(false)
-		, createReverseTwo_(false)
-		, createJacobian_(false)
-		, createSparseJacobian_(false)
-		, createHessian_(false)
-		, createSparseHessian_(false)
-		, maxAssignements_(20000)
-		, compiler_(GCC)
-		, generateSourceCode_(false)
+		: multiThreading_(false),
+		  createForwardZero_(false),
+		  createForwardOne_(false),
+		  createReverseOne_(false),
+		  createReverseTwo_(false),
+		  createJacobian_(false),
+		  createSparseJacobian_(false),
+		  createHessian_(false),
+		  createSparseHessian_(false),
+		  maxAssignements_(20000),
+		  compiler_(GCC),
+		  generateSourceCode_(false)
 	{
 	}
 

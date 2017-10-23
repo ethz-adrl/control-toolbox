@@ -89,15 +89,15 @@ public:
 	 */
 	ADCodegenLinearizer(std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> nonlinearSystem,
 		bool cacheJac = true)
-		: Base(nonlinearSystem)
-		, dFdx_(state_matrix_t::Zero())
-		, dFdu_(state_control_matrix_t::Zero())
-		, compiled_(false)
-		, cacheJac_(cacheJac)
-		, x_at_cache_(state_vector_t::Random())
-		, u_at_cache_(control_vector_t::Random())
-		, maxTempVarCountState_(0)
-		, maxTempVarCountControl_(0)
+		: Base(nonlinearSystem),
+		  dFdx_(state_matrix_t::Zero()),
+		  dFdu_(state_control_matrix_t::Zero()),
+		  compiled_(false),
+		  cacheJac_(cacheJac),
+		  x_at_cache_(state_vector_t::Random()),
+		  u_at_cache_(control_vector_t::Random()),
+		  maxTempVarCountState_(0),
+		  maxTempVarCountControl_(0)
 	{
 	}
 
@@ -107,16 +107,16 @@ public:
 	 * @param[in]  arg   The argument
 	 */
 	ADCodegenLinearizer(const ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>& arg)
-		: Base(arg)
-		, dFdx_(arg.dFdx_)
-		, dFdu_(arg.dFdu_)
-		, compiled_(arg.compiled_)
-		, cacheJac_(arg.cacheJac_)
-		, x_at_cache_(arg.x_at_cache_)
-		, u_at_cache_(arg.u_at_cache_)
-		, dynamicLib_(arg.dynamicLib_)
-		, maxTempVarCountState_(arg.maxTempVarCountState_)
-		, maxTempVarCountControl_(arg.maxTempVarCountControl_)
+		: Base(arg),
+		  dFdx_(arg.dFdx_),
+		  dFdu_(arg.dFdu_),
+		  compiled_(arg.compiled_),
+		  cacheJac_(arg.cacheJac_),
+		  x_at_cache_(arg.x_at_cache_),
+		  u_at_cache_(arg.u_at_cache_),
+		  dynamicLib_(arg.dynamicLib_),
+		  maxTempVarCountState_(arg.maxTempVarCountState_),
+		  maxTempVarCountControl_(arg.maxTempVarCountControl_)
 	{
 		if (compiled_)
 			model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("ADCodegenLinearizer"));

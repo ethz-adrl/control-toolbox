@@ -76,18 +76,18 @@ public:
 	RKnDerivatives(std::shared_ptr<SplinerBase<control_vector_t>> controlSpliner,
 		size_t shotIdx,
 		const DmsSettings& settings)
-		: shotIdx_(shotIdx)
-		, settings_(settings)
-		, controlSpliner_(controlSpliner)
-		, x_log_(nullptr)
-		, u_log_(nullptr)
-		, t_log_(nullptr)
-		, A_log_(nullptr)
-		, B_log_(nullptr)
-		, dXdSi_history_(state_matrix_array_t(0))
-		, dXdQi_history_(state_control_matrix_array_t(0))
-		, dXdQip1_history_(state_control_matrix_array_t(0))
-		, dXdHi_history_(state_vector_array_t(0))
+		: shotIdx_(shotIdx),
+		  settings_(settings),
+		  controlSpliner_(controlSpliner),
+		  x_log_(nullptr),
+		  u_log_(nullptr),
+		  t_log_(nullptr),
+		  A_log_(nullptr),
+		  B_log_(nullptr),
+		  dXdSi_history_(state_matrix_array_t(0)),
+		  dXdQi_history_(state_control_matrix_array_t(0)),
+		  dXdQip1_history_(state_control_matrix_array_t(0)),
+		  dXdHi_history_(state_vector_array_t(0))
 	{
 	}
 

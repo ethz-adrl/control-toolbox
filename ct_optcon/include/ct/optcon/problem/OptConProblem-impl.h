@@ -40,13 +40,13 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem(DynamicsPtr_t nonlinDynamics,
 	CostFunctionPtr_t costFunction,
 	LinearPtr_t linearSystem)
-	: tf_(0.0)
-	, x0_(state_vector_t::Zero())
-	, controlledSystem_(nonlinDynamics)
-	, costFunction_(costFunction)
-	, linearizedSystem_(linearSystem)
-	, stateInputConstraints_(nullptr)
-	, pureStateConstraints_(nullptr)
+	: tf_(0.0),
+	  x0_(state_vector_t::Zero()),
+	  controlledSystem_(nonlinDynamics),
+	  costFunction_(costFunction),
+	  linearizedSystem_(linearSystem),
+	  stateInputConstraints_(nullptr),
+	  pureStateConstraints_(nullptr)
 {
 	if (linearSystem == nullptr)  // no linearization provided
 	{

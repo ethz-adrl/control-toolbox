@@ -101,21 +101,21 @@ public:
 		SCALAR zeta = SCALAR(1.0),
 		SCALAR g_dc = SCALAR(1.0),
 		std::shared_ptr<Controller<2, 1, SCALAR>> controller = nullptr)
-		: ControlledSystem<2, 1, SCALAR>(controller, SYSTEM_TYPE::SECOND_ORDER)
-		, w_n_(w_n)
-		, w_n_square_(w_n_ * w_n_)
-		, zeta_(zeta)
-		, g_dc_(g_dc)
+		: ControlledSystem<2, 1, SCALAR>(controller, SYSTEM_TYPE::SECOND_ORDER),
+		  w_n_(w_n),
+		  w_n_square_(w_n_ * w_n_),
+		  zeta_(zeta),
+		  g_dc_(g_dc)
 	{
 	}
 
 	//! copy constructor
 	SecondOrderSystem(const SecondOrderSystem& arg)
-		: ControlledSystem<2, 1, SCALAR>(arg)
-		, w_n_(arg.w_n_)
-		, w_n_square_(arg.w_n_square_)
-		, zeta_(arg.zeta_)
-		, g_dc_(arg.g_dc_)
+		: ControlledSystem<2, 1, SCALAR>(arg),
+		  w_n_(arg.w_n_),
+		  w_n_square_(arg.w_n_square_),
+		  zeta_(arg.zeta_),
+		  g_dc_(arg.g_dc_)
 	{
 	}
 
@@ -128,11 +128,11 @@ public:
 	 * @param controller controller (optional)
 	 */
 	SecondOrderSystem(SCALAR k, SCALAR m, SCALAR d, SCALAR g_dc, std::shared_ptr<Controller<2, 1>> controller = nullptr)
-		: ControlledSystem<2, 1>(controller)
-		, w_n_(std::sqrt(k / m))
-		, w_n_square_(w_n_ * w_n_)
-		, zeta_(d / (2.0 * m * k))
-		, g_dc_(g_dc)
+		: ControlledSystem<2, 1>(controller),
+		  w_n_(std::sqrt(k / m)),
+		  w_n_square_(w_n_ * w_n_),
+		  zeta_(d / (2.0 * m * k)),
+		  g_dc_(g_dc)
 	{
 	}
 

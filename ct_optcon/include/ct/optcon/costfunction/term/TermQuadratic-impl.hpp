@@ -59,11 +59,11 @@ TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadratic(const 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadratic(
 	const TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>& arg)
-	: TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>(arg)
-	, Q_(arg.Q_)
-	, R_(arg.R_)
-	, x_ref_(arg.x_ref_)
-	, u_ref_(arg.u_ref_)
+	: TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>(arg),
+	  Q_(arg.Q_),
+	  R_(arg.R_),
+	  x_ref_(arg.x_ref_),
+	  u_ref_(arg.u_ref_)
 {
 }
 

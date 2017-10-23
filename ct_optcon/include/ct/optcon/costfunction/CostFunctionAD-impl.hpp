@@ -32,8 +32,8 @@ namespace optcon {
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD()
-	: CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>()
-	, stateControlTime_(Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM + 1, 1>::Zero())
+	: CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(),
+	  stateControlTime_(Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM + 1, 1>::Zero())
 {
 	intermediateFun_ = [&](const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM + 1, 1>& stateInputTime) {
 		return this->evaluateIntermediateCg(stateInputTime);
@@ -52,10 +52,10 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD()
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const CostFunctionAD& arg)
-	: CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(arg)
-	, stateControlTime_(arg.stateControlTime_)
-	, intermediateFun_(arg.intermediateFun_)
-	, finalFun_(arg.finalFun_)
+	: CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
+	  stateControlTime_(arg.stateControlTime_),
+	  intermediateFun_(arg.intermediateFun_),
+	  finalFun_(arg.finalFun_)
 {
 	intermediateTerms_.resize(arg.intermediateTerms_.size());
 	finalTerms_.resize(arg.finalTerms_.size());

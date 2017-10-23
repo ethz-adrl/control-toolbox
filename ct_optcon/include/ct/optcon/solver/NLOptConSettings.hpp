@@ -44,13 +44,13 @@ struct LineSearchSettings
 {
 	//! default constructor for the NLOptCon line-search settings
 	LineSearchSettings()
-		: active(true)
-		, adaptive(false)
-		, maxIterations(10)
-		, alpha_0(1.0)
-		, alpha_max(1.0)
-		, n_alpha(0.5)
-		, debugPrint(false)
+		: active(true),
+		  adaptive(false),
+		  maxIterations(10),
+		  alpha_0(1.0),
+		  alpha_max(1.0),
+		  n_alpha(0.5),
+		  debugPrint(false)
 	{
 	}
 
@@ -212,34 +212,30 @@ public:
      * sets all settings to default values.
      */
 	NLOptConSettings()
-		: integrator(ct::core::IntegrationType::RK4)
-		, discretization(APPROXIMATION::BACKWARD_EULER)
-		, timeVaryingDiscretization(false)
-		, nlocp_algorithm(GNMS)
-		, lqocp_solver(GNRICCATI_SOLVER)
-		, loggingPrefix("alg")
-		, closedLoopShooting(false)
-		,  //! by default, we do open-loop shooting
-		epsilon(1e-5)
-		, dt(0.001)
-		, K_sim(1)
-		,  //! by default, there is only one sub-integration step
-		K_shot(1)
-		,  //! by default the shot length is equal to the control length
-		min_cost_improvement(1e-5)
-		,  //! cost needs to be at least 1e-5 better before we assume convergence
-		maxDefectSum(1e-5)
-		, meritFunctionRho(0.0)
-		, max_iterations(100)
-		, fixedHessianCorrection(false)
-		, recordSmallestEigenvalue(false)
-		, nThreads(4)
-		, nThreadsEigen(4)
-		, lineSearchSettings()
-		, parallelBackward()
-		, debugPrint(false)
-		, printSummary(true)
-		, useSensitivityIntegrator(false)
+		: integrator(ct::core::IntegrationType::RK4),
+		  discretization(APPROXIMATION::BACKWARD_EULER),
+		  timeVaryingDiscretization(false),
+		  nlocp_algorithm(GNMS),
+		  lqocp_solver(GNRICCATI_SOLVER),
+		  loggingPrefix("alg"),
+		  closedLoopShooting(false),  //! by default, we do open-loop shooting
+		  epsilon(1e-5),
+		  dt(0.001),
+		  K_sim(1),                    //! by default, there is only one sub-integration step
+		  K_shot(1),                   //! by default the shot length is equal to the control length
+		  min_cost_improvement(1e-5),  //! cost needs to be at least 1e-5 better before we assume convergence
+		  maxDefectSum(1e-5),
+		  meritFunctionRho(0.0),
+		  max_iterations(100),
+		  fixedHessianCorrection(false),
+		  recordSmallestEigenvalue(false),
+		  nThreads(4),
+		  nThreadsEigen(4),
+		  lineSearchSettings(),
+		  parallelBackward(),
+		  debugPrint(false),
+		  printSummary(true),
+		  useSensitivityIntegrator(false)
 	{
 	}
 

@@ -55,17 +55,17 @@ public:
 	 *             problem and it is highly recommended to use custom settings
 	 */
 	DmsSettings()
-		: N_(30)
-		, T_(5)
-		, nThreads_(1)
-		, splineType_(ZERO_ORDER_HOLD)
-		, costEvaluationType_(SIMPLE)
-		, objectiveType_(KEEP_TIME_AND_GRID)
-		, h_min_(0.1)
-		, integrationType_(RK4)
-		, dt_sim_(0.01)
-		, absErrTol_(1e-10)
-		, relErrTol_(1e-10)
+		: N_(30),
+		  T_(5),
+		  nThreads_(1),
+		  splineType_(ZERO_ORDER_HOLD),
+		  costEvaluationType_(SIMPLE),
+		  objectiveType_(KEEP_TIME_AND_GRID),
+		  h_min_(0.1),
+		  integrationType_(RK4),
+		  dt_sim_(0.01),
+		  absErrTol_(1e-10),
+		  relErrTol_(1e-10)
 	{
 	}
 

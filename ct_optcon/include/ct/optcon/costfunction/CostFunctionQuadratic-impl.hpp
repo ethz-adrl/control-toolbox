@@ -38,9 +38,9 @@ CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionQuadratic()
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionQuadratic(const CostFunctionQuadratic& arg)
-	: CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>(arg)
-	, eps_(arg.eps_)
-	, doubleSidedDerivative_(arg.doubleSidedDerivative_)
+	: CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
+	  eps_(arg.eps_),
+	  doubleSidedDerivative_(arg.doubleSidedDerivative_)
 {
 	intermediateCostAnalytical_.resize(arg.intermediateCostAnalytical_.size());
 	finalCostAnalytical_.resize(arg.finalCostAnalytical_.size());

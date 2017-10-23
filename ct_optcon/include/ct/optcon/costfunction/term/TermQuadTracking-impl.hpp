@@ -35,11 +35,11 @@ TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadTracking(
 	const core::InterpolationType& stateSplineType,
 	const core::InterpolationType& controlSplineType,
 	const bool trackControlTrajectory)
-	: Q_(Q)
-	, R_(R)
-	, x_traj_ref_(stateSplineType)
-	, u_traj_ref_(controlSplineType)
-	, trackControlTrajectory_(trackControlTrajectory)
+	: Q_(Q),
+	  R_(R),
+	  x_traj_ref_(stateSplineType),
+	  u_traj_ref_(controlSplineType),
+	  trackControlTrajectory_(trackControlTrajectory)
 {
 }
 
@@ -55,12 +55,12 @@ TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadTracking(
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadTracking(
 	const TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>& arg)
-	: TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>(arg)
-	, Q_(arg.Q_)
-	, R_(arg.R_)
-	, x_traj_ref_(arg.x_traj_ref_)
-	, u_traj_ref_(arg.u_traj_ref_)
-	, trackControlTrajectory_(arg.trackControlTrajectory_)
+	: TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>(arg),
+	  Q_(arg.Q_),
+	  R_(arg.R_),
+	  x_traj_ref_(arg.x_traj_ref_),
+	  u_traj_ref_(arg.u_traj_ref_),
+	  trackControlTrajectory_(arg.trackControlTrajectory_)
 {
 }
 

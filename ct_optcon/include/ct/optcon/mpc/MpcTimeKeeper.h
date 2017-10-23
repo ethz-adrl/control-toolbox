@@ -65,15 +65,15 @@ public:
 	 * @param mpc_settings the mpc_settings as specified by the user
 	 */
 	MpcTimeKeeper(std::shared_ptr<MpcTimeHorizon<SCALAR>> timeHorizonStrategy, const mpc_settings& mpc_settings)
-		: mpc_settings_(mpc_settings)
-		, initialized_(false)
-		, finalPointReached_(false)
-		, lastMeasuredDelay_(0.0)
-		, maxDelayMeasured_(0.0)
-		, minDelayMeasured_(std::numeric_limits<SCALAR>::max())
-		, summedDelay_(0.0)
-		, timeHorizonStrategy_(timeHorizonStrategy)
-		, firstRun_(true)
+		: mpc_settings_(mpc_settings),
+		  initialized_(false),
+		  finalPointReached_(false),
+		  lastMeasuredDelay_(0.0),
+		  maxDelayMeasured_(0.0),
+		  minDelayMeasured_(std::numeric_limits<SCALAR>::max()),
+		  summedDelay_(0.0),
+		  timeHorizonStrategy_(timeHorizonStrategy),
+		  firstRun_(true)
 	{
 	}
 

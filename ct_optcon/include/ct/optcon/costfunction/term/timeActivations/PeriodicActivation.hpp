@@ -17,19 +17,19 @@ public:
 		const SCALAR period,
 		const SCALAR activation_offset,
 		const SCALAR period_offset)
-		: active_percentage_(active_percentage)
-		, period_(period)
-		, activation_offset_(activation_offset)
-		, period_offset_(period_offset)
+		: active_percentage_(active_percentage),
+		  period_(period),
+		  activation_offset_(activation_offset),
+		  period_offset_(period_offset)
 	{
 	}
 	virtual ~PeriodicActivation() {}
 	PeriodicActivation(const PeriodicActivation& arg)
-		: active_percentage_(arg.active_percentage_)
-		, period_(arg.period_)
-		, activation_offset_(arg.activation_offset_)
-		, period_offset_(arg.period_offset_)
-		, t_end_(arg.t_end_)
+		: active_percentage_(arg.active_percentage_),
+		  period_(arg.period_),
+		  activation_offset_(arg.activation_offset_),
+		  period_offset_(arg.period_offset_),
+		  t_end_(arg.t_end_)
 	{
 	}
 

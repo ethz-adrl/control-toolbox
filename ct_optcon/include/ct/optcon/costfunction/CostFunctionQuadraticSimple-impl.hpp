@@ -63,14 +63,14 @@ CostFunctionQuadraticSimple<STATE_DIM, CONTROL_DIM, SCALAR>::~CostFunctionQuadra
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionQuadraticSimple<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionQuadraticSimple(
 	const CostFunctionQuadraticSimple& arg)
-	: x_deviation_(arg.x_deviation_)
-	, x_nominal_(arg.x_nominal_)
-	, Q_(arg.Q_)
-	, u_deviation_(arg.u_deviation_)
-	, u_nominal_(arg.u_nominal_)
-	, R_(arg.R_)
-	, x_final_(arg.x_final_)
-	, Q_final_(arg.Q_final_)
+	: x_deviation_(arg.x_deviation_),
+	  x_nominal_(arg.x_nominal_),
+	  Q_(arg.Q_),
+	  u_deviation_(arg.u_deviation_),
+	  u_nominal_(arg.u_nominal_),
+	  R_(arg.R_),
+	  x_final_(arg.x_final_),
+	  Q_final_(arg.Q_final_)
 {
 }
 

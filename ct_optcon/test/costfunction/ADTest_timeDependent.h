@@ -64,12 +64,12 @@ public:
 	}
 
 	TestTerm(const TestTerm& arg)
-		: TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>(arg)
-		, Q_(arg.Q_)
-		, R_(arg.R_)
-		, c_(arg.c_)
-		, x_ref_(arg.x_ref_)
-		, u_ref_(arg.u_ref_)
+		: TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>(arg),
+		  Q_(arg.Q_),
+		  R_(arg.R_),
+		  c_(arg.c_),
+		  x_ref_(arg.x_ref_),
+		  u_ref_(arg.u_ref_)
 	{
 	}
 

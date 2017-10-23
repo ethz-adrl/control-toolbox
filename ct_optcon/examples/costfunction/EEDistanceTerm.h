@@ -80,10 +80,10 @@ public:
 	}
 
 	EEDistanceTerm(const EEDistanceTerm& arg)
-		: ct::TermBase<stateDim_planar, controlDim_planar, CppAD::AD<double>>(arg)
-		, Q_(arg.Q_)
-		, EE_desired_(arg.EE_desired_)
-		, type_fr_link0_X_ee_(arg.type_fr_link0_X_ee_)
+		: ct::TermBase<stateDim_planar, controlDim_planar, CppAD::AD<double>>(arg),
+		  Q_(arg.Q_),
+		  EE_desired_(arg.EE_desired_),
+		  type_fr_link0_X_ee_(arg.type_fr_link0_X_ee_)
 	{
 	}
 
