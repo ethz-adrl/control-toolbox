@@ -42,20 +42,21 @@ namespace core {
  * @tparam SCALAR scalar data type
  */
 template <int IN_DIM, int OUT_DIM, typename SCALAR = double>
-class Derivatives {
+class Derivatives
+{
 public:
-    typedef Eigen::Matrix<double, IN_DIM, 1> IN_TYPE; //!< function input vector type
-    typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE; //!< function output vector type
+    typedef Eigen::Matrix<double, IN_DIM, 1> IN_TYPE;    //!< function input vector type
+    typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE;  //!< function output vector type
     typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE;
-    typedef Eigen::Matrix<double, IN_DIM, IN_DIM> HES_TYPE;                                     
+    typedef Eigen::Matrix<double, IN_DIM, IN_DIM> HES_TYPE;
 
-	Derivatives() {};
+    Derivatives(){};
 
-	//! default destructor
-	virtual ~Derivatives() {};
+    //! default destructor
+    virtual ~Derivatives(){};
 
-	//! deep copy for derived classes
-	virtual Derivatives<IN_DIM, OUT_DIM, SCALAR>* clone() const = 0;
+    //! deep copy for derived classes
+    virtual Derivatives<IN_DIM, OUT_DIM, SCALAR>* clone() const = 0;
 
     /**
      * @brief      Evaluates the method itself
@@ -66,7 +67,7 @@ public:
      */
     virtual OUT_TYPE forwardZero(const Eigen::VectorXd& x)
     {
-       throw std::runtime_error("FUNCTION EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
+        throw std::runtime_error("FUNCTION EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
     }
 
     /**
@@ -89,8 +90,7 @@ public:
      * @param[out]      iRow  The row indices of the non zero values
      * @param[out]      jCol  The column indices of the non zero values
      */
-    virtual void sparseJacobian(
-        const Eigen::VectorXd& x,
+    virtual void sparseJacobian(const Eigen::VectorXd& x,
         Eigen::VectorXd& jac,
         Eigen::VectorXi& iRow,
         Eigen::VectorXi& jCol)
@@ -108,7 +108,7 @@ public:
     virtual Eigen::VectorXd sparseJacobianValues(const Eigen::VectorXd& x)
     {
         throw std::runtime_error("SPARSE JACOBIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
-    }    
+    }
 
     /**
      * @brief      Evaluates the hessian (2nd order derivatives with respect to
@@ -136,8 +136,7 @@ public:
      * @param      iRow    The row indices of the non zero values
      * @param      jCol    The column indices of the non zero values
      */
-    virtual void sparseHessian(
-        const Eigen::VectorXd& x,
+    virtual void sparseHessian(const Eigen::VectorXd& x,
         const Eigen::VectorXd& lambda,
         Eigen::VectorXd& hes,
         Eigen::VectorXi& iRow,
@@ -154,9 +153,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual Eigen::VectorXd sparseHessianValues(
-        const Eigen::VectorXd& x, 
-        const Eigen::VectorXd& lambda)
+    virtual Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda)
     {
         throw std::runtime_error("SPARSE HESSIAN EVALUATION NOT IMPLEMENTED FOR THIS TYPE OF DERIVATIVE");
     }
@@ -164,4 +161,3 @@ public:
 
 } /* namespace core */
 } /* namespace ct */
-

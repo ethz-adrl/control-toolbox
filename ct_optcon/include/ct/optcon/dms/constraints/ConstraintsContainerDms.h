@@ -57,20 +57,20 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class ConstraintsContainerDms : public tpl::DiscreteConstraintContainerBase<SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
+    typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
 
-	typedef typename DIMENSIONS::state_vector_t state_vector_t;
-	typedef typename DIMENSIONS::control_vector_t control_vector_t;
+    typedef typename DIMENSIONS::state_vector_t state_vector_t;
+    typedef typename DIMENSIONS::control_vector_t control_vector_t;
 
-	typedef typename DIMENSIONS::state_matrix_t state_matrix_t;
-	typedef typename DIMENSIONS::control_matrix_t control_matrix_t;
-	typedef typename DIMENSIONS::state_control_matrix_t state_control_matrix_t;
-	typedef typename DIMENSIONS::state_matrix_array_t state_matrix_array_t;
-	typedef typename DIMENSIONS::state_control_matrix_array_t state_control_matrix_array_t;
+    typedef typename DIMENSIONS::state_matrix_t state_matrix_t;
+    typedef typename DIMENSIONS::control_matrix_t control_matrix_t;
+    typedef typename DIMENSIONS::state_control_matrix_t state_control_matrix_t;
+    typedef typename DIMENSIONS::state_matrix_array_t state_matrix_array_t;
+    typedef typename DIMENSIONS::state_control_matrix_array_t state_control_matrix_array_t;
 
-	/**
+    /**
 	 * @brief      Custom constructor
 	 *
 	 * @param[in]  w                        The optimization variables
@@ -81,39 +81,37 @@ public:
 	 * @param[in]  x0                       The initial state
 	 * @param[in]  settings                 The dms settings
 	 */
-	ConstraintsContainerDms(
-			std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
-			std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
-			std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>>> shotContainers,
-			std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>> discretizedConstraints,
-			const state_vector_t& x0,
-			const DmsSettings settings);
+    ConstraintsContainerDms(std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
+        std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
+        std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>>> shotContainers,
+        std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>> discretizedConstraints,
+        const state_vector_t& x0,
+        const DmsSettings settings);
 
-	/**
+    /**
 	 * @brief      Destructor
 	 */
-	virtual ~ConstraintsContainerDms() {};
+    virtual ~ConstraintsContainerDms(){};
 
-	virtual void prepareEvaluation() override;
+    virtual void prepareEvaluation() override;
 
-	virtual void prepareJacobianEvaluation() override;
+    virtual void prepareJacobianEvaluation() override;
 
-	/**
+    /**
 	 * @brief      Updates the initial constraint
 	 *
 	 * @param[in]  x0    The new initial state
 	 */
-	void changeInitialConstraint(const state_vector_t& x0);
+    void changeInitialConstraint(const state_vector_t& x0);
 
-private:	
-	const DmsSettings settings_;
+private:
+    const DmsSettings settings_;
 
-	std::shared_ptr<InitStateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>> c_init_;
-	std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>>> shotContainers_;
+    std::shared_ptr<InitStateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>> c_init_;
+    std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>>> shotContainers_;
 };
 
 #include "implementation/ConstraintsContainerDms-impl.h"
 
-} // namespace optcon
-} // namespace ct
- 
+}  // namespace optcon
+}  // namespace ct

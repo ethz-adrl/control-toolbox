@@ -2,10 +2,12 @@ cmake_minimum_required (VERSION 2.6)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
 project (ct_rbd) 
 
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall")
+SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 find_package(catkin REQUIRED ct_core ct_optcon cmake_modules)
 find_package(kindr)

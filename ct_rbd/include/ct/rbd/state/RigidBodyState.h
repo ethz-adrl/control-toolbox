@@ -40,54 +40,57 @@ namespace tpl {
  * \ingroup State
  *
  */
-template<typename SCALAR = double>
-class RigidBodyState {
+template <typename SCALAR = double>
+class RigidBodyState
+{
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	RigidBodyState(typename RigidBodyPose<SCALAR>::STORAGE_TYPE storage = RigidBodyPose<SCALAR>::QUAT) :
-		pose_(storage),
-		velocities_()
-	{
-	}
+    RigidBodyState(typename RigidBodyPose<SCALAR>::STORAGE_TYPE storage = RigidBodyPose<SCALAR>::QUAT)
+        : pose_(storage), velocities_()
+    {
+    }
 
-	virtual ~RigidBodyState() {};
+    virtual ~RigidBodyState(){};
 
-	RigidBodyPose<SCALAR>& pose() { return pose_; }
-	const RigidBodyPose<SCALAR>& pose() const { return pose_; }
+    RigidBodyPose<SCALAR>& pose() { return pose_; }
+    const RigidBodyPose<SCALAR>& pose() const { return pose_; }
+    RigidBodyVelocities<SCALAR>& velocities() { return velocities_; }
+    const RigidBodyVelocities<SCALAR>& velocities() const { return velocities_; }
+    bool isApprox(const RigidBodyState& rhs, const double& tol = 1e-10)
+    {
+        return pose().isNear(rhs.pose(), tol) && velocities().getVector().isApprox(rhs.velocities().getVector(), tol);
+    }
 
-	RigidBodyVelocities<SCALAR>& velocities() { return velocities_; }
-	const RigidBodyVelocities<SCALAR>& velocities() const { return velocities_; }
+    /// @brief get translational velocity
+    const kindr::Velocity<SCALAR, 3> computeTranslationalVelocityW() const
+    {
+        return pose().rotateBaseToInertia(velocities().getTranslationalVelocity());
+    }
+    kindr::Velocity<SCALAR, 3> computeTranslationalVelocityW()
+    {
+        return pose().rotateBaseToInertia(velocities().getTranslationalVelocity());
+    }
 
-	bool isApprox(const RigidBodyState& rhs, const double& tol = 1e-10)
-	{
-		return pose().isNear(rhs.pose(), tol) && velocities().getVector().isApprox(rhs.velocities().getVector(), tol);
-	}
+    void setIdentity()
+    {
+        pose().setIdentity();
+        velocities().setZero();
+    }
 
-	/// @brief get translational velocity
-	const kindr::Velocity<SCALAR, 3> computeTranslationalVelocityW() const { return pose().rotateBaseToInertia(velocities().getTranslationalVelocity());}
-	kindr::Velocity<SCALAR, 3> computeTranslationalVelocityW() { return pose().rotateBaseToInertia(velocities().getTranslationalVelocity());}
-
-	void setIdentity()
-	{
-		pose().setIdentity();
-		velocities().setZero();
-	}
-
-	void setRandom()
-	{
-		pose().setRandom();
-		velocities().getTranslationalVelocity().toImplementation().setRandom();
-		velocities().getRotationalVelocity().toImplementation().setRandom();
-	}
+    void setRandom()
+    {
+        pose().setRandom();
+        velocities().getTranslationalVelocity().toImplementation().setRandom();
+        velocities().getRotationalVelocity().toImplementation().setRandom();
+    }
 
 private:
-	RigidBodyPose<SCALAR> pose_;
-	RigidBodyVelocities<SCALAR> velocities_;
-
+    RigidBodyPose<SCALAR> pose_;
+    RigidBodyVelocities<SCALAR> velocities_;
 };
 
-} // namespace tpl
+}  // namespace tpl
 
 typedef tpl::RigidBodyState<double> RigidBodyState;
 

@@ -48,42 +48,39 @@ template <size_t STATE_DIM, typename SCALAR = double>
 class Observer
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	friend class Integrator<STATE_DIM, SCALAR>;
+    friend class Integrator<STATE_DIM, SCALAR>;
 
-	typedef std::vector<std::shared_ptr<EventHandler<STATE_DIM, SCALAR>>, Eigen::aligned_allocator<std::shared_ptr<EventHandler<STATE_DIM, SCALAR>>>> EventHandlerPtrVector;
+    typedef std::vector<std::shared_ptr<EventHandler<STATE_DIM, SCALAR>>,
+        Eigen::aligned_allocator<std::shared_ptr<EventHandler<STATE_DIM, SCALAR>>>>
+        EventHandlerPtrVector;
 
-	//! default constructor
-	/*!
+    //! default constructor
+    /*!
 	 * @param eventHandlers vector of event handlers
 	 */
-	Observer(const EventHandlerPtrVector& eventHandlers);
+    Observer(const EventHandlerPtrVector& eventHandlers);
 
-	//! reset the observer
-	void reset();
+    //! reset the observer
+    void reset();
 
-	void observe(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t);
+    void observe(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t);
 
-	void log(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t);
+    void log(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t);
 
-	void observeInternal(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t);
+    void observeInternal(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t);
 
 private:
-	//! Lambda to pass to odeint (odeint takes copies of the observer so we can't pass the class
-	std::function<void (const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)> observeWrap;
-	std::function<void (const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)> observeWrapWithLogging;
+    //! Lambda to pass to odeint (odeint takes copies of the observer so we can't pass the class
+    std::function<void(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)> observeWrap;
+    std::function<void(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)> observeWrapWithLogging;
 
-	ct::core::StateVectorArray<STATE_DIM, SCALAR> states_; //!< container for logging the state
-	ct::core::tpl::TimeArray<SCALAR> times_;  //!< container for logging the time
-
-	
-	EventHandlerPtrVector eventHandlers_; //! list of event handlers
+    ct::core::StateVectorArray<STATE_DIM, SCALAR> states_;  //!< container for logging the state
+    ct::core::tpl::TimeArray<SCALAR> times_;                //!< container for logging the time
 
 
+    EventHandlerPtrVector eventHandlers_;  //! list of event handlers
 };
-
 }
 }
-
-

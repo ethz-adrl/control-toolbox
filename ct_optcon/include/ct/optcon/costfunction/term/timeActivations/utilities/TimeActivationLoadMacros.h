@@ -26,7 +26,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#define CT_LOADABLE_TIME_ACTIVATION(SCALAR, ACTIVATION, ACTIVATIONNAME) \
-		if (activationKind==ACTIVATIONNAME){ \
-			c_i = std::shared_ptr< tpl::ACTIVATION<SCALAR> > (new tpl::ACTIVATION<SCALAR>()); } \
-
+#define CT_LOADABLE_TIME_ACTIVATION(SCALAR, ACTIVATION, ACTIVATIONNAME)                \
+    if (activationKind == ACTIVATIONNAME)                                              \
+    {                                                                                  \
+        c_i = std::shared_ptr<tpl::ACTIVATION<SCALAR>>(new tpl::ACTIVATION<SCALAR>()); \
+    }

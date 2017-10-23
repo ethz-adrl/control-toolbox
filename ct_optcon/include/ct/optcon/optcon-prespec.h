@@ -30,7 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/core/core-prespec.h>
 
 #include "costfunction/costfunction.hpp"
-#include "costfunction/costfunction-impl.hpp" //temporary solution
+#include "costfunction/costfunction-impl.hpp"  //temporary solution
 
 #include "constraint/constraint.h"
 

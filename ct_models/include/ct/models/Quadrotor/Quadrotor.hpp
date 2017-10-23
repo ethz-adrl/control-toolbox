@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_MODELS_QUADROTOR_HPP_
-#define CT_MODELS_QUADROTOR_HPP_
+#pragma once
 
 #include <iostream>
 #include <memory>
@@ -36,39 +35,26 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/models/Quadrotor/quadrotor_dynamics/QuadrotorDynamics.hpp>
 
 
-namespace ct{
-namespace models{
+namespace ct {
+namespace models {
 
 class Quadrotor : public ct::core::ControlledSystem<quadrotor::nStates, quadrotor::nControls>
 {
 public:
+    Quadrotor(std::shared_ptr<ct::core::Controller<quadrotor::nStates, quadrotor::nControls>> controller = nullptr)
+        : ct::core::ControlledSystem<quadrotor::nStates, quadrotor::nControls>(controller)
+    {
+    }
 
-	Quadrotor(std::shared_ptr<ct::core::Controller<quadrotor::nStates, quadrotor::nControls> > controller = nullptr) :
-		ct::core::ControlledSystem<quadrotor::nStates, quadrotor::nControls>(controller)
-	{}
-
-	Quadrotor(const Quadrotor& arg) :
-		ct::core::ControlledSystem<quadrotor::nStates, quadrotor::nControls>(arg)
-	{}
-
-	virtual Quadrotor* clone() const override
-	{
-		return new Quadrotor(*this);
-	}
-
-
-	virtual void computeControlledDynamics(
-			const ct::core::StateVector<quadrotor::nStates>& state,
-			const ct::core::Time& t,
-			const ct::core::ControlVector<quadrotor::nControls>& control,
-			ct::core::StateVector<quadrotor::nStates>& derivative) override
-	{
-		derivative = quadrotor_ode(state, control);
-	}
-
+    Quadrotor(const Quadrotor& arg) : ct::core::ControlledSystem<quadrotor::nStates, quadrotor::nControls>(arg) {}
+    virtual Quadrotor* clone() const override { return new Quadrotor(*this); }
+    virtual void computeControlledDynamics(const ct::core::StateVector<quadrotor::nStates>& state,
+        const ct::core::Time& t,
+        const ct::core::ControlVector<quadrotor::nControls>& control,
+        ct::core::StateVector<quadrotor::nStates>& derivative) override
+    {
+        derivative = quadrotor_ode(state, control);
+    }
 };
-
 }
 }
-
-#endif /* CT_MODELS_QUADROTOR_HPP_ */

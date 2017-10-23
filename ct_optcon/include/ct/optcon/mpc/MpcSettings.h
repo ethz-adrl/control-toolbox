@@ -26,8 +26,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
 
 //! select a mode in which MPC is supposed to run
@@ -49,95 +49,95 @@ namespace optcon{
  * 		The overall time horizon gets set trough the initial problem time horizon. The smaller, receding time
  * 		horizon can be specified in the mpc_settings struct as "minimumTimeHorizonMpc_"
  */
-enum MPC_MODE{
+enum MPC_MODE
+{
 
-	FIXED_FINAL_TIME = 0,                  //!< FIXED_FINAL_TIME
+    FIXED_FINAL_TIME = 0,  //!< FIXED_FINAL_TIME
 
-	CONSTANT_RECEDING_HORIZON,             //!< CONSTANT_RECEDING_HORIZON
+    CONSTANT_RECEDING_HORIZON,  //!< CONSTANT_RECEDING_HORIZON
 
-	FIXED_FINAL_TIME_WITH_MIN_TIME_HORIZON,//!< FIXED_FINAL_TIME_WITH_MIN_TIME_HORIZON
+    FIXED_FINAL_TIME_WITH_MIN_TIME_HORIZON,  //!< FIXED_FINAL_TIME_WITH_MIN_TIME_HORIZON
 
-	RECEDING_HORIZON_WITH_FIXED_FINAL_TIME //!< RECEDING_HORIZON_WITH_FIXED_FINAL_TIME
+    RECEDING_HORIZON_WITH_FIXED_FINAL_TIME  //!< RECEDING_HORIZON_WITH_FIXED_FINAL_TIME
 };
 
 
 //! MPC Settings struct
-struct mpc_settings{
-
-	/*!
+struct mpc_settings
+{
+    /*!
 	 * State prediction.
 	 * Use state prediction (based on a given delay, the given initial state and a given policy)?
 	 * If set to true, MPC will either use a measurement of the delay or use the fixed delay given below
 	 * as "fixedDelayUs_".
 	 */
-	bool stateForwardIntegration_ = false;
+    bool stateForwardIntegration_ = false;
 
 
-	/*!
+    /*!
 	 * Delay compensation.
 	 * If measureDelay_ is set to true, the MPC timer automatically keeps track of the planning times and
 	 * uses them for the state forward prediction.
 	 * Only applies if stateForwardIntegration_ is set to true.
 	 * */
-	bool measureDelay_ = false;
+    bool measureDelay_ = false;
 
-	/*!
+    /*!
 	 * The delayMeasurementMultiplier_  quantifies the level of trust you have in our planning time measurement.
 	 * In case you wish to be conservative, for example because the planning times vary a lot, reduce this multiplier.
 	 * Maximum confidence means, set it to 1.0.
 	 * In essence, this number says "how much of our measured delay do we use for pre-integration".
 	 * */
-	double delayMeasurementMultiplier_ = 0.7;
+    double delayMeasurementMultiplier_ = 0.7;
 
-	/*!
+    /*!
 	 * If not using measureDelay_ = true, we can instead set a fixed, known delay in microseconds (!) here.
 	 */
-	int fixedDelayUs_ = 0;
+    int fixedDelayUs_ = 0;
 
-	/*!
+    /*!
 	 * Additional delay in microseconds (!), which gets added to either the measured delay of above fixedDelay.
 	 */
-	int additionalDelayUs_ = 0;
+    int additionalDelayUs_ = 0;
 
-	/*!
+    /*!
 	 * If solving the problem takes longer than predicted, we can post-truncate the solution trajectories.
 	 */
-	bool postTruncation_ = false;
+    bool postTruncation_ = false;
 
-	/*!
+    /*!
 	 * MPC Time horizon modus
 	 */
-	MPC_MODE mpc_mode = CONSTANT_RECEDING_HORIZON;
+    MPC_MODE mpc_mode = CONSTANT_RECEDING_HORIZON;
 
-	/*!
+    /*!
 	 * see description of the different modes above
 	 */
-	core::Time minimumTimeHorizonMpc_ = 1.0;	// seconds
+    core::Time minimumTimeHorizonMpc_ = 1.0;  // seconds
 
-	/*!
+    /*!
 	 * cold starting or warm starting.
 	 * Warm starting will either use a default strategy for common controller types, or a user specified
 	 * custom warm starting strategy.
 	 */
-	bool coldStart_ = false;
+    bool coldStart_ = false;
 
 
-	//! Print MPC settings to console
-	void print()
-	{
-		std::cout << " ========================= MPC SETTINGS =============================" << std::endl;
-		std::cout << " stateForwardIntegration: \t " << stateForwardIntegration_ << std::endl;
-		std::cout << " measureDelay: \t " << measureDelay_ << std::endl;
-		std::cout << " delayMeasurementMultiplier: \t " << delayMeasurementMultiplier_ << std::endl;
-		std::cout << " fixedDelayUs: \t " << fixedDelayUs_ << std::endl;
-		std::cout << " additionalDelayUs: \t " << additionalDelayUs_ << std::endl;
-		std::cout << " postTruncation_: \t " << postTruncation_ << std::endl;
-		std::cout << " mpc_mode: \t " << (int)mpc_mode << std::endl;
-		std::cout << " minimumTimeHorizonMpc: \t " << minimumTimeHorizonMpc_ << std::endl;
-		std::cout << " coldStart: \t " << coldStart_ << std::endl;
-		std::cout << " ============================== END =================================" << std::endl;
-	}
-
+    //! Print MPC settings to console
+    void print()
+    {
+        std::cout << " ========================= MPC SETTINGS =============================" << std::endl;
+        std::cout << " stateForwardIntegration: \t " << stateForwardIntegration_ << std::endl;
+        std::cout << " measureDelay: \t " << measureDelay_ << std::endl;
+        std::cout << " delayMeasurementMultiplier: \t " << delayMeasurementMultiplier_ << std::endl;
+        std::cout << " fixedDelayUs: \t " << fixedDelayUs_ << std::endl;
+        std::cout << " additionalDelayUs: \t " << additionalDelayUs_ << std::endl;
+        std::cout << " postTruncation_: \t " << postTruncation_ << std::endl;
+        std::cout << " mpc_mode: \t " << (int)mpc_mode << std::endl;
+        std::cout << " minimumTimeHorizonMpc: \t " << minimumTimeHorizonMpc_ << std::endl;
+        std::cout << " coldStart: \t " << coldStart_ << std::endl;
+        std::cout << " ============================== END =================================" << std::endl;
+    }
 };
 
 
@@ -152,20 +152,19 @@ struct mpc_settings{
  */
 inline void loadMpcSettings(const std::string& filename, mpc_settings& settings)
 {
-	boost::property_tree::ptree pt;
-	boost::property_tree::read_info(filename, pt);
+    boost::property_tree::ptree pt;
+    boost::property_tree::read_info(filename, pt);
 
-	settings.measureDelay_ = pt.get<bool>("mpc.measureDelay");
-	settings.stateForwardIntegration_ = pt.get<bool>("mpc.stateForwardIntegration");
-	settings.fixedDelayUs_ = pt.get<int>("mpc.fixedDelayUs");
-	settings.additionalDelayUs_ = pt.get<int>("mpc.additionalDelayUs");
-	settings.minimumTimeHorizonMpc_ = pt.get<double>("mpc.timeHorizon");
-	settings.coldStart_ = pt.get<bool>("mpc.coldStart");
-	settings.postTruncation_ = pt.get<bool>("mpc.postTruncation");
-	settings.delayMeasurementMultiplier_ = pt.get<double>("mpc.delayMeasurementMultiplier");
+    settings.measureDelay_ = pt.get<bool>("mpc.measureDelay");
+    settings.stateForwardIntegration_ = pt.get<bool>("mpc.stateForwardIntegration");
+    settings.fixedDelayUs_ = pt.get<int>("mpc.fixedDelayUs");
+    settings.additionalDelayUs_ = pt.get<int>("mpc.additionalDelayUs");
+    settings.minimumTimeHorizonMpc_ = pt.get<double>("mpc.timeHorizon");
+    settings.coldStart_ = pt.get<bool>("mpc.coldStart");
+    settings.postTruncation_ = pt.get<bool>("mpc.postTruncation");
+    settings.delayMeasurementMultiplier_ = pt.get<double>("mpc.delayMeasurementMultiplier");
 }
 
 
-}	// namespace optcon
-}	// namespace ct
-
+}  // namespace optcon
+}  // namespace ct

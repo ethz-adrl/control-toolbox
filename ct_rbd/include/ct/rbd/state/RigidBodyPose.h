@@ -42,241 +42,299 @@ namespace tpl {
  * rotateBaseToInertia() or rotateInertiaToBase() instead of directly working with either
  * representation. This will prevent unnecessary conversions.
  */
-template<typename SCALAR = double>
+template <typename SCALAR = double>
 class RigidBodyPose
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	enum STORAGE_TYPE
-	{
-		QUAT = 0,
-		EULER = 1
-	};
+    enum STORAGE_TYPE
+    {
+        QUAT = 0,
+        EULER = 1
+    };
 
-	typedef kindr::HomogeneousTransformationPosition3RotationQuaternion<SCALAR> HomogeneousTransform;
-	typedef kindr::Position<SCALAR, 3> Position3Tpl;
-	typedef Eigen::Matrix<SCALAR, 3, 1> Vector3Tpl; 
-
-
-	RigidBodyPose(STORAGE_TYPE storage = EULER) :
-		storage_(storage),
-		quat_(SCALAR(1.0),SCALAR(0.0),SCALAR(0.0),SCALAR(0.0)), // for CppAD cg compatibility
-		euler_(SCALAR(0.0),SCALAR(0.0),SCALAR(0.0))
-	{
-	}
-
-	RigidBodyPose(const kindr::EulerAnglesXyz<SCALAR>& orientationEulerXyz, const Position3Tpl& position, STORAGE_TYPE storage = EULER) :
-		storage_(storage),
-		quat_(SCALAR(1.0),SCALAR(0.0),SCALAR(0.0),SCALAR(0.0)), // for CppAD cg compatibility
-		euler_(SCALAR(0.0),SCALAR(0.0),SCALAR(0.0)),
-		position_(position)
-	{
-		setFromEulerAnglesXyz(orientationEulerXyz);
-	}
-
-	RigidBodyPose(const kindr::RotationQuaternion<SCALAR>& orientationQuat, const Position3Tpl& position, STORAGE_TYPE storage = EULER) :
-		storage_(storage),
-		quat_(SCALAR(1.0),SCALAR(0.0),SCALAR(0.0),SCALAR(0.0)), // for CppAD cg compatibility
-		euler_(SCALAR(0.0),SCALAR(0.0),SCALAR(0.0)),
-		position_(position)
-	{
-		setFromRotationQuaternion(orientationQuat);
-	}
-
-	//RigidBodyPose(const Eigen::Vector3d& orientationEulerXyz, const Eigen::Vector3d& position, STORAGE_TYPE storage = QUAT);
-	//RigidBodyPose(const Eigen::Quaterniond& orientationQuat, const Eigen::Vector3d& position, STORAGE_TYPE storage = QUAT);
-
-	~RigidBodyPose() {};
+    typedef kindr::HomogeneousTransformationPosition3RotationQuaternion<SCALAR> HomogeneousTransform;
+    typedef kindr::Position<SCALAR, 3> Position3Tpl;
+    typedef Eigen::Matrix<SCALAR, 3, 1> Vector3Tpl;
 
 
-	inline void operator=(const RigidBodyPose& rhs)
-	{
-		setFromRotationQuaternion(rhs.getRotationQuaternion());
-		position() = rhs.position();
-	}
+    RigidBodyPose(STORAGE_TYPE storage = EULER)
+        : storage_(storage),
+          quat_(SCALAR(1.0), SCALAR(0.0), SCALAR(0.0), SCALAR(0.0)),  // for CppAD cg compatibility
+          euler_(SCALAR(0.0), SCALAR(0.0), SCALAR(0.0))
+    {
+    }
 
-	inline bool isNear(const RigidBodyPose& rhs, const double& tol = 1e-10) const
-	{
-		return getRotationQuaternion().isNear(rhs.getRotationQuaternion(), tol) &&
-				position().toImplementation().isApprox(rhs.position().toImplementation(), tol);
-	}
+    RigidBodyPose(const kindr::EulerAnglesXyz<SCALAR>& orientationEulerXyz,
+        const Position3Tpl& position,
+        STORAGE_TYPE storage = EULER)
+        : storage_(storage),
+          quat_(SCALAR(1.0), SCALAR(0.0), SCALAR(0.0), SCALAR(0.0)),  // for CppAD cg compatibility
+          euler_(SCALAR(0.0), SCALAR(0.0), SCALAR(0.0)),
+          position_(position)
+    {
+        setFromEulerAnglesXyz(orientationEulerXyz);
+    }
 
-	/**
+    RigidBodyPose(const kindr::RotationQuaternion<SCALAR>& orientationQuat,
+        const Position3Tpl& position,
+        STORAGE_TYPE storage = EULER)
+        : storage_(storage),
+          quat_(SCALAR(1.0), SCALAR(0.0), SCALAR(0.0), SCALAR(0.0)),  // for CppAD cg compatibility
+          euler_(SCALAR(0.0), SCALAR(0.0), SCALAR(0.0)),
+          position_(position)
+    {
+        setFromRotationQuaternion(orientationQuat);
+    }
+
+    //RigidBodyPose(const Eigen::Vector3d& orientationEulerXyz, const Eigen::Vector3d& position, STORAGE_TYPE storage = QUAT);
+    //RigidBodyPose(const Eigen::Quaterniond& orientationQuat, const Eigen::Vector3d& position, STORAGE_TYPE storage = QUAT);
+
+    ~RigidBodyPose(){};
+
+
+    inline void operator=(const RigidBodyPose& rhs)
+    {
+        setFromRotationQuaternion(rhs.getRotationQuaternion());
+        position() = rhs.position();
+    }
+
+    inline bool isNear(const RigidBodyPose& rhs, const double& tol = 1e-10) const
+    {
+        return getRotationQuaternion().isNear(rhs.getRotationQuaternion(), tol) &&
+               position().toImplementation().isApprox(rhs.position().toImplementation(), tol);
+    }
+
+    /**
 	 * \brief This method returns the Euler angles rotation (X,Y,Z / roll,pitch,yaw).
 	 */
-	kindr::EulerAnglesXyz<SCALAR> getEulerAnglesXyz() const
-	{
-		if (storedAsEuler()) { return euler_; }
-		else { return kindr::EulerAnglesXyz<SCALAR>(quat_); }
-	}
+    kindr::EulerAnglesXyz<SCALAR> getEulerAnglesXyz() const
+    {
+        if (storedAsEuler())
+        {
+            return euler_;
+        }
+        else
+        {
+            return kindr::EulerAnglesXyz<SCALAR>(quat_);
+        }
+    }
 
-	/**
+    /**
 	 * \brief This method returns the quaternion rotation.
 	 */
-	kindr::RotationQuaternion<SCALAR> getRotationQuaternion() const
-	{
-		if (storedAsEuler()) { return kindr::RotationQuaternion<SCALAR>(euler_); }
-		else { return quat_; }
-	}
+    kindr::RotationQuaternion<SCALAR> getRotationQuaternion() const
+    {
+        if (storedAsEuler())
+        {
+            return kindr::RotationQuaternion<SCALAR>(euler_);
+        }
+        else
+        {
+            return quat_;
+        }
+    }
 
-	/**
+    /**
 	 * \brief This method returns the  rotation matrix from base to inertia frame. This method returns
 	 * \f$ _iR_b \f$ which is the following rotation matrix \f$ _iv = {_iR_b} {_bv} \f$.
 	 */
-	kindr::RotationMatrix<SCALAR> getRotationMatrix() const
-	{
-		if (storedAsEuler()) { return kindr::RotationMatrix<SCALAR>(euler_); }
-		else { return kindr::RotationMatrix<SCALAR>(quat_); }
-	}
+    kindr::RotationMatrix<SCALAR> getRotationMatrix() const
+    {
+        if (storedAsEuler())
+        {
+            return kindr::RotationMatrix<SCALAR>(euler_);
+        }
+        else
+        {
+            return kindr::RotationMatrix<SCALAR>(quat_);
+        }
+    }
 
-	/**
+    /**
 	 * \brief This method sets the Euler angles rotation (X,Y,Z / roll,pitch,yaw) from a kinder type.
 	 */
-	void setFromEulerAnglesXyz(const kindr::EulerAnglesXyz<SCALAR>& eulerAngles)
-	{
-		if (storedAsEuler()) { euler_.toImplementation() = eulerAngles.toImplementation(); }
-		else { quat_ = eulerAngles; }
-	}
+    void setFromEulerAnglesXyz(const kindr::EulerAnglesXyz<SCALAR>& eulerAngles)
+    {
+        if (storedAsEuler())
+        {
+            euler_.toImplementation() = eulerAngles.toImplementation();
+        }
+        else
+        {
+            quat_ = eulerAngles;
+        }
+    }
 
-	/**
+    /**
 	 * \brief This method sets the Euler angles rotation (X,Y,Z / roll,pitch,yaw) from a kinder type.
 	 */
-	void setFromEulerAnglesXyz(const Vector3Tpl& eulerAngles)
-	{
-		if (storedAsEuler())
-		{ euler_.toImplementation() = eulerAngles;}
-		else
-		{ quat_ = kindr::EulerAnglesXyz<SCALAR>(eulerAngles); }
-	}
+    void setFromEulerAnglesXyz(const Vector3Tpl& eulerAngles)
+    {
+        if (storedAsEuler())
+        {
+            euler_.toImplementation() = eulerAngles;
+        }
+        else
+        {
+            quat_ = kindr::EulerAnglesXyz<SCALAR>(eulerAngles);
+        }
+    }
 
-	/**
+    /**
 	 * \brief This method sets the quaternion angles rotation (X,Y,Z / roll,pitch,yaw) from a kinder type.
 	 */
-	void setFromRotationQuaternion(const kindr::RotationQuaternion<SCALAR>& quat)
-	{
-		if (storedAsEuler()) { euler_ = quat; }
-		else { quat_ = quat; }
-	}
+    void setFromRotationQuaternion(const kindr::RotationQuaternion<SCALAR>& quat)
+    {
+        if (storedAsEuler())
+        {
+            euler_ = quat;
+        }
+        else
+        {
+            quat_ = quat;
+        }
+    }
 
-	/**
+    /**
 	 * \brief This method sets the quaternion angles rotation (X,Y,Z / roll,pitch,yaw) from a kinder type.
 	 */
-	void setFromRotationQuaternion(const Eigen::Quaterniond& quat)
-	{
-		if (storedAsEuler()) { euler_ = kindr::RotationQuaternion<SCALAR>(quat); }
-		else { quat_ = kindr::RotationQuaternion<SCALAR>(quat); }
-	}
+    void setFromRotationQuaternion(const Eigen::Quaterniond& quat)
+    {
+        if (storedAsEuler())
+        {
+            euler_ = kindr::RotationQuaternion<SCALAR>(quat);
+        }
+        else
+        {
+            quat_ = kindr::RotationQuaternion<SCALAR>(quat);
+        }
+    }
 
-	/**
+    /**
 	 * \brief This method returns the position of the Base frame in the inertia frame.
 	 */
-	const Position3Tpl& position() const { return position_; };
-
-	/**
+    const Position3Tpl& position() const { return position_; };
+    /**
 	 * \brief This method returns the position of the Base frame in the inertia frame.
 	 */
-	Position3Tpl& position() { return position_; };
-
-	/**
+    Position3Tpl& position() { return position_; };
+    /**
 	 * \brief This methods rotates a 3D vector expressed in Base frame to Inertia Frame.
 	 */
-	template <class Vector3d>
-	Vector3d rotateBaseToInertia(const Vector3d& vector) const {
-		if (storedAsEuler()) { return euler_.rotate(vector); }
-		else { return quat_.rotate(vector); }
-	};
+    template <class Vector3d>
+    Vector3d rotateBaseToInertia(const Vector3d& vector) const
+    {
+        if (storedAsEuler())
+        {
+            return euler_.rotate(vector);
+        }
+        else
+        {
+            return quat_.rotate(vector);
+        }
+    };
 
-	/**
+    /**
 	 * \brief This methods rotates a 3D vector expressed in Inertia frame to Base Frame.
 	 */
-	template <class Vector3d>
-	Vector3d rotateInertiaToBase(const Vector3d& vector) const {
-		// more efficient than inverseRotate and (more importantly) compatible with auto-diff
-		// https://github.com/ethz-asl/kindr/issues/84
-		// return Vector3d::Zero();
-		// return kindr::RotationMatrix<SCALAR>(euler_).transposed().rotate(vector);
-		if (storedAsEuler()) { return kindr::RotationMatrix<SCALAR>(euler_).transposed().rotate(vector); }
-				else { return quat_.inverseRotate(vector); }
-	};
+    template <class Vector3d>
+    Vector3d rotateInertiaToBase(const Vector3d& vector) const
+    {
+        // more efficient than inverseRotate and (more importantly) compatible with auto-diff
+        // https://github.com/ethz-asl/kindr/issues/84
+        // return Vector3d::Zero();
+        // return kindr::RotationMatrix<SCALAR>(euler_).transposed().rotate(vector);
+        if (storedAsEuler())
+        {
+            return kindr::RotationMatrix<SCALAR>(euler_).transposed().rotate(vector);
+        }
+        else
+        {
+            return quat_.inverseRotate(vector);
+        }
+    };
 
-	/**
+    /**
 	 * \brief This methods returns the Homogeneous transform from the Base frame to the inertia frame.
 	 */
-	HomogeneousTransform getHomogeneousTransform() const { throw std::runtime_error("get homogeneous transform not implemented"); return HomogeneousTransform(); };
+    HomogeneousTransform getHomogeneousTransform() const
+    {
+        throw std::runtime_error("get homogeneous transform not implemented");
+        return HomogeneousTransform();
+    };
 
-	/**
+    /**
 	 * Returns gravity vector in world (0.0, 0.0, -9.81)
 	 * @return
 	 */
-	static Vector3Tpl gravity3DW(SCALAR g = SCALAR(-9.81)) {
-		return Vector3Tpl(SCALAR(0.0), SCALAR(0.0), g);
-	}
-
-
-	/**
+    static Vector3Tpl gravity3DW(SCALAR g = SCALAR(-9.81)) { return Vector3Tpl(SCALAR(0.0), SCALAR(0.0), g); }
+    /**
 	 * \brief This methods returns the 3D gravity vector expressed in the Base frame.
 	 */
-	Vector3Tpl computeGravityB(const Vector3Tpl& gravityW = gravity3DW()) const { return rotateInertiaToBase(gravityW); }
+    Vector3Tpl computeGravityB(const Vector3Tpl& gravityW = gravity3DW()) const
+    {
+        return rotateInertiaToBase(gravityW);
+    }
 
-	/**
+    /**
 	 * \brief This methods returns the 6D gravity vector expressed in the Base frame.
 	 */
-	Eigen::Matrix<SCALAR, 6, 1> computeGravityB6D(const Vector3Tpl& gravityW = gravity3DW()) const {
-		Eigen::Matrix<SCALAR, 6, 1> gravityWout(Eigen::Matrix<SCALAR, 6, 1>::Zero());
-		gravityWout.template tail<3>() = rotateInertiaToBase(gravityW);
-		return gravityWout;
-	}
+    Eigen::Matrix<SCALAR, 6, 1> computeGravityB6D(const Vector3Tpl& gravityW = gravity3DW()) const
+    {
+        Eigen::Matrix<SCALAR, 6, 1> gravityWout(Eigen::Matrix<SCALAR, 6, 1>::Zero());
+        gravityWout.template tail<3>() = rotateInertiaToBase(gravityW);
+        return gravityWout;
+    }
 
-	/**
+    /**
 	 * \brief Sets orientation to identity and position to (0, 0, 0)
 	 */
-	void setIdentity()
-	{
-		euler_.setIdentity();
-		quat_.setIdentity();
-		position().setZero();
-	}
+    void setIdentity()
+    {
+        euler_.setIdentity();
+        quat_.setIdentity();
+        position().setZero();
+    }
 
-	void setRandom()
-	{
-		euler_.setRandom();
-		quat_ = euler_;
-		position().toImplementation().setRandom();
-	}
+    void setRandom()
+    {
+        euler_.setRandom();
+        quat_ = euler_;
+        position().toImplementation().setRandom();
+    }
 
-	STORAGE_TYPE getStorageType() const {
-		return storage_;
-	}
-
+    STORAGE_TYPE getStorageType() const { return storage_; }
 private:
-	bool storedAsEuler() {
-		if (storage_ == EULER)
-			return true;
-		else
-			return false;
-	}
+    bool storedAsEuler()
+    {
+        if (storage_ == EULER)
+            return true;
+        else
+            return false;
+    }
 
-	bool storedAsEuler() const {
-		if (storage_ == EULER)
-			return true;
-		else
-			return false;
-	}
+    bool storedAsEuler() const
+    {
+        if (storage_ == EULER)
+            return true;
+        else
+            return false;
+    }
 
-	STORAGE_TYPE storage_;
+    STORAGE_TYPE storage_;
 
-	kindr::RotationQuaternion<SCALAR> quat_;
-	kindr::EulerAnglesXyz<SCALAR> euler_;
+    kindr::RotationQuaternion<SCALAR> quat_;
+    kindr::EulerAnglesXyz<SCALAR> euler_;
 
-	Position3Tpl position_;
-
+    Position3Tpl position_;
 };
 
-} // namespace tpl
+}  // namespace tpl
 
 typedef tpl::RigidBodyPose<double> RigidBodyPose;
 
 
-} // namespace rbd
-} // namespace ct
+}  // namespace rbd
+}  // namespace ct

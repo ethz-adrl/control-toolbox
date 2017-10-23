@@ -36,4 +36,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "LinearConstraintContainer-impl.h"
 #include "ConstraintContainerAnalytical-impl.h"
 #include "ConstraintContainerAD-impl.h"
-

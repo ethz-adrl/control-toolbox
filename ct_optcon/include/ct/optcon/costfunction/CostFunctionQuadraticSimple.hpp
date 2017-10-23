@@ -28,8 +28,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "CostFunctionQuadratic.hpp"
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
 /*!
  * \ingroup CostFunction
@@ -40,19 +40,18 @@ namespace optcon{
  * \f$ J(x,u,t) = \bar{x}^T Q \bar{x} + \bar{u}^T R \bar{u} + \bar{x}^T_f Q_f \bar{x}^T_f \f$
  * where \f$ \bar{x}, \bar{u} \f$ indicate deviations from a nominal (desired) state and control
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM,  typename SCALAR = double>
-class CostFunctionQuadraticSimple : public CostFunctionQuadratic< STATE_DIM, CONTROL_DIM, SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class CostFunctionQuadraticSimple : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
-
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>     state_matrix_t;
+    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
     typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>   control_state_matrix_t;
+    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
 
-    typedef core::StateVector<STATE_DIM, SCALAR>        state_vector_t;
-    typedef core::ControlVector<CONTROL_DIM, SCALAR>    control_vector_t;
+    typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+    typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 
     /**
      * Constructs a simple, purely quadratic cost function with all zero elements.
@@ -67,9 +66,12 @@ public:
      * @param x_final nominal (desired) final state
      * @param Q_final final state cost weighting
      */
-    CostFunctionQuadraticSimple(const state_matrix_t& Q, const control_matrix_t& R,
-            const state_vector_t& x_nominal, const control_vector_t& u_nominal,
-            const state_vector_t& x_final, const state_matrix_t& Q_final);
+    CostFunctionQuadraticSimple(const state_matrix_t& Q,
+        const control_matrix_t& R,
+        const state_vector_t& x_nominal,
+        const control_vector_t& u_nominal,
+        const state_vector_t& x_final,
+        const state_matrix_t& Q_final);
 
     virtual ~CostFunctionQuadraticSimple();
 
@@ -79,9 +81,11 @@ public:
      * Clones the cost function.
      * @return
      */
-    CostFunctionQuadraticSimple<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const override;
+    CostFunctionQuadraticSimple<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
 
-    virtual void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const SCALAR& t) override;
+    virtual void setCurrentStateAndControl(const state_vector_t& x,
+        const control_vector_t& u,
+        const SCALAR& t) override;
 
     virtual SCALAR evaluateIntermediate() override;
 
@@ -116,8 +120,7 @@ protected:
 
     state_vector_t x_final_;
     state_matrix_t Q_final_;
-
 };
 
-} // namespace optcon
-} // namespace ct
+}  // namespace optcon
+}  // namespace ct

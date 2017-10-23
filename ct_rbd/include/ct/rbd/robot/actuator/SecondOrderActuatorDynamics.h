@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef CT_SECONDORDERACTUATORDYNAMICS_H_
-#define CT_SECONDORDERACTUATORDYNAMICS_H_
+#pragma once
 
 #include "ActuatorDynamics.h"
 
@@ -36,52 +35,42 @@ namespace rbd {
  * Actuator Dynamics modelled as second order system, an oscillator with damping.
  */
 template <size_t NJOINTS, typename SCALAR = double>
-class SecondOrderActuatorDynamics : public ActuatorDynamics <NJOINTS, 2*NJOINTS, SCALAR>
+class SecondOrderActuatorDynamics : public ActuatorDynamics<NJOINTS, 2 * NJOINTS, SCALAR>
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    typedef ActuatorDynamics<NJOINTS, 2 * NJOINTS, SCALAR> BASE;
 
-	typedef ActuatorDynamics <NJOINTS, 2*NJOINTS, SCALAR> BASE;
+    //! constructor
+    SecondOrderActuatorDynamics(SCALAR w_n, SCALAR zeta = SCALAR(1.0), SCALAR g_dc = SCALAR(1.0));
 
-	//! constructor
-	SecondOrderActuatorDynamics(SCALAR w_n, SCALAR zeta = SCALAR(1.0), SCALAR g_dc = SCALAR(1.0));
+    //! destructor
+    virtual ~SecondOrderActuatorDynamics();
 
-	//! destructor
-	virtual ~SecondOrderActuatorDynamics();
-
-	//! deep cloning
-	virtual SecondOrderActuatorDynamics<NJOINTS, SCALAR>* clone() const override;
-
-
-	virtual void computePdot(
-			const typename BASE::act_state_vector_t& x,
-			const typename BASE::act_vel_vector_t& v,
-			const ct::core::ControlVector<NJOINTS, SCALAR>& control,
-			typename BASE::act_pos_vector_t& pDot
-		) override;
+    //! deep cloning
+    virtual SecondOrderActuatorDynamics<NJOINTS, SCALAR>* clone() const override;
 
 
-	virtual void computeVdot(
-			const typename BASE::act_state_vector_t& x,
-			const typename BASE::act_pos_vector_t& p,
-			const ct::core::ControlVector<NJOINTS, SCALAR>& control,
-			typename BASE::act_vel_vector_t& vDot
-		) override;
+    virtual void computePdot(const typename BASE::act_state_vector_t& x,
+        const typename BASE::act_vel_vector_t& v,
+        const ct::core::ControlVector<NJOINTS, SCALAR>& control,
+        typename BASE::act_pos_vector_t& pDot) override;
 
 
-	virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
-			const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
-			const typename BASE::act_state_vector_t& actState) override;
+    virtual void computeVdot(const typename BASE::act_state_vector_t& x,
+        const typename BASE::act_pos_vector_t& p,
+        const ct::core::ControlVector<NJOINTS, SCALAR>& control,
+        typename BASE::act_vel_vector_t& vDot) override;
+
+
+    virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
+        const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+        const typename BASE::act_state_vector_t& actState) override;
 
 
 private:
-
-	ct::core::SecondOrderSystem oscillator_;
+    ct::core::SecondOrderSystem oscillator_;
 };
-
 }
 }
-
-
-#endif /* CT_SECONDORDERACTUATORDYNAMICS_H_ */

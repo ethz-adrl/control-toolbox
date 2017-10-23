@@ -31,7 +31,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int main(int argc, char **argv)
 {
-	using namespace ct::optcon::example;
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+    using namespace ct::optcon::example;
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

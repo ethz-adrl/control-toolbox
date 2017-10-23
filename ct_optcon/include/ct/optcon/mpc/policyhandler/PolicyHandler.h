@@ -26,22 +26,21 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
-template<typename POLICY, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class PolicyHandler{
-
+template <typename POLICY, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class PolicyHandler
+{
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    PolicyHandler();
 
-	PolicyHandler();
+    virtual ~PolicyHandler();
 
-	virtual ~PolicyHandler();
-
-	//! design a warm-starting policy for the optimal control problem solver
-	/*!
+    //! design a warm-starting policy for the optimal control problem solver
+    /*!
 	 * Designs an initial guess for MPC (warm-start). An optimal strategy for warm-starting might be highly application/system dependent,
 	 * thus the user can overload this method if desired. Straight-forward default implementations for common 'ct' solvers and policy
 	 * types are provided in the folder "default".
@@ -54,14 +53,11 @@ public:
 	 * @param policy
 	 * 	the current policy, to be overwritten with the warm start
 	 */
-	virtual void designWarmStartingPolicy(
-			const SCALAR& delay,
-			const SCALAR& TimeHorizon,
-			POLICY& policy);
+    virtual void designWarmStartingPolicy(const SCALAR& delay, const SCALAR& TimeHorizon, POLICY& policy);
 
 
-	//! a method required for additional post-truncation.
-	/*!
+    //! a method required for additional post-truncation.
+    /*!
 	 * post truncation may become relevant if the delay is underestimated or pre-integration is turned off.
 	 * @param delay
 	 * 	the time to truncate away from the solution
@@ -70,24 +66,16 @@ public:
 	 * @param effectivelyTruncated
 	 * the time which was truncated away
 	 */
-	virtual void truncateSolutionFront(
-			const SCALAR& delay,
-			POLICY& policy,
-			SCALAR& effectivelyTruncated);
+    virtual void truncateSolutionFront(const SCALAR& delay, POLICY& policy, SCALAR& effectivelyTruncated);
 
 
-	//! set new policy to policy handler
-	void setPolicy(const POLICY& newPolicy);
+    //! set new policy to policy handler
+    void setPolicy(const POLICY& newPolicy);
 
 
 protected:
-
-	POLICY initialPolicy_;	//! the initial policy
-
+    POLICY initialPolicy_;  //! the initial policy
 };
 
-}	// namespace optcon
-}	// namespace ct
-
-
-
+}  // namespace optcon
+}  // namespace ct

@@ -23,8 +23,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
-#ifndef CT_HyQBareModelLinearizedForward_H_
-#define CT_HyQBareModelLinearizedForward_H_
+
+#pragma once
 
 #include <ct/core/core.h>
 
@@ -33,54 +33,44 @@ namespace ct {
 namespace models {
 namespace HyQ {
 
-class HyQBareModelLinearizedForward : public ct::core::LinearSystem<36, 12>{
-
+class HyQBareModelLinearizedForward : public ct::core::LinearSystem<36, 12>
+{
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef typename Eigen::Matrix<double, 36, 36> state_matrix_t;
-	typedef typename Eigen::Matrix<double, 36, 12> state_control_matrix_t;
+    typedef typename Eigen::Matrix<double, 36, 36> state_matrix_t;
+    typedef typename Eigen::Matrix<double, 36, 12> state_control_matrix_t;
 
-	HyQBareModelLinearizedForward(const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL):
-		ct::core::LinearSystem<36, 12>(type)
-	{
-		initialize();
-	}
+    HyQBareModelLinearizedForward(const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL)
+        : ct::core::LinearSystem<36, 12>(type)
+    {
+        initialize();
+    }
 
-	HyQBareModelLinearizedForward(const HyQBareModelLinearizedForward& other)
-	{
-		initialize();
-	}
+    HyQBareModelLinearizedForward(const HyQBareModelLinearizedForward& other) { initialize(); }
+    virtual ~HyQBareModelLinearizedForward(){};
 
-	virtual ~HyQBareModelLinearizedForward(){};
+    virtual HyQBareModelLinearizedForward* clone() const override { return new HyQBareModelLinearizedForward; }
+    virtual const state_matrix_t& getDerivativeState(const ct::core::StateVector<36>& x,
+        const ct::core::ControlVector<12>& u,
+        const double t = 0.0) override;
 
-	virtual HyQBareModelLinearizedForward* clone() const override
-	{
-		return new HyQBareModelLinearizedForward;
-	}
-
-	virtual const state_matrix_t& getDerivativeState(const ct::core::StateVector<36>& x, const ct::core::ControlVector<12>& u, const double t = 0.0) override;
-
-	virtual const state_control_matrix_t& getDerivativeControl(const ct::core::StateVector<36>& x, const ct::core::ControlVector<12>& u, const double t = 0.0) override;
+    virtual const state_control_matrix_t& getDerivativeControl(const ct::core::StateVector<36>& x,
+        const ct::core::ControlVector<12>& u,
+        const double t = 0.0) override;
 
 private:
-	void initialize() {
-		dFdx_.setZero();
-		dFdu_.setZero();
-	}
+    void initialize()
+    {
+        dFdx_.setZero();
+        dFdu_.setZero();
+    }
 
-	state_matrix_t dFdx_;
-	state_control_matrix_t dFdu_;
-	std::array<double, 987> vX_;
-	std::array<double, 240> vU_;
-
+    state_matrix_t dFdx_;
+    state_control_matrix_t dFdu_;
+    std::array<double, 987> vX_;
+    std::array<double, 240> vU_;
 };
-
 }
 }
 }
-
-#endif
-
-
-

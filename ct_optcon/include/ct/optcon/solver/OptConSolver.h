@@ -39,8 +39,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/problem/OptConProblem.h>
 
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
 
 /** \defgroup OptConSolver OptConSolver
@@ -50,28 +50,31 @@ namespace optcon{
  * - returns an optimal controller. These can be different controller types, feedforward only, feedforward-feedback, feedback only,
  * 		therefore it is templated on the controller type
  */
-template <typename DERIVED, typename POLICY, typename SETTINGS, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class OptConSolver{
-
+template <typename DERIVED,
+    typename POLICY,
+    typename SETTINGS,
+    size_t STATE_DIM,
+    size_t CONTROL_DIM,
+    typename SCALAR = double>
+class OptConSolver
+{
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	static const size_t STATE_D = STATE_DIM;
-	static const size_t CONTROL_D = CONTROL_DIM;
+    static const size_t STATE_D = STATE_DIM;
+    static const size_t CONTROL_D = CONTROL_DIM;
 
-	typedef POLICY Policy_t;
-	typedef SETTINGS Settings_t;
-	typedef DERIVED Derived;
-	typedef SCALAR Scalar_t;
+    typedef POLICY Policy_t;
+    typedef SETTINGS Settings_t;
+    typedef DERIVED Derived;
+    typedef SCALAR Scalar_t;
 
-	typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
+    typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
 
-	OptConSolver() {}
-
-	virtual ~OptConSolver(){}
-
-	/*!
+    OptConSolver() {}
+    virtual ~OptConSolver() {}
+    /*!
 	 * \brief Assigns the optimal control problem to the solver.
 	 *
 	 * Most solvers will require some computational effort to adjust to a new problem.
@@ -86,129 +89,129 @@ public:
 	 *
 	 * @return returns true if the optimal control structure is valid for the given solver
 	 */
-	virtual void setProblem(const OptConProblem_t& optConProblem) {
+    virtual void setProblem(const OptConProblem_t& optConProblem)
+    {
+        optConProblem.verify();
 
-		optConProblem.verify();
+        changeTimeHorizon(optConProblem.getTimeHorizon());
+        changeInitialState(optConProblem.getInitialState());
+        changeCostFunction(optConProblem.getCostFunction());
+        changeNonlinearSystem(optConProblem.getNonlinearSystem());
+        changeLinearSystem(optConProblem.getLinearSystem());
 
-		changeTimeHorizon(optConProblem.getTimeHorizon());
-		changeInitialState(optConProblem.getInitialState());
-		changeCostFunction(optConProblem.getCostFunction());
-		changeNonlinearSystem(optConProblem.getNonlinearSystem());
-		changeLinearSystem(optConProblem.getLinearSystem());
-		
-		if(optConProblem.getStateInputConstraints())
-			changeStateInputConstraints(optConProblem.getStateInputConstraints());
-		if(optConProblem.getPureStateConstraints())
-			changePureStateConstraints(optConProblem.getPureStateConstraints());
+        if (optConProblem.getStateInputConstraints())
+            changeStateInputConstraints(optConProblem.getStateInputConstraints());
+        if (optConProblem.getPureStateConstraints())
+            changePureStateConstraints(optConProblem.getPureStateConstraints());
+    }
 
-	}
-
-	/**
+    /**
 	 * configures the solver
 	 * */
-	virtual void configure(const Settings_t& settings) = 0;
+    virtual void configure(const Settings_t& settings) = 0;
 
-	/**
+    /**
 	 * configures the solver from configFile
 	 * */
-	void configureFromFile(const std::string& filename, bool verbose = true, const std::string& ns = DERIVED::SolverName)
-	{
-		Settings_t settings;
-		settings.load(filename, verbose, ns);
-		configure(settings);
-	}
+    void configureFromFile(const std::string& filename,
+        bool verbose = true,
+        const std::string& ns = DERIVED::SolverName)
+    {
+        Settings_t settings;
+        settings.load(filename, verbose, ns);
+        configure(settings);
+    }
 
-	/**
+    /**
 	 * solve the optimal control problem
 	 * @return true if solve succeeded, false otherwise.
 	 * */
-	virtual bool solve() = 0;
+    virtual bool solve() = 0;
 
-	/**
+    /**
 	 * run a single iteration of the solver (might not be supported by all solvers)
 	 * @return true if a better solution was found
 	 */
-	virtual bool runIteration() { throw std::runtime_error("runIteration not supported by solver"); }
-
-	/**
+    virtual bool runIteration() { throw std::runtime_error("runIteration not supported by solver"); }
+    /**
 	 * Get the optimized control policy to the optimal control problem
 	 * @return
 	 */
-	virtual const Policy_t& getSolution() = 0;
+    virtual const Policy_t& getSolution() = 0;
 
-	/**
+    /**
 	 * Get the optimized trajectory to the optimal control problem
 	 * @return
 	 */
-	virtual const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const = 0;
+    virtual const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const = 0;
 
-	/**
+    /**
 	 * Get the optimal feedforward control input corresponding to the optimal trajectory
 	 * @return
 	 */
-	virtual const core::ControlTrajectory<CONTROL_DIM, SCALAR> getControlTrajectory() const = 0;
+    virtual const core::ControlTrajectory<CONTROL_DIM, SCALAR> getControlTrajectory() const = 0;
 
-	/**
+    /**
 	 * Get the time indices corresponding to the solution
 	 * @return
 	 */
-	virtual const core::tpl::TimeArray<SCALAR>& getTimeArray() const = 0;
+    virtual const core::tpl::TimeArray<SCALAR>& getTimeArray() const = 0;
 
 
-	/*!
+    /*!
 	 * Set the initial guess used by the solver (not all solvers might support initial guesses)
 	 */
-	virtual void setInitialGuess(const Policy_t& initialGuess) = 0;
+    virtual void setInitialGuess(const Policy_t& initialGuess) = 0;
 
 
-	/*!
+    /*!
 	 * \brief Get the time horizon the solver currently operates on.
 	 *
 	 */
-	virtual SCALAR getTimeHorizon() const  = 0;
+    virtual SCALAR getTimeHorizon() const = 0;
 
 
-	/*!
+    /*!
 	 * \brief Change the time horizon the solver operates on.
 	 *
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct time horizon set.
 	 */
-	virtual void changeTimeHorizon(const SCALAR& tf) = 0;
+    virtual void changeTimeHorizon(const SCALAR& tf) = 0;
 
-	/*!
+    /*!
 	 * \brief Change the initial state for the optimal control problem
 	 *
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct initial state set
 	 */
-	virtual void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0) = 0;
+    virtual void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0) = 0;
 
-	/*!
+    /*!
 	 * \brief Change the cost function
 	 *
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct cost function
 	 */
-	virtual void changeCostFunction(const typename OptConProblem_t::CostFunctionPtr_t& cf) = 0;
+    virtual void changeCostFunction(const typename OptConProblem_t::CostFunctionPtr_t& cf) = 0;
 
-	/*!
+    /*!
 	 * \brief Change the nonlinear system
 	 *
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct nonlinear system
 	 */
-	virtual void changeNonlinearSystem(const typename OptConProblem_t::DynamicsPtr_t& dyn) = 0;
+    virtual void changeNonlinearSystem(const typename OptConProblem_t::DynamicsPtr_t& dyn) = 0;
 
-	/*!
+    /*!
 	 * \brief Change the linear system
 	 *
 	 * This function does not need to be called if setOptConProblem() has been called
 	 * with an OptConProblem that had the correct linear system
 	 */
-	virtual void changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin) = 0;
+    virtual void changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin) = 0;
 
-	/**
+    /**
 	 * @brief      Change the state input constraints
 	 *
 	 *             This function does not need to be called if
@@ -217,12 +220,12 @@ public:
 	 *
 	 * @param[in]  con   The new state input constraints
 	 */
-	virtual void changeStateInputConstraints(const typename OptConProblem_t::ConstraintPtr_t con) 
-	{
-		throw std::runtime_error("The current solver does not support state input constraints!");
-	}
+    virtual void changeStateInputConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
+    {
+        throw std::runtime_error("The current solver does not support state input constraints!");
+    }
 
-	/**
+    /**
 	 * @brief      Change the pure state constraints.
 	 *
 	 *             This function does not need to be called if
@@ -231,18 +234,13 @@ public:
 	 *
 	 * @param[in]  con   The new pure state constraints
 	 */
-	virtual void changePureStateConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
-	{
-		throw std::runtime_error("The current solver does not support pure state constraints!");
-	}
+    virtual void changePureStateConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
+    {
+        throw std::runtime_error("The current solver does not support pure state constraints!");
+    }
 
-	virtual SCALAR getCost() const
-	{
-		throw std::runtime_error("Get cost not implemented");
-	}
-
-
-	/*!
+    virtual SCALAR getCost() const { throw std::runtime_error("Get cost not implemented"); }
+    /*!
 	 * \brief Direct accessor to the system instances
 	 *
 	 * \warning{Use this only when performance absolutely matters and if you know what you
@@ -251,11 +249,11 @@ public:
 	 * modify each entry differently.}
 	 * @return
 	 */
-	virtual std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() = 0;
+    virtual std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() = 0;
 
-	virtual const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const = 0;
+    virtual const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const = 0;
 
-	/*!
+    /*!
 	 * \brief Direct accessor to the linear system instances
 	 *
 	 * \warning{Use this only when performance absolutely matters and if you know what you
@@ -264,11 +262,11 @@ public:
 	 * modify each entry differently.}
 	 * @return
 	 */
-	virtual std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() = 0;
+    virtual std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() = 0;
 
-	virtual const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const = 0;
+    virtual const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const = 0;
 
-	/*!
+    /*!
 	 * \brief Direct accessor to the cost function instances
 	 *
 	 * \warning{Use this only when performance absolutely matters and if you know what you
@@ -277,11 +275,11 @@ public:
 	 * modify each entry differently.}
 	 * @return
 	 */
-	virtual std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() = 0;
+    virtual std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() = 0;
 
-	virtual const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const = 0;
+    virtual const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const = 0;
 
-	/**
+    /**
 	 * @brief      Direct accessor to the state input constraint instances
 	 * 
 	 * \warning{Use this only when performance absolutely matters and if you know what you
@@ -291,11 +289,11 @@ public:
 	 *
 	 * @return     The state input constraint instances
 	 */
-	virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() = 0;
+    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() = 0;
 
-	virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const = 0;
+    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const = 0;
 
-	/**
+    /**
 	 * @brief      Direct accessor to the pure state constraints
 	 * 
 	 * \warning{Use this only when performance absolutely matters and if you know what you
@@ -305,12 +303,12 @@ public:
 	 *
 	 * @return     The pure state constraints instances.
 	 */
-	virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() = 0;
+    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() = 0;
 
-	virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const = 0;
+    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const = 0;
 
 
-	/**
+    /**
 	 * @brief      Generates and compiles AD source code which can be used in
 	 *             the solver. This method can be called just before solving the
 	 *             problem, i.e. it can be called from the same executable than
@@ -319,27 +317,23 @@ public:
 	 * @param[in]  problemCG  The optcon problem templated on the AD CG Scalar
 	 * @param[in]  settings   The settings indicating what to generate
 	 */
-	virtual void generateAndCompileCode(
-		const OptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
-		const ct::core::DerivativesCppadSettings& settings)
-	{
-		throw std::runtime_error("Generate and compile code not implemented for this solver");
-	}
+    virtual void generateAndCompileCode(const OptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
+        const ct::core::DerivativesCppadSettings& settings)
+    {
+        throw std::runtime_error("Generate and compile code not implemented for this solver");
+    }
 
-	/**
+    /**
 	 * @brief      Generates source AD source code which can be used in the
 	 *             solver. This method needs to be called ahead of actually
 	 *             solving the problem (e.g. from a different executable)
 	 *
 	 * @param[in]  settings  The settings indicating what to generate
 	 */
-	virtual void generateCode(const ct::core::DerivativesCppadSettings& settings) 
-	{
-		throw std::runtime_error("Generate Code not implemented for this solver");
-	}
+    virtual void generateCode(const ct::core::DerivativesCppadSettings& settings)
+    {
+        throw std::runtime_error("Generate Code not implemented for this solver");
+    }
 };
-
-
 }
 }
-

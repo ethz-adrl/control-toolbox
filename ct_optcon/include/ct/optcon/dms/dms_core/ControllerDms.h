@@ -31,7 +31,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/optcon/dms/dms_core/OptVectorDms.h>
 
 
-
 namespace ct {
 namespace optcon {
 
@@ -52,66 +51,54 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class ControllerDms : public ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-	typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
-	typedef typename DIMENSIONS::state_vector_t state_vector_t;
-	typedef typename DIMENSIONS::control_vector_t control_vector_t;
-
-
-	ControllerDms() = delete;
-
-	ControllerDms(
-			std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner,
-			size_t shotIdx):
-		controlSpliner_(controlSpliner),
-		shotIdx_(shotIdx)
-	{}
+    typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
+    typedef typename DIMENSIONS::state_vector_t state_vector_t;
+    typedef typename DIMENSIONS::control_vector_t control_vector_t;
 
 
-	ControllerDms(const ControllerDms& arg):
-			controlSpliner_(arg.controlSpliner_),
-			shotIdx_(arg.shotIdx_)
-	{}
+    ControllerDms() = delete;
 
-	virtual ~ControllerDms(){}
-
-	virtual ControllerDms<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
-	{
-		return new ControllerDms<STATE_DIM, CONTROL_DIM, SCALAR> (*this);
-	}
+    ControllerDms(std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner, size_t shotIdx)
+        : controlSpliner_(controlSpliner), shotIdx_(shotIdx)
+    {
+    }
 
 
-	void computeControl(
-			const state_vector_t& state,
-			const SCALAR& t,
-			control_vector_t&  controlAction)
-	{
-		controlAction = controlSpliner_->evalSpline(t, shotIdx_);
-		assert(controlAction == controlAction);
-	}
+    ControllerDms(const ControllerDms& arg) : controlSpliner_(arg.controlSpliner_), shotIdx_(arg.shotIdx_) {}
+    virtual ~ControllerDms() {}
+    virtual ControllerDms<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
+    {
+        return new ControllerDms<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
+    }
 
-    virtual core::ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const state_vector_t& state, const SCALAR time) override
+
+    void computeControl(const state_vector_t& state, const SCALAR& t, control_vector_t& controlAction)
+    {
+        controlAction = controlSpliner_->evalSpline(t, shotIdx_);
+        assert(controlAction == controlAction);
+    }
+
+    virtual core::ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const state_vector_t& state,
+        const SCALAR time) override
     {
         return controlSpliner_->splineDerivative_q_i(time, shotIdx_);
     }
 
-    virtual core::ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeUf(const state_vector_t& state, const SCALAR time) override
+    virtual core::ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeUf(const state_vector_t& state,
+        const SCALAR time) override
     {
         return controlSpliner_->splineDerivative_q_iplus1(time, shotIdx_);
     }
 
 
 private:
+    std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner_;
 
-	std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner_;
-
-	/* index of the shot to which this controller belongs */
-	size_t shotIdx_;
-
+    /* index of the shot to which this controller belongs */
+    size_t shotIdx_;
 };
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

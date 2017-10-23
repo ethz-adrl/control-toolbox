@@ -30,34 +30,34 @@ namespace ct {
 namespace rbd {
 
 template <size_t CONTROL_DIM, size_t STATE_DIM, typename SCALAR>
-SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::SelectionMatrix(const SelectionMatrix& other) :
-Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>(other)
-{}
+SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::SelectionMatrix(const SelectionMatrix& other)
+    : Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>(other)
+{
+}
 
 template <size_t CONTROL_DIM, size_t STATE_DIM, typename SCALAR>
-SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::SelectionMatrix(bool floatingBase) :
-Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>()
+SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::SelectionMatrix(bool floatingBase)
+    : Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>()
 {
-	setIdentity(floatingBase);
+    setIdentity(floatingBase);
 }
 
 template <size_t CONTROL_DIM, size_t STATE_DIM, typename SCALAR>
 void SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::setIdentity(bool floatingBase)
 {
-	this->setZero();
+    this->setZero();
 
-	if (floatingBase)
-	{
-		if (STATE_DIM < 6)
-			throw std::runtime_error("Selection Matrix for floating base systems should at least have 6 columns");
+    if (floatingBase)
+    {
+        if (STATE_DIM < 6)
+            throw std::runtime_error("Selection Matrix for floating base systems should at least have 6 columns");
 
-		this->template bottomRightCorner<CONTROL_DIM, STATE_DIM-6>().setIdentity();
-
-	} else
-	{
-		this->template bottomRightCorner<CONTROL_DIM, CONTROL_DIM>().setIdentity();
-	}
+        this->template bottomRightCorner<CONTROL_DIM, STATE_DIM - 6>().setIdentity();
+    }
+    else
+    {
+        this->template bottomRightCorner<CONTROL_DIM, CONTROL_DIM>().setIdentity();
+    }
 }
-
 }
 }

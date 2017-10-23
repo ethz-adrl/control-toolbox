@@ -42,39 +42,33 @@ namespace core {
 class SISOControllerBase
 {
 public:
-	//! Default constructor
-	SISOControllerBase() {};
+    //! Default constructor
+    SISOControllerBase(){};
 
-	//! Copy constructor
-	SISOControllerBase(const SISOControllerBase& arg) {}
+    //! Copy constructor
+    SISOControllerBase(const SISOControllerBase& arg) {}
+    //! Destructor
+    virtual ~SISOControllerBase(){};
 
-	//! Destructor
-	virtual ~SISOControllerBase() {};
-
-	//! Deep cloning destructor
-	/*!
+    //! Deep cloning destructor
+    /*!
 	 * Needs to be implemented by derived class.
 	 * @return pointer to cloned instance
 	 */
-	virtual SISOControllerBase* clone() const = 0;
+    virtual SISOControllerBase* clone() const = 0;
 
-	//! Computes the control action
-	/*!
+    //! Computes the control action
+    /*!
 	 * Takes the current state and time and computes the corresponding output.
 	 * Needs to be implemented by any derived class.
 	 * @param state current state
 	 * @param t current time
 	 * @return resulting control action
 	 */
-	virtual double computeControl(const double& state, const core::Time& t) = 0;
+    virtual double computeControl(const double& state, const core::Time& t) = 0;
 
 protected:
-
-
 };
 
-} // namespace core
-} // namespace ct
-
-
-
+}  // namespace core
+}  // namespace ct

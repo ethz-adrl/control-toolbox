@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_HyQForwardZero_H_
-#define INCLUDE_HyQForwardZero_H_
+#pragma once
 
 #include <ct/core/math/Derivatives.h>
 
@@ -33,12 +32,14 @@ namespace ct {
 namespace models {
 namespace HyQ {
 
-class HyQForwardZero : public core::Derivatives<49, 36, double> {
+class HyQForwardZero : public core::Derivatives<49, 36, double>
+{
 public:
     typedef Eigen::Matrix<double, 36, 1> OUT_TYPE;
     typedef Eigen::Matrix<double, 49, 1> X_TYPE;
 
-    HyQForwardZero() {
+    HyQForwardZero()
+    {
         eval_.setZero();
         v_.fill(0.0);
     };
@@ -49,13 +50,9 @@ public:
         v_.fill(0.0);
     }
 
-    virtual ~HyQForwardZero() {};
+    virtual ~HyQForwardZero(){};
 
-    HyQForwardZero* clone() const override{
-        return new HyQForwardZero(*this);
-    }
-
-
+    HyQForwardZero* clone() const override { return new HyQForwardZero(*this); }
     OUT_TYPE forwardZero(const Eigen::VectorXd& x_in) override;
 
 private:
@@ -66,5 +63,3 @@ private:
 } /* namespace HyQ */
 } /* namespace models */
 } /* namespace ct */
-
-#endif /* INCLUDE_JACOBIAN_NAME_H_ */

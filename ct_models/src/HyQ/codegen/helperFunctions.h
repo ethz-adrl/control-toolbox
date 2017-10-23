@@ -32,9 +32,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/rbd/rbd.h>
 #include <ct/models/HyQ/HyQ.h>
 
-namespace ct{
-namespace models{
-namespace HyQ{
+namespace ct {
+namespace models {
+namespace HyQ {
 
 // a floating base forward-dynamic system templated on scalar type
 typedef ct::rbd::FloatingBaseFDSystem<ct::rbd::HyQ::tpl::Dynamics<double>, false> HyQSystem;
@@ -51,70 +51,72 @@ const size_t njoints = HyQSystem::Kinematics::NJOINTS;
 const size_t nEE = HyQSystem::Kinematics::NUM_EE;
 
 template <typename SCALAR>
-Eigen::Matrix<SCALAR, control_dim+6, 1> hyqInverseDynamics(const Eigen::Matrix<SCALAR, state_dim+18, 1>& x)
+Eigen::Matrix<SCALAR, control_dim + 6, 1> hyqInverseDynamics(const Eigen::Matrix<SCALAR, state_dim + 18, 1>& x)
 {
- 	ct::rbd::HyQ::tpl::Dynamics<SCALAR> hyqDynamics;
-	ct::rbd::tpl::RBDState<njoints, SCALAR> hyqState;
+    ct::rbd::HyQ::tpl::Dynamics<SCALAR> hyqDynamics;
+    ct::rbd::tpl::RBDState<njoints, SCALAR> hyqState;
 
-	// we assume x contains: q, q_dot, q_ddot
-	hyqState.fromStateVectorEulerXyz(x.template topRows<state_dim>());
+    // we assume x contains: q, q_dot, q_ddot
+    hyqState.fromStateVectorEulerXyz(x.template topRows<state_dim>());
 
-	ct::rbd::tpl::RigidBodyAcceleration<SCALAR> base_a(x.template segment<6>(state_dim));
-	ct::rbd::tpl::JointAcceleration<njoints, SCALAR> qdd(x.template bottomRows<njoints>());
+    ct::rbd::tpl::RigidBodyAcceleration<SCALAR> base_a(x.template segment<6>(state_dim));
+    ct::rbd::tpl::JointAcceleration<njoints, SCALAR> qdd(x.template bottomRows<njoints>());
 
-	typename ct::rbd::HyQ::tpl::Dynamics<SCALAR>::ExtLinkForces_t fext(Eigen::Matrix<SCALAR, 6, 1>::Zero()); //zero
+    typename ct::rbd::HyQ::tpl::Dynamics<SCALAR>::ExtLinkForces_t fext(Eigen::Matrix<SCALAR, 6, 1>::Zero());  //zero
 
-	// output
-	ct::core::ControlVector<control_dim, SCALAR> u;
-	typename ct::rbd::HyQ::tpl::Dynamics<SCALAR>::ForceVector_t base_w;
+    // output
+    ct::core::ControlVector<control_dim, SCALAR> u;
+    typename ct::rbd::HyQ::tpl::Dynamics<SCALAR>::ForceVector_t base_w;
 
- 	hyqDynamics.FloatingBaseFullyActuatedID(hyqState, base_a, qdd, fext, base_w, u);
+    hyqDynamics.FloatingBaseFullyActuatedID(hyqState, base_a, qdd, fext, base_w, u);
 
-	Eigen::Matrix<SCALAR, control_dim+6, 1> y;
- 	y << base_w, u;
-	return y;
+    Eigen::Matrix<SCALAR, control_dim + 6, 1> y;
+    y << base_w, u;
+    return y;
 }
 
 template <typename SCALAR>
-Eigen::Matrix<SCALAR, nEE*6, 1> hyqForwardKinematics(const Eigen::Matrix<SCALAR, state_dim, 1>& x)
+Eigen::Matrix<SCALAR, nEE * 6, 1> hyqForwardKinematics(const Eigen::Matrix<SCALAR, state_dim, 1>& x)
 {
-	ct::rbd::HyQ::tpl::Kinematics<SCALAR> hyqKinematics;
-	ct::rbd::tpl::RBDState<njoints, SCALAR> hyqState;
-	hyqState.fromStateVectorEulerXyz(x.template topRows<state_dim>());
+    ct::rbd::HyQ::tpl::Kinematics<SCALAR> hyqKinematics;
+    ct::rbd::tpl::RBDState<njoints, SCALAR> hyqState;
+    hyqState.fromStateVectorEulerXyz(x.template topRows<state_dim>());
 
-	// output vector: positions and velocities for all endeffectors
-	Eigen::Matrix<SCALAR, nEE*6, 1> y;
+    // output vector: positions and velocities for all endeffectors
+    Eigen::Matrix<SCALAR, nEE * 6, 1> y;
 
-	for (size_t i=0; i<nEE; i++)
-	{
-		y.template segment<3>(i*6) = hyqKinematics.getEEPositionInWorld(i, hyqState.basePose(), hyqState.jointPositions()).toImplementation();
-		y.template segment<3>(i*6 + 3) = hyqKinematics.getEEVelocityInWorld(i, hyqState).toImplementation();
-	}
+    for (size_t i = 0; i < nEE; i++)
+    {
+        y.template segment<3>(i * 6) =
+            hyqKinematics.getEEPositionInWorld(i, hyqState.basePose(), hyqState.jointPositions()).toImplementation();
+        y.template segment<3>(i * 6 + 3) = hyqKinematics.getEEVelocityInWorld(i, hyqState).toImplementation();
+    }
 
-	return y;
+    return y;
 }
 
 template <typename SCALAR>
-Eigen::Matrix<SCALAR, state_dim, 1> hyqContactModelForwardDynamics(const Eigen::Matrix<SCALAR, state_dim + control_dim + 1, 1>& x) // state, input, time
+Eigen::Matrix<SCALAR, state_dim, 1> hyqContactModelForwardDynamics(
+    const Eigen::Matrix<SCALAR, state_dim + control_dim + 1, 1>& x)  // state, input, time
 {
-	ct::rbd::FloatingBaseFDSystem<ct::rbd::HyQ::tpl::Dynamics<SCALAR>, false> system;
-	std::shared_ptr<ContactModel<SCALAR>> contactModel = std::shared_ptr<ContactModel<SCALAR>>(new ContactModel<SCALAR>());
-	contactModel->k() = SCALAR(5000);
-	contactModel->d() = SCALAR(1000);
-	contactModel->alpha() = SCALAR(100);
-	contactModel->alpha_n() = SCALAR(100);
-	contactModel->zOffset() = SCALAR(-0.02);
-	contactModel->smoothing() = static_cast<typename ContactModel<SCALAR>::VELOCITY_SMOOTHING>(ContactModel<SCALAR>::VELOCITY_SMOOTHING::SIGMOID);
+    ct::rbd::FloatingBaseFDSystem<ct::rbd::HyQ::tpl::Dynamics<SCALAR>, false> system;
+    std::shared_ptr<ContactModel<SCALAR>> contactModel =
+        std::shared_ptr<ContactModel<SCALAR>>(new ContactModel<SCALAR>());
+    contactModel->k() = SCALAR(5000);
+    contactModel->d() = SCALAR(1000);
+    contactModel->alpha() = SCALAR(100);
+    contactModel->alpha_n() = SCALAR(100);
+    contactModel->zOffset() = SCALAR(-0.02);
+    contactModel->smoothing() = static_cast<typename ContactModel<SCALAR>::VELOCITY_SMOOTHING>(
+        ContactModel<SCALAR>::VELOCITY_SMOOTHING::SIGMOID);
 
-	system.setContactModel(contactModel);
-	ct::core::StateVector<state_dim, SCALAR> y;
+    system.setContactModel(contactModel);
+    ct::core::StateVector<state_dim, SCALAR> y;
 
-	system.computeControlledDynamics(x.segment(0, state_dim), SCALAR(0.0), x.segment(state_dim, control_dim), y);
+    system.computeControlledDynamics(x.segment(0, state_dim), SCALAR(0.0), x.segment(state_dim, control_dim), y);
 
-	return y;
+    return y;
 }
-
-
 }
 }
 }

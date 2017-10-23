@@ -58,12 +58,9 @@ public:
      * @param[in]  system       The controlled system
      * @param[in]  stepperType  The integration stepper type
      */
-    SensitivityIntegratorCT(
-        const std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> >& system,
+    SensitivityIntegratorCT(const std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& system,
         const ct::core::IntegrationType stepperType = ct::core::IntegrationType::EULERCT)
-    :
-    cacheData_(false),
-    cacheSensitivities_(false)
+        : cacheData_(false), cacheSensitivities_(false)
     {
         setControlledSystem(system);
         initializeDerived(stepperType);
@@ -72,8 +69,7 @@ public:
     /**
      * @brief      Destroys the object.
      */
-    ~SensitivityIntegratorCT(){}
-
+    ~SensitivityIntegratorCT() {}
     /**
      * @brief      Initializes the steppers
      *
@@ -81,7 +77,7 @@ public:
      */
     void initializeDerived(const ct::core::IntegrationType stepperType)
     {
-        switch(stepperType)
+        switch (stepperType)
         {
             case ct::core::IntegrationType::EULERCT:
             {
@@ -121,7 +117,7 @@ public:
                 throw std::runtime_error("Invalid CT integration type");
         }
     }
-    
+
     /**
      * @brief      Prepares the integrator to provide first order sensitivity
      *             generation by setting a linearsystem, enabling state caching
@@ -133,31 +129,35 @@ public:
     {
         linearSystem_ = linearSystem;
         cacheData_ = true;
-        
-        dX0dot_ = [this](const state_matrix& dX0In, state_matrix& dX0dt, const SCALAR t){
-            if(cacheSensitivities_)
+
+        dX0dot_ = [this](const state_matrix& dX0In, state_matrix& dX0dt, const SCALAR t) {
+            if (cacheSensitivities_)
                 arraydX0_.push_back(dX0In);
 
             dX0dt = arrayA_[dX0Index_] * dX0In;
             dX0Index_++;
         };
 
-        dU0dot_ = [this](const state_control_matrix& dU0In, state_control_matrix& dU0dt, const SCALAR t){
-            if(cacheSensitivities_)
+        dU0dot_ = [this](const state_control_matrix& dU0In, state_control_matrix& dU0dt, const SCALAR t) {
+            if (cacheSensitivities_)
                 arraydU0_.push_back(dU0In);
 
-            dU0dt = arrayA_[dU0Index_] * dU0In + 
-                    arrayB_[dU0Index_] * controlledSystem_->getController()->getDerivativeU0(statesCached_[dU0Index_], timesCached_[dU0Index_]);
-            dU0Index_++;                                                                                  
+            dU0dt = arrayA_[dU0Index_] * dU0In +
+                    arrayB_[dU0Index_] *
+                        controlledSystem_->getController()->getDerivativeU0(
+                            statesCached_[dU0Index_], timesCached_[dU0Index_]);
+            dU0Index_++;
         };
 
-        dUfdot_ =  [this](const state_control_matrix& dUfIn, state_control_matrix& dUfdt, const SCALAR t){
-            if(cacheSensitivities_)
+        dUfdot_ = [this](const state_control_matrix& dUfIn, state_control_matrix& dUfdt, const SCALAR t) {
+            if (cacheSensitivities_)
                 arraydUf_.push_back(dUfIn);
 
-            dUfdt = arrayA_[dU0Index_] * dUfIn + 
-                    arrayB_[dU0Index_] * controlledSystem_->getController()->getDerivativeUf(statesCached_[dU0Index_], timesCached_[dU0Index_]);
-            dU0Index_++;                                                                                  
+            dUfdt = arrayA_[dU0Index_] * dUfIn +
+                    arrayB_[dU0Index_] *
+                        controlledSystem_->getController()->getDerivativeUf(
+                            statesCached_[dU0Index_], timesCached_[dU0Index_]);
+            dU0Index_++;
         };
     }
 
@@ -166,14 +166,15 @@ public:
      *
      * @param[in]  controlledSystem  The new controlled system
      */
-    void setControlledSystem(const std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& controlledSystem)
+    void setControlledSystem(
+        const std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& controlledSystem)
     {
         controlledSystem_ = controlledSystem;
         xDot_ = [this](const state_vector& x, state_vector& dxdt, const SCALAR t) {
             control_vector controlAction;
             controlledSystem_->getController()->computeControl(x, t, controlAction);
 
-            if(cacheData_)
+            if (cacheData_)
             {
                 statesCached_.push_back(x);
                 controlsCached_.push_back(controlAction);
@@ -181,7 +182,7 @@ public:
             }
 
             controlledSystem_->computeControlledDynamics(x, t, controlAction, dxdt);
-        }; 
+        };
     }
 
     /**
@@ -195,32 +196,37 @@ public:
     {
         costFunction_ = costFun;
         cacheSensitivities_ = true;
-        costDot_ = [this](const SCALAR& costIn, SCALAR& cost, const SCALAR t)
-        {
-            costFunction_->setCurrentStateAndControl(statesCached_[costIndex_], controlsCached_[costIndex_], timesCached_[costIndex_]);
+        costDot_ = [this](const SCALAR& costIn, SCALAR& cost, const SCALAR t) {
+            costFunction_->setCurrentStateAndControl(
+                statesCached_[costIndex_], controlsCached_[costIndex_], timesCached_[costIndex_]);
             cost = costFunction_->evaluateIntermediate();
             costIndex_++;
         };
 
-        costdX0dot_ = [this](const state_vector& costdX0In, state_vector& costdX0dt, const SCALAR t){
-            costFunction_->setCurrentStateAndControl(statesCached_[costIndex_], controlsCached_[costIndex_], timesCached_[costIndex_]);
+        costdX0dot_ = [this](const state_vector& costdX0In, state_vector& costdX0dt, const SCALAR t) {
+            costFunction_->setCurrentStateAndControl(
+                statesCached_[costIndex_], controlsCached_[costIndex_], timesCached_[costIndex_]);
             costdX0dt = arraydX0_[costIndex_].transpose() * costFunction_->stateDerivativeIntermediate();
             costIndex_++;
         };
 
-        costdU0dot_ = [this](const control_vector& costdU0In, control_vector& costdU0dt, const SCALAR t){
-            costFunction_->setCurrentStateAndControl(statesCached_[costIndex_], controlsCached_[costIndex_], timesCached_[costIndex_]);
-            costdU0dt = arraydU0_[costIndex_].transpose() * costFunction_->stateDerivativeIntermediate() + 
-                        controlledSystem_->getController()->getDerivativeU0(statesCached_[costIndex_], timesCached_[costIndex_]) * 
-                        costFunction_->controlDerivativeIntermediate();
+        costdU0dot_ = [this](const control_vector& costdU0In, control_vector& costdU0dt, const SCALAR t) {
+            costFunction_->setCurrentStateAndControl(
+                statesCached_[costIndex_], controlsCached_[costIndex_], timesCached_[costIndex_]);
+            costdU0dt = arraydU0_[costIndex_].transpose() * costFunction_->stateDerivativeIntermediate() +
+                        controlledSystem_->getController()->getDerivativeU0(
+                            statesCached_[costIndex_], timesCached_[costIndex_]) *
+                            costFunction_->controlDerivativeIntermediate();
             costIndex_++;
         };
 
-        costdUfdot_ = [this](const control_vector& costdUfIn, control_vector& costdUfdt, const SCALAR t){
-            costFunction_->setCurrentStateAndControl(statesCached_[costIndex_], controlsCached_[costIndex_], timesCached_[costIndex_]);
-            costdUfdt = arraydUf_[costIndex_].transpose() * costFunction_->stateDerivativeIntermediate() + 
-                        controlledSystem_->getController()->getDerivativeUf(statesCached_[costIndex_], timesCached_[costIndex_]) *
-                        costFunction_->controlDerivativeIntermediate();
+        costdUfdot_ = [this](const control_vector& costdUfIn, control_vector& costdUfdt, const SCALAR t) {
+            costFunction_->setCurrentStateAndControl(
+                statesCached_[costIndex_], controlsCached_[costIndex_], timesCached_[costIndex_]);
+            costdUfdt = arraydUf_[costIndex_].transpose() * costFunction_->stateDerivativeIntermediate() +
+                        controlledSystem_->getController()->getDerivativeUf(
+                            statesCached_[costIndex_], timesCached_[costIndex_]) *
+                            costFunction_->controlDerivativeIntermediate();
             costIndex_++;
         };
     }
@@ -237,14 +243,12 @@ public:
      * @param[out]     stateTrajectory  The output state trajectory
      * @param[out]     timeTrajectory   The output time trajectory
      */
-    void integrate(
-            state_vector& state,
-            const SCALAR startTime,
-            const size_t numSteps,
-            const SCALAR dt,
-            ct::core::StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
-            ct::core::tpl::TimeArray<SCALAR>& timeTrajectory
-    )
+    void integrate(state_vector& state,
+        const SCALAR startTime,
+        const size_t numSteps,
+        const SCALAR dt,
+        ct::core::StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
+        ct::core::tpl::TimeArray<SCALAR>& timeTrajectory)
     {
         clearStates();
         clearLinearization();
@@ -255,7 +259,7 @@ public:
         stateTrajectory.push_back(state);
         timeTrajectory.push_back(time);
 
-        for(size_t i = 0; i < numSteps; ++i)
+        for (size_t i = 0; i < numSteps; ++i)
         {
             stepperState_->do_step(xDot_, state, time, dt);
             time += dt;
@@ -274,17 +278,12 @@ public:
      * @param[in]       numSteps   The number steps
      * @param[in]       dt         The integration timestep
      */
-    void integrate(
-            state_vector& state,
-            const SCALAR startTime,
-            const size_t numSteps,
-            const SCALAR dt
-    )
+    void integrate(state_vector& state, const SCALAR startTime, const size_t numSteps, const SCALAR dt)
     {
         clearStates();
         clearLinearization();
         SCALAR time = startTime;
-        for(size_t i = 0; i < numSteps; ++i)
+        for (size_t i = 0; i < numSteps; ++i)
         {
             stepperState_->do_step(xDot_, state, time, dt);
             time += dt;
@@ -301,17 +300,12 @@ public:
      * @param[in]      numSteps   The number of integration steps
      * @param[in]      dt         The integration timestep
      */
-    void integrateSensitivityDX0(
-        state_matrix& dX0,
-        const SCALAR startTime,
-        const size_t numSteps,
-        const SCALAR dt
-        )
+    void integrateSensitivityDX0(state_matrix& dX0, const SCALAR startTime, const size_t numSteps, const SCALAR dt)
     {
         dX0Index_ = 0;
         SCALAR time = startTime;
         dX0.setIdentity();
-        for(size_t i = 0; i < numSteps; ++i)
+        for (size_t i = 0; i < numSteps; ++i)
         {
             stepperDX0_->do_step(dX0dot_, dX0, time, dt);
             time += dt;
@@ -327,17 +321,15 @@ public:
      * @param[in]      numSteps   The number of integration steps
      * @param[in]      dt         The integration timestep
      */
-    void integrateSensitivityDU0(
-        state_control_matrix& dU0,
+    void integrateSensitivityDU0(state_control_matrix& dU0,
         const SCALAR startTime,
         const size_t numSteps,
-        const SCALAR dt
-        )
+        const SCALAR dt)
     {
         dU0Index_ = 0;
         SCALAR time = startTime;
         dU0.setZero();
-        for(size_t i = 0; i < numSteps; ++i)
+        for (size_t i = 0; i < numSteps; ++i)
         {
             stepperDU0_->do_step(dU0dot_, dU0, time, dt);
             time += dt;
@@ -353,17 +345,15 @@ public:
      * @param[in]      numSteps   The number of integration steps
      * @param[in]      dt         The integration timestep
      */
-    void integrateSensitivityDUf(
-        state_control_matrix& dUf,
+    void integrateSensitivityDUf(state_control_matrix& dUf,
         const SCALAR startTime,
         const size_t numSteps,
-        const SCALAR dt
-        )
+        const SCALAR dt)
     {
         dU0Index_ = 0;
         SCALAR time = startTime;
         dUf.setZero();
-        for(size_t i = 0; i < numSteps; ++i)
+        for (size_t i = 0; i < numSteps; ++i)
         {
             stepperDU0_->do_step(dUfdot_, dUf, time, dt);
             time += dt;
@@ -379,20 +369,14 @@ public:
      * @param[in]      numSteps   The number of integration steps
      * @param[in]      dt         The integration time step
      */
-    void integrateCost(
-        SCALAR& cost,
-        const SCALAR startTime,
-        const size_t numSteps,
-        const SCALAR dt)
+    void integrateCost(SCALAR& cost, const SCALAR startTime, const size_t numSteps, const SCALAR dt)
     {
         SCALAR time = startTime;
         costIndex_ = 0;
-        if( statesCached_.size() == 0 ||
-            controlsCached_.size() == 0 ||
-            timesCached_.size() == 0)
-                throw std::runtime_error("States cached are empty");
+        if (statesCached_.size() == 0 || controlsCached_.size() == 0 || timesCached_.size() == 0)
+            throw std::runtime_error("States cached are empty");
 
-        for(size_t i = 0; i < numSteps; ++i)
+        for (size_t i = 0; i < numSteps; ++i)
         {
             stepperCost_->do_step(costDot_, cost, time, dt);
             time += dt;
@@ -409,17 +393,12 @@ public:
      * @param[in]      numSteps   The number of integration steps
      * @param[in]      dt         The integration time step
      */
-    void integrateCostSensitivityDX0(
-        state_vector& dX0,
-        const SCALAR startTime,
-        const size_t numSteps,
-        const SCALAR dt
-        )
+    void integrateCostSensitivityDX0(state_vector& dX0, const SCALAR startTime, const size_t numSteps, const SCALAR dt)
     {
         costIndex_ = 0;
         SCALAR time = startTime;
         dX0.setZero();
-        for(size_t i = 0; i < numSteps; ++i)
+        for (size_t i = 0; i < numSteps; ++i)
         {
             stepperCostDX0_->do_step(costdX0dot_, dX0, time, dt);
             time += dt;
@@ -435,17 +414,15 @@ public:
      * @param[in]      numSteps   The number of integration steps
      * @param[in]      dt         The integration time step
      */
-    void integrateCostSensitivityDU0(
-        control_vector& dU0,
+    void integrateCostSensitivityDU0(control_vector& dU0,
         const SCALAR startTime,
         const size_t numSteps,
-        const SCALAR dt
-        )
+        const SCALAR dt)
     {
         costIndex_ = 0;
         SCALAR time = startTime;
         dU0.setZero();
-        for(size_t i = 0; i < numSteps; ++i)
+        for (size_t i = 0; i < numSteps; ++i)
         {
             stepperCostDU0_->do_step(costdU0dot_, dU0, time, dt);
             time += dt;
@@ -461,17 +438,15 @@ public:
      * @param[in]      numSteps   The number of integration steps
      * @param[in]      dt         The integration time step
      */
-    void integrateCostSensitivityDUf(
-        control_vector& dUf,
+    void integrateCostSensitivityDUf(control_vector& dUf,
         const SCALAR& startTime,
         const size_t numSteps,
-        const SCALAR dt
-        )
+        const SCALAR dt)
     {
         costIndex_ = 0;
         SCALAR time = startTime;
         dUf.setZero();
-        for(size_t i = 0; i < numSteps; ++i)
+        for (size_t i = 0; i < numSteps; ++i)
         {
             stepperCostDU0_->do_step(costdUfdot_, dUf, time, dt);
             time += dt;
@@ -484,12 +459,13 @@ public:
      */
     void linearize()
     {
-        for(size_t i = 0; i < statesCached_.size(); ++i)
+        for (size_t i = 0; i < statesCached_.size(); ++i)
         {
             arrayA_.push_back(linearSystem_->getDerivativeState(statesCached_[i], controlsCached_[i], timesCached_[i]));
-            arrayB_.push_back(linearSystem_->getDerivativeControl(statesCached_[i], controlsCached_[i], timesCached_[i]));
+            arrayB_.push_back(
+                linearSystem_->getDerivativeControl(statesCached_[i], controlsCached_[i], timesCached_[i]));
         }
-    }    
+    }
 
     /**
      * @brief      Clears the cached states, controls and times
@@ -523,21 +499,20 @@ public:
     }
 
 private:
-
     std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> controlledSystem_;
-    std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> > linearSystem_;
-    std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> > costFunction_;                                                     
+    std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem_;
+    std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFunction_;
 
     // Integrate the function
-    std::function<void (const SCALAR, SCALAR&, const SCALAR)> costDot_;
-    std::function<void (const state_vector&, state_vector&, const SCALAR)> costdX0dot_;
-    std::function<void (const control_vector&, control_vector&, const SCALAR)> costdU0dot_;
-    std::function<void (const control_vector&, control_vector&, const SCALAR)> costdUfdot_;
+    std::function<void(const SCALAR, SCALAR&, const SCALAR)> costDot_;
+    std::function<void(const state_vector&, state_vector&, const SCALAR)> costdX0dot_;
+    std::function<void(const control_vector&, control_vector&, const SCALAR)> costdU0dot_;
+    std::function<void(const control_vector&, control_vector&, const SCALAR)> costdUfdot_;
 
     // Sensitivities
-    std::function<void (const state_matrix&, state_matrix&, const SCALAR)> dX0dot_;
-    std::function<void (const state_control_matrix&, state_control_matrix&, const SCALAR)> dU0dot_;
-    std::function<void (const state_control_matrix&, state_control_matrix&, const SCALAR)> dUfdot_;
+    std::function<void(const state_matrix&, state_matrix&, const SCALAR)> dX0dot_;
+    std::function<void(const state_control_matrix&, state_control_matrix&, const SCALAR)> dU0dot_;
+    std::function<void(const state_control_matrix&, state_control_matrix&, const SCALAR)> dUfdot_;
 
     // Cache
     bool cacheData_;
@@ -565,12 +540,7 @@ private:
     size_t dX0Index_;
     size_t dU0Index_;
 
-    std::function<void (const state_vector&, state_vector&, const SCALAR)> xDot_;
-
-
+    std::function<void(const state_vector&, state_vector&, const SCALAR)> xDot_;
 };
-
-
 }
 }
-

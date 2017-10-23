@@ -24,12 +24,11 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_NLOC_FIXBASENLOC_H_
-#define INCLUDE_CT_RBD_NLOC_FIXBASENLOC_H_
+#pragma once
 
 #include <ct/rbd/systems/FixBaseFDSystem.h>
 
-namespace ct{
+namespace ct {
 namespace rbd {
 
 /**
@@ -39,112 +38,108 @@ template <class RBDDynamics, typename SCALAR = double>
 class FixBaseNLOC
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    static const bool eeForcesAreControlInputs = false;
 
-	static const bool eeForcesAreControlInputs = false;
+    typedef FixBaseFDSystem<RBDDynamics, eeForcesAreControlInputs> FBSystem;
+    typedef ct::core::LinearSystem<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> LinearizedSystem;
+    typedef ct::rbd::RbdLinearizer<FBSystem> SystemLinearizer;
 
-	typedef FixBaseFDSystem<RBDDynamics, eeForcesAreControlInputs> FBSystem;
-	typedef ct::core::LinearSystem<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> LinearizedSystem;
-	typedef ct::rbd::RbdLinearizer<FBSystem> SystemLinearizer;
+    typedef typename RBDDynamics::JointAcceleration_t JointAcceleration_t;
+    typedef typename RBDDynamics::ExtLinkForces_t ExtLinkForces_t;
 
-	typedef typename RBDDynamics::JointAcceleration_t JointAcceleration_t;
-	typedef typename RBDDynamics::ExtLinkForces_t ExtLinkForces_t;
+    //! @ todo: introduce templates for P_DIM and V_DIM
+    typedef ct::optcon::NLOptConSolver<FBSystem::STATE_DIM,
+        FBSystem::CONTROL_DIM,
+        FBSystem::STATE_DIM / 2,
+        FBSystem::STATE_DIM / 2,
+        SCALAR>
+        NLOptConSolver;
 
-	//! @ todo: introduce templates for P_DIM and V_DIM
-	typedef ct::optcon::NLOptConSolver<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, FBSystem::STATE_DIM/2, FBSystem::STATE_DIM/2, SCALAR> NLOptConSolver;
+    typedef typename core::StateVector<FBSystem::STATE_DIM, SCALAR> StateVector;
+    typedef typename core::ControlVector<FBSystem::CONTROL_DIM, SCALAR> ControlVector;
+    typedef typename core::FeedbackMatrix<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> FeedbackMatrix;
+    typedef typename core::StateVectorArray<FBSystem::STATE_DIM, SCALAR> StateVectorArray;
+    typedef typename core::ControlVectorArray<FBSystem::CONTROL_DIM, SCALAR> ControlVectorArray;
+    typedef typename core::FeedbackArray<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> FeedbackArray;
+    typedef typename core::StateFeedbackController<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>
+        StateFeedbackController;
 
-	typedef typename core::StateVector<FBSystem::STATE_DIM, SCALAR> StateVector;
-	typedef typename core::ControlVector<FBSystem::CONTROL_DIM, SCALAR> ControlVector;
-	typedef typename core::FeedbackMatrix<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> FeedbackMatrix;
-	typedef typename core::StateVectorArray<FBSystem::STATE_DIM, SCALAR> StateVectorArray;
-	typedef typename core::ControlVectorArray<FBSystem::CONTROL_DIM, SCALAR> ControlVectorArray;
-	typedef typename core::FeedbackArray<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> FeedbackArray;
-	typedef typename core::StateFeedbackController<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> StateFeedbackController;
-
-	typedef ct::optcon::CostFunctionAD<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> CostFunction;
-
-
-	//! constructor for loading nloc settings from file
-	FixBaseNLOC(
-			const std::string& costFunctionFile,
-			const std::string& settingsFile,
-			std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
-			bool verbose = false,
-			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
+    typedef ct::optcon::CostFunctionAD<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> CostFunction;
 
 
-	//! constructor which directly takes the nloc settings
-	FixBaseNLOC(
-			const std::string& costFunctionFile,
-			const typename NLOptConSolver::Settings_t& nlocSettings,
-			std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
-			bool verbose = false,
-			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
+    //! constructor for loading nloc settings from file
+    FixBaseNLOC(const std::string& costFunctionFile,
+        const std::string& settingsFile,
+        std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
+        bool verbose = false,
+        std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
 
 
-	void initialize(
-			const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x0,
-			const core::Time& tf,
-			StateVectorArray x_ref = StateVectorArray(),
-			FeedbackArray u0_fb = FeedbackArray(),
-			ControlVectorArray u0_ff = ControlVectorArray());
+    //! constructor which directly takes the nloc settings
+    FixBaseNLOC(const std::string& costFunctionFile,
+        const typename NLOptConSolver::Settings_t& nlocSettings,
+        std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
+        bool verbose = false,
+        std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
 
 
-	//! initialize fixed-base robot with a steady pose using inverse dynamics torques as feedforward
-	void initializeSteadyPose(
-			const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x0,
-			const core::Time& tf,
-			const int N,
-			FeedbackMatrix K = FeedbackMatrix::Zero());
+    void initialize(const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x0,
+        const core::Time& tf,
+        StateVectorArray x_ref = StateVectorArray(),
+        FeedbackArray u0_fb = FeedbackArray(),
+        ControlVectorArray u0_ff = ControlVectorArray());
 
 
-	//! initialize fixed-base robot with a directly interpolated state trajectory and corresponding ID torques
-	void initializeDirectInterpolation(
-			const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x0,
-			const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& xf,
-			const core::Time& tf,
-			const int N,
-			FeedbackMatrix K = FeedbackMatrix::Zero());
+    //! initialize fixed-base robot with a steady pose using inverse dynamics torques as feedforward
+    void initializeSteadyPose(const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x0,
+        const core::Time& tf,
+        const int N,
+        FeedbackMatrix K = FeedbackMatrix::Zero());
 
 
-	bool runIteration();
+    //! initialize fixed-base robot with a directly interpolated state trajectory and corresponding ID torques
+    void initializeDirectInterpolation(const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x0,
+        const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& xf,
+        const core::Time& tf,
+        const int N,
+        FeedbackMatrix K = FeedbackMatrix::Zero());
 
-	const core::StateFeedbackController<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>& getSolution();
 
-	const StateVectorArray& retrieveLastRollout();
+    bool runIteration();
 
-	const core::TimeArray& getTimeArray();
+    const core::StateFeedbackController<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>& getSolution();
 
-	const FeedbackArray& getFeedbackArray();
+    const StateVectorArray& retrieveLastRollout();
 
-	const ControlVectorArray& getControlVectorArray();
+    const core::TimeArray& getTimeArray();
 
-	const typename NLOptConSolver::Settings_t& getSettings() const;
+    const FeedbackArray& getFeedbackArray();
 
-	void changeCostFunction(std::shared_ptr<CostFunction> costFunction);
+    const ControlVectorArray& getControlVectorArray();
 
-	std::shared_ptr<NLOptConSolver> getSolver();
+    const typename NLOptConSolver::Settings_t& getSettings() const;
+
+    void changeCostFunction(std::shared_ptr<CostFunction> costFunction);
+
+    std::shared_ptr<NLOptConSolver> getSolver();
 
 
 private:
+    //! compute fix-base inverse dynamics torques for initialization
+    void computeIDTorques(const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x, ControlVector& u);
 
-	//! compute fix-base inverse dynamics torques for initialization
-	void computeIDTorques(const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x, ControlVector& u);
+    std::shared_ptr<FBSystem> system_;
+    std::shared_ptr<LinearizedSystem> linearizedSystem_;
+    std::shared_ptr<CostFunction> costFunction_;
 
-	std::shared_ptr<FBSystem> system_;
-	std::shared_ptr<LinearizedSystem> linearizedSystem_;
-	std::shared_ptr<CostFunction> costFunction_;
+    optcon::OptConProblem<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> optConProblem_;
 
-	optcon::OptConProblem<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> optConProblem_;
+    std::shared_ptr<NLOptConSolver> nlocSolver_;
 
-	std::shared_ptr<NLOptConSolver> nlocSolver_;
-
-	size_t iteration_;
-
+    size_t iteration_;
 };
 
-} // namespace rbd
-} // namespace ct
-
-#endif /* INCLUDE_CT_RBD_NLOC_FIXBASENLOC_H_ */
+}  // namespace rbd
+}  // namespace ct

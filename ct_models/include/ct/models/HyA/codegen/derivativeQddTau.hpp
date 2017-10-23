@@ -38,15 +38,12 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  This is an example of how to use the generated code.
  */
 
-#ifndef HYA_CODEGEN_DERIVATIVEQDDTAU_HPP_
-#define HYA_CODEGEN_DERIVATIVEQDDTAU_HPP_
+#pragma once
 
 #include <ct/core/core.h>
 
 namespace ct_HyA {
 
-Eigen::Matrix<double, 6, 6> computeQddTauCodegen(const Eigen::Matrix<double, 12, 1>& state, const Eigen::Matrix<double, 6, 1>& tau);
-
+Eigen::Matrix<double, 6, 6> computeQddTauCodegen(const Eigen::Matrix<double, 12, 1>& state,
+    const Eigen::Matrix<double, 6, 1>& tau);
 }
-
-#endif /* TEST_CODEGEN_DERIVATIVEQDDTAU_HPP_ */

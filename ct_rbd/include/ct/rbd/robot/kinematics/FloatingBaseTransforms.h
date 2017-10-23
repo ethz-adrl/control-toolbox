@@ -32,19 +32,17 @@ namespace ct {
 namespace rbd {
 
 template <class RBD>
-class FloatingBaseTransforms {
+class FloatingBaseTransforms
+{
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	FloatingBaseTransforms(std::shared_ptr<RBD> rbdContainer) :
-		rbdContainer_(rbdContainer)
-	{}
-
-	virtual ~FloatingBaseTransforms() {};
+    FloatingBaseTransforms(std::shared_ptr<RBD> rbdContainer) : rbdContainer_(rbdContainer) {}
+    virtual ~FloatingBaseTransforms(){};
 
 
 private:
-	std::shared_ptr<RBD> rbdContainer_;
+    std::shared_ptr<RBD> rbdContainer_;
 };
 
 } /* namespace rbd */

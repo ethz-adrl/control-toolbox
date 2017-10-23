@@ -28,9 +28,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/optcon/optcon.h>
 
-namespace ct{
-namespace optcon{
-namespace example{
+namespace ct {
+namespace optcon {
+namespace example {
 
 
 /*!
@@ -39,50 +39,50 @@ namespace example{
  */
 TEST(TrackingTest, TrackingTermTest)
 {
-	const size_t state_dim = 12;
-	const size_t control_dim = 4;
+    const size_t state_dim = 12;
+    const size_t control_dim = 4;
 
-	// analytical costfunction
-	std::shared_ptr<CostFunctionAnalytical<state_dim, control_dim>> costFunction (new CostFunctionAnalytical<state_dim, control_dim>());
+    // analytical costfunction
+    std::shared_ptr<CostFunctionAnalytical<state_dim, control_dim>> costFunction(
+        new CostFunctionAnalytical<state_dim, control_dim>());
 
-	Eigen::Matrix<double, state_dim, state_dim> Q;
-	Eigen::Matrix<double, control_dim, control_dim> R;
-	Q.setIdentity();
-	R.setIdentity();
+    Eigen::Matrix<double, state_dim, state_dim> Q;
+    Eigen::Matrix<double, control_dim, control_dim> R;
+    Q.setIdentity();
+    R.setIdentity();
 
-	// create a reference trajectory and fill it with random values
-	core::StateTrajectory<state_dim> stateTraj;
-	core::ControlTrajectory<control_dim> controlTraj;
-	size_t trajSize = 50;
-	bool timeIsAbsolute = true;
-	for(size_t i = 0; i < trajSize; ++i)
-	{
-		stateTraj.push_back(core::StateVector<state_dim>::Random(), double(i), timeIsAbsolute);
-		controlTraj.push_back(core::ControlVector<control_dim>::Random(), double(i), timeIsAbsolute);
-	}
+    // create a reference trajectory and fill it with random values
+    core::StateTrajectory<state_dim> stateTraj;
+    core::ControlTrajectory<control_dim> controlTraj;
+    size_t trajSize = 50;
+    bool timeIsAbsolute = true;
+    for (size_t i = 0; i < trajSize; ++i)
+    {
+        stateTraj.push_back(core::StateVector<state_dim>::Random(), double(i), timeIsAbsolute);
+        controlTraj.push_back(core::ControlVector<control_dim>::Random(), double(i), timeIsAbsolute);
+    }
 
-	std::shared_ptr< TermQuadTracking<state_dim, control_dim> > trackingTerm (
-			new TermQuadTracking<state_dim, control_dim>(Q, R, core::InterpolationType::LIN, core::InterpolationType::ZOH, true));
+    std::shared_ptr<TermQuadTracking<state_dim, control_dim>> trackingTerm(new TermQuadTracking<state_dim, control_dim>(
+        Q, R, core::InterpolationType::LIN, core::InterpolationType::ZOH, true));
 
-	trackingTerm->setStateAndControlReference(stateTraj, controlTraj);
-	costFunction->addIntermediateTerm(trackingTerm);
+    trackingTerm->setStateAndControlReference(stateTraj, controlTraj);
+    costFunction->addIntermediateTerm(trackingTerm);
 
-	ct::core::StateVector<state_dim> x;
-	ct::core::ControlVector<control_dim> u;
-	x.setRandom();
-	u.setRandom();
-	double t = 0.0;
+    ct::core::StateVector<state_dim> x;
+    ct::core::ControlVector<control_dim> u;
+    x.setRandom();
+    u.setRandom();
+    double t = 0.0;
 
-	costFunction->setCurrentStateAndControl(x, u, t);
+    costFunction->setCurrentStateAndControl(x, u, t);
 
-	ASSERT_TRUE(costFunction->stateDerivativeIntermediateTest());
-	ASSERT_TRUE(costFunction->controlDerivativeIntermediateTest());
-
+    ASSERT_TRUE(costFunction->stateDerivativeIntermediateTest());
+    ASSERT_TRUE(costFunction->controlDerivativeIntermediateTest());
 }
 
-} // namespace example
-} // namespace optcon
-} // namespace ct
+}  // namespace example
+}  // namespace optcon
+}  // namespace ct
 
 
 /*!
@@ -91,8 +91,7 @@ TEST(TrackingTest, TrackingTermTest)
  */
 int main(int argc, char** argv)
 {
-	using namespace ct::optcon::example;
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+    using namespace ct::optcon::example;
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
-

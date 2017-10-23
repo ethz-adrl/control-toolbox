@@ -24,16 +24,9 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef QUADROTOR_WITH_LOAD_H_
-#define QUADROTOR_WITH_LOAD_H_
-
-#include <Eigen/Core>
+#pragma once
 
 #include <ct/rbd/rbd.h>
-
-//#include <ct/rbd/robot/RobCoGenContainer.h>
-//#include <ct/rbd/robot/Kinematics.h>
-//#include <ct/rbd/robot/Dynamics.h>
 
 #include "generated/declarations.h"
 #include "generated/forward_dynamics.h"
@@ -124,6 +117,3 @@ inline void KinematicsQuadrotorWithLoad::initEndeffectors(std::array<EndEffector
 }*/
 
 #include <ct/rbd/robot/robcogen/robcogenHelpers.h>
-
-
-#endif /* QUADROTOR_WITH_LOAD_H_ */

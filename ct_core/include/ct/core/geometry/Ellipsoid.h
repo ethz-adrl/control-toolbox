@@ -32,7 +32,7 @@ namespace core {
 namespace tpl {
 
 
-template<typename SCALAR>
+template <typename SCALAR>
 class Ellipsoid
 {
 public:
@@ -49,21 +49,8 @@ public:
      * @param[in]  A     The matrix of half axes
      * @param[in]  S     The orientation of the ellipsoid
      */
-    Ellipsoid(
-        const Vector3s& x0,
-        const Matrix3s& A,
-        const Matrix3s& S)
-    :
-        x0_(x0),
-        A_(A),
-        S_(S)
-    {}
-
-    void setFromQuaterion(const Quaternions& quat)
-    {
-        S_ = Matrix3s(quat);
-    }
-
+    Ellipsoid(const Vector3s& x0, const Matrix3s& A, const Matrix3s& S) : x0_(x0), A_(A), S_(S) {}
+    void setFromQuaterion(const Quaternions& quat) { S_ = Matrix3s(quat); }
     /**
      * @brief      Returns a value =< 1 if point x is inside the ellpsoid, > 1
      *             otherwise
@@ -77,27 +64,20 @@ public:
         return (x - x0_).transpose() * S_ * A_.transpose() * A_ * S_.transpose() * (x - x0_) - SCALAR(1.0);
     }
 
-    const Vector3s& x0() const {return x0_; }
-    Vector3s& x0() {return x0_; }
-
-    const Matrix3s& A() const {return A_; }
-    Matrix3s& A() {return A_; }
-
-    const Matrix3s& S() const {return S_; }
-    Matrix3s& S() {return S_; }
-
-
+    const Vector3s& x0() const { return x0_; }
+    Vector3s& x0() { return x0_; }
+    const Matrix3s& A() const { return A_; }
+    Matrix3s& A() { return A_; }
+    const Matrix3s& S() const { return S_; }
+    Matrix3s& S() { return S_; }
 private:
-    Vector3s x0_; // The center of the ellipsoid
-    Matrix3s A_; // The matrix of halfaxes
-    Matrix3s S_; // The orientation of the ellipsoid
-
+    Vector3s x0_;  // The center of the ellipsoid
+    Matrix3s A_;   // The matrix of halfaxes
+    Matrix3s S_;   // The orientation of the ellipsoid
 };
-
 }
 
 typedef tpl::Ellipsoid<double> Ellipsoid;
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

@@ -28,8 +28,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <mutex>
 
-namespace ct{
-namespace core{ 
+namespace ct {
+namespace core {
 
 /**
  * @brief      This class provides static methods to initialize a parallel
@@ -40,23 +40,14 @@ class CppadParallel
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 public:
+    static CppadParallel& getInstance()
+    {
+        static CppadParallel instance;  // Guaranteed to be destroyed, instantiated on first use.
+        return instance;
+    }
 
-	static CppadParallel& getInstance()
-	{
-		static CppadParallel instance; // Guaranteed to be destroyed, instantiated on first use.
-		return instance;
-	}
-
-	static void initParallel(size_t numThreads)
-	{
-		CppadParallel::getInstance().initParallelImpl(numThreads);
-	}
-
-	static void resetParallel()
-	{
-		CppadParallel::getInstance().resetParallelImpl();
-	}
-
+    static void initParallel(size_t numThreads) { CppadParallel::getInstance().initParallelImpl(numThreads); }
+    static void resetParallel() { CppadParallel::getInstance().resetParallelImpl(); }
 private:
     /**
      * @brief      Call this function before entering a parallel section
@@ -69,9 +60,7 @@ private:
         isSequential_ = true;
         numThreads_ = numThreads;
 
-        CppAD::thread_alloc::parallel_setup(
-            numThreads_, in_parallel, thread_number
-        );
+        CppAD::thread_alloc::parallel_setup(numThreads_, in_parallel, thread_number);
 
         CppAD::thread_alloc::hold_memory(true);
         CppAD::parallel_ad<double>();
@@ -82,19 +71,13 @@ private:
     {
         threadMap_.clear();
         isSequential_ = true;
-        CppAD::thread_alloc::parallel_setup(
-            1, CPPAD_NULL, CPPAD_NULL
-        );
+        CppAD::thread_alloc::parallel_setup(1, CPPAD_NULL, CPPAD_NULL);
         CppAD::thread_alloc::hold_memory(false);
         CppAD::parallel_ad<double>();
     }
 
 
-    CppadParallel() :
-    	isSequential_(false),
-		numThreads_(100)
-    {}
-
+    CppadParallel() : isSequential_(false), numThreads_(100) {}
     bool isSequential_;
     std::map<size_t, size_t> threadMap_;
     size_t numThreads_;
@@ -106,11 +89,7 @@ private:
      *
      * @return     True if in parallel
      */
-    static bool in_parallel(void)
-    {
-        return !(CppadParallel::getInstance().isSequential_);
-    }
-
+    static bool in_parallel(void) { return !(CppadParallel::getInstance().isSequential_); }
     /**
      * @brief      This method gets called by Cppad::parallel_setup and
      *             indicates the thread number of the current thread
@@ -126,23 +105,20 @@ private:
         CppadParallel& instance = CppadParallel::getInstance();
 
         instance.hashMutex_.lock();
-        if(instance.threadMap_.size() < instance.numThreads_)
-            if(!instance.threadMap_.count(hashId))
-            	instance.threadMap_.insert(std::make_pair(hashId, instance.threadMap_.size()));
+        if (instance.threadMap_.size() < instance.numThreads_)
+            if (!instance.threadMap_.count(hashId))
+                instance.threadMap_.insert(std::make_pair(hashId, instance.threadMap_.size()));
 
         size_t threadNum = instance.threadMap_[hashId];
         instance.hashMutex_.unlock();
-        
+
         return threadNum;
     }
 
     // singleton stuff
 public:
     CppadParallel(CppadParallel const&) = delete;
-    void operator=(CppadParallel const&)  = delete;
+    void operator=(CppadParallel const&) = delete;
 };
-
-
 }
 }
-

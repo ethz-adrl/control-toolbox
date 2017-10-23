@@ -43,8 +43,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#define DEBUG_PRINT_MPC	//! use this flag to enable debug printouts in the MPC implementation
 
 
-namespace ct{
-namespace optcon{
+namespace ct {
+namespace optcon {
 
 
 /** \defgroup MPC MPC
@@ -72,27 +72,26 @@ namespace optcon{
  *		the optimal control solver to be employed, for example SLQ or DMS
  *
  */
-template<typename OPTCON_SOLVER>
-class MPC {
-
+template <typename OPTCON_SOLVER>
+class MPC
+{
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    static const size_t STATE_DIM = OPTCON_SOLVER::STATE_D;
+    static const size_t CONTROL_DIM = OPTCON_SOLVER::CONTROL_D;
 
-	static const size_t STATE_DIM = OPTCON_SOLVER::STATE_D;
-	static const size_t CONTROL_DIM = OPTCON_SOLVER::CONTROL_D;
+    static const size_t P_DIM = OPTCON_SOLVER::POS_DIM;
+    static const size_t V_DIM = OPTCON_SOLVER::VEL_DIM;
 
-	static const size_t P_DIM = OPTCON_SOLVER::POS_DIM;
-	static const size_t V_DIM = OPTCON_SOLVER::VEL_DIM;
+    typedef typename OPTCON_SOLVER::Scalar_t Scalar_t;
+    typedef typename OPTCON_SOLVER::Policy_t Policy_t;
 
-	typedef typename OPTCON_SOLVER::Scalar_t Scalar_t;
-	typedef typename OPTCON_SOLVER::Policy_t Policy_t;
-
-	typedef OptConProblem<STATE_DIM, CONTROL_DIM, Scalar_t> OptConProblem_t;
+    typedef OptConProblem<STATE_DIM, CONTROL_DIM, Scalar_t> OptConProblem_t;
 
 
-	//! MPC solver constructor
-	/*!
+    //! MPC solver constructor
+    /*!
 	 *
 	 * @param problem
 	 * 	the optimal control problem set up by the user
@@ -107,48 +106,47 @@ public:
 	 *  user-provided custom time horizon strategy, which derives from base class 'MpcTimeHorizon'.
 	 *  If not specified, MPC will use one of its default implementations or throw an error if there is no default match.
 	 */
-	MPC(
-			const OptConProblem_t& problem,
-			const typename OPTCON_SOLVER::Settings_t& solverSettings,
-			const mpc_settings& mpcsettings = mpc_settings(),
-			std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> customPolicyHandler = nullptr,
-			std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> customTimeHorizon = nullptr);
+    MPC(const OptConProblem_t& problem,
+        const typename OPTCON_SOLVER::Settings_t& solverSettings,
+        const mpc_settings& mpcsettings = mpc_settings(),
+        std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> customPolicyHandler = nullptr,
+        std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> customTimeHorizon = nullptr);
 
 
-	//! Allows access to the solver member, required mainly for unit testing.
-	/*!
+    //! Allows access to the solver member, required mainly for unit testing.
+    /*!
 	 * @return reference to the optimal control problem solver
 	 */
-	OPTCON_SOLVER& getSolver();
+    OPTCON_SOLVER& getSolver();
 
 
-	//! Additional method to insert a custom time horizon strategy, independent from the constructor
-	/*!
+    //! Additional method to insert a custom time horizon strategy, independent from the constructor
+    /*!
 	 * @param timeHorizonStrategy
 	 * 	the time horizon strategy provided by the user
 	 */
-	void setTimeHorizonStrategy(std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> timeHorizonStrategy);
+    void setTimeHorizonStrategy(std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> timeHorizonStrategy);
 
-	//! set a new initial guess for the policy
-	/**
+    //! set a new initial guess for the policy
+    /**
 	 * @param initGuess
 	 */
-	void setInitialGuess(const Policy_t& initGuess);
+    void setInitialGuess(const Policy_t& initGuess);
 
-	//! Check if final time horizon for this task was reached
-	bool timeHorizonReached();
+    //! Check if final time horizon for this task was reached
+    bool timeHorizonReached();
 
 
-	//! retrieve the time that elapsed since the first successful solve() call to an Optimal Control Problem
-	/*!
+    //! retrieve the time that elapsed since the first successful solve() call to an Optimal Control Problem
+    /*!
 	 * the returned time can be used externally, for example to update cost functions
 	 * @return time elapsed
 	 */
-	const Scalar_t timeSinceFirstSuccessfulSolve();
+    const Scalar_t timeSinceFirstSuccessfulSolve();
 
 
-	//! perform forward integration of the measured system state, to compensate for expected or already occured time lags
-	/*!
+    //! perform forward integration of the measured system state, to compensate for expected or already occured time lags
+    /*!
 	 * State forward integration
 	 * @param t_forward_start
 	 * 	time where forward integration starts
@@ -159,15 +157,15 @@ public:
 	 * @param forwardIntegrationController
 	 *  (optional) external controller for forward integration
 	 */
-	void doPreIntegration(
-			const Scalar_t& t_forward_start,
-			const Scalar_t& t_forward_stop,
-			core::StateVector<STATE_DIM, Scalar_t>& x_start,
-			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr);
+    void doPreIntegration(const Scalar_t& t_forward_start,
+        const Scalar_t& t_forward_stop,
+        core::StateVector<STATE_DIM, Scalar_t>& x_start,
+        const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController =
+            nullptr);
 
 
-	//! main MPC run method
-	/*!
+    //! main MPC run method
+    /*!
 	 * @param x
 	 * 	current system state
 	 * @param x_ts
@@ -183,47 +181,45 @@ public:
 	 * 		the last iteration.
 	 * @return true if solve was successful, false otherwise.
 	 */
-	bool run(const core::StateVector<STATE_DIM, Scalar_t>& x,
-			const Scalar_t x_ts,
-			Policy_t& newPolicy,
-			Scalar_t& newPolicy_ts,
-			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr);
+    bool run(const core::StateVector<STATE_DIM, Scalar_t>& x,
+        const Scalar_t x_ts,
+        Policy_t& newPolicy,
+        Scalar_t& newPolicy_ts,
+        const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController =
+            nullptr);
 
 
-	void prepareIteration();
+    void prepareIteration();
 
 
-	bool finishIteration(
-			const core::StateVector<STATE_DIM, Scalar_t>& x,
-			const Scalar_t x_ts,
-			Policy_t& newPolicy,
-			Scalar_t& newPolicy_ts,
-			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController = nullptr);
+    bool finishIteration(const core::StateVector<STATE_DIM, Scalar_t>& x,
+        const Scalar_t x_ts,
+        Policy_t& newPolicy,
+        Scalar_t& newPolicy_ts,
+        const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController =
+            nullptr);
 
 
+    //! reset the mpc problem and provide new problem time horizon (mandatory)
+    void resetMpc(const Scalar_t& newTimeHorizon);
 
-	//! reset the mpc problem and provide new problem time horizon (mandatory)
-	void resetMpc(const Scalar_t& newTimeHorizon);
 
-
-	//! update the mpc settings in all instances (main class, time keeper class, etc)
-	/*!
+    //! update the mpc settings in all instances (main class, time keeper class, etc)
+    /*!
 	 * update the mpc settings in all instances
 	 * @param settings
 	 * 	the new mpc settings provided by the user.
 	 */
-	void updateSettings(const mpc_settings& settings);
+    void updateSettings(const mpc_settings& settings);
 
 
-	//! printout simple statistical data
-	void printMpcSummary();
+    //! printout simple statistical data
+    void printMpcSummary();
 
 
 private:
-
-
-	//! state forward propagation (for delay compensation)
-	/*!
+    //! state forward propagation (for delay compensation)
+    /*!
 	 * Perform forward integration about the given prediction horizon. Currently, this automatically uses adaptive integration.
 	 * - uses an arbitrary controller given, which is important for hierarchical setups where the actual controller may be refined further
 	 * - clones that controller, since it may be mistakenly used somewhere else otherwise.
@@ -237,37 +233,36 @@ private:
 	 * @param controller
 	 *  the controller to be used for forward propagation
 	 */
-	void integrateForward(
-			const Scalar_t startTime,
-			const Scalar_t stopTime,
-			core::StateVector<STATE_DIM, Scalar_t>& state,
-			const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>>& controller);
+    void integrateForward(const Scalar_t startTime,
+        const Scalar_t stopTime,
+        core::StateVector<STATE_DIM, Scalar_t>& state,
+        const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>>& controller);
 
-	//! timings for pre-integration
-	Scalar_t t_forward_start_;
-	Scalar_t t_forward_stop_;
+    //! timings for pre-integration
+    Scalar_t t_forward_start_;
+    Scalar_t t_forward_stop_;
 
-	OPTCON_SOLVER solver_;	//! optimal control solver employed for mpc
+    OPTCON_SOLVER solver_;  //! optimal control solver employed for mpc
 
-	Policy_t currentPolicy_;	//! currently optimal policy, initial guess respectively
+    Policy_t currentPolicy_;  //! currently optimal policy, initial guess respectively
 
-	std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> policyHandler_;	//! policy handler, which takes care of warm-starting
+    std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>>
+        policyHandler_;  //! policy handler, which takes care of warm-starting
 
-	std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> timeHorizonStrategy_;	//! time horizon strategy, e.g. receding horizon optimal control
+    std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>>
+        timeHorizonStrategy_;  //! time horizon strategy, e.g. receding horizon optimal control
 
-	tpl::MpcTimeKeeper<Scalar_t> timeKeeper_;	//! time keeper
+    tpl::MpcTimeKeeper<Scalar_t> timeKeeper_;  //! time keeper
 
-	mpc_settings mpc_settings_;	//! mpc settings
+    mpc_settings mpc_settings_;  //! mpc settings
 
-	bool firstRun_;	//! true for first run
+    bool firstRun_;  //! true for first run
 
-	typename OPTCON_SOLVER::OptConProblem_t::DynamicsPtr_t dynamics_;	//! dynamics instance for forward integration
+    typename OPTCON_SOLVER::OptConProblem_t::DynamicsPtr_t dynamics_;  //! dynamics instance for forward integration
 
-	size_t runCallCounter_;	//! counter which gets incremented at every call of the run() method
-
+    size_t runCallCounter_;  //! counter which gets incremented at every call of the run() method
 };
 
 
-}	//namespace optcon
-}	//namespace ct
-
+}  //namespace optcon
+}  //namespace ct

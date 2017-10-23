@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_INTERNAL_TRAITSELECTORSPECS_HPP_
-#define INCLUDE_CT_RBD_INTERNAL_TRAITSELECTORSPECS_HPP_
+#pragma once
 
 #include "CppADCodegenTrait.h"
 #include "CppADDoubleTrait.h"
@@ -38,19 +37,16 @@ namespace tpl {
 template <>
 struct TraitSelector<CppAD::AD<double>>
 {
- 	typedef ct::rbd::internal::CppADDoubleTrait Trait;
+    typedef ct::rbd::internal::CppADDoubleTrait Trait;
 };
 
 template <>
 struct TraitSelector<CppAD::AD<CppAD::cg::CG<double>>>
 {
- 	typedef ct::rbd::internal::CppADCodegenTrait Trait;
+    typedef ct::rbd::internal::CppADCodegenTrait Trait;
 };
 
 
-} //namespace tpl
-} // namespace rbd
-} // namespace iit
-
-
-#endif //INCLUDE_EXTERNAL_HYQ_TRAITS_TRAITSELECTOR_HPP_
+}  //namespace tpl
+}  // namespace rbd
+}  // namespace iit

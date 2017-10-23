@@ -28,27 +28,26 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // #define DEBUG_PRINT
 
 
-template<typename SCALAR>
-IpoptSolver<SCALAR>::IpoptSolver(std::shared_ptr<tpl::Nlp<SCALAR>> nlp, const NlpSolverSettings& settings) :
-BASE(nlp, settings),
-settings_(BASE::settings_.ipoptSettings_)
+template <typename SCALAR>
+IpoptSolver<SCALAR>::IpoptSolver(std::shared_ptr<tpl::Nlp<SCALAR>> nlp, const NlpSolverSettings& settings)
+    : BASE(nlp, settings), settings_(BASE::settings_.ipoptSettings_)
 {
     //Constructor arguments
     //Argument 1: create console output
     //Argument 2: create empty
-    ipoptApp_ = std::shared_ptr<Ipopt::IpoptApplication> (new Ipopt::IpoptApplication(true,false));
+    ipoptApp_ = std::shared_ptr<Ipopt::IpoptApplication>(new Ipopt::IpoptApplication(true, false));
 }
 
-template<typename SCALAR>
+template <typename SCALAR>
 IpoptSolver<SCALAR>::~IpoptSolver()
 {
     // Needed to destruct all the IPOPT memory
-    Ipopt::Referencer* t=NULL;
+    Ipopt::Referencer* t = NULL;
     this->ReleaseRef(t);
     delete t;
 }
 
-template<typename SCALAR>
+template <typename SCALAR>
 void IpoptSolver<SCALAR>::configureDerived(const NlpSolverSettings& settings)
 {
     std::cout << "calling Ipopt configure derived" << std::endl;
@@ -57,7 +56,7 @@ void IpoptSolver<SCALAR>::configureDerived(const NlpSolverSettings& settings)
     this->isInitialized_ = true;
 }
 
-template<typename SCALAR>
+template <typename SCALAR>
 void IpoptSolver<SCALAR>::setSolverOptions()
 {
     ipoptApp_->Options()->SetNumericValue("tol", settings_.tol_);
@@ -69,7 +68,7 @@ void IpoptSolver<SCALAR>::setSolverOptions()
     ipoptApp_->Options()->SetStringValueIfUnset("linear_scaling_on_demand", settings_.linear_scaling_on_demand_);
     ipoptApp_->Options()->SetStringValueIfUnset("hessian_approximation", settings_.hessian_approximation_);
     // ipoptApp_->Options()->SetStringValueIfUnset("nlp_scaling_method", settings_.nlp_scaling_method_);
-    ipoptApp_->Options()->SetIntegerValue("print_level", settings_.printLevel_); //working now
+    ipoptApp_->Options()->SetIntegerValue("print_level", settings_.printLevel_);  //working now
     ipoptApp_->Options()->SetStringValueIfUnset("print_user_options", settings_.print_user_options_);
     // ipoptApp_->Options()->SetIntegerValue("print_frequency_iter", settings_.print_frequency_iter_);
     ipoptApp_->Options()->SetStringValueIfUnset("derivative_test", settings_.derivativeTest_);
@@ -81,32 +80,38 @@ void IpoptSolver<SCALAR>::setSolverOptions()
     ipoptApp_->Options()->SetStringValueIfUnset("linear_solver", settings_.linear_solver_);
 }
 
-template<typename SCALAR>
+template <typename SCALAR>
 bool IpoptSolver<SCALAR>::solve()
 {
     status_ = ipoptApp_->Initialize();
     if (!(status_ == Ipopt::Solve_Succeeded) && !this->isInitialized_)
-        throw(std::runtime_error("NLP initialization failed"));        
+        throw(std::runtime_error("NLP initialization failed"));
 
     // Ask Ipopt to solve the problem
     status_ = ipoptApp_->OptimizeTNLP(this);
 
-    if (status_ == Ipopt::Solve_Succeeded || status_ == Ipopt::Solved_To_Acceptable_Level) {
+    if (status_ == Ipopt::Solve_Succeeded || status_ == Ipopt::Solved_To_Acceptable_Level)
+    {
         // Retrieve some statistics about the solve
         Ipopt::Index iter_count = ipoptApp_->Statistics()->IterationCount();
-        std::cout << std::endl << std::endl << "*** The problem solved in " << iter_count << " iterations!" << std::endl;
+        std::cout << std::endl
+                  << std::endl
+                  << "*** The problem solved in " << iter_count << " iterations!" << std::endl;
 
         SCALAR final_obj = ipoptApp_->Statistics()->FinalObjective();
-        std::cout << std::endl << std::endl << "*** The final value of the objective function is " << final_obj << '.' << std::endl;
+        std::cout << std::endl
+                  << std::endl
+                  << "*** The final value of the objective function is " << final_obj << '.' << std::endl;
         return true;
     }
-    else{
+    else
+    {
         std::cout << " ipopt return value: " << status_ << std::endl;
         return false;
     }
 }
 
-template<typename SCALAR>
+template <typename SCALAR>
 void IpoptSolver<SCALAR>::prepareWarmStart(size_t maxIterations)
 {
     ipoptApp_->Options()->SetStringValue("warm_start_init_point", "yes");
@@ -119,9 +124,12 @@ void IpoptSolver<SCALAR>::prepareWarmStart(size_t maxIterations)
     ipoptApp_->Options()->SetStringValue("derivative_test", "none");
 }
 
-template<typename SCALAR>
-bool IpoptSolver<SCALAR>::get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
-        Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style)
+template <typename SCALAR>
+bool IpoptSolver<SCALAR>::get_nlp_info(Ipopt::Index& n,
+    Ipopt::Index& m,
+    Ipopt::Index& nnz_jac_g,
+    Ipopt::Index& nnz_h_lag,
+    IndexStyleEnum& index_style)
 {
 #ifdef DEBUG_PRINT
     std::cout << "... entering get_nlp_info()" << std::endl;
@@ -135,9 +143,9 @@ bool IpoptSolver<SCALAR>::get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::
     assert(m == m);
 
     nnz_jac_g = this->nlp_->getNonZeroJacobianCount();
-    assert(nnz_jac_g==nnz_jac_g);
+    assert(nnz_jac_g == nnz_jac_g);
 
-    if(settings_.hessian_approximation_ == "exact")
+    if (settings_.hessian_approximation_ == "exact")
         nnz_h_lag = this->nlp_->getNonZeroHessianCount();
 
     index_style = Ipopt::TNLP::C_STYLE;
@@ -151,13 +159,17 @@ bool IpoptSolver<SCALAR>::get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::
     return true;
 }
 
-template<typename SCALAR>
-bool IpoptSolver<SCALAR>::get_bounds_info(Ipopt::Index n, SCALAR* x_l, SCALAR* x_u,
-        Ipopt::Index m, SCALAR* g_l, SCALAR* g_u)
+template <typename SCALAR>
+bool IpoptSolver<SCALAR>::get_bounds_info(Ipopt::Index n,
+    SCALAR* x_l,
+    SCALAR* x_u,
+    Ipopt::Index m,
+    SCALAR* g_l,
+    SCALAR* g_u)
 {
 #ifdef DEBUG_PRINT
     std::cout << "... entering get_bounds_info()" << std::endl;
-#endif //DEBUG_PRINT
+#endif  //DEBUG_PRINT
     MapVecXs x_lVec(x_l, n);
     MapVecXs x_uVec(x_u, n);
     MapVecXs g_lVec(g_l, m);
@@ -176,35 +188,40 @@ bool IpoptSolver<SCALAR>::get_bounds_info(Ipopt::Index n, SCALAR* x_l, SCALAR* x
 
 #ifdef DEBUG_PRINT
     std::cout << "... Leaving get_bounds_info()" << std::endl;
-#endif //DEBUG_PRINT
+#endif  //DEBUG_PRINT
 
     return true;
 }
 
-template<typename SCALAR>
-bool IpoptSolver<SCALAR>::get_starting_point(Ipopt::Index n, bool init_x, SCALAR* x,
-        bool init_z, SCALAR* z_L, SCALAR* z_U,
-        Ipopt::Index m, bool init_lambda,
-        SCALAR* lambda)
+template <typename SCALAR>
+bool IpoptSolver<SCALAR>::get_starting_point(Ipopt::Index n,
+    bool init_x,
+    SCALAR* x,
+    bool init_z,
+    SCALAR* z_L,
+    SCALAR* z_U,
+    Ipopt::Index m,
+    bool init_lambda,
+    SCALAR* lambda)
 {
 #ifdef DEBUG_PRINT
     std::cout << "... entering get_starting_point()" << std::endl;
-#endif //DEBUG_PRINT
-       //
-    if(init_x)
+#endif  //DEBUG_PRINT
+    //
+    if (init_x)
     {
         MapVecXs xVec(x, n);
         this->nlp_->getInitialGuess(n, xVec);
     }
 
-    if(init_z)
+    if (init_z)
     {
         MapVecXs z_lVec(z_L, n);
         MapVecXs z_uVec(z_U, n);
         this->nlp_->getBoundMultipliers(n, z_lVec, z_uVec);
     }
 
-    if(init_lambda)
+    if (init_lambda)
     {
         MapVecXs lambdaVec(lambda, m);
         this->nlp_->getLambdaVars(m, lambdaVec);
@@ -213,17 +230,17 @@ bool IpoptSolver<SCALAR>::get_starting_point(Ipopt::Index n, bool init_x, SCALAR
 
 #ifdef DEBUG_PRINT
     std::cout << "... entering get_starting_point()" << std::endl;
-#endif //DEBUG_PRINT
+#endif  //DEBUG_PRINT
 
     return true;
 }
 
-template<typename SCALAR>
+template <typename SCALAR>
 bool IpoptSolver<SCALAR>::eval_f(Ipopt::Index n, const SCALAR* x, bool new_x, SCALAR& obj_value)
 {
 #ifdef DEBUG_PRINT
     std::cout << "... entering eval_f()" << std::endl;
-#endif //DEBUG_PRINT
+#endif  //DEBUG_PRINT
     MapConstVecXs xVec(x, n);
     this->nlp_->extractOptimizationVars(xVec, new_x);
     obj_value = this->nlp_->evaluateCostFun();
@@ -231,16 +248,16 @@ bool IpoptSolver<SCALAR>::eval_f(Ipopt::Index n, const SCALAR* x, bool new_x, SC
 
 #ifdef DEBUG_PRINT
     std::cout << "... leaving eval_f()" << std::endl;
-#endif //DEBUG_PRINT
+#endif  //DEBUG_PRINT
     return true;
 }
 
-template<typename SCALAR>
+template <typename SCALAR>
 bool IpoptSolver<SCALAR>::eval_grad_f(Ipopt::Index n, const SCALAR* x, bool new_x, SCALAR* grad_f)
 {
 #ifdef DEBUG_PRINT
     std::cout << "... entering eval_grad_f()" << std::endl;
-#endif //DEBUG_PRINT
+#endif  //DEBUG_PRINT
     MapVecXs grad_fVec(grad_f, n);
     MapConstVecXs xVec(x, n);
     this->nlp_->extractOptimizationVars(xVec, new_x);
@@ -248,16 +265,16 @@ bool IpoptSolver<SCALAR>::eval_grad_f(Ipopt::Index n, const SCALAR* x, bool new_
 
 #ifdef DEBUG_PRINT
     std::cout << "... leaving eval_grad_f()" << std::endl;
-#endif //DEBUG_PRINT
+#endif  //DEBUG_PRINT
     return true;
 }
 
-template<typename SCALAR>
+template <typename SCALAR>
 bool IpoptSolver<SCALAR>::eval_g(Ipopt::Index n, const SCALAR* x, bool new_x, Ipopt::Index m, SCALAR* g)
 {
 #ifdef DEBUG_PRINT
     std::cout << "... entering eval_g()" << std::endl;
-#endif //DEBUG_PRINT
+#endif  //DEBUG_PRINT
     assert(m == this->nlp_->getConstraintsCount());
     MapConstVecXs xVec(x, n);
     this->nlp_->extractOptimizationVars(xVec, new_x);
@@ -268,21 +285,26 @@ bool IpoptSolver<SCALAR>::eval_g(Ipopt::Index n, const SCALAR* x, bool new_x, Ip
 #ifdef DEBUG_PRINT
     std::cout << "gVec: " << gVec.transpose() << std::endl;
     std::cout << "... leaving eval_g()" << std::endl;
-#endif //DEBUG_PRINT
+#endif  //DEBUG_PRINT
 
     return true;
 }
 
-template<typename SCALAR>
-bool IpoptSolver<SCALAR>::eval_jac_g(Ipopt::Index n, const SCALAR* x, bool new_x,
-        Ipopt::Index m, Ipopt::Index nele_jac, Ipopt::Index* iRow, Ipopt::Index *jCol,
-        SCALAR* values)
+template <typename SCALAR>
+bool IpoptSolver<SCALAR>::eval_jac_g(Ipopt::Index n,
+    const SCALAR* x,
+    bool new_x,
+    Ipopt::Index m,
+    Ipopt::Index nele_jac,
+    Ipopt::Index* iRow,
+    Ipopt::Index* jCol,
+    SCALAR* values)
 {
     if (values == NULL)
     {
 #ifdef DEBUG_PRINT
         std::cout << "... entering eval_jac_g, values == NULL" << std::endl;
-#endif //DEBUG_PRINT
+#endif  //DEBUG_PRINT
         // set indices of nonzero elements of the jacobian
         Eigen::Map<Eigen::VectorXi> iRowVec(iRow, nele_jac);
         Eigen::Map<Eigen::VectorXi> jColVec(jCol, nele_jac);
@@ -291,13 +313,13 @@ bool IpoptSolver<SCALAR>::eval_jac_g(Ipopt::Index n, const SCALAR* x, bool new_x
 
 #ifdef DEBUG_PRINT
         std::cout << "... leaving eval_jac_g, values == NULL" << std::endl;
-#endif //DEBUG_PRINT
+#endif  //DEBUG_PRINT
     }
     else
     {
 #ifdef DEBUG_PRINT
         std::cout << "... entering eval_jac_g, values != NULL" << std::endl;
-#endif //DEBUG_PRINT
+#endif  //DEBUG_PRINT
         MapVecXs valVec(values, nele_jac);
         MapConstVecXs xVec(x, n);
         this->nlp_->extractOptimizationVars(xVec, new_x);
@@ -306,19 +328,25 @@ bool IpoptSolver<SCALAR>::eval_jac_g(Ipopt::Index n, const SCALAR* x, bool new_x
 
 #ifdef DEBUG_PRINT
         std::cout << "... leaving eval_jac_g, values != NULL" << std::endl;
-#endif //DEBUG_PRINT
+#endif  //DEBUG_PRINT
     }
 
     return true;
 }
 
-template<typename SCALAR>
-bool IpoptSolver<SCALAR>::eval_h(Ipopt::Index n, const SCALAR* x, bool new_x,
-        SCALAR obj_factor, Ipopt::Index m, const SCALAR* lambda,
-        bool new_lambda, Ipopt::Index nele_hess, Ipopt::Index* iRow,
-        Ipopt::Index* jCol, SCALAR* values)
+template <typename SCALAR>
+bool IpoptSolver<SCALAR>::eval_h(Ipopt::Index n,
+    const SCALAR* x,
+    bool new_x,
+    SCALAR obj_factor,
+    Ipopt::Index m,
+    const SCALAR* lambda,
+    bool new_lambda,
+    Ipopt::Index nele_hess,
+    Ipopt::Index* iRow,
+    Ipopt::Index* jCol,
+    SCALAR* values)
 {
-
 #ifdef DEBUG_PRINT
     std::cout << "... entering eval_h()" << std::endl;
 #endif
@@ -341,9 +369,9 @@ bool IpoptSolver<SCALAR>::eval_h(Ipopt::Index n, const SCALAR* x, bool new_x,
         this->nlp_->evaluateHessian(nele_hess, valVec, obj_factor, lambdaVec);
     }
 
-    // only needed if quasi-newton approximation is not used, hence set to -1 (not used)!
-    // ATTENTION: for hard coding of the hessian, one only needs the lower left corner (since it is symmetric) - IPOPT knows that
-    //nnz_h_lag = -1;
+// only needed if quasi-newton approximation is not used, hence set to -1 (not used)!
+// ATTENTION: for hard coding of the hessian, one only needs the lower left corner (since it is symmetric) - IPOPT knows that
+//nnz_h_lag = -1;
 
 #ifdef DEBUG_PRINT
     std::cout << "... leaving eval_h()" << std::endl;
@@ -352,13 +380,18 @@ bool IpoptSolver<SCALAR>::eval_h(Ipopt::Index n, const SCALAR* x, bool new_x,
     return true;
 }
 
-template<typename SCALAR>
+template <typename SCALAR>
 void IpoptSolver<SCALAR>::finalize_solution(Ipopt::SolverReturn status,
-        Ipopt::Index n, const SCALAR* x, const SCALAR* z_L, const SCALAR* z_U,
-        Ipopt::Index m, const SCALAR* g, const SCALAR* lambda,
-        SCALAR obj_value,
-        const Ipopt::IpoptData* ip_data,
-        Ipopt::IpoptCalculatedQuantities* ip_cq)
+    Ipopt::Index n,
+    const SCALAR* x,
+    const SCALAR* z_L,
+    const SCALAR* z_U,
+    Ipopt::Index m,
+    const SCALAR* g,
+    const SCALAR* lambda,
+    SCALAR obj_value,
+    const Ipopt::IpoptData* ip_data,
+    Ipopt::IpoptCalculatedQuantities* ip_cq)
 {
 #ifdef DEBUG_PRINT
     std::cout << "... entering finalize_solution() ..." << std::endl;

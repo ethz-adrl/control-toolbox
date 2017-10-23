@@ -68,5 +68,4 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // keep standard header guard (easy debugging)
 // header guard is identical to the one in core.h
-#endif // INCLUDE_CT_CORE_CORE_H_
-
+#endif  // INCLUDE_CT_CORE_CORE_H_

@@ -34,20 +34,20 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, class SCALAR = double>
 class FeedbackMatrix : public Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	FeedbackMatrix() {};
-	virtual ~FeedbackMatrix() {};
+    FeedbackMatrix(){};
+    virtual ~FeedbackMatrix(){};
 
     typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> Base;
 
     // This constructor allows you to construct MyVectorType from Eigen expressions
-    template<typename OtherDerived>
-    FeedbackMatrix(const Eigen::MatrixBase<OtherDerived>& other)
-        : Base(other)
-    { }
+    template <typename OtherDerived>
+    FeedbackMatrix(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)
+    {
+    }
     // This method allows you to assign Eigen expressions to MyVectorType
-    template<typename OtherDerived>
+    template <typename OtherDerived>
     FeedbackMatrix& operator=(const Eigen::MatrixBase<OtherDerived>& other)
     {
         this->Base::operator=(other);
@@ -57,4 +57,3 @@ public:
 
 } /* namespace core */
 } /* namespace ct */
-

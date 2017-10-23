@@ -41,38 +41,36 @@ namespace internal {
  * @tparam     MATRIX  The Matrix type to be integrated
  * @tparam     SCALAR  The scalar type
  */
-template<typename MATRIX, typename SCALAR = double>
+template <typename MATRIX, typename SCALAR = double>
 class StepperCTBase : public StepperBase<MATRIX, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    virtual void integrate_n_steps(
-            const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
-            MATRIX& state,
-            const SCALAR& startTime,
-            size_t numSteps,
-            SCALAR dt) override
+    virtual void integrate_n_steps(const std::function<void(const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& state,
+        const SCALAR& startTime,
+        size_t numSteps,
+        SCALAR dt) override
     {
         SCALAR time = startTime;
-        for(size_t i = 0; i < numSteps; ++i)
+        for (size_t i = 0; i < numSteps; ++i)
         {
             do_step(rhs, state, time, dt);
             time += dt;
-        }      
+        }
     }
 
-    virtual void integrate_n_steps(
-            std::function<void (const MATRIX& x, const SCALAR& t)> observe,
-            const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
-            MATRIX& state,
-            const SCALAR& startTime,
-            size_t numSteps,
-            SCALAR dt) override
+    virtual void integrate_n_steps(std::function<void(const MATRIX& x, const SCALAR& t)> observe,
+        const std::function<void(const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& state,
+        const SCALAR& startTime,
+        size_t numSteps,
+        SCALAR dt) override
     {
         SCALAR time = startTime;
 
-        for(size_t i = 0; i < numSteps; ++i)
+        for (size_t i = 0; i < numSteps; ++i)
         {
             do_step(rhs, state, time, dt);
             time += dt;
@@ -88,14 +86,11 @@ public:
      * @param[in]      time        The integration time
      * @param[in]      dt          The integration timestep
      */
-    virtual void do_step(
-        const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
+    virtual void do_step(const std::function<void(const MATRIX&, MATRIX&, SCALAR)>& rhs,
         MATRIX& stateInOut,
         const SCALAR time,
         const SCALAR dt) = 0;
-    
 };
-
 
 
 /**
@@ -104,28 +99,24 @@ public:
  * @tparam     MATRIX  The matrix type
  * @tparam     SCALAR  The scalar type
  */
-template<typename MATRIX, typename SCALAR = double>
+template <typename MATRIX, typename SCALAR = double>
 class StepperEulerCT : public StepperCTBase<MATRIX, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    StepperEulerCT(){}
-
+    StepperEulerCT() {}
 private:
-    virtual void do_step(
-        const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
+    virtual void do_step(const std::function<void(const MATRIX&, MATRIX&, SCALAR)>& rhs,
         MATRIX& stateInOut,
         const SCALAR time,
-        const SCALAR dt
-        ) override
+        const SCALAR dt) override
     {
         rhs(stateInOut, derivative_, time);
         stateInOut += dt * derivative_;
     }
 
     MATRIX derivative_;
-
 };
 
 /**
@@ -134,25 +125,18 @@ private:
  * @tparam     MATRIX  The matrix type
  * @tparam     SCALAR  The scalar type
  */
-template<typename MATRIX, typename SCALAR = double>
+template <typename MATRIX, typename SCALAR = double>
 class StepperRK4CT : public StepperCTBase<MATRIX, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    StepperRK4CT() 
-    :
-    oneSixth_(SCALAR(1.0 / 6.0))
-    {}
-
+    StepperRK4CT() : oneSixth_(SCALAR(1.0 / 6.0)) {}
 private:
-
-    virtual void do_step(
-        const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
+    virtual void do_step(const std::function<void(const MATRIX&, MATRIX&, SCALAR)>& rhs,
         MATRIX& stateInOut,
         const SCALAR time,
-        const SCALAR dt
-        ) override
+        const SCALAR dt) override
     {
         SCALAR halfStep = SCALAR(0.5) * dt;
         SCALAR timePlusHalfStep = time + halfStep;
@@ -168,13 +152,7 @@ private:
     MATRIX k3_;
     MATRIX k4_;
     SCALAR oneSixth_;
-
 };
-
-
 }
 }
 }
-
-
-

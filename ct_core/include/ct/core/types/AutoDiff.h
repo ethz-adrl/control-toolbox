@@ -32,7 +32,6 @@ namespace core {
 typedef CppAD::AD<double> ADScalar;
 typedef CppAD::cg::CG<double> ADCGValueType;
 
-typedef CppAD::AD<ADCGValueType> ADCGScalar; //!< scalar  type
-
+typedef CppAD::AD<ADCGValueType> ADCGScalar;  //!< scalar  type
 }
 }

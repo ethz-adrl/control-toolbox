@@ -43,25 +43,26 @@ class DerivativesCppadSettings
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef enum CompilerType {GCC = 0, CLANG = 1, num_types_compiler} Compiler_t;
+    typedef enum CompilerType { GCC = 0, CLANG = 1, num_types_compiler } Compiler_t;
 
     /**
      * @brief      Default constructor, set default settings
      */
-    DerivativesCppadSettings() :
-    multiThreading_(false),
-    createForwardZero_(false),
-    createForwardOne_(false),
-    createReverseOne_(false),
-    createReverseTwo_(false),
-    createJacobian_(false),
-    createSparseJacobian_(false),
-    createHessian_(false),
-    createSparseHessian_(false),
-    maxAssignements_(20000),
-    compiler_(GCC),
-    generateSourceCode_(false)
-    {}
+    DerivativesCppadSettings()
+        : multiThreading_(false),
+          createForwardZero_(false),
+          createForwardOne_(false),
+          createReverseOne_(false),
+          createReverseTwo_(false),
+          createJacobian_(false),
+          createSparseJacobian_(false),
+          createHessian_(false),
+          createSparseHessian_(false),
+          maxAssignements_(20000),
+          compiler_(GCC),
+          generateSourceCode_(false)
+    {
+    }
 
     bool multiThreading_;
     bool createForwardZero_;
@@ -80,45 +81,41 @@ public:
      */
     void print()
     {
-        std::cout<<"============================================================="<<std::endl;
-        std::cout<<"\tCPPAD Derivatives Settings: "<<std::endl;
-        std::cout<<"============================================================="<<std::endl;
+        std::cout << "=============================================================" << std::endl;
+        std::cout << "\tCPPAD Derivatives Settings: " << std::endl;
+        std::cout << "=============================================================" << std::endl;
 
-        if(multiThreading_)
+        if (multiThreading_)
             std::cout << "Enabling multithreading in JIT lib" << std::endl;
-        if(createForwardZero_)
+        if (createForwardZero_)
             std::cout << "Generating Forward Zero in JIT lib" << std::endl;
-        if(createReverseOne_)
+        if (createReverseOne_)
             std::cout << "Generating Reverse One in JIT lib" << std::endl;
-        if(createReverseTwo_)
+        if (createReverseTwo_)
             std::cout << "Generating Reverse Two in JIT lib" << std::endl;
-        if(createJacobian_)
+        if (createJacobian_)
             std::cout << "Generating Jacobian in JIT lib" << std::endl;
-        if(createSparseJacobian_)
+        if (createSparseJacobian_)
             std::cout << "Generating Sparse Jacobian in JIT lib" << std::endl;
-        if(createHessian_)
+        if (createHessian_)
             std::cout << "Generating Hessian in JIT lib" << std::endl;
-        if(createSparseHessian_)
+        if (createSparseHessian_)
             std::cout << "Generating Sparse Hessian in JIT lib" << std::endl;
 
         std::cout << "Using " + compilerToString[compiler_] + " to compile the generated derivatives" << std::endl;
 
         std::cout << "Max Assignements per generated Function:" << maxAssignements_ << std::endl;
 
-        if(generateSourceCode_)
+        if (generateSourceCode_)
             std::cout << "Generating and saving Source Code" << std::endl;
     }
 
-     /**
+    /**
      * @brief      Checks whether to settings are filled with meaningful values
      *
      * @return     Returns true of the parameters are ok
      */
-    bool parametersOk() const
-    {
-        return true;
-    }
-
+    bool parametersOk() const { return true; }
     /**
      * @brief      Loads the settings from a .info file
      *
@@ -131,17 +128,17 @@ public:
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);
 
-        multiThreading_         = pt.get<bool>(ns + ".MultiThreading");
-        createForwardZero_      = pt.get<bool>(ns + ".CreateForwardZero");
-        createForwardOne_       = pt.get<bool>(ns + ".CreateForwardOne");
-        createReverseOne_       = pt.get<bool>(ns + ".CreateReverseOne");
-        createReverseTwo_       = pt.get<bool>(ns + ".CreateReverseTwo");
-        createJacobian_         = pt.get<bool>(ns + ".CreateJacobian");
-        createSparseJacobian_   = pt.get<bool>(ns + ".CreateSparseJacobian");
-        createHessian_          = pt.get<bool>(ns + ".CreateHessian");
-        createSparseHessian_    = pt.get<bool>(ns + ".CreateSparseHessian");
-        maxAssignements_        = pt.get<unsigned int>(ns + ".MaxAssignements");
-        generateSourceCode_     = pt.get<bool>(ns + ".GenerateSourceCode");
+        multiThreading_ = pt.get<bool>(ns + ".MultiThreading");
+        createForwardZero_ = pt.get<bool>(ns + ".CreateForwardZero");
+        createForwardOne_ = pt.get<bool>(ns + ".CreateForwardOne");
+        createReverseOne_ = pt.get<bool>(ns + ".CreateReverseOne");
+        createReverseTwo_ = pt.get<bool>(ns + ".CreateReverseTwo");
+        createJacobian_ = pt.get<bool>(ns + ".CreateJacobian");
+        createSparseJacobian_ = pt.get<bool>(ns + ".CreateSparseJacobian");
+        createHessian_ = pt.get<bool>(ns + ".CreateHessian");
+        createSparseHessian_ = pt.get<bool>(ns + ".CreateSparseHessian");
+        maxAssignements_ = pt.get<unsigned int>(ns + ".MaxAssignements");
+        generateSourceCode_ = pt.get<bool>(ns + ".GenerateSourceCode");
 
         std::string compilerStr = pt.get<std::string>(ns + ".Compiler");
 
@@ -151,13 +148,13 @@ public:
         {
             std::cout << "Invalid compiler specified in config, should be one of the following:" << std::endl;
 
-            for(auto it = stringTocompiler.begin(); it != stringTocompiler.end(); it++)
+            for (auto it = stringTocompiler.begin(); it != stringTocompiler.end(); it++)
                 std::cout << it->first << std::endl;
-        }                
+        }
 
         if (verbose)
         {
-            std::cout << "Loaded Derivatives CPPAD settings from "<<filename<<": "<<std::endl;
+            std::cout << "Loaded Derivatives CPPAD settings from " << filename << ": " << std::endl;
             print();
         }
     }
@@ -168,6 +165,5 @@ private:
 };
 
 
-} // namespace core
-} // namespace ct
-
+}  // namespace core
+}  // namespace ct

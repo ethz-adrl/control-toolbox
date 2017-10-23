@@ -24,29 +24,20 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_MODELS_HYA_HYQURDFNAMES_H_
-#define INCLUDE_CT_MODELS_HYA_HYQURDFNAMES_H_
+#pragma once
 
 namespace ct {
 namespace models {
 namespace HyA {
 
 static std::vector<std::string> urdfJointNames()
-	{
-		std::vector<std::string> urdfJointNames = {
-			"hya_saa_joint",
-			"hya_sfe_joint",
-			"hya_hr_joint",
-			"hya_efe_joint",
-			"hya_wr_joint",
-			"hya_wfe_joint",
-			};
+{
+    std::vector<std::string> urdfJointNames = {
+        "hya_saa_joint", "hya_sfe_joint", "hya_hr_joint", "hya_efe_joint", "hya_wr_joint", "hya_wfe_joint",
+    };
 
-		return urdfJointNames;
-	}
-
+    return urdfJointNames;
 }
 }
 }
-
-#endif /* INCLUDE_CT_MODELS_HYA_HYQURDFNAMES_H_ */
+}

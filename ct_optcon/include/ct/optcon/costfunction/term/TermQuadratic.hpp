@@ -43,9 +43,8 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, t
 class TermQuadratic : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	
     typedef Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM> state_matrix_t;
     typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
     typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
@@ -53,76 +52,81 @@ public:
     typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM> control_matrix_double_t;
     typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, STATE_DIM> control_state_matrix_double_t;
 
-	TermQuadratic();
+    TermQuadratic();
 
-	TermQuadratic(const state_matrix_t& Q, const control_matrix_t& R);
+    TermQuadratic(const state_matrix_t& Q, const control_matrix_t& R);
 
-	TermQuadratic(
-		const state_matrix_t& Q, 
-		const control_matrix_t& R,
-		const core::StateVector<STATE_DIM, SCALAR_EVAL>& x_ref, 
-		const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref);
+    TermQuadratic(const state_matrix_t& Q,
+        const control_matrix_t& R,
+        const core::StateVector<STATE_DIM, SCALAR_EVAL>& x_ref,
+        const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref);
 
-	TermQuadratic(const TermQuadratic& arg);
+    TermQuadratic(const TermQuadratic& arg);
 
-	virtual ~TermQuadratic();
-	
-	virtual TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone () const override;
+    virtual ~TermQuadratic();
 
-	void setWeights(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM>& Q,
-			const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM>& R);
+    virtual TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone() const override;
 
-	const state_matrix_t& getStateWeight() const;
+    void setWeights(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM>& Q,
+        const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM>& R);
 
-	state_matrix_t& getStateWeight();
+    const state_matrix_t& getStateWeight() const;
 
-	const control_matrix_t& getControlWeight() const;
+    state_matrix_t& getStateWeight();
 
-	control_matrix_t& getControlWeight();
+    const control_matrix_t& getControlWeight() const;
 
-	void setStateAndControlReference(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x_ref, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref);
+    control_matrix_t& getControlWeight();
 
-    virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u, const SCALAR& t) override;
- 	
-	virtual ct::core::ADCGScalar evaluateCppadCg(
-		const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
-		const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
-		ct::core::ADCGScalar t) override;
+    void setStateAndControlReference(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x_ref,
+        const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref);
 
-	core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
-			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
+    virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
+        const Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& u,
+        const SCALAR& t) override;
 
-	state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
-			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
-	
-	core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
-			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
-	
-	control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
-			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
+    virtual ct::core::ADCGScalar evaluateCppadCg(const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
+        const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
+        ct::core::ADCGScalar t) override;
 
-	control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
-			const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u, const SCALAR_EVAL& t) override;
-	
-	virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) override;
+    core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+        const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+        const SCALAR_EVAL& t) override;
 
-	virtual void updateReferenceState (const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState) override;
+    state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+        const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+        const SCALAR_EVAL& t) override;
 
-	virtual Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> getReferenceState() const override;
+    core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+        const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+        const SCALAR_EVAL& t) override;
+
+    control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+        const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+        const SCALAR_EVAL& t) override;
+
+    control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+        const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+        const SCALAR_EVAL& t) override;
+
+    virtual void loadConfigFile(const std::string& filename,
+        const std::string& termName,
+        bool verbose = false) override;
+
+    virtual void updateReferenceState(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState) override;
+
+    virtual Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> getReferenceState() const override;
 
 protected:
+    template <typename SC>
+    SC evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1>& x, const Eigen::Matrix<SC, CONTROL_DIM, 1>& u, const SC& t);
 
-	template<typename SC>
-	SC evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1> &x, const Eigen::Matrix<SC, CONTROL_DIM, 1> &u, const SC& t);
+    state_matrix_t Q_;
+    control_matrix_t R_;
 
-	state_matrix_t Q_;
-	control_matrix_t R_;
-
-	core::StateVector<STATE_DIM, SCALAR_EVAL> x_ref_;
-	core::ControlVector<CONTROL_DIM, SCALAR_EVAL> u_ref_;
-
+    core::StateVector<STATE_DIM, SCALAR_EVAL> x_ref_;
+    core::ControlVector<CONTROL_DIM, SCALAR_EVAL> u_ref_;
 };
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct

@@ -34,11 +34,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 int main(int argc, char **argv)
 {
-	testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 
-	//	ct::optcon::example::singleCore();
-	//	ct::optcon::example::multiCore();
+    //	ct::optcon::example::singleCore();
+    //	ct::optcon::example::multiCore();
 
-	return 1;
+    return 1;
 }

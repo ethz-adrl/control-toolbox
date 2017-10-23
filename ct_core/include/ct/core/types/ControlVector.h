@@ -33,30 +33,29 @@ template <int CONTROL_DIM, class SCALAR = double>
 class ControlVector : public Eigen::Matrix<SCALAR, CONTROL_DIM, 1>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	static const size_t DIM = CONTROL_DIM;
+    static const size_t DIM = CONTROL_DIM;
 
-	ControlVector() {};
-	virtual ~ControlVector() {};
+    ControlVector(){};
+    virtual ~ControlVector(){};
 
-	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, 1> Base;
+    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, 1> Base;
 
-	// This constructor allows you to construct MyVectorType from Eigen expressions
-	template<typename OtherDerived>
-	ControlVector(const Eigen::MatrixBase<OtherDerived>& other)
-		: Base(other)
-	{ }
+    // This constructor allows you to construct MyVectorType from Eigen expressions
+    template <typename OtherDerived>
+    ControlVector(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)
+    {
+    }
 
-	// This method allows you to assign Eigen expressions to MyVectorType
-	template<typename OtherDerived>
-	ControlVector& operator=(const Eigen::MatrixBase <OtherDerived>& other)
-	{
-		this->Base::operator=(other);
-		return *this;
-	}
+    // This method allows you to assign Eigen expressions to MyVectorType
+    template <typename OtherDerived>
+    ControlVector& operator=(const Eigen::MatrixBase<OtherDerived>& other)
+    {
+        this->Base::operator=(other);
+        return *this;
+    }
 };
 
 } /* namespace core */
 } /* namespace ct */
-

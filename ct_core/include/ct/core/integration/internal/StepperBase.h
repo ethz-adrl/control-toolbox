@@ -43,14 +43,8 @@ class StepperBase
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    StepperBase()
-    :
-    absErrTol_(SCALAR(1e-8)),
-    relErrTol_(SCALAR(1e-8))
-    {}
-
-    virtual ~StepperBase(){}
-
+    StepperBase() : absErrTol_(SCALAR(1e-8)), relErrTol_(SCALAR(1e-8)) {}
+    virtual ~StepperBase() {}
     /**
      * @brief         Performs numSteps integration steps
      *
@@ -60,12 +54,11 @@ public:
      * @param[in]     numSteps   The number of integration steps
      * @param[in]     dt         The integration timestep
      */
-    virtual void integrate_n_steps(
-            const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
-            MATRIX& state,
-            const SCALAR& startTime,
-            size_t numSteps,
-            SCALAR dt)
+    virtual void integrate_n_steps(const std::function<void(const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& state,
+        const SCALAR& startTime,
+        size_t numSteps,
+        SCALAR dt)
     {
         throw std::runtime_error("Integrate_n_steps not implemented for the stepper type");
     }
@@ -80,13 +73,12 @@ public:
      * @param[in]     numSteps   The number steps
      * @param[in]     dt         The integration timestep
      */
-    virtual void integrate_n_steps(
-            std::function<void (const MATRIX& x, const SCALAR& t)> observer,
-            const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
-            MATRIX& state,
-            const SCALAR& startTime,
-            size_t numSteps,
-            SCALAR dt)
+    virtual void integrate_n_steps(std::function<void(const MATRIX& x, const SCALAR& t)> observer,
+        const std::function<void(const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& state,
+        const SCALAR& startTime,
+        size_t numSteps,
+        SCALAR dt)
     {
         throw std::runtime_error("Integrate_n_steps not implemented for the stepper type");
     }
@@ -101,12 +93,11 @@ public:
      * @param[in]     finalTime  The final time
      * @param[in]     dt         The integration timestep
      */
-    virtual void integrate_const(
-            const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
-            MATRIX& state,
-            const SCALAR& startTime,
-            const SCALAR& finalTime,
-            SCALAR dt)
+    virtual void integrate_const(const std::function<void(const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& state,
+        const SCALAR& startTime,
+        const SCALAR& finalTime,
+        SCALAR dt)
     {
         throw std::runtime_error("integrate_const not implemented for the stepper type");
     }
@@ -121,13 +112,12 @@ public:
      * @param[in]     finalTime  The final time
      * @param[in]     dt         The integration timestep
      */
-    virtual void integrate_const(
-            std::function<void (const MATRIX& x, const SCALAR& t)> observer,
-            const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
-            MATRIX& state,
-            const SCALAR& startTime,
-            const SCALAR& finalTime,
-            SCALAR dt)
+    virtual void integrate_const(std::function<void(const MATRIX& x, const SCALAR& t)> observer,
+        const std::function<void(const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& state,
+        const SCALAR& startTime,
+        const SCALAR& finalTime,
+        SCALAR dt)
     {
         throw std::runtime_error("integrate_const not implemented for the stepper type");
     }
@@ -145,12 +135,11 @@ public:
      * @param[in]     finalTime  The final time
      * @param[in]     dtInitial  The initial integration timestep
      */
-    virtual void integrate_adaptive(
-            const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
-            MATRIX& state,
-            const SCALAR& startTime,
-            const SCALAR& finalTime,
-            SCALAR dtInitial = SCALAR(0.01))
+    virtual void integrate_adaptive(const std::function<void(const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& state,
+        const SCALAR& startTime,
+        const SCALAR& finalTime,
+        SCALAR dtInitial = SCALAR(0.01))
     {
         throw std::runtime_error("integrate_adaptive not implemented for the stepper type");
     }
@@ -169,15 +158,14 @@ public:
      * @param[in]     finalTime  The final time
      * @param[in]     dtInitial  The initial integration timestep
      */
-    virtual void integrate_adaptive(
-            std::function<void (const MATRIX& x, const SCALAR& t)> observer,
-            const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
-            MATRIX& state,
-            const SCALAR& startTime,
-            const SCALAR& finalTime,
-            const SCALAR dtInitial = SCALAR(0.01))
+    virtual void integrate_adaptive(std::function<void(const MATRIX& x, const SCALAR& t)> observer,
+        const std::function<void(const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& state,
+        const SCALAR& startTime,
+        const SCALAR& finalTime,
+        const SCALAR dtInitial = SCALAR(0.01))
     {
-        throw std::runtime_error("integrate_adaptive not implemented for the stepper type");        
+        throw std::runtime_error("integrate_adaptive not implemented for the stepper type");
     }
 
     /**
@@ -189,12 +177,11 @@ public:
      * @param[in]     timeTrajectory  The time trajectory
      * @param[in]     dtInitial       The initial integration timestep
      */
-    virtual void integrate_times(
-            std::function<void (const MATRIX& x, const SCALAR& t)> observer,
-            const std::function<void (const MATRIX&, MATRIX&, SCALAR)>& rhs,
-            MATRIX& state,
-            const tpl::TimeArray<SCALAR>& timeTrajectory,
-            SCALAR dtInitial = SCALAR(0.01))
+    virtual void integrate_times(std::function<void(const MATRIX& x, const SCALAR& t)> observer,
+        const std::function<void(const MATRIX&, MATRIX&, SCALAR)>& rhs,
+        MATRIX& state,
+        const tpl::TimeArray<SCALAR>& timeTrajectory,
+        SCALAR dtInitial = SCALAR(0.01))
     {
         throw std::runtime_error("integrate_times not implemented for the stepper type");
     }
@@ -214,14 +201,7 @@ public:
 protected:
     SCALAR absErrTol_;
     SCALAR relErrTol_;
-
-    
 };
-
-
-
 }
 }
 }
-
-

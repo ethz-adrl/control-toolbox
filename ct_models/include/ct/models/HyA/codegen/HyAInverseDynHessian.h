@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_HESSIAN_NAME_H_
-#define INCLUDE_HESSIAN_NAME_H_
+#pragma once
 
 #include <ct/core/math/Derivatives.h>
 
@@ -33,12 +32,14 @@ namespace ct {
 namespace models {
 namespace HyA {
 
-class HyAInverseDynHessian : public core::Derivatives<12, 6, double> {
+class HyAInverseDynHessian : public core::Derivatives<12, 6, double>
+{
 public:
     typedef Eigen::Matrix<double, 12, 12> HES_TYPE;
     typedef Eigen::Matrix<double, 12, 1> X_TYPE;
 
-    HyAInverseDynHessian() {
+    HyAInverseDynHessian()
+    {
         hessian_.setZero();
         v_.fill(0.0);
     };
@@ -49,13 +50,9 @@ public:
         v_.fill(0.0);
     }
 
-    virtual ~HyAInverseDynHessian() {};
+    virtual ~HyAInverseDynHessian(){};
 
-    HyAInverseDynHessian* clone() const override{
-        return new HyAInverseDynHessian(*this);
-    }
-
-
+    HyAInverseDynHessian* clone() const override { return new HyAInverseDynHessian(*this); }
     HES_TYPE hessian(const Eigen::VectorXd& x_in, const Eigen::VectorXd& w_in) override;
 
 private:
@@ -66,5 +63,3 @@ private:
 } /* namespace HyA */
 } /* namespace models */
 } /* namespace ct */
-
-#endif /* INCLUDE_HESSIAN_NAME_H_ */

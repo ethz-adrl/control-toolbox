@@ -50,16 +50,16 @@ class CppadUtils
 {
 public:
     typedef ADScalar AD_SCALAR;
-    typedef ADCGScalar CG_SCALAR; //!< CG_SCALAR  type
-    typedef ADCGValueType CG_VALUE_TYPE; //!< autodiff scalar type
-                                       
-    typedef Eigen::Matrix<AD_SCALAR, IN_DIM, 1> IN_TYPE_AD; //!< function input vector type
-    typedef Eigen::Matrix<AD_SCALAR, OUT_DIM, 1> OUT_TYPE_AD; //!< function  output vector type 
+    typedef ADCGScalar CG_SCALAR;         //!< CG_SCALAR  type
+    typedef ADCGValueType CG_VALUE_TYPE;  //!< autodiff scalar type
 
-    typedef Eigen::Matrix<CG_SCALAR, IN_DIM, 1> IN_TYPE_CG; //!< function input vector type
-    typedef Eigen::Matrix<CG_SCALAR, OUT_DIM, 1> OUT_TYPE_CG; //!< function  output vector type                 
+    typedef Eigen::Matrix<AD_SCALAR, IN_DIM, 1> IN_TYPE_AD;    //!< function input vector type
+    typedef Eigen::Matrix<AD_SCALAR, OUT_DIM, 1> OUT_TYPE_AD;  //!< function  output vector type
 
-    typedef std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> FUN_TYPE_CG; //!< function type
+    typedef Eigen::Matrix<CG_SCALAR, IN_DIM, 1> IN_TYPE_CG;    //!< function input vector type
+    typedef Eigen::Matrix<CG_SCALAR, OUT_DIM, 1> OUT_TYPE_CG;  //!< function  output vector type
+
+    typedef std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> FUN_TYPE_CG;  //!< function type
     typedef std::function<OUT_TYPE_AD(const IN_TYPE_AD&)> FUN_TYPE_AD;
 
     /**
@@ -74,14 +74,8 @@ public:
      * @param[in]  outputDim  outputDim output dimension, must be specified if
      *                        template parameter IN_DIM is -1 (dynamic)
      */
-    CppadUtils(
-        FUN_TYPE_CG& f, 
-        int inputDim = IN_DIM, 
-        int outputDim = OUT_DIM) 
-    :
-        cgStdFun_(f),
-        inputDim_(inputDim),
-        outputDim_(outputDim)
+    CppadUtils(FUN_TYPE_CG& f, int inputDim = IN_DIM, int outputDim = OUT_DIM)
+        : cgStdFun_(f), inputDim_(inputDim), outputDim_(outputDim)
     {
         update(f, inputDim, outputDim);
     }
@@ -99,36 +93,23 @@ public:
      * @param[in]  outputDim  outputDim output dimension, must be specified if
      *                        template parameter IN_DIM is -1 (dynamic)
      */
-     
-    CppadUtils(
-        FUN_TYPE_AD& f, 
-        int inputDim = IN_DIM, 
-        int outputDim = OUT_DIM) 
-    :
-        adStdFun_(f),
-        inputDim_(inputDim),
-        outputDim_(outputDim)
+
+    CppadUtils(FUN_TYPE_AD& f, int inputDim = IN_DIM, int outputDim = OUT_DIM)
+        : adStdFun_(f), inputDim_(inputDim), outputDim_(outputDim)
     {
         update(f, inputDim, outputDim);
     }
 
     //! copy constructor
-    CppadUtils(const CppadUtils& arg) 
-    :
-        cgStdFun_(arg.cgStdFun_),
-        adStdFun_(arg.adStdFun_),
-        inputDim_(arg.inputDim_),
-        outputDim_(arg.outputDim_)
+    CppadUtils(const CppadUtils& arg)
+        : cgStdFun_(arg.cgStdFun_), adStdFun_(arg.adStdFun_), inputDim_(arg.inputDim_), outputDim_(arg.outputDim_)
     {
         cgCppadFun_ = arg.cgCppadFun_;
         adCppadFun_ = arg.adCppadFun_;
     }
 
     //! destructor
-    virtual ~CppadUtils()
-    {
-    }
-
+    virtual ~CppadUtils() {}
     //! update the Jacobian with a new function
     /*!
      * \warning If IN_DIM and/our OUT_DIM are set to dynamic (-1), then the actual dimensions of
@@ -143,7 +124,7 @@ public:
         cgStdFun_ = f;
         outputDim_ = outputDim;
         inputDim_ = inputDim;
-        if(outputDim_ > 0 && inputDim_ > 0)
+        if (outputDim_ > 0 && inputDim_ > 0)
         {
             recordCg();
             updateDerived();
@@ -164,7 +145,7 @@ public:
         adStdFun_ = f;
         outputDim_ = outputDim;
         inputDim_ = inputDim;
-        if(outputDim_ > 0 && inputDim_ > 0)
+        if (outputDim_ > 0 && inputDim_ > 0)
         {
             recordAd();
             updateDerived();
@@ -177,10 +158,7 @@ public:
     virtual void updateDerived(){};
 
     //! deep cloning of Jacobian
-    CppadUtils* clone() const{
-        return new CppadUtils<IN_DIM, OUT_DIM>(*this);
-    }
-
+    CppadUtils* clone() const { return new CppadUtils<IN_DIM, OUT_DIM>(*this); }
 protected:
     //! record the Auto-Diff terms for code generation
     void recordCg()
@@ -225,19 +203,18 @@ protected:
 
         fAd.optimize();
 
-        adCppadFun_ = fAd;        
+        adCppadFun_ = fAd;
     }
 
-    std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> cgStdFun_; //! the function
+    std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> cgStdFun_;  //! the function
     std::function<OUT_TYPE_AD(const IN_TYPE_AD&)> adStdFun_;
 
-    int inputDim_; //! function input dimension
-    int outputDim_; //! function output dimension
+    int inputDim_;   //! function input dimension
+    int outputDim_;  //! function output dimension
 
-    CppAD::ADFun<CG_VALUE_TYPE> cgCppadFun_; //!  auto-diff function
+    CppAD::ADFun<CG_VALUE_TYPE> cgCppadFun_;  //!  auto-diff function
     CppAD::ADFun<double> adCppadFun_;
 };
 
 } /* namespace core */
 } /* namespace ct */
-

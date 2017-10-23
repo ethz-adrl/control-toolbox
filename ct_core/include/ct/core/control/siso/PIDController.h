@@ -52,161 +52,139 @@ namespace core {
 class PIDController : public SISOControllerBase
 {
 public:
-	//! Parameters of a PID Controller
-	/*!
+    //! Parameters of a PID Controller
+    /*!
 	 * Contains the gains as well as the limits and saturation
 	 */
-	struct parameters_t {
-		parameters_t(
-				double kp = 0.0,
-				double ki = 0.0,
-				double kd = 0.0,
-				double dt_ = 0.01,
-				double Imax_ = std::numeric_limits<double>::max(),
-				double uMax_ = std::numeric_limits<double>::max(),
-				double uMin_ = -std::numeric_limits<double>::max()) :
-					k_p(kp),
-					k_i(ki),
-					k_d(kd),
-					dt(dt_),
-					Imax(Imax_),
-					uMax(uMax_),
-					uMin(uMin_)
-		{}
-		double k_p;				//! proportional gain
-		double k_i;				//! integral gain
-		double k_d;				//! differential gain
-		double dt;				//! timestep for I-part
-		double Imax;			//! anti-windup I-part saturation
-		double uMax;			//! max u output
-		double uMin;			//! min u output
-	};
+    struct parameters_t
+    {
+        parameters_t(double kp = 0.0,
+            double ki = 0.0,
+            double kd = 0.0,
+            double dt_ = 0.01,
+            double Imax_ = std::numeric_limits<double>::max(),
+            double uMax_ = std::numeric_limits<double>::max(),
+            double uMin_ = -std::numeric_limits<double>::max())
+            : k_p(kp), k_i(ki), k_d(kd), dt(dt_), Imax(Imax_), uMax(uMax_), uMin(uMin_)
+        {
+        }
+        double k_p;   //! proportional gain
+        double k_i;   //! integral gain
+        double k_d;   //! differential gain
+        double dt;    //! timestep for I-part
+        double Imax;  //! anti-windup I-part saturation
+        double uMax;  //! max u output
+        double uMin;  //! min u output
+    };
 
-	//! setpoint for the PID controller
-	/*!
+    //! setpoint for the PID controller
+    /*!
 	 * Contains both the desired state and derivative setpoint
 	 */
-	struct setpoint_t
-	{
-		setpoint_t(
-				double stateDes = 0.0,
-				double stateDevDes = 0.0):
-					stateDesired_(stateDes),
-					stateDerivativeDesired_(stateDevDes)
-		{}
+    struct setpoint_t
+    {
+        setpoint_t(double stateDes = 0.0, double stateDevDes = 0.0)
+            : stateDesired_(stateDes), stateDerivativeDesired_(stateDevDes)
+        {
+        }
 
-		double stateDesired_; //! desired state
-		double stateDerivativeDesired_; //! desired derivative
-	};
+        double stateDesired_;            //! desired state
+        double stateDerivativeDesired_;  //! desired derivative
+    };
 
-	//! default constructor
-	/*!
+    //! default constructor
+    /*!
 	 * Initializes setpoints and parameters to their default values
 	 * @param parameters The parameters for the PID controller
 	 * @param setpoint The setpoint for the PID controller
 	 */
-	PIDController(const parameters_t& parameters = parameters_t(), const setpoint_t& setpoint = setpoint_t()) :
-		statePrevious_(0.0),
-		I_(0.0),
-		parameters_(parameters),
-		setpoint_(setpoint)
-	{};
+    PIDController(const parameters_t& parameters = parameters_t(), const setpoint_t& setpoint = setpoint_t())
+        : statePrevious_(0.0), I_(0.0), parameters_(parameters), setpoint_(setpoint){};
 
-	//! copy constructor
-	PIDController(const PIDController& other) :
-		statePrevious_(other.statePrevious_),
-		I_(other.I_),
-		parameters_(other.parameters_),
-		setpoint_(other.setpoint_)
-	{}
+    //! copy constructor
+    PIDController(const PIDController& other)
+        : statePrevious_(other.statePrevious_), I_(other.I_), parameters_(other.parameters_), setpoint_(other.setpoint_)
+    {
+    }
 
-	//! detailed constructor
-	virtual ~PIDController() {};
+    //! detailed constructor
+    virtual ~PIDController(){};
 
-	//! clone operator
-	PIDController* clone() const override {return new PIDController(*this);}
-
-	//! set the initial state
-	/*!
+    //! clone operator
+    PIDController* clone() const override { return new PIDController(*this); }
+    //! set the initial state
+    /*!
 	 * Set the initial state for finite differencing for the D-part
 	 * @param state the initial state
 	 */
-	void setInitialState(const double& state) { statePrevious_ = state; }
-
-	//! set the state
-	/*!
+    void setInitialState(const double& state) { statePrevious_ = state; }
+    //! set the state
+    /*!
 	 * @param state The setpoint to set
 	 */
-	void setDesiredState(const double& state) { setpoint_.stateDesired_ = state; }
-
-	//! set the desired state and derivative
-	/*!
+    void setDesiredState(const double& state) { setpoint_.stateDesired_ = state; }
+    //! set the desired state and derivative
+    /*!
 	 * @param state the desired state
 	 * @param stateDerivative the desired state derivative
 	 */
-	void setDesiredState(const double& state, const double& stateDerivative)
-	{
-		setpoint_.stateDesired_ = state;
-		setpoint_.stateDerivativeDesired_ = stateDerivative;
-	}
+    void setDesiredState(const double& state, const double& stateDerivative)
+    {
+        setpoint_.stateDesired_ = state;
+        setpoint_.stateDerivativeDesired_ = stateDerivative;
+    }
 
-	//! computes the control input based on the current state and time
-	/*!
+    //! computes the control input based on the current state and time
+    /*!
 	 * uses finite-differences for computing the state derivative
 	 * @param state the current state
 	 * @param t the current time
 	 * @return the control input
 	 */
-	double computeControl(const double& state, const core::Time& t) override;
+    double computeControl(const double& state, const core::Time& t) override;
 
-	//! computes the control input
-	/*!
+    //! computes the control input
+    /*!
 	 *
 	 * @param state the current state
 	 * @param stateDerivative the current state derivative
 	 * @param t the current time
 	 * @return the control input
 	 */
-	double computeControl(const double& state, const double& stateDerivative, const core::Time& t);
+    double computeControl(const double& state, const double& stateDerivative, const core::Time& t);
 
-	//! change the control parameters
-	/*!
+    //! change the control parameters
+    /*!
 	 *
 	 * @param parameters the new PID controller parameters
 	 */
-	void changeParameters(const parameters_t& parameters) { parameters_ = parameters; }
-
-	//! returns a reference to the parameters
-	/*!
+    void changeParameters(const parameters_t& parameters) { parameters_ = parameters; }
+    //! returns a reference to the parameters
+    /*!
 	 * Changes to the parameters can be directly made through this reference
 	 * @return reference to the parameters
 	 */
-	parameters_t& Parameters() {return parameters_;}
-
-	//! resets the controller
-	/*!
+    parameters_t& Parameters() { return parameters_; }
+    //! resets the controller
+    /*!
 	 * resets the I part as well as the previous state
 	 */
-	void reset();
+    void reset();
 
 protected:
-	double statePrevious_; //! the previous state used for finite differences
-	double I_; //! the current I part (integrated)
+    double statePrevious_;  //! the previous state used for finite differences
+    double I_;              //! the current I part (integrated)
 
-	parameters_t parameters_; //! the parameters of the PID controller
-	setpoint_t setpoint_; //! the setpoint of the PID controller
+    parameters_t parameters_;  //! the parameters of the PID controller
+    setpoint_t setpoint_;      //! the setpoint of the PID controller
 
 private:
-	//! saturates the control according to the boundaries
-	void saturateControl(double& u);
+    //! saturates the control according to the boundaries
+    void saturateControl(double& u);
 
-	//! computes the I-part
-	void computeI(double error);
-
+    //! computes the I-part
+    void computeI(double error);
 };
 
-} // namespace core
-} // namespace ct
-
-
-
+}  // namespace core
+}  // namespace ct

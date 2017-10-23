@@ -47,164 +47,166 @@ namespace optcon {
  * These terms can have arbitrary form.
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class CostFunctionQuadratic : public CostFunction<STATE_DIM, CONTROL_DIM, SCALAR> {
-
+class CostFunctionQuadratic : public CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>
+{
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
-	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-	typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
+    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
+    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
 
-	typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
-	typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+    typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+    typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 
-	typedef CostFunction<STATE_DIM, CONTROL_DIM, SCALAR> BASE;
+    typedef CostFunction<STATE_DIM, CONTROL_DIM, SCALAR> BASE;
 
-	/**
+    /**
 	 * Constructor
 	 */
-	CostFunctionQuadratic();
+    CostFunctionQuadratic();
 
-	/**
+    /**
 	 * Copy constructor
 	 * @param arg other cost function
 	 */
-	CostFunctionQuadratic(const CostFunctionQuadratic& arg);
+    CostFunctionQuadratic(const CostFunctionQuadratic& arg);
 
-	/**
+    /**
 	 * Clones the cost function.
 	 * @return
 	 */
-	virtual CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>* clone () const = 0;
+    virtual CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const = 0;
 
-	/**
+    /**
 	 * Destructor
 	 */
-	virtual ~CostFunctionQuadratic();
+    virtual ~CostFunctionQuadratic();
 
-	/**
+    /**
 	 * \brief Adds an intermediate term
 	 * @param term intermediate term
 	 * @param verbose verbosity flag which enables printout
 	 * @return
 	 */
-	virtual size_t addIntermediateTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false);
+    virtual size_t addIntermediateTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term,
+        bool verbose = false);
 
-	virtual void addIntermediateADTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar> > term, bool verbose = false);
+    virtual void addIntermediateADTerm(
+        std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar>> term,
+        bool verbose = false);
 
-	/**
+    /**
 	 * \brief Adds a final term
 	 * @param term final term
 	 * @param verbose verbosity flag which enables printout
 	 * @return
 	 */
-	virtual size_t addFinalTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > term, bool verbose = false);
+    virtual size_t addFinalTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term, bool verbose = false);
 
-	virtual void addFinalADTerm (std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar> > term, bool verbose = false);
+    virtual void addFinalADTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar>> term,
+        bool verbose = false);
 
-	/**
+    /**
 	 * \brief Loads cost function from config file
 	 * @param filename config file location
 	 * @param verbose verbosity flag which enables printout
 	 */
-	virtual void loadFromConfigFile(const std::string& filename, bool verbose = false);
+    virtual void loadFromConfigFile(const std::string& filename, bool verbose = false);
 
-	/**
+    /**
 	 * \brief Computes intermediate-cost first-order derivative with respect to state
 	 * @return derivative vector (Jacobian)
 	 */
-	virtual state_vector_t stateDerivativeIntermediate() = 0;
+    virtual state_vector_t stateDerivativeIntermediate() = 0;
 
-	/**
+    /**
 	 * Computes terminal-cost first-order derivative with respect to state
 	 * @return derivative vector (Jacobian)
 	 */
-	virtual state_vector_t stateDerivativeTerminal() = 0;
+    virtual state_vector_t stateDerivativeTerminal() = 0;
 
-	/**
+    /**
 	 * \brief Computes intermediate-cost second-order derivative with respect to state
 	 * @return derivative matrix (Jacobian)
 	 */
-	virtual state_matrix_t stateSecondDerivativeIntermediate() = 0;
+    virtual state_matrix_t stateSecondDerivativeIntermediate() = 0;
 
-	/**
+    /**
 	 * \brief Computes final-cost second-order derivative with respect to state
 	 * @return derivative matrix (Jacobian)
 	 */
-	virtual state_matrix_t stateSecondDerivativeTerminal() = 0;
+    virtual state_matrix_t stateSecondDerivativeTerminal() = 0;
 
-	/**
+    /**
 	 * \brief Computes intermediate-cost first-order derivative with respect to control
 	 * @return derivative vector (Jacobian)
 	 */
-	virtual control_vector_t controlDerivativeIntermediate() = 0;
+    virtual control_vector_t controlDerivativeIntermediate() = 0;
 
-	/**
+    /**
 	 * \brief Computes terminal-cost first-order derivative with respect to control
 	 *
 	 * Not available for all cost functions. Throws an exception if not available.
 	 * @return derivative vector (Jacobian)
 	 */
-	virtual control_vector_t controlDerivativeTerminal();
-	/**
+    virtual control_vector_t controlDerivativeTerminal();
+    /**
 	 * \brief Computes intermediate-cost second-order derivative with respect to input
 	 * @return derivative matrix (Jacobian)
 	 */
-	virtual control_matrix_t controlSecondDerivativeIntermediate() = 0;
+    virtual control_matrix_t controlSecondDerivativeIntermediate() = 0;
 
-	/**
+    /**
 	 * \brief Computes final-cost second-order derivative with respect to input
 	 *
 	 * Not available for all cost functions. Throws an exception if not available.
 	 * @return derivative matrix (Jacobian)
 	 */
-	virtual control_matrix_t controlSecondDerivativeTerminal();
+    virtual control_matrix_t controlSecondDerivativeTerminal();
 
-	/**
+    /**
 	 * \brief Computes intermediate-cost derivative with respect to state and control
 	 * @return derivative matrix (Jacobian)
 	 */
-	virtual control_state_matrix_t stateControlDerivativeIntermediate() = 0;
+    virtual control_state_matrix_t stateControlDerivativeIntermediate() = 0;
 
-	/**
+    /**
 	 * \brief Computes final-cost derivative with respect to state and control
 	 * @return derivative matrix (Jacobian)
 	 */
-	virtual control_state_matrix_t stateControlDerivativeTerminal();
+    virtual control_state_matrix_t stateControlDerivativeTerminal();
 
-	virtual void updateReferenceState(const state_vector_t& x_ref);
+    virtual void updateReferenceState(const state_vector_t& x_ref);
 
-	virtual void updateFinalState(const state_vector_t& x_final);
+    virtual void updateFinalState(const state_vector_t& x_final);
 
-	bool stateDerivativeIntermediateTest();
+    bool stateDerivativeIntermediateTest();
 
-	bool controlDerivativeIntermediateTest();
+    bool controlDerivativeIntermediateTest();
 
-	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermById(const size_t id);
+    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermById(const size_t id);
 
-	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermById(const size_t id);
+    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermById(const size_t id);
 
-	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermByName(const std::string& name);
+    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermByName(const std::string& name);
 
-	std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermById(const std::string& name);
+    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermById(const std::string& name);
 
 protected:
+    state_vector_t stateDerivativeIntermediateNumDiff();
+    control_vector_t controlDerivativeIntermediateNumDiff();
 
-	state_vector_t stateDerivativeIntermediateNumDiff();
-	control_vector_t controlDerivativeIntermediateNumDiff();
+    SCALAR eps_;
+    bool doubleSidedDerivative_ = true;
 
-	SCALAR eps_;
-	bool doubleSidedDerivative_ = true;
+    /** list of intermediate cost terms for which analytic derivatives are available */
+    std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>>> intermediateCostAnalytical_;
 
-	/** list of intermediate cost terms for which analytic derivatives are available */
-	std::vector < std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > > intermediateCostAnalytical_;
-
-	/** list of final cost terms for which analytic derivatives are available */
-	std::vector < std::shared_ptr< TermBase<STATE_DIM, CONTROL_DIM, SCALAR> > > finalCostAnalytical_;
+    /** list of final cost terms for which analytic derivatives are available */
+    std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>>> finalCostAnalytical_;
 };
 
 
-} // namespace optcon
-} // namespace ct
-
+}  // namespace optcon
+}  // namespace ct
