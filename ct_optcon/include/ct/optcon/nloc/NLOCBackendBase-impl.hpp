@@ -285,7 +285,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 				SensitivityPtr(new ct::core::SensitivityIntegrator<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(
 					settings_.getSimulationTimestep(), linearSystems_[i], controller_[i], settings_.integrator,
 					settings_.timeVaryingDiscretization));
-		} else
+		}
+		else
 		{
 			sensitivity_[i] =
 				SensitivityPtr(new ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(
@@ -391,7 +392,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(co
 	{
 		lqocSolver_ = std::shared_ptr<GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>>(
 			new GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>());
-	} else if (settings.lqocp_solver == NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER)
+	}
+	else if (settings.lqocp_solver == NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER)
 	{
 #ifdef HPIPM
 		lqocSolver_ =
@@ -399,7 +401,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(co
 #else
 		throw std::runtime_error("HPIPM selected but not built.");
 #endif
-	} else
+	}
+	else
 		throw std::runtime_error("Solver for Linear Quadratic Optimal Control Problem wrongly specified.");
 
 	// set number of Eigen Threads (requires -fopenmp)
@@ -552,7 +555,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
 			settings_.integrator == ct::core::IntegrationType::RK_SYM)
 		{
 			integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], i * dt, subSteps, dt_sim);
-		} else
+		}
+		else
 		{
 			integrators_[threadId]->integrate_n_steps(xShot[i], i * dt, subSteps, dt_sim);
 		}
@@ -609,10 +613,12 @@ SYMPLECTIC_ENABLED NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>
 	if (settings_.integrator == ct::core::IntegrationType::EULER_SYM)
 	{
 		integratorsEulerSymplectic_[threadId]->integrate_n_steps(x0, t, steps, dt_sim);
-	} else if (settings_.integrator == ct::core::IntegrationType::RK_SYM)
+	}
+	else if (settings_.integrator == ct::core::IntegrationType::RK_SYM)
 	{
 		integratorsRkSymplectic_[threadId]->integrate_n_steps(x0, t, steps, dt_sim);
-	} else
+	}
+	else
 	{
 		throw std::runtime_error("invalid symplectic integrator specified");
 	}
@@ -934,7 +940,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 				//! compute l2 norms of state and control update
 				lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, uff_local);
 				lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
-			} else
+			}
+			else
 			{
 #ifdef MATLAB  // in case of no debug printing but still logging, need to compute them
 				//! compute l2 norms of state and control update
@@ -946,7 +953,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 			x_prev_ = x_;
 			u_ff_.swap(uff_local);
 			alphaBest_ = 1;
-		} else
+		}
+		else
 		{
 			if (settings_.debugPrint)
 			{
@@ -954,7 +962,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
 			}
 			return false;
 		}
-	} else
+	}
+	else
 	{
 		if (settings_.lineSearchSettings.debugPrint)
 		{
@@ -1033,7 +1042,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 	if (dynamicsGood)
 	{
 		computeCostsOfTrajectory(threadId, x_local, u_local, intermediateCost, finalCost);
-	} else
+	}
+	else
 	{
 		if (settings_.debugPrint)
 		{
@@ -1075,7 +1085,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 		{
 			lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, u_ff_);
 			lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
-		} else
+		}
+		else
 		{
 #ifdef MATLAB
 			lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, u_ff_);
@@ -1084,7 +1095,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 		}
 		x_prev_ = x_;
 		alphaBest_ = 1;
-	} else  //! do line search over a merit function trading off costs and constraint violations
+	}
+	else  //! do line search over a merit function trading off costs and constraint violations
 	{
 		// merit of previous trajectory
 		lowestCost_ = intermediateCostBest_ + finalCostBest_ + d_norm_ * settings_.meritFunctionRho;
@@ -1206,7 +1218,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareSolve
 		//iterate backward up to first stage
 		for (int i = this->lqocProblem_->getNumberOfStages() - 1; i >= startIndex; i--)
 			lqocSolver_->solveSingleStage(i);
-	} else
+	}
+	else
 		throw std::runtime_error("unknown solver type in prepareSolveLQProblem()");
 }
 
@@ -1218,7 +1231,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishSolveL
 	if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
 	{
 		solveFullLQProblem();
-	} else if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
+	}
+	else if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
 	{
 		// if solver is GNRiccati, solve the first stage and get solution
 		lqocProblem_->x_ = x_;
@@ -1229,7 +1243,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishSolveL
 			lqocSolver_->solveSingleStage(i);
 
 		lqocSolver_->computeStateAndControlUpdates();
-	} else
+	}
+	else
 		throw std::runtime_error("unknown solver type in finishSolveLQProblem()");
 }
 
@@ -1329,7 +1344,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::doFullStepUp
 	{
 		lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(lx_);
 		lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(lu_);
-	} else
+	}
+	else
 	{
 #ifdef MATLAB
 		lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(lx_);

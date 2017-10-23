@@ -203,7 +203,8 @@ public:
 
 			iRow = iRow1;
 			jCol = jCol1;
-		} else
+		}
+		else
 			constraints_->getSparsityPattern(iRow, jCol, nele_jac);
 	}
 

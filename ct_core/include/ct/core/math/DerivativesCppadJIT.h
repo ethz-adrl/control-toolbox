@@ -145,7 +145,8 @@ public:
 		{
 			assert(model_->isForwardZeroAvailable() == true);
 			return model_->ForwardZero(x);
-		} else
+		}
+		else
 			return this->adCppadFun_.Forward(0, x);
 	}
 
@@ -160,7 +161,8 @@ public:
 		{
 			assert(model_->isJacobianAvailable() == true);
 			jac = model_->Jacobian(x);
-		} else
+		}
+		else
 			jac = this->adCppadFun_.Jacobian(x);
 
 		JAC_TYPE_D out(this->outputDim_, x.rows());
@@ -185,7 +187,8 @@ public:
 			jac = Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
 			iRow = sparsityRowsJacobianEigen_;
 			jCol = sparsityColsJacobianEigen_;
-		} else
+		}
+		else
 			jac = this->adCppadFun_.SparseJacobian(x);
 	}
 
@@ -201,7 +204,8 @@ public:
 			std::vector<double> output;
 			model_->SparseJacobian(input, output, sparsityRowsJacobian_, sparsityColsJacobian_);
 			return Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
-		} else
+		}
+		else
 			return this->adCppadFun_.SparseJacobian(x);
 	}
 
@@ -218,7 +222,8 @@ public:
 			HES_TYPE_D out(x.rows(), x.rows());
 			out = HES_TYPE_ROW_MAJOR::Map(hessian.data(), x.rows(), x.rows());
 			return out;
-		} else
+		}
+		else
 		{
 			Eigen::VectorXd hessian = this->adCppadFun_.Hessian(x, lambda);
 			HES_TYPE_D out(x.rows(), x.rows());
@@ -246,7 +251,8 @@ public:
 			hes = Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
 			iRow = sparsityRowsHessianEigen_;
 			jCol = sparsityColsHessianEigen_;
-		} else
+		}
+		else
 			hes = this->adCppadFun_.SparseHessian(x, lambda);
 	}
 
@@ -264,7 +270,8 @@ public:
 			std::vector<double> output;
 			model_->SparseHessian(input, inputLambda, output, sparsityRowsHessian_, sparsityColsHessian_);
 			return Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
-		} else
+		}
+		else
 			return this->adCppadFun_.SparseHessian(x, lambda);
 	}
 

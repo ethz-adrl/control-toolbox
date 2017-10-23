@@ -301,8 +301,8 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
 
 		// calculate FF update
 		lv_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * gv_[k];
-
-	} else
+	}
+	else
 	{
 		// compute eigenvalues with eigenvectors enabled
 		eigenvalueSolver_.compute(H_[k], Eigen::ComputeEigenvectors);

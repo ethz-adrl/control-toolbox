@@ -296,8 +296,8 @@ private:
 				getSymplecticAandB<V_DIM, P_DIM>(t, x, *x_next, u, A_sym, B_sym);
 
 				integrateSensitivities(A_sym, B_sym, x, dX0In, dX0dt, t);
-
-			} else
+			}
+			else
 			{
 				if (timeVarying_)
 				{
@@ -305,7 +305,8 @@ private:
 					state_control_matrix_t B = linearSystem_->getDerivativeControl(x, u, t);
 
 					integrateSensitivities(A, B, x, dX0In, dX0dt, t);
-				} else
+				}
+				else
 				{
 					integrateSensitivities(Aconst_, Bconst_, x, dX0In, dX0dt, t);
 				}

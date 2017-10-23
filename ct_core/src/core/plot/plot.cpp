@@ -201,7 +201,8 @@ bool figure(std::string i)
 		args = PyTuple_New(1);
 		PyObject* i_py = PyString_FromString(i.c_str());
 		PyTuple_SetItem(args, 0, i_py);
-	} else
+	}
+	else
 	{
 		args = PyTuple_New(0);
 	}

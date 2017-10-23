@@ -82,7 +82,8 @@ bool CARE<STATE_DIM, CONTROL_DIM>::solve(const state_matrix_t& Q,
 	{
 		R_inverse.setZero();
 		R_inverse.diagonal().noalias() = R.diagonal().cwiseInverse();
-	} else
+	}
+	else
 	{
 		R_inverse.noalias() = R.inverse();
 	}
@@ -196,7 +197,8 @@ bool CARE<STATE_DIM, CONTROL_DIM>::solveSchurDirect(const schur_matrix_t& M, sta
 		if (i == (2 * STATE_DIM - 1) || std::abs(T(i + 1, i)) < 1e-12)
 		{
 			SELECT[i] = static_cast<int>(T(i, i) < 0);
-		} else
+		}
+		else
 		{
 			// we have a complex block
 			SELECT[i] = static_cast<int>((T(i, i) + T(i + 1, i + 1)) / 2.0 < 0);

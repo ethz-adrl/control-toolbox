@@ -456,7 +456,8 @@ bool ConstraintContainerAD<STATE_DIM, CONTROL_DIM, SCALAR>::initializeIntermedia
 				sparsityStateIntermediateRows_(stateIndex) = sparsityRows(i);
 				sparsityStateIntermediateCols_(stateIndex) = sparsityCols(i);
 				stateIndex++;
-			} else
+			}
+			else
 			{
 				sparsityInputIntermediateRows_(inputIndex) = sparsityRows(i);
 				sparsityInputIntermediateCols_(inputIndex) = sparsityCols(i) - STATE_DIM;
@@ -520,7 +521,8 @@ bool ConstraintContainerAD<STATE_DIM, CONTROL_DIM, SCALAR>::initializeTerminal()
 				sparsityStateTerminalRows_(stateIndex) = sparsityRows(i);
 				sparsityStateTerminalCols_(stateIndex) = sparsityCols(i);
 				stateIndex++;
-			} else
+			}
+			else
 			{
 				sparsityInputTerminalRows_(inputIndex) = sparsityRows(i);
 				sparsityInputTerminalCols_(inputIndex) = sparsityCols(i) - STATE_DIM;

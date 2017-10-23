@@ -151,7 +151,8 @@ public:
 				if (timeArray.at(i) <= enquiryTime)
 					break;
 			}
-		} else
+		}
+		else
 		{
 			for (int i = index_; i < (int)timeArray.size(); i++)
 			{

@@ -90,7 +90,8 @@ void StateFeedbackPolicyHandler<STATE_DIM, CONTROL_DIM, SCALAR>::designWarmStart
 			FeedForwardTraj.push_back(FeedForwardTraj.back(), dt_, timeIsRelative);
 			StateRefTraj.push_back(StateRefTraj.back(), dt_, timeIsRelative);
 		}
-	} else if (Kn_new < currentSize)
+	}
+	else if (Kn_new < currentSize)
 	{
 		// remove elements from back
 		for (size_t i = 0; i < currentSize - Kn_new; i++)

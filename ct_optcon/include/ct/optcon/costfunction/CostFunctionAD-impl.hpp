@@ -189,7 +189,8 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(const st
 		if (!term)
 		{
 			throw std::runtime_error("Term type \"" + termKind + "\" not supported");
-		} else
+		}
+		else
 		{
 			if (term)
 				addADTerm(filename, currentTerm, currentTermType, term, this, verbose);

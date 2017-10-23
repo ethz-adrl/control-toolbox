@@ -187,7 +187,8 @@ TEST(ILQRTestA, InstancesComparison)
 				std::cout << "Turning Line-Search off" << std::endl;
 				ilqr_settings.lineSearchSettings.active = false;
 				ilqr_settings_mp.lineSearchSettings.active = false;
-			} else
+			}
+			else
 			{
 				std::cout << "Turning Line-Search on" << std::endl;
 				ilqr_settings.lineSearchSettings.active = true;
@@ -333,7 +334,8 @@ TEST(ILQRTestB, SingleCoreTest)
 			{
 				ilqr_settings.lineSearchSettings.active = false;
 				ilqr_settings_mp.lineSearchSettings.active = false;
-			} else
+			}
+			else
 			{
 				ilqr_settings.lineSearchSettings.active = true;
 				ilqr_settings_mp.lineSearchSettings.active = true;
@@ -343,7 +345,8 @@ TEST(ILQRTestB, SingleCoreTest)
 			{
 				ilqr_settings.fixedHessianCorrection = false;
 				ilqr_settings_mp.fixedHessianCorrection = false;
-			} else
+			}
+			else
 			{
 				ilqr_settings.fixedHessianCorrection = true;
 				ilqr_settings_mp.fixedHessianCorrection = true;
@@ -417,7 +420,8 @@ TEST(ILQRTestB, SingleCoreTest)
 							ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
 						B_analytic =
 							ilqr_settings.dt * analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
-					} else if (ilqr_settings.discretization == NLOptConSettings::APPROXIMATION::BACKWARD_EULER)
+					}
+					else if (ilqr_settings.discretization == NLOptConSettings::APPROXIMATION::BACKWARD_EULER)
 					{
 						state_matrix_t aNew =
 							ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
@@ -425,7 +429,8 @@ TEST(ILQRTestB, SingleCoreTest)
 						A_analytic = aNewInv;
 						B_analytic = aNewInv * ilqr_settings.dt *
 									 analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
-					} else if (ilqr_settings.discretization == NLOptConSettings::APPROXIMATION::TUSTIN)
+					}
+					else if (ilqr_settings.discretization == NLOptConSettings::APPROXIMATION::TUSTIN)
 					{
 						state_matrix_t aNew = 0.5 * ilqr_settings.dt *
 											  analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
@@ -537,7 +542,8 @@ TEST(ILQRTestC, PolicyComparison)
 			{
 				ilqr_settings.lineSearchSettings.active = false;
 				ilqr_settings_mp.lineSearchSettings.active = false;
-			} else
+			}
+			else
 			{
 				ilqr_settings.lineSearchSettings.active = true;
 				ilqr_settings_mp.lineSearchSettings.active = true;

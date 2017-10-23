@@ -131,7 +131,8 @@ public:
 			firstSolveTimer_.stop();
 			timeSinceEndedLastSolve = lastSolveTimer_.getElapsedTime();
 			timeSinceEndedFirstSolve = firstSolveTimer_.getElapsedTime();
-		} else
+		}
+		else
 		{
 			timeSinceEndedLastSolve = 0.0;
 			timeSinceEndedFirstSolve = 0.0;

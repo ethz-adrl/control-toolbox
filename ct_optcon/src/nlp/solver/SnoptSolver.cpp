@@ -38,7 +38,8 @@ SnoptMemory::SnoptMemory(const SnoptSolver &self) : self(self)
 		// Append to end
 		memind = mempool.size();
 		mempool.push_back(this);
-	} else
+	}
+	else
 	{
 		// Reuse freed element
 		memind = mem_it - mempool.begin();
@@ -55,7 +56,8 @@ SnoptMemory::~SnoptMemory()
 	{
 		// Should probably shut down program
 		std::cout << "Error while destroying SNOPT memory" << std::endl;
-	} else
+	}
+	else
 	{
 		delete[] iAfun_;
 		delete[] jAvar_;

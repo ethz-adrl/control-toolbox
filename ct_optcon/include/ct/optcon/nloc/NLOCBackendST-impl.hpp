@@ -174,7 +174,8 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 
 			//! compute new alpha
 			alpha = alpha * this->settings_.lineSearchSettings.n_alpha;
-		} else
+		}
+		else
 		{
 			//! cost < this->lowestCost_ , better merit/cost found!
 
@@ -194,7 +195,8 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 				this->lx_norm_ =
 					this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(
 						x_search, this->x_prev_);
-			} else
+			}
+			else
 			{
 #ifdef MATLAB
 				this->lu_norm_ =

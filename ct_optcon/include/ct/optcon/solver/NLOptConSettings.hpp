@@ -508,7 +508,8 @@ public:
 			if (stringToIntegrator.find(integratorStr) != stringToIntegrator.end())
 			{
 				integrator = stringToIntegrator[integratorStr];
-			} else
+			}
+			else
 			{
 				std::cout << "Invalid integrator specified in config, should be one of the following:" << std::endl;
 
@@ -524,7 +525,8 @@ public:
 			if (stringToDiscretization.find(discretizationStr) != stringToDiscretization.end())
 			{
 				discretization = stringToDiscretization[discretizationStr];
-			} else
+			}
+			else
 			{
 				std::cout << "Invalid discretization specified in config, should be one of the following:" << std::endl;
 
@@ -540,7 +542,8 @@ public:
 			if (stringTonlocp_algorithm.find(nlocp_algorithmStr) != stringTonlocp_algorithm.end())
 			{
 				nlocp_algorithm = stringTonlocp_algorithm[nlocp_algorithmStr];
-			} else
+			}
+			else
 			{
 				std::cout << "Invalid nlocp_algorithm specified in config, should be one of the following:"
 						  << std::endl;
@@ -558,7 +561,8 @@ public:
 			if (stringTolocp_solver.find(locp_solverStr) != stringTolocp_solver.end())
 			{
 				lqocp_solver = stringTolocp_solver[locp_solverStr];
-			} else
+			}
+			else
 			{
 				std::cout << "Invalid locp_solver specified in config, should be one of the following:" << std::endl;
 

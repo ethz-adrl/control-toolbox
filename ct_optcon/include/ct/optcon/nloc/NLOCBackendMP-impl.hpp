@@ -571,7 +571,8 @@ SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 			this->u_ff_, this->u_ff_prev_);
 		this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(
 			this->x_, this->x_prev_);
-	} else
+	}
+	else
 	{
 #ifdef MATLAB
 		this->lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(
@@ -680,7 +681,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 			this->lqocProblem_->b_.swap(defects_recorded);
 			this->substepsX_ = substepsX;
 			this->substepsU_ = substepsU;
-		} else
+		}
+		else
 		{
 			if (this->settings_.lineSearchSettings.debugPrint)
 			{

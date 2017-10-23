@@ -232,7 +232,8 @@ CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermedia
 			this->setCurrentStateAndControl(x_perturbed, u_local, t_local);
 			dxdt_low = this->evaluateIntermediate();
 			dFdx(i, 0) = (dxdt - dxdt_low) / (dxp + dxm);
-		} else
+		}
+		else
 		{
 			dFdx(i, 0) = (dxdt - dxdt_ref) / dxp;
 		}
@@ -279,7 +280,8 @@ CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeIntermed
 			dxdt_low = this->evaluateIntermediate();
 
 			dFdu(i, 0) = (dxdt - dxdt_low) / (dup + dum);
-		} else
+		}
+		else
 		{
 			dFdu(i, 0) = (dxdt - dxdt_ref) / dup;
 		}

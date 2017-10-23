@@ -103,7 +103,8 @@ bool IpoptSolver<SCALAR>::solve()
 				  << std::endl
 				  << "*** The final value of the objective function is " << final_obj << '.' << std::endl;
 		return true;
-	} else
+	}
+	else
 	{
 		std::cout << " ipopt return value: " << status_ << std::endl;
 		return false;
@@ -313,7 +314,8 @@ bool IpoptSolver<SCALAR>::eval_jac_g(Ipopt::Index n,
 #ifdef DEBUG_PRINT
 		std::cout << "... leaving eval_jac_g, values == NULL" << std::endl;
 #endif  //DEBUG_PRINT
-	} else
+	}
+	else
 	{
 #ifdef DEBUG_PRINT
 		std::cout << "... entering eval_jac_g, values != NULL" << std::endl;
@@ -355,7 +357,8 @@ bool IpoptSolver<SCALAR>::eval_h(Ipopt::Index n,
 		Eigen::Map<Eigen::VectorXi> iRowVec(iRow, nele_hess);
 		Eigen::Map<Eigen::VectorXi> jColVec(jCol, nele_hess);
 		this->nlp_->getSparsityPatternHessian(nele_hess, iRowVec, jColVec);
-	} else
+	}
+	else
 	{
 		// return the values. This is a symmetric matrix, fill the lower left
 		// triangle only

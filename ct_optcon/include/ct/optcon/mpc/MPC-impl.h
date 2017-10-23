@@ -53,14 +53,16 @@ MPC<OPTCON_SOLVER>::MPC(const OptConProblem_t& problem,
 			std::cout << "Initializing MPC with a custom policy handler (warmstarter) provided by the user."
 					  << std::endl;
 			policyHandler_ = customPolicyHandler;
-		} else
+		}
+		else
 		{
 			if (std::is_base_of<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, Scalar_t>, OPTCON_SOLVER>::value)
 			{
 				// default policy handler for standard discrete-time iLQG implementation
 				policyHandler_ = std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>>(
 					new StateFeedbackPolicyHandler<STATE_DIM, CONTROL_DIM, Scalar_t>(solverSettings.dt));
-			} else
+			}
+			else
 			{
 				throw std::runtime_error(
 					"ERROR in MPC Constructor -- no default warm start strategy available for the selected "
@@ -75,7 +77,8 @@ MPC<OPTCON_SOLVER>::MPC(const OptConProblem_t& problem,
 	{
 		std::cout << "Initializing MPC with a custom time-horizon strategy provided by the user." << std::endl;
 		timeHorizonStrategy_ = customTimeHorizon;
-	} else
+	}
+	else
 	{
 		const Scalar_t initTimeHorizon = solver_.getTimeHorizon();
 
@@ -138,7 +141,8 @@ void MPC<OPTCON_SOLVER>::doPreIntegration(const Scalar_t& t_forward_start,
 		{
 			// ... either with a given third-party controller
 			integrateForward(t_forward_start, t_forward_stop, x_start, forwardIntegrationController);
-		} else
+		}
+		else
 		{
 			// ... or with the controller obtained from the solver (solution of last mpc-run).
 			std::shared_ptr<Policy_t> prevController(new Policy_t(currentPolicy_));
@@ -257,8 +261,8 @@ bool MPC<OPTCON_SOLVER>::finishIteration(const core::StateVector<STATE_DIM, Scal
 
 				// update policy timestamp with the truncated time
 				newPolicy_ts += dt_truncated_eff;
-
-			} else if (t_forward_stop_ >= dtp && !firstRun_)
+			}
+			else if (t_forward_stop_ >= dtp && !firstRun_)
 			{
 #ifdef DEBUG_PRINT_MPC
 				std::cout << "DEBUG_PRINT_MPC: controller opt faster than pre-integration horizon. Consider tuning "
@@ -333,7 +337,8 @@ void MPC<OPTCON_SOLVER>::printMpcSummary()
 		std::cout << "Total sum of meas. delay [sec]: \t" << timeKeeper_.getSummedDelay() << std::endl;
 		std::cout << "Average measured delay [sec]:   \t" << timeKeeper_.getSummedDelay() / runCallCounter_
 				  << std::endl;
-	} else
+	}
+	else
 	{
 		std::cout << "Used fixed delay[sec]: \t" << 0.000001 * mpc_settings_.fixedDelayUs_ << std::endl;
 	}

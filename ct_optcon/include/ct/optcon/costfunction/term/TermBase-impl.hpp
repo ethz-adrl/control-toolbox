@@ -195,7 +195,8 @@ void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadTimeActivation(c
 		if (!c_i)
 		{
 			throw std::runtime_error("Activation type \"" + activationKind + "\" not supported");
-		} else
+		}
+		else
 		{
 			c_i_ = c_i;
 			if (verbose)

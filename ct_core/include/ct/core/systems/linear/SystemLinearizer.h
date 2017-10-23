@@ -200,12 +200,13 @@ public:
 						(dxdt.template segment<STATE_DIM / 2>(STATE_DIM / 2) -
 							dxdt_low.template segment<STATE_DIM / 2>(STATE_DIM / 2)) /
 						(dxp + dxm);
-				} else
+				}
+				else
 				{
 					dFdx_.template col(i) = (dxdt - dxdt_low) / (dxp + dxm);
 				}
-
-			} else
+			}
+			else
 			{
 				if (isSecondOrderSystem_)
 				{
@@ -213,7 +214,8 @@ public:
 						(dxdt.template segment<STATE_DIM / 2>(STATE_DIM / 2) -
 							dxdt_ref_.template segment<STATE_DIM / 2>(STATE_DIM / 2)) /
 						dxp;
-				} else
+				}
+				else
 				{
 					dFdx_.template col(i) = (dxdt - dxdt_ref_) / dxp;
 				}
@@ -277,11 +279,13 @@ public:
 						(dxdt.template segment<STATE_DIM / 2>(STATE_DIM / 2) -
 							dxdt_low.template segment<STATE_DIM / 2>(STATE_DIM / 2)) /
 						(dup + dum);
-				} else
+				}
+				else
 				{
 					dFdu_.template col(i) = (dxdt - dxdt_low) / (dup + dum);
 				}
-			} else
+			}
+			else
 			{
 				if (isSecondOrderSystem_)
 				{
@@ -289,7 +293,8 @@ public:
 						(dxdt.template segment<STATE_DIM / 2>(STATE_DIM / 2) -
 							dxdt_ref_.template segment<STATE_DIM / 2>(STATE_DIM / 2)) /
 						dup;
-				} else
+				}
+				else
 				{
 					dFdu_.template col(i) = (dxdt - dxdt_ref_) / dup;
 				}

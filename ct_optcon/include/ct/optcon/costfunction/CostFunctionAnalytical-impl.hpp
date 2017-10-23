@@ -126,7 +126,8 @@ void CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(
 		if (!term)
 		{
 			throw std::runtime_error("Term type \"" + termKind + "\" not supported");
-		} else
+		}
+		else
 		{
 			addTerm(filename, currentTerm, currentTermType, term, this, verbose);
 		}

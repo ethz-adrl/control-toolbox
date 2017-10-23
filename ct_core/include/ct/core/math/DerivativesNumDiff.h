@@ -121,7 +121,8 @@ public:
 				OUT_TYPE y_perturbed_low = f_(x_perturbed);
 
 				jac.template col(i) = (y_perturbed - y_perturbed_low) / (dxp + dxm);
-			} else
+			}
+			else
 			{
 				jac.template col(i) = (y_perturbed - y_ref) / dxp;
 			}
