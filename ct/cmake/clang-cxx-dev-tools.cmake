@@ -18,8 +18,9 @@ function(filter_ct_directories allItems excludeDir)
     set(${allItems} ${${allItems}} PARENT_SCOPE)
 endfunction(filter_ct_directories)
 
-# we exclude "external" (i.e. CppAD) sources from the format- and tidy process     
-filter_ct_directories(ALL_CXX_SOURCE_FILES "/external/")     
+# list "external" sources, to be excluded from the format- and tidy process: 
+filter_ct_directories(ALL_CXX_SOURCE_FILES "/external/") # excludes CppAD
+filter_ct_directories(ALL_CXX_SOURCE_FILES "/iit/rbd")   # excludes iit rbd folders 
           
 
 # Adding clang-format target if executable is found
