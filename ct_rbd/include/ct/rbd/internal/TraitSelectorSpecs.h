@@ -38,19 +38,19 @@ namespace tpl {
 template <>
 struct TraitSelector<CppAD::AD<double>>
 {
- 	typedef ct::rbd::internal::CppADDoubleTrait Trait;
+	typedef ct::rbd::internal::CppADDoubleTrait Trait;
 };
 
 template <>
 struct TraitSelector<CppAD::AD<CppAD::cg::CG<double>>>
 {
- 	typedef ct::rbd::internal::CppADCodegenTrait Trait;
+	typedef ct::rbd::internal::CppADCodegenTrait Trait;
 };
 
 
-} //namespace tpl
-} // namespace rbd
-} // namespace iit
+}  //namespace tpl
+}  // namespace rbd
+}  // namespace iit
 
 
-#endif //INCLUDE_EXTERNAL_HYQ_TRAITS_TRAITSELECTOR_HPP_
+#endif  //INCLUDE_EXTERNAL_HYQ_TRAITS_TRAITSELECTOR_HPP_

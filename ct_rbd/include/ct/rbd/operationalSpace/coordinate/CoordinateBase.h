@@ -40,20 +40,18 @@ template <size_t NUM_OUTPUTS, size_t NUM_JOINTS>
 class CoordinateBase
 {
 public:
-	typedef std::shared_ptr<CoordinateBase<NUM_OUTPUTS, NUM_JOINTS> >	ptr;
-	typedef RBDState<NUM_JOINTS> 					state_t;
-	typedef Eigen::Matrix<double, NUM_OUTPUTS, 1>	coordinate_t;
+	typedef std::shared_ptr<CoordinateBase<NUM_OUTPUTS, NUM_JOINTS>> ptr;
+	typedef RBDState<NUM_JOINTS> state_t;
+	typedef Eigen::Matrix<double, NUM_OUTPUTS, 1> coordinate_t;
 
 	CoordinateBase() {}
 	virtual ~CoordinateBase() {}
-
 	virtual coordinate_t getCoordinate(const state_t& state) = 0;
 
 private:
-
 };
 
-} // namespace rbd
-} // namespace ct
+}  // namespace rbd
+}  // namespace ct
 
 #endif /* CT_COORDINATEBASE_H_ */

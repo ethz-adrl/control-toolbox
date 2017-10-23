@@ -37,8 +37,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ct/rbd/robot/kinematics/EndEffector.h"
 
- using namespace ct;
- using namespace rbd;
+using namespace ct;
+using namespace rbd;
 
 
 TEST(TestHyQKinematics, transformTest)
@@ -46,7 +46,7 @@ TEST(TestHyQKinematics, transformTest)
 	TestHyQ::Kinematics kyn;
 	EndEffector<TestHyQ::Kinematics::NJOINTS> eeTest;
 
-	for (size_t i=0; i<TestHyQ::Kinematics::NUM_EE; i++)
+	for (size_t i = 0; i < TestHyQ::Kinematics::NUM_EE; i++)
 	{
 		eeTest = kyn.getEndEffector(i);
 	}
@@ -64,10 +64,8 @@ TEST(TestHyQKinematics, transformTest)
 }
 
 
-int main(int argc, char **argv){
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+int main(int argc, char **argv)
+{
+	testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }
-
-
-

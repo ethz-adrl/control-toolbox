@@ -51,7 +51,7 @@ TEST(EEKinematicsTest, testFootVelocityBaseAngularVelocity)
 	// rotate around x
 	state.baseLocalAngularVelocity()(0) = 1.3;
 
-	for (size_t i=0; i<nFeet; i++)
+	for (size_t i = 0; i < nFeet; i++)
 	{
 		kindr::Velocity3D eeVelW;
 		kindr::Velocity3D eeVelB;
@@ -90,7 +90,7 @@ TEST(EEKinematicsTest, testFootVelocityBaseZRotation)
 	state.baseLocalAngularVelocity()(2) = 1.3;
 
 	const size_t nFeet = 4;
-	for (size_t i=0; i<nFeet; i++)
+	for (size_t i = 0; i < nFeet; i++)
 	{
 		kindr::Velocity3D eeVelW;
 		kindr::Velocity3D eeVelB;
@@ -115,7 +115,7 @@ TEST(EEKinematicsTest, testFootVelocityBaseLinearVelocity)
 
 	const size_t nTests = 100;
 
-	for(size_t t=0; t<nTests; t++)
+	for (size_t t = 0; t < nTests; t++)
 	{
 		// random configuration
 		state.setRandom();
@@ -126,7 +126,7 @@ TEST(EEKinematicsTest, testFootVelocityBaseLinearVelocity)
 		state.jointVelocities().setZero();
 
 		const size_t nFeet = 4;
-		for (size_t i=0; i<nFeet; i++)
+		for (size_t i = 0; i < nFeet; i++)
 		{
 			kindr::Velocity3D eeVelW;
 			kindr::Velocity3D eeVelB;
@@ -152,7 +152,7 @@ TEST(EEKinematicsTest, testFootPositionVaryingBase)
 
 	const size_t nTests = 100;
 
-	for(size_t t=0; t<nTests; t++)
+	for (size_t t = 0; t < nTests; t++)
 	{
 		// random configuration
 		state.setRandom();
@@ -161,12 +161,12 @@ TEST(EEKinematicsTest, testFootPositionVaryingBase)
 
 		const size_t nFeet = 4;
 		std::array<kindr::Position3D, nFeet> B_eePos;
-		for (size_t i=0; i<nFeet; i++)
+		for (size_t i = 0; i < nFeet; i++)
 		{
-			 B_eePos[i] = kinematics.getEEPositionInBase(i, state.jointPositions());
+			B_eePos[i] = kinematics.getEEPositionInBase(i, state.jointPositions());
 
-			 // all legs should have same height
-			if (i>0)
+			// all legs should have same height
+			if (i > 0)
 				ASSERT_NEAR(B_eePos[0](2), B_eePos[i](2), 1e-6);
 
 			// legs should be below belly
@@ -186,7 +186,7 @@ TEST(EEKinematicsTest, testFootPositionStraightBase)
 
 	const size_t nTests = 100;
 
-	for(size_t t=0; t<nTests; t++)
+	for (size_t t = 0; t < nTests; t++)
 	{
 		// random configuration
 		state.setRandom();
@@ -198,23 +198,20 @@ TEST(EEKinematicsTest, testFootPositionStraightBase)
 
 		const size_t nFeet = 4;
 		std::array<kindr::Position3D, nFeet> W_eePos;
-		for (size_t i=0; i<nFeet; i++)
+		for (size_t i = 0; i < nFeet; i++)
 		{
 			W_eePos[i] = kinematics.getEEPositionInWorld(i, state.basePose(), state.jointPositions());
 
-			 // all legs should have same height
-			if (i>0)
+			// all legs should have same height
+			if (i > 0)
 				ASSERT_NEAR(W_eePos[0](2), W_eePos[i](2), 1e-6);
 
 			// legs should be below belly
-			ASSERT_LT(W_eePos[0](2), state.basePose().position()(2)-0.5);
-			ASSERT_GT(W_eePos[0](2), state.basePose().position()(2)-1.5);
-
-
+			ASSERT_LT(W_eePos[0](2), state.basePose().position()(2) - 0.5);
+			ASSERT_GT(W_eePos[0](2), state.basePose().position()(2) - 1.5);
 		}
 	}
 }
-
 
 
 // Test influence of base linear velocity on feet
@@ -226,7 +223,7 @@ TEST(EEKinematicsTest, forceMappingTest)
 
 	const size_t nTests = 100;
 
-	for(size_t t=0; t<nTests; t++)
+	for (size_t t = 0; t < nTests; t++)
 	{
 		// random configuration
 		state.setRandom();
@@ -241,7 +238,7 @@ TEST(EEKinematicsTest, forceMappingTest)
 		std::array<TestHyQ::Kinematics::EEForce, nFeet> eeForcesW;
 
 
-		for (size_t i=0; i<nFeet; i++)
+		for (size_t i = 0; i < nFeet; i++)
 		{
 			// only force in z
 			eeForcesW[i].setZero();
@@ -250,15 +247,12 @@ TEST(EEKinematicsTest, forceMappingTest)
 			TestHyQ::Kinematics::EEForce eeForceLink;
 			eeForceLink.setZero();
 
-			eeForceLink = kinematics.mapForceFromWorldToLink(eeForcesW[i],
-					state.basePose(),
-					state.jointPositions(),
-					i);
+			eeForceLink = kinematics.mapForceFromWorldToLink(eeForcesW[i], state.basePose(), state.jointPositions(), i);
 
 			// we only expect forces in negative x, no torques
-			for (size_t j=0; j<6; j++)
+			for (size_t j = 0; j < 6; j++)
 			{
-				if (j!=3)
+				if (j != 3)
 					ASSERT_NEAR(eeForceLink(j), 0.0, 1e-6);
 			}
 
@@ -268,8 +262,6 @@ TEST(EEKinematicsTest, forceMappingTest)
 }
 
 
-
-
 TEST(EEKinematicsTest, forceMagnitudeTest)
 {
 	RBDStateHyQ state;
@@ -277,7 +269,7 @@ TEST(EEKinematicsTest, forceMagnitudeTest)
 
 	const size_t nTests = 100;
 
-	for(size_t t=0; t<nTests; t++)
+	for (size_t t = 0; t < nTests; t++)
 	{
 		// random configuration
 		state.setRandom();
@@ -285,23 +277,19 @@ TEST(EEKinematicsTest, forceMagnitudeTest)
 		const size_t nFeet = 4;
 		std::array<TestHyQ::Kinematics::EEForce, nFeet> eeForcesW;
 
-		for (size_t i=0; i<nFeet; i++)
+		for (size_t i = 0; i < nFeet; i++)
 		{
 			eeForcesW[i].setRandom();
 
 			TestHyQ::Kinematics::EEForce forceLink;
 
-			forceLink = kinematics.mapForceFromWorldToLink(eeForcesW[i],
-								state.basePose(),
-								state.jointPositions(),
-								i);
+			forceLink = kinematics.mapForceFromWorldToLink(eeForcesW[i], state.basePose(), state.jointPositions(), i);
 
 			// we expect the magnitude not to change
 			ASSERT_NEAR(forceLink.bottomRows<3>().norm(), eeForcesW[i].bottomRows<3>().norm(), 1e-6);
 		}
 	}
 }
-
 
 
 // Test influence of base linear velocity on feet
@@ -313,7 +301,7 @@ TEST(EEKinematicsTest, torqueMappingTest)
 
 	const size_t nTests = 100;
 
-	for(size_t t=0; t<nTests; t++)
+	for (size_t t = 0; t < nTests; t++)
 	{
 		// random configuration
 		state.setRandom();
@@ -328,9 +316,9 @@ TEST(EEKinematicsTest, torqueMappingTest)
 		std::array<TestHyQ::Kinematics::EEForce, nFeet> eeForcesW;
 
 
-		for (size_t i=0; i<nFeet; i++)
+		for (size_t i = 0; i < nFeet; i++)
 		{
-			state.jointPositions()(3*i+2) = M_PI/2.0; // knees bent by 90°
+			state.jointPositions()(3 * i + 2) = M_PI / 2.0;  // knees bent by 90°
 
 			// only force in z
 			eeForcesW[i].setZero();
@@ -338,39 +326,33 @@ TEST(EEKinematicsTest, torqueMappingTest)
 
 			TestHyQ::Kinematics::EEForce forceLink;
 
-			forceLink = kinematics.mapForceFromWorldToLink(eeForcesW[i],
-								state.basePose(),
-								state.jointPositions(),
-								i);
+			forceLink = kinematics.mapForceFromWorldToLink(eeForcesW[i], state.basePose(), state.jointPositions(), i);
 
 			// we only expect forces in negative y
 			ASSERT_NEAR(forceLink(3), 0.0, 1e-6);
-			ASSERT_NEAR(forceLink(4), eeForcesW[i](5),1e-6);
+			ASSERT_NEAR(forceLink(4), eeForcesW[i](5), 1e-6);
 			ASSERT_NEAR(forceLink(5), 0.0, 1e-6);
 
 			// we expect torques only around z
-			for (size_t j=0; j<2; j++)
+			for (size_t j = 0; j < 2; j++)
 			{
 				ASSERT_NEAR(forceLink(j), 0.0, 1e-6);
 			}
 
 			double torqueAbs = std::abs(forceLink(2));
-			ASSERT_NEAR(torqueAbs, forceLink.bottomRows<3>().norm()*0.33, 1e-6);
+			ASSERT_NEAR(torqueAbs, forceLink.bottomRows<3>().norm() * 0.33, 1e-6);
 
-			if (i<2 && (i-1)%3 != 0)
+			if (i < 2 && (i - 1) % 3 != 0)
 			{
 				ASSERT_NEAR(forceLink.bottomRows<3>().norm(), 0.0, 1e-12);
 			}
-
 		}
 	}
 }
 
 
-
-
-
-int main(int argc, char **argv){
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+int main(int argc, char **argv)
+{
+	testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }

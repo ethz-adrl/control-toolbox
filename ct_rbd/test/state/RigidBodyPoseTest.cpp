@@ -144,7 +144,7 @@ TEST(RigidBodyPoseTest, gravityTest)
 	ASSERT_TRUE(gEuler.isApprox(gravityW));
 
 	// test for 180° rotations
-	for (size_t i=0; i<3; i++)
+	for (size_t i = 0; i < 3; i++)
 	{
 		poseQuat.setIdentity();
 		poseEuler.setIdentity();
@@ -157,14 +157,15 @@ TEST(RigidBodyPoseTest, gravityTest)
 		poseEuler.setFromEulerAnglesXyz(orientationXyz);
 
 		// if we perturb in x or y gravity should point upwards
-		if (i<2)
+		if (i < 2)
 		{
 			Eigen::Vector3d gravityUp;
 			gravityUp << 0.0, 0.0, 9.81;
 
 			ASSERT_TRUE(poseQuat.computeGravityB().isApprox(gravityUp));
 			ASSERT_TRUE(poseEuler.computeGravityB().isApprox(gravityUp));
-		} else
+		}
+		else
 		{
 			// otherwise gravity is normal
 			Eigen::Vector3d gravityDown;
@@ -180,7 +181,7 @@ TEST(RigidBodyPoseTest, gravityTest)
 	poseEuler.setIdentity();
 
 	Eigen::Vector3d orientationXyz(Eigen::Vector3d::Zero());
-	orientationXyz(0) = 30.0/180.0*M_PI;
+	orientationXyz(0) = 30.0 / 180.0 * M_PI;
 
 	poseQuat.setFromEulerAnglesXyz(orientationXyz);
 	poseEuler.setFromEulerAnglesXyz(orientationXyz);
@@ -203,7 +204,8 @@ TEST(RigidBodyPoseTest, rotationTest)
 	RigidBodyPose poseQuat(RigidBodyPose::QUAT);
 	RigidBodyPose poseEuler(RigidBodyPose::EULER);
 
-	Eigen::Vector3d testVector; testVector.setRandom();
+	Eigen::Vector3d testVector;
+	testVector.setRandom();
 
 	Eigen::Vector3d rotatedVectorQuat;
 	Eigen::Vector3d rotatedVectorEigen;
@@ -223,10 +225,8 @@ TEST(RigidBodyPoseTest, rotationTest)
 }
 
 
-int main(int argc, char **argv){
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+int main(int argc, char** argv)
+{
+	testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }
-
-
-

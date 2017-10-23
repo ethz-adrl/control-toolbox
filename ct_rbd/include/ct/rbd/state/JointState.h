@@ -49,56 +49,41 @@ public:
 		NDOFS = NJOINTS
 	};
 
-	typedef Eigen::Matrix<SCALAR, 2*NJOINTS, 1> joint_state_vector_t;
+	typedef Eigen::Matrix<SCALAR, 2 * NJOINTS, 1> joint_state_vector_t;
 	typedef Eigen::Matrix<SCALAR, NJOINTS, 1> Position;
 	typedef Eigen::Matrix<SCALAR, NJOINTS, 1> Velocity;
 
 	typedef Eigen::VectorBlock<joint_state_vector_t, NJOINTS> JointPositionBlock;
 	typedef Eigen::VectorBlock<const joint_state_vector_t, NJOINTS> JointPositionBlockConst;
 
-	JointState ()
-	{
-		setZero();
-	}
-
-	JointState (const joint_state_vector_t& state) :
-		state_(state)
-	{}
-
-	inline bool operator == (const JointState& rhs) const
-	{
-		return ( this->state_ == rhs.state_ );
-	}
-
-	inline bool operator != (const JointState<NJOINTS, SCALAR>& rhs) const
-	{
-		return ( this->state_ != rhs.state_ );
-	}
-
-	inline JointState<NJOINTS, SCALAR> operator + (const JointState<NJOINTS, SCALAR>& rhs) const
+	JointState() { setZero(); }
+	JointState(const joint_state_vector_t& state) : state_(state) {}
+	inline bool operator==(const JointState& rhs) const { return (this->state_ == rhs.state_); }
+	inline bool operator!=(const JointState<NJOINTS, SCALAR>& rhs) const { return (this->state_ != rhs.state_); }
+	inline JointState<NJOINTS, SCALAR> operator+(const JointState<NJOINTS, SCALAR>& rhs) const
 	{
 		return JointState<NJOINTS, SCALAR>(this->state_ + rhs.state_);
 	}
-	inline JointState<NJOINTS, SCALAR> operator - (const JointState<NJOINTS, SCALAR>& rhs) const
+	inline JointState<NJOINTS, SCALAR> operator-(const JointState<NJOINTS, SCALAR>& rhs) const
 	{
 		return JointState<NJOINTS, SCALAR>(this->state_ - rhs.state_);
 	}
 
-	inline JointState<NJOINTS, SCALAR> operator * (const SCALAR& scalar) const
+	inline JointState<NJOINTS, SCALAR> operator*(const SCALAR& scalar) const
 	{
 		return JointState<NJOINTS, SCALAR>(this->state_ * scalar);
 	}
-	inline JointState<NJOINTS, SCALAR> operator / (const SCALAR& scalar) const
+	inline JointState<NJOINTS, SCALAR> operator/(const SCALAR& scalar) const
 	{
 		return JointState<NJOINTS, SCALAR>(this->state_ / scalar);
 	}
 
-	inline bool operator < (const JointState<NJOINTS, SCALAR>& rhs) const
+	inline bool operator<(const JointState<NJOINTS, SCALAR>& rhs) const
 	{
 		return (this->array() < rhs.array()).isConstant(1);
 	}
 
-	inline bool operator > (const JointState<NJOINTS, SCALAR>& rhs) const
+	inline bool operator>(const JointState<NJOINTS, SCALAR>& rhs) const
 	{
 		return (this->array() > rhs.array()).isConstant(1);
 	}
@@ -112,38 +97,48 @@ public:
 	JointPositionBlock getPositions() { return state_.template head<NJOINTS>(); }
 	/// @brief get constant joint state
 	const JointPositionBlockConst getPositions() const { return state_.template head<NJOINTS>(); }
-
-	SCALAR& getPosition(size_t i) { assert(i<NJOINTS && "Invalid joint index"); return state_(i); }
-	const SCALAR& getPosition(size_t i) const { assert(i<NJOINTS && "Invalid joint index"); return state_(i); }
+	SCALAR& getPosition(size_t i)
+	{
+		assert(i < NJOINTS && "Invalid joint index");
+		return state_(i);
+	}
+	const SCALAR& getPosition(size_t i) const
+	{
+		assert(i < NJOINTS && "Invalid joint index");
+		return state_(i);
+	}
 
 	/// @brief get joint velocity
 	JointPositionBlock getVelocities() { return state_.template tail<NJOINTS>(); }
 	/// @brief get constant joint velocity
 	const JointPositionBlockConst getVelocities() const { return state_.template tail<NJOINTS>(); }
-
-	SCALAR& getVelocity(size_t i) { assert(i<NJOINTS && "Invalid joint index"); return state_(NJOINTS+i); }
-	const SCALAR& getVelocity(size_t i) const { assert(i<NJOINTS && "Invalid joint index"); return state_(NJOINTS+i); }
+	SCALAR& getVelocity(size_t i)
+	{
+		assert(i < NJOINTS && "Invalid joint index");
+		return state_(NJOINTS + i);
+	}
+	const SCALAR& getVelocity(size_t i) const
+	{
+		assert(i < NJOINTS && "Invalid joint index");
+		return state_(NJOINTS + i);
+	}
 
 
 	joint_state_vector_t& toImplementation() { return state_; }
 	const joint_state_vector_t& toImplementation() const { return state_; }
-
-
 	/// @brief set states to zero
 	void setZero() { state_.setZero(); }
-
 	void setRandom() { state_.setRandom(); }
-
 protected:
 	joint_state_vector_t state_;
 };
 
-} // namespace tpl
+}  // namespace tpl
 
-template<size_t NJOINTS>
+template <size_t NJOINTS>
 using JointState = tpl::JointState<NJOINTS, double>;
 
-} // namespace rbd
-} // namespace ct
+}  // namespace rbd
+}  // namespace ct
 
 #endif /* JOINTSTATEBASE_H_ */

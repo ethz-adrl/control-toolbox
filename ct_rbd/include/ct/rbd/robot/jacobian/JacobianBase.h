@@ -41,12 +41,12 @@ class JacobianBase
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	typedef RBDState<NUM_JOINTS, SCALAR>		 				state_t;
-	typedef Eigen::Matrix<SCALAR, NUM_OUTPUTS, 6+NUM_JOINTS> 	jacobian_t;
-	typedef Eigen::Matrix<SCALAR, 6+NUM_JOINTS, NUM_OUTPUTS> 	jacobian_inv_t;
+	typedef RBDState<NUM_JOINTS, SCALAR> state_t;
+	typedef Eigen::Matrix<SCALAR, NUM_OUTPUTS, 6 + NUM_JOINTS> jacobian_t;
+	typedef Eigen::Matrix<SCALAR, 6 + NUM_JOINTS, NUM_OUTPUTS> jacobian_inv_t;
 
-	JacobianBase() {};
-	virtual ~JacobianBase() {};
+	JacobianBase(){};
+	virtual ~JacobianBase(){};
 
 	/**
 	 * This methods calculates the Jacobian of the floating-base Jacobian in the Origin (World or Inertia)
@@ -65,13 +65,12 @@ public:
 	virtual void getJacobianOriginDerivative(const state_t& state, jacobian_t& dJdt) = 0;
 
 private:
-
 };
 
-} // namespace tpl
+}  // namespace tpl
 
-template<size_t NUM_OUTPUTS, size_t NUM_JOINTS>
+template <size_t NUM_OUTPUTS, size_t NUM_JOINTS>
 using JacobianBase = tpl::JacobianBase<NUM_OUTPUTS, NUM_JOINTS, double>;
 
-} // namespace rbd
-} // namespace ct
+}  // namespace rbd
+}  // namespace ct

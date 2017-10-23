@@ -32,13 +32,13 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct {
 namespace rbd {
-namespace internal{
+namespace internal {
 
 /*!
  * \brief Trait providing basic mathematical operations for CppAD datatypes
  */
-struct CppADDoubleTrait {
-
+struct CppADDoubleTrait
+{
 	typedef CppAD::AD<double> Scalar;
 
 	inline static Scalar sin(const Scalar& x) { return CppAD::sin(x); }
@@ -49,17 +49,14 @@ struct CppADDoubleTrait {
 	inline static Scalar tanh(const Scalar& x) { return CppAD::tanh(x); }
 	inline static Scalar exp(const Scalar& x) { return CppAD::exp(x); }
 	inline static Scalar fabs(const Scalar& x) { return CppAD::fabs(x); }
-
 	template <int Dims>
-	inline static Eigen::Matrix<Scalar, Dims, 1> solve(const Eigen::Matrix<Scalar, Dims, Dims>& A, const Eigen::Matrix<Scalar, Dims, 1>& b)
+	inline static Eigen::Matrix<Scalar, Dims, 1> solve(const Eigen::Matrix<Scalar, Dims, Dims>& A,
+		const Eigen::Matrix<Scalar, Dims, 1>& b)
 	{
-		return A.inverse()*b;
+		return A.inverse() * b;
 	}
-
 };
-
 }
-
 }
 }
 

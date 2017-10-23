@@ -30,7 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ct/rbd/systems/FloatingBaseFDSystem.h>
 #include <ct/rbd/systems/linear/RbdLinearizer.h>
 
-namespace ct{
+namespace ct {
 namespace rbd {
 
 /**
@@ -63,25 +63,22 @@ public:
 
 
 	//! constructor taking path to the settings file
-	FloatingBaseNLOCContactModel(
-			const std::string& costFunctionFile,
-			const std::string& settingsFile,
-			std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
-			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
+	FloatingBaseNLOCContactModel(const std::string& costFunctionFile,
+		const std::string& settingsFile,
+		std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
+		std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
 
 	//! constructor taking settings file directly
-	FloatingBaseNLOCContactModel(
-			const std::string& costFunctionFile,
-			const typename NLOptConSolver::Settings_t& settings,
-			std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
-			std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
+	FloatingBaseNLOCContactModel(const std::string& costFunctionFile,
+		const typename NLOptConSolver::Settings_t& settings,
+		std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
+		std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
 
-	void initialize(
-			const typename RBDDynamics::RBDState_t& x0,
-			const core::Time& tf,
-			StateVectorArray x_ref = StateVectorArray(),
-			FeedbackArray u0_fb = FeedbackArray(),
-			ControlVectorArray u0_ff = ControlVectorArray());
+	void initialize(const typename RBDDynamics::RBDState_t& x0,
+		const core::Time& tf,
+		StateVectorArray x_ref = StateVectorArray(),
+		FeedbackArray u0_fb = FeedbackArray(),
+		ControlVectorArray u0_ff = ControlVectorArray());
 
 	void configure(const typename NLOptConSolver::Settings_t& settings);
 
@@ -104,7 +101,6 @@ public:
 	std::shared_ptr<NLOptConSolver> getSolver();
 
 private:
-
 	std::shared_ptr<FBSystem> system_;
 	std::shared_ptr<LinearizedSystem> linearizedSystem_;
 	std::shared_ptr<CostFunction> costFunction_;
@@ -114,10 +110,7 @@ private:
 	std::shared_ptr<NLOptConSolver> solver_;
 
 	size_t iteration_;
-
-
 };
-
 }
 }
 

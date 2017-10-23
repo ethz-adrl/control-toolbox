@@ -26,47 +26,43 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-namespace ct{
-namespace rbd{
+namespace ct {
+namespace rbd {
 
 template <class RBDDynamics>
-FloatingBaseNLOCContactModel<RBDDynamics>::FloatingBaseNLOCContactModel(
-		const std::string& costFunctionFile,
-		const std::string& settingsFile,
-		std::shared_ptr<FBSystem> system,
-		std::shared_ptr<LinearizedSystem> linearizedSystem):
-		system_(system),
-		linearizedSystem_(linearizedSystem),
-		costFunction_(new CostFunction(costFunctionFile, false)),
-		optConProblem_(system_, costFunction_, linearizedSystem_),
-		iteration_(0)
-		{
+FloatingBaseNLOCContactModel<RBDDynamics>::FloatingBaseNLOCContactModel(const std::string& costFunctionFile,
+	const std::string& settingsFile,
+	std::shared_ptr<FBSystem> system,
+	std::shared_ptr<LinearizedSystem> linearizedSystem)
+	: system_(system),
+	  linearizedSystem_(linearizedSystem),
+	  costFunction_(new CostFunction(costFunctionFile, false)),
+	  optConProblem_(system_, costFunction_, linearizedSystem_),
+	  iteration_(0)
+{
 	solver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settingsFile));
-		}
+}
 
 template <class RBDDynamics>
-FloatingBaseNLOCContactModel<RBDDynamics>::FloatingBaseNLOCContactModel(
-		const std::string& costFunctionFile,
-		const typename NLOptConSolver::Settings_t& settings,
-		std::shared_ptr<FBSystem> system,
-		std::shared_ptr<LinearizedSystem> linearizedSystem
-) :
-system_(system),
-linearizedSystem_(linearizedSystem),
-costFunction_(new CostFunction(costFunctionFile, false)),
-optConProblem_(system_, costFunction_, linearizedSystem_),
-iteration_(0)
+FloatingBaseNLOCContactModel<RBDDynamics>::FloatingBaseNLOCContactModel(const std::string& costFunctionFile,
+	const typename NLOptConSolver::Settings_t& settings,
+	std::shared_ptr<FBSystem> system,
+	std::shared_ptr<LinearizedSystem> linearizedSystem)
+	: system_(system),
+	  linearizedSystem_(linearizedSystem),
+	  costFunction_(new CostFunction(costFunctionFile, false)),
+	  optConProblem_(system_, costFunction_, linearizedSystem_),
+	  iteration_(0)
 {
 	solver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settings));
 }
 
 template <class RBDDynamics>
-void FloatingBaseNLOCContactModel<RBDDynamics>::initialize(
-		const typename RBDDynamics::RBDState_t& x0,
-		const core::Time& tf,
-		StateVectorArray x_ref,
-		FeedbackArray u0_fb,
-		ControlVectorArray u0_ff)
+void FloatingBaseNLOCContactModel<RBDDynamics>::initialize(const typename RBDDynamics::RBDState_t& x0,
+	const core::Time& tf,
+	StateVectorArray x_ref,
+	FeedbackArray u0_fb,
+	ControlVectorArray u0_ff)
 {
 	typename NLOptConSolver::Policy_t policy(x_ref, u0_ff, u0_fb, getSettings().dt);
 
@@ -143,6 +139,5 @@ FloatingBaseNLOCContactModel<RBDDynamics>::getSolver()
 {
 	return solver_;
 }
-
 }
 }

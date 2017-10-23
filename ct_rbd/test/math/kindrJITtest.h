@@ -29,7 +29,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <kindr/Core>
 
-const size_t DIM = 3; //!< dimension of vector
+const size_t DIM = 3;  //!< dimension of vector
 
 //! the Jacobian codegen class
 typedef DerivativesCppadJIT<DIM, DIM> derivativesCppadJIT;
@@ -50,11 +50,11 @@ Eigen::Matrix<SCALAR, 3, 1> testFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
 	kindr::EulerAnglesXyz<SCALAR> anglesIn(x);
 	kindr::EulerAnglesXyz<SCALAR> anglesTemp;
 
-	anglesTemp.setX(3*anglesIn.x() + 2*anglesIn.x()*anglesIn.x() - anglesIn.y()*anglesIn.z());
+	anglesTemp.setX(3 * anglesIn.x() + 2 * anglesIn.x() * anglesIn.x() - anglesIn.y() * anglesIn.z());
 	anglesTemp.setY(anglesIn.z() + anglesIn.y() + 3);
 	anglesTemp.setZ(anglesIn.z());
 
-	kindr::EulerAnglesXyz<SCALAR> anglesOut (anglesTemp);
+	kindr::EulerAnglesXyz<SCALAR> anglesOut(anglesTemp);
 
 	return anglesOut.toImplementation();
 }
@@ -70,9 +70,7 @@ Eigen::Matrix<SCALAR, DIM, DIM> jacobianCheck(const Eigen::Matrix<SCALAR, 3, 1>&
 {
 	Eigen::Matrix<SCALAR, DIM, DIM> jac;
 
-	jac << 3+4*x(0),    -x(2),     -x(1),
-		   0,              1,        1,
-		   0, 			  0, 	    1;
+	jac << 3 + 4 * x(0), -x(2), -x(1), 0, 1, 1, 0, 0, 1;
 
 	return jac;
 }
@@ -83,7 +81,8 @@ Eigen::Matrix<SCALAR, DIM, DIM> jacobianCheck(const Eigen::Matrix<SCALAR, 3, 1>&
  */
 TEST(KindrJitTest, EulerAnglesTest)
 {
-	try {
+	try
+	{
 		// create a function handle (also works for class methods, lambdas, function pointers, ...)
 		typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
 
@@ -99,7 +98,7 @@ TEST(KindrJitTest, EulerAnglesTest)
 		// create an input vector
 		Eigen::Matrix<double, 3, 1> angles;
 
-		for (size_t i=0; i<10; i++)
+		for (size_t i = 0; i < 10; i++)
 		{
 			// create a random input
 			angles.setRandom();
@@ -110,10 +109,7 @@ TEST(KindrJitTest, EulerAnglesTest)
 		}
 	} catch (std::exception& e)
 	{
-		std::cout << "Exception thrown: "<<e.what()<<std::endl;
+		std::cout << "Exception thrown: " << e.what() << std::endl;
 		ASSERT_TRUE(false);
 	}
 }
-
-
-

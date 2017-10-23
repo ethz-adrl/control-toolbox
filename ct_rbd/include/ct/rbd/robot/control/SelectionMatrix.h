@@ -55,8 +55,6 @@ public:
 	void setIdentity(bool floatingBase);
 
 private:
-
 };
-
 }
 }

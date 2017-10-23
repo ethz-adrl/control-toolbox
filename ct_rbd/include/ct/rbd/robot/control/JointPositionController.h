@@ -37,32 +37,32 @@ namespace rbd {
  * \tparam NJOINTS number of joints of the robot
  */
 template <size_t NJOINTS>
-class JointPositionController : public ct::core::Controller<2*NJOINTS, NJOINTS>
+class JointPositionController : public ct::core::Controller<2 * NJOINTS, NJOINTS>
 {
 public:
-	static const size_t STATE_DIM = 2*NJOINTS;
+	static const size_t STATE_DIM = 2 * NJOINTS;
 	static const size_t CONTROL_DIM = NJOINTS;
 
-	typedef std::shared_ptr<JointPositionController<NJOINTS> > Ptr;
+	typedef std::shared_ptr<JointPositionController<NJOINTS>> Ptr;
 	typedef ct::core::PIDController PIDController;
 
 	virtual JointPositionController<NJOINTS>* clone() const override;
 
 	JointPositionController(
-			const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition = Eigen::Matrix<double, NJOINTS, 1>::Zero(),
-			const Eigen::Matrix<double, NJOINTS, 1>& desiredVelocity = Eigen::Matrix<double, NJOINTS, 1>::Zero(),
-			const std::vector<PIDController::parameters_t>& parameters = std::vector<PIDController::parameters_t>(NJOINTS, PIDController::parameters_t())
-	);
+		const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition = Eigen::Matrix<double, NJOINTS, 1>::Zero(),
+		const Eigen::Matrix<double, NJOINTS, 1>& desiredVelocity = Eigen::Matrix<double, NJOINTS, 1>::Zero(),
+		const std::vector<PIDController::parameters_t>& parameters = std::vector<PIDController::parameters_t>(NJOINTS,
+			PIDController::parameters_t()));
 
-	JointPositionController(
-			const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition,
-			const Eigen::Matrix<double, NJOINTS, 1>& desiredVelocity,
-			const PIDController::parameters_t& parameters
-	);
+	JointPositionController(const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition,
+		const Eigen::Matrix<double, NJOINTS, 1>& desiredVelocity,
+		const PIDController::parameters_t& parameters);
 
 	virtual ~JointPositionController();
 
-	void computeControl(const core::StateVector<STATE_DIM>& state, const core::Time& t, core::ControlVector<NJOINTS>& control) override;
+	void computeControl(const core::StateVector<STATE_DIM>& state,
+		const core::Time& t,
+		core::ControlVector<NJOINTS>& control) override;
 
 	void setDesiredPosition(const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition);
 
@@ -73,10 +73,8 @@ public:
 	void reset();
 
 protected:
-
 	std::vector<PIDController> jointControllers_;
-
 };
 
-} // namespace rbd
-} // namespace ct
+}  // namespace rbd
+}  // namespace ct

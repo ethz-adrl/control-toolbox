@@ -97,15 +97,15 @@ public:
 	typedef kindr::Velocity<SCALAR, 3> Velocity3S;
 
 
-
 	/*!
 	 * \brief the type of velcity smoothing
 	 */
-	enum VELOCITY_SMOOTHING {
-		NONE = 0,   //!< none
-		SIGMOID = 1,//!< sigmoid
-		TANH = 2,   //!< tanh
-		ABS = 3     //!< abs
+	enum VELOCITY_SMOOTHING
+	{
+		NONE = 0,     //!< none
+		SIGMOID = 1,  //!< sigmoid
+		TANH = 2,     //!< tanh
+		ABS = 3       //!< abs
 	};
 
 	/*!
@@ -118,23 +118,22 @@ public:
 	 * @param smoothing the type of velocity smoothing
 	 * @param kinematics instance of the kinematics (optionally). Should be provided for efficiency when using Auto-Diff.
 	 */
-	EEContactModel(
-			const SCALAR& k = SCALAR(5000),
-			const SCALAR& d = SCALAR(500.0),
-			const SCALAR& alpha = SCALAR(100.0),
-			const SCALAR& alpha_n = SCALAR(-1.0),
-			const SCALAR& zOffset = SCALAR(0.0),
-			const VELOCITY_SMOOTHING& smoothing = NONE,
-			const std::shared_ptr<Kinematics>& kinematics = std::shared_ptr<Kinematics>(new Kinematics())) :
-		kinematics_(kinematics),
-		smoothing_(smoothing),
-		k_(k),
-		d_(d),
-		alpha_(alpha),
-		alpha_n_(alpha_n),
-		zOffset_(zOffset)
+	EEContactModel(const SCALAR& k = SCALAR(5000),
+		const SCALAR& d = SCALAR(500.0),
+		const SCALAR& alpha = SCALAR(100.0),
+		const SCALAR& alpha_n = SCALAR(-1.0),
+		const SCALAR& zOffset = SCALAR(0.0),
+		const VELOCITY_SMOOTHING& smoothing = NONE,
+		const std::shared_ptr<Kinematics>& kinematics = std::shared_ptr<Kinematics>(new Kinematics()))
+		: kinematics_(kinematics),
+		  smoothing_(smoothing),
+		  k_(k),
+		  d_(d),
+		  alpha_(alpha),
+		  alpha_n_(alpha_n),
+		  zOffset_(zOffset)
 	{
-		for (size_t i=0; i<NUM_EE; i++)
+		for (size_t i = 0; i < NUM_EE; i++)
 			EEactive_[i] = true;
 	}
 
@@ -142,32 +141,24 @@ public:
 	 * \brief Clone operator
 	 * @param other instance to clone
 	 */
-	EEContactModel(const EEContactModel& other) :
-		kinematics_(other.kinematics_->clone()),
-		smoothing_(other.smoothing_),
-		k_(other.k_),
-		d_(other.d_),
-		alpha_(other.alpha_),
-		alpha_n_(other.alpha_n_),
-		zOffset_(other.zOffset_),
-		EEactive_(other.EEactive_)
+	EEContactModel(const EEContactModel& other)
+		: kinematics_(other.kinematics_->clone()),
+		  smoothing_(other.smoothing_),
+		  k_(other.k_),
+		  d_(other.d_),
+		  alpha_(other.alpha_),
+		  alpha_n_(other.alpha_n_),
+		  zOffset_(other.zOffset_),
+		  EEactive_(other.EEactive_)
 	{
 	}
 
-	EEContactModel* clone() const {
-		return new EEContactModel(*this);
-	}
-
-
+	EEContactModel* clone() const { return new EEContactModel(*this); }
 	/**
 	 * \brief Sets which end-effectors can have forces excerted on them
 	 * @param activeMap flags of active end-effectors
 	 */
-	void setActiveEE(const ActiveMap& activeMap)
-	{
-		EEactive_ = activeMap;
-	}
-
+	void setActiveEE(const ActiveMap& activeMap) { EEactive_ = activeMap; }
 	/**
 	 * \brief Computes the contact forces given a state of the robot. Returns forces expressed in the world frame
 	 * @param state The state of the robot
@@ -177,7 +168,7 @@ public:
 	{
 		EEForcesLinear eeForces;
 
-		for (size_t i=0; i<NUM_EE; i++)
+		for (size_t i = 0; i < NUM_EE; i++)
 		{
 			if (EEactive_[i])
 			{
@@ -187,7 +178,8 @@ public:
 				{
 					Velocity3S eeVelocity = kinematics_->getEEVelocityInWorld(i, state);
 					eeForces[i] = computeEEForce(eePenetration, eeVelocity);
-				} else
+				}
+				else
 				{
 					eeForces[i].setZero();
 				}
@@ -202,10 +194,7 @@ public:
 	SCALAR& k() { return k_; }
 	SCALAR& d() { return d_; }
 	SCALAR& zOffset() { return zOffset_; }
-
 	VELOCITY_SMOOTHING& smoothing() { return smoothing_; }
-
-
 private:
 	/**
 	 * \brief Checks if end-effector is in contact. Currently assumes this is the case for negative z
@@ -228,7 +217,9 @@ private:
 	 * @param jointPosition Joint position of the robot
 	 * @return Penetration in world coordinates
 	 */
-	Vector3s computePenetration(const size_t& eeId, const tpl::RigidBodyPose<SCALAR>& basePose, const typename tpl::JointState<NJOINTS,SCALAR>::Position& jointPosition)
+	Vector3s computePenetration(const size_t& eeId,
+		const tpl::RigidBodyPose<SCALAR>& basePose,
+		const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
 	{
 		Position3S pos = kinematics_->getEEPositionInWorld(eeId, basePose, jointPosition);
 
@@ -265,22 +256,22 @@ private:
 	 */
 	void smoothEEForce(EEForceLinear& eeForce, const Vector3s& eePenetration)
 	{
-		switch(smoothing_)
+		switch (smoothing_)
 		{
-		case NONE:
-			return;
-		case SIGMOID:
-			eeForce *= 1./(1. + TRAIT::exp(eePenetration(2)*alpha_));
-			return;
-		case TANH:
-			// same as sigmoid, maybe cheaper / more expensive to compute?
-			eeForce *= 0.5*TRAIT::tanh(-0.5*eePenetration(2)*alpha_) + 0.5;
-			return;
-		case ABS:
-			eeForce *= 0.5 * -eePenetration(2)*alpha_ / (1. + TRAIT::fabs(-eePenetration(2)*alpha_)) + 0.5;
-			return;
-		default:
-			throw std::runtime_error("undefined smoothing function");
+			case NONE:
+				return;
+			case SIGMOID:
+				eeForce *= 1. / (1. + TRAIT::exp(eePenetration(2) * alpha_));
+				return;
+			case TANH:
+				// same as sigmoid, maybe cheaper / more expensive to compute?
+				eeForce *= 0.5 * TRAIT::tanh(-0.5 * eePenetration(2) * alpha_) + 0.5;
+				return;
+			case ABS:
+				eeForce *= 0.5 * -eePenetration(2) * alpha_ / (1. + TRAIT::fabs(-eePenetration(2) * alpha_)) + 0.5;
+				return;
+			default:
+				throw std::runtime_error("undefined smoothing function");
 		}
 	}
 
@@ -299,10 +290,11 @@ private:
 	{
 		if (alpha_n_ > SCALAR(0))
 		{
-			force(2) += k_*TRAIT::exp(-alpha_n_*p_N);
-		} else if (p_N <= SCALAR(0))
+			force(2) += k_ * TRAIT::exp(-alpha_n_ * p_N);
+		}
+		else if (p_N <= SCALAR(0))
 		{
-			force(2) -= k_*p_N;
+			force(2) -= k_ * p_N;
 		}
 	}
 
@@ -313,16 +305,14 @@ private:
 	//! Type of velocity smoothing
 	VELOCITY_SMOOTHING smoothing_;
 
-	SCALAR k_; //!< spring constant
-	SCALAR d_; //!< damper constant
-	SCALAR alpha_; //!< velocity smoothing coefficient
-	SCALAR alpha_n_; //!< normal force smoothing coefficient
-	SCALAR zOffset_; //!< vertical offset of the contact pane
+	SCALAR k_;        //!< spring constant
+	SCALAR d_;        //!< damper constant
+	SCALAR alpha_;    //!< velocity smoothing coefficient
+	SCALAR alpha_n_;  //!< normal force smoothing coefficient
+	SCALAR zOffset_;  //!< vertical offset of the contact pane
 
-	ActiveMap EEactive_; //!< stores which endeffectors are active, i.e. can make contact
+	ActiveMap EEactive_;  //!< stores which endeffectors are active, i.e. can make contact
 };
-
-
 }
 }
 

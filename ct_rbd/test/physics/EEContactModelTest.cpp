@@ -36,7 +36,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace ct::rbd;
 
 
-
 TEST(EEContactModelTest, basicTest)
 {
 	typedef TestHyQ::Kinematics HyqKinematics;
@@ -49,22 +48,24 @@ TEST(EEContactModelTest, basicTest)
 
 	EEForcesLinear forces;
 
-	try {
+	try
+	{
 		forces = eeContactModel.computeContactForces(state);
 	} catch (const std::runtime_error& e)
 	{
-		std::cout << "error thrown: "<<e.what()<<std::endl;
+		std::cout << "error thrown: " << e.what() << std::endl;
 		ASSERT_TRUE(false);
 	}
 
-	for (size_t i=0; i<forces.size(); i++)
+	for (size_t i = 0; i < forces.size(); i++)
 	{
-		std::cout << "Force at EE-ID "<<i<<": "<<forces[i].transpose();
+		std::cout << "Force at EE-ID " << i << ": " << forces[i].transpose();
 	}
 }
 
 
-int main(int argc, char **argv){
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+int main(int argc, char** argv)
+{
+	testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }

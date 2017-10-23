@@ -59,15 +59,12 @@ TEST(TestHyQKinematicsAd, transformTest)
 	kindr::Position<size_type, 3> pos = kynTpl.getEEPositionInWorld(ind, hyqPose, hyqJointState.getPositions());
 	auto force3d = kynTpl.mapForceFromWorldToLink3d(vec3Tpl, hyqPose, hyqJointState.getPositions(), ind);
 	auto forceLink = kynTpl.mapForceFromWorldToLink(force3d, hyqPose, hyqJointState.getPositions(), ind);
-	auto forceEELink =  kynTpl.mapForceFromEEToLink(force3d, hyqPose, hyqJointState.getPositions(), ind);
-
+	auto forceEELink = kynTpl.mapForceFromEEToLink(force3d, hyqPose, hyqJointState.getPositions(), ind);
 }
 
 
-int main(int argc, char **argv){
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+int main(int argc, char **argv)
+{
+	testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }
-
-
-

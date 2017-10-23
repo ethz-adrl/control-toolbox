@@ -33,9 +33,10 @@ namespace ct {
 namespace rbd {
 
 template <size_t NJOINTS, typename SCALAR = double>
-class EndEffector {
+class EndEffector
+{
 public:
-	typedef Eigen::Matrix<SCALAR,6,NJOINTS> jacobian_t;
+	typedef Eigen::Matrix<SCALAR, 6, NJOINTS> jacobian_t;
 	typedef typename JointState<NJOINTS>::Position joint_position_t;
 
 	EndEffector();
@@ -54,10 +55,9 @@ public:
 	 * \brief *DO NOT USE*. Set the link id on which an endeffector is on
 	 * @param linkId LinkId to be set
 	 */
-	void setLinkId(size_t linkId); // we should not have this public
+	void setLinkId(size_t linkId);  // we should not have this public
 
 private:
-
 	// id of the link that the endeffector is on
 	size_t linkId_;
 };

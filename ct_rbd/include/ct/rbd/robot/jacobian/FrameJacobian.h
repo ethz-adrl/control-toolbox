@@ -48,7 +48,6 @@ public:
 
 	FrameJacobian() {}
 	~FrameJacobian() {}
-
 	/**
 	 * This method calculates the inertia frame (frame i) Jacobian (rotational and translation part) given the non-inertia base frame full Jacobian (frame b).
 	 *
@@ -57,17 +56,16 @@ public:
 	 * @param[in] b_J_point A 6-by-NUM_JOINTS Jacobian matrix (rotational and translation part) expressed in the base frame.
 	 * @param[out] i_J_point A 6-by-(6+NUM_JOINTS) Jacobian matrix (rotational and linear translation) expressed in the desired inertia frame.
 	 */
-	static void FromBaseJacobianToInertiaJacobian(
-			const Matrix3s& i_R_b,
-			const Vector3s& b_r_point,
-			const Eigen::Matrix<SCALAR,6,NUM_JOINTS>& b_J_point,
-			Eigen::Matrix<SCALAR,6,NUM_JOINTS+6>& i_J_point) {
-
+	static void FromBaseJacobianToInertiaJacobian(const Matrix3s& i_R_b,
+		const Vector3s& b_r_point,
+		const Eigen::Matrix<SCALAR, 6, NUM_JOINTS>& b_J_point,
+		Eigen::Matrix<SCALAR, 6, NUM_JOINTS + 6>& i_J_point)
+	{
 		// orientation
-		Eigen::Matrix<SCALAR,3,NUM_JOINTS+6> i_J_poitOrientation;
+		Eigen::Matrix<SCALAR, 3, NUM_JOINTS + 6> i_J_poitOrientation;
 		FromBaseJacToInertiaJacOrientation(i_R_b, b_r_point, b_J_point.template topRows<3>(), i_J_poitOrientation);
 		// translation
-		Eigen::Matrix<SCALAR,3,NUM_JOINTS+6> i_J_poitTranslation;
+		Eigen::Matrix<SCALAR, 3, NUM_JOINTS + 6> i_J_poitTranslation;
 		FromBaseJacToInertiaJacTranslation(i_R_b, b_r_point, b_J_point.template bottomRows<3>(), i_J_poitTranslation);
 
 		i_J_point << i_J_poitOrientation, i_J_poitTranslation;
@@ -81,13 +79,12 @@ public:
 	 * @param[in] b_J_point A 3-by-NUM_JOINTS rotational Jacobian matrix expressed in the base frame.
 	 * @param[out] i_J_point A 3-by-(6+NUM_JOINTS) rotational Jacobian matrix expressed in the desired inertia frame.
 	 */
-	static void FromBaseJacToInertiaJacOrientation(
-			const Matrix3s& i_R_b,
-			const Vector3s& b_r_point,
-			const Eigen::Matrix<SCALAR,3,NUM_JOINTS>& b_J_point,
-			Eigen::Matrix<SCALAR,3,NUM_JOINTS+6>& i_J_point) {
-
-		i_J_point << i_R_b,  Matrix3s::Zero(),  i_R_b*b_J_point;
+	static void FromBaseJacToInertiaJacOrientation(const Matrix3s& i_R_b,
+		const Vector3s& b_r_point,
+		const Eigen::Matrix<SCALAR, 3, NUM_JOINTS>& b_J_point,
+		Eigen::Matrix<SCALAR, 3, NUM_JOINTS + 6>& i_J_point)
+	{
+		i_J_point << i_R_b, Matrix3s::Zero(), i_R_b * b_J_point;
 	}
 
 	/**
@@ -98,13 +95,12 @@ public:
 	 * @param[in] b_J_point A 3-by-NUM_JOINTS translational Jacobian matrix expressed in the base frame.
 	 * @param[out] i_J_point A 3-by-(6+NUM_JOINTS) translational Jacobian matrix expressed in the desired inertia frame.
 	 */
-	static void FromBaseJacToInertiaJacTranslation(
-			const Matrix3s& i_R_b,
-			const Vector3s& b_r_point,
-			const Eigen::Matrix<SCALAR,3,NUM_JOINTS>& b_J_point,
-			Eigen::Matrix<SCALAR,3,NUM_JOINTS+6>& i_J_point) {
-
-		i_J_point << -i_R_b*CrossProductMatrix(b_r_point),  i_R_b,  i_R_b*b_J_point;
+	static void FromBaseJacToInertiaJacTranslation(const Matrix3s& i_R_b,
+		const Vector3s& b_r_point,
+		const Eigen::Matrix<SCALAR, 3, NUM_JOINTS>& b_J_point,
+		Eigen::Matrix<SCALAR, 3, NUM_JOINTS + 6>& i_J_point)
+	{
+		i_J_point << -i_R_b * CrossProductMatrix(b_r_point), i_R_b, i_R_b * b_J_point;
 	}
 
 
@@ -120,23 +116,21 @@ public:
 	 * @param[out] i_dJdt_point A 6-by-(6+NUM_JOINTS) Jacobian matrix time derivative (rotational and translation part) expressed in the desired inertia frame.
 	 */
 	static void FromBaseJacobianDevToInertiaJacobianDev(
-			const Eigen::Matrix<SCALAR,NUM_JOINTS+6,1>& generalizedVelocities,
-			const Matrix3s& i_R_b,
-			const Vector3s& b_r_point,
-			const Eigen::Matrix<SCALAR,6,NUM_JOINTS>& b_J_point,
-			const Eigen::Matrix<SCALAR,6,NUM_JOINTS>& b_dJdt_point,
-			Eigen::Matrix<SCALAR,6,NUM_JOINTS+6>& i_dJdt_point) {
-
+		const Eigen::Matrix<SCALAR, NUM_JOINTS + 6, 1>& generalizedVelocities,
+		const Matrix3s& i_R_b,
+		const Vector3s& b_r_point,
+		const Eigen::Matrix<SCALAR, 6, NUM_JOINTS>& b_J_point,
+		const Eigen::Matrix<SCALAR, 6, NUM_JOINTS>& b_dJdt_point,
+		Eigen::Matrix<SCALAR, 6, NUM_JOINTS + 6>& i_dJdt_point)
+	{
 		// orientation
-		Eigen::Matrix<SCALAR,3,NUM_JOINTS+6> i_dJdt_pointOrientation;
+		Eigen::Matrix<SCALAR, 3, NUM_JOINTS + 6> i_dJdt_pointOrientation;
 		FromBaseJacobianDevToInertiaJacobianDevOrientation(generalizedVelocities, i_R_b, b_r_point,
-				b_J_point.template topRows<3>(), b_dJdt_point.template topRows<3>(),
-				i_dJdt_pointOrientation);
+			b_J_point.template topRows<3>(), b_dJdt_point.template topRows<3>(), i_dJdt_pointOrientation);
 		// translation
-		Eigen::Matrix<SCALAR,3,NUM_JOINTS+6> i_dJdt_pointTranslation;
+		Eigen::Matrix<SCALAR, 3, NUM_JOINTS + 6> i_dJdt_pointTranslation;
 		FromBaseJacobianDevToInertiaJacobianDevTranslation(generalizedVelocities, i_R_b, b_r_point,
-				b_J_point.template bottomRows<3>(), b_dJdt_point.template bottomRows<3>(),
-				i_dJdt_pointTranslation);
+			b_J_point.template bottomRows<3>(), b_dJdt_point.template bottomRows<3>(), i_dJdt_pointTranslation);
 
 		i_dJdt_point << i_dJdt_pointOrientation, i_dJdt_pointTranslation;
 	}
@@ -153,17 +147,17 @@ public:
 	 * @param[out] i_dJdt_point A 6-by-(6+NUM_JOINTS) rotational Jacobian matrix time derivative expressed in the desired inertia frame.
 	 */
 	static void FromBaseJacobianDevToInertiaJacobianDevOrientation(
-			const Eigen::Matrix<SCALAR,NUM_JOINTS+6,1>& generalizedVelocities,
-			const Matrix3s& i_R_b,
-			const Vector3s& b_r_point,
-			const Eigen::Matrix<SCALAR,3,NUM_JOINTS>& b_J_point,
-			const Eigen::Matrix<SCALAR,3,NUM_JOINTS>& b_dJdt_point,
-			Eigen::Matrix<SCALAR,3,NUM_JOINTS+6>& i_dJdt_point) {
-
+		const Eigen::Matrix<SCALAR, NUM_JOINTS + 6, 1>& generalizedVelocities,
+		const Matrix3s& i_R_b,
+		const Vector3s& b_r_point,
+		const Eigen::Matrix<SCALAR, 3, NUM_JOINTS>& b_J_point,
+		const Eigen::Matrix<SCALAR, 3, NUM_JOINTS>& b_dJdt_point,
+		Eigen::Matrix<SCALAR, 3, NUM_JOINTS + 6>& i_dJdt_point)
+	{
 		// rotation matrix time derivatives
-		Matrix3s i_dRdt_b = i_R_b*CrossProductMatrix(generalizedVelocities.template head<3>());
+		Matrix3s i_dRdt_b = i_R_b * CrossProductMatrix(generalizedVelocities.template head<3>());
 		// orientation
-		i_dJdt_point << i_dRdt_b,  Matrix3s::Zero(),  i_dRdt_b*b_J_point + i_R_b*b_dJdt_point;
+		i_dJdt_point << i_dRdt_b, Matrix3s::Zero(), i_dRdt_b * b_J_point + i_R_b * b_dJdt_point;
 	}
 
 	/**
@@ -178,21 +172,20 @@ public:
 	 * @param[out] i_dJdt_point A 6-by-(6+NUM_JOINTS) translational Jacobian matrix time derivative expressed in the desired inertia frame.
 	 */
 	static void FromBaseJacobianDevToInertiaJacobianDevTranslation(
-			const Eigen::Matrix<SCALAR,NUM_JOINTS+6,1>& generalizedVelocities,
-			const Matrix3s& i_R_b,
-			const Vector3s& b_r_point,
-			const Eigen::Matrix<SCALAR,3,NUM_JOINTS>& b_J_point,
-			const Eigen::Matrix<SCALAR,3,NUM_JOINTS>& b_dJdt_point,
-			Eigen::Matrix<SCALAR,3,NUM_JOINTS+6>& i_dJdt_point) {
-
+		const Eigen::Matrix<SCALAR, NUM_JOINTS + 6, 1>& generalizedVelocities,
+		const Matrix3s& i_R_b,
+		const Vector3s& b_r_point,
+		const Eigen::Matrix<SCALAR, 3, NUM_JOINTS>& b_J_point,
+		const Eigen::Matrix<SCALAR, 3, NUM_JOINTS>& b_dJdt_point,
+		Eigen::Matrix<SCALAR, 3, NUM_JOINTS + 6>& i_dJdt_point)
+	{
 		// velocity of the point in the base frame
 		Vector3s b_v_point = b_J_point * generalizedVelocities.template tail<NUM_JOINTS>();
 		// rotation matrix time derivatives
-		Matrix3s i_dRdt_b = i_R_b*CrossProductMatrix(generalizedVelocities.template head<3>());
+		Matrix3s i_dRdt_b = i_R_b * CrossProductMatrix(generalizedVelocities.template head<3>());
 		// translation
-		i_dJdt_point << -i_dRdt_b*CrossProductMatrix(b_r_point) - i_R_b*CrossProductMatrix(b_v_point),
-						i_dRdt_b,
-						i_dRdt_b*b_J_point + i_R_b*b_dJdt_point;
+		i_dJdt_point << -i_dRdt_b * CrossProductMatrix(b_r_point) - i_R_b * CrossProductMatrix(b_v_point), i_dRdt_b,
+			i_dRdt_b * b_J_point + i_R_b * b_dJdt_point;
 	}
 
 private:
@@ -200,25 +193,21 @@ private:
 	 * calculates the skew matrix for vector cross product
 	 */
 	template <typename Derived>
-	static Matrix3s CrossProductMatrix(const Eigen::DenseBase<Derived>& in) {
-
-		if (in.innerSize()!=3 || in.outerSize()!=1)  throw std::runtime_error("Input argument should be a 3-by-1 vector.");
+	static Matrix3s CrossProductMatrix(const Eigen::DenseBase<Derived>& in)
+	{
+		if (in.innerSize() != 3 || in.outerSize() != 1)
+			throw std::runtime_error("Input argument should be a 3-by-1 vector.");
 
 		Matrix3s out;
-		out <<   SCALAR(0.0),   -in(2), +in(1),
-				+in(2),  SCALAR(0.0),   -in(0),
-				-in(1), +in(0),  SCALAR(0.0);
+		out << SCALAR(0.0), -in(2), +in(1), +in(2), SCALAR(0.0), -in(0), -in(1), +in(0), SCALAR(0.0);
 		return out;
 	}
-
-
 };
 
-} // namespace tpl
+}  // namespace tpl
 
 template <size_t NUM_JOINTS>
 using FrameJacobian = tpl::FrameJacobian<NUM_JOINTS, double>;
 
-} // namespace rbd
-} // namespace ct
-
+}  // namespace rbd
+}  // namespace ct

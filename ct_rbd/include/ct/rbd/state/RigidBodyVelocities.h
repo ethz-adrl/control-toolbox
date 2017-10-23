@@ -28,7 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct {
 namespace rbd {
-namespace tpl{
+namespace tpl {
 
 /**
  * \brief Representation of Rigid Body Velocities, currently just a typedef
@@ -37,7 +37,7 @@ namespace tpl{
 // unfortunately kindr stores linear velocity first and not rotational velocity.
 // so we cannot use it directly. Instead we privately inherit and make the "safe"
 // methods public and "override" the others.
-template<typename SCALAR = double>
+template <typename SCALAR = double>
 class RigidBodyVelocities : private kindr::TwistLinearVelocityLocalAngularVelocity<SCALAR>
 {
 public:
@@ -63,11 +63,9 @@ public:
 	}
 
 private:
-
-
 };
 
-} // namespace tpl
+}  // namespace tpl
 
 typedef tpl::RigidBodyVelocities<double> RigidBodyVelocities;
 

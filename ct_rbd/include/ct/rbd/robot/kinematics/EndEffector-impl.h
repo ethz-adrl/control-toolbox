@@ -30,17 +30,15 @@ namespace ct {
 namespace rbd {
 
 template <size_t NJOINTS, typename SCALAR>
-EndEffector<NJOINTS, SCALAR>::EndEffector() :
-linkId_(999)
-{};
+EndEffector<NJOINTS, SCALAR>::EndEffector() : linkId_(999){};
 
 template <size_t NJOINTS, typename SCALAR>
-EndEffector<NJOINTS, SCALAR>::~EndEffector() {};
+EndEffector<NJOINTS, SCALAR>::~EndEffector(){};
 
 template <size_t NJOINTS, typename SCALAR>
-EndEffector<NJOINTS, SCALAR>::EndEffector(const EndEffector& other) :
-	linkId_(other.linkId_)
-{}
+EndEffector<NJOINTS, SCALAR>::EndEffector(const EndEffector& other) : linkId_(other.linkId_)
+{
+}
 
 template <size_t NJOINTS, typename SCALAR>
 const size_t& EndEffector<NJOINTS, SCALAR>::getLinkId()

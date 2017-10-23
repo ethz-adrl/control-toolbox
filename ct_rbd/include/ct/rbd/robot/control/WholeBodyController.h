@@ -35,10 +35,10 @@ namespace rbd {
  * @class WholeBodyController
  */
 template <size_t NJOINTS>
-class WholeBodyController : public ct::core::Controller<2*6 + 2*NJOINTS, NJOINTS>
+class WholeBodyController : public ct::core::Controller<2 * 6 + 2 * NJOINTS, NJOINTS>
 {
 public:
-	static const size_t STATE_DIM = 2*6 + 2*NJOINTS;
+	static const size_t STATE_DIM = 2 * 6 + 2 * NJOINTS;
 
 	WholeBodyController();
 
@@ -46,15 +46,16 @@ public:
 
 	virtual WholeBodyController<NJOINTS>* clone() const override;
 
-	virtual void computeControl(const core::StateVector<STATE_DIM>& state, const core::Time& t, core::ControlVector<NJOINTS>& control) override;
+	virtual void computeControl(const core::StateVector<STATE_DIM>& state,
+		const core::Time& t,
+		core::ControlVector<NJOINTS>& control) override;
 
 	JointPositionController<NJOINTS>& getJointController();
 
 
 protected:
 	JointPositionController<NJOINTS> jointController_;
-
 };
 
-} // namespace rbd
-} // namespace ct
+}  // namespace rbd
+}  // namespace ct
