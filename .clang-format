@@ -34,7 +34,7 @@ BraceWrapping:
 BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Custom
 BreakBeforeTernaryOperators: false
-BreakConstructorInitializersBeforeComma: true
+BreakConstructorInitializersBeforeComma: false
 BreakAfterJavaFieldAnnotations: false
 BreakStringLiterals: true
 ColumnLimit:     120
