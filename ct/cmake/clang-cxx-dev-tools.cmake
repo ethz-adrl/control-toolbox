@@ -20,7 +20,9 @@ endfunction(filter_ct_directories)
 
 # list "external" sources, to be excluded from the format- and tidy process: 
 filter_ct_directories(ALL_CXX_SOURCE_FILES "/external/") # excludes CppAD
-filter_ct_directories(ALL_CXX_SOURCE_FILES "/iit/rbd")   # excludes iit rbd folders 
+filter_ct_directories(ALL_CXX_SOURCE_FILES "/iit/rbd/")   # excludes iit rbd folders 
+filter_ct_directories(ALL_CXX_SOURCE_FILES "/testIrb4600/generated/")   # excludes generated code
+filter_ct_directories(ALL_CXX_SOURCE_FILES "/testhyq/generated/")   # excludes generated code
           
 
 # Adding clang-format target if executable is found
