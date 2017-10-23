@@ -48,31 +48,34 @@ TEST(QuadrotorWithLoadTestTest, NumDiffComparison)
 	const size_t STATE_DIM = QuadrotorSystem::STATE_DIM;
 	const size_t CONTROL_DIM = QuadrotorSystem::CONTROL_DIM;
 
-	std::shared_ptr<QuadrotorSystem > quadrotorSystem(new QuadrotorSystem);
+	std::shared_ptr<QuadrotorSystem> quadrotorSystem(new QuadrotorSystem);
 
 	core::SystemLinearizer<STATE_DIM, CONTROL_DIM> systemLinearizer(quadrotorSystem);
 
-	core::StateVector<STATE_DIM> x; x.setZero();
-	core::ControlVector<CONTROL_DIM> u; u.setZero();
+	core::StateVector<STATE_DIM> x;
+	x.setZero();
+	core::ControlVector<CONTROL_DIM> u;
+	u.setZero();
 
-//	auto A_system = systemLinearizer.getDerivativeState(x, u, 1.0);
-//	auto B_system = systemLinearizer.getDerivativeControl(x, u, 1.0);
-//
-//
-//	size_t nTests = 1000;
-//	for (size_t i=0; i<nTests; i++)
-//	{
-//		x.setRandom();
-//		u.setRandom();
-//
-//		auto A_system = systemLinearizer.getDerivativeState(x, u, 0.0);
-//		auto B_system = systemLinearizer.getDerivativeControl(x, u, 0.0);
-//	}
+	//	auto A_system = systemLinearizer.getDerivativeState(x, u, 1.0);
+	//	auto B_system = systemLinearizer.getDerivativeControl(x, u, 1.0);
+	//
+	//
+	//	size_t nTests = 1000;
+	//	for (size_t i=0; i<nTests; i++)
+	//	{
+	//		x.setRandom();
+	//		u.setRandom();
+	//
+	//		auto A_system = systemLinearizer.getDerivativeState(x, u, 0.0);
+	//		auto B_system = systemLinearizer.getDerivativeControl(x, u, 0.0);
+	//	}
 
 	/* todo insert meaningful unit test here */
 }
 
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }

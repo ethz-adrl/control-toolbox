@@ -33,12 +33,14 @@ namespace ct {
 namespace models {
 namespace HyA {
 
-class HyAInverseDynJacReverse : public core::Derivatives<12, 6, double> {
+class HyAInverseDynJacReverse : public core::Derivatives<12, 6, double>
+{
 public:
 	typedef Eigen::Matrix<double, 6, 12> JAC_TYPE;
 	typedef Eigen::Matrix<double, 12, 1> X_TYPE;
 
-	HyAInverseDynJacReverse() {
+	HyAInverseDynJacReverse()
+	{
 		jac_.setZero();
 		v_.fill(0.0);
 	};
@@ -49,13 +51,9 @@ public:
 		v_.fill(0.0);
 	}
 
-	virtual ~HyAInverseDynJacReverse() {};
+	virtual ~HyAInverseDynJacReverse(){};
 
-	HyAInverseDynJacReverse* clone() const override{
-		return new HyAInverseDynJacReverse(*this);
-	}
-
-
+	HyAInverseDynJacReverse* clone() const override { return new HyAInverseDynJacReverse(*this); }
 	JAC_TYPE jacobian(const Eigen::VectorXd& x_in) override;
 
 private:

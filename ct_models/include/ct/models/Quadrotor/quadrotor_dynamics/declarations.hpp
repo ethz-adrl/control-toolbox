@@ -27,8 +27,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CT_MODELS_QUADROTOR_DECLARATIONS_HPP_
 #define CT_MODELS_QUADROTOR_DECLARATIONS_HPP_
 
-namespace ct{
-namespace models{
+namespace ct {
+namespace models {
 namespace quadrotor {
 
 const size_t nStates = 12;
@@ -40,7 +40,6 @@ typedef Eigen::Matrix<double, nControls, 1> control_vector_t;
 typedef Eigen::Matrix<double, nStates, nStates> state_matrix_t;
 typedef Eigen::Matrix<double, nControls, nControls> control_matrix_t;
 typedef Eigen::Matrix<double, nStates, nControls> control_gain_matrix_t;
-
 }
 }
 }

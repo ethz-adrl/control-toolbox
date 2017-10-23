@@ -43,8 +43,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct_HyA {
 
-Eigen::Matrix<double, 12+6, 6> computeFullJacobianCodegen(const Eigen::Matrix<double, 12, 1>& state, const Eigen::Matrix<double, 6, 1>& tau);
-
+Eigen::Matrix<double, 12 + 6, 6> computeFullJacobianCodegen(const Eigen::Matrix<double, 12, 1>& state,
+	const Eigen::Matrix<double, 6, 1>& tau);
 }
 
 #endif /* TEST_CODEGEN_DERIVATIVE_FULL_JACOBIAN_HPP_ */

@@ -44,21 +44,22 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // these will be undefined later, DO NOT USE!
 
-#define ROBCOGEN_NS HyQ // defines the NS of the robot in robcogen, e.g. iit::<ROBCOGEN_NS>
-#define TARGET_NS HyQ // defines the NS where all robot definitions go. Here ct::models::TestHyQ. This defines ct::models::TestHyQ::Dynamics etc.
+#define ROBCOGEN_NS HyQ  // defines the NS of the robot in robcogen, e.g. iit::<ROBCOGEN_NS>
+#define TARGET_NS \
+	HyQ  // defines the NS where all robot definitions go. Here ct::models::TestHyQ. This defines ct::models::TestHyQ::Dynamics etc.
 
 // define all links of the robot, names as in robcogen
-#define CT_BASE fr_trunk // base link name
-#define CT_L0  fr_LF_hipassembly
-#define CT_L1  fr_LF_upperleg
-#define CT_L2  fr_LF_lowerleg
-#define CT_L3  fr_RF_hipassembly
-#define CT_L4  fr_RF_upperleg
-#define CT_L5  fr_RF_lowerleg
-#define CT_L6  fr_LH_hipassembly
-#define CT_L7  fr_LH_upperleg
-#define CT_L8  fr_LH_lowerleg
-#define CT_L9  fr_RH_hipassembly
+#define CT_BASE fr_trunk  // base link name
+#define CT_L0 fr_LF_hipassembly
+#define CT_L1 fr_LF_upperleg
+#define CT_L2 fr_LF_lowerleg
+#define CT_L3 fr_RF_hipassembly
+#define CT_L4 fr_RF_upperleg
+#define CT_L5 fr_RF_lowerleg
+#define CT_L6 fr_LH_hipassembly
+#define CT_L7 fr_LH_upperleg
+#define CT_L8 fr_LH_lowerleg
+#define CT_L9 fr_RH_hipassembly
 #define CT_L10 fr_RH_upperleg
 #define CT_L11 fr_RH_lowerleg
 
@@ -66,10 +67,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CT_N_EE 4
 
 // definition of an end-effector
-#define CT_EE0 fr_LF_foot //name of end-effector. Same as frame in RobCoGen
-#define CT_EE0_IS_ON_LINK 3 // to which link is the end-effector rigidly attached to?
-#define CT_EE0_FIRST_JOINT 0 // which is the first joint in the kinematic chain from base to end-effector?
-#define CT_EE0_LAST_JOINT 2 // which is the last joint in the kinematic chain? THEY NEED TO BE IN ORDER, NO GAPS ALLOWED!
+#define CT_EE0 fr_LF_foot     //name of end-effector. Same as frame in RobCoGen
+#define CT_EE0_IS_ON_LINK 3   // to which link is the end-effector rigidly attached to?
+#define CT_EE0_FIRST_JOINT 0  // which is the first joint in the kinematic chain from base to end-effector?
+#define CT_EE0_LAST_JOINT \
+	2  // which is the last joint in the kinematic chain? THEY NEED TO BE IN ORDER, NO GAPS ALLOWED!
 
 #define CT_EE1 fr_RF_foot
 #define CT_EE1_IS_ON_LINK 6

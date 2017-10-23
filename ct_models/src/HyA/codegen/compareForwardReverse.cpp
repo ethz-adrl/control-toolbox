@@ -70,151 +70,151 @@ void timingForwardDynamics()
 	std::vector<JacB, Eigen::aligned_allocator<JacB>> numDiffB(nTests);
 
 
-	std::cout << "running "<<nTests<<" tests"<<std::endl;
-	for (size_t i=0; i<nTests; i++)
+	std::cout << "running " << nTests << " tests" << std::endl;
+	for (size_t i = 0; i < nTests; i++)
 	{
 		x[i].setRandom();
 		u[i].setRandom();
 	}
 
 	auto start = std::chrono::high_resolution_clock::now();
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
-		forwardA[i] = linModelForward.getDerivativeState(x[i],u[i]);
+		forwardA[i] = linModelForward.getDerivativeState(x[i], u[i]);
 	}
 	auto end = std::chrono::high_resolution_clock::now();
 	auto diff = end - start;
-	size_t msTotal = std::chrono::duration <double, std::milli> (diff).count();
-	std::cout << "forwardA: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+	size_t msTotal = std::chrono::duration<double, std::milli>(diff).count();
+	std::cout << "forwardA: " << msTotal << " ms. Average: " << msTotal / double(nTests) << " ms" << std::endl;
 
 	start = std::chrono::high_resolution_clock::now();
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
-		reverseA[i] = linModelReverse.getDerivativeState(x[i],u[i]);
+		reverseA[i] = linModelReverse.getDerivativeState(x[i], u[i]);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;
-	msTotal = std::chrono::duration <double, std::milli> (diff).count();
-	std::cout << "reverseA: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+	msTotal = std::chrono::duration<double, std::milli>(diff).count();
+	std::cout << "reverseA: " << msTotal << " ms. Average: " << msTotal / double(nTests) << " ms" << std::endl;
 
 	start = std::chrono::high_resolution_clock::now();
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
-		rbdA[i] = linearizer.getDerivativeState(x[i],u[i]);
+		rbdA[i] = linearizer.getDerivativeState(x[i], u[i]);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;
-	msTotal = std::chrono::duration <double, std::milli> (diff).count();
-	std::cout << "rbdA: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+	msTotal = std::chrono::duration<double, std::milli>(diff).count();
+	std::cout << "rbdA: " << msTotal << " ms. Average: " << msTotal / double(nTests) << " ms" << std::endl;
 
 	start = std::chrono::high_resolution_clock::now();
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
-		numDiffA[i] = sysLinearizer.getDerivativeState(x[i],u[i]);
+		numDiffA[i] = sysLinearizer.getDerivativeState(x[i], u[i]);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;
-	msTotal = std::chrono::duration <double, std::milli> (diff).count();
-	std::cout << "numDiffA: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+	msTotal = std::chrono::duration<double, std::milli>(diff).count();
+	std::cout << "numDiffA: " << msTotal << " ms. Average: " << msTotal / double(nTests) << " ms" << std::endl;
 
 	start = std::chrono::high_resolution_clock::now();
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
-		forwardB[i] = linModelForward.getDerivativeControl(x[i],u[i]);
+		forwardB[i] = linModelForward.getDerivativeControl(x[i], u[i]);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;
-	msTotal = std::chrono::duration <double, std::milli> (diff).count();
-	std::cout << "forwardB: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+	msTotal = std::chrono::duration<double, std::milli>(diff).count();
+	std::cout << "forwardB: " << msTotal << " ms. Average: " << msTotal / double(nTests) << " ms" << std::endl;
 
 	start = std::chrono::high_resolution_clock::now();
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
-		reverseB[i] = linModelForward.getDerivativeControl(x[i],u[i]);
+		reverseB[i] = linModelForward.getDerivativeControl(x[i], u[i]);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;
-	msTotal = std::chrono::duration <double, std::milli> (diff).count();
-	std::cout << "reverseB: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+	msTotal = std::chrono::duration<double, std::milli>(diff).count();
+	std::cout << "reverseB: " << msTotal << " ms. Average: " << msTotal / double(nTests) << " ms" << std::endl;
 
 	start = std::chrono::high_resolution_clock::now();
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
-		rbdB[i] = linearizer.getDerivativeControl(x[i],u[i]);
+		rbdB[i] = linearizer.getDerivativeControl(x[i], u[i]);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;
-	msTotal = std::chrono::duration <double, std::milli> (diff).count();
-	std::cout << "rbdB: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+	msTotal = std::chrono::duration<double, std::milli>(diff).count();
+	std::cout << "rbdB: " << msTotal << " ms. Average: " << msTotal / double(nTests) << " ms" << std::endl;
 
 	start = std::chrono::high_resolution_clock::now();
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
-		numDiffB[i] = sysLinearizer.getDerivativeControl(x[i],u[i]);
+		numDiffB[i] = sysLinearizer.getDerivativeControl(x[i], u[i]);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;
-	msTotal = std::chrono::duration <double, std::milli> (diff).count();
-	std::cout << "numDiffB: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+	msTotal = std::chrono::duration<double, std::milli>(diff).count();
+	std::cout << "numDiffB: " << msTotal << " ms. Average: " << msTotal / double(nTests) << " ms" << std::endl;
 
 	bool failed = false;
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
 		if (!forwardA[i].isApprox(reverseA[i], 1e-12))
 		{
 			std::cout << "Forward A and reverse A not similar" << std::endl;
-			std::cout << "forward A: "<<std::endl << forwardA[i] << std::endl;
-			std::cout << "reverse A: "<<std::endl << reverseA[i] << std::endl;
+			std::cout << "forward A: " << std::endl << forwardA[i] << std::endl;
+			std::cout << "reverse A: " << std::endl << reverseA[i] << std::endl;
 			failed = true;
 		}
 
 		if (!forwardA[i].isApprox(rbdA[i], 1e-5))
 		{
 			std::cout << "Forward A and RbdLinearizer A not similar" << std::endl;
-			std::cout << "forward A: "<<std::endl << forwardA[i] << std::endl;
-			std::cout << "reverse A: "<<std::endl << rbdA[i] << std::endl;
+			std::cout << "forward A: " << std::endl << forwardA[i] << std::endl;
+			std::cout << "reverse A: " << std::endl << rbdA[i] << std::endl;
 			failed = true;
 		}
 
 		if (!reverseA[i].isApprox(rbdA[i], 1e-5))
 		{
 			std::cout << "Forward A and RbdLinearizer A not similar" << std::endl;
-			std::cout << "reverse A: "<<std::endl << reverseA[i] << std::endl;
-			std::cout << "rbd A: "<<std::endl << rbdA[i] << std::endl<< std::endl<< std::endl;
+			std::cout << "reverse A: " << std::endl << reverseA[i] << std::endl;
+			std::cout << "rbd A: " << std::endl << rbdA[i] << std::endl << std::endl << std::endl;
 			failed = true;
 		}
 	}
 
 	failed = false;
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
 		if (!forwardB[i].isApprox(rbdB[i], 1e-5))
 		{
 			std::cout << "Forward B and RbdLinearizer B not similar" << std::endl;
-			std::cout << "forward B: "<<std::endl << forwardB[i] << std::endl;
-			std::cout << "rbd B: "<<std::endl << rbdB[i] << std::endl<< std::endl<< std::endl;
+			std::cout << "forward B: " << std::endl << forwardB[i] << std::endl;
+			std::cout << "rbd B: " << std::endl << rbdB[i] << std::endl << std::endl << std::endl;
 			failed = true;
 		}
 		if (!reverseB[i].isApprox(rbdB[i], 1e-5))
 		{
 			std::cout << "Forward B and RbdLinearizer B not similar" << std::endl;
-			std::cout << "reverse B: "<<std::endl << reverseB[i] << std::endl;
-			std::cout << "rbd B: "<<std::endl << rbdB[i] << std::endl<< std::endl<< std::endl;
+			std::cout << "reverse B: " << std::endl << reverseB[i] << std::endl;
+			std::cout << "rbd B: " << std::endl << rbdB[i] << std::endl << std::endl << std::endl;
 			failed = true;
 		}
 		if (!forwardB[i].isApprox(reverseB[i], 1e-12))
 		{
 			std::cout << "Forward B and reverse B not similar" << std::endl;
-			std::cout << "forward B: "<<std::endl << forwardB[i] << std::endl;
-			std::cout << "reverse B: "<<std::endl << reverseB[i] << std::endl<< std::endl<< std::endl;
+			std::cout << "forward B: " << std::endl << forwardB[i] << std::endl;
+			std::cout << "reverse B: " << std::endl << reverseB[i] << std::endl << std::endl << std::endl;
 			failed = true;
 		}
 		if (failed)
 		{
-			std::cout << "test failed, aborting"<<std::endl;
+			std::cout << "test failed, aborting" << std::endl;
 			break;
 		}
-	}	
+	}
 }
 
 void timingInverseDynamics()
@@ -225,7 +225,7 @@ void timingInverseDynamics()
 	typedef Eigen::Matrix<double, 6, 12> JacIv;
 	static const size_t nTests = 10000;
 
-	std::cout << "running "<<nTests<<" tests"<<std::endl;
+	std::cout << "running " << nTests << " tests" << std::endl;
 
 	std::vector<JacIv, Eigen::aligned_allocator<JacIv>> forwardJacIv(nTests);
 	std::vector<JacIv, Eigen::aligned_allocator<JacIv>> reverseJacIv(nTests);
@@ -233,50 +233,48 @@ void timingInverseDynamics()
 	typedef typename Eigen::Matrix<double, 12, 1> X;
 	std::vector<X> x(nTests);
 
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
 		x[i].setRandom();
 	}
 
 	auto start = std::chrono::high_resolution_clock::now();
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
 		forwardJacIv[i] = ivLinearForward.jacobian(x[i]);
 	}
 	auto end = std::chrono::high_resolution_clock::now();
 	auto diff = end - start;
-	size_t msTotal = std::chrono::duration <double, std::milli> (diff).count();
-	std::cout << "forwardJacIv: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+	size_t msTotal = std::chrono::duration<double, std::milli>(diff).count();
+	std::cout << "forwardJacIv: " << msTotal << " ms. Average: " << msTotal / double(nTests) << " ms" << std::endl;
 
 	start = std::chrono::high_resolution_clock::now();
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
 		reverseJacIv[i] = ivLinearReverse.jacobian(x[i]);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	diff = end - start;
-	msTotal = std::chrono::duration <double, std::milli> (diff).count();
-	std::cout << "reverseJacIv: " << msTotal << " ms. Average: " << msTotal/double(nTests) << " ms" << std::endl;
+	msTotal = std::chrono::duration<double, std::milli>(diff).count();
+	std::cout << "reverseJacIv: " << msTotal << " ms. Average: " << msTotal / double(nTests) << " ms" << std::endl;
 
 
 	bool failed = false;
-	for (size_t i=0; i<nTests; i++)
+	for (size_t i = 0; i < nTests; i++)
 	{
 		if (!forwardJacIv[i].isApprox(reverseJacIv[i], 1e-12))
 		{
 			std::cout << "ForwardJacIv and reverseJacIv not similar" << std::endl;
-			std::cout << "ForwardJacIv A: "<<std::endl << forwardJacIv[i] << std::endl;
-			std::cout << "reverseJacIv A: "<<std::endl << reverseJacIv[i] << std::endl;
+			std::cout << "ForwardJacIv A: " << std::endl << forwardJacIv[i] << std::endl;
+			std::cout << "reverseJacIv A: " << std::endl << reverseJacIv[i] << std::endl;
 			failed = true;
 		}
 	}
 }
 
-int main (int argc, char* argv[])
+int main(int argc, char* argv[])
 {
 	timingForwardDynamics();
 	timingInverseDynamics();
 	return 0;
 }
-
-

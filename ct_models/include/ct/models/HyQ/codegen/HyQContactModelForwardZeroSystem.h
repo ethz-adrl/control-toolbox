@@ -55,27 +55,22 @@ public:
 
 	typedef core::SymplecticSystem<18, 18, CONTROL_DIM> Base;
 
-	HyQContactModelForwardZeroSystem() :
-		Base()
-	{};
+	HyQContactModelForwardZeroSystem() : Base(){};
 
-	HyQContactModelForwardZeroSystem(const HyQContactModelForwardZeroSystem& other) :
-		Base(other),
-		hyqForwardZero_(other.hyqForwardZero_)
-	{};
+	HyQContactModelForwardZeroSystem(const HyQContactModelForwardZeroSystem& other)
+		: Base(other), hyqForwardZero_(other.hyqForwardZero_){};
 
-	virtual ~HyQContactModelForwardZeroSystem() {};
+	virtual ~HyQContactModelForwardZeroSystem(){};
 
-	virtual HyQContactModelForwardZeroSystem* clone() const override{
+	virtual HyQContactModelForwardZeroSystem* clone() const override
+	{
 		return new HyQContactModelForwardZeroSystem(*this);
 	}
 
-	virtual void computePdot(
-			const StateVector& x,
-			const core::StateVector<18>& v,
-			const ControlVector& control,
-			core::StateVector<18>& pDot
-		) override
+	virtual void computePdot(const StateVector& x,
+		const core::StateVector<18>& v,
+		const ControlVector& control,
+		core::StateVector<18>& pDot) override
 	{
 		StateVector xLocal = x;
 		xLocal.tail(18) = v;
@@ -84,12 +79,10 @@ public:
 		pDot = toStateDerivative(xd, rbdCached).head(18);
 	}
 
-	virtual void computeVdot(
-		const StateVector& x,
+	virtual void computeVdot(const StateVector& x,
 		const core::StateVector<18>& p,
 		const ControlVector& control,
-		core::StateVector<18>& vDot
-	) override
+		core::StateVector<18>& vDot) override
 	{
 		StateVector xLocal = x;
 		xLocal.head(18) = p;
@@ -102,9 +95,7 @@ public:
 private:
 	HyQForwardZero hyqForwardZero_;
 
-	StateVector toStateDerivative(
-			const ct::rbd::RBDAcceleration<12>& acceleration,
-			const ct::rbd::RBDState<12>& state)
+	StateVector toStateDerivative(const ct::rbd::RBDAcceleration<12>& acceleration, const ct::rbd::RBDState<12>& state)
 	{
 		return acceleration.toStateUpdateVectorEulerXyz(state);
 	}
@@ -115,12 +106,11 @@ private:
 		x.fromStateVectorEulerXyz(state);
 		return x;
 	}
-
 };
 
-} // namespace HyQ
+}  // namespace HyQ
 
-} // namespace models
-} // namespace ct
+}  // namespace models
+}  // namespace ct
 
 #endif /* INCLUDE_CT_MODELS_HYQ_CONTACTMODEL_FORWARDZERO_SYSTEM_H_ */
