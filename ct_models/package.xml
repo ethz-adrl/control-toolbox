@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <package>
 	<name>ct_models</name>
-	<version>0.0.1</version>
+	<version>0.2.0</version>
 	<description>dynamics models for adrl ct</description>
 
-	<maintainer email="mg@todo.todo">markus giftthaler</maintainer>
-
-	<license>TODO</license>
+  <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
+  <maintainer email="mgiftthaler@ethz.ch">Markus Giftthaler</maintainer>
+    
+  <license>Apache v2</license>
 
 	<buildtool_depend>catkin</buildtool_depend>
 

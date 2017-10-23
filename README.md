@@ -1,6 +1,6 @@
 # Control Toolbox
 
-This is the Control Toolbox, an efficient C++ library for control, estimation, optimization and motion planning in robotics.
+This is the Control Toolbox v2.0, an efficient C++ library for control, estimation, optimization and motion planning in robotics.
 
 Please find the documentation [here](https://adrlab.bitbucket.io/ct)
 

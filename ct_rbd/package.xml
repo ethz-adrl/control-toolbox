@@ -1,11 +1,12 @@
 <package>
   <name>ct_rbd</name>
-  <version>1.0.0</version>
+  <version>0.2.0</version>
   <description>
     Rigid Body Dynamics module of ADRL control toolbox
   </description>
-  <maintainer email="neunertm@ethz.ch">Michael Neunert</maintainer>
-  <license>BSD</license>
+  <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
+  <maintainer email="mgiftthaler@ethz.ch">Markus Giftthaler</maintainer>
+  <license>Apache v2</license>
   
   <buildtool_depend>catkin</buildtool_depend>
   
