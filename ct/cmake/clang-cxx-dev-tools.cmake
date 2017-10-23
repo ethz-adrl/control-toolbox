@@ -7,14 +7,19 @@ file(GLOB_RECURSE
      ALL_CXX_SOURCE_FILES
      *.[chi]pp *.[chi]xx *.cc *.hh *.ii *.[CHI] *.h
      )
-# we exclude external sources from the format- and tidy process     
-set (EXCLUDE_DIR "/external/")
-foreach (TMP_PATH ${ALL_CXX_SOURCE_FILES})
-    string (FIND ${TMP_PATH} ${EXCLUDE_DIR} EXCLUDE_DIR_FOUND)
-    if (NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
-        list (REMOVE_ITEM ALL_CXX_SOURCE_FILES ${TMP_PATH})
-    endif ()
-endforeach(TMP_PATH)
+
+# function to exclude user-defined folders from the clang format- and tidy process     
+function(filter_ct_directories allItems excludeDir)
+    foreach (TMP_PATH ${${allItems}})
+        if ("${TMP_PATH}" MATCHES ${excludeDir})
+            list (REMOVE_ITEM ${allItems} ${TMP_PATH})
+        endif()
+    endforeach(TMP_PATH)
+    set(${allItems} ${${allItems}} PARENT_SCOPE)
+endfunction(filter_ct_directories)
+
+# we exclude "external" (i.e. CppAD) sources from the format- and tidy process     
+filter_ct_directories(ALL_CXX_SOURCE_FILES "/external/")     
           
 
 # Adding clang-format target if executable is found
