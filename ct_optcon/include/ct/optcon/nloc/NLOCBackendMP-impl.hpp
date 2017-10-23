@@ -442,14 +442,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 					". Not waking up workers.");
 #endif  //DEBUG_PRINT_MP
 
-		this->rolloutSingleShot(this->settings_.nThreads,
-			firstIndex,
-			this->u_ff_,
-			this->x_,
-			this->x_,
-			this->xShot_,
-			*this->substepsX_,
-			*this->substepsU_);
+		this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_, this->xShot_,
+			*this->substepsX_, *this->substepsU_);
 
 		this->computeSingleDefect(firstIndex, this->x_, this->xShot_, this->lqocProblem_->b_);
 		return;
@@ -637,34 +631,16 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 		{
 			case NLOptConSettings::NLOCP_ALGORITHM::GNMS:
 			{
-				this->executeLineSearchMultipleShooting(threadId,
-					alpha,
-					this->lu_,
-					this->lx_,
-					x_search,
-					x_shot_search,
-					defects_recorded,
-					u_recorded,
-					intermediateCost,
-					finalCost,
-					defectNorm,
-					*substepsX,
-					*substepsU,
+				this->executeLineSearchMultipleShooting(threadId, alpha, this->lu_, this->lx_, x_search, x_shot_search,
+					defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, *substepsX, *substepsU,
 					&alphaBestFound_);
 				break;
 			}
 			case NLOptConSettings::NLOCP_ALGORITHM::ILQR:
 			{
 				defectNorm = 0.0;
-				this->executeLineSearchSingleShooting(threadId,
-					alpha,
-					x_search,
-					u_recorded,
-					intermediateCost,
-					finalCost,
-					*substepsX,
-					*substepsU,
-					&alphaBestFound_);
+				this->executeLineSearchSingleShooting(threadId, alpha, x_search, u_recorded, intermediateCost,
+					finalCost, *substepsX, *substepsU, &alphaBestFound_);
 				break;
 			}
 			default:

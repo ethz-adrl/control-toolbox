@@ -97,21 +97,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
 	//		} // end optional printout
 
 	// assemble optimal control problem
-	::d_cvt_colmaj_to_ocp_qp(hA_.data(),
-		hB_.data(),
-		hb_.data(),
-		hQ_.data(),
-		hS_.data(),
-		hR_.data(),
-		hq_.data(),
-		hr_.data(),
-		hidxb_.data(),
-		hd_lb_.data(),
-		hd_ub_.data(),
-		hC_.data(),
-		hD_.data(),
-		hd_lg_.data(),
-		hd_ug_.data(),
+	::d_cvt_colmaj_to_ocp_qp(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(),
+		hr_.data(), hidxb_.data(), hd_lb_.data(), hd_ub_.data(), hC_.data(), hD_.data(), hd_lg_.data(), hd_ug_.data(),
 		&qp_);
 
 	// solve optimal control problem
@@ -128,15 +115,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeStateAndControlUpdates()
 	LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
 
 	// convert optimal control problem solution to standard column-major representation
-	::d_cvt_ocp_qp_sol_to_colmaj(&qp_,
-		&qp_sol_,
-		u_.data(),
-		x_.data(),
-		pi_.data(),
-		lam_lb_.data(),
-		lam_ub_.data(),
-		lam_lg_.data(),
-		lam_ug_.data());
+	::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u_.data(), x_.data(), pi_.data(), lam_lb_.data(), lam_ub_.data(),
+		lam_lg_.data(), lam_ug_.data());
 
 	hx_[0] = this->lqocProblem_->x_[0];
 
@@ -229,13 +209,8 @@ ct::core::ControlVectorArray<CONTROL_DIM> HPIPMInterface<STATE_DIM, CONTROL_DIM>
 		::d_cvt_strmat2mat(Lr.rows(), Lr.cols(), &workspace_.L[i], 0, 0, Lr.data(), Lr.rows());
 
 		Eigen::Matrix<double, 1, control_dim> llTranspose;
-		::d_cvt_strmat2mat(llTranspose.rows(),
-			llTranspose.cols(),
-			&workspace_.L[i],
-			control_dim + state_dim,
-			0,
-			llTranspose.data(),
-			llTranspose.rows());
+		::d_cvt_strmat2mat(llTranspose.rows(), llTranspose.cols(), &workspace_.L[i], control_dim + state_dim, 0,
+			llTranspose.data(), llTranspose.rows());
 
 		lv[i] = -Lr.transpose().inverse() * llTranspose.transpose();
 	}
@@ -249,15 +224,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::printSolution()
 {
 	int ii;
 
-	::d_cvt_ocp_qp_sol_to_colmaj(&qp_,
-		&qp_sol_,
-		u_.data(),
-		x_.data(),
-		pi_.data(),
-		lam_lb_.data(),
-		lam_ub_.data(),
-		lam_lg_.data(),
-		lam_ug_.data());
+	::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u_.data(), x_.data(), pi_.data(), lam_lb_.data(), lam_ub_.data(),
+		lam_lg_.data(), lam_ug_.data());
 
 
 	printf("\nsolution\n\n");
@@ -352,17 +320,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
 						N_ == lqocProblem->getNumberOfStages() &&  // and the number of states did not change
 						this->lqocProblem_ == lqocProblem;         // and it was the same pointer
 
-	setupHPIPM(lqocProblem->x_,
-		lqocProblem->u_,
-		lqocProblem->A_,
-		lqocProblem->B_,
-		lqocProblem->b_,
-		lqocProblem->P_,
-		lqocProblem->qv_,
-		lqocProblem->Q_,
-		lqocProblem->rv_,
-		lqocProblem->R_,
-		keepPointers);
+	setupHPIPM(lqocProblem->x_, lqocProblem->u_, lqocProblem->A_, lqocProblem->B_, lqocProblem->b_, lqocProblem->P_,
+		lqocProblem->qv_, lqocProblem->Q_, lqocProblem->rv_, lqocProblem->R_, keepPointers);
 }
 
 

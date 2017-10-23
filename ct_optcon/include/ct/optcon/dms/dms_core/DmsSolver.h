@@ -118,13 +118,8 @@ public:
 		this->setProblem(problem);
 
 		dmsProblem_ = std::shared_ptr<DmsProblem<STATE_DIM, CONTROL_DIM, SCALAR>>(
-			new DmsProblem<STATE_DIM, CONTROL_DIM, SCALAR>(settingsDms,
-				this->systems_,
-				this->linearSystems_,
-				this->costFunctions_,
-				this->stateInputConstraints_,
-				this->pureStateConstraints_,
-				x0_));
+			new DmsProblem<STATE_DIM, CONTROL_DIM, SCALAR>(settingsDms, this->systems_, this->linearSystems_,
+				this->costFunctions_, this->stateInputConstraints_, this->pureStateConstraints_, x0_));
 
 		// SNOPT only works for the double type
 		if (settingsDms.solverSettings_.solverType_ == NlpSolverSettings::SNOPT)

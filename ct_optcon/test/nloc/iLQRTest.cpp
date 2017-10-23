@@ -239,14 +239,12 @@ TEST(ILQRTestA, InstancesComparison)
 				ASSERT_NEAR(optimalPolicy_comp.uff()[i](0), optimalPolicy.uff()[i](0), 1e-3);
 
 				ASSERT_NEAR(optimalPolicy_comp.K()[i].array().abs().maxCoeff(),
-					optimalPolicy.K()[i].array().abs().maxCoeff(),
-					1e-3);
+					optimalPolicy.K()[i].array().abs().maxCoeff(), 1e-3);
 
 				ASSERT_NEAR(optimalPolicy_mp_comp.uff()[i](0), optimalPolicy_mp.uff()[i](0), 1e-3);
 
 				ASSERT_NEAR(optimalPolicy_mp_comp.K()[i].array().abs().maxCoeff(),
-					optimalPolicy_mp.K()[i].array().abs().maxCoeff(),
-					1e-3);
+					optimalPolicy_mp.K()[i].array().abs().maxCoeff(), 1e-3);
 			}
 		}
 

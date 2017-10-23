@@ -51,24 +51,8 @@ CARE<STATE_DIM, CONTROL_DIM>::CARE()
 	int TCols = schur_matrix_t::ColsAtCompileTime;
 
 #ifdef CT_USE_LAPACK
-	dtrsen_("N",
-		"V",
-		&SELECT[0],
-		&TCols,
-		T.data(),
-		&N,
-		U.data(),
-		&N,
-		&WR[0],
-		&WI[0],
-		&MS,
-		&S,
-		&SEP,
-		WORKDUMMY,
-		&LWORK,
-		&IWORKQUERY[0],
-		&LIWORK,
-		&INFO);
+	dtrsen_("N", "V", &SELECT[0], &TCols, T.data(), &N, U.data(), &N, &WR[0], &WI[0], &MS, &S, &SEP, WORKDUMMY, &LWORK,
+		&IWORKQUERY[0], &LIWORK, &INFO);
 
 	LWORK_ = WORKDUMMY[0] + 32;
 	LIWORK_ = IWORKQUERY[0] + 32;
@@ -221,24 +205,8 @@ bool CARE<STATE_DIM, CONTROL_DIM>::solveSchurDirect(const schur_matrix_t& M, sta
 		}
 	}
 
-	dtrsen_("N",
-		"V",
-		&SELECT[0],
-		&N,
-		T.data(),
-		&N,
-		U.data(),
-		&N,
-		&WR[0],
-		&WI[0],
-		&MS,
-		&S,
-		&SEP,
-		WORK_.data(),
-		&LWORK_,
-		IWORK_.data(),
-		&LIWORK_,
-		&INFO);
+	dtrsen_("N", "V", &SELECT[0], &N, T.data(), &N, U.data(), &N, &WR[0], &WI[0], &MS, &S, &SEP, WORK_.data(), &LWORK_,
+		IWORK_.data(), &LIWORK_, &INFO);
 
 	const state_matrix_t& U11 = U.template block<STATE_DIM, STATE_DIM>(0, 0);
 	const state_matrix_t& U21 = U.template block<STATE_DIM, STATE_DIM>(STATE_DIM, 0);

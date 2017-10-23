@@ -208,8 +208,7 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateIntermediateCg(
 	CGScalar y = CGScalar(0.0);
 
 	for (auto it : intermediateTerms_)
-		y += it->evaluateCppadCg(stateInputTime.segment(0, STATE_DIM),
-			stateInputTime.segment(STATE_DIM, CONTROL_DIM),
+		y += it->evaluateCppadCg(stateInputTime.segment(0, STATE_DIM), stateInputTime.segment(STATE_DIM, CONTROL_DIM),
 			stateInputTime(STATE_DIM + CONTROL_DIM));
 
 	Eigen::Matrix<CGScalar, 1, 1> out;
@@ -225,8 +224,7 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateTerminalCg(
 	CGScalar y = CGScalar(0.0);
 
 	for (auto it : finalTerms_)
-		y += it->evaluateCppadCg(stateInputTime.segment(0, STATE_DIM),
-			stateInputTime.segment(STATE_DIM, CONTROL_DIM),
+		y += it->evaluateCppadCg(stateInputTime.segment(0, STATE_DIM), stateInputTime.segment(STATE_DIM, CONTROL_DIM),
 			stateInputTime(STATE_DIM + CONTROL_DIM));
 
 	Eigen::Matrix<CGScalar, 1, 1> out;

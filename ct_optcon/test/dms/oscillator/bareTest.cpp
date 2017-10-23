@@ -66,11 +66,8 @@ public:
 			new ct::optcon::CostFunctionQuadraticSimple<2, 1>(Q_, R_, x_final_, u_des_, x_final_, Q_final_));
 
 		std::shared_ptr<ct::optcon::CostFunctionQuadratic<2, 1, ScalarCG>> costFunctionCG(
-			new ct::optcon::CostFunctionQuadraticSimple<2, 1, ScalarCG>(Q_.cast<ScalarCG>(),
-				R_.cast<ScalarCG>(),
-				x_final_.cast<ScalarCG>(),
-				u_des_.cast<ScalarCG>(),
-				x_final_.cast<ScalarCG>(),
+			new ct::optcon::CostFunctionQuadraticSimple<2, 1, ScalarCG>(Q_.cast<ScalarCG>(), R_.cast<ScalarCG>(),
+				x_final_.cast<ScalarCG>(), u_des_.cast<ScalarCG>(), x_final_.cast<ScalarCG>(),
 				Q_final_.cast<ScalarCG>()));
 
 		stateInputConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(

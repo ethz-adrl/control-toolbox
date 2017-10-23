@@ -286,10 +286,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
 
 			sensitivity_[i] =
 				SensitivityPtr(new ct::core::SensitivityIntegrator<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(
-					settings_.getSimulationTimestep(),
-					linearSystems_[i],
-					controller_[i],
-					settings_.integrator,
+					settings_.getSimulationTimestep(), linearSystems_[i], controller_[i], settings_.integrator,
 					settings_.timeVaryingDiscretization));
 		} else
 		{

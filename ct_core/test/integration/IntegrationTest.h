@@ -167,34 +167,22 @@ TEST(IntegrationTest, derivativeTest)
 				//std::cout << "Testing integration call const" << std::endl;
 
 				// use fixed step integration
-				integrators[j]->integrate_const(initialStateLocal,
-					startTime,
-					finalTime,
-					dt,
-					stateTrajectories[j * integratorFunctions + 0],
-					timeTrajectories[j * integratorFunctions + 0]);
+				integrators[j]->integrate_const(initialStateLocal, startTime, finalTime, dt,
+					stateTrajectories[j * integratorFunctions + 0], timeTrajectories[j * integratorFunctions + 0]);
 
 				initialStateLocal = initialState;
 
 				//std::cout << "Testing integration call integrate_n_steps" << std::endl;
 
-				integrators[j]->integrate_n_steps(initialStateLocal,
-					startTime,
-					nsteps,
-					dt,
-					stateTrajectories[j * integratorFunctions + 1],
-					timeTrajectories[j * integratorFunctions + 1]);
+				integrators[j]->integrate_n_steps(initialStateLocal, startTime, nsteps, dt,
+					stateTrajectories[j * integratorFunctions + 1], timeTrajectories[j * integratorFunctions + 1]);
 
 				initialStateLocal = initialState;
 
 				//std::cout << "Testing integration call integrate adaptive" << std::endl;
 
-				integrators[j]->integrate_adaptive(initialStateLocal,
-					startTime,
-					finalTime,
-					stateTrajectories[j * integratorFunctions + 2],
-					timeTrajectories[j * integratorFunctions + 2],
-					dt);
+				integrators[j]->integrate_adaptive(initialStateLocal, startTime, finalTime,
+					stateTrajectories[j * integratorFunctions + 2], timeTrajectories[j * integratorFunctions + 2], dt);
 
 				initialStateLocal = initialState;
 
@@ -205,10 +193,8 @@ TEST(IntegrationTest, derivativeTest)
 
 				//std::cout << "Testing integration call integrate times" << std::endl;
 
-				integrators[j]->integrate_times(initialStateLocal,
-					timeTrajectories[j * integratorFunctions + 3],
-					stateTrajectories[j * integratorFunctions + 3],
-					dt);
+				integrators[j]->integrate_times(initialStateLocal, timeTrajectories[j * integratorFunctions + 3],
+					stateTrajectories[j * integratorFunctions + 3], dt);
 			}
 
 			for (size_t j = 0; j < nResults; j++)

@@ -88,14 +88,8 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(s
 	for (size_t k = firstIndex; k <= lastIndex; k = k + this->settings_.K_shot)
 	{
 		// rollout the shot
-		this->rolloutSingleShot(this->settings_.nThreads,
-			k,
-			this->u_ff_,
-			this->x_,
-			this->x_,
-			this->xShot_,
-			*this->substepsX_,
-			*this->substepsU_);
+		this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_,
+			*this->substepsX_, *this->substepsU_);
 
 		this->computeSingleDefect(k, this->x_, this->xShot_, this->lqocProblem_->b_);
 	}
@@ -146,18 +140,8 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 		{
 			case NLOptConSettings::NLOCP_ALGORITHM::GNMS:
 			{
-				this->executeLineSearchMultipleShooting(this->settings_.nThreads,
-					alpha,
-					this->lu_,
-					this->lx_,
-					x_search,
-					x_shot_search,
-					defects_recorded,
-					u_recorded,
-					intermediateCost,
-					finalCost,
-					defectNorm,
-					*substepsX,
+				this->executeLineSearchMultipleShooting(this->settings_.nThreads, alpha, this->lu_, this->lx_, x_search,
+					x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, *substepsX,
 					*substepsU);
 
 				break;
@@ -165,14 +149,8 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
 			case NLOptConSettings::NLOCP_ALGORITHM::ILQR:
 			{
 				defectNorm = 0.0;
-				this->executeLineSearchSingleShooting(this->settings_.nThreads,
-					alpha,
-					x_search,
-					u_recorded,
-					intermediateCost,
-					finalCost,
-					*substepsX,
-					*substepsU);
+				this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, x_search, u_recorded,
+					intermediateCost, finalCost, *substepsX, *substepsU);
 				break;
 			}
 			default:

@@ -272,23 +272,18 @@ private:
 			{
 				integratorStepper_ =
 					std::shared_ptr<internal::StepperODEIntControlled<internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>,
-						Eigen::Matrix<SCALAR, STATE_DIM, 1>,
-						SCALAR>>(
+						Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
 						new internal::StepperODEIntControlled<internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>,
-							Eigen::Matrix<SCALAR, STATE_DIM, 1>,
-							SCALAR>());
+							Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
 				break;
 			}
 
 			case RK5VARIABLE:
 			{
-				integratorStepper_ = std::shared_ptr<
-					internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>,
-						Eigen::Matrix<SCALAR, STATE_DIM, 1>,
-						SCALAR>>(
+				integratorStepper_ = std::shared_ptr<internal::StepperODEIntDenseOutput<
+					internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>, Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
 					new internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>,
-						Eigen::Matrix<SCALAR, STATE_DIM, 1>,
-						SCALAR>());
+						Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
 				break;
 			}
 
@@ -296,10 +291,9 @@ private:
 			{
 				integratorStepper_ =
 					std::shared_ptr<internal::StepperODEInt<internal::bulirsch_stoer_t<STATE_DIM, SCALAR>,
-						Eigen::Matrix<SCALAR, STATE_DIM, 1>,
-						SCALAR>>(new internal::StepperODEInt<internal::bulirsch_stoer_t<STATE_DIM, SCALAR>,
-						Eigen::Matrix<SCALAR, STATE_DIM, 1>,
-						SCALAR>());
+						Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
+						new internal::StepperODEInt<internal::bulirsch_stoer_t<STATE_DIM, SCALAR>,
+							Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
 				break;
 			}
 			default:
@@ -336,10 +330,9 @@ private:
 			case EULER:
 			{
 				integratorStepper_ = std::shared_ptr<internal::StepperODEInt<internal::euler_t<STATE_DIM, SCALAR>,
-					Eigen::Matrix<SCALAR, STATE_DIM, 1>,
-					SCALAR>>(new internal::StepperODEInt<internal::euler_t<STATE_DIM, SCALAR>,
-					Eigen::Matrix<SCALAR, STATE_DIM, 1>,
-					SCALAR>());
+					Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
+					new internal::StepperODEInt<internal::euler_t<STATE_DIM, SCALAR>,
+						Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
 				break;
 			}
 
@@ -347,10 +340,9 @@ private:
 			{
 				integratorStepper_ =
 					std::shared_ptr<internal::StepperODEInt<internal::runge_kutta_4_t<STATE_DIM, SCALAR>,
-						Eigen::Matrix<SCALAR, STATE_DIM, 1>,
-						SCALAR>>(new internal::StepperODEInt<internal::runge_kutta_4_t<STATE_DIM, SCALAR>,
-						Eigen::Matrix<SCALAR, STATE_DIM, 1>,
-						SCALAR>());
+						Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
+						new internal::StepperODEInt<internal::runge_kutta_4_t<STATE_DIM, SCALAR>,
+							Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
 				break;
 			}
 
@@ -358,10 +350,9 @@ private:
 			{
 				integratorStepper_ =
 					std::shared_ptr<internal::StepperODEInt<internal::modified_midpoint_t<STATE_DIM, SCALAR>,
-						Eigen::Matrix<SCALAR, STATE_DIM, 1>,
-						SCALAR>>(new internal::StepperODEInt<internal::modified_midpoint_t<STATE_DIM, SCALAR>,
-						Eigen::Matrix<SCALAR, STATE_DIM, 1>,
-						SCALAR>());
+						Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
+						new internal::StepperODEInt<internal::modified_midpoint_t<STATE_DIM, SCALAR>,
+							Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
 				break;
 			}
 
@@ -369,10 +360,9 @@ private:
 			{
 				integratorStepper_ =
 					std::shared_ptr<internal::StepperODEInt<internal::runge_kutta_fehlberg78_t<STATE_DIM, SCALAR>,
-						Eigen::Matrix<SCALAR, STATE_DIM, 1>,
-						SCALAR>>(new internal::StepperODEInt<internal::runge_kutta_fehlberg78_t<STATE_DIM, SCALAR>,
-						Eigen::Matrix<SCALAR, STATE_DIM, 1>,
-						SCALAR>());
+						Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
+						new internal::StepperODEInt<internal::runge_kutta_fehlberg78_t<STATE_DIM, SCALAR>,
+							Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
 
 				break;
 			}

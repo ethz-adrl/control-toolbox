@@ -174,13 +174,12 @@ public:
 	}
 
 private:
-	std::map<SplineType, std::string> splineToString = {{ZERO_ORDER_HOLD, "Zero order hold"},
-		{PIECEWISE_LINEAR, "Piecewise Linear"}};
-	std::map<ObjectiveType, std::string> objTypeToString = {{KEEP_TIME_AND_GRID, "Timegrid fix"},
-		{OPTIMIZE_GRID, "Timegrid Optimization On"}};
-	std::map<IntegrationType, std::string> integratorToString = {{EULER, "Euler"},
-		{RK4, "Runge-Kutta 4th order"},
-		{RK5, "RK5 adaptive step size"}};
+	std::map<SplineType, std::string> splineToString = {
+		{ZERO_ORDER_HOLD, "Zero order hold"}, {PIECEWISE_LINEAR, "Piecewise Linear"}};
+	std::map<ObjectiveType, std::string> objTypeToString = {
+		{KEEP_TIME_AND_GRID, "Timegrid fix"}, {OPTIMIZE_GRID, "Timegrid Optimization On"}};
+	std::map<IntegrationType, std::string> integratorToString = {
+		{EULER, "Euler"}, {RK4, "Runge-Kutta 4th order"}, {RK5, "RK5 adaptive step size"}};
 	std::map<CostEvaluationType, std::string> costEvalToString = {{SIMPLE, "Simple"}, {FULL, "Full"}};
 };
 }

@@ -119,8 +119,7 @@ public:
 				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>,
 					Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>>(
 					Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>(),
-					controlledSystem_,
-					core::EULERCT);
+					controlledSystem_, core::EULERCT);
 				break;
 			}
 			case DmsSettings::RK4:
@@ -128,8 +127,7 @@ public:
 				integratorCT_ = std::allocate_shared<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>,
 					Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>>(
 					Eigen::aligned_allocator<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>>(),
-					controlledSystem_,
-					core::RK4CT);
+					controlledSystem_, core::RK4CT);
 				break;
 			}
 			case DmsSettings::RK5:

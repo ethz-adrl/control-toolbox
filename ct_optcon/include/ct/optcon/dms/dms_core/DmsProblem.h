@@ -149,14 +149,8 @@ public:
 				(timeGrid_->getShotEndTime(shotIdx) - timeGrid_->getShotStartTime(shotIdx)) / settings_.dt_sim_ + 0.5;
 
 			shotContainers_.push_back(std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>>(
-				new ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>(systemPtrs[shotIdx],
-					linearPtrs[shotIdx],
-					costPtrs[shotIdx],
-					optVariablesDms_,
-					controlSpliner_,
-					timeGrid_,
-					shotIdx,
-					settings_,
+				new ShotContainer<STATE_DIM, CONTROL_DIM, SCALAR>(systemPtrs[shotIdx], linearPtrs[shotIdx],
+					costPtrs[shotIdx], optVariablesDms_, controlSpliner_, timeGrid_, shotIdx, settings_,
 					nIntegrationSteps)));
 		}
 
@@ -254,14 +248,8 @@ public:
 				(timeGrid_->getShotEndTime(shotIdx) - timeGrid_->getShotStartTime(shotIdx)) / settings_.dt_sim_ + 0.5;
 
 			shotContainers.push_back(std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, ScalarCG>>(
-				new ShotContainer<STATE_DIM, CONTROL_DIM, ScalarCG>(systemPtrs[shotIdx],
-					linearPtrs[shotIdx],
-					costPtrs[shotIdx],
-					optVariablesDms,
-					controlSpliner,
-					timeGrid,
-					shotIdx,
-					settings_,
+				new ShotContainer<STATE_DIM, CONTROL_DIM, ScalarCG>(systemPtrs[shotIdx], linearPtrs[shotIdx],
+					costPtrs[shotIdx], optVariablesDms, controlSpliner, timeGrid, shotIdx, settings_,
 					nIntegrationSteps)));
 		}
 

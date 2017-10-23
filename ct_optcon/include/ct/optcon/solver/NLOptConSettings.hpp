@@ -607,40 +607,29 @@ private:
 	std::map<ct::core::IntegrationType, std::string> integratorToString = {{ct::core::IntegrationType::EULER, "Euler"},
 		{ct::core::IntegrationType::RK4, "Runge-Kutta 4th Order"},
 		{ct::core::IntegrationType::MODIFIED_MIDPOINT, "Modified midpoint"},
-		{ct::core::IntegrationType::ODE45, "ode45"},
-		{ct::core::IntegrationType::RK5VARIABLE, "RK5 variable step"},
-		{ct::core::IntegrationType::RK78, "RK78"},
-		{ct::core::IntegrationType::BULIRSCHSTOER, "Bulirsch-Stoer"},
+		{ct::core::IntegrationType::ODE45, "ode45"}, {ct::core::IntegrationType::RK5VARIABLE, "RK5 variable step"},
+		{ct::core::IntegrationType::RK78, "RK78"}, {ct::core::IntegrationType::BULIRSCHSTOER, "Bulirsch-Stoer"},
 		{ct::core::IntegrationType::EULERCT, "Euler (CT)"},
 		{ct::core::IntegrationType::RK4CT, "Runge-Kutta 4th Order (CT"},
 		{ct::core::IntegrationType::EULER_SYM, "Symplectic Euler"},
 		{ct::core::IntegrationType::RK_SYM, "Symplectic Runge Kutta"}};
 
 	std::map<std::string, ct::core::IntegrationType> stringToIntegrator = {{"Euler", ct::core::IntegrationType::EULER},
-		{"RK4", ct::core::IntegrationType::RK4},
-		{"MODIFIED_MIDPOINT", ct::core::IntegrationType::MODIFIED_MIDPOINT},
-		{"ODE45", ct::core::IntegrationType::ODE45},
-		{"RK5VARIABLE", ct::core::IntegrationType::RK5VARIABLE},
-		{"RK78", ct::core::IntegrationType::RK78},
-		{"BULIRSCHSTOER", ct::core::IntegrationType::BULIRSCHSTOER},
-		{"EulerCT", ct::core::IntegrationType::EULERCT},
-		{"RK4CT", ct::core::IntegrationType::RK4CT},
-		{"Euler_Sym", ct::core::IntegrationType::EULER_SYM},
-		{"Rk_Sym", ct::core::IntegrationType::RK_SYM}};
+		{"RK4", ct::core::IntegrationType::RK4}, {"MODIFIED_MIDPOINT", ct::core::IntegrationType::MODIFIED_MIDPOINT},
+		{"ODE45", ct::core::IntegrationType::ODE45}, {"RK5VARIABLE", ct::core::IntegrationType::RK5VARIABLE},
+		{"RK78", ct::core::IntegrationType::RK78}, {"BULIRSCHSTOER", ct::core::IntegrationType::BULIRSCHSTOER},
+		{"EulerCT", ct::core::IntegrationType::EULERCT}, {"RK4CT", ct::core::IntegrationType::RK4CT},
+		{"Euler_Sym", ct::core::IntegrationType::EULER_SYM}, {"Rk_Sym", ct::core::IntegrationType::RK_SYM}};
 
 
 	//! mappings for discretization types
 	std::map<APPROXIMATION, std::string> discretizationToString = {{APPROXIMATION::FORWARD_EULER, "Forward_euler"},
-		{APPROXIMATION::BACKWARD_EULER, "Backward_euler"},
-		{APPROXIMATION::SYMPLECTIC_EULER, "Symplectic_euler"},
-		{APPROXIMATION::TUSTIN, "Tustin"},
-		{APPROXIMATION::MATRIX_EXPONENTIAL, "Matrix_exponential"}};
+		{APPROXIMATION::BACKWARD_EULER, "Backward_euler"}, {APPROXIMATION::SYMPLECTIC_EULER, "Symplectic_euler"},
+		{APPROXIMATION::TUSTIN, "Tustin"}, {APPROXIMATION::MATRIX_EXPONENTIAL, "Matrix_exponential"}};
 
 	std::map<std::string, APPROXIMATION> stringToDiscretization = {{"Forward_euler", APPROXIMATION::FORWARD_EULER},
-		{"Backward_euler", APPROXIMATION::BACKWARD_EULER},
-		{"Symplectic_euler", APPROXIMATION::SYMPLECTIC_EULER},
-		{"Tustin", APPROXIMATION::TUSTIN},
-		{"Matrix_exponential", APPROXIMATION::MATRIX_EXPONENTIAL}};
+		{"Backward_euler", APPROXIMATION::BACKWARD_EULER}, {"Symplectic_euler", APPROXIMATION::SYMPLECTIC_EULER},
+		{"Tustin", APPROXIMATION::TUSTIN}, {"Matrix_exponential", APPROXIMATION::MATRIX_EXPONENTIAL}};
 
 
 	//! mappings for algorithm types
@@ -650,11 +639,11 @@ private:
 
 
 	//! mappings for linear-quadratic solver types
-	std::map<LQOCP_SOLVER, std::string> locp_solverToString = {{GNRICCATI_SOLVER, "GNRICCATI_SOLVER"},
-		{HPIPM_SOLVER, "HPIPM_SOLVER"}};
+	std::map<LQOCP_SOLVER, std::string> locp_solverToString = {
+		{GNRICCATI_SOLVER, "GNRICCATI_SOLVER"}, {HPIPM_SOLVER, "HPIPM_SOLVER"}};
 
-	std::map<std::string, LQOCP_SOLVER> stringTolocp_solver = {{"GNRICCATI_SOLVER", GNRICCATI_SOLVER},
-		{"HPIPM_SOLVER", HPIPM_SOLVER}};
+	std::map<std::string, LQOCP_SOLVER> stringTolocp_solver = {
+		{"GNRICCATI_SOLVER", GNRICCATI_SOLVER}, {"HPIPM_SOLVER", HPIPM_SOLVER}};
 };
 }
 }
