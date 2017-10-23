@@ -1,9 +1,8 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-clang-analyzer-alpha*,*,-clang-analyzer-alpha.*,-llvm-include-order'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-clang-analyzer-alpha*,-llvm-include-order,'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
-User:            gimarkus
 CheckOptions:    
   - key:             cert-dcl59-cpp.HeaderFileExtensions
     value:           h,hh,hpp,hxx
