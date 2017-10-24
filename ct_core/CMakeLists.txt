@@ -64,10 +64,12 @@ catkin_package(
         include/external
         ${EIGEN3_INCLUDE_DIR}
    LIBRARIES
+       dl
        ct_core
        ${PRESPEC_LIB_NAMES}
    DEPENDS
        eigen
+       dl
 )
 
 

@@ -173,10 +173,8 @@ catkin_package(
         ${BLASFEO_INCLUDE_DIR}
    DEPENDS
         lapack 
-        dl
    LIBRARIES
         ${LAPACK_LIBS} 
-        dl
         ${CT_SNOPT_LIBS}
         ${HPIPM_LIBRARY}
         ${BLASFEO_LIBRARY}
@@ -207,7 +205,7 @@ if(BUILD_EXAMPLES)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
 
     add_executable(ex_LQR examples/LQR.cpp)
-    target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS} dl)
+    target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS})
 
     add_executable(ex_NLOC examples/NLOC.cpp)
     target_link_libraries(ex_NLOC ${catkin_LIBRARIES})
@@ -267,18 +265,18 @@ add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
 target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
 catkin_add_gtest(constraint_comparison test/constraint/ConstraintComparison.cpp)
-target_link_libraries(constraint_comparison ${catkin_LIBRARIES} dl)
+target_link_libraries(constraint_comparison ${catkin_LIBRARIES})
 # note that this test does not have a prespec equivalent
 
 catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
-target_link_libraries(constraint_test ${catkin_LIBRARIES} dl)
+target_link_libraries(constraint_test ${catkin_LIBRARIES} )
 catkin_add_gtest(constraint_test_prespec test/constraint/ConstraintTestPrespec.cpp)
-target_link_libraries(constraint_test_prespec ${catkin_LIBRARIES} dl ${PRESPEC_LIB_NAMES})
+target_link_libraries(constraint_test_prespec ${catkin_LIBRARIES} ${PRESPEC_LIB_NAMES})
 
 catkin_add_gtest(CostFunctionTests test/costfunction/CostFunctionTests.cpp)
-target_link_libraries(CostFunctionTests ${catkin_LIBRARIES} dl ${MATLAB_LIBS})
+target_link_libraries(CostFunctionTests ${catkin_LIBRARIES} ${MATLAB_LIBS})
 catkin_add_gtest(TrackingTermTest test/costfunction/TrackingTest.cpp)
-target_link_libraries(TrackingTermTest ${catkin_LIBRARIES} dl ${MATLAB_LIBS})
+target_link_libraries(TrackingTermTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
 
 catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
 target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
@@ -287,7 +285,7 @@ catkin_add_gtest(dms_test_all_var test/dms/oscillator/oscDMSTestAllVariants.cpp)
 target_link_libraries(dms_test_all_var ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
 
 #add_executable(bareTest test/dms/oscillator/bareTest.cpp)
-#target_link_libraries(bareTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS} dl)
+#target_link_libraries(bareTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
 
 add_executable(matFilesGenerator test/dms/oscillator/matfiles/matFilesGenerator.cpp)
 target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
