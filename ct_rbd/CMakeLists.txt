@@ -11,7 +11,6 @@ SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 find_package(catkin REQUIRED ct_core ct_optcon cmake_modules)
 find_package(kindr)
-find_package(Eigen3)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}  
@@ -24,7 +23,6 @@ message(WARNING "CT RBD: Compiling the following explict template libraries: ${P
 catkin_package(
    INCLUDE_DIRS
         ${kindr_INCLUDE_DIRS}
-        ${EIGEN3_INCLUDE_DIR}
         include
         include/ct/rbd
         test
@@ -39,7 +37,6 @@ catkin_package(
 
 include_directories(
     ${kindr_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIR}
     include/ct/rbd
     test/models/testhyq/generated
     include

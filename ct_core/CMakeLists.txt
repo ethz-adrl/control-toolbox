@@ -62,9 +62,12 @@ catkin_package(
         ${BOOST_INCLUDE_DIRS}
         include
         include/external
+        ${EIGEN3_INCLUDE_DIR}
    LIBRARIES
        ct_core
        ${PRESPEC_LIB_NAMES}
+   DEPENDS
+       eigen
 )
 
 

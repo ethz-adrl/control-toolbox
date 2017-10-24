@@ -13,7 +13,6 @@ find_package(catkin REQUIRED
     message_generation 
     message_runtime
 )
-find_package(Eigen REQUIRED)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -std=c++11 -Wall -Wl,--no-as-needed")
@@ -144,7 +143,6 @@ endif(DEFINED ENV{SNOPT_SOURCE_DIR})
 set(NLP_LIBS ${IPOPT_LIBS} ${CT_SNOPT_LIBS})
 
 include_directories(
-    ${EIGEN_INCLUDE_DIRS} 
     include
     ${catkin_INCLUDE_DIRS}
 )
@@ -171,11 +169,9 @@ message(WARNING "CT Optcon: Compiling the following explict template libraries: 
 catkin_package(
    INCLUDE_DIRS
         include
-        ${EIGEN_INCLUDE_DIRS}
         ${HPIPM_INCLUDE_DIR}
         ${BLASFEO_INCLUDE_DIR}
    DEPENDS
-        eigen 
         lapack 
         dl
    LIBRARIES
