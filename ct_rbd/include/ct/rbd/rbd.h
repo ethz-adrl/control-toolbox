@@ -45,4 +45,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Systems-impl"
 #include "Nloc-impl"
 
+// keep standard header guard (easy debugging)
+// header guard is identical to the one in rbd-prespec.h
 #endif /* INCLUDE_CT_RBD_RBD_H_ */

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef HYQ_ROBCOGENHYQ_H_
-#define HYQ_ROBCOGENHYQ_H_
+#pragma once
 
 #include <Eigen/Core>
 
@@ -89,6 +88,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CT_EE3_LAST_JOINT 11
 
 #include <ct/rbd/robot/robcogen/robcogenHelpers.h>
-
-
-#endif /* THYQ_ROBCOGEHYQ_H_ */

@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef TEST_MODELS_ROBCOGENTESTIRB4600_H_
-#define TEST_MODELS_ROBCOGENTESTIRB4600_H_
+#pragma once
 
 #include <Eigen/Core>
 
@@ -65,4 +64,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ct/rbd/robot/robcogen/robcogenHelpers.h>
 
-#endif /* ROBCOGENTESTIRB4600_H_ */

@@ -53,4 +53,9 @@ The parser in the CMakeLists.txt would then create the following code out of thi
 \note The parameter DOUBLE_OR_FLOAT is optional but can be used if your class does not compile for Auto-Diff types
 which is often the case if no special care is taken.
 
+
+\section Some guidelines
+- use **#pragma once** as header guards, rather than the standard #ifndef ... #define style.
+
+
 */

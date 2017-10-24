@@ -42,4 +42,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * \warning{do not include implementation files in rbd-prespec.h}
  */
 
+// keep standard header guard (easy debugging)
+// header guard is identical to the one in rbd.h
 #endif /* INCLUDE_CT_RBD_RBD_H_ */
