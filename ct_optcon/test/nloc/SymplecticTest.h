@@ -28,8 +28,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <gtest/gtest.h>
 
-#include <ct/optcon/optcon.h>
-
 
 /* This test implements a 1-Dimensional horizontally moving point mass with mass 1kg and attached to a spring
  x = [p, pd] // p - position pointing upwards, against gravity, pd - velocity
@@ -353,19 +351,3 @@ void symplecticTest()
 }  // namespace ct
 
 
-/*!
- * This runs the GNMS unit test.
- * \note for a more straight-forward implementation example, visit the tutorial.
- * \example GNMSCTest.cpp
- */
-int main(int argc, char** argv)
-{
-    ct::optcon::example::symplecticTest();
-
-    //	testing::InitGoogleTest(&argc, argv);
-    //    return RUN_ALL_TESTS();
-
-    //	ct::optcon::example::multiCore();
-
-    return 1;
-}
