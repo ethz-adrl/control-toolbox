@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_ROBOT_SYSTEMS_FIXBASEFDSYSTEM_H_
-#define INCLUDE_CT_RBD_ROBOT_SYSTEMS_FIXBASEFDSYSTEM_H_
+#pragma once
 
 #include <ct/rbd/state/RigidBodyPose.h>
 #include <ct/rbd/robot/actuator/ActuatorDynamics.h>
@@ -280,5 +279,3 @@ private:
 
 #undef ACTUATOR_DYNAMICS_ENABLED
 #undef ACTUATOR_DYNAMICS_DISABLED
-
-#endif /* INCLUDE_CT_RBD_ROBOT_SYSTEMS_FIXBASEFDSYSTEM_H_ */
