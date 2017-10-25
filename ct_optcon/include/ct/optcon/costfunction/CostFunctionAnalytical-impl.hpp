@@ -24,6 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************************/
 
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -328,5 +329,6 @@ CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeTe
 
     return derivative;
 }
-}
-}
+
+} // namespace optcon
+} // namespace ct
