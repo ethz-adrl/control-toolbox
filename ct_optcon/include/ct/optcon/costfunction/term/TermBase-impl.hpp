@@ -67,21 +67,6 @@ ct::core::ADCGScalar TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::eval
     throw std::runtime_error("The cost function term term " + name_ + " does not implement evaluate CppadCg.");
 }
 
-//template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-//ct::core::ADCGScalar TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evalCG(
-//		const Eigen::Matrix<ct::core::ADCGScalar, STATE_DIM, 1>& x,
-//		const Eigen::Matrix<ct::core::ADCGScalar, CONTROL_DIM, 1>& u,
-//		const ct::core::ADCGScalar& t)
-//		{
-//
-//	Eigen::Matrix<SCALAR, STATE_DIM, 1> x_sc = x.template cast<SCALAR>();
-//	Eigen::Matrix<SCALAR, CONTROL_DIM, 1> u_sc = u.template cast<SCALAR>();
-////	SCALAR t_sc = static_cast<SCALAR>(t);
-//
-//	SCALAR cost = evaluate(x_sc, u_sc, 0.0);
-//	return (ct::core::ADCGScalar)cost;
-//		}
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 bool TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::isActiveAtTime(SCALAR_EVAL t)
 {
