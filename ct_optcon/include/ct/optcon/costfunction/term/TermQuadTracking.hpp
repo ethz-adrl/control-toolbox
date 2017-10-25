@@ -114,5 +114,25 @@ protected:
     bool trackControlTrajectory_;
 };
 
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
+template <typename SC>
+SC TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1>& x,
+    const Eigen::Matrix<SC, CONTROL_DIM, 1>& u,
+    const SC& t)
+{
+    Eigen::Matrix<SC, STATE_DIM, 1> xDiff = x - x_traj_ref_.eval((SCALAR_EVAL)t).template cast<SC>();
+
+    Eigen::Matrix<SC, CONTROL_DIM, 1> uDiff;
+
+    if (trackControlTrajectory_)
+        uDiff = u - u_traj_ref_.eval((SCALAR_EVAL)t).template cast<SC>();
+    else
+        uDiff = u;
+
+    return (xDiff.transpose() * Q_.template cast<SC>() * xDiff + uDiff.transpose() * R_.template cast<SC>() * uDiff)(
+        0, 0);
+}
+
 }  // namespace optcon
 }  // namespace ct
