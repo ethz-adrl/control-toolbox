@@ -109,7 +109,88 @@ TEST(KindrJitTest, EulerAnglesTest)
         }
     } catch (std::exception& e)
     {
-        std::cout << "Exception thrown: " << e.what() << std::endl;
+        std::cout << "Kindr Euler angle test failed: " << e.what() << std::endl;
+        ASSERT_TRUE(false);
+    }
+}
+
+
+template <typename SCALAR>
+Eigen::Matrix<SCALAR, 3, 1> rotateTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
+{
+    kindr::EulerAnglesXyz<SCALAR> angles(x);
+
+    // create a position and set to a trivial hard-coded value
+    kindr::Position<SCALAR, 3> pos;
+    pos.toImplementation()(0) = 1;
+    pos.toImplementation()(1) = 1;
+    pos.toImplementation()(2) = 1;
+
+    kindr::Position<SCALAR, 3> pos_rot = angles.rotate(pos);
+
+    return angles.rotate(pos).toImplementation();
+}
+
+
+TEST(KindrJitTest, DISABLED_EulerRotateTest)
+{
+    try
+    {
+        // create a function handle (also works for class methods, lambdas, function pointers, ...)
+        typename derivativesCppadJIT::FUN_TYPE_CG f = rotateTestFunction<derivativesCppadJIT::CG_SCALAR>;
+
+        // initialize the Auto-Diff Codegen Jacobian
+        derivativesCppadJIT jacCG(f);
+
+        DerivativesCppadSettings settings;
+        settings.createJacobian_ = true;
+
+        // compile the Jacobian
+        jacCG.compileJIT(settings, "kindrRotateTestLib");
+
+    } catch (std::exception& e)
+    {
+        std::cout << "Kindr rotate test failed: " << e.what() << std::endl;
+        ASSERT_TRUE(false);
+    }
+}
+
+
+template <typename SCALAR>
+Eigen::Matrix<SCALAR, 3, 1> kindrRotationMatrixTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
+{
+    kindr::EulerAnglesXyz<SCALAR> angles(x);
+
+    // create a position and set to a trivial hard-coded value
+    kindr::Position<SCALAR, 3> pos;
+    pos.toImplementation()(0) = 1;
+    pos.toImplementation()(1) = 1;
+    pos.toImplementation()(2) = 1;
+
+    return kindr::RotationMatrix<SCALAR>(angles).toImplementation() * pos.toImplementation();
+
+}
+
+
+TEST(KindrJitTest, DISABLED_RotationMatrixTest)
+{
+    try
+    {
+        // create a function handle (also works for class methods, lambdas, function pointers, ...)
+        typename derivativesCppadJIT::FUN_TYPE_CG f = kindrRotationMatrixTestFunction<derivativesCppadJIT::CG_SCALAR>;
+
+        // initialize the Auto-Diff Codegen Jacobian
+        derivativesCppadJIT jacCG(f);
+
+        DerivativesCppadSettings settings;
+        settings.createJacobian_ = true;
+
+        // compile the Jacobian
+        jacCG.compileJIT(settings, "testLib");
+
+    } catch (std::exception& e)
+    {
+        std::cout << "Kindr rotation matrix test failed: " << e.what() << std::endl;
         ASSERT_TRUE(false);
     }
 }
