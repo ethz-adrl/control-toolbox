@@ -24,8 +24,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#ifndef JOINTSTATEBASE_H_
-#define JOINTSTATEBASE_H_
+#pragma once
 
 namespace ct {
 namespace rbd {
@@ -140,5 +139,3 @@ using JointState = tpl::JointState<NJOINTS, double>;
 
 }  // namespace rbd
 }  // namespace ct
-
-#endif /* JOINTSTATEBASE_H_ */
