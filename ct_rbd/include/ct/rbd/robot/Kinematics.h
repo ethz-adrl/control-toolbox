@@ -166,12 +166,14 @@ public:
         const tpl::RigidBodyPose<SCALAR>& basePose,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
+        // vector from base to endeffector expressed in base frame
+        Position3Tpl B_x_EE = getEEPositionInBase(eeID, jointPosition);
+
         // vector from base to endeffector expressed in world frame
-        Position3Tpl W_x_EE =
-            basePose.template rotateBaseToInertia(Position3Tpl(getEEPositionInBase(eeID, jointPosition)));
+        Position3Tpl W_x_EE = basePose.template rotateBaseToInertia(B_x_EE);
 
         // vector from origin to endeffector = vector from origin to base + vector from base to endeffector
-        return basePose.position() + W_x_EE;
+        return  basePose.position()  +  W_x_EE;
     }
 
     /**
