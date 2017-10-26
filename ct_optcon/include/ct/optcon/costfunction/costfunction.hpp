@@ -5,9 +5,6 @@
 #pragma once
 
 // time activations
-#include "term/timeActivations/TimeActivations.h"
-
-// terms
 #include "term/TermBase.hpp"
 #include "term/TermLinear.hpp"
 #include "term/TermMixed.hpp"

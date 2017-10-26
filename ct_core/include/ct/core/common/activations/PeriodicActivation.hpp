@@ -2,14 +2,15 @@
 #pragma once
 
 #include <cmath>
-#include "TimeActivationBase.hpp"
+
+#include "../activations/ActivationBase.hpp"
 
 namespace ct {
-namespace optcon {
+namespace core {
 namespace tpl {
 
 template <typename SCALAR>
-class PeriodicActivation : public TimeActivationBase<SCALAR>
+class PeriodicActivation : public ActivationBase<SCALAR>
 {
 public:
     PeriodicActivation() {}
@@ -52,9 +53,9 @@ public:
     }
 
     // to verify
-    virtual bool isActiveAtTime(const SCALAR t) override { return isActiveAtTimeSpecialized(t); }
+    virtual bool isActive(const SCALAR t) override { return isActiveSpecialized(t); }
     template <typename S = SCALAR>
-    typename std::enable_if<std::is_same<S, double>::value, bool>::type isActiveAtTimeSpecialized(const SCALAR t)
+    typename std::enable_if<std::is_same<S, double>::value, bool>::type isActiveSpecialized(const SCALAR t)
     {
         bool active = false;
         if (t >= period_offset_ && t < t_end_)
@@ -68,7 +69,7 @@ public:
     }
 
     template <typename S = SCALAR>
-    typename std::enable_if<!std::is_same<S, double>::value, bool>::type isActiveAtTimeSpecialized(const SCALAR t)
+    typename std::enable_if<!std::is_same<S, double>::value, bool>::type isActiveSpecialized(const SCALAR t)
     {
         return true;
     }
