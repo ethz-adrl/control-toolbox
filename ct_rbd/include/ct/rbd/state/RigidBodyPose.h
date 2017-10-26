@@ -241,7 +241,11 @@ public:
             Eigen::Quaternion<SCALAR> q = rollAngle * pitchAngle * yawAngle;
             Eigen::Matrix<SCALAR, 3, 3> rotationMatrix = q.matrix();
 
-            Eigen::Matrix<SCALAR, 3, 1> result = rotationMatrix * vector.template toImplementation();
+            // incredibly ungly hack to get along with different types
+            Eigen::Matrix<SCALAR, 3, 1> vec_temp;
+            vec_temp << vector(0), vector(1), vector(2);
+
+            Eigen::Matrix<SCALAR, 3, 1> result = rotationMatrix * vec_temp;
             return (Vector3s)result;
 
             //            return euler_.rotate(vector); // temporarily replaced -- the kindr rotate() method is not auto-diffable
