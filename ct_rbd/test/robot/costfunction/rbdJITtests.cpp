@@ -24,13 +24,12 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#include <ct/rbd/rbd.h>
-#include "TaskspaceCostFunctionTest.h"
 
-using namespace ct;
-using namespace rbd;
+#include <ct/optcon/optcon.h>
+#include "rbdJITtests.h"
 
-int main(int argc, char **argv)
+
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

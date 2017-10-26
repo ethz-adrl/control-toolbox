@@ -24,14 +24,49 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
-#include <ct/rbd/rbd.h>
-#include "TaskspaceCostFunctionTest.h"
+#include "../../models/testhyq/RobCoGenTestHyQ.h"
+#include <gtest/gtest.h>
 
 using namespace ct;
 using namespace rbd;
 
-int main(int argc, char **argv)
+TEST(TaskspaceCostFunctionTests, TestTaskSpacePositionTerm)
 {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    typedef ct::core::ADCGScalar size_type;
+    typedef TestHyQ::tpl::Kinematics<size_type> KinTpl_t;
+
+    KinTpl_t kynTpl;
+    size_t eeId = 1;
+
+    const size_t hyqStateDim = 36;
+    const size_t hyqControlDim = 12;
+
+    Eigen::Matrix<double, 3, 3> Q;
+    Q.setIdentity();
+
+    std::shared_ptr<optcon::CostFunctionAD<hyqStateDim, hyqControlDim>> Adcf(
+        new optcon::CostFunctionAD<hyqStateDim, hyqControlDim>());
+    std::shared_ptr<TermTaskspacePosition<KinTpl_t, true, hyqStateDim, hyqControlDim>> term1(
+        new TermTaskspacePosition<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId, Q));
+
+    Adcf->addFinalADTerm(term1, true);
+    Adcf->addIntermediateADTerm(term1, true);
+
+    Adcf->initialize();
+
+    Eigen::Matrix<double, hyqStateDim, 1> x;
+    Eigen::Matrix<double, hyqControlDim, 1> u;
+    x.setRandom();
+    u.setRandom();
+
+    double t = 1.0;
+
+    Adcf->setCurrentStateAndControl(x, u, t);
+
+    //    Adcf->stateDerivativeIntermediateTest();
+    //    Adcf->controlDerivativeIntermediateTest();
+
+    //! compare auto-diff against num-diff
+    ASSERT_TRUE(Adcf->stateDerivativeIntermediateTest());
+    ASSERT_TRUE(Adcf->controlDerivativeIntermediateTest());
 }

@@ -32,8 +32,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 const size_t DIM = 3;  //!< dimension of vector
 
 //! the Jacobian codegen class
-typedef DerivativesCppadJIT<DIM, DIM> derivativesCppadJIT;
-typedef DerivativesCppadCG<DIM, DIM> derivativesCppadCG;
+using derivativesCppadJIT = DerivativesCppadJIT<DIM, DIM>;
+using derivativesCppadCG = DerivativesCppadCG<DIM, DIM>;
 
 
 /*!
