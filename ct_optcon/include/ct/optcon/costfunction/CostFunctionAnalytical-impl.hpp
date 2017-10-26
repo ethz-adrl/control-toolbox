@@ -4,6 +4,7 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Lincensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -308,5 +309,6 @@ CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeTe
 
     return derivative;
 }
-}
-}
+
+} // namespace optcon
+} // namespace ct

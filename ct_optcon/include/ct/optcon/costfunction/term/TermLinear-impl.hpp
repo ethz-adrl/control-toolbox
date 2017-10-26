@@ -42,17 +42,6 @@ TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::~TermLinear()
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-template <typename SC>
-SC TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1> &x,
-    const Eigen::Matrix<SC, CONTROL_DIM, 1> &u,
-    const SC &t)
-{
-    Eigen::Matrix<SC, 1, 1> y_eigen = a_.template cast<SC>().transpose() * x + b_.template cast<SC>().transpose() * u;
-    SC y = y_eigen(0, 0) + SC(c_);
-    return y;
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 SCALAR TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x,
     const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u,
     const SCALAR &t)
