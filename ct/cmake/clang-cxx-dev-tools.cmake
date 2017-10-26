@@ -38,11 +38,12 @@ if(NOT CLANG_FORMAT_BIN)
 else()
   message (WARNING "USING CLANG-FORMAT. This re-formats the source-code in a well-defined style.")
   add_custom_target(
-    clang-format ALL
+    clang-format
     COMMAND clang-format-3.9
     -i
     -style=file
     ${ALL_CXX_SOURCE_FILES}
+    VERBATIM
     )
 endif()
 
@@ -57,7 +58,7 @@ if(NOT CLANG_TIDY_BIN)
 else()
     message (WARNING "USING CLANG-TIDY to analyze the code for formatting issues...")
     add_custom_target(
-        clang-tidy ALL
+        clang-tidy
         COMMAND clang-tidy-3.9 # todo how to get rid of version number?
         ${ALL_CXX_SOURCE_FILES}
         -config='' #uses the config file .clang-tidy (located in the root directory)
@@ -65,5 +66,6 @@ else()
         -std=c++11
         ${INCLUDE_DIRECTORIES}
         COMMENT "Launching clang-tidy"
+        VERBATIM
     )
 endif() #CLANG_TIDY_BIN
