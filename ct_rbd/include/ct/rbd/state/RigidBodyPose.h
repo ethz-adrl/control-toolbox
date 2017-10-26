@@ -88,17 +88,24 @@ public:
         setFromRotationQuaternion(orientationQuat);
     }
 
+    RigidBodyPose(const RigidBodyPose<SCALAR>& arg):
+    	storage_(arg.storage_),
+		quat_(arg.quat_),
+		euler_(arg.euler_),
+		position_(arg.position_)
+    {}
+
     //RigidBodyPose(const Eigen::Vector3d& orientationEulerXyz, const Eigen::Vector3d& position, STORAGE_TYPE storage = QUAT);
     //RigidBodyPose(const Eigen::Quaterniond& orientationQuat, const Eigen::Vector3d& position, STORAGE_TYPE storage = QUAT);
 
     ~RigidBodyPose(){};
 
-
-    inline void operator=(const RigidBodyPose& rhs)
-    {
-        setFromRotationQuaternion(rhs.getRotationQuaternion());
-        position() = rhs.position();
-    }
+//! @todo why do we need this operator overloaded? It obviously skips a few important members
+//    inline void operator=(const RigidBodyPose& rhs)
+//    {
+//        setFromRotationQuaternion(rhs.getRotationQuaternion());
+//        position() = rhs.position();
+//    }
 
     inline bool isNear(const RigidBodyPose& rhs, const double& tol = 1e-10) const
     {
@@ -223,12 +230,21 @@ public:
     /**
 	 * \brief This methods rotates a 3D vector expressed in Base frame to Inertia Frame.
 	 */
-    template <class Vector3d>
-    Vector3d rotateBaseToInertia(const Vector3d& vector) const
+    template <class Vector3s>
+    Vector3s rotateBaseToInertia(const Vector3s& vector) const
     {
         if (storedAsEuler())
         {
-            return euler_.rotate(vector);
+            Eigen::AngleAxis<SCALAR> rollAngle(euler_.toImplementation()(0), Eigen::Matrix<SCALAR, 3, 1>::UnitX());
+            Eigen::AngleAxis<SCALAR> pitchAngle(euler_.toImplementation()(1), Eigen::Matrix<SCALAR, 3, 1>::UnitY());
+            Eigen::AngleAxis<SCALAR> yawAngle(euler_.toImplementation()(2), Eigen::Matrix<SCALAR, 3, 1>::UnitZ());
+            Eigen::Quaternion<SCALAR> q = rollAngle * pitchAngle * yawAngle;
+            Eigen::Matrix<SCALAR, 3, 3> rotationMatrix = q.matrix();
+
+            Eigen::Matrix<SCALAR, 3, 1> result = rotationMatrix * vector.template toImplementation();
+            return (Vector3s)result;
+
+            //            return euler_.rotate(vector); // temporarily replaced -- the kindr rotate() method is not auto-diffable
         }
         else
         {
@@ -236,11 +252,12 @@ public:
         }
     };
 
+
     /**
 	 * \brief This methods rotates a 3D vector expressed in Inertia frame to Base Frame.
 	 */
-    template <class Vector3d>
-    Vector3d rotateInertiaToBase(const Vector3d& vector) const
+    template <class Vector3s>
+    Vector3s rotateInertiaToBase(const Vector3s& vector) const
     {
         // more efficient than inverseRotate and (more importantly) compatible with auto-diff
         // https://github.com/ethz-asl/kindr/issues/84
@@ -307,13 +324,15 @@ public:
 
     STORAGE_TYPE getStorageType() const { return storage_; }
 private:
-    bool storedAsEuler()
-    {
-        if (storage_ == EULER)
-            return true;
-        else
-            return false;
-    }
+
+    //! would we have a non-const accessor here?
+//    bool storedAsEuler()
+//    {
+//        if (storage_ == EULER)
+//            return true;
+//        else
+//            return false;
+//    }
 
     bool storedAsEuler() const
     {
