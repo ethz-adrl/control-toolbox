@@ -46,17 +46,25 @@ class RigidBodyState
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    RigidBodyState(typename RigidBodyPose<SCALAR>::STORAGE_TYPE storage = RigidBodyPose<SCALAR>::QUAT)
+    RigidBodyState(typename RigidBodyPose<SCALAR>::STORAGE_TYPE storage = RigidBodyPose<SCALAR>::EULER)
         : pose_(storage), velocities_()
     {
     }
 
+    //! copy constructor
+    RigidBodyState(const RigidBodyState<SCALAR>& arg) : pose_(arg.pose_), velocities_(arg.velocities_) {}
+    //! destructor
     virtual ~RigidBodyState(){};
 
+    //! return the rigid body pose
     RigidBodyPose<SCALAR>& pose() { return pose_; }
+    //! return the rigid body pose (const)
     const RigidBodyPose<SCALAR>& pose() const { return pose_; }
+    //! return the rigid body velocities
     RigidBodyVelocities<SCALAR>& velocities() { return velocities_; }
+    //! return the rigid body velocities (const)
     const RigidBodyVelocities<SCALAR>& velocities() const { return velocities_; }
+    //! numerically comparing two rigid body states
     bool isApprox(const RigidBodyState& rhs, const double& tol = 1e-10)
     {
         return pose().isNear(rhs.pose(), tol) && velocities().getVector().isApprox(rhs.velocities().getVector(), tol);
