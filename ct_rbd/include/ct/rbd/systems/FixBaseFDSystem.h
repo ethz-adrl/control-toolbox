@@ -4,8 +4,7 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_ROBOT_SYSTEMS_FIXBASEFDSYSTEM_H_
-#define INCLUDE_CT_RBD_ROBOT_SYSTEMS_FIXBASEFDSYSTEM_H_
+#pragma once
 
 #include <ct/rbd/state/RigidBodyPose.h>
 #include <ct/rbd/robot/actuator/ActuatorDynamics.h>
@@ -260,5 +259,3 @@ private:
 
 #undef ACTUATOR_DYNAMICS_ENABLED
 #undef ACTUATOR_DYNAMICS_DISABLED
-
-#endif /* INCLUDE_CT_RBD_ROBOT_SYSTEMS_FIXBASEFDSYSTEM_H_ */

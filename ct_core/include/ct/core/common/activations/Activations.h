@@ -4,16 +4,15 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-
 #pragma once
 
-#include "utilities/TimeActivationLoadMacros.h"
+#include "../activations/ActivationBase.hpp"
+#include "../activations/PeriodicActivation.hpp"
+#include "../activations/RBFGaussActivation.h"
+#include "../activations/SingleActivation.hpp"
+#include "../activations/utilities/ActivationLoadMacros.h"
 
-#include "PeriodicActivation.hpp"
-#include "SingleActivation.hpp"
-#include "RBFGaussActivation.h"
-
-#define CT_LOADABLE_TIME_ACTIVATIONS(SCALAR)                            \
-    CT_LOADABLE_TIME_ACTIVATION(SCALAR, SingleActivation, "single")     \
-    CT_LOADABLE_TIME_ACTIVATION(SCALAR, PeriodicActivation, "periodic") \
-    CT_LOADABLE_TIME_ACTIVATION(SCALAR, RBFGaussActivation, "rbf")
+#define CT_LOADABLE_ACTIVATIONS(SCALAR)                            \
+    CT_LOADABLE_ACTIVATION(SCALAR, SingleActivation, "single")     \
+    CT_LOADABLE_ACTIVATION(SCALAR, PeriodicActivation, "periodic") \
+    CT_LOADABLE_ACTIVATION(SCALAR, RBFGaussActivation, "rbf")

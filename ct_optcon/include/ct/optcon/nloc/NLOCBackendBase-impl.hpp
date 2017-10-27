@@ -1247,39 +1247,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::updateCosts(
     computeCostsOfTrajectory(settings_.nThreads, x_, u_ff_, intermediateCostBest_, finalCostBest_);
 }
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-template <typename ARRAY_TYPE, size_t ORDER>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDiscreteArrayNorm(
-    const ARRAY_TYPE& d) const
-{
-    SCALAR norm = 0.0;
-
-    for (size_t k = 0; k < d.size(); k++)
-    {
-        norm += d[k].template lpNorm<ORDER>();
-    }
-    return norm;
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-template <typename ARRAY_TYPE, size_t ORDER>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDiscreteArrayNorm(const ARRAY_TYPE& a,
-    const ARRAY_TYPE& b) const
-{
-    assert(a.size() == b.size());
-
-    SCALAR norm = 0.0;
-
-    for (size_t k = 0; k < a.size(); k++)
-    {
-        norm += (a[k] - b[k]).template lpNorm<ORDER>();
-    }
-    return norm;
-}
-
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::retrieveLastLinearizedModel(StateMatrixArray& A,
     StateControlMatrixArray& B)
@@ -1552,16 +1519,6 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getSettings() con
 {
     return settings_;
 }
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-template <size_t ORDER>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefectsNorm(
-    const StateVectorArray& d) const
-{
-    return computeDiscreteArrayNorm<StateVectorArray, ORDER>(d);
-}
-
 
 }  // namespace optcon
 }  // namespace ct

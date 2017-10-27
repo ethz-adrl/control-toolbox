@@ -4,8 +4,7 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#ifndef CT_OPTCON_COSTFUNCTIONAD_HPP_
-#define CT_OPTCON_COSTFUNCTIONAD_HPP_
+#pragma once
 
 #include <ct/core/core.h>
 #include <memory>
@@ -155,4 +154,3 @@ private:
 }  // namespace optcon
 }  // namespace ct
 
-#endif  // CT_COSTFUNCTIONAD_HPP_

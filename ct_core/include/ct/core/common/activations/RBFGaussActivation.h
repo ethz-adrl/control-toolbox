@@ -3,14 +3,15 @@
 
 #include <cmath>
 #include <math.h>
-#include "TimeActivationBase.hpp"
+
+#include "../activations/ActivationBase.hpp"
 
 namespace ct {
-namespace optcon {
+namespace core {
 namespace tpl {
 
 template <typename SCALAR>
-class RBFGaussActivation : public TimeActivationBase<SCALAR>
+class RBFGaussActivation : public ActivationBase<SCALAR>
 {
 public:
     RBFGaussActivation() {}
@@ -36,7 +37,7 @@ public:
         factor_ = SCALAR(1.0) / sqrt(SCALAR(2.0) * M_PI * sigma_ * sigma_);
     }
 
-    virtual bool isActiveAtTime(const SCALAR t) override { return true; }
+    virtual bool isActive(const SCALAR t) override { return true; }
     virtual SCALAR computeActivation(const SCALAR t) override
     {
         return factor_ * exp((t - mu_) * (t - mu_) * sigma2inv_);
@@ -54,8 +55,8 @@ private:
     SCALAR sigma2inv_;
     SCALAR factor_;
 };
-}
+} //namespace tpl
 
 typedef tpl::RBFGaussActivation<double> RBFGaussActivation;
-}
-}
+} //namespact core
+} //namespace ct

@@ -520,8 +520,8 @@ protected:
     /*!
 	 * This is a helper function to efficiently send std::vectors to Matlab.
 	 */
-    template <class V>
-    void matrixToMatlab(V& matrix, std::string variableName);
+//    template <class V>
+//    void matrixToMatlab(V& matrix, std::string variableName);
 
     //! compute norm of a discrete array (todo move to core)
     template <typename ARRAY_TYPE, size_t ORDER = 1>
@@ -634,6 +634,48 @@ protected:
 
     SummaryAllIterations<SCALAR> summaryAllIterations_;
 };
+
+
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+template <typename ARRAY_TYPE, size_t ORDER>
+SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDiscreteArrayNorm(
+    const ARRAY_TYPE& d) const
+{
+    SCALAR norm = 0.0;
+
+    for (size_t k = 0; k < d.size(); k++)
+    {
+        norm += d[k].template lpNorm<ORDER>();
+    }
+    return norm;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+template <typename ARRAY_TYPE, size_t ORDER>
+SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDiscreteArrayNorm(const ARRAY_TYPE& a,
+    const ARRAY_TYPE& b) const
+{
+    assert(a.size() == b.size());
+
+    SCALAR norm = 0.0;
+
+    for (size_t k = 0; k < a.size(); k++)
+    {
+        norm += (a[k] - b[k]).template lpNorm<ORDER>();
+    }
+    return norm;
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+template <size_t ORDER>
+SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefectsNorm(
+    const StateVectorArray& d) const
+{
+    return computeDiscreteArrayNorm<StateVectorArray, ORDER>(d);
+}
 
 
 }  // namespace optcon
