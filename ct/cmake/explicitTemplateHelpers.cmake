@@ -99,7 +99,7 @@ function(ct_configureFiles ConfigDir STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCA
         list(APPEND CURRENT_SRCS ${outputFile})
     endforeach()
    
-    message(WARNING "CURRENT_SRCS: ${CURRENT_SRCS}")
+    #(WARNING "CURRENT_SRCS: ${CURRENT_SRCS}")
     set(CURRENT_SRCS "${CURRENT_SRCS}" PARENT_SCOPE)
 endfunction()
 
@@ -108,7 +108,7 @@ endfunction()
 function(ct_add_explicit_template_libs)
     foreach(lib_name ${PRESPEC_LIB_NAMES})
       #get_filename_component(raw_filename ${file} NAME_WE)
-      message(WARNING "sources for lib ${lib_name}: \n ${${lib_name}_SRCS}")
+      #message(WARNING "sources for lib ${lib_name}: \n ${${lib_name}_SRCS}")
       add_library(${lib_name}
            ${${lib_name}_SRCS}
       )
