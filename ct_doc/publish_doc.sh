@@ -35,6 +35,8 @@ mkdir -p ct_rbd/doc/html || exit 1;
 
 pwd
 
+ls ../../../
+
 cp -R ../../../ct/ct_core/doc/html/* ct_core/doc/html/ || exit 1;
 cp -R ../../../ct/ct_doc/doc/html/* ct_doc/doc/html/ || exit 1;
 cp -R ../../../ct/ct_models/doc/html/* ct_models/doc/html/ || exit 1;
