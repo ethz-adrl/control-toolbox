@@ -13,7 +13,7 @@ namespace optcon {
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermBase(std::string name)
     : name_(name),
-      c_i_(std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>>(new tpl::TimeActivationBase<SCALAR_EVAL>()))
+      c_i_(std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>>(new ct::core::tpl::ActivationBase<SCALAR_EVAL>()))
 {
 }
 
@@ -50,7 +50,7 @@ ct::core::ADCGScalar TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::eval
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 bool TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::isActiveAtTime(SCALAR_EVAL t)
 {
-    return c_i_->isActiveAtTime(t);
+    return c_i_->isActive(t);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
@@ -134,7 +134,7 @@ void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(const
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::setTimeActivation(
-    std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> c_i,
+    std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>> c_i,
     bool verbose)
 {
     c_i_ = c_i;
@@ -154,8 +154,8 @@ void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadTimeActivation(c
     {
         std::string activationKind = pt.get<std::string>(termName + ".time_activation" + ".kind");
         boost::algorithm::to_lower(activationKind);
-        std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> c_i;
-        CT_LOADABLE_TIME_ACTIVATIONS(SCALAR_EVAL);
+        std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>> c_i;
+        CT_LOADABLE_ACTIVATIONS(SCALAR_EVAL);
         c_i->loadConfigFile(filename, termName + ".time_activation", verbose);
         if (!c_i)
         {

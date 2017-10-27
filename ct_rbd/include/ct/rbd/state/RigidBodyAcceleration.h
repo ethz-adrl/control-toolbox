@@ -4,9 +4,7 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#ifndef _RIGIDBODYACCELERATION_H_
-#define _RIGIDBODYACCELERATION_H_
-
+#pragma once
 
 namespace ct {
 namespace rbd {
@@ -94,6 +92,3 @@ typedef tpl::RigidBodyAcceleration<double> RigidBodyAcceleration;
 
 }  // namespace rbd
 }  // namespace ct
-
-
-#endif /* _RIGIDBODYACCELERATION_H_ */
