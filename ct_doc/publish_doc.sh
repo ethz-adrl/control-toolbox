@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# force execution in bash
+if [ "$(ps -p "$$" -o comm=)" != "bash" ]; then
+    # Taken from http://unix-linux.questionfor.info/q_unix-linux-programming_85038.html
+    bash "$0" "$@"
+    exit "$?"
+fi
+
 # brings us to the script location (in ct/ct_doc/)
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR
