@@ -15,7 +15,7 @@ find_package(catkin REQUIRED
 )
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -std=c++11 -Wall -Wl,--no-as-needed")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++11 -Wall -Wl,--no-as-needed")
 SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++11 -Wall")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
@@ -165,6 +165,9 @@ generate_messages(
 ## assemble list of libraries that contain prespecified templates
 ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_optcon")
 message(WARNING "CT Optcon: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
+
+#used later for clang-tidy
+set(INC_DIRS ${catkin_INCLUDE_DIRS}  "${CMAKE_CURRENT_SOURCE_DIR}/include" ${HPIPM_INCLUDE_DIR} ${BLASFEO_INCLUDE_DIR})
 
 catkin_package(
    INCLUDE_DIRS
@@ -320,3 +323,6 @@ if(DOXYGEN_FOUND)
         COMMAND ${CMAKE_COMMAND} -E echo_append "API Documentation built in ${CMAKE_CURRENT_SOURCE_DIR}/doc"
         VERBATIM)
 endif()
+
+
+ct_configure_clang_tidy(INC_DIRS)

@@ -1,14 +1,14 @@
 
 #pragma once
 
-#include "TimeActivationBase.hpp"
+#include "../activations/ActivationBase.hpp"
 
 namespace ct {
-namespace optcon {
+namespace core {
 namespace tpl {
 
 template <typename SCALAR>
-class SingleActivation : public TimeActivationBase<SCALAR>
+class SingleActivation : public ActivationBase<SCALAR>
 {
 public:
     SingleActivation() {}
@@ -23,20 +23,24 @@ public:
         t_off_ = pt.get<SCALAR>(termName + ".t_off");
     }
 
-    virtual bool isActiveAtTime(const SCALAR t) override { return (t >= t_on_ && t < t_off_); }
+    //! this activation is active in a strict time window
+    virtual bool isActive(const SCALAR t) override { return (t >= t_on_ && t < t_off_); }
+    //! within this time-window, the activation is saturated
     virtual SCALAR computeActivation(const SCALAR t) override { return SCALAR(1.0); }
     virtual void printInfo() override
     {
-        std::cout << "Cost Function active between time: " << t_on_ << "s and time: " << t_off_ << "s" << std::endl;
+        std::cout << "Cost Function active between values: " << t_on_ << "s and: " << t_off_ << "s" << std::endl;
     }
 
 private:
+    //! time when to switch on
     SCALAR t_on_;
+    //! time when to switch off
     SCALAR t_off_;
 };
 
-}  // tpl
+}  // namespace tpl
 
 typedef tpl::SingleActivation<double> SingleActivation;
-}
-}
+}  // namespace core
+}  // namespace ct

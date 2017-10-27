@@ -15,6 +15,11 @@ detailed information). To automaticallyformat the code according to ct-style, ju
 and press *Ctrl+Shift+f*.
 
 
+Example command for running clang-format or clang-tidy:
+
+$ catkin build --no-deps <package_name> -v --make-args clang-tidy 
+
+
 \section Explicit Template Instantiation
 CT relies on explicit template instantiation. While CT handles things slightly different, please see
 [this post](https://anteru.net/blog/2008/11/19/318/index.html) to learn more about the subject. The

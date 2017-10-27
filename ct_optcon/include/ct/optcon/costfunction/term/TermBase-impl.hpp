@@ -1,28 +1,8 @@
-/***********************************************************************************
-Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
-Farbod Farshidian. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice,
-      this list of conditions and the following disclaimer in the documentation
-      and/or other materials provided with the distribution.
- * Neither the name of ETH ZURICH nor the names of its contributors may be used
-      to endorse or promote products derived from this software without specific
-      prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- ***************************************************************************************/
+/**********************************************************************************************************************
+This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
+Licensed under Apache2 license (see LICENSE file in main directory)
+ **********************************************************************************************************************/
 
 #pragma once
 
@@ -33,7 +13,7 @@ namespace optcon {
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermBase(std::string name)
     : name_(name),
-      c_i_(std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>>(new tpl::TimeActivationBase<SCALAR_EVAL>()))
+      c_i_(std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>>(new ct::core::tpl::ActivationBase<SCALAR_EVAL>()))
 {
 }
 
@@ -70,7 +50,7 @@ ct::core::ADCGScalar TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::eval
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 bool TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::isActiveAtTime(SCALAR_EVAL t)
 {
-    return c_i_->isActiveAtTime(t);
+    return c_i_->isActive(t);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
@@ -154,7 +134,7 @@ void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(const
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::setTimeActivation(
-    std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> c_i,
+    std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>> c_i,
     bool verbose)
 {
     c_i_ = c_i;
@@ -174,8 +154,8 @@ void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadTimeActivation(c
     {
         std::string activationKind = pt.get<std::string>(termName + ".time_activation" + ".kind");
         boost::algorithm::to_lower(activationKind);
-        std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> c_i;
-        CT_LOADABLE_TIME_ACTIVATIONS(SCALAR_EVAL);
+        std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>> c_i;
+        CT_LOADABLE_ACTIVATIONS(SCALAR_EVAL);
         c_i->loadConfigFile(filename, termName + ".time_activation", verbose);
         if (!c_i)
         {

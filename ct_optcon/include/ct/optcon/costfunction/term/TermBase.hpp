@@ -1,36 +1,15 @@
-/***********************************************************************************
-Copyright (c) 2017, Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo,
-Farbod Farshidian. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
-      this list of conditions and the following disclaimer in the documentation
-      and/or other materials provided with the distribution.
-    * Neither the name of ETH ZURICH nor the names of its contributors may be used
-      to endorse or promote products derived from this software without specific
-      prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************************************************************************************/
+/**********************************************************************************************************************
+This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
+Licensed under Apache2 license (see LICENSE file in main directory)
+**********************************************************************************************************************/
 
 
 #pragma once
 
 #include <boost/algorithm/string.hpp>
 
-#include "timeActivations/TimeActivationBase.hpp"
-#include "timeActivations/TimeActivations.h"
+#include <ct/core/common/activations/Activations.h>
 
 namespace ct {
 namespace optcon {
@@ -52,8 +31,10 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, t
 class TermBase
 {
 protected:
+	//! a name identifier for this term
     std::string name_;
-    std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> c_i_;
+    //! time activations for this term
+    std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>> c_i_;
 
 public:
     typedef Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM> state_matrix_t;
@@ -135,34 +116,43 @@ public:
 	 */
     virtual bool isActiveAtTime(SCALAR_EVAL t);
 
+    //! compute time activation
     SCALAR_EVAL computeActivation(SCALAR_EVAL t);
 
+    //! compute derivative of this cost term w.r.t. the state
     virtual core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(
         const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
+    //! compute second order derivative of this cost term w.r.t. the state
     virtual state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
+    //! compute derivative of this cost term w.r.t. the control input
     virtual core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(
         const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
+    //! compute second order derivative of this cost term w.r.t. the control input
     virtual control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
+    //! compute the cross-term derivative (state-control) of this cost function term
     virtual control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
+    //! load this term from a configuration file
     virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false);
 
-    void setTimeActivation(std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> c_i, bool verbose = false);
+    //! set the time activation functions for this term
+    void setTimeActivation(std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>> c_i, bool verbose = false);
 
+    //! load the time activation functions for this term from file
     void loadTimeActivation(const std::string& filename, const std::string& termName, bool verbose = false);
 
     /**
@@ -177,8 +167,10 @@ public:
 	 */
     void setName(const std::string& termName);
 
+    //! updates the reference state for this term
     virtual void updateReferenceState(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState);
 
+    //! retrieve this term's current reference state
     virtual Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> getReferenceState() const;
 };
 
