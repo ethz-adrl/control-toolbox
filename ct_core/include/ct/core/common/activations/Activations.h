@@ -10,9 +10,11 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "../activations/PeriodicActivation.hpp"
 #include "../activations/RBFGaussActivation.h"
 #include "../activations/SingleActivation.hpp"
+#include "../activations/BarrierActivation.hpp"
 #include "../activations/utilities/ActivationLoadMacros.h"
 
 #define CT_LOADABLE_ACTIVATIONS(SCALAR)                            \
     CT_LOADABLE_ACTIVATION(SCALAR, SingleActivation, "single")     \
     CT_LOADABLE_ACTIVATION(SCALAR, PeriodicActivation, "periodic") \
-    CT_LOADABLE_ACTIVATION(SCALAR, RBFGaussActivation, "rbf")
+    CT_LOADABLE_ACTIVATION(SCALAR, RBFGaussActivation, "rbf")      \
+	CT_LOADABLE_ACTIVATION(SCALAR, BarrierActivation, "barrier")

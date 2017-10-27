@@ -27,6 +27,6 @@ struct TraitSelector<CppAD::AD<CppAD::cg::CG<double>>>
 };
 
 
-}  //namespace tpl
-}  // namespace rbd
-}  // namespace iit
+}  // namespace tpl
+}  // namespace core
+}  // namespace ct
