@@ -17,6 +17,7 @@ BRANCH=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)
 # go out of ct
 cd ../.. || exit 1;
 
+rm -rf adrlab.bitbucket.io
 git clone git@bitbucket.org:adrlab/adrlab.bitbucket.io.git || exit 1;
 
 cd adrlab.bitbucket.io/ct
