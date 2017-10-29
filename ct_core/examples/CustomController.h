@@ -13,14 +13,14 @@ Licensed under Apache2 license (see LICENSE file in main directory)
  *
  * \example CustomController.h
  */
-// our controller class that takes a 2-dimensional state and outputs a 1-dimensional control action
+//! an example controller class that takes a 2-dimensional state and outputs a 1-dimensional control action
 class CustomController : public ct::core::Controller<2, 1>
 {
 public:
     static const size_t state_dim = 2;    // two states
     static const size_t control_dim = 1;  // one control action
 
-    // default constructor
+    //! default constructor
     CustomController(const ct::core::ControlVector<control_dim>& uff,  // feedforward control
         const double& kp,                                              // P gain
         const double& kd                                               // D gain
@@ -29,17 +29,17 @@ public:
     {
     }
 
-    // destructor
+    //! destructor
     ~CustomController() {}
-    // copy constructor
+    //! copy constructor
     CustomController(const CustomController& other) : uff_(other.uff_), kp_(other.kp_), kd_(other.kd_) {}
-    // clone method, needs to be implemented, overrides ct::core::Controller::clone()
+    //! clone method, needs to be implemented, overrides ct::core::Controller::clone()
     CustomController* clone() const override
     {
         return new CustomController(*this);  // calls copy constructor
     }
 
-    // override the compute control method
+    //! override the compute control method with a custom control law
     void computeControl(const ct::core::StateVector<state_dim>& state,
         const double& t,
         ct::core::ControlVector<control_dim>& controlAction) override
@@ -49,7 +49,7 @@ public:
     }
 
 private:
-    ct::core::ControlVector<control_dim> uff_;  // feedforward control action
-    double kp_;                                 // P gain
-    double kd_;                                 // D gain
+    ct::core::ControlVector<control_dim> uff_;  //! feedforward control action
+    double kp_;                                 //! P gain
+    double kd_;                                 //! D gain
 };
