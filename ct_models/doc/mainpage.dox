@@ -7,14 +7,6 @@ The Models Module contains a collection of reference models.
 
 \section ct_models_install Installation and Usage
 CT Models is part of the Control Toolbox suite. See <a href="../../../ct_core/doc/html/index.html"> CT main documentation</a> for installation and usage instructions.
-
-\section ct_models_acknowledgement Acknowledgement
-Project Lead and Maintanance: 
- - Michael Neunert, neunertm ( at ) gmail (dot) com
- - Markus Giftthaler, mgiftthaler (at) ethz (dot) ch
-
-Contributors
- - Markus Stäuble
  
 */
 
