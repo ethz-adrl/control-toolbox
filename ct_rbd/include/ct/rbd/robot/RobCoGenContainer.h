@@ -166,7 +166,22 @@ public:
     Position3Tpl getEEPositionInBase(size_t eeId,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
-        return Position3Tpl(getHomogeneousTransformBaseEEById(eeId, jointPosition).template topRightCorner<3, 1>());
+    	tpl::RigidBodyPose pose = getEEPoseInBase(eeId, jointPosition);
+    	return Position3Tpl(pose.position());
+    }
+
+    /*!
+     * \brief Get the endeffector pose expressed in the base frame
+     *
+	 * @param eeId endeffector ID
+	 * @param jointPosition current joint position
+	 * @return position of the endeffector expressed in the base frame
+     */
+    tpl::RigidBodyPose getEEPoseInBase(size_t eeId, const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+    {
+    	// construct the rigid body pose from a homogeneous transformation matrix
+    	tpl::RigidBodyPose pose = tpl::RigidBodyPose(getHomogeneousTransformBaseEEById(eeId, jointPosition));
+    	return pose;
     }
 
 

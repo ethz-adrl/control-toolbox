@@ -135,6 +135,12 @@ public:
         return rbdState.base().pose().rotateBaseToInertia(eeVelocityBase);
     }
 
+    /*!
+     * Computes the forward kinematics for the end-effector position and expresses the end-effector position in robot base coordinates.
+     * @param eeID unique identifier of the end-effector in question
+     * @param jointPosition current robot joint positions
+     * @return the current end-effector position in base coordinates
+     */
     Position3Tpl getEEPositionInBase(size_t eeID,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
@@ -142,6 +148,13 @@ public:
     }
 
 
+    /*!
+     * Computes the forward kinematics for the end-effector position and expresses the end-effector position in world coordinates
+     * @param eeID unique identifier of the end-effector in question
+     * @param basePose current robot base pose
+     * @param jointPosition current robot joint positions
+     * @return the current end-effector position in world coordinates
+     */
     Position3Tpl getEEPositionInWorld(size_t eeID,
         const tpl::RigidBodyPose<SCALAR>& basePose,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
@@ -153,7 +166,7 @@ public:
         Position3Tpl W_x_EE = basePose.template rotateBaseToInertia(B_x_EE);
 
         // vector from origin to endeffector = vector from origin to base + vector from base to endeffector
-        return  basePose.position()  +  W_x_EE;
+        return basePose.position() + W_x_EE;
     }
 
     /**
