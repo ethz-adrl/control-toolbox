@@ -28,17 +28,22 @@ class RigidBodyPose
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    /*!
+	 * \brief the orientation can either be stored as EulerAngles or as quaternion.
+	 * \todo reduce to quaternion only
+	 */
     enum STORAGE_TYPE
     {
         QUAT = 0,
         EULER = 1
     };
 
-    typedef kindr::HomogeneousTransformationPosition3RotationQuaternion<SCALAR> HomogeneousTransform;
-    typedef kindr::Position<SCALAR, 3> Position3Tpl;
-    typedef Eigen::Matrix<SCALAR, 3, 1> Vector3Tpl;
+    using HomogeneousTransform = kindr::HomogeneousTransformationPosition3RotationQuaternion<SCALAR>;
+    using Matrix4Tpl = Eigen::Matrix<SCALAR, 4, 4>;
+    using Position3Tpl = kindr::Position<SCALAR, 3>;
+    using Vector3Tpl = Eigen::Matrix<SCALAR, 3, 1>;
 
-
+    //! default construct a RigidBodyPose
     RigidBodyPose(STORAGE_TYPE storage = EULER)
         : storage_(storage),
           quat_(SCALAR(1.0), SCALAR(0.0), SCALAR(0.0), SCALAR(0.0)),  // for CppAD cg compatibility
@@ -46,6 +51,7 @@ public:
     {
     }
 
+    //! construct a RigidBodyPose from Euler Angles and a position vector
     RigidBodyPose(const kindr::EulerAnglesXyz<SCALAR>& orientationEulerXyz,
         const Position3Tpl& position,
         STORAGE_TYPE storage = EULER)
@@ -57,6 +63,7 @@ public:
         setFromEulerAnglesXyz(orientationEulerXyz);
     }
 
+    //! construct a RigidBodyPose from a rotation quaternion and a position vector
     RigidBodyPose(const kindr::RotationQuaternion<SCALAR>& orientationQuat,
         const Position3Tpl& position,
         STORAGE_TYPE storage = EULER)
@@ -68,24 +75,35 @@ public:
         setFromRotationQuaternion(orientationQuat);
     }
 
-    RigidBodyPose(const RigidBodyPose<SCALAR>& arg):
-    	storage_(arg.storage_),
-		quat_(arg.quat_),
-		euler_(arg.euler_),
-		position_(arg.position_)
-    {}
+    //! construct a RigidBodyPose from a homogeneous transformation matrix
+    RigidBodyPose(const Matrix4Tpl& homTransform, STORAGE_TYPE storage = EULER)
+        : storage_(storage),
+          quat_(SCALAR(1.0), SCALAR(0.0), SCALAR(0.0), SCALAR(0.0)),  // for CppAD cg compatibility
+          euler_(SCALAR(0.0), SCALAR(0.0), SCALAR(0.0)),
+          position_(homTransform.template topRightCorner<3, 1>())
+    {
+        kindr::RotationMatrix<SCALAR> rotMat(homTransform.template topLeftCorner<3, 3>());
+        setFromRotationMatrix(rotMat);
+    }
+
+    //! copy-constructor for a RigidBodyPose
+    RigidBodyPose(const RigidBodyPose<SCALAR>& arg)
+        : storage_(arg.storage_), quat_(arg.quat_), euler_(arg.euler_), position_(arg.position_)
+    {
+    }
 
     //RigidBodyPose(const Eigen::Vector3d& orientationEulerXyz, const Eigen::Vector3d& position, STORAGE_TYPE storage = QUAT);
     //RigidBodyPose(const Eigen::Quaterniond& orientationQuat, const Eigen::Vector3d& position, STORAGE_TYPE storage = QUAT);
 
+    //! destructor for a rigid body pose
     ~RigidBodyPose(){};
 
-//! @todo why do we need this operator overloaded? It obviously skips a few important members
-//    inline void operator=(const RigidBodyPose& rhs)
-//    {
-//        setFromRotationQuaternion(rhs.getRotationQuaternion());
-//        position() = rhs.position();
-//    }
+    //! @todo why do we need this operator overloaded? It obviously skips a few important members
+    //    inline void operator=(const RigidBodyPose& rhs)
+    //    {
+    //        setFromRotationQuaternion(rhs.getRotationQuaternion());
+    //        position() = rhs.position();
+    //    }
 
     inline bool isNear(const RigidBodyPose& rhs, const double& tol = 1e-10) const
     {
@@ -140,7 +158,7 @@ public:
     }
 
     /**
-	 * \brief This method sets the Euler angles rotation (X,Y,Z / roll,pitch,yaw) from a kinder type.
+	 * \brief This method sets the Euler angles rotation (X,Y,Z / roll,pitch,yaw) from a kindr type.
 	 */
     void setFromEulerAnglesXyz(const kindr::EulerAnglesXyz<SCALAR>& eulerAngles)
     {
@@ -155,7 +173,7 @@ public:
     }
 
     /**
-	 * \brief This method sets the Euler angles rotation (X,Y,Z / roll,pitch,yaw) from a kinder type.
+	 * \brief This method sets the Euler angles rotation (X,Y,Z / roll,pitch,yaw) from a kindr type.
 	 */
     void setFromEulerAnglesXyz(const Vector3Tpl& eulerAngles)
     {
@@ -170,7 +188,7 @@ public:
     }
 
     /**
-	 * \brief This method sets the quaternion angles rotation (X,Y,Z / roll,pitch,yaw) from a kinder type.
+	 * \brief This method sets the quaternion angles rotation (X,Y,Z / roll,pitch,yaw) from a kindr quaternion type.
 	 */
     void setFromRotationQuaternion(const kindr::RotationQuaternion<SCALAR>& quat)
     {
@@ -185,7 +203,7 @@ public:
     }
 
     /**
-	 * \brief This method sets the quaternion angles rotation (X,Y,Z / roll,pitch,yaw) from a kinder type.
+	 * \brief This method sets the quaternion angles rotation (X,Y,Z / roll,pitch,yaw) from an Eigen quaternion
 	 */
     void setFromRotationQuaternion(const Eigen::Quaterniond& quat)
     {
@@ -196,6 +214,22 @@ public:
         else
         {
             quat_ = kindr::RotationQuaternion<SCALAR>(quat);
+        }
+    }
+
+
+    /**
+     * \brief This method sets the quaternion angles rotation from a kindr rotation matrix
+     */
+    void setfromRotationMatrix(const kindr::RotationMatrix<SCALAR>& rotMat)
+    {
+        if (storedAsEuler())
+        {
+            euler_ = kindr::RotationQuaternion<SCALAR>(rotMat);
+        }
+        else
+        {
+            quat_ = kindr::RotationQuaternion<SCALAR>(rotMat);
         }
     }
 
@@ -308,15 +342,14 @@ public:
 
     STORAGE_TYPE getStorageType() const { return storage_; }
 private:
-
     //! would we have a non-const accessor here?
-//    bool storedAsEuler()
-//    {
-//        if (storage_ == EULER)
-//            return true;
-//        else
-//            return false;
-//    }
+    //    bool storedAsEuler()
+    //    {
+    //        if (storage_ == EULER)
+    //            return true;
+    //        else
+    //            return false;
+    //    }
 
     bool storedAsEuler() const
     {
