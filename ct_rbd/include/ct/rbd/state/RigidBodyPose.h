@@ -217,11 +217,10 @@ public:
         }
     }
 
-
     /**
      * \brief This method sets the quaternion angles rotation from a kindr rotation matrix
      */
-    void setfromRotationMatrix(const kindr::RotationMatrix<SCALAR>& rotMat)
+    void setFromRotationMatrix(const kindr::RotationMatrix<SCALAR>& rotMat)
     {
         if (storedAsEuler())
         {
@@ -236,10 +235,12 @@ public:
     /**
 	 * \brief This method returns the position of the Base frame in the inertia frame.
 	 */
+
     const Position3Tpl& position() const { return position_; };
     /**
 	 * \brief This method returns the position of the Base frame in the inertia frame.
 	 */
+
     Position3Tpl& position() { return position_; };
     /**
 	 * \brief This methods rotates a 3D vector expressed in Base frame to Inertia Frame.
@@ -247,6 +248,9 @@ public:
     template <class Vector3s>
     Vector3s rotateBaseToInertia(const Vector3s& vector) const
     {
+    	Vector3s out;
+
+    	/*
         if (storedAsEuler())
         {
             Eigen::AngleAxis<SCALAR> rollAngle(euler_.toImplementation()(0), Eigen::Matrix<SCALAR, 3, 1>::UnitX());
@@ -255,21 +259,36 @@ public:
             Eigen::Quaternion<SCALAR> q = rollAngle * pitchAngle * yawAngle;
             Eigen::Matrix<SCALAR, 3, 3> rotationMatrix = q.matrix();
 
-            // incredibly ungly hack to get along with different types
+            // incredibly ugly hack to get along with different types
             Eigen::Matrix<SCALAR, 3, 1> vec_temp;
             vec_temp << vector(0), vector(1), vector(2);
 
             Eigen::Matrix<SCALAR, 3, 1> result = rotationMatrix * vec_temp;
-            return (Vector3s)result;
+            out = (Vector3s)result;
 
             //            return euler_.rotate(vector); // temporarily replaced -- the kindr rotate() method is not auto-diffable
         }
         else
         {
-            return quat_.rotate(vector);
+        	out = quat_.rotate(vector);
         }
+*/
+        return out;
     };
 
+
+    //! rotate
+    kindr::RotationQuaternion<SCALAR> rotateBaseToInertiaQuaternion(const kindr::RotationQuaternion<SCALAR>& q) const
+    {
+    	kindr::RotationQuaternion<SCALAR> result;
+
+//        if (storedAsEuler())
+//        	result = kindr::RotationQuaternion<SCALAR>(euler_) * q;
+//        else
+//            result = quat_ * q;
+
+        return result;
+    }
 
     /**
 	 * \brief This methods rotates a 3D vector expressed in Inertia frame to Base Frame.
