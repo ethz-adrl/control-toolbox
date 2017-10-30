@@ -32,7 +32,7 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = ct_core
+PROJECT_NAME           = ct
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
@@ -44,7 +44,7 @@ PROJECT_NUMBER         = v2.0
 # for a project that appears at the top of each page and should give viewer a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "Control Toolbox - Core Module"
+PROJECT_BRIEF          = "Control Toolbox"
 
 # With the PROJECT_LOGO tag one can specify an logo or icon that is included in
 # the documentation. The maximum height of the logo should not exceed 55 pixels
@@ -341,7 +341,7 @@ IDL_PROPERTY_SUPPORT   = YES
 # all members of a group must be documented explicitly.
 # The default value is: NO.
 
-DISTRIBUTE_GROUP_DOC   = NO
+DISTRIBUTE_GROUP_DOC   = YES
 
 # Set the SUBGROUPING tag to YES to allow class member groups of the same type
 # (for instance a group of public functions) to be put as a subgroup of that
@@ -726,7 +726,7 @@ WARN_IF_DOC_ERROR      = YES
 # documentation, but not about the absence of documentation.
 # The default value is: NO.
 
-WARN_NO_PARAMDOC       = NO
+WARN_NO_PARAMDOC       = YES
 
 # The WARN_FORMAT tag determines the format of the warning messages that doxygen
 # can produce. The string should contain the $file, $line, and $text tags, which
@@ -754,7 +754,19 @@ WARN_LOGFILE           =
 # spaces.
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = ../ ./
+# CT DEV: Need to specify explicitely to ensure ordering!
+# https://stackoverflow.com/questions/18001897/how-do-you-order-doxygen-custom-pages
+
+INPUT                  = mainpage.dox \
+						installation.dox \
+						getting_started.dox \
+						core_tutorial.dox \
+						optcon_tutorial.dox \
+						performance.dox \
+						application_examples.dox \
+						changelog.dox \
+						developer_info.dox
+						
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -807,8 +819,8 @@ EXCLUDE_SYMLINKS       = NO
 
 EXCLUDE_PATTERNS       = */external/cppad/* \
                          */src/codegen/* \
-                         */templates/* \
-                         */eigenIntegration.h 
+                         */generated/jacobians* \
+                         */generated/transforms*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the
@@ -825,16 +837,22 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = ../test \
-						 ../examples
+EXAMPLE_PATH           = ../examples \
+						 ../../ct_core/examples \
+						 ../../ct_core/test \
+						 ../../ct_optcon/examples \
+						 ../../ct_optcon/test \
+						 ../../ct_rbd/examples \
+						 ../../ct_rbd/test \
+						 ../../ct_models/examples \
+						 ../../ct_models/test
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
 # *.h) to filter out the source-files in the directories. If left blank all
 # files are included.
 
-EXAMPLE_PATTERNS       = *.cpp \
-						 *.h
+EXAMPLE_PATTERNS       = 
 
 # If the EXAMPLE_RECURSIVE tag is set to YES then subdirectories will be
 # searched for input files to be used with the \include or \dontinclude commands
@@ -1105,7 +1123,7 @@ HTML_EXTRA_FILES       =
 # Minimum value: 0, maximum value: 359, default value: 220.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_COLORSTYLE_HUE    = 1
+HTML_COLORSTYLE_HUE    = 220
 
 # The HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of the colors
 # in the HTML output. For a value of 0 the output will use grayscales only. A
@@ -1557,7 +1575,7 @@ EXTRA_SEARCH_MAPPINGS  =
 # If the GENERATE_LATEX tag is set to YES doxygen will generate LaTeX output.
 # The default value is: YES.
 
-GENERATE_LATEX         = NO
+GENERATE_LATEX         = YES
 
 # The LATEX_OUTPUT tag is used to specify where the LaTeX docs will be put. If a
 # relative path is entered the value of OUTPUT_DIRECTORY will be put in front of
@@ -1685,7 +1703,7 @@ LATEX_HIDE_INDICES     = NO
 # The default value is: NO.
 # This tag requires that the tag GENERATE_LATEX is set to YES.
 
-LATEX_SOURCE_CODE      = NO
+LATEX_SOURCE_CODE      = YES
 
 # The LATEX_BIB_STYLE tag can be used to specify the style to use for the
 # bibliography, e.g. plainnat, or ieeetr. See
@@ -1984,15 +2002,17 @@ SKIP_FUNCTION_MACROS   = YES
 # Note: Each tag file must have a unique name (where the name does NOT include
 # the path). If a tag file is not located in the directory in which doxygen is
 # run, you must also specify the path to the tagfile here.
-#TAGFILES               = tags/ct_optcon.tag=../../../ct_optcon/doc/html \
-#                         tags/ct_rbd.tag=../../../ct_rbd/doc/html \
-#                         tags/ct_models.tag=../../../ct_models/doc/html
+
+TAGFILES               = tags/ct_core.tag=../../../ct_core/doc/html \
+					 	 tags/ct_optcon.tag=../../../ct_optcon/doc/html \
+					 	 tags/ct_rbd.tag=../../../ct_rbd/doc/html \
+					 	 tags/ct_models.tag=../../../ct_models/doc/html
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create a
 # tag file that is based on the input files it reads. See section "Linking to
 # external documentation" for more information about the usage of tag files.
 
-GENERATE_TAGFILE       = ../../ct_doc/doc/tags/ct_core.tag
+GENERATE_TAGFILE       = 
 
 # If the ALLEXTERNALS tag is set to YES all external class will be listed in the
 # class index. If set to NO only the inherited external classes will be listed.
