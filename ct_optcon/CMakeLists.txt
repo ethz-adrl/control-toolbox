@@ -264,10 +264,10 @@ catkin_add_gtest(NonlinearSystemTest test/nloc/NonlinearSystemTest.cpp)
 target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 #todo make prespec test
 
-add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
-target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-add_executable(SymplecticTestPrespec test/nloc/SymplecticTestPrespec.cpp)
-target_link_libraries(SymplecticTestPrespec ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
+#add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
+#target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+#add_executable(SymplecticTestPrespec test/nloc/SymplecticTestPrespec.cpp)
+#target_link_libraries(SymplecticTestPrespec ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
 
 catkin_add_gtest(constraint_comparison test/constraint/ConstraintComparison.cpp)
 target_link_libraries(constraint_comparison ${catkin_LIBRARIES})

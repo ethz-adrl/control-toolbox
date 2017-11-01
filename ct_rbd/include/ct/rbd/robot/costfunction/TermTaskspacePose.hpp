@@ -124,18 +124,15 @@ private:
 
         // compute the current end-effector position
         tpl::RigidBodyPose<SC> ee_pose =
-            kinematics_.getEEPoseInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions());
+            kinematics_.getEEPoseInBase(eeInd_, /*rbdState.basePose(), */ rbdState.jointPositions());
 
-        // todo do we have a method getEEPoseInWorld? and if yes, can it return both quaternions and euler angles?
-        // todo does the rigid body pose naturally implement a difference measure? -> might want to employ that
+        // todo distance measure for rbdpose (euklidean distance and difference quat)
 
         // compute the position error
-//        Eigen::Matrix<SC, 3, 1> xDiff = ee_pos - pos_ref_.template cast<SC>();
-//
-//        // compute the cost based on the position error
-//        SC cost = (xDiff.transpose() * QTaskSpace_.template cast<SC>() * xDiff)(0, 0);
+        Eigen::Matrix<SC, 3, 1> xDiff = ee_pose.position().toImplementation() - pos_ref_.template cast<SC>();
 
-        SC cost;
+        // compute the cost based on the position error
+        SC cost = (xDiff.transpose() * QTaskSpace_.template cast<SC>() * xDiff)(0, 0);
 
         return cost;
     }

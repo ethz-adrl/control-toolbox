@@ -167,10 +167,9 @@ public:
 	 */
     Position3Tpl getEEPositionInBase(size_t eeId,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition,
-		RigidBodyPoseTpl::STORAGE_TYPE storage = RigidBodyPoseTpl::EULER)
+        typename RigidBodyPoseTpl::STORAGE_TYPE storage = RigidBodyPoseTpl::STORAGE_TYPE::EULER)
     {
-    	RigidBodyPoseTpl pose = getEEPoseInBase(eeId, jointPosition, storage);
-    	return Position3Tpl(pose.position());
+        return Position3Tpl(getHomogeneousTransformBaseEEById(eeId, jointPosition).template topRightCorner<3,1>());
     }
 
     /*!
@@ -180,11 +179,13 @@ public:
 	 * @param jointPosition current joint position
 	 * @return position of the endeffector expressed in the base frame
      */
-    RigidBodyPoseTpl getEEPoseInBase(size_t eeId, const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition, RigidBodyPoseTpl::STORAGE_TYPE storage = RigidBodyPoseTpl::EULER)
+    RigidBodyPoseTpl getEEPoseInBase(size_t eeId,
+        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition,
+        typename RigidBodyPoseTpl::STORAGE_TYPE storage = RigidBodyPoseTpl::EULER)
     {
-    	// construct the rigid body pose from a homogeneous transformation matrix
-    	RigidBodyPoseTpl pose (getHomogeneousTransformBaseEEById(eeId, jointPosition), storage);
-    	return pose;
+        // construct the rigid body pose from a homogeneous transformation matrix
+        RigidBodyPoseTpl pose(getHomogeneousTransformBaseEEById(eeId, jointPosition), storage);
+        return pose;
     }
 
 

@@ -209,7 +209,7 @@ public:
     {
         if (storedAsEuler())
         {
-            euler_ = kindr::RotationQuaternion<SCALAR>(quat);
+            euler_ = kindr::EulerAnglesXyz<SCALAR>(quat);
         }
         else
         {
@@ -224,7 +224,7 @@ public:
     {
         if (storedAsEuler())
         {
-            euler_ = kindr::RotationQuaternion<SCALAR>(rotMat);
+            euler_ = kindr::EulerAnglesXyz<SCALAR>(rotMat);
         }
         else
         {

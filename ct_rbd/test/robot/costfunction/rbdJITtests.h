@@ -27,7 +27,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include <gtest/gtest.h>
-#include "../../../include/ct/rbd/robot/costfunction/TermTaskspacePosition.hpp"
 #include "../../models/testhyq/RobCoGenTestHyQ.h"
 
 
@@ -44,12 +43,17 @@ using size_type = ct::core::ADCGScalar;
 using KinTpl_t = TestHyQ::tpl::Kinematics<size_type>;
 KinTpl_t kynTpl;
 size_t eeId = 1;
+
 const Eigen::Matrix<double, 3, 3> Q = Eigen::Matrix<double, 3, 3>::Random();
+
 std::shared_ptr<TermTaskspacePosition<KinTpl_t, true, hyqStateDim, hyqControlDim>> termTaskspace(
     new TermTaskspacePosition<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId, Q));
 
+std::shared_ptr<TermTaskspacePose<KinTpl_t, true, hyqStateDim, hyqControlDim>> termTaskspacePose(
+    new TermTaskspacePose<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId, Q));
 
-//! test the TaskSpacePosition term for JIT-compatibility
+
+//! test TermTaskSpacePosition term for JIT-compatibility
 template <typename SCALAR>
 Eigen::Matrix<SCALAR, 1, 1> testFunctionTaskSpacePosition(
     const Eigen::Matrix<SCALAR, hyqStateDim + hyqControlDim, 1> xu)
@@ -60,8 +64,7 @@ Eigen::Matrix<SCALAR, 1, 1> testFunctionTaskSpacePosition(
     cost(0, 0) = termTaskspace->evaluateCppadCg(xu.template head<hyqStateDim>(), xu.template tail<hyqControlDim>(), t);
     return cost;
 }
-
-TEST(RBD_JIT_Tests, TaskspaceCostFunctionTest)
+TEST(RBD_JIT_Tests, TaskspacePositionCostFunctionTest)
 {
     using derivativesCppadJIT = DerivativesCppadJIT<hyqStateDim + hyqControlDim, 1>;
 
@@ -80,6 +83,41 @@ TEST(RBD_JIT_Tests, TaskspaceCostFunctionTest)
     } catch (std::exception& e)
     {
         std::cout << "testTaskSpacePositionTerm failed!" << std::endl;
+        ASSERT_TRUE(false);
+    }
+}
+
+
+//! test TermTaskSpacePose term for JIT-compatibility
+template <typename SCALAR>
+Eigen::Matrix<SCALAR, 1, 1> testFunctionTaskSpacePose(
+    const Eigen::Matrix<SCALAR, hyqStateDim + hyqControlDim, 1> xu)
+{
+    // evaluate the task-space position term
+    Eigen::Matrix<SCALAR, 1, 1> cost;
+    SCALAR t(0.0);
+    cost(0, 0) = termTaskspacePose->evaluateCppadCg(xu.template head<hyqStateDim>(), xu.template tail<hyqControlDim>(), t);
+    return cost;
+}
+TEST(RBD_JIT_Tests, TaskspacePoseCostFunctionTest)
+{
+    using derivativesCppadJIT = DerivativesCppadJIT<hyqStateDim + hyqControlDim, 1>;
+
+    typename derivativesCppadJIT::FUN_TYPE_CG f = testFunctionTaskSpacePose<ct::core::ADCGScalar>;
+
+    derivativesCppadJIT jacCG(f);
+
+    DerivativesCppadSettings settings;
+    settings.createJacobian_ = true;
+
+    try
+    {
+        // compile the Jacobian
+        jacCG.compileJIT(settings, "taskSpaceCfTestLib", verbose);
+        std::cout << "testTaskSpacePoseTerm compiled!" << std::endl;
+    } catch (std::exception& e)
+    {
+        std::cout << "testTaskSpacePoseTerm failed!" << std::endl;
         ASSERT_TRUE(false);
     }
 }
@@ -105,7 +143,6 @@ Eigen::Matrix<SCALAR, 1, 1> testFunctionRBDPose(const Eigen::Matrix<SCALAR, 3 + 
 
     return cost;
 }
-
 TEST(RBD_JIT_Tests, RigidBodyPoseTest)
 {
     using derivativesCppadJIT = DerivativesCppadJIT<3 + 3, 1>;
@@ -160,7 +197,6 @@ Eigen::Matrix<SCALAR, 1, 1> testFunctionRigidBodyState(const Eigen::Matrix<SCALA
 
     return cost;
 }
-
 TEST(RBD_JIT_Tests, RigidBodyStateTest)
 {
     using derivativesCppadJIT = DerivativesCppadJIT<12, 1>;
@@ -217,7 +253,6 @@ Eigen::Matrix<SCALAR, 1, 1> testFunctionRBDState(const Eigen::Matrix<SCALAR, hyq
 
     return cost;
 }
-
 TEST(RBD_JIT_Tests, RBDStateTest)
 {
     using derivativesCppadJIT = DerivativesCppadJIT<hyqStateDim, 1>;

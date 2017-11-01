@@ -25,7 +25,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************************/
 
 
-#include <ct/optcon/optcon.h>
+#include <ct/rbd/rbd.h>
 #include "rbdJITtests.h"
 
 

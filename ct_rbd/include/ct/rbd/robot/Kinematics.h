@@ -147,7 +147,7 @@ public:
     Position3Tpl getEEPositionInBase(size_t eeID,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
-        return robcogen().getEEPositionInBase(eeID, jointPosition);
+        return (Position3Tpl) robcogen().getEEPositionInBase(eeID, jointPosition);
     }
 
 
