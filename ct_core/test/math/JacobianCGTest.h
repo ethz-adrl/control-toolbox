@@ -67,6 +67,45 @@ Eigen::Matrix<SCALAR, inDim, inDim> hessianCheck(const Eigen::Matrix<SCALAR, inD
 }
 
 
+
+/*!
+ * Test evaluation of the forward-zero function, which should be possible to evaluate in both uncompiled and compiled state
+ */
+TEST(JacobianCGTest, DISABLED_ForwardZeroTest)
+{
+    try
+    {
+        // create a function handle (also works for class methods, lambdas, function pointers, ...)
+        typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
+
+        // initialize the Auto-Diff Codegen Jacobian
+        derivativesCppadJIT jacCG(f);
+
+        DerivativesCppadSettings settings;
+        settings.createForwardZero_ = true;
+        settings.createJacobian_ = true;
+
+        // create a random double vector
+        Eigen::VectorXd someVec (inDim);
+        someVec.setRandom();
+
+        // test evaluation of forward zero before compilation
+        Eigen::VectorXd vecOut = jacCG.forwardZero(someVec); // << -- fails here!
+
+        // compile the Jacobian
+        jacCG.compileJIT(settings, "forwardZeroTestLib");
+
+        // test evaluation of forward zero after compilation
+        Eigen::VectorXd vecOut2 = jacCG.forwardZero(someVec);
+
+    } catch (std::exception& e)
+    {
+        std::cout << "Exception thrown: " << e.what() << std::endl;
+        ASSERT_TRUE(false);
+    }
+}
+
+
 /*!
  * Test for just-in-time compilation of the Jacobian and subsequent evaluation of it
  */
