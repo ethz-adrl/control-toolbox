@@ -40,6 +40,7 @@ public:
 
     using HomogeneousTransform = kindr::HomogeneousTransformationPosition3RotationQuaternion<SCALAR>;
     using Matrix4Tpl = Eigen::Matrix<SCALAR, 4, 4>;
+    using Matrix3Tpl = Eigen::Matrix<SCALAR, 3, 3>;
     using Position3Tpl = kindr::Position<SCALAR, 3>;
     using Vector3Tpl = Eigen::Matrix<SCALAR, 3, 1>;
 
@@ -149,7 +150,14 @@ public:
     {
         if (storedAsEuler())
         {
-            return kindr::RotationMatrix<SCALAR>(euler_);
+            Eigen::AngleAxis<SCALAR> rollAngle(euler_.toImplementation()(0), Eigen::Matrix<SCALAR, 3, 1>::UnitX());
+            Eigen::AngleAxis<SCALAR> pitchAngle(euler_.toImplementation()(1), Eigen::Matrix<SCALAR, 3, 1>::UnitY());
+            Eigen::AngleAxis<SCALAR> yawAngle(euler_.toImplementation()(2), Eigen::Matrix<SCALAR, 3, 1>::UnitZ());
+            Eigen::Quaternion<SCALAR> q = rollAngle * pitchAngle * yawAngle;
+//            Eigen::Matrix<SCALAR, 3, 3> rotationMatrix = q.matrix();
+            return kindr::RotationMatrix<SCALAR> (q.matrix());
+
+            //            return kindr::RotationMatrix<SCALAR>(euler_); // this is not JIT compatible as it uses a unit quat temporarily
         }
         else
         {
@@ -248,44 +256,51 @@ public:
     template <class Vector3s>
     Vector3s rotateBaseToInertia(const Vector3s& vector) const
     {
-    	Vector3s out;
+        Vector3s out;
 
-    	/*
         if (storedAsEuler())
         {
-            Eigen::AngleAxis<SCALAR> rollAngle(euler_.toImplementation()(0), Eigen::Matrix<SCALAR, 3, 1>::UnitX());
-            Eigen::AngleAxis<SCALAR> pitchAngle(euler_.toImplementation()(1), Eigen::Matrix<SCALAR, 3, 1>::UnitY());
-            Eigen::AngleAxis<SCALAR> yawAngle(euler_.toImplementation()(2), Eigen::Matrix<SCALAR, 3, 1>::UnitZ());
-            Eigen::Quaternion<SCALAR> q = rollAngle * pitchAngle * yawAngle;
-            Eigen::Matrix<SCALAR, 3, 3> rotationMatrix = q.matrix();
+            kindr::RotationMatrix<SCALAR> rotationMatrix = getRotationMatrix();
 
             // incredibly ugly hack to get along with different types
             Eigen::Matrix<SCALAR, 3, 1> vec_temp;
             vec_temp << vector(0), vector(1), vector(2);
 
-            Eigen::Matrix<SCALAR, 3, 1> result = rotationMatrix * vec_temp;
+            Eigen::Matrix<SCALAR, 3, 1> result = rotationMatrix.toImplementation() * vec_temp;
             out = (Vector3s)result;
 
             //            return euler_.rotate(vector); // temporarily replaced -- the kindr rotate() method is not auto-diffable
         }
         else
         {
-        	out = quat_.rotate(vector);
+            out = quat_.rotate(vector);
         }
-*/
+
         return out;
     };
 
 
-    //! rotate
+    /**
+	 * \brief This methods rotates a 3D matrix expressed in Base frame to Inertia Frame.
+	 */
+    Matrix3Tpl rotateBaseToInertiaMat(const Matrix3Tpl& mat) const
+    {
+    	kindr::RotationMatrix<SCALAR> rotMat = getRotationMatrix();
+    	return rotMat.toImplementation() * mat;
+    }
+
+
+    /**
+	 * \brief This methods rotates a quaternion expressed in Base frame to Inertia Frame.
+	 */
     kindr::RotationQuaternion<SCALAR> rotateBaseToInertiaQuaternion(const kindr::RotationQuaternion<SCALAR>& q) const
     {
-    	kindr::RotationQuaternion<SCALAR> result;
+        kindr::RotationQuaternion<SCALAR> result;
 
-//        if (storedAsEuler())
-//        	result = kindr::RotationQuaternion<SCALAR>(euler_) * q;
-//        else
-//            result = quat_ * q;
+        if (storedAsEuler())
+            result = kindr::RotationQuaternion<SCALAR>(euler_) * q;
+        else
+            result = quat_ * q;
 
         return result;
     }
@@ -361,15 +376,6 @@ public:
 
     STORAGE_TYPE getStorageType() const { return storage_; }
 private:
-    //! would we have a non-const accessor here?
-    //    bool storedAsEuler()
-    //    {
-    //        if (storage_ == EULER)
-    //            return true;
-    //        else
-    //            return false;
-    //    }
-
     bool storedAsEuler() const
     {
         if (storage_ == EULER)

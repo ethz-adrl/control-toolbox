@@ -56,6 +56,7 @@ public:
     using Jacobian = typename ROBCOGEN::Jacobian;
     using Jacobians = typename ROBCOGEN::Jacobians;
     using Vector3Tpl = Eigen::Matrix<SCALAR, 3, 1>;
+    using Matrix3Tpl = Eigen::Matrix<SCALAR, 3, 3>;
     using Position3Tpl = kindr::Position<SCALAR, 3>;
     using Velocity3Tpl = kindr::Velocity<SCALAR, 3>;
     using QuaterionTpl = kindr::RotationQuaternion<SCALAR>;
@@ -164,6 +165,14 @@ public:
     }
 
     /*!
+     * compute the forward kinematics and return a rotation matrix specifying the ee-rotation w.r.t. the base frame
+     */
+    Matrix3Tpl getEERotInBase(size_t eeID, const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+    {
+    	return robcogen().getEERotInBase(eeID, jointPosition);
+    }
+
+    /*!
      * Computes the forward kinematics for the end-effector position and expresses the end-effector position in world coordinates
      * @param eeID unique identifier of the end-effector in question
      * @param basePose current robot base pose
@@ -203,6 +212,19 @@ public:
     	QuaterionTpl W_q_EE = basePose.template rotateBaseToInertiaQuaternion(B_q_EE);
 
     	return RigidBodyPoseTpl(W_q_EE, basePose.position() + W_p_EE);
+    }
+
+
+    //! get the end-effector rotation matrix expressed in world coordinates
+    Matrix3Tpl getEERotInWorld(size_t eeID,
+            const RigidBodyPoseTpl& basePose,
+            const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+    {
+    	// ee rotation matrix in base coordinates
+    	Matrix3Tpl B_R_EE = getEERotInBase(eeID, jointPosition);
+
+    	// ee rotation matriix in world
+    	return basePose.template rotateBaseToInertiaMat(B_R_EE);
     }
 
 

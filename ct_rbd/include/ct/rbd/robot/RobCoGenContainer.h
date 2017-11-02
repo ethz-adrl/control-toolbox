@@ -58,6 +58,7 @@ public:
     typedef Eigen::Matrix<SCALAR, 4, 4> HomogeneousTransform;
     typedef Eigen::Matrix<SCALAR, 6, 6> ForceTransform;
     typedef Eigen::Matrix<SCALAR, 6, NJOINTS> Jacobian;
+    typedef Eigen::Matrix<SCALAR, 3, 3> Matrix3Tpl;
 
     typedef kindr::Position<SCALAR, 3> Position3Tpl;
     typedef Eigen::Matrix<SCALAR, 3, 1> Vector3Tpl;
@@ -186,6 +187,15 @@ public:
         // construct the rigid body pose from a homogeneous transformation matrix
         RigidBodyPoseTpl pose(getHomogeneousTransformBaseEEById(eeId, jointPosition), storage);
         return pose;
+    }
+
+    /*!
+     * compute the forward kinematics and return a rotation matrix specifying the ee-rotation w.r.t. the base frame
+     */
+    Matrix3Tpl getEERotInBase(size_t eeId,
+            const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+    {
+    	return getHomogeneousTransformBaseEEById(eeId, jointPosition).template topLeftCorner<3,3>();
     }
 
 
