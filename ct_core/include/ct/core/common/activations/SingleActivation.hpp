@@ -2,12 +2,13 @@
 #pragma once
 
 #include "../activations/ActivationBase.hpp"
+#include <ct/core/internal/traits/TraitSelectorSpecs.h>
 
 namespace ct {
 namespace core {
 namespace tpl {
 
-template <typename SCALAR>
+template <typename SCALAR, typename TRAIT = typename ct::core::tpl::TraitSelector<SCALAR>::Trait>
 class SingleActivation : public ActivationBase<SCALAR>
 {
 public:
