@@ -180,6 +180,10 @@ TEST(CostFunctionTest, ADQuadraticTest)
 
             costFunctionAD.initialize();
 
+            // create cloned cost function
+            std::shared_ptr<CostFunctionAD<state_dim, control_dim>> costFunctionAD_clone(costFunctionAD.clone());
+            costFunctionAD_clone->initialize();
+
             for (size_t j = 0; j < nTests; j++)
             {
                 core::StateVector<state_dim> x;
@@ -195,9 +199,11 @@ TEST(CostFunctionTest, ADQuadraticTest)
 
                 costFunction.setCurrentStateAndControl(x, u, 1.0);
                 costFunctionAD.setCurrentStateAndControl(x, u, 1.0);
+                costFunctionAD_clone->setCurrentStateAndControl(x, u, 1.0);
 
                 //			printCostFunctionOutput(costFunction, costFunctionAD);
                 compareCostFunctionOutput(costFunction, costFunctionAD);
+                compareCostFunctionOutput(costFunction, costFunctionAD_clone);
 
                 // now some manual assertions
                 ASSERT_TRUE(costFunction.stateDerivativeIntermediate().isApprox(2 * Q_interm * (x - x_ref)));

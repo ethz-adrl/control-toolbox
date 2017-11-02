@@ -71,6 +71,9 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(const std::string& filename,
     bool verbose)
 {
+	if(verbose)
+		std::cout << "Starting to load analytical cost function from file " << filename << std::endl;
+
     this->intermediateCostAnalytical_.clear();
     this->finalCostAnalytical_.clear();
 

@@ -13,7 +13,8 @@ namespace optcon {
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermBase(std::string name)
     : name_(name),
-      c_i_(std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>>(new ct::core::tpl::ActivationBase<SCALAR_EVAL>()))
+      c_i_(
+          std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>>(new ct::core::tpl::ActivationBase<SCALAR_EVAL>()))
 {
 }
 
@@ -147,6 +148,9 @@ void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadTimeActivation(c
     const std::string& termName,
     bool verbose)
 {
+    if (verbose)
+        std::cout << "TermBase: loading TimeActivation ..." << std::endl;
+
     boost::property_tree::ptree pt;
     boost::property_tree::read_info(filename, pt);
 
