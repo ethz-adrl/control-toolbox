@@ -28,7 +28,7 @@ void testPosition()
     std::shared_ptr<optcon::CostFunctionAD<hyqStateDim, hyqControlDim>> Adcf(
         new optcon::CostFunctionAD<hyqStateDim, hyqControlDim>());
     std::shared_ptr<TermTaskspacePosition<KinTpl_t, true, hyqStateDim, hyqControlDim>> term1(
-        new TermTaskspacePosition<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId, Q));
+        new TermTaskspacePosition<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId, Q, Eigen::Vector3d::Random()));
 
     Adcf->addFinalADTerm(term1, true);
     Adcf->addIntermediateADTerm(term1, true);

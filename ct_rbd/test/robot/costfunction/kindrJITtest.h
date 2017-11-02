@@ -195,7 +195,7 @@ Eigen::Matrix<SCALAR, 3, 1> convertRotationMatrixToKindrEulerTestFunction(const 
 
     return euler.toImplementation();
 }
-TEST(KindrJitTest, KindrRotationMatrixToEulerAnglesXyzTest)
+TEST(KindrJitTest, DISABLED_KindrRotationMatrixToEulerAnglesXyzTest)
 {
     using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 3>;
 
@@ -238,7 +238,7 @@ Eigen::Matrix<SCALAR, 3, 1> convertRotationMatrixToEigenEulerTestFunction(const 
 
     return eigenEulerAngles;
 }
-TEST(KindrJitTest, EigenRotationMatrixToEigenEulerAnglesTest)
+TEST(KindrJitTest, DISABLED_EigenRotationMatrixToEigenEulerAnglesTest)
 {
     using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 3>;
 
@@ -283,7 +283,7 @@ Eigen::Matrix<SCALAR, 3, 1> convertRotationMatrixToAngleAxisTestFunction(const E
 
     return angleAxis.axis();
 }
-TEST(KindrJitTest, EigenRotationMatrixToAngleAxisTest)
+TEST(KindrJitTest, DISABLED_EigenRotationMatrixToAngleAxisTest)
 {
     using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 3>;
 
@@ -373,7 +373,7 @@ Eigen::Matrix<SCALAR, 4, 1> convertRotationMatrixToKindrQuatTestFunction(const E
 
     return someData;
 }
-TEST(KindrJitTest, RotationMatrixToKindrRotationQuatTest)
+TEST(KindrJitTest, DISABLED_RotationMatrixToKindrRotationQuatTest)
 {
     using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 4>;
 
@@ -422,7 +422,7 @@ Eigen::Matrix<SCALAR, 4, 1> convertKindrRotationMatrixToEigenQuatTestFunction(co
 
     return someData;
 }
-TEST(KindrJitTest, KindrRotationMatrixToEigenRotationQuatTest)
+TEST(KindrJitTest, DISABLED_KindrRotationMatrixToEigenRotationQuatTest)
 {
     using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 4>;
 
