@@ -99,13 +99,6 @@ public:
     //! destructor for a rigid body pose
     ~RigidBodyPose(){};
 
-    //! @todo why do we need this operator overloaded? It obviously skips a few important members
-    //    inline void operator=(const RigidBodyPose& rhs)
-    //    {
-    //        setFromRotationQuaternion(rhs.getRotationQuaternion());
-    //        position() = rhs.position();
-    //    }
-
     inline bool isNear(const RigidBodyPose& rhs, const double& tol = 1e-10) const
     {
         return getRotationQuaternion().isNear(rhs.getRotationQuaternion(), tol) &&
