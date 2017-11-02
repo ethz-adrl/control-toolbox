@@ -10,8 +10,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 using namespace ct;
 using namespace rbd;
 
-//TEST(TaskspaceCostFunctionTests, TestTaskSpacePositionTerm)
-void testPosition()
+TEST(TaskspaceCostFunctionTests, TestTaskSpacePositionTerm)
 {
     typedef ct::core::ADCGScalar size_type;
     typedef TestHyQ::tpl::Kinematics<size_type> KinTpl_t;
@@ -44,17 +43,16 @@ void testPosition()
 
     Adcf->setCurrentStateAndControl(x, u, t);
 
-    Adcf->stateDerivativeIntermediateTest();
-    Adcf->controlDerivativeIntermediateTest();
+    //    Adcf->stateDerivativeIntermediateTest();
+    //    Adcf->controlDerivativeIntermediateTest();
 
     //! compare auto-diff against num-diff
-    //    ASSERT_TRUE(Adcf->stateDerivativeIntermediateTest());
-    //    ASSERT_TRUE(Adcf->controlDerivativeIntermediateTest());
+    ASSERT_TRUE(Adcf->stateDerivativeIntermediateTest());
+    ASSERT_TRUE(Adcf->controlDerivativeIntermediateTest());
 }
 
 
-//TEST(TaskspaceCostFunctionTests, TestTaskSpacePoseTerm)
-void testPose()
+TEST(TaskspaceCostFunctionTests, TestTaskSpacePoseTerm)
 {
     typedef ct::core::ADCGScalar size_type;
     typedef TestHyQ::tpl::Kinematics<size_type> KinTpl_t;
@@ -108,10 +106,10 @@ void testPose()
 
     Adcf->setCurrentStateAndControl(x, u, t);
 
-    Adcf->stateDerivativeIntermediateTest();
-    Adcf->controlDerivativeIntermediateTest();
+    //    Adcf->stateDerivativeIntermediateTest();
+    //    Adcf->controlDerivativeIntermediateTest();
 
     //! compare auto-diff against num-diff
-    //    ASSERT_TRUE(Adcf->stateDerivativeIntermediateTest());
-    //    ASSERT_TRUE(Adcf->controlDerivativeIntermediateTest());
+    ASSERT_TRUE(Adcf->stateDerivativeIntermediateTest());
+    ASSERT_TRUE(Adcf->controlDerivativeIntermediateTest());
 }
