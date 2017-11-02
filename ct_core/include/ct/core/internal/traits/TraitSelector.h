@@ -31,5 +31,5 @@ struct TraitSelector<float>
 };
 
 }  //namespace tpl
-}  // namespace rbd
-}  // namespace iit
+}  // namespace core
+}  // namespace ct
