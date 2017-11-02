@@ -167,8 +167,7 @@ public:
 	 * @return position of the endeffector expressed in the base frame
 	 */
     Position3Tpl getEEPositionInBase(size_t eeId,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition,
-        typename RigidBodyPoseTpl::STORAGE_TYPE storage = RigidBodyPoseTpl::STORAGE_TYPE::EULER)
+        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
         return Position3Tpl(getHomogeneousTransformBaseEEById(eeId, jointPosition).template topRightCorner<3,1>());
     }
@@ -178,6 +177,7 @@ public:
      *
 	 * @param eeId endeffector ID
 	 * @param jointPosition current joint position
+	 * @param storage the type of storage inteded for the pose
 	 * @return position of the endeffector expressed in the base frame
      */
     RigidBodyPoseTpl getEEPoseInBase(size_t eeId,
