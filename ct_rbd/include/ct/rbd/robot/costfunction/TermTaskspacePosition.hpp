@@ -19,7 +19,8 @@ namespace rbd {
 
 
 /*!
- * \brief A costfunction term that defines a cost in task space
+ * \brief A costfunction term that defines a cost on a taskspace position.
+ * \warning This term does not consider orientations. For a full pose cost function, see TermTaskspacePose.h
  *
  * This cost function adds a quadratic penalty on the position offset of an endeffector to a desired position
  *  @todo add velocity to term
@@ -40,9 +41,10 @@ public:
     //! the trivial constructor is explicitly forbidden
     TermTaskspacePosition() = delete;
 
+    //! constructor
     TermTaskspacePosition(size_t eeInd,
         const Eigen::Matrix<double, 3, 3>& Q,
-        const core::StateVector<3, double>& pos_des = core::StateVector<3, double>::Zero(),
+        const core::StateVector<3, double>& pos_des,
         const std::string& name = "TermTaskSpace")
         : optcon::TermBase<STATE_DIM, CONTROL_DIM, double, ct::core::ADCGScalar>(name),
           eeInd_(eeInd),
