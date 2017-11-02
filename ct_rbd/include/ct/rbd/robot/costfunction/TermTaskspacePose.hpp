@@ -38,7 +38,7 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     //! the trivial constructor is explicitly forbidden
-    TermTaskspacePose() = delete;
+    TermTaskspacePose(){}
 
     //! constructor using a quaternion for orientation
     TermTaskspacePose(size_t eeInd,
@@ -121,6 +121,9 @@ public:
     //! load term information from configuration file (stores data in member variables)
     void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) override
     {
+    	if(verbose)
+    		std::cout<<"Loading TermTaskspacePose from file " << filename << std::endl;
+
         ct::optcon::loadScalarCF(filename, "eeId", eeInd_, termName);
         ct::optcon::loadScalarCF(filename, "Q_rot", Q_rot_, termName);
 
@@ -130,6 +133,7 @@ public:
         // try loading a quaternion directly
         try
         {
+        	std::cout << "trying to load quaternion" << std::endl;
         	Eigen::Matrix<double, 4, 1> quat_vec;
             ct::optcon::loadMatrixCF(filename, "quat_des", quat_vec, termName);
             Eigen::Quaterniond quat_des (quat_vec(0), quat_vec(1), quat_vec(2), quat_vec(3));
@@ -141,6 +145,7 @@ public:
         } catch (const std::exception& e)
         {
             // quaternion load failed, try loading euler angles
+        	std::cout << "trying to load euler angles" << std::endl;
             try
             {
                 Eigen::Vector3d eulerXyz;
