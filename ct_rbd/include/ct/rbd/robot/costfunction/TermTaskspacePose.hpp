@@ -28,12 +28,6 @@ namespace rbd {
  * \tparam STATE_DIM state dimensionality of the system
  * \tparam CONTROL_DIM control dimensionality of the system
  *
- *
- * todo:
- * - we can specify poses either in terms of euler angles or in terms of quaternions
- * - we should do all he math in quaternions
- * - a possible cost: the norm of the difference quaternion  |q_diff| ? the weighted norm q_diff' Q_quat q_diff ?
- *
  */
 template <class KINEMATICS, bool FB, size_t STATE_DIM, size_t CONTROL_DIM>
 class TermTaskspacePose : public optcon::TermBase<STATE_DIM, CONTROL_DIM, double, ct::core::ADCGScalar>
@@ -50,8 +44,8 @@ public:
     TermTaskspacePose(size_t eeInd,
         const Eigen::Matrix<double, 3, 3>& Qpos,
         const double& Qrot,
-        const core::StateVector<3, double>& w_pos_des = core::StateVector<3, double>::Zero(),
-        const Eigen::Quaternion<double>& w_q_des = Eigen::Quaternion<double>::Identity(),
+        const core::StateVector<3, double>& w_pos_des,
+        const Eigen::Quaternion<double>& w_q_des,
         const std::string& name = "TermTaskSpace")
         : optcon::TermBase<STATE_DIM, CONTROL_DIM, double, ct::core::ADCGScalar>(name),
           eeInd_(eeInd),
@@ -72,8 +66,8 @@ public:
     TermTaskspacePose(size_t eeInd,
         const Eigen::Matrix<double, 3, 3>& Qpos,
         const double& Qrot,
-        const core::StateVector<3, double>& w_pos_des = core::StateVector<3, double>::Zero(),
-        const Eigen::Matrix<double, 3, 1>& eulerXyz = Eigen::Matrix<double, 3, 1>::Zero(),
+        const core::StateVector<3, double>& w_pos_des,
+        const Eigen::Matrix<double, 3, 1>& eulerXyz,
         const std::string& name = "TermTaskSpace")
         // delegate constructor
         : TermTaskspacePose(eeInd,
@@ -86,6 +80,7 @@ public:
               name)
     {
     }
+
 
     //! construct this term with info loaded from a configuration file
     TermTaskspacePose(std::string& configFile, const std::string& termName, bool verbose = false)

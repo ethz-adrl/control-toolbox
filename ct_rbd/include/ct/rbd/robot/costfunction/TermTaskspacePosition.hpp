@@ -44,7 +44,7 @@ public:
     //! constructor
     TermTaskspacePosition(size_t eeInd,
         const Eigen::Matrix<double, 3, 3>& Q,
-        const core::StateVector<3, double>& pos_des = core::StateVector<3, double>::Zero(),
+        const core::StateVector<3, double>& pos_des,
         const std::string& name = "TermTaskSpace")
         : optcon::TermBase<STATE_DIM, CONTROL_DIM, double, ct::core::ADCGScalar>(name),
           eeInd_(eeInd),
