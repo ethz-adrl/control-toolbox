@@ -55,6 +55,7 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const CostFunctio
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const std::string& filename, bool verbose)
+    : CostFunctionAD() //! @warning the delegating constructor in the initializer list is required to call the init routine in CostFunctionAD()
 {
     loadFromConfigFile(filename, verbose);
 }
