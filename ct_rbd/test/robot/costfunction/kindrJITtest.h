@@ -6,15 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <Eigen/Dense>
 #include <kindr/Core>
-#include <stdio.h>
-
-const size_t DIM = 3;  //!< dimension of vector
-
-//! the Jacobian codegen class
-using derivativesCppadJIT = DerivativesCppadJIT<DIM, DIM>;
-using derivativesCppadCG = DerivativesCppadCG<DIM, DIM>;
 
 
 /*!
@@ -47,9 +39,9 @@ Eigen::Matrix<SCALAR, 3, 1> testFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
  * @return output y = f(x)
  */
 template <typename SCALAR>
-Eigen::Matrix<SCALAR, DIM, DIM> jacobianCheck(const Eigen::Matrix<SCALAR, 3, 1>& x)
+Eigen::Matrix<SCALAR, 3, 3> jacobianCheck(const Eigen::Matrix<SCALAR, 3, 1>& x)
 {
-    Eigen::Matrix<SCALAR, DIM, DIM> jac;
+    Eigen::Matrix<SCALAR, 3, 3> jac;
 
     jac << 3 + 4 * x(0), -x(2), -x(1), 0, 1, 1, 0, 0, 1;
 
@@ -62,6 +54,7 @@ Eigen::Matrix<SCALAR, DIM, DIM> jacobianCheck(const Eigen::Matrix<SCALAR, 3, 1>&
  */
 TEST(KindrJitTest, EulerAnglesTest)
 {
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 3>;
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
@@ -96,6 +89,7 @@ TEST(KindrJitTest, EulerAnglesTest)
 }
 
 
+//! test the kindr rotate method on euler angles
 template <typename SCALAR>
 Eigen::Matrix<SCALAR, 3, 1> rotateTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
 {
@@ -107,14 +101,11 @@ Eigen::Matrix<SCALAR, 3, 1> rotateTestFunction(const Eigen::Matrix<SCALAR, 3, 1>
     pos.toImplementation()(1) = 1;
     pos.toImplementation()(2) = 1;
 
-    //    kindr::Position<SCALAR, 3> pos_rot = angles.rotate(pos);
-
     return angles.rotate(pos).toImplementation();
 }
-
-
 TEST(KindrJitTest, EulerRotateTest)
 {
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 3>;
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
@@ -137,6 +128,7 @@ TEST(KindrJitTest, EulerRotateTest)
 }
 
 
+//! test the kindr RotationMatrix constructor
 template <typename SCALAR>
 Eigen::Matrix<SCALAR, 3, 1> kindrRotationMatrixTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
 {
@@ -159,10 +151,10 @@ Eigen::Matrix<SCALAR, 3, 1> kindrRotationMatrixTestFunction(const Eigen::Matrix<
 
     return rotMat.toImplementation() * pos;
 }
-
-// DISABLED_
 TEST(KindrJitTest, RotationMatrixTest)
 {
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 3>;
+
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
@@ -197,19 +189,16 @@ Eigen::Matrix<SCALAR, 3, 1> convertRotationMatrixToKindrEulerTestFunction(const 
     someMatrix(0, 1) = -ct::core::internal::CppADCodegenTrait::sin(x(0));
     someMatrix(1, 0) = ct::core::internal::CppADCodegenTrait::sin(x(0));
 
-    // this works
     kindr::RotationMatrix<SCALAR> rotMat(someMatrix);
 
-    // this does not, although it should.
     kindr::EulerAnglesXyz<SCALAR> euler(rotMat);  //<-- fails
-
-    // this conversion seems to compile, but also throws an exception (division by zero)
-    //    Eigen::Matrix<SCALAR, 3,1> eigenEulerAngles = someMatrix.eulerAngles(0,1,2);
 
     return euler.toImplementation();
 }
 TEST(KindrJitTest, KindrRotationMatrixToEulerAnglesXyzTest)
 {
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 3>;
+
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
@@ -238,20 +227,21 @@ TEST(KindrJitTest, KindrRotationMatrixToEulerAnglesXyzTest)
 template <typename SCALAR>
 Eigen::Matrix<SCALAR, 3, 1> convertRotationMatrixToEigenEulerTestFunction(const Eigen::Matrix<SCALAR, -1, 1>& x)
 {
-    Eigen::Matrix<SCALAR, 3, 3> someMatrix (3,3);
+    Eigen::Matrix<SCALAR, 3, 3> someMatrix(3, 3);
     someMatrix.setIdentity();
     someMatrix(0, 0) = ct::core::internal::CppADCodegenTrait::cos(x(0));
     someMatrix(1, 1) = ct::core::internal::CppADCodegenTrait::cos(x(0));
     someMatrix(0, 1) = -ct::core::internal::CppADCodegenTrait::sin(x(0));
     someMatrix(1, 0) = ct::core::internal::CppADCodegenTrait::sin(x(0));
 
-    // this conversion seems to compile, but also throws an exception (division by zero)
-    Eigen::Matrix<SCALAR, 3, 1> eigenEulerAngles = someMatrix.eulerAngles(0, 1, 2);
+    Eigen::Matrix<SCALAR, 3, 1> eigenEulerAngles = someMatrix.eulerAngles(0, 1, 2);  // <-- fails
 
     return eigenEulerAngles;
 }
 TEST(KindrJitTest, EigenRotationMatrixToEigenEulerAnglesTest)
 {
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 3>;
+
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
@@ -266,8 +256,8 @@ TEST(KindrJitTest, EigenRotationMatrixToEigenEulerAnglesTest)
         settings.createForwardZero_ = true;
 
         // compile the Jacobian
-        Eigen::VectorXd test (3); test << 0.0, 0.0, 0.0;
-        jacCG.forwardZero(test);
+        //        Eigen::VectorXd test (3); test << 0.0, 0.0, 0.0;
+        //        jacCG.forwardZero(test); // <--fails
         jacCG.compileJIT(settings, "EigenRotationMatrixToEigenEulerAnglesTest");
 
     } catch (std::exception& e)
@@ -278,9 +268,92 @@ TEST(KindrJitTest, EigenRotationMatrixToEigenEulerAnglesTest)
 }
 
 
-//! test the behaviour of transcribing a rotation matrix into Euler Angles
+//! test the behaviour of transcribing an Eigen rotation matrix into Eigen AngleAxis representation
 template <typename SCALAR>
-Eigen::Matrix<SCALAR, 3, 1> convertRotationMatrixToKindrQuatTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
+Eigen::Matrix<SCALAR, 3, 1> convertRotationMatrixToAngleAxisTestFunction(const Eigen::Matrix<SCALAR, -1, 1>& x)
+{
+    Eigen::Matrix<SCALAR, 3, 3> someMatrix(3, 3);
+    someMatrix.setIdentity();
+    someMatrix(0, 0) = ct::core::internal::CppADCodegenTrait::cos(x(0));
+    someMatrix(1, 1) = ct::core::internal::CppADCodegenTrait::cos(x(0));
+    someMatrix(0, 1) = -ct::core::internal::CppADCodegenTrait::sin(x(0));
+    someMatrix(1, 0) = ct::core::internal::CppADCodegenTrait::sin(x(0));
+
+    Eigen::AngleAxis<SCALAR> angleAxis(someMatrix);
+
+    return angleAxis.axis();
+}
+TEST(KindrJitTest, EigenRotationMatrixToAngleAxisTest)
+{
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 3>;
+
+    try
+    {
+        // create a function handle (also works for class methods, lambdas, function pointers, ...)
+        typename derivativesCppadJIT::FUN_TYPE_CG f =
+            convertRotationMatrixToAngleAxisTestFunction<derivativesCppadJIT::CG_SCALAR>;
+
+        // initialize the Auto-Diff Codegen Jacobian
+        derivativesCppadJIT jacCG(f);
+
+        DerivativesCppadSettings settings;
+        settings.createJacobian_ = true;
+
+        // compile the Jacobian
+        jacCG.compileJIT(settings, "EigenRotationMatrixToAngleAxisTest");
+
+    } catch (std::exception& e)
+    {
+        std::cout << "EigenRotationMatrixToAngleAxisTest test failed: " << e.what() << std::endl;
+        ASSERT_TRUE(false);
+    }
+}
+
+
+//! test the Frobenius norm on an EigenMatrix
+template <typename SCALAR>
+Eigen::Matrix<SCALAR, -1, 1> frobeniusNormTestFunction(const Eigen::Matrix<SCALAR, -1, 1>& x)
+{
+    Eigen::Matrix<SCALAR, 3, 3> someMatrix(3, 3);
+    someMatrix.setIdentity();
+    someMatrix(0, 0) = ct::core::internal::CppADCodegenTrait::cos(x(0));
+    someMatrix(1, 1) = ct::core::internal::CppADCodegenTrait::cos(x(0));
+    someMatrix(0, 1) = -ct::core::internal::CppADCodegenTrait::sin(x(0));
+    someMatrix(1, 0) = ct::core::internal::CppADCodegenTrait::sin(x(0));
+
+    Eigen::Matrix<SCALAR, 1, 1> someData;
+    someData(0, 0) = someMatrix.norm();  // per default Eigen returns the Frobenius when calling norm() on a matrix.
+    return someData;
+}
+TEST(KindrJitTest, FrobeniusNormTest)
+{
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 1>;
+
+    try
+    {
+        // create a function handle (also works for class methods, lambdas, function pointers, ...)
+        typename derivativesCppadJIT::FUN_TYPE_CG f = frobeniusNormTestFunction<derivativesCppadJIT::CG_SCALAR>;
+
+        // initialize the Auto-Diff Codegen Jacobian
+        derivativesCppadJIT jacCG(f);
+
+        DerivativesCppadSettings settings;
+        settings.createJacobian_ = true;
+
+        // compile the Jacobian
+        jacCG.compileJIT(settings, "FrobeniusNormTest");
+
+    } catch (std::exception& e)
+    {
+        std::cout << "FrobeniusNormTest test failed: " << e.what() << std::endl;
+        ASSERT_TRUE(false);
+    }
+}
+
+
+//! test the behaviour of transcribing a rotation matrix into a kindr RotationQuaternion
+template <typename SCALAR>
+Eigen::Matrix<SCALAR, 4, 1> convertRotationMatrixToKindrQuatTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
 {
     Eigen::Matrix<SCALAR, 3, 3> someMatrix;
     someMatrix.setIdentity();
@@ -295,13 +368,15 @@ Eigen::Matrix<SCALAR, 3, 1> convertRotationMatrixToKindrQuatTestFunction(const E
     // this does not, although it should.
     kindr::RotationQuaternion<SCALAR> quat(rotMat);  // <-- todo this fails
 
-    Eigen::Matrix<SCALAR, 3, 1> someData;
-    someData << quat.x(), quat.y(), quat.z();
+    Eigen::Matrix<SCALAR, 4, 1> someData;
+    someData << quat.w(), quat.x(), quat.y(), quat.z();
 
     return someData;
 }
 TEST(KindrJitTest, RotationMatrixToKindrRotationQuatTest)
 {
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 4>;
+
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
@@ -328,7 +403,7 @@ TEST(KindrJitTest, RotationMatrixToKindrRotationQuatTest)
 
 //! check conversion from kindr rotation matrix to an eigen quaternion
 template <typename SCALAR>
-Eigen::Matrix<SCALAR, 3, 1> convertKindrRotationMatrixToEigenQuatTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
+Eigen::Matrix<SCALAR, 4, 1> convertKindrRotationMatrixToEigenQuatTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
 {
     Eigen::Matrix<SCALAR, 3, 3> someMatrix;
     someMatrix.setIdentity();
@@ -337,19 +412,20 @@ Eigen::Matrix<SCALAR, 3, 1> convertKindrRotationMatrixToEigenQuatTestFunction(co
     someMatrix(0, 1) = -ct::core::internal::CppADCodegenTrait::sin(x(0));
     someMatrix(1, 0) = ct::core::internal::CppADCodegenTrait::sin(x(0));
 
-    // this works
-    //    kindr::RotationMatrix<SCALAR> rotMat(someMatrix); // <--- why does this fail even for an eigen type?????
+    kindr::RotationMatrix<SCALAR> rotMat(someMatrix);
 
     // this does not, although it should.
     Eigen::Quaternion<SCALAR> quat(someMatrix);  // <-- todo this fails
 
-    Eigen::Matrix<SCALAR, 3, 1> someData;
-    someData << quat.x(), quat.y(), quat.z();
+    Eigen::Matrix<SCALAR, 4, 1> someData;
+    someData << quat.w(), quat.x(), quat.y(), quat.z();
 
     return someData;
 }
 TEST(KindrJitTest, KindrRotationMatrixToEigenRotationQuatTest)
 {
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 4>;
+
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
@@ -374,6 +450,7 @@ TEST(KindrJitTest, KindrRotationMatrixToEigenRotationQuatTest)
 }
 
 
+//! test the JIT compatibility of Eigen Transforms
 template <typename SCALAR>
 Eigen::Matrix<SCALAR, 3, 1> eigenTransformTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
 {
@@ -386,10 +463,10 @@ Eigen::Matrix<SCALAR, 3, 1> eigenTransformTestFunction(const Eigen::Matrix<SCALA
     // return some random part of the eigen transform matrix
     return (t.matrix()).template topLeftCorner<3, 1>();
 }
-
-
 TEST(KindrJitTest, EigenTransformTest)
 {
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 3>;
+
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
@@ -412,6 +489,7 @@ TEST(KindrJitTest, EigenTransformTest)
 }
 
 
+//! test the JIT compatibility of Eigen quaternions
 template <typename SCALAR>
 Eigen::Matrix<SCALAR, 3, 1> eigenQuaternionTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
 {
@@ -420,11 +498,13 @@ Eigen::Matrix<SCALAR, 3, 1> eigenQuaternionTestFunction(const Eigen::Matrix<SCAL
         Eigen::AngleAxis<SCALAR>(x(1), Eigen::Matrix<SCALAR, 3, 1>::UnitY()) *
         Eigen::AngleAxis<SCALAR>(x(2), Eigen::Matrix<SCALAR, 3, 1>::UnitZ());
 
+    // return some data
     return q.toRotationMatrix().template topRightCorner<3, 1>();
 }
-
 TEST(KindrJitTest, EigenQuaternionTest)
 {
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 3>;
+
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
@@ -449,7 +529,7 @@ TEST(KindrJitTest, EigenQuaternionTest)
 
 //! check the conversion between an Eigen Quaternion and an kindr RotationQuaternion.
 template <typename SCALAR>
-Eigen::Matrix<SCALAR, 3, 1> eigenQuatToKindrRotationQuatFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
+Eigen::Matrix<SCALAR, 4, 1> eigenQuatToKindrRotationQuatFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
 {
     Eigen::Quaternion<SCALAR> q;
     q = Eigen::AngleAxis<SCALAR>(x(0), Eigen::Matrix<SCALAR, 3, 1>::UnitX()) *
@@ -458,13 +538,15 @@ Eigen::Matrix<SCALAR, 3, 1> eigenQuatToKindrRotationQuatFunction(const Eigen::Ma
 
     kindr::RotationQuaternion<SCALAR> kindr_quat(q);
 
-    Eigen::Matrix<SCALAR, 3, 1> someData;
-    someData << kindr_quat.x(), kindr_quat.y(), kindr_quat.z();
+    Eigen::Matrix<SCALAR, 4, 1> someData;
+    someData << kindr_quat.w(), kindr_quat.x(), kindr_quat.y(), kindr_quat.z();
 
     return someData;
 }
 TEST(KindrJitTest, EigenQuatToKindrRotationQuatTest)
 {
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 4>;
+
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
@@ -487,19 +569,22 @@ TEST(KindrJitTest, EigenQuatToKindrRotationQuatTest)
     }
 }
 
+
+//! test the JIT compatibility of kindr Quaternions
 template <typename SCALAR>
-Eigen::Matrix<SCALAR, 3, 1> kindrQuaternionTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
+Eigen::Matrix<SCALAR, 4, 1> kindrQuaternionTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
 {
     kindr::Quaternion<SCALAR> q(x(0), x(1), x(2), x(2));
 
-    Eigen::Matrix<SCALAR, 3, 1> res;
-    res << q.x(), q.y(), q.z();
+    Eigen::Matrix<SCALAR, 4, 1> res;
+    res << q.w(), q.x(), q.y(), q.z();
 
     return res;
 }
-
 TEST(KindrJitTest, kindrQuaternionTest)
 {
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 4>;
+
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
@@ -522,8 +607,9 @@ TEST(KindrJitTest, kindrQuaternionTest)
 }
 
 
+//! test the JIT compatibility of kindr UnitQuaternions
 template <typename SCALAR>
-Eigen::Matrix<SCALAR, 3, 1> kindrUnitQuaternionTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
+Eigen::Matrix<SCALAR, 4, 1> kindrUnitQuaternionTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
 {
     Eigen::Quaternion<SCALAR> q_init;
     q_init = Eigen::AngleAxis<SCALAR>(x(0), Eigen::Matrix<SCALAR, 3, 1>::UnitX()) *
@@ -533,14 +619,15 @@ Eigen::Matrix<SCALAR, 3, 1> kindrUnitQuaternionTestFunction(const Eigen::Matrix<
 
     kindr::UnitQuaternion<SCALAR> q(q_init);
 
-    Eigen::Matrix<SCALAR, 3, 1> res;
-    res << q.x(), q.y(), q.z();
+    Eigen::Matrix<SCALAR, 4, 1> res;
+    res << q.w(), q.x(), q.y(), q.z();
 
     return res;
 }
-
 TEST(KindrJitTest, kindrUnitQuaternionTest)
 {
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 4>;
+
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
@@ -567,17 +654,19 @@ TEST(KindrJitTest, kindrUnitQuaternionTest)
  * Test JIT compatiblility of the kindr "RotationQuaternion" class
  */
 template <typename SCALAR>
-Eigen::Matrix<SCALAR, 3, 1> kindrRotationQuaternionTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
+Eigen::Matrix<SCALAR, 4, 1> kindrRotationQuaternionTestFunction(const Eigen::Matrix<SCALAR, 3, 1>& x)
 {
     kindr::RotationQuaternion<SCALAR> q(x(0), x(1), x(2), x(2));
 
-    Eigen::Matrix<SCALAR, 3, 1> res;
-    res << q.x(), q.y(), q.z();
+    Eigen::Matrix<SCALAR, 4, 1> res;
+    res << q.w(), q.x(), q.y(), q.z();
 
     return res;
 }
 TEST(KindrJitTest, kindrRotationQuaternionTest)
 {
+    using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 4>;
+
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
