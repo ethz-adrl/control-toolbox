@@ -49,7 +49,7 @@ public:
     }
 
     RBDState(const RBDState& other) : baseState_(other.baseState_), jointState_(other.jointState_) {}
-    RBDState(const RigidBodyState<SCALAR>& baseState, const JointState<NJOINTS>& jointState)
+    RBDState(const RigidBodyState<SCALAR>& baseState, const JointState<NJOINTS, SCALAR>& jointState)
         : baseState_(baseState), jointState_(jointState)
     {
     }

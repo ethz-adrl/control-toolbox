@@ -4,8 +4,7 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#ifndef JOINTSTATEBASE_H_
-#define JOINTSTATEBASE_H_
+#pragma once
 
 namespace ct {
 namespace rbd {
@@ -120,5 +119,3 @@ using JointState = tpl::JointState<NJOINTS, double>;
 
 }  // namespace rbd
 }  // namespace ct
-
-#endif /* JOINTSTATEBASE_H_ */

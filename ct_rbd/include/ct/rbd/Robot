@@ -19,6 +19,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "robot/control/JointPositionController.h"
 #include "robot/control/SelectionMatrix.h"
 
-#include "robot/costfunction/TermTaskspace.hpp"
+#include "robot/costfunction/TermTaskspacePosition.hpp"
+#include "robot/costfunction/TermTaskspacePose.hpp"
 
 #include "robot/kinematics/EndEffector.h"

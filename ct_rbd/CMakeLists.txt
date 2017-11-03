@@ -97,10 +97,11 @@ catkin_add_gtest(EEContactModelTest test/physics/EEContactModelTest.cpp)
 target_link_libraries(EEContactModelTest ${catkin_LIBRARIES})
 
 # todo make unit test again
-add_executable(TaskSpaceCfTest test/robot/costfunction/TaskspaceCostFunctionTest.cpp)
+catkin_add_gtest(TaskSpaceCfTest test/robot/costfunction/TaskspaceCostFunctionTest.cpp)
 target_link_libraries(TaskSpaceCfTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(kindrJITtest test/math/kindrJITtest.cpp)
+catkin_add_gtest(rbdJITtests test/robot/costfunction/rbdJITtests.cpp)
+target_link_libraries(rbdJITtests ${catkin_LIBRARIES})
+catkin_add_gtest(kindrJITtest test/robot/costfunction/kindrJITtest.cpp)
 target_link_libraries(kindrJITtest ${catkin_LIBRARIES})
 
 #catkin_add_gtest(ControllerTests test/robot/control/ControllerTests.cpp)

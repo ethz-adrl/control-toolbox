@@ -105,7 +105,9 @@ void addTerm(const std::string& filename,
     }
     term->loadTimeActivation(filename, currentTerm, verbose);
     term->loadConfigFile(filename, currentTerm, verbose);
-    std::cout << "Successfully loaded term" << std::endl;
+
+    if (verbose)
+        std::cout << "Successfully loaded term " + currentTerm << std::endl;
 }
 
 template <typename TERM_PTR, typename costFuncType>
@@ -135,7 +137,9 @@ void addADTerm(const std::string& filename,
     }
     term->loadTimeActivation(filename, currentTerm, verbose);
     term->loadConfigFile(filename, currentTerm, verbose);
-    std::cout << "Successfully loaded term" << std::endl;
+
+    if (verbose)
+        std::cout << "Successfully loaded term " + currentTerm << std::endl;
 }
 
 }  // namespace optcon

@@ -58,9 +58,12 @@ public:
     typedef Eigen::Matrix<SCALAR, 4, 4> HomogeneousTransform;
     typedef Eigen::Matrix<SCALAR, 6, 6> ForceTransform;
     typedef Eigen::Matrix<SCALAR, 6, NJOINTS> Jacobian;
+    typedef Eigen::Matrix<SCALAR, 3, 3> Matrix3Tpl;
 
     typedef kindr::Position<SCALAR, 3> Position3Tpl;
     typedef Eigen::Matrix<SCALAR, 3, 1> Vector3Tpl;
+
+    using RigidBodyPoseTpl = tpl::RigidBodyPose<SCALAR>;
 
 
     HomogeneousTransforms& homogeneousTransforms() { return homogeneousTransforms_; };
@@ -166,7 +169,33 @@ public:
     Position3Tpl getEEPositionInBase(size_t eeId,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
-        return Position3Tpl(getHomogeneousTransformBaseEEById(eeId, jointPosition).template topRightCorner<3, 1>());
+        return Position3Tpl(getHomogeneousTransformBaseEEById(eeId, jointPosition).template topRightCorner<3,1>());
+    }
+
+    /*!
+     * \brief Get the endeffector pose expressed in the base frame
+     *
+	 * @param eeId endeffector ID
+	 * @param jointPosition current joint position
+	 * @param storage the type of storage inteded for the pose
+	 * @return position of the endeffector expressed in the base frame
+     */
+    RigidBodyPoseTpl getEEPoseInBase(size_t eeId,
+        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition,
+        typename RigidBodyPoseTpl::STORAGE_TYPE storage = RigidBodyPoseTpl::EULER)
+    {
+        // construct the rigid body pose from a homogeneous transformation matrix
+        RigidBodyPoseTpl pose(getHomogeneousTransformBaseEEById(eeId, jointPosition), storage);
+        return pose;
+    }
+
+    /*!
+     * compute the forward kinematics and return a rotation matrix specifying the ee-rotation w.r.t. the base frame
+     */
+    Matrix3Tpl getEERotInBase(size_t eeId,
+            const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+    {
+    	return getHomogeneousTransformBaseEEById(eeId, jointPosition).template topLeftCorner<3,3>();
     }
 
 
