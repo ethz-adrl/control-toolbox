@@ -50,12 +50,14 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const CostFunctio
 
     intermediateCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(intermediateFun_, STATE_DIM + CONTROL_DIM + 1, 1));
     finalCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(finalFun_, STATE_DIM + CONTROL_DIM + 1, 1));
+
+    initialize();  //when cloning, we directly call initialize()
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const std::string& filename, bool verbose)
-    : CostFunctionAD() //! @warning the delegating constructor in the initializer list is required to call the init routine in CostFunctionAD()
+    : CostFunctionAD()  //! @warning the delegating constructor in the initializer list is required to call the initial routine in CostFunctionAD()
 {
     loadFromConfigFile(filename, verbose);
 }
