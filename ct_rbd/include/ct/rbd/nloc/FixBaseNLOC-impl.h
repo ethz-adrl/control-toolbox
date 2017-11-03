@@ -10,36 +10,22 @@ namespace ct {
 namespace rbd {
 
 template <class RBDDynamics, typename SCALAR>
-FixBaseNLOC<RBDDynamics, SCALAR>::FixBaseNLOC(const std::string& costFunctionFile,
-    const std::string& settingsFile,
-    std::shared_ptr<FBSystem> system,
-    bool verbose,
-    std::shared_ptr<LinearizedSystem> linearizedSystem)
-    : system_(system),
-      linearizedSystem_(linearizedSystem),
-      costFunction_(new CostFunction(costFunctionFile, verbose)),
-      optConProblem_(system_, costFunction_, linearizedSystem_),
-      iteration_(0)
-{
-    optConProblem_.verify();
-    nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settingsFile));
-}
-
-template <class RBDDynamics, typename SCALAR>
-FixBaseNLOC<RBDDynamics, SCALAR>::FixBaseNLOC(const std::string& costFunctionFile,
+FixBaseNLOC<RBDDynamics, SCALAR>::FixBaseNLOC(
+    std::shared_ptr<ct::optcon::CostFunctionQuadratic<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>> costFun,
     const typename NLOptConSolver::Settings_t& nlocSettings,
     std::shared_ptr<FBSystem> system,
     bool verbose,
     std::shared_ptr<LinearizedSystem> linearizedSystem)
     : system_(system),
       linearizedSystem_(linearizedSystem),
-      costFunction_(new CostFunction(costFunctionFile, verbose)),
+      costFunction_(costFun),
       optConProblem_(system_, costFunction_, linearizedSystem_),
       iteration_(0)
 {
     optConProblem_.verify();
     nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, nlocSettings));
 }
+
 
 template <class RBDDynamics, typename SCALAR>
 void FixBaseNLOC<RBDDynamics, SCALAR>::initialize(const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x0,

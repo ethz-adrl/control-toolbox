@@ -46,19 +46,10 @@ public:
     typedef typename core::StateFeedbackController<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>
         StateFeedbackController;
 
-    typedef ct::optcon::CostFunctionAD<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM> CostFunction;
+    typedef ct::optcon::CostFunctionQuadratic<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> CostFunction;
 
-
-    //! constructor for loading nloc settings from file
-    FixBaseNLOC(const std::string& costFunctionFile,
-        const std::string& settingsFile,
-        std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
-        bool verbose = false,
-        std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
-
-
-    //! constructor which directly takes the nloc settings
-    FixBaseNLOC(const std::string& costFunctionFile,
+    //! constructor which directly takes a cost function
+    FixBaseNLOC(std::shared_ptr<ct::optcon::CostFunctionQuadratic<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>> costFun,
         const typename NLOptConSolver::Settings_t& nlocSettings,
         std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
         bool verbose = false,
