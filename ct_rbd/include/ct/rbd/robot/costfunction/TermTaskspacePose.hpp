@@ -38,8 +38,7 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     //! the trivial constructor is explicitly forbidden
-    TermTaskspacePose(){}
-
+    TermTaskspacePose() {}
     //! constructor using a quaternion for orientation
     TermTaskspacePose(size_t eeInd,
         const Eigen::Matrix<double, 3, 3>& Qpos,
@@ -51,8 +50,8 @@ public:
           eeInd_(eeInd),
           Q_pos_(Qpos),
           Q_rot_(Qrot),
-          pos_ref_(w_pos_des),
-          R_ref_(w_q_des.normalized().toRotationMatrix())
+          w_p_ref_(w_pos_des),
+          w_R_ref_(w_q_des.normalized().toRotationMatrix())
     {
         // Checks whether STATE_DIM has the appropriate size.
         //  2 * (FB * 6 + KINEMATICS::NJOINTS)) represents a floating base system with euler angles
@@ -90,7 +89,12 @@ public:
 
     //! copy constructor
     TermTaskspacePose(const TermTaskspacePose& arg)
-        : eeInd_(arg.eeInd_), kinematics_(KINEMATICS()), Q_pos_(arg.Q_pos_), pos_ref_(arg.pos_ref_)
+        : eeInd_(arg.eeInd_),
+          kinematics_(KINEMATICS()),
+          Q_pos_(arg.Q_pos_),
+          Q_rot_(arg.Q_rot_),
+          w_p_ref_(arg.w_p_ref_),
+          w_R_ref_(arg.w_R_ref_)
     {
     }
 
@@ -121,23 +125,23 @@ public:
     //! load term information from configuration file (stores data in member variables)
     void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) override
     {
-    	if(verbose)
-    		std::cout<<"Loading TermTaskspacePose from file " << filename << std::endl;
+        if (verbose)
+            std::cout << "Loading TermTaskspacePose from file " << filename << std::endl;
 
         ct::optcon::loadScalarCF(filename, "eeId", eeInd_, termName);
         ct::optcon::loadScalarCF(filename, "Q_rot", Q_rot_, termName);
 
         ct::optcon::loadMatrixCF(filename, "Q_pos", Q_pos_, termName);
-        ct::optcon::loadMatrixCF(filename, "x_des", pos_ref_, termName);
+        ct::optcon::loadMatrixCF(filename, "x_des", w_p_ref_, termName);
 
         // try loading a quaternion directly
         try
         {
-        	std::cout << "trying to load quaternion" << std::endl;
-        	Eigen::Matrix<double, 4, 1> quat_vec;
+            std::cout << "trying to load quaternion" << std::endl;
+            Eigen::Matrix<double, 4, 1> quat_vec;
             ct::optcon::loadMatrixCF(filename, "quat_des", quat_vec, termName);
-            Eigen::Quaterniond quat_des (quat_vec(0), quat_vec(1), quat_vec(2), quat_vec(3));
-            R_ref_ = quat_des.toRotationMatrix();
+            Eigen::Quaterniond quat_des(quat_vec(0), quat_vec(1), quat_vec(2), quat_vec(3));
+            w_R_ref_ = quat_des.toRotationMatrix();
             if (verbose)
                 std::cout << "Read quat_des as = \n"
                           << quat_des.w() << " " << quat_des.x() << " " << quat_des.y() << " " << quat_des.z() << " "
@@ -145,7 +149,7 @@ public:
         } catch (const std::exception& e)
         {
             // quaternion load failed, try loading euler angles
-        	std::cout << "trying to load euler angles" << std::endl;
+            std::cout << "trying to load euler angles" << std::endl;
             try
             {
                 Eigen::Vector3d eulerXyz;
@@ -153,7 +157,7 @@ public:
                 Eigen::Quaternion<double> quat_des(Eigen::AngleAxisd(eulerXyz(0), Eigen::Vector3d::UnitX()) *
                                                    Eigen::AngleAxisd(eulerXyz(1), Eigen::Vector3d::UnitY()) *
                                                    Eigen::AngleAxisd(eulerXyz(2), Eigen::Vector3d::UnitZ()));
-                R_ref_ = quat_des.toRotationMatrix();
+                w_R_ref_ = quat_des.toRotationMatrix();
                 if (verbose)
                     std::cout << "Read desired Euler Angles Xyz as  = \n" << eulerXyz.transpose() << std::endl;
             } catch (const std::exception& e)
@@ -168,7 +172,7 @@ public:
             std::cout << "Read eeId as eeId = \n" << eeInd_ << std::endl;
             std::cout << "Read Q_pos as Q_pos = \n" << Q_pos_ << std::endl;
             std::cout << "Read Q_rot as Q_rot = \n" << Q_rot_ << std::endl;
-            std::cout << "Read x_des as x_des = \n" << pos_ref_.transpose() << std::endl;
+            std::cout << "Read x_des as x_des = \n" << w_p_ref_.transpose() << std::endl;
         }
     }
 
@@ -187,7 +191,7 @@ private:
         Eigen::Matrix<SC, 3, 1> xDiff =
             kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions())
                 .toImplementation() -
-            pos_ref_.template cast<SC>();
+            w_p_ref_.template cast<SC>();
 
         // compute the cost based on the position error
         SC pos_cost = (xDiff.transpose() * Q_pos_.template cast<SC>() * xDiff)(0, 0);
@@ -200,7 +204,7 @@ private:
         // for the intuition behind, consider the following posts:
         // https://math.stackexchange.com/a/87698
         // https://math.stackexchange.com/a/773635
-        Matrix3Tpl ee_rot_diff = R_ref_.template cast<SC>().transpose() * ee_rot;
+        Matrix3Tpl ee_rot_diff = w_R_ref_.template cast<SC>().transpose() * ee_rot;
 
         SC rot_cost = (SC)Q_rot_ * (ee_rot_diff - Matrix3Tpl::Identity()).norm();  // the frobenius norm of (R_diff-I)
 
@@ -242,10 +246,10 @@ private:
     double Q_rot_;
 
     //! reference position in world frame
-    Eigen::Matrix<double, 3, 1> pos_ref_;
+    Eigen::Matrix<double, 3, 1> w_p_ref_;
 
     //! reference ee orientation in world frame
-    Eigen::Matrix<double, 3, 3> R_ref_;
+    Eigen::Matrix<double, 3, 3> w_R_ref_;
 };
 
 
