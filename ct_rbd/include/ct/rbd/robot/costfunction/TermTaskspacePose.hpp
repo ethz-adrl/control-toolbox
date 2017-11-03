@@ -134,37 +134,23 @@ public:
         ct::optcon::loadMatrixCF(filename, "Q_pos", Q_pos_, termName);
         ct::optcon::loadMatrixCF(filename, "x_des", w_p_ref_, termName);
 
-        // try loading a quaternion directly
+        // try loading euler angles
+        if (verbose)
+            std::cout << "trying to load euler angles" << std::endl;
         try
         {
-            std::cout << "trying to load quaternion" << std::endl;
-            Eigen::Matrix<double, 4, 1> quat_vec;
-            ct::optcon::loadMatrixCF(filename, "quat_des", quat_vec, termName);
-            Eigen::Quaterniond quat_des(quat_vec(0), quat_vec(1), quat_vec(2), quat_vec(3));
+            Eigen::Vector3d eulerXyz;
+            ct::optcon::loadMatrixCF(filename, "eulerXyz_des", eulerXyz, termName);
+            Eigen::Quaternion<double> quat_des(Eigen::AngleAxisd(eulerXyz(0), Eigen::Vector3d::UnitX()) *
+                                               Eigen::AngleAxisd(eulerXyz(1), Eigen::Vector3d::UnitY()) *
+                                               Eigen::AngleAxisd(eulerXyz(2), Eigen::Vector3d::UnitZ()));
             w_R_ref_ = quat_des.toRotationMatrix();
             if (verbose)
-                std::cout << "Read quat_des as = \n"
-                          << quat_des.w() << " " << quat_des.x() << " " << quat_des.y() << " " << quat_des.z() << " "
-                          << std::endl;
+                std::cout << "Read desired Euler Angles Xyz as  = \n" << eulerXyz.transpose() << std::endl;
         } catch (const std::exception& e)
         {
-            // quaternion load failed, try loading euler angles
-            std::cout << "trying to load euler angles" << std::endl;
-            try
-            {
-                Eigen::Vector3d eulerXyz;
-                ct::optcon::loadMatrixCF(filename, "eulerXyz_des", eulerXyz, termName);
-                Eigen::Quaternion<double> quat_des(Eigen::AngleAxisd(eulerXyz(0), Eigen::Vector3d::UnitX()) *
-                                                   Eigen::AngleAxisd(eulerXyz(1), Eigen::Vector3d::UnitY()) *
-                                                   Eigen::AngleAxisd(eulerXyz(2), Eigen::Vector3d::UnitZ()));
-                w_R_ref_ = quat_des.toRotationMatrix();
-                if (verbose)
-                    std::cout << "Read desired Euler Angles Xyz as  = \n" << eulerXyz.transpose() << std::endl;
-            } catch (const std::exception& e)
-            {
-                throw std::runtime_error(
-                    "Failed to load TermTaskspacePose, could not find a desired end effector orientation in file.");
-            }
+            throw std::runtime_error(
+                "Failed to load TermTaskspacePose, could not find a desired end effector orientation in file.");
         }
 
         if (verbose)
