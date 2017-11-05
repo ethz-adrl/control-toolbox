@@ -34,6 +34,7 @@ class TermTaskspacePose : public optcon::TermBase<STATE_DIM, CONTROL_DIM, double
 {
 public:
     using SCALAR = ct::core::ADCGScalar;
+    using BASE = optcon::TermBase<STATE_DIM, CONTROL_DIM, double, ct::core::ADCGScalar>;
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -46,7 +47,7 @@ public:
         const core::StateVector<3, double>& w_pos_des,
         const Eigen::Quaternion<double>& w_q_des,
         const std::string& name = "TermTaskSpace")
-        : optcon::TermBase<STATE_DIM, CONTROL_DIM, double, ct::core::ADCGScalar>(name),
+        : BASE(name),
           eeInd_(eeInd),
           Q_pos_(Qpos),
           Q_rot_(Qrot),
@@ -89,7 +90,8 @@ public:
 
     //! copy constructor
     TermTaskspacePose(const TermTaskspacePose& arg)
-        : eeInd_(arg.eeInd_),
+        : BASE(arg),
+		  eeInd_(arg.eeInd_),
           kinematics_(KINEMATICS()),
           Q_pos_(arg.Q_pos_),
           Q_rot_(arg.Q_rot_),
@@ -161,6 +163,12 @@ public:
             std::cout << "Read x_des as x_des = \n" << w_p_ref_.transpose() << std::endl;
         }
     }
+
+
+    //! retrieve reference position in world frame
+    const Eigen::Matrix<double, 3, 1>& getReferencePosition() const { return w_p_ref_; }
+    //! retrieve reference ee orientation in world frame
+    const Eigen::Quaterniond getReferenceOrientation() const { return Eigen::Quaterniond(w_R_ref_); }
 
 
 private:
