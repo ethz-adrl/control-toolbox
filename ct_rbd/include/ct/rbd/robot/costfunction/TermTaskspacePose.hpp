@@ -36,6 +36,8 @@ public:
     using SCALAR = ct::core::ADCGScalar;
     using BASE = optcon::TermBase<STATE_DIM, CONTROL_DIM, double, ct::core::ADCGScalar>;
 
+    using RBDStateTpl = ct::rbd::tpl::RBDState<KINEMATICS::NJOINTS, SCALAR>;
+
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     //! the trivial constructor is explicitly forbidden
@@ -54,12 +56,6 @@ public:
           w_p_ref_(w_pos_des),
           w_R_ref_(w_q_des.normalized().toRotationMatrix())
     {
-        // Checks whether STATE_DIM has the appropriate size.
-        //  2 * (FB * 6 + KINEMATICS::NJOINTS)) represents a floating base system with euler angles
-        //  2 * (FB * 6 + KINEMATICS::NJOINTS) + 1 representing a floating base system with quaternion angles
-        static_assert(
-            (STATE_DIM == 2 * (FB * 6 + KINEMATICS::NJOINTS)) || (STATE_DIM == 2 * (FB * 6 + KINEMATICS::NJOINTS) + 1),
-            "STATE_DIM does not have appropriate size.");
     }
 
     //! constructor using euler angles for orientation
@@ -91,7 +87,7 @@ public:
     //! copy constructor
     TermTaskspacePose(const TermTaskspacePose& arg)
         : BASE(arg),
-		  eeInd_(arg.eeInd_),
+          eeInd_(arg.eeInd_),
           kinematics_(KINEMATICS()),
           Q_pos_(arg.Q_pos_),
           Q_rot_(arg.Q_rot_),
@@ -103,7 +99,7 @@ public:
     //! destructor
     virtual ~TermTaskspacePose() {}
     //! deep cloning
-    TermTaskspacePose<KINEMATICS, FB, STATE_DIM, CONTROL_DIM>* clone() const override
+    virtual TermTaskspacePose<KINEMATICS, FB, STATE_DIM, CONTROL_DIM>* clone() const override
     {
         return new TermTaskspacePose(*this);
     }
@@ -169,9 +165,40 @@ public:
     const Eigen::Matrix<double, 3, 1>& getReferencePosition() const { return w_p_ref_; }
     //! retrieve reference ee orientation in world frame
     const Eigen::Quaterniond getReferenceOrientation() const { return Eigen::Quaterniond(w_R_ref_); }
-
+protected:
+    /*!
+     * setStateFromVector transforms your (custom) state vector x into a RBDState.
+     * Is virtual to allow for easy overloading of this term for custom systems
+     * @param x your state vector
+     * @return a full rigid body state
+     */
+    virtual RBDStateTpl setStateFromVector(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x)
+    {
+        return setStateFromVector_specialized<FB>(x);
+    }
 
 private:
+    //! computes RBDState in case the user supplied a floating-base robot (SFINAE principle)
+    template <bool T>
+    RBDStateTpl setStateFromVector_specialized(const Eigen::Matrix<SCALAR, -1, 1>& x,
+        typename std::enable_if<T, bool>::type = true)
+    {
+        RBDStateTpl rbdState;
+        rbdState.fromStateVectorEulerXyz(x);
+
+        return rbdState;
+    }
+
+    //! computes RBDState in case the user supplied a fixed-base robot (SFINAE principle)
+    template <bool T>
+    RBDStateTpl setStateFromVector_specialized(const Eigen::Matrix<SCALAR, -1, 1>& x,
+        typename std::enable_if<!T, bool>::type = true)
+    {
+        RBDStateTpl rbdState;
+        rbdState.joints().toImplementation() = x.head(STATE_DIM);
+        return rbdState;
+    }
+
     //! a templated evaluate() method
     template <typename SC>
     SC evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1>& x, const Eigen::Matrix<SC, CONTROL_DIM, 1>& u, const SC& t)
@@ -179,7 +206,7 @@ private:
         using Matrix3Tpl = Eigen::Matrix<SC, 3, 3>;
 
         // transform the robot state vector into a CT RBDState
-        tpl::RBDState<KINEMATICS::NJOINTS, SC> rbdState = setStateFromVector<FB>(x);
+        tpl::RBDState<KINEMATICS::NJOINTS, SC> rbdState = setStateFromVector(x);
 
         // position difference in world frame
         Eigen::Matrix<SC, 3, 1> xDiff =
@@ -200,31 +227,9 @@ private:
         // https://math.stackexchange.com/a/773635
         Matrix3Tpl ee_rot_diff = w_R_ref_.template cast<SC>().transpose() * ee_rot;
 
-        SC rot_cost = (SC)Q_rot_ * (ee_rot_diff - Matrix3Tpl::Identity()).norm();  // the frobenius norm of (R_diff-I)
+        SC rot_cost = (SC)Q_rot_ * (ee_rot_diff - Matrix3Tpl::Identity()).squaredNorm();  // the frobenius norm of (R_diff-I)
 
         return pos_cost + rot_cost;
-    }
-
-
-    //! computes RBDState in case the user supplied a floating-base robot
-    template <bool T>
-    tpl::RBDState<KINEMATICS::NJOINTS, SCALAR> setStateFromVector(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
-        typename std::enable_if<T, bool>::type = true)
-    {
-        tpl::RBDState<KINEMATICS::NJOINTS, SCALAR> rbdState;
-        rbdState.fromStateVectorEulerXyz(x);
-
-        return rbdState;
-    }
-
-    //! computes RBDState in case the user supplied a fixed-base robot
-    template <bool T>
-    tpl::RBDState<KINEMATICS::NJOINTS, SCALAR> setStateFromVector(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
-        typename std::enable_if<!T, bool>::type = true)
-    {
-        tpl::RBDState<KINEMATICS::NJOINTS, SCALAR> rbdState;
-        rbdState.joints() = x;
-        return rbdState;
     }
 
     //! index of the end-effector in question
