@@ -161,8 +161,10 @@ public:
 
     virtual void updateFinalState(const state_vector_t& x_final);
 
+    //! compare the state derivative against numerical differentiation
     bool stateDerivativeIntermediateTest();
 
+    //! compare the control derivative against numerical differentiation
     bool controlDerivativeIntermediateTest();
 
     std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermById(const size_t id);
@@ -173,11 +175,56 @@ public:
 
     std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermByName(const std::string& name);
 
+    //! initialize the cost function (e.g. to be used in CostFunctionAD)
+    virtual void initialize();
+
 protected:
+    //! evaluate intermediate analytical cost terms
+    SCALAR evaluateIntermediateBase();
+
+    //! evaluate terminal analytical cost terms
+    SCALAR evaluateTerminalBase();
+
+    //! evaluate intermediate analytical state derivatives
+    state_vector_t stateDerivativeIntermediateBase();
+
+    //! evaluate terminal analytical state derivatives
+    state_vector_t stateDerivativeTerminalBase();
+
+    //! evaluate intermediate analytical state second derivatives
+    state_matrix_t stateSecondDerivativeIntermediateBase();
+
+    //! evaluate terminal analytical state second derivatives
+    state_matrix_t stateSecondDerivativeTerminalBase();
+
+    //! evaluate intermediate analytical control derivatives
+    control_vector_t controlDerivativeIntermediateBase();
+
+    //! evaluate terminal analytical control derivatives
+    control_vector_t controlDerivativeTerminalBase();
+
+    //! evaluate intermediate analytical control second derivatives
+    control_matrix_t controlSecondDerivativeIntermediateBase();
+
+    //! evaluate terminal analytical control second derivatives
+    control_matrix_t controlSecondDerivativeTerminalBase();
+
+    //! evaluate intermediate analytical control mixed state control derivatives
+    control_state_matrix_t stateControlDerivativeIntermediateBase();
+
+    //! evaluate terminal analytical control mixed state control derivatives
+    control_state_matrix_t stateControlDerivativeTerminalBase();
+
+    //! compute the state derivative by numerical differentiation (can be used for testing)
     state_vector_t stateDerivativeIntermediateNumDiff();
+
+    //! compute the control derivative by numerical differentiation (can be used for testing)
     control_vector_t controlDerivativeIntermediateNumDiff();
 
+    //! stepsize for numerical differentiation
     SCALAR eps_;
+
+    //! use double sided derivatives in numerical differentiation
     bool doubleSidedDerivative_ = true;
 
     /** list of intermediate cost terms for which analytic derivatives are available */
