@@ -166,7 +166,7 @@ CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::getIntermediateTermByName
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>>
-CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::getFinalTermById(const std::string& name)
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::getFinalTermByName(const std::string& name)
 {
     for (auto term : finalCostAnalytical_)
         if (term->getName() == name)

@@ -171,7 +171,7 @@ public:
 
     std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermByName(const std::string& name);
 
-    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermById(const std::string& name);
+    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getFinalTermByName(const std::string& name);
 
 protected:
     state_vector_t stateDerivativeIntermediateNumDiff();
