@@ -1,4 +1,8 @@
 /*!
+ * \brief This example shows how to define your own system.
+ *
+ * \note This generates a "System", not a "ControlledSystem". If you wanted to use
+ * this system for controller design, you should derive from "ControlledSystem"
  *
  * \example Masspoint.h
  */
@@ -25,7 +29,7 @@ public:
         return new Masspoint(*this);  // calls copy constructor
     }
 
-    // we override this method which gets called by e.g. the Integrator
+    // The system dynamics. We override this method which gets called by e.g. the Integrator
     void computeDynamics(const ct::core::StateVector<STATE_DIM>& x,
         const ct::core::Time& t,
         ct::core::StateVector<STATE_DIM>& derivative) override

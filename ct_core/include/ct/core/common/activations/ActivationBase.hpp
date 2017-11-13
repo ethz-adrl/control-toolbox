@@ -12,7 +12,8 @@ namespace core {
 namespace tpl {
 
 /*!
- * Base class for all sort of (scalar) activation functions, e.g. time activations
+ * Base class for all sort of (scalar) activation functions, e.g. time activations. Activations can be used to
+ * periodically scale costs, constraints, or other, arbitrary functions. All activations are scalars.
  */
 template <typename SCALAR>
 class ActivationBase

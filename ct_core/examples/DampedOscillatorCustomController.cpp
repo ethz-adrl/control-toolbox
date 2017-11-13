@@ -4,6 +4,8 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 /*!
+ * \brief This is a basic example showing how to augment a controlled system with a custom controller
+ * and forward integrate it over time.
  *
  * \example DampedOscillatorCustomController.cpp
  */
