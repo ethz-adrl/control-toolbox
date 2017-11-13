@@ -69,10 +69,6 @@ public:
 	 */
     ~CostFunctionAnalytical();
 
-    size_t addIntermediateTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term,
-        bool verbose = false) override;
-    size_t addFinalTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term, bool verbose = false) override;
-
     SCALAR evaluateIntermediate() override;
     SCALAR evaluateTerminal() override;
 
