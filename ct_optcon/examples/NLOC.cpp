@@ -1,21 +1,25 @@
-
-#include <ct/optcon/optcon.h>
-#include "exampleDir.h"
-
-using namespace ct::core;
-using namespace ct::optcon;
-
 /*!
+ * \example nloc.cpp
+ *
  * This example shows how to use the nonlinear optimal control solvers iLQR, unconstrained Gauss-Newton-Multiple-Shooting (GNMS),
- * as well as the hybrid methods iLQR-GNMS(M), where M denotes the number of multiple-shooting intervals.
+ * as well as the hybrid methods iLQR-GNMS(M), where M denotes the number of multiple-shooting intervals. This example applies
+ * them to a simple oscillator.
  *
  * Details on the algorithms including a derivation and numerous examples can be found in
  * Markus Giftthaler et al, “A Family of iterative Gauss-Newton Shooting Methods for Unconstrained Optimal Control”.
  * Submitted to IEEE Robotics and Automation Letters and ICRA 2018.
  *
+ * The oscillator has state dimensions 2 and control dimension 1, for which ct_optcon has precompiled libraries
+ * (explicit template instantiation). We include the pre-compiled libraries in "../optcon-prespec.h"
  *
- * \example nloc.cpp
  */
+#include <ct/optcon/optcon-prespec.h>
+#include "exampleDir.h"
+
+using namespace ct::core;
+using namespace ct::optcon;
+
+
 int main(int argc, char **argv)
 {
     /*get the state and control input dimension of the oscillator. Since we're dealing with a simple oscillator,
@@ -42,7 +46,7 @@ int main(int argc, char **argv)
         new ct::core::SystemLinearizer<state_dim, control_dim>(oscillatorDynamics));
 
 
-    /* STEP 1-C: create a cost function. We have pre-specified the cost-function weights for this problem in "mpcCost.info".
+    /* STEP 1-C: create a cost function. We have pre-specified the cost-function weights for this problem in "nlocCost.info".
 	 * Here, we show how to create terms for intermediate and final cost and how to automatically load them from the configuration file.
 	 * The verbose option allows to print information about the loaded terms on the terminal. */
     std::shared_ptr<ct::optcon::TermQuadratic<state_dim, control_dim>> intermediateCost(
@@ -50,8 +54,8 @@ int main(int argc, char **argv)
     std::shared_ptr<ct::optcon::TermQuadratic<state_dim, control_dim>> finalCost(
         new ct::optcon::TermQuadratic<state_dim, control_dim>());
     bool verbose = true;
-    intermediateCost->loadConfigFile(ct::optcon::exampleDir + "/mpcCost.info", "intermediateCost", verbose);
-    finalCost->loadConfigFile(ct::optcon::exampleDir + "/mpcCost.info", "finalCost", verbose);
+    intermediateCost->loadConfigFile(ct::optcon::exampleDir + "/nlocCost.info", "intermediateCost", verbose);
+    finalCost->loadConfigFile(ct::optcon::exampleDir + "/nlocCost.info", "finalCost", verbose);
 
     // Since we are using quadratic cost function terms in this example, the first and second order derivatives are immediately known and we
     // define the cost function to be an "Analytical Cost Function". Let's create the corresponding object and add the previously loaded
