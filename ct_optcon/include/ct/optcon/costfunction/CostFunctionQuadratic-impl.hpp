@@ -1,14 +1,13 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Licensed under Apache2 license (see LICENSE file in main directory)
+ This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
+ Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #pragma once
 
 namespace ct {
 namespace optcon {
-
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionQuadratic()
@@ -44,14 +43,6 @@ CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::~CostFunctionQuadratic()
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-size_t CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateTerm(
-    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term,
-    bool verbose)
-{
-    throw std::runtime_error("not implemented");
-};
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateADTerm(
     std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar>> term,
     bool verbose)
@@ -59,13 +50,6 @@ void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateADTer
     throw std::runtime_error("not implemented");
 };
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-size_t CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalTerm(
-    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term,
-    bool verbose)
-{
-    throw std::runtime_error("not implemented");
-};
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalADTerm(
@@ -161,18 +145,18 @@ CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::getIntermediateTermByName
         if (term->getName() == name)
             return term;
 
-    throw std::runtime_error("Term " + name + " not found in the costfunction");
+    throw std::runtime_error("Term " + name + " not found in the CostFunctionQuadratic");
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>>
-CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::getFinalTermById(const std::string& name)
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::getFinalTermByName(const std::string& name)
 {
     for (auto term : finalCostAnalytical_)
         if (term->getName() == name)
             return term;
 
-    throw std::runtime_error("Term " + name + " not found in the costfunction");
+    throw std::runtime_error("Term " + name + " not found in the CostFunctionQuadratic");
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -270,6 +254,240 @@ CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeIntermed
     return dFdu;
 }
 
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::initialize()
+{
+    /*!
+	 * do nothing at all
+	 */
+}
+
+
+// add terms
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+size_t CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateTerm(
+    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term,
+    bool verbose)
+{
+    intermediateCostAnalytical_.push_back(term);
+    if (verbose)
+    {
+        std::string name = term->getName();
+        std::cout << "Trying to add term as intermediate" << std::endl;
+    }
+
+    return intermediateCostAnalytical_.size() - 1;
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+size_t CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalTerm(
+    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term,
+    bool verbose)
+{
+    finalCostAnalytical_.push_back(term);
+    if (verbose)
+    {
+        std::string name = term->getName();
+        std::cout << "Trying to add term as final" << std::endl;
+    }
+
+    return finalCostAnalytical_.size() - 1;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+SCALAR CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateIntermediateBase()
+{
+    SCALAR y = SCALAR(0.0);
+
+    for (auto it : this->intermediateCostAnalytical_)
+    {
+        if (!it->isActiveAtTime(this->t_))
+        {
+            continue;
+        }
+        y += it->computeActivation(this->t_) * it->eval(this->x_, this->u_, this->t_);
+    }
+
+    return y;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+SCALAR CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateTerminalBase()
+{
+    SCALAR y = SCALAR(0.0);
+
+    for (auto it : this->finalCostAnalytical_)
+        y += it->evaluate(this->x_, this->u_, this->t_);
+
+    return y;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediateBase()
+{
+    state_vector_t derivative;
+    derivative.setZero();
+
+    for (auto it : this->intermediateCostAnalytical_)
+    {
+        if (!it->isActiveAtTime(this->t_))
+        {
+            continue;
+        }
+        derivative += it->computeActivation(this->t_) * it->stateDerivative(this->x_, this->u_, this->t_);
+    }
+
+    return derivative;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeTerminalBase()
+{
+    state_vector_t derivative;
+    derivative.setZero();
+
+    for (auto it : this->finalCostAnalytical_)
+        derivative += it->stateDerivative(this->x_, this->u_, this->t_);
+
+    return derivative;
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::state_matrix_t
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateSecondDerivativeIntermediateBase()
+{
+    state_matrix_t derivative;
+    derivative.setZero();
+
+    for (auto it : this->intermediateCostAnalytical_)
+    {
+        if (!it->isActiveAtTime(this->t_))
+        {
+            continue;
+        }
+        derivative += it->computeActivation(this->t_) * it->stateSecondDerivative(this->x_, this->u_, this->t_);
+    }
+
+    return derivative;
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::state_matrix_t
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateSecondDerivativeTerminalBase()
+{
+    state_matrix_t derivative;
+    derivative.setZero();
+
+    for (auto it : this->finalCostAnalytical_)
+        derivative += it->stateSecondDerivative(this->x_, this->u_, this->t_);
+
+    return derivative;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeIntermediateBase()
+{
+    control_vector_t derivative;
+    derivative.setZero();
+
+    for (auto it : this->intermediateCostAnalytical_)
+    {
+        if (!it->isActiveAtTime(this->t_))
+        {
+            continue;
+        }
+        derivative += it->computeActivation(this->t_) * it->controlDerivative(this->x_, this->u_, this->t_);
+    }
+
+    return derivative;
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeTerminalBase()
+{
+    control_vector_t derivative;
+    derivative.setZero();
+
+    for (auto it : this->finalCostAnalytical_)
+        derivative += it->controlDerivative(this->x_, this->u_, this->t_);
+
+    return derivative;
+}
+
+// get control second derivatives
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_t
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivativeIntermediateBase()
+{
+    control_matrix_t derivative;
+    derivative.setZero();
+
+    for (auto it : this->intermediateCostAnalytical_)
+    {
+        if (!it->isActiveAtTime(this->t_))
+        {
+            continue;
+        }
+        derivative += it->computeActivation(this->t_) * it->controlSecondDerivative(this->x_, this->u_, this->t_);
+    }
+
+    return derivative;
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_t
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivativeTerminalBase()
+{
+    control_matrix_t derivative;
+    derivative.setZero();
+
+    for (auto it : this->finalCostAnalytical_)
+        derivative += it->controlSecondDerivative(this->x_, this->u_, this->t_);
+
+    return derivative;
+}
+
+// get state-control derivatives
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_matrix_t
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeIntermediateBase()
+{
+    control_state_matrix_t derivative;
+    derivative.setZero();
+
+    for (auto it : this->intermediateCostAnalytical_)
+    {
+        if (!it->isActiveAtTime(this->t_))
+        {
+            continue;
+        }
+        derivative += it->computeActivation(this->t_) * it->stateControlDerivative(this->x_, this->u_, this->t_);
+    }
+
+    return derivative;
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_matrix_t
+CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeTerminalBase()
+{
+    control_state_matrix_t derivative;
+    derivative.setZero();
+
+    for (auto it : this->finalCostAnalytical_)
+        derivative += it->stateControlDerivative(this->x_, this->u_, this->t_);
+
+    return derivative;
+}
 
 }  // optcon
 }  // ct
