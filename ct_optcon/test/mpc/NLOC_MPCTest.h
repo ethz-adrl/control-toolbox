@@ -28,7 +28,7 @@ using std::shared_ptr;
 /**
  * Test the MPC pre integrator
  */
-TEST(MPCTestA, PreIntegratorTest)
+TEST(MPCTestA, DISABLED_PreIntegratorTest)
 {
     typedef tpl::LinearOscillator<double> LinearOscillator;
     typedef tpl::LinearOscillatorLinear<double> LinearOscillatorLinear;
@@ -154,7 +154,7 @@ TEST(MPCTestA, PreIntegratorTest)
 }
 
 
-TEST(MPCTestB, NLOC_MPC_DoublePrecision)
+TEST(MPCTestB, DISABLED_NLOC_MPC_DoublePrecision)
 {
     typedef tpl::LinearOscillator<double> LinearOscillator;
     typedef tpl::LinearOscillatorLinear<double> LinearOscillatorLinear;
