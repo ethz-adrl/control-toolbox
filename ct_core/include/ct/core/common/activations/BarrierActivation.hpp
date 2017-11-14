@@ -30,11 +30,16 @@ template <typename SCALAR, typename TRAIT = typename ct::core::tpl::TraitSelecto
 class BarrierActivation : public ActivationBase<SCALAR>
 {
 public:
-    //! trivial constructor
+    //! trivial constructor, which deactivates upper and lower bounds.
     BarrierActivation() : ub_active_(false), lb_active_(false), ub_((SCALAR)0.0), lb_((SCALAR)0.0), alpha_((SCALAR)0.0)
     {
     }
-    //! constructor with input arguments for upper and lower bound
+    /*!
+     * \brief constructor with input arguments for upper and lower bound
+     * @param ub the upper bound barrier
+     * @param lb the lower bound barrier
+     * @param alpha scaling factor (steepness multiplier)
+     */
     BarrierActivation(const SCALAR& ub, const SCALAR& lb, const SCALAR& alpha = SCALAR(1.0))
         : ub_active_(true), lb_active_(true), ub_(ub), lb_(lb), alpha_(alpha)
     {
@@ -84,6 +89,11 @@ public:
     }
 
 
+    /*!
+     * \brief activate the lower bound while deactivating the upper bound.
+     * @param lb new numeric value for the lower bound threshold
+     * @param alpha new steepness multiplier
+     */
     void setLowerBoundOnly(const SCALAR& lb, const SCALAR& alpha = (SCALAR)1.0){
     	lb_active_ = true;
     	ub_active_ = false;
@@ -91,6 +101,11 @@ public:
     	alpha_ = alpha;
     }
 
+    /*!
+     * \brief activate the upper bound while deactivating the lower bound
+     * @param ub new numeric value for the upper bound threshold
+     * @param alpha new steepness multiplier
+     */
     void setUpperBoundOnly(const SCALAR& ub, const SCALAR& alpha = (SCALAR)1.0){
     	lb_active_ = false;
     	ub_active_ = true;

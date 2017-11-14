@@ -148,8 +148,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 This toolbox has been used in, or has helped to realize the following academic publications:
 
 - Markus Giftthaler, Michael Neunert, Markus Stäuble, Jonas Buchli and Moritz Diehl.
-“A Family of iterative Gauss-Newton Shooting Methods for Unconstrained Optimal Control”. 
-Submitted to IEEE Robotics and Automation Letters.
+“A Family of iterative Gauss-Newton Shooting Methods for Nonlinear Optimal Control”. 
+Submitted to the IEEE International Conference on Robotics and Automation 2018.
 
 - Michael Neunert, Markus Stäuble, Markus Giftthaler, Dario Bellicoso, Jan Carius, Christian Gehring, Marco Hutter and Jonas Buchli. 
 “Whole Body Model Predictive Control Through Contacts For Quadrupeds”.

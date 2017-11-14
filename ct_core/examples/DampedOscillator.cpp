@@ -1,4 +1,6 @@
 /*!
+ * \brief This is a very basic example showing how to instantiate a system (an oscillator in this case)
+ * and forward integrate it over time.
  *
  * \example DampedOscillator.cpp
  */
@@ -16,7 +18,7 @@ int main(int argc, char* argv)
     // we initialize it at 0
     x.setZero();
 
-    // create our oscillator
+    // create an oscillator, which is a predefined system in ct_core
     double w_n = 10;
     std::shared_ptr<ct::core::SecondOrderSystem> oscillator(new ct::core::SecondOrderSystem(w_n));
 
