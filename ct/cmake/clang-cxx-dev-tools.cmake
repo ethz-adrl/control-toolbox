@@ -58,7 +58,7 @@ if(NOT CLANG_FORMAT_BIN)
         COMMAND ${CMAKE_COMMAND} -E echo_append "clang-format executable not found"
         VERBATIM)
 else()
-  message (WARNING "USING CLANG-FORMAT. This re-formats the source-code in a well-defined style.")
+  message (WARNING "FOUND CLANG-FORMAT")
   add_custom_target(
     clang-format
     COMMAND ${CLANG_FORMAT_BIN}
@@ -98,7 +98,7 @@ function(ct_configure_clang_tidy TIDY_INC_DIRS)
             COMMAND ${CMAKE_COMMAND} -E echo_append "clang-tidy executable not found"
             VERBATIM)
     else()
-        message (WARNING "USING CLANG-TIDY to analyze the code for formatting issues...")
+        message (WARNING "FOUND CLANG-TIDY")
         set(CLANG_TIDY_COMMAND COMMAND ${CLANG_TIDY_BIN} ${ALL_CXX_SOURCE_FILES} -config='' -header-filter=\".*\\/ct\\/.*\" -- -std=c++11 ${CURRENT_INC_DIRS})
             
         add_custom_target(
