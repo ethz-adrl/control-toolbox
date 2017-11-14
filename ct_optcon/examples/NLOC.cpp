@@ -6,7 +6,7 @@
  * them to a simple oscillator.
  *
  * Details on the algorithms including a derivation and numerous examples can be found in
- * Markus Giftthaler et al, “A Family of iterative Gauss-Newton Shooting Methods for Unconstrained Optimal Control”.
+ * Markus Giftthaler et al, “A Family of iterative Gauss-Newton Shooting Methods for Nonlinear Optimal Control”.
  * Submitted to ICRA 2018.
  *
  */
