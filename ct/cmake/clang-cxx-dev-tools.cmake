@@ -14,13 +14,20 @@ function(filter_ct_directories allItems excludeDir)
     set(${allItems} ${${allItems}} PARENT_SCOPE)
 endfunction(filter_ct_directories)
 
-function(ct_get_all_srcs)
+function(ct_get_all_srcs ADD_HEADERS)
+
+    set(EXTENSIONS "*.cpp")
+    if (ADD_HEADERS)
+      list(APPEND EXTENSIONS "*.hpp" ".h")
+    endif()
+    
     # Get all project files
     file(GLOB_RECURSE
      ALL_CXX_SOURCE_FILES
      ${PROJECT_SOURCE_DIR}
-     *.cpp
+     ${EXTENSIONS}
      )
+     
      
      # list "external" sources, to be excluded from the format- and tidy process: 
     filter_ct_directories(ALL_CXX_SOURCE_FILES "/external/") # excludes CppAD
@@ -31,17 +38,22 @@ function(ct_get_all_srcs)
     filter_ct_directories(ALL_CXX_SOURCE_FILES "/HyA/generated/")   # excludes generated code
     filter_ct_directories(ALL_CXX_SOURCE_FILES "/HyQ/generated/")   # excludes generated code
     filter_ct_directories(ALL_CXX_SOURCE_FILES "/QuadrotorWithLoad/generated/")   # excludes generated code
-          
-     #message(FATAL_ERROR "sources list: ${ALL_CXX_SOURCE_FILES}$")
+        
+     #message(FATAL_ERROR "sources list: ${ALL_CXX_SOURCE_FILES}")
      set(ALL_CXX_SOURCE_FILES ${ALL_CXX_SOURCE_FILES} PARENT_SCOPE)
 endfunction()
 
 
 
 # Adding clang-format target if executable is found
-find_program(CLANG_FORMAT_BIN "clang-format-3.9")
-message(${CLANG_FORMAT_BIN})
+ct_get_all_srcs(TRUE)
+find_program(CLANG_FORMAT_BIN "clang-format")
 if(NOT CLANG_FORMAT_BIN)
+  find_program(CLANG_FORMAT_BIN "clang-format-3.9")
+endif()
+message(WARNING "CLANG FORMAT IS: " ${CLANG_FORMAT_BIN})
+if(NOT CLANG_FORMAT_BIN)
+    message (WARNING "CLANG-FORMAT not found. You can ignore this message if you are not a CT developer.")
     add_custom_target(clang-format
         COMMAND ${CMAKE_COMMAND} -E echo_append "clang-format executable not found"
         VERBATIM)
@@ -49,7 +61,7 @@ else()
   message (WARNING "USING CLANG-FORMAT. This re-formats the source-code in a well-defined style.")
   add_custom_target(
     clang-format
-    COMMAND clang-format-3.9
+    COMMAND ${CLANG_FORMAT_BIN}
     -i
     -style=file
     ${ALL_CXX_SOURCE_FILES}
@@ -60,7 +72,7 @@ endif()
 # Adding clang-tidy target if clang-tidy executable is found
 function(ct_configure_clang_tidy TIDY_INC_DIRS)
 
-    ct_get_all_srcs()
+    ct_get_all_srcs(FALSE)
 
     set(CURRENT_INC_DIRS "")
     
@@ -73,7 +85,10 @@ function(ct_configure_clang_tidy TIDY_INC_DIRS)
     
     #message(FATAL_ERROR "Current inc dirs: ${CURRENT_INC_DIRS}")
 
-    find_program(CLANG_TIDY_BIN "clang-tidy-3.9")
+    find_program(CLANG_TIDY_BIN "clang-tidy")
+    if(NOT CLANG_TIDY_BIN)
+      find_program(CLANG_TIDY_BIN "clang-tidy-3.9")
+    endif()
         message(${CLANG_TIDY_BIN})
     if(NOT CLANG_TIDY_BIN)
         add_custom_target(clang-tidy
@@ -81,7 +96,7 @@ function(ct_configure_clang_tidy TIDY_INC_DIRS)
             VERBATIM)
     else()
         message (WARNING "USING CLANG-TIDY to analyze the code for formatting issues...")
-        set(CLANG_TIDY_COMMAND COMMAND clang-tidy-3.9 ${ALL_CXX_SOURCE_FILES} -config='' -- -std=c++11 ${CURRENT_INC_DIRS})
+        set(CLANG_TIDY_COMMAND COMMAND ${CLANG_TIDY_BIN} ${ALL_CXX_SOURCE_FILES} -config='' -- -std=c++11 ${CURRENT_INC_DIRS})
             
         add_custom_target(
             clang-tidy

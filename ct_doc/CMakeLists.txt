@@ -25,5 +25,14 @@ if(DOXYGEN_FOUND)
         VERBATIM)
 endif()
 
+        
+add_custom_target(clang-format
+        COMMAND ${CMAKE_COMMAND} -E echo_append ""
+        VERBATIM)
+
+add_custom_target(clang-tidy
+        COMMAND ${CMAKE_COMMAND} -E echo_append ""
+        VERBATIM)    
+
 
     

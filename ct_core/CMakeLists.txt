@@ -20,7 +20,7 @@ find_package(Qwt QUIET)
 find_package(Qt4 QUIET)
 
 
-if(QWT_FOUND AND Qt4_FOUND)
+if(QWT_FOUND AND Qt4_FOUND) 
     set(QWT_ENABLED true)
     add_definitions( -DQWT_ENABLED )
     include(${QT_USE_FILE})
