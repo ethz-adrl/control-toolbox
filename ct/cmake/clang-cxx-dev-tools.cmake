@@ -89,6 +89,9 @@ function(ct_configure_clang_tidy TIDY_INC_DIRS)
     if(NOT CLANG_TIDY_BIN)
       find_program(CLANG_TIDY_BIN "clang-tidy-3.9")
     endif()
+    if(NOT CLANG_TIDY_BIN)
+      find_program(CLANG_TIDY_BIN "clang_tidy")
+    endif()
         message(${CLANG_TIDY_BIN})
     if(NOT CLANG_TIDY_BIN)
         add_custom_target(clang-tidy
@@ -96,7 +99,7 @@ function(ct_configure_clang_tidy TIDY_INC_DIRS)
             VERBATIM)
     else()
         message (WARNING "USING CLANG-TIDY to analyze the code for formatting issues...")
-        set(CLANG_TIDY_COMMAND COMMAND ${CLANG_TIDY_BIN} ${ALL_CXX_SOURCE_FILES} -config='' -- -std=c++11 ${CURRENT_INC_DIRS})
+        set(CLANG_TIDY_COMMAND COMMAND ${CLANG_TIDY_BIN} ${ALL_CXX_SOURCE_FILES} -config='' -header-filter=\".*\\/ct\\/.*\" -- -std=c++11 ${CURRENT_INC_DIRS})
             
         add_custom_target(
             clang-tidy
