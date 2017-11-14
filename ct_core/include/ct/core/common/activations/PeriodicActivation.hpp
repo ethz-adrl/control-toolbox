@@ -92,8 +92,8 @@ private:
     SCALAR period_offset_;      // how much is the period offset to t=0?
     SCALAR t_end_;
 };
-}
+}  // namespace tpl
 
 typedef tpl::PeriodicActivation<double> PeriodicActivation;
-}
-}
+}  // namespace core
+}  // namespace ct

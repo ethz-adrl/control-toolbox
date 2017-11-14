@@ -30,9 +30,9 @@ public:
     }
 
     //! return if term is active
-    virtual bool isActive(const SCALAR s){return true;}
+    virtual bool isActive(const SCALAR s) { return true; }
     //! compute activation multiplier based on scalar input
-    virtual SCALAR computeActivation(const SCALAR s){return (SCALAR) 1.0;}
+    virtual SCALAR computeActivation(const SCALAR s) { return (SCALAR)1.0; }
     //! first order derivative of this activation
     virtual SCALAR firstOrderDerivative(const SCALAR s)
     {
@@ -46,8 +46,8 @@ public:
     //! print to console
     virtual void printInfo() {}
 };
-}  // tpl
+}  // namespace tpl
 
 typedef tpl::ActivationBase<double> ActivationBase;
-}  // core
-}  // ct
+}  // namespace core
+}  // namespace ct

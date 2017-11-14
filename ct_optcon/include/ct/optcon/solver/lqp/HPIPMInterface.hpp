@@ -156,7 +156,7 @@ private:
 };
 
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct
 
 #endif

@@ -165,6 +165,7 @@ public:
     const Eigen::Matrix<double, 3, 1>& getReferencePosition() const { return w_p_ref_; }
     //! retrieve reference ee orientation in world frame
     const Eigen::Quaterniond getReferenceOrientation() const { return Eigen::Quaterniond(w_R_ref_); }
+
 protected:
     /*!
      * setStateFromVector transforms your (custom) state vector x into a RBDState.
@@ -227,7 +228,8 @@ private:
         // https://math.stackexchange.com/a/773635
         Matrix3Tpl ee_rot_diff = w_R_ref_.template cast<SC>().transpose() * ee_rot;
 
-        SC rot_cost = (SC)Q_rot_ * (ee_rot_diff - Matrix3Tpl::Identity()).squaredNorm();  // the frobenius norm of (R_diff-I)
+        SC rot_cost =
+            (SC)Q_rot_ * (ee_rot_diff - Matrix3Tpl::Identity()).squaredNorm();  // the frobenius norm of (R_diff-I)
 
         return pos_cost + rot_cost;
     }

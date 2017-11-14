@@ -224,5 +224,5 @@ Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> TermQuadratic<STATE_DIM, CONTROL_DIM, S
 {
     return x_ref_;
 }
-}
-}
+}  // namespace optcon
+}  // namespace ct

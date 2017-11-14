@@ -520,8 +520,8 @@ protected:
     /*!
 	 * This is a helper function to efficiently send std::vectors to Matlab.
 	 */
-//    template <class V>
-//    void matrixToMatlab(V& matrix, std::string variableName);
+    //    template <class V>
+    //    void matrixToMatlab(V& matrix, std::string variableName);
 
     //! compute norm of a discrete array (todo move to core)
     template <typename ARRAY_TYPE, size_t ORDER = 1>
@@ -634,8 +634,6 @@ protected:
 
     SummaryAllIterations<SCALAR> summaryAllIterations_;
 };
-
-
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>

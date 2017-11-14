@@ -546,7 +546,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::d_print_e_tran_mat(int row, int col
     printf("\n");
 }
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct
 
 #endif

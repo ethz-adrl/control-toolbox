@@ -72,5 +72,5 @@ private:
     int K_;
 };
 
-}  //! optcon
-}  //! ct
+}  // namespace optcon
+}  // namespace ct

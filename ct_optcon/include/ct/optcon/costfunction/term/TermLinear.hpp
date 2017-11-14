@@ -75,7 +75,6 @@ public:
         bool verbose = false) override;  // virtual function for data loading
 
 protected:
-
     template <typename SC>
     SC evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1> &x, const Eigen::Matrix<SC, CONTROL_DIM, 1> &u, const SC &t);
 

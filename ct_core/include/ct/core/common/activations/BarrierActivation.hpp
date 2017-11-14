@@ -94,11 +94,12 @@ public:
      * @param lb new numeric value for the lower bound threshold
      * @param alpha new steepness multiplier
      */
-    void setLowerBoundOnly(const SCALAR& lb, const SCALAR& alpha = (SCALAR)1.0){
-    	lb_active_ = true;
-    	ub_active_ = false;
-    	lb_ = lb;
-    	alpha_ = alpha;
+    void setLowerBoundOnly(const SCALAR& lb, const SCALAR& alpha = (SCALAR)1.0)
+    {
+        lb_active_ = true;
+        ub_active_ = false;
+        lb_ = lb;
+        alpha_ = alpha;
     }
 
     /*!
@@ -106,11 +107,12 @@ public:
      * @param ub new numeric value for the upper bound threshold
      * @param alpha new steepness multiplier
      */
-    void setUpperBoundOnly(const SCALAR& ub, const SCALAR& alpha = (SCALAR)1.0){
-    	lb_active_ = false;
-    	ub_active_ = true;
-    	ub_ = ub;
-    	alpha_ = alpha;
+    void setUpperBoundOnly(const SCALAR& ub, const SCALAR& alpha = (SCALAR)1.0)
+    {
+        lb_active_ = false;
+        ub_active_ = true;
+        ub_ = ub;
+        alpha_ = alpha;
     }
 
     //! compute activation multiplier based on scalar input

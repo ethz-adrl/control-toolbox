@@ -489,5 +489,5 @@ CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeTer
     return derivative;
 }
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

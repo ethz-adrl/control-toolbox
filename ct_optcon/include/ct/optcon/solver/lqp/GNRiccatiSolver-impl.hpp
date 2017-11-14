@@ -337,5 +337,5 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 #endif
 }
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

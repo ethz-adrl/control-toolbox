@@ -119,5 +119,5 @@ protected:
 };
 
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

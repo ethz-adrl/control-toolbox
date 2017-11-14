@@ -284,7 +284,8 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivativeIntermedi
     Eigen::Matrix<SCALAR, 1, 1> w;
     w << SCALAR(1.0);
     MatrixXs hesTot = intermediateCostCodegen_->hessian(stateControlTime_, w);
-    return hesTot.template block<CONTROL_DIM, CONTROL_DIM>(STATE_DIM, STATE_DIM) + this->controlSecondDerivativeIntermediateBase();
+    return hesTot.template block<CONTROL_DIM, CONTROL_DIM>(STATE_DIM, STATE_DIM) +
+           this->controlSecondDerivativeIntermediateBase();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -294,7 +295,8 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivativeTerminal(
     Eigen::Matrix<SCALAR, 1, 1> w;
     w << SCALAR(1.0);
     MatrixXs hesTot = finalCostCodegen_->hessian(stateControlTime_, w);
-    return hesTot.template block<CONTROL_DIM, CONTROL_DIM>(STATE_DIM, STATE_DIM) + this->controlSecondDerivativeTerminalBase();
+    return hesTot.template block<CONTROL_DIM, CONTROL_DIM>(STATE_DIM, STATE_DIM) +
+           this->controlSecondDerivativeTerminalBase();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>

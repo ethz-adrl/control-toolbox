@@ -67,17 +67,17 @@ public:
 
     //! copy constructor
     TermTaskspacePosition(const TermTaskspacePosition& arg)
-        : eeInd_(arg.eeInd_),
-          kinematics_(KINEMATICS()),
-          QTaskSpace_(arg.QTaskSpace_),
-          pos_ref_(arg.pos_ref_)
+        : eeInd_(arg.eeInd_), kinematics_(KINEMATICS()), QTaskSpace_(arg.QTaskSpace_), pos_ref_(arg.pos_ref_)
     {
     }
 
     //! destructor
     virtual ~TermTaskspacePosition() {}
     //! deep cloning
-    TermTaskspacePosition<KINEMATICS, FB, STATE_DIM, CONTROL_DIM>* clone() const override { return new TermTaskspacePosition(*this); }
+    TermTaskspacePosition<KINEMATICS, FB, STATE_DIM, CONTROL_DIM>* clone() const override
+    {
+        return new TermTaskspacePosition(*this);
+    }
     virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
         const Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& u,
         const SCALAR& t) override
@@ -110,16 +110,15 @@ public:
 
 
 private:
-
     //! a templated evaluate() method
     template <typename SC>
     SC evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1>& x, const Eigen::Matrix<SC, CONTROL_DIM, 1>& u, const SC& t)
     {
-    	tpl::RBDState<KINEMATICS::NJOINTS, SC> rbdState = setStateFromVector<FB>(x);
+        tpl::RBDState<KINEMATICS::NJOINTS, SC> rbdState = setStateFromVector<FB>(x);
 
         Eigen::Matrix<SC, 3, 1> xDiff =
             kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions())
-                .toImplementation()-
+                .toImplementation() -
             pos_ref_.template cast<SC>();
 
         SC cost = (xDiff.transpose() * QTaskSpace_.template cast<SC>() * xDiff)(0, 0);
@@ -143,7 +142,7 @@ private:
     tpl::RBDState<KINEMATICS::NJOINTS, SCALAR> setStateFromVector(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
         typename std::enable_if<!T, bool>::type = true)
     {
-    	tpl::RBDState<KINEMATICS::NJOINTS, SCALAR> rbdState;
+        tpl::RBDState<KINEMATICS::NJOINTS, SCALAR> rbdState;
         rbdState.joints() = x;
         return rbdState;
     }

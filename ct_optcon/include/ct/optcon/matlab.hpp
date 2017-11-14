@@ -20,5 +20,5 @@ class MatFile
 public:
     MatFile() {}
 };
-}  // namespace MATLAB
+}  // namespace matlab
 #endif  //MATLAB

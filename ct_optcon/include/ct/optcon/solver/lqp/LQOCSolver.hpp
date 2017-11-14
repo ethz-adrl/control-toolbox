@@ -82,5 +82,5 @@ protected:
     SCALAR delta_uff_norm_;  //! l2-norm of the control update
     SCALAR delta_x_norm_;    //! l2-norm of the state update
 };
-}
-}
+}  // namespace optcon
+}  // namespace ct
