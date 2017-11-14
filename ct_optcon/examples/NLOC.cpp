@@ -7,7 +7,7 @@
  *
  * Details on the algorithms including a derivation and numerous examples can be found in
  * Markus Giftthaler et al, “A Family of iterative Gauss-Newton Shooting Methods for Unconstrained Optimal Control”.
- * Submitted to IEEE Robotics and Automation Letters and ICRA 2018.
+ * Submitted to ICRA 2018.
  *
  */
 #include <ct/optcon/optcon.h>
