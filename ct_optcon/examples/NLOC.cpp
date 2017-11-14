@@ -9,11 +9,8 @@
  * Markus Giftthaler et al, “A Family of iterative Gauss-Newton Shooting Methods for Unconstrained Optimal Control”.
  * Submitted to IEEE Robotics and Automation Letters and ICRA 2018.
  *
- * The oscillator has state dimensions 2 and control dimension 1, for which ct_optcon has precompiled libraries
- * (explicit template instantiation). We include the pre-compiled libraries in "../optcon-prespec.h"
- *
  */
-#include <ct/optcon/optcon-prespec.h>
+#include <ct/optcon/optcon.h>
 #include "exampleDir.h"
 
 using namespace ct::core;
