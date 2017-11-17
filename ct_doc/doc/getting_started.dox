@@ -14,7 +14,7 @@ If you need additional support, feel free to create an issue on Bitbucket or con
  
 \page tut_basics Basic Tutorial
 
-\subsection tut_basics_pkg Creating a ROS package
+\section tut_basics_pkg Creating a ROS package
 CT is middleware free. Therefore, you are not bound to use ROS or catkin. However, for the sake of simplicity we will use catkin in this tutorial.
 Make sure you have succesfully downloaded and compiled CT according to our @ref gs instructions. Afterwards go to your catkin workspace
 and create a new package
@@ -27,7 +27,7 @@ catkin_create_pkg my_ct_project roscpp ct_core ct_rbd ct_optcon ct_models
 In this example, we made \a my_ct_project dependent on all CT packages. This is not strictly necessary, however there is no harm to it either.
 
 
-\subsection tut_basics_exec Creating our first executable
+\section tut_basics_exec Creating our first executable
 
 First, we are going to simulate the dynamics of a damped oscillator. Let's create our main file
 
@@ -42,7 +42,7 @@ choices such as ct::core::IntegratorEuler or ct::core::ODE45. Here, we chose a f
 for 1 second with a time step of 0.001 seconds. Finally, we print the new state.
 
 
-\subsection tut_basics_system Creating our first system
+\section tut_basics_system Creating our first system
 In the example above, we have been using an oscillator that is provided with CT. However, we might want to model our own system. Here, we will model
 a simple mass point subject to friction. However, if you are interested in more sophisticated models, especially Rigid Body Dynamics, make sure you 
 check out the tutorials in ct_rbd as well.

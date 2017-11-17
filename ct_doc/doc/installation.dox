@@ -10,14 +10,17 @@ This library is written in C++11. It is tested under Ubuntu 14.04 and 16.04 with
 library versions as provided in the package sources.
 
 
-\subsection dep Dependencies
+\section dep Dependencies
+
  - C++ compiler with C++11 support (we recommend gcc-5.4.1 or greater or clang-3.5 or greater)
  - <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen 3</a>
  - <a href="http://wiki.ros.org/catkin">catkin</a> (build system, easy to switch to CMakeLists.txt where needed). We recommend using <a href="http://catkin-tools.readthedocs.io/en/latest/verbs/catkin_build.html">catkin_tools</a>
  - boost 1.54 or greater (soon optional)
 
  
-\subsection opt_dep Optional Dependencies and Bindings
+\section opt_dep Optional Dependencies and Bindings
+The following dependencies and bindings are optional but can help to enhance the functionality or performance of the CT
+
  - <a href="http://www.netlib.org/lapack/">lapack</a> (enables Schur method as an alternative to iterative method in ct::optcon::LQR)
  - <a href="https://clang.llvm.org/">clang</a> compiler (faster compilation for large linear models), $ sudo apt-get install clang-3.5
  - <a href="http://wiki.ros.org/indigo">ROS Indigo</a> (for ROS bindings, visualization and extended examples), see <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_nodes</a>, <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_msgs</a>
@@ -34,9 +37,10 @@ library versions as provided in the package sources.
 
 
 \page install Compile
-\subsection build_lib Build the library
 
+\section build_lib Build the library
 
+In order to build the library, exectue the following commands in your terminal
 \code{.sh}
 cd catkin_ws/src
 git clone git@bitbucket.org:adrlab/ct.git
@@ -59,7 +63,7 @@ Build Flag  | Default value | Description
 
 
 
-\subsection build_doc Build this Documentation
+\section build_doc Build this Documentation
 To build the documentation do
 \code{.sh}
 catkin build ct_doc -v --make-args doc # build the doc 
@@ -67,7 +71,7 @@ catkin build ct_doc -v --make-args doc # build the doc
 This will build the documentation and open it in your browser.
 
 
-\subsection run_tests Run Unit Tests
+\section run_tests Run Unit Tests
 The unit tests are writte as <a href="http://code.google.com/p/googletest/">Google Tests</a>.
 To run unit tests and verify operation execute
 \code{.sh}

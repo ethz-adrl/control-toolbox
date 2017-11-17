@@ -11,7 +11,7 @@ This tutorial is specific for the Core Module of the Control Toolbox. For instal
 
 In this tutorial, we will take a look how to implement and simulate simple (feedback) controllers.
 
-\subsection cure_tut_pid PID Control
+\section cure_tut_pid PID Control
 
 First, we will implement a controller based on a simple PID Controller. There are at least three different ways to realize a PID Controller in CT.
 While there is a ct::core::PIDController, it is only SISO. However, CT assumes all systems and controllers are MIMO. Therefore, if you want to use
@@ -20,18 +20,12 @@ This is shown in ct::core::SISOArrayController. Alternatively, you can implement
 An example is shown in the \ref core_tut_custom_control "Custom Controller Tutorial". The third and easiest option is to implement the PID controller as
  a linear state feedback controller of the form \f$ u = K x \f$. Herefore, we can use ct::core::StateFeedbackController.
  
- 
-
-1. Implement your own controller
-
-To implement a controller, we derive from ct::core::Controller. As we will see
-in a bit, this will ensure our feedback controller is interoperable with the rest of the Control Toolbox.
 
 
-\subsection core_tut_custom_control Custom Controller
+\section core_tut_custom_control Custom Controller
 
 In this example, we create our own implementation of a controller. We create a controller that has two states and one control input. Our
-control structure will be a PD controller with a feedforward control action.
+control structure will be a PD controller with a feedforward control action. To implement a controller, we derive from ct::core::Controller. As we will see in a bit, this will ensure our feedback controller is interoperable with the rest of the Control Toolbox.
 Our CustomController.h looks like the following
 
 \include CustomController.h
@@ -86,7 +80,7 @@ In 2016 IEEE International Conference on Simulation, Modeling, and Programming f
 for tips and tricks on how to do this easily!
 
 
-\subsection core_tut_linearization_function Jacobian/Derivative of a General Function
+\section core_tut_linearization_function Jacobian/Derivative of a General Function
 In this tutorial, we will compute the Jacobian (derivative) of a general function using Auto-Diff Codegeneration. For this let's look at the
 unit test found in ct_core/test/math/JacobianCGTest.h
 
@@ -104,7 +98,7 @@ whether you gain speed or not, you will have to try it out.
 
 
 
-\subsection core_tut_linearization_systems Jacobian/Linearization of a Nonlinear System
+\section core_tut_linearization_systems Jacobian/Linearization of a Nonlinear System
 
 Often when dealing with nonlinear systems, described by a differential equation of the form \f$ \dot{x} = f(x,u,t) \f$ we wish to compute the linearized form of
 the system around an operating point \f$ x=x_s \f$, \f$ u=u_s \f$. 
@@ -138,7 +132,7 @@ For an example on how to use Auto-Diff Codegen to compute the linearization, see
 \note  Both Auto-Diff and Auto-Diff Codegen require you to template your function on the scalar type. Please see the tutorial \ref core_tut_linearization_scalar_templating 
 for tips and tricks on how to do this easily!
 
-\subsection core_tut_linearization_scalar_templating Templating your System or Function on the Scalar Type
+\section core_tut_linearization_scalar_templating Templating your System or Function on the Scalar Type
 
 
 \page core_tut_types Some notes on types

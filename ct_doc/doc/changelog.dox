@@ -1,11 +1,15 @@
 /*!
 
 \page changelog Change Log
+For a complete list of changes, we encourage you to check out our git repository at https://bitbucket.org/adrlab/ct
 
 \section cl_v2 Version 2
 Features
 - added GNMS algorithm
-- explicit template instantiation
+- type simplifications
+- explicit template instantiation for faster compilation speed
+- improved interfaces for SNOPT/IPOPT
+- several speed improvements
 - HPIPM support
 - improved Auto-Diff JIT and code-generation support
 - Constraints module
