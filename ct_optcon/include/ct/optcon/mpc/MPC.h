@@ -125,7 +125,7 @@ public:
     const Scalar_t timeSinceFirstSuccessfulSolve();
 
 
-    //! perform forward integration of the measured system state, to compensate for expected or already occured time lags
+    //! perform forward integration of the measured system state, to compensate for expected or already occurred time lags
     /*!
 	 * State forward integration
 	 * @param t_forward_start
@@ -136,8 +136,10 @@ public:
 	 * 	initial state for forward integration, gets overwritten with forward-integrated state
 	 * @param forwardIntegrationController
 	 *  (optional) external controller for forward integration
+	 *
+	 *  \warning The effect of the integration will vanish one the MPC frequency is higher than the sampling frequency
 	 */
-    void doPreIntegration(const Scalar_t& t_forward_start,
+    void doForwardIntegration(const Scalar_t& t_forward_start,
         const Scalar_t& t_forward_stop,
         core::StateVector<STATE_DIM, Scalar_t>& x_start,
         const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController =
@@ -158,7 +160,7 @@ public:
 	 * @param forwardIntegrationController
 	 * 		optional input: in some scenarios, we wish to use a different kind controller for forward integrating the system than the one we are optimizing
 	 * 		Such a controller can be handed over here as additional argument. If set to empty, MPC uses its own optimized controller from
-	 * 		the last iteration.
+	 * 		the last iteration, thus assuming perfect control trajectory tracking.
 	 * @return true if solve was successful, false otherwise.
 	 */
     bool run(const core::StateVector<STATE_DIM, Scalar_t>& x,
@@ -239,6 +241,7 @@ private:
     bool firstRun_;  //! true for first run
 
     typename OPTCON_SOLVER::OptConProblem_t::DynamicsPtr_t dynamics_;  //! dynamics instance for forward integration
+    ct::core::Integrator<STATE_DIM, Scalar_t> forwardIntegrator_;	//! integrator for forward integration
 
     size_t runCallCounter_;  //! counter which gets incremented at every call of the run() method
 };

@@ -20,6 +20,7 @@ MPC<OPTCON_SOLVER>::MPC(const OptConProblem_t& problem,
       solver_(problem, solverSettings),
       mpc_settings_(mpcsettings),
       dynamics_(problem.getNonlinearSystem()->clone()),
+	  forwardIntegrator_(dynamics_, mpcsettings.stateForwardIntegratorType_),
       firstRun_(true),
       runCallCounter_(0),
       policyHandler_(new PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>())
@@ -110,7 +111,7 @@ const typename MPC<OPTCON_SOLVER>::Scalar_t MPC<OPTCON_SOLVER>::timeSinceFirstSu
 
 
 template <typename OPTCON_SOLVER>
-void MPC<OPTCON_SOLVER>::doPreIntegration(const Scalar_t& t_forward_start,
+void MPC<OPTCON_SOLVER>::doForwardIntegration(const Scalar_t& t_forward_start,
     const Scalar_t& t_forward_stop,
     core::StateVector<STATE_DIM, Scalar_t>& x_start,
     const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController)
@@ -204,7 +205,7 @@ bool MPC<OPTCON_SOLVER>::finishIteration(const core::StateVector<STATE_DIM, Scal
 
     // todo preintegrtion goes to finish call
     if (!firstRun_)
-        doPreIntegration(t_forward_start_, t_forward_stop_, x_start, forwardIntegrationController);
+        doForwardIntegration(t_forward_start_, t_forward_stop_, x_start, forwardIntegrationController);
 
 
     solver_.changeInitialState(x_start);  // todo goes to finish call
@@ -297,6 +298,9 @@ void MPC<OPTCON_SOLVER>::resetMpc(const Scalar_t& newTimeHorizon)
 template <typename OPTCON_SOLVER>
 void MPC<OPTCON_SOLVER>::updateSettings(const mpc_settings& settings)
 {
+	if(settings.stateForwardIntegratorType_ != mpc_settings_.stateForwardIntegratorType_)
+		forwardIntegrator_ = ct::core::Integrator<STATE_DIM, Scalar_t>(dynamics_, settings.stateForwardIntegratorType_);
+
     mpc_settings_ = settings;
     timeKeeper_.updateSettings(settings);
     timeHorizonStrategy_->updateSettings(settings);
@@ -336,13 +340,10 @@ void MPC<OPTCON_SOLVER>::integrateForward(const Scalar_t startTime,
 {
     dynamics_->setController(controller);
 
-    Scalar_t dtInit = 0.0001;
-
-    // create temporary integrator object
-    core::Integrator<STATE_DIM, Scalar_t> newInt(dynamics_, ct::core::IntegrationType::RK4);
+    int nSteps = std::max(0, (int)std::lround((stopTime-startTime)/mpc_settings_.stateForwardIntegration_dt_));
 
     // adaptive pre-integration
-    newInt.integrate_adaptive(state, startTime, stopTime, dtInit);
+    forwardIntegrator_.integrate_n_steps(state, startTime, nSteps, mpc_settings_.stateForwardIntegration_dt_);
 }
 
 

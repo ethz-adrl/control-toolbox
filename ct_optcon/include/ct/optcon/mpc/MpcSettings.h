@@ -53,6 +53,15 @@ struct mpc_settings
 	 */
     bool stateForwardIntegration_ = false;
 
+    /*!
+     * Integrator type to use for the state prediction
+     */
+    ct::core::IntegrationType stateForwardIntegratorType_ = ct::core::IntegrationType::RK4;
+
+    /*!
+     * time step size employed for the forward integration
+     */
+    double stateForwardIntegration_dt_ = 0.001;
 
     /*!
 	 * Delay compensation.
@@ -108,6 +117,8 @@ struct mpc_settings
     {
         std::cout << " ========================= MPC SETTINGS =============================" << std::endl;
         std::cout << " stateForwardIntegration: \t " << stateForwardIntegration_ << std::endl;
+        std::cout << " stateForwardIntegrator: \t " << stateForwardIntegratorType_ << std::endl;
+        std::cout << " stateForwardIntegration_dt: \t " << stateForwardIntegration_dt_ << std::endl;
         std::cout << " measureDelay: \t " << measureDelay_ << std::endl;
         std::cout << " delayMeasurementMultiplier: \t " << delayMeasurementMultiplier_ << std::endl;
         std::cout << " fixedDelayUs: \t " << fixedDelayUs_ << std::endl;
@@ -137,6 +148,8 @@ inline void loadMpcSettings(const std::string& filename, mpc_settings& settings)
 
     settings.measureDelay_ = pt.get<bool>("mpc.measureDelay");
     settings.stateForwardIntegration_ = pt.get<bool>("mpc.stateForwardIntegration");
+    settings.stateForwardIntegration_dt_ = pt.get<double>("mpc.stateForwardIntegration_dt");
+    settings.stateForwardIntegratorType_ = (ct::core::IntegrationType) pt.get<int>("mpc.stateForwardIntegratorType");
     settings.fixedDelayUs_ = pt.get<int>("mpc.fixedDelayUs");
     settings.additionalDelayUs_ = pt.get<int>("mpc.additionalDelayUs");
     settings.minimumTimeHorizonMpc_ = pt.get<double>("mpc.timeHorizon");
