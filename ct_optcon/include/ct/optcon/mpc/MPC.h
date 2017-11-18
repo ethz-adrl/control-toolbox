@@ -224,26 +224,35 @@ private:
     Scalar_t t_forward_start_;
     Scalar_t t_forward_stop_;
 
-    OPTCON_SOLVER solver_;  //! optimal control solver employed for mpc
+    //! optimal control solver employed for mpc
+    OPTCON_SOLVER solver_;
 
-    Policy_t currentPolicy_;  //! currently optimal policy, initial guess respectively
+    //! currently optimal policy, initial guess respectively
+    Policy_t currentPolicy_;
 
-    std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>>
-        policyHandler_;  //! policy handler, which takes care of warm-starting
+    //! policy handler, which takes care of warm-starting
+    std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> policyHandler_;
 
-    std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>>
-        timeHorizonStrategy_;  //! time horizon strategy, e.g. receding horizon optimal control
+    //! time horizon strategy, e.g. receding horizon optimal control
+    std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> timeHorizonStrategy_;
 
-    tpl::MpcTimeKeeper<Scalar_t> timeKeeper_;  //! time keeper
+    //! time keeper
+    tpl::MpcTimeKeeper<Scalar_t> timeKeeper_;
 
-    mpc_settings mpc_settings_;  //! mpc settings
+    //! mpc settings
+    mpc_settings mpc_settings_;
 
-    bool firstRun_;  //! true for first run
+    //! true for first run
+    bool firstRun_;
 
-    typename OPTCON_SOLVER::OptConProblem_t::DynamicsPtr_t dynamics_;  //! dynamics instance for forward integration
-    ct::core::Integrator<STATE_DIM, Scalar_t> forwardIntegrator_;	//! integrator for forward integration
+    //! dynamics instance for forward integration
+    typename OPTCON_SOLVER::OptConProblem_t::DynamicsPtr_t dynamics_;
 
-    size_t runCallCounter_;  //! counter which gets incremented at every call of the run() method
+    //! integrator for forward integration
+    ct::core::Integrator<STATE_DIM, Scalar_t> forwardIntegrator_;
+
+    //! counter which gets incremented at every call of the run() method
+    size_t runCallCounter_;
 };
 
 
