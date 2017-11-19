@@ -6,45 +6,39 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <sys/time.h>
-
 namespace ct {
 namespace core {
 namespace tpl {
 
-//! A timer ("stop watch") to record elapsed time based on the system clock
+//! A timer ("stop watch") to record elapsed time based on external time stamps
 /*!
  * Keeps track of time in a stop watch fashion.
  */
 template <typename SCALAR = double>
-class Timer
+class ExternallyDrivenTimer
 {
 public:
     //! Default constructor
-    Timer()
-    {
-        reset();
-    }
-
+    ExternallyDrivenTimer() { reset(); }
     //! Trigger start.
     /*!
 	 * Starts the time measurement.
 	 * Can be re-triggered without calling stop(). Simply overrides the start timestamp.
 	 */
-    inline void start() { gettimeofday(&start_time, NULL); }
+    inline void start(const SCALAR& time) { start_time = time; }
     //! Trigger stop
     /*!
 	 * Stops the time measurement.
 	 */
-    inline void stop() { gettimeofday(&stop_time, NULL); }
+    inline void stop(const SCALAR& time) { stop_time = time; }
     //! Get the elapsed time between calls to start() and stop()
     /*!
 	 *
-	 * @return time in seconds
+	 * @return time
 	 */
     SCALAR getElapsedTime() const
     {
-        return (stop_time.tv_sec - start_time.tv_sec) + (stop_time.tv_usec - start_time.tv_usec) * 1e-6;
+        return stop_time - start_time;
     }
 
     //! Resets the clock.
@@ -53,18 +47,16 @@ public:
 	 */
     void reset()
     {
-        start_time.tv_sec = 0;
-        start_time.tv_usec = 0;
-        stop_time.tv_sec = 0;
-        stop_time.tv_usec = 0;
+        start_time = (SCALAR)0.0;
+        stop_time = (SCALAR)0.0;
     }
 
 private:
-    struct timeval start_time; /*!< start time */
-    struct timeval stop_time;  /*!< stop time */
+    SCALAR start_time; /*!< start time */
+    SCALAR stop_time;  /*!< stop time */
 };
 }
 
-typedef tpl::Timer<double> Timer;
+typedef tpl::ExternallyDrivenTimer<double> ExternallyDrivenTimer;
 }
 }
