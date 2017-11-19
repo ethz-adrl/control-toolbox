@@ -20,7 +20,7 @@ problems.
  research conducted at the Agile and Dexterous Robotics Lab at ETH Zürich, but is continuously extended to cover more fields of 
  applications and algorithms.
 
-\subsection teaser_traj_opt Trajectory Optimization, Optimal Control and (Nonlinear) Model Predictive Control (MPC)
+\subsection teaser_traj_opt Trajectory Optimization, Optimal Control and (Nonlinear) Model Predictive Control
 One of the few strenghts of the Control Toolbox are the implementations of Numerical Optimal Control, also often referred to
 as Trajectory Optimization, as well as (Nonlinear) Model Predictive Control. The Control Toolbox was designed with
 performance in mind and allows to solve large scale Optimal Control problems in MPC fashion. Using the code provided
@@ -55,6 +55,11 @@ The source code is available at <a href="https://bitbucket.org/adrlab/ct">https:
 
 
 \section features_overview Summary of Features
+
+The Control Toolbox consists of three main modules: The Core module, the Optimal Control (optcon) module and the Rigid Body Dyanmics (rbd)
+module. These modules depend on each other in this order, e.g. you can use the core module without the optcon or rbd module. The core
+module provides general type definitions and mathematical tools. The optcon module adds functionality for optimal control such as cost functions,
+solver backends and an MPC wrapper. The rbd module helps to model rigid body dynamics systems and use them within Optimal Control problems.
 
 \subsection ct_core_overview CT Core:
 
@@ -119,7 +124,7 @@ The Control Toolbox has been used for Hardware and Simulation control tasks on f
 For details and more videos see \ref application_examples "Application Examples" and our \ref publications "publications".
 
 
-\section gs Getting Started
+\section gs How to use the Control Toolbox
 
 To get started with the control toolbox, please see \ref getting_started "Getting Started".
 
