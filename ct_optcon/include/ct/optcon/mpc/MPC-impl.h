@@ -20,11 +20,13 @@ MPC<OPTCON_SOLVER>::MPC(const OptConProblem_t& problem,
       solver_(problem, solverSettings),
       mpc_settings_(mpcsettings),
       dynamics_(problem.getNonlinearSystem()->clone()),
-	  forwardIntegrator_(dynamics_, mpcsettings.stateForwardIntegratorType_),
+      forwardIntegrator_(dynamics_, mpcsettings.stateForwardIntegratorType_),
       firstRun_(true),
       runCallCounter_(0),
       policyHandler_(new PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>())
 {
+    checkSettings(mpcsettings);
+
     // =========== INIT WARM START STRATEGY =============
 
     if (mpc_settings_.coldStart_ == false)
@@ -104,9 +106,9 @@ bool MPC<OPTCON_SOLVER>::timeHorizonReached()
 
 
 template <typename OPTCON_SOLVER>
-const typename MPC<OPTCON_SOLVER>::Scalar_t MPC<OPTCON_SOLVER>::timeSinceFirstSuccessfulSolve()
+const typename MPC<OPTCON_SOLVER>::Scalar_t MPC<OPTCON_SOLVER>::timeSinceFirstSuccessfulSolve(const Scalar_t& extTime)
 {
-    return timeKeeper_.timeSinceFirstSuccessfulSolve();
+    return timeKeeper_.timeSinceFirstSuccessfulSolve(extTime);
 }
 
 
@@ -133,21 +135,9 @@ void MPC<OPTCON_SOLVER>::doForwardIntegration(const Scalar_t& t_forward_start,
 }
 
 
-template <typename OPTCON_SOLVER>
-bool MPC<OPTCON_SOLVER>::run(const core::StateVector<STATE_DIM, Scalar_t>& x,
-    const Scalar_t x_ts,
-    Policy_t& newPolicy,
-    Scalar_t& newPolicy_ts,
-    const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController)
-{
-    prepareIteration();
-
-    return finishIteration(x, x_ts, newPolicy, newPolicy_ts, forwardIntegrationController);
-}
-
 
 template <typename OPTCON_SOLVER>
-void MPC<OPTCON_SOLVER>::prepareIteration()
+void MPC<OPTCON_SOLVER>::prepareIteration(const Scalar_t& extTime)
 {
 #ifdef DEBUG_PRINT_MPC
     std::cout << "DEBUG_PRINT_MPC: started to prepare MPC iteration() " << std::endl;
@@ -162,9 +152,7 @@ void MPC<OPTCON_SOLVER>::prepareIteration()
     if (firstRun_)
         timeKeeper_.initialize();
 
-    timeKeeper_.startDelayMeasurement();
-
-    timeKeeper_.computeNewTimings(currTimeHorizon, newTimeHorizon, t_forward_start_, t_forward_stop_);
+    timeKeeper_.computeNewTimings(extTime, currTimeHorizon, newTimeHorizon, t_forward_start_, t_forward_stop_);
 
     // update the Optimal Control Solver with new time horizon and state information
     solver_.changeTimeHorizon(newTimeHorizon);
@@ -198,17 +186,18 @@ bool MPC<OPTCON_SOLVER>::finishIteration(const core::StateVector<STATE_DIM, Scal
     std::cout << "DEBUG_PRINT_MPC: started mpc finish Iteration() with state-timestamp " << x_ts << std::endl;
 #endif  //DEBUG_PRINT_MPC
 
+    timeKeeper_.startDelayMeasurement(x_ts);
+
     // initialize the time-stamp for policy which is to be designed
     newPolicy_ts = x_ts;
 
     core::StateVector<STATE_DIM, Scalar_t> x_start = x;
 
-    // todo preintegrtion goes to finish call
     if (!firstRun_)
         doForwardIntegration(t_forward_start_, t_forward_stop_, x_start, forwardIntegrationController);
 
 
-    solver_.changeInitialState(x_start);  // todo goes to finish call
+    solver_.changeInitialState(x_start);
 
     bool solveSuccessful = solver_.finishMPCIteration();
 
@@ -220,7 +209,7 @@ bool MPC<OPTCON_SOLVER>::finishIteration(const core::StateVector<STATE_DIM, Scal
         currentPolicy_ = solver_.getSolution();
 
         // obtain the time which passed since the previous successful solve
-        Scalar_t dtp = timeKeeper_.timeSincePreviousSuccessfulSolve();
+        Scalar_t dtp = timeKeeper_.timeSincePreviousSuccessfulSolve(x_ts);
 
         // post-truncation may be an option of the solve-call took longer than the estimated delay
         if (mpc_settings_.postTruncation_)
@@ -259,14 +248,14 @@ bool MPC<OPTCON_SOLVER>::finishIteration(const core::StateVector<STATE_DIM, Scal
 
 #ifdef DEBUG_PRINT_MPC
     std::cout << "DEBUG_PRINT_MPC: start timestamp outgoing policy: " << newPolicy_ts << std::endl;
-    std::cout << "DEBUG_PRINT_MPC: ended run() " << std::endl << std::endl;
+    std::cout << "DEBUG_PRINT_MPC: ended finishIteration() " << std::endl << std::endl;
 #endif  //DEBUG_PRINT_MPC
 
     // update policy result
     newPolicy = currentPolicy_;
 
-    // stop the delay measurement. This needs to be the last method called in run().
-    timeKeeper_.stopDelayMeasurement();
+    // stop the delay measurement. This needs to be the last method called in finishIteration().
+    timeKeeper_.stopDelayMeasurement(x_ts);
 
     // in the first run, the policy time-stamp needs to be shifted about the solving time
     if (firstRun_)
@@ -298,8 +287,10 @@ void MPC<OPTCON_SOLVER>::resetMpc(const Scalar_t& newTimeHorizon)
 template <typename OPTCON_SOLVER>
 void MPC<OPTCON_SOLVER>::updateSettings(const mpc_settings& settings)
 {
-	if(settings.stateForwardIntegratorType_ != mpc_settings_.stateForwardIntegratorType_)
-		forwardIntegrator_ = ct::core::Integrator<STATE_DIM, Scalar_t>(dynamics_, settings.stateForwardIntegratorType_);
+    checkSettings(settings);
+
+    if (settings.stateForwardIntegratorType_ != mpc_settings_.stateForwardIntegratorType_)
+        forwardIntegrator_ = ct::core::Integrator<STATE_DIM, Scalar_t>(dynamics_, settings.stateForwardIntegratorType_);
 
     mpc_settings_ = settings;
     timeKeeper_.updateSettings(settings);
@@ -312,7 +303,7 @@ void MPC<OPTCON_SOLVER>::printMpcSummary()
 {
     std::cout << std::endl;
     std::cout << "================ MPC Summary ================" << std::endl;
-    std::cout << "Number of run() calls:\t\t\t" << runCallCounter_ << std::endl;
+    std::cout << "Number of MPC calls:\t\t\t" << runCallCounter_ << std::endl;
 
     if (mpc_settings_.measureDelay_)
     {
@@ -340,12 +331,21 @@ void MPC<OPTCON_SOLVER>::integrateForward(const Scalar_t startTime,
 {
     dynamics_->setController(controller);
 
-    int nSteps = std::max(0, (int)std::lround((stopTime-startTime)/mpc_settings_.stateForwardIntegration_dt_));
+    int nSteps = std::max(0, (int)std::lround((stopTime - startTime) / mpc_settings_.stateForwardIntegration_dt_));
 
     // adaptive pre-integration
     forwardIntegrator_.integrate_n_steps(state, startTime, nSteps, mpc_settings_.stateForwardIntegration_dt_);
 }
 
+
+template <typename OPTCON_SOLVER>
+void MPC<OPTCON_SOLVER>::checkSettings(const mpc_settings& settings)
+{
+    // if external timing is active, internal delay measurement must be turned off
+    if (settings.useExternalTiming_ && settings.measureDelay_)
+        throw std::runtime_error(
+            "MPC: measuring delay internally contradicts using external Timing. Switch off one of those options.");
+}
 
 }  //namespace optcon
 }  //namespace ct

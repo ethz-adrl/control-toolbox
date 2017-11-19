@@ -112,6 +112,13 @@ struct mpc_settings
     bool coldStart_ = false;
 
 
+    /*!
+     * override the internal clock with external timing.
+     * \warning when employing this option, the setExternalTime() method needs to be called in MPC
+     */
+    bool useExternalTiming_ = false;
+
+
     //! Print MPC settings to console
     void print()
     {
@@ -127,6 +134,7 @@ struct mpc_settings
         std::cout << " mpc_mode: \t " << (int)mpc_mode << std::endl;
         std::cout << " minimumTimeHorizonMpc: \t " << minimumTimeHorizonMpc_ << std::endl;
         std::cout << " coldStart: \t " << coldStart_ << std::endl;
+        std::cout << " useExternalTiming: \t " << useExternalTiming_ << std::endl;
         std::cout << " ============================== END =================================" << std::endl;
     }
 };
@@ -156,6 +164,7 @@ inline void loadMpcSettings(const std::string& filename, mpc_settings& settings)
     settings.coldStart_ = pt.get<bool>("mpc.coldStart");
     settings.postTruncation_ = pt.get<bool>("mpc.postTruncation");
     settings.delayMeasurementMultiplier_ = pt.get<double>("mpc.delayMeasurementMultiplier");
+    settings.useExternalTiming_ = pt.get<bool>("mpc.useExternalTiming");
 }
 
 

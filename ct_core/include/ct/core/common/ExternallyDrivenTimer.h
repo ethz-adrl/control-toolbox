@@ -33,7 +33,6 @@ public:
     inline void stop(const SCALAR& time) { stop_time = time; }
     //! Get the elapsed time between calls to start() and stop()
     /*!
-	 *
 	 * @return time
 	 */
     SCALAR getElapsedTime() const

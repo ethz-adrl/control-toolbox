@@ -119,10 +119,10 @@ public:
 
     //! retrieve the time that elapsed since the first successful solve() call to an Optimal Control Problem
     /*!
-	 * the returned time can be used externally, for example to update cost functions
-	 * @return time elapsed
+	 * @param the external time stamp
+	 * @return time elapsed, the returned time can be used externally, for example to update cost functions
 	 */
-    const Scalar_t timeSinceFirstSuccessfulSolve();
+    const Scalar_t timeSinceFirstSuccessfulSolve(const Scalar_t& extTime);
 
 
     //! perform forward integration of the measured system state, to compensate for expected or already occurred time lags
@@ -146,34 +146,30 @@ public:
             nullptr);
 
 
-    //! main MPC run method
     /*!
-	 * @param x
-	 * 	current system state
-	 * @param x_ts
-	 *  time stamp of the current state (external time in seconds)
-	 * @param newPolicy
-	 *  the new policy calculated by the MPC run() method based on above state, the timing info and the underlying OptConProblem
-	 * @param newPolicy_ts
-	 *  time stamp of the resulting policy. This indicates when the policy is supposed to start being applied, relative to
-	 *  the user-provided state-timestamp x_ts.
-	 * @param forwardIntegrationController
-	 * 		optional input: in some scenarios, we wish to use a different kind controller for forward integrating the system than the one we are optimizing
-	 * 		Such a controller can be handed over here as additional argument. If set to empty, MPC uses its own optimized controller from
-	 * 		the last iteration, thus assuming perfect control trajectory tracking.
-	 * @return true if solve was successful, false otherwise.
-	 */
-    bool run(const core::StateVector<STATE_DIM, Scalar_t>& x,
-        const Scalar_t x_ts,
-        Policy_t& newPolicy,
-        Scalar_t& newPolicy_ts,
-        const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController =
-            nullptr);
+     * Prepare MPC iteration
+     * @param ext_ts the current external time
+     */
+    void prepareIteration(const Scalar_t& ext_ts);
 
 
-    void prepareIteration();
-
-
+    //! finish MPC iteration
+    /*!
+   	 * @param x
+   	 * 	current system state
+   	 * @param x_ts
+   	 *  time stamp of the current state (external time in seconds)
+   	 * @param newPolicy
+   	 *  the new policy calculated based on above state, the timing info and the underlying OptConProblem
+   	 * @param newPolicy_ts
+   	 *  time stamp of the resulting policy. This indicates when the policy is supposed to start being applied, relative to
+   	 *  the user-provided state-timestamp x_ts.
+   	 * @param forwardIntegrationController
+   	 * 		optional input: in some scenarios, we wish to use a different kind controller for forward integrating the system than the one we are optimizing
+   	 * 		Such a controller can be handed over here as additional argument. If set to empty, MPC uses its own optimized controller from
+   	 * 		the last iteration, thus assuming perfect control trajectory tracking.
+   	 * @return true if solve was successful, false otherwise.
+   	 */
     bool finishIteration(const core::StateVector<STATE_DIM, Scalar_t>& x,
         const Scalar_t x_ts,
         Policy_t& newPolicy,
@@ -202,10 +198,8 @@ public:
 private:
     //! state forward propagation (for delay compensation)
     /*!
-	 * Perform forward integration about the given prediction horizon. Currently, this automatically uses adaptive integration.
+	 * Perform forward integration about the given prediction horizon.
 	 * - uses an arbitrary controller given, which is important for hierarchical setups where the actual controller may be refined further
-	 * - clones that controller, since it may be mistakenly used somewhere else otherwise.
-	 * - output: the forward integrated state in x0
 	 * @param startTime
 	 * 	time where forward integration starts w.r.t. the current policy
 	 * @param stopTime
@@ -219,6 +213,8 @@ private:
         const Scalar_t stopTime,
         core::StateVector<STATE_DIM, Scalar_t>& state,
         const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>>& controller);
+
+    void checkSettings(const mpc_settings& settings);
 
     //! timings for pre-integration
     Scalar_t t_forward_start_;
