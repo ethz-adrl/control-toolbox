@@ -80,6 +80,8 @@ public:
 
     bool runIteration();
 
+    bool solve();
+
     const core::StateFeedbackController<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>& getSolution();
 
     const StateVectorArray& retrieveLastRollout();
