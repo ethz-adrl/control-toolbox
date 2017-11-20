@@ -101,6 +101,13 @@ bool FixBaseNLOC<RBDDynamics, SCALAR>::runIteration()
     return foundBetter;
 }
 
+
+template <class RBDDynamics, typename SCALAR>
+bool FixBaseNLOC<RBDDynamics, SCALAR>::solve()
+{
+    return nlocSolver_->solve();
+}
+
 template <class RBDDynamics, typename SCALAR>
 const core::StateFeedbackController<FixBaseNLOC<RBDDynamics, SCALAR>::FBSystem::STATE_DIM,
     FixBaseNLOC<RBDDynamics, SCALAR>::FBSystem::CONTROL_DIM,
