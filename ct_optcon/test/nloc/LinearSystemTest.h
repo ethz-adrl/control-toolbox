@@ -52,7 +52,7 @@ TEST(LinearSystemsTest, NLOCSolverTest)
     nloc_settings.dt = 0.01;
     nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;  // default approximation
     nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-    nloc_settings.printSummary = false;
+    nloc_settings.printSummary = true; //! this is required to have summary computed and test passed.
 
     // loop through all solver classes
     for (int algClass = 0; algClass < NLOptConSettings::NLOCP_ALGORITHM::NUM_TYPES; algClass++)
@@ -103,11 +103,11 @@ TEST(LinearSystemsTest, NLOCSolverTest)
                                         nloc_settings.integrator = ct::core::IntegrationType::EULERCT;
                                     else if (integratortype == 1 && nloc_settings.useSensitivityIntegrator == true)
                                     {
-                                    	// use RK4 with exactly integrated sensitivities
+                                        // use RK4 with exactly integrated sensitivities
                                         nloc_settings.integrator = ct::core::IntegrationType::RK4CT;
                                     }
                                     else
-                                        continue; // proceed to next test case
+                                        continue;  // proceed to next test case
 
 //                                  nloc_settings.print();
 
@@ -139,7 +139,6 @@ TEST(LinearSystemsTest, NLOCSolverTest)
                                         tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
 
 
-                                    std::cout << "initializing gnms solver" << std::endl;
                                     NLOptConSolver solver(optConProblem, nloc_settings);
                                     solver.configure(nloc_settings);
                                     solver.setInitialGuess(initController);
@@ -150,15 +149,14 @@ TEST(LinearSystemsTest, NLOCSolverTest)
                                     //! retrieve summary of the optimization
                                     const SummaryAllIterations<double>& summary = solver.getBackend()->getSummary();
                                     //! check that the policy improved in the first iteration
-                                    ASSERT_TRUE(summary.lx_norms.front() > 1e-9 && summary.lu_norms.front() > 1e-9 &&
-                                                "NLOC should have improved at least once");
+                                    ASSERT_GT(summary.lx_norms.front(), 1e-9);
+                                    ASSERT_GT(summary.lu_norms.front(), 1e-9);
 
                                     //! check that we are converged after the first iteration
-                                    ASSERT_TRUE(summary.lx_norms.back() < 1e-10 && summary.lu_norms.back() < 1e-10 &&
-                                                "NLOC should be converged in one iteration");
-                                    ASSERT_TRUE(summary.defect_l1_norms.back() < 1e-11 &&
-                                                summary.defect_l2_norms.back() < 1e-11 &&
-                                                "NLOC should not have defects.");
+                                    ASSERT_LT(summary.lx_norms.back(), 1e-10);
+                                    ASSERT_LT(summary.lu_norms.back(), 1e-10);
+                                    ASSERT_LT(summary.defect_l1_norms.back(), 1e-10);
+                                    ASSERT_LT(summary.defect_l2_norms.back(), 1e-10);
 
                                     testCounter++;
 
