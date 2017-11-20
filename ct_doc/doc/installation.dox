@@ -16,7 +16,7 @@ library versions as provided in the package sources.
  - <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen 3</a>
  - <a href="http://wiki.ros.org/catkin">catkin</a> (build system, easy to switch to CMakeLists.txt where needed). We recommend using <a href="http://catkin-tools.readthedocs.io/en/latest/verbs/catkin_build.html">catkin_tools</a>
  - boost 1.54 or greater (soon optional)
-
+ - <a href="https://github.com/ethz-asl/kindr">kindr</a>, a kinematics library for robotics, which is required for building ct_rbd
  
 \section opt_dep Optional Dependencies and Bindings
 The following dependencies and bindings are optional but can help to enhance the functionality or performance of the CT
@@ -43,7 +43,8 @@ The following dependencies and bindings are optional but can help to enhance the
 In order to build the library, exectue the following commands in your terminal
 \code{.sh}
 cd catkin_ws/src
-git clone git@bitbucket.org:adrlab/ct.git
+git clone https://github.com/ethz-asl/kindr.git
+git clone https://bitbucket.org/adrlab/ct.git
 catkin build -DCMAKE_BUILD_TYPE=RELEASE 
 \endcode
 
