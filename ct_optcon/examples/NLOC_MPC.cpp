@@ -119,7 +119,7 @@ int main(int argc, char **argv)
 	 * together with a time-stamp from your robot or system. MPC needs to receive both that time information and
 	 * the state from your control system. Here, "simulate" the time measurement using std::chrono and wrap
 	 * everything into a for-loop.
-	 * The basic idea of operation is that after receiving time and state information, one executes the run() method of MPC.
+	 * The basic idea of operation is that after receiving time and state information, one executes the finishIteration() method of MPC.
 	 */
     auto start_time = std::chrono::high_resolution_clock::now();
 
@@ -143,14 +143,18 @@ int main(int argc, char **argv)
         ct::core::Time t =
             1e-6 * std::chrono::duration_cast<std::chrono::microseconds>(current_time - start_time).count();
 
+        // prepare mpc iteration
+        ilqr_mpc.prepareIteration(t);
+
         // new optimal policy
         ct::core::StateFeedbackController<state_dim, control_dim> newPolicy;
 
         // timestamp of the new optimal policy
         ct::core::Time ts_newPolicy;
 
-        // !!! run one MPC cycle !!! (get new policy by reference)
-        bool success = ilqr_mpc.run(x0, t, newPolicy, ts_newPolicy);
+        current_time = std::chrono::high_resolution_clock::now();
+        t = 1e-6 * std::chrono::duration_cast<std::chrono::microseconds>(current_time - start_time).count();
+        bool success = ilqr_mpc.finishIteration(x0, t, newPolicy, ts_newPolicy);
 
         // we break the loop in case the time horizon is reached or solve() failed
         if (ilqr_mpc.timeHorizonReached() | !success)

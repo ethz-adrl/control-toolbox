@@ -60,7 +60,7 @@ public:
         ct::core::ControlVector<RBDDynamics::NJOINTS> joint_torques =
             ct::core::ControlVector<RBDDynamics::NJOINTS>::Zero();
 
-        // introduce some light damping into the joint (friction) // todo fixme tune this value
+        // introduce some light damping into the joint (friction) //! @todo tune this value
         joint_torques = -0.0005 * x.joints().getVelocities();
 
         dynamics_.FloatingBaseForwardDynamics(x, joint_torques, linkForces, xd);
