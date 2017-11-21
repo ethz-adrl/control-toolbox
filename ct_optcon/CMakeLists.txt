@@ -298,9 +298,6 @@ target_link_libraries(dms_test_all_var ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_
 add_executable(matFilesGenerator test/dms/oscillator/matfiles/matFilesGenerator.cpp)
 target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
 
-#add_executable(timeKeeperTest test/mpc/TimeKeeperTest.cpp)
-#target_link_libraries(timeKeeperTest ${catkin_LIBRARIES})
-
 get_filename_component(MPC_TEST_MAT_DIR "test/mpc/matfiles" ABSOLUTE)
 configure_file(test/mpc/mpcTestSettings.h.in test/mpc/mpcTestSettings.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/mpc)

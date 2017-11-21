@@ -10,6 +10,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "common/QuantizationNoise.h"
 #include "common/InfoFileParser.h"
 #include "common/Timer.h"
+#include "common/ExternallyDrivenTimer.h"
 #include "common/Interpolation.h"
 #include "common/linspace.h"
 #include "common/activations/Activations.h"
