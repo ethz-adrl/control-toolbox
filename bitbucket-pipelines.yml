@@ -1,0 +1,5 @@
+pipelines:
+  default:
+    - step:
+        script:
+          - bash <(curl -s https://codecov.io/bash) -t de58327d-d9d8-4005-84be-2522efa48a43 -X gcov
