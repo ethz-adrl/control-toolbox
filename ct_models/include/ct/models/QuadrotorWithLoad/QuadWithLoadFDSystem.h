@@ -6,10 +6,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/core/systems/ControlledSystem.h>
-#include <ct/rbd/state/RigidBodyPose.h>
-
-#include <ct/rbd/systems/RBDSystem.h>
+#include <ct/core/core.h>
+#include <ct/rbd/rbd.h>
 
 namespace ct {
 namespace rbd {
