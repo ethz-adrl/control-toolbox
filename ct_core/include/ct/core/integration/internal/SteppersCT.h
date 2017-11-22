@@ -6,7 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/core/systems/System.h>
+#include <ct/core/systems/continuous_time/System.h>
 #include "StepperBase.h"
 
 namespace ct {

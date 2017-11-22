@@ -6,8 +6,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/core/systems/ControlledSystem.h>
-#include <ct/core/systems/linear/LinearSystem.h>
+#include <ct/core/systems/continuous_time/ControlledSystem.h>
+#include <ct/core/systems/continuous_time/linear/LinearSystem.h>
 #include <ct/core/integration/internal/SteppersCT.h>
 
 #define SYMPLECTIC_ENABLED        \

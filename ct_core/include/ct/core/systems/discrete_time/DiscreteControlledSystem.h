@@ -7,7 +7,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "DiscreteSystem.h"
-#include <ct/core/control/DiscreteController.h>
+#include <ct/core/control/discrete_time/DiscreteController.h>
 
 namespace ct {
 namespace core {

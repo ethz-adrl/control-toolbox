@@ -6,7 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include "ct/core/control/Controller.h"
+#include "Controller.h"
 
 namespace ct {
 namespace core {
@@ -18,7 +18,7 @@ namespace core {
  * constant control input.
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class ConstantTrajectoryController : public Controller<STATE_DIM, CONTROL_DIM, SCALAR>
+class ConstantController : public Controller<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -27,35 +27,27 @@ public:
     /*!
 	 * Sets the control signal to zero
 	 */
-    ConstantTrajectoryController() {}
+    ConstantController();
+
     //! Constructor
     /*!
 	 * Initializes the control to a fixed value
 	 * @param u The fixed control signal
 	 */
-    ConstantTrajectoryController(const ControlVectorArray<CONTROL_DIM, SCALAR>& u,
-        const StateVectorArray<STATE_DIM, SCALAR>& x)
-        : uff_(u), x_(x)
-    {
-    }
+    ConstantController(ControlVector<CONTROL_DIM, SCALAR>& u);
 
     //! Copy constructor
-    ConstantTrajectoryController(const ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR>& other)
-        : Controller<STATE_DIM, CONTROL_DIM, SCALAR>(other), x_(other.x_), uff_(other.uff_)
-    {
-    }
+    ConstantController(const ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>& other);
 
     //! Destructor
-    ~ConstantTrajectoryController() {}
+    virtual ~ConstantController();
+
     //! Clone operator
     /*!
 	 * Clones the controller. Used for cloning ControlledSystem's
 	 * @return pointer to cloned controller
 	 */
-    ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
-    {
-        return new ConstantTrajectoryController<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
-    }
+    ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
 
     //! Computes current control
     /*!
@@ -67,36 +59,27 @@ public:
 	 */
     void computeControl(const StateVector<STATE_DIM, SCALAR>& state,
         const SCALAR& t,
-        ControlVector<CONTROL_DIM, SCALAR>& controlAction) override
-    {
-        throw std::runtime_error("not implemented");
-    }
+        ControlVector<CONTROL_DIM, SCALAR>& controlAction) override;
 
     //! Sets the control signal
     /*!
 	 *
 	 * @param u The fixed control signal
 	 */
-    void setControlVectorArray(const ControlVectorArray<CONTROL_DIM, SCALAR>& u) { uff_ = u; }
+    void setControl(const ControlVector<CONTROL_DIM, SCALAR>& u);
+
     //! Get the fixed control signal
     /*!
-	 */
-    const ControlVectorArray<CONTROL_DIM, SCALAR>& getControlVectorArray() const { return uff_; }
-    //! Sets the state trajectory
-    /*!
 	 *
-	 * @param u The fixed state trajectory
+	 * @param u The control input to write the signal to.
 	 */
-    void setStateVectorArray(const StateVectorArray<STATE_DIM, SCALAR>& x) { x_ = x; }
-    //! Get the fixed state trajectory
-    /*!
-	 *
-	 *
-	 */
-    const StateVectorArray<STATE_DIM, SCALAR>& getStateVectorArray() const { return x_; }
+    const ControlVector<CONTROL_DIM, SCALAR>& getControl() const;
+
+    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state,
+        const SCALAR time) override;
+
 private:
-    ControlVectorArray<CONTROL_DIM, SCALAR> uff_;  //! feedforward control trajectory
-    StateVectorArray<STATE_DIM, SCALAR> x_;
+    ControlVector<CONTROL_DIM, SCALAR> u_;
 };
 }
 }

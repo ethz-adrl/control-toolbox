@@ -6,7 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/core/control/Controller.h>
+#include "Controller.h"
 #include <ct/core/types/FeedbackMatrix.h>
 
 namespace ct {
