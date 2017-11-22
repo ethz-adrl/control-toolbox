@@ -88,6 +88,7 @@ public:
     }
 
     LinkedMasses *clone() const override { return new LinkedMasses(); };
+
 private:
     state_matrix_t A_;
     state_control_matrix_t B_;

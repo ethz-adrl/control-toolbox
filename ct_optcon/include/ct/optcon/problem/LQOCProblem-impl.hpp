@@ -100,5 +100,5 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
     u_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, u0);
 }
 
-}  //! optcon
-}  //! ct
+}  // namespace optcon
+}  // namespace ct

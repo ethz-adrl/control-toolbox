@@ -156,5 +156,5 @@ void TermQuadTracking<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFi
         std::cout << "Read R as R = \n" << R_ << std::endl;
     }
 }
-}
-}
+}  // namespace optcon
+}  // namespace ct

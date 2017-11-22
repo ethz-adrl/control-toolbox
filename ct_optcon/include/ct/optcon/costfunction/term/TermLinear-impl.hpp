@@ -121,5 +121,5 @@ void TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(con
         std::cout << "Read b as b= \n" << b_ << std::endl;
     }
 }
-}
-}
+}  // namespace optcon
+}  // namespace ct

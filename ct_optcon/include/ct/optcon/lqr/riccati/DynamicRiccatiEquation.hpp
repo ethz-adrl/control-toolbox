@@ -116,5 +116,5 @@ private:
 };
 
 
-}  // namespace ricatti
-}  // namespace lqr
+}  // namespace optcon
+}  // namespace ct

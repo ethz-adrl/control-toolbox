@@ -6,6 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include "../../models/testhyq/RobCoGenTestHyQ.h"
 #include <gtest/gtest.h>
+#include "../../../ct_optcon/test/costfunction/compareCostFunctions.h"
 
 using namespace ct;
 using namespace rbd;
@@ -49,6 +50,16 @@ TEST(TaskspaceCostFunctionTests, TestTaskSpacePositionTerm)
     //! compare auto-diff against num-diff
     ASSERT_TRUE(Adcf->stateDerivativeIntermediateTest());
     ASSERT_TRUE(Adcf->controlDerivativeIntermediateTest());
+
+    // check cloning for this term/costfunction combination
+    std::shared_ptr<optcon::CostFunctionAD<hyqStateDim, hyqControlDim>> Adcf_cloned (Adcf->clone());
+    x.setRandom();
+    u.setRandom();
+    t = 2.0;
+    Adcf->setCurrentStateAndControl(x, u, t);
+    Adcf_cloned->setCurrentStateAndControl(x, u, t);
+
+    ct::optcon::example::compareCostFunctionOutput(*Adcf_cloned, *Adcf);
 }
 
 
@@ -112,4 +123,13 @@ TEST(TaskspaceCostFunctionTests, TestTaskSpacePoseTerm)
     //! compare auto-diff against num-diff
     ASSERT_TRUE(Adcf->stateDerivativeIntermediateTest());
     ASSERT_TRUE(Adcf->controlDerivativeIntermediateTest());
+
+    // check cloning for this term/costfunction combination
+    std::shared_ptr<optcon::CostFunctionAD<hyqStateDim, hyqControlDim>> Adcf_cloned (Adcf->clone());
+    x.setRandom();
+    u.setRandom();
+    t = 2.0;
+    Adcf->setCurrentStateAndControl(x, u, t);
+    Adcf_cloned->setCurrentStateAndControl(x, u, t);
+    ct::optcon::example::compareCostFunctionOutput(*Adcf_cloned, *Adcf);
 }

@@ -79,14 +79,14 @@ public:
     /**
 	 * \brief Destructor
 	 */
-    ~CostFunctionAD();
+    virtual ~CostFunctionAD();
 
 
     /**
 	 * @brief      Initializes the AD costfunction, generates and compiles
 	 *             source code
 	 */
-    void initialize();
+    virtual void initialize() override;
 
     /**
 	 * \brief Add an intermediate, auto-differentiable term
@@ -134,23 +134,36 @@ public:
     control_state_matrix_t stateControlDerivativeIntermediate() override;
     control_state_matrix_t stateControlDerivativeTerminal() override;
 
+    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> getIntermediateADTermById(const size_t id);
+
+    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> getFinalADTermById(const size_t id);
+
+    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> getIntermediateADTermByName(
+        const std::string& name);
+
+    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> getFinalADTermByName(const std::string& name);
+
 
 private:
     MatrixCg evaluateIntermediateCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM + 1, 1>& stateInputTime);
     MatrixCg evaluateTerminalCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM + 1, 1>& stateInputTime);
 
+    //! combined state, control and time vector
     Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM + 1, 1> stateControlTime_;
 
+    //! intermediate AD terms
     std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>>> intermediateTerms_;
+    //! final AD terms
     std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>>> finalTerms_;
 
+    //! generated jacobians
     std::shared_ptr<JacCG> intermediateCostCodegen_;
     std::shared_ptr<JacCG> finalCostCodegen_;
 
+    //! cppad functions
     typename JacCG::FUN_TYPE_CG intermediateFun_;
     typename JacCG::FUN_TYPE_CG finalFun_;
 };
 
 }  // namespace optcon
 }  // namespace ct
-

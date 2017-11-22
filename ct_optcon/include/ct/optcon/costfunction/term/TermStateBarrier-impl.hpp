@@ -81,9 +81,9 @@ void TermStateBarrier<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFi
     const std::string& termName,
     bool verbose)
 {
-	state_matrix_t Alpha;
-	state_matrix_t Ub;
-	state_matrix_t Lb;
+    state_matrix_t Alpha;
+    state_matrix_t Ub;
+    state_matrix_t Lb;
 
     loadMatrixCF(filename, "alpha", Alpha, termName);
     loadMatrixCF(filename, "upper_bound", Ub, termName);
@@ -100,5 +100,5 @@ void TermStateBarrier<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFi
         std::cout << "Read lower_bound as = \n" << lb_.transpose() << std::endl;
     }
 }
-}
-}
+}  // namespace optcon
+}  // namespace ct

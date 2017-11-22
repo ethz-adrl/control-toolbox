@@ -157,5 +157,5 @@ void TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::updateReferenceStat
 {
     x_ref_ = newRefState;
 }
-}
-}
+}  // namespace optcon
+}  // namespace ct

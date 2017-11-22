@@ -42,5 +42,5 @@ public:
 protected:
     std::shared_ptr<Backend_t> backend_;
 };
-}
-}
+}  // namespace optcon
+}  // namespace ct

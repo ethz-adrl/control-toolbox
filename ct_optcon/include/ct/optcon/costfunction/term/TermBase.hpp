@@ -31,7 +31,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, t
 class TermBase
 {
 protected:
-	//! a name identifier for this term
+    //! a name identifier for this term
     std::string name_;
     //! time activations for this term
     std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>> c_i_;

@@ -96,5 +96,5 @@ private:
     Eigen::VectorXd WORK_;
     Eigen::VectorXi IWORK_;
 };
-}
-}
+}  // namespace optcon
+}  // namespace ct

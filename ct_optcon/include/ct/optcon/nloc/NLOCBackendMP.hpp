@@ -123,7 +123,7 @@ private:
     //! wrapper method for nice debug printing
     void printString(const std::string& text);
 
-    std::vector<std::thread, Eigen::aligned_allocator<std::thread>> workerThreads_;
+    std::vector<std::thread> workerThreads_;
     std::atomic_bool workersActive_;
     std::atomic_int workerTask_;
 

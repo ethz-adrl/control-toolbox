@@ -1,14 +1,13 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Licensed under Apache2 license (see LICENSE file in main directory)
-**********************************************************************************************************************/
+ This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
+ Licensed under Apache2 license (see LICENSE file in main directory)
+ **********************************************************************************************************************/
 
 #pragma once
 
 namespace ct {
 namespace optcon {
-
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD()
@@ -28,7 +27,6 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD()
 
     setCurrentStateAndControl(this->x_, this->u_, this->t_);
 }
-
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const CostFunctionAD& arg)
@@ -54,7 +52,6 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const CostFunctio
     initialize();  //when cloning, we directly call initialize()
 }
 
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const std::string& filename, bool verbose)
     : CostFunctionAD()  //! @warning the delegating constructor in the initializer list is required to call the initial routine in CostFunctionAD()
@@ -70,7 +67,6 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>* CostFunctionAD<STATE_DIM, CONTRO
 {
     return new CostFunctionAD(*this);
 }
-
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::initialize()
@@ -134,7 +130,6 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::setCurrentStateAndControl(c
 
     stateControlTime_ << x, u, t;
 }
-
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(const std::string& filename, bool verbose)
@@ -219,13 +214,13 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateTerminalCg(
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 SCALAR CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateIntermediate()
 {
-    return intermediateCostCodegen_->forwardZero(stateControlTime_)(0);
+    return this->evaluateIntermediateBase() + intermediateCostCodegen_->forwardZero(stateControlTime_)(0);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 SCALAR CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateTerminal()
 {
-    return finalCostCodegen_->forwardZero(stateControlTime_)(0);
+    return this->evaluateTerminalBase() + finalCostCodegen_->forwardZero(stateControlTime_)(0);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -234,7 +229,7 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediate()
 {
     Eigen::Matrix<SCALAR, 1, STATE_DIM + CONTROL_DIM + 1> jacTot =
         intermediateCostCodegen_->jacobian(stateControlTime_);
-    return jacTot.template leftCols<STATE_DIM>().transpose();
+    return jacTot.template leftCols<STATE_DIM>().transpose() + this->stateDerivativeIntermediateBase();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -242,9 +237,8 @@ typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeTerminal()
 {
     Eigen::Matrix<SCALAR, 1, STATE_DIM + CONTROL_DIM + 1> jacTot = finalCostCodegen_->jacobian(stateControlTime_);
-    return jacTot.template leftCols<STATE_DIM>().transpose();
+    return jacTot.template leftCols<STATE_DIM>().transpose() + this->stateDerivativeTerminalBase();
 }
-
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t
@@ -252,7 +246,7 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeIntermediate()
 {
     Eigen::Matrix<SCALAR, 1, STATE_DIM + CONTROL_DIM + 1> jacTot =
         intermediateCostCodegen_->jacobian(stateControlTime_);
-    return jacTot.template block<1, CONTROL_DIM>(0, STATE_DIM).transpose();
+    return jacTot.template block<1, CONTROL_DIM>(0, STATE_DIM).transpose() + this->controlDerivativeIntermediateBase();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -260,9 +254,8 @@ typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeTerminal()
 {
     Eigen::Matrix<SCALAR, 1, STATE_DIM + CONTROL_DIM + 1> jacTot = finalCostCodegen_->jacobian(stateControlTime_);
-    return jacTot.template block<1, CONTROL_DIM>(0, STATE_DIM).transpose();
+    return jacTot.template block<1, CONTROL_DIM>(0, STATE_DIM).transpose() + this->controlDerivativeTerminalBase();
 }
-
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::state_matrix_t
@@ -271,7 +264,7 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateSecondDerivativeIntermediat
     Eigen::Matrix<SCALAR, 1, 1> w;
     w << SCALAR(1.0);
     MatrixXs hesTot = intermediateCostCodegen_->hessian(stateControlTime_, w);
-    return hesTot.template block<STATE_DIM, STATE_DIM>(0, 0);
+    return hesTot.template block<STATE_DIM, STATE_DIM>(0, 0) + this->stateSecondDerivativeIntermediateBase();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -281,9 +274,8 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateSecondDerivativeTerminal()
     Eigen::Matrix<SCALAR, 1, 1> w;
     w << SCALAR(1.0);
     MatrixXs hesTot = finalCostCodegen_->hessian(stateControlTime_, w);
-    return hesTot.template block<STATE_DIM, STATE_DIM>(0, 0);
+    return hesTot.template block<STATE_DIM, STATE_DIM>(0, 0) + this->stateSecondDerivativeTerminalBase();
 }
-
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_t
@@ -292,9 +284,9 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivativeIntermedi
     Eigen::Matrix<SCALAR, 1, 1> w;
     w << SCALAR(1.0);
     MatrixXs hesTot = intermediateCostCodegen_->hessian(stateControlTime_, w);
-    return hesTot.template block<CONTROL_DIM, CONTROL_DIM>(STATE_DIM, STATE_DIM);
+    return hesTot.template block<CONTROL_DIM, CONTROL_DIM>(STATE_DIM, STATE_DIM) +
+           this->controlSecondDerivativeIntermediateBase();
 }
-
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_t
@@ -303,7 +295,8 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivativeTerminal(
     Eigen::Matrix<SCALAR, 1, 1> w;
     w << SCALAR(1.0);
     MatrixXs hesTot = finalCostCodegen_->hessian(stateControlTime_, w);
-    return hesTot.template block<CONTROL_DIM, CONTROL_DIM>(STATE_DIM, STATE_DIM);
+    return hesTot.template block<CONTROL_DIM, CONTROL_DIM>(STATE_DIM, STATE_DIM) +
+           this->controlSecondDerivativeTerminalBase();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -313,7 +306,7 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeIntermedia
     Eigen::Matrix<SCALAR, 1, 1> w;
     w << SCALAR(1.0);
     MatrixXs hesTot = intermediateCostCodegen_->hessian(stateControlTime_, w);
-    return hesTot.template block<CONTROL_DIM, STATE_DIM>(STATE_DIM, 0);
+    return hesTot.template block<CONTROL_DIM, STATE_DIM>(STATE_DIM, 0) + this->stateControlDerivativeIntermediateBase();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -323,7 +316,47 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeTerminal()
     Eigen::Matrix<SCALAR, 1, 1> w;
     w << SCALAR(1.0);
     MatrixXs hesTot = finalCostCodegen_->hessian(stateControlTime_, w);
-    return hesTot.template block<CONTROL_DIM, STATE_DIM>(STATE_DIM, 0);
+    return hesTot.template block<CONTROL_DIM, STATE_DIM>(STATE_DIM, 0) + this->stateControlDerivativeTerminalBase();
 }
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+std::shared_ptr<ct::optcon::
+        TermBase<STATE_DIM, CONTROL_DIM, SCALAR, typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CGScalar>>
+CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::getIntermediateADTermById(const size_t id)
+{
+    return intermediateTerms_[id];
 }
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+std::shared_ptr<ct::optcon::
+        TermBase<STATE_DIM, CONTROL_DIM, SCALAR, typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CGScalar>>
+CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::getFinalADTermById(const size_t id)
+{
+    return finalTerms_[id];
 }
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+std::shared_ptr<
+    TermBase<STATE_DIM, CONTROL_DIM, SCALAR, typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CGScalar>>
+CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::getIntermediateADTermByName(const std::string& name)
+{
+    for (auto term : intermediateTerms_)
+        if (term->getName() == name)
+            return term;
+
+    throw std::runtime_error("Term " + name + " not found in the CostFunctionAD");
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+std::shared_ptr<
+    TermBase<STATE_DIM, CONTROL_DIM, SCALAR, typename CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CGScalar>>
+CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::getFinalADTermByName(const std::string& name)
+{
+    for (auto term : finalTerms_)
+        if (term->getName() == name)
+            return term;
+
+    throw std::runtime_error("Term " + name + " not found in the CostFunctionAD");
+}
+}  // namespace optcon
+}  // namespace ct
