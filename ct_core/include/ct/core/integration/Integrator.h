@@ -11,6 +11,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include <cmath>
 
 #include "EventHandler.h"
+#include "Observer.h"
 #include "eigenIntegration.h"
 
 #include "internal/StepperBase.h"
