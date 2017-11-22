@@ -7,3 +7,4 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 // put impl files here
+#include "systems/discrete_time/SystemDiscretizer-impl.h"
