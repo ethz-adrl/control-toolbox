@@ -27,6 +27,8 @@ namespace core {
 //! Discretize a general, continuous-time non-linear dynamic system using forward integration
 /*!
  * The SystemDiscretizer transforms a continuous-time system into a discrete-time system by forward integration.
+ * Please not that it does not perform a global transformation to discrete-time (it cannot compute transition matrices
+ * or similar), but rather 'mimicks' a discrete system, based on the underlying continuous-time system.
  * In every call to propagateControlledDynamics(), the continuous-time system is forward integrated by a time interval
  * dt_. Furthermore, the substeps during integration are recorded during each propagate-call, and can be retrieved
  * using getSubstates() and getSubcontrols().
@@ -80,20 +82,31 @@ public:
      * @param integratorType the integratorType for numerical forward integration
      * @param K_sim the number of sub-integration intervals
      */
-    SystemDiscretizer(ContinuousSystemPtr& system,
+    SystemDiscretizer(ContinuousSystemPtr system,
         const SCALAR& dt,
         const ct::core::IntegrationType& integratorType = ct::core::IntegrationType::RK4,
         const int& K_sim = 1);
 
+    //! copy constructor
+    SystemDiscretizer(const SystemDiscretizer& arg);
+
     //! destructor
     virtual ~SystemDiscretizer();
 
+    //! deep cloning
+    virtual SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>* clone() const override;
+
+    //! initialize class
+    void initialize();
+
+    //! update integration type
     void setIntegrationType(const ct::core::IntegrationType& integratorType);
 
+    //! update parameters
     void setParameters(const SCALAR& dt, const int& K_sim = 1);
 
     //! update the SystemDiscretizer with a new nonlinear, continuous-time system
-    void changeContinuousTimeSystem(ContinuousSystemPtr& newSystem);
+    void changeContinuousTimeSystem(ContinuousSystemPtr newSystem);
 
     //! propagate discrete-time dynamics by performing a numerical forward integration of the continuous-time system
     /*!

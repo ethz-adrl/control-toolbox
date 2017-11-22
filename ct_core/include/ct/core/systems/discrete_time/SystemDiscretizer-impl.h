@@ -36,7 +36,7 @@ SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::SystemDiscretiz
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::SystemDiscretizer(ContinuousSystemPtr& system,
+SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::SystemDiscretizer(ContinuousSystemPtr system,
     const SCALAR& dt,
     const ct::core::IntegrationType& integratorType,
     const int& K_sim)
@@ -54,6 +54,21 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::~SystemDiscretizer()
 {
 }
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::SystemDiscretizer(const SystemDiscretizer& arg)
+    : dt_(arg.dt_), K_sim_(arg.K_sim_), dt_sim_(arg.dt_sim_), integratorType_(arg.integratorType_)
+{
+    changeContinuousTimeSystem(ContinuousSystemPtr(cont_time_system_->clone()));
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>*
+SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::clone() const
+{
+    return new SystemDiscretizer(*this);
+}
+
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 SCALAR SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getSimulationTimestep()
@@ -79,22 +94,27 @@ void SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::setParamet
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeContinuousTimeSystem(
-    ContinuousSystemPtr& dyn)
+void SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initialize()
 {
-    cont_time_system_ = std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>>(dyn->clone());
-    cont_time_system_->setController(cont_constant_controller_);
-
     substepRecorder_ =
         SubstepRecorderPtr(new ct::core::SubstepRecorder<STATE_DIM, CONTROL_DIM, SCALAR>(cont_time_system_));
 
-    // if symplectic integrator then don't create normal ones
     if (integratorType_ != ct::core::IntegrationType::EULER_SYM && integratorType_ != ct::core::IntegrationType::RK_SYM)
     {
         integrator_ = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR>>(
             new ct::core::Integrator<STATE_DIM, SCALAR>(cont_time_system_, integratorType_, substepRecorder_));
     }
     initializeSymplecticIntegrator<V_DIM, P_DIM>();
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeContinuousTimeSystem(
+    ContinuousSystemPtr dyn)
+{
+    cont_time_system_ = std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>>(dyn->clone());
+    cont_time_system_->setController(cont_constant_controller_);
+    initialize();
 }
 
 
@@ -146,11 +166,10 @@ SYMPLECTIC_ENABLED SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALA
                     substepRecorder_));
 
         //! initialize RK symplectic integrator
-        integratorRkSymplectic_ =
-            std::shared_ptr<ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>(
-                new ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR>(
-                    std::static_pointer_cast<ct::core::SymplecticSystem<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>(
-                        cont_time_system_)));
+        integratorRkSymplectic_ = std::shared_ptr<ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>(
+            new ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR>(
+                std::static_pointer_cast<ct::core::SymplecticSystem<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>(
+                    cont_time_system_)));
     }
 }
 

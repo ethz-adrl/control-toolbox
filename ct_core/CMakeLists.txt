@@ -114,6 +114,9 @@ target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
 catkin_add_gtest(IntegratorComparisonPrespec test/integration/IntegratorComparisonPrespec.cpp)
 target_link_libraries(IntegratorComparisonPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
 
+catkin_add_gtest(SystemDiscretizerTest test/integration/SystemDiscretizerTest.cpp)
+target_link_libraries(SystemDiscretizerTest ${catkin_LIBRARIES} ct_core)
+
 add_executable(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
 target_link_libraries(SensitivityTest ${catkin_LIBRARIES} ct_core)
 
