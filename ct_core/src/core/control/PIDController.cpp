@@ -6,7 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <iostream>
 
-#include <ct/core/control/siso/PIDController.h>
+#include <ct/core/control/continuous_time/siso/PIDController.h>
 
 #include <ct/core/types/Time.h>
 

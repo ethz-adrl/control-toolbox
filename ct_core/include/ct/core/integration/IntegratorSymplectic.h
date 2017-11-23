@@ -14,7 +14,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include "eigenIntegration.h"
 
-#include <ct/core/systems/SymplecticSystem.h>
+#include <ct/core/systems/continuous_time/SymplecticSystem.h>
 
 #include "internal/SteppersODEIntDefinitions.h"
 

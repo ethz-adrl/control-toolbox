@@ -4,7 +4,12 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#pragma once
+#include <ct/core/core.h>
+#include "SystemDiscretizerTest.h"
 
-// put impl files here
-#include "systems/discrete_time/SystemDiscretizer-impl.h"
+
+int main(int argc, char **argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}

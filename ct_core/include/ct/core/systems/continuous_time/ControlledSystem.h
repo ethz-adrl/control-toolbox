@@ -6,7 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include "../control/Controller.h"
+#include <ct/core/control/continuous_time/Controller.h>
 #include "System.h"
 
 #include <ct/core/types/arrays/MatrixArrays.h>

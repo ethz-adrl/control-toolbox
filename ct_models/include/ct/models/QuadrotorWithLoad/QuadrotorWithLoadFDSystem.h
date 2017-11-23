@@ -6,16 +6,14 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/core/systems/ControlledSystem.h>
-#include <ct/rbd/state/RigidBodyPose.h>
-
-#include <ct/rbd/systems/RBDSystem.h>
+#include <ct/core/core.h>
+#include <ct/rbd/rbd.h>
 
 namespace ct {
 namespace rbd {
 
 template <class RBDDynamics, bool QUAT_INTEGRATION = false>
-class QuadWithLoadFDSystem
+class QuadrotorWithLoadFDSystem
     : public RBDSystem<RBDDynamics, QUAT_INTEGRATION>,
       public core::ControlledSystem<RBDDynamics::NSTATE + QUAT_INTEGRATION, 4, typename RBDDynamics::SCALAR>
 {
@@ -30,16 +28,16 @@ public:
 
     typedef core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
-    QuadWithLoadFDSystem(){};
+    QuadrotorWithLoadFDSystem(){};
 
-    QuadWithLoadFDSystem(const QuadWithLoadFDSystem& arg)
+    QuadrotorWithLoadFDSystem(const QuadrotorWithLoadFDSystem& arg)
         : RBDSystem<RBDDynamics, QUAT_INTEGRATION>(arg),
           core::ControlledSystem<RBDDynamics::NSTATE + QUAT_INTEGRATION, 4, typename RBDDynamics::SCALAR>(arg),
           dynamics_(arg.dynamics_)
     {
     }
 
-    virtual ~QuadWithLoadFDSystem(){};
+    virtual ~QuadrotorWithLoadFDSystem(){};
 
     virtual RBDDynamics& dynamics() override { return dynamics_; }
     virtual const RBDDynamics& dynamics() const override { return dynamics_; }
@@ -125,9 +123,9 @@ public:
     }
 
 
-    virtual QuadWithLoadFDSystem<RBDDynamics, QUAT_INTEGRATION>* clone() const override
+    virtual QuadrotorWithLoadFDSystem<RBDDynamics, QUAT_INTEGRATION>* clone() const override
     {
-        return new QuadWithLoadFDSystem(*this);
+        return new QuadrotorWithLoadFDSystem(*this);
     }
 
 private:

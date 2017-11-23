@@ -6,5 +6,19 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-// put impl files here
-#include "systems/discrete_time/SystemDiscretizer-impl.h"
+namespace ct {
+namespace models {
+namespace quadrotor {
+
+static std::vector<std::string> urdfJointNames()
+{
+    std::vector<std::string> urdfJointNames = {
+        "jA", "jB",
+    };
+
+    return urdfJointNames;
+}
+
+}  // quadrotor
+}  // models
+}  // ct

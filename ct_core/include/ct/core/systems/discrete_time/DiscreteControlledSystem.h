@@ -7,7 +7,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "DiscreteSystem.h"
-#include <ct/core/control/DiscreteController.h>
+#include <ct/core/control/discrete_time/DiscreteController.h>
 
 namespace ct {
 namespace core {
@@ -105,7 +105,7 @@ public:
 	 * evaluates \f$ x_{n+1} = f(x_n, n) \f$ at a given state and index
 	 * @param state start state to propagate from
 	 * @param n time index to propagate the dynamics at
-	 * @param stateNext propagated state
+	 * @param stateNext the resulting propagated state
 	 */
     virtual void propagateDynamics(const StateVector<STATE_DIM, SCALAR>& state,
         const int& n,
@@ -121,6 +121,14 @@ public:
     }
 
 
+    //! propagates the controlled system dynamics forward by one step
+    /*!
+	 * evaluates \f$ x_{n+1} = f(x_n, u_n, n) \f$ at a given state, control and index
+	 * @param state start state to propagate from
+	 * @param control the control input to apply. This is a constant control input applied to the continuous-time dynamics
+	 * @param n time index to propagate the dynamics at
+	 * @param stateNext the resulting propagated state
+	 */
     virtual void propagateControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
         const int& n,
         const ControlVector<CONTROL_DIM, SCALAR>& control,

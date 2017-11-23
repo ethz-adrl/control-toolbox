@@ -14,11 +14,11 @@ class DiscreteSystem
 {
 public:
     //! constructor
-    DiscreteSystem(const SYSTEM_TYPE& type = GENERAL) : type_(type), isSymplectic_(false) {}
+    DiscreteSystem(const SYSTEM_TYPE& type = GENERAL) : type_(type) {}
     //! desctructor
     virtual ~DiscreteSystem() {}
     //! deep copy
-    virtual DiscreteSystem* clone() const { throw std::runtime_error("clone not implemented"); };
+    virtual DiscreteSystem* clone() const { throw std::runtime_error("DiscreteSystem: clone() not implemented"); };
     //! propagates the system dynamics forward by one step
     /*!
 	 * evaluates \f$ x_{n+1} = f(x_n, n) \f$ at a given state and index
@@ -35,16 +35,8 @@ public:
 	 * @return system type
 	 */
     SYSTEM_TYPE getType() const { return type_; }
-    /**
-	 * @brief      Determines if the system is in symplectic form .
-	 *
-	 * @return     True if symplectic, False otherwise.
-	 */
-    bool isSymplectic() const { return isSymplectic_; }
 protected:
     SYSTEM_TYPE type_;  //!< type of system
-
-    bool isSymplectic_;
 };
 }
 }

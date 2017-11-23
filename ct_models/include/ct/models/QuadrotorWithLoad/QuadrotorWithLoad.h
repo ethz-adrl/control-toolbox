@@ -21,7 +21,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 // define namespace and base
 #define ROBCOGEN_NS ct_quadrotor
-#define TARGET_NS ct_quadrotor
+#define TARGET_NS quadrotor
 
 // define the links
 #define CT_BASE fr_body

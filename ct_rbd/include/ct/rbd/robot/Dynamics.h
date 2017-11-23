@@ -7,7 +7,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <memory>
-#include <ct/core/systems/ControlledSystem.h>
+#include <ct/core/systems/continuous_time/ControlledSystem.h>
 #include "kinematics/RBDDataMap.h"
 #include "Kinematics.h"
 #include "ProjectedDynamics.h"

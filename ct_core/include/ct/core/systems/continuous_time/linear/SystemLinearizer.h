@@ -12,7 +12,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include <ct/core/types/StateVector.h>
 #include <ct/core/types/ControlVector.h>
 
-#include <ct/core/systems/ControlledSystem.h>
+#include <ct/core/systems/continuous_time/ControlledSystem.h>
 
 #include "LinearSystem.h"
 

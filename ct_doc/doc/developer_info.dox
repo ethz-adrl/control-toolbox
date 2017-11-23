@@ -11,13 +11,17 @@ style sheet for our conventions. Or simply rely on clang-format to do the format
 
 Note for developers using the *Eclipse IDE*: you can conveniently integrate clang-format (and our .clang-format 
 configuration file) in your project using the "CppStyle" plugin (see http://www.cppstyle.com/ for 
-detailed information). To automaticallyformat the code according to ct-style, just mark the source-code 
+detailed information). To automatically format the code according to ct-style, just mark the source-code 
 and press *Ctrl+Shift+f*.
 
 
-Example command for running clang-format or clang-tidy:
+Example command for running clang-tidy:
 
 $ catkin build --no-deps <package_name> -v --make-args clang-tidy 
+
+For clang-format it's just the same: 
+
+$ catkin build --no-deps <package_name> -v --make-args clang-format 
 
 
 \section Explicit Template Instantiation
