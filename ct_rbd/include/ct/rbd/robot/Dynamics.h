@@ -116,7 +116,7 @@ public:
 	 */
     ENABLE_FIX_BASE FixBaseForwardDynamics(const JointState_t& x, const control_vector_t& u, JointAcceleration_t& qdd)
     {
-        ExtLinkForces_t force(Eigen::Matrix<double, 6, 1>::Zero());
+        ExtLinkForces_t force(Eigen::Matrix<SCALAR, 6, 1>::Zero());
         FixBaseForwardDynamics(x, u, force, qdd);
     }
 

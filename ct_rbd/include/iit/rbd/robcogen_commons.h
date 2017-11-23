@@ -356,7 +356,7 @@ void ctransform_Ia_revolute(
 
     aux1.XX = Ia_A(AX,AX) + 2*C.XY*rz - 2*C.XZ*ry;
     aux1.YY = Ia_A(AY,AY) + 2*C.YZ*rx - 2*C.YX*rz;
-    aux1.ZZ = 0.0;
+    aux1.ZZ = Scalar(0);
     aux1.XY = Ia_A(AX,AY) + C.YY*rz - C.XX*rz - C.YZ*ry + C.XZ*rx;
     aux1.XZ = C.XX*ry - C.XY*rx;
     aux1.YZ = C.YX*ry - C.YY*rx;
