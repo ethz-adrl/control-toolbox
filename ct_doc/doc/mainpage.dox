@@ -2,48 +2,93 @@
 \mainpage Overview
 
 \section ct1 Control Toolbox
-This is ADRL Control Toolbox, a C++ library for efficient modelling, control and estimation for robotics. As the name
-suggests, it contains several tools to design and evaluate controllers, model dynamical systems and solve optimal control
-problems.
+This is ADRL Control Toolbox, an open-source C++ library for efficient modelling, control, 
+estimation and trajectory optimization for robotics. The toolbox is designed for high efficiency
+and online control. As the name suggests, it contains several tools to design and evaluate 
+controllers, model dynamical systems and solve optimal control problems. Besides linking to the 
+full doxygen documentation, on the following pages we outline the ct's general concept, its 
+major building blocks and highlight selected application examples.
 
 
-\section teaser Why using the CT?
- A very common tasks for robotics researchers and practitioners is to model robotic systems, implement Equations of Motion, 
- and develop model-based controllers, estimators, planning algorithms, etc.
- Sooner or later, one is confronted with questions of efficient implementation, computing derivative information, 
- formulating constraints or cost functions, or refactoring code to make it fast enough to run on robotic hardware.
- The Control Toolbox is specifically designed for these tasks. It is entirely written in C++, provides interfaces to 
- state-of-the art robot modelling software, provides a set of optimal control tools, spanning a range from simple LQR 
- reference implementations to constrained model predictive control, can auto-differentiate and generate derivative code 
- for arbitrary functions, and provides a simple way to visualize simulation results using ROS and rviz. The 'ct' has been 
- successfully used for a large number of hardware experiments, demonstrations and academic publications. The project originated from
- research conducted at the Agile and Dexterous Robotics Lab at ETH Zürich, but is continuously extended to cover more fields of 
- applications and algorithms.
+\section teaser What is the CT and why should I use it?
+ A very common tasks for robotics researchers and practitioners is to model robotic systems, 
+ implement Equations of Motion, and develop model-based controllers, estimators, planning 
+ algorithms, etc. 
+ Sooner or later, one is confronted with questions of efficient implementation, 
+ computing derivative information, formulating constraints or cost functions, or refactoring code 
+ to make it fast enough to run on robotic hardware.
+ The Control Toolbox is specifically designed for these tasks. 
+ It is entirely written in C++, provides interfaces to state-of-the art robot modelling software, 
+ provides a set of optimal control tools, spanning a range from simple LQR reference implementations
+ to constrained model predictive control, can auto-differentiate and generate derivative code for 
+ arbitrary functions, and provides a simple way to visualize simulation results using ROS and rviz. 
+ The toolbox has a strong focus on highly efficient code that can be run online (in the loop) on 
+ robots or other actuated hardware.
+ Still, we designed the toolbox with usability in mind, allowing inexperienced users to apply 
+ advanced concepts such as Non-linear Model Predictive Control (NMPC) or Numerical Optimal Control
+ easily and with minimal effort. 
+ While we provide the means of modelling rigid body dynamics, all other modules are independent 
+ of the a particular modelling framework, allowing the code to be interfaced with existing 
+ C/C++ code or libraries. 
+ A major contribution of the control toolbox are the implementations of non-linear optimal 
+ control algorithms.
+ The 'ct' has been successfully used for a large number of hardware experiments, demonstrations 
+ and academic publications. Example hardware applications are online trajectory optimization
+ with collision avoidance, trajectory optimization for Quadrupeds and mobile manipulators
+ as well as NMPC on ground robots and UAVs.
+ The project originated from research conducted at the Agile and Dexterous Robotics Lab at 
+ ETH Zürich, but is continuously extended to cover more fields of applications and algorithms.
+
+\section scope Scope of the 'ct'
+ Software is one of the key building blocks for robotic systems and there is a great effort 
+ in creating software tools and libraries for robotics. 
+ However, when it comes to control and especially Numerical Optimal Control, there are not 
+ many open source tools available that are both easy to use for fast development as well as 
+ efficient enough for online usage. 
+ While there exist mature toolboxes for Numerical Optimal Control and Trajectory Optimization, 
+ they are highly specialized, standalone tools that due not provide sufficient flexibility 
+ for other applications. Here is where the `Robotics and Optimal Control Toolbox' or short 
+ the `Control Toolbox' (CT) steps in. CT has been designed from ground up to provide the tools 
+ needed for fast development and evaluation of control methods while being optimized for 
+ efficiency allowing for online operation. While the emphasis lies on control, the tools 
+ provided can also be used for simulation, estimation or optimization applications.
+
+ In contrast to other robotic software, CT is not a rigid integrated application but can be 
+ seen quite literal as a toolbox: It offers a variety of tools which can be used and combined 
+ to solve a task at hand. While ease-of-use has been a major criteria during the design and 
+ application examples are provided, using CT still requires programming and control knowledge. 
+ However, it frees the users from implementing standard methods that require in-depth experience 
+ with linear algebra or numerical methods. Furthermore, by using common definitions and types, 
+ a seamless integration between different components such as systems, controllers or integrators 
+ is provided, enabling fast prototyping.
+
 
 \subsection teaser_traj_opt Trajectory Optimization, Optimal Control and (Nonlinear) Model Predictive Control
-One of the few strenghts of the Control Toolbox are the implementations of Numerical Optimal Control, also often referred to
-as Trajectory Optimization, as well as (Nonlinear) Model Predictive Control. The Control Toolbox was designed with
-performance in mind and allows to solve large scale Optimal Control problems in MPC fashion. Using the code provided
-NMPC on a full dynamic model of a quarduped robot with 36 states and 12 inputs can be solved at a rate of over 160 Hz for
+One of the strenghts of the Control Toolbox are the implementations of Numerical Optimal Control,
+also often referred to as Trajectory Optimization, as well as (Nonlinear) Model Predictive Control. 
+The Control Toolbox was designed with performance in mind and allows to solve large scale 
+Optimal Control problems in MPC fashion. For instance, using the 'ct', NMPC on a full dynamic 
+model of a quarduped robot with 36 states and 12 inputs can be solved at a rate of over 180 Hz for
 a time horizon of 500 steps using a standard desktop computer.
 
-But also versatility is a key-feature of the Control Toolbox. Once the Optimal Control problem has been formulated, it can
-be solved with a multitude of solver strategies and implementations. This allows for quickly comparing various approaches.
-Currently, the Control Toolbox supports the following types of Numerical Optimal Control and Trajectory Optimization
-techniques both as single optimization and MPC:
+Versatility is a key-feature of the Control Toolbox. 
+Once the Optimal Control problem has been formulated, it can be solved with a multitude of solver
+strategies and implementations. 
+This allows for quickly comparing various approaches.
+Currently, the Control Toolbox supports the following types of Numerical Optimal Control and 
+Trajectory Optimization techniques both as single optimization and MPC:
  - Single Shooting
- - Direct Multiple Shooting (DMS)
  - iLQR / SLQ
+ - Classical Direct Multiple Shooting (DMS)
  - Gauss-Newton-Multiple-Shooting (GNMS)
 
-All these algorithms have linear time complexity, i.e. computation time scales linear with the time horizon.
+All these algorithms feature linear time complexity, i.e. computation time scales linear with the time horizon.
 
-We also support the following solvers
+The 'ct' features a custon Riccati-solver, but also supports the following third-party NLP solvers
  - IPOPT (first and second order)
  - SNOPT
  - HPIPM
- - custom GNMS solver
- - custom iLQR solver
+
 
 All the algorithm flavors and solver backends are available through simple configuration files without altering the problem.
 Therefore, we believe the Control Toolbox provides the broadest choice of Optimal Control solvers while not sacrificing performance.
