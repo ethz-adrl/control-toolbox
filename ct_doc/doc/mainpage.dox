@@ -63,6 +63,32 @@ major building blocks and highlight selected application examples.
  is provided, enabling fast prototyping.
 
 
+\section structure Structure of the 'ct'
+CT is separated into different modules described below. 
+There is a clear hierarchy between the modules. 
+The `core' module (ct_core) contains mostly data type definitions, definitions for systems
+and controllers, as well as basic functionality such as numerical integrators for differential equations. 
+The `optimal Control' module (ct_optcon) builds on top of the `core' module and adds 
+infrastructure for defining and solving Optimal Control Problems. 
+The `rigid Body Dynamics' module (ct_rbd) provides tools for modelling Rigid Body Dynamics 
+systems and interfaces with ct_core and ct_optcon data types. 
+For testing as well as examples, we provide the 'models' module (ct_models) which contains 
+various robot models including a quadruped, a robotic arm, a normal quadrotor and
+a quadrotor with slung load.
+
+
+\section design Design and Implementation
+The main focus of CT is efficiency, which is why it is fully implemented in C++. 
+Since CT is designed as a toolbox rather than an integrated application, we tried to provide 
+maximum flexibility to the users. Therefore, it is not tied to a specific middleware such as 
+ROS and dependencies are kept at a minimum. The two essential dependencies for ct are
+Eigen and kindr (which is based on Eigen). This Eigen dependency is intentional since Eigen
+is a defacto standard for linear algebra in C++, as it provides highly efficient implementations 
+of standard matrix operations as well as more advanced linear algebra methods. 
+Kindr is a header only Kinematics library which builds on top of it and provides data types 
+for different rotation representations such as Quaternions, Euler angles or rotation matrices.
+
+
 \subsection teaser_traj_opt Trajectory Optimization, Optimal Control and (Nonlinear) Model Predictive Control
 One of the strenghts of the Control Toolbox are the implementations of Numerical Optimal Control,
 also often referred to as Trajectory Optimization, as well as (Nonlinear) Model Predictive Control. 
