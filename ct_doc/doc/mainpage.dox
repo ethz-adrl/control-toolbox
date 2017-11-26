@@ -28,9 +28,9 @@ The CT was designed with the following features in mind:
  Currently, the Control Toolbox supports the following types of Numerical Optimal Control (Trajectory 
  Optimization) approaches:
  	- Single Shooting
- 	- iLQR / SLQ
- 	- Gauss-Newton-Multiple-Shooting (GNMS)
- 	- Classical Direct Multiple Shooting (DMS)
+ 	- iLQR \cite todorov2005ilqg / SLQ \cite slq:2005 
+ 	- Gauss-Newton-Multiple-Shooting (GNMS) \cite giftthaler2017family
+ 	- Classical Direct Multiple Shooting (DMS) \cite bock1984direct
  - **Solver interfaces**: 
   - custom Riccati-solver
   - IPOPT (first and second order)
@@ -91,8 +91,9 @@ For details and more videos see \ref application_examples "Application Examples"
  control algorithms.
  The CT has been successfully used for a large number of hardware experiments, demonstrations 
  and academic publications. Example hardware applications are online trajectory optimization
- with collision avoidance, trajectory optimization for Quadrupeds and mobile manipulators
- as well as NMPC on ground robots and UAVs.
+ with collision avoidance \cite giftthaler2017autodiff, trajectory optimization for 
+ Quadrupeds \cite neunert:2017:ral and mobile manipulators \cite giftthaler2017efficient
+ as well as NMPC on ground robots \cite neunert2017mpc and UAVs \cite neunert16hexrotor.
  The project originated from research conducted at the Agile and Dexterous Robotics Lab at 
  ETH Zürich, but is continuously extended to cover more fields of applications and algorithms.
 
