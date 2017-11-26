@@ -46,7 +46,7 @@ optcon and rbd as well.
 @tableofcontents
 
 - make use of \ref vectorization "Vectorization"
-- use \ref auto-diff "Auto-Differentiation" with just-in-time compilation or code generation
+- use \ref core_tut_linearization "Auto-Differentiation" with just-in-time compilation or code generation
 - if you do not want to use Auto-Diff, consider using the ct::rbd::RbdLinearizer for linearizing Rigid Body Dynamics
 - use multi-threading for Nonlinear Optimal Control Solvers
 - use HPIPM for running MPC or solving Optimal Control problems

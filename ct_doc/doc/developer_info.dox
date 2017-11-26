@@ -18,13 +18,14 @@ and press *Ctrl+Shift+f*.
 
 
 Example command for running clang-tidy:
-
+\code
 $ catkin build --no-deps <package_name> -v --make-args clang-tidy 
+\endcode
 
 For clang-format it's just the same: 
-
+\code
 $ catkin build --no-deps <package_name> -v --make-args clang-format 
-
+\endcode
 
 \section Explicit Template Instantiation
 
@@ -69,7 +70,20 @@ which is often the case if no special care is taken.
 
 
 \section Some guidelines
-- use **#pragma once** as header guards, rather than the standard #ifndef ... #define style.
+
+Headerguards: 
+
+- please use 
+\code 
+#pragma once
+\endcode 
+as header guards, rather than
+\code
+#ifndef
+#define 
+/*...*/
+#endif
+\endcode
 
 
 */
