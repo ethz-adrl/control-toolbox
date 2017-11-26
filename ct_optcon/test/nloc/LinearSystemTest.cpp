@@ -8,9 +8,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "LinearSystemTest.h"
 
 /*!
- * This runs the GNMS unit test.
- * \note for a more straight-forward implementation example, visit the tutorial.
- * \example GNMSCTest.cpp
+ * This runs the Linear system unit test.
  */
 int main(int argc, char **argv)
 {
