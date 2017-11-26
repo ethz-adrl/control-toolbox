@@ -8,6 +8,7 @@
 This tutorial is specific for the Core Module of the Control Toolbox. For installation instructions and an overview see the main CT documentation.
 
 \page core_tut_control Feedback Control Tutorial
+@tableofcontents
 
 In this tutorial, we will take a look how to implement and simulate simple (feedback) controllers.
 
@@ -49,6 +50,7 @@ rosrun ct_core ex_DampedOscillatorCustomController
 
 
 \page core_tut_linearization Derivatives/Jacobian/Linearization Tutorial
+@tableofcontents
 
 Often when working with a general nonlinear function \f$ f(x) \f$ we are interested in its Jacobian (derivatives) \f$ J = \frac{df}{dx} \f$.
 

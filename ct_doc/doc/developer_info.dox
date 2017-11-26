@@ -1,6 +1,8 @@
 /*!
 
 \page developer Developer Guidelines
+@tableofcontents
+
 We very much welcome external developers. Small changes and contributions can be made via pull requests.
 If you have a larger enhancement, bug fix or other contribution in mind, feel free to first create an issue 
 to align the development with ongoing activities.
@@ -25,9 +27,12 @@ $ catkin build --no-deps <package_name> -v --make-args clang-format
 
 
 \section Explicit Template Instantiation
-CT relies on explicit template instantiation. While CT handles things slightly different, please see
-[this post](https://anteru.net/blog/2008/11/19/318/index.html) to learn more about the subject. The
-basic idea is that for all templated class there is 
+
+CT relies on explicit template instantiation, that means precompilation of the library for 
+user-specified state and control dimensions. 
+While CT handles things slightly different, please see [this post](https://anteru.net/blog/2008/11/19/318/index.html) 
+to learn more about the subject.
+The basic idea is that for all templated class there is 
 - a header (.h) that defines the class and its methods
 - an (header) implementation (-impl.h) that implements all methods
 - a cpp template file (.cpp.in) that instantiates the template

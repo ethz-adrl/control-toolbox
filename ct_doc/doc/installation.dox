@@ -6,6 +6,7 @@
 
 
 \page requirements Requirements
+@tableofcontents
 This library is written in C++11. It is tested under Ubuntu 14.04 and 16.04 with
 library versions as provided in the package sources.
 
@@ -37,6 +38,7 @@ The following dependencies and bindings are optional but can help to enhance the
 
 
 \page install Compile
+@tableofcontents
 
 \section build_lib Build the library
 
