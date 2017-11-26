@@ -8,8 +8,9 @@ If you have a larger enhancement, bug fix or other contribution in mind, feel fr
 to align the development with ongoing activities.
 
 \section Code Formatting
-We support clang-format and provide a style template to automatically format the code. Please refer to the
-style sheet for our conventions. Or simply rely on clang-format to do the formatting for you ;).
+We support clang-format and provide a style template to automatically format the source code. 
+Please refer to the clang-format style sheet in the package root directory for our conventions. 
+Or simply rely on clang-format to do the formatting for you.
 
 Note for developers using the *Eclipse IDE*: you can conveniently integrate clang-format (and our .clang-format 
 configuration file) in your project using the "CppStyle" plugin (see http://www.cppstyle.com/ for 
@@ -69,11 +70,10 @@ The parser in the CMakeLists.txt would then create the following code out of thi
 which is often the case if no special care is taken.
 
 
-\section Some guidelines
+\section other_guidelines Other guidelines
 
-Headerguards: 
-
-- please use 
+ - Headerguards: 
+please use 
 \code 
 #pragma once
 \endcode 
@@ -85,5 +85,11 @@ as header guards, rather than
 #endif
 \endcode
 
+ - never use **std::make_shared** and **std::allocate_shared** within the CT. They cause aligment issues,
+compare the following bugreport: http://eigen.tuxfamily.org/bz/show_bug.cgi?id=1049
+Currently, the best option is to declare and define shared pointers using CT types as in the following example
+\code{.cpp}
+std::shared_ptr<ct::core::ControlledSystem<state_dim, control_dim>> nonlinearSystem( new SomeClass(...));
+\endcode
 
 */

@@ -15,7 +15,7 @@ Especially with increasing complexity of your project, compilation time of the C
 there are some tricks to reduce compilation time
 - make sure you compile in Release mode (catkin build -DCMAKE_BUILD_TYPE=RELEASE)
 - use CLANG instead of gcc. See the build flags in the \ref install "Installation Guide" on how to use clang.
-- use \ref prespec Explicit Template Instantiation
+- use \ref prespec
 
 \section prespec Explicit Template Instantiation
 The Control Toolbox is a heavily templated library for best runtime performance. However, this means most
@@ -29,8 +29,8 @@ Template Parameter 	| Description
 STATE_DIM			| The dimension of the system's system state
 CONTROL_DIM			| The dimension of the system's control input
 SCALAR				| The scalar type used (usually double)
-POS_DIM				| (optional) Dimension of the position vector in a symplectic integrator
-VEL_DIM				| (optional) Dimension of the velocity vector in a symplectic integrator
+POS_DIM				| (optional) Dimension of the position vector for a symplectic system
+VEL_DIM				| (optional) Dimension of the velocity vector for a symplectic system
 
 In case you are multiple systems of different dimensions, you can prespecify each of their dimensions.
 
