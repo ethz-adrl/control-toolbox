@@ -156,16 +156,20 @@ various robot models including a quadruped, a robotic arm, a normal quadrotor an
 with slung load. The models are briefly detailed in the following.
 
 
-\subsection ct_core_overview CT Core:
+\subsection ct_core_overview CT Core
 
- - Definitions of fundamental types for **control** and simulation, such as dynamic systems (ct::core::System), 
- states (ct::core::StateVector), controls (ct::core::Controller), or trajectories (ct::core::DiscreteTrajectoryBase).
- - **Numeric integration** (ct::core::Integrator) with various ODE solvers including fixed step (ct::core::IntegratorEuler, ct::core::IntegratorRK4)
-  and variable step (ct::core::IntegratorRK5Variable, ct::core::ODE45) integrators, as well as symplectic (semi-implicit) integrators.
- - Numerical approximation of Trajectory **Sensitivities** (ct::core::Sensitivity , e.g. by forward-integrating variational differential equations)
+ - Definitions of fundamental types for **control** and simulation, such as dynamic systems 
+ (ct::core::System), states (ct::core::StateVector), controls (ct::core::Controller), or trajectories 
+ (ct::core::DiscreteTrajectoryBase).
+ - **Numeric integration** (ct::core::Integrator) with various ODE solvers including fixed step 
+ (ct::core::IntegratorEuler, ct::core::IntegratorRK4) and variable step (ct::core::IntegratorRK5Variable, 
+ ct::core::ODE45) integrators, as well as symplectic (semi-implicit) integrators.
+ - Numerical approximation of Trajectory **Sensitivities** (ct::core::Sensitivity , e.g. by forward-integrating 
+ variational differential equations)
  - Common **feedback controllers** (e.g. ct::core::PIDController)
- - Derivatives/Jacobians of general functions using **Numerical Differentiation** (ct::core::DerivativesNumDiff) or **Automatic-Differentiation** with 
- code-generation (ct::core::DerivativesCppadCG) and just-in-time (JIT) compilation (ct::core::DerivativesCppadJIT)
+ - Derivatives/Jacobians of general functions using **Numerical Differentiation** (ct::core::DerivativesNumDiff) 
+ or **Automatic-Differentiation** with code-generation (ct::core::DerivativesCppadCG) and just-in-time (JIT) 
+ compilation (ct::core::DerivativesCppadJIT)
  - <a href="../../../ct_core/doc/html/index.html">quick link to ct_core</a> 
  
 
@@ -227,7 +231,9 @@ For any questions, issues or other troubleshooting please either
 - create an issue: https://bitbucket.org/adrlab/ct/issues
 - contact the devs: control-toolbox-dev@googlegroups.com
 
-\section ct_doc_acknowledgement Acknowledgement
+
+\section ct_doc_acknowledgement Acknowledgements
+
 \subsection contribs Contributors
  - Michael Neunert
  - Markus Giftthaler
