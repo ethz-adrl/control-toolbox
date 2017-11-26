@@ -26,8 +26,7 @@ library versions as provided in the package sources.
  
  
 \section opt_dep Optional Dependencies and Bindings
-T
-he following dependencies and bindings are optional but can help to enhance the functionality or performance of the CT
+The following dependencies and bindings are optional but can help to enhance the functionality or performance of the CT
 
  - <a href="http://www.netlib.org/lapack/">lapack</a> (enables Schur method as an alternative to iterative method in ct::optcon::LQR)
 
