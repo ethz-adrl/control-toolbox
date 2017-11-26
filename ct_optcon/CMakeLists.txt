@@ -216,8 +216,8 @@ if(BUILD_EXAMPLES)
     add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
     target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES})
     
-    #add_executable(ex_DMS examples/DMS.cpp)
-    #target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
+    add_executable(ex_DMS examples/DMS.cpp)
+    target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
 endif()
 
 
