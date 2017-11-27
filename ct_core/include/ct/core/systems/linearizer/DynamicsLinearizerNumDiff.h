@@ -5,12 +5,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 #pragma once
 
-#include <Eigen/Dense>
-#include <Eigen/StdVector>
-#include <ct/core/types/StateVector.h>
-#include <ct/core/types/ControlVector.h>
-
-
 namespace ct {
 namespace core {
 
@@ -40,8 +34,8 @@ public:
     typedef StateVector<STATE_DIM, SCALAR> state_vector_t;        //!< state vector type
     typedef ControlVector<CONTROL_DIM, SCALAR> control_vector_t;  //!< control vector type
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;            //!< state Jacobian type (A)
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t;  //!< control Jacobian type (B)
+    typedef StateMatrix<STATE_DIM, SCALAR> state_matrix_t; //!< state Jacobian type (A)
+    typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;  //!< control Jacobian type (B)
 
     typedef std::function<void(const state_vector_t&, const TIME&,
         const control_vector_t&, state_vector_t&)> dynamics_fct_t; //!< dynamics function signature
@@ -66,6 +60,8 @@ public:
     DynamicsLinearizerNumDiff(const DynamicsLinearizerNumDiff& rhs)
         : dynamics_fct_(rhs.dynamics_fct_),
           doubleSidedDerivative_(rhs.doubleSidedDerivative_),
+          dFdx_(rhs.dFdx_),
+          dFdu_(rhs.dFdu_),
           eps_(rhs.eps_)
     {
     }
