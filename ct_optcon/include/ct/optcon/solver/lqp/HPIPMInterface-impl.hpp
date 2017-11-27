@@ -164,7 +164,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::getFeedback(ct::core::FeedbackArray
 
     // for all other steps we can just read Ls
     Eigen::Matrix<double, state_dim, control_dim> Ls;
-    for (size_t i = 1; i < this->lqocProblem_->getNumberOfStages(); i++)
+    for (int i = 1; i < this->lqocProblem_->getNumberOfStages(); i++)
     {
         ::d_cvt_strmat2mat(Lr.rows(), Lr.cols(), &workspace_.L[i], 0, 0, Lr.data(), Lr.rows());
         ::d_cvt_strmat2mat(Ls.rows(), Ls.cols(), &workspace_.L[i], Lr.rows(), 0, Ls.data(), Ls.rows());
@@ -181,7 +181,7 @@ ct::core::ControlVectorArray<CONTROL_DIM> HPIPMInterface<STATE_DIM, CONTROL_DIM>
     LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
     ct::core::ControlVectorArray<CONTROL_DIM> lv(p.getNumberOfStages());
 
-    for (size_t i = 1; i < this->lqocProblem_->getNumberOfStages(); i++)
+    for (int i = 1; i < this->lqocProblem_->getNumberOfStages(); i++)
     {
         Eigen::Matrix<double, control_dim, control_dim> Lr;
         ::d_cvt_strmat2mat(Lr.rows(), Lr.cols(), &workspace_.L[i], 0, 0, Lr.data(), Lr.rows());
