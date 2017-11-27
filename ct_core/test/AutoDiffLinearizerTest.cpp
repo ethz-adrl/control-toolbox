@@ -6,6 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <ct/core/core.h>
 #include "system/TestNonlinearSystem.h"
+#include "system/TestDiscreteNonlinearSystem.h"
 
 // Bring in gtest
 #include <gtest/gtest.h>
@@ -74,6 +75,83 @@ TEST(AutoDiffLinearizerTest, SystemLinearizerComparison)
 
         ASSERT_LT((A_system - A_adCloned).array().abs().maxCoeff(), 1e-5);
         ASSERT_LT((B_system - B_adCloned).array().abs().maxCoeff(), 1e-5);
+    }
+}
+
+TEST(AutoDiffDiscreteLinearizerTest, DiscreteSystemLinearizerComparison)
+{
+    // define the dimensions of the system
+    const size_t state_dim   = TestDiscreteNonlinearSystem::STATE_DIM;
+    const size_t control_dim = TestDiscreteNonlinearSystem::CONTROL_DIM;
+
+    // typedefs for the auto-differentiable system
+    typedef CppAD::AD<double> AD_Scalar;
+    typedef tpl::TestDiscreteNonlinearSystem<AD_Scalar> TestDiscreteNonlinearSystemAD;
+
+    // handy typedefs for the Jacobian
+    typedef StateMatrix<state_dim, double> A_type;
+    typedef StateControlMatrix<state_dim, control_dim, double> B_type;
+
+    // create two nonlinear systems, one regular one and one auto-differentiable
+    const double rate = 0.1;
+    shared_ptr<TestDiscreteNonlinearSystem> nonlinearSystem(new TestDiscreteNonlinearSystem(rate));
+    shared_ptr<TestDiscreteNonlinearSystemAD> nonlinearSystemAD(new tpl::TestDiscreteNonlinearSystem<AD_Scalar>(AD_Scalar(rate)));
+
+    // create a linearizer that applies numerical differentiation
+    DiscreteSystemLinearizer<state_dim, control_dim> systemLinearizer(nonlinearSystem);
+
+    //TODO
+    // // create a linearizer that uses codegeneration
+    // AutoDiffLinearizer<state_dim, control_dim> adLinearizer(nonlinearSystemAD);
+    // std::shared_ptr<AutoDiffLinearizer<state_dim, control_dim>> adLinearizerClone(adLinearizer.clone());
+
+    // create state, control and time variables
+    StateVector<TestNonlinearSystem::STATE_DIM> x;
+    ControlVector<TestNonlinearSystem::CONTROL_DIM> u;
+    int n = 0;
+
+    for (size_t i = 0; i < 1000; i++)
+    {
+        // set a random state
+        x.setRandom();
+        u.setRandom();
+
+        // use the numerical differentiation linearizer
+        A_type A_system = systemLinearizer.getDerivativeState(x, u, n);
+        B_type B_system = systemLinearizer.getDerivativeControl(x, u, n);
+
+        A_type A_system2;
+        B_type B_system2;
+
+        // sanity check: compare getDerivtive* methods with getAandB
+        systemLinearizer.getAandB(x, u, x, n, 1, A_system2, B_system2);
+        ASSERT_LT((A_system - A_system2).array().abs().maxCoeff(), 1e-5);
+        ASSERT_LT((B_system - B_system2).array().abs().maxCoeff(), 1e-5);
+
+        // analytic derivative
+        A_type A_system_analytic;
+        A_system_analytic << 1.0+rate*u(0),           0.0,
+                                 x(1)*x(1), 2.0*x(0)*x(1);
+
+        B_type B_system_analytic;
+        B_system_analytic << rate*x(0), 0.0;
+
+        ASSERT_LT((A_system - A_system_analytic).array().abs().maxCoeff(), 1e-5);
+        ASSERT_LT((B_system - B_system_analytic).array().abs().maxCoeff(), 1e-5);
+
+        // // use the auto differentiation linearzier
+        // A_type A_ad = adLinearizer.getDerivativeState(x, u, t);
+        // B_type B_ad = adLinearizer.getDerivativeControl(x, u, t);
+        //
+        // A_type A_adCloned = adLinearizerClone->getDerivativeState(x, u, t);
+        // B_type B_adCloned = adLinearizerClone->getDerivativeControl(x, u, t);
+
+        // // verify the result
+        // ASSERT_LT((A_system - A_ad).array().abs().maxCoeff(), 1e-5);
+        // ASSERT_LT((B_system - B_ad).array().abs().maxCoeff(), 1e-5);
+        //
+        // ASSERT_LT((A_system - A_adCloned).array().abs().maxCoeff(), 1e-5);
+        // ASSERT_LT((B_system - B_adCloned).array().abs().maxCoeff(), 1e-5);
     }
 }
 

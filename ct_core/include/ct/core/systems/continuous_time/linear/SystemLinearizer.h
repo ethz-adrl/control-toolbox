@@ -71,7 +71,8 @@ public:
     typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;            //!< state Jacobian type (A)
     typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t;  //! control Jacobian type (B)
 
-    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> system_t;
+    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> system_t;        //!< type of system to be linearized
+    typedef LinearSystem    <STATE_DIM, CONTROL_DIM, SCALAR> linear_system_t; //!< type of resulting linear system
 
     //! default constructor
     /*!
@@ -82,7 +83,7 @@ public:
 	 */
     SystemLinearizer(std::shared_ptr<system_t> nonlinearSystem,
         bool doubleSidedDerivative = true)
-        : LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(nonlinearSystem->getType()),
+        : linear_system_t(nonlinearSystem->getType()),
           nonlinearSystem_(nonlinearSystem),
           linearizer_(std::bind(&system_t::computeControlledDynamics, nonlinearSystem_.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
               doubleSidedDerivative)
@@ -101,7 +102,7 @@ public:
 
     //! copy constructor
     SystemLinearizer(const SystemLinearizer& arg)
-        : LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
+        : linear_system_t(arg),
           nonlinearSystem_(arg.nonlinearSystem_->clone()),
           linearizer_(std::bind(&system_t::computeControlledDynamics, nonlinearSystem_.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
               arg.linearizer_.getDoubleSidedDerivativeFlag()),
@@ -179,8 +180,7 @@ public:
 
 
 protected:
-    std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>>
-        nonlinearSystem_;  //!< instance of non-linear system
+    std::shared_ptr<system_t> nonlinearSystem_;  //!< instance of non-linear system
 
     DynamicsLinearizerNumDiff<STATE_DIM,CONTROL_DIM,SCALAR,SCALAR> linearizer_; //!< instance of numerical-linearizer
 

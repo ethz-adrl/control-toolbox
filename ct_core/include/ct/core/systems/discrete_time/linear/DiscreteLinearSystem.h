@@ -67,20 +67,30 @@ public:
     }
 
 
+    //! retrieve discrete-time linear system matrices A and B.
     /*!
-	 * retrieve discrete-time linear system matrices A and B.
-	 * @param x	the state setpoint
-	 * @param u the control setpoint
-	 * @param n the time setpoint
-	 * @param numSteps number of timesteps for which to get the sensitivity for
-	 * @param A the resulting linear system matrix A
-	 * @param B the resulting linear system matrix B
-	 */
+     * This computes matrices A and B such that
+     * \f[
+     *  x_{n+1} = Ax_n + Bu_n
+     * \f]
+     *
+     * Note that the inputs x_next and subSteps are potentially being ignored
+     * for 'true' discrete system models but are relevant for sensitivity
+     * calculations if the underlying system is continuous.
+     *
+     * @param x the state setpoint at n
+     * @param u the control setpoint at n
+     * @param n the time setpoint
+     * @param x_next the state at n+1
+     * @param subSteps number of substeps to use in sensitivity calculation
+     * @param A the resulting linear system matrix A
+     * @param B the resulting linear system matrix B
+     */
     virtual void getAandB(const StateVector<STATE_DIM, SCALAR>& x,
         const ControlVector<CONTROL_DIM, SCALAR>& u,
         const StateVector<STATE_DIM, SCALAR>& x_next,
         const int n,
-        size_t numSteps,
+        size_t subSteps,
         state_matrix_t& A,
         state_control_matrix_t& B) = 0;
 
