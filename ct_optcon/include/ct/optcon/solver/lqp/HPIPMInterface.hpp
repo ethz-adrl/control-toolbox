@@ -96,6 +96,9 @@ private:
 
     void d_print_e_tran_mat(int row, int col, double* A, int lda);
 
+    void d_print_tran_mat(int row, int col, double* A, int lda);
+
+
     int N_;  // horizon length
 
     std::vector<int> nx_;  // number of states per stage
@@ -159,4 +162,4 @@ private:
 }  // namespace optcon
 }  // namespace ct
 
-#endif
+#endif // HPIPM

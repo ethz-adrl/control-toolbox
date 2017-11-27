@@ -6,8 +6,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include "LQOCSolver.hpp"
-
 #ifdef HPIPM
 
 namespace ct {
@@ -316,7 +314,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupHPIPM(StateVectorArray& x,
     StateMatrixArray& Q,
     ControlVectorArray& rv,
     ControlMatrixArray& R,
-    bool keepPointers = false)
+    bool keepPointers)
 {
     if (N_ == -1)
         throw std::runtime_error("Time horizon not set, please set it first");
@@ -549,4 +547,4 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::d_print_e_tran_mat(int row, int col
 }  // namespace optcon
 }  // namespace ct
 
-#endif
+#endif // HPIPM
