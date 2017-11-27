@@ -30,7 +30,9 @@ extern "C" {
 namespace ct {
 namespace optcon {
 
-//! Interface to the HPIPM solver
+/*!
+ * This class implements an interface to the HPIPM solver
+ */
 template <int STATE_DIM, int CONTROL_DIM>
 class HPIPMInterface : public LQOCSolver<STATE_DIM, CONTROL_DIM>
 {

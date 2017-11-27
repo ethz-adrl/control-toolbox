@@ -252,9 +252,6 @@ if(HPIPM)
     
     #add_executable(HPIPMInterfaceTest2 test/hpipm/HPIPMInterfaceTest2.cpp) # todo make unit test
     #target_link_libraries(HPIPMInterfaceTest2 ${HPIPM_LIBS} ${MATLAB_LIBS})
-    
-    #add_executable(HPIPMInterfaceTest3 test/hpipm/HPIPMInterfaceTest3.cpp)# todo make unit test
-    #target_link_libraries(HPIPMInterfaceTest3 ${HPIPM_LIBS} ${MATLAB_LIBS})
 endif(HPIPM)
 
 
