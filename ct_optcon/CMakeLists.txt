@@ -86,7 +86,7 @@ if(HPIPM)
 endif(HPIPM)
 
 
-## dummy lapack libs
+## lapack libs
 set(LAPACK_LIBS "")
 find_package(LAPACK QUIET)
 if(LAPACK_FOUND)
@@ -196,9 +196,14 @@ endif()
 # add libraries for explicit template
 ct_add_explicit_template_libs()
 
+# link against addigional external libraries, such as lapack, if applicable
 if(USE_LAPACK)
     ct_link_external_library(${LAPACK_LIBS})
 endif(USE_LAPACK)
+if(HPIPM)
+   ct_link_external_library(${BLASFEO_LIBRARY})
+   ct_link_external_library(${HPIPM_LIBRARY})
+endif(HPIPM)
 
 
 if(BUILD_EXAMPLES)
@@ -234,9 +239,11 @@ catkin_add_gtest(iLQRTest test/nloc/iLQRTest.cpp)
 target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
 if(HPIPM)
-    add_executable(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
+    catkin_add_gtest(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
     target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-
+    catkin_add_gtest(LQOCSolverTestPrespec test/solver/linear/LQOCSolverTestPrespec.cpp)
+    target_link_libraries(LQOCSolverTestPrespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIB_NAMES})
+    
     add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
     target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
     
@@ -245,9 +252,6 @@ if(HPIPM)
     
     #add_executable(HPIPMInterfaceTest2 test/hpipm/HPIPMInterfaceTest2.cpp) # todo make unit test
     #target_link_libraries(HPIPMInterfaceTest2 ${HPIPM_LIBS} ${MATLAB_LIBS})
-    
-    #add_executable(HPIPMInterfaceTest3 test/hpipm/HPIPMInterfaceTest3.cpp)# todo make unit test
-    #target_link_libraries(HPIPMInterfaceTest3 ${HPIPM_LIBS} ${MATLAB_LIBS})
 endif(HPIPM)
 
 

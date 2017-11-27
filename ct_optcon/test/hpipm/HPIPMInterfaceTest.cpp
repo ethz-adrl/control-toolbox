@@ -1,18 +1,20 @@
-/*
- * HPIPMInterfaceTest.cpp
- *
- *  Created on: Jul 7, 2017
- *      Author: neunertm
- */
+/**********************************************************************************************************************
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
+Licensed under Apache2 license (see LICENSE file in main directory)
+**********************************************************************************************************************/
 
-#define HPIPM
+/*!
+ * \warning This example is not intuitive. For a better introduction into the solver-framework,
+ * visit the tutorial.
+ */
 
 #include <ct/optcon/optcon.h>
 
 using namespace ct::core;
 
-static const int state_dim = 8;
-static const int control_dim = 3;
+static const size_t state_dim = 8;
+static const size_t control_dim = 3;
 
 void dmcopy(int row, int col, double *A, int lda, double *B, int ldb)
 {
@@ -88,7 +90,6 @@ public:
     }
 
     LinkedMasses *clone() const override { return new LinkedMasses(); };
-
 private:
     state_matrix_t A_;
     state_control_matrix_t B_;
@@ -159,19 +160,28 @@ private:
     ct::core::StateVector<state_dim> b_;
 };
 
-void testGNMS();
+void compareRiccatiApproach();  // forward declaration of comparison method
+
 
 int main(int argc, char *argv[])
 {
-    LinkedMasses system;
-
     int N = 5;
-
     double dt = 0.5;
 
-    ct::optcon::HPIPMInterface<state_dim, control_dim> interface;
+    typedef ct::optcon::LQOCProblem<state_dim, control_dim> LQOCProblem_t;
+    std::shared_ptr<LQOCProblem_t> lqocProblem(new LQOCProblem_t(N));
+
+    // define an initial state
     StateVector<state_dim> x0;
     x0 << 2.5, 2.5, 0, 0, 0, 0, 0, 0;
+
+    // define a desired terminal state
+    StateVector<state_dim> stateOffset;
+    stateOffset.setConstant(0.1);
+
+    // define a nominal control
+    ControlVector<control_dim> u0;
+    u0.setConstant(-0.1);
 
 
     StateMatrix<state_dim> Q;
@@ -181,39 +191,64 @@ int main(int argc, char *argv[])
     R.setIdentity();
     R *= 2 * 2.0;
 
-
-    StateVector<state_dim> stateOffset;
-    stateOffset.setConstant(0.1);
-
-    ControlVector<control_dim> uNom;
-    uNom.setConstant(-0.1);
-
+    // create a cost function
     ct::optcon::CostFunctionQuadraticSimple<state_dim, control_dim> costFunction(
-        Q, R, -stateOffset, uNom, -stateOffset, Q);
+        Q, R, -stateOffset, u0, -stateOffset, Q);
 
-    interface.changeTimeHorizon(N);
-    interface.solveLinearProblem(x0, system, costFunction, stateOffset, dt);
-    interface.printSolution();
+    // create a continuous-time example system and discretize it
+    std::shared_ptr<ct::core::LinearSystem<state_dim, control_dim>> system(new LinkedMasses());
+    ct::core::SensitivityApproximation<state_dim, control_dim> discretizedSystem(
+        dt, system, ct::optcon::NLOptConSettings::APPROXIMATION::MATRIX_EXPONENTIAL);
 
-    std::cout << std::endl << std::endl << std::endl;
-    std::cout << "TEST GNMS!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl << std::endl << std::endl;
+    // initialize the linear quadratic optimal control problem
+    lqocProblem->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discretizedSystem, costFunction, stateOffset, dt);
 
-    testGNMS();
+
+    // create hpipm solver instance, set and solve problem
+    ct::optcon::HPIPMInterface<state_dim, control_dim> hpipm;
+    hpipm.setProblem(lqocProblem);
+    hpipm.solve();
+
+    ct::core::StateVectorArray<state_dim> x_sol = hpipm.getSolutionState();
+
+    for (size_t i = 0; i < x_sol.size(); i++)
+        std::cout << x_sol[i].transpose() << std::endl;
+
+    // todo print solution
+
+    //    interface.changeTimeHorizon(N);
+    //    interface.solveLinearProblem(x0, system, costFunction, stateOffset, dt);
+    //    interface.printSolution();
+
+    //    std::cout << std::endl << std::endl << std::endl;
+    //    std::cout << "TEST GNMS!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl << std::endl << std::endl;
+    //
+    //    testGNMS();
+
+    compareRiccatiApproach();
 
     return 1;
 }
 
-
-void testGNMS()
+//
+void compareRiccatiApproach()
 {
+    typedef ct::optcon::NLOptConSolver<state_dim, control_dim, state_dim / 2, state_dim / 2> NLOptConSolver;
+
+    // define an initial state
     StateVector<state_dim> x_0;
     x_0 << 2.5, 2.5, 0, 0, 0, 0, 0, 0;
 
-    ct::optcon::GNMSSettings gnms_settings;
+    //    // define a nominal control
+    //    ControlVector<control_dim> u0;
+    //    u0.setConstant(-0.1);
+
+
+    ct::optcon::NLOptConSettings gnms_settings;
     gnms_settings.dt = 0.5;
-    gnms_settings.dt_sim = 0.5;
-    gnms_settings.integrator = ct::optcon::GNMSSettings::EULER;
-    gnms_settings.discretization = ct::optcon::GNMSSettings::MATRIX_EXPONENTIAL;
+    gnms_settings.K_sim = 1;
+    gnms_settings.integrator = ct::core::IntegrationType::EULERCT;
+    gnms_settings.discretization = ct::optcon::NLOptConSettings::APPROXIMATION::MATRIX_EXPONENTIAL;
     gnms_settings.max_iterations = 1;
 
 
@@ -247,16 +282,15 @@ void testGNMS()
     // provide initial guess
     ControlVectorArray<control_dim> u0(N, ControlVector<control_dim>::Zero());
     StateVectorArray<state_dim> x0(N + 1, x_0);
+    FeedbackArray<state_dim, control_dim> u0_fb(N, FeedbackMatrix<state_dim, control_dim>::Zero());
 
-    ct::optcon::GNMS<state_dim, control_dim>::Policy_t initController(u0, x0);
+    NLOptConSolver::Policy_t initController(x0, u0, u0_fb, gnms_settings.dt);
 
-    // construct single-core single subsystem OptCon Problem
     ct::optcon::OptConProblem<state_dim, control_dim> optConProblem(
         tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
 
 
-    std::cout << "initializing gnms solver" << std::endl;
-    ct::optcon::GNMS<state_dim, control_dim> gnms(optConProblem, gnms_settings);
+    NLOptConSolver gnms(optConProblem, gnms_settings);
 
 
     gnms.configure(gnms_settings);
@@ -266,7 +300,10 @@ void testGNMS()
 
     gnms.runIteration();
 
-    // test trajectories
-    StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
-    ControlTrajectory<control_dim> uRollout = gnms.getControlTrajectory();
+    NLOptConSolver::Policy_t solution = gnms.getSolution();
+
+    StateVectorArray<state_dim> x_sol = solution.x_ref();
+
+    for (size_t i = 0; i < x_sol.size(); i++)
+        std::cout << x_sol[i].transpose() << std::endl;
 }
