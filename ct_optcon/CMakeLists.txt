@@ -15,7 +15,7 @@ find_package(catkin REQUIRED
 )
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++11 -Wall -Wl,--no-as-needed")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++11 -Wall")
 SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++11 -Wall")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
@@ -216,8 +216,8 @@ if(BUILD_EXAMPLES)
     add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
     target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES})
     
-    #add_executable(ex_DMS examples/DMS.cpp)
-    #target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
+    add_executable(ex_DMS examples/DMS.cpp)
+    target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
 endif()
 
 

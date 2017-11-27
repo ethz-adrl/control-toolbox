@@ -13,6 +13,7 @@ follow the Tutorials below.
 If you need additional support, feel free to create an issue on Bitbucket or contact the developers.
  
 \page tut_basics Basic Tutorial
+@tableofcontents
 
 \section tut_basics_pkg Creating a ROS package
 CT is middleware free. Therefore, you are not bound to use ROS or catkin. However, for the sake of simplicity we will use catkin in this tutorial.

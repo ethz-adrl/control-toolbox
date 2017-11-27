@@ -8,6 +8,7 @@
 This tutorial is specific for the Core Module of the Control Toolbox. For installation instructions and an overview see the main CT documentation.
 
 \page core_tut_control Feedback Control Tutorial
+@tableofcontents
 
 In this tutorial, we will take a look how to implement and simulate simple (feedback) controllers.
 
@@ -49,6 +50,7 @@ rosrun ct_core ex_DampedOscillatorCustomController
 
 
 \page core_tut_linearization Derivatives/Jacobian/Linearization Tutorial
+@tableofcontents
 
 Often when working with a general nonlinear function \f$ f(x) \f$ we are interested in its Jacobian (derivatives) \f$ J = \frac{df}{dx} \f$.
 
@@ -70,11 +72,7 @@ Auto-Diff Code Generation | +++                | +++               | ++         
 
 Bottom line: Automatic Differentiation is the tool of choice for accurate, yet easy to setup derivatives. For best performance, Automatic Differentiation 
 with code generation (Auto-Diff Codgen) should be used. <b>Auto-Diff Codegen is as accurate as analytical derivatives and equally fast if not faster!</b>.
-For more on this read the following paper:
-
-<em>Michael Neunert, Markus Giftthaler, Marco Frigerio, Claudio Semini, Jonas Buchli (2016). Fast Derivatives of Rigid Body Dynamics for Control, Optimization and Estimation. 
-In 2016 IEEE International Conference on Simulation, Modeling, and Programming for Autonomous Robots (SIMPAR 2016)</em>
-<a href="http://www.adrl.ethz.ch/lib/exe/fetch.php/adrl:publication_list:simpar_preprint.pdf">PDF</a>
+For more on this please refer to the following publications: \cite giftthaler2017autodiff \cite neunert:2016:derivatives
 
 \note  Both Auto-Diff and Auto-Diff Codegen require you to template your function on the scalar type. Please see the tutorial \ref core_tut_linearization_scalar_templating 
 for tips and tricks on how to do this easily!

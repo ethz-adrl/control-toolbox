@@ -1,13 +1,16 @@
 /*!
 
 \page developer Developer Guidelines
+@tableofcontents
+
 We very much welcome external developers. Small changes and contributions can be made via pull requests.
 If you have a larger enhancement, bug fix or other contribution in mind, feel free to first create an issue 
 to align the development with ongoing activities.
 
 \section Code Formatting
-We support clang-format and provide a style template to automatically format the code. Please refer to the
-style sheet for our conventions. Or simply rely on clang-format to do the formatting for you ;).
+We support clang-format and provide a style template to automatically format the source code. 
+Please refer to the clang-format style sheet in the package root directory for our conventions. 
+Or simply rely on clang-format to do the formatting for you.
 
 Note for developers using the *Eclipse IDE*: you can conveniently integrate clang-format (and our .clang-format 
 configuration file) in your project using the "CppStyle" plugin (see http://www.cppstyle.com/ for 
@@ -16,18 +19,22 @@ and press *Ctrl+Shift+f*.
 
 
 Example command for running clang-tidy:
-
+\code
 $ catkin build --no-deps <package_name> -v --make-args clang-tidy 
+\endcode
 
 For clang-format it's just the same: 
-
+\code
 $ catkin build --no-deps <package_name> -v --make-args clang-format 
-
+\endcode
 
 \section Explicit Template Instantiation
-CT relies on explicit template instantiation. While CT handles things slightly different, please see
-[this post](https://anteru.net/blog/2008/11/19/318/index.html) to learn more about the subject. The
-basic idea is that for all templated class there is 
+
+CT relies on explicit template instantiation, that means precompilation of the library for 
+user-specified state and control dimensions. 
+While CT handles things slightly different, please see [this post](https://anteru.net/blog/2008/11/19/318/index.html) 
+to learn more about the subject.
+The basic idea is that for all templated class there is 
 - a header (.h) that defines the class and its methods
 - an (header) implementation (-impl.h) that implements all methods
 - a cpp template file (.cpp.in) that instantiates the template
@@ -63,8 +70,26 @@ The parser in the CMakeLists.txt would then create the following code out of thi
 which is often the case if no special care is taken.
 
 
-\section Some guidelines
-- use **#pragma once** as header guards, rather than the standard #ifndef ... #define style.
+\section other_guidelines Other guidelines
 
+ - Headerguards: 
+please use 
+\code 
+#pragma once
+\endcode 
+as header guards, rather than
+\code
+#ifndef
+#define 
+/*...*/
+#endif
+\endcode
+
+ - never use **std::make_shared** and **std::allocate_shared** within the CT. They cause aligment issues,
+compare the following bugreport: http://eigen.tuxfamily.org/bz/show_bug.cgi?id=1049
+Currently, the best option is to declare and define shared pointers using CT types as in the following example
+\code{.cpp}
+std::shared_ptr<ct::core::ControlledSystem<state_dim, control_dim>> nonlinearSystem( new SomeClass(...));
+\endcode
 
 */

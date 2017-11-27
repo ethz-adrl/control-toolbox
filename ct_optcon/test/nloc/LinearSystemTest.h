@@ -23,8 +23,12 @@ using std::shared_ptr;
 
 
 /*!
- * This test considers a variety of different solver/algorithm options for NLOC,
+ * This unit test considers a variety of different solver/algorithm options for NLOC,
  * combined with a linear system. We check if the optimization converges within 1 iteration.
+ *
+ * \example LinearSystemTest.h
+ *
+ * \note visit the tutorial for a more intuitive example.
  *
  * \warning The HPIPM solver is not included in this unit test.
  */

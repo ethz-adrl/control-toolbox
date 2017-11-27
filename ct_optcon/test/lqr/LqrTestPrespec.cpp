@@ -7,11 +7,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include <ct/optcon/optcon-prespec.h>
 #include "LqrTest.h"
 
-/*!
- * This runs the LQR unit test.
- * \note for a more straight-forward implementation example, visit the tutorial.
- * \example LqrTest.cpp
- */
+
 int main(int argc, char **argv)
 {
     using namespace ct::optcon::example;
