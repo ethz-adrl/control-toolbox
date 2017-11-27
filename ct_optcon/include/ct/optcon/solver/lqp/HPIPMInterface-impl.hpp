@@ -319,28 +319,37 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupHPIPM(StateVectorArray& x,
     if (N_ == -1)
         throw std::runtime_error("Time horizon not set, please set it first");
 
+    // set the initial state
     x0_ = x[0].data();
 
-    // transcribe the representation of the affine system to the absolute origin of the linear system
+    /*
+     * transcribe the "differential" representation of the OptConProblem to the absolute origin of
+     * the linear system.
+     * Note: constant terms are not even handed over above (not important for solving LQ problem).
+     */
+
+    // STEP 1: transcription of affine system dynamics offset term
     for (int i = 0; i < N_; i++)
     {
         bEigen_[i] = b[i] + x[i + 1] - A[i] * x[i] - B[i] * u[i];
     }
-
     hb0_ = b[0] + x[1] - B[0] * u[0];  //! this line needs to be transcribed separately (correction for first stage)
 
 
+    // STEP 2: transcription of intermediate costs
     for (int i = 0; i < N_; i++)
     {
         hqEigen_[i] = qv[i] - Q[i] * x[i] - P[i].transpose() * u[i];
         hrEigen_[i] = rv[i] - R[i] * u[i] - P[i] * x[i];
     }
+    hr0_ = hrEigen_[0] + P[0] * x[0];  //! this line needs to be transcribed separately (correction for first stage)
 
-    // transcription of LQ cost into x-origin coordinates
+
+    // STEP 3: transcription of terminal cost terms
     hqEigen_[N_] = qv[N_] - Q[N_] * x[N_];
-    hr0_ = hrEigen_[0] + P[0] * x[0];
 
 
+    // STEP 4: The following quantities remain unchanged when changing coordinate systems
     if (!keepPointers)
     {
         for (int i = 0; i < N_; i++)
@@ -349,13 +358,15 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupHPIPM(StateVectorArray& x,
             hB_[i] = B[i].data();
         }
 
+        // intermediate cost hessians and cross-terms
         for (int i = 0; i < N_; i++)
         {
-            // transcribe the representation of the LQ cost into system x-origin coordinates
             hQ_[i] = Q[i].data();
             hS_[i] = P[i].data();
             hR_[i] = R[i].data();
         }
+
+        // final cost hessian state
         hQ_[N_] = Q[N_].data();
     }
 
@@ -375,15 +386,18 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     this->lx_.resize(N + 1);
     this->lu_.resize(N);
 
-    nx_.resize(N_ + 1, STATE_DIM);
-    nu_.resize(N_ + 1, CONTROL_DIM);
-    nb_.resize(N_ + 1, 0);
-    ng_.resize(N_ + 1, 0);
+    nx_.resize(N_ + 1, STATE_DIM);		// initialize number of states per stage
+    nu_.resize(N_ + 1, CONTROL_DIM);    // initialize number of control inputs per stage
+    nb_.resize(N_ + 1, 0);    // initialize number of box constraints per stage
+    ng_.resize(N_ + 1, 0);    // initialize number of general constraints per stage
 
+    // resize the containers for the affine system dynamics approximation
     hA_.resize(N_);
     hB_.resize(N_);
     bEigen_.resize(N_);
     hb_.resize(N_);
+
+    // resize the containers for the LQ cost approximation
     hQ_.resize(N_ + 1);
     hS_.resize(N_ + 1);
     hR_.resize(N_ + 1);
@@ -391,6 +405,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     hq_.resize(N_ + 1);
     hrEigen_.resize(N_ + 1);
     hr_.resize(N_ + 1);
+
     hd_lb_.resize(N_ + 1);
     hd_ub_.resize(N_ + 1);
     hd_lg_.resize(N_ + 1);
