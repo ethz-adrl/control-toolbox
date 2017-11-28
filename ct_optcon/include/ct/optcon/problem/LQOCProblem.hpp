@@ -10,6 +10,7 @@ namespace ct {
 namespace optcon {
 
 /*!
+ * \brief Defines a Linear-Quadratic Optimal Control Problem, which is optionally constrained.
  *
  * This class defines a Linear Quadratic Optimal Control (LQOC) Problem, consisting of
  * - affine systen dynamics
@@ -53,6 +54,9 @@ namespace optcon {
  * \f[
  * \mathbf \d_{lb}  \leq \mathbf C_n \delta \mathbf \x_n + \mathbf D_n \delta \mathbf \u_n \leq \mathbf \d_{ub} \ \forall i=0,1,\ldots,N
  * \f]
+ *
+ *
+ * \todo Refactor the initializing methods such that const-references can be handed over.
  */
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR = double>
 class LQOCProblem
@@ -60,12 +64,12 @@ class LQOCProblem
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	using constr_vec_t = Eigen::Matrix<SCALAR, -1, 1>;
+    using constr_vec_t = Eigen::Matrix<SCALAR, -1, 1>;
     using constr_state_jac_t = Eigen::Matrix<SCALAR, -1, STATE_DIM>;
     using constr_control_jac_t = Eigen::Matrix<SCALAR, -1, CONTROL_DIM>;
 
     using constr_vec_array_t = ct::core::DiscreteArray<constr_vec_t>;
-    using constr_state_jac_array_t =  ct::core::DiscreteArray<constr_state_jac_t>;
+    using constr_state_jac_array_t = ct::core::DiscreteArray<constr_state_jac_t>;
     using constr_control_jac_array_t = ct::core::DiscreteArray<constr_control_jac_t>;
 
 
@@ -84,13 +88,33 @@ public:
      */
     void setZero(const int& nGenConstr = 0);
 
-    //! set state box constraints
+    /*!
+     * \brief set uniform state box constraints
+     * @param x_lb state lower bound
+     * @param x_ub state upper bound
+     */
     void setStateBoxConstraints(ct::core::StateVector<STATE_DIM, SCALAR>& x_lb,
         ct::core::StateVector<STATE_DIM, SCALAR>& x_ub);
 
-    //! set control box constraints
+    /*!
+     * \brief set uniform control box constraints, with the same constraint being applied at each stage
+     * @param u_lb control lower bound
+     * @param u_ub control upper bound
+     */
     void setControlBoxConstraints(ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_lb,
         ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_ub);
+
+    /*!
+     * \brief set general (in)equaltiy constraints, with the same constraint applied at each stage
+     * @param d_lb general constraint lower bound
+     * @param d_ub general constraint upper bound
+     * @param C general constraint state jacobian
+     * @param D general constraint control jacobian
+     */
+    void setGeneralConstraints(constr_vec_t& d_lb,
+        constr_vec_t& d_ub,
+        constr_state_jac_t& C,
+        constr_control_jac_t& D);
 
     /*!
      * \brief a convenience method which constructs an unconstrained LQOC Problem from an LTI system and continuous-time quadratic cost

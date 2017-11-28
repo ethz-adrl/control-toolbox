@@ -129,6 +129,20 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setControlBoxConstraints(
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
+void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(constr_vec_t& d_lb,
+    constr_vec_t& d_ub,
+    constr_state_jac_t& C,
+    constr_control_jac_t& D)
+{
+	d_lb_.setConstant(d_lb);
+	d_ub_.setConstant(d_ub);
+	C_.setConstant(C_);
+	D_.setConstant(D_);
+	isConstrained_ = true;
+}
+
+
+template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuadraticProblem(
     ct::core::StateVector<STATE_DIM, SCALAR>& x0,
     ct::core::ControlVector<CONTROL_DIM, SCALAR>& u0,
