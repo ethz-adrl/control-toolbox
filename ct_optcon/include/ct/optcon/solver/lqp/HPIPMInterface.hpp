@@ -78,8 +78,9 @@ public:
 private:
     void setProblemImpl(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
 
-    //! transcribe the problem from original local formulation to HPIPM's global coordinates
     /*!
+     * @brief transcribe the problem from original local formulation to HPIPM's global coordinates
+     *
      * See also the description of the LQOC Problem in class LQOCProblem.h
      *
      * @param x current state reference \f$ \hat \mathbf x_n \f$
@@ -99,6 +100,8 @@ private:
      *  \mathbf x_{n+1} = \mathbf A_n \mathbf x_n + \mathbf B_n \mathbf u_n +\mathbf b_n
      *  + \hat \mathbf x_{n+1} - \mathbf A_n \hat \mathbf x_n -  \mathbf B_n \hat \mathbf u_n
      * \f]
+     *
+     * @todo potentially rename, as it only sets up the unconstrained part of the problem
      */
     void setupHPIPM(StateVectorArray& x,
         ControlVectorArray& u,
@@ -112,20 +115,31 @@ private:
         ControlMatrixArray& R,
         bool keepPointers = false);
 
+    /*!
+     * @brief setup the constraint indices and matrices
+     */
+    void setupConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem);
+
     //! change number of states of the optimal control problem
     void changeNumberOfStages(int N);
 
+    //! creates a zero matrix
     void d_zeros(double** pA, int row, int col);
 
+    //! prints a matrix in column-major format
     void d_print_mat(int m, int n, double* A, int lda);
 
-    //!prints a matrix in column-major format (exponential notation)
+    //! prints a matrix in column-major format (exponential notation)
     void d_print_e_mat(int m, int n, double* A, int lda);
 
+    //! prints the transposed of a matrix in column-major format (exponential notation)
     void d_print_e_tran_mat(int row, int col, double* A, int lda);
 
+    //! prints the transposed of a matrix in column-major format
     void d_print_tran_mat(int row, int col, double* A, int lda);
 
+    //! prints a matrix in column-major format
+    void int_print_mat(int row, int col, int* A, int lda);
 
     int N_;  //! horizon length
 
@@ -141,33 +155,39 @@ private:
     StateVectorArray bEigen_;                  //! intermediate container for intuitive transcription
     Eigen::Matrix<double, state_dim, 1> hb0_;  //! intermediate container for intuitive transcription of first stage
 
-    std::vector<double*> hQ_;   //! pure state penalty hessian
-    std::vector<double*> hS_;   //! state-control cross-terms
-    std::vector<double*> hR_;   //! pure control penalty hessian
-    std::vector<double*> hq_;	//! pure state penalty jacobian
-    std::vector<double*> hr_;   //! pure control penalty jacobian
-    Eigen::Matrix<double, control_dim, 1> hr0_; //! intermediate container for intuitive transcription of first stage
-    StateVectorArray hqEigen_;  //! interm. container for intuitive transcription of 1st order state penalty
+    std::vector<double*> hQ_;                    //! pure state penalty hessian
+    std::vector<double*> hS_;                    //! state-control cross-terms
+    std::vector<double*> hR_;                    //! pure control penalty hessian
+    std::vector<double*> hq_;                    //! pure state penalty jacobian
+    std::vector<double*> hr_;                    //! pure control penalty jacobian
+    Eigen::Matrix<double, control_dim, 1> hr0_;  //! intermediate container for intuitive transcription of first stage
+    StateVectorArray hqEigen_;    //! interm. container for intuitive transcription of 1st order state penalty
     ControlVectorArray hrEigen_;  //! interm. container for intuitive transcription of 1st order control penalty
 
-    std::vector<double*> hd_lb_; //! todo lower box constraint violation ?
-    std::vector<double*> hd_ub_; //! todo upper box constraint violation ?
-    std::vector<double*> hd_lg_; //! todo lower general constraint violation ?
-    std::vector<double*> hd_ug_; //! todo upper general constraint violation ?
-    std::vector<double*> hC_;    //! general constraint jacobians w.r.t. states (presumably)
-    std::vector<double*> hD_;    //! general constraint jacobians w.r.t. controls (presumably)
-    std::vector<int*> hidxb_;    //! todo what is this?
+    std::vector<double*> hd_lb_;                          //! lower box constraint threshold ?
+    std::vector<double*> hd_ub_;                          //! upper box constraint threshold ?
+    std::vector<int*> hidxb_;                             //! sparsity pattern for box constraints
+    std::vector<Eigen::Matrix<int, -1, 1>> hdidxb_temp_;  //! todo temp container to work out how sparsity pattern works
+    std::vector<double*> hd_lg_;                          //! lower general constraint threshold ?
+    std::vector<double*> hd_ug_;                          //! upper general constraint threshold ?
+    std::vector<double*> hC_;                             //! general constraint jacobians w.r.t. states (presumably)
+    std::vector<double*> hD_;                             //! general constraint jacobians w.r.t. controls (presumably)
 
     double* x0_;  //! initial state
 
     // solution
-    std::vector<double*> u_;  //! optimal control trajectory
-    std::vector<double*> x_;  //! optimal state trajectory
-    std::vector<double*> pi_; //! todo what is this ?
-    std::vector<double*> lam_lb_; //! todo lagrange multiplier box-constraint lower ?
-    std::vector<double*> lam_ub_; //! todo lagrange multiplier box-constraint upper ?
-    std::vector<double*> lam_lg_; //! todo lagrange multiplier general-constraint lower ?
-    std::vector<double*> lam_ug_; //! todo lagrange multiplier general-constraint upper ?
+    std::vector<double*> u_;       //! optimal control trajectory
+    std::vector<double*> x_;       //! optimal state trajectory
+    std::vector<double*> pi_;      //! todo what is this ?
+    std::vector<double*> lam_lb_;  //! ptr to lagrange multiplier box-constraint lower
+    std::vector<double*> lam_ub_;  //! ptr to lagrange multiplier box-constraint upper
+    std::vector<double*> lam_lg_;  //! ptr to lagrange multiplier general-constraint lower
+    std::vector<double*> lam_ug_;  //! ptr to lagrange multiplier general-constraint upper
+
+    std::vector<Eigen::Matrix<double, -1, 1>> cont_lam_lb_;  //! container for lagr. mult. box-constraint lower
+    std::vector<Eigen::Matrix<double, -1, 1>> cont_lam_ub_;  //! container for lagr. mult. box-constraint upper
+    std::vector<Eigen::Matrix<double, -1, 1>> cont_lam_lg_;  //! container for lagr. mult. general-constraint lower
+    std::vector<Eigen::Matrix<double, -1, 1>> cont_lam_ug_;  //! container for lagr. mult. general-constraint upper
 
     ct::core::StateVectorArray<STATE_DIM> hx_;
     ct::core::StateVectorArray<STATE_DIM> hpi_;
@@ -179,7 +199,7 @@ private:
     std::vector<char> qp_sol_mem_;
     struct d_ocp_qp_sol qp_sol_;
 
-    struct d_ipm_hard_ocp_qp_arg arg_;
+    struct d_ipm_hard_ocp_qp_arg arg_;  //! IPM settings
     std::vector<char> ipm_mem_;
     struct d_ipm_hard_ocp_qp_workspace workspace_;
 

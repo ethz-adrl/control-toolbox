@@ -12,7 +12,9 @@ namespace optcon {
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::LQOCProblem(int N)
-    : isConstrained_(false)  // by default, we assume the problem ins unconstrained
+    : hasStateBoxConstraints_(false),  // by default, we assume the problem ins unconstrained
+      hasControlBoxConstraints_(false),
+      hasGenConstraints_(false)
 {
     changeNumStages(N);
 }
@@ -20,7 +22,31 @@ LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::LQOCProblem(int N)
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isConstrained() const
 {
-    return isConstrained_;
+    return (isBoxConstrained() | isGeneralConstrained());
+}
+
+template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
+bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isControlBoxConstrained() const
+{
+    return hasControlBoxConstraints_;
+}
+
+template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
+bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isStateBoxConstrained() const
+{
+    return hasStateBoxConstraints_;
+}
+
+template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
+bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isBoxConstrained() const
+{
+    return hasStateBoxConstraints_ | hasControlBoxConstraints_;
+}
+
+template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
+bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isGeneralConstrained() const
+{
+    return hasGenConstraints_;
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
@@ -105,7 +131,9 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero(const int& nGenConstr)
         D_[i].setZero();
     }
 
-    isConstrained_ = false;
+    hasStateBoxConstraints_ = false;
+    hasControlBoxConstraints_ = false;
+    hasGenConstraints_ = false;
 }
 
 
@@ -115,7 +143,7 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setStateBoxConstraints(ct::cor
 {
     x_lb_.setConstant(x_lb);
     x_ub_.setConstant(x_ub);
-    isConstrained_ = true;
+    hasStateBoxConstraints_ = true;
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
@@ -125,7 +153,7 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setControlBoxConstraints(
 {
     u_lb_.setConstant(u_lb);
     u_ub_.setConstant(u_ub);
-    isConstrained_ = true;
+    hasControlBoxConstraints_ = true;
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
@@ -134,11 +162,11 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(constr_v
     constr_state_jac_t& C,
     constr_control_jac_t& D)
 {
-	d_lb_.setConstant(d_lb);
-	d_ub_.setConstant(d_ub);
-	C_.setConstant(C);
-	D_.setConstant(D);
-	isConstrained_ = true;
+    d_lb_.setConstant(d_lb);
+    d_ub_.setConstant(d_ub);
+    C_.setConstant(C);
+    D_.setConstant(D);
+    hasGenConstraints_ = true;
 }
 
 
@@ -182,7 +210,9 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
     x_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_ + 1, x0);
     u_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, u0);
 
-    isConstrained_ = false;
+    hasStateBoxConstraints_ = false;
+    hasControlBoxConstraints_ = false;
+    hasGenConstraints_ = false;
 }
 
 

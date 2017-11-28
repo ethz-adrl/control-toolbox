@@ -161,6 +161,11 @@ public:
     //! return a flag indicating whether this LQOC Problem is constrained or not
     bool isConstrained() const;
 
+    bool isControlBoxConstrained() const;
+    bool isStateBoxConstrained() const;
+    bool isBoxConstrained() const;
+    bool isGeneralConstrained() const;
+
     //! affine, time-varying system dynamics in discrete time
     ct::core::StateMatrixArray<STATE_DIM, SCALAR> A_;
     ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> B_;
@@ -210,8 +215,13 @@ private:
     //! the number of discrete time steps in the LOCP, including terminal stage
     int K_;
 
-    //! bool indicating if the optimization problem is constrained
-    bool isConstrained_;
+    //! bool indicating if the optimization problem is input box-constrained
+    bool hasControlBoxConstraints_;
+    //! bool indicating if the optimization problem is state box-constrained
+    bool hasStateBoxConstraints_;
+    //! bool indicating if the optimization problem hs general inequality constraints
+    bool hasGenConstraints_;
+
 };
 
 }  // namespace optcon

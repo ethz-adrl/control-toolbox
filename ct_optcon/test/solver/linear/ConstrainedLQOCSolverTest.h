@@ -58,15 +58,21 @@ void boxConstraintsTest()
 
     // control box constraints
     ct::core::ControlVector<control_dim> u_lb;
-    u_lb.setConstant(-1.0);
+    u_lb.setConstant(-0.5);
     ct::core::ControlVector<control_dim> u_ub;
-    u_ub.setConstant(1.0);
+    u_ub.setConstant(0.5);
 
     // initialize the optimal control problems for both solvers
     lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, b, dt);
     lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, b, dt);
     lqocProblem1->setControlBoxConstraints(u_lb, u_ub);
     lqocProblem2->setControlBoxConstraints(u_lb, u_ub);
+
+    // check that constraint configuration is right
+    //    ASSERT_TRUE(lqocProblem1->isConstrained());
+    //    ASSERT_FALSE(lqocProblem1->isGeneralConstrained());
+    //    ASSERT_FALSE(lqocProblem1->isStateBoxConstrained());
+    //    ASSERT_TRUE(lqocProblem1->isControlBoxConstrained());
 
     // set and try to solve the problem for both solvers
     hpipmSolver->setProblem(lqocProblem1);
