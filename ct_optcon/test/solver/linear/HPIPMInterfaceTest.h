@@ -5,16 +5,15 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 /*!
+ * This unit test compares HPIPM and the custom GNRiccati solver using custom defined system
+ * with state dimension 8 and control dimension 3.
+ *
  * \warning This example is not intuitive. For a better introduction into the solver-framework,
  * visit the tutorial.
  */
 
-#include <ct/optcon/optcon.h>
 
 using namespace ct::core;
-
-static const size_t state_dim = 8;
-static const size_t control_dim = 3;
 
 void dmcopy(int row, int col, double *A, int lda, double *B, int ldb)
 {
@@ -28,17 +27,20 @@ void dmcopy(int row, int col, double *A, int lda, double *B, int ldb)
     }
 }
 
-class LinkedMasses : public LinearSystem<state_dim, control_dim>
+class LinkedMasses : public LinearSystem<8, 3>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+	static const int state_dim = 8;
+    static const int control_dim = 3;
+    static const int pp = state_dim / 2;  // number of masses
 
     LinkedMasses()
     {
         A_.setZero();
         B_.setZero();
 
-        static const int pp = state_dim / 2;  // number of masses
 
         Eigen::Matrix<double, pp, pp> TEigen;
         TEigen.setZero();
@@ -96,9 +98,13 @@ private:
 };
 
 
-class LinkedMasses2 : public ControlledSystem<state_dim, control_dim>
+class LinkedMasses2 : public ControlledSystem<8, 3>
 {
 public:
+
+	static const int state_dim = 8;
+	static const int control_dim = 3;
+
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     LinkedMasses2()
@@ -160,16 +166,18 @@ private:
     ct::core::StateVector<state_dim> b_;
 };
 
-void compareRiccatiApproach();  // forward declaration of comparison method
 
-
-int main(int argc, char *argv[])
+TEST(HPIPMInterfaceTest, compareSolvers)
 {
+	const size_t state_dim = 8;
+	const size_t control_dim = 3;
+
     int N = 5;
     double dt = 0.5;
 
     typedef ct::optcon::LQOCProblem<state_dim, control_dim> LQOCProblem_t;
-    std::shared_ptr<LQOCProblem_t> lqocProblem(new LQOCProblem_t(N));
+    std::shared_ptr<LQOCProblem_t> lqocProblem_hpipm(new LQOCProblem_t(N));
+    std::shared_ptr<LQOCProblem_t> lqocProblem_gnriccati(new LQOCProblem_t(N));
 
     // define an initial state
     StateVector<state_dim> x0;
@@ -183,7 +191,7 @@ int main(int argc, char *argv[])
     ControlVector<control_dim> u0;
     u0.setConstant(-0.1);
 
-
+    // define cost function matrices
     StateMatrix<state_dim> Q;
     Q.setIdentity();
     Q *= 2.0;
@@ -200,110 +208,42 @@ int main(int argc, char *argv[])
     ct::core::SensitivityApproximation<state_dim, control_dim> discretizedSystem(
         dt, system, ct::optcon::NLOptConSettings::APPROXIMATION::MATRIX_EXPONENTIAL);
 
-    // initialize the linear quadratic optimal control problem
-    lqocProblem->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discretizedSystem, costFunction, stateOffset, dt);
+    // initialize the linear quadratic optimal control problems
+    lqocProblem_hpipm->setFromTimeInvariantLinearQuadraticProblem(
+        x0, u0, discretizedSystem, costFunction, stateOffset, dt);
+    lqocProblem_gnriccati->setFromTimeInvariantLinearQuadraticProblem(
+        x0, u0, discretizedSystem, costFunction, stateOffset, dt);
 
 
     // create hpipm solver instance, set and solve problem
     ct::optcon::HPIPMInterface<state_dim, control_dim> hpipm;
-    hpipm.setProblem(lqocProblem);
+    hpipm.setProblem(lqocProblem_hpipm);
     hpipm.solve();
 
-    ct::core::StateVectorArray<state_dim> x_sol = hpipm.getSolutionState();
+    // create GNRiccati solver instance, set and solve problem
+    ct::optcon::GNRiccatiSolver<state_dim, control_dim> gnriccati;
+    gnriccati.setProblem(lqocProblem_gnriccati);
+    gnriccati.solve();
 
-    for (size_t i = 0; i < x_sol.size(); i++)
-        std::cout << x_sol[i].transpose() << std::endl;
+    // retrieve solutions
+    ct::core::StateVectorArray<state_dim> x_sol_hpipm = hpipm.getSolutionState();
+    ct::core::StateVectorArray<state_dim> x_sol_gnrccati = gnriccati.getSolutionState();
+    ct::core::ControlVectorArray<control_dim> u_sol_hpipm = hpipm.getSolutionControl();
+    ct::core::ControlVectorArray<control_dim> u_sol_gnrccati = gnriccati.getSolutionControl();
 
-    // todo print solution
+    // asser that the solution sizes the same
+    ASSERT_EQ(x_sol_hpipm.size(), x_sol_gnrccati.size());
+    ASSERT_EQ(u_sol_hpipm.size(), u_sol_gnrccati.size());
 
-    //    interface.changeTimeHorizon(N);
-    //    interface.solveLinearProblem(x0, system, costFunction, stateOffset, dt);
-    //    interface.printSolution();
+    // assert that states are the same
+    for (size_t i = 0; i < x_sol_hpipm.size(); i++)
+    {
+    	ASSERT_LT((x_sol_hpipm[i]-x_sol_gnrccati[i]).array().abs().maxCoeff(), 1e-6);
+    }
 
-    //    std::cout << std::endl << std::endl << std::endl;
-    //    std::cout << "TEST GNMS!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl << std::endl << std::endl;
-    //
-    //    testGNMS();
-
-    compareRiccatiApproach();
-
-    return 1;
-}
-
-//
-void compareRiccatiApproach()
-{
-    typedef ct::optcon::NLOptConSolver<state_dim, control_dim, state_dim / 2, state_dim / 2> NLOptConSolver;
-
-    // define an initial state
-    StateVector<state_dim> x_0;
-    x_0 << 2.5, 2.5, 0, 0, 0, 0, 0, 0;
-
-    //    // define a nominal control
-    //    ControlVector<control_dim> u0;
-    //    u0.setConstant(-0.1);
-
-
-    ct::optcon::NLOptConSettings gnms_settings;
-    gnms_settings.dt = 0.5;
-    gnms_settings.K_sim = 1;
-    gnms_settings.integrator = ct::core::IntegrationType::EULERCT;
-    gnms_settings.discretization = ct::optcon::NLOptConSettings::APPROXIMATION::MATRIX_EXPONENTIAL;
-    gnms_settings.max_iterations = 1;
-
-
-    std::shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new LinkedMasses2);
-    //std::shared_ptr<LinearSystem<state_dim, control_dim> > analyticLinearSystem(new ct::core::SystemLinearizer<state_dim,control_dim>(nonlinearSystem));
-    std::shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinkedMasses);
-
-    StateMatrix<state_dim> Q;
-    Q.setIdentity();
-    Q *= 2.0;
-    ControlMatrix<control_dim> R;
-    R.setIdentity();
-    R *= 2 * 2.0;
-
-
-    StateVector<state_dim> stateOffset;
-    stateOffset.setConstant(0.1);
-
-    ControlVector<control_dim> uNom;
-    uNom.setConstant(-0.1);
-
-
-    std::shared_ptr<ct::optcon::CostFunctionQuadratic<state_dim, control_dim>> costFunction(
-        new ct::optcon::CostFunctionQuadraticSimple<state_dim, control_dim>(
-            Q, R, -stateOffset, uNom, -stateOffset, Q * gnms_settings.dt));
-
-    // times
-    int N = 5;
-    ct::core::Time tf = 5.0 * gnms_settings.dt;
-
-    // provide initial guess
-    ControlVectorArray<control_dim> u0(N, ControlVector<control_dim>::Zero());
-    StateVectorArray<state_dim> x0(N + 1, x_0);
-    FeedbackArray<state_dim, control_dim> u0_fb(N, FeedbackMatrix<state_dim, control_dim>::Zero());
-
-    NLOptConSolver::Policy_t initController(x0, u0, u0_fb, gnms_settings.dt);
-
-    ct::optcon::OptConProblem<state_dim, control_dim> optConProblem(
-        tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
-
-
-    NLOptConSolver gnms(optConProblem, gnms_settings);
-
-
-    gnms.configure(gnms_settings);
-    gnms.setInitialGuess(initController);
-
-    std::cout << "running gnms solver" << std::endl;
-
-    gnms.runIteration();
-
-    NLOptConSolver::Policy_t solution = gnms.getSolution();
-
-    StateVectorArray<state_dim> x_sol = solution.x_ref();
-
-    for (size_t i = 0; i < x_sol.size(); i++)
-        std::cout << x_sol[i].transpose() << std::endl;
+    // assert that controls are the same
+    for (size_t i = 0; i < u_sol_hpipm.size(); i++)
+    {
+    	ASSERT_LT((u_sol_hpipm[i]-u_sol_gnrccati[i]).array().abs().maxCoeff(), 1e-6);
+    }
 }

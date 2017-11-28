@@ -7,8 +7,9 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include <gtest/gtest.h>
 #include <ct/optcon/optcon.h>
 
+// several tests which compare HPIPM and GNRiccati
 #include "LQOCSolverTest.h"
-
+#include "HPIPMInterfaceTest.h"
 
 int main(int argc, char **argv)
 {

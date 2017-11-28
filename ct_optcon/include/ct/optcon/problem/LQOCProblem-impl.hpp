@@ -136,8 +136,8 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(constr_v
 {
 	d_lb_.setConstant(d_lb);
 	d_ub_.setConstant(d_ub);
-	C_.setConstant(C_);
-	D_.setConstant(D_);
+	C_.setConstant(C);
+	D_.setConstant(D);
 	isConstrained_ = true;
 }
 

@@ -246,12 +246,6 @@ if(HPIPM)
     
     add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
     target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-    
-    #add_executable(HPIPMInterfaceTest test/hpipm/HPIPMInterfaceTest.cpp)	# todo make unit test
-    #target_link_libraries(HPIPMInterfaceTest ${HPIPM_LIBS} ${MATLAB_LIBS})
-    
-    #add_executable(HPIPMInterfaceTest2 test/hpipm/HPIPMInterfaceTest2.cpp) # todo make unit test
-    #target_link_libraries(HPIPMInterfaceTest2 ${HPIPM_LIBS} ${MATLAB_LIBS})
 endif(HPIPM)
 
 
