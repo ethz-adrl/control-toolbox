@@ -357,137 +357,36 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupConstraints(
 {
     nb_.resize(N_ + 1, 0);  // reset number of box constraints per stage
     ng_.resize(N_ + 1, 0);  // reset number of general constraints per stage
+    hdidxbEigen_.resize(N_ + 1);
 
-    hdidxb_temp_.resize(N_ + 1, Eigen::Matrix<int, CONTROL_DIM, 1>::Zero());
+    // now an attempt to make a general implementation
 
-    bool isStateBoxConstr = lqocProblem->isStateBoxConstrained();
-    bool isControlBoxConstr = lqocProblem->isControlBoxConstrained();
-
-    // first handle box constraints
-    if (isControlBoxConstr && !isStateBoxConstr)
+    if (lqocProblem->isBoxConstrained())
     {
-        /* add the number of control box constraints.
-    	 * for simplicity, we assume the same number of control box constraints is active from time n=0 to n=N-1.
-    	 * Note that the value of the box constraint could change, though. */
-        for (size_t i = 0; i < N_; i++)
+        for (size_t i = 0; i < N_ + 1; i++)
         {
-            const int nConstr = (int)CONTROL_DIM;
+            const int nConstr = get_hpipm_boxconstr_sp_pattern(i, lqocProblem->ux_I_[i], hdidxbEigen_[i]);
+
+            std::cout << "hpipm sparsity: " << hdidxbEigen_[i].transpose() << std::endl;
+
+            assembly_dynamic_constraint_container(lqocProblem, nConstr, i, hdidxbEigen_[i]);
+
             nb_[i] = nConstr;
 
-            hd_lb_[i] = lqocProblem->ux_lb_[i].data();
-            hd_ub_[i] = lqocProblem->ux_ub_[i].data();
+            std::cout << "dyn assembl. lower bound: " << lqocProblem->ux_lb_dyn_[i].transpose() << std::endl;
+            std::cout << "dyn assembl. upper bound: " << lqocProblem->ux_ub_dyn_[i].transpose() << std::endl;
 
-            hdidxb_temp_[i] = Eigen::Matrix<int, nConstr, 1>::Zero();
-            for (int j = 0; j < nConstr; j++)
-                hdidxb_temp_[i](j) = j;  // count up constraint indices todo how to write more efficiently?
+            hd_lb_[i] = lqocProblem->ux_lb_dyn_[i].data();
+            hd_ub_[i] = lqocProblem->ux_ub_dyn_[i].data();
 
-            hidxb_[i] = hdidxb_temp_[i].data();
+            hidxb_[i] = hdidxbEigen_[i].data();
 
             // direct pointers of lagrange mult to corresponding containers
-            cont_lam_lb_[i].resize(nConstr, 1);
+            cont_lam_lb_[i].resize(nConstr, 1);  // todo eventually get rid of this resize and make this fixed size
             cont_lam_ub_[i].resize(nConstr, 1);
             lam_lb_[i] = cont_lam_lb_[i].data();
             lam_ub_[i] = cont_lam_ub_[i].data();
         }
-
-        // todo how to ensure that the last box constraint points on state rather than control ? We'll need to specify the J matrices
-        //        throw std::runtime_error("bounds for box constraints not set yet");
-    }
-    // handle case with state box constraints but no control box constraints
-    else if (isStateBoxConstr && !isControlBoxConstr)
-    {
-        /* add the number of state box constraints.
-         * for simplicity, we assume the same number of state box constraints is active from time n=1 to n=N.
-         * Note that the value of the box constraint could change, though. */
-
-        // no constraints for first stage
-        nb_[0] = 0;
-        hdidxb_temp_[0].resize(0, 1);
-        hidxb_[0] = hdidxb_temp_[0].data();
-        cont_lam_lb_[0].resize(0, 1);
-        cont_lam_ub_[0].resize(0, 1);
-        lam_lb_[0] = cont_lam_lb_[0].data();
-        lam_ub_[0] = cont_lam_ub_[0].data();
-
-        for (size_t i = 1; i < N_ + 1; i++)
-        {
-            const int nConstr = (int)STATE_DIM;
-            nb_[i] = nConstr;
-
-            std::cout << lqocProblem->ux_lb_[i] << std::endl;
-
-            hd_lb_[i] = lqocProblem->ux_lb_[i].data();
-            hd_lb_[i] += CONTROL_DIM;  // set pointer to correct element
-            hd_ub_[i] = lqocProblem->ux_ub_[i].data();
-            hd_ub_[i] += CONTROL_DIM;  // set pointer to correct element
-
-            std::cout << *(hd_lb_[i]) << std::endl;
-
-
-            hdidxb_temp_[i] = Eigen::Matrix<int, nConstr, 1>::Zero();
-            for (int j = 0; j < nConstr; j++)
-                hdidxb_temp_[i](j) =
-                    j + CONTROL_DIM;  // count up constraint indices todo how to write more efficiently?
-
-            hidxb_[i] = hdidxb_temp_[i].data();
-
-            // direct pointers of lagrange mult to corresponding containers
-            cont_lam_lb_[i].resize(nConstr, 1);
-            cont_lam_ub_[i].resize(nConstr, 1);
-            lam_lb_[i] = cont_lam_lb_[i].data();
-            lam_ub_[i] = cont_lam_ub_[i].data();
-        }
-
-        // todo: this assumes that we're adding all states as box constraints. how can we e.g. only add the positions? // todo look into the sparsity matrix
-    }
-    else if (isStateBoxConstr && isControlBoxConstr)
-    {
-        // constraints for first stage
-        nb_[0] = (int)CONTROL_DIM;
-        hdidxb_temp_[0].resize(CONTROL_DIM, 1);
-
-        hdidxb_temp_[0] = Eigen::Matrix<int, CONTROL_DIM, 1>::Zero();
-        for (int j = 0; j < CONTROL_DIM; j++)
-            hdidxb_temp_[0](j) = j;  // count up constraint indices todo how to write more efficiently?
-
-        hidxb_[0] = hdidxb_temp_[0].data();
-        cont_lam_lb_[0].resize(CONTROL_DIM, 1);
-        cont_lam_ub_[0].resize(CONTROL_DIM, 1);
-        lam_lb_[0] = cont_lam_lb_[0].data();
-        lam_ub_[0] = cont_lam_ub_[0].data();
-
-        for (size_t i = 1; i < N_; i++)
-        {
-            const int nConstr = (int)(STATE_DIM + CONTROL_DIM);
-            nb_[i] = nConstr;
-
-            std::cout << lqocProblem->ux_lb_[i] << std::endl;
-
-            hd_lb_[i] = lqocProblem->ux_lb_[i].data();
-            hd_ub_[i] = lqocProblem->ux_ub_[i].data();
-
-            std::cout << *(hd_lb_[i]) << std::endl;
-
-
-            hdidxb_temp_[i] = Eigen::Matrix<int, nConstr, 1>::Zero();
-            for (int j = 0; j < nConstr; j++)
-                hdidxb_temp_[i](j) = j;
-
-            hidxb_[i] = hdidxb_temp_[i].data();
-
-            // direct pointers of lagrange mult to corresponding containers
-            cont_lam_lb_[i].resize(nConstr, 1);
-            cont_lam_ub_[i].resize(nConstr, 1);
-            lam_lb_[i] = cont_lam_lb_[i].data();
-            lam_ub_[i] = cont_lam_ub_[i].data();
-        }
-
-        // todo last stage is missing still.
-        // todo why do the state constraints fail? need different example perhaps?
-    }
-    else
-    {
-        throw std::runtime_error("problem not box constrained");
     }
 
     if (lqocProblem->isGeneralConstrained())
@@ -684,6 +583,56 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     //#endif
     //    ipm_mem_.resize(ipm_size);
     //    ::d_create_ipm_hard_ocp_qp(&qp_, &arg_, &workspace_, ipm_mem_.data());
+}
+
+
+template <int STATE_DIM, int CONTROL_DIM>
+int HPIPMInterface<STATE_DIM, CONTROL_DIM>::get_hpipm_boxconstr_sp_pattern(const size_t n,
+    const box_constr_sparsity_t& lqoc_sp_in,
+    Eigen::Matrix<int, STATE_DIM + CONTROL_DIM, 1>& hpipm_sp_out)
+{
+    // lqoc_box_constr_sparsity_t is a vector with ones and zeros, showing which constraint is active and which not
+    // for example [0 0 1 0 0 1 0]
+    // this method transforms it into an output vector indicating indices of constraints
+    // above example would shall result as [2 5]
+
+    int nBoxCon = 0;  // count number of box constraints
+
+    size_t i_start = 0;                       // start searching for box constraints at this index
+    size_t i_stop = STATE_DIM + CONTROL_DIM;  // stop searching for box constraints at this index
+
+    if (n == 0)
+        i_stop = CONTROL_DIM;  // omit state box constraints at first stage
+    else if (n == N_)
+        i_start = CONTROL_DIM;  // omit control box constraints at last stage
+
+    for (size_t i = 0; i < STATE_DIM + CONTROL_DIM; i++)
+    {
+        if (lqoc_sp_in(i) == 1)  // if there is a box constraint ...
+        {
+            hpipm_sp_out(nBoxCon) = i;  // ... add to index
+            nBoxCon++;
+        }
+    }
+    return nBoxCon;
+}
+
+
+template <int STATE_DIM, int CONTROL_DIM>
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::assembly_dynamic_constraint_container(
+    std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem,
+    size_t nCon,
+    size_t ind,
+    const Eigen::Matrix<int, STATE_DIM + CONTROL_DIM, 1>& hpipm_sp)
+{
+    lqocProblem->ux_lb_dyn_[ind].resize(nCon);
+    lqocProblem->ux_ub_dyn_[ind].resize(nCon);
+
+    for (size_t i = 0; i < nCon; i++)
+    {
+        lqocProblem->ux_lb_dyn_[ind](i) = lqocProblem->ux_lb_[ind](hpipm_sp(i));
+        lqocProblem->ux_ub_dyn_[ind](i) = lqocProblem->ux_ub_[ind](hpipm_sp(i));
+    }
 }
 
 

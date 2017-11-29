@@ -52,6 +52,8 @@ public:
     typedef ct::core::StateVectorArray<STATE_DIM> StateVectorArray;
     typedef ct::core::ControlVectorArray<CONTROL_DIM> ControlVectorArray;
 
+    using box_constr_sparsity_t = typename LQOCProblem<STATE_DIM, CONTROL_DIM>::box_constr_sparsity_t;
+
     //! constructor
     HPIPMInterface(int N = -1);
 
@@ -141,6 +143,20 @@ private:
     //! prints a matrix in column-major format
     void int_print_mat(int row, int col, int* A, int lda);
 
+    //! compute HPIPM's box constraint sparsity pattern based on ct LQOCProblem box constraint sparsity pattern
+    /*!
+     * todo document this method
+     * @return number of box constraints
+     */
+    int get_hpipm_boxconstr_sp_pattern(const size_t n, const box_constr_sparsity_t& in,
+        Eigen::Matrix<int, STATE_DIM + CONTROL_DIM, 1>& hpipm_sp_out);
+
+    // temporary, get rid of that again todo
+    void assembly_dynamic_constraint_container(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem,
+        size_t nCon,
+        size_t ind,
+        const Eigen::Matrix<int, STATE_DIM + CONTROL_DIM, 1>& hpipm_sp);
+
     int N_;  //! horizon length
 
     std::vector<int> nx_;  //! number of states per stage
@@ -164,14 +180,15 @@ private:
     StateVectorArray hqEigen_;    //! interm. container for intuitive transcription of 1st order state penalty
     ControlVectorArray hrEigen_;  //! interm. container for intuitive transcription of 1st order control penalty
 
-    std::vector<double*> hd_lb_;                          //! lower box constraint threshold ?
-    std::vector<double*> hd_ub_;                          //! upper box constraint threshold ?
-    std::vector<int*> hidxb_;                             //! sparsity pattern for box constraints
-    std::vector<Eigen::Matrix<int, -1, 1>> hdidxb_temp_;  //! todo temp container to work out how sparsity pattern works
-    std::vector<double*> hd_lg_;                          //! lower general constraint threshold ?
-    std::vector<double*> hd_ug_;                          //! upper general constraint threshold ?
-    std::vector<double*> hC_;                             //! general constraint jacobians w.r.t. states (presumably)
-    std::vector<double*> hD_;                             //! general constraint jacobians w.r.t. controls (presumably)
+    std::vector<double*> hd_lb_;  //! lower box constraint threshold ?
+    std::vector<double*> hd_ub_;  //! upper box constraint threshold ?
+    std::vector<int*> hidxb_;     //! pointer sparsity pattern for box constraints
+    ct::core::DiscreteArray<Eigen::Matrix<int, STATE_DIM + CONTROL_DIM, 1>>
+        hdidxbEigen_;             //! container for box constraint sparsity pattern
+    std::vector<double*> hd_lg_;  //! lower general constraint threshold ?
+    std::vector<double*> hd_ug_;  //! upper general constraint threshold ?
+    std::vector<double*> hC_;     //! general constraint jacobians w.r.t. states (presumably)
+    std::vector<double*> hD_;     //! general constraint jacobians w.r.t. controls (presumably)
 
     double* x0_;  //! initial state
 

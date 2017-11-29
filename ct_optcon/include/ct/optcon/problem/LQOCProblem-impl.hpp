@@ -77,6 +77,9 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumStages(int N)
 
     ux_lb_.resize(N + 1);
     ux_ub_.resize(N + 1);
+    ux_lb_dyn_.resize(N + 1);
+    ux_ub_dyn_.resize(N + 1);
+    ux_I_.resize(N + 1);
 
     d_lb_.resize(N + 1);
     d_ub_.resize(N + 1);
@@ -107,6 +110,7 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero(const int& nGenConstr)
     uxmax.setConstant(std::numeric_limits<SCALAR>::max());
     ux_lb_.setConstant(uxmin);
     ux_ub_.setConstant(uxmax);
+    ux_I_.setConstant(box_constr_sparsity_t::Zero());
 
     assert(d_lb_.size() == d_ub_.size());
     assert(d_lb_.size() == C_.size());
@@ -131,13 +135,20 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero(const int& nGenConstr)
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setStateBoxConstraints(ct::core::StateVector<STATE_DIM, SCALAR>& x_lb,
-    ct::core::StateVector<STATE_DIM, SCALAR>& x_ub)
+    ct::core::StateVector<STATE_DIM, SCALAR>& x_ub,
+    const Eigen::Matrix<int, STATE_DIM, 1>& sparsity)
 {
+    // make sure there are no state bounds at initial stage
+    ux_lb_[0].template tail<STATE_DIM>().setConstant(std::numeric_limits<SCALAR>::lowest());
+    ux_ub_[0].template tail<STATE_DIM>().setConstant(std::numeric_limits<SCALAR>::max());
+    ux_I_[0].template tail<STATE_DIM>() = Eigen::Matrix<int, STATE_DIM, 1>::Zero();
+
     assert(ux_lb_.size() == ux_ub_.size());
-    for (size_t i = 0; i < ux_lb_.size(); i++)
+    for (size_t i = 1; i < K_ + 1; i++)
     {
         ux_lb_[i].template tail<STATE_DIM>() = x_lb;
         ux_ub_[i].template tail<STATE_DIM>() = x_ub;
+        ux_I_[i].template tail<STATE_DIM>() = sparsity;
     }
 
     hasStateBoxConstraints_ = true;
@@ -146,14 +157,21 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setStateBoxConstraints(ct::cor
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setControlBoxConstraints(
     ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_lb,
-    ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_ub)
+    ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_ub,
+    const Eigen::Matrix<int, CONTROL_DIM, 1>& sparsity)
 {
     assert(ux_lb_.size() == ux_ub_.size());
-    for (size_t i = 0; i < ux_lb_.size(); i++)
+    for (size_t i = 0; i < K_; i++)
     {
         ux_lb_[i].template head<CONTROL_DIM>() = u_lb;
         ux_ub_[i].template head<CONTROL_DIM>() = u_ub;
+        ux_I_[i].template head<CONTROL_DIM>() = sparsity;
     }
+
+    // make sure there are no control bounds at terminal stage
+    ux_lb_[K_].template head<CONTROL_DIM>().setConstant(std::numeric_limits<SCALAR>::lowest());
+    ux_ub_[K_].template head<CONTROL_DIM>().setConstant(std::numeric_limits<SCALAR>::max());
+    ux_I_[K_].template head<CONTROL_DIM>() = Eigen::Matrix<int, CONTROL_DIM, 1>::Zero();
 
     hasControlBoxConstraints_ = true;
 }
@@ -215,26 +233,6 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
     hasStateBoxConstraints_ = false;
     hasControlBoxConstraints_ = false;
     hasGenConstraints_ = false;
-}
-
-
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuadraticProblem(
-    ct::core::StateVector<STATE_DIM, SCALAR>& x0,
-    ct::core::ControlVector<CONTROL_DIM, SCALAR>& u0,
-    ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
-    ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
-    ct::core::StateVector<STATE_DIM, SCALAR>& stateOffset,
-    ct::core::StateVector<STATE_DIM, SCALAR>& x_lb,
-    ct::core::StateVector<STATE_DIM, SCALAR>& x_ub,
-    ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_lb,
-    ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_ub,
-    double dt)
-{
-    setFromTimeInvariantLinearQuadraticProblem(x0, u0, linearSystem, costFunction, stateOffset, dt);
-
-    setControlBoxConstraints(u_lb, u_ub);
-    setStateBoxConstraints(x_lb, x_ub);
 }
 
 }  // namespace optcon

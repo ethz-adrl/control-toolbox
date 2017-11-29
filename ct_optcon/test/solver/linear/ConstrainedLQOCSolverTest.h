@@ -86,11 +86,19 @@ void boxConstraintsTest()
     ct::core::ControlVector<control_dim> u_lb, u_ub;
     u_lb.setConstant(-0.5);
     u_ub.setConstant(0.5);
+    Eigen::Matrix<int, control_dim, 1> u_box_sparsity;
+    u_box_sparsity << 1, 1, 1;
+
 
     // state box constraints
     ct::core::StateVector<state_dim> x_lb, x_ub;
-    x_lb.setConstant(-20.0);
-    x_ub.setConstant(20.0);
+    x_lb.setConstant(std::numeric_limits<double>::lowest());
+    x_ub.setConstant(std::numeric_limits<double>::max());
+    Eigen::Matrix<int, state_dim, 1> x_box_sparsity = Eigen::Matrix<int, state_dim, 1>::Zero();
+    x_lb(0) = 1.7;
+    x_lb(1) = 1.7;
+    x_box_sparsity(0) = 1;
+    x_box_sparsity(1) = 1;
 
     // solution variables needed later
     ct::core::StateVectorArray<state_dim> xSol_hpipm;
@@ -107,8 +115,8 @@ void boxConstraintsTest()
     // initialize the optimal control problems for both solvers
     lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
     lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
-    lqocProblem1->setControlBoxConstraints(u_lb, u_ub);
-    lqocProblem2->setControlBoxConstraints(u_lb, u_ub);
+    lqocProblem1->setControlBoxConstraints(u_lb, u_ub, u_box_sparsity);
+    lqocProblem2->setControlBoxConstraints(u_lb, u_ub, u_box_sparsity);
 
     // check that constraint configuration is right
     //    ASSERT_TRUE(lqocProblem1->isConstrained());
@@ -154,8 +162,8 @@ void boxConstraintsTest()
     lqocProblem2->setZero();
     lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
     lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
-    lqocProblem1->setStateBoxConstraints(x_lb, x_ub);
-    lqocProblem2->setStateBoxConstraints(x_lb, x_ub);
+    lqocProblem1->setStateBoxConstraints(x_lb, x_ub, x_box_sparsity);
+    lqocProblem2->setStateBoxConstraints(x_lb, x_ub, x_box_sparsity);
 
     // check that constraint configuration is right
     //    ASSERT_TRUE(lqocProblem1->isConstrained());
@@ -196,15 +204,23 @@ void boxConstraintsTest()
         std::cout << " ================================================== " << std::endl;
     }
 
+    // modified box constraints
+    x_lb(0) = 1.5;
+    x_lb(1) = 1.5;
+    u_lb(0) = -1.0;
+    u_ub(0) =  1.0;
+    u_box_sparsity(1)=0;
+    u_box_sparsity(2)=0;
+
     // initialize the optimal control problems for both solvers
     lqocProblem1->setZero();
     lqocProblem2->setZero();
     lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
     lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
-    lqocProblem1->setStateBoxConstraints(x_lb, x_ub);
-    lqocProblem2->setStateBoxConstraints(x_lb, x_ub);
-    lqocProblem1->setControlBoxConstraints(u_lb, u_ub);
-    lqocProblem2->setControlBoxConstraints(u_lb, u_ub);
+    lqocProblem1->setStateBoxConstraints(x_lb, x_ub, x_box_sparsity);
+    lqocProblem2->setStateBoxConstraints(x_lb, x_ub, x_box_sparsity);
+    lqocProblem1->setControlBoxConstraints(u_lb, u_ub, u_box_sparsity);
+    lqocProblem2->setControlBoxConstraints(u_lb, u_ub, u_box_sparsity);
 
     // check that constraint configuration is right
     //    ASSERT_TRUE(lqocProblem1->isConstrained());

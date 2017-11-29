@@ -13,7 +13,7 @@ namespace optcon {
  * \brief Defines a Linear-Quadratic Optimal Control Problem, which is optionally constrained.
  *
  * This class defines a Linear Quadratic Optimal Control (LQOC) Problem, consisting of
- * - affine systen dynamics
+ * - affine system dynamics
  * - reference trajectories (arrays!) for state and control
  * - LQ approximation of the cost function
  *
@@ -42,14 +42,7 @@ namespace optcon {
  * The constrained LQ problem additionally implements the box constraints
  * \f$ \mathbf \x_{lb} \leq \mathbf x_n \leq \mathbf \x_{ub} \ \forall i=1,2,\ldots,N \f$ and
  * \f$ \mathbf \u_{lb} \leq \mathbf u_n \leq \mathbf \u_{ub} \ \forall i=0,1,\ldots,N-1  \f$
- * which in differential notation read as
- * \f[
- * \mathbf \x_{lb} - \hat \mathbf x_n  \leq \delta \mathbf x_n \leq \mathbf \x_{ub} - \hat \mathbf x_n \ \forall i=1,2,\ldots,N
- * \f]
- * and
- * \f[
- * \mathbf \u_{lb} - \hat \mathbf u_n  \leq \delta \mathbf u_n \leq \mathbf \u_{ub} - \hat \mathbf u_n \ \forall i=0,1,\ldots,N-1
- * \f]
+ * which are always kept in absolute coordinates.
  * and the general inequality constraints
  * \f[
  * \mathbf \d_{lb}  \leq \mathbf C_n \delta \mathbf \x_n + \mathbf D_n \delta \mathbf \u_n \leq \mathbf \d_{ub} \ \forall i=0,1,\ldots,N
@@ -66,13 +59,22 @@ public:
     using constr_vec_t = Eigen::Matrix<SCALAR, -1, 1>;
     using constr_state_jac_t = Eigen::Matrix<SCALAR, -1, STATE_DIM>;
     using constr_control_jac_t = Eigen::Matrix<SCALAR, -1, CONTROL_DIM>;
+    using constr_state_sparsity_t = Eigen::Matrix<int, -1, STATE_DIM>;
+    using constr_control_sparsity_t = Eigen::Matrix<int, -1, CONTROL_DIM>;
 
     using constr_vec_array_t = ct::core::DiscreteArray<constr_vec_t>;
     using constr_state_jac_array_t = ct::core::DiscreteArray<constr_state_jac_t>;
     using constr_control_jac_array_t = ct::core::DiscreteArray<constr_control_jac_t>;
+    using constr_state_sparsity_array_t = ct::core::DiscreteArray<constr_state_sparsity_t>;
+    using constr_control_sparsity_array_t = ct::core::DiscreteArray<constr_control_sparsity_t>;
 
     using box_constr_t = Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM, 1>;
     using box_constr_array_t = ct::core::DiscreteArray<box_constr_t>;
+
+    //! a vector indicating which box constraints are active and which not
+    using box_constr_sparsity_t = Eigen::Matrix<int, STATE_DIM + CONTROL_DIM, 1>;
+    using box_constr_sparsity_array_t = ct::core::DiscreteArray<box_constr_sparsity_t>;
+
 
     //! constructor
     LQOCProblem(int N = 0);
@@ -91,19 +93,23 @@ public:
 
     /*!
      * \brief set uniform state box constraints
-     * @param x_lb state lower bound
-     * @param x_ub state upper bound
+     * @param x_lb state lower bound in absolute coordinates
+     * @param x_ub state upper bound in absolute coordinates
+     * @param sparsity the sparsity identification vector, by default all box constraints are active
      */
     void setStateBoxConstraints(ct::core::StateVector<STATE_DIM, SCALAR>& x_lb,
-        ct::core::StateVector<STATE_DIM, SCALAR>& x_ub);
+        ct::core::StateVector<STATE_DIM, SCALAR>& x_ub,
+        const Eigen::Matrix<int, STATE_DIM, 1>& sparsity = Eigen::Matrix<int, STATE_DIM, 1>::Ones());
 
     /*!
      * \brief set uniform control box constraints, with the same constraint being applied at each stage
-     * @param u_lb control lower bound
-     * @param u_ub control upper bound
+     * @param u_lb control lower bound in absolute coordinates
+     * @param u_ub control upper bound in absolute coordinates
+     * @param sparsity the sparsity identification vector, by default all box constraints are active
      */
     void setControlBoxConstraints(ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_lb,
-        ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_ub);
+        ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_ub,
+        const Eigen::Matrix<int, CONTROL_DIM, 1>& sparsity = Eigen::Matrix<int, CONTROL_DIM, 1>::Ones());
 
     /*!
      * \brief set general (in)equaltiy constraints, with the same constraint applied at each stage
@@ -112,10 +118,7 @@ public:
      * @param C general constraint state jacobian
      * @param D general constraint control jacobian
      */
-    void setGeneralConstraints(constr_vec_t& d_lb,
-        constr_vec_t& d_ub,
-        constr_state_jac_t& C,
-        constr_control_jac_t& D);
+    void setGeneralConstraints(constr_vec_t& d_lb, constr_vec_t& d_ub, constr_state_jac_t& C, constr_control_jac_t& D);
 
     /*!
      * \brief a convenience method which constructs an unconstrained LQOC Problem from an LTI system and continuous-time quadratic cost
@@ -132,31 +135,6 @@ public:
         ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
         ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
         ct::core::StateVector<STATE_DIM, SCALAR>& stateOffset,
-        double dt);
-
-    /*!
-     * \brief a convenience method which constructs a box-constrained LQOC Problem from an LTI system and continuous-time quadratic cost
-     * The discretization of the cost functions and constraints happens within this function. It employs an Euler-Discretization
-     * @param x0 the initial state
-     * @param u0 the current (and desired control)
-     * @param linearSystem the discrete-time LTI system
-     * @param costFunction the continuous-time cost function
-     * @param stateOffset the offset for the affine system dynamics demanded by the LQOC Solver
-     * @param dt the sampling time, required for discretization
-     * @param x_lb state lower bound
-     * @param x_ub state upper bound
-     * @param u_lb control lower bound
-     * @param u_ub control upper bound
-     */
-    void setFromTimeInvariantLinearQuadraticProblem(ct::core::StateVector<STATE_DIM, SCALAR>& x0,
-        ct::core::ControlVector<CONTROL_DIM, SCALAR>& u0,
-        ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
-        ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
-        ct::core::StateVector<STATE_DIM, SCALAR>& stateOffset,
-        ct::core::StateVector<STATE_DIM, SCALAR>& x_lb,
-        ct::core::StateVector<STATE_DIM, SCALAR>& x_ub,
-        ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_lb,
-        ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_ub,
         double dt);
 
     //! return a flag indicating whether this LQOC Problem is constrained or not
@@ -194,9 +172,12 @@ public:
 
     //! lower bound of box constraints in order [u_lb; x_lb]. Stacked for memory efficiency.
     box_constr_array_t ux_lb_;
-
+    constr_vec_array_t ux_lb_dyn_;
     //! upper bound of box constraints in order [u_ub; x_ub]. Stacked for memory efficiency.
     box_constr_array_t ux_ub_;
+    constr_vec_array_t ux_ub_dyn_;
+    //! box constraint sparsity
+    box_constr_sparsity_array_t ux_I_;
 
     //! general constraint lower bound
     constr_vec_array_t d_lb_;
@@ -217,7 +198,6 @@ private:
     bool hasStateBoxConstraints_;
     //! bool indicating if the optimization problem hs general inequality constraints
     bool hasGenConstraints_;
-
 };
 
 }  // namespace optcon
