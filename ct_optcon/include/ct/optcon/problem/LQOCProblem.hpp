@@ -72,6 +72,8 @@ public:
     using constr_state_jac_array_t = ct::core::DiscreteArray<constr_state_jac_t>;
     using constr_control_jac_array_t = ct::core::DiscreteArray<constr_control_jac_t>;
 
+    using box_constr_t = Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM, 1>;
+    using box_constr_array_t = ct::core::DiscreteArray<box_constr_t>;
 
     //! constructor
     LQOCProblem(int N = 0);
@@ -191,16 +193,11 @@ public:
     //! LQ approximation of the cross terms of the cost function
     ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> P_;
 
+    //! lower bound of box constraints in order [u_lb; x_lb]. Stacked for memory efficiency.
+    box_constr_array_t ux_lb_;
 
-    //! lower bound of control input box constraint
-    ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_lb_;
-    //! upper bound of control input box constraint
-    ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_ub_;
-
-    //! lower bound of state box constraint
-    ct::core::StateVectorArray<STATE_DIM, SCALAR> x_lb_;
-    //! upper bound of state box constraint
-    ct::core::StateVectorArray<STATE_DIM, SCALAR> x_ub_;
+    //! upper bound of box constraints in order [u_ub; x_ub]. Stacked for memory efficiency.
+    box_constr_array_t ux_ub_;
 
     //! general constraint lower bound
     constr_vec_array_t d_lb_;

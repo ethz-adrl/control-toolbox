@@ -83,16 +83,14 @@ void boxConstraintsTest()
 
 
     // control box constraints
-    ct::core::ControlVector<control_dim> u_lb;
+    ct::core::ControlVector<control_dim> u_lb, u_ub;
     u_lb.setConstant(-0.5);
-    ct::core::ControlVector<control_dim> u_ub;
     u_ub.setConstant(0.5);
 
     // state box constraints
-    ct::core::StateVector<state_dim> x_lb;
-    x_lb << -x0(0), -x0(1), -0.4, -0.4, -0.4, -0.4, -0.4,-0.4;
-    ct::core::StateVector<state_dim> x_ub;
-    x_ub = -x_lb;
+    ct::core::StateVector<state_dim> x_lb, x_ub;
+    x_lb.setConstant(-20.0);
+    x_ub.setConstant(20.0);
 
     // solution variables needed later
     ct::core::StateVectorArray<state_dim> xSol_hpipm;
@@ -190,4 +188,53 @@ void boxConstraintsTest()
 
     if (verbose)
         printSolution(xSol_hpipm, uSol_hpipm, KSol_hpipm);
+
+
+    if (verbose)
+       {
+           std::cout << " ================================================== " << std::endl;
+           std::cout << " TEST CASE 3: BOX CONSTRAINTS ON STATE AND CONTROL  " << std::endl;
+           std::cout << " ================================================== " << std::endl;
+       }
+
+       // initialize the optimal control problems for both solvers
+       lqocProblem1->setZero();
+       lqocProblem2->setZero();
+       lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
+       lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
+       lqocProblem1->setStateBoxConstraints(x_lb, x_ub);
+       lqocProblem2->setStateBoxConstraints(x_lb, x_ub);
+       lqocProblem1->setControlBoxConstraints(u_lb, u_ub);
+       lqocProblem2->setControlBoxConstraints(u_lb, u_ub);
+
+       // check that constraint configuration is right
+       //    ASSERT_TRUE(lqocProblem1->isConstrained());
+       //    ASSERT_FALSE(lqocProblem1->isGeneralConstrained());
+       //    ASSERT_TRUE(lqocProblem1->isStateBoxConstrained());
+       //    ASSERT_TRUE(lqocProblem1->isControlBoxConstrained());
+
+       // set and try to solve the problem for both solvers
+       hpipmSolver->setProblem(lqocProblem1);
+       hpipmSolver->solve();
+
+       try
+       {
+           gnRiccatiSolver->setProblem(lqocProblem2);
+           gnRiccatiSolver->solve();
+           //        ASSERT(false); // should never reach to this point
+       } catch (std::exception& e)
+       {
+           std::cout << "GNRiccatiSolver failed with exception " << e.what() << std::endl;
+           //ASSERT(TRUE)
+       }
+
+       // retrieve solutions from hpipm
+       xSol_hpipm = hpipmSolver->getSolutionState();
+       uSol_hpipm = hpipmSolver->getSolutionControl();
+       hpipmSolver->getFeedback(KSol_hpipm);
+
+       // todo assert that state and control box constraints are met
+
+       if (verbose)
+           printSolution(xSol_hpipm, uSol_hpipm, KSol_hpipm);
 }

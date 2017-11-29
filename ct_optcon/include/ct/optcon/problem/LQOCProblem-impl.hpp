@@ -75,10 +75,8 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumStages(int N)
     rv_.resize(N);
     R_.resize(N);
 
-    u_lb_.resize(N);
-    u_ub_.resize(N);
-    x_lb_.resize(N + 1);
-    x_ub_.resize(N + 1);
+    ux_lb_.resize(N + 1);
+    ux_ub_.resize(N + 1);
 
     d_lb_.resize(N + 1);
     d_ub_.resize(N + 1);
@@ -104,17 +102,11 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero(const int& nGenConstr)
 
 
     // despite this method is called setZero() the upper and lower box constraints are set to the numeric limits
-    core::ControlVector<CONTROL_DIM, SCALAR> umin, umax;
-    umin.setConstant(std::numeric_limits<SCALAR>::lowest());
-    umax.setConstant(std::numeric_limits<SCALAR>::max());
-    u_lb_.setConstant(umin);
-    u_ub_.setConstant(umax);
-
-    core::StateVector<STATE_DIM, SCALAR> xmin, xmax;
-    xmin.setConstant(std::numeric_limits<SCALAR>::lowest());
-    xmax.setConstant(std::numeric_limits<SCALAR>::max());
-    x_lb_.setConstant(xmin);
-    x_ub_.setConstant(xmax);
+    box_constr_t uxmin, uxmax;
+    uxmin.setConstant(std::numeric_limits<SCALAR>::lowest());
+    uxmax.setConstant(std::numeric_limits<SCALAR>::max());
+    ux_lb_.setConstant(uxmin);
+    ux_ub_.setConstant(uxmax);
 
     assert(d_lb_.size() == d_ub_.size());
     assert(d_lb_.size() == C_.size());
@@ -141,8 +133,13 @@ template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setStateBoxConstraints(ct::core::StateVector<STATE_DIM, SCALAR>& x_lb,
     ct::core::StateVector<STATE_DIM, SCALAR>& x_ub)
 {
-    x_lb_.setConstant(x_lb);
-    x_ub_.setConstant(x_ub);
+    assert(ux_lb_.size() == ux_ub_.size());
+    for (size_t i = 0; i < ux_lb_.size(); i++)
+    {
+        ux_lb_[i].template tail<STATE_DIM>() = x_lb;
+        ux_ub_[i].template tail<STATE_DIM>() = x_ub;
+    }
+
     hasStateBoxConstraints_ = true;
 }
 
@@ -151,8 +148,13 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setControlBoxConstraints(
     ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_lb,
     ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_ub)
 {
-    u_lb_.setConstant(u_lb);
-    u_ub_.setConstant(u_ub);
+    assert(ux_lb_.size() == ux_ub_.size());
+    for (size_t i = 0; i < ux_lb_.size(); i++)
+    {
+        ux_lb_[i].template head<CONTROL_DIM>() = u_lb;
+        ux_ub_[i].template head<CONTROL_DIM>() = u_ub;
+    }
+
     hasControlBoxConstraints_ = true;
 }
 
