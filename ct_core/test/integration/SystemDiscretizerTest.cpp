@@ -4,13 +4,12 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#include <ct/optcon/optcon-prespec.h>
-#include "LqrTest.h"
+#include <ct/core/core.h>
+#include "SystemDiscretizerTest.h"
 
 
 int main(int argc, char **argv)
 {
-    using namespace ct::optcon::example;
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

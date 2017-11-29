@@ -69,10 +69,10 @@ public:
     };
 
     const std::shared_ptr<ct::core::StateVectorArray<STATE_DIM, SCALAR>>& getSubstates() const { return states_; }
-    const std::shared_ptr<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>> getSubcontrols() const
+    const std::shared_ptr<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>>& getSubcontrols() const
     {
         return controls_;
-    }  //!< container for logging the control
+    }
 
 private:
     bool activated_;

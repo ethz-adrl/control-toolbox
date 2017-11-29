@@ -7,7 +7,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -std=c++11 -Wall -Wl,--no-as-needed")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -std=c++11 -Wall")
 SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++11 -Wall")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
@@ -113,6 +113,12 @@ catkin_add_gtest(IntegratorComparison test/integration/IntegratorComparison.cpp)
 target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
 catkin_add_gtest(IntegratorComparisonPrespec test/integration/IntegratorComparisonPrespec.cpp)
 target_link_libraries(IntegratorComparisonPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
+
+catkin_add_gtest(SymplecticIntegrationTest test/integration/SymplecticIntegrationTest.cpp)
+target_link_libraries(SymplecticIntegrationTest ${catkin_LIBRARIES} ct_core)
+
+catkin_add_gtest(SystemDiscretizerTest test/integration/SystemDiscretizerTest.cpp)
+target_link_libraries(SystemDiscretizerTest ${catkin_LIBRARIES} ct_core)
 
 add_executable(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
 target_link_libraries(SensitivityTest ${catkin_LIBRARIES} ct_core)

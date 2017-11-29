@@ -4,17 +4,17 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
+/*!
+ * This file implements constraint unit tests.
+ * For more intuitive examples, visit the tutorial.
+ * \example ConstraintComparison.h
+ */
+
 #pragma once
 
 namespace ct {
 namespace optcon {
 namespace example {
-
-
-/*!
- * This is an example for using constraints.
- * \example ConstraintTest.h
- */
 
 const bool verbose = true;
 

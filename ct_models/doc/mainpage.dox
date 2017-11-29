@@ -2,11 +2,12 @@
 \mainpage CT Models
 
 \section ct_models_mod Control Toolbox - Models Module
-This module is part of the ADRL Control Toolbox, a C++ library for implementing dynamics, controllers, simulators and estimators for robotics. 
-The Models Module contains a collection of reference models.
+
+This module is part of the ADRL Control Toolbox ('CT'), an open-source C++ library for efficient modelling, control, 
+estimation and trajectory optimization for robotics.
 
 \section ct_models_install Installation and Usage
-CT Models is part of the Control Toolbox suite. See <a href="../../../ct_core/doc/html/index.html"> CT main documentation</a> for installation and usage instructions.
+CT Models is part of the Control Toolbox suite. See <a href="../../../ct_doc/doc/html/index.html"> CT main documentation</a> for installation and usage instructions.
  
 */
 

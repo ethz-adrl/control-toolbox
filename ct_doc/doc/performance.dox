@@ -9,13 +9,15 @@ implementation for many state-of-the-art control approaches. This page gives an 
 best performance.
 
 \page compile_time Optimize Compile Time
+@tableofcontents
+
 Especially with increasing complexity of your project, compilation time of the CT can become long. However,
 there are some tricks to reduce compilation time
 - make sure you compile in Release mode (catkin build -DCMAKE_BUILD_TYPE=RELEASE)
 - use CLANG instead of gcc. See the build flags in the \ref install "Installation Guide" on how to use clang.
-- use \ref prespec Explicit Template Instantiation
+- use \ref prespec
 
-\subsection prespec Explicit Template Instantiation
+\section prespec Explicit Template Instantiation
 The Control Toolbox is a heavily templated library for best runtime performance. However, this means most
 code lives in header files and gets recompiled when any changes are made to the code. Needless to say, that
 this can become cumbersome after some time. However, there is a simple yet effective workaround:
@@ -27,8 +29,8 @@ Template Parameter 	| Description
 STATE_DIM			| The dimension of the system's system state
 CONTROL_DIM			| The dimension of the system's control input
 SCALAR				| The scalar type used (usually double)
-POS_DIM				| (optional) Dimension of the position vector in a symplectic integrator
-VEL_DIM				| (optional) Dimension of the velocity vector in a symplectic integrator
+POS_DIM				| (optional) Dimension of the position vector for a symplectic system
+VEL_DIM				| (optional) Dimension of the velocity vector for a symplectic system
 
 In case you are multiple systems of different dimensions, you can prespecify each of their dimensions.
 
@@ -41,14 +43,16 @@ e.g. change \code{.cpp}#include <ct/core/core.h>\endcode to \code{.cpp}#include 
 optcon and rbd as well.
 
 \page execution_speed Optimize Execution Speed
+@tableofcontents
+
 - make use of \ref vectorization "Vectorization"
-- use \ref auto-diff "Auto-Differentiation" with just-in-time compilation or code generation
+- use \ref core_tut_linearization "Auto-Differentiation" with just-in-time compilation or code generation
 - if you do not want to use Auto-Diff, consider using the ct::rbd::RbdLinearizer for linearizing Rigid Body Dynamics
 - use multi-threading for Nonlinear Optimal Control Solvers
 - use HPIPM for running MPC or solving Optimal Control problems
 
 
-\subsection vectorization Vectorization
+\section vectorization Vectorization
 Vectorization is a processor feature where a Single Instruction is applied to Multiple Data (SIMD). This
 is especially useful for linear algebra operations. CT relies on [Eigen's Vectorization](http://eigen.tuxfamily.org/index.php?title=FAQ) 
  capabilities. This means CT supports SSE, FMA and AVX2 instructions. 

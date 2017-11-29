@@ -4,6 +4,12 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
+/*!
+ * This file implements a LQR unit tests and a comparison against MATLAB
+ * For more intuitive examples, visit the tutorial.
+ * \example LqrTest.h
+ */
+
 #pragma once
 
 #include <chrono>

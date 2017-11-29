@@ -4,13 +4,21 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#include <ct/optcon/optcon-prespec.h>
-#include "LqrTest.h"
+#pragma once
 
+namespace ct {
+namespace models {
+namespace quadrotor {
 
-int main(int argc, char **argv)
+static std::vector<std::string> urdfJointNames()
 {
-    using namespace ct::optcon::example;
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    std::vector<std::string> urdfJointNames = {
+        "jA", "jB",
+    };
+
+    return urdfJointNames;
 }
+
+}  // quadrotor
+}  // models
+}  // ct

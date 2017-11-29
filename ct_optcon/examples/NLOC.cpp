@@ -1,13 +1,9 @@
 /*!
- * \example nloc.cpp
+ * \example NLOC.cpp
  *
  * This example shows how to use the nonlinear optimal control solvers iLQR, unconstrained Gauss-Newton-Multiple-Shooting (GNMS),
  * as well as the hybrid methods iLQR-GNMS(M), where M denotes the number of multiple-shooting intervals. This example applies
- * them to a simple oscillator.
- *
- * Details on the algorithms including a derivation and numerous examples can be found in
- * Markus Giftthaler et al, “A Family of iterative Gauss-Newton Shooting Methods for Nonlinear Optimal Control”.
- * Submitted to ICRA 2018.
+ * them to a simple second-order oscillator.
  *
  */
 #include <ct/optcon/optcon.h>

@@ -4,8 +4,10 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
+#include <gtest/gtest.h>
 #include <ct/optcon/optcon-prespec.h>
-#include "LqrTest.h"
+
+#include "LQOCSolverTest.h"
 
 
 int main(int argc, char **argv)

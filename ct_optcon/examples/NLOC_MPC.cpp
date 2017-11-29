@@ -11,7 +11,7 @@ using namespace ct::optcon;
  * In this example, we apply iLQR-MPC to a simple second order system, a damped oscillator.
  * This tutorial builds up on the example NLOC.cpp, please consider this one as well.
  *
- * \example ilqr_mpc.cpp
+ * \example NLOC_MPC.cpp
  */
 int main(int argc, char **argv)
 {
