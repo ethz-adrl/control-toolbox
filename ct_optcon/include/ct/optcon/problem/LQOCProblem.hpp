@@ -172,10 +172,8 @@ public:
 
     //! lower bound of box constraints in order [u_lb; x_lb]. Stacked for memory efficiency.
     box_constr_array_t ux_lb_;
-    constr_vec_array_t ux_lb_dyn_;
     //! upper bound of box constraints in order [u_ub; x_ub]. Stacked for memory efficiency.
     box_constr_array_t ux_ub_;
-    constr_vec_array_t ux_ub_dyn_;
     //! box constraint sparsity
     box_constr_sparsity_array_t ux_I_;
 

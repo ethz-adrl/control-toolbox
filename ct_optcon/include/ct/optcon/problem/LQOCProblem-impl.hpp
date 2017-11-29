@@ -77,8 +77,6 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumStages(int N)
 
     ux_lb_.resize(N + 1);
     ux_ub_.resize(N + 1);
-    ux_lb_dyn_.resize(N + 1);
-    ux_ub_dyn_.resize(N + 1);
     ux_I_.resize(N + 1);
 
     d_lb_.resize(N + 1);

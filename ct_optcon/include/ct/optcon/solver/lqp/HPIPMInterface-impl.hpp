@@ -324,9 +324,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
     if (lqocProblem->isConstrained())
         setupConstraints(lqocProblem);
 
-    // todo figure out how to transcribe the actual constraint matrices here
-
-
     // moved here temporarily. todo check if needs to stay here. check what happens if constraints change sizes
     int qp_size = ::d_memsize_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
 #ifdef DEBUG_PRINT
@@ -357,33 +354,25 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupConstraints(
 {
     nb_.resize(N_ + 1, 0);  // reset number of box constraints per stage
     ng_.resize(N_ + 1, 0);  // reset number of general constraints per stage
-    hdidxbEigen_.resize(N_ + 1);
-
-    // now an attempt to make a general implementation
 
     if (lqocProblem->isBoxConstrained())
     {
         for (size_t i = 0; i < N_ + 1; i++)
         {
             const int nConstr = get_hpipm_boxconstr_sp_pattern(i, lqocProblem->ux_I_[i], hdidxbEigen_[i]);
-
-            std::cout << "hpipm sparsity: " << hdidxbEigen_[i].transpose() << std::endl;
-
-            assembly_dynamic_constraint_container(lqocProblem, nConstr, i, hdidxbEigen_[i]);
-
             nb_[i] = nConstr;
 
-            std::cout << "dyn assembl. lower bound: " << lqocProblem->ux_lb_dyn_[i].transpose() << std::endl;
-            std::cout << "dyn assembl. upper bound: " << lqocProblem->ux_ub_dyn_[i].transpose() << std::endl;
+            assemble_hpipm_box_constr_container(lqocProblem, nConstr, i, hdidxbEigen_[i]);
 
-            hd_lb_[i] = lqocProblem->ux_lb_dyn_[i].data();
-            hd_ub_[i] = lqocProblem->ux_ub_dyn_[i].data();
-
+            // set pointers to hpipm-style box constraint boundaries and sparsity pattern
+            hd_lb_[i] = ux_lb_hpipm_[i].data();
+            hd_ub_[i] = ux_ub_hpipm_[i].data();
             hidxb_[i] = hdidxbEigen_[i].data();
 
+            // TODO clarify with Gianluca if we need to reset the lagrange multiplier
+            // before warmstarting (potentially wrong warmstart for the lambdas)
+
             // direct pointers of lagrange mult to corresponding containers
-            cont_lam_lb_[i].resize(nConstr, 1);  // todo eventually get rid of this resize and make this fixed size
-            cont_lam_ub_[i].resize(nConstr, 1);
             lam_lb_[i] = cont_lam_lb_[i].data();
             lam_ub_[i] = cont_lam_ub_[i].data();
         }
@@ -430,7 +419,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupHPIPM(StateVectorArray& x,
     {
         bEigen_[i] = b[i] + x[i + 1] - A[i] * x[i] - B[i] * u[i];
     }
-    hb0_ = b[0] + x[1] - B[0] * u[0];  //! this line needs to be transcribed separately (correction for first stage)
+    hb0_ = b[0] + x[1] - B[0] * u[0];  // this line needs to be transcribed separately (correction for first stage)
 
 
     // STEP 2: transcription of intermediate costs
@@ -439,7 +428,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupHPIPM(StateVectorArray& x,
         hqEigen_[i] = qv[i] - Q[i] * x[i] - P[i].transpose() * u[i];
         hrEigen_[i] = rv[i] - R[i] * u[i] - P[i] * x[i];
     }
-    hr0_ = hrEigen_[0] + P[0] * x[0];  //! this line needs to be transcribed separately (correction for first stage)
+    hr0_ = hrEigen_[0] + P[0] * x[0];  // this line needs to be transcribed separately (correction for first stage)
 
 
     // STEP 3: transcription of terminal cost terms
@@ -487,6 +476,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     nu_.resize(N_ + 1, CONTROL_DIM);  // initialize number of control inputs per stage
     nb_.resize(N_ + 1, 0);            // initialize number of box constraints per stage
     ng_.resize(N_ + 1, 0);            // initialize number of general constraints per stage
+    hdidxbEigen_.resize(N_ + 1);      // resize sparsity container for box constraints
 
     // resize the containers for the affine system dynamics approximation
     hA_.resize(N_);
@@ -505,11 +495,13 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
 
     hd_lb_.resize(N_ + 1);
     hd_ub_.resize(N_ + 1);
+    hidxb_.resize(N_ + 1);
+    ux_lb_hpipm_.resize(N_ + 1);
+    ux_ub_hpipm_.resize(N_ + 1);
     hd_lg_.resize(N_ + 1);
     hd_ug_.resize(N_ + 1);
     hC_.resize(N_ + 1);
     hD_.resize(N_ + 1);
-    hidxb_.resize(N_ + 1);
 
     u_.resize(N_ + 1);
     x_.resize(N_ + 1);
@@ -589,7 +581,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
 template <int STATE_DIM, int CONTROL_DIM>
 int HPIPMInterface<STATE_DIM, CONTROL_DIM>::get_hpipm_boxconstr_sp_pattern(const size_t n,
     const box_constr_sparsity_t& lqoc_sp_in,
-    Eigen::Matrix<int, STATE_DIM + CONTROL_DIM, 1>& hpipm_sp_out)
+    box_constr_sparsity_t& hpipm_sp_out)
 {
     // lqoc_box_constr_sparsity_t is a vector with ones and zeros, showing which constraint is active and which not
     // for example [0 0 1 0 0 1 0]
@@ -619,19 +611,19 @@ int HPIPMInterface<STATE_DIM, CONTROL_DIM>::get_hpipm_boxconstr_sp_pattern(const
 
 
 template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::assembly_dynamic_constraint_container(
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::assemble_hpipm_box_constr_container(
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem,
     size_t nCon,
     size_t ind,
-    const Eigen::Matrix<int, STATE_DIM + CONTROL_DIM, 1>& hpipm_sp)
+    const box_constr_sparsity_t& hpipm_sp)
 {
-    lqocProblem->ux_lb_dyn_[ind].resize(nCon);
-    lqocProblem->ux_ub_dyn_[ind].resize(nCon);
+    ux_lb_hpipm_[ind].resize(nCon);
+    ux_ub_hpipm_[ind].resize(nCon);
 
     for (size_t i = 0; i < nCon; i++)
     {
-        lqocProblem->ux_lb_dyn_[ind](i) = lqocProblem->ux_lb_[ind](hpipm_sp(i));
-        lqocProblem->ux_ub_dyn_[ind](i) = lqocProblem->ux_ub_[ind](hpipm_sp(i));
+        ux_lb_hpipm_[ind](i) = lqocProblem->ux_lb_[ind](hpipm_sp(i));
+        ux_ub_hpipm_[ind](i) = lqocProblem->ux_ub_[ind](hpipm_sp(i));
     }
 }
 

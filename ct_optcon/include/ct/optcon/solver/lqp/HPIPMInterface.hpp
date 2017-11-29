@@ -41,18 +41,25 @@ public:
 
     static const int state_dim = STATE_DIM;
     static const int control_dim = CONTROL_DIM;
+    static const int max_box_constr_dim = STATE_DIM + CONTROL_DIM;
 
-    typedef ct::core::StateMatrix<STATE_DIM> StateMatrix;
-    typedef ct::core::StateMatrixArray<STATE_DIM> StateMatrixArray;
-    typedef ct::core::ControlMatrix<CONTROL_DIM> ControlMatrix;
-    typedef ct::core::ControlMatrixArray<CONTROL_DIM> ControlMatrixArray;
-    typedef ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM> StateControlMatrixArray;
-    typedef ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM> FeedbackArray;
+    using StateMatrix = ct::core::StateMatrix<STATE_DIM>;
+    using StateMatrixArray = ct::core::StateMatrixArray<STATE_DIM>;
+    using ControlMatrix = ct::core::ControlMatrix<CONTROL_DIM>;
+    using ControlMatrixArray = ct::core::ControlMatrixArray<CONTROL_DIM>;
+    using StateControlMatrixArray = ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM>;
+    using FeedbackArray = ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM>;
 
-    typedef ct::core::StateVectorArray<STATE_DIM> StateVectorArray;
-    typedef ct::core::ControlVectorArray<CONTROL_DIM> ControlVectorArray;
+    using StateVectorArray = ct::core::StateVectorArray<STATE_DIM>;
+    using ControlVectorArray = ct::core::ControlVectorArray<CONTROL_DIM>;
 
-    using box_constr_sparsity_t = typename LQOCProblem<STATE_DIM, CONTROL_DIM>::box_constr_sparsity_t;
+    // definitions for variable-size constraints
+    using constr_vec_t = Eigen::Matrix<double, -1, 1>;
+    using constr_vec_array_t = ct::core::DiscreteArray<constr_vec_t>;
+
+
+    //! typedef a container for a sparsity pattern vector for box constraints
+    using box_constr_sparsity_t = Eigen::Matrix<int, max_box_constr_dim, 1>;
 
     //! constructor
     HPIPMInterface(int N = -1);
@@ -143,68 +150,128 @@ private:
     //! prints a matrix in column-major format
     void int_print_mat(int row, int col, int* A, int lda);
 
-    //! compute HPIPM's box constraint sparsity pattern based on ct LQOCProblem box constraint sparsity pattern
     /*!
+     * \brief  compute HPIPM's box constraint sparsity pattern based on ct LQOCProblem box constraint sparsity pattern
      * todo document this method
      * @return number of box constraints
      */
-    int get_hpipm_boxconstr_sp_pattern(const size_t n, const box_constr_sparsity_t& in,
-        Eigen::Matrix<int, STATE_DIM + CONTROL_DIM, 1>& hpipm_sp_out);
+    int get_hpipm_boxconstr_sp_pattern(const size_t n,
+        const box_constr_sparsity_t& in,
+        box_constr_sparsity_t& hpipm_sp_out);
 
-    // temporary, get rid of that again todo
-    void assembly_dynamic_constraint_container(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem,
+    /*!
+     * \brief transcribe box constraints into the way required by HPIPM.
+     * \note There are multiple reasons why the final, 'condensed' box constraint container
+     * gets assembled here, rather than in the LQOC problem. Fristly, it allows the user to
+     * independently specify state-box and control-box constraints. Secondly, this is relatively
+     * specific to the implementation of HPIPM. Other LQ solvers might require different interfaces
+     * for the box constraints.
+     */
+    void assemble_hpipm_box_constr_container(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem,
         size_t nCon,
         size_t ind,
-        const Eigen::Matrix<int, STATE_DIM + CONTROL_DIM, 1>& hpipm_sp);
+        const box_constr_sparsity_t& hpipm_sp);
 
-    int N_;  //! horizon length
+    //! horizon length
+    int N_;
 
-    std::vector<int> nx_;  //! number of states per stage
-    std::vector<int> nu_;  //! number of inputs per stage
+    //! number of states per stage
+    std::vector<int> nx_;
+    //! number of inputs per stage
+    std::vector<int> nu_;
 
-    std::vector<int> nb_;  //! number of box constraints per stage, currently always zero
-    std::vector<int> ng_;  //! number of general constraints per stage, currently always zero
+    //! number of box constraints per stage
+    std::vector<int> nb_;
+    //! number of general constraints per stage
+    std::vector<int> ng_;
 
-    std::vector<double*> hA_;                  //! system state sensitivities
-    std::vector<double*> hB_;                  //! system input sensitivities
-    std::vector<double*> hb_;                  //! system offset term
-    StateVectorArray bEigen_;                  //! intermediate container for intuitive transcription
-    Eigen::Matrix<double, state_dim, 1> hb0_;  //! intermediate container for intuitive transcription of first stage
+    //! initial state
+    double* x0_;
 
-    std::vector<double*> hQ_;                    //! pure state penalty hessian
-    std::vector<double*> hS_;                    //! state-control cross-terms
-    std::vector<double*> hR_;                    //! pure control penalty hessian
-    std::vector<double*> hq_;                    //! pure state penalty jacobian
-    std::vector<double*> hr_;                    //! pure control penalty jacobian
-    Eigen::Matrix<double, control_dim, 1> hr0_;  //! intermediate container for intuitive transcription of first stage
-    StateVectorArray hqEigen_;    //! interm. container for intuitive transcription of 1st order state penalty
-    ControlVectorArray hrEigen_;  //! interm. container for intuitive transcription of 1st order control penalty
+    //! system state sensitivities
+    std::vector<double*> hA_;
+    //! system input sensitivities
+    std::vector<double*> hB_;
+    //! system offset term
+    std::vector<double*> hb_;
+    //! intermediate container for intuitive transcription of system representation from local to global coordinates
+    StateVectorArray bEigen_;
+    //! intermediate container for intuitive transcription of first stage from local to global coordinates
+    Eigen::Matrix<double, state_dim, 1> hb0_;
 
-    std::vector<double*> hd_lb_;  //! lower box constraint threshold ?
-    std::vector<double*> hd_ub_;  //! upper box constraint threshold ?
-    std::vector<int*> hidxb_;     //! pointer sparsity pattern for box constraints
-    ct::core::DiscreteArray<Eigen::Matrix<int, STATE_DIM + CONTROL_DIM, 1>>
-        hdidxbEigen_;             //! container for box constraint sparsity pattern
-    std::vector<double*> hd_lg_;  //! lower general constraint threshold ?
-    std::vector<double*> hd_ug_;  //! upper general constraint threshold ?
-    std::vector<double*> hC_;     //! general constraint jacobians w.r.t. states (presumably)
-    std::vector<double*> hD_;     //! general constraint jacobians w.r.t. controls (presumably)
 
-    double* x0_;  //! initial state
+    //! pure state penalty hessian
+    std::vector<double*> hQ_;
+    //! state-control cross-terms
+    std::vector<double*> hS_;
+    //! pure control penalty hessian
+    std::vector<double*> hR_;
+    //! pure state penalty jacobian
+    std::vector<double*> hq_;
+    //! pure control penalty jacobian
+    std::vector<double*> hr_;
+    //! intermediate container for intuitive transcription of first stage from local to global coordinates
+    Eigen::Matrix<double, control_dim, 1> hr0_;
+    //! interm. container for intuitive transcription of 1st order state penalty from local to global coordinates
+    StateVectorArray hqEigen_;
+    //! interm. container for intuitive transcription of 1st order control penalty from local to global coordinates
+    ControlVectorArray hrEigen_;
 
-    // solution
-    std::vector<double*> u_;       //! optimal control trajectory
-    std::vector<double*> x_;       //! optimal state trajectory
-    std::vector<double*> pi_;      //! todo what is this ?
-    std::vector<double*> lam_lb_;  //! ptr to lagrange multiplier box-constraint lower
-    std::vector<double*> lam_ub_;  //! ptr to lagrange multiplier box-constraint upper
-    std::vector<double*> lam_lg_;  //! ptr to lagrange multiplier general-constraint lower
-    std::vector<double*> lam_ug_;  //! ptr to lagrange multiplier general-constraint upper
 
-    std::vector<Eigen::Matrix<double, -1, 1>> cont_lam_lb_;  //! container for lagr. mult. box-constraint lower
-    std::vector<Eigen::Matrix<double, -1, 1>> cont_lam_ub_;  //! container for lagr. mult. box-constraint upper
-    std::vector<Eigen::Matrix<double, -1, 1>> cont_lam_lg_;  //! container for lagr. mult. general-constraint lower
-    std::vector<Eigen::Matrix<double, -1, 1>> cont_lam_ug_;  //! container for lagr. mult. general-constraint upper
+    //! pointer to lower box constraint boundary
+    std::vector<double*> hd_lb_;
+    //! pointer to upper box constraint boundary
+    std::vector<double*> hd_ub_;
+    //! pointer to sparsity pattern for box constraints
+    std::vector<int*> hidxb_;
+    //! lower box constraint boundary in hpipm spec
+    constr_vec_array_t ux_lb_hpipm_;
+    //! upper box constraint boundary in hpipm spec
+    constr_vec_array_t ux_ub_hpipm_;
+    /*!
+     * \brief container for hpipm box constr. sparsity pattern
+     * An example for how an element of this array might look like: [0 1 4 7]
+     * This would mean that box constraints act on elements 0, 1, 4 and 7 of the
+     * combined vector of decision variables [u; x]
+     */
+    ct::core::DiscreteArray<box_constr_sparsity_t> hdidxbEigen_;
+
+    //! lower general constraint boundary
+    std::vector<double*> hd_lg_;
+    //! upper general constraint boundary
+    std::vector<double*> hd_ug_;
+    //! general constraint jacobians w.r.t. states
+    std::vector<double*> hC_;
+    //! general constraint jacobians w.r.t. controls (presumably)
+    std::vector<double*> hD_;
+
+
+    /*
+     * SOLUTION variables
+     */
+    //! optimal control trajectory
+    std::vector<double*> u_;
+    //! optimal state trajectory
+    std::vector<double*> x_;
+    //! @todo what is this ?
+    std::vector<double*> pi_;
+    //! ptr to lagrange multiplier box-constraint lower
+    std::vector<double*> lam_lb_;
+    //! ptr to lagrange multiplier box-constraint upper
+    std::vector<double*> lam_ub_;
+    //! ptr to lagrange multiplier general-constraint lower
+    std::vector<double*> lam_lg_;
+    //! ptr to lagrange multiplier general-constraint upper
+    std::vector<double*> lam_ug_;
+
+    //! container lagr. mult. box-constr. lower
+    std::vector<Eigen::Matrix<double, max_box_constr_dim, 1>> cont_lam_lb_;
+    //! container lagr. mult. box-constr. upper
+    std::vector<Eigen::Matrix<double, max_box_constr_dim, 1>> cont_lam_ub_;
+    //! container for lagr. mult. general-constraint lower
+    std::vector<Eigen::Matrix<double, -1, 1>> cont_lam_lg_;
+    //! container for lagr. mult. general-constraint upper
+    std::vector<Eigen::Matrix<double, -1, 1>> cont_lam_ug_;
 
     ct::core::StateVectorArray<STATE_DIM> hx_;
     ct::core::StateVectorArray<STATE_DIM> hpi_;
