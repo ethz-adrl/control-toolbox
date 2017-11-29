@@ -100,10 +100,9 @@ TEST(AutoDiffDiscreteLinearizerTest, DiscreteSystemLinearizerComparison)
     // create a linearizer that applies numerical differentiation
     DiscreteSystemLinearizer<state_dim, control_dim> systemLinearizer(nonlinearSystem);
 
-    //TODO
-    // // create a linearizer that uses codegeneration
-    // AutoDiffLinearizer<state_dim, control_dim> adLinearizer(nonlinearSystemAD);
-    // std::shared_ptr<AutoDiffLinearizer<state_dim, control_dim>> adLinearizerClone(adLinearizer.clone());
+    // create a linearizer that uses auto differentiation
+    DiscreteSystemLinearizerAD<state_dim, control_dim> adLinearizer(nonlinearSystemAD);
+    std::shared_ptr<DiscreteSystemLinearizerAD<state_dim, control_dim>> adLinearizerClone(adLinearizer.clone());
 
     // create state, control and time variables
     StateVector<TestNonlinearSystem::STATE_DIM> x;
@@ -139,19 +138,19 @@ TEST(AutoDiffDiscreteLinearizerTest, DiscreteSystemLinearizerComparison)
         ASSERT_LT((A_system - A_system_analytic).array().abs().maxCoeff(), 1e-5);
         ASSERT_LT((B_system - B_system_analytic).array().abs().maxCoeff(), 1e-5);
 
-        // // use the auto differentiation linearzier
-        // A_type A_ad = adLinearizer.getDerivativeState(x, u, t);
-        // B_type B_ad = adLinearizer.getDerivativeControl(x, u, t);
-        //
-        // A_type A_adCloned = adLinearizerClone->getDerivativeState(x, u, t);
-        // B_type B_adCloned = adLinearizerClone->getDerivativeControl(x, u, t);
+        // use the auto differentiation linearzier
+        A_type A_ad = adLinearizer.getDerivativeState(x, u, n);
+        B_type B_ad = adLinearizer.getDerivativeControl(x, u, n);
 
-        // // verify the result
-        // ASSERT_LT((A_system - A_ad).array().abs().maxCoeff(), 1e-5);
-        // ASSERT_LT((B_system - B_ad).array().abs().maxCoeff(), 1e-5);
-        //
-        // ASSERT_LT((A_system - A_adCloned).array().abs().maxCoeff(), 1e-5);
-        // ASSERT_LT((B_system - B_adCloned).array().abs().maxCoeff(), 1e-5);
+        A_type A_adCloned = adLinearizerClone->getDerivativeState(x, u, n);
+        B_type B_adCloned = adLinearizerClone->getDerivativeControl(x, u, n);
+
+        // verify the result
+        ASSERT_LT((A_system - A_ad).array().abs().maxCoeff(), 1e-5);
+        ASSERT_LT((B_system - B_ad).array().abs().maxCoeff(), 1e-5);
+
+        ASSERT_LT((A_system - A_adCloned).array().abs().maxCoeff(), 1e-5);
+        ASSERT_LT((B_system - B_adCloned).array().abs().maxCoeff(), 1e-5);
     }
 }
 

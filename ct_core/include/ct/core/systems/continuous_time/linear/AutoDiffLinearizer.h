@@ -102,18 +102,18 @@ public:
 
     //! get the Jacobian with respect to the state
     /*!
-	 * This computes the linearization of the system with respect to the state at a given point \f$ x=x_s \f$, \f$ u=u_s \f$,
-	 * i.e. it computes
-	 *
-	 * \f[
-	 * A = \frac{df}{dx} |_{x=x_s, u=u_s}
-	 * \f]
-	 *
-	 * @param x state to linearize at
-	 * @param u control to linearize at
-	 * @param t time
-	 * @return Jacobian wrt state
-	 */
+     * This computes the linearization of the system with respect to the state at a given point \f$ x=x_s \f$, \f$ u=u_s \f$,
+     * i.e. it computes
+     *
+     * \f[
+     * A = \frac{df}{dx} |_{x=x_s, u=u_s}
+     * \f]
+     *
+     * @param x state to linearize at
+     * @param u control to linearize at
+     * @param t time
+     * @return Jacobian wrt state
+     */
     virtual const state_matrix_t& getDerivativeState(const state_vector_t& x,
         const control_vector_t& u,
         const double t = 0.0) override
