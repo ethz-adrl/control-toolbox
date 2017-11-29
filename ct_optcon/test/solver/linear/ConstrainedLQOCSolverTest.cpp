@@ -12,7 +12,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 int main(int argc, char **argv)
 {
-    using namespace ct::optcon::example;
+    using namespace ct::optcon;
     boxConstraintsTest();
 //    testing::InitGoogleTest(&argc, argv);
 //    return RUN_ALL_TESTS();

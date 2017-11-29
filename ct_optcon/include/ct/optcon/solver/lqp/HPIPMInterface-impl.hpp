@@ -378,7 +378,10 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupConstraints(
             hd_lb_[i] = lqocProblem->u_lb_[i].data();
             hd_ub_[i] = lqocProblem->u_ub_[i].data();
 
-            hdidxb_temp_[i] = Eigen::Matrix<int, CONTROL_DIM, 1>::Zero();  // temp. todo this should count up?
+            hdidxb_temp_[i] = Eigen::Matrix<int, nConstr, 1>::Zero();
+            for(int j = 0; j<nConstr; j++)
+            	hdidxb_temp_[i](j)=j; // count up constraint indices todo how to write more efficiently?
+
             hidxb_[i] = hdidxb_temp_[i].data();
 
             // direct pointers of lagrange mult to corresponding containers
@@ -397,10 +400,12 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupConstraints(
          * for simplicity, we assume the same number of state box constraints is active from time n=1 to n=N.
          * Note that the value of the box constraint could change, though. */
         for (size_t i = 1; i < N_ + 1; i++)
-            nb_[i] += (int)STATE_DIM;
+        {
+        	const int nConstr = (int)STATE_DIM;
+            nb_[i] += nConstr;
+        }
 
-        // todo: this assumes that we're adding all states as box constraints. how can we e.g. only add the positions?
-        throw std::runtime_error("bounds for box constraints not set yet");
+        // todo: this assumes that we're adding all states as box constraints. how can we e.g. only add the positions? // todo look into the sparsity matrix
     }
 
     if (lqocProblem->isGeneralConstrained())
