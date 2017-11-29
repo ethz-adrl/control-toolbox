@@ -481,6 +481,9 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupConstraints(
             lam_lb_[i] = cont_lam_lb_[i].data();
             lam_ub_[i] = cont_lam_ub_[i].data();
         }
+
+        // todo last stage is missing still.
+        // todo why do the state constraints fail? need different example perhaps?
     }
     else
     {

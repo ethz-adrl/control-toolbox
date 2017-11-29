@@ -8,10 +8,10 @@ using namespace ct;
 using namespace ct::core;
 using namespace ct::optcon;
 
-#include "../../testSystems/LinkedMasses.h"
+#include "../../testSystems/LinearOscillator.h"
 
-const size_t state_dim = 8;
-const size_t control_dim = 3;
+const size_t state_dim = 2;
+const size_t control_dim = 1;
 
 void printSolution(const ct::core::StateVectorArray<state_dim>& x,
     const ct::core::ControlVectorArray<control_dim>& u,
@@ -30,10 +30,7 @@ void printSolution(const ct::core::StateVectorArray<state_dim>& x,
         std::cout << K[j] << std::endl << std::endl;
 }
 
-/*
- * In this test:
- * todo assure that GNRiccati throws an error if the problem is constrained
- */
+
 //TEST(ConstrainedLQOCSolverTest, BoxConstraintsTest)
 void boxConstraintsTest()
 {
@@ -52,21 +49,21 @@ void boxConstraintsTest()
 
 
     // create a continuous-time example system and discretize it
-    std::shared_ptr<core::LinearSystem<state_dim, control_dim>> exampleSystem(new LinkedMasses());
+    std::shared_ptr<core::LinearSystem<state_dim, control_dim>> exampleSystem(new example::LinearOscillatorLinear());
     core::SensitivityApproximation<state_dim, control_dim> discreteExampleSystem(
         dt, exampleSystem, core::SensitivityApproximationSettings::APPROXIMATION::MATRIX_EXPONENTIAL);
 
     // nominal control
     ct::core::ControlVector<control_dim> u0;
-    u0.setConstant(0.1);
+    u0.setConstant(0);
 
     // initial state
     ct::core::StateVector<state_dim> x0;
-    x0 << 2.5, 2.5, 0, 0, 0, 0, 0, 0;
+    x0 << 2.5, 0.0;
 
     // desired final state
     ct::core::StateVector<state_dim> xf;
-    xf.setConstant(0.1);
+    xf.setConstant(0.0);
 
 
     // define cost function matrices
@@ -91,6 +88,7 @@ void boxConstraintsTest()
     ct::core::StateVector<state_dim> x_lb, x_ub;
     x_lb.setConstant(-20.0);
     x_ub.setConstant(20.0);
+    x_lb(0) = 1.7;
 
     // solution variables needed later
     ct::core::StateVectorArray<state_dim> xSol_hpipm;
@@ -142,6 +140,7 @@ void boxConstraintsTest()
         printSolution(xSol_hpipm, uSol_hpipm, KSol_hpipm);
 
 
+
     if (verbose)
     {
         std::cout << " ================================================== " << std::endl;
@@ -190,50 +189,50 @@ void boxConstraintsTest()
 
 
     if (verbose)
-    {
-        std::cout << " ================================================== " << std::endl;
-        std::cout << " TEST CASE 3: BOX CONSTRAINTS ON STATE AND CONTROL  " << std::endl;
-        std::cout << " ================================================== " << std::endl;
-    }
+       {
+           std::cout << " ================================================== " << std::endl;
+           std::cout << " TEST CASE 3: BOX CONSTRAINTS ON STATE AND CONTROL  " << std::endl;
+           std::cout << " ================================================== " << std::endl;
+       }
 
-    // initialize the optimal control problems for both solvers
-    lqocProblem1->setZero();
-    lqocProblem2->setZero();
-    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
-    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
-    lqocProblem1->setStateBoxConstraints(x_lb, x_ub);
-    lqocProblem2->setStateBoxConstraints(x_lb, x_ub);
-    lqocProblem1->setControlBoxConstraints(u_lb, u_ub);
-    lqocProblem2->setControlBoxConstraints(u_lb, u_ub);
+       // initialize the optimal control problems for both solvers
+       lqocProblem1->setZero();
+       lqocProblem2->setZero();
+       lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
+       lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
+       lqocProblem1->setStateBoxConstraints(x_lb, x_ub);
+       lqocProblem2->setStateBoxConstraints(x_lb, x_ub);
+       lqocProblem1->setControlBoxConstraints(u_lb, u_ub);
+       lqocProblem2->setControlBoxConstraints(u_lb, u_ub);
 
-    // check that constraint configuration is right
-    //    ASSERT_TRUE(lqocProblem1->isConstrained());
-    //    ASSERT_FALSE(lqocProblem1->isGeneralConstrained());
-    //    ASSERT_TRUE(lqocProblem1->isStateBoxConstrained());
-    //    ASSERT_TRUE(lqocProblem1->isControlBoxConstrained());
+       // check that constraint configuration is right
+       //    ASSERT_TRUE(lqocProblem1->isConstrained());
+       //    ASSERT_FALSE(lqocProblem1->isGeneralConstrained());
+       //    ASSERT_TRUE(lqocProblem1->isStateBoxConstrained());
+       //    ASSERT_TRUE(lqocProblem1->isControlBoxConstrained());
 
-    // set and try to solve the problem for both solvers
-    hpipmSolver->setProblem(lqocProblem1);
-    hpipmSolver->solve();
+       // set and try to solve the problem for both solvers
+       hpipmSolver->setProblem(lqocProblem1);
+       hpipmSolver->solve();
 
-    try
-    {
-        gnRiccatiSolver->setProblem(lqocProblem2);
-        gnRiccatiSolver->solve();
-        //        ASSERT(false); // should never reach to this point
-    } catch (std::exception& e)
-    {
-        std::cout << "GNRiccatiSolver failed with exception " << e.what() << std::endl;
-        //ASSERT(TRUE)
-    }
+       try
+       {
+           gnRiccatiSolver->setProblem(lqocProblem2);
+           gnRiccatiSolver->solve();
+           //        ASSERT(false); // should never reach to this point
+       } catch (std::exception& e)
+       {
+           std::cout << "GNRiccatiSolver failed with exception " << e.what() << std::endl;
+           //ASSERT(TRUE)
+       }
 
-    // retrieve solutions from hpipm
-    xSol_hpipm = hpipmSolver->getSolutionState();
-    uSol_hpipm = hpipmSolver->getSolutionControl();
-    hpipmSolver->getFeedback(KSol_hpipm);
+       // retrieve solutions from hpipm
+       xSol_hpipm = hpipmSolver->getSolutionState();
+       uSol_hpipm = hpipmSolver->getSolutionControl();
+       hpipmSolver->getFeedback(KSol_hpipm);
 
-    // todo assert that state and control box constraints are met
+       // todo assert that state and control box constraints are met
 
-    if (verbose)
-        printSolution(xSol_hpipm, uSol_hpipm, KSol_hpipm);
+       if (verbose)
+           printSolution(xSol_hpipm, uSol_hpipm, KSol_hpipm);
 }

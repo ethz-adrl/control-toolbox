@@ -55,7 +55,6 @@ namespace optcon {
  * \mathbf \d_{lb}  \leq \mathbf C_n \delta \mathbf \x_n + \mathbf D_n \delta \mathbf \u_n \leq \mathbf \d_{ub} \ \forall i=0,1,\ldots,N
  * \f]
  *
- *
  * \todo Refactor the initializing methods such that const-references can be handed over.
  */
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR = double>
