@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Lincensed under Apache2 license (see LICENSE file in main directory)
+Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 
@@ -9,8 +9,7 @@ Lincensed under Apache2 license (see LICENSE file in main directory)
 
 #include <boost/algorithm/string.hpp>
 
-#include "timeActivations/TimeActivationBase.hpp"
-#include "timeActivations/TimeActivations.h"
+#include <ct/core/common/activations/Activations.h>
 
 namespace ct {
 namespace optcon {
@@ -32,8 +31,10 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, t
 class TermBase
 {
 protected:
+    //! a name identifier for this term
     std::string name_;
-    std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> c_i_;
+    //! time activations for this term
+    std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>> c_i_;
 
 public:
     typedef Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM> state_matrix_t;
@@ -115,34 +116,43 @@ public:
 	 */
     virtual bool isActiveAtTime(SCALAR_EVAL t);
 
+    //! compute time activation
     SCALAR_EVAL computeActivation(SCALAR_EVAL t);
 
+    //! compute derivative of this cost term w.r.t. the state
     virtual core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(
         const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
+    //! compute second order derivative of this cost term w.r.t. the state
     virtual state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
+    //! compute derivative of this cost term w.r.t. the control input
     virtual core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(
         const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
+    //! compute second order derivative of this cost term w.r.t. the control input
     virtual control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
+    //! compute the cross-term derivative (state-control) of this cost function term
     virtual control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
+    //! load this term from a configuration file
     virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false);
 
-    void setTimeActivation(std::shared_ptr<tpl::TimeActivationBase<SCALAR_EVAL>> c_i, bool verbose = false);
+    //! set the time activation functions for this term
+    void setTimeActivation(std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>> c_i, bool verbose = false);
 
+    //! load the time activation functions for this term from file
     void loadTimeActivation(const std::string& filename, const std::string& termName, bool verbose = false);
 
     /**
@@ -157,8 +167,10 @@ public:
 	 */
     void setName(const std::string& termName);
 
+    //! updates the reference state for this term
     virtual void updateReferenceState(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState);
 
+    //! retrieve this term's current reference state
     virtual Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> getReferenceState() const;
 };
 

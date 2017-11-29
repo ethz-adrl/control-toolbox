@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Lincensed under Apache2 license (see LICENSE file in main directory)
+Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 
@@ -86,9 +86,9 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(siz
         iteration_local = this->iteration_;
 
 #ifdef DEBUG_PRINT_MP
-        printString("[Thread " + std::to_string(threadId) + "]: previous procId: " + std::to_string(uniqueProcessID) +
-                    ", current procId: " +
-                    std::to_string(generateUniqueProcessID(iteration_local, (int)workerTask_local)));
+        printString(
+            "[Thread " + std::to_string(threadId) + "]: previous procId: " + std::to_string(uniqueProcessID) +
+            ", current procId: " + std::to_string(generateUniqueProcessID(iteration_local, (int)workerTask_local)));
 #endif
 
 
@@ -643,8 +643,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 
             if (this->settings_.lineSearchSettings.debugPrint)
             {
-                printString("[LineSearch, Thread " + std::to_string(threadId) + "]: Lower cost/merit found at alpha:" +
-                            std::to_string(alpha));
+                printString("[LineSearch, Thread " + std::to_string(threadId) +
+                            "]: Lower cost/merit found at alpha:" + std::to_string(alpha));
                 printString("[LineSearch]: Cost:\t" + std::to_string(intermediateCost + finalCost));
                 printString("[LineSearch]: Defect:\t" + std::to_string(defectNorm));
                 printString("[LineSearch]: Merit:\t" + std::to_string(cost));

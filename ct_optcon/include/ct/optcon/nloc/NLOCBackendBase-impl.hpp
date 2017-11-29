@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Lincensed under Apache2 license (see LICENSE file in main directory)
+Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -923,8 +923,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
             }
             else
             {
-#ifdef MATLAB  // in case of no debug printing but still logging, need to compute them
-                //! compute l2 norms of state and control update
+#ifdef MATLAB  // in case of no debug printing but still logging, need to compute them \
+    //! compute l2 norms of state and control update
                 lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, uff_local);
                 lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
 #endif
@@ -1185,9 +1185,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareSolveLQProblem(size_t startIndex)
 {
     // if solver is HPIPM, there's nothing to prepare
-    if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
-    {
-    }
+    if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER) {}
     // if solver is GNRiccati - we iterate backward up to the first stage
     else if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
     {

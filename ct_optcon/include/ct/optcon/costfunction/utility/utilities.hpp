@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Lincensed under Apache2 license (see LICENSE file in main directory)
+Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -69,10 +69,9 @@ void loadMatrixCF(const std::string& filename,
             }
             else
             {
-                matrix(i, j) = scaling *
-                               pt.get<double>(termName + ".weights." + matrixName + "." + "(" + std::to_string(i) +
-                                                  "," + std::to_string(j) + ")",
-                                   0.0);
+                matrix(i, j) = scaling * pt.get<double>(termName + ".weights." + matrixName + "." + "(" +
+                                                            std::to_string(i) + "," + std::to_string(j) + ")",
+                                             0.0);
             }
         }
     }
@@ -105,7 +104,9 @@ void addTerm(const std::string& filename,
     }
     term->loadTimeActivation(filename, currentTerm, verbose);
     term->loadConfigFile(filename, currentTerm, verbose);
-    std::cout << "Successfully loaded term" << std::endl;
+
+    if (verbose)
+        std::cout << "Successfully loaded term " + currentTerm << std::endl;
 }
 
 template <typename TERM_PTR, typename costFuncType>
@@ -135,8 +136,10 @@ void addADTerm(const std::string& filename,
     }
     term->loadTimeActivation(filename, currentTerm, verbose);
     term->loadConfigFile(filename, currentTerm, verbose);
-    std::cout << "Successfully loaded term" << std::endl;
+
+    if (verbose)
+        std::cout << "Successfully loaded term " + currentTerm << std::endl;
 }
 
 }  // namespace optcon
-}  // namepsace ct
+}  // namespace ct

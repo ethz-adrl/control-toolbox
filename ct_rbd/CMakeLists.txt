@@ -20,6 +20,10 @@ include_directories(
 ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_rbd")
 message(WARNING "CT RBD: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
 
+#used later for clang-tidy
+set(INC_DIRS ${catkin_INCLUDE_DIRS} ${kindr_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/include/ct/rbd")
+
+
 catkin_package(
    INCLUDE_DIRS
         ${kindr_INCLUDE_DIRS}
@@ -93,10 +97,11 @@ catkin_add_gtest(EEContactModelTest test/physics/EEContactModelTest.cpp)
 target_link_libraries(EEContactModelTest ${catkin_LIBRARIES})
 
 # todo make unit test again
-add_executable(TaskSpaceCfTest test/robot/costfunction/TaskspaceCostFunctionTest.cpp)
+catkin_add_gtest(TaskSpaceCfTest test/robot/costfunction/TaskspaceCostFunctionTest.cpp)
 target_link_libraries(TaskSpaceCfTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(kindrJITtest test/math/kindrJITtest.cpp)
+catkin_add_gtest(rbdJITtests test/robot/costfunction/rbdJITtests.cpp)
+target_link_libraries(rbdJITtests ${catkin_LIBRARIES})
+catkin_add_gtest(kindrJITtest test/robot/costfunction/kindrJITtest.cpp)
 target_link_libraries(kindrJITtest ${catkin_LIBRARIES})
 
 #catkin_add_gtest(ControllerTests test/robot/control/ControllerTests.cpp)
@@ -117,3 +122,5 @@ if(DOXYGEN_FOUND)
         COMMAND ${CMAKE_COMMAND} -E echo_append "API Documentation built in ${CMAKE_CURRENT_SOURCE_DIR}/doc"
         VERBATIM)
 endif()
+
+ct_configure_clang_tidy(INC_DIRS)

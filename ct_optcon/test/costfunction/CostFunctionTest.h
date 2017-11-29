@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Lincensed under Apache2 license (see LICENSE file in main directory)
+Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -9,46 +9,15 @@ Lincensed under Apache2 license (see LICENSE file in main directory)
 #define EIGEN_INITIALIZE_MATRICES_BY_NAN
 #define DEBUG
 
+#include "compareCostFunctions.h"
+
+
 const size_t state_dim = 12;
 const size_t control_dim = 4;
 
 namespace ct {
 namespace optcon {
 namespace example {
-
-
-template <size_t state_dim, size_t control_dim>
-void compareCostFunctionOutput(CostFunctionQuadratic<state_dim, control_dim>& costFunction,
-    CostFunctionQuadratic<state_dim, control_dim>& costFunction2)
-{
-    ASSERT_NEAR(costFunction.evaluateIntermediate(), costFunction2.evaluateIntermediate(), 1e-9);
-    ASSERT_NEAR(costFunction.evaluateTerminal(), costFunction2.evaluateTerminal(), 1e-9);
-
-    ASSERT_TRUE(costFunction.stateDerivativeIntermediate().isApprox(costFunction2.stateDerivativeIntermediate()));
-    ASSERT_TRUE(costFunction.stateDerivativeTerminal().isApprox(costFunction2.stateDerivativeTerminal()));
-
-    ASSERT_TRUE(
-        costFunction.stateSecondDerivativeIntermediate().isApprox(costFunction2.stateSecondDerivativeIntermediate()));
-    ASSERT_TRUE(costFunction.stateSecondDerivativeTerminal().isApprox(costFunction2.stateSecondDerivativeTerminal()));
-
-    ASSERT_TRUE(costFunction.controlDerivativeIntermediate().isApprox(costFunction2.controlDerivativeIntermediate()));
-    ASSERT_TRUE(costFunction.controlDerivativeTerminal().isApprox(costFunction2.controlDerivativeTerminal()));
-
-    ASSERT_TRUE(costFunction.controlSecondDerivativeIntermediate().isApprox(
-        costFunction2.controlSecondDerivativeIntermediate()));
-    ASSERT_TRUE(
-        costFunction.controlSecondDerivativeTerminal().isApprox(costFunction2.controlSecondDerivativeTerminal()));
-
-    ASSERT_TRUE(
-        costFunction.stateControlDerivativeIntermediate().isApprox(costFunction2.stateControlDerivativeIntermediate()));
-    ASSERT_TRUE(costFunction.stateControlDerivativeTerminal().isApprox(costFunction2.stateControlDerivativeTerminal()));
-
-    // second derivatives have to be symmetric
-    ASSERT_TRUE(costFunction.stateSecondDerivativeIntermediate().isApprox(
-        costFunction.stateSecondDerivativeIntermediate().transpose()));
-    ASSERT_TRUE(costFunction.controlSecondDerivativeIntermediate().isApprox(
-        costFunction.controlSecondDerivativeIntermediate().transpose()));
-}
 
 
 template <size_t state_dim, size_t control_dim>
@@ -180,6 +149,10 @@ TEST(CostFunctionTest, ADQuadraticTest)
 
             costFunctionAD.initialize();
 
+            // create cloned cost function
+            std::shared_ptr<CostFunctionAD<state_dim, control_dim>> costFunctionAD_clone(costFunctionAD.clone());
+            costFunctionAD_clone->initialize();
+
             for (size_t j = 0; j < nTests; j++)
             {
                 core::StateVector<state_dim> x;
@@ -195,9 +168,11 @@ TEST(CostFunctionTest, ADQuadraticTest)
 
                 costFunction.setCurrentStateAndControl(x, u, 1.0);
                 costFunctionAD.setCurrentStateAndControl(x, u, 1.0);
+                costFunctionAD_clone->setCurrentStateAndControl(x, u, 1.0);
 
                 //			printCostFunctionOutput(costFunction, costFunctionAD);
                 compareCostFunctionOutput(costFunction, costFunctionAD);
+                compareCostFunctionOutput(costFunction, *costFunctionAD_clone);
 
                 // now some manual assertions
                 ASSERT_TRUE(costFunction.stateDerivativeIntermediate().isApprox(2 * Q_interm * (x - x_ref)));
@@ -315,6 +290,56 @@ TEST(CostFunctionTest, ADQuadMultTest)
             FAIL();
         }
     }
+}
+
+
+/*!
+ * This is simply a little integration test that shows that the tracking cost function term builds and that
+ * its analytic derivatives match NumDiff derivatives.
+ * This unit test tests the tracking cost function and the tracking cost function term.
+ * \example TrackingTest.cpp
+ */
+TEST(CostFunctionTest, TrackingTermTest)
+{
+    const size_t state_dim = 12;
+    const size_t control_dim = 4;
+
+    // analytical costfunction
+    std::shared_ptr<CostFunctionAnalytical<state_dim, control_dim>> costFunction(
+        new CostFunctionAnalytical<state_dim, control_dim>());
+
+    Eigen::Matrix<double, state_dim, state_dim> Q;
+    Eigen::Matrix<double, control_dim, control_dim> R;
+    Q.setIdentity();
+    R.setIdentity();
+
+    // create a reference trajectory and fill it with random values
+    core::StateTrajectory<state_dim> stateTraj;
+    core::ControlTrajectory<control_dim> controlTraj;
+    size_t trajSize = 50;
+    bool timeIsAbsolute = true;
+    for (size_t i = 0; i < trajSize; ++i)
+    {
+        stateTraj.push_back(core::StateVector<state_dim>::Random(), double(i), timeIsAbsolute);
+        controlTraj.push_back(core::ControlVector<control_dim>::Random(), double(i), timeIsAbsolute);
+    }
+
+    std::shared_ptr<TermQuadTracking<state_dim, control_dim>> trackingTerm(new TermQuadTracking<state_dim, control_dim>(
+        Q, R, core::InterpolationType::LIN, core::InterpolationType::ZOH, true));
+
+    trackingTerm->setStateAndControlReference(stateTraj, controlTraj);
+    costFunction->addIntermediateTerm(trackingTerm);
+
+    ct::core::StateVector<state_dim> x;
+    ct::core::ControlVector<control_dim> u;
+    x.setRandom();
+    u.setRandom();
+    double t = 0.0;
+
+    costFunction->setCurrentStateAndControl(x, u, t);
+
+    ASSERT_TRUE(costFunction->stateDerivativeIntermediateTest());
+    ASSERT_TRUE(costFunction->controlDerivativeIntermediateTest());
 }
 
 

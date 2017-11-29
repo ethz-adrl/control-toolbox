@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Lincensed under Apache2 license (see LICENSE file in main directory)
+Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #pragma once
@@ -10,36 +10,22 @@ namespace ct {
 namespace rbd {
 
 template <class RBDDynamics, typename SCALAR>
-FixBaseNLOC<RBDDynamics, SCALAR>::FixBaseNLOC(const std::string& costFunctionFile,
-    const std::string& settingsFile,
-    std::shared_ptr<FBSystem> system,
-    bool verbose,
-    std::shared_ptr<LinearizedSystem> linearizedSystem)
-    : system_(system),
-      linearizedSystem_(linearizedSystem),
-      costFunction_(new CostFunction(costFunctionFile, verbose)),
-      optConProblem_(system_, costFunction_, linearizedSystem_),
-      iteration_(0)
-{
-    optConProblem_.verify();
-    nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, settingsFile));
-}
-
-template <class RBDDynamics, typename SCALAR>
-FixBaseNLOC<RBDDynamics, SCALAR>::FixBaseNLOC(const std::string& costFunctionFile,
+FixBaseNLOC<RBDDynamics, SCALAR>::FixBaseNLOC(
+    std::shared_ptr<ct::optcon::CostFunctionQuadratic<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>> costFun,
     const typename NLOptConSolver::Settings_t& nlocSettings,
     std::shared_ptr<FBSystem> system,
     bool verbose,
     std::shared_ptr<LinearizedSystem> linearizedSystem)
     : system_(system),
       linearizedSystem_(linearizedSystem),
-      costFunction_(new CostFunction(costFunctionFile, verbose)),
+      costFunction_(costFun),
       optConProblem_(system_, costFunction_, linearizedSystem_),
       iteration_(0)
 {
     optConProblem_.verify();
     nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, nlocSettings));
 }
+
 
 template <class RBDDynamics, typename SCALAR>
 void FixBaseNLOC<RBDDynamics, SCALAR>::initialize(const tpl::JointState<FBSystem::CONTROL_DIM, SCALAR>& x0,
@@ -113,6 +99,13 @@ bool FixBaseNLOC<RBDDynamics, SCALAR>::runIteration()
 
     iteration_++;
     return foundBetter;
+}
+
+
+template <class RBDDynamics, typename SCALAR>
+bool FixBaseNLOC<RBDDynamics, SCALAR>::solve()
+{
+    return nlocSolver_->solve();
 }
 
 template <class RBDDynamics, typename SCALAR>

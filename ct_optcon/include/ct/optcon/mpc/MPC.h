@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Lincensed under Apache2 license (see LICENSE file in main directory)
+Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #pragma once
@@ -119,13 +119,13 @@ public:
 
     //! retrieve the time that elapsed since the first successful solve() call to an Optimal Control Problem
     /*!
-	 * the returned time can be used externally, for example to update cost functions
-	 * @return time elapsed
+	 * @param the external time stamp
+	 * @return time elapsed, the returned time can be used externally, for example to update cost functions
 	 */
-    const Scalar_t timeSinceFirstSuccessfulSolve();
+    const Scalar_t timeSinceFirstSuccessfulSolve(const Scalar_t& extTime);
 
 
-    //! perform forward integration of the measured system state, to compensate for expected or already occured time lags
+    //! perform forward integration of the measured system state, to compensate for expected or already occurred time lags
     /*!
 	 * State forward integration
 	 * @param t_forward_start
@@ -136,42 +136,40 @@ public:
 	 * 	initial state for forward integration, gets overwritten with forward-integrated state
 	 * @param forwardIntegrationController
 	 *  (optional) external controller for forward integration
+	 *
+	 *  \warning The effect of the integration will vanish one the MPC frequency is higher than the sampling frequency
 	 */
-    void doPreIntegration(const Scalar_t& t_forward_start,
+    void doForwardIntegration(const Scalar_t& t_forward_start,
         const Scalar_t& t_forward_stop,
         core::StateVector<STATE_DIM, Scalar_t>& x_start,
         const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController =
             nullptr);
 
 
-    //! main MPC run method
     /*!
-	 * @param x
-	 * 	current system state
-	 * @param x_ts
-	 *  time stamp of the current state (external time in seconds)
-	 * @param newPolicy
-	 *  the new policy calculated by the MPC run() method based on above state, the timing info and the underlying OptConProblem
-	 * @param newPolicy_ts
-	 *  time stamp of the resulting policy. This indicates when the policy is supposed to start being applied, relative to
-	 *  the user-provided state-timestamp x_ts.
-	 * @param forwardIntegrationController
-	 * 		optional input: in some scenarios, we wish to use a different kind controller for forward integrating the system than the one we are optimizing
-	 * 		Such a controller can be handed over here as additional argument. If set to empty, MPC uses its own optimized controller from
-	 * 		the last iteration.
-	 * @return true if solve was successful, false otherwise.
-	 */
-    bool run(const core::StateVector<STATE_DIM, Scalar_t>& x,
-        const Scalar_t x_ts,
-        Policy_t& newPolicy,
-        Scalar_t& newPolicy_ts,
-        const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController =
-            nullptr);
+     * Prepare MPC iteration
+     * @param ext_ts the current external time
+     */
+    void prepareIteration(const Scalar_t& ext_ts);
 
 
-    void prepareIteration();
-
-
+    //! finish MPC iteration
+    /*!
+   	 * @param x
+   	 * 	current system state
+   	 * @param x_ts
+   	 *  time stamp of the current state (external time in seconds)
+   	 * @param newPolicy
+   	 *  the new policy calculated based on above state, the timing info and the underlying OptConProblem
+   	 * @param newPolicy_ts
+   	 *  time stamp of the resulting policy. This indicates when the policy is supposed to start being applied, relative to
+   	 *  the user-provided state-timestamp x_ts.
+   	 * @param forwardIntegrationController
+   	 * 		optional input: in some scenarios, we wish to use a different kind controller for forward integrating the system than the one we are optimizing
+   	 * 		Such a controller can be handed over here as additional argument. If set to empty, MPC uses its own optimized controller from
+   	 * 		the last iteration, thus assuming perfect control trajectory tracking.
+   	 * @return true if solve was successful, false otherwise.
+   	 */
     bool finishIteration(const core::StateVector<STATE_DIM, Scalar_t>& x,
         const Scalar_t x_ts,
         Policy_t& newPolicy,
@@ -200,10 +198,8 @@ public:
 private:
     //! state forward propagation (for delay compensation)
     /*!
-	 * Perform forward integration about the given prediction horizon. Currently, this automatically uses adaptive integration.
+	 * Perform forward integration about the given prediction horizon.
 	 * - uses an arbitrary controller given, which is important for hierarchical setups where the actual controller may be refined further
-	 * - clones that controller, since it may be mistakenly used somewhere else otherwise.
-	 * - output: the forward integrated state in x0
 	 * @param startTime
 	 * 	time where forward integration starts w.r.t. the current policy
 	 * @param stopTime
@@ -218,29 +214,41 @@ private:
         core::StateVector<STATE_DIM, Scalar_t>& state,
         const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>>& controller);
 
+    void checkSettings(const mpc_settings& settings);
+
     //! timings for pre-integration
     Scalar_t t_forward_start_;
     Scalar_t t_forward_stop_;
 
-    OPTCON_SOLVER solver_;  //! optimal control solver employed for mpc
+    //! optimal control solver employed for mpc
+    OPTCON_SOLVER solver_;
 
-    Policy_t currentPolicy_;  //! currently optimal policy, initial guess respectively
+    //! currently optimal policy, initial guess respectively
+    Policy_t currentPolicy_;
 
-    std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>>
-        policyHandler_;  //! policy handler, which takes care of warm-starting
+    //! policy handler, which takes care of warm-starting
+    std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> policyHandler_;
 
-    std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>>
-        timeHorizonStrategy_;  //! time horizon strategy, e.g. receding horizon optimal control
+    //! time horizon strategy, e.g. receding horizon optimal control
+    std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> timeHorizonStrategy_;
 
-    tpl::MpcTimeKeeper<Scalar_t> timeKeeper_;  //! time keeper
+    //! time keeper
+    tpl::MpcTimeKeeper<Scalar_t> timeKeeper_;
 
-    mpc_settings mpc_settings_;  //! mpc settings
+    //! mpc settings
+    mpc_settings mpc_settings_;
 
-    bool firstRun_;  //! true for first run
+    //! true for first run
+    bool firstRun_;
 
-    typename OPTCON_SOLVER::OptConProblem_t::DynamicsPtr_t dynamics_;  //! dynamics instance for forward integration
+    //! dynamics instance for forward integration
+    typename OPTCON_SOLVER::OptConProblem_t::DynamicsPtr_t dynamics_;
 
-    size_t runCallCounter_;  //! counter which gets incremented at every call of the run() method
+    //! integrator for forward integration
+    ct::core::Integrator<STATE_DIM, Scalar_t> forwardIntegrator_;
+
+    //! counter which gets incremented at every call of the run() method
+    size_t runCallCounter_;
 };
 
 

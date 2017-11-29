@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+
+<!-- adapted from Daniel Mellinger, Nathan Michael, Vijay Kumar, "Trajectory Generation and Control for Precise Aggressive Maneuvers with Quadrotors" -->
+
+<robot name="quadrotor">
+ <joint name="floating_base" type="fixed">
+	<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+	<parent link="base_footprint"/>
+	<child link="base_link"/>
+ </joint>
+  <link name="base_footprint">
+     <visual>
+     	<geometry>
+		<cylinder length="0.01" radius="0.01" />
+	</geometry>
+	<material name="blue">
+		<color rbga="1 0 0 1"/>
+	</material>
+     </visual>
+  </link>
+  <link name="base_link">
+    <inertial>
+      <mass value="0.5"/>
+      <origin xyz="0 0 0"/>
+    <inertia ixx="0.0023" ixy="0.0" ixz="0.0" iyy="0.0023" iyz="0.0" izz="0.004"/> 
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+         <mesh filename="package://ct_models/urdf/Quadrotor/quadrotor_base.dae" scale="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+    <!-- note: the original hector quadrotor urdf had a (simplified, but still complex) collision mesh, too -->
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder radius=".3" length=".1"/>
+      </geometry>
+    </collision>      
+  </link>
+
+  
+</robot>
+

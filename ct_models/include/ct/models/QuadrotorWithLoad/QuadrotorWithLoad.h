@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Lincensed under Apache2 license (see LICENSE file in main directory)
+Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -21,7 +21,7 @@ Lincensed under Apache2 license (see LICENSE file in main directory)
 
 // define namespace and base
 #define ROBCOGEN_NS ct_quadrotor
-#define TARGET_NS ct_quadrotor
+#define TARGET_NS quadrotor
 
 // define the links
 #define CT_BASE fr_body
@@ -34,66 +34,5 @@ Lincensed under Apache2 license (see LICENSE file in main directory)
 #define CT_EE0_IS_ON_LINK 1
 #define CT_EE0_FIRST_JOINT 0
 #define CT_EE0_LAST_JOINT 1
-
-/*
-namespace ct {
-namespace rbd {
-
-typedef RobCoGenContainer<
-		iit::ct_quadrotor::Traits,
-		iit::ct_quadrotor::LinkDataMap
-		>
-RobCoGenQuadrotorWithLoad;
-
-const size_t numEE = 1;
-
-typedef Kinematics<RobCoGenQuadrotorWithLoad, numEE> KinematicsQuadrotorWithLoad;
-typedef Dynamics<RobCoGenQuadrotorWithLoad, numEE, true> DynamicsQuadrotorWithLoad;
-
-static const size_t nStates = 12;
-static const size_t nControls = 4;
-static const size_t nJoints = 2;
-
-template <>
-inline typename RobCoGenQuadrotorWithLoad::HomogeneousTransform RobCoGenQuadrotorWithLoad::getHomogeneousTransformBaseLinkById(
-		size_t linkId, const JointState<NJOINTS>::Position& jointPosition)
-{
-	return ct_quadrotor::getTransformBaseLinkById(homogeneousTransforms(), linkId, jointPosition);
-}
-
-template <>
-inline typename RobCoGenQuadrotorWithLoad::ForceTransform RobCoGenQuadrotorWithLoad::getForceTransformLinkBaseById(
-		size_t linkId, const JointState<NJOINTS>::Position& jointPosition)
-{
-	return ct_quadrotor::getTransformLinkBaseById(forceTransforms(), linkId, jointPosition);
-}
-
-template <>
-inline typename RobCoGenQuadrotorWithLoad::HomogeneousTransform RobCoGenQuadrotorWithLoad::getHomogeneousTransformBaseEEById(
-		size_t eeId, const JointState<NJOINTS>::Position& jointPosition)
-{
-	return ct_quadrotor::getTransformBaseEEById(homogeneousTransforms(), eeId, jointPosition);
-}
-
-template <>
-inline typename RobCoGenQuadrotorWithLoad::Jacobian RobCoGenQuadrotorWithLoad::getJacobianBaseEEbyId(
-		size_t eeId, const JointState<NJOINTS>::Position& jointPosition)
-{
-	return ct_quadrotor::getJacobianBaseEEbyId<Jacobians, NJOINTS>(jacobians(), eeId, jointPosition);
-}
-
-
-
-template <>
-inline void KinematicsQuadrotorWithLoad::initEndeffectors(std::array<EndEffector<NJOINTS>, numEE>& endeffectors)
-{
-	for (size_t i=0; i<numEE; i++)
-	{
-		endeffectors[i].setLinkId(ct_quadrotor::eeIdToLinkId(i));
-	}
-}
-
-}
-}*/
 
 #include <ct/rbd/robot/robcogen/robcogenHelpers.h>

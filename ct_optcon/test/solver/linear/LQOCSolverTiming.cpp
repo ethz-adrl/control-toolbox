@@ -1,8 +1,12 @@
-/*
- * LQOCSolverTest.cpp
- *
- *  Created on: Jul 13, 2017
- *      Author: neunertm
+/**********************************************************************************************************************
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
+Licensed under Apache2 license (see LICENSE file in main directory)
+**********************************************************************************************************************/
+
+/*!
+ * This executable serves to compare the run-times of our own Riccati LQ problem solver and Gianluca Frison's HPIPM solver.
+ * It is not a supposed to be a unit test, but can be used to compare runtimes on different machines.
  */
 
 #include <ct/optcon/optcon.h>
@@ -172,7 +176,7 @@ void timeSolvers()
 }
 
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv[])
 {
     timeSolvers<3, 3>();
     timeSolvers<6, 6>();

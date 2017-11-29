@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Lincensed under Apache2 license (see LICENSE file in main directory)
+Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 /*!
  *  \example JacobianCGTest.h
@@ -64,6 +64,45 @@ Eigen::Matrix<SCALAR, inDim, inDim> hessianCheck(const Eigen::Matrix<SCALAR, inD
     hes << 4, 0, 0, 0, 0, -1, 0, -1, 0;
 
     return w(0) * hes;
+}
+
+
+
+/*!
+ * Test evaluation of the forward-zero function, which should be possible to evaluate in both uncompiled and compiled state
+ */
+TEST(JacobianCGTest, DISABLED_ForwardZeroTest)
+{
+    try
+    {
+        // create a function handle (also works for class methods, lambdas, function pointers, ...)
+        typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
+
+        // initialize the Auto-Diff Codegen Jacobian
+        derivativesCppadJIT jacCG(f);
+
+        DerivativesCppadSettings settings;
+        settings.createForwardZero_ = true;
+        settings.createJacobian_ = true;
+
+        // create a random double vector
+        Eigen::VectorXd someVec (inDim);
+        someVec.setRandom();
+
+        // test evaluation of forward zero before compilation
+        Eigen::VectorXd vecOut = jacCG.forwardZero(someVec); // << -- fails here!
+
+        // compile the Jacobian
+        jacCG.compileJIT(settings, "forwardZeroTestLib");
+
+        // test evaluation of forward zero after compilation
+        Eigen::VectorXd vecOut2 = jacCG.forwardZero(someVec);
+
+    } catch (std::exception& e)
+    {
+        std::cout << "Exception thrown: " << e.what() << std::endl;
+        ASSERT_TRUE(false);
+    }
 }
 
 

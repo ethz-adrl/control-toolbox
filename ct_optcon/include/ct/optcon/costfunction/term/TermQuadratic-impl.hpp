@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Lincensed under Apache2 license (see LICENSE file in main directory)
+Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -224,5 +224,5 @@ Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> TermQuadratic<STATE_DIM, CONTROL_DIM, S
 {
     return x_ref_;
 }
-}
-}
+}  // namespace optcon
+}  // namespace ct

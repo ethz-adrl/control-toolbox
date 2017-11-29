@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Lincensed under Apache2 license (see LICENSE file in main directory)
+Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -15,8 +15,6 @@ namespace optcon {
  * \ingroup CostFunction
  *
  * \brief A quadratic tracking term of type \f$ J(t) = (x_{ref}(t) - x)^T Q (x_{ref}(t) - x) + (u_{ref}(t) - u)^T R (u_{ref}(t) - u) \f$
- *
- * An example for using this term is given in @todo write new TrackingTest.cpp
  *
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, typename SCALAR = SCALAR_EVAL>

@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Lincensed under Apache2 license (see LICENSE file in main directory)
+Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #include <chrono>
@@ -15,15 +15,22 @@ Lincensed under Apache2 license (see LICENSE file in main directory)
 #include "nloc_test_dir.h"
 
 
-/* This test implements a 1-Dimensional horizontally moving point mass with mass 1kg and attached to a spring
- x = [p, pd] // p - position pointing upwards, against gravity, pd - velocity
- dx = f(x,u)
-    = [0 1  x  +  [0      +  [0  u
-       0 0]        9.81]      1]
-
+/*!
+ * This file implements a NLOC unit tests.
+ * For more intuitive examples, visit the tutorial.
+ *
+ * \example NonlinearSystemTest.h
+ *
+ *
  */
 
-
+/*
+ * This test implements a 1-Dimensional horizontally moving point mass with mass 1kg and attached to a spring
+ * x = [p, pd] // p - position pointing upwards, against gravity, pd - velocity
+ * dx = f(x,u)
+ *   = [0 1  x  +  [0      +  [0  u
+ *      0 0]        9.81]      1]
+ */
 namespace ct {
 namespace optcon {
 namespace example {
