@@ -59,20 +59,21 @@ namespace core {
  * @tparam dimension of state vector
  * @tparam dimension of control vector
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class SystemLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM>
+class SystemLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef StateVector<STATE_DIM, SCALAR> state_vector_t;        //!< state vector type
-    typedef ControlVector<CONTROL_DIM, SCALAR> control_vector_t;  //!< control vector type
+    typedef LinearSystem<STATE_DIM, CONTROL_DIM> Base;  //!< Base class type
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;            //!< state Jacobian type (A)
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t;  //! control Jacobian type (B)
+    typedef typename Base::state_vector_t state_vector_t;                  //!< state vector type
+    typedef typename Base::control_vector_t control_vector_t;              //!< input vector type
+    typedef typename Base::state_matrix_t state_matrix_t;                  //!< state Jacobian type
+    typedef typename Base::state_control_matrix_t state_control_matrix_t;  //!< input Jacobian type
 
-    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> system_t;        //!< type of system to be linearized
-    typedef LinearSystem    <STATE_DIM, CONTROL_DIM, SCALAR> linear_system_t; //!< type of resulting linear system
+    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, double> system_t;  //!< type of system to be linearized
+
 
     //! default constructor
     /*!
@@ -81,11 +82,15 @@ public:
 	 * @param nonlinearSystem non-linear system to linearize
 	 * @param doubleSidedDerivative if true, double sided numerical differentiation is used
 	 */
-    SystemLinearizer(std::shared_ptr<system_t> nonlinearSystem,
-        bool doubleSidedDerivative = true)
-        : linear_system_t(nonlinearSystem->getType()),
+    SystemLinearizer(std::shared_ptr<system_t> nonlinearSystem, bool doubleSidedDerivative = true)
+        : Base(nonlinearSystem->getType()),
           nonlinearSystem_(nonlinearSystem),
-          linearizer_(std::bind(&system_t::computeControlledDynamics, nonlinearSystem_.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+          linearizer_(std::bind(&system_t::computeControlledDynamics,
+                          nonlinearSystem_.get(),
+                          std::placeholders::_1,
+                          std::placeholders::_2,
+                          std::placeholders::_3,
+                          std::placeholders::_4),
               doubleSidedDerivative)
     {
         if (nonlinearSystem == nullptr)
@@ -102,9 +107,14 @@ public:
 
     //! copy constructor
     SystemLinearizer(const SystemLinearizer& arg)
-        : linear_system_t(arg),
+        : Base(arg),
           nonlinearSystem_(arg.nonlinearSystem_->clone()),
-          linearizer_(std::bind(&system_t::computeControlledDynamics, nonlinearSystem_.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+          linearizer_(std::bind(&system_t::computeControlledDynamics,
+                          nonlinearSystem_.get(),
+                          std::placeholders::_1,
+                          std::placeholders::_2,
+                          std::placeholders::_3,
+                          std::placeholders::_4),
               arg.linearizer_.getDoubleSidedDerivativeFlag()),
           dFdx_(arg.dFdx_),
           dFdu_(arg.dFdu_),
@@ -115,9 +125,9 @@ public:
     //! destructor
     virtual ~SystemLinearizer() {}
     //! deep cloning
-    SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
+    SystemLinearizer<STATE_DIM, CONTROL_DIM>* clone() const override
     {
-        return new SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
+        return new SystemLinearizer<STATE_DIM, CONTROL_DIM>(*this);
     }
 
     //! get the Jacobian with respect to the state
@@ -136,13 +146,13 @@ public:
 	 */
     virtual const state_matrix_t& getDerivativeState(const state_vector_t& x,
         const control_vector_t& u,
-        const SCALAR t = SCALAR(0.0)) override
+        const double t = 0.0) override
     {
         dFdx_ = linearizer_.getDerivativeState(x, u, t);
 
         if (isSecondOrderSystem_)
         {
-            dFdx_.template topLeftCorner <STATE_DIM / 2, STATE_DIM / 2>().setZero();
+            dFdx_.template topLeftCorner<STATE_DIM / 2, STATE_DIM / 2>().setZero();
             dFdx_.template topRightCorner<STATE_DIM / 2, STATE_DIM / 2>().setIdentity();
         }
 
@@ -166,13 +176,13 @@ public:
 	 */
     virtual const state_control_matrix_t& getDerivativeControl(const state_vector_t& x,
         const control_vector_t& u,
-        const SCALAR t = SCALAR(0.0)) override
+        const double t = 0.0) override
     {
         dFdu_ = linearizer_.getDerivativeControl(x, u, t);
 
         if (isSecondOrderSystem_)
         {
-          dFdu_.template topRows<STATE_DIM / 2>().setZero();
+            dFdu_.template topRows<STATE_DIM / 2>().setZero();
         }
 
         return dFdu_;
@@ -182,7 +192,8 @@ public:
 protected:
     std::shared_ptr<system_t> nonlinearSystem_;  //!< instance of non-linear system
 
-    DynamicsLinearizerNumDiff<STATE_DIM,CONTROL_DIM,SCALAR,SCALAR> linearizer_; //!< instance of numerical-linearizer
+    DynamicsLinearizerNumDiff<STATE_DIM, CONTROL_DIM, double, double>
+        linearizer_;  //!< instance of numerical-linearizer
 
     state_matrix_t dFdx_;          //!< Jacobian wrt state
     state_control_matrix_t dFdu_;  //!< Jacobian wrt input
@@ -191,5 +202,5 @@ protected:
 };
 
 
-}  // core
-}  // ct
+}  // namespace core
+}  // namespace ct

@@ -3,11 +3,7 @@ This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyr
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
-
 #pragma once
-
-#include "internal/ADLinearizerBase.h"
-#include <ct/core/internal/autodiff/CGHelpers.h>
 
 #include <ct/core/templateDir.h>
 
@@ -49,17 +45,22 @@ namespace core {
  * @tparam dimension of control vector
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM>
-class ADCodegenLinearizer : public internal::ADLinearizerBase<STATE_DIM, CONTROL_DIM, CppAD::AD<CppAD::cg::CG<double>>>
+class ADCodegenLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM>
 {
 public:
-    typedef ADCGScalar SCALAR;                                                //!< scalar type
-    typedef ADCGValueType AD_SCALAR;                                          //!< Auto-Diff scalar type
-    typedef internal::ADLinearizerBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;  //!< base class type
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    typedef LinearSystem<STATE_DIM, CONTROL_DIM> Base;  //!< Base class type
+
+    typedef ADCGScalar SCALAR;        //!< scalar type
+    typedef ADCGValueType AD_SCALAR;  //!< Auto-Diff scalar type
 
     typedef typename Base::state_vector_t state_vector_t;                  //!< state vector type
-    typedef typename Base::control_vector_t control_vector_t;              //!< control vector type
-    typedef typename Base::state_matrix_t state_matrix_t;                  //!< state matrix type
-    typedef typename Base::state_control_matrix_t state_control_matrix_t;  //!< state control matrix type
+    typedef typename Base::control_vector_t control_vector_t;              //!< input vector type
+    typedef typename Base::state_matrix_t state_matrix_t;                  //!< state Jacobian type
+    typedef typename Base::state_control_matrix_t state_control_matrix_t;  //!< input Jacobian type
+
+    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, ADCGScalar> system_t;  //!< type of system to be linearized
 
     //! default constructor
     /*!
@@ -67,39 +68,35 @@ public:
 	 * @param nonlinearSystem non-linear system instance
 	 * @param cacheJac if true, caches the Jacobians to prevent recomputation for the same state/input
 	 */
-    ADCodegenLinearizer(std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> nonlinearSystem,
-        bool cacheJac = true)
-        : Base(nonlinearSystem),
+    ADCodegenLinearizer(std::shared_ptr<system_t> nonlinearSystem, bool cacheJac = true)
+        : Base(nonlinearSystem->getType()),
           dFdx_(state_matrix_t::Zero()),
           dFdu_(state_control_matrix_t::Zero()),
-          compiled_(false),
           cacheJac_(cacheJac),
-          x_at_cache_(state_vector_t::Random()),
-          u_at_cache_(control_vector_t::Random()),
-          maxTempVarCountState_(0),
-          maxTempVarCountControl_(0)
+          nonlinearSystem_(nonlinearSystem),
+          linearizer_(std::bind(&system_t::computeControlledDynamics,
+              nonlinearSystem_.get(),
+              std::placeholders::_1,
+              std::placeholders::_2,
+              std::placeholders::_3,
+              std::placeholders::_4))
     {
     }
 
-    /**
-	 * @brief      Copy constructor
-	 *
-	 * @param[in]  arg   The argument
-	 */
+    //! copy constructor
     ADCodegenLinearizer(const ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>& arg)
-        : Base(arg),
+        : Base(arg.nonlinearSystem_->getType()),
           dFdx_(arg.dFdx_),
           dFdu_(arg.dFdu_),
-          compiled_(arg.compiled_),
           cacheJac_(arg.cacheJac_),
-          x_at_cache_(arg.x_at_cache_),
-          u_at_cache_(arg.u_at_cache_),
-          dynamicLib_(arg.dynamicLib_),
-          maxTempVarCountState_(arg.maxTempVarCountState_),
-          maxTempVarCountControl_(arg.maxTempVarCountControl_)
+          nonlinearSystem_(arg.nonlinearSystem_->clone()),
+          linearizer_(std::bind(&system_t::computeControlledDynamics,
+              nonlinearSystem_.get(),
+              std::placeholders::_1,
+              std::placeholders::_2,
+              std::placeholders::_3,
+              std::placeholders::_4))
     {
-        if (compiled_)
-            model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("ADCodegenLinearizer"));
     }
 
     //! deep cloning
@@ -128,14 +125,7 @@ public:
         const control_vector_t& u,
         const double t = 0.0) override
     {
-        if (!compiled_)
-            throw std::runtime_error(
-                "Called getDerivativeState on ADCodegenLinearizer before compiling. Call 'compile()' before");
-
-        // if jacobian is not supposed to be cached or if values change, recompute it
-        if (!cacheJac_ || (x != x_at_cache_ || u != u_at_cache_))
-            computeJacobian(x, u);
-
+        dFdx_ = linearizer_.getDerivativeState(x, u, t);
         return dFdx_;
     }
 
@@ -159,16 +149,7 @@ public:
         const control_vector_t& u,
         const double t = 0.0) override
     {
-        if (!compiled_)
-        {
-            throw std::runtime_error(
-                "Called getDerivativeState on ADCodegenLinearizer before compiling. Call 'compile()' before");
-        }
-
-        // if jacobian is not supposed to be cached or if values change, recompute it
-        if (!cacheJac_ || (x != x_at_cache_ || u != u_at_cache_))
-            computeJacobian(x, u);
-
+        dFdu_ = linearizer_.getDerivativeControl(x, u, t);
         return dFdu_;
     }
 
@@ -182,37 +163,23 @@ public:
     void compileJIT(const std::string& libName = "threadId" + std::to_string(std::hash<std::thread::id>()(
                                                                   std::this_thread::get_id())))
     {
-        if (compiled_)
-            return;
-
-        CppAD::cg::ModelCSourceGen<double> cgen(this->f_, "ADCodegenLinearizer");
-        cgen.setCreateJacobian(true);
-        CppAD::cg::ModelLibraryCSourceGen<double> libcgen(cgen);
-
-        // compile source code
-        CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, libName);
-
-        dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler_));
-
-        model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("ADCodegenLinearizer"));
-
-        compiled_ = true;
+        linearizer_.compileJIT(libName);
     }
 
     //! generates source code and saves it to file
     /*!
-	 * This generates source code for computing the system linearization and saves it to file. This
-	 * function uses a template file in which it replaces two placeholders, each identified as the
-	 * string "AUTOGENERATED_CODE_PLACEHOLDER"
-	 *
-	 * @param systemName name of the resulting LinearSystem class
-	 * @param outputDir output directory
-	 * @param templateDir directory of the template file
-	 * @param ns1 first layer namespace
-	 * @param ns2 second layer namespace
-	 * @param useReverse if true, uses Auto-Diff reverse mode
-	 * @param ignoreZero if true, zero entries are not assigned zero
-	 */
+     * This generates source code for computing the system linearization and saves it to file. This
+     * function uses a template file in which it replaces two placeholders, each identified as the
+     * string "AUTOGENERATED_CODE_PLACEHOLDER"
+     *
+     * @param systemName name of the resulting LinearSystem class
+     * @param outputDir output directory
+     * @param templateDir directory of the template file
+     * @param ns1 first layer namespace
+     * @param ns2 second layer namespace
+     * @param useReverse if true, uses Auto-Diff reverse mode
+     * @param ignoreZero if true, zero entries are not assigned zero
+     */
     void generateCode(const std::string& systemName,
         const std::string& outputDir = ct::core::CODEGEN_OUTPUT_DIR,
         const std::string& templateDir = ct::core::CODEGEN_TEMPLATE_DIR,
@@ -221,15 +188,8 @@ public:
         bool useReverse = false,
         bool ignoreZero = true)
     {
-        this->sparsityA_.clearWork();  //clears the cppad sparsity work called by a possible method call before
-        size_t jacDimension = STATE_DIM * STATE_DIM;
-        std::string codeJacA = internal::CGHelpers::generateJacobianSource(this->f_, this->sparsityA_, jacDimension,
-            maxTempVarCountState_, useReverse, ignoreZero, "jac", "x_in", "vX_");
-
-        this->sparsityB_.clearWork();  //clears the cppad sparsity work called by a possible method call before
-        jacDimension = STATE_DIM * CONTROL_DIM;
-        std::string codeJacB = internal::CGHelpers::generateJacobianSource(this->f_, this->sparsityB_, jacDimension,
-            maxTempVarCountControl_, useReverse, ignoreZero, "jac", "x_in", "vU_");
+        std::string codeJacA, codeJacB;
+        linearizer_.generateCode(codeJacA, codeJacB, useReverse, ignoreZero);
 
         writeCodeFile(
             templateDir, outputDir, systemName, ns1, ns2, codeJacA, codeJacB, "AUTOGENERATED_CODE_PLACEHOLDER");
@@ -237,42 +197,18 @@ public:
 
 
 private:
-    //! computes the Jacobians
-    /*!
-	 * Given a state and input this method evaluates both Jacobians and caches them
-	 * @param x state to linearize around
-	 * @param u input to linearize around
-	 */
-    void computeJacobian(const state_vector_t& x, const control_vector_t& u)
-    {
-        Eigen::Matrix<double, Eigen::Dynamic, 1> input(STATE_DIM + CONTROL_DIM);
-        input << x, u;
-
-        Eigen::Matrix<double, Eigen::Dynamic, 1> jac(Base::FullJac_entries);
-
-        jac = model_->Jacobian(input);
-
-        Eigen::Map<Eigen::Matrix<double, STATE_DIM + CONTROL_DIM, STATE_DIM>> out(jac.data());
-
-        dFdx_ = out.template topRows<STATE_DIM>().transpose();
-        dFdu_ = out.template bottomRows<CONTROL_DIM>().transpose();
-
-        x_at_cache_ = x;
-        u_at_cache_ = u;
-    }
-
     //! write code to file
     /*!
-	 * Writes generated code to file
-	 * @param templateDir directory of the template file
-	 * @param outputDir output directory
-	 * @param systemName name of the resulting system class
-	 * @param ns1 first layer namespace
-	 * @param ns2 second layer namespace
-	 * @param codeJacA code for state Jacobian A
-	 * @param codeJacB code for input Jacobian B
-	 * @param codePlaceholder placeholder to search for and to be replaced with code
-	 */
+     * Writes generated code to file
+     * @param templateDir directory of the template file
+     * @param outputDir output directory
+     * @param systemName name of the resulting system class
+     * @param ns1 first layer namespace
+     * @param ns2 second layer namespace
+     * @param codeJacA code for state Jacobian A
+     * @param codeJacB code for input Jacobian B
+     * @param codePlaceholder placeholder to search for and to be replaced with code
+     */
     void writeCodeFile(const std::string& templateDir,
         const std::string& outputDir,
         const std::string& systemName,
@@ -284,14 +220,17 @@ private:
     {
         std::cout << "Generating linear system..." << std::endl;
 
+        size_t maxTempVarCountState, maxTempVarCountControl;
+        linearizer_.getMaxTempVarCount(maxTempVarCountState, maxTempVarCountControl);
+
         std::string header = internal::CGHelpers::parseFile(templateDir + "/LinearSystem.tpl.h");
         std::string source = internal::CGHelpers::parseFile(templateDir + "/LinearSystem.tpl.cpp");
 
         replaceSizesAndNames(header, systemName, ns1, ns2);
         replaceSizesAndNames(source, systemName, ns1, ns2);
 
-        internal::CGHelpers::replaceOnce(header, "MAX_COUNT_STATE", std::to_string(maxTempVarCountState_));
-        internal::CGHelpers::replaceOnce(header, "MAX_COUNT_CONTROL", std::to_string(maxTempVarCountControl_));
+        internal::CGHelpers::replaceOnce(header, "MAX_COUNT_STATE", std::to_string(maxTempVarCountState));
+        internal::CGHelpers::replaceOnce(header, "MAX_COUNT_CONTROL", std::to_string(maxTempVarCountControl));
 
         internal::CGHelpers::replaceOnce(source, codePlaceholder + "_JAC_A", codeJacA);
         internal::CGHelpers::replaceOnce(source, codePlaceholder + "_JAC_B", codeJacB);
@@ -305,11 +244,11 @@ private:
 
     //! replaces size and namespace placeholders in file
     /*!
-	 * @param file content of the file to perform the modification on
-	 * @param systemName name of the system
-	 * @param ns1 first layer namespace
-	 * @param ns2 second layer namespace
-	 */
+     * @param file content of the file to perform the modification on
+     * @param systemName name of the system
+     * @param ns1 first layer namespace
+     * @param ns2 second layer namespace
+     */
     void replaceSizesAndNames(std::string& file,
         const std::string& systemName,
         const std::string& ns1,
@@ -325,19 +264,12 @@ private:
     state_matrix_t dFdx_;          //!< state Jacobian
     state_control_matrix_t dFdu_;  //!< input Jacobian
 
-    bool compiled_;                            //!< flag if library is compiled
-    bool cacheJac_;                            //!< flag if Jacobian will be cached
-    CppAD::cg::GccCompiler<double> compiler_;  //!< compiler instance for JIT compilation
+    bool cacheJac_;  //!< flag if Jacobian will be cached
 
-    state_vector_t x_at_cache_;    //!< state at which Jacobian has been cached
-    control_vector_t u_at_cache_;  //!< input at which Jacobian has been cached
+    std::shared_ptr<system_t> nonlinearSystem_;  //!< instance of non-linear system
 
-
-    std::shared_ptr<CppAD::cg::DynamicLib<double>> dynamicLib_;  //!< compiled and dynamically loaded library
-    std::shared_ptr<CppAD::cg::GenericModel<double>> model_;     //!< Auto-Diff model
-
-    size_t maxTempVarCountState_;    //!< number of temporary variables in the source code of the state Jacobian
-    size_t maxTempVarCountControl_;  //!< number of temporary variables in the source code of the input Jacobian
+    DynamicsLinearizerADCG<STATE_DIM, CONTROL_DIM, ADCGScalar, ADCGScalar> linearizer_;  //!< instance of ad-linearizer
 };
-}
-}
+
+}  // namespace core
+}  // namespace ct

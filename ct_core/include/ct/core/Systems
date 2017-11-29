@@ -15,6 +15,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include "systems/linearizer/DynamicsLinearizerNumDiff.h"
 #include "systems/linearizer/DynamicsLinearizerAD.h"
+#include "systems/linearizer/DynamicsLinearizerADCG.h"
 
 #include "systems/continuous_time/linear/SystemLinearizer.h"
 #include "systems/continuous_time/linear/AutoDiffLinearizer.h"

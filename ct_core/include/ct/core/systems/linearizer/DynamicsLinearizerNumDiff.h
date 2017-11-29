@@ -34,11 +34,11 @@ public:
     typedef StateVector<STATE_DIM, SCALAR> state_vector_t;        //!< state vector type
     typedef ControlVector<CONTROL_DIM, SCALAR> control_vector_t;  //!< control vector type
 
-    typedef StateMatrix<STATE_DIM, SCALAR> state_matrix_t; //!< state Jacobian type (A)
+    typedef StateMatrix<STATE_DIM, SCALAR> state_matrix_t;                              //!< state Jacobian type (A)
     typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;  //!< control Jacobian type (B)
 
-    typedef std::function<void(const state_vector_t&, const TIME&,
-        const control_vector_t&, state_vector_t&)> dynamics_fct_t; //!< dynamics function signature
+    typedef std::function<void(const state_vector_t&, const TIME&, const control_vector_t&, state_vector_t&)>
+        dynamics_fct_t;  //!< dynamics function signature
 
     //! default constructor
     /*!
@@ -48,8 +48,7 @@ public:
      * @param doubleSidedDerivative if true, double sided numerical differentiation is used
      */
     DynamicsLinearizerNumDiff(dynamics_fct_t dyn, bool doubleSidedDerivative = true)
-        : dynamics_fct_(dyn),
-          doubleSidedDerivative_(doubleSidedDerivative)
+        : dynamics_fct_(dyn), doubleSidedDerivative_(doubleSidedDerivative)
     {
         dFdx_.setZero();
         dFdu_.setZero();
@@ -81,13 +80,12 @@ public:
    * @param t time
    * @return Jacobian wrt state
    */
-    const state_matrix_t& getDerivativeState(const state_vector_t& x,
-        const control_vector_t& u,
-        const TIME t = TIME(0))
+    const state_matrix_t& getDerivativeState(const state_vector_t& x, const control_vector_t& u, const TIME t = TIME(0))
     {
-        if(!doubleSidedDerivative_) dynamics_fct_(x, t, u, res_ref_);
+        if (!doubleSidedDerivative_)
+            dynamics_fct_(x, t, u, res_ref_);
 
-        for (size_t i=0; i < STATE_DIM; i++)
+        for (size_t i = 0; i < STATE_DIM; i++)
         {
             // inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
             SCALAR h = eps_ * std::max(fabs(x(i)), SCALAR(1.0));
@@ -141,9 +139,10 @@ public:
         const control_vector_t& u,
         const TIME t = TIME(0))
     {
-        if(!doubleSidedDerivative_) dynamics_fct_(x, t, u, res_ref_);
+        if (!doubleSidedDerivative_)
+            dynamics_fct_(x, t, u, res_ref_);
 
-        for (size_t i=0; i < CONTROL_DIM; i++)
+        for (size_t i = 0; i < CONTROL_DIM; i++)
         {
             // inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
             SCALAR h = eps_ * std::max(fabs(u(i)), SCALAR(1.0));
@@ -179,10 +178,10 @@ public:
         return dFdu_;
     }
 
-    bool getDoubleSidedDerivativeFlag() const {return doubleSidedDerivative_;}
+    bool getDoubleSidedDerivativeFlag() const { return doubleSidedDerivative_; }
 
 protected:
-    dynamics_fct_t dynamics_fct_; //!< function handle to system dynamics
+    dynamics_fct_t dynamics_fct_;  //!< function handle to system dynamics
 
     bool doubleSidedDerivative_;  //!< flag if double sided numerical differentiation should be used
 
@@ -196,5 +195,5 @@ protected:
     state_vector_t res_ref_;  //!< reference result for numerical differentiation
 };
 
-}  // core
-}  // ct
+}  // namespace core
+}  // namespace ct

@@ -10,7 +10,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-//! Computes the linearization of a system dynamics function through numerical autodiff
+//! Computes the linearization of a system dynamics function through autodiff
 /*!
  * This class takes a function handle representing system dynamics of the form
  * \f$ f(x(t),t,u(t),\dot{x(t)}) \f$ or \f$ f(x[n],n,u[n],x[n+1]) \f$ where the
@@ -30,32 +30,30 @@ public:
 
     typedef internal::DynamicsLinearizerADBase<STATE_DIM, CONTROL_DIM, SCALAR, TIME> Base;
 
-    typedef typename Base::state_vector_t state_vector_t;     //!< state vector type
-    typedef typename Base::control_vector_t control_vector_t; //!< control vector type
+    typedef typename Base::state_vector_t state_vector_t;      //!< state vector type
+    typedef typename Base::control_vector_t control_vector_t;  //!< control vector type
 
-    typedef typename Base::state_matrix_t state_matrix_t; //!< state Jacobian type (A)
+    typedef typename Base::state_matrix_t state_matrix_t;                  //!< state Jacobian type (A)
     typedef typename Base::state_control_matrix_t state_control_matrix_t;  //!< control Jacobian type (B)
 
-    typedef typename Base::dynamics_fct_t dynamics_fct_t; //!< dynamics function signature
+    typedef typename Base::dynamics_fct_t dynamics_fct_t;  //!< dynamics function signature
 
+    //! default constructor
+    /*!
+     * @param dyn function handle to system dynamics
+     */
     DynamicsLinearizerAD(dynamics_fct_t dyn)
-        : Base(dyn), dynamics_fct_(dyn)
+        : Base(dyn), dynamics_fct_(dyn), dFdx_(state_matrix_t::Zero()), dFdu_(state_control_matrix_t::Zero())
     {
-        dFdx_.setZero();
-        dFdu_.setZero();
     }
 
+    //! copy constructor
     DynamicsLinearizerAD(const DynamicsLinearizerAD& rhs)
-        : Base(rhs.dynamics_fct_),
-          dynamics_fct_(rhs.dynamics_fct_),
-          dFdx_(rhs.dFdx_),
-          dFdu_(rhs.dFdu_)
+        : Base(rhs.dynamics_fct_), dynamics_fct_(rhs.dynamics_fct_), dFdx_(rhs.dFdx_), dFdu_(rhs.dFdu_)
     {
     }
 
-    virtual const state_matrix_t& getDerivativeState(const state_vector_t& x,
-        const control_vector_t& u,
-        const TIME t = TIME(0))
+    const state_matrix_t& getDerivativeState(const state_vector_t& x, const control_vector_t& u, const TIME t = TIME(0))
     {
         computeA(x, u);
         return dFdx_;
@@ -111,12 +109,11 @@ protected:
     }
 
 protected:
-
-    dynamics_fct_t dynamics_fct_; //!< function handle to system dynamics
+    dynamics_fct_t dynamics_fct_;  //!< function handle to system dynamics
 
     state_matrix_t dFdx_;          //!< Jacobian wrt state
     state_control_matrix_t dFdu_;  //!< Jacobian wrt input
 };
 
-} // core
-} // ct
+}  // namespace core
+}  // namespace ct

@@ -41,22 +41,17 @@ public:
     typedef StateMatrix<STATE_DIM, double> state_matrix_t;
     typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, double> state_control_matrix_t;
 
-    typedef std::function<void(const state_vector_ad_t&, const TIME&,
-        const control_vector_ad_t&, state_vector_ad_t&)> dynamics_fct_t; //!< dynamics function signature
+    typedef std::function<void(const state_vector_ad_t&, const TIME&, const control_vector_ad_t&, state_vector_ad_t&)>
+        dynamics_fct_t;  //!< dynamics function signature
 
     //! default constructor
     /*!
 	 * @param dyn non-linear system to linearize
 	 */
-    DynamicsLinearizerADBase(dynamics_fct_t dyn)
-        : dynamics_fct_(dyn)
-    {
-        initialize();
-    }
+    DynamicsLinearizerADBase(dynamics_fct_t dyn) : dynamics_fct_(dyn) { initialize(); }
 
     //! copy constructor
-    DynamicsLinearizerADBase(const DynamicsLinearizerADBase& arg)
-        : dynamics_fct_(arg.dynamics_fct_)
+    DynamicsLinearizerADBase(const DynamicsLinearizerADBase& arg) : dynamics_fct_(arg.dynamics_fct_)
     {
         setupSparsityA();
         setupSparsityB();
@@ -140,13 +135,13 @@ protected:
         sparsityB_.clearWork();
     }
 
-    dynamics_fct_t dynamics_fct_; //!< function handle to system dynamics
+    dynamics_fct_t dynamics_fct_;                  //!< function handle to system dynamics
     CppAD::ADFun<typename SCALAR::value_type> f_;  //!< Auto-Diff function
 
     SparsityPattern sparsityA_;  //!< sparsity pattern of the state Jacobian
     SparsityPattern sparsityB_;  //!< sparsity pattern of the input Jacobian
 };
 
-} // internal
-} // core
-} // ct
+}  // namespace internal
+}  // namespace core
+}  // namespace ct

@@ -23,8 +23,8 @@ TEST(ADCodegenLinearizerTest, JITCompilationTest)
     typedef tpl::TestNonlinearSystem<Scalar> TestNonlinearSystemAD;
 
     // handy typedefs for the Jacobian
-    typedef Eigen::Matrix<double, state_dim, state_dim> A_type;
-    typedef Eigen::Matrix<double, state_dim, control_dim> B_type;
+    typedef ct::core::StateMatrix<state_dim, double> A_type;
+    typedef ct::core::StateControlMatrix<state_dim, control_dim, double> B_type;
 
     // create two nonlinear systems, one regular one and one auto-differentiable
     const double w_n = 100.0;
@@ -41,6 +41,10 @@ TEST(ADCodegenLinearizerTest, JITCompilationTest)
     std::cout << "... done!" << std::endl;
 
     std::shared_ptr<ADCodegenLinearizer<state_dim, control_dim>> adLinearizerClone(adLinearizer.clone());
+    std::cout << "compiling the clone..." << std::endl;
+    adLinearizerClone->compileJIT("ADCGCodegenLibCone");
+    std::cout << "... done!" << std::endl;
+
     // create state, control and time variables
     StateVector<TestNonlinearSystem::STATE_DIM> x;
     ControlVector<TestNonlinearSystem::CONTROL_DIM> u;
@@ -139,6 +143,7 @@ TEST(ADCodegenLinearizerTestMP, JITCompilationTestMP)
     for (size_t i = 0; i < nThreads; ++i)
     {
         adLinearizers.push_back(std::shared_ptr<ADCodegenLinearizer<state_dim, control_dim>>(adLinearizer.clone()));
+        adLinearizers.back()->compileJIT();
         systemLinearizers.push_back(
             std::shared_ptr<SystemLinearizer<state_dim, control_dim>>(systemLinearizer.clone()));
     }

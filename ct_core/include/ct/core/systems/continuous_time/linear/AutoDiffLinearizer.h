@@ -49,35 +49,45 @@ class AutoDiffLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM>
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-
-    typedef CppAD::AD<double> AD_double;                                   //!< Auto-Diff double type
-    typedef LinearSystem<STATE_DIM, CONTROL_DIM> Base;                     //!< Base class type
+    typedef LinearSystem<STATE_DIM, CONTROL_DIM> Base;  //!< Base class type
 
     typedef StateVector<STATE_DIM, double> state_vector_t;                 //!< state vector type
     typedef ControlVector<CONTROL_DIM, double> control_vector_t;           //!< input vector type
     typedef typename Base::state_matrix_t state_matrix_t;                  //!< state Jacobian type
     typedef typename Base::state_control_matrix_t state_control_matrix_t;  //!< input Jacobian type
 
-    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, AD_double> system_t;     //!< type of system to be linearized
+    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, ADScalar> system_t;  //!< type of system to be linearized
 
     //! default constructor
     /*!
-	 * @param nonlinearSystem non-linear system instance to linearize
-	 */
+     * @param nonlinearSystem non-linear system instance to linearize
+     */
     AutoDiffLinearizer(std::shared_ptr<system_t> nonlinearSystem)
         : Base(nonlinearSystem->getType()),
+          dFdx_(state_matrix_t::Zero()),
+          dFdu_(state_control_matrix_t::Zero()),
           nonlinearSystem_(nonlinearSystem),
-          linearizer_(std::bind(&system_t::computeControlledDynamics, nonlinearSystem_.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4))
+          linearizer_(std::bind(&system_t::computeControlledDynamics,
+              nonlinearSystem_.get(),
+              std::placeholders::_1,
+              std::placeholders::_2,
+              std::placeholders::_3,
+              std::placeholders::_4))
     {
     }
 
     //! copy constructor
     AutoDiffLinearizer(const AutoDiffLinearizer& arg)
         : Base(arg.nonlinearSystem_->getType()),
-          nonlinearSystem_(arg.nonlinearSystem_->clone()),
-          linearizer_(std::bind(&system_t::computeControlledDynamics, nonlinearSystem_.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)),
           dFdx_(arg.dFdx_),
-          dFdu_(arg.dFdu_)
+          dFdu_(arg.dFdu_),
+          nonlinearSystem_(arg.nonlinearSystem_->clone()),
+          linearizer_(std::bind(&system_t::computeControlledDynamics,
+              nonlinearSystem_.get(),
+              std::placeholders::_1,
+              std::placeholders::_2,
+              std::placeholders::_3,
+              std::placeholders::_4))
     {
     }
 
@@ -137,13 +147,13 @@ public:
 
 
 protected:
-    std::shared_ptr<system_t> nonlinearSystem_;  //!< instance of non-linear system
-
-    DynamicsLinearizerAD<STATE_DIM, CONTROL_DIM, AD_double, double> linearizer_; //!< instance of ad-linearizer
-
     state_matrix_t dFdx_;
     state_control_matrix_t dFdu_;
+
+    std::shared_ptr<system_t> nonlinearSystem_;  //!< instance of non-linear system
+
+    DynamicsLinearizerAD<STATE_DIM, CONTROL_DIM, ADScalar, double> linearizer_;  //!< instance of ad-linearizer
 };
 
-} // core
-} // ct
+}  // namespace core
+}  // namespace ct
