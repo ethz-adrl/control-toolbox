@@ -5,17 +5,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 #pragma once
 
-#include <Eigen/Dense>
-#include <Eigen/StdVector>
-#include <ct/core/types/StateVector.h>
-#include <ct/core/types/ControlVector.h>
-
-#include <ct/core/systems/discrete_time/DiscreteControlledSystem.h>
-
-#include <ct/core/systems/linearizer/DynamicsLinearizerNumDiff.h>
-
-#include "DiscreteLinearSystem.h"
-
 namespace ct {
 namespace core {
 
@@ -39,26 +28,27 @@ namespace core {
  *
  * Examples for using the SystemLinearizer (and the Auto-diff Linearizer) can be found in \ref AutoDiffLinearizerTest.cpp
  *
- * \note In case your ControlledSystem is templated on scalar type, we suggest using the ADCodegenLinearizer
+ * \note In case your ControlledSystem is templated on scalar type, we suggest using the DiscreteSystemLinearizerAD
  * for highest efficiency and accuracy.
  *
  * @tparam dimension of state vector
  * @tparam dimension of control vector
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class DiscreteSystemLinearizer : public DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM>
+class DiscreteSystemLinearizer : public DiscreteLinearSystem<STATE_DIM, CONTROL_DIM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> system_t;        //!< type of system to be linearized
-    typedef DiscreteLinearSystem    <STATE_DIM, CONTROL_DIM, SCALAR> linear_system_t; //!< type of resulting linear system
+    typedef DiscreteLinearSystem<STATE_DIM, CONTROL_DIM> Base;
 
-    typedef StateVector<STATE_DIM, SCALAR> state_vector_t;        //!< state vector type
-    typedef ControlVector<CONTROL_DIM, SCALAR> control_vector_t;  //!< control vector type
+    typedef DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, double> system_t;  //!< type of system to be linearized
 
-    typedef typename linear_system_t::state_matrix_t state_matrix_t;            //!< state Jacobian type (A)
-    typedef typename linear_system_t::state_control_matrix_t state_control_matrix_t;  //! control Jacobian type (B)
+    typedef typename Base::state_vector_t state_vector_t;      //!< state vector type
+    typedef typename Base::control_vector_t control_vector_t;  //!< control vector type
+
+    typedef typename Base::state_matrix_t state_matrix_t;                  //!< state Jacobian type (A)
+    typedef typename Base::state_control_matrix_t state_control_matrix_t;  //! control Jacobian type (B)
 
     //! default constructor
     /*!
@@ -67,11 +57,15 @@ public:
      * @param nonlinearSystem non-linear system to linearize
      * @param doubleSidedDerivative if true, double sided numerical differentiation is used
      */
-    DiscreteSystemLinearizer(std::shared_ptr<system_t> nonlinearSystem,
-        bool doubleSidedDerivative = true)
-        : linear_system_t(nonlinearSystem->getType()),
+    DiscreteSystemLinearizer(std::shared_ptr<system_t> nonlinearSystem, bool doubleSidedDerivative = true)
+        : Base(nonlinearSystem->getType()),
           nonlinearSystem_(nonlinearSystem),
-          linearizer_(std::bind(&system_t::propagateControlledDynamics, nonlinearSystem_.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+          linearizer_(std::bind(&system_t::propagateControlledDynamics,
+                          nonlinearSystem_.get(),
+                          std::placeholders::_1,
+                          std::placeholders::_2,
+                          std::placeholders::_3,
+                          std::placeholders::_4),
               doubleSidedDerivative)
     {
         if (nonlinearSystem == nullptr)
@@ -83,9 +77,14 @@ public:
 
     //! copy constructor
     DiscreteSystemLinearizer(const DiscreteSystemLinearizer& arg)
-        : linear_system_t(arg),
+        : Base(arg),
           nonlinearSystem_(arg.nonlinearSystem_->clone()),
-          linearizer_(std::bind(&system_t::propagateControlledDynamics, nonlinearSystem_.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+          linearizer_(std::bind(&system_t::propagateControlledDynamics,
+                          nonlinearSystem_.get(),
+                          std::placeholders::_1,
+                          std::placeholders::_2,
+                          std::placeholders::_3,
+                          std::placeholders::_4),
               arg.linearizer_.getDoubleSidedDerivativeFlag()),
           dFdx_(arg.dFdx_),
           dFdu_(arg.dFdu_)
@@ -96,9 +95,9 @@ public:
     virtual ~DiscreteSystemLinearizer() {}
 
     //! deep cloning
-    DiscreteSystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
+    DiscreteSystemLinearizer<STATE_DIM, CONTROL_DIM>* clone() const override
     {
-        return new DiscreteSystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
+        return new DiscreteSystemLinearizer<STATE_DIM, CONTROL_DIM>(*this);
     }
 
     //! get the Jacobian with respect to the state
@@ -162,9 +161,9 @@ public:
      * @param A the resulting linear system matrix A
      * @param B the resulting linear system matrix B
      */
-    virtual void getAandB(const StateVector<STATE_DIM, SCALAR>& x,
-        const ControlVector<CONTROL_DIM, SCALAR>& u,
-        const StateVector<STATE_DIM, SCALAR>& x_next,
+    virtual void getAandB(const state_vector_t& x,
+        const control_vector_t& u,
+        const state_vector_t& x_next,
         const int n,
         size_t numSteps,
         state_matrix_t& A,
@@ -180,11 +179,11 @@ public:
 protected:
     std::shared_ptr<system_t> nonlinearSystem_;  //!< instance of non-linear system
 
-    DynamicsLinearizerNumDiff<STATE_DIM,CONTROL_DIM,SCALAR,int> linearizer_; //!< instance of numerical-linearizer
+    DynamicsLinearizerNumDiff<STATE_DIM, CONTROL_DIM, double, int> linearizer_;  //!< instance of numerical-linearizer
 
     state_matrix_t dFdx_;          //!< Jacobian wrt state
     state_control_matrix_t dFdu_;  //!< Jacobian wrt input
 };
 
-} // core
-} // ct
+}  // namespace core
+}  // namespace ct

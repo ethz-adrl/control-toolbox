@@ -26,6 +26,11 @@ class DiscreteLinearSystem : public DiscreteControlledSystem<STATE_DIM, CONTROL_
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    typedef DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+
+    typedef typename Base::state_vector_t state_vector_t;
+    typedef typename Base::control_vector_t control_vector_t;
+
     typedef StateMatrix<STATE_DIM, SCALAR> state_matrix_t;                              //!< state Jacobian type
     typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;  //!< input Jacobian type
 
@@ -55,10 +60,10 @@ public:
 	 * @param control control input
 	 * @param stateNext propagated state
 	 */
-    virtual void propagateControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
+    virtual void propagateControlledDynamics(const state_vector_t& state,
         const int& n,
-        const ControlVector<CONTROL_DIM, SCALAR>& control,
-        StateVector<STATE_DIM, SCALAR>& stateNext) override
+        const control_vector_t& control,
+        state_vector_t& stateNext) override
     {
         state_matrix_t A;
         state_control_matrix_t B;
@@ -86,16 +91,16 @@ public:
      * @param A the resulting linear system matrix A
      * @param B the resulting linear system matrix B
      */
-    virtual void getAandB(const StateVector<STATE_DIM, SCALAR>& x,
-        const ControlVector<CONTROL_DIM, SCALAR>& u,
-        const StateVector<STATE_DIM, SCALAR>& x_next,
+    virtual void getAandB(const state_vector_t& x,
+        const control_vector_t& u,
+        const state_vector_t& x_next,
         const int n,
         size_t subSteps,
         state_matrix_t& A,
         state_control_matrix_t& B) = 0;
 
-    void getAandB(const StateVector<STATE_DIM, SCALAR>& x,
-        const ControlVector<CONTROL_DIM, SCALAR>& u,
+    void getAandB(const state_vector_t& x,
+        const control_vector_t& u,
         const int n,
         state_matrix_t& A,
         state_control_matrix_t& B)
@@ -104,5 +109,5 @@ public:
     }
 };
 
-}  // core
-}  // ct
+}  // namespace core
+}  // namespace ct

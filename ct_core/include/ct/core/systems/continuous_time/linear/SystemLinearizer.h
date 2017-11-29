@@ -6,18 +6,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-
-#include <Eigen/Dense>
-#include <Eigen/StdVector>
-#include <ct/core/types/StateVector.h>
-#include <ct/core/types/ControlVector.h>
-
-#include <ct/core/systems/continuous_time/ControlledSystem.h>
-
-#include <ct/core/systems/linearizer/DynamicsLinearizerNumDiff.h>
-
-#include "LinearSystem.h"
-
 namespace ct {
 namespace core {
 
