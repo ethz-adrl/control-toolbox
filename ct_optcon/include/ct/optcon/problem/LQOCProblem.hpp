@@ -42,12 +42,13 @@ namespace optcon {
  * The constrained LQ problem additionally implements the box constraints
  * \f$ \mathbf \x_{lb} \leq \mathbf x_n \leq \mathbf \x_{ub} \ \forall i=1,2,\ldots,N \f$ and
  * \f$ \mathbf \u_{lb} \leq \mathbf u_n \leq \mathbf \u_{ub} \ \forall i=0,1,\ldots,N-1  \f$
- * which are always kept in absolute coordinates.
  * and the general inequality constraints
  * \f[
  * \mathbf \d_{lb}  \leq \mathbf C_n \delta \mathbf \x_n + \mathbf D_n \delta \mathbf \u_n \leq \mathbf \d_{ub} \ \forall i=0,1,\ldots,N
  * \f]
+ * which are both always kept in absolute coordinates.
  *
+ * \todo refactor all to be in global coordinates
  * \todo Refactor the initializing methods such that const-references can be handed over.
  */
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR = double>
@@ -56,17 +57,13 @@ class LQOCProblem
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    using constr_vec_t = Eigen::Matrix<SCALAR, -1, 1>;
-    using constr_state_jac_t = Eigen::Matrix<SCALAR, -1, STATE_DIM>;
-    using constr_control_jac_t = Eigen::Matrix<SCALAR, -1, CONTROL_DIM>;
-    using constr_state_sparsity_t = Eigen::Matrix<int, -1, STATE_DIM>;
-    using constr_control_sparsity_t = Eigen::Matrix<int, -1, CONTROL_DIM>;
+    using constr_vec_t = Eigen::Matrix<SCALAR, -1, -1>;
+    using constr_state_jac_t = Eigen::Matrix<SCALAR, -1, -1>;
+    using constr_control_jac_t = Eigen::Matrix<SCALAR, -1,-1>;
 
     using constr_vec_array_t = ct::core::DiscreteArray<constr_vec_t>;
     using constr_state_jac_array_t = ct::core::DiscreteArray<constr_state_jac_t>;
     using constr_control_jac_array_t = ct::core::DiscreteArray<constr_control_jac_t>;
-    using constr_state_sparsity_array_t = ct::core::DiscreteArray<constr_state_sparsity_t>;
-    using constr_control_sparsity_array_t = ct::core::DiscreteArray<constr_control_sparsity_t>;
 
     using box_constr_t = Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM, 1>;
     using box_constr_array_t = ct::core::DiscreteArray<box_constr_t>;
@@ -118,7 +115,7 @@ public:
      * @param C general constraint state jacobian
      * @param D general constraint control jacobian
      */
-    void setGeneralConstraints(constr_vec_t& d_lb, constr_vec_t& d_ub, constr_state_jac_t& C, constr_control_jac_t& D);
+    void setGeneralConstraints(const constr_vec_t& d_lb, const constr_vec_t& d_ub, const constr_state_jac_t& C, const constr_control_jac_t& D);
 
     /*!
      * \brief a convenience method which constructs an unconstrained LQOC Problem from an LTI system and continuous-time quadratic cost

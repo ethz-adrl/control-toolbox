@@ -64,8 +64,17 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
     problems[1]->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, b, dt);
 
     // configure box constraints
-    qocSolvers[1]->configureBoxConstraints(problems[1]);
-    // todo make virtual function for lqoc soler base class
+    try
+    {
+    	// try to give GNRiccati a constraint...
+        lqocSolvers[1]->configureBoxConstraints(problems[1]);
+        ASSERT_TRUE(false);
+    } catch (const std::exception& e)
+    {
+    	// ... should fail
+    	ASSERT_TRUE(true);
+    }
+    lqocSolvers[1]->configureBoxConstraints(problems[1]);
 
     // set the problem pointers
     lqocSolvers[0]->setProblem(problems[0]);
@@ -97,7 +106,7 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
             std::cout << xSol_hpipm[j].transpose() << std::endl;
         }
         // assert that state trajectories are identical for both solvers
-        ASSERT_NEAR((xSol_riccati[j]-xSol_hpipm[j]).array().abs().maxCoeff(), 0.0, 1e-6);
+        ASSERT_NEAR((xSol_riccati[j] - xSol_hpipm[j]).array().abs().maxCoeff(), 0.0, 1e-6);
     }
 
     for (size_t j = 0; j < uSol_riccati.size(); j++)
@@ -110,7 +119,7 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
             std::cout << uSol_hpipm[j].transpose() << std::endl;
         }
         // assert that control trajectories are identical for both solvers
-        ASSERT_NEAR((uSol_riccati[j]-uSol_hpipm[j]).array().abs().maxCoeff(), 0.0, 1e-6);
+        ASSERT_NEAR((uSol_riccati[j] - uSol_hpipm[j]).array().abs().maxCoeff(), 0.0, 1e-6);
     }
 
     for (size_t j = 0; j < KSol_riccati.size(); j++)
@@ -123,7 +132,6 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
             std::cout << KSol_hpipm[j] << std::endl << std::endl;
         }
         // assert that feedback trajectories are identical for both solvers
-        ASSERT_NEAR((KSol_riccati[j]-KSol_hpipm[j]).array().abs().maxCoeff(), 0.0, 1e-6);
+        ASSERT_NEAR((KSol_riccati[j] - KSol_hpipm[j]).array().abs().maxCoeff(), 0.0, 1e-6);
     }
-
 }

@@ -175,10 +175,10 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setControlBoxConstraints(
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(constr_vec_t& d_lb,
-    constr_vec_t& d_ub,
-    constr_state_jac_t& C,
-    constr_control_jac_t& D)
+void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(const constr_vec_t& d_lb,
+    const constr_vec_t& d_ub,
+    const constr_state_jac_t& C,
+    const constr_control_jac_t& D)
 {
     d_lb_.setConstant(d_lb);
     d_ub_.setConstant(d_ub);
@@ -197,6 +197,8 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
     ct::core::StateVector<STATE_DIM, SCALAR>& stateOffset,
     double dt)
 {
+	setZero();
+
     core::StateMatrix<STATE_DIM, SCALAR> A;
     core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B;
     linearSystem.getAandB(x0, u0, 0, A, B);

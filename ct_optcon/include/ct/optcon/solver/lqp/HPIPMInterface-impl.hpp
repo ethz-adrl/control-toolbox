@@ -76,9 +76,9 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configure(const NLOptConSettings& s
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
 {
-    //		// optional printout
-    //		for (size_t i=0; i<N_+1; i++)
-    //		{
+    // optional printout
+    //    		for (size_t i=0; i<N_+1; i++)
+    //    		{
     //			std::cout << "HPIPM matrix printout for stage " << i << std::endl;
     //			if (i<N_)
     //			{
@@ -106,12 +106,12 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
     //				d_print_mat(1, CONTROL_DIM, hr_[i], 1);
     //			}
     //
-    //          int_print_mat(1, nb_[i], hidxb_[i], 1);
-    //          printf("\nhd_lb_\n");
-    //          d_print_mat(1, nb_[i], hd_lb_[i], 1);
-    //          printf("\nhd_ub_\n");
-    //          d_print_mat(1, nb_[i], hd_ub_[i], 1);
-    //		} // end optional printout
+    //              int_print_mat(1, nb_[i], hidxb_[i], 1);
+    //              printf("\nhd_lb_\n");
+    //              d_print_mat(1, nb_[i], hd_lb_[i], 1);
+    //              printf("\nhd_ub_\n");
+    //              d_print_mat(1, nb_[i], hd_ub_[i], 1);
+    //        } // end optional printout
 
     // set pointers to optimal control problem
     ::d_cvt_colmaj_to_ocp_qp(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(),
@@ -354,7 +354,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
             configureGeneralConstraints(lqocProblem);
     }
 
-
     // we do not need to reset the pointers if
     bool keepPointers = this->lqocProblem_ &&                      //there was an lqocProblem before
                         N_ == lqocProblem->getNumberOfStages() &&  // and the number of states did not change
@@ -402,11 +401,33 @@ template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
 {
-    // todo resize langrage mult container
-    lam_lg_.resize(N_ + 1);
-    lam_ug_.resize(N_ + 1);
+    for (size_t i = 0; i < N_ + 1; i++)
+    {
+    	// check dimensions
+        assert(lqocProblem->d_lb_[i].rows() == lqocProblem->d_ub_[i].rows());
+        assert(lqocProblem->d_lb_[i].rows() == lqocProblem->C_[i].rows());
+        assert(lqocProblem->d_lb_[i].rows() == lqocProblem->D_[i].rows());
+        assert(lqocProblem->C_[i].cols() == STATE_DIM);
+        assert(lqocProblem->D_[i].cols() == CONTROL_DIM);
 
-    throw std::runtime_error("general constraints not yet handled in HPIPM");
+        // get the number of constraints
+        ng_[i] = lqocProblem->d_lb_[i].rows();
+
+        // set pointers to hpipm-style box constraint boundaries and sparsity pattern
+        hd_lg_[i] = lqocProblem->d_lb_[i].data();
+        hd_ug_[i] = lqocProblem->d_ub_[i].data();
+        hC_[i] = lqocProblem->C_[i].data();
+        hD_[i] = lqocProblem->D_[i].data();
+
+        // TODO clarify with Gianluca if we need to reset the lagrange multiplier
+        // before warmstarting (potentially wrong warmstart for the lambdas)
+
+        // direct pointers of lagrange mult to corresponding containers
+        cont_lam_lg_[i].resize(ng_[i]); // todo avoid dynamic allocation (e.g. by defining a max. constraint dim)
+        cont_lam_ug_[i].resize(ng_[i]); // todo avoid dynamic allocation (e.g. by defining a max. constraint dim)
+        lam_lg_[i] = cont_lam_lg_[i].data();
+        lam_ug_[i] = cont_lam_ug_[i].data();
+    }
 }
 
 

@@ -108,7 +108,6 @@ public:
     virtual void initializeAndAllocate() override;
 
 private:
-
     /*!
      * @brief set problem implementation for hpipm
      * \warning This method is called in the loop. As little memory as possible
@@ -307,17 +306,20 @@ private:
     std::vector<double*> lam_ug_;
 
     //! container lagr. mult. box-constr. lower
-    std::vector<Eigen::Matrix<double, max_box_constr_dim, 1>> cont_lam_lb_;
+    ct::core::DiscreteArray<Eigen::Matrix<double, max_box_constr_dim, 1>> cont_lam_lb_;
     //! container lagr. mult. box-constr. upper
-    std::vector<Eigen::Matrix<double, max_box_constr_dim, 1>> cont_lam_ub_;
+    ct::core::DiscreteArray<Eigen::Matrix<double, max_box_constr_dim, 1>> cont_lam_ub_;
     //! container for lagr. mult. general-constraint lower
-    std::vector<Eigen::Matrix<double, -1, 1>> cont_lam_lg_;
+    ct::core::DiscreteArray<Eigen::Matrix<double, -1, 1>> cont_lam_lg_;
     //! container for lagr. mult. general-constraint upper
-    std::vector<Eigen::Matrix<double, -1, 1>> cont_lam_ug_;
+    ct::core::DiscreteArray<Eigen::Matrix<double, -1, 1>> cont_lam_ug_;
 
     ct::core::StateVectorArray<STATE_DIM> hx_;
     ct::core::StateVectorArray<STATE_DIM> hpi_;
     ct::core::ControlVectorArray<CONTROL_DIM> hu_;
+
+    //! settings from NLOptConSolver
+    NLOptConSettings settings_;
 
     std::vector<char> qp_mem_;
     struct d_ocp_qp qp_;
@@ -329,7 +331,6 @@ private:
     std::vector<char> ipm_mem_;
     struct d_ipm_hard_ocp_qp_workspace workspace_;
 
-    NLOptConSettings settings_;
 };
 
 

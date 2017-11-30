@@ -16,6 +16,8 @@ namespace optcon {
 /*!
  * Base class for solvers to solve an LQOCProblem
  * (both constrained / unconstrained, etc.)
+ *
+ * \todo uncouple from NLOptConSettings
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class LQOCSolver
