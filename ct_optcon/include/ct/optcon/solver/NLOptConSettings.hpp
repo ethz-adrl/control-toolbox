@@ -42,7 +42,7 @@ struct LineSearchSettings
     double alpha_0;       /*!< Initial step size for line search. Use 1 for step size as suggested by NLOptCon */
     double alpha_max;     /*!< Maximum step size for line search. This is the limit when adapting alpha_0. */
     double
-        n_alpha; /*!< Factor by which the line search step size alpha gets multiplied with after each iteration. Usually 0.5 is a good value. */
+        n_alpha;     /*!< Factor by which the line search step size alpha gets multiplied with after each iteration. Usually 0.5 is a good value. */
     bool debugPrint; /*!< Print out debug information during line-search*/
 
 
@@ -233,12 +233,12 @@ public:
     double min_cost_improvement;      //! minimum cost improvement between two interations to assume convergence
     double maxDefectSum;              //! maximum sum of squared defects (assume covergence if lower than this number)
     double meritFunctionRho;          //! trade off between constraint violation and cost for a merit function
-    int max_iterations;  //! the maximum admissible number of NLOptCon main iterations \warning make sure to select this number high enough allow for convergence
-    bool fixedHessianCorrection;    //! perform Hessian regularization by incrementing the eigenvalues by epsilon.
-    bool recordSmallestEigenvalue;  //! save the smallest eigenvalue of the Hessian
-    int nThreads;                   //! number of threads, for MP version
+    int max_iterations;               //! the maximum admissible number of NLOptCon main iterations \warning make sure to select this number high enough allow for convergence
+    bool fixedHessianCorrection;      //! perform Hessian regularization by incrementing the eigenvalues by epsilon.
+    bool recordSmallestEigenvalue;    //! save the smallest eigenvalue of the Hessian
+    int nThreads;                     //! number of threads, for MP version
     size_t
-        nThreadsEigen;  //! number of threads for eigen parallelization (applies both to MP and ST) Note. in order to activate Eigen parallelization, compile with '-fopenmp'
+        nThreadsEigen;                      //! number of threads for eigen parallelization (applies both to MP and ST) Note. in order to activate Eigen parallelization, compile with '-fopenmp'
     LineSearchSettings lineSearchSettings;  //! the line search settings
     ParallelBackwardSettings
         parallelBackward;  //! do the backward pass in parallel with building the LQ problems (experimental)
