@@ -32,6 +32,10 @@ namespace optcon {
 
 /*!
  * This class implements an interface to the HPIPM solver
+ *
+ * \warning in order to allow for an efficient implementation of constrained MPC,
+ * the configuration of the box and general constraints must be done independently
+ * from setProblem()
  */
 template <int STATE_DIM, int CONTROL_DIM>
 class HPIPMInterface : public LQOCSolver<STATE_DIM, CONTROL_DIM>
@@ -83,6 +87,12 @@ public:
 
     void printSolution();
 
+    //! brief setup and configure the box constraints
+    void configureBoxConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem);
+
+    //! brief setup and configure the general (in)equality constraints
+    void configureGeneralConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem);
+
 
 private:
 
@@ -133,12 +143,10 @@ private:
         bool keepPointers = false);
 
     /*!
-     * @brief setup the constraint indices and matrices
+     * @brief change number of states of the optimal control problem
+     * @return true if number of stages changed, false if number of stages is unchanged.
      */
-    void setupConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem);
-
-    //! change number of states of the optimal control problem
-    void changeNumberOfStages(int N);
+    bool changeNumberOfStages(int N);
 
     //! creates a zero matrix
     void d_zeros(double** pA, int row, int col);
