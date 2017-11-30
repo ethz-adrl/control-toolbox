@@ -284,8 +284,7 @@ A proper technical report about the CT is currently in preparation. Meanwhile, p
 This toolbox has been used in, or has helped to realize the following academic publications:
 
 - Markus Giftthaler, Michael Neunert, Markus Stäuble, Jonas Buchli and Moritz Diehl.
-“A Family of iterative Gauss-Newton Shooting Methods for Nonlinear Optimal Control”. 
-Submitted to the IEEE International Conference on Robotics and Automation 2018.
+“A Family of iterative Gauss-Newton Shooting Methods for Nonlinear Optimal Control”. arXiv:1711.11006 [cs.SY]
 
 - Michael Neunert, Markus Stäuble, Markus Giftthaler, Dario Bellicoso, Jan Carius, Christian Gehring, 
 Marco Hutter and Jonas Buchli. 
