@@ -88,23 +88,34 @@ public:
     void printSolution();
 
     //! brief setup and configure the box constraints
-    void configureBoxConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem);
+    virtual void configureBoxConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
 
     //! brief setup and configure the general (in)equality constraints
-    void configureGeneralConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem);
+    virtual void configureGeneralConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
 
+    /*!
+     * @brief allocate memory for HPIPM
+     *
+     * \warning These functions are assumed to be used only outside the control loop.
+     * Their intended use is to call them before the loop to setup the memory needed by
+     * the QP structures and solver (dynamic memory allocation is time consuming).
+     *
+     * Needs to be called when
+     *  - the number of stages changes
+     *  - the box constraint configuration changes
+     *  - the general constraint configuration changes
+     */
+    virtual void initializeAndAllocate() override;
 
 private:
 
     /*!
-     * @brief allocate memory for HPIPM
-     * Needs to be called when
-     *  - the number of stages changes
-     *  - the box constraint configuration changes
-     *  - todo
+     * @brief set problem implementation for hpipm
+     * \warning This method is called in the loop. As little memory as possible
+     * should be allocated in this function. Ideally this method only sets pointers.
+     *
+     * \warning If you wish to
      */
-    void initializeAndAllocate();
-
     void setProblemImpl(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
 
     /*!

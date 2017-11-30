@@ -46,6 +46,22 @@ public:
 
     virtual void configure(const NLOptConSettings& settings) = 0;
 
+    //! setup and configure the box constraints
+    virtual void configureBoxConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+    {
+        throw std::runtime_error("box constraints are not available for this solver.");
+    }
+
+    //! setup and configure the general (in)equality constraints
+    virtual void configureGeneralConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+    {
+        throw std::runtime_error("general constraints are not available for this solver.");
+    }
+
+    //! a method reserved for memory allocation (e.g. required for HPIPM)
+    virtual void initializeAndAllocate() = 0;
+
+    //! solve the LQOC problem
     virtual void solve() = 0;
 
     virtual void solveSingleStage(int N)

@@ -343,5 +343,12 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 #endif
 }
 
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::initializeAndAllocate()
+{
+	// do nothing
+}
+
+
 }  // namespace optcon
 }  // namespace ct

@@ -25,8 +25,6 @@ HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(int N) : N_(-1), x0_(null
     hdidxbEigen_.resize(1, box_constr_sparsity_t::Zero());
 
     configure(settings_);
-
-    changeNumberOfStages(N);
 }
 
 
@@ -39,8 +37,6 @@ HPIPMInterface<STATE_DIM, CONTROL_DIM>::~HPIPMInterface()
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
 {
-    // TODO : check on how time-consuming these operations are
-
     int qp_size = ::d_memsize_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
     qp_mem_.resize(qp_size);
     ::d_create_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_, qp_mem_.data());
@@ -53,9 +49,10 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
     ipm_mem_.resize(ipm_size);
     ::d_create_ipm_hard_ocp_qp(&qp_, &arg_, &workspace_, ipm_mem_.data());
 
+    std::cout << "HPIPM allocating memory for QP"
+              << std::endl;  // always print to make sure users take not in case of misuse
     if (settings_.lqoc_solver_settings.lqoc_debug_print)
     {
-    	std::cout << "HPIPM allocating memory for QP" << std::endl;
         std::cout << "HPIPM qp_size: " << qp_size << std::endl;
         std::cout << "HPIPM qp_sol_size: " << qp_sol_size << std::endl;
         std::cout << "HPIPM ipm_size: " << ipm_size << std::endl;
@@ -343,6 +340,21 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
     // check if the number of stages N changed and adapt problem dimensions
     bool nStagesChanged = changeNumberOfStages(lqocProblem->getNumberOfStages());
 
+
+    // WARNING: the allocation should in practice not have to happen during the loop.
+    // If possible, prefer receding horizon MPC problems.
+    // If the number of stages has changed, however, the problem needs to be re-built:
+    if (nStagesChanged)
+    {
+        // update constraint configuration in case the horizon length has changed.
+        if (lqocProblem->isBoxConstrained())
+            configureBoxConstraints(lqocProblem);
+
+        if (lqocProblem->isGeneralConstrained())
+            configureGeneralConstraints(lqocProblem);
+    }
+
+
     // we do not need to reset the pointers if
     bool keepPointers = this->lqocProblem_ &&                      //there was an lqocProblem before
                         N_ == lqocProblem->getNumberOfStages() &&  // and the number of states did not change
@@ -352,14 +364,11 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
     setupCostAndDynamics(lqocProblem->x_, lqocProblem->u_, lqocProblem->A_, lqocProblem->B_, lqocProblem->b_,
         lqocProblem->P_, lqocProblem->qv_, lqocProblem->Q_, lqocProblem->rv_, lqocProblem->R_, keepPointers);
 
-    if (lqocProblem->isBoxConstrained())
-        configureBoxConstraints(lqocProblem);
 
-    if (lqocProblem->isGeneralConstrained())
-        configureGeneralConstraints(lqocProblem);
-
-    // TODO: leave this function call here until clarified details with Gianluca:
-    initializeAndAllocate();
+    if (nStagesChanged)
+    {
+        initializeAndAllocate();
+    }
 }
 
 
