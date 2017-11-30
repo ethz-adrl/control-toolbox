@@ -85,6 +85,16 @@ public:
 
 
 private:
+
+    /*!
+     * @brief allocate memory for HPIPM
+     * Needs to be called when
+     *  - the number of stages changes
+     *  - the box constraint configuration changes
+     *  - todo
+     */
+    void initializeAndAllocate();
+
     void setProblemImpl(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
 
     /*!
@@ -109,10 +119,8 @@ private:
      *  \mathbf x_{n+1} = \mathbf A_n \mathbf x_n + \mathbf B_n \mathbf u_n +\mathbf b_n
      *  + \hat \mathbf x_{n+1} - \mathbf A_n \hat \mathbf x_n -  \mathbf B_n \hat \mathbf u_n
      * \f]
-     *
-     * @todo potentially rename, as it only sets up the unconstrained part of the problem
      */
-    void setupHPIPM(StateVectorArray& x,
+    void setupCostAndDynamics(StateVectorArray& x,
         ControlVectorArray& u,
         StateMatrixArray& A,
         StateControlMatrixArray& B,
@@ -151,25 +159,40 @@ private:
     void int_print_mat(int row, int col, int* A, int lda);
 
     /*!
-     * \brief  compute HPIPM's box constraint sparsity pattern based on ct LQOCProblem box constraint sparsity pattern
-     * todo document this method
-     * @return number of box constraints
+     * \brief  compute HPIPM's box constraint sparsity pattern and the number of box constraints based
+     * on ct LQOCProblem box constraint sparsity pattern
+     *
+     * @param n time-index for which the sparsity pattern is to be computed
+     * @param lqoc_sp_in box-constraint sparsity pattern in lqoc format
+     * @param hpipm_sp_out box-constraint sparsity pattern in hpipm format
+     * @return calculated number of box constraints
+     *
+     * lqoc_sp_in is a vector with ones and zeros, showing which constraint is active and which not,
+     * a possible example for this pattern is lqoc_sp_in = [0 0 1 0 0 1 0]
+     * This method transforms it into an output vector indicating indices of active constraints
+     * above example would result as hpipm_sp_out = [2 5]
      */
     int get_hpipm_boxconstr_sp_pattern(const size_t n,
-        const box_constr_sparsity_t& in,
+        const box_constr_sparsity_t& lqoc_sp_in,
         box_constr_sparsity_t& hpipm_sp_out);
 
     /*!
-     * \brief transcribe box constraints into the way required by HPIPM.
+     * \brief transcribe box constraints into a dense vector as required by HPIPM
+     *
+     * @param lqocProblem a ptr to the linear-quadratic problem
+     * @param nCon number of box constraints active
+     * @param ind current time-index n
+     * @param corresponding hpipm box constraint sparsity
+     *
      * \note There are multiple reasons why the final, 'condensed' box constraint container
-     * gets assembled here, rather than in the LQOC problem. Fristly, it allows the user to
+     * gets assembled here, rather than in the LQOC problem. First, it allows the user to
      * independently specify state-box and control-box constraints. Secondly, this is relatively
      * specific to the implementation of HPIPM. Other LQ solvers might require different interfaces
      * for the box constraints.
      */
     void assemble_hpipm_box_constr_container(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem,
-        size_t nCon,
-        size_t ind,
+        const int nCon,
+        const int ind,
         const box_constr_sparsity_t& hpipm_sp);
 
     //! horizon length

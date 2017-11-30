@@ -13,16 +13,13 @@ namespace optcon {
 
 
 template <int STATE_DIM, int CONTROL_DIM>
-HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(int N) : N_(-1), x0_(nullptr)
+HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(int N) : N_(-1), x0_(nullptr), settings_(NLOptConSettings())
 {
     // some zero variables
     hb0_.setZero();
     hr0_.setZero();
 
-    arg_.alpha_min = 1e-8;
-    arg_.mu_max = 1e-12;
-    arg_.iter_max = 50;  // TODO make this a setting
-    arg_.mu0 = 2.0;
+    configure(settings_);
 
     changeNumberOfStages(N);
 }
@@ -38,7 +35,42 @@ template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configure(const NLOptConSettings& settings)
 {
     settings_ = settings;
+
+    arg_.iter_max = settings_.lqoc_solver_settings.num_lqoc_iterations;
+
+    arg_.alpha_min = 1e-8;  // todo review and make setting
+    arg_.mu_max = 1e-12;    // todo review and make setting
+    arg_.mu0 = 2.0;         // todo review and make setting
 }
+
+
+template <int STATE_DIM, int CONTROL_DIM>
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
+{
+	// TODO : check on how time-consuming these operations are
+
+    int qp_size = ::d_memsize_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
+#ifdef DEBUG_PRINT
+    std::cout << "qp_size: " << qp_size << std::endl;
+#endif
+    qp_mem_.resize(qp_size);
+    ::d_create_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_, qp_mem_.data());
+
+    int qp_sol_size = ::d_memsize_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
+#ifdef DEBUG_PRINT
+    std::cout << "qp_sol_size: " << qp_sol_size << std::endl;
+#endif
+    qp_sol_mem_.resize(qp_sol_size);
+    ::d_create_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_sol_, qp_sol_mem_.data());
+
+    int ipm_size = ::d_memsize_ipm_hard_ocp_qp(&qp_, &arg_);
+#ifdef DEBUG_PRINT
+    std::cout << "ipm_size: " << ipm_size << std::endl;
+#endif
+    ipm_mem_.resize(ipm_size);
+    ::d_create_ipm_hard_ocp_qp(&qp_, &arg_, &workspace_, ipm_mem_.data());
+}
+
 
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
@@ -72,19 +104,13 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
     //				printf("\nr\n");
     //				d_print_mat(1, CONTROL_DIM, hr_[i], 1);
     //			}
+    //
+    //          int_print_mat(1, nb_[i], hidxb_[i], 1);
+    //          printf("\nhd_lb_\n");
+    //          d_print_mat(1, nb_[i], hd_lb_[i], 1);
+    //          printf("\nhd_ub_\n");
+    //          d_print_mat(1, nb_[i], hd_ub_[i], 1);
     //		} // end optional printout
-
-
-    // todo move this to optional printout
-    for (size_t i = 0; i < N_ + 1; i++)
-    {
-        std::cout << "HPIPM matrix printout for stage " << i << std::endl;
-        int_print_mat(1, nb_[i], hidxb_[i], 1);
-        printf("\nhd_lb_\n");
-        d_print_mat(1, nb_[i], hd_lb_[i], 1);
-        printf("\nhd_ub_\n");
-        d_print_mat(1, nb_[i], hd_ub_[i], 1);
-    }
 
     // assemble optimal control problem
     ::d_cvt_colmaj_to_ocp_qp(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(),
@@ -95,10 +121,12 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
     ::d_solve_ipm2_hard_ocp_qp(&qp_, &qp_sol_, &workspace_);
 
     // hpipm display iteration summary
-    // todo make this output optional
-    printf("\nipm iter = %d\n", workspace_.iter);
-    printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha\t\tmu\n");
-    d_print_e_tran_mat(5, workspace_.iter, workspace_.stat, 5);
+    if (settings_.lqoc_solver_settings.lqoc_debug_print)
+    {
+        printf("\nipm iter = %d\n", workspace_.iter);
+        printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha\t\tmu\n");
+        d_print_e_tran_mat(5, workspace_.iter, workspace_.stat, 5);
+    }
 
     // extract state and control updates
     computeStateAndControlUpdates();
@@ -130,7 +158,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeStateAndControlUpdates()
         this->lx_[k + 1] = hx_[k + 1] - p.x_[k + 1];
 
         // compute the norms of the updates
-        // \todo needed?
+        // TODO needed?
         this->delta_x_norm_ += this->lx_[k + 1].norm();
         this->delta_uff_norm_ += this->lu_[k].norm();
     }
@@ -222,7 +250,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::printSolution()
 
     ::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u_.data(), x_.data(), pi_.data(), lam_lb_.data(), lam_ub_.data(),
         lam_lg_.data(), lam_ug_.data());
-
 
     printf("\nsolution\n\n");
     printf("\nu\n");
@@ -318,33 +345,11 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
                         this->lqocProblem_ == lqocProblem;         // and it was the same pointer
 
     // setup unconstrained part of problem
-    setupHPIPM(lqocProblem->x_, lqocProblem->u_, lqocProblem->A_, lqocProblem->B_, lqocProblem->b_, lqocProblem->P_,
-        lqocProblem->qv_, lqocProblem->Q_, lqocProblem->rv_, lqocProblem->R_, keepPointers);
+    setupCostAndDynamics(lqocProblem->x_, lqocProblem->u_, lqocProblem->A_, lqocProblem->B_, lqocProblem->b_,
+        lqocProblem->P_, lqocProblem->qv_, lqocProblem->Q_, lqocProblem->rv_, lqocProblem->R_, keepPointers);
 
     if (lqocProblem->isConstrained())
         setupConstraints(lqocProblem);
-
-    // moved here temporarily. todo check if needs to stay here. check what happens if constraints change sizes
-    int qp_size = ::d_memsize_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
-#ifdef DEBUG_PRINT
-    std::cout << "qp_size: " << qp_size << std::endl;
-#endif
-    qp_mem_.resize(qp_size);
-    ::d_create_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_, qp_mem_.data());
-
-    int qp_sol_size = ::d_memsize_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
-#ifdef DEBUG_PRINT
-    std::cout << "qp_sol_size: " << qp_sol_size << std::endl;
-#endif
-    qp_sol_mem_.resize(qp_sol_size);
-    ::d_create_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_sol_, qp_sol_mem_.data());
-
-    int ipm_size = ::d_memsize_ipm_hard_ocp_qp(&qp_, &arg_);
-#ifdef DEBUG_PRINT
-    std::cout << "ipm_size: " << ipm_size << std::endl;
-#endif
-    ipm_mem_.resize(ipm_size);
-    ::d_create_ipm_hard_ocp_qp(&qp_, &arg_, &workspace_, ipm_mem_.data());
 }
 
 
@@ -386,11 +391,13 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupConstraints(
 
         throw std::runtime_error("general constraints not yet handled in HPIPM");
     }
+
+    initializeAndAllocate();
 }
 
 
 template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupHPIPM(StateVectorArray& x,
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArray& x,
     ControlVectorArray& u,
     StateMatrixArray& A,
     StateControlMatrixArray& B,
@@ -554,27 +561,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     // last input is not a decision variable
     nu_[N] = 0;
 
-
-    //    int qp_size = ::d_memsize_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
-    //#ifdef DEBUG_PRINT
-    //    std::cout << "qp_size: " << qp_size << std::endl;
-    //#endif
-    //    qp_mem_.resize(qp_size);
-    //    ::d_create_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_, qp_mem_.data());
-    //
-    //    int qp_sol_size = ::d_memsize_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
-    //#ifdef DEBUG_PRINT
-    //    std::cout << "qp_sol_size: " << qp_sol_size << std::endl;
-    //#endif
-    //    qp_sol_mem_.resize(qp_sol_size);
-    //    ::d_create_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_sol_, qp_sol_mem_.data());
-    //
-    //    int ipm_size = ::d_memsize_ipm_hard_ocp_qp(&qp_, &arg_);
-    //#ifdef DEBUG_PRINT
-    //    std::cout << "ipm_size: " << ipm_size << std::endl;
-    //#endif
-    //    ipm_mem_.resize(ipm_size);
-    //    ::d_create_ipm_hard_ocp_qp(&qp_, &arg_, &workspace_, ipm_mem_.data());
+    initializeAndAllocate();
 }
 
 
@@ -583,22 +570,17 @@ int HPIPMInterface<STATE_DIM, CONTROL_DIM>::get_hpipm_boxconstr_sp_pattern(const
     const box_constr_sparsity_t& lqoc_sp_in,
     box_constr_sparsity_t& hpipm_sp_out)
 {
-    // lqoc_box_constr_sparsity_t is a vector with ones and zeros, showing which constraint is active and which not
-    // for example [0 0 1 0 0 1 0]
-    // this method transforms it into an output vector indicating indices of constraints
-    // above example would shall result as [2 5]
-
     int nBoxCon = 0;  // count number of box constraints
 
-    size_t i_start = 0;                       // start searching for box constraints at this index
-    size_t i_stop = STATE_DIM + CONTROL_DIM;  // stop searching for box constraints at this index
+    size_t i_start = 0;                  // start searching for box constraints at this index
+    size_t i_stop = max_box_constr_dim;  // stop searching for box constraints at this index
 
     if (n == 0)
-        i_stop = CONTROL_DIM;  // omit state box constraints at first stage
+        i_stop = CONTROL_DIM;  // omit state box constraints at first stage, n=0
     else if (n == N_)
-        i_start = CONTROL_DIM;  // omit control box constraints at last stage
+        i_start = CONTROL_DIM;  // omit control box constraints at last stage, n=N
 
-    for (size_t i = 0; i < STATE_DIM + CONTROL_DIM; i++)
+    for (size_t i = i_start; i < i_stop; i++)
     {
         if (lqoc_sp_in(i) == 1)  // if there is a box constraint ...
         {
@@ -613,13 +595,15 @@ int HPIPMInterface<STATE_DIM, CONTROL_DIM>::get_hpipm_boxconstr_sp_pattern(const
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::assemble_hpipm_box_constr_container(
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem,
-    size_t nCon,
-    size_t ind,
+    const int nCon,
+    const int ind,
     const box_constr_sparsity_t& hpipm_sp)
 {
+    // resize the hpipm box constraint sparsity container to the number of box constraints
     ux_lb_hpipm_[ind].resize(nCon);
     ux_ub_hpipm_[ind].resize(nCon);
 
+    // fill in the corresponding box constraint bounds, indices given by the hpipm sparsity pattern
     for (size_t i = 0; i < nCon; i++)
     {
         ux_lb_hpipm_[ind](i) = lqocProblem->ux_lb_[ind](hpipm_sp(i));

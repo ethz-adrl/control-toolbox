@@ -95,6 +95,7 @@ struct LineSearchSettings
     }
 };
 
+// TODO remove, as not applicable any more
 struct ParallelBackwardSettings
 {
     ParallelBackwardSettings()
@@ -160,6 +161,49 @@ struct ParallelBackwardSettings
         }
     }
 };
+
+
+//! LQOC Solver settings
+/*!
+ * Settings for solving each linear-quadratic (constrained) sub-problem
+ */
+struct LQOCSolverSettings
+{
+public:
+    LQOCSolverSettings() : num_lqoc_iterations(5), lqoc_debug_print(false) {}
+    int num_lqoc_iterations;  //! number of allowed sub-iterations of LQOC solver per NLOC main iteration
+    bool lqoc_debug_print;
+
+    void print() const
+    {
+        std::cout << "======================= LQOCSolverSettings =====================" << std::endl;
+        std::cout << "num_lqoc_iterations: \t" << num_lqoc_iterations << std::endl;
+        std::cout << "lqoc_debug_print: \t" << lqoc_debug_print << std::endl;
+    }
+
+    void load(const std::string& filename, bool verbose = true, const std::string& ns = "lqoc_solver_settings")
+    {
+        if (verbose)
+            std::cout << "Trying to load LQOCSolverSettings config from " << filename << ": " << std::endl;
+
+        boost::property_tree::ptree pt;
+        boost::property_tree::read_info(filename, pt);
+
+        try
+        {
+            num_lqoc_iterations = pt.get<int>(ns + ".num_lqoc_iterations");
+        } catch (...)
+        {
+        }
+        try
+        {
+            lqoc_debug_print = pt.get<bool>(ns + ".lqoc_debug_print");
+        } catch (...)
+        {
+        }
+    }
+};
+
 
 /*!
  * \ingroup NLOptCon
@@ -242,6 +286,7 @@ public:
     LineSearchSettings lineSearchSettings;  //! the line search settings
     ParallelBackwardSettings
         parallelBackward;  //! do the backward pass in parallel with building the LQ problems (experimental)
+    LQOCSolverSettings lqoc_solver_settings;
     bool debugPrint;
     bool printSummary;
     bool useSensitivityIntegrator;
@@ -294,6 +339,8 @@ public:
         std::cout << std::endl;
 
         lineSearchSettings.print();
+
+        lqoc_solver_settings.print();
 
         std::cout << std::endl;
 
@@ -477,6 +524,13 @@ public:
         try
         {
             parallelBackward.load(filename, verbose, ns + ".parallel_backward_pass");
+        } catch (...)
+        {
+        }
+
+        try
+        {
+            lqoc_solver_settings.load(filename, verbose, ns + ".lqoc_solver_settings");
         } catch (...)
         {
         }
