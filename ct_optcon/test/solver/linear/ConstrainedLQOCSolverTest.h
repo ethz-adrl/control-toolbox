@@ -9,10 +9,9 @@ using namespace ct::core;
 using namespace ct::optcon;
 
 #include "../../testSystems/LinkedMasses.h"
+#include "../../testSystems/LinearOscillator.h"
 
-const size_t state_dim = 8;
-const size_t control_dim = 3;
-
+template <size_t state_dim, size_t control_dim>
 void printSolution(const ct::core::StateVectorArray<state_dim>& x,
     const ct::core::ControlVectorArray<control_dim>& u,
     const ct::core::FeedbackArray<state_dim, control_dim>& K)
@@ -30,12 +29,17 @@ void printSolution(const ct::core::StateVectorArray<state_dim>& x,
         std::cout << K[j] << std::endl << std::endl;
 }
 
-/*
- * In this test:
- * todo assure that GNRiccati throws an error if the problem is constrained
- */
-//TEST(ConstrainedLQOCSolverTest, BoxConstraintsTest)
-void boxConstraintsTest()
+
+template <size_t state_dim, size_t control_dim, typename LINEAR_SYSTEM>
+void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
+    ct::core::StateVector<state_dim> x0,
+    ct::core::StateVector<state_dim> xf,
+	ct::core::ControlVector<control_dim> u_lb,
+	ct::core::ControlVector<control_dim> u_ub,
+	Eigen::Matrix<int, control_dim, 1> u_box_sparsity,
+	ct::core::StateVector<state_dim> x_lb,
+	ct::core::StateVector<state_dim> x_ub,
+	Eigen::Matrix<int, state_dim, 1> x_box_sparsity)
 {
     const size_t N = 5;
     const double dt = 0.5;
@@ -52,21 +56,9 @@ void boxConstraintsTest()
 
 
     // create a continuous-time example system and discretize it
-    std::shared_ptr<core::LinearSystem<state_dim, control_dim>> exampleSystem(new LinkedMasses());
+    std::shared_ptr<core::LinearSystem<state_dim, control_dim>> exampleSystem(new LINEAR_SYSTEM());
     core::SensitivityApproximation<state_dim, control_dim> discreteExampleSystem(
         dt, exampleSystem, core::SensitivityApproximationSettings::APPROXIMATION::MATRIX_EXPONENTIAL);
-
-    // nominal control
-    ct::core::ControlVector<control_dim> u0;
-    u0.setConstant(0.1);
-
-    // initial state
-    ct::core::StateVector<state_dim> x0;
-    x0 << 2.5, 2.5, 0, 0, 0, 0, 0, 0;
-
-    // desired final state
-    ct::core::StateVector<state_dim> xf;
-    xf.setConstant(0.1);
 
 
     // define cost function matrices
@@ -80,25 +72,6 @@ void boxConstraintsTest()
     // create a cost function
     std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction(
         new CostFunctionQuadraticSimple<state_dim, control_dim>(Q, R, xf, u0, xf, Q));
-
-
-    // control box constraints
-    ct::core::ControlVector<control_dim> u_lb, u_ub;
-    u_lb.setConstant(-0.5);
-    u_ub.setConstant(0.5);
-    Eigen::Matrix<int, control_dim, 1> u_box_sparsity;
-    u_box_sparsity << 1, 1, 1;
-
-
-    // state box constraints
-    ct::core::StateVector<state_dim> x_lb, x_ub;
-    x_lb.setConstant(std::numeric_limits<double>::lowest());
-    x_ub.setConstant(std::numeric_limits<double>::max());
-    Eigen::Matrix<int, state_dim, 1> x_box_sparsity = Eigen::Matrix<int, state_dim, 1>::Zero();
-    x_lb(0) = 1.7;
-    x_lb(1) = 1.7;
-    x_box_sparsity(0) = 1;
-    x_box_sparsity(1) = 1;
 
     // solution variables needed later
     ct::core::StateVectorArray<state_dim> xSol_hpipm;
@@ -126,6 +99,7 @@ void boxConstraintsTest()
 
     // set and try to solve the problem for both solvers
     hpipmSolver->setProblem(lqocProblem1);
+    hpipmSolver->initializeAndAllocate();
     hpipmSolver->solve();
 
     try
@@ -147,7 +121,7 @@ void boxConstraintsTest()
     // todo assert that state and control box constraints are met
 
     if (verbose)
-        printSolution(xSol_hpipm, uSol_hpipm, KSol_hpipm);
+        printSolution<state_dim, control_dim>(xSol_hpipm, uSol_hpipm, KSol_hpipm);
 
 
     if (verbose)
@@ -173,6 +147,7 @@ void boxConstraintsTest()
 
     // set and try to solve the problem for both solvers
     hpipmSolver->setProblem(lqocProblem1);
+    hpipmSolver->initializeAndAllocate();
     hpipmSolver->solve();
 
     try
@@ -194,7 +169,7 @@ void boxConstraintsTest()
     // todo assert that state and control box constraints are met
 
     if (verbose)
-        printSolution(xSol_hpipm, uSol_hpipm, KSol_hpipm);
+        printSolution<state_dim, control_dim>(xSol_hpipm, uSol_hpipm, KSol_hpipm);
 
 
     if (verbose)
@@ -203,14 +178,6 @@ void boxConstraintsTest()
         std::cout << " TEST CASE 3: BOX CONSTRAINTS ON STATE AND CONTROL  " << std::endl;
         std::cout << " ================================================== " << std::endl;
     }
-
-    // modified box constraints
-    x_lb(0) = 1.5;
-    x_lb(1) = 1.5;
-    u_lb(0) = -1.0;
-    u_ub(0) =  1.0;
-    u_box_sparsity(1)=0;
-    u_box_sparsity(2)=0;
 
     // initialize the optimal control problems for both solvers
     lqocProblem1->setZero();
@@ -230,6 +197,7 @@ void boxConstraintsTest()
 
     // set and try to solve the problem for both solvers
     hpipmSolver->setProblem(lqocProblem1);
+    hpipmSolver->initializeAndAllocate();
     hpipmSolver->solve();
 
     try
@@ -251,5 +219,79 @@ void boxConstraintsTest()
     // todo assert that state and control box constraints are met
 
     if (verbose)
-        printSolution(xSol_hpipm, uSol_hpipm, KSol_hpipm);
+        printSolution<state_dim, control_dim>(xSol_hpipm, uSol_hpipm, KSol_hpipm);
+}
+
+
+//TEST(ConstrainedLQOCSolverTest, BoxConstraintsTest)
+void runBoxConstraintsTestSmallSize()
+{
+    const size_t state_dim = 2;
+    const size_t control_dim = 1;
+
+    // nominal control
+    ct::core::ControlVector<control_dim> u0;
+    u0.setConstant(0);
+
+    // initial state
+    ct::core::StateVector<state_dim> x0;
+    x0 << 2.5, 0.0;
+
+    // desired final state
+    ct::core::StateVector<state_dim> xf;
+    xf.setConstant(0.0);
+
+    // control box constraints
+    ct::core::ControlVector<control_dim> u_lb, u_ub;
+    u_lb.setConstant(-0.5);
+    u_ub.setConstant(0.5);
+    Eigen::Matrix<int, control_dim, 1> u_box_sparsity =
+        Eigen::Matrix<int, control_dim, 1>::Ones();  // all controls are bounded
+
+    // state box constraints
+    ct::core::StateVector<state_dim> x_lb, x_ub;
+    x_lb.setConstant(std::numeric_limits<double>::lowest());
+    x_ub.setConstant(std::numeric_limits<double>::max());
+    Eigen::Matrix<int, state_dim, 1> x_box_sparsity = Eigen::Matrix<int, state_dim, 1>::Zero();
+    x_lb(0) = 1.7;
+    x_box_sparsity(0) = 1;
+
+    boxConstraintsTest<state_dim, control_dim, example::LinearOscillatorLinear>(u0, x0, xf, u_lb, u_ub, u_box_sparsity, x_lb, x_ub, x_box_sparsity);
+}
+
+void runBoxConstraintsTestMediumSize()
+{
+    const size_t state_dim = 8;
+    const size_t control_dim = 3;
+
+    // nominal control
+    ct::core::ControlVector<control_dim> u0;
+    u0.setConstant(0.1);
+
+    // initial state
+    ct::core::StateVector<state_dim> x0;
+    x0 << 2.5, 2.5, 0, 0, 0, 0, 0, 0;
+
+    // desired final state
+    ct::core::StateVector<state_dim> xf;
+    xf.setConstant(0.1);
+
+    // control box constraints
+    ct::core::ControlVector<control_dim> u_lb, u_ub;
+    u_lb.setConstant(-0.5);
+    u_ub.setConstant(0.5);
+    Eigen::Matrix<int, control_dim, 1> u_box_sparsity;
+    u_box_sparsity << 1, 1, 1;
+
+    // state box constraints
+    ct::core::StateVector<state_dim> x_lb, x_ub;
+    x_lb.setConstant(std::numeric_limits<double>::lowest());
+    x_ub.setConstant(std::numeric_limits<double>::max());
+    Eigen::Matrix<int, state_dim, 1> x_box_sparsity = Eigen::Matrix<int, state_dim, 1>::Zero();
+    x_lb(0) = 1.7;
+    x_lb(1) = 1.7;
+    x_box_sparsity(0) = 1;
+    x_box_sparsity(1) = 1;
+
+    boxConstraintsTest<state_dim, control_dim, LinkedMasses>(u0, x0, xf, u_lb, u_ub, u_box_sparsity, x_lb, x_ub, x_box_sparsity);
 }

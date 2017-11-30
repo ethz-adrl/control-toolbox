@@ -63,7 +63,11 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
     problems[0]->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, b, dt);
     problems[1]->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, b, dt);
 
-    // set the problem for both solvers
+    // configure box constraints
+    qocSolvers[1]->configureBoxConstraints(problems[1]);
+    // todo make virtual function for lqoc soler base class
+
+    // set the problem pointers
     lqocSolvers[0]->setProblem(problems[0]);
     lqocSolvers[1]->setProblem(problems[1]);
 
