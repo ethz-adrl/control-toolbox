@@ -15,7 +15,6 @@ OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem()
 {
 }
 
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem(DynamicsPtr_t nonlinDynamics,
     CostFunctionPtr_t costFunction,
@@ -25,8 +24,8 @@ OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem(DynamicsPtr_t nonli
       controlledSystem_(nonlinDynamics),
       costFunction_(costFunction),
       linearizedSystem_(linearSystem),
-	  boxConstraints_(nullptr),
-	  generalConstraints_(nullptr)
+      boxConstraints_(nullptr),
+      generalConstraints_(nullptr)
 {
     if (linearSystem == nullptr)  // no linearization provided
     {
@@ -44,8 +43,40 @@ OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem(const SCALAR& tf,
     LinearPtr_t linearSystem)
     : OptConProblem(nonlinDynamics, costFunction, linearSystem)  // delegating constructor
 {
-    tf_ = tf;
-    x0_ = x0;
+	      tf_ = tf;
+	      x0_ = x0;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem(DynamicsPtr_t nonlinDynamics,
+    CostFunctionPtr_t costFunction,
+    ConstraintPtr_t boxConstraints,
+    ConstraintPtr_t generalConstraints,
+    LinearPtr_t linearSystem)
+    : OptConProblem(nonlinDynamics, costFunction, linearSystem)  // delegating constructor
+{
+	      boxConstraints_ = boxConstraints;
+	      generalConstraints_ = generalConstraints;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem(const SCALAR& tf,
+    const state_vector_t& x0,
+    DynamicsPtr_t nonlinDynamics,
+    CostFunctionPtr_t costFunction,
+    ConstraintPtr_t boxConstraints,
+    ConstraintPtr_t generalConstraints,
+    LinearPtr_t linearSystem)
+    : OptConProblem(nonlinDynamics,
+          costFunction,
+          boxConstraints,
+          generalConstraints,
+          linearSystem)  // delegating constructor
+{
+	      tf_ = tf;
+	      x0_ = x0;
 }
 
 
@@ -116,15 +147,15 @@ void OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setBoxConstraints(const Cons
 {
     boxConstraints_ = constraint;
     if (!boxConstraints_->isInitialized())
-    	boxConstraints_->initialize();
+        boxConstraints_->initialize();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(const ConstraintPtr_t constraint)
 {
-	generalConstraints_ = constraint;
+    generalConstraints_ = constraint;
     if (!generalConstraints_->isInitialized())
-    	generalConstraints_->initialize();
+        generalConstraints_->initialize();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>

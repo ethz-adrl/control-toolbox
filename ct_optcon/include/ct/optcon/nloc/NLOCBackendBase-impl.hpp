@@ -49,6 +49,8 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendBase(
       intermediateCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
       finalCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
       linearSystems_(settings.nThreads + 1),
+      boxConstraints_(settings.nThreads + 1, nullptr),      // initialize constraints with null
+      generalConstraints_(settings.nThreads + 1, nullptr),  // initialize constraints with null
       firstRollout_(true),
       alphaBest_(-1)
 {
@@ -67,11 +69,11 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendBase(
     changeNonlinearSystem(optConProblem.getNonlinearSystem());
     changeLinearSystem(optConProblem.getLinearSystem());
 
-    // to be included later
-    //		if(optConProblem.getBoxConstraints())
-    //			changeBoxConstraints(optConProblem.getBoxConstraints());
-    //		if(optConProblem.getGeneralConstraints())
-    //			changeGeneralConstraints(optConProblem.getGeneralConstraints());
+    // if the optimal problem has constraints, change
+    if (optConProblem.getBoxConstraints())
+        changeBoxConstraints(optConProblem.getBoxConstraints());
+    if (optConProblem.getGeneralConstraints())
+        changeGeneralConstraints(optConProblem.getGeneralConstraints());
 }
 
 
@@ -198,7 +200,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeInitia
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeCostFunction(
-    const typename Base::OptConProblem_t::CostFunctionPtr_t& cf)
+    const typename OptConProblem_t::CostFunctionPtr_t& cf)
 {
     if (cf == nullptr)
         throw std::runtime_error("cost function is nullptr");
@@ -208,7 +210,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeCostFu
     for (int i = 0; i < settings_.nThreads + 1; i++)
     {
         // make a deep copy
-        costFunctions_[i] = typename Base::OptConProblem_t::CostFunctionPtr_t(cf->clone());
+        costFunctions_[i] = typename OptConProblem_t::CostFunctionPtr_t(cf->clone());
     }
 
     // recompute cost if line search is active
@@ -218,7 +220,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeCostFu
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlinearSystem(
-    const typename Base::OptConProblem_t::DynamicsPtr_t& dyn)
+    const typename OptConProblem_t::DynamicsPtr_t& dyn)
 {
     if (dyn == nullptr)
         throw std::runtime_error("system dynamics are nullptr");
@@ -233,7 +235,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
     for (int i = 0; i < settings_.nThreads + 1; i++)
     {
         // make a deep copy
-        systems_[i] = typename Base::OptConProblem_t::DynamicsPtr_t(dyn->clone());
+        systems_[i] = typename OptConProblem_t::DynamicsPtr_t(dyn->clone());
         systems_[i]->setController(controller_[i]);
 
         substepRecorders_[i] = std::shared_ptr<ct::core::SubstepRecorder<STATE_DIM, CONTROL_DIM, SCALAR>>(
@@ -276,6 +278,44 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
     reset();  // since system changed, we have to start fresh, i.e. with a rollout
 }
 
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeBoxConstraints(
+    const typename OptConProblem_t::ConstraintPtr_t& con)
+{
+    if (con == nullptr)
+        throw std::runtime_error("NLOCBackendBase: box constraint is nullptr");
+
+    boxConstraints_.resize(settings_.nThreads + 1);
+
+    for (int i = 0; i < settings_.nThreads + 1; i++)
+    {
+        // make a deep copy
+        boxConstraints_[i] = typename OptConProblem_t::ConstraintPtr_t(con->clone());
+    }
+
+    // TODO need to compute current box constraint violation here? (lineSearch?)
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeGeneralConstraints(
+    const typename OptConProblem_t::ConstraintPtr_t& con)
+{
+    if (con == nullptr)
+        throw std::runtime_error("NLOCBackendBase: general constraint is nullptr");
+
+    generalConstraints_.resize(settings_.nThreads + 1);
+
+    for (int i = 0; i < settings_.nThreads + 1; i++)
+    {
+        // make a deep copy
+        generalConstraints_[i] = typename OptConProblem_t::ConstraintPtr_t(con->clone());
+    }
+
+    // TODO need to compute current general constraint violation here? (lineSearch?)
+}
+
+
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 SYMPLECTIC_ENABLED NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeSymplecticIntegrators(
     size_t i)
@@ -305,7 +345,7 @@ SYMPLECTIC_DISABLED NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeLinearSystem(
-    const typename Base::OptConProblem_t::LinearPtr_t& lin)
+    const typename OptConProblem_t::LinearPtr_t& lin)
 {
     linearSystems_.resize(settings_.nThreads + 1);
 
@@ -1185,7 +1225,9 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareSolveLQProblem(size_t startIndex)
 {
     // if solver is HPIPM, there's nothing to prepare
-    if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER) {}
+    if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
+    {
+    }
     // if solver is GNRiccati - we iterate backward up to the first stage
     else if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
     {

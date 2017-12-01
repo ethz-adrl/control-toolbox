@@ -22,16 +22,16 @@ namespace optcon {
  * 	- nonlinear system dynamics
  * 	- cost function (intermediate + terminal cost)
  * 	- initial state
- * 	- state-input constraints
  * 	- box constraints
  * 	- general constraints
  * 	- an overall time horizon
  *
  * 	Note that in most cases, the user can also provide a pointer to the linearized system dynamics. This is optional, and
  * 	in case it is not provided, numerical differentiation will be applied to approximate the linearized dynamics.
+ *
  * 	\warning Using numerical differentiation is inefficient and typically slow.
  *
-*/
+ */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class OptConProblem
 {
@@ -50,10 +50,8 @@ public:
 
     OptConProblem();
 
-
-    //! Construct a simple unconstrained Optimal Control Problem
     /*!
-	 * Constructor for the simplest problem setup
+	 * @brief Construct a simple unconstrained Optimal Control Problem
 	 * \warning time and initial state to be specified later
 	 *
 	 * @param nonlinDynamics the nonlinear system dynamics
@@ -63,9 +61,8 @@ public:
 	 */
     OptConProblem(DynamicsPtr_t nonlinDynamics, CostFunctionPtr_t costFunction, LinearPtr_t linearSystem = nullptr);
 
-
-    //! Construct a simple unconstrained optimal control problem, with initial state and final time as constructor arguments
     /*!
+     * @brief Construct a simple unconstrained optimal control problem, with initial state and final time as constructor arguments
 	 * @param tf The optimal control problem final time horizon
 	 * @param x0 The initial system state
 	 * @param nonlinDynamics The nonlinear system dynamics
@@ -78,8 +75,47 @@ public:
         CostFunctionPtr_t costFunction,
         LinearPtr_t linearSystem = nullptr);
 
+    /*!
+	 * @brief Construct a constrained Optimal Control Problem
+	 *
+	 * @param nonlinDynamics the nonlinear system dynamics
+	 * @param costFunction a quadratic cost function
+	 * @param boxConstraints the box constraints
+	 * @param generalConstraints the general constraints
+	 * @param linearSystem (optional) the linear system holding the dynamics derivatives.
+	 *
+	 * \warning time and initial state to be specified later
+	 * \warning If the user does not specify the derivatives, they are generated automatically using numerical differentiation. This is slow
+	 */
+    OptConProblem(DynamicsPtr_t nonlinDynamics,
+        CostFunctionPtr_t costFunction,
+        ConstraintPtr_t boxConstraints,
+        ConstraintPtr_t generalConstraints,
+        LinearPtr_t linearSystem = nullptr);
 
-    //! check if all the ingredients for an unconstrained otpimal control problem are there
+    /*!
+	 * @brief Construct a constrained Optimal Control Problem
+	 *
+	 * @param tf The optimal control problem final time horizon
+	 * @param x0 The initial system state
+	 * @param nonlinDynamics the nonlinear system dynamics
+	 * @param costFunction a quadratic cost function
+	 * @param boxConstraints the box constraints
+	 * @param generalConstraints the general constraints
+	 * @param linearSystem (optional) the linear system holding the dynamics derivatives.
+	 *
+	 * \warning time and initial state to be specified later
+	 * \warning If the user does not specify the derivatives, they are generated automatically using numerical differentiation. This is slow
+	 */
+    OptConProblem(const SCALAR& tf,
+        const state_vector_t& x0,
+        DynamicsPtr_t nonlinDynamics,
+        CostFunctionPtr_t costFunction,
+        ConstraintPtr_t boxConstraints,
+        ConstraintPtr_t generalConstraints,
+        LinearPtr_t linearSystem = nullptr);
+
+    //! check if all the ingredients for an unconstrained optimal control problem are there
     void verify() const;
 
     /*!

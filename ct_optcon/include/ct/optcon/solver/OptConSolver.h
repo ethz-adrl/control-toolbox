@@ -154,7 +154,7 @@ public:
     /*!
 	 * \brief Change the time horizon the solver operates on.
 	 *
-	 * This function does not need to be called if setOptConProblem() has been called
+	 * This function does not need to be called if setProblem() has been called
 	 * with an OptConProblem that had the correct time horizon set.
 	 */
     virtual void changeTimeHorizon(const SCALAR& tf) = 0;
@@ -162,7 +162,7 @@ public:
     /*!
 	 * \brief Change the initial state for the optimal control problem
 	 *
-	 * This function does not need to be called if setOptConProblem() has been called
+	 * This function does not need to be called if setProblem() has been called
 	 * with an OptConProblem that had the correct initial state set
 	 */
     virtual void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0) = 0;
@@ -170,7 +170,7 @@ public:
     /*!
 	 * \brief Change the cost function
 	 *
-	 * This function does not need to be called if setOptConProblem() has been called
+	 * This function does not need to be called if setProblem() has been called
 	 * with an OptConProblem that had the correct cost function
 	 */
     virtual void changeCostFunction(const typename OptConProblem_t::CostFunctionPtr_t& cf) = 0;
@@ -178,7 +178,7 @@ public:
     /*!
 	 * \brief Change the nonlinear system
 	 *
-	 * This function does not need to be called if setOptConProblem() has been called
+	 * This function does not need to be called if setProblem() has been called
 	 * with an OptConProblem that had the correct nonlinear system
 	 */
     virtual void changeNonlinearSystem(const typename OptConProblem_t::DynamicsPtr_t& dyn) = 0;
@@ -186,7 +186,7 @@ public:
     /*!
 	 * \brief Change the linear system
 	 *
-	 * This function does not need to be called if setOptConProblem() has been called
+	 * This function does not need to be called if setProblem() has been called
 	 * with an OptConProblem that had the correct linear system
 	 */
     virtual void changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin) = 0;
@@ -195,21 +195,21 @@ public:
 	 * @brief      Change the box constraints
 	 *
 	 *             This function does not need to be called if
-	 *             setOptConProblem() has been called with an OptConProblem that
+	 *             setProblem() has been called with an OptConProblem that
 	 *             had the correct linear system
 	 *
 	 * @param[in]  con   The new box constraints
 	 */
     virtual void changeBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
     {
-        throw std::runtime_error("The current solver does not support box constraints!");
+        throw std::runtime_error("The current solver does not support  constraints!");
     }
 
     /**
 	 * @brief      Change the general constraints.
 	 *
 	 *             This function does not need to be called if
-	 *             setOptConProblem() has been called with an OptConProblem that
+	 *             setProblem() has been called with an OptConProblem that
 	 *             had the correct linear system
 	 *
 	 * @param[in]  con   The new general constraints
