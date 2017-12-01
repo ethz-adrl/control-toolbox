@@ -163,7 +163,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
     if (tf < 0)
         throw std::runtime_error("negative time horizon specified");
 
-    K_ = settings_.computeK(tf);
+    int newK = settings_.computeK(tf);
+
+    if(newK == K_)
+    	return;
+
+    K_ = newK;
 
     t_ = TimeArray(settings_.dt, K_ + 1, 0.0);
 
