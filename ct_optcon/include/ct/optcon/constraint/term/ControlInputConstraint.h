@@ -12,7 +12,7 @@ namespace optcon {
 /**
  * @ingroup    Constraint
  *
- * @brief      Class for control input constraint.
+ * @brief      Class for control input box constraint term
  *
  * @tparam     STATE_DIM    The state dimension
  * @tparam     CONTROL_DIM  The control dimension
