@@ -100,7 +100,7 @@ ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInputSparse(cons
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::sparsityPatternInput(VectorXi& rows, VectorXi& cols)
 {
-    this->genDiagonalIndices(CONTROL_DIM, rows, cols);
+    this->genSparseDiagonalIndices(Eigen::Matrix<int, CONTROL_DIM, 1>::Ones(), rows, cols);
 }
 }
 }

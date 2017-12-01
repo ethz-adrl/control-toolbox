@@ -96,7 +96,47 @@ void boxConstraintsExample()
     constraints->initialize();
 
     std::cout << "=============================================" << std::endl;
-    std::cout << "Printing example for control input constraint:" << std::endl;
+    std::cout << "Printing example for combined box constraint:" << std::endl;
+    std::cout << "=============================================" << std::endl;
+    constraints->printout();
+}
+
+
+void sparseBoxConstraintsExample()
+{
+    // create constraint container
+    std::shared_ptr<ConstraintContainerAnalytical<state_dim, control_dim>> constraints(
+        new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
+
+    // box constraint boundaries with sparsities
+//    Eigen::VectorXi sp_control (control_dim);
+//    sp_state << 0, 1, 0, 0, 1;
+//    Eigen::VectorXd u_lb, u_ub (2);
+//    u_lb.setConstant(-1.11);
+//    u_ub = -u_lb;
+
+    Eigen::VectorXi sp_state (state_dim);
+    sp_state << 0, 1, 0, 0, 1, 0, 1, 1, 0, 0;
+    Eigen::VectorXd x_lb (4);
+    Eigen::VectorXd x_ub (4);
+    x_lb.setConstant(-3.33);
+    x_ub = -x_lb;
+
+    // constrain terms
+//    std::shared_ptr<ControlInputConstraint<state_dim, control_dim>> controlConstraint(
+//        new ControlInputConstraint<state_dim, control_dim>(u_lb, u_ub));
+//    controlConstraint->setName("ControlInputConstraint");
+    std::shared_ptr<StateConstraint<state_dim, control_dim>> stateConstraint(
+        new StateConstraint<state_dim, control_dim>(x_lb, x_ub, sp_state));
+    stateConstraint->setName("StateConstraint");
+
+    // add and initialize constraint terms
+//    constraints->addIntermediateConstraint(controlConstraint, true);
+    constraints->addIntermediateConstraint(stateConstraint, true);
+    constraints->initialize();
+
+    std::cout << "=============================================" << std::endl;
+    std::cout << "Printing example for sparse box constraint:" << std::endl;
     std::cout << "=============================================" << std::endl;
     constraints->printout();
 }
@@ -107,5 +147,6 @@ int main(int argc, char **argv)
 	controlInputBoxConstraintExample();
     terminalConstraintExample();
     boxConstraintsExample();
+    sparseBoxConstraintsExample();
     return 1;
 }
