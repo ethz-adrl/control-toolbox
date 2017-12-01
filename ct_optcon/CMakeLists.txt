@@ -212,6 +212,9 @@ if(BUILD_EXAMPLES)
     set(CT_OPTCON_EXAMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/examples")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
 
+    add_executable(ex_ConstraintOutput examples/ConstraintExampleOutput.cpp)
+    target_link_libraries(ex_ConstraintOutput ${catkin_LIBRARIES})
+
     add_executable(ex_LQR examples/LQR.cpp)
     target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS})
 
