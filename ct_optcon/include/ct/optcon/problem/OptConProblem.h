@@ -23,8 +23,8 @@ namespace optcon {
  * 	- cost function (intermediate + terminal cost)
  * 	- initial state
  * 	- state-input constraints
- * 	- pure state intermediate constraints
- * 	- pure state terminal constraints
+ * 	- box constraints
+ * 	- general constraints
  * 	- an overall time horizon
  *
  * 	Note that in most cases, the user can also provide a pointer to the linearized system dynamics. This is optional, and
@@ -113,30 +113,30 @@ public:
     void setCostFunction(const CostFunctionPtr_t cost);
 
     /*!
-	 * set intermediate constraints
-	 * @param constraint pointer to intermediate constraint
+	 * set box constraints
+	 * @param constraint pointer to box constraint
 	 */
-    void setStateInputConstraints(const ConstraintPtr_t constraint);
+    void setBoxConstraints(const ConstraintPtr_t constraint);
 
     /*!
-	 * set final constraints
-	 * @param constraint pointer to a final constraint
+	 * set general constraints
+	 * @param constraint pointer to a general constraint
 	 */
-    void setPureStateConstraints(const ConstraintPtr_t constraint);
+    void setGeneralConstraints(const ConstraintPtr_t constraint);
 
     /**
-	 * @brief      Retrieve the state input constraints
+	 * @brief      Retrieve the box constraints
 	 *
-	 * @return     The state input constraints.
+	 * @return     The box constraints.
 	 */
-    const ConstraintPtr_t getStateInputConstraints() const;
+    const ConstraintPtr_t getBoxConstraints() const;
 
     /**
-	 * @brief      Retrieves the pure state constraints
+	 * @brief      Retrieves the general constraints
 	 *
-	 * @return     The pure state constraints
+	 * @return     The the general constraints
 	 */
-    const ConstraintPtr_t getPureStateConstraints() const;
+    const ConstraintPtr_t getGeneralConstraints() const;
 
     /*!
 	 * get initial state (called by solvers)
@@ -170,8 +170,20 @@ private:
     CostFunctionPtr_t costFunction_;  //! a quadratic cost function
     LinearPtr_t linearizedSystem_;    //! the linear approximation of the nonlinear system
 
-    ConstraintPtr_t stateInputConstraints_;  //! container of all the intermediate constraints of the problem
-    ConstraintPtr_t pureStateConstraints_;   //! container of all the terminal constraints of the problem
+    /*!
+     * @brief container of all the state and input box constraints of the problem
+     * Expected form:
+     * \f$ u_{lb} \leq u \leq u_{ub} \f$ and \f$ x_{lb} \leq x \leq x_{ub} \f$
+     */
+    ConstraintPtr_t boxConstraints_;
+
+    /*!
+     * @brief container of all the general constraints of the problem
+     * Expected form:
+     * \f$ d_{lb} \leq g(x,u) \leq d_{ub} \f$
+     */
+    ConstraintPtr_t generalConstraints_;
 };
-}
-}
+
+}  // namespace optcon
+}  // namespace ct

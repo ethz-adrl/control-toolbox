@@ -228,32 +228,32 @@ public:
     const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const;
 
     /**
-	 * @brief      Direct accessor to the state input constraint instances
+	 * @brief      Direct accessor to the box constraint instances
 	 *
 	 * \warning{Use this only when performance absolutely matters and if you know what you
 	 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
 	 * in a safe and easy way. You should especially not change the size of the vector or
 	 * modify each entry differently.}
 	 *
-	 * @return     The state input constraint instances
+	 * @return     The box constraint instances
 	 */
-    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances();
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances();
 
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const;
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const;
 
     /**
-	 * @brief      Direct accessor to the pure state constraints
+	 * @brief      Direct accessor to the general constraints
 	 *
 	 * \warning{Use this only when performance absolutely matters and if you know what you
 	 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
 	 * in a safe and easy way. You should especially not change the size of the vector or
 	 * modify each entry differently.}
 	 *
-	 * @return     The pure state constraints instances.
+	 * @return     The general constraints instances.
 	 */
-    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances();
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances();
 
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const;
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() const;
 
 
     /*!
@@ -625,8 +625,8 @@ protected:
     std::vector<typename OptConProblem_t::DynamicsPtr_t> systems_;
     std::vector<typename OptConProblem_t::LinearPtr_t> linearSystems_;
     std::vector<typename OptConProblem_t::CostFunctionPtr_t> costFunctions_;
-    std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints_;
-    std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints_;
+    std::vector<typename OptConProblem_t::ConstraintPtr_t> boxConstraints_;
+    std::vector<typename OptConProblem_t::ConstraintPtr_t> generalConstraints_;
 
 
     bool firstRollout_;

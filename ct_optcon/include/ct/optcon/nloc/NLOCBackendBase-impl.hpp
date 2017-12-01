@@ -68,10 +68,10 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendBase(
     changeLinearSystem(optConProblem.getLinearSystem());
 
     // to be included later
-    //		if(optConProblem.getStateInputConstraints())
-    //			changeStateInputConstraints(optConProblem.getStateInputConstraints());
-    //		if(optConProblem.getPureStateConstraints())
-    //			changePureStateConstraints(optConProblem.getPureStateConstraints());
+    //		if(optConProblem.getBoxConstraints())
+    //			changeBoxConstraints(optConProblem.getBoxConstraints());
+    //		if(optConProblem.getGeneralConstraints())
+    //			changeGeneralConstraints(optConProblem.getGeneralConstraints());
 }
 
 
@@ -1458,35 +1458,35 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getCostFunctionIn
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 std::vector<typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::ConstraintPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getStateInputConstraintsInstances()
+NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getBoxConstraintsInstances()
 {
-    return stateInputConstraints_;
+    return boxConstraints_;
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 const std::vector<
     typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::ConstraintPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getStateInputConstraintsInstances() const
+NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getBoxConstraintsInstances() const
 {
-    return stateInputConstraints_;
+    return boxConstraints_;
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 std::vector<typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::ConstraintPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getPureStateConstraintsInstances()
+NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getGeneralConstraintsInstances()
 {
-    return pureStateConstraints_;
+    return generalConstraints_;
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 const std::vector<
     typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::ConstraintPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getPureStateConstraintsInstances() const
+NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getGeneralConstraintsInstances() const
 {
-    return pureStateConstraints_;
+    return generalConstraints_;
 }
 
 

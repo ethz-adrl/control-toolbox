@@ -44,21 +44,21 @@ public:
             new ct::optcon::CostFunctionQuadraticSimple<2, 1>(Q_, R_, x_final_, u_des_, x_final_, Q_final_));
 
 
-        pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
+        generalConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
             new ct::optcon::ConstraintContainerAnalytical<2, 1>());
 
         std::shared_ptr<TerminalConstraint<2, 1>> termConstraint(new TerminalConstraint<2, 1>(x_final_));
 
         termConstraint->setName("crazyTerminalConstraint");
 
-        pureStateConstraints_->addTerminalConstraint(termConstraint, true);
+        generalConstraints_->addTerminalConstraint(termConstraint, true);
 
-        pureStateConstraints_->initialize();
+        generalConstraints_->initialize();
 
         OptConProblem<2, 1> optProblem(oscillator_, costFunction_);
         optProblem.setInitialState(x_0_);
         optProblem.setTimeHorizon(settings_.T_);
-        optProblem.setPureStateConstraints(pureStateConstraints_);
+        optProblem.setGeneralConstraints(generalConstraints_);
 
         calcInitGuess();
         dmsPlanner_ = std::shared_ptr<DmsSolver<2, 1>>(new DmsSolver<2, 1>(optProblem, settings_));
@@ -93,7 +93,7 @@ private:
     DmsSettings settings_;
     std::shared_ptr<DmsSolver<2, 1>> dmsPlanner_;
     std::shared_ptr<ct::optcon::CostFunctionQuadratic<2, 1>> costFunction_;
-    std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>> pureStateConstraints_;
+    std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>> generalConstraints_;
 
     OscDimensions::state_vector_t x_0_;
     OscDimensions::state_vector_t x_final_;
