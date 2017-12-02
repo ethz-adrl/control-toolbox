@@ -10,15 +10,25 @@ namespace ct {
 namespace optcon {
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::ControlInputConstraint(
-    const core::ControlVector<CONTROL_DIM> uLow,
-    const core::ControlVector<CONTROL_DIM> uHigh)
+ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::ControlInputConstraint(const control_vector_t& lb,
+    const control_vector_t& ub)
+    : Base(lb, ub)
 {
-    Base::lb_.resize(CONTROL_DIM);
-    Base::ub_.resize(CONTROL_DIM);
-    // The terminal state constraint is treated as equality constraint, therefore, ub = lb
-    Base::lb_ = uLow.template cast<SCALAR>();
-    Base::ub_ = uHigh.template cast<SCALAR>();
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::ControlInputConstraint(const VectorXs& lb,
+    const VectorXs& ub,
+    const Eigen::VectorXi& control_sparsity)
+    : Base(lb, ub, control_sparsity)
+{
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::ControlInputConstraint(const ControlInputConstraint& arg)
+    : Base(arg)
+{
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -34,18 +44,12 @@ ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* ControlInputConstraint<S
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-size_t ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::getConstraintSize() const
-{
-    return CONTROL_DIM;
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluate(
     const state_vector_t& x,
     const control_vector_t& u,
     const SCALAR t)
 {
-    return u;
+    return this->sparsity_J_ * u;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -55,7 +59,7 @@ ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateCppadCg(
     const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
     ct::core::ADCGScalar t)
 {
-    return u;
+    return this->sparsity_J_.template cast<ct::core::ADCGScalar>() * u;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -64,7 +68,9 @@ ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianState(const stat
     const control_vector_t& u,
     const SCALAR t)
 {
-    return Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>::Zero();
+    MatrixXs jac(this->constrSize_, STATE_DIM);
+    jac.setZero();
+    return jac;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -73,7 +79,7 @@ ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInput(const stat
     const control_vector_t& u,
     const SCALAR t)
 {
-    return Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>::Identity();
+    return this->sparsity_J_;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -85,7 +91,22 @@ size_t ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::getNumNonZerosJac
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 size_t ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::getNumNonZerosJacobianInput() const
 {
-    return CONTROL_DIM;
+    return this->constrSize_;
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+typename ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
+ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianStateSparse(const state_vector_t& x,
+    const control_vector_t& u,
+    const SCALAR t)
+{
+    return VectorXs();
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::sparsityPatternState(VectorXi& rows, VectorXi& cols)
+{
+    //    do nothing
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -94,13 +115,16 @@ ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInputSparse(cons
     const control_vector_t& u,
     const SCALAR t)
 {
-    return core::ControlVector<CONTROL_DIM, SCALAR>::Ones();
+    VectorXs jac(this->constrSize_);
+    jac.setConstant(1.0);
+    return jac;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::sparsityPatternInput(VectorXi& rows, VectorXi& cols)
 {
-    this->genDiagonalIndices(CONTROL_DIM, rows, cols);
+	this->sparsityPatternSparseJacobian(rows, cols);
 }
-}
-}
+
+}  // namespace optcon
+}  // namespace ct

@@ -212,6 +212,9 @@ if(BUILD_EXAMPLES)
     set(CT_OPTCON_EXAMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/examples")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
 
+    add_executable(ex_ConstraintOutput examples/ConstraintExampleOutput.cpp)
+    target_link_libraries(ex_ConstraintOutput ${catkin_LIBRARIES})
+
     add_executable(ex_LQR examples/LQR.cpp)
     target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS})
 
@@ -279,6 +282,9 @@ target_link_libraries(constraint_test ${catkin_LIBRARIES} )
 catkin_add_gtest(constraint_test_prespec test/constraint/ConstraintTestPrespec.cpp)
 target_link_libraries(constraint_test_prespec ${catkin_LIBRARIES} ${PRESPEC_LIB_NAMES})
 
+catkin_add_gtest(SparseBoxConstraintTest test/constraint/SparseBoxConstraintTest.cpp)
+target_link_libraries(SparseBoxConstraintTest ${catkin_LIBRARIES})
+
 get_filename_component(COSTFUNCTION_TEST_DIR "test/costfunction" ABSOLUTE)
 configure_file(test/costfunction/costfunction_test_dir.h.in test/costfunction/costfunction_test_dir.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/costfunction)
@@ -292,9 +298,6 @@ target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
 
 catkin_add_gtest(dms_test_all_var test/dms/oscillator/oscDMSTestAllVariants.cpp)
 target_link_libraries(dms_test_all_var ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-
-#add_executable(bareTest test/dms/oscillator/bareTest.cpp)
-#target_link_libraries(bareTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
 
 add_executable(matFilesGenerator test/dms/oscillator/matfiles/matFilesGenerator.cpp)
 target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
