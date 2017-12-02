@@ -118,5 +118,14 @@ void BoxConstraintBase<DERIVED_DIM, STATE_DIM, CONTROL_DIM, SCALAR>::sanityCheck
 }
 
 
+template <size_t DERIVED_DIM, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void BoxConstraintBase<DERIVED_DIM, STATE_DIM, CONTROL_DIM, SCALAR>::sparsityPatternSparseJacobian(VectorXi& rows, VectorXi& cols)
+{
+    this->genSparseDiagonalIndices(sparsity_, rows, cols);
+    for (size_t i = 0; i < constrSize_; i++)
+        rows(i) = i;
+}
+
+
 }  // namespace optcon
 }  // namespace ct

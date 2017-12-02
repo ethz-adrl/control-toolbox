@@ -105,8 +105,12 @@ protected:
     //! size of the constraint
     size_t constrSize_;
 
+    //! custom jacobian pattern for sparse box constraint
+    void sparsityPatternSparseJacobian(VectorXi& rows, VectorXi& cols);
+
 private:
     void sanityCheck(const size_t& nCon, const VectorXs& lb, const VectorXs& ub) const;
+
 };
 
 }  // namespace optcon

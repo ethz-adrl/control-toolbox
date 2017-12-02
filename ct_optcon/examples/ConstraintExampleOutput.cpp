@@ -111,7 +111,7 @@ void sparseBoxConstraintsExample()
     // box constraint boundaries with sparsities
     Eigen::VectorXi sp_control(control_dim);
     sp_control << 0, 1, 0, 0, 1;
-    Eigen::VectorXd u_lb (2);
+    Eigen::VectorXd u_lb(2);
     Eigen::VectorXd u_ub(2);
     u_lb.setConstant(-1.11);
     u_ub = -u_lb;
@@ -127,6 +127,7 @@ void sparseBoxConstraintsExample()
     std::shared_ptr<ControlInputConstraint<state_dim, control_dim>> controlConstraint(
         new ControlInputConstraint<state_dim, control_dim>(u_lb, u_ub, sp_control));
     controlConstraint->setName("ControlInputConstraint");
+
     std::shared_ptr<StateConstraint<state_dim, control_dim>> stateConstraint(
         new StateConstraint<state_dim, control_dim>(x_lb, x_ub, sp_state));
     stateConstraint->setName("StateConstraint");
@@ -145,9 +146,9 @@ void sparseBoxConstraintsExample()
 
 int main(int argc, char **argv)
 {
-    //	controlInputBoxConstraintExample();
+    controlInputBoxConstraintExample();
     terminalConstraintExample();
-    //    boxConstraintsExample();
+    boxConstraintsExample();
     sparseBoxConstraintsExample();
     return 1;
 }

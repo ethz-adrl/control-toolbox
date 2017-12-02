@@ -104,7 +104,7 @@ StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianStateSparse(const state
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::sparsityPatternState(VectorXi& rows, VectorXi& cols)
 {
-    this->genSparseDiagonalIndices(this->sparsity_, rows, cols);
+	this->sparsityPatternSparseJacobian(rows, cols);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
