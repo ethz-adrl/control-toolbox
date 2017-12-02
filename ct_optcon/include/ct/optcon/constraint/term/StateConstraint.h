@@ -11,41 +11,53 @@ namespace optcon {
 
 
 /**
- * @brief      Class for state constraint.
+ * @ingroup    Constraint
+ *
+ * @brief      Class for state box constraint.
  *
  * @tparam     STATE_DIM  The state dimension
  * @tparam     INPUT_DIM  The control dimension
  * @tparam     SCALAR     The Scalar type
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class StateConstraint : public ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
+class StateConstraint : public BoxConstraintBase<STATE_DIM, STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
-    typedef ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+    using Trait = typename ct::core::tpl::TraitSelector<SCALAR>::Trait;
+    using Base = BoxConstraintBase<STATE_DIM, STATE_DIM, CONTROL_DIM, SCALAR>;
 
-    typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
-    typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+    using state_vector_t = core::StateVector<STATE_DIM, SCALAR>;
+    using control_vector_t = core::ControlVector<CONTROL_DIM, SCALAR>;
 
-    typedef Eigen::Matrix<int, Eigen::Dynamic, 1> VectorXi;
-    typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
-    typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
+    using VectorXi = Eigen::Matrix<int, Eigen::Dynamic, 1>;
+    using VectorXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>;
+    using MatrixXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>;
+
+    using sparsity_matrix_t = Eigen::Matrix<SCALAR, Eigen::Dynamic, STATE_DIM>;
 
     /**
-	 * @brief      Custom constructor
+	 * @brief      Constructor taking lower and upper state bounds directly. Assumes state box constraint is dense.
 	 *
 	 * @param[in]  xLow   The lower state bound
 	 * @param[in]  xHigh  The upper state bound
 	 */
     StateConstraint(const state_vector_t& xLow, const state_vector_t& xHigh);
 
+    /**
+     * @brief 	  Constructor for sparse state box constraint. Takes bounds and sparsity pattern.
+     * @param lb  Lower boundary values
+     * @param ub  Upper boundary values
+     * @param state_sparsity State constraint sparsity pattern
+     */
+    StateConstraint(const VectorXs& lb, const VectorXs& ub, const Eigen::VectorXi& state_sparsity);
+
+    StateConstraint(const StateConstraint& arg);
+
     virtual ~StateConstraint();
 
     virtual StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
-
-    virtual size_t getConstraintSize() const override;
 
     virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
@@ -64,7 +76,12 @@ public:
 
     virtual VectorXs jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
+    virtual VectorXs jacobianInputSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
+
     virtual void sparsityPatternState(VectorXi& rows, VectorXi& cols) override;
+
+    virtual void sparsityPatternInput(VectorXi& rows, VectorXi& cols) override;
 };
-}
-}
+
+}  // namespace optcon
+}  // namespace ct

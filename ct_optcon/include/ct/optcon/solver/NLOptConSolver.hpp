@@ -206,17 +206,17 @@ public:
     //! get constant reference to the cost function
     const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const override;
 
-    //! get reference to the state input constraints
-    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() override;
+    //! get reference to the box constraints
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() override;
 
-    //! get constant reference to the state input constraints
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const override;
+    //! get constant reference to the boxconstraints
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const override;
 
-    //! get reference to the pure state constraints
-    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() override;
+    //! get reference to the general constraints
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() override;
 
-    //! get constant reference to the pure state constraints
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const override;
+    //! get constant reference to the general constraints
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() const override;
 
     //! logging a short summary to matlab
     void logSummaryToMatlab(const std::string& fileName);
