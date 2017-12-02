@@ -5,11 +5,11 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 /*!
- * This Example displays some constraint toolbox outputs, giving the user a feeling for
- * sparsity patterns, etc.
+ * This unit test for the box constraint terms compares automatically generated sparsity patterns against hard-coded ones.
  */
 
 #include <ct/optcon/optcon.h>
+#include <gtest/gtest.h>
 
 using namespace ct::core;
 using namespace ct::optcon;
@@ -77,10 +77,10 @@ void boxConstraintsExample()
         new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
 
     // desired terminal state
-    ControlVector<control_dim> u_lb = -1.11 * ControlVector<control_dim>::Ones();
-    ControlVector<control_dim> u_ub = 1.11 * ControlVector<control_dim>::Ones();
-    StateVector<state_dim> x_lb = -3.33 * StateVector<state_dim>::Ones();
-    StateVector<state_dim> x_ub = 3.33 * StateVector<state_dim>::Ones();
+    ControlVector<control_dim> u_lb = -1.11*ControlVector<control_dim>::Ones();
+    ControlVector<control_dim> u_ub = 1.11*ControlVector<control_dim>::Ones();
+    StateVector<state_dim> x_lb = -3.33*StateVector<state_dim>::Ones();
+    StateVector<state_dim> x_ub = 3.33*StateVector<state_dim>::Ones();
 
     // constrain terms
     std::shared_ptr<ControlInputConstraint<state_dim, control_dim>> controlConstraint(
@@ -109,17 +109,16 @@ void sparseBoxConstraintsExample()
         new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
 
     // box constraint boundaries with sparsities
-    Eigen::VectorXi sp_control(control_dim);
+    Eigen::VectorXi sp_control (control_dim);
     sp_control << 0, 1, 0, 0, 1;
-    Eigen::VectorXd u_lb (2);
-    Eigen::VectorXd u_ub(2);
+    Eigen::VectorXd u_lb, u_ub (2);
     u_lb.setConstant(-1.11);
     u_ub = -u_lb;
 
-    Eigen::VectorXi sp_state(state_dim);
+    Eigen::VectorXi sp_state (state_dim);
     sp_state << 0, 1, 0, 0, 1, 0, 1, 1, 0, 0;
-    Eigen::VectorXd x_lb(4);
-    Eigen::VectorXd x_ub(4);
+    Eigen::VectorXd x_lb (4);
+    Eigen::VectorXd x_ub (4);
     x_lb.setConstant(-3.33);
     x_ub = -x_lb;
 
@@ -145,9 +144,17 @@ void sparseBoxConstraintsExample()
 
 int main(int argc, char **argv)
 {
-    //	controlInputBoxConstraintExample();
+	controlInputBoxConstraintExample();
     terminalConstraintExample();
-    //    boxConstraintsExample();
+    boxConstraintsExample();
     sparseBoxConstraintsExample();
     return 1;
 }
+
+
+int main(int argc, char **argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+

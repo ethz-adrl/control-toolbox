@@ -11,6 +11,8 @@ namespace optcon {
 
 
 /**
+ * @ingroup    Constraint
+ *
  * @brief      Class for state box constraint.
  *
  * @tparam     STATE_DIM  The state dimension
@@ -18,13 +20,13 @@ namespace optcon {
  * @tparam     SCALAR     The Scalar type
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class StateConstraint : public ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
+class StateConstraint : public BoxConstraintBase<STATE_DIM, STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     using Trait = typename ct::core::tpl::TraitSelector<SCALAR>::Trait;
-    using Base = ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>;
+    using Base = BoxConstraintBase<STATE_DIM, STATE_DIM, CONTROL_DIM, SCALAR>;
 
     using state_vector_t = core::StateVector<STATE_DIM, SCALAR>;
     using control_vector_t = core::ControlVector<CONTROL_DIM, SCALAR>;
@@ -34,6 +36,7 @@ public:
     using MatrixXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>;
 
     using sparsity_matrix_t = Eigen::Matrix<SCALAR, Eigen::Dynamic, STATE_DIM>;
+
     /**
 	 * @brief      Constructor taking lower and upper state bounds directly. Assumes state box constraint is dense.
 	 *
@@ -56,8 +59,6 @@ public:
 
     virtual StateConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
 
-    virtual size_t getConstraintSize() const override;
-
     virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
     virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
@@ -75,21 +76,12 @@ public:
 
     virtual VectorXs jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
+    virtual VectorXs jacobianInputSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
+
     virtual void sparsityPatternState(VectorXi& rows, VectorXi& cols) override;
 
-protected:
-    //! only for diagonal sparsity
-    sparsity_matrix_t diagSparsityVecToSparsityMat(const VectorXi& spVec,
-        const size_t& nConstr);
-
-    //! sparsity in vector form
-    VectorXi sparsity_;
-
-    //! sparsity matrix
-    sparsity_matrix_t sparsity_J_;
-
-    //! size of the constraint
-    size_t constrSize_;
+    virtual void sparsityPatternInput(VectorXi& rows, VectorXi& cols) override;
 };
-}
-}
+
+}  // namespace optcon
+}  // namespace ct

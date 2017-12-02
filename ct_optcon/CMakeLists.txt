@@ -285,6 +285,9 @@ target_link_libraries(constraint_test ${catkin_LIBRARIES} )
 catkin_add_gtest(constraint_test_prespec test/constraint/ConstraintTestPrespec.cpp)
 target_link_libraries(constraint_test_prespec ${catkin_LIBRARIES} ${PRESPEC_LIB_NAMES})
 
+catkin_add_gtest(SparseBoxConstraintTest test/constraint/SparseBoxConstraintTest.cpp)
+target_link_libraries(SparseBoxConstraintTest ${catkin_LIBRARIES})
+
 get_filename_component(COSTFUNCTION_TEST_DIR "test/costfunction" ABSOLUTE)
 configure_file(test/costfunction/costfunction_test_dir.h.in test/costfunction/costfunction_test_dir.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/costfunction)
