@@ -27,19 +27,27 @@ class DynamicsLinearizerADBase
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    //TODO this exclusive list, the following typedef, and getOutScalarType() should be generalized
     static_assert((std::is_same<SCALAR, CppAD::AD<double>>::value) ||
-                      (std::is_same<SCALAR, CppAD::AD<CppAD::cg::CG<double>>>::value),
-        "SCALAR template parameter in ADLinearizerBase should either be of CppAD::AD<double> or "
-        "CppAD::AD<CppAD::cg::double> type");
+                      (std::is_same<SCALAR, CppAD::AD<CppAD::cg::CG<double>>>::value) ||
+                      (std::is_same<SCALAR, CppAD::AD<float>>::value) ||
+                      (std::is_same<SCALAR, CppAD::AD<CppAD::cg::CG<float>>>::value),
+        "SCALAR template parameter in ADLinearizerBase should either be of CppAD::AD<XX> or "
+        "CppAD::AD<CppAD::cg::XX> type with XX being float or double");
 
-    typedef StateVector<STATE_DIM> state_vector_t;
-    typedef ControlVector<CONTROL_DIM> control_vector_t;
+    typedef typename std::conditional<(std::is_same<SCALAR, CppAD::AD<double>>::value) ||
+                                          (std::is_same<SCALAR, CppAD::AD<CppAD::cg::CG<double>>>::value),
+        double,
+        float>::type OUT_SCALAR;  //!< scalar type of resulting linear system
+
+    typedef StateVector<STATE_DIM, OUT_SCALAR> state_vector_t;
+    typedef ControlVector<CONTROL_DIM, OUT_SCALAR> control_vector_t;
 
     typedef StateVector<STATE_DIM, SCALAR> state_vector_ad_t;
     typedef ControlVector<CONTROL_DIM, SCALAR> control_vector_ad_t;
 
-    typedef StateMatrix<STATE_DIM, double> state_matrix_t;
-    typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, double> state_control_matrix_t;
+    typedef StateMatrix<STATE_DIM, OUT_SCALAR> state_matrix_t;
+    typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, OUT_SCALAR> state_control_matrix_t;
 
     typedef std::function<void(const state_vector_ad_t&, const TIME&, const control_vector_ad_t&, state_vector_ad_t&)>
         dynamics_fct_t;  //!< dynamics function signature
@@ -56,6 +64,18 @@ public:
         setupSparsityA();
         setupSparsityB();
         f_ = arg.f_;
+    }
+
+    template <typename T = std::string>  // do not use this template argument
+    typename std::enable_if<std::is_same<OUT_SCALAR, double>::value, T>::type getOutScalarType() const
+    {
+        return "double";
+    }
+
+    template <typename T = std::string>  // do not use this template argument
+    typename std::enable_if<std::is_same<OUT_SCALAR, float>::value, T>::type getOutScalarType() const
+    {
+        return "float";
     }
 
     //! destructor

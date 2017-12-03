@@ -30,6 +30,8 @@ public:
 
     typedef internal::DynamicsLinearizerADBase<STATE_DIM, CONTROL_DIM, SCALAR, TIME> Base;
 
+    typedef typename Base::OUT_SCALAR OUT_SCALAR; //!< scalar type of resulting linear system
+
     typedef typename Base::state_vector_t state_vector_t;      //!< state vector type
     typedef typename Base::control_vector_t control_vector_t;  //!< control vector type
 
@@ -75,15 +77,15 @@ protected:
      */
     void computeA(const state_vector_t& x, const control_vector_t& u)
     {
-        Eigen::Matrix<double, Eigen::Dynamic, 1> input(STATE_DIM + CONTROL_DIM);
+        Eigen::Matrix<OUT_SCALAR, Eigen::Dynamic, 1> input(STATE_DIM + CONTROL_DIM);
         input << x, u;
 
-        Eigen::Matrix<double, Eigen::Dynamic, 1> jac(this->A_entries);
+        Eigen::Matrix<OUT_SCALAR, Eigen::Dynamic, 1> jac(this->A_entries);
 
         this->f_.SparseJacobianForward(input, this->sparsityA_.sparsity(), this->sparsityA_.row(),
             this->sparsityA_.col(), jac, this->sparsityA_.workJacobian());
 
-        Eigen::Map<Eigen::Matrix<double, STATE_DIM, STATE_DIM>> out(jac.data());
+        Eigen::Map<Eigen::Matrix<OUT_SCALAR, STATE_DIM, STATE_DIM>> out(jac.data());
 
         dFdx_ = out;
     }
@@ -95,15 +97,15 @@ protected:
      */
     void computeB(const state_vector_t& x, const control_vector_t& u)
     {
-        Eigen::Matrix<double, Eigen::Dynamic, 1> input(STATE_DIM + CONTROL_DIM);
+        Eigen::Matrix<OUT_SCALAR, Eigen::Dynamic, 1> input(STATE_DIM + CONTROL_DIM);
         input << x, u;
 
-        Eigen::Matrix<double, Eigen::Dynamic, 1> jac(this->B_entries);
+        Eigen::Matrix<OUT_SCALAR, Eigen::Dynamic, 1> jac(this->B_entries);
 
         this->f_.SparseJacobianForward(input, this->sparsityB_.sparsity(), this->sparsityB_.row(),
             this->sparsityB_.col(), jac, this->sparsityB_.workJacobian());
 
-        Eigen::Map<Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>> out(jac.data());
+        Eigen::Map<Eigen::Matrix<OUT_SCALAR, STATE_DIM, CONTROL_DIM>> out(jac.data());
 
         dFdu_ = out;
     }

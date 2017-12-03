@@ -88,7 +88,7 @@ public:
         for (size_t i = 0; i < STATE_DIM; i++)
         {
             // inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
-            SCALAR h = eps_ * std::max(fabs(x(i)), SCALAR(1.0));
+            SCALAR h = eps_ * std::max(std::abs<SCALAR>(x(i)), SCALAR(1.0));
             SCALAR x_ph = x(i) + h;
             SCALAR dxp = x_ph - x(i);
 
@@ -145,7 +145,7 @@ public:
         for (size_t i = 0; i < CONTROL_DIM; i++)
         {
             // inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
-            SCALAR h = eps_ * std::max(fabs(u(i)), SCALAR(1.0));
+            SCALAR h = eps_ * std::max(std::abs<SCALAR>(u(i)), SCALAR(1.0));
             SCALAR u_ph = u(i) + h;
             SCALAR dup = u_ph - u(i);
 

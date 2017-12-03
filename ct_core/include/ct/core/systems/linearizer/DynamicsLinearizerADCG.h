@@ -31,6 +31,8 @@ public:
 
     typedef internal::DynamicsLinearizerADBase<STATE_DIM, CONTROL_DIM, SCALAR, TIME> Base;
 
+    typedef typename Base::OUT_SCALAR OUT_SCALAR; //!< scalar type of resulting linear system
+
     typedef typename Base::state_vector_t state_vector_t;      //!< state vector type
     typedef typename Base::control_vector_t control_vector_t;  //!< control vector type
 
@@ -53,7 +55,7 @@ public:
           x_at_cache_(state_vector_t::Random()),
           u_at_cache_(control_vector_t::Random()),
           compiled_(false),
-          cacheJac_(cacheJac_),
+          cacheJac_(cacheJac),
           maxTempVarCountState_(0),
           maxTempVarCountControl_(0)
     {
@@ -74,7 +76,7 @@ public:
           maxTempVarCountControl_(rhs.maxTempVarCountControl_)
     {
         if (compiled_)
-            model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DynamicsLinearizerADCG"));
+            model_ = std::shared_ptr<CppAD::cg::GenericModel<OUT_SCALAR>>(dynamicLib_->model("DynamicsLinearizerADCG"));
     }
 
     //! compute and return derivative w.r.t. state
@@ -86,7 +88,7 @@ public:
      * @param t time
      * @return Jacobian w.r.t. state
      */
-    const state_matrix_t& getDerivativeState(const state_vector_t& x, const control_vector_t& u, const double t = 0.0)
+    const state_matrix_t& getDerivativeState(const state_vector_t& x, const control_vector_t& u, const OUT_SCALAR t = 0.0)
     {
         if (!compiled_)
             throw std::runtime_error(
@@ -110,7 +112,7 @@ public:
      */
     const state_control_matrix_t& getDerivativeControl(const state_vector_t& x,
         const control_vector_t& u,
-        const double t = 0.0)
+        const OUT_SCALAR t = 0.0)
     {
         if (!compiled_)
             throw std::runtime_error(
@@ -136,16 +138,16 @@ public:
         if (compiled_)
             return;
 
-        CppAD::cg::ModelCSourceGen<double> cgen(this->f_, "DynamicsLinearizerADCG");
+        CppAD::cg::ModelCSourceGen<OUT_SCALAR> cgen(this->f_, "DynamicsLinearizerADCG");
         cgen.setCreateJacobian(true);
-        CppAD::cg::ModelLibraryCSourceGen<double> libcgen(cgen);
+        CppAD::cg::ModelLibraryCSourceGen<OUT_SCALAR> libcgen(cgen);
 
         // compile source code
-        CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, libName);
+        CppAD::cg::DynamicModelLibraryProcessor<OUT_SCALAR> p(libcgen, libName);
 
-        dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler_));
+        dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<OUT_SCALAR>>(p.createDynamicLibrary(compiler_));
 
-        model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DynamicsLinearizerADCG"));
+        model_ = std::shared_ptr<CppAD::cg::GenericModel<OUT_SCALAR>>(dynamicLib_->model("DynamicsLinearizerADCG"));
 
         compiled_ = true;
     }
@@ -168,13 +170,13 @@ public:
     {
         this->sparsityA_.clearWork();  //clears the cppad sparsity work possibly done before
         size_t jacDimension = STATE_DIM * STATE_DIM;
-        codeJacA = internal::CGHelpers::generateJacobianSource(this->f_, this->sparsityA_, jacDimension,
-            maxTempVarCountState_, useReverse, ignoreZero, "jac", "x_in", "vX_");
+        codeJacA = internal::CGHelpers::generateJacobianSource<typename SCALAR::value_type,OUT_SCALAR>(this->f_, this->sparsityA_, jacDimension,
+            maxTempVarCountState_, useReverse, ignoreZero, "jac", "x_in", "vX_", Base::getOutScalarType());
 
         this->sparsityB_.clearWork();
         jacDimension = STATE_DIM * CONTROL_DIM;
-        codeJacB = internal::CGHelpers::generateJacobianSource(this->f_, this->sparsityB_, jacDimension,
-            maxTempVarCountControl_, useReverse, ignoreZero, "jac", "x_in", "vU_");
+        codeJacB = internal::CGHelpers::generateJacobianSource<typename SCALAR::value_type,OUT_SCALAR>(this->f_, this->sparsityB_, jacDimension,
+            maxTempVarCountControl_, useReverse, ignoreZero, "jac", "x_in", "vU_", Base::getOutScalarType());
     }
 
     //! accessor to maxTempVarCount variables
@@ -194,14 +196,14 @@ protected:
     void computeJacobian(const state_vector_t& x, const control_vector_t& u)
     {
         // copy to dynamic type due to requirements by cppad
-        Eigen::Matrix<double, Eigen::Dynamic, 1> input(STATE_DIM + CONTROL_DIM);
+        Eigen::Matrix<OUT_SCALAR, Eigen::Dynamic, 1> input(STATE_DIM + CONTROL_DIM);
         input << x, u;
 
-        Eigen::Matrix<double, Eigen::Dynamic, 1> jac(Base::FullJac_entries);
+        Eigen::Matrix<OUT_SCALAR, Eigen::Dynamic, 1> jac(Base::FullJac_entries);
 
         jac = model_->Jacobian(input);
 
-        Eigen::Map<Eigen::Matrix<double, STATE_DIM + CONTROL_DIM, STATE_DIM>> out(jac.data());
+        Eigen::Map<Eigen::Matrix<OUT_SCALAR, STATE_DIM + CONTROL_DIM, STATE_DIM>> out(jac.data());
 
         dFdx_ = out.template topRows<STATE_DIM>().transpose();
         dFdu_ = out.template bottomRows<CONTROL_DIM>().transpose();
@@ -221,10 +223,10 @@ protected:
 
     bool compiled_;                            //!< flag if library from generated code is compiled
     bool cacheJac_;                            //!< flag if Jacobian will be cached
-    CppAD::cg::GccCompiler<double> compiler_;  //!< compiler instance for JIT compilation
+    CppAD::cg::GccCompiler<OUT_SCALAR> compiler_;  //!< compiler instance for JIT compilation
 
-    std::shared_ptr<CppAD::cg::DynamicLib<double>> dynamicLib_;  //!< compiled and dynamically loaded library
-    std::shared_ptr<CppAD::cg::GenericModel<double>> model_;     //!< Auto-Diff model
+    std::shared_ptr<CppAD::cg::DynamicLib<OUT_SCALAR>> dynamicLib_;  //!< compiled and dynamically loaded library
+    std::shared_ptr<CppAD::cg::GenericModel<OUT_SCALAR>> model_;     //!< Auto-Diff model
 
     size_t maxTempVarCountState_;    //!< number of temporary variables in the source code of the state Jacobian
     size_t maxTempVarCountControl_;  //!< number of temporary variables in the source code of the input Jacobian

@@ -12,10 +12,10 @@ namespace ct {
 namespace NS1 {
 namespace NS2 {
 
-class LINEAR_SYSTEM_NAME : public ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM>
+class LINEAR_SYSTEM_NAME : public ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
-    typedef ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM> Base;
+    typedef ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
     typedef typename Base::state_vector_t state_vector_t;
     typedef typename Base::control_vector_t control_vector_t;
@@ -67,8 +67,8 @@ private:
 
     state_matrix_t dFdx_;
     state_control_matrix_t dFdu_;
-    std::array<double, MAX_COUNT_STATE> vX_;
-    std::array<double, MAX_COUNT_CONTROL> vU_;
+    std::array<SCALAR, MAX_COUNT_STATE> vX_;
+    std::array<SCALAR, MAX_COUNT_CONTROL> vU_;
 };
 }
 }

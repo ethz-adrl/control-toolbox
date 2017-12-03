@@ -44,23 +44,24 @@ namespace core {
  * for highest efficiency and accuracy. If this is not the case but your system is a RigidBodySystem you can fall back
  * to the ct::rbd::RBDLinearizer for good accuracy and speed.
  *
- * @tparam dimension of state vector
- * @tparam dimension of control vector
+ * @tparam STATE_DIM   dimension of state vector
+ * @tparam CONTROL_DIM dimension of control vector
+ * @tparam SCALAR underlying scalar type of the system
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class SystemLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class SystemLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef LinearSystem<STATE_DIM, CONTROL_DIM> Base;  //!< Base class type
+    typedef LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;  //!< Base class type
 
     typedef typename Base::state_vector_t state_vector_t;                  //!< state vector type
     typedef typename Base::control_vector_t control_vector_t;              //!< input vector type
     typedef typename Base::state_matrix_t state_matrix_t;                  //!< state Jacobian type
     typedef typename Base::state_control_matrix_t state_control_matrix_t;  //!< input Jacobian type
 
-    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, double> system_t;  //!< type of system to be linearized
+    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> system_t;  //!< type of system to be linearized
 
 
     //! default constructor
@@ -113,9 +114,9 @@ public:
     //! destructor
     virtual ~SystemLinearizer() {}
     //! deep cloning
-    SystemLinearizer<STATE_DIM, CONTROL_DIM>* clone() const override
+    SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {
-        return new SystemLinearizer<STATE_DIM, CONTROL_DIM>(*this);
+        return new SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
     }
 
     //! get the Jacobian with respect to the state
@@ -180,7 +181,7 @@ public:
 protected:
     std::shared_ptr<system_t> nonlinearSystem_;  //!< instance of non-linear system
 
-    DynamicsLinearizerNumDiff<STATE_DIM, CONTROL_DIM, double, double>
+    DynamicsLinearizerNumDiff<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR>
         linearizer_;  //!< instance of numerical-linearizer
 
     state_matrix_t dFdx_;          //!< Jacobian wrt state

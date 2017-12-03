@@ -41,26 +41,29 @@ namespace core {
  * \warning Depending on the complexity of your system, just-in-time compilation (compileJIT()) can be slow. In that case generate a
  * source code file
  *
- * @tparam dimension of state vector
- * @tparam dimension of control vector
+ * @tparam STATE_DIM dimension of state vector
+ * @tparam CONTROL_DIM dimension of control vector
+ * @tparam SCALAR primitive type of resultant linear system
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class ADCodegenLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class ADCodegenLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef LinearSystem<STATE_DIM, CONTROL_DIM> Base;  //!< Base class type
+    typedef LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;  //!< Base class type
 
-    typedef ADCGScalar SCALAR;        //!< scalar type
-    typedef ADCGValueType AD_SCALAR;  //!< Auto-Diff scalar type
+    typedef CppAD::AD<CppAD::cg::CG<SCALAR>> ADCGScalar;  //!< Autodiff codegen type
+
+    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, ADCGScalar> system_t;  //!< type of system to be linearized
+    typedef DynamicsLinearizerADCG<STATE_DIM, CONTROL_DIM, ADCGScalar, ADCGScalar>
+        linearizer_t;  //!< type of linearizer to be used
 
     typedef typename Base::state_vector_t state_vector_t;                  //!< state vector type
     typedef typename Base::control_vector_t control_vector_t;              //!< input vector type
     typedef typename Base::state_matrix_t state_matrix_t;                  //!< state Jacobian type
     typedef typename Base::state_control_matrix_t state_control_matrix_t;  //!< input Jacobian type
 
-    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, ADCGScalar> system_t;  //!< type of system to be linearized
 
     //! default constructor
     /*!
@@ -100,9 +103,9 @@ public:
     }
 
     //! deep cloning
-    ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>* clone() const override
+    ADCodegenLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {
-        return new ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>(*this);
+        return new ADCodegenLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
     }
 
     //! get the Jacobian with respect to the state
@@ -123,7 +126,7 @@ public:
 	 */
     const state_matrix_t& getDerivativeState(const state_vector_t& x,
         const control_vector_t& u,
-        const double t = 0.0) override
+        const SCALAR t = SCALAR(0.0)) override
     {
         dFdx_ = linearizer_.getDerivativeState(x, u, t);
         return dFdx_;
@@ -147,7 +150,7 @@ public:
 	 */
     const state_control_matrix_t& getDerivativeControl(const state_vector_t& x,
         const control_vector_t& u,
-        const double t = 0.0) override
+        const SCALAR t = SCALAR(0.0)) override
     {
         dFdu_ = linearizer_.getDerivativeControl(x, u, t);
         return dFdu_;
@@ -226,8 +229,10 @@ private:
         std::string header = internal::CGHelpers::parseFile(templateDir + "/LinearSystem.tpl.h");
         std::string source = internal::CGHelpers::parseFile(templateDir + "/LinearSystem.tpl.cpp");
 
-        replaceSizesAndNames(header, systemName, ns1, ns2);
-        replaceSizesAndNames(source, systemName, ns1, ns2);
+        const std::string scalarName(linearizer_.getOutScalarType());
+
+        replaceSizesAndNames(header, systemName, scalarName, ns1, ns2);
+        replaceSizesAndNames(source, systemName, scalarName, ns1, ns2);
 
         internal::CGHelpers::replaceOnce(header, "MAX_COUNT_STATE", std::to_string(maxTempVarCountState));
         internal::CGHelpers::replaceOnce(header, "MAX_COUNT_CONTROL", std::to_string(maxTempVarCountControl));
@@ -246,11 +251,13 @@ private:
     /*!
      * @param file content of the file to perform the modification on
      * @param systemName name of the system
+     * @param scalarName name of scalar (e.g., "double")
      * @param ns1 first layer namespace
      * @param ns2 second layer namespace
      */
     void replaceSizesAndNames(std::string& file,
         const std::string& systemName,
+        const std::string& scalarName,
         const std::string& ns1,
         const std::string& ns2)
     {
@@ -259,6 +266,7 @@ private:
         internal::CGHelpers::replaceAll(file, "NS2", ns2);
         internal::CGHelpers::replaceAll(file, "STATE_DIM", std::to_string(STATE_DIM));
         internal::CGHelpers::replaceAll(file, "CONTROL_DIM", std::to_string(CONTROL_DIM));
+        internal::CGHelpers::replaceAll(file, "SCALAR", scalarName);
     }
 
     state_matrix_t dFdx_;          //!< state Jacobian
@@ -268,7 +276,7 @@ private:
 
     std::shared_ptr<system_t> nonlinearSystem_;  //!< instance of non-linear system
 
-    DynamicsLinearizerADCG<STATE_DIM, CONTROL_DIM, ADCGScalar, ADCGScalar> linearizer_;  //!< instance of ad-linearizer
+    linearizer_t linearizer_;  //!< instance of ad-linearizer
 };
 
 }  // namespace core

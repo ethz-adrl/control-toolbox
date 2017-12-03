@@ -18,7 +18,7 @@ TEST(ADCodegenLinearizerTest, JITCompilationTest)
     const size_t control_dim = TestNonlinearSystem::CONTROL_DIM;
 
     // typedefs for the auto-differentiable codegen system
-    typedef ADCodegenLinearizer<state_dim, control_dim>::SCALAR Scalar;
+    typedef ADCodegenLinearizer<state_dim, control_dim>::ADCGScalar Scalar;
     typedef typename Scalar::value_type AD_ValueType;
     typedef tpl::TestNonlinearSystem<Scalar> TestNonlinearSystemAD;
 
@@ -87,7 +87,7 @@ TEST(ADCodegenLinearizerTest, CodegenTest)
     const size_t control_dim = TestNonlinearSystem::CONTROL_DIM;
 
     // typedefs for the auto-differentiable codegen system
-    typedef ADCodegenLinearizer<state_dim, control_dim>::SCALAR Scalar;
+    typedef ADCodegenLinearizer<state_dim, control_dim>::ADCGScalar Scalar;
     typedef typename Scalar::value_type AD_ValueType;
     typedef tpl::TestNonlinearSystem<Scalar> TestNonlinearSystemAD;
 
@@ -117,7 +117,7 @@ TEST(ADCodegenLinearizerTestMP, JITCompilationTestMP)
     const size_t control_dim = TestNonlinearSystem::CONTROL_DIM;
 
     // typedefs for the auto-differentiable codegen system
-    typedef ADCodegenLinearizer<state_dim, control_dim>::SCALAR Scalar;
+    typedef ADCodegenLinearizer<state_dim, control_dim>::ADCGScalar Scalar;
     typedef typename Scalar::value_type AD_ValueType;
     typedef tpl::TestNonlinearSystem<Scalar> TestNonlinearSystemAD;
 

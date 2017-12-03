@@ -33,16 +33,17 @@ namespace core {
  *
  * @tparam dimension of state vector
  * @tparam dimension of control vector
+ * @tparam SCALAR underlying scalar type of the system
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class DiscreteSystemLinearizer : public DiscreteLinearSystem<STATE_DIM, CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class DiscreteSystemLinearizer : public DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef DiscreteLinearSystem<STATE_DIM, CONTROL_DIM> Base;
+    typedef DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
-    typedef DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, double> system_t;  //!< type of system to be linearized
+    typedef DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> system_t;  //!< type of system to be linearized
 
     typedef typename Base::state_vector_t state_vector_t;      //!< state vector type
     typedef typename Base::control_vector_t control_vector_t;  //!< control vector type
@@ -95,9 +96,9 @@ public:
     virtual ~DiscreteSystemLinearizer() {}
 
     //! deep cloning
-    DiscreteSystemLinearizer<STATE_DIM, CONTROL_DIM>* clone() const override
+    DiscreteSystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {
-        return new DiscreteSystemLinearizer<STATE_DIM, CONTROL_DIM>(*this);
+        return new DiscreteSystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
     }
 
     //! get the Jacobian with respect to the state
@@ -179,7 +180,7 @@ public:
 protected:
     std::shared_ptr<system_t> nonlinearSystem_;  //!< instance of non-linear system
 
-    DynamicsLinearizerNumDiff<STATE_DIM, CONTROL_DIM, double, int> linearizer_;  //!< instance of numerical-linearizer
+    DynamicsLinearizerNumDiff<STATE_DIM, CONTROL_DIM, SCALAR, int> linearizer_;  //!< instance of numerical-linearizer
 
     state_matrix_t dFdx_;          //!< Jacobian wrt state
     state_control_matrix_t dFdu_;  //!< Jacobian wrt input

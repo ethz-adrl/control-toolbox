@@ -42,21 +42,25 @@ namespace core {
  *
  * @tparam dimension of state vector
  * @tparam dimension of control vector
+ * @tparam SCALAR primitive type of resultant linear system
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class AutoDiffLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class AutoDiffLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef LinearSystem<STATE_DIM, CONTROL_DIM> Base;  //!< Base class type
+    typedef LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;  //!< Base class type
 
-    typedef StateVector<STATE_DIM, double> state_vector_t;                 //!< state vector type
-    typedef ControlVector<CONTROL_DIM, double> control_vector_t;           //!< input vector type
+    typedef CppAD::AD<SCALAR> ADScalar;
+    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, ADScalar> system_t;  //!< type of system to be linearized
+    typedef DynamicsLinearizerAD<STATE_DIM, CONTROL_DIM, ADScalar, ADScalar>
+        linearizer_t;  //!< type of linearizer to be used
+
+    typedef typename Base::state_vector_t state_vector_t;                  //!< state vector type
+    typedef typename Base::control_vector_t control_vector_t;              //!< input vector type
     typedef typename Base::state_matrix_t state_matrix_t;                  //!< state Jacobian type
     typedef typename Base::state_control_matrix_t state_control_matrix_t;  //!< input Jacobian type
-
-    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, ADScalar> system_t;  //!< type of system to be linearized
 
     //! default constructor
     /*!
@@ -95,9 +99,9 @@ public:
     virtual ~AutoDiffLinearizer() {}
 
     //! deep cloning
-    AutoDiffLinearizer<STATE_DIM, CONTROL_DIM>* clone() const override
+    AutoDiffLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {
-        return new AutoDiffLinearizer<STATE_DIM, CONTROL_DIM>(*this);
+        return new AutoDiffLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
     }
 
     //! get the Jacobian with respect to the state
@@ -116,7 +120,7 @@ public:
      */
     virtual const state_matrix_t& getDerivativeState(const state_vector_t& x,
         const control_vector_t& u,
-        const double t = 0.0) override
+        const SCALAR t = SCALAR(0.0)) override
     {
         dFdx_ = linearizer_.getDerivativeState(x, u, t);
         return dFdx_;
@@ -139,7 +143,7 @@ public:
 	 */
     virtual const state_control_matrix_t& getDerivativeControl(const state_vector_t& x,
         const control_vector_t& u,
-        const double t = 0.0) override
+        const SCALAR t = SCALAR(0.0)) override
     {
         dFdu_ = linearizer_.getDerivativeControl(x, u, t);
         return dFdu_;
@@ -152,7 +156,7 @@ protected:
 
     std::shared_ptr<system_t> nonlinearSystem_;  //!< instance of non-linear system
 
-    DynamicsLinearizerAD<STATE_DIM, CONTROL_DIM, ADScalar, double> linearizer_;  //!< instance of ad-linearizer
+    linearizer_t linearizer_;  //!< instance of ad-linearizer
 };
 
 }  // namespace core

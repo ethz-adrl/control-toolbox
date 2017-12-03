@@ -39,22 +39,25 @@ namespace core {
  * \warning This function still has some issues with pure time dependency
  * \todo Make time an Auto-Diff parameter
  *
- * @tparam dimension of state vector
- * @tparam dimension of control vector
+ * @tparam STATE_DIM dimension of state vector
+ * @tparam CONTROL_DIM dimension of control vector
+ * @tparam SCALAR primitive type of resultant linear system
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class DiscreteSystemLinearizerAD : public DiscreteLinearSystem<STATE_DIM, CONTROL_DIM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class DiscreteSystemLinearizerAD : public DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef DiscreteLinearSystem<STATE_DIM, CONTROL_DIM> Base;
+    typedef DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
+    typedef CppAD::AD<SCALAR> ADScalar;
     typedef DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, ADScalar> system_t;  //!< type of system to be linearized
+    typedef DynamicsLinearizerAD<STATE_DIM, CONTROL_DIM, ADScalar, int>
+        linearizer_t;  //!< type of linearizer to be used
 
-    typedef typename Base::state_vector_t state_vector_t;      //!< state vector type
-    typedef typename Base::control_vector_t control_vector_t;  //!< control vector type
-
+    typedef typename Base::state_vector_t state_vector_t;                  //!< state vector type
+    typedef typename Base::control_vector_t control_vector_t;              //!< control vector type
     typedef typename Base::state_matrix_t state_matrix_t;                  //!< state Jacobian type (A)
     typedef typename Base::state_control_matrix_t state_control_matrix_t;  //! control Jacobian type (B)
 
@@ -95,9 +98,9 @@ public:
     virtual ~DiscreteSystemLinearizerAD() {}
 
     //! deep cloning
-    DiscreteSystemLinearizerAD<STATE_DIM, CONTROL_DIM>* clone() const override
+    DiscreteSystemLinearizerAD<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {
-        return new DiscreteSystemLinearizerAD<STATE_DIM, CONTROL_DIM>(*this);
+        return new DiscreteSystemLinearizerAD<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
     }
 
     //! get the Jacobian with respect to the state
@@ -181,7 +184,7 @@ protected:
 
     std::shared_ptr<system_t> nonlinearSystem_;  //!< instance of non-linear system
 
-    DynamicsLinearizerAD<STATE_DIM, CONTROL_DIM, ADScalar, int> linearizer_;  //!< instance of ad-linearizer
+    linearizer_t linearizer_;  //!< instance of ad-linearizer
 };
 
 }  // namespace core

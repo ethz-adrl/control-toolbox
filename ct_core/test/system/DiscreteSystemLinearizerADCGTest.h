@@ -18,9 +18,9 @@ TEST(DiscreteSystemLinearizerADCG, JITCompilationTest)
     const size_t control_dim = TestDiscreteNonlinearSystem::CONTROL_DIM;
 
     // typedefs for the auto-differentiable codegen system
-    typedef DiscreteSystemLinearizerADCG<state_dim, control_dim>::SCALAR Scalar;
-    typedef typename Scalar::value_type AD_ValueType;
-    typedef tpl::TestDiscreteNonlinearSystem<Scalar> TestDiscreteNonlinearSystemAD;
+    typedef DiscreteSystemLinearizerADCG<state_dim, control_dim>::ADCGScalar ADCGScalar;
+    typedef typename ADCGScalar::value_type AD_ValueType;
+    typedef tpl::TestDiscreteNonlinearSystem<ADCGScalar> TestDiscreteNonlinearSystemAD;
 
     // handy typedefs for the Jacobian
     typedef ct::core::StateMatrix<state_dim, double> A_type;
@@ -30,7 +30,7 @@ TEST(DiscreteSystemLinearizerADCG, JITCompilationTest)
     const double rate = 100.0;
     shared_ptr<TestDiscreteNonlinearSystem> oscillator(new TestDiscreteNonlinearSystem(rate));
     shared_ptr<TestDiscreteNonlinearSystemAD> oscillatorAD(
-        new tpl::TestDiscreteNonlinearSystem<Scalar>(AD_ValueType(rate)));
+        new tpl::TestDiscreteNonlinearSystem<ADCGScalar>(AD_ValueType(rate)));
 
     // create two nonlinear systems, one regular one and one auto-diff codegen
     DiscreteSystemLinearizer<state_dim, control_dim> systemLinearizer(oscillator);
@@ -91,14 +91,14 @@ TEST(DiscreteSystemLinearizerADCG, CodegenTest)
     const size_t control_dim = TestDiscreteNonlinearSystem::CONTROL_DIM;
 
     // typedefs for the auto-differentiable codegen system
-    typedef DiscreteSystemLinearizerADCG<state_dim, control_dim>::SCALAR Scalar;
-    typedef typename Scalar::value_type AD_ValueType;
-    typedef tpl::TestDiscreteNonlinearSystem<Scalar> TestDiscreteNonlinearSystemAD;
+    typedef DiscreteSystemLinearizerADCG<state_dim, control_dim>::ADCGScalar ADCGScalar;
+    typedef typename ADCGScalar::value_type AD_ValueType;
+    typedef tpl::TestDiscreteNonlinearSystem<ADCGScalar> TestDiscreteNonlinearSystemAD;
 
     // create two nonlinear systems, one regular one and one auto-differentiable
     const double rate = 100.0;
     shared_ptr<TestDiscreteNonlinearSystemAD> oscillatorAD(
-        new tpl::TestDiscreteNonlinearSystem<Scalar>(AD_ValueType(rate)));
+        new tpl::TestDiscreteNonlinearSystem<ADCGScalar>(AD_ValueType(rate)));
 
     // create two nonlinear systems, one regular one and one auto-diff codegen
     DiscreteSystemLinearizerADCG<state_dim, control_dim> adLinearizer(oscillatorAD);
@@ -123,9 +123,9 @@ TEST(DiscreteSystemLinearizerADCGMP, JITCompilationTestMP)
     const size_t control_dim = TestDiscreteNonlinearSystem::CONTROL_DIM;
 
     // typedefs for the auto-differentiable codegen system
-    typedef DiscreteSystemLinearizerADCG<state_dim, control_dim>::SCALAR Scalar;
-    typedef typename Scalar::value_type AD_ValueType;
-    typedef tpl::TestDiscreteNonlinearSystem<Scalar> TestDiscreteNonlinearSystemAD;
+    typedef DiscreteSystemLinearizerADCG<state_dim, control_dim>::ADCGScalar ADCGScalar;
+    typedef typename ADCGScalar::value_type AD_ValueType;
+    typedef tpl::TestDiscreteNonlinearSystem<ADCGScalar> TestDiscreteNonlinearSystemAD;
 
     // handy typedefs for the Jacobian
     typedef ct::core::StateMatrix<state_dim, double> A_type;
@@ -135,7 +135,7 @@ TEST(DiscreteSystemLinearizerADCGMP, JITCompilationTestMP)
     const double rate = 100.0;
     shared_ptr<TestDiscreteNonlinearSystem> oscillator(new TestDiscreteNonlinearSystem(rate));
     shared_ptr<TestDiscreteNonlinearSystemAD> oscillatorAD(
-        new tpl::TestDiscreteNonlinearSystem<Scalar>(AD_ValueType(rate)));
+        new tpl::TestDiscreteNonlinearSystem<ADCGScalar>(AD_ValueType(rate)));
 
     // create two nonlinear systems, one regular one and one auto-diff codegen
     DiscreteSystemLinearizer<state_dim, control_dim> systemLinearizer(oscillator);
@@ -191,5 +191,88 @@ TEST(DiscreteSystemLinearizerADCGMP, JITCompilationTestMP)
 
         for (auto& thr : threads)
             thr.join();
+    }
+}
+
+TEST(DiscreteSystemLinearizerADCG, FloatTest)
+{
+  typedef float primitiveType;
+
+  // define the dimensions of the system
+  const size_t state_dim = TestDiscreteNonlinearSystem::STATE_DIM;
+  const size_t control_dim = TestDiscreteNonlinearSystem::CONTROL_DIM;
+
+  // typedefs for the auto-differentiable codegen system
+  typedef DiscreteSystemLinearizerADCG<state_dim, control_dim, primitiveType>::ADCGScalar ADCGScalar;
+  typedef typename ADCGScalar::value_type AD_ValueType;
+  typedef tpl::TestDiscreteNonlinearSystem<ADCGScalar> TestDiscreteNonlinearSystemAD;
+
+  // handy typedefs for the Jacobian
+  typedef ct::core::StateMatrix<state_dim, primitiveType> A_type;
+  typedef ct::core::StateControlMatrix<state_dim, control_dim, primitiveType> B_type;
+
+  // create two nonlinear systems, one regular one and one auto-differentiable
+  const primitiveType rate = 100.0;
+  shared_ptr<tpl::TestDiscreteNonlinearSystem<primitiveType>> oscillator(new tpl::TestDiscreteNonlinearSystem<primitiveType>(rate));
+  shared_ptr<TestDiscreteNonlinearSystemAD> oscillatorAD(
+      new tpl::TestDiscreteNonlinearSystem<ADCGScalar>(AD_ValueType(rate)));
+
+  // create two nonlinear systems, one regular one and one auto-diff codegen
+  DiscreteSystemLinearizer<state_dim, control_dim, primitiveType> systemLinearizer(oscillator);
+  DiscreteSystemLinearizerADCG<state_dim, control_dim, primitiveType> adLinearizer(oscillatorAD);
+
+  // do just in time compilation of the Jacobians
+  std::cout << "compiling..." << std::endl;
+  adLinearizer.compileJIT("ADCGCodegenLib");
+  std::cout << "... done!" << std::endl;
+
+  std::shared_ptr<DiscreteSystemLinearizerADCG<state_dim, control_dim, primitiveType>> adLinearizerClone(adLinearizer.clone());
+  std::cout << "compiling the clone..." << std::endl;
+  adLinearizerClone->compileJIT("ADCGCodegenLibClone");
+  std::cout << "... done!" << std::endl;
+
+  // create state, control and time variables
+  StateVector<state_dim, primitiveType> x;
+  ControlVector<control_dim, primitiveType> u;
+  int n = 0;
+
+  for (size_t i = 0; i < 1000; i++)
+  {
+      // set a random state
+      x.setRandom();
+      u.setRandom();
+
+      // use the numerical differentiation linearizer
+      A_type A_system;
+      B_type B_system;
+      systemLinearizer.getAandB(x, u, x, n, 1, A_system, B_system);
+
+      // use the auto diff codegen linearzier
+      A_type A_ad;
+      B_type B_ad;
+      adLinearizer.getAandB(x, u, x, n, 1, A_ad, B_ad);
+
+      A_type A_adCloned;
+      B_type B_adCloned;
+      adLinearizerClone->getAandB(x, u, x, n, 1, A_adCloned, B_adCloned);
+
+      // verify the result //FIXME: this tolerance is too high
+      ASSERT_LT((A_system - A_ad).array().abs().maxCoeff(), 1e-1);
+      ASSERT_LT((B_system - B_ad).array().abs().maxCoeff(), 1e-1);
+
+      ASSERT_LT((A_system - A_adCloned).array().abs().maxCoeff(), 1e-1);
+      ASSERT_LT((B_system - B_adCloned).array().abs().maxCoeff(), 1e-1);
+  }
+
+    try
+    {
+        std::cout << "generating code..." << std::endl;
+        // generate code for the Jacobians
+        adLinearizer.generateCode("TestDiscreteNonlinearSystemLinearizedFloat");
+        std::cout << "... done!" << std::endl;
+    } catch (const std::runtime_error& e)
+    {
+        std::cout << "code generation failed: " << e.what() << std::endl;
+        ASSERT_TRUE(false);
     }
 }
