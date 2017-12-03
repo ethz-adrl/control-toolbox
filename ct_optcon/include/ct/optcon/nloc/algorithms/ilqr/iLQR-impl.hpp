@@ -98,6 +98,17 @@ bool iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishIteration()
                   << " ms" << std::endl;
 
 
+    start = std::chrono::steady_clock::now();
+    //! linearize and set constraints
+    this->backend_->setBoxConstraintsForLQOCProblem();
+    // TODO add general constraints here
+    end = std::chrono::steady_clock::now();
+    diff = end - start;
+    if (debugPrint)
+        std::cout << "[iLQR]: Linearizing and setting constraints took "
+                  << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
+
+
     end = std::chrono::steady_clock::now();
     diff = end - startEntire;
     if (debugPrint)

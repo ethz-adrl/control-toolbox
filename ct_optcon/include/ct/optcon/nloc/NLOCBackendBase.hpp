@@ -339,6 +339,9 @@ public:
     //! Computes the quadratic approximation of the cost function along the trajectory, for the specified indices
     virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
 
+    //! sets the box constraints for the entire time horizon including terminal stage
+    void setBoxConstraintsForLQOCProblem();
+
     //! obtain state update from lqoc solver
     void getStateUpdates();
 
@@ -414,6 +417,7 @@ protected:
         const StateVectorArray& xShot,
         StateVectorArray& d) const;
 
+
     //! Computes the linearized Dynamics at a specific point of the trajectory
     /*!
 	  This function calculates the linearization, i.e. matrices A and B in \f$ \dot{x} = A(x(k)) x + B(x(k)) u \f$
@@ -423,6 +427,19 @@ protected:
 	  \param k step k
 	*/
     void computeLinearizedDynamics(size_t threadId, size_t k);
+
+
+    //! Computes the linearized general constraints at a specific point of the trajectory
+    /*!
+	  This function calculates the linearization, i.e. matrices d, C and D in \f$ d_{lb} \leq C x + D u \leq d_{ub}\f$
+	  at a specific point of the trajectory
+
+	  \param threadId the id of the worker thread
+	  \param k step k
+
+	  \note the box constraints do not need to be linearized
+	*/
+    void computeLinearizedConstraints(size_t threadId, size_t k);
 
     //! Computes the quadratic costs
     /*!

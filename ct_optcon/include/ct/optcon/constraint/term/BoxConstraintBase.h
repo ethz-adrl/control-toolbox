@@ -37,7 +37,10 @@ public:
     using sparsity_matrix_t = Eigen::Matrix<SCALAR, Eigen::Dynamic, DERIVED_DIM>;
 
     //! generate sparsity pattern for sparse box constraint
-    static void sparsityPatternSparseJacobian(const VectorXi& sparsity_vec, const size_t& constrSize, VectorXi& rows, VectorXi& cols);
+    static void sparsityPatternSparseJacobian(const VectorXi& sparsity_vec,
+        const size_t& constrSize,
+        VectorXi& rows,
+        VectorXi& cols);
 
     /**
 	 * @brief      Constructor taking lower and upper state bounds directly. Assumes the box constraint is dense.
@@ -110,7 +113,6 @@ protected:
 
 private:
     void sanityCheck(const size_t& nCon, const VectorXs& lb, const VectorXs& ub) const;
-
 };
 
 }  // namespace optcon

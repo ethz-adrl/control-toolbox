@@ -93,6 +93,21 @@ public:
     void setZero(const int& nGenConstr = 0);
 
     /*!
+     * \brief set intermediate box constraints at a specific index
+     * @param index the index
+     * @param nConstr the number of constraints
+     * @param ux_lb control lower bound in absolute coordinates, active bounds ordered as [u x]
+     * @param ux_ub control upper bound in absolute coordinates, active bounds ordered as [u x]
+     * @param sp the sparsity vector, with strictly increasing indices, e.g. [0 1 4 7]
+     */
+    void setIntermediateBoxConstraint(
+    		const int index,
+    		const int nConstr,
+            const constr_vec_t& ux_lb,
+            const constr_vec_t& ux_ub,
+            const VectorXi& sp);
+
+    /*!
      * \brief set uniform box constraints, with the same constraint being applied at each intermediate stage
      * @param nConstr the number of constraints
      * @param ux_lb control lower bound in absolute coordinates, active bounds ordered as [u x]

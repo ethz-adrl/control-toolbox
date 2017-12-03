@@ -115,7 +115,8 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero(const int& nGenConstr)
 
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateBoxConstraints(const int nConstr,
+void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateBoxConstraint(const int index,
+    const int nConstr,
     const constr_vec_t& ux_lb,
     const constr_vec_t& ux_ub,
     const VectorXi& sp)
@@ -130,15 +131,25 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateBoxConstraints(
         throw(std::runtime_error("LQOCProblem setIntermediateBoxConstraint: error in constraint config"));
     }
 
-    for (int i = 0; i < K_; i++)
-    {
-        nb_[i] = nConstr;
-        ux_lb_[i].template topRows(nConstr) = ux_lb;
-        ux_ub_[i].template topRows(nConstr) = ux_ub;
-        ux_I_[i].template topRows(nConstr) = sp;
-    }
+    if (index >= K_)
+        throw(std::runtime_error("LQOCProblem cannot set an intermediate Box constraint at time >= K_"));
+
+    nb_[index] = nConstr;
+    ux_lb_[index].template topRows(nConstr) = ux_lb;
+    ux_ub_[index].template topRows(nConstr) = ux_ub;
+    ux_I_[index].template topRows(nConstr) = sp;
 
     hasBoxConstraints_ = true;
+}
+
+template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
+void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateBoxConstraints(const int nConstr,
+    const constr_vec_t& ux_lb,
+    const constr_vec_t& ux_ub,
+    const VectorXi& sp)
+{
+    for (int i = 0; i < K_; i++)
+        setIntermediateBoxConstraint(i, nConstr, ux_lb, ux_ub, sp);
 }
 
 
@@ -148,22 +159,25 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setTerminalBoxConstraints(cons
     const constr_vec_t& ux_ub,
     const VectorXi& sp)
 {
-    if ((ux_lb.rows() != ux_ub.rows()) | (ux_lb.size() != nConstr) | (sp.rows() != nConstr) |
-        (sp(sp.rows() - 1) > (STATE_DIM - 1)))
+    if (nConstr > 0)
     {
-        std::cout << "n.o. constraints : " << nConstr << std::endl;
-        std::cout << "ux_lb : " << ux_lb.transpose() << std::endl;
-        std::cout << "ux_ub : " << ux_ub.transpose() << std::endl;
-        std::cout << "sparsity : " << sp.transpose() << std::endl;
-        throw(std::runtime_error("LQOCProblem setTerminalBoxConstraint: error in constraint config"));
+        if ((ux_lb.rows() != ux_ub.rows()) | (ux_lb.size() != nConstr) | (sp.rows() != nConstr) |
+            (sp(sp.rows() - 1) > (STATE_DIM - 1)))
+        {
+            std::cout << "n.o. constraints : " << nConstr << std::endl;
+            std::cout << "ux_lb : " << ux_lb.transpose() << std::endl;
+            std::cout << "ux_ub : " << ux_ub.transpose() << std::endl;
+            std::cout << "sparsity : " << sp.transpose() << std::endl;
+            throw(std::runtime_error("LQOCProblem setTerminalBoxConstraint: error in constraint config"));
+        }
+
+        nb_[K_] = nConstr;
+        ux_lb_[K_].template topRows(nConstr) = ux_lb;
+        ux_ub_[K_].template topRows(nConstr) = ux_ub;
+        ux_I_[K_].template topRows(nConstr) = sp;
+
+        hasBoxConstraints_ = true;
     }
-
-    nb_[K_] = nConstr;
-    ux_lb_[K_].template topRows(nConstr) = ux_lb;
-    ux_ub_[K_].template topRows(nConstr) = ux_ub;
-    ux_I_[K_].template topRows(nConstr) = sp;
-
-    hasBoxConstraints_ = true;
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>

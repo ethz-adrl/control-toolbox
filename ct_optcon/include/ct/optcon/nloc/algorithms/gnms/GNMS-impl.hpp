@@ -84,6 +84,17 @@ void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareIteration()
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
 
+    start = std::chrono::steady_clock::now();
+    //! linearize and set constraints
+    this->backend_->setBoxConstraintsForLQOCProblem();
+    // TODO add general constraints here
+    end = std::chrono::steady_clock::now();
+    diff = end - start;
+    if (debugPrint)
+        std::cout << "[GNMS]: Linearizing and setting constraints took "
+                  << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
+
+
     if (debugPrint)
         std::cout << "[GNMS]: Solving prepare stage of LQOC Problem" << std::endl;
 

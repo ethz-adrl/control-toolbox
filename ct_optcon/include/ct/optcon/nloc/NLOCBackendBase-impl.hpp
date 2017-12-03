@@ -753,6 +753,78 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinea
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::setBoxConstraintsForLQOCProblem()
+{
+    // set box constraints if there are any
+    if (boxConstraints_[settings_.nThreads] != nullptr)
+    {
+        // temp vars
+        Eigen::VectorXi foo, u_sparsity_intermediate, x_sparsity_intermediate, x_sparsity_terminal;
+
+        // intermediate box constraints
+        const int nb_ux_intermediate = boxConstraints_[settings_.nThreads]->getJacobianStateNonZeroCountIntermediate() +
+                                       boxConstraints_[settings_.nThreads]->getJacobianInputNonZeroCountIntermediate();
+
+        if (nb_ux_intermediate > 0)
+        {
+            boxConstraints_[settings_.nThreads]->sparsityPatternInputIntermediate(foo, u_sparsity_intermediate);
+            boxConstraints_[settings_.nThreads]->sparsityPatternStateIntermediate(foo, x_sparsity_intermediate);
+
+            Eigen::VectorXi ux_sparsity_intermediate(nb_ux_intermediate);
+            x_sparsity_intermediate.array() += CONTROL_DIM;  // shift indices to match combined decision vector [u, x]
+            ux_sparsity_intermediate << u_sparsity_intermediate, x_sparsity_intermediate;
+
+            lqocProblem_->setIntermediateBoxConstraints(nb_ux_intermediate,
+                boxConstraints_[settings_.nThreads]->getLowerBoundsIntermediate(),
+                boxConstraints_[settings_.nThreads]->getUpperBoundsIntermediate(), ux_sparsity_intermediate);
+        }
+
+        // terminal box constraints
+        const int nb_x_terminal = boxConstraints_[settings_.nThreads]->getJacobianStateNonZeroCountTerminal();
+
+        if (nb_x_terminal > 0)
+        {
+            boxConstraints_[settings_.nThreads]->sparsityPatternStateTerminal(foo, x_sparsity_terminal);
+
+            lqocProblem_->setTerminalBoxConstraints(nb_x_terminal,
+                boxConstraints_[settings_.nThreads]->getLowerBoundsTerminal(),
+                boxConstraints_[settings_.nThreads]->getUpperBoundsTerminal(), x_sparsity_terminal);
+        }
+    }
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedConstraints(size_t threadId,
+    size_t k)
+{
+    LQOCProblem_t& p = *lqocProblem_;
+    const scalar_t& dt = settings_.dt;
+
+    // treat general constraints
+    generalConstraints_[threadId]->setCurrentStateAndControl(x_[k], u_ff_[k], dt * k);
+
+    p.ng_[k] = generalConstraints_[threadId]->getIntermediateConstraintsCount();
+
+
+    //    // derivative of cost with respect to state
+    //    p.q_[k] = costFunctions_[threadId]->evaluateIntermediate() * dt;
+    //
+    //    p.qv_[k] = costFunctions_[threadId]->stateDerivativeIntermediate() * dt;
+    //
+    //    p.Q_[k] = costFunctions_[threadId]->stateSecondDerivativeIntermediate() * dt;
+    //
+    //    // derivative of cost with respect to control and state
+    //    p.P_[k] = costFunctions_[threadId]->stateControlDerivativeIntermediate() * dt;
+    //
+    //    // derivative of cost with respect to control
+    //    p.rv_[k] = costFunctions_[threadId]->controlDerivativeIntermediate() * dt;
+    //
+    //    p.R_[k] = costFunctions_[threadId]->controlSecondDerivativeIntermediate() * dt;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCosts(size_t threadId, size_t k)
 {
     LQOCProblem_t& p = *lqocProblem_;
