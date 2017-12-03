@@ -48,6 +48,9 @@ namespace optcon {
  * \f]
  * which are both always kept in absolute coordinates.
  *
+ * \note The box constraint containers within this class are made fixed-size. Solvers can get the
+ * actual number of box constraints from a a dedicated container nb_
+ *
  * \todo refactor all to be in global coordinates
  * \todo Refactor the initializing methods such that const-references can be handed over.
  */
@@ -59,7 +62,7 @@ public:
 
     using constr_vec_t = Eigen::Matrix<SCALAR, -1, -1>;
     using constr_state_jac_t = Eigen::Matrix<SCALAR, -1, -1>;
-    using constr_control_jac_t = Eigen::Matrix<SCALAR, -1,-1>;
+    using constr_control_jac_t = Eigen::Matrix<SCALAR, -1, -1>;
 
     using constr_vec_array_t = ct::core::DiscreteArray<constr_vec_t>;
     using constr_state_jac_array_t = ct::core::DiscreteArray<constr_state_jac_t>;
@@ -72,6 +75,7 @@ public:
     using box_constr_sparsity_t = Eigen::Matrix<int, STATE_DIM + CONTROL_DIM, 1>;
     using box_constr_sparsity_array_t = ct::core::DiscreteArray<box_constr_sparsity_t>;
 
+    using VectorXi = Eigen::VectorXi;
 
     //! constructor
     LQOCProblem(int N = 0);
@@ -89,24 +93,28 @@ public:
     void setZero(const int& nGenConstr = 0);
 
     /*!
-     * \brief set uniform state box constraints
-     * @param x_lb state lower bound in absolute coordinates
-     * @param x_ub state upper bound in absolute coordinates
-     * @param sparsity the sparsity identification vector, by default all box constraints are active
+     * \brief set uniform box constraints, with the same constraint being applied at each intermediate stage
+     * @param nConstr the number of constraints
+     * @param ux_lb control lower bound in absolute coordinates, active bounds ordered as [u x]
+     * @param ux_ub control upper bound in absolute coordinates, active bounds ordered as [u x]
+     * @param sp the sparsity vector, with strictly increasing indices, e.g. [0 1 4 7]
      */
-    void setStateBoxConstraints(ct::core::StateVector<STATE_DIM, SCALAR>& x_lb,
-        ct::core::StateVector<STATE_DIM, SCALAR>& x_ub,
-        const Eigen::Matrix<int, STATE_DIM, 1>& sparsity = Eigen::Matrix<int, STATE_DIM, 1>::Ones());
+    void setIntermediateBoxConstraints(const int nConstr,
+        const constr_vec_t& ux_lb,
+        const constr_vec_t& ux_ub,
+        const VectorXi& sp);
 
     /*!
-     * \brief set uniform control box constraints, with the same constraint being applied at each stage
-     * @param u_lb control lower bound in absolute coordinates
-     * @param u_ub control upper bound in absolute coordinates
-     * @param sparsity the sparsity identification vector, by default all box constraints are active
+     * \brief set box constraints for terminal stage
+     * @param nConstr the number of constraints
+     * @param ux_lb control lower bound in absolute coordinates, active bounds ordered as [u x]
+     * @param ux_ub control upper bound in absolute coordinates, active bounds ordered as [u x]
+     * @param sp the sparsity vector, with strictly increasing indices, e.g. [0 1 4 7]
      */
-    void setControlBoxConstraints(ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_lb,
-        ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_ub,
-        const Eigen::Matrix<int, CONTROL_DIM, 1>& sparsity = Eigen::Matrix<int, CONTROL_DIM, 1>::Ones());
+    void setTerminalBoxConstraints(const int nConstr,
+        const constr_vec_t& ux_lb,
+        const constr_vec_t& ux_ub,
+        const VectorXi& sp);
 
     /*!
      * \brief set general (in)equaltiy constraints, with the same constraint applied at each stage
@@ -115,7 +123,10 @@ public:
      * @param C general constraint state jacobian
      * @param D general constraint control jacobian
      */
-    void setGeneralConstraints(const constr_vec_t& d_lb, const constr_vec_t& d_ub, const constr_state_jac_t& C, const constr_control_jac_t& D);
+    void setGeneralConstraints(const constr_vec_t& d_lb,
+        const constr_vec_t& d_ub,
+        const constr_state_jac_t& C,
+        const constr_control_jac_t& D);
 
     /*!
      * \brief a convenience method which constructs an unconstrained LQOC Problem from an LTI system and continuous-time quadratic cost
@@ -137,8 +148,6 @@ public:
     //! return a flag indicating whether this LQOC Problem is constrained or not
     bool isConstrained() const;
 
-    bool isControlBoxConstrained() const;
-    bool isStateBoxConstrained() const;
     bool isBoxConstrained() const;
     bool isGeneralConstrained() const;
 
@@ -171,26 +180,33 @@ public:
     box_constr_array_t ux_lb_;
     //! upper bound of box constraints in order [u_ub; x_ub]. Stacked for memory efficiency.
     box_constr_array_t ux_ub_;
-    //! box constraint sparsity
+    /*!
+     * \brief container for the box constraint sparsity pattern
+     * An example for how an element of this array might look like: [0 1 4 7]
+     * This would mean that box constraints act on elements 0, 1, 4 and 7 of the
+     * combined vector of decision variables [u; x]
+     */
     box_constr_sparsity_array_t ux_I_;
+    //! the number of box constraints at every stage.
+    std::vector<int> nb_;
 
     //! general constraint lower bound
     constr_vec_array_t d_lb_;
     //! general constraint upper bound
     constr_vec_array_t d_ub_;
-
     //! linear general constraint matrices
     constr_state_jac_array_t C_;
     constr_control_jac_array_t D_;
+    //! number of general inequality constraints
+    std::vector<int> ng_;
 
 private:
     //! the number of discrete time steps in the LOCP, including terminal stage
     int K_;
 
-    //! bool indicating if the optimization problem is input box-constrained
-    bool hasControlBoxConstraints_;
-    //! bool indicating if the optimization problem is state box-constrained
-    bool hasStateBoxConstraints_;
+    //! bool indicating if the optimization problem is box-constrained
+    bool hasBoxConstraints_;
+
     //! bool indicating if the optimization problem hs general inequality constraints
     bool hasGenConstraints_;
 };

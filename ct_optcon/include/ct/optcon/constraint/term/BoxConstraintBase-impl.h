@@ -14,7 +14,7 @@ BoxConstraintBase<DERIVED_DIM, STATE_DIM, CONTROL_DIM, SCALAR>::BoxConstraintBas
     const decision_vector_t& ub)
 {
     // check if box constraints are meaningful
-	sanityCheck(DERIVED_DIM, lb, ub);
+    sanityCheck(DERIVED_DIM, lb, ub);
 
     // this box constraint is 'dense' (one dense jacobian diagonal, one zero jacobian)
     constrSize_ = DERIVED_DIM;
@@ -72,7 +72,7 @@ typename BoxConstraintBase<DERIVED_DIM, STATE_DIM, CONTROL_DIM, SCALAR>::sparsit
 BoxConstraintBase<DERIVED_DIM, STATE_DIM, CONTROL_DIM, SCALAR>::diagSparsityVecToSparsityMat(const VectorXi& spVec,
     const size_t& nConstr)
 {
-	// set up sparsity matrix all zero
+    // set up sparsity matrix all zero
     sparsity_matrix_t mat(nConstr, DERIVED_DIM);
     mat.setZero();
 
@@ -96,10 +96,10 @@ void BoxConstraintBase<DERIVED_DIM, STATE_DIM, CONTROL_DIM, SCALAR>::sanityCheck
     const VectorXs& lb,
     const VectorXs& ub) const
 {
-	// assert that the size of constraint vectors is equal to the computed/given number of constraints
+    // assert that the size of constraint vectors is equal to the computed/given number of constraints
     if (lb.rows() != nCon | ub.rows() != nCon)
     {
-    	std::cout << "no. Constraints: " << nCon << std::endl;
+        std::cout << "no. Constraints: " << nCon << std::endl;
         std::cout << "BoxConstraintBase: lb " << lb.transpose() << std::endl;
         std::cout << "BoxConstraintBase: ub " << ub.transpose() << std::endl;
         throw std::runtime_error("BoxConstraintBase: wrong constraint sizes in StateConstraint");
@@ -119,10 +119,14 @@ void BoxConstraintBase<DERIVED_DIM, STATE_DIM, CONTROL_DIM, SCALAR>::sanityCheck
 
 
 template <size_t DERIVED_DIM, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void BoxConstraintBase<DERIVED_DIM, STATE_DIM, CONTROL_DIM, SCALAR>::sparsityPatternSparseJacobian(VectorXi& rows, VectorXi& cols)
+void BoxConstraintBase<DERIVED_DIM, STATE_DIM, CONTROL_DIM, SCALAR>::sparsityPatternSparseJacobian(
+    const VectorXi& sparsity_vec,
+    const size_t& constrSize,
+    VectorXi& rows,
+    VectorXi& cols)
 {
-    this->genSparseDiagonalIndices(sparsity_, rows, cols);
-    for (size_t i = 0; i < constrSize_; i++)
+    Base::genSparseDiagonalIndices(sparsity_vec, rows, cols);
+    for (size_t i = 0; i < constrSize; i++)
         rows(i) = i;
 }
 

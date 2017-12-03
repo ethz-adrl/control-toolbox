@@ -22,7 +22,6 @@ HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(int N) : N_(-1), x0_(null
     // by default, set number of box and general constraints to zero
     nb_.resize(1, 0);
     ng_.resize(1, 0);
-    hdidxbEigen_.resize(1, box_constr_sparsity_t::Zero());
 
     configure(settings_);
 }
@@ -50,7 +49,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
     ::d_create_ipm_hard_ocp_qp(&qp_, &arg_, &workspace_, ipm_mem_.data());
 
     std::cout << "HPIPM allocating memory for QP"
-              << std::endl;  // always print to make sure users take not in case of misuse
+              << std::endl;  // always print to make sure users take note in case of wrong use
     if (settings_.lqoc_solver_settings.lqoc_debug_print)
     {
         std::cout << "HPIPM qp_size: " << qp_size << std::endl;
@@ -77,8 +76,8 @@ template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
 {
     // optional printout
-    //    		for (size_t i=0; i<N_+1; i++)
-    //    		{
+    //    for (size_t i = 0; i < N_ + 1; i++)
+    //    {
     //			std::cout << "HPIPM matrix printout for stage " << i << std::endl;
     //			if (i<N_)
     //			{
@@ -106,12 +105,12 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
     //				d_print_mat(1, CONTROL_DIM, hr_[i], 1);
     //			}
     //
-    //              int_print_mat(1, nb_[i], hidxb_[i], 1);
-    //              printf("\nhd_lb_\n");
-    //              d_print_mat(1, nb_[i], hd_lb_[i], 1);
-    //              printf("\nhd_ub_\n");
-    //              d_print_mat(1, nb_[i], hd_ub_[i], 1);
-    //        } // end optional printout
+    //        int_print_mat(1, nb_[i], hidxb_[i], 1);
+    //        printf("\nhd_lb_\n");
+    //        d_print_mat(1, nb_[i], hd_lb_[i], 1);
+    //        printf("\nhd_ub_\n");
+    //        d_print_mat(1, nb_[i], hd_ub_[i], 1);
+    //    }  // end optional printout
 
     // set pointers to optimal control problem
     ::d_cvt_colmaj_to_ocp_qp(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(),
@@ -375,17 +374,28 @@ template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureBoxConstraints(
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
 {
+    // stages 1 to N
     for (size_t i = 0; i < N_ + 1; i++)
     {
-        const int nConstr = get_hpipm_boxconstr_sp_pattern(i, lqocProblem->ux_I_[i], hdidxbEigen_[i]);
-        nb_[i] = nConstr;
+        nb_[i] = lqocProblem->nb_[i];
 
-        assemble_hpipm_box_constr_container(lqocProblem, nConstr, i, hdidxbEigen_[i]);
+        // set pointers to box constraint boundaries and sparsity pattern
+        hd_lb_[i] = lqocProblem->ux_lb_[i].data();
+        hd_ub_[i] = lqocProblem->ux_ub_[i].data();
+        hidxb_[i] = lqocProblem->ux_I_[i].data();
 
-        // set pointers to hpipm-style box constraint boundaries and sparsity pattern
-        hd_lb_[i] = ux_lb_hpipm_[i].data();
-        hd_ub_[i] = ux_ub_hpipm_[i].data();
-        hidxb_[i] = hdidxbEigen_[i].data();
+        // first stage requires special treatment as state is not a decision variable
+        if (i == 0)
+        {
+            nb_[i] = 0;
+            for (int j = 0; j < lqocProblem->nb_[i]; j++)
+            {
+                if (lqocProblem->ux_I_[i](j) < CONTROL_DIM)
+                    nb_[i]++;  // adapt number of constraints such that only controls are listed as decision vars
+                else
+                    break;
+            }
+        }
 
         // TODO clarify with Gianluca if we need to reset the lagrange multiplier
         // before warmstarting (potentially wrong warmstart for the lambdas)
@@ -403,7 +413,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
 {
     for (size_t i = 0; i < N_ + 1; i++)
     {
-    	// check dimensions
+        // check dimensions
         assert(lqocProblem->d_lb_[i].rows() == lqocProblem->d_ub_[i].rows());
         assert(lqocProblem->d_lb_[i].rows() == lqocProblem->C_[i].rows());
         assert(lqocProblem->d_lb_[i].rows() == lqocProblem->D_[i].rows());
@@ -423,8 +433,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
         // before warmstarting (potentially wrong warmstart for the lambdas)
 
         // direct pointers of lagrange mult to corresponding containers
-        cont_lam_lg_[i].resize(ng_[i]); // todo avoid dynamic allocation (e.g. by defining a max. constraint dim)
-        cont_lam_ug_[i].resize(ng_[i]); // todo avoid dynamic allocation (e.g. by defining a max. constraint dim)
+        cont_lam_lg_[i].resize(ng_[i]);  // todo avoid dynamic allocation (e.g. by defining a max. constraint dim)
+        cont_lam_ug_[i].resize(ng_[i]);  // todo avoid dynamic allocation (e.g. by defining a max. constraint dim)
         lam_lg_[i] = cont_lam_lg_[i].data();
         lam_ug_[i] = cont_lam_ug_[i].data();
     }
@@ -514,11 +524,10 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     this->lx_.resize(N + 1);
     this->lu_.resize(N);
 
-    nx_.resize(N_ + 1, STATE_DIM);                     // initialize number of states per stage
-    nu_.resize(N_ + 1, CONTROL_DIM);                   // initialize number of control inputs per stage
-    nb_.resize(N_ + 1, nb_.back());                    // initialize number of box constraints per stage
-    ng_.resize(N_ + 1, ng_.back());                    // initialize number of general constraints per stage
-    hdidxbEigen_.resize(N_ + 1, hdidxbEigen_.back());  // resize sparsity container for box constraints
+    nx_.resize(N_ + 1, STATE_DIM);    // initialize number of states per stage
+    nu_.resize(N_ + 1, CONTROL_DIM);  // initialize number of control inputs per stage
+    nb_.resize(N_ + 1, nb_.back());   // initialize number of box constraints per stage
+    ng_.resize(N_ + 1, ng_.back());   // initialize number of general constraints per stage
 
     // resize the containers for the affine system dynamics approximation
     hA_.resize(N_);
@@ -538,8 +547,6 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     hd_lb_.resize(N_ + 1);
     hd_ub_.resize(N_ + 1);
     hidxb_.resize(N_ + 1);
-    ux_lb_hpipm_.resize(N_ + 1);
-    ux_ub_hpipm_.resize(N_ + 1);
     hd_lg_.resize(N_ + 1);
     hd_ug_.resize(N_ + 1);
     hC_.resize(N_ + 1);
@@ -597,53 +604,6 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     nu_[N] = 0;
 
     return true;
-}
-
-
-template <int STATE_DIM, int CONTROL_DIM>
-int HPIPMInterface<STATE_DIM, CONTROL_DIM>::get_hpipm_boxconstr_sp_pattern(const size_t n,
-    const box_constr_sparsity_t& lqoc_sp_in,
-    box_constr_sparsity_t& hpipm_sp_out)
-{
-    int nBoxCon = 0;  // count number of box constraints
-
-    size_t i_start = 0;                  // start searching for box constraints at this index
-    size_t i_stop = max_box_constr_dim;  // stop searching for box constraints at this index
-
-    if (n == 0)
-        i_stop = CONTROL_DIM;  // omit state box constraints at first stage, n=0
-    else if (n == N_)
-        i_start = CONTROL_DIM;  // omit control box constraints at last stage, n=N
-
-    for (size_t i = i_start; i < i_stop; i++)
-    {
-        if (lqoc_sp_in(i) == 1)  // if there is a box constraint ...
-        {
-            hpipm_sp_out(nBoxCon) = i;  // ... add to index
-            nBoxCon++;
-        }
-    }
-    return nBoxCon;
-}
-
-
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::assemble_hpipm_box_constr_container(
-    std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem,
-    const int nCon,
-    const int ind,
-    const box_constr_sparsity_t& hpipm_sp)
-{
-    // resize the hpipm box constraint sparsity container to the number of box constraints
-    ux_lb_hpipm_[ind].resize(nCon);
-    ux_ub_hpipm_[ind].resize(nCon);
-
-    // fill in the corresponding box constraint bounds, indices given by the hpipm sparsity pattern
-    for (size_t i = 0; i < nCon; i++)
-    {
-        ux_lb_hpipm_[ind](i) = lqocProblem->ux_lb_[ind](hpipm_sp(i));
-        ux_ub_hpipm_[ind](i) = lqocProblem->ux_ub_[ind](hpipm_sp(i));
-    }
 }
 
 
