@@ -282,7 +282,6 @@ private:
     struct d_ipm_hard_ocp_qp_arg arg_;  //! IPM settings
     std::vector<char> ipm_mem_;
     struct d_ipm_hard_ocp_qp_workspace workspace_;
-
 };
 
 

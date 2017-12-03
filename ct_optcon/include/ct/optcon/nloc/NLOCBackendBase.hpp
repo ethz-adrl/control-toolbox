@@ -94,7 +94,7 @@ public:
     using control_vector_t = core::ControlVector<CONTROL_DIM, SCALAR>;
     using feedback_matrix_t = core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>;
 
-    using scalar_t =  SCALAR ;
+    using scalar_t = SCALAR;
     using scalar_array_t = std::vector<SCALAR, Eigen::aligned_allocator<SCALAR>>;
 
 

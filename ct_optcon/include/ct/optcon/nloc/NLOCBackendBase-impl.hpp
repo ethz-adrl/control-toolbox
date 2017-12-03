@@ -165,8 +165,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
 
     int newK = settings_.computeK(tf);
 
-    if(newK == K_)
-    	return;
+    if (newK == K_)
+        return;
 
     K_ = newK;
 
