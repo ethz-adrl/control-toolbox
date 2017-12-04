@@ -7,6 +7,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "term/ConstraintBase.h"
+#include "term/BoxConstraintBase.h"
 #include "term/ControlInputConstraint.h"
 #include "term/ObstacleConstraint.h"
 #include "term/StateConstraint.h"

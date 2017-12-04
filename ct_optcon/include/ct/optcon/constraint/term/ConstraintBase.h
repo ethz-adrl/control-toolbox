@@ -199,8 +199,8 @@ public:
 
 
 protected:
-    VectorXs lb_;  // lower bound on the constraints
-    VectorXs ub_;  // upper bound on the constraints
+    VectorXs lb_;  //! lower bound on the constraints
+    VectorXs ub_;  //! upper bound on the constraints
 
     /**
 	 * @brief      Generates indices of a diagonal square matrix
@@ -210,6 +210,17 @@ protected:
 	 * @param[out] jCol_vec      The column vector
 	 */
     void genDiagonalIndices(const size_t num_elements, Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec);
+
+    /**
+	 * @brief      Generates indices of a sparse diagonal square matrix
+	 *
+	 * @param[in]  diag_sparsity Sparsity pattern for the diagonal (Example: [0 1 0 0 1 1])
+	 * @param[out] iRow_vec      The row vector
+	 * @param[out] jCol_vec      The column vector
+	 */
+    void genSparseDiagonalIndices(const Eigen::VectorXi& diag_sparsity,
+        Eigen::VectorXi& iRow_vec,
+        Eigen::VectorXi& jCol_vec);
 
     /**
 	 * @brief      Generates indices of a full matrix
