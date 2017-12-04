@@ -18,7 +18,7 @@ function(ct_get_all_srcs ADD_HEADERS)
 
     set(EXTENSIONS "*.cpp")
     if (ADD_HEADERS)
-      list(APPEND EXTENSIONS "*.hpp" ".h")
+      list(APPEND EXTENSIONS "*.hpp" "*.h")
     endif()
     
     # Get all project files
