@@ -87,7 +87,7 @@ void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareIteration()
     start = std::chrono::steady_clock::now();
     //! linearize and set constraints
     this->backend_->setBoxConstraintsForLQOCProblem();
-    // TODO add general constraints here
+    this->backend_->computeLinearizedGeneralConstraintsAroundTrajectory(K_shot, K - 1);
     end = std::chrono::steady_clock::now();
     diff = end - start;
     if (debugPrint)
@@ -141,7 +141,7 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishIteration()
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS]: Linearizing for first shot took "
+        std::cout << "[GNMS]: Linearizing for first multiple-shooting interval took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
 
@@ -150,9 +150,17 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishIteration()
     end = std::chrono::steady_clock::now();
     diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS]: Cost computation for first shot took "
+        std::cout << "[GNMS]: Cost computation for first multiple-shooting interval took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
+
+    start = std::chrono::steady_clock::now();
+    this->backend_->computeLinearizedGeneralConstraintsAroundTrajectory(0, K_shot - 1);
+    end = std::chrono::steady_clock::now();
+    diff = end - start;
+    if (debugPrint)
+        std::cout << "[GNMS]: Linearizing constraints for first multiple-shooting interval took "
+                  << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
     if (debugPrint)
         std::cout << "[GNMS]: Finish phase LQOC Problem" << std::endl;
@@ -288,7 +296,7 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishMPCIteration()
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS-MPC]: Linearizing for first shot took "
+        std::cout << "[GNMS-MPC]: Linearizing for first multiple-shooting interval took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
 
@@ -297,7 +305,7 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishMPCIteration()
     end = std::chrono::steady_clock::now();
     diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS-MPC]: Cost computation for first shot took "
+        std::cout << "[GNMS-MPC]: Cost computation for first multiple-shooting interval took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
     if (debugPrint)
