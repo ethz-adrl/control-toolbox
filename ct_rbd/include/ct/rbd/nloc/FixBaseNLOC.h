@@ -49,7 +49,8 @@ public:
     typedef ct::optcon::CostFunctionQuadratic<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> CostFunction;
 
     //! constructor which directly takes a cost function
-    FixBaseNLOC(std::shared_ptr<ct::optcon::CostFunctionQuadratic<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>> costFun,
+    FixBaseNLOC(
+        std::shared_ptr<ct::optcon::CostFunctionQuadratic<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>> costFun,
         const typename NLOptConSolver::Settings_t& nlocSettings,
         std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
         bool verbose = false,
