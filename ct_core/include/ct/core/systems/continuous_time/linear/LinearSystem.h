@@ -72,7 +72,9 @@ public:
 	 * @param t current time
 	 * @return A matrix
 	 */
-    virtual const state_matrix_t& getDerivativeState(const StateVector<STATE_DIM, SCALAR>& x,const ControlVector<CONTROL_DIM, SCALAR>& u,const SCALAR t = 0.0) = 0;
+    virtual const state_matrix_t& getDerivativeState(const StateVector<STATE_DIM, SCALAR>& x,
+        const ControlVector<CONTROL_DIM, SCALAR>& u,
+        const SCALAR t = 0.0) = 0;
 
     //! get the B matrix of a linear system
     /*!

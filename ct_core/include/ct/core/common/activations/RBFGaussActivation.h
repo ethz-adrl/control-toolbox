@@ -56,8 +56,8 @@ private:
     SCALAR sigma2inv_;
     SCALAR factor_;
 };
-} //namespace tpl
+}  //namespace tpl
 
 typedef tpl::RBFGaussActivation<double> RBFGaussActivation;
-} //namespact core
-} //namespace ct
+}  //namespact core
+}  //namespace ct

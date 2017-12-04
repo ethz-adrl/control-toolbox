@@ -67,7 +67,6 @@ Eigen::Matrix<SCALAR, inDim, inDim> hessianCheck(const Eigen::Matrix<SCALAR, inD
 }
 
 
-
 /*!
  * Test evaluation of the forward-zero function, which should be possible to evaluate in both uncompiled and compiled state
  */
@@ -86,11 +85,11 @@ TEST(JacobianCGTest, DISABLED_ForwardZeroTest)
         settings.createJacobian_ = true;
 
         // create a random double vector
-        Eigen::VectorXd someVec (inDim);
+        Eigen::VectorXd someVec(inDim);
         someVec.setRandom();
 
         // test evaluation of forward zero before compilation
-        Eigen::VectorXd vecOut = jacCG.forwardZero(someVec); // << -- fails here!
+        Eigen::VectorXd vecOut = jacCG.forwardZero(someVec);  // << -- fails here!
 
         // compile the Jacobian
         jacCG.compileJIT(settings, "forwardZeroTestLib");

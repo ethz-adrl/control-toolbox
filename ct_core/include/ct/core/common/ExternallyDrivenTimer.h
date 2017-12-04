@@ -35,11 +35,7 @@ public:
     /*!
 	 * @return time
 	 */
-    SCALAR getElapsedTime() const
-    {
-        return stop_time - start_time;
-    }
-
+    SCALAR getElapsedTime() const { return stop_time - start_time; }
     //! Resets the clock.
     /*!
 	 * Not needed to be called after start()/stop() calls.
