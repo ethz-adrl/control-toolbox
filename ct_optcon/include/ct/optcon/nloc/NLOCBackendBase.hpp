@@ -61,8 +61,6 @@ public:
 
     typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
-    typedef OptConSolver<NLOCBackendBase, Policy_t, Settings_t, STATE_DIM, CONTROL_DIM, SCALAR> Base;
-
     typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
     typedef LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR> LQOCSolver_t;
 
@@ -80,25 +78,24 @@ public:
     typedef std::vector<ControlVectorArrayPtr, Eigen::aligned_allocator<ControlVectorArrayPtr>> ControlSubsteps;
     typedef std::shared_ptr<ControlSubsteps> ControlSubstepsPtr;
 
-    typedef ct::core::ControlMatrix<CONTROL_DIM, SCALAR> ControlMatrix;
-    typedef ct::core::ControlMatrixArray<CONTROL_DIM, SCALAR> ControlMatrixArray;
-    typedef ct::core::StateMatrixArray<STATE_DIM, SCALAR> StateMatrixArray;
-    typedef ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> StateControlMatrixArray;
-    typedef ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> FeedbackArray;
-    typedef ct::core::tpl::TimeArray<SCALAR> TimeArray;
+    using ControlMatrix = ct::core::ControlMatrix<CONTROL_DIM, SCALAR>;
+    using ControlMatrixArray = ct::core::ControlMatrixArray<CONTROL_DIM, SCALAR>;
+    using StateMatrixArray = ct::core::StateMatrixArray<STATE_DIM, SCALAR>;
+    using StateControlMatrixArray = ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR>;
+    using FeedbackArray = ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>;
+    using TimeArray = ct::core::tpl::TimeArray<SCALAR>;
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t;
+    using state_matrix_t = Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>;
+    using control_matrix_t = Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>;
+    using control_state_matrix_t = Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>;
+    using state_control_matrix_t = Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM>;
 
-    typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
-    typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
-    typedef core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR> feedback_matrix_t;
+    using state_vector_t = core::StateVector<STATE_DIM, SCALAR>;
+    using control_vector_t = core::ControlVector<CONTROL_DIM, SCALAR>;
+    using feedback_matrix_t = core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>;
 
-
-    typedef SCALAR scalar_t;
-    typedef std::vector<SCALAR, Eigen::aligned_allocator<SCALAR>> scalar_array_t;
+    using scalar_t =  SCALAR ;
+    using scalar_array_t = std::vector<SCALAR, Eigen::aligned_allocator<SCALAR>>;
 
 
     NLOCBackendBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const Settings_t& settings);
@@ -157,36 +154,33 @@ public:
 
     /*!
 	 * \brief Change the initial state for the optimal control problem
-	 *
-	 * This function does not need to be called if setOptConProblem() has been called
-	 * with an OptConProblem that had the correct initial state set
 	 */
     void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0);
 
     /*!
 	 * \brief Change the cost function
-	 *
-	 * This function does not need to be called if setOptConProblem() has been called
-	 * with an OptConProblem that had the correct cost function
 	 */
-    void changeCostFunction(const typename Base::OptConProblem_t::CostFunctionPtr_t& cf);
+    void changeCostFunction(const typename OptConProblem_t::CostFunctionPtr_t& cf);
 
     /*!
 	 * \brief Change the nonlinear system
-	 *
-	 * This function does not need to be called if setOptConProblem() has been called
-	 * with an OptConProblem that had the correct nonlinear system
 	 */
-    void changeNonlinearSystem(const typename Base::OptConProblem_t::DynamicsPtr_t& dyn);
+    void changeNonlinearSystem(const typename OptConProblem_t::DynamicsPtr_t& dyn);
 
     /*!
 	 * \brief Change the linear system
-	 *
-	 * This function does not need to be called if setOptConProblem() has been called
-	 * with an OptConProblem that had the correct linear system
 	 */
-    void changeLinearSystem(const typename Base::OptConProblem_t::LinearPtr_t& lin);
+    void changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin);
 
+    /*!
+	 * \brief Change the box constraints
+	 */
+    void changeBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t& con);
+
+    /*!
+	 * \brief Change the general constraints
+	 */
+    void changeGeneralConstraints(const typename OptConProblem_t::ConstraintPtr_t& con);
 
     /*!
 	 * \brief Direct accessor to the system instances
@@ -228,32 +222,32 @@ public:
     const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const;
 
     /**
-	 * @brief      Direct accessor to the state input constraint instances
+	 * @brief      Direct accessor to the box constraint instances
 	 *
 	 * \warning{Use this only when performance absolutely matters and if you know what you
 	 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
 	 * in a safe and easy way. You should especially not change the size of the vector or
 	 * modify each entry differently.}
 	 *
-	 * @return     The state input constraint instances
+	 * @return     The box constraint instances
 	 */
-    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances();
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances();
 
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const;
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const;
 
     /**
-	 * @brief      Direct accessor to the pure state constraints
+	 * @brief      Direct accessor to the general constraints
 	 *
 	 * \warning{Use this only when performance absolutely matters and if you know what you
 	 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
 	 * in a safe and easy way. You should especially not change the size of the vector or
 	 * modify each entry differently.}
 	 *
-	 * @return     The pure state constraints instances.
+	 * @return     The general constraints instances.
 	 */
-    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances();
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances();
 
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const;
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() const;
 
 
     /*!
@@ -602,7 +596,6 @@ protected:
     StateSubstepsPtr substepsX_;
     ControlSubstepsPtr substepsU_;
 
-
     scalar_t intermediateCostBest_;
     scalar_t finalCostBest_;
     scalar_t lowestCost_;
@@ -625,8 +618,8 @@ protected:
     std::vector<typename OptConProblem_t::DynamicsPtr_t> systems_;
     std::vector<typename OptConProblem_t::LinearPtr_t> linearSystems_;
     std::vector<typename OptConProblem_t::CostFunctionPtr_t> costFunctions_;
-    std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints_;
-    std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints_;
+    std::vector<typename OptConProblem_t::ConstraintPtr_t> boxConstraints_;
+    std::vector<typename OptConProblem_t::ConstraintPtr_t> generalConstraints_;
 
 
     bool firstRollout_;

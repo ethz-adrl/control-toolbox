@@ -230,6 +230,11 @@ public:
 	 */
     bool isInitialized();
 
+    /**
+     * @brief     Print out sparsity patterns, jacobians, etc. Serves for quick visual inspection
+     */
+    void printout();
+
 protected:
     bool initializedIntermediate_;
     bool initializedTerminal_;
