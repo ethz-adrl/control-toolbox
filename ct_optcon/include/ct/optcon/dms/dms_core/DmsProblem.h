@@ -55,16 +55,16 @@ public:
 	 * @param[in]  systemPtrs               The non linear systems
 	 * @param[in]  linearPtrs               The linearized systems
 	 * @param[in]  costPtrs                 The cost function
-	 * @param[in]  stateInputConstraints  The intermediate constraints
-	 * @param[in]  pureStateConstraints         The final constraints
+	 * @param[in]  boxConstraints           The box constraints
+	 * @param[in]  generaConstraints        The general constraints
 	 * @param[in]  x0                       The initial state
 	 */
     DmsProblem(DmsSettings settings,
         std::vector<typename OptConProblem_t::DynamicsPtr_t> systemPtrs,
         std::vector<typename OptConProblem_t::LinearPtr_t> linearPtrs,
         std::vector<typename OptConProblem_t::CostFunctionPtr_t> costPtrs,
-        std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints,
-        std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints,
+        std::vector<typename OptConProblem_t::ConstraintPtr_t> boxConstraints,
+        std::vector<typename OptConProblem_t::ConstraintPtr_t> generalConstraints,
         const state_vector_t& x0)
         : settings_(settings)
     {
@@ -106,16 +106,16 @@ public:
 
         optVariablesDms_ = std::static_pointer_cast<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>>(this->optVariables_);
 
-        if (stateInputConstraints.size() > 0 || pureStateConstraints.size() > 0)
+        if (boxConstraints.size() > 0 || generalConstraints.size() > 0)
             discretizedConstraints_ = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>>(
                 new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>(
                     optVariablesDms_, controlSpliner_, timeGrid_, settings_.N_));
 
-        if (stateInputConstraints.size() > 0)
-            discretizedConstraints_->setStateInputConstraints(stateInputConstraints.front());
+        if (boxConstraints.size() > 0)
+            discretizedConstraints_->setBoxConstraints(boxConstraints.front());
 
-        if (pureStateConstraints.size() > 0)
-            discretizedConstraints_->setPureStateConstraints(pureStateConstraints.front());
+        if (generalConstraints.size() > 0)
+            discretizedConstraints_->setGeneralConstraints(generalConstraints.front());
 
 
         for (size_t shotIdx = 0; shotIdx < settings_.N_; shotIdx++)
@@ -167,9 +167,9 @@ public:
         std::vector<std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>>
             costPtrs,
         std::vector<std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>>
-            stateInputConstraints,
+            boxConstraints,
         std::vector<std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>>
-            pureStateConstraints,
+            generalConstraints,
         const ct::core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x0)
     {
         typedef ct::core::ADCGScalar ScalarCG;
@@ -205,16 +205,16 @@ public:
 
 
         std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, ScalarCG>> discretizedConstraints;
-        if (stateInputConstraints.size() > 0 || pureStateConstraints.size() > 0)
+        if (boxConstraints.size() > 0 || generalConstraints.size() > 0)
             discretizedConstraints = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, ScalarCG>>(
                 new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, ScalarCG>(
                     optVariablesDms, controlSpliner, timeGrid, settings_.N_));
 
-        if (stateInputConstraints.size() > 0)
-            discretizedConstraints->setStateInputConstraints(stateInputConstraints.front());
+        if (boxConstraints.size() > 0)
+            discretizedConstraints->setBoxConstraints(boxConstraints.front());
 
-        if (pureStateConstraints.size() > 0)
-            discretizedConstraints->setPureStateConstraints(pureStateConstraints.front());
+        if (generalConstraints.size() > 0)
+            discretizedConstraints->setGeneralConstraints(generalConstraints.front());
 
         std::vector<std::shared_ptr<ShotContainer<STATE_DIM, CONTROL_DIM, ScalarCG>>> shotContainers;
         for (size_t shotIdx = 0; shotIdx < settings_.N_; shotIdx++)

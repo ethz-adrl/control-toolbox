@@ -18,7 +18,7 @@ function(ct_get_all_srcs ADD_HEADERS)
 
     set(EXTENSIONS "*.cpp")
     if (ADD_HEADERS)
-      list(APPEND EXTENSIONS "*.hpp" ".h")
+      list(APPEND EXTENSIONS "*.hpp" "*.h")
     endif()
     
     # Get all project files
@@ -99,7 +99,7 @@ function(ct_configure_clang_tidy TIDY_INC_DIRS)
             VERBATIM)
     else()
         message (WARNING "FOUND CLANG-TIDY")
-        set(CLANG_TIDY_COMMAND COMMAND ${CLANG_TIDY_BIN} ${ALL_CXX_SOURCE_FILES} -config='' -header-filter=\".*\\/ct\\/.*\" -- -std=c++11 ${CURRENT_INC_DIRS})
+        set(CLANG_TIDY_COMMAND COMMAND ${CLANG_TIDY_BIN} ${ALL_CXX_SOURCE_FILES} -config='' -header-filter=\".*\\/ct\\/.*\" -- -std=c++11 -fopenmp ${CURRENT_INC_DIRS})
             
         add_custom_target(
             clang-tidy

@@ -52,7 +52,7 @@ TEST(TaskspaceCostFunctionTests, TestTaskSpacePositionTerm)
     ASSERT_TRUE(Adcf->controlDerivativeIntermediateTest());
 
     // check cloning for this term/costfunction combination
-    std::shared_ptr<optcon::CostFunctionAD<hyqStateDim, hyqControlDim>> Adcf_cloned (Adcf->clone());
+    std::shared_ptr<optcon::CostFunctionAD<hyqStateDim, hyqControlDim>> Adcf_cloned(Adcf->clone());
     x.setRandom();
     u.setRandom();
     t = 2.0;
@@ -125,7 +125,7 @@ TEST(TaskspaceCostFunctionTests, TestTaskSpacePoseTerm)
     ASSERT_TRUE(Adcf->controlDerivativeIntermediateTest());
 
     // check cloning for this term/costfunction combination
-    std::shared_ptr<optcon::CostFunctionAD<hyqStateDim, hyqControlDim>> Adcf_cloned (Adcf->clone());
+    std::shared_ptr<optcon::CostFunctionAD<hyqStateDim, hyqControlDim>> Adcf_cloned(Adcf->clone());
     x.setRandom();
     u.setRandom();
     t = 2.0;

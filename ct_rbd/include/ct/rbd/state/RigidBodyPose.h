@@ -147,7 +147,7 @@ public:
             Eigen::AngleAxis<SCALAR> pitchAngle(euler_.toImplementation()(1), Eigen::Matrix<SCALAR, 3, 1>::UnitY());
             Eigen::AngleAxis<SCALAR> yawAngle(euler_.toImplementation()(2), Eigen::Matrix<SCALAR, 3, 1>::UnitZ());
             Eigen::Quaternion<SCALAR> q = rollAngle * pitchAngle * yawAngle;
-            return kindr::RotationMatrix<SCALAR> (q.matrix());
+            return kindr::RotationMatrix<SCALAR>(q.matrix());
 
             //            return kindr::RotationMatrix<SCALAR>(euler_); // this is not JIT compatible as it uses a unit quat temporarily
         }
@@ -277,8 +277,8 @@ public:
 	 */
     Matrix3Tpl rotateBaseToInertiaMat(const Matrix3Tpl& mat) const
     {
-    	kindr::RotationMatrix<SCALAR> rotMat = getRotationMatrix();
-    	return rotMat.toImplementation() * mat;
+        kindr::RotationMatrix<SCALAR> rotMat = getRotationMatrix();
+        return rotMat.toImplementation() * mat;
     }
 
 

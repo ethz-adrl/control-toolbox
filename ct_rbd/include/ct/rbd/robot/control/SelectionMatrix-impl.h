@@ -23,34 +23,32 @@ SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::SelectionMatrix(bool floatingBa
 }
 
 template <size_t CONTROL_DIM, size_t STATE_DIM, typename SCALAR>
-template<typename T>
-typename std::enable_if <(STATE_DIM >= 6), T>::type
-SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::setIdentity(bool floatingBase)
+template <typename T>
+typename std::enable_if<(STATE_DIM >= 6), T>::type SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::setIdentity(
+    bool floatingBase)
 {
     this->setZero();
 
-    if(floatingBase)
+    if (floatingBase)
     {
-      this->template bottomRightCorner<CONTROL_DIM, STATE_DIM - 6>().setIdentity();
+        this->template bottomRightCorner<CONTROL_DIM, STATE_DIM - 6>().setIdentity();
     }
     else
     {
-      this->template bottomRightCorner<CONTROL_DIM, CONTROL_DIM>().setIdentity();
+        this->template bottomRightCorner<CONTROL_DIM, CONTROL_DIM>().setIdentity();
     }
 }
 
 template <size_t CONTROL_DIM, size_t STATE_DIM, typename SCALAR>
-template<typename T>
-typename std::enable_if <(STATE_DIM < 6), T>::type
-SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::setIdentity(bool floatingBase)
+template <typename T>
+typename std::enable_if<(STATE_DIM < 6), T>::type SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::setIdentity(
+    bool floatingBase)
 {
-  if(floatingBase)
-    throw std::runtime_error("Selection Matrix for floating base systems should at least have 6 columns");
+    if (floatingBase)
+        throw std::runtime_error("Selection Matrix for floating base systems should at least have 6 columns");
 
-  this->setZero();
-  this->template bottomRightCorner<CONTROL_DIM, CONTROL_DIM>().setIdentity();
+    this->setZero();
+    this->template bottomRightCorner<CONTROL_DIM, CONTROL_DIM>().setIdentity();
 }
-
-
 }
 }

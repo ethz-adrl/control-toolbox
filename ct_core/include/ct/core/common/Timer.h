@@ -21,11 +21,7 @@ class Timer
 {
 public:
     //! Default constructor
-    Timer()
-    {
-        reset();
-    }
-
+    Timer() { reset(); }
     //! Trigger start.
     /*!
 	 * Starts the time measurement.
