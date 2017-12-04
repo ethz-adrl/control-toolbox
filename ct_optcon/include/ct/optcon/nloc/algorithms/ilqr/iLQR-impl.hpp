@@ -101,6 +101,7 @@ bool iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishIteration()
     start = std::chrono::steady_clock::now();
     //! linearize and set constraints
     this->backend_->setBoxConstraintsForLQOCProblem();
+    this->backend_->computeLinearizedGeneralConstraintsAroundTrajectory(0, K-1);
     // TODO add general constraints here
     end = std::chrono::steady_clock::now();
     diff = end - start;

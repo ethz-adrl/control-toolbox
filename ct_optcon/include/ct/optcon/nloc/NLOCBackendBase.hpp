@@ -339,6 +339,9 @@ public:
     //! Computes the quadratic approximation of the cost function along the trajectory, for the specified indices
     virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
 
+    //! Computes the linear general constraint approximation along the trajectory, for the specified indices
+    virtual void computeLinearizedGeneralConstraintsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
+
     //! sets the box constraints for the entire time horizon including terminal stage
     void setBoxConstraintsForLQOCProblem();
 

@@ -46,6 +46,8 @@ protected:
 
     virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
 
+    virtual void computeLinearizedGeneralConstraintsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
+
     virtual void rolloutShots(size_t firstIndex, size_t lastIndex) override;
 
     SCALAR performLineSearch() override;

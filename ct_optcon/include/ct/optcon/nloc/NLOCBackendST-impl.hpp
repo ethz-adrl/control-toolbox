@@ -61,6 +61,19 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
     }
 }
 
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedGeneralConstraintsAroundTrajectory(
+    size_t firstIndex,
+    size_t lastIndex)
+{
+    if (this->generalConstraints_[this->settings_.nThreads] != nullptr)
+    {
+        for (size_t k = firstIndex; k <= lastIndex; k++)
+        {
+            this->computeLinearizedConstraints(this->settings_.nThreads, k);
+        }
+    }
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots(size_t firstIndex, size_t lastIndex)

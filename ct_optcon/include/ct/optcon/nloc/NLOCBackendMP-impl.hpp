@@ -86,9 +86,9 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(siz
         iteration_local = this->iteration_;
 
 #ifdef DEBUG_PRINT_MP
-        printString(
-            "[Thread " + std::to_string(threadId) + "]: previous procId: " + std::to_string(uniqueProcessID) +
-            ", current procId: " + std::to_string(generateUniqueProcessID(iteration_local, (int)workerTask_local)));
+        printString("[Thread " + std::to_string(threadId) + "]: previous procId: " + std::to_string(uniqueProcessID) +
+                    ", current procId: " +
+                    std::to_string(generateUniqueProcessID(iteration_local, (int)workerTask_local)));
 #endif
 
 
@@ -285,6 +285,14 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLineari
 
         kCompleted_++;
     }
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedGeneralConstraintsAroundTrajectory(
+    size_t firstIndex,
+    size_t lastIndex)
+{
+	throw std::runtime_error("mp computeLinearizedGeneralConstraintsAroundTrajectory not impl");
 }
 
 
@@ -643,8 +651,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 
             if (this->settings_.lineSearchSettings.debugPrint)
             {
-                printString("[LineSearch, Thread " + std::to_string(threadId) +
-                            "]: Lower cost/merit found at alpha:" + std::to_string(alpha));
+                printString("[LineSearch, Thread " + std::to_string(threadId) + "]: Lower cost/merit found at alpha:" +
+                            std::to_string(alpha));
                 printString("[LineSearch]: Cost:\t" + std::to_string(intermediateCost + finalCost));
                 printString("[LineSearch]: Defect:\t" + std::to_string(defectNorm));
                 printString("[LineSearch]: Merit:\t" + std::to_string(cost));

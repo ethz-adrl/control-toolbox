@@ -798,29 +798,31 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedConstraints(size_t threadId,
     size_t k)
 {
-    LQOCProblem_t& p = *lqocProblem_;
-    const scalar_t& dt = settings_.dt;
+    // set general if there are any
+    if (generalConstraints_[threadId] != nullptr)
+    {
+        LQOCProblem_t& p = *lqocProblem_;
+        const scalar_t& dt = settings_.dt;
 
-    // treat general constraints
-    generalConstraints_[threadId]->setCurrentStateAndControl(x_[k], u_ff_[k], dt * k);
+        // treat general constraints
+        generalConstraints_[threadId]->setCurrentStateAndControl(x_[k], u_ff_[k], dt * k);
 
-    p.ng_[k] = generalConstraints_[threadId]->getIntermediateConstraintsCount();
+        p.ng_[k] = generalConstraints_[threadId]->getIntermediateConstraintsCount();
+        if (p.ng_[k] > 0)
+        {
+            p.hasGenConstraints_ = true;
+            p.C_[k] = generalConstraints_[threadId]->jacobianStateIntermediate();
+            p.D_[k] = generalConstraints_[threadId]->jacobianInputIntermediate();
 
+            Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> g_eval = generalConstraints_[threadId]->evaluateIntermediate();
 
-    //    // derivative of cost with respect to state
-    //    p.q_[k] = costFunctions_[threadId]->evaluateIntermediate() * dt;
-    //
-    //    p.qv_[k] = costFunctions_[threadId]->stateDerivativeIntermediate() * dt;
-    //
-    //    p.Q_[k] = costFunctions_[threadId]->stateSecondDerivativeIntermediate() * dt;
-    //
-    //    // derivative of cost with respect to control and state
-    //    p.P_[k] = costFunctions_[threadId]->stateControlDerivativeIntermediate() * dt;
-    //
-    //    // derivative of cost with respect to control
-    //    p.rv_[k] = costFunctions_[threadId]->controlDerivativeIntermediate() * dt;
-    //
-    //    p.R_[k] = costFunctions_[threadId]->controlSecondDerivativeIntermediate() * dt;
+            // rewrite constraint in absolute coordinates as required by LQOC problem
+            p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
+                         p.D_[k] * u_ff_[k];
+            p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
+                         p.D_[k] * u_ff_[k];
+        }
+    }
 }
 
 
@@ -858,10 +860,30 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeCo
     // feed current state and control to cost function
     costFunctions_[settings_.nThreads]->setCurrentStateAndControl(x_[K_], control_vector_t::Zero(), settings_.dt * K_);
 
-    // derivative of termination cost with respect to state
+    // derivative of terminal cost with respect to state
     p.q_[K_] = costFunctions_[settings_.nThreads]->evaluateTerminal();
     p.qv_[K_] = costFunctions_[settings_.nThreads]->stateDerivativeTerminal();
     p.Q_[K_] = costFunctions_[settings_.nThreads]->stateSecondDerivativeTerminal();
+
+    // init terminal general constraints, if any
+    if (generalConstraints_[settings_.nThreads] != nullptr)
+    {
+        p.ng_[K_] = generalConstraints_[settings_.nThreads]->getTerminalConstraintsCount();
+        if (p.ng_[K_] > 0)
+        {
+            p.hasGenConstraints_ = true;
+            p.C_[K_] = generalConstraints_[settings_.nThreads]->jacobianStateTerminal();
+            p.D_[K_] = generalConstraints_[settings_.nThreads]->jacobianInputTerminal();
+
+            Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> g_eval =
+                generalConstraints_[settings_.nThreads]->evaluateTerminal();
+
+            p.d_lb_[K_] =
+                generalConstraints_[settings_.nThreads]->getLowerBoundsTerminal() - g_eval + p.C_[K_] * x_[K_];
+            p.d_ub_[K_] =
+                generalConstraints_[settings_.nThreads]->getUpperBoundsTerminal() - g_eval + p.C_[K_] * x_[K_];
+        }
+    }
 }
 
 
@@ -1088,9 +1110,9 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
         }
     }
 
-    if ((lowestCostPrevious - lowestCost_) / lowestCostPrevious > settings_.min_cost_improvement)
+    if ((fabs((lowestCostPrevious - lowestCost_) / lowestCostPrevious)) > settings_.min_cost_improvement)
     {
-        return true;
+        return true;  //! found better cost
     }
 
     if (settings_.debugPrint)
@@ -1351,7 +1373,14 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solveFullLQP
 {
     lqocProblem_->x_ = x_;
     lqocProblem_->u_ = u_ff_;
+
+    if (lqocProblem_->isBoxConstrained())
+        lqocSolver_->configureBoxConstraints(lqocProblem_);
+    if (lqocProblem_->isGeneralConstrained())
+        lqocSolver_->configureGeneralConstraints(lqocProblem_);
+
     lqocSolver_->setProblem(lqocProblem_);
+
     lqocSolver_->solve();
 }
 

@@ -215,15 +215,16 @@ public:
     //! number of general inequality constraints
     std::vector<int> ng_;
 
-private:
-    //! the number of discrete time steps in the LOCP, including terminal stage
-    int K_;
-
     //! bool indicating if the optimization problem is box-constrained
     bool hasBoxConstraints_;
 
     //! bool indicating if the optimization problem hs general inequality constraints
     bool hasGenConstraints_;
+
+private:
+    //! the number of discrete time steps in the LOCP, including terminal stage
+    int K_;
+
 };
 
 }  // namespace optcon

@@ -95,73 +95,6 @@ struct LineSearchSettings
     }
 };
 
-// TODO remove, as not applicable any more
-struct ParallelBackwardSettings
-{
-    ParallelBackwardSettings()
-    {
-        enabled = false;
-        showWarnings = false;
-        pollingTimeoutUs = 100;
-    }
-
-    bool parametersOk(size_t nThreadsTotal) const
-    {
-        if (pollingTimeoutUs < 10)
-        {
-            std::cout << "Polling timeout is smaller than 10 us. Consider increasing it." << std::endl;
-        }
-        return (pollingTimeoutUs >= 10);
-    }
-
-    bool enabled;      /*!< Flag whether to use parallel backward */
-    bool showWarnings; /*!< Show speed warnings if cost or linearization threads are not fast enough */
-    size_t pollingTimeoutUs;
-
-    void print() const
-    {
-        std::cout << "Parallel Backward Settings: " << std::endl;
-        std::cout << "=====================" << std::endl;
-        std::cout << "enabled: " << enabled << std::endl;
-        std::cout << "showWarnings: " << showWarnings << std::endl;
-        std::cout << "pollingTimeoutUs: " << pollingTimeoutUs << std::endl;
-    }
-
-    void load(const std::string& filename, bool verbose = true, const std::string& ns = "parallel_backward_pass")
-    {
-        if (verbose)
-            std::cout << "Trying to load parallel backward pass settings from " << filename << ": " << std::endl;
-
-        boost::property_tree::ptree pt;
-        boost::property_tree::read_info(filename, pt);
-
-        try
-        {
-            enabled = pt.get<bool>(ns + ".enabled");
-        } catch (...)
-        {
-        }
-        try
-        {
-            showWarnings = pt.get<bool>(ns + ".showWarnings");
-        } catch (...)
-        {
-        }
-        try
-        {
-            pollingTimeoutUs = pt.get<size_t>(ns + ".pollingTimeoutUs");
-        } catch (...)
-        {
-        }
-
-        if (verbose)
-        {
-            std::cout << "Loaded parallel backward settings from " << filename << ": " << std::endl;
-            print();
-        }
-    }
-};
-
 
 //! LQOC Solver settings
 /*!
@@ -256,7 +189,6 @@ public:
           nThreads(4),
           nThreadsEigen(4),
           lineSearchSettings(),
-          parallelBackward(),
           debugPrint(false),
           printSummary(true),
           useSensitivityIntegrator(false)
@@ -284,8 +216,6 @@ public:
     size_t
         nThreadsEigen;                      //! number of threads for eigen parallelization (applies both to MP and ST) Note. in order to activate Eigen parallelization, compile with '-fopenmp'
     LineSearchSettings lineSearchSettings;  //! the line search settings
-    ParallelBackwardSettings
-        parallelBackward;  //! do the backward pass in parallel with building the LQ problems (experimental)
     LQOCSolverSettings lqoc_solver_settings;
     bool debugPrint;
     bool printSummary;
@@ -342,9 +272,6 @@ public:
 
         lqoc_solver_settings.print();
 
-        std::cout << std::endl;
-
-        parallelBackward.print();
         std::cout << "===============================================================" << std::endl;
     }
 
@@ -387,7 +314,7 @@ public:
             std::cout << "Number of threads should not exceed 100." << std::endl;
             return false;
         }
-        return (lineSearchSettings.parametersOk() && parallelBackward.parametersOk(nThreads));
+        return (lineSearchSettings.parametersOk());
     }
 
 
@@ -521,13 +448,6 @@ public:
         } catch (...)
         {
         }
-        try
-        {
-            parallelBackward.load(filename, verbose, ns + ".parallel_backward_pass");
-        } catch (...)
-        {
-        }
-
         try
         {
             lqoc_solver_settings.load(filename, verbose, ns + ".lqoc_solver_settings");

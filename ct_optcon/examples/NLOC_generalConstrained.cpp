@@ -1,7 +1,7 @@
 /*!
- * \example NLOC_boxConstrained.cpp
+ * \example NLOC_generalConstrained.cpp
  *
- * This example shows how to use box constraints alongside NLOC and requires HPIPM to be installed
+ * This example shows how to use general constraints alongside NLOC and requires HPIPM to be installed
  * The unconstrained Riccati backward-pass is replaced by a high-performance interior-point
  * constrained linear-quadratic Optimal Control solver.
  *
@@ -14,14 +14,66 @@ using namespace ct::core;
 using namespace ct::optcon;
 
 
-int main(int argc, char **argv)
+/*get the state and control input dimension of the oscillator. Since we're dealing with a simple oscillator,
+ the state and control dimensions will be state_dim = 2, and control_dim = 1. */
+static const size_t state_dim = ct::core::SecondOrderSystem::STATE_DIM;
+static const size_t control_dim = ct::core::SecondOrderSystem::CONTROL_DIM;
+
+/*!
+ * @brief A simple 1d constraint term. We'll use CppAD to compute its jacobians
+ *
+ * This term implements the general inequality constraints
+ * \f$ d_{lb} \leq u \cdot p^2 \leq d_{ub} \f$
+ * where \f$ p \f$ denotes the position of the oscillator mass.
+ *
+ * This constraint can be thought of a position-varying bound on the control input.
+ * At large oscillator deflections, the control bounds shrink
+ */
+class ConstraintTerm1D : public ct::optcon::ConstraintBase<state_dim, control_dim>
 {
-    /*get the state and control input dimension of the oscillator. Since we're dealing with a simple oscillator,
-	 the state and control dimensions will be state_dim = 2, and control_dim = 1. */
-    const size_t state_dim = ct::core::SecondOrderSystem::STATE_DIM;
-    const size_t control_dim = ct::core::SecondOrderSystem::CONTROL_DIM;
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    const static size_t term_dim = 1;
+    typedef typename ct::core::tpl::TraitSelector<double>::Trait Trait;
+    typedef typename ct::core::tpl::TraitSelector<ct::core::ADCGScalar>::Trait TraitCG;
+    typedef ct::optcon::ConstraintBase<state_dim, control_dim> Base;
+    typedef ct::core::StateVector<state_dim> state_vector_t;
+    typedef ct::core::ControlVector<control_dim> control_vector_t;
+
+    ConstraintTerm1D()
+    {
+        Base::lb_.resize(term_dim);
+        Base::ub_.resize(term_dim);
+        Base::lb_.setConstant(-0.5);
+        Base::ub_.setConstant(0.5);
+    }
+
+    virtual ~ConstraintTerm1D() {}
+    virtual ConstraintTerm1D* clone() const override { return new ConstraintTerm1D(); }
+    virtual size_t getConstraintSize() const override { return term_dim; }
+    virtual Eigen::VectorXd evaluate(const state_vector_t& x, const control_vector_t& u, const double t) override
+    {
+        Eigen::Matrix<double, term_dim, 1> val;
+        val.template segment<1>(0) << u(0) * x(0) * x(0);
+        return val;
+    }
+
+    virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
+        const ct::core::StateVector<state_dim, ct::core::ADCGScalar>& x,
+        const ct::core::ControlVector<control_dim, ct::core::ADCGScalar>& u,
+        ct::core::ADCGScalar t) override
+    {
+        Eigen::Matrix<ct::core::ADCGScalar, term_dim, 1> val;
+
+        val.template segment<1>(0) << u(0) * x(0) * x(0);
+
+        return val;
+    }
+};
 
 
+int main(int argc, char** argv)
+{
     /* STEP 1: set up the Nonlinear Optimal Control Problem
 	 * First of all, we need to create instances of the system dynamics, the linearized system and the cost function. */
 
@@ -60,27 +112,18 @@ int main(int argc, char **argv)
     costFunction->addFinalTerm(finalCost);
 
 
-    /* STEP 1-D: set up the box constraints for the control input*/
-    // input box constraint boundaries with sparsities in constraint toolbox format
-    Eigen::VectorXi sp_control(control_dim);
-    sp_control << 1;
-    Eigen::VectorXd u_lb(control_dim);
-    Eigen::VectorXd u_ub(control_dim);
-    u_lb.setConstant(-0.5);
-    u_ub = -u_lb;
-
+    /* STEP 1-D: set up the general constraints */
     // constraint terms
-    std::shared_ptr<ControlInputConstraint<state_dim, control_dim>> controlConstraint(
-        new ControlInputConstraint<state_dim, control_dim>(u_lb, u_ub, sp_control));
-    controlConstraint->setName("ControlInputConstraint");
+    std::shared_ptr<ConstraintTerm1D> term1_ad(new ConstraintTerm1D());
 
     // create constraint container
-    std::shared_ptr<ConstraintContainerAnalytical<state_dim, control_dim>> boxConstraints(
-        new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
+    std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> generalConstraintsAD(
+        new ct::optcon::ConstraintContainerAD<state_dim, control_dim>());
+
 
     // add and initialize constraint terms
-    boxConstraints->addIntermediateConstraint(controlConstraint, verbose);
-    boxConstraints->initialize();
+    generalConstraintsAD->addIntermediateConstraint(term1_ad, verbose);
+    generalConstraintsAD->initialize();
 
 
     /* STEP 1-E: initialization with initial state and desired time horizon */
@@ -96,7 +139,7 @@ int main(int argc, char **argv)
         timeHorizon, x0, oscillatorDynamics, costFunction, adLinearizer);
 
     // add the box constraints to the optimal control problem
-    optConProblem.setBoxConstraints(boxConstraints);
+    optConProblem.setGeneralConstraints(generalConstraintsAD);
 
     /* STEP 2: set up a nonlinear optimal control solver. */
 
@@ -110,10 +153,13 @@ int main(int argc, char **argv)
     ilqr_settings.integrator = ct::core::IntegrationType::EULERCT;
     ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
     ilqr_settings.max_iterations = 10;
+    ilqr_settings.min_cost_improvement = 1e-6;
     ilqr_settings.nThreads = 1;
     ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
     ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
-    ilqr_settings.lqoc_solver_settings.num_lqoc_iterations = 10; // number of riccati sub-iterations
+    ilqr_settings.lqoc_solver_settings.num_lqoc_iterations = 10;                // number of riccati sub-iterations
+    ilqr_settings.lqoc_solver_settings.lqoc_debug_print = true;                 // number of riccati sub-iterations
+    ilqr_settings.lineSearchSettings.active = false;
     ilqr_settings.printSummary = true;
 
 
@@ -144,6 +190,6 @@ int main(int argc, char **argv)
     // STEP 4: retrieve the solution
     ct::core::StateFeedbackController<state_dim, control_dim> solution = iLQR.getSolution();
 
-    // let's plot the output
+    // plot the output
     plotResultsOscillator<state_dim, control_dim>(solution.x_ref(), solution.uff(), solution.time());
 }
