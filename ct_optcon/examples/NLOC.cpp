@@ -8,6 +8,7 @@
  */
 #include <ct/optcon/optcon.h>
 #include "exampleDir.h"
+#include "plotResultsOscillator.h"
 
 using namespace ct::core;
 using namespace ct::optcon;
@@ -117,6 +118,7 @@ int main(int argc, char **argv)
     // STEP 4: retrieve the solution
     ct::core::StateFeedbackController<state_dim, control_dim> solution = iLQR.getSolution();
 
-    // let's examine the output. Here, we print the optimized state trajectory.
-    solution.getReferenceStateTrajectory().print();
+    // let's plot the output
+    plotResultsOscillator<state_dim, control_dim>(solution.x_ref(), solution.uff(), solution.time());
+
 }
