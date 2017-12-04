@@ -169,7 +169,7 @@ public:
     Position3Tpl getEEPositionInBase(size_t eeId,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
-        return Position3Tpl(getHomogeneousTransformBaseEEById(eeId, jointPosition).template topRightCorner<3,1>());
+        return Position3Tpl(getHomogeneousTransformBaseEEById(eeId, jointPosition).template topRightCorner<3, 1>());
     }
 
     /*!
@@ -192,10 +192,9 @@ public:
     /*!
      * compute the forward kinematics and return a rotation matrix specifying the ee-rotation w.r.t. the base frame
      */
-    Matrix3Tpl getEERotInBase(size_t eeId,
-            const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+    Matrix3Tpl getEERotInBase(size_t eeId, const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
-    	return getHomogeneousTransformBaseEEById(eeId, jointPosition).template topLeftCorner<3,3>();
+        return getHomogeneousTransformBaseEEById(eeId, jointPosition).template topLeftCorner<3, 3>();
     }
 
 

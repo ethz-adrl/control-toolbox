@@ -268,7 +268,7 @@ TEST(KindrJitTest, DISABLED_EigenRotationMatrixToEigenEulerAnglesTest)
 }
 
 
-#if EIGEN_VERSION_AT_LEAST(3, 2, 7) // prior versions have a bug
+#if EIGEN_VERSION_AT_LEAST(3, 2, 7)  // prior versions have a bug
 //! test the behaviour of transcribing an Eigen rotation matrix into Eigen AngleAxis representation
 template <typename SCALAR>
 Eigen::Matrix<SCALAR, 3, 1> convertRotationMatrixToAngleAxisTestFunction(const Eigen::Matrix<SCALAR, -1, 1>& x)

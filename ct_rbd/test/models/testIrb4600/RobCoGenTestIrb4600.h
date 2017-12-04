@@ -43,4 +43,3 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #define CT_EE0_LAST_JOINT 5
 
 #include <ct/rbd/robot/robcogen/robcogenHelpers.h>
-

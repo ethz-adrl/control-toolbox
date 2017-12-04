@@ -32,13 +32,11 @@ public:
 
     SelectionMatrix(bool floatingBase);
 
-    template<typename T=void> // do not use this template argument
-    typename std::enable_if <(STATE_DIM < 6), T>::type
-    setIdentity(bool floatingBase);
+    template <typename T = void>  // do not use this template argument
+    typename std::enable_if<(STATE_DIM < 6), T>::type setIdentity(bool floatingBase);
 
-    template<typename T=void> // do not use this template argument
-    typename std::enable_if <(STATE_DIM >= 6), T>::type
-    setIdentity(bool floatingBase);
+    template <typename T = void>  // do not use this template argument
+    typename std::enable_if<(STATE_DIM >= 6), T>::type setIdentity(bool floatingBase);
 
 
 private:

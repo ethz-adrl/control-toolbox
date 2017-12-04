@@ -721,7 +721,9 @@ void save(const std::string& filename)
     Py_DECREF(res);
 }
 
-void warn() {}
+void warn()
+{
+}
 
 #else
 
