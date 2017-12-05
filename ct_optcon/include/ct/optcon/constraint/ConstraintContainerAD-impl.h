@@ -42,11 +42,7 @@ ConstraintContainerAD<STATE_DIM, CONTROL_DIM, SCALAR>::ConstraintContainerAD(con
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 ConstraintContainerAD<STATE_DIM, CONTROL_DIM, SCALAR>::ConstraintContainerAD(const ConstraintContainerAD& arg)
-    : LinearConstraintContainer<STATE_DIM, CONTROL_DIM>(arg),
-      constraintsIntermediate_(arg.constraintsIntermediate_),
-      constraintsTerminal_(arg.constraintsTerminal_),
-      intermediateCodegen_(arg.intermediateCodegen_),
-      terminalCodegen_(arg.terminalCodegen_),
+    : LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
       fIntermediate_(arg.fIntermediate_),
       fTerminal_(arg.fTerminal_),
       sparsityIntermediateRows_(arg.sparsityIntermediateRows_),
@@ -71,6 +67,15 @@ ConstraintContainerAD<STATE_DIM, CONTROL_DIM, SCALAR>::ConstraintContainerAD(con
     for (size_t i = 0; i < constraintsTerminal_.size(); ++i)
         constraintsTerminal_[i] =
             std::shared_ptr<ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>>(arg.constraintsTerminal_[i]->clone());
+
+    intermediateCodegen_ =
+        std::shared_ptr<JacCG>(new JacCG(fIntermediate_, STATE_DIM + CONTROL_DIM, getIntermediateConstraintsCount()));
+    terminalCodegen_ =
+        std::shared_ptr<JacCG>(new JacCG(fTerminal_, STATE_DIM + CONTROL_DIM, getTerminalConstraintsCount()));
+
+    // make sure libraries get compiled in clone
+    initializeIntermediate();
+    initializeTerminal();
 }
 
 
