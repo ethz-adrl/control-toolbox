@@ -358,7 +358,7 @@ public:
     virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;
 
     //! do a single threaded rollout and defect computation of the shots - useful for line-search
-    void rolloutShotsSingleThreaded(size_t threadId,
+    bool rolloutShotsSingleThreaded(size_t threadId,
         size_t firstIndex,
         size_t lastIndex,
         ControlVectorArray& u_ff_local,
@@ -518,6 +518,8 @@ protected:
         ControlVectorArray& u_local,
         scalar_t& intermediateCost,
         scalar_t& finalCost,
+	    scalar_t& e_box_norm,
+	    scalar_t& e_gen_norm,
         StateSubsteps& substepsX,
         ControlSubsteps& substepsU,
         std::atomic_bool* terminationFlag = nullptr) const;
@@ -534,6 +536,8 @@ protected:
         scalar_t& intermediateCost,
         scalar_t& finalCost,
         scalar_t& defectNorm,
+	    scalar_t& e_box_norm,
+	    scalar_t& e_gen_norm,
         StateSubsteps& substepsX,
         ControlSubsteps& substepsU,
         std::atomic_bool* terminationFlag = nullptr) const;

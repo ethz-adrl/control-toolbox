@@ -668,7 +668,7 @@ SYMPLECTIC_DISABLED NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShotsSingleThreaded(size_t threadId,
+bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShotsSingleThreaded(size_t threadId,
     size_t firstIndex,
     size_t lastIndex,
     ControlVectorArray& u_ff_local,
@@ -685,11 +685,15 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots
     for (size_t k = firstIndex; k <= lastIndex; k = k + settings_.K_shot)
     {
         // first rollout the shot
-        rolloutSingleShot(threadId, k, u_ff_local, x_local, x_ref_lqr, xShot, substepsX, substepsU);
+        bool dynamicsGood = rolloutSingleShot(threadId, k, u_ff_local, x_local, x_ref_lqr, xShot, substepsX, substepsU);
+
+        if (!dynamicsGood)
+            return false;
 
         // then compute the corresponding defect
         computeSingleDefect(k, x_local, xShot, d);
     }
+    return true;
 }
 
 
@@ -1186,10 +1190,14 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
     }
     else
     {
+        // merit of previous trajectory
+        lowestCost_ = intermediateCostBest_ + finalCostBest_ + (e_box_norm_ + e_gen_norm_) * settings_.meritFunctionRhoConstraints;
+        lowestCostPrevious = lowestCost_;
+
         if (settings_.lineSearchSettings.debugPrint)
         {
             std::cout << "[LineSearch]: Starting line search." << std::endl;
-            std::cout << "[LineSearch]: Cost last rollout: " << lowestCost_ << std::endl;
+            std::cout << "[LineSearch]: Merit last rollout: " << lowestCost_ << std::endl;
         }
 
         alphaBest_ = performLineSearch();
@@ -1237,12 +1245,16 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
     ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
     scalar_t& intermediateCost,
     scalar_t& finalCost,
+    scalar_t& e_box_norm,
+    scalar_t& e_gen_norm,
     StateSubsteps& substepsX,
     ControlSubsteps& substepsU,
     std::atomic_bool* terminationFlag) const
 {
     intermediateCost = std::numeric_limits<scalar_t>::infinity();
     finalCost = std::numeric_limits<scalar_t>::infinity();
+    e_box_norm = 0.0;
+    e_gen_norm = 0.0;
 
     if (terminationFlag && *terminationFlag)
         return;
@@ -1262,7 +1274,14 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 
     if (dynamicsGood)
     {
+        // compute cost specific to this alpha
         computeCostsOfTrajectory(threadId, x_local, u_local, intermediateCost, finalCost);
+
+        // compute constraint violations specific to this alpha
+        if (boxConstraints_[threadId] != nullptr)
+            computeBoxConstraintErrorOfTrajectory(threadId, x_local, u_local, e_box_norm);
+        if (generalConstraints_[threadId] != nullptr)
+            computeGeneralConstraintErrorOfTrajectory(threadId, x_local, u_local, e_gen_norm);
     }
     else
     {
@@ -1381,6 +1400,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
     scalar_t& intermediateCost,
     scalar_t& finalCost,
     scalar_t& defectNorm,
+    scalar_t& e_box_norm,
+    scalar_t& e_gen_norm,
     StateSubsteps& substepsX,
     ControlSubsteps& substepsU,
     std::atomic_bool* terminationFlag) const
@@ -1388,6 +1409,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
     intermediateCost = std::numeric_limits<scalar_t>::max();
     finalCost = std::numeric_limits<scalar_t>::max();
     defectNorm = std::numeric_limits<scalar_t>::max();
+    e_box_norm = 0.0;
+    e_gen_norm = 0.0;
 
     if (terminationFlag && *terminationFlag)
         return;
@@ -1402,7 +1425,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
     if (terminationFlag && *terminationFlag)
         return;
 
-    rolloutShotsSingleThreaded(
+    bool dynamicsGood = rolloutShotsSingleThreaded(
         threadId, 0, K_ - 1, u_alpha, x_alpha, x_alpha, x_shot_alpha, defects_recorded, substepsX, substepsU);
 
     if (terminationFlag && *terminationFlag)
@@ -1415,7 +1438,24 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
         return;
 
     //! compute costs
-    computeCostsOfTrajectory(threadId, x_alpha, u_alpha, intermediateCost, finalCost);
+    if (dynamicsGood)
+    {
+        computeCostsOfTrajectory(threadId, x_alpha, u_alpha, intermediateCost, finalCost);
+
+        // compute constraint violations specific to this alpha
+        if (boxConstraints_[threadId] != nullptr)
+            computeBoxConstraintErrorOfTrajectory(threadId, x_alpha, u_alpha, e_box_norm);
+        if (generalConstraints_[threadId] != nullptr)
+            computeGeneralConstraintErrorOfTrajectory(threadId, x_alpha, u_alpha, e_gen_norm);
+    }
+    else
+    {
+        if (settings_.debugPrint)
+        {
+            std::string msg = std::string("dynamics not good, thread: ") + std::to_string(threadId);
+            std::cout << msg << std::endl;
+        }
+    }
 
     if (terminationFlag && *terminationFlag)
         return;

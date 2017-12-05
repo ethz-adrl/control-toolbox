@@ -183,6 +183,7 @@ public:
           min_cost_improvement(1e-5),  //! cost needs to be at least 1e-5 better before we assume convergence
           maxDefectSum(1e-5),
           meritFunctionRho(0.0),
+		  meritFunctionRhoConstraints(1.0),
           max_iterations(100),
           fixedHessianCorrection(false),
           recordSmallestEigenvalue(false),
@@ -208,11 +209,12 @@ public:
     int K_shot;                       //! duration of a shot as an integer multiple of dt
     double min_cost_improvement;      //! minimum cost improvement between two interations to assume convergence
     double maxDefectSum;              //! maximum sum of squared defects (assume covergence if lower than this number)
-    double meritFunctionRho;          //! trade off between constraint violation and cost for a merit function
-    int max_iterations;               //! the maximum admissible number of NLOptCon main iterations \warning make sure to select this number high enough allow for convergence
-    bool fixedHessianCorrection;      //! perform Hessian regularization by incrementing the eigenvalues by epsilon.
-    bool recordSmallestEigenvalue;    //! save the smallest eigenvalue of the Hessian
-    int nThreads;                     //! number of threads, for MP version
+    double meritFunctionRho;          //! trade off between internal (defect)constraint violation and cost
+    double meritFunctionRhoConstraints;  //! trade off between external (general and path) constraint violation and cost
+    int max_iterations;                  //! the maximum admissible number of NLOptCon main iterations \warning make sure to select this number high enough allow for convergence
+    bool fixedHessianCorrection;         //! perform Hessian regularization by incrementing the eigenvalues by epsilon.
+    bool recordSmallestEigenvalue;       //! save the smallest eigenvalue of the Hessian
+    int nThreads;                        //! number of threads, for MP version
     size_t
         nThreadsEigen;                      //! number of threads for eigen parallelization (applies both to MP and ST) Note. in order to activate Eigen parallelization, compile with '-fopenmp'
     LineSearchSettings lineSearchSettings;  //! the line search settings
@@ -256,7 +258,8 @@ public:
         std::cout << "maxIter:\t" << max_iterations << std::endl;
         std::cout << "min cost improvement:\t" << min_cost_improvement << std::endl;
         std::cout << "max defect sum:\t" << maxDefectSum << std::endl;
-        std::cout << "merit function rho:\t" << meritFunctionRho << std::endl;
+        std::cout << "merit function rho defects:\t" << meritFunctionRho << std::endl;
+        std::cout << "merit function rho constraints:\t" << meritFunctionRhoConstraints << std::endl;
         std::cout << "fixedHessianCorrection:\t" << fixedHessianCorrection << std::endl;
         std::cout << "recordSmallestEigenvalue:\t" << recordSmallestEigenvalue << std::endl;
         std::cout << "epsilon:\t" << epsilon << std::endl;
@@ -360,6 +363,12 @@ public:
         try
         {
             meritFunctionRho = pt.get<double>(ns + ".meritFunctionRho");
+        } catch (...)
+        {
+        }
+        try
+        {
+            meritFunctionRhoConstraints = pt.get<double>(ns + ".meritFunctionRhoConstraints");
         } catch (...)
         {
         }

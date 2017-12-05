@@ -90,6 +90,8 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
         SCALAR intermediateCost = std::numeric_limits<SCALAR>::max();
         SCALAR finalCost = std::numeric_limits<SCALAR>::max();
         SCALAR defectNorm = std::numeric_limits<SCALAR>::max();
+        SCALAR e_box_norm = std::numeric_limits<SCALAR>::max();
+        SCALAR e_gen_norm = std::numeric_limits<SCALAR>::max();
 
         ct::core::StateVectorArray<STATE_DIM, SCALAR> x_search(this->K_ + 1);
         ct::core::StateVectorArray<STATE_DIM, SCALAR> x_shot_search(this->K_ + 1);
@@ -102,7 +104,7 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
         typename Base::ControlSubstepsPtr substepsU =
             typename Base::ControlSubstepsPtr(new typename Base::ControlSubsteps(this->K_ + 1));
 
-        //! set init state
+        // set init state
         x_search[0] = this->x_[0];
 
 
@@ -111,8 +113,8 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
             case NLOptConSettings::NLOCP_ALGORITHM::GNMS:
             {
                 this->executeLineSearchMultipleShooting(this->settings_.nThreads, alpha, this->lu_, this->lx_, x_search,
-                    x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, *substepsX,
-                    *substepsU);
+                    x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, e_box_norm,
+                    e_gen_norm, *substepsX, *substepsU);
 
                 break;
             }
@@ -120,40 +122,46 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
             {
                 defectNorm = 0.0;
                 this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, x_search, u_recorded,
-                    intermediateCost, finalCost, *substepsX, *substepsU);
+                    intermediateCost, finalCost, e_box_norm, e_gen_norm, *substepsX, *substepsU);
                 break;
             }
             default:
                 throw std::runtime_error("Algorithm type unknown in performLineSearch()!");
         }
 
+        // compute merit
+        cost = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm +
+               this->settings_.meritFunctionRhoConstraints * (e_box_norm + e_gen_norm);
 
-        cost = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm;
-
-        //! catch the case that a rollout might be unstable
+        // catch the case that a rollout might be unstable
         if (std::isnan(cost) ||
-            cost >= this->lowestCost_)  // todo: alternatively cost >= (this->lowestCost_*(1 - 1e-3*alpha)), study this
+            cost >= this->lowestCost_)  // TODO: alternatively cost >= (this->lowestCost_*(1 - 1e-3*alpha)), study this
         {
             if (this->settings_.lineSearchSettings.debugPrint)
             {
                 std::cout << "[LineSearch]: No better cost/merit found at alpha " << alpha << ":" << std::endl;
                 std::cout << "[LineSearch]: Cost:\t" << intermediateCost + finalCost << std::endl;
                 std::cout << "[LineSearch]: Defect:\t" << defectNorm << std::endl;
+                std::cout << "[LineSearch]: err box constr:\t" + std::to_string(e_box_norm) << std::endl;
+                std::cout << "[LineSearch]: err gen constr:\t" + std::to_string(e_gen_norm) << std::endl;
                 std::cout << "[LineSearch]: Merit:\t" << cost << std::endl;
             }
 
-            //! compute new alpha
+            // compute new alpha
             alpha = alpha * this->settings_.lineSearchSettings.n_alpha;
         }
         else
         {
-            //! cost < this->lowestCost_ , better merit/cost found!
+            // cost < this->lowestCost_ , better merit/cost found!
 
             if (this->settings_.lineSearchSettings.debugPrint)
             {
                 std::cout << "Lower cost/merit found at alpha: " << alpha << ":" << std::endl;
-                std::cout << "merit: " << cost << "cost " << intermediateCost + finalCost << ", defect " << defectNorm
-                          << " at alpha: " << alpha << std::endl;
+                std::cout << "[LineSearch]: Cost:\t" << intermediateCost + finalCost << std::endl;
+                std::cout << "[LineSearch]: Defect:\t" << defectNorm << std::endl;
+                std::cout << "[LineSearch]: err box constr:\t" + std::to_string(e_box_norm) << std::endl;
+                std::cout << "[LineSearch]: err gen constr:\t" + std::to_string(e_gen_norm) << std::endl;
+                std::cout << "[LineSearch]: Merit:\t" << cost << std::endl;
             }
 
 
@@ -182,6 +190,8 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
             this->intermediateCostBest_ = intermediateCost;
             this->finalCostBest_ = finalCost;
             this->d_norm_ = defectNorm;
+            this->e_box_norm_ = e_box_norm;
+            this->e_gen_norm_ = e_gen_norm;
             this->x_prev_ = x_search;
             this->lowestCost_ = cost;
             this->x_.swap(x_search);
@@ -192,7 +202,7 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::performLineS
             this->substepsU_ = substepsU;
             break;
         }
-    }  //! end while
+    }  // end while
 
     return alphaBest;
 }

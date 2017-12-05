@@ -156,11 +156,13 @@ int main(int argc, char** argv)
     ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
     ilqr_settings.max_iterations = 10;
     ilqr_settings.min_cost_improvement = 1e-6;
-    ilqr_settings.nThreads = 4;
+    ilqr_settings.meritFunctionRhoConstraints = 10;
+    ilqr_settings.nThreads = 1;
     ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
     ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
     ilqr_settings.lqoc_solver_settings.num_lqoc_iterations = 10;                // number of riccati sub-iterations
-    ilqr_settings.lineSearchSettings.active = false;
+    ilqr_settings.lineSearchSettings.active = true;
+    ilqr_settings.lineSearchSettings.debugPrint = true;
     ilqr_settings.printSummary = true;
 
 

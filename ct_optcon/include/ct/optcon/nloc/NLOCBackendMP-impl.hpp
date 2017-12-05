@@ -475,6 +475,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
         SCALAR intermediateCost = std::numeric_limits<SCALAR>::max();
         SCALAR finalCost = std::numeric_limits<SCALAR>::max();
         SCALAR defectNorm = std::numeric_limits<SCALAR>::max();
+        SCALAR e_box_norm = std::numeric_limits<SCALAR>::max();
+        SCALAR e_gen_norm = std::numeric_limits<SCALAR>::max();
         ct::core::StateVectorArray<STATE_DIM, SCALAR> x_search(this->K_ + 1);
         ct::core::StateVectorArray<STATE_DIM, SCALAR> x_shot_search(this->K_ + 1);
         ct::core::StateVectorArray<STATE_DIM, SCALAR> defects_recorded(
@@ -494,23 +496,24 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
             case NLOptConSettings::NLOCP_ALGORITHM::GNMS:
             {
                 this->executeLineSearchMultipleShooting(threadId, alpha, this->lu_, this->lx_, x_search, x_shot_search,
-                    defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, *substepsX, *substepsU,
-                    &alphaBestFound_);
+                    defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm,
+                    *substepsX, *substepsU, &alphaBestFound_);
                 break;
             }
             case NLOptConSettings::NLOCP_ALGORITHM::ILQR:
             {
                 defectNorm = 0.0;
                 this->executeLineSearchSingleShooting(threadId, alpha, x_search, u_recorded, intermediateCost,
-                    finalCost, *substepsX, *substepsU, &alphaBestFound_);
+                    finalCost, e_box_norm, e_gen_norm, *substepsX, *substepsU, &alphaBestFound_);
                 break;
             }
             default:
                 throw std::runtime_error("Algorithm type unknown in performLineSearch()!");
         }
 
-
-        cost = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm;
+        // compute merit
+        cost = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm +
+               this->settings_.meritFunctionRhoConstraints * (e_box_norm + e_gen_norm);
 
         lineSearchResultMutex_.lock();
         if (cost < lowestCostPrevious_ && !std::isnan(cost))
@@ -528,6 +531,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
                             std::to_string(alpha));
                 printString("[LineSearch]: Cost:\t" + std::to_string(intermediateCost + finalCost));
                 printString("[LineSearch]: Defect:\t" + std::to_string(defectNorm));
+                printString("[LineSearch]: err box constr:\t" + std::to_string(e_box_norm));
+                printString("[LineSearch]: err gen constr:\t" + std::to_string(e_gen_norm));
                 printString("[LineSearch]: Merit:\t" + std::to_string(cost));
             }
 
@@ -535,6 +540,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
             this->intermediateCostBest_ = intermediateCost;
             this->finalCostBest_ = finalCost;
             this->d_norm_ = defectNorm;
+            this->e_box_norm_ = e_box_norm;
+            this->e_gen_norm_ = e_gen_norm;
             this->lowestCost_ = cost;
             this->x_.swap(x_search);
             this->xShot_.swap(x_shot_search);
@@ -551,6 +558,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
                             "]: NO lower cost/merit found at alpha:" + std::to_string(alpha));
                 printString("[LineSearch]: Cost:\t" + std::to_string(intermediateCost + finalCost));
                 printString("[LineSearch]: Defect:\t" + std::to_string(defectNorm));
+                printString("[LineSearch]: err box constr:\t" + std::to_string(e_box_norm));
+                printString("[LineSearch]: err gen constr:\t" + std::to_string(e_gen_norm));
                 printString("[LineSearch]: Merit:\t" + std::to_string(cost));
             }
         }
