@@ -85,10 +85,12 @@ int main(int argc, char **argv)
     ilqr_settings.integrator = ct::core::IntegrationType::EULERCT;
     ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
     ilqr_settings.max_iterations = 10;
+    ilqr_settings.nThreads = 4;  // use multi-threading
     ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
-    ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::
-        GNRICCATI_SOLVER;  // the LQ-problems are solved using a custom Gauss-Newton Riccati solver
+    ilqr_settings.lqocp_solver =
+        NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;  // solve LQ-problems using custom Riccati solver
     ilqr_settings.printSummary = true;
+    ilqr_settings.debugPrint = true;
 
 
     /* STEP 2-B: provide an initial guess */
@@ -120,5 +122,4 @@ int main(int argc, char **argv)
 
     // let's plot the output
     plotResultsOscillator<state_dim, control_dim>(solution.x_ref(), solution.uff(), solution.time());
-
 }

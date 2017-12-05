@@ -333,14 +333,8 @@ public:
     //! perform line-search and update controller for multiple shooting
     bool lineSearchMultipleShooting();
 
-    //! Computes the linearization of the dynamics along the trajectory, for the specified indices. See computeLinearizedDynamics for details
-    virtual void computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
-
-    //! Computes the quadratic approximation of the cost function along the trajectory, for the specified indices
-    virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
-
-    //! Computes the linear general constraint approximation along the trajectory, for the specified indices
-    virtual void computeLinearizedGeneralConstraintsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
+    //! build LQ approximation around trajectory (linearize dynamics and general constraints, quadratize cost)
+    virtual void computeLQApproximation(size_t firstIndex, size_t lastIndex) = 0;
 
     //! sets the box constraints for the entire time horizon including terminal stage
     void setBoxConstraintsForLQOCProblem();

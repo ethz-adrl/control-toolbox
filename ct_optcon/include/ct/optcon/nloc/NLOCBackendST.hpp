@@ -35,11 +35,8 @@ public:
     virtual ~NLOCBackendST();
 
 protected:
-    virtual void computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
 
-    virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
-
-    virtual void computeLinearizedGeneralConstraintsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
+    virtual void computeLQApproximation(size_t firstIndex, size_t lastIndex) override;
 
     virtual void rolloutShots(size_t firstIndex, size_t lastIndex) override;
 

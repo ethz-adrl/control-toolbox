@@ -145,22 +145,13 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(siz
                 uniqueProcessID = generateUniqueProcessID(iteration_local, ROLLOUT_SHOTS);
                 break;
             }
-            case LINEARIZE_DYNAMICS:
+            case COMPUTE_LQ_PROBLEM:
             {
 #ifdef DEBUG_PRINT_MP
-                printString("[Thread " + std::to_string(threadId) + "]: now doing linearization !");
+                printString("[Thread " + std::to_string(threadId) + "]: now LQ approximation !");
 #endif  // DEBUG_PRINT_MP
-                computeLinearizedDynamicsWorker(threadId);
-                uniqueProcessID = generateUniqueProcessID(iteration_local, LINEARIZE_DYNAMICS);
-                break;
-            }
-            case COMPUTE_COST:
-            {
-#ifdef DEBUG_PRINT_MP
-                printString("[Thread " + std::to_string(threadId) + "]: now doing cost computation !");
-#endif  // DEBUG_PRINT_MP
-                computeQuadraticCostsWorker(threadId);
-                uniqueProcessID = generateUniqueProcessID(iteration_local, COMPUTE_COST);
+                computeLQProblemWorker(threadId);
+                uniqueProcessID = generateUniqueProcessID(iteration_local, COMPUTE_LQ_PROBLEM);
                 break;
             }
             case SHUTDOWN:
@@ -202,126 +193,32 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::launchWorkerTh
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsAroundTrajectory(
-    size_t firstIndex,
+void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLQApproximation(size_t firstIndex,
     size_t lastIndex)
 {
-    /*!
+    // fill terminal cost
+    if (lastIndex == (this->K_ - 1))
+        this->initializeCostToGo();
+
+    /*
 	 * In special cases, this function may be called for a single index, e.g. for the unconstrained GNMS real-time iteration scheme.
 	 * Then, don't wake up workers, but do single-threaded computation for that single index, and return.
 	 */
     if (lastIndex == firstIndex)
     {
 #ifdef DEBUG_PRINT_MP
-        printString("[MP]: do single threaded linearization for single index " + std::to_string(firstIndex) +
+        printString("[MP]: do single threaded LQ approximation for single index " + std::to_string(firstIndex) +
                     ". Not waking up workers.");
 #endif  //DEBUG_PRINT_MP
         this->computeLinearizedDynamics(this->settings_.nThreads, firstIndex);
-        return;
-    }
-
-
-    /*!
-	 * In case of multiple points to be linearized, start multi-threading:
-	 */
-    Eigen::setNbThreads(1);  // disable Eigen multi-threading
-#ifdef DEBUG_PRINT_MP
-    printString("[MP]: Restricting Eigen to " + std::to_string(Eigen::nbThreads()) + " threads.");
-#endif  //DEBUG_PRINT_MP
-
-    kTaken_ = 0;
-    kCompleted_ = 0;
-    KMax_ = lastIndex;
-    KMin_ = firstIndex;
-
-#ifdef DEBUG_PRINT_MP
-    printString("[MP]: Waking up workers to do linearization.");
-#endif  //DEBUG_PRINT_MP
-    workerTask_ = LINEARIZE_DYNAMICS;
-    workerWakeUpCondition_.notify_all();
-
-#ifdef DEBUG_PRINT_MP
-    printString("[MP]: Will sleep now until we have linearized dynamics.");
-#endif  //DEBUG_PRINT_MP
-
-    std::unique_lock<std::mutex> waitLock(kCompletedMutex_);
-    kCompletedCondition_.wait(waitLock, [this] { return kCompleted_.load() > KMax_ - KMin_; });
-    waitLock.unlock();
-    workerTask_ = IDLE;
-#ifdef DEBUG_PRINT_MP
-    printString("[MP]: Woke up again, should have linearized dynamics now.");
-#endif  //DEBUG_PRINT_MP
-
-
-    Eigen::setNbThreads(this->settings_.nThreadsEigen);  // restore Eigen multi-threading
-#ifdef DEBUG_PRINT_MP
-    printString("[MP]: Restoring " + std::to_string(Eigen::nbThreads()) + " Eigen threads.");
-#endif  //DEBUG_PRINT_MP
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamicsWorker(size_t threadId)
-{
-    while (true)
-    {
-        size_t k = kTaken_++;
-
-        if (k > KMax_ - KMin_)
-        {
-            //kCompleted_++;
-            if (kCompleted_.load() > KMax_ - KMin_)
-                kCompletedCondition_.notify_all();
-            return;
-        }
-
-#ifdef DEBUG_PRINT_MP
-        if ((k + 1) % 100 == 0)
-            printString(
-                "[Thread " + std::to_string(threadId) + "]: Linearizing for index k " + std::to_string(KMax_ - k));
-#endif
-
-        this->computeLinearizedDynamics(threadId, KMax_ - k);  // linearize backwards
-
-        kCompleted_++;
-    }
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedGeneralConstraintsAroundTrajectory(
-    size_t firstIndex,
-    size_t lastIndex)
-{
-	throw std::runtime_error("mp computeLinearizedGeneralConstraintsAroundTrajectory not impl");
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsAroundTrajectory(
-    size_t firstIndex,
-    size_t lastIndex)
-{
-    //! fill terminal cost
-    this->initializeCostToGo();
-
-
-    /*!
-	 * In special cases, this function may be called for a single index, e.g. for the unconstrained GNMS real-time iteration scheme.
-	 * Then, don't wake up workers, but do single-threaded computation for that single index, and return.
-	 */
-    if (lastIndex == firstIndex)
-    {
-#ifdef DEBUG_PRINT_MP
-        printString("[MP]: do single threaded cost approximation for single index " + std::to_string(firstIndex) +
-                    ". Not waking up workers.");
-#endif  //DEBUG_PRINT_MP
         this->computeQuadraticCosts(this->settings_.nThreads, firstIndex);
+        if (this->generalConstraints_[this->settings_.nThreads] != nullptr)
+            this->computeLinearizedConstraints(this->settings_.nThreads, firstIndex);
         return;
     }
 
-
-    /*!
-	 * In case of multiple points to be linearized, start multi-threading:
+    /*
+	 * In case of multiple points to perform LQ-approximation, start multi-threading:
 	 */
     Eigen::setNbThreads(1);  // disable Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
@@ -333,15 +230,14 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
     KMax_ = lastIndex;
     KMin_ = firstIndex;
 
-
 #ifdef DEBUG_PRINT_MP
-    std::cout << "[MP]: Waking up workers to do cost computation." << std::endl;
+    printString("[MP]: Waking up workers to do LQ approximation.");
 #endif  //DEBUG_PRINT_MP
-    workerTask_ = COMPUTE_COST;
+    workerTask_ = COMPUTE_LQ_PROBLEM;
     workerWakeUpCondition_.notify_all();
 
 #ifdef DEBUG_PRINT_MP
-    std::cout << "[MP]: Will sleep now until we have cost." << std::endl;
+    printString("[MP]: Will sleep now until we computed LQ approximation.");
 #endif  //DEBUG_PRINT_MP
 
     std::unique_lock<std::mutex> waitLock(kCompletedMutex_);
@@ -349,41 +245,14 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadrat
     waitLock.unlock();
     workerTask_ = IDLE;
 #ifdef DEBUG_PRINT_MP
-    std::cout << "[MP]: Woke up again, should have cost now." << std::endl;
+    printString("[MP]: Woke up again, should have computed LQ approximation now.");
 #endif  //DEBUG_PRINT_MP
+
 
     Eigen::setNbThreads(this->settings_.nThreadsEigen);  // restore Eigen multi-threading
 #ifdef DEBUG_PRINT_MP
     printString("[MP]: Restoring " + std::to_string(Eigen::nbThreads()) + " Eigen threads.");
 #endif  //DEBUG_PRINT_MP
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeQuadraticCostsWorker(size_t threadId)
-{
-    while (true)
-    {
-        size_t k = kTaken_++;
-
-        if (k > KMax_ - KMin_)
-        {
-            //kCompleted_++;
-            if (kCompleted_.load() > KMax_ - KMin_)
-                kCompletedCondition_.notify_all();
-            return;
-        }
-
-#ifdef DEBUG_PRINT_MP
-        if ((k + 1) % 100 == 0)
-            printString("[Thread " + std::to_string(threadId) + "]: Quadratizing cost for index k " +
-                        std::to_string(KMax_ - k));
-#endif
-
-        this->computeQuadraticCosts(threadId, KMax_ - k);  // compute cost backwards
-
-        kCompleted_++;
-    }
 }
 
 
@@ -392,7 +261,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLQProbl
 {
     while (true)
     {
-        size_t k = kTaken_++;
+        const size_t k = kTaken_++;
 
         if (k > KMax_ - KMin_)
         {
@@ -408,8 +277,12 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLQProbl
                         std::to_string(KMax_ - k));
 #endif
 
-        this->computeQuadraticCosts(threadId, KMax_ - k);      // compute cost backwards
-        this->computeLinearizedDynamics(threadId, KMax_ - k);  // linearize backwards
+        this->computeQuadraticCosts(threadId, KMax_ - k);  // quadratize cost backwards
+
+        this->computeLinearizedDynamics(threadId, KMax_ - k);  // linearize dynamics backwards
+
+        if (this->generalConstraints_[threadId] != nullptr)
+            this->computeLinearizedConstraints(threadId, KMax_ - k);  // linearize constraints backwards
 
         kCompleted_++;
     }

@@ -219,8 +219,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeCostFu
     }
 
     // recompute cost if line search is active
+    // TODO: this should be multi-threaded to save time
     if (iteration_ > 0 && settings_.lineSearchSettings.active)
-        computeQuadraticCostsAroundTrajectory(0, K_ - 1);
+        computeCostsOfTrajectory(settings_.nThreads, x_, u_ff_, intermediateCostBest_, finalCostBest_);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -1375,9 +1376,19 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solveFullLQP
     lqocProblem_->u_ = u_ff_;
 
     if (lqocProblem_->isBoxConstrained())
+    {
+        if (settings_.debugPrint)
+            std::cout << "LQ Problem has box constraints. Configuring box constraints now. " << std::endl;
+
         lqocSolver_->configureBoxConstraints(lqocProblem_);
+    }
     if (lqocProblem_->isGeneralConstrained())
+    {
+        if (settings_.debugPrint)
+            std::cout << "LQ Problem has general constraints. Configuring general constraints now. " << std::endl;
+
         lqocSolver_->configureGeneralConstraints(lqocProblem_);
+    }
 
     lqocSolver_->setProblem(lqocProblem_);
 

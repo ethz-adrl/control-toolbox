@@ -6,6 +6,7 @@
  * constrained linear-quadratic Optimal Control solver.
  *
  */
+
 #include <ct/optcon/optcon.h>
 #include "exampleDir.h"
 #include "plotResultsOscillator.h"
@@ -20,7 +21,7 @@ static const size_t state_dim = ct::core::SecondOrderSystem::STATE_DIM;
 static const size_t control_dim = ct::core::SecondOrderSystem::CONTROL_DIM;
 
 /*!
- * @brief A simple 1d constraint term. We'll use CppAD to compute its jacobians
+ * @brief A simple 1d constraint term.
  *
  * This term implements the general inequality constraints
  * \f$ d_{lb} \leq u \cdot p^2 \leq d_{ub} \f$
@@ -33,27 +34,27 @@ class ConstraintTerm1D : public ct::optcon::ConstraintBase<state_dim, control_di
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    const static size_t term_dim = 1;
     typedef typename ct::core::tpl::TraitSelector<double>::Trait Trait;
     typedef typename ct::core::tpl::TraitSelector<ct::core::ADCGScalar>::Trait TraitCG;
     typedef ct::optcon::ConstraintBase<state_dim, control_dim> Base;
     typedef ct::core::StateVector<state_dim> state_vector_t;
     typedef ct::core::ControlVector<control_dim> control_vector_t;
 
+    //! constructor with hard-coded constraint boundaries.
     ConstraintTerm1D()
     {
-        Base::lb_.resize(term_dim);
-        Base::ub_.resize(term_dim);
+        Base::lb_.resize(1);
+        Base::ub_.resize(1);
         Base::lb_.setConstant(-0.5);
         Base::ub_.setConstant(0.5);
     }
 
     virtual ~ConstraintTerm1D() {}
     virtual ConstraintTerm1D* clone() const override { return new ConstraintTerm1D(); }
-    virtual size_t getConstraintSize() const override { return term_dim; }
+    virtual size_t getConstraintSize() const override { return 1; }
     virtual Eigen::VectorXd evaluate(const state_vector_t& x, const control_vector_t& u, const double t) override
     {
-        Eigen::Matrix<double, term_dim, 1> val;
+        Eigen::Matrix<double, 1, 1> val;
         val.template segment<1>(0) << u(0) * x(0) * x(0);
         return val;
     }
@@ -63,7 +64,7 @@ public:
         const ct::core::ControlVector<control_dim, ct::core::ADCGScalar>& u,
         ct::core::ADCGScalar t) override
     {
-        Eigen::Matrix<ct::core::ADCGScalar, term_dim, 1> val;
+        Eigen::Matrix<ct::core::ADCGScalar, 1, 1> val;
 
         val.template segment<1>(0) << u(0) * x(0) * x(0);
 
@@ -114,16 +115,16 @@ int main(int argc, char** argv)
 
     /* STEP 1-D: set up the general constraints */
     // constraint terms
-    std::shared_ptr<ConstraintTerm1D> term1_ad(new ConstraintTerm1D());
+    std::shared_ptr<ConstraintTerm1D> pathConstraintTerm(new ConstraintTerm1D());
 
     // create constraint container
-    std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> generalConstraintsAD(
+    std::shared_ptr<ct::optcon::ConstraintContainerAD<state_dim, control_dim>> generalConstraints(
         new ct::optcon::ConstraintContainerAD<state_dim, control_dim>());
 
 
     // add and initialize constraint terms
-    generalConstraintsAD->addIntermediateConstraint(term1_ad, verbose);
-    generalConstraintsAD->initialize();
+    generalConstraints->addIntermediateConstraint(pathConstraintTerm, verbose);
+    generalConstraints->initialize();
 
 
     /* STEP 1-E: initialization with initial state and desired time horizon */
@@ -139,7 +140,8 @@ int main(int argc, char** argv)
         timeHorizon, x0, oscillatorDynamics, costFunction, adLinearizer);
 
     // add the box constraints to the optimal control problem
-    optConProblem.setGeneralConstraints(generalConstraintsAD);
+    optConProblem.setGeneralConstraints(generalConstraints);
+
 
     /* STEP 2: set up a nonlinear optimal control solver. */
 
@@ -154,11 +156,10 @@ int main(int argc, char** argv)
     ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
     ilqr_settings.max_iterations = 10;
     ilqr_settings.min_cost_improvement = 1e-6;
-    ilqr_settings.nThreads = 1;
+    ilqr_settings.nThreads = 4;
     ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
     ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
     ilqr_settings.lqoc_solver_settings.num_lqoc_iterations = 10;                // number of riccati sub-iterations
-    ilqr_settings.lqoc_solver_settings.lqoc_debug_print = true;                 // number of riccati sub-iterations
     ilqr_settings.lineSearchSettings.active = false;
     ilqr_settings.printSummary = true;
 
