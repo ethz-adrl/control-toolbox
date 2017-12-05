@@ -36,6 +36,8 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendBase(
       settings_(settings),
       K_(0),
       d_norm_(0.0),
+      e_box_norm_(0.0),
+      e_gen_norm_(0.0),
       lx_norm_(0.0),
       lu_norm_(0.0),
       lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>()),
@@ -300,7 +302,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeBoxCon
         boxConstraints_[i] = typename OptConProblem_t::ConstraintPtr_t(con->clone());
     }
 
-    // TODO need to compute current box constraint violation here? (lineSearch?)
+    // TODO can we do this multi-threaded?
+    if (iteration_ > 0 && settings_.lineSearchSettings.active)
+        computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -318,7 +322,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeGenera
         generalConstraints_[i] = typename OptConProblem_t::ConstraintPtr_t(con->clone());
     }
 
-    // TODO need to compute current general constraint violation here? (lineSearch?)
+    // TODO can we do this multi-threaded?
+    if (iteration_ > 0 && settings_.lineSearchSettings.active)
+        computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
 }
 
 
@@ -729,6 +735,86 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeCosts
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeBoxConstraintErrorOfTrajectory(
+    size_t threadId,
+    const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+    const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+    scalar_t& e_tot) const
+{
+    e_tot = 0;
+
+    // intermediate constraints
+    for (size_t k = 0; k < (size_t)K_; k++)
+    {
+        if (boxConstraints_[threadId] != nullptr)
+        {
+            if (boxConstraints_[threadId]->getIntermediateConstraintsCount() > 0)
+            {
+                boxConstraints_[threadId]->setCurrentStateAndControl(x_local[k], u_local[k], settings_.dt * k);
+                Eigen::Matrix<SCALAR, -1, 1> box_err = boxConstraints_[threadId]->getTotalBoundsViolationIntermediate();
+                e_tot += box_err.norm();  // TODO check if we should use different norms here
+            }
+        }
+    }
+
+    // normalize integrated violation by time
+    e_tot *= settings_.dt;
+
+    // terminal constraint violation
+    if (boxConstraints_[threadId] != nullptr)
+    {
+        if (boxConstraints_[threadId]->getTerminalConstraintsCount() > 0)
+        {
+            boxConstraints_[threadId]->setCurrentStateAndControl(
+                x_local[K_], control_vector_t::Zero(), settings_.dt * K_);
+            Eigen::Matrix<SCALAR, -1, 1> box_err = boxConstraints_[threadId]->getTotalBoundsViolationTerminal();
+            e_tot += box_err.norm();  // TODO check if we should use different norms here
+        }
+    }
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeGeneralConstraintErrorOfTrajectory(
+    size_t threadId,
+    const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+    const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+    scalar_t& e_tot) const
+{
+    e_tot = 0;
+
+    // intermediate constraints
+    for (size_t k = 0; k < (size_t)K_; k++)
+    {
+        if (generalConstraints_[threadId] != nullptr)
+        {
+            if (generalConstraints_[threadId]->getIntermediateConstraintsCount() > 0)
+            {
+                generalConstraints_[threadId]->setCurrentStateAndControl(x_local[k], u_local[k], settings_.dt * k);
+                Eigen::Matrix<SCALAR, -1, 1> gen_err =
+                    generalConstraints_[threadId]->getTotalBoundsViolationIntermediate();
+                e_tot += gen_err.norm();  // TODO check if we should use different norms here
+            }
+        }
+    }
+
+    // normalize integrated violation by time
+    e_tot *= settings_.dt;
+
+    if (generalConstraints_[threadId] != nullptr)
+    {
+        if (generalConstraints_[threadId]->getTerminalConstraintsCount() > 0)
+        {
+            generalConstraints_[threadId]->setCurrentStateAndControl(
+                x_local[K_], control_vector_t::Zero(), settings_.dt * K_);
+            Eigen::Matrix<SCALAR, -1, 1> gen_err = generalConstraints_[threadId]->getTotalBoundsViolationTerminal();
+            e_tot += gen_err.norm();  // TODO check if we should use different norms here
+        }
+    }
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamics(size_t threadId, size_t k)
 {
     LQOCProblem_t& p = *lqocProblem_;
@@ -902,9 +988,14 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::printSummary
         smallestEigenvalue = lqocSolver_->getSmallestEigenvalue();
     }
 
+    computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
+    computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
+
     summaryAllIterations_.iterations.push_back(iteration_);
     summaryAllIterations_.defect_l1_norms.push_back(d_norm_l1);
     summaryAllIterations_.defect_l2_norms.push_back(d_norm_l2);
+    summaryAllIterations_.e_box_norms.push_back(e_box_norm_);
+    summaryAllIterations_.e_gen_norms.push_back(e_gen_norm_);
     summaryAllIterations_.lx_norms.push_back(lx_norm_);
     summaryAllIterations_.lu_norms.push_back(lu_norm_);
     summaryAllIterations_.intermediateCosts.push_back(intermediateCostBest_);
@@ -964,6 +1055,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
     d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);
     matFile_.put("d_norm", d_norm_);
 
+    computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
+    computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
+    matFile_.put("e_box_norm", e_box_norm_);
+    matFile_.put("e_gen_norm", e_gen_norm_);
+
     matFile_.close();
 #endif  //MATLAB_FULL_LOG
 }
@@ -989,6 +1085,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logInitToMat
 
     d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);
     matFile_.put("d_norm", d_norm_);
+
+    computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
+    computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
+    matFile_.put("e_box_norm", e_box_norm_);
+    matFile_.put("e_gen_norm", e_gen_norm_);
 
     matFile_.close();
 #endif

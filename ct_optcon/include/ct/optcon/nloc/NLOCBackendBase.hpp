@@ -372,7 +372,6 @@ public:
     //! performLineSearch: execute the line search, possibly with different threading schemes
     virtual SCALAR performLineSearch() = 0;
 
-
     //! simple full-step update for state and feedforward control (used for MPC-mode!)
     void doFullStepUpdate();
 
@@ -486,6 +485,31 @@ protected:
         scalar_t& intermediateCost,
         scalar_t& finalCost) const;
 
+    /*!
+	 * @brief Compute box constraint violations for a given set of state and input trajectory
+     *
+	 * \param threadId the ID of the thread
+	 * \param x_local the state trajectory
+	 * \param u_local the control trajectory
+	 * \param e_tot the total accumulated box constraint violation
+	 */
+    void computeBoxConstraintErrorOfTrajectory(size_t threadId,
+        const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+        const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+        scalar_t& e_tot) const;
+
+    /*!
+	 * @brief Compute general constraint violations for a given set of state and input trajectory
+     *
+	 * \param threadId the ID of the thread
+	 * \param x_local the state trajectory
+	 * \param u_local the control trajectory
+	 * \param e_tot the total accumulated general constraint violation
+	 */
+    void computeGeneralConstraintErrorOfTrajectory(size_t threadId,
+        const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+        const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+        scalar_t& e_tot) const;
 
     //! Check if controller with particular alpha is better
     void executeLineSearchSingleShooting(const size_t threadId,
@@ -597,9 +621,11 @@ protected:
 
     FeedbackArray L_;
 
-    SCALAR d_norm_;   //! sum of the norms of all defects
-    SCALAR lx_norm_;  //! sum of the norms of state update
-    SCALAR lu_norm_;  //! sum of the norms of control update
+    SCALAR d_norm_;      //! sum of the norms of all defects (internal constraint)
+    SCALAR e_box_norm_;  //! sum of the norms of all box constraint violations
+    SCALAR e_gen_norm_;  //! sum of the norms of all general constraint violations
+    SCALAR lx_norm_;     //! sum of the norms of state update
+    SCALAR lu_norm_;     //! sum of the norms of control update
 
     //! shared pointer to the linear-quadratic optimal control problem
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>> lqocProblem_;

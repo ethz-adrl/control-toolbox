@@ -146,6 +146,47 @@ public:
 	 */
     VectorXs getUpperBoundsTerminal() const;
 
+    /**
+	 * @brief      Retrieves the violation of the upper constraint bound on the intermediate constraints
+	 *
+	 * @return     The upper bound violation on intermediate constraints
+	 */
+    VectorXs getUpperBoundsViolationIntermediate();
+
+    /**
+	 * @brief      Retrieves the violation of the lower constraint bound on the intermediate constraints
+	 *
+	 * @return     The lower bound violation on intermediate constraints
+	 */
+    VectorXs getLowerBoundsViolationIntermediate();
+
+    /**
+	 * @brief      Retrieves the violation of the upper constraint bound on the terminal constraints
+	 *
+	 * @return     The upper bound violation on terminal constraints
+	 */
+    VectorXs getUpperBoundsViolationTerminal();
+
+    /**
+	 * @brief      Retrieves the violation of the lower constraint bound on the terminal constraints
+	 *
+	 * @return     The lower bound violation on terminal constraints
+	 */
+    VectorXs getLowerBoundsViolationTerminal();
+
+    /**
+	 * @brief      Retrieves the total violation of the constraints bounds on the intermediate constraints
+	 *
+	 * @return     The total bound violation on intermediate constraints
+	 */
+    VectorXs getTotalBoundsViolationIntermediate();
+
+    /**
+	 * @brief      Retrieves the total violation of the constraints bounds on the terminal constraints
+	 *
+	 * @return     The total bound violation on terminal constraints
+	 */
+    VectorXs getTotalBoundsViolationTerminal();
 
 protected:
     /**
