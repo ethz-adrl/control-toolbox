@@ -54,7 +54,8 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendBase(
       boxConstraints_(settings.nThreads + 1, nullptr),      // initialize constraints with null
       generalConstraints_(settings.nThreads + 1, nullptr),  // initialize constraints with null
       firstRollout_(true),
-      alphaBest_(-1)
+      alphaBest_(-1),
+	  resetCounter_(0)
 {
     Eigen::initParallel();
 
@@ -1574,6 +1575,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::reset()
     finalCostBest_ = std::numeric_limits<scalar_t>::infinity();
     intermediateCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
     finalCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
+
+    resetCounter_++;
 }
 
 

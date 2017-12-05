@@ -669,6 +669,8 @@ protected:
     bool firstRollout_;
     scalar_t alphaBest_;
 
+    size_t resetCounter_;
+
     SummaryAllIterations<SCALAR> summaryAllIterations_;
 };
 

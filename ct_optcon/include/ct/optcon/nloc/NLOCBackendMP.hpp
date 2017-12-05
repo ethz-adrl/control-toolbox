@@ -42,7 +42,6 @@ public:
     virtual ~NLOCBackendMP();
 
 protected:
-
     virtual void computeLQApproximation(size_t firstIndex, size_t lastIndex) override;
 
     virtual void rolloutShots(size_t firstIndex, size_t lastIndex) override;
@@ -55,7 +54,7 @@ private:
         IDLE,
         LINE_SEARCH,
         ROLLOUT_SHOTS,
-		COMPUTE_LQ_PROBLEM,
+        COMPUTE_LQ_PROBLEM,
         SHUTDOWN
     };
 
@@ -96,7 +95,7 @@ private:
 	 * Generates a unique identifiers for task, iteration:
 	 * @todo replace by proper hash
 	 * */
-    size_t generateUniqueProcessID(const size_t& iterateNo, const int workerState);
+    size_t generateUniqueProcessID(const size_t& iterateNo, const int workerState, const size_t resetCount);
 
     //! wrapper method for nice debug printing
     void printString(const std::string& text);
