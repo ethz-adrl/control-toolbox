@@ -49,6 +49,17 @@ if(MATLAB)
 endif(MATLAB)
 set(MATLAB_LIBS ${MATLAB_LIB_DIR})
 
+#todo export this properly from ct_core
+find_package(PythonLibs QUIET)
+if (PYTHONLIBS_FOUND)
+   message(STATUS "Python found")
+   include_directories(${PYTHON_INCLUDE_DIRS})
+   set(PLOTTING_ENABLED true)
+   add_definitions(-DPLOTTING_ENABLED)
+else()
+   message(STATUS "Python not found")
+   set(PYTHON_LIBRARY "")
+endif()
 
 ## dummy HPIPM libs
 set(HPIPM_LIBS "")
@@ -219,10 +230,10 @@ if(BUILD_EXAMPLES)
     target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS})
 
     add_executable(ex_NLOC examples/NLOC.cpp)
-    target_link_libraries(ex_NLOC ${catkin_LIBRARIES})
+    target_link_libraries(ex_NLOC ${catkin_LIBRARIES} ${HPIPM_LIBS})
         
     add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
-    target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES})
+    target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES} ${HPIPM_LIBS})
     
     add_executable(ex_DMS examples/DMS.cpp)
     target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
@@ -247,14 +258,18 @@ if(HPIPM)
     catkin_add_gtest(LQOCSolverTestPrespec test/solver/linear/LQOCSolverTestPrespec.cpp)
     target_link_libraries(LQOCSolverTestPrespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIB_NAMES})
     
+    catkin_add_gtest(ConstrainedLQOCSolverTest test/solver/linear/ConstrainedLQOCSolverTest.cpp)
+    target_link_libraries(ConstrainedLQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+      
     add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
     target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-    
-    #add_executable(HPIPMInterfaceTest test/hpipm/HPIPMInterfaceTest.cpp)	# todo make unit test
-    #target_link_libraries(HPIPMInterfaceTest ${HPIPM_LIBS} ${MATLAB_LIBS})
-    
-    #add_executable(HPIPMInterfaceTest2 test/hpipm/HPIPMInterfaceTest2.cpp) # todo make unit test
-    #target_link_libraries(HPIPMInterfaceTest2 ${HPIPM_LIBS} ${MATLAB_LIBS})
+    if(BUILD_EXAMPLES)
+        add_executable(ex_NLOC_boxConstrained examples/NLOC_boxConstrained.cpp)
+        target_link_libraries(ex_NLOC_boxConstrained ${catkin_LIBRARIES} ${HPIPM_LIBS})
+        
+        add_executable(ex_NLOC_generalConstrained examples/NLOC_generalConstrained.cpp)
+        target_link_libraries(ex_NLOC_generalConstrained ${catkin_LIBRARIES} ${HPIPM_LIBS})
+    endif()
 endif(HPIPM)
 
 

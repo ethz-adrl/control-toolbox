@@ -12,7 +12,8 @@ Features
 - explicit template instantiation for faster compilation speed
 - improved interfaces for SNOPT/IPOPT
 - several speed improvements
-- HPIPM support
+- added (in)equaltiy constrained linear-quadratic optimal control problems
+- added HPIPM interface (HPIPM is a high-performance interior-point QP solver)
 - improved Auto-Diff JIT and code-generation support
 - Constraints module
 

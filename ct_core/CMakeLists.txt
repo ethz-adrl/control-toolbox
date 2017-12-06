@@ -73,6 +73,7 @@ catkin_package(
    DEPENDS
        eigen
        dl
+       ${PYTHON_LIBRARY}
 )
 
 

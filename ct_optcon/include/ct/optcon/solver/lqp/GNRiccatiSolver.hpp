@@ -49,6 +49,8 @@ public:
 
     virtual void solve() override;
 
+    virtual void initializeAndAllocate() override;
+
     virtual void solveSingleStage(int N) override;
 
     virtual void configure(const NLOptConSettings& settings) override;

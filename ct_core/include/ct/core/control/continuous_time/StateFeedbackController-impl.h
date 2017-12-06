@@ -102,7 +102,7 @@ StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::K() const
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 const tpl::TimeArray<SCALAR>& StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::time() const
 {
-    return uff_.getTimeArray();
+    return x_ref_.getTimeArray();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>

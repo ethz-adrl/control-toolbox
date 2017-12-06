@@ -209,7 +209,7 @@ protected:
 	 * @param[out] iRow_vec      The row vector
 	 * @param[out] jCol_vec      The column vector
 	 */
-    void genDiagonalIndices(const size_t num_elements, Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec);
+    static void genDiagonalIndices(const size_t num_elements, Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec);
 
     /**
 	 * @brief      Generates indices of a sparse diagonal square matrix
@@ -218,7 +218,7 @@ protected:
 	 * @param[out] iRow_vec      The row vector
 	 * @param[out] jCol_vec      The column vector
 	 */
-    void genSparseDiagonalIndices(const Eigen::VectorXi& diag_sparsity,
+    static void genSparseDiagonalIndices(const Eigen::VectorXi& diag_sparsity,
         Eigen::VectorXi& iRow_vec,
         Eigen::VectorXi& jCol_vec);
 
@@ -230,7 +230,7 @@ protected:
 	 * @param[out] iRow_vec  The row vector
 	 * @param[out] jCol_vec  The col vector
 	 */
-    void genBlockIndices(const size_t num_rows,
+    static void genBlockIndices(const size_t num_rows,
         const size_t num_cols,
         Eigen::VectorXi& iRow_vec,
         Eigen::VectorXi& jCol_vec);
