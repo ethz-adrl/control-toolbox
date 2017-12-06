@@ -134,6 +134,7 @@ private:
      * @param R pure input-cost term \f$ \mathbf R_n \f$ (second order derivative)
      * @param keepPointers keep pointers
      *
+     *
      * This method needs change coordinate systems, in the sense that
      *  \f[
      *  \mathbf x_{n+1} = \mathbf A_n \mathbf x_n + \mathbf B_n \mathbf u_n +\mathbf b_n

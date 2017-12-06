@@ -40,11 +40,12 @@ namespace optcon {
  *  \hat \mathbf u_i \quad \forall i = 0, 1, \ldots \f$
  *
  * The constrained LQ problem additionally implements the box constraints
- * \f$ \mathbf \x_{lb} \leq \mathbf x_n \leq \mathbf \x_{ub} \ \forall i=1,2,\ldots,N \f$ and
- * \f$ \mathbf \u_{lb} \leq \mathbf u_n \leq \mathbf \u_{ub} \ \forall i=0,1,\ldots,N-1  \f$
+ * \f$ \mathbf x_{lb} \leq \mathbf x_n \leq \mathbf x_{ub} \ \forall i=1,2,\ldots,N \f$
+ * and
+ * \f$ \mathbf u_{lb} \leq \mathbf u_n \leq \mathbf u_{ub} \ \forall i=0,1,\ldots,N-1\f$
  * and the general inequality constraints
  * \f[
- * \mathbf \d_{lb}  \leq \mathbf C_n \delta \mathbf \x_n + \mathbf D_n \delta \mathbf \u_n \leq \mathbf \d_{ub} \ \forall i=0,1,\ldots,N
+ * \mathbf d_{lb}  \leq \mathbf C_n \mathbf x_n + \mathbf D_n \mathbf u_n \leq \mathbf d_{ub} \ \forall i=0,1,\ldots,N
  * \f]
  * which are both always kept in absolute coordinates.
  *
