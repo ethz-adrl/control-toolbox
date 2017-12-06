@@ -1,19 +1,19 @@
-cmake_minimum_required (VERSION 2.6) 
+cmake_minimum_required (VERSION 2.6)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
-project (ct_rbd) 
+project (ct_rbd)
 
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-find_package(catkin REQUIRED ct_core ct_optcon cmake_modules)
+find_package(catkin REQUIRED ct_core ct_optcon)
 find_package(kindr)
 
 include_directories(
-  ${catkin_INCLUDE_DIRS}  
+  ${catkin_INCLUDE_DIRS}
 )
 
 ## assemble list of libraries that contain prespecified templates
@@ -32,8 +32,7 @@ catkin_package(
         test
    LIBRARIES
         ${PRESPEC_LIB_NAMES}
-   CATKIN_DEPENDS 
-       roscpp
+   CATKIN_DEPENDS
        ct_core
        ct_optcon
        kindr
@@ -52,11 +51,11 @@ include_directories(
 ct_add_explicit_template_libs()
 
 
-## TESTING    
-    
+## TESTING
+
 catkin_add_gtest(RigidBodyPoseTest test/state/RigidBodyPoseTest.cpp)
 target_link_libraries(RigidBodyPoseTest ${catkin_LIBRARIES})
-    
+
 catkin_add_gtest(RobCoGenContainerTest test/robot/robcogen/RobCoGenContainerTest.cpp)
 target_link_libraries(RobCoGenContainerTest ${catkin_LIBRARIES})
 
@@ -109,7 +108,7 @@ target_link_libraries(kindrJITtest ${catkin_LIBRARIES})
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-    
+
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_rbd.doxyfile)
     set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
 
