@@ -380,6 +380,8 @@ public:
     const SummaryAllIterations<SCALAR>& getSummary() const;
 
 protected:
+
+
     //! integrate the individual shots
     bool rolloutSingleShot(const size_t threadId,
         const size_t k,
@@ -669,7 +671,8 @@ protected:
     bool firstRollout_;
     scalar_t alphaBest_;
 
-    size_t resetCounter_;
+    //! a counter used to identify lqp problems in derived classes, i.e. for thread management in MP
+    size_t lqpCounter_;
 
     SummaryAllIterations<SCALAR> summaryAllIterations_;
 };
