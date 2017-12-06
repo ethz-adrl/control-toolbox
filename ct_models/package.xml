@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
 	<name>ct_models</name>
-	<version>0.2.0</version>
+	<version>0.2.1</version>
 	<description>dynamics models for adrl ct</description>
 
   <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
