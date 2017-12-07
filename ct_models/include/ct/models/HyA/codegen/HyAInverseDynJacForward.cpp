@@ -3,7 +3,6 @@ This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyr
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
-
 #include "HyAInverseDynJacForward.h"
 
 namespace ct {
@@ -506,9 +505,8 @@ HyAInverseDynJacForward::JAC_TYPE HyAInverseDynJacForward::jacobian(const Eigen:
              0.647967112 * v_[2] + v_[36] * v_[139] + v_[33] * v_[11] - 0.01438086 * v_[108];
     v_[4] = 0.647967112 * v_[163] + 2.327 * v_[102] + 2.327 * v_[76] + 0.647967112 * v_[83] + 0.01438086 * v_[99] +
             -1 * v_[4] - -0.0055615274403 * v_[117];
-    jac[12] = v_[0] * jac[14] +
-              v_[9] * (v_[12] * v_[35] + v_[45] * v_[93] + v_[13] * v_[97] + v_[39] * v_[37] + v_[18] * v_[11] +
-                          v_[160] * v_[32] + v_[19] * v_[4] + v_[137] * v_[141]);
+    jac[12] = v_[0] * jac[14] + v_[9] * (v_[12] * v_[35] + v_[45] * v_[93] + v_[13] * v_[97] + v_[39] * v_[37] +
+                                            v_[18] * v_[11] + v_[160] * v_[32] + v_[19] * v_[4] + v_[137] * v_[141]);
     jac[13] = v_[13] * v_[35] + v_[39] * v_[93] + v_[28] * v_[97] + v_[22] * v_[37] + v_[52] * v_[11] +
               v_[96] * v_[32] + v_[25] * v_[4] + v_[155] * v_[141];
     v_[4] = cos(x_in[3]);
@@ -1292,6 +1290,6 @@ HyAInverseDynJacForward::JAC_TYPE HyAInverseDynJacForward::jacobian(const Eigen:
 
     return jac_;
 }
-}
-}
-}
+}  // namespace HyA
+}  // namespace models
+}  // namespace ct
