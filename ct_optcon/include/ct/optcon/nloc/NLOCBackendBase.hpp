@@ -94,7 +94,7 @@ public:
     using control_vector_t = core::ControlVector<CONTROL_DIM, SCALAR>;
     using feedback_matrix_t = core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>;
 
-    using scalar_t =  SCALAR ;
+    using scalar_t = SCALAR;
     using scalar_array_t = std::vector<SCALAR, Eigen::aligned_allocator<SCALAR>>;
 
 
@@ -333,11 +333,11 @@ public:
     //! perform line-search and update controller for multiple shooting
     bool lineSearchMultipleShooting();
 
-    //! Computes the linearization of the dynamics along the trajectory, for the specified indices. See computeLinearizedDynamics for details
-    virtual void computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
+    //! build LQ approximation around trajectory (linearize dynamics and general constraints, quadratize cost)
+    virtual void computeLQApproximation(size_t firstIndex, size_t lastIndex) = 0;
 
-    //! Computes the quadratic approximation of the cost function along the trajectory, for the specified indices
-    virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
+    //! sets the box constraints for the entire time horizon including terminal stage
+    void setBoxConstraintsForLQOCProblem();
 
     //! obtain state update from lqoc solver
     void getStateUpdates();
@@ -358,7 +358,7 @@ public:
     virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;
 
     //! do a single threaded rollout and defect computation of the shots - useful for line-search
-    void rolloutShotsSingleThreaded(size_t threadId,
+    bool rolloutShotsSingleThreaded(size_t threadId,
         size_t firstIndex,
         size_t lastIndex,
         ControlVectorArray& u_ff_local,
@@ -372,7 +372,6 @@ public:
     //! performLineSearch: execute the line search, possibly with different threading schemes
     virtual SCALAR performLineSearch() = 0;
 
-
     //! simple full-step update for state and feedforward control (used for MPC-mode!)
     void doFullStepUpdate();
 
@@ -381,6 +380,8 @@ public:
     const SummaryAllIterations<SCALAR>& getSummary() const;
 
 protected:
+
+
     //! integrate the individual shots
     bool rolloutSingleShot(const size_t threadId,
         const size_t k,
@@ -414,6 +415,7 @@ protected:
         const StateVectorArray& xShot,
         StateVectorArray& d) const;
 
+
     //! Computes the linearized Dynamics at a specific point of the trajectory
     /*!
 	  This function calculates the linearization, i.e. matrices A and B in \f$ \dot{x} = A(x(k)) x + B(x(k)) u \f$
@@ -423,6 +425,19 @@ protected:
 	  \param k step k
 	*/
     void computeLinearizedDynamics(size_t threadId, size_t k);
+
+
+    //! Computes the linearized general constraints at a specific point of the trajectory
+    /*!
+	  This function calculates the linearization, i.e. matrices d, C and D in \f$ d_{lb} \leq C x + D u \leq d_{ub}\f$
+	  at a specific point of the trajectory
+
+	  \param threadId the id of the worker thread
+	  \param k step k
+
+	  \note the box constraints do not need to be linearized
+	*/
+    void computeLinearizedConstraints(size_t threadId, size_t k);
 
     //! Computes the quadratic costs
     /*!
@@ -472,6 +487,31 @@ protected:
         scalar_t& intermediateCost,
         scalar_t& finalCost) const;
 
+    /*!
+	 * @brief Compute box constraint violations for a given set of state and input trajectory
+     *
+	 * \param threadId the ID of the thread
+	 * \param x_local the state trajectory
+	 * \param u_local the control trajectory
+	 * \param e_tot the total accumulated box constraint violation
+	 */
+    void computeBoxConstraintErrorOfTrajectory(size_t threadId,
+        const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+        const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+        scalar_t& e_tot) const;
+
+    /*!
+	 * @brief Compute general constraint violations for a given set of state and input trajectory
+     *
+	 * \param threadId the ID of the thread
+	 * \param x_local the state trajectory
+	 * \param u_local the control trajectory
+	 * \param e_tot the total accumulated general constraint violation
+	 */
+    void computeGeneralConstraintErrorOfTrajectory(size_t threadId,
+        const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+        const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+        scalar_t& e_tot) const;
 
     //! Check if controller with particular alpha is better
     void executeLineSearchSingleShooting(const size_t threadId,
@@ -480,6 +520,8 @@ protected:
         ControlVectorArray& u_local,
         scalar_t& intermediateCost,
         scalar_t& finalCost,
+	    scalar_t& e_box_norm,
+	    scalar_t& e_gen_norm,
         StateSubsteps& substepsX,
         ControlSubsteps& substepsU,
         std::atomic_bool* terminationFlag = nullptr) const;
@@ -496,6 +538,8 @@ protected:
         scalar_t& intermediateCost,
         scalar_t& finalCost,
         scalar_t& defectNorm,
+	    scalar_t& e_box_norm,
+	    scalar_t& e_gen_norm,
         StateSubsteps& substepsX,
         ControlSubsteps& substepsU,
         std::atomic_bool* terminationFlag = nullptr) const;
@@ -583,9 +627,11 @@ protected:
 
     FeedbackArray L_;
 
-    SCALAR d_norm_;   //! sum of the norms of all defects
-    SCALAR lx_norm_;  //! sum of the norms of state update
-    SCALAR lu_norm_;  //! sum of the norms of control update
+    SCALAR d_norm_;      //! sum of the norms of all defects (internal constraint)
+    SCALAR e_box_norm_;  //! sum of the norms of all box constraint violations
+    SCALAR e_gen_norm_;  //! sum of the norms of all general constraint violations
+    SCALAR lx_norm_;     //! sum of the norms of state update
+    SCALAR lu_norm_;     //! sum of the norms of control update
 
     //! shared pointer to the linear-quadratic optimal control problem
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>> lqocProblem_;
@@ -624,6 +670,9 @@ protected:
 
     bool firstRollout_;
     scalar_t alphaBest_;
+
+    //! a counter used to identify lqp problems in derived classes, i.e. for thread management in MP
+    size_t lqpCounter_;
 
     SummaryAllIterations<SCALAR> summaryAllIterations_;
 };

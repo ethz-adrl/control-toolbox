@@ -1,9 +1,9 @@
 /*!
- * \example NLOC.cpp
+ * \example NLOC_boxConstrained.cpp
  *
- * This example shows how to use the nonlinear optimal control solvers iLQR, unconstrained Gauss-Newton-Multiple-Shooting (GNMS),
- * as well as the hybrid methods iLQR-GNMS(M), where M denotes the number of multiple-shooting intervals. This example applies
- * them to a simple second-order oscillator.
+ * This example shows how to use box constraints alongside NLOC and requires HPIPM to be installed
+ * The unconstrained Riccati backward-pass is replaced by a high-performance interior-point
+ * constrained linear-quadratic Optimal Control solver.
  *
  */
 #include <ct/optcon/optcon.h>
@@ -60,7 +60,30 @@ int main(int argc, char **argv)
     costFunction->addFinalTerm(finalCost);
 
 
-    /* STEP 1-D: initialization with initial state and desired time horizon */
+    /* STEP 1-D: set up the box constraints for the control input*/
+    // input box constraint boundaries with sparsities in constraint toolbox format
+    Eigen::VectorXi sp_control(control_dim);
+    sp_control << 1;
+    Eigen::VectorXd u_lb(control_dim);
+    Eigen::VectorXd u_ub(control_dim);
+    u_lb.setConstant(-0.5);
+    u_ub = -u_lb;
+
+    // constraint terms
+    std::shared_ptr<ControlInputConstraint<state_dim, control_dim>> controlConstraint(
+        new ControlInputConstraint<state_dim, control_dim>(u_lb, u_ub, sp_control));
+    controlConstraint->setName("ControlInputConstraint");
+
+    // create constraint container
+    std::shared_ptr<ConstraintContainerAnalytical<state_dim, control_dim>> boxConstraints(
+        new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
+
+    // add and initialize constraint terms
+    boxConstraints->addIntermediateConstraint(controlConstraint, verbose);
+    boxConstraints->initialize();
+
+
+    /* STEP 1-E: initialization with initial state and desired time horizon */
 
     StateVector<state_dim> x0;
     x0.setRandom();  // in this example, we choose a random initial state x0
@@ -72,6 +95,8 @@ int main(int argc, char **argv)
     OptConProblem<state_dim, control_dim> optConProblem(
         timeHorizon, x0, oscillatorDynamics, costFunction, adLinearizer);
 
+    // add the box constraints to the optimal control problem
+    optConProblem.setBoxConstraints(boxConstraints);
 
     /* STEP 2: set up a nonlinear optimal control solver. */
 
@@ -85,12 +110,11 @@ int main(int argc, char **argv)
     ilqr_settings.integrator = ct::core::IntegrationType::EULERCT;
     ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
     ilqr_settings.max_iterations = 10;
-    ilqr_settings.nThreads = 4;  // use multi-threading
+    ilqr_settings.nThreads = 4;
     ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
-    ilqr_settings.lqocp_solver =
-        NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;  // solve LQ-problems using custom Riccati solver
+    ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
+    ilqr_settings.lqoc_solver_settings.num_lqoc_iterations = 10; // number of riccati sub-iterations
     ilqr_settings.printSummary = true;
-    ilqr_settings.debugPrint = true;
 
 
     /* STEP 2-B: provide an initial guess */

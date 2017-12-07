@@ -1,6 +1,6 @@
 <package>
   <name>ct_rbd</name>
-  <version>0.2.0</version>
+  <version>0.2.1</version>
   <description>
     Rigid Body Dynamics module of ADRL control toolbox
   </description>

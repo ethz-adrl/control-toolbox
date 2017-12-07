@@ -79,24 +79,15 @@ bool iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishIteration()
 
     auto start = std::chrono::steady_clock::now();
     auto startEntire = start;
-    //! linearize dynamics around the whole trajectory
-    this->backend_->computeLinearizedDynamicsAroundTrajectory(0, K - 1);
+
+    // set box constraints and do LQ approximation
+    this->backend_->setBoxConstraintsForLQOCProblem();
+    this->backend_->computeLQApproximation(0, K - 1);
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
     if (debugPrint)
-        std::cout << "[iLQR]: Linearizing dynamics took " << std::chrono::duration<double, std::milli>(diff).count()
-                  << " ms" << std::endl;
-
-
-    start = std::chrono::steady_clock::now();
-    //! compute the quadratic cost around the whole trajectory
-    this->backend_->computeQuadraticCostsAroundTrajectory(0, K - 1);
-    end = std::chrono::steady_clock::now();
-    diff = end - start;
-    if (debugPrint)
-        std::cout << "[iLQR]: Cost computation took " << std::chrono::duration<double, std::milli>(diff).count()
-                  << " ms" << std::endl;
-
+        std::cout << "[iLQR]: Computing LQ approximation took "
+                  << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
     end = std::chrono::steady_clock::now();
     diff = end - startEntire;

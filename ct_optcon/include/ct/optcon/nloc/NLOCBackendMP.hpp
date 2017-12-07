@@ -42,9 +42,7 @@ public:
     virtual ~NLOCBackendMP();
 
 protected:
-    virtual void computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
-
-    virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) override;
+    virtual void computeLQApproximation(size_t firstIndex, size_t lastIndex) override;
 
     virtual void rolloutShots(size_t firstIndex, size_t lastIndex) override;
 
@@ -56,9 +54,7 @@ private:
         IDLE,
         LINE_SEARCH,
         ROLLOUT_SHOTS,
-        LINEARIZE_DYNAMICS,
-        COMPUTE_COST,
-        PARALLEL_BACKWARD_PASS,
+        COMPUTE_LQ_PROBLEM,
         SHUTDOWN
     };
 
@@ -84,27 +80,6 @@ private:
 	 */
     void lineSearchWorker(size_t threadId);
 
-
-    //! Worker function for linearized dynamics
-    /*!
-	  Gets a parameter k to process and then calls computeLinearizedDynamicsWorker method
-	  \param k step k
-	 */
-    void computeLinearizedDynamicsWorker(size_t threadId);
-
-
-    //! Computes the quadratic costs
-    /*!
-	  This function calculates the quadratic costs as provided by the costFunction pointer.
-
-	  \param k step k
-	 */
-    void computeQuadraticCostsWorker(size_t threadId);
-
-
-    //! rolls out a shot and computes the defect
-    void rolloutShotWorker(size_t threadId);
-
     //! Creates the linear quadratic problem
     /*!
 	  This function calculates the quadratic costs as provided by the costFunction pointer as well as the linearized dynamics.
@@ -113,12 +88,14 @@ private:
 	 */
     void computeLQProblemWorker(size_t threadId);
 
+    //! rolls out a shot and computes the defect
+    void rolloutShotWorker(size_t threadId);
 
     /*! heuristic that generates a unique id for a process, such that we can manage the tasks.
 	 * Generates a unique identifiers for task, iteration:
 	 * @todo replace by proper hash
 	 * */
-    size_t generateUniqueProcessID(const size_t& iterateNo, const int workerState);
+    size_t generateUniqueProcessID(const size_t& iterateNo, const int workerState, const size_t resetCount);
 
     //! wrapper method for nice debug printing
     void printString(const std::string& text);

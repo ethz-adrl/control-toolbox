@@ -12,7 +12,9 @@ namespace ct {
 namespace rbd {
 
 /*!
- * Actuator Dynamics modelled as second order system, an oscillator with damping.
+ * Actuator Dynamics modeled as second order system, an oscillator with damping.
+ *
+ * \warning This is wrong - actually the simple oscillator is not a symplectic system (if damping != 0)
  */
 template <size_t NJOINTS, typename SCALAR = double>
 class SecondOrderActuatorDynamics : public ActuatorDynamics<NJOINTS, 2 * NJOINTS, SCALAR>
@@ -22,8 +24,17 @@ public:
 
     typedef ActuatorDynamics<NJOINTS, 2 * NJOINTS, SCALAR> BASE;
 
-    //! constructor
-    SecondOrderActuatorDynamics(SCALAR w_n, SCALAR zeta = SCALAR(1.0), SCALAR g_dc = SCALAR(1.0));
+    //! constructor assuming unit amplification
+    SecondOrderActuatorDynamics(double w_n, double zeta);
+
+    //! constructor assuming custom amplification, set g_dc = w_n*w_n
+    SecondOrderActuatorDynamics(double w_n, double zeta, double g_dc);
+
+    //! constructor assuming unit amplification
+    SecondOrderActuatorDynamics(std::vector<double> w_n, std::vector<double> zeta);
+
+    //! constructor assuming custom amplification, set g_dc = w_n*w_n
+    SecondOrderActuatorDynamics(std::vector<double> w_n, std::vector<double> zeta, std::vector<double> g_dc);
 
     //! destructor
     virtual ~SecondOrderActuatorDynamics();
@@ -50,7 +61,8 @@ public:
 
 
 private:
-    ct::core::SecondOrderSystem oscillator_;
+    std::vector<ct::core::tpl::SecondOrderSystem<SCALAR>> oscillators_;
 };
-}
-}
+
+}  // namespace rbd
+}  // namespace ct

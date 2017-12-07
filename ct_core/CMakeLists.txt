@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 2.6) 
-project (ct_core) 
+cmake_minimum_required (VERSION 2.6)
+project (ct_core)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
@@ -20,7 +20,7 @@ find_package(Qwt QUIET)
 find_package(Qt4 QUIET)
 
 
-if(QWT_FOUND AND Qt4_FOUND) 
+if(QWT_FOUND AND Qt4_FOUND)
     set(QWT_ENABLED true)
     add_definitions( -DQWT_ENABLED )
     include(${QT_USE_FILE})
@@ -44,13 +44,13 @@ endif()
 
 include_directories(
   ${BOOST_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}  
+  ${catkin_INCLUDE_DIRS}
 )
 
 include_directories (
     include
     include/external
-    ${EIGEN3_INCLUDE_DIR}   
+    ${EIGEN3_INCLUDE_DIR}
 )
 
 ## assemble list of libraries that contain prespecified templates
@@ -71,8 +71,7 @@ catkin_package(
        ct_core
        ${PRESPEC_LIB_NAMES}
    DEPENDS
-       eigen
-       dl
+       EIGEN3
 )
 
 
@@ -154,7 +153,7 @@ endif()
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-    
+
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_core.doxyfile)
     set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
 

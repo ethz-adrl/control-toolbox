@@ -1,13 +1,14 @@
 <package>
   <name>ct_optcon</name>
-  <version>0.2.0</version>
+  <version>0.2.1</version>
   <description>Optimal Control package of the Control Toolbox</description>
-  <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
   <maintainer email="mgiftthaler@ethz.ch">Markus Giftthaler</maintainer>  
+  <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
   <license>Apache v2</license>
 
   <url>http://ros.org/wiki/foo_core</url>
-  <author>Michael Neunert, Markus Giftthaler</author>
+  <author>Markus Giftthaler</author>
+  <author>Michael Neunert</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 

@@ -123,7 +123,7 @@ ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInputSparse(cons
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::sparsityPatternInput(VectorXi& rows, VectorXi& cols)
 {
-	this->sparsityPatternSparseJacobian(rows, cols);
+	this->sparsityPatternSparseJacobian(this->sparsity_,  this->constrSize_, rows, cols);
 }
 
 }  // namespace optcon

@@ -149,6 +149,12 @@ SCALAR GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::getSmallestEigenvalue()
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem)
 {
+    if (lqocProblem->isConstrained())
+    {
+        throw std::runtime_error(
+            "Selected wrong solver - GNRiccatiSolver cannot handle constrained problems. Use a different solver");
+    }
+
     const int& N = lqocProblem->getNumberOfStages();
     changeNumberOfStages(N);
 }
@@ -336,6 +342,13 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
     matFile_.close();
 #endif
 }
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::initializeAndAllocate()
+{
+    // do nothing
+}
+
 
 }  // namespace optcon
 }  // namespace ct

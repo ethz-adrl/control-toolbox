@@ -1,11 +1,11 @@
 <package>
   <name>ct_core</name>
-  <version>0.2.0</version>
+  <version>0.2.1</version>
   <description>
   ADRL control toolbox - core module
   </description>
-  <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
   <maintainer email="mgiftthaler@ethz.ch">Markus Giftthaler</maintainer>  
+  <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
   <license>Apache v2</license>
   <buildtool_depend>catkin</buildtool_depend>
   

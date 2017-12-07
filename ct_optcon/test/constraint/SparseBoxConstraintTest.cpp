@@ -86,7 +86,7 @@ TEST(SparseBoxConstraintTest, HardcodedPatternTest)
     jac_u_ref(1, 4) = 1;
     Eigen::MatrixXd jac_u = constraints->jacobianInputIntermediate();
     for (size_t i = 0; i < 4 + 2; i++)
-        for (size_t j = 0;  j< control_dim; j++)
+        for (size_t j = 0; j < control_dim; j++)
             ASSERT_EQ(jac_u(i, j), jac_u_ref(i, j));
 
 
@@ -96,20 +96,20 @@ TEST(SparseBoxConstraintTest, HardcodedPatternTest)
     Eigen::VectorXi iRows, jCols;
 
     constraints->sparsityPatternStateIntermediate(iRows, jCols);
-    ASSERT_EQ(iRows(0),2);
-    ASSERT_EQ(iRows(1),3);
-    ASSERT_EQ(iRows(2),4);
-    ASSERT_EQ(iRows(3),5);
-    ASSERT_EQ(jCols(0),1);
-    ASSERT_EQ(jCols(1),4);
-    ASSERT_EQ(jCols(2),6);
-    ASSERT_EQ(jCols(3),7);
+    ASSERT_EQ(iRows(0), 2);
+    ASSERT_EQ(iRows(1), 3);
+    ASSERT_EQ(iRows(2), 4);
+    ASSERT_EQ(iRows(3), 5);
+    ASSERT_EQ(jCols(0), 1);
+    ASSERT_EQ(jCols(1), 4);
+    ASSERT_EQ(jCols(2), 6);
+    ASSERT_EQ(jCols(3), 7);
 
     constraints->sparsityPatternInputIntermediate(iRows, jCols);
-    ASSERT_EQ(iRows(0),0);
-    ASSERT_EQ(iRows(1),1);
-    ASSERT_EQ(jCols(0),1);
-    ASSERT_EQ(jCols(1),4);
+    ASSERT_EQ(iRows(0), 0);
+    ASSERT_EQ(iRows(1), 1);
+    ASSERT_EQ(jCols(0), 1);
+    ASSERT_EQ(jCols(1), 4);
 }
 
 

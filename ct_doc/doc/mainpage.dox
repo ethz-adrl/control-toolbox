@@ -242,6 +242,8 @@ For any questions, issues or other troubleshooting please either
  - Farbod Farshidian
  - Diego Pardo
  - Timothy Sandy
+ - Jan Carius
+ - Hamza Merzic
  
 \subsection lead_overview Project Lead and Maintanance: 
  - Michael Neunert, neunertm ( at ) gmail (dot) com
@@ -284,8 +286,9 @@ A proper technical report about the CT is currently in preparation. Meanwhile, p
 This toolbox has been used in, or has helped to realize the following academic publications:
 
 - Markus Giftthaler, Michael Neunert, Markus Stäuble, Jonas Buchli and Moritz Diehl.
-“A Family of iterative Gauss-Newton Shooting Methods for Nonlinear Optimal Control”. 
-Submitted to the IEEE International Conference on Robotics and Automation 2018.
+“A Family of iterative Gauss-Newton Shooting Methods for Nonlinear Optimal Control”. arXiv:1711.11006 [cs.SY]
+<a href="https://arxiv.org/abs/1711.11006">arXiv:1711.11006 [cs.SY]</a> 
+
 
 - Michael Neunert, Markus Stäuble, Markus Giftthaler, Dario Bellicoso, Jan Carius, Christian Gehring, 
 Marco Hutter and Jonas Buchli. 

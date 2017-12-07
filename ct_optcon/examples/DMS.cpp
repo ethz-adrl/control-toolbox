@@ -1,6 +1,7 @@
 
 #include <ct/optcon/optcon.h>
 #include "exampleDir.h"
+#include "plotResultsOscillator.h"
 
 /*!
  * This example shows how to use classical Direct Multiple Shooting with an oscillator system,
@@ -115,4 +116,8 @@ int main(int argc, char **argv)
 
     // retrieve the solution
     DmsPolicy<state_dim, control_dim> solution = dmsSolver->getSolution();
+
+    // let's plot the output
+    plotResultsOscillator<state_dim, control_dim>(solution.xSolution_, solution.uSolution_, solution.tSolution_);
+
 }

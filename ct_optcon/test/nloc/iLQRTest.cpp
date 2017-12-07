@@ -22,7 +22,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
  */
 
-
 namespace ct {
 namespace optcon {
 namespace example {
@@ -91,7 +90,7 @@ TEST(ILQRTestA, InstancesComparison)
         ilqr_settings.K_sim = 1;
         ilqr_settings.epsilon = 0.0;
         ilqr_settings.nThreads = 1;
-        ilqr_settings.max_iterations = 500;
+        ilqr_settings.max_iterations = 5;
         ilqr_settings.recordSmallestEigenvalue = false;
         ilqr_settings.fixedHessianCorrection = false;
         ilqr_settings.min_cost_improvement = 1e-12;
@@ -101,7 +100,8 @@ TEST(ILQRTestA, InstancesComparison)
         ilqr_settings.closedLoopShooting = true;
         ilqr_settings.integrator = ct::core::IntegrationType::EULER;
         ilqr_settings.printSummary = false;
-        //		ilqr_settings.lineSearchSettings.debugPrint = true;
+        ilqr_settings.debugPrint = false;
+        ilqr_settings.lineSearchSettings.debugPrint = false;
 
 
         // copy settings for MP case, but change number of threads
@@ -141,7 +141,6 @@ TEST(ILQRTestA, InstancesComparison)
 
         ilqr.configure(ilqr_settings);
         ilqr.setInitialGuess(initController);
-
         //! check that if retrieving solution now, we exactly get back the init guess.
         NLOptConSolver::Policy_t mirroredInitguess = ilqr.getSolution();
         for (size_t i = 0; i < initController.uff().size(); i++)
@@ -151,10 +150,7 @@ TEST(ILQRTestA, InstancesComparison)
             ASSERT_NEAR(mirroredInitguess.x_ref()[i](0), initController.x_ref()[i](0), 1e-3);
         }
 
-        bool foundBetter = true;
-
-        while (foundBetter)
-            foundBetter = ilqr.runIteration();
+        ilqr.solve();
 
         std::cout << "now going into tests" << std::endl;
 
@@ -162,6 +158,8 @@ TEST(ILQRTestA, InstancesComparison)
         size_t nTests = 2;
         for (size_t i = 0; i < nTests; i++)
         {
+            bool foundBetter;
+
             if (i == 0)
             {
                 std::cout << "Turning Line-Search off" << std::endl;
@@ -195,7 +193,6 @@ TEST(ILQRTestA, InstancesComparison)
 
             ilqr_comp.setInitialGuess(optimalPolicy);
             ilqr_mp_comp.setInitialGuess(optimalPolicy_mp);
-
 
             ilqr_comp.solve();
             ilqr_mp_comp.solve();

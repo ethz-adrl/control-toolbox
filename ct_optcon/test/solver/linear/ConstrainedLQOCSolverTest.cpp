@@ -7,13 +7,11 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include <gtest/gtest.h>
 #include <ct/optcon/optcon.h>
 
-// several tests which compare HPIPM and GNRiccati
-#include "LQOCSolverTest.h"
-#include "HPIPMInterfaceTest.h"
+#include "ConstrainedLQOCSolverTest.h"
 
 int main(int argc, char **argv)
 {
-    using namespace ct::optcon::example;
+    using namespace ct::optcon;
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
