@@ -74,7 +74,7 @@ public:
 	 *
 	 * @param w_n eigenfrequency
 	 * @param zeta damping ratio
-	 * @param g_dc DC gain on input
+	 * @param g_dc DC gain on input, set to \f$ w_n^2 \f$ to achieve amplification 1
 	 * @param controller controller (optional)
 	 */
     SecondOrderSystem(SCALAR w_n,

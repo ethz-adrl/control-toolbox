@@ -17,16 +17,17 @@ namespace rbd {
  * the dynamics of the collection of all actuators in the system
  * The actuators are assumed to form a symplectic system.
  */
-template <size_t NJOINTS, size_t ACT_STATE_DIM = 2 * NJOINTS, typename SCALAR = double>
-class ActuatorDynamics : public core::SymplecticSystem<ACT_STATE_DIM / 2, ACT_STATE_DIM / 2, NJOINTS, SCALAR>
+template <size_t NJOINTS, size_t ACT_STATE_DIMS = 2 * NJOINTS, typename SCALAR = double>
+class ActuatorDynamics : public core::SymplecticSystem<ACT_STATE_DIMS / 2, ACT_STATE_DIMS / 2, NJOINTS, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static const size_t ACT_POS_DIM = ACT_STATE_DIM / 2;
-    static const size_t ACT_VEL_DIM = ACT_STATE_DIM / 2;
+	static const size_t ACT_STATE_DIM = ACT_STATE_DIMS;
+    static const size_t ACT_POS_DIM = ACT_STATE_DIMS / 2;
+    static const size_t ACT_VEL_DIM = ACT_STATE_DIMS / 2;
 
-    typedef ct::core::StateVector<ACT_STATE_DIM, SCALAR> act_state_vector_t;
+    typedef ct::core::StateVector<ACT_STATE_DIMS, SCALAR> act_state_vector_t;
     typedef ct::core::StateVector<ACT_POS_DIM, SCALAR> act_pos_vector_t;
     typedef ct::core::StateVector<ACT_VEL_DIM, SCALAR> act_vel_vector_t;
 
@@ -35,7 +36,7 @@ public:
 
     virtual ~ActuatorDynamics(){};
 
-    virtual ActuatorDynamics<NJOINTS, ACT_STATE_DIM, SCALAR>* clone() const override = 0;
+    virtual ActuatorDynamics<NJOINTS, ACT_STATE_DIMS, SCALAR>* clone() const override = 0;
 
     virtual void computePdot(const act_state_vector_t& x,
         const act_vel_vector_t& v,

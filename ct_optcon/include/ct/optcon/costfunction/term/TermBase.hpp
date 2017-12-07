@@ -170,6 +170,9 @@ public:
     //! updates the reference state for this term
     virtual void updateReferenceState(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState);
 
+    //! updates the reference control for this term
+    virtual void updateReferenceControl(const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, 1>& newRefControl);
+
     //! retrieve this term's current reference state
     virtual Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> getReferenceState() const;
 };
