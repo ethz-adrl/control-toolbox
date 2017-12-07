@@ -10,6 +10,12 @@ namespace ct {
 namespace rbd {
 
 template <size_t NJOINTS, typename SCALAR>
+SecondOrderActuatorDynamics<NJOINTS, SCALAR>::SecondOrderActuatorDynamics(SCALAR w_n, SCALAR zeta)
+    : oscillator_(w_n, zeta, w_n * w_n)
+{
+}
+
+template <size_t NJOINTS, typename SCALAR>
 SecondOrderActuatorDynamics<NJOINTS, SCALAR>::SecondOrderActuatorDynamics(SCALAR w_n, SCALAR zeta, SCALAR g_dc)
     : oscillator_(w_n, zeta, g_dc)
 {
