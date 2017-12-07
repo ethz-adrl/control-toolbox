@@ -37,7 +37,7 @@ public:
 
 private:
     OUT_TYPE eval_;
-    std::array<double, 401> v_;
+    std::array<double, 402> v_;
 };
 
 } /* namespace HyQ */
