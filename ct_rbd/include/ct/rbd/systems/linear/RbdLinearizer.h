@@ -57,8 +57,8 @@ public:
     typedef ct::core::StateVector<STATE_DIM, SCALAR> state_vector_t;
     typedef ct::core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t;
+    typedef ct::core::StateMatrix<STATE_DIM, SCALAR> state_matrix_t;
+    typedef ct::core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;
 
 
     RbdLinearizer(std::shared_ptr<SYSTEM> RBDSystem, bool doubleSidedDerivative = false)
