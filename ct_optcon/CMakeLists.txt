@@ -1,17 +1,13 @@
-cmake_minimum_required (VERSION 2.6) 
+cmake_minimum_required (VERSION 2.6)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
-project (ct_optcon) 
+project (ct_optcon)
 
-find_package(catkin REQUIRED 
+find_package(catkin REQUIRED
     ct_core
-    cmake_modules 
-    std_msgs
-    message_generation 
-    message_runtime
 )
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
@@ -45,7 +41,7 @@ if(MATLAB)
         include_directories(${matlab_cpp_interface_INCLUDE_DIRS})
         set(MATLAB_LIB_DIR ${matlab_cpp_interface_LIBRARIES})
         add_definitions( -DMATLAB )
-    endif()    
+    endif()
 endif(MATLAB)
 set(MATLAB_LIBS ${MATLAB_LIB_DIR})
 
@@ -70,24 +66,24 @@ if(HPIPM)
     if(DEFINED ENV{BLASFEO_DIR})
         if(DEFINED ENV{HPIPM_DIR})
             message(WARNING "...Found HPIPM and BLASFEO environment variables")
-            
+
             set(BLASFEO_INCLUDE_DIR $ENV{BLASFEO_DIR}/include)
             set(HPIPM_INCLUDE_DIR $ENV{HPIPM_DIR}/include)
             set(BLASFEO_DIR $ENV{BLASFEO_DIR})
             set(HPIPM_DIR $ENV{HPIPM_DIR})
-                        
+
             include_directories(${BLASFEO_INCLUDE_DIR})
             include_directories(${HPIPM_INCLUDE_DIR})
             link_directories(${BLASFEO_DIR}/lib)
             link_directories(${HPIPM_DIR}/lib)
-            
+
             find_library(BLASFEO_LIBRARY blasfeo  ${BLASFEO_DIR}/lib REQUIRED)
             find_library(HPIPM_LIBRARY hpipm  ${HPIPM_DIR}/lib REQUIRED)
 
             set(HPIPM_LIBS hpipm blasfeo)
-    
+
             add_definitions (-DHPIPM)
-            
+
         else(DEFINED ENV{HPIPM_DIR})
             message(WARNING "WARNING: Trying to build with HPIPM, but no ENV variable for HPIPM found.")
         endif(DEFINED ENV{HPIPM_DIR})
@@ -133,7 +129,7 @@ if(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
     link_directories(${IPOPT_BUILD_DIR}/lib)
     set(IPOPT_LIBS ipopt dl coinmumps coinhsl lapack blas gfortran
         m quadmath coinmetis)
-        
+
 endif(DEFINED ENV{IPOPT_SOURCE_DIR} OR ipopt_FOUND)
 
 
@@ -158,21 +154,6 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
 )
 
-
-## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   Control.msg
-   iLQG.msg
-)
-
-
-## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs  # Or other packages containing msgs
-)
-
 ## assemble list of libraries that contain prespecified templates
 ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_optcon")
 message(WARNING "CT Optcon: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
@@ -185,10 +166,8 @@ catkin_package(
         include
         ${HPIPM_INCLUDE_DIR}
         ${BLASFEO_INCLUDE_DIR}
-   DEPENDS
-        lapack 
    LIBRARIES
-        ${LAPACK_LIBS} 
+        ${LAPACK_LIBS}
         ${CT_SNOPT_LIBS}
         ${HPIPM_LIBRARY}
         ${BLASFEO_LIBRARY}
@@ -231,10 +210,10 @@ if(BUILD_EXAMPLES)
 
     add_executable(ex_NLOC examples/NLOC.cpp)
     target_link_libraries(ex_NLOC ${catkin_LIBRARIES} ${HPIPM_LIBS})
-        
+
     add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
     target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES} ${HPIPM_LIBS})
-    
+
     add_executable(ex_DMS examples/DMS.cpp)
     target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
 endif()
@@ -257,16 +236,16 @@ if(HPIPM)
     target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
     catkin_add_gtest(LQOCSolverTestPrespec test/solver/linear/LQOCSolverTestPrespec.cpp)
     target_link_libraries(LQOCSolverTestPrespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIB_NAMES})
-    
+
     catkin_add_gtest(ConstrainedLQOCSolverTest test/solver/linear/ConstrainedLQOCSolverTest.cpp)
     target_link_libraries(ConstrainedLQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-      
+
     add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
     target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
     if(BUILD_EXAMPLES)
         add_executable(ex_NLOC_boxConstrained examples/NLOC_boxConstrained.cpp)
         target_link_libraries(ex_NLOC_boxConstrained ${catkin_LIBRARIES} ${HPIPM_LIBS})
-        
+
         add_executable(ex_NLOC_generalConstrained examples/NLOC_generalConstrained.cpp)
         target_link_libraries(ex_NLOC_generalConstrained ${catkin_LIBRARIES} ${HPIPM_LIBS})
     endif()
@@ -332,7 +311,7 @@ target_link_libraries(NLOC_MPCTest_prespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-    
+
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_optcon.doxyfile)
     set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
 
