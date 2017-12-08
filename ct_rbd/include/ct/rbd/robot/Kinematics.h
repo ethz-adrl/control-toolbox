@@ -228,6 +228,15 @@ public:
     }
 
 
+    tpl::JointState<NJOINTS, SCALAR>::Position getJointsFromEEWorld(size_t eeID, const RigidBodyPoseTpl& ee_pose,
+        const RigidBodyPoseTpl& basePose)
+    {
+    }
+
+    tpl::JointState<NJOINTS, SCALAR>::Position getJointsFromEEBase(size_t eeID, const RigidBodyPoseTpl& ee_pose)
+    {
+    }
+
     /**
 	 * \brief Transforms a force applied at an end-effector and expressed in the world into the link frame the EE is rigidly connected to.
 	 * @param W_force Force expressed in world coordinates
@@ -346,6 +355,8 @@ private:
     std::shared_ptr<RBD> rbdContainer_;
     std::array<EndEffector<NJOINTS, SCALAR>, N_EE> endEffectors_;
     FloatingBaseTransforms<RBD> floatingBaseTransforms_;
+
+    std::shared_ptr<InverseKinematicsBase> ik_ = nullptr;
 };
 
 
