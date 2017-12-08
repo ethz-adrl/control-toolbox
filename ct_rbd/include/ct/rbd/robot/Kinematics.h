@@ -11,6 +11,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include "kinematics/EndEffector.h"
 #include "kinematics/FloatingBaseTransforms.h"
+#include "kinematics/InverseKinematicsBase.h"
 
 namespace ct {
 namespace rbd {
@@ -227,14 +228,16 @@ public:
         return basePose.template rotateBaseToInertiaMat(B_R_EE);
     }
 
-
-    tpl::JointState<NJOINTS, SCALAR>::Position getJointsFromEEWorld(size_t eeID, const RigidBodyPoseTpl& ee_pose,
+    typename tpl::JointState<NJOINTS, SCALAR>::Position getJointsFromEEWorld(size_t eeID,
+        const RigidBodyPoseTpl& ee_pose,
         const RigidBodyPoseTpl& basePose)
     {
+        return tpl::JointState<NJOINTS, SCALAR>::Position;
     }
 
-    tpl::JointState<NJOINTS, SCALAR>::Position getJointsFromEEBase(size_t eeID, const RigidBodyPoseTpl& ee_pose)
+    typename tpl::JointState<NJOINTS, SCALAR>::Position getJointsFromEEBase(size_t eeID, const RigidBodyPoseTpl& ee_pose)
     {
+        return tpl::JointState<NJOINTS, SCALAR>::Position;
     }
 
     /**
@@ -356,7 +359,7 @@ private:
     std::array<EndEffector<NJOINTS, SCALAR>, N_EE> endEffectors_;
     FloatingBaseTransforms<RBD> floatingBaseTransforms_;
 
-    std::shared_ptr<InverseKinematicsBase> ik_ = nullptr;
+    std::shared_ptr<InverseKinematicsBase<NJOINTS, SCALAR>> ik_ = nullptr;
 };
 
 
