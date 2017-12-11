@@ -1,17 +1,22 @@
 #pragma once
 
-#include <ct/rbd/robot/kinematics/InverseKinematicsSolverBase.h>
+#include <ct/rbd/state/JointState.h>
+#include <ct/rbd/state/RigidBodyPose.h>
 
 namespace ct {
 namespace rbd {
 
 template <size_t NJOINTS, typename SCALAR = double>
-class InverseKinematicsBase
-{
+class InverseKinematicsBase {
 public:
-    virtual std::shared_ptr<InverseKinematicsSolverBase<NJOINTS, SCALAR>> get_solver(const int base,
-        const int ee,
-        const int id = 0) const = 0;
+  virtual std::vector<typename tpl::JointState<NJOINTS, SCALAR>::Position>
+  computeInverseKinematics(const tpl::RigidBodyPose<SCALAR> &eeBasePose,
+                           const std::vector<SCALAR> &freeJoints) const = 0;
+
+  virtual std::vector<typename tpl::JointState<NJOINTS, SCALAR>::Position>
+  computeInverseKinematics(const tpl::RigidBodyPose<SCALAR> &eeWorldPose,
+                           const tpl::RigidBodyPose<SCALAR> &baseWorldPose,
+                           const std::vector<SCALAR> &freeJoints) const = 0;
 };
 
 } /* namespace rbd */

@@ -11,7 +11,7 @@ SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++11 -Wall")
 SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++11 -Wall")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-find_package(catkin REQUIRED ct_rbd)
+find_package(catkin REQUIRED ct_rbd ct_models)
 
 
 include_directories(
@@ -33,11 +33,11 @@ catkin_package(
 )
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME}
+add_library(hya_ik
   src/HyA/transform6d.cpp
 )
 
-set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-fPIC -DIKFAST_NO_MAIN -DIKFAST_CLIBRARY -shared -Wno-unused-variable")
+set_target_properties(hya_ik PROPERTIES COMPILE_FLAGS "-fPIC -DIKFAST_NO_MAIN -DIKFAST_CLIBRARY -shared -Wno-unused-variable")
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -48,6 +48,14 @@ set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-fPIC -DIKFAST_N
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/ct_ik_node.cpp)
+
+
+catkin_add_gtest(hya_ik_test test/HyAIKTest.cpp)
+target_link_libraries(hya_ik_test
+                      hya_ik
+                      ${catkin_LIBRARIES})
+set(NAMESPACE "hya_ik")
+set_target_properties(hya_ik_test PROPERTIES COMPILE_FLAGS "-DIKFAST_NAMESPACE=${NAMESPACE} -DIKFAST_HAS_LIBRARY -DIKFAST_CLIBRARY")
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

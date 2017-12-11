@@ -56,6 +56,9 @@ ct_add_explicit_template_libs()
 catkin_add_gtest(RigidBodyPoseTest test/state/RigidBodyPoseTest.cpp)
 target_link_libraries(RigidBodyPoseTest ${catkin_LIBRARIES})
 
+catkin_add_gtest(JointStateTest test/state/JointStateTest.cpp)
+target_link_libraries(JointStateTest ${catkin_LIBRARIES})
+
 catkin_add_gtest(RobCoGenContainerTest test/robot/robcogen/RobCoGenContainerTest.cpp)
 target_link_libraries(RobCoGenContainerTest ${catkin_LIBRARIES})
 
