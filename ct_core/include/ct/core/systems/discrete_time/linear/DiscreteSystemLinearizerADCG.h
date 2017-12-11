@@ -5,18 +5,16 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 #pragma once
 
-#include <ct/core/templateDir.h>
-
 namespace ct {
 namespace core {
 
-//! Computes the linearization of a general non-linear ControlledSystem using Automatic Differentiation with code generation
+//! Computes the linearization of a general non-linear DiscreteControlledSystem using Automatic Differentiation with code generation
 /*!
- * This class takes a non-linear ControlledSystem \f$ \dot{x} = f(x,u,t) \f$ and computes the linearization
- * around a certain point \f$ x = x_s \f$, \f$ u = u_s \f$.
+ * This class takes a non-linear DiscreteControlledSystem \f$ x[n+1] = f(x[n],u[n],n) \f$
+ * and computes the linearization around a certain point \f$ x = x_s \f$, \f$ u = u_s \f$.
  *
  * \f[
- *   \dot{x} = A x + B u
+ *   x[n+1] = A x[n] + B u[n]
  * \f]
  *
  * where
@@ -30,13 +28,14 @@ namespace core {
  *
  * \note This is generally the most efficient and most accurate way to generate the linearization of system dynamics.
  *
- * \warning You should ensure that your ControlledSystem is templated on the scalar type and does not contain branching
+ * Unit test \ref AutoDiffLinearizerTest.cpp illustrates the use of this class.
+ *
+ *
+ * \warning You should ensure that your DiscreteControlledSystem is templated on the scalar type and does not contain branching
  * (if/else statements, switch cases etc.)
  *
  * The linearization is computed using Auto Differentiation which is then used by a code generator framework to generate
  * efficient code. For convenience just-in-time compilation is provided. However, you can also generate source code directly.
- *
- * Unit test \ref CodegenTests.cpp illustrates the use of the ADCodeGenLinearizer.
  *
  * \warning Depending on the complexity of your system, just-in-time compilation (compileJIT()) can be slow. In that case generate a
  * source code file
@@ -46,38 +45,37 @@ namespace core {
  * @tparam SCALAR primitive type of resultant linear system
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class ADCodegenLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
+class DiscreteSystemLinearizerADCG : public DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;  //!< Base class type
+    typedef DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
-    typedef CppAD::AD<CppAD::cg::CG<SCALAR>> ADCGScalar;  //!< Autodiff codegen type
+    typedef CppAD::AD<CppAD::cg::CG<SCALAR>> ADCGScalar; //!< Autodiff codegen type
 
-    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, ADCGScalar> system_t;  //!< type of system to be linearized
-    typedef DynamicsLinearizerADCG<STATE_DIM, CONTROL_DIM, ADCGScalar, ADCGScalar>
+    typedef DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, ADCGScalar> system_t;  //!< type of system to be linearized
+    typedef DynamicsLinearizerADCG<STATE_DIM, CONTROL_DIM, ADCGScalar, int>
         linearizer_t;  //!< type of linearizer to be used
 
-    typedef typename Base::state_vector_t state_vector_t;                  //!< state vector type
-    typedef typename Base::control_vector_t control_vector_t;              //!< input vector type
-    typedef typename Base::state_matrix_t state_matrix_t;                  //!< state Jacobian type
-    typedef typename Base::state_control_matrix_t state_control_matrix_t;  //!< input Jacobian type
 
+    typedef typename Base::state_vector_t state_vector_t;      //!< state vector type
+    typedef typename Base::control_vector_t control_vector_t;  //!< control vector type
+
+    typedef typename Base::state_matrix_t state_matrix_t;                  //!< state Jacobian type (A)
+    typedef typename Base::state_control_matrix_t state_control_matrix_t;  //! control Jacobian type (B)
 
     //! default constructor
     /*!
-	 * Initializes an Auto-Diff codegen linearizer with a ControlledSystem
-	 * @param nonlinearSystem non-linear system instance
-	 * @param cacheJac if true, caches the Jacobians to prevent recomputation for the same state/input
-	 */
-    ADCodegenLinearizer(std::shared_ptr<system_t> nonlinearSystem, bool cacheJac = true)
+     * @param nonlinearSystem non-linear system instance to linearize
+     */
+    DiscreteSystemLinearizerADCG(std::shared_ptr<system_t> nonlinearSystem, bool cacheJac = true)
         : Base(nonlinearSystem->getType()),
           dFdx_(state_matrix_t::Zero()),
           dFdu_(state_control_matrix_t::Zero()),
           cacheJac_(cacheJac),
           nonlinearSystem_(nonlinearSystem),
-          linearizer_(std::bind(&system_t::computeControlledDynamics,
+          linearizer_(std::bind(&system_t::propagateControlledDynamics,
               nonlinearSystem_.get(),
               std::placeholders::_1,
               std::placeholders::_2,
@@ -87,13 +85,13 @@ public:
     }
 
     //! copy constructor
-    ADCodegenLinearizer(const ADCodegenLinearizer<STATE_DIM, CONTROL_DIM>& arg)
+    DiscreteSystemLinearizerADCG(const DiscreteSystemLinearizerADCG& arg)
         : Base(arg.nonlinearSystem_->getType()),
           dFdx_(arg.dFdx_),
           dFdu_(arg.dFdu_),
           cacheJac_(arg.cacheJac_),
           nonlinearSystem_(arg.nonlinearSystem_->clone()),
-          linearizer_(std::bind(&system_t::computeControlledDynamics,
+          linearizer_(std::bind(&system_t::propagateControlledDynamics,
               nonlinearSystem_.get(),
               std::placeholders::_1,
               std::placeholders::_2,
@@ -102,67 +100,97 @@ public:
     {
     }
 
+    //! destructor
+    virtual ~DiscreteSystemLinearizerADCG() {}
+
     //! deep cloning
-    ADCodegenLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
+    DiscreteSystemLinearizerADCG<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {
-        return new ADCodegenLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
+        return new DiscreteSystemLinearizerADCG<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
     }
 
     //! get the Jacobian with respect to the state
     /*!
-	 * This computes the linearization of the system with respect to the state at a given point \f$ x=x_s \f$, \f$ u=u_s \f$,
-	 * i.e. it computes
-	 *
-	 * \f[
-	 * A = \frac{df}{dx} |_{x=x_s, u=u_s}
-	 * \f]
-	 *
-	 * \warning Call compileJIT() before calling this function.
-	 *
-	 * @param x state to linearize at
-	 * @param u control to linearize at
-	 * @param t time
-	 * @return Jacobian wrt state
-	 */
-    const state_matrix_t& getDerivativeState(const state_vector_t& x,
-        const control_vector_t& u,
-        const SCALAR t = SCALAR(0.0)) override
+     * This computes the linearization of the system with respect to the state at a given point \f$ x=x_s \f$, \f$ u=u_s \f$,
+     * i.e. it computes
+     *
+     * \f[
+     * A = \frac{df}{dx} |_{x=x_s, u=u_s}
+     * \f]
+     *
+     * @param x state to linearize at
+     * @param u control to linearize at
+     * @param t time
+     * @return Jacobian wrt state
+     */
+    const state_matrix_t& getDerivativeState(const state_vector_t& x, const control_vector_t& u, const int t = 0)
     {
         dFdx_ = linearizer_.getDerivativeState(x, u, t);
         return dFdx_;
     }
 
+
     //! get the Jacobian with respect to the input
     /*!
-	 * This computes the linearization of the system with respect to the input at a given point \f$ x=x_s \f$, \f$ u=u_s \f$,
-	 * i.e. it computes
-	 *
-	 * \f[
-	 * B = \frac{df}{du} |_{x=x_s, u=u_s}
-	 * \f]
-	 *
-	 * \warning Call compileJIT() before calling this function.
-	 *
-	 * @param x state to linearize at
-	 * @param u control to linearize at
-	 * @param t time
-	 * @return Jacobian wrt input
-	 */
+   * This computes the linearization of the system with respect to the input at a given point \f$ x=x_s \f$, \f$ u=u_s \f$,
+   * i.e. it computes
+   *
+   * \f[
+   * B = \frac{df}{du} |_{x=x_s, u=u_s}
+   * \f]
+   *
+   * @param x state to linearize at
+   * @param u control to linearize at
+   * @param t time
+   * @return Jacobian wrt input
+   */
     const state_control_matrix_t& getDerivativeControl(const state_vector_t& x,
         const control_vector_t& u,
-        const SCALAR t = SCALAR(0.0)) override
+        const int t = 0)
     {
         dFdu_ = linearizer_.getDerivativeControl(x, u, t);
         return dFdu_;
     }
 
+    //! retrieve discrete-time linear system matrices A and B.
+    /*!
+     * This computes matrices A and B such that
+     * \f[
+     *  x_{n+1} = Ax_n + Bu_n
+     * \f]
+     *
+     * Note that the inputs x_next and subSteps are being ignored
+     *
+     * @param x the state setpoint at n
+     * @param u the control setpoint at n
+     * @param n the time setpoint
+     * @param x_next -> ignored
+     * @param subSteps -> ignored
+     * @param A the resulting linear system matrix A
+     * @param B the resulting linear system matrix B
+     */
+    void getAandB(const state_vector_t& x,
+        const control_vector_t& u,
+        const state_vector_t& x_next,
+        const int n,
+        size_t numSteps,
+        state_matrix_t& A,
+        state_control_matrix_t& B) override
+    {
+        dFdx_ = linearizer_.getDerivativeState(x, u, n);
+        dFdu_ = linearizer_.getDerivativeControl(x, u, n);
+
+        A = dFdx_;
+        B = dFdu_;
+    }
+
     //! compile just-in-time
     /*!
-	 * Generates the source code, compiles it and dynamically loads the resulting library.
-	 *
-	 * \note If this function takes a long time, consider generating the source code using
-	 * generateCode() and compile it before runtime.
-	 */
+     * Generates the source code, compiles it and dynamically loads the resulting library.
+     *
+     * \note If this function takes a long time, consider generating the source code using
+     * generateCode() and compile it before runtime.
+     */
     void compileJIT(const std::string& libName = "threadId" + std::to_string(std::hash<std::thread::id>()(
                                                                   std::this_thread::get_id())))
     {
@@ -198,7 +226,6 @@ public:
             templateDir, outputDir, systemName, ns1, ns2, codeJacA, codeJacB, "AUTOGENERATED_CODE_PLACEHOLDER");
     }
 
-
 private:
     //! write code to file
     /*!
@@ -221,13 +248,13 @@ private:
         const std::string& codeJacB,
         const std::string& codePlaceholder)
     {
-        std::cout << "Generating linear system..." << std::endl;
+        std::cout << "Generating discrete linear system..." << std::endl;
 
         size_t maxTempVarCountState, maxTempVarCountControl;
         linearizer_.getMaxTempVarCount(maxTempVarCountState, maxTempVarCountControl);
 
-        std::string header = internal::CGHelpers::parseFile(templateDir + "/LinearSystem.tpl.h");
-        std::string source = internal::CGHelpers::parseFile(templateDir + "/LinearSystem.tpl.cpp");
+        std::string header = internal::CGHelpers::parseFile(templateDir + "/DiscreteLinearSystem.tpl.h");
+        std::string source = internal::CGHelpers::parseFile(templateDir + "/DiscreteLinearSystem.tpl.cpp");
 
         const std::string scalarName(linearizer_.getOutScalarType());
 
@@ -244,7 +271,7 @@ private:
         internal::CGHelpers::writeFile(outputDir + "/" + systemName + ".cpp", source);
 
 
-        std::cout << "... Done! Successfully generated linear system" << std::endl;
+        std::cout << "... Done! Successfully generated discrete linear system" << std::endl;
     }
 
     //! replaces size and namespace placeholders in file
@@ -269,6 +296,7 @@ private:
         internal::CGHelpers::replaceAll(file, "SCALAR", scalarName);
     }
 
+protected:
     state_matrix_t dFdx_;          //!< state Jacobian
     state_control_matrix_t dFdu_;  //!< input Jacobian
 

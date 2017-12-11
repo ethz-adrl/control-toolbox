@@ -37,7 +37,7 @@ public:
 
 private:
     JAC_TYPE jac_;
-    std::array<double, 637> v_;
+    std::array<double, 640> v_;
 };
 
 } /* namespace HyQ */

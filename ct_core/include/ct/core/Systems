@@ -12,11 +12,19 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "systems/continuous_time/ControlledSystem.h"
 #include "systems/continuous_time/linear/LinearSystem.h"
 #include "systems/continuous_time/linear/LTISystem.h"
+
+#include "systems/linearizer/DynamicsLinearizerNumDiff.h"
+#include "systems/linearizer/DynamicsLinearizerAD.h"
+#include "systems/linearizer/DynamicsLinearizerADCG.h"
+
 #include "systems/continuous_time/linear/SystemLinearizer.h"
 #include "systems/continuous_time/linear/AutoDiffLinearizer.h"
 #include "systems/continuous_time/linear/ADCodegenLinearizer.h"
 
 #include "systems/discrete_time/DiscreteControlledSystem.h"
-#include "systems/discrete_time/linear/DiscreteLinearSystem.h"
 #include "systems/discrete_time/SystemDiscretizer.h"
 
+#include "systems/discrete_time/linear/DiscreteLinearSystem.h"
+#include "systems/discrete_time/linear/DiscreteSystemLinearizer.h"
+#include "systems/discrete_time/linear/DiscreteSystemLinearizerAD.h"
+#include "systems/discrete_time/linear/DiscreteSystemLinearizerADCG.h"

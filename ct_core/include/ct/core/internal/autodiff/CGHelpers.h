@@ -45,8 +45,9 @@ public:
 	 * @param tempName name of temporary variables (i.e. an array / vector)
 	 * @return generated C source code
 	 * @tparam AD_SCALAR Auto-Diff scalar type which is either a normal AD type or a codegen type
+   * @tparam SCALAR underlying primitive type
 	 */
-    template <typename AD_SCALAR>
+    template <typename AD_SCALAR, typename SCALAR=double>
     static std::string generateJacobianSource(CppAD::ADFun<AD_SCALAR>& f,
         SparsityPattern& pattern,
         const size_t jacDim,
@@ -55,9 +56,10 @@ public:
         bool ignoreZero = true,
         std::string jacName = "jac",
         std::string inputName = "x_in",
-        std::string tempName = "v_")
+        std::string tempName = "v_",
+        std::string scalarName = "double")
     {
-        CppAD::cg::CodeHandler<double> codeHandler;
+        CppAD::cg::CodeHandler<SCALAR> codeHandler;
 
         size_t n = f.Domain();
 
@@ -76,9 +78,9 @@ public:
             f.SparseJacobianForward(
                 input, pattern.sparsity(), pattern.row(), pattern.col(), jac, pattern.workJacobian());
 
-        CppAD::cg::LanguageC<double> langC("double", 4);
+        CppAD::cg::LanguageC<SCALAR> langC(scalarName, 4);
         langC.setIgnoreZeroDepAssign(ignoreZero);
-        CppAD::cg::LangCDefaultVariableNameGenerator<double> nameGen(jacName, inputName, tempName);
+        CppAD::cg::LangCDefaultVariableNameGenerator<SCALAR> nameGen(jacName, inputName, tempName);
 
         std::ostringstream code;
         codeHandler.generateCode(code, langC, jac, nameGen);
