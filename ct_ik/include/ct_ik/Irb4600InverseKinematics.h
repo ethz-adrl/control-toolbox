@@ -1,7 +1,7 @@
 #pragma once
 
 #define IKFAST_HAS_LIBRARY
-#define IKFAST_NAMESPACE hya_ik
+#define IKFAST_NAMESPACE irb4600_ik
 #include <ikfast.h>
 #include <Eigen/Dense>
 
@@ -13,7 +13,7 @@ namespace ct {
 namespace rbd {
 
 template <typename SCALAR = double>
-class HyAInverseKinematics : InverseKinematicsBase<6, SCALAR>
+class Irb4600InverseKinematics : InverseKinematicsBase<6, SCALAR>
 {
 public:
     virtual std::vector<typename tpl::JointState<6, SCALAR>::Position> computeInverseKinematics(
@@ -23,9 +23,9 @@ public:
         // TODO: Check for valid solutions.
         IkSolutionList<double> solutions;
 
-        if (size_t(hya_ik::GetNumFreeParameters()) != freeJoints.size()) throw "Error";
+        if (size_t(irb4600_ik::GetNumFreeParameters()) != freeJoints.size()) throw "Error";
 
-        hya_ik::ComputeIk(eeBasePose.position().toImplementation().data(),
+        irb4600_ik::ComputeIk(eeBasePose.position().toImplementation().data(),
             eeBasePose.getRotationMatrix().toImplementation().data(),
             freeJoints.size() > 0 ? freeJoints.data() : nullptr, solutions);
 
