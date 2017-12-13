@@ -12,9 +12,6 @@ SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 find_package(catkin REQUIRED ct_core ct_optcon)
 find_package(kindr)
 
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
 
 ## assemble list of libraries that contain prespecified templates
 ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_rbd")
@@ -25,25 +22,28 @@ set(INC_DIRS ${catkin_INCLUDE_DIRS} ${kindr_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURC
 
 
 catkin_package(
-   INCLUDE_DIRS
-        ${kindr_INCLUDE_DIRS}
-        include
-        include/ct/rbd
-        test
-   LIBRARIES
-        ${PRESPEC_LIB_NAMES}
-   CATKIN_DEPENDS
-       ct_core
-       ct_optcon
-       kindr
+  INCLUDE_DIRS
+    ${kindr_INCLUDE_DIRS}
+    include
+    include/ct/rbd
+    include/ct/rbd/robot/kinematics/ikfast
+    test
+  LIBRARIES
+    ${PRESPEC_LIB_NAMES}
+  CATKIN_DEPENDS
+    ct_core
+    ct_optcon
+    kindr
 )
 
 include_directories(
-    ${kindr_INCLUDE_DIRS}
-    include/ct/rbd
-    test/models/testhyq/generated
-    include
-    test
+  ${catkin_INCLUDE_DIRS}
+  ${kindr_INCLUDE_DIRS}
+  include/ct/rbd
+  include/ct/rbd/robot/kinematics/ikfast
+  test/models/testhyq/generated
+  include
+  test
 )
 
 
@@ -111,18 +111,17 @@ target_link_libraries(kindrJITtest ${catkin_LIBRARIES})
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
+  set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_rbd.doxyfile)
+  set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
 
-    set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_rbd.doxyfile)
-    set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
+  configure_file(${doxyfile_in} ${doxyfile} @ONLY)
 
-    configure_file(${doxyfile_in} ${doxyfile} @ONLY)
-
-    add_custom_target(doc
-        COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
-        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc
-        COMMAND ${CMAKE_COMMAND} -E echo_append "API Documentation built in ${CMAKE_CURRENT_SOURCE_DIR}/doc"
-        VERBATIM)
+  add_custom_target(doc
+    COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
+    COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc
+    COMMAND ${CMAKE_COMMAND} -E echo_append "API Documentation built in ${CMAKE_CURRENT_SOURCE_DIR}/doc"
+    VERBATIM)
 endif()
 
 ct_configure_clang_tidy(INC_DIRS)

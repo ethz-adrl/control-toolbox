@@ -1,12 +1,14 @@
-#include <ct_ik/HyAInverseKinematics.h>
-#include <ct_ik/Irb4600InverseKinematics.h>
+#include <ct/models/HyA/HyAInverseKinematics.h>
+#include <ct/models/Irb4600/Irb4600InverseKinematics.h>
 #include <ct/rbd/rbd.h>
 #include <ct/rbd/state/JointState.h>
 #include <ct/models/HyA/HyA.h>
 
 #include <gtest/gtest.h>
 
-TEST(HyAIKTest, IKTest)
+
+// TODO: add proper tests.
+TEST(HyAIKTest, IKFastTest)
 {
     ct::rbd::HyAInverseKinematics<double> hya_ik_solver;
     ct::rbd::HyA::Kinematics kin;
@@ -25,11 +27,13 @@ TEST(HyAIKTest, IKTest)
         std::cout << i << std::endl;
     }
 
-    for (auto i : hya_ik_solver.computeInverseKinematics(ret))
+    for (const auto& i : hya_ik_solver.computeInverseKinematics(ret))
+    {
         std::cout << i << std::endl << std::endl;
+    }
 }
 
-TEST(Irb4600IKTest, IKTest)
+TEST(Irb4600IKTest, IKFastTest)
 {
     ct::rbd::Irb4600InverseKinematics<double> irb4600_ik_solver;
     ct::rbd::HyA::Kinematics kin;
@@ -48,8 +52,10 @@ TEST(Irb4600IKTest, IKTest)
         std::cout << i << std::endl;
     }
 
-    for (auto i : irb4600_ik_solver.computeInverseKinematics(ret))
+    for (const auto& i : irb4600_ik_solver.computeInverseKinematics(ret))
+    {
         std::cout << i << std::endl << std::endl;
+    }
 }
 
 int main(int argc, char **argv)

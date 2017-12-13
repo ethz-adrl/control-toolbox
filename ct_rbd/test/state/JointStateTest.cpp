@@ -6,6 +6,7 @@ Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
+#include <ct/core/core.h>
 #include "ct/rbd/state/JointState.h"
 
 #include <gtest/gtest.h>
