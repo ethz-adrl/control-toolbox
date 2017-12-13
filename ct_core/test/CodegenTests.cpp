@@ -25,6 +25,7 @@ using std::shared_ptr;
 
 #include "math/JacobianCGTest.h"
 #include "system/ADCodegenLinearizerTest.h"
+#include "system/DiscreteSystemLinearizerADCGTest.h"
 
 
 /*!

@@ -45,6 +45,9 @@ public:
 
     typedef typename std::shared_ptr<DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> Ptr;
 
+    typedef StateVector<STATE_DIM, SCALAR> state_vector_t;        //<! state vector type
+    typedef ControlVector<CONTROL_DIM, SCALAR> control_vector_t;  //<! control vector type
+
     //! default constructor
     /*!
 	 * @param type system type
@@ -107,11 +110,9 @@ public:
 	 * @param n time index to propagate the dynamics at
 	 * @param stateNext the resulting propagated state
 	 */
-    virtual void propagateDynamics(const StateVector<STATE_DIM, SCALAR>& state,
-        const int& n,
-        StateVector<STATE_DIM, SCALAR>& stateNext) override
+    virtual void propagateDynamics(const state_vector_t& state, const int& n, state_vector_t& stateNext) override
     {
-        ControlVector<CONTROL_DIM, SCALAR> controlAction;
+        control_vector_t controlAction;
         if (controller_)
             controller_->computeControl(state, n, controlAction);
         else
@@ -129,14 +130,14 @@ public:
 	 * @param n time index to propagate the dynamics at
 	 * @param stateNext the resulting propagated state
 	 */
-    virtual void propagateControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
+    virtual void propagateControlledDynamics(const state_vector_t& state,
         const int& n,
-        const ControlVector<CONTROL_DIM, SCALAR>& control,
-        StateVector<STATE_DIM, SCALAR>& stateNext) = 0;
+        const control_vector_t& control,
+        state_vector_t& stateNext) = 0;
 
 
 protected:
     std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>> controller_;  //!< the controller instance
 };
-}
-}
+}  // namespace core
+}  // namespace ct

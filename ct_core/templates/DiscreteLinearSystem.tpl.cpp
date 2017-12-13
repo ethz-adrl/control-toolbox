@@ -14,7 +14,7 @@ namespace NS2 {
 const LINEAR_SYSTEM_NAME::state_matrix_t& LINEAR_SYSTEM_NAME::getDerivativeState(
     const state_vector_t& x,
     const control_vector_t& u,
-    const SCALAR t)
+    const int t)
 {
     SCALAR* jac = dFdx_.data();
     Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM, 1> x_in;
@@ -28,7 +28,7 @@ const LINEAR_SYSTEM_NAME::state_matrix_t& LINEAR_SYSTEM_NAME::getDerivativeState
 const LINEAR_SYSTEM_NAME::state_control_matrix_t& LINEAR_SYSTEM_NAME::getDerivativeControl(
     const state_vector_t& x,
     const control_vector_t& u,
-    const SCALAR t)
+    const int t)
 {
     SCALAR* jac = dFdu_.data();
     Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM, 1> x_in;
@@ -38,6 +38,7 @@ const LINEAR_SYSTEM_NAME::state_control_matrix_t& LINEAR_SYSTEM_NAME::getDerivat
 
     return dFdu_;
 }
+
 }
 }
 }

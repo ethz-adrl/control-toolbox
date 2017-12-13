@@ -26,6 +26,11 @@ class DiscreteLinearSystem : public DiscreteControlledSystem<STATE_DIM, CONTROL_
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    typedef DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+
+    typedef typename Base::state_vector_t state_vector_t;
+    typedef typename Base::control_vector_t control_vector_t;
+
     typedef StateMatrix<STATE_DIM, SCALAR> state_matrix_t;                              //!< state Jacobian type
     typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;  //!< input Jacobian type
 
@@ -55,10 +60,10 @@ public:
 	 * @param control control input
 	 * @param stateNext propagated state
 	 */
-    virtual void propagateControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
+    virtual void propagateControlledDynamics(const state_vector_t& state,
         const int& n,
-        const ControlVector<CONTROL_DIM, SCALAR>& control,
-        StateVector<STATE_DIM, SCALAR>& stateNext) override
+        const control_vector_t& control,
+        state_vector_t& stateNext) override
     {
         state_matrix_t A;
         state_control_matrix_t B;
@@ -67,25 +72,35 @@ public:
     }
 
 
+    //! retrieve discrete-time linear system matrices A and B.
     /*!
-	 * retrieve discrete-time linear system matrices A and B.
-	 * @param x	the state setpoint
-	 * @param u the control setpoint
-	 * @param n the time setpoint
-	 * @param numSteps number of timesteps for which to get the sensitivity for
-	 * @param A the resulting linear system matrix A
-	 * @param B the resulting linear system matrix B
-	 */
-    virtual void getAandB(const StateVector<STATE_DIM, SCALAR>& x,
-        const ControlVector<CONTROL_DIM, SCALAR>& u,
-        const StateVector<STATE_DIM, SCALAR>& x_next,
+     * This computes matrices A and B such that
+     * \f[
+     *  x_{n+1} = Ax_n + Bu_n
+     * \f]
+     *
+     * Note that the inputs x_next and subSteps are potentially being ignored
+     * for 'true' discrete system models but are relevant for sensitivity
+     * calculations if the underlying system is continuous.
+     *
+     * @param x the state setpoint at n
+     * @param u the control setpoint at n
+     * @param n the time setpoint
+     * @param x_next the state at n+1
+     * @param subSteps number of substeps to use in sensitivity calculation
+     * @param A the resulting linear system matrix A
+     * @param B the resulting linear system matrix B
+     */
+    virtual void getAandB(const state_vector_t& x,
+        const control_vector_t& u,
+        const state_vector_t& x_next,
         const int n,
-        size_t numSteps,
+        size_t subSteps,
         state_matrix_t& A,
         state_control_matrix_t& B) = 0;
 
-    void getAandB(const StateVector<STATE_DIM, SCALAR>& x,
-        const ControlVector<CONTROL_DIM, SCALAR>& u,
+    void getAandB(const state_vector_t& x,
+        const control_vector_t& u,
         const int n,
         state_matrix_t& A,
         state_control_matrix_t& B)
@@ -94,5 +109,5 @@ public:
     }
 };
 
-}  // core
-}  // ct
+}  // namespace core
+}  // namespace ct

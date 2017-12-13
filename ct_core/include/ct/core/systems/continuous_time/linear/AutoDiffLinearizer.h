@@ -6,8 +6,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include "internal/ADLinearizerBase.h"
-
 namespace ct {
 namespace core {
 
@@ -44,16 +42,20 @@ namespace core {
  *
  * @tparam dimension of state vector
  * @tparam dimension of control vector
+ * @tparam SCALAR primitive type of resultant linear system
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class AutoDiffLinearizer : public internal::ADLinearizerBase<STATE_DIM, CONTROL_DIM, CppAD::AD<double>>
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+class AutoDiffLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    typedef LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;  //!< Base class type
 
-    typedef CppAD::AD<double> AD_double;                                         //!< Auto-Diff double type
-    typedef internal::ADLinearizerBase<STATE_DIM, CONTROL_DIM, AD_double> Base;  //!< Base class type
+    typedef CppAD::AD<SCALAR> ADScalar;
+    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, ADScalar> system_t;  //!< type of system to be linearized
+    typedef DynamicsLinearizerAD<STATE_DIM, CONTROL_DIM, ADScalar, ADScalar>
+        linearizer_t;  //!< type of linearizer to be used
 
     typedef typename Base::state_vector_t state_vector_t;                  //!< state vector type
     typedef typename Base::control_vector_t control_vector_t;              //!< input vector type
@@ -62,42 +64,65 @@ public:
 
     //! default constructor
     /*!
-	 * @param nonlinearSystem non-linear system instance to linearize
-	 */
-    AutoDiffLinearizer(std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, AD_double>> nonlinearSystem)
-        : Base(nonlinearSystem)
+     * @param nonlinearSystem non-linear system instance to linearize
+     */
+    AutoDiffLinearizer(std::shared_ptr<system_t> nonlinearSystem)
+        : Base(nonlinearSystem->getType()),
+          dFdx_(state_matrix_t::Zero()),
+          dFdu_(state_control_matrix_t::Zero()),
+          nonlinearSystem_(nonlinearSystem),
+          linearizer_(std::bind(&system_t::computeControlledDynamics,
+              nonlinearSystem_.get(),
+              std::placeholders::_1,
+              std::placeholders::_2,
+              std::placeholders::_3,
+              std::placeholders::_4))
     {
     }
 
     //! copy constructor
-    AutoDiffLinearizer(const AutoDiffLinearizer& arg) : Base(arg), dFdx_(arg.dFdx_), dFdu_(arg.dFdu_) {}
+    AutoDiffLinearizer(const AutoDiffLinearizer& arg)
+        : Base(arg.nonlinearSystem_->getType()),
+          dFdx_(arg.dFdx_),
+          dFdu_(arg.dFdu_),
+          nonlinearSystem_(arg.nonlinearSystem_->clone()),
+          linearizer_(std::bind(&system_t::computeControlledDynamics,
+              nonlinearSystem_.get(),
+              std::placeholders::_1,
+              std::placeholders::_2,
+              std::placeholders::_3,
+              std::placeholders::_4))
+    {
+    }
+
     //! destructor
     virtual ~AutoDiffLinearizer() {}
+
     //! deep cloning
-    AutoDiffLinearizer<STATE_DIM, CONTROL_DIM>* clone() const override
+    AutoDiffLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {
-        return new AutoDiffLinearizer<STATE_DIM, CONTROL_DIM>(*this);
+        return new AutoDiffLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
     }
 
     //! get the Jacobian with respect to the state
     /*!
-	 * This computes the linearization of the system with respect to the state at a given point \f$ x=x_s \f$, \f$ u=u_s \f$,
-	 * i.e. it computes
-	 *
-	 * \f[
-	 * A = \frac{df}{dx} |_{x=x_s, u=u_s}
-	 * \f]
-	 *
-	 * @param x state to linearize at
-	 * @param u control to linearize at
-	 * @param t time
-	 * @return Jacobian wrt state
-	 */
+     * This computes the linearization of the system with respect to the state at a given point \f$ x=x_s \f$, \f$ u=u_s \f$,
+     * i.e. it computes
+     *
+     * \f[
+     * A = \frac{df}{dx} |_{x=x_s, u=u_s}
+     * \f]
+     *
+     * @param x state to linearize at
+     * @param u control to linearize at
+     * @param t time
+     * @return Jacobian wrt state
+     */
     virtual const state_matrix_t& getDerivativeState(const state_vector_t& x,
         const control_vector_t& u,
-        const double t = 0.0) override
+        const SCALAR t = SCALAR(0.0)) override
     {
-        computeA(x, u);
+        dFdx_ = linearizer_.getDerivativeState(x, u, t);
         return dFdx_;
     }
 
@@ -118,57 +143,21 @@ public:
 	 */
     virtual const state_control_matrix_t& getDerivativeControl(const state_vector_t& x,
         const control_vector_t& u,
-        const double t = 0.0) override
+        const SCALAR t = SCALAR(0.0)) override
     {
-        computeB(x, u);
+        dFdu_ = linearizer_.getDerivativeControl(x, u, t);
         return dFdu_;
     }
 
 
 protected:
-    //! compute the state Jacobian
-    /*!
-	 * @param x state to linearize around
-	 * @param u input to linearize around
-	 */
-    void computeA(const state_vector_t& x, const control_vector_t& u)
-    {
-        Eigen::Matrix<double, Eigen::Dynamic, 1> input(STATE_DIM + CONTROL_DIM);
-        input << x, u;
-
-        Eigen::Matrix<double, Eigen::Dynamic, 1> jac(this->A_entries);
-
-        this->f_.SparseJacobianForward(input, this->sparsityA_.sparsity(), this->sparsityA_.row(),
-            this->sparsityA_.col(), jac, this->sparsityA_.workJacobian());
-
-        Eigen::Map<Eigen::Matrix<double, STATE_DIM, STATE_DIM>> out(jac.data());
-
-        dFdx_ = out;
-    }
-
-    //! compute the input Jacobian
-    /*!
-	 * @param x state to linearize around
-	 * @param u input to linearize around
-	 */
-    void computeB(const state_vector_t& x, const control_vector_t& u)
-    {
-        Eigen::Matrix<double, Eigen::Dynamic, 1> input(STATE_DIM + CONTROL_DIM);
-        input << x, u;
-
-        Eigen::Matrix<double, Eigen::Dynamic, 1> jac(this->B_entries);
-
-        this->f_.SparseJacobianForward(input, this->sparsityB_.sparsity(), this->sparsityB_.row(),
-            this->sparsityB_.col(), jac, this->sparsityB_.workJacobian());
-
-        Eigen::Map<Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>> out(jac.data());
-
-        dFdu_ = out;
-    }
-
-
     state_matrix_t dFdx_;
     state_control_matrix_t dFdu_;
+
+    std::shared_ptr<system_t> nonlinearSystem_;  //!< instance of non-linear system
+
+    linearizer_t linearizer_;  //!< instance of ad-linearizer
 };
-}
-}
+
+}  // namespace core
+}  // namespace ct

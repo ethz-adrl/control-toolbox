@@ -3,7 +3,6 @@ This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyr
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
-
 #include "HyAInverseDynJacReverse.h"
 
 namespace ct {
@@ -1137,6 +1136,6 @@ HyAInverseDynJacReverse::JAC_TYPE HyAInverseDynJacReverse::jacobian(const Eigen:
 
     return jac_;
 }
-}
-}
-}
+}  // namespace HyA
+}  // namespace models
+}  // namespace ct
