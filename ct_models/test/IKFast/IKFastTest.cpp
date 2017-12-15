@@ -1,3 +1,9 @@
+/**********************************************************************************************************************
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
+Licensed under Apache2 license (see LICENSE file in main directory)
+**********************************************************************************************************************/
+
 #include <ct/models/HyA/HyAInverseKinematics.h>
 #include <ct/models/Irb4600/Irb4600InverseKinematics.h>
 #include <ct/rbd/rbd.h>

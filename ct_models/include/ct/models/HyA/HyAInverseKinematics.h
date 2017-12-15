@@ -9,7 +9,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #define IKFAST_HAS_LIBRARY
 #define IKFAST_NAMESPACE hya_ik
 #include <ikfast.h>
-#include <Eigen/Dense>
+#include <ct/core/core.h>
 
 #include <ct/rbd/robot/kinematics/InverseKinematicsBase.h>
 
