@@ -124,9 +124,6 @@ int main(int argc, char **argv)
     auto start_time = std::chrono::high_resolution_clock::now();
 
 
-    // outputs
-    ct::core::StateTrajectory<state_dim> stateTraj;
-
     // limit the maximum number of runs in this example
     size_t maxNumRuns = 100;
 
