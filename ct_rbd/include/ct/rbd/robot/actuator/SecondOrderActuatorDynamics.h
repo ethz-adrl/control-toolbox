@@ -17,12 +17,12 @@ namespace rbd {
  * \warning This is wrong - actually the simple oscillator is not a symplectic system (if damping != 0)
  */
 template <size_t NJOINTS, typename SCALAR = double>
-class SecondOrderActuatorDynamics : public ActuatorDynamics<NJOINTS, 2 * NJOINTS, SCALAR>
+class SecondOrderActuatorDynamics : public ActuatorDynamics<2 * NJOINTS, NJOINTS, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef ActuatorDynamics<NJOINTS, 2 * NJOINTS, SCALAR> BASE;
+    typedef ActuatorDynamics<2 * NJOINTS, NJOINTS, SCALAR> BASE;
 
     //! constructor assuming unit amplification
     SecondOrderActuatorDynamics(double w_n, double zeta);
@@ -42,23 +42,14 @@ public:
     //! deep cloning
     virtual SecondOrderActuatorDynamics<NJOINTS, SCALAR>* clone() const override;
 
-
-    virtual void computePdot(const typename BASE::act_state_vector_t& x,
-        const typename BASE::act_vel_vector_t& v,
+    virtual void computeControlledDynamics(const ct::core::StateVector<2*NJOINTS, SCALAR>& state,
+        const SCALAR& t,
         const ct::core::ControlVector<NJOINTS, SCALAR>& control,
-        typename BASE::act_pos_vector_t& pDot) override;
-
-
-    virtual void computeVdot(const typename BASE::act_state_vector_t& x,
-        const typename BASE::act_pos_vector_t& p,
-        const ct::core::ControlVector<NJOINTS, SCALAR>& control,
-        typename BASE::act_vel_vector_t& vDot) override;
-
+        ct::core::StateVector<2*NJOINTS, SCALAR>& derivative) override;
 
     virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
         const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
         const typename BASE::act_state_vector_t& actState) override;
-
 
 private:
     std::vector<ct::core::tpl::SecondOrderSystem<SCALAR>> oscillators_;

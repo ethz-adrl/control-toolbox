@@ -30,7 +30,8 @@ SecondOrderActuatorDynamics<NJOINTS, SCALAR>::SecondOrderActuatorDynamics(std::v
 
     oscillators_.resize(NJOINTS);
     for (size_t i = 0; i < NJOINTS; i++)
-        oscillators_[i] = ct::core::tpl::SecondOrderSystem<SCALAR>((SCALAR)w_n[i], (SCALAR)zeta[i], (SCALAR)(w_n[i] * w_n[i]));
+        oscillators_[i] =
+            ct::core::tpl::SecondOrderSystem<SCALAR>((SCALAR)w_n[i], (SCALAR)zeta[i], (SCALAR)(w_n[i] * w_n[i]));
 }
 
 template <size_t NJOINTS, typename SCALAR>
@@ -58,20 +59,11 @@ SecondOrderActuatorDynamics<NJOINTS, SCALAR>* SecondOrderActuatorDynamics<NJOINT
 }
 
 template <size_t NJOINTS, typename SCALAR>
-void SecondOrderActuatorDynamics<NJOINTS, SCALAR>::computePdot(const typename BASE::act_state_vector_t& x,
-    const typename BASE::act_vel_vector_t& v,
+void SecondOrderActuatorDynamics<NJOINTS, SCALAR>::computeControlledDynamics(
+    const ct::core::StateVector<2 * NJOINTS, SCALAR>& state,
+    const SCALAR& t,
     const ct::core::ControlVector<NJOINTS, SCALAR>& control,
-    typename BASE::act_pos_vector_t& pDot)
-{
-    // as the oscillator is symplectic itself, we simply transcribe the velocity coordinates
-    pDot = v;
-}
-
-template <size_t NJOINTS, typename SCALAR>
-void SecondOrderActuatorDynamics<NJOINTS, SCALAR>::computeVdot(const typename BASE::act_state_vector_t& x,
-    const typename BASE::act_pos_vector_t& p,
-    const ct::core::ControlVector<NJOINTS, SCALAR>& control,
-    typename BASE::act_vel_vector_t& vDot)
+    ct::core::StateVector<2 * NJOINTS, SCALAR>& derivative)
 {
     // evaluate oscillator dynamics for each joint
     for (size_t i = 0; i < NJOINTS; i++)
@@ -81,11 +73,12 @@ void SecondOrderActuatorDynamics<NJOINTS, SCALAR>::computeVdot(const typename BA
         core::ControlVector<1, SCALAR> inputCtrl;
         inputCtrl(0) = control(i);
 
-        secondOrderState << p(i), x(i + NJOINTS);
+        secondOrderState << state(i), state(i + NJOINTS);
 
         oscillators_[i].computeControlledDynamics(secondOrderState, SCALAR(0.0), inputCtrl, secondOrderStateDerivative);
 
-        vDot(i) = secondOrderStateDerivative(1);
+        derivative(i) = state(i + NJOINTS);
+        derivative(i + NJOINTS) = secondOrderStateDerivative(1);
     }
 }
 
@@ -97,5 +90,6 @@ core::ControlVector<NJOINTS, SCALAR> SecondOrderActuatorDynamics<NJOINTS, SCALAR
     // for this simple actuator dynamics model, the controlOutput is just the "position" coordinates of the actuator state
     return actState.template topRows<NJOINTS>();
 }
-}
-}
+
+}  // namespace rbd
+}  // namespace ct

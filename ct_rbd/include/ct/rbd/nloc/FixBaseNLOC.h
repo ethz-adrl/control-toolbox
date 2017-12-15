@@ -6,7 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/rbd/systems/FixBaseFDSystem.h>
+#include <ct/rbd/systems/FixBaseFDSystemSymplectic.h>
 
 namespace ct {
 namespace rbd {
@@ -21,7 +21,8 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     static const bool eeForcesAreControlInputs = false;
-    typedef FixBaseFDSystem<RBDDynamics, ACTUATOR_STATE_DIM, eeForcesAreControlInputs> FBSystem;
+
+    typedef FixBaseFDSystemSymplectic<RBDDynamics, ACTUATOR_STATE_DIM, eeForcesAreControlInputs> FBSystem;
 
     static const size_t CONTROL_DIM = FBSystem::CONTROL_DIM;
     static const size_t NJOINTS = FBSystem::NJOINTS;
@@ -53,13 +54,11 @@ public:
         bool verbose = false,
         std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
 
-
     void initialize(const tpl::JointState<NJOINTS, SCALAR>& x0,
         const core::Time& tf,
         StateVectorArray x_ref = StateVectorArray(),
         FeedbackArray u0_fb = FeedbackArray(),
         ControlVectorArray u0_ff = ControlVectorArray());
-
 
     //! initialize fixed-base robot with a steady pose using inverse dynamics torques as feedforward
     void initializeSteadyPose(const tpl::JointState<NJOINTS, SCALAR>& x0,
@@ -67,7 +66,6 @@ public:
         const int N,
         ControlVector& u_ref,
         FeedbackMatrix K = FeedbackMatrix::Zero());
-
 
     //! initialize fixed-base robot with a directly interpolated state trajectory and corresponding ID torques
     void initializeDirectInterpolation(const tpl::JointState<NJOINTS, SCALAR>& x0,
@@ -84,7 +82,6 @@ public:
         ct::core::ControlVectorArray<NJOINTS, SCALAR>& u_array,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_array,
         FeedbackMatrix K = FeedbackMatrix::Zero());
-
 
     bool runIteration();
 
