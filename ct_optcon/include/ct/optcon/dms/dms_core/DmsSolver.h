@@ -233,14 +233,12 @@ public:
 
     virtual void changeBoxConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
     {
-        this->getBoxConstraintsInstances().push_back(
-            typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
+        this->getBoxConstraintsInstances().push_back(typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
     }
 
     virtual void changeGeneralConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
     {
-        this->getGeneralConstraintsInstances().push_back(
-            typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
+        this->getGeneralConstraintsInstances().push_back(typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
     }
 
     /**
@@ -278,8 +276,7 @@ public:
     {
         return boxConstraints_;
     }
-    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances()
-        const override
+    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const override
     {
         return boxConstraints_;
     }

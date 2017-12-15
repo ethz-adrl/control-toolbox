@@ -175,7 +175,7 @@ void timeSolvers()
     }
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     timeSolvers<3, 3>();
     timeSolvers<6, 6>();

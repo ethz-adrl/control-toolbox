@@ -55,7 +55,7 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendBase(
       generalConstraints_(settings.nThreads + 1, nullptr),  // initialize constraints with null
       firstRollout_(true),
       alphaBest_(-1),
-	  lqpCounter_(0)
+      lqpCounter_(0)
 {
     Eigen::initParallel();
 
@@ -1192,7 +1192,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
     else
     {
         // merit of previous trajectory
-        lowestCost_ = intermediateCostBest_ + finalCostBest_ + (e_box_norm_ + e_gen_norm_) * settings_.meritFunctionRhoConstraints;
+        lowestCost_ = intermediateCostBest_ + finalCostBest_ +
+                      (e_box_norm_ + e_gen_norm_) * settings_.meritFunctionRhoConstraints;
         lowestCostPrevious = lowestCost_;
 
         if (settings_.lineSearchSettings.debugPrint)
@@ -1466,7 +1467,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareSolveLQProblem(size_t startIndex)
 {
-	lqpCounter_++;
+    lqpCounter_++;
 
     // if solver is HPIPM, there's nothing to prepare
     if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
@@ -1491,7 +1492,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareSolve
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishSolveLQProblem(size_t endIndex)
 {
-	lqpCounter_++;
+    lqpCounter_++;
 
     // if solver is HPIPM, solve the full problem
     if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
@@ -1518,7 +1519,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishSolveL
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solveFullLQProblem()
 {
-	lqpCounter_++;
+    lqpCounter_++;
 
     lqocProblem_->x_ = x_;
     lqocProblem_->u_ = u_ff_;

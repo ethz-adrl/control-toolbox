@@ -183,7 +183,7 @@ public:
           min_cost_improvement(1e-5),  //! cost needs to be at least 1e-5 better before we assume convergence
           maxDefectSum(1e-5),
           meritFunctionRho(0.0),
-		  meritFunctionRhoConstraints(1.0),
+          meritFunctionRhoConstraints(1.0),
           max_iterations(100),
           fixedHessianCorrection(false),
           recordSmallestEigenvalue(false),

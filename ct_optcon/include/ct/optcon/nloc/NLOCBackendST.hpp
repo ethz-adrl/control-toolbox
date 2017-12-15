@@ -35,7 +35,6 @@ public:
     virtual ~NLOCBackendST();
 
 protected:
-
     virtual void computeLQApproximation(size_t firstIndex, size_t lastIndex) override;
 
     virtual void rolloutShots(size_t firstIndex, size_t lastIndex) override;

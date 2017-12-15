@@ -82,5 +82,5 @@ public:
     virtual void sparsityPatternInput(VectorXi& rows, VectorXi& cols) override;
 };
 
-} // namespace optcon
-} // namespace ct
+}  // namespace optcon
+}  // namespace ct

@@ -16,8 +16,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 TEST(HPIPMInterfaceTest, compareSolvers)
 {
-	const size_t state_dim = 8;
-	const size_t control_dim = 3;
+    const size_t state_dim = 8;
+    const size_t control_dim = 3;
 
     int N = 5;
     double dt = 0.5;
@@ -85,12 +85,12 @@ TEST(HPIPMInterfaceTest, compareSolvers)
     // assert that states are the same
     for (size_t i = 0; i < x_sol_hpipm.size(); i++)
     {
-    	ASSERT_LT((x_sol_hpipm[i]-x_sol_gnrccati[i]).array().abs().maxCoeff(), 1e-6);
+        ASSERT_LT((x_sol_hpipm[i] - x_sol_gnrccati[i]).array().abs().maxCoeff(), 1e-6);
     }
 
     // assert that controls are the same
     for (size_t i = 0; i < u_sol_hpipm.size(); i++)
     {
-    	ASSERT_LT((u_sol_hpipm[i]-u_sol_gnrccati[i]).array().abs().maxCoeff(), 1e-6);
+        ASSERT_LT((u_sol_hpipm[i] - u_sol_gnrccati[i]).array().abs().maxCoeff(), 1e-6);
     }
 }

@@ -108,8 +108,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::threadWork(siz
 
             // sleep until the state is not IDLE any more and we have a different process ID than before
             std::unique_lock<std::mutex> waitLock(workerWakeUpMutex_);
-            while (workerTask_ == IDLE ||
-                   (uniqueProcessID == generateUniqueProcessID(this->iteration_, (int)workerTask_.load(), this->lqpCounter_)))
+            while (workerTask_ == IDLE || (uniqueProcessID == generateUniqueProcessID(this->iteration_,
+                                                                  (int)workerTask_.load(), this->lqpCounter_)))
             {
                 workerWakeUpCondition_.wait(waitLock);
             }
@@ -206,7 +206,6 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::launchWorkerTh
     {
         workerThreads_.push_back(std::thread(&NLOCBackendMP::threadWork, this, i));
     }
-
 }
 
 
@@ -613,9 +612,10 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchWork
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 size_t NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::generateUniqueProcessID(const size_t& iterateNo,
-    const int workerState, const size_t resetCount)
+    const int workerState,
+    const size_t resetCount)
 {
-    return (10e12 * (resetCount+1) + 10e6 * (workerState + 1) + iterateNo + 1);
+    return (10e12 * (resetCount + 1) + 10e6 * (workerState + 1) + iterateNo + 1);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>

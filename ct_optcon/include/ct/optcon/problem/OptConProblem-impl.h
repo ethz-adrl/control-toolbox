@@ -43,8 +43,8 @@ OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem(const SCALAR& tf,
     LinearPtr_t linearSystem)
     : OptConProblem(nonlinDynamics, costFunction, linearSystem)  // delegating constructor
 {
-	      tf_ = tf;
-	      x0_ = x0;
+    tf_ = tf;
+    x0_ = x0;
 }
 
 
@@ -56,8 +56,8 @@ OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem(DynamicsPtr_t nonli
     LinearPtr_t linearSystem)
     : OptConProblem(nonlinDynamics, costFunction, linearSystem)  // delegating constructor
 {
-	      boxConstraints_ = boxConstraints;
-	      generalConstraints_ = generalConstraints;
+    boxConstraints_ = boxConstraints;
+    generalConstraints_ = generalConstraints;
 }
 
 
@@ -75,8 +75,8 @@ OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem(const SCALAR& tf,
           generalConstraints,
           linearSystem)  // delegating constructor
 {
-	      tf_ = tf;
-	      x0_ = x0;
+    tf_ = tf;
+    x0_ = x0;
 }
 
 

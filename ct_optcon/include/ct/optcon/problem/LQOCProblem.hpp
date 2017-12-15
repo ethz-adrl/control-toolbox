@@ -101,12 +101,11 @@ public:
      * @param ux_ub control upper bound in absolute coordinates, active bounds ordered as [u x]
      * @param sp the sparsity vector, with strictly increasing indices, e.g. [0 1 4 7]
      */
-    void setIntermediateBoxConstraint(
-    		const int index,
-    		const int nConstr,
-            const constr_vec_t& ux_lb,
-            const constr_vec_t& ux_ub,
-            const VectorXi& sp);
+    void setIntermediateBoxConstraint(const int index,
+        const int nConstr,
+        const constr_vec_t& ux_lb,
+        const constr_vec_t& ux_ub,
+        const VectorXi& sp);
 
     /*!
      * \brief set uniform box constraints, with the same constraint being applied at each intermediate stage
@@ -225,7 +224,6 @@ public:
 private:
     //! the number of discrete time steps in the LOCP, including terminal stage
     int K_;
-
 };
 
 }  // namespace optcon

@@ -69,9 +69,10 @@ void loadMatrixCF(const std::string& filename,
             }
             else
             {
-                matrix(i, j) = scaling * pt.get<double>(termName + ".weights." + matrixName + "." + "(" +
-                                                            std::to_string(i) + "," + std::to_string(j) + ")",
-                                             0.0);
+                matrix(i, j) = scaling *
+                               pt.get<double>(termName + ".weights." + matrixName + "." + "(" + std::to_string(i) +
+                                                  "," + std::to_string(j) + ")",
+                                   0.0);
             }
         }
     }

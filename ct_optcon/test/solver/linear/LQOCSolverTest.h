@@ -66,13 +66,13 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
     // configure box constraints
     try
     {
-    	// try to give GNRiccati a constraint...
+        // try to give GNRiccati a constraint...
         lqocSolvers[1]->configureBoxConstraints(problems[1]);
         ASSERT_TRUE(false);
     } catch (const std::exception& e)
     {
-    	// ... should fail
-    	ASSERT_TRUE(true);
+        // ... should fail
+        ASSERT_TRUE(true);
     }
     lqocSolvers[1]->configureBoxConstraints(problems[1]);
 

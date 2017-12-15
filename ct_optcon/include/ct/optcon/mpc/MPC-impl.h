@@ -135,7 +135,6 @@ void MPC<OPTCON_SOLVER>::doForwardIntegration(const Scalar_t& t_forward_start,
 }
 
 
-
 template <typename OPTCON_SOLVER>
 void MPC<OPTCON_SOLVER>::prepareIteration(const Scalar_t& extTime)
 {
