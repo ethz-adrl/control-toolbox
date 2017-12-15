@@ -48,7 +48,7 @@ void plotResults(std::vector<StateVectorArray<stateSize>>& stateTrajectories, st
             position.push_back(stateTrajectories[i][j](0) + (stateTrajectories.size() - i - 1));
         }
 
-        int type = ((int) i) / 4;
+        int type = ((int)i) / 4;
         int call = i % 4;
         std::string name = integratorNames[type] + " - " + integratorCalls[call];
 

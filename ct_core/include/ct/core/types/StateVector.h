@@ -37,7 +37,6 @@ public:
 
     //! get underlying Eigen type
     Base& toImplementation() { return *this; }
-
     //! get const underlying Eigen type
     const Base& toImplementation() const { return *this; }
 };

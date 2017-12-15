@@ -196,72 +196,72 @@ TEST(DiscreteSystemLinearizerADCGMP, JITCompilationTestMP)
 
 TEST(DiscreteSystemLinearizerADCG, FloatTest)
 {
-  // define the dimensions of the system
-  const size_t state_dim = TestDiscreteNonlinearSystem::STATE_DIM;
-  const size_t control_dim = TestDiscreteNonlinearSystem::CONTROL_DIM;
+    // define the dimensions of the system
+    const size_t state_dim = TestDiscreteNonlinearSystem::STATE_DIM;
+    const size_t control_dim = TestDiscreteNonlinearSystem::CONTROL_DIM;
 
-  // typedefs for the auto-differentiable codegen system
-  typedef DiscreteSystemLinearizerADCG<state_dim, control_dim, float>::ADCGScalar ADCGScalarFloat;
-  typedef DiscreteSystemLinearizerADCG<state_dim, control_dim, double>::ADCGScalar ADCGScalarDouble;
+    // typedefs for the auto-differentiable codegen system
+    typedef DiscreteSystemLinearizerADCG<state_dim, control_dim, float>::ADCGScalar ADCGScalarFloat;
+    typedef DiscreteSystemLinearizerADCG<state_dim, control_dim, double>::ADCGScalar ADCGScalarDouble;
 
-  typedef typename ADCGScalarFloat::value_type AD_ValueTypeFloat;
-  typedef typename ADCGScalarDouble::value_type AD_ValueTypeDouble;
+    typedef typename ADCGScalarFloat::value_type AD_ValueTypeFloat;
+    typedef typename ADCGScalarDouble::value_type AD_ValueTypeDouble;
 
-  typedef tpl::TestDiscreteNonlinearSystem<ADCGScalarFloat> TestDiscreteNonlinearSystemADFloat;
-  typedef tpl::TestDiscreteNonlinearSystem<ADCGScalarDouble> TestDiscreteNonlinearSystemADDouble;
+    typedef tpl::TestDiscreteNonlinearSystem<ADCGScalarFloat> TestDiscreteNonlinearSystemADFloat;
+    typedef tpl::TestDiscreteNonlinearSystem<ADCGScalarDouble> TestDiscreteNonlinearSystemADDouble;
 
-  // handy typedefs for the Jacobian
-  typedef ct::core::StateMatrix<state_dim, float> A_typeFloat;
-  typedef ct::core::StateMatrix<state_dim, double> A_typeDouble;
+    // handy typedefs for the Jacobian
+    typedef ct::core::StateMatrix<state_dim, float> A_typeFloat;
+    typedef ct::core::StateMatrix<state_dim, double> A_typeDouble;
 
-  typedef ct::core::StateControlMatrix<state_dim, control_dim, float> B_typeFloat;
-  typedef ct::core::StateControlMatrix<state_dim, control_dim, double> B_typeDouble;
+    typedef ct::core::StateControlMatrix<state_dim, control_dim, float> B_typeFloat;
+    typedef ct::core::StateControlMatrix<state_dim, control_dim, double> B_typeDouble;
 
-  // create two nonlinear systems, one regular one and one auto-differentiable
-  const float rateFloat = 100.0;
-  const double rateDouble = static_cast<double>(rateFloat);
+    // create two nonlinear systems, one regular one and one auto-differentiable
+    const float rateFloat = 100.0;
+    const double rateDouble = static_cast<double>(rateFloat);
 
-  shared_ptr<TestDiscreteNonlinearSystemADFloat> oscillatorADFloat(
-      new tpl::TestDiscreteNonlinearSystem<ADCGScalarFloat>(AD_ValueTypeFloat(rateFloat)));
-  shared_ptr<TestDiscreteNonlinearSystemADDouble> oscillatorADDouble(
-      new tpl::TestDiscreteNonlinearSystem<ADCGScalarDouble>(AD_ValueTypeDouble(rateDouble)));
+    shared_ptr<TestDiscreteNonlinearSystemADFloat> oscillatorADFloat(
+        new tpl::TestDiscreteNonlinearSystem<ADCGScalarFloat>(AD_ValueTypeFloat(rateFloat)));
+    shared_ptr<TestDiscreteNonlinearSystemADDouble> oscillatorADDouble(
+        new tpl::TestDiscreteNonlinearSystem<ADCGScalarDouble>(AD_ValueTypeDouble(rateDouble)));
 
-  DiscreteSystemLinearizerADCG<state_dim, control_dim, float> adLinearizerFloat(oscillatorADFloat);
-  DiscreteSystemLinearizerADCG<state_dim, control_dim, double> adLinearizerDouble(oscillatorADDouble);
+    DiscreteSystemLinearizerADCG<state_dim, control_dim, float> adLinearizerFloat(oscillatorADFloat);
+    DiscreteSystemLinearizerADCG<state_dim, control_dim, double> adLinearizerDouble(oscillatorADDouble);
 
-  // do just in time compilation of the Jacobians
-  std::cout << "compiling..." << std::endl;
-  adLinearizerFloat.compileJIT("ADCGCodegenLibFloat");
-  adLinearizerDouble.compileJIT("ADCGCodegenLibDouble");
-  std::cout << "... done compiling!" << std::endl;
+    // do just in time compilation of the Jacobians
+    std::cout << "compiling..." << std::endl;
+    adLinearizerFloat.compileJIT("ADCGCodegenLibFloat");
+    adLinearizerDouble.compileJIT("ADCGCodegenLibDouble");
+    std::cout << "... done compiling!" << std::endl;
 
-  // create state, control and time variables
-  StateVector<state_dim, float> xFloat;
-  StateVector<state_dim, double> xDouble;
-  ControlVector<control_dim, float> uFloat;
-  ControlVector<control_dim, double> uDouble;
-  int n = 0;
+    // create state, control and time variables
+    StateVector<state_dim, float> xFloat;
+    StateVector<state_dim, double> xDouble;
+    ControlVector<control_dim, float> uFloat;
+    ControlVector<control_dim, double> uDouble;
+    int n = 0;
 
-  for (size_t i = 0; i < 1000; i++)
-  {
-      // set a random state
-      xFloat.setRandom();
-      xDouble = xFloat.cast<double>();
-      uFloat.setRandom();
-      uDouble = uFloat.cast<double>();
+    for (size_t i = 0; i < 1000; i++)
+    {
+        // set a random state
+        xFloat.setRandom();
+        xDouble = xFloat.cast<double>();
+        uFloat.setRandom();
+        uDouble = uFloat.cast<double>();
 
-      A_typeFloat A_Float;
-      B_typeFloat B_Float;
-      adLinearizerFloat.getAandB(xFloat, uFloat, xFloat, n, 1, A_Float, B_Float);
+        A_typeFloat A_Float;
+        B_typeFloat B_Float;
+        adLinearizerFloat.getAandB(xFloat, uFloat, xFloat, n, 1, A_Float, B_Float);
 
-      A_typeDouble A_Double;
-      B_typeDouble B_Double;
-      adLinearizerDouble.getAandB(xDouble, uDouble, xDouble, n, 1, A_Double, B_Double);
+        A_typeDouble A_Double;
+        B_typeDouble B_Double;
+        adLinearizerDouble.getAandB(xDouble, uDouble, xDouble, n, 1, A_Double, B_Double);
 
-      // verify the result //FIXME: this tolerance is too high
-      ASSERT_LT((A_Double - A_Float.cast<double>()).array().abs().maxCoeff(), 1e-5);
-      ASSERT_LT((B_Double - B_Float.cast<double>()).array().abs().maxCoeff(), 1e-5);
-  }
+        // verify the result //FIXME: this tolerance is too high
+        ASSERT_LT((A_Double - A_Float.cast<double>()).array().abs().maxCoeff(), 1e-5);
+        ASSERT_LT((B_Double - B_Float.cast<double>()).array().abs().maxCoeff(), 1e-5);
+    }
 
     try
     {

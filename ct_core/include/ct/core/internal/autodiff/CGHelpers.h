@@ -47,7 +47,7 @@ public:
 	 * @tparam AD_SCALAR Auto-Diff scalar type which is either a normal AD type or a codegen type
    * @tparam SCALAR underlying primitive type
 	 */
-    template <typename AD_SCALAR, typename SCALAR=double>
+    template <typename AD_SCALAR, typename SCALAR = double>
     static std::string generateJacobianSource(CppAD::ADFun<AD_SCALAR>& f,
         SparsityPattern& pattern,
         const size_t jacDim,

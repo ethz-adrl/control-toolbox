@@ -31,7 +31,7 @@ public:
 
     typedef internal::DynamicsLinearizerADBase<STATE_DIM, CONTROL_DIM, SCALAR, TIME> Base;
 
-    typedef typename Base::OUT_SCALAR OUT_SCALAR; //!< scalar type of resulting linear system
+    typedef typename Base::OUT_SCALAR OUT_SCALAR;  //!< scalar type of resulting linear system
 
     typedef typename Base::state_vector_t state_vector_t;      //!< state vector type
     typedef typename Base::control_vector_t control_vector_t;  //!< control vector type
@@ -88,7 +88,9 @@ public:
      * @param t time
      * @return Jacobian w.r.t. state
      */
-    const state_matrix_t& getDerivativeState(const state_vector_t& x, const control_vector_t& u, const OUT_SCALAR t = 0.0)
+    const state_matrix_t& getDerivativeState(const state_vector_t& x,
+        const control_vector_t& u,
+        const OUT_SCALAR t = 0.0)
     {
         if (!compiled_)
             throw std::runtime_error(
@@ -170,13 +172,15 @@ public:
     {
         this->sparsityA_.clearWork();  //clears the cppad sparsity work possibly done before
         size_t jacDimension = STATE_DIM * STATE_DIM;
-        codeJacA = internal::CGHelpers::generateJacobianSource<typename SCALAR::value_type,OUT_SCALAR>(this->f_, this->sparsityA_, jacDimension,
-            maxTempVarCountState_, useReverse, ignoreZero, "jac", "x_in", "vX_", Base::getOutScalarType());
+        codeJacA = internal::CGHelpers::generateJacobianSource<typename SCALAR::value_type, OUT_SCALAR>(this->f_,
+            this->sparsityA_, jacDimension, maxTempVarCountState_, useReverse, ignoreZero, "jac", "x_in", "vX_",
+            Base::getOutScalarType());
 
         this->sparsityB_.clearWork();
         jacDimension = STATE_DIM * CONTROL_DIM;
-        codeJacB = internal::CGHelpers::generateJacobianSource<typename SCALAR::value_type,OUT_SCALAR>(this->f_, this->sparsityB_, jacDimension,
-            maxTempVarCountControl_, useReverse, ignoreZero, "jac", "x_in", "vU_", Base::getOutScalarType());
+        codeJacB = internal::CGHelpers::generateJacobianSource<typename SCALAR::value_type, OUT_SCALAR>(this->f_,
+            this->sparsityB_, jacDimension, maxTempVarCountControl_, useReverse, ignoreZero, "jac", "x_in", "vU_",
+            Base::getOutScalarType());
     }
 
     //! accessor to maxTempVarCount variables
@@ -221,8 +225,8 @@ protected:
     state_vector_t x_at_cache_;    //!< state at which Jacobian has been cached
     control_vector_t u_at_cache_;  //!< input at which Jacobian has been cached
 
-    bool compiled_;                            //!< flag if library from generated code is compiled
-    bool cacheJac_;                            //!< flag if Jacobian will be cached
+    bool compiled_;                                //!< flag if library from generated code is compiled
+    bool cacheJac_;                                //!< flag if Jacobian will be cached
     CppAD::cg::GccCompiler<OUT_SCALAR> compiler_;  //!< compiler instance for JIT compilation
 
     std::shared_ptr<CppAD::cg::DynamicLib<OUT_SCALAR>> dynamicLib_;  //!< compiled and dynamically loaded library

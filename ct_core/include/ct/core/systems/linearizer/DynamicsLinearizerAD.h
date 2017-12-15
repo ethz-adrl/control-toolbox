@@ -30,7 +30,7 @@ public:
 
     typedef internal::DynamicsLinearizerADBase<STATE_DIM, CONTROL_DIM, SCALAR, TIME> Base;
 
-    typedef typename Base::OUT_SCALAR OUT_SCALAR; //!< scalar type of resulting linear system
+    typedef typename Base::OUT_SCALAR OUT_SCALAR;  //!< scalar type of resulting linear system
 
     typedef typename Base::state_vector_t state_vector_t;      //!< state vector type
     typedef typename Base::control_vector_t control_vector_t;  //!< control vector type

@@ -81,7 +81,7 @@ TEST(AutoDiffLinearizerTest, SystemLinearizerComparison)
 TEST(AutoDiffDiscreteLinearizerTest, DiscreteSystemLinearizerComparison)
 {
     // define the dimensions of the system
-    const size_t state_dim   = TestDiscreteNonlinearSystem::STATE_DIM;
+    const size_t state_dim = TestDiscreteNonlinearSystem::STATE_DIM;
     const size_t control_dim = TestDiscreteNonlinearSystem::CONTROL_DIM;
 
     // typedefs for the auto-differentiable system
@@ -95,7 +95,8 @@ TEST(AutoDiffDiscreteLinearizerTest, DiscreteSystemLinearizerComparison)
     // create two nonlinear systems, one regular one and one auto-differentiable
     const double rate = 0.1;
     shared_ptr<TestDiscreteNonlinearSystem> nonlinearSystem(new TestDiscreteNonlinearSystem(rate));
-    shared_ptr<TestDiscreteNonlinearSystemAD> nonlinearSystemAD(new tpl::TestDiscreteNonlinearSystem<AD_Scalar>(AD_Scalar(rate)));
+    shared_ptr<TestDiscreteNonlinearSystemAD> nonlinearSystemAD(
+        new tpl::TestDiscreteNonlinearSystem<AD_Scalar>(AD_Scalar(rate)));
 
     // create a linearizer that applies numerical differentiation
     DiscreteSystemLinearizer<state_dim, control_dim> systemLinearizer(nonlinearSystem);
@@ -129,11 +130,10 @@ TEST(AutoDiffDiscreteLinearizerTest, DiscreteSystemLinearizerComparison)
 
         // analytic derivative
         A_type A_system_analytic;
-        A_system_analytic << 1.0+rate*u(0),           0.0,
-                                 x(1)*x(1), 2.0*x(0)*x(1);
+        A_system_analytic << 1.0 + rate * u(0), 0.0, x(1) * x(1), 2.0 * x(0) * x(1);
 
         B_type B_system_analytic;
-        B_system_analytic << rate*x(0), 0.0;
+        B_system_analytic << rate * x(0), 0.0;
 
         ASSERT_LT((A_system - A_system_analytic).array().abs().maxCoeff(), 1e-5);
         ASSERT_LT((B_system - B_system_analytic).array().abs().maxCoeff(), 1e-5);

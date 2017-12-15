@@ -26,8 +26,8 @@ class LinearSystem : public ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef StateVector<STATE_DIM, SCALAR> state_vector_t;                              //!< state vector type
-    typedef ControlVector<CONTROL_DIM, SCALAR> control_vector_t;                        //!< input vector type
+    typedef StateVector<STATE_DIM, SCALAR> state_vector_t;        //!< state vector type
+    typedef ControlVector<CONTROL_DIM, SCALAR> control_vector_t;  //!< input vector type
 
     typedef StateMatrix<STATE_DIM, SCALAR> state_matrix_t;                              //!< state Jacobian type
     typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;  //!< input Jacobian type
@@ -86,8 +86,7 @@ public:
 	 * @param t current time
 	 * @return B matrix
 	 */
-    virtual const state_control_matrix_t& getDerivativeControl(
-        const state_vector_t& x,
+    virtual const state_control_matrix_t& getDerivativeControl(const state_vector_t& x,
         const control_vector_t& u,
         const SCALAR t = SCALAR(0.0)) = 0;
 };

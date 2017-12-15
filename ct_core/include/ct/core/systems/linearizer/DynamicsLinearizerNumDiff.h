@@ -179,7 +179,6 @@ public:
     }
 
     bool getDoubleSidedDerivativeFlag() const { return doubleSidedDerivative_; }
-
 protected:
     dynamics_fct_t dynamics_fct_;  //!< function handle to system dynamics
 

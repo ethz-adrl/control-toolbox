@@ -57,7 +57,6 @@ public:
 	 * @param dyn non-linear system to linearize
 	 */
     DynamicsLinearizerADBase(dynamics_fct_t dyn) : dynamics_fct_(dyn) { initialize(); }
-
     //! copy constructor
     DynamicsLinearizerADBase(const DynamicsLinearizerADBase& arg) : dynamics_fct_(arg.dynamics_fct_)
     {
@@ -80,7 +79,6 @@ public:
 
     //! destructor
     virtual ~DynamicsLinearizerADBase() {}
-
 protected:
     const size_t A_entries = STATE_DIM * STATE_DIM;    //!< number of entries in the state Jacobian
     const size_t B_entries = STATE_DIM * CONTROL_DIM;  //!< number of entries in the input Jacobian

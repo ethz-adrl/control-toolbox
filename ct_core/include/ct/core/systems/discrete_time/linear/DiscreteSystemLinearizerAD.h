@@ -96,7 +96,6 @@ public:
 
     //! destructor
     virtual ~DiscreteSystemLinearizerAD() {}
-
     //! deep cloning
     DiscreteSystemLinearizerAD<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {

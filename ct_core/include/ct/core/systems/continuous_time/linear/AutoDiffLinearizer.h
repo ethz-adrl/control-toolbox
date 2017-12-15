@@ -97,7 +97,6 @@ public:
 
     //! destructor
     virtual ~AutoDiffLinearizer() {}
-
     //! deep cloning
     AutoDiffLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {
