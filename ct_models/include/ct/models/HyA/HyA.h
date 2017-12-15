@@ -44,3 +44,4 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include <ct/models/HyA/codegen/HyAInverseDynJacReverse.h>
 
 #include "HyAUrdfNames.h"
+#include "HyAJointLimits.h"
