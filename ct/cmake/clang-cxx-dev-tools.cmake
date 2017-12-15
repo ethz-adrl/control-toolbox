@@ -38,6 +38,7 @@ function(ct_get_all_srcs ADD_HEADERS)
     filter_ct_directories(ALL_CXX_SOURCE_FILES "/HyA/generated/")   # excludes generated code
     filter_ct_directories(ALL_CXX_SOURCE_FILES "/HyQ/generated/")   # excludes generated code
     filter_ct_directories(ALL_CXX_SOURCE_FILES "/QuadrotorWithLoad/generated/")   # excludes generated code
+    filter_ct_directories(ALL_CXX_SOURCE_FILES "/transform6d.cpp") #excludes generated inverse kinematics code
         
      #message(FATAL_ERROR "sources list: ${ALL_CXX_SOURCE_FILES}")
      set(ALL_CXX_SOURCE_FILES ${ALL_CXX_SOURCE_FILES} PARENT_SCOPE)

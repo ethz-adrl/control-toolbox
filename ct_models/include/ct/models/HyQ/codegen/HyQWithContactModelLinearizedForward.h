@@ -31,7 +31,10 @@ public:
     HyQWithContactModelLinearizedForward(const HyQWithContactModelLinearizedForward& other) { initialize(); }
     virtual ~HyQWithContactModelLinearizedForward(){};
 
-    virtual HyQWithContactModelLinearizedForward* clone() const override { return new HyQWithContactModelLinearizedForward; }
+    virtual HyQWithContactModelLinearizedForward* clone() const override
+    {
+        return new HyQWithContactModelLinearizedForward;
+    }
 
     virtual const state_matrix_t& getDerivativeState(const state_vector_t& x,
         const control_vector_t& u,
