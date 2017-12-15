@@ -152,7 +152,7 @@ public:
             controlIn.template topRows<NJOINTS>();
 
         state_vector_act_t actStateDerivative;
-        actuatorDynamics_->computeControlledDynamics(actState, t, actControlIn, actStateDerivative);
+        actuatorDynamics_->computeActuatorDynamics(jState, actState, t, actControlIn, actStateDerivative);
 
         stateDerivative.template tail<ACTUATOR_STATE_DIM>() = actStateDerivative;
 

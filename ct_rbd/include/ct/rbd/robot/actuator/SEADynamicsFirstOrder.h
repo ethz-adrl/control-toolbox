@@ -15,7 +15,7 @@ namespace rbd {
  * Series-elastic actuator dynamics modelled as a spring, control input is the motor velocity
  */
 template <size_t NJOINTS, typename SCALAR = double>
-class SEADynamics1d : public ActuatorDynamics<NJOINTS, NJOINTS, SCALAR>
+class SEADynamicsFirstOrder : public ActuatorDynamics<NJOINTS, NJOINTS, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -23,18 +23,19 @@ public:
     typedef ActuatorDynamics<NJOINTS, NJOINTS, SCALAR> BASE;
 
     //! constructor assuming unit amplification
-    SEADynamics1d(double k_spring);
+    SEADynamicsFirstOrder(double k_spring);
 
     //! destructor
-    virtual ~SEADynamics1d();
+    virtual ~SEADynamicsFirstOrder();
 
     //! deep cloning
-    virtual SEADynamics1d<NJOINTS, SCALAR>* clone() const override;
+    virtual SEADynamicsFirstOrder<NJOINTS, SCALAR>* clone() const override;
 
-    virtual void computeControlledDynamics(const ct::core::StateVector<NJOINTS, SCALAR>& state,
+    virtual void computeActuatorDynamics(const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+        const ct::core::StateVector<NJOINTS, SCALAR>& state,
         const SCALAR& t,
         const ct::core::ControlVector<NJOINTS, SCALAR>& control,
-        ct::core::StateVector<NJOINTS, SCALAR>& derivative) override = 0;
+        ct::core::StateVector<NJOINTS, SCALAR>& derivative) override;
 
     virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
         const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,

@@ -121,12 +121,16 @@ public:
         // the top rows hold the RBD velocities ...
         pDot.template topRows<RBDDynamics::NJOINTS>() = v.template topRows<RBDDynamics::NJOINTS>();
 
+        // full joint state vector
+        typename RBDDynamics::JointState_t jState = jointStateFromVector(x);
+
         // compute he pDot for the actuator part
-        computeActuatorPdot<ACT_STATE_DIM>(x, v, controlIn, pDot);
+        computeActuatorPdot<ACT_STATE_DIM>(jState, x, v, controlIn, pDot);
     }
 
 
-    ACTUATOR_DYNAMICS_ENABLED computeActuatorPdot(const state_vector_full_t& x,
+    ACTUATOR_DYNAMICS_ENABLED computeActuatorPdot(const typename RBDDynamics::JointState_t& jState,
+        const state_vector_full_t& x,
         const v_vector_full_t& v,
         const control_vector_full_t& controlIn,
         p_vector_full_t& pDot)
@@ -143,14 +147,15 @@ public:
         actState << actPos, actVel;
 
         p_vector_act_t actPdot;
-        actuatorDynamics_->computePdot(actState, actVel, actControlIn, actPdot);
+        actuatorDynamics_->computePdot(jState, actState, actVel, actControlIn, actPdot);
 
         // ... the bottom rows hold the actuator dynamics
         pDot.template bottomRows<ACT_STATE_DIM / 2>() = actPdot;
     }
 
 
-    ACTUATOR_DYNAMICS_DISABLED computeActuatorPdot(const state_vector_full_t& x,
+    ACTUATOR_DYNAMICS_DISABLED computeActuatorPdot(const typename RBDDynamics::JointState_t& jState,
+        const state_vector_full_t& x,
         const v_vector_full_t& v,
         const control_vector_full_t& controlIn,
         p_vector_full_t& pDot)
@@ -216,7 +221,7 @@ public:
 
         // ... the bottom rows hold the actuator dynamics
         v_vector_act_t actVdot;
-        actuatorDynamics_->computeVdot(actState, actPos, actControlIn, actVdot);
+        actuatorDynamics_->computeVdot(jState, actState, actPos, actControlIn, actVdot);
         vDot.template bottomRows<ACT_STATE_DIM / 2>() = actVdot;
 
         // overwrite control with actuator control output as a function of current robot and actuator states
