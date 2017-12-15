@@ -52,7 +52,7 @@ public:
 
     typedef DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
-    typedef CppAD::AD<CppAD::cg::CG<SCALAR>> ADCGScalar; //!< Autodiff codegen type
+    typedef CppAD::AD<CppAD::cg::CG<SCALAR>> ADCGScalar;  //!< Autodiff codegen type
 
     typedef DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, ADCGScalar> system_t;  //!< type of system to be linearized
     typedef DynamicsLinearizerADCG<STATE_DIM, CONTROL_DIM, ADCGScalar, int>
@@ -102,7 +102,6 @@ public:
 
     //! destructor
     virtual ~DiscreteSystemLinearizerADCG() {}
-
     //! deep cloning
     DiscreteSystemLinearizerADCG<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {

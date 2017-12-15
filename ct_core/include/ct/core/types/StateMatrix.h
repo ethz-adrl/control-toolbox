@@ -20,18 +20,22 @@ public:
 
     typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> Base;
 
-    // This constructor allows you to construct MyVectorType from Eigen expressions
+    //! This constructor allows you to construct MyVectorType from Eigen expressions
     template <typename OtherDerived>
     StateMatrix(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)
     {
     }
-    // This method allows you to assign Eigen expressions to MyVectorType
+    //! This method allows you to assign Eigen expressions to MyVectorType
     template <typename OtherDerived>
     StateMatrix& operator=(const Eigen::MatrixBase<OtherDerived>& other)
     {
         this->Base::operator=(other);
         return *this;
     }
+    //! get underlying Eigen type
+    Base& toImplementation() { return *this; }
+    //! get const underlying Eigen type
+    const Base& toImplementation() const { return *this; }
 };
 
 } /* namespace core */

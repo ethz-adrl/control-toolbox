@@ -29,7 +29,8 @@ public:
         // TODO: Check for valid solutions.
         IkSolutionList<double> solutions;
 
-        if (size_t(irb4600_ik::GetNumFreeParameters()) != freeJoints.size()) throw "Error";
+        if (size_t(irb4600_ik::GetNumFreeParameters()) != freeJoints.size())
+            throw "Error";
 
         irb4600_ik::ComputeIk(eeBasePose.position().toImplementation().data(),
             eeBasePose.getRotationMatrix().toImplementation().data(),

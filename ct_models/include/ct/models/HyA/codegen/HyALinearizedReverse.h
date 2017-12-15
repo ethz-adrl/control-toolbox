@@ -32,7 +32,6 @@ public:
     virtual ~HyALinearizedReverse(){};
 
     virtual HyALinearizedReverse* clone() const override { return new HyALinearizedReverse; }
-
     virtual const state_matrix_t& getDerivativeState(const state_vector_t& x,
         const control_vector_t& u,
         const double t = double(0.0)) override;

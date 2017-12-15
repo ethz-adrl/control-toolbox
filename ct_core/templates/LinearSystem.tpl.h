@@ -32,7 +32,6 @@ public:
     virtual ~LINEAR_SYSTEM_NAME(){};
 
     virtual LINEAR_SYSTEM_NAME* clone() const override { return new LINEAR_SYSTEM_NAME; }
-
     virtual const state_matrix_t& getDerivativeState(const state_vector_t& x,
         const control_vector_t& u,
         const SCALAR t = SCALAR(0.0)) override;

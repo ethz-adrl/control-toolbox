@@ -32,21 +32,21 @@ public:
 
     //copy constructor
     TestDiscreteNonlinearSystem(const TestDiscreteNonlinearSystem& arg)
-        : DiscreteControlledSystem<2, 1, SCALAR>(arg), rate_(arg.rate_) {}
+        : DiscreteControlledSystem<2, 1, SCALAR>(arg), rate_(arg.rate_)
+    {
+    }
 
 
     virtual ~TestDiscreteNonlinearSystem() {}
-
     TestDiscreteNonlinearSystem* clone() const override { return new TestDiscreteNonlinearSystem(*this); }
-
     virtual void propagateControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
         const int& n,
         const ControlVector<CONTROL_DIM, SCALAR>& control,
         StateVector<STATE_DIM, SCALAR>& stateNext) override
     {
         // this is pretty much random
-        stateNext(0) = state(0) + rate_*state(0)*control(0);
-        stateNext(1) = state(0)*state(1)*state(1);
+        stateNext(0) = state(0) + rate_ * state(0) * control(0);
+        stateNext(1) = state(0) * state(1) * state(1);
     }
 
 private:

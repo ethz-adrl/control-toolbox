@@ -213,5 +213,3 @@ void symplecticTest()
 }  // namespace example
 }  // namespace optcon
 }  // namespace ct
-
-

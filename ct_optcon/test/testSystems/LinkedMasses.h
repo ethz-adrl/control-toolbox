@@ -32,7 +32,7 @@ class LinkedMasses : public LinearSystem<8, 3>
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	static const int state_dim = 8;
+    static const int state_dim = 8;
     static const int control_dim = 3;
     static const int pp = state_dim / 2;  // number of masses
 
@@ -101,9 +101,8 @@ private:
 class LinkedMasses2 : public ControlledSystem<8, 3>
 {
 public:
-
-	static const int state_dim = 8;
-	static const int control_dim = 3;
+    static const int state_dim = 8;
+    static const int control_dim = 3;
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

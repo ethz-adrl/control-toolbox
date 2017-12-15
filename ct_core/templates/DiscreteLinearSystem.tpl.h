@@ -32,7 +32,6 @@ public:
     virtual ~LINEAR_SYSTEM_NAME(){};
 
     virtual LINEAR_SYSTEM_NAME* clone() const override { return new LINEAR_SYSTEM_NAME; }
-
     void getAandB(const state_vector_t& x,
         const control_vector_t& u,
         const state_vector_t& x_next,

@@ -6,7 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/rbd/systems/FixBaseFDSystem.h>
+#include <ct/rbd/systems/FixBaseFDSystemSymplectic.h>
 
 namespace ct {
 namespace rbd {
@@ -14,14 +14,15 @@ namespace rbd {
 /**
  * \brief NLOC for fixed base systems without an explicit contact model.
  */
-template <class RBDDynamics, size_t ACTUATOR_STATE_DIM = 0, typename SCALAR = double>
+template <class FIX_BASE_FD_SYSTEM, size_t ACTUATOR_STATE_DIM = 0, typename SCALAR = double>
 class FixBaseNLOC
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     static const bool eeForcesAreControlInputs = false;
-    typedef FixBaseFDSystem<RBDDynamics, ACTUATOR_STATE_DIM, eeForcesAreControlInputs> FBSystem;
+
+    using FBSystem = FIX_BASE_FD_SYSTEM;
 
     static const size_t CONTROL_DIM = FBSystem::CONTROL_DIM;
     static const size_t NJOINTS = FBSystem::NJOINTS;
@@ -30,8 +31,7 @@ public:
     typedef ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> LinearizedSystem;
     typedef ct::rbd::RbdLinearizer<FBSystem> SystemLinearizer;
 
-    typedef typename RBDDynamics::JointAcceleration_t JointAcceleration_t;
-    typedef typename RBDDynamics::ExtLinkForces_t ExtLinkForces_t;
+    using JointAcceleration_t = ct::rbd::tpl::JointAcceleration<NJOINTS, SCALAR>;
 
     //! @ todo: introduce templates for P_DIM and V_DIM
     typedef ct::optcon::NLOptConSolver<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR> NLOptConSolver;
@@ -53,21 +53,18 @@ public:
         bool verbose = false,
         std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
 
-
     void initialize(const tpl::JointState<NJOINTS, SCALAR>& x0,
         const core::Time& tf,
         StateVectorArray x_ref = StateVectorArray(),
         FeedbackArray u0_fb = FeedbackArray(),
         ControlVectorArray u0_ff = ControlVectorArray());
 
-
     //! initialize fixed-base robot with a steady pose using inverse dynamics torques as feedforward
     void initializeSteadyPose(const tpl::JointState<NJOINTS, SCALAR>& x0,
         const core::Time& tf,
         const int N,
-		ControlVector& u_ref,
+        ControlVector& u_ref,
         FeedbackMatrix K = FeedbackMatrix::Zero());
-
 
     //! initialize fixed-base robot with a directly interpolated state trajectory and corresponding ID torques
     void initializeDirectInterpolation(const tpl::JointState<NJOINTS, SCALAR>& x0,
@@ -76,6 +73,14 @@ public:
         const int N,
         FeedbackMatrix K = FeedbackMatrix::Zero());
 
+    //! initialize fixed-base robot with a directly interpolated state trajectory and corresponding ID torques
+    void initializeDirectInterpolation(const tpl::JointState<NJOINTS, SCALAR>& x0,
+        const tpl::JointState<NJOINTS, SCALAR>& xf,
+        const core::Time& tf,
+        const int N,
+        ct::core::ControlVectorArray<NJOINTS, SCALAR>& u_array,
+        ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_array,
+        FeedbackMatrix K = FeedbackMatrix::Zero());
 
     bool runIteration();
 
@@ -101,7 +106,6 @@ public:
     void computeIDTorques(const tpl::JointState<NJOINTS, SCALAR>& x, ControlVector& u);
 
 private:
-
     std::shared_ptr<FBSystem> system_;
     std::shared_ptr<LinearizedSystem> linearizedSystem_;
     std::shared_ptr<CostFunction> costFunction_;

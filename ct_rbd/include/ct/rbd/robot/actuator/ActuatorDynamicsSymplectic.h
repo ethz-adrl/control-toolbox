@@ -17,36 +17,45 @@ namespace rbd {
  * the dynamics of the collection of all actuators in the system
  * The actuators are assumed to form a symplectic system.
  */
-template <size_t ACT_STATE_DIMS, size_t NJOINTS, typename SCALAR = double>
-class ActuatorDynamics : public core::ControlledSystem<ACT_STATE_DIMS, NJOINTS, SCALAR>
+template <size_t NJOINTS, size_t ACT_STATE_DIMS = 2 * NJOINTS, typename SCALAR = double>
+class ActuatorDynamicsSymplectic
+    : public core::SymplecticSystem<ACT_STATE_DIMS / 2, ACT_STATE_DIMS / 2, NJOINTS, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     static const size_t ACT_STATE_DIM = ACT_STATE_DIMS;
-    static const size_t ACT_CONTROL_DIM = NJOINTS;
+    static const size_t ACT_POS_DIM = ACT_STATE_DIMS / 2;
+    static const size_t ACT_VEL_DIM = ACT_STATE_DIMS / 2;
 
     typedef ct::core::StateVector<ACT_STATE_DIMS, SCALAR> act_state_vector_t;
-    typedef ct::core::ControlVector<NJOINTS, SCALAR> act_control_vector_t;
+    typedef ct::core::StateVector<ACT_POS_DIM, SCALAR> act_pos_vector_t;
+    typedef ct::core::StateVector<ACT_VEL_DIM, SCALAR> act_vel_vector_t;
 
-    ActuatorDynamics(){};
 
-    virtual ~ActuatorDynamics(){};
+    ActuatorDynamicsSymplectic(){};
 
-    virtual ActuatorDynamics<ACT_STATE_DIMS, NJOINTS, SCALAR>* clone() const override = 0;
+    virtual ~ActuatorDynamicsSymplectic(){};
 
-    virtual void computeControlledDynamics(const ct::core::StateVector<ACT_STATE_DIMS, SCALAR>& state,
-        const SCALAR& t,
-        const ct::core::ControlVector<NJOINTS, SCALAR>& control,
-        ct::core::StateVector<ACT_STATE_DIMS, SCALAR>& derivative) override = 0;
+    virtual ActuatorDynamicsSymplectic<NJOINTS, ACT_STATE_DIMS, SCALAR>* clone() const override = 0;
 
+    virtual void computePdot(const act_state_vector_t& x,
+        const act_vel_vector_t& v,
+        const core::ControlVector<NJOINTS, SCALAR>& control,
+        act_pos_vector_t& pDot) override = 0;
+
+
+    virtual void computeVdot(const act_state_vector_t& x,
+        const act_pos_vector_t& p,
+        const core::ControlVector<NJOINTS, SCALAR>& control,
+        act_vel_vector_t& vDot) override = 0;
+
+
+    //! output equation of the actuator
     /**
-     * @brief output equation of the actuator
-     *
 	 * Algebraic output equation for the actuator system, translating the current actuator state and the current robot state into
 	 * an output control vector.
 	 * Example: in an RBD setting, the controlOutput may be the actual joint torques.
-	 *
 	 * @param robotState current RBD state of the robot
 	 * @param actState current state of the actuators
 	 * @param controlOutput control output (output side of actuator)

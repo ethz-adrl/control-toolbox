@@ -380,8 +380,6 @@ public:
     const SummaryAllIterations<SCALAR>& getSummary() const;
 
 protected:
-
-
     //! integrate the individual shots
     bool rolloutSingleShot(const size_t threadId,
         const size_t k,
@@ -520,8 +518,8 @@ protected:
         ControlVectorArray& u_local,
         scalar_t& intermediateCost,
         scalar_t& finalCost,
-	    scalar_t& e_box_norm,
-	    scalar_t& e_gen_norm,
+        scalar_t& e_box_norm,
+        scalar_t& e_gen_norm,
         StateSubsteps& substepsX,
         ControlSubsteps& substepsU,
         std::atomic_bool* terminationFlag = nullptr) const;
@@ -538,8 +536,8 @@ protected:
         scalar_t& intermediateCost,
         scalar_t& finalCost,
         scalar_t& defectNorm,
-	    scalar_t& e_box_norm,
-	    scalar_t& e_gen_norm,
+        scalar_t& e_box_norm,
+        scalar_t& e_gen_norm,
         StateSubsteps& substepsX,
         ControlSubsteps& substepsU,
         std::atomic_bool* terminationFlag = nullptr) const;

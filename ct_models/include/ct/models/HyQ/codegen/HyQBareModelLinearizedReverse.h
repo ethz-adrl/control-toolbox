@@ -32,7 +32,6 @@ public:
     virtual ~HyQBareModelLinearizedReverse(){};
 
     virtual HyQBareModelLinearizedReverse* clone() const override { return new HyQBareModelLinearizedReverse; }
-
     virtual const state_matrix_t& getDerivativeState(const state_vector_t& x,
         const control_vector_t& u,
         const double t = double(0.0)) override;

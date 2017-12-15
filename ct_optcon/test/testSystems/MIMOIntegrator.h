@@ -44,7 +44,7 @@ template <size_t state_dim, size_t control_dim>
 class MIMOIntegratorLinear : public core::LinearSystem<state_dim, control_dim>
 {
 public:
-	using BASE = core::LinearSystem<state_dim, control_dim>;
+    using BASE = core::LinearSystem<state_dim, control_dim>;
     typedef typename BASE::state_matrix_t state_matrix_t;
     typedef typename BASE::state_control_matrix_t state_control_matrix_t;
 
