@@ -169,12 +169,12 @@ target_link_libraries(HyaTest
 add_library(hya_ik
   src/HyA/transform6d.cpp
 )
-set_target_properties(hya_ik PROPERTIES COMPILE_FLAGS "-fPIC -DIKFAST_NAMESPACE=hya_ik -DIKFAST_NO_MAIN -Wno-unused-variable")
+set_target_properties(hya_ik PROPERTIES COMPILE_FLAGS "-std=c++98 -fPIC -DIKFAST_NAMESPACE=hya_ik -DIKFAST_NO_MAIN -Wno-unused-variable")
 
 add_library(irb4600_ik
   src/Irb4600/transform6d.cpp
 )
-set_target_properties(irb4600_ik PROPERTIES COMPILE_FLAGS "-fPIC -DIKFAST_NAMESPACE=irb4600_ik -DIKFAST_NO_MAIN -Wno-unused-variable")
+set_target_properties(irb4600_ik PROPERTIES COMPILE_FLAGS "-std=c++98 -fPIC -DIKFAST_NAMESPACE=irb4600_ik -DIKFAST_NO_MAIN -Wno-unused-variable")
 
 
 # Tests.
