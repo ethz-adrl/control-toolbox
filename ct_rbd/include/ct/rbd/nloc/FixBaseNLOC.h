@@ -14,7 +14,7 @@ namespace rbd {
 /**
  * \brief NLOC for fixed base systems without an explicit contact model.
  */
-template <class RBDDynamics, size_t ACTUATOR_STATE_DIM = 0, typename SCALAR = double>
+template <class FIX_BASE_FD_SYSTEM, size_t ACTUATOR_STATE_DIM = 0, typename SCALAR = double>
 class FixBaseNLOC
 {
 public:
@@ -22,7 +22,7 @@ public:
 
     static const bool eeForcesAreControlInputs = false;
 
-    typedef FixBaseFDSystemSymplectic<RBDDynamics, ACTUATOR_STATE_DIM, eeForcesAreControlInputs> FBSystem;
+    using FBSystem = FIX_BASE_FD_SYSTEM;
 
     static const size_t CONTROL_DIM = FBSystem::CONTROL_DIM;
     static const size_t NJOINTS = FBSystem::NJOINTS;
@@ -31,8 +31,7 @@ public:
     typedef ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> LinearizedSystem;
     typedef ct::rbd::RbdLinearizer<FBSystem> SystemLinearizer;
 
-    typedef typename RBDDynamics::JointAcceleration_t JointAcceleration_t;
-    typedef typename RBDDynamics::ExtLinkForces_t ExtLinkForces_t;
+    using JointAcceleration_t = ct::rbd::tpl::JointAcceleration<NJOINTS, SCALAR>;
 
     //! @ todo: introduce templates for P_DIM and V_DIM
     typedef ct::optcon::NLOptConSolver<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR> NLOptConSolver;

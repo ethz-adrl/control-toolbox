@@ -91,5 +91,16 @@ core::ControlVector<NJOINTS, SCALAR> SecondOrderActuatorDynamics<NJOINTS, SCALAR
     return actState.template topRows<NJOINTS>();
 }
 
+template <size_t NJOINTS, typename SCALAR>
+ct::core::StateVector<2 * NJOINTS, SCALAR> SecondOrderActuatorDynamics<NJOINTS, SCALAR>::computeStateFromOutput(
+    const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& refRobotJointState,
+    const core::ControlVector<NJOINTS, SCALAR>& refControl)
+{
+    ct::core::StateVector<2 * NJOINTS, SCALAR> refState;
+    refState.setZero();
+    refState.template topRows<NJOINTS>() = refControl.toImplementation();
+    return refState;
+}
+
 }  // namespace rbd
 }  // namespace ct

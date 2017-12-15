@@ -64,14 +64,20 @@ public:
     using state_vector_act_t = core::StateVector<ACTUATOR_STATE_DIM, SCALAR>;
 
     //! constructor
-    FixBaseFDSystem() : Base(core::SYSTEM_TYPE::SECOND_ORDER), dynamics_(RBDDynamics()), actuatorDynamics_(nullptr)
+    /*!
+     * \warning when using actuator dynamics, the system losses its second order characteristics
+     */
+    FixBaseFDSystem() : Base(), dynamics_(RBDDynamics()), actuatorDynamics_(nullptr)
     {
         basePose_.setIdentity();
     }
 
     //! constructor including actuator dynamics
+    /*!
+     * \warning when using actuator dynamics, the system losses its second order characteristics
+     */
     FixBaseFDSystem(std::shared_ptr<ActuatorDynamics_t> actuatorDynamics)
-        : Base(core::SYSTEM_TYPE::SECOND_ORDER), dynamics_(RBDDynamics()), actuatorDynamics_(actuatorDynamics)
+        : Base(), dynamics_(RBDDynamics()), actuatorDynamics_(actuatorDynamics)
     {
         basePose_.setIdentity();
     }
@@ -97,12 +103,13 @@ public:
     virtual RBDDynamics& dynamics() override { return dynamics_; }
     //! get dynamics (const)
     virtual const RBDDynamics& dynamics() const override { return dynamics_; }
+
     void computeControlledDynamics(const ct::core::StateVector<STATE_DIM, SCALAR>& state,
         const SCALAR& t,
         const ct::core::ControlVector<CONTROL_DIM, SCALAR>& controlIn,
         ct::core::StateVector<STATE_DIM, SCALAR>& derivative)
     {
-        // map the rbd velocities
+        // map the joint velocities
         derivative.template topRows<NJOINTS>() = state.template segment<NJOINTS>(NJOINTS);
 
         // temporary variable for the control (will get modified by the actuator dynamics, if applicable)
@@ -112,7 +119,7 @@ public:
         typename RBDDynamics::JointState_t jState = jointStateFromVector(state);
 
         // compute actuator dynamics and their control output
-        computeActuatorDynamics<ACT_STATE_DIM>(jState, t, state, controlIn, controlIn, derivative, control);
+        computeActuatorDynamics<ACT_STATE_DIM>(jState, t, state, controlIn, derivative, control);
 
         // Cache updated rbd state
         typename RBDDynamics::ExtLinkForces_t linkForces(Eigen::Matrix<SCALAR, 6, 1>::Zero());
@@ -137,45 +144,6 @@ public:
         derivative.template segment<RBDDynamics::NJOINTS>(NJOINTS) = jAcc.getAcceleration();
     }
 
-
-    //! compute velocity derivatives, for both RBD system and actuator dynamics
-//    virtual void computeVdot(const state_vector_full_t& x,
-//        const p_vector_full_t& p,
-//        const control_vector_full_t& controlIn,
-//        v_vector_full_t& vDot) override
-//    {
-//        // temporary variable for the control (will get modified by the actuator dynamics, if applicable)
-//        control_vector_full_t control = controlIn;
-//
-//        // extract the current RBD joint state from the state vector // todo make method to get joint state
-//        typename RBDDynamics::JointState_t jState = jointStateFromVector(x);
-//
-//        computeActuatorVdot<ACT_STATE_DIM>(jState, x, p, controlIn, vDot, control);
-//
-//        // Cache updated rbd state
-//        typename RBDDynamics::ExtLinkForces_t linkForces(Eigen::Matrix<SCALAR, 6, 1>::Zero());
-//
-//        // add end effector forces as control inputs (if applicable)
-//        if (EE_ARE_CONTROL_INPUTS == true)
-//        {
-//            for (size_t i = 0; i < RBDDynamics::N_EE; i++)
-//            {
-//                auto endEffector = dynamics_.kinematics().getEndEffector(i);
-//                size_t linkId = endEffector.getLinkId();
-//                linkForces[static_cast<typename RBDDynamics::ROBCOGEN::LinkIdentifiers>(linkId)] =
-//                    dynamics_.kinematics().mapForceFromWorldToLink3d(
-//                        control.template segment<3>(RBDDynamics::NJOINTS + i * 3), basePose_, jState.getPositions(), i);
-//            }
-//        }
-//
-//        typename RBDDynamics::JointAcceleration_t jAcc;
-//
-//        dynamics_.FixBaseForwardDynamics(jState, control.template head<RBDDynamics::NJOINTS>(), linkForces, jAcc);
-//
-//        vDot.template topRows<RBDDynamics::NJOINTS>() = jAcc.getAcceleration();
-//    }
-
-
     ACTUATOR_DYNAMICS_ENABLED computeActuatorDynamics(const typename RBDDynamics::JointState_t& jState,
         const SCALAR& t,
         const state_vector_full_t& state,
@@ -187,10 +155,11 @@ public:
         const Eigen::Ref<const typename state_vector_act_t::Base> actState = state.template tail<ACT_STATE_DIM>();
         const Eigen::Ref<const typename control_vector_full_t::Base> actControlIn =
             controlIn.template topRows<NJOINTS>();
-        Eigen::Ref<const typename state_vector_act_t::Base> actStateDerivative =
-            stateDerivative.template tail<ACT_STATE_DIM>();
 
+        state_vector_act_t actStateDerivative;
         actuatorDynamics_->computeControlledDynamics(actState, t, actControlIn, actStateDerivative);
+
+        stateDerivative.template tail<ACTUATOR_STATE_DIM>() = actStateDerivative;
 
         // overwrite control with actuator control output as a function of current robot and actuator states
         controlOut = actuatorDynamics_->computeControlOutput(jState, actState);
@@ -200,7 +169,7 @@ public:
     // do nothing if actuators disabled
     ACTUATOR_DYNAMICS_DISABLED computeActuatorDynamics(const typename RBDDynamics::JointState_t& jState,
         const SCALAR& t,
-        const state_vector_full_t& x,
+        const state_vector_full_t& state,
         const control_vector_full_t& controlIn,
         state_vector_full_t& stateDerivative,
         control_vector_full_t& controlOut)
@@ -218,7 +187,7 @@ public:
     {
         typename RBDDynamics::JointState_t jointState;
         jointState.getPositions() = x_full.template head<RBDDynamics::NJOINTS>();
-        jointState.getVelocities() = x_full.template segment<RBDDynamics::NJOINTS>(STATE_DIM / 2);
+        jointState.getVelocities() = x_full.template segment<RBDDynamics::NJOINTS>(NJOINTS);
         return jointState;
     }
 
@@ -238,17 +207,14 @@ public:
     {
         state_vector_rbd_t x_small;
         x_small.template head<NJOINTS>() = x_full.template head<NJOINTS>();
-        x_small.template tail<NJOINTS>() = x_full.template segment<NJOINTS>(STATE_DIM / 2);
+        x_small.template tail<NJOINTS>() = x_full.template segment<NJOINTS>(NJOINTS);
         return x_small;
     }
 
     //! transform control systems state vector to the pure actuator state
     static const state_vector_act_t actuatorStateFromVector(const state_vector_full_t& state)
     {
-        state_vector_act_t actState;
-        actState.template topRows<ACT_STATE_DIM / 2>() =
-            state.template segment<ACT_STATE_DIM / 2>(RBDDynamics::NSTATE / 2);
-        actState.template bottomRows<ACT_STATE_DIM / 2>() = state.template bottomRows<ACT_STATE_DIM / 2>();
+        state_vector_act_t actState = state.template tail<ACT_STATE_DIM>();
         return actState;
     }
 
@@ -257,12 +223,13 @@ public:
         const state_vector_act_t& x_act = state_vector_act_t::Zero())
     {
         state_vector_full_t fullState;
-        fullState.template head<NJOINTS>() = x_rbd.template head<NJOINTS>();
-        fullState.template segment<ACTUATOR_STATE_DIM / 2>(NJOINTS) = x_act.template head<ACTUATOR_STATE_DIM / 2>();
-        fullState.template segment<NJOINTS>(STATE_DIM / 2) = x_rbd.template tail<NJOINTS>();
-        fullState.template tail<ACTUATOR_STATE_DIM / 2>() = x_act.template tail<ACTUATOR_STATE_DIM / 2>();
+        fullState.template head<2*NJOINTS>() = x_rbd.template head<2*NJOINTS>();
+        fullState.template tail<ACTUATOR_STATE_DIM>() = x_act;
         return fullState;
     }
+
+    //! get pointer to actuator dynamics
+    std::shared_ptr<ActuatorDynamics_t> getActuatorDynamics() {return actuatorDynamics_;}
 
 private:
     //! a "dummy" base pose which sets the robot's "fixed" position in the world

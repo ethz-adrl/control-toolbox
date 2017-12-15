@@ -62,6 +62,14 @@ public:
     virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
         const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
         const act_state_vector_t& actState) = 0;
+
+    /*!
+     * @brief reconstruct actuator state from a desired control output and robot joint state (e.g. for initialization)
+     * @return the actuator state resulting in the desired control output
+     */
+    virtual ct::core::StateVector<ACT_STATE_DIMS, SCALAR> computeStateFromOutput(
+        const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& refRobotJointState,
+        const core::ControlVector<NJOINTS, SCALAR>& refControl) = 0;
 };
 
 

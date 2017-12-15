@@ -42,14 +42,18 @@ public:
     //! deep cloning
     virtual SecondOrderActuatorDynamics<NJOINTS, SCALAR>* clone() const override;
 
-    virtual void computeControlledDynamics(const ct::core::StateVector<2*NJOINTS, SCALAR>& state,
+    virtual void computeControlledDynamics(const ct::core::StateVector<2 * NJOINTS, SCALAR>& state,
         const SCALAR& t,
         const ct::core::ControlVector<NJOINTS, SCALAR>& control,
-        ct::core::StateVector<2*NJOINTS, SCALAR>& derivative) override;
+        ct::core::StateVector<2 * NJOINTS, SCALAR>& derivative) override;
 
     virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
         const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
         const typename BASE::act_state_vector_t& actState) override;
+
+    virtual ct::core::StateVector<2*NJOINTS, SCALAR> computeStateFromOutput(
+        const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& refRobotJointState,
+        const core::ControlVector<NJOINTS, SCALAR>& refControl) override;
 
 private:
     std::vector<ct::core::tpl::SecondOrderSystem<SCALAR>> oscillators_;

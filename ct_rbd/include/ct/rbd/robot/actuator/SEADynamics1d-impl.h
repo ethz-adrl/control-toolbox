@@ -32,9 +32,8 @@ void SEADynamics1d<NJOINTS, SCALAR>::computeControlledDynamics(const ct::core::S
     const ct::core::ControlVector<NJOINTS, SCALAR>& control,
     ct::core::StateVector<NJOINTS, SCALAR>& derivative)
 {
-	derivative.template head<NJOINTS>() = control.template head<NJOINTS>();
+    derivative.template head<NJOINTS>() = control.template head<NJOINTS>();
 }
-
 
 template <size_t NJOINTS, typename SCALAR>
 core::ControlVector<NJOINTS, SCALAR> SEADynamics1d<NJOINTS, SCALAR>::computeControlOutput(
@@ -44,5 +43,13 @@ core::ControlVector<NJOINTS, SCALAR> SEADynamics1d<NJOINTS, SCALAR>::computeCont
     return (actState.template topRows<NJOINTS>() - robotJointState.getPositions()) * k_;
 }
 
-} // namespace rbd
-} // namespace ct
+template <size_t NJOINTS, typename SCALAR>
+ct::core::StateVector<NJOINTS, SCALAR> SEADynamics1d<NJOINTS, SCALAR>::computeStateFromOutput(
+    const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& refRobotJointState,
+    const core::ControlVector<NJOINTS, SCALAR>& refControl)
+{
+	return refRobotJointState.getPositions() + 1/k_ * refControl.toImplementation();
+}
+
+}  // namespace rbd
+}  // namespace ct
