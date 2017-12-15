@@ -51,7 +51,7 @@ public:
         const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
         const typename BASE::act_state_vector_t& actState) override;
 
-    virtual ct::core::StateVector<2*NJOINTS, SCALAR> computeStateFromOutput(
+    virtual ct::core::StateVector<2 * NJOINTS, SCALAR> computeStateFromOutput(
         const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& refRobotJointState,
         const core::ControlVector<NJOINTS, SCALAR>& refControl) override;
 

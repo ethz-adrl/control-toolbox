@@ -48,7 +48,7 @@ ct::core::StateVector<NJOINTS, SCALAR> SEADynamics1d<NJOINTS, SCALAR>::computeSt
     const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& refRobotJointState,
     const core::ControlVector<NJOINTS, SCALAR>& refControl)
 {
-	return refRobotJointState.getPositions() + 1/k_ * refControl.toImplementation();
+    return refRobotJointState.getPositions() + 1 / k_ * refControl.toImplementation();
 }
 
 }  // namespace rbd

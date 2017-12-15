@@ -12,10 +12,10 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "RBDSystem.h"
 
 
-#define ACTUATOR_DYNAMICS_ENABLED   \
+#define ACTUATOR_DYNAMICS_ENABLED    \
     template <size_t ACT_STATE_DIMS> \
     typename std::enable_if<(ACT_STATE_DIMS > 0), void>::type
-#define ACTUATOR_DYNAMICS_DISABLED  \
+#define ACTUATOR_DYNAMICS_DISABLED   \
     template <size_t ACT_STATE_DIMS> \
     typename std::enable_if<(ACT_STATE_DIMS <= 0), void>::type
 
@@ -77,7 +77,8 @@ public:
 
 
     //! constructor
-    FixBaseFDSystemSymplectic() : Base(core::SYSTEM_TYPE::SECOND_ORDER), dynamics_(RBDDynamics()), actuatorDynamics_(nullptr)
+    FixBaseFDSystemSymplectic()
+        : Base(core::SYSTEM_TYPE::SECOND_ORDER), dynamics_(RBDDynamics()), actuatorDynamics_(nullptr)
     {
         basePose_.setIdentity();
     }
@@ -96,7 +97,8 @@ public:
 	 *
 	 * \note takes care of explicitly cloning actuatorDynamics, if existent
 	 */
-    FixBaseFDSystemSymplectic(const FixBaseFDSystemSymplectic& arg) : Base(arg), basePose_(arg.basePose_), dynamics_(RBDDynamics())
+    FixBaseFDSystemSymplectic(const FixBaseFDSystemSymplectic& arg)
+        : Base(arg), basePose_(arg.basePose_), dynamics_(RBDDynamics())
     {
         if (arg.actuatorDynamics_)
         {

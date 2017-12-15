@@ -67,11 +67,7 @@ public:
     /*!
      * \warning when using actuator dynamics, the system losses its second order characteristics
      */
-    FixBaseFDSystem() : Base(), dynamics_(RBDDynamics()), actuatorDynamics_(nullptr)
-    {
-        basePose_.setIdentity();
-    }
-
+    FixBaseFDSystem() : Base(), dynamics_(RBDDynamics()), actuatorDynamics_(nullptr) { basePose_.setIdentity(); }
     //! constructor including actuator dynamics
     /*!
      * \warning when using actuator dynamics, the system losses its second order characteristics
@@ -103,7 +99,6 @@ public:
     virtual RBDDynamics& dynamics() override { return dynamics_; }
     //! get dynamics (const)
     virtual const RBDDynamics& dynamics() const override { return dynamics_; }
-
     void computeControlledDynamics(const ct::core::StateVector<STATE_DIM, SCALAR>& state,
         const SCALAR& t,
         const ct::core::ControlVector<CONTROL_DIM, SCALAR>& controlIn,
@@ -223,14 +218,13 @@ public:
         const state_vector_act_t& x_act = state_vector_act_t::Zero())
     {
         state_vector_full_t fullState;
-        fullState.template head<2*NJOINTS>() = x_rbd.template head<2*NJOINTS>();
+        fullState.template head<2 * NJOINTS>() = x_rbd.template head<2 * NJOINTS>();
         fullState.template tail<ACTUATOR_STATE_DIM>() = x_act;
         return fullState;
     }
 
     //! get pointer to actuator dynamics
-    std::shared_ptr<ActuatorDynamics_t> getActuatorDynamics() {return actuatorDynamics_;}
-
+    std::shared_ptr<ActuatorDynamics_t> getActuatorDynamics() { return actuatorDynamics_; }
 private:
     //! a "dummy" base pose which sets the robot's "fixed" position in the world
     tpl::RigidBodyPose<SCALAR> basePose_;

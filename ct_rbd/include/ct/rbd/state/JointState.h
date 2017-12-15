@@ -90,10 +90,12 @@ public:
     }
     /// @brief check joint position limits
     template <typename T>
-    bool checkPositionLimits(T lowerLimit, T upperLimit) {
+    bool checkPositionLimits(T lowerLimit, T upperLimit)
+    {
         assert(lowerLimit.size() == NJOINTS && upperLimit.size() == NJOINTS && "Wrong limit dimensions");
         for (size_t i = 0; i < NJOINTS; ++i)
-            if (getPosition(i) < lowerLimit[i] || getPosition(i) > upperLimit[i]) return false;
+            if (getPosition(i) < lowerLimit[i] || getPosition(i) > upperLimit[i])
+                return false;
         return true;
     }
 
@@ -113,10 +115,12 @@ public:
     }
     /// @brief check joint velocity limits
     template <typename T>
-    bool checkVelocityLimits(T limit) {
+    bool checkVelocityLimits(T limit)
+    {
         assert(limit.size() == NJOINTS && "Wrong limit dimension");
         for (size_t i = 0; i < NJOINTS; ++i)
-            if (abs(getVelocity(i)) > limit[i]) return false;
+            if (abs(getVelocity(i)) > limit[i])
+                return false;
         return true;
     }
 

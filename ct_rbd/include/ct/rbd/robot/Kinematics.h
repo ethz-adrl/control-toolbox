@@ -44,28 +44,28 @@ public:
     virtual ~Kinematics(){};
 
     Kinematics<RBD, N_EE>* clone() const { return new Kinematics<RBD, N_EE>(*this); }
-    static const size_t NUM_EE  = N_EE;
+    static const size_t NUM_EE = N_EE;
     static const size_t NJOINTS = RBD::NJOINTS;
-    static const size_t NLINKS  = RBD::NLINKS;
+    static const size_t NLINKS = RBD::NLINKS;
 
     using Ptr_t = std::shared_ptr<Kinematics<RBD, N_EE>>;
 
     using ROBCOGEN = RBD;
-    using SCALAR   = typename ROBCOGEN::SCALAR;
+    using SCALAR = typename ROBCOGEN::SCALAR;
 
-    using HomogeneousTransform  = typename ROBCOGEN::HomogeneousTransform;
+    using HomogeneousTransform = typename ROBCOGEN::HomogeneousTransform;
     using HomogeneousTransforms = typename ROBCOGEN::HomogeneousTransforms;
-    using ForceTransform        = typename ROBCOGEN::ForceTransform;
-    using Jacobian              = typename ROBCOGEN::Jacobian;
-    using Jacobians             = typename ROBCOGEN::Jacobians;
-    using Vector3Tpl            = Eigen::Matrix<SCALAR, 3, 1>;
-    using Matrix3Tpl            = Eigen::Matrix<SCALAR, 3, 3>;
-    using Position3Tpl          = kindr::Position<SCALAR, 3>;
-    using Velocity3Tpl          = kindr::Velocity<SCALAR, 3>;
-    using QuaterionTpl          = kindr::RotationQuaternion<SCALAR>;
-    using RigidBodyPoseTpl      = tpl::RigidBodyPose<SCALAR>;
-    using EEForce               = SpatialForceVector<SCALAR>;
-    using EEForceLinear         = Vector3Tpl;
+    using ForceTransform = typename ROBCOGEN::ForceTransform;
+    using Jacobian = typename ROBCOGEN::Jacobian;
+    using Jacobians = typename ROBCOGEN::Jacobians;
+    using Vector3Tpl = Eigen::Matrix<SCALAR, 3, 1>;
+    using Matrix3Tpl = Eigen::Matrix<SCALAR, 3, 3>;
+    using Position3Tpl = kindr::Position<SCALAR, 3>;
+    using Velocity3Tpl = kindr::Velocity<SCALAR, 3>;
+    using QuaterionTpl = kindr::RotationQuaternion<SCALAR>;
+    using RigidBodyPoseTpl = tpl::RigidBodyPose<SCALAR>;
+    using EEForce = SpatialForceVector<SCALAR>;
+    using EEForceLinear = Vector3Tpl;
 
     void initEndeffectors(std::array<EndEffector<NJOINTS, SCALAR>, NUM_EE>& endeffectors)
     {
@@ -233,17 +233,20 @@ public:
         size_t eeID,
         size_t solverID = 0)
     {
-        if (solverID >= 100) throw "Solver ID must be less than 100.";
+        if (solverID >= 100)
+            throw "Solver ID must be less than 100.";
 
         size_t hash = eeID * 100 + solverID;
-        if (ikSolvers_.find (hash) != ikSolvers_.end()) throw "Solver with the same eeID and solverID already present.";
+        if (ikSolvers_.find(hash) != ikSolvers_.end())
+            throw "Solver with the same eeID and solverID already present.";
         ikSolvers_[hash] = solver;
     }
 
     std::shared_ptr<InverseKinematicsBase<NJOINTS, SCALAR>> getIKSolver(const size_t eeID,
         const size_t solverID = 0) const
     {
-        if (solverID >= 100) throw "Solver ID must be less than 100.";
+        if (solverID >= 100)
+            throw "Solver ID must be less than 100.";
         size_t hash = eeID * 100 + solverID;
         return ikSolvers_[hash];
     }
@@ -310,7 +313,7 @@ public:
         // transform the force/torque to an equivalent force/torque in the base using a lever-arm for the torque
         EEForce B_force;
 
-        B_force.force()  = basePose.template rotateInertiaToBase<Vector3Tpl>(W_force.force());
+        B_force.force() = basePose.template rotateInertiaToBase<Vector3Tpl>(W_force.force());
         B_force.torque() = B_x_EE.toImplementation().cross(B_force.force()) +
                            basePose.template rotateInertiaToBase<Vector3Tpl>(W_force.torque());
 

@@ -165,11 +165,8 @@ public:
     const Eigen::Matrix<double, 3, 1>& getReferencePosition() const { return w_p_ref_; }
     //! retrieve reference ee orientation in world frame
     const Eigen::Quaterniond getReferenceOrientation() const { return Eigen::Quaterniond(w_R_ref_); }
-
-    void setReferencePosition(const Eigen::Matrix<double, 3, 1>& w_p_ref){w_p_ref_ = w_p_ref;}
-
-    void setReferenceOrientation(const Eigen::Matrix<double, 3, 3> w_R_ref){w_R_ref_ = w_R_ref;}
-
+    void setReferencePosition(const Eigen::Matrix<double, 3, 1>& w_p_ref) { w_p_ref_ = w_p_ref; }
+    void setReferenceOrientation(const Eigen::Matrix<double, 3, 3> w_R_ref) { w_R_ref_ = w_R_ref; }
 protected:
     /*!
      * setStateFromVector transforms your (custom) state vector x into a RBDState.

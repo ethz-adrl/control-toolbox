@@ -18,12 +18,13 @@ namespace rbd {
  * The actuators are assumed to form a symplectic system.
  */
 template <size_t NJOINTS, size_t ACT_STATE_DIMS = 2 * NJOINTS, typename SCALAR = double>
-class ActuatorDynamicsSymplectic : public core::SymplecticSystem<ACT_STATE_DIMS / 2, ACT_STATE_DIMS / 2, NJOINTS, SCALAR>
+class ActuatorDynamicsSymplectic
+    : public core::SymplecticSystem<ACT_STATE_DIMS / 2, ACT_STATE_DIMS / 2, NJOINTS, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	static const size_t ACT_STATE_DIM = ACT_STATE_DIMS;
+    static const size_t ACT_STATE_DIM = ACT_STATE_DIMS;
     static const size_t ACT_POS_DIM = ACT_STATE_DIMS / 2;
     static const size_t ACT_VEL_DIM = ACT_STATE_DIMS / 2;
 
