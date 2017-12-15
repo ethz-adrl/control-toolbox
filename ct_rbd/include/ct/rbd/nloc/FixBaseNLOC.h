@@ -65,7 +65,7 @@ public:
     void initializeSteadyPose(const tpl::JointState<NJOINTS, SCALAR>& x0,
         const core::Time& tf,
         const int N,
-		ControlVector& u_ref,
+        ControlVector& u_ref,
         FeedbackMatrix K = FeedbackMatrix::Zero());
 
 
@@ -74,6 +74,15 @@ public:
         const tpl::JointState<NJOINTS, SCALAR>& xf,
         const core::Time& tf,
         const int N,
+        FeedbackMatrix K = FeedbackMatrix::Zero());
+
+    //! initialize fixed-base robot with a directly interpolated state trajectory and corresponding ID torques
+    void initializeDirectInterpolation(const tpl::JointState<NJOINTS, SCALAR>& x0,
+        const tpl::JointState<NJOINTS, SCALAR>& xf,
+        const core::Time& tf,
+        const int N,
+        ct::core::ControlVectorArray<NJOINTS, SCALAR>& u_array,
+        ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_array,
         FeedbackMatrix K = FeedbackMatrix::Zero());
 
 
@@ -101,7 +110,6 @@ public:
     void computeIDTorques(const tpl::JointState<NJOINTS, SCALAR>& x, ControlVector& u);
 
 private:
-
     std::shared_ptr<FBSystem> system_;
     std::shared_ptr<LinearizedSystem> linearizedSystem_;
     std::shared_ptr<CostFunction> costFunction_;

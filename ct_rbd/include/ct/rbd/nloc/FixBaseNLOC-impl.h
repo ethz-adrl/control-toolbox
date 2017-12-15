@@ -46,7 +46,7 @@ void FixBaseNLOC<RBDDynamics, ACTUATOR_STATE_DIM, SCALAR>::initializeSteadyPose(
     const tpl::JointState<NJOINTS, SCALAR>& x0,
     const core::Time& tf,
     const int N,
-	ControlVector& u_ref,
+    ControlVector& u_ref,
     FeedbackMatrix K)
 {
     StateVector x0full = system_->toFullState(x0.toImplementation());
@@ -82,29 +82,46 @@ void FixBaseNLOC<RBDDynamics, ACTUATOR_STATE_DIM, SCALAR>::initializeDirectInter
     const int N,
     FeedbackMatrix K)
 {
-    ControlVector uff;
+    ct::core::ControlVectorArray<NJOINTS, SCALAR> uff_array;
+    ct::core::StateVectorArray<STATE_DIM, SCALAR> x_array;
 
-    StateVectorArray x_ref(N + 1);
-    ControlVectorArray u0_ff = ControlVectorArray(N);
+    initializeDirectInterpolation(x0, xf, tf, N, uff_array, x_array, K);
+}
+
+
+template <class RBDDynamics, size_t ACTUATOR_STATE_DIM, typename SCALAR>
+void FixBaseNLOC<RBDDynamics, ACTUATOR_STATE_DIM, SCALAR>::initializeDirectInterpolation(
+    const tpl::JointState<NJOINTS, SCALAR>& x0,
+    const tpl::JointState<NJOINTS, SCALAR>& xf,
+    const core::Time& tf,
+    const int N,
+    ct::core::ControlVectorArray<NJOINTS, SCALAR>& uff_array,
+    ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_array,
+    FeedbackMatrix K)
+{
+    uff_array.resize(N);
+    x_array.resize(N + 1);
+
+    ControlVector uff;
 
     StateVector x0full = system_->toFullState(x0.toImplementation());
     StateVector xffull = system_->toFullState(xf.toImplementation());
 
     for (int i = 0; i < N + 1; i++)
     {
-        x_ref[i] = x0full + (xffull - x0full) * SCALAR(i) / SCALAR(N);
+        x_array[i] = x0full + (xffull - x0full) * SCALAR(i) / SCALAR(N);
 
         if (i < N)
         {
-            typename RBDDynamics::RBDState_t rbdState = system_->RBDStateFromVector(x_ref[i]);
+            typename RBDDynamics::RBDState_t rbdState = system_->RBDStateFromVector(x_array[i]);
             const tpl::JointState<NJOINTS, SCALAR> jointState = rbdState.joints();
-            computeIDTorques(jointState, u0_ff[i]);
+            computeIDTorques(jointState, uff_array[i]);
         }
     }
 
     FeedbackArray u0_fb(N, K);
 
-    typename NLOptConSolver::Policy_t policy(x_ref, u0_ff, u0_fb, getSettings().dt);
+    typename NLOptConSolver::Policy_t policy(x_array, uff_array, u0_fb, getSettings().dt);
 
     nlocSolver_->changeInitialState(x0full);
     nlocSolver_->changeTimeHorizon(tf);
