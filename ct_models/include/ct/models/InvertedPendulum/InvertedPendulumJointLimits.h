@@ -6,6 +6,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include <math.h>
+
 namespace ct {
 namespace models {
 namespace InvertedPendulum {
@@ -14,7 +16,7 @@ template <typename SCALAR = double>
 const typename ct::rbd::tpl::JointState<1, SCALAR>::Position& jointLowerLimit()
 {
     static typename ct::rbd::tpl::JointState<1, SCALAR>::Position jointLowerLimit;
-    jointLowerLimit << -3.1416;
+    jointLowerLimit << -M_PI;
 
     return jointLowerLimit;
 }
@@ -23,7 +25,7 @@ template <typename SCALAR = double>
 const typename ct::rbd::tpl::JointState<1, SCALAR>::Position& jointUpperLimit()
 {
     static typename ct::rbd::tpl::JointState<1, SCALAR>::Position jointUpperLimit;
-    jointUpperLimit << 3.1415;
+    jointUpperLimit << M_PI;
 
     return jointUpperLimit;
 }

@@ -21,7 +21,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 // define namespace and base
 #define ROBCOGEN_NS ct_InvertedPendulum
-#define TARGET_NS HyA
+#define TARGET_NS InvertedPendulum
 
 // define the links
 #define CT_BASE fr_InvertedPendulumBase
