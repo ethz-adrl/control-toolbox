@@ -45,6 +45,9 @@ class SystemDiscretizer : public DiscreteControlledSystem<STATE_DIM, CONTROL_DIM
 {
 public:
     // convenience typedefs
+    typedef DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+    typedef typename Base::time_t time_t;
+
     using IntegratorPtr = std::shared_ptr<Integrator<STATE_DIM, SCALAR>>;
     using IntegratorSymplecticEulerPtr =
         std::shared_ptr<ct::core::IntegratorSymplecticEuler<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>;
@@ -118,7 +121,7 @@ public:
 	 * \warning calling this method resets the substep-recorder. The substeps are only available for a single call to propagateControlledDynamics()
 	 */
     virtual void propagateControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
-        const int& n,
+        const time_t n,
         const ControlVector<CONTROL_DIM, SCALAR>& control,
         StateVector<STATE_DIM, SCALAR>& stateNext) override;
 

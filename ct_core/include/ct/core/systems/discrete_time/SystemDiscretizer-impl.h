@@ -121,7 +121,7 @@ void SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeCont
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::propagateControlledDynamics(
     const StateVector<STATE_DIM, SCALAR>& state,
-    const int& n,
+    const time_t n,
     const ControlVector<CONTROL_DIM, SCALAR>& control,
     StateVector<STATE_DIM, SCALAR>& stateNext)
 {

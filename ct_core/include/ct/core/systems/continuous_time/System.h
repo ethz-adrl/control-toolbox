@@ -42,6 +42,7 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     typedef SCALAR S;  //!< the scalar type
+    typedef SCALAR time_t;  //!< the type of the time variable
 
     //! default constructor
     /*!
@@ -65,7 +66,7 @@ public:
 	 * @param derivative state derivative
 	 */
     virtual void computeDynamics(const StateVector<STATE_DIM, SCALAR>& state,
-        const SCALAR& t,
+        const time_t& t,
         StateVector<STATE_DIM, SCALAR>& derivative) = 0;
 
     //! get the type of system
