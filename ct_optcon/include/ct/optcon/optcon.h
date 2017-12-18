@@ -33,7 +33,9 @@
 
 #include "constraint/constraint.h"
 
+#include "problem/OptConProblemBase.h"
 #include "problem/OptConProblem.h"
+#include "problem/DiscreteOptConProblem.h"
 #include "problem/LQOCProblem.hpp"
 #include "solver/OptConSolver.h"
 
@@ -70,7 +72,7 @@
 #include "constraint/constraint-impl.h"
 
 //problem
-#include "problem/OptConProblem-impl.h"
+#include "problem/OptConProblemBase-impl.h"
 #include "problem/LQOCProblem-impl.hpp"
 
 //solver
