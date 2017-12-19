@@ -210,7 +210,7 @@ void FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::computeIDTorqu
     ControlVector& u)
 {
     //! zero external link forces and acceleration
-    JointAcceleration_t jAcc(Eigen::Matrix<SCALAR, 6, 1>::Zero());
+    JointAcceleration_t jAcc(Eigen::Matrix<SCALAR, NJOINTS, 1>::Zero());
 
     system_->dynamics().FixBaseID(x, jAcc, u);
 }
