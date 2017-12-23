@@ -36,3 +36,4 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <ct/rbd/robot/robcogen/robcogenHelpers.h>
 #include "InvertedPendulumJointLimits.h"
+#include "InvertedPendulumUrdfNames.h"
