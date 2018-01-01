@@ -6,13 +6,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#define SYMPLECTIC_ENABLED        \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V > 0 && P > 0), void>::type
-#define SYMPLECTIC_DISABLED       \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V <= 0 || P <= 0), void>::type
-
 namespace ct {
 namespace optcon {
 
@@ -23,11 +16,8 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendBase(
     const Settings_t& settings)
     :
 
-      substepRecorders_(),
-      integrators_(settings.nThreads + 1),
+      discretizers_(settings.nThreads + 1),
       sensitivity_(settings.nThreads + 1),
-      integratorsEulerSymplectic_(settings.nThreads + 1),
-      integratorsRkSymplectic_(settings.nThreads + 1),
 
       controller_(settings.nThreads + 1),
       initialized_(false),
@@ -235,11 +225,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
         throw std::runtime_error("system dynamics are nullptr");
 
     systems_.resize(settings_.nThreads + 1);
-    substepRecorders_.resize(settings_.nThreads + 1);
-    integrators_.resize(settings_.nThreads + 1);
+    discretizers_.resize(settings_.nThreads + 1);
     sensitivity_.resize(settings_.nThreads + 1);
-    integratorsEulerSymplectic_.resize(settings_.nThreads + 1);
-    integratorsRkSymplectic_.resize(settings_.nThreads + 1);
 
     for (int i = 0; i < settings_.nThreads + 1; i++)
     {
@@ -247,21 +234,13 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
         systems_[i] = typename OptConProblem_t::DynamicsPtr_t(dyn->clone());
         systems_[i]->setController(controller_[i]);
 
-        substepRecorders_[i] = std::shared_ptr<ct::core::SubstepRecorder<STATE_DIM, CONTROL_DIM, SCALAR>>(
-            new ct::core::SubstepRecorder<STATE_DIM, CONTROL_DIM, SCALAR>(systems_[i]));
-
         if (controller_[i] == nullptr)
             throw std::runtime_error("Controller not defined");
 
-        // if symplectic integrator then don't create normal ones
-        if (settings_.integrator != ct::core::IntegrationType::EULER_SYM &&
-            settings_.integrator != ct::core::IntegrationType::RK_SYM)
-        {
-            integrators_[i] = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR>>(
-                new ct::core::Integrator<STATE_DIM, SCALAR>(systems_[i], settings_.integrator, substepRecorders_[i]));
-        }
-        initializeSymplecticIntegrators<V_DIM, P_DIM>(i);
-
+        discretizers_[i] = std::shared_ptr<ct::core::SystemDiscretizer<STATE_DIM, CONTROL_DIM, STATE_DIM / 2,  CONTROL_DIM / 2, SCALAR>>(
+            new ct::core::SystemDiscretizer<STATE_DIM, CONTROL_DIM, STATE_DIM / 2,  CONTROL_DIM / 2, SCALAR>(
+                systems_[i], settings_.dt, settings_.integrator, settings_.K_sim));
+        discretizers_[i]->initialize();
 
         if (settings_.useSensitivityIntegrator)
         {
@@ -330,33 +309,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeGenera
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-SYMPLECTIC_ENABLED NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeSymplecticIntegrators(
-    size_t i)
-{
-    if (systems_[i]->isSymplectic())
-    {
-        //! it only makes sense to compile the following code, if V_DIM > 0 and P_DIM > 0
-        integratorsEulerSymplectic_[i] =
-            std::shared_ptr<ct::core::IntegratorSymplecticEuler<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>(
-                new ct::core::IntegratorSymplecticEuler<P_DIM, V_DIM, CONTROL_DIM, SCALAR>(
-                    std::static_pointer_cast<ct::core::SymplecticSystem<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>(
-                        systems_[i]),
-                    substepRecorders_[i]));
-        integratorsRkSymplectic_[i] =
-            std::shared_ptr<ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>(
-                new ct::core::IntegratorSymplecticRk<P_DIM, V_DIM, CONTROL_DIM, SCALAR>(
-                    std::static_pointer_cast<ct::core::SymplecticSystem<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>(
-                        systems_[i])));
-    }
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-SYMPLECTIC_DISABLED NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeSymplecticIntegrators(
-    size_t i)
-{
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeLinearSystem(
     const typename OptConProblem_t::LinearPtr_t& lin)
 {
@@ -413,6 +365,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(co
             sensitivity_[i]->setTimeDiscretization(settings.getSimulationTimestep());
         else
             sensitivity_[i]->setTimeDiscretization(settings.dt);
+
+        discretizers_[i]->setParameters(settings.dt, settings.K_sim);
     }
 
     if (settings.integrator != settings_.integrator)
@@ -535,9 +489,6 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
     ControlSubsteps& substepsU,
     std::atomic_bool* terminationFlag) const
 {
-    const double& dt = settings_.dt;
-    const double dt_sim = settings_.getSimulationTimestep();
-    const size_t subSteps = settings_.K_sim;
     const int K_local = K_;
 
     if (u_local.size() < (size_t)K_)
@@ -563,7 +514,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
         if (terminationFlag && *terminationFlag)
             return false;
 
-        substepRecorders_[threadId]->reset();
+        //TODO do we need to reset the substepRecorders in systemDiscretizers?
 
         if (i > (int)k)
         {
@@ -580,19 +531,10 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
             x_local[i] = xShot[i - 1];  //!"overwrite" x_local
         }
 
-
         controller_[threadId]->setControl(u_local[i]);
 
-
-        if (settings_.integrator == ct::core::IntegrationType::EULER_SYM ||
-            settings_.integrator == ct::core::IntegrationType::RK_SYM)
-        {
-            integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], i * dt, subSteps, dt_sim);
-        }
-        else
-        {
-            integrators_[threadId]->integrate_n_steps(xShot[i], i * dt, subSteps, dt_sim);
-        }
+        state_vector_t dummyStateNext;
+        discretizers_[threadId]->propagateControlledDynamics(xShot[i], i, u_local[i], dummyStateNext);
 
 
         if (i == K_local - 1)
@@ -625,47 +567,11 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
         }
 
         // get substeps for sensitivities
-        substepsX[i] = substepRecorders_[threadId]->getSubstates();
-        substepsU[i] = substepRecorders_[threadId]->getSubcontrols();
+        substepsX[i] = discretizers_[threadId]->getSubstates();
+        substepsU[i] = discretizers_[threadId]->getSubcontrols();
     }
 
     return true;
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-SYMPLECTIC_ENABLED NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::integrateSymplectic(size_t threadId,
-    ct::core::StateVector<STATE_DIM, SCALAR>& x0,
-    const double& t,
-    const size_t& steps,
-    const double& dt_sim) const
-{
-    if (!systems_[threadId]->isSymplectic())
-        throw std::runtime_error("Trying to integrate using symplectic integrator, but system is not symplectic.");
-
-    if (settings_.integrator == ct::core::IntegrationType::EULER_SYM)
-    {
-        integratorsEulerSymplectic_[threadId]->integrate_n_steps(x0, t, steps, dt_sim);
-    }
-    else if (settings_.integrator == ct::core::IntegrationType::RK_SYM)
-    {
-        integratorsRkSymplectic_[threadId]->integrate_n_steps(x0, t, steps, dt_sim);
-    }
-    else
-    {
-        throw std::runtime_error("invalid symplectic integrator specified");
-    }
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-SYMPLECTIC_DISABLED NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::integrateSymplectic(size_t threadId,
-    ct::core::StateVector<STATE_DIM, SCALAR>& x0,
-    const double& t,
-    const size_t& steps,
-    const double& dt_sim) const
-{
-    throw std::runtime_error("Symplectic integrator selected but invalid dimensions for it. Check V_DIM>1, P_DIM>1");
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
@@ -1470,9 +1376,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareSolve
     lqpCounter_++;
 
     // if solver is HPIPM, there's nothing to prepare
-    if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
-    {
-    }
+    if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER) {}
     // if solver is GNRiccati - we iterate backward up to the first stage
     else if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
     {
@@ -1828,7 +1732,3 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getSettings() con
 
 }  // namespace optcon
 }  // namespace ct
-
-
-#undef SYMPLECTIC_ENABLED
-#undef SYMPLECTIC_DISABLED
