@@ -1,9 +1,8 @@
-/*
- * ProjectedFDSystemTest.cpp
- *
- *  Created on: Apr 20, 2017
- *      Author: neunertm
- */
+/**********************************************************************************************************************
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
+Licensed under Apache2 license (see LICENSE file in main directory)
+**********************************************************************************************************************/
 
 #ifndef TEST_SYSTEMS_PROJECTEDFDSYSTEMTEST_CPP_
 #define TEST_SYSTEMS_PROJECTEDFDSYSTEMTEST_CPP_
