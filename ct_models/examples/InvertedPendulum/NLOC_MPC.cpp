@@ -12,7 +12,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 using namespace ct::rbd;
 
-const size_t njoints = ct::rbd::InvertedPendulum::Kinematics::NJOINTS;
+const size_t njoints            = ct::rbd::InvertedPendulum::Kinematics::NJOINTS;
 const size_t actuator_state_dim = 1;
 
 typedef ct::rbd::InvertedPendulum::tpl::Dynamics<double> IPDynamics;
@@ -22,34 +22,40 @@ typedef ct::core::LinearSystem<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM, doubl
 
 using InvertedPendulumNLOC = FixBaseNLOC<IPSystem, actuator_state_dim, double>;
 
-class MPCSimulator : public ct::core::ControlSimulator<IPSystem> {
- public:
-  MPCSimulator(ct::core::Time sim_dt, ct::core::Time control_dt,
-               const ct::core::StateVector<STATE_DIM>& x0, std::shared_ptr<IPSystem> ip_system,
-               ct::optcon::MPC<ct::optcon::NLOptConSolver<STATE_DIM, CONTROL_DIM>>& mpc)
-      : ct::core::ControlSimulator<IPSystem>(sim_dt, control_dt, x0, ip_system), mpc_(mpc) {
-    controller_ = std::make_shared<ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>>();
-  }
+class MPCSimulator : public ct::core::ControlSimulator<IPSystem>
+{
+public:
+    MPCSimulator(ct::core::Time sim_dt,
+        ct::core::Time control_dt,
+        const ct::core::StateVector<STATE_DIM>& x0,
+        std::shared_ptr<IPSystem> ip_system,
+        ct::optcon::MPC<ct::optcon::NLOptConSolver<STATE_DIM, CONTROL_DIM>>& mpc)
+        : ct::core::ControlSimulator<IPSystem>(sim_dt, control_dt, x0, ip_system), mpc_(mpc)
+    {
+        controller_ = std::make_shared<ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>>();
+    }
 
-  virtual bool prepareControllerIteration(ct::core::Time sim_time) {
-    mpc_.prepareIteration(sim_time);
-    return true;
-  }
+    virtual bool prepareControllerIteration(ct::core::Time sim_time)
+    {
+        mpc_.prepareIteration(sim_time);
+        return true;
+    }
 
-  virtual bool finishControllerIteration(ct::core::Time sim_time) {
-    state_mtx_.lock();
-    ct::core::StateVector<STATE_DIM> x_temp = x_;
-    state_mtx_.unlock();
+    virtual bool finishControllerIteration(ct::core::Time sim_time)
+    {
+        state_mtx_.lock();
+        ct::core::StateVector<STATE_DIM> x_temp = x_;
+        state_mtx_.unlock();
 
-    std::shared_ptr<ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>> new_controller =
-        std::make_shared<ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>>();
-    bool success = mpc_.finishIteration(x_temp, sim_time, *new_controller, controller_ts_);
+        std::shared_ptr<ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>> new_controller =
+            std::make_shared<ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>>();
+        bool success = mpc_.finishIteration(x_temp, sim_time, *new_controller, controller_ts_);
 
-    policy_mtx_.lock();
-    controller_ = new_controller;
-    policy_mtx_.unlock();
-    return success;
-  }
+        policy_mtx_.lock();
+        controller_ = new_controller;
+        policy_mtx_.unlock();
+        return success;
+    }
 
 private:
     ct::optcon::MPC<ct::optcon::NLOptConSolver<STATE_DIM, CONTROL_DIM>>& mpc_;
@@ -63,7 +69,7 @@ int main(int argc, char* argv[])
     {
         std::string workingDirectory = ct::models::exampleDir + "/InvertedPendulum";
 
-        std::string configFile = workingDirectory + "/solver.info";
+        std::string configFile       = workingDirectory + "/solver.info";
         std::string costFunctionFile = workingDirectory + "/cost.info";
 
         std::shared_ptr<ct::rbd::SEADynamicsFirstOrder<njoints, double>> actuatorDynamics(
@@ -86,7 +92,7 @@ int main(int argc, char* argv[])
 
         std::shared_ptr<ct::optcon::CostFunctionAnalytical<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>> newCost =
             std::make_shared<ct::optcon::CostFunctionAnalytical<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>>();
-        size_t intTermID = newCost->addIntermediateTerm(termQuadInterm);
+        size_t intTermID   = newCost->addIntermediateTerm(termQuadInterm);
         size_t finalTermID = newCost->addFinalTerm(termQuadFinal);
 
         ct::core::Time timeHorizon;
@@ -101,16 +107,15 @@ int main(int argc, char* argv[])
         ct::core::StateVector<IPSystem::STATE_DIM> x0full = IPSystem::toFullState(x0.toImplementation());
 
         std::shared_ptr<LinearSystem> linSystem = nullptr;
-        ct::optcon::OptConProblem<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM> optConProblem(timeHorizon, x0full, ipSystem, newCost, linSystem);
+        ct::optcon::OptConProblem<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM> optConProblem(
+            timeHorizon, x0full, ipSystem, newCost, linSystem);
         InvertedPendulumNLOC nloc_solver(newCost, nloc_settings, ipSystem, verbose, linSystem);
 
         int K = nloc_solver.getSettings().computeK(timeHorizon);
 
-
         InvertedPendulumNLOC::StateVectorArray stateRefTraj(K + 1, x0full);
         InvertedPendulumNLOC::FeedbackArray fbTrajectory(K, -fbD);
-        InvertedPendulumNLOC::ControlVectorArray ffTrajectory(K,
-            InvertedPendulumNLOC::ControlVector::Zero());
+        InvertedPendulumNLOC::ControlVectorArray ffTrajectory(K, InvertedPendulumNLOC::ControlVector::Zero());
 
         int initType = 0;
         ct::core::loadScalar(configFile, "initType", initType);
@@ -122,9 +127,9 @@ int main(int argc, char* argv[])
                 ct::core::ControlVector<IPSystem::CONTROL_DIM> uff_ref;
                 nloc_solver.initializeSteadyPose(x0, timeHorizon, K, uff_ref, -fbD);
 
-                std::vector<std::shared_ptr<
-                    ct::optcon::CostFunctionQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>>>& inst1 =
-                    nloc_solver.getSolver()->getCostFunctionInstances();
+                std::vector<
+                    std::shared_ptr<ct::optcon::CostFunctionQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>>>&
+                    inst1 = nloc_solver.getSolver()->getCostFunctionInstances();
 
                 for (size_t i = 0; i < inst1.size(); i++)
                 {
@@ -147,28 +152,28 @@ int main(int argc, char* argv[])
         std::cout << "waiting 1 second for begin" << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
-
         nloc_solver.solve();
-        ct::core::StateFeedbackController<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM> initialSolution = nloc_solver.getSolution();
+        ct::core::StateFeedbackController<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM> initialSolution =
+            nloc_solver.getSolution();
         InvertedPendulumNLOC::StateVectorArray x_nloc = initialSolution.x_ref();
 
         // nloc_solver.retrieveLastRollout();
 
         ct::optcon::NLOptConSettings ilqr_settings_mpc(nloc_solver.getSettings());
         ilqr_settings_mpc.max_iterations = 1;
-        ilqr_settings_mpc.printSummary = false;
+        ilqr_settings_mpc.printSummary   = false;
 
         ct::optcon::mpc_settings mpc_settings;
-        mpc_settings.stateForwardIntegration_ = false;
-        mpc_settings.postTruncation_ = false;
-        mpc_settings.measureDelay_ = false;
+        mpc_settings.stateForwardIntegration_    = false;
+        mpc_settings.postTruncation_             = false;
+        mpc_settings.measureDelay_               = false;
         mpc_settings.delayMeasurementMultiplier_ = 1.0;
-        mpc_settings.mpc_mode = ct::optcon::MPC_MODE::CONSTANT_RECEDING_HORIZON;
-        mpc_settings.coldStart_ = false;
-        mpc_settings.minimumTimeHorizonMpc_ = 3.0;
+        mpc_settings.mpc_mode                    = ct::optcon::MPC_MODE::CONSTANT_RECEDING_HORIZON;
+        mpc_settings.coldStart_                  = false;
+        mpc_settings.minimumTimeHorizonMpc_      = 3.0;
 
-        ct::optcon::MPC<ct::optcon::NLOptConSolver<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>>
-            ilqr_mpc(optConProblem, ilqr_settings_mpc, mpc_settings);
+        ct::optcon::MPC<ct::optcon::NLOptConSolver<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>> ilqr_mpc(
+            optConProblem, ilqr_settings_mpc, mpc_settings);
         ilqr_mpc.setInitialGuess(initialSolution);
 
         MPCSimulator mpc_sim(1e-3, 1e-2, x0full, ipSystem, ilqr_mpc);
@@ -177,8 +182,7 @@ int main(int argc, char* argv[])
 
         ilqr_mpc.printMpcSummary();
 
-    }
-    catch (std::runtime_error& e)
+    } catch (std::runtime_error& e)
     {
         std::cout << "Exception caught: " << e.what() << std::endl;
     }
