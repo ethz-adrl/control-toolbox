@@ -16,8 +16,12 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include "problem/OptConProblemBase.h"
 #include "problem/OptConProblem.h"
+#include "problem/DiscreteOptConProblem.h"
 #include "problem/LQOCProblem.hpp"
-#include "solver/OptConSolver.h"
+
+#include "system_interface/OptconSystemInterface.h"
+#include "system_interface/OptconContinuousSystemInterface.h"
+#include "system_interface/OptconDiscreteSystemInterface.h"
 
 #include "nloc/NLOCBackendBase.hpp"
 #include "nloc/NLOCBackendST.hpp"
@@ -25,6 +29,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "nloc/algorithms/gnms/GNMS.hpp"
 #include "nloc/algorithms/ilqr/iLQR.hpp"
 
+#include "solver/OptConSolver.h"
 #include "solver/lqp/HPIPMInterface.hpp"
 #include "solver/lqp/GNRiccatiSolver.hpp"
 #include "solver/NLOptConSolver.hpp"

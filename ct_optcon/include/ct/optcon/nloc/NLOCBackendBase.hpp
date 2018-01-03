@@ -24,13 +24,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include <ct/optcon/matlab.hpp>
 #endif
 
-#define SYMPLECTIC_ENABLED        \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V > 0 && P > 0), void>::type
-#define SYMPLECTIC_DISABLED       \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V <= 0 || P <= 0), void>::type
-
 namespace ct {
 namespace optcon {
 
@@ -47,7 +40,12 @@ namespace optcon {
  *
  */
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
+template <size_t STATE_DIM,
+    size_t CONTROL_DIM,
+    size_t P_DIM,
+    size_t V_DIM,
+    typename SCALAR = double,
+    typename OPTCONPROBLEM = OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>
 class NLOCBackendBase
 {
 public:
@@ -59,12 +57,10 @@ public:
     typedef NLOptConSettings Settings_t;
     typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 
-    typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
+    typedef OPTCONPROBLEM OptConProblem_t;
 
     typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
     typedef LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR> LQOCSolver_t;
-
-    typedef core::Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR> Sensitivity_t;
 
     typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
     typedef std::shared_ptr<StateVectorArray> StateVectorArrayPtr;
@@ -77,6 +73,9 @@ public:
 
     typedef std::vector<ControlVectorArrayPtr, Eigen::aligned_allocator<ControlVectorArrayPtr>> ControlSubsteps;
     typedef std::shared_ptr<ControlSubsteps> ControlSubstepsPtr;
+
+    typedef OptconSystemInterface<STATE_DIM, CONTROL_DIM, OptConProblem_t, SCALAR> systemInterface_t;
+    typedef std::shared_ptr<systemInterface_t> systemInterfacePtr_t;
 
     using ControlMatrix = ct::core::ControlMatrix<CONTROL_DIM, SCALAR>;
     using ControlMatrixArray = ct::core::ControlMatrixArray<CONTROL_DIM, SCALAR>;
@@ -97,10 +96,14 @@ public:
     using scalar_t = SCALAR;
     using scalar_array_t = std::vector<SCALAR, Eigen::aligned_allocator<SCALAR>>;
 
+    NLOCBackendBase(const OptConProblem_t& optConProblem, const Settings_t& settings);
+    NLOCBackendBase(const OptConProblem_t& optConProblem,
+        const std::string& settingsFile,
+        bool verbose = true,
+        const std::string& ns = "alg");
 
-    NLOCBackendBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const Settings_t& settings);
-
-    NLOCBackendBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+    NLOCBackendBase(const systemInterfacePtr_t& systemInterface, const Settings_t& settings);
+    NLOCBackendBase(const systemInterfacePtr_t& systemInterface,
         const std::string& settingsFile,
         bool verbose = true,
         const std::string& ns = "alg");
@@ -560,18 +563,6 @@ protected:
     template <size_t ORDER = 1>
     SCALAR computeDefectsNorm(const StateVectorArray& d) const;
 
-    typedef std::shared_ptr<ct::core::SystemDiscretizer<STATE_DIM, CONTROL_DIM, STATE_DIM / 2,  CONTROL_DIM / 2, SCALAR>> SystemDiscretizerPtr;
-    std::vector<SystemDiscretizerPtr, Eigen::aligned_allocator<SystemDiscretizerPtr>> discretizers_;  //! Runge-Kutta-4 Discretizers
-
-    typedef std::shared_ptr<Sensitivity_t> SensitivityPtr;
-    std::vector<SensitivityPtr, Eigen::aligned_allocator<SensitivityPtr>>
-        sensitivity_;  //! the ct sensitivity integrators
-
-    typedef std::shared_ptr<core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>> ConstantControllerPtr;
-    std::vector<ConstantControllerPtr, Eigen::aligned_allocator<ConstantControllerPtr>>
-        controller_;  //! the constant controller for forward-integration during one time-step
-
-
     //! The policy. currently only for returning the result, should eventually replace L_ and u_ff_ (todo)
     NLOCBackendBase::Policy_t policy_;
 
@@ -612,6 +603,9 @@ protected:
     StateSubstepsPtr substepsX_;
     ControlSubstepsPtr substepsU_;
 
+    //! pointer to instance of the system interface
+    systemInterfacePtr_t systemInterface_;
+
     scalar_t intermediateCostBest_;
     scalar_t finalCostBest_;
     scalar_t lowestCost_;
@@ -631,8 +625,6 @@ protected:
      * of the following objects, we have nThreads+1 instantiations in form of a vector.
      * Every instantiation is dedicated to a certain thread in the multi-thread implementation
      */
-    std::vector<typename OptConProblem_t::DynamicsPtr_t> systems_;
-    std::vector<typename OptConProblem_t::LinearPtr_t> linearSystems_;
     std::vector<typename OptConProblem_t::CostFunctionPtr_t> costFunctions_;
     std::vector<typename OptConProblem_t::ConstraintPtr_t> boxConstraints_;
     std::vector<typename OptConProblem_t::ConstraintPtr_t> generalConstraints_;
@@ -648,9 +640,9 @@ protected:
 };
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, typename OPTCONPROBLEM>
 template <typename ARRAY_TYPE, size_t ORDER>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDiscreteArrayNorm(
+SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>::computeDiscreteArrayNorm(
     const ARRAY_TYPE& d) const
 {
     SCALAR norm = 0.0;
@@ -663,9 +655,10 @@ SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDis
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, typename OPTCONPROBLEM>
 template <typename ARRAY_TYPE, size_t ORDER>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDiscreteArrayNorm(const ARRAY_TYPE& a,
+SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>::computeDiscreteArrayNorm(
+    const ARRAY_TYPE& a,
     const ARRAY_TYPE& b) const
 {
     assert(a.size() == b.size());
@@ -679,9 +672,9 @@ SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDis
     return norm;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, typename OPTCONPROBLEM>
 template <size_t ORDER>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDefectsNorm(
+SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>::computeDefectsNorm(
     const StateVectorArray& d) const
 {
     return computeDiscreteArrayNorm<StateVectorArray, ORDER>(d);
@@ -690,7 +683,3 @@ SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeDef
 
 }  // namespace optcon
 }  // namespace ct
-
-
-#undef SYMPLECTIC_ENABLED
-#undef SYMPLECTIC_DISABLED
