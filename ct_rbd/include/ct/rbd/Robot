@@ -12,6 +12,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "robot/Dynamics.h"
          
 #include "robot/actuator/SecondOrderActuatorDynamics.h"
+#include "robot/actuator/SEADynamicsFirstOrder.h"
          
 #include "robot/control/IDControllerFB.h"
 #include "robot/control/WholeBodyController.h"

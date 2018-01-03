@@ -1,0 +1,69 @@
+Robot ct_DoubleInvertedPendulum {
+
+
+RobotBase DoubleInvertedPendulumBase {
+	inertia_params {
+		mass = 1.0
+		CoM = (0.0, 0.0, 0.0)
+		Iy=0.0	Ix=0.0	Ixy=0.0	Iz=0.0	Ixz=0.0	Iyz=0.0
+	}
+	children {
+		Link1 via Joint1
+	}
+}
+
+link Link1 {
+	id = 1
+	inertia_params {
+		mass = 1.0
+		CoM = (0.0, 0.0, 0.0)
+		Ix=0.0005  Iy=0.0005  Iz=0.001  Ixy=0.0  Ixz=0.0  Iyz=0.0
+		ref_frame = fr_COM_Link1
+	}
+	children {
+	    Link2 via Joint2
+	}
+	frames {
+		fr_COM_Link1 {
+	       translation = (0.5, 0.0, 0.0)
+			rotation = (PI/2.0, 0.0, 0.0)
+		}
+	}
+}
+
+link Link2 {
+	id = 2
+	inertia_params {
+		mass = 1.0
+		CoM = (0.0, 0.0, 0.0)
+		Ix=0.0005  Iy=0.0005  Iz=0.001  Ixy=0.0  Ixz=0.0  Iyz=0.0
+		ref_frame = fr_COM_Link2
+	}
+	children {}
+	frames {
+	   fr_ee{
+	       translation = (1.0, 0.0, 0.0)
+	       rotation    = (0.0, 0.0, 0.0)
+	        }
+		fr_COM_Link2 {
+	       translation = (0.5, 0.0, 0.0)
+			rotation = (0.0, 0.0, 0.0)
+		}
+	}
+}
+
+r_joint Joint1 {
+	ref_frame {
+		translation = (0.0, 0.0, 0.0)
+		rotation = (0.0, PI/2.0, PI)
+	}
+}
+
+r_joint Joint2 {
+	ref_frame {
+		translation = (1.0, 0.0, 0.0)
+		rotation = (0.0, 0.0, 0.0)
+	}
+}
+
+}

@@ -72,16 +72,15 @@ For details and more videos see \ref application_examples "Application Examples"
  implement Equations of Motion, and develop model-based controllers, estimators, planning 
  algorithms, etc. 
  Sooner or later, one is confronted with questions of efficient implementation, 
- computing derivative information, formulating constraints or cost functions, or refactoring code 
- to make it fast enough to run on robotic hardware.
- The Control Toolbox is specifically designed for these tasks. 
+ computing derivative information, formulating constraints or cost functions or running controllers
+ in model-predictive control fashion. The Control Toolbox is specifically designed for these tasks. 
  It is entirely written in C++, provides interfaces to state-of-the art robot modelling software, 
  provides a set of optimal control tools, spanning a range from simple LQR reference implementations
  to constrained model predictive control, can auto-differentiate and generate derivative code for 
  arbitrary functions, and provides a simple way to visualize simulation results using ROS and rviz. 
  The toolbox has a strong focus on highly efficient code that can be run online (in the loop) on 
  robots or other actuated hardware.
- Still, we designed the toolbox with usability in mind, allowing inexperienced users to apply 
+ We designed the toolbox with usability in mind, allowing inexperienced users to apply 
  advanced concepts such as Non-linear Model Predictive Control (NMPC) or Numerical Optimal Control
  easily and with minimal effort. 
  While we provide the means of modelling rigid body dynamics, all other modules are independent 
@@ -95,7 +94,7 @@ For details and more videos see \ref application_examples "Application Examples"
  Quadrupeds \cite neunert:2017:ral and mobile manipulators \cite giftthaler2017efficient
  as well as NMPC on ground robots \cite neunert2017mpc and UAVs \cite neunert16hexrotor.
  The project originated from research conducted at the Agile and Dexterous Robotics Lab at 
- ETH Zürich, but is continuously extended to cover more fields of applications and algorithms.
+ ETH Zurich, but is continuously extended to cover more fields of applications and algorithms.
 
 
 \section scope Scope of the CT
@@ -289,7 +288,6 @@ This toolbox has been used in, or has helped to realize the following academic p
 “A Family of iterative Gauss-Newton Shooting Methods for Nonlinear Optimal Control”. arXiv:1711.11006 [cs.SY]
 <a href="https://arxiv.org/abs/1711.11006">arXiv:1711.11006 [cs.SY]</a> 
 
-
 - Michael Neunert, Markus Stäuble, Markus Giftthaler, Dario Bellicoso, Jan Carius, Christian Gehring, 
 Marco Hutter and Jonas Buchli. 
 “Whole Body Model Predictive Control Through Contacts For Quadrupeds”.
@@ -301,7 +299,7 @@ Submitted to IEEE Robotics and Automation Letters.
 
 - Markus Giftthaler, Michael Neunert, Markus Stäuble, Marco Frigerio, Claudio Semini and Jonas Buchli. 
 “Automatic Differentiation of Rigid Body Dynamics for Optimal Control and Estimation”, 
-To appear in Advanced Robotics, SIMPAR special issue. November 2017. 
+Advanced Robotics, SIMPAR special issue. November 2017. 
 <a href="https://arxiv.org/abs/1709.03799">arXiv preprint</a> 
 
 - Michael Neunert, Markus Giftthaler, Marco Frigerio, Claudio Semini and Jonas Buchli. 

@@ -10,24 +10,25 @@ namespace ct {
 namespace rbd {
 
 template <size_t NJOINTS, typename SCALAR>
-SEADynamics1d<NJOINTS, SCALAR>::SEADynamics1d(double k_spring) : k_((SCALAR)k_spring)
-{
-}
-
-
-template <size_t NJOINTS, typename SCALAR>
-SEADynamics1d<NJOINTS, SCALAR>::~SEADynamics1d()
+SEADynamicsFirstOrder<NJOINTS, SCALAR>::SEADynamicsFirstOrder(double k_spring) : k_((SCALAR)k_spring)
 {
 }
 
 template <size_t NJOINTS, typename SCALAR>
-SEADynamics1d<NJOINTS, SCALAR>* SEADynamics1d<NJOINTS, SCALAR>::clone() const
+SEADynamicsFirstOrder<NJOINTS, SCALAR>::~SEADynamicsFirstOrder()
 {
-    return new SEADynamics1d(*this);
 }
 
 template <size_t NJOINTS, typename SCALAR>
-void SEADynamics1d<NJOINTS, SCALAR>::computeControlledDynamics(const ct::core::StateVector<NJOINTS, SCALAR>& state,
+SEADynamicsFirstOrder<NJOINTS, SCALAR>* SEADynamicsFirstOrder<NJOINTS, SCALAR>::clone() const
+{
+    return new SEADynamicsFirstOrder(*this);
+}
+
+template <size_t NJOINTS, typename SCALAR>
+void SEADynamicsFirstOrder<NJOINTS, SCALAR>::computeActuatorDynamics(
+    const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+    const ct::core::StateVector<NJOINTS, SCALAR>& state,
     const SCALAR& t,
     const ct::core::ControlVector<NJOINTS, SCALAR>& control,
     ct::core::StateVector<NJOINTS, SCALAR>& derivative)
@@ -36,7 +37,7 @@ void SEADynamics1d<NJOINTS, SCALAR>::computeControlledDynamics(const ct::core::S
 }
 
 template <size_t NJOINTS, typename SCALAR>
-core::ControlVector<NJOINTS, SCALAR> SEADynamics1d<NJOINTS, SCALAR>::computeControlOutput(
+core::ControlVector<NJOINTS, SCALAR> SEADynamicsFirstOrder<NJOINTS, SCALAR>::computeControlOutput(
     const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
     const typename BASE::act_state_vector_t& actState)
 {
@@ -44,7 +45,7 @@ core::ControlVector<NJOINTS, SCALAR> SEADynamics1d<NJOINTS, SCALAR>::computeCont
 }
 
 template <size_t NJOINTS, typename SCALAR>
-ct::core::StateVector<NJOINTS, SCALAR> SEADynamics1d<NJOINTS, SCALAR>::computeStateFromOutput(
+ct::core::StateVector<NJOINTS, SCALAR> SEADynamicsFirstOrder<NJOINTS, SCALAR>::computeStateFromOutput(
     const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& refRobotJointState,
     const core::ControlVector<NJOINTS, SCALAR>& refControl)
 {

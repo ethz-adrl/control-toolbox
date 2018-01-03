@@ -1,9 +1,8 @@
-/*
- * FloatingBaseSLQ.h
- *
- *  Created on: Jan 11, 2017
- *      Author: neunertm
- */
+/**********************************************************************************************************************
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
+Licensed under Apache2 license (see LICENSE file in main directory)
+**********************************************************************************************************************/
 
 #ifndef INCLUDE_CT_RBD_SLQ_FLOATINGBASESLQ_H_
 #define INCLUDE_CT_RBD_SLQ_FLOATINGBASESLQ_H_

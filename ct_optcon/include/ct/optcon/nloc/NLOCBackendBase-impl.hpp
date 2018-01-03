@@ -7,11 +7,11 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #define SYMPLECTIC_ENABLED        \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V > 0 && P > 0), void>::type
+    template <size_t V, size_t P, size_t ST> \
+    typename std::enable_if<(V > 0 && P > 0 && (V+P==ST)), void>::type
 #define SYMPLECTIC_DISABLED       \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V <= 0 || P <= 0), void>::type
+    template <size_t V, size_t P, size_t ST> \
+    typename std::enable_if<(V <= 0 || P <= 0 || (V+P!=ST)), void>::type
 
 namespace ct {
 namespace optcon {
@@ -260,7 +260,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
             integrators_[i] = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR>>(
                 new ct::core::Integrator<STATE_DIM, SCALAR>(systems_[i], settings_.integrator, substepRecorders_[i]));
         }
-        initializeSymplecticIntegrators<V_DIM, P_DIM>(i);
+        initializeSymplecticIntegrators<V_DIM, P_DIM, STATE_DIM>(i);
 
 
         if (settings_.useSensitivityIntegrator)
@@ -491,7 +491,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::simpleRollou
 
 		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
 		{
-			integrateSymplectic<V_DIM, P_DIM>(threadId, x_local[i], 0, subSteps, dt_sim);
+			integrateSymplectic<V_DIM, P_DIM, STATE_DIM>(threadId, x_local[i], 0, subSteps, dt_sim);
 		} else
 		{
 			integrators_[threadId]->integrate_n_steps(x_local[i], 0, subSteps, dt_sim);
@@ -587,7 +587,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
         if (settings_.integrator == ct::core::IntegrationType::EULER_SYM ||
             settings_.integrator == ct::core::IntegrationType::RK_SYM)
         {
-            integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], i * dt, subSteps, dt_sim);
+            integrateSymplectic<V_DIM, P_DIM, STATE_DIM>(threadId, xShot[i], i * dt, subSteps, dt_sim);
         }
         else
         {

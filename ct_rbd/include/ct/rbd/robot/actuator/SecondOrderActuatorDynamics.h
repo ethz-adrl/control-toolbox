@@ -42,7 +42,8 @@ public:
     //! deep cloning
     virtual SecondOrderActuatorDynamics<NJOINTS, SCALAR>* clone() const override;
 
-    virtual void computeControlledDynamics(const ct::core::StateVector<2 * NJOINTS, SCALAR>& state,
+    virtual void computeActuatorDynamics(const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+        const ct::core::StateVector<2 * NJOINTS, SCALAR>& state,
         const SCALAR& t,
         const ct::core::ControlVector<NJOINTS, SCALAR>& control,
         ct::core::StateVector<2 * NJOINTS, SCALAR>& derivative) override;

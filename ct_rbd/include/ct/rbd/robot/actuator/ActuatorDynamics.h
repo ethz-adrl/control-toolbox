@@ -15,10 +15,15 @@ namespace rbd {
 /*!
  * This class covers the actuator dynamics for a robot, i.e. not the dynamics of a single actuator, but
  * the dynamics of the collection of all actuators in the system
- * The actuators are assumed to form a symplectic system.
+ *
+ * \note This class does on purpose not derive from ControlledSystem, as it requires the full robot state
+ *
+ * @tparam state dimensions of all actuators in the system together
+ * @tparam number of joints in the robot
+ * @tparam primitive scalar type, eg. double
  */
 template <size_t ACT_STATE_DIMS, size_t NJOINTS, typename SCALAR = double>
-class ActuatorDynamics : public core::ControlledSystem<ACT_STATE_DIMS, NJOINTS, SCALAR>
+class ActuatorDynamics
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -33,12 +38,13 @@ public:
 
     virtual ~ActuatorDynamics(){};
 
-    virtual ActuatorDynamics<ACT_STATE_DIMS, NJOINTS, SCALAR>* clone() const override = 0;
+    virtual ActuatorDynamics<ACT_STATE_DIMS, NJOINTS, SCALAR>* clone() const = 0;
 
-    virtual void computeControlledDynamics(const ct::core::StateVector<ACT_STATE_DIMS, SCALAR>& state,
+    virtual void computeActuatorDynamics(const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+        const ct::core::StateVector<ACT_STATE_DIMS, SCALAR>& actuatorState,
         const SCALAR& t,
         const ct::core::ControlVector<NJOINTS, SCALAR>& control,
-        ct::core::StateVector<ACT_STATE_DIMS, SCALAR>& derivative) override = 0;
+        ct::core::StateVector<ACT_STATE_DIMS, SCALAR>& derivative) = 0;
 
     /**
      * @brief output equation of the actuator

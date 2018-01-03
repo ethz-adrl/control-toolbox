@@ -270,7 +270,7 @@ ENABLE_FIX_BASE_IMPL Dynamics<RBD, NEE>::FixBaseID(const JointState_t& x,
     const JointAcceleration_t& qdd,
     control_vector_t& u)
 {
-    ExtLinkForces_t force(Eigen::Matrix<SCALAR, NJOINTS, 1>::Zero());
+    ExtLinkForces_t force(Eigen::Matrix<SCALAR, 6, 1>::Zero());
     kinematics_->robcogen().inverseDynamics().id(u, x.getPositions(), x.getVelocities(), qdd.getAcceleration(), force);
 }
 
