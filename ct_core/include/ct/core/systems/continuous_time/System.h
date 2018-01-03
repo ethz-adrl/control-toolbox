@@ -74,7 +74,7 @@ public:
 	 */
     SYSTEM_TYPE getType() const { return type_; }
     /**
-	 * @brief      Determines if the system is in symplectic form .
+	 * @brief      Determines if the system is in symplectic form.
 	 *
 	 * @return     True if symplectic, False otherwise.
 	 */

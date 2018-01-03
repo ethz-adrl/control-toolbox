@@ -190,7 +190,7 @@ public:
         std::cout << "System is ";
         if (zeta_ == 0.0)
         {
-            std::cout << "undampened" << std::endl;
+            std::cout << "undamped" << std::endl;
         }
         if (zeta_ == 1.0)
         {

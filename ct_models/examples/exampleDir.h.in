@@ -7,9 +7,9 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 namespace ct {
-namespace optcon {
+namespace models {
 
-static const std::string exampleDir = "${CT_OPTCON_EXAMPLE_DIR}";
+static const std::string exampleDir = "${CT_MODELS_EXAMPLE_DIR}";
 
 }
 }
