@@ -179,6 +179,7 @@ int main(int argc, char* argv[])
         MPCSimulator mpc_sim(1e-3, 1e-2, x0full, ipSystem, ilqr_mpc);
         std::cout << "simulating 3 seconds" << std::endl;
         mpc_sim.simulate(3);
+        mpc_sim.finish();
 
         ilqr_mpc.printMpcSummary();
 

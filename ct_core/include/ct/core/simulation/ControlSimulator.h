@@ -71,29 +71,33 @@ public:
     }
 
     //! destructor
-    virtual ~ControlSimulator(){};
-
+    virtual ~ControlSimulator() { finish(); };
     //! During controller update, this method does processing before the state measurement arrives
     virtual bool prepareControllerIteration(Time sim_time) = 0;
 
     //! During controller update, this method does processing once the state measurement arrives
     virtual bool finishControllerIteration(Time sim_time) = 0;
 
-    //! This methods spawns the two threads
+    //! spawns the two threads in a nonblocking way
     void simulate(Time duration)
     {
         stop_           = false;
         sim_start_time_ = std::chrono::high_resolution_clock::now();
         x_              = x0_;
-        std::thread sys_thread(&ControlSimulator::simulateSystem, this, duration),
-            solver_thread(&ControlSimulator::simulateController, this, duration);
-
-        sys_thread.join();
-        solver_thread.join();
+        sys_thread_     = std::thread(&ControlSimulator::simulateSystem, this, duration);
+        control_thread_ = std::thread(&ControlSimulator::simulateController, this, duration);
     }
 
-    //! stop the simulation
+    //! waits for the simulation threads to finish
+    void finish()
+    {
+        if (sys_thread_.joinable()) sys_thread_.join();
+        if (control_thread_.joinable()) control_thread_.join();
+    }
+
+    //! stops the simulation
     void stop() { stop_ = true; }
+
 protected:
     //! method run by the thread that simulates the system
     virtual void simulateSystem(Time duration)
@@ -115,7 +119,9 @@ protected:
             if (residue > 1e-6)
                 integrator.integrate_n_steps(temp_x, sim_time + int(control_dt_ / sim_dt_) * sim_dt_, 1, residue);
 
-            // TODO: Add check if it fails to work in real time.
+            if (std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - wall_time).count() >=
+                control_dt_)
+                std::cerr << "Simulation running too slow. Please increase the step size!" << std::endl;
             while (std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - wall_time).count() <
                    control_dt_)
                 usleep(100);
@@ -158,6 +164,8 @@ protected:
     std::chrono::time_point<std::chrono::high_resolution_clock> sim_start_time_;
     StateVector<STATE_DIM> x0_;
     StateVector<STATE_DIM> x_;
+    std::thread sys_thread_;
+    std::thread control_thread_;
     std::mutex state_mtx_;
     std::mutex policy_mtx_;
     std::atomic<bool> stop_;
