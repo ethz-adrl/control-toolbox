@@ -46,7 +46,6 @@ public:
 
     typedef std::function<OUT_TYPE_AD(const IN_TYPE_AD&)> FUN_TYPE_AD;
 
-    typedef CppadUtils<IN_DIM, OUT_DIM> Utils;
     typedef Derivatives<IN_DIM, OUT_DIM> DerivativesBase;
 
 
@@ -70,6 +69,7 @@ public:
         inputDim_(inputDim),
         outputDim_(outputDim)
     {
+        update(f, inputDim, outputDim);
     }
 
     //! copy constructor
@@ -108,18 +108,19 @@ public:
     DerivativesCppad* clone() const { return new DerivativesCppad<IN_DIM, OUT_DIM>(*this); }
     virtual OUT_TYPE_D forwardZero(const Eigen::VectorXd& x)
     {
-        return this->adCppadFun_.Forward(this->inputDim_, x);
+        return adCppadFun_.Forward(0, x);
     }
 
     virtual JAC_TYPE_D jacobian(const Eigen::VectorXd& x)
     {
-        if (this->outputDim_ <= 0)
+        if (outputDim_ <= 0)
             throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
 
-        jac = this->adCppadFun_.Jacobian(x);
 
-        JAC_TYPE_D out(this->outputDim_, x.rows());
-        out = JAC_TYPE_ROW_MAJOR::Map(jac.data(), this->outputDim_, x.rows());
+        Eigen::VectorXd jac = adCppadFun_.Jacobian(x);
+
+        JAC_TYPE_D out(outputDim_, x.rows());
+        out = JAC_TYPE_ROW_MAJOR::Map(jac.data(), outputDim_, x.rows());
         return out;
     }
 
@@ -128,27 +129,27 @@ public:
         Eigen::VectorXi& iRow,
         Eigen::VectorXi& jCol)
     {
-        if (this->outputDim_ <= 0)
+        if (outputDim_ <= 0)
             throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
 
-        jac = this->adCppadFun_.SparseJacobian(x);
+        jac = adCppadFun_.SparseJacobian(x);
     }
 
     virtual Eigen::VectorXd sparseJacobianValues(const Eigen::VectorXd& x)
     {
-        if (this->outputDim_ <= 0)
+        if (outputDim_ <= 0)
             throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
 
-        return this->adCppadFun_.SparseJacobian(x);
+        return adCppadFun_.SparseJacobian(x);
     }
 
 
     virtual HES_TYPE_D hessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda)
     {
-        if (this->outputDim_ <= 0)
+        if (outputDim_ <= 0)
             throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
 
-        Eigen::VectorXd hessian = this->adCppadFun_.Hessian(x, lambda);
+        Eigen::VectorXd hessian = adCppadFun_.Hessian(x, lambda);
         HES_TYPE_D out(x.rows(), x.rows());
         out = HES_TYPE_ROW_MAJOR::Map(hessian.data(), x.rows(), x.rows());
         return out;
@@ -160,119 +161,19 @@ public:
         Eigen::VectorXi& iRow,
         Eigen::VectorXi& jCol)
     {
-        if (this->outputDim_ <= 0)
+        if (outputDim_ <= 0)
             throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
 
-        hes = this->adCppadFun_.SparseHessian(x, lambda);
-        iRow = sparsityRowsHessianEigen_;
-        jCol = sparsityColsHessianEigen_;
+        hes = adCppadFun_.SparseHessian(x, lambda);
     }
 
 
     virtual Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda)
     {
-        if (this->outputDim_ <= 0)
+        if (outputDim_ <= 0)
             throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
 
-        return this->adCppadFun_.SparseHessian(x, lambda);
-    }
-
-    //! get Jacobian sparsity pattern
-    /*!
-     * Auto-Diff automatically detects the sparsity pattern of the Jacobian. This method returns the pattern.
-     * @return Sparsity pattern of the Jacobian
-     */
-    Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> getSparsityPatternJacobian()
-    {
-        assert(model_->isJacobianSparsityAvailable() == true);
-
-        std::vector<bool> sparsityVec = model_->JacobianSparsityBool();
-        Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(this->outputDim_, this->inputDim_);
-
-        assert((int)(sparsityVec.size()) == this->outputDim_ * this->inputDim_);
-        for (size_t row = 0; row < this->outputDim_; ++row)
-            for (size_t col = 0; col < this->inputDim_; ++col)
-                sparsityMat(row, col) = sparsityVec[col + row * this->inputDim_];
-
-        return sparsityMat;
-    }
-
-    /**
-     * @brief      get Hessian sparsity pattern
-     *
-     * @return     Auto-diff automatically detects the sparsity pattern of the Hessian
-     */
-    Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> getSparsityPatternHessian()
-    {
-        assert(model_->isHessianSparsityAvailable() == true);
-
-        std::vector<bool> sparsityVec = model_->HessianSparsityBool();
-        Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(this->inputDim_, this->inputDim_);
-
-        assert(sparsityVec.size() == this->inputDim_ * this->inputDim_);
-        for (size_t row = 0; row < this->inputDim_; ++row)
-            for (size_t col = 0; col < this->inputDim_; ++col)
-            {
-                // std::cout << "sparsityVec: " << sparsityRowsHessian_[col + row * this->inputDim_] << std::endl;
-                sparsityMat(row, col) = sparsityVec[col + row * this->inputDim_];
-            }
-
-        return sparsityMat;
-    }
-
-
-    //! get Jacobian sparsity pattern
-    /*!
-     * Auto-Diff automatically detects the sparsity pattern of the Jacobian. This method returns the pattern
-     * in row-column format. Row and columns contain the indeces of all non-zero entries.
-     *
-     * @param rows row indeces of non-zero entries
-     * @param columns column indeces of non-zero entries
-     */
-    void getSparsityPatternJacobian(Eigen::VectorXi& rows, Eigen::VectorXi& columns)
-    {
-        assert(model_->isJacobianSparsityAvailable() == true);
-
-        rows = sparsityRowsJacobianEigen_;
-        columns = sparsityColsJacobianEigen_;
-    }
-
-    /**
-     * @brief      Returns the number of nonzeros in the sparse jacobian
-     *
-     * @return     The number of nonzeros in the sparse jacobian
-     */
-    size_t getNumNonZerosJacobian()
-    {
-        assert(model_->isJacobianSparsityAvailable() == true);
-        return sparsityRowsJacobian_.size();
-    }
-
-    /**
-     * @brief      Returns the number of nonzeros in the sparse hessian
-     *
-     * @return     The number of non zeros in the sparse hessian
-     */
-    size_t getNumNonZerosHessian()
-    {
-        assert(model_->isJacobianSparsityAvailable() == true);
-        return sparsityRowsHessian_.size();
-    }
-
-    //! get Hessian sparsity pattern
-    /*!
-     * Auto-Diff automatically detects the sparsity pattern of the Jacobian. This method returns the pattern
-     * in row-column format. Row and columns contain the indeces of all non-zero entries.
-     *
-     * @param rows row indeces of non-zero entries
-     * @param columns column indeces of non-zero entries
-     */
-    void getSparsityPatternHessian(Eigen::VectorXi& rows, Eigen::VectorXi& columns)
-    {
-        assert(model_->isHessianSparsityAvailable() == true);
-
-        rows = sparsityRowsHessianEigen_;
-        columns = sparsityColsHessianEigen_;
+        return adCppadFun_.SparseHessian(x, lambda);
     }
 
 private:
@@ -297,6 +198,8 @@ private:
 
         fAd.optimize();
 
+        std::cout << "AD FUn recorded" << std::endl;
+
         adCppadFun_ = fAd;
     }
 
@@ -306,17 +209,6 @@ private:
     int outputDim_;  //! function output dimension
 
     CppAD::ADFun<double> adCppadFun_;
-
-    std::vector<size_t> sparsityRowsJacobian_;
-    std::vector<size_t> sparsityColsJacobian_;
-    std::vector<size_t> sparsityRowsHessian_;
-    std::vector<size_t> sparsityColsHessian_;
-
-    Eigen::VectorXi sparsityRowsJacobianEigen_;
-    Eigen::VectorXi sparsityColsJacobianEigen_;
-    Eigen::VectorXi sparsityRowsHessianEigen_;
-    Eigen::VectorXi sparsityColsHessianEigen_;
-    //!
 };
 
 } /* namespace core */

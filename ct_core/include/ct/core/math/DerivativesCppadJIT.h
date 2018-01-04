@@ -69,7 +69,7 @@ public:
           outputDim_(outputDim),
           compiled_(false), libName_("")
     {
-        
+        update(f, inputDim, outputDim);
     }
 
 
@@ -126,8 +126,9 @@ public:
             assert(model_->isForwardZeroAvailable() == true);
             return model_->ForwardZero(x);
         }
-        else
+        else {
             throw std::runtime_error("Error: Compile the library first by calling compileJIT(..)");
+        }
     }
 
     virtual JAC_TYPE_D jacobian(const Eigen::VectorXd& x)
@@ -395,7 +396,6 @@ public:
             compiler.setTemporaryFolder(tempDir);
             dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler));
         }
-
         else if (settings.compiler_ == DerivativesCppadSettings::CLANG)
         {
             CppAD::cg::ClangCompiler<double> compiler;
