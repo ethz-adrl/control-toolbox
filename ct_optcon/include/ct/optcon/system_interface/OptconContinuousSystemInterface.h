@@ -33,7 +33,7 @@ public:
     typedef typename Base::state_matrix_t state_matrix_t;
     typedef typename Base::state_control_matrix_t state_control_matrix_t;
 
-    typedef ct::core::SystemDiscretizer<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, CONTROL_DIM / 2, SCALAR> discretizer_t;
+    typedef ct::core::SystemDiscretizer<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR> discretizer_t;
     typedef std::shared_ptr<discretizer_t> system_discretizer_ptr_t;
 
     typedef ct::core::Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR> Sensitivity_t;

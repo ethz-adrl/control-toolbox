@@ -39,7 +39,7 @@ namespace core {
 template <size_t STATE_DIM,
     size_t CONTROL_DIM,
     size_t P_DIM = STATE_DIM / 2,
-    size_t V_DIM = CONTROL_DIM / 2,
+    size_t V_DIM = STATE_DIM / 2,
     typename SCALAR = double>
 class SystemDiscretizer : public DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
