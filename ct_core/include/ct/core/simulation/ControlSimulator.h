@@ -122,9 +122,7 @@ protected:
             if (std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - wall_time).count() >=
                 control_dt_)
                 std::cerr << "Simulation running too slow. Please increase the step size!" << std::endl;
-            while (std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - wall_time).count() <
-                   control_dt_)
-                usleep(100);
+            std::this_thread::sleep_until(wall_time + std::chrono::duration<double>(control_dt_));
             wall_time += std::chrono::duration_cast<std::chrono::system_clock::duration>(
                 std::chrono::duration<double>(control_dt_));
 
