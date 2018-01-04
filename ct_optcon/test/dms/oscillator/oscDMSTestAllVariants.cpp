@@ -1,27 +1,13 @@
 /**********************************************************************************************************************
-Copyright (c) 2016, Agile & Dexterous Robotics Lab, ETH ZURICH. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
-      this list of conditions and the following disclaimer in the documentation
-      and/or other materials provided with the distribution.
-    * Neither the name of ETH ZURICH nor the names of its contributors may be used
-      to endorse or promote products derived from this software without specific
-      prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
+Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
+
+/*!
+ * This unit test applies Direct Multiple Shooting to an oscillator system. It employs all possible combinations of settings and solvers.
+ * \example oscDMSTestAllVariants.cpp
+ */
 
 #include <ct/optcon/optcon.h>
 #include <gtest/gtest.h>
@@ -58,21 +44,21 @@ public:
             new ct::optcon::CostFunctionQuadraticSimple<2, 1>(Q_, R_, x_final_, u_des_, x_final_, Q_final_));
 
 
-        pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
+        generalConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
             new ct::optcon::ConstraintContainerAnalytical<2, 1>());
 
         std::shared_ptr<TerminalConstraint<2, 1>> termConstraint(new TerminalConstraint<2, 1>(x_final_));
 
         termConstraint->setName("crazyTerminalConstraint");
 
-        pureStateConstraints_->addTerminalConstraint(termConstraint, true);
+        generalConstraints_->addTerminalConstraint(termConstraint, true);
 
-        pureStateConstraints_->initialize();
+        generalConstraints_->initialize();
 
         OptConProblem<2, 1> optProblem(oscillator_, costFunction_);
         optProblem.setInitialState(x_0_);
         optProblem.setTimeHorizon(settings_.T_);
-        optProblem.setPureStateConstraints(pureStateConstraints_);
+        optProblem.setGeneralConstraints(generalConstraints_);
 
         calcInitGuess();
         dmsPlanner_ = std::shared_ptr<DmsSolver<2, 1>>(new DmsSolver<2, 1>(optProblem, settings_));
@@ -107,7 +93,7 @@ private:
     DmsSettings settings_;
     std::shared_ptr<DmsSolver<2, 1>> dmsPlanner_;
     std::shared_ptr<ct::optcon::CostFunctionQuadratic<2, 1>> costFunction_;
-    std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>> pureStateConstraints_;
+    std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>> generalConstraints_;
 
     OscDimensions::state_vector_t x_0_;
     OscDimensions::state_vector_t x_final_;
@@ -167,10 +153,6 @@ TEST(DmsTest, OscillatorDmsTestAllVariants)
 }  // namespace ct
 
 
-/*!
- * This unit test applies Direct Multiple Shooting to an oscillator system. It employs all possible combinations of settings and solvers.
- * \example oscDMSTestAllVariants.cpp
- */
 int main(int argc, char **argv)
 {
     using namespace ct::optcon::example;

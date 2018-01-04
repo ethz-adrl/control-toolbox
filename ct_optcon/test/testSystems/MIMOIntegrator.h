@@ -1,13 +1,10 @@
-/*
- * MIMOIntegrator.h
- *
- *  Created on: Jul 13, 2017
- *      Author: neunertm
- */
+/**********************************************************************************************************************
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
+Licensed under Apache2 license (see LICENSE file in main directory)
+**********************************************************************************************************************/
 
-#ifndef TEST_TESTSYSTEMS_MIMOINTEGRATOR_H_
-#define TEST_TESTSYSTEMS_MIMOINTEGRATOR_H_
-
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -44,8 +41,9 @@ template <size_t state_dim, size_t control_dim>
 class MIMOIntegratorLinear : public core::LinearSystem<state_dim, control_dim>
 {
 public:
-    typedef typename Eigen::Matrix<double, state_dim, state_dim> state_matrix_t;            //!< state Jacobian type
-    typedef typename Eigen::Matrix<double, state_dim, control_dim> state_control_matrix_t;  //!< input Jacobian type
+    using BASE = core::LinearSystem<state_dim, control_dim>;
+    typedef typename BASE::state_matrix_t state_matrix_t;
+    typedef typename BASE::state_control_matrix_t state_control_matrix_t;
 
     state_matrix_t A_;
     state_control_matrix_t B_;
@@ -101,5 +99,3 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> createMIMOIntegra
 }
 }
 
-
-#endif /* TEST_TESTSYSTEMS_MIMOINTEGRATOR_H_ */

@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -57,8 +57,8 @@ public:
     typedef ct::core::StateVector<STATE_DIM, SCALAR> state_vector_t;
     typedef ct::core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t;
+    typedef ct::core::StateMatrix<STATE_DIM, SCALAR> state_matrix_t;
+    typedef ct::core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;
 
 
     RbdLinearizer(std::shared_ptr<SYSTEM> RBDSystem, bool doubleSidedDerivative = false)

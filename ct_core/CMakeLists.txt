@@ -1,13 +1,13 @@
-cmake_minimum_required (VERSION 2.6) 
-project (ct_core) 
+cmake_minimum_required (VERSION 2.6)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
+project (ct_core)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -std=c++11 -Wall -Wl,--no-as-needed")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -std=c++11 -Wall")
 SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++11 -Wall")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
@@ -20,7 +20,7 @@ find_package(Qwt QUIET)
 find_package(Qt4 QUIET)
 
 
-if(QWT_FOUND AND Qt4_FOUND) 
+if(QWT_FOUND AND Qt4_FOUND)
     set(QWT_ENABLED true)
     add_definitions( -DQWT_ENABLED )
     include(${QT_USE_FILE})
@@ -44,13 +44,13 @@ endif()
 
 include_directories(
   ${BOOST_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}  
+  ${catkin_INCLUDE_DIRS}
 )
 
 include_directories (
     include
     include/external
-    ${EIGEN3_INCLUDE_DIR}   
+    ${EIGEN3_INCLUDE_DIR}
 )
 
 ## assemble list of libraries that contain prespecified templates
@@ -71,8 +71,7 @@ catkin_package(
        ct_core
        ${PRESPEC_LIB_NAMES}
    DEPENDS
-       eigen
-       dl
+       EIGEN3
 )
 
 
@@ -114,6 +113,12 @@ target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
 catkin_add_gtest(IntegratorComparisonPrespec test/integration/IntegratorComparisonPrespec.cpp)
 target_link_libraries(IntegratorComparisonPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
 
+catkin_add_gtest(SymplecticIntegrationTest test/integration/SymplecticIntegrationTest.cpp)
+target_link_libraries(SymplecticIntegrationTest ${catkin_LIBRARIES} ct_core)
+
+catkin_add_gtest(SystemDiscretizerTest test/integration/SystemDiscretizerTest.cpp)
+target_link_libraries(SystemDiscretizerTest ${catkin_LIBRARIES} ct_core)
+
 add_executable(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
 target_link_libraries(SensitivityTest ${catkin_LIBRARIES} ct_core)
 
@@ -148,7 +153,7 @@ endif()
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-    
+
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_core.doxyfile)
     set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
 

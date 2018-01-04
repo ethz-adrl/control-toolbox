@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -229,6 +229,11 @@ public:
 	 * @return     Returns true if initialized
 	 */
     bool isInitialized();
+
+    /**
+     * @brief     Print out sparsity patterns, jacobians, etc. Serves for quick visual inspection
+     */
+    void printout();
 
 protected:
     bool initializedIntermediate_;

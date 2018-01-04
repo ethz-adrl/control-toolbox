@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -685,10 +685,11 @@ const typename HyALinearizedForward<SCALAR>::state_matrix_t& HyALinearizedForwar
     vX_[40] = vX_[384] * vX_[367] + (vX_[367] * vX_[374] - vX_[368] * vX_[383]) * vX_[282] -
               (vX_[40] * vX_[368] + (vX_[367] * vX_[383] - vX_[368] * vX_[382]) * vX_[358]);
     jac[18] =
-        (0 - (vX_[0] * (0.0055279857 * vX_[3] + -0.022851627 * (0 - vX_[8]) + vX_[9] * vX_[90] + vX_[11] * vX_[31] +
-                           vX_[30] * vX_[261] + vX_[12] * vX_[189] + vX_[13] * vX_[264] + vX_[265] * vX_[3] +
-                           (vX_[42] * vX_[2]) / vX_[24] - 0.012390532 * vX_[267] - -0.002752 * vX_[7]) +
-                 vX_[1] * vX_[270]) -
+        (0 -
+            (vX_[0] * (0.0055279857 * vX_[3] + -0.022851627 * (0 - vX_[8]) + vX_[9] * vX_[90] + vX_[11] * vX_[31] +
+                          vX_[30] * vX_[261] + vX_[12] * vX_[189] + vX_[13] * vX_[264] + vX_[265] * vX_[3] +
+                          (vX_[42] * vX_[2]) / vX_[24] - 0.012390532 * vX_[267] - -0.002752 * vX_[7]) +
+                vX_[1] * vX_[270]) -
             (vX_[4] * (-0.034462002 * vX_[3] + -0.022851627 * vX_[7] + (vX_[223] * vX_[263]) / vX_[223] + vX_[262] +
                           vX_[265] * vX_[264] + vX_[98] * vX_[3] + (-0.022851627 * vX_[2]) / vX_[24] -
                           0.0055279857 * vX_[267] - -0.002752 * (0 - vX_[266])) +
@@ -917,7 +918,7 @@ const typename HyALinearizedForward<SCALAR>::state_matrix_t& HyALinearizedForwar
     vX_[31] = vX_[52] * vX_[93] + vX_[31] * vX_[22] + vX_[53] * vX_[3] + vX_[21] * vX_[11];
     vX_[21] = (vX_[25] - vX_[19] * vX_[31]) / vX_[24];
     vX_[52] = vX_[65] - (vX_[42] * vX_[21] + vX_[25] * vX_[19]);
-    vX_[21] = - - 0.022851627 * vX_[21];
+    vX_[21] = --0.022851627 * vX_[21];
     vX_[53] = 0 - (vX_[11] * vX_[369] + vX_[3] * vX_[336]) - (vX_[22] * vX_[89] + vX_[93] * vX_[335]) -
               (vX_[34] * vX_[262] + vX_[157] * vX_[331]) - (vX_[15] * vX_[388] + vX_[120] * vX_[328]);
     vX_[65] = vX_[79] + vX_[259] - vX_[65] - vX_[31] - -0.022851627 * ((-vX_[278]) * vX_[31]) / vX_[24];
@@ -1231,7 +1232,7 @@ const typename HyALinearizedForward<SCALAR>::state_matrix_t& HyALinearizedForwar
     vX_[313] = vX_[313] * vX_[22] + vX_[366] * vX_[11];
     vX_[366] = (vX_[216] - vX_[19] * vX_[313]) / vX_[24];
     vX_[210] = vX_[373] - (vX_[42] * vX_[366] + vX_[216] * vX_[19]);
-    vX_[366] = - - 0.022851627 * vX_[366];
+    vX_[366] = --0.022851627 * vX_[366];
     vX_[208] = 0 - vX_[11] * vX_[99] - vX_[22] * vX_[79] - vX_[34] * vX_[360] - vX_[15] * vX_[3];
     vX_[373] = vX_[213] + vX_[139] - vX_[373] - vX_[313] - -0.022851627 * ((-vX_[278]) * vX_[313]) / vX_[24];
     vX_[217] = vX_[252] * vX_[270] + vX_[228] * vX_[28] + vX_[253] * vX_[40] + vX_[217] * vX_[26] + vX_[211];
@@ -1303,14 +1304,13 @@ const typename HyALinearizedForward<SCALAR>::state_matrix_t& HyALinearizedForwar
                            vX_[0] * (vX_[74] + vX_[358] * vX_[230] - (vX_[42] * vX_[211] + vX_[216] * vX_[372]))) *
                            vX_[4] +
                        vX_[248]) -
-            vX_[365] *
-                ((vX_[4] * vX_[207] +
-                     vX_[0] * (2. * vX_[237] * vX_[358] + vX_[210] + vX_[358] * vX_[220] * vX_[358] - vX_[317])) *
-                        vX_[0] +
-                    (vX_[4] * (vX_[373] - 2. * vX_[188] * vX_[282] - vX_[191] * vX_[282] - vX_[317]) +
-                        vX_[0] * vX_[207]) *
-                        vX_[4] +
-                    vX_[317])) /
+            vX_[365] * ((vX_[4] * vX_[207] + vX_[0] * (2. * vX_[237] * vX_[358] + vX_[210] +
+                                                          vX_[358] * vX_[220] * vX_[358] - vX_[317])) *
+                               vX_[0] +
+                           (vX_[4] * (vX_[373] - 2. * vX_[188] * vX_[282] - vX_[191] * vX_[282] - vX_[317]) +
+                               vX_[0] * vX_[207]) *
+                               vX_[4] +
+                           vX_[317])) /
         vX_[385];
     vX_[317] = vX_[0] * jac[42];
     vX_[207] = vX_[4] * jac[42];
@@ -1446,7 +1446,7 @@ const typename HyALinearizedForward<SCALAR>::state_matrix_t& HyALinearizedForwar
     vX_[190] = vX_[145] * vX_[25] + vX_[190] * vX_[63] + vX_[151] * vX_[101] + vX_[142] * vX_[49];
     vX_[142] = (vX_[141] - vX_[155] * vX_[190]) / vX_[154];
     vX_[145] = vX_[149] - (vX_[152] * vX_[142] + vX_[141] * vX_[155]);
-    vX_[142] = - - 0.00021200017 * vX_[142];
+    vX_[142] = --0.00021200017 * vX_[142];
     vX_[151] = 0 - vX_[21] * vX_[163];
     vX_[148] = -vX_[151];
     vX_[21] = vX_[21] * vX_[166];
@@ -1473,7 +1473,7 @@ const typename HyALinearizedForward<SCALAR>::state_matrix_t& HyALinearizedForwar
                vX_[145] * vX_[280] + vX_[142] * vX_[287] + vX_[311] * vX_[283] + vX_[179] * vX_[308] +
                (vX_[152] * vX_[177] + vX_[141] * vX_[315] - vX_[316] * vX_[190]) / vX_[154];
     vX_[149] = vX_[147] + vX_[140] - vX_[149] - vX_[190] - -0.00021200017 * ((-vX_[92]) * vX_[190]) / vX_[154];
-    vX_[147] = - - 0.00021200017 * vX_[146];
+    vX_[147] = --0.00021200017 * vX_[146];
     vX_[144] = vX_[164] * vX_[207] + vX_[151] * vX_[48] + vX_[143] - vX_[144] - -0.00021200017 * vX_[180];
     vX_[270] = (vX_[117] * vX_[380]) / vX_[117] + vX_[270] + vX_[142] * vX_[280] + vX_[149] * vX_[287] +
                vX_[147] * vX_[283] + vX_[144] * vX_[308] + (-0.00021200017 * vX_[177] - vX_[320] * vX_[190]) / vX_[154];
@@ -1599,7 +1599,7 @@ const typename HyALinearizedForward<SCALAR>::state_matrix_t& HyALinearizedForwar
     vX_[194] = vX_[194] * vX_[22] + vX_[291] * vX_[11];
     vX_[291] = (vX_[179] - vX_[19] * vX_[194]) / vX_[24];
     vX_[353] = vX_[198] - (vX_[42] * vX_[291] + vX_[179] * vX_[19]);
-    vX_[291] = - - 0.022851627 * vX_[291];
+    vX_[291] = --0.022851627 * vX_[291];
     vX_[250] = 0 - vX_[11] * vX_[270] - vX_[22] * vX_[347] - vX_[34] * vX_[181] - vX_[15] * vX_[144];
     vX_[198] = vX_[178] + vX_[142] - vX_[198] - vX_[194] - -0.022851627 * ((-vX_[278]) * vX_[194]) / vX_[24];
     vX_[305] = vX_[239] * vX_[28] + vX_[305] * vX_[26] + vX_[183];
@@ -1761,7 +1761,7 @@ const typename HyALinearizedForward<SCALAR>::state_matrix_t& HyALinearizedForwar
     vX_[177] = -0.184 * vX_[368] + 0.02075 * vX_[251];
     vX_[96] = -1.38614328745655 * vX_[177];
     vX_[103] = vX_[84] * vX_[211] + vX_[31] * vX_[80] - (vX_[103] * vX_[177] + vX_[96] * vX_[102]);
-    vX_[84] = - - 6.25528861700981e-05 * vX_[177];
+    vX_[84] = --6.25528861700981e-05 * vX_[177];
     vX_[165] = -0.00345708950900075 * vX_[177];
     vX_[190] = -vX_[165];
     vX_[141] = vX_[68] * vX_[84] + vX_[368] * vX_[105] + vX_[67] * vX_[190] + vX_[230] * vX_[107];
@@ -1838,7 +1838,7 @@ const typename HyALinearizedForward<SCALAR>::state_matrix_t& HyALinearizedForwar
     vX_[298] = vX_[298] * vX_[63] + vX_[113] * vX_[49];
     vX_[113] = (vX_[81] - vX_[155] * vX_[298]) / vX_[154];
     vX_[155] = vX_[103] - (vX_[152] * vX_[113] + vX_[81] * vX_[155]);
-    vX_[113] = - - 0.00021200017 * vX_[113];
+    vX_[113] = --0.00021200017 * vX_[113];
     vX_[165] = vX_[129] * vX_[251] + vX_[165] * vX_[70];
     vX_[129] = (vX_[165] - vX_[161] * vX_[111]) / vX_[117];
     vX_[31] = vX_[126] * vX_[251] + vX_[96] * vX_[70] + vX_[127] * vX_[368] + vX_[31] * vX_[68] - vX_[33] -
@@ -1872,7 +1872,7 @@ const typename HyALinearizedForward<SCALAR>::state_matrix_t& HyALinearizedForwar
                vX_[113] * vX_[287] + vX_[248] * vX_[283] + vX_[194] * vX_[308] +
                (vX_[152] * vX_[250] + vX_[81] * vX_[315] - vX_[316] * vX_[298]) / vX_[154];
     vX_[103] = vX_[102] + vX_[114] - vX_[103] - vX_[298] - -0.00021200017 * ((-vX_[92]) * vX_[298]) / vX_[154];
-    vX_[102] = - - 0.00021200017 * vX_[292];
+    vX_[102] = --0.00021200017 * vX_[292];
     vX_[126] = vX_[91] * vX_[48] + vX_[104] - vX_[126] - -0.00021200017 * vX_[279];
     vX_[176] = (vX_[117] * vX_[151] + vX_[111] * vX_[296] - vX_[319] * vX_[111]) / vX_[117] + vX_[176] +
                vX_[113] * vX_[280] + vX_[103] * vX_[287] + vX_[102] * vX_[283] + vX_[126] * vX_[308] +
@@ -1997,7 +1997,7 @@ const typename HyALinearizedForward<SCALAR>::state_matrix_t& HyALinearizedForwar
     vX_[327] = vX_[327] * vX_[22] + vX_[205] * vX_[11];
     vX_[205] = (vX_[323] - vX_[19] * vX_[327]) / vX_[24];
     vX_[19] = vX_[324] - (vX_[42] * vX_[205] + vX_[323] * vX_[19]);
-    vX_[205] = - - 0.022851627 * vX_[205];
+    vX_[205] = --0.022851627 * vX_[205];
     vX_[114] = 0 - vX_[11] * vX_[176] - vX_[22] * vX_[188] - vX_[34] * vX_[321] - vX_[15] * vX_[126];
     vX_[324] = vX_[131] + vX_[113] - vX_[324] - vX_[327] - -0.022851627 * ((-vX_[278]) * vX_[327]) / vX_[24];
     vX_[316] = vX_[218] * vX_[28] + vX_[316] * vX_[26] + vX_[319];
@@ -3213,9 +3213,8 @@ const typename HyALinearizedForward<SCALAR>::state_control_matrix_t& HyALineariz
                   vU_[21] -
               (vU_[21] * vU_[56] - vU_[65] * (2.5924191 + vU_[58] + vU_[64] - vU_[24] * vU_[49])) * vU_[65];
     vU_[56] = 0.007629 +
-              (vU_[0] * vU_[43] +
-                  vU_[67] * (2. * vU_[33] * vU_[65] + 0.08585553 + vU_[32] - vU_[66] * vU_[34] +
-                                vU_[65] * vU_[37] * vU_[65] - vU_[56])) *
+              (vU_[0] * vU_[43] + vU_[67] * (2. * vU_[33] * vU_[65] + 0.08585553 + vU_[32] - vU_[66] * vU_[34] +
+                                                vU_[65] * vU_[37] * vU_[65] - vU_[56])) *
                   vU_[67] +
               (vU_[0] * (0.039002996 + vU_[44] + vU_[46] - vU_[32] - vU_[48] - -0.022851627 * -0.022851627 / vU_[27] -
                             2. * vU_[51] * vU_[21] - vU_[36] * vU_[21] - vU_[56]) +
@@ -3510,7 +3509,7 @@ const typename HyALinearizedForward<SCALAR>::state_control_matrix_t& HyALineariz
 
     return dFdu_;
 }
-}
-}
-}
-}
+}  // namespace tpl
+}  // namespace HyA
+}  // namespace models
+}  // namespace ct

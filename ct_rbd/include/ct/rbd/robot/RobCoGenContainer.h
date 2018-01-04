@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -169,7 +169,7 @@ public:
     Position3Tpl getEEPositionInBase(size_t eeId,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
-        return Position3Tpl(getHomogeneousTransformBaseEEById(eeId, jointPosition).template topRightCorner<3,1>());
+        return Position3Tpl(getHomogeneousTransformBaseEEById(eeId, jointPosition).template topRightCorner<3, 1>());
     }
 
     /*!
@@ -192,10 +192,9 @@ public:
     /*!
      * compute the forward kinematics and return a rotation matrix specifying the ee-rotation w.r.t. the base frame
      */
-    Matrix3Tpl getEERotInBase(size_t eeId,
-            const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+    Matrix3Tpl getEERotInBase(size_t eeId, const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
-    	return getHomogeneousTransformBaseEEById(eeId, jointPosition).template topLeftCorner<3,3>();
+        return getHomogeneousTransformBaseEEById(eeId, jointPosition).template topLeftCorner<3, 3>();
     }
 
 

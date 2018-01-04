@@ -1,10 +1,23 @@
 # Control Toolbox
 
-This is the Control Toolbox v2.0, an efficient C++ library for control, estimation, optimization and motion planning in robotics.
+This is the Control Toolbox, an efficient C++ library for control, estimation, optimization and motion planning in robotics.
 
 Please find the documentation [here](https://adrlab.bitbucket.io/ct)
 
 
-Note: in order to leverage the full potential of the ct, enable Eigen Vectorization and multi-threading. Example
+# Licence Information
 
-$ catkin build <your_package> -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-march=native -mtune=native -mavx -mfma -fopenmp" --force-cmake
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+Licensed under Apache2 license (see LICENSE file in main directory)
+
+
+# Author list
+Complete list of authors who contributed code to the Control Toolbox:
+
+Michael Neunert,
+Markus Giftthaler,
+Markus Stäuble,
+Diego Pardo,
+Farbod Farshidian,
+Timothy Sandy,
+Jan Carius

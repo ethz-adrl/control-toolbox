@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -70,6 +70,10 @@ public:
         lastSolveTimer_.reset();
         firstSolveTimer_.reset();
 
+        ext_timer_.reset();
+        ext_lastSolveTimer_.reset();
+        ext_firstSolveTimer_.reset();
+
         lastMeasuredDelay_ = 0.0;
         maxDelayMeasured_ = 0.0;
         minDelayMeasured_ = std::numeric_limits<SCALAR>::max();
@@ -82,20 +86,21 @@ public:
 
     //! compute new mpc timings, based on current time horizon and the given time horizon strategy
     /*!
-	 *
+	 * @param externalTime the external timing, optional.
 	 * @param current_T
 	 * 	the currently active problem time horizon
 	 * @param new_T
 	 * 	the new, updated problem time horizon, which gets computed by the time horizon strategy
 	 * @param t_forw_start
-	 * 	time where to start the forward propagation of the state measurement based on delays and currently optimal policy
+	 * 	time where to start the forward propagation of the state measurement based on delays
 	 * @param t_forw_stop
-	 * 	time where to stop the forward propagation of the state measurement based on delays and currently optimal policy
+	 * 	time where to stop the forward propagation of the state measurement based on delays
 	 */
-    void computeNewTimings(const SCALAR current_T,
+    void computeNewTimings(const SCALAR externalTime,
+        const SCALAR current_T,
         SCALAR& new_T,
-        SCALAR& t_forw_start,  // relative time to start forward integration
-        SCALAR& t_forw_stop)   // relative time to stop forward integration
+        SCALAR& t_forw_start,
+        SCALAR& t_forw_stop)
     {
         if (initialized_ == false)
             throw std::runtime_error(
@@ -107,13 +112,24 @@ public:
 
         if (!firstRun_)
         {
-            lastSolveTimer_.stop();
-            firstSolveTimer_.stop();
-            timeSinceEndedLastSolve = lastSolveTimer_.getElapsedTime();
-            timeSinceEndedFirstSolve = firstSolveTimer_.getElapsedTime();
+            if (mpc_settings_.useExternalTiming_)
+            {
+                ext_firstSolveTimer_.stop(externalTime);
+                ext_lastSolveTimer_.stop(externalTime);
+                timeSinceEndedFirstSolve = ext_firstSolveTimer_.getElapsedTime();
+                timeSinceEndedLastSolve = ext_lastSolveTimer_.getElapsedTime();
+            }
+            else
+            {
+                lastSolveTimer_.stop();
+                firstSolveTimer_.stop();
+                timeSinceEndedLastSolve = lastSolveTimer_.getElapsedTime();
+                timeSinceEndedFirstSolve = firstSolveTimer_.getElapsedTime();
+            }
         }
         else
         {
+            // set zero for the first mpc run
             timeSinceEndedLastSolve = 0.0;
             timeSinceEndedFirstSolve = 0.0;
         }
@@ -182,41 +198,61 @@ public:
 	 */
     void updateSettings(const mpc_settings& settings) { mpc_settings_ = settings; }
     //! start measuring time elapsed during planning / solving the optimal control problem
-    void startDelayMeasurement()
+    void startDelayMeasurement(const SCALAR& externalTime)
     {
         if (mpc_settings_.measureDelay_)
         {
-            timer_.start();
+            if (mpc_settings_.useExternalTiming_)
+                ext_timer_.start(externalTime);
+            else
+                timer_.start();
         }
     }
 
 
     //! stop measuring time elapsed during solving the optimal control problem
-    void stopDelayMeasurement()
+    void stopDelayMeasurement(const SCALAR& externalTime)
     {
-        if (mpc_settings_.measureDelay_)
+        if (mpc_settings_.useExternalTiming_)
+        {
+            ext_timer_.stop(externalTime);
+            lastMeasuredDelay_ = ext_timer_.getElapsedTime();
+            // measure how much time passed since last successful solve()
+            ext_lastSolveTimer_.start(externalTime);
+        }
+        else
         {
             timer_.stop();
             lastMeasuredDelay_ = timer_.getElapsedTime();
-            maxDelayMeasured_ = std::max(maxDelayMeasured_, lastMeasuredDelay_);
-            minDelayMeasured_ = std::min(minDelayMeasured_, lastMeasuredDelay_);
-            summedDelay_ += lastMeasuredDelay_;
-
-            if (lastMeasuredDelay_ < 0)
-                throw std::runtime_error("Fatal: measured delay cannot be < 0");
-
-#ifdef DEBUG_PRINT_TIMEKEEPER
-            std::cout << "Measured delay during Solution: " << lastMeasuredDelay_ << " seconds" << std::endl;
-            std::cout << "Max. measured delay during Solution: " << maxDelayMeasured_ << " seconds" << std::endl;
-            std::cout << "Min. measured delay during Solution: " << minDelayMeasured_ << " seconds" << std::endl;
-#endif
+            // measure how much time passed since last successful solve()
+            lastSolveTimer_.start();
         }
 
-        lastSolveTimer_.start();  // to measure how much time passed since last successful solve()
+        maxDelayMeasured_ = std::max(maxDelayMeasured_, lastMeasuredDelay_);
+        minDelayMeasured_ = std::min(minDelayMeasured_, lastMeasuredDelay_);
+        summedDelay_ += lastMeasuredDelay_;
+
+        if (lastMeasuredDelay_ < 0)
+            throw std::runtime_error("Fatal: measured delay cannot be < 0");
+
+#ifdef DEBUG_PRINT_TIMEKEEPER
+        std::cout << "Measured delay during Solution: " << lastMeasuredDelay_ << " seconds" << std::endl;
+        std::cout << "Max. measured delay during Solution: " << maxDelayMeasured_ << " seconds" << std::endl;
+        std::cout << "Min. measured delay during Solution: " << minDelayMeasured_ << " seconds" << std::endl;
+#endif
 
         if (firstRun_)
         {
-            firstSolveTimer_.start();  // timer for measuring how much time elapsed since the first successful plan
+            // start timer for measuring how much time elapsed since the first successful plan
+            if (mpc_settings_.useExternalTiming_)
+            {
+                ext_firstSolveTimer_.start(externalTime);
+            }
+            else
+            {
+                firstSolveTimer_.start();
+            }
+
             firstRun_ = false;
         }
     }
@@ -227,14 +263,22 @@ public:
 	 * the returned time can be used to synchronize the calls to optimal control problems
 	 * @return time elapsed
 	 */
-    SCALAR timeSincePreviousSuccessfulSolve()
+    SCALAR timeSincePreviousSuccessfulSolve(const SCALAR& externalTime)
     {
         if (firstRun_)
             return 0.0;
         else
         {
-            lastSolveTimer_.stop();
-            return lastSolveTimer_.getElapsedTime();
+            if (mpc_settings_.useExternalTiming_)
+            {
+                ext_lastSolveTimer_.stop(externalTime);
+                return ext_lastSolveTimer_.getElapsedTime();
+            }
+            else
+            {
+                lastSolveTimer_.stop();
+                return lastSolveTimer_.getElapsedTime();
+            }
         }
     }
 
@@ -244,14 +288,22 @@ public:
 	 * the returned time can be used externally, for example to update cost functions
 	 * @return time elapsed
 	 */
-    const SCALAR timeSinceFirstSuccessfulSolve()
+    const SCALAR timeSinceFirstSuccessfulSolve(const SCALAR& externalTime)
     {
         if (firstRun_)
             return 0.0;
         else
         {
-            firstSolveTimer_.stop();
-            return firstSolveTimer_.getElapsedTime();
+            if (mpc_settings_.useExternalTiming_)
+            {
+                ext_firstSolveTimer_.stop(externalTime);
+                return ext_firstSolveTimer_.getElapsedTime();
+            }
+            else
+            {
+                firstSolveTimer_.stop();
+                return firstSolveTimer_.getElapsedTime();
+            }
         }
     }
 
@@ -264,9 +316,9 @@ public:
     //! get the sum of all measured delays
     const SCALAR& getSummedDelay() const { return summedDelay_; }
 private:
-    //! computes the delay to be applied to the policy based on fixed delays and measured delays
+    //! computes the time to forward integrate a measured state according to the current policy based on fixed delays and measured delays
     /*!
-	 * The delay to be applied consinst of a fixed-time delay specified by the user (for example communication delays)
+	 * The delay to be applied consists of a fixed-time delay specified by the user (for example communication delays)
 	 * and a variable delay, which is based on a delay-measurement, which captures the optimal control problem solving times.
 	 * The delay to be applied is the sum of fixed and variable components.
 	 * @return delay to be applied
@@ -281,6 +333,10 @@ private:
         else  // using fixed delay
             fixedDelay += 1e-6 * mpc_settings_.fixedDelayUs_;
 
+#ifdef DEBUG_PRINT_TIMEKEEPER
+        std::cout << "Accumulated delay to apply: " << fixedDelay + variableDelay << " seconds" << std::endl;
+#endif
+
         return fixedDelay + variableDelay;
     }
 
@@ -289,20 +345,30 @@ private:
 
     bool initialized_;
 
-    bool finalPointReached_;  //! flag indicating that the time horizon has been hit
+    //! flag indicating that the time horizon has been hit
+    bool finalPointReached_;
 
-    core::tpl::Timer<SCALAR> timer_;  //! timer for measuring the time elapsed during planning, internal, relative time
-    core::tpl::Timer<SCALAR> lastSolveTimer_;  //! timer to measure how much time elapsed since the last finished solve
-    core::tpl::Timer<SCALAR>
-        firstSolveTimer_;  //! timer for measuring how much time elapsed since the first successful plan
+    //! timer for internally measuring the time elapsed during planning, internal, relative time
+    core::tpl::Timer<SCALAR> timer_;
+    //! timer to internally measure how much time elapsed since the last finished solve
+    core::tpl::Timer<SCALAR> lastSolveTimer_;
+    //! timer for internally measuring how much time elapsed since the first successful plan
+    core::tpl::Timer<SCALAR> firstSolveTimer_;
+
+    //! timer for internally measuring the time elapsed during planning, internal, relative time
+    core::tpl::ExternallyDrivenTimer<SCALAR> ext_timer_;
+    //! timer to internally measure how much time elapsed since the last finished solve
+    core::tpl::ExternallyDrivenTimer<SCALAR> ext_lastSolveTimer_;
+    //! timer for internally measuring how much time elapsed since the first successful plan
+    core::tpl::ExternallyDrivenTimer<SCALAR> ext_firstSolveTimer_;
 
     SCALAR lastMeasuredDelay_;  //! last delay in planning, internal, relative time
     SCALAR maxDelayMeasured_;   //! the max. delay occurred due to planning
     SCALAR minDelayMeasured_;   //! the min. delay occurred due to planning
     SCALAR summedDelay_;        //! sum of all delays measured
 
-    std::shared_ptr<MpcTimeHorizon<SCALAR>>
-        timeHorizonStrategy_;  //! time horizon strategy specified by the user, e.g. constant receding horizon
+    //! time horizon strategy specified by the user, e.g. constant receding horizon
+    std::shared_ptr<MpcTimeHorizon<SCALAR>> timeHorizonStrategy_;
 
     bool firstRun_;  //! set to true if first run active
 };

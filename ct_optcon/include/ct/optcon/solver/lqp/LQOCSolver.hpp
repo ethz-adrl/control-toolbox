@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -16,6 +16,8 @@ namespace optcon {
 /*!
  * Base class for solvers to solve an LQOCProblem
  * (both constrained / unconstrained, etc.)
+ *
+ * \todo uncouple from NLOptConSettings
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class LQOCSolver
@@ -46,6 +48,22 @@ public:
 
     virtual void configure(const NLOptConSettings& settings) = 0;
 
+    //! setup and configure the box constraints
+    virtual void configureBoxConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+    {
+        throw std::runtime_error("box constraints are not available for this solver.");
+    }
+
+    //! setup and configure the general (in)equality constraints
+    virtual void configureGeneralConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+    {
+        throw std::runtime_error("general constraints are not available for this solver.");
+    }
+
+    //! a method reserved for memory allocation (e.g. required for HPIPM)
+    virtual void initializeAndAllocate() = 0;
+
+    //! solve the LQOC problem
     virtual void solve() = 0;
 
     virtual void solveSingleStage(int N)

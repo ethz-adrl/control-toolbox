@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -21,9 +21,9 @@ const size_t state_dim = ct::rbd::FixBaseFDSystem<ct::rbd::HyA::Dynamics>::STATE
 const size_t control_dim = ct::rbd::FixBaseFDSystem<ct::rbd::HyA::Dynamics>::CONTROL_DIM;
 const size_t njoints = ct::rbd::HyA::Dynamics::NJOINTS;
 
-typedef ct::core::ADCodegenLinearizer<state_dim, control_dim>::SCALAR Scalar;
+typedef ct::core::ADCodegenLinearizer<state_dim, control_dim>::ADCGScalar Scalar;
 typedef ct::rbd::FixBaseFDSystem<ct::rbd::HyA::tpl::Dynamics<Scalar>> HyANonLinearSystem;
-typedef ct::core::DerivativesCppad<state_dim, control_dim> JacCG;
+typedef ct::core::DerivativesCppadCG<state_dim, control_dim> JacCG;
 
 template <typename SCALAR>
 using control_vector_t = typename ct::rbd::HyA::tpl::Dynamics<SCALAR>::control_vector_t;

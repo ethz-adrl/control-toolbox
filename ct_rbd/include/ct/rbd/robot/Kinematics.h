@@ -1,16 +1,19 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
 
+#include <unordered_map>
+
 #include <ct/rbd/common/SpatialForceVector.h>
 #include <ct/rbd/state/RBDState.h>
 
 #include "kinematics/EndEffector.h"
 #include "kinematics/FloatingBaseTransforms.h"
+#include "kinematics/InverseKinematicsBase.h"
 
 namespace ct {
 namespace rbd {
@@ -64,7 +67,6 @@ public:
     using EEForce = SpatialForceVector<SCALAR>;
     using EEForceLinear = Vector3Tpl;
 
-
     void initEndeffectors(std::array<EndEffector<NJOINTS, SCALAR>, NUM_EE>& endeffectors)
     {
         for (size_t i = 0; i < NUM_EE; i++)
@@ -74,18 +76,17 @@ public:
     }
 
     /**
-	 * \brief Get an end-effector
-	 * @param id end-effector id
-	 * @return
-	 */
+     * \brief Get an end-effector
+     * @param id end-effector id
+     * @return
+     */
     EndEffector<NJOINTS, SCALAR>& getEndEffector(size_t id) { return endEffectors_[id]; };
     /**
-	 * \brief Set an end-effector
-	 * @param id end-effector id
-	 * @param ee end-effector
-	 */
+     * \brief Set an end-effector
+     * @param id end-effector id
+     * @param ee end-effector
+     */
     void setEndEffector(size_t id, const EndEffector<NJOINTS, SCALAR>& ee){};
-
 
     Jacobian getJacobianById(size_t linkId)
     {
@@ -108,7 +109,8 @@ public:
     HomogeneousTransforms& transforms() { return robcogen().homogeneousTransforms(); }
     const Jacobians& jacobians() const { return robcogen().jacobians(); }
     Jacobians& jacobians() { return robcogen().jacobians(); }
-    //	RigidBodyPoseTpl<SCALAR> getLinkPoseInWorld(size_t linkId, const typename JointStateTpl<NJOINTS, SCALAR>::Position& jointPosition, const RigidBodyPoseTpl<SCALAR>& basePose) {
+    //	RigidBodyPoseTpl<SCALAR> getLinkPoseInWorld(size_t linkId, const typename JointStateTpl<NJOINTS,
+    // SCALAR>::Position& jointPosition, const RigidBodyPoseTpl<SCALAR>& basePose) {
     //		throw std::runtime_error("not implemented");
     //		return getHomogeneousTransformBaseLinkById(linkId, jointPosition);
     //	};
@@ -137,7 +139,8 @@ public:
     }
 
     /*!
-     * Computes the forward kinematics for the end-effector position and expresses the end-effector position in robot base coordinates.
+     * Computes the forward kinematics for the end-effector position and expresses the end-effector position in robot
+     * base coordinates.
      * @param eeID unique identifier of the end-effector in question
      * @param jointPosition current robot joint positions
      * @return the current end-effector position in base coordinates
@@ -151,9 +154,9 @@ public:
         return robcogen().getEEPositionInBase(eeID, jointPosition);
     }
 
-
     /*!
-     * Computes the forward kinematics for the end-effector position and expresses the end-effector pose in robot base coordinates.
+     * Computes the forward kinematics for the end-effector position and expresses the end-effector pose in robot base
+     * coordinates.
      * @param eeID unique identifier of the end-effector in question
      * @param jointPosition current robot joint positions
      * @return the current end-effector pose in base coordinates
@@ -169,11 +172,12 @@ public:
      */
     Matrix3Tpl getEERotInBase(size_t eeID, const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
-    	return robcogen().getEERotInBase(eeID, jointPosition);
+        return robcogen().getEERotInBase(eeID, jointPosition);
     }
 
     /*!
-     * Computes the forward kinematics for the end-effector position and expresses the end-effector position in world coordinates
+     * Computes the forward kinematics for the end-effector position and expresses the end-effector position in world
+     * coordinates
      * @param eeID unique identifier of the end-effector in question
      * @param basePose current robot base pose
      * @param jointPosition current robot joint positions
@@ -195,47 +199,67 @@ public:
         return basePose.position() + W_x_EE;
     }
 
-
     //! get the end-effector pose in world coordinates
     RigidBodyPoseTpl getEEPoseInWorld(size_t eeID,
         const RigidBodyPoseTpl& basePose,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
-    	// ee pose in base coordinates
-    	RigidBodyPoseTpl B_x_EE = getEEPoseInBase(eeID, jointPosition);
+        // ee pose in base coordinates
+        RigidBodyPoseTpl B_x_EE = getEEPoseInBase(eeID, jointPosition);
 
-    	// position rotated into world frame
-    	Position3Tpl W_p_EE = basePose.template rotateBaseToInertia(B_x_EE.position());
+        // position rotated into world frame
+        Position3Tpl W_p_EE = basePose.template rotateBaseToInertia(B_x_EE.position());
 
-    	// orientation rotated into world frame
-    	QuaterionTpl B_q_EE = B_x_EE.getRotationQuaternion();
-    	QuaterionTpl W_q_EE = basePose.template rotateBaseToInertiaQuaternion(B_q_EE);
+        // orientation rotated into world frame
+        QuaterionTpl B_q_EE = B_x_EE.getRotationQuaternion();
+        QuaterionTpl W_q_EE = basePose.template rotateBaseToInertiaQuaternion(B_q_EE);
 
-    	return RigidBodyPoseTpl(W_q_EE, basePose.position() + W_p_EE);
+        return RigidBodyPoseTpl(W_q_EE, basePose.position() + W_p_EE);
     }
-
 
     //! get the end-effector rotation matrix expressed in world coordinates
     Matrix3Tpl getEERotInWorld(size_t eeID,
-            const RigidBodyPoseTpl& basePose,
-            const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+        const RigidBodyPoseTpl& basePose,
+        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
-    	// ee rotation matrix in base coordinates
-    	Matrix3Tpl B_R_EE = getEERotInBase(eeID, jointPosition);
+        // ee rotation matrix in base coordinates
+        Matrix3Tpl B_R_EE = getEERotInBase(eeID, jointPosition);
 
-    	// ee rotation matriix in world
-    	return basePose.template rotateBaseToInertiaMat(B_R_EE);
+        // ee rotation matriix in world
+        return basePose.template rotateBaseToInertiaMat(B_R_EE);
     }
 
+    void addIKSolver(const std::shared_ptr<InverseKinematicsBase<NJOINTS, SCALAR>>& solver,
+        size_t eeID,
+        size_t solverID = 0)
+    {
+        if (solverID >= 100)
+            throw "Solver ID must be less than 100.";
+
+        size_t hash = eeID * 100 + solverID;
+        if (ikSolvers_.find(hash) != ikSolvers_.end())
+            throw "Solver with the same eeID and solverID already present.";
+        ikSolvers_[hash] = solver;
+    }
+
+    std::shared_ptr<InverseKinematicsBase<NJOINTS, SCALAR>> getIKSolver(const size_t eeID,
+        const size_t solverID = 0) const
+    {
+        if (solverID >= 100)
+            throw "Solver ID must be less than 100.";
+        size_t hash = eeID * 100 + solverID;
+        return ikSolvers_[hash];
+    }
 
     /**
-	 * \brief Transforms a force applied at an end-effector and expressed in the world into the link frame the EE is rigidly connected to.
-	 * @param W_force Force expressed in world coordinates
-	 * @param basePose Pose of the base (in the world)
-	 * @param jointPosition Joint angles
-	 * @param eeId ID of the end-effector
-	 * @return
-	 */
+     * \brief Transforms a force applied at an end-effector and expressed in the world into the link frame the EE is
+     * rigidly connected to.
+     * @param W_force Force expressed in world coordinates
+     * @param basePose Pose of the base (in the world)
+     * @param jointPosition Joint angles
+     * @param eeId ID of the end-effector
+     * @return
+     */
     EEForce mapForceFromWorldToLink3d(const Vector3Tpl& W_force,
         const RigidBodyPoseTpl& basePose,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition,
@@ -248,13 +272,14 @@ public:
     }
 
     /**
-	 * \brief Transforms a force applied at an end-effector and expressed in the world into the link frame the EE is rigidly connected to.
-	 * @param W_force Force expressed in world coordinates
-	 * @param basePose Pose of the base (in the world)
-	 * @param jointPosition Joint angles
-	 * @param eeId ID of the end-effector
-	 * @return
-	 */
+     * \brief Transforms a force applied at an end-effector and expressed in the world into the link frame the EE is
+     * rigidly connected to.
+     * @param W_force Force expressed in world coordinates
+     * @param basePose Pose of the base (in the world)
+     * @param jointPosition Joint angles
+     * @param eeId ID of the end-effector
+     * @return
+     */
     EEForce mapForceFromWorldToLink(const EEForce& W_force,
         const RigidBodyPoseTpl& basePose,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition,
@@ -266,16 +291,16 @@ public:
         return mapForceFromWorldToLink(W_force, basePose, jointPosition, B_x_EE, eeId);
     }
 
-
     /**
-	 * \brief Transforms a force applied at an end-effector and expressed in the world into the link frame the EE is rigidly connected to.
-	 * @param W_force Force expressed in world coordinates
-	 * @param basePose Pose of the base (in the world)
-	 * @param jointPosition Joint angles
-	 * @param B_x_EE Position of the end effector in the base
-	 * @param eeId ID of the end-effector
-	 * @return
-	 */
+     * \brief Transforms a force applied at an end-effector and expressed in the world into the link frame the EE is
+     * rigidly connected to.
+     * @param W_force Force expressed in world coordinates
+     * @param basePose Pose of the base (in the world)
+     * @param jointPosition Joint angles
+     * @param B_x_EE Position of the end effector in the base
+     * @param eeId ID of the end-effector
+     * @return
+     */
     EEForce mapForceFromWorldToLink(const EEForce& W_force,
         const RigidBodyPoseTpl& basePose,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition,
@@ -296,26 +321,25 @@ public:
         return EEForce(robcogen().getForceTransformLinkBaseById(linkId, jointPosition) * B_force);
     }
 
-
     /**
-	 * \brief Transforms a force applied at an end-effector expressed in an arbitrary (end-effector)
-	 * frame into the link frame the EE is rigidly connected to.
-	 *
-	 * This function does not assume any position or orientation of the end-effector. Therefore,
-	 * the user must specify the orientation of the end-effector in the base. There are two common
-	 * choices: use zero rotation to assume forces/torques are expressed in the base. Or use the
-	 * base orientation to assume the end-effector forces/torques are expressed in the world. For
-	 * this variant, also see mapForceFromWorldToLink().
-	 *
-	 * NOTE: Even if zero or base rotation is assumed, you have to pass the correct position of the
-	 * end-effector expressed in the base as part of T_B_EE! Do NOT pass the base pose directly here!
-	 *
-	 * @param EE_force 6D torque/force vector expressed in the EE frame
-	 * @param T_B_EE transform from end-effector to base
-	 * @param jointPosition joint angles
-	 * @param eeId ID of the end-effector
-	 * @return
-	 */
+     * \brief Transforms a force applied at an end-effector expressed in an arbitrary (end-effector)
+     * frame into the link frame the EE is rigidly connected to.
+     *
+     * This function does not assume any position or orientation of the end-effector. Therefore,
+     * the user must specify the orientation of the end-effector in the base. There are two common
+     * choices: use zero rotation to assume forces/torques are expressed in the base. Or use the
+     * base orientation to assume the end-effector forces/torques are expressed in the world. For
+     * this variant, also see mapForceFromWorldToLink().
+     *
+     * NOTE: Even if zero or base rotation is assumed, you have to pass the correct position of the
+     * end-effector expressed in the base as part of T_B_EE! Do NOT pass the base pose directly here!
+     *
+     * @param EE_force 6D torque/force vector expressed in the EE frame
+     * @param T_B_EE transform from end-effector to base
+     * @param jointPosition joint angles
+     * @param eeId ID of the end-effector
+     * @return
+     */
     EEForce mapForceFromEEToLink(const EEForce& EE_force,
         const RigidBodyPoseTpl& T_B_EE,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition,
@@ -346,8 +370,9 @@ private:
     std::shared_ptr<RBD> rbdContainer_;
     std::array<EndEffector<NJOINTS, SCALAR>, N_EE> endEffectors_;
     FloatingBaseTransforms<RBD> floatingBaseTransforms_;
-};
 
+    std::unordered_map<size_t, std::shared_ptr<InverseKinematicsBase<NJOINTS, SCALAR>>> ikSolvers_;
+};
 
 } /* namespace rbd */
 } /* namespace ct */

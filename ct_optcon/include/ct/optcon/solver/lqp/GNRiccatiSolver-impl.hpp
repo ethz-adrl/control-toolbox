@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
@@ -149,6 +149,12 @@ SCALAR GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::getSmallestEigenvalue()
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem)
 {
+    if (lqocProblem->isConstrained())
+    {
+        throw std::runtime_error(
+            "Selected wrong solver - GNRiccatiSolver cannot handle constrained problems. Use a different solver");
+    }
+
     const int& N = lqocProblem->getNumberOfStages();
     changeNumberOfStages(N);
 }
@@ -336,6 +342,13 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
     matFile_.close();
 #endif
 }
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::initializeAndAllocate()
+{
+    // do nothing
+}
+
 
 }  // namespace optcon
 }  // namespace ct

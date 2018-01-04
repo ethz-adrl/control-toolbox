@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -17,7 +17,7 @@ using std::shared_ptr;
 const size_t stateSize = 2;
 bool plotResult = false;
 
-std::vector<std::string> integratorNames = {"euler", "rk4", "rk5 variable"};
+std::vector<std::string> integratorNames = {"euler", "rk4", "rk78", "rk5 variable", "ode45", "modified midpoint"};
 std::vector<std::string> integratorCalls = {"const", "nSteps", "adaptive", "times"};
 
 double randomNumber(double min, double max)
@@ -48,8 +48,8 @@ void plotResults(std::vector<StateVectorArray<stateSize>>& stateTrajectories, st
             position.push_back(stateTrajectories[i][j](0) + (stateTrajectories.size() - i - 1));
         }
 
-        size_t type = i / 4;
-        size_t call = i % 4;
+        int type = ((int)i) / 4;
+        int call = i % 4;
         std::string name = integratorNames[type] + " - " + integratorCalls[call];
 
         plot::subplot(5, std::round(stateTrajectories.size() / 5.0) + 1, i + 1);

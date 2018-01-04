@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -42,7 +42,7 @@ struct LineSearchSettings
     double alpha_0;       /*!< Initial step size for line search. Use 1 for step size as suggested by NLOptCon */
     double alpha_max;     /*!< Maximum step size for line search. This is the limit when adapting alpha_0. */
     double
-        n_alpha; /*!< Factor by which the line search step size alpha gets multiplied with after each iteration. Usually 0.5 is a good value. */
+        n_alpha;     /*!< Factor by which the line search step size alpha gets multiplied with after each iteration. Usually 0.5 is a good value. */
     bool debugPrint; /*!< Print out debug information during line-search*/
 
 
@@ -95,71 +95,48 @@ struct LineSearchSettings
     }
 };
 
-struct ParallelBackwardSettings
+
+//! LQOC Solver settings
+/*!
+ * Settings for solving each linear-quadratic (constrained) sub-problem
+ */
+struct LQOCSolverSettings
 {
-    ParallelBackwardSettings()
-    {
-        enabled = false;
-        showWarnings = false;
-        pollingTimeoutUs = 100;
-    }
-
-    bool parametersOk(size_t nThreadsTotal) const
-    {
-        if (pollingTimeoutUs < 10)
-        {
-            std::cout << "Polling timeout is smaller than 10 us. Consider increasing it." << std::endl;
-        }
-        return (pollingTimeoutUs >= 10);
-    }
-
-    bool enabled;      /*!< Flag whether to use parallel backward */
-    bool showWarnings; /*!< Show speed warnings if cost or linearization threads are not fast enough */
-    size_t pollingTimeoutUs;
+public:
+    LQOCSolverSettings() : num_lqoc_iterations(5), lqoc_debug_print(false) {}
+    int num_lqoc_iterations;  //! number of allowed sub-iterations of LQOC solver per NLOC main iteration
+    bool lqoc_debug_print;
 
     void print() const
     {
-        std::cout << "Parallel Backward Settings: " << std::endl;
-        std::cout << "=====================" << std::endl;
-        std::cout << "enabled: " << enabled << std::endl;
-        std::cout << "showWarnings: " << showWarnings << std::endl;
-        std::cout << "pollingTimeoutUs: " << pollingTimeoutUs << std::endl;
+        std::cout << "======================= LQOCSolverSettings =====================" << std::endl;
+        std::cout << "num_lqoc_iterations: \t" << num_lqoc_iterations << std::endl;
+        std::cout << "lqoc_debug_print: \t" << lqoc_debug_print << std::endl;
     }
 
-    void load(const std::string& filename, bool verbose = true, const std::string& ns = "parallel_backward_pass")
+    void load(const std::string& filename, bool verbose = true, const std::string& ns = "lqoc_solver_settings")
     {
         if (verbose)
-            std::cout << "Trying to load parallel backward pass settings from " << filename << ": " << std::endl;
+            std::cout << "Trying to load LQOCSolverSettings config from " << filename << ": " << std::endl;
 
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);
 
         try
         {
-            enabled = pt.get<bool>(ns + ".enabled");
+            num_lqoc_iterations = pt.get<int>(ns + ".num_lqoc_iterations");
         } catch (...)
         {
         }
         try
         {
-            showWarnings = pt.get<bool>(ns + ".showWarnings");
+            lqoc_debug_print = pt.get<bool>(ns + ".lqoc_debug_print");
         } catch (...)
         {
-        }
-        try
-        {
-            pollingTimeoutUs = pt.get<size_t>(ns + ".pollingTimeoutUs");
-        } catch (...)
-        {
-        }
-
-        if (verbose)
-        {
-            std::cout << "Loaded parallel backward settings from " << filename << ": " << std::endl;
-            print();
         }
     }
 };
+
 
 /*!
  * \ingroup NLOptCon
@@ -206,13 +183,13 @@ public:
           min_cost_improvement(1e-5),  //! cost needs to be at least 1e-5 better before we assume convergence
           maxDefectSum(1e-5),
           meritFunctionRho(0.0),
+          meritFunctionRhoConstraints(1.0),
           max_iterations(100),
           fixedHessianCorrection(false),
           recordSmallestEigenvalue(false),
           nThreads(4),
           nThreadsEigen(4),
           lineSearchSettings(),
-          parallelBackward(),
           debugPrint(false),
           printSummary(true),
           useSensitivityIntegrator(false)
@@ -232,16 +209,16 @@ public:
     int K_shot;                       //! duration of a shot as an integer multiple of dt
     double min_cost_improvement;      //! minimum cost improvement between two interations to assume convergence
     double maxDefectSum;              //! maximum sum of squared defects (assume covergence if lower than this number)
-    double meritFunctionRho;          //! trade off between constraint violation and cost for a merit function
-    int max_iterations;  //! the maximum admissible number of NLOptCon main iterations \warning make sure to select this number high enough allow for convergence
-    bool fixedHessianCorrection;    //! perform Hessian regularization by incrementing the eigenvalues by epsilon.
-    bool recordSmallestEigenvalue;  //! save the smallest eigenvalue of the Hessian
-    int nThreads;                   //! number of threads, for MP version
+    double meritFunctionRho;          //! trade off between internal (defect)constraint violation and cost
+    double meritFunctionRhoConstraints;  //! trade off between external (general and path) constraint violation and cost
+    int max_iterations;                  //! the maximum admissible number of NLOptCon main iterations \warning make sure to select this number high enough allow for convergence
+    bool fixedHessianCorrection;         //! perform Hessian regularization by incrementing the eigenvalues by epsilon.
+    bool recordSmallestEigenvalue;       //! save the smallest eigenvalue of the Hessian
+    int nThreads;                        //! number of threads, for MP version
     size_t
-        nThreadsEigen;  //! number of threads for eigen parallelization (applies both to MP and ST) Note. in order to activate Eigen parallelization, compile with '-fopenmp'
+        nThreadsEigen;                      //! number of threads for eigen parallelization (applies both to MP and ST) Note. in order to activate Eigen parallelization, compile with '-fopenmp'
     LineSearchSettings lineSearchSettings;  //! the line search settings
-    ParallelBackwardSettings
-        parallelBackward;  //! do the backward pass in parallel with building the LQ problems (experimental)
+    LQOCSolverSettings lqoc_solver_settings;
     bool debugPrint;
     bool printSummary;
     bool useSensitivityIntegrator;
@@ -281,7 +258,8 @@ public:
         std::cout << "maxIter:\t" << max_iterations << std::endl;
         std::cout << "min cost improvement:\t" << min_cost_improvement << std::endl;
         std::cout << "max defect sum:\t" << maxDefectSum << std::endl;
-        std::cout << "merit function rho:\t" << meritFunctionRho << std::endl;
+        std::cout << "merit function rho defects:\t" << meritFunctionRho << std::endl;
+        std::cout << "merit function rho constraints:\t" << meritFunctionRhoConstraints << std::endl;
         std::cout << "fixedHessianCorrection:\t" << fixedHessianCorrection << std::endl;
         std::cout << "recordSmallestEigenvalue:\t" << recordSmallestEigenvalue << std::endl;
         std::cout << "epsilon:\t" << epsilon << std::endl;
@@ -295,9 +273,8 @@ public:
 
         lineSearchSettings.print();
 
-        std::cout << std::endl;
+        lqoc_solver_settings.print();
 
-        parallelBackward.print();
         std::cout << "===============================================================" << std::endl;
     }
 
@@ -340,7 +317,7 @@ public:
             std::cout << "Number of threads should not exceed 100." << std::endl;
             return false;
         }
-        return (lineSearchSettings.parametersOk() && parallelBackward.parametersOk(nThreads));
+        return (lineSearchSettings.parametersOk());
     }
 
 
@@ -386,6 +363,12 @@ public:
         try
         {
             meritFunctionRho = pt.get<double>(ns + ".meritFunctionRho");
+        } catch (...)
+        {
+        }
+        try
+        {
+            meritFunctionRhoConstraints = pt.get<double>(ns + ".meritFunctionRhoConstraints");
         } catch (...)
         {
         }
@@ -476,7 +459,7 @@ public:
         }
         try
         {
-            parallelBackward.load(filename, verbose, ns + ".parallel_backward_pass");
+            lqoc_solver_settings.load(filename, verbose, ns + ".lqoc_solver_settings");
         } catch (...)
         {
         }

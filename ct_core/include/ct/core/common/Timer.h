@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -21,14 +21,7 @@ class Timer
 {
 public:
     //! Default constructor
-    Timer()
-    {
-        start_time.tv_sec = 0;
-        start_time.tv_usec = 0;
-        stop_time.tv_sec = 0;
-        stop_time.tv_usec = 0;
-    }
-
+    Timer() { reset(); }
     //! Trigger start.
     /*!
 	 * Starts the time measurement.

@@ -1,6 +1,8 @@
 /*!
 @page optcon_tutorials ct optcon Tutorial
 
+In this tutorial we will walk you through implementing several Optimal Controllers for your system, including a basic LQR controller,
+a Nonlinear Optimal Controller (NLOC), a Nonlinear Model Predictive Controller (NMPC) as well as Direct Multiple Shooting (DMS).
 - \subpage optcon_tut_lqr
 - \subpage optcon_tut_mpc
 - \subpage optcon_tut_nloc

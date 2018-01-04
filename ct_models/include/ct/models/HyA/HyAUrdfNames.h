@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -10,9 +10,9 @@ namespace ct {
 namespace models {
 namespace HyA {
 
-static std::vector<std::string> urdfJointNames()
+const std::vector<std::string>& urdfJointNames()
 {
-    std::vector<std::string> urdfJointNames = {
+    static std::vector<std::string> urdfJointNames{
         "hya_saa_joint", "hya_sfe_joint", "hya_hr_joint", "hya_efe_joint", "hya_wr_joint", "hya_wfe_joint",
     };
 

@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -32,7 +32,12 @@ public:
 
     SelectionMatrix(bool floatingBase);
 
-    void setIdentity(bool floatingBase);
+    template <typename T = void>  // do not use this template argument
+    typename std::enable_if<(STATE_DIM < 6), T>::type setIdentity(bool floatingBase);
+
+    template <typename T = void>  // do not use this template argument
+    typename std::enable_if<(STATE_DIM >= 6), T>::type setIdentity(bool floatingBase);
+
 
 private:
 };

@@ -1,17 +1,14 @@
 /*!
- * \example nloc.cpp
+ * \example NLOC.cpp
  *
  * This example shows how to use the nonlinear optimal control solvers iLQR, unconstrained Gauss-Newton-Multiple-Shooting (GNMS),
  * as well as the hybrid methods iLQR-GNMS(M), where M denotes the number of multiple-shooting intervals. This example applies
- * them to a simple oscillator.
- *
- * Details on the algorithms including a derivation and numerous examples can be found in
- * Markus Giftthaler et al, “A Family of iterative Gauss-Newton Shooting Methods for Nonlinear Optimal Control”.
- * Submitted to ICRA 2018.
+ * them to a simple second-order oscillator.
  *
  */
 #include <ct/optcon/optcon.h>
 #include "exampleDir.h"
+#include "plotResultsOscillator.h"
 
 using namespace ct::core;
 using namespace ct::optcon;
@@ -88,10 +85,12 @@ int main(int argc, char **argv)
     ilqr_settings.integrator = ct::core::IntegrationType::EULERCT;
     ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
     ilqr_settings.max_iterations = 10;
+    ilqr_settings.nThreads = 4;  // use multi-threading
     ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
-    ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::
-        GNRICCATI_SOLVER;  // the LQ-problems are solved using a custom Gauss-Newton Riccati solver
+    ilqr_settings.lqocp_solver =
+        NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;  // solve LQ-problems using custom Riccati solver
     ilqr_settings.printSummary = true;
+    ilqr_settings.debugPrint = true;
 
 
     /* STEP 2-B: provide an initial guess */
@@ -121,6 +120,6 @@ int main(int argc, char **argv)
     // STEP 4: retrieve the solution
     ct::core::StateFeedbackController<state_dim, control_dim> solution = iLQR.getSolution();
 
-    // let's examine the output. Here, we print the optimized state trajectory.
-    solution.getReferenceStateTrajectory().print();
+    // let's plot the output
+    plotResultsOscillator<state_dim, control_dim>(solution.x_ref(), solution.uff(), solution.time());
 }

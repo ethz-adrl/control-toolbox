@@ -38,7 +38,7 @@ PROJECT_NAME           = ct
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         = v2.0
+PROJECT_NUMBER         = v2.1
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
@@ -415,7 +415,7 @@ EXTRACT_ALL            = YES
 # be included in the documentation.
 # The default value is: NO.
 
-EXTRACT_PRIVATE        = NO
+EXTRACT_PRIVATE        = YES
 
 # If the EXTRACT_PACKAGE tag is set to YES all members with package or internal
 # scope will be included in the documentation.
@@ -427,7 +427,7 @@ EXTRACT_PACKAGE        = NO
 # included in the documentation.
 # The default value is: NO.
 
-EXTRACT_STATIC         = NO
+EXTRACT_STATIC         = YES
 
 # If the EXTRACT_LOCAL_CLASSES tag is set to YES classes (and structs) defined
 # locally in source files will be included in the documentation. If set to NO
@@ -443,7 +443,7 @@ EXTRACT_LOCAL_CLASSES  = YES
 # included.
 # The default value is: NO.
 
-EXTRACT_LOCAL_METHODS  = NO
+EXTRACT_LOCAL_METHODS  = YES
 
 # If this flag is set to YES, the members of anonymous namespaces will be
 # extracted and appear in the documentation as a namespace called
@@ -683,7 +683,7 @@ LAYOUT_FILE            = DoxygenLayout.xml
 # search path. Do not use file names with spaces, bibtex cannot handle them. See
 # also \cite for info how to create references.
 
-CITE_BIB_FILES         =
+CITE_BIB_FILES         = refs.bib
 
 #---------------------------------------------------------------------------
 # Configuration options related to warning and progress messages
@@ -842,9 +842,7 @@ EXAMPLE_PATH           = ../examples \
 						 ../../ct_core/test \
 						 ../../ct_optcon/examples \
 						 ../../ct_optcon/test \
-						 ../../ct_rbd/examples \
 						 ../../ct_rbd/test \
-						 ../../ct_models/examples \
 						 ../../ct_models/test
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the

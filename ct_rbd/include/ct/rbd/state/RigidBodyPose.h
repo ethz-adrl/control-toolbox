@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -29,9 +29,9 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     /*!
-	 * \brief the orientation can either be stored as EulerAngles or as quaternion.
-	 * \todo reduce to quaternion only
-	 */
+     * \brief the orientation can either be stored as EulerAngles or as quaternion.
+     * \todo reduce to quaternion only
+     */
     enum STORAGE_TYPE
     {
         QUAT = 0,
@@ -106,8 +106,8 @@ public:
     }
 
     /**
-	 * \brief This method returns the Euler angles rotation (X,Y,Z / roll,pitch,yaw).
-	 */
+     * \brief This method returns the Euler angles rotation (X,Y,Z / roll,pitch,yaw).
+     */
     kindr::EulerAnglesXyz<SCALAR> getEulerAnglesXyz() const
     {
         if (storedAsEuler())
@@ -121,8 +121,8 @@ public:
     }
 
     /**
-	 * \brief This method returns the quaternion rotation.
-	 */
+     * \brief This method returns the quaternion rotation.
+     */
     kindr::RotationQuaternion<SCALAR> getRotationQuaternion() const
     {
         if (storedAsEuler())
@@ -136,9 +136,9 @@ public:
     }
 
     /**
-	 * \brief This method returns the  rotation matrix from base to inertia frame. This method returns
-	 * \f$ _iR_b \f$ which is the following rotation matrix \f$ _iv = {_iR_b} {_bv} \f$.
-	 */
+     * \brief This method returns the  rotation matrix from base to inertia frame. This method returns
+     * \f$ _iR_b \f$ which is the following rotation matrix \f$ _iv = {_iR_b} {_bv} \f$.
+     */
     kindr::RotationMatrix<SCALAR> getRotationMatrix() const
     {
         if (storedAsEuler())
@@ -147,7 +147,7 @@ public:
             Eigen::AngleAxis<SCALAR> pitchAngle(euler_.toImplementation()(1), Eigen::Matrix<SCALAR, 3, 1>::UnitY());
             Eigen::AngleAxis<SCALAR> yawAngle(euler_.toImplementation()(2), Eigen::Matrix<SCALAR, 3, 1>::UnitZ());
             Eigen::Quaternion<SCALAR> q = rollAngle * pitchAngle * yawAngle;
-            return kindr::RotationMatrix<SCALAR> (q.matrix());
+            return kindr::RotationMatrix<SCALAR>(q.matrix());
 
             //            return kindr::RotationMatrix<SCALAR>(euler_); // this is not JIT compatible as it uses a unit quat temporarily
         }
@@ -158,8 +158,8 @@ public:
     }
 
     /**
-	 * \brief This method sets the Euler angles rotation (X,Y,Z / roll,pitch,yaw) from a kindr type.
-	 */
+     * \brief This method sets the Euler angles rotation (X,Y,Z / roll,pitch,yaw) from a kindr type.
+     */
     void setFromEulerAnglesXyz(const kindr::EulerAnglesXyz<SCALAR>& eulerAngles)
     {
         if (storedAsEuler())
@@ -173,8 +173,8 @@ public:
     }
 
     /**
-	 * \brief This method sets the Euler angles rotation (X,Y,Z / roll,pitch,yaw) from a kindr type.
-	 */
+     * \brief This method sets the Euler angles rotation (X,Y,Z / roll,pitch,yaw) from a kindr type.
+     */
     void setFromEulerAnglesXyz(const Vector3Tpl& eulerAngles)
     {
         if (storedAsEuler())
@@ -188,8 +188,8 @@ public:
     }
 
     /**
-	 * \brief This method sets the quaternion angles rotation (X,Y,Z / roll,pitch,yaw) from a kindr quaternion type.
-	 */
+     * \brief This method sets the quaternion angles rotation (X,Y,Z / roll,pitch,yaw) from a kindr quaternion type.
+     */
     void setFromRotationQuaternion(const kindr::RotationQuaternion<SCALAR>& quat)
     {
         if (storedAsEuler())
@@ -203,8 +203,8 @@ public:
     }
 
     /**
-	 * \brief This method sets the quaternion angles rotation (X,Y,Z / roll,pitch,yaw) from an Eigen quaternion
-	 */
+     * \brief This method sets the quaternion angles rotation (X,Y,Z / roll,pitch,yaw) from an Eigen quaternion
+     */
     void setFromRotationQuaternion(const Eigen::Quaterniond& quat)
     {
         if (storedAsEuler())
@@ -233,18 +233,45 @@ public:
     }
 
     /**
-	 * \brief This method returns the position of the Base frame in the inertia frame.
-	 */
+     * \brief This method returns the position of the Base frame in the inertia frame.
+     */
 
     const Position3Tpl& position() const { return position_; };
     /**
-	 * \brief This method returns the position of the Base frame in the inertia frame.
-	 */
+     * \brief This method returns the position of the Base frame in the inertia frame.
+     */
 
     Position3Tpl& position() { return position_; };
     /**
-	 * \brief This methods rotates a 3D vector expressed in Base frame to Inertia Frame.
-	 */
+     * \brief This method returns the Base frame in a custom Frame specified in the Inertia Frame.
+     */
+    RigidBodyPose<SCALAR> inReferenceFrame(const RigidBodyPose<SCALAR>& ref_frame) const
+    {
+        if (ref_frame.storedAsEuler() && storedAsEuler())
+        {
+            return RigidBodyPose<SCALAR>(ref_frame.getEulerAnglesXyz().inverseRotate(euler_),
+                ref_frame.getEulerAnglesXyz().inverseRotate(position() - ref_frame.position()));
+        }
+        else if (ref_frame.storedAsEuler() && !storedAsEuler())
+        {
+            return RigidBodyPose<SCALAR>(ref_frame.getEulerAnglesXyz().inverted() * quat_,
+                ref_frame.getEulerAnglesXyz().inverseRotate(position() - ref_frame.position()));
+        }
+        else if (!ref_frame.storedAsEuler() && storedAsEuler())
+        {
+            return RigidBodyPose<SCALAR>(ref_frame.getRotationQuaternion().inverseRotate(euler_),
+                ref_frame.getRotationQuaternion().inverseRotate(position() - ref_frame.position()));
+        }
+        else
+        {
+            return RigidBodyPose<SCALAR>(ref_frame.getRotationQuaternion().inverted() * quat_,
+                ref_frame.getRotationQuaternion().inverseRotate(position() - ref_frame.position()));
+        }
+    };
+
+    /**
+     * \brief This methods rotates a 3D vector expressed in Base frame to Inertia Frame.
+     */
     template <class Vector3s>
     Vector3s rotateBaseToInertia(const Vector3s& vector) const
     {
@@ -273,18 +300,18 @@ public:
 
 
     /**
-	 * \brief This methods rotates a 3D matrix expressed in Base frame to Inertia Frame.
-	 */
+     * \brief This methods rotates a 3D matrix expressed in Base frame to Inertia Frame.
+     */
     Matrix3Tpl rotateBaseToInertiaMat(const Matrix3Tpl& mat) const
     {
-    	kindr::RotationMatrix<SCALAR> rotMat = getRotationMatrix();
-    	return rotMat.toImplementation() * mat;
+        kindr::RotationMatrix<SCALAR> rotMat = getRotationMatrix();
+        return rotMat.toImplementation() * mat;
     }
 
 
     /**
-	 * \brief This methods rotates a quaternion expressed in Base frame to Inertia Frame.
-	 */
+     * \brief This methods rotates a quaternion expressed in Base frame to Inertia Frame.
+     */
     kindr::RotationQuaternion<SCALAR> rotateBaseToInertiaQuaternion(const kindr::RotationQuaternion<SCALAR>& q) const
     {
         kindr::RotationQuaternion<SCALAR> result;
@@ -298,8 +325,8 @@ public:
     }
 
     /**
-	 * \brief This methods rotates a 3D vector expressed in Inertia frame to Base Frame.
-	 */
+     * \brief This methods rotates a 3D vector expressed in Inertia frame to Base Frame.
+     */
     template <class Vector3s>
     Vector3s rotateInertiaToBase(const Vector3s& vector) const
     {
@@ -318,8 +345,8 @@ public:
     };
 
     /**
-	 * \brief This methods returns the Homogeneous transform from the Base frame to the inertia frame.
-	 */
+     * \brief This methods returns the Homogeneous transform from the Base frame to the inertia frame.
+     */
     HomogeneousTransform getHomogeneousTransform() const
     {
         throw std::runtime_error("get homogeneous transform not implemented");
@@ -327,21 +354,21 @@ public:
     };
 
     /**
-	 * Returns gravity vector in world (0.0, 0.0, -9.81)
-	 * @return
-	 */
+     * Returns gravity vector in world (0.0, 0.0, -9.81)
+     * @return
+     */
     static Vector3Tpl gravity3DW(SCALAR g = SCALAR(-9.81)) { return Vector3Tpl(SCALAR(0.0), SCALAR(0.0), g); }
     /**
-	 * \brief This methods returns the 3D gravity vector expressed in the Base frame.
-	 */
+     * \brief This methods returns the 3D gravity vector expressed in the Base frame.
+     */
     Vector3Tpl computeGravityB(const Vector3Tpl& gravityW = gravity3DW()) const
     {
         return rotateInertiaToBase(gravityW);
     }
 
     /**
-	 * \brief This methods returns the 6D gravity vector expressed in the Base frame.
-	 */
+     * \brief This methods returns the 6D gravity vector expressed in the Base frame.
+     */
     Eigen::Matrix<SCALAR, 6, 1> computeGravityB6D(const Vector3Tpl& gravityW = gravity3DW()) const
     {
         Eigen::Matrix<SCALAR, 6, 1> gravityWout(Eigen::Matrix<SCALAR, 6, 1>::Zero());
@@ -350,8 +377,8 @@ public:
     }
 
     /**
-	 * \brief Sets orientation to identity and position to (0, 0, 0)
-	 */
+     * \brief Sets orientation to identity and position to (0, 0, 0)
+     */
     void setIdentity()
     {
         euler_.setIdentity();

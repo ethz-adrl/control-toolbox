@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -69,9 +69,10 @@ void loadMatrixCF(const std::string& filename,
             }
             else
             {
-                matrix(i, j) = scaling * pt.get<double>(termName + ".weights." + matrixName + "." + "(" +
-                                                            std::to_string(i) + "," + std::to_string(j) + ")",
-                                             0.0);
+                matrix(i, j) = scaling *
+                               pt.get<double>(termName + ".weights." + matrixName + "." + "(" + std::to_string(i) +
+                                                  "," + std::to_string(j) + ")",
+                                   0.0);
             }
         }
     }

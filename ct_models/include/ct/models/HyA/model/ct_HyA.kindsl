@@ -36,7 +36,7 @@ link Shoulder_AA {
 	       translation = (0.0, 0.0, 0.089)
 			rotation = (0.0, 0.0, 0.0)
 		}
-		
+
 	}
 }
 

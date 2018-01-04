@@ -18,7 +18,7 @@ function(ct_get_all_srcs ADD_HEADERS)
 
     set(EXTENSIONS "*.cpp")
     if (ADD_HEADERS)
-      list(APPEND EXTENSIONS "*.hpp" ".h")
+      list(APPEND EXTENSIONS "*.hpp" "*.h")
     endif()
     
     # Get all project files
@@ -38,6 +38,8 @@ function(ct_get_all_srcs ADD_HEADERS)
     filter_ct_directories(ALL_CXX_SOURCE_FILES "/HyA/generated/")   # excludes generated code
     filter_ct_directories(ALL_CXX_SOURCE_FILES "/HyQ/generated/")   # excludes generated code
     filter_ct_directories(ALL_CXX_SOURCE_FILES "/QuadrotorWithLoad/generated/")   # excludes generated code
+    filter_ct_directories(ALL_CXX_SOURCE_FILES "transform6d.cpp") #excludes generated inverse kinematics code
+    filter_ct_directories(ALL_CXX_SOURCE_FILES "/ikfast/ikfast.h") #excludes ik fast header
         
      #message(FATAL_ERROR "sources list: ${ALL_CXX_SOURCE_FILES}")
      set(ALL_CXX_SOURCE_FILES ${ALL_CXX_SOURCE_FILES} PARENT_SCOPE)
@@ -99,7 +101,7 @@ function(ct_configure_clang_tidy TIDY_INC_DIRS)
             VERBATIM)
     else()
         message (WARNING "FOUND CLANG-TIDY")
-        set(CLANG_TIDY_COMMAND COMMAND ${CLANG_TIDY_BIN} ${ALL_CXX_SOURCE_FILES} -config='' -header-filter=\".*\\/ct\\/.*\" -- -std=c++11 ${CURRENT_INC_DIRS})
+        set(CLANG_TIDY_COMMAND COMMAND ${CLANG_TIDY_BIN} ${ALL_CXX_SOURCE_FILES} -config='' -header-filter=\".*\\/ct\\/.*\" -- -std=c++11 -fopenmp ${CURRENT_INC_DIRS})
             
         add_custom_target(
             clang-tidy

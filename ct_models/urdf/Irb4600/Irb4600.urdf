@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<robot name="irb4600">
+  <link name="link_0"> </link>
+  <link name="link_1"> </link>
+  <link name="link_2"> </link>
+  <link name="link_3"> </link>
+  <link name="link_4"> </link>
+  <link name="link_5"> </link>
+  <link name="link_6"> </link>
+
+  <joint name="joint_1" type="revolute">
+    <parent link="link_0"/>
+    <child  link="link_1"/>
+    <origin xyz="0 0 0" rpy="0 -0 0 "/>
+    <axis   xyz="0 0 1"/>
+    <limit lower="-3.1416" upper="3.1416" effort="100000" velocity="2.618" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <joint name="joint_2" type="revolute">
+    <parent link="link_1"/>
+    <child  link="link_2"/>
+    <origin xyz="0.175 0 0.495" rpy="0 -0 0 "/>
+    <axis   xyz="0 1 0"/>
+    <limit lower="-1.7453" upper="1.9199" effort="100000" velocity="2.618" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <joint name="joint_3" type="revolute">
+    <parent link="link_2"/>
+    <child  link="link_3"/>
+    <origin xyz="0 0 1.095" rpy="0 -0 0 "/>
+    <axis   xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="100000" velocity="2.618" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <joint name="joint_4" type="revolute">
+    <parent link="link_3"/>
+    <child  link="link_4"/>
+    <origin xyz="0.332 0 0.175" rpy="0 -0 0 "/>
+    <axis   xyz="1 0 0"/>
+    <limit lower="-3.49" upper="3.49" effort="10000" velocity="6.2832" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <joint name="joint_5" type="revolute">
+    <parent link="link_4"/>
+    <child  link="link_5"/>
+    <origin xyz="0.939 0 0" rpy="0 -0 0 "/>
+    <axis   xyz="0 1 0"/>
+    <limit lower="-2.044" upper="2.044" effort="100000" velocity="6.2832" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <joint name="joint_6" type="revolute">
+    <parent link="link_5"/>
+    <child  link="link_6"/>
+    <origin xyz="0.135 0 0" rpy="0 1.57076 0 "/>
+    <axis   xyz="0 0 1"/>
+    <limit lower="-5.5" upper="5.5" effort="100000" velocity="7.854" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+</robot>

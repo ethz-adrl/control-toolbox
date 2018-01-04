@@ -1,10 +1,12 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
+
+#include <ct/core/core.h>
 
 namespace ct {
 namespace rbd {
@@ -86,6 +88,16 @@ public:
         assert(i < NJOINTS && "Invalid joint index");
         return state_(i);
     }
+    /// @brief check joint position limits
+    template <typename T>
+    bool checkPositionLimits(T lowerLimit, T upperLimit)
+    {
+        assert(lowerLimit.size() == NJOINTS && upperLimit.size() == NJOINTS && "Wrong limit dimensions");
+        for (size_t i = 0; i < NJOINTS; ++i)
+            if (getPosition(i) < lowerLimit[i] || getPosition(i) > upperLimit[i])
+                return false;
+        return true;
+    }
 
     /// @brief get joint velocity
     JointPositionBlock getVelocities() { return state_.template tail<NJOINTS>(); }
@@ -100,6 +112,16 @@ public:
     {
         assert(i < NJOINTS && "Invalid joint index");
         return state_(NJOINTS + i);
+    }
+    /// @brief check joint velocity limits
+    template <typename T>
+    bool checkVelocityLimits(T limit)
+    {
+        assert(limit.size() == NJOINTS && "Wrong limit dimension");
+        for (size_t i = 0; i < NJOINTS; ++i)
+            if (abs(getVelocity(i)) > limit[i])
+                return false;
+        return true;
     }
 
 

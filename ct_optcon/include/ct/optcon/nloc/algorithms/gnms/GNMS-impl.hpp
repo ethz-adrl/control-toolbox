@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
@@ -65,24 +65,14 @@ void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareIteration()
         this->backend_->rolloutShots(K_shot, K - 1);
     }
 
-
     auto start = std::chrono::steady_clock::now();
-    this->backend_->computeLinearizedDynamicsAroundTrajectory(K_shot, K - 1);
+    this->backend_->setBoxConstraintsForLQOCProblem();
+    this->backend_->computeLQApproximation(K_shot, K - 1);
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS]: Linearizing from index " << K_shot << " to N-1 took "
+        std::cout << "[GNMS]: computing LQ Approximation from index " << K_shot << " to N-1 took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
-
-
-    start = std::chrono::steady_clock::now();
-    this->backend_->computeQuadraticCostsAroundTrajectory(K_shot, K - 1);
-    end = std::chrono::steady_clock::now();
-    diff = end - start;
-    if (debugPrint)
-        std::cout << "[GNMS]: Cost computation for index " << K_shot << " to N-1 took "
-                  << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
-
 
     if (debugPrint)
         std::cout << "[GNMS]: Solving prepare stage of LQOC Problem" << std::endl;
@@ -126,22 +116,12 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishIteration()
 #endif
 
     auto start = std::chrono::steady_clock::now();
-    this->backend_->computeLinearizedDynamicsAroundTrajectory(0, K_shot - 1);
+    this->backend_->computeLQApproximation(0, K_shot - 1);
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS]: Linearizing for first shot took "
+        std::cout << "[GNMS]: computing LQ approximation for first multiple-shooting interval took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
-
-
-    start = std::chrono::steady_clock::now();
-    this->backend_->computeQuadraticCostsAroundTrajectory(0, K_shot - 1);
-    end = std::chrono::steady_clock::now();
-    diff = end - start;
-    if (debugPrint)
-        std::cout << "[GNMS]: Cost computation for first shot took "
-                  << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
-
 
     if (debugPrint)
         std::cout << "[GNMS]: Finish phase LQOC Problem" << std::endl;
@@ -214,22 +194,13 @@ void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareMPCIteration()
     this->backend_->rolloutShots(K_shot, K - 1);
 
     auto start = std::chrono::steady_clock::now();
-    this->backend_->computeLinearizedDynamicsAroundTrajectory(K_shot, K - 1);
+    this->backend_->setBoxConstraintsForLQOCProblem();
+    this->backend_->computeLQApproximation(K_shot, K - 1);
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS-MPC]: Linearizing from index " << K_shot << " to N-1 took "
+        std::cout << "[GNMS-MPC]: computing LQ approximation from index " << K_shot << " to N-1 took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
-
-
-    start = std::chrono::steady_clock::now();
-    this->backend_->computeQuadraticCostsAroundTrajectory(K_shot, K - 1);
-    end = std::chrono::steady_clock::now();
-    diff = end - start;
-    if (debugPrint)
-        std::cout << "[GNMS-MPC]: Cost computation for index " << K_shot << " to N-1 took "
-                  << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
-
 
     if (debugPrint)
         std::cout << "[GNMS-MPC]: Solving prepare stage of LQOC Problem" << std::endl;
@@ -273,20 +244,11 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishMPCIteration()
 #endif
 
     auto start = std::chrono::steady_clock::now();
-    this->backend_->computeLinearizedDynamicsAroundTrajectory(0, K_shot - 1);
+    this->backend_->computeLQApproximation(0, K_shot - 1);
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS-MPC]: Linearizing for first shot took "
-                  << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
-
-
-    start = std::chrono::steady_clock::now();
-    this->backend_->computeQuadraticCostsAroundTrajectory(0, K_shot - 1);
-    end = std::chrono::steady_clock::now();
-    diff = end - start;
-    if (debugPrint)
-        std::cout << "[GNMS-MPC]: Cost computation for first shot took "
+        std::cout << "[GNMS-MPC]: computing LQ approximation for first multiple-shooting interval took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
     if (debugPrint)

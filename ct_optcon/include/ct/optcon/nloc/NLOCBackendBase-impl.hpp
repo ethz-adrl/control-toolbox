@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -7,11 +7,11 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #define SYMPLECTIC_ENABLED        \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V > 0 && P > 0), void>::type
+    template <size_t V, size_t P, size_t ST> \
+    typename std::enable_if<(V > 0 && P > 0 && (V+P==ST)), void>::type
 #define SYMPLECTIC_DISABLED       \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V <= 0 || P <= 0), void>::type
+    template <size_t V, size_t P, size_t ST> \
+    typename std::enable_if<(V <= 0 || P <= 0 || (V+P!=ST)), void>::type
 
 namespace ct {
 namespace optcon {
@@ -36,6 +36,8 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendBase(
       settings_(settings),
       K_(0),
       d_norm_(0.0),
+      e_box_norm_(0.0),
+      e_gen_norm_(0.0),
       lx_norm_(0.0),
       lu_norm_(0.0),
       lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>()),
@@ -49,8 +51,11 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendBase(
       intermediateCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
       finalCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
       linearSystems_(settings.nThreads + 1),
+      boxConstraints_(settings.nThreads + 1, nullptr),      // initialize constraints with null
+      generalConstraints_(settings.nThreads + 1, nullptr),  // initialize constraints with null
       firstRollout_(true),
-      alphaBest_(-1)
+      alphaBest_(-1),
+      lqpCounter_(0)
 {
     Eigen::initParallel();
 
@@ -67,11 +72,11 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendBase(
     changeNonlinearSystem(optConProblem.getNonlinearSystem());
     changeLinearSystem(optConProblem.getLinearSystem());
 
-    // to be included later
-    //		if(optConProblem.getStateInputConstraints())
-    //			changeStateInputConstraints(optConProblem.getStateInputConstraints());
-    //		if(optConProblem.getPureStateConstraints())
-    //			changePureStateConstraints(optConProblem.getPureStateConstraints());
+    // if the optimal problem has constraints, change
+    if (optConProblem.getBoxConstraints())
+        changeBoxConstraints(optConProblem.getBoxConstraints());
+    if (optConProblem.getGeneralConstraints())
+        changeGeneralConstraints(optConProblem.getGeneralConstraints());
 }
 
 
@@ -161,7 +166,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeTimeHo
     if (tf < 0)
         throw std::runtime_error("negative time horizon specified");
 
-    K_ = settings_.computeK(tf);
+    int newK = settings_.computeK(tf);
+
+    if (newK == K_)
+        return;
+
+    K_ = newK;
 
     t_ = TimeArray(settings_.dt, K_ + 1, 0.0);
 
@@ -198,7 +208,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeInitia
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeCostFunction(
-    const typename Base::OptConProblem_t::CostFunctionPtr_t& cf)
+    const typename OptConProblem_t::CostFunctionPtr_t& cf)
 {
     if (cf == nullptr)
         throw std::runtime_error("cost function is nullptr");
@@ -208,17 +218,18 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeCostFu
     for (int i = 0; i < settings_.nThreads + 1; i++)
     {
         // make a deep copy
-        costFunctions_[i] = typename Base::OptConProblem_t::CostFunctionPtr_t(cf->clone());
+        costFunctions_[i] = typename OptConProblem_t::CostFunctionPtr_t(cf->clone());
     }
 
     // recompute cost if line search is active
+    // TODO: this should be multi-threaded to save time
     if (iteration_ > 0 && settings_.lineSearchSettings.active)
-        computeQuadraticCostsAroundTrajectory(0, K_ - 1);
+        computeCostsOfTrajectory(settings_.nThreads, x_, u_ff_, intermediateCostBest_, finalCostBest_);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlinearSystem(
-    const typename Base::OptConProblem_t::DynamicsPtr_t& dyn)
+    const typename OptConProblem_t::DynamicsPtr_t& dyn)
 {
     if (dyn == nullptr)
         throw std::runtime_error("system dynamics are nullptr");
@@ -233,7 +244,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
     for (int i = 0; i < settings_.nThreads + 1; i++)
     {
         // make a deep copy
-        systems_[i] = typename Base::OptConProblem_t::DynamicsPtr_t(dyn->clone());
+        systems_[i] = typename OptConProblem_t::DynamicsPtr_t(dyn->clone());
         systems_[i]->setController(controller_[i]);
 
         substepRecorders_[i] = std::shared_ptr<ct::core::SubstepRecorder<STATE_DIM, CONTROL_DIM, SCALAR>>(
@@ -249,7 +260,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
             integrators_[i] = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR>>(
                 new ct::core::Integrator<STATE_DIM, SCALAR>(systems_[i], settings_.integrator, substepRecorders_[i]));
         }
-        initializeSymplecticIntegrators<V_DIM, P_DIM>(i);
+        initializeSymplecticIntegrators<V_DIM, P_DIM, STATE_DIM>(i);
 
 
         if (settings_.useSensitivityIntegrator)
@@ -275,6 +286,48 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlin
     }
     reset();  // since system changed, we have to start fresh, i.e. with a rollout
 }
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeBoxConstraints(
+    const typename OptConProblem_t::ConstraintPtr_t& con)
+{
+    if (con == nullptr)
+        throw std::runtime_error("NLOCBackendBase: box constraint is nullptr");
+
+    boxConstraints_.resize(settings_.nThreads + 1);
+
+    for (int i = 0; i < settings_.nThreads + 1; i++)
+    {
+        // make a deep copy
+        boxConstraints_[i] = typename OptConProblem_t::ConstraintPtr_t(con->clone());
+    }
+
+    // TODO can we do this multi-threaded?
+    if (iteration_ > 0 && settings_.lineSearchSettings.active)
+        computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeGeneralConstraints(
+    const typename OptConProblem_t::ConstraintPtr_t& con)
+{
+    if (con == nullptr)
+        throw std::runtime_error("NLOCBackendBase: general constraint is nullptr");
+
+    generalConstraints_.resize(settings_.nThreads + 1);
+
+    for (int i = 0; i < settings_.nThreads + 1; i++)
+    {
+        // make a deep copy
+        generalConstraints_[i] = typename OptConProblem_t::ConstraintPtr_t(con->clone());
+    }
+
+    // TODO can we do this multi-threaded?
+    if (iteration_ > 0 && settings_.lineSearchSettings.active)
+        computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
+}
+
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 SYMPLECTIC_ENABLED NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeSymplecticIntegrators(
@@ -305,7 +358,7 @@ SYMPLECTIC_DISABLED NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeLinearSystem(
-    const typename Base::OptConProblem_t::LinearPtr_t& lin)
+    const typename OptConProblem_t::LinearPtr_t& lin)
 {
     linearSystems_.resize(settings_.nThreads + 1);
 
@@ -438,7 +491,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::simpleRollou
 
 		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
 		{
-			integrateSymplectic<V_DIM, P_DIM>(threadId, x_local[i], 0, subSteps, dt_sim);
+			integrateSymplectic<V_DIM, P_DIM, STATE_DIM>(threadId, x_local[i], 0, subSteps, dt_sim);
 		} else
 		{
 			integrators_[threadId]->integrate_n_steps(x_local[i], 0, subSteps, dt_sim);
@@ -534,7 +587,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutSingl
         if (settings_.integrator == ct::core::IntegrationType::EULER_SYM ||
             settings_.integrator == ct::core::IntegrationType::RK_SYM)
         {
-            integrateSymplectic<V_DIM, P_DIM>(threadId, xShot[i], i * dt, subSteps, dt_sim);
+            integrateSymplectic<V_DIM, P_DIM, STATE_DIM>(threadId, xShot[i], i * dt, subSteps, dt_sim);
         }
         else
         {
@@ -616,7 +669,7 @@ SYMPLECTIC_DISABLED NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShotsSingleThreaded(size_t threadId,
+bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShotsSingleThreaded(size_t threadId,
     size_t firstIndex,
     size_t lastIndex,
     ControlVectorArray& u_ff_local,
@@ -633,11 +686,15 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::rolloutShots
     for (size_t k = firstIndex; k <= lastIndex; k = k + settings_.K_shot)
     {
         // first rollout the shot
-        rolloutSingleShot(threadId, k, u_ff_local, x_local, x_ref_lqr, xShot, substepsX, substepsU);
+        bool dynamicsGood = rolloutSingleShot(threadId, k, u_ff_local, x_local, x_ref_lqr, xShot, substepsX, substepsU);
+
+        if (!dynamicsGood)
+            return false;
 
         // then compute the corresponding defect
         computeSingleDefect(k, x_local, xShot, d);
     }
+    return true;
 }
 
 
@@ -683,6 +740,86 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeCosts
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeBoxConstraintErrorOfTrajectory(
+    size_t threadId,
+    const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+    const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+    scalar_t& e_tot) const
+{
+    e_tot = 0;
+
+    // intermediate constraints
+    for (size_t k = 0; k < (size_t)K_; k++)
+    {
+        if (boxConstraints_[threadId] != nullptr)
+        {
+            if (boxConstraints_[threadId]->getIntermediateConstraintsCount() > 0)
+            {
+                boxConstraints_[threadId]->setCurrentStateAndControl(x_local[k], u_local[k], settings_.dt * k);
+                Eigen::Matrix<SCALAR, -1, 1> box_err = boxConstraints_[threadId]->getTotalBoundsViolationIntermediate();
+                e_tot += box_err.norm();  // TODO check if we should use different norms here
+            }
+        }
+    }
+
+    // normalize integrated violation by time
+    e_tot *= settings_.dt;
+
+    // terminal constraint violation
+    if (boxConstraints_[threadId] != nullptr)
+    {
+        if (boxConstraints_[threadId]->getTerminalConstraintsCount() > 0)
+        {
+            boxConstraints_[threadId]->setCurrentStateAndControl(
+                x_local[K_], control_vector_t::Zero(), settings_.dt * K_);
+            Eigen::Matrix<SCALAR, -1, 1> box_err = boxConstraints_[threadId]->getTotalBoundsViolationTerminal();
+            e_tot += box_err.norm();  // TODO check if we should use different norms here
+        }
+    }
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeGeneralConstraintErrorOfTrajectory(
+    size_t threadId,
+    const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+    const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+    scalar_t& e_tot) const
+{
+    e_tot = 0;
+
+    // intermediate constraints
+    for (size_t k = 0; k < (size_t)K_; k++)
+    {
+        if (generalConstraints_[threadId] != nullptr)
+        {
+            if (generalConstraints_[threadId]->getIntermediateConstraintsCount() > 0)
+            {
+                generalConstraints_[threadId]->setCurrentStateAndControl(x_local[k], u_local[k], settings_.dt * k);
+                Eigen::Matrix<SCALAR, -1, 1> gen_err =
+                    generalConstraints_[threadId]->getTotalBoundsViolationIntermediate();
+                e_tot += gen_err.norm();  // TODO check if we should use different norms here
+            }
+        }
+    }
+
+    // normalize integrated violation by time
+    e_tot *= settings_.dt;
+
+    if (generalConstraints_[threadId] != nullptr)
+    {
+        if (generalConstraints_[threadId]->getTerminalConstraintsCount() > 0)
+        {
+            generalConstraints_[threadId]->setCurrentStateAndControl(
+                x_local[K_], control_vector_t::Zero(), settings_.dt * K_);
+            Eigen::Matrix<SCALAR, -1, 1> gen_err = generalConstraints_[threadId]->getTotalBoundsViolationTerminal();
+            e_tot += gen_err.norm();  // TODO check if we should use different norms here
+        }
+    }
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedDynamics(size_t threadId, size_t k)
 {
     LQOCProblem_t& p = *lqocProblem_;
@@ -704,6 +841,80 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinea
 
     sensitivity_[threadId]->setSubstepTrajectoryReference(substepsX_.get(), substepsU_.get());
     sensitivity_[threadId]->getAandB(x_[k], u_ff_[k], xShot_[k], (int)k, settings_.K_sim, p.A_[k], p.B_[k]);
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::setBoxConstraintsForLQOCProblem()
+{
+    // set box constraints if there are any
+    if (boxConstraints_[settings_.nThreads] != nullptr)
+    {
+        // temp vars
+        Eigen::VectorXi foo, u_sparsity_intermediate, x_sparsity_intermediate, x_sparsity_terminal;
+
+        // intermediate box constraints
+        const int nb_ux_intermediate = boxConstraints_[settings_.nThreads]->getJacobianStateNonZeroCountIntermediate() +
+                                       boxConstraints_[settings_.nThreads]->getJacobianInputNonZeroCountIntermediate();
+
+        if (nb_ux_intermediate > 0)
+        {
+            boxConstraints_[settings_.nThreads]->sparsityPatternInputIntermediate(foo, u_sparsity_intermediate);
+            boxConstraints_[settings_.nThreads]->sparsityPatternStateIntermediate(foo, x_sparsity_intermediate);
+
+            Eigen::VectorXi ux_sparsity_intermediate(nb_ux_intermediate);
+            x_sparsity_intermediate.array() += CONTROL_DIM;  // shift indices to match combined decision vector [u, x]
+            ux_sparsity_intermediate << u_sparsity_intermediate, x_sparsity_intermediate;
+
+            lqocProblem_->setIntermediateBoxConstraints(nb_ux_intermediate,
+                boxConstraints_[settings_.nThreads]->getLowerBoundsIntermediate(),
+                boxConstraints_[settings_.nThreads]->getUpperBoundsIntermediate(), ux_sparsity_intermediate);
+        }
+
+        // terminal box constraints
+        const int nb_x_terminal = boxConstraints_[settings_.nThreads]->getJacobianStateNonZeroCountTerminal();
+
+        if (nb_x_terminal > 0)
+        {
+            boxConstraints_[settings_.nThreads]->sparsityPatternStateTerminal(foo, x_sparsity_terminal);
+
+            lqocProblem_->setTerminalBoxConstraints(nb_x_terminal,
+                boxConstraints_[settings_.nThreads]->getLowerBoundsTerminal(),
+                boxConstraints_[settings_.nThreads]->getUpperBoundsTerminal(), x_sparsity_terminal);
+        }
+    }
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::computeLinearizedConstraints(size_t threadId,
+    size_t k)
+{
+    // set general if there are any
+    if (generalConstraints_[threadId] != nullptr)
+    {
+        LQOCProblem_t& p = *lqocProblem_;
+        const scalar_t& dt = settings_.dt;
+
+        // treat general constraints
+        generalConstraints_[threadId]->setCurrentStateAndControl(x_[k], u_ff_[k], dt * k);
+
+        p.ng_[k] = generalConstraints_[threadId]->getIntermediateConstraintsCount();
+        if (p.ng_[k] > 0)
+        {
+            p.hasGenConstraints_ = true;
+            p.C_[k] = generalConstraints_[threadId]->jacobianStateIntermediate();
+            p.D_[k] = generalConstraints_[threadId]->jacobianInputIntermediate();
+
+            Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> g_eval = generalConstraints_[threadId]->evaluateIntermediate();
+
+            // rewrite constraint in absolute coordinates as required by LQOC problem
+            p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
+                         p.D_[k] * u_ff_[k];
+            p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
+                         p.D_[k] * u_ff_[k];
+        }
+    }
 }
 
 
@@ -741,10 +952,30 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initializeCo
     // feed current state and control to cost function
     costFunctions_[settings_.nThreads]->setCurrentStateAndControl(x_[K_], control_vector_t::Zero(), settings_.dt * K_);
 
-    // derivative of termination cost with respect to state
+    // derivative of terminal cost with respect to state
     p.q_[K_] = costFunctions_[settings_.nThreads]->evaluateTerminal();
     p.qv_[K_] = costFunctions_[settings_.nThreads]->stateDerivativeTerminal();
     p.Q_[K_] = costFunctions_[settings_.nThreads]->stateSecondDerivativeTerminal();
+
+    // init terminal general constraints, if any
+    if (generalConstraints_[settings_.nThreads] != nullptr)
+    {
+        p.ng_[K_] = generalConstraints_[settings_.nThreads]->getTerminalConstraintsCount();
+        if (p.ng_[K_] > 0)
+        {
+            p.hasGenConstraints_ = true;
+            p.C_[K_] = generalConstraints_[settings_.nThreads]->jacobianStateTerminal();
+            p.D_[K_] = generalConstraints_[settings_.nThreads]->jacobianInputTerminal();
+
+            Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> g_eval =
+                generalConstraints_[settings_.nThreads]->evaluateTerminal();
+
+            p.d_lb_[K_] =
+                generalConstraints_[settings_.nThreads]->getLowerBoundsTerminal() - g_eval + p.C_[K_] * x_[K_];
+            p.d_ub_[K_] =
+                generalConstraints_[settings_.nThreads]->getUpperBoundsTerminal() - g_eval + p.C_[K_] * x_[K_];
+        }
+    }
 }
 
 
@@ -762,9 +993,14 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::printSummary
         smallestEigenvalue = lqocSolver_->getSmallestEigenvalue();
     }
 
+    computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
+    computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
+
     summaryAllIterations_.iterations.push_back(iteration_);
     summaryAllIterations_.defect_l1_norms.push_back(d_norm_l1);
     summaryAllIterations_.defect_l2_norms.push_back(d_norm_l2);
+    summaryAllIterations_.e_box_norms.push_back(e_box_norm_);
+    summaryAllIterations_.e_gen_norms.push_back(e_gen_norm_);
     summaryAllIterations_.lx_norms.push_back(lx_norm_);
     summaryAllIterations_.lu_norms.push_back(lu_norm_);
     summaryAllIterations_.intermediateCosts.push_back(intermediateCostBest_);
@@ -824,6 +1060,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logToMatlab(
     d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);
     matFile_.put("d_norm", d_norm_);
 
+    computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
+    computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
+    matFile_.put("e_box_norm", e_box_norm_);
+    matFile_.put("e_gen_norm", e_gen_norm_);
+
     matFile_.close();
 #endif  //MATLAB_FULL_LOG
 }
@@ -849,6 +1090,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::logInitToMat
 
     d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);
     matFile_.put("d_norm", d_norm_);
+
+    computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
+    computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
+    matFile_.put("e_box_norm", e_box_norm_);
+    matFile_.put("e_gen_norm", e_gen_norm_);
 
     matFile_.close();
 #endif
@@ -945,10 +1191,15 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
     }
     else
     {
+        // merit of previous trajectory
+        lowestCost_ = intermediateCostBest_ + finalCostBest_ +
+                      (e_box_norm_ + e_gen_norm_) * settings_.meritFunctionRhoConstraints;
+        lowestCostPrevious = lowestCost_;
+
         if (settings_.lineSearchSettings.debugPrint)
         {
             std::cout << "[LineSearch]: Starting line search." << std::endl;
-            std::cout << "[LineSearch]: Cost last rollout: " << lowestCost_ << std::endl;
+            std::cout << "[LineSearch]: Merit last rollout: " << lowestCost_ << std::endl;
         }
 
         alphaBest_ = performLineSearch();
@@ -971,9 +1222,9 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchSi
         }
     }
 
-    if ((lowestCostPrevious - lowestCost_) / lowestCostPrevious > settings_.min_cost_improvement)
+    if ((fabs((lowestCostPrevious - lowestCost_) / lowestCostPrevious)) > settings_.min_cost_improvement)
     {
-        return true;
+        return true;  //! found better cost
     }
 
     if (settings_.debugPrint)
@@ -996,12 +1247,16 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
     ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
     scalar_t& intermediateCost,
     scalar_t& finalCost,
+    scalar_t& e_box_norm,
+    scalar_t& e_gen_norm,
     StateSubsteps& substepsX,
     ControlSubsteps& substepsU,
     std::atomic_bool* terminationFlag) const
 {
     intermediateCost = std::numeric_limits<scalar_t>::infinity();
     finalCost = std::numeric_limits<scalar_t>::infinity();
+    e_box_norm = 0.0;
+    e_gen_norm = 0.0;
 
     if (terminationFlag && *terminationFlag)
         return;
@@ -1021,7 +1276,14 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 
     if (dynamicsGood)
     {
+        // compute cost specific to this alpha
         computeCostsOfTrajectory(threadId, x_local, u_local, intermediateCost, finalCost);
+
+        // compute constraint violations specific to this alpha
+        if (boxConstraints_[threadId] != nullptr)
+            computeBoxConstraintErrorOfTrajectory(threadId, x_local, u_local, e_box_norm);
+        if (generalConstraints_[threadId] != nullptr)
+            computeGeneralConstraintErrorOfTrajectory(threadId, x_local, u_local, e_gen_norm);
     }
     else
     {
@@ -1140,6 +1402,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
     scalar_t& intermediateCost,
     scalar_t& finalCost,
     scalar_t& defectNorm,
+    scalar_t& e_box_norm,
+    scalar_t& e_gen_norm,
     StateSubsteps& substepsX,
     ControlSubsteps& substepsU,
     std::atomic_bool* terminationFlag) const
@@ -1147,6 +1411,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
     intermediateCost = std::numeric_limits<scalar_t>::max();
     finalCost = std::numeric_limits<scalar_t>::max();
     defectNorm = std::numeric_limits<scalar_t>::max();
+    e_box_norm = 0.0;
+    e_gen_norm = 0.0;
 
     if (terminationFlag && *terminationFlag)
         return;
@@ -1161,7 +1427,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
     if (terminationFlag && *terminationFlag)
         return;
 
-    rolloutShotsSingleThreaded(
+    bool dynamicsGood = rolloutShotsSingleThreaded(
         threadId, 0, K_ - 1, u_alpha, x_alpha, x_alpha, x_shot_alpha, defects_recorded, substepsX, substepsU);
 
     if (terminationFlag && *terminationFlag)
@@ -1174,7 +1440,24 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
         return;
 
     //! compute costs
-    computeCostsOfTrajectory(threadId, x_alpha, u_alpha, intermediateCost, finalCost);
+    if (dynamicsGood)
+    {
+        computeCostsOfTrajectory(threadId, x_alpha, u_alpha, intermediateCost, finalCost);
+
+        // compute constraint violations specific to this alpha
+        if (boxConstraints_[threadId] != nullptr)
+            computeBoxConstraintErrorOfTrajectory(threadId, x_alpha, u_alpha, e_box_norm);
+        if (generalConstraints_[threadId] != nullptr)
+            computeGeneralConstraintErrorOfTrajectory(threadId, x_alpha, u_alpha, e_gen_norm);
+    }
+    else
+    {
+        if (settings_.debugPrint)
+        {
+            std::string msg = std::string("dynamics not good, thread: ") + std::to_string(threadId);
+            std::cout << msg << std::endl;
+        }
+    }
 
     if (terminationFlag && *terminationFlag)
         return;
@@ -1184,8 +1467,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::executeLineS
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareSolveLQProblem(size_t startIndex)
 {
+    lqpCounter_++;
+
     // if solver is HPIPM, there's nothing to prepare
-    if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER) {}
+    if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
+    {
+    }
     // if solver is GNRiccati - we iterate backward up to the first stage
     else if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
     {
@@ -1205,6 +1492,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::prepareSolve
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishSolveLQProblem(size_t endIndex)
 {
+    lqpCounter_++;
+
     // if solver is HPIPM, solve the full problem
     if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
     {
@@ -1230,9 +1519,28 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::finishSolveL
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::solveFullLQProblem()
 {
+    lqpCounter_++;
+
     lqocProblem_->x_ = x_;
     lqocProblem_->u_ = u_ff_;
+
+    if (lqocProblem_->isBoxConstrained())
+    {
+        if (settings_.debugPrint)
+            std::cout << "LQ Problem has box constraints. Configuring box constraints now. " << std::endl;
+
+        lqocSolver_->configureBoxConstraints(lqocProblem_);
+    }
+    if (lqocProblem_->isGeneralConstrained())
+    {
+        if (settings_.debugPrint)
+            std::cout << "LQ Problem has general constraints. Configuring general constraints now. " << std::endl;
+
+        lqocSolver_->configureGeneralConstraints(lqocProblem_);
+    }
+
     lqocSolver_->setProblem(lqocProblem_);
+
     lqocSolver_->solve();
 }
 
@@ -1458,35 +1766,35 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getCostFunctionIn
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 std::vector<typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::ConstraintPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getStateInputConstraintsInstances()
+NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getBoxConstraintsInstances()
 {
-    return stateInputConstraints_;
+    return boxConstraints_;
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 const std::vector<
     typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::ConstraintPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getStateInputConstraintsInstances() const
+NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getBoxConstraintsInstances() const
 {
-    return stateInputConstraints_;
+    return boxConstraints_;
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 std::vector<typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::ConstraintPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getPureStateConstraintsInstances()
+NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getGeneralConstraintsInstances()
 {
-    return pureStateConstraints_;
+    return generalConstraints_;
 }
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 const std::vector<
     typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptConProblem_t::ConstraintPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getPureStateConstraintsInstances() const
+NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getGeneralConstraintsInstances() const
 {
-    return pureStateConstraints_;
+    return generalConstraints_;
 }
 
 

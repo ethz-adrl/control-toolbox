@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
@@ -15,7 +15,6 @@ OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem()
 {
 }
 
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem(DynamicsPtr_t nonlinDynamics,
     CostFunctionPtr_t costFunction,
@@ -25,8 +24,8 @@ OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem(DynamicsPtr_t nonli
       controlledSystem_(nonlinDynamics),
       costFunction_(costFunction),
       linearizedSystem_(linearSystem),
-      stateInputConstraints_(nullptr),
-      pureStateConstraints_(nullptr)
+      boxConstraints_(nullptr),
+      generalConstraints_(nullptr)
 {
     if (linearSystem == nullptr)  // no linearization provided
     {
@@ -43,6 +42,38 @@ OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem(const SCALAR& tf,
     CostFunctionPtr_t costFunction,
     LinearPtr_t linearSystem)
     : OptConProblem(nonlinDynamics, costFunction, linearSystem)  // delegating constructor
+{
+    tf_ = tf;
+    x0_ = x0;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem(DynamicsPtr_t nonlinDynamics,
+    CostFunctionPtr_t costFunction,
+    ConstraintPtr_t boxConstraints,
+    ConstraintPtr_t generalConstraints,
+    LinearPtr_t linearSystem)
+    : OptConProblem(nonlinDynamics, costFunction, linearSystem)  // delegating constructor
+{
+    boxConstraints_ = boxConstraints;
+    generalConstraints_ = generalConstraints;
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::OptConProblem(const SCALAR& tf,
+    const state_vector_t& x0,
+    DynamicsPtr_t nonlinDynamics,
+    CostFunctionPtr_t costFunction,
+    ConstraintPtr_t boxConstraints,
+    ConstraintPtr_t generalConstraints,
+    LinearPtr_t linearSystem)
+    : OptConProblem(nonlinDynamics,
+          costFunction,
+          boxConstraints,
+          generalConstraints,
+          linearSystem)  // delegating constructor
 {
     tf_ = tf;
     x0_ = x0;
@@ -112,43 +143,33 @@ void OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setCostFunction(const CostFu
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setStateInputConstraints(const ConstraintPtr_t constraint)
+void OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setBoxConstraints(const ConstraintPtr_t constraint)
 {
-    stateInputConstraints_ = constraint;
-    if (!stateInputConstraints_->isInitialized())
-        stateInputConstraints_->initialize();
-    if ((stateInputConstraints_->getJacobianInputNonZeroCountIntermediate() +
-            stateInputConstraints_->getJacobianInputNonZeroCountTerminal()) == 0)
-        std::cout << "WARNING: The state input constraint container does not"
-                  << " contain any elements in the constraint jacobian with respect to the input."
-                  << " Consider adding the constraints as pure state constraints. " << std::endl;
+    boxConstraints_ = constraint;
+    if (!boxConstraints_->isInitialized())
+        boxConstraints_->initialize();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setPureStateConstraints(const ConstraintPtr_t constraint)
+void OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(const ConstraintPtr_t constraint)
 {
-    pureStateConstraints_ = constraint;
-    if (!pureStateConstraints_->isInitialized())
-        pureStateConstraints_->initialize();
-    if ((pureStateConstraints_->getJacobianInputNonZeroCountIntermediate() +
-            pureStateConstraints_->getJacobianInputNonZeroCountTerminal()) > 0)
-        throw std::runtime_error(
-            "Pure state constraints contain an element with a non zero derivative with respect to control input."
-            " Implement this constraint as state input constraint");
+    generalConstraints_ = constraint;
+    if (!generalConstraints_->isInitialized())
+        generalConstraints_->initialize();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 const typename OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::ConstraintPtr_t
-OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::getStateInputConstraints() const
+OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::getBoxConstraints() const
 {
-    return stateInputConstraints_;
+    return boxConstraints_;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 const typename OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::ConstraintPtr_t
-OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::getPureStateConstraints() const
+OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>::getGeneralConstraints() const
 {
-    return pureStateConstraints_;
+    return generalConstraints_;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>

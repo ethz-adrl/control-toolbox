@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -7,7 +7,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <memory>
-#include <ct/core/systems/ControlledSystem.h>
+#include <ct/core/systems/continuous_time/ControlledSystem.h>
 #include "kinematics/RBDDataMap.h"
 #include "Kinematics.h"
 #include "ProjectedDynamics.h"
@@ -116,7 +116,7 @@ public:
 	 */
     ENABLE_FIX_BASE FixBaseForwardDynamics(const JointState_t& x, const control_vector_t& u, JointAcceleration_t& qdd)
     {
-        ExtLinkForces_t force(Eigen::Matrix<double, 6, 1>::Zero());
+        ExtLinkForces_t force(Eigen::Matrix<SCALAR, 6, 1>::Zero());
         FixBaseForwardDynamics(x, u, force, qdd);
     }
 
@@ -132,6 +132,15 @@ public:
         const JointAcceleration_t& qdd,
         const ExtLinkForces_t& force,
         control_vector_t& u);
+
+    /**
+	 * @brief Computes Inverse dynamics of a fixed-base system without external
+	 * forces.
+	 * @param[in] 	x		the current state of the robot
+	 * @param[in] 	qdd		the Joints acceleration
+	 * @param[out]	u		The control vector
+	 */
+    ENABLE_FIX_BASE FixBaseID(const JointState_t& x, const JointAcceleration_t& qdd, control_vector_t& u);
 
     /**
 	 * @brief Compute forward dynamics for an floating-base RBD system under external
@@ -253,6 +262,15 @@ ENABLE_FIX_BASE_IMPL Dynamics<RBD, NEE>::FixBaseID(const JointState_t& x,
     const ExtLinkForces_t& force,
     control_vector_t& u)
 {
+    kinematics_->robcogen().inverseDynamics().id(u, x.getPositions(), x.getVelocities(), qdd.getAcceleration(), force);
+}
+
+template <class RBD, size_t NEE>
+ENABLE_FIX_BASE_IMPL Dynamics<RBD, NEE>::FixBaseID(const JointState_t& x,
+    const JointAcceleration_t& qdd,
+    control_vector_t& u)
+{
+    ExtLinkForces_t force(Eigen::Matrix<SCALAR, 6, 1>::Zero());
     kinematics_->robcogen().inverseDynamics().id(u, x.getPositions(), x.getVelocities(), qdd.getAcceleration(), force);
 }
 

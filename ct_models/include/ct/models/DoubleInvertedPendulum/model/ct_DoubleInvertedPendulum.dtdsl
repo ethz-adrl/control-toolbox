@@ -1,0 +1,22 @@
+Robot ct_DoubleInvertedPendulum
+
+Frames {
+    fr_DoubleInvertedPendulumBase, fr_Link1, fr_Joint1, fr_Link2, fr_Joint2, fr_ee
+}
+
+Transforms {
+    
+	base=fr_DoubleInvertedPendulumBase, target=fr_Link1
+	base=fr_DoubleInvertedPendulumBase, target=fr_Link2
+	base=fr_DoubleInvertedPendulumBase, target=fr_ee
+
+    base=fr_Link2, target=fr_DoubleInvertedPendulumBase
+	base=fr_Link1, target=fr_DoubleInvertedPendulumBase
+	base=fr_ee, target=fr_DoubleInvertedPendulumBase	
+}
+
+Jacobians {
+	base=fr_DoubleInvertedPendulumBase, target=fr_Link2
+	base=fr_DoubleInvertedPendulumBase, target=fr_Link1
+	base=fr_DoubleInvertedPendulumBase, target=fr_ee
+}

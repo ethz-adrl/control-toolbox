@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -25,11 +25,11 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #endif
 
 #define SYMPLECTIC_ENABLED        \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V > 0 && P > 0), void>::type
+    template <size_t V, size_t P, size_t ST> \
+    typename std::enable_if<(V > 0 && P > 0 && (V+P==ST)), void>::type
 #define SYMPLECTIC_DISABLED       \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V <= 0 || P <= 0), void>::type
+    template <size_t V, size_t P, size_t ST> \
+    typename std::enable_if<(V <= 0 || P <= 0 || (V+P!=ST)), void>::type
 
 namespace ct {
 namespace optcon {
@@ -61,8 +61,6 @@ public:
 
     typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
-    typedef OptConSolver<NLOCBackendBase, Policy_t, Settings_t, STATE_DIM, CONTROL_DIM, SCALAR> Base;
-
     typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
     typedef LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR> LQOCSolver_t;
 
@@ -80,25 +78,24 @@ public:
     typedef std::vector<ControlVectorArrayPtr, Eigen::aligned_allocator<ControlVectorArrayPtr>> ControlSubsteps;
     typedef std::shared_ptr<ControlSubsteps> ControlSubstepsPtr;
 
-    typedef ct::core::ControlMatrix<CONTROL_DIM, SCALAR> ControlMatrix;
-    typedef ct::core::ControlMatrixArray<CONTROL_DIM, SCALAR> ControlMatrixArray;
-    typedef ct::core::StateMatrixArray<STATE_DIM, SCALAR> StateMatrixArray;
-    typedef ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> StateControlMatrixArray;
-    typedef ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> FeedbackArray;
-    typedef ct::core::tpl::TimeArray<SCALAR> TimeArray;
+    using ControlMatrix = ct::core::ControlMatrix<CONTROL_DIM, SCALAR>;
+    using ControlMatrixArray = ct::core::ControlMatrixArray<CONTROL_DIM, SCALAR>;
+    using StateMatrixArray = ct::core::StateMatrixArray<STATE_DIM, SCALAR>;
+    using StateControlMatrixArray = ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR>;
+    using FeedbackArray = ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>;
+    using TimeArray = ct::core::tpl::TimeArray<SCALAR>;
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t;
+    using state_matrix_t = Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>;
+    using control_matrix_t = Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>;
+    using control_state_matrix_t = Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>;
+    using state_control_matrix_t = Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM>;
 
-    typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
-    typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
-    typedef core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR> feedback_matrix_t;
+    using state_vector_t = core::StateVector<STATE_DIM, SCALAR>;
+    using control_vector_t = core::ControlVector<CONTROL_DIM, SCALAR>;
+    using feedback_matrix_t = core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>;
 
-
-    typedef SCALAR scalar_t;
-    typedef std::vector<SCALAR, Eigen::aligned_allocator<SCALAR>> scalar_array_t;
+    using scalar_t = SCALAR;
+    using scalar_array_t = std::vector<SCALAR, Eigen::aligned_allocator<SCALAR>>;
 
 
     NLOCBackendBase(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const Settings_t& settings);
@@ -157,36 +154,33 @@ public:
 
     /*!
 	 * \brief Change the initial state for the optimal control problem
-	 *
-	 * This function does not need to be called if setOptConProblem() has been called
-	 * with an OptConProblem that had the correct initial state set
 	 */
     void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0);
 
     /*!
 	 * \brief Change the cost function
-	 *
-	 * This function does not need to be called if setOptConProblem() has been called
-	 * with an OptConProblem that had the correct cost function
 	 */
-    void changeCostFunction(const typename Base::OptConProblem_t::CostFunctionPtr_t& cf);
+    void changeCostFunction(const typename OptConProblem_t::CostFunctionPtr_t& cf);
 
     /*!
 	 * \brief Change the nonlinear system
-	 *
-	 * This function does not need to be called if setOptConProblem() has been called
-	 * with an OptConProblem that had the correct nonlinear system
 	 */
-    void changeNonlinearSystem(const typename Base::OptConProblem_t::DynamicsPtr_t& dyn);
+    void changeNonlinearSystem(const typename OptConProblem_t::DynamicsPtr_t& dyn);
 
     /*!
 	 * \brief Change the linear system
-	 *
-	 * This function does not need to be called if setOptConProblem() has been called
-	 * with an OptConProblem that had the correct linear system
 	 */
-    void changeLinearSystem(const typename Base::OptConProblem_t::LinearPtr_t& lin);
+    void changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin);
 
+    /*!
+	 * \brief Change the box constraints
+	 */
+    void changeBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t& con);
+
+    /*!
+	 * \brief Change the general constraints
+	 */
+    void changeGeneralConstraints(const typename OptConProblem_t::ConstraintPtr_t& con);
 
     /*!
 	 * \brief Direct accessor to the system instances
@@ -228,32 +222,32 @@ public:
     const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const;
 
     /**
-	 * @brief      Direct accessor to the state input constraint instances
+	 * @brief      Direct accessor to the box constraint instances
 	 *
 	 * \warning{Use this only when performance absolutely matters and if you know what you
 	 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
 	 * in a safe and easy way. You should especially not change the size of the vector or
 	 * modify each entry differently.}
 	 *
-	 * @return     The state input constraint instances
+	 * @return     The box constraint instances
 	 */
-    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances();
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances();
 
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateInputConstraintsInstances() const;
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const;
 
     /**
-	 * @brief      Direct accessor to the pure state constraints
+	 * @brief      Direct accessor to the general constraints
 	 *
 	 * \warning{Use this only when performance absolutely matters and if you know what you
 	 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
 	 * in a safe and easy way. You should especially not change the size of the vector or
 	 * modify each entry differently.}
 	 *
-	 * @return     The pure state constraints instances.
+	 * @return     The general constraints instances.
 	 */
-    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances();
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances();
 
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getPureStateConstraintsInstances() const;
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() const;
 
 
     /*!
@@ -339,11 +333,11 @@ public:
     //! perform line-search and update controller for multiple shooting
     bool lineSearchMultipleShooting();
 
-    //! Computes the linearization of the dynamics along the trajectory, for the specified indices. See computeLinearizedDynamics for details
-    virtual void computeLinearizedDynamicsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
+    //! build LQ approximation around trajectory (linearize dynamics and general constraints, quadratize cost)
+    virtual void computeLQApproximation(size_t firstIndex, size_t lastIndex) = 0;
 
-    //! Computes the quadratic approximation of the cost function along the trajectory, for the specified indices
-    virtual void computeQuadraticCostsAroundTrajectory(size_t firstIndex, size_t lastIndex) = 0;
+    //! sets the box constraints for the entire time horizon including terminal stage
+    void setBoxConstraintsForLQOCProblem();
 
     //! obtain state update from lqoc solver
     void getStateUpdates();
@@ -364,7 +358,7 @@ public:
     virtual void rolloutShots(size_t firstIndex, size_t lastIndex) = 0;
 
     //! do a single threaded rollout and defect computation of the shots - useful for line-search
-    void rolloutShotsSingleThreaded(size_t threadId,
+    bool rolloutShotsSingleThreaded(size_t threadId,
         size_t firstIndex,
         size_t lastIndex,
         ControlVectorArray& u_ff_local,
@@ -377,7 +371,6 @@ public:
 
     //! performLineSearch: execute the line search, possibly with different threading schemes
     virtual SCALAR performLineSearch() = 0;
-
 
     //! simple full-step update for state and feedforward control (used for MPC-mode!)
     void doFullStepUpdate();
@@ -420,6 +413,7 @@ protected:
         const StateVectorArray& xShot,
         StateVectorArray& d) const;
 
+
     //! Computes the linearized Dynamics at a specific point of the trajectory
     /*!
 	  This function calculates the linearization, i.e. matrices A and B in \f$ \dot{x} = A(x(k)) x + B(x(k)) u \f$
@@ -429,6 +423,19 @@ protected:
 	  \param k step k
 	*/
     void computeLinearizedDynamics(size_t threadId, size_t k);
+
+
+    //! Computes the linearized general constraints at a specific point of the trajectory
+    /*!
+	  This function calculates the linearization, i.e. matrices d, C and D in \f$ d_{lb} \leq C x + D u \leq d_{ub}\f$
+	  at a specific point of the trajectory
+
+	  \param threadId the id of the worker thread
+	  \param k step k
+
+	  \note the box constraints do not need to be linearized
+	*/
+    void computeLinearizedConstraints(size_t threadId, size_t k);
 
     //! Computes the quadratic costs
     /*!
@@ -478,6 +485,31 @@ protected:
         scalar_t& intermediateCost,
         scalar_t& finalCost) const;
 
+    /*!
+	 * @brief Compute box constraint violations for a given set of state and input trajectory
+     *
+	 * \param threadId the ID of the thread
+	 * \param x_local the state trajectory
+	 * \param u_local the control trajectory
+	 * \param e_tot the total accumulated box constraint violation
+	 */
+    void computeBoxConstraintErrorOfTrajectory(size_t threadId,
+        const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+        const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+        scalar_t& e_tot) const;
+
+    /*!
+	 * @brief Compute general constraint violations for a given set of state and input trajectory
+     *
+	 * \param threadId the ID of the thread
+	 * \param x_local the state trajectory
+	 * \param u_local the control trajectory
+	 * \param e_tot the total accumulated general constraint violation
+	 */
+    void computeGeneralConstraintErrorOfTrajectory(size_t threadId,
+        const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+        const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+        scalar_t& e_tot) const;
 
     //! Check if controller with particular alpha is better
     void executeLineSearchSingleShooting(const size_t threadId,
@@ -486,6 +518,8 @@ protected:
         ControlVectorArray& u_local,
         scalar_t& intermediateCost,
         scalar_t& finalCost,
+        scalar_t& e_box_norm,
+        scalar_t& e_gen_norm,
         StateSubsteps& substepsX,
         ControlSubsteps& substepsU,
         std::atomic_bool* terminationFlag = nullptr) const;
@@ -502,6 +536,8 @@ protected:
         scalar_t& intermediateCost,
         scalar_t& finalCost,
         scalar_t& defectNorm,
+        scalar_t& e_box_norm,
+        scalar_t& e_gen_norm,
         StateSubsteps& substepsX,
         ControlSubsteps& substepsU,
         std::atomic_bool* terminationFlag = nullptr) const;
@@ -589,9 +625,11 @@ protected:
 
     FeedbackArray L_;
 
-    SCALAR d_norm_;   //! sum of the norms of all defects
-    SCALAR lx_norm_;  //! sum of the norms of state update
-    SCALAR lu_norm_;  //! sum of the norms of control update
+    SCALAR d_norm_;      //! sum of the norms of all defects (internal constraint)
+    SCALAR e_box_norm_;  //! sum of the norms of all box constraint violations
+    SCALAR e_gen_norm_;  //! sum of the norms of all general constraint violations
+    SCALAR lx_norm_;     //! sum of the norms of state update
+    SCALAR lu_norm_;     //! sum of the norms of control update
 
     //! shared pointer to the linear-quadratic optimal control problem
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>> lqocProblem_;
@@ -601,7 +639,6 @@ protected:
 
     StateSubstepsPtr substepsX_;
     ControlSubstepsPtr substepsU_;
-
 
     scalar_t intermediateCostBest_;
     scalar_t finalCostBest_;
@@ -625,12 +662,15 @@ protected:
     std::vector<typename OptConProblem_t::DynamicsPtr_t> systems_;
     std::vector<typename OptConProblem_t::LinearPtr_t> linearSystems_;
     std::vector<typename OptConProblem_t::CostFunctionPtr_t> costFunctions_;
-    std::vector<typename OptConProblem_t::ConstraintPtr_t> stateInputConstraints_;
-    std::vector<typename OptConProblem_t::ConstraintPtr_t> pureStateConstraints_;
+    std::vector<typename OptConProblem_t::ConstraintPtr_t> boxConstraints_;
+    std::vector<typename OptConProblem_t::ConstraintPtr_t> generalConstraints_;
 
 
     bool firstRollout_;
     scalar_t alphaBest_;
+
+    //! a counter used to identify lqp problems in derived classes, i.e. for thread management in MP
+    size_t lqpCounter_;
 
     SummaryAllIterations<SCALAR> summaryAllIterations_;
 };

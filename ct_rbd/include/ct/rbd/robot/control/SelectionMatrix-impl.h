@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
@@ -23,21 +23,32 @@ SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::SelectionMatrix(bool floatingBa
 }
 
 template <size_t CONTROL_DIM, size_t STATE_DIM, typename SCALAR>
-void SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::setIdentity(bool floatingBase)
+template <typename T>
+typename std::enable_if<(STATE_DIM >= 6), T>::type SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::setIdentity(
+    bool floatingBase)
 {
     this->setZero();
 
     if (floatingBase)
     {
-        if (STATE_DIM < 6)
-            throw std::runtime_error("Selection Matrix for floating base systems should at least have 6 columns");
-
         this->template bottomRightCorner<CONTROL_DIM, STATE_DIM - 6>().setIdentity();
     }
     else
     {
         this->template bottomRightCorner<CONTROL_DIM, CONTROL_DIM>().setIdentity();
     }
+}
+
+template <size_t CONTROL_DIM, size_t STATE_DIM, typename SCALAR>
+template <typename T>
+typename std::enable_if<(STATE_DIM < 6), T>::type SelectionMatrix<CONTROL_DIM, STATE_DIM, SCALAR>::setIdentity(
+    bool floatingBase)
+{
+    if (floatingBase)
+        throw std::runtime_error("Selection Matrix for floating base systems should at least have 6 columns");
+
+    this->setZero();
+    this->template bottomRightCorner<CONTROL_DIM, CONTROL_DIM>().setIdentity();
 }
 }
 }

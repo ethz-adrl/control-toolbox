@@ -1,17 +1,31 @@
 /*!
 
 \page changelog Change Log
+@tableofcontents
 
-\section cl_v2 Version 2
+For a complete list of changes, we encourage you to check out our git repository at https://bitbucket.org/adrlab/ct
+
+\section cl_v21 Version 2.1
+- added (in)equality constrained linear-quadratic optimal control problems
+- refactored HPIPM interface (HPIPM is a high-performance interior-point QP solver)
+- changed from pure state and state-input constraints to box constraints and general 
+inequality constraints in optimal control problems
+- provide general in-equality constrained versions of iLQR, GNMS and their hybrid variants.
+- minor improvements to NLOCBackends
+
+\section cl_v2 Version 2.0
 Features
 - added GNMS algorithm
-- explicit template instantiation
-- HPIPM support
+- type simplifications
+- explicit template instantiation for faster compilation speed
+- improved interfaces for SNOPT/IPOPT
+- several speed improvements
+- added HPIPM interface
 - improved Auto-Diff JIT and code-generation support
 - Constraints module
 
 
-\section cl_v1 Version 1
+\section cl_v1 Version 1.0
 - initial release
 
 
