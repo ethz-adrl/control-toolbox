@@ -9,15 +9,15 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-  //! interface class for optimal control algorithms
-  /*!
-   * Defines the unified interface for optimal control solvers used in conjuction
-   * with a discrete optimal control problem.
-   *
-   * \tparam STATE_DIM size of state vector
-   * \tparam CONTROL_DIM size of input vector
-   * \tparam SCALAR the underlying scalar type
-   */
+//! interface class for optimal control algorithms
+/*!
+ * Defines the unified interface for optimal control solvers used in conjuction
+ * with a discrete optimal control problem.
+ *
+ * \tparam STATE_DIM size of state vector
+ * \tparam CONTROL_DIM size of input vector
+ * \tparam SCALAR the underlying scalar type
+ */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class OptconDiscreteSystemInterface : public OptconSystemInterface<STATE_DIM,
                                           CONTROL_DIM,
@@ -47,7 +47,7 @@ public:
     OptconDiscreteSystemInterface(const optConProblem_t& problem, const settings_t& settings);
 
     //! destructor
-    virtual ~OptconDiscreteSystemInterface();
+    virtual ~OptconDiscreteSystemInterface() {}
 
     //TODO initialize and configure methods
 
@@ -84,6 +84,9 @@ public:
         const control_vector_t& control,
         state_vector_t& stateNext,
         const size_t threadId) override;
+
+    virtual void changeNonlinearSystem(const typename optConProblem_t::DynamicsPtr_t& dyn) override;
+    virtual void changeLinearSystem(const typename optConProblem_t::LinearPtr_t& lin) override;
 };
 
 }  // namespace optcon

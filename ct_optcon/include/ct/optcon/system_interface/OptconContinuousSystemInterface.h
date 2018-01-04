@@ -51,7 +51,7 @@ public:
     OptconContinuousSystemInterface(const optConProblem_t& problem, const settings_t& settings);
 
     //! destructor
-    virtual ~OptconContinuousSystemInterface();
+    virtual ~OptconContinuousSystemInterface() {}
 
     //! perform necessary setup work
     virtual void initialize() override;
@@ -90,6 +90,9 @@ public:
         const control_vector_t& control,
         state_vector_t& stateNext,
         const size_t threadId) override;
+
+    virtual void changeNonlinearSystem(const typename optConProblem_t::DynamicsPtr_t& dyn) override;
+    virtual void changeLinearSystem(const typename optConProblem_t::LinearPtr_t& lin) override;
 
     //! set the number of stages/time steps
     virtual void changeNumStages(const int numStages) override;

@@ -32,7 +32,12 @@ namespace optcon {
  * 	\warning Using numerical differentiation is inefficient and typically slow.
  *
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR = double>
+template <size_t STATE_DIM,
+    size_t CONTROL_DIM,
+    typename system_t,
+    typename linear_system_t,
+    typename linearizer_t,
+    typename SCALAR = double>
 class OptConProblemBase
 {
 public:

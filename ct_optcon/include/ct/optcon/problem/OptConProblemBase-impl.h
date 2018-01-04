@@ -10,13 +10,14 @@ namespace ct {
 namespace optcon {
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::OptConProblemBase()
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::OptConProblemBase()
 {
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::OptConProblemBase(DynamicsPtr_t nonlinDynamics,
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::OptConProblemBase(
+    DynamicsPtr_t nonlinDynamics,
     CostFunctionPtr_t costFunction,
     LinearPtr_t linearSystem)
     : tf_(0.0),
@@ -29,14 +30,13 @@ OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::Op
 {
     if (linearSystem == nullptr)  // no linearization provided
     {
-        linearizedSystem_ = std::shared_ptr<core::SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>>(
-            new core::SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>(controlledSystem_));
+        linearizedSystem_ = std::shared_ptr<linearizer_t>(new linearizer_t(controlledSystem_));
     }
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::OptConProblemBase(const time_t tf,
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::OptConProblemBase(const time_t tf,
     const state_vector_t& x0,
     DynamicsPtr_t nonlinDynamics,
     CostFunctionPtr_t costFunction,
@@ -48,8 +48,9 @@ OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::Op
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::OptConProblemBase(DynamicsPtr_t nonlinDynamics,
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::OptConProblemBase(
+    DynamicsPtr_t nonlinDynamics,
     CostFunctionPtr_t costFunction,
     ConstraintPtr_t boxConstraints,
     ConstraintPtr_t generalConstraints,
@@ -61,8 +62,8 @@ OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::Op
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::OptConProblemBase(const time_t tf,
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::OptConProblemBase(const time_t tf,
     const state_vector_t& x0,
     DynamicsPtr_t nonlinDynamics,
     CostFunctionPtr_t costFunction,
@@ -80,8 +81,8 @@ OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::Op
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::verify() const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::verify() const
 {
     if (!controlledSystem_)
     {
@@ -102,102 +103,108 @@ void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-const typename OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::DynamicsPtr_t
-OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::getNonlinearSystem() const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+const typename OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::DynamicsPtr_t
+OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::getNonlinearSystem() const
 {
     return controlledSystem_;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-const typename OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::LinearPtr_t
-OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::getLinearSystem() const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+const typename OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::LinearPtr_t
+OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::getLinearSystem() const
 {
     return linearizedSystem_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-const typename OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::CostFunctionPtr_t
-OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::getCostFunction() const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+const typename OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::CostFunctionPtr_t
+OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::getCostFunction() const
 {
     return costFunction_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::setNonlinearSystem(const DynamicsPtr_t dyn)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::setNonlinearSystem(
+    const DynamicsPtr_t dyn)
 {
     controlledSystem_ = dyn;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::setLinearSystem(const LinearPtr_t lin)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::setLinearSystem(
+    const LinearPtr_t lin)
 {
     linearizedSystem_ = lin;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::setCostFunction(const CostFunctionPtr_t cost)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::setCostFunction(
+    const CostFunctionPtr_t cost)
 {
     costFunction_ = cost;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::setBoxConstraints(const ConstraintPtr_t constraint)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::setBoxConstraints(
+    const ConstraintPtr_t constraint)
 {
     boxConstraints_ = constraint;
     if (!boxConstraints_->isInitialized())
         boxConstraints_->initialize();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::setGeneralConstraints(const ConstraintPtr_t constraint)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::setGeneralConstraints(
+    const ConstraintPtr_t constraint)
 {
     generalConstraints_ = constraint;
     if (!generalConstraints_->isInitialized())
         generalConstraints_->initialize();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-const typename OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::ConstraintPtr_t
-OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::getBoxConstraints() const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+const typename OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::ConstraintPtr_t
+OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::getBoxConstraints() const
 {
     return boxConstraints_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-const typename OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::ConstraintPtr_t
-OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::getGeneralConstraints() const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+const typename OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::ConstraintPtr_t
+OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::getGeneralConstraints() const
 {
     return generalConstraints_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-const typename OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::state_vector_t
-OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::getInitialState() const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+const typename OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::state_vector_t
+OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::getInitialState() const
 {
     return x0_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::setInitialState(const state_vector_t& x0)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::setInitialState(
+    const state_vector_t& x0)
 {
     x0_ = x0;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-typename OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::time_t
-OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::getTimeHorizon() const
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+typename OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::time_t
+OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::getTimeHorizon() const
 {
     return tf_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename SCALAR>
-void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, SCALAR>::setTimeHorizon(const time_t tf)
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename system_t, typename linear_system_t, typename linearizer_t, typename SCALAR>
+void OptConProblemBase<STATE_DIM, CONTROL_DIM, system_t, linear_system_t, linearizer_t, SCALAR>::setTimeHorizon(const time_t tf)
 {
     tf_ = tf;
 }
 
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

@@ -106,6 +106,9 @@ public:
     std::vector<typename optConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() { return systems_; }
     std::vector<typename optConProblem_t::LinearPtr_t>& getLinearSystemsInstances() { return linearSystems_; }
 
+    virtual void changeNonlinearSystem(const typename optConProblem_t::DynamicsPtr_t& dyn) = 0;
+    virtual void changeLinearSystem(const typename optConProblem_t::LinearPtr_t& lin) = 0;
+
     virtual void getSubstates(StateVectorArrayPtr& subStepsX, const size_t threadId) {}
     virtual void getSubcontrols(ControlVectorArrayPtr& subStepsU, const size_t threadId) {}
 

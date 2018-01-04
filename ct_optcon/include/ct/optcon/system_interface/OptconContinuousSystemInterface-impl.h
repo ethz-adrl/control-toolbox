@@ -23,6 +23,37 @@ void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumS
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::changeNonlinearSystem(
+    const typename optConProblem_t::DynamicsPtr_t& dyn)
+{
+    if (dyn == nullptr)
+        throw std::runtime_error("system dynamics are nullptr");
+
+    for (int i = 0; i < this->settings_.nThreads + 1; i++)
+    {
+        this->systems_.at(i) = typename optConProblem_t::DynamicsPtr_t(dyn->clone());
+        this->systems_.at(i)->setController(this->controller_.at(i));
+
+        discretizers_.at(i) = system_discretizer_ptr_t(new discretizer_t(
+            this->systems_.at(i), this->settings_.dt, this->settings_.integrator, this->settings_.K_sim));
+        discretizers_.at(i)->initialize();
+    }
+}
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::changeLinearSystem(
+    const typename optConProblem_t::LinearPtr_t& lin)
+{
+    if (lin == nullptr)
+        throw std::runtime_error("linear system dynamics are nullptr");
+
+    for (int i = 0; i < this->settings_.nThreads + 1; i++)
+    {
+        this->linearSystems_.at(i) = typename optConProblem_t::LinearPtr_t(lin->clone());
+        sensitivity_.at(i)->setLinearSystem(this->linearSystems_.at(i));
+    }
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::initialize()
 {
     this->systems_.resize(this->settings_.nThreads + 1);
@@ -33,15 +64,16 @@ void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::initialize
     for (int i = 0; i < this->settings_.nThreads + 1; i++)
     {
         // make a deep copy of the system for each thread
-        this->systems_[i] = typename optConProblem_t::DynamicsPtr_t(this->optConProblem_.getNonlinearSystem()->clone());
-        this->systems_[i]->setController(this->controller_[i]);
+        this->systems_.at(i) =
+            typename optConProblem_t::DynamicsPtr_t(this->optConProblem_.getNonlinearSystem()->clone());
+        this->systems_.at(i)->setController(this->controller_.at(i));
 
-        this->linearSystems_[i] =
+        this->linearSystems_.at(i) =
             typename optConProblem_t::LinearPtr_t(this->optConProblem_.getLinearSystem()->clone());
 
-        discretizers_[i] = system_discretizer_ptr_t(new discretizer_t(
-            this->systems_[i], this->settings_.dt, this->settings_.integrator, this->settings_.K_sim));
-        discretizers_[i]->initialize();
+        discretizers_.at(i) = system_discretizer_ptr_t(new discretizer_t(
+            this->systems_.at(i), this->settings_.dt, this->settings_.integrator, this->settings_.K_sim));
+        discretizers_.at(i)->initialize();
 
         if (this->settings_.useSensitivityIntegrator)
         {
@@ -52,16 +84,16 @@ void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::initialize
                 this->settings_.integrator != ct::core::IntegrationType::EULER_SYM)
                 throw std::runtime_error("sensitivity integrator only available for Euler and RK4 integrators");
 
-            sensitivity_[i] = SensitivityPtr(
+            sensitivity_.at(i) = SensitivityPtr(
                 new ct::core::SensitivityIntegrator<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>(
-                    this->settings_.getSimulationTimestep(), this->linearSystems_[i], this->controller_[i],
+                    this->settings_.getSimulationTimestep(), this->linearSystems_.at(i), this->controller_.at(i),
                     this->settings_.integrator, this->settings_.timeVaryingDiscretization));
         }
         else
         {
-            sensitivity_[i] = SensitivityPtr(
+            sensitivity_.at(i) = SensitivityPtr(
                 new ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>(
-                    this->settings_.dt, this->linearSystems_[i], this->settings_.discretization));
+                    this->settings_.dt, this->linearSystems_.at(i), this->settings_.discretization));
         }
     }
 }

@@ -230,6 +230,13 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, typename OPTCONPROBLEM>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>::changeNonlinearSystem(
+    const typename OptConProblem_t::DynamicsPtr_t& dyn)
+{
+    systemInterface_->changeNonlinearSystem(dyn);
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, typename OPTCONPROBLEM>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>::changeBoxConstraints(
     const typename OptConProblem_t::ConstraintPtr_t& con)
 {
@@ -269,6 +276,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM
         computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
 }
 
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, typename OPTCONPROBLEM>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>::changeLinearSystem(
+    const typename OptConProblem_t::LinearPtr_t& lin)
+{
+    systemInterface_->changeLinearSystem(lin);
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, typename OPTCONPROBLEM>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>::checkProblem()

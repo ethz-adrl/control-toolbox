@@ -1,0 +1,7 @@
+#include <ct/optcon/optcon-prespec.h>
+
+#include <ct/optcon/system_interface/OptconContinuousSystemInterface-impl.h>
+#include <ct/optcon/system_interface/OptconDiscreteSystemInterface-impl.h>
+
+template class ct::optcon::OptconContinuousSystemInterface<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>;
+template class ct::optcon::OptconDiscreteSystemInterface<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>;
