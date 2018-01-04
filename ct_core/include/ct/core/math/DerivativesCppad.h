@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -26,41 +26,30 @@ namespace core {
  * @tparam OUT_DIM Output dimensionailty of the function (use Eigen::Dynamic (-1) for dynamic size)
  */
 template <int IN_DIM, int OUT_DIM>
-class CppadUtils
+class DerivativesCppad : public Derivatives<IN_DIM, OUT_DIM, double> // double on purpose!
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     typedef ADScalar AD_SCALAR;
-    typedef ADCGScalar CG_SCALAR;         //!< CG_SCALAR  type
-    typedef ADCGValueType CG_VALUE_TYPE;  //!< autodiff scalar type
 
     typedef Eigen::Matrix<AD_SCALAR, IN_DIM, 1> IN_TYPE_AD;    //!< function input vector type
     typedef Eigen::Matrix<AD_SCALAR, OUT_DIM, 1> OUT_TYPE_AD;  //!< function  output vector type
 
-    typedef Eigen::Matrix<CG_SCALAR, IN_DIM, 1> IN_TYPE_CG;    //!< function input vector type
-    typedef Eigen::Matrix<CG_SCALAR, OUT_DIM, 1> OUT_TYPE_CG;  //!< function  output vector type
+    typedef Eigen::Matrix<double, IN_DIM, 1> IN_TYPE_D;         //!< function input vector type double
+    typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE_D;       //!< function output vector type
+    typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE_D;  //!< Jacobian type
+    typedef Eigen::Matrix<double, OUT_DIM, IN_DIM, Eigen::RowMajor>
+        JAC_TYPE_ROW_MAJOR;  //!< Jocobian type in row-major format
+    typedef Eigen::Matrix<double, IN_DIM, IN_DIM> HES_TYPE_D;
+    typedef Eigen::Matrix<double, IN_DIM, IN_DIM, Eigen::RowMajor> HES_TYPE_ROW_MAJOR;
 
-    typedef std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> FUN_TYPE_CG;  //!< function type
     typedef std::function<OUT_TYPE_AD(const IN_TYPE_AD&)> FUN_TYPE_AD;
 
-    /**
-     * @brief      Contructs the derivatives for codegeneration using a
-     *             FUN_TYPE_CG function
-     * @warning    If IN_DIM and/our OUT_DIM are set to dynamic (-1), then the
-     *             actual dimensions of x and y have to be passed here.
-     *
-     * @param      f          The function to be autodiffed
-     * @param[in]  inputDim   inputDim input dimension, must be specified if
-     *                        template parameter IN_DIM is -1 (dynamic)
-     * @param[in]  outputDim  outputDim output dimension, must be specified if
-     *                        template parameter IN_DIM is -1 (dynamic)
-     */
-    CppadUtils(FUN_TYPE_CG& f, int inputDim = IN_DIM, int outputDim = OUT_DIM)
-        : cgStdFun_(f), inputDim_(inputDim), outputDim_(outputDim)
-    {
-        update(f, inputDim, outputDim);
-    }
+    typedef Derivatives<IN_DIM, OUT_DIM> DerivativesBase;
 
-    /*
+
+    /**
      * @brief      Constructs the derivatives for autodiff without
      *             codegeneration using a FUN_TYPE_AD function
      *
@@ -73,43 +62,27 @@ public:
      * @param[in]  outputDim  outputDim output dimension, must be specified if
      *                        template parameter IN_DIM is -1 (dynamic)
      */
-
-    CppadUtils(FUN_TYPE_AD& f, int inputDim = IN_DIM, int outputDim = OUT_DIM)
-        : adStdFun_(f), inputDim_(inputDim), outputDim_(outputDim)
+    DerivativesCppad(FUN_TYPE_AD& f, int inputDim = IN_DIM, int outputDim = OUT_DIM)
+        : 
+        DerivativesBase(),
+        adStdFun_(f),
+        inputDim_(inputDim),
+        outputDim_(outputDim)
     {
         update(f, inputDim, outputDim);
     }
 
     //! copy constructor
-    CppadUtils(const CppadUtils& arg)
-        : cgStdFun_(arg.cgStdFun_), adStdFun_(arg.adStdFun_), inputDim_(arg.inputDim_), outputDim_(arg.outputDim_)
+    DerivativesCppad(const DerivativesCppad& arg)
+        : 
+        DerivativesBase(arg),
+        adStdFun_(arg.adStdFun_),
+        inputDim_(arg.inputDim_),
+        outputDim_(arg.outputDim_)
     {
-        cgCppadFun_ = arg.cgCppadFun_;
         adCppadFun_ = arg.adCppadFun_;
     }
 
-    //! destructor
-    virtual ~CppadUtils() {}
-    //! update the Jacobian with a new function
-    /*!
-     * \warning If IN_DIM and/our OUT_DIM are set to dynamic (-1), then the actual dimensions of
-     * x and y have to be passed here.
-     *
-     * @param f new function to compute Jacobian of
-     * @param inputDim input dimension, must be specified if template parameter IN_DIM is -1 (dynamic)
-     * @param outputDim output dimension, must be specified if template parameter IN_DIM is -1 (dynamic)
-     */
-    void update(FUN_TYPE_CG& f, const size_t inputDim = IN_DIM, const size_t outputDim = OUT_DIM)
-    {
-        cgStdFun_ = f;
-        outputDim_ = outputDim;
-        inputDim_ = inputDim;
-        if (outputDim_ > 0 && inputDim_ > 0)
-        {
-            recordCg();
-            updateDerived();
-        }
-    }
 
     //! update the Jacobian with a new function
     /*!
@@ -126,42 +99,84 @@ public:
         outputDim_ = outputDim;
         inputDim_ = inputDim;
         if (outputDim_ > 0 && inputDim_ > 0)
-        {
             recordAd();
-            updateDerived();
-        }
     }
 
-    /**
-     * @brief      Updates any members of the derived classes after the function object got updated
-     */
-    virtual void updateDerived(){};
-
+    //! destructor
+    virtual ~DerivativesCppad() {}
     //! deep cloning of Jacobian
-    CppadUtils* clone() const { return new CppadUtils<IN_DIM, OUT_DIM>(*this); }
-protected:
-    //! record the Auto-Diff terms for code generation
-    void recordCg()
+    DerivativesCppad* clone() const { return new DerivativesCppad<IN_DIM, OUT_DIM>(*this); }
+    virtual OUT_TYPE_D forwardZero(const Eigen::VectorXd& x)
     {
-        // input vector, needs to be dynamic size
-        Eigen::Matrix<CG_SCALAR, Eigen::Dynamic, 1> x(inputDim_);
-
-        // declare x as independent
-        CppAD::Independent(x);
-
-        // output vector, needs to be dynamic size
-        Eigen::Matrix<CG_SCALAR, Eigen::Dynamic, 1> y(outputDim_);
-
-        y = cgStdFun_(x);
-
-        // store operation sequence in f: x -> y and stop recording
-        CppAD::ADFun<CG_VALUE_TYPE> fCodeGen(x, y);
-
-        fCodeGen.optimize();
-
-        cgCppadFun_ = fCodeGen;
+        return adCppadFun_.Forward(0, x);
     }
 
+    virtual JAC_TYPE_D jacobian(const Eigen::VectorXd& x)
+    {
+        if (outputDim_ <= 0)
+            throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+
+
+        Eigen::VectorXd jac = adCppadFun_.Jacobian(x);
+
+        JAC_TYPE_D out(outputDim_, x.rows());
+        out = JAC_TYPE_ROW_MAJOR::Map(jac.data(), outputDim_, x.rows());
+        return out;
+    }
+
+    virtual void sparseJacobian(const Eigen::VectorXd& x,
+        Eigen::VectorXd& jac,
+        Eigen::VectorXi& iRow,
+        Eigen::VectorXi& jCol)
+    {
+        if (outputDim_ <= 0)
+            throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+
+        jac = adCppadFun_.SparseJacobian(x);
+    }
+
+    virtual Eigen::VectorXd sparseJacobianValues(const Eigen::VectorXd& x)
+    {
+        if (outputDim_ <= 0)
+            throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+
+        return adCppadFun_.SparseJacobian(x);
+    }
+
+
+    virtual HES_TYPE_D hessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda)
+    {
+        if (outputDim_ <= 0)
+            throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+
+        Eigen::VectorXd hessian = adCppadFun_.Hessian(x, lambda);
+        HES_TYPE_D out(x.rows(), x.rows());
+        out = HES_TYPE_ROW_MAJOR::Map(hessian.data(), x.rows(), x.rows());
+        return out;
+    }
+
+    virtual void sparseHessian(const Eigen::VectorXd& x,
+        const Eigen::VectorXd& lambda,
+        Eigen::VectorXd& hes,
+        Eigen::VectorXi& iRow,
+        Eigen::VectorXi& jCol)
+    {
+        if (outputDim_ <= 0)
+            throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+
+        hes = adCppadFun_.SparseHessian(x, lambda);
+    }
+
+
+    virtual Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda)
+    {
+        if (outputDim_ <= 0)
+            throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
+
+        return adCppadFun_.SparseHessian(x, lambda);
+    }
+
+private:
     /**
      * @brief      Records the auto-diff terms
      */
@@ -183,16 +198,16 @@ protected:
 
         fAd.optimize();
 
+        std::cout << "AD FUn recorded" << std::endl;
+
         adCppadFun_ = fAd;
     }
 
-    std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> cgStdFun_;  //! the function
     std::function<OUT_TYPE_AD(const IN_TYPE_AD&)> adStdFun_;
 
     int inputDim_;   //! function input dimension
     int outputDim_;  //! function output dimension
 
-    CppAD::ADFun<CG_VALUE_TYPE> cgCppadFun_;  //!  auto-diff function
     CppAD::ADFun<double> adCppadFun_;
 };
 
