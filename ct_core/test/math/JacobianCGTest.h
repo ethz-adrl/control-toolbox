@@ -21,6 +21,7 @@ const size_t outDim = 2;  //!< dimension of y
 //! the Jacobian codegen class
 typedef DerivativesCppadJIT<inDim, outDim> derivativesCppadJIT;
 typedef DerivativesCppadCG<inDim, outDim> derivativesCppadCG;
+typedef DerivativesCppad<inDim, outDim> derivativesCppad;
 
 /*!
  * A general vector-valued function.
@@ -70,15 +71,17 @@ Eigen::Matrix<SCALAR, inDim, inDim> hessianCheck(const Eigen::Matrix<SCALAR, inD
 /*!
  * Test evaluation of the forward-zero function, which should be possible to evaluate in both uncompiled and compiled state
  */
-TEST(JacobianCGTest, DISABLED_ForwardZeroTest)
+TEST(JacobianCGTest, ForwardZeroTest)
 {
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
-        typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
+        typename derivativesCppadJIT::FUN_TYPE_CG f_cg = testFunction<derivativesCppadJIT::CG_SCALAR>;
+        typename derivativesCppad::FUN_TYPE_AD f_ad = testFunction<derivativesCppad::AD_SCALAR>;
 
         // initialize the Auto-Diff Codegen Jacobian
-        derivativesCppadJIT jacCG(f);
+        derivativesCppadJIT jacCG(f_cg);
+        derivativesCppad jacAd(f_ad);
 
         DerivativesCppadSettings settings;
         settings.createForwardZero_ = true;
@@ -89,13 +92,16 @@ TEST(JacobianCGTest, DISABLED_ForwardZeroTest)
         someVec.setRandom();
 
         // test evaluation of forward zero before compilation
-        Eigen::VectorXd vecOut = jacCG.forwardZero(someVec);  // << -- fails here!
+        Eigen::VectorXd vecOut = jacAd.forwardZero(someVec);
 
         // compile the Jacobian
         jacCG.compileJIT(settings, "forwardZeroTestLib");
 
         // test evaluation of forward zero after compilation
         Eigen::VectorXd vecOut2 = jacCG.forwardZero(someVec);
+
+        // verify the outputs
+        ASSERT_LT((vecOut - vecOut2).array().abs().maxCoeff(), 1e-10);
 
     } catch (std::exception& e)
     {
@@ -114,9 +120,11 @@ TEST(JacobianCGTest, JITCompilationTest)
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
         typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
+        typename derivativesCppad::FUN_TYPE_AD f_ad = testFunction<derivativesCppad::AD_SCALAR>;
 
         // initialize the Auto-Diff Codegen Jacobian
         derivativesCppadJIT jacCG(f);
+        derivativesCppad jacAd(f_ad);
 
         DerivativesCppadSettings settings;
         settings.createJacobian_ = true;
@@ -134,6 +142,8 @@ TEST(JacobianCGTest, JITCompilationTest)
 
             // verify agains the analytical Jacobian
             ASSERT_LT((jacCG.jacobian(x) - jacobianCheck(x)).array().abs().maxCoeff(), 1e-10);
+            ASSERT_LT((jacAd.jacobian(x) - jacobianCheck(x)).array().abs().maxCoeff(), 1e-10);
+            ASSERT_LT((jacCG.jacobian(x) - jacAd.jacobian(x)).array().abs().maxCoeff(), 1e-10);
         }
     } catch (std::exception& e)
     {
@@ -148,8 +158,10 @@ TEST(HessianCGTest, JITHessianTest)
     try
     {
         typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
+        typename derivativesCppad::FUN_TYPE_AD f_ad = testFunction<derivativesCppad::AD_SCALAR>;
 
         derivativesCppadJIT hessianCg(f);
+        derivativesCppad hessianAd(f_ad);
 
         DerivativesCppadSettings settings;
         settings.createHessian_ = true;
@@ -165,6 +177,8 @@ TEST(HessianCGTest, JITHessianTest)
             w.setRandom();
 
             ASSERT_LT((hessianCg.hessian(x, w) - hessianCheck(x, w)).array().abs().maxCoeff(), 1e-10);
+            ASSERT_LT((hessianAd.hessian(x, w) - hessianCheck(x, w)).array().abs().maxCoeff(), 1e-10);
+            ASSERT_LT((hessianCg.hessian(x, w) - hessianAd.hessian(x, w)).array().abs().maxCoeff(), 1e-10);
         }
 
 
@@ -176,9 +190,9 @@ TEST(HessianCGTest, JITHessianTest)
 }
 
 
-/*!
- * Test for writing the codegenerated Jacobian to file
- */
+// /*!
+//  * Test for writing the codegenerated Jacobian to file
+//  */
 TEST(JacobianCGTest, CodegenTest)
 {
     // create a function handle (also works for class methods, lambdas, function pointers, ...)
