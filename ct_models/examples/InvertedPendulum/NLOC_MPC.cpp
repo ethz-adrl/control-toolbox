@@ -32,29 +32,28 @@ public:
         ct::optcon::MPC<ct::optcon::NLOptConSolver<STATE_DIM, CONTROL_DIM>>& mpc)
         : ct::core::ControlSimulator<IPSystem>(sim_dt, control_dt, x0, ip_system), mpc_(mpc)
     {
-        controller_ = std::make_shared<ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>>();
+        controller_.reset(new ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>);
     }
 
-    virtual bool prepareControllerIteration(ct::core::Time sim_time)
+    void prepareControllerIteration(ct::core::Time sim_time) override
     {
         mpc_.prepareIteration(sim_time);
-        return true;
     }
 
-    virtual bool finishControllerIteration(ct::core::Time sim_time)
+    void finishControllerIteration(ct::core::Time sim_time) override
     {
         state_mtx_.lock();
         ct::core::StateVector<STATE_DIM> x_temp = x_;
         state_mtx_.unlock();
 
-        std::shared_ptr<ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>> new_controller =
-            std::make_shared<ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>>();
+        std::shared_ptr<ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>> new_controller(
+            new ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>);
         bool success = mpc_.finishIteration(x_temp, sim_time, *new_controller, controller_ts_);
+        if (!success) throw "Failed to finish iteration.";
 
-        policy_mtx_.lock();
+        control_mtx_.lock();
         controller_ = new_controller;
-        policy_mtx_.unlock();
-        return success;
+        control_mtx_.unlock();
     }
 
 private:
@@ -81,17 +80,15 @@ int main(int argc, char* argv[])
         nloc_settings.load(configFile, verbose, "ilqr");
 
         std::shared_ptr<ct::optcon::TermQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM, double, double>>
-            termQuadInterm = std::make_shared<
-                ct::optcon::TermQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM, double, double>>();
+            termQuadInterm(new ct::optcon::TermQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM, double, double>);
         termQuadInterm->loadConfigFile(costFunctionFile, "term0", verbose);
 
         std::shared_ptr<ct::optcon::TermQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM, double, double>>
-            termQuadFinal = std::make_shared<
-                ct::optcon::TermQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM, double, double>>();
+            termQuadFinal(new ct::optcon::TermQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM, double, double>);
         termQuadFinal->loadConfigFile(costFunctionFile, "term1", verbose);
 
-        std::shared_ptr<ct::optcon::CostFunctionAnalytical<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>> newCost =
-            std::make_shared<ct::optcon::CostFunctionAnalytical<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>>();
+        std::shared_ptr<ct::optcon::CostFunctionAnalytical<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>> newCost(
+            new ct::optcon::CostFunctionAnalytical<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>);
         size_t intTermID   = newCost->addIntermediateTerm(termQuadInterm);
         size_t finalTermID = newCost->addFinalTerm(termQuadFinal);
 

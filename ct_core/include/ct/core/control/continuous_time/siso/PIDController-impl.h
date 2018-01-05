@@ -4,22 +4,19 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#include <iostream>
-
-#include <ct/core/control/continuous_time/siso/PIDController.h>
-
-#include <ct/core/types/Time.h>
+#pragma once
 
 namespace ct {
 namespace core {
 
-double PIDController::computeControl(const double& state, const core::Time& t)
+template <typename SCALAR>
+SCALAR PIDController<SCALAR>::computeControl(const SCALAR& state, const Time& t)
 {
-    double error = setpoint_.stateDesired_ - state;
+    SCALAR error = setpoint_.stateDesired_ - state;
 
     // ** P-part **
     // ============
-    double P = parameters_.k_p * error;
+    SCALAR P = parameters_.k_p * error;
 
     // ** I-part **
     // ============
@@ -27,11 +24,11 @@ double PIDController::computeControl(const double& state, const core::Time& t)
 
     // ** D-Part **
     // ============
-    double D = parameters_.k_d * (setpoint_.stateDerivativeDesired_ - (state - statePrevious_) / parameters_.dt);
+    SCALAR D = parameters_.k_d * (setpoint_.stateDerivativeDesired_ - (state - statePrevious_) / parameters_.dt);
 
     // ** Controller Output **
     // =======================
-    double u = (P + I_ + D);
+    SCALAR u = (P + I_ + D);
     saturateControl(u);
 
     statePrevious_ = state;
@@ -39,13 +36,16 @@ double PIDController::computeControl(const double& state, const core::Time& t)
     return u;
 }
 
-double PIDController::computeControl(const double& state, const double& stateDerivative, const core::Time& t)
+template <typename SCALAR>
+SCALAR PIDController<SCALAR>::computeControl(const SCALAR& state,
+    const SCALAR& stateDerivative,
+    const Time& t)
 {
-    double error = setpoint_.stateDesired_ - state;
+    SCALAR error = setpoint_.stateDesired_ - state;
 
     // ** P-part **
     // ============
-    double P = parameters_.k_p * error;
+    SCALAR P = parameters_.k_p * error;
 
     // ** I-part **
     // ============
@@ -53,11 +53,11 @@ double PIDController::computeControl(const double& state, const double& stateDer
 
     // ** D-Part **
     // ============
-    double D = parameters_.k_d * (setpoint_.stateDerivativeDesired_ - stateDerivative);
+    SCALAR D = parameters_.k_d * (setpoint_.stateDerivativeDesired_ - stateDerivative);
 
     // ** Controller Output **
     // =======================
-    double u = (P + I_ + D);
+    SCALAR u = (P + I_ + D);
 
     saturateControl(u);
 
@@ -66,7 +66,8 @@ double PIDController::computeControl(const double& state, const double& stateDer
     return u;
 }
 
-void PIDController::saturateControl(double& u)
+template <typename SCALAR>
+void PIDController<SCALAR>::saturateControl(SCALAR& u)
 {
     if (u > parameters_.uMax)
         u = parameters_.uMax;
@@ -74,7 +75,8 @@ void PIDController::saturateControl(double& u)
         u = parameters_.uMin;
 }
 
-void PIDController::computeI(double error)
+template <typename SCALAR>
+void PIDController<SCALAR>::computeI(const SCALAR& error)
 {
     I_ += parameters_.k_i * error * parameters_.dt;
 
@@ -89,10 +91,11 @@ void PIDController::computeI(double error)
     }
 }
 
-void PIDController::reset()
+template <typename SCALAR>
+void PIDController<SCALAR>::reset()
 {
-    statePrevious_ = 0.0;
-    I_ = 0.0;
+    statePrevious_ = SCALAR();
+    I_ = SCALAR();
 }
 
 }  // namespace core

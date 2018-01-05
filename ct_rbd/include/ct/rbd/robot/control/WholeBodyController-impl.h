@@ -34,7 +34,7 @@ void WholeBodyController<NJOINTS>::computeControl(const core::StateVector<STATE_
 }
 
 template <size_t NJOINTS>
-JointPositionController<NJOINTS>& WholeBodyController<NJOINTS>::getJointController()
+JointPositionPIDController<NJOINTS>& WholeBodyController<NJOINTS>::getJointController()
 {
     return jointController_;
 }

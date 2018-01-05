@@ -10,44 +10,44 @@ namespace ct {
 namespace rbd {
 
 template <size_t NJOINTS>
-JointPositionController<NJOINTS>* JointPositionController<NJOINTS>::clone() const
+JointPositionPIDController<NJOINTS>* JointPositionPIDController<NJOINTS>::clone() const
 {
-    throw std::runtime_error("RBD: JointPositionController.h, clone() not implemented");
+    throw std::runtime_error("RBD: JointPositionPIDController.h, clone() not implemented");
 };
 
 template <size_t NJOINTS>
-JointPositionController<NJOINTS>::~JointPositionController()
+JointPositionPIDController<NJOINTS>::~JointPositionPIDController()
 {
 }
 
 template <size_t NJOINTS>
-JointPositionController<NJOINTS>::JointPositionController(const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition,
+JointPositionPIDController<NJOINTS>::JointPositionPIDController(const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition,
     const Eigen::Matrix<double, NJOINTS, 1>& desiredVelocity,
-    const std::vector<core::PIDController::parameters_t>& parameters)
+    const std::vector<PIDController::parameters_t>& parameters)
 {
     assert(parameters.size() == NJOINTS);
 
     for (size_t i = 0; i < NJOINTS; i++)
     {
-        jointControllers_.push_back(core::PIDController(
-            parameters[i], core::PIDController::setpoint_t(desiredPosition(i), desiredVelocity(i))));
+        jointControllers_.push_back(PIDController(
+            parameters[i], PIDController::setpoint_t(desiredPosition(i), desiredVelocity(i))));
     }
 }
 
 template <size_t NJOINTS>
-JointPositionController<NJOINTS>::JointPositionController(const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition,
+JointPositionPIDController<NJOINTS>::JointPositionPIDController(const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition,
     const Eigen::Matrix<double, NJOINTS, 1>& desiredVelocity,
-    const core::PIDController::parameters_t& parameters)
+    const PIDController::parameters_t& parameters)
 {
     for (size_t i = 0; i < NJOINTS; i++)
     {
         jointControllers_.push_back(
-            core::PIDController(parameters, core::PIDController::setpoint_t(desiredPosition(i), desiredVelocity(i))));
+            PIDController(parameters, PIDController::setpoint_t(desiredPosition(i), desiredVelocity(i))));
     }
 }
 
 template <size_t NJOINTS>
-void JointPositionController<NJOINTS>::computeControl(const core::StateVector<STATE_DIM>& state,
+void JointPositionPIDController<NJOINTS>::computeControl(const core::StateVector<STATE_DIM>& state,
     const core::Time& t,
     core::ControlVector<NJOINTS>& control)
 {
@@ -60,7 +60,7 @@ void JointPositionController<NJOINTS>::computeControl(const core::StateVector<ST
 }
 
 template <size_t NJOINTS>
-void JointPositionController<NJOINTS>::setDesiredPosition(const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition)
+void JointPositionPIDController<NJOINTS>::setDesiredPosition(const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition)
 {
     for (size_t i = 0; i < NJOINTS; i++)
     {
@@ -69,7 +69,7 @@ void JointPositionController<NJOINTS>::setDesiredPosition(const Eigen::Matrix<do
 }
 
 template <size_t NJOINTS>
-void JointPositionController<NJOINTS>::setDesiredPosition(double desiredPosition, int jointId)
+void JointPositionPIDController<NJOINTS>::setDesiredPosition(double desiredPosition, int jointId)
 {
     assert(0 <= jointId && jointId < NJOINTS);  // assuming first joint has index 0
 
@@ -77,7 +77,7 @@ void JointPositionController<NJOINTS>::setDesiredPosition(double desiredPosition
 }
 
 template <size_t NJOINTS>
-void JointPositionController<NJOINTS>::setAllPIDGains(double kp, double ki, double kd)
+void JointPositionPIDController<NJOINTS>::setAllPIDGains(double kp, double ki, double kd)
 {
     PIDController::parameters_t parameters;
     parameters.k_p = kp;
@@ -91,7 +91,7 @@ void JointPositionController<NJOINTS>::setAllPIDGains(double kp, double ki, doub
 }
 
 template <size_t NJOINTS>
-void JointPositionController<NJOINTS>::reset()
+void JointPositionPIDController<NJOINTS>::reset()
 {
     for (size_t i = 0; i < NJOINTS; i++)
     {

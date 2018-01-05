@@ -72,11 +72,15 @@ public:
 
     //! destructor
     virtual ~ControlSimulator() { finish(); };
+
+    //! Gets called after the integrator step
+    virtual void finishSystemIteration(Time sim_time) {}
+
     //! During controller update, this method does processing before the state measurement arrives
-    virtual bool prepareControllerIteration(Time sim_time) = 0;
+    virtual void prepareControllerIteration(Time sim_time) {}
 
     //! During controller update, this method does processing once the state measurement arrives
-    virtual bool finishControllerIteration(Time sim_time) = 0;
+    virtual void finishControllerIteration(Time sim_time) {}
 
     //! spawns the two threads in a nonblocking way
     void simulate(Time duration)
@@ -99,59 +103,69 @@ public:
     void stop() { stop_ = true; }
 
 protected:
-    //! method run by the thread that simulates the system
+    //! run by the thread that simulates the system
     virtual void simulateSystem(Time duration)
     {
-        Integrator<STATE_DIM> integrator(system_);
-        Time sim_time;
-        auto wall_time                = sim_start_time_;
-        StateVector<STATE_DIM> temp_x = x_;
-        // In case an integer number of steps cannot be performed
-        const double residue = control_dt_ / sim_dt_ - int(control_dt_ / sim_dt_);
-
-        while (std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - sim_start_time_).count() <
-                   duration &&
-               !stop_)
+        try
         {
-            sim_time = std::chrono::duration<double>(wall_time - sim_start_time_).count();
+            Integrator<STATE_DIM> integrator(system_);
+            StateVector<STATE_DIM> temp_x = x_;
+            // In case an integer number of steps cannot be performed
+            const double residue = control_dt_ / sim_dt_ - int(control_dt_ / sim_dt_);
+            auto wall_time       = sim_start_time_;
+            Time sim_time        = std::chrono::duration<double>(wall_time - sim_start_time_).count();
 
-            integrator.integrate_n_steps(temp_x, sim_time, int(control_dt_ / sim_dt_), sim_dt_);
-            if (residue > 1e-6)
-                integrator.integrate_n_steps(temp_x, sim_time + int(control_dt_ / sim_dt_) * sim_dt_, 1, residue);
+            while (std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - sim_start_time_).count() <
+                       duration && !stop_)
+            {
+                integrator.integrate_n_steps(temp_x, sim_time, int(control_dt_ / sim_dt_), sim_dt_);
+                if (residue > 1e-6)
+                    integrator.integrate_n_steps(temp_x, sim_time + int(control_dt_ / sim_dt_) * sim_dt_, 1, residue);
 
-            if (std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - wall_time).count() >=
-                control_dt_)
-                std::cerr << "Simulation running too slow. Please increase the step size!" << std::endl;
-            std::this_thread::sleep_until(wall_time + std::chrono::duration<double>(control_dt_));
-            wall_time += std::chrono::duration_cast<std::chrono::system_clock::duration>(
-                std::chrono::duration<double>(control_dt_));
+                if (std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - wall_time).count() >=
+                        control_dt_)
+                    std::cerr << "Simulation running too slow. Please increase the step size!" << std::endl;
+                std::this_thread::sleep_until(wall_time + std::chrono::duration<double>(control_dt_));
+                wall_time += std::chrono::duration_cast<std::chrono::system_clock::duration>(
+                    std::chrono::duration<double>(control_dt_));
 
-            state_mtx_.lock();
-            x_ = temp_x;
-            state_mtx_.unlock();
+                state_mtx_.lock();
+                x_ = temp_x;
+                state_mtx_.unlock();
 
-            policy_mtx_.lock();
-            system_->setController(controller_);
-            policy_mtx_.unlock();
+                control_mtx_.lock();
+                system_->setController(controller_);
+                control_mtx_.unlock();
+
+                sim_time = std::chrono::duration<double>(wall_time - sim_start_time_).count();
+                finishSystemIteration(sim_time);
+            }
+        } catch (...)
+        {
+            throw;
         }
     }
 
-    //! method run by the thread that updates the controller
+    //! run by the thread that updates the controller
     virtual void simulateController(Time duration)
     {
-        Time sim_time;
-        while (std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - sim_start_time_).count() <
-                   duration &&
-               !stop_)
+        try
         {
-            sim_time =
-                std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - sim_start_time_).count();
-            bool success = prepareControllerIteration(sim_time);
-            sim_time =
-                std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - sim_start_time_).count();
-            success &= finishControllerIteration(sim_time);
+            Time sim_time;
+            while (std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - sim_start_time_).count() <
+                       duration && !stop_)
+            {
+                sim_time =
+                    std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - sim_start_time_).count();
+                prepareControllerIteration(sim_time);
 
-            if (!success) throw "Simulation failed!";
+                sim_time =
+                    std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - sim_start_time_).count();
+                finishControllerIteration(sim_time);
+            }
+        } catch (...)
+        {
+            throw;
         }
     }
 
@@ -165,7 +179,7 @@ protected:
     std::thread sys_thread_;
     std::thread control_thread_;
     std::mutex state_mtx_;
-    std::mutex policy_mtx_;
+    std::mutex control_mtx_;
     std::atomic<bool> stop_;
 };
 
