@@ -99,7 +99,7 @@ public:
     //! get feedforward array (without timings)
     const DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>& uff() const;
 
-    //! get feedback array (without timings
+    //! get feedback array (without timings)
     const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>& K() const;
 
     //! get time array

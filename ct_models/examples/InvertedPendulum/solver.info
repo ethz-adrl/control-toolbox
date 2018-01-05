@@ -1,0 +1,40 @@
+timeHorizon 3.0
+
+initType    0 ; 0 = steady state ID, 1 = linear, 2 = integrated with zero control action, 3 = random; 4=zero
+
+ilqr
+{
+    integrator RK4
+    useSensitivityIntegrator false
+    discretization Forward_euler
+    timeVaryingDiscretization false
+    dt 0.005
+    K_sim 1
+    K_shot 1
+    epsilon 0e-6
+    max_iterations 50
+    fixedHessianCorrection false
+    recordSmallestEigenvalue false
+    min_cost_improvement 1e-7
+    meritFunctionRho 0.0
+    maxDefectSum 1e-5
+    nThreads 1
+    nThreadsEigen 1
+    ;locp_solver HPIPM_SOLVER
+    locp_solver GNRICCATI_SOLVER
+    nlocp_algorithm GNMS
+    closedLoopShooting true
+    printSummary true
+    debugPrint false
+
+
+    line_search
+    {
+        active false ;
+        adaptive false ;
+        maxIterations 10 ;
+        alpha_0 1.0 ;
+        n_alpha 0.5 ;
+        debugPrint false
+    }
+}

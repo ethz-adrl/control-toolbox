@@ -10,7 +10,7 @@ find_package(catkin REQUIRED ct_rbd)
 
 find_package(Boost REQUIRED system filesystem)
 
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall -pthread")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 set(ct_model_libs
@@ -176,6 +176,16 @@ add_library(irb4600_ik
 )
 set_target_properties(irb4600_ik PROPERTIES COMPILE_FLAGS "-std=c++98 -fPIC -DIKFAST_NAMESPACE=irb4600_ik -DIKFAST_NO_MAIN -Wno-unused-variable")
 
+
+if(BUILD_EXAMPLES)
+    message(STATUS "Building with examples.")
+
+    set(CT_MODELS_EXAMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/examples")
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
+
+    add_executable(ex_NLOC_MPC_invertedPendulum examples/InvertedPendulum/NLOC_MPC.cpp)
+    target_link_libraries(ex_NLOC_MPC_invertedPendulum ${catkin_LIBRARIES})
+endif()
 
 # Tests.
 catkin_add_gtest(ikfast_test test/IKFast/IKFastTest.cpp)
