@@ -15,6 +15,8 @@ class StateVector : public Eigen::Matrix<SCALAR, STATE_DIM, 1>
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    static const size_t DIM = STATE_DIM;
+
     StateVector(){};
     virtual ~StateVector(){};
 
