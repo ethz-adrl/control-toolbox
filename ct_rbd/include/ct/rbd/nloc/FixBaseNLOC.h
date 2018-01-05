@@ -46,6 +46,9 @@ public:
 
     typedef ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> CostFunction;
 
+    //! default constructor
+    FixBaseNLOC();
+
     //! constructor which directly takes a cost function
     FixBaseNLOC(std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFun,
         const typename NLOptConSolver::Settings_t& nlocSettings,

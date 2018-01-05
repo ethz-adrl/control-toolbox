@@ -10,6 +10,9 @@ namespace ct {
 namespace rbd {
 
 template <class FIX_BASE_FD_SYSTEM, size_t ACTUATOR_STATE_DIM, typename SCALAR>
+FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::FixBaseNLOC(){}
+
+template <class FIX_BASE_FD_SYSTEM, size_t ACTUATOR_STATE_DIM, typename SCALAR>
 FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::FixBaseNLOC(
     std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFun,
     const typename NLOptConSolver::Settings_t& nlocSettings,
@@ -25,7 +28,6 @@ FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::FixBaseNLOC(
     optConProblem_.verify();
     nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, nlocSettings));
 }
-
 
 template <class FIX_BASE_FD_SYSTEM, size_t ACTUATOR_STATE_DIM, typename SCALAR>
 void FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::initialize(const tpl::JointState<NJOINTS, SCALAR>& x0,
