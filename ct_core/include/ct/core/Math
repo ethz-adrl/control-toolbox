@@ -6,10 +6,10 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include "math/CppadUtils.h"
 #include "math/Derivatives.h"
 #include "math/DerivativesCppadSettings.h"
 #include "math/DerivativesNumDiff.h"
+#include "math/DerivativesCppad.h"
 #include "math/DerivativesCppadJIT.h"
 #include "math/DerivativesCppadCG.h"
 

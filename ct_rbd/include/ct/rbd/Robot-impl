@@ -8,6 +8,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "robot/actuator/SecondOrderActuatorDynamics-impl.h"
+#include "robot/actuator/SEADynamicsFirstOrder-impl.h"
 
 #include "robot/control/JointPositionController-impl.h"
 #include "robot/control/SelectionMatrix-impl.h"

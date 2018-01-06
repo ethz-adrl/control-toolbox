@@ -1,0 +1,19 @@
+Robot ct_InvertedPendulum
+
+Frames {
+    fr_InvertedPendulumBase, fr_Link1, fr_Joint1, fr_ee
+}
+
+Transforms {
+    
+	base=fr_InvertedPendulumBase, target=fr_Link1
+	base=fr_InvertedPendulumBase, target=fr_ee
+
+	base=fr_Link1, target=fr_InvertedPendulumBase
+	base=fr_ee, target=fr_InvertedPendulumBase	
+}
+
+Jacobians {
+	base=fr_InvertedPendulumBase, target=fr_Link1
+	base=fr_InvertedPendulumBase, target=fr_ee
+}

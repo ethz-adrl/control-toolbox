@@ -19,7 +19,6 @@ namespace rbd {
  */
 template <size_t NJOINTS, size_t ACT_STATE_DIMS = 2 * NJOINTS, typename SCALAR = double>
 class ActuatorDynamicsSymplectic
-    : public core::SymplecticSystem<ACT_STATE_DIMS / 2, ACT_STATE_DIMS / 2, NJOINTS, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -39,16 +38,18 @@ public:
 
     virtual ActuatorDynamicsSymplectic<NJOINTS, ACT_STATE_DIMS, SCALAR>* clone() const override = 0;
 
-    virtual void computePdot(const act_state_vector_t& x,
+    virtual void computePdot(const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+        const act_state_vector_t& x,
         const act_vel_vector_t& v,
         const core::ControlVector<NJOINTS, SCALAR>& control,
-        act_pos_vector_t& pDot) override = 0;
+        act_pos_vector_t& pDot) = 0;
 
 
-    virtual void computeVdot(const act_state_vector_t& x,
+    virtual void computeVdot(const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+        const act_state_vector_t& x,
         const act_pos_vector_t& p,
         const core::ControlVector<NJOINTS, SCALAR>& control,
-        act_vel_vector_t& vDot) override = 0;
+        act_vel_vector_t& vDot) = 0;
 
 
     //! output equation of the actuator

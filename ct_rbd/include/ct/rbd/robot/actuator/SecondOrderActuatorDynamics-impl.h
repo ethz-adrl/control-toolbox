@@ -59,7 +59,8 @@ SecondOrderActuatorDynamics<NJOINTS, SCALAR>* SecondOrderActuatorDynamics<NJOINT
 }
 
 template <size_t NJOINTS, typename SCALAR>
-void SecondOrderActuatorDynamics<NJOINTS, SCALAR>::computeControlledDynamics(
+void SecondOrderActuatorDynamics<NJOINTS, SCALAR>::computeActuatorDynamics(
+    const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
     const ct::core::StateVector<2 * NJOINTS, SCALAR>& state,
     const SCALAR& t,
     const ct::core::ControlVector<NJOINTS, SCALAR>& control,

@@ -6,7 +6,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include "CppadUtils.h"
 #include "DerivativesCppadSettings.h"
 
 namespace ct {
@@ -27,18 +26,13 @@ namespace core {
  * @tparam OUT_DIM Output dimensionailty of the function (use Eigen::Dynamic (-1) for dynamic size)
  */
 template <int IN_DIM, int OUT_DIM>
-class DerivativesCppadJIT : public CppadUtils<IN_DIM, OUT_DIM>,
-                            public Derivatives<IN_DIM, OUT_DIM, double>  // double on purpose!
+class DerivativesCppadJIT : public Derivatives<IN_DIM, OUT_DIM, double>// double on purpose!
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef ADScalar AD_SCALAR;
     typedef ADCGScalar CG_SCALAR;         //!< CG_SCALAR  type
     typedef ADCGValueType CG_VALUE_TYPE;  //!< autodiff scalar type
-
-    typedef Eigen::Matrix<AD_SCALAR, IN_DIM, 1> IN_TYPE_AD;    //!< function input vector type
-    typedef Eigen::Matrix<AD_SCALAR, OUT_DIM, 1> OUT_TYPE_AD;  //!< function  output vector type
 
     typedef Eigen::Matrix<CG_SCALAR, IN_DIM, 1> IN_TYPE_CG;    //!< function input vector type
     typedef Eigen::Matrix<CG_SCALAR, OUT_DIM, 1> OUT_TYPE_CG;  //!< function  output vector type
@@ -53,9 +47,7 @@ public:
 
 
     typedef std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> FUN_TYPE_CG;  //!< function type
-    typedef std::function<OUT_TYPE_AD(const IN_TYPE_AD&)> FUN_TYPE_AD;
 
-    typedef CppadUtils<IN_DIM, OUT_DIM> Utils;
     typedef Derivatives<IN_DIM, OUT_DIM> DerivativesBase;
 
     /**
@@ -71,53 +63,62 @@ public:
      *                        template parameter IN_DIM is -1 (dynamic)
      */
     DerivativesCppadJIT(FUN_TYPE_CG& f, int inputDim = IN_DIM, int outputDim = OUT_DIM)
-        : Utils(f, inputDim, outputDim), DerivativesBase(), compiled_(false), libName_("")
+        : DerivativesBase(),
+          cgStdFun_(f),
+          inputDim_(inputDim),
+          outputDim_(outputDim),
+          compiled_(false), libName_("")
     {
+        update(f, inputDim, outputDim);
     }
 
-    /**
-     * @brief      Constructs the derivatives for autodiff without
-     *             codegeneration using a FUN_TYPE_AD function
-     *
-     * @warning    If IN_DIM and/our OUT_DIM are set to dynamic (-1), then the
-     *             actual dimensions of x and y have to be passed here.
-     *
-     * @param      f          The function to be autodiffed
-     * @param[in]  inputDim   inputDim input dimension, must be specified if
-     *                        template parameter IN_DIM is -1 (dynamic)
-     * @param[in]  outputDim  outputDim output dimension, must be specified if
-     *                        template parameter IN_DIM is -1 (dynamic)
-     */
-    DerivativesCppadJIT(FUN_TYPE_AD& f, int inputDim = IN_DIM, int outputDim = OUT_DIM)
-        : Utils(f, inputDim, outputDim), DerivativesBase(), compiled_(false), libName_("")
-    {
-    }
 
     //! copy constructor
     DerivativesCppadJIT(const DerivativesCppadJIT& arg)
-        : Utils(arg),
-          DerivativesBase(arg),
+        : DerivativesBase(arg),
+          cgStdFun_(arg.cgStdFun_),
+          inputDim_(arg.inputDim_),
+          outputDim_(arg.outputDim_),
           compiled_(arg.compiled_),
           libName_(arg.libName_),
           dynamicLib_(arg.dynamicLib_)
     {
+        cgCppadFun_ = arg.cgCppadFun_;
         if (compiled_)
             model_ =
                 std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad" + libName_));
     }
 
-    virtual void updateDerived() override
+
+    //! update the Jacobian with a new function
+    /*!
+     * \warning If IN_DIM and/our OUT_DIM are set to dynamic (-1), then the actual dimensions of
+     * x and y have to be passed here.
+     *
+     * @param f new function to compute Jacobian of
+     * @param inputDim input dimension, must be specified if template parameter IN_DIM is -1 (dynamic)
+     * @param outputDim output dimension, must be specified if template parameter IN_DIM is -1 (dynamic)
+     */
+    void update(FUN_TYPE_CG& f, const size_t inputDim = IN_DIM, const size_t outputDim = OUT_DIM)
     {
-        compiled_ = false;
-        libName_ = "";
-        dynamicLib_ = nullptr;
-        model_ = nullptr;
+        cgStdFun_ = f;
+        outputDim_ = outputDim;
+        inputDim_ = inputDim;
+        if (outputDim_ > 0 && inputDim_ > 0)
+        {
+            recordCg();
+            compiled_ = false;
+            libName_ = "";
+            dynamicLib_ = nullptr;
+            model_ = nullptr;
+        }
     }
 
     //! destructor
-    virtual ~DerivativesCppadJIT() {}
+    virtual ~DerivativesCppadJIT() = default;
     //! deep cloning of Jacobian
     DerivativesCppadJIT* clone() const { return new DerivativesCppadJIT<IN_DIM, OUT_DIM>(*this); }
+
     virtual OUT_TYPE_D forwardZero(const Eigen::VectorXd& x)
     {
         if (compiled_)
@@ -125,13 +126,14 @@ public:
             assert(model_->isForwardZeroAvailable() == true);
             return model_->ForwardZero(x);
         }
-        else
-            return this->adCppadFun_.Forward(0, x);
+        else {
+            throw std::runtime_error("Error: Compile the library first by calling compileJIT(..)");
+        }
     }
 
     virtual JAC_TYPE_D jacobian(const Eigen::VectorXd& x)
     {
-        if (this->outputDim_ <= 0)
+        if (outputDim_ <= 0)
             throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
 
 
@@ -140,13 +142,13 @@ public:
         {
             assert(model_->isJacobianAvailable() == true);
             jac = model_->Jacobian(x);
+            JAC_TYPE_D out(outputDim_, x.rows());
+            out = JAC_TYPE_ROW_MAJOR::Map(jac.data(), outputDim_, x.rows());
+            return out;
         }
         else
-            jac = this->adCppadFun_.Jacobian(x);
+            throw std::runtime_error("Error: Compile the library first by calling compileJIT(..)");
 
-        JAC_TYPE_D out(this->outputDim_, x.rows());
-        out = JAC_TYPE_ROW_MAJOR::Map(jac.data(), this->outputDim_, x.rows());
-        return out;
     }
 
     virtual void sparseJacobian(const Eigen::VectorXd& x,
@@ -154,7 +156,7 @@ public:
         Eigen::VectorXi& iRow,
         Eigen::VectorXi& jCol)
     {
-        if (this->outputDim_ <= 0)
+        if (outputDim_ <= 0)
             throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
 
         if (compiled_)
@@ -168,12 +170,12 @@ public:
             jCol = sparsityColsJacobianEigen_;
         }
         else
-            jac = this->adCppadFun_.SparseJacobian(x);
+            throw std::runtime_error("Error: Compile the library first by calling compileJIT(..)");
     }
 
     virtual Eigen::VectorXd sparseJacobianValues(const Eigen::VectorXd& x)
     {
-        if (this->outputDim_ <= 0)
+        if (outputDim_ <= 0)
             throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
 
         if (compiled_)
@@ -185,13 +187,13 @@ public:
             return Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
         }
         else
-            return this->adCppadFun_.SparseJacobian(x);
+            throw std::runtime_error("Error: Compile the library first by calling compileJIT(..)");
     }
 
 
     virtual HES_TYPE_D hessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda)
     {
-        if (this->outputDim_ <= 0)
+        if (outputDim_ <= 0)
             throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
 
         if (compiled_)
@@ -204,10 +206,7 @@ public:
         }
         else
         {
-            Eigen::VectorXd hessian = this->adCppadFun_.Hessian(x, lambda);
-            HES_TYPE_D out(x.rows(), x.rows());
-            out = HES_TYPE_ROW_MAJOR::Map(hessian.data(), x.rows(), x.rows());
-            return out;
+            throw std::runtime_error("Error: Compile the library first by calling compileJIT(..)");
         }
     }
 
@@ -217,7 +216,7 @@ public:
         Eigen::VectorXi& iRow,
         Eigen::VectorXi& jCol)
     {
-        if (this->outputDim_ <= 0)
+        if (outputDim_ <= 0)
             throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
 
         if (compiled_)
@@ -232,13 +231,13 @@ public:
             jCol = sparsityColsHessianEigen_;
         }
         else
-            hes = this->adCppadFun_.SparseHessian(x, lambda);
+            throw std::runtime_error("Error: Compile the library first by calling compileJIT(..)");
     }
 
 
     virtual Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda)
     {
-        if (this->outputDim_ <= 0)
+        if (outputDim_ <= 0)
             throw std::runtime_error("Outdim dim smaller 0; Define output dim in DerivativesCppad constructor");
 
         if (compiled_)
@@ -251,7 +250,7 @@ public:
             return Eigen::Map<Eigen::VectorXd>(output.data(), output.size(), 1);
         }
         else
-            return this->adCppadFun_.SparseHessian(x, lambda);
+            throw std::runtime_error("Error: Compile the library first by calling compileJIT(..)");
     }
 
     //! get Jacobian sparsity pattern
@@ -264,12 +263,12 @@ public:
         assert(model_->isJacobianSparsityAvailable() == true);
 
         std::vector<bool> sparsityVec = model_->JacobianSparsityBool();
-        Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(this->outputDim_, this->inputDim_);
+        Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(outputDim_, inputDim_);
 
-        assert((int)(sparsityVec.size()) == this->outputDim_ * this->inputDim_);
-        for (size_t row = 0; row < this->outputDim_; ++row)
-            for (size_t col = 0; col < this->inputDim_; ++col)
-                sparsityMat(row, col) = sparsityVec[col + row * this->inputDim_];
+        assert((int)(sparsityVec.size()) == outputDim_ * inputDim_);
+        for (size_t row = 0; row < outputDim_; ++row)
+            for (size_t col = 0; col < inputDim_; ++col)
+                sparsityMat(row, col) = sparsityVec[col + row * inputDim_];
 
         return sparsityMat;
     }
@@ -284,14 +283,14 @@ public:
         assert(model_->isHessianSparsityAvailable() == true);
 
         std::vector<bool> sparsityVec = model_->HessianSparsityBool();
-        Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(this->inputDim_, this->inputDim_);
+        Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(inputDim_, inputDim_);
 
-        assert(sparsityVec.size() == this->inputDim_ * this->inputDim_);
-        for (size_t row = 0; row < this->inputDim_; ++row)
-            for (size_t col = 0; col < this->inputDim_; ++col)
+        assert(sparsityVec.size() == inputDim_ * inputDim_);
+        for (size_t row = 0; row < inputDim_; ++row)
+            for (size_t col = 0; col < inputDim_; ++col)
             {
                 // std::cout << "sparsityVec: " << sparsityRowsHessian_[col + row * this->inputDim_] << std::endl;
-                sparsityMat(row, col) = sparsityVec[col + row * this->inputDim_];
+                sparsityMat(row, col) = sparsityVec[col + row * inputDim_];
             }
 
         return sparsityMat;
@@ -368,7 +367,7 @@ public:
         // assigning a unique identifier to the library in order to avoid race conditions in JIT
         libName_ = libName + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id()));
 
-        CppAD::cg::ModelCSourceGen<double> cgen(this->cgCppadFun_, "DerivativesCppad" + libName_);
+        CppAD::cg::ModelCSourceGen<double> cgen(cgCppadFun_, "DerivativesCppad" + libName_);
 
         cgen.setMultiThreading(settings.multiThreading_);
         cgen.setCreateForwardZero(settings.createForwardZero_);
@@ -397,7 +396,6 @@ public:
             compiler.setTemporaryFolder(tempDir);
             dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler));
         }
-
         else if (settings.compiler_ == DerivativesCppadSettings::CLANG)
         {
             CppAD::cg::ClangCompiler<double> compiler;
@@ -460,6 +458,35 @@ public:
     }
 
 private:
+    //! record the Auto-Diff terms for code generation
+    void recordCg()
+    {
+        // input vector, needs to be dynamic size
+        Eigen::Matrix<CG_SCALAR, Eigen::Dynamic, 1> x(inputDim_);
+
+        // declare x as independent
+        CppAD::Independent(x);
+
+        // output vector, needs to be dynamic size
+        Eigen::Matrix<CG_SCALAR, Eigen::Dynamic, 1> y(outputDim_);
+
+        y = cgStdFun_(x);
+
+        // store operation sequence in f: x -> y and stop recording
+        CppAD::ADFun<CG_VALUE_TYPE> fCodeGen(x, y);
+
+        fCodeGen.optimize();
+
+        cgCppadFun_ = fCodeGen;
+    }
+
+    std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> cgStdFun_;  //! the function
+
+    int inputDim_;   //! function input dimension
+    int outputDim_;  //! function output dimension
+
+    CppAD::ADFun<CG_VALUE_TYPE> cgCppadFun_;  //!  auto-diff function
+
     bool compiled_;        //! flag if Jacobian is compiled
     std::string libName_;  //! a unique name for this library
 

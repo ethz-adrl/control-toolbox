@@ -384,7 +384,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM
 
 		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
 		{
-			integrateSymplectic<V_DIM, P_DIM>(threadId, x_local[i], 0, subSteps, dt_sim);
+			integrateSymplectic<V_DIM, P_DIM, STATE_DIM>(threadId, x_local[i], 0, subSteps, dt_sim);
 		} else
 		{
 			integrators_[threadId]->integrate_n_steps(x_local[i], 0, subSteps, dt_sim);

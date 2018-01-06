@@ -4,9 +4,7 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-
-#ifndef CT_INCLUDE_CT_OPTCON_EXAMPLE_DIR
-#define CT_INCLUDE_CT_OPTCON_EXAMPLE_DIR
+#pragma once
 
 namespace ct {
 namespace optcon {
@@ -15,5 +13,3 @@ static const std::string exampleDir = "${CT_OPTCON_EXAMPLE_DIR}";
 
 }
 }
-
-#endif
