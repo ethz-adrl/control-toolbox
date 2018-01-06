@@ -15,7 +15,7 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>::NL
     const OptConProblem_t& optConProblem,
     const Settings_t& settings)
     : NLOCBackendBase(systemInterfacePtr_t(
-                          new OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>(optConProblem, settings)),
+                          new OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(optConProblem, settings)),
           settings)
 {
 }

@@ -17,23 +17,35 @@ namespace optcon {
  *
  * \tparam STATE_DIM size of state vector
  * \tparam CONTROL_DIM size of input vector
+ * \tparam P_DIM size for symplectic integrator
+ * \tparam V_DIM size for symplectic integrator
  * \tparam SCALAR the underlying scalar type
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class OptconContinuousSystemInterface
-    : public OptconSystemInterface<STATE_DIM, CONTROL_DIM, ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>, SCALAR>
+template <size_t STATE_DIM,
+    size_t CONTROL_DIM,
+    size_t P_DIM = STATE_DIM / 2,
+    size_t V_DIM = STATE_DIM / 2,
+    typename SCALAR = double>
+class OptconContinuousSystemInterface : public OptconSystemInterface<STATE_DIM,
+                                            CONTROL_DIM,
+                                            ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>,
+                                            SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef OptconSystemInterface<STATE_DIM, CONTROL_DIM, ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>, SCALAR> Base;
+    typedef OptconSystemInterface<STATE_DIM,
+        CONTROL_DIM,
+        ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>,
+        SCALAR>
+        Base;
 
     typedef typename Base::control_vector_t control_vector_t;
     typedef typename Base::state_vector_t state_vector_t;
     typedef typename Base::state_matrix_t state_matrix_t;
     typedef typename Base::state_control_matrix_t state_control_matrix_t;
 
-    typedef ct::core::SystemDiscretizer<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR> discretizer_t;
+    typedef ct::core::SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> discretizer_t;
     typedef std::shared_ptr<discretizer_t> system_discretizer_ptr_t;
 
     typedef ct::core::Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR> Sensitivity_t;

@@ -9,21 +9,21 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::OptconContinuousSystemInterface(
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::OptconContinuousSystemInterface(
     const optConProblem_t& problem,
     const settings_t& settings)
     : Base(problem, settings)
 {
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumStages(const int numStages)
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNumStages(const int numStages)
 {
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::changeNonlinearSystem(
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeNonlinearSystem(
     const typename optConProblem_t::DynamicsPtr_t& dyn)
 {
     if (dyn == nullptr)
@@ -39,8 +39,8 @@ void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::changeNonl
         discretizers_.at(i)->initialize();
     }
 }
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::changeLinearSystem(
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeLinearSystem(
     const typename optConProblem_t::LinearPtr_t& lin)
 {
     if (lin == nullptr)
@@ -53,8 +53,8 @@ void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::changeLine
     }
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::initialize()
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initialize()
 {
     this->systems_.resize(this->settings_.nThreads + 1);
     this->linearSystems_.resize(this->settings_.nThreads + 1);
@@ -98,8 +98,8 @@ void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::initialize
     }
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::configure(const settings_t& settings)
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(const settings_t& settings)
 {
     if (settings.nThreads != this->settings_.nThreads)
     {
@@ -129,8 +129,8 @@ void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::configure(
     this->settings_ = settings;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::propagateControlledDynamics(
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::propagateControlledDynamics(
     const state_vector_t& state,
     const time_t n,
     const control_vector_t& control,
@@ -142,22 +142,22 @@ void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::propagateC
     discretizers_[threadId]->propagateControlledDynamics(state, n, control, stateNext);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::getSubstates(StateVectorArrayPtr& subStepsX,
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getSubstates(StateVectorArrayPtr& subStepsX,
     const size_t threadId)
 {
     subStepsX = discretizers_[threadId]->getSubstates();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::getSubcontrols(ControlVectorArrayPtr& subStepsU,
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getSubcontrols(ControlVectorArrayPtr& subStepsU,
     const size_t threadId)
 {
     subStepsU = discretizers_[threadId]->getSubcontrols();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::setSubstepTrajectoryReference(
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::setSubstepTrajectoryReference(
     const StateSubstepsPtr& xSubsteps,
     const ControlSubstepsPtr& uSubsteps,
     const size_t threadId)
@@ -165,8 +165,8 @@ void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::setSubstep
     sensitivity_[threadId]->setSubstepTrajectoryReference(xSubsteps.get(), uSubsteps.get());
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::getAandB(const state_vector_t& x,
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getAandB(const state_vector_t& x,
     const control_vector_t& u,
     const state_vector_t& x_next,
     const int n,
