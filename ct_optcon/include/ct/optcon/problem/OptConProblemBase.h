@@ -34,9 +34,9 @@ namespace optcon {
  */
 template <size_t STATE_DIM,
     size_t CONTROL_DIM,
-    typename system_t,
-    typename linear_system_t,
-    typename linearizer_t,
+    typename SYSTEM_T,
+    typename LINEAR_SYSTEM_T,
+    typename LINEARIZER_T,
     typename SCALAR = double>
 class OptConProblemBase
 {
@@ -48,11 +48,11 @@ public:
 
     // typedefs
     typedef ct::core::StateVector<STATE_DIM, SCALAR> state_vector_t;
-    typedef std::shared_ptr<system_t> DynamicsPtr_t;
-    typedef std::shared_ptr<linear_system_t> LinearPtr_t;
+    typedef std::shared_ptr<SYSTEM_T> DynamicsPtr_t;
+    typedef std::shared_ptr<LINEAR_SYSTEM_T> LinearPtr_t;
     typedef std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> CostFunctionPtr_t;
     typedef std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> ConstraintPtr_t;
-    typedef typename system_t::time_t time_t;
+    typedef typename SYSTEM_T::time_t time_t;
 
     OptConProblemBase();
 

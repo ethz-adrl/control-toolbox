@@ -106,7 +106,7 @@ public:
 
 private:
     std::vector<system_discretizer_ptr_t, Eigen::aligned_allocator<system_discretizer_ptr_t>>
-        discretizers_;  //! Runge-Kutta-4 Discretizers
+        discretizers_;  //! system discretizers
 
     std::vector<SensitivityPtr, Eigen::aligned_allocator<SensitivityPtr>>
         sensitivity_;  //! the ct sensitivity integrators
