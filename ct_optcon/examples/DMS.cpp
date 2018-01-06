@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 
 
     // define optcon problem and add constraint
-    OptConProblem<state_dim, control_dim> optConProblem(oscillator, costFunction);
+    ContinuousOptConProblem<state_dim, control_dim> optConProblem(oscillator, costFunction);
     optConProblem.setInitialState(x_0);
     optConProblem.setGeneralConstraints(finalConstraints);
 

@@ -45,7 +45,7 @@ template <size_t STATE_DIM,
     size_t P_DIM,
     size_t V_DIM,
     typename SCALAR = double,
-    typename OPTCONPROBLEM = OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>
+    typename OPTCONPROBLEM = ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>
 class NLOCBackendBase
 {
 public:

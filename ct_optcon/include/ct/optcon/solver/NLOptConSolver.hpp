@@ -6,7 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/optcon/problem/OptConProblem.h>
+#include <ct/optcon/problem/ContinuousOptConProblem.h>
 
 #include <ct/optcon/nloc/NLOCBackendST.hpp>
 #include <ct/optcon/nloc/NLOCBackendMP.hpp>
@@ -45,7 +45,7 @@ public:
     typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
     typedef NLOptConSettings Settings_t;
     typedef SCALAR Scalar_t;
-    typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
+    typedef ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
 
     //! constructor

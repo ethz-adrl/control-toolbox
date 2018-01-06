@@ -55,7 +55,7 @@ public:
 
         generalConstraints_->initialize();
 
-        OptConProblem<2, 1> optProblem(oscillator_, costFunction_);
+        ContinuousOptConProblem<2, 1> optProblem(oscillator_, costFunction_);
         optProblem.setInitialState(x_0_);
         optProblem.setTimeHorizon(settings_.T_);
         optProblem.setGeneralConstraints(generalConstraints_);

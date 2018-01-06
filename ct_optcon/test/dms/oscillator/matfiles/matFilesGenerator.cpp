@@ -90,7 +90,7 @@ public:
         termConstraint->setName("crazyTerminalConstraint");
         generalConstraints_->addTerminalConstraint(termConstraint, true);
 
-        OptConProblem<2, 1> optProblem(oscillator_, costFunction_);
+        ContinuousOptConProblem<2, 1> optProblem(oscillator_, costFunction_);
         optProblem.setInitialState(x_0_);
 
         optProblem.setTimeHorizon(settings_.T_);
@@ -134,7 +134,7 @@ public:
         termConstraint->setName("crazyTerminalConstraint");
         generalConstraints_->addTerminalConstraint(termConstraint, true);
 
-        OptConProblem<2, 1> optProblem(oscillator_, costFunction_);
+        ContinuousOptConProblem<2, 1> optProblem(oscillator_, costFunction_);
         optProblem.setInitialState(x_0_);
 
         optProblem.setTimeHorizon(settings_.T_);

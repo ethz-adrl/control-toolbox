@@ -12,7 +12,7 @@ namespace optcon {
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendMP(
-    const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+    const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
     const NLOptConSettings& settings)
     : Base(optConProblem, settings)
 {
@@ -21,7 +21,7 @@ NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendMP(
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::NLOCBackendMP(
-    const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+    const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
     const std::string& settingsFile,
     bool verbose,
     const std::string& ns)

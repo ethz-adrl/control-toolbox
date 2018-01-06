@@ -15,7 +15,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "constraint/constraint.h"
 
 #include "problem/OptConProblemBase.h"
-#include "problem/OptConProblem.h"
+#include "problem/ContinuousOptConProblem.h"
 #include "problem/DiscreteOptConProblem.h"
 #include "problem/LQOCProblem.hpp"
 

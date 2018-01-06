@@ -21,12 +21,12 @@ namespace optcon {
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class OptconContinuousSystemInterface
-    : public OptconSystemInterface<STATE_DIM, CONTROL_DIM, OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>, SCALAR>
+    : public OptconSystemInterface<STATE_DIM, CONTROL_DIM, ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef OptconSystemInterface<STATE_DIM, CONTROL_DIM, OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>, SCALAR> Base;
+    typedef OptconSystemInterface<STATE_DIM, CONTROL_DIM, ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>, SCALAR> Base;
 
     typedef typename Base::control_vector_t control_vector_t;
     typedef typename Base::state_vector_t state_vector_t;

@@ -31,9 +31,9 @@ public:
 
     typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> Base;
 
-    NLOCBackendMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const NLOptConSettings& settings);
+    NLOCBackendMP(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const NLOptConSettings& settings);
 
-    NLOCBackendMP(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+    NLOCBackendMP(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
         const std::string& settingsFile,
         bool verbose = true,
         const std::string& ns = "alg");
