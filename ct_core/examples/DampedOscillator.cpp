@@ -15,8 +15,9 @@ int main(int argc, char** argv)
     // create a state
     ct::core::StateVector<state_dim> x;
 
-    // we initialize it at 0
-    x.setZero();
+    // we initialize it at a point with unit deflection and zero velocity
+    x(0) = 1.0;
+    x(1) = 0.0;
 
     // create an oscillator, which is a predefined system in ct_core
     double w_n = 10;
