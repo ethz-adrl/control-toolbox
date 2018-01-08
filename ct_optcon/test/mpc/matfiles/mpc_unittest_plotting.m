@@ -20,9 +20,10 @@ for i=0:mult:numVars*mult-1
 figure(1);
 plot([ts_var ts_var],[-5 20], ':k');
 plot(ts_var+t_var, x_var(1,:));
+grid on
 
 figure(2);
 plot([ts_var ts_var],[-5 20], ':k');
 plot(ts_var+t_var, x_var(2,:));
-
+grid on
 end

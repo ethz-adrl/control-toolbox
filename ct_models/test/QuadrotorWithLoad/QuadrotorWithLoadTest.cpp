@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -15,7 +15,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include <gtest/gtest.h>
 
 #include <ct/models/QuadrotorWithLoad/QuadrotorWithLoad.h>
-#include <ct/models/QuadrotorWithLoad/QuadWithLoadFDSystem.h>
+#include <ct/models/QuadrotorWithLoad/QuadrotorWithLoadFDSystem.h>
 
 using namespace ct;
 using namespace ct::rbd;
@@ -23,7 +23,7 @@ using namespace ct::rbd;
 
 TEST(QuadrotorWithLoadTestTest, NumDiffComparison)
 {
-    typedef QuadWithLoadFDSystem<ct_quadrotor::Dynamics> QuadrotorSystem;
+    typedef QuadrotorWithLoadFDSystem<quadrotor::Dynamics> QuadrotorSystem;
 
     const size_t STATE_DIM = QuadrotorSystem::STATE_DIM;
     const size_t CONTROL_DIM = QuadrotorSystem::CONTROL_DIM;

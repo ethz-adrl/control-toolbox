@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -11,11 +11,32 @@ namespace optcon {
 
 /*!
  *
- * This class defines a Linear Quadratic Optimal Control Problem, consisting of
+ * This class defines a Linear Quadratic Optimal Control (LQOC) Problem, consisting of
  * - affine systen dynamics
  * - reference trajectories (arrays!) for state and control
  * - LQ approximation of the cost function
  *
+ * The LQ problem hence has the following form:
+ * \f[
+ * \min_{\delta \mathbf{u}_n, \delta \mathbf{x}_n}
+ * \bigg \{
+ * q_N +\delta \mathbf{x}_N^\top \mathbf{q}_N +\frac{1}{2}\delta \mathbf{x}_N^\top \mathbf{Q}_N\delta \mathbf{x}_N
+ * +\sum_{n=0}^{N-1} q_n + \delta \mathbf{x}_n^\top \mathbf{q}_n
+ * + \delta \mathbf{u}_n^\top \mathbf{r}_n
+ * + \frac{1}{2}\delta \mathbf{x}_n^\top\mathbf{Q}_n\delta \mathbf{x}_n
+ * +\frac{1}{2}\delta \mathbf{u}_n^\top \mathbf{R}_n\delta \mathbf{u}_n
+ * + \delta \mathbf{u}_n^\top \mathbf{P}_n\delta \mathbf{x}_n
+ * \bigg \}
+ * \f]
+ * subject to
+ * \f[
+ * \delta \mathbf x_{n+1} = \mathbf A_n \delta \mathbf x_n + \mathbf B_n \delta \mathbf u_n +\mathbf b_n
+ * \f]
+ * with
+ * \f$ \delta \mathbf x_n = \mathbf x_n - \hat \mathbf x_n \f$ and \f$ \delta \mathbf u_n = \mathbf u_n - \hat \mathbf u_n \f$
+ *
+ * The reference trajectories for state and control are here denoted as \f$ \hat \mathbf x_i, \
+ *  \hat \mathbf u_i \quad \forall i = 0, 1, \ldots \f$
  */
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR = double>
 class LQOCProblem

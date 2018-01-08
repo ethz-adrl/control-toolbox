@@ -1,11 +1,11 @@
 
 #include <ct/optcon/optcon.h>
-
 #include "exampleDir.h"
 
-
 /*!
- * This example shows how to use Direct Multiple Shooting with an oscillator system, using IPOPT as NLP solver.
+ * This example shows how to use classical Direct Multiple Shooting with an oscillator system,
+ * using IPOPT as NLP solver.
+ *
  * \example DMS.cpp
  */
 int main(int argc, char **argv)
@@ -52,34 +52,30 @@ int main(int argc, char **argv)
     std::shared_ptr<TerminalConstraint<state_dim, control_dim>> terminalConstraint(
         new TerminalConstraint<2, 1>(x_final));
     terminalConstraint->setName("TerminalConstraint");
-    finalConstraints->addConstraint(terminalConstraint, true);
+    finalConstraints->addTerminalConstraint(terminalConstraint, true);
     finalConstraints->initialize();
 
 
     // define optcon problem and add constraint
     OptConProblem<state_dim, control_dim> optConProblem(oscillator, costFunction);
     optConProblem.setInitialState(x_0);
-    optConProblem.setFinalConstraints(finalConstraints);
+    optConProblem.setGeneralConstraints(finalConstraints);
 
 
     /**
 	 * STEP 2 : determine solver settings
 	 */
     DmsSettings settings;
-    settings.N_ = 25;                          // number of nodes
-    settings.T_ = 5.0;                         // final time horizon
-    settings.nThreads_ = 4;                    // number of threads for multi-threading
-    settings.terminalStateConstraint_ = true;  // here, we put a hard constraint on the terminal state
+    settings.N_ = 25;        // number of nodes
+    settings.T_ = 5.0;       // final time horizon
+    settings.nThreads_ = 4;  // number of threads for multi-threading
     settings.splineType_ = DmsSettings::PIECEWISE_LINEAR;
     settings.costEvaluationType_ = DmsSettings::FULL;  // we evaluate the full cost and use no trapezoidal approximation
-    settings.objectiveType_ =
-        DmsSettings::KEEP_TIME_AND_GRID;           // here, we don't optimize the time spacing between the nodes
+    settings.objectiveType_ = DmsSettings::KEEP_TIME_AND_GRID;  // don't optimize the time spacing between the nodes
     settings.h_min_ = 0.1;                         // minimum admissible distance between two nodes in [sec]
     settings.integrationType_ = DmsSettings::RK4;  // type of the shot integrator
     settings.dt_sim_ = 0.01;                       // forward simulation dt
-    settings.integrateSens_ =
-        1;  // the sensitivities can either be obtained through solving an ODE or through differentiation of the integrator
-    settings.nlpSettings_.solverType_ = NlpSolverSettings::IPOPT;
+    settings.solverSettings_.solverType_ = NlpSolverSettings::SolverType::IPOPT;  // use IPOPT
     settings.absErrTol_ = 1e-8;
     settings.relErrTol_ = 1e-8;
 

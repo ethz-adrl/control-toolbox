@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
@@ -146,6 +146,34 @@ void ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::genDiagonalIndices(const si
         iRow_vec(count) = i;
         jCol_vec(count) = i;
         count++;
+    }
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::genSparseDiagonalIndices(const Eigen::VectorXi& diag_sparsity,
+    Eigen::VectorXi& iRow_vec,
+    Eigen::VectorXi& jCol_vec)
+{
+    // make sure the sparsity pattern is correct and consists only of ones and zeros
+    assert(diag_sparsity.maxCoeff() <= 1);
+    assert(diag_sparsity.minCoeff() >= 0);
+
+    const int num_elements = diag_sparsity.sum();
+
+    iRow_vec.resize(num_elements);
+    jCol_vec.resize(num_elements);
+
+    size_t count = 0;
+
+    for (int i = 0; i < diag_sparsity.rows(); ++i)
+    {
+        if (diag_sparsity(i) == 1)
+        {
+            iRow_vec(count) = i;
+            jCol_vec(count) = i;
+            count++;
+        }
     }
 }
 

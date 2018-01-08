@@ -7,7 +7,7 @@
 
 #include <ct/core/core.h>
 
-int main(int argc, char* argv)
+int main(int argc, char** argv)
 {
     // a damped oscillator has two states, position and velocity
     const size_t state_dim = ct::core::SecondOrderSystem::STATE_DIM;  // = 2

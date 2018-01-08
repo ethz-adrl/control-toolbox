@@ -1,20 +1,22 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
 
-#include "systems/System.h"
-#include "systems/ControlledSystem.h"
-#include "systems/SecondOrderSystem.h"
-#include "systems/DiscreteControlledSystem.h"
-#include "systems/ControlledSystem.h"
-#include "systems/linear/LinearSystem.h"
-#include "systems/linear/LTISystem.h"
-#include "systems/linear/SystemLinearizer.h"
-#include "systems/linear/DiscreteLinearSystem.h"
-#include "systems/linear/AutoDiffLinearizer.h"
-#include "systems/linear/ADCodegenLinearizer.h"
+#include "systems/continuous_time/System.h"
+#include "systems/continuous_time/ControlledSystem.h"
+#include "systems/continuous_time/SecondOrderSystem.h"
+#include "systems/continuous_time/ControlledSystem.h"
+#include "systems/continuous_time/linear/LinearSystem.h"
+#include "systems/continuous_time/linear/LTISystem.h"
+#include "systems/continuous_time/linear/SystemLinearizer.h"
+#include "systems/continuous_time/linear/AutoDiffLinearizer.h"
+#include "systems/continuous_time/linear/ADCodegenLinearizer.h"
+
+#include "systems/discrete_time/DiscreteControlledSystem.h"
+#include "systems/discrete_time/linear/DiscreteLinearSystem.h"
+#include "systems/discrete_time/SystemDiscretizer.h"
 

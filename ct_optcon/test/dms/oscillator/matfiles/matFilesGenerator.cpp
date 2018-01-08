@@ -82,19 +82,19 @@ public:
     {
         settings_.solverSettings_.solverType_ = NlpSolverSettings::IPOPT;
 
-        pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
+        generalConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
             new ct::optcon::ConstraintContainerAnalytical<2, 1>());
 
         std::shared_ptr<TerminalConstraint<2, 1>> termConstraint(new TerminalConstraint<2, 1>(x_final_));
 
         termConstraint->setName("crazyTerminalConstraint");
-        pureStateConstraints_->addTerminalConstraint(termConstraint, true);
+        generalConstraints_->addTerminalConstraint(termConstraint, true);
 
         OptConProblem<2, 1> optProblem(oscillator_, costFunction_);
         optProblem.setInitialState(x_0_);
 
         optProblem.setTimeHorizon(settings_.T_);
-        optProblem.setPureStateConstraints(pureStateConstraints_);
+        optProblem.setGeneralConstraints(generalConstraints_);
 
         dmsPlanner_ = std::shared_ptr<DmsSolver<2, 1>>(new DmsSolver<2, 1>(optProblem, settings_));
 
@@ -126,20 +126,20 @@ public:
     {
         settings_.solverSettings_.solverType_ = NlpSolverSettings::SNOPT;
 
-        pureStateConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
+        generalConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
             new ct::optcon::ConstraintContainerAnalytical<2, 1>());
 
         std::shared_ptr<TerminalConstraint<2, 1>> termConstraint(new TerminalConstraint<2, 1>(x_final_));
 
         termConstraint->setName("crazyTerminalConstraint");
-        pureStateConstraints_->addTerminalConstraint(termConstraint, true);
+        generalConstraints_->addTerminalConstraint(termConstraint, true);
 
         OptConProblem<2, 1> optProblem(oscillator_, costFunction_);
         optProblem.setInitialState(x_0_);
 
         optProblem.setTimeHorizon(settings_.T_);
-        optProblem.setPureStateConstraints(pureStateConstraints_);
-        pureStateConstraints_->initialize();
+        optProblem.setGeneralConstraints(generalConstraints_);
+        generalConstraints_->initialize();
 
         dmsPlanner_ = std::shared_ptr<DmsSolver<2, 1>>(new DmsSolver<2, 1>(optProblem, settings_));
 
@@ -191,7 +191,7 @@ private:
     DmsSettings settings_;
     std::shared_ptr<DmsSolver<2, 1>> dmsPlanner_;
     std::shared_ptr<ct::optcon::CostFunctionQuadratic<2, 1>> costFunction_;
-    std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>> pureStateConstraints_;
+    std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>> generalConstraints_;
 
 
     DmsPolicy<2, 1> initialPolicy_;

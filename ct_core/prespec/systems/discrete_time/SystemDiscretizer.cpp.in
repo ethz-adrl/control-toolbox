@@ -1,0 +1,8 @@
+#include <ct/core/core-prespec.h>
+#include <ct/core/systems/discrete_time/SystemDiscretizer-impl.h>
+
+#if (@POS_DIM_PRESPEC@ && @VEL_DIM_PRESPEC@ && @DOUBLE_OR_FLOAT@)
+
+template class ct::core::SystemDiscretizer<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @POS_DIM_PRESPEC@, @VEL_DIM_PRESPEC@, @SCALAR_PRESPEC@>;
+
+#endif

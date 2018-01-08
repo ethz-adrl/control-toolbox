@@ -683,7 +683,7 @@ LAYOUT_FILE            = DoxygenLayout.xml
 # search path. Do not use file names with spaces, bibtex cannot handle them. See
 # also \cite for info how to create references.
 
-CITE_BIB_FILES         =
+CITE_BIB_FILES         = refs.bib
 
 #---------------------------------------------------------------------------
 # Configuration options related to warning and progress messages
@@ -842,9 +842,7 @@ EXAMPLE_PATH           = ../examples \
 						 ../../ct_core/test \
 						 ../../ct_optcon/examples \
 						 ../../ct_optcon/test \
-						 ../../ct_rbd/examples \
 						 ../../ct_rbd/test \
-						 ../../ct_models/examples \
 						 ../../ct_models/test
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the

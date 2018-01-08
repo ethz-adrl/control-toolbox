@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -49,7 +49,8 @@ public:
     typedef ct::optcon::CostFunctionQuadratic<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR> CostFunction;
 
     //! constructor which directly takes a cost function
-    FixBaseNLOC(std::shared_ptr<ct::optcon::CostFunctionQuadratic<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>> costFun,
+    FixBaseNLOC(
+        std::shared_ptr<ct::optcon::CostFunctionQuadratic<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>> costFun,
         const typename NLOptConSolver::Settings_t& nlocSettings,
         std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
         bool verbose = false,
@@ -79,6 +80,8 @@ public:
 
 
     bool runIteration();
+
+    bool solve();
 
     const core::StateFeedbackController<FBSystem::STATE_DIM, FBSystem::CONTROL_DIM, SCALAR>& getSolution();
 

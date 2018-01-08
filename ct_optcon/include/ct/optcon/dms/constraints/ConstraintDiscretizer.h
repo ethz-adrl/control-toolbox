@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -77,23 +77,21 @@ public:
     }
 
 
-    void setStateInputConstraints(
-        std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> stateInputConstraints)
+    void setBoxConstraints(std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> boxConstraints)
     {
-        constraints_.push_back(stateInputConstraints);
-        constraintsIntermediateCount_ += (N_ + 1) * stateInputConstraints->getIntermediateConstraintsCount();
-        constraintsTerminalCount_ += stateInputConstraints->getTerminalConstraintsCount();
+        constraints_.push_back(boxConstraints);
+        constraintsIntermediateCount_ += (N_ + 1) * boxConstraints->getIntermediateConstraintsCount();
+        constraintsTerminalCount_ += boxConstraints->getTerminalConstraintsCount();
         constraintsCount_ = constraintsIntermediateCount_ + constraintsTerminalCount_;
 
         discreteConstraints_.resize(constraintsCount_);
         discreteLowerBound_.resize(constraintsCount_);
         discreteUpperBound_.resize(constraintsCount_);
 
-        nonZeroJacCountIntermediate_ +=
-            (N_ + 1) * (stateInputConstraints->getJacobianStateNonZeroCountIntermediate() +
-                           stateInputConstraints->getJacobianInputNonZeroCountIntermediate());
-        nonZeroJacCountTerminal_ += stateInputConstraints->getJacobianStateNonZeroCountTerminal() +
-                                    stateInputConstraints->getJacobianInputNonZeroCountTerminal();
+        nonZeroJacCountIntermediate_ += (N_ + 1) * (boxConstraints->getJacobianStateNonZeroCountIntermediate() +
+                                                       boxConstraints->getJacobianInputNonZeroCountIntermediate());
+        nonZeroJacCountTerminal_ += boxConstraints->getJacobianStateNonZeroCountTerminal() +
+                                    boxConstraints->getJacobianInputNonZeroCountTerminal();
         nonZeroJacCount_ = nonZeroJacCountIntermediate_ + nonZeroJacCountTerminal_;
 
         discreteJac_.resize(nonZeroJacCount_);
@@ -101,20 +99,20 @@ public:
         discreteJCol_.resize(nonZeroJacCount_);
     }
 
-    void setPureStateConstraints(
-        std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> pureStateConstraints)
+    void setGeneralConstraints(
+        std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> generalConstraints)
     {
-        constraints_.push_back(pureStateConstraints);
-        constraintsIntermediateCount_ += (N_ + 1) * pureStateConstraints->getIntermediateConstraintsCount();
-        constraintsTerminalCount_ += pureStateConstraints->getTerminalConstraintsCount();
+        constraints_.push_back(generalConstraints);
+        constraintsIntermediateCount_ += (N_ + 1) * generalConstraints->getIntermediateConstraintsCount();
+        constraintsTerminalCount_ += generalConstraints->getTerminalConstraintsCount();
         constraintsCount_ = constraintsIntermediateCount_ + constraintsTerminalCount_;
 
         discreteConstraints_.resize(constraintsCount_);
         discreteLowerBound_.resize(constraintsCount_);
         discreteUpperBound_.resize(constraintsCount_);
 
-        nonZeroJacCountIntermediate_ += (N_ + 1) * pureStateConstraints->getJacobianStateNonZeroCountIntermediate();
-        nonZeroJacCountTerminal_ += pureStateConstraints->getJacobianStateNonZeroCountTerminal();
+        nonZeroJacCountIntermediate_ += (N_ + 1) * generalConstraints->getJacobianStateNonZeroCountIntermediate();
+        nonZeroJacCountTerminal_ += generalConstraints->getJacobianStateNonZeroCountTerminal();
         nonZeroJacCount_ = nonZeroJacCountIntermediate_ + nonZeroJacCountTerminal_;
 
         discreteJac_.resize(nonZeroJacCount_);

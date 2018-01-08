@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -169,7 +169,7 @@ public:
      */
     Matrix3Tpl getEERotInBase(size_t eeID, const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
-    	return robcogen().getEERotInBase(eeID, jointPosition);
+        return robcogen().getEERotInBase(eeID, jointPosition);
     }
 
     /*!
@@ -201,30 +201,30 @@ public:
         const RigidBodyPoseTpl& basePose,
         const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
-    	// ee pose in base coordinates
-    	RigidBodyPoseTpl B_x_EE = getEEPoseInBase(eeID, jointPosition);
+        // ee pose in base coordinates
+        RigidBodyPoseTpl B_x_EE = getEEPoseInBase(eeID, jointPosition);
 
-    	// position rotated into world frame
-    	Position3Tpl W_p_EE = basePose.template rotateBaseToInertia(B_x_EE.position());
+        // position rotated into world frame
+        Position3Tpl W_p_EE = basePose.template rotateBaseToInertia(B_x_EE.position());
 
-    	// orientation rotated into world frame
-    	QuaterionTpl B_q_EE = B_x_EE.getRotationQuaternion();
-    	QuaterionTpl W_q_EE = basePose.template rotateBaseToInertiaQuaternion(B_q_EE);
+        // orientation rotated into world frame
+        QuaterionTpl B_q_EE = B_x_EE.getRotationQuaternion();
+        QuaterionTpl W_q_EE = basePose.template rotateBaseToInertiaQuaternion(B_q_EE);
 
-    	return RigidBodyPoseTpl(W_q_EE, basePose.position() + W_p_EE);
+        return RigidBodyPoseTpl(W_q_EE, basePose.position() + W_p_EE);
     }
 
 
     //! get the end-effector rotation matrix expressed in world coordinates
     Matrix3Tpl getEERotInWorld(size_t eeID,
-            const RigidBodyPoseTpl& basePose,
-            const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+        const RigidBodyPoseTpl& basePose,
+        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
-    	// ee rotation matrix in base coordinates
-    	Matrix3Tpl B_R_EE = getEERotInBase(eeID, jointPosition);
+        // ee rotation matrix in base coordinates
+        Matrix3Tpl B_R_EE = getEERotInBase(eeID, jointPosition);
 
-    	// ee rotation matriix in world
-    	return basePose.template rotateBaseToInertiaMat(B_R_EE);
+        // ee rotation matriix in world
+        return basePose.template rotateBaseToInertiaMat(B_R_EE);
     }
 
 

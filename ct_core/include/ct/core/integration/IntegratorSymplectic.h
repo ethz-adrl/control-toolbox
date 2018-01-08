@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -14,7 +14,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include "eigenIntegration.h"
 
-#include <ct/core/systems/SymplecticSystem.h>
+#include <ct/core/systems/continuous_time/SymplecticSystem.h>
 
 #include "internal/SteppersODEIntDefinitions.h"
 

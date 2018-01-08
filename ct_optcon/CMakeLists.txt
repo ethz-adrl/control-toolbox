@@ -15,7 +15,7 @@ find_package(catkin REQUIRED
 )
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++11 -Wall -Wl,--no-as-needed")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++11 -Wall")
 SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++11 -Wall")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
@@ -86,7 +86,7 @@ if(HPIPM)
 endif(HPIPM)
 
 
-## dummy lapack libs
+## lapack libs
 set(LAPACK_LIBS "")
 find_package(LAPACK QUIET)
 if(LAPACK_FOUND)
@@ -196,9 +196,14 @@ endif()
 # add libraries for explicit template
 ct_add_explicit_template_libs()
 
+# link against addigional external libraries, such as lapack, if applicable
 if(USE_LAPACK)
     ct_link_external_library(${LAPACK_LIBS})
 endif(USE_LAPACK)
+if(HPIPM)
+   ct_link_external_library(${BLASFEO_LIBRARY})
+   ct_link_external_library(${HPIPM_LIBRARY})
+endif(HPIPM)
 
 
 if(BUILD_EXAMPLES)
@@ -206,6 +211,9 @@ if(BUILD_EXAMPLES)
 
     set(CT_OPTCON_EXAMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/examples")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
+
+    add_executable(ex_ConstraintOutput examples/ConstraintExampleOutput.cpp)
+    target_link_libraries(ex_ConstraintOutput ${catkin_LIBRARIES})
 
     add_executable(ex_LQR examples/LQR.cpp)
     target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS})
@@ -216,8 +224,8 @@ if(BUILD_EXAMPLES)
     add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
     target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES})
     
-    #add_executable(ex_DMS examples/DMS.cpp)
-    #target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
+    add_executable(ex_DMS examples/DMS.cpp)
+    target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
 endif()
 
 
@@ -234,9 +242,11 @@ catkin_add_gtest(iLQRTest test/nloc/iLQRTest.cpp)
 target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
 if(HPIPM)
-    add_executable(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
+    catkin_add_gtest(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
     target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-
+    catkin_add_gtest(LQOCSolverTestPrespec test/solver/linear/LQOCSolverTestPrespec.cpp)
+    target_link_libraries(LQOCSolverTestPrespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIB_NAMES})
+    
     add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
     target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
     
@@ -245,9 +255,6 @@ if(HPIPM)
     
     #add_executable(HPIPMInterfaceTest2 test/hpipm/HPIPMInterfaceTest2.cpp) # todo make unit test
     #target_link_libraries(HPIPMInterfaceTest2 ${HPIPM_LIBS} ${MATLAB_LIBS})
-    
-    #add_executable(HPIPMInterfaceTest3 test/hpipm/HPIPMInterfaceTest3.cpp)# todo make unit test
-    #target_link_libraries(HPIPMInterfaceTest3 ${HPIPM_LIBS} ${MATLAB_LIBS})
 endif(HPIPM)
 
 
@@ -278,6 +285,9 @@ target_link_libraries(constraint_test ${catkin_LIBRARIES} )
 catkin_add_gtest(constraint_test_prespec test/constraint/ConstraintTestPrespec.cpp)
 target_link_libraries(constraint_test_prespec ${catkin_LIBRARIES} ${PRESPEC_LIB_NAMES})
 
+catkin_add_gtest(SparseBoxConstraintTest test/constraint/SparseBoxConstraintTest.cpp)
+target_link_libraries(SparseBoxConstraintTest ${catkin_LIBRARIES})
+
 get_filename_component(COSTFUNCTION_TEST_DIR "test/costfunction" ABSOLUTE)
 configure_file(test/costfunction/costfunction_test_dir.h.in test/costfunction/costfunction_test_dir.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/costfunction)
@@ -292,14 +302,8 @@ target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
 catkin_add_gtest(dms_test_all_var test/dms/oscillator/oscDMSTestAllVariants.cpp)
 target_link_libraries(dms_test_all_var ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
 
-#add_executable(bareTest test/dms/oscillator/bareTest.cpp)
-#target_link_libraries(bareTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-
 add_executable(matFilesGenerator test/dms/oscillator/matfiles/matFilesGenerator.cpp)
 target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-
-#add_executable(timeKeeperTest test/mpc/TimeKeeperTest.cpp)
-#target_link_libraries(timeKeeperTest ${catkin_LIBRARIES})
 
 get_filename_component(MPC_TEST_MAT_DIR "test/mpc/matfiles" ABSOLUTE)
 configure_file(test/mpc/mpcTestSettings.h.in test/mpc/mpcTestSettings.h)

@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -12,45 +12,53 @@ namespace optcon {
 /**
  * @ingroup    Constraint
  *
- * @brief      Class for control input constraint.
+ * @brief      Class for control input box constraint term
  *
  * @tparam     STATE_DIM    The state dimension
  * @tparam     CONTROL_DIM  The control dimension
  * @tparam     SCALAR       The Scalar type
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class ControlInputConstraint : public ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>
+class ControlInputConstraint : public BoxConstraintBase<CONTROL_DIM, STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef typename ct::core::tpl::TraitSelector<SCALAR>::Trait Trait;
-    typedef ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+    using Trait = typename ct::core::tpl::TraitSelector<SCALAR>::Trait;
+    using Base = BoxConstraintBase<CONTROL_DIM, STATE_DIM, CONTROL_DIM, SCALAR>;
 
-    typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
-    typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+    using state_vector_t = core::StateVector<STATE_DIM, SCALAR>;
+    using control_vector_t = core::ControlVector<CONTROL_DIM, SCALAR>;
 
-    typedef Eigen::Matrix<int, Eigen::Dynamic, 1> VectorXi;
-    typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
-    typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
+    using VectorXi = Eigen::Matrix<int, Eigen::Dynamic, 1>;
+    using VectorXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>;
+    using MatrixXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>;
+
+    using sparsity_matrix_t = Eigen::Matrix<SCALAR, Eigen::Dynamic, CONTROL_DIM>;
 
     /**
-	 * @brief      Custom constructor
+	 * @brief      Constructor taking lower and upper state bounds directly. Assumes state box constraint is dense.
 	 *
 	 * @param[in]  uLow   The upper control input bound
 	 * @param[in]  uHigh  The lower control input bound
 	 */
-    ControlInputConstraint(const core::ControlVector<CONTROL_DIM> uLow, const core::ControlVector<CONTROL_DIM> uHigh);
+    ControlInputConstraint(const control_vector_t& uLow, const control_vector_t& uHigh);
+
+    /**
+     * @brief 	  Constructor for sparse control input box constraint. Takes bounds and sparsity pattern.
+     * @param lb  Lower boundary values
+     * @param ub  Upper boundary values
+     * @param control_sparsity Control input constraint sparsity pattern
+     */
+    ControlInputConstraint(const VectorXs& lb, const VectorXs& ub, const Eigen::VectorXi& control_sparsity);
+
+    ControlInputConstraint(const ControlInputConstraint& arg);
 
     virtual ~ControlInputConstraint();
 
     virtual ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
 
-    virtual size_t getConstraintSize() const override;
-
-    virtual Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> evaluate(const state_vector_t& x,
-        const control_vector_t& u,
-        const SCALAR t) override;
+    virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
     virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
         const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
@@ -65,9 +73,14 @@ public:
 
     virtual size_t getNumNonZerosJacobianInput() const override;
 
+    virtual VectorXs jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
+
     virtual VectorXs jacobianInputSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
+
+    virtual void sparsityPatternState(VectorXi& rows, VectorXi& cols) override;
 
     virtual void sparsityPatternInput(VectorXi& rows, VectorXi& cols) override;
 };
-}
-}
+
+} // namespace optcon
+} // namespace ct

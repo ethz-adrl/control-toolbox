@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toobox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
@@ -33,7 +33,11 @@ std::shared_ptr<TermTaskspacePosition<KinTpl_t, true, hyqStateDim, hyqControlDim
     new TermTaskspacePosition<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId, Qpos, Eigen::Vector3d::Random()));
 
 std::shared_ptr<TermTaskspacePose<KinTpl_t, true, hyqStateDim, hyqControlDim>> termTaskspacePose(
-    new TermTaskspacePose<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId, Qpos, Qrot, Eigen::Vector3d::Random(), Eigen::Vector3d::Random()));
+    new TermTaskspacePose<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId,
+        Qpos,
+        Qrot,
+        Eigen::Vector3d::Random(),
+        Eigen::Vector3d::Random()));
 
 
 //! test TermTaskSpacePosition term for JIT-compatibility
@@ -73,13 +77,13 @@ TEST(RBD_JIT_Tests, TaskspacePositionCostFunctionTest)
 
 //! test TermTaskSpacePose term for JIT-compatibility
 template <typename SCALAR>
-Eigen::Matrix<SCALAR, 1, 1> testFunctionTaskSpacePose(
-    const Eigen::Matrix<SCALAR, hyqStateDim + hyqControlDim, 1> xu)
+Eigen::Matrix<SCALAR, 1, 1> testFunctionTaskSpacePose(const Eigen::Matrix<SCALAR, hyqStateDim + hyqControlDim, 1> xu)
 {
     // evaluate the task-space position term
     Eigen::Matrix<SCALAR, 1, 1> cost;
     SCALAR t(0.0);
-    cost(0, 0) = termTaskspacePose->evaluateCppadCg(xu.template head<hyqStateDim>(), xu.template tail<hyqControlDim>(), t);
+    cost(0, 0) =
+        termTaskspacePose->evaluateCppadCg(xu.template head<hyqStateDim>(), xu.template tail<hyqControlDim>(), t);
     return cost;
 }
 TEST(RBD_JIT_Tests, TaskspacePoseCostFunctionTest)
@@ -258,5 +262,3 @@ TEST(RBD_JIT_Tests, RBDStateTest)
         ASSERT_TRUE(false);
     }
 }
-
-
