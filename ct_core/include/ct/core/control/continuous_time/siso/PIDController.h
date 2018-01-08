@@ -79,41 +79,33 @@ public:
      * @param parameters The parameters for the PID controller
      * @param setpoint The setpoint for the PID controller
      */
-    PIDController(const parameters_t& parameters = parameters_t(), const setpoint_t& setpoint = setpoint_t())
-        : statePrevious_(SCALAR(0.0)), I_(SCALAR(0.0)), parameters_(parameters), setpoint_(setpoint){};
+    PIDController(const parameters_t& parameters = parameters_t(), const setpoint_t& setpoint = setpoint_t());
 
     //! copy constructor
-    PIDController(const PIDController& other)
-        : statePrevious_(other.statePrevious_), I_(other.I_), parameters_(other.parameters_), setpoint_(other.setpoint_)
-    {
-    }
+    PIDController(const PIDController& other);
 
-    //! detailed constructor
-    virtual ~PIDController(){};
+    //! destructor
+    virtual ~PIDController();
 
     //! clone operator
-    PIDController* clone() const { return new PIDController(*this); }
+    PIDController* clone() const;
     //! set the initial state
     /*!
      * Set the initial state for finite differencing for the D-part
      * @param state the initial state
      */
-    void setInitialState(const SCALAR& state) { statePrevious_ = state; }
+    void setInitialState(const SCALAR& state);
     //! set the state
     /*!
      * @param state The setpoint to set
      */
-    void setDesiredState(const SCALAR& state) { setpoint_.stateDesired_ = state; }
+    void setDesiredState(const SCALAR& state);
     //! set the desired state and derivative
     /*!
      * @param state the desired state
      * @param stateDerivative the desired state derivative
      */
-    void setDesiredState(const SCALAR& state, const SCALAR& stateDerivative)
-    {
-        setpoint_.stateDesired_ = state;
-        setpoint_.stateDerivativeDesired_ = stateDerivative;
-    }
+    void setDesiredState(const SCALAR& state, const SCALAR& stateDerivative);
 
     //! computes the control input based on the current state and time
     /*!
@@ -139,13 +131,13 @@ public:
      *
      * @param parameters the new PID controller parameters
      */
-    void changeParameters(const parameters_t& parameters) { parameters_ = parameters; }
+    void changeParameters(const parameters_t& parameters);
     //! returns a reference to the parameters
     /*!
      * Changes to the parameters can be directly made through this reference
      * @return reference to the parameters
      */
-    parameters_t& Parameters() { return parameters_; }
+    parameters_t& Parameters();
     //! resets the controller
     /*!
      * resets the I part as well as the previous state

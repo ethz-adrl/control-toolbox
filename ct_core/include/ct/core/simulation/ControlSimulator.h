@@ -43,18 +43,16 @@ public:
     ControlSimulator(Time sim_dt,
         Time control_dt,
         const StateVector<STATE_DIM>& x0,
-        std::shared_ptr<CONTROLLED_SYSTEM> controlled_system,
-        std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller = nullptr)
+        std::shared_ptr<CONTROLLED_SYSTEM> controlled_system)
         : sim_dt_(sim_dt),
           control_dt_(control_dt),
           x0_(x0),
           system_(controlled_system),
-          controller_(controller),
           stop_(false)
     {
+        system_->getController(controller_);
         if (sim_dt_ <= 0 || control_dt_ <= 0) throw "Step sizes must be positive.";
         if (sim_dt_ > control_dt_) throw "Simulation step must be smaller than the control step.";
-        if (controller_) system_->setController(controller_);
     }
 
     //! copy constructor
@@ -132,10 +130,6 @@ protected:
                 state_mtx_.lock();
                 x_ = temp_x;
                 state_mtx_.unlock();
-
-                control_mtx_.lock();
-                system_->setController(controller_);
-                control_mtx_.unlock();
 
                 sim_time = std::chrono::duration<double>(wall_time - sim_start_time_).count();
                 finishSystemIteration(sim_time);

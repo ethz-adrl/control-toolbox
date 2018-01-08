@@ -35,6 +35,13 @@ public:
         controller_.reset(new ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>);
     }
 
+    void finishSystemIteration(ct::core::Time sim_time) override
+    {
+        control_mtx_.lock();
+        system_->setController(controller_);
+        control_mtx_.unlock();
+    }
+
     void prepareControllerIteration(ct::core::Time sim_time) override
     {
         mpc_.prepareIteration(sim_time);
