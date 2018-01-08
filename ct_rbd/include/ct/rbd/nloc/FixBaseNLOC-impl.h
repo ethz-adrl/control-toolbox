@@ -10,9 +10,6 @@ namespace ct {
 namespace rbd {
 
 template <class FIX_BASE_FD_SYSTEM, size_t ACTUATOR_STATE_DIM, typename SCALAR>
-FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::FixBaseNLOC(){}
-
-template <class FIX_BASE_FD_SYSTEM, size_t ACTUATOR_STATE_DIM, typename SCALAR>
 FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::FixBaseNLOC(
     std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFun,
     const typename NLOptConSolver::Settings_t& nlocSettings,
