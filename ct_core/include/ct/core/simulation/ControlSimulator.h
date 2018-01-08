@@ -81,12 +81,12 @@ public:
     virtual void finishControllerIteration(Time sim_time) {}
 
     //! spawns the two threads in a nonblocking way
-    void simulate(Time duration)
+    void simulate(Time duration, const IntegrationType& intType = IntegrationType::EULERCT)
     {
         stop_           = false;
         sim_start_time_ = std::chrono::high_resolution_clock::now();
         x_              = x0_;
-        sys_thread_     = std::thread(&ControlSimulator::simulateSystem, this, duration);
+        sys_thread_     = std::thread(&ControlSimulator::simulateSystem, this, duration, std::ref(intType));
         control_thread_ = std::thread(&ControlSimulator::simulateController, this, duration);
     }
 
@@ -102,11 +102,11 @@ public:
 
 protected:
     //! run by the thread that simulates the system
-    virtual void simulateSystem(Time duration)
+    virtual void simulateSystem(Time duration, const IntegrationType& intType = IntegrationType::EULERCT)
     {
         try
         {
-            Integrator<STATE_DIM> integrator(system_);
+            Integrator<STATE_DIM> integrator(system_, intType);
             StateVector<STATE_DIM> temp_x = x_;
             // In case an integer number of steps cannot be performed
             const double residue = control_dt_ / sim_dt_ - int(control_dt_ / sim_dt_);
