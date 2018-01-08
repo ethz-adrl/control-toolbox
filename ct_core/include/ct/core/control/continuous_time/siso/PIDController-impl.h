@@ -94,8 +94,8 @@ void PIDController<SCALAR>::computeI(const SCALAR& error)
 template <typename SCALAR>
 void PIDController<SCALAR>::reset()
 {
-    statePrevious_ = SCALAR();
-    I_ = SCALAR();
+    statePrevious_ = SCALAR(0.0);
+    I_ = SCALAR(0.0);
 }
 
 }  // namespace core

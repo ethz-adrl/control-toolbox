@@ -39,9 +39,9 @@ public:
      */
     struct parameters_t
     {
-        parameters_t(SCALAR kp = SCALAR(),
-            SCALAR ki = SCALAR(),
-            SCALAR kd = SCALAR(),
+        parameters_t(SCALAR kp = SCALAR(0.0),
+            SCALAR ki = SCALAR(0.0),
+            SCALAR kd = SCALAR(0.0),
             Time dt_ = 0.01,
             SCALAR Imax_ = std::numeric_limits<SCALAR>::max(),
             SCALAR uMax_ = std::numeric_limits<SCALAR>::max(),
@@ -64,7 +64,7 @@ public:
      */
     struct setpoint_t
     {
-        setpoint_t(SCALAR stateDes = SCALAR(), SCALAR stateDevDes = SCALAR())
+        setpoint_t(SCALAR stateDes = SCALAR(0.0), SCALAR stateDevDes = SCALAR(0.0))
             : stateDesired_(stateDes), stateDerivativeDesired_(stateDevDes)
         {
         }
@@ -80,7 +80,7 @@ public:
      * @param setpoint The setpoint for the PID controller
      */
     PIDController(const parameters_t& parameters = parameters_t(), const setpoint_t& setpoint = setpoint_t())
-        : statePrevious_(SCALAR()), I_(SCALAR()), parameters_(parameters), setpoint_(setpoint){};
+        : statePrevious_(SCALAR(0.0)), I_(SCALAR(0.0)), parameters_(parameters), setpoint_(setpoint){};
 
     //! copy constructor
     PIDController(const PIDController& other)
