@@ -8,6 +8,7 @@ follow the Tutorials below.
 - \subpage tut_basics "Basics Tutorial"
 - \subpage core_tutorials "ct core Tutorials"
 - \subpage optcon_tutorials "ct optcon Tutorials"
+- \subpage rbd_tutorials "ct rbd Tutorials"
 - \subpage tut_examples "Examples"
 
 If you need additional support, feel free to create an issue on Bitbucket or contact the developers.
