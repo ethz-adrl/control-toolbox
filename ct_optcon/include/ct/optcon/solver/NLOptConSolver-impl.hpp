@@ -62,12 +62,12 @@ void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>
     switch (settings.nlocp_algorithm)
     {
         case NLOptConSettings::NLOCP_ALGORITHM::GNMS:
-            nlocAlgorithm_ = std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>>(
-                new GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(nlocBackend_, settings));
+            nlocAlgorithm_ = std::shared_ptr<NLOCAlgorithm_t>(
+                new GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>(nlocBackend_, settings));
             break;
         case NLOptConSettings::NLOCP_ALGORITHM::ILQR:
-            nlocAlgorithm_ = std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>>(
-                new iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(nlocBackend_, settings));
+            nlocAlgorithm_ = std::shared_ptr<NLOCAlgorithm_t>(
+                new iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>(nlocBackend_, settings));
             break;
         default:
             throw std::runtime_error("This algorithm is not implemented in NLOptConSolver.hpp");

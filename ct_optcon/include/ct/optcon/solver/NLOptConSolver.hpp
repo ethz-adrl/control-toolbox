@@ -44,11 +44,12 @@ public:
     static const size_t VEL_DIM = V_DIM;
 
     typedef NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM> Derived;
-    typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
+    typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t; //TODO: different for discrete problem?
     typedef NLOptConSettings Settings_t;
     typedef SCALAR Scalar_t;
     typedef OPTCONPROBLEM OptConProblem_t;
     typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM> NLOCBackendBase_t;
+    typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM> NLOCAlgorithm_t;
 
 
     //! constructor
@@ -229,7 +230,7 @@ protected:
     std::shared_ptr<NLOCBackendBase_t> nlocBackend_;
 
     //! the algorithm for sequencing the math operations in correct manner
-    std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>> nlocAlgorithm_;
+    std::shared_ptr<NLOCAlgorithm_t> nlocAlgorithm_;
 };
 
 

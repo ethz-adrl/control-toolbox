@@ -13,8 +13,13 @@ namespace ct {
 namespace optcon {
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
-class iLQR : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>
+template <size_t STATE_DIM,
+    size_t CONTROL_DIM,
+    size_t P_DIM,
+    size_t V_DIM,
+    typename SCALAR = double,
+    typename OPTCONPROBLEM = ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>
+class iLQR : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -22,12 +27,14 @@ public:
     static const size_t STATE_D = STATE_DIM;
     static const size_t CONTROL_D = CONTROL_DIM;
 
-    typedef ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
-    typedef NLOptConSettings Settings_t;
+    typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM> Base;
+
+    typedef typename Base::Policy_t Policy_t;
+    typedef typename Base::Settings_t Settings_t;
+    typedef typename Base::Backend_t Backend_t;
+
     typedef SCALAR Scalar_t;
 
-    typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> BASE;
-    typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> Backend_t;
 
     //! constructor
     iLQR(std::shared_ptr<Backend_t>& backend_, const Settings_t& settings);
@@ -44,35 +51,35 @@ public:
 
     //! runIteration combines prepareIteration and finishIteration
     /*!
-	 * For iLQR the separation between prepareIteration and finishIteration would actually not be necessary
-	 * @return
-	 */
+     * For iLQR the separation between prepareIteration and finishIteration would actually not be necessary
+     * @return
+     */
     virtual bool runIteration() override;
 
 
     /*!
-	 * for iLQR, as it is a purely sequential approach, we cannot prepare anything prior to solving,
-	 */
+     * for iLQR, as it is a purely sequential approach, we cannot prepare anything prior to solving,
+     */
     virtual void prepareIteration() override;
 
 
     /*!
-	 * for iLQR, finishIteration contains the whole main iLQR iteration.
-	 * @return
-	 */
+     * for iLQR, finishIteration contains the whole main iLQR iteration.
+     * @return
+     */
     virtual bool finishIteration() override;
 
 
     /*!
-	 * for iLQR, as it is a purely sequential approach, we cannot prepare anything prior to solving,
-	 */
+     * for iLQR, as it is a purely sequential approach, we cannot prepare anything prior to solving,
+     */
     virtual void prepareMPCIteration() override;
 
 
     /*!
-	 * for iLQR, finishIteration contains the whole main iLQR iteration.
-	 * @return
-	 */
+     * for iLQR, finishIteration contains the whole main iLQR iteration.
+     * @return
+     */
     virtual bool finishMPCIteration() override;
 };
 
