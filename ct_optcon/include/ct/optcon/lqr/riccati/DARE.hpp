@@ -53,7 +53,7 @@ public:
         control_feedback_t& K,
         bool verbose = false,
         const SCALAR eps = 1e-6,
-        size_t maxIter = 100);
+        size_t maxIter = 1000);
 
 
 private:
