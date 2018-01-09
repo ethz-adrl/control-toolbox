@@ -49,7 +49,9 @@ public:
     //! destructor
     virtual ~OptconDiscreteSystemInterface() {}
 
-    //TODO initialize and configure methods
+    //! perform necessary setup work
+    virtual void initialize() override;
+    virtual void configure(const settings_t& settings) override;
 
     //! retrieve discrete-time linear system matrices A and B.
     /*!

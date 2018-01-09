@@ -99,7 +99,8 @@ void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALA
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(const settings_t& settings)
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::configure(
+    const settings_t& settings)
 {
     if (settings.nThreads != this->settings_.nThreads)
     {
@@ -137,20 +138,21 @@ void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALA
     state_vector_t& stateNext,
     const size_t threadId)
 {
-    this->controller_[threadId]->setControl(
-        control);  // TODO is this even necessary? - possibly remove controller_ member completely
+    this->controller_[threadId]->setControl(control);
     discretizers_[threadId]->propagateControlledDynamics(state, n, control, stateNext);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getSubstates(StateVectorArrayPtr& subStepsX,
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getSubstates(
+    StateVectorArrayPtr& subStepsX,
     const size_t threadId)
 {
     subStepsX = discretizers_[threadId]->getSubstates();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
-void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getSubcontrols(ControlVectorArrayPtr& subStepsU,
+void OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::getSubcontrols(
+    ControlVectorArrayPtr& subStepsU,
     const size_t threadId)
 {
     subStepsU = discretizers_[threadId]->getSubcontrols();
