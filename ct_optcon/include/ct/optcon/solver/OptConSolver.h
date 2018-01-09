@@ -35,7 +35,8 @@ template <typename DERIVED,
     typename SETTINGS,
     size_t STATE_DIM,
     size_t CONTROL_DIM,
-    typename SCALAR = double>
+    typename SCALAR = double,
+    typename OPTCONPROBLEM = ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>
 class OptConSolver
 {
 public:
@@ -49,7 +50,7 @@ public:
     typedef DERIVED Derived;
     typedef SCALAR Scalar_t;
 
-    typedef ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
+    typedef OPTCONPROBLEM OptConProblem_t;
 
 
     OptConSolver() {}

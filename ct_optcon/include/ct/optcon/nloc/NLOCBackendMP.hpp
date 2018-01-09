@@ -23,17 +23,24 @@ namespace optcon {
 /*!
  * NLOC Backend for the multi-threaded case
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
-class NLOCBackendMP : public NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>
+template <size_t STATE_DIM,
+    size_t CONTROL_DIM,
+    size_t P_DIM,
+    size_t V_DIM,
+    typename SCALAR = double,
+    typename OPTCONPROBLEM = ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>
+class NLOCBackendMP : public NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> Base;
+    typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM> Base;
+    typedef typename Base::OptConProblem_t OptConProblem_t;
 
-    NLOCBackendMP(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem, const NLOptConSettings& settings);
+    NLOCBackendMP(const OptConProblem_t& optConProblem, const NLOptConSettings& settings);
 
-    NLOCBackendMP(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>& optConProblem,
+
+    NLOCBackendMP(const OptConProblem_t& optConProblem,
         const std::string& settingsFile,
         bool verbose = true,
         const std::string& ns = "alg");

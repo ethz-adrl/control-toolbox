@@ -25,13 +25,15 @@ template <size_t STATE_DIM,
     size_t CONTROL_DIM,
     size_t P_DIM = STATE_DIM / 2,
     size_t V_DIM = STATE_DIM / 2,
-    typename SCALAR = double>
-class NLOptConSolver : public OptConSolver<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>,
+    typename SCALAR = double,
+    typename OPTCONPROBLEM = ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>
+class NLOptConSolver : public OptConSolver<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>,
                            core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>,
                            NLOptConSettings,
                            STATE_DIM,
                            CONTROL_DIM,
-                           SCALAR>
+                           SCALAR,
+                           OPTCONPROBLEM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -41,11 +43,12 @@ public:
     static const size_t POS_DIM = P_DIM;
     static const size_t VEL_DIM = V_DIM;
 
-    typedef NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> Derived;
+    typedef NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM> Derived;
     typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
     typedef NLOptConSettings Settings_t;
     typedef SCALAR Scalar_t;
-    typedef ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
+    typedef OPTCONPROBLEM OptConProblem_t;
+    typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM> NLOCBackendBase_t;
 
 
     //! constructor
@@ -186,7 +189,7 @@ public:
     const Settings_t& getSettings();
 
     //! get a reference to the backend (@todo this is not optimal, allows the user too much access)
-    const std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>>& getBackend();
+    const std::shared_ptr<NLOCBackendBase_t>& getBackend();
 
     //! get reference to the nonlinear system
     std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override;
@@ -223,7 +226,7 @@ public:
 
 protected:
     //! the backend holding all the math operations
-    std::shared_ptr<NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>> nlocBackend_;
+    std::shared_ptr<NLOCBackendBase_t> nlocBackend_;
 
     //! the algorithm for sequencing the math operations in correct manner
     std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>> nlocAlgorithm_;

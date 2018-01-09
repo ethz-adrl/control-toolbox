@@ -57,14 +57,14 @@ public:
     OptConProblemBase();
 
     /*!
-   * @brief Construct a simple unconstrained Optimal Control Problem
-   * \warning time and initial state to be specified later
-   *
-   * @param nonlinDynamics the nonlinear system dynamics
-   * @param costFunction a quadratic cost function
-   * @param linearSystem (optional) the linear system holding the dynamics derivatives. If the
-   * user does not specify the derivatives, they are generated automatically using numerical differentiation. Warning: this is slow
-   */
+     * @brief Construct a simple unconstrained Optimal Control Problem
+     * \warning time and initial state to be specified later
+     *
+     * @param nonlinDynamics the nonlinear system dynamics
+     * @param costFunction a quadratic cost function
+     * @param linearSystem (optional) the linear system holding the dynamics derivatives. If the
+     * user does not specify the derivatives, they are generated automatically using numerical differentiation. Warning: this is slow
+     */
     OptConProblemBase(DynamicsPtr_t nonlinDynamics, CostFunctionPtr_t costFunction, LinearPtr_t linearSystem = nullptr);
 
     /*!
