@@ -6,7 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include "JointPositionController.h"
+#include "JointPositionPIDController.h"
 
 namespace ct {
 namespace rbd {
@@ -30,11 +30,11 @@ public:
         const core::Time& t,
         core::ControlVector<NJOINTS>& control) override;
 
-    JointPositionController<NJOINTS>& getJointController();
+    JointPositionPIDController<NJOINTS>& getJointController();
 
 
 protected:
-    JointPositionController<NJOINTS> jointController_;
+    JointPositionPIDController<NJOINTS> jointController_;
 };
 
 }  // namespace rbd

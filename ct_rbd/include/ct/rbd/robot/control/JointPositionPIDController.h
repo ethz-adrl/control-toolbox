@@ -17,28 +17,28 @@ namespace rbd {
  * \tparam NJOINTS number of joints of the robot
  */
 template <size_t NJOINTS>
-class JointPositionController : public ct::core::Controller<2 * NJOINTS, NJOINTS>
+class JointPositionPIDController : public ct::core::Controller<2 * NJOINTS, NJOINTS>
 {
 public:
     static const size_t STATE_DIM = 2 * NJOINTS;
     static const size_t CONTROL_DIM = NJOINTS;
 
-    typedef std::shared_ptr<JointPositionController<NJOINTS>> Ptr;
-    typedef ct::core::PIDController PIDController;
+    typedef std::shared_ptr<JointPositionPIDController<NJOINTS>> Ptr;
+    typedef ct::core::PIDController<double> PIDController;
 
-    virtual JointPositionController<NJOINTS>* clone() const override;
+    virtual JointPositionPIDController<NJOINTS>* clone() const override;
 
-    JointPositionController(
+    JointPositionPIDController(
         const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition = Eigen::Matrix<double, NJOINTS, 1>::Zero(),
         const Eigen::Matrix<double, NJOINTS, 1>& desiredVelocity = Eigen::Matrix<double, NJOINTS, 1>::Zero(),
         const std::vector<PIDController::parameters_t>& parameters = std::vector<PIDController::parameters_t>(NJOINTS,
             PIDController::parameters_t()));
 
-    JointPositionController(const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition,
+    JointPositionPIDController(const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition,
         const Eigen::Matrix<double, NJOINTS, 1>& desiredVelocity,
         const PIDController::parameters_t& parameters);
 
-    virtual ~JointPositionController();
+    virtual ~JointPositionPIDController();
 
     void computeControl(const core::StateVector<STATE_DIM>& state,
         const core::Time& t,

@@ -80,7 +80,6 @@ set(CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/generated")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h)
 
 add_library(ct_core
-   src/core/control/PIDController.cpp
    src/core/plot/plot.cpp
    src/core/internal/autodiff/SparsityPattern.cpp
 )
