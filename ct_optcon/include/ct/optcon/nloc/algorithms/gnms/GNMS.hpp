@@ -18,8 +18,8 @@ template <size_t STATE_DIM,
     size_t P_DIM,
     size_t V_DIM,
     typename SCALAR = double,
-    typename OPTCONPROBLEM = ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>
-class GNMS : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>
+    bool CONTINUOUS = true>
+class GNMS : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -27,7 +27,7 @@ public:
     static const size_t STATE_D = STATE_DIM;
     static const size_t CONTROL_D = CONTROL_DIM;
 
-    typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM> Base;
+    typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS> Base;
 
     typedef typename Base::Policy_t Policy_t;
     typedef typename Base::Settings_t Settings_t;

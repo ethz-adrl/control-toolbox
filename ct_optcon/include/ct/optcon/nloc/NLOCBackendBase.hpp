@@ -45,7 +45,7 @@ template <size_t STATE_DIM,
     size_t P_DIM,
     size_t V_DIM,
     typename SCALAR = double,
-    typename OPTCONPROBLEM = ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>
+    bool CONTINUOUS = true>
 class NLOCBackendBase
 {
 public:
@@ -55,9 +55,14 @@ public:
     static const size_t control_dim = CONTROL_DIM;
 
     typedef NLOptConSettings Settings_t;
-    typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 
-    typedef OPTCONPROBLEM OptConProblem_t;
+    typedef typename std::conditional<CONTINUOUS,
+        ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>,
+        ct::core::DiscreteStateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>>::type Policy_t;
+
+    typedef typename std::conditional<CONTINUOUS,
+        ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>,
+        DiscreteOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>::type OptConProblem_t;
 
     typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
     typedef LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR> LQOCSolver_t;
@@ -650,9 +655,9 @@ protected:
 };
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, typename OPTCONPROBLEM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 template <typename ARRAY_TYPE, size_t ORDER>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>::computeDiscreteArrayNorm(
+SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::computeDiscreteArrayNorm(
     const ARRAY_TYPE& d) const
 {
     SCALAR norm = 0.0;
@@ -665,9 +670,9 @@ SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBL
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, typename OPTCONPROBLEM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 template <typename ARRAY_TYPE, size_t ORDER>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>::computeDiscreteArrayNorm(
+SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::computeDiscreteArrayNorm(
     const ARRAY_TYPE& a,
     const ARRAY_TYPE& b) const
 {
@@ -682,9 +687,9 @@ SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBL
     return norm;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, typename OPTCONPROBLEM>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 template <size_t ORDER>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>::computeDefectsNorm(
+SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::computeDefectsNorm(
     const StateVectorArray& d) const
 {
     return computeDiscreteArrayNorm<StateVectorArray, ORDER>(d);

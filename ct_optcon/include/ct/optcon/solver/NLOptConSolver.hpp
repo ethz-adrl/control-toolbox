@@ -26,14 +26,14 @@ template <size_t STATE_DIM,
     size_t P_DIM = STATE_DIM / 2,
     size_t V_DIM = STATE_DIM / 2,
     typename SCALAR = double,
-    typename OPTCONPROBLEM = ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>
-class NLOptConSolver : public OptConSolver<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>,
-                           core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>,
+    bool CONTINUOUS = true>
+class NLOptConSolver : public OptConSolver<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>,
+                           typename NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Policy_t,
                            NLOptConSettings,
                            STATE_DIM,
                            CONTROL_DIM,
                            SCALAR,
-                           OPTCONPROBLEM>
+                           CONTINUOUS>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -43,13 +43,23 @@ public:
     static const size_t POS_DIM = P_DIM;
     static const size_t VEL_DIM = V_DIM;
 
-    typedef NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM> Derived;
-    typedef core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t; //TODO: different for discrete problem?
+    typedef OptConSolver<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>,
+                               typename NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Policy_t,
+                               NLOptConSettings,
+                               STATE_DIM,
+                               CONTROL_DIM,
+                               SCALAR,
+                               CONTINUOUS> Base;
+
+
     typedef NLOptConSettings Settings_t;
     typedef SCALAR Scalar_t;
-    typedef OPTCONPROBLEM OptConProblem_t;
-    typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM> NLOCBackendBase_t;
-    typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM> NLOCAlgorithm_t;
+
+    typedef typename Base::OptConProblem_t OptConProblem_t;
+
+    typedef NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS> NLOCAlgorithm_t;
+    typedef typename NLOCAlgorithm_t::Policy_t Policy_t;
+    typedef typename NLOCAlgorithm_t::Backend_t Backend_t;
 
 
     //! constructor
@@ -190,7 +200,7 @@ public:
     const Settings_t& getSettings();
 
     //! get a reference to the backend (@todo this is not optimal, allows the user too much access)
-    const std::shared_ptr<NLOCBackendBase_t>& getBackend();
+    const std::shared_ptr<Backend_t>& getBackend();
 
     //! get reference to the nonlinear system
     std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override;
@@ -227,7 +237,7 @@ public:
 
 protected:
     //! the backend holding all the math operations
-    std::shared_ptr<NLOCBackendBase_t> nlocBackend_;
+    std::shared_ptr<Backend_t> nlocBackend_;
 
     //! the algorithm for sequencing the math operations in correct manner
     std::shared_ptr<NLOCAlgorithm_t> nlocAlgorithm_;

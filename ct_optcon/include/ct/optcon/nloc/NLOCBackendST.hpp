@@ -22,13 +22,13 @@ template <size_t STATE_DIM,
     size_t P_DIM,
     size_t V_DIM,
     typename SCALAR = double,
-    typename OPTCONPROBLEM = ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>
-class NLOCBackendST : public NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM>
+    bool CONTINUOUS = true>
+class NLOCBackendST : public NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM> Base;
+    typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS> Base;
     typedef typename Base::OptConProblem_t OptConProblem_t;
 
     NLOCBackendST(const OptConProblem_t& optConProblem, const NLOptConSettings& settings);

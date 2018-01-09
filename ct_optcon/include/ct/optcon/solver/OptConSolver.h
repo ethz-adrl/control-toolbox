@@ -36,11 +36,15 @@ template <typename DERIVED,
     size_t STATE_DIM,
     size_t CONTROL_DIM,
     typename SCALAR = double,
-    typename OPTCONPROBLEM = ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>
+    bool CONTINUOUS = true>
 class OptConSolver
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    typedef typename std::conditional<CONTINUOUS,
+        ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>,
+        DiscreteOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>::type OptConProblem_t;
 
     static const size_t STATE_D = STATE_DIM;
     static const size_t CONTROL_D = CONTROL_DIM;
@@ -49,9 +53,6 @@ public:
     typedef SETTINGS Settings_t;
     typedef DERIVED Derived;
     typedef SCALAR Scalar_t;
-
-    typedef OPTCONPROBLEM OptConProblem_t;
-
 
     OptConSolver() {}
     virtual ~OptConSolver() {}

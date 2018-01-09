@@ -16,15 +16,17 @@ template <size_t STATE_DIM,
     size_t P_DIM,
     size_t V_DIM,
     typename SCALAR = double,
-    typename OPTCONPROBLEM = ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>
+    bool CONTINUOUS = true>
 class NLOCAlgorithm
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, OPTCONPROBLEM> Backend_t;
+    typedef typename std::conditional<CONTINUOUS,
+        ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>,
+        ct::core::DiscreteStateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>>::type Policy_t;
 
-    typedef ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
+    typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS> Backend_t;
     typedef NLOptConSettings Settings_t;
     typedef SCALAR Scalar_t;
 
