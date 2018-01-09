@@ -110,6 +110,16 @@ public:
 
     virtual ~NLOCBackendBase();
 
+    template <typename T = OptConProblem_t>  // do not use this template argument
+    typename std::enable_if<std::is_same<T, ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>::value,
+        systemInterfacePtr_t>::type
+    createSystemInterface(const OptConProblem_t& optConProblem, const Settings_t& settings);
+
+    template <typename T = OptConProblem_t>  // do not use this template argument
+    typename std::enable_if<std::is_same<T, DiscreteOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>::value,
+        systemInterfacePtr_t>::type
+    createSystemInterface(const OptConProblem_t& optConProblem, const Settings_t& settings);
+
     //! configure the solver
     /**
      * Configure the solver
