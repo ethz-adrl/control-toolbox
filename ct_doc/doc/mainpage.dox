@@ -22,7 +22,7 @@ The CT was designed with the following features in mind:
  - **Performance**: 
  	- solve large scale optimal control problems in MPC fashion. 
  	- Example: solve NMPC on a full dynamic model of a quadruped robot with 36 states and 12 inputs 
- 	at a rate of over 180 Hz for time horizon of 500 steps using a standard desktop computer.
+ 	at a rate of over 180 Hz for time horizon of 125 steps using a standard desktop computer.
 
  - **Versatility**: the CT offers a broad choice of Optimal Control solvers while not sacrificing performance.
  Currently, the Control Toolbox supports the following types of Numerical Optimal Control (Trajectory 
@@ -153,7 +153,9 @@ systems and interfaces with ct_core and ct_optcon data types.
 
 For testing as well as examples, we also provide the 'models' module (ct_models) which contains 
 various robot models including a quadruped, a robotic arm, a normal quadrotor and a quadrotor 
-with slung load. The models are briefly detailed in the following.
+with slung load. 
+
+The four different main modules are detailed in the following.
 
 
 \subsection ct_core_overview CT Core
@@ -285,17 +287,19 @@ A proper technical report about the CT is currently in preparation. Meanwhile, p
 This toolbox has been used in, or has helped to realize the following academic publications:
 
 - Markus Giftthaler, Michael Neunert, Markus Stäuble, Jonas Buchli and Moritz Diehl.
-“A Family of iterative Gauss-Newton Shooting Methods for Nonlinear Optimal Control”. arXiv:1711.11006 [cs.SY]
-<a href="https://arxiv.org/abs/1711.11006">arXiv:1711.11006 [cs.SY]</a> 
+“A Family of iterative Gauss-Newton Shooting Methods for Nonlinear Optimal Control”.
+<a href="https://arxiv.org/abs/1711.11006">arXiv preprint</a>
 
 - Michael Neunert, Markus Stäuble, Markus Giftthaler, Dario Bellicoso, Jan Carius, Christian Gehring, 
 Marco Hutter and Jonas Buchli. 
 “Whole Body Model Predictive Control Through Contacts For Quadrupeds”.
-Submitted to IEEE Robotics and Automation Letters.
+To appear in IEEE Robotics and Automation Letters.
+<a href="https://arxiv.org/abs/1712.02889">arXiv preprint</a>
 
 - Markus Giftthaler and Jonas Buchli.
-“A Projection Approach to Equality Constrained Sequential Linear Quadratic Optimal Control”. 
+“A Projection Approach to Equality Constrained Iterative Linear Quadratic Optimal Control”. 
 2017 IEEE-RAS International Conference on Humanoid Robots, November 15-17, Birmingham, UK.
+<a href="http://ieeexplore.ieee.org/document/8239538/">IEEE Xplore</a>
 
 - Markus Giftthaler, Michael Neunert, Markus Stäuble, Marco Frigerio, Claudio Semini and Jonas Buchli. 
 “Automatic Differentiation of Rigid Body Dynamics for Optimal Control and Estimation”, 

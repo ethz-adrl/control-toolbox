@@ -57,12 +57,4 @@ As before, we can now integrate this system forward
 \include MasspointIntegration.cpp
 
 
-\page tut_examples API Documentation
-
-Apart from the tutorial style documentation, there is also a full API documentation available for each module which can be found here
-
-* core API
-* optcon API
-* rbd API
-
  */

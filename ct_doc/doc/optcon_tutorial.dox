@@ -4,8 +4,10 @@
 In this tutorial we will walk you through implementing several Optimal Controllers for your system, including a basic LQR controller,
 a Nonlinear Optimal Controller (NLOC), a Nonlinear Model Predictive Controller (NMPC) as well as Direct Multiple Shooting (DMS).
 - \subpage optcon_tut_lqr
-- \subpage optcon_tut_mpc
 - \subpage optcon_tut_nloc
+- \subpage optcon_tut_nloc_box_constrained
+- \subpage optcon_tut_nloc_gen_constrained
+- \subpage optcon_tut_mpc
 - \subpage optcon_tut_dms
 
 \page optcon_tut_lqr LQR Control of a Damped Oscillator
@@ -35,6 +37,35 @@ You can run this example with the following command
 rosrun ct_optcon ex_NLOC
 \endcode
 
+
+\page optcon_tut_nloc_box_constrained Box-constrained nonlinear Optimal Control
+
+In this example, we show how to set up a box-constrained variation of the nonlinear optimal control solver from the previous example.
+
+\note This example requires the HPIPM solver to be installed.
+
+\include NLOC_boxConstrained.cpp
+
+You can run this example with the following command
+\code{.sh}
+rosrun ct_optcon ex_NLOC_boxConstrained
+\endcode
+
+
+\page optcon_tut_nloc_gen_constrained Generally-constrained nonlinear Optimal Control
+
+In this example, we show how to set up a generally-constrained variation of the nonlinear optimal control solver from the previous example.
+
+\note This example requires the HPIPM solver to be installed.
+
+\include NLOC_generalConstrained.cpp
+
+You can run this example with the following command
+\code{.sh}
+rosrun ct_optcon ex_NLOC_generalConstrained
+\endcode
+
+
 \page optcon_tut_mpc NLOC-MPC of a Damped Oscillator
 
 In this example we show how to use a Nonlinear Optimal Control solver (here iLQG) in combination with the MPC-class for out-of-the box Model Predictive Control.
@@ -47,12 +78,12 @@ rosrun ct_optcon ex_NLOC_MPC
 \endcode
 
 
-\page optcon_tut_dms Constrained Direct Multiple Shooting for a Damped Oscillator
+\page optcon_tut_dms Classical, Constrained Direct Multiple Shooting for a Damped Oscillator
 
-In this example, we show how to solve an Optimal Control problem for a oscillator system using Direct Multiple Shooting.
+In this example, we show how to solve an Optimal Control problem for a oscillator system using classical Direct Multiple Shooting with an NLP solver backend.
 
-\note For unconstrained problems we suggest using a Gauss-Newton Multiple Shooting (ct::optcon::GNMS) approach due to its linear time complexity
-and faster computation.
+\note Generally, we suggest using a Gauss-Newton Multiple Shooting (ct::optcon::GNMS) approach due to its linear time complexity
+and faster computation. For problems with a fine control discretization, it typically performs better than classical DMS.
 
 \note This example requires either <a href="https://projects.coin-or.org/Ipopt">IPOPT</a> or 
 <a href="http://www.sbsi-sol-optimize.com/asp/sol_product_snopt.htm">SNOPT</a> to be installed. If you have a global installation 
