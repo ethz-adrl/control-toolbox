@@ -148,6 +148,7 @@ public:
      * with an OptConProblem that had the correct time horizon set.
      */
     void changeTimeHorizon(const SCALAR& tf);
+    void changeTimeHorizon(int numStages);
 
     SCALAR getTimeHorizon();
 

@@ -53,7 +53,7 @@ public:
     OptconSystemInterface(const optConProblem_t& problem, const settings_t& settings)
         : optConProblem_(problem), settings_(settings), controller_(settings.nThreads + 1)
     {
-        for (auto controller_i : controller_)
+        for (auto& controller_i : controller_)
         {
             controller_i = ConstantControllerPtr(new constant_controller_t());
         }

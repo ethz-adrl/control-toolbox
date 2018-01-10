@@ -27,7 +27,7 @@ void OptconDiscreteSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::getAandB(con
     state_control_matrix_t& B,
     const size_t threadId)
 {
-    this->linearSystems_.at(threadId)->getAandB(x, u, x_next, n, subSteps, A, B);
+    this->linearSystems_[threadId]->getAandB(x, u, x_next, n, subSteps, A, B);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -39,7 +39,7 @@ void OptconDiscreteSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>::propagateCon
     const size_t threadId)
 {
     this->controller_[threadId]->setControl(control);
-    this->systems_.at(threadId)->propagateControlledDynamics(state, n, control, stateNext);
+    this->systems_[threadId]->propagateControlledDynamics(state, n, control, stateNext);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
