@@ -123,8 +123,6 @@ public:
 
     //! Equidistant integration based on number of time steps and step length
     /*!
-	 * Integrates n steps forward from the current state recording the state and time trajectory.
-	 * For a recording free version, see the function below.
 	 *
 	 * \warning Overrides the initial state
 	 *
