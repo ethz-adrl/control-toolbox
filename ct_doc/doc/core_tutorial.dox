@@ -140,12 +140,15 @@ There are different ways of templating your code on the scalar type. Here, we de
 \code{.cpp}
 namespace my_sys {
 
-class MySystem {
+class MySystem : public ct:core::ControlledSystem<2, 1> {
   public:
     size_t STATE_DIM = 2;
     size_t INPUT_DIM = 1;
 
-    ct::core::StateVector<STATE_DIM> computeControlledDynamics(ct::core::StateVector<STATE_DIM>& x, ct::core::ControlVector<CONTROL_DIM>& u) override;
+    void computeControlledDynamics(const StateVector<STATE_DIM>& state,
+        const double& t,
+        const ControlVector<CONTROL_DIM>& control,
+        StateVector<STATE_DIM>& derivative) override;
 
  private:
     double my_paramter_;
@@ -165,12 +168,15 @@ namespace my_sys {
 namespace tpl {
 
 template <typename SCALAR>
-class MySystem {
+class MySystem : ct::core::ControlledSystem<2, 1, SCALAR> {
   public:
     size_t STATE_DIM = 2;
     size_t INPUT_DIM = 1;
 
-    ct::core::StateVector<STATE_DIM, SCALAR> computeControlledDynamics(ct::core::StateVector<STATE_DIM, SCALAR>& x, ct::core::ControlVector<CONTROL_DIM, SCALAR>& u) override;
+    void computeControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
+        const SCALAR& t,
+        const ControlVector<CONTROL_DIM, SCALAR>& control,
+        StateVector<STATE_DIM, SCALAR>& derivative) override;
 
  private:
     SCALAR my_paramter_;
