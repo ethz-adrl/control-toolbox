@@ -308,6 +308,10 @@ target_link_libraries(NLOC_MPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LI
 catkin_add_gtest(NLOC_MPCTest_prespec test/mpc/NLOC_MPCTest_prespec.cpp)
 target_link_libraries(NLOC_MPCTest_prespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIB_NAMES})
 
+catkin_add_gtest(system_interface_test test/system_interface/SystemInterfaceTest.cpp)
+target_link_libraries(system_interface_test ${catkin_LIBRARIES})
+catkin_add_gtest(system_interface_test_prespec test/system_interface/SystemInterfaceTest-Prespec.cpp)
+target_link_libraries(system_interface_test_prespec ${catkin_LIBRARIES} ${PRESPEC_LIB_NAMES})
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
