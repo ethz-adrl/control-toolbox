@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
         ct::core::StateVector<IPSystem::STATE_DIM> x0full = IPSystem::toFullState(x0.toImplementation());
 
         std::shared_ptr<LinearSystem> linSystem = nullptr;
-        ct::optcon::OptConProblem<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM> optConProblem(
+        ct::optcon::ContinuousOptConProblem<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM> optConProblem(
             timeHorizon, x0full, ipSystem, newCost, linSystem);
         InvertedPendulumNLOC nloc_solver(newCost, nloc_settings, ipSystem, verbose, linSystem);
 
