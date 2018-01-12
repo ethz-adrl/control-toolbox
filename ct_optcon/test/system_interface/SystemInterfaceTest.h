@@ -18,8 +18,6 @@ namespace ct {
 namespace optcon {
 namespace example {
 
-//TODO test initializing from OptConProblem
-
 TEST(SystemInterfaceTest, ContinuousSystemInterface)
 {
     const size_t STATE_DIM = state_dim;
@@ -30,8 +28,8 @@ TEST(SystemInterfaceTest, ContinuousSystemInterface)
 
     typedef ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
+    // nonlinear and linear system instances
     std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM>> nonlinearSystem(new LinearOscillator());
-
     std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM>> analyticLinearSystem(new LinearOscillatorLinear());
 
     Eigen::Vector2d x_final;
@@ -42,9 +40,6 @@ TEST(SystemInterfaceTest, ContinuousSystemInterface)
 
     // fill minimal version of optconproblem
     OptConProblem_t optConProblem(nonlinearSystem, costFunction, analyticLinearSystem);
-
-    typedef OptconSystemInterface<STATE_DIM, CONTROL_DIM, OptConProblem_t, SCALAR> systemInterface_t;
-    typedef std::shared_ptr<systemInterface_t> systemInterfacePtr_t;
 
     // settings
     NLOptConSettings nloc_settings;
@@ -80,6 +75,9 @@ TEST(SystemInterfaceTest, ContinuousSystemInterface)
 
                 // nloc_settings.print();
 
+                // creat the system interface
+                typedef OptconSystemInterface<STATE_DIM, CONTROL_DIM, OptConProblem_t, SCALAR> systemInterface_t;
+                typedef std::shared_ptr<systemInterface_t> systemInterfacePtr_t;
                 systemInterfacePtr_t systemInterface(
                     new OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(
                         optConProblem, nloc_settings));
@@ -91,26 +89,20 @@ TEST(SystemInterfaceTest, ContinuousSystemInterface)
                 systemInterface_t::control_vector_t control;
                 control.setRandom();
 
-                systemInterface_t::state_matrix_t A;
-                systemInterface_t::state_control_matrix_t B;
-
                 systemInterface_t::StateSubstepsPtr subStepsX(new systemInterface_t::StateSubsteps());
                 systemInterface_t::ControlSubstepsPtr subStepsU(new systemInterface_t::ControlSubsteps());
                 subStepsX->resize(1);
                 subStepsU->resize(1);
 
                 systemInterface->propagateControlledDynamics(x_start, 0, control, x_next, 0);
+
                 systemInterface->getSubstates(subStepsX->at(0), 0);
-                std::cout << "subStepsX->at(0) with K_sim " << nloc_settings.K_sim << std::endl;
-                for(const auto& substep : *(subStepsX->at(0))){
-                  std::cout << substep.transpose() << std::endl;
-                }
                 systemInterface->getSubcontrols(subStepsU->at(0), 0);
-                std::cout << "subStepsU->at(0) with K_sim " << nloc_settings.K_sim << std::endl;
-                for(const auto& substep : *(subStepsU->at(0))){
-                  std::cout << substep.transpose() << std::endl;
-                  ASSERT_TRUE(substep.isApprox(control, 1e-10)); // constant controller
-                }
+
+
+                // calculate linearization
+                systemInterface_t::state_matrix_t A;
+                systemInterface_t::state_control_matrix_t B;
                 systemInterface->setSubstepTrajectoryReference(subStepsX, subStepsU, 0);
                 systemInterface->getAandB(x_start, control, x_next, 0, nloc_settings.K_sim, A, B, 0);
 
@@ -121,18 +113,32 @@ TEST(SystemInterfaceTest, ContinuousSystemInterface)
                 discretizer.initialize();
 
                 systemInterface_t::state_vector_t x_next_discretizer;
+                systemInterface_t::StateSubstepsPtr subStepsX_discretizer(new systemInterface_t::StateSubsteps());
+                systemInterface_t::ControlSubstepsPtr subStepsU_discretizer(new systemInterface_t::ControlSubsteps());
+                subStepsX_discretizer->resize(1);
+                subStepsU_discretizer->resize(1);
                 discretizer.propagateControlledDynamics(x_start, 0, control, x_next_discretizer);
+                subStepsX_discretizer->at(0) = discretizer.getSubstates();
+                subStepsU_discretizer->at(0) = discretizer.getSubcontrols();
 
                 ASSERT_TRUE(x_next.isApprox(x_next_discretizer, 1e-8));
+
+                ASSERT_TRUE(subStepsX->at(0)->size() == subStepsX_discretizer->at(0)->size());
+                ASSERT_TRUE(subStepsU->at(0)->size() == subStepsU_discretizer->at(0)->size());
+                ASSERT_TRUE(subStepsX->at(0)->size() == subStepsU_discretizer->at(0)->size());
+
+                for(size_t i=0; i<subStepsX->at(0)->size(); ++i)
+                {
+                    ASSERT_TRUE(subStepsX->at(0)->at(i).isApprox(subStepsX_discretizer->at(0)->at(i), 1e-8));
+                    ASSERT_TRUE(subStepsU->at(0)->at(i).isApprox(subStepsU_discretizer->at(0)->at(i), 1e-8));
+
+                    ASSERT_TRUE(subStepsU->at(0)->at(i).isApprox(control, 1e-8));  // constant controller
+                }
 
                 // use sensitivity and check against systemInterface
                 typedef ct::core::Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR> Sensitivity_t;
                 typedef std::shared_ptr<Sensitivity_t> SensitivityPtr;
                 SensitivityPtr sensitivity;
-
-                typedef ct::core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR> constant_controller_t;
-                typedef std::shared_ptr<constant_controller_t> ConstantControllerPtr;
-                ConstantControllerPtr controller(new constant_controller_t());
 
                 if (nloc_settings.useSensitivityIntegrator)
                 {
@@ -142,6 +148,10 @@ TEST(SystemInterfaceTest, ContinuousSystemInterface)
                         nloc_settings.integrator != ct::core::IntegrationType::RK4CT &&
                         nloc_settings.integrator != ct::core::IntegrationType::EULER_SYM)
                         throw std::runtime_error("sensitivity integrator only available for Euler and RK4 integrators");
+
+                    typedef ct::core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR> constant_controller_t;
+                    typedef std::shared_ptr<constant_controller_t> ConstantControllerPtr;
+                    ConstantControllerPtr controller(new constant_controller_t());
 
                     sensitivity.reset(new ct::core::SensitivityIntegrator<STATE_DIM, CONTROL_DIM, STATE_DIM / 2,
                         STATE_DIM / 2, SCALAR>(nloc_settings.getSimulationTimestep(), analyticLinearSystem, controller,
