@@ -499,8 +499,9 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             x_local[i] = xShot[i - 1];  //!"overwrite" x_local
         }
 
-        state_vector_t dummyStateNext;
-        systemInterface_->propagateControlledDynamics(xShot[i], i, u_local[i], dummyStateNext, threadId);
+        state_vector_t stateNext;
+        systemInterface_->propagateControlledDynamics(xShot[i], i, u_local[i], stateNext, threadId);
+        xShot[i] = stateNext;
 
         if (i == K_local - 1)
             x_local[K_local] = xShot[K_local - 1];  //! fill in terminal state if required
