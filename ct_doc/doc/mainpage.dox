@@ -7,9 +7,11 @@
 \section ct1 Control Toolbox
 
 This is the ADRL Control Toolbox ('CT'), an open-source C++ library for efficient modelling, control, 
-estimation and trajectory optimization for robotics. The toolbox is designed for high efficiency
-and online control. As the name suggests, it contains several tools to design and evaluate 
-controllers, model dynamical systems and solve optimal control problems. 
+estimation, trajectory optimization and model predictive control.
+The CT is applicable to a broad class of dynamic systems, but features additional modelling tools specially designed for robotics.
+This page outlines its general concept, its major building blocks and highlights selected application examples.
+
+The library contains several tools to design and evaluate controllers, model dynamical systems and solve optimal control problems.
 The CT was designed with the following features in mind:
 
  - **Systems and dynamics**: intuitive modelling of systems governed by ordinary differential-
