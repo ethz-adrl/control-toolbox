@@ -8,7 +8,6 @@ follow the Tutorials below.
 - \subpage tut_basics "Basics Tutorial"
 - \subpage core_tutorials "ct core Tutorials"
 - \subpage optcon_tutorials "ct optcon Tutorials"
-- \subpage tut_examples "Examples"
 
 If you need additional support, feel free to create an issue on Bitbucket or contact the developers.
  
@@ -56,13 +55,5 @@ As before, we can now integrate this system forward
 
 \include MasspointIntegration.cpp
 
-
-\page tut_examples API Documentation
-
-Apart from the tutorial style documentation, there is also a full API documentation available for each module which can be found here
-
-* core API
-* optcon API
-* rbd API
 
  */
