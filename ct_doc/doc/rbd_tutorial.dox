@@ -169,3 +169,4 @@ There are several useful types in the ct RBD package. This is just a loose colle
 * ct::rbd::RigidBodyState - the state of a single 6-DoF Rigid Body
 * ct::rbd::IDControllerFB - a floating base inverse dynamics controller
 
+*/

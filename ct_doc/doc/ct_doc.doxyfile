@@ -762,6 +762,7 @@ INPUT                  = mainpage.dox \
 						getting_started.dox \
 						core_tutorial.dox \
 						optcon_tutorial.dox \
+						rbd_tutorial.dox \
 						performance.dox \
 						application_examples.dox \
 						changelog.dox \
