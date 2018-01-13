@@ -96,7 +96,7 @@ You need to adjust a few variables. First, set the namespace (ROBCOGEN_NS) which
 
 Once you need end-effectors, specify their number (CT_N_EE). Then, for each end-effector, specify its name in RobCoGen (CT_EEx) and which link it is rigidly attached to (CT_EEx_IS_ON_LINK). Then specify the first joint in the kinematic chain leading up to the end-effector (CT_EEx_FIRST_JOINT, often but not necessarily 0) as well as the last joint (CT_EEx_LAST_JOINT). The Control Toolbox assumes that all joint numbers in between those two also influence the end-effector.
 
-The "black magic" file above creates some very useful types for you. This includes:
+Above steps automatically create the following useful types:
 
 \code{.cpp}
 ct::rbd::MyRobot::Dynamics myRobotDynamics; // an implementation of ct::rbd::Dynamics for your robot
@@ -105,7 +105,7 @@ ct::rbd::MyRobot::tpl::Dynamics<SCALAR> myRobotDynamicsTpl; // an implementation
 ct::rbd::MyRobot::Kinematics myRobotKinematics; // an implementation of ct::rbd::Kinematics for your robot
 \endcode
 
-The Dynamics and Kinematics class have some very useful functions including computing forward and inverse dynamics as well as transforms and Jacobians. Please refer to the documentation for more details.
+The Dynamics and Kinematics class have some useful functions including computing forward and inverse dynamics as well as transforms and Jacobians. Please refer to the documentation for more details.
 
 That's it! You can verify your setup by looking into the ct models package, e.g. at the HyA robot. Feel free to check out our tutorials on how to \ref rbd_tut_forward_dynamics as well as \ref rbd_tut_types.
 
@@ -126,14 +126,14 @@ The Control Toolbox provides two handy wrappers, that transform the forward dyna
 You can simply instantiate your dynamics using those classes
 
 \code{.cpp}
-  // obtain the state dimension, this is usually 2*num_joints plus potentially an additional 12 for floating base robots.
+  // obtain the state dimension
   const size_t STATE_DIM = FixBaseFDSystem<MyRobot::Dynamics>::STATE_DIM;
 
   // create an instance of the system
   std::shared_ptr<core::System<STATE_DIM>> dynamics(new FixBaseFDSystem<MyRobot::Dynamics>);
 \endcode
 
-Please look at the documentation to find other exciting ct::rbd::Dynamics methods that you can potentially use.
+Please look at the documentation to find other ct::rbd::Dynamics methods that you can potentially use.
 
 
 
@@ -162,7 +162,7 @@ Now that our robot is a ct::core::ControlledSystem we can throw all sorts of gre
 
 
 \page rbd_tut_types Useful RBD types
-There are several very useful types in the ct RBD package. This is just a loose collection of a few useful classes and types. Please refer to the individual documentation for more information.
+There are several useful types in the ct RBD package. This is just a loose collection of a few useful classes and types. Please refer to the individual documentation for more information.
 
 * ct::rbd::Dynamics and ct::rbd::Kinematics - forward/inverse dynamics, transforms and Jacobians
 * ct::rbd::RBDState - the state of a Rigid Body Dynamics system in minimal coordinates
