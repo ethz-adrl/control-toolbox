@@ -131,7 +131,86 @@ For an example on how to use Auto-Diff Codegen to compute the linearization, see
 for tips and tricks on how to do this easily!
 
 \section core_tut_linearization_scalar_templating Templating your System or Function on the Scalar Type
+In order to make use of Auto-Differentiation, you need to template your system on the scalar type. This means Auto-Diff needs to be able to call your system function 
+with a special type, rather than a regular float or double type. If your modelling framework does not support this natively (as often the case), here is a short guide
+on how to add Auto-Diff support. Luckily, the Eigen library already templates its type on the scalar type already. Thus, if you are using Eigen, this process is even easier.
 
+There are different ways of templating your code on the scalar type. Here, we describe one of several options. Assume you have your class that contains your model/system:
+
+\code{.cpp}
+namespace my_sys {
+
+class MySystem : public ct:core::ControlledSystem<2, 1> {
+  public:
+    size_t STATE_DIM = 2;
+    size_t INPUT_DIM = 1;
+
+    void computeControlledDynamics(const StateVector<STATE_DIM>& state,
+        const double& t,
+        const ControlVector<CONTROL_DIM>& control,
+        StateVector<STATE_DIM>& derivative) override;
+
+ private:
+    double my_paramter_;
+};
+
+} // namespace my_sys
+
+\endcode
+
+The first step is to template your class on the scalar type. When doing so, we recommend moving your class to a new subnamespace (here called "tpl"). The reason
+to do so is that you can add a "using" directive in the original namespace, that defines your class with its original scalar type. In this way, all other code
+you might have written is not affected and continues to work. As a second step, you replace all double or floats or whatever scalar type you used before with the
+template parameter. CT types are already templated on scalar types, making your life much easier. The result would look something like this:
+
+\code{.cpp}
+namespace my_sys {
+namespace tpl {
+
+template <typename SCALAR>
+class MySystem : ct::core::ControlledSystem<2, 1, SCALAR> {
+  public:
+    size_t STATE_DIM = 2;
+    size_t INPUT_DIM = 1;
+
+    void computeControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
+        const SCALAR& t,
+        const ControlVector<CONTROL_DIM, SCALAR>& control,
+        StateVector<STATE_DIM, SCALAR>& derivative) override;
+
+ private:
+    SCALAR my_paramter_;
+};
+
+} // namespace tpl
+
+using MySystem = tpl::MySystem<double>; // this line ensures backwards compatibility of dependent code
+
+} // namespace my_sys
+
+\endcode
+
+\note Fixed quantities such as the state dimension obviously do not need to be type converted.
+
+\note It is not strictly necessary to change the parameter ("my_parameter_") to SCALAR type as well. However, you can then use Auto-Diff to derive e.g. your
+dynamics function by this parameter if you ever wanted to do parametric optimization or system identification. Cool eh? :)
+
+\note Since your class is templated now, make sure you move the implementation from the .cpp file to the .h file (or an implementation file that gets included in the .h file).
+
+\note In case your class is already templated (on anything really), one option is to add the scalar type to the list of templates and default it to whatever scalar
+type you used before.
+
+\warn There are some pitfalls when using Auto-Differentiation. Please read the notes below.
+
+In order to make sure your class works with Auto-Differentiation, your code needs to comply with some restrictions:
+ * Ideally, your code should not contain branching, i.e. no if/else, switch or for loops that **depend** on an Auto-Diff scalar. While there are proper ways of dealing with branching
+you might not want to start out with it. Branching that depends only on paramters of which you do not want to take the derivative of is fine.
+ * Using mathematical functions or linear algebra: Functions such as std::sin, std::exp or inverses of Eigen matrices either do not support scalar types or have internal branching.
+Thus, they cannot be used. Thus, we provide traits that help you in this situation. These traits will select appropriate functions to call, depending on which SCALAR type is used.
+In case you called std::sin before, you should now call ct::core::internal::TraitSelector<SCALAR>::Trait::sin. In case e.g. SCALAR is a double type, this will call std::sin but for
+instances of the Auto-Diff scalar it will call the Auto-Diff compatible versions of sin.
+
+Once the conversion is completed, you can follow the instructions above to compute Jacobians.
 
 \page core_tut_types Some notes on types
 
