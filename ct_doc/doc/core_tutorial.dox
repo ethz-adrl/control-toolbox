@@ -17,10 +17,10 @@ In this tutorial, we will take a look how to implement and simulate simple (feed
 First, we will implement a controller based on a simple PID Controller. There are at least three different ways to realize a PID Controller in CT.
 While there is a ct::core::PIDController, it is only SISO. However, CT assumes all systems and controllers are MIMO. Therefore, if you want to use
 the pre-implemented ct::core::PIDController, you will have to provide a mapping from states to PIDController input and from the output to the control input.
-This is shown in ct::core::SISOArrayController. Alternatively, you can implement your own Controller class which could utilize the ct::core::PIDController
+Alternatively, you can implement your own Controller class which could utilize the ct::core::PIDController
 An example is shown in the \ref core_tut_custom_control "Custom Controller Tutorial". The third and easiest option is to implement the PID controller as
  a linear state feedback controller of the form \f$ u = K x \f$. Herefore, we can use ct::core::StateFeedbackController.
- 
+
 
 
 \section core_tut_custom_control Custom Controller
@@ -70,11 +70,11 @@ Symbolic Math Engine      | +++                | +                 | +          
 Automatic Differentiation | +++                | +                 | ++         | ++         |
 Auto-Diff Code Generation | +++                | +++               | ++         | ++         |
 
-Bottom line: Automatic Differentiation is the tool of choice for accurate, yet easy to setup derivatives. For best performance, Automatic Differentiation 
+Bottom line: Automatic Differentiation is the tool of choice for accurate, yet easy to setup derivatives. For best performance, Automatic Differentiation
 with code generation (Auto-Diff Codgen) should be used. <b>Auto-Diff Codegen is as accurate as analytical derivatives and equally fast if not faster!</b>.
 For more on this please refer to the following publications: \cite giftthaler2017autodiff \cite neunert:2016:derivatives
 
-\note  Both Auto-Diff and Auto-Diff Codegen require you to template your function on the scalar type. Please see the tutorial \ref core_tut_linearization_scalar_templating 
+\note  Both Auto-Diff and Auto-Diff Codegen require you to template your function on the scalar type. Please see the tutorial \ref core_tut_linearization_scalar_templating
 for tips and tricks on how to do this easily!
 
 
@@ -99,7 +99,7 @@ whether you gain speed or not, you will have to try it out.
 \section core_tut_linearization_systems Jacobian/Linearization of a Nonlinear System
 
 Often when dealing with nonlinear systems, described by a differential equation of the form \f$ \dot{x} = f(x,u,t) \f$ we wish to compute the linearized form of
-the system around an operating point \f$ x=x_s \f$, \f$ u=u_s \f$. 
+the system around an operating point \f$ x=x_s \f$, \f$ u=u_s \f$.
 
 \f[
   \dot{x} = A(x_s, u_s) x + B(x_s, u_s) u
@@ -127,16 +127,95 @@ test, this time at ct_core/test/math/AutoDiffLinearizerTest.cpp. This unit test 
 
 For an example on how to use Auto-Diff Codegen to compute the linearization, see \ref ADCodegenLinearizerTest.h
 
-\note  Both Auto-Diff and Auto-Diff Codegen require you to template your function on the scalar type. Please see the tutorial \ref core_tut_linearization_scalar_templating 
+\note  Both Auto-Diff and Auto-Diff Codegen require you to template your function on the scalar type. Please see the tutorial \ref core_tut_linearization_scalar_templating
 for tips and tricks on how to do this easily!
 
 \section core_tut_linearization_scalar_templating Templating your System or Function on the Scalar Type
+In order to make use of Auto-Differentiation, you need to template your system on the scalar type. This means Auto-Diff needs to be able to call your system function 
+with a special type, rather than a regular float or double type. If your modelling framework does not support this natively (as often the case), here is a short guide
+on how to add Auto-Diff support. Luckily, the Eigen library already templates its type on the scalar type already. Thus, if you are using Eigen, this process is even easier.
 
+There are different ways of templating your code on the scalar type. Here, we describe one of several options. Assume you have your class that contains your model/system:
+
+\code{.cpp}
+namespace my_sys {
+
+class MySystem : public ct:core::ControlledSystem<2, 1> {
+  public:
+    size_t STATE_DIM = 2;
+    size_t INPUT_DIM = 1;
+
+    void computeControlledDynamics(const StateVector<STATE_DIM>& state,
+        const double& t,
+        const ControlVector<CONTROL_DIM>& control,
+        StateVector<STATE_DIM>& derivative) override;
+
+ private:
+    double my_paramter_;
+};
+
+} // namespace my_sys
+
+\endcode
+
+The first step is to template your class on the scalar type. When doing so, we recommend moving your class to a new subnamespace (here called "tpl"). The reason
+to do so is that you can add a "using" directive in the original namespace, that defines your class with its original scalar type. In this way, all other code
+you might have written is not affected and continues to work. As a second step, you replace all double or floats or whatever scalar type you used before with the
+template parameter. CT types are already templated on scalar types, making your life much easier. The result would look something like this:
+
+\code{.cpp}
+namespace my_sys {
+namespace tpl {
+
+template <typename SCALAR>
+class MySystem : ct::core::ControlledSystem<2, 1, SCALAR> {
+  public:
+    size_t STATE_DIM = 2;
+    size_t INPUT_DIM = 1;
+
+    void computeControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
+        const SCALAR& t,
+        const ControlVector<CONTROL_DIM, SCALAR>& control,
+        StateVector<STATE_DIM, SCALAR>& derivative) override;
+
+ private:
+    SCALAR my_paramter_;
+};
+
+} // namespace tpl
+
+using MySystem = tpl::MySystem<double>; // this line ensures backwards compatibility of dependent code
+
+} // namespace my_sys
+
+\endcode
+
+\note Fixed quantities such as the state dimension obviously do not need to be type converted.
+
+\note It is not strictly necessary to change the parameter ("my_parameter_") to SCALAR type as well. However, you can then use Auto-Diff to derive e.g. your
+dynamics function by this parameter if you ever wanted to do parametric optimization or system identification. Cool eh? :)
+
+\note Since your class is templated now, make sure you move the implementation from the .cpp file to the .h file (or an implementation file that gets included in the .h file).
+
+\note In case your class is already templated (on anything really), one option is to add the scalar type to the list of templates and default it to whatever scalar
+type you used before.
+
+\warn There are some pitfalls when using Auto-Differentiation. Please read the notes below.
+
+In order to make sure your class works with Auto-Differentiation, your code needs to comply with some restrictions:
+ * Ideally, your code should not contain branching, i.e. no if/else, switch or for loops that **depend** on an Auto-Diff scalar. While there are proper ways of dealing with branching
+you might not want to start out with it. Branching that depends only on paramters of which you do not want to take the derivative of is fine.
+ * Using mathematical functions or linear algebra: Functions such as std::sin, std::exp or inverses of Eigen matrices either do not support scalar types or have internal branching.
+Thus, they cannot be used. Thus, we provide traits that help you in this situation. These traits will select appropriate functions to call, depending on which SCALAR type is used.
+In case you called std::sin before, you should now call ct::core::internal::TraitSelector<SCALAR>::Trait::sin. In case e.g. SCALAR is a double type, this will call std::sin but for
+instances of the Auto-Diff scalar it will call the Auto-Diff compatible versions of sin.
+
+Once the conversion is completed, you can follow the instructions above to compute Jacobians.
 
 \page core_tut_types Some notes on types
 
-In ct/core/types, the user will find a variety of predefined variable types that are common in robotics and control. Our definitions of vectors and matrices are based 
-on Eigen and are deliberately chosen to be fixed-size, while discrete array and discrete trajectory types rely on STL std::vectors. 
+In ct/core/types, the user will find a variety of predefined variable types that are common in robotics and control. Our definitions of vectors and matrices are based
+on Eigen and are deliberately chosen to be fixed-size, while discrete array and discrete trajectory types rely on STL std::vectors.
 
 While discrete arrays, for example StateVectorArray.h, denote a pure `stack' of variables of a certain type, discrete trajectories like StateTrajectory.h also include timing
 information for the data points. The discrete trajectory employs ct::core::Interpolation to provide ZOH or piecewise linear interpolation between the data points, which is automatically

@@ -10,7 +10,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "robot/actuator/SecondOrderActuatorDynamics-impl.h"
 #include "robot/actuator/SEADynamicsFirstOrder-impl.h"
 
-#include "robot/control/JointPositionController-impl.h"
+#include "robot/control/JointPositionPIDController-impl.h"
 #include "robot/control/SelectionMatrix-impl.h"
 #include "robot/control/WholeBodyController-impl.h"
 

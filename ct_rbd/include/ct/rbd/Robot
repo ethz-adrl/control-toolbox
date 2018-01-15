@@ -10,14 +10,14 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "robot/RobCoGenContainer.h"
 #include "robot/Kinematics.h"
 #include "robot/Dynamics.h"
-         
+
 #include "robot/actuator/SecondOrderActuatorDynamics.h"
 #include "robot/actuator/SEADynamicsFirstOrder.h"
-         
+
 #include "robot/control/IDControllerFB.h"
 #include "robot/control/WholeBodyController.h"
 #include "robot/control/InfiniteHorizonLQRwithInverseDynamics.h"
-#include "robot/control/JointPositionController.h"
+#include "robot/control/JointPositionPIDController.h"
 #include "robot/control/SelectionMatrix.h"
 
 #include "robot/costfunction/TermTaskspacePosition.hpp"

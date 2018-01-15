@@ -35,17 +35,16 @@ public:
 
     DARE();
 
-
     /*! compute the discrete-time steady state Riccati-Matrix
-	 * this method iterates over the time-varying discrete-time Riccati Equation to compute the steady-state solution.
-	 * @param Q state weight
-	 * @param R control weight
-	 * @param A discrete-time linear system matrix A
-	 * @param B discrete-time linear system matrix B
-	 * @param verbose print additional information
-	 * @param eps treshold to stop iterating
-	 * @return steady state riccati matrix P
-	 */
+     * this method iterates over the time-varying discrete-time Riccati Equation to compute the steady-state solution.
+     * @param Q state weight
+     * @param R control weight
+     * @param A discrete-time linear system matrix A
+     * @param B discrete-time linear system matrix B
+     * @param verbose print additional information
+     * @param eps treshold to stop iterating
+     * @return steady state riccati matrix P
+     */
     state_matrix_t computeSteadyStateRiccatiMatrix(const state_matrix_t& Q,
         const control_matrix_t& R,
         const state_matrix_t& A,
@@ -53,7 +52,28 @@ public:
         control_feedback_t& K,
         bool verbose = false,
         const SCALAR eps = 1e-6,
-        size_t maxIter = 100);
+        size_t maxIter = 1000);
+
+    /*! compute the discrete-time steady state Riccati-Matrix with warm initialization of P matrix
+     * this method iterates over the time-varying discrete-time Riccati Equation to compute the steady-state solution.
+     * @param Q state weight
+     * @param R control weight
+     * @param A discrete-time linear system matrix A
+     * @param B discrete-time linear system matrix B
+     * @param P warm initialized P matrix
+     * @param verbose print additional information
+     * @param eps treshold to stop iterating
+     * @return steady state riccati matrix P
+     */
+    state_matrix_t computeSteadyStateRiccatiMatrix(const state_matrix_t& Q,
+        const control_matrix_t& R,
+        const state_matrix_t& A,
+        const control_gain_matrix_t& B,
+        state_matrix_t P,
+        control_feedback_t& K,
+        bool verbose = false,
+        const SCALAR eps = 1e-6,
+        size_t maxIter = 1000);
 
 
 private:
