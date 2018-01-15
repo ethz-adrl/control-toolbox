@@ -1,9 +1,8 @@
 Robot ct_InvertedPendulum {
 
-
 RobotBase InvertedPendulumBase {
 	inertia_params {
-		mass = 1.0
+		mass = 0.0
 		CoM = (0.0, 0.0, 0.0)
 		Iy=0.0	Ix=0.0	Ixy=0.0	Iz=0.0	Ixz=0.0	Iyz=0.0
 	}
@@ -15,20 +14,20 @@ RobotBase InvertedPendulumBase {
 link Link1 {
 	id = 1
 	inertia_params {
-		mass = 1.0
+		mass = 1.811
 		CoM = (0.0, 0.0, 0.0)
-		Ix=0.0005  Iy=0.0005  Iz=0.001  Ixy=0.0  Ixz=0.0  Iyz=0.0
+		Ix=0.00047 Iy=0.00047 Iz=0.009055 Ixy=0.0 Ixz=0.0 Iyz=0.0
 		ref_frame = fr_COM
 	}
 	children {}
 	frames {
 	   fr_ee{
-	       translation = (1.0, 0.0, 0.0)
+	       translation = (0.27, 0.0, 0.0)
 	       rotation    = (0.0, 0.0, 0.0)
 	        }
 		fr_COM {
-	       translation = (0.5, 0.0, 0.0)
-			rotation = (PI/2.0, 0.0, 0.0)
+	       translation = (0.137, 0.0, 0.0)
+			rotation = (0.0, 0.0, 0.0)
 		}
 	}
 }
