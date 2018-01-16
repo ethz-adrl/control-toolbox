@@ -63,6 +63,9 @@ public:
     using state_vector_rbd_t = core::StateVector<RBDDynamics::NSTATE, SCALAR>;
     using state_vector_act_t = core::StateVector<ACTUATOR_STATE_DIM, SCALAR>;
 
+    using JointAcceleration_t = ct::rbd::tpl::JointAcceleration<NJOINTS, SCALAR>;
+
+
     //! constructor
     /*!
      * \warning when using actuator dynamics, the system losses its second order characteristics
@@ -225,6 +228,15 @@ public:
 
     //! get pointer to actuator dynamics
     std::shared_ptr<ActuatorDynamics_t> getActuatorDynamics() { return actuatorDynamics_; }
+    //! compute inverse dynamics torques
+    ct::core::ControlVector<NJOINTS> computeIDTorques(const tpl::JointState<NJOINTS, SCALAR>& jState,
+        const JointAcceleration_t& jAcc = JointAcceleration_t(Eigen::Matrix<SCALAR, NJOINTS, 1>::Zero()))
+    {
+        ct::core::ControlVector<NJOINTS> u;
+        dynamics_.FixBaseID(jState, jAcc, u);
+        return u;
+    }
+
 private:
     //! a "dummy" base pose which sets the robot's "fixed" position in the world
     tpl::RigidBodyPose<SCALAR> basePose_;

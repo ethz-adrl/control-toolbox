@@ -42,44 +42,38 @@ void FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::initialize(con
 
 template <class FIX_BASE_FD_SYSTEM, size_t ACTUATOR_STATE_DIM, typename SCALAR>
 void FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::initializeSteadyPose(
-    const tpl::JointState<NJOINTS, SCALAR>& x0,
+    const ct::core::StateVector<STATE_DIM, SCALAR>& x0,
     const core::Time& tf,
     const int N,
     ControlVector& u_ref,
     FeedbackMatrix K)
 {
-    ct::core::StateVector<ACTUATOR_STATE_DIM, SCALAR> actRefState;
-    actRefState.setZero();
+    ControlVector uff_torque = system_->computeIDTorques(system_->jointStateFromVector(x0));
 
-    ControlVector uff;
-    computeIDTorques(x0, uff);  // compute inverse dynamics for this joint state
-    u_ref = uff;
-
-    // transcribe uff into the feed-forward init guess
-    ControlVectorArray u0_ff(N, uff);
-
-    // ... and to the act state if required // todo only works for this special case
-    if (ACTUATOR_STATE_DIM > 0)
+    if (ACTUATOR_STATE_DIM > 0)  // if there are actuator dynamics
     {
-        actRefState = system_->getActuatorDynamics()->computeStateFromOutput(x0, uff);
+        u_ref.setZero();  // todo compute this from act.state
+    }
+    else  // actuator dynamics off
+    {
+        u_ref = uff_torque;
     }
 
-    StateVector x0full = system_->toFullState(x0.toImplementation(), actRefState);
-
-    StateVectorArray x_ref = StateVectorArray(N + 1, x0full);
+    // transcribe uff into the feed-forward init guess
+    ControlVectorArray u0_ff(N, u_ref);
+    StateVectorArray x_ref = StateVectorArray(N + 1, x0);
     FeedbackArray u0_fb(N, K);
-
     typename NLOptConSolver::Policy_t policy(x_ref, u0_ff, u0_fb, getSettings().dt);
 
     nlocSolver_->changeTimeHorizon(tf);
     nlocSolver_->setInitialGuess(policy);
-    nlocSolver_->changeInitialState(x0full);
+    nlocSolver_->changeInitialState(x0);
 }
 
 template <class FIX_BASE_FD_SYSTEM, size_t ACTUATOR_STATE_DIM, typename SCALAR>
 void FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::initializeDirectInterpolation(
-    const tpl::JointState<NJOINTS, SCALAR>& x0,
-    const tpl::JointState<NJOINTS, SCALAR>& xf,
+    const ct::core::StateVector<STATE_DIM, SCALAR>& x0,
+    const ct::core::StateVector<STATE_DIM, SCALAR>& xf,
     const core::Time& tf,
     const int N,
     FeedbackMatrix K)
@@ -93,8 +87,8 @@ void FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::initializeDire
 
 template <class FIX_BASE_FD_SYSTEM, size_t ACTUATOR_STATE_DIM, typename SCALAR>
 void FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::initializeDirectInterpolation(
-    const tpl::JointState<NJOINTS, SCALAR>& x0,
-    const tpl::JointState<NJOINTS, SCALAR>& xf,
+    const ct::core::StateVector<STATE_DIM, SCALAR>& x0full,
+    const ct::core::StateVector<STATE_DIM, SCALAR>& xffull,
     const core::Time& tf,
     const int N,
     ct::core::ControlVectorArray<NJOINTS, SCALAR>& uff_array,
@@ -104,20 +98,34 @@ void FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::initializeDire
     uff_array.resize(N);
     x_array.resize(N + 1);
 
-    ControlVector uff;
-
-    StateVector x0full = system_->toFullState(x0.toImplementation());
-    StateVector xffull = system_->toFullState(xf.toImplementation());
+    // temporary variables
+    ControlVector uff_torque;
 
     for (int i = 0; i < N + 1; i++)
     {
         x_array[i] = x0full + (xffull - x0full) * SCALAR(i) / SCALAR(N);
 
+        const tpl::JointState<NJOINTS, SCALAR> jointState = system_->jointStateFromVector(x_array[i]);
+
         if (i < N)
         {
-            ct::rbd::tpl::RBDState<NJOINTS, SCALAR> rbdState = system_->RBDStateFromVector(x_array[i]);
-            const tpl::JointState<NJOINTS, SCALAR> jointState = rbdState.joints();
-            computeIDTorques(jointState, uff_array[i]);
+        	uff_torque = system_->computeIDTorques(jointState);
+            if (ACTUATOR_STATE_DIM > 0)  // if there are actuator dynamics
+            {
+                uff_array[i].setZero();  // todo compute this from act.state
+            }
+            else  // actuator dynamics off
+            {
+                uff_array[i] = uff_torque;
+            }
+        }
+
+        if (i > 0 && ACTUATOR_STATE_DIM > 0)
+        {
+            // direct interpolation for actuator state may not make sense. Improve using actuator model
+            ct::core::StateVector<ACTUATOR_STATE_DIM, SCALAR> actRefState =
+                system_->getActuatorDynamics()->computeStateFromOutput(jointState, uff_torque);
+            x_array[i] = system_->toFullState(jointState.toImplementation(), actRefState);
         }
     }
 
@@ -201,17 +209,6 @@ std::shared_ptr<typename FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCA
 FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::getSolver()
 {
     return nlocSolver_;
-}
-
-template <class FIX_BASE_FD_SYSTEM, size_t ACTUATOR_STATE_DIM, typename SCALAR>
-void FixBaseNLOC<FIX_BASE_FD_SYSTEM, ACTUATOR_STATE_DIM, SCALAR>::computeIDTorques(
-    const tpl::JointState<NJOINTS, SCALAR>& x,
-    ControlVector& u)
-{
-    //! zero external link forces and acceleration
-    JointAcceleration_t jAcc(Eigen::Matrix<SCALAR, NJOINTS, 1>::Zero());
-
-    system_->dynamics().FixBaseID(x, jAcc, u);
 }
 
 }  // namespace rbd

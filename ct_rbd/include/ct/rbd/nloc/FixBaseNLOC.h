@@ -63,22 +63,22 @@ public:
         ControlVectorArray u0_ff = ControlVectorArray());
 
     //! initialize fixed-base robot with a steady pose using inverse dynamics torques as feedforward
-    void initializeSteadyPose(const tpl::JointState<NJOINTS, SCALAR>& x0,
+    void initializeSteadyPose(const ct::core::StateVector<STATE_DIM, SCALAR>& x0,
         const core::Time& tf,
         const int N,
         ControlVector& u_ref,
         FeedbackMatrix K = FeedbackMatrix::Zero());
 
     //! initialize fixed-base robot with a directly interpolated state trajectory and corresponding ID torques
-    void initializeDirectInterpolation(const tpl::JointState<NJOINTS, SCALAR>& x0,
-        const tpl::JointState<NJOINTS, SCALAR>& xf,
+    void initializeDirectInterpolation(const ct::core::StateVector<STATE_DIM, SCALAR>& x0,
+        const ct::core::StateVector<STATE_DIM, SCALAR>& xf,
         const core::Time& tf,
         const int N,
         FeedbackMatrix K = FeedbackMatrix::Zero());
 
     //! initialize fixed-base robot with a directly interpolated state trajectory and corresponding ID torques
-    void initializeDirectInterpolation(const tpl::JointState<NJOINTS, SCALAR>& x0,
-        const tpl::JointState<NJOINTS, SCALAR>& xf,
+    void initializeDirectInterpolation(const ct::core::StateVector<STATE_DIM, SCALAR>& x0,
+        const ct::core::StateVector<STATE_DIM, SCALAR>& xf,
         const core::Time& tf,
         const int N,
         ct::core::ControlVectorArray<NJOINTS, SCALAR>& u_array,
@@ -104,9 +104,6 @@ public:
     void changeCostFunction(std::shared_ptr<CostFunction> costFunction);
 
     std::shared_ptr<NLOptConSolver> getSolver();
-
-    //! compute fix-base inverse dynamics torques
-    void computeIDTorques(const tpl::JointState<NJOINTS, SCALAR>& x, ControlVector& u);
 
 private:
     std::shared_ptr<FBSystem> system_;
