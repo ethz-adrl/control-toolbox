@@ -15,8 +15,8 @@ namespace ct {
         //! Describes a switch between phases
         template <class Phase, typename Time>
         struct SwitchEvent {
-            std::shared_ptr<Phase> pre_phase;
-            std::shared_ptr<Phase> post_phase;
+            Phase pre_phase;
+            Phase post_phase;
             Time switch_time;
         };
 
@@ -38,8 +38,7 @@ namespace ct {
         template <class Phase, typename Time>
         class PhaseSequence {
         public:
-            typedef std::shared_ptr<Phase> PhasePtr_t;
-            typedef std::vector<PhasePtr> PhaseSchedule_t;
+            typedef std::vector<Phase> PhaseSchedule_t;
             typedef std::vector<Time> TimeSchedule_t;
 
             //! Construct empty sequence (with default start time)
@@ -50,8 +49,8 @@ namespace ct {
             ~PhaseSequence() {}
 
             /// @brief add a phase with duration
-            void addPhase(const PhasePtr_t& phase, const Time& duration) {
-              phase_schedule_.push_back(phase);
+            void addPhase(Phase phase, Time duration) {
+              phase_schedule_.push_back(std::move(phase));
               time_schedule_.emplace_back(time_schedule_.back() + duration);
             }
             /// @brief get number of phases
@@ -63,12 +62,12 @@ namespace ct {
             /// @brief get end time from sequence index
             Time getEndTimeFromIdx( std::size_t idx) { return time_schedule_[idx+1]; }
             /// @brief get phase pointer from sequence index
-            PhasePtr_t getPhasePtrFromIdx( std::size_t idx ) { return phase_schedule_[idx]; }
+            Phase getPhaseFromIdx( std::size_t idx ) { return phase_schedule_[idx]; }
             /// @brief get phase pointer from time
-            PhasePtr_t getPhasePtrFromTime( Time time ) { return getPhasePtrFromIdx(getIdxFromTime(time)); }
+            Phase getPhaseFromTime( Time time ) { return getPhaseFromIdx(getIdxFromTime(time)); }
             /// @brief get next switch event from sequence index
             SwitchEvent<Phase, Time> getSwitchEventFromIdx( std::size_t idx) {
-              return {getPhasePtr(idx), getPhasePtr(idx+1), getEndTimeFromIdx(idx)};
+              return {getPhaseFromIdx(idx), getPhaseFromIdx(idx+1), getEndTimeFromIdx(idx)};
             }
             /// @brief get next switch event from time
             SwitchEvent<Phase, Time> getSwitchEventFromTime( Time time ) {
