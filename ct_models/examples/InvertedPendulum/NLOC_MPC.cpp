@@ -78,8 +78,11 @@ int main(int argc, char* argv[])
         std::string configFile       = workingDirectory + "/solver.info";
         std::string costFunctionFile = workingDirectory + "/cost.info";
 
+        const double k_spring = 160;
+        const double gear_ratio = 50;
+
         std::shared_ptr<ct::rbd::SEADynamicsFirstOrder<njoints, double>> actuatorDynamics(
-            new ct::rbd::SEADynamicsFirstOrder<njoints, double>(160.0));
+            new ct::rbd::SEADynamicsFirstOrder<njoints, double>(k_spring, gear_ratio));
         std::shared_ptr<IPSystem> ipSystem(new IPSystem(actuatorDynamics));
 
         // NLOC settings

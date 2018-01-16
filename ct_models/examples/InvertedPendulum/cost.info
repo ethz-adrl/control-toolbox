@@ -23,7 +23,7 @@ term0
 
     R
     {
-      scaling 1
+      scaling 0.02
 
       ; motor velocity
 
