@@ -8,97 +8,87 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 namespace ct {
     namespace core {
-        //! A general class to store mode dependent object
+        //! Declaring Switched type such that we can write Switched<SystemPtr>
+        template <class T>
+        using Switched = std::vector<T>;
+
+        //! Describes a switch between phases
+        template <class Phase, typename Time>
+        struct SwitchEvent {
+            std::shared_ptr<Phase> pre_phase;
+            std::shared_ptr<Phase> post_phase;
+            Time switch_time;
+        };
+
+        //! Describes a Phase sequence with timing
         /*!
-         *  All modes are stored in a vector
-         *  The vector index doubles as the mode number
+         *  Each phase of the sequence has a start time, and end time
+         *  Each event has a pre & post phase + switching time
+         *
+         *  Example:
+         *  The following illustrates a sequence of 3 phases
+         *  + ------- + ------- + ------- +
+         *  t0   p0   t1   p1   t2   p2   t3
+         *
+         *  It contains 4 times to define the sequence.
+         *  Two of those are switching times: t1 and t2
+         *  There are two switching events: {p0, p1, t1} and {p1, p2, t2};
+         *
          */
-        template <T>
-        class Switched {
+        template <class Phase, typename Time>
+        class PhaseSequence {
         public:
-            typedef std::vector<T> modes_t;        //<! list of modes
-
-            //! constructor
-            Switched(const modes_t& modes) : modes_(modes) {}
-            //! desctructor
-            ~Switched() {}
-
-            /// @brief get base pose
-            T& getMode(const std::size_t& mode_number) { return modes_[mode_number]; }
-        protected:
-            modes_t modes_;  //!< list of modes
-        };
-
-        //! Describes a switch between modes
-        struct ModeSwitch {
-            std::size_t curr_mode;
-            std::size_t next_mode;
-            double switch_time;
-        };
-
-        //! Describes a single phase
-        struct Phase {
-            std::size_t mode;
-            double start_time;
-            double end_time;
-        };
-
-        //! Describes a mode sequence with timing
-        /*!
-         *  Each phase of the sequence has a mode number, start time, and end time
-         *  This is stored in a vector of modes and vector of times
-         */
-        class ModeSequence {
-        public:
-            typedef std::vector<std::size_t> mode_schedule_t;  //<! list of modes for each phase
-            typedef std::vector<double> time_schedule_t;       //<! switching times including start and end
+            typedef std::shared_ptr<Phase> PhasePtr_t;
+            typedef std::vector<PhasePtr> PhaseSchedule_t;
+            typedef std::vector<Time> TimeSchedule_t;
 
             //! Construct empty sequence (with default start time)
-            ModeSequence(const double& start_time = 0.0) {
+            PhaseSequence(const Time& start_time = 0) {
               time_schedule_.push_back(start_time);
             }
-            //! Construct from sequence
-            ModeSequence(const mode_schedule_t& mode_schedule, const time_schedule_t& time_schedule) :
-                mode_schedule_(mode_schedule),
-                time_schedule_(time_schedule){
-              if (mode_schedule_.size() != (time_schedule_.size() - 1)) {
-                throw std::runtime_error("Mode schedule needs be length of times schedule - 1");
-              };
-              if (time_schedule_.size() < 2) {
-                throw std::runtime_error("time schedule needs to be longer than two");
-              };
-            }
-            //! desctructor
-            ~ModeSequence() {}
+            //! Destructor
+            ~PhaseSequence() {}
 
-            /// @brief add a phase with mode and duration
-            void addPhase(const std::size_t& mode, const double& duration) {
-              mode_schedule_.push_back(mode);
+            /// @brief add a phase with duration
+            void addPhase(const PhasePtr_t& phase, const Time& duration) {
+              phase_schedule_.push_back(phase);
               time_schedule_.emplace_back(time_schedule_.back() + duration);
             }
             /// @brief get number of phases
-            std::size_t getNumPhases() { return mode_schedule_.size(); }
+            std::size_t getNumPhases() { return phase_schedule_.size(); }
             /// @brief get number of switches
             std::size_t getNumSwitches() { return getNumPhases() - 1; }
-            /// @brief get mode from phase index
-            const std::size_t& getModeFromIdx( const std::size_t& idx) { return mode_schedule_[idx]; }
-            /// @brief get start time from phase index
-            const double& getStartTimeFromIdx( const std::size_t& idx) { return switch_times_[idx]; }
-            /// @brief get end time from phase index
-            const double& getEndTimeFromIdx( const std::size_t& idx) { return switch_times_[idx+1]; }
-            /// @brief get next mode switch from phase index
-            ModeSwitch getModeSwitchFromIdx( const std::size_t& idx) {
-              return {getModeFromIdx(idx), getModeFromIdx(idx+1), getEndTimeFromIdx(idx)};
+            /// @brief get start time from sequence index
+            Time getStartTimeFromIdx( std::size_t idx) { return time_schedule_[idx]; }
+            /// @brief get end time from sequence index
+            Time getEndTimeFromIdx( std::size_t idx) { return time_schedule_[idx+1]; }
+            /// @brief get phase pointer from sequence index
+            PhasePtr_t getPhasePtrFromIdx( std::size_t idx ) { return phase_schedule_[idx]; }
+            /// @brief get phase pointer from time
+            PhasePtr_t getPhasePtrFromTime( Time time ) { return getPhasePtrFromIdx(getIdxFromTime(time)); }
+            /// @brief get next switch event from sequence index
+            SwitchEvent<Phase, Time> getSwitchEventFromIdx( std::size_t idx) {
+              return {getPhasePtr(idx), getPhasePtr(idx+1), getEndTimeFromIdx(idx)};
             }
-            /// @brief get phase from phase index
-            Phase getPhase ( const std::size_t& idx ){
-              return {getModeFromIdx(idx), getStartTimeFromIdx(idx), getEndTimeFromIdx(idx)};
+            /// @brief get next switch event from time
+            SwitchEvent<Phase, Time> getSwitchEventFromTime( Time time ) {
+              return getSwitchEventFromIdx(getIdxFromTime(time));
+            }
+            /// @brief get sequence index from time
+            std::size_t getIdxFromTime( Time time ) {
+              // Finds pointer to first element less or equal to time
+              // i.e. it returns the index for the phase with time in [t_start, t_end)
+              auto low = std::lower_bound(time_schedule_.begin(), time_schedule_.end(), time);
+              return low - time_schedule_.begin();
             }
 
-        protected:
-            mode_schedule_t mode_schedule_;
-            time_schedule_t time_schedule_;
+        private:
+            PhaseSchedule_t phase_schedule_;
+            TimeSchedule_t time_schedule_;
         };
+
+        using ContinuousModeSequence = PhaseSequence<std::size_t, double>;
+        using DiscreteModeSequence = PhaseSequence<std::size_t, int>;
 
     }  // namespace core
 }  // namespace ct
