@@ -8,6 +8,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 namespace ct {
 namespace rbd {
+namespace tpl {
 
 template <size_t NJOINTS, typename SCALAR>
 SEADynamicsFirstOrder<NJOINTS, SCALAR>::SEADynamicsFirstOrder(double k_spring, double gear_ratio)
@@ -34,8 +35,8 @@ void SEADynamicsFirstOrder<NJOINTS, SCALAR>::computeActuatorDynamics(
     const ct::core::ControlVector<NJOINTS, SCALAR>& control,
     ct::core::StateVector<NJOINTS, SCALAR>& derivative)
 {
-	// the gear velocity is the motor velocity divided by the gear ratio:
-    derivative.template head<NJOINTS>() = control.template head<NJOINTS>() * 1/r_;;
+    // the gear velocity is the motor velocity divided by the gear ratio:
+    derivative.template head<NJOINTS>() = control.template head<NJOINTS>() / r_;
 }
 
 template <size_t NJOINTS, typename SCALAR>
@@ -43,7 +44,7 @@ core::ControlVector<NJOINTS, SCALAR> SEADynamicsFirstOrder<NJOINTS, SCALAR>::com
     const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
     const typename BASE::act_state_vector_t& actState)
 {
-	// compute joint torque as a function of the deflection between joint position and gear position
+    // compute joint torque as a function of the deflection between joint position and gear position
     return (actState.template topRows<NJOINTS>() - robotJointState.getPositions()) * k_;
 }
 
@@ -52,9 +53,10 @@ ct::core::StateVector<NJOINTS, SCALAR> SEADynamicsFirstOrder<NJOINTS, SCALAR>::c
     const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& refRobotJointState,
     const core::ControlVector<NJOINTS, SCALAR>& refControl)
 {
-	// compute desired gear position from current joint position and desired torque
-    return refRobotJointState.getPositions() + 1 / k_ * refControl.toImplementation();
+    // compute desired gear position from current joint position and desired torque
+    return refRobotJointState.getPositions() + refControl.toImplementation() / k_;
 }
 
+}  // namespace tpl
 }  // namespace rbd
 }  // namespace ct

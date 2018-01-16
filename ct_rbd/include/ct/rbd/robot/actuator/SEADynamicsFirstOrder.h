@@ -10,6 +10,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 namespace ct {
 namespace rbd {
+namespace tpl {
 
 /*!
  * Series-elastic actuator dynamics modeled as a series of motor, gearbox and a spring.
@@ -22,7 +23,7 @@ namespace rbd {
  * In a SEA, the gear position is typically known anyway.
  *
  */
-template <size_t NJOINTS, typename SCALAR = double>
+template <size_t NJOINTS, typename SCALAR>
 class SEADynamicsFirstOrder : public ActuatorDynamics<NJOINTS, NJOINTS, SCALAR>
 {
 public:
@@ -58,6 +59,11 @@ private:
     SCALAR r_;  //! gear ratio, defined in terms of input/output
 };
 
+
+}  // namespace tpl
+
+template <size_t NJOINTS>
+using SEADynamicsFirstOrder = typename tpl::SEADynamicsFirstOrder<NJOINTS, double>;
 
 }  // namespace rbd
 }  // namespace ct
