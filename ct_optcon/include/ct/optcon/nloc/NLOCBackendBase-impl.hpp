@@ -1319,6 +1319,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
 
         rolloutShots(0, K_ - 1);
 
+        d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);
+
         updateCosts();
 
         lowestCost_ = intermediateCostBest_ + finalCostBest_;
@@ -1376,6 +1378,9 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::lineSearchMu
     {
         return true;  //! found better cost
     }
+
+    if (d_norm_ > settings_.maxDefectSum)
+    	return true;
 
     if (settings_.debugPrint)
     {
