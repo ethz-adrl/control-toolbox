@@ -12,7 +12,15 @@ namespace ct {
 namespace rbd {
 
 /*!
- * Series-elastic actuator dynamics modelled as a spring, control input is the motor velocity
+ * Series-elastic actuator dynamics modeled as a series of motor, gearbox and a spring.
+ *
+ * Control Input: Motor Velocity
+ * Actuator State: Gear Position
+ * Actuator State Derivative: Gear Velocity
+ *
+ * \note The advantage of choosing the the gear position as state is that no calibration on the motor position is required.
+ * In a SEA, the gear position is typically known anyway.
+ *
  */
 template <size_t NJOINTS, typename SCALAR = double>
 class SEADynamicsFirstOrder : public ActuatorDynamics<NJOINTS, NJOINTS, SCALAR>
@@ -23,7 +31,7 @@ public:
     typedef ActuatorDynamics<NJOINTS, NJOINTS, SCALAR> BASE;
 
     //! constructor assuming unit amplification
-    SEADynamicsFirstOrder(double k_spring);
+    SEADynamicsFirstOrder(double k_spring, double gear_ratio);
 
     //! destructor
     virtual ~SEADynamicsFirstOrder();
@@ -47,6 +55,7 @@ public:
 
 private:
     SCALAR k_;  //! spring constant
+    SCALAR r_;  //! gear ratio, defined in terms of input/output
 };
 
 
