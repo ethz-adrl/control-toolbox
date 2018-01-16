@@ -8,7 +8,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 namespace ct {
     namespace core {
-        //! Declaring Switched type such that we can write Switched<SystemPtr>
+        //! Declaring Switched alias such that we can write Switched<System>
         template <class T>
         using Switched = std::vector<T>;
 
@@ -57,6 +57,8 @@ namespace ct {
             std::size_t getNumPhases() { return phase_schedule_.size(); }
             /// @brief get number of switches
             std::size_t getNumSwitches() { return getNumPhases() - 1; }
+            /// @brief get sequence total duration
+            Time getTotalDuration() { return time_schedule_.back() - time_schedule_.front(); }
             /// @brief get start time from sequence index
             Time getStartTimeFromIdx( std::size_t idx) { return time_schedule_[idx]; }
             /// @brief get end time from sequence index
@@ -77,8 +79,15 @@ namespace ct {
             std::size_t getIdxFromTime( Time time ) {
               // Finds pointer to first element less or equal to time
               // i.e. it returns the index for the phase with time in [t_start, t_end)
-              auto low = std::lower_bound(time_schedule_.begin(), time_schedule_.end(), time);
-              return low - time_schedule_.begin();
+              // times outside the vector are mapped to the first and last phase
+              if (time < time_schedule_.front()) {
+                return 0;
+              } else if (time >= time_schedule_.back()) {
+                return getNumPhases() - 1;
+              } else {
+                auto up = std::upper_bound(time_schedule_.begin(), time_schedule_.end(), time);
+                return up - time_schedule_.begin() - 1;
+              }
             }
 
         private:
@@ -87,7 +96,10 @@ namespace ct {
         };
 
         using ContinuousModeSequence = PhaseSequence<std::size_t, double>;
+        using ContinuousModeSwitch = SwitchEvent<std::size_t, double>;
+
         using DiscreteModeSequence = PhaseSequence<std::size_t, int>;
+        using DiscreteModeSwitch = SwitchEvent<std::size_t, int>;
 
     }  // namespace core
 }  // namespace ct
