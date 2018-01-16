@@ -209,10 +209,10 @@ if(BUILD_EXAMPLES)
     target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS})
 
     add_executable(ex_NLOC examples/NLOC.cpp)
-    target_link_libraries(ex_NLOC ${catkin_LIBRARIES} ${HPIPM_LIBS})
+    target_link_libraries(ex_NLOC ${catkin_LIBRARIES} ${HPIPM_LIBS}${MATLAB_LIBS})
 
     add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
-    target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES} ${HPIPM_LIBS})
+    target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
     add_executable(ex_DMS examples/DMS.cpp)
     target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
