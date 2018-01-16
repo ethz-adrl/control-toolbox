@@ -81,8 +81,8 @@ int main(int argc, char* argv[])
         const double k_spring = 160;
         const double gear_ratio = 50;
 
-        std::shared_ptr<ct::rbd::SEADynamicsFirstOrder<njoints, double>> actuatorDynamics(
-            new ct::rbd::SEADynamicsFirstOrder<njoints, double>(k_spring, gear_ratio));
+        std::shared_ptr<ct::rbd::SEADynamicsFirstOrder<njoints>> actuatorDynamics(
+            new ct::rbd::SEADynamicsFirstOrder<njoints>(k_spring, gear_ratio));
         std::shared_ptr<IPSystem> ipSystem(new IPSystem(actuatorDynamics));
 
         // NLOC settings
