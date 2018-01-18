@@ -20,10 +20,10 @@ const InvertedPendulumActDynLinearizedForward::state_matrix_t& InvertedPendulumA
     Eigen::Matrix<double, 3 + 1, 1> x_in;
     x_in << x, u;
 
-        jac[1] = (-180.9 - 0.248107 * 9.81 * (- cos(x_in[0]))) / 0.043045655;
+        jac[1] = (-180.9 - 0.530623 * 9.81 * (- cos(x_in[0]))) / 0.16452757;
     // dependent variables without operations
     jac[3] = 1;
-    jac[7] = 4202.51474858496;
+    jac[7] = 1099.51177179606;
 
 
     return dFdx_;

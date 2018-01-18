@@ -116,7 +116,7 @@ iit::ct_InvertedPendulum::tpl::MotionTransforms<TRAIT>::Type_fr_InvertedPendulum
     (*this)(2,4) = 0;
     (*this)(2,5) = 0;
     (*this)(3,0) = 0;
-    (*this)(3,1) = 0.27;
+    (*this)(3,1) = 0.435;
     (*this)(3,2) = 0;
     (*this)(3,3) = 0;
     (*this)(3,4) = 0;
@@ -140,10 +140,10 @@ const typename iit::ct_InvertedPendulum::tpl::MotionTransforms<TRAIT>::Type_fr_I
     (*this)(1,1) = - c_q_Joint1_;
     (*this)(2,0) =  c_q_Joint1_;
     (*this)(2,1) = - s_q_Joint1_;
-    (*this)(4,2) = ( 0.27 *  c_q_Joint1_);
+    (*this)(4,2) = ( 0.435 *  c_q_Joint1_);
     (*this)(4,3) = - s_q_Joint1_;
     (*this)(4,4) = - c_q_Joint1_;
-    (*this)(5,2) = ( 0.27 *  s_q_Joint1_);
+    (*this)(5,2) = ( 0.435 *  s_q_Joint1_);
     (*this)(5,3) =  c_q_Joint1_;
     (*this)(5,4) = - s_q_Joint1_;
     return *this;
@@ -219,7 +219,7 @@ iit::ct_InvertedPendulum::tpl::MotionTransforms<TRAIT>::Type_fr_ee_X_fr_Inverted
     (*this)(3,1) = 0;
     (*this)(3,2) = 0;
     (*this)(3,3) = 0;
-    (*this)(4,0) = 0.27;
+    (*this)(4,0) = 0.435;
     (*this)(4,1) = 0;
     (*this)(4,2) = 0;
     (*this)(4,3) = 0;
@@ -244,8 +244,8 @@ const typename iit::ct_InvertedPendulum::tpl::MotionTransforms<TRAIT>::Type_fr_e
     (*this)(3,5) =  c_q_Joint1_;
     (*this)(4,4) = - c_q_Joint1_;
     (*this)(4,5) = - s_q_Joint1_;
-    (*this)(5,1) = ( 0.27 *  c_q_Joint1_);
-    (*this)(5,2) = ( 0.27 *  s_q_Joint1_);
+    (*this)(5,1) = ( 0.435 *  c_q_Joint1_);
+    (*this)(5,2) = ( 0.435 *  s_q_Joint1_);
     return *this;
 }
 template <typename TRAIT>
@@ -350,7 +350,7 @@ iit::ct_InvertedPendulum::tpl::ForceTransforms<TRAIT>::Type_fr_InvertedPendulumB
     (*this)(0,1) = 0;
     (*this)(0,2) = 1;
     (*this)(0,3) = 0;
-    (*this)(0,4) = 0.27;
+    (*this)(0,4) = 0.435;
     (*this)(0,5) = 0;
     (*this)(1,2) = 0;
     (*this)(1,3) = 0;
@@ -383,10 +383,10 @@ const typename iit::ct_InvertedPendulum::tpl::ForceTransforms<TRAIT>::Type_fr_In
     
     (*this)(1,0) = - s_q_Joint1_;
     (*this)(1,1) = - c_q_Joint1_;
-    (*this)(1,5) = ( 0.27 *  c_q_Joint1_);
+    (*this)(1,5) = ( 0.435 *  c_q_Joint1_);
     (*this)(2,0) =  c_q_Joint1_;
     (*this)(2,1) = - s_q_Joint1_;
-    (*this)(2,5) = ( 0.27 *  s_q_Joint1_);
+    (*this)(2,5) = ( 0.435 *  s_q_Joint1_);
     (*this)(4,3) = - s_q_Joint1_;
     (*this)(4,4) = - c_q_Joint1_;
     (*this)(5,3) =  c_q_Joint1_;
@@ -451,7 +451,7 @@ iit::ct_InvertedPendulum::tpl::ForceTransforms<TRAIT>::Type_fr_ee_X_fr_InvertedP
     (*this)(0,4) = 0;
     (*this)(0,5) = 0;
     (*this)(1,0) = 0;
-    (*this)(1,3) = 0.27;
+    (*this)(1,3) = 0.435;
     (*this)(1,4) = 0;
     (*this)(1,5) = 0;
     (*this)(2,0) = 1.0;
@@ -485,8 +485,8 @@ const typename iit::ct_InvertedPendulum::tpl::ForceTransforms<TRAIT>::Type_fr_ee
     (*this)(0,2) =  c_q_Joint1_;
     (*this)(1,1) = - c_q_Joint1_;
     (*this)(1,2) = - s_q_Joint1_;
-    (*this)(2,4) = ( 0.27 *  c_q_Joint1_);
-    (*this)(2,5) = ( 0.27 *  s_q_Joint1_);
+    (*this)(2,4) = ( 0.435 *  c_q_Joint1_);
+    (*this)(2,5) = ( 0.435 *  s_q_Joint1_);
     (*this)(3,4) = - s_q_Joint1_;
     (*this)(3,5) =  c_q_Joint1_;
     (*this)(4,4) = - c_q_Joint1_;
@@ -592,10 +592,10 @@ const typename iit::ct_InvertedPendulum::tpl::HomogeneousTransforms<TRAIT>::Type
     
     (*this)(1,0) = - s_q_Joint1_;
     (*this)(1,1) = - c_q_Joint1_;
-    (*this)(1,3) = (- 0.27 *  s_q_Joint1_);
+    (*this)(1,3) = (- 0.435 *  s_q_Joint1_);
     (*this)(2,0) =  c_q_Joint1_;
     (*this)(2,1) = - s_q_Joint1_;
-    (*this)(2,3) = ( 0.27 *  c_q_Joint1_);
+    (*this)(2,3) = ( 0.435 *  c_q_Joint1_);
     return *this;
 }
 template <typename TRAIT>
@@ -632,7 +632,7 @@ template <typename TRAIT>
 iit::ct_InvertedPendulum::tpl::HomogeneousTransforms<TRAIT>::Type_fr_ee_X_fr_InvertedPendulumBase::Type_fr_ee_X_fr_InvertedPendulumBase()
 {
     (*this)(0,0) = 0;
-    (*this)(0,3) = - 0.27;
+    (*this)(0,3) = - 0.435;
     (*this)(1,0) = 0;
     (*this)(1,3) = 0;
     (*this)(2,0) = 1;

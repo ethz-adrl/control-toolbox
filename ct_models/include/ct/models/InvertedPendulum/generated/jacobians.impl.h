@@ -46,7 +46,7 @@ const typename iit::ct_InvertedPendulum::tpl::Jacobians<TRAIT>::Type_fr_Inverted
     s_q_Joint1_ = TRAIT::sin( jState(JOINT1));
     c_q_Joint1_ = TRAIT::cos( jState(JOINT1));
     
-    (*this)(4,0) = (- 0.27 *  c_q_Joint1_);
-    (*this)(5,0) = (- 0.27 *  s_q_Joint1_);
+    (*this)(4,0) = (- 0.435 *  c_q_Joint1_);
+    (*this)(5,0) = (- 0.435 *  s_q_Joint1_);
     return *this;
 }

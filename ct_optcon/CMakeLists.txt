@@ -209,7 +209,7 @@ if(BUILD_EXAMPLES)
     target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS})
 
     add_executable(ex_NLOC examples/NLOC.cpp)
-    target_link_libraries(ex_NLOC ${catkin_LIBRARIES} ${HPIPM_LIBS}${MATLAB_LIBS})
+    target_link_libraries(ex_NLOC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
     add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
     target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
@@ -244,10 +244,10 @@ if(HPIPM)
     target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
     if(BUILD_EXAMPLES)
         add_executable(ex_NLOC_boxConstrained examples/NLOC_boxConstrained.cpp)
-        target_link_libraries(ex_NLOC_boxConstrained ${catkin_LIBRARIES} ${HPIPM_LIBS})
+        target_link_libraries(ex_NLOC_boxConstrained ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
         add_executable(ex_NLOC_generalConstrained examples/NLOC_generalConstrained.cpp)
-        target_link_libraries(ex_NLOC_generalConstrained ${catkin_LIBRARIES} ${HPIPM_LIBS})
+        target_link_libraries(ex_NLOC_generalConstrained ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
     endif()
 endif(HPIPM)
 
@@ -267,8 +267,8 @@ target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MA
 
 add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
 target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-add_executable(SymplecticTestPrespec test/nloc/SymplecticTestPrespec.cpp)
-target_link_libraries(SymplecticTestPrespec ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
+#add_executable(SymplecticTestPrespec test/nloc/SymplecticTestPrespec.cpp)
+#target_link_libraries(SymplecticTestPrespec ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
 
 catkin_add_gtest(constraint_comparison test/constraint/ConstraintComparison.cpp)
 target_link_libraries(constraint_comparison ${catkin_LIBRARIES})

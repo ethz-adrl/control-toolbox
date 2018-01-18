@@ -22,12 +22,12 @@ link Link1 {
 	children {}
 	frames {
 	   fr_ee{
-	       translation = (0.27, 0.0, 0.0)
+	       translation = (0.435, 0.0, 0.0)
 	       rotation    = (0.0, 0.0, 0.0)
-	        }
+	       }
 		fr_COM {
-	       translation = (0.137, 0.0, 0.0)
-			rotation = (0.0, 0.0, 0.0)
+	       translation = (0.293, 0.0, 0.0)
+		   rotation = (0.0, 0.0, 0.0)
 		}
 	}
 }
