@@ -102,6 +102,13 @@ void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::updateFinalState(con
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::updateReferenceControl(const control_vector_t& u_ref)
+{
+    for (auto costIntermediate : intermediateCostAnalytical_)
+        costIntermediate->updateReferenceControl(u_ref);
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 bool CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediateTest()
 {
     state_vector_t derivative = stateDerivativeIntermediate();
