@@ -23,7 +23,7 @@ namespace tpl {
  * @param SCALAR the scalar type
  */
 template <size_t NJOINTS, size_t ACT_STATE_DIM, typename SCALAR>
-class RobotState : public RBDState<NJOINTS, SCALAR>
+class FloatingBaseRobotState : public RBDState<NJOINTS, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -39,26 +39,27 @@ public:
     using actuator_state_vector_t = ct::core::StateVector<ACT_STATE_DIM, SCALAR>;
     static const size_t NDOF = Base_t::NDOF;
     static const size_t NSTATE = Base_t::NSTATE + ACT_STATE_DIM;
-    static const size_t NSTATE_QUAT = NSTATE +1;
+    static const size_t NSTATE_QUAT = NSTATE + 1;
 
     using state_vector_quat_t = ct::core::StateVector<NSTATE_QUAT, SCALAR>;
     using state_vector_euler_t = ct::core::StateVector<NSTATE, SCALAR>;
 
 
     //! default constructor
-    RobotState(const STORAGE_TYPE storage = STORAGE_TYPE::EULER)
+    FloatingBaseRobotState(const STORAGE_TYPE storage = STORAGE_TYPE::EULER)
         : Base_t(storage), act_state_(actuator_state_vector_t::Zero())
     {
     }
 
     //! constructor with actuator state as parameter
-    RobotState(const RBDState_t& rbdState, const actuator_state_vector_t& act_state = actuator_state_vector_t::Zero())
+    FloatingBaseRobotState(const RBDState_t& rbdState,
+        const actuator_state_vector_t& act_state = actuator_state_vector_t::Zero())
         : Base_t(rbdState), act_state_(act_state)
     {
     }
 
     //! constructor with base, jonit and actuator state as parameters
-    RobotState(const RigidBodyState_t& baseState,
+    FloatingBaseRobotState(const RigidBodyState_t& baseState,
         const JointState_t& jointState,
         const actuator_state_vector_t& act_state = actuator_state_vector_t::Zero())
         : Base_t(baseState, jointState), act_state_(act_state)
@@ -66,9 +67,9 @@ public:
     }
 
     //! copy constructor
-    RobotState(const RobotState& other) : Base_t(other), act_state_(other.act_state_) {}
+    FloatingBaseRobotState(const FloatingBaseRobotState& other) : Base_t(other), act_state_(other.act_state_) {}
     //! destructor
-    ~RobotState() {}
+    ~FloatingBaseRobotState() {}
     //! accessor to base class RBDState
     RBDState_t& rbdState() { return *this; }
     //! accessor to base class RBDState
@@ -127,18 +128,16 @@ public:
 
     //! reconstruct robot state from an Eigen state-vector with quaternion representation
     template <typename T = void>
-    typename std::enable_if<(ACT_STATE_DIM > 0), T>::type fromStateVectorQuaternion(
-        const state_vector_quat_t& state)
+    typename std::enable_if<(ACT_STATE_DIM > 0), T>::type fromStateVectorQuaternion(const state_vector_quat_t& state)
     {
         // transcribe the first part of the state in to the RBDState and the second part into the actuator state
-        Eigen::VectorBlock<const Eigen::Matrix<SCALAR, NSTATE_QUAT,1>, Base_t::NSTATE_QUAT> stateBase =
+        Eigen::VectorBlock<const Eigen::Matrix<SCALAR, NSTATE_QUAT, 1>, Base_t::NSTATE_QUAT> stateBase =
             state.template head<Base_t::NSTATE_QUAT>();
         Base_t::fromStateVectorQuaternion(stateBase);
         act_state_ = state.template tail<ACT_STATE_DIM>();
     }
     template <typename T = void>
-    typename std::enable_if<(ACT_STATE_DIM == 0), T>::type fromStateVectorQuaternion(
-        const state_vector_quat_t& state)
+    typename std::enable_if<(ACT_STATE_DIM == 0), T>::type fromStateVectorQuaternion(const state_vector_quat_t& state)
     {
         // transcribe RBDState only
         Base_t::fromStateVectorQuaternion(state);
@@ -146,17 +145,16 @@ public:
 
     //! reconstruct robot state from an Eigen state-vector with euler representation
     template <typename T = void>
-    typename std::enable_if<(ACT_STATE_DIM > 0), T>::type fromStateVectorEulerXyz(
-        const state_vector_euler_t& state)
+    typename std::enable_if<(ACT_STATE_DIM > 0), T>::type fromStateVectorEulerXyz(const state_vector_euler_t& state)
     {
         // transcribe the first part of the state in to the RBDState and the second part into the actuator state
-        Eigen::VectorBlock<const Eigen::Matrix<SCALAR, NSTATE,1>, Base_t::NSTATE> stateBase = state.template head<Base_t::NSTATE>();
+        Eigen::VectorBlock<const Eigen::Matrix<SCALAR, NSTATE, 1>, Base_t::NSTATE> stateBase =
+            state.template head<Base_t::NSTATE>();
         Base_t::fromStateVectorEulerXyz(stateBase);
         act_state_ = state.template tail<ACT_STATE_DIM>();
     }
     template <typename T = void>
-    typename std::enable_if<(ACT_STATE_DIM == 0), T>::type fromStateVectorEulerXyz(
-        const state_vector_euler_t& state)
+    typename std::enable_if<(ACT_STATE_DIM == 0), T>::type fromStateVectorEulerXyz(const state_vector_euler_t& state)
     {
         // transcribe RBDState only
         Base_t::state_vector_euler_t(state);
@@ -188,7 +186,7 @@ private:
 
 // convenience typedef
 template <size_t NJOINTS, size_t ACT_STATE_DIM = 0>
-using RobotState = tpl::RobotState<NJOINTS, ACT_STATE_DIM, double>;
+using FloatingBaseRobotState = tpl::FloatingBaseRobotState<NJOINTS, ACT_STATE_DIM, double>;
 
 }  // namespace rbd
 }  // namespace ct

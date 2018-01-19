@@ -8,4 +8,5 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "state/RBDState.h"
-#include "state/RobotState.h"
+#include "state/FloatingBaseRobotState.h"
+#include "state/FixBaseRobotState.h"

@@ -14,7 +14,7 @@ namespace rbd {
 /**
  * \brief NLOC for fixed base systems without an explicit contact model.
  */
-template <class FIX_BASE_FD_SYSTEM, size_t ACTUATOR_STATE_DIM = 0, typename SCALAR = double>
+template <class FIX_BASE_FD_SYSTEM>
 class FixBaseNLOC
 {
 public:
@@ -27,24 +27,27 @@ public:
     static const size_t CONTROL_DIM = FBSystem::CONTROL_DIM;
     static const size_t NJOINTS = FBSystem::NJOINTS;
     static const size_t STATE_DIM = FBSystem::STATE_DIM;
+    static const size_t ACTUATOR_STATE_DIM = FBSystem::ACTUATOR_STATE_DIM;
+    using SCALAR = typename FBSystem::SCALAR;
 
-    typedef ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> LinearizedSystem;
-    typedef ct::rbd::RbdLinearizer<FBSystem> SystemLinearizer;
-
-    using JointAcceleration_t = ct::rbd::tpl::JointAcceleration<NJOINTS, SCALAR>;
+    using LinearizedSystem = ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>;
+//    using SystemLinearizer = ct::rbd::RbdLinearizer<FBSystem>;
 
     //! @ todo: introduce templates for P_DIM and V_DIM
-    typedef ct::optcon::NLOptConSolver<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR> NLOptConSolver;
+    using NLOptConSolver = ct::optcon::NLOptConSolver<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>;
 
-    typedef typename core::StateVector<STATE_DIM, SCALAR> StateVector;
-    typedef typename core::ControlVector<CONTROL_DIM, SCALAR> ControlVector;
-    typedef typename core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR> FeedbackMatrix;
-    typedef typename core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
-    typedef typename core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
-    typedef typename core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> FeedbackArray;
-    typedef typename core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> StateFeedbackController;
+    using RobotState_t = tpl::FixBaseRobotState<NJOINTS, ACTUATOR_STATE_DIM, SCALAR>;
+    using StateVector = typename core::StateVector<STATE_DIM, SCALAR>;
+    using ControlVector = typename core::ControlVector<CONTROL_DIM, SCALAR>;
+    using FeedbackMatrix = typename core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>;
+    using StateVectorArray = typename core::StateVectorArray<STATE_DIM, SCALAR>;
+    using ControlVectorArray = typename core::ControlVectorArray<CONTROL_DIM, SCALAR>;
+    using FeedbackArray = typename core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>;
+    using StateFeedbackController = typename core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>;
 
-    typedef ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR> CostFunction;
+    using CostFunction = ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>;
+    using JointAcceleration_t = ct::rbd::tpl::JointAcceleration<NJOINTS, SCALAR>;
+
 
     //! default constructor
     FixBaseNLOC() = default;
@@ -56,29 +59,29 @@ public:
         bool verbose = false,
         std::shared_ptr<LinearizedSystem> linearizedSystem = nullptr);
 
-    void initialize(const tpl::JointState<NJOINTS, SCALAR>& x0,
+    void initialize(const RobotState_t& x0,
         const core::Time& tf,
         StateVectorArray x_ref = StateVectorArray(),
         FeedbackArray u0_fb = FeedbackArray(),
         ControlVectorArray u0_ff = ControlVectorArray());
 
     //! initialize fixed-base robot with a steady pose using inverse dynamics torques as feedforward
-    void initializeSteadyPose(const ct::core::StateVector<STATE_DIM, SCALAR>& x0,
+    void initializeSteadyPose(const RobotState_t& x0,
         const core::Time& tf,
         const int N,
         ControlVector& u_ref,
         FeedbackMatrix K = FeedbackMatrix::Zero());
 
     //! initialize fixed-base robot with a directly interpolated state trajectory and corresponding ID torques
-    void initializeDirectInterpolation(const ct::core::StateVector<STATE_DIM, SCALAR>& x0,
-        const ct::core::StateVector<STATE_DIM, SCALAR>& xf,
+    void initializeDirectInterpolation(const RobotState_t& x0,
+        const RobotState_t& xf,
         const core::Time& tf,
         const int N,
         FeedbackMatrix K = FeedbackMatrix::Zero());
 
     //! initialize fixed-base robot with a directly interpolated state trajectory and corresponding ID torques
-    void initializeDirectInterpolation(const ct::core::StateVector<STATE_DIM, SCALAR>& x0,
-        const ct::core::StateVector<STATE_DIM, SCALAR>& xf,
+    void initializeDirectInterpolation(const RobotState_t& x0,
+        const RobotState_t& xf,
         const core::Time& tf,
         const int N,
         ct::core::ControlVectorArray<NJOINTS, SCALAR>& u_array,
@@ -89,7 +92,7 @@ public:
 
     bool solve();
 
-    const core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>& getSolution();
+    const StateFeedbackController& getSolution();
 
     const StateVectorArray& retrieveLastRollout();
 

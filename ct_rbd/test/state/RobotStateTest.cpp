@@ -16,17 +16,27 @@ bool areEqual(const T v1, const T v2)
 }
 
 
-TEST(RobotStateTest, instantiationTest)
+TEST(RobotStateTest, FloatingBaseInstantiationTest)
 {
     const size_t njoints = 6;
     const size_t act_state_dim = 6;
 
-    ct::rbd::RobotState<njoints> robotStateTest1;
-    ct::rbd::RobotState<njoints, act_state_dim> robotStateTest2;
+    ct::rbd::FloatingBaseRobotState<njoints> robotStateTest1;
+    ct::rbd::FloatingBaseRobotState<njoints, act_state_dim> robotStateTest2;
 }
 
 
-TEST(RobotStateTest, stateComparison)
+TEST(RobotStateTest, FixBaseInstantiationTest)
+{
+    const size_t njoints = 6;
+    const size_t act_state_dim = 6;
+
+    ct::rbd::FixBaseRobotState<njoints> robotStateTest1;
+    ct::rbd::FixBaseRobotState<njoints, act_state_dim> robotStateTest2;
+}
+
+
+TEST(RobotStateTest, FloatingBaseStateComparison)
 {
     const size_t njoints = 6;
     const size_t act_state_dim = 6;
@@ -40,7 +50,7 @@ TEST(RobotStateTest, stateComparison)
         ct::core::StateVector<act_state_dim> actuatorState;
         actuatorState.setRandom();
 
-        ct::rbd::RobotState<njoints, act_state_dim> robotState(rbdState, actuatorState);
+        ct::rbd::FloatingBaseRobotState<njoints, act_state_dim> robotState(rbdState, actuatorState);
 
         // test that the original RBDState and the one retrieved from RobotState are identical
         ASSERT_TRUE(rbdState.isApprox(robotState.rbdState()));
@@ -49,7 +59,7 @@ TEST(RobotStateTest, stateComparison)
         ASSERT_TRUE(areEqual(actuatorState, robotState.actuatorState()));
 
         // test copy constructor
-        ct::rbd::RobotState<njoints, act_state_dim> robotStateCopied(robotState);
+        ct::rbd::FloatingBaseRobotState<njoints, act_state_dim> robotStateCopied(robotState);
         ASSERT_TRUE(robotStateCopied.rbdState().isApprox(robotState.rbdState()));
         ASSERT_TRUE(areEqual(actuatorState, robotStateCopied.actuatorState()));
 
@@ -65,7 +75,7 @@ TEST(RobotStateTest, stateComparison)
         // a series of state conversions and comparisons
         {
             // check robot state to full state with quaternion conversion
-            ct::rbd::RobotState<njoints, act_state_dim>::state_vector_quat_t temp =
+            ct::rbd::FloatingBaseRobotState<njoints, act_state_dim>::state_vector_quat_t temp =
                 robotState.toStateVectorQuaternion();
             const size_t nstate_quat = ct::rbd::RBDState<njoints>::NSTATE_QUAT;
             // reconstructed states ...
@@ -77,7 +87,7 @@ TEST(RobotStateTest, stateComparison)
         }
         {
             // check robot state to full state with EulerXyzUnique() conversion
-            ct::rbd::RobotState<njoints, act_state_dim>::state_vector_euler_t temp =
+            ct::rbd::FloatingBaseRobotState<njoints, act_state_dim>::state_vector_euler_t temp =
                 robotState.toStateVectorEulerXyzUnique();
             const size_t nstate_euler = ct::rbd::RBDState<njoints>::NSTATE;
             // reconstructed states ...
@@ -89,7 +99,7 @@ TEST(RobotStateTest, stateComparison)
         }
         {
             // check robot state to full state with EulerXyz() conversion
-            ct::rbd::RobotState<njoints, act_state_dim>::state_vector_euler_t temp = robotState.toStateVectorEulerXyz();
+            ct::rbd::FloatingBaseRobotState<njoints, act_state_dim>::state_vector_euler_t temp = robotState.toStateVectorEulerXyz();
             const size_t nstate_euler = ct::rbd::RBDState<njoints>::NSTATE;
             // reconstructed states ...
             ct::core::StateVector<nstate_euler> state_euler_reconstr = temp.head<nstate_euler>();
@@ -100,15 +110,15 @@ TEST(RobotStateTest, stateComparison)
         }
         {
             // random Euler State to robot state conversion (and back)
-            ct::rbd::RobotState<njoints, act_state_dim>::state_vector_euler_t temp;
+            ct::rbd::FloatingBaseRobotState<njoints, act_state_dim>::state_vector_euler_t temp;
             temp.setRandom();
-            ct::rbd::RobotState<njoints, act_state_dim> testRobotState;
+            ct::rbd::FloatingBaseRobotState<njoints, act_state_dim> testRobotState;
             testRobotState.fromStateVectorEulerXyz(temp);
             ASSERT_TRUE(areEqual(testRobotState.toStateVectorEulerXyz(), temp));
         }
         {
             // random quaternion state to robot state conversion (and back)
-            ct::rbd::RobotState<njoints, act_state_dim>::state_vector_quat_t temp;
+            ct::rbd::FloatingBaseRobotState<njoints, act_state_dim>::state_vector_quat_t temp;
             temp.setRandom();
             // need to generate a consistent unit random quaternion
             Eigen::Quaterniond rand_quat = Eigen::Quaterniond::UnitRandom();
@@ -116,7 +126,7 @@ TEST(RobotStateTest, stateComparison)
             temp(1) = rand_quat.x();
             temp(2) = rand_quat.y();
             temp(3) = rand_quat.z();
-            ct::rbd::RobotState<njoints, act_state_dim> testRobotState(
+            ct::rbd::FloatingBaseRobotState<njoints, act_state_dim> testRobotState(
                 ct::rbd::RigidBodyPose::STORAGE_TYPE::QUAT);  // selecting the correct storage type is imporant here
             testRobotState.fromStateVectorQuaternion(temp);
             ASSERT_TRUE(areEqual(testRobotState.toStateVectorQuaternion(), temp));

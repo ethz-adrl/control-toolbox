@@ -14,24 +14,26 @@ using namespace ct::rbd;
 
 const size_t njoints = ct::rbd::InvertedPendulum::Kinematics::NJOINTS;
 const size_t actuator_state_dim = 1;
-const size_t state_dim_full = njoints * 2 + actuator_state_dim;
 
-typedef ct::rbd::InvertedPendulum::tpl::Dynamics<double> IPDynamics;
-typedef ct::rbd::FixBaseFDSystem<IPDynamics, actuator_state_dim, false> IPSystem;
+using RobotState_t = ct::rbd::FixBaseRobotState<njoints, actuator_state_dim>;
+static const size_t state_dim = RobotState_t::NSTATE;
+static const size_t control_dim = njoints;
 
-typedef ct::core::LinearSystem<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM, double> LinearSystem;
+using IPDynamics = ct::rbd::InvertedPendulum::tpl::Dynamics<double>;
+using IPSystem = ct::rbd::FixBaseFDSystem<IPDynamics, actuator_state_dim, false>;
+using LinearSystem = ct::core::LinearSystem<state_dim, control_dim, double>;
 
-using InvertedPendulumNLOC = FixBaseNLOC<IPSystem, actuator_state_dim, double>;
+using InvertedPendulumNLOC = FixBaseNLOC<IPSystem>;
 
 class MPCSimulator : public ct::core::ControlSimulator<IPSystem>
 {
 public:
     MPCSimulator(ct::core::Time sim_dt,
         ct::core::Time control_dt,
-        const ct::core::StateVector<STATE_DIM>& x0,
+        const RobotState_t& x0,
         std::shared_ptr<IPSystem> ip_system,
         ct::optcon::MPC<ct::optcon::NLOptConSolver<STATE_DIM, CONTROL_DIM>>& mpc)
-        : ct::core::ControlSimulator<IPSystem>(sim_dt, control_dt, x0, ip_system), mpc_(mpc)
+        : ct::core::ControlSimulator<IPSystem>(sim_dt, control_dt, x0.toStateVector(), ip_system), mpc_(mpc)
     {
         controller_.reset(new ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>);
     }
@@ -102,22 +104,25 @@ int main(int argc, char* argv[])
 
         ct::core::Time timeHorizon;
         InvertedPendulumNLOC::FeedbackArray::value_type fbD;
-        ct::core::StateVector<state_dim_full> x0;
-        ct::core::StateVector<state_dim_full> xf;
+        RobotState_t x0;
+        RobotState_t xf;
 
         ct::core::loadScalar(configFile, "timeHorizon", timeHorizon);
         ct::core::loadMatrix(costFunctionFile, "K_init", fbD);
-        ct::core::loadMatrix(costFunctionFile, "x_0", x0.toImplementation());
-        ct::core::loadMatrix(costFunctionFile, "term1.weights.x_des", xf);
+        RobotState_t::state_vector_t xftemp, x0temp;
+        ct::core::loadMatrix(costFunctionFile, "x_0", x0temp);
+        ct::core::loadMatrix(costFunctionFile, "term1.weights.x_des", xftemp);
+        x0.fromStateVector(x0temp);
+        xf.fromStateVector(xftemp);
 
         std::shared_ptr<LinearSystem> linSystem = nullptr;
         ct::optcon::OptConProblem<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM> optConProblem(
-            timeHorizon, x0, ipSystem, newCost, linSystem);
+            timeHorizon, x0.toStateVector(), ipSystem, newCost, linSystem);
         InvertedPendulumNLOC nloc_solver(newCost, nloc_settings, ipSystem, verbose, linSystem);
 
         int K = nloc_solver.getSettings().computeK(timeHorizon);
 
-        InvertedPendulumNLOC::StateVectorArray stateRefTraj(K + 1, x0);
+        InvertedPendulumNLOC::StateVectorArray stateRefTraj(K + 1, x0.toStateVector());
         InvertedPendulumNLOC::FeedbackArray fbTrajectory(K, -fbD);
         InvertedPendulumNLOC::ControlVectorArray ffTrajectory(K, InvertedPendulumNLOC::ControlVector::Zero());
 
