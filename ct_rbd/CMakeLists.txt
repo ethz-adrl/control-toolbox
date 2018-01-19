@@ -59,6 +59,9 @@ target_link_libraries(RigidBodyPoseTest ${catkin_LIBRARIES})
 catkin_add_gtest(JointStateTest test/state/JointStateTest.cpp)
 target_link_libraries(JointStateTest ${catkin_LIBRARIES})
 
+catkin_add_gtest(RobotStateTest test/state/RobotStateTest.cpp)
+target_link_libraries(RobotStateTest ${catkin_LIBRARIES})
+
 catkin_add_gtest(RobCoGenContainerTest test/robot/robcogen/RobCoGenContainerTest.cpp)
 target_link_libraries(RobCoGenContainerTest ${catkin_LIBRARIES})
 
@@ -98,16 +101,14 @@ target_link_libraries(EEKinematicsTest ${catkin_LIBRARIES})
 catkin_add_gtest(EEContactModelTest test/physics/EEContactModelTest.cpp)
 target_link_libraries(EEContactModelTest ${catkin_LIBRARIES})
 
-# todo make unit test again
 catkin_add_gtest(TaskSpaceCfTest test/robot/costfunction/TaskspaceCostFunctionTest.cpp)
 target_link_libraries(TaskSpaceCfTest ${catkin_LIBRARIES})
+
 catkin_add_gtest(rbdJITtests test/robot/costfunction/rbdJITtests.cpp)
 target_link_libraries(rbdJITtests ${catkin_LIBRARIES})
+
 catkin_add_gtest(kindrJITtest test/robot/costfunction/kindrJITtest.cpp)
 target_link_libraries(kindrJITtest ${catkin_LIBRARIES})
-
-#catkin_add_gtest(ControllerTests test/robot/control/ControllerTests.cpp)
-#target_link_libraries(ControllerTests ${catkin_LIBRARIES})
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)

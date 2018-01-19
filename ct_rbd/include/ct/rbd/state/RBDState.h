@@ -31,16 +31,13 @@ class RBDState
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    enum DIMS
-    {
-        NDOF = NJOINTS + 6,
-        NSTATE = 2 * (NJOINTS + 6)  ///< position/velocity of (joints + base)
+    static const size_t NDOF = NJOINTS + 6;
+    static const size_t NSTATE = 2 * (NJOINTS + 6);
+    static const size_t NSTATE_QUAT = NSTATE + 1;
 
-    };
-
-    typedef Eigen::Matrix<SCALAR, NSTATE + 1, 1> state_vector_quat_t;
-    typedef Eigen::Matrix<SCALAR, NSTATE, 1> state_vector_euler_t;
-    typedef Eigen::Matrix<SCALAR, NDOF, 1> coordinate_vector_t;
+    typedef ct::core::StateVector<NSTATE_QUAT, SCALAR> state_vector_quat_t;
+    typedef ct::core::StateVector<NSTATE, SCALAR> state_vector_euler_t;
+    typedef ct::core::StateVector<NDOF, SCALAR> coordinate_vector_t;
 
     RBDState(typename RigidBodyPose<SCALAR>::STORAGE_TYPE storage = RigidBodyPose<SCALAR>::EULER) : baseState_(storage)
     {
@@ -170,8 +167,6 @@ public:
         return state;
     }
 
-    void fromStateVectorRaw(const state_vector_quat_t& state) { fromStateVectorQuaternion(state); }
-    void fromStateVectorRaw(const state_vector_euler_t& state) { fromStateVectorEulerXyz(state); }
     void fromStateVectorQuaternion(const state_vector_quat_t& state)
     {
         try
@@ -210,6 +205,8 @@ public:
         }
     }
 
+    void fromStateVectorRaw(const state_vector_quat_t& state) { fromStateVectorQuaternion(state); }
+    void fromStateVectorRaw(const state_vector_euler_t& state) { fromStateVectorEulerXyz(state); }
     virtual void setDefault()
     {
         baseState_.setIdentity();
