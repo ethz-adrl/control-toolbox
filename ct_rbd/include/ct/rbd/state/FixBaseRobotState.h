@@ -96,6 +96,10 @@ public:
     actuator_state_vector_t& actuatorState() { return act_state_; }
     //! accessor to actuator state
     const actuator_state_vector_t& actuatorState() const { return act_state_; }
+    //! accessor to single element of actuator state
+    SCALAR& actuatorState(size_t i) {return act_state_(i);}
+    //! accessor to single element of actuator state
+    const SCALAR& actuatorState(size_t i) const {return act_state_(i);}
     //! accessor to joint state
     JointState_t& joints() { return joints_; }
     //! accessor to joint state
@@ -139,6 +143,16 @@ public:
         robotState.template segment<NJOINTS>(NJOINTS) = joints_.getVelocities();
         robotState.template tail<ACT_STATE_DIM>() = act_state_;
         return robotState;
+    }
+
+    //! transform full robot state to RBDState
+    RBDState_t toRBDState(const RigidBodyPose_t& basePose = RigidBodyPose_t())
+    {
+        RBDState_t rbdState;
+        rbdState.setZero();
+        rbdState.basePose() = basePose;
+        rbdState.joints() = joints_;
+        return rbdState;
     }
 
 protected:

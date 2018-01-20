@@ -167,7 +167,6 @@ public:
         controlOut = actuatorDynamics_->computeControlOutput(robotState.joints(), robotState.actuatorState());
     }
 
-
     //! do nothing if actuators disabled
     template <typename T = void>
     typename std::enable_if<(ACT_STATE_DIM == 0), T>::type computeActuatorDynamics(
@@ -185,7 +184,6 @@ public:
         return new FixBaseFDSystem<RBDDynamics, ACT_STATE_DIM, EE_ARE_CONTROL_INPUTS>(*this);
     }
 
-
     //! get pointer to actuator dynamics
     std::shared_ptr<ActuatorDynamics_t> getActuatorDynamics() { return actuatorDynamics_; }
     //! compute inverse dynamics torques
@@ -196,6 +194,25 @@ public:
         dynamics_.FixBaseID(jState, jAcc, u);
         return u;
     }
+
+    //! if actuator dynamics enabled, this method allows to design a consistent actuator state
+    template <typename T = typename FixBaseRobotState_t::actuator_state_vector_t>
+    typename std::enable_if<(ACT_STATE_DIM > 0), T>::type designConsistentActuatorState(
+        const tpl::JointState<NJOINTS, SCALAR>& jStateRef,
+        const ct::core::ControlVector<NJOINTS>& torqueRef)
+    {
+        return actuatorDynamics_->computeStateFromOutput(jStateRef, torqueRef);
+    }
+
+    //! if actuator dynamics enabled, this method allows to design a consistent actuator state
+    template <typename T = typename FixBaseRobotState_t::actuator_state_vector_t>
+    typename std::enable_if<(ACT_STATE_DIM>0), T>::type designConsistentActuatorState(
+        const tpl::JointState<NJOINTS, SCALAR>& jStateRef)
+    {
+        const ct::core::ControlVector<NJOINTS> torqueRef = computeIDTorques(jStateRef);
+        return designConsistentActuatorState(jStateRef, torqueRef);
+    }
+
 
 private:
     //! a "dummy" base pose which sets the robot's "fixed" position in the world
