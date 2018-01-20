@@ -99,7 +99,8 @@ TEST(RobotStateTest, FloatingBaseStateComparison)
         }
         {
             // check robot state to full state with EulerXyz() conversion
-            ct::rbd::FloatingBaseRobotState<njoints, act_state_dim>::state_vector_euler_t temp = robotState.toStateVectorEulerXyz();
+            ct::rbd::FloatingBaseRobotState<njoints, act_state_dim>::state_vector_euler_t temp =
+                robotState.toStateVectorEulerXyz();
             const size_t nstate_euler = ct::rbd::RBDState<njoints>::NSTATE;
             // reconstructed states ...
             ct::core::StateVector<nstate_euler> state_euler_reconstr = temp.head<nstate_euler>();
@@ -120,12 +121,19 @@ TEST(RobotStateTest, FloatingBaseStateComparison)
             // random quaternion state to robot state conversion (and back)
             ct::rbd::FloatingBaseRobotState<njoints, act_state_dim>::state_vector_quat_t temp;
             temp.setRandom();
-            // need to generate a consistent unit random quaternion
-            Eigen::Quaterniond rand_quat = Eigen::Quaterniond::UnitRandom();
+
+            // need to generate a consistent unit random quaternion (compatible with older Eigen versions)
+            // and overwrite the previous random state with it
+            Eigen::Vector3d euler;
+            euler.setRandom();
+            Eigen::Quaterniond rand_quat = Eigen::AngleAxisd(euler(0), Eigen::Vector3d::UnitX()) *
+                                           Eigen::AngleAxisd(euler(1), Eigen::Vector3d::UnitY()) *
+                                           Eigen::AngleAxisd(euler(2), Eigen::Vector3d::UnitZ());
             temp(0) = rand_quat.w();
             temp(1) = rand_quat.x();
             temp(2) = rand_quat.y();
             temp(3) = rand_quat.z();
+
             ct::rbd::FloatingBaseRobotState<njoints, act_state_dim> testRobotState(
                 ct::rbd::RigidBodyPose::STORAGE_TYPE::QUAT);  // selecting the correct storage type is imporant here
             testRobotState.fromStateVectorQuaternion(temp);
