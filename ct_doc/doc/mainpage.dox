@@ -271,7 +271,7 @@ Please note the licence and notice files in the source directory.
   title = "The {Control Toolbox} - An Open-Source {C++} Library for Robotics, Optimal and Model Predictive Control",
   howpublished = "\url{https://adrlab.bitbucket.io/ct}",
   year = "2018", 
-  note = ""
+  note = "arXiv:1801.04290 [cs.RO]"
 }
 \endcode
 
