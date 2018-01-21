@@ -4,8 +4,7 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#ifndef RBDACCELERATION_H_
-#define RBDACCELERATION_H_
+#pragma once
 
 #include "JointAcceleration.h"
 #include "RBDState.h"
@@ -119,6 +118,3 @@ using RBDAcceleration = tpl::RBDAcceleration<NJOINTS, double>;
 
 }  // namespace rbd
 }  // namespace ct
-
-
-#endif /* RBDACCELERATION_H_ */

@@ -197,7 +197,7 @@ public:
 
     //! if actuator dynamics enabled, this method allows to design a consistent actuator state
     template <typename T = typename FixBaseRobotState_t::actuator_state_vector_t>
-    typename std::enable_if<(ACT_STATE_DIM > 0), T>::type designConsistentActuatorState(
+    typename std::enable_if<(ACT_STATE_DIM > 0), T>::type computeConsistentActuatorState(
         const tpl::JointState<NJOINTS, SCALAR>& jStateRef,
         const ct::core::ControlVector<NJOINTS>& torqueRef)
     {
@@ -206,11 +206,11 @@ public:
 
     //! if actuator dynamics enabled, this method allows to design a consistent actuator state
     template <typename T = typename FixBaseRobotState_t::actuator_state_vector_t>
-    typename std::enable_if<(ACT_STATE_DIM>0), T>::type designConsistentActuatorState(
+    typename std::enable_if<(ACT_STATE_DIM>0), T>::type computeConsistentActuatorState(
         const tpl::JointState<NJOINTS, SCALAR>& jStateRef)
     {
         const ct::core::ControlVector<NJOINTS> torqueRef = computeIDTorques(jStateRef);
-        return designConsistentActuatorState(jStateRef, torqueRef);
+        return computeConsistentActuatorState(jStateRef, torqueRef);
     }
 
 

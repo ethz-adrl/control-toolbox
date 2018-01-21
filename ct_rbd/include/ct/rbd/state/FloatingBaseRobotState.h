@@ -22,7 +22,7 @@ namespace tpl {
  * @param ACT_STATE_DIM the state dimension of the actuator
  * @param SCALAR the scalar type
  */
-template <size_t NJOINTS, size_t ACT_STATE_DIM, typename SCALAR>
+template <size_t NJOINTS, size_t ACT_STATE_DIM = 0, typename SCALAR = double>
 class FloatingBaseRobotState : public RBDState<NJOINTS, SCALAR>
 {
 public:

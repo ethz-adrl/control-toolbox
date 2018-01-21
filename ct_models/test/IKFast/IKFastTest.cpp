@@ -34,7 +34,8 @@ TEST(HyAIKTest, DISABLED_FKTest)
         // compute IKfast fk
         ct::rbd::RigidBodyPose ikFastPose;
         kindr::RotationMatrix<double> ikFastRotMat;
-        hya_ik::ComputeFk(pos.data(), ikFastPose.position().toImplementation().data(), ikFastRotMat.toImplementation().data());
+        hya_ik::ComputeFk(
+            pos.data(), ikFastPose.position().toImplementation().data(), ikFastRotMat.toImplementation().data());
 
         ikFastPose.setFromRotationMatrix(ikFastRotMat);
 
