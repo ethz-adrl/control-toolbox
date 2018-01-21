@@ -162,12 +162,6 @@ const typename FixBaseNLOC<FIX_BASE_FD_SYSTEM>::StateFeedbackController& FixBase
 }
 
 template <class FIX_BASE_FD_SYSTEM>
-const typename FixBaseNLOC<FIX_BASE_FD_SYSTEM>::StateVectorArray& FixBaseNLOC<FIX_BASE_FD_SYSTEM>::retrieveLastRollout()
-{
-    return nlocSolver_->getStates();
-}
-
-template <class FIX_BASE_FD_SYSTEM>
 const core::TimeArray& FixBaseNLOC<FIX_BASE_FD_SYSTEM>::getTimeArray()
 {
     return nlocSolver_->getStateTrajectory().getTimeArray();
@@ -184,6 +178,13 @@ const typename FixBaseNLOC<FIX_BASE_FD_SYSTEM>::ControlVectorArray&
 FixBaseNLOC<FIX_BASE_FD_SYSTEM>::getControlVectorArray()
 {
     return nlocSolver_->getSolution().uff();
+}
+
+template <class FIX_BASE_FD_SYSTEM>
+const typename FixBaseNLOC<FIX_BASE_FD_SYSTEM>::StateVectorArray&
+FixBaseNLOC<FIX_BASE_FD_SYSTEM>::getStateVectorArray()
+{
+    return nlocSolver_->getSolution().x_ref();
 }
 
 template <class FIX_BASE_FD_SYSTEM>

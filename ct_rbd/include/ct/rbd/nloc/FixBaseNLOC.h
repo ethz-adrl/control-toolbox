@@ -94,13 +94,13 @@ public:
 
     const StateFeedbackController& getSolution();
 
-    const StateVectorArray& retrieveLastRollout();
-
     const core::TimeArray& getTimeArray();
 
     const FeedbackArray& getFeedbackArray();
 
     const ControlVectorArray& getControlVectorArray();
+
+    const StateVectorArray& getStateVectorArray();
 
     const typename NLOptConSolver::Settings_t& getSettings() const;
 
