@@ -114,7 +114,7 @@ private:
     template <typename SC>
     SC evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1>& x, const Eigen::Matrix<SC, CONTROL_DIM, 1>& u, const SC& t)
     {
-        tpl::RBDState<KINEMATICS::NJOINTS, SC> rbdState = setStateFromVector<FB>(x);
+        RBDState<KINEMATICS::NJOINTS, SC> rbdState = setStateFromVector<FB>(x);
 
         Eigen::Matrix<SC, 3, 1> xDiff =
             kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions())
@@ -128,10 +128,10 @@ private:
 
     //! computes RBDState in case the user supplied a floating-base robot
     template <bool T>
-    tpl::RBDState<KINEMATICS::NJOINTS, SCALAR> setStateFromVector(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
+    RBDState<KINEMATICS::NJOINTS, SCALAR> setStateFromVector(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
         typename std::enable_if<T, bool>::type = true)
     {
-        tpl::RBDState<KINEMATICS::NJOINTS, SCALAR> rbdState;
+        RBDState<KINEMATICS::NJOINTS, SCALAR> rbdState;
         rbdState.fromStateVectorEulerXyz(x);
 
         return rbdState;
@@ -139,10 +139,10 @@ private:
 
     //! computes RBDState in case the user supplied a fixed-base robot
     template <bool T>
-    tpl::RBDState<KINEMATICS::NJOINTS, SCALAR> setStateFromVector(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
+    RBDState<KINEMATICS::NJOINTS, SCALAR> setStateFromVector(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
         typename std::enable_if<!T, bool>::type = true)
     {
-        tpl::RBDState<KINEMATICS::NJOINTS, SCALAR> rbdState;
+        RBDState<KINEMATICS::NJOINTS, SCALAR> rbdState;
         rbdState.joints() = x;
         return rbdState;
     }

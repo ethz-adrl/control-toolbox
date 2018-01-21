@@ -10,7 +10,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 namespace ct {
 namespace rbd {
-namespace tpl {
 
 /*!
  *
@@ -31,8 +30,8 @@ public:
     using Base_t = RBDState<NJOINTS, SCALAR>;
     using RBDState_t = RBDState<NJOINTS, SCALAR>;
 
-    using RigidBodyPose_t = RigidBodyPose<SCALAR>;
-    using RigidBodyState_t = RigidBodyState<SCALAR>;
+    using RigidBodyPose_t = tpl::RigidBodyPose<SCALAR>;
+    using RigidBodyState_t = tpl::RigidBodyState<SCALAR>;
     using JointState_t = JointState<NJOINTS, SCALAR>;
     using STORAGE_TYPE = typename RigidBodyPose_t::STORAGE_TYPE;  //! Euler or quat
 
@@ -180,13 +179,6 @@ private:
     using Base_t::toCoordinatePosition;
     using Base_t::toCoordinateVelocity;
 };
-
-
-}  // namespact tpl
-
-// convenience typedef
-template <size_t NJOINTS, size_t ACT_STATE_DIM = 0>
-using FloatingBaseRobotState = tpl::FloatingBaseRobotState<NJOINTS, ACT_STATE_DIM, double>;
 
 }  // namespace rbd
 }  // namespace ct

@@ -34,13 +34,13 @@ template <typename SCALAR>
 Eigen::Matrix<SCALAR, control_dim + 6, 1> hyqInverseDynamics(const Eigen::Matrix<SCALAR, state_dim + 18, 1>& x)
 {
     ct::rbd::HyQ::tpl::Dynamics<SCALAR> hyqDynamics;
-    ct::rbd::tpl::RBDState<njoints, SCALAR> hyqState;
+    ct::rbd::RBDState<njoints, SCALAR> hyqState;
 
     // we assume x contains: q, q_dot, q_ddot
     hyqState.fromStateVectorEulerXyz(x.template topRows<state_dim>());
 
     ct::rbd::tpl::RigidBodyAcceleration<SCALAR> base_a(x.template segment<6>(state_dim));
-    ct::rbd::tpl::JointAcceleration<njoints, SCALAR> qdd(x.template bottomRows<njoints>());
+    ct::rbd::JointAcceleration<njoints, SCALAR> qdd(x.template bottomRows<njoints>());
 
     typename ct::rbd::HyQ::tpl::Dynamics<SCALAR>::ExtLinkForces_t fext(Eigen::Matrix<SCALAR, 6, 1>::Zero());  //zero
 
@@ -59,7 +59,7 @@ template <typename SCALAR>
 Eigen::Matrix<SCALAR, nEE * 6, 1> hyqForwardKinematics(const Eigen::Matrix<SCALAR, state_dim, 1>& x)
 {
     ct::rbd::HyQ::tpl::Kinematics<SCALAR> hyqKinematics;
-    ct::rbd::tpl::RBDState<njoints, SCALAR> hyqState;
+    ct::rbd::RBDState<njoints, SCALAR> hyqState;
     hyqState.fromStateVectorEulerXyz(x.template topRows<state_dim>());
 
     // output vector: positions and velocities for all endeffectors

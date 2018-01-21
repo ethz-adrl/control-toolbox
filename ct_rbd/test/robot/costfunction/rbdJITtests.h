@@ -224,9 +224,9 @@ Eigen::Matrix<SCALAR, 1, 1> testFunctionRBDState(const Eigen::Matrix<SCALAR, hyq
     baseState.pose().position() = pos;
     baseState.pose().setFromEulerAnglesXyz(euler);
 
-    ct::rbd::tpl::JointState<12, SCALAR> jointState(x.template tail<24>());
+    ct::rbd::JointState<12, SCALAR> jointState(x.template tail<24>());
 
-    ct::rbd::tpl::RBDState<12, SCALAR> rbdState;
+    ct::rbd::RBDState<12, SCALAR> rbdState;
     rbdState.base() = baseState;
     rbdState.joints() = jointState;
 
@@ -234,7 +234,7 @@ Eigen::Matrix<SCALAR, 1, 1> testFunctionRBDState(const Eigen::Matrix<SCALAR, hyq
     Eigen::Matrix<SCALAR, 1, 1> cost;
     SCALAR t(0.0);
 
-    ct::rbd::tpl::RBDState<12, SCALAR> rbdStateCopy = rbdState;
+    ct::rbd::RBDState<12, SCALAR> rbdStateCopy = rbdState;
 
     cost(0, 0) = rbdStateCopy.toStateVectorEulerXyz().norm();
 

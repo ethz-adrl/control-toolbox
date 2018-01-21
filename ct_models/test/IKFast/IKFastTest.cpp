@@ -19,7 +19,7 @@ TEST(HyAIKTest, DISABLED_FKTest)
     ct::rbd::HyA::Kinematics kin_robcogen;  // robcogen kinematics
     size_t eeInd = 0;
 
-    typename ct::rbd::tpl::JointState<6, double>::Position pos;
+    typename ct::rbd::JointState<6, double>::Position pos;
 
     size_t nTests = 100;
 
@@ -45,12 +45,11 @@ TEST(HyAIKTest, DISABLED_FKTest)
     }
 }
 
-
 TEST(HyAIKTest, IKFastTest)
 {
     ct::rbd::HyAInverseKinematics<double> hya_ik_solver;
     ct::rbd::HyA::Kinematics kin;
-    typename ct::rbd::tpl::JointState<6, double>::Position pos;
+    typename ct::rbd::JointState<6, double>::Position pos;
     pos << 0, 1, 0, -1, 1, -1;
 
     auto ret = kin.getEEPoseInBase(0, pos);
@@ -75,7 +74,7 @@ TEST(Irb4600IKTest, IKFastTest)
 {
     ct::rbd::Irb4600InverseKinematics<double> irb4600_ik_solver;
     ct::rbd::HyA::Kinematics kin;
-    typename ct::rbd::tpl::JointState<6, double>::Position pos;
+    typename ct::rbd::JointState<6, double>::Position pos;
     pos << 0, 1, 0, -1, 1, -1;
 
     auto ret = kin.getEEPoseInBase(0, pos);

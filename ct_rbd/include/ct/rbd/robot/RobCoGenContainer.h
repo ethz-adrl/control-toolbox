@@ -94,7 +94,7 @@ public:
 	 * @return Homogeneous transformation from link to base \f$ T_{BL}  \f$
 	 */
     HomogeneousTransform getHomogeneousTransformBaseLinkById(size_t linkId,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+        const typename JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
         return UTILS::getTransformBaseLinkById(homogeneousTransforms(), linkId, jointPosition);
     }
@@ -111,7 +111,7 @@ public:
 	 * @return Force transformation from link to base \f$ T_{LB}  \f$
 	 */
     ForceTransform getForceTransformLinkBaseById(size_t linkId,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+        const typename JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
         return UTILS::getTransformLinkBaseById(forceTransforms(), linkId, jointPosition);
     }
@@ -128,7 +128,7 @@ public:
 	 * @return Homogeneous transformation from base to endeffector \f$ T_{EE-B}  \f$
 	 */
     HomogeneousTransform getHomogeneousTransformBaseEEById(size_t eeId,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+        const typename JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
         return UTILS::getTransformBaseEEById(homogeneousTransforms(), eeId, jointPosition);
     }
@@ -141,7 +141,7 @@ public:
 	 * @return Jacobian of the endeffector expressed in the base frame
 	 */
     Jacobian getJacobianBaseEEbyId(size_t eeId,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+        const typename JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
         return UTILS::getJacobianBaseEEbyId(jacobians(), eeId, jointPosition);
     }
@@ -167,7 +167,7 @@ public:
 	 * @return position of the endeffector expressed in the base frame
 	 */
     Position3Tpl getEEPositionInBase(size_t eeId,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+        const typename JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
         return Position3Tpl(getHomogeneousTransformBaseEEById(eeId, jointPosition).template topRightCorner<3, 1>());
     }
@@ -181,7 +181,7 @@ public:
 	 * @return position of the endeffector expressed in the base frame
      */
     RigidBodyPoseTpl getEEPoseInBase(size_t eeId,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition,
+        const typename JointState<NJOINTS, SCALAR>::Position& jointPosition,
         typename RigidBodyPoseTpl::STORAGE_TYPE storage = RigidBodyPoseTpl::EULER)
     {
         // construct the rigid body pose from a homogeneous transformation matrix
@@ -192,7 +192,7 @@ public:
     /*!
      * compute the forward kinematics and return a rotation matrix specifying the ee-rotation w.r.t. the base frame
      */
-    Matrix3Tpl getEERotInBase(size_t eeId, const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+    Matrix3Tpl getEERotInBase(size_t eeId, const typename JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
         return getHomogeneousTransformBaseEEById(eeId, jointPosition).template topLeftCorner<3, 3>();
     }

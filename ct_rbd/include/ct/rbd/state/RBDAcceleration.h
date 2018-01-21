@@ -12,7 +12,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 namespace ct {
 namespace rbd {
-namespace tpl {
 
 /**
  * @class RBDAcceleration
@@ -21,7 +20,7 @@ namespace tpl {
  *
  * @brief joint acceleration and base acceleration
  */
-template <size_t NJOINTS, typename SCALAR>
+template <size_t NJOINTS, typename SCALAR = double>
 class RBDAcceleration
 {
 public:
@@ -36,7 +35,7 @@ public:
 
     typedef Eigen::Matrix<SCALAR, NDOF, 1> coordinate_vector_t;
 
-    typedef RigidBodyAcceleration<SCALAR> RigidBodyAcceleration_t;
+    typedef tpl::RigidBodyAcceleration<SCALAR> RigidBodyAcceleration_t;
 
 
     RBDAcceleration() { setZero(); }
@@ -110,11 +109,6 @@ protected:
     RigidBodyAcceleration_t baseStateDerivative_;
     JointAcceleration<NJOINTS, SCALAR> jointStateDerivative_;
 };
-
-}  // namespace tpl
-
-template <size_t NJOINTS>
-using RBDAcceleration = tpl::RBDAcceleration<NJOINTS, double>;
 
 }  // namespace rbd
 }  // namespace ct

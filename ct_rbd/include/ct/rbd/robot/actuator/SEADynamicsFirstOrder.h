@@ -10,7 +10,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 namespace ct {
 namespace rbd {
-namespace tpl {
 
 /*!
  * Series-elastic actuator dynamics modeled as a series of motor, gearbox and a spring.
@@ -23,7 +22,7 @@ namespace tpl {
  * In a SEA, the gear position is typically known anyway.
  *
  */
-template <size_t NJOINTS, typename SCALAR>
+template <size_t NJOINTS, typename SCALAR = double>
 class SEADynamicsFirstOrder : public ActuatorDynamics<NJOINTS, NJOINTS, SCALAR>
 {
 public:
@@ -40,18 +39,18 @@ public:
     //! deep cloning
     virtual SEADynamicsFirstOrder<NJOINTS, SCALAR>* clone() const override;
 
-    virtual void computeActuatorDynamics(const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+    virtual void computeActuatorDynamics(const JointState<NJOINTS, SCALAR>& robotJointState,
         const ct::core::StateVector<NJOINTS, SCALAR>& state,
         const SCALAR& t,
         const ct::core::ControlVector<NJOINTS, SCALAR>& control,
         ct::core::StateVector<NJOINTS, SCALAR>& derivative) override;
 
     virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
-        const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+        const JointState<NJOINTS, SCALAR>& robotJointState,
         const typename BASE::act_state_vector_t& actState) override;
 
     virtual ct::core::StateVector<NJOINTS, SCALAR> computeStateFromOutput(
-        const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& refRobotJointState,
+        const JointState<NJOINTS, SCALAR>& refRobotJointState,
         const core::ControlVector<NJOINTS, SCALAR>& refControl) override;
 
 private:
@@ -59,11 +58,6 @@ private:
     SCALAR r_;  //! gear ratio, defined in terms of input/output
 };
 
-
-}  // namespace tpl
-
-template <size_t NJOINTS>
-using SEADynamicsFirstOrder = typename tpl::SEADynamicsFirstOrder<NJOINTS, double>;
 
 }  // namespace rbd
 }  // namespace ct

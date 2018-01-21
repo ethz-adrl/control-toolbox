@@ -13,27 +13,27 @@ namespace models {
 namespace InvertedPendulum {
 
 template <typename SCALAR = double>
-const typename ct::rbd::tpl::JointState<1, SCALAR>::Position& jointLowerLimit()
+const typename ct::rbd::JointState<1, SCALAR>::Position& jointLowerLimit()
 {
-    static typename ct::rbd::tpl::JointState<1, SCALAR>::Position jointLowerLimit;
+    static typename ct::rbd::JointState<1, SCALAR>::Position jointLowerLimit;
     jointLowerLimit << -M_PI;
 
     return jointLowerLimit;
 }
 
 template <typename SCALAR = double>
-const typename ct::rbd::tpl::JointState<1, SCALAR>::Position& jointUpperLimit()
+const typename ct::rbd::JointState<1, SCALAR>::Position& jointUpperLimit()
 {
-    static typename ct::rbd::tpl::JointState<1, SCALAR>::Position jointUpperLimit;
+    static typename ct::rbd::JointState<1, SCALAR>::Position jointUpperLimit;
     jointUpperLimit << M_PI;
 
     return jointUpperLimit;
 }
 
 template <typename SCALAR = double>
-const typename ct::rbd::tpl::JointState<1, SCALAR>::Velocity& jointVelocityLimit()
+const typename ct::rbd::JointState<1, SCALAR>::Velocity& jointVelocityLimit()
 {
-    static typename ct::rbd::tpl::JointState<1, SCALAR>::Velocity jointVelocityLimit;
+    static typename ct::rbd::JointState<1, SCALAR>::Velocity jointVelocityLimit;
     jointVelocityLimit << 2.0;
 
     return jointVelocityLimit;

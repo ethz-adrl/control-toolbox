@@ -10,7 +10,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 namespace ct {
 namespace rbd {
-namespace tpl {
 
 /*!
  *
@@ -24,13 +23,13 @@ namespace tpl {
  * @param ACT_STATE_DIM the state dimension of the actuator
  * @param SCALAR the scalar type
  */
-template <size_t NJOINTS, size_t ACT_STATE_DIM, typename SCALAR>
+template <size_t NJOINTS, size_t ACT_STATE_DIM = 0, typename SCALAR = double>
 class FixBaseRobotState
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    using RigidBodyPose_t = RigidBodyPose<SCALAR>;
+    using RigidBodyPose_t = tpl::RigidBodyPose<SCALAR>;
     using JointState_t = JointState<NJOINTS, SCALAR>;
     using RBDState_t = RBDState<NJOINTS, SCALAR>;
 
@@ -161,13 +160,6 @@ protected:
     //! the actuator state vector
     actuator_state_vector_t act_state_;
 };
-
-
-}  // namespact tpl
-
-// convenience typedef
-template <size_t NJOINTS, size_t ACT_STATE_DIM = 0>
-using FixBaseRobotState = tpl::FixBaseRobotState<NJOINTS, ACT_STATE_DIM, double>;
 
 }  // namespace rbd
 }  // namespace ct

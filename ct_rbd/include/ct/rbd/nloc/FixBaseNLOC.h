@@ -36,7 +36,7 @@ public:
     //! @ todo: introduce templates for P_DIM and V_DIM
     using NLOptConSolver = ct::optcon::NLOptConSolver<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>;
 
-    using RobotState_t = tpl::FixBaseRobotState<NJOINTS, ACTUATOR_STATE_DIM, SCALAR>;
+    using RobotState_t = FixBaseRobotState<NJOINTS, ACTUATOR_STATE_DIM, SCALAR>;
     using StateVector = typename core::StateVector<STATE_DIM, SCALAR>;
     using ControlVector = typename core::ControlVector<CONTROL_DIM, SCALAR>;
     using FeedbackMatrix = typename core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>;
@@ -46,7 +46,7 @@ public:
     using StateFeedbackController = typename core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>;
 
     using CostFunction = ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>;
-    using JointAcceleration_t = ct::rbd::tpl::JointAcceleration<NJOINTS, SCALAR>;
+    using JointAcceleration_t = JointAcceleration<NJOINTS, SCALAR>;
 
 
     //! default constructor

@@ -421,8 +421,8 @@ private:
 
 }  // namespace tpl
 
+// convenience typedef (required)
 typedef tpl::RigidBodyPose<double> RigidBodyPose;
-
 
 }  // namespace rbd
 }  // namespace ct

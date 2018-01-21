@@ -60,7 +60,7 @@ SecondOrderActuatorDynamics<NJOINTS, SCALAR>* SecondOrderActuatorDynamics<NJOINT
 
 template <size_t NJOINTS, typename SCALAR>
 void SecondOrderActuatorDynamics<NJOINTS, SCALAR>::computeActuatorDynamics(
-    const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+    const JointState<NJOINTS, SCALAR>& robotJointState,
     const ct::core::StateVector<2 * NJOINTS, SCALAR>& state,
     const SCALAR& t,
     const ct::core::ControlVector<NJOINTS, SCALAR>& control,
@@ -85,7 +85,7 @@ void SecondOrderActuatorDynamics<NJOINTS, SCALAR>::computeActuatorDynamics(
 
 template <size_t NJOINTS, typename SCALAR>
 core::ControlVector<NJOINTS, SCALAR> SecondOrderActuatorDynamics<NJOINTS, SCALAR>::computeControlOutput(
-    const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+    const JointState<NJOINTS, SCALAR>& robotJointState,
     const typename BASE::act_state_vector_t& actState)
 {
     // for this simple actuator dynamics model, the controlOutput is just the "position" coordinates of the actuator state
@@ -94,7 +94,7 @@ core::ControlVector<NJOINTS, SCALAR> SecondOrderActuatorDynamics<NJOINTS, SCALAR
 
 template <size_t NJOINTS, typename SCALAR>
 ct::core::StateVector<2 * NJOINTS, SCALAR> SecondOrderActuatorDynamics<NJOINTS, SCALAR>::computeStateFromOutput(
-    const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& refRobotJointState,
+    const JointState<NJOINTS, SCALAR>& refRobotJointState,
     const core::ControlVector<NJOINTS, SCALAR>& refControl)
 {
     ct::core::StateVector<2 * NJOINTS, SCALAR> refState;

@@ -55,13 +55,13 @@ public:
     using Base = core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>;
     using ActuatorDynamics_t = ActuatorDynamics<ACT_STATE_DIM, NJOINTS, SCALAR>;
     using RigidBodyPose_t = tpl::RigidBodyPose<SCALAR>;
-    using FixBaseRobotState_t = tpl::FixBaseRobotState<NJOINTS, ACT_STATE_DIM, SCALAR>;
+    using FixBaseRobotState_t = FixBaseRobotState<NJOINTS, ACT_STATE_DIM, SCALAR>;
 
     // typedefs state and controls
     using state_vector_t = typename FixBaseRobotState_t::state_vector_t;
     using actuator_state_vector_t = typename FixBaseRobotState_t::actuator_state_vector_t;
     using control_vector_t = core::ControlVector<CONTROL_DIM, SCALAR>;
-    using JointAcceleration_t = ct::rbd::tpl::JointAcceleration<NJOINTS, SCALAR>;
+    using JointAcceleration_t = JointAcceleration<NJOINTS, SCALAR>;
 
 
     //! constructor
@@ -187,7 +187,7 @@ public:
     //! get pointer to actuator dynamics
     std::shared_ptr<ActuatorDynamics_t> getActuatorDynamics() { return actuatorDynamics_; }
     //! compute inverse dynamics torques
-    ct::core::ControlVector<NJOINTS> computeIDTorques(const tpl::JointState<NJOINTS, SCALAR>& jState,
+    ct::core::ControlVector<NJOINTS> computeIDTorques(const JointState<NJOINTS, SCALAR>& jState,
         const JointAcceleration_t& jAcc = JointAcceleration_t(Eigen::Matrix<SCALAR, NJOINTS, 1>::Zero()))
     {
         ct::core::ControlVector<NJOINTS> u;
@@ -198,7 +198,7 @@ public:
     //! if actuator dynamics enabled, this method allows to design a consistent actuator state
     template <typename T = typename FixBaseRobotState_t::actuator_state_vector_t>
     typename std::enable_if<(ACT_STATE_DIM > 0), T>::type computeConsistentActuatorState(
-        const tpl::JointState<NJOINTS, SCALAR>& jStateRef,
+        const JointState<NJOINTS, SCALAR>& jStateRef,
         const ct::core::ControlVector<NJOINTS>& torqueRef)
     {
         return actuatorDynamics_->computeStateFromOutput(jStateRef, torqueRef);
@@ -207,7 +207,7 @@ public:
     //! if actuator dynamics enabled, this method allows to design a consistent actuator state
     template <typename T = typename FixBaseRobotState_t::actuator_state_vector_t>
     typename std::enable_if<(ACT_STATE_DIM>0), T>::type computeConsistentActuatorState(
-        const tpl::JointState<NJOINTS, SCALAR>& jStateRef)
+        const JointState<NJOINTS, SCALAR>& jStateRef)
     {
         const ct::core::ControlVector<NJOINTS> torqueRef = computeIDTorques(jStateRef);
         return computeConsistentActuatorState(jStateRef, torqueRef);
