@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
 This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus St√§uble, Diego Pardo, Farbod Farshidian
+Authors:  Michael Neunert, Markus Giftthaler, Markus St‰uble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -249,7 +249,7 @@ public:
     {
         if (ref_frame.storedAsEuler() && storedAsEuler())
         {
-            return RigidBodyPose<SCALAR>(ref_frame.getEulerAnglesXyz().inverseRotate(euler_),
+            return RigidBodyPose<SCALAR>(ref_frame.getEulerAnglesXyz().inverted() * euler_,
                 ref_frame.getEulerAnglesXyz().inverseRotate(position() - ref_frame.position()));
         }
         else if (ref_frame.storedAsEuler() && !storedAsEuler())
@@ -259,7 +259,7 @@ public:
         }
         else if (!ref_frame.storedAsEuler() && storedAsEuler())
         {
-            return RigidBodyPose<SCALAR>(ref_frame.getRotationQuaternion().inverseRotate(euler_),
+            return RigidBodyPose<SCALAR>(ref_frame.getRotationQuaternion().inverted() * euler_,
                 ref_frame.getRotationQuaternion().inverseRotate(position() - ref_frame.position()));
         }
         else
