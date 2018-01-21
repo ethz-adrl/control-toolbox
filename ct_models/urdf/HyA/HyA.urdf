@@ -64,7 +64,6 @@ remove the unneeded links and joints -->
   </joint>
   <!-- Wrist FE joint -->
   <joint name="hya_wfe_joint" type="revolute">
-    <!--origin rpy="-1.57079632679 0 -1.57079632679" xyz="0.02075 0 0.184"/-->
     <origin xyz="0.02075 0.00000 0.18400" rpy="2.3561944901923457 -1.5707962635746238 2.3561944901923457"/>
     <parent link="hya_wrist_r_link"/>
     <child link="hya_wrist_fe_link"/>
