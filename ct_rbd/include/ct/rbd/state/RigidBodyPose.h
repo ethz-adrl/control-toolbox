@@ -76,6 +76,14 @@ public:
         setFromRotationQuaternion(orientationQuat);
     }
 
+    //! construct a RigidBodyPose from a rotation quaternion and a position vector
+    RigidBodyPose(const Eigen::Quaternion<SCALAR>& orientationQuat,
+        const Eigen::Matrix<SCALAR, 3, 1>& position,
+        STORAGE_TYPE storage = EULER)
+        : RigidBodyPose(kindr::RotationQuaternion<SCALAR>(orientationQuat), Position3Tpl(position))
+    {
+    }
+
     //! construct a RigidBodyPose from a homogeneous transformation matrix
     RigidBodyPose(const Matrix4Tpl& homTransform, STORAGE_TYPE storage = EULER)
         : storage_(storage),
@@ -249,7 +257,7 @@ public:
     {
         if (ref_frame.storedAsEuler() && storedAsEuler())
         {
-            return RigidBodyPose<SCALAR>(ref_frame.getEulerAnglesXyz().inverseRotate(euler_),
+            return RigidBodyPose<SCALAR>(ref_frame.getEulerAnglesXyz().inverted() * euler_,
                 ref_frame.getEulerAnglesXyz().inverseRotate(position() - ref_frame.position()));
         }
         else if (ref_frame.storedAsEuler() && !storedAsEuler())
@@ -259,7 +267,7 @@ public:
         }
         else if (!ref_frame.storedAsEuler() && storedAsEuler())
         {
-            return RigidBodyPose<SCALAR>(ref_frame.getRotationQuaternion().inverseRotate(euler_),
+            return RigidBodyPose<SCALAR>(ref_frame.getRotationQuaternion().inverted() * euler_,
                 ref_frame.getRotationQuaternion().inverseRotate(position() - ref_frame.position()));
         }
         else
