@@ -4,8 +4,7 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_ROBOT_STATE_RIGIDBODYSTATE_H_
-#define INCLUDE_CT_RBD_ROBOT_STATE_RIGIDBODYSTATE_H_
+#pragma once
 
 #include "RigidBodyPose.h"
 #include "RigidBodyVelocities.h"
@@ -80,9 +79,8 @@ private:
 
 }  // namespace tpl
 
+// convenience typedef (required)
 typedef tpl::RigidBodyState<double> RigidBodyState;
 
 } /* namespace rbd */
 } /* namespace ct */
-
-#endif /* INCLUDE_CT_RBD_ROBOT_STATE_RIGIDBODYSTATE_H_ */

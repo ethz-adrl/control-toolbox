@@ -16,11 +16,11 @@ template <size_t NJOINTS, typename SCALAR = double>
 class InverseKinematicsBase
 {
 public:
-    virtual std::vector<typename tpl::JointState<NJOINTS, SCALAR>::Position> computeInverseKinematics(
+    virtual std::vector<typename JointState<NJOINTS, SCALAR>::Position> computeInverseKinematics(
         const tpl::RigidBodyPose<SCALAR> &eeBasePose,
         const std::vector<SCALAR> &freeJoints) const = 0;
 
-    virtual std::vector<typename tpl::JointState<NJOINTS, SCALAR>::Position> computeInverseKinematics(
+    virtual std::vector<typename JointState<NJOINTS, SCALAR>::Position> computeInverseKinematics(
         const tpl::RigidBodyPose<SCALAR> &eeWorldPose,
         const tpl::RigidBodyPose<SCALAR> &baseWorldPose,
         const std::vector<SCALAR> &freeJoints) const = 0;

@@ -1,6 +1,6 @@
 The Control Toolbox
 
-Copyright 2014-2018 ETH Zürich.
+Copyright 2014-2018 ETH Zurich.
 
 This software has been developed at the Agile & Dexterous Robotics Lab 
 at ETH Zurich under the lead of Michael Neunert and Markus Giftthaler.

@@ -10,7 +10,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 namespace ct {
 namespace rbd {
-namespace tpl {
 
 /**
  * @class JointState
@@ -133,11 +132,6 @@ public:
 protected:
     joint_state_vector_t state_;
 };
-
-}  // namespace tpl
-
-template <size_t NJOINTS>
-using JointState = tpl::JointState<NJOINTS, double>;
 
 }  // namespace rbd
 }  // namespace ct

@@ -11,7 +11,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 namespace ct {
 namespace rbd {
-namespace tpl {
 
 /** \defgroup State State
   * \brief Different state types for Rigid Bodies, Robots etc.
@@ -25,31 +24,30 @@ namespace tpl {
  * @brief joint states and base states
  */
 
-template <size_t NJOINTS, typename SCALAR>
+template <size_t NJOINTS, typename SCALAR = double>
 class RBDState
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    enum DIMS
-    {
-        NDOF = NJOINTS + 6,
-        NSTATE = 2 * (NJOINTS + 6)  ///< position/velocity of (joints + base)
+    static const size_t NDOF = NJOINTS + 6;
+    static const size_t NSTATE = 2 * (NJOINTS + 6);
+    static const size_t NSTATE_QUAT = NSTATE + 1;
 
-    };
+    using RigidBodyState_t = tpl::RigidBodyState<SCALAR>;
+    using RigidBodyPose_t = tpl::RigidBodyPose<SCALAR>;
+    typedef ct::core::StateVector<NSTATE_QUAT, SCALAR> state_vector_quat_t;
+    typedef ct::core::StateVector<NSTATE, SCALAR> state_vector_euler_t;
+    typedef ct::core::StateVector<NDOF, SCALAR> coordinate_vector_t;
 
-    typedef Eigen::Matrix<SCALAR, NSTATE + 1, 1> state_vector_quat_t;
-    typedef Eigen::Matrix<SCALAR, NSTATE, 1> state_vector_euler_t;
-    typedef Eigen::Matrix<SCALAR, NDOF, 1> coordinate_vector_t;
-
-    RBDState(typename RigidBodyPose<SCALAR>::STORAGE_TYPE storage = RigidBodyPose<SCALAR>::EULER) : baseState_(storage)
+    RBDState(typename RigidBodyPose_t::STORAGE_TYPE storage = RigidBodyPose_t::EULER) : baseState_(storage)
     {
         baseState_.setIdentity();
         jointState_.setZero();
     }
 
     RBDState(const RBDState& other) : baseState_(other.baseState_), jointState_(other.jointState_) {}
-    RBDState(const RigidBodyState<SCALAR>& baseState, const JointState<NJOINTS, SCALAR>& jointState)
+    RBDState(const RigidBodyState_t& baseState, const JointState<NJOINTS, SCALAR>& jointState)
         : baseState_(baseState), jointState_(jointState)
     {
     }
@@ -63,17 +61,17 @@ public:
 
 
     /// @brief get base states
-    RigidBodyState<SCALAR>& base() { return baseState_; }
+    RigidBodyState_t& base() { return baseState_; }
     /// @brief get constant base states
-    const RigidBodyState<SCALAR>& base() const { return baseState_; }
+    const RigidBodyState_t& base() const { return baseState_; }
     /// @brief get base pose
-    RigidBodyPose<SCALAR>& basePose() { return base().pose(); }
+    RigidBodyPose_t& basePose() { return base().pose(); }
     /// @brief get constant base states
-    const RigidBodyPose<SCALAR>& basePose() const { return base().pose(); }
+    const RigidBodyPose_t& basePose() const { return base().pose(); }
     /// @brief get base velocities
-    RigidBodyVelocities<SCALAR>& baseVelocities() { return base().velocities(); }
+    tpl::RigidBodyVelocities<SCALAR>& baseVelocities() { return base().velocities(); }
     /// @brief get constant base velocities
-    const RigidBodyVelocities<SCALAR>& baseVelocities() const { return base().velocities(); }
+    const tpl::RigidBodyVelocities<SCALAR>& baseVelocities() const { return base().velocities(); }
     /// @brief get base local angular velocity
     kindr::LocalAngularVelocity<SCALAR>& baseLocalAngularVelocity()
     {
@@ -170,8 +168,6 @@ public:
         return state;
     }
 
-    void fromStateVectorRaw(const state_vector_quat_t& state) { fromStateVectorQuaternion(state); }
-    void fromStateVectorRaw(const state_vector_euler_t& state) { fromStateVectorEulerXyz(state); }
     void fromStateVectorQuaternion(const state_vector_quat_t& state)
     {
         try
@@ -210,6 +206,8 @@ public:
         }
     }
 
+    void fromStateVectorRaw(const state_vector_quat_t& state) { fromStateVectorQuaternion(state); }
+    void fromStateVectorRaw(const state_vector_euler_t& state) { fromStateVectorEulerXyz(state); }
     virtual void setDefault()
     {
         baseState_.setIdentity();
@@ -230,15 +228,9 @@ public:
 
 
 protected:
-    RigidBodyState<SCALAR> baseState_;
+    RigidBodyState_t baseState_;
     JointState<NJOINTS, SCALAR> jointState_;
 };
-
-
-}  // namespace tpl
-
-template <size_t NJOINTS>
-using RBDState = tpl::RBDState<NJOINTS, double>;
 
 }  // namespace rbd
 }  // namespace ct

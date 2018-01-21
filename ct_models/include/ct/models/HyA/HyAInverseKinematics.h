@@ -22,7 +22,7 @@ template <typename SCALAR = double>
 class HyAInverseKinematics : InverseKinematicsBase<6, SCALAR>
 {
 public:
-    virtual std::vector<typename tpl::JointState<6, SCALAR>::Position> computeInverseKinematics(
+    virtual std::vector<typename JointState<6, SCALAR>::Position> computeInverseKinematics(
         const tpl::RigidBodyPose<SCALAR>& eeBasePose,
         const std::vector<SCALAR>& freeJoints = std::vector<SCALAR>()) const
     {
@@ -37,7 +37,7 @@ public:
             freeJoints.size() > 0 ? freeJoints.data() : nullptr, solutions);
 
         size_t num_solutions = solutions.GetNumSolutions();
-        std::vector<typename tpl::JointState<6, SCALAR>::Position> res(solutions.GetNumSolutions());
+        std::vector<typename JointState<6, SCALAR>::Position> res(solutions.GetNumSolutions());
 
         for (size_t i = 0u; i < num_solutions; ++i)
         {
@@ -48,7 +48,7 @@ public:
         return res;
     }
 
-    virtual std::vector<typename tpl::JointState<6, SCALAR>::Position> computeInverseKinematics(
+    virtual std::vector<typename JointState<6, SCALAR>::Position> computeInverseKinematics(
         const tpl::RigidBodyPose<SCALAR>& eeWorldPose,
         const tpl::RigidBodyPose<SCALAR>& baseWorldPose,
         const std::vector<SCALAR>& freeJoints = std::vector<SCALAR>()) const

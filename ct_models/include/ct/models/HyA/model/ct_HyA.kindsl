@@ -157,7 +157,7 @@ link Wrist_FE {
 	children {}
 	frames {
 	   fr_ee {
-	       translation = (0.03, 0.0, 0.0)
+	       translation = (0.03, 0.0, 0.0) ; offset to end-effector
 	       rotation    = (0.0, 0.0, 0.0)
 	   }
 	   fr_Wrist_FE_COM {

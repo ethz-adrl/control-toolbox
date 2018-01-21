@@ -76,6 +76,14 @@ public:
         setFromRotationQuaternion(orientationQuat);
     }
 
+    //! construct a RigidBodyPose from a rotation quaternion and a position vector
+    RigidBodyPose(const Eigen::Quaternion<SCALAR>& orientationQuat,
+        const Eigen::Matrix<SCALAR, 3, 1>& position,
+        STORAGE_TYPE storage = EULER)
+        : RigidBodyPose(kindr::RotationQuaternion<SCALAR>(orientationQuat), Position3Tpl(position))
+    {
+    }
+
     //! construct a RigidBodyPose from a homogeneous transformation matrix
     RigidBodyPose(const Matrix4Tpl& homTransform, STORAGE_TYPE storage = EULER)
         : storage_(storage),
@@ -413,8 +421,8 @@ private:
 
 }  // namespace tpl
 
+// convenience typedef (required)
 typedef tpl::RigidBodyPose<double> RigidBodyPose;
-
 
 }  // namespace rbd
 }  // namespace ct

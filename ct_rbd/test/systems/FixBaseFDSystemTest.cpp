@@ -43,11 +43,12 @@ TEST(FixBaseFDSystemTest, ForwardDynamicsTest)
 
 TEST(FixBaseFDSystemTest, ActuatorDynamicsTest)
 {
-    const size_t rbd_state_dim = FixBaseFDSystem<TestIrb4600::Dynamics>::STATE_DIM;
     const size_t njoints = TestIrb4600::Dynamics::NJOINTS;
     const size_t actuator_state_dim = 2 * njoints;
 
-    const size_t state_dim = rbd_state_dim + actuator_state_dim;
+    using RobotState_t = FixBaseRobotState<njoints, actuator_state_dim>;
+
+    const size_t state_dim = RobotState_t::NSTATE;
 
     // generate actuator dynamics
     const double w_n = 2;
@@ -88,11 +89,11 @@ TEST(FixBaseFDSystemTest, ActuatorDynamicsTest)
     std::cout << "___________________________________________________________________________" << std::endl;
 
 
-    TestIrb4600::Dynamics::RBDState_t rbdState = combinedDynamics->RBDStateFromVector(state);
-    std::cout << "Integrated joint positions: " << rbdState.joints().getPositions().transpose() << std::endl;
-    std::cout << "Integrated joint velocities: " << rbdState.joints().getVelocities().transpose() << std::endl;
+    RobotState_t::JointState_t jointState = RobotState_t::jointStateFromVector(state);
+    std::cout << "Integrated joint positions: " << jointState.getPositions().transpose() << std::endl;
+    std::cout << "Integrated joint velocities: " << jointState.getVelocities().transpose() << std::endl;
 
-    ct::core::StateVector<actuator_state_dim> actState = combinedDynamics->actuatorStateFromVector(state);
+    RobotState_t::actuator_state_vector_t actState = RobotState_t::actuatorStateFromVector(state);
     std::cout << "Integrated actuator state: " << actState.transpose() << std::endl;
     std::cout << "___________________________________________________________________________" << std::endl;
 

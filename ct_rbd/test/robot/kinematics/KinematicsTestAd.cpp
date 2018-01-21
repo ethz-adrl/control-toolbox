@@ -27,7 +27,7 @@ TEST(TestHyQKinematicsAd, transformTest)
     typedef TestHyQ::tpl::Kinematics<size_type> KinTpl_t;
     KinTpl_t kynTpl;
 
-    tpl::JointState<TestHyQ::tpl::Kinematics<size_type>::NJOINTS, size_type> hyqJointState;
+    JointState<TestHyQ::tpl::Kinematics<size_type>::NJOINTS, size_type> hyqJointState;
     tpl::RigidBodyPose<size_type> hyqPose;
     Eigen::Matrix<size_type, 3, 1> vec3Tpl;
 

@@ -38,14 +38,14 @@ public:
 
     virtual ActuatorDynamicsSymplectic<NJOINTS, ACT_STATE_DIMS, SCALAR>* clone() const override = 0;
 
-    virtual void computePdot(const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+    virtual void computePdot(const JointState<NJOINTS, SCALAR>& robotJointState,
         const act_state_vector_t& x,
         const act_vel_vector_t& v,
         const core::ControlVector<NJOINTS, SCALAR>& control,
         act_pos_vector_t& pDot) = 0;
 
 
-    virtual void computeVdot(const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+    virtual void computeVdot(const JointState<NJOINTS, SCALAR>& robotJointState,
         const act_state_vector_t& x,
         const act_pos_vector_t& p,
         const core::ControlVector<NJOINTS, SCALAR>& control,
@@ -62,7 +62,7 @@ public:
 	 * @param controlOutput control output (output side of actuator)
 	 */
     virtual core::ControlVector<NJOINTS, SCALAR> computeControlOutput(
-        const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+        const JointState<NJOINTS, SCALAR>& robotJointState,
         const act_state_vector_t& actState) = 0;
 
     /*!
@@ -70,7 +70,7 @@ public:
      * @return the actuator state resulting in the desired control output
      */
     virtual ct::core::StateVector<ACT_STATE_DIMS, SCALAR> computeStateFromOutput(
-        const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& refRobotJointState,
+        const JointState<NJOINTS, SCALAR>& refRobotJointState,
         const core::ControlVector<NJOINTS, SCALAR>& refControl) = 0;
 };
 

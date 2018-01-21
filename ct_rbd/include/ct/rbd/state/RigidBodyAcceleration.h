@@ -88,6 +88,7 @@ protected:
 
 }  // namespace tpl
 
+// convenience typedef (required)
 typedef tpl::RigidBodyAcceleration<double> RigidBodyAcceleration;
 
 }  // namespace rbd

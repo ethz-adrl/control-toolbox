@@ -23,7 +23,7 @@ term0
 
     R
     {
-      scaling 1
+      scaling 0.02
 
       ; motor velocity
 
@@ -93,7 +93,7 @@ x_0
   (1,0)   0.0
 
   ; actuator position
-  (2,0)   0.0
+  (2,0)   -3.14
 }
 
 

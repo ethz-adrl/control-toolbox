@@ -50,18 +50,23 @@ Eigen::Matrix<SCALAR, 3, 3> jacobianCheck(const Eigen::Matrix<SCALAR, 3, 1>& x)
 
 
 /*!
- * Test for just-in-time compilation of the Jacobian and subsequent evaluation of it, with kindr in the loop
+ * Test for just-in-time compilation of the Jacobian and
+ * normal Auto-diff Jacobian, with kindr in the loop
  */
 TEST(KindrJitTest, EulerAnglesTest)
 {
     using derivativesCppadJIT = ct::core::DerivativesCppadJIT<3, 3>;
+    using derivativesCppad = ct::core::DerivativesCppad<3, 3>;
+
     try
     {
         // create a function handle (also works for class methods, lambdas, function pointers, ...)
         typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
+        typename derivativesCppad::FUN_TYPE_AD f_ad = testFunction<derivativesCppad::AD_SCALAR>;
 
         // initialize the Auto-Diff Codegen Jacobian
         derivativesCppadJIT jacCG(f);
+        derivativesCppad jacAd(f_ad);
 
         DerivativesCppadSettings settings;
         settings.createJacobian_ = true;
@@ -78,8 +83,8 @@ TEST(KindrJitTest, EulerAnglesTest)
             angles.setRandom();
 
             // verify agains the analytical Jacobian
-
             ASSERT_LT((jacCG.jacobian(angles) - jacobianCheck(angles)).array().abs().maxCoeff(), 1e-10);
+            ASSERT_LT((jacAd.jacobian(angles) - jacobianCheck(angles)).array().abs().maxCoeff(), 1e-10);
         }
     } catch (std::exception& e)
     {

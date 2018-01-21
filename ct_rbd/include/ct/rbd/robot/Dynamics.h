@@ -56,7 +56,7 @@ public:
 
 
     // NSTATE either includes the base or is just the joint state
-    static const size_t NSTATE = FB * tpl::RBDState<NJOINTS, SCALAR>::NSTATE + (1 - FB) * 2 * NJOINTS;
+    static const size_t NSTATE = FB * RBDState<NJOINTS, SCALAR>::NSTATE + (1 - FB) * 2 * NJOINTS;
     static const size_t N_EE = NEE;
 
     //temporary definitions, ideally this should come from RBD
@@ -65,10 +65,10 @@ public:
     typedef Eigen::Matrix<SCALAR, 6, 1> Vector6d_t;
     typedef Vector6d_t ForceVector_t;
 
-    typedef tpl::RBDState<NJOINTS, SCALAR> RBDState_t;
-    typedef tpl::RBDAcceleration<NJOINTS, SCALAR> RBDAcceleration_t;
-    typedef tpl::JointState<NJOINTS, SCALAR> JointState_t;
-    typedef tpl::JointAcceleration<NJOINTS, SCALAR> JointAcceleration_t;
+    typedef RBDState<NJOINTS, SCALAR> RBDState_t;
+    typedef RBDAcceleration<NJOINTS, SCALAR> RBDAcceleration_t;
+    typedef JointState<NJOINTS, SCALAR> JointState_t;
+    typedef JointAcceleration<NJOINTS, SCALAR> JointAcceleration_t;
     typedef tpl::RigidBodyAcceleration<SCALAR> RigidBodyAcceleration_t;
 
     // currently assumes our input is the joint dimension and we only affect acceleration

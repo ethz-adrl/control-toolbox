@@ -36,7 +36,7 @@ public:
     using SCALAR = ct::core::ADCGScalar;
     using BASE = optcon::TermBase<STATE_DIM, CONTROL_DIM, double, ct::core::ADCGScalar>;
 
-    using RBDStateTpl = ct::rbd::tpl::RBDState<KINEMATICS::NJOINTS, SCALAR>;
+    using RBDStateTpl = ct::rbd::RBDState<KINEMATICS::NJOINTS, SCALAR>;
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -208,7 +208,7 @@ private:
         using Matrix3Tpl = Eigen::Matrix<SC, 3, 3>;
 
         // transform the robot state vector into a CT RBDState
-        tpl::RBDState<KINEMATICS::NJOINTS, SC> rbdState = setStateFromVector(x);
+        RBDState<KINEMATICS::NJOINTS, SC> rbdState = setStateFromVector(x);
 
         // position difference in world frame
         Eigen::Matrix<SC, 3, 1> xDiff =

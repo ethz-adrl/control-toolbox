@@ -4,8 +4,7 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#ifndef RBDACCELERATION_H_
-#define RBDACCELERATION_H_
+#pragma once
 
 #include "JointAcceleration.h"
 #include "RBDState.h"
@@ -13,7 +12,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 namespace ct {
 namespace rbd {
-namespace tpl {
 
 /**
  * @class RBDAcceleration
@@ -22,7 +20,7 @@ namespace tpl {
  *
  * @brief joint acceleration and base acceleration
  */
-template <size_t NJOINTS, typename SCALAR>
+template <size_t NJOINTS, typename SCALAR = double>
 class RBDAcceleration
 {
 public:
@@ -37,7 +35,7 @@ public:
 
     typedef Eigen::Matrix<SCALAR, NDOF, 1> coordinate_vector_t;
 
-    typedef RigidBodyAcceleration<SCALAR> RigidBodyAcceleration_t;
+    typedef tpl::RigidBodyAcceleration<SCALAR> RigidBodyAcceleration_t;
 
 
     RBDAcceleration() { setZero(); }
@@ -112,13 +110,5 @@ protected:
     JointAcceleration<NJOINTS, SCALAR> jointStateDerivative_;
 };
 
-}  // namespace tpl
-
-template <size_t NJOINTS>
-using RBDAcceleration = tpl::RBDAcceleration<NJOINTS, double>;
-
 }  // namespace rbd
 }  // namespace ct
-
-
-#endif /* RBDACCELERATION_H_ */

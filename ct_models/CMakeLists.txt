@@ -19,6 +19,7 @@ set(ct_model_libs
     HyAJacInverseDynamicsReverse
     hya_ik
     irb4600_ik
+    InvertedPendulumActDynLinearizedForward
 )
 
 if(BUILD_HYQ_FULL)
@@ -44,6 +45,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+set(IP_CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/InvertedPendulum/codegen")
 set(HYA_CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/HyA/codegen")
 set(HYQ_CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/HyQ/codegen")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/CodegenOutputDirs.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/CodegenOutputDirs.h)
@@ -118,6 +120,14 @@ if (BUILD_HYQ_LINEARIZATION_TIMINGS)
                           HyQForwardZero
                           ${catkin_LIBRARIES})
 endif(BUILD_HYQ_LINEARIZATION_TIMINGS)
+
+########## Inverted Pendulum #########
+#add_executable(InvertedPendulumWithActuatorCodeGen src/InvertedPendulum/codegen/InvertedPendulumWithActuatorCodeGen.cpp)
+#target_link_libraries(InvertedPendulumWithActuatorCodeGen ${catkin_LIBRARIES})
+
+add_library(InvertedPendulumActDynLinearizedForward include/ct/models/InvertedPendulum/codegen/InvertedPendulumActDynLinearizedForward.cpp)
+target_link_libraries(InvertedPendulumActDynLinearizedForward ${catkin_LIBRARIES})
+
 
 ################ HyA #################
 #add_executable(HyALinearizationCodegen src/HyA/codegen/HyALinearizationCodeGen.cpp)

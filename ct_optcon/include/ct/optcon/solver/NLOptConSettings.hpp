@@ -192,7 +192,8 @@ public:
           lineSearchSettings(),
           debugPrint(false),
           printSummary(true),
-          useSensitivityIntegrator(false)
+          useSensitivityIntegrator(false),
+		  logToMatlab(false)
     {
     }
 
@@ -222,6 +223,7 @@ public:
     bool debugPrint;
     bool printSummary;
     bool useSensitivityIntegrator;
+    bool logToMatlab;  //! log to matlab (true/false)
 
 
     //! compute the number of discrete time steps for an arbitrary input time interval
@@ -269,6 +271,7 @@ public:
         std::cout << "debugPrint:\t" << debugPrint << std::endl;
         std::cout << "printSummary:\t" << printSummary << std::endl;
         std::cout << "useSensitivityIntegrator:\t" << useSensitivityIntegrator << std::endl;
+        std::cout << "logToMatlab:\t" << logToMatlab << std::endl;
         std::cout << std::endl;
 
         lineSearchSettings.print();
@@ -411,6 +414,12 @@ public:
         try
         {
             useSensitivityIntegrator = pt.get<bool>(ns + ".useSensitivityIntegrator");
+        } catch (...)
+        {
+        }
+        try
+        {
+            logToMatlab = pt.get<bool>(ns + ".logToMatlab");
         } catch (...)
         {
         }
