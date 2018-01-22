@@ -30,10 +30,12 @@ public:
         IkSolutionList<double> solutions;
 
         if (size_t(hya_ik::GetNumFreeParameters()) != freeJoints.size())
-            throw "Error";
+            throw std::runtime_error("Error");
 
-        hya_ik::ComputeIk(eeBasePose.position().toImplementation().data(),
-            eeBasePose.getRotationMatrix().toImplementation().data(),
+        // Data needs to be in row-major form.
+        Eigen::Matrix<SCALAR, 3, 3, Eigen::RowMajor> eeBaseRotationRowMajor =
+            eeBasePose.getRotationMatrix().toImplementation();
+        hya_ik::ComputeIk(eeBasePose.position().toImplementation().data(), eeBaseRotationRowMajor.data(),
             freeJoints.size() > 0 ? freeJoints.data() : nullptr, solutions);
 
         size_t num_solutions = solutions.GetNumSolutions();

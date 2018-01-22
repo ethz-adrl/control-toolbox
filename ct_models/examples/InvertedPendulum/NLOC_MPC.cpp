@@ -56,7 +56,7 @@ public:
             new ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>);
         bool success = mpc_.finishIteration(x_temp, sim_time, *new_controller, controller_ts_);
         if (!success)
-            throw "Failed to finish iteration.";
+            throw std::runtime_error("Failed to finish iteration.");
 
         control_mtx_.lock();
         controller_ = new_controller;

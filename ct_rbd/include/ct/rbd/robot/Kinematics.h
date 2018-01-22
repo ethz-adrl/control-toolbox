@@ -230,11 +230,11 @@ public:
         size_t solverID = 0)
     {
         if (solverID >= 100)
-            throw "Solver ID must be less than 100.";
+            throw std::runtime_error("Solver ID must be less than 100.");
 
         size_t hash = eeID * 100 + solverID;
         if (ikSolvers_.find(hash) != ikSolvers_.end())
-            throw "Solver with the same eeID and solverID already present.";
+            throw std::runtime_error("Solver with the same eeID and solverID already present.");
         ikSolvers_[hash] = solver;
     }
 
@@ -242,7 +242,7 @@ public:
         const size_t solverID = 0) const
     {
         if (solverID >= 100)
-            throw "Solver ID must be less than 100.";
+            throw std::runtime_error("Solver ID must be less than 100.");
         size_t hash = eeID * 100 + solverID;
         return ikSolvers_[hash];
     }

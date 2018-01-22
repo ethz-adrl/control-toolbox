@@ -51,8 +51,8 @@ public:
           stop_(false)
     {
         system_->getController(controller_);
-        if (sim_dt_ <= 0 || control_dt_ <= 0) throw "Step sizes must be positive.";
-        if (sim_dt_ > control_dt_) throw "Simulation step must be smaller than the control step.";
+        if (sim_dt_ <= 0 || control_dt_ <= 0) throw std::runtime_error("Step sizes must be positive.");
+        if (sim_dt_ > control_dt_) throw std::runtime_error("Simulation step must be smaller than the control step.");
     }
 
     //! copy constructor
