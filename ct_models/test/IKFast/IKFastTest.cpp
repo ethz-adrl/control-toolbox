@@ -37,12 +37,15 @@ TEST(HyAIKTest, IKFastTest)
     ct::rbd::HyAInverseKinematics<double> hya_ik_solver;
     ct::rbd::HyA::Kinematics kin;
     typename ct::rbd::JointState<ct::rbd::HyA::Kinematics::NJOINTS, double>::Position pos;
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 100; ++i) {
         pos.setRandom();
 
         auto ee_pose = kin.getEEPoseInBase(0, pos);
 
-        for (const auto& joints : hya_ik_solver.computeInverseKinematics(ee_pose))
+        std::vector<typename ct::rbd::JointState<ct::rbd::HyA::Kinematics::NJOINTS, double>::Position> solutions =
+            hya_ik_solver.computeInverseKinematics(ee_pose);
+        std::cerr << "Found " << solutions.size() << " valid solutions." << std::endl;
+        for (const auto& joints : solutions)
         {
             auto query_ee_pose = kin.getEEPoseInBase(0, joints);
             ASSERT_LT((query_ee_pose.position().toImplementation() - ee_pose.position().toImplementation()).norm(), 1e-6);
