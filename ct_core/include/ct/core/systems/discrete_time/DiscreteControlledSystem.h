@@ -69,7 +69,7 @@ public:
         : DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type), controller_(controller){};
 
     //! copy constructor
-    DiscreteControlledSystem(const ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>& arg)
+    DiscreteControlledSystem(const DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>& arg)
         : DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg)
     {
         if (arg.controller_)
