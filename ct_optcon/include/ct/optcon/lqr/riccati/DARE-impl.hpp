@@ -52,14 +52,15 @@ DARE<STATE_DIM, CONTROL_DIM, SCALAR>::computeSteadyStateRiccatiMatrix(const stat
         dynamicRDE_.iterateRobust(Q, R, A, B, P, K);
         diff = (P - P_prev).cwiseAbs().maxCoeff();
         if (!K.allFinite())
-            throw "DARE : Failed to converge";
+            throw std::runtime_error("DARE : Failed to converge");
         numIter++;
     }
 
     if (diff >= eps)
-        throw "DARE : Failed to converge";
+        throw std::runtime_error("DARE : Failed to converge");
 
-    if (verbose) {
+    if (verbose)
+    {
         std::cout << "DARE : converged after " << numIter << " iterations out of a maximum of " << maxIter << std::endl;
         std::cout << "Resulting K: " << K << std::endl;
     }

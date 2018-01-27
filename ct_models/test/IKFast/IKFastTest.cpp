@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
 This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus St√§uble, Diego Pardo, Farbod Farshidian
+Authors:  Michael Neunert, Markus Giftthaler, Markus St‰uble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -12,36 +12,23 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <gtest/gtest.h>
 
-
-// compare the forward kinematics implementations if IKFast and the RobCoGen
-TEST(HyAIKTest, DISABLED_FKTest)
+TEST(HyAIKTest, FKTest)
 {
-    ct::rbd::HyA::Kinematics kin_robcogen;  // robcogen kinematics
-    size_t eeInd = 0;
-
-    typename ct::rbd::JointState<6, double>::Position pos;
-
-    size_t nTests = 100;
-
-    for (size_t i = 0; i < nTests; i++)
-    {
-        // set a random joint position
+    ct::rbd::HyAInverseKinematics<double> hya_ik_solver;
+    ct::rbd::HyA::Kinematics kin;
+    typename ct::rbd::JointState<ct::rbd::HyA::Kinematics::NJOINTS, double>::Position pos;
+    for (int i = 0; i < 10; ++i) {
         pos.setRandom();
 
-        // compute robcogen fk
-        ct::rbd::RigidBodyPose testPose = kin_robcogen.getEEPoseInBase(eeInd, pos);
+        auto ee_pose = kin.getEEPoseInBase(0, pos);
 
-        // compute IKfast fk
-        ct::rbd::RigidBodyPose ikFastPose;
-        kindr::RotationMatrix<double> ikFastRotMat;
-        hya_ik::ComputeFk(
-            pos.data(), ikFastPose.position().toImplementation().data(), ikFastRotMat.toImplementation().data());
+        Eigen::Vector3d ee_pos;
+        Eigen::Matrix<double, 3, 3, Eigen::RowMajor> ee_rot;
+        // Data needs to be in row-major form.
+        hya_ik::ComputeFk(pos.data(), ee_pos.data(), ee_rot.data());
 
-        ikFastPose.setFromRotationMatrix(ikFastRotMat);
-
-        std::cout << testPose.position() << std::endl;
-        std::cout << ikFastPose.position() << std::endl;
-        ASSERT_TRUE(testPose.isNear(ikFastPose));
+        ASSERT_LT((ee_pos - ee_pose.position().toImplementation()).norm(), 1e-6);
+        ASSERT_LT((ee_rot - ee_pose.getRotationMatrix().toImplementation()).norm(), 1e-6);
     }
 }
 
@@ -49,49 +36,50 @@ TEST(HyAIKTest, IKFastTest)
 {
     ct::rbd::HyAInverseKinematics<double> hya_ik_solver;
     ct::rbd::HyA::Kinematics kin;
-    typename ct::rbd::JointState<6, double>::Position pos;
-    pos << 0, 1, 0, -1, 1, -1;
+    typename ct::rbd::JointState<ct::rbd::HyA::Kinematics::NJOINTS, double>::Position pos;
+    for (int i = 0; i < 100; ++i) {
+        pos.setRandom();
 
-    auto ret = kin.getEEPoseInBase(0, pos);
+        auto ee_pose = kin.getEEPoseInBase(0, pos);
 
-    std::cout << ret.position() << std::endl;
-
-    std::vector<double> joints{0, 1, 0, -1, 1, -1}, eetrans(3), eerot(9);
-    hya_ik::ComputeFk(joints.data(), eetrans.data(), eerot.data());
-
-    for (auto i : eetrans)
-    {
-        std::cout << i << std::endl;
-    }
-
-    for (const auto& i : hya_ik_solver.computeInverseKinematics(ret))
-    {
-        std::cout << i << std::endl << std::endl;
+        std::vector<typename ct::rbd::JointState<ct::rbd::HyA::Kinematics::NJOINTS, double>::Position> solutions =
+            hya_ik_solver.computeInverseKinematics(ee_pose);
+        std::cerr << "Found " << solutions.size() << " valid solutions." << std::endl;
+        for (const auto& joints : solutions)
+        {
+            auto query_ee_pose = kin.getEEPoseInBase(0, joints);
+            ASSERT_LT((query_ee_pose.position().toImplementation() - ee_pose.position().toImplementation()).norm(), 1e-6);
+            ASSERT_LT(
+                (query_ee_pose.getRotationMatrix().toImplementation() - ee_pose.getRotationMatrix().toImplementation())
+                    .norm(),
+                1e-6);
+        }
     }
 }
 
 TEST(Irb4600IKTest, IKFastTest)
 {
     ct::rbd::Irb4600InverseKinematics<double> irb4600_ik_solver;
-    ct::rbd::HyA::Kinematics kin;
     typename ct::rbd::JointState<6, double>::Position pos;
-    pos << 0, 1, 0, -1, 1, -1;
-
-    auto ret = kin.getEEPoseInBase(0, pos);
-
-    std::cout << ret.position() << std::endl;
-
-    std::vector<double> joints{0, 1, 0, -1, 1, -1}, eetrans(3), eerot(9);
-    irb4600_ik::ComputeFk(joints.data(), eetrans.data(), eerot.data());
-
-    for (auto i : eetrans)
+    for (int i = 0; i < 10; ++i)
     {
-        std::cout << i << std::endl;
-    }
+        pos.setRandom();
 
-    for (const auto& i : irb4600_ik_solver.computeInverseKinematics(ret))
-    {
-        std::cout << i << std::endl << std::endl;
+        Eigen::Vector3d ee_pos;
+        Eigen::Matrix<double, 3, 3, Eigen::RowMajor> ee_rot;
+        // Data needs to be in row-major form.
+        irb4600_ik::ComputeFk(pos.data(), ee_pos.data(), ee_rot.data());
+
+        ct::rbd::RigidBodyPose ee_pose;
+        ee_pose.position().toImplementation() = ee_pos;
+        ee_pose.setFromRotationMatrix(kindr::RotationMatrix<double>(ee_rot));
+
+        for (const auto& joints : irb4600_ik_solver.computeInverseKinematics(ee_pose))
+        {
+            irb4600_ik::ComputeFk(joints.data(), ee_pos.data(), ee_rot.data());
+            ASSERT_LT((ee_pos - ee_pose.position().toImplementation()).norm(), 1e-3);
+            ASSERT_LT((ee_rot - ee_pose.getRotationMatrix().toImplementation()).norm(), 1e-3);
+        }
     }
 }
 
