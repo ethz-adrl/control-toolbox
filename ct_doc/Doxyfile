@@ -32,7 +32,7 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = "Control Toolbox"
+PROJECT_NAME           = ct
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
@@ -44,7 +44,7 @@ PROJECT_NUMBER         = v2.1
 # for a project that appears at the top of each page and should give viewer a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "The Control Toolbox - an efficient library for Robotics, Optimal and Model Predictive Control"
+PROJECT_BRIEF          = "Control Toolbox"
 
 # With the PROJECT_LOGO tag one can specify an logo or icon that is included in
 # the documentation. The maximum height of the logo should not exceed 55 pixels
@@ -415,7 +415,7 @@ EXTRACT_ALL            = YES
 # be included in the documentation.
 # The default value is: NO.
 
-EXTRACT_PRIVATE        = YES
+EXTRACT_PRIVATE        = NO
 
 # If the EXTRACT_PACKAGE tag is set to YES all members with package or internal
 # scope will be included in the documentation.
@@ -427,7 +427,7 @@ EXTRACT_PACKAGE        = NO
 # included in the documentation.
 # The default value is: NO.
 
-EXTRACT_STATIC         = YES
+EXTRACT_STATIC         = NO
 
 # If the EXTRACT_LOCAL_CLASSES tag is set to YES classes (and structs) defined
 # locally in source files will be included in the documentation. If set to NO
@@ -443,7 +443,7 @@ EXTRACT_LOCAL_CLASSES  = YES
 # included.
 # The default value is: NO.
 
-EXTRACT_LOCAL_METHODS  = YES
+EXTRACT_LOCAL_METHODS  = NO
 
 # If this flag is set to YES, the members of anonymous namespaces will be
 # extracted and appear in the documentation as a namespace called
@@ -758,15 +758,17 @@ WARN_LOGFILE           =
 # https://stackoverflow.com/questions/18001897/how-do-you-order-doxygen-custom-pages
 
 INPUT                  = mainpage.dox \
-						installation.dox \
-						getting_started.dox \
-						core_tutorial.dox \
-						optcon_tutorial.dox \
-						performance.dox \
-						application_examples.dox \
-						changelog.dox \
-						developer_info.dox
-						
+            installation.dox \
+            getting_started.dox \
+            core_tutorial.dox \
+            optcon_tutorial.dox \
+            rbd_tutorial.dox \
+            ik_tutorial.dox \
+            performance.dox \
+            application_examples.dox \
+            changelog.dox \
+            developer_info.dox
+
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -838,19 +840,19 @@ EXCLUDE_SYMBOLS        =
 # command).
 
 EXAMPLE_PATH           = ../examples \
-						 ../../ct_core/examples \
-						 ../../ct_core/test \
-						 ../../ct_optcon/examples \
-						 ../../ct_optcon/test \
-						 ../../ct_rbd/test \
-						 ../../ct_models/test
+             ../../ct_core/examples \
+             ../../ct_core/test \
+             ../../ct_optcon/examples \
+             ../../ct_optcon/test \
+             ../../ct_rbd/test \
+             ../../ct_models/test
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
 # *.h) to filter out the source-files in the directories. If left blank all
 # files are included.
 
-EXAMPLE_PATTERNS       = 
+EXAMPLE_PATTERNS       =
 
 # If the EXAMPLE_RECURSIVE tag is set to YES then subdirectories will be
 # searched for input files to be used with the \include or \dontinclude commands
@@ -2002,15 +2004,15 @@ SKIP_FUNCTION_MACROS   = YES
 # run, you must also specify the path to the tagfile here.
 
 TAGFILES               = tags/ct_core.tag=../../../ct_core/doc/html \
-					 	 tags/ct_optcon.tag=../../../ct_optcon/doc/html \
-					 	 tags/ct_rbd.tag=../../../ct_rbd/doc/html \
-					 	 tags/ct_models.tag=../../../ct_models/doc/html
+             tags/ct_optcon.tag=../../../ct_optcon/doc/html \
+             tags/ct_rbd.tag=../../../ct_rbd/doc/html \
+             tags/ct_models.tag=../../../ct_models/doc/html
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create a
 # tag file that is based on the input files it reads. See section "Linking to
 # external documentation" for more information about the usage of tag files.
 
-GENERATE_TAGFILE       = 
+GENERATE_TAGFILE       =
 
 # If the ALLEXTERNALS tag is set to YES all external class will be listed in the
 # class index. If set to NO only the inherited external classes will be listed.
