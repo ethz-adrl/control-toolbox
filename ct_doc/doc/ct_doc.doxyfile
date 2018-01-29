@@ -758,16 +758,16 @@ WARN_LOGFILE           =
 # https://stackoverflow.com/questions/18001897/how-do-you-order-doxygen-custom-pages
 
 INPUT                  = mainpage.dox \
-            installation.dox \
-            getting_started.dox \
-            core_tutorial.dox \
-            optcon_tutorial.dox \
-            rbd_tutorial.dox \
-            ik_tutorial.dox \
-            performance.dox \
-            application_examples.dox \
-            changelog.dox \
-            developer_info.dox
+                         installation.dox \
+                         getting_started.dox \
+                         core_tutorial.dox \
+                         optcon_tutorial.dox \
+                         rbd_tutorial.dox \
+                         ik_tutorial.dox \
+                         performance.dox \
+                         application_examples.dox \
+                         changelog.dox \
+                         developer_info.dox
 
 
 # This tag can be used to specify the character encoding of the source files
@@ -840,12 +840,12 @@ EXCLUDE_SYMBOLS        =
 # command).
 
 EXAMPLE_PATH           = ../examples \
-             ../../ct_core/examples \
-             ../../ct_core/test \
-             ../../ct_optcon/examples \
-             ../../ct_optcon/test \
-             ../../ct_rbd/test \
-             ../../ct_models/test
+                         ../../ct_core/examples \
+                         ../../ct_core/test \
+                         ../../ct_optcon/examples \
+                         ../../ct_optcon/test \
+                         ../../ct_rbd/test \
+                         ../../ct_models/test
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
@@ -2004,9 +2004,9 @@ SKIP_FUNCTION_MACROS   = YES
 # run, you must also specify the path to the tagfile here.
 
 TAGFILES               = tags/ct_core.tag=../../../ct_core/doc/html \
-             tags/ct_optcon.tag=../../../ct_optcon/doc/html \
-             tags/ct_rbd.tag=../../../ct_rbd/doc/html \
-             tags/ct_models.tag=../../../ct_models/doc/html
+                         tags/ct_optcon.tag=../../../ct_optcon/doc/html \
+                         tags/ct_rbd.tag=../../../ct_rbd/doc/html \
+                         tags/ct_models.tag=../../../ct_models/doc/html
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create a
 # tag file that is based on the input files it reads. See section "Linking to
