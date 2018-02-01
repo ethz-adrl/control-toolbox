@@ -28,8 +28,8 @@ public:
     virtual typename JointState<NJOINTS, SCALAR>::Position computeInverseKinematicsCloseTo(
         const tpl::RigidBodyPose<SCALAR> &eeWorldPose,
         const tpl::RigidBodyPose<SCALAR> &baseWorldPose,
-        const std::vector<SCALAR> &freeJoints,
-        const typename JointState<NJOINTS, SCALAR>::Position &queryJointPositions) const
+        const typename JointState<NJOINTS, SCALAR>::Position &queryJointPositions,
+        const std::vector<SCALAR> &freeJoints = std::vector<SCALAR>()) const
     {
         auto solutions = computeInverseKinematics(eeWorldPose, baseWorldPose, freeJoints);
         if (!solutions.size()) throw std::runtime_error("No inverse kinematics solutions found!");
