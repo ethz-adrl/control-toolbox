@@ -82,10 +82,12 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "filter/DisturbanceObserver.h"
 #include "filter/DisturbedSystem.h"
 #include "filter/ExtendedKalmanFilter.h"
+#include "filter/EstimatorBase.h"
 #include "filter/FilterBase.h"
 #include "filter/LinearMeasurementModel.h"
 #include "filter/MeasurementModelBase.h"
 #include "filter/StateObserver.h"
+#include "filter/SteadyStateKalmanFilter.h"
 #include "filter/SystemModelBase.h"
 
 // keep standard header guard (easy debugging)

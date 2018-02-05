@@ -47,8 +47,6 @@ public:
         const Eigen::Matrix<SCALAR, STATE_DIM, 1> xNext = Eigen::Matrix<SCALAR, STATE_DIM, 1>::Zero();
         sensApprox_.getAandB(state, control.toImplementation(), xNext, int(t / dt_ * (numSubsteps_ + 1) + 0.5),
             numSubsteps_ + 1, A_, B_);
-        std::cerr << "A\n" << A_ << std::endl;
-        std::cerr << "B\n" << B_ << std::endl;
     }
     ct::core::StateVector<STATE_DIM, SCALAR> computeDynamics(
         const ct::core::StateVector<STATE_DIM, SCALAR>& state,

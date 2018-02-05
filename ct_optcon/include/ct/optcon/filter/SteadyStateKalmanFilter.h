@@ -12,16 +12,17 @@ namespace ct {
 namespace optcon {
 
 template <size_t STATE_DIM_T, typename SCALAR = double>
-class ExtendedKalmanFilter : public EstimatorBase<STATE_DIM_T, SCALAR>
+class SteadyStateKalmanFilter : public EstimatorBase<STATE_DIM_T, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    ExtendedKalmanFilter(
+    SteadyStateKalmanFilter(
         const ct::core::StateVector<STATE_DIM_T, SCALAR>& x0 = ct::core::StateVector<STATE_DIM_T, SCALAR>::Zero(),
-        const Eigen::Matrix<SCALAR, STATE_DIM_T, STATE_DIM_T>& P0 = Eigen::Matrix<SCALAR, STATE_DIM_T, STATE_DIM_T>::Identity())
-        : EstimatorBase<STATE_DIM_T, SCALAR>(x0), P_(P0)
+        size_t maxDAREIterations = 1000)
+        : EstimatorBase<STATE_DIM_T, SCALAR>(x0), maxDAREIterations_(maxDAREIterations)
     {
+        P_.setIdentity();
     }
 
     template <size_t CONTROL_DIM>
@@ -32,7 +33,8 @@ public:
     {
         f.updateJacobians(this->x_, u, t);
         this->x_ = f.computeDynamics(this->x_, u, t);
-        P_       = (f.dFdx() * P_ * f.dFdx().transpose()) + f.dFdv() * Q * f.dFdv().transpose();
+        Q_       = Q;
+        A_       = f.dFdx();
         return this->x_;
     }
 
@@ -42,18 +44,28 @@ public:
         const Eigen::Matrix<SCALAR, OBS_DIM, OBS_DIM>& R)
     {
         h.updateJacobians(this->x_);
-        const Eigen::Matrix<SCALAR, STATE_DIM_T, OBS_DIM> K =
-            P_ * h.dHdx().transpose() *
-            (h.dHdx() * P_ * h.dHdx().transpose() + h.dHdw() * R * h.dHdw().transpose()).inverse();
+        Eigen::Matrix<SCALAR, OBS_DIM, STATE_DIM_T> K;
 
-        this->x_ += K * (y - h.computeMeasurement(this->x_));
-        P_ -= (K * h.dHdx() * P_).eval();
+        DARE<STATE_DIM_T, OBS_DIM, SCALAR> dare;
+        try
+        {
+            P_ = dare.computeSteadyStateRiccatiMatrix(
+                Q_, R, A_.transpose(), h.dHdx().transpose(), P_, K, false, 1e-6, maxDAREIterations_);
+        } catch (...)
+        {
+            throw;
+        }
 
+        this->x_ += K.transpose() * (y - h.computeMeasurement(this->x_));
         return this->x_;
     }
 
+    void setMaxDAREIterations(size_t maxDAREIterations) { maxDAREIterations_ = maxDAREIterations; }
 private:
+    size_t maxDAREIterations_;
     Eigen::Matrix<SCALAR, STATE_DIM_T, STATE_DIM_T> P_;
+    Eigen::Matrix<SCALAR, STATE_DIM_T, STATE_DIM_T> A_;
+    Eigen::Matrix<SCALAR, STATE_DIM_T, STATE_DIM_T> Q_;
 };
 
 }  // optcon
