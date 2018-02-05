@@ -13,6 +13,7 @@ Makefile
 */.settings/*
 */doc/html/
 */doc/latex/
+Doxyfile
 *.orig
 templateDir.h
 exampleDir.h
