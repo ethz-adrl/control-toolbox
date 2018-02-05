@@ -77,6 +77,16 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "mpc/policyhandler/PolicyHandler-impl.h"
 #include "mpc/policyhandler/default/StateFeedbackPolicyHandler-impl.h"
 
+//filter
+#include "filter/CTSystemModel.h"
+#include "filter/DisturbanceObserver.h"
+#include "filter/DisturbedSystem.h"
+#include "filter/ExtendedKalmanFilter.h"
+#include "filter/FilterBase.h"
+#include "filter/LinearMeasurementModel.h"
+#include "filter/MeasurementModelBase.h"
+#include "filter/StateObserver.h"
+#include "filter/SystemModelBase.h"
 
 // keep standard header guard (easy debugging)
 // header guard is identical to the one in optcon-prespec.h
