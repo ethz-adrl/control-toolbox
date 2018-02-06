@@ -17,39 +17,36 @@ class LTIMeasurementModel : public LinearMeasurementModel<OBS_DIM, STATE_DIM, SC
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    using Base = LinearMeasurementModel<OBS_DIM, STATE_DIM, SCALAR>;
+    using typename Base::state_vector_t;
+    using typename Base::output_vector_t;
+    using typename Base::output_matrix_t;
+    using typename Base::output_state_matrix_t;
+    using typename Base::Time_t;
+
     LTIMeasurementModel()
     {
         dHdx_.setZero();
         dHdw_.setIdentity();
     }
 
-    LTIMeasurementModel(const ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, SCALAR>& C,
-        const ct::core::OutputMatrix<OBS_DIM, SCALAR>& dHdw = ct::core::OutputMatrix<OBS_DIM, SCALAR>::Identity())
+    LTIMeasurementModel(const output_state_matrix_t& C, const output_matrix_t& dHdw = output_matrix_t::Identity())
         : dHdx_(C)
     {
     }
-    ct::core::OutputVector<OBS_DIM, SCALAR> computeMeasurement(const ct::core::StateVector<STATE_DIM, SCALAR>& state,
-        const ct::core::Time& t = 0) override
+    output_vector_t computeMeasurement(const state_vector_t& state, const Time_t& t = 0) override
     {
         return dHdx_ * state;
     }
 
-    ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, SCALAR> computeDerivativeState(
-        const ct::core::StateVector<STATE_DIM, SCALAR>& state,
-        const ct::core::Time& t) override
+    output_state_matrix_t computeDerivativeState(const state_vector_t& state, const Time_t& t) override
     {
         return dHdx_;
     }
-    ct::core::OutputMatrix<OBS_DIM, SCALAR> computeDerivativeNoise(
-        const ct::core::StateVector<STATE_DIM, SCALAR>& state,
-        const ct::core::Time& t) override
-    {
-        return dHdw_;
-    }
-
+    output_matrix_t computeDerivativeNoise(const state_vector_t& state, const Time_t& t) override { return dHdw_; }
 protected:
-    ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, SCALAR> dHdx_;
-    ct::core::OutputMatrix<OBS_DIM, SCALAR> dHdw_;
+    output_state_matrix_t dHdx_;
+    output_matrix_t dHdw_;
 };
 
 }  // optcon

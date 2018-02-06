@@ -13,7 +13,9 @@ template <size_t OBS_DIM, size_t STATE_DIM, typename SCALAR = double>
 class MeasurementModelBase
 {
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    using state_vector_t  = ct::core::StateVector<STATE_DIM, SCALAR>;
+    using output_vector_t = ct::core::OutputVector<OBS_DIM, SCALAR>;
+    using Time_t          = ct::core::Time;
 
     virtual ~MeasurementModelBase() {}
     virtual ct::core::OutputVector<OBS_DIM, SCALAR> computeMeasurement(

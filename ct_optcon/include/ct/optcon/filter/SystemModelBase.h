@@ -13,22 +13,25 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class SystemModelBase
 {
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    using state_vector_t   = ct::core::StateVector<STATE_DIM, SCALAR>;
+    using state_matrix_t   = ct::core::StateMatrix<STATE_DIM, SCALAR>;
+    using control_vector_t = ct::core::ControlVector<CONTROL_DIM, SCALAR>;
+    using Time_t           = ct::core::Time;
 
     virtual ~SystemModelBase() {}
-    virtual ct::core::StateVector<STATE_DIM, SCALAR> computeDynamics(
-        const ct::core::StateVector<STATE_DIM, SCALAR>& state,
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& control,
-        ct::core::Time t) = 0;
+    virtual state_vector_t computeDynamics(
+        const state_vector_t& state,
+        const control_vector_t& control,
+        Time_t t) = 0;
 
-    virtual ct::core::StateMatrix<STATE_DIM, SCALAR> computeDerivativeState(
-        const ct::core::StateVector<STATE_DIM, SCALAR>& state,
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& control,
-        ct::core::Time t) = 0;
-    virtual ct::core::StateMatrix<STATE_DIM, SCALAR> computeDerivativeNoise(
-        const ct::core::StateVector<STATE_DIM, SCALAR>& state,
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& control,
-        ct::core::Time t) = 0;
+    virtual state_matrix_t computeDerivativeState(
+        const state_vector_t& state,
+        const control_vector_t& control,
+        Time_t t) = 0;
+    virtual state_matrix_t computeDerivativeNoise(
+        const state_vector_t& state,
+        const control_vector_t& control,
+        Time_t t) = 0;
 };
 
 }  // optcon

@@ -25,6 +25,8 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     static const size_t ESTIMATE_DIM = STATE_DIM + DIST_DIM;
+    using Base = StateObserver<OBS_DIM, ESTIMATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>;
+    using typename Base::Time_t;
 
     DisturbanceObserver() {}
     DisturbanceObserver(std::shared_ptr<DisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>> system,
@@ -35,28 +37,23 @@ public:
         const ESTIMATOR& ekf,
         const ct::core::StateMatrix<ESTIMATE_DIM, SCALAR>& Qaug,
         const ct::core::OutputMatrix<OBS_DIM, SCALAR>& R)
-        : StateObserver<OBS_DIM, ESTIMATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>(system,
-              sensApprox,
-              dt,
-              Caug,
-              ekf,
-              Qaug,
-              R)
+        : Base(system, sensApprox, dt, Caug, ekf, Qaug, R)
     {
     }
 
-    const ct::core::StateVector<ESTIMATE_DIM, SCALAR>& predict(const ct::core::Time& t = 0) override
+    ct::core::StateVector<ESTIMATE_DIM, SCALAR> predict(const Time_t& t = 0) override
     {
         return this->estimator_.template predict<CONTROL_DIM>(
             this->f_, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Zero(), this->Q_, t);
     }
-    const ct::core::StateVector<ESTIMATE_DIM, SCALAR>& update(const ct::core::OutputVector<OBS_DIM, SCALAR>& y,
-        const ct::core::Time& = 0) override
+    ct::core::StateVector<ESTIMATE_DIM, SCALAR> update(const ct::core::OutputVector<OBS_DIM, SCALAR>& y,
+        const Time_t& = 0) override
     {
         return this->estimator_.template update<OBS_DIM>(y, this->h_, this->R_);
     }
 
-    Eigen::Matrix<SCALAR, STATE_DIM, 1> getStateEstimate() {
+    ct::core::StateVector<STATE_DIM, SCALAR> getStateEstimate()
+    {
         return this->estimator_.getEstimate().head(STATE_DIM);
     }
     Eigen::Matrix<SCALAR, DIST_DIM, 1> getDisturbanceEstimate()

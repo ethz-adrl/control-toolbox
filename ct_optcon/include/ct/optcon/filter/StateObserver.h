@@ -21,32 +21,38 @@ public:
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    using Base = FilterBase<OBS_DIM, STATE_DIM, SCALAR>;
+    using typename Base::state_vector_t;
+    using typename Base::output_vector_t;
+    using typename Base::Time_t;
+    using state_matrix_t        = ct::core::StateMatrix<STATE_DIM, SCALAR>;
+    using output_matrix_t       = ct::core::OutputMatrix<OBS_DIM, SCALAR>;
+    using output_state_matrix_t = ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, SCALAR>;
+
     StateObserver(std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> system,
         const ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>&
             sensApprox,
         double dt,
-        const ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, SCALAR>& C,
+        const output_state_matrix_t& C,
         const ESTIMATOR& estimator,
-        const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
-        const ct::core::OutputMatrix<OBS_DIM, SCALAR>& R)
+        const state_matrix_t& Q,
+        const output_matrix_t& R)
         : f_(system, sensApprox, dt), h_(C), estimator_(estimator), Q_(Q), R_(R)
     {
     }
 
-    ct::core::StateVector<STATE_DIM, SCALAR> filter(const ct::core::OutputVector<OBS_DIM, SCALAR>& y,
-        const ct::core::Time& t) override
+    state_vector_t filter(const output_vector_t& y, const Time_t& t) override
     {
         predict(t);
         return update(y, t);
     }
-    virtual const ct::core::StateVector<STATE_DIM, SCALAR>& predict(const ct::core::Time& t = 0)
+    virtual state_vector_t predict(const Time_t& t = 0)
     {
         return estimator_.template predict<CONTROL_DIM>(
             f_, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Zero(), Q_, t);
     }
 
-    virtual const ct::core::StateVector<STATE_DIM, SCALAR>& update(const ct::core::OutputVector<OBS_DIM, SCALAR>& y,
-        const ct::core::Time& t = 0)
+    virtual state_vector_t update(const output_vector_t& y, const Time_t& t = 0)
     {
         return estimator_.template update<OBS_DIM>(y, h_, R_, t);
     }
@@ -55,8 +61,8 @@ protected:
     ESTIMATOR estimator_;
     CTSystemModel<STATE_DIM, CONTROL_DIM, SCALAR> f_;
     LTIMeasurementModel<OBS_DIM, STATE_DIM, SCALAR> h_;
-    ct::core::StateMatrix<STATE_DIM, SCALAR> Q_;
-    ct::core::OutputMatrix<OBS_DIM, SCALAR> R_;
+    state_matrix_t Q_;
+    output_matrix_t R_;
 };
 
 }  // optcon

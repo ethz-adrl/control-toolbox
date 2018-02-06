@@ -17,12 +17,18 @@ class CTSystemModel : public SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    using Base = SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>;
+    using typename Base::state_vector_t;
+    using typename Base::state_matrix_t;
+    using typename Base::control_vector_t;
+    using typename Base::Time_t;
+
     CTSystemModel(std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> system,
         const ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>&
             sensApprox,
         double dt,
         unsigned numSubsteps = 0u,
-        const ct::core::StateMatrix<STATE_DIM, SCALAR>& dFdv = ct::core::StateMatrix<STATE_DIM, SCALAR>::Identity(),
+        const state_matrix_t& dFdv = state_matrix_t::Identity(),
         const ct::core::IntegrationType& intType = ct::core::IntegrationType::EULERCT)
         : system_(system),
           sensApprox_(sensApprox),
@@ -35,32 +41,31 @@ public:
         const double dtNormalized = dt_ / (numSubsteps_ + 1);
         sensApprox_.setTimeDiscretization(dtNormalized);
     }
-    virtual ~CTSystemModel() {}
-    ct::core::StateVector<STATE_DIM, SCALAR> computeDynamics(const ct::core::StateVector<STATE_DIM, SCALAR>& state,
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& controlPlaceholder,
-        ct::core::Time t) override
+    state_vector_t computeDynamics(const state_vector_t& state,
+        const control_vector_t& controlPlaceholder,
+        Time_t t) override
     {
-        ct::core::StateVector<STATE_DIM, SCALAR> x = state;
+        state_vector_t x = state;
         integrator_.integrate_n_steps(x, t, numSubsteps_ + 1, dt_ / (numSubsteps_ + 1));
         return x;
     }
 
-    ct::core::StateMatrix<STATE_DIM, SCALAR> computeDerivativeState(
-        const ct::core::StateVector<STATE_DIM, SCALAR>& state,
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& controlPlaceholder,
-        ct::core::Time t) override
+    state_matrix_t computeDerivativeState(
+        const state_vector_t& state,
+        const control_vector_t& controlPlaceholder,
+        Time_t t) override
     {
-        ct::core::ControlVector<CONTROL_DIM, SCALAR> control;
+        control_vector_t control;
         if (!system_->getController()) throw std::runtime_error("Controller not initialized!");
         system_->getController()->computeControl(state, t, control);
-        const ct::core::StateVector<STATE_DIM, SCALAR> xNext = ct::core::StateVector<STATE_DIM, SCALAR>::Zero();
+        const state_vector_t xNext = state_vector_t::Zero();
         sensApprox_.getAandB(state, control, xNext, int(t / dt_ * (numSubsteps_ + 1) + 0.5), numSubsteps_ + 1, A_, B_);
         return A_;
     }
-    ct::core::StateMatrix<STATE_DIM, SCALAR> computeDerivativeNoise(
-        const ct::core::StateVector<STATE_DIM, SCALAR>& state,
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& control,
-        ct::core::Time t) override
+    state_matrix_t computeDerivativeNoise(
+        const state_vector_t& state,
+        const control_vector_t& control,
+        Time_t t) override
     {
         return dFdv_;
     }
@@ -69,10 +74,10 @@ protected:
     std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> system_;
     ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR> sensApprox_;
     double dt_;
-    ct::core::StateMatrix<STATE_DIM, SCALAR> dFdv_;
+    state_matrix_t dFdv_;
     ct::core::Integrator<STATE_DIM, SCALAR> integrator_;
     unsigned numSubsteps_;
-    ct::core::StateMatrix<STATE_DIM, SCALAR> A_;  // dFdx.
+    state_matrix_t A_;  // dFdx.
     ct::core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B_;
 };
 
