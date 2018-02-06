@@ -280,6 +280,10 @@ Please note the licence and notice files in the source directory.
 
 This toolbox has been used in, or has helped to realize the following academic publications:
 
+- Markus Giftthaler, Michael Neunert, Markus Stäuble and Jonas Buchli.
+“The Control Toolbox - An Open-Source C++ Library for Robotics, Optimal and Model Predictive Control”.
+<a href="https://arxiv.org/abs/1801.04290" target="_blank">arXiv preprint</a>
+
 - Markus Giftthaler, Michael Neunert, Markus Stäuble, Jonas Buchli and Moritz Diehl.
 “A Family of iterative Gauss-Newton Shooting Methods for Nonlinear Optimal Control”.
 <a href="https://arxiv.org/abs/1711.11006" target="_blank">arXiv preprint</a>
