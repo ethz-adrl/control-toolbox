@@ -17,16 +17,18 @@ template <size_t OBS_DIM, size_t STATE_DIM, size_t CONTROL_DIM, class ESTIMATOR,
 class StateObserver : public FilterBase<OBS_DIM, STATE_DIM, SCALAR>
 {
 public:
+    static_assert(STATE_DIM == ESTIMATOR::STATE_D, "Observer and estimator dimensions have to be the same!");
+
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     StateObserver(std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> system,
         const ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>&
             sensApprox,
         double dt,
-        const Eigen::Matrix<double, OBS_DIM, STATE_DIM>& C,
+        const ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, SCALAR>& C,
         const ESTIMATOR& estimator,
-        const Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>& Q,
-        const Eigen::Matrix<SCALAR, OBS_DIM, OBS_DIM>& R)
+        const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
+        const ct::core::OutputMatrix<OBS_DIM, SCALAR>& R)
         : f_(system, sensApprox, dt), h_(C), estimator_(estimator), Q_(Q), R_(R)
     {
     }
@@ -39,7 +41,8 @@ public:
     }
     virtual const ct::core::StateVector<STATE_DIM, SCALAR>& predict(const ct::core::Time& t = 0)
     {
-        return estimator_.template predict<CONTROL_DIM>(f_, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Zero(), Q_, t);
+        return estimator_.template predict<CONTROL_DIM>(
+            f_, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Zero(), Q_, t);
     }
 
     virtual const ct::core::StateVector<STATE_DIM, SCALAR>& update(const ct::core::OutputVector<OBS_DIM, SCALAR>& y,
@@ -52,8 +55,8 @@ protected:
     ESTIMATOR estimator_;
     CTSystemModel<STATE_DIM, CONTROL_DIM, SCALAR> f_;
     LTIMeasurementModel<OBS_DIM, STATE_DIM, SCALAR> h_;
-    Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> Q_;
-    Eigen::Matrix<SCALAR, OBS_DIM, OBS_DIM> R_;
+    ct::core::StateMatrix<STATE_DIM, SCALAR> Q_;
+    ct::core::OutputMatrix<OBS_DIM, SCALAR> R_;
 };
 
 }  // optcon

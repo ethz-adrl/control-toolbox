@@ -31,10 +31,10 @@ public:
         const ct::core::SensitivityApproximation<ESTIMATE_DIM, CONTROL_DIM, ESTIMATE_DIM / 2, ESTIMATE_DIM / 2, SCALAR>&
             sensApprox,
         double dt,
-        const Eigen::Matrix<double, OBS_DIM, ESTIMATE_DIM>& Caug,
+        const ct::core::OutputStateMatrix<OBS_DIM, ESTIMATE_DIM, SCALAR>& Caug,
         const ESTIMATOR& ekf,
-        const Eigen::Matrix<SCALAR, ESTIMATE_DIM, ESTIMATE_DIM>& Qaug,
-        const Eigen::Matrix<SCALAR, OBS_DIM, OBS_DIM>& R)
+        const ct::core::StateMatrix<ESTIMATE_DIM, SCALAR>& Qaug,
+        const ct::core::OutputMatrix<OBS_DIM, SCALAR>& R)
         : StateObserver<OBS_DIM, ESTIMATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>(system,
               sensApprox,
               dt,
@@ -48,7 +48,7 @@ public:
     const ct::core::StateVector<ESTIMATE_DIM, SCALAR>& predict(const ct::core::Time& t = 0) override
     {
         return this->estimator_.template predict<CONTROL_DIM>(
-            this->f_, Eigen::Matrix<SCALAR, CONTROL_DIM, 1>::Zero(), this->Q_, t);
+            this->f_, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Zero(), this->Q_, t);
     }
     const ct::core::StateVector<ESTIMATE_DIM, SCALAR>& update(const ct::core::OutputVector<OBS_DIM, SCALAR>& y,
         const ct::core::Time& = 0) override
