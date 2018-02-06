@@ -31,7 +31,7 @@ public:
         IkSolutionList<double> solutions;
 
         if (size_t(hya_ik::GetNumFreeParameters()) != freeJoints.size())
-            throw std::runtime_error("Error");
+            throw std::runtime_error("Error specifying free joints");
 
         // Data needs to be in row-major form.
         Eigen::Matrix<SCALAR, 3, 3, Eigen::RowMajor> eeBaseRotationRowMajor =

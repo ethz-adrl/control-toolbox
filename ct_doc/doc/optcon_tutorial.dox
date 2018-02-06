@@ -1,5 +1,5 @@
 /*!
-@page optcon_tutorials ct optcon Tutorial
+@page optcon_tutorials ct optcon Tutorials
 
 In this tutorial we will walk you through implementing several Optimal Controllers for your system, including a basic LQR controller,
 a Nonlinear Optimal Controller (NLOC), a Nonlinear Model Predictive Controller (NMPC) as well as Direct Multiple Shooting (DMS).
@@ -85,9 +85,9 @@ In this example, we show how to solve an Optimal Control problem for a oscillato
 \note Generally, we suggest using a Gauss-Newton Multiple Shooting (ct::optcon::GNMS) approach due to its linear time complexity
 and faster computation. For problems with a fine control discretization, it typically performs better than classical DMS.
 
-\note This example requires either <a href="https://projects.coin-or.org/Ipopt">IPOPT</a> or 
-<a href="http://www.sbsi-sol-optimize.com/asp/sol_product_snopt.htm">SNOPT</a> to be installed. If you have a global installation 
-of one of these solvers, and an environment variable set, it will be automatically detected. 
+\note This example requires either <a href="https://projects.coin-or.org/Ipopt">IPOPT</a> or
+<a href="http://www.sbsi-sol-optimize.com/asp/sol_product_snopt.htm">SNOPT</a> to be installed. If you have a global installation
+of one of these solvers, and an environment variable set, it will be automatically detected.
 
 \include DMS.cpp
 

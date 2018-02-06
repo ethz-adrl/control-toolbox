@@ -24,6 +24,29 @@ public:
         const tpl::RigidBodyPose<SCALAR> &eeWorldPose,
         const tpl::RigidBodyPose<SCALAR> &baseWorldPose,
         const std::vector<SCALAR> &freeJoints) const = 0;
+
+    virtual typename JointState<NJOINTS, SCALAR>::Position computeInverseKinematicsCloseTo(
+        const tpl::RigidBodyPose<SCALAR> &eeWorldPose,
+        const tpl::RigidBodyPose<SCALAR> &baseWorldPose,
+        const typename JointState<NJOINTS, SCALAR>::Position &queryJointPositions,
+        const std::vector<SCALAR> &freeJoints = std::vector<SCALAR>()) const
+    {
+        auto solutions = computeInverseKinematics(eeWorldPose, baseWorldPose, freeJoints);
+        if (!solutions.size()) throw std::runtime_error("No inverse kinematics solutions found!");
+
+        typename JointState<NJOINTS, SCALAR>::Position closestPosition = solutions[0];
+        double minNorm = (closestPosition - queryJointPositions).norm();
+
+        for (int i = 1; i < solutions.size(); ++i)
+        {
+            if ((solutions[i] - queryJointPositions).norm() < minNorm)
+            {
+                minNorm = (solutions[i] - queryJointPositions).norm();
+                closestPosition = solutions[i];
+            }
+        }
+        return closestPosition;
+    }
 };
 
 } /* namespace rbd */
