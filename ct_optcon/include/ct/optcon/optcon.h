@@ -41,54 +41,37 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "mpc/policyhandler/PolicyHandler.h"
 #include "mpc/policyhandler/default/StateFeedbackPolicyHandler.h"
 
+#include "filter/filter.h"
 
 // implementations
-//costfunction
 #include "costfunction/costfunction-impl.hpp"
 
-//constraints
 #include "constraint/constraint-impl.h"
 
-//problem
 #include "problem/OptConProblem-impl.h"
 #include "problem/LQOCProblem-impl.hpp"
 
-//solver
 #include "solver/lqp/GNRiccatiSolver-impl.hpp"
 #include "solver/lqp/HPIPMInterface-impl.hpp"
 #include "solver/NLOptConSolver-impl.hpp"
 
-//lqr
 #include "lqr/riccati/CARE-impl.hpp"
 #include "lqr/riccati/DARE-impl.hpp"
 #include "lqr/FHDTLQR-impl.hpp"
 #include "lqr/LQR-impl.hpp"
 
-//nloc
 #include "nloc/NLOCBackendBase-impl.hpp"
 #include "nloc/NLOCBackendST-impl.hpp"
 #include "nloc/NLOCBackendMP-impl.hpp"
 #include "nloc/algorithms/gnms/GNMS-impl.hpp"
 #include "nloc/algorithms/ilqr/iLQR-impl.hpp"
 
-//mpc
 #include "mpc/MPC-impl.h"
 #include "mpc/timehorizon/MpcTimeHorizon-impl.h"
 #include "mpc/policyhandler/PolicyHandler-impl.h"
 #include "mpc/policyhandler/default/StateFeedbackPolicyHandler-impl.h"
 
-//filter
-#include "filter/CTSystemModel.h"
-#include "filter/DisturbanceObserver.h"
-#include "filter/DisturbedSystem.h"
-#include "filter/ExtendedKalmanFilter.h"
-#include "filter/EstimatorBase.h"
-#include "filter/FilterBase.h"
-#include "filter/LinearMeasurementModel.h"
-#include "filter/MeasurementModelBase.h"
-#include "filter/StateObserver.h"
-#include "filter/SteadyStateKalmanFilter.h"
-#include "filter/SystemModelBase.h"
+#include "filter/filter-impl.h"
 
 // keep standard header guard (easy debugging)
 // header guard is identical to the one in optcon-prespec.h

@@ -15,18 +15,20 @@ class SystemModelBase
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    SystemModelBase() {}
     virtual ~SystemModelBase() {}
-    virtual void updateJacobians(const ct::core::StateVector<STATE_DIM, SCALAR>& state,
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& control,
-        ct::core::Time t) = 0;
     virtual ct::core::StateVector<STATE_DIM, SCALAR> computeDynamics(
         const ct::core::StateVector<STATE_DIM, SCALAR>& state,
         const ct::core::ControlVector<CONTROL_DIM, SCALAR>& control,
         ct::core::Time t) = 0;
 
-    virtual Eigen::Matrix<double, STATE_DIM, STATE_DIM>& dFdx() = 0;
-    virtual Eigen::Matrix<double, STATE_DIM, STATE_DIM>& dFdv() = 0;
+    virtual ct::core::StateMatrix<STATE_DIM, SCALAR> computeDerivativeState(
+        const ct::core::StateVector<STATE_DIM, SCALAR>& state,
+        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& control,
+        ct::core::Time t) = 0;
+    virtual ct::core::StateMatrix<STATE_DIM, SCALAR> computeDerivativeNoise(
+        const ct::core::StateVector<STATE_DIM, SCALAR>& state,
+        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& control,
+        ct::core::Time t) = 0;
 };
 
 }  // optcon

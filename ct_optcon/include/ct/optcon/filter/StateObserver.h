@@ -8,7 +8,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include "FilterBase.h"
 #include "EstimatorBase.h"
-#include "LinearMeasurementModel.h"
+#include "LTIMeasurementModel.h"
 
 namespace ct {
 namespace optcon {
@@ -23,7 +23,7 @@ public:
         const ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>&
             sensApprox,
         double dt,
-        Eigen::Matrix<double, OBS_DIM, STATE_DIM> C,
+        const Eigen::Matrix<double, OBS_DIM, STATE_DIM>& C,
         const ESTIMATOR& estimator,
         const Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>& Q,
         const Eigen::Matrix<SCALAR, OBS_DIM, OBS_DIM>& R)
@@ -31,22 +31,27 @@ public:
     {
     }
 
-    void filter() override {}
-    virtual const ct::core::StateVector<STATE_DIM, SCALAR>& predict(ct::core::Time t = 0)
+    ct::core::StateVector<STATE_DIM, SCALAR> filter(const ct::core::OutputVector<OBS_DIM, SCALAR>& y,
+        const ct::core::Time& t) override
     {
-        return estimator_.template predict<CONTROL_DIM>(f_, Eigen::Matrix<SCALAR, CONTROL_DIM, 1>::Zero(), Q_, t);
+        predict(t);
+        return update(y, t);
+    }
+    virtual const ct::core::StateVector<STATE_DIM, SCALAR>& predict(const ct::core::Time& t = 0)
+    {
+        return estimator_.template predict<CONTROL_DIM>(f_, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Zero(), Q_, t);
     }
 
-    virtual const ct::core::StateVector<STATE_DIM, SCALAR>& update(const Eigen::Matrix<SCALAR, OBS_DIM, 1>& y,
-        ct::core::Time t = 0)
+    virtual const ct::core::StateVector<STATE_DIM, SCALAR>& update(const ct::core::OutputVector<OBS_DIM, SCALAR>& y,
+        const ct::core::Time& t = 0)
     {
-        return estimator_.template update<OBS_DIM>(y, h_, R_);
+        return estimator_.template update<OBS_DIM>(y, h_, R_, t);
     }
 
 protected:
     ESTIMATOR estimator_;
     CTSystemModel<STATE_DIM, CONTROL_DIM, SCALAR> f_;
-    LinearMeasurementModel<OBS_DIM, STATE_DIM, SCALAR> h_;
+    LTIMeasurementModel<OBS_DIM, STATE_DIM, SCALAR> h_;
     Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> Q_;
     Eigen::Matrix<SCALAR, OBS_DIM, OBS_DIM> R_;
 };

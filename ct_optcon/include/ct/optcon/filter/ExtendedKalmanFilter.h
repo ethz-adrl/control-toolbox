@@ -11,49 +11,54 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-template <size_t STATE_DIM_T, typename SCALAR = double>
-class ExtendedKalmanFilter : public EstimatorBase<STATE_DIM_T, SCALAR>
+template <size_t STATE_DIM, typename SCALAR = double>
+class ExtendedKalmanFilter : public EstimatorBase<STATE_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    static const size_t STATE_D = STATE_DIM;
+
     ExtendedKalmanFilter(
-        const ct::core::StateVector<STATE_DIM_T, SCALAR>& x0 = ct::core::StateVector<STATE_DIM_T, SCALAR>::Zero(),
-        const Eigen::Matrix<SCALAR, STATE_DIM_T, STATE_DIM_T>& P0 = Eigen::Matrix<SCALAR, STATE_DIM_T, STATE_DIM_T>::Identity())
-        : EstimatorBase<STATE_DIM_T, SCALAR>(x0), P_(P0)
+        const ct::core::StateVector<STATE_DIM, SCALAR>& x0 = ct::core::StateVector<STATE_DIM, SCALAR>::Zero(),
+        const ct::core::StateMatrix<STATE_DIM, SCALAR>& P0 = ct::core::StateMatrix<STATE_DIM, SCALAR>::Identity())
+        : EstimatorBase<STATE_DIM, SCALAR>(x0), P_(P0)
     {
     }
 
     template <size_t CONTROL_DIM>
-    const ct::core::StateVector<STATE_DIM_T, SCALAR>& predict(SystemModelBase<STATE_DIM_T, CONTROL_DIM, SCALAR>& f,
-        const Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& u,
-        const Eigen::Matrix<SCALAR, STATE_DIM_T, STATE_DIM_T>& Q,
-        ct::core::Time t = 0)
+    const ct::core::StateVector<STATE_DIM, SCALAR>& predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
+        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
+        const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
+        const ct::core::Time& t = 0)
     {
-        f.updateJacobians(this->x_, u, t);
-        this->x_ = f.computeDynamics(this->x_, u, t);
-        P_       = (f.dFdx() * P_ * f.dFdx().transpose()) + f.dFdv() * Q * f.dFdv().transpose();
-        return this->x_;
+        ct::core::StateMatrix<STATE_DIM, SCALAR> dFdx = f.computeDerivativeState(this->x_est_, u, t);
+        ct::core::StateMatrix<STATE_DIM, SCALAR> dFdv = f.computeDerivativeNoise(this->x_est_, u, t);
+        this->x_est_ = f.computeDynamics(this->x_est_, u, t);
+        P_       = (dFdx * P_ * dFdx.transpose()) + dFdv * Q * dFdv.transpose();
+        return this->x_est_;
     }
 
     template <size_t OBS_DIM>
-    const ct::core::StateVector<STATE_DIM_T, SCALAR>& update(const Eigen::Matrix<SCALAR, OBS_DIM, 1>& y,
-        MeasurementModelBase<OBS_DIM, STATE_DIM_T, SCALAR>& h,
-        const Eigen::Matrix<SCALAR, OBS_DIM, OBS_DIM>& R)
+    const ct::core::StateVector<STATE_DIM, SCALAR>& update(const ct::core::OutputVector<OBS_DIM, SCALAR>& y,
+        LinearMeasurementModel<OBS_DIM, STATE_DIM, SCALAR>& h,
+        const ct::core::OutputMatrix<OBS_DIM, SCALAR>& R,
+        const ct::core::Time& t = 0)
     {
-        h.updateJacobians(this->x_);
-        const Eigen::Matrix<SCALAR, STATE_DIM_T, OBS_DIM> K =
-            P_ * h.dHdx().transpose() *
-            (h.dHdx() * P_ * h.dHdx().transpose() + h.dHdw() * R * h.dHdw().transpose()).inverse();
+        ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, SCALAR> dHdx = h.computeDerivativeState(this->x_est_, t);
+        ct::core::OutputMatrix<OBS_DIM, SCALAR> dHdw = h.computeDerivativeNoise(this->x_est_, t);
+        const Eigen::Matrix<SCALAR, STATE_DIM, OBS_DIM> K =
+            P_ * dHdx.transpose() *
+            (dHdx * P_ * dHdx.transpose() + dHdw * R * dHdw.transpose()).inverse();
 
-        this->x_ += K * (y - h.computeMeasurement(this->x_));
-        P_ -= (K * h.dHdx() * P_).eval();
+        this->x_est_ += K * (y - h.computeMeasurement(this->x_est_));
+        P_ -= (K * dHdx * P_).eval();
 
-        return this->x_;
+        return this->x_est_;
     }
 
 private:
-    Eigen::Matrix<SCALAR, STATE_DIM_T, STATE_DIM_T> P_;
+    ct::core::StateMatrix<STATE_DIM, SCALAR> P_;
 };
 
 }  // optcon

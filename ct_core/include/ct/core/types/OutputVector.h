@@ -9,27 +9,27 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-template <size_t STATE_DIM, class SCALAR = double>
-class StateVector : public Eigen::Matrix<SCALAR, STATE_DIM, 1>
+template <size_t OUTPUT_DIM, class SCALAR = double>
+class OutputVector : public Eigen::Matrix<SCALAR, OUTPUT_DIM, 1>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, 1> Base;
-    static const size_t DIM = STATE_DIM;
+    typedef Eigen::Matrix<SCALAR, OUTPUT_DIM, 1> Base;
+    static const size_t DIM = OUTPUT_DIM;
 
-    StateVector() {}
-    virtual ~StateVector() {}
+    OutputVector() {}
+    virtual ~OutputVector() {}
 
     //! This constructor allows you to construct MyVectorType from Eigen expressions
     template <typename OtherDerived>
-    StateVector(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)
+    OutputVector(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)
     {
     }
 
     //! This method allows you to assign Eigen expressions to MyVectorType
     template <typename OtherDerived>
-    StateVector& operator=(const Eigen::MatrixBase<OtherDerived>& other)
+    OutputVector& operator=(const Eigen::MatrixBase<OtherDerived>& other)
     {
         this->Base::operator=(other);
         return *this;

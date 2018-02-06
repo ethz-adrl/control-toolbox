@@ -15,10 +15,10 @@ class StateMatrix : public Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    StateMatrix(){};
-    virtual ~StateMatrix(){};
-
     typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> Base;
+
+    StateMatrix() {}
+    virtual ~StateMatrix() {}
 
     //! This constructor allows you to construct MyVectorType from Eigen expressions
     template <typename OtherDerived>

@@ -16,16 +16,16 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     EstimatorBase(const ct::core::StateVector<STATE_DIM, SCALAR>& x0 = ct::core::StateVector<STATE_DIM, SCALAR>::Zero())
-        : x_(x0)
+        : x_est_(x0)
     {
     }
-    EstimatorBase(const EstimatorBase& arg) : x_(arg.x_) {}
+    EstimatorBase(const EstimatorBase& arg) : x_est_(arg.x_est_) {}
 
-    const ct::core::StateVector<STATE_DIM, SCALAR>& getEstimate() const { return x_; }
-    void setEstimate(const ct::core::StateVector<STATE_DIM, SCALAR>& x) { x_ = x; }
+    const ct::core::StateVector<STATE_DIM, SCALAR>& getEstimate() const { return x_est_; }
+    void setEstimate(const ct::core::StateVector<STATE_DIM, SCALAR>& x) { x_est_ = x; }
 
 protected:
-    ct::core::StateVector<STATE_DIM, SCALAR> x_;
+    ct::core::StateVector<STATE_DIM, SCALAR> x_est_;
 };
 
 }  // optcon

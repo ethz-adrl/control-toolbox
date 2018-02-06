@@ -6,20 +6,15 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-namespace ct {
-namespace optcon {
-
-template <size_t OBS_DIM, size_t STATE_DIM, typename SCALAR = double>
-class MeasurementModelBase
-{
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-    virtual ~MeasurementModelBase() {}
-    virtual ct::core::OutputVector<OBS_DIM, SCALAR> computeMeasurement(
-        const ct::core::StateVector<STATE_DIM, SCALAR>& state,
-        const ct::core::Time& t = 0) = 0;
-};
-
-}  // optcon
-}  // ct
+#include "CTSystemModel.h"
+#include "DisturbanceObserver.h"
+#include "DisturbedSystem.h"
+#include "ExtendedKalmanFilter.h"
+#include "EstimatorBase.h"
+#include "FilterBase.h"
+#include "LinearMeasurementModel.h"
+#include "LTIMeasurementModel.h"
+#include "MeasurementModelBase.h"
+#include "StateObserver.h"
+#include "SteadyStateKalmanFilter.h"
+#include "SystemModelBase.h"

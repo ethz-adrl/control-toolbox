@@ -13,7 +13,8 @@ template <size_t OBS_DIM, size_t STATE_DIM, typename SCALAR = double>
 class FilterBase
 {
 public:
-    virtual void filter() = 0;
+    virtual ct::core::StateVector<STATE_DIM, SCALAR> filter(const ct::core::OutputVector<OBS_DIM, SCALAR>& measurement,
+        const ct::core::Time& time) = 0;
 };
 
 }  // optcon

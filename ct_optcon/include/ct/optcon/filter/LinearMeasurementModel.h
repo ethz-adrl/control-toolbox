@@ -15,32 +15,17 @@ template <size_t OBS_DIM, size_t STATE_DIM, typename SCALAR = double>
 class LinearMeasurementModel : public MeasurementModelBase<OBS_DIM, STATE_DIM, SCALAR>
 {
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    virtual ~LinearMeasurementModel() {}
 
-    LinearMeasurementModel()
-    {
-        dHdx_.setZero();
-        dHdw_.setIdentity();
-    }
-
-    LinearMeasurementModel(Eigen::Matrix<double, OBS_DIM, STATE_DIM> C,
-        const Eigen::Matrix<double, OBS_DIM, OBS_DIM>& dHdw = Eigen::Matrix<double, OBS_DIM, OBS_DIM>::Identity())
-        : dHdx_(C)
-    {
-        dHdw_.setIdentity();
-    }
-    ct::core::StateVector<OBS_DIM, SCALAR> computeMeasurement(
-        const ct::core::StateVector<STATE_DIM, SCALAR>& state) override
-    {
-        return dHdx_ * state;
-    }
-
-    void updateJacobians(const ct::core::StateVector<STATE_DIM, SCALAR>& state) override {}
-    Eigen::Matrix<double, OBS_DIM, STATE_DIM>& dHdx() override { return dHdx_; }
-    Eigen::Matrix<double, OBS_DIM, OBS_DIM>& dHdw() override { return dHdw_; }
-protected:
-    Eigen::Matrix<double, OBS_DIM, STATE_DIM> dHdx_;
-    Eigen::Matrix<double, OBS_DIM, OBS_DIM> dHdw_;
+    virtual ct::core::OutputVector<OBS_DIM, SCALAR> computeMeasurement(
+        const ct::core::StateVector<STATE_DIM, SCALAR>& state,
+        const ct::core::Time& t = 0) = 0;
+    virtual ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, SCALAR> computeDerivativeState(
+        const ct::core::StateVector<STATE_DIM, SCALAR>& state,
+        const ct::core::Time& t) = 0;
+    virtual ct::core::OutputMatrix<OBS_DIM, SCALAR> computeDerivativeNoise(
+        const ct::core::StateVector<STATE_DIM, SCALAR>& state,
+        const ct::core::Time& t) = 0;
 };
 
 }  // optcon
