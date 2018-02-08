@@ -25,21 +25,31 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     static const size_t ESTIMATE_DIM = STATE_DIM + DIST_DIM;
-    using Base = StateObserver<OBS_DIM, ESTIMATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>;
+    using Base                       = StateObserver<OBS_DIM, ESTIMATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>;
     using typename Base::Time_t;
 
-    DisturbanceObserver() {}
     DisturbanceObserver(std::shared_ptr<DisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>> system,
         const ct::core::SensitivityApproximation<ESTIMATE_DIM, CONTROL_DIM, ESTIMATE_DIM / 2, ESTIMATE_DIM / 2, SCALAR>&
             sensApprox,
         double dt,
         const ct::core::OutputStateMatrix<OBS_DIM, ESTIMATE_DIM, SCALAR>& Caug,
-        const ESTIMATOR& ekf,
+        const ESTIMATOR& estimator,
         const ct::core::StateMatrix<ESTIMATE_DIM, SCALAR>& Qaug,
         const ct::core::OutputMatrix<OBS_DIM, SCALAR>& R)
-        : Base(system, sensApprox, dt, Caug, ekf, Qaug, R)
+        : Base(system, sensApprox, dt, Caug, estimator, Qaug, R)
     {
     }
+
+    DisturbanceObserver(std::shared_ptr<DisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>> system,
+        const ct::core::SensitivityApproximation<ESTIMATE_DIM, CONTROL_DIM, ESTIMATE_DIM / 2, ESTIMATE_DIM / 2, SCALAR>&
+            sensApprox,
+        const ESTIMATOR& estimator,
+        const DisturbanceObserverSettings<OBS_DIM, ESTIMATE_DIM, SCALAR>& do_settings)
+        : Base(system, sensApprox, do_settings.dt, do_settings.C, estimator, do_settings.Qaug, do_settings.R)
+    {
+    }
+
+    virtual ~DisturbanceObserver() {}
 
     ct::core::StateVector<ESTIMATE_DIM, SCALAR> predict(const Time_t& t = 0) override
     {

@@ -7,6 +7,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "FilterBase.h"
+#include "FilterSettings.h"
 #include "EstimatorBase.h"
 #include "LTIMeasurementModel.h"
 
@@ -41,6 +42,20 @@ public:
     {
     }
 
+    StateObserver(std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> system,
+        const ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>&
+            sensApprox,
+        const ESTIMATOR& estimator,
+        const StateObserverSettings<OBS_DIM, STATE_DIM, SCALAR>& so_settings)
+        : f_(system, sensApprox, so_settings.dt),
+          h_(so_settings.C),
+          estimator_(estimator),
+          Q_(so_settings.Q),
+          R_(so_settings.R)
+    {
+    }
+
+    virtual ~StateObserver() {}
     state_vector_t filter(const output_vector_t& y, const Time_t& t) override
     {
         predict(t);

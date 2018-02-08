@@ -6,6 +6,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include "FilterSettings.h"
+
 namespace ct {
 namespace optcon {
 
@@ -14,6 +16,8 @@ class EstimatorBase
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    using state_vector_t = ct::core::StateVector<STATE_DIM, SCALAR>;
 
     EstimatorBase(const ct::core::StateVector<STATE_DIM, SCALAR>& x0 = ct::core::StateVector<STATE_DIM, SCALAR>::Zero())
         : x_est_(x0)

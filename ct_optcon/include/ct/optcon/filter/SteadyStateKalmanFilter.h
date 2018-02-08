@@ -7,9 +7,13 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "EstimatorBase.h"
+#include "LinearMeasurementModel.h"
 
 namespace ct {
 namespace optcon {
+
+template <size_t STATE_DIM, typename SCALAR>
+struct SteadyStateKalmanFilterSettings;
 
 template <size_t STATE_DIM, typename SCALAR = double>
 class SteadyStateKalmanFilter : public EstimatorBase<STATE_DIM, SCALAR>
@@ -18,17 +22,22 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     static const size_t STATE_D = STATE_DIM;
+    using Base                  = EstimatorBase<STATE_DIM, SCALAR>;
+    using typename Base::state_vector_t;
 
-    SteadyStateKalmanFilter(
-        const ct::core::StateVector<STATE_DIM, SCALAR>& x0 = ct::core::StateVector<STATE_DIM, SCALAR>::Zero(),
-        size_t maxDAREIterations = 1000)
-        : EstimatorBase<STATE_DIM, SCALAR>(x0), maxDAREIterations_(maxDAREIterations)
+    SteadyStateKalmanFilter(const state_vector_t& x0 = state_vector_t::Zero(), size_t maxDAREIterations = 1000)
+        : Base(x0), maxDAREIterations_(maxDAREIterations)
     {
         P_.setZero();
     }
 
+    SteadyStateKalmanFilter(const SteadyStateKalmanFilterSettings<STATE_DIM, SCALAR>& sskf_settings)
+        : Base(sskf_settings.x0), maxDAREIterations_(sskf_settings.maxDAREIterations)
+    {
+    }
+
     template <size_t CONTROL_DIM>
-    const ct::core::StateVector<STATE_DIM, SCALAR>& predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
+    const state_vector_t& predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
         const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
         const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
         const ct::core::Time& t = 0)
@@ -40,7 +49,7 @@ public:
     }
 
     template <size_t OBS_DIM>
-    const ct::core::StateVector<STATE_DIM, SCALAR>& update(const ct::core::OutputVector<OBS_DIM, SCALAR>& y,
+    const state_vector_t& update(const ct::core::OutputVector<OBS_DIM, SCALAR>& y,
         LinearMeasurementModel<OBS_DIM, STATE_DIM, SCALAR>& h,
         const ct::core::OutputMatrix<OBS_DIM, SCALAR>& R,
         const ct::core::Time& t = 0)

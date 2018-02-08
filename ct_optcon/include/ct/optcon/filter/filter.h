@@ -12,6 +12,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "ExtendedKalmanFilter.h"
 #include "EstimatorBase.h"
 #include "FilterBase.h"
+#include "FilterSettings.h"
 #include "LinearMeasurementModel.h"
 #include "LTIMeasurementModel.h"
 #include "MeasurementModelBase.h"
