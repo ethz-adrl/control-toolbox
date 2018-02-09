@@ -38,7 +38,7 @@ public:
         const ESTIMATOR& estimator,
         const state_matrix_t& Q,
         const output_matrix_t& R)
-        : f_(system, sensApprox, dt), h_(C), estimator_(estimator), Q_(Q), R_(R)
+        : estimator_(estimator), f_(system, sensApprox, dt), h_(C), Q_(Q), R_(R)
     {
     }
 
