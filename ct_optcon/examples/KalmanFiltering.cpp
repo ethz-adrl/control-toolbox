@@ -13,9 +13,6 @@
 /*!
  * A simple custom PD controller for an oscillator
  *
- * see \ref DampedOscillatorCustomController.cpp on how to use it.
- *
- * \example CustomController.h
  */
 //! an example controller class that takes a 2-dimensional state and outputs a 1-dimensional control action
 class CustomController : public ct::core::Controller<2, 1>
@@ -98,13 +95,9 @@ int main(int argc, char** argv)
     size_t nSteps     = 100;
     integrator.integrate_n_steps(x, t0, nSteps, dt, states, times);
 
-    ct::core::ControlVectorArray<CONTROL_DIM, double> controls(states.size() - 1);
-    for (size_t i = 0; i < states.size() - 1; ++i)
-        controller->computeControl(states[i], times[i], controls[i]);
-
     // Load dt.
     ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, double> C;
-    C << 0.5, 1;  // Measure position.
+    C << 0.5, 1;  // Measure a combination of position and velocity.
     ct::core::StateMatrix<STATE_DIM, double> Q = ct::core::StateMatrix<STATE_DIM, double>::Identity();
     ct::core::OutputMatrix<OBS_DIM, double> R  = 10 * ct::core::OutputMatrix<OBS_DIM, double>::Identity();
 
@@ -122,8 +115,9 @@ int main(int argc, char** argv)
     std::normal_distribution<double> noise(0, 1);
 
     ct::core::StateVectorArray<STATE_DIM, double> states_est;
+    states_est.push_back(states[0]);
     ct::core::StateVector<STATE_DIM, double> xt;
-    for (size_t i = 0; i < controls.size(); ++i)
+    for (size_t i = 1; i < states.size(); ++i)
     {
         xt = states[i];
         xt[0] += 0.15 * noise(gen);  // Position noise.
@@ -134,7 +128,7 @@ int main(int argc, char** argv)
     }
 
     for (size_t i = 0; i < states_est.size(); ++i)
-        std::cerr << "State\t\tState_est\n"
+        std::cout << "State\t\tState_est\n"
                   << std::fixed << std::setprecision(6)
                   << states[i][0] << "\t" << states_est[i][0] << std::endl
                   << states[i][1] << "\t" << states_est[i][1] << std::endl

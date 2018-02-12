@@ -219,6 +219,9 @@ if(BUILD_EXAMPLES)
 
     add_executable(ex_KalmanFiltering examples/KalmanFiltering.cpp)
     target_link_libraries(ex_KalmanFiltering ${catkin_LIBRARIES})
+
+    add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
+    target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
 endif()
 
 
@@ -311,6 +314,8 @@ target_link_libraries(NLOC_MPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LI
 catkin_add_gtest(NLOC_MPCTest_prespec test/mpc/NLOC_MPCTest_prespec.cpp)
 target_link_libraries(NLOC_MPCTest_prespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIB_NAMES})
 
+catkin_add_gtest(KalmanFilterTest test/filter/KalmanFilterTest.cpp)
+target_link_libraries(KalmanFilterTest ${catkin_LIBRARIES})
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)

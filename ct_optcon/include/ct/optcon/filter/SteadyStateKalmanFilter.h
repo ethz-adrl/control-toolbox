@@ -67,7 +67,7 @@ public:
             throw;
         }
 
-        this->x_est_ += K.transpose() * (y - h.computeMeasurement(this->x_est_, t));
+        this->x_est_ -= K.transpose() * (y - h.computeMeasurement(this->x_est_, t));
         return this->x_est_;
     }
 
