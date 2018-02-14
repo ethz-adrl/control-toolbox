@@ -19,7 +19,6 @@ find_package(PythonLibs QUIET)
 find_package(Qwt QUIET)
 find_package(Qt4 QUIET)
 
-
 if(QWT_FOUND AND Qt4_FOUND)
     set(QWT_ENABLED true)
     add_definitions( -DQWT_ENABLED )
@@ -53,9 +52,14 @@ include_directories (
     ${EIGEN3_INCLUDE_DIR}
 )
 
+## dummy prespec libs
+set(PRESPEC_LIB_NAMES "")
+
 ## assemble list of libraries that contain prespecified templates
-ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_core")
-message(WARNING "CT Core: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
+if(USE_PRESPEC)
+    ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_core")
+    message(WARNING "CT Core: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
+endif(USE_PRESPEC)
 
 #used later for clang-tidy
 set(INC_DIRS ${BOOST_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/include/external" ${EIGEN3_INCLUDE_DIR})
@@ -84,9 +88,11 @@ add_library(ct_core
    src/core/internal/autodiff/SparsityPattern.cpp
 )
 
-# add libraries for explicit template
+# add libraries for explicit templates
 target_link_libraries(ct_core ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
-ct_add_explicit_template_libs()
+if(USE_PRESPEC)
+    ct_add_explicit_template_libs()
+endif(USE_PRESPEC)
 
 if(BUILD_EXAMPLES)
     add_executable(ex_DampedOscillatorCustomController examples/DampedOscillatorCustomController.cpp)
@@ -100,17 +106,12 @@ target_link_libraries(NoiseTest ${catkin_LIBRARIES})
 catkin_add_gtest(SecondOrderSystemTest test/SecondOrderSystemTest.cpp)
 target_link_libraries(SecondOrderSystemTest ${catkin_LIBRARIES})
 
-# This test is not required to link against ${PRESPEC_LIB_NAMES} as it is not using prespec.
-# However, we just test that it does not fail here.
+# This test is not required to link against ${PRESPEC_LIB_NAMES} as it is not using prespec. Here we ensure that linking against it does not fail.
 catkin_add_gtest(IntegrationTest test/integration/IntegrationTest.cpp)
 target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
-catkin_add_gtest(IntegrationTestPrespec test/integration/IntegrationTestPrespec.cpp)
-target_link_libraries(IntegrationTestPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
 
 catkin_add_gtest(IntegratorComparison test/integration/IntegratorComparison.cpp)
 target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
-catkin_add_gtest(IntegratorComparisonPrespec test/integration/IntegratorComparisonPrespec.cpp)
-target_link_libraries(IntegratorComparisonPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
 
 catkin_add_gtest(SymplecticIntegrationTest test/integration/SymplecticIntegrationTest.cpp)
 target_link_libraries(SymplecticIntegrationTest ${catkin_LIBRARIES} ct_core)
@@ -140,7 +141,7 @@ target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} ct_core pthread
 catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
 target_link_libraries(CodegenTests ${catkin_LIBRARIES} ct_core dl pthread)
 
-# not really a test, but serves as example
+## example for using the build-in plotting tool
 add_executable(plotTest test/plot/plotTest.cpp)
 target_link_libraries(plotTest ${catkin_LIBRARIES} ct_core)
 
@@ -150,6 +151,17 @@ if(QWT_ENABLED)
 endif()
 
 
+## unit tests for prespec templates
+if(USE_PRESPEC)
+    catkin_add_gtest(IntegrationTestPrespec test/integration/IntegrationTestPrespec.cpp)
+    target_link_libraries(IntegrationTestPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
+    
+    catkin_add_gtest(IntegratorComparisonPrespec test/integration/IntegratorComparisonPrespec.cpp)
+    target_link_libraries(IntegratorComparisonPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
+endif(USE_PRESPEC)
+
+
+## build doxygen documentation
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
 
