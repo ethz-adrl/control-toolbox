@@ -22,17 +22,17 @@ namespace optcon {
  * configuration.
  *
  */
-template <size_t OBS_DIM, size_t STATE_DIM, typename SCALAR = double>
+template <size_t OUTPUT_DIM, size_t STATE_DIM, typename SCALAR = double>
 struct StateObserverSettings
 {
     //! default constructor for the state Observer settings
     StateObserverSettings() {}
     //! check if the currently set parameters are meaningful
     bool parametersOk() const { return (dt > 0.0); }
-    double dt;                                                 /*!< Sampling time. */
-    ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, SCALAR> C; /*!< Observation matrix C time. */
-    ct::core::StateMatrix<STATE_DIM, SCALAR> Q;                /*!< Weighing matrix Q. */
-    ct::core::OutputMatrix<OBS_DIM, SCALAR> R;                 /*!< Weighing matrix R. */
+    double dt;                                                    /*!< Sampling time. */
+    ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR> C; /*!< Observation matrix C time. */
+    ct::core::StateMatrix<STATE_DIM, SCALAR> Q;                   /*!< Weighing matrix Q. */
+    ct::core::OutputMatrix<OUTPUT_DIM, SCALAR> R;                 /*!< Weighing matrix R. */
 
     //! print the current settings
     void print() const
@@ -76,8 +76,8 @@ struct StateObserverSettings
  * configuration.
  *
  */
-template <size_t OBS_DIM, size_t STATE_DIM, typename SCALAR = double>
-using DisturbanceObserverSettings = StateObserverSettings<OBS_DIM, STATE_DIM, SCALAR>;
+template <size_t OUTPUT_DIM, size_t STATE_DIM, typename SCALAR = double>
+using DisturbanceObserverSettings = StateObserverSettings<OUTPUT_DIM, STATE_DIM, SCALAR>;
 
 //! Settings for setting up a SteadyStateKF
 /*!

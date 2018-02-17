@@ -11,13 +11,13 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-template <size_t OBS_DIM, size_t STATE_DIM, typename SCALAR = double>
-class LTIMeasurementModel : public LinearMeasurementModel<OBS_DIM, STATE_DIM, SCALAR>
+template <size_t OUTPUT_DIM, size_t STATE_DIM, typename SCALAR = double>
+class LTIMeasurementModel : public LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    using Base = LinearMeasurementModel<OBS_DIM, STATE_DIM, SCALAR>;
+    using Base = LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>;
     using typename Base::state_vector_t;
     using typename Base::output_vector_t;
     using typename Base::output_matrix_t;

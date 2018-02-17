@@ -48,16 +48,16 @@ public:
         return this->x_est_;
     }
 
-    template <size_t OBS_DIM>
-    const state_vector_t& update(const ct::core::OutputVector<OBS_DIM, SCALAR>& y,
-        LinearMeasurementModel<OBS_DIM, STATE_DIM, SCALAR>& h,
-        const ct::core::OutputMatrix<OBS_DIM, SCALAR>& R,
+    template <size_t OUTPUT_DIM>
+    const state_vector_t& update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
+        LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
+        const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R,
         const ct::core::Time& t = 0)
     {
-        ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, SCALAR> dHdx = h.computeDerivativeState(this->x_est_, t);
-        Eigen::Matrix<SCALAR, OBS_DIM, STATE_DIM> K;
+        ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR> dHdx = h.computeDerivativeState(this->x_est_, t);
+        Eigen::Matrix<SCALAR, OUTPUT_DIM, STATE_DIM> K;
 
-        DARE<STATE_DIM, OBS_DIM, SCALAR> dare;
+        DARE<STATE_DIM, OUTPUT_DIM, SCALAR> dare;
         try
         {
             P_ = dare.computeSteadyStateRiccatiMatrix(

@@ -55,7 +55,7 @@ TEST(extendedKalmanFilterTest, extendedKalmanFilterTest)
     // a damped oscillator has two states, position and velocity
     const size_t STATE_DIM   = ct::core::SecondOrderSystem::STATE_DIM;    // = 2
     const size_t CONTROL_DIM = ct::core::SecondOrderSystem::CONTROL_DIM;  // = 1
-    const size_t OBS_DIM     = 1;  // We assume we only receive a single observation.
+    const size_t OUTPUT_DIM  = 1;  // We assume we only receive a single observation.
 
     // create a state
     ct::core::StateVector<STATE_DIM> x;
@@ -95,17 +95,17 @@ TEST(extendedKalmanFilterTest, extendedKalmanFilterTest)
     //     controller->computeControl(states[i], times[i], controls[i]);
 
     // Load dt.
-    ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, double> C;
+    ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, double> C;
     C << 1, 0;  // Measure position.
-    ct::core::StateMatrix<STATE_DIM, double> Q = 10 * ct::core::StateMatrix<STATE_DIM, double>::Identity();
-    ct::core::OutputMatrix<OBS_DIM, double> R  = ct::core::OutputMatrix<OBS_DIM, double>::Identity();
+    ct::core::StateMatrix<STATE_DIM, double> Q   = 10 * ct::core::StateMatrix<STATE_DIM, double>::Identity();
+    ct::core::OutputMatrix<OUTPUT_DIM, double> R = ct::core::OutputMatrix<OUTPUT_DIM, double>::Identity();
 
     std::shared_ptr<ct::core::SystemLinearizer<STATE_DIM, CONTROL_DIM, double>> linearizer(
         new ct::core::SystemLinearizer<STATE_DIM, CONTROL_DIM, double>(oscillator));
     ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, double> sensApprox(
         dt, linearizer);
     ct::optcon::ExtendedKalmanFilter<STATE_DIM, double> ekf(states[0]);
-    ct::optcon::StateObserver<OBS_DIM, STATE_DIM, CONTROL_DIM, ct::optcon::ExtendedKalmanFilter<STATE_DIM, double>,
+    ct::optcon::StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ct::optcon::ExtendedKalmanFilter<STATE_DIM, double>,
         double>
         stateObserver(oscillator, sensApprox, dt, C, ekf, Q, R);
 
@@ -135,7 +135,7 @@ TEST(steadyStateKalmanFilterTest, steadyStateKalmanFilterTest)
     // a damped oscillator has two states, position and velocity
     const size_t STATE_DIM   = ct::core::SecondOrderSystem::STATE_DIM;    // = 2
     const size_t CONTROL_DIM = ct::core::SecondOrderSystem::CONTROL_DIM;  // = 1
-    const size_t OBS_DIM     = 1;  // We assume we only receive a single observation.
+    const size_t OUTPUT_DIM  = 1;  // We assume we only receive a single observation.
 
     // create a state
     ct::core::StateVector<STATE_DIM> x;
@@ -175,18 +175,18 @@ TEST(steadyStateKalmanFilterTest, steadyStateKalmanFilterTest)
     //     controller->computeControl(states[i], times[i], controls[i]);
 
     // Load dt.
-    ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, double> C;
+    ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, double> C;
     C << 1, 0;  // Measure position.
-    ct::core::StateMatrix<STATE_DIM, double> Q = 10 * ct::core::StateMatrix<STATE_DIM, double>::Identity();
-    ct::core::OutputMatrix<OBS_DIM, double> R  = ct::core::OutputMatrix<OBS_DIM, double>::Identity();
+    ct::core::StateMatrix<STATE_DIM, double> Q   = 10 * ct::core::StateMatrix<STATE_DIM, double>::Identity();
+    ct::core::OutputMatrix<OUTPUT_DIM, double> R = ct::core::OutputMatrix<OUTPUT_DIM, double>::Identity();
 
     std::shared_ptr<ct::core::SystemLinearizer<STATE_DIM, CONTROL_DIM, double>> linearizer(
         new ct::core::SystemLinearizer<STATE_DIM, CONTROL_DIM, double>(oscillator));
     ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, double> sensApprox(
         dt, linearizer);
     ct::optcon::SteadyStateKalmanFilter<STATE_DIM, double> sskf(states[0], 50000);
-    ct::optcon::StateObserver<OBS_DIM, STATE_DIM, CONTROL_DIM, ct::optcon::SteadyStateKalmanFilter<STATE_DIM, double>,
-        double>
+    ct::optcon::StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM,
+        ct::optcon::SteadyStateKalmanFilter<STATE_DIM, double>, double>
         stateObserver(oscillator, sensApprox, dt, C, sskf, Q, R);
 
     std::default_random_engine gen;

@@ -13,29 +13,29 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-template <size_t OBS_DIM,
+template <size_t OUTPUT_DIM,
     size_t STATE_DIM,
     size_t DIST_DIM,
     size_t CONTROL_DIM,
     class ESTIMATOR,
     typename SCALAR = double>
-class DisturbanceObserver : public StateObserver<OBS_DIM, STATE_DIM + DIST_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>
+class DisturbanceObserver : public StateObserver<OUTPUT_DIM, STATE_DIM + DIST_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     static const size_t ESTIMATE_DIM = STATE_DIM + DIST_DIM;
-    using Base                       = StateObserver<OBS_DIM, ESTIMATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>;
+    using Base                       = StateObserver<OUTPUT_DIM, ESTIMATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>;
     using typename Base::Time_t;
 
     DisturbanceObserver(std::shared_ptr<DisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>> system,
         const ct::core::SensitivityApproximation<ESTIMATE_DIM, CONTROL_DIM, ESTIMATE_DIM / 2, ESTIMATE_DIM / 2, SCALAR>&
             sensApprox,
         double dt,
-        const ct::core::OutputStateMatrix<OBS_DIM, ESTIMATE_DIM, SCALAR>& Caug,
+        const ct::core::OutputStateMatrix<OUTPUT_DIM, ESTIMATE_DIM, SCALAR>& Caug,
         const ESTIMATOR& estimator,
         const ct::core::StateMatrix<ESTIMATE_DIM, SCALAR>& Qaug,
-        const ct::core::OutputMatrix<OBS_DIM, SCALAR>& R)
+        const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R)
         : Base(system, sensApprox, dt, Caug, estimator, Qaug, R)
     {
     }
@@ -44,22 +44,21 @@ public:
         const ct::core::SensitivityApproximation<ESTIMATE_DIM, CONTROL_DIM, ESTIMATE_DIM / 2, ESTIMATE_DIM / 2, SCALAR>&
             sensApprox,
         const ESTIMATOR& estimator,
-        const DisturbanceObserverSettings<OBS_DIM, ESTIMATE_DIM, SCALAR>& do_settings)
+        const DisturbanceObserverSettings<OUTPUT_DIM, ESTIMATE_DIM, SCALAR>& do_settings)
         : Base(system, sensApprox, do_settings.dt, do_settings.C, estimator, do_settings.Qaug, do_settings.R)
     {
     }
 
     virtual ~DisturbanceObserver() {}
-
     ct::core::StateVector<ESTIMATE_DIM, SCALAR> predict(const Time_t& t = 0) override
     {
         return this->estimator_.template predict<CONTROL_DIM>(
             this->f_, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Zero(), this->Q_, t);
     }
-    ct::core::StateVector<ESTIMATE_DIM, SCALAR> update(const ct::core::OutputVector<OBS_DIM, SCALAR>& y,
+    ct::core::StateVector<ESTIMATE_DIM, SCALAR> update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
         const Time_t& = 0) override
     {
-        return this->estimator_.template update<OBS_DIM>(y, this->h_, this->R_);
+        return this->estimator_.template update<OUTPUT_DIM>(y, this->h_, this->R_);
     }
 
     ct::core::StateVector<STATE_DIM, SCALAR> getStateEstimate()

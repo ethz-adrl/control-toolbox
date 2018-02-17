@@ -14,21 +14,21 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-template <size_t OBS_DIM, size_t STATE_DIM, size_t CONTROL_DIM, class ESTIMATOR, typename SCALAR = double>
-class StateObserver : public FilterBase<OBS_DIM, STATE_DIM, SCALAR>
+template <size_t OUTPUT_DIM, size_t STATE_DIM, size_t CONTROL_DIM, class ESTIMATOR, typename SCALAR = double>
+class StateObserver : public FilterBase<OUTPUT_DIM, STATE_DIM, SCALAR>
 {
 public:
     static_assert(STATE_DIM == ESTIMATOR::STATE_D, "Observer and estimator dimensions have to be the same!");
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    using Base = FilterBase<OBS_DIM, STATE_DIM, SCALAR>;
+    using Base = FilterBase<OUTPUT_DIM, STATE_DIM, SCALAR>;
     using typename Base::state_vector_t;
     using typename Base::output_vector_t;
     using typename Base::Time_t;
     using state_matrix_t        = ct::core::StateMatrix<STATE_DIM, SCALAR>;
-    using output_matrix_t       = ct::core::OutputMatrix<OBS_DIM, SCALAR>;
-    using output_state_matrix_t = ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, SCALAR>;
+    using output_matrix_t       = ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>;
+    using output_state_matrix_t = ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR>;
 
     StateObserver(std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> system,
         const ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>&
@@ -46,7 +46,7 @@ public:
         const ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>&
             sensApprox,
         const ESTIMATOR& estimator,
-        const StateObserverSettings<OBS_DIM, STATE_DIM, SCALAR>& so_settings)
+        const StateObserverSettings<OUTPUT_DIM, STATE_DIM, SCALAR>& so_settings)
         : f_(system, sensApprox, so_settings.dt),
           h_(so_settings.C),
           estimator_(estimator),
@@ -69,13 +69,13 @@ public:
 
     virtual state_vector_t update(const output_vector_t& y, const Time_t& t = 0)
     {
-        return estimator_.template update<OBS_DIM>(y, h_, R_, t);
+        return estimator_.template update<OUTPUT_DIM>(y, h_, R_, t);
     }
 
 protected:
     ESTIMATOR estimator_;
     CTSystemModel<STATE_DIM, CONTROL_DIM, SCALAR> f_;
-    LTIMeasurementModel<OBS_DIM, STATE_DIM, SCALAR> h_;
+    LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR> h_;
     state_matrix_t Q_;
     output_matrix_t R_;
 };

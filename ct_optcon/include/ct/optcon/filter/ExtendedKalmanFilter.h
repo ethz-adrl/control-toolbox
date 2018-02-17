@@ -48,15 +48,15 @@ public:
         return this->x_est_;
     }
 
-    template <size_t OBS_DIM>
-    const state_vector_t& update(const ct::core::OutputVector<OBS_DIM, SCALAR>& y,
-        LinearMeasurementModel<OBS_DIM, STATE_DIM, SCALAR>& h,
-        const ct::core::OutputMatrix<OBS_DIM, SCALAR>& R,
+    template <size_t OUTPUT_DIM>
+    const state_vector_t& update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
+        LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
+        const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R,
         const ct::core::Time& t = 0)
     {
-        ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, SCALAR> dHdx = h.computeDerivativeState(this->x_est_, t);
-        ct::core::OutputMatrix<OBS_DIM, SCALAR> dHdw = h.computeDerivativeNoise(this->x_est_, t);
-        const Eigen::Matrix<SCALAR, STATE_DIM, OBS_DIM> K =
+        ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR> dHdx = h.computeDerivativeState(this->x_est_, t);
+        ct::core::OutputMatrix<OUTPUT_DIM, SCALAR> dHdw = h.computeDerivativeNoise(this->x_est_, t);
+        const Eigen::Matrix<SCALAR, STATE_DIM, OUTPUT_DIM> K =
             P_ * dHdx.transpose() * (dHdx * P_ * dHdx.transpose() + dHdw * R * dHdw.transpose()).inverse();
 
         this->x_est_ += K * (y - h.computeMeasurement(this->x_est_));

@@ -60,7 +60,7 @@ int main(int argc, char** argv)
     // a damped oscillator has two states, position and velocity
     const size_t STATE_DIM   = ct::core::SecondOrderSystem::STATE_DIM;    // = 2
     const size_t CONTROL_DIM = ct::core::SecondOrderSystem::CONTROL_DIM;  // = 1
-    const size_t OBS_DIM     = 1;  // We assume we only receive a single observation.
+    const size_t OUTPUT_DIM  = 1;  // We assume we only receive a single observation.
 
     // create a state
     ct::core::StateVector<STATE_DIM> x;
@@ -96,17 +96,17 @@ int main(int argc, char** argv)
     integrator.integrate_n_steps(x, t0, nSteps, dt, states, times);
 
     // Load dt.
-    ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, double> C;
+    ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, double> C;
     C << 0.5, 1;  // Measure a combination of position and velocity.
-    ct::core::StateMatrix<STATE_DIM, double> Q = ct::core::StateMatrix<STATE_DIM, double>::Identity();
-    ct::core::OutputMatrix<OBS_DIM, double> R  = 10 * ct::core::OutputMatrix<OBS_DIM, double>::Identity();
+    ct::core::StateMatrix<STATE_DIM, double> Q   = ct::core::StateMatrix<STATE_DIM, double>::Identity();
+    ct::core::OutputMatrix<OUTPUT_DIM, double> R = 10 * ct::core::OutputMatrix<OUTPUT_DIM, double>::Identity();
 
     std::shared_ptr<ct::core::SystemLinearizer<STATE_DIM, CONTROL_DIM, double>> linearizer(
         new ct::core::SystemLinearizer<STATE_DIM, CONTROL_DIM, double>(oscillator));
     ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, double> sensApprox(
         dt, linearizer);
     ct::optcon::ExtendedKalmanFilter<STATE_DIM, double> ekf(states[0]);
-    ct::optcon::StateObserver<OBS_DIM, STATE_DIM, CONTROL_DIM, ct::optcon::ExtendedKalmanFilter<STATE_DIM, double>,
+    ct::optcon::StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ct::optcon::ExtendedKalmanFilter<STATE_DIM, double>,
         double>
         stateObserver(oscillator, sensApprox, dt, C, ekf, Q, R);
 
@@ -129,8 +129,7 @@ int main(int argc, char** argv)
 
     for (size_t i = 0; i < states_est.size(); ++i)
         std::cout << "State\t\tState_est\n"
-                  << std::fixed << std::setprecision(6)
-                  << states[i][0] << "\t" << states_est[i][0] << std::endl
+                  << std::fixed << std::setprecision(6) << states[i][0] << "\t" << states_est[i][0] << std::endl
                   << states[i][1] << "\t" << states_est[i][1] << std::endl
                   << std::endl;
 

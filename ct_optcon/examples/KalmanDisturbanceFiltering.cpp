@@ -1,7 +1,9 @@
 /*!
- * \example KalmanFiltering.cpp
+ * \example KalmanDisturbanceFiltering.cpp
  *
- * This example shows how to use the Kalman Filter to estimate the state of a simple oscillator.
+ * This example shows how to use the Kalman Filter to estimate the state and the disturbance acting on a simple
+ * oscillator. The gist of the example is that the state is augmented with a disturbance and the system dynamics
+ * is expanded to include our model of the system with disturbance included.
  *
  */
 
@@ -78,7 +80,11 @@ public:
     }
 
     CustomDisturbedSystem* clone() const override { return new CustomDisturbedSystem(*this); }
-    //! override the computeControlledDynamics with a custom update
+    /*!
+     * Override the computeControlledDynamics with a custom update. Since only input disturbance is present, we
+     * the dynamics wrt state is calculated by correcting the control action with our disturbance estimate. Since
+     * the disturbance is assumed constant, the derivative wrt the disturbance is zero.
+     */
     void computeControlledDynamics(const ct::core::StateVector<STATE_DIM + DIST_DIM, SCALAR>& state,
         const SCALAR& t,
         const ct::core::ControlVector<CONTROL_DIM, SCALAR>& control,
@@ -100,7 +106,7 @@ int main(int argc, char** argv)
     // a damped oscillator has two states, position and velocity
     const size_t STATE_DIM   = ct::core::SecondOrderSystem::STATE_DIM;    // = 2
     const size_t CONTROL_DIM = ct::core::SecondOrderSystem::CONTROL_DIM;  // = 1
-    const size_t OBS_DIM     = 2;            // We assume we only receive a single observation.
+    const size_t OUTPUT_DIM  = 2;
     const size_t DIST_DIM    = CONTROL_DIM;  // Here we only use input disturbance.
 
     // create a state
@@ -144,18 +150,18 @@ int main(int argc, char** argv)
         new CustomDisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM, double>(oscillator));
 
     // Observation matrix.
-    ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM, double> C;
+    ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, double> C;
     C.setIdentity();
 
-    ct::core::OutputStateMatrix<OBS_DIM, DIST_DIM, double> Cd;
+    ct::core::OutputStateMatrix<OUTPUT_DIM, DIST_DIM, double> Cd;
     Cd.setZero();
     // Augmented C matrix assuming we don't observe the disturbance.
-    ct::core::OutputStateMatrix<OBS_DIM, STATE_DIM + DIST_DIM, double> Caug;
+    ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM + DIST_DIM, double> Caug;
     Caug << C, Cd;
     ct::core::StateMatrix<STATE_DIM + DIST_DIM, double> Qaug =
         ct::core::StateMatrix<STATE_DIM + DIST_DIM, double>::Identity();
     Qaug(2, 2) *= 100;
-    ct::core::OutputMatrix<OBS_DIM, double> R = ct::core::OutputMatrix<OBS_DIM, double>::Identity();
+    ct::core::OutputMatrix<OUTPUT_DIM, double> R = ct::core::OutputMatrix<OUTPUT_DIM, double>::Identity();
 
     std::shared_ptr<ct::core::SystemLinearizer<STATE_DIM + DIST_DIM, CONTROL_DIM, double>> linearizer(
         new ct::core::SystemLinearizer<STATE_DIM + DIST_DIM, CONTROL_DIM, double>(customdisturbedSystem));
@@ -164,7 +170,7 @@ int main(int argc, char** argv)
     ct::core::StateVector<STATE_DIM + DIST_DIM> x0aug;
     x0aug << states[0], 0;
     ct::optcon::ExtendedKalmanFilter<STATE_DIM + DIST_DIM, double> ekf(x0aug);
-    ct::optcon::DisturbanceObserver<OBS_DIM, STATE_DIM, DIST_DIM, CONTROL_DIM,
+    ct::optcon::DisturbanceObserver<OUTPUT_DIM, STATE_DIM, DIST_DIM, CONTROL_DIM,
         ct::optcon::ExtendedKalmanFilter<STATE_DIM + DIST_DIM, double>, double>
         disturbanceObserver(customdisturbedSystem, sensApprox, dt, Caug, ekf, Qaug, R);
 
@@ -189,7 +195,6 @@ int main(int argc, char** argv)
                   << "\t\t" << states_est[i][2] << std::endl
                   << std::endl;
     }
-
 
     return 0;
 }

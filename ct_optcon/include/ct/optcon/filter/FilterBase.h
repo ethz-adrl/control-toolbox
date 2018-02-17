@@ -9,12 +9,12 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-template <size_t OBS_DIM, size_t STATE_DIM, typename SCALAR = double>
+template <size_t OUTPUT_DIM, size_t STATE_DIM, typename SCALAR = double>
 class FilterBase
 {
 public:
     using state_vector_t  = ct::core::StateVector<STATE_DIM, SCALAR>;
-    using output_vector_t = ct::core::OutputVector<OBS_DIM, SCALAR>;
+    using output_vector_t = ct::core::OutputVector<OUTPUT_DIM, SCALAR>;
     using Time_t          = ct::core::Time;
 
     virtual ~FilterBase() {}
