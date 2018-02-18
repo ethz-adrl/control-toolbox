@@ -1,0 +1,249 @@
+/*!
+@page ik_tutorials Inverse Kinematics Tutorials
+
+In this tutorial we shall cover ways of generating the inverse kinematics analytic solvers using <a href="http://openrave.org/docs/latest_stable/openravepy/ikfast">IKFast</a>. All of the ways should produce the same result, the only difference between them is the amount of setting up required to make it work.
+
+IKFast is closed-form analytic inverse kinematics solver which generates IK solutions in the order of microseconds, which is usually a few orders of magnitude faster than the numerical solvers. Since the solver is analytic, certain assumptions must be satisfied, thus making the solver less general than the numerical solvers.
+
+The simplest way of generating a solver, which potentially lacks customizability, is to use <a href="https://www.hamzamerzic.info/ikfast/">this</a> online service which generates the desired inverse kinematics file. Simply upload the URDF or DAE file for which you wish to generate the inverse kinematics and follow the instructions from there.
+
+The more involved approaches are presented in the pages below.
+
+- \subpage ik_tut_docker
+- \subpage ik_tut_local
+
+After the solver is generated, to integrate it to your system visit
+
+- \subpage ik_implement
+
+In case of errors, please consult the FAQ provided below. If your error is not addressed, please consult the official <a href="openrave-users@lists.sourceforge.net">mailing list</a>, post an <a href="https://github.com/rdiankov/openrave">issue</a> or contact us for support.
+
+- \subpage ik_faq
+
+\page ik_tut_docker Generate IKFast solvers using a Docker image
+@tableofcontents
+
+In this tutorial we shall cover generating IKFast using <a href="https://www.docker.com/">Docker</a>. Docker container images are lightweight, stand-alone, executable packages that include everything needed to run a software: code, runtime, system tools, system libraries, and configurations. This allows avoiding to deal with software dependencies, and have a software along with all the dependencies set up with just a single command.
+
+\section ik_tut_docker_setup Setting up Docker
+
+The first step required in order to be able to run Docker containers is to set up the Docker daemon - the software that is able to execute the containers. There are multiple ways of doing this. Here we shall present the official way of doing this on Linux as of the moment of writing. For a more up-to-date configuration, please consult the official Docker website.
+
+To set up the Docker daemon, simply run the following commands.
+
+\code{.sh}
+sudo apt-get update
+sudo apt-get install -y linux-image-extra-$(uname -r) linux-image-extra-virtual apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo apt-key fingerprint 0EBFCD88
+sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+sudo apt-get install -y docker-ce
+sudo groupadd docker
+sudo usermod -aG docker $USER
+\endcode
+
+After this it is necessary to log out and log in again with the same user so that Docker daemon is able to run with newly defined permissions.
+
+\section ik_tut_docker_generate Generating the solver
+
+Now that Docker is up and running, we shall generate the inverse kinematics solver.
+To do that, we first need to get the Docker image containing IKFast. For this we recommend the image located <a href="https://hub.docker.com/r/hamzamerzic/openrave/">here</a>.
+
+\subsection ik_tut_docker_step1 Getting the image
+
+Thus, to obtain the image we can simply run
+
+\code{.sh}
+docker pull hamzamerzic/openrave
+\endcode
+
+To test if the image works simply run
+
+\code{.sh}
+docker run -it hamzamerzic/openrave
+python -c 'import openravepy; print openravepy.__version__'
+\endcode
+
+which should give "0.9.0" as output. The second command should be ran within the container's shell.
+
+\subsection ik_tut_docker_step2 Generating the solver
+
+The image that was obtained contains all the dependencies needed to run IKFast's solver generation. To do this make sure you have the DAE or URDF file of your robot. In case you only have a URDF file an intermediate step needs to be done in order to convert it to DAE. To do that, make sure you have ROS and ros-<ros_version>-collada-urdf package installed and run
+
+\code{.sh}
+rosrun collada_urdf urdf_to_collada <robot_urdf> robot_full.dae
+\endcode
+
+Optionally, you can round the floating numbers in the DAE file for better numeric stability. To do that simply run
+
+\code{.sh}
+rosrun moveit_kinematics round_collada_numbers.py robot_full.dae robot.dae 6
+\endcode
+
+Here 6 specifies the number of decimal places we wish to keep. You can experiment with the precision. In the next steps we assume that the robot file is robot.dae.
+
+\code{.sh}
+docker run --rm --env PYTHONPATH=/usr/local/lib/python2.7/dist-packages -v <path_to_robot_file_directory>:/out hamzamerzic/openrave /bin/bash -c "cd /out; openrave-robot.py robot.dae --info links"
+\endcode
+
+As output you should get something like
+
+\code
+name   index parents
+--------------------
+link_0 0
+link_1 1     link_0
+link_2 2     link_1
+link_3 3     link_2
+link_4 4     link_3
+link_5 5     link_4
+link_6 6     link_5
+--------------------
+name   index parents
+\endcode
+
+The important things to look for are the indices as we need them in order to specify from which to which link to calculate the inverse kinematics. In case the indices are not showing, you should consult with the FAQ.
+
+Now that we know which indices correspond to the base link and to the end effector link, we can continue with generating the solver. To do that simply run
+
+\code{.sh}
+docker run --rm --env PYTHONPATH=/usr/local/lib/python2.7/dist-packages -v <path_to_robot_file_directory>:/out hamzamerzic/openrave /bin/bash -c "cd /out; python /usr/local/lib/python2.7/dist-packages/openravepy/_openravepy_/ikfast.py --robot=robot.dae --iktype=transform6d --baselink=0 --eelink=6 --savefile=custom_ik.cpp"
+\endcode
+
+Here we assumed that the baselink and end effector links are 0 and 6, respectively. For the inverse kinematics type, we used the full Transform6D inverse kinematics, but other options are also <a href="http://openrave.org/docs/latest_stable/openravepy/ikfast">available</a>.
+
+Now that we have the solver in place we can skip directly to the \ref ik_implement page.
+
+\page ik_tut_local Generate IKFast solver with OpenRAVE built from source
+@tableofcontents
+
+Here we shall set up the IKFast by building OpenRAVE from source.
+
+\section ik_tut_local_step1 Building OpenRAVE from source
+
+A simple way to do that is to run the <a href="https://hub.docker.com/r/hamzamerzic/openrave/">commands</a> used to generate the Docker image from the previous section. By doing that we get the following list of commands (as per instructions on the page)
+
+\code{.sh}
+sudo apt-get install libbullet-dev libode-dev liblapack-dev python-scipy libfcl-dev
+sudo pip uninstall mpmath
+sudo pip install sympy==0.7.1
+git clone https://github.com/rdiankov/openrave.git
+sudo apt-get install "collada-dom2.4-dp*" libsoqt4-dev
+cd openrave/
+mkdir build && cd build
+cmake ..
+make -j
+sudo make install
+cd
+\endcode
+
+To test if our setup works do
+
+\code{.sh}
+python -c 'import openravepy; print openravepy.__version__'
+\endcode
+
+which should give "0.9.0" as output. Make sure you leave the build directory of OpenRAVE, otherwise an importing error might occur.
+
+Now that OpenRAVE is set up, we can generate the solver.
+
+\section ik_tut_local_step2 Generating the solver
+
+To generate the IKFast solver, make sure you have the DAE or URDF file of your robot. In case you only have a URDF file, an intermediate step needs to be done in order to convert it to DAE. To do that, make sure you have ROS and ros-<ros_version>-collada-urdf package installed and run
+
+\code{.sh}
+rosrun collada_urdf urdf_to_collada <robot_urdf> robot_full.dae
+\endcode
+
+Optionally, you can round the floating numbers in the DAE file for better numeric stability. To do that simply run
+
+\code{.sh}
+rosrun moveit_kinematics round_collada_numbers.py robot_full.dae robot.dae 6
+\endcode
+
+Here 6 specifies the number of decimal places we wish to keep. You can experiment with the precision. In the next steps we assume that the robot file is called robot.dae.
+
+\code{.sh}
+cd <path_to_robot_file_directory>
+openrave-robot.py robot.dae --info links
+\endcode
+
+As output you should get something like
+
+\code
+name   index parents
+--------------------
+link_0 0
+link_1 1     link_0
+link_2 2     link_1
+link_3 3     link_2
+link_4 4     link_3
+link_5 5     link_4
+link_6 6     link_5
+--------------------
+name   index parents
+\endcode
+
+The important things to look for are the indices as we need them in order to specify from which to which link to calculate the inverse kinematics. In case the indices are not showing, you should consult with the FAQ.
+
+Now that we know which indices correspond to the base link and to the end effector link, we can continue with generating the solver. To do that simply run
+
+\code{.sh}
+cd <path_to_robot_file_directory>
+`openrave-config --python-dir`/openravepy/_openravepy_/ikfast.py --robot=robot.dae --iktype=transform6d --baselink=0 --eelink=6 --savefile=custom_ik.cpp
+\endcode
+
+Here we assumed that the baselink and end effector links are 0 and 6, respectively. For the inverse kinematics type, we used the full Transform6D inverse kinematics, but other options are also <a href="http://openrave.org/docs/latest_stable/openravepy/ikfast">available</a>.
+
+Now that we have the solver in place we can move on to the \ref ik_implement page.
+
+\page ik_implement Build IKFast library
+@tableofcontents
+
+Assuming that the solver is successfully generated, we can now build an inverse kinematics library for our robot. In order to do that, we need to follow two simple steps.
+
+\subsection ik_tut_build_step1 Step 1: Implement the InverseKinematicsBase interface
+
+For our solver we need to implement the InverseKinematicsBase interface found in ct/rbd/robot/kinematics/. There are a few things to pay attention to when doing this:
+
+1. We need to include ikfast.h,
+2. Before including ikfast.h two lines must be added containing:
+    \code{.cpp}
+    #define IKFAST_HAS_LIBRARY
+    #define IKFAST_NAMESPACE <desired_namespace>
+    \endcode
+
+3. Make sure that the rotation matrices are in row-major form
+
+To take inspiration on how to implement the interface, consult ct/models/HyA/HyAInverseKinematics.h.
+
+\subsection ik_tut_build_step2 Step 2: Add the library build recipe in the CMakeLists.txt
+
+This step is pretty straightforward. In order to build the library we need to specify some custom target properties which are shown in the lines below
+
+\code{.cmake}
+add_library(<library_name>
+  <path_to_generated_solver_file> (e.g. transform6d.cpp from before)
+)
+set_target_properties(<library_name> PROPERTIES COMPILE_FLAGS "-std=c++98 -fPIC -DIKFAST_NAMESPACE=<desired_namespace> -DIKFAST_NO_MAIN -Wno-unused-variable")
+\endcode
+
+... and we are done! To use the inverse kinematics library simply link to it like you would with any other library.
+
+\page ik_faq FAQ
+@tableofcontents
+
+\section ik_faq_from_kindsl URDF files from .kindsl
+
+When using URDF files generated from .kindsl file, make sure to add in the joint limits. Otherwise, the command for obtaining link indices will fail, due to issues in generating the kinematic tree.
+
+\section ik_faq_num_solutions Joint limits not taken into account
+
+IKFast by default does not deal with joint limits, the final solutions have to be filtered for feasibility.
+
+\section ik_faq_solver_fails Solver generation fails
+
+There are multiple reasons why the solver generation can fail. As mentioned earlier, the most common one is due to the assumptions made in order to be able to generate the solutions analytically. These assumptions reduce the generality of the solvers.
+
+*/
