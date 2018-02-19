@@ -8,6 +8,10 @@ option(USE_LAPACKE "Use lapacke bindings for Eigen" false)
 option(USE_BLAS "Use blas bindings for Eigen" false)
 option(HPIPM "Build HPIPM Optimal Control solver" false)
 
+## option to activate/deactivate explicit template prespecs
+option(USE_PRESPEC "Compile with explicit template prespec" false)
+
+
 if (USE_CLANG AND USE_INTEL)
     message (FATAL_ERROR "Please choose either intel or clang compiler or neither.")
 endif()

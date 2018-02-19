@@ -27,8 +27,10 @@ if(BUILD_HYQ_FULL)
 endif(BUILD_HYQ_FULL)
 
 ## assemble list of libraries that contain prespecified templates
-ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_models")
-message(WARNING "CT Models: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
+if(USE_PRESPEC)
+    ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_models")
+    message(WARNING "CT Models: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
+endif(USE_PRESPEC)
 
 catkin_package(
   INCLUDE_DIRS
@@ -51,7 +53,9 @@ set(HYQ_CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/HyQ/co
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/CodegenOutputDirs.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/CodegenOutputDirs.h)
 
 # add libraries for explicit template
-ct_add_explicit_template_libs()
+if(USE_PRESPEC)
+    ct_add_explicit_template_libs()
+endif(USE_PRESPEC)
 
 ################ HyQ #################
 add_executable(HyQLinearizationCodgen src/HyQ/codegen/HyQLinearizationCodgen.cpp)

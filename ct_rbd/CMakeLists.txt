@@ -14,8 +14,10 @@ find_package(kindr)
 
 
 ## assemble list of libraries that contain prespecified templates
+if(USE_PRESPEC)
 ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_rbd")
 message(WARNING "CT RBD: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
+endif(USE_PRESPEC)
 
 #used later for clang-tidy
 set(INC_DIRS ${catkin_INCLUDE_DIRS} ${kindr_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/include/ct/rbd")
@@ -48,7 +50,9 @@ include_directories(
 
 
 # add libraries for explicit template
-ct_add_explicit_template_libs()
+if(USE_PRESPEC)
+    ct_add_explicit_template_libs()
+endif(USE_PRESPEC)
 
 
 ## TESTING
