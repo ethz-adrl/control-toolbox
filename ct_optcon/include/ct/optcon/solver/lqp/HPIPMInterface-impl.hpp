@@ -11,17 +11,20 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-
 template <int STATE_DIM, int CONTROL_DIM>
-HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(int N) : N_(-1), x0_(nullptr), settings_(NLOptConSettings())
+HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(int N)
+    : N_(N), nb_(1, 0), ng_(1, 0), x0_(nullptr), settings_(NLOptConSettings())
 {
     // some zero variables
     hb0_.setZero();
     hr0_.setZero();
 
     // by default, set number of box and general constraints to zero
-    nb_.resize(1, 0);
-    ng_.resize(1, 0);
+    if (N > 0)
+    {
+        nb_.resize(N, 0);
+        ng_.resize(N, 0);
+    }
 
     configure(settings_);
 }
@@ -353,10 +356,10 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
             configureGeneralConstraints(lqocProblem);
     }
 
-    // we do not need to reset the pointers if
-    bool keepPointers = this->lqocProblem_ &&                      //there was an lqocProblem before
-                        N_ == lqocProblem->getNumberOfStages() &&  // and the number of states did not change
-                        this->lqocProblem_ == lqocProblem;         // and it was the same pointer
+    // we do not need to reset the pointers if ...
+    bool keepPointers = this->lqocProblem_ &&                      // ...there was an lqocProblem before...
+                        N_ == lqocProblem->getNumberOfStages() &&  // ...and the number of states did not change...
+                        this->lqocProblem_ == lqocProblem;         // ...and it was the same pointer.
 
     // setup unconstrained part of problem
     setupCostAndDynamics(lqocProblem->x_, lqocProblem->u_, lqocProblem->A_, lqocProblem->B_, lqocProblem->b_,
@@ -421,7 +424,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
         assert(lqocProblem->D_[i].cols() == CONTROL_DIM);
 
         // get the number of constraints
-        ng_[i] = lqocProblem->d_lb_[i].rows();
+        ng_[i] = lqocProblem->ng_[i];
 
         // set pointers to hpipm-style box constraint boundaries and sparsity pattern
         hd_lg_[i] = lqocProblem->d_lb_[i].data();

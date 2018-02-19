@@ -227,6 +227,10 @@ protected:
 
     //! the algorithm for sequencing the math operations in correct manner
     std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>> nlocAlgorithm_;
+
+private:
+    //! update algorithm (private use only, should not be called from extern, use configure() or initialize() for that purpose)
+    void setAlgorithm(const Settings_t& settings);
 };
 
 
