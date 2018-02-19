@@ -304,8 +304,10 @@ if(USE_PRESPEC)
     catkin_add_gtest(LqrTestPrespec test/lqr/LqrTestPrespec.cpp)
     target_link_libraries(LqrTestPrespec ${catkin_LIBRARIES} ${LAPACK_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
     
-    catkin_add_gtest(LQOCSolverTestPrespec test/solver/linear/LQOCSolverTestPrespec.cpp)
-    target_link_libraries(LQOCSolverTestPrespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIB_NAMES})
+    if(HPIPM)
+        catkin_add_gtest(LQOCSolverTestPrespec test/solver/linear/LQOCSolverTestPrespec.cpp)
+        target_link_libraries(LQOCSolverTestPrespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIB_NAMES})
+    endif(HPIPM)
     
     catkin_add_gtest(LinearSystemTestPrespec test/nloc/LinearSystemTestPrespec.cpp)
     target_link_libraries(LinearSystemTestPrespec ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
