@@ -30,12 +30,14 @@ void timeSingleSolve(size_t N, std::vector<std::vector<double>>& loggedSolveTime
     std::shared_ptr<LQOCSolver<state_dim, control_dim>> gnRiccatiSolver(new GNRiccatiSolver<state_dim, control_dim>(N));
     std::vector<std::string> solverNames = {"Riccati", "HPIPM"};
 
-    NLOptConSettings gnRiccatiSolverSettings;
-    gnRiccatiSolverSettings.fixedHessianCorrection = true;
-    gnRiccatiSolverSettings.epsilon = 0;
-    gnRiccatiSolverSettings.recordSmallestEigenvalue = false;
-    gnRiccatiSolverSettings.nThreadsEigen = 1;
-    gnRiccatiSolver->configure(gnRiccatiSolverSettings);
+    NLOptConSettings solverSettings;
+    solverSettings.fixedHessianCorrection = true;
+    solverSettings.epsilon = 0;
+    solverSettings.recordSmallestEigenvalue = false;
+    solverSettings.nThreadsEigen = 1;
+
+    gnRiccatiSolver->configure(solverSettings);
+    hpipmSolver->configure(solverSettings);
 
     lqocSolvers.push_back(gnRiccatiSolver);
     lqocSolvers.push_back(hpipmSolver);
@@ -70,6 +72,7 @@ void timeSingleSolve(size_t N, std::vector<std::vector<double>>& loggedSolveTime
     for (size_t i = 0; i < lqocSolvers.size(); i++)
     {
         std::vector<double> setProblemTime;
+        std::vector<double> allocTime;
         std::vector<double> solveTime;
         std::vector<double> getTime;
         std::vector<double> totalTime;
@@ -87,6 +90,10 @@ void timeSingleSolve(size_t N, std::vector<std::vector<double>>& loggedSolveTime
             lqocSolvers[i]->setProblem(problems[i]);
             auto end_set = std::chrono::steady_clock::now();
 
+            auto start_alloc = std::chrono::steady_clock::now();
+            lqocSolvers[i]->initializeAndAllocate();
+            auto end_alloc = std::chrono::steady_clock::now();
+
             auto start_solve = std::chrono::steady_clock::now();
             lqocSolvers[i]->solve();
             auto end_solve = std::chrono::steady_clock::now();
@@ -100,6 +107,7 @@ void timeSingleSolve(size_t N, std::vector<std::vector<double>>& loggedSolveTime
 
             // record times
             setProblemTime.push_back(std::chrono::duration<double, std::milli>(end_set - start_set).count());
+            allocTime.push_back(std::chrono::duration<double, std::milli>(end_alloc - start_alloc).count());
             solveTime.push_back(std::chrono::duration<double, std::milli>(end_solve - start_solve).count());
             getTime.push_back(std::chrono::duration<double, std::milli>(end_get - start_get).count());
             totalTime.push_back(std::chrono::duration<double, std::milli>(end_all - start_all).count());
@@ -107,6 +115,7 @@ void timeSingleSolve(size_t N, std::vector<std::vector<double>>& loggedSolveTime
 
         // average times
         double avgSetTime = std::accumulate(setProblemTime.begin(), setProblemTime.end(), 0.0) / (double)nRuns;
+        double avgAllocTime = std::accumulate(allocTime.begin(), allocTime.end(), 0.0) / (double)nRuns;
         double avgSolveTime = std::accumulate(solveTime.begin(), solveTime.end(), 0.0) / (double)nRuns;
         double avgGetTime = std::accumulate(getTime.begin(), getTime.end(), 0.0) / (double)nRuns;
         double avgTotalTime = std::accumulate(totalTime.begin(), totalTime.end(), 0.0) / (double)nRuns;
@@ -114,17 +123,11 @@ void timeSingleSolve(size_t N, std::vector<std::vector<double>>& loggedSolveTime
         loggedSolveTimes[i].push_back(avgTotalTime);
 
         std::cout << "average setProblem() with " << solverNames[i] << " took\t" << avgSetTime << " ms" << std::endl;
+        std::cout << "average initializeAndAllocate() with " << solverNames[i] << " took\t" << avgAllocTime << " ms"
+                  << std::endl;
         std::cout << "average solve() with " << solverNames[i] << " took\t" << avgSolveTime << " ms" << std::endl;
         std::cout << "average get() with " << solverNames[i] << " took\t" << avgGetTime << " ms" << std::endl;
         std::cout << "average total call with " << solverNames[i] << " took\t" << avgTotalTime << " ms" << std::endl;
-
-        //			std::cout << "x:" << std::endl;
-        //			for (size_t j=0; j<xSol.size(); j++)
-        //				std::cout<<xSol[j].transpose()<<std::endl;
-        //
-        //			std::cout << "u:" << std::endl;
-        //			for (size_t j=0; j<uSol.size(); j++)
-        //				std::cout<<uSol[j].transpose()<<std::endl;
 
         std::cout << std::endl;
     }
@@ -180,7 +183,7 @@ int main(int argc, char** argv)
     timeSolvers<3, 3>();
     timeSolvers<6, 6>();
     timeSolvers<12, 12>();
-    timeSolvers<24, 24>();
+    timeSolvers<12, 24>();
     timeSolvers<12, 36>();
 
     return 1;

@@ -12,8 +12,8 @@ namespace ct {
 namespace optcon {
 
 template <int STATE_DIM, int CONTROL_DIM>
-HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(int N)
-    : N_(N), nb_(1, 0), ng_(1, 0), x0_(nullptr), settings_(NLOptConSettings())
+HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(const int N, const int nb, const int ng)
+    : N_(-1), nb_(1, nb), ng_(1, ng), x0_(nullptr), settings_(NLOptConSettings())
 {
     // some zero variables
     hb0_.setZero();
@@ -21,10 +21,7 @@ HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(int N)
 
     // by default, set number of box and general constraints to zero
     if (N > 0)
-    {
-        nb_.resize(N, 0);
-        ng_.resize(N, 0);
-    }
+        setSolverDimensions(N, nb, ng);
 
     configure(settings_);
 }
@@ -35,6 +32,14 @@ HPIPMInterface<STATE_DIM, CONTROL_DIM>::~HPIPMInterface()
 {
 }
 
+template <int STATE_DIM, int CONTROL_DIM>
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setSolverDimensions(const int N, const int nb, const int ng)
+{
+    nb_.resize(N + 1, nb);
+    ng_.resize(N + 1, ng);
+    changeNumberOfStages(N);
+    initializeAndAllocate();
+}
 
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
@@ -51,10 +56,9 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
     ipm_mem_.resize(ipm_size);
     ::d_create_ipm_hard_ocp_qp(&qp_, &arg_, &workspace_, ipm_mem_.data());
 
-    std::cout << "HPIPM allocating memory for QP"
-              << std::endl;  // always print to make sure users take note in case of wrong use
     if (settings_.lqoc_solver_settings.lqoc_debug_print)
     {
+        std::cout << "HPIPM allocating memory for QP with time horizon: " << N_ << std::endl;
         std::cout << "HPIPM qp_size: " << qp_size << std::endl;
         std::cout << "HPIPM qp_sol_size: " << qp_sol_size << std::endl;
         std::cout << "HPIPM ipm_size: " << ipm_size << std::endl;
@@ -79,41 +83,41 @@ template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
 {
     // optional printout
-    //    for (size_t i = 0; i < N_ + 1; i++)
-    //    {
-    //			std::cout << "HPIPM matrix printout for stage " << i << std::endl;
-    //			if (i<N_)
-    //			{
-    //				printf("\nA\n");
-    //				d_print_mat(STATE_DIM, STATE_DIM, hA_[i], STATE_DIM);
-    //				printf("\nB\n");
-    //				d_print_mat(STATE_DIM, CONTROL_DIM, hB_[i], STATE_DIM);
-    //				printf("\nb\n");
-    //				d_print_mat(1, STATE_DIM, hb_[i], 1);
-    //			}
+    //        for (size_t i = 0; i < N_ + 1; i++)
+    //        {
+    //    			std::cout << "HPIPM matrix printout for stage " << i << std::endl;
+    //    			if (i<N_)
+    //    			{
+    //    				printf("\nA\n");
+    //    				d_print_mat(STATE_DIM, STATE_DIM, hA_[i], STATE_DIM);
+    //    				printf("\nB\n");
+    //    				d_print_mat(STATE_DIM, CONTROL_DIM, hB_[i], STATE_DIM);
+    //    				printf("\nb\n");
+    //    				d_print_mat(1, STATE_DIM, hb_[i], 1);
+    //    			}
     //
-    //			printf("\nQ\n");
-    //			d_print_mat(STATE_DIM, STATE_DIM, hQ_[i], STATE_DIM);
-    //			printf("\nq\n");
-    //			d_print_mat(1, STATE_DIM, hq_[i], 1);
+    //    			printf("\nQ\n");
+    //    			d_print_mat(STATE_DIM, STATE_DIM, hQ_[i], STATE_DIM);
+    //    			printf("\nq\n");
+    //    			d_print_mat(1, STATE_DIM, hq_[i], 1);
     //
     //
-    //			if (i<N_)
-    //			{
-    //				printf("\nR\n");
-    //				d_print_mat(CONTROL_DIM, CONTROL_DIM, hR_[i], CONTROL_DIM);
-    //				printf("\nS\n");
-    //				d_print_mat(CONTROL_DIM, STATE_DIM, hS_[i], CONTROL_DIM);
-    //				printf("\nr\n");
-    //				d_print_mat(1, CONTROL_DIM, hr_[i], 1);
-    //			}
+    //    			if (i<N_)
+    //    			{
+    //    				printf("\nR\n");
+    //    				d_print_mat(CONTROL_DIM, CONTROL_DIM, hR_[i], CONTROL_DIM);
+    //    				printf("\nS\n");
+    //    				d_print_mat(CONTROL_DIM, STATE_DIM, hS_[i], CONTROL_DIM);
+    //    				printf("\nr\n");
+    //    				d_print_mat(1, CONTROL_DIM, hr_[i], 1);
+    //    			}
     //
-    //        int_print_mat(1, nb_[i], hidxb_[i], 1);
-    //        printf("\nhd_lb_\n");
-    //        d_print_mat(1, nb_[i], hd_lb_[i], 1);
-    //        printf("\nhd_ub_\n");
-    //        d_print_mat(1, nb_[i], hd_ub_[i], 1);
-    //    }  // end optional printout
+    //            int_print_mat(1, nb_[i], hidxb_[i], 1);
+    //            printf("\nhd_lb_\n");
+    //            d_print_mat(1, nb_[i], hd_lb_[i], 1);
+    //            printf("\nhd_ub_\n");
+    //            d_print_mat(1, nb_[i], hd_ub_[i], 1);
+    //        }  // end optional printout
 
     // set pointers to optimal control problem
     ::d_cvt_colmaj_to_ocp_qp(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(),
@@ -356,14 +360,9 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
             configureGeneralConstraints(lqocProblem);
     }
 
-    // we do not need to reset the pointers if ...
-    bool keepPointers = this->lqocProblem_ &&                      // ...there was an lqocProblem before...
-                        N_ == lqocProblem->getNumberOfStages() &&  // ...and the number of states did not change...
-                        this->lqocProblem_ == lqocProblem;         // ...and it was the same pointer.
-
     // setup unconstrained part of problem
     setupCostAndDynamics(lqocProblem->x_, lqocProblem->u_, lqocProblem->A_, lqocProblem->B_, lqocProblem->b_,
-        lqocProblem->P_, lqocProblem->qv_, lqocProblem->Q_, lqocProblem->rv_, lqocProblem->R_, keepPointers);
+        lqocProblem->P_, lqocProblem->qv_, lqocProblem->Q_, lqocProblem->rv_, lqocProblem->R_);
 
 
     if (nStagesChanged)
@@ -454,8 +453,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
     StateVectorArray& qv,
     StateMatrixArray& Q,
     ControlVectorArray& rv,
-    ControlMatrixArray& R,
-    bool keepPointers)
+    ControlMatrixArray& R)
 {
     if (N_ == -1)
         throw std::runtime_error("Time horizon not set, please set it first");
@@ -463,13 +461,14 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
     // set the initial state
     x0_ = x[0].data();
 
-    /*
+/*
      * transcribe the "differential" representation of the OptConProblem to the absolute origin of
      * the linear system.
      * Note: constant terms are not even handed over above (not important for solving LQ problem).
      */
 
-    // STEP 1: transcription of affine system dynamics offset term
+// STEP 1: transcription of affine system dynamics offset term
+#pragma omp parallel for
     for (int i = 0; i < N_; i++)
     {
         bEigen_[i] = b[i] + x[i + 1] - A[i] * x[i] - B[i] * u[i];
@@ -477,7 +476,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
     hb0_ = b[0] + x[1] - B[0] * u[0];  // this line needs to be transcribed separately (correction for first stage)
 
 
-    // STEP 2: transcription of intermediate costs
+// STEP 2: transcription of intermediate costs
+#pragma omp parallel for
     for (int i = 0; i < N_; i++)
     {
         hqEigen_[i] = qv[i] - Q[i] * x[i] - P[i].transpose() * u[i];
@@ -491,25 +491,22 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
 
 
     // STEP 4: The following quantities remain unchanged when changing coordinate systems
-    if (!keepPointers)
+    for (int i = 0; i < N_; i++)
     {
-        for (int i = 0; i < N_; i++)
-        {
-            hA_[i] = A[i].data();
-            hB_[i] = B[i].data();
-        }
-
-        // intermediate cost hessians and cross-terms
-        for (int i = 0; i < N_; i++)
-        {
-            hQ_[i] = Q[i].data();
-            hS_[i] = P[i].data();
-            hR_[i] = R[i].data();
-        }
-
-        // final cost hessian state
-        hQ_[N_] = Q[N_].data();
+        hA_[i] = A[i].data();
+        hB_[i] = B[i].data();
     }
+
+    // intermediate cost hessians and cross-terms
+    for (int i = 0; i < N_; i++)
+    {
+        hQ_[i] = Q[i].data();
+        hS_[i] = P[i].data();
+        hR_[i] = R[i].data();
+    }
+
+    // final cost hessian state
+    hQ_[N_] = Q[N_].data();
 
     // reset lqocProblem pointer, will get set in Base class if needed
     this->lqocProblem_ = nullptr;

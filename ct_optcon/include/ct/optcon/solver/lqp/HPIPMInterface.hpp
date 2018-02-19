@@ -66,7 +66,9 @@ public:
     using box_constr_sparsity_t = Eigen::Matrix<int, max_box_constr_dim, 1>;
 
     //! constructor
-    HPIPMInterface(int N = -1);
+    HPIPMInterface(const int N = -1,
+        const int nb = 0,
+        const int ng = 0);
 
     //! destructor
     virtual ~HPIPMInterface();
@@ -108,6 +110,10 @@ public:
     virtual void initializeAndAllocate() override;
 
 private:
+    void setSolverDimensions(const int N,
+        const int nb = 0,
+        const int ng = 0);
+
     /*!
      * @brief set problem implementation for hpipm
      * \warning This method is called in the loop. As little memory as possible
@@ -132,7 +138,6 @@ private:
      * @param Q pure state-cost term \f$ \mathbf Q_n \f$ (second order derivative)
      * @param rv pure input-cost term \f$ \mathbf r_n \f$ (first order derivative)
      * @param R pure input-cost term \f$ \mathbf R_n \f$ (second order derivative)
-     * @param keepPointers keep pointers
      *
      *
      * This method needs change coordinate systems, in the sense that
@@ -150,8 +155,7 @@ private:
         StateVectorArray& qv,
         StateMatrixArray& Q,
         ControlVectorArray& rv,
-        ControlMatrixArray& R,
-        bool keepPointers = false);
+        ControlMatrixArray& R);
 
     /*!
      * @brief change number of states of the optimal control problem

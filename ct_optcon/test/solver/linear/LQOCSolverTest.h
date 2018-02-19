@@ -63,22 +63,13 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
     problems[0]->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, b, dt);
     problems[1]->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, b, dt);
 
-    // configure box constraints
-    try
-    {
-        // try to give GNRiccati a constraint...
-        lqocSolvers[1]->configureBoxConstraints(problems[1]);
-        ASSERT_TRUE(false);
-    } catch (const std::exception& e)
-    {
-        // ... should fail
-        ASSERT_TRUE(true);
-    }
-    lqocSolvers[1]->configureBoxConstraints(problems[1]);
-
     // set the problem pointers
     lqocSolvers[0]->setProblem(problems[0]);
     lqocSolvers[1]->setProblem(problems[1]);
+
+    // allocate memory (if required)
+    lqocSolvers[0]->initializeAndAllocate();
+    lqocSolvers[1]->initializeAndAllocate();
 
     // solve the problems
     lqocSolvers[0]->solve();
