@@ -18,13 +18,16 @@ If you need additional support, feel free to create an issue on Bitbucket or con
 
 \section tut_basics_pkg Creating a ROS package
 CT is middleware free. Therefore, you are not bound to use ROS or catkin. However, for the sake of simplicity we will use catkin in this tutorial.
-Make sure you have succesfully downloaded and compiled CT according to our @ref gs instructions. Afterwards go to your catkin workspace
+In case you need a refresher on catkin, please go through the tutorials [here](http://wiki.ros.org/catkin/Tutorials).
+Make sure you have succesfully downloaded and compiled CT according to our @ref gs instructions. 
+Afterwards go to your catkin workspace
 and create a new package
 
 \code{.sh}
 cd ~/catkin_ws/src
 catkin_create_pkg my_ct_project roscpp ct_core ct_rbd ct_optcon ct_models
 \endcode
+
 
 In this example, we made \a my_ct_project dependent on all CT packages. This is not strictly necessary, however there is no harm to it either.
 
