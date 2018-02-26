@@ -17,3 +17,4 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "LinearConstraintContainer.h"
 #include "ConstraintContainerAD.h"
 #include "ConstraintContainerAnalytical.h"
+#include "SwitchedLinearConstraintContainer.h"
