@@ -10,7 +10,9 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "systems/continuous_time/ControlledSystem.h"
 #include "systems/continuous_time/SecondOrderSystem.h"
 #include "systems/continuous_time/ControlledSystem.h"
+#include "systems/continuous_time/SwitchedControlledSystem.h"
 #include "systems/continuous_time/linear/LinearSystem.h"
+#include "systems/continuous_time/linear/SwitchedLinearSystem.h"
 #include "systems/continuous_time/linear/LTISystem.h"
 
 #include "systems/linearizer/DynamicsLinearizerNumDiff.h"

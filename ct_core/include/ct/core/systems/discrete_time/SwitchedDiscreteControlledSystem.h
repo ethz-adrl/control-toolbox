@@ -22,7 +22,7 @@ namespace ct {
  * \f]
  *
  * where \f$ x_{n} \f$ is the state, \f$ u_{n} \f$ the control input and \f$ n \f$ the time index.
- * \f$ f_{i} refers to the dynamics in a specific mode. Modes are prespecified as a function the time index
+ * \f$ f_{i} \f$ refers to the dynamics in a specific mode. Modes are prespecified as a function of time.
  *
  *
  * For implementing your own SwitchedDiscreteControlledSystem, provide a vector of Discrete systems
@@ -88,7 +88,14 @@ namespace ct {
             //! deep copy
             virtual SwitchedDiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone()  const
             {
-              throw std::runtime_error("SwitchedDiscreteControlledSystem: clone() not implemented");
+              auto clone_ = new SwitchedDiscreteControlledSystem(*this);
+
+              // Clone individual subsystems for thread safety
+              clone_->switchedSystems_.clear();
+              for (auto& subSystem : this->switchedSystems_){
+                clone_->switchedSystems_.emplace_back(subSystem->clone());
+              }
+              return clone_;
             };
 
             //! propagates the controlled system dynamics forward by one step

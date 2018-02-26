@@ -11,7 +11,7 @@ namespace ct {
 
 //! class for a general switched discrete linear system or linearized discrete system
 /*!
- * Defines the interface for a discrete linear system
+ * Defines the interface for a switched discrete linear system
  *
  * \tparam STATE_DIM size of state vector
  * \tparam CONTROL_DIM size of input vector
@@ -51,7 +51,14 @@ namespace ct {
             //! deep cloning
             virtual SwitchedDiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
             {
-              throw std::runtime_error("SwitchedDiscreteLinearSystem: clone() not implemented");
+              auto clone_ = new SwitchedDiscreteLinearSystem(*this);
+
+              // Clone individual subsystems for thread safety
+              clone_->switchedLinearSystems_.clear();
+              for (auto& linearSystem : this->switchedLinearSystems_){
+                clone_->switchedLinearSystems_.emplace_back(linearSystem->clone());
+              }
+              return clone_;
             };
 
             //! compute the system dynamics
