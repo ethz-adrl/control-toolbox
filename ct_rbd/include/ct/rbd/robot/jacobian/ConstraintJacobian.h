@@ -24,7 +24,7 @@ class ConstraintJacobian : public OperationalJacobianBase<OUTPUTS, NJOINTS, SCAL
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef tpl::RBDState<NJOINTS, SCALAR> RBDState_t;
+    typedef RBDState<NJOINTS, SCALAR> RBDState_t;
     typedef typename OperationalJacobianBase<OUTPUTS, NJOINTS, SCALAR>::jacobian_t jacobian_t;
     typedef Eigen::Matrix<SCALAR, 3, 3> Matrix3s;
 

@@ -10,6 +10,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #define IKFAST_NAMESPACE hya_ik
 #include <ikfast.h>
 #include <ct/core/core.h>
+#include <ct/rbd/state/JointState.h>
+#include <ct/models/HyA/HyAJointLimits.h>
 
 #include <ct/rbd/robot/kinematics/InverseKinematicsBase.h>
 
@@ -22,33 +24,38 @@ template <typename SCALAR = double>
 class HyAInverseKinematics : InverseKinematicsBase<6, SCALAR>
 {
 public:
-    virtual std::vector<typename tpl::JointState<6, SCALAR>::Position> computeInverseKinematics(
+    virtual std::vector<typename JointState<6, SCALAR>::Position> computeInverseKinematics(
         const tpl::RigidBodyPose<SCALAR>& eeBasePose,
         const std::vector<SCALAR>& freeJoints = std::vector<SCALAR>()) const
     {
-        // TODO: Check for valid solutions.
         IkSolutionList<double> solutions;
 
         if (size_t(hya_ik::GetNumFreeParameters()) != freeJoints.size())
-            throw "Error";
+            throw std::runtime_error("Error specifying free joints");
 
-        hya_ik::ComputeIk(eeBasePose.position().toImplementation().data(),
-            eeBasePose.getRotationMatrix().toImplementation().data(),
+        // Data needs to be in row-major form.
+        Eigen::Matrix<SCALAR, 3, 3, Eigen::RowMajor> eeBaseRotationRowMajor =
+            eeBasePose.getRotationMatrix().toImplementation();
+        hya_ik::ComputeIk(eeBasePose.position().toImplementation().data(), eeBaseRotationRowMajor.data(),
             freeJoints.size() > 0 ? freeJoints.data() : nullptr, solutions);
 
         size_t num_solutions = solutions.GetNumSolutions();
-        std::vector<typename tpl::JointState<6, SCALAR>::Position> res(solutions.GetNumSolutions());
+        std::vector<typename JointState<6, SCALAR>::Position> res;
 
+        JointState<6, SCALAR> sol;
         for (size_t i = 0u; i < num_solutions; ++i)
         {
             const IkSolutionBase<double>& solution = solutions.GetSolution(i);
-            solution.GetSolution(res[i].data(), freeJoints.size() > 0 ? freeJoints.data() : nullptr);
+            solution.GetSolution(sol.getPositions().data(), freeJoints.size() > 0 ? freeJoints.data() : nullptr);
+            sol.toUniquePosition(ct::models::HyA::jointLowerLimit());
+            if (sol.checkPositionLimits(ct::models::HyA::jointLowerLimit(), ct::models::HyA::jointUpperLimit()))
+                res.push_back(sol.getPositions());
         }
 
         return res;
     }
 
-    virtual std::vector<typename tpl::JointState<6, SCALAR>::Position> computeInverseKinematics(
+    virtual std::vector<typename JointState<6, SCALAR>::Position> computeInverseKinematics(
         const tpl::RigidBodyPose<SCALAR>& eeWorldPose,
         const tpl::RigidBodyPose<SCALAR>& baseWorldPose,
         const std::vector<SCALAR>& freeJoints = std::vector<SCALAR>()) const

@@ -143,7 +143,7 @@ public:
 	 * @param state The state of the robot
 	 * @return End-effector forces expressed in the world frame
 	 */
-    EEForcesLinear computeContactForces(const tpl::RBDState<NJOINTS, SCALAR>& state)
+    EEForcesLinear computeContactForces(const RBDState<NJOINTS, SCALAR>& state)
     {
         EEForcesLinear eeForces;
 
@@ -198,7 +198,7 @@ private:
 	 */
     Vector3s computePenetration(const size_t& eeId,
         const tpl::RigidBodyPose<SCALAR>& basePose,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+        const typename JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
         Position3S pos = kinematics_->getEEPositionInWorld(eeId, basePose, jointPosition);
 

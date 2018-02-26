@@ -66,6 +66,7 @@ public:
     using RigidBodyPoseTpl = tpl::RigidBodyPose<SCALAR>;
     using EEForce = SpatialForceVector<SCALAR>;
     using EEForceLinear = Vector3Tpl;
+    using JointState_t = JointState<NJOINTS, SCALAR>;
 
     void initEndeffectors(std::array<EndEffector<NJOINTS, SCALAR>, NUM_EE>& endeffectors)
     {
@@ -109,13 +110,8 @@ public:
     HomogeneousTransforms& transforms() { return robcogen().homogeneousTransforms(); }
     const Jacobians& jacobians() const { return robcogen().jacobians(); }
     Jacobians& jacobians() { return robcogen().jacobians(); }
-    //	RigidBodyPoseTpl<SCALAR> getLinkPoseInWorld(size_t linkId, const typename JointStateTpl<NJOINTS,
-    // SCALAR>::Position& jointPosition, const RigidBodyPoseTpl<SCALAR>& basePose) {
-    //		throw std::runtime_error("not implemented");
-    //		return getHomogeneousTransformBaseLinkById(linkId, jointPosition);
-    //	};
 
-    Velocity3Tpl getEEVelocityInBase(size_t eeId, const tpl::RBDState<NJOINTS, SCALAR>& rbdState)
+    Velocity3Tpl getEEVelocityInBase(size_t eeId, const RBDState<NJOINTS, SCALAR>& rbdState)
     {
         Velocity3Tpl eeVelocityBase;
         eeVelocityBase.toImplementation() =
@@ -132,7 +128,7 @@ public:
         return eeVelocityBase;
     }
 
-    Velocity3Tpl getEEVelocityInWorld(size_t eeId, const tpl::RBDState<NJOINTS, SCALAR>& rbdState)
+    Velocity3Tpl getEEVelocityInWorld(size_t eeId, const RBDState<NJOINTS, SCALAR>& rbdState)
     {
         Velocity3Tpl eeVelocityBase = getEEVelocityInBase(eeId, rbdState);
         return rbdState.base().pose().rotateBaseToInertia(eeVelocityBase);
@@ -149,7 +145,7 @@ public:
      *
      */
     Position3Tpl getEEPositionInBase(size_t eeID,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+        const typename JointState_t::Position& jointPosition)
     {
         return robcogen().getEEPositionInBase(eeID, jointPosition);
     }
@@ -162,7 +158,7 @@ public:
      * @return the current end-effector pose in base coordinates
      */
     RigidBodyPoseTpl getEEPoseInBase(size_t eeID,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+        const typename JointState_t::Position& jointPosition)
     {
         return robcogen().getEEPoseInBase(eeID, jointPosition);
     }
@@ -170,7 +166,7 @@ public:
     /*!
      * compute the forward kinematics and return a rotation matrix specifying the ee-rotation w.r.t. the base frame
      */
-    Matrix3Tpl getEERotInBase(size_t eeID, const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+    Matrix3Tpl getEERotInBase(size_t eeID, const typename JointState_t::Position& jointPosition)
     {
         return robcogen().getEERotInBase(eeID, jointPosition);
     }
@@ -187,7 +183,7 @@ public:
      */
     Position3Tpl getEEPositionInWorld(size_t eeID,
         const RigidBodyPoseTpl& basePose,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+        const typename JointState_t::Position& jointPosition)
     {
         // vector from base to endeffector expressed in base frame
         Position3Tpl B_x_EE = getEEPositionInBase(eeID, jointPosition);
@@ -202,7 +198,7 @@ public:
     //! get the end-effector pose in world coordinates
     RigidBodyPoseTpl getEEPoseInWorld(size_t eeID,
         const RigidBodyPoseTpl& basePose,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+        const typename JointState_t::Position& jointPosition)
     {
         // ee pose in base coordinates
         RigidBodyPoseTpl B_x_EE = getEEPoseInBase(eeID, jointPosition);
@@ -220,7 +216,7 @@ public:
     //! get the end-effector rotation matrix expressed in world coordinates
     Matrix3Tpl getEERotInWorld(size_t eeID,
         const RigidBodyPoseTpl& basePose,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition)
+        const typename JointState_t::Position& jointPosition)
     {
         // ee rotation matrix in base coordinates
         Matrix3Tpl B_R_EE = getEERotInBase(eeID, jointPosition);
@@ -234,11 +230,11 @@ public:
         size_t solverID = 0)
     {
         if (solverID >= 100)
-            throw "Solver ID must be less than 100.";
+            throw std::runtime_error("Solver ID must be less than 100.");
 
         size_t hash = eeID * 100 + solverID;
         if (ikSolvers_.find(hash) != ikSolvers_.end())
-            throw "Solver with the same eeID and solverID already present.";
+            throw std::runtime_error("Solver with the same eeID and solverID already present.");
         ikSolvers_[hash] = solver;
     }
 
@@ -246,7 +242,7 @@ public:
         const size_t solverID = 0) const
     {
         if (solverID >= 100)
-            throw "Solver ID must be less than 100.";
+            throw std::runtime_error("Solver ID must be less than 100.");
         size_t hash = eeID * 100 + solverID;
         return ikSolvers_[hash];
     }
@@ -262,7 +258,7 @@ public:
      */
     EEForce mapForceFromWorldToLink3d(const Vector3Tpl& W_force,
         const RigidBodyPoseTpl& basePose,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition,
+        const typename JointState_t::Position& jointPosition,
         size_t eeId)
     {
         EEForce eeForce(EEForce::Zero());
@@ -282,7 +278,7 @@ public:
      */
     EEForce mapForceFromWorldToLink(const EEForce& W_force,
         const RigidBodyPoseTpl& basePose,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition,
+        const typename JointState_t::Position& jointPosition,
         size_t eeId)
     {
         // get endeffector position in world
@@ -303,7 +299,7 @@ public:
      */
     EEForce mapForceFromWorldToLink(const EEForce& W_force,
         const RigidBodyPoseTpl& basePose,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition,
+        const typename JointState_t::Position& jointPosition,
         const Position3Tpl& B_x_EE,
         size_t eeId)
     {
@@ -342,7 +338,7 @@ public:
      */
     EEForce mapForceFromEEToLink(const EEForce& EE_force,
         const RigidBodyPoseTpl& T_B_EE,
-        const typename tpl::JointState<NJOINTS, SCALAR>::Position& jointPosition,
+        const typename JointState_t::Position& jointPosition,
         size_t eeId)
     {
         // get the link that the EE is attached to

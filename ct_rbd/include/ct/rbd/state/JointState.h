@@ -10,7 +10,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 namespace ct {
 namespace rbd {
-namespace tpl {
 
 /**
  * @class JointState
@@ -88,13 +87,34 @@ public:
         assert(i < NJOINTS && "Invalid joint index");
         return state_(i);
     }
-    /// @brief check joint position limits
+    /// @brief normalize the joint state to be in the range [lowerLimitVec, lowerLimitVec + 2pi)
     template <typename T>
-    bool checkPositionLimits(T lowerLimit, T upperLimit)
+    void toUniquePosition(T lowerLimitVec, double tolerance = 1e-3)
+    {
+        assert(lowerLimitVec.size() == NJOINTS && "Wrong limit dimensions");
+        for (size_t i = 0; i < NJOINTS; ++i)
+        {
+            int k = std::ceil((lowerLimitVec[i] - getPosition(i)) / (2 * M_PI));
+            getPosition(i) += k * 2 * M_PI;
+            if (abs(getPosition(i) + (k - 1) * 2 * M_PI - lowerLimitVec[i]) <= tolerance)
+            {
+                getPosition(i) += (k - 1) * 2 * M_PI;
+            }
+            else
+            {
+                getPosition(i) += k * 2 * M_PI;
+            }
+        }
+    }
+
+    /// @brief check joint position limits assuming limits and joint position are in the same range e.g. [-pi, pi)
+    template <typename T>
+    bool checkPositionLimits(T lowerLimit, T upperLimit, double tolerance = 1e-3)
     {
         assert(lowerLimit.size() == NJOINTS && upperLimit.size() == NJOINTS && "Wrong limit dimensions");
         for (size_t i = 0; i < NJOINTS; ++i)
-            if (getPosition(i) < lowerLimit[i] || getPosition(i) > upperLimit[i])
+            if (abs(getPosition(i) - lowerLimit[i]) > tolerance && getPosition(i) < lowerLimit[i] ||
+                abs(getPosition(i) - upperLimit[i]) > tolerance && getPosition(i) > upperLimit[i])
                 return false;
         return true;
     }
@@ -133,11 +153,6 @@ public:
 protected:
     joint_state_vector_t state_;
 };
-
-}  // namespace tpl
-
-template <size_t NJOINTS>
-using JointState = tpl::JointState<NJOINTS, double>;
 
 }  // namespace rbd
 }  // namespace ct

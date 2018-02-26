@@ -271,7 +271,7 @@ Please note the licence and notice files in the source directory.
   title = "The {Control Toolbox} - An Open-Source {C++} Library for Robotics, Optimal and Model Predictive Control",
   howpublished = "\url{https://adrlab.bitbucket.io/ct}",
   year = "2018", 
-  note = ""
+  note = "arXiv:1801.04290 [cs.RO]"
 }
 \endcode
 
@@ -279,6 +279,10 @@ Please note the licence and notice files in the source directory.
 \section publications Related Publications
 
 This toolbox has been used in, or has helped to realize the following academic publications:
+
+- Markus Giftthaler, Michael Neunert, Markus Stäuble and Jonas Buchli.
+“The Control Toolbox - An Open-Source C++ Library for Robotics, Optimal and Model Predictive Control”.
+<a href="https://arxiv.org/abs/1801.04290" target="_blank">arXiv preprint</a>
 
 - Markus Giftthaler, Michael Neunert, Markus Stäuble, Jonas Buchli and Moritz Diehl.
 “A Family of iterative Gauss-Newton Shooting Methods for Nonlinear Optimal Control”.

@@ -157,9 +157,14 @@ public:
 	 */
     virtual control_state_matrix_t stateControlDerivativeTerminal();
 
+    //! update the reference state for intermediate cost terms
     virtual void updateReferenceState(const state_vector_t& x_ref);
 
+    //! update the reference state for final cost terms
     virtual void updateFinalState(const state_vector_t& x_final);
+
+    //! update the reference control for intermediate cost terms
+    virtual void updateReferenceControl(const control_vector_t& u_ref);
 
     //! compare the state derivative against numerical differentiation
     bool stateDerivativeIntermediateTest();

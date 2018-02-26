@@ -37,7 +37,7 @@ In case you are multiple systems of different dimensions, you can prespecify eac
 To use explicit template instantiation follow these steps:
 1. add your dimensions to ct/ct/config/explicit_templates.cfg . You can set POS_DIM and VEL_DIM to 0 if you
 are not using symplectic integrators.
-2. rerun cmake: catkin build -DCMAKE_BUILD_TYPE=RELEASE --force-cmake
+2. rerun cmake and enable explicit template prespec: catkin build -DUSE_PRESPEC=true -DCMAKE_BUILD_TYPE=RELEASE --force-cmake
 3. In your executable change the standard CT includes from their regular ones to the prespecified ones,
 e.g. change \code{.cpp}#include <ct/core/core.h>\endcode to \code{.cpp}#include <ct/core/core-prespec.h>\endcode Remember to do this for
 optcon and rbd as well.

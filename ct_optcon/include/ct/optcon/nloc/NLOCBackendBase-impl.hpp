@@ -905,45 +905,48 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 {
 #ifdef MATLAB_FULL_LOG
 
-    std::cout << "Logging to Matlab" << std::endl;
+    if (settings_.logToMatlab)
+    {
+        std::cout << "Logging to Matlab" << std::endl;
 
-    LQOCProblem_t& p = *lqocProblem_;
+        LQOCProblem_t& p = *lqocProblem_;
 
-    matFile_.open(settings_.loggingPrefix + "Log" + std::to_string(iteration) + ".mat");
+        matFile_.open(settings_.loggingPrefix + "Log" + std::to_string(iteration) + ".mat");
 
-    matFile_.put("iteration", iteration);
-    matFile_.put("K", K_);
-    matFile_.put("dt", settings_.dt);
-    matFile_.put("K_sim", settings_.K_sim);
-    matFile_.put("x", x_.toImplementation());
-    matFile_.put("u_ff", u_ff_.toImplementation());
-    matFile_.put("t", t_.toEigenTrajectory());
-    matFile_.put("d", lqocProblem_->b_.toImplementation());
-    matFile_.put("xShot", xShot_.toImplementation());
+        matFile_.put("iteration", iteration);
+        matFile_.put("K", K_);
+        matFile_.put("dt", settings_.dt);
+        matFile_.put("K_sim", settings_.K_sim);
+        matFile_.put("x", x_.toImplementation());
+        matFile_.put("u_ff", u_ff_.toImplementation());
+        matFile_.put("t", t_.toEigenTrajectory());
+        matFile_.put("d", lqocProblem_->b_.toImplementation());
+        matFile_.put("xShot", xShot_.toImplementation());
 
-    matFile_.put("A", p.A_.toImplementation());
-    matFile_.put("B", p.B_.toImplementation());
-    matFile_.put("qv", p.qv_.toImplementation());
-    matFile_.put("Q", p.Q_.toImplementation());
-    matFile_.put("P", p.P_.toImplementation());
-    matFile_.put("rv", p.rv_.toImplementation());
-    matFile_.put("R", p.R_.toImplementation());
-    matFile_.put("q", p.q_.toEigenTrajectory());
+        matFile_.put("A", p.A_.toImplementation());
+        matFile_.put("B", p.B_.toImplementation());
+        matFile_.put("qv", p.qv_.toImplementation());
+        matFile_.put("Q", p.Q_.toImplementation());
+        matFile_.put("P", p.P_.toImplementation());
+        matFile_.put("rv", p.rv_.toImplementation());
+        matFile_.put("R", p.R_.toImplementation());
+        matFile_.put("q", p.q_.toEigenTrajectory());
 
-    matFile_.put("lx_norm", lx_norm_);
-    matFile_.put("lu_norm", lu_norm_);
-    matFile_.put("cost", getCost());
-    matFile_.put("alphaStep", alphaBest_);
+        matFile_.put("lx_norm", lx_norm_);
+        matFile_.put("lu_norm", lu_norm_);
+        matFile_.put("cost", getCost());
+        matFile_.put("alphaStep", alphaBest_);
 
-    d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);
-    matFile_.put("d_norm", d_norm_);
+        d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);
+        matFile_.put("d_norm", d_norm_);
 
-    computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
-    computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
-    matFile_.put("e_box_norm", e_box_norm_);
-    matFile_.put("e_gen_norm", e_gen_norm_);
+        computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
+        computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
+        matFile_.put("e_box_norm", e_box_norm_);
+        matFile_.put("e_gen_norm", e_gen_norm_);
 
-    matFile_.close();
+        matFile_.close();
+    }
 #endif  //MATLAB_FULL_LOG
 }
 
@@ -952,29 +955,31 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::logInitToMatlab()
 {
 #ifdef MATLAB
+    if (settings_.logToMatlab)
+    {
+        std::cout << "Logging init guess to Matlab" << std::endl;
 
-    std::cout << "Logging init guess to Matlab" << std::endl;
+        matFile_.open(settings_.loggingPrefix + "LogInit.mat");
 
-    matFile_.open(settings_.loggingPrefix + "LogInit.mat");
+        matFile_.put("K", K_);
+        matFile_.put("dt", settings_.dt);
+        matFile_.put("K_sim", settings_.K_sim);
 
-    matFile_.put("K", K_);
-    matFile_.put("dt", settings_.dt);
-    matFile_.put("K_sim", settings_.K_sim);
+        matFile_.put("x", x_.toImplementation());
+        matFile_.put("u_ff", u_ff_.toImplementation());
+        matFile_.put("d", lqocProblem_->b_.toImplementation());
+        matFile_.put("cost", getCost());
 
-    matFile_.put("x", x_.toImplementation());
-    matFile_.put("u_ff", u_ff_.toImplementation());
-    matFile_.put("d", lqocProblem_->b_.toImplementation());
-    matFile_.put("cost", getCost());
+        d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);
+        matFile_.put("d_norm", d_norm_);
 
-    d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);
-    matFile_.put("d_norm", d_norm_);
+        computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
+        computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
+        matFile_.put("e_box_norm", e_box_norm_);
+        matFile_.put("e_gen_norm", e_gen_norm_);
 
-    computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
-    computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
-    matFile_.put("e_box_norm", e_box_norm_);
-    matFile_.put("e_gen_norm", e_gen_norm_);
-
-    matFile_.close();
+        matFile_.close();
+    }
 #endif
 }
 
@@ -1197,6 +1202,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
         rolloutShots(0, K_ - 1);
 
+        d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);
+
         updateCosts();
 
         lowestCost_ = intermediateCostBest_ + finalCostBest_;
@@ -1254,6 +1261,9 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     {
         return true;  //! found better cost
     }
+
+    if (d_norm_ > settings_.maxDefectSum)
+        return true;
 
     if (settings_.debugPrint)
     {

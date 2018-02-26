@@ -4,9 +4,7 @@ Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farb
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-
 #pragma once
-
 
 #include "jacobian/ConstraintJacobian.h"
 #include "kinematics/RBDDataMap.h"
@@ -45,10 +43,10 @@ public:
     typedef RBDDataMap<Eigen::Vector3d, NEE> EE_contact_forces_t;
     typedef RBDDataMap<bool, NEE> EE_in_contact_t;
 
-    typedef tpl::RBDState<NJOINTS, Scalar> RBDState_t;
-    typedef tpl::RBDAcceleration<NJOINTS, Scalar> RBDAcceleration_t;
-    typedef tpl::JointState<NJOINTS, Scalar> JointState_t;
-    typedef tpl::JointAcceleration<NJOINTS, Scalar> JointAcceleration_t;
+    typedef RBDState<NJOINTS, Scalar> RBDState_t;
+    typedef RBDAcceleration<NJOINTS, Scalar> RBDAcceleration_t;
+    typedef JointState<NJOINTS, Scalar> JointState_t;
+    typedef JointAcceleration<NJOINTS, Scalar> JointAcceleration_t;
 
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorXs;

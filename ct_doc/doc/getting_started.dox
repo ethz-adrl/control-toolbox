@@ -5,25 +5,29 @@ In order to get you started with using the Control Toolbox, there are several us
 you have installed the Control Toolbox as described in the \ref install_guide "Installation Guide". Afterwards you can
 follow the Tutorials below.
 
-- \subpage tut_basics "Basics Tutorial"
+- \subpage tut_basics "Basics Tutorials"
 - \subpage core_tutorials "ct core Tutorials"
 - \subpage optcon_tutorials "ct optcon Tutorials"
 - \subpage rbd_tutorials "ct rbd Tutorials"
+- \subpage ik_tutorials "Inverse kinematics Tutorials"
 
 If you need additional support, feel free to create an issue on Bitbucket or contact the developers.
- 
-\page tut_basics Basic Tutorial
+
+\page tut_basics Basic Tutorials
 @tableofcontents
 
 \section tut_basics_pkg Creating a ROS package
 CT is middleware free. Therefore, you are not bound to use ROS or catkin. However, for the sake of simplicity we will use catkin in this tutorial.
-Make sure you have succesfully downloaded and compiled CT according to our @ref gs instructions. Afterwards go to your catkin workspace
+In case you need a refresher on catkin, please go through the tutorials [here](http://wiki.ros.org/catkin/Tutorials).
+Make sure you have succesfully downloaded and compiled CT according to our @ref gs instructions. 
+Afterwards go to your catkin workspace
 and create a new package
 
 \code{.sh}
 cd ~/catkin_ws/src
 catkin_create_pkg my_ct_project roscpp ct_core ct_rbd ct_optcon ct_models
 \endcode
+
 
 In this example, we made \a my_ct_project dependent on all CT packages. This is not strictly necessary, however there is no harm to it either.
 
@@ -34,7 +38,7 @@ First, we are going to simulate the dynamics of a damped oscillator. Let's creat
 
 \include DampedOscillator.cpp
 
-So what happens in this code? We first include ct/core.h. This includes all relevant headers from CT Core. Other CT modules have similar header files 
+So what happens in this code? We first include ct/core.h. This includes all relevant headers from CT Core. Other CT modules have similar header files
 such as \a ct/rbd.h . If you were to include ct/rbd.h you would not have to include ct/core.h anymore. It is automatically included.
 
 Then, we create a state vector and set it to zero. Afterwards, we can create a shared pointer to a ct::core::SecondOrderSystem
@@ -45,7 +49,7 @@ for 1 second with a time step of 0.001 seconds. Finally, we print the new state.
 
 \section tut_basics_system Creating our first system
 In the example above, we have been using an oscillator that is provided with CT. However, we might want to model our own system. Here, we will model
-a simple mass point subject to friction. However, if you are interested in more sophisticated models, especially Rigid Body Dynamics, make sure you 
+a simple mass point subject to friction. However, if you are interested in more sophisticated models, especially Rigid Body Dynamics, make sure you
 check out the tutorials in ct_rbd as well.
 
 First we create our system within a header Masspoint.h

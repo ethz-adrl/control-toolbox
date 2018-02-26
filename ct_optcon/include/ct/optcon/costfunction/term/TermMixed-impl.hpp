@@ -140,6 +140,15 @@ void TermMixed<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(cons
     const std::string& termName,
     bool verbose)
 {
+    boost::property_tree::ptree pt;
+    try
+    {
+        boost::property_tree::read_info(filename, pt);
+    } catch (...)
+    {
+    }
+    this->name_ = pt.get<std::string>(termName + ".name.", termName);
+
     loadMatrixCF(filename, "P", P_, termName);
     loadMatrixCF(filename, "x_des", x_ref_, termName);
     loadMatrixCF(filename, "u_des", u_ref_, termName);

@@ -20,4 +20,5 @@ Markus Stäuble,
 Diego Pardo,
 Farbod Farshidian,
 Timothy Sandy,
-Jan Carius
+Jan Carius,
+Hamza Merzic

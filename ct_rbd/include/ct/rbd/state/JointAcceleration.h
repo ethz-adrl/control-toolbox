@@ -8,14 +8,13 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 namespace ct {
 namespace rbd {
-namespace tpl {
 
 /*!
  * \ingroup State
  *
  * \brief joint acceleration
  */
-template <size_t NJOINTS, typename SCALAR>
+template <size_t NJOINTS, typename SCALAR = double>
 class JointAcceleration
 {
 public:
@@ -50,11 +49,6 @@ public:
 protected:
     Eigen::Matrix<SCALAR, NJOINTS, 1> acceleration_;
 };
-
-}  // namespace tpl
-
-template <size_t NJOINTS>
-using JointAcceleration = tpl::JointAcceleration<NJOINTS, double>;
 
 }  // namespace rbd
 }  // namespace ct

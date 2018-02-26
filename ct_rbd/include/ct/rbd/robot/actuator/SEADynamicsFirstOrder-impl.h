@@ -10,7 +10,8 @@ namespace ct {
 namespace rbd {
 
 template <size_t NJOINTS, typename SCALAR>
-SEADynamicsFirstOrder<NJOINTS, SCALAR>::SEADynamicsFirstOrder(double k_spring) : k_((SCALAR)k_spring)
+SEADynamicsFirstOrder<NJOINTS, SCALAR>::SEADynamicsFirstOrder(double k_spring, double gear_ratio)
+    : k_(SCALAR(k_spring)), r_(SCALAR(gear_ratio))
 {
 }
 
@@ -27,29 +28,32 @@ SEADynamicsFirstOrder<NJOINTS, SCALAR>* SEADynamicsFirstOrder<NJOINTS, SCALAR>::
 
 template <size_t NJOINTS, typename SCALAR>
 void SEADynamicsFirstOrder<NJOINTS, SCALAR>::computeActuatorDynamics(
-    const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+    const JointState<NJOINTS, SCALAR>& robotJointState,
     const ct::core::StateVector<NJOINTS, SCALAR>& state,
     const SCALAR& t,
     const ct::core::ControlVector<NJOINTS, SCALAR>& control,
     ct::core::StateVector<NJOINTS, SCALAR>& derivative)
 {
-    derivative.template head<NJOINTS>() = control.template head<NJOINTS>();
+    // the gear velocity is the motor velocity divided by the gear ratio:
+    derivative.template head<NJOINTS>() = control.template head<NJOINTS>() / r_;
 }
 
 template <size_t NJOINTS, typename SCALAR>
 core::ControlVector<NJOINTS, SCALAR> SEADynamicsFirstOrder<NJOINTS, SCALAR>::computeControlOutput(
-    const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& robotJointState,
+    const JointState<NJOINTS, SCALAR>& robotJointState,
     const typename BASE::act_state_vector_t& actState)
 {
+    // compute joint torque as a function of the deflection between joint position and gear position
     return (actState.template topRows<NJOINTS>() - robotJointState.getPositions()) * k_;
 }
 
 template <size_t NJOINTS, typename SCALAR>
 ct::core::StateVector<NJOINTS, SCALAR> SEADynamicsFirstOrder<NJOINTS, SCALAR>::computeStateFromOutput(
-    const ct::rbd::tpl::JointState<NJOINTS, SCALAR>& refRobotJointState,
+    const JointState<NJOINTS, SCALAR>& refRobotJointState,
     const core::ControlVector<NJOINTS, SCALAR>& refControl)
 {
-    return refRobotJointState.getPositions() + 1 / k_ * refControl.toImplementation();
+    // compute desired gear position from current joint position and desired torque
+    return refRobotJointState.getPositions() + refControl.toImplementation() / k_;
 }
 
 }  // namespace rbd

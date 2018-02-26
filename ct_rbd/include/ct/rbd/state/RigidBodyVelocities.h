@@ -47,6 +47,7 @@ private:
 
 }  // namespace tpl
 
+// convenience typedef (required)
 typedef tpl::RigidBodyVelocities<double> RigidBodyVelocities;
 
 } /* namespace rbd */
