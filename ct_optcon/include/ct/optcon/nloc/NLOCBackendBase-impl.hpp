@@ -482,8 +482,6 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         if (terminationFlag && *terminationFlag)
             return false;
 
-        //TODO do we need to reset the substepRecorders in systemDiscretizers?
-
         if (i > (int)k)
         {
             xShot[i] = xShot[i - 1];  //! initialize integration variable

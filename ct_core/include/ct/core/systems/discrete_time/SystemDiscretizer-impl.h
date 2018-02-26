@@ -133,7 +133,6 @@ void SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::propagateC
     cont_constant_controller_->setControl(control);
 
     // reset substep recorder for every new control step
-    // compare NLOCBackend
     substepRecorder_->reset();
 
     // initialize state to propagate

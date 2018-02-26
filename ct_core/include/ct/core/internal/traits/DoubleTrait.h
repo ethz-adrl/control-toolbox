@@ -23,7 +23,7 @@ struct DoubleTrait
     inline static Scalar tanh(const Scalar& x) { return std::tanh(x); }
     inline static Scalar exp(const Scalar& x) { return std::exp(x); }
     inline static Scalar fabs(const Scalar& x) { return std::fabs(x); }
-    inline static Scalar sqrt(const Scalar& x) {return std::sqrt(x); }
+    inline static Scalar sqrt(const Scalar& x) { return std::sqrt(x); }
 
     //! Solves a linear system of equations using Eigen's inverse functionality
     template <int Rows, int Cols>
@@ -33,6 +33,6 @@ struct DoubleTrait
         return A.inverse() * b;
     }
 };
-}
-}
-}
+}  // namespace internal
+}  // namespace core
+}  // namespace ct
