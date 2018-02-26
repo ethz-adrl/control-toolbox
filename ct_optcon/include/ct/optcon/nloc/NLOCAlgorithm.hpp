@@ -22,9 +22,7 @@ class NLOCAlgorithm
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef typename std::conditional<CONTINUOUS,
-        ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>,
-        ct::core::DiscreteStateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>>::type Policy_t;
+    typedef ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 
     typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS> Backend_t;
     typedef NLOptConSettings Settings_t;

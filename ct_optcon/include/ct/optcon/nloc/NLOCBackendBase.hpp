@@ -56,9 +56,7 @@ public:
 
     typedef NLOptConSettings Settings_t;
 
-    typedef typename std::conditional<CONTINUOUS,
-        ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>,
-        ct::core::DiscreteStateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>>::type Policy_t;
+    typedef typename ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 
     typedef typename std::conditional<CONTINUOUS,
         ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>,
