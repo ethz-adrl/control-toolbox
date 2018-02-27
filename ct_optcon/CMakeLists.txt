@@ -20,8 +20,10 @@ option(MATLAB "Compile with matlab support" OFF)
 option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" OFF)
 option(DEBUG_PRINT "Print debug messages" OFF)
 
-option(HPIPM "Compile with HPIPM support" OFF)
-
+SET(BUILD_EXAMPLES TRUE)
+SET(ENV{BLASFEO_DIR} /opt/blasfeo)
+SET(ENV{HPIPM_DIR} /opt/hpipm)
+option(HPIPM "Compile with HPIPM support" ON)
 
 if(DEBUG_PRINT)
     message(STATUS "WARNING: Debug Print ON")
@@ -92,7 +94,6 @@ if(HPIPM)
     endif(DEFINED ENV{BLASFEO_DIR})
 endif(HPIPM)
 
-
 ## lapack libs
 set(LAPACK_LIBS "")
 find_package(LAPACK QUIET)
@@ -159,6 +160,7 @@ if(USE_PRESPEC)
     ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_optcon")
     message(WARNING "CT Optcon: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
 endif(USE_PRESPEC)
+
 
 #used later for clang-tidy
 set(INC_DIRS ${catkin_INCLUDE_DIRS}  "${CMAKE_CURRENT_SOURCE_DIR}/include" ${HPIPM_INCLUDE_DIR} ${BLASFEO_INCLUDE_DIR})
@@ -242,12 +244,22 @@ if(HPIPM)
 
     add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
     target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+
     if(BUILD_EXAMPLES)
         add_executable(ex_NLOC_boxConstrained examples/NLOC_boxConstrained.cpp)
         target_link_libraries(ex_NLOC_boxConstrained ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
         add_executable(ex_NLOC_generalConstrained examples/NLOC_generalConstrained.cpp)
-        target_link_libraries(ex_NLOC_generalConstrained ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+        target_link_libraries(ex_NLOC_generalConstrained ${catkin_LIBRARIES} ${HPIPM_LIBS})
+
+        add_executable(switched_optcon_test examples/switched_systems_optcon/switched_optcon_test.cpp)
+        target_link_libraries(switched_optcon_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+
+        add_executable(switched_continuous_optcon_test examples/switched_systems_optcon/switched_continuous_optcon_test.cpp)
+        target_link_libraries(switched_continuous_optcon_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+
+        add_executable(switched_continuous_timeOptimal_test examples/switched_systems_optcon/switched_continuous_timeOptimal_test.cpp)
+        target_link_libraries(switched_continuous_timeOptimal_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
     endif(BUILD_EXAMPLES)
 endif(HPIPM)
 

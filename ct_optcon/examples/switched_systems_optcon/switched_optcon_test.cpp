@@ -5,7 +5,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #include <ct/optcon/optcon.h>
-#include "../testSystems/TestDiscreteNonlinearSystem.h"
+#include "TestSystems.h"
 #include <gtest/gtest.h>
 
 using namespace ct;
@@ -13,7 +13,7 @@ using namespace ct::core;
 using namespace ct::optcon;
 using std::shared_ptr;
 
-TEST(SwitchingOptconTest, SwitchingOptconTest)
+int main(int argc, char **argv)
 {
   const bool VERBOSE = false;
 
@@ -180,15 +180,4 @@ TEST(SwitchingOptconTest, SwitchingOptconTest)
             << "\tx: " << xSol[dm_seq.getTotalDuration()].transpose()
             << std::endl;
 
-}
-
-/*!
- *  \example SwitchingOptconTest.cpp
- *
- *  Test basic functionality of switching logic in the optcon setting
- */
-int main(int argc, char **argv)
-{
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }

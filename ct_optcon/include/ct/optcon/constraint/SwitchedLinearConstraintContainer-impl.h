@@ -45,6 +45,7 @@ namespace ct {
           for (auto& linearConstraintContainer : this->switchedLinearConstraintContainers_){
             clone_->switchedLinearConstraintContainers_.emplace_back(linearConstraintContainer->clone());
           }
+          clone_->activeLinearConstraintContainer_ = clone_->switchedLinearConstraintContainers_.front();
           return clone_;
         };
 
