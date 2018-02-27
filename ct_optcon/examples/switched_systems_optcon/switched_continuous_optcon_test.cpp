@@ -5,7 +5,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #include <ct/optcon/optcon.h>
-#include "../testSystems/TestDiscreteNonlinearSystem.h"
+#include "TestSystems.h"
 #include <gtest/gtest.h>
 
 using namespace ct;
@@ -135,7 +135,7 @@ void plotResults(const ct::core::StateVectorArray<STATE_DIM>& stateArray,
 #endif
 }
 
-TEST(SwitchingContinuousOptconTest, SwitchingContinuousOptconTest)
+int main(int argc, char **argv)
 {
   // Problem derived from Example 3 in http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=1259455
 
@@ -268,15 +268,4 @@ TEST(SwitchingContinuousOptconTest, SwitchingContinuousOptconTest)
   // == Postprocessing =================================================================================================
   ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM> solution = iLQR.getSolution();
   plotResults<STATE_DIM, CONTROL_DIM>(solution.x_ref(), solution.uff(), solution.time());
-}
-
-/*!
- *  \example SwitchingOptconTest.cpp
- *
- *  Test basic functionality of switching logic in the optcon setting
- */
-int main(int argc, char **argv)
-{
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }

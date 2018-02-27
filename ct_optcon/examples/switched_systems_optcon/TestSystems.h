@@ -148,7 +148,7 @@ namespace tpl {
     };
 
 template <typename SCALAR>
-class TestDiscreteNonlinearSystem : public DiscreteControlledSystem<2, 1, SCALAR>
+class TestSystems : public DiscreteControlledSystem<2, 1, SCALAR>
 {
 public:
     typedef DiscreteControlledSystem<2, 1, SCALAR> Base;
@@ -159,20 +159,20 @@ public:
     typedef typename Base::control_vector_t control_vector_t;
     typedef typename Base::time_t time_t;
 
-    TestDiscreteNonlinearSystem() = delete;
+    TestSystems() = delete;
 
     // constructor directly using frequency and damping coefficients
-    TestDiscreteNonlinearSystem(SCALAR rate, std::shared_ptr<DiscreteController<2, 1, SCALAR>> controller = nullptr)
+    TestSystems(SCALAR rate, std::shared_ptr<DiscreteController<2, 1, SCALAR>> controller = nullptr)
         : Base(controller, SYSTEM_TYPE::GENERAL), rate_(rate)
     {
     }
 
     //copy constructor
-    TestDiscreteNonlinearSystem(const TestDiscreteNonlinearSystem& arg) : Base(arg), rate_(arg.rate_) {}
+    TestSystems(const TestSystems& arg) : Base(arg), rate_(arg.rate_) {}
 
-    virtual ~TestDiscreteNonlinearSystem() {}
+    virtual ~TestSystems() {}
 
-    TestDiscreteNonlinearSystem* clone() const override { return new TestDiscreteNonlinearSystem(*this); }
+    TestSystems* clone() const override { return new TestSystems(*this); }
 
     virtual void propagateControlledDynamics(const state_vector_t& state,
         const time_t n,
@@ -189,7 +189,7 @@ private:
 };
 }  // namespace tpl
 
-typedef tpl::TestDiscreteNonlinearSystem<double> TestDiscreteNonlinearSystem;
+typedef tpl::TestSystems<double> TestDiscreteNonlinearSystem;
 typedef tpl::TestDiscreteLinearSystem<double> TestDiscreteLinearSystem;
 typedef tpl::TestLinearSystem<double> TestLinearSystem;
 typedef tpl::TestTimeParameterizedLinearSystem<double> TestTimeParameterizedLinearSystem;

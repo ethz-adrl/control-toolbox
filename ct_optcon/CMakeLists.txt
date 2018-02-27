@@ -20,8 +20,10 @@ option(MATLAB "Compile with matlab support" OFF)
 option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" OFF)
 option(DEBUG_PRINT "Print debug messages" OFF)
 
-option(HPIPM "Compile with HPIPM support" OFF)
-
+SET(BUILD_EXAMPLES TRUE)
+SET(ENV{BLASFEO_DIR} /opt/blasfeo)
+SET(ENV{HPIPM_DIR} /opt/hpipm)
+option(HPIPM "Compile with HPIPM support" ON)
 
 if(DEBUG_PRINT)
     message(STATUS "WARNING: Debug Print ON")
@@ -92,7 +94,6 @@ if(HPIPM)
     endif(DEFINED ENV{BLASFEO_DIR})
 endif(HPIPM)
 
-
 ## lapack libs
 set(LAPACK_LIBS "")
 find_package(LAPACK QUIET)
@@ -155,8 +156,10 @@ include_directories(
 )
 
 ## assemble list of libraries that contain prespecified templates
+
 ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_optcon")
 message(WARNING "CT Optcon: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
+
 
 #used later for clang-tidy
 set(INC_DIRS ${catkin_INCLUDE_DIRS}  "${CMAKE_CURRENT_SOURCE_DIR}/include" ${HPIPM_INCLUDE_DIR} ${BLASFEO_INCLUDE_DIR})
@@ -242,12 +245,22 @@ if(HPIPM)
 
     add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
     target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+
     if(BUILD_EXAMPLES)
         add_executable(ex_NLOC_boxConstrained examples/NLOC_boxConstrained.cpp)
         target_link_libraries(ex_NLOC_boxConstrained ${catkin_LIBRARIES} ${HPIPM_LIBS})
 
         add_executable(ex_NLOC_generalConstrained examples/NLOC_generalConstrained.cpp)
         target_link_libraries(ex_NLOC_generalConstrained ${catkin_LIBRARIES} ${HPIPM_LIBS})
+
+        add_executable(switched_optcon_test examples/switched_systems_optcon/switched_optcon_test.cpp)
+        target_link_libraries(switched_optcon_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+
+        add_executable(switched_continuous_optcon_test examples/switched_systems_optcon/switched_continuous_optcon_test.cpp)
+        target_link_libraries(switched_continuous_optcon_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+
+        add_executable(switched_continuous_timeOptimal_test examples/switched_systems_optcon/switched_continuous_timeOptimal_test.cpp)
+        target_link_libraries(switched_continuous_timeOptimal_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
     endif()
 endif(HPIPM)
 
@@ -312,6 +325,8 @@ catkin_add_gtest(system_interface_test test/system_interface/SystemInterfaceTest
 target_link_libraries(system_interface_test ${catkin_LIBRARIES})
 catkin_add_gtest(system_interface_test_prespec test/system_interface/SystemInterfaceTest-Prespec.cpp)
 target_link_libraries(system_interface_test_prespec ${catkin_LIBRARIES} ${PRESPEC_LIB_NAMES})
+
+
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)

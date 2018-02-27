@@ -5,7 +5,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #include <ct/optcon/optcon.h>
-#include "../testSystems/TestDiscreteNonlinearSystem.h"
+#include "TestSystems.h"
 #include <gtest/gtest.h>
 
 using namespace ct;
@@ -248,7 +248,7 @@ private:
 
 };
 
-TEST(SwitchingContinuousTimeOptconTest, SwitchingContinuousTimeOptconTest)
+int main(int argc, char **argv)
 {
   // Problem derived from Example 3 in http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=1259455
 
@@ -384,7 +384,7 @@ TEST(SwitchingContinuousTimeOptconTest, SwitchingContinuousTimeOptconTest)
   ilqr_settings.max_iterations = 10;
   ilqr_settings.min_cost_improvement = 1e-6;
   ilqr_settings.meritFunctionRhoConstraints = 10;
-  ilqr_settings.nThreads = 1;
+  ilqr_settings.nThreads = 4;
   ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
   ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;    // solve LQ-problems using HPIPM
   ilqr_settings.lqoc_solver_settings.num_lqoc_iterations = 1000;                // number of riccati sub-iterations
@@ -420,15 +420,4 @@ TEST(SwitchingContinuousTimeOptconTest, SwitchingContinuousTimeOptconTest)
 
   plotResults<STATE_DIM, CONTROL_DIM>(solution.x_ref(), solution.uff(), solution.time());
 
-}
-
-/*!
- *  \example SwitchingOptconTest.cpp
- *
- *  Test basic functionality of switching logic in the optcon setting
- */
-int main(int argc, char **argv)
-{
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }
