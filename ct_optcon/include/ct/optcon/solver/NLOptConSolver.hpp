@@ -241,6 +241,10 @@ protected:
 
     //! the algorithm for sequencing the math operations in correct manner
     std::shared_ptr<NLOCAlgorithm_t> nlocAlgorithm_;
+
+private:
+    //! set algorithm, use as private only
+    void setAlgorithm(const Settings_t& settings);
 };
 
 
