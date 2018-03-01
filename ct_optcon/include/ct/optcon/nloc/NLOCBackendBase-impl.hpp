@@ -328,10 +328,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeGenera
     }
 
     // we need to allocate memory in HPIPM for the new constraints
-    for(size_t i = 0; i<K_; i++)
-    	lqocProblem_->ng_[i] = generalConstraints_[settings_.nThreads]->getIntermediateConstraintsCount();
+    for (size_t i = 0; i < K_; i++)
+        lqocProblem_->ng_[i] = generalConstraints_[settings_.nThreads]->getIntermediateConstraintsCount();
 
-	lqocProblem_->ng_[K_] = generalConstraints_[settings_.nThreads]->getTerminalConstraintsCount();
+    lqocProblem_->ng_[K_] = generalConstraints_[settings_.nThreads]->getTerminalConstraintsCount();
     lqocSolver_->setProblem(lqocProblem_);
     lqocSolver_->configureGeneralConstraints(lqocProblem_);
     lqocSolver_->initializeAndAllocate();
