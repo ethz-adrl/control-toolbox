@@ -24,6 +24,10 @@ class DiscreteController
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    typedef StateVector<STATE_DIM, SCALAR> state_vector_t;
+    typedef ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+
     //! Default constructor
     DiscreteController(){};
 
@@ -35,24 +39,22 @@ public:
 
     //! Deep cloning
     /*!
-	 * Has to be implemented by any custom controller.
-	 */
+     * Has to be implemented by any custom controller.
+     */
     virtual DiscreteController* clone() const = 0;
 
     //! Compute control signal
     /*!
-	 * Evaluate the given controller for a given state and time index
-	 * returns the computed control action.
-	 *
-	 * This function has to be implemented by any custom controller
-	 *
-	 * @param state current state of the system
-	 * @param n current time index of the system
-	 * @param controlAction the corresponding control action
-	 */
-    virtual void computeControl(const StateVector<STATE_DIM, SCALAR>& state,
-        const int& n,
-        ControlVector<CONTROL_DIM, SCALAR>& controlAction) = 0;
+     * Evaluate the given controller for a given state and time index
+     * returns the computed control action.
+     *
+     * This function has to be implemented by any custom controller
+     *
+     * @param state current state of the system
+     * @param n current time index of the system
+     * @param controlAction the corresponding control action
+     */
+    virtual void computeControl(const state_vector_t& state, const int n, control_vector_t& controlAction) = 0;
 };
 
 }  // namespace core

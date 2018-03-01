@@ -7,11 +7,11 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #define SYMPLECTIC_ENABLED        \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V > 0 && P > 0), void>::type
+    template <size_t V, size_t P, size_t ST> \
+    typename std::enable_if<(V > 0 && P > 0 && (V+P==ST)), void>::type
 #define SYMPLECTIC_DISABLED       \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V <= 0 || P <= 0), void>::type
+    template <size_t V, size_t P, size_t ST> \
+    typename std::enable_if<(V <= 0 || P <= 0 || (V+P!=ST)), void>::type
 
 namespace ct {
 namespace core {
@@ -104,7 +104,7 @@ void SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::initialize
         integrator_ = std::shared_ptr<ct::core::Integrator<STATE_DIM, SCALAR>>(
             new ct::core::Integrator<STATE_DIM, SCALAR>(cont_time_system_, integratorType_, substepRecorder_));
     }
-    initializeSymplecticIntegrator<V_DIM, P_DIM>();
+    initializeSymplecticIntegrator<V_DIM, P_DIM, STATE_DIM>();
 }
 
 
@@ -121,7 +121,7 @@ void SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::changeCont
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR>
 void SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::propagateControlledDynamics(
     const StateVector<STATE_DIM, SCALAR>& state,
-    const int& n,
+    const time_t n,
     const ControlVector<CONTROL_DIM, SCALAR>& control,
     StateVector<STATE_DIM, SCALAR>& stateNext)
 {
@@ -133,7 +133,6 @@ void SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::propagateC
     cont_constant_controller_->setControl(control);
 
     // reset substep recorder for every new control step
-    // compare NLOCBackend
     substepRecorder_->reset();
 
     // initialize state to propagate
@@ -142,7 +141,7 @@ void SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>::propagateC
     // perform integration
     if (integratorType_ == ct::core::IntegrationType::EULER_SYM || integratorType_ == ct::core::IntegrationType::RK_SYM)
     {
-        integrateSymplectic<V_DIM, P_DIM>(stateNext, n * dt_, K_sim_, dt_sim_);
+        integrateSymplectic<V_DIM, P_DIM, STATE_DIM>(stateNext, n * dt_, K_sim_, dt_sim_);
     }
     else
     {

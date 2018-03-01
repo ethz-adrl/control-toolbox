@@ -113,7 +113,7 @@ private:
     std::shared_ptr<LinearizedSystem> linearizedSystem_;
     std::shared_ptr<CostFunction> costFunction_;
 
-    optcon::OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> optConProblem_;
+    optcon::ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> optConProblem_;
 
     std::shared_ptr<NLOptConSolver> nlocSolver_;
 

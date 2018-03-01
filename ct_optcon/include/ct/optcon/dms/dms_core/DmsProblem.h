@@ -8,7 +8,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 
-#include <ct/optcon/problem/OptConProblem.h>
+#include <ct/optcon/problem/ContinuousOptConProblem.h>
 #include <ct/optcon/dms/dms_core/DmsDimensions.h>
 #include <ct/optcon/dms/dms_core/OptVectorDms.h>
 #include <ct/optcon/dms/dms_core/ControllerDms.h>
@@ -44,7 +44,7 @@ public:
     typedef typename DIMENSIONS::state_vector_array_t state_vector_array_t;
     typedef typename DIMENSIONS::time_array_t time_array_t;
 
-    typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
+    typedef ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
 
     /**

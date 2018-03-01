@@ -49,7 +49,9 @@ class ControlledSystem : public System<STATE_DIM, SCALAR>
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    typedef System<STATE_DIM, SCALAR> Base;
     typedef typename std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> Ptr;
+    typedef typename Base::time_t time_t;
 
     //! default constructor
     /*!
@@ -121,7 +123,7 @@ public:
 	 * @param derivative state derivative
 	 */
     virtual void computeDynamics(const StateVector<STATE_DIM, SCALAR>& state,
-        const SCALAR& t,
+        const time_t& t,
         StateVector<STATE_DIM, SCALAR>& derivative) override
     {
         if (controller_)
@@ -134,7 +136,7 @@ public:
 
 
     virtual void computeControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
-        const SCALAR& t,
+        const time_t& t,
         const ControlVector<CONTROL_DIM, SCALAR>& control,
         StateVector<STATE_DIM, SCALAR>& derivative) = 0;
 

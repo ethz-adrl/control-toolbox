@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 
     ct::core::Time timeHorizon = 3.0;
 
-    OptConProblem<state_dim, control_dim> optConProblem(
+    ContinuousOptConProblem<state_dim, control_dim> optConProblem(
         timeHorizon, x0, oscillatorDynamics, costFunction, adLinearizer);
 
 
