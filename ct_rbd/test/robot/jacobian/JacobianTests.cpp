@@ -3,8 +3,8 @@
 //
 
 #include <gtest/gtest.h>
+#include <ct/rbd/robot/jacobian/ConstraintJacobian.h>
 #include "../../models/testhyq/RobCoGenTestHyQ.h"
-#include "../../../include/ct/rbd/robot/jacobian/ConstraintJacobian.h"
 
 using namespace ct::rbd;
 

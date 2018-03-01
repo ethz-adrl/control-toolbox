@@ -46,10 +46,12 @@ public:
     std::array<bool, Kinematics::NUM_EE> eeInContact_;
 
 
-    void getJacobianOriginDerivativeNumdiff(const RBDState_t& state, jacobian_t& dJdt) {
-        /*
+    void getJacobianOriginDerivativeNumdiff(const RBDState_t& state, jacobian_t& dJdt)
+    {
+     /*
 		 * Takes the numdiff (single sided) of getContactJacobian.  derivative is dJ/dt = dJ/dq * dq/dt
-		 * Because the contactJacobian (defined in the base frame) is independent of floating base coordinates -> only numdiff against joints
+		 * Because the contactJacobian (defined in the base frame) is independent of floating base coordinates
+     * -> only numdiff against joints
 		 */
         jacobian_t Jc0, Jc1;
         RBDState_t state1 = state;
@@ -98,9 +100,13 @@ public:
                 for (size_t i = 0; i < NJOINTS; i++){ // Loop over columns i of dJdt_joints
                     for (size_t j = 0; j < NJOINTS; j++) { // Loop over derivative w.r.t each joint j and sum
                         if (i>=j){
-                            dJidqj = (Jc_Rotational.template block<3, 1>(0, j)).template cross(Jc_Translational.template block<3, 1>(0, i));
+                          dJidqj = (Jc_Rotational.template block<3, 1>(0, j)).
+                              template cross(
+                              Jc_Translational.template block<3, 1>(0, i));
                         } else { // i < j
-                            dJidqj = (Jc_Rotational.template block<3, 1>(0, i)).template cross(Jc_Translational.template block<3, 1>(0, j));
+                          dJidqj = (Jc_Rotational.template block<3, 1>(0, i)).
+                              template cross(
+                              Jc_Translational.template block<3, 1>(0, j));
                         }
                         dJdt_joints.template block<3, 1>(0, i) += dJidqj * state.joints().getVelocities()(j);
                     }
@@ -146,7 +152,6 @@ public:
 
 private:
     Kinematics kinematics_;
-
 };
 
 }  // namespace tpl
