@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 
 
     // STEP 1-E: create and initialize an "optimal control problem"
-    OptConProblem<state_dim, control_dim> optConProblem(
+    ContinuousOptConProblem<state_dim, control_dim> optConProblem(
         timeHorizon, x0, oscillatorDynamics, costFunction, adLinearizer);
 
 

@@ -49,7 +49,7 @@ TEST(MPCTestA, ForwardIntegratorTest)
         shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction =
             tpl::createCostFunctionLinearOscillator<double>(x_final);
 
-        OptConProblem<state_dim, control_dim> optConProblem(system, costFunction, analyticLinearSystem);
+        ContinuousOptConProblem<state_dim, control_dim> optConProblem(system, costFunction, analyticLinearSystem);
         optConProblem.setInitialState(x0);
         optConProblem.setTimeHorizon(timeHorizon);
 
@@ -180,7 +180,7 @@ TEST(MPCTestB, NLOC_MPC_DoublePrecision)
             shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction =
                 tpl::createCostFunctionLinearOscillator<double>(x_final);
 
-            OptConProblem<state_dim, control_dim> optConProblem(system, costFunction, analyticLinearSystem);
+            ContinuousOptConProblem<state_dim, control_dim> optConProblem(system, costFunction, analyticLinearSystem);
             optConProblem.setTimeHorizon(timeHorizon);
             optConProblem.setInitialState(x0);
 

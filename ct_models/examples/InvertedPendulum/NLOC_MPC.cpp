@@ -116,8 +116,10 @@ int main(int argc, char* argv[])
         xf.fromStateVector(xftemp);
 
         std::shared_ptr<LinearSystem> linSystem = nullptr;
-        ct::optcon::OptConProblem<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM> optConProblem(
+
+        ct::optcon::ContinuousOptConProblem<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM> optConProblem(
             timeHorizon, x0.toStateVector(), ipSystem, newCost, linSystem);
+
         InvertedPendulumNLOC nloc_solver(newCost, nloc_settings, ipSystem, verbose, linSystem);
 
         int K = nloc_solver.getSettings().computeK(timeHorizon);

@@ -21,6 +21,7 @@ struct DoubleTrait {
 	inline static Scalar tanh(const Scalar& x) { return std::tanh(x); }
 	inline static Scalar exp(const Scalar& x) { return std::exp(x); }
 	inline static Scalar fabs(const Scalar& x) { return std::fabs(x); }
+	inline static Scalar sqrt(const Scalar& x) {return std::sqrt(x); }
 
 	template <int Rows, int Cols>
 	inline static Eigen::Matrix<Scalar, Cols, 1> solve(const Eigen::Matrix<Scalar, Rows, Cols>& A, const Eigen::Matrix<Scalar, Rows, 1>& b)

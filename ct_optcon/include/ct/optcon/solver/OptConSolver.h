@@ -7,7 +7,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 /**
  * OptConSolver.hpp
- * 
+ *
  *
  * Requirements:
  * - returns an optimal controller. These can be different controller types, feedforward only, feedforward-feedback, feedback only,
@@ -16,7 +16,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/optcon/problem/OptConProblem.h>
+#include <ct/optcon/problem/ContinuousOptConProblem.h>
 
 
 namespace ct {
@@ -35,11 +35,16 @@ template <typename DERIVED,
     typename SETTINGS,
     size_t STATE_DIM,
     size_t CONTROL_DIM,
-    typename SCALAR = double>
+    typename SCALAR = double,
+    bool CONTINUOUS = true>
 class OptConSolver
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    typedef typename std::conditional<CONTINUOUS,
+        ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>,
+        DiscreteOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>::type OptConProblem_t;
 
     static const size_t STATE_D = STATE_DIM;
     static const size_t CONTROL_D = CONTROL_DIM;
@@ -48,9 +53,6 @@ public:
     typedef SETTINGS Settings_t;
     typedef DERIVED Derived;
     typedef SCALAR Scalar_t;
-
-    typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
-
 
     OptConSolver() {}
     virtual ~OptConSolver() {}
@@ -261,7 +263,7 @@ public:
 
     /**
 	 * @brief      Direct accessor to the box constraint instances
-	 * 
+	 *
 	 * \warning{Use this only when performance absolutely matters and if you know what you
 	 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
 	 * in a safe and easy way. You should especially not change the size of the vector or
@@ -275,7 +277,7 @@ public:
 
     /**
 	 * @brief      Direct accessor to the general constraints
-	 * 
+	 *
 	 * \warning{Use this only when performance absolutely matters and if you know what you
 	 * are doing. Otherwise use e.g. changeCostFunction() to change the system dynamics
 	 * in a safe and easy way. You should especially not change the size of the vector or
@@ -297,7 +299,7 @@ public:
 	 * @param[in]  problemCG  The optcon problem templated on the AD CG Scalar
 	 * @param[in]  settings   The settings indicating what to generate
 	 */
-    virtual void generateAndCompileCode(const OptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
+    virtual void generateAndCompileCode(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
         const ct::core::DerivativesCppadSettings& settings)
     {
         throw std::runtime_error("Generate and compile code not implemented for this solver");

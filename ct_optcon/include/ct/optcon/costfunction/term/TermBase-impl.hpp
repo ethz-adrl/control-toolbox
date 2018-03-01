@@ -173,6 +173,8 @@ void TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadTimeActivation(c
         }
     } catch (std::exception& e)
     {
+        if (verbose)
+            std::cout << "TermBase: encountered exception while loading TimeActivation." << std::endl;
         return;
     }
 }

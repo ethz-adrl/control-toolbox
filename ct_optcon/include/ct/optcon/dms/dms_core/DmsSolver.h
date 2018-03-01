@@ -6,7 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/optcon/problem/OptConProblem.h>
+#include <ct/optcon/problem/ContinuousOptConProblem.h>
 #include <ct/optcon/solver/OptConSolver.h>
 
 #include <ct/optcon/dms/dms_core/DmsProblem.h>
@@ -28,7 +28,7 @@ namespace optcon {
 /**
  * @ingroup    DMS
  *
- * @brief      The DMS policy used as a solution container 
+ * @brief      The DMS policy used as a solution container
  *
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
@@ -83,15 +83,15 @@ public:
 
     typedef DmsPolicy<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 
-    typedef OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
+    typedef ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
 
     /**
 	 * @brief      Custom constructor, converts the optcon problem to a DMS problem
 	 *
-	 * @param[in]  problem      The optimal control problem	
+	 * @param[in]  problem      The optimal control problem
 	 * @param[in]  settingsDms  The dms settings
 	 */
-    DmsSolver(const OptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> problem, DmsSettings settingsDms)
+    DmsSolver(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> problem, DmsSettings settingsDms)
         : nlpSolver_(nullptr), settings_(settingsDms)
     {
         // Create system, linearsystem and costfunction instances
@@ -112,7 +112,7 @@ public:
         configure(settingsDms);
     }
 
-    virtual void generateAndCompileCode(const OptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
+    virtual void generateAndCompileCode(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
         const ct::core::DerivativesCppadSettings& settings) override
     {
         // Create system, linearsystem and costfunction instances

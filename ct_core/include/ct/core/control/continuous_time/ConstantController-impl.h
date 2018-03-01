@@ -48,6 +48,14 @@ void ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::computeControl(const St
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
+void ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::computeControl(const StateVector<STATE_DIM, SCALAR>& state,
+    const int n,
+    ControlVector<CONTROL_DIM, SCALAR>& controlAction)
+{
+    computeControl(state, SCALAR(n), controlAction);
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>::setControl(const ControlVector<CONTROL_DIM, SCALAR>& u)
 {
     u_ = u;
@@ -66,5 +74,5 @@ ControlMatrix<CONTROL_DIM, SCALAR> ConstantController<STATE_DIM, CONTROL_DIM, SC
 {
     return ControlMatrix<CONTROL_DIM, SCALAR>::Identity();
 }
-}
-}
+}  // namespace core
+}  // namespace ct
