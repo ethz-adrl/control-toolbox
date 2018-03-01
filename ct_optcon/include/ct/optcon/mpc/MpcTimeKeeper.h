@@ -9,7 +9,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "MpcSettings.h"
 #include "timehorizon/MpcTimeHorizon.h"
 
-#include <ct/optcon/problem/OptConProblem.h>
+#include <ct/optcon/problem/ContinuousOptConProblem.h>
 
 /**
  * define the following flag for debugging the MPC time keeper

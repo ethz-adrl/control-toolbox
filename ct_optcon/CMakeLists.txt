@@ -298,28 +298,34 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/mpc)
 catkin_add_gtest(NLOC_MPCTest test/mpc/NLOC_MPCTest.cpp)
 target_link_libraries(NLOC_MPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
+catkin_add_gtest(system_interface_test test/system_interface/SystemInterfaceTest.cpp)
+target_link_libraries(system_interface_test ${catkin_LIBRARIES})
+
 
 ## additional prespec tests
 if(USE_PRESPEC)
     catkin_add_gtest(LqrTestPrespec test/lqr/LqrTestPrespec.cpp)
     target_link_libraries(LqrTestPrespec ${catkin_LIBRARIES} ${LAPACK_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
-    
+
     if(HPIPM)
         catkin_add_gtest(LQOCSolverTestPrespec test/solver/linear/LQOCSolverTestPrespec.cpp)
         target_link_libraries(LQOCSolverTestPrespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIB_NAMES})
     endif(HPIPM)
-    
+
     catkin_add_gtest(LinearSystemTestPrespec test/nloc/LinearSystemTestPrespec.cpp)
     target_link_libraries(LinearSystemTestPrespec ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
-    
+
     #add_executable(SymplecticTestPrespec test/nloc/SymplecticTestPrespec.cpp)
     #target_link_libraries(SymplecticTestPrespec ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
-    
+
     catkin_add_gtest(constraint_test_prespec test/constraint/ConstraintTestPrespec.cpp)
     target_link_libraries(constraint_test_prespec ${catkin_LIBRARIES} ${PRESPEC_LIB_NAMES})
-    
+
     catkin_add_gtest(NLOC_MPCTest_prespec test/mpc/NLOC_MPCTest_prespec.cpp)
     target_link_libraries(NLOC_MPCTest_prespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIB_NAMES})
+
+    catkin_add_gtest(system_interface_test_prespec test/system_interface/SystemInterfaceTest-Prespec.cpp)
+    target_link_libraries(system_interface_test_prespec ${catkin_LIBRARIES} ${PRESPEC_LIB_NAMES})
 endif(USE_PRESPEC)
 
 

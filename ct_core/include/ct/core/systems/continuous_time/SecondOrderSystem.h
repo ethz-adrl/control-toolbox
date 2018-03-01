@@ -66,6 +66,9 @@ public:
     static const size_t STATE_DIM = 2;    //!< state dimension (position, velocity)
     static const size_t CONTROL_DIM = 1;  //!< control dimension (force)
 
+    typedef ControlledSystem<2, 1, SCALAR> Base;
+    typedef typename Base::time_t time_t;
+
     //! default constructor
     SecondOrderSystem() = delete;
 
@@ -142,7 +145,7 @@ public:
 	 * @param derivative derivative (velocity, acceleration)
 	 */
     virtual void computeControlledDynamics(const StateVector<2, SCALAR>& state,
-        const SCALAR& t,
+        const time_t& t,
         const ControlVector<1, SCALAR>& control,
         StateVector<2, SCALAR>& derivative) override
     {

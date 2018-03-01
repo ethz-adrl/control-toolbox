@@ -11,15 +11,20 @@ namespace ct {
 namespace optcon {
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR = double>
+template <size_t STATE_DIM,
+    size_t CONTROL_DIM,
+    size_t P_DIM,
+    size_t V_DIM,
+    typename SCALAR = double,
+    bool CONTINUOUS = true>
 class NLOCAlgorithm
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> Backend_t;
-
     typedef ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
+
+    typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS> Backend_t;
     typedef NLOptConSettings Settings_t;
     typedef SCALAR Scalar_t;
 

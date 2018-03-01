@@ -121,7 +121,7 @@ TEST(ILQRTestA, InstancesComparison)
         x0.setRandom();
 
         // construct single-core single subsystem OptCon Problem
-        OptConProblem<state_dim, control_dim> optConProblem(
+        ContinuousOptConProblem<state_dim, control_dim> optConProblem(
             tf, x0, nonlinearSystem, costFunction, analyticLinearSystem);
 
         size_t nSteps = std::round(tf / ilqr_settings.dt);
@@ -279,7 +279,7 @@ TEST(ILQRTestB, SingleCoreTest)
         x0.setRandom();
 
         // construct single-core single subsystem OptCon Problem
-        OptConProblem<state_dim, control_dim> optConProblem(
+        ContinuousOptConProblem<state_dim, control_dim> optConProblem(
             tf, x0, nonlinearSystem, costFunction, analyticLinearSystem);
 
         size_t nSteps = std::round(tf / ilqr_settings.dt);
@@ -488,7 +488,7 @@ TEST(ILQRTestC, PolicyComparison)
         x0.setRandom();
 
         // construct single-core single subsystem OptCon Problem
-        OptConProblem<state_dim, control_dim> optConProblem(
+        ContinuousOptConProblem<state_dim, control_dim> optConProblem(
             tf, x0, nonlinearSystem, costFunction, analyticLinearSystem);
 
         size_t nSteps = std::round(tf / ilqr_settings.dt);

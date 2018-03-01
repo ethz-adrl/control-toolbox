@@ -6,7 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-//#include <ct/core/core.h>
+#include <ct/core/core.h>
 
 namespace ct {
 namespace NS1 {
@@ -23,7 +23,7 @@ public:
     typedef typename Base::state_control_matrix_t state_control_matrix_t;
 
     LINEAR_SYSTEM_NAME(const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL)
-        : ct::core::LinearSystem<STATE_DIM, CONTROL_DIM>(type)
+        : Base(type)
     {
         initialize();
     }
