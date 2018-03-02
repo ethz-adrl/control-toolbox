@@ -36,6 +36,24 @@ NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::~NLOpt
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
+void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::setAlgorithm(const Settings_t& settings)
+{
+    switch (settings.nlocp_algorithm)
+    {
+        case NLOptConSettings::NLOCP_ALGORITHM::GNMS:
+            nlocAlgorithm_ = std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>>(
+                new GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>(nlocBackend_, settings));
+            break;
+        case NLOptConSettings::NLOCP_ALGORITHM::ILQR:
+            nlocAlgorithm_ = std::shared_ptr<NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>>(
+                new iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>(nlocBackend_, settings));
+            break;
+        default:
+            throw std::runtime_error("This algorithm is not implemented in NLOptConSolver.hpp");
+    }
+}
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::initialize(
     const OptConProblem_t& optConProblem,
     const Settings_t& settings)
@@ -47,7 +65,7 @@ void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::i
         nlocBackend_ = std::shared_ptr<Backend_t>(
             new NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>(optConProblem, settings));
 
-    configure(settings);
+    setAlgorithm(settings);
 }
 
 
@@ -59,19 +77,7 @@ void NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::c
 
     nlocBackend_->configure(settings);
 
-    switch (settings.nlocp_algorithm)
-    {
-        case NLOptConSettings::NLOCP_ALGORITHM::GNMS:
-            nlocAlgorithm_ = std::shared_ptr<NLOCAlgorithm_t>(
-                new GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>(nlocBackend_, settings));
-            break;
-        case NLOptConSettings::NLOCP_ALGORITHM::ILQR:
-            nlocAlgorithm_ = std::shared_ptr<NLOCAlgorithm_t>(
-                new iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>(nlocBackend_, settings));
-            break;
-        default:
-            throw std::runtime_error("This algorithm is not implemented in NLOptConSolver.hpp");
-    }
+    setAlgorithm(settings);
 }
 
 

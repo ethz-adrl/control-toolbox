@@ -283,6 +283,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     // TODO can we do this multi-threaded?
     if (iteration_ > 0 && settings_.lineSearchSettings.active)
         computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
+
+    setBoxConstraintsForLQOCProblem();
+    lqocSolver_->configureBoxConstraints(lqocProblem_);
+    lqocSolver_->initializeAndAllocate();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
@@ -299,6 +303,15 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         // make a deep copy
         generalConstraints_[i] = typename OptConProblem_t::ConstraintPtr_t(con->clone());
     }
+
+    // we need to allocate memory in HPIPM for the new constraints
+    for (size_t i = 0; i < K_; i++)
+        lqocProblem_->ng_[i] = generalConstraints_[settings_.nThreads]->getIntermediateConstraintsCount();
+
+    lqocProblem_->ng_[K_] = generalConstraints_[settings_.nThreads]->getTerminalConstraintsCount();
+    lqocSolver_->setProblem(lqocProblem_);
+    lqocSolver_->configureGeneralConstraints(lqocProblem_);
+    lqocSolver_->initializeAndAllocate();
 
     // TODO can we do this multi-threaded?
     if (iteration_ > 0 && settings_.lineSearchSettings.active)
