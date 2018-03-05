@@ -29,7 +29,7 @@ public:
 
     static const size_t NJOINTS = RBD::NJOINTS;
     static const size_t CONTROL_DIM = RBD::NJOINTS;  //this is very big assumption!
-    static const size_t NDOF = RBDState<NJOINTS>::NDOF;
+    static const size_t NDOF = RBDState<NJOINTS, Scalar>::NDOF;
     static const size_t MAX_JAC_SIZE = 3 * NEE;
 
     // this typedefs should live somewhere else
@@ -69,6 +69,7 @@ public:
     {
         ee_in_contact_ = eeinc;
         ResetJacobianStructure();
+        setSizes();
     }
 
     /**
@@ -85,19 +86,34 @@ public:
 	 */
     void ProjectedForwardDynamics(const RBDState_t& x, const control_vector_t& u, RBDAcceleration_t& qdd)
     {
-        updatePD(x, u);
+        ProjectedForwardDynamicsCommon(x, u);
+        qdd.base().fromVector6d(qddlambda_.template segment<6>(0));
+        qdd.joints().setAcceleration(qddlambda_.template segment<NJOINTS>(6));
+    }
 
-        g_coordinate_vector_t qd = x.toCoordinateVelocity();
+    /// @brief compute contact forces from last dynamics call
+    void getContactForcesInBase(EE_contact_forces_t& lambda)
+    {
+        int rowCounter = 0;
+        for (int eeinc_i = 0; eeinc_i < NEE; eeinc_i++)
+        {
+            if (ee_in_contact_[eeinc_i])
+            {
+                lambda[eeinc_i] = qddlambda_.template segment<3>(NDOF + rowCounter);
+                rowCounter += 3;
+            }
+            else
+            {
+                lambda[eeinc_i].setZero();
+            }
+        }
+    };
 
-        g_coordinate_vector_t b = fp_ - hp_ - (Cc_ * qd);
-        // - M J^-1 J_dot * qd +
-        //b = -Cc_ * qd + fp_ - hp_;
-
-        g_coordinate_vector_t y = Mc_.fullPivLu().solve(b);
-
-        //ToDo: better assignment methods
-        qdd.base().fromVector6d(y.template segment<6>(0));
-        qdd.joints().setAcceleration(y.template segment<NJOINTS>(6));
+    /// @brief compute contact forces at current state and control input
+    void getContactForcesInBase(const RBDState_t& x, const control_vector_t& u, EE_contact_forces_t& lambda)
+    {
+        ProjectedForwardDynamicsCommon(x, u);
+        getContactForcesInBase(lambda);
     }
 
     /**
@@ -109,72 +125,42 @@ public:
 	 */
     void ProjectedInverseDynamics(const RBDState_t& x, const RBDAcceleration_t& qdd, control_vector_t& u)
     {
-        /// This method is generic for any type of projection, however the current implementation
-        /// of the class only provides the orthogonal projector.
-        /// ToDo: For the orthogonal projection some of these operations are redundant
-
-        updatePD(x, u);
-
-        Eigen::Matrix<Scalar, NDOF, CONTROL_DIM> PSt = P_ * S_.transpose();
-
-        svd_.compute(PSt, Eigen::ComputeThinU | Eigen::ComputeThinV);
-
-        VectorXs sing_values(svd_.matrixV().cols(), 1);  // size of E has same size as columns of V
-        sing_values = (svd_.singularValues().array() > 1e-9).select(svd_.singularValues().array().inverse(), 0);
-        selection_matrix_t Pstinv = svd_.matrixV() * sing_values.asDiagonal() * svd_.matrixU().transpose();
-
-        selection_matrix_t PStP = Pstinv * P_;
-
-        g_coordinate_vector_t Mqdd = M_ * qdd.toCoordinateAcceleration();
-
-        u = PStP * (Mqdd + h_);
+        updateDynamicsTerms(x, u);
+        ProjectedInverseDynamicsCommon(x, qdd, u);
     }
 
     void ProjectedInverseDynamicsNoGravity(const RBDState_t& x, const RBDAcceleration_t& qdd, control_vector_t& u)
     {
-        /// This method is generic for any type of projection, however the current implementation
-        /// of the class only provides the orthogonal projector.
-        /// ToDo: For the orthogonal projection some of these operations are redundant
-
-        updatePDNoGravity(x, u);
-
-        Eigen::Matrix<Scalar, NDOF, CONTROL_DIM> PSt = P_ * S_.transpose();
-
-        svd_.compute(PSt, Eigen::ComputeThinU | Eigen::ComputeThinV);
-
-        VectorXs sing_values(svd_.matrixV().cols(), 1);  // size of E has same size as columns of V
-        sing_values = (svd_.singularValues().array() > 1e-9).select(svd_.singularValues().array().inverse(), 0);
-        selection_matrix_t Pstinv = svd_.matrixV() * sing_values.asDiagonal() * svd_.matrixU().transpose();
-
-        selection_matrix_t PStP = Pstinv * P_;
-
-        g_coordinate_vector_t Mqdd = M_ * qdd.toCoordinateAcceleration();
-
-        u = PStP * (Mqdd + h_);
+        updateDynamicsTermsNoGravity(x, u);
+        ProjectedInverseDynamicsCommon(x, qdd, u);
     }
 
-    /// @brief compute contact forces from last dynamics call given the last
-    /// call of the dynamics.
-    /// the idea is to allow the user to get the contact forces only if required
-    void computeContactForces(EE_contact_forces_t& lamda);
-
 private:
-    ///@brief Update constraint dynamics terms
-    void updatePD(const RBDState_t& x, const control_vector_t& u);
-
-    void updatePDNoGravity(const RBDState_t& x, const control_vector_t& u);
-
-    ///@brief Update the Projected terms
-    void updateProjectedTerms(const control_vector_t& u);
-
     /// @brief Update M h & f terms of the dynamics equation
     void updateDynamicsTerms(const RBDState_t& x, const control_vector_t& u);
 
+    /// @brief Update M h & f terms of the dynamics equation, excluding gravity from h
     void updateDynamicsTermsNoGravity(const RBDState_t& x, const control_vector_t& u);
+
+    /**
+     * @brief Solves the equation
+     *      P (M*qdd + h) = P*St*tau
+     *      with P Jc^T = 0
+     *      The user is responsible for providing a constraint consistent acceleration
+     */
+    void ProjectedInverseDynamicsCommon(const RBDState_t& x, const RBDAcceleration_t& qdd, control_vector_t& u);
+
+    /**
+     * @brief Simultaniously solves the equations
+     *      M*qdd + h = St*tau + Jct*lambda
+     *      Jc*qdd + dJcdt*qd + omega x v = 0  (No acceleration of the feet)
+     */
+    void ProjectedForwardDynamicsCommon(const RBDState_t& x, const control_vector_t& u);
 
     void ResetJacobianStructure();
 
-private:
+    void setSizes();
+
     std::shared_ptr<Kinematics<RBD, NEE>> kinematics_; /*!< The RBD kinematics */
 
     EE_in_contact_t ee_in_contact_; /*!< the contact configuration data map*/
@@ -186,11 +172,11 @@ private:
     g_coordinate_vector_t f_; /*!< The input force*/
     g_coordinate_vector_t h_; /*!< the c and g-forces */
 
-    inertia_matrix_t Mc_;      /*!< The constraint inertia matrix */
-    g_coordinate_vector_t fp_; /*!< acting input force*/
-    g_coordinate_vector_t hp_; /*!< acting forces */
-    inertia_matrix_t Cc_;      /*!< Internal forces (ToDo: find better name)*/
-
+    Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MJTJ0_;
+    Eigen::Matrix<Scalar, Eigen::Dynamic, 1> qddlambda_, b_;
+    Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Jc_reduced_;
+    Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> dJcdt_reduced_;
+    Eigen::Matrix<Scalar, Eigen::Dynamic, 1> feet_crossproduct_;
 
     tpl::ConstraintJacobian<Kinematics<RBD, NEE>, MAX_JAC_SIZE, NJOINTS, Scalar>
         Jc_; /*!< The Jacobian of the constraint */
@@ -204,26 +190,7 @@ ProjectedDynamics<RBD, NEE>::ProjectedDynamics(const std::shared_ptr<Kinematics<
     const EE_in_contact_t ee_inc /*= EE_in_Contact_t(false)*/)
     : kinematics_(kyn), ee_in_contact_(ee_inc)
 {
-}
-
-template <class RBD, size_t NEE>
-void ProjectedDynamics<RBD, NEE>::updatePD(const RBDState_t& x, const control_vector_t& u)
-{
-    // currently using the null space orthogonal projection
-
-    updateDynamicsTerms(x, u);
-    Jc_.updateState(x);
-    updateProjectedTerms(u);
-}
-
-template <class RBD, size_t NEE>
-void ProjectedDynamics<RBD, NEE>::updatePDNoGravity(const RBDState_t& x, const control_vector_t& u)
-{
-    // currently using the null space orthogonal projection
-
-    updateDynamicsTermsNoGravity(x, u);
-    Jc_.updateState(x);
-    updateProjectedTerms(u);
+    setContactConfiguration(ee_inc);
 }
 
 template <class RBD, size_t NEE>
@@ -237,10 +204,6 @@ void ProjectedDynamics<RBD, NEE>::updateDynamicsTermsNoGravity(const RBDState_t&
 
     M_ = kinematics_->robcogen().jSim().update(x.joints().getPositions());
 
-    // todo replace with selection matrix from kinematics_!
-    S_.template block<CONTROL_DIM, 6>(0, 0).setZero();
-    S_.template block<CONTROL_DIM, NJOINTS>(0, 6).setIdentity();
-
     h_ << base_w, jForces;
     f_ << Eigen::Matrix<Scalar, 6, 1>::Zero(), u;
 }
@@ -248,51 +211,69 @@ void ProjectedDynamics<RBD, NEE>::updateDynamicsTermsNoGravity(const RBDState_t&
 template <class RBD, size_t NEE>
 void ProjectedDynamics<RBD, NEE>::updateDynamicsTerms(const RBDState_t& x, const control_vector_t& u)
 {
-    joint_vector_t jForces, jForces_gravity, jForces_velocity;
-    ForceVector_t base_w, base_w_gravity, base_w_velocity;
+    joint_vector_t jForces_gravity;
+    ForceVector_t base_w_gravity;
 
-
-    // Calls set kinematics->setjointstates
     kinematics_->robcogen().inverseDynamics().G_terms_fully_actuated(
         base_w_gravity, jForces_gravity, x.basePose().computeGravityB6D(), x.joints().getPositions());
 
-    kinematics_->robcogen().inverseDynamics().C_terms_fully_actuated(
-        base_w_velocity, jForces_velocity, x.baseVelocities().getVector(), x.joints().getVelocities());
-
-    base_w = base_w_gravity + base_w_velocity;
-    jForces = jForces_gravity + jForces_velocity;
-
-    M_ = kinematics_->robcogen().jSim().update(x.joints().getPositions());
-
-    // todo replace with selection matrix from kinematics_!
-    S_.template block<CONTROL_DIM, 6>(0, 0).setZero();
-    S_.template block<CONTROL_DIM, NJOINTS>(0, 6).setIdentity();
-
-    h_ << base_w, jForces;
-    f_ << Eigen::Matrix<Scalar, 6, 1>::Zero(), u;
+    updateDynamicsTermsNoGravity(x, u);
+    h_.template segment<6>(0) += base_w_gravity;
+    h_.template segment<NJOINTS>(6) += jForces_gravity;
 }
 
 template <class RBD, size_t NEE>
-void ProjectedDynamics<RBD, NEE>::updateProjectedTerms(const control_vector_t& u)
+void ProjectedDynamics<RBD, NEE>::ProjectedInverseDynamicsCommon(const RBDState_t& x,
+    const RBDAcceleration_t& qdd,
+    control_vector_t& u)
 {
+    Jc_.updateState(x);
     P_ = Jc_.P();
 
-    /// Constraint Inertia Matrix
-    /// There are various versions, user should decide on this?
-    ///
-    inertia_matrix_t PM = P_ * M_;
-    inertia_matrix_t PMT = PM.transpose();
-    Mc_ = M_ + PM - PMT;
+    Eigen::Matrix<Scalar, NDOF, CONTROL_DIM> PSt = P_ * S_.transpose();
 
-    ///Acting input force
-    fp_ = P_ * S_.transpose() * u;
+    svd_.compute(PSt, Eigen::ComputeThinU | Eigen::ComputeThinV);
 
-    ///Acting forces
-    hp_ = P_ * h_;
+    VectorXs sing_values(svd_.matrixV().cols(), 1);  // size of E has same size as columns of V
+    sing_values = (svd_.singularValues().array() > 1e-9).select(svd_.singularValues().array().inverse(), 0);
+    selection_matrix_t Pstinv = svd_.matrixV() * sing_values.asDiagonal() * svd_.matrixU().transpose();
 
-    ///InternalForces
-    inertia_matrix_t C = Jc_.JdagerSVD() * Jc_.dJdt();
-    Cc_ = M_ * C;
+    selection_matrix_t PStP = Pstinv * P_;
+
+    g_coordinate_vector_t Mqdd = M_ * qdd.toCoordinateAcceleration();
+
+    u = PStP * (Mqdd + h_);
+}
+
+template <class RBD, size_t NEE>
+void ProjectedDynamics<RBD, NEE>::ProjectedForwardDynamicsCommon(const RBDState_t& x, const control_vector_t& u)
+{
+    // Set Kinematics
+    Jc_.updateState(x);
+    int rowCount = 0;
+    for (int eeinc_i = 0; eeinc_i < NEE; eeinc_i++)
+    {
+        if (ee_in_contact_[eeinc_i])
+        {
+            Jc_reduced_.template block<3, NDOF>(rowCount, 0) = Jc_.J().template block<3, NDOF>(3 * eeinc_i, 0);
+            dJcdt_reduced_.template block<3, NDOF>(rowCount, 0) = Jc_.dJdt().template block<3, NDOF>(3 * eeinc_i, 0);
+            feet_crossproduct_.template segment<3>(rowCount) =
+                x.baseLocalAngularVelocity().toImplementation().template cross(
+                    kinematics_->getEEVelocityInBase(eeinc_i, x).toImplementation());
+            rowCount += 3;
+        }
+    }
+
+    // Set Dynamics
+    updateDynamicsTerms(x, u);
+    MJTJ0_.template block<NDOF, NDOF>(0, 0) = M_;
+    MJTJ0_.template block(NDOF, 0, 3 * neec_, NDOF) = -Jc_reduced_;
+    MJTJ0_.template block(0, NDOF, NDOF, 3 * neec_) = -Jc_reduced_.transpose();
+
+    b_.template segment<NDOF>(0) = f_ - h_;
+    b_.template segment(NDOF, 3 * neec_) = dJcdt_reduced_ * x.toCoordinateVelocity() + feet_crossproduct_;
+
+    qddlambda_ = core::ADHelperFunctions::LDLTsolve_dynamic<Scalar>(MJTJ0_, b_);
 }
 
 template <class RBD, size_t NEE>
@@ -301,7 +282,6 @@ void ProjectedDynamics<RBD, NEE>::ResetJacobianStructure()
     Jc_.ee_indices_.clear();
     Jc_.c_size_ = 0;
     neec_ = 0;
-
 
     for (auto eeinc = 0; eeinc < NEE; eeinc++)
     {
@@ -314,6 +294,22 @@ void ProjectedDynamics<RBD, NEE>::ResetJacobianStructure()
             Jc_.eeInContact_[eeinc] = ee_in_contact_[eeinc];
         }
     }
+}
+
+template <class RBD, size_t NEE>
+void ProjectedDynamics<RBD, NEE>::setSizes()
+{
+    Jc_reduced_.resize(3 * neec_, NDOF);
+    dJcdt_reduced_.resize(3 * neec_, NDOF);
+    feet_crossproduct_.resize(3 * neec_);
+
+    MJTJ0_.resize(NDOF + 3 * neec_, NDOF + 3 * neec_);
+    MJTJ0_.setZero();
+    b_.resize(NDOF + 3 * neec_);
+    qddlambda_.resize(NDOF + 3 * neec_);
+
+    S_.template block<CONTROL_DIM, 6>(0, 0).setZero();
+    S_.template block<CONTROL_DIM, NJOINTS>(0, 6).setIdentity();
 }
 
 } /* namespace rbd */

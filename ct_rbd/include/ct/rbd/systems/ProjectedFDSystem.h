@@ -54,15 +54,22 @@ namespace rbd {
  */
 template <class RBDDynamics, bool QUAT_INTEGRATION = false>
 class ProjectedFDSystem : public RBDSystem<RBDDynamics, QUAT_INTEGRATION>,
-                          public core::ControlledSystem<RBDDynamics::NSTATE + QUAT_INTEGRATION, RBDDynamics::NJOINTS>
+                          public core::ControlledSystem<RBDDynamics::NSTATE + QUAT_INTEGRATION,
+                              RBDDynamics::NJOINTS,
+                              typename RBDDynamics::SCALAR>
 {
 public:
     using Dynamics = RBDDynamics;
     using Kinematics = typename RBDDynamics::Kinematics_t;
 
+    typedef typename RBDDynamics::SCALAR SCALAR;
+
     const static size_t N_EE = RBDDynamics::N_EE;
     const static size_t STATE_DIM = RBDDynamics::NSTATE + QUAT_INTEGRATION;
     const static size_t CONTROL_DIM = RBDDynamics::NJOINTS;
+
+    typedef core::StateVector<STATE_DIM, SCALAR> StateVector;
+    typedef core::ControlVector<CONTROL_DIM, SCALAR> ControlVector;
 
     typedef core::ControlledSystem<RBDDynamics::RBDState_t::NSTATE + QUAT_INTEGRATION, RBDDynamics::NJOINTS> Base;
 
@@ -72,48 +79,44 @@ public:
 
     virtual RBDDynamics& dynamics() override { return dynamics_; }
     virtual const RBDDynamics& dynamics() const override { return dynamics_; }
-    virtual void computeControlledDynamics(const core::StateVector<STATE_DIM>& state,
-        const core::Time& t,
-        const core::ControlVector<CONTROL_DIM>& control,
-        core::StateVector<STATE_DIM>& derivative
-
-        ) override
+    virtual void computeControlledDynamics(const StateVector& state,
+        const SCALAR& t,
+        const ControlVector& control,
+        StateVector& derivative) override
     {
         typename RBDDynamics::RBDState_t x = RBDStateFromVector(state);
-
         typename RBDDynamics::RBDAcceleration_t xd;
 
         dynamics_.ProjectedForwardDynamics(eeInContact_, x, control, xd);
-
         derivative = toStateDerivative<QUAT_INTEGRATION>(xd, x);
     }
 
     void setEEInContact(typename RBDDynamics::EE_in_contact_t& eeInContact) { eeInContact_ = eeInContact; }
-    typename RBDDynamics::RBDState_t RBDStateFromVector(const core::StateVector<STATE_DIM>& state)
+    typename RBDDynamics::RBDState_t RBDStateFromVector(const StateVector& state)
     {
         return RBDStateFromVectorImpl<QUAT_INTEGRATION>(state);
     }
 
     template <bool T>
-    typename RBDDynamics::RBDState_t RBDStateFromVectorImpl(const core::StateVector<STATE_DIM>& state,
+    typename RBDDynamics::RBDState_t RBDStateFromVectorImpl(const StateVector& state,
         typename std::enable_if<T, bool>::type = true)
     {
-        typename RBDDynamics::RBDState_t x(RigidBodyPose::QUAT);
+        typename RBDDynamics::RBDState_t x(tpl::RigidBodyPose<SCALAR>::QUAT);
         x.fromStateVectorQuaternion(state);
         return x;
     }
 
     template <bool T>
-    typename RBDDynamics::RBDState_t RBDStateFromVectorImpl(const core::StateVector<STATE_DIM>& state,
+    typename RBDDynamics::RBDState_t RBDStateFromVectorImpl(const StateVector& state,
         typename std::enable_if<!T, bool>::type = true)
     {
-        typename RBDDynamics::RBDState_t x(RigidBodyPose::EULER);
+        typename RBDDynamics::RBDState_t x(tpl::RigidBodyPose<SCALAR>::EULER);
         x.fromStateVectorEulerXyz(state);
         return x;
     }
 
     template <bool T>
-    core::StateVector<STATE_DIM> toStateDerivative(const typename RBDDynamics::RBDAcceleration_t& acceleration,
+    StateVector toStateDerivative(const typename RBDDynamics::RBDAcceleration_t& acceleration,
         const typename RBDDynamics::RBDState_t& state,
         typename std::enable_if<T, bool>::type = true)
     {
@@ -121,7 +124,7 @@ public:
     }
 
     template <bool T>
-    core::StateVector<STATE_DIM> toStateDerivative(const typename RBDDynamics::RBDAcceleration_t& acceleration,
+    StateVector toStateDerivative(const typename RBDDynamics::RBDAcceleration_t& acceleration,
         const typename RBDDynamics::RBDState_t& state,
         typename std::enable_if<!T, bool>::type = true)
     {

@@ -137,6 +137,9 @@ target_link_libraries(LinspaceTest ${catkin_LIBRARIES})
 catkin_add_gtest(AutoDiffLinearizerTest test/AutoDiffLinearizerTest.cpp)
 target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} ct_core pthread)
 
+catkin_add_gtest(MatrixInversionTest test/internal/MatrixInversionTest.cpp)
+target_link_libraries(MatrixInversionTest ${catkin_LIBRARIES})
+
 # Codegen tests cannot run in parallel. Thus we build and run all codegen tests in one
 catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
 target_link_libraries(CodegenTests ${catkin_LIBRARIES} ct_core dl pthread)
