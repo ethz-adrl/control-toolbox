@@ -114,6 +114,9 @@ target_link_libraries(rbdJITtests ${catkin_LIBRARIES})
 catkin_add_gtest(kindrJITtest test/robot/costfunction/kindrJITtest.cpp)
 target_link_libraries(kindrJITtest ${catkin_LIBRARIES})
 
+catkin_add_gtest(jacobianTests test/robot/jacobian/JacobianTests.cpp)
+target_link_libraries(jacobianTests ${catkin_LIBRARIES})
+
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
   set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_rbd.doxyfile)
