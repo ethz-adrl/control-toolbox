@@ -87,6 +87,7 @@ public:
         assert(i < NJOINTS && "Invalid joint index");
         return state_(i);
     }
+
     /// @brief normalize the joint state to be in the range [lowerLimitVec, lowerLimitVec + 2pi)
     template <typename T>
     void toUniquePosition(T lowerLimitVec, double tolerance = 1e-3)
@@ -94,16 +95,9 @@ public:
         assert(lowerLimitVec.size() == NJOINTS && "Wrong limit dimensions");
         for (size_t i = 0; i < NJOINTS; ++i)
         {
-            int k = std::ceil((lowerLimitVec[i] - getPosition(i)) / (2 * M_PI));
-            getPosition(i) += k * 2 * M_PI;
-            if (abs(getPosition(i) + (k - 1) * 2 * M_PI - lowerLimitVec[i]) <= tolerance)
-            {
-                getPosition(i) += (k - 1) * 2 * M_PI;
-            }
-            else
-            {
-                getPosition(i) += k * 2 * M_PI;
-            }
+            // compute the integer of multiple of 2*PI to substract
+            int k = std::floor((getPosition(i) - lowerLimitVec[i]) / (2 * M_PI));
+            getPosition(i) -= k * 2 * M_PI;
         }
     }
 
