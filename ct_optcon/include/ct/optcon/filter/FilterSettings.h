@@ -10,6 +10,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include "SteadyStateKalmanFilter.h"
 #include "ExtendedKalmanFilter.h"
+#include "UnscentedKalmanFilter.h"
 
 namespace ct {
 namespace optcon {
@@ -125,7 +126,7 @@ struct SteadyStateKalmanFilterSettings
     }
 };
 
-//! Settings for setting up a ExtendedKF
+//! Settings for setting up an ExtendedKF
 /*!
  * \ingroup
  *
@@ -165,7 +166,63 @@ struct ExtendedKalmanFilterSettings
 
         if (verbose)
         {
-            std::cout << "Loaded steady state KF settings from " << filename << ": " << std::endl;
+            std::cout << "Loaded ExtendedKF settings from " << filename << ": " << std::endl;
+            print();
+        }
+    }
+};
+
+//! Settings for setting up an UnscentedKF
+/*!
+ * \ingroup
+ *
+ * The UnscentedKF settings are designed to make the initialization smoother and possible through a file
+ * configuration.
+ *
+ */
+template <size_t STATE_DIM, typename SCALAR = double>
+struct UnscentedKalmanFilterSettings
+{
+    typename UnscentedKalmanFilter<STATE_DIM, SCALAR>::state_vector_t x0; /*!< Initial state estimate. */
+    SCALAR alpha;
+    SCALAR beta;
+    SCALAR kappa;
+    ct::core::StateMatrix<STATE_DIM, SCALAR> P0;                         /*!< Initial covariance matrix. */
+
+    //! default constructor
+    UnscentedKalmanFilterSettings() {}
+    //! print the current settings
+    void print() const
+    {
+        std::cout << "State Observer Settings: " << std::endl;
+        std::cout << "=====================" << std::endl;
+        std::cout << "x0:\n" << x0 << std::endl;
+        std::cout << "alpha:\n" << alpha << std::endl;
+        std::cout << "beta:\n" << beta << std::endl;
+        std::cout << "kappa:\n" << kappa << std::endl;
+        std::cout << "P0:\n" << P0 << std::endl;
+        std::cout << "              =======" << std::endl;
+        std::cout << std::endl;
+    }
+
+    //! load settings from file
+    void load(const std::string& filename, bool verbose, const std::string& ns)
+    {
+        if (verbose) std::cout << "Trying to load steady state KF settings from " << filename << ": " << std::endl;
+
+        boost::property_tree::ptree pt;
+        boost::property_tree::read_info(filename, pt);
+
+
+        ct::core::loadMatrix(filename, "x0", x0, ns);
+        alpha = pt.get<bool>(ns + ".alpha");
+        beta = pt.get<bool>(ns + ".beta");
+        kappa = pt.get<bool>(ns + ".kappa");
+        ct::core::loadMatrix(filename, "P0", P0, ns);
+
+        if (verbose)
+        {
+            std::cout << "Loaded UnscentedKF settings from " << filename << ": " << std::endl;
             print();
         }
     }

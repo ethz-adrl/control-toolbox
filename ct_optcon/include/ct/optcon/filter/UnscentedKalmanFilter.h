@@ -95,17 +95,23 @@ public:
     using CovarianceSquareRoot = Cholesky<Eigen::Matrix<SCALAR, SIZE, SIZE>>;
 
     UnscentedKalmanFilter(const state_vector_t& x0 = state_vector_t::Zero(),
+        SCALAR alpha                               = SCALAR(1),
+        SCALAR beta                                = SCALAR(2),
+        SCALAR kappa                               = SCALAR(0),
         const ct::core::StateMatrix<STATE_DIM, SCALAR>& P0 = ct::core::StateMatrix<STATE_DIM, SCALAR>::Identity())
-        : Base(x0), P_(P0)
+        : Base(x0), alpha_(alpha), beta_(beta), kappa_(kappa), P_(P0)
     {
     }
 
-    UnscentedKalmanFilter(const UnscentedKalmanFilterSettings<STATE_DIM, SCALAR>& ekf_settings)
-        : Base(ekf_settings.x0), P_(ekf_settings.P0)
+    UnscentedKalmanFilter(const UnscentedKalmanFilterSettings<STATE_DIM, SCALAR>& ukf_settings)
+        : Base(ukf_settings.x0),
+          alpha_(ukf_settings.alpha),
+          beta_(ukf_settings.beta),
+          kappa_(ukf_settings.kappa),
+          P_(ukf_settings.P0)
     {
     }
 
-    // ============= DONE.=============
     template <size_t CONTROL_DIM>
     const state_vector_t& predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
         const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
@@ -113,18 +119,16 @@ public:
         const ct::core::Time& t = 0)
     {
         if (!computeSigmaPoints())
-        {
             throw std::runtime_error("UnscentedKalmanFilter : Numerical error.");
-        }
 
         this->x_est_ = this->template computeStatePrediction<CONTROL_DIM>(f, u, t);
 
-        computeCovarianceFromSigmaPoints(this->x_est_, sigmaStatePoints_, f.computeDerivativeNoise(this->x_est_, t), P_);
+        computeCovarianceFromSigmaPoints(
+            this->x_est_, sigmaStatePoints_, f.computeDerivativeNoise(this->x_est_, t), P_);
 
         return this->x_est_;
     }
 
-    // ============= DONE.=============
     template <size_t OUTPUT_DIM>
     const state_vector_t& update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& z,
         LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
@@ -138,45 +142,40 @@ public:
             this->template computeMeasurementPrediction<OUTPUT_DIM>(h, sigmaMeasurementPoints, t);
 
         // Compute innovation covariance
-        Covariance<OUTPUT_DIM> P_yy;
-        computeCovarianceFromSigmaPoints(y, sigmaMeasurementPoints, h.computeDerivativeNoise(this->x_est_, t), P_yy);
+        Covariance<OUTPUT_DIM> P;
+        computeCovarianceFromSigmaPoints(y, sigmaMeasurementPoints, h.computeDerivativeNoise(this->x_est_, t), P);
 
         Eigen::Matrix<SCALAR, STATE_DIM, OUTPUT_DIM> K;
-        computeKalmanGain(y, sigmaMeasurementPoints, P_yy, K);
+        computeKalmanGain(y, sigmaMeasurementPoints, P, K);
 
         // Update state
-        x += K * (z - y);
+        this->x_est_ += K * (z - y);
 
         // Update state covariance
-        updateStateCovariance<OUTPUT_DIM>(K, P_yy);
+        updateStateCovariance<OUTPUT_DIM>(K, P);
 
         return this->x_est_;
     }
 
-    // ============= DONE.=============
     bool computeSigmaPoints()
     {
         // Get square root of covariance
         CovarianceSquareRoot<STATE_DIM> llt;
-        llt.compute(P);
-        if (llt.info() != Eigen::Success)
-        {
-            return false;
-        }
+        llt.compute(P_);
+        if (llt.info() != Eigen::Success) return false;
 
         Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> _S = llt.matrixL().toDenseMatrix();
 
         // Set left "block" (first column)
-        sigmaStatePoints_.template leftCols<1>() = this->x_est_;
+        this->sigmaStatePoints_.template leftCols<1>() = this->x_est_;
         // Set center block with x + gamma_ * S
-        sigmaStatePoints_.template block<STATE_DIM, STATE_DIM>(0, 1) = (gamma_ * _S).colwise() + this->x_est_;
+        this->sigmaStatePoints_.template block<STATE_DIM, STATE_DIM>(0, 1) = (gamma_ * _S).colwise() + this->x_est_;
         // Set right block with x - gamma_ * S
-        sigmaStatePoints_.template rightCols<STATE_DIM>() = (-gamma_ * _S).colwise() + this->x_est_;
+        this->sigmaStatePoints_.template rightCols<STATE_DIM>() = (-gamma_ * _S).colwise() + this->x_est_;
 
         return true;
     }
 
-    // ============= DONE.=============
     template <size_t SIZE>
     bool computeCovarianceFromSigmaPoints(const Eigen::Matrix<SCALAR, SIZE, 1>& mean,
         const SigmaPoints<SIZE>& sigmaPoints,
@@ -185,12 +184,11 @@ public:
     {
         SigmaPoints<SIZE> W   = this->sigmaWeights_c_.transpose().template replicate<SIZE, 1>();
         SigmaPoints<SIZE> tmp = (sigmaPoints.colwise() - mean);
-        cov                       = tmp.cwiseProduct(W) * tmp.transpose() + noiseCov;
+        cov                   = tmp.cwiseProduct(W) * tmp.transpose() + noiseCov;
 
         return true;
     }
 
-    // ============= DONE.=============
     template <size_t OUTPUT_DIM>
     bool computeKalmanGain(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
         const SigmaPoints<OUTPUT_DIM>& sigmaMeasurementPoints,
@@ -207,10 +205,9 @@ public:
     }
 
     template <size_t OUTPUT_DIM>
-    bool updateStateCovariance(const Eigen::Matrix<SCALAR, STATE_DIM, OUTPUT_DIM>& K,
-        const Covariance<OUTPUT_DIM>& P_yy)
+    bool updateStateCovariance(const Eigen::Matrix<SCALAR, STATE_DIM, OUTPUT_DIM>& K, const Covariance<OUTPUT_DIM>& P)
     {
-        P -= K * P_yy * K.transpose();
+        P_ -= K * P * K.transpose();
         return true;
     }
 
@@ -252,7 +249,7 @@ public:
         assert(std::abs(L + kappa_) > 1e-6);
 
         SCALAR W_m_0 = lambda_ / (L + lambda_);
-        SCALAR W_c_0 = W_m_0 + (SCALAR(1) - alpha_ * alpha_ + beta);
+        SCALAR W_c_0 = W_m_0 + (SCALAR(1) - alpha_ * alpha_ + beta_);
         SCALAR W_i   = SCALAR(1) / (SCALAR(2) * alpha_ * alpha_ * (L + kappa_));
 
         // Make sure W_i > 0 to avoid square-root of negative number
@@ -293,7 +290,7 @@ public:
     }
 
     template <size_t OUTPUT_DIM>
-    Type computePredictionFromSigmaPoints(const SigmaPoints<OUTPUT_DIM>& sigmaPoints)
+    state_vector_t computePredictionFromSigmaPoints(const SigmaPoints<OUTPUT_DIM>& sigmaPoints)
     {
         // Use efficient matrix x vector computation
         return sigmaPoints * sigmaWeights_m_;
