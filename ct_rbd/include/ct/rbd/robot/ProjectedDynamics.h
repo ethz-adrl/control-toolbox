@@ -273,7 +273,7 @@ void ProjectedDynamics<RBD, NEE>::ProjectedForwardDynamicsCommon(const RBDState_
     b_.template segment<NDOF>(0) = f_ - h_;
     b_.template segment(NDOF, 3 * neec_) = dJcdt_reduced_ * x.toCoordinateVelocity() + feet_crossproduct_;
 
-    qddlambda_ = core::ADHelperFunctions::LDLTsolve_dynamic<Scalar>(MJTJ0_, b_);
+    qddlambda_ = core::LDLTsolve<Scalar>(MJTJ0_, b_);
 }
 
 template <class RBD, size_t NEE>

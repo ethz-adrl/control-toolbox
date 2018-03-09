@@ -37,36 +37,37 @@ Eigen::Matrix<double, n, n> getPositiveDefiniteMatrix()
     return svd_.matrixV() * sing_values.asDiagonal() * svd_.matrixU().transpose();
 }
 
-TEST(MatrixInversionTest, ADHelperFunctionsCustomInversionTests)
+TEST(MatrixInversionTest, CustomInversionTests)
 {
     constexpr int NTESTS = 1000;
     MatrixNd A;
-    VectorNd b, x_ct, x_ct_dynamic, x_eigen;
+    VectorNd b, x_ct, x_eigen;
+    Eigen::MatrixXd A_dynamic(n, n);
+    Eigen::VectorXd b_dynamic(n), x_ct_dynamic(n);
 
-    // Test LDLT
+
     for (int i = 0; i < NTESTS; i++)
     {
         b.setRandom();
         A = getPositiveDefiniteMatrix();
+        b_dynamic = b;
+        A_dynamic = A;
 
-        x_ct = ADHelperFunctions::LDLTsolve<double, n, 1>(A, b);
-        x_ct_dynamic = ADHelperFunctions::LDLTsolve<double>(A, b);
+        // Test LDLT
+        x_ct = LDLTsolve<double>(A, b);
+        x_ct_dynamic = LDLTsolve<double>(A_dynamic, b_dynamic);
         x_eigen = A.ldlt().solve(b);
 
         ASSERT_TRUE(x_ct.isApprox(x_eigen, 1e-9));
         ASSERT_TRUE(x_ct_dynamic.isApprox(x_eigen, 1e-9));
-    }
 
-    // Test LU
-    for (int i = 0; i < NTESTS; i++)
-    {
-        b.setRandom();
-        A = getPositiveDefiniteMatrix();
-
-        x_ct = ADHelperFunctions::LUsolve<double, n, 1>(A, b);
-        x_eigen = A.ldlt().solve(b);
+        // Test LU
+        x_ct = LUsolve<double>(A, b);
+        x_ct_dynamic = LUsolve<double>(A_dynamic, b_dynamic);
+        x_eigen = A.lu().solve(b);
 
         ASSERT_TRUE(x_ct.isApprox(x_eigen, 1e-9));
+        ASSERT_TRUE(x_ct_dynamic.isApprox(x_eigen, 1e-9));
     }
 }
 
