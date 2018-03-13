@@ -96,9 +96,9 @@ public:
     //! accessor to actuator state
     const actuator_state_vector_t& actuatorState() const { return act_state_; }
     //! accessor to single element of actuator state
-    SCALAR& actuatorState(size_t i) {return act_state_(i);}
+    SCALAR& actuatorState(size_t i) { return act_state_(i); }
     //! accessor to single element of actuator state
-    const SCALAR& actuatorState(size_t i) const {return act_state_(i);}
+    const SCALAR& actuatorState(size_t i) const { return act_state_(i); }
     //! accessor to joint state
     JointState_t& joints() { return joints_; }
     //! accessor to joint state
