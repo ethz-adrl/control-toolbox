@@ -1,4 +1,16 @@
 #include <ct/optcon/optcon-prespec.h>
-#include <ct/optcon/problem/OptConProblem-impl.h>
+#include <ct/optcon/problem/OptConProblemBase-impl.h>
 
-template class ct::optcon::OptConProblem<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>;
+// continuous optConProblem
+template class ct::optcon::OptConProblemBase<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@,
+    ct::core::ControlledSystem<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>,
+    ct::core::LinearSystem<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>,
+    ct::core::SystemLinearizer<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>,
+    @SCALAR_PRESPEC@>;
+
+// discrete optConProblem
+template class ct::optcon::OptConProblemBase<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@,
+    ct::core::DiscreteControlledSystem<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>,
+    ct::core::DiscreteLinearSystem<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>,
+    ct::core::DiscreteSystemLinearizer<@STATE_DIM_PRESPEC@, @CONTROL_DIM_PRESPEC@, @SCALAR_PRESPEC@>,
+    @SCALAR_PRESPEC@>;

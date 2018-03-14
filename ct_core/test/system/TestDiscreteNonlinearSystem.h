@@ -19,30 +19,30 @@ template <typename SCALAR>
 class TestDiscreteNonlinearSystem : public DiscreteControlledSystem<2, 1, SCALAR>
 {
 public:
+    typedef DiscreteControlledSystem<2, 1, SCALAR> Base;
     static const size_t STATE_DIM = 2;
     static const size_t CONTROL_DIM = 1;
+
+    typedef typename Base::state_vector_t state_vector_t;
+    typedef typename Base::control_vector_t control_vector_t;
+    typedef typename Base::time_t time_t;
 
     TestDiscreteNonlinearSystem() = delete;
 
     // constructor directly using frequency and damping coefficients
     TestDiscreteNonlinearSystem(SCALAR rate, std::shared_ptr<DiscreteController<2, 1, SCALAR>> controller = nullptr)
-        : DiscreteControlledSystem<2, 1, SCALAR>(controller, SYSTEM_TYPE::GENERAL), rate_(rate)
+        : Base(controller, SYSTEM_TYPE::GENERAL), rate_(rate)
     {
     }
 
     //copy constructor
-    TestDiscreteNonlinearSystem(const TestDiscreteNonlinearSystem& arg)
-        : DiscreteControlledSystem<2, 1, SCALAR>(arg), rate_(arg.rate_)
-    {
-    }
-
-
+    TestDiscreteNonlinearSystem(const TestDiscreteNonlinearSystem& arg) : Base(arg), rate_(arg.rate_) {}
     virtual ~TestDiscreteNonlinearSystem() {}
     TestDiscreteNonlinearSystem* clone() const override { return new TestDiscreteNonlinearSystem(*this); }
-    virtual void propagateControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
-        const int& n,
-        const ControlVector<CONTROL_DIM, SCALAR>& control,
-        StateVector<STATE_DIM, SCALAR>& stateNext) override
+    virtual void propagateControlledDynamics(const state_vector_t& state,
+        const time_t n,
+        const control_vector_t& control,
+        state_vector_t& stateNext) override
     {
         // this is pretty much random
         stateNext(0) = state(0) + rate_ * state(0) * control(0);
@@ -52,7 +52,7 @@ public:
 private:
     SCALAR rate_;
 };
-}
+}  // namespace tpl
 
 typedef tpl::TestDiscreteNonlinearSystem<double> TestDiscreteNonlinearSystem;
 

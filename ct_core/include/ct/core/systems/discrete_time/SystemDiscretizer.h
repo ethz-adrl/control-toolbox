@@ -14,11 +14,11 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include <ct/core/integration/EventHandlers/SubstepRecorder.h>
 
 #define SYMPLECTIC_ENABLED        \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V > 0 && P > 0), void>::type
+    template <size_t V, size_t P, size_t ST> \
+    typename std::enable_if<(V > 0 && P > 0 && (V+P==ST)), void>::type
 #define SYMPLECTIC_DISABLED       \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V <= 0 || P <= 0), void>::type
+    template <size_t V, size_t P, size_t ST> \
+    typename std::enable_if<(V <= 0 || P <= 0 || (V+P!=ST)), void>::type
 
 
 namespace ct {
@@ -39,12 +39,15 @@ namespace core {
 template <size_t STATE_DIM,
     size_t CONTROL_DIM,
     size_t P_DIM = STATE_DIM / 2,
-    size_t V_DIM = CONTROL_DIM / 2,
+    size_t V_DIM = STATE_DIM / 2,
     typename SCALAR = double>
 class SystemDiscretizer : public DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     // convenience typedefs
+    typedef DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+    typedef typename Base::time_t time_t;
+
     using IntegratorPtr = std::shared_ptr<Integrator<STATE_DIM, SCALAR>>;
     using IntegratorSymplecticEulerPtr =
         std::shared_ptr<ct::core::IntegratorSymplecticEuler<P_DIM, V_DIM, CONTROL_DIM, SCALAR>>;
@@ -118,7 +121,7 @@ public:
 	 * \warning calling this method resets the substep-recorder. The substeps are only available for a single call to propagateControlledDynamics()
 	 */
     virtual void propagateControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
-        const int& n,
+        const time_t n,
         const ControlVector<CONTROL_DIM, SCALAR>& control,
         StateVector<STATE_DIM, SCALAR>& stateNext) override;
 

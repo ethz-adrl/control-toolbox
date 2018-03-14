@@ -27,6 +27,7 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     typedef DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
+    typedef typename Base::time_t time_t;
 
     typedef typename Base::state_vector_t state_vector_t;
     typedef typename Base::control_vector_t control_vector_t;
@@ -61,7 +62,7 @@ public:
 	 * @param stateNext propagated state
 	 */
     virtual void propagateControlledDynamics(const state_vector_t& state,
-        const int& n,
+        const time_t n,
         const control_vector_t& control,
         state_vector_t& stateNext) override
     {

@@ -26,6 +26,8 @@ struct CppADDoubleTrait
     inline static Scalar tanh(const Scalar& x) { return CppAD::tanh(x); }
     inline static Scalar exp(const Scalar& x) { return CppAD::exp(x); }
     inline static Scalar fabs(const Scalar& x) { return CppAD::fabs(x); }
+    inline static Scalar sqrt(const Scalar& x) { return CppAD::sqrt(x); }
+
     //! Solves a linear system of equations using Eigen's inverse functionality
     template <int Dims>
     inline static Eigen::Matrix<Scalar, Dims, 1> solve(const Eigen::Matrix<Scalar, Dims, Dims>& A,
@@ -34,6 +36,6 @@ struct CppADDoubleTrait
         return A.inverse() * b;
     }
 };
-}
-}
-}
+}  // namespace internal
+}  // namespace core
+}  // namespace ct

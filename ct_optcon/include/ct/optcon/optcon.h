@@ -13,9 +13,15 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include "constraint/constraint.h"
 
-#include "problem/OptConProblem.h"
+#include "problem/OptConProblemBase.h"
+#include "problem/ContinuousOptConProblem.h"
+#include "problem/DiscreteOptConProblem.h"
 #include "problem/LQOCProblem.hpp"
-#include "solver/OptConSolver.h"
+#include "solver/NLOptConSettings.hpp"
+
+#include "system_interface/OptconSystemInterface.h"
+#include "system_interface/OptconContinuousSystemInterface.h"
+#include "system_interface/OptconDiscreteSystemInterface.h"
 
 #include "nloc/NLOCBackendBase.hpp"
 #include "nloc/NLOCBackendST.hpp"
@@ -23,10 +29,10 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "nloc/algorithms/gnms/GNMS.hpp"
 #include "nloc/algorithms/ilqr/iLQR.hpp"
 
+#include "solver/OptConSolver.h"
 #include "solver/lqp/HPIPMInterface.hpp"
 #include "solver/lqp/GNRiccatiSolver.hpp"
 #include "solver/NLOptConSolver.hpp"
-#include "solver/NLOptConSettings.hpp"
 
 #include "lqr/riccati/CARE.hpp"
 #include "lqr/riccati/DARE.hpp"
@@ -48,7 +54,10 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include "constraint/constraint-impl.h"
 
-#include "problem/OptConProblem-impl.h"
+#include "system_interface/OptconContinuousSystemInterface-impl.h"
+#include "system_interface/OptconDiscreteSystemInterface-impl.h"
+
+#include "problem/OptConProblemBase-impl.h"
 #include "problem/LQOCProblem-impl.hpp"
 
 #include "solver/lqp/GNRiccatiSolver-impl.hpp"
