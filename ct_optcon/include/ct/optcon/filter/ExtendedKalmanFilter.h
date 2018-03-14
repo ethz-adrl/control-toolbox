@@ -25,45 +25,21 @@ public:
     using typename Base::state_vector_t;
 
     ExtendedKalmanFilter(const state_vector_t& x0 = state_vector_t::Zero(),
-        const ct::core::StateMatrix<STATE_DIM, SCALAR>& P0 = ct::core::StateMatrix<STATE_DIM, SCALAR>::Zero())
-        : Base(x0), P_(P0)
-    {
-    }
+        const ct::core::StateMatrix<STATE_DIM, SCALAR>& P0 = ct::core::StateMatrix<STATE_DIM, SCALAR>::Zero());
 
-    ExtendedKalmanFilter(const ExtendedKalmanFilterSettings<STATE_DIM, SCALAR>& ekf_settings)
-        : Base(ekf_settings.x0), P_(ekf_settings.P0)
-    {
-    }
+    ExtendedKalmanFilter(const ExtendedKalmanFilterSettings<STATE_DIM, SCALAR>& ekf_settings);
 
     template <size_t CONTROL_DIM>
     const state_vector_t& predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
         const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
         const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
-        const ct::core::Time& t = 0)
-    {
-        ct::core::StateMatrix<STATE_DIM, SCALAR> dFdx = f.computeDerivativeState(this->x_est_, u, t);
-        ct::core::StateMatrix<STATE_DIM, SCALAR> dFdv = f.computeDerivativeNoise(this->x_est_, u, t);
-        this->x_est_ = f.computeDynamics(this->x_est_, u, t);
-        P_           = (dFdx * P_ * dFdx.transpose()) + dFdv * Q * dFdv.transpose();
-        return this->x_est_;
-    }
+        const ct::core::Time& t = 0);
 
     template <size_t OUTPUT_DIM>
     const state_vector_t& update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
         LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
         const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R,
-        const ct::core::Time& t = 0)
-    {
-        ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR> dHdx = h.computeDerivativeState(this->x_est_, t);
-        ct::core::OutputMatrix<OUTPUT_DIM, SCALAR> dHdw = h.computeDerivativeNoise(this->x_est_, t);
-        const Eigen::Matrix<SCALAR, STATE_DIM, OUTPUT_DIM> K =
-            P_ * dHdx.transpose() * (dHdx * P_ * dHdx.transpose() + dHdw * R * dHdw.transpose()).inverse();
-
-        this->x_est_ += K * (y - h.computeMeasurement(this->x_est_));
-        P_ -= (K * dHdx * P_).eval();
-
-        return this->x_est_;
-    }
+        const ct::core::Time& t = 0);
 
 private:
     ct::core::StateMatrix<STATE_DIM, SCALAR> P_;

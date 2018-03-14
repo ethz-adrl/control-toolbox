@@ -37,40 +37,20 @@ public:
         const output_state_matrix_t& C,
         const ESTIMATOR& estimator,
         const state_matrix_t& Q,
-        const output_matrix_t& R)
-        : estimator_(estimator), f_(system, sensApprox, dt), h_(C), Q_(Q), R_(R)
-    {
-    }
+        const output_matrix_t& R);
 
     StateObserver(std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> system,
         const ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>&
             sensApprox,
         const ESTIMATOR& estimator,
-        const StateObserverSettings<OUTPUT_DIM, STATE_DIM, SCALAR>& so_settings)
-        : f_(system, sensApprox, so_settings.dt),
-          h_(so_settings.C),
-          estimator_(estimator),
-          Q_(so_settings.Q),
-          R_(so_settings.R)
-    {
-    }
+        const StateObserverSettings<OUTPUT_DIM, STATE_DIM, SCALAR>& so_settings);
 
-    virtual ~StateObserver() {}
-    state_vector_t filter(const output_vector_t& y, const Time_t& t) override
-    {
-        predict(t);
-        return update(y, t);
-    }
-    virtual state_vector_t predict(const Time_t& t = 0)
-    {
-        return estimator_.template predict<CONTROL_DIM>(
-            f_, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Zero(), Q_, t);
-    }
+    virtual ~StateObserver();
+    state_vector_t filter(const output_vector_t& y, const Time_t& t) override;
 
-    virtual state_vector_t update(const output_vector_t& y, const Time_t& t = 0)
-    {
-        return estimator_.template update<OUTPUT_DIM>(y, h_, R_, t);
-    }
+    virtual state_vector_t predict(const Time_t& t = 0);
+
+    virtual state_vector_t update(const output_vector_t& y, const Time_t& t = 0);
 
 protected:
     ESTIMATOR estimator_;

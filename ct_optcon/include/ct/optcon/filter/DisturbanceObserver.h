@@ -7,6 +7,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "StateObserver.h"
+#include "StateObserver-impl.h"
 #include "DisturbedSystem.h"
 #include "ExtendedKalmanFilter.h"
 
@@ -35,40 +36,22 @@ public:
         const ct::core::OutputStateMatrix<OUTPUT_DIM, ESTIMATE_DIM, SCALAR>& Caug,
         const ESTIMATOR& estimator,
         const ct::core::StateMatrix<ESTIMATE_DIM, SCALAR>& Qaug,
-        const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R)
-        : Base(system, sensApprox, dt, Caug, estimator, Qaug, R)
-    {
-    }
+        const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R);
 
     DisturbanceObserver(std::shared_ptr<DisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>> system,
         const ct::core::SensitivityApproximation<ESTIMATE_DIM, CONTROL_DIM, ESTIMATE_DIM / 2, ESTIMATE_DIM / 2, SCALAR>&
             sensApprox,
         const ESTIMATOR& estimator,
-        const DisturbanceObserverSettings<OUTPUT_DIM, ESTIMATE_DIM, SCALAR>& do_settings)
-        : Base(system, sensApprox, do_settings.dt, do_settings.C, estimator, do_settings.Qaug, do_settings.R)
-    {
-    }
+        const DisturbanceObserverSettings<OUTPUT_DIM, ESTIMATE_DIM, SCALAR>& do_settings);
 
-    virtual ~DisturbanceObserver() {}
-    ct::core::StateVector<ESTIMATE_DIM, SCALAR> predict(const Time_t& t = 0) override
-    {
-        return this->estimator_.template predict<CONTROL_DIM>(
-            this->f_, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Zero(), this->Q_, t);
-    }
+    virtual ~DisturbanceObserver();
+
+    ct::core::StateVector<ESTIMATE_DIM, SCALAR> predict(const Time_t& t = 0) override;
     ct::core::StateVector<ESTIMATE_DIM, SCALAR> update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
-        const Time_t& = 0) override
-    {
-        return this->estimator_.template update<OUTPUT_DIM>(y, this->h_, this->R_);
-    }
+        const Time_t& = 0) override;
 
-    ct::core::StateVector<STATE_DIM, SCALAR> getStateEstimate()
-    {
-        return this->estimator_.getEstimate().head(STATE_DIM);
-    }
-    Eigen::Matrix<SCALAR, DIST_DIM, 1> getDisturbanceEstimate()
-    {
-        return this->estimator_.getEstimate().tail(DIST_DIM);
-    }
+    ct::core::StateVector<STATE_DIM, SCALAR> getStateEstimate();
+    Eigen::Matrix<SCALAR, DIST_DIM, 1> getDisturbanceEstimate();
 };
 
 }  // optcon

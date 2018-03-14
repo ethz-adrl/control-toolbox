@@ -16,40 +16,23 @@ public:
     static const size_t AUGMENTED_DIM = STATE_DIM + DIST_DIM;
 
     DisturbedSystemController(
-        std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller = nullptr)
-        : controller_(controller)
-    {
-    }
+        std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller = nullptr);
 
-    DisturbedSystemController(const DisturbedSystemController& other) : controller_(other.controller_->clone()) {}
-    DisturbedSystemController* clone() const override { return new DisturbedSystemController(*this); }
+    DisturbedSystemController(const DisturbedSystemController& other);
+    DisturbedSystemController* clone() const override;
     void computeControl(const ct::core::StateVector<AUGMENTED_DIM, SCALAR>& state,
         const SCALAR& t,
-        ct::core::ControlVector<CONTROL_DIM, SCALAR>& controlAction) override
-    {
-        if (!controller_) throw std::runtime_error("Controller not set!");
-        controller_->computeControl(state.head(STATE_DIM), t, controlAction);
-    }
+        ct::core::ControlVector<CONTROL_DIM, SCALAR>& controlAction) override;
 
     ct::core::ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(
         const ct::core::StateVector<AUGMENTED_DIM, SCALAR>& state,
-        const SCALAR time) override
-    {
-        if (!controller_) throw std::runtime_error("Controller not set!");
-        return controller_->getDerivativeU0(state.head(STATE_DIM), time);
-    }
+        const SCALAR time) override;
+
     ct::core::ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeUf(
         const ct::core::StateVector<AUGMENTED_DIM, SCALAR>& state,
-        const SCALAR time) override
-    {
-        if (!controller_) throw std::runtime_error("Controller not set!");
-        return controller_->getDerivativeUf(state.head(STATE_DIM), time);
-    }
+        const SCALAR time) override;
 
-    void setController(std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller)
-    {
-        controller_ = controller;
-    }
+    void setController(std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller);
 
 private:
     std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller_;
@@ -63,26 +46,12 @@ public:
 
     static const size_t AUGMENTED_DIM = STATE_DIM + DIST_DIM;
 
-    DisturbedSystem() : ct::core::ControlledSystem<AUGMENTED_DIM, CONTROL_DIM, SCALAR>(ct::core::SYSTEM_TYPE::GENERAL)
-    {
-    }
+    DisturbedSystem();
 
-    DisturbedSystem(std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller)
-        : ct::core::ControlledSystem<AUGMENTED_DIM, CONTROL_DIM, SCALAR>(
-              std::shared_ptr<DisturbedSystemController<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>>(
-                  new DisturbedSystemController<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>(controller)),
-              ct::core::SYSTEM_TYPE::GENERAL)
-    {
-        this->controlAction_.setZero();
-    }
+    DisturbedSystem(std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller);
 
     // Not overloaded. This is a completely new method.
-    void setController(const std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>>& controller)
-    {
-        std::dynamic_pointer_cast<DisturbedSystemController<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>>(
-            this->controller_)
-            ->setController(controller);
-    }
+    void setController(const std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>>& controller);
 
     virtual void computeControlledDynamics(const ct::core::StateVector<AUGMENTED_DIM, SCALAR>& state,
         const SCALAR& t,

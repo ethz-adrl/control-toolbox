@@ -25,53 +25,24 @@ public:
     using Base                  = EstimatorBase<STATE_DIM, SCALAR>;
     using typename Base::state_vector_t;
 
-    SteadyStateKalmanFilter(const state_vector_t& x0 = state_vector_t::Zero(), size_t maxDAREIterations = 1000)
-        : Base(x0), maxDAREIterations_(maxDAREIterations)
-    {
-        P_.setZero();
-    }
+    SteadyStateKalmanFilter(const state_vector_t& x0 = state_vector_t::Zero(), size_t maxDAREIterations = 1000);
 
-    SteadyStateKalmanFilter(const SteadyStateKalmanFilterSettings<STATE_DIM, SCALAR>& sskf_settings)
-        : Base(sskf_settings.x0), maxDAREIterations_(sskf_settings.maxDAREIterations)
-    {
-    }
+    SteadyStateKalmanFilter(const SteadyStateKalmanFilterSettings<STATE_DIM, SCALAR>& sskf_settings);
 
     template <size_t CONTROL_DIM>
     const state_vector_t& predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
         const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
         const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
-        const ct::core::Time& t = 0)
-    {
-        A_           = f.computeDerivativeState(this->x_est_, u, t);
-        Q_           = Q;
-        this->x_est_ = f.computeDynamics(this->x_est_, u, t);
-        return this->x_est_;
-    }
+        const ct::core::Time& t = 0);
 
     template <size_t OUTPUT_DIM>
     const state_vector_t& update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
         LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
         const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R,
-        const ct::core::Time& t = 0)
-    {
-        ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR> dHdx = h.computeDerivativeState(this->x_est_, t);
-        Eigen::Matrix<SCALAR, OUTPUT_DIM, STATE_DIM> K;
+        const ct::core::Time& t = 0);
 
-        DARE<STATE_DIM, OUTPUT_DIM, SCALAR> dare;
-        try
-        {
-            P_ = dare.computeSteadyStateRiccatiMatrix(
-                Q_, R, A_.transpose(), dHdx.transpose(), P_, K, false, 1e-6, maxDAREIterations_);
-        } catch (...)
-        {
-            throw;
-        }
+    void setMaxDAREIterations(size_t maxDAREIterations);
 
-        this->x_est_ -= K.transpose() * (y - h.computeMeasurement(this->x_est_, t));
-        return this->x_est_;
-    }
-
-    void setMaxDAREIterations(size_t maxDAREIterations) { maxDAREIterations_ = maxDAREIterations; }
 private:
     size_t maxDAREIterations_;
     ct::core::StateMatrix<STATE_DIM, SCALAR> P_;

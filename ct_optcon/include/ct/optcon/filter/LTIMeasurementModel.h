@@ -24,26 +24,15 @@ public:
     using typename Base::output_state_matrix_t;
     using typename Base::Time_t;
 
-    LTIMeasurementModel()
-    {
-        dHdx_.setZero();
-        dHdw_.setIdentity();
-    }
+    LTIMeasurementModel();
 
-    LTIMeasurementModel(const output_state_matrix_t& C, const output_matrix_t& dHdw = output_matrix_t::Identity())
-        : dHdx_(C)
-    {
-    }
-    output_vector_t computeMeasurement(const state_vector_t& state, const Time_t& t = 0) override
-    {
-        return dHdx_ * state;
-    }
+    LTIMeasurementModel(const output_state_matrix_t& C, const output_matrix_t& dHdw = output_matrix_t::Identity());
 
-    output_state_matrix_t computeDerivativeState(const state_vector_t& state, const Time_t& t) override
-    {
-        return dHdx_;
-    }
-    output_matrix_t computeDerivativeNoise(const state_vector_t& state, const Time_t& t) override { return dHdw_; }
+    output_vector_t computeMeasurement(const state_vector_t& state, const Time_t& t = 0) override;
+
+    output_state_matrix_t computeDerivativeState(const state_vector_t& state, const Time_t& t) override;
+    output_matrix_t computeDerivativeNoise(const state_vector_t& state, const Time_t& t) override;
+
 protected:
     output_state_matrix_t dHdx_;
     output_matrix_t dHdw_;
