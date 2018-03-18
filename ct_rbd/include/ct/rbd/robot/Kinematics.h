@@ -110,7 +110,6 @@ public:
     HomogeneousTransforms& transforms() { return robcogen().homogeneousTransforms(); }
     const Jacobians& jacobians() const { return robcogen().jacobians(); }
     Jacobians& jacobians() { return robcogen().jacobians(); }
-
     Velocity3Tpl getEEVelocityInBase(size_t eeId, const RBDState<NJOINTS, SCALAR>& rbdState)
     {
         Velocity3Tpl eeVelocityBase;
@@ -144,8 +143,7 @@ public:
      *      * @todo integrate this into getEEPoseInBase
      *
      */
-    Position3Tpl getEEPositionInBase(size_t eeID,
-        const typename JointState_t::Position& jointPosition)
+    Position3Tpl getEEPositionInBase(size_t eeID, const typename JointState_t::Position& jointPosition)
     {
         return robcogen().getEEPositionInBase(eeID, jointPosition);
     }
@@ -157,8 +155,7 @@ public:
      * @param jointPosition current robot joint positions
      * @return the current end-effector pose in base coordinates
      */
-    RigidBodyPoseTpl getEEPoseInBase(size_t eeID,
-        const typename JointState_t::Position& jointPosition)
+    RigidBodyPoseTpl getEEPoseInBase(size_t eeID, const typename JointState_t::Position& jointPosition)
     {
         return robcogen().getEEPoseInBase(eeID, jointPosition);
     }
