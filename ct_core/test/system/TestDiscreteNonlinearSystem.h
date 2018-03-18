@@ -37,11 +37,8 @@ public:
 
     //copy constructor
     TestDiscreteNonlinearSystem(const TestDiscreteNonlinearSystem& arg) : Base(arg), rate_(arg.rate_) {}
-
     virtual ~TestDiscreteNonlinearSystem() {}
-
     TestDiscreteNonlinearSystem* clone() const override { return new TestDiscreteNonlinearSystem(*this); }
-
     virtual void propagateControlledDynamics(const state_vector_t& state,
         const time_t n,
         const control_vector_t& control,

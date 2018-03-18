@@ -172,7 +172,7 @@ public:
     {
         try
         {
-            base().pose().setFromRotationQuaternion(kindr::RotationQuaternionD(state.template head<4>()));
+            base().pose().setFromRotationQuaternion(kindr::RotationQuaternion<SCALAR>(state.template head<4>()));
             base().pose().position().toImplementation() = state.template segment<3>(4);
             joints().getPositions() = state.template segment<NJOINTS>(7);
             base().velocities().getRotationalVelocity().toImplementation() = state.template segment<3>(7 + NJOINTS);
