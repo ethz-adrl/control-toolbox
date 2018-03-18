@@ -74,8 +74,8 @@ TEST(TaskspaceCostFunctionTests, TestTaskSpacePoseTerm)
     const size_t hyqStateDim = 36;
     const size_t hyqControlDim = 12;
 
-    // specify a penalty on the position error
-    Eigen::Matrix<double, 3, 3> Qpos;
+    // specify a penalty on the position and velocity error
+    Eigen::Matrix<double, 6, 6> Qpos;
     Qpos.setIdentity();
 
     // specify a penalty on the orientation error
@@ -84,6 +84,10 @@ TEST(TaskspaceCostFunctionTests, TestTaskSpacePoseTerm)
     // specify a desired ee position
     Eigen::Matrix<double, 3, 1> w_pos_ee;
     w_pos_ee.setRandom();
+
+    // specify a desired ee velocity
+    Eigen::Matrix<double, 3, 1> w_v_ee;
+    w_v_ee.setRandom();
 
     // specify a desired ee orientation as quaternion, to be used in first constructor
     Eigen::Quaternion<double> w_q_ee;
@@ -97,11 +101,11 @@ TEST(TaskspaceCostFunctionTests, TestTaskSpacePoseTerm)
 
     // test constructor taking the quaternion
     std::shared_ptr<TermTaskspacePose<KinTpl_t, true, hyqStateDim, hyqControlDim>> term1(
-        new TermTaskspacePose<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId, Qpos, Qrot, w_pos_ee, w_q_ee));
+        new TermTaskspacePose<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId, Qpos, Qrot, w_pos_ee, w_v_ee, w_q_ee));
 
     // test constructor using euler angles
     std::shared_ptr<TermTaskspacePose<KinTpl_t, true, hyqStateDim, hyqControlDim>> term2(
-        new TermTaskspacePose<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId, Qpos, Qrot, w_pos_ee, w_euler_ee));
+        new TermTaskspacePose<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId, Qpos, Qrot, w_pos_ee, w_v_ee, w_euler_ee));
 
     Adcf->addFinalADTerm(term1, true);
     Adcf->addIntermediateADTerm(term1, true);

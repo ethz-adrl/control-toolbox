@@ -25,17 +25,20 @@ KinTpl_t kynTpl;
 size_t eeId = 1;
 
 // penalties for task-space tests
-const Eigen::Matrix<double, 3, 3> Qpos = Eigen::Matrix<double, 3, 3>::Random();
+const Eigen::Matrix<double, 6, 6> Qpos = Eigen::Matrix<double, 6, 6>::Random();
 double Qrot = 1.0;
 
 // terms for task-space tests
 std::shared_ptr<TermTaskspacePosition<KinTpl_t, true, hyqStateDim, hyqControlDim>> termTaskspace(
-    new TermTaskspacePosition<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId, Qpos, Eigen::Vector3d::Random()));
+    new TermTaskspacePosition<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId,
+        Eigen::Matrix<double, 3, 3>::Random(),
+        Eigen::Vector3d::Random()));
 
 std::shared_ptr<TermTaskspacePose<KinTpl_t, true, hyqStateDim, hyqControlDim>> termTaskspacePose(
     new TermTaskspacePose<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId,
         Qpos,
         Qrot,
+        Eigen::Vector3d::Random(),
         Eigen::Vector3d::Random(),
         Eigen::Vector3d::Random()));
 
