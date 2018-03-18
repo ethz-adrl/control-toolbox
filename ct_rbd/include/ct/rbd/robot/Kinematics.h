@@ -110,26 +110,7 @@ public:
     HomogeneousTransforms& transforms() { return robcogen().homogeneousTransforms(); }
     const Jacobians& jacobians() const { return robcogen().jacobians(); }
     Jacobians& jacobians() { return robcogen().jacobians(); }
-    //! compute end effector velocity in world coordinates
-    Velocity3Tpl getEEVelocityInWorld(size_t eeId, const RBDState<NJOINTS, SCALAR>& rbdState)
-    {
-        // compute end effector velocity in base coordinates
-        Velocity3Tpl eeVelocityWorld = getEEVelocityInBase(eeId, rbdState);
 
-        // rotate them to the world frame
-        rbdState.base().pose().rotateBaseToInertia(eeVelocityWorld);
-
-        // add translational velocity induced by linear base motion
-        eeVelocityWorld += rbdState.base().velocities().getTranslationalVelocity();
-
-        // add translational velocity induced by angular base motion
-        eeVelocityWorld += rbdState.base().velocities().getRotationalVelocity().cross(
-            getEEPositionInBase(eeId, rbdState.jointPositions()));
-
-        return eeVelocityWorld;
-    }
-
-    //! compute end effector velocity in base coordinates
     Velocity3Tpl getEEVelocityInBase(size_t eeId, const RBDState<NJOINTS, SCALAR>& rbdState)
     {
         Velocity3Tpl eeVelocityBase;
@@ -137,7 +118,20 @@ public:
             (robcogen().getJacobianBaseEEbyId(eeId, rbdState.jointPositions()) * rbdState.jointVelocities())
                 .template bottomRows<3>();
 
+        // add translational velocity induced by linear base motion
+        eeVelocityBase += rbdState.base().velocities().getTranslationalVelocity();
+
+        // add translational velocity induced by angular base motion
+        eeVelocityBase += rbdState.base().velocities().getRotationalVelocity().cross(
+            getEEPositionInBase(eeId, rbdState.jointPositions()));
+
         return eeVelocityBase;
+    }
+
+    Velocity3Tpl getEEVelocityInWorld(size_t eeId, const RBDState<NJOINTS, SCALAR>& rbdState)
+    {
+        Velocity3Tpl eeVelocityBase = getEEVelocityInBase(eeId, rbdState);
+        return rbdState.base().pose().rotateBaseToInertia(eeVelocityBase);
     }
 
     /*!
@@ -150,7 +144,8 @@ public:
      *      * @todo integrate this into getEEPoseInBase
      *
      */
-    Position3Tpl getEEPositionInBase(size_t eeID, const typename JointState_t::Position& jointPosition)
+    Position3Tpl getEEPositionInBase(size_t eeID,
+        const typename JointState_t::Position& jointPosition)
     {
         return robcogen().getEEPositionInBase(eeID, jointPosition);
     }
@@ -162,7 +157,8 @@ public:
      * @param jointPosition current robot joint positions
      * @return the current end-effector pose in base coordinates
      */
-    RigidBodyPoseTpl getEEPoseInBase(size_t eeID, const typename JointState_t::Position& jointPosition)
+    RigidBodyPoseTpl getEEPoseInBase(size_t eeID,
+        const typename JointState_t::Position& jointPosition)
     {
         return robcogen().getEEPoseInBase(eeID, jointPosition);
     }
