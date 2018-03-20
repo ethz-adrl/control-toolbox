@@ -642,7 +642,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             {
                 boxConstraints_[threadId]->setCurrentStateAndControl(x_local[k], u_local[k], settings_.dt * k);
                 Eigen::Matrix<SCALAR, -1, 1> box_err = boxConstraints_[threadId]->getTotalBoundsViolationIntermediate();
-                e_tot += box_err.norm();  // TODO check if we should use different norms here
+                e_tot += box_err.template lpNorm<1>();
             }
         }
     }
@@ -658,7 +658,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             boxConstraints_[threadId]->setCurrentStateAndControl(
                 x_local[K_], control_vector_t::Zero(), settings_.dt * K_);
             Eigen::Matrix<SCALAR, -1, 1> box_err = boxConstraints_[threadId]->getTotalBoundsViolationTerminal();
-            e_tot += box_err.norm();  // TODO check if we should use different norms here
+            e_tot += box_err.template lpNorm<1>();
         }
     }
 }
@@ -683,7 +683,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
                 generalConstraints_[threadId]->setCurrentStateAndControl(x_local[k], u_local[k], settings_.dt * k);
                 Eigen::Matrix<SCALAR, -1, 1> gen_err =
                     generalConstraints_[threadId]->getTotalBoundsViolationIntermediate();
-                e_tot += gen_err.norm();  // TODO check if we should use different norms here
+                e_tot += gen_err.template lpNorm<1>();
             }
         }
     }
@@ -698,7 +698,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             generalConstraints_[threadId]->setCurrentStateAndControl(
                 x_local[K_], control_vector_t::Zero(), settings_.dt * K_);
             Eigen::Matrix<SCALAR, -1, 1> gen_err = generalConstraints_[threadId]->getTotalBoundsViolationTerminal();
-            e_tot += gen_err.norm();  // TODO check if we should use different norms here
+            e_tot += gen_err.template lpNorm<1>();
         }
     }
 }
@@ -796,11 +796,19 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
             Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> g_eval = generalConstraints_[threadId]->evaluateIntermediate();
 
-            // rewrite constraint in absolute coordinates as required by LQOC problem
-            p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
-                         p.D_[k] * u_ff_[k];
-            p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
-                         p.D_[k] * u_ff_[k];
+            if (k == 0) {
+              // Correction for first stage
+              p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval +
+                           p.D_[k] * u_ff_[k];
+              p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval +
+                           p.D_[k] * u_ff_[k];
+            } else {
+              // rewrite constraint in absolute coordinates as required by LQOC problem
+              p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
+                           p.D_[k] * u_ff_[k];
+              p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
+                           p.D_[k] * u_ff_[k];
+            }
         }
     }
 }
@@ -874,7 +882,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     SCALAR d_norm_l1 = computeDefectsNorm<1>(lqocProblem_->b_);
     SCALAR d_norm_l2 = computeDefectsNorm<2>(lqocProblem_->b_);
     SCALAR totalCost = intermediateCostBest_ + finalCostBest_;
-    SCALAR totalMerit = intermediateCostBest_ + finalCostBest_ + settings_.meritFunctionRho * d_norm_l1;
+
+    computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
+    computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
+
+    SCALAR totalMerit = intermediateCostBest_ + finalCostBest_ + settings_.meritFunctionRho * d_norm_l1
+                        + settings_.meritFunctionRhoConstraints * (e_box_norm_ + e_gen_norm_);
 
     SCALAR smallestEigenvalue = 0.0;
     if (settings_.recordSmallestEigenvalue && settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
@@ -882,8 +895,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         smallestEigenvalue = lqocSolver_->getSmallestEigenvalue();
     }
 
-    computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
-    computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
 
     summaryAllIterations_.iterations.push_back(iteration_);
     summaryAllIterations_.defect_l1_norms.push_back(d_norm_l1);
@@ -1237,7 +1248,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     else  //! do line search over a merit function trading off costs and constraint violations
     {
         // merit of previous trajectory
-        lowestCost_ = intermediateCostBest_ + finalCostBest_ + d_norm_ * settings_.meritFunctionRho;
+        lowestCost_ = intermediateCostBest_ + finalCostBest_ + d_norm_ * settings_.meritFunctionRho
+                      + (e_box_norm_ + e_gen_norm_) * settings_.meritFunctionRhoConstraints;
         lowestCostPrevious = lowestCost_;
 
         if (settings_.lineSearchSettings.debugPrint)
@@ -1245,6 +1257,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             std::cout << "[LineSearch]: Starting line search." << std::endl;
             std::cout << "[LineSearch]: Cost of last rollout:\t" << intermediateCostBest_ + finalCostBest_ << std::endl;
             std::cout << "[LineSearch]: Defect norm last rollout:\t" << d_norm_ << std::endl;
+            std::cout << "[LineSearch]: err box constr last rollout:\t" << e_box_norm_ << std::endl;
+            std::cout << "[LineSearch]: err gen constr last rollout:\t" << e_gen_norm_ << std::endl;
             std::cout << "[LineSearch]: Merit of last rollout:\t" << lowestCost_ << std::endl;
         }
 
@@ -1256,6 +1270,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
                       << std::endl;
             std::cout << "[LineSearch]: Cost:\t" << intermediateCostBest_ + finalCostBest_ << std::endl;
             std::cout << "[LineSearch]: Defect:\t" << d_norm_ << std::endl;
+            std::cout << "[LineSearch]: err box constr:\t" << e_box_norm_ << std::endl;
+            std::cout << "[LineSearch]: err gen constr:\t" << e_gen_norm_ << std::endl;
         }
 
         if (alphaBest_ == 0.0)
