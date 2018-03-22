@@ -44,10 +44,9 @@ public:
     TermTaskspacePose() {}
     //! constructor using a quaternion for orientation
     TermTaskspacePose(size_t eeInd,
-        const Eigen::Matrix<double, 6, 6>& Qpos,
+        const Eigen::Matrix<double, 3, 3>& Qpos,
         const double& Qrot,
         const core::StateVector<3, double>& w_pos_des,
-        const core::StateVector<3, double>& w_v_des,
         const Eigen::Quaternion<double>& w_q_des,
         const std::string& name = "TermTaskSpace")
         : BASE(name),
@@ -55,17 +54,15 @@ public:
           Q_pos_(Qpos),
           Q_rot_(Qrot),
           w_p_ref_(w_pos_des),
-          w_v_ref_(w_v_des),
           w_R_ref_(w_q_des.normalized().toRotationMatrix())
     {
     }
 
     //! constructor using euler angles for orientation
     TermTaskspacePose(size_t eeInd,
-        const Eigen::Matrix<double, 6, 6>& Qpos,
+        const Eigen::Matrix<double, 3, 3>& Qpos,
         const double& Qrot,
         const core::StateVector<3, double>& w_pos_des,
-        const core::StateVector<3, double>& w_v_des,
         const Eigen::Matrix<double, 3, 1>& eulerXyz,
         const std::string& name = "TermTaskSpace")
         // delegate constructor
@@ -73,7 +70,6 @@ public:
               Qpos,
               Qrot,
               w_pos_des,
-              w_v_des,
               Eigen::Quaternion<double>(Eigen::AngleAxisd(eulerXyz(0), Eigen::Vector3d::UnitX()) *
                                         Eigen::AngleAxisd(eulerXyz(1), Eigen::Vector3d::UnitY()) *
                                         Eigen::AngleAxisd(eulerXyz(2), Eigen::Vector3d::UnitZ())),
@@ -96,7 +92,6 @@ public:
           Q_pos_(arg.Q_pos_),
           Q_rot_(arg.Q_rot_),
           w_p_ref_(arg.w_p_ref_),
-          w_v_ref_(arg.w_v_ref_),
           w_R_ref_(arg.w_R_ref_)
     {
     }
@@ -136,7 +131,6 @@ public:
 
         ct::optcon::loadMatrixCF(filename, "Q_pos", Q_pos_, termName);
         ct::optcon::loadMatrixCF(filename, "x_des", w_p_ref_, termName);
-        ct::optcon::loadMatrixCF(filename, "v_des", w_v_ref_, termName);
 
         // try loading euler angles
         if (verbose)
@@ -163,7 +157,6 @@ public:
             std::cout << "Read Q_pos as Q_pos = \n" << Q_pos_ << std::endl;
             std::cout << "Read Q_rot as Q_rot = \n" << Q_rot_ << std::endl;
             std::cout << "Read x_des as x_des = \n" << w_p_ref_.transpose() << std::endl;
-            std::cout << "Read v_des as v_des = \n" << w_v_ref_.transpose() << std::endl;
         }
     }
 
@@ -172,18 +165,8 @@ public:
     const Eigen::Matrix<double, 3, 1>& getReferencePosition() const { return w_p_ref_; }
     //! retrieve reference ee orientation in world frame
     const Eigen::Quaterniond getReferenceOrientation() const { return Eigen::Quaterniond(w_R_ref_); }
-    //! set the endeffector reference position
     void setReferencePosition(const Eigen::Matrix<double, 3, 1>& w_p_ref) { w_p_ref_ = w_p_ref; }
-    //! set the endeffector reference velocity
-    void setReferenceVelocity(const Eigen::Matrix<double, 3, 1>& w_v_ref) { w_v_ref_ = w_v_ref; }
-    //! set the endeffector reference orientation
     void setReferenceOrientation(const Eigen::Matrix<double, 3, 3> w_R_ref) { w_R_ref_ = w_R_ref; }
-    //! return the reference pose as RigidBodyPose
-    const ct::rbd::RigidBodyPose getReferencePose() const
-    {
-        return ct::rbd::RigidBodyPose(getReferenceOrientation(), getReferencePosition());
-    }
-
 protected:
     /*!
      * setStateFromVector transforms your (custom) state vector x into a RBDState.
@@ -191,17 +174,15 @@ protected:
      * @param x your state vector
      * @return a full rigid body state
      */
-    virtual RBDStateTpl setStateFromVector(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
-        const Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& u)
+    virtual RBDStateTpl setStateFromVector(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x)
     {
-        return setStateFromVector_specialized<FB>(x, u);
+        return setStateFromVector_specialized<FB>(x);
     }
 
 private:
     //! computes RBDState in case the user supplied a floating-base robot (SFINAE principle)
     template <bool T>
     RBDStateTpl setStateFromVector_specialized(const Eigen::Matrix<SCALAR, -1, 1>& x,
-        const Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& u,
         typename std::enable_if<T, bool>::type = true)
     {
         RBDStateTpl rbdState;
@@ -213,7 +194,6 @@ private:
     //! computes RBDState in case the user supplied a fixed-base robot (SFINAE principle)
     template <bool T>
     RBDStateTpl setStateFromVector_specialized(const Eigen::Matrix<SCALAR, -1, 1>& x,
-        const Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& u,
         typename std::enable_if<!T, bool>::type = true)
     {
         RBDStateTpl rbdState;
@@ -228,25 +208,15 @@ private:
         using Matrix3Tpl = Eigen::Matrix<SC, 3, 3>;
 
         // transform the robot state vector into a CT RBDState
-        RBDState<KINEMATICS::NJOINTS, SC> rbdState = setStateFromVector(x, u);
+        RBDState<KINEMATICS::NJOINTS, SC> rbdState = setStateFromVector(x);
 
-        // position/velocity  difference in world frame
-        Eigen::Matrix<SC, 6, 1> xDiff;
-
-        // compute position difference
-        xDiff.template head<3>() =
+        // position difference in world frame
+        Eigen::Matrix<SC, 3, 1> xDiff =
             kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions())
                 .toImplementation() -
             w_p_ref_.template cast<SC>();
 
-        // TODO: in a future release, activate the velocity term for the end-effector
-        // compute velocity difference
-        // xDiff.template tail<3>() =
-        //  kinematics_.getEEVelocityInWorld(eeInd_, rbdState).toImplementation() - w_v_ref_.template cast<SC>();
-        xDiff.template tail<3>().setZero(); // TODO remove in future release
-
-
-        // compute the cost based on the position and velocity error
+        // compute the cost based on the position error
         SC pos_cost = (xDiff.transpose() * Q_pos_.template cast<SC>() * xDiff)(0, 0);
 
 
@@ -271,17 +241,14 @@ private:
     //! the robot kinematics
     KINEMATICS kinematics_;
 
-    //! weighting matrix for the task-space position and velocity
-    Eigen::Matrix<double, 6, 6> Q_pos_;
+    //! weighting matrix for the task-space position
+    Eigen::Matrix<double, 3, 3> Q_pos_;
 
     //! weighting factor for orientation error
     double Q_rot_;
 
     //! reference position in world frame
     Eigen::Matrix<double, 3, 1> w_p_ref_;
-
-    //! reference velocity in world frame
-    Eigen::Matrix<double, 3, 1> w_v_ref_;
 
     //! reference ee orientation in world frame
     Eigen::Matrix<double, 3, 3> w_R_ref_;
