@@ -7,6 +7,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "common/GaussianNoise.h"
+#include "common/UniformNoise.h"
 #include "common/QuantizationNoise.h"
 #include "common/InfoFileParser.h"
 #include "common/Timer.h"
