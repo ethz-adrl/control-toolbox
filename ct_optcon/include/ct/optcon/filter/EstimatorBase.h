@@ -11,6 +11,14 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
+/*!
+ * \ingroup Filter
+ *
+ * \brief Estimator base provides an estimator interface which simply stores the state estimate and provides getters
+ *        and setters.
+ *
+ * @tparam STATE_DIM
+ */
 template <size_t STATE_DIM, typename SCALAR = double>
 class EstimatorBase
 {
@@ -19,17 +27,19 @@ public:
 
     using state_vector_t = ct::core::StateVector<STATE_DIM, SCALAR>;
 
+    //! Constructor.
     EstimatorBase(const ct::core::StateVector<STATE_DIM, SCALAR>& x0 = ct::core::StateVector<STATE_DIM, SCALAR>::Zero())
         : x_est_(x0)
     {
     }
+    //! Copy constructor.
     EstimatorBase(const EstimatorBase& arg) : x_est_(arg.x_est_) {}
-
+    //! Estimate getter.
     const ct::core::StateVector<STATE_DIM, SCALAR>& getEstimate() const { return x_est_; }
+    //! Estimate setter.
     void setEstimate(const ct::core::StateVector<STATE_DIM, SCALAR>& x) { x_est_ = x; }
-
 protected:
-    ct::core::StateVector<STATE_DIM, SCALAR> x_est_;
+    ct::core::StateVector<STATE_DIM, SCALAR> x_est_;  //! State estimate.
 };
 
 }  // optcon

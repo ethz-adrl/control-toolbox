@@ -14,6 +14,16 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
+/*!
+ * \ingroup Filter
+ *
+ * \brief State Observer estimates the state by combining the state estimator as well as the system and measurement
+ *        models.
+ *
+ * @tparam STATE_DIM    dimensionality of the output
+ * @tparam STATE_DIM    dimensionality of the state
+ * @tparam CONTROL_DIM
+ */
 template <size_t OUTPUT_DIM, size_t STATE_DIM, size_t CONTROL_DIM, class ESTIMATOR, typename SCALAR = double>
 class StateObserver : public FilterBase<OUTPUT_DIM, STATE_DIM, SCALAR>
 {
@@ -30,6 +40,7 @@ public:
     using output_matrix_t       = ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>;
     using output_state_matrix_t = ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR>;
 
+    //! Constructor.
     StateObserver(std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> system,
         const ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>&
             sensApprox,
@@ -39,25 +50,30 @@ public:
         const state_matrix_t& Q,
         const output_matrix_t& R);
 
+    //! Constructor using the observer settings.
     StateObserver(std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> system,
         const ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>&
             sensApprox,
         const ESTIMATOR& estimator,
         const StateObserverSettings<OUTPUT_DIM, STATE_DIM, SCALAR>& so_settings);
 
+    //! Virtual destructor.
     virtual ~StateObserver();
+    //! Implementation of the filter method.
     state_vector_t filter(const output_vector_t& y, const Time_t& t) override;
 
+    //! Observer predict method.
     virtual state_vector_t predict(const Time_t& t = 0);
 
+    //! Observer update method.
     virtual state_vector_t update(const output_vector_t& y, const Time_t& t = 0);
 
 protected:
-    ESTIMATOR estimator_;
-    CTSystemModel<STATE_DIM, CONTROL_DIM, SCALAR> f_;
-    LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR> h_;
-    state_matrix_t Q_;
-    output_matrix_t R_;
+    ESTIMATOR estimator_;                                   //! Estimator used to filter the state.
+    CTSystemModel<STATE_DIM, CONTROL_DIM, SCALAR> f_;       //! System model for propagating the system.
+    LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR> h_;  //! Observation model used to calculate the output error.
+    state_matrix_t Q_;                                      //! Filter Q matrix.
+    output_matrix_t R_;                                     //! Filter R matrix.
 };
 
 }  // optcon

@@ -9,6 +9,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
+// TODO: Handle the sensitivity approximation types - introduce a typedef for readability.
+
 template <size_t OUTPUT_DIM, size_t STATE_DIM, size_t DIST_DIM, size_t CONTROL_DIM, class ESTIMATOR, typename SCALAR>
 DisturbanceObserver<OUTPUT_DIM, STATE_DIM, DIST_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::DisturbanceObserver(
     std::shared_ptr<DisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>> system,

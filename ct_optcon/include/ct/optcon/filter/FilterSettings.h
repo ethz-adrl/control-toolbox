@@ -187,7 +187,7 @@ struct UnscentedKalmanFilterSettings
     SCALAR alpha;
     SCALAR beta;
     SCALAR kappa;
-    ct::core::StateMatrix<STATE_DIM, SCALAR> P0;                         /*!< Initial covariance matrix. */
+    ct::core::StateMatrix<STATE_DIM, SCALAR> P0; /*!< Initial covariance matrix. */
 
     //! default constructor
     UnscentedKalmanFilterSettings() {}
@@ -213,10 +213,9 @@ struct UnscentedKalmanFilterSettings
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);
 
-
         ct::core::loadMatrix(filename, "x0", x0, ns);
         alpha = pt.get<bool>(ns + ".alpha");
-        beta = pt.get<bool>(ns + ".beta");
+        beta  = pt.get<bool>(ns + ".beta");
         kappa = pt.get<bool>(ns + ".kappa");
         ct::core::loadMatrix(filename, "P0", P0, ns);
 
