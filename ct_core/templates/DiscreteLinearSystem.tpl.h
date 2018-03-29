@@ -16,7 +16,7 @@ class LINEAR_SYSTEM_NAME : public ct::core::DiscreteLinearSystem<STATE_DIM, CONT
 {
 public:
 
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     typedef ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
 
