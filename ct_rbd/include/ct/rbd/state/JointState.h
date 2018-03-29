@@ -87,34 +87,36 @@ public:
         assert(i < NJOINTS && "Invalid joint index");
         return state_(i);
     }
+
     /// @brief normalize the joint state to be in the range [lowerLimitVec, lowerLimitVec + 2pi)
     template <typename T>
-    void toUniquePosition(T lowerLimitVec, double tolerance = 1e-3)
+    void toUniquePosition(T lowerLimitVec, double tolerance = 0.0)
     {
         assert(lowerLimitVec.size() == NJOINTS && "Wrong limit dimensions");
         for (size_t i = 0; i < NJOINTS; ++i)
         {
-            int k = std::ceil((lowerLimitVec[i] - getPosition(i)) / (2 * M_PI));
-            getPosition(i) += k * 2 * M_PI;
-            if (abs(getPosition(i) + (k - 1) * 2 * M_PI - lowerLimitVec[i]) <= tolerance)
+            // compute the integer of multiple of 2*PI to substract
+            int k_lower = std::floor((getPosition(i) - (lowerLimitVec[i] - tolerance)) / (2 * M_PI));
+            int k_upper = std::floor((getPosition(i) - (lowerLimitVec[i] + tolerance)) / (2 * M_PI));
+
+            if (abs(k_lower) <= abs(k_upper))
             {
-                getPosition(i) += (k - 1) * 2 * M_PI;
+                if (k_lower != 0)
+                    getPosition(i) -= k_lower * 2 * M_PI;
             }
-            else
-            {
-                getPosition(i) += k * 2 * M_PI;
-            }
+            else if (k_upper != 0)
+                getPosition(i) -= k_upper * 2 * M_PI;
         }
     }
 
     /// @brief check joint position limits assuming limits and joint position are in the same range e.g. [-pi, pi)
     template <typename T>
-    bool checkPositionLimits(T lowerLimit, T upperLimit, double tolerance = 1e-3)
+    bool checkPositionLimits(T lowerLimit, T upperLimit, double tolerance = 0.0)
     {
         assert(lowerLimit.size() == NJOINTS && upperLimit.size() == NJOINTS && "Wrong limit dimensions");
         for (size_t i = 0; i < NJOINTS; ++i)
-            if (abs(getPosition(i) - lowerLimit[i]) > tolerance && getPosition(i) < lowerLimit[i] ||
-                abs(getPosition(i) - upperLimit[i]) > tolerance && getPosition(i) > upperLimit[i])
+            if ((abs(getPosition(i) - lowerLimit[i]) > tolerance && getPosition(i) < lowerLimit[i]) ||
+                (abs(getPosition(i) - upperLimit[i]) > tolerance && getPosition(i) > upperLimit[i]))
                 return false;
         return true;
     }

@@ -21,7 +21,7 @@ namespace ct {
 namespace rbd {
 
 template <typename SCALAR = double>
-class HyAInverseKinematics : InverseKinematicsBase<6, SCALAR>
+class HyAInverseKinematics : public InverseKinematicsBase<6, SCALAR>
 {
 public:
     virtual std::vector<typename JointState<6, SCALAR>::Position> computeInverseKinematics(
