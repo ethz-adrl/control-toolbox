@@ -31,8 +31,15 @@ class TermTaskspacePoseCG : public optcon::TermBase<STATE_DIM, CONTROL_DIM, doub
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    // dimension: states, controls, ee des position params (3), time (1)
-    static const size_t AD_PARAMETER_DIM = STATE_DIM + CONTROL_DIM + 3 + 1;
+    /*
+     * The AD parameter vector consists of:
+     * - states (STATE_DIM parameters)
+     * - controls (CONTROL_DIM parameters)
+     * - desired end-effector positions (3 parameters)
+     * - desired end-effector orientation (9 parameters)
+     * - time (1 parameter)
+     */
+    static const size_t AD_PARAMETER_DIM = STATE_DIM + CONTROL_DIM + 3 + 9 + 1;
 
     using BASE = optcon::TermBase<STATE_DIM, CONTROL_DIM, double, double>;
 
@@ -45,18 +52,19 @@ public:
     typedef Eigen::Matrix<double, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
     typedef Eigen::Matrix<double, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
 
-    TermTaskspacePoseCG() {}
+
+    TermTaskspacePoseCG() = default;
     //! constructor using a quaternion for orientation
     TermTaskspacePoseCG(size_t eeInd,
         const Eigen::Matrix<double, 3, 3>& Qpos,
         const double& Qrot,
         const core::StateVector<3, double>& w_pos_des,
         const Eigen::Quaternion<double>& w_q_des,
-        const TYPE type = TYPE::AUTO_DIFF_AT_RUNTIME,
         const std::string& name = "TermTaskSpace")
-        : BASE(name), eeInd_(eeInd), Q_pos_(Qpos), Q_rot_(Qrot), w_R_ref_(w_q_des.normalized().toRotationMatrix())
+        : BASE(name), eeInd_(eeInd), Q_pos_(Qpos), Q_rot_(Qrot)
     {
         setReferencePosition(w_pos_des);
+        setReferenceOrientation(w_q_des);
         setup();
     }
 
@@ -65,7 +73,6 @@ public:
         const Eigen::Matrix<double, 3, 3>& Qpos,
         const double& Qrot,
         const ct::rbd::RigidBodyPose& rbdPose,
-        const TYPE type = TYPE::AUTO_DIFF_AT_RUNTIME,
         const std::string& name = "TermTaskSpace")
         // delegate constructor
         : TermTaskspacePoseCG(eeInd,
@@ -73,7 +80,6 @@ public:
               Qrot,
               rbdPose.position().toImplementation(),
               rbdPose.getRotationQuaternion().toImplementation(),
-              type,
               name)
     {
     }
@@ -84,7 +90,6 @@ public:
         const double& Qrot,
         const core::StateVector<3, double>& w_pos_des,
         const Eigen::Matrix<double, 3, 1>& eulerXyz,
-        const TYPE type = TYPE::AUTO_DIFF_AT_RUNTIME,
         const std::string& name = "TermTaskSpace")
         // delegate constructor
         : TermTaskspacePoseCG(eeInd,
@@ -94,7 +99,6 @@ public:
               Eigen::Quaternion<double>(Eigen::AngleAxisd(eulerXyz(0), Eigen::Vector3d::UnitX()) *
                                         Eigen::AngleAxisd(eulerXyz(1), Eigen::Vector3d::UnitY()) *
                                         Eigen::AngleAxisd(eulerXyz(2), Eigen::Vector3d::UnitZ())),
-              type,
               name)
     {
     }
@@ -109,12 +113,10 @@ public:
     //! copy constructor
     TermTaskspacePoseCG(const TermTaskspacePoseCG& arg)
         : BASE(arg),
-          type_(arg.type_),
           eeInd_(arg.eeInd_),
           kinematics_(KINEMATICS()),
           Q_pos_(arg.Q_pos_),
           Q_rot_(arg.Q_rot_),
-          w_R_ref_(arg.w_R_ref_),
           costFun_(arg.costFun_),
           adParameterVector_(arg.adParameterVector_)
     {
@@ -249,7 +251,7 @@ public:
             Eigen::Quaternion<double> quat_des(Eigen::AngleAxisd(eulerXyz(0), Eigen::Vector3d::UnitX()) *
                                                Eigen::AngleAxisd(eulerXyz(1), Eigen::Vector3d::UnitY()) *
                                                Eigen::AngleAxisd(eulerXyz(2), Eigen::Vector3d::UnitZ()));
-            w_R_ref_ = quat_des.toRotationMatrix();
+            setReferenceOrientation(quat_des);
             if (verbose)
                 std::cout << "Read desired Euler Angles Xyz as  = \n" << eulerXyz.transpose() << std::endl;
         } catch (const std::exception& e)
@@ -281,9 +283,25 @@ public:
     }
 
     //! retrieve reference ee orientation in world frame
-    const Eigen::Quaterniond getReferenceOrientation() const { return Eigen::Quaterniond(w_R_ref_); }
-    //! set the endeffector reference orientation
-    void setReferenceOrientation(const Eigen::Matrix<double, 3, 3> w_R_ref) { w_R_ref_ = w_R_ref; }
+    const Eigen::Quaterniond getReferenceOrientation() const
+    {
+        return Eigen::Quaterniond(extractReferenceRotationMatrix(adParameterVector_));
+    }
+
+    //! set desired end-effector orientation in world frame
+    void setReferenceOrientation(const Eigen::Matrix<double, 3, 3>& w_R_ref)
+    {
+        // transcribe the rotation matrix into the parameter vector
+        const Eigen::Matrix<double, 9, 1> matVectorized(Eigen::Map<const Eigen::Matrix<double, 9, 1>>(w_R_ref.data(), 9));
+        adParameterVector_.template segment<9>(STATE_DIM + CONTROL_DIM + 3) = matVectorized;
+    }
+
+    //! set desired end-effector orientation in world frame
+    void setReferenceOrientation(const Eigen::Quaterniond& w_q_des)
+    {
+    	setReferenceOrientation(w_q_des.normalized().toRotationMatrix());
+    }
+
     //! return the reference pose as RigidBodyPose
     const ct::rbd::RigidBodyPose getReferencePose() const
     {
@@ -304,6 +322,15 @@ protected:
     }
 
 private:
+
+    template <typename SC>
+    const Eigen::Matrix<SC, 3, 3> extractReferenceRotationMatrix(const Eigen::Matrix<SC, AD_PARAMETER_DIM, 1>& parameterVector) const
+    {
+        Eigen::Matrix<SC, 9, 1> matVectorized = parameterVector.template segment<9>(STATE_DIM + CONTROL_DIM + 3);
+        Eigen::Matrix<SC, 3, 3> w_R_ee(Eigen::Map<Eigen::Matrix<SC, 3, 3>>(matVectorized.data(), 3, 3));
+        return w_R_ee;
+    }
+
     //! computes RBDState in case the user supplied a floating-base robot (SFINAE principle)
     template <bool T>
     RBDStateTpl setStateFromVector_specialized(const Eigen::Matrix<CGScalar, -1, 1>& x,
@@ -355,7 +382,8 @@ private:
         // for the intuition behind, consider the following posts:
         // https://math.stackexchange.com/a/87698
         // https://math.stackexchange.com/a/773635
-        Matrix3Tpl ee_R_diff = w_R_ref_.template cast<SC>().transpose() * ee_rot;
+        Eigen::Matrix<SC, 3, 3> w_R_ref = extractReferenceRotationMatrix<SC>(adParams);
+        Matrix3Tpl ee_R_diff = w_R_ref.transpose() * ee_rot;
 
         SC rot_cost =
             (SC)Q_rot_ * (ee_R_diff - Matrix3Tpl::Identity()).squaredNorm();  // the Frobenius norm of (R_diff-I)
@@ -375,9 +403,6 @@ private:
 
     //! weighting factor for orientation error
     double Q_rot_;
-
-    //! desired end-effector orientation in world frame
-    Eigen::Matrix<double, 3, 3> w_R_ref_;
 
     //! the cppad JIT derivatives
     std::shared_ptr<DerivativesCppadJIT> derivativesCppadJIT_;
