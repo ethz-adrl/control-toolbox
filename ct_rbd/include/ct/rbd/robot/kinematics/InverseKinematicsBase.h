@@ -16,6 +16,8 @@ template <size_t NJOINTS, typename SCALAR = double>
 class InverseKinematicsBase
 {
 public:
+    InverseKinematicsBase() = default;
+    virtual ~InverseKinematicsBase() {}
     virtual std::vector<typename JointState<NJOINTS, SCALAR>::Position> computeInverseKinematics(
         const tpl::RigidBodyPose<SCALAR> &eeBasePose,
         const std::vector<SCALAR> &freeJoints) const = 0;
@@ -32,7 +34,8 @@ public:
         const std::vector<SCALAR> &freeJoints = std::vector<SCALAR>()) const
     {
         auto solutions = computeInverseKinematics(eeWorldPose, baseWorldPose, freeJoints);
-        if (!solutions.size()) throw std::runtime_error("No inverse kinematics solutions found!");
+        if (!solutions.size())
+            throw std::runtime_error("No inverse kinematics solutions found!");
 
         typename JointState<NJOINTS, SCALAR>::Position closestPosition = solutions[0];
         double minNorm = (closestPosition - queryJointPositions).norm();
@@ -46,6 +49,16 @@ public:
             }
         }
         return closestPosition;
+    }
+
+    virtual typename JointState<NJOINTS, SCALAR>::Position computeInverseKinematicsCloseTo(
+        const tpl::RigidBodyPose<SCALAR> &eeBasePose,
+        const typename JointState<NJOINTS, SCALAR>::Position &queryJointPositions,
+        const std::vector<SCALAR> &freeJoints = std::vector<SCALAR>()) const
+    {
+        tpl::RigidBodyPose<SCALAR> dummyWorldPose;
+        dummyWorldPose.setIdentity();
+        return computeInverseKinematicsCloseTo(eeBasePose, dummyWorldPose, queryJointPositions, freeJoints);
     }
 };
 
