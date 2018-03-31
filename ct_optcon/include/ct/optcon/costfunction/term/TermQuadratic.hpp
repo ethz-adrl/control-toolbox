@@ -41,6 +41,8 @@ public:
         const core::StateVector<STATE_DIM, SCALAR_EVAL>& x_ref,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref);
 
+    TermQuadratic(std::string& configFile, const std::string& termName, bool verbose = false);
+
     TermQuadratic(const TermQuadratic& arg);
 
     virtual ~TermQuadratic();

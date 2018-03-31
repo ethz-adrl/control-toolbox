@@ -108,9 +108,6 @@ target_link_libraries(EEContactModelTest ${catkin_LIBRARIES})
 catkin_add_gtest(TaskSpaceCfTest test/robot/costfunction/TaskspaceCostFunctionTest.cpp)
 target_link_libraries(TaskSpaceCfTest ${catkin_LIBRARIES})
 
-add_executable(TaskSpaceCfCGTest test/robot/costfunction/TaskspaceCostFunctionCG_Test.cpp)
-target_link_libraries(TaskSpaceCfCGTest ${catkin_LIBRARIES})
-
 catkin_add_gtest(rbdJITtests test/robot/costfunction/rbdJITtests.cpp)
 target_link_libraries(rbdJITtests ${catkin_LIBRARIES})
 
