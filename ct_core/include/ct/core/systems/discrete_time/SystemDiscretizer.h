@@ -13,12 +13,12 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include <ct/core/integration/IntegratorSymplectic.h>
 #include <ct/core/integration/EventHandlers/SubstepRecorder.h>
 
-#define SYMPLECTIC_ENABLED        \
+#define SYMPLECTIC_ENABLED                   \
     template <size_t V, size_t P, size_t ST> \
-    typename std::enable_if<(V > 0 && P > 0 && (V+P==ST)), void>::type
-#define SYMPLECTIC_DISABLED       \
+    typename std::enable_if<(V > 0 && P > 0 && (V + P == ST)), void>::type
+#define SYMPLECTIC_DISABLED                  \
     template <size_t V, size_t P, size_t ST> \
-    typename std::enable_if<(V <= 0 || P <= 0 || (V+P!=ST)), void>::type
+    typename std::enable_if<(V <= 0 || P <= 0 || (V + P != ST)), void>::type
 
 
 namespace ct {

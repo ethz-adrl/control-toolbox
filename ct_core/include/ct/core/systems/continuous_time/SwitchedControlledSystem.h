@@ -60,11 +60,11 @@ public:
 	 * @param type system type
 	 */
     SwitchedControlledSystem(const SwitchedSystems& switchedSystems,
-                             const ContinuousModeSequence& continuousModeSequence,
-                             const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
+        const ContinuousModeSequence& continuousModeSequence,
+        const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
         : ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type),
           switchedSystems_(switchedSystems),
-          continuousModeSequence_(continuousModeSequence) {};
+          continuousModeSequence_(continuousModeSequence){};
 
     //! constructor
     /*!
@@ -73,19 +73,18 @@ public:
 	 * @param type system type
 	 */
     SwitchedControlledSystem(const SwitchedSystems& switchedSystems,
-                             const ContinuousModeSequence& continuousModeSequence,
-                             std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller,
-                             const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
+        const ContinuousModeSequence& continuousModeSequence,
+        std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller,
+        const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
         : ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>(controller, type),
           switchedSystems_(switchedSystems),
-          continuousModeSequence_(continuousModeSequence) {};
+          continuousModeSequence_(continuousModeSequence){};
 
     //! copy constructor
-    SwitchedControlledSystem(const SwitchedControlledSystem& arg) :
-        ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
-        switchedSystems_(arg.switchedSystems_),
-        continuousModeSequence_(arg.continuousModeSequence_)
-    { };
+    SwitchedControlledSystem(const SwitchedControlledSystem& arg)
+        : ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
+          switchedSystems_(arg.switchedSystems_),
+          continuousModeSequence_(arg.continuousModeSequence_){};
 
     //! destructor
     virtual ~SwitchedControlledSystem(){};
@@ -97,7 +96,8 @@ public:
 
         // Clone individual subsystems for thread safety
         clone_->switchedSystems_.clear();
-        for (auto& subSystem : this->switchedSystems_){
+        for (auto& subSystem : this->switchedSystems_)
+        {
             clone_->switchedSystems_.emplace_back(subSystem->clone());
         }
         return clone_;
@@ -106,13 +106,14 @@ public:
     virtual void computeControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
         const time_t& t,
         const ControlVector<CONTROL_DIM, SCALAR>& control,
-        StateVector<STATE_DIM, SCALAR>& derivative) override {
+        StateVector<STATE_DIM, SCALAR>& derivative) override
+    {
         auto mode = continuousModeSequence_.getPhaseFromTime(t);
         switchedSystems_[mode]->computeControlledDynamics(state, t, control, derivative);
     };
 
 protected:
-    SwitchedSystems switchedSystems_;  //!< switched system container
+    SwitchedSystems switchedSystems_;                //!< switched system container
     ContinuousModeSequence continuousModeSequence_;  //!< the prespecified mode sequence
 };
 }

@@ -299,7 +299,8 @@ public:
 	 * @param[in]  problemCG  The optcon problem templated on the AD CG Scalar
 	 * @param[in]  settings   The settings indicating what to generate
 	 */
-    virtual void generateAndCompileCode(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
+    virtual void generateAndCompileCode(
+        const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
         const ct::core::DerivativesCppadSettings& settings)
     {
         throw std::runtime_error("Generate and compile code not implemented for this solver");

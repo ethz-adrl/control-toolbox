@@ -170,7 +170,8 @@ void symplecticTest()
     NLOptConSolver::Policy_t initController(x0, u0, u0_fb, gnms_settings.dt);
 
     // construct single-core single subsystem OptCon Problem
-    ContinuousOptConProblem<state_dim, control_dim> optConProblem(tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
+    ContinuousOptConProblem<state_dim, control_dim> optConProblem(
+        tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
 
 
     //	std::cout << "initializing gnms solver" << std::endl;

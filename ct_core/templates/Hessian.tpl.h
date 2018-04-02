@@ -15,7 +15,6 @@ namespace NS2 {
 class DERIVATIVE_NAME : public core::Derivatives<IN_DIM, OUT_DIM, double>
 {
 public:
-
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     typedef Eigen::Matrix<double, IN_DIM, IN_DIM> HES_TYPE;

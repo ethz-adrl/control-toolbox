@@ -44,12 +44,13 @@ public:
     static const size_t VEL_DIM = V_DIM;
 
     typedef OptConSolver<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>,
-                               typename NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Policy_t,
-                               NLOptConSettings,
-                               STATE_DIM,
-                               CONTROL_DIM,
-                               SCALAR,
-                               CONTINUOUS> Base;
+        typename NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Policy_t,
+        NLOptConSettings,
+        STATE_DIM,
+        CONTROL_DIM,
+        SCALAR,
+        CONTINUOUS>
+        Base;
 
 
     typedef NLOptConSettings Settings_t;

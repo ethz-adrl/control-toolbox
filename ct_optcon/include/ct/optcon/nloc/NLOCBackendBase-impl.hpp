@@ -305,10 +305,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
 
     // we need to allocate memory in HPIPM for the new constraints
-    for (size_t i = 0; i < K_; i++) {
-        generalConstraints_[settings_.nThreads]->setCurrentStateAndControl(lqocProblem_->x_[i],
-                                                                           lqocProblem_->u_[i],
-                                                                           i * settings_.dt);
+    for (size_t i = 0; i < K_; i++)
+    {
+        generalConstraints_[settings_.nThreads]->setCurrentStateAndControl(
+            lqocProblem_->x_[i], lqocProblem_->u_[i], i * settings_.dt);
         lqocProblem_->ng_[i] = generalConstraints_[settings_.nThreads]->getIntermediateConstraintsCount();
     }
 
@@ -783,15 +783,17 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     size_t k)
 {
     // set general if there are any
-    if (generalConstraints_[threadId] != nullptr) {
-        LQOCProblem_t &p = *lqocProblem_;
-        const scalar_t &dt = settings_.dt;
+    if (generalConstraints_[threadId] != nullptr)
+    {
+        LQOCProblem_t& p = *lqocProblem_;
+        const scalar_t& dt = settings_.dt;
 
         // treat general constraints
         generalConstraints_[threadId]->setCurrentStateAndControl(x_[k], u_ff_[k], dt * k);
 
         p.ng_[k] = generalConstraints_[threadId]->getIntermediateConstraintsCount();
-        if (p.ng_[k] > 0) {
+        if (p.ng_[k] > 0)
+        {
             p.hasGenConstraints_ = true;
             p.C_[k] = generalConstraints_[threadId]->jacobianStateIntermediate();
             p.D_[k] = generalConstraints_[threadId]->jacobianInputIntermediate();
@@ -799,12 +801,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> g_eval = generalConstraints_[threadId]->evaluateIntermediate();
 
             // rewrite constraint in absolute coordinates as required by LQOC problem
-            p.d_lb_[k] =
-                generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
-                p.D_[k] * u_ff_[k];
-            p.d_ub_[k] =
-                generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
-                p.D_[k] * u_ff_[k];
+            p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
+                         p.D_[k] * u_ff_[k];
+            p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
+                         p.D_[k] * u_ff_[k];
         }
     }
 }
@@ -882,8 +882,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
     computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
 
-    SCALAR totalMerit = intermediateCostBest_ + finalCostBest_ + settings_.meritFunctionRho * d_norm_l1
-                        + settings_.meritFunctionRhoConstraints * (e_box_norm_ + e_gen_norm_);
+    SCALAR totalMerit = intermediateCostBest_ + finalCostBest_ + settings_.meritFunctionRho * d_norm_l1 +
+                        settings_.meritFunctionRhoConstraints * (e_box_norm_ + e_gen_norm_);
 
     SCALAR smallestEigenvalue = 0.0;
     if (settings_.recordSmallestEigenvalue && settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
@@ -1244,8 +1244,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     else  //! do line search over a merit function trading off costs and constraint violations
     {
         // merit of previous trajectory
-        lowestCost_ = intermediateCostBest_ + finalCostBest_ + d_norm_ * settings_.meritFunctionRho
-                      + (e_box_norm_ + e_gen_norm_) * settings_.meritFunctionRhoConstraints;
+        lowestCost_ = intermediateCostBest_ + finalCostBest_ + d_norm_ * settings_.meritFunctionRho +
+                      (e_box_norm_ + e_gen_norm_) * settings_.meritFunctionRhoConstraints;
         lowestCostPrevious = lowestCost_;
 
         if (settings_.lineSearchSettings.debugPrint)
@@ -1381,7 +1381,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     lqpCounter_++;
 
     // if solver is HPIPM, there's nothing to prepare
-    if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER) {}
+    if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
+    {
+    }
     // if solver is GNRiccati - we iterate backward up to the first stage
     else if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
     {

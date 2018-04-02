@@ -44,8 +44,8 @@ public:
 	 * @param type system type
 	 */
     SwitchedLinearSystem(const SwitchedLinearSystems& switchedLinearSystems,
-                         const ContinuousModeSequence& continuousModeSequence,
-                         const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL)
+        const ContinuousModeSequence& continuousModeSequence,
+        const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL)
         : LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type),
           switchedLinearSystems_(switchedLinearSystems),
           continuousModeSequence_(continuousModeSequence)
@@ -58,14 +58,15 @@ public:
     //! deep cloning
     virtual SwitchedLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {
-      auto clone_ = new SwitchedLinearSystem(*this);
+        auto clone_ = new SwitchedLinearSystem(*this);
 
-      // Clone individual subsystems for thread safety
-      clone_->switchedLinearSystems_.clear();
-      for (auto& linearSystem : this->switchedLinearSystems_){
-        clone_->switchedLinearSystems_.emplace_back(linearSystem->clone());
-      }
-      return clone_;
+        // Clone individual subsystems for thread safety
+        clone_->switchedLinearSystems_.clear();
+        for (auto& linearSystem : this->switchedLinearSystems_)
+        {
+            clone_->switchedLinearSystems_.emplace_back(linearSystem->clone());
+        }
+        return clone_;
     };
 
     using LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>::computeControlledDynamics;
@@ -87,7 +88,7 @@ public:
     };
 
 private:
-    SwitchedLinearSystems switchedLinearSystems_;  //!< Switched linear system container
+    SwitchedLinearSystems switchedLinearSystems_;    //!< Switched linear system container
     ContinuousModeSequence continuousModeSequence_;  //!< the prespecified mode sequence
 };
 }

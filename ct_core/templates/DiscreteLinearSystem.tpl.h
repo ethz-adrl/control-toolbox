@@ -15,7 +15,6 @@ namespace NS2 {
 class LINEAR_SYSTEM_NAME : public ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
-
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     typedef ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
@@ -25,8 +24,7 @@ public:
     typedef typename Base::state_matrix_t state_matrix_t;
     typedef typename Base::state_control_matrix_t state_control_matrix_t;
 
-    LINEAR_SYSTEM_NAME(const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL)
-        : Base(type)
+    LINEAR_SYSTEM_NAME(const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL) : Base(type)
     {
         initialize();
     }

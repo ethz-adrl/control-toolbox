@@ -26,11 +26,7 @@ public:
 	 * @param mean the mean of the uniform distribution
 	 * @param the half-width of the distribution
 	 */
-	UniformNoise(double mean = 0.0, double r = 1.0)
-        : rd_(), eng_(rd_()), distr_(mean-r, mean+r)
-    {
-    }
-
+    UniformNoise(double mean = 0.0, double r = 1.0) : rd_(), eng_(rd_()), distr_(mean - r, mean + r) {}
     //! Scalar generator
     /*!
 	 *  generates a single scalar random variable

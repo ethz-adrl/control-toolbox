@@ -193,7 +193,7 @@ public:
           debugPrint(false),
           printSummary(true),
           useSensitivityIntegrator(false),
-		  logToMatlab(false)
+          logToMatlab(false)
     {
     }
 

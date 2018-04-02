@@ -18,13 +18,10 @@ HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(const int N, const int nb
     // some zero variables
     hb0_.setZero();
     hr0_.setZero();
-    x_zeros.setZero();
-    u_zeros.setZero();
 
     // by default, set number of box and general constraints to zero
     if (N > 0)
         setSolverDimensions(N, nb, ng);
-
 
     configure(settings_);
 }
@@ -62,13 +59,10 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
     if (settings_.lqoc_solver_settings.lqoc_debug_print)
     {
         std::cout << "HPIPM allocating memory for QP with time horizon: " << N_ << std::endl;
-        for (size_t i=0; i<N_+1; i++){
-          std::cout << "HPIPM stage " << i << ": (nx, nu, nb, ng) : ("
-          << nx_[i] << ", "
-          << nu_[i] << ", "
-          << nb_[i] << ", "
-          << ng_[i] << ")"
-          << std::endl;
+        for (size_t i = 0; i < N_ + 1; i++)
+        {
+            std::cout << "HPIPM stage " << i << ": (nx, nu, nb, ng) : (" << nx_[i] << ", " << nu_[i] << ", " << nb_[i]
+                      << ", " << ng_[i] << ")" << std::endl;
         }
         std::cout << "HPIPM qp_size: " << qp_size << std::endl;
         std::cout << "HPIPM qp_sol_size: " << qp_sol_size << std::endl;
@@ -84,9 +78,9 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configure(const NLOptConSettings& s
 
     arg_.iter_max = settings_.lqoc_solver_settings.num_lqoc_iterations;
 
-    arg_.alpha_min = 1e-9;  // todo review and make setting
+    arg_.alpha_min = 1e-8;  // todo review and make setting
     arg_.mu_max = 1e-12;    // todo review and make setting
-    arg_.mu0 = 1e0;         // todo review and make setting
+    arg_.mu0 = 2.0;         // todo review and make setting
 }
 
 
@@ -397,7 +391,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
     {
         initializeAndAllocate();
     }
-
 }
 
 
@@ -416,18 +409,16 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureBoxConstraints(
         hidxb_[i] = lqocProblem->ux_I_[i].data();
 
         // first stage requires special treatment as state is not a decision variable
-        // TODO: This assumes that control and state bounds are declared in that order -> is this always true?
+        // TODO: This assumes that the control box constraints come first
         if (i == 0)
         {
-            nb_[0] = 0;
-            for (int j = 0; j < lqocProblem->nb_[0]; j++)
+            nb_[i] = 0;
+            for (int j = 0; j < lqocProblem->nb_[i]; j++)
             {
-                if (lqocProblem->ux_I_[0](j) < CONTROL_DIM) {
-                    // Declared input bound -> count them
-                    nb_[i]++;
-                } else {
-
-                }
+                if (lqocProblem->ux_I_[i](j) < CONTROL_DIM)
+                    nb_[i]++;  // adapt number of constraints such that only controls are listed as decision vars
+                else
+                    break;
             }
         }
 
@@ -486,36 +477,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
     }
 }
 
-//{
-//    for (size_t i = 0; i < N_ + 1; i++)
-//    {
-//        // check dimensions
-//        assert(lqocProblem->d_lb_[i].rows() == lqocProblem->d_ub_[i].rows());
-//        assert(lqocProblem->d_lb_[i].rows() == lqocProblem->C_[i].rows());
-//        assert(lqocProblem->d_lb_[i].rows() == lqocProblem->D_[i].rows());
-//        assert(lqocProblem->C_[i].cols() == STATE_DIM);
-//        assert(lqocProblem->D_[i].cols() == CONTROL_DIM);
-//
-//        // get the number of constraints
-//        ng_[i] = lqocProblem->ng_[i];
-//
-//        // set pointers to hpipm-style box constraint boundaries and sparsity pattern
-//        hd_lg_[i] = lqocProblem->d_lb_[i].data();
-//        hd_ug_[i] = lqocProblem->d_ub_[i].data();
-//        hC_[i] = lqocProblem->C_[i].data();
-//        hD_[i] = lqocProblem->D_[i].data();
-//
-//        // TODO clarify with Gianluca if we need to reset the lagrange multiplier
-//        // before warmstarting (potentially wrong warmstart for the lambdas)
-//
-//        // direct pointers of lagrange mult to corresponding containers
-//        cont_lam_lg_[i].resize(ng_[i]);  // todo avoid dynamic allocation (e.g. by defining a max. constraint dim)
-//        cont_lam_ug_[i].resize(ng_[i]);  // todo avoid dynamic allocation (e.g. by defining a max. constraint dim)
-//        lam_lg_[i] = cont_lam_lg_[i].data();
-//        lam_ug_[i] = cont_lam_ug_[i].data();
-//    }
-//}
-
 
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArray& x,
@@ -534,7 +495,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
 
     // set the initial state
     x0_ = x[0].data();
-
 
     /*
      * transcribe the "differential" representation of the OptConProblem to the absolute origin of
@@ -641,15 +601,12 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     cont_lam_lg_.resize(N_ + 1);
     cont_lam_ug_.resize(N_ + 1);
 
-    x_[0] = x_zeros.data();
     for (int i = 0; i < N_; i++)
     {
         // first state and last input are not optimized
         x_[i + 1] = hx_[i + 1].data();
         u_[i] = hu_[i].data();
     }
-    u_[N_] = u_zeros.data();
-
     for (int i = 0; i < N_; i++)
     {
         pi_[i] = hpi_[i].data();

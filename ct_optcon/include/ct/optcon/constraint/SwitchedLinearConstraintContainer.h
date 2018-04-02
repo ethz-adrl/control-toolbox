@@ -33,7 +33,8 @@ public:
     typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
     typedef core::ControlVector<CONTROL_DIM, SCALAR> input_vector_t;
 
-    typedef SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>* SwitchedLinearConstraintContainer_Raw_Ptr_t;
+    typedef SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>*
+        SwitchedLinearConstraintContainer_Raw_Ptr_t;
     typedef std::shared_ptr<LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> LinearConstraintContainer_Ptr_t;
     typedef core::Switched<LinearConstraintContainer_Ptr_t> SwitchedLinearConstraintContainers;
     typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
@@ -45,7 +46,7 @@ public:
 	 * @brief      Default constructor
 	 */
     SwitchedLinearConstraintContainer(const SwitchedLinearConstraintContainers& switchedLinearConstraintContainers,
-                                      const ModeSequence_t& continuousModeSequence);
+        const ModeSequence_t& continuousModeSequence);
 
 
     /**

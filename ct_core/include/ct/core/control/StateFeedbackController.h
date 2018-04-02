@@ -55,7 +55,6 @@ public:
 
     //! default constructor
     StateFeedbackController() : ContinuousBase(), DiscreteBase() {}
-
     //! copy constructor
     StateFeedbackController(const StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>& other);
 

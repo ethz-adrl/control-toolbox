@@ -15,7 +15,6 @@ namespace NS2 {
 class LINEAR_SYSTEM_NAME : public ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
-
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     typedef ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;

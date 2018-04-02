@@ -106,17 +106,12 @@ target_link_libraries(NoiseTest ${catkin_LIBRARIES})
 catkin_add_gtest(SecondOrderSystemTest test/SecondOrderSystemTest.cpp)
 target_link_libraries(SecondOrderSystemTest ${catkin_LIBRARIES})
 
-# This test is not required to link against ${PRESPEC_LIB_NAMES} as it is not using prespec.
-# However, we just test that it does not fail here.
+# This test is not required to link against ${PRESPEC_LIB_NAMES} as it is not using prespec. Here we ensure that linking against it does not fail.
 catkin_add_gtest(IntegrationTest test/integration/IntegrationTest.cpp)
 target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
-catkin_add_gtest(IntegrationTestPrespec test/integration/IntegrationTestPrespec.cpp)
-target_link_libraries(IntegrationTestPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
 
 catkin_add_gtest(IntegratorComparison test/integration/IntegratorComparison.cpp)
 target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
-catkin_add_gtest(IntegratorComparisonPrespec test/integration/IntegratorComparisonPrespec.cpp)
-target_link_libraries(IntegratorComparisonPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
 
 catkin_add_gtest(SymplecticIntegrationTest test/integration/SymplecticIntegrationTest.cpp)
 target_link_libraries(SymplecticIntegrationTest ${catkin_LIBRARIES} ct_core)

@@ -112,7 +112,8 @@ public:
         configure(settingsDms);
     }
 
-    virtual void generateAndCompileCode(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
+    virtual void generateAndCompileCode(
+        const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
         const ct::core::DerivativesCppadSettings& settings) override
     {
         // Create system, linearsystem and costfunction instances

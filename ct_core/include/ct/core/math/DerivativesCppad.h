@@ -26,7 +26,7 @@ namespace core {
  * @tparam OUT_DIM Output dimensionailty of the function (use Eigen::Dynamic (-1) for dynamic size)
  */
 template <int IN_DIM, int OUT_DIM>
-class DerivativesCppad : public Derivatives<IN_DIM, OUT_DIM, double> // double on purpose!
+class DerivativesCppad : public Derivatives<IN_DIM, OUT_DIM, double>  // double on purpose!
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -63,22 +63,14 @@ public:
      *                        template parameter IN_DIM is -1 (dynamic)
      */
     DerivativesCppad(FUN_TYPE_AD& f, int inputDim = IN_DIM, int outputDim = OUT_DIM)
-        : 
-        DerivativesBase(),
-        adStdFun_(f),
-        inputDim_(inputDim),
-        outputDim_(outputDim)
+        : DerivativesBase(), adStdFun_(f), inputDim_(inputDim), outputDim_(outputDim)
     {
         update(f, inputDim, outputDim);
     }
 
     //! copy constructor
     DerivativesCppad(const DerivativesCppad& arg)
-        : 
-        DerivativesBase(arg),
-        adStdFun_(arg.adStdFun_),
-        inputDim_(arg.inputDim_),
-        outputDim_(arg.outputDim_)
+        : DerivativesBase(arg), adStdFun_(arg.adStdFun_), inputDim_(arg.inputDim_), outputDim_(arg.outputDim_)
     {
         adCppadFun_ = arg.adCppadFun_;
     }
@@ -106,11 +98,7 @@ public:
     virtual ~DerivativesCppad() {}
     //! deep cloning of Jacobian
     DerivativesCppad* clone() const { return new DerivativesCppad<IN_DIM, OUT_DIM>(*this); }
-    virtual OUT_TYPE_D forwardZero(const Eigen::VectorXd& x)
-    {
-        return adCppadFun_.Forward(0, x);
-    }
-
+    virtual OUT_TYPE_D forwardZero(const Eigen::VectorXd& x) { return adCppadFun_.Forward(0, x); }
     virtual JAC_TYPE_D jacobian(const Eigen::VectorXd& x)
     {
         if (outputDim_ <= 0)

@@ -90,8 +90,8 @@ public:
 
 private:
     SCALAR
-        active_percentage_;  // how much of the cycle is the time active TODO: misleading name. should be called fraction
-    SCALAR period_;          // what is the period
+    active_percentage_;  // how much of the cycle is the time active TODO: misleading name. should be called fraction
+    SCALAR period_;      // what is the period
     SCALAR activation_offset_;  // how much is the activation offset WITHIN the period
     SCALAR period_offset_;      // how much is the period offset to t=0?
     SCALAR t_end_;
