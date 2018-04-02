@@ -41,7 +41,7 @@ class System
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef SCALAR S;       //!< the scalar type
+    typedef SCALAR S;  //!< the scalar type
     typedef SCALAR time_t;  //!< the type of the time variable
 
     //! default constructor

@@ -24,6 +24,7 @@ struct DoubleTrait
     inline static Scalar exp(const Scalar& x) { return std::exp(x); }
     inline static Scalar fabs(const Scalar& x) { return std::fabs(x); }
     inline static Scalar sqrt(const Scalar& x) { return std::sqrt(x); }
+
     //! Solves a linear system of equations using Eigen's inverse functionality
     template <int Rows, int Cols>
     inline static Eigen::Matrix<Scalar, Cols, 1> solve(const Eigen::Matrix<Scalar, Rows, Cols>& A,

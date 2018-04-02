@@ -25,8 +25,7 @@ template <typename SCALAR>
 PIDController<SCALAR>::~PIDController(){};
 
 template <typename SCALAR>
-PIDController<SCALAR>* PIDController<SCALAR>::clone() const
-{
+PIDController<SCALAR>* PIDController<SCALAR>::clone() const {
     return new PIDController<SCALAR>(*this);
 }
 
@@ -45,7 +44,7 @@ void PIDController<SCALAR>::setDesiredState(const SCALAR& state)
 template <typename SCALAR>
 void PIDController<SCALAR>::setDesiredState(const SCALAR& state, const SCALAR& stateDerivative)
 {
-    setpoint_.stateDesired_ = state;
+    setpoint_.stateDesired_           = state;
     setpoint_.stateDerivativeDesired_ = stateDerivative;
 }
 
@@ -77,7 +76,9 @@ SCALAR PIDController<SCALAR>::computeControl(const SCALAR& state, const Time& t)
 }
 
 template <typename SCALAR>
-SCALAR PIDController<SCALAR>::computeControl(const SCALAR& state, const SCALAR& stateDerivative, const Time& t)
+SCALAR PIDController<SCALAR>::computeControl(const SCALAR& state,
+    const SCALAR& stateDerivative,
+    const Time& t)
 {
     SCALAR error = setpoint_.stateDesired_ - state;
 

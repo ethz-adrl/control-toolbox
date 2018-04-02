@@ -64,6 +64,7 @@ public:
 
     //! destructor
     virtual ~OptconContinuousSystemInterface() {}
+
     //! perform necessary setup work
     virtual void initialize() override;
     virtual void configure(const settings_t& settings) override;

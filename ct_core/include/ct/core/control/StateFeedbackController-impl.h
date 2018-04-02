@@ -74,15 +74,13 @@ StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::clone() const
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-const DiscreteArray<typename StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t>&
-StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::x_ref() const
+const DiscreteArray<typename StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t>& StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::x_ref() const
 {
     return x_ref_.getDataArray();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-const DiscreteArray<typename StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t>&
-StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::uff() const
+const DiscreteArray<typename StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t>& StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::uff() const
 {
     return uff_.getDataArray();
 }

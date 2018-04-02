@@ -47,6 +47,7 @@ TEST(LQRTest, DARETest)
     Eigen::Matrix<double, stateDim, stateDim> P_test;
     P_test << 6.932484752255643, 4.332273119899151, 4.332273119899151, 4.55195134961773;
     ASSERT_LT((P - P_test).array().abs().maxCoeff(), 1e-12);
+
 }
 
 

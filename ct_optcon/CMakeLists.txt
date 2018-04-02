@@ -161,7 +161,6 @@ if(USE_PRESPEC)
     message(WARNING "CT Optcon: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
 endif(USE_PRESPEC)
 
-
 #used later for clang-tidy
 set(INC_DIRS ${catkin_INCLUDE_DIRS}  "${CMAKE_CURRENT_SOURCE_DIR}/include" ${HPIPM_INCLUDE_DIR} ${BLASFEO_INCLUDE_DIR})
 

@@ -17,5 +17,5 @@
 #define CT_LOADABLE_TERMS(SCALAR_EVAL, SCALAR)                        \
     CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TermLinear, "linear")       \
     CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TermQuadratic, "quadratic") \
-    CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TermMixed, "mixed")         \
+    CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TermMixed, "mixed") \
     CT_LOADABLE_TERM(SCALAR_EVAL, SCALAR, TermQuadMult, "quadratic-multiplicative")

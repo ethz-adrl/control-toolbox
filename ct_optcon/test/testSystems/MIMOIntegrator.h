@@ -98,3 +98,4 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> createMIMOIntegra
 }
 }
 }
+
