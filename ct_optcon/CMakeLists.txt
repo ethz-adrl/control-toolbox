@@ -247,7 +247,7 @@ if(HPIPM)
         target_link_libraries(ex_NLOC_boxConstrained ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
         add_executable(ex_NLOC_generalConstrained examples/NLOC_generalConstrained.cpp)
-        target_link_libraries(ex_NLOC_generalConstrained ${catkin_LIBRARIES} ${HPIPM_LIBS})
+        target_link_libraries(ex_NLOC_generalConstrained ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
         add_executable(switched_optcon_test examples/switched_systems_optcon/switched_optcon_test.cpp)
         target_link_libraries(switched_optcon_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
