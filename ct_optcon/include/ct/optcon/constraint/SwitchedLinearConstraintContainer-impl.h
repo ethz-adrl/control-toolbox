@@ -15,8 +15,10 @@ namespace ct {
             const ModeSequence_t& continuousModeSequence)
             : switchedLinearConstraintContainers_(switchedLinearConstraintContainers),
               continuousModeSequence_(continuousModeSequence),
-              activeLinearConstraintContainer_(switchedLinearConstraintContainers.front())
+              activeLinearConstraintContainer_(switchedLinearConstraintContainers.front()),
+              terminalLinearConstraintContainer_(switchedLinearConstraintContainers.at(continuousModeSequence.getFinalPhase()))
         {
+
         };
 
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -46,6 +48,8 @@ namespace ct {
             clone_->switchedLinearConstraintContainers_.emplace_back(linearConstraintContainer->clone());
           }
           clone_->activeLinearConstraintContainer_ = clone_->switchedLinearConstraintContainers_.front();
+          clone_->terminalLinearConstraintContainer_ = clone_->switchedLinearConstraintContainers_.at(
+              clone_->continuousModeSequence_.getFinalPhase());
           return clone_;
         };
 
@@ -60,7 +64,7 @@ namespace ct {
         typename SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
         SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateTerminal()
         {
-            return switchedLinearConstraintContainers_.back()->evaluateTerminal();
+            return terminalLinearConstraintContainer_->evaluateTerminal();
         };
 
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -72,7 +76,7 @@ namespace ct {
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
         size_t SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::getTerminalConstraintsCount()
         {
-            return switchedLinearConstraintContainers_.back()->getTerminalConstraintsCount();
+            return terminalLinearConstraintContainer_->getTerminalConstraintsCount();
         };
 
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -93,14 +97,14 @@ namespace ct {
         typename SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
         SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianStateSparseTerminal()
         {
-            return switchedLinearConstraintContainers_.back()->jacobianStateSparseTerminal();
+            return terminalLinearConstraintContainer_->jacobianStateSparseTerminal();
         };
 
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
         typename SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
         SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianStateTerminal()
         {
-            return switchedLinearConstraintContainers_.back()->jacobianStateTerminal();
+            return terminalLinearConstraintContainer_->jacobianStateTerminal();
         };
 
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -121,14 +125,14 @@ namespace ct {
         typename SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::VectorXs
         SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInputSparseTerminal()
         {
-            return switchedLinearConstraintContainers_.back()->jacobianInputSparseTerminal();
+            return terminalLinearConstraintContainer_->jacobianInputSparseTerminal();
         };
 
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
         typename SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs
         SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::jacobianInputTerminal()
         {
-            return switchedLinearConstraintContainers_.back()->jacobianInputTerminal();
+            return terminalLinearConstraintContainer_->jacobianInputTerminal();
         };
 
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -140,7 +144,7 @@ namespace ct {
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
         void SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::sparsityPatternStateTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols)
         {
-            return switchedLinearConstraintContainers_.back()->sparsityPatternStateTerminal(iRows, jCols);
+            return terminalLinearConstraintContainer_->sparsityPatternStateTerminal(iRows, jCols);
         };
 
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -152,7 +156,7 @@ namespace ct {
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
         void SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::sparsityPatternInputTerminal(Eigen::VectorXi& iRows, Eigen::VectorXi& jCols)
         {
-            return switchedLinearConstraintContainers_.back()->sparsityPatternInputTerminal(iRows, jCols);
+            return terminalLinearConstraintContainer_->sparsityPatternInputTerminal(iRows, jCols);
         };
 
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -164,7 +168,7 @@ namespace ct {
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
         size_t SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::getJacobianStateNonZeroCountTerminal()
         {
-            return switchedLinearConstraintContainers_.back()->getJacobianStateNonZeroCountTerminal();
+            return terminalLinearConstraintContainer_->getJacobianStateNonZeroCountTerminal();
         };
 
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -176,14 +180,17 @@ namespace ct {
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
         size_t SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::getJacobianInputNonZeroCountTerminal()
         {
-            return switchedLinearConstraintContainers_.back()->getJacobianInputNonZeroCountTerminal();
+            return terminalLinearConstraintContainer_->getJacobianInputNonZeroCountTerminal();
         };
 
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
         bool SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::initializeIntermediate()
         {
-            for (auto& linearConstraintContainer : switchedLinearConstraintContainers_){
-                if (~linearConstraintContainer->initializeIntermediate()){
+            for (auto linearConstraintContainer : switchedLinearConstraintContainers_){
+              linearConstraintContainer->initialize();
+                if (!linearConstraintContainer->isInitialized()){
+                  std::cout << "SwitchedLinearConstraintContainer::initializeIntermediate(): "
+                            << "one of the constraints failed to initialize" << std::endl;
                     return false;
                 }
             }
@@ -193,19 +200,17 @@ namespace ct {
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
         bool SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::initializeTerminal()
         {
-          if (switchedLinearConstraintContainers_.back()->initializeTerminal()) {
-            this->lowerBoundsTerminal_ = switchedLinearConstraintContainers_.back()->getLowerBoundsTerminal();
-            this->upperBoundsTerminal_ = switchedLinearConstraintContainers_.back()->getUpperBoundsTerminal();
-            return true;
-          }
-          return false;
+          // All in switchedLinearConstraintContainers_ already initialized in initializeIntermediate()
+          this->lowerBoundsTerminal_ = terminalLinearConstraintContainer_->getLowerBoundsTerminal();
+          this->upperBoundsTerminal_ = terminalLinearConstraintContainer_->getUpperBoundsTerminal();
+          return true;
         };
 
         template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
         void SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::update()
         {
             auto mode = continuousModeSequence_.getPhaseFromTime(this->t_);
-            activeLinearConstraintContainer_ = switchedLinearConstraintContainers_[mode];
+            activeLinearConstraintContainer_ = switchedLinearConstraintContainers_.at(mode);
             activeLinearConstraintContainer_->setCurrentStateAndControl(this->x_, this->u_, this->t_);
 
           this->lowerBoundsIntermediate_ = activeLinearConstraintContainer_->getLowerBoundsIntermediate();

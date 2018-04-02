@@ -54,29 +54,33 @@ namespace ct {
               time_schedule_.emplace_back(time_schedule_.back() + duration);
             }
             /// @brief get number of phases
-            std::size_t getNumPhases() { return phase_schedule_.size(); }
+            std::size_t getNumPhases() const { return phase_schedule_.size(); }
             /// @brief get number of switches
-            std::size_t getNumSwitches() { return getNumPhases() - 1; }
+            std::size_t getNumSwitches() const { return getNumPhases() - 1; }
             /// @brief get sequence total duration
-            Time getTotalDuration() { return time_schedule_.back() - time_schedule_.front(); }
+            Time getTotalDuration() const { return time_schedule_.back() - time_schedule_.front(); }
             /// @brief get start time from sequence index
-            Time getStartTimeFromIdx( std::size_t idx) { return time_schedule_[idx]; }
+            Time getStartTimeFromIdx( std::size_t idx) const { return time_schedule_[idx]; }
             /// @brief get end time from sequence index
-            Time getEndTimeFromIdx( std::size_t idx) { return time_schedule_[idx+1]; }
+            Time getEndTimeFromIdx( std::size_t idx) const { return time_schedule_[idx+1]; }
             /// @brief get phase pointer from sequence index
-            Phase getPhaseFromIdx( std::size_t idx ) { return phase_schedule_[idx]; }
+            Phase getPhaseFromIdx( std::size_t idx ) const { return phase_schedule_[idx]; }
             /// @brief get phase pointer from time
-            Phase getPhaseFromTime( Time time ) { return getPhaseFromIdx(getIdxFromTime(time)); }
+            Phase getPhaseFromTime( Time time ) const { return getPhaseFromIdx(getIdxFromTime(time)); }
+            /// @brief get First phase pointer
+            Phase getFirstPhase() const { return phase_schedule_.front(); };
+            /// @brief get Final phase pointer
+            Phase getFinalPhase() const { return phase_schedule_.back(); };
             /// @brief get next switch event from sequence index
-            SwitchEvent<Phase, Time> getSwitchEventFromIdx( std::size_t idx) {
+            SwitchEvent<Phase, Time> getSwitchEventFromIdx( std::size_t idx) const {
               return {getPhaseFromIdx(idx), getPhaseFromIdx(idx+1), getEndTimeFromIdx(idx)};
             }
             /// @brief get next switch event from time
-            SwitchEvent<Phase, Time> getSwitchEventFromTime( Time time ) {
+            SwitchEvent<Phase, Time> getSwitchEventFromTime( Time time ) const {
               return getSwitchEventFromIdx(getIdxFromTime(time));
             }
             /// @brief get sequence index from time
-            std::size_t getIdxFromTime( Time time ) {
+            std::size_t getIdxFromTime( Time time ) const {
               // Finds pointer to first element less or equal to time
               // i.e. it returns the index for the phase with time in [t_start, t_end)
               // times outside the vector are mapped to the first and last phase

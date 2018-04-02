@@ -145,41 +145,11 @@ target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} ct_core pthread
 catkin_add_gtest(SwitchingTest test/SwitchingTest.cpp)
 target_link_libraries(SwitchingTest ${catkin_LIBRARIES} ct_core)
 
-# This test is not required to link against ${PRESPEC_LIB_NAMES} as it is not using prespec. Here we ensure that linking against it does not fail.
-catkin_add_gtest(IntegrationTest test/integration/IntegrationTest.cpp)
-target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
 catkin_add_gtest(SwitchedControlledSystemTest test/SwitchedControlledSystemTest.cpp)
 target_link_libraries(SwitchedControlledSystemTest ${catkin_LIBRARIES} ct_core)
 
 catkin_add_gtest(SwitchedDiscreteControlledSystemTest test/SwitchedDiscreteControlledSystemTest.cpp)
 target_link_libraries(SwitchedDiscreteControlledSystemTest ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(IntegratorComparison test/integration/IntegratorComparison.cpp)
-target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(SymplecticIntegrationTest test/integration/SymplecticIntegrationTest.cpp)
-target_link_libraries(SymplecticIntegrationTest ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(SystemDiscretizerTest test/integration/SystemDiscretizerTest.cpp)
-target_link_libraries(SystemDiscretizerTest ${catkin_LIBRARIES} ct_core)
-
-add_executable(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
-target_link_libraries(SensitivityTest ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(InterpolationTest test/InterpolationTest.cpp)
-target_link_libraries(InterpolationTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(DiscreteArrayTest test/DiscreteArrayTest.cpp)
-target_link_libraries(DiscreteArrayTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(DiscreteTrajectoryTest test/DiscreteTrajectoryTest.cpp)
-target_link_libraries(DiscreteTrajectoryTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(LinspaceTest test/LinspaceTest.cpp)
-target_link_libraries(LinspaceTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(AutoDiffLinearizerTest test/AutoDiffLinearizerTest.cpp)
-target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} ct_core pthread)
 
 catkin_add_gtest(MatrixInversionTest test/math/MatrixInversionTest.cpp)
 target_link_libraries(MatrixInversionTest ${catkin_LIBRARIES})

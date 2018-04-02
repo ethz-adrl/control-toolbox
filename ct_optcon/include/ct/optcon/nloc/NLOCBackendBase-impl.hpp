@@ -305,8 +305,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
 
     // we need to allocate memory in HPIPM for the new constraints
-    for (size_t i = 0; i < K_; i++)
+    for (size_t i = 0; i < K_; i++) {
+        generalConstraints_[settings_.nThreads]->setCurrentStateAndControl(lqocProblem_->x_[i],
+                                                                           lqocProblem_->u_[i],
+                                                                           i * settings_.dt);
         lqocProblem_->ng_[i] = generalConstraints_[settings_.nThreads]->getIntermediateConstraintsCount();
+    }
 
     lqocProblem_->ng_[K_] = generalConstraints_[settings_.nThreads]->getTerminalConstraintsCount();
     lqocSolver_->setProblem(lqocProblem_);
@@ -779,36 +783,28 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     size_t k)
 {
     // set general if there are any
-    if (generalConstraints_[threadId] != nullptr)
-    {
-        LQOCProblem_t& p = *lqocProblem_;
-        const scalar_t& dt = settings_.dt;
+    if (generalConstraints_[threadId] != nullptr) {
+        LQOCProblem_t &p = *lqocProblem_;
+        const scalar_t &dt = settings_.dt;
 
         // treat general constraints
         generalConstraints_[threadId]->setCurrentStateAndControl(x_[k], u_ff_[k], dt * k);
 
         p.ng_[k] = generalConstraints_[threadId]->getIntermediateConstraintsCount();
-        if (p.ng_[k] > 0)
-        {
+        if (p.ng_[k] > 0) {
             p.hasGenConstraints_ = true;
             p.C_[k] = generalConstraints_[threadId]->jacobianStateIntermediate();
             p.D_[k] = generalConstraints_[threadId]->jacobianInputIntermediate();
 
             Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> g_eval = generalConstraints_[threadId]->evaluateIntermediate();
 
-            if (k == 0) {
-              // Correction for first stage
-              p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval +
-                           p.D_[k] * u_ff_[k];
-              p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval +
-                           p.D_[k] * u_ff_[k];
-            } else {
-              // rewrite constraint in absolute coordinates as required by LQOC problem
-              p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
-                           p.D_[k] * u_ff_[k];
-              p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
-                           p.D_[k] * u_ff_[k];
-            }
+            // rewrite constraint in absolute coordinates as required by LQOC problem
+            p.d_lb_[k] =
+                generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
+                p.D_[k] * u_ff_[k];
+            p.d_ub_[k] =
+                generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
+                p.D_[k] * u_ff_[k];
         }
     }
 }

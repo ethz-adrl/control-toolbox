@@ -20,7 +20,7 @@ option(MATLAB "Compile with matlab support" OFF)
 option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" OFF)
 option(DEBUG_PRINT "Print debug messages" OFF)
 
-SET(BUILD_EXAMPLES TRUE)
+SET(BUILD_EXAMPLES FALSE)
 SET(ENV{BLASFEO_DIR} /opt/blasfeo)
 SET(ENV{HPIPM_DIR} /opt/hpipm)
 option(HPIPM "Compile with HPIPM support" ON)

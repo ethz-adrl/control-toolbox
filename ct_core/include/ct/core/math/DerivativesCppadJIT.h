@@ -364,8 +364,14 @@ public:
         if (compiled_)
             return;
 
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+
         // assigning a unique identifier to the library in order to avoid race conditions in JIT
-        libName_ = libName + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id()));
+        std::string uniqueID = std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id()))
+                               + "_" + std::to_string(ts.tv_nsec);
+
+        libName_ = libName + uniqueID;
 
         CppAD::cg::ModelCSourceGen<double> cgen(cgCppadFun_, "DerivativesCppad" + libName_);
 
@@ -381,7 +387,7 @@ public:
         cgen.setMaxAssignmentsPerFunc(settings.maxAssignements_);
 
         CppAD::cg::ModelLibraryCSourceGen<double> libcgen(cgen);
-        std::string tempDir = "cppad_temp" + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id()));
+        std::string tempDir = "cppad_temp" + uniqueID;
         if (verbose)
         {
             std::cout << "Starting to compile " << libName_ << " library ..." << std::endl;

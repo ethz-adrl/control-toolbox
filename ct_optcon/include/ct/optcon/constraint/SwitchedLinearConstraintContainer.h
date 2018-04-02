@@ -116,6 +116,7 @@ private:
     SwitchedLinearConstraintContainers switchedLinearConstraintContainers_;
     ModeSequence_t continuousModeSequence_;
     LinearConstraintContainer_Ptr_t activeLinearConstraintContainer_;
+    LinearConstraintContainer_Ptr_t terminalLinearConstraintContainer_;
 };
 
 }  // namespace optcon
