@@ -38,7 +38,7 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     static const size_t ESTIMATE_DIM = STATE_DIM + DIST_DIM;
-    using Base                       = StateObserver<OUTPUT_DIM, ESTIMATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>;
+    using Base = StateObserver<OUTPUT_DIM, ESTIMATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>;
     using typename Base::Time_t;
 
     //! Constructor. We assume a linear model, i.e. C matrix is constant.

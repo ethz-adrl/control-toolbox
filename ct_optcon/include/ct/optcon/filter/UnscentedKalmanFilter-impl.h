@@ -38,7 +38,7 @@ template <typename _MatrixType, int _UpLo>
 template <typename Derived>
 Cholesky<_MatrixType, _UpLo>& Cholesky<_MatrixType, _UpLo>::setL(const Eigen::MatrixBase<Derived>& matrix)
 {
-    this->m_matrix        = matrix.template triangularView<Eigen::Lower>();
+    this->m_matrix = matrix.template triangularView<Eigen::Lower>();
     this->m_isInitialized = true;
     return *this;
 }
@@ -47,7 +47,7 @@ template <typename _MatrixType, int _UpLo>
 template <typename Derived>
 Cholesky<_MatrixType, _UpLo>& Cholesky<_MatrixType, _UpLo>::setU(const Eigen::MatrixBase<Derived>& matrix)
 {
-    this->m_matrix        = matrix.template triangularView<Eigen::Upper>().adjoint();
+    this->m_matrix = matrix.template triangularView<Eigen::Upper>().adjoint();
     this->m_isInitialized = true;
     return *this;
 }
@@ -85,7 +85,8 @@ UnscentedKalmanFilter<STATE_DIM, SCALAR>::predict(SystemModelBase<STATE_DIM, CON
     const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
     const ct::core::Time& t)
 {
-    if (!computeSigmaPoints()) throw std::runtime_error("UnscentedKalmanFilter : Numerical error.");
+    if (!computeSigmaPoints())
+        throw std::runtime_error("UnscentedKalmanFilter : Numerical error.");
 
     this->x_est_ = this->template computeStatePrediction<CONTROL_DIM>(f, u, t);
 
@@ -130,7 +131,8 @@ bool UnscentedKalmanFilter<STATE_DIM, SCALAR>::computeSigmaPoints()
     // Get square root of covariance
     CovarianceSquareRoot<STATE_DIM> llt;
     llt.compute(P_);
-    if (llt.info() != Eigen::Success) return false;
+    if (llt.info() != Eigen::Success)
+        return false;
 
     Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> _S = llt.matrixL().toDenseMatrix();
 
@@ -152,9 +154,9 @@ bool UnscentedKalmanFilter<STATE_DIM, SCALAR>::computeCovarianceFromSigmaPoints(
     const Covariance<SIZE>& noiseCov,
     Covariance<SIZE>& cov)
 {
-    SigmaPoints<SIZE> W   = this->sigmaWeights_c_.transpose().template replicate<SIZE, 1>();
+    SigmaPoints<SIZE> W = this->sigmaWeights_c_.transpose().template replicate<SIZE, 1>();
     SigmaPoints<SIZE> tmp = (sigmaPoints.colwise() - mean);
-    cov                   = tmp.cwiseProduct(W) * tmp.transpose() + noiseCov;
+    cov = tmp.cwiseProduct(W) * tmp.transpose() + noiseCov;
 
     return true;
 }
@@ -218,8 +220,8 @@ void UnscentedKalmanFilter<STATE_DIM, SCALAR>::computeWeights()
 
 {
     SCALAR L = SCALAR(STATE_DIM);
-    lambda_  = alpha_ * alpha_ * (L + kappa_) - L;
-    gamma_   = std::sqrt(L + lambda_);
+    lambda_ = alpha_ * alpha_ * (L + kappa_) - L;
+    gamma_ = std::sqrt(L + lambda_);
 
     // Make sure L != -lambda_ to avoid division by zero
     assert(std::abs(L + lambda_) > 1e-6);
@@ -229,7 +231,7 @@ void UnscentedKalmanFilter<STATE_DIM, SCALAR>::computeWeights()
 
     SCALAR W_m_0 = lambda_ / (L + lambda_);
     SCALAR W_c_0 = W_m_0 + (SCALAR(1) - alpha_ * alpha_ + beta_);
-    SCALAR W_i   = SCALAR(1) / (SCALAR(2) * alpha_ * alpha_ * (L + kappa_));
+    SCALAR W_i = SCALAR(1) / (SCALAR(2) * alpha_ * alpha_ * (L + kappa_));
 
     // Make sure W_i > 0 to avoid square-root of negative number
     assert(W_i > SCALAR(0));

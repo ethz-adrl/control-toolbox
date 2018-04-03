@@ -34,8 +34,8 @@ SteadyStateKalmanFilter<STATE_DIM, SCALAR>::predict(SystemModelBase<STATE_DIM, C
     const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
     const ct::core::Time& t)
 {
-    A_           = f.computeDerivativeState(this->x_est_, u, t);
-    Q_           = Q;
+    A_ = f.computeDerivativeState(this->x_est_, u, t);
+    Q_ = Q;
     this->x_est_ = f.computeDynamics(this->x_est_, u, t);
     return this->x_est_;
 }

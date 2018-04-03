@@ -36,8 +36,8 @@ public:
     using typename Base::state_vector_t;
     using typename Base::output_vector_t;
     using typename Base::Time_t;
-    using state_matrix_t        = ct::core::StateMatrix<STATE_DIM, SCALAR>;
-    using output_matrix_t       = ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>;
+    using state_matrix_t = ct::core::StateMatrix<STATE_DIM, SCALAR>;
+    using output_matrix_t = ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>;
     using output_state_matrix_t = ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR>;
 
     //! Constructor.

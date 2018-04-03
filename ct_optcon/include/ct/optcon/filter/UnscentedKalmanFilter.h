@@ -66,7 +66,7 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     static const size_t STATE_D = STATE_DIM;
-    using Base                  = EstimatorBase<STATE_DIM, SCALAR>;
+    using Base = EstimatorBase<STATE_DIM, SCALAR>;
     using typename Base::state_vector_t;
 
     static constexpr size_t SigmaPointCount = 2 * STATE_DIM + 1;
@@ -82,9 +82,9 @@ public:
 
     //! Constructor.
     UnscentedKalmanFilter(const state_vector_t& x0 = state_vector_t::Zero(),
-        SCALAR alpha                               = SCALAR(1),
-        SCALAR beta                                = SCALAR(2),
-        SCALAR kappa                               = SCALAR(0),
+        SCALAR alpha = SCALAR(1),
+        SCALAR beta = SCALAR(2),
+        SCALAR kappa = SCALAR(0),
         const ct::core::StateMatrix<STATE_DIM, SCALAR>& P0 = ct::core::StateMatrix<STATE_DIM, SCALAR>::Identity());
 
     //! Constructor from settings.

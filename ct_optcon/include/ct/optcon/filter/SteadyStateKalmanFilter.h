@@ -31,7 +31,7 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     static const size_t STATE_D = STATE_DIM;
-    using Base                  = EstimatorBase<STATE_DIM, SCALAR>;
+    using Base = EstimatorBase<STATE_DIM, SCALAR>;
     using typename Base::state_vector_t;
 
     //! Constructor.

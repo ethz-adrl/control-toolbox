@@ -51,7 +51,8 @@ struct StateObserverSettings
     //! load settings from file
     void load(const std::string& filename, bool verbose, const std::string& ns)
     {
-        if (verbose) std::cout << "Trying to load state observer settings from " << filename << ": " << std::endl;
+        if (verbose)
+            std::cout << "Trying to load state observer settings from " << filename << ": " << std::endl;
 
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);
@@ -110,7 +111,8 @@ struct SteadyStateKalmanFilterSettings
     //! load settings from file
     void load(const std::string& filename, bool verbose, const std::string& ns)
     {
-        if (verbose) std::cout << "Trying to load steady state KF settings from " << filename << ": " << std::endl;
+        if (verbose)
+            std::cout << "Trying to load steady state KF settings from " << filename << ": " << std::endl;
 
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);
@@ -156,7 +158,8 @@ struct ExtendedKalmanFilterSettings
     //! load settings from file
     void load(const std::string& filename, bool verbose, const std::string& ns)
     {
-        if (verbose) std::cout << "Trying to load steady state KF settings from " << filename << ": " << std::endl;
+        if (verbose)
+            std::cout << "Trying to load steady state KF settings from " << filename << ": " << std::endl;
 
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);
@@ -208,14 +211,15 @@ struct UnscentedKalmanFilterSettings
     //! load settings from file
     void load(const std::string& filename, bool verbose, const std::string& ns)
     {
-        if (verbose) std::cout << "Trying to load steady state KF settings from " << filename << ": " << std::endl;
+        if (verbose)
+            std::cout << "Trying to load steady state KF settings from " << filename << ": " << std::endl;
 
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);
 
         ct::core::loadMatrix(filename, "x0", x0, ns);
         alpha = pt.get<bool>(ns + ".alpha");
-        beta  = pt.get<bool>(ns + ".beta");
+        beta = pt.get<bool>(ns + ".beta");
         kappa = pt.get<bool>(ns + ".kappa");
         ct::core::loadMatrix(filename, "P0", P0, ns);
 

@@ -54,8 +54,7 @@ public:
     void setController(std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller);
 
 private:
-    std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller_;     //! Nominal controller.
-
+    std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller_;  //! Nominal controller.
 };
 
 /*!

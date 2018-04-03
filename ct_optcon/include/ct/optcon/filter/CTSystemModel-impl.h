@@ -24,7 +24,8 @@ CTSystemModel<STATE_DIM, CONTROL_DIM, SCALAR>::CTSystemModel(
       integrator_(system_, intType),
       numSubsteps_(numSubsteps)
 {
-    if (!system_ && !system_->getController()) throw std::runtime_error("System or controller not initialized!");
+    if (!system_ && !system_->getController())
+        throw std::runtime_error("System or controller not initialized!");
     const double dtNormalized = dt_ / (numSubsteps_ + 1);
     sensApprox_.setTimeDiscretization(dtNormalized);
 }
@@ -49,7 +50,8 @@ CTSystemModel<STATE_DIM, CONTROL_DIM, SCALAR>::computeDerivativeState(
     Time_t t)
 {
     control_vector_t control;
-    if (!system_->getController()) throw std::runtime_error("Controller not initialized!");
+    if (!system_->getController())
+        throw std::runtime_error("Controller not initialized!");
     system_->getController()->computeControl(state, t, control);
     const typename CTSystemModel<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t xNext =
         CTSystemModel<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t::Zero();
