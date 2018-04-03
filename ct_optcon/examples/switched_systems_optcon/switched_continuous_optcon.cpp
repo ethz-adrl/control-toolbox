@@ -8,150 +8,23 @@
 
 #include <ct/optcon/optcon.h>
 #include "TestLinearSystem.h"
+#include "stateSumConstraint.h"
+#include "plotResultsSwitched.h"
 
 using namespace ct;
 using namespace ct::core;
 using namespace ct::optcon;
 using std::shared_ptr;
 
-
-static const size_t STATE_DIM = 2;
-static const size_t CONTROL_DIM = 1;
-
-/*!
- * @brief A simple 1d constraint term.
- *
- * This term implements sum of states inequality constraints
- * \f$ d_{lb} \leq x_{0} + x_{1} \leq d_{ub} \f$
- *
- */
-class stateSumConstraint : public ct::optcon::ConstraintBase<STATE_DIM, CONTROL_DIM>
-{
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    typedef typename ct::core::tpl::TraitSelector<double>::Trait Trait;
-    typedef typename ct::core::tpl::TraitSelector<ct::core::ADCGScalar>::Trait TraitCG;
-    typedef ct::optcon::ConstraintBase<STATE_DIM, CONTROL_DIM> Base;
-    typedef ct::core::StateVector<STATE_DIM> state_vector_t;
-    typedef ct::core::ControlVector<CONTROL_DIM> control_vector_t;
-
-    typedef Eigen::Matrix<double, 1, STATE_DIM> Jacobian_state_t;
-    typedef Eigen::Matrix<double, 1, CONTROL_DIM> Jacobian_control_t;
-
-    //! constructor with constraint boundaries.
-    stateSumConstraint(double lb, double ub) : lb_(lb), ub_(ub)
-    {
-        Base::lb_.resize(1);
-        Base::ub_.resize(1);
-        Base::lb_.setConstant(lb);
-        Base::ub_.setConstant(ub);
-    }
-
-    virtual ~stateSumConstraint() {}
-    virtual stateSumConstraint* clone() const override { return new stateSumConstraint(lb_, ub_); }
-    virtual size_t getConstraintSize() const override { return 1; }
-    virtual Eigen::VectorXd evaluate(const state_vector_t& x, const control_vector_t& u, const double t) override
-    {
-        Eigen::Matrix<double, 1, 1> val;
-        val.template segment<1>(0) << x(0) + x(1);
-        return val;
-    }
-
-    virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
-        const ct::core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
-        const ct::core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
-        ct::core::ADCGScalar t) override
-    {
-        Eigen::Matrix<ct::core::ADCGScalar, 1, 1> val;
-        val.template segment<1>(0) << x(0) + x(1);
-        return val;
-    }
-
-private:
-    double lb_;
-    double ub_;
-};
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-void plotResults(const ct::core::StateVectorArray<STATE_DIM>& stateArray,
-    const ct::core::ControlVectorArray<CONTROL_DIM>& controlArray,
-    const ct::core::TimeArray& timeArray)
-{
-#ifdef PLOTTING_ENABLED
-    using namespace ct::core;
-
-    try
-    {
-        plot::ion();
-        plot::figure();
-
-        if (timeArray.size() != stateArray.size())
-        {
-            std::cout << timeArray.size() << std::endl;
-            std::cout << stateArray.size() << std::endl;
-            throw std::runtime_error("Cannot plot data, x and t not equal length");
-        }
-
-        std::vector<std::vector<double>> states;
-        std::vector<double> time_state;
-        std::vector<double> constraint;
-        for (size_t k = 0; k < STATE_DIM; k++)
-        {
-            states.push_back(std::vector<double>());
-        }
-
-        for (size_t j = 0; j < stateArray.size(); j++)
-        {
-            for (size_t k = 0; k < STATE_DIM; k++)
-            {
-                states[k].push_back(stateArray[j](k));
-            }
-            time_state.push_back(timeArray[j]);
-            constraint.push_back(stateArray[j](0) + stateArray[j](1));
-        }
-
-        std::vector<double> control;
-        std::vector<double> time_control;
-        for (size_t j = 0; j < controlArray.size(); j++)
-        {
-            control.push_back(controlArray[j](0));
-            time_control.push_back(timeArray[j]);
-        }
-
-        for (size_t k = 0; k < STATE_DIM; k++)
-        {
-            plot::subplot(STATE_DIM, 1, k + 1);
-            plot::plot(time_state, states[k]);
-            plot::title("x(" + std::to_string(k) + ")");
-        }
-
-        plot::figure();
-        plot::plot(time_state, constraint);
-        plot::title("Constraint x(0) + x(1)");
-
-
-        plot::figure();
-        plot::plot(time_control, control);
-        plot::title("Control");
-
-        plot::show();
-    } catch (const std::exception& e)
-    {
-        std::cout << e.what() << std::endl;
-    }
-#else
-    std::cout << "Plotting is disabled." << std::endl;
-#endif
-}
-
 int main(int argc, char** argv)
 {
     /* STEP 1: set up the Nonlinear Optimal Control Problem
-	 * First of all, we need to create instances of the system dynamics, the linearized system and the cost function. */
+    * First of all, we need to create instances of the system dynamics, the linearized system and the cost function. */
 
     /* STEP 1-A: Aliases
-	 * We create aliases for the system types to be used in this problem */
+    * We create aliases for the system types to be used in this problem */
+    static const size_t STATE_DIM = 2;
+    static const size_t CONTROL_DIM = 1;
     using System = TestLinearSystem;
     using SwitchedSystem = SwitchedControlledSystem<STATE_DIM, CONTROL_DIM>;
     using SystemPtr = SwitchedSystem::SystemPtr;
@@ -166,7 +39,7 @@ int main(int argc, char** argv)
 
     /* STEP 1-B: Create a mode sequence
     * Then we set the switching time, time horizon, and schedule of the systems in the mode sequence.
-     * The switching time is not optimized and therefore set to the optimal switching time according to the paper */
+    * The switching time is not optimized and therefore set to the optimal switching time according to the paper */
     double switchTime = 1.1624;
     double timeHorizon = 2.0;
     ContinuousModeSequence modeSequence;
@@ -174,7 +47,7 @@ int main(int argc, char** argv)
     modeSequence.addPhase(1, timeHorizon - switchTime);  // phase 1, t in [t, T)
 
     /* STEP 1-C: create a cost function.
-     * We specify a quadratic penalty on a desired final state and quadratic costs on the inputs */
+    * We specify a quadratic penalty on a desired final state and quadratic costs on the inputs */
     Eigen::Matrix<double, STATE_DIM, 1> x_nominal, x_final;
     Eigen::Matrix<double, CONTROL_DIM, 1> u_nominal;
     Eigen::Matrix<double, STATE_DIM, STATE_DIM> Q, Q_final;
@@ -190,7 +63,7 @@ int main(int argc, char** argv)
         new CostFunctionQuadraticSimple<STATE_DIM, CONTROL_DIM>(Q, R, x_nominal, u_nominal, x_final, Q_final));
 
     /* STEP 1-D: Create system dynamics
-     * Two linear systems are created, linearized and combined into switched systems */
+    * Two linear systems are created, linearized and combined into switched systems */
     System::state_matrix_t A1_continuous, A2_continuous;
     A1_continuous << 1.5, 0.0, 0.0, 1.0;
     A2_continuous << 0.5, 0.866, 0.866, -0.5;
@@ -215,15 +88,16 @@ int main(int argc, char** argv)
 
     // Construct Switched Continuous System and its linearizations
     std::shared_ptr<SwitchedSystem> switchedSystem(new SwitchedSystem(switchedSystems, modeSequence, controller));
-    std::shared_ptr<SwitchedLinearSystem> switchedLinearSystem(new SwitchedLinearSystem(switchedLinearSystems, modeSequence));
+    std::shared_ptr<SwitchedLinearSystem> switchedLinearSystem(
+        new SwitchedLinearSystem(switchedLinearSystems, modeSequence));
 
     // Set initial conditions
     System::state_vector_t x0;
     x0 << 1.0, 1.0;
 
     /* STEP 1-E: Create constraints
-     * Two constraints are created, linearized, and combined into a switched constraint
-     * Both are a sum of state constraint, but the bounds for each phase are different */
+    * Two constraints are created, linearized, and combined into a switched constraint
+    * Both are a sum of state constraint, but the bounds for each phase are different */
     std::shared_ptr<stateSumConstraint> phase1Constraint(new stateSumConstraint(-1e20, 7.0));
     std::shared_ptr<stateSumConstraint> phase2Constraint(new stateSumConstraint(7.0, 1e20));
 
@@ -249,8 +123,8 @@ int main(int argc, char** argv)
     /* STEP 2: set up a nonlinear optimal control solver. */
 
     /* STEP 2-A: Create the settings.
-	 * the type of solver, and most parameters, like number of shooting intervals, etc.,
-	 * can be chosen using the following settings struct. For more detail, check out the NLOptConSettings class. */
+    * the type of solver, and most parameters, like number of shooting intervals, etc.,
+    * can be chosen using the following settings struct. For more detail, check out the NLOptConSettings class. */
     NLOptConSettings ilqr_settings;
     ilqr_settings.dt = 0.001;  // the control discretization in [sec]
     ilqr_settings.integrator = ct::core::IntegrationType::EULERCT;
@@ -267,7 +141,7 @@ int main(int argc, char** argv)
     ilqr_settings.printSummary = true;
 
     /* STEP 2-B: provide an initial guess
-     * iLQR requires and initial control policy; we set all control action to zero. */
+    * iLQR requires and initial control policy; we set all control action to zero. */
     int kNUM_STEPS = ilqr_settings.computeK(timeHorizon);
     FeedbackArray<STATE_DIM, CONTROL_DIM> u0_fb(kNUM_STEPS, FeedbackMatrix<STATE_DIM, CONTROL_DIM>::Zero());
     ControlVectorArray<CONTROL_DIM> u0_ff(kNUM_STEPS, ControlVector<CONTROL_DIM>::Zero());
@@ -294,5 +168,5 @@ int main(int argc, char** argv)
     ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM> solution = iLQR.getSolution();
 
     // Plot results
-    plotResults<STATE_DIM, CONTROL_DIM>(solution.x_ref(), solution.uff(), solution.time());
+    plotResults(solution.x_ref(), solution.uff(), solution.time());
 }

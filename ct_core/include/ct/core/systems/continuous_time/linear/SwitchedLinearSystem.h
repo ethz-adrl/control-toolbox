@@ -39,8 +39,8 @@ public:
 
     //! default constructor
     /*!
-	 * @param type system type
-	 */
+    * @param type system type
+    */
     SwitchedLinearSystem(const SwitchedLinearSystems& switchedLinearSystems,
         const ContinuousModeSequence& continuousModeSequence,
         const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL)
@@ -52,8 +52,7 @@ public:
 
     //! copy constructor
     SwitchedLinearSystem(const SwitchedLinearSystem& arg)
-    : LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
-      continuousModeSequence_(arg.continuousModeSequence_)
+        : LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg), continuousModeSequence_(arg.continuousModeSequence_)
     {
         switchedLinearSystems_.clear();
         for (auto& subSystem : arg.switchedLinearSystems_)

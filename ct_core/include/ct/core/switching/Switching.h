@@ -23,19 +23,19 @@ struct SwitchEvent
 
 //! Describes a Phase sequence with timing
 /*!
-         *  Each phase of the sequence has a start time, and end time
-         *  Each event has a pre & post phase + switching time
-         *
-         *  Example:
-         *  The following illustrates a sequence of 3 phases
-         *  + ------- + ------- + ------- +
-         *  t0   p0   t1   p1   t2   p2   t3
-         *
-         *  It contains 4 times to define the sequence.
-         *  Two of those are switching times: t1 and t2
-         *  There are two switching events: {p0, p1, t1} and {p1, p2, t2};
-         *
-         */
+*  Each phase of the sequence has a start time, and end time
+*  Each event has a pre & post phase + switching time
+*
+*  Example:
+*  The following illustrates a sequence of 3 phases
+*  + ------- + ------- + ------- +
+*  t0   p0   t1   p1   t2   p2   t3
+*
+*  It contains 4 times to define the sequence.
+*  Two of those are switching times: t1 and t2
+*  There are two switching events: {p0, p1, t1} and {p1, p2, t2};
+*
+*/
 template <class Phase, typename Time>
 class PhaseSequence
 {

@@ -24,8 +24,8 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::SwitchedLinearConstraintContainer(
     const SwitchedLinearConstraintContainer& arg)
     : LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
-      continuousModeSequence_(arg.continuousModeSequence_) {
-
+      continuousModeSequence_(arg.continuousModeSequence_)
+{
     // Clone individual constraints
     switchedLinearConstraintContainers_.clear();
     for (auto& linearConstraintContainer : arg.switchedLinearConstraintContainers_)

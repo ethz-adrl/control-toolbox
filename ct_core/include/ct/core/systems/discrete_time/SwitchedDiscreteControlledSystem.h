@@ -59,8 +59,8 @@ public:
 
     //! default constructor
     /*!
-           * @param type system type
-           */
+    * @param type system type
+    */
     SwitchedDiscreteControlledSystem(const SwitchedSystems& switchedSystems,
         const DiscreteModeSequence& discreteModeSequence,
         const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
@@ -70,10 +70,10 @@ public:
 
     //! constructor
     /*!
-           *
-           * @param controller controller
-           * @param type system type
-           */
+    *
+    * @param controller controller
+    * @param type system type
+    */
     SwitchedDiscreteControlledSystem(const SwitchedSystems& switchedSystems,
         const DiscreteModeSequence& discreteModeSequence,
         std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>> controller,
@@ -105,12 +105,12 @@ public:
 
     //! propagates the controlled system dynamics forward by one step
     /*!
-           * evaluates \f$ x_{n+1} = f(x_n, u_n, n) \f$ at a given state, control, index, and mode
-           * @param state start state to propagate from
-           * @param control the control input to apply. This is a constant control input applied to the continuous-time dynamics
-           * @param n time index to propagate the dynamics at
-           * @param stateNext the resulting propagated state
-           */
+    * evaluates \f$ x_{n+1} = f(x_n, u_n, n) \f$ at a given state, control, index, and mode
+    * @param state start state to propagate from
+    * @param control the control input to apply. This is a constant control input applied to the continuous-time dynamics
+    * @param n time index to propagate the dynamics at
+    * @param stateNext the resulting propagated state
+    */
     virtual void propagateControlledDynamics(const state_vector_t& state,
         const time_t n,
         const control_vector_t& control,

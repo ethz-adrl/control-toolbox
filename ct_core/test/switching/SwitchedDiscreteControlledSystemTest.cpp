@@ -16,21 +16,21 @@ using std::shared_ptr;
 TEST(SwitchedDiscreteControlledSystemTest, SwitchedDiscreteControlledSystem)
 {
     // Convenience aliases
-    using MySys = TestDiscreteNonlinearSystem;
-    using MySwitchedSys = SwitchedDiscreteControlledSystem<MySys::STATE_DIM, MySys::CONTROL_DIM>;
-    using SystemPtr = MySwitchedSys::SystemPtr;
-    using SwitchedSystems = MySwitchedSys::SwitchedSystems;
-    using ConstantController = ConstantController<MySys::STATE_DIM, MySys::CONTROL_DIM>;
-    using Controller = std::shared_ptr<DiscreteController<MySys::STATE_DIM, MySys::CONTROL_DIM>>;
+    using System = TestDiscreteNonlinearSystem;
+    using SwitchedSystem = SwitchedDiscreteControlledSystem<System::STATE_DIM, System::CONTROL_DIM>;
+    using SystemPtr = SwitchedSystem::SystemPtr;
+    using SwitchedSystems = SwitchedSystem::SwitchedSystems;
+    using ConstantController = ConstantController<System::STATE_DIM, System::CONTROL_DIM>;
+    using Controller = std::shared_ptr<DiscreteController<System::STATE_DIM, System::CONTROL_DIM>>;
 
-    using SwitchedDiscreteLinearSystem = SwitchedDiscreteLinearSystem<MySys::STATE_DIM, MySys::CONTROL_DIM>;
-    using DiscreteSystemLinearizer = DiscreteSystemLinearizer<MySys::STATE_DIM, MySys::CONTROL_DIM>;
+    using SwitchedDiscreteLinearSystem = SwitchedDiscreteLinearSystem<System::STATE_DIM, System::CONTROL_DIM>;
+    using DiscreteSystemLinearizer = DiscreteSystemLinearizer<System::STATE_DIM, System::CONTROL_DIM>;
     using LinearizerSystemPtr = SwitchedDiscreteLinearSystem::LinearSystemPtr;
     using SwitchedLinearSystems = SwitchedDiscreteLinearSystem::SwitchedLinearSystems;
 
     // Setup systems
-    SystemPtr sysPtr1(new MySys(1.0));
-    SystemPtr sysPtr2(new MySys(2.0));
+    SystemPtr sysPtr1(new System(1.0));
+    SystemPtr sysPtr2(new System(2.0));
     SwitchedSystems switchedSystems = {sysPtr1, sysPtr2};
 
     // Setup mode sequence
@@ -40,15 +40,15 @@ TEST(SwitchedDiscreteControlledSystemTest, SwitchedDiscreteControlledSystem)
     dm_seq.addPhase(0, 1);  // phase 2, t in [5, 6)
 
     // Setup Constant Controller
-    MySys::control_vector_t u;
+    System::control_vector_t u;
     u[0] = 1.0;
     Controller controller(new ConstantController(u));
 
     // Construct Switched Discrete System
-    MySwitchedSys mySwitchedSys(switchedSystems, dm_seq, controller);
+    SwitchedSystem mySwitchedSys(switchedSystems, dm_seq, controller);
 
     // Forward Integrate
-    MySys::state_vector_t x, x_next;
+    System::state_vector_t x, x_next;
     x.setZero();
     x[0] = 1.0;
     std::vector<double> intermediate_solutions = {1.0, 2.0, 4.0, 12.0, 36.0, 108.0, 216.0};
