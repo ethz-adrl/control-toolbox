@@ -409,7 +409,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureBoxConstraints(
         hidxb_[i] = lqocProblem->ux_I_[i].data();
 
         // first stage requires special treatment as state is not a decision variable
-        // TODO: This assumes that the control box constraints come first
         if (i == 0)
         {
             nb_[i] = 0;
