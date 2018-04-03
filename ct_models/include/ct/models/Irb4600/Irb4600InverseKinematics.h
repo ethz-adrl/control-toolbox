@@ -31,7 +31,8 @@ public:
 
     Irb4600InverseKinematics() = default;
 
-    virtual ~Irb4600InverseKinematics() {}
+    virtual ~Irb4600InverseKinematics() = default;
+
     virtual bool computeInverseKinematics(JointPositionsVector_t& res,
         const RigidBodyPoseTpl& eeBasePose,
         const std::vector<size_t>& freeJoints = std::vector<size_t>()) const

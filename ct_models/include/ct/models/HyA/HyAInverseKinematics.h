@@ -33,7 +33,8 @@ public:
 
     HyAInverseKinematics() = default;
 
-    virtual ~HyAInverseKinematics() {}
+    virtual ~HyAInverseKinematics() = default;
+
     virtual bool computeInverseKinematics(JointPositionsVector_t& res,
         const RigidBodyPoseTpl& eeBasePose,
         const std::vector<size_t>& freeJoints = std::vector<size_t>()) const

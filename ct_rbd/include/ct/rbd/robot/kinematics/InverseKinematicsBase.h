@@ -25,8 +25,9 @@ public:
     //! default constructor
     InverseKinematicsBase() = default;
 
-    //! destructor
-    virtual ~InverseKinematicsBase() {}
+    //! default destructor
+    virtual ~InverseKinematicsBase() = default;
+
     /*!
      * @brief compute inverse kinematics for an end-effector w.r.t robot base
      * @param ikSolutions vector of all solutions to the inverse kinematics problem
