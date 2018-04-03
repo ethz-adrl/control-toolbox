@@ -5,7 +5,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #include <ct/core/core.h>
-#include "system/TestDiscreteNonlinearSystem.h"
+#include "../system/TestDiscreteNonlinearSystem.h"
 
 // Bring in gtest
 #include <gtest/gtest.h>
@@ -85,7 +85,7 @@ TEST(SwitchedDiscreteControlledSystemTest, SwitchedDiscreteControlledSystem)
 
 
 /*!
- *  \example SwitchingDiscreteControlledSystemTest.cpp
+ *  SwitchingDiscreteControlledSystemTest.cpp
  *
  *  Test basic functionality of switching discrete controlled systems
  */

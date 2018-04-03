@@ -9,8 +9,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 //! Declaring Switched alias such that we can write Switched<System>
-template <class T>
-using Switched = std::vector<T>;
+template <class T, class Alloc = Eigen::aligned_allocator<T>>
+using Switched = std::vector<T, Alloc>;
 
 //! Describes a switch between phases
 template <class Phase, typename Time>

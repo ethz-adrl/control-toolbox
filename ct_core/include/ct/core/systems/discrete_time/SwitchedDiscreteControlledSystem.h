@@ -82,21 +82,25 @@ public:
           switchedSystems_(switchedSystems),
           discreteModeSequence_(discreteModeSequence){};
 
+    //! copy constructor
+    SwitchedDiscreteControlledSystem(const SwitchedDiscreteControlledSystem& arg)
+        : DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
+          discreteModeSequence_(arg.discreteModeSequence_)
+    {
+        switchedSystems_.clear();
+        for (auto& subSystem : arg.switchedSystems_)
+        {
+            switchedSystems_.emplace_back(subSystem->clone());
+        }
+    };
+
     //! destructor
     virtual ~SwitchedDiscreteControlledSystem(){};
 
     //! deep copy
     virtual SwitchedDiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const
     {
-        auto clone_ = new SwitchedDiscreteControlledSystem(*this);
-
-        // Clone individual subsystems for thread safety
-        clone_->switchedSystems_.clear();
-        for (auto& subSystem : this->switchedSystems_)
-        {
-            clone_->switchedSystems_.emplace_back(subSystem->clone());
-        }
-        return clone_;
+        return new SwitchedDiscreteControlledSystem(*this);
     };
 
     //! propagates the controlled system dynamics forward by one step

@@ -130,7 +130,7 @@ TEST(SwitchingTest, SwitchedSystem)
 }
 
 /*!
- *  \example SwitchingTest.cpp
+ *  SwitchingTest.cpp
  *
  *  Test basic functionality of switching logic
  */

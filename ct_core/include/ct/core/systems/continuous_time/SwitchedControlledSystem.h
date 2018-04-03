@@ -8,7 +8,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include "ControlledSystem.h"
 #include <ct/core/switching/Switching.h>
-#include <Eigen/src/Core/util/Memory.h>
 
 namespace ct {
 namespace core {
@@ -83,8 +82,14 @@ public:
     //! copy constructor
     SwitchedControlledSystem(const SwitchedControlledSystem& arg)
         : ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
-          switchedSystems_(arg.switchedSystems_),
-          continuousModeSequence_(arg.continuousModeSequence_){};
+          continuousModeSequence_(arg.continuousModeSequence_)
+    {
+        switchedSystems_.clear();
+        for (auto& subSystem : arg.switchedSystems_)
+        {
+            switchedSystems_.emplace_back(subSystem->clone());
+        }
+    };
 
     //! destructor
     virtual ~SwitchedControlledSystem(){};
@@ -92,15 +97,7 @@ public:
     //! deep copy
     virtual SwitchedControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {
-        auto clone_ = new SwitchedControlledSystem(*this);
-
-        // Clone individual subsystems for thread safety
-        clone_->switchedSystems_.clear();
-        for (auto& subSystem : this->switchedSystems_)
-        {
-            clone_->switchedSystems_.emplace_back(subSystem->clone());
-        }
-        return clone_;
+        return new SwitchedControlledSystem(*this);
     };
 
     virtual void computeControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,

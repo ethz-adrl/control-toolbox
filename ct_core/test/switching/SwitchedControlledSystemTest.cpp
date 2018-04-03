@@ -5,7 +5,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #include <ct/core/core.h>
-#include "system/TestNonlinearSystem.h"
+#include "../system/TestNonlinearSystem.h"
 
 // Bring in gtest
 #include <gtest/gtest.h>
@@ -18,21 +18,21 @@ TEST(SwitchedControlledSystemTest, SwitchedControlledSystem)
     const bool VERBOSE = false;
 
     // Convenience aliases
-    using MySys = TestNonlinearSystem;
-    using MySwitchedSys = SwitchedControlledSystem<MySys::STATE_DIM, MySys::CONTROL_DIM>;
-    using SystemPtr = MySwitchedSys::SystemPtr;
-    using SwitchedSystems = MySwitchedSys::SwitchedSystems;
-    using ConstantController = ConstantController<MySys::STATE_DIM, MySys::CONTROL_DIM>;
-    using Controller = std::shared_ptr<Controller<MySys::STATE_DIM, MySys::CONTROL_DIM>>;
+    using System = TestNonlinearSystem;
+    using SwitchedSystem = SwitchedControlledSystem<System::STATE_DIM, System::CONTROL_DIM>;
+    using SystemPtr = SwitchedSystem::SystemPtr;
+    using SwitchedSystems = SwitchedSystem::SwitchedSystems;
+    using ConstantController = ConstantController<System::STATE_DIM, System::CONTROL_DIM>;
+    using Controller = std::shared_ptr<Controller<System::STATE_DIM, System::CONTROL_DIM>>;
 
-    using SwitchedLinearSystem = SwitchedLinearSystem<MySys::STATE_DIM, MySys::CONTROL_DIM>;
-    using SystemLinearizer = SystemLinearizer<MySys::STATE_DIM, MySys::CONTROL_DIM>;
+    using SwitchedLinearSystem = SwitchedLinearSystem<System::STATE_DIM, System::CONTROL_DIM>;
+    using SystemLinearizer = SystemLinearizer<System::STATE_DIM, System::CONTROL_DIM>;
     using LinearizerSystemPtr = SwitchedLinearSystem::LinearSystemPtr;
     using SwitchedLinearSystems = SwitchedLinearSystem::SwitchedLinearSystems;
 
     // Setup systems
-    SystemPtr sysPtr1(new MySys(0.0));
-    SystemPtr sysPtr2(new MySys(1.0));
+    SystemPtr sysPtr1(new System(0.0));
+    SystemPtr sysPtr2(new System(1.0));
     SwitchedSystems switchedSystems = {sysPtr1, sysPtr2};
 
     // Setup mode sequence
@@ -42,16 +42,16 @@ TEST(SwitchedControlledSystemTest, SwitchedControlledSystem)
     cm_seq.addPhase(0, 0.5);  // phase 2, t in [3.5, 3.0)
 
     // Setup Constant Controller
-    MySys::control_vector_t u;
+    System::control_vector_t u;
     u[0] = 1.0;
     Controller controller(new ConstantController(u));
 
     // Construct Switched System
-    auto mySwitchedSys = std::shared_ptr<MySwitchedSys>(new MySwitchedSys(switchedSystems, cm_seq, controller));
-    Integrator<MySys::STATE_DIM> integrator(mySwitchedSys, EULER);
+    std::shared_ptr<SwitchedSystem> mySwitchedSys(new SwitchedSystem(switchedSystems, cm_seq, controller));
+    Integrator<System::STATE_DIM> integrator(mySwitchedSys, EULER);
 
     // Forward Integrate
-    MySys::state_vector_t x, x_next;
+    System::state_vector_t x, x_next;
     x.setZero();
     x[0] = 1.0;
     double dt = 0.10;
@@ -121,7 +121,7 @@ TEST(SwitchedControlledSystemTest, SwitchedControlledSystem)
 
 
 /*!
- *  \example SwitchingControlledSystemTest.cpp
+ *  SwitchingControlledSystemTest.cpp
  *
  *  Test basic functionality of switching continuous controlled systems
  */

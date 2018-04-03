@@ -24,9 +24,19 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::SwitchedLinearConstraintContainer(
     const SwitchedLinearConstraintContainer& arg)
     : LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
-      switchedLinearConstraintContainers_(arg.switchedLinearConstraintContainers_),
-      continuousModeSequence_(arg.continuousModeSequence_),
-      activeLinearConstraintContainer_(arg.activeLinearConstraintContainer_){};
+      continuousModeSequence_(arg.continuousModeSequence_) {
+
+    // Clone individual constraints
+    switchedLinearConstraintContainers_.clear();
+    for (auto& linearConstraintContainer : arg.switchedLinearConstraintContainers_)
+    {
+        switchedLinearConstraintContainers_.emplace_back(linearConstraintContainer->clone());
+    }
+
+    activeLinearConstraintContainer_ = switchedLinearConstraintContainers_.front();
+    terminalLinearConstraintContainer_ =
+        switchedLinearConstraintContainers_.at(continuousModeSequence_.getFinalPhase());
+};
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::~SwitchedLinearConstraintContainer(){};
@@ -35,18 +45,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::SwitchedLinearConstraintContainer_Raw_Ptr_t
 SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::clone() const
 {
-    auto clone_ = new SwitchedLinearConstraintContainer(*this);
-
-    // Clone individual subsystems for thread safety
-    clone_->switchedLinearConstraintContainers_.clear();
-    for (auto& linearConstraintContainer : this->switchedLinearConstraintContainers_)
-    {
-        clone_->switchedLinearConstraintContainers_.emplace_back(linearConstraintContainer->clone());
-    }
-    clone_->activeLinearConstraintContainer_ = clone_->switchedLinearConstraintContainers_.front();
-    clone_->terminalLinearConstraintContainer_ =
-        clone_->switchedLinearConstraintContainers_.at(clone_->continuousModeSequence_.getFinalPhase());
-    return clone_;
+    return new SwitchedLinearConstraintContainer(*this);
 };
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>

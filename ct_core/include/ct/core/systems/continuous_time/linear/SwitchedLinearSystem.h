@@ -8,8 +8,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <ct/core/types/StateVector.h>
 #include <ct/core/types/ControlVector.h>
-#include <Eigen/src/Core/util/Memory.h>
-
 
 namespace ct {
 namespace core {
@@ -52,21 +50,25 @@ public:
     {
     }
 
+    //! copy constructor
+    SwitchedLinearSystem(const SwitchedLinearSystem& arg)
+    : LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
+      continuousModeSequence_(arg.continuousModeSequence_)
+    {
+        switchedLinearSystems_.clear();
+        for (auto& subSystem : arg.switchedLinearSystems_)
+        {
+            switchedLinearSystems_.emplace_back(subSystem->clone());
+        }
+    }
+
     //! destructor
     virtual ~SwitchedLinearSystem(){};
 
     //! deep cloning
     virtual SwitchedLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {
-        auto clone_ = new SwitchedLinearSystem(*this);
-
-        // Clone individual subsystems for thread safety
-        clone_->switchedLinearSystems_.clear();
-        for (auto& linearSystem : this->switchedLinearSystems_)
-        {
-            clone_->switchedLinearSystems_.emplace_back(linearSystem->clone());
-        }
-        return clone_;
+        return new SwitchedLinearSystem(*this);
     };
 
     using LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>::computeControlledDynamics;

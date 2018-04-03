@@ -249,14 +249,8 @@ if(HPIPM)
         add_executable(ex_NLOC_generalConstrained examples/NLOC_generalConstrained.cpp)
         target_link_libraries(ex_NLOC_generalConstrained ${catkin_LIBRARIES} ${HPIPM_LIBS})
 
-        add_executable(switched_optcon_test examples/switched_systems_optcon/switched_optcon_test.cpp)
-        target_link_libraries(switched_optcon_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-
-        add_executable(switched_continuous_optcon_test examples/switched_systems_optcon/switched_continuous_optcon_test.cpp)
+        add_executable(switched_continuous_optcon_test examples/switched_systems_optcon/switched_continuous_optcon.cpp)
         target_link_libraries(switched_continuous_optcon_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-
-        add_executable(switched_continuous_timeOptimal_test examples/switched_systems_optcon/switched_continuous_timeOptimal_test.cpp)
-        target_link_libraries(switched_continuous_timeOptimal_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
     endif(BUILD_EXAMPLES)
 endif(HPIPM)
 

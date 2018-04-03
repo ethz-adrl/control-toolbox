@@ -45,21 +45,25 @@ public:
           switchedLinearSystems_(switchedLinearSystems),
           discreteModeSequence_(discreteModeSequence){};
 
+    //! copy constructor
+    SwitchedDiscreteLinearSystem(const SwitchedDiscreteLinearSystem& arg)
+        : DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg),
+          discreteModeSequence_(arg.discreteModeSequence_)
+    {
+        switchedLinearSystems_.clear();
+        for (auto& subSystem : arg.switchedLinearSystems_)
+        {
+            switchedLinearSystems_.emplace_back(subSystem->clone());
+        }
+    };
+
     //! destructor
     virtual ~SwitchedDiscreteLinearSystem(){};
 
     //! deep cloning
     virtual SwitchedDiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {
-        auto clone_ = new SwitchedDiscreteLinearSystem(*this);
-
-        // Clone individual subsystems for thread safety
-        clone_->switchedLinearSystems_.clear();
-        for (auto& linearSystem : this->switchedLinearSystems_)
-        {
-            clone_->switchedLinearSystems_.emplace_back(linearSystem->clone());
-        }
-        return clone_;
+        return new SwitchedDiscreteLinearSystem(*this);
     };
 
     //! compute the system dynamics
