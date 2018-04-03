@@ -39,8 +39,8 @@ public:
 
     //! default constructor
     /*!
-    * @param type system type
-    */
+     * @param type system type
+     */
     SwitchedLinearSystem(const SwitchedLinearSystems& switchedLinearSystems,
         const ContinuousModeSequence& continuousModeSequence,
         const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL)

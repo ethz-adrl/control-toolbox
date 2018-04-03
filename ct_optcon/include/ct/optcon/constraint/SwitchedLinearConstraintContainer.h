@@ -43,28 +43,28 @@ public:
     typedef core::PhaseSequence<std::size_t, SCALAR> ModeSequence_t;
 
     /**
-	 * @brief      Default constructor
-	 */
+     * @brief      Default constructor
+     */
     SwitchedLinearConstraintContainer(const SwitchedLinearConstraintContainers& switchedLinearConstraintContainers,
         const ModeSequence_t& continuousModeSequence);
 
 
     /**
-	 * @brief      Copy constructor
-	 *
-	 * @param[in]  arg   The object to be copied
-	 */
+     * @brief      Copy constructor
+     *
+     * @param[in]  arg   The object to be copied
+     */
     SwitchedLinearConstraintContainer(const SwitchedLinearConstraintContainer& arg);
     /**
-	 * @brief      Destructor
-	 *
-	 */
+     * @brief      Destructor
+     *
+     */
     virtual ~SwitchedLinearConstraintContainer();
 
     /**
-	 * Clones the linear constraint class
-	 * @return pointer to the clone
-	 */
+     * Clones the linear constraint class
+     * @return pointer to the clone
+     */
     virtual SwitchedLinearConstraintContainer_Raw_Ptr_t clone() const override;
 
     virtual VectorXs evaluateIntermediate() override;

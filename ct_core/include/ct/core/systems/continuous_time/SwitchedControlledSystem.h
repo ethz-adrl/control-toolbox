@@ -56,8 +56,8 @@ public:
 
     //! default constructor
     /*!
-    * @param type system type
-    */
+     * @param type system type
+     */
     SwitchedControlledSystem(const SwitchedSystems& switchedSystems,
         const ContinuousModeSequence& continuousModeSequence,
         const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
@@ -67,10 +67,10 @@ public:
 
     //! constructor
     /*!
-    *
-    * @param controller controller
-    * @param type system type
-    */
+     *
+     * @param controller controller
+     * @param type system type
+     */
     SwitchedControlledSystem(const SwitchedSystems& switchedSystems,
         const ContinuousModeSequence& continuousModeSequence,
         std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller,

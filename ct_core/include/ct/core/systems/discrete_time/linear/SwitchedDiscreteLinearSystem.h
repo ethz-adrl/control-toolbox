@@ -36,8 +36,8 @@ public:
 
     //! default constructor
     /*!
-           * @param type system type
-           */
+     * @param type system type
+     */
     SwitchedDiscreteLinearSystem(const SwitchedLinearSystems& switchedLinearSystems,
         const DiscreteModeSequence& discreteModeSequence,
         const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
@@ -67,15 +67,15 @@ public:
 
     //! compute the system dynamics
     /*!
-    * This computes the system dynamics
-    * \f[
-    *  x_{n+1} = A_{i}x_n + B_{i}u_n
-    * \f]
-    * @param state current state
-    * @param n current time index
-    * @param control control input
-    * @param stateNext propagated state
-    */
+     * This computes the system dynamics
+     * \f[
+     *  x_{n+1} = A_{i}x_n + B_{i}u_n
+     * \f]
+     * @param state current state
+     * @param n current time index
+     * @param control control input
+     * @param stateNext propagated state
+     */
     virtual void propagateControlledDynamics(const state_vector_t& state,
         const time_t n,
         const control_vector_t& control,
@@ -87,23 +87,23 @@ public:
 
     //! retrieve discrete-time linear system matrices A and B for mode i, active at time n.
     /*!
-    * This computes matrices A and B such that
-    * \f[
-    *  x_{n+1} = A_{i}x_n + B_{i}u_n
-    * \f]
-    *
-    * Note that the inputs x_next and subSteps are potentially being ignored
-    * for 'true' discrete system models but are relevant for sensitivity
-    * calculations if the underlying system is continuous.
-    *
-    * @param x the state setpoint at n
-    * @param u the control setpoint at n
-    * @param n the time setpoint
-    * @param x_next the state at n+1
-    * @param subSteps number of substeps to use in sensitivity calculation
-    * @param A the resulting linear system matrix A
-    * @param B the resulting linear system matrix B
-    */
+     * This computes matrices A and B such that
+     * \f[
+     *  x_{n+1} = A_{i}x_n + B_{i}u_n
+     * \f]
+     *
+     * Note that the inputs x_next and subSteps are potentially being ignored
+     * for 'true' discrete system models but are relevant for sensitivity
+     * calculations if the underlying system is continuous.
+     *
+     * @param x the state setpoint at n
+     * @param u the control setpoint at n
+     * @param n the time setpoint
+     * @param x_next the state at n+1
+     * @param subSteps number of substeps to use in sensitivity calculation
+     * @param A the resulting linear system matrix A
+     * @param B the resulting linear system matrix B
+     */
     virtual void getAandB(const state_vector_t& x,
         const control_vector_t& u,
         const state_vector_t& x_next,
