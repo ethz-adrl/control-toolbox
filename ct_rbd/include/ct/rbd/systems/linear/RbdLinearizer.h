@@ -26,8 +26,6 @@ struct print_size_as_warning
     char operator()() { return N + 256; }  //deliberately causing overflow
 };
 
-#define DEBUG
-
 namespace ct {
 namespace rbd {
 
