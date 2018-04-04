@@ -187,7 +187,7 @@ TEST(TaskspaceCostFunctionTests, TestTaskSpacePoseTermCG)
     Eigen::VectorXd stateDerivative_orig = costFun->stateDerivativeIntermediate();
     // change reference parameters
     w_pos_ee.setRandom();
-    Eigen::Quaterniond testq = Eigen::Quaterniond::UnitRandom();
+    Eigen::Quaterniond testq = w_q_ee * Eigen::Quaterniond(0, 1, 0, 0);
     term1->setReferencePosition(w_pos_ee);
     term1->setReferenceOrientation(testq);
     // new evaluation
