@@ -22,40 +22,57 @@ template <typename SCALAR = double>
 class Irb4600InverseKinematics : InverseKinematicsBase<6, SCALAR>
 {
 public:
-    virtual std::vector<typename JointState<6, SCALAR>::Position> computeInverseKinematics(
-        const tpl::RigidBodyPose<SCALAR>& eeBasePose,
-        const std::vector<SCALAR>& freeJoints = std::vector<SCALAR>()) const
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    using BASE = InverseKinematicsBase<6, SCALAR>;
+    using JointPosition_t = typename BASE::JointPosition_t;
+    using JointPositionsVector_t = typename BASE::JointPositionsVector_t;
+    using RigidBodyPoseTpl = typename BASE::RigidBodyPoseTpl;
+
+    Irb4600InverseKinematics() = default;
+
+    virtual ~Irb4600InverseKinematics() = default;
+
+    virtual bool computeInverseKinematics(JointPositionsVector_t& res,
+        const RigidBodyPoseTpl& eeBasePose,
+        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const
     {
-        // TODO: Check for valid solutions.
+        res.clear();
         IkSolutionList<double> solutions;
 
         if (size_t(irb4600_ik::GetNumFreeParameters()) != freeJoints.size())
-            throw std::runtime_error("Error specifying free joints");
+            throw std::runtime_error("Error specifying free joints in Irb4600InverseKinematics");
 
         // Data needs to be in row-major form.
         Eigen::Matrix<SCALAR, 3, 3, Eigen::RowMajor> eeBaseRotationRowMajor =
             eeBasePose.getRotationMatrix().toImplementation();
+        const std::vector<double> freeJoints_ikf(freeJoints.begin(), freeJoints.end());
         irb4600_ik::ComputeIk(eeBasePose.position().toImplementation().data(), eeBaseRotationRowMajor.data(),
-            freeJoints.size() > 0 ? freeJoints.data() : nullptr, solutions);
+            freeJoints_ikf.size() > 0 ? freeJoints_ikf.data() : nullptr, solutions);
 
         size_t num_solutions = solutions.GetNumSolutions();
-        std::vector<typename JointState<6, SCALAR>::Position> res(solutions.GetNumSolutions());
 
+        if (num_solutions == 0)
+            return false;  // no solution found
+
+        JointState<6> sol;
         for (size_t i = 0u; i < num_solutions; ++i)
         {
             const IkSolutionBase<double>& solution = solutions.GetSolution(i);
-            solution.GetSolution(res[i].data(), freeJoints.size() > 0 ? freeJoints.data() : nullptr);
+            solution.GetSolution(
+                sol.getPositions().data(), freeJoints_ikf.size() > 0 ? freeJoints_ikf.data() : nullptr);
+            res.push_back(sol.getPositions());
         }
 
-        return res;
+        return true;
     }
 
-    virtual std::vector<typename JointState<6, SCALAR>::Position> computeInverseKinematics(
-        const tpl::RigidBodyPose<SCALAR>& eeWorldPose,
-        const tpl::RigidBodyPose<SCALAR>& baseWorldPose,
-        const std::vector<SCALAR>& freeJoints = std::vector<SCALAR>()) const
+    virtual bool computeInverseKinematics(JointPositionsVector_t& res,
+        const RigidBodyPoseTpl& eeWorldPose,
+        const RigidBodyPoseTpl& baseWorldPose,
+        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const
     {
-        return computeInverseKinematics(eeWorldPose.inReferenceFrame(baseWorldPose), freeJoints);
+        return computeInverseKinematics(res, eeWorldPose.inReferenceFrame(baseWorldPose), freeJoints);
     }
 };
 } /* namespace rbd */
