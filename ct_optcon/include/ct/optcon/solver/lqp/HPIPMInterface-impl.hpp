@@ -59,6 +59,11 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
     if (settings_.lqoc_solver_settings.lqoc_debug_print)
     {
         std::cout << "HPIPM allocating memory for QP with time horizon: " << N_ << std::endl;
+        for (size_t i = 0; i < N_ + 1; i++)
+        {
+            std::cout << "HPIPM stage " << i << ": (nx, nu, nb, ng) : (" << nx_[i] << ", " << nu_[i] << ", " << nb_[i]
+                      << ", " << ng_[i] << ")" << std::endl;
+        }
         std::cout << "HPIPM qp_size: " << qp_size << std::endl;
         std::cout << "HPIPM qp_sol_size: " << qp_sol_size << std::endl;
         std::cout << "HPIPM ipm_size: " << ipm_size << std::endl;
@@ -113,11 +118,26 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
             d_print_mat(1, CONTROL_DIM, hr_[i], 1);
         }
 
+        printf("\nnb\n");
+        std::cout << nb_[i] << std::endl;
+        printf("\nhidxb_\n");
         int_print_mat(1, nb_[i], hidxb_[i], 1);
         printf("\nhd_lb_\n");
         d_print_mat(1, nb_[i], hd_lb_[i], 1);
         printf("\nhd_ub_\n");
         d_print_mat(1, nb_[i], hd_ub_[i], 1);
+
+        printf("\nng\n");
+        std::cout << ng_[i] << std::endl;
+        printf("\nC\n");
+        d_print_mat(ng_[i], STATE_DIM, hC_[i], ng_[i]);
+        printf("\nD\n");
+        d_print_mat(ng_[i], CONTROL_DIM, hD_[i], ng_[i]);
+        printf("\nhd_lg_\n");
+        d_print_mat(1, ng_[i], hd_lg_[i], 1);
+        printf("\nhd_ug_\n");
+        d_print_mat(1, ng_[i], hd_ug_[i], 1);
+
     }   // end optional printout
 #endif  // HPIPM_PRINT_MATRICES
 
@@ -135,6 +155,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         printf("\nipm iter = %d\n", workspace_.iter);
         printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha\t\tmu\n");
         d_print_e_tran_mat(5, workspace_.iter, workspace_.stat, 5);
+
+        printSolution();
     }
 
     // extract state and control updates
@@ -271,19 +293,19 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::printSolution()
 #ifdef HPIPM_PRINT_MATRICES
     printf("\npi\n");
     for (ii = 0; ii < N_; ii++)
-        d_print_mat(1, nx_[ii + 1], pi[ii], 1);
+        d_print_mat(1, nx_[ii + 1], pi_[ii], 1);
     printf("\nlam_lb\n");
     for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, nb_[ii], lam_lb[ii], 1);
+        d_print_mat(1, nb_[ii], lam_lb_[ii], 1);
     printf("\nlam_ub\n");
     for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, nb_[ii], lam_ub[ii], 1);
+        d_print_mat(1, nb_[ii], lam_ub_[ii], 1);
     printf("\nlam_lg\n");
     for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, ng_[ii], lam_lg[ii], 1);
+        d_print_mat(1, ng_[ii], lam_lg_[ii], 1);
     printf("\nlam_ug\n");
     for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, ng_[ii], lam_ug[ii], 1);
+        d_print_mat(1, ng_[ii], lam_ug_[ii], 1);
 
     printf("\nt_lb\n");
     for (ii = 0; ii <= N_; ii++)
