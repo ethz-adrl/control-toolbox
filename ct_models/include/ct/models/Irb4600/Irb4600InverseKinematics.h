@@ -56,13 +56,16 @@ public:
             return false;  // no solution found
 
         JointState<6> sol;
-        for (size_t i = 0u; i < num_solutions; ++i)
+        for (size_t i = 0; i < num_solutions; ++i)
         {
             const IkSolutionBase<double>& solution = solutions.GetSolution(i);
             solution.GetSolution(
                 sol.getPositions().data(), freeJoints_ikf.size() > 0 ? freeJoints_ikf.data() : nullptr);
             res.push_back(sol.getPositions());
         }
+
+        if(res.size() == 0)
+        	return false; // no viable solution after filtering for joint limits
 
         return true;
     }

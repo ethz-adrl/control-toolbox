@@ -52,13 +52,14 @@ public:
         hya_ik::ComputeIk(eeBasePose.position().toImplementation().data(), eeBaseRotationRowMajor.data(),
             freeJoints_ikf.size() > 0 ? freeJoints_ikf.data() : nullptr, solutions);
 
-        size_t num_solutions = solutions.GetNumSolutions();
+        int num_solutions = solutions.GetNumSolutions();
 
         if (num_solutions == 0)
             return false;  // no solution found
 
+        // filter for joint limit violations
         JointState<6> sol;
-        for (size_t i = 0u; i < num_solutions; ++i)
+        for (size_t i = 0; i < num_solutions; i++)
         {
             const IkSolutionBase<double>& solution = solutions.GetSolution(i);
             solution.GetSolution(
@@ -67,6 +68,9 @@ public:
             if (sol.checkPositionLimits(ct::models::HyA::jointLowerLimit(), ct::models::HyA::jointUpperLimit()))
                 res.push_back(sol.getPositions());
         }
+
+        if(res.size() == 0)
+        	return false; // no viable solution after filtering for joint limits
 
         return true;
     }
