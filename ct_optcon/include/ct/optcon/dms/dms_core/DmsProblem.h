@@ -97,8 +97,7 @@ public:
         size_t wLength = (settings.N_ + 1) * (STATE_DIM + CONTROL_DIM);
         if (settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
         {
-            throw std::runtime_error("Currently we do not support adaptive time gridding");
-            // wLength += settings_.N_;
+            throw std::runtime_error("We do not support adaptive time gridding");
         }
 
         this->optVariables_ = std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>>(
@@ -312,18 +311,12 @@ public:
     /**
 	 * @brief      Destructor
 	 */
-    virtual ~DmsProblem() {}
-    virtual void updateProblem() override
+    ~DmsProblem() override = default;
+    void updateProblem() override
     {
         controlSpliner_->computeSpline(optVariablesDms_->getOptimizedInputs().toImplementation());
         for (auto shotContainer : shotContainers_)
             shotContainer->reset();
-
-        // if(settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-        // {
-        // 	// std::cout << "optVariablesDms_->getOptimizedTimeSegments(): " << optVariablesDms_->getOptimizedTimeSegments().transpose() << std::endl;
-        // 	timeGrid_->updateTimeGrid(optVariablesDms_->getOptimizedTimeSegments());
-        // }
     }
 
     /**
@@ -357,19 +350,7 @@ public:
 	 */
     const state_vector_array_t& getStateTrajectory()
     {
-        // stateSolutionDense_.clear();
-        // for(auto shotContainer : shotContainers_)
-        // 	shotContainer->integrateShot();
-
-        // stateSolutionDense_.push_back(shotContainers_.front()->getXHistory().front());
-        // for(auto shotContainer : shotContainers_)
-        // {
-        // 	state_vector_array_t x_traj = shotContainer->getXHistory();
-        // 	for(size_t j = 1; j < x_traj.size(); ++j)
-        // 		stateSolutionDense_.push_back(x_traj[j]);
-        // }
         return optVariablesDms_->getOptimizedStates();
-        ;
     }
 
     /**
@@ -379,18 +360,6 @@ public:
 	 */
     const control_vector_array_t& getInputTrajectory()
     {
-        // inputSolutionDense_.clear();
-        // for(auto shotContainer : shotContainers_)
-        // 	shotContainer->integrateShot();
-
-        // inputSolutionDense_.push_back(shotContainers_.front()->getUHistory().front());
-        // for(auto shotContainer : shotContainers_)
-        // {
-        // 	control_vector_array_t u_traj = shotContainer->getUHistory();
-        // 	for(size_t j = 1; j < u_traj.size(); ++j)
-        // 		inputSolutionDense_.push_back(u_traj[j]);
-        // }
-        // return inputSolutionDense_;
         return optVariablesDms_->getOptimizedInputs();
     }
 
@@ -401,18 +370,6 @@ public:
 	 */
     const time_array_t& getTimeArray()
     {
-        // timeSolutionDense_.clear();
-        // for(auto shotContainer : shotContainers_)
-        // 	shotContainer->integrateShot();
-
-        // timeSolutionDense_.push_back(shotContainers_.front()->getTHistory().front());
-        // for(auto shotContainer : shotContainers_)
-        // {
-        // 	time_array_t t_traj = shotContainer->getTHistory();
-        // 	for(size_t j = 1; j < t_traj.size(); ++j)
-        // 		timeSolutionDense_.push_back(t_traj[j]);
-        // }
-        // return timeSolutionDense_;
         return timeGrid_->toImplementation();
     }
 

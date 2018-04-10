@@ -66,8 +66,8 @@ public:
     /**
 	 * @brief      The destructor.
 	 */
-    virtual ~CostEvaluatorFull() {}
-    virtual SCALAR eval() override
+    ~CostEvaluatorFull() override = default;
+    SCALAR eval() override
     {
         SCALAR cost = SCALAR(0.0);
 
@@ -85,7 +85,7 @@ public:
         return cost;
     }
 
-    virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>& grad) override
+    void evalGradient(size_t grad_length, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>& grad) override
     {
         grad.setZero();
 

@@ -17,7 +17,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include <ct/optcon/nlp/DiscreteConstraintContainerBase.h>
 #include <ct/optcon/dms/constraints/InitStateConstraint.h>
 #include <ct/optcon/dms/constraints/ContinuityConstraint.h>
-#include <ct/optcon/dms/constraints/TimeHorizonEqualityConstraint.h>
 #include <ct/optcon/dms/dms_core/DmsSettings.h>
 #include <ct/optcon/dms/constraints/ConstraintDiscretizer.h>
 
@@ -71,11 +70,11 @@ public:
     /**
 	 * @brief      Destructor
 	 */
-    virtual ~ConstraintsContainerDms(){};
+    ~ConstraintsContainerDms() override = default;
 
-    virtual void prepareEvaluation() override;
+    void prepareEvaluation() override;
 
-    virtual void prepareJacobianEvaluation() override;
+    void prepareJacobianEvaluation() override;
 
     /**
 	 * @brief      Updates the initial constraint

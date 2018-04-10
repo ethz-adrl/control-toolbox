@@ -26,12 +26,12 @@ public:
     /**
 	 * @brief      Default constructor
 	 */
-    SplinerBase(){};
+    SplinerBase() = default;
 
     /**
 	 * @brief      Destructor
 	 */
-    virtual ~SplinerBase(){};
+    virtual ~SplinerBase() = default;
 
     typedef T vector_t;
     typedef Eigen::Matrix<SCALAR, T::DIM, T::DIM> matrix_t;
