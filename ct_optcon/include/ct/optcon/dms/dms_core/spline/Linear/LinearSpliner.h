@@ -37,10 +37,10 @@ public:
 	 * @param[in]  grid  The dms timegrid
 	 */
     LinearSpliner(std::shared_ptr<tpl::TimeGrid<SCALAR>> grid) : timeGrid_(grid) {}
-    virtual ~LinearSpliner() {}
+    ~LinearSpliner() override = default;
     void computeSpline(const vector_array_t& points) override { nodes_ = points; }
     // evaluate spline and return vector at interpolation time
-    virtual vector_t evalSpline(const SCALAR time, const size_t shotIdx) override
+    vector_t evalSpline(const SCALAR time, const size_t shotIdx) override
     {
         Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> result;
         result.resize(T::DIM);
@@ -58,7 +58,7 @@ public:
     }
 
 
-    virtual vector_t splineDerivative_t(const SCALAR time, const size_t shotIdx) const override
+    vector_t splineDerivative_t(const SCALAR time, const size_t shotIdx) const override
     {
         vector_t result;
 
@@ -70,7 +70,7 @@ public:
     }
 
 
-    virtual vector_t splineDerivative_h_i(const SCALAR time, const size_t shotIdx) const override
+    vector_t splineDerivative_h_i(const SCALAR time, const size_t shotIdx) const override
     {
         vector_t result;
 
@@ -82,7 +82,7 @@ public:
         return result;
     }
 
-    virtual matrix_t splineDerivative_q_i(const SCALAR time, const size_t shotIdx) const override
+    matrix_t splineDerivative_q_i(const SCALAR time, const size_t shotIdx) const override
     {
         matrix_t drv;
 
@@ -96,7 +96,7 @@ public:
     }
 
 
-    virtual matrix_t splineDerivative_q_iplus1(const SCALAR time, const size_t shotIdx) const override
+    matrix_t splineDerivative_q_iplus1(const SCALAR time, const size_t shotIdx) const override
     {
         matrix_t drv;
 
