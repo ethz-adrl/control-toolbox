@@ -4,4 +4,3 @@
 #include "constraints/ConstraintsContainerDms.h"
 #include "constraints/ContinuityConstraint.h"
 #include "constraints/InitStateConstraint.h"
-#include "constraints/TimeHorizonEqualityConstraint.h"

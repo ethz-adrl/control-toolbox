@@ -63,7 +63,7 @@ public:
     /**
 	 * @brief      Destructor
 	 */
-    virtual ~OptVectorDms() {}
+    ~OptVectorDms() override = default;
     /**
 	 * @brief      Returns the optimized state for a specific shot
 	 *
@@ -83,15 +83,6 @@ public:
     control_vector_t getOptimizedControl(const size_t pairNum) const;
 
     /**
-	 * @brief      Return the optimized time segment for a specific shot
-	 *
-	 * @param[in]  pairNum  The pair number
-	 *
-	 * @return     The optimized time segment.
-	 */
-    SCALAR getOptimizedTimeSegment(const size_t pairNum) const;
-
-    /**
 	 * @brief      Returns the optimized state for all shots
 	 *
 	 * @return     The optimized states.
@@ -104,13 +95,6 @@ public:
 	 * @return     The optimized control inputs.
 	 */
     const control_vector_array_t& getOptimizedInputs();
-
-    /**
-	 * @brief      Returns the optimized time segments for all shots
-	 *
-	 * @return     The optimized time segments.
-	 */
-    const Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>& getOptimizedTimeSegments();
 
     /**
 	 * @brief      Returns the starting index for the state at shot pairNum
@@ -131,17 +115,6 @@ public:
 	 * @return     The state index.
 	 */
     size_t getControlIndex(const size_t pairNum) const;
-
-    /**
-	 * @brief      Returns the starting index for the time segment input at shot pairNum
-	 *             inside the optimization vector
-	 *
-	 * @param[in]  pairNum  The shot number
-	 *
-	 * @return     The state index.
-	 */
-    size_t getTimeSegmentIndex(const size_t pairNum) const;
-
 
     /**
 	 * @brief      Sets an initial guess for the optimal solution. The optimal
@@ -178,11 +151,6 @@ public:
     void changeDesiredState(const state_vector_t& xF);
 
     /**
-	 * @brief      Sets bounds on the time segment variables
-	 */
-    void setLowerTimeSegmentBounds();
-
-    /**
 	 * @brief      Returns the number of pairs 
 	 *
 	 * @return     Number of pairs
@@ -200,12 +168,9 @@ private:
     /* maps the number of a "pair" to the index in w where ... */
     std::map<size_t, size_t> pairNumToStateIdx_;   /* ... its state starts */
     std::map<size_t, size_t> pairNumToControlIdx_; /* ... its control starts */
-    std::map<size_t, size_t>
-        shotNumToShotDurationIdx_; /* its shot time starts is in w (last element doesn't have one) */
 
     state_vector_array_t stateSolution_;
     control_vector_array_t inputSolution_;
-    Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> optimizedTimeSegments_;
 };
 
 }  // namespace optcon

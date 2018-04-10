@@ -28,15 +28,6 @@ ConstraintsContainerDms<STATE_DIM, CONTROL_DIM, SCALAR>::ConstraintsContainerDms
         this->constraints_.push_back(c_i);
     }
 
-    if (settings_.objectiveType_ == DmsSettings::OPTIMIZE_GRID)
-    {
-        std::shared_ptr<TimeHorizonEqualityConstraint<STATE_DIM, CONTROL_DIM, SCALAR>> c_horizon_equal =
-            std::shared_ptr<TimeHorizonEqualityConstraint<STATE_DIM, CONTROL_DIM, SCALAR>>(
-                new TimeHorizonEqualityConstraint<STATE_DIM, CONTROL_DIM, SCALAR>(w, timeGrid, settings));
-
-        this->constraints_.push_back(c_horizon_equal);
-    }
-
     if (discretizedConstraints)
     {
         std::cout << "Adding discretized constraints" << std::endl;
