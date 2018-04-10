@@ -13,7 +13,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
  * \f$ d_{lb} \leq x_{0} + x_{1} \leq d_{ub} \f$
  *
  */
-class stateSumConstraint : public ct::optcon::ConstraintBase<2, 1>
+class StateSumConstraint : public ct::optcon::ConstraintBase<2, 1>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -27,7 +27,7 @@ public:
     typedef Eigen::Matrix<double, 1, 1> Jacobian_control_t;
 
     //! constructor with constraint boundaries.
-    stateSumConstraint(double lb, double ub) : lb_(lb), ub_(ub)
+    StateSumConstraint(double lb, double ub) : lb_(lb), ub_(ub)
     {
       Base::lb_.resize(1);
       Base::ub_.resize(1);
@@ -35,8 +35,8 @@ public:
       Base::ub_.setConstant(ub);
     }
 
-    virtual ~stateSumConstraint() {}
-    virtual stateSumConstraint* clone() const override { return new stateSumConstraint(lb_, ub_); }
+    virtual ~StateSumConstraint() {}
+    virtual StateSumConstraint* clone() const override { return new StateSumConstraint(lb_, ub_); }
     virtual size_t getConstraintSize() const override { return 1; }
     virtual Eigen::VectorXd evaluate(const state_vector_t& x, const control_vector_t& u, const double t) override
     {
