@@ -66,9 +66,7 @@ public:
     using box_constr_sparsity_t = Eigen::Matrix<int, max_box_constr_dim, 1>;
 
     //! constructor
-    HPIPMInterface(const int N = -1,
-        const int nb = 0,
-        const int ng = 0);
+    HPIPMInterface(const int N = -1, const int nb = 0, const int ng = 0);
 
     //! destructor
     virtual ~HPIPMInterface();
@@ -110,9 +108,7 @@ public:
     virtual void initializeAndAllocate() override;
 
 private:
-    void setSolverDimensions(const int N,
-        const int nb = 0,
-        const int ng = 0);
+    void setSolverDimensions(const int N, const int nb = 0, const int ng = 0);
 
     /*!
      * @brief set problem implementation for hpipm

@@ -5,6 +5,10 @@
 
 For a complete list of changes, we encourage you to check out our git repository at https://bitbucket.org/adrlab/ct
 
+\section cl_v22 Version 2.2
+- added switched systems, allowing for switches between dynamic models according to a pre-defined schedule.
+- projected system dynamics are now compatible with the Auto-Diff tools.
+
 \section cl_v21 Version 2.1
 - added (in)equality constrained linear-quadratic optimal control problems
 - refactored HPIPM interface (HPIPM is a high-performance interior-point QP solver)
