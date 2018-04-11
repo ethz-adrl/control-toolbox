@@ -31,7 +31,9 @@ TEST(SwitchedDiscreteControlledSystemTest, SwitchedDiscreteControlledSystem)
     // Setup systems
     SystemPtr sysPtr1(new System(1.0));
     SystemPtr sysPtr2(new System(2.0));
-    SwitchedSystems switchedSystems = {sysPtr1, sysPtr2};
+    SwitchedSystems switchedSystems;
+    switchedSystems.push_back(sysPtr1);
+    switchedSystems.push_back(sysPtr2);
 
     // Setup mode sequence
     DiscreteModeSequence dm_seq;

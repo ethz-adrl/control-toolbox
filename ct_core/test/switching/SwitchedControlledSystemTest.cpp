@@ -33,7 +33,9 @@ TEST(SwitchedControlledSystemTest, SwitchedControlledSystem)
     // Setup systems
     SystemPtr sysPtr1(new System(0.0));
     SystemPtr sysPtr2(new System(1.0));
-    SwitchedSystems switchedSystems = {sysPtr1, sysPtr2};
+    SwitchedSystems switchedSystems;
+    switchedSystems.push_back(sysPtr1);
+    switchedSystems.push_back(sysPtr2);
 
     // Setup mode sequence
     ContinuousModeSequence cm_seq;
