@@ -26,7 +26,7 @@ namespace core {
  * @tparam OUT_DIM Output dimensionailty of the function (use Eigen::Dynamic (-1) for dynamic size)
  */
 template <int IN_DIM, int OUT_DIM>
-class DerivativesCppadJIT : public Derivatives<IN_DIM, OUT_DIM, double>// double on purpose!
+class DerivativesCppadJIT : public Derivatives<IN_DIM, OUT_DIM, double>  // double on purpose!
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -63,11 +63,7 @@ public:
      *                        template parameter IN_DIM is -1 (dynamic)
      */
     DerivativesCppadJIT(FUN_TYPE_CG& f, int inputDim = IN_DIM, int outputDim = OUT_DIM)
-        : DerivativesBase(),
-          cgStdFun_(f),
-          inputDim_(inputDim),
-          outputDim_(outputDim),
-          compiled_(false), libName_("")
+        : DerivativesBase(), cgStdFun_(f), inputDim_(inputDim), outputDim_(outputDim), compiled_(false), libName_("")
     {
         update(f, inputDim, outputDim);
     }
@@ -118,7 +114,6 @@ public:
     virtual ~DerivativesCppadJIT() = default;
     //! deep cloning of Jacobian
     DerivativesCppadJIT* clone() const { return new DerivativesCppadJIT<IN_DIM, OUT_DIM>(*this); }
-
     virtual OUT_TYPE_D forwardZero(const Eigen::VectorXd& x)
     {
         if (compiled_)
@@ -126,7 +121,8 @@ public:
             assert(model_->isForwardZeroAvailable() == true);
             return model_->ForwardZero(x);
         }
-        else {
+        else
+        {
             throw std::runtime_error("Error: Compile the library first by calling compileJIT(..)");
         }
     }
@@ -148,7 +144,6 @@ public:
         }
         else
             throw std::runtime_error("Error: Compile the library first by calling compileJIT(..)");
-
     }
 
     virtual void sparseJacobian(const Eigen::VectorXd& x,
@@ -364,8 +359,14 @@ public:
         if (compiled_)
             return;
 
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+
         // assigning a unique identifier to the library in order to avoid race conditions in JIT
-        libName_ = libName + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id()));
+        std::string uniqueID =
+            std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id())) + "_" + std::to_string(ts.tv_nsec);
+
+        libName_ = libName + uniqueID;
 
         CppAD::cg::ModelCSourceGen<double> cgen(cgCppadFun_, "DerivativesCppad" + libName_);
 
@@ -381,7 +382,7 @@ public:
         cgen.setMaxAssignmentsPerFunc(settings.maxAssignements_);
 
         CppAD::cg::ModelLibraryCSourceGen<double> libcgen(cgen);
-        std::string tempDir = "cppad_temp" + std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id()));
+        std::string tempDir = "cppad_temp" + uniqueID;
         if (verbose)
         {
             std::cout << "Starting to compile " << libName_ << " library ..." << std::endl;

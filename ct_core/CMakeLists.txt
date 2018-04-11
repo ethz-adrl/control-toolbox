@@ -137,6 +137,15 @@ target_link_libraries(LinspaceTest ${catkin_LIBRARIES})
 catkin_add_gtest(AutoDiffLinearizerTest test/AutoDiffLinearizerTest.cpp)
 target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} ct_core pthread)
 
+catkin_add_gtest(SwitchingTest test/switching/SwitchingTest.cpp)
+target_link_libraries(SwitchingTest ${catkin_LIBRARIES} ct_core)
+
+catkin_add_gtest(SwitchedControlledSystemTest test/switching/SwitchedControlledSystemTest.cpp)
+target_link_libraries(SwitchedControlledSystemTest ${catkin_LIBRARIES} ct_core)
+
+catkin_add_gtest(SwitchedDiscreteControlledSystemTest test/switching/SwitchedDiscreteControlledSystemTest.cpp)
+target_link_libraries(SwitchedDiscreteControlledSystemTest ${catkin_LIBRARIES} ct_core)
+
 catkin_add_gtest(MatrixInversionTest test/math/MatrixInversionTest.cpp)
 target_link_libraries(MatrixInversionTest ${catkin_LIBRARIES})
 

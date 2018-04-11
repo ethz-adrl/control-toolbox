@@ -92,7 +92,6 @@ if(HPIPM)
     endif(DEFINED ENV{BLASFEO_DIR})
 endif(HPIPM)
 
-
 ## lapack libs
 set(LAPACK_LIBS "")
 find_package(LAPACK QUIET)
@@ -242,12 +241,16 @@ if(HPIPM)
 
     add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
     target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+
     if(BUILD_EXAMPLES)
         add_executable(ex_NLOC_boxConstrained examples/NLOC_boxConstrained.cpp)
         target_link_libraries(ex_NLOC_boxConstrained ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
         add_executable(ex_NLOC_generalConstrained examples/NLOC_generalConstrained.cpp)
         target_link_libraries(ex_NLOC_generalConstrained ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+
+        add_executable(switched_continuous_optcon_example examples/switched_systems_optcon/switched_continuous_optcon.cpp)
+        target_link_libraries(switched_continuous_optcon_example ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
     endif(BUILD_EXAMPLES)
 endif(HPIPM)
 
