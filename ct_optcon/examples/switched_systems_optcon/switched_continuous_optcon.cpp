@@ -8,7 +8,7 @@
 
 #include <ct/optcon/optcon.h>
 #include "TestLinearSystem.h"
-#include "stateSumConstraint.h"
+#include "StateSumConstraint.h"
 #include "plotResultsSwitched.h"
 
 using namespace ct;
