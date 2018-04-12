@@ -72,7 +72,9 @@ int main(int argc, char** argv)
     B2_continuous << 1.0, 1.0;
     SystemPtr sysPtr1(new System(A1_continuous, B1_continuous));
     SystemPtr sysPtr2(new System(A2_continuous, B2_continuous));
-    SwitchedSystems switchedSystems = {sysPtr1, sysPtr2};
+    SwitchedSystems switchedSystems;
+    switchedSystems.push_back(sysPtr1);
+    switchedSystems.push_back(sysPtr2);
 
     // Setup Constant Controller
     System::control_vector_t u0;
@@ -84,7 +86,9 @@ int main(int argc, char** argv)
     sysPtr2->setController(controller);
     LinearizerSystemPtr linSys1(new SystemLinearizer(sysPtr1));
     LinearizerSystemPtr linSys2(new SystemLinearizer(sysPtr2));
-    SwitchedLinearSystems switchedLinearSystems = {linSys1, linSys2};
+    SwitchedLinearSystems switchedLinearSystems;
+    switchedLinearSystems.push_back(linSys1);
+    switchedLinearSystems.push_back(linSys2);
 
     // Construct Switched Continuous System and its linearizations
     std::shared_ptr<SwitchedSystem> switchedSystem(new SwitchedSystem(switchedSystems, modeSequence, controller));
@@ -98,8 +102,8 @@ int main(int argc, char** argv)
     /* STEP 1-E: Create constraints
     * Two constraints are created, linearized, and combined into a switched constraint
     * Both are a sum of state constraint, but the bounds for each phase are different */
-    std::shared_ptr<stateSumConstraint> phase1Constraint(new stateSumConstraint(-1e20, 7.0));
-    std::shared_ptr<stateSumConstraint> phase2Constraint(new stateSumConstraint(7.0, 1e20));
+    std::shared_ptr<StateSumConstraint> phase1Constraint(new StateSumConstraint(-1e20, 7.0));
+    std::shared_ptr<StateSumConstraint> phase2Constraint(new StateSumConstraint(7.0, 1e20));
 
     // Linearized constraints
     bool verbose = false;
@@ -112,8 +116,9 @@ int main(int argc, char** argv)
     generalConstraints_2->addIntermediateConstraint(phase2Constraint, verbose);
 
     // Switched constraints
-    SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM>::SwitchedLinearConstraintContainers
-        switchedConstraintContainers = {generalConstraints_1, generalConstraints_2};
+    SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM>::SwitchedLinearConstraintContainers switchedConstraintContainers;
+    switchedConstraintContainers.push_back(generalConstraints_1);
+    switchedConstraintContainers.push_back(generalConstraints_2);
 
     std::shared_ptr<SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM>> switchedConstraints(
         new SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM>(switchedConstraintContainers, modeSequence));
