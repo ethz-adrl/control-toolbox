@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
 This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus St√§uble, Diego Pardo, Farbod Farshidian
+Authors:  Michael Neunert, Markus Giftthaler, Markus St‰uble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -69,7 +69,9 @@ TEST(SwitchedDiscreteControlledSystemTest, SwitchedDiscreteControlledSystem)
     LinearizerSystemPtr linSys2(new DiscreteSystemLinearizer(sysPtr2));
 
     // Switched Linearization
-    SwitchedLinearSystems switchedLinearSystems = {linSys1, linSys2};
+    SwitchedLinearSystems switchedLinearSystems;
+    switchedLinearSystems.push_back(linSys1);
+    switchedLinearSystems.push_back(linSys2);
     SwitchedDiscreteLinearSystem switchedDiscreteLinearSystem(switchedLinearSystems, dm_seq);
 
     // Test linearizations
