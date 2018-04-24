@@ -23,7 +23,7 @@ namespace optcon {
  * @tparam OUTPUT_DIM   dimensionality of the output
  * @tparam STATE_DIM    nominal state dimensionality
  * @tparam DIST_DIM     dimensionality of the disturbance
- * @tparam CONTROL_DIM
+ * @tparam CONTROL_DIM  dimensionality of the control input
  * @tparam ESTIMATOR    underlying estimator class
  */
 template <size_t OUTPUT_DIM,
@@ -39,12 +39,18 @@ public:
 
     static const size_t ESTIMATE_DIM = STATE_DIM + DIST_DIM;
     using Base = StateObserver<OUTPUT_DIM, ESTIMATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>;
+
+    using DisturbedSystem_t = DisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>;
+
+    using SensitivityApproximation_t =
+        ct::core::SensitivityApproximation<ESTIMATE_DIM, CONTROL_DIM, ESTIMATE_DIM / 2, ESTIMATE_DIM / 2, SCALAR>;
+
     using typename Base::Time_t;
+    using estimate_vector_t = ct::core::StateVector<ESTIMATE_DIM, SCALAR>;
 
     //! Constructor. We assume a linear model, i.e. C matrix is constant.
-    DisturbanceObserver(std::shared_ptr<DisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>> system,
-        const ct::core::SensitivityApproximation<ESTIMATE_DIM, CONTROL_DIM, ESTIMATE_DIM / 2, ESTIMATE_DIM / 2, SCALAR>&
-            sensApprox,
+    DisturbanceObserver(std::shared_ptr<DisturbedSystem_t> system,
+        const SensitivityApproximation_t& sensApprox,
         double dt,
         const ct::core::OutputStateMatrix<OUTPUT_DIM, ESTIMATE_DIM, SCALAR>& Caug,
         const ESTIMATOR& estimator,
@@ -52,23 +58,23 @@ public:
         const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R);
 
     //! Constructor from observer settings.
-    DisturbanceObserver(std::shared_ptr<DisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>> system,
-        const ct::core::SensitivityApproximation<ESTIMATE_DIM, CONTROL_DIM, ESTIMATE_DIM / 2, ESTIMATE_DIM / 2, SCALAR>&
-            sensApprox,
+    DisturbanceObserver(std::shared_ptr<DisturbedSystem_t> system,
+        const SensitivityApproximation_t& sensApprox,
         const ESTIMATOR& estimator,
         const DisturbanceObserverSettings<OUTPUT_DIM, ESTIMATE_DIM, SCALAR>& do_settings);
 
     //! Destructor.
-    virtual ~DisturbanceObserver();
+    virtual ~DisturbanceObserver() = default;
 
     //! Prediction step of the estimation.
-    ct::core::StateVector<ESTIMATE_DIM, SCALAR> predict(const Time_t& t = 0) override;
+    estimate_vector_t predict(const Time_t& t = 0) override;
+
     //! Update step of the estimation.
-    ct::core::StateVector<ESTIMATE_DIM, SCALAR> update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
-        const Time_t& = 0) override;
+    estimate_vector_t update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y, const Time_t& = 0) override;
 
     //! State estimate getter.
     ct::core::StateVector<STATE_DIM, SCALAR> getStateEstimate();
+
     //! Disturbance estimate getter.
     Eigen::Matrix<SCALAR, DIST_DIM, 1> getDisturbanceEstimate();
 };
