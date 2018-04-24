@@ -337,9 +337,6 @@ if(USE_PRESPEC)
     target_link_libraries(system_interface_test_prespec ${catkin_LIBRARIES} ${PRESPEC_LIB_NAMES})
 endif(USE_PRESPEC)
 
-catkin_add_gtest(KalmanFilterTest test/filter/KalmanFilterTest.cpp)
-target_link_libraries(KalmanFilterTest ${catkin_LIBRARIES})
-
 ## build doxygen documentation
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
