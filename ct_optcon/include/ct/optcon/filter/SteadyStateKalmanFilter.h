@@ -6,6 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include "../lqr/riccati/DARE.hpp"
 #include "EstimatorBase.h"
 #include "LinearMeasurementModel.h"
 
