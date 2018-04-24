@@ -7,8 +7,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "StateObserver.h"
-#include "StateObserver-impl.h"
 #include "DisturbedSystem.h"
+#include "DisturbedSystemController.h"
 #include "ExtendedKalmanFilter.h"
 
 namespace ct {

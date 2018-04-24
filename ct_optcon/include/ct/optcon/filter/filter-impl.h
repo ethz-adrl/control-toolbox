@@ -9,6 +9,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "CTSystemModel-impl.h"
 #include "DisturbanceObserver-impl.h"
 #include "DisturbedSystem-impl.h"
+#include "DisturbedSystemController-impl.h"
 #include "ExtendedKalmanFilter-impl.h"
 #include "LTIMeasurementModel-impl.h"
 #include "StateObserver-impl.h"
