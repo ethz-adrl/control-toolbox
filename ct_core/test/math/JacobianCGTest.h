@@ -190,6 +190,48 @@ TEST(HessianCGTest, JITHessianTest)
 }
 
 
+/*!
+ * Test cloning of JIT compiled libraries
+ */
+TEST(JacobianCGTest, JITCloneTest)
+{
+    try
+    {
+        typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
+        typename derivativesCppad::FUN_TYPE_AD f_ad = testFunction<derivativesCppad::AD_SCALAR>;
+
+        // initialize the Auto-Diff Codegen Jacobian
+        std::shared_ptr<derivativesCppadJIT> jacCG(new derivativesCppadJIT(f));
+        std::shared_ptr<derivativesCppad> jacAd(new derivativesCppad(f_ad));
+
+        DerivativesCppadSettings settings;
+        settings.createJacobian_ = true;
+
+        // compile the Jacobian
+        jacCG->compileJIT(settings, "jacobianCGLib");
+
+        // create an input vector
+        Eigen::Matrix<double, inDim, 1> x;
+
+        std::shared_ptr<derivativesCppadJIT> jacCG_cloned(jacCG->clone());
+
+        for (size_t i = 0; i < 100; i++)
+        {
+            // create a random input
+            x.setRandom();
+
+            // verify agains the analytical Jacobian
+            ASSERT_LT((jacCG_cloned->jacobian(x) - jacobianCheck(x)).array().abs().maxCoeff(), 1e-10);
+            ASSERT_LT((jacCG_cloned->jacobian(x) - jacAd->jacobian(x)).array().abs().maxCoeff(), 1e-10);
+        }
+    } catch (std::exception& e)
+    {
+        std::cout << "Exception thrown: " << e.what() << std::endl;
+        ASSERT_TRUE(false);
+    }
+}
+
+
 // /*!
 //  * Test for writing the codegenerated Jacobian to file
 //  */
