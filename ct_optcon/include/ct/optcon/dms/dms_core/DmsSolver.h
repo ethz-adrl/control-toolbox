@@ -112,7 +112,7 @@ public:
         configure(settingsDms);
     }
 
-    virtual void generateAndCompileCode(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
+    void generateAndCompileCode(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
         const ct::core::DerivativesCppadSettings& settings) override
     {
         // Create system, linearsystem and costfunction instances
@@ -149,15 +149,15 @@ public:
     /**
 	 * @brief      Destructor
 	 */
-    virtual ~DmsSolver() {}
-    virtual void configure(const DmsSettings& settings) override
+    ~DmsSolver() override = default;
+    void configure(const DmsSettings& settings) override
     {
         dmsProblem_->configure(settings);
         dmsProblem_->changeTimeHorizon(tf_);
         dmsProblem_->changeInitialState(x0_);
     }
 
-    virtual bool solve() override
+    bool solve() override
     {
         if (!nlpSolver_->isInitialized())
             nlpSolver_->configure(settings_.solverSettings_);
@@ -165,7 +165,7 @@ public:
         return nlpSolver_->solve();
     }
 
-    virtual const Policy_t& getSolution() override
+    const Policy_t& getSolution() override
     {
         policy_.xSolution_ = dmsProblem_->getStateSolution();
         policy_.uSolution_ = dmsProblem_->getInputSolution();
@@ -173,39 +173,39 @@ public:
         return policy_;
     }
 
-    virtual const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const override
+    const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const override
     {
         return core::StateTrajectory<STATE_DIM, SCALAR>(dmsProblem_->getTimeArray(), dmsProblem_->getStateTrajectory());
     }
 
-    virtual const core::ControlTrajectory<CONTROL_DIM, SCALAR> getControlTrajectory() const override
+    const core::ControlTrajectory<CONTROL_DIM, SCALAR> getControlTrajectory() const override
     {
         return core::ControlTrajectory<CONTROL_DIM, SCALAR>(
             dmsProblem_->getTimeArray(), dmsProblem_->getInputTrajectory());
     }
 
-    virtual const core::tpl::TimeArray<SCALAR>& getTimeArray() const override { return dmsProblem_->getTimeArray(); }
-    virtual void setInitialGuess(const Policy_t& initialGuess) override
+    const core::tpl::TimeArray<SCALAR>& getTimeArray() const override { return dmsProblem_->getTimeArray(); }
+    void setInitialGuess(const Policy_t& initialGuess) override
     {
         dmsProblem_->setInitialGuess(initialGuess.xSolution_, initialGuess.uSolution_);
     }
 
-    virtual SCALAR getTimeHorizon() const override { return dmsProblem_->getTimeHorizon(); }
-    virtual void changeTimeHorizon(const SCALAR& tf) override
+    SCALAR getTimeHorizon() const override { return dmsProblem_->getTimeHorizon(); }
+    void changeTimeHorizon(const SCALAR& tf) override
     {
         tf_ = tf;
         if (dmsProblem_)
             dmsProblem_->changeTimeHorizon(tf);
     }
 
-    virtual void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0) override
+    void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0) override
     {
         x0_ = x0;
         if (dmsProblem_)
             dmsProblem_->changeInitialState(x0);
     }
 
-    virtual void changeCostFunction(const typename Base::OptConProblem_t::CostFunctionPtr_t& cf) override
+    void changeCostFunction(const typename Base::OptConProblem_t::CostFunctionPtr_t& cf) override
     {
         this->getCostFunctionInstances().resize(settings_.N_);
         if (cf)
@@ -213,7 +213,7 @@ public:
                 this->getCostFunctionInstances()[i] = typename Base::OptConProblem_t::CostFunctionPtr_t(cf->clone());
     }
 
-    virtual void changeNonlinearSystem(const typename Base::OptConProblem_t::DynamicsPtr_t& dyn) override
+    void changeNonlinearSystem(const typename Base::OptConProblem_t::DynamicsPtr_t& dyn) override
     {
         this->getNonlinearSystemsInstances().resize(settings_.N_);
 
@@ -222,7 +222,7 @@ public:
                 this->getNonlinearSystemsInstances()[i] = typename Base::OptConProblem_t::DynamicsPtr_t(dyn->clone());
     }
 
-    virtual void changeLinearSystem(const typename Base::OptConProblem_t::LinearPtr_t& lin) override
+    void changeLinearSystem(const typename Base::OptConProblem_t::LinearPtr_t& lin) override
     {
         this->getLinearSystemsInstances().resize(settings_.N_);
 
@@ -231,12 +231,12 @@ public:
                 this->getLinearSystemsInstances()[i] = typename Base::OptConProblem_t::LinearPtr_t(lin->clone());
     }
 
-    virtual void changeBoxConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
+    void changeBoxConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
     {
         this->getBoxConstraintsInstances().push_back(typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
     }
 
-    virtual void changeGeneralConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
+    void changeGeneralConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
     {
         this->getGeneralConstraintsInstances().push_back(typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
     }
@@ -245,47 +245,48 @@ public:
 	 * @brief      Prints out the solution trajectories of the DMS problem
 	 */
     void printSolution() { dmsProblem_->printSolution(); }
-    virtual std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override
+
+    std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override
     {
         return systems_;
     }
-    virtual const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const override
+    const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const override
     {
         return systems_;
     }
 
-    virtual std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() override
+    std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() override
     {
         return linearSystems_;
     }
-    virtual const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const override
+    const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const override
     {
         return linearSystems_;
     }
 
-    virtual std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() override
+    std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() override
     {
         return costFunctions_;
     }
-    virtual const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const override
+    const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const override
     {
         return costFunctions_;
     }
 
-    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() override
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() override
     {
         return boxConstraints_;
     }
-    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const override
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const override
     {
         return boxConstraints_;
     }
 
-    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() override
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() override
     {
         return generalConstraints_;
     }
-    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances()
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances()
         const override
     {
         return generalConstraints_;

@@ -29,7 +29,7 @@ TEST(SystemDiscretizerTest, IntegratorComparison)
 
     size_t nTests = 10;
 
-    for (size_t i = 0; i < nTests; ++i)
+    for (size_t i = 1; i < nTests; ++i)
     {
         double w_n = randomNumber(0, 10);
         double zeta = randomNumber(0, 10);

@@ -161,8 +161,6 @@ Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> LUsolve(
     Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> X(n, m);
     inverseHelperfunctions::solveLU<SCALAR>(LU, B, X);
 
-    // Verify against Eigen in debug mode to catch cases where algorithm is not applicable
-    assert((A.fullPivLu().solve(B)).isApprox(X, 1e-6));
     return X;
 }
 
@@ -188,8 +186,6 @@ Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> LDLTsolve(
     Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> X(n, m);
     inverseHelperfunctions::solveLDLT(L, d, B, X);
 
-    // Verify against Eigen in debug mode to catch cases where algorithm is not applicable
-    assert((A.fullPivLu().solve(B)).isApprox(X, 1e-6));
     return X;
 }
 }
