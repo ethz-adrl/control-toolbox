@@ -93,12 +93,7 @@ public:
           dFdu_(arg.dFdu_),
           cacheJac_(arg.cacheJac_),
           nonlinearSystem_(arg.nonlinearSystem_->clone()),
-          linearizer_(std::bind(&system_t::computeControlledDynamics,
-              nonlinearSystem_.get(),
-              std::placeholders::_1,
-              std::placeholders::_2,
-              std::placeholders::_3,
-              std::placeholders::_4))
+          linearizer_(arg.linearizer_)
     {
     }
 
