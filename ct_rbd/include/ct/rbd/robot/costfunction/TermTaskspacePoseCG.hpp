@@ -134,8 +134,7 @@ public:
           evalControlDerivatives_(arg.evalControlDerivatives_)
     {
         derivativesCppadJIT_ =
-            std::shared_ptr<DerivativesCppadJIT>(new DerivativesCppadJIT(costFun_, AD_PARAMETER_DIM, 1));
-        setup();
+            std::shared_ptr<DerivativesCppadJIT>(arg.derivativesCppadJIT_->clone());
     }
 
     //! destructor
