@@ -35,5 +35,5 @@ int main(int argc, char** argv)
     // print the new state
     std::cout << "state after integration: " << x.transpose() << std::endl;
 
-    return 1;
+    return 0;
 }

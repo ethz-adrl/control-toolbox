@@ -58,7 +58,7 @@ public:
 	 * @param type system type
 	 */
     ControlledSystem(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
-        : System<STATE_DIM, SCALAR>(type), controller_(nullptr){};
+        : System<STATE_DIM, SCALAR>(type), controller_(nullptr){}
 
     //! constructor
     /*!
@@ -71,7 +71,7 @@ public:
         : System<STATE_DIM, SCALAR>(type), controller_(controller)
     {
         controlAction_.setZero();
-    };
+    }
 
     //! copy constructor
     ControlledSystem(const ControlledSystem& arg) : System<STATE_DIM, SCALAR>(arg), controlAction_(arg.controlAction_)
@@ -81,7 +81,7 @@ public:
     }
 
     //! destructor
-    virtual ~ControlledSystem(){};
+    virtual ~ControlledSystem(){}
 
     //! deep copy
     virtual ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override = 0;
