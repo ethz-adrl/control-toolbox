@@ -296,6 +296,25 @@ public:
 
         return source;
     }
+
+
+    /*!
+     * @brief load a previously generated dynamic library by name
+     * @param libName name of the library
+     * @return pointer to a loaded instance of the library
+     *
+     * \note This loading function is inspired by the CppAD dynamic library processor, see CppAD::cg::DynamicModelLibraryProcessor
+     */
+    template <typename SC = double>
+    static std::shared_ptr<CppAD::cg::DynamicLib<SC>> loadDynamicLibCppad(const std::string& libName)
+    {
+#if CPPAD_CG_SYSTEM_LINUX
+        return std::shared_ptr<CppAD::cg::DynamicLib<SC>>(
+            new CppAD::cg::LinuxDynamicLib<SC>(libName + CppAD::cg::system::SystemInfo<>::DYNAMIC_LIB_EXTENSION));
+#else
+        throw std::runtime_error("Loading dynamic Cppad codegen libraries only supported in Linux.");
+#endif
+    }
 };
 
 } /* namespace internal */
