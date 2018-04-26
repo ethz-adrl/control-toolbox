@@ -40,7 +40,7 @@ public:
     typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE_D;       //!< function output vector type
     typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE_D;  //!< Jacobian type
     typedef Eigen::Matrix<double, OUT_DIM, IN_DIM, Eigen::RowMajor>
-        JAC_TYPE_ROW_MAJOR;  //!< Jocobian type in row-major format
+        JAC_TYPE_ROW_MAJOR;  //!< Jacobian type in row-major format
     typedef Eigen::Matrix<double, IN_DIM, IN_DIM> HES_TYPE_D;
     typedef Eigen::Matrix<double, IN_DIM, IN_DIM, Eigen::RowMajor> HES_TYPE_ROW_MAJOR;
 
@@ -67,21 +67,26 @@ public:
         update(f, inputDim, outputDim);
     }
 
-
-    //! copy constructor
+    /*!
+     * @brief copy constructor
+     * @param arg instance to copy
+     * @note  It is  important to not only copy the pointer to the dynamic library, but to load the library properly instead.
+     */
     DerivativesCppadJIT(const DerivativesCppadJIT& arg)
         : DerivativesBase(arg),
           cgStdFun_(arg.cgStdFun_),
           inputDim_(arg.inputDim_),
           outputDim_(arg.outputDim_),
           compiled_(arg.compiled_),
-          libName_(arg.libName_),
-          dynamicLib_(arg.dynamicLib_)
+          libName_(arg.libName_)
     {
         cgCppadFun_ = arg.cgCppadFun_;
         if (compiled_)
+        {
+            dynamicLib_ = internal::CGHelpers::loadDynamicLibCppad<double>(libName_);
             model_ =
                 std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad" + libName_));
+        }
     }
 
 
@@ -457,7 +462,9 @@ public:
         }
     }
 
-private:
+    //! retrieve the dynamic library, e.g. for testing purposes
+    const std::shared_ptr<CppAD::cg::DynamicLib<double>> getDynamicLib() { return dynamicLib_; }
+protected:
     //! record the Auto-Diff terms for code generation
     void recordCg()
     {
