@@ -5,7 +5,7 @@ In this tutorial we shall cover ways of generating the inverse kinematics analyt
 
 IKFast is closed-form analytic inverse kinematics solver which generates IK solutions in the order of microseconds, which is usually a few orders of magnitude faster than the numerical solvers. Since the solver is analytic, certain assumptions must be satisfied, thus making the solver less general than the numerical solvers.
 
-The simplest way of generating a solver, which potentially lacks customizability, is to use <a href="https://www.hamzamerzic.info/ikfast/">this</a> online service which generates the desired inverse kinematics file. Simply upload the URDF or DAE file for which you wish to generate the inverse kinematics and follow the instructions from there.
+The simplest way of generating a solver, which potentially lacks customizability, is to use <a href="https://www.hamzamerzic.info/ikfast_generator/">this</a> online service which generates the desired inverse kinematics file. Simply upload the URDF or DAE file for which you wish to generate the inverse kinematics and follow the instructions from there.
 
 The more involved approaches are presented in the pages below.
 
