@@ -215,6 +215,13 @@ TEST(JacobianCGTest, JITCloneTest)
 
         std::shared_ptr<derivativesCppadJIT> jacCG_cloned(jacCG->clone());
 
+        // make sure the underlying dynamic libraries are not identical (dynamic library cloned correctly)
+        if (jacCG_cloned->getDynamicLib() == jacCG->getDynamicLib())
+        {
+            std::cout << "FATAL ERROR: dynamic library not cloned correctly in JIT." << std::endl;
+            ASSERT_TRUE(false);
+        }
+
         for (size_t i = 0; i < 100; i++)
         {
             // create a random input

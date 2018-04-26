@@ -113,6 +113,13 @@ TEST(ADCodegenLinearizerTest, JITCloneTest)
     std::cout << "cloning without compilation..." << std::endl;
     std::shared_ptr<ADCodegenLinearizer<state_dim, control_dim>> adLinearizerClone(adLinearizer.clone());
 
+    // make sure the underlying dynamic libraries are not identical (dynamic library cloned correctly)
+    if (adLinearizerClone->getLinearizer().getDynamicLib() == adLinearizer.getLinearizer().getDynamicLib())
+    {
+        std::cout << "FATAL ERROR: dynamic library not cloned correctly in JIT." << std::endl;
+        ASSERT_TRUE(false);
+    }
+
     // create state, control and time variables
     StateVector<TestNonlinearSystem::STATE_DIM> x;
     ControlVector<TestNonlinearSystem::CONTROL_DIM> u;
