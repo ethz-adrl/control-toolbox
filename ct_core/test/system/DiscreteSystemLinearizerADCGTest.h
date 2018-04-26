@@ -1,6 +1,5 @@
 /**********************************************************************************************************************
 This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -42,9 +41,13 @@ TEST(DiscreteSystemLinearizerADCG, JITCompilationTest)
     std::cout << "... done!" << std::endl;
 
     std::shared_ptr<DiscreteSystemLinearizerADCG<state_dim, control_dim>> adLinearizerClone(adLinearizer.clone());
-    std::cout << "compiling the clone..." << std::endl;
-    adLinearizerClone->compileJIT("ADCGCodegenLibCone");
-    std::cout << "... done!" << std::endl;
+
+    // make sure the underlying dynamic libraries are not identical (dynamic library cloned correctly)
+    if (adLinearizerClone->getLinearizer().getDynamicLib() == adLinearizer.getLinearizer().getDynamicLib())
+    {
+        std::cout << "FATAL ERROR: dynamic library not cloned correctly in JIT." << std::endl;
+        ASSERT_TRUE(false);
+    }
 
     // create state, control and time variables
     StateVector<state_dim> x;

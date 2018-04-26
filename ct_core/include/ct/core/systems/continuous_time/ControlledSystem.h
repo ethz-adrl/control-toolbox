@@ -1,6 +1,5 @@
 /**********************************************************************************************************************
 This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -58,7 +57,7 @@ public:
 	 * @param type system type
 	 */
     ControlledSystem(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
-        : System<STATE_DIM, SCALAR>(type), controller_(nullptr){};
+        : System<STATE_DIM, SCALAR>(type), controller_(nullptr){}
 
     //! constructor
     /*!
@@ -71,7 +70,7 @@ public:
         : System<STATE_DIM, SCALAR>(type), controller_(controller)
     {
         controlAction_.setZero();
-    };
+    }
 
     //! copy constructor
     ControlledSystem(const ControlledSystem& arg) : System<STATE_DIM, SCALAR>(arg), controlAction_(arg.controlAction_)
@@ -81,7 +80,7 @@ public:
     }
 
     //! destructor
-    virtual ~ControlledSystem(){};
+    virtual ~ControlledSystem(){}
 
     //! deep copy
     virtual ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override = 0;

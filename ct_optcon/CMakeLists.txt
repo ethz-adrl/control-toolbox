@@ -219,6 +219,12 @@ if(BUILD_EXAMPLES)
 
     add_executable(ex_DMS examples/DMS.cpp)
     target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
+
+    add_executable(ex_KalmanFiltering examples/KalmanFiltering.cpp)
+    target_link_libraries(ex_KalmanFiltering ${catkin_LIBRARIES})
+
+    add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
+    target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
 endif()
 
 
@@ -330,7 +336,6 @@ if(USE_PRESPEC)
     catkin_add_gtest(system_interface_test_prespec test/system_interface/SystemInterfaceTest-Prespec.cpp)
     target_link_libraries(system_interface_test_prespec ${catkin_LIBRARIES} ${PRESPEC_LIB_NAMES})
 endif(USE_PRESPEC)
-
 
 ## build doxygen documentation
 find_package(Doxygen)

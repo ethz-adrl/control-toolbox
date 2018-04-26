@@ -1,6 +1,5 @@
 /**********************************************************************************************************************
 This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -295,6 +294,25 @@ public:
         t.close();
 
         return source;
+    }
+
+
+    /*!
+     * @brief load a previously generated dynamic library by name
+     * @param libName name of the library
+     * @return pointer to a loaded instance of the library
+     *
+     * \note This loading function is inspired by the CppAD dynamic library processor, see CppAD::cg::DynamicModelLibraryProcessor
+     */
+    template <typename SC = double>
+    static std::shared_ptr<CppAD::cg::DynamicLib<SC>> loadDynamicLibCppad(const std::string& libName)
+    {
+#if CPPAD_CG_SYSTEM_LINUX
+        return std::shared_ptr<CppAD::cg::DynamicLib<SC>>(
+            new CppAD::cg::LinuxDynamicLib<SC>(libName + CppAD::cg::system::SystemInfo<>::DYNAMIC_LIB_EXTENSION));
+#else
+        throw std::runtime_error("Loading dynamic Cppad codegen libraries only supported in Linux.");
+#endif
     }
 };
 

@@ -1,6 +1,5 @@
 /**********************************************************************************************************************
 This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -15,12 +14,12 @@ class StateVector : public Eigen::Matrix<SCALAR, STATE_DIM, 1>
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    typedef Eigen::Matrix<SCALAR, STATE_DIM, 1> Base;
     static const size_t DIM = STATE_DIM;
 
-    StateVector(){};
-    virtual ~StateVector(){};
+    StateVector() {}
+    virtual ~StateVector() {}
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, 1> Base;
     //! This constructor allows you to construct MyVectorType from Eigen expressions
     template <typename OtherDerived>
     StateVector(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)

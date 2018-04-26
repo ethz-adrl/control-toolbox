@@ -1,6 +1,5 @@
 /**********************************************************************************************************************
 This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 #pragma once
@@ -54,6 +53,7 @@ public:
           dFdu_(state_control_matrix_t::Zero()),
           x_at_cache_(state_vector_t::Random()),
           u_at_cache_(control_vector_t::Random()),
+          jitLibName_(""),
           compiled_(false),
           cacheJac_(cacheJac),
           maxTempVarCountState_(0),
@@ -69,14 +69,18 @@ public:
           dFdu_(rhs.dFdu_),
           x_at_cache_(rhs.x_at_cache_),
           u_at_cache_(rhs.u_at_cache_),
+          jitLibName_(rhs.jitLibName_),
           compiled_(rhs.compiled_),
           cacheJac_(rhs.cacheJac_),
-          dynamicLib_(rhs.dynamicLib_),
           maxTempVarCountState_(rhs.maxTempVarCountState_),
           maxTempVarCountControl_(rhs.maxTempVarCountControl_)
     {
         if (compiled_)
-            model_ = std::shared_ptr<CppAD::cg::GenericModel<OUT_SCALAR>>(dynamicLib_->model("DynamicsLinearizerADCG"));
+        {
+            dynamicLib_ = internal::CGHelpers::loadDynamicLibCppad<OUT_SCALAR>(jitLibName_);
+            model_ = std::shared_ptr<CppAD::cg::GenericModel<OUT_SCALAR>>(
+                dynamicLib_->model("DynamicsLinearizerADCG" + jitLibName_));
+        }
     }
 
     //! compute and return derivative w.r.t. state
@@ -134,24 +138,42 @@ public:
     * \note If this function takes a long time, consider generating the source code using
     * generateCode() and compile it before runtime.
     */
-    void compileJIT(const std::string& libName = "threadId" + std::to_string(std::hash<std::thread::id>()(
-                                                                  std::this_thread::get_id())))
+    void compileJIT(const std::string& libName = "DynamicsLinearizerADCG", bool verbose = false)
     {
         if (compiled_)
             return;
 
-        CppAD::cg::ModelCSourceGen<OUT_SCALAR> cgen(this->f_, "DynamicsLinearizerADCG");
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+
+        // assigning a unique identifier to the library in order to avoid race conditions in JIT
+        std::string uniqueID =
+            std::to_string(std::hash<std::thread::id>()(std::this_thread::get_id())) + "_" + std::to_string(ts.tv_nsec);
+
+        jitLibName_ = libName + uniqueID;
+
+        CppAD::cg::ModelCSourceGen<OUT_SCALAR> cgen(this->f_, "DynamicsLinearizerADCG" + jitLibName_);
         cgen.setCreateJacobian(true);
         CppAD::cg::ModelLibraryCSourceGen<OUT_SCALAR> libcgen(cgen);
+        std::string tempDir = "cppad_temp" + uniqueID;
+        if (verbose)
+        {
+            std::cout << "Starting to compile " << jitLibName_ << " library ..." << std::endl;
+            std::cout << "In temporary directory " << tempDir << std::endl;
+        }
 
         // compile source code
-        CppAD::cg::DynamicModelLibraryProcessor<OUT_SCALAR> p(libcgen, libName);
-
+        CppAD::cg::DynamicModelLibraryProcessor<OUT_SCALAR> p(libcgen, jitLibName_);
+        compiler_.setTemporaryFolder(tempDir);
         dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<OUT_SCALAR>>(p.createDynamicLibrary(compiler_));
 
-        model_ = std::shared_ptr<CppAD::cg::GenericModel<OUT_SCALAR>>(dynamicLib_->model("DynamicsLinearizerADCG"));
+        model_ = std::shared_ptr<CppAD::cg::GenericModel<OUT_SCALAR>>(
+            dynamicLib_->model("DynamicsLinearizerADCG" + jitLibName_));
 
         compiled_ = true;
+
+        if (verbose)
+            std::cout << "Successfully compiled " << jitLibName_ << std::endl;
     }
 
     //! generates source code
@@ -190,6 +212,8 @@ public:
         maxTempVarCountControl = maxTempVarCountControl_;
     }
 
+    //! retrieve the dynamic library, e.g. for testing purposes
+    const std::shared_ptr<CppAD::cg::DynamicLib<OUT_SCALAR>> getDynamicLib() const { return dynamicLib_; }
 protected:
     //! computes the Jacobians
     /*!
@@ -225,6 +249,7 @@ protected:
     state_vector_t x_at_cache_;    //!< state at which Jacobian has been cached
     control_vector_t u_at_cache_;  //!< input at which Jacobian has been cached
 
+    std::string jitLibName_;                       //!< name of the library compiled with JIT
     bool compiled_;                                //!< flag if library from generated code is compiled
     bool cacheJac_;                                //!< flag if Jacobian will be cached
     CppAD::cg::GccCompiler<OUT_SCALAR> compiler_;  //!< compiler instance for JIT compilation

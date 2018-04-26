@@ -1,6 +1,5 @@
 /**********************************************************************************************************************
 This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 /*!
@@ -182,6 +181,55 @@ TEST(HessianCGTest, JITHessianTest)
         }
 
 
+    } catch (std::exception& e)
+    {
+        std::cout << "Exception thrown: " << e.what() << std::endl;
+        ASSERT_TRUE(false);
+    }
+}
+
+
+/*!
+ * Test cloning of JIT compiled libraries
+ */
+TEST(JacobianCGTest, JITCloneTest)
+{
+    try
+    {
+        typename derivativesCppadJIT::FUN_TYPE_CG f = testFunction<derivativesCppadJIT::CG_SCALAR>;
+        typename derivativesCppad::FUN_TYPE_AD f_ad = testFunction<derivativesCppad::AD_SCALAR>;
+
+        // initialize the Auto-Diff Codegen Jacobian
+        std::shared_ptr<derivativesCppadJIT> jacCG(new derivativesCppadJIT(f));
+        std::shared_ptr<derivativesCppad> jacAd(new derivativesCppad(f_ad));
+
+        DerivativesCppadSettings settings;
+        settings.createJacobian_ = true;
+
+        // compile the Jacobian
+        jacCG->compileJIT(settings, "jacobianCGLib");
+
+        // create an input vector
+        Eigen::Matrix<double, inDim, 1> x;
+
+        std::shared_ptr<derivativesCppadJIT> jacCG_cloned(jacCG->clone());
+
+        // make sure the underlying dynamic libraries are not identical (dynamic library cloned correctly)
+        if (jacCG_cloned->getDynamicLib() == jacCG->getDynamicLib())
+        {
+            std::cout << "FATAL ERROR: dynamic library not cloned correctly in JIT." << std::endl;
+            ASSERT_TRUE(false);
+        }
+
+        for (size_t i = 0; i < 100; i++)
+        {
+            // create a random input
+            x.setRandom();
+
+            // verify agains the analytical Jacobian
+            ASSERT_LT((jacCG_cloned->jacobian(x) - jacobianCheck(x)).array().abs().maxCoeff(), 1e-10);
+            ASSERT_LT((jacCG_cloned->jacobian(x) - jacAd->jacobian(x)).array().abs().maxCoeff(), 1e-10);
+        }
     } catch (std::exception& e)
     {
         std::cout << "Exception thrown: " << e.what() << std::endl;

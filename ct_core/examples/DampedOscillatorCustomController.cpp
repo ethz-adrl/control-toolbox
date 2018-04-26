@@ -1,6 +1,5 @@
 /**********************************************************************************************************************
 This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 /*!
@@ -53,5 +52,5 @@ int main(int argc, char** argv)
     // print the new state
     std::cout << "state after integration: " << x.transpose() << std::endl;
 
-    return 1;
+    return 0;
 }

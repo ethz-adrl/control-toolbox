@@ -1,7 +1,6 @@
 /**********************************************************************************************************************
  This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
- Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
- Licensed under Apache2 license (see LICENSE file in main directory)
+  Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #pragma once
@@ -46,10 +45,8 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const CostFunctio
         finalTerms_[i] =
             std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>>(arg.finalTerms_[i]->clone());
 
-    intermediateCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(intermediateFun_, STATE_DIM + CONTROL_DIM + 1, 1));
-    finalCostCodegen_ = std::shared_ptr<JacCG>(new JacCG(finalFun_, STATE_DIM + CONTROL_DIM + 1, 1));
-
-    initialize();  //when cloning, we directly call initialize()
+    intermediateCostCodegen_ = std::shared_ptr<JacCG>(arg.intermediateCostCodegen_->clone());
+    finalCostCodegen_ = std::shared_ptr<JacCG>(arg.finalCostCodegen_->clone());
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>

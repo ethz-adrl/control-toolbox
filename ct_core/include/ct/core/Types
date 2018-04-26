@@ -1,6 +1,5 @@
 /**********************************************************************************************************************
 This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -11,10 +10,13 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "types/AutoDiff.h"
 #include "types/ControlVector.h"
 #include "types/StateVector.h"
+#include "types/OutputVector.h"
 #include "types/FeedbackMatrix.h"
 #include "types/StateMatrix.h"
 #include "types/ControlMatrix.h"
+#include "types/OutputMatrix.h"
 #include "types/StateControlMatrix.h"
+#include "types/OutputStateMatrix.h"
 
 #include "types/arrays/ScalarArray.h"
 #include "types/arrays/TimeArray.h"

@@ -69,6 +69,7 @@ catkin_package(
         ${BOOST_INCLUDE_DIRS}
         include
         include/external
+        examples
         ${EIGEN3_INCLUDE_DIR}
    LIBRARIES
        dl
@@ -167,7 +168,7 @@ endif()
 if(USE_PRESPEC)
     catkin_add_gtest(IntegrationTestPrespec test/integration/IntegrationTestPrespec.cpp)
     target_link_libraries(IntegrationTestPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
-    
+
     catkin_add_gtest(IntegratorComparisonPrespec test/integration/IntegratorComparisonPrespec.cpp)
     target_link_libraries(IntegratorComparisonPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
 endif(USE_PRESPEC)

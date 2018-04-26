@@ -1,6 +1,5 @@
 /**********************************************************************************************************************
 This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
@@ -52,12 +51,12 @@ DARE<STATE_DIM, CONTROL_DIM, SCALAR>::computeSteadyStateRiccatiMatrix(const stat
         dynamicRDE_.iterateRobust(Q, R, A, B, P, K);
         diff = (P - P_prev).cwiseAbs().maxCoeff();
         if (!K.allFinite())
-            throw std::runtime_error("DARE : Failed to converge");
+            throw std::runtime_error("DARE : Failed to converge - K is unstable.");
         numIter++;
     }
 
     if (diff >= eps)
-        throw std::runtime_error("DARE : Failed to converge");
+        throw std::runtime_error("DARE : Failed to converge - maximum number of iterations reached.");
 
     if (verbose)
     {

@@ -1,6 +1,5 @@
 /**********************************************************************************************************************
 This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -151,7 +150,6 @@ TEST(CostFunctionTest, ADQuadraticTest)
 
             // create cloned cost function
             std::shared_ptr<CostFunctionAD<state_dim, control_dim>> costFunctionAD_clone(costFunctionAD.clone());
-            costFunctionAD_clone->initialize();
 
             for (size_t j = 0; j < nTests; j++)
             {
@@ -170,7 +168,7 @@ TEST(CostFunctionTest, ADQuadraticTest)
                 costFunctionAD.setCurrentStateAndControl(x, u, 1.0);
                 costFunctionAD_clone->setCurrentStateAndControl(x, u, 1.0);
 
-                //			printCostFunctionOutput(costFunction, costFunctionAD);
+                // printCostFunctionOutput(costFunction, costFunctionAD);
                 compareCostFunctionOutput(costFunction, costFunctionAD);
                 compareCostFunctionOutput(costFunction, *costFunctionAD_clone);
 
@@ -210,9 +208,9 @@ TEST(CostFunctionTest, ADQuadMultTest)
     std::shared_ptr<TermMixed<state_dim, control_dim, double, ct::core::ADCGScalar>> termMixedAD(
         new TermMixed<state_dim, control_dim, double, ct::core::ADCGScalar>);
 
-
     costFunction.addIntermediateTerm(termQuadMult);
     costFunctionAD.addIntermediateADTerm(termQuadMultAD);
+    costFunctionAD.initialize();
 
     Eigen::Matrix<double, state_dim, state_dim> Q;
     Eigen::Matrix<double, control_dim, control_dim> R;
@@ -261,8 +259,6 @@ TEST(CostFunctionTest, ADQuadMultTest)
 
             // create cloned cost function
             std::shared_ptr<CostFunctionAD<state_dim, control_dim>> costFunctionAD_clone(costFunctionAD.clone());
-            costFunctionAD_clone->initialize();
-
 
             for (size_t j = 0; j < nTests; j++)
             {
