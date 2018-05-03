@@ -108,23 +108,27 @@ void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::updateReferenceContr
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-bool CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediateTest()
+bool CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediateTest(bool verbose)
 {
     state_vector_t derivative = stateDerivativeIntermediate();
     state_vector_t derivativeNd = stateDerivativeIntermediateNumDiff();
-    std::cout << "norm error between derivative/numdiff state : " << std::endl
-              << (derivative - derivativeNd).norm() << std::endl;
+
+    if (verbose)
+        std::cout << "norm error between derivative/numdiff state : " << std::endl
+                  << (derivative - derivativeNd).norm() << std::endl;
 
     return (derivative.isApprox(derivativeNd, 1e-6));
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-bool CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeIntermediateTest()
+bool CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeIntermediateTest(bool verbose)
 {
     control_vector_t derivative = controlDerivativeIntermediate();
     control_vector_t derivativeNd = controlDerivativeIntermediateNumDiff();
-    std::cout << "norm error between derivative/numdiff control : " << std::endl
-              << (derivative - derivativeNd).norm() << std::endl;
+
+    if (verbose)
+        std::cout << "norm error between derivative/numdiff control : " << std::endl
+                  << (derivative - derivativeNd).norm() << std::endl;
 
     return (derivative.isApprox(derivativeNd, 1e-6));
 }

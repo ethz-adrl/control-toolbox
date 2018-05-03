@@ -21,5 +21,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include "robot/costfunction/TermTaskspacePosition.hpp"
 #include "robot/costfunction/TermTaskspacePose.hpp"
+#include "robot/costfunction/TermTaskspacePoseCG.hpp"
 
 #include "robot/kinematics/EndEffector.h"

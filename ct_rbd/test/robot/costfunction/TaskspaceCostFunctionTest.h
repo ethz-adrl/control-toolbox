@@ -3,12 +3,13 @@ This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyr
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#include "../../models/testhyq/RobCoGenTestHyQ.h"
 #include <gtest/gtest.h>
+#include "../../models/testhyq/RobCoGenTestHyQ.h"
 #include "../../../ct_optcon/test/costfunction/compareCostFunctions.h"
 
 using namespace ct;
 using namespace rbd;
+
 
 TEST(TaskspaceCostFunctionTests, TestTaskSpacePositionTerm)
 {
@@ -43,10 +44,7 @@ TEST(TaskspaceCostFunctionTests, TestTaskSpacePositionTerm)
 
     Adcf->setCurrentStateAndControl(x, u, t);
 
-    //    Adcf->stateDerivativeIntermediateTest();
-    //    Adcf->controlDerivativeIntermediateTest();
-
-    //! compare auto-diff against num-diff
+    // compare auto-diff against num-diff
     ASSERT_TRUE(Adcf->stateDerivativeIntermediateTest());
     ASSERT_TRUE(Adcf->controlDerivativeIntermediateTest());
 
@@ -116,10 +114,7 @@ TEST(TaskspaceCostFunctionTests, TestTaskSpacePoseTerm)
 
     Adcf->setCurrentStateAndControl(x, u, t);
 
-    //    Adcf->stateDerivativeIntermediateTest();
-    //    Adcf->controlDerivativeIntermediateTest();
-
-    //! compare auto-diff against num-diff
+    // compare auto-diff against num-diff
     ASSERT_TRUE(Adcf->stateDerivativeIntermediateTest());
     ASSERT_TRUE(Adcf->controlDerivativeIntermediateTest());
 
@@ -131,4 +126,90 @@ TEST(TaskspaceCostFunctionTests, TestTaskSpacePoseTerm)
     Adcf->setCurrentStateAndControl(x, u, t);
     Adcf_cloned->setCurrentStateAndControl(x, u, t);
     ct::optcon::example::compareCostFunctionOutput(*Adcf_cloned, *Adcf);
+}
+
+
+TEST(TaskspaceCostFunctionTests, TestTaskSpacePoseTermCG)
+{
+    typedef ct::core::ADCGScalar size_type;
+    typedef TestHyQ::tpl::Kinematics<size_type> KinTpl_t;
+
+    // global vars
+    const size_t eeId = 1;
+    const size_t hyqStateDim = 36;
+    const size_t hyqControlDim = 12;
+
+    // specify a penalty on the position error
+    const Eigen::Matrix<double, 3, 3> Qpos = Eigen::Matrix<double, 3, 3>::Identity();
+
+    // specify a penalty on the orientation error
+    const double Qrot = 1.0;
+
+    // specify a desired ee position
+    Eigen::Matrix<double, 3, 1> w_pos_ee;
+    w_pos_ee.setRandom();
+
+    // specify a desired ee orientation as quaternion, to be used in first constructor
+    Eigen::Quaternion<double> w_q_ee;
+    w_q_ee.setIdentity();
+
+    // get euler angles corresponding to the quaternion, to be used in second constructor
+    Eigen::Matrix<double, 3, 1> w_euler_ee = w_q_ee.toRotationMatrix().eulerAngles(0, 1, 2);
+
+    // test constructor taking the quaternion
+    std::shared_ptr<TermTaskspacePoseCG<KinTpl_t, true, hyqStateDim, hyqControlDim>> term1(
+        new TermTaskspacePoseCG<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId, Qpos, Qrot, w_pos_ee, w_q_ee));
+
+    // create and initialize the cost function
+    std::shared_ptr<optcon::CostFunctionAnalytical<hyqStateDim, hyqControlDim>> costFun(
+        new optcon::CostFunctionAnalytical<hyqStateDim, hyqControlDim>());
+
+    costFun->addIntermediateTerm(term1);
+    costFun->initialize();
+
+    Eigen::Matrix<double, hyqStateDim, 1> x;
+    Eigen::Matrix<double, hyqControlDim, 1> u;
+    x.setRandom();
+    u.setRandom();
+
+    double t = 1.0;
+
+    // TEST 1: compare auto-diff against num-diff
+    // ==========================================
+    ASSERT_TRUE(costFun->stateDerivativeIntermediateTest());
+    ASSERT_TRUE(costFun->controlDerivativeIntermediateTest());
+
+    // TEST 2: cost must not be the same after the reference position and orientation got changed
+    // ==========================================
+    costFun->setCurrentStateAndControl(x, u, t);
+    double cost_orig = costFun->evaluateIntermediate();
+    Eigen::VectorXd stateDerivative_orig = costFun->stateDerivativeIntermediate();
+    // change reference parameters
+    w_pos_ee.setRandom();
+    Eigen::Quaterniond testq = w_q_ee * Eigen::Quaterniond(0, 1, 0, 0);
+    term1->setReferencePosition(w_pos_ee);
+    term1->setReferenceOrientation(testq);
+    // new evaluation
+    double cost_new = costFun->evaluateIntermediate();
+    Eigen::VectorXd stateDerivative_new = costFun->stateDerivativeIntermediate();
+    ASSERT_TRUE(cost_orig - cost_new > 1e-8);
+    ASSERT_TRUE((stateDerivative_orig - stateDerivative_new).array().maxCoeff() > 1e-8);
+
+    // TEST 3: check that the reference position and orientation got updated correctly
+    // ==========================================
+    Eigen::Vector3d w_pos_ee_retrieved = term1->getReferencePosition();
+    ASSERT_TRUE((w_pos_ee - w_pos_ee_retrieved).array().maxCoeff() < 1e-6);
+    Eigen::Matrix3d matOriginal = testq.toRotationMatrix();
+    Eigen::Matrix3d matRetrieved = term1->getReferenceOrientation().toRotationMatrix();
+    ASSERT_TRUE((matOriginal - matRetrieved).array().maxCoeff() < 1e-6);
+
+    // TEST 4: check cloning for this term/costfunction combination
+    // ==========================================
+    std::shared_ptr<optcon::CostFunctionAnalytical<hyqStateDim, hyqControlDim>> costFun_cloned(costFun->clone());
+    x.setRandom();
+    u.setRandom();
+    t = 2.0;
+    costFun->setCurrentStateAndControl(x, u, t);
+    costFun_cloned->setCurrentStateAndControl(x, u, t);
+    ct::optcon::example::compareCostFunctionOutput(*costFun_cloned, *costFun);
 }

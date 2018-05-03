@@ -166,10 +166,10 @@ public:
     virtual void updateReferenceControl(const control_vector_t& u_ref);
 
     //! compare the state derivative against numerical differentiation
-    bool stateDerivativeIntermediateTest();
+    bool stateDerivativeIntermediateTest(bool verbose = false);
 
     //! compare the control derivative against numerical differentiation
-    bool controlDerivativeIntermediateTest();
+    bool controlDerivativeIntermediateTest(bool verbose = false);
 
     std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> getIntermediateTermById(const size_t id);
 
