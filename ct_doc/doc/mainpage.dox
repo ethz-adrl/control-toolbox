@@ -215,6 +215,7 @@ The four different main modules are detailed in the following.
 
 The source code is available at <a href="https://bitbucket.org/adrlab/ct" target="_blank">https://bitbucket.org/adrlab/ct</a>
 
+Examples for interfacing with ROS and advanced application examples are available at <a href="https://bitbucket.org/adrlab/ct_ros/src/master/" target="_blank">ct_ros</a>.
 
 \section gs How to use the Control Toolbox
 
