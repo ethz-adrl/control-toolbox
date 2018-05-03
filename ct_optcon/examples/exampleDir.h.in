@@ -8,6 +8,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
+// the following path will be set automatically during building (do not copy this file manually!)
 static const std::string exampleDir = "${CT_OPTCON_EXAMPLE_DIR}";
 
 }
