@@ -441,7 +441,9 @@ private:
         // compute rotation penalty using the Frobenius norm of (R_diff-I)
         SC rot_cost = (SC)Q_rot_ * (ee_R_diff - Eigen::Matrix<SC, 3, 3>::Identity()).squaredNorm();
 
-        return Eigen::Matrix<SC, 1, 1>(pos_cost + rot_cost);
+        Eigen::Matrix<SC, 1, 1> result;
+        result(0,0) = pos_cost + rot_cost;
+        return result;
     }
 
     //! index of the end-effector
