@@ -1,0 +1,64 @@
+<robot name="DoubleInvertedPendulum">
+  <link name="DoubleInvertedPendulumBase">
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 1.57 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.015" radius="0.015"/>
+      </geometry>
+      <material name="red">
+        <color rgba="0.8 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+  <link name="Link1">
+    <inertial>
+      <origin xyz="0.0 0.0 0.137"/>
+      <mass value="1.811"/>
+      <inertia ixx="0.009055" ixy="0.0" ixz="0.0" iyy="0.00047" iyz="0.0" izz="0.00047"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0.137"/>
+      <geometry>
+          <cylinder length="0.27" radius="0.01"/>
+      </geometry>
+      <material name="blue">
+          <color rgba="0 0 .8 1"/>
+      </material>
+    </visual>
+  </link>
+  <link name="Link2">
+    <inertial>
+      <origin xyz="0.0 0.0 0.137"/>
+      <mass value="1.811"/>
+      <inertia ixx="0.009055" ixy="0.0" ixz="0.0" iyy="0.00047" iyz="0.0" izz="0.00047"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0.137"/>
+      <geometry>
+          <cylinder length="0.27" radius="0.01"/>
+      </geometry>
+      <material name="blue">
+          <color rgba="0 0 .8 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="Joint1" type="revolute">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="InvertedPendulumBase"/>
+    <child link="Link1"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="150.0" lower="-3.1416" upper="3.1416" velocity="12.0"/>
+  </joint>
+  <joint name="Joint2" type="revolute">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="Link1"/>
+    <child link="Link2"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="150.0" lower="-3.1416" upper="3.1416" velocity="12.0"/>
+  </joint>
+</robot>
