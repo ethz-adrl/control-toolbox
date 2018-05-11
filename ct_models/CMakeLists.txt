@@ -197,7 +197,7 @@ if(BUILD_EXAMPLES)
     set(CT_MODELS_EXAMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/examples")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
 
-    add_executable(ex_NLOC_MPC_invertedPendulum examples/InvertedPendulum/NLOC_MPC.cpp)
+    add_executable(ex_NLOC_MPC_invertedPendulum examples/mpc/InvertedPendulum/NLOC_MPC.cpp)
     target_link_libraries(ex_NLOC_MPC_invertedPendulum ${catkin_LIBRARIES})
 endif()
 

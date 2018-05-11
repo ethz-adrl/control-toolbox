@@ -3,9 +3,8 @@ This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyr
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#include <ct/optcon/optcon.h>
 #include <ct/rbd/rbd.h>
-#include "../exampleDir.h"
+#include "../../exampleDir.h"
 
 #include <ct/models/InvertedPendulum/InvertedPendulum.h>
 
@@ -53,9 +52,11 @@ public:
 
         std::shared_ptr<ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>> new_controller(
             new ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM>);
+
         bool success = mpc_.finishIteration(x_temp, sim_time, *new_controller, controller_ts_);
+
         if (!success)
-            throw std::runtime_error("Failed to finish iteration.");
+            throw std::runtime_error("Failed to finish MPC iteration.");
 
         control_mtx_.lock();
         controller_ = new_controller;
@@ -88,12 +89,12 @@ int main(int argc, char* argv[])
         ct::optcon::NLOptConSettings nloc_settings;
         nloc_settings.load(configFile, verbose, "ilqr");
 
-        std::shared_ptr<ct::optcon::TermQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM, double, double>>
-        termQuadInterm(new ct::optcon::TermQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM, double, double>);
+        std::shared_ptr<ct::optcon::TermQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>> termQuadInterm(
+            new ct::optcon::TermQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>);
         termQuadInterm->loadConfigFile(costFunctionFile, "term0", verbose);
 
-        std::shared_ptr<ct::optcon::TermQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM, double, double>>
-        termQuadFinal(new ct::optcon::TermQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM, double, double>);
+        std::shared_ptr<ct::optcon::TermQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>> termQuadFinal(
+            new ct::optcon::TermQuadratic<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>);
         termQuadFinal->loadConfigFile(costFunctionFile, "term1", verbose);
 
         std::shared_ptr<ct::optcon::CostFunctionAnalytical<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>> newCost(
@@ -167,7 +168,6 @@ int main(int argc, char* argv[])
             nloc_solver.getSolution();
         InvertedPendulumNLOC::StateVectorArray x_nloc = initialSolution.x_ref();
 
-        // nloc_solver.retrieveLastRollout();
 
         ct::optcon::NLOptConSettings ilqr_settings_mpc(nloc_solver.getSettings());
         ilqr_settings_mpc.max_iterations = 1;
@@ -186,9 +186,12 @@ int main(int argc, char* argv[])
             optConProblem, ilqr_settings_mpc, mpc_settings);
         ilqr_mpc.setInitialGuess(initialSolution);
 
-        MPCSimulator mpc_sim(1e-3, 1e-2, x0, ipSystem, ilqr_mpc);
+        ct::core::Time sim_dt = 1e-3;
+        ct::core::Time control_dt = 1e-2;
+
+        MPCSimulator mpc_sim(sim_dt, control_dt, x0, ipSystem, ilqr_mpc);
         std::cout << "simulating 3 seconds" << std::endl;
-        mpc_sim.simulate(3);
+        mpc_sim.simulate(3.0);
         mpc_sim.finish();
 
         ilqr_mpc.printMpcSummary();

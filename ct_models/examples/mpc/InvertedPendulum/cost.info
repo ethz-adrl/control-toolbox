@@ -35,7 +35,7 @@ term0
       ; joint position
       (0,0)   0.0
 
-        ; joint velocity
+      ; joint velocity
       (1,0)   0.0
 
       ; motor position
@@ -73,7 +73,7 @@ term1
       ; joint position
       (0,0)   0.0
 
-        ; joint velocity
+      ; joint velocity
       (1,0)    0.0
 
       ; motor pos
