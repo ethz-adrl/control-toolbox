@@ -50,7 +50,7 @@ public:
 
     //! constructor
     OptconSystemInterface(const optConProblem_t& problem, const settings_t& settings)
-        : optConProblem_(problem), settings_(settings), controller_(settings.nThreads + 1)
+        : controller_(settings.nThreads + 1), optConProblem_(problem), settings_(settings)
     {
         for (auto& controller_i : controller_)
         {

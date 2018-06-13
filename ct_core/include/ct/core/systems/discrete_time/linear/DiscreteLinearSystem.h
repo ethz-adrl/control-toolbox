@@ -47,7 +47,7 @@ public:
     virtual ~DiscreteLinearSystem(){};
 
     //! deep cloning
-    virtual DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const = 0;
+    virtual DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override = 0;
 
     //! compute the system dynamics
     /*!

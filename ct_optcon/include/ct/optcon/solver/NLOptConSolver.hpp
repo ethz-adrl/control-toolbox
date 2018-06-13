@@ -111,7 +111,7 @@ public:
 	 * run a single iteration of the solver
 	 * @return true if a better solution was found
 	 */
-    virtual bool runIteration();
+    virtual bool runIteration() override;
 
     /*!
 	 * Set the initial guess used by the solver (not all solvers might support initial guesses)

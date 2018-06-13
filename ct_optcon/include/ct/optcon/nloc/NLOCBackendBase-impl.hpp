@@ -31,8 +31,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::NLOCBackendBase(
     const systemInterfacePtr_t& systemInterface,
     const Settings_t& settings)
-    : systemInterface_(systemInterface),
-      initialized_(false),
+    : initialized_(false),
       configured_(false),
       iteration_(0),
       settings_(settings),
@@ -46,6 +45,8 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::NLOCB
 
       substepsX_(new StateSubsteps),
       substepsU_(new ControlSubsteps),
+
+      systemInterface_(systemInterface),
 
       intermediateCostBest_(std::numeric_limits<SCALAR>::infinity()),
       finalCostBest_(std::numeric_limits<SCALAR>::infinity()),

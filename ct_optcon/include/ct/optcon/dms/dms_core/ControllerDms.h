@@ -53,7 +53,7 @@ public:
     }
 
 
-    void computeControl(const state_vector_t& state, const SCALAR& t, control_vector_t& controlAction)
+    void computeControl(const state_vector_t& state, const SCALAR& t, control_vector_t& controlAction) override
     {
         controlAction = controlSpliner_->evalSpline(t, shotIdx_);
         assert(controlAction == controlAction);
