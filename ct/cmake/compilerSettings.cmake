@@ -16,8 +16,8 @@ if (USE_CLANG AND USE_INTEL)
     message (FATAL_ERROR "Please choose either intel or clang compiler or neither.")
 endif()
 
-set(CLANG_C_COMPILER "/usr/bin/clang-3.5" CACHE STRING "Path to Clang C compiler binary")
-set(CLANG_CXX_COMPILER "/usr/bin/clang++-3.5" CACHE STRING "Path to Clang C++ compiler binary")
+set(CLANG_C_COMPILER "/usr/bin/clang" CACHE STRING "Path to Clang C compiler binary")
+set(CLANG_CXX_COMPILER "/usr/bin/clang++" CACHE STRING "Path to Clang C++ compiler binary")
 set(INTEL_C_COMPILER "/opt/intel/bin/icc" CACHE STRING "Path to Intel C compiler binary")
 set(INTEL_CXX_COMPILER "/opt/intel/bin/icpc" CACHE STRING "Path to Intel C++ compiler binary")
 
