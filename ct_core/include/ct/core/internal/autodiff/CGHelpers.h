@@ -66,7 +66,7 @@ public:
         codeHandler.makeVariables(input);
         // Initializing to some typical values
         for (size_t i = 0; i < n; i++)
-            input[i].setValue(0.0);
+            input[i].setValue(static_cast<double>(rand()) / static_cast<double>(RAND_MAX));
 
         CppAD::vector<AD_SCALAR> jac(jacDim);
 
@@ -124,7 +124,7 @@ public:
         CppAD::vector<AD_SCALAR> input(n);
 
         for (size_t i = 0; i < input.size(); i++)
-            input[i] = AD_SCALAR(0.0);
+            input[i].setValue(static_cast<double>(rand()) / static_cast<double>(RAND_MAX));
 
         // mark independent as variables
         codeHandler.makeVariables(input);
@@ -185,13 +185,13 @@ public:
         codeHandler.makeVariables(input);
         // setting some typical values here.
         for (size_t i = 0; i < input.size(); i++)
-            input[i].setValue(0.0);
+            input[i].setValue(static_cast<double>(rand()) / static_cast<double>(RAND_MAX));
 
         CppAD::vector<AD_SCALAR> weights(m);
         codeHandler.makeVariables(weights);
         // settings some typical values for the weights
         for (size_t i = 0; i < m; ++i)
-            weights[i].setValue(0.0);
+            weights[i].setValue(static_cast<double>(rand()) / static_cast<double>(RAND_MAX));
 
         CppAD::vector<AD_SCALAR> hes(hesDim);
         f.SparseHessian(input, weights, pattern.sparsity(), pattern.row(), pattern.col(), hes, pattern.workHessian());

@@ -101,7 +101,7 @@ protected:
         // input vector, needs to be dynamic size
         Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> x(STATE_DIM + CONTROL_DIM);
 
-        x.setZero();
+        x.setRandom();
 
         // declare x as independent
         CppAD::Independent(x);

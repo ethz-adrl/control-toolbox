@@ -186,6 +186,7 @@ private:
     {
         // input vector, needs to be dynamic size
         Eigen::Matrix<CG_SCALAR, Eigen::Dynamic, 1> x(inputDim_);
+        x.setRandom();
 
         // declare x as independent
         CppAD::Independent(x);
