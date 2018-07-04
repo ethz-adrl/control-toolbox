@@ -71,6 +71,7 @@ private:
     std::array<SCALAR, MAX_COUNT_STATE> vX_;
     std::array<SCALAR, MAX_COUNT_CONTROL> vU_;
 };
-}
-}
-}
+
+} // namespace NS2
+} // namespace NS1
+} // namespace ct
