@@ -58,9 +58,9 @@ public:
 
     virtual MatrixXs jacobianInput(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 
-    virtual size_t getNumNonZerosJacobianState() const;
+    virtual size_t getNumNonZerosJacobianState() const override;
 
-    virtual size_t getNumNonZerosJacobianInput() const;
+    virtual size_t getNumNonZerosJacobianInput() const override;
 
     virtual VectorXs jacobianStateSparse(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override;
 

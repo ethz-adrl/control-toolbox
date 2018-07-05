@@ -76,7 +76,7 @@ public:
     }
 
     //! destructor
-    virtual ~DiscreteControlledSystem(){};
+    virtual ~DiscreteControlledSystem() = default;
 
     //! deep copy
     virtual DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override = 0;

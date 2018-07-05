@@ -48,7 +48,7 @@ public:
     //! copy constructor
     StepInputController(const StepInputController& arg) : parameters_(arg.parameters_) {}
     //! deep cloning
-    StepInputController* clone() const { return new StepInputController(*this); }
+    StepInputController* clone() const override { return new StepInputController(*this); }
     //! computes control input
     /*!
      * Computes the control input. The state parameter gets ignored.
