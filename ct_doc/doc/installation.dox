@@ -17,42 +17,45 @@ library versions as provided in the package sources.
  - <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen 3</a>
  - <a href="http://wiki.ros.org/catkin">catkin</a> (build system, easy to switch to CMakeLists.txt where needed). We recommend using <a href="http://catkin-tools.readthedocs.io/en/latest/verbs/catkin_build.html">catkin_tools</a>
  - boost 1.54 or greater (soon optional)
- - <a href="https://github.com/ethz-asl/kindr">kindr</a>, a kinematics library for robotics, 
- which is required for building ct_rbd. Ideally, clone the newest version into your 
+ - <a href="https://github.com/ethz-asl/kindr">kindr</a>, a kinematics library for robotics,
+ which is required for building ct_rbd. Ideally, clone the newest version into your
  catkin workspace:
  \code{.sh}
  $ git clone https://github.com/ethz-asl/kindr.git
  \endcode
- 
- 
+
+
 \section opt_dep Optional Dependencies and Bindings
 The following dependencies and bindings are optional but can help to enhance the functionality or performance of the CT
 
  - <a href="http://www.netlib.org/lapack/">lapack</a> (enables Schur method as an alternative to iterative method in ct::optcon::LQR)
 
  - <a href="https://clang.llvm.org/">clang</a> compiler (faster compilation for large linear models), install from command-line via
- \code{.sh} $ sudo apt-get install clang-3.5 \endcode
+ \code{.sh} $ sudo apt-get install clang \endcode
+ and possibly replace `clang` with a more specific version, e.g. `clang-3.8`.
+ Please make sure that the `clang` and `clang++` commands are in your path.
+ You may need to create a symbolic link in `/usr/bin` or use a bash alias.
 
  - <a href="http://wiki.ros.org/indigo">ROS Indigo</a> or <a href="http://wiki.ros.org/kinetic">Kinetic</a> (for ROS bindings, visualization and extended examples), see <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_nodes</a>, <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_msgs</a>
 
  - <a href="https://projects.coin-or.org/Ipopt">IPOPT</a> or <a href="http://www.sbsi-sol-optimize.com/asp/sol_product_snopt.htm">SNOPT</a>
   (for ct::optcon::SnoptSolver and ct::optcon::IpoptSolver as used by ct::optcon::DMS)
 
- - <a href="https://github.com/giaf/blasfeo/releases/tag/ct-v2">blasfeo</a> linear algebra and <a href="https://github.com/giaf/hpipm/releases/tag/ct-v2">HPIPM solver</a> as 
- alternative high-performance (constrained) linear-quadratic optimal control solver. Check out the *ct-v2* tags. Detailed reference 
- about blasefeo can be found <a href="https://arxiv.org/abs/1704.02457">here</a>. 
+ - <a href="https://github.com/giaf/blasfeo/releases/tag/ct-v2">blasfeo</a> linear algebra and <a href="https://github.com/giaf/hpipm/releases/tag/ct-v2">HPIPM solver</a> as
+ alternative high-performance (constrained) linear-quadratic optimal control solver. Check out the *ct-v2* tags. Detailed reference
+ about blasefeo can be found <a href="https://arxiv.org/abs/1704.02457">here</a>.
  Both packages were developed by <a href="https://www.syscop.de/people/dr-gianluca-frison">Gianluca Frison</a>, <a href="https://www.syscop.de/">University of Freiburg</a>.
 
  - <a href="http://qwt.sourceforge.net/">Qwt</a> (for basic plotting)
 
  - MATLAB (for Matlab logging)
 
- - <a href="http://clang.llvm.org/extra/clang-tidy/">clang-tidy</a>, install via 
+ - <a href="http://clang.llvm.org/extra/clang-tidy/">clang-tidy</a>, install via
  \code{.sh}
  $ sudo apt-get install clang-tidy-3.9
  \endcode
 
- - <a href="https://clang.llvm.org/docs/ClangFormat.html">clang-format</a>, install via 
+ - <a href="https://clang.llvm.org/docs/ClangFormat.html">clang-format</a>, install via
   \code{.sh}
  $ sudo apt-get install clang-format-3.9
  \endcode
@@ -68,7 +71,7 @@ In order to build the library, execute the following commands in your terminal
 cd catkin_ws/src
 git clone https://github.com/ethz-asl/kindr.git
 git clone https://bitbucket.org/adrlab/ct.git
-catkin build -DCMAKE_BUILD_TYPE=RELEASE 
+catkin build -DCMAKE_BUILD_TYPE=RELEASE
 \endcode
 
 The following additional build flags are available, which can be appended to the build command above
@@ -77,10 +80,10 @@ Build Flag  | Default value | Description
 ------------- | ------------- | ------------
 -DBUILD_EXAMPLES=\<BOOL> | FALSE  | Builds examples for all packages
 -DBUILD_HYQ_FULL=\<FALSE> | FALSE | Build HyQ examples and executables (warning: slow with GCC!)
--DUSE_CLANG=\<BOOL> | FALSE  | Use CLANG instead of the default compiler 
--DCLANG_CXX_COMPILER=\<clang-bin> | "/usr/bin/clang++-3.5" | Set clang C++ compiler binary
--DCLANG_C_COMPILER=\<clang-bin> | "/usr/bin/clang-3.5" | Set clang C compiler binary
--DUSE_INTEL=\<BOOL> | FALSE  | Use Intel compiler instead of the default compiler 
+-DUSE_CLANG=\<BOOL> | FALSE  | Use CLANG instead of the default compiler
+-DCLANG_CXX_COMPILER=\<clang-bin> | "/usr/bin/clang++" | Set clang C++ compiler binary
+-DCLANG_C_COMPILER=\<clang-bin> | "/usr/bin/clang" | Set clang C compiler binary
+-DUSE_INTEL=\<BOOL> | FALSE  | Use Intel compiler instead of the default compiler
 -DINTEL_CXX_COMPILER=\<clang-bin> | "/opt/intel/bin/icc" | Set Intel C++ compiler binary
 -DINTEL_C_COMPILER=\<clang-bin> | "/opt/intel/bin/icpc" | Set Intel C compiler binary
 -DHPIPM=\<BOOL> | FALSE | Compile with HPIPM support (set $BLASFEO_DIR and $HPIPM_DIR environment variables)
@@ -90,7 +93,7 @@ Build Flag  | Default value | Description
 \section build_doc Build this Documentation
 To build the documentation do
 \code{.sh}
-catkin build ct_doc -v --make-args doc # build the doc 
+catkin build ct_doc -v --make-args doc # build the doc
 \endcode
 This will build the documentation and open it in your browser.
 
