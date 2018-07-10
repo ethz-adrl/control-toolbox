@@ -78,6 +78,7 @@ public:
 
     //! destructor
     virtual ~DynamicsLinearizerADBase() {}
+
 protected:
     const size_t A_entries = STATE_DIM * STATE_DIM;    //!< number of entries in the state Jacobian
     const size_t B_entries = STATE_DIM * CONTROL_DIM;  //!< number of entries in the input Jacobian
@@ -100,8 +101,8 @@ protected:
     {
         // input vector, needs to be dynamic size
         Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> x(STATE_DIM + CONTROL_DIM);
-
-        x.setZero();
+        // init to rand to avoid floating point problems in user's code
+        x.setRandom();
 
         // declare x as independent
         CppAD::Independent(x);
