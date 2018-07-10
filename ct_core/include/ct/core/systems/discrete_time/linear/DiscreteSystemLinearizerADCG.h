@@ -248,21 +248,24 @@ private:
         linearizer_.getMaxTempVarCount(maxTempVarCountState, maxTempVarCountControl);
 
         std::string header = internal::CGHelpers::parseFile(templateDir + "/DiscreteLinearSystem.tpl.h");
-        std::string source = internal::CGHelpers::parseFile(templateDir + "/DiscreteLinearSystem.tpl.cpp");
+        std::string sourceA = internal::CGHelpers::parseFile(templateDir + "/DiscreteLinearSystem.tplA.cpp");
+        std::string sourceB = internal::CGHelpers::parseFile(templateDir + "/DiscreteLinearSystem.tplB.cpp");
 
         const std::string scalarName(linearizer_.getOutScalarType());
 
         replaceSizesAndNames(header, systemName, scalarName, ns1, ns2);
-        replaceSizesAndNames(source, systemName, scalarName, ns1, ns2);
+        replaceSizesAndNames(sourceA, systemName, scalarName, ns1, ns2);
+        replaceSizesAndNames(sourceB, systemName, scalarName, ns1, ns2);
 
         internal::CGHelpers::replaceOnce(header, "MAX_COUNT_STATE", std::to_string(maxTempVarCountState));
         internal::CGHelpers::replaceOnce(header, "MAX_COUNT_CONTROL", std::to_string(maxTempVarCountControl));
 
-        internal::CGHelpers::replaceOnce(source, codePlaceholder + "_JAC_A", codeJacA);
-        internal::CGHelpers::replaceOnce(source, codePlaceholder + "_JAC_B", codeJacB);
+        internal::CGHelpers::replaceOnce(sourceA, codePlaceholder + "_JAC_A", codeJacA);
+        internal::CGHelpers::replaceOnce(sourceB, codePlaceholder + "_JAC_B", codeJacB);
 
         internal::CGHelpers::writeFile(outputDir + "/" + systemName + ".h", header);
-        internal::CGHelpers::writeFile(outputDir + "/" + systemName + ".cpp", source);
+        internal::CGHelpers::writeFile(outputDir + "/" + systemName + "_A.cpp", sourceA);
+        internal::CGHelpers::writeFile(outputDir + "/" + systemName + "_B.cpp", sourceB);
 
 
         std::cout << "... Done! Successfully generated discrete linear system" << std::endl;
