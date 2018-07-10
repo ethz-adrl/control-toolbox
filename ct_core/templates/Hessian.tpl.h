@@ -42,6 +42,6 @@ private:
     std::array<double, MAX_COUNT> v_;
 };
 
-} /* namespace NS2 */
-} /* namespace NS1 */
-} /* namespace ct */
+} // namespace NS2
+} // namespace NS1
+} // namespace ct

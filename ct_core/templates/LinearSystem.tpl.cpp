@@ -3,6 +3,8 @@ This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyr
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
+// clang-format off
+
 #include "LINEAR_SYSTEM_NAME.h"
 
 namespace ct {
@@ -37,6 +39,9 @@ const LINEAR_SYSTEM_NAME::state_control_matrix_t& LINEAR_SYSTEM_NAME::getDerivat
 
     return dFdu_;
 }
-}
-}
-}
+
+} // namespace NS2
+} // namespace NS1
+} // namespace ct
+
+// clang-format on
