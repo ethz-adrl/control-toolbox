@@ -388,7 +388,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::ro
         }
 
         size_t kShot = (KMax_ - k);
-        if (kShot % ((size_t)this->settings_.K_shot) == 0)  //! only rollout when we're meeting the beginning of a shot
+        if (kShot % ((size_t)this->computeShotLength()) == 0)  //! only rollout when we're meeting the beginning of a shot
         {
 #ifdef DEBUG_PRINT_MP
             if ((k + 1) % 100 == 0)
@@ -510,29 +510,10 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::li
         typename Base::ControlSubstepsPtr substepsU =
             typename Base::ControlSubstepsPtr(new typename Base::ControlSubsteps(this->K_ + 1));
 
-        //! set init state
-        x_search[0] = this->x_prev_[0];
 
-
-        switch (this->settings_.nlocp_algorithm)
-        {
-            case NLOptConSettings::NLOCP_ALGORITHM::GNMS:
-            {
-                this->executeLineSearchMultipleShooting(threadId, alpha, this->lu_, this->lx_, x_search, x_shot_search,
-                    defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm,
-                    *substepsX, *substepsU, &alphaBestFound_);
-                break;
-            }
-            case NLOptConSettings::NLOCP_ALGORITHM::ILQR:
-            {
-                defectNorm = 0.0;
-                this->executeLineSearchSingleShooting(threadId, alpha, x_search, u_recorded, intermediateCost,
-                    finalCost, e_box_norm, e_gen_norm, *substepsX, *substepsU, &alphaBestFound_);
-                break;
-            }
-            default:
-                throw std::runtime_error("Algorithm type unknown in performLineSearch()!");
-        }
+        this->executeLineSearch(threadId, alpha, this->lu_, this->lx_, x_search, x_shot_search, defects_recorded,
+            u_recorded, intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm, *substepsX, *substepsU,
+            &alphaBestFound_);
 
         // compute merit
         cost = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm +

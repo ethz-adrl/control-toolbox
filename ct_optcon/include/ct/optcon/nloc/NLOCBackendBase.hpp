@@ -328,11 +328,8 @@ public:
      */
     void printSummary();
 
-    //! perform line-search and update controller for single shooting
-    bool lineSearchSingleShooting();
-
-    //! perform line-search and update controller for multiple shooting
-    bool lineSearchMultipleShooting();
+    //! perform line-search and update controller
+    bool lineSearch();
 
     //! build LQ approximation around trajectory (linearize dynamics and general constraints, quadratize cost)
     virtual void computeLQApproximation(size_t firstIndex, size_t lastIndex) = 0;
@@ -368,7 +365,8 @@ public:
         StateVectorArray& xShot,
         StateVectorArray& d,
         StateSubsteps& substepsX,
-        ControlSubsteps& substepsU) const;
+        ControlSubsteps& substepsU,
+        std::atomic_bool* terminationFlag = nullptr) const;
 
     //! performLineSearch: execute the line search, possibly with different threading schemes
     virtual SCALAR performLineSearch() = 0;
@@ -379,6 +377,9 @@ public:
     void logSummaryToMatlab(const std::string& fileName);
 
     const SummaryAllIterations<SCALAR>& getSummary() const;
+
+    //! compute the length of the multiple-shooting intervals
+    const int computeShotLength() const;
 
 protected:
     //! integrate the individual shots
@@ -513,20 +514,7 @@ protected:
         scalar_t& e_tot) const;
 
     //! Check if controller with particular alpha is better
-    void executeLineSearchSingleShooting(const size_t threadId,
-        const scalar_t alpha,
-        StateVectorArray& x_local,
-        ControlVectorArray& u_local,
-        scalar_t& intermediateCost,
-        scalar_t& finalCost,
-        scalar_t& e_box_norm,
-        scalar_t& e_gen_norm,
-        StateSubsteps& substepsX,
-        ControlSubsteps& substepsU,
-        std::atomic_bool* terminationFlag = nullptr) const;
-
-
-    void executeLineSearchMultipleShooting(const size_t threadId,
+    void executeLineSearch(const size_t threadId,
         const scalar_t alpha,
         const ControlVectorArray& u_ff_update,
         const StateVectorArray& x_update,

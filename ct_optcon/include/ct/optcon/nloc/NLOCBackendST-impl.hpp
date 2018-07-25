@@ -57,7 +57,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::rolloutShots(size_t firstIndex,
     size_t lastIndex)
 {
-    for (size_t k = firstIndex; k <= lastIndex; k = k + this->settings_.K_shot)
+    for (size_t k = firstIndex; k <= lastIndex; k = k + this->computeShotLength())
     {
         // rollout the shot
         this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_,
@@ -106,30 +106,11 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         typename Base::ControlSubstepsPtr substepsU =
             typename Base::ControlSubstepsPtr(new typename Base::ControlSubsteps(this->K_ + 1));
 
-        // set init state
-        x_search[0] = this->x_[0];
 
+        this->executeLineSearch(this->settings_.nThreads, alpha, this->lu_, this->lx_, x_search, x_shot_search,
+            defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm, *substepsX,
+            *substepsU);
 
-        switch (this->settings_.nlocp_algorithm)
-        {
-            case NLOptConSettings::NLOCP_ALGORITHM::GNMS:
-            {
-                this->executeLineSearchMultipleShooting(this->settings_.nThreads, alpha, this->lu_, this->lx_, x_search,
-                    x_shot_search, defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, e_box_norm,
-                    e_gen_norm, *substepsX, *substepsU);
-
-                break;
-            }
-            case NLOptConSettings::NLOCP_ALGORITHM::ILQR:
-            {
-                defectNorm = 0.0;
-                this->executeLineSearchSingleShooting(this->settings_.nThreads, alpha, x_search, u_recorded,
-                    intermediateCost, finalCost, e_box_norm, e_gen_norm, *substepsX, *substepsU);
-                break;
-            }
-            default:
-                throw std::runtime_error("Algorithm type unknown in performLineSearch()!");
-        }
 
         // compute merit
         cost = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm +

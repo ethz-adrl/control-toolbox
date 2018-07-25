@@ -115,7 +115,7 @@ bool iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishItera
         std::cout << "[iLQR]: #3 LineSearch" << std::endl;
 
     start = std::chrono::steady_clock::now();
-    bool foundBetter = this->backend_->lineSearchSingleShooting();
+    bool foundBetter = this->backend_->lineSearch();
     end = std::chrono::steady_clock::now();
     diff = end - start;
     if (debugPrint)
