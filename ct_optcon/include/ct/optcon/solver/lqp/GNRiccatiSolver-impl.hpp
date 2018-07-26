@@ -93,14 +93,6 @@ ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> GNRiccatiSolver<STATE_DIM, CON
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>
-GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::getFeedforwardUpdates()
-{
-    return lv_;
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::getFeedback(
     ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K)
 {

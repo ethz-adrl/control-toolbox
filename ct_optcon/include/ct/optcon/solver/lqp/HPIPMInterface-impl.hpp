@@ -250,30 +250,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::getFeedback(ct::core::FeedbackArray
 
 
 template <int STATE_DIM, int CONTROL_DIM>
-ct::core::ControlVectorArray<CONTROL_DIM> HPIPMInterface<STATE_DIM, CONTROL_DIM>::getFeedforwardUpdates()
-{
-    throw std::runtime_error("HPIPMInterface: getFeedforwardUpdates Not implemented");
-
-    LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
-    ct::core::ControlVectorArray<CONTROL_DIM> lv(p.getNumberOfStages());
-
-    for (int i = 1; i < this->lqocProblem_->getNumberOfStages(); i++)
-    {
-        Eigen::Matrix<double, control_dim, control_dim> Lr;
-        ::d_cvt_strmat2mat(Lr.rows(), Lr.cols(), &workspace_.L[i], 0, 0, Lr.data(), Lr.rows());
-
-        Eigen::Matrix<double, 1, control_dim> llTranspose;
-        ::d_cvt_strmat2mat(llTranspose.rows(), llTranspose.cols(), &workspace_.L[i], control_dim + state_dim, 0,
-            llTranspose.data(), llTranspose.rows());
-
-        lv[i] = -Lr.transpose().inverse() * llTranspose.transpose();
-    }
-
-    return lv;
-}
-
-
-template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::printSolution()
 {
     int ii;

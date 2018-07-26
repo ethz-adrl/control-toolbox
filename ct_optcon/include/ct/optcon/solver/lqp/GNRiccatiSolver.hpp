@@ -58,8 +58,6 @@ public:
 
     virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() override;
 
-    virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdates() override;
-
     virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K) override;
 
     //! compute the state and control updates.

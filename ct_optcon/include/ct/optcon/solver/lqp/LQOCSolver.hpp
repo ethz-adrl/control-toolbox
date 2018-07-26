@@ -86,8 +86,6 @@ public:
     const SCALAR& getStateUpdateNorm() { return delta_x_norm_; }
     const core::StateVectorArray<STATE_DIM, SCALAR>& getStateUpdates() { return lx_; }
     const core::ControlVectorArray<CONTROL_DIM, SCALAR>& getControlUpdates() { return lu_; }
-    virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdates() = 0;
-
 protected:
     virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) = 0;
 

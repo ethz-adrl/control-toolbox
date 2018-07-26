@@ -82,8 +82,6 @@ public:
 
     virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM>& K) override;
 
-    virtual ct::core::ControlVectorArray<CONTROL_DIM> getFeedforwardUpdates() override;
-
     void printSolution();
 
     //! brief setup and configure the box constraints
