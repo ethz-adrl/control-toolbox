@@ -75,7 +75,8 @@ public:
         throw std::runtime_error("getSmallestEigenvalue not available for this solver.");
     }
 
-    virtual void computeStateAndControlUpdates() = 0;
+    // TODO as it sweeps forward, it should also compute the pure "updates").
+    virtual void computeLQSolution() = 0;
 
     virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() = 0;
     virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() = 0;

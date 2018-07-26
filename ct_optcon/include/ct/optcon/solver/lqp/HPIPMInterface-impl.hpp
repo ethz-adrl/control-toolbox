@@ -159,12 +159,12 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
     }
 
     // extract state and control updates
-    computeStateAndControlUpdates();
+    computeLQSolution();
 }
 
 
 template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeStateAndControlUpdates()
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeLQSolution()
 {
     LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
 

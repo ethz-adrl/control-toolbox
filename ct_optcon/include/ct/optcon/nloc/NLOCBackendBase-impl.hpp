@@ -1196,7 +1196,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         for (int i = endIndex; i >= 0; i--)
             lqocSolver_->solveSingleStage(i);
 
-        lqocSolver_->computeStateAndControlUpdates();
+        lqocSolver_->computeLQSolution();
     }
     else
         throw std::runtime_error("unknown solver type in finishSolveLQProblem()");

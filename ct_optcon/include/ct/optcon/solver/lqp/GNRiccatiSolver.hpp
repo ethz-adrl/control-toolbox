@@ -67,7 +67,7 @@ public:
 	 *
 	 * IMPORTANT: you need to call this method at the right place if you're using solveSingleStage() by yourself.
 	 */
-    virtual void computeStateAndControlUpdates() override;
+    virtual void computeLQSolution() override;
 
     virtual SCALAR getSmallestEigenvalue() override;
 

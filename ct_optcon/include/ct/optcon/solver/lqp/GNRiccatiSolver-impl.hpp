@@ -37,7 +37,7 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::solve()
     for (int i = this->lqocProblem_->getNumberOfStages() - 1; i >= 0; i--)
         solveSingleStage(i);
 
-    computeStateAndControlUpdates();
+    computeLQSolution();
 }
 
 
@@ -101,7 +101,7 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::getFeedback(
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::computeStateAndControlUpdates()
+void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::computeLQSolution()
 {
     LQOCProblem_t& p = *this->lqocProblem_;
 
