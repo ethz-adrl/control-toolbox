@@ -62,7 +62,6 @@ void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareIter
     if (this->backend_->iteration() == 0)
     {
         this->backend_->rolloutShots(K_shot, K - 1);
-        // todo is a cost computation missing here?
     }
 
     auto start = std::chrono::steady_clock::now();

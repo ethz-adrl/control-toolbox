@@ -87,7 +87,8 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::computeLQSolution()
         this->u_sol_[k] = lv_[k] + L_[k] * this->x_sol_[k];
 
         //! state update rule
-        this->x_sol_[k + 1] = (p.A_[k] + p.B_[k] * L_[k]) * this->x_sol_[k] + p.B_[k] * lv_[k] + p.b_[k];
+        //        this->x_sol_[k + 1] = (p.A_[k] + p.B_[k] * L_[k]) * this->x_sol_[k] + p.B_[k] * lv_[k] + p.b_[k];
+        this->x_sol_[k + 1] = p.A_[k] * this->x_sol_[k] + p.B_[k] * this->u_sol_[k] + p.b_[k];
 
         this->lu_[k] = this->u_sol_[k] - p.u_[k];
         this->lx_[k + 1] = this->x_sol_[k + 1] - p.x_[k + 1];
