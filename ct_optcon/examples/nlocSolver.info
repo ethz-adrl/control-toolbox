@@ -6,7 +6,7 @@ ilqr
 	timeVaryingDiscretization false
 	dt 0.01
     K_sim 1
-    K_shot 11
+    K_shot 1
     epsilon 0
 	max_iterations 100
     fixedHessianCorrection false

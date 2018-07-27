@@ -199,11 +199,13 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     lu_.resize(K_);
     u_ff_.resize(K_);
     u_ff_prev_.resize(K_);
-    d_.resize(K_ + 1, state_vector_t::Zero());
+    d_.resize(K_ + 1);
     L_.resize(K_);
 
     substepsX_->resize(K_ + 1);
     substepsU_->resize(K_ + 1);
+
+    resetDefects();
 
     systemInterface_->changeNumStages(K_);
 
@@ -1254,6 +1256,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     finalCostBest_ = std::numeric_limits<scalar_t>::infinity();
     intermediateCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
     finalCostPrevious_ = std::numeric_limits<scalar_t>::infinity();
+    resetDefects();
 }
 
 
