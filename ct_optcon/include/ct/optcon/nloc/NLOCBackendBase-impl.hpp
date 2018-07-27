@@ -199,7 +199,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     lu_.resize(K_);
     u_ff_.resize(K_);
     u_ff_prev_.resize(K_);
-    d_.resize(K_ + 1);
+    d_.resize(K_ + 1, state_vector_t::Zero());
     L_.resize(K_);
 
     substepsX_->resize(K_ + 1);
