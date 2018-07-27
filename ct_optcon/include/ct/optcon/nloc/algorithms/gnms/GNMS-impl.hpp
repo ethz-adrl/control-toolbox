@@ -56,12 +56,13 @@ void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareIter
     this->backend_->checkProblem();
 
     int K = this->backend_->getNumSteps();
-    int K_shot = this->backend_->getNumStepsPerShot();
+    int K_shot = this->backend_->getNumStepsPerShot(); // TODO check: getNumStepsPerShot is redundant with getShotLength() ??
 
     // if first iteration, compute shots and rollout and cost!
     if (this->backend_->iteration() == 0)
     {
         this->backend_->rolloutShots(K_shot, K - 1);
+        // todo is a cost computation missing here?
     }
 
     auto start = std::chrono::steady_clock::now();
@@ -136,8 +137,8 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishItera
 
     //! update solutions
     this->backend_->getFeedback();
-    this->backend_->getControlUpdates();
-    this->backend_->getStateUpdates();
+    this->backend_->getControlUpdates(); // todo replace by getting solution
+    this->backend_->getStateUpdates();   // todo replace by getting solution
 
 
     start = std::chrono::steady_clock::now();
@@ -265,8 +266,8 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishMPCIt
     //! update solutions
     start = std::chrono::steady_clock::now();
     this->backend_->getFeedback();
-    this->backend_->getControlUpdates();
-    this->backend_->getStateUpdates();
+    this->backend_->getControlUpdates();	// todo replace by getting solution
+    this->backend_->getStateUpdates();		// todo replace by getting solution
 
     //!update state and controls, no line-search, overwriting happens only at next rollout
     this->backend_->doFullStepUpdate();

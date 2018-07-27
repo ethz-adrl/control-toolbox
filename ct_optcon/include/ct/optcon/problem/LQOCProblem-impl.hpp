@@ -195,6 +195,8 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(const co
 }
 
 
+// TODO this needs to be modified, as it it is not fully consistent
+// -- we hand over an offset term manually ... that does not really make sense?
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuadraticProblem(
     ct::core::StateVector<STATE_DIM, SCALAR>& x0,

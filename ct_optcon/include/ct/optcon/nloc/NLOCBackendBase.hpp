@@ -331,7 +331,7 @@ public:
     //! perform line-search and update controller
     bool lineSearch();
 
-    //! build LQ approximation around trajectory (linearize dynamics and general constraints, quadratize cost)
+    //! build LQ approximation around trajectory (linearize dynamics and general constraints, quadratize cost, etc)
     virtual void computeLQApproximation(size_t firstIndex, size_t lastIndex) = 0;
 
     //! sets the box constraints for the entire time horizon including terminal stage
@@ -393,15 +393,6 @@ protected:
         ControlSubsteps& substepsU,
         std::atomic_bool* terminationFlag = nullptr) const;
 
-    /*
-    bool simpleRollout(
-            const size_t threadId,
-            const ControlVectorArray& uff,
-            const StateVectorArray& x_ref_lqr,
-            StateVectorArray& x_local,
-            ControlVectorArray& u_recorded
-            )const;
-            */
 
     //! computes the defect between shot and trajectory
     /*!
@@ -416,15 +407,16 @@ protected:
         StateVectorArray& d) const;
 
 
-    //! Computes the linearized Dynamics at a specific point of the trajectory
+    //! Computes the linearized Dynamics and quadratic cost approximation at a specific point of the trajectory
     /*!
-      This function calculates the linearization, i.e. matrices A and B in \f$ \dot{x} = A(x(k)) x + B(x(k)) u \f$
-      at a specific point of the trajectory
+      This function calculates the affine dynamics approximation, i.e. matrices A, B and b in \f$ x_{n+1} = A_n x_n + B_n u_n + b_n \f$
+      at a specific point of the trajectory. This function also calculates the quadratic costs as provided by the costFunction pointer.
+      and maps it into the coordinates of the LQ problem.
 
       \param threadId the id of the worker thread
       \param k step k
     */
-    void computeLinearizedDynamics(size_t threadId, size_t k);
+    void executeLQApproximation(size_t threadId, size_t k);
 
 
     //! Computes the linearized general constraints at a specific point of the trajectory
@@ -438,15 +430,6 @@ protected:
       \note the box constraints do not need to be linearized
     */
     void computeLinearizedConstraints(size_t threadId, size_t k);
-
-    //! Computes the quadratic costs
-    /*!
-      This function calculates the quadratic costs as provided by the costFunction pointer.
-
-     * \param threadId id of worker thread
-     * \param k step k
-    */
-    void computeQuadraticCosts(size_t threadId, size_t k);
 
     //! Initializes cost to go
     /*!
@@ -586,6 +569,8 @@ protected:
     ControlVectorArray lu_;
     ControlVectorArray u_ff_;
     ControlVectorArray u_ff_prev_;
+
+    StateVectorArray d_; /*!< defects */
 
     FeedbackArray L_;
 

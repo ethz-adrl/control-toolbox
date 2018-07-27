@@ -78,8 +78,9 @@ public:
     // TODO as it sweeps forward, it should also compute the pure "updates").
     virtual void computeLQSolution() = 0;
 
-    virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() = 0;
-    virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() = 0;
+    // todo, these virtuals can now be kept local, remove from derived classes
+    virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() { return x_sol_; }
+    virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() { return u_sol_; }
 
     virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K) = 0;
 
@@ -91,6 +92,9 @@ protected:
     virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) = 0;
 
     std::shared_ptr<LQOCProblem_t> lqocProblem_;
+
+    core::StateVectorArray<STATE_DIM, SCALAR> x_sol_;      // solution in x
+    core::ControlVectorArray<CONTROL_DIM, SCALAR> u_sol_;  // solution in u
 
     core::StateVectorArray<STATE_DIM, SCALAR> lx_;      // differential update on the state
     core::ControlVectorArray<CONTROL_DIM, SCALAR> lu_;  // differential update on the control

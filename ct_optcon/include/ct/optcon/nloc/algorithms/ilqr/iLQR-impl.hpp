@@ -107,8 +107,8 @@ bool iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishItera
 
     // update solutions
     this->backend_->getFeedback();
-    this->backend_->getControlUpdates();
-    this->backend_->getStateUpdates();
+    this->backend_->getControlUpdates(); // todo replace by getting solution
+    this->backend_->getStateUpdates();   // todo replace by getting solution
 
     // line-search
     if (debugPrint)

@@ -54,10 +54,6 @@ public:
 
     virtual void configure(const NLOptConSettings& settings) override;
 
-    virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() override;
-
-    virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() override;
-
     virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K) override;
 
     //! compute the state and control updates.
