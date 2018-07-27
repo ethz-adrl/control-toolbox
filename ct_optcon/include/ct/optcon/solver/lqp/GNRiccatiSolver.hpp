@@ -54,8 +54,6 @@ public:
 
     virtual void configure(const NLOptConSettings& settings) override;
 
-    virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K) override;
-
     //! compute the state and control updates.
     /*!
 	 * this method is specific to the GN Riccati solver, since the state updates lx_
@@ -63,7 +61,7 @@ public:
 	 *
 	 * IMPORTANT: you need to call this method at the right place if you're using solveSingleStage() by yourself.
 	 */
-    virtual void computeLQSolution() override;
+    virtual void extractLQSolution() override;
 
     virtual SCALAR getSmallestEigenvalue() override;
 
@@ -95,7 +93,6 @@ protected:
     ControlMatrix H_corrFix_;
 
     ControlVectorArray lv_;
-    FeedbackArray L_;
 
     StateVectorArray sv_;
     StateMatrixArray S_;

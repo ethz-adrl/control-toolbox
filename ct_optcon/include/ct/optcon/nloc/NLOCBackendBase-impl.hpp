@@ -191,12 +191,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
     t_ = TimeArray(settings_.dt, K_ + 1, 0.0);
 
-    lx_.resize(K_ + 1);
     x_.resize(K_ + 1);
     x_prev_.resize(K_ + 1);
     xShot_.resize(K_ + 1);
 
-    lu_.resize(K_);
     u_ff_.resize(K_);
     u_ff_prev_.resize(K_);
     d_.resize(K_ + 1);
@@ -415,7 +413,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     xShot[k] = x_local[k];  // initialize
 
     //! determine index where to stop at the latest
-    int K_stop = k + computeShotLength();
+    int K_stop = k + getNumStepsPerShot();
     if (K_stop > K_local)
         K_stop = K_local;
 
@@ -498,7 +496,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     //! make sure all intermediate entries in the defect trajectory are zero
     d.setConstant(state_vector_t::Zero());
 
-    for (size_t k = firstIndex; k <= lastIndex; k = k + computeShotLength())
+    for (size_t k = firstIndex; k <= lastIndex; k = k + getNumStepsPerShot())
     {
         // first rollout the shot
         bool dynamicsGood = rolloutSingleShot(
@@ -655,9 +653,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     systemInterface_->getAandB(x_[k], u_ff_[k], xShot_[k], (int)k, settings_.K_sim, p.A_[k], p.B_[k], threadId);
 
     // compute dynamics offset term b_n
-    // todo clearly we fill only K data entries into b_, but in fact it currently is K_+1 long in LQOC Problem --revise?
     p.b_[k] = d_[k] + x_[k + 1] - p.A_[k] * x_[k] - p.B_[k] * u_ff_[k];
-
 
     // feed current state and control to cost function
     costFunctions_[threadId]->setCurrentStateAndControl(x_[k], u_ff_[k], dt * k);
@@ -963,6 +959,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     u_ff_prev_ = u_ff_;
     x_prev_ = x_;
 
+    // get feedback from lqoc solver which is always the same
+    getFeedback();
 
     if (!settings_.lineSearchSettings.active)  // do full step updates
     {
@@ -981,18 +979,10 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
         lowestCost_ = intermediateCostBest_ + finalCostBest_;
 
-        if (settings_.printSummary)
-        {
-            lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, u_ff_);
-            lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
-        }
-        else
-        {
-#ifdef MATLAB
-            lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, u_ff_);
-            lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
-#endif
-        }
+        // compute the control and state update norms separately here, since they are usually different from the pure lqoc solver update
+        lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, u_ff_);
+        lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
+
         x_prev_ = x_;
         alphaBest_ = 1;
     }
@@ -1061,8 +1051,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::executeLineSearch(const size_t threadId,
     const scalar_t alpha,
-    const ControlVectorArray& u_ff_update,  // todo replace by u_ff_new
-    const StateVectorArray& x_update,       // todo replae by x_new
+    const ControlVectorArray& u_ff_new,
+    const StateVectorArray& x_new,
     ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_alpha,
     ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_alpha,
     ct::core::StateVectorArray<STATE_DIM, SCALAR>& defects_recorded,
@@ -1085,12 +1075,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     if (terminationFlag && *terminationFlag)
         return;
 
-    // update feedforward
-    u_alpha =
-        u_ff_update * alpha + u_ff_prev_;  // Todo change update formula to: alpha * u_ff_new + (1-alpha) * u_ff_prev_;
+    // update feedforward with weighting alpha
+    u_alpha = u_ff_new * alpha + u_ff_prev_ * (1 - alpha);
 
-    // update state decision variables
-    x_alpha = x_update * alpha + x_prev_;  // Todo change update formula to: alpha * x_new + (1-alpha) * x_prev_;
+    // update state decision variables with weighting alpha
+    x_alpha = x_new * alpha + x_prev_ * (1 - alpha);
 
 
     if (terminationFlag && *terminationFlag)
@@ -1151,8 +1140,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     // if solver is GNRiccati - we iterate backward up to the first stage
     else if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
     {
-        lqocProblem_->x_ = x_;     // todo delete
-        lqocProblem_->u_ = u_ff_;  // todo delete
         lqocSolver_->setProblem(lqocProblem_);
 
         //iterate backward up to first stage
@@ -1176,14 +1163,12 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
     else if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
     {
-        lqocProblem_->x_ = x_;     // todo delete
-        lqocProblem_->u_ = u_ff_;  // todo delete
         lqocSolver_->setProblem(lqocProblem_);
 
         for (int i = endIndex; i >= 0; i--)
             lqocSolver_->solveSingleStage(i);
 
-        lqocSolver_->computeLQSolution();
+        lqocSolver_->extractLQSolution();
     }
     else
         throw std::runtime_error("unknown solver type in finishSolveLQProblem()");
@@ -1194,9 +1179,6 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::solveFullLQProblem()
 {
     lqpCounter_++;
-
-     lqocProblem_->x_ = x_;     // todo delete
-     lqocProblem_->u_ = u_ff_;  // todo delete
 
     if (lqocProblem_->isBoxConstrained())
     {
@@ -1263,39 +1245,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::doFullStepUpdate()
 {
-    // todo: find out where lu_ and lx_ are set, possibly remove that and always get it from the LQOC solver, which holds it locally
-    // todo: replace by simply getting the solution from the LQOC solver
-    u_ff_ += lu_;
-    x_ += lx_;
+    u_ff_ = lqocSolver_->getSolutionControl();
+    x_ = lqocSolver_->getSolutionState();
 
     alphaBest_ = 1.0;
-
-    if (settings_.debugPrint || settings_.printSummary)
-    {
-        lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(lx_);
-        lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(lu_);
-    }
-    else
-    {
-#ifdef MATLAB
-        lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(lx_);
-        lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(lu_);
-#endif
-    }
 }
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-const int NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::computeShotLength() const
-{
-    if (settings_.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
-        return K_;
-    else if (settings_.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::GNMS)
-        return settings_.K_shot;
-    else
-        throw std::runtime_error("Unknown algorithm type in NLOCBackendBase::computeShotLength()");
-}
-
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::logSummaryToMatlab(
@@ -1312,27 +1266,11 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getSu
     return summaryAllIterations_;
 }
 
-
-// todo check if still required?
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getStateUpdates()
-{
-    lx_ = lqocSolver_->getStateUpdates();
-}
-
-// todo check if still required?
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getControlUpdates()
-{
-    lu_ = lqocSolver_->getControlUpdates();
-}
-
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getFeedback()
 {
     if (settings_.closedLoopShooting)
-        lqocSolver_->getFeedback(L_);
+        L_ = lqocSolver_->getSolutionFeedback();
     else
         L_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());  // TODO should eventually go away
 }
@@ -1510,9 +1448,15 @@ int NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::g
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-int NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getNumStepsPerShot()
+int NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getNumStepsPerShot() const
 {
-    return settings_.K_shot;
+	// todo try to find clear solution here
+    if (settings_.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
+        return K_;
+    else if (settings_.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::GNMS)
+        return settings_.K_shot;
+    else
+        throw std::runtime_error("Unknown algorithm type in NLOCBackendBase::getNumStepsPerShot()");
 }
 
 

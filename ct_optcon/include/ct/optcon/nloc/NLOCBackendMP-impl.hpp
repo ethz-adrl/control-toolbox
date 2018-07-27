@@ -385,7 +385,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::ro
         }
 
         size_t kShot = (KMax_ - k);
-        if (kShot % ((size_t)this->computeShotLength()) ==
+        if (kShot % ((size_t)this->getNumStepsPerShot()) ==
             0)  //! only rollout when we're meeting the beginning of a shot
         {
 #ifdef DEBUG_PRINT_MP
@@ -447,22 +447,12 @@ SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     printString("[MP]: Restoring " + std::to_string(Eigen::nbThreads()) + " Eigen threads.");
 #endif  //DEBUG_PRINT_MP
 
-    if (this->settings_.printSummary)
-    {
-        this->lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(
-            this->u_ff_, this->u_ff_prev_);
-        this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(
-            this->x_, this->x_prev_);
-    }
-    else
-    {
-#ifdef MATLAB
-        this->lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(
-            this->u_ff_, this->u_ff_prev_);
-        this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(
-            this->x_, this->x_prev_);
-#endif
-    }
+    // update norms, as they are typically different from the pure lqoc solver updates
+    this->lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(
+        this->u_ff_, this->u_ff_prev_);
+    this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(
+        this->x_, this->x_prev_);
+
     this->x_prev_ = this->x_;
     this->u_ff_prev_ = this->u_ff_;
 
@@ -508,10 +498,9 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::li
         typename Base::ControlSubstepsPtr substepsU =
             typename Base::ControlSubstepsPtr(new typename Base::ControlSubsteps(this->K_ + 1));
 
-
-        this->executeLineSearch(threadId, alpha, this->lu_, this->lx_, x_search, x_shot_search, defects_recorded,
-            u_recorded, intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm, *substepsX, *substepsU,
-            &alphaBestFound_);
+        this->executeLineSearch(threadId, alpha, this->lqocSolver_->getSolutionControl(),
+            this->lqocSolver_->getSolutionState(), x_search, x_shot_search, defects_recorded, u_recorded,
+            intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm, *substepsX, *substepsU, &alphaBestFound_);
 
         // compute merit
         cost = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm +

@@ -151,7 +151,7 @@ public:
 
     int getNumSteps();
 
-    int getNumStepsPerShot();
+    int getNumStepsPerShot() const;
 
     /*!
      * \brief Change the initial state for the optimal control problem
@@ -337,12 +337,6 @@ public:
     //! sets the box constraints for the entire time horizon including terminal stage
     void setBoxConstraintsForLQOCProblem();
 
-    //! obtain state update from lqoc solver
-    void getStateUpdates();
-
-    //! obtain control update from lqoc solver
-    void getControlUpdates();
-
     //! obtain feedback update from lqoc solver, if provided
     void getFeedback();
 
@@ -377,9 +371,6 @@ public:
     void logSummaryToMatlab(const std::string& fileName);
 
     const SummaryAllIterations<SCALAR>& getSummary() const;
-
-    //! compute the length of the multiple-shooting intervals
-    const int computeShotLength() const;
 
 protected:
     //! integrate the individual shots
@@ -499,8 +490,8 @@ protected:
     //! Check if controller with particular alpha is better
     void executeLineSearch(const size_t threadId,
         const scalar_t alpha,
-        const ControlVectorArray& u_ff_update,
-        const StateVectorArray& x_update,
+        const ControlVectorArray& u_ff_new,
+        const StateVectorArray& x_new,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_recorded,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_recorded,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& defects_recorded,
@@ -561,12 +552,10 @@ protected:
 
     int K_;  //! the number of stages in the overall OptConProblem
 
-    StateVectorArray lx_;
     StateVectorArray x_;
     StateVectorArray xShot_;
     StateVectorArray x_prev_;
 
-    ControlVectorArray lu_;
     ControlVectorArray u_ff_;
     ControlVectorArray u_ff_prev_;
 

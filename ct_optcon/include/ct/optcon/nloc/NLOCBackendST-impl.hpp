@@ -55,7 +55,7 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::rolloutShots(size_t firstIndex,
     size_t lastIndex)
 {
-    for (size_t k = firstIndex; k <= lastIndex; k = k + this->computeShotLength())
+    for (size_t k = firstIndex; k <= lastIndex; k = k + this->getNumStepsPerShot())
     {
         // rollout the shot
         this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_,
@@ -105,9 +105,9 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             typename Base::ControlSubstepsPtr(new typename Base::ControlSubsteps(this->K_ + 1));
 
 
-        this->executeLineSearch(this->settings_.nThreads, alpha, this->lu_, this->lx_, x_search, x_shot_search,
-            defects_recorded, u_recorded, intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm, *substepsX,
-            *substepsU);
+        this->executeLineSearch(this->settings_.nThreads, alpha, this->lqocSolver_->getSolutionControl(),
+            this->lqocSolver_->getSolutionState(), x_search, x_shot_search, defects_recorded, u_recorded,
+            intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm, *substepsX, *substepsU);
 
 
         // compute merit
@@ -145,27 +145,12 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
                 std::cout << "[LineSearch]: Merit:\t" << cost << std::endl;
             }
 
-
-            if (this->settings_.printSummary)
-            {
-                this->lu_norm_ =
-                    this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(
-                        u_recorded, this->u_ff_prev_);
-                this->lx_norm_ =
-                    this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(
-                        x_search, this->x_prev_);
-            }
-            else
-            {
-#ifdef MATLAB
-                this->lu_norm_ =
-                    this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(
-                        u_recorded, this->u_ff_prev_);
-                this->lx_norm_ =
-                    this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(
-                        x_search, this->x_prev_);
-#endif
-            }
+            // compute update norms separately, as they are typically different from pure lqoc solver updates
+            this->lu_norm_ =
+                this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(
+                    u_recorded, this->u_ff_prev_);
+            this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(
+                x_search, this->x_prev_);
 
             alphaBest = alpha;
             this->intermediateCostBest_ = intermediateCost;

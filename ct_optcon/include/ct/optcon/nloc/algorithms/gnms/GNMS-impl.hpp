@@ -56,7 +56,7 @@ void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareIter
     this->backend_->checkProblem();
 
     int K = this->backend_->getNumSteps();
-    int K_shot = this->backend_->getNumStepsPerShot(); // TODO check: getNumStepsPerShot is redundant with getShotLength() ??
+    int K_shot = this->backend_->getNumStepsPerShot();
 
     // if first iteration, compute shots and rollout and cost!
     if (this->backend_->iteration() == 0)
@@ -132,13 +132,6 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishItera
     if (debugPrint)
         std::cout << "[GNMS]: Finish solving LQOC problem took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
-
-
-    //! update solutions
-    this->backend_->getFeedback();
-    this->backend_->getControlUpdates(); // todo replace by getting solution
-    this->backend_->getStateUpdates();   // todo replace by getting solution
-
 
     start = std::chrono::steady_clock::now();
     bool foundBetter = this->backend_->lineSearch();
@@ -264,11 +257,6 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishMPCIt
 
     //! update solutions
     start = std::chrono::steady_clock::now();
-    this->backend_->getFeedback();
-    this->backend_->getControlUpdates();	// todo replace by getting solution
-    this->backend_->getStateUpdates();		// todo replace by getting solution
-
-    //!update state and controls, no line-search, overwriting happens only at next rollout
     this->backend_->doFullStepUpdate();
 
     end = std::chrono::steady_clock::now();

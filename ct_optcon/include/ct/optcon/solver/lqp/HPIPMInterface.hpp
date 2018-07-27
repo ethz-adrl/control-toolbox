@@ -74,7 +74,7 @@ public:
 
     void solve() override;
 
-    virtual void computeLQSolution() override;
+    virtual void extractLQSolution() override;
 
     virtual ct::core::StateVectorArray<STATE_DIM> getSolutionState() override;
 

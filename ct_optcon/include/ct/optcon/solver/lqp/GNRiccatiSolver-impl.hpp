@@ -37,7 +37,7 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::solve()
     for (int i = this->lqocProblem_->getNumberOfStages() - 1; i >= 0; i--)
         solveSingleStage(i);
 
-    computeLQSolution();
+    extractLQSolution();
 }
 
 
@@ -61,42 +61,20 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::configure(const NLOptConSe
     H_corrFix_ = settings_.epsilon * ControlMatrix::Identity();
 }
 
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::getFeedback(
-    ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K)
-{
-    K = L_;
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::computeLQSolution()
+void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::extractLQSolution()
 {
     LQOCProblem_t& p = *this->lqocProblem_;
 
-    this->delta_x_norm_ = 0.0;
-    this->delta_uff_norm_ = 0.0;
-
     this->x_sol_[0] = p.x_[0];
-    this->lx_[0].setZero();
 
     for (int k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
     {
         //! control update rule
-        this->u_sol_[k] = lv_[k] + L_[k] * this->x_sol_[k];
+        this->u_sol_[k] = lv_[k] + this->L_[k] * this->x_sol_[k];
 
         //! state update rule
-        //        this->x_sol_[k + 1] = (p.A_[k] + p.B_[k] * L_[k]) * this->x_sol_[k] + p.B_[k] * lv_[k] + p.b_[k];
         this->x_sol_[k + 1] = p.A_[k] * this->x_sol_[k] + p.B_[k] * this->u_sol_[k] + p.b_[k];
-
-        this->lu_[k] = this->u_sol_[k] - p.u_[k];
-        this->lx_[k + 1] = this->x_sol_[k + 1] - p.x_[k + 1];
-
-        //! compute the norms of the updates
-        //! \todo needed?
-        this->delta_x_norm_ += this->lx_[k + 1].norm();
-        this->delta_uff_norm_ += this->lu_[k].norm();
     }
 }
 
@@ -139,10 +117,8 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumberOfStages(int N
     Hi_inverse_.resize(N);
 
     lv_.resize(N);
-    L_.resize(N);
+    this->L_.resize(N);
 
-    this->lx_.resize(N + 1);
-    this->lu_.resize(N);
     this->x_sol_.resize(N + 1);
     this->u_sol_.resize(N);
 
@@ -175,15 +151,15 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostToGo(size_t k)
 
     S_[k] = p.Q_[k];
     S_[k].noalias() += p.A_[k].transpose() * S_[k + 1] * p.A_[k];
-    S_[k].noalias() -= L_[k].transpose() * Hi_[k] * L_[k];
+    S_[k].noalias() -= this->L_[k].transpose() * Hi_[k] * this->L_[k];
 
     S_[k] = 0.5 * (S_[k] + S_[k].transpose()).eval();
 
     sv_[k] = p.qv_[k];
     sv_[k].noalias() += p.A_[k].transpose() * sv_[k + 1];
     sv_[k].noalias() += p.A_[k].transpose() * S_[k + 1] * p.b_[k];
-    sv_[k].noalias() += L_[k].transpose() * Hi_[k] * lv_[k];
-    sv_[k].noalias() += L_[k].transpose() * gv_[k];
+    sv_[k].noalias() += this->L_[k].transpose() * Hi_[k] * lv_[k];
+    sv_[k].noalias() += this->L_[k].transpose() * gv_[k];
     sv_[k].noalias() += G_[k].transpose() * lv_[k];
 }
 
@@ -247,7 +223,7 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
         Hi_inverse_[k] = -Hi_[k].template selfadjointView<Eigen::Lower>().llt().solve(ControlMatrix::Identity());
 
         // calculate FB gain update
-        L_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * G_[k];
+        this->L_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * G_[k];
 
         // calculate FF update
         lv_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * gv_[k];
@@ -279,7 +255,7 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
         Hi_inverse_[k].noalias() = V * D_inverse * V.transpose();
 
         // calculate FB gain update
-        L_[k].noalias() = Hi_inverse_[k] * G_[k];
+        this->L_[k].noalias() = Hi_inverse_[k] * G_[k];
 
         // calculate FF update
         lv_[k].noalias() = Hi_inverse_[k] * gv_[k];
@@ -296,7 +272,7 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 
     matFile_.put("sv", sv_.toImplementation());
     matFile_.put("S", S_.toImplementation());
-    matFile_.put("L", L_.toImplementation());
+    matFile_.put("L", this->L_.toImplementation());
     matFile_.put("H", H_.toImplementation());
     matFile_.put("Hi_", Hi_.toImplementation());
     matFile_.put("Hi_inverse", Hi_inverse_.toImplementation());
