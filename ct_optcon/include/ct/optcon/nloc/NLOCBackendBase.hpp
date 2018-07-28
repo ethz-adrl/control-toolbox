@@ -514,14 +514,6 @@ protected:
      */
     void updateFFController(size_t k);
 
-
-    //! Send a std::vector of Eigen to Matlab
-    /*!
-     * This is a helper function to efficiently send std::vectors to Matlab.
-     */
-    //    template <class V>
-    //    void matrixToMatlab(V& matrix, std::string variableName);
-
     //! compute norm of a discrete array (todo move to core)
     template <typename ARRAY_TYPE, size_t ORDER = 1>
     SCALAR computeDiscreteArrayNorm(const ARRAY_TYPE& d) const;

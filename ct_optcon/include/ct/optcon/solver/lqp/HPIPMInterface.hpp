@@ -76,11 +76,7 @@ public:
 
     virtual void extractLQSolution() override;
 
-    virtual ct::core::StateVectorArray<STATE_DIM> getSolutionState() override;
-
-    virtual ct::core::ControlVectorArray<CONTROL_DIM> getSolutionControl() override;
-
-    virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM>& K) override;
+    void designFeedback();
 
     void printSolution();
 
@@ -187,7 +183,7 @@ private:
     //! number of general constraints per stage
     std::vector<int> ng_;
 
-    //! initial state
+    //! pointer to initial state
     double* x0_;
 
     //! system state sensitivities
@@ -196,8 +192,6 @@ private:
     std::vector<double*> hB_;
     //! system offset term
     std::vector<double*> hb_;
-    //! intermediate container for intuitive transcription of system representation from local to global coordinates
-    StateVectorArray bEigen_;
     //! intermediate container for intuitive transcription of first stage from local to global coordinates
     Eigen::Matrix<double, state_dim, 1> hb0_;
 
@@ -214,10 +208,6 @@ private:
     std::vector<double*> hr_;
     //! intermediate container for intuitive transcription of first stage from local to global coordinates
     Eigen::Matrix<double, control_dim, 1> hr0_;
-    //! interm. container for intuitive transcription of 1st order state penalty from local to global coordinates
-    StateVectorArray hqEigen_;
-    //! interm. container for intuitive transcription of 1st order control penalty from local to global coordinates
-    ControlVectorArray hrEigen_;
 
 
     //! pointer to lower box constraint boundary
@@ -267,9 +257,7 @@ private:
     //! container for lagr. mult. general-constraint upper
     ct::core::DiscreteArray<Eigen::Matrix<double, -1, 1>> cont_lam_ug_;
 
-    ct::core::StateVectorArray<STATE_DIM> hx_;
     ct::core::StateVectorArray<STATE_DIM> hpi_;
-    ct::core::ControlVectorArray<CONTROL_DIM> hu_;
 
     //! settings from NLOptConSolver
     NLOptConSettings settings_;

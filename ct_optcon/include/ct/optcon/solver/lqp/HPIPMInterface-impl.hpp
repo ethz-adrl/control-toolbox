@@ -87,7 +87,7 @@ template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
 {
 // optional printout
-#ifdef HPIPM_PRINT_MATRICES
+//#ifdef HPIPM_PRINT_MATRICES
     for (size_t i = 0; i < N_ + 1; i++)
     {
         std::cout << "HPIPM matrix printout for stage " << i << std::endl;
@@ -138,7 +138,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         d_print_mat(1, ng_[i], hd_ug_[i], 1);
 
     }   // end optional printout
-#endif  // HPIPM_PRINT_MATRICES
+//#endif  // HPIPM_PRINT_MATRICES
 
     // set pointers to optimal control problem
     ::d_cvt_colmaj_to_ocp_qp(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(),
@@ -158,62 +158,24 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         printSolution();
     }
 
-    // extract state and control updates
-    extractLQSolution();
-}
-
-
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::extractLQSolution()
-{
-    LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
-
     // convert optimal control problem solution to standard column-major representation
     ::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u_.data(), x_.data(), pi_.data(), lam_lb_.data(), lam_ub_.data(),
         lam_lg_.data(), lam_ug_.data());
 
-    hx_[0] = this->lqocProblem_->x_[0];
-
-    this->delta_x_norm_ = 0.0;
-    this->delta_uff_norm_ = 0.0;
-
-    this->lx_[0].setZero();
-
-    for (int k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
-    {
-        // reconstruct control update
-        this->lu_[k] = hu_[k] - p.u_[k];
-
-        // reconstruct state update
-        this->lx_[k + 1] = hx_[k + 1] - p.x_[k + 1];
-
-        // compute the norms of the updates
-        // TODO needed?
-        this->delta_x_norm_ += this->lx_[k + 1].norm();
-        this->delta_uff_norm_ += this->lu_[k].norm();
-    }
+    designFeedback();
 }
 
-
 template <int STATE_DIM, int CONTROL_DIM>
-ct::core::StateVectorArray<STATE_DIM> HPIPMInterface<STATE_DIM, CONTROL_DIM>::getSolutionState()
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::extractLQSolution()
 {
-    return hx_;
+    // no action required
 }
 
-
 template <int STATE_DIM, int CONTROL_DIM>
-ct::core::ControlVectorArray<CONTROL_DIM> HPIPMInterface<STATE_DIM, CONTROL_DIM>::getSolutionControl()
-{
-    return hu_;
-}
-
-
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM>& K)
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::designFeedback()
 {
     LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
-    K.resize(p.getNumberOfStages());
+    this->L_.resize(p.getNumberOfStages());
 
     // for stage 0, HPIPM does not provide feedback, so we have to construct it
 
@@ -235,8 +197,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::getFeedback(ct::core::FeedbackArray
     G.noalias() += p.B_[0].transpose() * S * p.A_[0];
 
     // step4: compute K[0]
-    K[0] = (-H.inverse() * G);  // \todo use Lr here instead of H!
-
+    this->L_[0] = (-H.inverse() * G);  // \todo use Lr here instead of H!
 
     // for all other steps we can just read Ls
     Eigen::Matrix<double, state_dim, control_dim> Ls;
@@ -244,7 +205,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::getFeedback(ct::core::FeedbackArray
     {
         ::d_cvt_strmat2mat(Lr.rows(), Lr.cols(), &workspace_.L[i], 0, 0, Lr.data(), Lr.rows());
         ::d_cvt_strmat2mat(Ls.rows(), Ls.cols(), &workspace_.L[i], Lr.rows(), 0, Ls.data(), Ls.rows());
-        K[i] = (-Ls * Lr.partialPivLu().inverse()).transpose();
+        this->L_[i] = (-Ls * Lr.partialPivLu().inverse()).transpose();
     }
 }
 
@@ -467,53 +428,33 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
     if (N_ == -1)
         throw std::runtime_error("Time horizon not set, please set it first");
 
-    // set the initial state
+    // assign data for LQ problem
+
+    // set pointer to the initial state
+    this->x_sol_[0] = x[0];
     x0_ = x[0].data();
 
-    /*
-     * transcribe the "differential" representation of the OptConProblem to the absolute origin of
-     * the linear system.
-     * Note: constant terms are not even handed over above (not important for solving LQ problem).
-     */
+    hb0_ = b[0] + A[0] * x[0];   // hpipm correction for first stage
+    hr0_ = rv[0] + P[0] * x[0];  // hpipm correction for first stage
 
-    // STEP 1: transcription of affine system dynamics offset term
-    for (int i = 0; i < N_; i++)
-    {
-        bEigen_[i] = b[i] + x[i + 1] - A[i] * x[i] - B[i] * u[i];
-    }
-    hb0_ = b[0] + x[1] - B[0] * u[0];  // this line needs to be transcribed separately (correction for first stage)
-
-
-    // STEP 2: transcription of intermediate costs
-    for (int i = 0; i < N_; i++)
-    {
-        hqEigen_[i] = qv[i] - Q[i] * x[i] - P[i].transpose() * u[i];
-        hrEigen_[i] = rv[i] - R[i] * u[i] - P[i] * x[i];
-    }
-    hr0_ = hrEigen_[0] + P[0] * x[0];  // this line needs to be transcribed separately (correction for first stage)
-
-
-    // STEP 3: transcription of terminal cost terms
-    hqEigen_[N_] = qv[N_] - Q[N_] * x[N_];
-
-
-    // STEP 4: The following quantities remain unchanged when changing coordinate systems
     for (int i = 0; i < N_; i++)
     {
         hA_[i] = A[i].data();
         hB_[i] = B[i].data();
+        hb_[i] = b[i].data();
     }
 
-    // intermediate cost hessians and cross-terms
     for (int i = 0; i < N_; i++)
     {
         hQ_[i] = Q[i].data();
         hS_[i] = P[i].data();
         hR_[i] = R[i].data();
+        hq_[i] = qv[i].data();
+        hr_[i] = rv[i].data();
     }
 
-    // final cost hessian state
     hQ_[N_] = Q[N_].data();
+    hq_[N_] = qv[N_].data();
 
     // reset lqocProblem pointer, will get set in Base class if needed
     this->lqocProblem_ = nullptr;
@@ -528,9 +469,6 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
 
     N_ = N;
 
-    this->lx_.resize(N + 1);
-    this->lu_.resize(N);
-
     nx_.resize(N_ + 1, STATE_DIM);    // initialize number of states per stage
     nu_.resize(N_ + 1, CONTROL_DIM);  // initialize number of control inputs per stage
     nb_.resize(N_ + 1, nb_.back());   // initialize number of box constraints per stage
@@ -539,16 +477,13 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     // resize the containers for the affine system dynamics approximation
     hA_.resize(N_);
     hB_.resize(N_);
-    bEigen_.resize(N_);
     hb_.resize(N_);
 
     // resize the containers for the LQ cost approximation
     hQ_.resize(N_ + 1);
     hS_.resize(N_ + 1);
     hR_.resize(N_ + 1);
-    hqEigen_.resize(N_ + 1);
     hq_.resize(N_ + 1);
-    hrEigen_.resize(N_ + 1);
     hr_.resize(N_ + 1);
 
     hd_lb_.resize(N_ + 1);
@@ -562,9 +497,9 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     u_.resize(N_ + 1);
     x_.resize(N_ + 1);
     pi_.resize(N_);
-    hx_.resize(N_ + 1);
     hpi_.resize(N_);
-    hu_.resize(N_);
+    this->x_sol_.resize(N_ + 1);
+    this->u_sol_.resize(N_);
 
     lam_lb_.resize(N_ + 1);
     lam_ub_.resize(N_ + 1);
@@ -578,24 +513,16 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     for (int i = 0; i < N_; i++)
     {
         // first state and last input are not optimized
-        x_[i + 1] = hx_[i + 1].data();
-        u_[i] = hu_[i].data();
+        x_[i + 1] = this->x_sol_[i + 1].data();
+        u_[i] = this->u_sol_[i].data();
     }
     for (int i = 0; i < N_; i++)
     {
         pi_[i] = hpi_[i].data();
     }
-    for (int i = 0; i < N_; i++)
-    {
-        hq_[i] = hqEigen_[i].data();
-        hr_[i] = hrEigen_[i].data();
-        hb_[i] = bEigen_[i].data();
-    }
 
     hS_[N_] = nullptr;
     hR_[N_] = nullptr;
-
-    hq_[N_] = hqEigen_[N_].data();
     hr_[N_] = nullptr;
 
     hb_[0] = hb0_.data();

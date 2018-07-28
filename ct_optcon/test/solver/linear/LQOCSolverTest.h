@@ -17,7 +17,7 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
     const size_t N = 5;
     const double dt = 0.5;
 
-    bool verbose = false;  // optional verbose output
+    bool verbose = true;  // optional verbose output
 
     // create instances of HPIPM and an unconstrained Gauss-Newton Riccati solver
     std::shared_ptr<LQOCSolver<state_dim, control_dim>> hpipmSolver(new HPIPMInterface<state_dim, control_dim>);
@@ -77,14 +77,10 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
     // retrieve solutions from both solvers
     auto xSol_riccati = lqocSolvers[0]->getSolutionState();
     auto uSol_riccati = lqocSolvers[0]->getSolutionControl();
+    ct::core::FeedbackArray<state_dim, control_dim> KSol_riccati = lqocSolvers[0]->getSolutionFeedback();
     auto xSol_hpipm = lqocSolvers[1]->getSolutionState();
     auto uSol_hpipm = lqocSolvers[1]->getSolutionControl();
-
-    ct::core::FeedbackArray<state_dim, control_dim> KSol_riccati;
-    ct::core::FeedbackArray<state_dim, control_dim> KSol_hpipm;
-    lqocSolvers[0]->getFeedback(KSol_riccati);
-    lqocSolvers[1]->getFeedback(KSol_hpipm);
-
+    ct::core::FeedbackArray<state_dim, control_dim> KSol_hpipm = lqocSolvers[1]->getSolutionFeedback();
 
     for (size_t j = 0; j < xSol_riccati.size(); j++)
     {
