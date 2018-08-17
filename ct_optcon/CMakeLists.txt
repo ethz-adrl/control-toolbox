@@ -74,12 +74,6 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
 )
 
-## build SNOPT library
-if(BUILD_WITH_SNOPT_SUPPORT)
-    add_library(ct_snopt_interface src/nlp/solver/SnoptSolver.cpp)
-    target_link_libraries(ct_snopt_interface ${catkin_LIBRARIES} ${SNOPT_LIBS})
-endif()
-
 ## assemble list of libraries that contain prespecified templates
 if(USE_PRESPEC)
     ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_optcon")
@@ -103,6 +97,13 @@ catkin_package(
    CATKIN_DEPENDS
         ct_core
 )
+
+## build SNOPT library
+if(BUILD_WITH_SNOPT_SUPPORT)
+    add_library(ct_snopt_interface src/nlp/solver/SnoptSolver.cpp)
+    target_link_libraries(ct_snopt_interface ${catkin_LIBRARIES} ${SNOPT_LIBS})
+endif()
+
 
 # add libraries for explicit template
 if(USE_PRESPEC)
