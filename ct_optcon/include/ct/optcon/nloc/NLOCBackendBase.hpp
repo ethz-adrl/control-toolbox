@@ -294,7 +294,7 @@ public:
     /*!
       Retrieve the linearized model computed during the last iteration
     */
-    void retrieveLastLinearizedModel(StateMatrixArray& A, StateControlMatrixArray& B);
+    void retrieveLastAffineModel(StateMatrixArray& A, StateControlMatrixArray& B, StateVectorArray& b);
 
     /*!
      * the prepare Solve LQP Problem method is intended for a special use-case: unconstrained GNMS with pre-solving of the
