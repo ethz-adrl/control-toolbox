@@ -166,12 +166,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
 }
 
 template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::extractLQSolution()
-{
-    // no action required
-}
-
-template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::designFeedback()
 {
     LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;

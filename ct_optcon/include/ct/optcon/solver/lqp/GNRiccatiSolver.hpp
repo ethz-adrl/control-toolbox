@@ -56,10 +56,9 @@ public:
 
     //! compute the state and control updates.
     /*!
-	 * this method is specific to the GN Riccati solver, since the state updates lx_
-	 * need to be completed in an additional forward sweep.
+	 * The GNRiccati solver needs this method in order to compute the state and control solutions after the Riccati backward pass.
 	 *
-	 * IMPORTANT: you need to call this method at the right place if you're using solveSingleStage() by yourself.
+	 * \warning You need to call this method at the right place if you're using solveSingleStage() by yourself.
 	 */
     virtual void extractLQSolution() override;
 

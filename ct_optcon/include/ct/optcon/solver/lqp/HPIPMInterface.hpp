@@ -74,8 +74,6 @@ public:
 
     void solve() override;
 
-    virtual void extractLQSolution() override;
-
     void designFeedback();
 
     void printSolution();

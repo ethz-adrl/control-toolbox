@@ -64,8 +64,8 @@ public:
 
     //! solve the LQOC problem
     virtual void solve() = 0;
-    //! extract the solution
-    virtual void extractLQSolution() = 0;
+    //! extract the solution (can be overriden if additional extraction steps required in specific solver)
+    virtual void extractLQSolution() {};
 
     virtual void solveSingleStage(int N)
     {

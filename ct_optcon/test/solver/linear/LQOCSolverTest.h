@@ -17,7 +17,7 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
     const size_t N = 5;
     const double dt = 0.5;
 
-    bool verbose = true;  // optional verbose output
+    bool verbose = false;  // optional verbose output
 
     // create instances of HPIPM and an unconstrained Gauss-Newton Riccati solver
     std::shared_ptr<LQOCSolver<state_dim, control_dim>> hpipmSolver(new HPIPMInterface<state_dim, control_dim>);
