@@ -131,6 +131,7 @@ public:
 	 */
     void evaluateHessian(const int nele_hes, MapVecXs& hes, const SCALAR obj_fac, MapConstVecXs& lambda)
     {
+#if EIGEN_VERSION_AT_LEAST(3, 3, 0)
         if (!constraintsCodegen_ || !costCodegen_)
             throw std::runtime_error(
                 "Error in evaluateHessian. Hessian Evaluation only implemented for codegeneration");
@@ -154,6 +155,9 @@ public:
         hessianTotal_ = (hessianCost_ + hessianConstraints_).template triangularView<Eigen::Lower>();
 
         hes = Eigen::Map<Eigen::VectorXd>(hessianTotal_.valuePtr(), nele_hes, 1);
+#else
+        throw std::runtime_error("evaluateHessian only available for Eigen 3.3 and newer. Please change solver settings to NOT use hessians");
+#endif
     }
 
     /**
@@ -245,6 +249,7 @@ public:
 	 */
     size_t getNonZeroHessianCount()
     {
+#if EIGEN_VERSION_AT_LEAST(3, 3, 0)
         if (!constraintsCodegen_ || !costCodegen_)
         {
             std::cerr << "Error: Exact hessians only work with AD hessian codegeneration" << std::endl;
@@ -286,6 +291,10 @@ public:
 
         size_t nonZerosHessian = iRowHessian_.rows();
         return nonZerosHessian;
+#else
+        throw std::runtime_error("getNonZeroHessianCount only available for Eigen 3.3 and newer. Please change solver settings to NOT use hessians");
+        return 0;
+#endif
     }
 
     /**
@@ -478,7 +487,9 @@ protected:
     std::shared_ptr<ct::core::DerivativesCppadJIT<-1, 1>> costCodegen_;
     std::shared_ptr<ct::core::DerivativesCppadJIT<-1, -1>> constraintsCodegen_;
 
+#if EIGEN_VERSION_AT_LEAST(3, 3, 0)
     Eigen::SparseMatrix<SCALAR> hessianCost_, hessianConstraints_, hessianTotal_;
+#endif
 
     Eigen::VectorXi iRowHessianCost_, iRowHessianConstraints_, jColHessianCost_, jColHessianConstraints_;
     Eigen::VectorXi iRowHessian_;
