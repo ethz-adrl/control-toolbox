@@ -247,6 +247,9 @@ if(HPIPM)
 
     add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
     target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+    
+    catkin_add_gtest(LinearSystemSolverComparison test/nloc/LinearSystemSolverComparison.cpp)
+    target_link_libraries(LinearSystemSolverComparison ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
     if(BUILD_EXAMPLES)
         add_executable(ex_NLOC_boxConstrained examples/NLOC_boxConstrained.cpp)
