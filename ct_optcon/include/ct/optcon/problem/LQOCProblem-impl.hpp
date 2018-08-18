@@ -213,18 +213,9 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
     core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B;
     linearSystem.getAandB(x0, u0, 0, A, B);
 
-    std::cout << "A" << std::endl;
-    std::cout << A << std::endl;
-    std::cout << "B" << std::endl;
-    std::cout << B << std::endl;
-
     A_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_, A);
     B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, B);
-
     b_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_ + 1, offset + x0 - A * x0 - B * u0);
-
-    std::cout << "b" << std::endl;
-    std::cout << b_.front() << std::endl;
 
     // feed current state and control to cost function
     costFunction.setCurrentStateAndControl(x0, u0, 0);
@@ -246,22 +237,6 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
 
     hasBoxConstraints_ = false;
     hasGenConstraints_ = false;
-
-
-    std::cout << "Q" << std::endl;
-    std::cout << Q_.front() << std::endl;
-    std::cout << "R" << std::endl;
-    std::cout << R_.front() << std::endl;
-    std::cout << "P" << std::endl;
-    std::cout << P_.front() << std::endl;
-    std::cout << "qv" << std::endl;
-    std::cout << qv_.front() << std::endl;
-    std::cout << "rv" << std::endl;
-    std::cout << rv_.front() << std::endl;
-    std::cout << "qv_final" << std::endl;
-    std::cout << qv_[K_] << std::endl;
-    std::cout << "Qfinal" << std::endl;
-    std::cout << Q_[K_] << std::endl;
 }
 
 }  // namespace optcon

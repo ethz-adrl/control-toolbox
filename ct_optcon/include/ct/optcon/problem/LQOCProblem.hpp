@@ -16,7 +16,7 @@ namespace optcon {
  * - reference trajectories (arrays!) for state and control
  * - LQ approximation of the cost function
  *
- * The unconstrained LQ problem hence has the following form:
+ * The unconstrained LQ problem has the following form:
  * \f[
  * \min_{\mathbf{u}_n, \mathbf{x}_n}
  * \bigg \{
@@ -33,13 +33,6 @@ namespace optcon {
  * \mathbf x_{n+1} = \mathbf A_n \mathbf x_n + \mathbf B_n \mathbf u_n +\mathbf b_n
  * \f]
  *
- * Note in v2.2 of the CT, we were still using the differential notation
- * \f$ \delta \mathbf x_n = \mathbf x_n - \hat \mathbf x_n \f$ and \f$ \delta \mathbf u_n = \mathbf u_n - \hat \mathbf u_n \f$
- *
- * with reference trajectories for state and control denoted as \f$ \hat \mathbf x_i, \
- *  \hat \mathbf u_i \quad \forall i = 0, 1, \ldots \f$
- * however for consistency reasons, as of v2.3 we switched to absolute coordinates.
- *
  * The constrained LQ problem additionally implements the box constraints
  * \f$ \mathbf x_{lb} \leq \mathbf x_n \leq \mathbf x_{ub} \ \forall i=1,2,\ldots,N \f$
  * and
@@ -53,7 +46,13 @@ namespace optcon {
  * \note The box constraint containers within this class are made fixed-size. Solvers can get the
  * actual number of box constraints from a a dedicated container nb_
  *
- * \todo refactor all to be in global coordinates (in progress, todo: remove comment)
+ * \note Note that until version v2.2 of the CT, we were using the differential notation
+ * \f$ \delta \mathbf x_n = \mathbf x_n - \hat \mathbf x_n \f$ and \f$ \delta \mathbf u_n = \mathbf u_n - \hat \mathbf u_n \f$
+ *
+ * with reference trajectories for state and control denoted as \f$ \hat \mathbf x_i, \
+ *  \hat \mathbf u_i \quad \forall i = 0, 1, \ldots \f$
+ * however for consistency reasons, as of v2.3, the LQOC problem is formulated in absolute coordinates.
+ *
  * \todo Refactor the initializing methods such that const-references can be handed over.
  */
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR = double>
