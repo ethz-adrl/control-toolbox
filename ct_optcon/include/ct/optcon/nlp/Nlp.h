@@ -155,7 +155,7 @@ public:
         hessianTotal_ = (hessianCost_ + hessianConstraints_).template triangularView<Eigen::Lower>();
 
         hes = Eigen::Map<Eigen::VectorXd>(hessianTotal_.valuePtr(), nele_hes, 1);
-else
+#else
         throw std::runtime_error("evaluateHessian only available for Eigen 3.3 and newer. Please change solver settings to NOT use hessians");
 #endif
     }
