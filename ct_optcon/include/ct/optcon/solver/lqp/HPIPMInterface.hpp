@@ -104,8 +104,8 @@ private:
     void setSolverDimensions(const int N, const int nb = 0, const int ng = 0);
 
     /*!
-     * @brief set problem implementation for hpipm
-     * \warning This method is called in the loop. As little memory as possible
+     * @brief set problem implementation for HPIPM
+     * \warning This method is called in the control loop. As little memory as possible
      * should be allocated in this function. Ideally this method only sets pointers.
      *
      * \warning If you wish to
@@ -113,7 +113,7 @@ private:
     void setProblemImpl(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
 
     /*!
-     * @brief transcribe the problem from original local formulation to HPIPM's global coordinates
+     * @brief transcribe the problem for HPIPM
      *
      * See also the description of the LQOC Problem in class LQOCProblem.h
      *
@@ -129,11 +129,7 @@ private:
      * @param R pure input-cost term \f$ \mathbf R_n \f$ (second order derivative)
      *
      *
-     * This method needs change coordinate systems, in the sense that
-     *  \f[
-     *  \mathbf x_{n+1} = \mathbf A_n \mathbf x_n + \mathbf B_n \mathbf u_n +\mathbf b_n
-     *  + \hat \mathbf x_{n+1} - \mathbf A_n \hat \mathbf x_n -  \mathbf B_n \hat \mathbf u_n
-     * \f]
+     * \warning To achieve compatibility with HPIPM, this method needs to perform a change of coordinates for certain problem variables in the first stage.
      */
     void setupCostAndDynamics(StateVectorArray& x,
         ControlVectorArray& u,

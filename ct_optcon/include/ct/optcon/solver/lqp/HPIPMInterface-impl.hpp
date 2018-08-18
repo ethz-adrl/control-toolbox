@@ -87,7 +87,7 @@ template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
 {
 // optional printout
-//#ifdef HPIPM_PRINT_MATRICES
+#ifdef HPIPM_PRINT_MATRICES
     for (size_t i = 0; i < N_ + 1; i++)
     {
         std::cout << "HPIPM matrix printout for stage " << i << std::endl;
@@ -138,7 +138,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         d_print_mat(1, ng_[i], hd_ug_[i], 1);
 
     }   // end optional printout
-//#endif  // HPIPM_PRINT_MATRICES
+#endif  // HPIPM_PRINT_MATRICES
 
     // set pointers to optimal control problem
     ::d_cvt_colmaj_to_ocp_qp(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(),
@@ -434,9 +434,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
     this->x_sol_[0] = x[0];
     x0_ = x[0].data();
 
-    hb0_ = b[0] + A[0] * x[0];   // hpipm correction for first stage
-    hr0_ = rv[0] + P[0] * x[0];  // hpipm correction for first stage
-
     for (int i = 0; i < N_; i++)
     {
         hA_[i] = A[i].data();
@@ -453,8 +450,15 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
         hr_[i] = rv[i].data();
     }
 
+    // terminal stage
     hQ_[N_] = Q[N_].data();
     hq_[N_] = qv[N_].data();
+
+    // IMPORTANT: for hb_ and hr_, we need a HPIPM-specific correction for the first stage
+    hb0_ = b[0] + A[0] * x[0];
+    hr0_ = rv[0] + P[0] * x[0];
+    hb_[0] = hb0_.data();
+    hr_[0] = hr0_.data();
 
     // reset lqocProblem pointer, will get set in Base class if needed
     this->lqocProblem_ = nullptr;
@@ -525,8 +529,8 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     hR_[N_] = nullptr;
     hr_[N_] = nullptr;
 
-    hb_[0] = hb0_.data();
-    hr_[0] = hr0_.data();
+    hb_[0] = nullptr;
+    hr_[0] = nullptr;
 
     ct::core::StateVectorArray<STATE_DIM> hx;
     ct::core::ControlVectorArray<CONTROL_DIM> hu;
