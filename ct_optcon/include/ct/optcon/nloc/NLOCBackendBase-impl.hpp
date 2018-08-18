@@ -396,73 +396,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 }
 
 
-/*
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::simpleRollout(
-		const size_t threadId,
-		const ControlVectorArray& uff,
-		const StateVectorArray& x_ref_lqr,
-		StateVectorArray& x_local,
-		ControlVectorArray& u_recorded
-		)const
-{
-	const double& dt = settings_.dt;
-	const double dt_sim = settings_.getSimulationTimestep();
-	const size_t subSteps = settings_.K_sim;
-	const int K_local = K_;
-
-	u_recorded.clear();
-
-	x_local.resize(K_+1);
-	x_local.front() = x_ref_lqr.front();
-
-	if(uff.size() < (size_t)K_) throw std::runtime_error("simpleRollout: u_local is too short.");
-
-
-	for (int i = 1; i<K_local+1; i++)
-	{
-		x_local[i] = x_local[i-1];
-
-		u_recorded.push_back(uff[i-1] + L_[i-1] * (x_local[i-1] - x_ref_lqr[i-1]));
-
-		controller_[threadId]->setControl(u_recorded.back());
-
-
-		if(settings_.integrator == ct::core::IntegrationType::EULER_SYM || settings_.integrator == ct::core::IntegrationType::RK_SYM)
-		{
-			integrateSymplectic<V_DIM, P_DIM, STATE_DIM>(threadId, x_local[i], 0, subSteps, dt_sim);
-		} else
-		{
-			integrators_[threadId]->integrate_n_steps(x_local[i], 0, subSteps, dt_sim);
-		}
-
-
-		// check if nan
-		for (size_t k=0; k<STATE_DIM; k++)
-		{
-			if (isnan(x_local[i](k)))
-			{
-				x_local.resize(K_local+1, ct::core::StateVector<STATE_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
-				u_recorded.resize(K_local, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
-				return false;
-			}
-		}
-		for (size_t k=0; k<CONTROL_DIM; k++)
-		{
-			if (isnan(u_recorded.back()(k)))
-			{
-				x_local.resize(K_local+1, ct::core::StateVector<STATE_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
-				u_recorded.resize(K_local, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Constant(std::numeric_limits<SCALAR>::quiet_NaN()));
-				std::cout << "control unstable" << std::endl;
-				return false;
-			}
-		}
-	}
-	return true;
-}
-*/
-
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::rolloutSingleShot(const size_t threadId,
     const size_t k,  //! the starting index of the shot
@@ -486,12 +419,9 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     xShot[k] = x_local[k];  // initialize
 
     //! determine index where to stop at the latest
-    int K_stop = k + settings_.K_shot;
+    int K_stop = k + computeShotLength();
     if (K_stop > K_local)
         K_stop = K_local;
-
-    if (settings_.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
-        K_stop = K_local;  //! @todo this is not elegant - need to improve.
 
     // for each control step
     for (int i = (int)k; i < K_stop; i++)
@@ -566,15 +496,17 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     StateVectorArray& xShot,
     StateVectorArray& d,
     StateSubsteps& substepsX,
-    ControlSubsteps& substepsU) const
+    ControlSubsteps& substepsU,
+    std::atomic_bool* terminationFlag) const
 {
     //! make sure all intermediate entries in the defect trajectory are zero
     d.setConstant(state_vector_t::Zero());
 
-    for (size_t k = firstIndex; k <= lastIndex; k = k + settings_.K_shot)
+    for (size_t k = firstIndex; k <= lastIndex; k = k + computeShotLength())
     {
         // first rollout the shot
-        bool dynamicsGood = rolloutSingleShot(threadId, k, u_ff_local, x_local, x_ref_lqr, xShot, substepsX, substepsU);
+        bool dynamicsGood = rolloutSingleShot(
+            threadId, k, u_ff_local, x_local, x_ref_lqr, xShot, substepsX, substepsU, terminationFlag);
 
         if (!dynamicsGood)
             return false;
@@ -1034,171 +966,7 @@ SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::lineSearchSingleShooting()
-{
-    // lowest cost is cost of last rollout
-    lowestCost_ = intermediateCostBest_ + finalCostBest_;
-    scalar_t lowestCostPrevious = lowestCost_;
-
-    //! backup controller that led to current trajectory
-    u_ff_prev_ = u_ff_;  // todo note this might be redundant
-    x_prev_ = x_;        // todo note this might be redundant
-
-    if (!settings_.lineSearchSettings.active)
-    {
-        StateVectorArray x_ref_lqr_local(K_ + 1);
-        ControlVectorArray uff_local(K_);
-
-        uff_local = u_ff_ + lu_;          //  add lu
-        x_ref_lqr_local = x_prev_ + lx_;  // stabilize around current solution candidate
-
-        bool dynamicsGood = rolloutSingleShot(
-            settings_.nThreads, 0, uff_local, x_, x_ref_lqr_local, xShot_, *this->substepsX_, *this->substepsU_);
-
-        if (dynamicsGood)
-        {
-            intermediateCostBest_ = std::numeric_limits<scalar_t>::max();
-            finalCostBest_ = std::numeric_limits<scalar_t>::max();
-            computeCostsOfTrajectory(settings_.nThreads, x_, uff_local, intermediateCostBest_, finalCostBest_);
-            lowestCost_ = intermediateCostBest_ + finalCostBest_;
-
-            if (settings_.printSummary)
-            {
-                //! compute l2 norms of state and control update
-                lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, uff_local);
-                lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
-            }
-            else
-            {
-#ifdef MATLAB  // in case of no debug printing but still logging, need to compute them \
-    //! compute l2 norms of state and control update
-                lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(u_ff_prev_, uff_local);
-                lx_norm_ = computeDiscreteArrayNorm<StateVectorArray, 2>(x_prev_, x_);
-#endif
-            }
-
-            x_prev_ = x_;
-            u_ff_.swap(uff_local);
-            alphaBest_ = 1;
-        }
-        else
-        {
-            if (settings_.debugPrint)
-            {
-                std::cout << "CONVERGED: System became unstable!" << std::endl;
-            }
-            return false;
-        }
-    }
-    else
-    {
-        // merit of previous trajectory
-        lowestCost_ = intermediateCostBest_ + finalCostBest_ +
-                      (e_box_norm_ + e_gen_norm_) * settings_.meritFunctionRhoConstraints;
-        lowestCostPrevious = lowestCost_;
-
-        if (settings_.lineSearchSettings.debugPrint)
-        {
-            std::cout << "[LineSearch]: Starting line search." << std::endl;
-            std::cout << "[LineSearch]: Merit last rollout: " << lowestCost_ << std::endl;
-        }
-
-        alphaBest_ = performLineSearch();
-
-        if (settings_.lineSearchSettings.debugPrint)
-        {
-            std::cout << "[LineSearch]: Best control found at alpha: " << alphaBest_ << " . Will use this control."
-                      << std::endl;
-        }
-
-        if (alphaBest_ == 0.0)
-        {
-            if (settings_.debugPrint)
-            {
-                {
-                    std::cout << "WARNING: No better control found. Converged." << std::endl;
-                }
-                return false;
-            }
-        }
-    }
-
-    if ((fabs((lowestCostPrevious - lowestCost_) / lowestCostPrevious)) > settings_.min_cost_improvement)
-    {
-        return true;  //! found better cost
-    }
-
-    if (settings_.debugPrint)
-    {
-        std::cout << "CONVERGED: Cost last iteration: " << lowestCostPrevious << ", current cost: " << lowestCost_
-                  << std::endl;
-        std::cout << "CONVERGED: Cost improvement ratio was: "
-                  << (lowestCostPrevious - lowestCost_) / lowestCostPrevious
-                  << "x, which is lower than convergence criteria: " << settings_.min_cost_improvement << std::endl;
-    }
-    return false;
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::executeLineSearchSingleShooting(
-    const size_t threadId,
-    const scalar_t alpha,
-    ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
-    ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
-    scalar_t& intermediateCost,
-    scalar_t& finalCost,
-    scalar_t& e_box_norm,
-    scalar_t& e_gen_norm,
-    StateSubsteps& substepsX,
-    ControlSubsteps& substepsU,
-    std::atomic_bool* terminationFlag) const
-{
-    intermediateCost = std::numeric_limits<scalar_t>::infinity();
-    finalCost = std::numeric_limits<scalar_t>::infinity();
-    e_box_norm = 0.0;
-    e_gen_norm = 0.0;
-
-    if (terminationFlag && *terminationFlag)
-        return;
-
-    StateVectorArray x_ref_lqr;
-    StateVectorArray xShot_local(K_ + 1);  //! note this is currently only a dummy (\todo nicer solution?)
-
-    //! if stabilizing about new solution candidate, choose lu as feedforward increment and also increment x_prev_ by lx
-    u_local = lu_ * alpha + u_ff_prev_;
-    x_ref_lqr = lx_ * alpha + x_prev_;
-
-    bool dynamicsGood =
-        rolloutSingleShot(threadId, 0, u_local, x_local, x_ref_lqr, xShot_local, substepsX, substepsU, terminationFlag);
-
-    if (terminationFlag && *terminationFlag)
-        return;
-
-    if (dynamicsGood)
-    {
-        // compute cost specific to this alpha
-        computeCostsOfTrajectory(threadId, x_local, u_local, intermediateCost, finalCost);
-
-        // compute constraint violations specific to this alpha
-        if (boxConstraints_[threadId] != nullptr)
-            computeBoxConstraintErrorOfTrajectory(threadId, x_local, u_local, e_box_norm);
-        if (generalConstraints_[threadId] != nullptr)
-            computeGeneralConstraintErrorOfTrajectory(threadId, x_local, u_local, e_gen_norm);
-    }
-    else
-    {
-        if (settings_.debugPrint)
-        {
-            std::string msg = std::string("dynamics not good, thread: ") + std::to_string(threadId);
-            std::cout << msg << std::endl;
-        }
-    }
-}
-
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::lineSearchMultipleShooting()
+bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::lineSearch()
 {
     // lowest cost
     scalar_t lowestCostPrevious;
@@ -1208,7 +976,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     x_prev_ = x_;
 
 
-    if (!settings_.lineSearchSettings.active)  //! do full step updates
+    if (!settings_.lineSearchSettings.active)  // do full step updates
     {
         //! lowest cost is cost of last rollout
         lowestCostPrevious = intermediateCostBest_ + finalCostBest_;
@@ -1219,7 +987,6 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         resetDefects();
 
         rolloutShots(0, K_ - 1);
-
         d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);
 
         updateCosts();
@@ -1241,12 +1008,16 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         x_prev_ = x_;
         alphaBest_ = 1;
     }
-    else  //! do line search over a merit function trading off costs and constraint violations
+    else  // do line search over a merit function trading off costs and constraint violations
     {
         // merit of previous trajectory
+        d_norm_ = computeDefectsNorm<1>(lqocProblem_->b_);
         lowestCost_ = intermediateCostBest_ + finalCostBest_ + d_norm_ * settings_.meritFunctionRho +
                       (e_box_norm_ + e_gen_norm_) * settings_.meritFunctionRhoConstraints;
         lowestCostPrevious = lowestCost_;
+
+        resetDefects();
+
 
         if (settings_.lineSearchSettings.debugPrint)
         {
@@ -1301,8 +1072,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::executeLineSearchMultipleShooting(
-    const size_t threadId,
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::executeLineSearch(const size_t threadId,
     const scalar_t alpha,
     const ControlVectorArray& u_ff_update,
     const StateVectorArray& x_update,
@@ -1338,14 +1108,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     if (terminationFlag && *terminationFlag)
         return;
 
-    bool dynamicsGood = rolloutShotsSingleThreaded(
-        threadId, 0, K_ - 1, u_alpha, x_alpha, x_alpha, x_shot_alpha, defects_recorded, substepsX, substepsU);
+    bool dynamicsGood;
 
-    if (terminationFlag && *terminationFlag)
-        return;
-
-    //! compute defects norm
-    defectNorm = computeDefectsNorm<1>(defects_recorded);
+    dynamicsGood = rolloutShotsSingleThreaded(threadId, 0, K_ - 1, u_alpha, x_alpha, x_alpha, x_shot_alpha,
+        defects_recorded, substepsX, substepsU, terminationFlag);
 
     if (terminationFlag && *terminationFlag)
         return;
@@ -1353,11 +1119,24 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     //! compute costs
     if (dynamicsGood)
     {
+        //! compute defects norm
+        defectNorm = computeDefectsNorm<1>(defects_recorded);
+
+        if (terminationFlag && *terminationFlag)
+            return;
+
         computeCostsOfTrajectory(threadId, x_alpha, u_alpha, intermediateCost, finalCost);
+
+        if (terminationFlag && *terminationFlag)
+            return;
 
         // compute constraint violations specific to this alpha
         if (boxConstraints_[threadId] != nullptr)
             computeBoxConstraintErrorOfTrajectory(threadId, x_alpha, u_alpha, e_box_norm);
+
+        if (terminationFlag && *terminationFlag)
+            return;
+
         if (generalConstraints_[threadId] != nullptr)
             computeGeneralConstraintErrorOfTrajectory(threadId, x_alpha, u_alpha, e_gen_norm);
     }
@@ -1369,9 +1148,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             std::cout << msg << std::endl;
         }
     }
-
-    if (terminationFlag && *terminationFlag)
-        return;
 }
 
 
@@ -1517,6 +1293,18 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         lu_norm_ = computeDiscreteArrayNorm<ControlVectorArray, 2>(lu_);
 #endif
     }
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
+const int NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::computeShotLength() const
+{
+    if (settings_.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
+        return K_;
+    else if (settings_.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::GNMS)
+        return settings_.K_shot;
+    else
+        throw std::runtime_error("Unknown algorithm type in NLOCBackendBase::computeShotLength()");
 }
 
 

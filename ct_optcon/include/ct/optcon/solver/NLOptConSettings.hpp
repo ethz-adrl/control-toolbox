@@ -192,7 +192,7 @@ public:
           debugPrint(false),
           printSummary(true),
           useSensitivityIntegrator(false),
-		  logToMatlab(false)
+          logToMatlab(false)
     {
     }
 
@@ -307,6 +307,7 @@ public:
             return false;
         }
 
+        // TODO need thorough check if this is really the case ....
         if ((K_shot > 1) && (nlocp_algorithm == ILQR))
         {
             std::cout << "Invalid parameter: for iLQR K_shot needs to be 1. K_shot currently is " << K_shot

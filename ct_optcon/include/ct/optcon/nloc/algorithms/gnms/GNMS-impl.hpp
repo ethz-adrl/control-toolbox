@@ -141,7 +141,7 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishItera
 
 
     start = std::chrono::steady_clock::now();
-    bool foundBetter = this->backend_->lineSearchMultipleShooting();
+    bool foundBetter = this->backend_->lineSearch();
     end = std::chrono::steady_clock::now();
     diff = end - start;
     if (debugPrint)
