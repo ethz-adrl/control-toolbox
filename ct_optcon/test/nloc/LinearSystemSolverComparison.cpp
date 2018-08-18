@@ -9,10 +9,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 /*!
  * This runs the Linear system solver comparison with NLOC
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
-
-    return 1;
 }
