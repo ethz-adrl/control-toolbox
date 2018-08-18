@@ -364,12 +364,12 @@ TEST(ILQRTestB, SingleCoreTest)
 
                 core::StateMatrixArray<state_dim> A;
                 core::StateControlMatrixArray<state_dim, control_dim> B;
-                core::StateVector<state_dim> b;
+                core::StateVectorArray<state_dim> b;
                 ilqr.getBackend()->retrieveLastAffineModel(A, B, b);
 
                 core::StateMatrixArray<state_dim> A_mp;
                 core::StateControlMatrixArray<state_dim, control_dim> B_mp;
-                core::StateVector<state_dim> b_mp;
+                core::StateVectorArray<state_dim> b_mp;
                 ilqr_mp.getBackend()->retrieveLastAffineModel(A_mp, B_mp, b_mp);
 
                 ASSERT_EQ(A.size(), nSteps);
