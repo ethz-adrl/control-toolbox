@@ -234,8 +234,7 @@ public:
                     discreteInd += nnEle;
                 }
 
-                rowOffset += constraint->getJacobianStateNonZeroCountIntermediate() +
-                             constraint->getJacobianInputNonZeroCountIntermediate();
+                rowOffset += constraint->getIntermediateConstraintsCount();
             }
         }
 
@@ -244,26 +243,25 @@ public:
             nnEle = constraint->getJacobianStateNonZeroCountTerminal();
             if (nnEle > 0)
             {
-                Eigen::VectorXi iRowStateIntermediate(constraint->getJacobianStateNonZeroCountTerminal());
-                Eigen::VectorXi jColStateIntermediate(constraint->getJacobianStateNonZeroCountTerminal());
-                constraint->sparsityPatternStateTerminal(iRowStateIntermediate, jColStateIntermediate);
-                discreteIRow_.segment(discreteInd, nnEle) = iRowStateIntermediate.array() + rowOffset;
-                discreteJCol_.segment(discreteInd, nnEle) = jColStateIntermediate.array() + w_->getStateIndex(N_);
+                Eigen::VectorXi iRowStateTerminal(constraint->getJacobianStateNonZeroCountTerminal());
+                Eigen::VectorXi jColStateTerminal(constraint->getJacobianStateNonZeroCountTerminal());
+                constraint->sparsityPatternStateTerminal(iRowStateTerminal, jColStateTerminal);
+                discreteIRow_.segment(discreteInd, nnEle) = iRowStateTerminal.array() + rowOffset;
+                discreteJCol_.segment(discreteInd, nnEle) = jColStateTerminal.array() + w_->getStateIndex(N_);
                 discreteInd += nnEle;
             }
 
             nnEle = constraint->getJacobianInputNonZeroCountTerminal();
             if (nnEle > 0)
             {
-                Eigen::VectorXi iRowInputIntermediate(constraint->getJacobianInputNonZeroCountTerminal());
-                Eigen::VectorXi jColInputIntermediate(constraint->getJacobianInputNonZeroCountTerminal());
-                constraint->sparsityPatternInputTerminal(iRowInputIntermediate, jColInputIntermediate);
-                discreteIRow_.segment(discreteInd, nnEle) = iRowInputIntermediate.array() + rowOffset;
-                discreteJCol_.segment(discreteInd, nnEle) = jColInputIntermediate.array() + w_->getControlIndex(N_);
+                Eigen::VectorXi iRowInputTerminal(constraint->getJacobianInputNonZeroCountTerminal());
+                Eigen::VectorXi jColInputTerminal(constraint->getJacobianInputNonZeroCountTerminal());
+                constraint->sparsityPatternInputTerminal(iRowInputTerminal, jColInputTerminal);
+                discreteIRow_.segment(discreteInd, nnEle) = iRowInputTerminal.array() + rowOffset;
+                discreteJCol_.segment(discreteInd, nnEle) = jColInputTerminal.array() + w_->getControlIndex(N_);
                 discreteInd += nnEle;
             }
-            rowOffset +=
-                constraint->getJacobianStateNonZeroCountTerminal() + constraint->getJacobianInputNonZeroCountTerminal();
+            rowOffset += constraint->getTerminalConstraintsCount();
         }
 
         iRow_vec = discreteIRow_;
