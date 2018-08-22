@@ -224,6 +224,41 @@ public:
 
         printLevel_ = pt.get<unsigned int>(ns + ".Verbosity");
         tol_ = pt.get<double>(ns + ".OptimalityTolerance");
+
+        setParameterIfExists(pt, jacobianApproximation_, "jacobianApproximation", ns);
+        setParameterIfExists(pt, restoAcceptableTol_, "restoAcceptableTol", ns);
+        setParameterIfExists(pt, restoAcceptableTol_, "restoAcceptableTol", ns);
+        setParameterIfExists(pt, constr_viol_tol_, "constr_viol_tol", ns);
+        setParameterIfExists(pt, restoTol_, "restoTol", ns);
+        setParameterIfExists(pt, acceptableTol_, "acceptableTol", ns);
+        setParameterIfExists(pt, restoAcceptableTol_, "restoAcceptableTol", ns);
+        setParameterIfExists(pt, linear_scaling_on_demand_, "linear_scaling_on_demand", ns);
+        setParameterIfExists(pt, nlp_scaling_method_, "nlp_scaling_method", ns);
+        setParameterIfExists(pt, print_user_options_, "print_user_options", ns);
+        setParameterIfExists(pt, print_frequency_iter_, "print_frequency_iter_", ns);
+        setParameterIfExists(pt, printInfoString_, "printInfoString", ns);
+        setParameterIfExists(pt, derivativeTestTol_, "derivativeTestTol", ns);
+        setParameterIfExists(pt, derivativeTestPerturbation_, "derivativeTestPerturbation", ns);
+        setParameterIfExists(pt, point_perturbation_radius_, "point_perturbation_radius", ns);
+        setParameterIfExists(pt, checkDerivativesForNaninf_, "checkDerivativesForNaninf", ns);
+        setParameterIfExists(pt, derivativeTestPrintAll_, "derivativeTestPrintAll", ns);
+        setParameterIfExists(pt, linear_solver_, "linear_solver", ns);
+        setParameterIfExists(pt, linearSystemScaling_, "linearSystemScaling", ns);
+        setParameterIfExists(pt, jacobianApproximation_, "jacobianApproximation", ns);
+    }
+
+    template <typename TYPE>
+    static void setParameterIfExists(const boost::property_tree::ptree& pt,
+        TYPE& param,
+        const std::string& param_name,
+        const std::string& ns)
+    {
+        const std::string full_param_name = ns + "." + param_name;
+        boost::optional<const boost::property_tree::ptree&> child = pt.get_child_optional(full_param_name);
+        if (child)
+        {
+            param = child->get_value<TYPE>();
+        }
     }
 };
 
