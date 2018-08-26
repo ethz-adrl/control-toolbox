@@ -99,17 +99,23 @@ TEST(NLOCTest, NonlinearSystemAlgorithmComparison)
     // print trajectories
 	StateTrajectory < state_dim > xRollout_gnms = gnms.getStateTrajectory();
 	ControlTrajectory < control_dim > uRollout_gnms = gnms.getControlTrajectory();
-    std::cout << "x final GNMS: " << xRollout_gnms.back().transpose() << std::endl;
-    std::cout << "u final GNMS: " << uRollout_gnms.back().transpose() << std::endl;
-
 
     ilqr.solve();
 
 	// print trajectories
 	StateTrajectory < state_dim > xRollout_ilqr = ilqr.getStateTrajectory();
 	ControlTrajectory < control_dim > uRollout_ilqr = ilqr.getControlTrajectory();
-	std::cout << "x final iLQG: " << xRollout_ilqr.back().transpose() << std::endl;
-	std::cout << "u final iLQG: " << uRollout_ilqr.back().transpose() << std::endl;
+
+
+	// Assert that the solutions are equal
+    for (size_t i = 0; i < xRollout_gnms.size(); i++) {
+		ASSERT_NEAR(xRollout_gnms[i](0), xRollout_ilqr[i](0), 1e-4);
+	}
+
+    for (size_t i = 0; i < uRollout_ilqr.size(); i++) {
+		ASSERT_NEAR(uRollout_gnms[i](0), uRollout_ilqr[i](0), 1e-4);
+	}
+
 }
 
 
