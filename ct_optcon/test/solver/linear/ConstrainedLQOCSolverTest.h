@@ -158,7 +158,7 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
     // retrieve solutions from hpipm
     xSol_hpipm = hpipmSolver->getSolutionState();
     uSol_hpipm = hpipmSolver->getSolutionControl();
-    hpipmSolver->getFeedback(KSol_hpipm);
+    KSol_hpipm = hpipmSolver->getSolutionFeedback();
 
 
     if (verbose)
@@ -211,7 +211,7 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
     // retrieve solutions from hpipm
     xSol_hpipm = hpipmSolver->getSolutionState();
     uSol_hpipm = hpipmSolver->getSolutionControl();
-    hpipmSolver->getFeedback(KSol_hpipm);
+    KSol_hpipm = hpipmSolver->getSolutionFeedback();
 
     if (verbose)
         printSolution<state_dim, control_dim>(xSol_hpipm, uSol_hpipm, KSol_hpipm);
@@ -277,7 +277,7 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
     // retrieve solutions from hpipm
     xSol_hpipm = hpipmSolver->getSolutionState();
     uSol_hpipm = hpipmSolver->getSolutionControl();
-    hpipmSolver->getFeedback(KSol_hpipm);
+    KSol_hpipm = hpipmSolver->getSolutionFeedback();
 
     if (verbose)
         printSolution<state_dim, control_dim>(xSol_hpipm, uSol_hpipm, KSol_hpipm);
@@ -373,7 +373,7 @@ void generalConstraintsTest(ct::core::ControlVector<control_dim> u0,
     // retrieve solutions from hpipm
     xSol_hpipm = hpipmSolver->getSolutionState();
     uSol_hpipm = hpipmSolver->getSolutionControl();
-    hpipmSolver->getFeedback(KSol_hpipm);
+    KSol_hpipm = hpipmSolver->getSolutionFeedback();
 
 
     if (verbose)
@@ -681,7 +681,7 @@ TEST(ConstrainedLQOCSolverTest, BoxConstraintUsingConstraintToolbox)
     // retrieve solutions from hpipm
     xSol_hpipm = hpipmSolver->getSolutionState();
     uSol_hpipm = hpipmSolver->getSolutionControl();
-    hpipmSolver->getFeedback(KSol_hpipm);
+    KSol_hpipm = hpipmSolver->getSolutionFeedback();
 
     if (verbose)
         printSolution<state_dim, control_dim>(xSol_hpipm, uSol_hpipm, KSol_hpipm);

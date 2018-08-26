@@ -54,22 +54,13 @@ public:
 
     virtual void configure(const NLOptConSettings& settings) override;
 
-    virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() override;
-
-    virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() override;
-
-    virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdates() override;
-
-    virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K) override;
-
     //! compute the state and control updates.
     /*!
-	 * this method is specific to the GN Riccati solver, since the state updates lx_
-	 * need to be completed in an additional forward sweep.
+	 * The GNRiccati solver needs this method in order to compute the state and control solutions after the Riccati backward pass.
 	 *
-	 * IMPORTANT: you need to call this method at the right place if you're using solveSingleStage() by yourself.
+	 * \warning You need to call this method at the right place if you're using solveSingleStage() by yourself.
 	 */
-    virtual void computeStateAndControlUpdates() override;
+    virtual void extractLQSolution() override;
 
     virtual SCALAR getSmallestEigenvalue() override;
 
@@ -101,7 +92,6 @@ protected:
     ControlMatrix H_corrFix_;
 
     ControlVectorArray lv_;
-    FeedbackArray L_;
 
     StateVectorArray sv_;
     StateMatrixArray S_;

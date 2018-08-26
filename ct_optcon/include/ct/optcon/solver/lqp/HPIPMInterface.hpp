@@ -74,15 +74,7 @@ public:
 
     void solve() override;
 
-    virtual void computeStateAndControlUpdates() override;
-
-    virtual ct::core::StateVectorArray<STATE_DIM> getSolutionState() override;
-
-    virtual ct::core::ControlVectorArray<CONTROL_DIM> getSolutionControl() override;
-
-    virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM>& K) override;
-
-    virtual ct::core::ControlVectorArray<CONTROL_DIM> getFeedforwardUpdates() override;
+    void designFeedback();
 
     void printSolution();
 
@@ -110,8 +102,8 @@ private:
     void setSolverDimensions(const int N, const int nb = 0, const int ng = 0);
 
     /*!
-     * @brief set problem implementation for hpipm
-     * \warning This method is called in the loop. As little memory as possible
+     * @brief set problem implementation for HPIPM
+     * \warning This method is called in the control loop. As little memory as possible
      * should be allocated in this function. Ideally this method only sets pointers.
      *
      * \warning If you wish to
@@ -119,7 +111,7 @@ private:
     void setProblemImpl(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
 
     /*!
-     * @brief transcribe the problem from original local formulation to HPIPM's global coordinates
+     * @brief transcribe the problem for HPIPM
      *
      * See also the description of the LQOC Problem in class LQOCProblem.h
      *
@@ -135,11 +127,7 @@ private:
      * @param R pure input-cost term \f$ \mathbf R_n \f$ (second order derivative)
      *
      *
-     * This method needs change coordinate systems, in the sense that
-     *  \f[
-     *  \mathbf x_{n+1} = \mathbf A_n \mathbf x_n + \mathbf B_n \mathbf u_n +\mathbf b_n
-     *  + \hat \mathbf x_{n+1} - \mathbf A_n \hat \mathbf x_n -  \mathbf B_n \hat \mathbf u_n
-     * \f]
+     * \warning To achieve compatibility with HPIPM, this method needs to perform a change of coordinates for certain problem variables in the first stage.
      */
     void setupCostAndDynamics(StateVectorArray& x,
         ControlVectorArray& u,
@@ -189,7 +177,7 @@ private:
     //! number of general constraints per stage
     std::vector<int> ng_;
 
-    //! initial state
+    //! pointer to initial state
     double* x0_;
 
     //! system state sensitivities
@@ -198,8 +186,6 @@ private:
     std::vector<double*> hB_;
     //! system offset term
     std::vector<double*> hb_;
-    //! intermediate container for intuitive transcription of system representation from local to global coordinates
-    StateVectorArray bEigen_;
     //! intermediate container for intuitive transcription of first stage from local to global coordinates
     Eigen::Matrix<double, state_dim, 1> hb0_;
 
@@ -216,10 +202,6 @@ private:
     std::vector<double*> hr_;
     //! intermediate container for intuitive transcription of first stage from local to global coordinates
     Eigen::Matrix<double, control_dim, 1> hr0_;
-    //! interm. container for intuitive transcription of 1st order state penalty from local to global coordinates
-    StateVectorArray hqEigen_;
-    //! interm. container for intuitive transcription of 1st order control penalty from local to global coordinates
-    ControlVectorArray hrEigen_;
 
 
     //! pointer to lower box constraint boundary
@@ -269,9 +251,7 @@ private:
     //! container for lagr. mult. general-constraint upper
     ct::core::DiscreteArray<Eigen::Matrix<double, -1, 1>> cont_lam_ug_;
 
-    ct::core::StateVectorArray<STATE_DIM> hx_;
     ct::core::StateVectorArray<STATE_DIM> hpi_;
-    ct::core::ControlVectorArray<CONTROL_DIM> hu_;
 
     //! settings from NLOptConSolver
     NLOptConSettings settings_;

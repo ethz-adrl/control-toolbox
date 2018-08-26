@@ -226,8 +226,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::co
         printString("[MP]: do single threaded LQ approximation for single index " + std::to_string(firstIndex) +
                     ". Not waking up workers.");
 #endif  //DEBUG_PRINT_MP
-        this->computeLinearizedDynamics(this->settings_.nThreads, firstIndex);
-        this->computeQuadraticCosts(this->settings_.nThreads, firstIndex);
+        this->executeLQApproximation(this->settings_.nThreads, firstIndex);
         if (this->generalConstraints_[this->settings_.nThreads] != nullptr)
             this->computeLinearizedConstraints(this->settings_.nThreads, firstIndex);
         return;
@@ -299,9 +298,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::co
                         std::to_string(KMax_ - k));
 #endif
 
-        this->computeQuadraticCosts(threadId, KMax_ - k);  // quadratize cost backwards
-
-        this->computeLinearizedDynamics(threadId, KMax_ - k);  // linearize dynamics backwards
+        this->executeLQApproximation(threadId, KMax_ - k);
 
         if (this->generalConstraints_[threadId] != nullptr)
             this->computeLinearizedConstraints(threadId, KMax_ - k);  // linearize constraints backwards
@@ -329,7 +326,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::ro
         this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_, this->xShot_,
             *this->substepsX_, *this->substepsU_);
 
-        this->computeSingleDefect(firstIndex, this->x_, this->xShot_, this->lqocProblem_->b_);
+        this->computeSingleDefect(firstIndex, this->x_, this->xShot_, this->d_);
         return;
     }
 
@@ -388,7 +385,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::ro
         }
 
         size_t kShot = (KMax_ - k);
-        if (kShot % ((size_t)this->computeShotLength()) ==
+        if (kShot % ((size_t)this->getNumStepsPerShot()) ==
             0)  //! only rollout when we're meeting the beginning of a shot
         {
 #ifdef DEBUG_PRINT_MP
@@ -400,7 +397,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::ro
             this->rolloutSingleShot(
                 threadId, kShot, this->u_ff_, this->x_, this->x_, this->xShot_, *this->substepsX_, *this->substepsU_);
 
-            this->computeSingleDefect(kShot, this->x_, this->xShot_, this->lqocProblem_->b_);
+            this->computeSingleDefect(kShot, this->x_, this->xShot_, this->d_);
         }
 
         kCompleted_++;
@@ -450,22 +447,12 @@ SCALAR NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     printString("[MP]: Restoring " + std::to_string(Eigen::nbThreads()) + " Eigen threads.");
 #endif  //DEBUG_PRINT_MP
 
-    if (this->settings_.printSummary)
-    {
-        this->lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(
-            this->u_ff_, this->u_ff_prev_);
-        this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(
-            this->x_, this->x_prev_);
-    }
-    else
-    {
-#ifdef MATLAB
-        this->lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(
-            this->u_ff_, this->u_ff_prev_);
-        this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(
-            this->x_, this->x_prev_);
-#endif
-    }
+    // update norms, as they are typically different from the pure lqoc solver updates
+    this->lu_norm_ = this->template computeDiscreteArrayNorm<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>, 2>(
+        this->u_ff_, this->u_ff_prev_);
+    this->lx_norm_ = this->template computeDiscreteArrayNorm<ct::core::StateVectorArray<STATE_DIM, SCALAR>, 2>(
+        this->x_, this->x_prev_);
+
     this->x_prev_ = this->x_;
     this->u_ff_prev_ = this->u_ff_;
 
@@ -511,10 +498,9 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::li
         typename Base::ControlSubstepsPtr substepsU =
             typename Base::ControlSubstepsPtr(new typename Base::ControlSubsteps(this->K_ + 1));
 
-
-        this->executeLineSearch(threadId, alpha, this->lu_, this->lx_, x_search, x_shot_search, defects_recorded,
-            u_recorded, intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm, *substepsX, *substepsU,
-            &alphaBestFound_);
+        this->executeLineSearch(threadId, alpha, this->lqocSolver_->getSolutionControl(),
+            this->lqocSolver_->getSolutionState(), x_search, x_shot_search, defects_recorded, u_recorded,
+            intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm, *substepsX, *substepsU, &alphaBestFound_);
 
         // compute merit
         cost = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm +
@@ -551,7 +537,7 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::li
             this->x_.swap(x_search);
             this->xShot_.swap(x_shot_search);
             this->u_ff_.swap(u_recorded);
-            this->lqocProblem_->b_.swap(defects_recorded);
+            this->d_.swap(defects_recorded);
             this->substepsX_ = substepsX;
             this->substepsU_ = substepsU;
         }
@@ -559,13 +545,19 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::li
         {
             if (this->settings_.lineSearchSettings.debugPrint)
             {
-                printString("[LineSearch, Thread " + std::to_string(threadId) +
-                            "]: NO lower cost/merit found at alpha:" + std::to_string(alpha));
-                printString("[LineSearch]: Cost:\t" + std::to_string(intermediateCost + finalCost));
-                printString("[LineSearch]: Defect:\t" + std::to_string(defectNorm));
-                printString("[LineSearch]: err box constr:\t" + std::to_string(e_box_norm));
-                printString("[LineSearch]: err gen constr:\t" + std::to_string(e_gen_norm));
-                printString("[LineSearch]: Merit:\t" + std::to_string(cost));
+                if (!alphaBestFound_)
+                {
+                    printString("[LineSearch, Thread " + std::to_string(threadId) +
+                                "]: NO lower cost/merit found at alpha:" + std::to_string(alpha));
+                    printString("[LineSearch]: Cost:\t" + std::to_string(intermediateCost + finalCost));
+                    printString("[LineSearch]: Defect:\t" + std::to_string(defectNorm));
+                    printString("[LineSearch]: err box constr:\t" + std::to_string(e_box_norm));
+                    printString("[LineSearch]: err gen constr:\t" + std::to_string(e_gen_norm));
+                    printString("[LineSearch]: Merit:\t" + std::to_string(cost));
+                }
+                else
+                    printString("[LineSearch, Thread " + std::to_string(threadId) +
+                                "]: getting terminated. Best stepsize found by another thread.");
             }
         }
 

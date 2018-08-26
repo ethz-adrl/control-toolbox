@@ -64,6 +64,8 @@ public:
 
     //! solve the LQOC problem
     virtual void solve() = 0;
+    //! extract the solution (can be overriden if additional extraction steps required in specific solver)
+    virtual void extractLQSolution() {};
 
     virtual void solveSingleStage(int N)
     {
@@ -75,29 +77,17 @@ public:
         throw std::runtime_error("getSmallestEigenvalue not available for this solver.");
     }
 
-    virtual void computeStateAndControlUpdates() = 0;
-
-    virtual ct::core::StateVectorArray<STATE_DIM, SCALAR> getSolutionState() = 0;
-    virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getSolutionControl() = 0;
-
-    virtual void getFeedback(ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K) = 0;
-
-    const SCALAR& getControlUpdateNorm() { return delta_uff_norm_; }
-    const SCALAR& getStateUpdateNorm() { return delta_x_norm_; }
-    const core::StateVectorArray<STATE_DIM, SCALAR>& getStateUpdates() { return lx_; }
-    const core::ControlVectorArray<CONTROL_DIM, SCALAR>& getControlUpdates() { return lu_; }
-    virtual ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> getFeedforwardUpdates() = 0;
-
+    const ct::core::StateVectorArray<STATE_DIM, SCALAR>& getSolutionState() { return x_sol_; }
+    const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& getSolutionControl() { return u_sol_; }
+    const ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& getSolutionFeedback() { return L_; }
 protected:
     virtual void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) = 0;
 
     std::shared_ptr<LQOCProblem_t> lqocProblem_;
 
-    core::StateVectorArray<STATE_DIM, SCALAR> lx_;      // differential update on the state
-    core::ControlVectorArray<CONTROL_DIM, SCALAR> lu_;  // differential update on the control
-
-    SCALAR delta_uff_norm_;  //! l2-norm of the control update
-    SCALAR delta_x_norm_;    //! l2-norm of the state update
+    core::StateVectorArray<STATE_DIM, SCALAR> x_sol_;            // solution in x
+    core::ControlVectorArray<CONTROL_DIM, SCALAR> u_sol_;        // solution in u
+    ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> L_;  // solution feedback
 };
 }  // namespace optcon
 }  // namespace ct
