@@ -8,9 +8,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <gtest/gtest.h>
 
-//#define MATLAB
-//#define MATLAB_FULL_LOG
-
 #include "nloc_test_dir.h"
 
 
@@ -21,14 +18,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
  * \example NonlinearSystemTest.h
  *
  *
- */
-
-/*
- * This test implements a 1-Dimensional horizontally moving point mass with mass 1kg and attached to a spring
- * x = [p, pd] // p - position pointing upwards, against gravity, pd - velocity
- * dx = f(x,u)
- *   = [0 1  x  +  [0      +  [0  u
- *      0 0]        9.81]      1]
  */
 namespace ct {
 namespace optcon {
@@ -42,7 +31,7 @@ using std::shared_ptr;
 const size_t state_dim = 1;    // position, velocity
 const size_t control_dim = 1;  // force
 
-//! Dynamics class for the GNMS unit test
+//! Dynamics class for the GNMS unit test, slightly nonlinear dynamics
 class Dynamics : public ControlledSystem<state_dim, control_dim>
 {
 public:
@@ -92,8 +81,8 @@ TEST(NLOCTest, NonlinearSystemTest)
 
     std::cout << "setting up problem " << std::endl;
 
-    std::string configFile = std::string(NLOC_TEST_DIR) + "/config/solver.info";
-    std::string costFunctionFile = std::string(NLOC_TEST_DIR) + "/config/cost.info";
+    std::string configFile = std::string(NLOC_TEST_DIR) + "/nonlinear/solver.info";
+    std::string costFunctionFile = std::string(NLOC_TEST_DIR) + "/nonlinear/cost.info";
 
     Eigen::Matrix<double, 1, 1> x_0;
     ct::core::loadMatrix(costFunctionFile, "x_0", x_0);

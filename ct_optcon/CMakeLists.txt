@@ -192,7 +192,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/nloc)
 catkin_add_gtest(LinearSystemTest test/nloc/LinearSystemTest.cpp)
 target_link_libraries(LinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
-catkin_add_gtest(NonlinearSystemTest test/nloc/NonlinearSystemTest.cpp)
+catkin_add_gtest(NonlinearSystemTest test/nloc/nonlinear/NonlinearSystemTest.cpp)
 target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
 add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
