@@ -151,7 +151,7 @@ public:
 
     int getNumSteps();
 
-    int getNumStepsPerShot();
+    int getNumStepsPerShot() const;
 
     /*!
      * \brief Change the initial state for the optimal control problem
@@ -294,7 +294,7 @@ public:
     /*!
       Retrieve the linearized model computed during the last iteration
     */
-    void retrieveLastLinearizedModel(StateMatrixArray& A, StateControlMatrixArray& B);
+    void retrieveLastAffineModel(StateMatrixArray& A, StateControlMatrixArray& B, StateVectorArray& b);
 
     /*!
      * the prepare Solve LQP Problem method is intended for a special use-case: unconstrained GNMS with pre-solving of the
@@ -331,17 +331,11 @@ public:
     //! perform line-search and update controller
     bool lineSearch();
 
-    //! build LQ approximation around trajectory (linearize dynamics and general constraints, quadratize cost)
+    //! build LQ approximation around trajectory (linearize dynamics and general constraints, quadratize cost, etc)
     virtual void computeLQApproximation(size_t firstIndex, size_t lastIndex) = 0;
 
     //! sets the box constraints for the entire time horizon including terminal stage
     void setBoxConstraintsForLQOCProblem();
-
-    //! obtain state update from lqoc solver
-    void getStateUpdates();
-
-    //! obtain control update from lqoc solver
-    void getControlUpdates();
 
     //! obtain feedback update from lqoc solver, if provided
     void getFeedback();
@@ -378,9 +372,6 @@ public:
 
     const SummaryAllIterations<SCALAR>& getSummary() const;
 
-    //! compute the length of the multiple-shooting intervals
-    const int computeShotLength() const;
-
 protected:
     //! integrate the individual shots
     bool rolloutSingleShot(const size_t threadId,
@@ -393,15 +384,6 @@ protected:
         ControlSubsteps& substepsU,
         std::atomic_bool* terminationFlag = nullptr) const;
 
-    /*
-    bool simpleRollout(
-            const size_t threadId,
-            const ControlVectorArray& uff,
-            const StateVectorArray& x_ref_lqr,
-            StateVectorArray& x_local,
-            ControlVectorArray& u_recorded
-            )const;
-            */
 
     //! computes the defect between shot and trajectory
     /*!
@@ -416,15 +398,16 @@ protected:
         StateVectorArray& d) const;
 
 
-    //! Computes the linearized Dynamics at a specific point of the trajectory
+    //! Computes the linearized Dynamics and quadratic cost approximation at a specific point of the trajectory
     /*!
-      This function calculates the linearization, i.e. matrices A and B in \f$ \dot{x} = A(x(k)) x + B(x(k)) u \f$
-      at a specific point of the trajectory
+      This function calculates the affine dynamics approximation, i.e. matrices A, B and b in \f$ x_{n+1} = A_n x_n + B_n u_n + b_n \f$
+      at a specific point of the trajectory. This function also calculates the quadratic costs as provided by the costFunction pointer.
+      and maps it into the coordinates of the LQ problem.
 
       \param threadId the id of the worker thread
       \param k step k
     */
-    void computeLinearizedDynamics(size_t threadId, size_t k);
+    void executeLQApproximation(size_t threadId, size_t k);
 
 
     //! Computes the linearized general constraints at a specific point of the trajectory
@@ -438,15 +421,6 @@ protected:
       \note the box constraints do not need to be linearized
     */
     void computeLinearizedConstraints(size_t threadId, size_t k);
-
-    //! Computes the quadratic costs
-    /*!
-      This function calculates the quadratic costs as provided by the costFunction pointer.
-
-     * \param threadId id of worker thread
-     * \param k step k
-    */
-    void computeQuadraticCosts(size_t threadId, size_t k);
 
     //! Initializes cost to go
     /*!
@@ -516,8 +490,8 @@ protected:
     //! Check if controller with particular alpha is better
     void executeLineSearch(const size_t threadId,
         const scalar_t alpha,
-        const ControlVectorArray& u_ff_update,
-        const StateVectorArray& x_update,
+        const ControlVectorArray& u_ff_new,
+        const StateVectorArray& x_new,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_recorded,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_recorded,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& defects_recorded,
@@ -539,14 +513,6 @@ protected:
      * \param k step k
      */
     void updateFFController(size_t k);
-
-
-    //! Send a std::vector of Eigen to Matlab
-    /*!
-     * This is a helper function to efficiently send std::vectors to Matlab.
-     */
-    //    template <class V>
-    //    void matrixToMatlab(V& matrix, std::string variableName);
 
     //! compute norm of a discrete array (todo move to core)
     template <typename ARRAY_TYPE, size_t ORDER = 1>
@@ -578,14 +544,14 @@ protected:
 
     int K_;  //! the number of stages in the overall OptConProblem
 
-    StateVectorArray lx_;
     StateVectorArray x_;
     StateVectorArray xShot_;
     StateVectorArray x_prev_;
 
-    ControlVectorArray lu_;
     ControlVectorArray u_ff_;
     ControlVectorArray u_ff_prev_;
+
+    StateVectorArray d_; /*!< defects */
 
     FeedbackArray L_;
 

@@ -77,14 +77,10 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
     // retrieve solutions from both solvers
     auto xSol_riccati = lqocSolvers[0]->getSolutionState();
     auto uSol_riccati = lqocSolvers[0]->getSolutionControl();
+    ct::core::FeedbackArray<state_dim, control_dim> KSol_riccati = lqocSolvers[0]->getSolutionFeedback();
     auto xSol_hpipm = lqocSolvers[1]->getSolutionState();
     auto uSol_hpipm = lqocSolvers[1]->getSolutionControl();
-
-    ct::core::FeedbackArray<state_dim, control_dim> KSol_riccati;
-    ct::core::FeedbackArray<state_dim, control_dim> KSol_hpipm;
-    lqocSolvers[0]->getFeedback(KSol_riccati);
-    lqocSolvers[1]->getFeedback(KSol_hpipm);
-
+    ct::core::FeedbackArray<state_dim, control_dim> KSol_hpipm = lqocSolvers[1]->getSolutionFeedback();
 
     for (size_t j = 0; j < xSol_riccati.size(); j++)
     {

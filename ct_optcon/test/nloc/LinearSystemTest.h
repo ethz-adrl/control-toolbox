@@ -55,7 +55,7 @@ TEST(LinearSystemsTest, NLOCSolverTest)
     nloc_settings.dt = 0.01;
     nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;  // default approximation
     nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-    nloc_settings.printSummary = true;  //! this is required to have summary computed and test passed.
+    nloc_settings.printSummary = false;
 
     // loop through all solver classes
     for (int algClass = 0; algClass < NLOptConSettings::NLOCP_ALGORITHM::NUM_TYPES; algClass++)

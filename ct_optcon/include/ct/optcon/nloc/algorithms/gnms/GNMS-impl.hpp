@@ -133,13 +133,6 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishItera
         std::cout << "[GNMS]: Finish solving LQOC problem took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
-
-    //! update solutions
-    this->backend_->getFeedback();
-    this->backend_->getControlUpdates();
-    this->backend_->getStateUpdates();
-
-
     start = std::chrono::steady_clock::now();
     bool foundBetter = this->backend_->lineSearch();
     end = std::chrono::steady_clock::now();
@@ -264,11 +257,6 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishMPCIt
 
     //! update solutions
     start = std::chrono::steady_clock::now();
-    this->backend_->getFeedback();
-    this->backend_->getControlUpdates();
-    this->backend_->getStateUpdates();
-
-    //!update state and controls, no line-search, overwriting happens only at next rollout
     this->backend_->doFullStepUpdate();
 
     end = std::chrono::steady_clock::now();

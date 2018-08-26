@@ -364,11 +364,13 @@ TEST(ILQRTestB, SingleCoreTest)
 
                 core::StateMatrixArray<state_dim> A;
                 core::StateControlMatrixArray<state_dim, control_dim> B;
-                ilqr.getBackend()->retrieveLastLinearizedModel(A, B);
+                core::StateVectorArray<state_dim> b;
+                ilqr.getBackend()->retrieveLastAffineModel(A, B, b);
 
                 core::StateMatrixArray<state_dim> A_mp;
                 core::StateControlMatrixArray<state_dim, control_dim> B_mp;
-                ilqr_mp.getBackend()->retrieveLastLinearizedModel(A_mp, B_mp);
+                core::StateVectorArray<state_dim> b_mp;
+                ilqr_mp.getBackend()->retrieveLastAffineModel(A_mp, B_mp, b_mp);
 
                 ASSERT_EQ(A.size(), nSteps);
                 ASSERT_EQ(B.size(), nSteps);
@@ -423,6 +425,8 @@ TEST(ILQRTestB, SingleCoreTest)
                     ASSERT_LT((B[j] - B_analytic).array().abs().maxCoeff(), 1e-6);
                     ASSERT_LT((B_mp[j] - B_analytic).array().abs().maxCoeff(), 1e-6);
                     ASSERT_LT((B_mp[j] - B[j]).array().abs().maxCoeff(), 1e-12);
+
+                    ASSERT_LT((b_mp[j] - b[j]).array().abs().maxCoeff(), 1e-12);
                 }
 
                 ASSERT_EQ(foundBetter, foundBetter_mp);

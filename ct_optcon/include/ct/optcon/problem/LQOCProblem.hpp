@@ -16,27 +16,22 @@ namespace optcon {
  * - reference trajectories (arrays!) for state and control
  * - LQ approximation of the cost function
  *
- * The unconstrained LQ problem hence has the following form:
+ * The unconstrained LQ problem has the following form:
  * \f[
- * \min_{\delta \mathbf{u}_n, \delta \mathbf{x}_n}
+ * \min_{\mathbf{u}_n, \mathbf{x}_n}
  * \bigg \{
- * q_N +\delta \mathbf{x}_N^\top \mathbf{q}_N +\frac{1}{2}\delta \mathbf{x}_N^\top \mathbf{Q}_N\delta \mathbf{x}_N
- * +\sum_{n=0}^{N-1} q_n + \delta \mathbf{x}_n^\top \mathbf{q}_n
- * + \delta \mathbf{u}_n^\top \mathbf{r}_n
- * + \frac{1}{2}\delta \mathbf{x}_n^\top\mathbf{Q}_n\delta \mathbf{x}_n
- * +\frac{1}{2}\delta \mathbf{u}_n^\top \mathbf{R}_n\delta \mathbf{u}_n
- * + \delta \mathbf{u}_n^\top \mathbf{P}_n\delta \mathbf{x}_n
+ * q_N + \mathbf{x}_N^\top \mathbf{q}_N +\frac{1}{2} \mathbf{x}_N^\top \mathbf{Q}_N \mathbf{x}_N
+ * +\sum_{n=0}^{N-1} q_n + \mathbf{x}_n^\top \mathbf{q}_n
+ * + \mathbf{u}_n^\top \mathbf{r}_n
+ * + \frac{1}{2} \mathbf{x}_n^\top\mathbf{Q}_n \mathbf{x}_n
+ * +\frac{1}{2} \mathbf{u}_n^\top \mathbf{R}_n \mathbf{u}_n
+ * + \mathbf{u}_n^\top \mathbf{P}_n \mathbf{x}_n
  * \bigg \}
  * \f]
  * subject to
  * \f[
- * \delta \mathbf x_{n+1} = \mathbf A_n \delta \mathbf x_n + \mathbf B_n \delta \mathbf u_n +\mathbf b_n
+ * \mathbf x_{n+1} = \mathbf A_n \mathbf x_n + \mathbf B_n \mathbf u_n +\mathbf b_n
  * \f]
- * with
- * \f$ \delta \mathbf x_n = \mathbf x_n - \hat \mathbf x_n \f$ and \f$ \delta \mathbf u_n = \mathbf u_n - \hat \mathbf u_n \f$
- *
- * The reference trajectories for state and control are here denoted as \f$ \hat \mathbf x_i, \
- *  \hat \mathbf u_i \quad \forall i = 0, 1, \ldots \f$
  *
  * The constrained LQ problem additionally implements the box constraints
  * \f$ \mathbf x_{lb} \leq \mathbf x_n \leq \mathbf x_{ub} \ \forall i=1,2,\ldots,N \f$
@@ -51,7 +46,13 @@ namespace optcon {
  * \note The box constraint containers within this class are made fixed-size. Solvers can get the
  * actual number of box constraints from a a dedicated container nb_
  *
- * \todo refactor all to be in global coordinates
+ * \note Note that until version v2.2 of the CT, we were using the differential notation
+ * \f$ \delta \mathbf x_n = \mathbf x_n - \hat \mathbf x_n \f$ and \f$ \delta \mathbf u_n = \mathbf u_n - \hat \mathbf u_n \f$
+ *
+ * with reference trajectories for state and control denoted as \f$ \hat \mathbf x_i, \
+ *  \hat \mathbf u_i \quad \forall i = 0, 1, \ldots \f$
+ * however for consistency reasons, as of v2.3, the LQOC problem is formulated in absolute coordinates.
+ *
  * \todo Refactor the initializing methods such that const-references can be handed over.
  */
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR = double>
@@ -80,10 +81,10 @@ public:
     //! constructor
     LQOCProblem(int N = 0);
 
-    //! returns the number of discrete time steps in the LOCP, including terminal stage
+    //! returns the number of discrete time steps in the LQOCP, including terminal stage
     int getNumberOfStages();
 
-    //! change the number of discrete time steps in the LOCP
+    //! change the number of discrete time steps in the LQOCP
     void changeNumStages(int N);
 
     /*!

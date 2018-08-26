@@ -48,6 +48,7 @@ TEST(LinearSystemsSolverComparison, LinearSystemsSolverComparison)
     nloc_settings.fixedHessianCorrection = false;
     nloc_settings.dt = 0.01;
     nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;  // default approximation
+    nloc_settings.printSummary = false;
 
     // loop through all solver classes
     for (int algClass = 0; algClass < NLOptConSettings::NLOCP_ALGORITHM::NUM_TYPES; algClass++)

@@ -105,12 +105,7 @@ bool iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishItera
         std::cout << "[iLQR]: Solving LQOC problem took " << std::chrono::duration<double, std::milli>(diff).count()
                   << " ms" << std::endl;
 
-    // update solutions
-    this->backend_->getFeedback();
-    this->backend_->getControlUpdates();
-    this->backend_->getStateUpdates();
-
-    // line-search
+    // update solutions and line-search
     if (debugPrint)
         std::cout << "[iLQR]: #3 LineSearch" << std::endl;
 

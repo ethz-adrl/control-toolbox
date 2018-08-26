@@ -201,10 +201,13 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
     ct::core::ControlVector<CONTROL_DIM, SCALAR>& u0,
     ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
     ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
-    ct::core::StateVector<STATE_DIM, SCALAR>& stateOffset,
+    ct::core::StateVector<STATE_DIM, SCALAR>& offset,
     double dt)
 {
     setZero();
+
+    x_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_ + 1, x0);
+    u_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, u0);
 
     core::StateMatrix<STATE_DIM, SCALAR> A;
     core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B;
@@ -212,30 +215,25 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
 
     A_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_, A);
     B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, B);
-    b_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_ + 1, stateOffset);
-
+    b_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_ + 1, offset + x0 - A * x0 - B * u0);
 
     // feed current state and control to cost function
     costFunction.setCurrentStateAndControl(x0, u0, 0);
 
-    // derivative of cost with respect to state
-    qv_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_ + 1, costFunction.stateDerivativeIntermediate() * dt);
+    // intermediate stage
     Q_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_ + 1, costFunction.stateSecondDerivativeIntermediate() * dt);
-
-    // derivative of cost with respect to control and state
     P_ =
         core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, costFunction.stateControlDerivativeIntermediate() * dt);
-
-    // derivative of cost with respect to control
-    rv_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, costFunction.controlDerivativeIntermediate() * dt);
-
     R_ = core::ControlMatrixArray<CONTROL_DIM, SCALAR>(K_, costFunction.controlSecondDerivativeIntermediate() * dt);
 
-    Q_[K_] = costFunction.stateSecondDerivativeTerminal();
-    qv_[K_] = costFunction.stateDerivativeTerminal();
+    qv_ = core::StateVectorArray<STATE_DIM, SCALAR>(
+        K_ + 1, costFunction.stateDerivativeIntermediate() * dt - Q_.front() * x0 - P_.front().transpose() * u0);
+    rv_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(
+        K_, costFunction.controlDerivativeIntermediate() * dt - R_.front() * u0 - P_.front() * x0);
 
-    x_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_ + 1, x0);
-    u_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, u0);
+    // final stage
+    Q_[K_] = costFunction.stateSecondDerivativeTerminal();
+    qv_[K_] = costFunction.stateDerivativeTerminal() - Q_[K_] * x0;
 
     hasBoxConstraints_ = false;
     hasGenConstraints_ = false;
