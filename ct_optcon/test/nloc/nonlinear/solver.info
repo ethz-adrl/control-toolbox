@@ -1,7 +1,5 @@
 timeHorizon 3.0
 
-initType    0 ; 0 = zero, 1 = linear, 2 = integrated with zero control action, 3 = random
-
 gnms
 {
 	integrator EulerCT
@@ -19,8 +17,7 @@ gnms
     maxDefectSum 1e-5
     meritFunctionRho 1.0
     nThreads 1
-    nThreadsEigen 4
-    ;locp_solver HPIPM_SOLVER
+    nThreadsEigen 1
     locp_solver GNRICCATI_SOLVER
     nlocp_algorithm ILQR
     debugPrint false
@@ -55,8 +52,7 @@ ilqr
     min_cost_improvement 1e-12
     maxDefectSum 1e-5
     nThreads 1    
-    nThreadsEigen 4
-    ;locp_solver HPIPM_SOLVER
+    nThreadsEigen 1
     locp_solver GNRICCATI_SOLVER
     nlocp_algorithm GNMS
     debugPrint false

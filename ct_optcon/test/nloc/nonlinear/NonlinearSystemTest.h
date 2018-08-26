@@ -8,6 +8,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <gtest/gtest.h>
 
+#include "DiehlSystem.h"
 #include "nloc_test_dir.h"
 
 
@@ -25,57 +26,11 @@ namespace example {
 
 using namespace ct::core;
 using namespace ct::optcon;
-
 using std::shared_ptr;
 
-const size_t state_dim = 1;    // position, velocity
-const size_t control_dim = 1;  // force
-
-//! Dynamics class for the GNMS unit test, slightly nonlinear dynamics
-class Dynamics : public ControlledSystem<state_dim, control_dim>
-{
-public:
-    Dynamics() : ControlledSystem<state_dim, control_dim>(SYSTEM_TYPE::SECOND_ORDER) {}
-    void computeControlledDynamics(const StateVector<state_dim>& state,
-        const Time& t,
-        const ControlVector<control_dim>& control,
-        StateVector<state_dim>& derivative) override
-    {
-        derivative(0) = (1.0 + state(0)) * state(0) + control(0);
-    }
-
-    Dynamics* clone() const override { return new Dynamics(); };
-};
-
-//! Linear system class for the GNMS unit test
-class LinearizedSystem : public LinearSystem<state_dim, control_dim>
-{
-public:
-    state_matrix_t A_;
-    state_control_matrix_t B_;
 
 
-    const state_matrix_t& getDerivativeState(const StateVector<state_dim>& x,
-        const ControlVector<control_dim>& u,
-        const double t = 0.0) override
-    {
-        A_ << 1 + 2 * x(0);
-        return A_;
-    }
-
-    const state_control_matrix_t& getDerivativeControl(const StateVector<state_dim>& x,
-        const ControlVector<control_dim>& u,
-        const double t = 0.0) override
-    {
-        B_ << 1;
-        return B_;
-    }
-
-    LinearizedSystem* clone() const override { return new LinearizedSystem(); }
-};
-
-
-TEST(NLOCTest, NonlinearSystemTest)
+TEST(NLOCTest, NonlinearSystemAlgorithmComparison)
 {
     typedef NLOptConSolver<state_dim, control_dim, 1, 0> NLOptConSolver;
 
@@ -113,62 +68,10 @@ TEST(NLOCTest, NonlinearSystemTest)
     ControlVectorArray<control_dim> u0(nSteps, uff_init_guess);
     StateVectorArray<state_dim> x0(nSteps + 1, x_0);
 
-    int initType = 0;
-    ct::core::loadScalar(configFile, "initType", initType);
-
-    switch (initType)
-    {
-        case 0:  // zero
-            break;
-
-        case 1:  // linear
-        {
-            for (size_t i = 0; i < nSteps + 1; i++)
-            {
-                x0[i] = x_0 + (x_f - x_0) * double(i) / double(nSteps);
-            }
-            break;
-        }
-        case 2:  // integration
-        {
-            shared_ptr<ControlledSystem<state_dim, control_dim>> systemForInit(new Dynamics);
-            ct::core::Integrator<state_dim> integratorForInit(systemForInit, ilqr_settings.integrator);
-            x0[0] = x_0;
-            for (size_t i = 1; i < nSteps + 1; i++)
-            {
-                x0[i] = x0[i - 1];
-                double dt_sim = gnms_settings.getSimulationTimestep();
-                integratorForInit.integrate_n_steps(x0[i], 0, 1, dt_sim);
-            }
-            break;
-        }
-        case 3:  // random
-        {
-            for (size_t i = 1; i < nSteps + 1; i++)
-            {
-                x0[i].setRandom();
-            }
-            break;
-        }
-        case 4:  // zero
-        {
-            for (size_t i = 1; i < nSteps + 1; i++)
-            {
-                x0[i].setZero();
-            }
-            break;
-        }
-        default:
-        {
-            throw std::runtime_error("illegal init type");
-            break;
-        }
-    }
-
-
     FeedbackArray<state_dim, control_dim> u0_fb(nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
     ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
     NLOptConSolver::Policy_t initController(x0, u0, u0_fb, gnms_settings.dt);
+
 
     // construct single-core single subsystem OptCon Problem
     ContinuousOptConProblem<state_dim, control_dim> optConProblem1(
@@ -189,45 +92,27 @@ TEST(NLOCTest, NonlinearSystemTest)
     ilqr.setInitialGuess(initController);
 
 
-    std::cout << "============ running solver 1 ==============" << std::endl;
+    std::cout << "============ running solvers ==============" << std::endl;
 
-    int numIterations = 0;
+    gnms.solve();
 
-    while (numIterations < gnms_settings.max_iterations)
-    {
-        gnms.runIteration();
+    // print trajectories
+	StateTrajectory < state_dim > xRollout_gnms = gnms.getStateTrajectory();
+	ControlTrajectory < control_dim > uRollout_gnms = gnms.getControlTrajectory();
+    std::cout << "x final GNMS: " << xRollout_gnms.back().transpose() << std::endl;
+    std::cout << "u final GNMS: " << uRollout_gnms.back().transpose() << std::endl;
 
-        // test trajectories
-        StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();
-        ControlTrajectory<control_dim> uRollout = gnms.getControlTrajectory();
 
-        numIterations++;
+    ilqr.solve();
 
-        std::cout << "x final GNMS: " << xRollout.back().transpose() << std::endl;
-        std::cout << "u final GNMS: " << uRollout.back().transpose() << std::endl;
-    }
-
-    gnms.logSummaryToMatlab("gnmsSummary");
-
-    std::cout << "============ running solver 2 ==============" << std::endl;
-
-    numIterations = 0;
-    while (numIterations < ilqr_settings.max_iterations)
-    {
-        ilqr.runIteration();
-
-        // test trajectories
-        StateTrajectory<state_dim> xRollout = ilqr.getStateTrajectory();
-        ControlTrajectory<control_dim> uRollout = ilqr.getControlTrajectory();
-
-        numIterations++;
-
-        std::cout << "x final iLQG: " << xRollout.back().transpose() << std::endl;
-        std::cout << "u final iLQG: " << uRollout.back().transpose() << std::endl;
-    }
-
-    ilqr.logSummaryToMatlab("ilqrSummary");
+	// print trajectories
+	StateTrajectory < state_dim > xRollout_ilqr = ilqr.getStateTrajectory();
+	ControlTrajectory < control_dim > uRollout_ilqr = ilqr.getControlTrajectory();
+	std::cout << "x final iLQG: " << xRollout_ilqr.back().transpose() << std::endl;
+	std::cout << "u final iLQG: " << uRollout_ilqr.back().transpose() << std::endl;
 }
+
+
 }
 }
 }

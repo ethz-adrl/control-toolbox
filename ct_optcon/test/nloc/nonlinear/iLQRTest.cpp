@@ -10,16 +10,10 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <ct/optcon/optcon.h>
 
-#include "../testSystems/LinearOscillator.h"
+#include "DiehlSystem.h"
 
+#include "nloc_test_dir.h"
 
-/* This test implements a 1-Dimensional horizontally moving point mass with mass 1kg and attached to a spring
- x = [p, pd] // p - position pointing upwards, against gravity, pd - velocity
- dx = f(x,u)
-    = [0 1  x  +  [0      +  [0  u
-       0 0]        9.81]      1]
-
- */
 
 namespace ct {
 namespace optcon {
@@ -31,57 +25,11 @@ using namespace ct::optcon;
 using std::shared_ptr;
 
 
-TEST(ILQRTest, SystemLinearizationTest)
-{
-    shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new LinearOscillator());
-    shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearOscillatorLinear());
-    shared_ptr<LinearSystem<state_dim, control_dim>> numDiffLinearModelGeneral(
-        new SystemLinearizer<state_dim, control_dim>(nonlinearSystem, false));
-    shared_ptr<LinearSystem<state_dim, control_dim>> numDiffLinearModelSecondOrder(
-        new SystemLinearizer<state_dim, control_dim>(nonlinearSystem, true));
-    StateVector<state_dim> xRef;
-    ControlVector<control_dim> u;
-    Time t = 0;
-
-    size_t nTests = 100;
-    for (size_t i = 0; i < nTests; i++)
-    {
-        xRef.setRandom();
-
-        // we have to set u in a way that it makes x and equilibrium
-        u(0) = kStiffness * xRef(0);
-
-        StateVector<state_dim> dxNonlinear;
-        nonlinearSystem->computeControlledDynamics(xRef, t, u, dxNonlinear);
-
-        StateVector<state_dim> dxLinear;
-        analyticLinearSystem->computeControlledDynamics(xRef, t, u, dxLinear);
-
-        StateVector<state_dim> dxLinearNumDiffGeneral;
-        numDiffLinearModelGeneral->computeControlledDynamics(xRef, t, u, dxLinearNumDiffGeneral);
-
-        StateVector<state_dim> dxLinearNumDiffSecondOrder;
-        numDiffLinearModelGeneral->computeControlledDynamics(xRef, t, u, dxLinearNumDiffSecondOrder);
-
-        ASSERT_LT((dxNonlinear - dxLinear).array().abs().maxCoeff(), 1e-6);
-
-        ASSERT_LT((dxNonlinear - dxLinearNumDiffGeneral).array().abs().maxCoeff(), 1e-6);
-
-        ASSERT_LT((dxNonlinear - dxLinearNumDiffSecondOrder).array().abs().maxCoeff(), 1e-6);
-    }
-}
-
-
 TEST(ILQRTestA, InstancesComparison)
 {
     try
     {
         typedef NLOptConSolver<state_dim, control_dim> NLOptConSolver;
-
-        std::cout << "setting up problem " << std::endl;
-
-        Eigen::Vector2d x_final;
-        x_final << 20, 0;
 
         NLOptConSettings ilqr_settings;
         ilqr_settings.dt = 0.001;
@@ -103,14 +51,17 @@ TEST(ILQRTestA, InstancesComparison)
         ilqr_settings.lineSearchSettings.debugPrint = false;
 
 
+        std::string costFunctionFile = std::string(NLOC_TEST_DIR) + "/nonlinear/cost.info";
+
+
         // copy settings for MP case, but change number of threads
         NLOptConSettings ilqr_settings_mp = ilqr_settings;
         ilqr_settings_mp.nThreads = 4;
 
-        shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new LinearOscillator());
-        shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearOscillatorLinear());
-        shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction =
-            tpl::createCostFunctionLinearOscillator<double>(x_final);
+        shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new Dynamics());
+        shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearizedSystem());
+        std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction(
+             new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
 
         // times
         ct::core::Time tf = 3.0;
@@ -233,7 +184,7 @@ TEST(ILQRTestA, InstancesComparison)
 }
 
 
-TEST(ILQRTestB, SingleCoreTest)
+TEST(ILQRTestB, MultiThreadingTest)
 {
     try
     {
@@ -241,10 +192,7 @@ TEST(ILQRTestB, SingleCoreTest)
         typedef StateMatrix<state_dim> state_matrix_t;
         typedef StateControlMatrix<state_dim, control_dim> state_control_matrix_t;
 
-        std::cout << "setting up problem " << std::endl;
-
-        Eigen::Vector2d x_final;
-        x_final << 20, 0;
+        std::string costFunctionFile = std::string(NLOC_TEST_DIR) + "/nonlinear/cost.info";
 
         NLOptConSettings ilqr_settings;
         ilqr_settings.epsilon = 0.0;
@@ -265,10 +213,10 @@ TEST(ILQRTestB, SingleCoreTest)
         NLOptConSettings ilqr_settings_mp = ilqr_settings;
         ilqr_settings_mp.nThreads = 4;
 
-        shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new LinearOscillator());
-        shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearOscillatorLinear());
-        shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction =
-            tpl::createCostFunctionLinearOscillator<double>(x_final);
+        shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new Dynamics());
+        shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearizedSystem());
+        std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction(
+             new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
 
         // times
         ct::core::Time tf = 3.0;
@@ -283,7 +231,6 @@ TEST(ILQRTestB, SingleCoreTest)
 
         size_t nSteps = std::round(tf / ilqr_settings.dt);
 
-        std::cout << "initializing ilqr solver" << std::endl;
         NLOptConSolver ilqr(optConProblem, ilqr_settings);
         NLOptConSolver ilqr_mp(optConProblem, ilqr_settings_mp);
 
@@ -433,9 +380,7 @@ TEST(ILQRTestB, SingleCoreTest)
 
                 numIterations++;
 
-                //note: since this is a linear system, it should actually converge in only 1 iteration.
-
-                ASSERT_LT(numIterations, 3);
+                ASSERT_LT(numIterations, 10);
             }
         }
 
@@ -451,13 +396,9 @@ TEST(ILQRTestC, PolicyComparison)
 {
     typedef NLOptConSolver<state_dim, control_dim> NLOptConSolver;
 
-
     try
     {
-        std::cout << "setting up problem " << std::endl;
-
-        Eigen::Vector2d x_final;
-        x_final << 20, 0;
+        std::string costFunctionFile = std::string(NLOC_TEST_DIR) + "/nonlinear/cost.info";
 
         NLOptConSettings ilqr_settings;
         ilqr_settings.epsilon = 0.0;
@@ -478,10 +419,10 @@ TEST(ILQRTestC, PolicyComparison)
         ilqr_settings_mp.nThreads = 4;
 
 
-        shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new LinearOscillator());
-        shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearOscillatorLinear());
-        shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction =
-            tpl::createCostFunctionLinearOscillator<double>(x_final);
+        shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new Dynamics());
+        shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearizedSystem());
+        std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction(
+             new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
 
         // times
         ct::core::Time tf = 3.0;
@@ -564,8 +505,8 @@ TEST(ILQRTestC, PolicyComparison)
                 new NLOptConSolver::Policy_t(ilqr_mp.getSolution()));
 
             // two test systems
-            std::shared_ptr<ControlledSystem<state_dim, control_dim>> testSystem1(new LinearOscillator());
-            std::shared_ptr<ControlledSystem<state_dim, control_dim>> testSystem2(new LinearOscillator());
+            std::shared_ptr<ControlledSystem<state_dim, control_dim>> testSystem1(new LinearizedSystem());
+            std::shared_ptr<ControlledSystem<state_dim, control_dim>> testSystem2(new LinearizedSystem());
 
             // set the controller
             testSystem1->setController(optController);
