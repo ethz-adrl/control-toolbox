@@ -106,13 +106,12 @@ TEST(NLOCTest, NonlinearSystemAlgorithmComparison)
 	StateTrajectory < state_dim > xRollout_ilqr = ilqr.getStateTrajectory();
 	ControlTrajectory < control_dim > uRollout_ilqr = ilqr.getControlTrajectory();
 
-
 	// Assert that the solutions are equal
-    for (size_t i = 0; i < xRollout_gnms.size(); i++) {
+	for (size_t i = 0; i < xRollout_gnms.size(); i++) {
 		ASSERT_NEAR(xRollout_gnms[i](0), xRollout_ilqr[i](0), 1e-4);
 	}
 
-    for (size_t i = 0; i < uRollout_ilqr.size(); i++) {
+	for (size_t i = 0; i < uRollout_ilqr.size(); i++) {
 		ASSERT_NEAR(uRollout_gnms[i](0), uRollout_ilqr[i](0), 1e-4);
 	}
 
