@@ -350,7 +350,7 @@ TEST(ILQRTestB, MultiThreadingTest)
                     {
                         state_matrix_t aNew =
                             ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
-                        state_matrix_t aNewInv = (state_matrix_t::Identity() - aNew).colPivHouseholderQr().inverse();
+                        state_matrix_t aNewInv = (state_matrix_t::Identity() - aNew).inverse();
                         A_analytic = aNewInv;
                         B_analytic = aNewInv * ilqr_settings.dt *
                                      analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
