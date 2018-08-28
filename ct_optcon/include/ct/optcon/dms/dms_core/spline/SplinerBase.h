@@ -5,6 +5,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include <ct/optcon/dms/dms_core/TimeGrid.h>
+
 namespace ct {
 namespace optcon {
 
@@ -22,14 +24,18 @@ class SplinerBase
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    /**
-	 * @brief      Default constructor
-	 */
-    SplinerBase() = default;
+
+    SplinerBase() = delete;
 
     /**
-	 * @brief      Destructor
-	 */
+     * @brief      Custom constructor
+     *  @param[in]  grid  The dms timegrid
+     */
+    SplinerBase(std::shared_ptr<tpl::TimeGrid<SCALAR>> grid) : timeGrid_(grid) {}
+
+    /**
+     * @brief      Destructor
+     */
     virtual ~SplinerBase() = default;
 
     typedef T vector_t;
@@ -38,65 +44,68 @@ public:
 
 
     /**
-	 * @brief      Updates the vector on the shots
-	 *
-	 * @param[in]  points  Updated vector array
-	 */
+     * @brief      Updates the vector on the shots
+     *
+     * @param[in]  points  Updated vector array
+     */
     virtual void computeSpline(const vector_array_t& points) = 0;
 
     /**
-	 * @brief      Depending on the spline type, this method evaluates the
-	 *             control input between the shots
-	 *
-	 * @param[in]  time     The evaluation time
-	 * @param[in]  shotIdx  The shot number
-	 *
-	 * @return     The splined vector
-	 */
+     * @brief      Depending on the spline type, this method evaluates the
+     *             control input between the shots
+     *
+     * @param[in]  time     The evaluation time
+     * @param[in]  shotIdx  The shot number
+     *
+     * @return     The splined vector
+     */
     virtual vector_t evalSpline(const SCALAR time, const size_t shotIdx) = 0;
 
     /**
-	 * @brief      Returns the spline derivatives with respect to time
-	 *
-	 * @param[in]  time     The evaluation time
-	 * @param[in]  shotIdx  The shot number
-	 *
-	 * @return     The time derivative
-	 */
+     * @brief      Returns the spline derivatives with respect to time
+     *
+     * @param[in]  time     The evaluation time
+     * @param[in]  shotIdx  The shot number
+     *
+     * @return     The time derivative
+     */
     virtual vector_t splineDerivative_t(const SCALAR time, const size_t shotIdx) const = 0;
 
     /**
-	 * @brief      Returns the spline derivatives with respect to the time
-	 *             segment between the shots
-	 *
-	 * @param[in]  time     The evaluation time
-	 * @param[in]  shotIdx  The shot number
-	 *
-	 * @return     The resulting derivative
-	 */
+     * @brief      Returns the spline derivatives with respect to the time
+     *             segment between the shots
+     *
+     * @param[in]  time     The evaluation time
+     * @param[in]  shotIdx  The shot number
+     *
+     * @return     The resulting derivative
+     */
     virtual vector_t splineDerivative_h_i(const SCALAR time, const size_t shotIdx) const = 0;
 
     /**
-	 * @brief      Return the spline derivative with respect to the control
-	 *             input at shot i
-	 *
-	 * @param[in]  time     The evaluation time
-	 * @param[in]  shotIdx  The shot number
-	 *
-	 * @return     The resulting derivative
-	 */
+     * @brief      Return the spline derivative with respect to the control
+     *             input at shot i
+     *
+     * @param[in]  time     The evaluation time
+     * @param[in]  shotIdx  The shot number
+     *
+     * @return     The resulting derivative
+     */
     virtual matrix_t splineDerivative_q_i(const SCALAR time, const size_t shotIdx) const = 0;
 
     /**
-	 * @brief      Returns the spline derivative with respect to the control
-	 *             input at shot i+1
-	 *
-	 * @param[in]  time     The evaluation time
-	 * @param[in]  shotIdx  The shot number
-	 *
-	 * @return     The resulting derivative
-	 */
+     * @brief      Returns the spline derivative with respect to the control
+     *             input at shot i+1
+     *
+     * @param[in]  time     The evaluation time
+     * @param[in]  shotIdx  The shot number
+     *
+     * @return     The resulting derivative
+     */
     virtual matrix_t splineDerivative_q_iplus1(const SCALAR time, const size_t shotIdx) const = 0;
+
+
+    std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid_;  //! array of times over which the spline is fitted
 };
 
 }  // namespace optcon

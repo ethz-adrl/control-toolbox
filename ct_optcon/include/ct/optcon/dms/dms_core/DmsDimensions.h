@@ -23,10 +23,10 @@ public:
     typedef ct::core::StateVector<STATE_DIM, SCALAR> state_vector_t;
     typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> state_vector_array_t;
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
+    typedef ct::core::StateMatrix<STATE_DIM, SCALAR> state_matrix_t;
     typedef ct::core::StateMatrixArray<STATE_DIM, SCALAR> state_matrix_array_t;
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> state_control_matrix_t;
+    typedef ct::core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;
     typedef ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_array_t;
 
     typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
@@ -34,7 +34,7 @@ public:
     typedef ct::core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
     typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> control_vector_array_t;
 
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
+    typedef ct::core::ControlMatrix<CONTROL_DIM, SCALAR> control_matrix_t;
     typedef ct::core::ControlMatrixTrajectory<CONTROL_DIM, SCALAR> control_matrix_array_t;
 
     typedef SCALAR time_t;

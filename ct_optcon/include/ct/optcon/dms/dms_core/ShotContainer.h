@@ -51,17 +51,17 @@ public:
     ShotContainer() = delete;
 
     /**
-	 * @brief      Custom constructor
-	 *
-	 * @param[in]  controlledSystem  The nonlinear system
-	 * @param[in]  linearSystem      The linearized system
-	 * @param[in]  costFct           The costfunction
-	 * @param[in]  w                 The optimization vector
-	 * @param[in]  controlSpliner    The control input spliner
-	 * @param[in]  timeGrid          The timegrid 
-	 * @param[in]  shotNr            The shot number
-	 * @param[in]  settings          The dms settings
-	 */
+     * @brief      Custom constructor for continuous systems
+     *
+     * @param[in]  controlledSystem  The nonlinear system
+     * @param[in]  linearSystem      The linearized system
+     * @param[in]  costFct           The costfunction
+     * @param[in]  w                 The optimization vector
+     * @param[in]  controlSpliner    The control input spliner
+     * @param[in]  timeGrid          The timegrid
+     * @param[in]  shotNr            The shot number
+     * @param[in]  settings          The dms settings
+     */
     ShotContainer(std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> controlledSystem,
         std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem,
         std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct,
@@ -86,7 +86,8 @@ public:
           cost_(SCALAR(0.0)),
           discreteQ_(state_vector_t::Zero()),
           discreteR_(control_vector_t::Zero()),
-          discreteRNext_(control_vector_t::Zero())
+          discreteRNext_(control_vector_t::Zero()),
+          nSteps_(nIntegrationSteps)
     {
         if (shotNr_ >= settings.N_)
             throw std::runtime_error("Dms Shot Integrator: shot index >= settings.N_ - check your settings.");
@@ -125,7 +126,6 @@ public:
         // SCALAR t_shot_end = timeGrid_->getShotEndTime(shotNr_);
 
         // +0.5 needed to avoid rounding errors from double to size_t
-        nSteps_ = nIntegrationSteps;
         // std::cout << "shotNr_: " << shotNr_ << "\t nSteps: " << nSteps_ << std::endl;
 
         integratorCT_->setLinearSystem(linearSystem_);
@@ -135,16 +135,85 @@ public:
     }
 
     /**
-	 * @brief      Performs the state integration between the shots
-	 */
+         * @brief      Custom constructor for discrete systems
+         *
+         * @param[in]  controlledSystem  The discrete nonlinear system
+         * @param[in]  linearSystem      The discrete linearized system
+         * @param[in]  costFct           The costfunction
+         * @param[in]  w                 The optimization vector
+         * @param[in]  controlSpliner    The control input spliner
+         * @param[in]  timeGrid          The timegrid
+         * @param[in]  shotNr            The shot number
+         * @param[in]  settings          The dms settings
+         */
+    ShotContainer(std::shared_ptr<ct::core::DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> controlledSystem,
+        std::shared_ptr<ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem,
+        std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct,
+        std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
+        std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner,
+        std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
+        size_t shotNr,
+        DmsSettings settings,
+        size_t nIntegrationSteps)
+        : discreteControlledSystem_(controlledSystem),
+          discreteLinearSystem_(linearSystem),
+          costFct_(costFct),
+          w_(w),
+          controlSpliner_(controlSpliner),
+          timeGrid_(timeGrid),
+          shotNr_(shotNr),
+          settings_(settings),
+          integrationCount_(0),
+          costIntegrationCount_(0),
+          sensIntegrationCount_(0),
+          costSensIntegrationCount_(0),
+          cost_(SCALAR(0.0)),
+          discreteQ_(state_vector_t::Zero()),
+          discreteR_(control_vector_t::Zero()),
+          discreteRNext_(control_vector_t::Zero()),
+          nSteps_(nIntegrationSteps)
+    {
+        if (shotNr_ >= settings.N_)
+            throw std::runtime_error("Dms Shot Integrator: shot index >= settings.N_ - check your settings.");
+
+        tStart_ = timeGrid_->getShotStartTime(shotNr_);
+        startIdx_ = static_cast<size_t>(tStart_ / settings_.dt_sim_);
+    }
+
+    /**
+     * @brief      Performs the state integration between the shots
+     */
     void integrateShot()
     {
         if ((w_->getUpdateCount() != integrationCount_))
         {
             integrationCount_ = w_->getUpdateCount();
             state_vector_t initState = w_->getOptimizedState(shotNr_);
-            integratorCT_->integrate(
-                initState, tStart_, nSteps_, SCALAR(settings_.dt_sim_), stateSubsteps_, timeSubsteps_);
+            if (integratorCT_)
+            {
+                integratorCT_->integrate(
+                    initState, tStart_, nSteps_, SCALAR(settings_.dt_sim_), stateSubsteps_, timeSubsteps_);
+            }
+            else
+            {
+                stateSubsteps_.clear();
+                stateSubsteps_.push_back(initState);
+                timeSubsteps_.clear();
+                timeSubsteps_.push_back(tStart_);
+                inputSubsteps_.clear();
+
+                typename ct::core::DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t state_next;
+
+                for (auto i = startIdx_; i < startIdx_ + nSteps_; i++)
+                {
+                    state_next.setZero();
+                    inputSubsteps_.push_back(controlSpliner_->evalSpline(timeSubsteps_.back(), shotNr_));
+                    discreteControlledSystem_->propagateControlledDynamics(
+                        stateSubsteps_.back(), i, inputSubsteps_.back(), state_next);
+                    stateSubsteps_.push_back(state_next);
+                    timeSubsteps_.push_back(timeSubsteps_.back() + settings_.dt_sim_);
+                }
+            }
         }
     }
 
@@ -155,13 +224,25 @@ public:
             costIntegrationCount_ = w_->getUpdateCount();
             integrateShot();
             cost_ = SCALAR(0.0);
-            integratorCT_->integrateCost(cost_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
+
+            if (integratorCT_)
+            {
+                integratorCT_->integrateCost(cost_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
+            }
+            else
+            {
+                for (size_t i = 0; i < timeSubsteps_.size() - 1; i++)
+                {
+                    costFct_->setCurrentStateAndControl(stateSubsteps_[i], inputSubsteps_[i], timeSubsteps_[i]);
+                    cost_ += costFct_->evaluateIntermediate();
+                }
+            }
         }
     }
 
     /**
-	 * @brief      Performs the state and the sensitivity integration between the shots
-	 */
+     * @brief      Performs the state and the sensitivity integration between the shots
+     */
     void integrateSensitivities()
     {
         if ((w_->getUpdateCount() != sensIntegrationCount_))
@@ -170,14 +251,33 @@ public:
             integrateShot();
             discreteA_.setIdentity();
             discreteB_.setZero();
-            integratorCT_->linearize();
-            integratorCT_->integrateSensitivityDX0(discreteA_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
-            integratorCT_->integrateSensitivityDU0(discreteB_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
 
-            if (settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
+            if (integratorCT_)
             {
-                discreteBNext_.setZero();
-                integratorCT_->integrateSensitivityDUf(discreteBNext_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
+                integratorCT_->linearize();
+                integratorCT_->integrateSensitivityDX0(discreteA_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
+                integratorCT_->integrateSensitivityDU0(discreteB_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
+
+                if (settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
+                {
+                    discreteBNext_.setZero();
+                    integratorCT_->integrateSensitivityDUf(discreteBNext_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
+                }
+            }
+            else
+            {
+                state_vector_t dummy_stateNext;
+                state_matrix_t A_i;
+                state_control_matrix_t B_i;
+                for (size_t i = 0; i < timeSubsteps_.size() - 1; i++)
+                {
+                    A_i.setZero();
+                    B_i.setZero();
+                    discreteLinearSystem_->getAandB(
+                        stateSubsteps_[i], inputSubsteps_[i], dummy_stateNext, i + startIdx_, 1, A_i, B_i);
+                    discreteA_ = A_i * discreteA_;
+                    discreteB_ = B_i + A_i * discreteB_;
+                }
             }
         }
     }
@@ -190,137 +290,161 @@ public:
             integrateSensitivities();
             discreteQ_.setZero();
             discreteR_.setZero();
-            integratorCT_->integrateCostSensitivityDX0(discreteQ_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
-            integratorCT_->integrateCostSensitivityDU0(discreteR_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
 
-            if (settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
+            if (integratorCT_)
             {
-                discreteRNext_.setZero();
-                integratorCT_->integrateCostSensitivityDUf(discreteRNext_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
+                integratorCT_->integrateCostSensitivityDX0(discreteQ_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
+                integratorCT_->integrateCostSensitivityDU0(discreteR_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
+
+                if (settings_.splineType_ == DmsSettings::PIECEWISE_LINEAR)
+                {
+                    discreteRNext_.setZero();
+                    integratorCT_->integrateCostSensitivityDUf(
+                        discreteRNext_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
+                }
+            }
+            else
+            {
+                for (size_t i = 0; i < timeSubsteps_.size() - 1; i++)
+                {
+                    costFct_->setCurrentStateAndControl(stateSubsteps_[i], inputSubsteps_[i], timeSubsteps_[i]);
+                    discreteQ_ = costFct_->stateDerivativeIntermediate();
+                    discreteR_ = costFct_->controlDerivativeIntermediate();
+                }
             }
         }
     }
 
     void reset()
     {
+        if (!integratorCT_)
+        {
+            return; // TODO should we reset something here?
+        }
         integratorCT_->clearStates();
         integratorCT_->clearSensitivities();
         integratorCT_->clearLinearization();
     }
 
     /**
-	 * @brief      Returns the integrated state
-	 *
-	 * @return     The integrated state
-	 */
+     * @brief      Returns the integrated state
+     *
+     * @return     The integrated state
+     */
     const state_vector_t getStateIntegrated() { return stateSubsteps_.back(); }
     /**
-	 * @brief      Returns the end time of the integration	
-	 *
-	 * @return     The end time of the integration.
-	 */
+     * @brief      Returns the end time of the integration
+     *
+     * @return     The end time of the integration.
+     */
     const SCALAR getIntegrationTimeFinal() { return timeSubsteps_.back(); }
     /**
-	 * @brief      Returns the integrated ODE sensitivity with respect to the
-	 *             discretized state s_i
-	 *
-	 * @return     The integrated sensitivity
-	 */
+     * @brief      Returns the integrated ODE sensitivity with respect to the
+     *             discretized state s_i
+     *
+     * @return     The integrated sensitivity
+     */
     const state_matrix_t getdXdSiIntegrated() { return discreteA_; }
     /**
-	 * @brief      Returns the integrated ODE sensitivity with respect to the
-	 *             discretized inputs q_i
-	 *
-	 * @return     The integrated sensitivity
-	 */
+     * @brief      Returns the integrated ODE sensitivity with respect to the
+     *             discretized inputs q_i
+     *
+     * @return     The integrated sensitivity
+     */
     const state_control_matrix_t getdXdQiIntegrated() { return discreteB_; }
     /**
-	 * @brief      Returns the integrated ODE sensitivity with respect to the
-	 *             discretized inputs q_{i+1}
-	 *
-	 * @return     The integrated sensitivity
-	 */
+     * @brief      Returns the integrated ODE sensitivity with respect to the
+     *             discretized inputs q_{i+1}
+     *
+     * @return     The integrated sensitivity
+     */
     const state_control_matrix_t getdXdQip1Integrated() { return discreteBNext_; }
     /**
-	 * @brief      Returns the integrated ODE sensitivity with respect to the
-	 *             time segments h_i
-	 *
-	 * @return     The integrated sensitivity
-	 */
+     * @brief      Returns the integrated ODE sensitivity with respect to the
+     *             time segments h_i
+     *
+     * @return     The integrated sensitivity
+     */
     // const state_vector_t getdXdHiIntegrated()
     // {
-    // 	return dXdHi_history_.back();
+    //     return dXdHi_history_.back();
     // }
 
     /**
-	 * @brief      Gets the full integrated state trajectory.
-	 *
-	 * @return     The integrated state trajectory
-	 */
+     * @brief      Gets the full integrated state trajectory.
+     *
+     * @return     The integrated state trajectory
+     */
     const state_vector_array_t& getXHistory() const { return stateSubsteps_; }
     /**
-	 * @brief      Returns the control input trajectory used during the state integration
-	 *
-	 * @return     The control trajectory
-	 */
+     * @brief      Returns the control input trajectory used during the state integration
+     *
+     * @return     The control trajectory
+     */
     const control_vector_array_t& getUHistory()
     {
-        inputSubsteps_.clear();
-        for (size_t t = 0; t < timeSubsteps_.size(); ++t)
+        if (inputSubsteps_.size() == 0)
         {
-            inputSubsteps_.push_back(controlSpliner_->evalSpline(timeSubsteps_[t], shotNr_));
+            for (size_t t = 0; t < timeSubsteps_.size(); ++t)
+            {
+                inputSubsteps_.push_back(controlSpliner_->evalSpline(timeSubsteps_[t], shotNr_));
+            }
         }
         return inputSubsteps_;
     }
 
     /**
-	 * @brief      Returns the time trajectory used during the integration
-	 *
-	 * @return     The time trajectory
-	 */
+     * @brief      Returns the time trajectory used during the integration
+     *
+     * @return     The time trajectory
+     */
     const time_array_t& getTHistory() const { return timeSubsteps_; }
     /**
-	 * @brief      Gets the cost integrated.
-	 *
-	 * @return     The integrated cost.
-	 */
+     * @brief      Gets the cost integrated.
+     *
+     * @return     The integrated cost.
+     */
     const SCALAR getCostIntegrated() const { return cost_; }
     /**
-	 * @brief      Returns the cost gradient with respect to s_i integrated over
-	 *             the shot
-	 *
-	 * @return     The cost gradient
-	 */
+     * @brief      Returns the cost gradient with respect to s_i integrated over
+     *             the shot
+     *
+     * @return     The cost gradient
+     */
     const state_vector_t getdLdSiIntegrated() const { return discreteQ_; }
     /**
-	 * @brief      Returns the cost gradient with respect to q_i integrated over
-	 *             the shot
-	 *
-	 * @return     The cost gradient
-	 */
+     * @brief      Returns the cost gradient with respect to q_i integrated over
+     *             the shot
+     *
+     * @return     The cost gradient
+     */
     const control_vector_t getdLdQiIntegrated() const { return discreteR_; }
     /**
-	 * @brief      Returns to cost gradient with respect to q_{i+1} integrated
-	 *             over the shot
-	 *
-	 * @return     The cost gradient
-	 */
+     * @brief      Returns to cost gradient with respect to q_{i+1} integrated
+     *             over the shot
+     *
+     * @return     The cost gradient
+     */
     const control_vector_t getdLdQip1Integrated() const { return discreteRNext_; }
     /**
-	 * @brief      Returns to cost gradient with respect to h_i integrated over
-	 *             the shot
-	 *
-	 * @return     The cost gradient
-	 */
+     * @brief      Returns to cost gradient with respect to h_i integrated over
+     *             the shot
+     *
+     * @return     The cost gradient
+     */
     // const double getdLdHiIntegrated() const
     // {
-    // 	return costGradientHi_;
+    //     return costGradientHi_;
     // }
 
 
 private:
     std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> controlledSystem_;
     std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem_;
+
+    std::shared_ptr<ct::core::DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> discreteControlledSystem_;
+    std::shared_ptr<ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> discreteLinearSystem_;
+
     std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct_;
     std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w_;
     std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner_;
@@ -351,8 +475,9 @@ private:
     control_vector_t discreteRNext_;
 
     std::shared_ptr<SensitivityIntegratorCT<STATE_DIM, CONTROL_DIM, SCALAR>> integratorCT_;
-    size_t nSteps_;
-    SCALAR tStart_;
+    size_t nSteps_;    //! the number of integration steps in this shot
+    SCALAR tStart_;    //! the time at which this shot starts
+    size_t startIdx_;  //! the index (discrete time) at which this shot starts
 };
 
 }  // namespace optcon

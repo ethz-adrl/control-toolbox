@@ -54,23 +54,28 @@ struct DmsPolicy
  *
  * @tparam     STATE_DIM    The state dimension
  * @tparam     CONTROL_DIM  The control dimension
+ * @tparam     SCALAR       The underlying scalar type
+ * @tparam     CONTINUOUS   Whether solver operates on continuous or discrete OptCon Problem
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class DmsSolver : public OptConSolver<DmsSolver<STATE_DIM, CONTROL_DIM, SCALAR>,
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double, bool CONTINUOUS = true>
+class DmsSolver : public OptConSolver<DmsSolver<STATE_DIM, CONTROL_DIM, SCALAR, CONTINUOUS>,
                       DmsPolicy<STATE_DIM, CONTROL_DIM, SCALAR>,
                       DmsSettings,
                       STATE_DIM,
                       CONTROL_DIM,
-                      SCALAR>
+                      SCALAR,
+                      CONTINUOUS>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef OptConSolver<DmsSolver<STATE_DIM, CONTROL_DIM, SCALAR>,
+    typedef OptConSolver<DmsSolver<STATE_DIM, CONTROL_DIM, SCALAR, CONTINUOUS>,
         DmsPolicy<STATE_DIM, CONTROL_DIM, SCALAR>,
         DmsSettings,
         STATE_DIM,
-        CONTROL_DIM>
+        CONTROL_DIM,
+        SCALAR,
+        CONTINUOUS>
         Base;
 
     typedef DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR> DIMENSIONS;
@@ -82,7 +87,7 @@ public:
 
     typedef DmsPolicy<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
 
-    typedef ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> OptConProblem_t;
+    typedef typename Base::OptConProblem_t OptConProblem_t;
 
     /**
 	 * @brief      Custom constructor, converts the optcon problem to a DMS problem
@@ -90,7 +95,7 @@ public:
 	 * @param[in]  problem      The optimal control problem
 	 * @param[in]  settingsDms  The dms settings
 	 */
-    DmsSolver(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> problem, DmsSettings settingsDms)
+    DmsSolver(const OptConProblem_t problem, DmsSettings settingsDms)
         : nlpSolver_(nullptr), settings_(settingsDms)
     {
         // Create system, linearsystem and costfunction instances

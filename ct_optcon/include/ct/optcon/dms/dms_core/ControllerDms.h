@@ -27,7 +27,8 @@ namespace optcon {
  *
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class ControllerDms : public ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>
+class ControllerDms : public ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>,
+                      public ct::core::DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -57,6 +58,11 @@ public:
     {
         controlAction = controlSpliner_->evalSpline(t, shotIdx_);
         assert(controlAction == controlAction);
+    }
+
+    void computeControl(const state_vector_t& state, const int n, control_vector_t& controlAction) override
+    {
+        controlAction = controlSpliner_->evalSpline(controlSpliner_->timeGrid_->getShotStartTime(shotIdx_), shotIdx_);
     }
 
     core::ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const state_vector_t& state,

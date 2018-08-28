@@ -6,7 +6,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "ct/optcon/dms/dms_core/spline/SplinerBase.h"
-#include <ct/optcon/dms/dms_core/TimeGrid.h>
 
 namespace ct {
 namespace optcon {
@@ -24,18 +23,20 @@ class LinearSpliner : public SplinerBase<T, SCALAR>
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef T vector_t;
-    typedef std::vector<vector_t, Eigen::aligned_allocator<vector_t>> vector_array_t;
-    typedef Eigen::Matrix<SCALAR, T::DIM, T::DIM> matrix_t;
+    typedef SplinerBase<T, SCALAR> Base;
+    typedef typename Base::vector_t vector_t;
+    typedef typename Base::vector_array_t vector_array_t;
+    typedef typename Base::matrix_t matrix_t;
+
 
     LinearSpliner() = delete;
 
     /**
-	 * @brief      Custom constructor
-	 *
-	 * @param[in]  grid  The dms timegrid
-	 */
-    LinearSpliner(std::shared_ptr<tpl::TimeGrid<SCALAR>> grid) : timeGrid_(grid) {}
+     * @brief      Custom constructor
+     *
+     * @param[in]  grid  The dms timegrid
+     */
+    LinearSpliner(std::shared_ptr<tpl::TimeGrid<SCALAR>> grid) : Base(grid) {}
     ~LinearSpliner() override = default;
     void computeSpline(const vector_array_t& points) override { nodes_ = points; }
     // evaluate spline and return vector at interpolation time
@@ -44,10 +45,10 @@ public:
         Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> result;
         result.resize(T::DIM);
 
-        //		int shotIdx = timeGrid_->getShotIndex(time);
-        SCALAR t_shot = timeGrid_->getShotDuration(shotIdx);     /* current duration of a whole shot*/
-        SCALAR t_s_start = timeGrid_->getShotStartTime(shotIdx); /* time when this particular shot started */
-        SCALAR t_s_end = timeGrid_->getShotEndTime(shotIdx);     /* time when this particular shot ends */
+        //        int shotIdx = timeGrid_->getShotIndex(time);
+        SCALAR t_shot = this->timeGrid_->getShotDuration(shotIdx);     /* current duration of a whole shot*/
+        SCALAR t_s_start = this->timeGrid_->getShotStartTime(shotIdx); /* time when this particular shot started */
+        SCALAR t_s_end = this->timeGrid_->getShotEndTime(shotIdx);     /* time when this particular shot ends */
 
         assert(shotIdx < nodes_.size());
 
@@ -61,7 +62,7 @@ public:
     {
         vector_t result;
 
-        SCALAR t_shot = timeGrid_->getShotDuration(shotIdx); /* current duration of a whole shot*/
+        SCALAR t_shot = this->timeGrid_->getShotDuration(shotIdx); /* current duration of a whole shot*/
 
         result = (nodes_[shotIdx + 1] - nodes_[shotIdx]) / t_shot;
 
@@ -73,8 +74,8 @@ public:
     {
         vector_t result;
 
-        SCALAR t_shot = timeGrid_->getShotDuration(shotIdx);     /* current duration of a whole shot*/
-        SCALAR t_s_start = timeGrid_->getShotStartTime(shotIdx); /* time when this particular shot started */
+        SCALAR t_shot = this->timeGrid_->getShotDuration(shotIdx);     /* current duration of a whole shot*/
+        SCALAR t_s_start = this->timeGrid_->getShotStartTime(shotIdx); /* time when this particular shot started */
 
         result = (time - t_s_start) * (nodes_[shotIdx] - nodes_[shotIdx + 1]) / (t_shot * t_shot);
 
@@ -85,8 +86,8 @@ public:
     {
         matrix_t drv;
 
-        SCALAR t_shot = timeGrid_->getShotDuration(shotIdx); /* current duration of a the shot*/
-        SCALAR t_s_end = timeGrid_->getShotEndTime(shotIdx); /* time when this particular shot ends */
+        SCALAR t_shot = this->timeGrid_->getShotDuration(shotIdx); /* current duration of a the shot*/
+        SCALAR t_s_end = this->timeGrid_->getShotEndTime(shotIdx); /* time when this particular shot ends */
 
         drv.setIdentity();
         drv *= (t_s_end - time) / t_shot;
@@ -99,9 +100,9 @@ public:
     {
         matrix_t drv;
 
-        //		int shotIdx = timeGrid_->getShotIndex(time);
-        SCALAR t_shot = timeGrid_->getShotDuration(shotIdx);     /* current duration of the shot*/
-        SCALAR t_s_start = timeGrid_->getShotStartTime(shotIdx); /* time when this particular shot started */
+        //        int shotIdx = timeGrid_->getShotIndex(time);
+        SCALAR t_shot = this->timeGrid_->getShotDuration(shotIdx);     /* current duration of the shot*/
+        SCALAR t_s_start = this->timeGrid_->getShotStartTime(shotIdx); /* time when this particular shot started */
 
         drv.setIdentity();
         drv *= (time - t_s_start) / t_shot;
@@ -112,8 +113,6 @@ public:
 
 private:
     vector_array_t nodes_;  // an array of references to grid points between which is interpolated
-
-    std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid_;
 };
 
 }  // namespace optcon
