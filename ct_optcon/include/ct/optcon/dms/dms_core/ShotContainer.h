@@ -266,6 +266,11 @@ public:
             }
             else
             {
+                discreteAi_.clear();
+                discreteAi_.push_back(discreteA_);
+                discreteBi_.clear();
+                discreteBi_.push_back(discreteB_);
+
                 state_vector_t dummy_stateNext;
                 state_matrix_t A_i;
                 state_control_matrix_t B_i;
@@ -277,6 +282,9 @@ public:
                         stateSubsteps_[i], inputSubsteps_[i], dummy_stateNext, i + startIdx_, 1, A_i, B_i);
                     discreteA_ = A_i * discreteA_;
                     discreteB_ = B_i + A_i * discreteB_;
+
+                    discreteAi_.push_back(discreteA_);
+                    discreteBi_.push_back(discreteB_);
                 }
             }
         }
@@ -305,11 +313,13 @@ public:
             }
             else
             {
+                state_vector_t q_i;
                 for (size_t i = 0; i < timeSubsteps_.size() - 1; i++)
                 {
                     costFct_->setCurrentStateAndControl(stateSubsteps_[i], inputSubsteps_[i], timeSubsteps_[i]);
-                    discreteQ_ = costFct_->stateDerivativeIntermediate();
-                    discreteR_ = costFct_->controlDerivativeIntermediate();
+                    q_i = costFct_->stateDerivativeIntermediate();
+                    discreteQ_ += discreteAi_[i].transpose() * q_i;
+                    discreteR_ += costFct_->controlDerivativeIntermediate() + discreteBi_[i].transpose() * q_i;
                 }
             }
         }
@@ -317,13 +327,20 @@ public:
 
     void reset()
     {
-        if (!integratorCT_)
+        if (integratorCT_)
         {
-            return; // TODO should we reset something here?
+            integratorCT_->clearStates();
+            integratorCT_->clearSensitivities();
+            integratorCT_->clearLinearization();
         }
-        integratorCT_->clearStates();
-        integratorCT_->clearSensitivities();
-        integratorCT_->clearLinearization();
+        else
+        {
+            stateSubsteps_.clear();
+            timeSubsteps_.clear();
+            inputSubsteps_.clear();
+            discreteAi_.clear();
+            discreteBi_.clear();
+        }
     }
 
     /**
@@ -465,7 +482,9 @@ private:
 
     //Sensitivity Trajectories
     state_matrix_t discreteA_;
+    state_matrix_array_t discreteAi_;  //! substeps of discreteA_
     state_control_matrix_t discreteB_;
+    state_control_matrix_array_t discreteBi_;  //! substeps of discreteB_
     state_control_matrix_t discreteBNext_;
 
     //Cost and cost gradient
