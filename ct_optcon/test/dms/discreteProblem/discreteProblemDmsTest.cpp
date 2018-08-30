@@ -25,7 +25,7 @@ TEST(DiscreteDmsTest, IPOPT)
 
     using ADCGlinearizer_t = ct::core::DiscreteSystemLinearizerADCG<state_dim, control_dim>;
 
-    constexpr double rate = 10.0;
+    constexpr double rate = 2.0;
     std::shared_ptr<sysD_t> sys(new sysD_t(rate));
     std::shared_ptr<sysADCG_t> sysADCG(new sysADCG_t(AD_ValueType(rate)));
     std::shared_ptr<ADCGlinearizer_t> lin(new ADCGlinearizer_t(sysADCG));
@@ -37,8 +37,12 @@ TEST(DiscreteDmsTest, IPOPT)
     ct::optcon::DmsSettings settings;
 
     settings.solverSettings_.solverType_ = ct::optcon::NlpSolverSettings::IPOPT;
-    settings.N_ = 30;
-    settings.T_ = 5;
+    settings.solverSettings_.ipoptSettings_.derivativeTest_ = "first-order";
+    settings.solverSettings_.ipoptSettings_.checkDerivativesForNaninf_ = "yes";
+    settings.solverSettings_.ipoptSettings_.derivativeTestPrintAll_ = "yes";
+    settings.solverSettings_.ipoptSettings_.derivativeTestTol_ = 1e-5;
+    settings.N_ = 50; // number of shots
+    settings.T_ = 1.0; // time horizon
     settings.nThreads_ = 1;
     settings.dt_sim_ = 0.01;
 

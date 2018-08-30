@@ -46,7 +46,7 @@ public:
     {
         // this is pretty much random
         stateNext(0) = state(0) + rate_ * state(0) * control(0);
-        stateNext(1) = state(0) * state(1) * state(1);
+        stateNext(1) = SCALAR(0.1) * state(0) * state(1) * state(1);
     }
 
 private:
