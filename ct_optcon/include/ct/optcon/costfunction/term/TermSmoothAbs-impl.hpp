@@ -67,7 +67,9 @@ core::StateVector<STATE_DIM, SCALAR_EVAL> TermSmoothAbs<STATE_DIM, CONTROL_DIM, 
     const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
     const SCALAR_EVAL& t)
 {
-	return (a_.array() * (x-x_ref_).array() * ((x - x_ref_).array().square() + Eigen::Array<SCALAR_EVAL, STATE_DIM, 1>::Ones() * alphaSquared_).rsqrt()).matrix();
+    return (a_.array() * (x - x_ref_).array() *
+            ((x - x_ref_).array().square() + Eigen::Array<SCALAR_EVAL, STATE_DIM, 1>::Ones() * alphaSquared_).rsqrt())
+        .matrix();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
@@ -78,7 +80,11 @@ TermSmoothAbs<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateSecondDerivativ
     const SCALAR_EVAL& t)
 {
     // return as diagonal matrix
-	return (a_.array() * (Eigen::Array<SCALAR_EVAL, STATE_DIM, 1>::Ones() * alphaSquared_ + (x-x_ref_).array().square()).pow(-3.0/2.0)).matrix().asDiagonal();
+    return (a_.array() * alphaSquared_ *
+            (Eigen::Array<SCALAR_EVAL, STATE_DIM, 1>::Ones() * alphaSquared_ + (x - x_ref_).array().square())
+                .pow(-3.0 / 2.0))
+        .matrix()
+        .asDiagonal();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
@@ -88,7 +94,9 @@ TermSmoothAbs<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlDerivative(
     const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
     const SCALAR_EVAL& t)
 {
-    return (b_.array() * (u-u_ref_).array() * ((u - u_ref_).array().square() + Eigen::Array<SCALAR_EVAL, CONTROL_DIM, 1>::Ones() * alphaSquared_).rsqrt()).matrix();
+    return (b_.array() * (u - u_ref_).array() *
+            ((u - u_ref_).array().square() + Eigen::Array<SCALAR_EVAL, CONTROL_DIM, 1>::Ones() * alphaSquared_).rsqrt())
+        .matrix();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
@@ -99,7 +107,11 @@ TermSmoothAbs<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlSecondDerivat
     const SCALAR_EVAL& t)
 {
     // return as diagonal matrix
-	return (b_.array() * (Eigen::Array<SCALAR_EVAL, CONTROL_DIM, 1>::Ones() * alphaSquared_ + (u-u_ref_).array().square()).pow(-3.0/2.0)).matrix().asDiagonal();
+    return (b_.array() * alphaSquared_ *
+            (Eigen::Array<SCALAR_EVAL, CONTROL_DIM, 1>::Ones() * alphaSquared_ + (u - u_ref_).array().square())
+                .pow(-3.0 / 2.0))
+        .matrix()
+        .asDiagonal();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
@@ -118,6 +130,11 @@ void TermSmoothAbs<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(
     bool verbose)
 {
     // read in the file and put the valus in a_ and b_
+    a_.setZero();
+    x_ref_.setZero();
+    b_.setZero();
+    u_ref_.setZero();
+
     loadMatrixCF(filename, "a", a_, termName);
     loadMatrixCF(filename, "x_ref", x_ref_, termName);
     loadMatrixCF(filename, "b", b_, termName);

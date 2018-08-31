@@ -13,7 +13,10 @@ namespace optcon {
 /**
  * \ingroup CostFunction
  *
- * \brief A smooth absolute term of type \f$ J = a sqrt((x-x_ref)^2 + alpha^2) - alpha + b sqrt((u-u_ref)^2 + alpha^2) - alpha \f$
+ * \brief A smooth absolute term of type
+ * \f$ J = a sqrt((x-x_ref)^2 + alpha^2) + b sqrt((u-u_ref)^2 + alpha^2) \f$
+ * where this calculation is performed component-wise and summed with individual
+ * weighting factors a[i], b[i].
  *
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, typename SCALAR = SCALAR_EVAL>
