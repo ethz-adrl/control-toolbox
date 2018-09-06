@@ -43,13 +43,13 @@ public:
     CostEvaluatorSimple() = delete;
 
     /**
-	 * @brief      Custom constructor
-	 *
-	 * @param[in]  costFct   The cost function
-	 * @param[in]  w         The optimization variables
-	 * @param[in]  timeGrid  The time grid
-	 * @param[in]  settings  The dms settings
-	 */
+   * @brief      Custom constructor
+   *
+   * @param[in]  costFct   The cost function
+   * @param[in]  w         The optimization variables
+   * @param[in]  timeGrid  The time grid
+   * @param[in]  settings  The dms settings
+   */
     CostEvaluatorSimple(std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct,
         std::shared_ptr<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>> w,
         std::shared_ptr<tpl::TimeGrid<SCALAR>> timeGrid,
@@ -68,8 +68,8 @@ public:
 
 private:
     /**
-	 * @brief      Updates the weights for the cost interpolation
-	 */
+   * @brief      Updates the weights for the cost interpolation
+   */
     void updatePhi();
 
     std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFct_;
@@ -89,7 +89,8 @@ SCALAR CostEvaluatorSimple<STATE_DIM, CONTROL_DIM, SCALAR>::eval()
 
     for (size_t i = 0; i < settings_.N_ + 1; ++i)
     {
-        costFct_->setCurrentStateAndControl(w_->getOptimizedState(i), w_->getOptimizedControl(i));
+        costFct_->setCurrentStateAndControl(
+            w_->getOptimizedState(i), w_->getOptimizedControl(i), timeGrid_->getShotStartTime(i));
         cost += phi_(i) * costFct_->evaluateIntermediate();
     }
 
@@ -108,7 +109,8 @@ void CostEvaluatorSimple<STATE_DIM, CONTROL_DIM, SCALAR>::evalGradient(size_t gr
     grad.setZero();
     for (size_t i = 0; i < settings_.N_ + 1; ++i)
     {
-        costFct_->setCurrentStateAndControl(w_->getOptimizedState(i), w_->getOptimizedControl(i));
+        costFct_->setCurrentStateAndControl(
+            w_->getOptimizedState(i), w_->getOptimizedControl(i), timeGrid_->getShotStartTime(i));
         grad.segment(w_->getStateIndex(i), STATE_DIM) += phi_(i) * costFct_->stateDerivativeIntermediate();
         grad.segment(w_->getControlIndex(i), CONTROL_DIM) += phi_(i) * costFct_->controlDerivativeIntermediate();
     }
