@@ -338,6 +338,63 @@ TEST(CostFunctionTest, TrackingTermTest)
     ASSERT_TRUE(costFunction->controlDerivativeIntermediateTest());
 }
 
+/*!
+ * Test the TermSmoothAbs term for first and second order derivatives
+ */
+TEST(CostFunctionTest, TermSmoothAbsTest)
+{
+    const size_t state_dim = 12;
+    const size_t control_dim = 4;
+
+    // analytical costfunction
+    std::shared_ptr<CostFunctionAnalytical<state_dim, control_dim>> costFunction(
+        new CostFunctionAnalytical<state_dim, control_dim>());
+
+    // autodiff costfunction
+    using CGScalar = typename CostFunctionAD<state_dim, control_dim>::CGScalar;
+    std::shared_ptr<CostFunctionAD<state_dim, control_dim>> costFunctionAD(
+        new CostFunctionAD<state_dim, control_dim>());
+
+    Eigen::Matrix<double, state_dim, 1> a, x_ref;
+    a.setRandom();
+    x_ref.setRandom();
+    Eigen::Matrix<double, control_dim, 1> b, u_ref;
+    b.setRandom();
+    u_ref.setRandom();
+    double alpha = 0.5;
+
+    std::shared_ptr<TermSmoothAbs<state_dim, control_dim>> smoothAbsTerm(
+        new TermSmoothAbs<state_dim, control_dim>(a, x_ref, b, u_ref, alpha));
+
+    std::shared_ptr<TermSmoothAbs<state_dim, control_dim, double, CGScalar>> smoothAbsTermAD(
+        new TermSmoothAbs<state_dim, control_dim, double, CGScalar>(a, x_ref, b, u_ref, alpha));
+
+    costFunction->addIntermediateTerm(smoothAbsTerm);
+    costFunctionAD->addIntermediateADTerm(smoothAbsTermAD);
+    costFunctionAD->initialize();
+
+    ct::core::StateVector<state_dim> x;
+    ct::core::ControlVector<control_dim> u;
+    x.setRandom();
+    u.setRandom();
+    double t = 0.0;
+
+    costFunction->setCurrentStateAndControl(x, u, t);
+    ASSERT_TRUE(costFunction->stateDerivativeIntermediateTest());
+    ASSERT_TRUE(costFunction->controlDerivativeIntermediateTest());
+
+    for (int i = 0; i < 100; i++)
+    {
+        x.setRandom();
+        u.setRandom();
+
+        costFunction->setCurrentStateAndControl(x, u, t);
+        costFunctionAD->setCurrentStateAndControl(x, u, t);
+
+        compareCostFunctionOutput(*costFunction, *costFunctionAD);
+    }
+}
+
 
 }  // namespace example
 }  // namespace optcon
