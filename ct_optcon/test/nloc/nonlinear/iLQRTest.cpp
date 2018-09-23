@@ -4,14 +4,10 @@ Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #include <chrono>
-
-// Bring in gtest
 #include <gtest/gtest.h>
-
 #include <ct/optcon/optcon.h>
 
 #include "DiehlSystem.h"
-
 #include "nloc_test_dir.h"
 
 
@@ -350,7 +346,9 @@ TEST(ILQRTestB, MultiThreadingTest)
                     {
                         state_matrix_t aNew =
                             ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
-                        state_matrix_t aNewInv = (state_matrix_t::Identity() - aNew).inverse();
+                        // Note: for compatibility with older Eigen versions, need scalar formulation for (state_matrix_t::Identity() - aNew).inverse();
+                        state_matrix_t aNewInv;
+                        aNewInv(0,0) = 1.0 / (1.0 - aNew(0,0));
                         A_analytic = aNewInv;
                         B_analytic = aNewInv * ilqr_settings.dt *
                                      analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
@@ -359,7 +357,9 @@ TEST(ILQRTestB, MultiThreadingTest)
                     {
                         state_matrix_t aNew = 0.5 * ilqr_settings.dt *
                                               analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
-                        state_matrix_t aNewInv = (state_matrix_t::Identity() - aNew).inverse();
+                        // Note: for compatibility with older Eigen versions, need scalar formulation for (state_matrix_t::Identity() - aNew).inverse();
+                        state_matrix_t aNewInv;
+                        aNewInv(0,0) = 1.0 / (1.0 - aNew(0,0));
                         A_analytic = aNewInv * (state_matrix_t::Identity() + aNew);
                         B_analytic = aNewInv * ilqr_settings.dt *
                                      analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
