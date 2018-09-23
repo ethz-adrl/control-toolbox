@@ -12,6 +12,7 @@
 #include "term/TermQuadMult-impl.hpp"
 #include "term/TermQuadTracking-impl.hpp"
 #include "term/TermStateBarrier-impl.hpp"
+#include "term/TermSmoothAbs-impl.hpp"
 
 // costfunctions
 #include "CostFunction-impl.hpp"
