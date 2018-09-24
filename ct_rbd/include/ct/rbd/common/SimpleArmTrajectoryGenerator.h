@@ -23,9 +23,9 @@ template <size_t NJOINTS, typename SCALAR = double>
 class SimpleArmTrajectoryGenerator
 {
 public:
-    using Position = ct::rbd::JointState<NJOINTS, SCALAR>::Position;
-    using Velocity = ct::rbd::JointState<NJOINTS, SCALAR>::Velocity;
-    using Acceleration = ct::rbd::JointAcceleration<NJOINTS, SCALAR>::Acceleration;
+    using Position = typename ct::rbd::JointState<NJOINTS, SCALAR>::Position;
+    using Velocity = typename ct::rbd::JointState<NJOINTS, SCALAR>::Velocity;
+    using Acceleration = typename ct::rbd::JointAcceleration<NJOINTS, SCALAR>::Acceleration;
 
 
     SimpleArmTrajectoryGenerator(const Velocity& kAbsMaxJointVelocities, const Acceleration& kAbsMaxJointAccelerations)
