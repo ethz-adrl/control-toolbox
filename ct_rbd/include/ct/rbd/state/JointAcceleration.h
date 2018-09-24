@@ -24,6 +24,8 @@ public:
         NDOFS = NJOINTS
     };
 
+    typedef Eigen::Matrix<SCALAR, NJOINTS, 1> Acceleration;
+
     JointAcceleration() { setZero(); }
     JointAcceleration(const Eigen::Matrix<SCALAR, NJOINTS, 1>& acceleration) : acceleration_(acceleration) {}
     /// @brief get number of degrees of freedom
@@ -46,7 +48,7 @@ public:
     }
 
 protected:
-    Eigen::Matrix<SCALAR, NJOINTS, 1> acceleration_;
+    Acceleration acceleration_;
 };
 
 }  // namespace rbd
