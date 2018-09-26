@@ -68,7 +68,7 @@ core::StateVector<STATE_DIM, SCALAR_EVAL> TermSmoothAbs<STATE_DIM, CONTROL_DIM, 
     const SCALAR_EVAL& t)
 {
     return (a_.array() * (x - x_ref_).array() *
-            ((x - x_ref_).array().square() + Eigen::Array<SCALAR_EVAL, STATE_DIM, 1>::Ones() * alphaSquared_).rsqrt())
+            ((x - x_ref_).array().square() + Eigen::Array<SCALAR_EVAL, STATE_DIM, 1>::Ones() * alphaSquared_).sqrt().inverse())
         .matrix();
 }
 
@@ -95,7 +95,7 @@ TermSmoothAbs<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlDerivative(
     const SCALAR_EVAL& t)
 {
     return (b_.array() * (u - u_ref_).array() *
-            ((u - u_ref_).array().square() + Eigen::Array<SCALAR_EVAL, CONTROL_DIM, 1>::Ones() * alphaSquared_).rsqrt())
+            ((u - u_ref_).array().square() + Eigen::Array<SCALAR_EVAL, CONTROL_DIM, 1>::Ones() * alphaSquared_).sqrt().inverse())
         .matrix();
 }
 
