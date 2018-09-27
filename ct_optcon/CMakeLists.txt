@@ -156,7 +156,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/dms/oscillator)
 catkin_add_gtest(LqrTest test/lqr/LqrTest.cpp)
 target_link_libraries(LqrTest ${catkin_LIBRARIES} ${LAPACK_LIBS} ${MATLAB_LIBS})
 
-catkin_add_gtest(iLQRTest test/nloc/iLQRTest.cpp)
+catkin_add_gtest(iLQRTest test/nloc/nonlinear/iLQRTest.cpp)
 target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
 if(HPIPM)
@@ -192,7 +192,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/nloc)
 catkin_add_gtest(LinearSystemTest test/nloc/LinearSystemTest.cpp)
 target_link_libraries(LinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
-catkin_add_gtest(NonlinearSystemTest test/nloc/NonlinearSystemTest.cpp)
+catkin_add_gtest(NonlinearSystemTest test/nloc/nonlinear/NonlinearSystemTest.cpp)
 target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
 add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
