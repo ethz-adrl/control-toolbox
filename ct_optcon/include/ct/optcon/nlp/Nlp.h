@@ -481,7 +481,7 @@ protected:
     std::shared_ptr<DiscreteCostEvaluatorBase<SCALAR>>
         costEvaluator_;  //! abstract base class, approximates the cost evaluation for the discrete problem
     std::shared_ptr<OptVector<SCALAR>>
-        optVariables_;  //! base class, containts the optimization variables used in the NLP solvers
+        optVariables_;  //! base class, contains the optimization variables used in the NLP solvers
     std::shared_ptr<DiscreteConstraintContainerBase<SCALAR>>
         constraints_;  //! abstract base class, contains the discretized constraints for the problem
     std::shared_ptr<ct::core::DerivativesCppadJIT<-1, 1>> costCodegen_;
