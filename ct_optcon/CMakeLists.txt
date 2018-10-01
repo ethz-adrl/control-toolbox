@@ -146,8 +146,10 @@ if(BUILD_EXAMPLES)
 
     add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
     target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
-endif()
 
+    add_executable(ex_Nlp examples/Nlp.cpp)
+    target_link_libraries(ex_Nlp ${catkin_LIBRARIES} ${NLP_LIBS})
+endif()
 
 get_filename_component(DMS_OSC_TEST_MAT_DIR "test/dms/oscillator/matfiles" ABSOLUTE)
 configure_file(test/dms/oscillator/oscDMSTest_settings.h.in test/dms/oscillator/oscDMSTest_settings.h)

@@ -3,7 +3,7 @@ This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyr
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#include <ct/optcon/optcon.h>
+#include <ct/optcon/nlp/solver/IpoptSolver.h>
 
 // #define DEBUG_PRINT
 
@@ -117,9 +117,7 @@ bool IpoptSolver<SCALAR>::get_nlp_info(Ipopt::Index& n,
     n = this->nlp_->getVarCount();
     assert(n == n);
 
-    // std::cout << 1 << std::endl;
-
-    m = this->nlp_->getConstraintsCount();
+    m = this->nlp_->getConstraintsCount();\
     assert(m == m);
 
     nnz_jac_g = this->nlp_->getNonZeroJacobianCount();

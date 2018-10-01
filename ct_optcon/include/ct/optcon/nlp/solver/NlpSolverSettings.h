@@ -262,6 +262,13 @@ public:
     }
 };
 
+
+enum class SolverType_t : uint8_t {
+  IPOPT = 0,
+  SNOPT = 1,
+  num_types_solver
+};
+
 /**
  * @ingroup    NLP
  *
@@ -270,12 +277,10 @@ public:
 class NlpSolverSettings
 {
 public:
-    typedef enum SolverType { IPOPT = 0, SNOPT = 1, num_types_solver } SolverType_t;
-
     /**
 	 * @brief      Default constructor, set default settings
 	 */
-    NlpSolverSettings() : solverType_(IPOPT), useGeneratedCostGradient_(false), useGeneratedConstraintJacobian_(false)
+    NlpSolverSettings() : solverType_(SolverType_t::IPOPT), useGeneratedCostGradient_(false), useGeneratedConstraintJacobian_(false)
     {
     }
 
@@ -304,9 +309,9 @@ public:
         else
             std::cout << "Using anlyitical Constraints Jacobian" << std::endl;
 
-        if (solverType_ == IPOPT)
+        if (solverType_ == SolverType_t::IPOPT)
             ipoptSettings_.print();
-        else if (solverType_ == SNOPT)
+        else if (solverType_ == SolverType_t::SNOPT)
             snoptSettings_.print();
     }
 
@@ -317,9 +322,9 @@ public:
      */
     bool parametersOk() const
     {
-        if (solverType_ == IPOPT)
+        if (solverType_ == SolverType_t::IPOPT)
             return ipoptSettings_.parametersOk();
-        else if (solverType_ == SNOPT)
+        else if (solverType_ == SolverType_t::SNOPT)
             return snoptSettings_.parametersOk();
         else
             return false;
@@ -337,13 +342,13 @@ public:
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);
 
-        solverType_ = (SolverType)pt.get<unsigned int>(ns + ".SolverType");
+        solverType_ = static_cast<SolverType_t>(pt.get<unsigned int>(ns + ".SolverType"));
         useGeneratedCostGradient_ = pt.get<bool>(ns + ".UseGeneratedCostGradient");
         useGeneratedConstraintJacobian_ = pt.get<bool>(ns + ".UseGeneratedConstraintJacobian");
 
-        if (solverType_ == IPOPT)
+        if (solverType_ == SolverType_t::IPOPT)
             ipoptSettings_.load(filename, verbose, ns + ".ipopt");
-        else if (solverType_ == SNOPT)
+        else if (solverType_ == SolverType_t::SNOPT)
             snoptSettings_.load(filename, verbose, ns + ".snopt");
 
         if (verbose)
@@ -354,7 +359,7 @@ public:
     }
 
 private:
-    std::map<SolverType, std::string> solverToString = {{IPOPT, "IPOPT"}, {SNOPT, "SNOPT"}};
+    std::map<SolverType_t, std::string> solverToString = {{SolverType_t::IPOPT, "IPOPT"}, {SolverType_t::SNOPT, "SNOPT"}};
 };
 
 
