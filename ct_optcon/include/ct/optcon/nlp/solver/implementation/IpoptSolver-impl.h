@@ -117,7 +117,7 @@ bool IpoptSolver<SCALAR>::get_nlp_info(Ipopt::Index& n,
     n = this->nlp_->getVarCount();
     assert(n == n);
 
-    m = this->nlp_->getConstraintsCount();\
+    m = this->nlp_->getConstraintsCount();
     assert(m == m);
 
     nnz_jac_g = this->nlp_->getNonZeroJacobianCount();

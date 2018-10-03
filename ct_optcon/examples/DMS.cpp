@@ -80,7 +80,7 @@ int main(int argc, char **argv)
     settings.h_min_ = 0.1;                         // minimum admissible distance between two nodes in [sec]
     settings.integrationType_ = DmsSettings::RK4;  // type of the shot integrator
     settings.dt_sim_ = 0.01;                       // forward simulation dt
-    settings.solverSettings_.solverType_ = NlpSolverSettings::SolverType::IPOPT;  // use IPOPT
+    settings.solverSettings_.solverType_ = NlpSolverType::IPOPT;  // use IPOPT
     settings.absErrTol_ = 1e-8;
     settings.relErrTol_ = 1e-8;
 

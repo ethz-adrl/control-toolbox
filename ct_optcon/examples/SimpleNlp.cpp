@@ -4,7 +4,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 /*!
- * \example Nlp.cpp
+ * \example SimpleNlp.cpp
  *
  * This example shows how to set up and solve a Nonlinear program using the Nlp and Nlpsolver classes.
  * We try to solve the following NLP:
@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
         new ExampleProblem<double>());
 
     NlpSolverSettings exampleNlpSolverSettings;
-    exampleNlpSolverSettings.solverType_ = SolverType_t::IPOPT;
+    exampleNlpSolverSettings.solverType_ = NlpSolverType::IPOPT;
     exampleNlpSolverSettings.ipoptSettings_.derivativeTest_ = "first-order";
     exampleNlpSolverSettings.ipoptSettings_.hessian_approximation_ = "limited-memory";
 
