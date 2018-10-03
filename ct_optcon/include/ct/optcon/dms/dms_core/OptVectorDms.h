@@ -71,7 +71,7 @@ public:
      *
      * @return     The optimized state
     */
-    const state_vector_t& getOptimizedState(const size_t pairNum) const;
+    state_vector_t getOptimizedState(const size_t pairNum) const;
 
     /**
      * @brief      Returns the optimized control input for a specific shot
@@ -80,7 +80,7 @@ public:
      *
      * @return     The optimized control input
     */
-    const control_vector_t& getOptimizedControl(const size_t pairNum) const;
+    control_vector_t getOptimizedControl(const size_t pairNum) const;
 
     /**
      * @brief      Returns the optimized state for all shots

@@ -25,7 +25,7 @@ OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::OptVectorDms(size_t n, const DmsSe
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-const typename DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t&
+typename DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t
 OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getOptimizedState(const size_t pairNum) const
 {
     size_t index = getStateIndex(pairNum);
@@ -33,7 +33,7 @@ OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getOptimizedState(const size_t pai
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-const typename DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t&
+typename DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t
 OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getOptimizedControl(const size_t pairNum) const
 {
     size_t index = getControlIndex(pairNum);
