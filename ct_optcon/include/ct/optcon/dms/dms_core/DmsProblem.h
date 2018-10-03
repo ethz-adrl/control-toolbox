@@ -311,6 +311,7 @@ public:
 	 * @brief      Destructor
 	 */
     ~DmsProblem() override = default;
+
     void updateProblem() override
     {
         controlSpliner_->computeSpline(optVariablesDms_->getOptimizedInputs().toImplementation());
@@ -413,6 +414,7 @@ public:
 	 * @brief      Prints the solution trajectories
 	 */
     void printSolution() { optVariablesDms_->printoutSolution(); }
+    
 private:
     DmsSettings settings_;
 

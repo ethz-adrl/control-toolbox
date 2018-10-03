@@ -76,7 +76,7 @@ private:
     std::shared_ptr<SplinerBase<control_vector_t, SCALAR>> controlSpliner_;
 
     /* index of the shot to which this controller belongs */
-    size_t shotIdx_;
+    const size_t shotIdx_;
 };
 
 }  // namespace optcon

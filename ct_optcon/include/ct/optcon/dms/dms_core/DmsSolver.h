@@ -149,6 +149,7 @@ public:
 	 * @brief      Destructor
 	 */
     ~DmsSolver() override = default;
+
     void configure(const DmsSettings& settings) override
     {
         dmsProblem_->configure(settings);

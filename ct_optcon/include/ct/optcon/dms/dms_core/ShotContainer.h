@@ -213,7 +213,7 @@ public:
 	 *
 	 * @return     The integrated state
 	 */
-    const state_vector_t getStateIntegrated() { return stateSubsteps_.back(); }
+    const state_vector_t& getStateIntegrated() { return stateSubsteps_.back(); }
     /**
 	 * @brief      Returns the end time of the integration	
 	 *
@@ -226,21 +226,21 @@ public:
 	 *
 	 * @return     The integrated sensitivity
 	 */
-    const state_matrix_t getdXdSiIntegrated() { return discreteA_; }
+    const state_matrix_t& getdXdSiIntegrated() { return discreteA_; }
     /**
 	 * @brief      Returns the integrated ODE sensitivity with respect to the
 	 *             discretized inputs q_i
 	 *
 	 * @return     The integrated sensitivity
 	 */
-    const state_control_matrix_t getdXdQiIntegrated() { return discreteB_; }
+    const state_control_matrix_t& getdXdQiIntegrated() { return discreteB_; }
     /**
 	 * @brief      Returns the integrated ODE sensitivity with respect to the
 	 *             discretized inputs q_{i+1}
 	 *
 	 * @return     The integrated sensitivity
 	 */
-    const state_control_matrix_t getdXdQip1Integrated() { return discreteBNext_; }
+    const state_control_matrix_t& getdXdQip1Integrated() { return discreteBNext_; }
     /**
 	 * @brief      Returns the integrated ODE sensitivity with respect to the
 	 *             time segments h_i
@@ -291,21 +291,21 @@ public:
 	 *
 	 * @return     The cost gradient
 	 */
-    const state_vector_t getdLdSiIntegrated() const { return discreteQ_; }
+    const state_vector_t& getdLdSiIntegrated() const { return discreteQ_; }
     /**
 	 * @brief      Returns the cost gradient with respect to q_i integrated over
 	 *             the shot
 	 *
 	 * @return     The cost gradient
 	 */
-    const control_vector_t getdLdQiIntegrated() const { return discreteR_; }
+    const control_vector_t& getdLdQiIntegrated() const { return discreteR_; }
     /**
 	 * @brief      Returns to cost gradient with respect to q_{i+1} integrated
 	 *             over the shot
 	 *
 	 * @return     The cost gradient
 	 */
-    const control_vector_t getdLdQip1Integrated() const { return discreteRNext_; }
+    const control_vector_t& getdLdQip1Integrated() const { return discreteRNext_; }
     /**
 	 * @brief      Returns to cost gradient with respect to h_i integrated over
 	 *             the shot

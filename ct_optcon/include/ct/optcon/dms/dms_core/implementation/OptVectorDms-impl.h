@@ -20,10 +20,12 @@ OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::OptVectorDms(size_t n, const DmsSe
         pairNumToControlIdx_.insert(std::make_pair(i, currIndex));
         currIndex += CONTROL_DIM;
     }
+    stateSolution_.resize(numPairs_);
+    inputSolution_.resize(numPairs_);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t
+const typename DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t&
 OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getOptimizedState(const size_t pairNum) const
 {
     size_t index = getStateIndex(pairNum);
@@ -31,7 +33,7 @@ OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getOptimizedState(const size_t pai
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t
+const typename DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t&
 OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getOptimizedControl(const size_t pairNum) const
 {
     size_t index = getControlIndex(pairNum);
@@ -42,11 +44,9 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 const typename DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_array_t&
 OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getOptimizedStates()
 {
-    stateSolution_.clear();
     for (size_t i = 0; i < numPairs_; i++)
-    {
-        stateSolution_.push_back(getOptimizedState(i));
-    }
+        stateSolution_[i] = getOptimizedState(i);
+
     return stateSolution_;
 }
 
@@ -55,9 +55,8 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 const typename DmsDimensions<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_array_t&
 OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>::getOptimizedInputs()
 {
-    inputSolution_.clear();
     for (size_t i = 0; i < numPairs_; i++)
-        inputSolution_.push_back(getOptimizedControl(i));
+        inputSolution_[i] = getOptimizedControl(i);
 
     return inputSolution_;
 }

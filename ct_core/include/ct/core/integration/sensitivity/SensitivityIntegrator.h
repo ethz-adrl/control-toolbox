@@ -70,7 +70,7 @@ public:
     /**
      * @brief      Destroys the object.
      */
-    virtual ~SensitivityIntegrator() {}
+    ~SensitivityIntegrator() override = default;
     /**
      * @brief      Initializes the steppers
      *
