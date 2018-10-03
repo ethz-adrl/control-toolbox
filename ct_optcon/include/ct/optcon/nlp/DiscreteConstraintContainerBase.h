@@ -5,8 +5,9 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-
-#include "DiscreteConstraintBase.h"
+#include <memory>
+#include <Eigen/Core>
+#include <ct/optcon/nlp/DiscreteConstraintBase.h>
 
 namespace ct {
 namespace optcon {
@@ -24,40 +25,40 @@ class DiscreteConstraintContainerBase
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
-    typedef Eigen::Matrix<int, Eigen::Dynamic, 1> VectorXi;
-    typedef Eigen::Map<VectorXs> MapVecXs;
-    typedef Eigen::Map<VectorXi> MapVecXi;
+    using VectorXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>;
+    using VectorXi = Eigen::Matrix<int, Eigen::Dynamic, 1>;
+    using MapVecXs = Eigen::Map<VectorXs>;
+    using MapVecXi = Eigen::Map<VectorXi>;
 
     /**
-	 * @brief      Default constructor
-	 */
-    DiscreteConstraintContainerBase() {}
+     * @brief      Default constructor
+     */
+    DiscreteConstraintContainerBase() = default;
     /**
-	 * @brief      Destructor
-	 */
-    virtual ~DiscreteConstraintContainerBase() {}
+     * @brief      Destructor
+     */
+    virtual ~DiscreteConstraintContainerBase() = default;
     /**
-	 * @brief      Gets called before the constraint evaluation. This method
-	 *             should contain all the calculations needed to evaluate the
-	 *             constraints
-	 */
+     * @brief      Gets called before the constraint evaluation. This method
+     *             should contain all the calculations needed to evaluate the
+     *             constraints
+     */
     virtual void prepareEvaluation() = 0;
 
     /**
-	 * @brief      Gets called before the constraint jacobian evaluation. This
-	 *             method should contain all the calculations needed to evaluate
-	 *             the constraint jacobian
-	 */
+     * @brief      Gets called before the constraint jacobian evaluation. This
+     *             method should contain all the calculations needed to evaluate
+     *             the constraint jacobian
+     */
     virtual void prepareJacobianEvaluation() = 0;
 
 
     /**
-	 * @brief      Writes the constraint evaluations into the large constraint
-	 *             optimization vector
-	 *
-	 * @param[out] c_nlp  The constraint vector used in the NLP
-	 */
+     * @brief      Writes the constraint evaluations into the large constraint
+     *             optimization vector
+     *
+     * @param[out] c_nlp  The constraint vector used in the NLP
+     */
     void evalConstraints(MapVecXs& c_nlp)
     {
         prepareEvaluation();
@@ -89,12 +90,12 @@ public:
     }
 
     /**
-	 * @brief      Evaluates the jacobian of the constraints and writes them
-	 *             into the nlp vector
-	 *
-	 * @param[out] jac_nlp    The constraint jacobian vector used in NLP
-	 * @param[in]  nzz_jac_g  The number of non zero elements in the jacobian
-	 */
+     * @brief      Evaluates the jacobian of the constraints and writes them
+     *             into the nlp vector
+     *
+     * @param[out] jac_nlp    The constraint jacobian vector used in NLP
+     * @param[in]  nzz_jac_g  The number of non zero elements in the jacobian
+     */
     void evalSparseJacobian(MapVecXs& jac_nlp, const int nzz_jac_g)
     {
         prepareJacobianEvaluation();
@@ -111,15 +112,15 @@ public:
     }
 
     /**
-	 * @brief      Retrieves the sparsity pattern of the constraints and writes
-	 *             them into the nlp vectors
-	 *
-	 * @param[out] iRow_nlp   The vector containing the row indices of the non
-	 *                        zero entries of the constraint jacobian
-	 * @param[out] jCol_nlp   The vector containing the column indices of the
-	 *                        non zero entries of the constraint jacobian
-	 * @param[in]  nnz_jac_g  The number of non zero elements in the constraint jacobian
-	 */
+     * @brief      Retrieves the sparsity pattern of the constraints and writes
+     *             them into the nlp vectors
+     *
+     * @param[out] iRow_nlp   The vector containing the row indices of the non
+     *                        zero entries of the constraint jacobian
+     * @param[out] jCol_nlp   The vector containing the column indices of the
+     *                        non zero entries of the constraint jacobian
+     * @param[in]  nnz_jac_g  The number of non zero elements in the constraint jacobian
+     */
     void getSparsityPattern(Eigen::Map<Eigen::VectorXi>& iRow_nlp,
         Eigen::Map<Eigen::VectorXi>& jCol_nlp,
         const int nnz_jac_g)
@@ -145,10 +146,10 @@ public:
     }
 
     /**
-	 * @brief      Returns the number of constraints in the NLP
-	 *
-	 * @return     The number of constraint in the NLP
-	 */
+     * @brief      Returns the number of constraints in the NLP
+     *
+     * @return     The number of constraint in the NLP
+     */
     size_t getConstraintsCount() const
     {
         size_t count = 0;
@@ -158,10 +159,10 @@ public:
     }
 
     /**
-	 * @brief      Returns the number of non zeros in the constraint jacobian
-	 *
-	 * @return     The number of non zeros in the constraint jacobian
-	 */
+     * @brief      Returns the number of non zeros in the constraint jacobian
+     *
+     * @return     The number of non zeros in the constraint jacobian
+     */
     size_t getNonZerosJacobianCount() const
     {
         size_t count = 0;
@@ -171,12 +172,12 @@ public:
     }
 
     /**
-	 * @brief      Retrieves the constraint bounds and writes them into the
-	 *             vectors used in the NLP
-	 *
-	 * @param[out]      lowerBound  The lower constraint bound
-	 * @param[out]      upperBound  The lower constraint bound
-	 */
+     * @brief      Retrieves the constraint bounds and writes them into the
+     *             vectors used in the NLP
+     *
+     * @param[out]      lowerBound  The lower constraint bound
+     * @param[out]      upperBound  The lower constraint bound
+     */
     void getBounds(MapVecXs& lowerBound, MapVecXs& upperBound)
     {
         size_t ind = 0;
@@ -193,8 +194,9 @@ protected:
     std::vector<std::shared_ptr<DiscreteConstraintBase<SCALAR>>>
         constraints_; /*!< contains all the constraints of the NLP */
 };
+
 }
 
-typedef tpl::DiscreteConstraintContainerBase<double> DiscreteConstraintContainerBase;
+using DiscreteConstraintContainerBase = tpl::DiscreteConstraintContainerBase<double>;
 }
 }

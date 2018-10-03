@@ -5,7 +5,10 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include "DerivativesCppadSettings.h"
+#include <ct/core/types/AutoDiff.h>
+#include <ct/core/internal/autodiff/CGHelpers.h>
+#include <ct/core/math/Derivatives.h>
+#include <ct/core/math/DerivativesCppadSettings.h>
 
 namespace ct {
 namespace core {
