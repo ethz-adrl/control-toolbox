@@ -6,6 +6,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include <Eigen/Core>
+
 namespace ct {
 namespace optcon {
 namespace tpl {
@@ -25,12 +27,12 @@ public:
     /**
     * @brief      Default constructor
     */
-    DiscreteCostEvaluatorBase(){};
+    DiscreteCostEvaluatorBase() = default;
 
     /**
    * @brief     Destructor.
    */
-    virtual ~DiscreteCostEvaluatorBase(){};
+    virtual ~DiscreteCostEvaluatorBase() = default;
 
 
     /**
@@ -50,7 +52,7 @@ public:
 };
 }
 
-typedef tpl::DiscreteCostEvaluatorBase<double> DiscreteCostEvaluatorBase;
+using DiscreteCostEvaluatorBase = tpl::DiscreteCostEvaluatorBase<double>;
 
 }  // namespace optcon
 }  // namespace ct

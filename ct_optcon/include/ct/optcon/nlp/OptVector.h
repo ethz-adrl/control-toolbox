@@ -22,20 +22,20 @@ class OptVector
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
-    typedef Eigen::Matrix<int, Eigen::Dynamic, 1> VectorXi;
-    typedef Eigen::Map<VectorXs> MapVecXs;
-    typedef Eigen::Map<VectorXi> MapVecXi;
-    typedef Eigen::Map<const VectorXs> MapConstVecXs;
+    using VectorXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>;
+    using VectorXi = Eigen::Matrix<int, Eigen::Dynamic, 1>;
+    using MapVecXs = Eigen::Map<VectorXs>;
+    using MapVecXi = Eigen::Map<VectorXi>;
+    using MapConstVecXs = Eigen::Map<const VectorXs>;
 
     OptVector() = delete;
 
     /**
-	 * @brief      { Constructor resizing the vectors of the optimization
-	 *             variables to the correct size }
-	 *
-	 * @param[in]  n     The number of the optimization variables
-	 */
+     * @brief      { Constructor resizing the vectors of the optimization
+     *             variables to the correct size }
+     *
+     * @param[in]  n     The number of the optimization variables
+     */
     OptVector(const size_t n) : updateCount_(0)
     {
         x_.resize(n);
@@ -56,11 +56,11 @@ public:
     }
 
     /**
-	 * @brief      Resizes the vectors of the constraint variables to the
-	 *             correct size
-	 *
-	 * @param[in]  m     The number of constraints
-	 */
+     * @brief      Resizes the vectors of the constraint variables to the
+     *             correct size
+     *
+     * @param[in]  m     The number of constraints
+     */
     void resizeConstraintVars(size_t m)
     {
         zMul_.resize(m + 1);
@@ -71,14 +71,14 @@ public:
 
     void reset() { updateCount_ = 0; }
     /**
-	 * @brief      Destructor
-	 */
-    virtual ~OptVector() {}
+     * @brief      Destructor
+     */
+    virtual ~OptVector() = default;
     /**
-	 * @brief      Resizes the vectors of the optimization variables
-	 *
-	 * @param[in]  size  The size of the new optimization variables
-	 */
+     * @brief      Resizes the vectors of the optimization variables
+     *
+     * @param[in]  size  The size of the new optimization variables
+     */
     void resizeOptimizationVars(const size_t size)
     {
         x_.resize(size);
@@ -92,26 +92,31 @@ public:
 
 
     /**
-	 * @brief      Resets the optimization variables
-	 */
+     * @brief      Resets the optimization variables
+     */
     void setZero()
     {
         x_.setZero();
         xInit_.setZero();
-        xLb_.setZero();
-        xUb_.setZero();
         lambda_.setZero();
         zUpper_.setZero();
         zLow_.setZero();
     }
 
+    void setRandomInitialGuess()
+    {
+        x_.setRandom();
+        xInit_.setRandom();
+    }
+
+
     /**
-	 * @brief      Checks if the optimization variables have to correct size
-	 *
-	 * @param[in]  n     The number of optimization variables
-	 *
-	 * @return     returns true of the dimensions match
-	 */
+     * @brief      Checks if the optimization variables have to correct size
+     *
+     * @param[in]  n     The number of optimization variables
+     *
+     * @return     returns true of the dimensions match
+     */
     bool checkOptimizationVarDimension(const unsigned int n)
     {
         bool xDim = x_.size() == n ? true : false;
@@ -121,11 +126,11 @@ public:
     }
 
     /**
-	 * @brief      Sets the optimization variable bounds.
-	 *
-	 * @param[in]  xLb   The lower optimization variable bound
-	 * @param[in]  xUb   The upper optimization variable bound
-	 */
+     * @brief      Sets the optimization variable bounds.
+     *
+     * @param[in]  xLb   The lower optimization variable bound
+     * @param[in]  xUb   The upper optimization variable bound
+     */
     void setBounds(const VectorXs& xLb, const VectorXs& xUb)
     {
         xLb_ = xLb;
@@ -134,25 +139,25 @@ public:
 
 
     /**
-	 * @brief      Gets the lower bounds of the optimization variables.
-	 *
-	 * @param[out] x     Lower bound
-	 */
+     * @brief      Gets the lower bounds of the optimization variables.
+     *
+     * @param[out] x     Lower bound
+     */
     void getLowerBounds(MapVecXs& x) const { x = xLb_; }
     /**
-	 * @brief      Gets the upper bounds of the optimization variables.
-	 *
-	 * @param[out]      x     The upper bound
-	 */
+     * @brief      Gets the upper bounds of the optimization variables.
+     *
+     * @param[out]      x     The upper bound
+     */
     void getUpperBounds(MapVecXs& x) const { x = xUb_; }
     /**
-	 * @brief      Return the state and the multiplier of the optimization
-	 *             variables, used in the NLP solver SNOPT.
-	 *
-	 * @param[in]  n       { The number of optimization variables }
-	 * @param[out] xMul    The optimization variables multiplier
-	 * @param[out] xState  The optimization variables state
-	 */
+     * @brief      Return the state and the multiplier of the optimization
+     *             variables, used in the NLP solver SNOPT.
+     *
+     * @param[in]  n       { The number of optimization variables }
+     * @param[out] xMul    The optimization variables multiplier
+     * @param[out] xState  The optimization variables state
+     */
     void getOptimizationMultState(const size_t n, MapVecXs& xMul, MapVecXi& xState) const
     {
         assert(n == xMul_.size());
@@ -162,13 +167,13 @@ public:
     }
 
     /**
-	 * @brief      Gets the constraint multiplier and state, used in the NLP
-	 *             solver SNOPT.
-	 *
-	 * @param[in]  m       { The number of constraints }
-	 * @param[out] zMul    The constraint variable multiplier
-	 * @param[out] zState  The constraint variable state
-	 */
+     * @brief      Gets the constraint multiplier and state, used in the NLP
+     *             solver SNOPT.
+     *
+     * @param[in]  m       { The number of constraints }
+     * @param[out] zMul    The constraint variable multiplier
+     * @param[out] zState  The constraint variable state
+     */
     void getConstraintsMultState(const size_t m, MapVecXs& zMul, MapVecXi& zState) const
     {
         assert(m == zMul_.size());
@@ -178,18 +183,18 @@ public:
     }
 
     /**
-	 * @brief      Returns the number of optimization variables
-	 *
-	 * @return     the number of optimization variables
-	 */
+     * @brief      Returns the number of optimization variables
+     *
+     * @return     the number of optimization variables
+     */
     size_t size() const { return x_.size(); }
     /**
-	 * @brief      Gets the bound multipliers used in the NLP solver IPOPT.
-	 *
-	 * @param[in]  n     { The number of optimization variables }
-	 * @param[out] low   The value for the lower bound multiplier
-	 * @param[out] up    The value for the upper bound multiplier
-	 */
+     * @brief      Gets the bound multipliers used in the NLP solver IPOPT.
+     *
+     * @param[in]  n     { The number of optimization variables }
+     * @param[out] low   The value for the lower bound multiplier
+     * @param[out] up    The value for the upper bound multiplier
+     */
     void getBoundMultipliers(size_t n, MapVecXs& low, MapVecXs& up) const
     {
         assert(n == zLow_.size());
@@ -198,11 +203,11 @@ public:
     }
 
     /**
-	 * @brief      Gets the values of the constraint multipliers.
-	 *
-	 * @param[in]  m     { The number of constraints }
-	 * @param[out] x     The values of the constraint multipliers
-	 */
+     * @brief      Gets the values of the constraint multipliers.
+     *
+     * @param[in]  m     { The number of constraints }
+     * @param[out] x     The values of the constraint multipliers
+     */
     void getLambdaVars(size_t m, MapVecXs& x) const
     {
         assert(m == lambda_.size());
@@ -210,18 +215,19 @@ public:
     }
 
     /**
-	 * @brief      Gets the optimization variables.
-	 *
-	 * @param[in]  n     { The number of optimization variables }
-	 * @param[out]      x     The optimization variables
-	 */
+     * @brief      Gets the optimization variables.
+     *
+     * @param[in]  n     { The number of optimization variables }
+     * @param[out]      x     The optimization variables
+     */
     void getOptimizationVars(size_t n, MapVecXs& x) const
     {
         assert(n == x_.size());
         x = x_;
     }
 
-    VectorXs getOptimizationVars() const { return x_; }
+    const VectorXs& getOptimizationVars() const { return x_; }
+
     void getInitialGuess(size_t n, MapVecXs& x) const
     {
         assert(n == xInit_.size());
@@ -229,14 +235,14 @@ public:
     }
 
     /**
-	 * @brief      Extracts the solution from ipopt and stores them into class
-	 *             variables
-	 *
-	 * @param[in]  x       The optimization variables
-	 * @param[in]  zL      The lower bound multiplier
-	 * @param[in]  zU      The upper bound multiplier
-	 * @param[in]  lambda  The constraint multiplier
-	 */
+     * @brief      Extracts the solution from ipopt and stores them into class
+     *             variables
+     *
+     * @param[in]  x       The optimization variables
+     * @param[in]  zL      The lower bound multiplier
+     * @param[in]  zU      The upper bound multiplier
+     * @param[in]  lambda  The constraint multiplier
+     */
     void setNewIpoptSolution(const MapConstVecXs& x,
         const MapConstVecXs& zL,
         const MapConstVecXs& zU,
@@ -249,15 +255,15 @@ public:
     }
 
     /**
-	 * @brief      Extracts the solution from snopt and stores it into class
-	 *             variables
-	 *
-	 * @param[in]  x       The optimization variables
-	 * @param[in]  xMul    The optimization variables multiplier
-	 * @param[in]  xState  The optimization variables state
-	 * @param[in]  fMul    The constraints multiplier
-	 * @param[in]  fState  The constraints state
-	 */
+     * @brief      Extracts the solution from snopt and stores it into class
+     *             variables
+     *
+     * @param[in]  x       The optimization variables
+     * @param[in]  xMul    The optimization variables multiplier
+     * @param[in]  xState  The optimization variables state
+     * @param[in]  fMul    The constraints multiplier
+     * @param[in]  fState  The constraints state
+     */
     void setNewSnoptSolution(const MapVecXs& x,
         const MapVecXs& xMul,
         const MapVecXi& xState,
@@ -272,11 +278,11 @@ public:
     }
 
     /**
-	 * @brief      Sets the updates optimization variables from the NLP solver
-	 *             and updates the counter
-	 *
-	 * @param[in]  x     The updates primal variables
-	 */
+     * @brief      Sets the updates optimization variables from the NLP solver
+     *             and updates the counter
+     *
+     * @param[in]  x     The updates primal variables
+     */
     void setOptimizationVars(const MapConstVecXs& x)
     {
         x_ = x;
@@ -291,10 +297,10 @@ public:
 
 
     /**
-	 * @brief      Returns the update counter
-	 *
-	 * @return     The update counter
-	 */
+     * @brief      Returns the update counter
+     *
+     * @return     The update counter
+     */
     size_t getUpdateCount() const { return updateCount_; }
 protected:
     VectorXs x_; /*!< The optimization variables */
@@ -316,6 +322,6 @@ protected:
 };
 }
 
-typedef tpl::OptVector<double> OptVector;
+using OptVector = tpl::OptVector<double>;
 }
 }

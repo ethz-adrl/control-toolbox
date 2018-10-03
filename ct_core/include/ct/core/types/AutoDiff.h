@@ -5,6 +5,9 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include <cppad/cg.hpp>
+#include <cppad/cppad.hpp>
+
 namespace ct {
 namespace core {
 

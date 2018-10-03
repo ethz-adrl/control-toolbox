@@ -32,6 +32,16 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ct {
 namespace optcon {
 
+
+/**
+ * @brief      The available types of NLP solvers
+ */
+enum class NlpSolverType : uint8_t {
+  IPOPT = 0,
+  SNOPT = 1,
+  num_types_solver
+};
+
 /**
  * @ingroup    NLP
  *
@@ -270,16 +280,14 @@ public:
 class NlpSolverSettings
 {
 public:
-    typedef enum SolverType { IPOPT = 0, SNOPT = 1, num_types_solver } SolverType_t;
-
     /**
 	 * @brief      Default constructor, set default settings
 	 */
-    NlpSolverSettings() : solverType_(IPOPT), useGeneratedCostGradient_(false), useGeneratedConstraintJacobian_(false)
+    NlpSolverSettings() : solverType_(NlpSolverType::IPOPT), useGeneratedCostGradient_(false), useGeneratedConstraintJacobian_(false)
     {
     }
 
-    SolverType_t solverType_;
+    NlpSolverType solverType_;
     bool useGeneratedCostGradient_;
     bool useGeneratedConstraintJacobian_;
     SnoptSettings snoptSettings_;
@@ -304,9 +312,9 @@ public:
         else
             std::cout << "Using anlyitical Constraints Jacobian" << std::endl;
 
-        if (solverType_ == IPOPT)
+        if (solverType_ == NlpSolverType::IPOPT)
             ipoptSettings_.print();
-        else if (solverType_ == SNOPT)
+        else if (solverType_ == NlpSolverType::SNOPT)
             snoptSettings_.print();
     }
 
@@ -317,9 +325,9 @@ public:
      */
     bool parametersOk() const
     {
-        if (solverType_ == IPOPT)
+        if (solverType_ == NlpSolverType::IPOPT)
             return ipoptSettings_.parametersOk();
-        else if (solverType_ == SNOPT)
+        else if (solverType_ == NlpSolverType::SNOPT)
             return snoptSettings_.parametersOk();
         else
             return false;
@@ -337,13 +345,13 @@ public:
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);
 
-        solverType_ = (SolverType)pt.get<unsigned int>(ns + ".SolverType");
+        solverType_ = static_cast<NlpSolverType>(pt.get<unsigned int>(ns + ".SolverType"));
         useGeneratedCostGradient_ = pt.get<bool>(ns + ".UseGeneratedCostGradient");
         useGeneratedConstraintJacobian_ = pt.get<bool>(ns + ".UseGeneratedConstraintJacobian");
 
-        if (solverType_ == IPOPT)
+        if (solverType_ == NlpSolverType::IPOPT)
             ipoptSettings_.load(filename, verbose, ns + ".ipopt");
-        else if (solverType_ == SNOPT)
+        else if (solverType_ == NlpSolverType::SNOPT)
             snoptSettings_.load(filename, verbose, ns + ".snopt");
 
         if (verbose)
@@ -354,7 +362,7 @@ public:
     }
 
 private:
-    std::map<SolverType, std::string> solverToString = {{IPOPT, "IPOPT"}, {SNOPT, "SNOPT"}};
+    std::map<NlpSolverType, std::string> solverToString = {{NlpSolverType::IPOPT, "IPOPT"}, {NlpSolverType::SNOPT, "SNOPT"}};
 };
 
 
