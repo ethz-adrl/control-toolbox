@@ -66,6 +66,7 @@ public:
 	 * @brief      The destructor.
 	 */
     ~CostEvaluatorFull() override = default;
+    
     SCALAR eval() override
     {
         SCALAR cost = SCALAR(0.0);
