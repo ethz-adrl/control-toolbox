@@ -34,8 +34,6 @@ class ConstraintTerm1D : public ct::optcon::ConstraintBase<state_dim, control_di
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    typedef typename ct::core::tpl::TraitSelector<double>::Trait Trait;
-    typedef typename ct::core::tpl::TraitSelector<ct::core::ADCGScalar>::Trait TraitCG;
     typedef ct::optcon::ConstraintBase<state_dim, control_dim> Base;
     typedef ct::core::StateVector<state_dim> state_vector_t;
     typedef ct::core::ControlVector<control_dim> control_vector_t;
@@ -156,13 +154,13 @@ int main(int argc, char** argv)
     ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
     ilqr_settings.max_iterations = 10;
     ilqr_settings.min_cost_improvement = 1e-6;
-    ilqr_settings.meritFunctionRhoConstraints = 10;
+    ilqr_settings.meritFunctionRhoConstraints = 0;
     ilqr_settings.nThreads = 1;
     ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
     ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
-    ilqr_settings.lqoc_solver_settings.num_lqoc_iterations = 10;                // number of riccati sub-iterations
-    ilqr_settings.lineSearchSettings.active = true;
-    ilqr_settings.lineSearchSettings.debugPrint = true;
+    ilqr_settings.lqoc_solver_settings.num_lqoc_iterations = 100;                // number of riccati sub-iterations
+    ilqr_settings.lineSearchSettings.active = false;
+    ilqr_settings.lineSearchSettings.debugPrint = false;
     ilqr_settings.printSummary = true;
 
 
@@ -188,6 +186,8 @@ int main(int argc, char** argv)
 
     // STEP 3: solve the optimal control problem
     iLQR.solve();
+    iLQR.runIteration();
+    iLQR.runIteration();
 
 
     // STEP 4: retrieve the solution

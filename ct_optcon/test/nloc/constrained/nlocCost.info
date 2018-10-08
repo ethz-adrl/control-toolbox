@@ -1,0 +1,54 @@
+intermediateCost
+{
+    name "intermediate cost quadratic"
+    kind "quadratic"   
+    type 0              ; 0 = intermediate, 1 = final
+
+    weights
+    {
+      Q
+      {
+        scaling 1.0
+        (0,0) 0
+        (1,1) 0.1
+      }
+      R
+      {
+        scaling 1
+        (0,0) 1
+      }
+      x_des
+      {
+        (0,0) 0
+        (1,0) 0
+      }
+    }
+}
+
+
+finalCost
+{
+    name "final cost quadratic"
+    kind "quadratic"   
+    type 1              ; 0 = intermediate, 1 = final
+
+    weights
+    {
+      Q
+      {
+        scaling 100.0
+        (0,0) 1.0
+        (1,1) 1.0
+      }
+      R
+      {
+        scaling 0
+        (0,0) 0
+      }
+      x_des
+      {
+        (0,0) 1.5
+        (1,0) 0
+      }
+    }
+}

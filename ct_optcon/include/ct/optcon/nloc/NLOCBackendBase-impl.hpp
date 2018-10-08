@@ -744,10 +744,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> g_eval = generalConstraints_[threadId]->evaluateIntermediate();
 
             // rewrite constraint boundaries in absolute coordinates as required by LQOC problem
-            p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
-                         p.D_[k] * u_ff_[k];
-            p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
-                         p.D_[k] * u_ff_[k];
+            p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate();
+            p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate();
         }
     }
 }
@@ -781,10 +779,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> g_eval =
                 generalConstraints_[settings_.nThreads]->evaluateTerminal();
 
-            p.d_lb_[K_] =
-                generalConstraints_[settings_.nThreads]->getLowerBoundsTerminal() - g_eval + p.C_[K_] * x_[K_];
-            p.d_ub_[K_] =
-                generalConstraints_[settings_.nThreads]->getUpperBoundsTerminal() - g_eval + p.C_[K_] * x_[K_];
+            p.d_lb_[K_] = generalConstraints_[settings_.nThreads]->getLowerBoundsTerminal();
+            p.d_ub_[K_] = generalConstraints_[settings_.nThreads]->getUpperBoundsTerminal();
         }
     }
 }

@@ -168,6 +168,9 @@ if(HPIPM)
     catkin_add_gtest(ConstrainedLQOCSolverTest test/solver/linear/ConstrainedLQOCSolverTest.cpp)
     target_link_libraries(ConstrainedLQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
+    add_executable(ConstraintsComparisonNLOC test/nloc/constrained/BoxConstraintTest.cpp)
+    target_link_libraries(ConstraintsComparisonNLOC ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+
     add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
     target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
     
