@@ -120,36 +120,36 @@ if(HPIPM)
 endif(HPIPM)
 
 
-#if(BUILD_EXAMPLES)
-#    message(STATUS "Building with examples.")
-#
-#    set(CT_OPTCON_EXAMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/examples")
-#    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
-#
-#    add_executable(ex_ConstraintOutput examples/ConstraintExampleOutput.cpp)
-#    target_link_libraries(ex_ConstraintOutput ${catkin_LIBRARIES})
-#
-#    add_executable(ex_LQR examples/LQR.cpp)
-#    target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS})
-#
-#    add_executable(ex_NLOC examples/NLOC.cpp)
-#    target_link_libraries(ex_NLOC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-#
-#    add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
-#    target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-#
-#    add_executable(ex_DMS examples/DMS.cpp)
-#    target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
-#
-#    add_executable(ex_KalmanFiltering examples/KalmanFiltering.cpp)
-#    target_link_libraries(ex_KalmanFiltering ${catkin_LIBRARIES})
-#
-#    add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
-#    target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
-#
-#    add_executable(ex_Nlp examples/SimpleNlp.cpp)
-#    target_link_libraries(ex_Nlp ${catkin_LIBRARIES} ${NLP_LIBS})
-#endif()
+if(BUILD_EXAMPLES)
+    message(STATUS "Building with examples.")
+
+    set(CT_OPTCON_EXAMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/examples")
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
+
+    add_executable(ex_ConstraintOutput examples/ConstraintExampleOutput.cpp)
+    target_link_libraries(ex_ConstraintOutput ${catkin_LIBRARIES})
+
+    add_executable(ex_LQR examples/LQR.cpp)
+    target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS})
+
+    add_executable(ex_NLOC examples/NLOC.cpp)
+    target_link_libraries(ex_NLOC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+
+    add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
+    target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+
+    add_executable(ex_DMS examples/DMS.cpp)
+    target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
+
+    add_executable(ex_KalmanFiltering examples/KalmanFiltering.cpp)
+    target_link_libraries(ex_KalmanFiltering ${catkin_LIBRARIES})
+
+    add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
+    target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
+
+    add_executable(ex_Nlp examples/SimpleNlp.cpp)
+    target_link_libraries(ex_Nlp ${catkin_LIBRARIES} ${NLP_LIBS})
+endif()
 
 get_filename_component(DMS_OSC_TEST_MAT_DIR "test/dms/oscillator/matfiles" ABSOLUTE)
 configure_file(test/dms/oscillator/oscDMSTest_settings.h.in test/dms/oscillator/oscDMSTest_settings.h)
@@ -168,11 +168,11 @@ if(HPIPM)
     catkin_add_gtest(ConstrainedLQOCSolverTest test/solver/linear/ConstrainedLQOCSolverTest.cpp)
     target_link_libraries(ConstrainedLQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
-    add_executable(ConstraintsComparisonNLOC test/nloc/constrained/BoxConstraintTest.cpp)
-    target_link_libraries(ConstraintsComparisonNLOC ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+    catkin_add_gtest(ConstrainedNLOCTest test/nloc/constrained/ConstrainedNLOCTest.cpp)
+    target_link_libraries(ConstrainedNLOCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
-    #add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
-    #target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+    add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
+    target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
     
     catkin_add_gtest(LinearSystemSolverComparison test/nloc/LinearSystemSolverComparison.cpp)
     target_link_libraries(LinearSystemSolverComparison ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
@@ -184,8 +184,8 @@ if(HPIPM)
         add_executable(ex_NLOC_generalConstrained examples/NLOC_generalConstrained.cpp)
         target_link_libraries(ex_NLOC_generalConstrained ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
-        #add_executable(switched_continuous_optcon_example examples/switched_systems_optcon/switched_continuous_optcon.cpp)
-        #target_link_libraries(switched_continuous_optcon_example ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+        add_executable(switched_continuous_optcon_example examples/switched_systems_optcon/switched_continuous_optcon.cpp)
+        target_link_libraries(switched_continuous_optcon_example ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
     endif(BUILD_EXAMPLES)
 endif(HPIPM)
 

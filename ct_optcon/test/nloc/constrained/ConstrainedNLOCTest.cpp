@@ -1,11 +1,12 @@
 
 #include <ct/optcon/optcon.h>
 #include "nloc_test_dir.h"
+#include <gtest/gtest.h>
 
 using namespace ct::core;
 using namespace ct::optcon;
 
-const bool verbose = true;
+const bool verbose = false;
 
 const size_t state_dim = ct::core::SecondOrderSystem::STATE_DIM;
 const size_t control_dim = ct::core::SecondOrderSystem::CONTROL_DIM;
@@ -25,7 +26,7 @@ std::shared_ptr<ct::core::SystemLinearizer<state_dim, control_dim>> linearizer(
 
 std::string nloc_test_dir = std::string(NLOC_TEST_DIR);
 
-/*
+
 void compareSolutions(const ct::core::StateFeedbackController<state_dim, control_dim>& sol1,
     const ct::core::StateFeedbackController<state_dim, control_dim>& sol2)
 {
@@ -44,12 +45,12 @@ void compareSolutions(const ct::core::StateFeedbackController<state_dim, control
 
     for (size_t j = 0; j < sol1_x.size(); j++)
     {
-        for (size_t n = 0; n < state_dim_dim; n++)
+        for (size_t n = 0; n < state_dim; n++)
         {
             ASSERT_NEAR(sol1_x[j](n), sol2_x[j](n), 1e-3);
         }
     }
-}*/
+}
 
 
 class ControlInputGenConstraint : public ct::optcon::ConstraintBase<state_dim, control_dim>
@@ -114,8 +115,8 @@ public:
     virtual Eigen::VectorXd evaluate(const state_vector_t& x, const control_vector_t& u, const double t) override
     {
         Eigen::Matrix<double, 1, 1> val;
-        val(0,0)= x(1);
-		return val;
+        val(0, 0) = x(1);
+        return val;
     }
 
     virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
@@ -124,7 +125,7 @@ public:
         ct::core::ADCGScalar t) override
     {
         Eigen::Matrix<ct::core::ADCGScalar, 1, 1> val;
-        val(0,0)= x(1);
+        val(0, 0) = x(1);
         return val;
     }
 };
@@ -133,26 +134,26 @@ public:
 // convenience function for generating an NLOC solver
 NLOptConSolver<state_dim, control_dim> generateSolver(ContinuousOptConProblem<state_dim, control_dim> ocp)
 {
-    NLOptConSettings ilqr_settings;
-    ilqr_settings.dt = 0.01;  // the control discretization in [sec]
-    ilqr_settings.integrator = ct::core::IntegrationType::EULERCT;
-    ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
-    ilqr_settings.max_iterations = 10;
-    ilqr_settings.nThreads = 1;
-    ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
-    ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
-    ilqr_settings.lqoc_solver_settings.num_lqoc_iterations = 100;                // number of riccati sub-iterations
-    ilqr_settings.printSummary = true;
-    ilqr_settings.lineSearchSettings.active = false;
+    NLOptConSettings nloc_settings;
+    nloc_settings.dt = 0.01;  // the control discretization in [sec]
+    nloc_settings.integrator = ct::core::IntegrationType::EULERCT;
+    nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
+    nloc_settings.max_iterations = 10;
+    nloc_settings.nThreads = 1;
+    nloc_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
+    nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
+    nloc_settings.lqoc_solver_settings.num_lqoc_iterations = 100;               // number of riccati sub-iterations
+    nloc_settings.printSummary = false;
+    nloc_settings.lineSearchSettings.active = false;
 
     // init controller
-    size_t K = ilqr_settings.computeK(timeHorizon);
+    size_t K = nloc_settings.computeK(timeHorizon);
     FeedbackArray<state_dim, control_dim> u0_fb(K, FeedbackMatrix<state_dim, control_dim>::Zero());
     ControlVectorArray<control_dim> u0_ff(K, ControlVector<control_dim>::Zero());
     StateVectorArray<state_dim> x_ref_init(K + 1, x0);
-    NLOptConSolver<state_dim, control_dim>::Policy_t initController(x_ref_init, u0_ff, u0_fb, ilqr_settings.dt);
+    NLOptConSolver<state_dim, control_dim>::Policy_t initController(x_ref_init, u0_ff, u0_fb, nloc_settings.dt);
 
-    NLOptConSolver<state_dim, control_dim> nloc(ocp, ilqr_settings);
+    NLOptConSolver<state_dim, control_dim> nloc(ocp, nloc_settings);
 
     nloc.setInitialGuess(initController);
 
@@ -181,7 +182,10 @@ ContinuousOptConProblem<state_dim, control_dim> generateUnconstrainedOCP()
 }
 
 
-void compareControlConstraints()
+/*
+ * This test compares pure control box constraints against the equivalent implementation as general constraints
+ */
+TEST(Constrained_NLOC_Test, comparePureControlConstraints)
 {
     // OPTION 1 - create constraint container for box constraints
     std::shared_ptr<ConstraintContainerAnalytical<state_dim, control_dim>> boxConstraints(
@@ -220,20 +224,23 @@ void compareControlConstraints()
     optConProblem_gen.setGeneralConstraints(generalConstraints);
 
     // create solvers and solve
-    auto iLQR_box = generateSolver(optConProblem_box);
-    auto iLQR_gen = generateSolver(optConProblem_gen);
+    auto nloc_box = generateSolver(optConProblem_box);
+    auto nloc_gen = generateSolver(optConProblem_gen);
 
-    iLQR_box.solve();
-    iLQR_gen.solve();
+    nloc_box.solve();
+    nloc_gen.solve();
 
-    ct::core::StateFeedbackController<state_dim, control_dim> solution_box = iLQR_box.getSolution();
-    ct::core::StateFeedbackController<state_dim, control_dim> solution_gen = iLQR_gen.getSolution();
+    ct::core::StateFeedbackController<state_dim, control_dim> solution_box = nloc_box.getSolution();
+    ct::core::StateFeedbackController<state_dim, control_dim> solution_gen = nloc_gen.getSolution();
 
-    //    compareSolutions(solution_box, solution_gen);
+    compareSolutions(solution_box, solution_gen);
 }
 
 
-void compareStateConstraints()
+/*
+ * This test compares pure state box constraints against the equivalent implementation as general constraints
+ */
+TEST(Constrained_NLOC_Test, comparePureStateConstraints)
 {
     // OPTION 1 - create constraint container for box constraints
     std::shared_ptr<ConstraintContainerAnalytical<state_dim, control_dim>> boxConstraints(
@@ -276,24 +283,98 @@ void compareStateConstraints()
     optConProblem_gen.setGeneralConstraints(generalConstraints);
 
     // create solvers and solve
-    auto iLQR_box = generateSolver(optConProblem_box);
-    auto iLQR_gen = generateSolver(optConProblem_gen);
+    auto nloc_box = generateSolver(optConProblem_box);
+    auto nloc_gen = generateSolver(optConProblem_gen);
 
-    iLQR_box.solve();
-    iLQR_gen.solve();
+    nloc_box.solve();
+    nloc_gen.solve();
 
-    ct::core::StateFeedbackController<state_dim, control_dim> solution_box = iLQR_box.getSolution();
-    ct::core::StateFeedbackController<state_dim, control_dim> solution_gen = iLQR_gen.getSolution();
+    ct::core::StateFeedbackController<state_dim, control_dim> solution_box = nloc_box.getSolution();
+    ct::core::StateFeedbackController<state_dim, control_dim> solution_gen = nloc_gen.getSolution();
 
-//    solution_box.getReferenceStateTrajectory().print();
-    solution_gen.getReferenceStateTrajectory().print();
-
-
-    //    compareSolutions(solution_box, solution_gen);
+    compareSolutions(solution_box, solution_gen);
 }
+
+
+/*
+ * This test makes sure NLOC throws an exception in case the ordering of the box constraints is wrong.
+ */
+TEST(Constrained_NLOC_Test, checkBoxConstraintOrdering)
+{
+    // create constraint container for box constraints
+    std::shared_ptr<ConstraintContainerAnalytical<state_dim, control_dim>> boxConstraints_order1(
+        new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
+    std::shared_ptr<ConstraintContainerAnalytical<state_dim, control_dim>> boxConstraints_order2(
+        new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
+
+    // create a box constraint on the state vector
+    Eigen::VectorXi sp_state(state_dim);
+    sp_state << 0, 1;
+    Eigen::VectorXd x_lb(1);
+    Eigen::VectorXd x_ub(1);
+    x_lb.setConstant(-0.2);
+    x_ub = -x_lb;
+    std::shared_ptr<StateConstraint<state_dim, control_dim>> stateConstraint(
+        new StateConstraint<state_dim, control_dim>(x_lb, x_ub, sp_state));
+    stateConstraint->setName("StateConstraint");
+
+
+    // create a box constraint on the control input
+    Eigen::VectorXi sp_control(control_dim);
+    sp_control << 1;
+    Eigen::VectorXd u_lb(control_dim);
+    Eigen::VectorXd u_ub(control_dim);
+    u_lb.setConstant(-0.5);
+    u_ub = -u_lb;
+    std::shared_ptr<ControlInputConstraint<state_dim, control_dim>> controlConstraint(
+        new ControlInputConstraint<state_dim, control_dim>(u_lb, u_ub, sp_control));
+    controlConstraint->setName("ControlInputConstraint");
+
+    // put in state constraints before box constraints
+    boxConstraints_order1->addIntermediateConstraint(stateConstraint, verbose);
+    boxConstraints_order1->addIntermediateConstraint(controlConstraint, verbose);
+    boxConstraints_order1->initialize();
+
+    // put in control constraints before state constraints
+    boxConstraints_order2->addIntermediateConstraint(controlConstraint, verbose);
+    boxConstraints_order2->addIntermediateConstraint(stateConstraint, verbose);
+    boxConstraints_order2->initialize();
+
+    auto optConProblem_order1 = generateUnconstrainedOCP();
+    auto optConProblem_order2 = generateUnconstrainedOCP();
+
+    optConProblem_order1.setBoxConstraints(boxConstraints_order1);
+    optConProblem_order2.setBoxConstraints(boxConstraints_order2);
+
+
+    // create solvers and solve
+    auto nloc_order1 = generateSolver(optConProblem_order1);
+    auto nloc_order2 = generateSolver(optConProblem_order2);
+
+    try
+    {
+        nloc_order1.solve(); // ... this should throw an exception, because of wrong box constraint ordering.
+        FAIL(); // fail if we get here
+    } catch (std::exception& e)
+    {
+        if (verbose)
+            std::cout << "Correctly caught bug in box constraint odering." << std::endl;
+        ASSERT_TRUE(true);
+    }
+
+    try
+    {
+        nloc_order2.solve();
+        // this should pass, has correct box constraint ordering.
+    } catch (const std::exception& e)
+    {
+        ASSERT_TRUE(false);
+    }
+}
+
 
 int main(int argc, char** argv)
 {
-    compareControlConstraints();
-    compareStateConstraints();
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

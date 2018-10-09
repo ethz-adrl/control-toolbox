@@ -686,7 +686,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     if (boxConstraints_[settings_.nThreads] != nullptr)
     {
         // temp vars
-        Eigen::VectorXi foo, u_sparsity_intermediate, x_sparsity_intermediate, x_sparsity_terminal;
+        Eigen::VectorXi u_sparsity_row, x_sparsity_row, u_sparsity_col_intermediate, x_sparsity_col_intermediate,
+            x_sparsity_col_terminal;
 
         // intermediate box constraints
         const int nb_ux_intermediate = boxConstraints_[settings_.nThreads]->getJacobianStateNonZeroCountIntermediate() +
@@ -694,12 +695,26 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
         if (nb_ux_intermediate > 0)
         {
-            boxConstraints_[settings_.nThreads]->sparsityPatternInputIntermediate(foo, u_sparsity_intermediate);
-            boxConstraints_[settings_.nThreads]->sparsityPatternStateIntermediate(foo, x_sparsity_intermediate);
+            boxConstraints_[settings_.nThreads]->sparsityPatternInputIntermediate(
+                u_sparsity_row, u_sparsity_col_intermediate);
+            boxConstraints_[settings_.nThreads]->sparsityPatternStateIntermediate(
+                x_sparsity_row, x_sparsity_col_intermediate);
+
+            // WARNING (TODO): currently, we require input box constraints to be added before state box constraints.
+            // We can check for correct ordering: if two types of box constraints are present ...
+            if (u_sparsity_row.size() > 0 && x_sparsity_row.size() > 0)
+            {
+                // ... we can check for correct ordering by comparing row indices. In case of wrong ordering, throw exception (TODO improve).
+                if (u_sparsity_row.array().minCoeff() > x_sparsity_row.array().maxCoeff())
+                    throw std::runtime_error(
+                        "ERROR: Box constraint ordering problem detected. Need to add input box constraints before "
+                        "state box constraints.");
+            }
 
             Eigen::VectorXi ux_sparsity_intermediate(nb_ux_intermediate);
-            x_sparsity_intermediate.array() += CONTROL_DIM;  // shift indices to match combined decision vector [u, x]
-            ux_sparsity_intermediate << u_sparsity_intermediate, x_sparsity_intermediate;
+            // shift indices to match combined decision vector [u, x]
+            x_sparsity_col_intermediate.array() += CONTROL_DIM;
+            ux_sparsity_intermediate << u_sparsity_col_intermediate, x_sparsity_col_intermediate;
 
             lqocProblem_->setIntermediateBoxConstraints(nb_ux_intermediate,
                 boxConstraints_[settings_.nThreads]->getLowerBoundsIntermediate(),
@@ -711,11 +726,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
         if (nb_x_terminal > 0)
         {
-            boxConstraints_[settings_.nThreads]->sparsityPatternStateTerminal(foo, x_sparsity_terminal);
+            boxConstraints_[settings_.nThreads]->sparsityPatternStateTerminal(x_sparsity_row, x_sparsity_col_terminal);
 
             lqocProblem_->setTerminalBoxConstraints(nb_x_terminal,
                 boxConstraints_[settings_.nThreads]->getLowerBoundsTerminal(),
-                boxConstraints_[settings_.nThreads]->getUpperBoundsTerminal(), x_sparsity_terminal);
+                boxConstraints_[settings_.nThreads]->getUpperBoundsTerminal(), x_sparsity_col_terminal);
         }
     }
 }
@@ -744,8 +759,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> g_eval = generalConstraints_[threadId]->evaluateIntermediate();
 
             // rewrite constraint boundaries in absolute coordinates as required by LQOC problem
-            p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval + p.C_[k] * x_[k] + p.D_[k] * u_ff_[k];
-            p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval + p.C_[k] * x_[k] + p.D_[k] * u_ff_[k];;
+            p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
+                         p.D_[k] * u_ff_[k];
+            p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
+                         p.D_[k] * u_ff_[k];
+            ;
         }
     }
 }
@@ -779,8 +797,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> g_eval =
                 generalConstraints_[settings_.nThreads]->evaluateTerminal();
 
-            p.d_lb_[K_] = generalConstraints_[settings_.nThreads]->getLowerBoundsTerminal() - g_eval + p.C_[K_] * x_[K_];
-            p.d_ub_[K_] = generalConstraints_[settings_.nThreads]->getUpperBoundsTerminal() - g_eval + p.C_[K_] * x_[K_];
+            p.d_lb_[K_] =
+                generalConstraints_[settings_.nThreads]->getLowerBoundsTerminal() - g_eval + p.C_[K_] * x_[K_];
+            p.d_ub_[K_] =
+                generalConstraints_[settings_.nThreads]->getUpperBoundsTerminal() - g_eval + p.C_[K_] * x_[K_];
         }
     }
 }
