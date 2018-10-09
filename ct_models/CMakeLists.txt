@@ -180,6 +180,10 @@ target_link_libraries(HyaTest
                       HyALinearizedForward)
 
 ################ Inverse Kinematics #################
+
+add_executable(InverseKinematicsTest test/HyA/InverseKinematicsTest.cpp)
+target_link_libraries(InverseKinematicsTest ${catkin_LIBRARIES})
+
 add_library(hya_ik
   src/HyA/transform6d.cpp
 )
