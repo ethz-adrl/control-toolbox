@@ -351,25 +351,8 @@ TEST(Constrained_NLOC_Test, checkBoxConstraintOrdering)
     auto nloc_order1 = generateSolver(optConProblem_order1);
     auto nloc_order2 = generateSolver(optConProblem_order2);
 
-    try
-    {
-        nloc_order1.solve(); // ... this should throw an exception, because of wrong box constraint ordering.
-        FAIL(); // fail if we get here
-    } catch (std::exception& e)
-    {
-        if (verbose)
-            std::cout << "Correctly caught bug in box constraint odering." << std::endl;
-        ASSERT_TRUE(true);
-    }
-
-    try
-    {
-        nloc_order2.solve();
-        // this should pass, has correct box constraint ordering.
-    } catch (const std::exception& e)
-    {
-        ASSERT_TRUE(false);
-    }
+    ASSERT_ANY_THROW(nloc_order1.solve()); // ... this should throw an exception, because of wrong box constraint ordering.
+    ASSERT_NO_THROW(nloc_order2.solve()); // this should pass, has correct box constraint ordering.
 }
 
 
