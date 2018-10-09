@@ -220,8 +220,8 @@ private:
     //! general constraint jacobians w.r.t. controls (presumably)
     std::vector<double*> hD_;
 //    //! local vars for constraint bounds for statge k=0, which need to be different by HPIPM convention
-//    Eigen::VectorXd hd_lg_0_Eigen_;
-//    Eigen::VectorXd hd_ug_0_Eigen_;
+    Eigen::VectorXd hd_lg_0_Eigen_;
+    Eigen::VectorXd hd_ug_0_Eigen_;
 
 
     /*

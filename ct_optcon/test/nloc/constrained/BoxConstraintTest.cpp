@@ -10,7 +10,7 @@ const bool verbose = true;
 const size_t state_dim = ct::core::SecondOrderSystem::STATE_DIM;
 const size_t control_dim = ct::core::SecondOrderSystem::CONTROL_DIM;
 
-StateVector<state_dim> x0 = StateVector<state_dim>::Random();
+StateVector<state_dim> x0 = StateVector<state_dim>::Zero();
 ct::core::Time timeHorizon = 3.0;
 
 // system dynamics
@@ -266,6 +266,7 @@ void compareStateConstraints()
         new ct::optcon::ConstraintContainerAD<state_dim, control_dim>());
 
     generalConstraints->addIntermediateConstraint(pathConstraintTerm, verbose);
+    generalConstraints->addTerminalConstraint(pathConstraintTerm, verbose);
     generalConstraints->initialize();
 
     std::cout << generalConstraints->jacobianInputIntermediate() << std::endl;
@@ -284,7 +285,7 @@ void compareStateConstraints()
     ct::core::StateFeedbackController<state_dim, control_dim> solution_box = iLQR_box.getSolution();
     ct::core::StateFeedbackController<state_dim, control_dim> solution_gen = iLQR_gen.getSolution();
 
-    solution_box.getReferenceStateTrajectory().print();
+//    solution_box.getReferenceStateTrajectory().print();
     solution_gen.getReferenceStateTrajectory().print();
 
 

@@ -366,10 +366,10 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
 {
     // HPIPM-specific correction for first-stage general constraint bounds
-//    hd_lg_0_Eigen_ = lqocProblem->d_lb_[0];
-//    hd_ug_0_Eigen_ = lqocProblem->d_ub_[0];
+    hd_lg_0_Eigen_ = lqocProblem->d_lb_[0] - lqocProblem->C_[0] * lqocProblem->x_[0];
+    hd_ug_0_Eigen_ = lqocProblem->d_ub_[0] - lqocProblem->C_[0] * lqocProblem->x_[0];
 
-    for (size_t i = 0; i < N_ + 1; i++)
+    for (size_t i = 0; i < N_ + 1; i++) // (also for terminal stage)
     {
         // check dimensions
         assert(lqocProblem->d_lb_[i].rows() == lqocProblem->d_ub_[i].rows());
@@ -382,16 +382,16 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
         ng_[i] = lqocProblem->ng_[i];
 
         // set pointers to hpipm-style box constraint boundaries and sparsity pattern
-//        if (i == 0)
-//        {
-//            hd_lg_[i] = hd_lg_0_Eigen_.data();
-//            hd_ug_[i] = hd_ug_0_Eigen_.data();
-//        }
-//        else
-//        {
+        if (i == 0)
+        {
+            hd_lg_[i] = hd_lg_0_Eigen_.data();
+            hd_ug_[i] = hd_ug_0_Eigen_.data();
+        }
+        else
+        {
             hd_lg_[i] = lqocProblem->d_lb_[i].data();
             hd_ug_[i] = lqocProblem->d_ub_[i].data();
-//        }
+        }
         hC_[i] = lqocProblem->C_[i].data();
         hD_[i] = lqocProblem->D_[i].data();
 
