@@ -55,6 +55,19 @@ if(USE_PRESPEC)
 endif(USE_PRESPEC)
 
 
+#todo export this properly from ct_core
+find_package(PythonLibs QUIET)
+if (PYTHONLIBS_FOUND)
+   message(STATUS "Python found")
+   include_directories(${PYTHON_INCLUDE_DIRS})
+   set(PLOTTING_ENABLED true)
+   add_definitions(-DPLOTTING_ENABLED)
+else()
+   message(STATUS "Python not found")
+   set(PYTHON_LIBRARY "")
+endif()
+
+
 ## TESTING
 
 catkin_add_gtest(RigidBodyPoseTest test/state/RigidBodyPoseTest.cpp)
@@ -116,6 +129,9 @@ target_link_libraries(kindrJITtest ${catkin_LIBRARIES})
 
 catkin_add_gtest(jacobianTests test/robot/jacobian/JacobianTests.cpp)
 target_link_libraries(jacobianTests ${catkin_LIBRARIES})
+
+add_executable(simpleArmTrajectoryTest src/SimpleArmTrajectoryGeneratorTest.cpp)
+target_link_libraries(simpleArmTrajectoryTest ${catkin_LIBRARIES})
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
