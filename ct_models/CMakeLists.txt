@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8.3)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../ct_optcon/cmake/externalSolvers.cmake)
 
 project(ct_models)
 
@@ -182,7 +183,7 @@ target_link_libraries(HyaTest
 ################ Inverse Kinematics #################
 
 add_executable(InverseKinematicsTest test/HyA/InverseKinematicsTest.cpp)
-target_link_libraries(InverseKinematicsTest ${catkin_LIBRARIES})
+target_link_libraries(InverseKinematicsTest ${catkin_LIBRARIES}${SNOPT_LIBS} ${IPOPT_LIBS} dl)
 
 add_library(hya_ik
   src/HyA/transform6d.cpp

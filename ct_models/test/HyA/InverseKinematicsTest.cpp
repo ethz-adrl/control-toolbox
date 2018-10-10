@@ -15,12 +15,32 @@ using HyAKinematicsAD_t = ct::rbd::HyA::tpl::Kinematics<ct::core::ADCGScalar>;
 using HyAKinematics_t = ct::rbd::HyA::tpl::Kinematics<double>;
 
 
-
 int main(int argc, char* argv[])
 {
-	size_t eeInd = 1;
+    size_t eeInd = 0;
 
-	std::shared_ptr<ct::rbd::IKCostEvaluator<HyAKinematicsAD_t>> ikCostEvaluator (new ct::rbd::IKCostEvaluator<HyAKinematicsAD_t> (eeInd));
+    ct::rbd::JointState<njoints>::Position jointLowerLimit = ct::models::HyA::jointLowerLimit();
+    ct::rbd::JointState<njoints>::Position jointUpperLimit = ct::models::HyA::jointUpperLimit();
 
-	return 1;
+    std::shared_ptr<ct::rbd::IKCostEvaluator<HyAKinematicsAD_t>> ikCostEvaluator(
+        new ct::rbd::IKCostEvaluator<HyAKinematicsAD_t>(eeInd));
+
+    std::shared_ptr<ct::rbd::IKNLP<HyAKinematicsAD_t>> ik_problem(
+        new ct::rbd::IKNLP<HyAKinematicsAD_t>(ikCostEvaluator, jointLowerLimit, jointUpperLimit));
+
+
+    ct::optcon::NlpSolverSettings nlpSolverSettings;
+    nlpSolverSettings.solverType_ = ct::optcon::NlpSolverType::IPOPT;
+    nlpSolverSettings.ipoptSettings_.derivativeTest_ = "first-order";
+    nlpSolverSettings.ipoptSettings_.hessian_approximation_ = "limited-memory";
+
+    std::shared_ptr<ct::optcon::IpoptSolver> nlpSolver(new ct::optcon::IpoptSolver(ik_problem, nlpSolverSettings));
+
+    if (!nlpSolver->isInitialized())
+        nlpSolver->configure(nlpSolverSettings);
+
+    nlpSolver->solve();
+
+
+    return 1;
 }

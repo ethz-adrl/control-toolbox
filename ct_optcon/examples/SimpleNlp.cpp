@@ -11,7 +11,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
  * min(x1 + x2)
  * s.t: x1 >= 0
  *      x2 >= 0
- *      1 >= x1^2 + x2^2 <= 2
+ *      1 <= x1^2 + x2^2 <= 2
  *
  */
 

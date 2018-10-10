@@ -1,0 +1,69 @@
+/**********************************************************************************************************************
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+Licensed under Apache2 license (see LICENSE file in main directory)
+**********************************************************************************************************************/
+
+#pragma once
+
+namespace ct {
+namespace rbd {
+
+/*!
+ * @brief Inverse Kinematics joint limit constraints
+ */
+template <typename KINEMATICS, typename SCALAR = double>
+class JointLimitConstraints : public ct::optcon::tpl::DiscreteConstraintBase<SCALAR>
+{
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    using VectorXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>;
+    using JointPosition = typename ct::rbd::JointState<KINEMATICS::NJOINTS, SCALAR>::Position;
+
+    JointLimitConstraints(std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> optVector,
+        const JointPosition& lowerBound,
+        const JointPosition& upperBound)
+        : optVector_(optVector)
+    {
+        lowerBounds_ = lowerBound;
+        upperBounds_ = upperBound;
+    }
+
+    ~JointLimitConstraints() override = default;
+
+    VectorXs eval() override
+    {
+        contraints_.setZero();
+        contraints_ = optVector_->getOptimizationVars();
+        return contraints_;
+    }
+
+    VectorXs evalSparseJacobian() override
+    {
+        jacobian_.setConstant(static_cast<SCALAR>(1.0));
+        return jacobian_;
+    }
+
+    size_t getConstraintSize() override { return KINEMATICS::NJOINTS; }
+    size_t getNumNonZerosJacobian() override { return KINEMATICS::NJOINTS; }
+    void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
+    {
+    	for(size_t i = 0; i<KINEMATICS::NJOINTS; i++)
+    	{
+    		iRow_vec(i) = i;
+            jCol_vec(i) = i;
+    	}
+    }
+
+    VectorXs getLowerBound() override { return lowerBounds_; }
+    VectorXs getUpperBound() override { return upperBounds_; }
+private:
+    std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> optVector_;
+    Eigen::Matrix<SCALAR, KINEMATICS::NJOINTS, 1> contraints_;
+    Eigen::Matrix<SCALAR, KINEMATICS::NJOINTS, 1> jacobian_;	 // sparse jacobian
+    Eigen::Matrix<SCALAR, KINEMATICS::NJOINTS, 1> lowerBounds_;  // lower bound
+    Eigen::Matrix<SCALAR, KINEMATICS::NJOINTS, 1> upperBounds_;  // upper bound
+};
+
+}  // namespace rbd
+}  // namespace ct
