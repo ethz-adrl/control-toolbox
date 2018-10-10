@@ -8,8 +8,9 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <Eigen/Sparse>
 #include <ct/core/math/DerivativesCppadJIT.h>
-#include "OptVector.h"
-#include "DiscreteConstraintContainerBase.h"
+#include <ct/optcon/nlp/OptVector.h>
+#include <ct/optcon/nlp/DiscreteConstraintContainerBase.h>
+#include <ct/optcon/nlp/DiscreteCostEvaluatorBase.h>
 
 namespace ct {
 namespace optcon {
@@ -32,32 +33,32 @@ class Nlp
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
-    typedef Eigen::Matrix<int, Eigen::Dynamic, 1> VectorXi;
-    typedef Eigen::Map<VectorXs> MapVecXs;
-    typedef Eigen::Map<VectorXi> MapVecXi;
-    typedef Eigen::Map<const VectorXs> MapConstVecXs;
+    using VectorXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>;
+    using VectorXi = Eigen::Matrix<int, Eigen::Dynamic, 1>;
+    using MapVecXs = Eigen::Map<VectorXs>;
+    using MapVecXi = Eigen::Map<VectorXi>;
+    using MapConstVecXs = Eigen::Map<const VectorXs>;
 
     /**
-	 * @brief      Default constructor
-	 */
-    Nlp() {}
+     * @brief      Default constructor
+     */
+    Nlp() = default;
     /**
-	 * @brief      Destructor
-	 */
-    virtual ~Nlp() {}
+     * @brief      Destructor
+     */
+    virtual ~Nlp() = default;
     /**
-	 * @brief      { This method gets called at each update of the Optimization
-	 *             variables. This can be used to distribute or rearrange the
-	 *             optimization variables appropriately }
-	 */
+     * @brief      { This method gets called at each update of the Optimization
+     *             variables. This can be used to distribute or rearrange the
+     *             optimization variables appropriately }
+     */
     virtual void updateProblem() = 0;
 
     /**
-	 * @brief      { Evaluates the costfunction at the current nlp iteration }
-	 *
-	 * @return     { Scalar value of the resulting cost }
-	 */
+     * @brief      { Evaluates the costfunction at the current nlp iteration }
+     *
+     * @return     { Scalar value of the resulting cost }
+     */
     SCALAR evaluateCostFun()
     {
         if (!costCodegen_ && !costEvaluator_)
@@ -71,11 +72,11 @@ public:
 
 
     /**
-	 * @brief      { Evaluates the gradient of the costfunction}
-	 *
-	 * @param[in]  n     { size of the gradient }
-	 * @param[out] grad  The gradient of the cost function
-	 */
+     * @brief      { Evaluates the gradient of the costfunction}
+     *
+     * @param[in]  n     { size of the gradient }
+     * @param[out] grad  The gradient of the cost function
+     */
     void evaluateCostGradient(const size_t n, MapVecXs& grad)
     {
         if (!costCodegen_ && !costEvaluator_)
@@ -88,11 +89,11 @@ public:
     }
 
     /**
-	 * @brief      { Evaluates the constraints }
-	 *
-	 * @param[out] values  The values of the constraint violations, wrapped as a
-	 *                     vector
-	 */
+     * @brief      { Evaluates the constraints }
+     *
+     * @param[out] values  The values of the constraint violations, wrapped as a
+     *                     vector
+     */
     void evaluateConstraints(MapVecXs& values)
     {
         if (!constraintsCodegen_ && !constraints_)
@@ -105,11 +106,11 @@ public:
     }
 
     /**
-	 * @brief      { Evaluates the constraint jacobian }
-	 *
-	 * @param[in]  nele_jac  The number of non zeros in the constraint jacobian
-	 * @param[out] jac       The non zero values of the jacobian
-	 */
+     * @brief      { Evaluates the constraint jacobian }
+     *
+     * @param[in]  nele_jac  The number of non zeros in the constraint jacobian
+     * @param[out] jac       The non zero values of the jacobian
+     */
     void evaluateConstraintJacobian(const int nele_jac, MapVecXs& jac)
     {
         if (!constraintsCodegen_ && !constraints_)
@@ -122,13 +123,13 @@ public:
     }
 
     /**
-	 * @brief      Evaluates the hessian of the lagrangian
-	 *
-	 * @param[in]  nele_hes  The number of non zeros in the hessian
-	 * @param      hes       The values of the non-zeros of the hessian
-	 * @param[in]  obj_fac   The costfunction multiplier
-	 * @param      lambda    The constraint multipliers
-	 */
+     * @brief      Evaluates the hessian of the lagrangian
+     *
+     * @param[in]  nele_hes  The number of non zeros in the hessian
+     * @param      hes       The values of the non-zeros of the hessian
+     * @param[in]  obj_fac   The costfunction multiplier
+     * @param      lambda    The constraint multipliers
+     */
     void evaluateHessian(const int nele_hes, MapVecXs& hes, const SCALAR obj_fac, MapConstVecXs& lambda)
     {
 #if EIGEN_VERSION_AT_LEAST(3, 3, 0)
@@ -161,15 +162,15 @@ public:
     }
 
     /**
-	 * @brief      Gets the sparsity pattern.
-	 *
-	 * @param[in]  nele_jac  The number of non zero elements in the constraint
-	 *                       jacobian
-	 * @param[out] iRow      The row indices of the location of the non zero
-	 *                       elements of the constraint jacobian
-	 * @param[out] jCol      The column indices of the location of the non zero
-	 *                       elements of the constraint jacobian
-	 */
+     * @brief      Gets the sparsity pattern.
+     *
+     * @param[in]  nele_jac  The number of non zero elements in the constraint
+     *                       jacobian
+     * @param[out] iRow      The row indices of the location of the non zero
+     *                       elements of the constraint jacobian
+     * @param[out] jCol      The column indices of the location of the non zero
+     *                       elements of the constraint jacobian
+     */
     void getSparsityPatternJacobian(const int nele_jac, MapVecXi& iRow, MapVecXi& jCol) const
     {
         if (!constraintsCodegen_ && !constraints_)
@@ -192,12 +193,12 @@ public:
     }
 
     /**
-	 * @brief      Gets the sparsity pattern hessian of the lagrangian
-	 *
-	 * @param[in]  nele_hes  The number of non zero elements in the hessian
-	 * @param      iRow      The row indices
-	 * @param      jCol      The column indices
-	 */
+     * @brief      Gets the sparsity pattern hessian of the lagrangian
+     *
+     * @param[in]  nele_hes  The number of non zero elements in the hessian
+     * @param      iRow      The row indices
+     * @param      jCol      The column indices
+     */
     void getSparsityPatternHessian(const int nele_hes, MapVecXi& iRow, MapVecXi& jCol) const
     {
         if (!constraintsCodegen_ || !costCodegen_)
@@ -212,10 +213,10 @@ public:
     }
 
     /**
-	 * @brief      Returns the number of constraints in the NLP
-	 *
-	 * @return     The number of constraints.
-	 */
+     * @brief      Returns the number of constraints in the NLP
+     *
+     * @return     The number of constraints.
+     */
     size_t getConstraintsCount() const
     {
         if (!constraints_)
@@ -225,12 +226,12 @@ public:
     }
 
     /**
-	 * @brief      Returns the number of the non zero elements of the constraint
-	 *             jacobian.
-	 *
-	 * @return     The number of the non zero elements of the constraint
-	 *             jacobian.
-	 */
+     * @brief      Returns the number of the non zero elements of the constraint
+     *             jacobian.
+     *
+     * @return     The number of the non zero elements of the constraint
+     *             jacobian.
+     */
     size_t getNonZeroJacobianCount() const
     {
         if (!constraintsCodegen_ && !constraints_)
@@ -243,10 +244,10 @@ public:
     }
 
     /**
-	 * @brief      Returns the number of non zeros in the hessian
-	 *
-	 * @return     The number of non zeros in the hessian
-	 */
+     * @brief      Returns the number of non zeros in the hessian
+     *
+     * @return     The number of non zeros in the hessian
+     */
     size_t getNonZeroHessianCount()
     {
 #if EIGEN_VERSION_AT_LEAST(3, 3, 0)
@@ -298,12 +299,12 @@ public:
     }
 
     /**
-	 * @brief      Reads the bounds of the constraints.
-	 *
-	 * @param[out] lowerBound  The lower constraint bound
-	 * @param[out] upperBound  The upper constraint bound
-	 * @param[in]  m           { The size of the constraints }
-	 */
+     * @brief      Reads the bounds of the constraints.
+     *
+     * @param[out] lowerBound  The lower constraint bound
+     * @param[out] upperBound  The upper constraint bound
+     * @param[in]  m           { The size of the constraints }
+     */
     void getConstraintBounds(MapVecXs& lowerBound, MapVecXs& upperBound, const size_t m) const
     {
         if (!constraints_)
@@ -313,10 +314,10 @@ public:
     }
 
     /**
-	 * @brief      Returns the number of Optimization optimization variables
-	 *
-	 * @return     The number of Optimization variables.
-	 */
+     * @brief      Returns the number of Optimization optimization variables
+     *
+     * @return     The number of Optimization variables.
+     */
     size_t getVarCount() const
     {
         if (!optVariables_)
@@ -326,12 +327,12 @@ public:
     }
 
     /**
-	 * @brief      Reads the bounds on the Optimization optimization variables.
-	 *
-	 * @param[out] lowerBound  The lower optimization variable bound
-	 * @param[out] upperBound  The upper optimization variable bound
-	 * @param[in]  n           { The number of Optimization variables }
-	 */
+     * @brief      Reads the bounds on the Optimization optimization variables.
+     *
+     * @param[out] lowerBound  The lower optimization variable bound
+     * @param[out] upperBound  The upper optimization variable bound
+     * @param[in]  n           { The number of Optimization variables }
+     */
     void getVariableBounds(MapVecXs& lowerBound, MapVecXs& upperBound, const size_t n) const
     {
         if (!optVariables_)
@@ -342,12 +343,12 @@ public:
     }
 
     /**
-	 * @brief      {Extracts the Optimization optimization variables from the nlp
-	 *             solvers between nlp iterations}
-	 *
-	 * @param[in]  x      { The value of the Optimization variables }
-	 * @param[in]  isNew  Indicates whether x differs from a previous call
-	 */
+     * @brief      {Extracts the Optimization optimization variables from the nlp
+     *             solvers between nlp iterations}
+     *
+     * @param[in]  x      { The value of the Optimization variables }
+     * @param[in]  isNew  Indicates whether x differs from a previous call
+     */
     void extractOptimizationVars(const MapConstVecXs& x, bool isNew)
     {
         if (!optVariables_)
@@ -361,11 +362,11 @@ public:
     }
 
     /**
-	 * @brief      Gets the Optimization variables.
-	 *
-	 * @param[in]  n     { The number of Optimization variables }
-	 * @param[out] x     { The values of the Optimization vars }
-	 */
+     * @brief      Gets the Optimization variables.
+     *
+     * @param[in]  n     { The number of Optimization variables }
+     * @param[out] x     { The values of the Optimization vars }
+     */
     void getInitialGuess(const size_t n, MapVecXs& x) const
     {
         if (!optVariables_)
@@ -375,14 +376,14 @@ public:
     }
 
     /**
-	 * @brief      Gets the variable multiplier and the variable state, used in
-	 *             the NLP solver SNOPT. See the snopt documentation for further
-	 *             explanations
-	 *
-	 * @param[in]  n       { The number of Optimization variables  }
-	 * @param[out] xMul    The optimization variable multiplier
-	 * @param[out] xState  The optimization variable states
-	 */
+     * @brief      Gets the variable multiplier and the variable state, used in
+     *             the NLP solver SNOPT. See the snopt documentation for further
+     *             explanations
+     *
+     * @param[in]  n       { The number of Optimization variables  }
+     * @param[out] xMul    The optimization variable multiplier
+     * @param[out] xState  The optimization variable states
+     */
     void getOptimizationMultState(const size_t n, MapVecXs& xMul, MapVecXi& xState) const
     {
         if (!optVariables_)
@@ -392,13 +393,13 @@ public:
     }
 
     /**
-	 * @brief      Gets the constraint multiplier and state, used in the NLP
-	 *             solver SNOPT.
-	 *
-	 * @param[in]  m       { The number of constraints }
-	 * @param[out] zMul    The constraint variable multiplier
-	 * @param[out] zState  The constraint variable state
-	 */
+     * @brief      Gets the constraint multiplier and state, used in the NLP
+     *             solver SNOPT.
+     *
+     * @param[in]  m       { The number of constraints }
+     * @param[out] zMul    The constraint variable multiplier
+     * @param[out] zState  The constraint variable state
+     */
     void getConstraintsMultState(const size_t m, MapVecXs& zMul, MapVecXi& zState) const
     {
         if (!optVariables_)
@@ -408,12 +409,12 @@ public:
     }
 
     /**
-	 * @brief      Gets the bound multipliers used in the NLP solver IPOPT.
-	 *
-	 * @param[in]  n     { The number of optimization variables }
-	 * @param[out] zLow  The value for the lower bound multiplier
-	 * @param[out] zUp   The value for the upper bound multiplier
-	 */
+     * @brief      Gets the bound multipliers used in the NLP solver IPOPT.
+     *
+     * @param[in]  n     { The number of optimization variables }
+     * @param[out] zLow  The value for the lower bound multiplier
+     * @param[out] zUp   The value for the upper bound multiplier
+     */
     void getBoundMultipliers(size_t n, MapVecXs& zLow, MapVecXs& zUp) const
     {
         if (!optVariables_)
@@ -423,11 +424,11 @@ public:
     }
 
     /**
-	 * @brief      Gets the values of the constraint multipliers.
-	 *
-	 * @param[in]  m       { The number of constraints }
-	 * @param[out] lambda  The values of the constraint multipliers
-	 */
+     * @brief      Gets the values of the constraint multipliers.
+     *
+     * @param[in]  m       { The number of constraints }
+     * @param[out] lambda  The values of the constraint multipliers
+     */
     void getLambdaVars(size_t m, MapVecXs& lambda) const
     {
         if (!optVariables_)
@@ -437,13 +438,13 @@ public:
     }
 
     /**
-	 * @brief      { Extracts the solution values from IPOPT }
-	 *
-	 * @param[in]  x       { The values of the optimization variables }
-	 * @param[in]  zL      The value for the lower bound multiplier
-	 * @param[in]  zU      The value for the upper bound multiplier
-	 * @param[in]  lambda  The values of the constraint multipliers
-	 */
+     * @brief      { Extracts the solution values from IPOPT }
+     *
+     * @param[in]  x       { The values of the optimization variables }
+     * @param[in]  zL      The value for the lower bound multiplier
+     * @param[in]  zU      The value for the upper bound multiplier
+     * @param[in]  lambda  The values of the constraint multipliers
+     */
     void extractIpoptSolution(const MapConstVecXs& x,
         const MapConstVecXs& zL,
         const MapConstVecXs& zU,
@@ -456,14 +457,14 @@ public:
     }
 
     /**
-	 * @brief      { Extracts the solution values from SNOPT }
-	 *
-	 * @param[in]  x       { The values of the optimization variables }
-	 * @param[in]  xMul    The optimization variable multiplier
-	 * @param[in]  xState  The optimization variable state
-	 * @param[in]  fMul    The constraint variable multiplier
-	 * @param[in]  fState  The constraint variable state
-	 */
+     * @brief      { Extracts the solution values from SNOPT }
+     *
+     * @param[in]  x       { The values of the optimization variables }
+     * @param[in]  xMul    The optimization variable multiplier
+     * @param[in]  xState  The optimization variable state
+     * @param[in]  fMul    The constraint variable multiplier
+     * @param[in]  fState  The constraint variable state
+     */
     void extractSnoptSolution(const MapVecXs& x,
         const MapVecXs& xMul,
         const MapVecXi& xState,
@@ -497,7 +498,7 @@ protected:
 };
 }
 
-typedef tpl::Nlp<double> Nlp;
+using Nlp = tpl::Nlp<double>;
 
 }  // namespace optcon
 }  // namespace ct

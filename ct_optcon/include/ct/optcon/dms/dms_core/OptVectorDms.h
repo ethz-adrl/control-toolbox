@@ -50,120 +50,121 @@ public:
     typedef typename DIMENSIONS::time_array_t time_array_t;
 
     /**
-	 * @brief      Custom constructor
-	 *
-	 * @param[in]  n         The number of optimization variables
-	 * @param[in]  settings  The dms settings
-	 */
+     * @brief      Custom constructor
+     *
+     * @param[in]  n         The number of optimization variables
+     * @param[in]  settings  The dms settings
+     */
     OptVectorDms(size_t n, const DmsSettings& settings);
 
     OptVectorDms(const OptVectorDms& arg) = delete;
 
     /**
-	 * @brief      Destructor
-	 */
+     * @brief      Destructor
+     */
     ~OptVectorDms() override = default;
+
     /**
-	 * @brief      Returns the optimized state for a specific shot
-	 *
-	 * @param[in]  pairNum  The shot number
-	 *
-	 * @return     The optimized state
-	 */
+     * @brief      Returns the optimized state for a specific shot
+     *
+     * @param[in]  pairNum  The shot number
+     *
+     * @return     The optimized state
+    */
     state_vector_t getOptimizedState(const size_t pairNum) const;
 
     /**
-	 * @brief      Returns the optimized control input for a specific shot
-	 *
-	 * @param[in]  pairNum  The shot number
-	 *
-	 * @return     The optimized control input
-	 */
+     * @brief      Returns the optimized control input for a specific shot
+     *
+     * @param[in]  pairNum  The shot number
+     *
+     * @return     The optimized control input
+    */
     control_vector_t getOptimizedControl(const size_t pairNum) const;
 
     /**
-	 * @brief      Returns the optimized state for all shots
-	 *
-	 * @return     The optimized states.
-	 */
+     * @brief      Returns the optimized state for all shots
+     *
+     * @return     The optimized states.
+    */
     const state_vector_array_t& getOptimizedStates();
 
     /**
-	 * @brief      Returns the optimized control inputs for all shots
-	 *
-	 * @return     The optimized control inputs.
-	 */
+     * @brief      Returns the optimized control inputs for all shots
+     *
+     * @return     The optimized control inputs.
+    */
     const control_vector_array_t& getOptimizedInputs();
 
     /**
-	 * @brief      Returns the starting index for the state at shot pairNum
-	 *             inside the optimization vector
-	 *
-	 * @param[in]  pairNum  The shot number
-	 *
-	 * @return     The state index.
-	 */
+     * @brief      Returns the starting index for the state at shot pairNum
+     *             inside the optimization vector
+     *
+     * @param[in]  pairNum  The shot number
+     *
+     * @return     The state index.
+     */
     size_t getStateIndex(const size_t pairNum) const;
 
     /**
-	 * @brief      Returns the starting index for the control input at shot pairNum
-	 *             inside the optimization vector
-	 *
-	 * @param[in]  pairNum  The shot number
-	 *
-	 * @return     The state index.
-	 */
+     * @brief      Returns the starting index for the control input at shot pairNum
+     *             inside the optimization vector
+     *
+     * @param[in]  pairNum  The shot number
+     *
+     * @return     The state index.
+     */
     size_t getControlIndex(const size_t pairNum) const;
 
     /**
-	 * @brief      Sets an initial guess for the optimal solution. The optimal
-	 *             solution is set as a linear interpolation between inital
-	 *             state x0 and final state xf. The initial guess for the
-	 *             control input is assumed to be constant and equal to u0
-	 *
-	 * @param[in]  x0    The initial state
-	 * @param[in]  x_f   The final state
-	 * @param[in]  u0    The control input
-	 */
+     * @brief      Sets an initial guess for the optimal solution. The optimal
+     *             solution is set as a linear interpolation between inital
+     *             state x0 and final state xf. The initial guess for the
+     *             control input is assumed to be constant and equal to u0
+     *
+     * @param[in]  x0    The initial state
+     * @param[in]  x_f   The final state
+     * @param[in]  u0    The control input
+     */
     void setInitGuess(const state_vector_t& x0, const state_vector_t& x_f, const control_vector_t& u0);
 
     /**
-	 * @brief      Sets an initial guess for the optimal solution.
-	 *
-	 * @param[in]  x_init  Initial guess for the state trajectory
-	 * @param[in]  u_init  Initial guess for the control trajectory
-	 */
+     * @brief      Sets an initial guess for the optimal solution.
+     *
+     * @param[in]  x_init  Initial guess for the state trajectory
+     * @param[in]  u_init  Initial guess for the control trajectory
+     */
     void setInitGuess(const state_vector_array_t& x_init, const control_vector_array_t& u_init);
 
     /**
-	 * @brief      Updates the initial state
-	 *
-	 * @param[in]  x0    The new initial state
-	 */
+     * @brief      Updates the initial state
+     *
+     * @param[in]  x0    The new initial state
+     */
     void changeInitialState(const state_vector_t& x0);
 
     /**
-	 * @brief      Updates the final state
-	 *
-	 * @param[in]  xF    The new final state
-	 */
+     * @brief      Updates the final state
+     *
+     * @param[in]  xF    The new final state
+     */
     void changeDesiredState(const state_vector_t& xF);
 
     /**
-	 * @brief      Returns the number of pairs 
-	 *
-	 * @return     Number of pairs
-	 */
+     * @brief      Returns the number of pairs 
+     *
+     * @return     Number of pairs
+     */
     size_t numPairs() { return numPairs_; }
     /**
-	 * @brief      Prints out the solution trajectories
-	 */
+     * @brief      Prints out the solution trajectories
+     */
     void printoutSolution();
 
 private:
     DmsSettings settings_;
 
-    size_t numPairs_;
+    const size_t numPairs_;
     /* maps the number of a "pair" to the index in w where ... */
     std::map<size_t, size_t> pairNumToStateIdx_;   /* ... its state starts */
     std::map<size_t, size_t> pairNumToControlIdx_; /* ... its control starts */

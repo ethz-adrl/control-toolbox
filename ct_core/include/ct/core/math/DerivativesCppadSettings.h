@@ -6,6 +6,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <iostream>
+#include <map>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/info_parser.hpp>
 

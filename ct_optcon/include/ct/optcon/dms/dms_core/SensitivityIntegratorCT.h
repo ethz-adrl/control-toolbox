@@ -48,7 +48,7 @@ public:
     /**
      * @brief      Destroys the object.
      */
-    ~SensitivityIntegratorCT() {}
+    ~SensitivityIntegratorCT() = default;
     /**
      * @brief      Initializes the steppers
      *

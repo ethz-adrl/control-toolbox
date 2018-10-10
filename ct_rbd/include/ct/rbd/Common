@@ -6,3 +6,5 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "common/SpatialForceVector.h"
+#include "common/SingleDOFTrajectoryGenerator.h"
+#include "common/SimpleArmTrajectoryGenerator.h"

@@ -94,10 +94,7 @@ public:
 
     VectorXs eval() override
     {
-        stateNext_ = shotContainer_->getStateIntegrated();
-        assert(stateNext_ == stateNext_);
-        assert(w_->getOptimizedState(shotIndex_ + 1) == w_->getOptimizedState(shotIndex_ + 1));
-        return w_->getOptimizedState(shotIndex_ + 1) - stateNext_;
+        return w_->getOptimizedState(shotIndex_ + 1) - shotContainer_->getStateIntegrated();
     }
 
     VectorXs evalSparseJacobian() override
@@ -257,7 +254,6 @@ private:
 
     VectorXs jacLocal_;
     size_t count_local_;
-    state_vector_t stateNext_;
 
     state_vector_t lb_;
     state_vector_t ub_;

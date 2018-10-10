@@ -146,8 +146,10 @@ if(BUILD_EXAMPLES)
 
     add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
     target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
-endif()
 
+    add_executable(ex_Nlp examples/SimpleNlp.cpp)
+    target_link_libraries(ex_Nlp ${catkin_LIBRARIES} ${NLP_LIBS})
+endif()
 
 get_filename_component(DMS_OSC_TEST_MAT_DIR "test/dms/oscillator/matfiles" ABSOLUTE)
 configure_file(test/dms/oscillator/oscDMSTest_settings.h.in test/dms/oscillator/oscDMSTest_settings.h)
@@ -165,6 +167,9 @@ if(HPIPM)
 
     catkin_add_gtest(ConstrainedLQOCSolverTest test/solver/linear/ConstrainedLQOCSolverTest.cpp)
     target_link_libraries(ConstrainedLQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+
+    catkin_add_gtest(ConstrainedNLOCTest test/nloc/constrained/ConstrainedNLOCTest.cpp)
+    target_link_libraries(ConstrainedNLOCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
 
     add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
     target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})

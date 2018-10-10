@@ -47,7 +47,7 @@ public:
     /**
 	 * @brief      Destructor
 	 */
-    virtual ~NlpSolver() {}
+    virtual ~NlpSolver() = default;
     /**
 	 * @brief      Configures the solver with new settings
 	 *
@@ -90,7 +90,7 @@ protected:
 };
 }
 
-typedef tpl::NlpSolver<double> NlpSolver;
+using NlpSolver = tpl::NlpSolver<double>;
 
 }  // namespace optcon
 }  // namespace ct

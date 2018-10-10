@@ -101,9 +101,9 @@ public:
                 this->costFunctions_, this->boxConstraints_, this->generalConstraints_, x0_));
 
         // SNOPT only works for the double type
-        if (settingsDms.solverSettings_.solverType_ == NlpSolverSettings::SNOPT)
+        if (settingsDms.solverSettings_.solverType_ == NlpSolverType::SNOPT)
             nlpSolver_ = std::shared_ptr<SnoptSolver>(new SnoptSolver(dmsProblem_, settingsDms.solverSettings_));
-        else if (settingsDms.solverSettings_.solverType_ == NlpSolverSettings::IPOPT)
+        else if (settingsDms.solverSettings_.solverType_ == NlpSolverType::IPOPT)
             nlpSolver_ = std::shared_ptr<IpoptSolver>(new IpoptSolver(dmsProblem_, settingsDms.solverSettings_));
         else
             std::cout << "Unknown solver type... Exiting" << std::endl;
@@ -149,6 +149,7 @@ public:
 	 * @brief      Destructor
 	 */
     ~DmsSolver() override = default;
+
     void configure(const DmsSettings& settings) override
     {
         dmsProblem_->configure(settings);
