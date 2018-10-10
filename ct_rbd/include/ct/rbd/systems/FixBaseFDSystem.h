@@ -5,11 +5,9 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/rbd/state/RigidBodyPose.h>
+#include "FixBaseSystemBase.h"
 #include <ct/rbd/robot/actuator/ActuatorDynamics.h>
 #include <ct/rbd/state/FixBaseRobotState.h>
-
-#include "RBDSystem.h"
 
 namespace ct {
 namespace rbd {
@@ -26,60 +24,51 @@ namespace rbd {
  * - joint velocities
  * - actuator state
  *
- * \warning when modelled with RobCoGen, the base pose must be rotated "against gravity" (RobCoGen modelling assumption)
+ * \warning when modelled with RobCoGen, the base pose must be rotated "against gravity" (RobCoGen modeling assumption)
  */
 template <class RBDDynamics, size_t ACT_STATE_DIM = 0, bool EE_ARE_CONTROL_INPUTS = false>
 class FixBaseFDSystem
-    : public RBDSystem<RBDDynamics, false>,
-      public core::ControlledSystem<RBDDynamics::NSTATE + ACT_STATE_DIM,         // state-dim
-          RBDDynamics::NJOINTS + EE_ARE_CONTROL_INPUTS * RBDDynamics::N_EE * 3,  // input-dim of combined system
-          typename RBDDynamics::SCALAR>
+    : public FixBaseSystemBase<RBDDynamics,
+	  RBDDynamics::NSTATE + ACT_STATE_DIM, 	// state dim
+	  RBDDynamics::NJOINTS + EE_ARE_CONTROL_INPUTS * RBDDynamics::N_EE * 3> // control dim
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    //! number of end-effectors
-    static const size_t N_EE = RBDDynamics::N_EE;
-    //! rigid body system state-dim plus actuator state-dim
-    static const size_t STATE_DIM = RBDDynamics::NSTATE + ACT_STATE_DIM;
-    //! joint torques plus end-effector forces
-    static const size_t NJOINTS = RBDDynamics::NJOINTS;
-    //! we assume one control input per joint
-    static const size_t CONTROL_DIM = NJOINTS + EE_ARE_CONTROL_INPUTS * N_EE * 3;
-    //! convenience definition
+    static const size_t N_EE = RBDDynamics::N_EE; //! number of end-effectors
+	static const size_t STATE_DIM = RBDDynamics::NSTATE + ACT_STATE_DIM; // combined state dim
+    static const size_t CONTROL_DIM = RBDDynamics::NJOINTS + EE_ARE_CONTROL_INPUTS * N_EE * 3; // combined control dim
     static const size_t ACTUATOR_STATE_DIM = ACT_STATE_DIM;
 
-    using Dynamics = RBDDynamics;
-    using SCALAR = typename RBDDynamics::SCALAR;
-    using Base = core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>;
-    using ActuatorDynamics_t = ActuatorDynamics<ACT_STATE_DIM, NJOINTS, SCALAR>;
-    using RigidBodyPose_t = tpl::RigidBodyPose<SCALAR>;
-    using FixBaseRobotState_t = FixBaseRobotState<NJOINTS, ACT_STATE_DIM, SCALAR>;
+	using BASE = FixBaseSystemBase<RBDDynamics, STATE_DIM, CONTROL_DIM>;
+    using SCALAR = typename BASE::SCALAR;
+    using state_vector_t = typename BASE::state_vector_t;
+    using control_vector_t = typename BASE::control_vector_t;
+    using JointAcceleration_t = typename BASE::JointAcceleration_t;
+    using RigidBodyPose_t = typename BASE::RigidBodyPose_t;
 
-    // typedefs state and controls
-    using state_vector_t = typename FixBaseRobotState_t::state_vector_t;
+    using ActuatorDynamics_t = ActuatorDynamics<ACTUATOR_STATE_DIM, RBDDynamics::NJOINTS, SCALAR>;
+    using FixBaseRobotState_t = FixBaseRobotState<BASE::NJOINTS, ACTUATOR_STATE_DIM, SCALAR>;
     using actuator_state_vector_t = typename FixBaseRobotState_t::actuator_state_vector_t;
-    using control_vector_t = core::ControlVector<CONTROL_DIM, SCALAR>;
-    using JointAcceleration_t = JointAcceleration<NJOINTS, SCALAR>;
 
 
-    //! constructor
     /*!
+     * @brief constructor
      * \warning when using actuator dynamics, the system looses its second order characteristics
      */
     FixBaseFDSystem(const RigidBodyPose_t& basePose = RigidBodyPose_t())
-        : Base(), basePose_(basePose), dynamics_(RBDDynamics()), actuatorDynamics_(nullptr)
+        : BASE(basePose), actuatorDynamics_(nullptr)
     {
     }
-    //! constructor including actuator dynamics
+
     /*!
+     * @brief constructor including actuator dynamics
      * \warning when using actuator dynamics, the system looses its second order characteristics
      */
     FixBaseFDSystem(std::shared_ptr<ActuatorDynamics_t> actuatorDynamics,
         const RigidBodyPose_t& basePose = RigidBodyPose_t())
-        : Base(), basePose_(basePose), dynamics_(RBDDynamics()), actuatorDynamics_(actuatorDynamics)
+        : BASE(basePose), actuatorDynamics_(actuatorDynamics)
     {
-        basePose_.setIdentity();
     }
 
     /*!
@@ -89,7 +78,7 @@ public:
 	 *
 	 * \note takes care of explicitly cloning actuatorDynamics, if existent
 	 */
-    FixBaseFDSystem(const FixBaseFDSystem& arg) : Base(arg), basePose_(arg.basePose_), dynamics_(RBDDynamics())
+    FixBaseFDSystem(const FixBaseFDSystem& arg) : BASE(arg)
     {
         if (arg.actuatorDynamics_)
         {
@@ -98,21 +87,18 @@ public:
     }
 
     //! destructor
-    virtual ~FixBaseFDSystem() {}
-    //! get dynamics
-    virtual RBDDynamics& dynamics() override { return dynamics_; }
-    //! get dynamics (const)
-    virtual const RBDDynamics& dynamics() const override { return dynamics_; }
+    virtual ~FixBaseFDSystem() = default;
+
     //! compute the controlled dynamics of the fixed base robotic system
-    void computeControlledDynamics(const ct::core::StateVector<STATE_DIM, SCALAR>& state,
+    void computeControlledDynamics(const state_vector_t& state,
         const SCALAR& t,
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& controlIn,
-        ct::core::StateVector<STATE_DIM, SCALAR>& derivative)
+        const control_vector_t& controlIn,
+        state_vector_t& derivative) override
     {
         FixBaseRobotState_t robotState(state);
 
         // map the joint velocities (unchanged, no damping)
-        derivative.template topRows<NJOINTS>() = robotState.joints().getVelocities();
+        derivative.template topRows<BASE::NJOINTS>() = robotState.joints().getVelocities();
 
         // temporary variable for the control (will get modified by the actuator dynamics, if applicable)
         control_vector_t control = controlIn;
@@ -128,21 +114,21 @@ public:
         {
             for (size_t i = 0; i < RBDDynamics::N_EE; i++)
             {
-                auto endEffector = dynamics_.kinematics().getEndEffector(i);
+                auto endEffector = this->dynamics_.kinematics().getEndEffector(i);
                 size_t linkId = endEffector.getLinkId();
                 linkForces[static_cast<typename RBDDynamics::ROBCOGEN::LinkIdentifiers>(linkId)] =
-                    dynamics_.kinematics().mapForceFromWorldToLink3d(
-                        control.template segment<3>(RBDDynamics::NJOINTS + i * 3), basePose_,
+                    this->dynamics_.kinematics().mapForceFromWorldToLink3d(
+                        control.template segment<3>(BASE::NJOINTS + i * 3), this->basePose_,
                         robotState.joints().getPositions(), i);
             }
         }
 
         typename RBDDynamics::JointAcceleration_t jAcc;
 
-        dynamics_.FixBaseForwardDynamics(
-            robotState.joints(), control.template head<RBDDynamics::NJOINTS>(), linkForces, jAcc);
+        this->dynamics_.FixBaseForwardDynamics(
+            robotState.joints(), control.template head<BASE::NJOINTS>(), linkForces, jAcc);
 
-        derivative.template segment<RBDDynamics::NJOINTS>(NJOINTS) = jAcc.getAcceleration();
+        derivative.template segment<BASE::NJOINTS>(BASE::NJOINTS) = jAcc.getAcceleration();
     }
 
     //! evaluate the actuator dynamics if actuators are enabled
@@ -154,7 +140,7 @@ public:
         control_vector_t& controlOut)
     {
         // get references to the current actuator position, velocity and input
-        const Eigen::Ref<const typename control_vector_t::Base> actControlIn = controlIn.template topRows<NJOINTS>();
+        const Eigen::Ref<const typename control_vector_t::Base> actControlIn = controlIn.template topRows<BASE::NJOINTS>();
 
         actuator_state_vector_t actStateDerivative;  // todo use vector block for this?
         actuatorDynamics_->computeActuatorDynamics(
@@ -185,20 +171,12 @@ public:
 
     //! get pointer to actuator dynamics
     std::shared_ptr<ActuatorDynamics_t> getActuatorDynamics() { return actuatorDynamics_; }
-    //! compute inverse dynamics torques
-    ct::core::ControlVector<NJOINTS> computeIDTorques(const JointState<NJOINTS, SCALAR>& jState,
-        const JointAcceleration_t& jAcc = JointAcceleration_t(Eigen::Matrix<SCALAR, NJOINTS, 1>::Zero()))
-    {
-        ct::core::ControlVector<NJOINTS> u;
-        dynamics_.FixBaseID(jState, jAcc, u);
-        return u;
-    }
 
     //! if actuator dynamics enabled, this method allows to design a consistent actuator state
     template <typename T = typename FixBaseRobotState_t::actuator_state_vector_t>
     typename std::enable_if<(ACT_STATE_DIM > 0), T>::type computeConsistentActuatorState(
-        const JointState<NJOINTS, SCALAR>& jStateRef,
-        const ct::core::ControlVector<NJOINTS>& torqueRef)
+        const JointState<BASE::NJOINTS, SCALAR>& jStateRef,
+        const ct::core::ControlVector<BASE::NJOINTS>& torqueRef)
     {
         return actuatorDynamics_->computeStateFromOutput(jStateRef, torqueRef);
     }
@@ -206,20 +184,14 @@ public:
     //! if actuator dynamics enabled, this method allows to design a consistent actuator state
     template <typename T = typename FixBaseRobotState_t::actuator_state_vector_t>
     typename std::enable_if<(ACT_STATE_DIM>0), T>::type computeConsistentActuatorState(
-        const JointState<NJOINTS, SCALAR>& jStateRef)
+        const JointState<BASE::NJOINTS, SCALAR>& jStateRef)
     {
-        const ct::core::ControlVector<NJOINTS> torqueRef = computeIDTorques(jStateRef);
+        const ct::core::ControlVector<BASE::NJOINTS> torqueRef = computeIDTorques(jStateRef);
         return computeConsistentActuatorState(jStateRef, torqueRef);
     }
 
 
 private:
-    //! a "dummy" base pose which sets the robot's "fixed" position in the world
-    tpl::RigidBodyPose<SCALAR> basePose_;
-
-    //! rigid body dynamics container
-    RBDDynamics dynamics_;
-
     //! pointer to the actuator dynamics
     std::shared_ptr<ActuatorDynamics_t> actuatorDynamics_;
 };

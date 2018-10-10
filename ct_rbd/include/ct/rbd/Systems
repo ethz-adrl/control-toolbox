@@ -6,9 +6,13 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include "systems/FixBaseVelSystem.h"
+#include "systems/FixBaseAccSystem.h"
 #include "systems/FixBaseFDSystem.h"
 #include "systems/FixBaseFDSystemSymplectic.h"
 #include "systems/FloatingBaseFDSystem.h"
 #include "systems/ProjectedFDSystem.h"
+
+
 
 #include "systems/linear/RbdLinearizer.h"
