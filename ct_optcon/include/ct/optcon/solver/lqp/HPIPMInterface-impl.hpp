@@ -369,7 +369,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
     hd_lg_0_Eigen_ = lqocProblem->d_lb_[0] - lqocProblem->C_[0] * lqocProblem->x_[0];
     hd_ug_0_Eigen_ = lqocProblem->d_ub_[0] - lqocProblem->C_[0] * lqocProblem->x_[0];
 
-    for (size_t i = 0; i < N_ + 1; i++) // (also for terminal stage)
+    for (size_t i = 0; i < N_ + 1; i++) // (includes the terminal stage)
     {
         // check dimensions
         assert(lqocProblem->d_lb_[i].rows() == lqocProblem->d_ub_[i].rows());

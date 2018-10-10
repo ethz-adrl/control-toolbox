@@ -763,7 +763,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
                          p.D_[k] * u_ff_[k];
             p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
                          p.D_[k] * u_ff_[k];
-            ;
         }
     }
 }
