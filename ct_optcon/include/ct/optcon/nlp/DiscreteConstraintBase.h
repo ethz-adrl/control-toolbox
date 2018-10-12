@@ -73,6 +73,17 @@ public:
      */
     virtual void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) = 0;
 
+    virtual size_t getNumNonZerosHessian()
+    {
+    	throw std::runtime_error("getNumNonZerosHessian() not implemented. Use Hessian approximation.");
+
+    }
+
+    virtual void genSparsityPatternHessian(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec)
+    {
+    	throw std::runtime_error("genSparsityPatternHessian() not implemented. Use Hessian approximation.");
+    }
+
     /**
      * @brief      Returns the lower bound of the constraint
      *

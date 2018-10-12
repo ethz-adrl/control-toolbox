@@ -89,6 +89,11 @@ public:
                   << this->optVariables_->getOptimizationVars().transpose() << std::endl;
     }
 
+    JointPosition_t getSolution()
+    {
+    	return this->optVariables_->getOptimizationVars();
+    }
+
 private:
 };
 

@@ -21,7 +21,6 @@ class IKCostEvaluator : public ct::optcon::tpl::DiscreteCostEvaluatorBase<SCALAR
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	//! constructor
     IKCostEvaluator(
     		size_t eeInd,
 			const Eigen::Matrix3d& Qpos = Eigen::Matrix3d::Identity(),
@@ -32,13 +31,25 @@ public:
     {
     }
 
-    //! destructor
+    IKCostEvaluator(const std::string& costFunctionPath, const std::string& termName, bool verbose)
+        : w_(nullptr),
+		  costTerm_(
+              new ct::rbd::TermTaskspacePoseCG<KINEMATICS, false, KINEMATICS::NJOINTS, KINEMATICS::NJOINTS>(costFunctionPath, termName, verbose))
+    {
+    }
+
     virtual ~IKCostEvaluator() override = default;
 
     //! needs to be set by NLP solver
     void setOptVector(std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> optVector)
     {
     	w_ = optVector;
+    }
+
+
+    ct::rbd::RigidBodyPose getTargetPose()
+    {
+    	return costTerm_->getReferencePose();
     }
 
     // set the target pose as rbd pose directly
@@ -84,6 +95,39 @@ public:
             grad = costTerm_->stateDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, KINEMATICS::NJOINTS, 1>::Zero(), 0.0);
     	else
     		throw std::runtime_error("IKCostEvaluator: optimization vector not set.");
+    }
+
+    //! retrieve second order derivative
+    virtual void evalHessian(const int num_el, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>>& hes) override
+    {
+        assert(num_el == KINEMATICS::NJOINTS*KINEMATICS::NJOINTS);
+     	if(w_ != nullptr)
+            hes = costTerm_->stateSecondDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, KINEMATICS::NJOINTS, 1>::Zero(), 0.0);
+    	else
+    		throw std::runtime_error("IKCostEvaluator: optimization vector not set.");
+    };
+
+    // create sparsity pattern for the hessian
+    virtual void getSparsityPatternHessian(Eigen::Map<Eigen::VectorXi>& iRow,
+        Eigen::Map<Eigen::VectorXi>& jCol,
+        const int nnz_hes)
+    {
+    	size_t count = 0;
+    	for(size_t i = 0; i<KINEMATICS::NJOINTS; i++)
+    	{
+    		iRow(count) = i;
+    		for (size_t j = 0; j<KINEMATICS::NJOINTS; j++)
+    		{
+    			jCol(count) = j;
+    			count++;
+    		}
+    	}
+    	assert(count == nnz_hes);
+    }
+
+    virtual size_t getNonZeroHessianCount() override
+    {
+    	return KINEMATICS::NJOINTS * KINEMATICS::NJOINTS;
     }
 
 private:

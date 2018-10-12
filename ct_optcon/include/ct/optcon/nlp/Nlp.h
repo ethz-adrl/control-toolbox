@@ -127,11 +127,23 @@ public:
      *
      * @param[in]  nele_hes  The number of non zeros in the hessian
      * @param      hes       The values of the non-zeros of the hessian
-     * @param[in]  obj_fac   The costfunction multiplier
+     * @param[in]  obj_fac   The costfunction multiplier (zero or one, NLP solver uses this to query for parts of the hessian only)
      * @param      lambda    The constraint multipliers
      */
     void evaluateHessian(const int nele_hes, MapVecXs& hes, const SCALAR obj_fac, MapConstVecXs& lambda)
     {
+    	hes.setZero();
+
+    	Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>> H (hes); // todo: we need a sparse hessian call...
+
+    	costEvaluator_->evalHessian(nele_hes, H);
+
+    	hes = obj_fact * hes;
+
+    	hes = Eigen::Map<Matrix<SCALAR, nele_hes, 1>>(H.data());
+
+
+
 #if EIGEN_VERSION_AT_LEAST(3, 3, 0)
         if (!constraintsCodegen_ || !costCodegen_)
             throw std::runtime_error(
@@ -201,6 +213,9 @@ public:
      */
     void getSparsityPatternHessian(const int nele_hes, MapVecXi& iRow, MapVecXi& jCol) const
     {
+    	constraints_->getSparsityPatternHessian(iRow, jCol, nele_hes);
+    	return; //TODO WARNING remove this return!!! only for temporary testing
+
         if (!constraintsCodegen_ || !costCodegen_)
             throw std::runtime_error(
                 "Error in getSparsityPatternHessian. Hessian Evaluation only implemented for codegeneration");
@@ -250,6 +265,9 @@ public:
      */
     size_t getNonZeroHessianCount()
     {
+    	return costEvaluator_->getNonZeroHessianCount() + constraints_->getNonZerosHessianCount(); //TODO WARNING remove this return!!! only for temporary testing
+
+
 #if EIGEN_VERSION_AT_LEAST(3, 3, 0)
         if (!constraintsCodegen_ || !costCodegen_)
         {

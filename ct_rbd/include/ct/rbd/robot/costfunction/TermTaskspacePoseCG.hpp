@@ -132,7 +132,7 @@ public:
     }
 
     //! construct this term with info loaded from a configuration file
-    TermTaskspacePoseCG(std::string& configFile, const std::string& termName, bool verbose = false)
+    TermTaskspacePoseCG(const std::string& configFile, const std::string& termName, bool verbose = false)
     {
         loadConfigFile(configFile, termName, verbose);
     }

@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 
     ct::optcon::NlpSolverSettings nlpSolverSettings;
     nlpSolverSettings.solverType_ = ct::optcon::NlpSolverType::IPOPT;
-    nlpSolverSettings.ipoptSettings_.derivativeTest_ = "first-order";
+    nlpSolverSettings.ipoptSettings_.derivativeTest_ = "first-order"; // remove this option if you need more speed.
     nlpSolverSettings.ipoptSettings_.hessian_approximation_ = "limited-memory";
 
     std::shared_ptr<ct::optcon::IpoptSolver> nlpSolver(new ct::optcon::IpoptSolver(ik_problem, nlpSolverSettings));
@@ -39,8 +39,15 @@ int main(int argc, char* argv[])
     if (!nlpSolver->isInitialized())
         nlpSolver->configure(nlpSolverSettings);
 
-    nlpSolver->solve();
+    // set desired end effector pose
+    ct::rbd::RigidBodyPose ee_pose_des;
+    ee_pose_des.position()(0) = 0.5;
+    ee_pose_des.position()(1) = 0.3;
+    ee_pose_des.position()(2) = 0.2;
 
+    ikCostEvaluator->setTargetPose(ee_pose_des); // todo: check the failure that occurs when this line is put earlier
+
+    nlpSolver->solve();
 
     return 1;
 }

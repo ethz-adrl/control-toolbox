@@ -55,6 +55,16 @@ public:
     	}
     }
 
+    virtual size_t getNumNonZerosHessian() override
+    {
+    	return 0; // there are no non-zero entries
+    }
+
+    virtual void genSparsityPatternHessian(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
+    {
+    	// do nothing
+    }
+
     VectorXs getLowerBound() override { return lowerBounds_; }
     VectorXs getUpperBound() override { return upperBounds_; }
 private:

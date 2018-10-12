@@ -172,6 +172,27 @@ public:
     }
 
     /**
+     * @brief      Returns the number of non zeros in the constraint hessian
+     *
+     * @return     The number of non zeros in the constraint hessian
+     */
+    size_t getNonZerosHessianCount() const
+    {
+    	size_t count = 0;
+        for (auto constraint : constraints_)
+            count += constraint->getNumNonZerosHessian();
+        return count;
+    }
+
+    void getSparsityPatternHessian(Eigen::Map<Eigen::VectorXi>& iRow_nlp,
+        Eigen::Map<Eigen::VectorXi>& jCol_nlp,
+        const int nnz_hes_g)
+    {
+    	// TODO needs to be implemented
+    	std::cout << "Warning: getSparsityPatternHessian needs to be implemented for DiscreteCosntraintContainerBase.h" << std::endl;
+    }
+
+    /**
      * @brief      Retrieves the constraint bounds and writes them into the
      *             vectors used in the NLP
      *
