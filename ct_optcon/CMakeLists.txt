@@ -147,8 +147,11 @@ if(BUILD_EXAMPLES)
     add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
     target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
 
-    add_executable(ex_Nlp examples/SimpleNlp.cpp)
-    target_link_libraries(ex_Nlp ${catkin_LIBRARIES} ${NLP_LIBS})
+    add_executable(ex_Nlp_bfgs examples/nlp_bfgs/SimpleNlp_bfgs.cpp)
+    target_link_libraries(ex_Nlp_bfgs ${catkin_LIBRARIES} ${NLP_LIBS})
+    
+    add_executable(ex_Nlp_exact examples/nlp_exactHessian/SimpleNlp_exactHessian.cpp)
+    target_link_libraries(ex_Nlp_exact ${catkin_LIBRARIES} ${NLP_LIBS})
 endif()
 
 get_filename_component(DMS_OSC_TEST_MAT_DIR "test/dms/oscillator/matfiles" ABSOLUTE)

@@ -60,13 +60,13 @@ public:
     * @param[in]  num_el       The size of the hessian (non-zeros)
     * @param[out] hes          The cost hessian matrix
     */
-    virtual void evalHessian(const int num_el, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>>& hes)
+    virtual void evalHessian(const int num_el, Eigen::VectorXd& hes)
     {
     	throw std::runtime_error("Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");
     };
 
-    virtual void getSparsityPatternHessian(Eigen::Map<Eigen::VectorXi>& iRow,
-        Eigen::Map<Eigen::VectorXi>& jCol,
+    virtual void getSparsityPatternHessian(Eigen::VectorXi& iRow,
+        Eigen::VectorXi& jCol,
         const int nnz_hes)
     {
     	// TODO needs to be implemented

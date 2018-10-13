@@ -4,10 +4,11 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 /*!
- * \example SimpleNlp.cpp
+ * \example SimpleNlp_bfgs.cpp
  *
- * This example shows how to set up and solve a Nonlinear program using the Nlp and Nlpsolver classes.
- * We try to solve the following NLP:
+ * This example shows how to set up and solve a Nonlinear program using the Nlp and Nlpsolver classes and a
+ * limited-memory Hessian approximation.
+ * We solve the following NLP:
  * min(x1 + x2)
  * s.t: x1 >= 0
  *      x2 >= 0

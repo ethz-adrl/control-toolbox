@@ -98,19 +98,23 @@ public:
     }
 
     //! retrieve second order derivative
-    virtual void evalHessian(const int num_el, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>>& hes) override
+    virtual void evalHessian(const int num_el, Eigen::VectorXd& hes) override
     {
         assert(num_el == KINEMATICS::NJOINTS*KINEMATICS::NJOINTS);
      	if(w_ != nullptr)
-            hes = costTerm_->stateSecondDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, KINEMATICS::NJOINTS, 1>::Zero(), 0.0);
-    	else
+     	{
+     		// map hessian value-vector to matrix
+     		Eigen::Map<Eigen::Matrix<SCALAR, KINEMATICS::NJOINTS, KINEMATICS::NJOINTS>> Hmat (hes.data(), KINEMATICS::NJOINTS, KINEMATICS::NJOINTS);
+     		Hmat = costTerm_->stateSecondDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, KINEMATICS::NJOINTS, 1>::Zero(), 0.0);
+     	}
+        else
     		throw std::runtime_error("IKCostEvaluator: optimization vector not set.");
     };
 
     // create sparsity pattern for the hessian
-    virtual void getSparsityPatternHessian(Eigen::Map<Eigen::VectorXi>& iRow,
-        Eigen::Map<Eigen::VectorXi>& jCol,
-        const int nnz_hes)
+    virtual void getSparsityPatternHessian(Eigen::VectorXi& iRow,
+        Eigen::VectorXi& jCol,
+        const int nnz_hes) override
     {
     	size_t count = 0;
     	for(size_t i = 0; i<KINEMATICS::NJOINTS; i++)
@@ -133,6 +137,7 @@ public:
 private:
     std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> w_;
     std::shared_ptr<ct::rbd::TermTaskspacePoseCG<KINEMATICS, false, KINEMATICS::NJOINTS, KINEMATICS::NJOINTS>> costTerm_;
+    Eigen::MatrixXd Hval_;
 };
 
 }  // namespace rbd
