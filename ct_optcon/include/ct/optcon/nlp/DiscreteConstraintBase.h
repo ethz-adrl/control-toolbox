@@ -84,6 +84,7 @@ public:
     	throw std::runtime_error("genSparsityPatternHessian() not implemented. Use Hessian approximation.");
     }
 
+
     /**
      * @brief      Returns the lower bound of the constraint
      *
@@ -97,6 +98,10 @@ public:
      * @return     The upper constraint bound
      */
     virtual VectorXs getUpperBound() = 0;
+
+    Eigen::VectorXi& iRowHessian() {return iRowHessian_;}
+    Eigen::VectorXi& jColHessian() {return jColHessian_;}
+
 
 protected:
     /**
@@ -139,6 +144,9 @@ protected:
         Eigen::VectorXi& iRow_vec,
         Eigen::VectorXi& jCol_vec,
         const size_t indexNumber);
+
+    Eigen::VectorXi iRowHessian_;
+    Eigen::VectorXi jColHessian_;
 };
 
 template <typename SCALAR>

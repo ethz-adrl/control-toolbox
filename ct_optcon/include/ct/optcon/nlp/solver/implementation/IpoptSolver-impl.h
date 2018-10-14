@@ -120,11 +120,11 @@ bool IpoptSolver<SCALAR>::get_nlp_info(Ipopt::Index& n,
     m = this->nlp_->getConstraintsCount();
     assert(m == m);
 
-    nnz_jac_g = this->nlp_->getNonZeroJacobianCount();
+    nnz_jac_g = (Ipopt::Index) this->nlp_->getNonZeroJacobianCount();
     assert(nnz_jac_g == nnz_jac_g);
 
     if (settings_.hessian_approximation_ == "exact")
-        nnz_h_lag = this->nlp_->getNonZeroHessianCount();
+        nnz_h_lag = (Ipopt::Index) this->nlp_->getNonZeroHessianCount();
 
     index_style = Ipopt::TNLP::C_STYLE;
 

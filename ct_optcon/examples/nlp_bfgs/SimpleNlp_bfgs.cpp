@@ -27,7 +27,7 @@ using namespace ct::optcon;
  * @tparam     SCALAR  Scalar type
  */
 template <typename SCALAR>
-class ExampleConstraints : public tpl::DiscreteConstraintBase<SCALAR> {
+class ExampleConstraints final : public tpl::DiscreteConstraintBase<SCALAR> {
 public:
     using VectorXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>;
 
@@ -106,7 +106,7 @@ private:
  * @tparam     SCALAR  Scalar type
  */
 template <typename SCALAR>
-class ExampleCostEvaluator : public tpl::DiscreteCostEvaluatorBase<SCALAR> {
+class ExampleCostEvaluator final : public tpl::DiscreteCostEvaluatorBase<SCALAR> {
 public:
 
     ExampleCostEvaluator(std::shared_ptr<tpl::OptVector<SCALAR>> optVector) 
@@ -138,7 +138,7 @@ private:
  * @tparam     SCALAR  Scalar type
  */
 template <typename SCALAR>
-class ExampleConstraintsContainer : public tpl::DiscreteConstraintContainerBase<SCALAR> {
+class ExampleConstraintsContainer final : public tpl::DiscreteConstraintContainerBase<SCALAR> {
 public:
     ExampleConstraintsContainer(std::shared_ptr<tpl::OptVector<SCALAR>> optVector)
     : optVector_(optVector) {
@@ -162,7 +162,7 @@ private:
  * @tparam     SCALAR  Scalar type
  */
 template <typename SCALAR>
-class ExampleProblem : public tpl::Nlp<SCALAR> {
+class ExampleProblem final : public tpl::Nlp<SCALAR> {
 public:
     ExampleProblem() {
         this->optVariables_ = std::shared_ptr<tpl::OptVector<SCALAR>>(

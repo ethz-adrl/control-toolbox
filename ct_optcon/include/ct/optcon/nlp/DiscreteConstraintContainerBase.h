@@ -112,7 +112,7 @@ public:
     }
 
     /**
-     * @brief      Retrieves the sparsity pattern of the constraints and writes
+     * @brief      Retrieves the sparsity pattern of the constraint Jacobian and writes
      *             them into the nlp vectors
      *
      * @param[out] iRow_nlp   The vector containing the row indices of the non
@@ -171,25 +171,49 @@ public:
         return count;
     }
 
-    /**
-     * @brief      Returns the number of non zeros in the constraint hessian
-     *
-     * @return     The number of non zeros in the constraint hessian
-     */
-    size_t getNonZerosHessianCount() const
-    {
-    	size_t count = 0;
-        for (auto constraint : constraints_)
-            count += constraint->getNumNonZerosHessian();
-        return count;
-    }
 
-    void getSparsityPatternHessian(Eigen::Map<Eigen::VectorXi>& iRow_nlp,
-        Eigen::Map<Eigen::VectorXi>& jCol_nlp,
-        const int nnz_hes_g)
+    /**
+     * @brief      creates the combined hessian sparsity pattern from a number of constraint terms
+     *
+     * @return     The number of non zeros in the constraint jacobian
+     */
+    void getSparsityPatternHessian(Eigen::VectorXi& iRow, Eigen::VectorXi& jCol, size_t numOptVar)
     {
-    	// TODO needs to be implemented
-    	std::cout << "Warning: getSparsityPatternHessian needs to be implemented for DiscreteCosntraintContainerBase.h" << std::endl;
+        std::vector<std::vector<Eigen::Triplet<SCALAR>>> tripletsConstraintTerms;
+        tripletsConstraintTerms.resize(constraints_.size());
+
+        std::vector<Eigen::SparseMatrix<SCALAR>> constraintHessians(constraints_.size());
+
+        for (size_t c = 0; c < constraints_.size(); c++)
+        {
+            // get sparsity pattern of every individual constraint term
+            constraints_[c]->genSparsityPatternHessian(constraints_[c]->iRowHessian(), constraints_[c]->jColHessian());
+            for (size_t i = 0; i < constraints_[c]->iRowHessian().rows(); ++i)
+                tripletsConstraintTerms[c].push_back(Eigen::Triplet<SCALAR>(
+                    constraints_[c]->iRowHessian()(i), constraints_[c]->jColHessian()(i), SCALAR(0.1)));
+
+            constraintHessians[c].resize(numOptVar, numOptVar);
+            constraintHessians[c].setFromTriplets(tripletsConstraintTerms[c].begin(), tripletsConstraintTerms[c].end());
+        }
+
+        // sum up all hessians
+        Eigen::SparseMatrix<SCALAR> constraintHessianTot(numOptVar, numOptVar);
+        for (auto& n : constraintHessians)
+            constraintHessianTot += n;
+
+        iRowHessianStdVec_.clear();
+        jColHessianStdVec_.clear();
+        for (size_t k = 0; k < constraintHessianTot.outerSize(); ++k)
+        {
+            for (typename Eigen::SparseMatrix<SCALAR>::InnerIterator it(constraintHessianTot, k); it; ++it)
+            {
+                iRowHessianStdVec_.push_back(it.row());
+                jColHessianStdVec_.push_back(it.col());
+            }
+        }
+
+        iRow = Eigen::Map<Eigen::VectorXi>(iRowHessianStdVec_.data(), iRowHessianStdVec_.size(), 1);
+        jCol = Eigen::Map<Eigen::VectorXi>(jColHessianStdVec_.data(), jColHessianStdVec_.size(), 1);
     }
 
     /**
@@ -214,8 +238,10 @@ public:
 protected:
     std::vector<std::shared_ptr<DiscreteConstraintBase<SCALAR>>>
         constraints_; /*!< contains all the constraints of the NLP */
-};
 
+    std::vector<int> iRowHessianStdVec_;
+    std::vector<int> jColHessianStdVec_;
+};
 }
 
 using DiscreteConstraintContainerBase = tpl::DiscreteConstraintContainerBase<double>;
