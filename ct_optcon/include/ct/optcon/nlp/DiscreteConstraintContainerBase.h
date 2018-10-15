@@ -189,7 +189,7 @@ public:
         {
             // get sparsity pattern of every individual constraint term
             constraints_[c]->genSparsityPatternHessian(constraints_[c]->iRowHessian(), constraints_[c]->jColHessian());
-            for (size_t i = 0; i < constraints_[c]->iRowHessian().rows(); ++i)
+            for (int i = 0; i < constraints_[c]->iRowHessian().rows(); ++i)
                 tripletsConstraintTerms[c].push_back(Eigen::Triplet<SCALAR>(
                     constraints_[c]->iRowHessian()(i), constraints_[c]->jColHessian()(i), SCALAR(0.1)));
 
@@ -204,7 +204,7 @@ public:
 
         iRowHessianStdVec_.clear();
         jColHessianStdVec_.clear();
-        for (size_t k = 0; k < constraintHessianTot_.outerSize(); ++k)
+        for (int k = 0; k < constraintHessianTot_.outerSize(); ++k)
         {
             for (typename Eigen::SparseMatrix<SCALAR>::InnerIterator it(constraintHessianTot_, k); it; ++it)
             {
@@ -246,7 +246,7 @@ public:
             hessianConstraintsValues[c] = constraints_[c]->sparseHessianValues(optVec, lambda.segment(count, c_nel));
             count += c_nel;
 
-            for (size_t i = 0; i < hessianConstraintsValues[c].rows(); ++i)
+            for (int i = 0; i < hessianConstraintsValues[c].rows(); ++i)
                 constraintHessianTot_.coeffRef(constraints_[c]->iRowHessian()(i), constraints_[c]->jColHessian()(i)) +=
                     hessianConstraintsValues[c](i);
         }

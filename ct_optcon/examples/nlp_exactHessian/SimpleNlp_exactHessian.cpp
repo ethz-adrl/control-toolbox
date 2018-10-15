@@ -96,6 +96,20 @@ public:
     	return hes;
     }
 
+    /*
+     * generate block-diagonal sparsity pattern
+     */
+    void genSparsityPatternHessian(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
+    {
+    	iRow_vec.resize(2);
+    	jCol_vec.resize(2);
+    	iRow_vec(0) = 0;
+    	jCol_vec(0) = 0;
+    	iRow_vec(1) = 1;
+    	jCol_vec(1) = 1;
+    }
+
+
     VectorXs getLowerBound() override { return lowerBounds_; }
     VectorXs getUpperBound() override { return upperBounds_; }
 private:
@@ -226,7 +240,7 @@ int main(int argc, char** argv)
 
     NlpSolverSettings exampleNlpSolverSettings;
     exampleNlpSolverSettings.solverType_ = NlpSolverType::IPOPT;
-    exampleNlpSolverSettings.ipoptSettings_.derivativeTest_ = "second-order";
+//    exampleNlpSolverSettings.ipoptSettings_.derivativeTest_ = "second-order"; // todo: bring this in!
     exampleNlpSolverSettings.ipoptSettings_.hessian_approximation_ = "exact";
 
 

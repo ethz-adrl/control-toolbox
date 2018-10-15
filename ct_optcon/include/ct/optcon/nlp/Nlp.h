@@ -156,10 +156,10 @@ public:
 
 
         // store in sparse representations
-        for (size_t i = 0; i < hessianCostValues.rows(); ++i)
+        for (int i = 0; i < hessianCostValues.rows(); ++i)
             hessianCost_.coeffRef(iRowHessianCost_(i), jColHessianCost_(i)) = hessianCostValues(i);
 
-        for (size_t i = 0; i < hessianConstraintsValues.rows(); ++i)
+        for (int i = 0; i < hessianConstraintsValues.rows(); ++i)
             hessianConstraints_.coeffRef(iRowHessianConstraints_(i), jColHessianConstraints_(i)) =
                 hessianConstraintsValues(i);
 
@@ -277,10 +277,10 @@ public:
         std::vector<Eigen::Triplet<SCALAR>> tripletsCost;
         std::vector<Eigen::Triplet<SCALAR>> tripletsConstraints;
 
-        for (size_t i = 0; i < iRowHessianCost_.rows(); ++i)
+        for (int i = 0; i < iRowHessianCost_.rows(); ++i)
             tripletsCost.push_back(Eigen::Triplet<SCALAR>(iRowHessianCost_(i), jColHessianCost_(i), SCALAR(0.1)));
 
-        for (size_t i = 0; i < iRowHessianConstraints_.rows(); ++i)
+        for (int i = 0; i < iRowHessianConstraints_.rows(); ++i)
             tripletsConstraints.push_back(
                 Eigen::Triplet<SCALAR>(iRowHessianConstraints_(i), jColHessianConstraints_(i), SCALAR(0.1)));
 
@@ -294,7 +294,7 @@ public:
 
         std::vector<int> iRowHessianStdVec;
         std::vector<int> jColHessianStdVec;
-        for (size_t k = 0; k < hessianTotal_.outerSize(); ++k)
+        for (int k = 0; k < hessianTotal_.outerSize(); ++k)
             for (typename Eigen::SparseMatrix<SCALAR>::InnerIterator it(hessianTotal_, k); it; ++it)
             {
                 iRowHessianStdVec.push_back(it.row());
