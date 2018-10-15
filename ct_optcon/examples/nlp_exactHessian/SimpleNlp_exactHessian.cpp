@@ -71,6 +71,7 @@ public:
 
     size_t getConstraintSize() override { return 3; }
     size_t getNumNonZerosJacobian() override { return 4; }
+
     void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
     {
         iRow_vec(0) = 0;
@@ -82,6 +83,17 @@ public:
         jCol_vec(1) = 1;
         jCol_vec(2) = 0;
         jCol_vec(3) = 1;
+    }
+
+    /*
+     * When we write down the three sub-hessian for this constraints we see H1 = 0, H2 = 0 and
+     * H3 = [2 0; 0 2].
+     */
+    Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda) override
+    {
+    	Eigen::VectorXd hes (2);
+    	hes.setConstant(lambda(2) * 2.0);
+    	return hes;
     }
 
     VectorXs getLowerBound() override { return lowerBounds_; }
@@ -124,20 +136,10 @@ public:
     }
 
     size_t getNonZeroHessianCount() override { return 4; }
-    void evalHessian(const int num_el, Eigen::VectorXd& hes) override
-    {
-        assert(num_el == 4);
-        hes.resize(num_el);
-        hes(0) = 2;
-        hes(1) = 2;
-        hes(2) = 2;
-        hes(3) = 2;
-    };
-
     void getSparsityPatternHessian(Eigen::VectorXi& iRow, Eigen::VectorXi& jCol) override
     {
-    	iRow.resize(4);
-    	jCol.resize(4);
+        iRow.resize(getNonZeroHessianCount());
+        jCol.resize(getNonZeroHessianCount());
         iRow(0) = 0;
         jCol(0) = 0;
         iRow(1) = 0;
@@ -146,6 +148,13 @@ public:
         jCol(2) = 0;
         iRow(3) = 1;
         jCol(3) = 1;
+    }
+
+    Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda) override
+    {
+        Eigen::VectorXd hes(getNonZeroHessianCount());
+        hes.setConstant(2.0 * lambda(0,0));
+        return hes;
     }
 
 private:
@@ -173,12 +182,6 @@ public:
     void prepareEvaluation() override { /* do nothing*/}
 
     void prepareJacobianEvaluation() override { /* do nothing*/}
-
-    void getSparsityPatternHessian(Eigen::VectorXi& iRow, Eigen::VectorXi& jCol) override
-    {
-
-    }
-
 
 private:
     std::shared_ptr<tpl::OptVector<SCALAR>> optVector_;

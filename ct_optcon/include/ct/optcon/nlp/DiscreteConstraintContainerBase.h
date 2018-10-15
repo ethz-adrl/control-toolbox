@@ -179,6 +179,7 @@ public:
      */
     void getSparsityPatternHessian(Eigen::VectorXi& iRow, Eigen::VectorXi& jCol, size_t numOptVar)
     {
+#if EIGEN_VERSION_AT_LEAST(3, 3, 0)
         std::vector<std::vector<Eigen::Triplet<SCALAR>>> tripletsConstraintTerms;
         tripletsConstraintTerms.resize(constraints_.size());
 
@@ -197,15 +198,15 @@ public:
         }
 
         // sum up all hessians
-        Eigen::SparseMatrix<SCALAR> constraintHessianTot(numOptVar, numOptVar);
-        for (auto& n : constraintHessians)
-            constraintHessianTot += n;
+        constraintHessianTot_.resize(numOptVar, numOptVar);
+        for (auto& mat : constraintHessians)
+            constraintHessianTot_ += mat;
 
         iRowHessianStdVec_.clear();
         jColHessianStdVec_.clear();
-        for (size_t k = 0; k < constraintHessianTot.outerSize(); ++k)
+        for (size_t k = 0; k < constraintHessianTot_.outerSize(); ++k)
         {
-            for (typename Eigen::SparseMatrix<SCALAR>::InnerIterator it(constraintHessianTot, k); it; ++it)
+            for (typename Eigen::SparseMatrix<SCALAR>::InnerIterator it(constraintHessianTot_, k); it; ++it)
             {
                 iRowHessianStdVec_.push_back(it.row());
                 jColHessianStdVec_.push_back(it.col());
@@ -214,6 +215,49 @@ public:
 
         iRow = Eigen::Map<Eigen::VectorXi>(iRowHessianStdVec_.data(), iRowHessianStdVec_.size(), 1);
         jCol = Eigen::Map<Eigen::VectorXi>(jColHessianStdVec_.data(), jColHessianStdVec_.size(), 1);
+#else
+        throw std::runtime_error(
+            "getSparsityPatternHessian only available for Eigen 3.3 and newer. Please change solver settings to NOT use "
+            "Hessians or upgrade Eigen version.");
+#endif
+    }
+
+
+    /**
+    * @brief      Evaluates the constraint hessian
+    *
+    * @param[in]  optVec       The optimization variables
+    * @param[in]  lambda       multipliers for hessian matrix
+    * @param[out] hes          The cost hessian matrix coeff
+    */
+    Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda)
+    {
+#if EIGEN_VERSION_AT_LEAST(3, 3, 0)
+
+        Eigen::VectorXd hes;  // template on scalar
+        Eigen::SparseMatrix<SCALAR> hessianConstraints;
+
+        std::vector<Eigen::VectorXd> hessianConstraintsValues(constraints_.size());
+        size_t count = 0;
+        for (size_t c = 0; c < constraints_.size(); c++)
+        {
+            // count the contraint size to hand over correct portion of multiplier vector lambda
+            size_t c_nel = constraints_[c]->getConstraintSize();
+            hessianConstraintsValues[c] = constraints_[c]->sparseHessianValues(optVec, lambda.segment(count, c_nel));
+            count += c_nel;
+
+            for (size_t i = 0; i < hessianConstraintsValues[c].rows(); ++i)
+                constraintHessianTot_.coeffRef(constraints_[c]->iRowHessian()(i), constraints_[c]->jColHessian()(i)) +=
+                    hessianConstraintsValues[c](i);
+        }
+
+        return Eigen::VectorXd(constraintHessianTot_);
+#else
+        throw std::runtime_error(
+            "sparseHessianValues only available for Eigen 3.3 and newer. Please change solver settings to NOT use "
+            "Hessians or upgrade Eigen version.");
+        return Eigen::VectorXd::Zero();
+#endif
     }
 
     /**
@@ -236,11 +280,15 @@ public:
     }
 
 protected:
-    std::vector<std::shared_ptr<DiscreteConstraintBase<SCALAR>>>
-        constraints_; /*!< contains all the constraints of the NLP */
+    //!Container which holds all the constraints of the NLP
+    std::vector<std::shared_ptr<DiscreteConstraintBase<SCALAR>>> constraints_;
 
     std::vector<int> iRowHessianStdVec_;
     std::vector<int> jColHessianStdVec_;
+
+#if EIGEN_VERSION_AT_LEAST(3, 3, 0)
+    Eigen::SparseMatrix<SCALAR> constraintHessianTot_;
+#endif
 };
 }
 

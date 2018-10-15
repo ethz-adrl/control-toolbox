@@ -55,19 +55,21 @@ public:
     {
     	throw std::runtime_error("Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");
     }
-    /**
-    * @brief      Evaluates the cost hessian
-    *
-    * @param[in]  num_el       The size of the hessian (non-zeros)
-    * @param[out] hes          The cost hessian matrix
-    */
-    virtual void evalHessian(const int num_el, Eigen::VectorXd& hes)
-    {
-    	throw std::runtime_error("Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");
-    };
 
     virtual void getSparsityPatternHessian(Eigen::VectorXi& iRow,
         Eigen::VectorXi& jCol)
+    {
+    	throw std::runtime_error("Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");
+    }
+
+    /**
+    * @brief      Evaluates the cost hessian
+    *
+    * @param[in]  optVec       The optimization variables
+    * @param[in]  lambda       multipliers for hessian matrix
+    * @param[out] hes          The cost hessian matrix coeff
+    */
+    virtual Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda)
     {
     	throw std::runtime_error("Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");
     }

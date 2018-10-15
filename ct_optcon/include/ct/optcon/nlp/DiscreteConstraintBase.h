@@ -75,13 +75,17 @@ public:
 
     virtual size_t getNumNonZerosHessian()
     {
-    	throw std::runtime_error("getNumNonZerosHessian() not implemented. Use Hessian approximation.");
-
+    	throw std::runtime_error("getNumNonZerosHessian() for DiscreteConstraintBase not implemented. Use Hessian approximation.");
     }
 
     virtual void genSparsityPatternHessian(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec)
     {
-    	throw std::runtime_error("genSparsityPatternHessian() not implemented. Use Hessian approximation.");
+    	throw std::runtime_error("genSparsityPatternHessian() for DiscreteConstraintBase not implemented. Use Hessian approximation.");
+    }
+
+    virtual Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda)
+    {
+    	throw std::runtime_error("sparseHessianValues() for DiscreteConstraintBase not implemented. Use Hessian approximation.");
     }
 
 
