@@ -75,17 +75,20 @@ public:
 
     virtual size_t getNumNonZerosHessian()
     {
-    	throw std::runtime_error("getNumNonZerosHessian() for DiscreteConstraintBase not implemented. Use Hessian approximation.");
+        throw std::runtime_error(
+            "getNumNonZerosHessian() for DiscreteConstraintBase not implemented. Use Hessian approximation.");
     }
 
     virtual void genSparsityPatternHessian(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec)
     {
-    	throw std::runtime_error("genSparsityPatternHessian() for DiscreteConstraintBase not implemented. Use Hessian approximation.");
+        throw std::runtime_error(
+            "genSparsityPatternHessian() for DiscreteConstraintBase not implemented. Use Hessian approximation.");
     }
 
     virtual Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda)
     {
-    	throw std::runtime_error("sparseHessianValues() for DiscreteConstraintBase not implemented. Use Hessian approximation.");
+        throw std::runtime_error(
+            "sparseHessianValues() for DiscreteConstraintBase not implemented. Use Hessian approximation.");
     }
 
 
@@ -103,10 +106,8 @@ public:
      */
     virtual VectorXs getUpperBound() = 0;
 
-    Eigen::VectorXi& iRowHessian() {return iRowHessian_;}
-    Eigen::VectorXi& jColHessian() {return jColHessian_;}
-
-
+    Eigen::VectorXi& iRowHessian() { return iRowHessian_; }
+    Eigen::VectorXi& jColHessian() { return jColHessian_; }
 protected:
     /**
      * @brief      This method generates Row and Column vectors which indicate

@@ -33,6 +33,7 @@ template <typename SCALAR>
 class ExampleConstraints final : public tpl::DiscreteConstraintBase<SCALAR>
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     using VectorXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>;
 
     ExampleConstraints(std::shared_ptr<tpl::OptVector<SCALAR>> optVector) : optVector_(optVector)
@@ -50,7 +51,6 @@ public:
 
     VectorXs getLowerBound() override { return lowerBounds_; }
     VectorXs getUpperBound() override { return upperBounds_; }
-
     VectorXs eval() override
     {
         constraints_.setZero();
@@ -79,7 +79,6 @@ public:
 
     size_t getConstraintSize() override { return 3; }
     size_t getNumNonZerosJacobian() override { return 4; }
-
     void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
     {
         iRow_vec(0) = 0;
@@ -101,9 +100,9 @@ public:
      */
     Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda) override
     {
-    	Eigen::VectorXd hes (2);
-    	hes.setConstant(lambda(2) * 2.0);
-    	return hes;
+        Eigen::VectorXd hes(2);
+        hes.setConstant(lambda(2) * 2.0);
+        return hes;
     }
 
     /*
@@ -112,12 +111,12 @@ public:
      */
     void genSparsityPatternHessian(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
     {
-    	iRow_vec.resize(2);
-    	jCol_vec.resize(2);
-    	iRow_vec(0) = 0;
-    	jCol_vec(0) = 0;
-    	iRow_vec(1) = 1;
-    	jCol_vec(1) = 1;
+        iRow_vec.resize(2);
+        jCol_vec.resize(2);
+        iRow_vec(0) = 0;
+        jCol_vec(0) = 0;
+        iRow_vec(1) = 1;
+        jCol_vec(1) = 1;
     }
 
 
@@ -139,6 +138,7 @@ template <typename SCALAR>
 class ExampleCostEvaluator final : public tpl::DiscreteCostEvaluatorBase<SCALAR>
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     ExampleCostEvaluator(std::shared_ptr<tpl::OptVector<SCALAR>> optVector) : optVector_(optVector) {}
     ~ExampleCostEvaluator() override = default;
 
@@ -157,24 +157,17 @@ public:
         grad(1) = static_cast<SCALAR>(-1.0);
     }
 
-    /*
-    * \note this function implementation is only required for the exact-hessian solver case
-    */
-    size_t getNonZeroHessianCount() override { return 0; }
 
     /*
     * \note this function implementation is only required for the exact-hessian solver case
     */
-    void getSparsityPatternHessian(Eigen::VectorXi& iRow, Eigen::VectorXi& jCol) override
-    {
-    	/* do nothing */
-    }
+    void getSparsityPatternHessian(Eigen::VectorXi& iRow, Eigen::VectorXi& jCol) override { /* do nothing */}
 
-    // todo this is really bad, we should not be returning by value if the sparse return value potentially does not exist
-    Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda) override
+    void sparseHessianValues(const Eigen::VectorXd& optVec,
+        const Eigen::VectorXd& lambda,
+        Eigen::VectorXd& hes) override
     {
-        /* do nothing */
-    	return Eigen::VectorXd(0);
+        /* do nothing, Hessian is all zero */
     }
 
 private:
@@ -191,6 +184,7 @@ template <typename SCALAR>
 class ExampleConstraintsContainer final : public tpl::DiscreteConstraintContainerBase<SCALAR>
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     ExampleConstraintsContainer(std::shared_ptr<tpl::OptVector<SCALAR>> optVector) : optVector_(optVector)
     {
         auto exampleConstraints =
@@ -215,6 +209,7 @@ template <typename SCALAR>
 class ExampleProblem final : public tpl::Nlp<SCALAR>
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     ExampleProblem()
     {
         this->optVariables_ = std::shared_ptr<tpl::OptVector<SCALAR>>(new tpl::OptVector<SCALAR>(2));
@@ -237,9 +232,9 @@ public:
 
 int main(int argc, char** argv)
 {
-	// create problems
-    std::shared_ptr<ExampleProblem<double>> problem1 (new ExampleProblem<double>());
-    std::shared_ptr<ExampleProblem<double>> problem2 (new ExampleProblem<double>());
+    // create problems
+    std::shared_ptr<ExampleProblem<double>> problem1(new ExampleProblem<double>());
+    std::shared_ptr<ExampleProblem<double>> problem2(new ExampleProblem<double>());
 
     // settings for exact Hessian solver
     NlpSolverSettings solverSettings1;
@@ -248,9 +243,9 @@ int main(int argc, char** argv)
     solverSettings1.ipoptSettings_.hessian_approximation_ = "exact";
 
     // create exact-Hessian solver and solve
-    std::shared_ptr<NlpSolver> nlpSolver1 (new IpoptSolver(problem1, solverSettings1));
+    std::shared_ptr<NlpSolver> nlpSolver1(new IpoptSolver(problem1, solverSettings1));
     nlpSolver1->solve();
-    std::cout << "Solution: " << problem1->getSolution().transpose() << std::endl;;
+    std::cout << "Solution: " << problem1->getSolution().transpose() << std::endl;
 
 
     // settings for Hessian approximation solver
@@ -259,9 +254,9 @@ int main(int argc, char** argv)
     solverSettings2.ipoptSettings_.hessian_approximation_ = "limited-memory";
 
     // create approximate-Hessian solver and solve
-    std::shared_ptr<NlpSolver> nlpSolver2 (new IpoptSolver(problem2, solverSettings2));
+    std::shared_ptr<NlpSolver> nlpSolver2(new IpoptSolver(problem2, solverSettings2));
     nlpSolver2->solve();
-    std::cout << "Solution: " << problem2->getSolution().transpose() << std::endl;;
+    std::cout << "Solution: " << problem2->getSolution().transpose() << std::endl;
 
     return 0;
 }

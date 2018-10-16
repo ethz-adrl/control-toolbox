@@ -50,16 +50,10 @@ public:
     */
     virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>& grad) = 0;
 
-
-    virtual size_t getNonZeroHessianCount()
+    virtual void getSparsityPatternHessian(Eigen::VectorXi& iRow, Eigen::VectorXi& jCol)
     {
-    	throw std::runtime_error("Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");
-    }
-
-    virtual void getSparsityPatternHessian(Eigen::VectorXi& iRow,
-        Eigen::VectorXi& jCol)
-    {
-    	throw std::runtime_error("Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");
+        throw std::runtime_error(
+            "Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");
     }
 
     /**
@@ -69,9 +63,12 @@ public:
     * @param[in]  lambda       multipliers for hessian matrix
     * @param[out] hes          The cost hessian matrix coeff
     */
-    virtual Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda)
+    virtual void sparseHessianValues(const Eigen::VectorXd& optVec,
+        const Eigen::VectorXd& lambda,
+        Eigen::VectorXd& hes)
     {
-    	throw std::runtime_error("Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");
+        throw std::runtime_error(
+            "Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");
     }
 };
 }

@@ -71,7 +71,7 @@ public:
             ind += cSize;
         }
 
-        assert(ind == (size_t) c_nlp.rows());  // or throw an error
+        assert(ind == (size_t)c_nlp.rows());  // or throw an error
     }
 
     void evalConstraints(VectorXs& c_nlp)
@@ -180,33 +180,31 @@ public:
     void getSparsityPatternHessian(Eigen::VectorXi& iRow, Eigen::VectorXi& jCol, size_t numOptVar)
     {
 #if EIGEN_VERSION_AT_LEAST(3, 3, 0)
-        std::vector<std::vector<Eigen::Triplet<SCALAR>>> tripletsConstraintTerms;
-        tripletsConstraintTerms.resize(constraints_.size());
 
-        std::vector<Eigen::SparseMatrix<SCALAR>> constraintHessians(constraints_.size());
+        // important initialization
+        constraintHessianTot_.resize(numOptVar, numOptVar);
+        constraintHessianSparsity_.resize(numOptVar, numOptVar);
+
+        std::vector<Eigen::Triplet<SCALAR>> triplets;
 
         for (size_t c = 0; c < constraints_.size(); c++)
         {
             // get sparsity pattern of every individual constraint term
             constraints_[c]->genSparsityPatternHessian(constraints_[c]->iRowHessian(), constraints_[c]->jColHessian());
             for (int i = 0; i < constraints_[c]->iRowHessian().rows(); i++)
-                tripletsConstraintTerms[c].push_back(Eigen::Triplet<SCALAR>(
-                    constraints_[c]->iRowHessian()(i), constraints_[c]->jColHessian()(i), SCALAR(0.1)));
-
-            constraintHessians[c].resize(numOptVar, numOptVar);
-            constraintHessians[c].setFromTriplets(tripletsConstraintTerms[c].begin(), tripletsConstraintTerms[c].end());
+                triplets.push_back(Eigen::Triplet<SCALAR>(
+                    constraints_[c]->iRowHessian()(i), constraints_[c]->jColHessian()(i), SCALAR(1.0)));
         }
 
-        // sum up all hessians // todo do via triplets, which should be more efficient
-        constraintHessianTot_.resize(numOptVar, numOptVar);
-        for (auto& mat : constraintHessians)
-            constraintHessianTot_ += mat;
+        // fill in values in total constraint Hessian
+        constraintHessianSparsity_.setFromTriplets(triplets.begin(), triplets.end());
+
 
         iRowHessianStdVec_.clear();
         jColHessianStdVec_.clear();
-        for (int k = 0; k < constraintHessianTot_.outerSize(); k++)
+        for (int k = 0; k < constraintHessianSparsity_.outerSize(); k++)
         {
-            for (typename Eigen::SparseMatrix<SCALAR>::InnerIterator it(constraintHessianTot_, k); it; ++it)
+            for (typename Eigen::SparseMatrix<SCALAR>::InnerIterator it(constraintHessianSparsity_, k); it; ++it)
             {
                 iRowHessianStdVec_.push_back(it.row());
                 jColHessianStdVec_.push_back(it.col());
@@ -217,8 +215,8 @@ public:
         jCol = Eigen::Map<Eigen::VectorXi>(jColHessianStdVec_.data(), jColHessianStdVec_.size(), 1);
 #else
         throw std::runtime_error(
-            "getSparsityPatternHessian only available for Eigen 3.3 and newer. Please change solver settings to NOT use "
-            "Hessians or upgrade Eigen version.");
+            "getSparsityPatternHessian only available for Eigen 3.3 and newer. Please change solver settings to NOT "
+            "use exact Hessians or upgrade Eigen version.");
 #endif
     }
 
@@ -233,30 +231,36 @@ public:
     Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda)
     {
 #if EIGEN_VERSION_AT_LEAST(3, 3, 0)
-    	constraintHessianTot_.setZero(); // important reset
 
-        std::vector<Eigen::VectorXd> hessianConstraintsValues(constraints_.size());
+        std::vector<Eigen::Triplet<SCALAR>> triplets;
+
         size_t count = 0;
         for (size_t c = 0; c < constraints_.size(); c++)
         {
             // count the constraint size to hand over correct portion of multiplier vector lambda
             size_t c_nel = constraints_[c]->getConstraintSize();
-            hessianConstraintsValues[c] = constraints_[c]->sparseHessianValues(optVec, lambda.segment(count, c_nel));
+            Eigen::VectorXd hessianSubValues =
+                constraints_[c]->sparseHessianValues(optVec, lambda.segment(count, c_nel));
             count += c_nel;
 
-            // todo -- set this from triplets here fore better efficiency
-
-            for (int i = 0; i < hessianConstraintsValues[c].rows(); i++)
-                constraintHessianTot_.coeffRef(constraints_[c]->iRowHessian()(i), constraints_[c]->jColHessian()(i)) +=
-                    hessianConstraintsValues[c](i);
+            // add the evaluated sub-hessian elements as triplets
+            for (int i = 0; i < hessianSubValues.rows(); i++)
+                triplets.push_back(Eigen::Triplet<SCALAR>(
+                    constraints_[c]->iRowHessian()(i), constraints_[c]->jColHessian()(i), hessianSubValues(i)));
         }
 
-        constraintHessianTot_.makeCompressed();
+        // combine all triplets into the sparse constraint Hessian
+        constraintHessianTot_.setFromTriplets(triplets.begin(), triplets.end());
 
-        return Eigen::VectorXd(Eigen::Map<Eigen::VectorXd>(constraintHessianTot_.valuePtr(), constraintHessianTot_.nonZeros(), 1));
+        // triangular-view required (todo: need better in-place assignment)
+        constraintHessianTot_ = constraintHessianTot_.template triangularView<Eigen::Lower>();
+
+        size_t nele_constraint_hes = jColHessianStdVec_.size();
+        return Eigen::VectorXd(Eigen::Map<Eigen::VectorXd>(constraintHessianTot_.valuePtr(), nele_constraint_hes, 1));
 #else
         throw std::runtime_error(
-            "sparseHessianValues only available for Eigen 3.3 and newer. Please use BFGS Hessian approx or upgrade Eigen version.");
+            "sparseHessianValues only available for Eigen 3.3 and newer. Please use BFGS Hessian approx or upgrade "
+            "Eigen version.");
         return Eigen::VectorXd::Zero();
 #endif
     }
@@ -289,6 +293,8 @@ protected:
 
 #if EIGEN_VERSION_AT_LEAST(3, 3, 0)
     Eigen::SparseMatrix<SCALAR> constraintHessianTot_;
+    Eigen::SparseMatrix<SCALAR>
+        constraintHessianSparsity_;  // helper to calculate sparsity and number of non-zero elements
 #endif
 };
 }
