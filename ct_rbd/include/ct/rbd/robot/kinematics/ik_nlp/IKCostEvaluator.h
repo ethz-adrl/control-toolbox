@@ -16,7 +16,7 @@ namespace rbd {
  * @warning currently this works only with fix-base systems
  */
 template <typename KINEMATICS, typename SCALAR = double>
-class IKCostEvaluator : public ct::optcon::tpl::DiscreteCostEvaluatorBase<SCALAR>
+class IKCostEvaluator final : public ct::optcon::tpl::DiscreteCostEvaluatorBase<SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -97,24 +97,27 @@ public:
     		throw std::runtime_error("IKCostEvaluator: optimization vector not set.");
     }
 
+
+    // todo make lower triangular
     //! retrieve second order derivative
-    virtual void evalHessian(const int num_el, Eigen::VectorXd& hes) override
+    void sparseHessianValues(const Eigen::VectorXd& jointAngles, const Eigen::VectorXd& obj_fac, Eigen::VectorXd& hes) override
     {
-        assert(num_el == KINEMATICS::NJOINTS*KINEMATICS::NJOINTS);
+        hes.resize(KINEMATICS::NJOINTS * KINEMATICS::NJOINTS);
+
      	if(w_ != nullptr)
      	{
      		// map hessian value-vector to matrix
      		Eigen::Map<Eigen::Matrix<SCALAR, KINEMATICS::NJOINTS, KINEMATICS::NJOINTS>> Hmat (hes.data(), KINEMATICS::NJOINTS, KINEMATICS::NJOINTS);
-     		Hmat = costTerm_->stateSecondDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, KINEMATICS::NJOINTS, 1>::Zero(), 0.0);
+     		Hmat = obj_fac(0,0) * costTerm_->stateSecondDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, KINEMATICS::NJOINTS, 1>::Zero(), 0.0);
      	}
         else
     		throw std::runtime_error("IKCostEvaluator: optimization vector not set.");
-    };
+    }
 
-    // create sparsity pattern for the hessian
+    // todo make lower triangular
+    //! create sparsity pattern for the hessian
     virtual void getSparsityPatternHessian(Eigen::VectorXi& iRow,
-        Eigen::VectorXi& jCol,
-        const int nnz_hes) override
+        Eigen::VectorXi& jCol) override
     {
     	size_t count = 0;
     	for(size_t i = 0; i<KINEMATICS::NJOINTS; i++)
@@ -129,10 +132,6 @@ public:
     	assert(count == nnz_hes);
     }
 
-    virtual size_t getNonZeroHessianCount() override
-    {
-    	return KINEMATICS::NJOINTS * KINEMATICS::NJOINTS;
-    }
 
 private:
     std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> w_;

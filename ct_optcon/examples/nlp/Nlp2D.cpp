@@ -102,7 +102,7 @@ public:
     {
         Eigen::VectorXd hes(2);
         hes.setConstant(lambda(2) * 2.0);
-        return hes;
+        return hes; // todo return by reference !!!!!!!!!!!!!!!!
     }
 
     /*

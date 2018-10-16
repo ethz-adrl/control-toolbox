@@ -17,7 +17,7 @@ namespace rbd {
  * @warning currently this works only with fix-base systems
  */
 template <typename KINEMATICS, typename SCALAR = double>
-class IKConstraintsContainer : public ct::optcon::tpl::DiscreteConstraintContainerBase<SCALAR>
+class IKConstraintsContainer final : public ct::optcon::tpl::DiscreteConstraintContainerBase<SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW

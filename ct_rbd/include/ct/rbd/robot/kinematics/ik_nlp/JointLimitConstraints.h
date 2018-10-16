@@ -12,7 +12,7 @@ namespace rbd {
  * @brief Inverse Kinematics joint limit constraints
  */
 template <typename KINEMATICS, typename SCALAR = double>
-class JointLimitConstraints : public ct::optcon::tpl::DiscreteConstraintBase<SCALAR>
+class JointLimitConstraints final : public ct::optcon::tpl::DiscreteConstraintBase<SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -46,6 +46,7 @@ public:
 
     size_t getConstraintSize() override { return KINEMATICS::NJOINTS; }
     size_t getNumNonZerosJacobian() override { return KINEMATICS::NJOINTS; }
+
     void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
     {
     	for(size_t i = 0; i<KINEMATICS::NJOINTS; i++)
@@ -55,14 +56,15 @@ public:
     	}
     }
 
-    virtual size_t getNumNonZerosHessian() override
-    {
-    	return 0; // there are no non-zero entries
-    }
 
-    virtual void genSparsityPatternHessian(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
+    void genSparsityPatternHessian(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
     {
     	// do nothing
+    }
+
+    Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda) override
+    {
+        return Eigen::VectorXd();
     }
 
     VectorXs getLowerBound() override { return lowerBounds_; }

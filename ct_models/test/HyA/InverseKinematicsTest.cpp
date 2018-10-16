@@ -31,8 +31,8 @@ int main(int argc, char* argv[])
 
     ct::optcon::NlpSolverSettings nlpSolverSettings;
     nlpSolverSettings.solverType_ = ct::optcon::NlpSolverType::IPOPT;
-    nlpSolverSettings.ipoptSettings_.derivativeTest_ = "first-order"; // remove this option if you need more speed.
-    nlpSolverSettings.ipoptSettings_.hessian_approximation_ = "limited-memory";
+    nlpSolverSettings.ipoptSettings_.derivativeTest_ = "second-order"; // remove this option if you need more speed.
+    nlpSolverSettings.ipoptSettings_.hessian_approximation_ = "limited-memory"; //limited-memory
 
     std::shared_ptr<ct::optcon::IpoptSolver> nlpSolver(new ct::optcon::IpoptSolver(ik_problem, nlpSolverSettings));
 
