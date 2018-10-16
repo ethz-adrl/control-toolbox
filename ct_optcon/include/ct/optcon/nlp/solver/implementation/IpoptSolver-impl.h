@@ -16,6 +16,7 @@ IpoptSolver<SCALAR>::IpoptSolver(std::shared_ptr<tpl::Nlp<SCALAR>> nlp, const Nl
     //Argument 1: create console output
     //Argument 2: create empty
     ipoptApp_ = std::shared_ptr<Ipopt::IpoptApplication>(new Ipopt::IpoptApplication(true, false));
+    configureDerived(settings);
 }
 
 template <typename SCALAR>
@@ -253,7 +254,7 @@ bool IpoptSolver<SCALAR>::eval_g(Ipopt::Index n, const SCALAR* x, bool new_x, Ip
 #ifdef DEBUG_PRINT
     std::cout << "... entering eval_g()" << std::endl;
 #endif  //DEBUG_PRINT
-    assert(m == this->nlp_->getConstraintsCount());
+    assert(m == (int) this->nlp_->getConstraintsCount());
     MapConstVecXs xVec(x, n);
     this->nlp_->extractOptimizationVars(xVec, new_x);
     MapVecXs gVec(g, m);
@@ -347,9 +348,7 @@ bool IpoptSolver<SCALAR>::eval_h(Ipopt::Index n,
         this->nlp_->evaluateHessian(nele_hess, valVec, obj_factor, lambdaVec);
     }
 
-// only needed if quasi-newton approximation is not used, hence set to -1 (not used)!
-// ATTENTION: for hard coding of the hessian, one only needs the lower left corner (since it is symmetric) - IPOPT knows that
-//nnz_h_lag = -1;
+// ATTENTION: for hard coding of the Hessian, one only needs the lower left corner (since it is symmetric) - IPOPT knows that
 
 #ifdef DEBUG_PRINT
     std::cout << "... leaving eval_h()" << std::endl;

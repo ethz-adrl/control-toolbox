@@ -4,14 +4,19 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 /*!
- * \example SimpleNlp_exactHessian.cpp
+ * \example NLp2D.cpp
  *
- * This example shows how to set up and solve a Nonlinear program using the Nlp and Nlpsolver classes with exact Hessians.
+ * This example shows how to set up and solve a Nonlinear program using the Nlp and Nlpsolver classes. We show both exact
+ * Hessian (requires more implementation) and Hessian-approximation versions.
  * We solve the following NLP:
- * min (x1 + x2)^2
+ *
+ * max(x1 + x2)
  * s.t: x1 >= 0
  *      x2 >= 0
  *      1 <= x1^2 + x2^2 <= 2
+ *
+ * The optimal solution to this problem is x = [1, 1].
+ * (taken from Wikipedia: https://en.wikipedia.org/wiki/Nonlinear_programming#2-dimensional_example)
  */
 
 #include <ct/optcon/nlp/Nlp>
@@ -43,17 +48,20 @@ public:
 
     ~ExampleConstraints() override = default;
 
+    VectorXs getLowerBound() override { return lowerBounds_; }
+    VectorXs getUpperBound() override { return upperBounds_; }
+
     VectorXs eval() override
     {
-        contraints_.setZero();
+        constraints_.setZero();
 
         SCALAR x1 = optVector_->getOptimizationVars()(0);
         SCALAR x2 = optVector_->getOptimizationVars()(1);
 
-        contraints_(0) = x1;
-        contraints_(1) = x2;
-        contraints_(2) = x1 * x1 + x2 * x2;
-        return contraints_;
+        constraints_(0) = x1;
+        constraints_(1) = x2;
+        constraints_(2) = x1 * x1 + x2 * x2;
+        return constraints_;
     }
 
     VectorXs evalSparseJacobian() override
@@ -88,6 +96,8 @@ public:
     /*
      * When we write down the three sub-hessian for this constraints we see H1 = 0, H2 = 0 and
      * H3 = [2 0; 0 2].
+     *
+     * \note this function implementation is only required for the exact-hessian solver case
      */
     Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda) override
     {
@@ -98,6 +108,7 @@ public:
 
     /*
      * generate block-diagonal sparsity pattern
+     * \note this function implementation is only required for the exact-hessian solver case
      */
     void genSparsityPatternHessian(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
     {
@@ -110,15 +121,14 @@ public:
     }
 
 
-    VectorXs getLowerBound() override { return lowerBounds_; }
-    VectorXs getUpperBound() override { return upperBounds_; }
 private:
     std::shared_ptr<tpl::OptVector<SCALAR>> optVector_;
-    Eigen::Matrix<SCALAR, 4, 1> contraints_;
     Eigen::Matrix<SCALAR, 4, 1> jacobian_;
-    Eigen::Matrix<SCALAR, 4, 1> lowerBounds_;  // lower bound
-    Eigen::Matrix<SCALAR, 4, 1> upperBounds_;  // upper bound
+    Eigen::Matrix<SCALAR, 3, 1> constraints_;
+    Eigen::Matrix<SCALAR, 3, 1> lowerBounds_;  // lower bound
+    Eigen::Matrix<SCALAR, 3, 1> upperBounds_;  // upper bound
 };
+
 
 /**
  * @brief      This class implements the cost function and its gradient
@@ -137,38 +147,34 @@ public:
         SCALAR x1 = optVector_->getOptimizationVars()(0);
         SCALAR x2 = optVector_->getOptimizationVars()(1);
 
-        return static_cast<SCALAR>((x1 + x2) * (x1 + x2));
+        return -static_cast<SCALAR>(x1 + x2);
     }
 
     void evalGradient(size_t grad_length, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>& grad) override
     {
-        SCALAR x1 = optVector_->getOptimizationVars()(0);
-        SCALAR x2 = optVector_->getOptimizationVars()(1);
         grad.resize(grad_length);
-        grad(0) = static_cast<SCALAR>(2 * (x1 + x2));
-        grad(1) = static_cast<SCALAR>(2 * (x1 + x2));
+        grad(0) = static_cast<SCALAR>(-1.0);
+        grad(1) = static_cast<SCALAR>(-1.0);
     }
 
-    size_t getNonZeroHessianCount() override { return 4; }
+    /*
+    * \note this function implementation is only required for the exact-hessian solver case
+    */
+    size_t getNonZeroHessianCount() override { return 0; }
+
+    /*
+    * \note this function implementation is only required for the exact-hessian solver case
+    */
     void getSparsityPatternHessian(Eigen::VectorXi& iRow, Eigen::VectorXi& jCol) override
     {
-        iRow.resize(getNonZeroHessianCount());
-        jCol.resize(getNonZeroHessianCount());
-        iRow(0) = 0;
-        jCol(0) = 0;
-        iRow(1) = 0;
-        jCol(1) = 1;
-        iRow(2) = 1;
-        jCol(2) = 0;
-        iRow(3) = 1;
-        jCol(3) = 1;
+    	/* do nothing */
     }
 
+    // todo this is really bad, we should not be returning by value if the sparse return value potentially does not exist
     Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda) override
     {
-        Eigen::VectorXd hes(getNonZeroHessianCount());
-        hes.setConstant(2.0 * lambda(0,0));
-        return hes;
+        /* do nothing */
+    	return Eigen::VectorXd(0);
     }
 
 private:
@@ -203,7 +209,6 @@ private:
 
 /**
  * @brief      Sets up the nlp to be solved by an nlpsolver
- *
  * @tparam     SCALAR  Scalar type
  */
 template <typename SCALAR>
@@ -227,32 +232,36 @@ public:
 
     void updateProblem() override { /* do nothing */}
 
-    void printSolution()
-    {
-        std::cout << "Solution: " << this->optVariables_->getOptimizationVars().transpose() << std::endl;
-    }
+    Eigen::VectorXd getSolution() { return this->optVariables_->getOptimizationVars(); }
 };
 
 int main(int argc, char** argv)
 {
-    std::shared_ptr<tpl::Nlp<double>> exampleProblem =
-        std::shared_ptr<ExampleProblem<double>>(new ExampleProblem<double>());
+	// create problems
+    std::shared_ptr<ExampleProblem<double>> problem1 (new ExampleProblem<double>());
+    std::shared_ptr<ExampleProblem<double>> problem2 (new ExampleProblem<double>());
 
-    NlpSolverSettings exampleNlpSolverSettings;
-    exampleNlpSolverSettings.solverType_ = NlpSolverType::IPOPT;
-//    exampleNlpSolverSettings.ipoptSettings_.derivativeTest_ = "second-order"; // todo: bring this in!
-    exampleNlpSolverSettings.ipoptSettings_.hessian_approximation_ = "exact";
+    // settings for exact Hessian solver
+    NlpSolverSettings solverSettings1;
+    solverSettings1.solverType_ = NlpSolverType::IPOPT;
+    solverSettings1.ipoptSettings_.derivativeTest_ = "second-order";
+    solverSettings1.ipoptSettings_.hessian_approximation_ = "exact";
+
+    // create exact-Hessian solver and solve
+    std::shared_ptr<NlpSolver> nlpSolver1 (new IpoptSolver(problem1, solverSettings1));
+    nlpSolver1->solve();
+    std::cout << "Solution: " << problem1->getSolution().transpose() << std::endl;;
 
 
-    std::shared_ptr<NlpSolver> nlpSolver =
-        std::shared_ptr<IpoptSolver>(new IpoptSolver(exampleProblem, exampleNlpSolverSettings));
+    // settings for Hessian approximation solver
+    NlpSolverSettings solverSettings2;
+    solverSettings2.solverType_ = NlpSolverType::IPOPT;
+    solverSettings2.ipoptSettings_.hessian_approximation_ = "limited-memory";
 
-    if (!nlpSolver->isInitialized())
-        nlpSolver->configure(exampleNlpSolverSettings);
-
-    nlpSolver->solve();
-
-    std::static_pointer_cast<ExampleProblem<double>>(exampleProblem)->printSolution();
+    // create approximate-Hessian solver and solve
+    std::shared_ptr<NlpSolver> nlpSolver2 (new IpoptSolver(problem2, solverSettings2));
+    nlpSolver2->solve();
+    std::cout << "Solution: " << problem2->getSolution().transpose() << std::endl;;
 
     return 0;
 }

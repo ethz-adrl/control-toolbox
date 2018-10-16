@@ -109,6 +109,11 @@ public:
         xInit_.setRandom();
     }
 
+    void setInitialGuess(const VectorXs& xinit)
+    {
+    	x_ = xinit;
+    	xInit_ = xinit;
+    }
 
     /**
      * @brief      Checks if the optimization variables have to correct size
@@ -197,7 +202,7 @@ public:
      */
     void getBoundMultipliers(size_t n, MapVecXs& low, MapVecXs& up) const
     {
-        assert(n == zLow_.size());
+        assert(n == (size_t) zLow_.size());
         low = zLow_;
         up = zUpper_;
     }
@@ -210,7 +215,7 @@ public:
      */
     void getLambdaVars(size_t m, MapVecXs& x) const
     {
-        assert(m == lambda_.size());
+        assert(m == (size_t) lambda_.size());
         x = lambda_;
     }
 
@@ -230,7 +235,7 @@ public:
 
     void getInitialGuess(size_t n, MapVecXs& x) const
     {
-        assert(n == xInit_.size());
+        assert(n == (size_t) xInit_.size());
         x = xInit_;
     }
 
