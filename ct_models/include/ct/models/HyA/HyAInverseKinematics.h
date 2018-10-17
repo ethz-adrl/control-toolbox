@@ -36,7 +36,7 @@ public:
 
     virtual bool computeInverseKinematics(JointPositionsVector_t& res,
         const RigidBodyPoseTpl& eeBasePose,
-        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const
+        const std::vector<size_t>& freeJoints = std::vector<size_t>())
     {
         res.clear();
         IkSolutionList<double> solutions;
@@ -77,7 +77,7 @@ public:
     virtual bool computeInverseKinematics(JointPositionsVector_t& res,
         const RigidBodyPoseTpl& eeWorldPose,
         const RigidBodyPoseTpl& baseWorldPose,
-        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const
+        const std::vector<size_t>& freeJoints = std::vector<size_t>())
     {
         return computeInverseKinematics(res, eeWorldPose.inReferenceFrame(baseWorldPose), freeJoints);
     }

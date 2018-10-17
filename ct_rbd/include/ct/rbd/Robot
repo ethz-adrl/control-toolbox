@@ -26,3 +26,4 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "robot/kinematics/EndEffector.h"
 #include "robot/kinematics/ik_nlp/IKCostEvaluator.h"
 #include "robot/kinematics/ik_nlp/IKNLP.h"
+#include "robot/kinematics/ik_nlp/IKNLPSolverIpopt.h"

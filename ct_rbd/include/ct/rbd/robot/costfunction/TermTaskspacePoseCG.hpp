@@ -441,8 +441,6 @@ private:
         Eigen::Matrix<SC, 3, 1> xDiff = xCurr - w_p_ref;
 
 
-//        kinematics_.jacobians().fr_HyABase_J_fr_ee.update(rbdState.jointPositions());
-
         // compute the cost from the position error
         SC pos_cost = (xDiff.transpose() * Q_pos_.template cast<SC>() * xDiff)(0, 0);
 

@@ -239,8 +239,8 @@ public:
         {
             // count the constraint size to hand over correct portion of multiplier vector lambda
             size_t c_nel = constraints_[c]->getConstraintSize();
-            Eigen::VectorXd hessianSubValues =
-                constraints_[c]->sparseHessianValues(optVec, lambda.segment(count, c_nel));
+            Eigen::VectorXd hessianSubValues;
+            constraints_[c]->sparseHessianValues(optVec, lambda.segment(count, c_nel), hessianSubValues);
             count += c_nel;
 
             // add the evaluated sub-hessian elements as triplets

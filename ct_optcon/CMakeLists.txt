@@ -126,26 +126,26 @@ if(BUILD_EXAMPLES)
     set(CT_OPTCON_EXAMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/examples")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
 
-    #add_executable(ex_ConstraintOutput examples/ConstraintExampleOutput.cpp)
-    #target_link_libraries(ex_ConstraintOutput ${catkin_LIBRARIES})
-    #
-    #add_executable(ex_LQR examples/LQR.cpp)
-    #target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS})
-    #
-    #add_executable(ex_NLOC examples/NLOC.cpp)
-    #target_link_libraries(ex_NLOC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-    #
-    #add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
-    #target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+    add_executable(ex_ConstraintOutput examples/ConstraintExampleOutput.cpp)
+    target_link_libraries(ex_ConstraintOutput ${catkin_LIBRARIES})
+    
+    add_executable(ex_LQR examples/LQR.cpp)
+    target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS})
+    
+    add_executable(ex_NLOC examples/NLOC.cpp)
+    target_link_libraries(ex_NLOC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+    
+    add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
+    target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
-    #add_executable(ex_DMS examples/DMS.cpp)
-    #target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
+    add_executable(ex_DMS examples/DMS.cpp)
+    target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
 
-    #add_executable(ex_KalmanFiltering examples/KalmanFiltering.cpp)
-    #target_link_libraries(ex_KalmanFiltering ${catkin_LIBRARIES})
-    #
-    #add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
-    #target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
+    add_executable(ex_KalmanFiltering examples/KalmanFiltering.cpp)
+    target_link_libraries(ex_KalmanFiltering ${catkin_LIBRARIES})
+    
+    add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
+    target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
 
     add_executable(ex_Nlp_2D examples/nlp/Nlp2D.cpp)
     target_link_libraries(ex_Nlp_2D ${catkin_LIBRARIES} ${NLP_LIBS})

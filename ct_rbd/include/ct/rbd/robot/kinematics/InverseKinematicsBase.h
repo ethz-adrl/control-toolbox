@@ -36,7 +36,7 @@ public:
      */
     virtual bool computeInverseKinematics(JointPositionsVector_t& ikSolutions,
         const RigidBodyPoseTpl& eeBasePose,
-        const std::vector<size_t>& freeJoints) const = 0;
+        const std::vector<size_t>& freeJoints) = 0;
 
     /*!
      * @brief compute inverse kinematics for an end-effector
@@ -49,7 +49,7 @@ public:
     virtual bool computeInverseKinematics(JointPositionsVector_t& ikSolutions,
         const RigidBodyPoseTpl& eeWorldPose,
         const RigidBodyPoseTpl& baseWorldPose,
-        const std::vector<size_t>& freeJoints) const = 0;
+        const std::vector<size_t>& freeJoints) = 0;
 
 
     /*!
@@ -64,7 +64,7 @@ public:
         const RigidBodyPoseTpl& eeWorldPose,
         const RigidBodyPoseTpl& baseWorldPose,
         const JointPosition_t& queryJointPositions,
-        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const
+        const std::vector<size_t>& freeJoints = std::vector<size_t>())
     {
         // compute all inverse kinematics solutions
         JointPositionsVector_t solutions;
@@ -98,7 +98,7 @@ public:
     virtual bool computeInverseKinematicsCloseTo(JointPosition_t& ikSolution,
         const RigidBodyPoseTpl& eeBasePose,
         const JointPosition_t& queryJointPositions,
-        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const
+        const std::vector<size_t>& freeJoints = std::vector<size_t>())
     {
         // set base world pose as identity, herewith eeBasePose = eeWorldPose
         RigidBodyPoseTpl identityWorldPose;

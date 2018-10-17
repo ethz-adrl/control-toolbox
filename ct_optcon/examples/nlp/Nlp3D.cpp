@@ -107,8 +107,7 @@ public:
         return jacobian_;
     }
 
-
-    /*
+    /*!
      * generate block-diagonal sparsity pattern for Hessian
      * \note this function implementation is only required for the exact-Hessian solver case
      */
@@ -124,17 +123,18 @@ public:
         jCol_vec(2) = 2;
     }
 
-    /*
+    /*!
      * \note this function implementation is only required for the exact-Hessian solver case
      */
-    Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda) override
+   void sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda, Eigen::VectorXd& sparseHes) override
     {
-        Eigen::VectorXd h1(nnzHes);
-        Eigen::VectorXd h2(nnzHes);
+        Eigen::VectorXd h1, h2;
+        h1.resize(nnzHes);
+        h2.resize(nnzHes);
         h1 << 2.0, -2.0, 2.0;
         h2 << 2.0, 2.0, 2.0;
 
-        return lambda(0) * h1 + lambda(1) * h2;
+        sparseHes = lambda(0) * h1 + lambda(1) * h2;
     }
 
 

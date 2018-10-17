@@ -98,11 +98,10 @@ public:
      *
      * \note this function implementation is only required for the exact-hessian solver case
      */
-    Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda) override
+    void sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda, Eigen::VectorXd& sparseHes) override
     {
-        Eigen::VectorXd hes(2);
-        hes.setConstant(lambda(2) * 2.0);
-        return hes; // todo return by reference !!!!!!!!!!!!!!!!
+        sparseHes.resize(2);
+        sparseHes.setConstant(lambda(2) * 2.0);
     }
 
     /*

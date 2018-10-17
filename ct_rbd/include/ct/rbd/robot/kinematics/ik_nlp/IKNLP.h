@@ -9,21 +9,21 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include "IKCostEvaluator.h"
 #include "IKConstraintContainer.h"
-#include "../InverseKinematicsBase.h"
 
 namespace ct {
 namespace rbd {
 
 /*!
  * todo: set more meaningful initial guess
- * todo implement cost evaluator
- * todo implement constraints
  */
 template <typename KINEMATICS, typename SCALAR = double>
-class IKNLP : public ct::optcon::tpl::Nlp<SCALAR>, public ct::rbd::InverseKinematicsBase<KINEMATICS::NJOINTS, SCALAR>
+class IKNLP : public ct::optcon::tpl::Nlp<SCALAR>
 {
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+	using Scalar_t = SCALAR;
+	using Kinematics_t = KINEMATICS;
 
     using InverseKinematicsBase = ct::rbd::InverseKinematicsBase<KINEMATICS::NJOINTS, SCALAR>;
     using JointPosition_t = typename InverseKinematicsBase::JointPosition_t;
@@ -55,43 +55,26 @@ public:
 
     virtual void updateProblem() override { /* do nothing */}
 
-    virtual bool computeInverseKinematics(JointPositionsVector_t& ikSolutions,
-        const RigidBodyPoseTpl& eeBasePose,
-        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const override
+    JointPosition_t getSolution()
     {
-        std::static_pointer_cast<ct::rbd::IKCostEvaluator<KINEMATICS, SCALAR>>(this->costEvaluator_)
-            ->setTargetPose(eeBasePose);
-
-        throw std::runtime_error("iknlp not implemented yet.");
-        // todo implement
-    }
-
-    virtual bool computeInverseKinematics(JointPositionsVector_t& ikSolutions,
-        const RigidBodyPoseTpl& eeWorldPose,
-        const RigidBodyPoseTpl& baseWorldPose,
-        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const override
-    {
-        throw std::runtime_error("iknlp not implemented yet.");
-        // todo implement
-    }
-
-    //! set an initial guess for the numerical routine
-    void setInitialGuess(const typename ct::rbd::JointState<KINEMATICS::NJOINTS>::Position& q_init)
-    {
-        throw std::runtime_error("IKNLP -- no initial guess setting implemented yet.");
-        //        this->optVariables_->setInitGuess(x_init_guess, u_init_guess);
+    	return this->optVariables_->getOptimizationVars();
     }
 
     //! print the solution to command line
     void printSolution()
     {
-        std::cout << "Inverse kinematics solution: " << std::endl
+        std::cout << "IKNLP Solution: " << std::endl
                   << this->optVariables_->getOptimizationVars().transpose() << std::endl;
     }
 
-    JointPosition_t getSolution()
+    std::shared_ptr<ct::rbd::IKCostEvaluator<KINEMATICS, SCALAR>> getIKCostEvaluator()
     {
-    	return this->optVariables_->getOptimizationVars();
+    	return std::static_pointer_cast<ct::rbd::IKCostEvaluator<KINEMATICS, SCALAR>>(this->costEvaluator_);
+    }
+
+    void setInitialGuess(const JointPosition_t& q_init)
+    {
+    	this->optVariables_->setInitialGuess(q_init);
     }
 
 private:

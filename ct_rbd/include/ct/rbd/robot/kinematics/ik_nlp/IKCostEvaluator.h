@@ -7,19 +7,23 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <ct/rbd/robot/Kinematics.h>
 #include <ct/rbd/state/RBDState.h>
+#include "IKRegularizerBase.h"
 
 namespace ct {
 namespace rbd {
 
+
 /*!
- * @brief Inverse Kinematics cost evaluator
+ * @brief Inverse Kinematics cost evaluator for NLP
  * @warning currently this works only with fix-base systems
  */
-template <typename KINEMATICS, typename SCALAR = double>
+template <typename KINEMATICS_AD, typename SCALAR = double>
 class IKCostEvaluator final : public ct::optcon::tpl::DiscreteCostEvaluatorBase<SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+	static const size_t NJOINTS = KINEMATICS_AD::NJOINTS;
 
     IKCostEvaluator(
     		size_t eeInd,
@@ -27,25 +31,29 @@ public:
 			const double& Qrot = 1.0)
         : w_(nullptr),
 		  costTerm_(
-              new ct::rbd::TermTaskspacePoseCG<KINEMATICS, false, KINEMATICS::NJOINTS, KINEMATICS::NJOINTS>(eeInd, Qpos, Qrot))
+              new ct::rbd::TermTaskspacePoseCG<KINEMATICS_AD, false, NJOINTS, NJOINTS>(eeInd, Qpos, Qrot)),
+			  ikRegularizer_(nullptr)
     {
     }
 
     IKCostEvaluator(const std::string& costFunctionPath, const std::string& termName, bool verbose)
         : w_(nullptr),
 		  costTerm_(
-              new ct::rbd::TermTaskspacePoseCG<KINEMATICS, false, KINEMATICS::NJOINTS, KINEMATICS::NJOINTS>(costFunctionPath, termName, verbose))
+              new ct::rbd::TermTaskspacePoseCG<KINEMATICS_AD, false, NJOINTS, NJOINTS>(costFunctionPath, termName, verbose)),
+			  ikRegularizer_(nullptr)
     {
     }
 
     virtual ~IKCostEvaluator() override = default;
 
-    //! needs to be set by NLP solver
+    //! opt vector needs to be set by NLP solver
     void setOptVector(std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> optVector)
     {
     	w_ = optVector;
     }
 
+    // set an optional regularizer (if necessary)
+    void setRegularizer(std::shared_ptr<IKRegularizerBase> reg) { ikRegularizer_ = reg; }
 
     ct::rbd::RigidBodyPose getTargetPose()
     {
@@ -57,7 +65,6 @@ public:
     {
 		costTerm_->setReferencePosition(rbdPose.position().toImplementation());
 		costTerm_->setReferenceOrientation(rbdPose.getRotationQuaternion().toImplementation());
-		costTerm_->setup(); // TODO: check if this is really required
     }
 
     // set the target pose as separate position and quaternion
@@ -65,7 +72,6 @@ public:
     {
 		costTerm_->setReferencePosition(w_pos_des);
 		costTerm_->setReferenceOrientation(w_q_des);
-		costTerm_->setup(); // TODO: check if this is really required
 	}
 
     // set the gart pose as euler angles directly
@@ -75,14 +81,13 @@ public:
     	costTerm_->setReferenceOrientation(Eigen::Quaterniond(Eigen::AngleAxisd(eulerXyz(0), Eigen::Vector3d::UnitX()) *
                         Eigen::AngleAxisd(eulerXyz(1), Eigen::Vector3d::UnitY()) *
                         Eigen::AngleAxisd(eulerXyz(2), Eigen::Vector3d::UnitZ())));
-		costTerm_->setup(); // TODO: check if this is really required
     }
 
     //! evaluate cost function
     virtual SCALAR eval() override
     {
     	if(w_ != nullptr)
-    		return costTerm_->evaluate(w_->getOptimizationVars(), Eigen::Matrix<double, KINEMATICS::NJOINTS, 1>::Zero(), 0.0);
+    		return costTerm_->evaluate(w_->getOptimizationVars(), Eigen::Matrix<double, NJOINTS, 1>::Zero(), 0.0);
     	else
     		throw std::runtime_error("IKCostEvaluator: optimization vector not set.");
     }
@@ -90,53 +95,60 @@ public:
     //! retrieve first-order derivative
     virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>& grad) override
     {
-        assert(grad_length == KINEMATICS::NJOINTS);
+        assert(grad_length == NJOINTS);
      	if(w_ != nullptr)
-            grad = costTerm_->stateDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, KINEMATICS::NJOINTS, 1>::Zero(), 0.0);
+            grad = costTerm_->stateDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, NJOINTS, 1>::Zero(), 0.0);
     	else
     		throw std::runtime_error("IKCostEvaluator: optimization vector not set.");
     }
 
 
-    // todo make lower triangular
+    // todo make lower triangular (when convenient)
     //! retrieve second order derivative
     void sparseHessianValues(const Eigen::VectorXd& jointAngles, const Eigen::VectorXd& obj_fac, Eigen::VectorXd& hes) override
     {
-        hes.resize(KINEMATICS::NJOINTS * KINEMATICS::NJOINTS);
+        hes.resize(NJOINTS * NJOINTS);
 
      	if(w_ != nullptr)
      	{
      		// map hessian value-vector to matrix
-     		Eigen::Map<Eigen::Matrix<SCALAR, KINEMATICS::NJOINTS, KINEMATICS::NJOINTS>> Hmat (hes.data(), KINEMATICS::NJOINTS, KINEMATICS::NJOINTS);
-     		Hmat = obj_fac(0,0) * costTerm_->stateSecondDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, KINEMATICS::NJOINTS, 1>::Zero(), 0.0);
+     		Eigen::Map<Eigen::Matrix<SCALAR, NJOINTS, NJOINTS>> Hmat (hes.data(), NJOINTS, NJOINTS);
+     		Hmat = obj_fac(0,0) * costTerm_->stateSecondDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, NJOINTS, 1>::Zero(), 0.0);
+
+     		if(ikRegularizer_)
+     			Hmat += ikRegularizer_->computeRegularizer(w_->getOptimizationVars());
      	}
         else
     		throw std::runtime_error("IKCostEvaluator: optimization vector not set.");
     }
 
-    // todo make lower triangular
+    // todo make lower triangular (when convenient)
     //! create sparsity pattern for the hessian
     virtual void getSparsityPatternHessian(Eigen::VectorXi& iRow,
         Eigen::VectorXi& jCol) override
     {
+        iRow.resize(NJOINTS * NJOINTS);
+        jCol.resize(NJOINTS * NJOINTS);
+
     	size_t count = 0;
-    	for(size_t i = 0; i<KINEMATICS::NJOINTS; i++)
+    	for(size_t i = 0; i<NJOINTS; i++)
     	{
-    		iRow(count) = i;
-    		for (size_t j = 0; j<KINEMATICS::NJOINTS; j++)
+    		for (size_t j = 0; j<NJOINTS; j++)
     		{
+				iRow(count) = i;
     			jCol(count) = j;
     			count++;
     		}
     	}
-    	assert(count == nnz_hes);
     }
 
 
 private:
     std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> w_;
-    std::shared_ptr<ct::rbd::TermTaskspacePoseCG<KINEMATICS, false, KINEMATICS::NJOINTS, KINEMATICS::NJOINTS>> costTerm_;
-    Eigen::MatrixXd Hval_;
+
+    std::shared_ptr<ct::rbd::TermTaskspacePoseCG<KINEMATICS_AD, false, NJOINTS, NJOINTS>> costTerm_;
+
+    std::shared_ptr<IKRegularizerBase> ikRegularizer_;
 };
 
 }  // namespace rbd

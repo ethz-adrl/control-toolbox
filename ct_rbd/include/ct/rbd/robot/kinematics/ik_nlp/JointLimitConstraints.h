@@ -49,6 +49,9 @@ public:
 
     void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
     {
+    	iRow_vec.resize(KINEMATICS::NJOINTS);
+    	jCol_vec.resize(KINEMATICS::NJOINTS);
+
     	for(size_t i = 0; i<KINEMATICS::NJOINTS; i++)
     	{
     		iRow_vec(i) = i;
@@ -62,9 +65,9 @@ public:
     	// do nothing
     }
 
-    Eigen::VectorXd sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda) override
+    void sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda, Eigen::VectorXd& sparseHes) override
     {
-        return Eigen::VectorXd();
+        // do nothing
     }
 
     VectorXs getLowerBound() override { return lowerBounds_; }
