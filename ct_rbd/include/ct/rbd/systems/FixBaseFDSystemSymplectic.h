@@ -5,10 +5,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/rbd/state/RigidBodyPose.h>
+#include "FixBaseSystemBase.h"
 #include <ct/rbd/robot/actuator/ActuatorDynamicsSymplectic.h>
-
-#include "RBDSystem.h"
 
 
 #define ACTUATOR_DYNAMICS_ENABLED    \
