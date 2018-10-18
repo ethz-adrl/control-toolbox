@@ -61,7 +61,7 @@ public:
     }
 
     //! print the solution to command line
-    void printSolution()
+    void printSolution() const
     {
         std::cout << "IKNLP Solution: " << std::endl
                   << this->optVariables_->getOptimizationVars().transpose() << std::endl;

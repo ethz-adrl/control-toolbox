@@ -190,7 +190,7 @@ public:
             std::shared_ptr<ExampleConstraints<SCALAR>>(new ExampleConstraints<SCALAR>(optVector_));
         this->constraints_.push_back(exampleConstraints);
     }
-    ~ExampleConstraintsContainer() = default;
+    ~ExampleConstraintsContainer() override = default;
 
     void prepareEvaluation() override { /* do nothing*/}
 

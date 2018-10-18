@@ -55,7 +55,7 @@ public:
     {
     }
 
-    virtual ~IKCostEvaluator() override = default;
+    ~IKCostEvaluator() override = default;
 
     //! opt vector needs to be set by NLP solver
     void setOptVector(std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> optVector)

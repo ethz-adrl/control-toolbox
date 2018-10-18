@@ -159,7 +159,8 @@ public:
 
         // collect all Hessian values (from both constraints and cost) in one vector of triplets
         // here, we re-use the the sparsity information collected in getNonZeroHessianCount()
-        std::vector<Eigen::Triplet<SCALAR>> triplets;
+        std::vector<Eigen::Triplet<SCALAR>, Eigen::aligned_allocator<Eigen::Triplet<SCALAR>>> triplets;
+        triplets.reserve(iRowHessianCost_.rows() + iRowHessianConstraints_.rows());
 
         for (int i = 0; i < iRowHessianCost_.rows(); i++)
         {
@@ -300,7 +301,8 @@ public:
 
 
         // collect all Hessian sparsity values (from both constraints and cost) in one vector of triplets
-        std::vector<Eigen::Triplet<SCALAR>> triplets;
+        std::vector<Eigen::Triplet<SCALAR>, Eigen::aligned_allocator<Eigen::Triplet<SCALAR>>> triplets;
+        triplets.reserve(iRowHessianCost_.rows() + iRowHessianConstraints_.rows());
 
         for (int i = 0; i < iRowHessianCost_.rows(); ++i)
             triplets.push_back(Eigen::Triplet<SCALAR>(iRowHessianCost_(i), jColHessianCost_(i), SCALAR(1.0)));

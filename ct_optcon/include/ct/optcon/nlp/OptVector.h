@@ -202,7 +202,7 @@ public:
      */
     void getBoundMultipliers(size_t n, MapVecXs& low, MapVecXs& up) const
     {
-        assert(n == (size_t) zLow_.size());
+        assert(n == static_cast<size_t>(zLow_.size()));
         low = zLow_;
         up = zUpper_;
     }
@@ -215,7 +215,7 @@ public:
      */
     void getLambdaVars(size_t m, MapVecXs& x) const
     {
-        assert(m == (size_t) lambda_.size());
+        assert(m == static_cast<size_t>(lambda_.size()));
         x = lambda_;
     }
 
@@ -235,7 +235,7 @@ public:
 
     void getInitialGuess(size_t n, MapVecXs& x) const
     {
-        assert(n == (size_t) xInit_.size());
+        assert(n == static_cast<size_t>(xInit_.size()));
         x = xInit_;
     }
 
