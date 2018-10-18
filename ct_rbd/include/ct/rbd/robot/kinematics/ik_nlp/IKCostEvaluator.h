@@ -30,17 +30,28 @@ public:
 			const Eigen::Matrix3d& Qpos = Eigen::Matrix3d::Identity(),
 			const double& Qrot = 1.0)
         : w_(nullptr),
-		  costTerm_(
+		  goalCostTerm_(
               new ct::rbd::TermTaskspacePoseCG<KINEMATICS_AD, false, NJOINTS, NJOINTS>(eeInd, Qpos, Qrot)),
+			  jointRefTerm_(nullptr),
 			  ikRegularizer_(nullptr)
     {
     }
 
-    IKCostEvaluator(const std::string& costFunctionPath, const std::string& termName, bool verbose)
+    IKCostEvaluator(const std::string& costFunctionPath, const std::string& termTaskspaceName, const bool verbose = false)
         : w_(nullptr),
-		  costTerm_(
-              new ct::rbd::TermTaskspacePoseCG<KINEMATICS_AD, false, NJOINTS, NJOINTS>(costFunctionPath, termName, verbose)),
+		  goalCostTerm_(
+              new ct::rbd::TermTaskspacePoseCG<KINEMATICS_AD, false, NJOINTS, NJOINTS>(costFunctionPath, termTaskspaceName, verbose)),
+			  jointRefTerm_(nullptr),
 			  ikRegularizer_(nullptr)
+    {
+    }
+
+    // additional constructor loading a joint position reference term
+    IKCostEvaluator(const std::string& costFunctionPath, const std::string& termTaskspaceName, const std::string& termJointPosName, const bool verbose = false)
+        : w_(nullptr),
+		  goalCostTerm_(new ct::rbd::TermTaskspacePoseCG<KINEMATICS_AD, false, NJOINTS, NJOINTS>(costFunctionPath, termTaskspaceName, verbose)),
+	      jointRefTerm_(new ct::optcon::TermQuadratic<NJOINTS, NJOINTS, SCALAR>(costFunctionPath, termJointPosName, verbose)),
+	      ikRegularizer_(nullptr)
     {
     }
 
@@ -57,28 +68,28 @@ public:
 
     ct::rbd::RigidBodyPose getTargetPose()
     {
-    	return costTerm_->getReferencePose();
+    	return goalCostTerm_->getReferencePose();
     }
 
     // set the target pose as rbd pose directly
     void setTargetPose( const ct::rbd::RigidBodyPose& rbdPose)
     {
-		costTerm_->setReferencePosition(rbdPose.position().toImplementation());
-		costTerm_->setReferenceOrientation(rbdPose.getRotationQuaternion().toImplementation());
+		goalCostTerm_->setReferencePosition(rbdPose.position().toImplementation());
+		goalCostTerm_->setReferenceOrientation(rbdPose.getRotationQuaternion().toImplementation());
     }
 
     // set the target pose as separate position and quaternion
     void setTargetPose(const core::StateVector<3>& w_pos_des, const Eigen::Quaterniond& w_q_des)
     {
-		costTerm_->setReferencePosition(w_pos_des);
-		costTerm_->setReferenceOrientation(w_q_des);
+		goalCostTerm_->setReferencePosition(w_pos_des);
+		goalCostTerm_->setReferenceOrientation(w_q_des);
 	}
 
     // set the gart pose as euler angles directly
     void setTargetPose(const core::StateVector<3>& w_pos_des, const Eigen::Matrix3d& eulerXyz)
     {
-    	costTerm_->setReferencePosition(w_pos_des);
-    	costTerm_->setReferenceOrientation(Eigen::Quaterniond(Eigen::AngleAxisd(eulerXyz(0), Eigen::Vector3d::UnitX()) *
+    	goalCostTerm_->setReferencePosition(w_pos_des);
+    	goalCostTerm_->setReferenceOrientation(Eigen::Quaterniond(Eigen::AngleAxisd(eulerXyz(0), Eigen::Vector3d::UnitX()) *
                         Eigen::AngleAxisd(eulerXyz(1), Eigen::Vector3d::UnitY()) *
                         Eigen::AngleAxisd(eulerXyz(2), Eigen::Vector3d::UnitZ())));
     }
@@ -87,8 +98,15 @@ public:
     virtual SCALAR eval() override
     {
     	if(w_ != nullptr)
-    		return costTerm_->evaluate(w_->getOptimizationVars(), Eigen::Matrix<double, NJOINTS, 1>::Zero(), 0.0);
-    	else
+    	{
+    		SCALAR val =  goalCostTerm_->evaluate(w_->getOptimizationVars(), Eigen::Matrix<double, NJOINTS, 1>::Zero(), 0.0);
+
+    		if(jointRefTerm_)
+    			val += jointRefTerm_->evaluate(w_->getOptimizationVars(), Eigen::Matrix<double, NJOINTS, 1>::Zero(), 0.0);
+
+    		return val;
+    	}
+    		else
     		throw std::runtime_error("IKCostEvaluator: optimization vector not set.");
     }
 
@@ -96,34 +114,22 @@ public:
     virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>& grad) override
     {
         assert(grad_length == NJOINTS);
+
      	if(w_ != nullptr)
-            grad = costTerm_->stateDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, NJOINTS, 1>::Zero(), 0.0);
+     	{
+            grad = goalCostTerm_->stateDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, NJOINTS, 1>::Zero(), 0.0);
+
+            if(jointRefTerm_)
+            	grad += jointRefTerm_->stateDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, NJOINTS, 1>::Zero(), 0.0);
+
+     	}
     	else
     		throw std::runtime_error("IKCostEvaluator: optimization vector not set.");
     }
 
 
     // todo make lower triangular (when convenient)
-    //! retrieve second order derivative
-    void sparseHessianValues(const Eigen::VectorXd& jointAngles, const Eigen::VectorXd& obj_fac, Eigen::VectorXd& hes) override
-    {
-        hes.resize(NJOINTS * NJOINTS);
-
-     	if(w_ != nullptr)
-     	{
-     		// map hessian value-vector to matrix
-     		Eigen::Map<Eigen::Matrix<SCALAR, NJOINTS, NJOINTS>> Hmat (hes.data(), NJOINTS, NJOINTS);
-     		Hmat = obj_fac(0,0) * costTerm_->stateSecondDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, NJOINTS, 1>::Zero(), 0.0);
-
-     		if(ikRegularizer_)
-     			Hmat += ikRegularizer_->computeRegularizer(w_->getOptimizationVars());
-     	}
-        else
-    		throw std::runtime_error("IKCostEvaluator: optimization vector not set.");
-    }
-
-    // todo make lower triangular (when convenient)
-    //! create sparsity pattern for the hessian
+    //! create sparsity pattern for the hessian (simply fill up completely)
     virtual void getSparsityPatternHessian(Eigen::VectorXi& iRow,
         Eigen::VectorXi& jCol) override
     {
@@ -143,12 +149,41 @@ public:
     }
 
 
+    // todo make lower triangular (when convenient)
+    //! retrieve second order derivative
+    void sparseHessianValues(const Eigen::VectorXd& jointAngles, const Eigen::VectorXd& obj_fac, Eigen::VectorXd& hes) override
+    {
+        hes.resize(NJOINTS * NJOINTS);
+
+     	if(w_ != nullptr)
+     	{
+     		// map hessian value-vector to matrix
+     		Eigen::Map<Eigen::Matrix<SCALAR, NJOINTS, NJOINTS>> Hmat (hes.data(), NJOINTS, NJOINTS);
+
+     		Hmat = goalCostTerm_->stateSecondDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, NJOINTS, 1>::Zero(), 0.0);
+
+     		if(jointRefTerm_)
+     			Hmat += jointRefTerm_->stateSecondDerivative(w_->getOptimizationVars(), Eigen::Matrix<double, NJOINTS, 1>::Zero(), 0.0);
+
+     		if(ikRegularizer_)
+     			Hmat += ikRegularizer_->computeRegularizer(w_->getOptimizationVars());
+
+     		Hmat *= obj_fac(0,0);
+     	}
+        else
+    		throw std::runtime_error("IKCostEvaluator: optimization vector not set.");
+    }
+
+
 private:
+
     std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> w_;
 
-    std::shared_ptr<ct::rbd::TermTaskspacePoseCG<KINEMATICS_AD, false, NJOINTS, NJOINTS>> costTerm_;
+    std::shared_ptr<ct::rbd::TermTaskspacePoseCG<KINEMATICS_AD, false, NJOINTS, NJOINTS>> goalCostTerm_;
 
-    std::shared_ptr<IKRegularizerBase> ikRegularizer_;
+    std::shared_ptr<ct::optcon::TermQuadratic<NJOINTS, NJOINTS, SCALAR>> jointRefTerm_;
+
+    std::shared_ptr<IKRegularizerBase> ikRegularizer_; // optional regularizer for Hessian matrix! (potentially goes away)
 };
 
 }  // namespace rbd

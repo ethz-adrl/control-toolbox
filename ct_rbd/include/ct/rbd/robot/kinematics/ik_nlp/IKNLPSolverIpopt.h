@@ -88,8 +88,8 @@ public:
 private:
     std::shared_ptr<IKNLP> iknlp_;
 
-    size_t eeInd_;				// for validation
     VALIDATION_KIN kinematics_; // for validation (todo: need different way to include double-based kinematics
+    size_t eeInd_;				// for validation
     double assertionThreshold_; // for validation
 };
 
