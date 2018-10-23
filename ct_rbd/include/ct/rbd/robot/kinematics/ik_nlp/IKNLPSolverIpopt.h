@@ -15,6 +15,8 @@ namespace rbd {
 /*!
  * \tparam IKNLP the inverse kinematics NLP class (templated on correct kinematics)
  * \tparam VALIDATION_KIN the kinematics used to validate if the computed solution is correct
+ *
+ * \todo scale initialization noise according to joint limits
  */
 template <typename IKNLP, typename VALIDATION_KIN>
 class IKNLPSolverIpopt final :
@@ -38,14 +40,24 @@ public:
     IKNLPSolverIpopt(
     		std::shared_ptr<IKNLP> iknlp,
     		ct::optcon::NlpSolverSettings nlpSolverSettings,
-			const size_t eeInd = 0,
-			const double assertionThreshold = 1e-5):
+			const size_t eeInd = 0):
     			ct::optcon::IpoptSolver(std::static_pointer_cast<ct::optcon::tpl::Nlp<SCALAR>>(iknlp), nlpSolverSettings),
     			iknlp_(iknlp),
 				kinematics_(VALIDATION_KIN()),
 				eeInd_(eeInd),
-				assertionThreshold_(assertionThreshold)
+				noise_(0.0, 1.0) // zero mean unit variance
     {}
+
+    //! constructor with additional inverse kinematics settings
+    IKNLPSolverIpopt(
+    		std::shared_ptr<IKNLP> iknlp,
+    		ct::optcon::NlpSolverSettings nlpSolverSettings,
+			const ct::rbd::InverseKinematicsSettings& ikSettings,
+			const size_t eeInd = 0):
+				IKNLPSolverIpopt(iknlp, nlpSolverSettings, eeInd)
+    {
+    	this->updateSettings(ikSettings);
+    }
 
 	void setInitialGuess(const JointPosition_t& q_init)
 	{
@@ -59,22 +71,41 @@ public:
         const RigidBodyPoseTpl& ee_W_base,
         const std::vector<size_t>& freeJoints = std::vector<size_t>()) override
     {
+    	ikSolutions.clear();
+
     	iknlp_->getIKCostEvaluator()->setTargetPose(ee_W_base);
 
-    	// call underlying NLP solver
-    	solve();
+    	size_t count = 0;
 
-        JointPosition_t sol = iknlp_->getSolution();
-        ikSolutions.push_back(sol);
+    	bool solutionFound = false;
 
-        // check if the solve was actually successful by forward evaluation and comparison
-	    RigidBodyPose forwardEval = kinematics_.getEEPoseInBase(eeInd_, sol);
+    	while(count < this->getSettings().maxNumTrials_ && !solutionFound)
+    	{
+			// set randomized initial guess if applicable
+			if (this->getSettings().randomizeInitialGuess_ && count != 0)
+			{
+				setInitialGuess(noise_.gen<IKNLP::Kinematics_t::NJOINTS>());
+			}
 
-	    // evaluate if solution is near the desired pose and return
-	    if(forwardEval.isNear(ee_W_base, assertionThreshold_))
-	    	return true;
-	    else
-	    	return false;
+			// call underlying NLP solver
+			solve();
+
+			JointPosition_t sol = iknlp_->getSolution();
+
+			// check if the solve was actually successful by forward evaluation and comparison
+			RigidBodyPose forwardEval = kinematics_.getEEPoseInBase(eeInd_, sol);
+
+			// evaluate if solution is near the desired pose and return
+			if (forwardEval.isNear(ee_W_base, this->getSettings().validationTol_))
+			{
+				ikSolutions.push_back(sol);
+				solutionFound = true;
+			}
+
+			count++;
+		}
+
+    	return solutionFound;
     }
 
     bool computeInverseKinematics(JointPositionsVector_t& ikSolutions,
@@ -90,7 +121,7 @@ private:
 
     VALIDATION_KIN kinematics_; // for validation (todo: need different way to include double-based kinematics
     size_t eeInd_;				// for validation
-    double assertionThreshold_; // for validation
+    ct::core::GaussianNoise noise_;
 };
 
 }  // rbd

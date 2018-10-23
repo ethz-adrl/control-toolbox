@@ -11,6 +11,21 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace rbd {
 
+
+struct InverseKinematicsSettings
+{
+	InverseKinematicsSettings():
+		maxNumTrials_(1),
+		randomizeInitialGuess_(true),
+		validationTol_(1e-4)
+	{}
+
+	size_t maxNumTrials_;
+	bool randomizeInitialGuess_;
+	double validationTol_;
+};
+
+
 template <size_t NJOINTS, typename SCALAR = double>
 class InverseKinematicsBase
 {
@@ -23,6 +38,11 @@ public:
 
     //! default constructor
     InverseKinematicsBase() = default;
+
+    //! constructor with additional settings
+    InverseKinematicsBase(const InverseKinematicsSettings& settings):
+    	settings_(settings)
+    {}
 
     //! default destructor
     virtual ~InverseKinematicsBase() = default;
@@ -106,6 +126,17 @@ public:
         return computeInverseKinematicsCloseTo(
             ikSolution, eeBasePose, identityWorldPose, queryJointPositions, freeJoints);
     }
+
+    const InverseKinematicsSettings& getSettings() const {return settings_;}
+
+    void updateSettings(const InverseKinematicsSettings& settings)
+    {
+		settings_ = settings;
+	}
+
+protected:
+
+    InverseKinematicsSettings settings_;
 };
 
 } /* namespace rbd */

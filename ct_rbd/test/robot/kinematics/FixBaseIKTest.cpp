@@ -24,8 +24,7 @@ int main(int argc, char* argv[])
     ct::rbd::JointState<njoints>::Position jointLowerLimit = ct::rbd::TestIrb4600::jointLowerLimit();
     ct::rbd::JointState<njoints>::Position jointUpperLimit = ct::rbd::TestIrb4600::jointUpperLimit();
 
-    std::shared_ptr<ct::rbd::IKCostEvaluator<KinematicsAD_t>> ikCostEvaluator(
-        new ct::rbd::IKCostEvaluator<KinematicsAD_t>(eeInd));
+    std::shared_ptr<ct::rbd::IKCostEvaluator<KinematicsAD_t>> ikCostEvaluator(new ct::rbd::IKCostEvaluator<KinematicsAD_t>(eeInd));
 
     std::shared_ptr<IKProblem> ik_problem(new IKProblem(ikCostEvaluator, jointLowerLimit, jointUpperLimit));
 
@@ -35,8 +34,11 @@ int main(int argc, char* argv[])
     nlpSolverSettings.ipoptSettings_.derivativeTest_ = "second-order"; // check derivatives
     nlpSolverSettings.ipoptSettings_.hessian_approximation_ = "exact"; // option: "limited-memory"
 
-    double validation_tol = 1e-5;
-    IKNLPSolver ikSolver(ik_problem, nlpSolverSettings, eeInd, validation_tol);
+    ct::rbd::InverseKinematicsSettings ikSettings;
+    ikSettings.maxNumTrials_ = 100;
+    ikSettings.randomizeInitialGuess_ = true;
+
+    IKNLPSolver ikSolver(ik_problem, nlpSolverSettings, ikSettings, eeInd);
 
     // set desired end effector pose
     ct::rbd::RigidBodyPose ee_pose_des;
@@ -46,7 +48,6 @@ int main(int argc, char* argv[])
     ikCostEvaluator->setTargetPose(ee_pose_des); // todo: check the failure that occurs when this line is put earlier
 
     IKNLPSolver::JointPositionsVector_t solutions;
-    ikSolver.setInitialGuess(IKNLPSolver::JointPosition_t::Random());
     bool accurateSolutionFound = ikSolver.computeInverseKinematics(solutions, ee_pose_des);
 
     std::cout << "InverseKinematics : accurate solution found: " << accurateSolutionFound << std::endl;
