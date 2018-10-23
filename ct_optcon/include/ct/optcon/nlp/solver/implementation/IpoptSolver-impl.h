@@ -121,11 +121,11 @@ bool IpoptSolver<SCALAR>::get_nlp_info(Ipopt::Index& n,
     m = this->nlp_->getConstraintsCount();
     assert(m == m);
 
-    nnz_jac_g = (Ipopt::Index) this->nlp_->getNonZeroJacobianCount();
+    nnz_jac_g = static_cast<Ipopt::Index>(this->nlp_->getNonZeroJacobianCount());
     assert(nnz_jac_g == nnz_jac_g);
 
     if (settings_.hessian_approximation_ == "exact")
-        nnz_h_lag = (Ipopt::Index) this->nlp_->getNonZeroHessianCount();
+        nnz_h_lag = static_cast<Ipopt::Index>(this->nlp_->getNonZeroHessianCount());
 
     index_style = Ipopt::TNLP::C_STYLE;
 
@@ -254,7 +254,7 @@ bool IpoptSolver<SCALAR>::eval_g(Ipopt::Index n, const SCALAR* x, bool new_x, Ip
 #ifdef DEBUG_PRINT
     std::cout << "... entering eval_g()" << std::endl;
 #endif  //DEBUG_PRINT
-    assert(m == (int) this->nlp_->getConstraintsCount());
+    assert(m == static_cast<int>(this->nlp_->getConstraintsCount()));
     MapConstVecXs xVec(x, n);
     this->nlp_->extractOptimizationVars(xVec, new_x);
     MapVecXs gVec(g, m);

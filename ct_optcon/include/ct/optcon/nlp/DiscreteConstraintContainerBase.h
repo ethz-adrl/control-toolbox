@@ -71,7 +71,7 @@ public:
             ind += cSize;
         }
 
-        assert(ind == (size_t)c_nlp.rows());  // or throw an error
+        assert(ind == static_cast<size_t>(c_nlp.rows()));  // or throw an error
     }
 
     void evalConstraints(VectorXs& c_nlp)
@@ -185,7 +185,7 @@ public:
         constraintHessianTot_.resize(numOptVar, numOptVar);
         constraintHessianSparsity_.resize(numOptVar, numOptVar);
 
-        std::vector<Eigen::Triplet<SCALAR>> triplets;
+        std::vector<Eigen::Triplet<SCALAR>, Eigen::aligned_allocator<Eigen::Triplet<SCALAR>>> triplets;
 
         for (size_t c = 0; c < constraints_.size(); c++)
         {
@@ -232,7 +232,7 @@ public:
     {
 #if EIGEN_VERSION_AT_LEAST(3, 3, 0)
 
-        std::vector<Eigen::Triplet<SCALAR>> triplets;
+        std::vector<Eigen::Triplet<SCALAR>, Eigen::aligned_allocator<Eigen::Triplet<SCALAR>>> triplets;
 
         size_t count = 0;
         for (size_t c = 0; c < constraints_.size(); c++)
