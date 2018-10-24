@@ -29,6 +29,7 @@ public:
         const JointPosition& upperBound)
         : optVector_(optVector)
     {
+    	// set up joint limit constraints
         auto jointLimits = std::shared_ptr<JointLimitConstraints<KINEMATICS, SCALAR>>(
             new JointLimitConstraints<KINEMATICS, SCALAR>(optVector_, lowerBound, upperBound));
         this->constraints_.push_back(jointLimits);
@@ -39,6 +40,15 @@ public:
     void prepareEvaluation() override { /* do nothing*/}
 
     void prepareJacobianEvaluation() override { /* do nothing*/}
+
+    /*!
+     * \brief get pointer to joint-limit constraints
+     * \warning the index is currently hard-coded (first in order)
+     */
+    const std::shared_ptr<JointLimitConstraints<KINEMATICS, SCALAR>> getJointLimitConstraints() const
+    {
+    	return std::static_pointer_cast<JointLimitConstraints<KINEMATICS, SCALAR>>(this->constraints_.front());
+    }
 
 private:
     std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> optVector_;

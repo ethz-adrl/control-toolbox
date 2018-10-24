@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -17,7 +17,7 @@ using IKProblem = ct::rbd::IKNLP<KinematicsAD_t>;
 using IKNLPSolver = ct::rbd::IKNLPSolverIpopt<IKProblem, Kinematics_t>;
 
 
-int main(int argc, char* argv[])
+TEST(FixBaseInverseKinematicsTest, NLPIKTest)
 {
     size_t eeInd = 0;
 
@@ -33,6 +33,7 @@ int main(int argc, char* argv[])
     nlpSolverSettings.solverType_ = ct::optcon::NlpSolverType::IPOPT;
     nlpSolverSettings.ipoptSettings_.derivativeTest_ = "second-order"; // check derivatives
     nlpSolverSettings.ipoptSettings_.hessian_approximation_ = "exact"; // option: "limited-memory"
+    nlpSolverSettings.ipoptSettings_.printLevel_ = 0;				   // avoid output
 
     ct::rbd::InverseKinematicsSettings ikSettings;
     ikSettings.maxNumTrials_ = 100;
@@ -45,16 +46,17 @@ int main(int argc, char* argv[])
     ee_pose_des.position()(0) = 1.0;
     ee_pose_des.position()(1) = 1.0;
     ee_pose_des.position()(2) = 1.0;
-    ikCostEvaluator->setTargetPose(ee_pose_des); // todo: check the failure that occurs when this line is put earlier
+    ikCostEvaluator->setTargetPose(ee_pose_des);
 
     IKNLPSolver::JointPositionsVector_t solutions;
     bool accurateSolutionFound = ikSolver.computeInverseKinematics(solutions, ee_pose_des);
 
-    std::cout << "InverseKinematics : accurate solution found: " << accurateSolutionFound << std::endl;
+    ASSERT_TRUE(accurateSolutionFound);
+}
 
-    /*!
-     * TODO: This will eventually become a unit test, once proper regularization schemes are integrated (improve accuracy of the solution).
-     */
 
-    return 1;
+int main(int argc, char **argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

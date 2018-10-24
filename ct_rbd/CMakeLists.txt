@@ -131,11 +131,13 @@ target_link_libraries(kindrJITtest ${catkin_LIBRARIES})
 catkin_add_gtest(jacobianTests test/robot/jacobian/JacobianTests.cpp)
 target_link_libraries(jacobianTests ${catkin_LIBRARIES})
 
+if(BUILD_WITH_IPOPT_SUPPORT)
+    catkin_add_gtest(FixBaseIKTest test/robot/kinematics/FixBaseIKTest.cpp)
+    target_link_libraries(FixBaseIKTest ${catkin_LIBRARIES}${SNOPT_LIBS} ${IPOPT_LIBS} dl)
+endif()
+
 add_executable(simpleArmTrajectoryTest src/SimpleArmTrajectoryGeneratorTest.cpp)
 target_link_libraries(simpleArmTrajectoryTest ${catkin_LIBRARIES})
-
-add_executable(FixBaseIKTest test/robot/kinematics/FixBaseIKTest.cpp)
-target_link_libraries(FixBaseIKTest ${catkin_LIBRARIES}${SNOPT_LIBS} ${IPOPT_LIBS} dl)
 
 
 find_package(Doxygen)

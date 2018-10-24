@@ -18,7 +18,7 @@ const size_t p_dim = 1;
 const size_t v_dim = 1;
 const size_t control_dim = 1;
 
-double randomNumber(double min, double max)
+double uniformRandomNumber(double min, double max)
 {
     std::random_device rd;                             // obtain a random number from hardware
     std::mt19937 eng(rd());                            // seed the generator
@@ -36,13 +36,13 @@ TEST(SymplecticIntegrationTest, simpleSymplecticTest)
 
         for (size_t i = 0; i < nTests; i++)
         {
-            double wn = randomNumber(0.1, 1.0);
+            double wn = uniformRandomNumber(0.1, 1.0);
             shared_ptr<ConstantController<state_dim, control_dim>> constController(
                 new ConstantController<state_dim, control_dim>());
             shared_ptr<TestSymplecticSystem> oscillator(new TestSymplecticSystem(wn, constController));
 
             ct::core::ControlVector<control_dim> testControl;
-            testControl(0) = randomNumber(-1, 1);
+            testControl(0) = uniformRandomNumber(-1, 1);
             constController->setControl(testControl);
 
             // create symplectic integrators

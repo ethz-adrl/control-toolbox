@@ -13,11 +13,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace rbd {
 
-/*!
- * todo: set more meaningful initial guess
- */
 template <typename KINEMATICS, typename SCALAR = double>
-class IKNLP : public ct::optcon::tpl::Nlp<SCALAR>
+class IKNLP final : public ct::optcon::tpl::Nlp<SCALAR>
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -50,10 +47,9 @@ public:
             new IKConstraintsContainer<KINEMATICS, SCALAR>(this->optVariables_, lowerBound, upperBound));
     }
 
-    //! default destructor
-    virtual ~IKNLP() override = default;
+    ~IKNLP() override = default;
 
-    virtual void updateProblem() override { /* do nothing */}
+    void updateProblem() override { /* do nothing */}
 
     JointPosition_t getSolution()
     {
@@ -67,17 +63,20 @@ public:
                   << this->optVariables_->getOptimizationVars().transpose() << std::endl;
     }
 
-    std::shared_ptr<ct::rbd::IKCostEvaluator<KINEMATICS, SCALAR>> getIKCostEvaluator()
-    {
-    	return std::static_pointer_cast<ct::rbd::IKCostEvaluator<KINEMATICS, SCALAR>>(this->costEvaluator_);
-    }
-
     void setInitialGuess(const JointPosition_t& q_init)
     {
     	this->optVariables_->setInitialGuess(q_init);
     }
 
-private:
+    std::shared_ptr<ct::rbd::IKCostEvaluator<KINEMATICS, SCALAR>> getIKCostEvaluator()
+    {
+    	return std::static_pointer_cast<ct::rbd::IKCostEvaluator<KINEMATICS, SCALAR>>(this->costEvaluator_);
+    }
+
+    std::shared_ptr<ct::rbd::IKConstraintsContainer<KINEMATICS, SCALAR>> getIKConstraintContainer()
+    {
+    	return std::static_pointer_cast<ct::rbd::IKConstraintsContainer<KINEMATICS, SCALAR>>(this->constraints_);
+    }
 };
 
 }  // rbd

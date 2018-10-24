@@ -11,7 +11,7 @@ using namespace ct::core;
 using std::shared_ptr;
 
 
-double randomNumber(double min, double max)
+double uniformRandomNumber(double min, double max)
 {
     std::random_device rd;                             // obtain a random number from hardware
     std::mt19937 eng(rd());                            // seed the generator
@@ -30,14 +30,14 @@ TEST(SystemDiscretizerTest, IntegratorComparison)
 
     for (size_t i = 1; i < nTests; ++i)
     {
-        double w_n = randomNumber(0, 10);
-        double zeta = randomNumber(0, 10);
+        double w_n = uniformRandomNumber(0, 10);
+        double zeta = uniformRandomNumber(0, 10);
 
         // make sure we are not complex
         while (w_n * w_n - zeta * zeta <= 0)
         {
-            w_n = randomNumber(0, 100);
-            zeta = randomNumber(0, 10);
+            w_n = uniformRandomNumber(0, 100);
+            zeta = uniformRandomNumber(0, 10);
         }
 
         // dynamic systems for manual integration and discrete propagation
@@ -75,7 +75,7 @@ TEST(SystemDiscretizerTest, IntegratorComparison)
         for (size_t j = 0; j < nStages; j++)
         {
             ct::core::ControlVector<control_dim> ctrl;
-            ctrl(0) = randomNumber(-1.0, 1.0);
+            ctrl(0) = uniformRandomNumber(-1.0, 1.0);
 
             // integrate systems
             constantController->setControl(ctrl);

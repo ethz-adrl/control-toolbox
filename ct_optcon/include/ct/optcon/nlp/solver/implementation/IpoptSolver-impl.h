@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -74,20 +74,24 @@ bool IpoptSolver<SCALAR>::solve()
     if (status_ == Ipopt::Solve_Succeeded || status_ == Ipopt::Solved_To_Acceptable_Level)
     {
         // Retrieve some statistics about the solve
-        Ipopt::Index iter_count = ipoptApp_->Statistics()->IterationCount();
-        std::cout << std::endl
-                  << std::endl
-                  << "*** The problem solved in " << iter_count << " iterations!" << std::endl;
+    	if(settings_.printLevel_ > 1)
+    	{
+            Ipopt::Index iter_count = ipoptApp_->Statistics()->IterationCount();
+            std::cout << std::endl
+                      << std::endl
+                      << "*** The problem solved in " << iter_count << " iterations!" << std::endl;
 
-        SCALAR final_obj = ipoptApp_->Statistics()->FinalObjective();
-        std::cout << std::endl
-                  << std::endl
-                  << "*** The final value of the objective function is " << final_obj << '.' << std::endl;
+            SCALAR final_obj = ipoptApp_->Statistics()->FinalObjective();
+            std::cout << std::endl
+                      << std::endl
+                      << "*** The final value of the objective function is " << final_obj << '.' << std::endl;
+    	}
         return true;
     }
     else
     {
-        std::cout << " ipopt return value: " << status_ << std::endl;
+    	if(settings_.printLevel_ > 1)
+            std::cout << " ipopt return value: " << status_ << std::endl;
         return false;
     }
 }

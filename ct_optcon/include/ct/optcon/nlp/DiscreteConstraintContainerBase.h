@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich,
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -297,8 +297,10 @@ protected:
         constraintHessianSparsity_;  // helper to calculate sparsity and number of non-zero elements
 #endif
 };
-}
+
+} // namespace tpl
 
 using DiscreteConstraintContainerBase = tpl::DiscreteConstraintContainerBase<double>;
-}
-}
+
+} // namespace optcon
+} // namespact ct

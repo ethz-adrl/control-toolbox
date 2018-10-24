@@ -72,6 +72,9 @@ public:
 
     VectorXs getLowerBound() override { return lowerBounds_; }
     VectorXs getUpperBound() override { return upperBounds_; }
+
+    const VectorXs getLowerBound() const { return lowerBounds_; }
+    const VectorXs getUpperBound() const { return upperBounds_; }
 private:
     std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> optVector_;
     Eigen::Matrix<SCALAR, KINEMATICS::NJOINTS, 1> contraints_;

@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -19,7 +19,7 @@ bool plotResult = false;
 std::vector<std::string> integratorNames = {"euler", "rk4", "rk78", "rk5 variable", "ode45", "modified midpoint"};
 std::vector<std::string> integratorCalls = {"const", "nSteps", "adaptive", "times"};
 
-double randomNumber(double min, double max)
+double uniformRandomNumber(double min, double max)
 {
     std::random_device rd;                             // obtain a random number from hardware
     std::mt19937 eng(rd());                            // seed the generator
@@ -92,14 +92,14 @@ TEST(IntegrationTest, derivativeTest)
             initialState << 1.0, 0.0;
 
             // create a 10 Hz second order system with damping 0.1
-            double w_n = randomNumber(0, 10);
-            double zeta = randomNumber(0, 10);
+            double w_n = uniformRandomNumber(0, 10);
+            double zeta = uniformRandomNumber(0, 10);
 
             // make sure we are not complex
             while (w_n * w_n - zeta * zeta <= 0)
             {
-                w_n = randomNumber(0, 100);
-                zeta = randomNumber(0, 10);
+                w_n = uniformRandomNumber(0, 100);
+                zeta = uniformRandomNumber(0, 10);
             }
             oscillator = shared_ptr<SecondOrderSystem>(new SecondOrderSystem(w_n, zeta));
             oscillator->checkParameters();
