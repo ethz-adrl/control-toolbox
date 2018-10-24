@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
- This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-  Licensed under Apache2 license (see LICENSE file in main directory)
- **********************************************************************************************************************/
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
+Licensed under Apache2 license (see LICENSE file in main directory)
+**********************************************************************************************************************/
 
 #pragma once
 
@@ -47,7 +47,7 @@ void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateADTer
     bool verbose)
 {
     throw std::runtime_error("not implemented");
-};
+}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -56,35 +56,35 @@ void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalADTerm(
     bool verbose)
 {
     throw std::runtime_error("not implemented");
-};
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(const std::string& filename,
     bool verbose)
 {
     throw std::runtime_error("not implemented");
-};
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeTerminal()
 {
     throw std::runtime_error("controlDerivativeTerminal() not implemented in CostFunctionQuadratic");
-};
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_t
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivativeTerminal()
 {
     throw std::runtime_error("controlSecondDerivativeTerminal() not implemented");
-};
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_matrix_t
 CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeTerminal()
 {
     throw std::runtime_error("stateControlDerivativeTerminal() not implemented");
-};
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::updateReferenceState(const state_vector_t& x_ref)

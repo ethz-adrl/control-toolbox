@@ -301,7 +301,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
 
     // we need to allocate memory in HPIPM for the new constraints
-    for (size_t i = 0; i < K_; i++)
+    for (int i = 0; i < K_; i++)
     {
         generalConstraints_[settings_.nThreads]->setCurrentStateAndControl(
             lqocProblem_->x_[i], lqocProblem_->u_[i], i * settings_.dt);
@@ -1158,7 +1158,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         lqocSolver_->setProblem(lqocProblem_);
 
         //iterate backward up to first stage
-        for (int i = this->lqocProblem_->getNumberOfStages() - 1; i >= startIndex; i--)
+        for (int i = this->lqocProblem_->getNumberOfStages() - 1; i >= static_cast<int>(startIndex); i--)
             lqocSolver_->solveSingleStage(i);
     }
     else

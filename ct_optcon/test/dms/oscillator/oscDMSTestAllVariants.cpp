@@ -152,7 +152,7 @@ TEST(DmsTest, OscillatorDmsTestAllVariants)
 }  // namespace ct
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     using namespace ct::optcon::example;
     testing::InitGoogleTest(&argc, argv);

@@ -104,8 +104,6 @@ TEST(ILQRTestA, InstancesComparison)
         size_t nTests = 2;
         for (size_t i = 0; i < nTests; i++)
         {
-            bool foundBetter;
-
             if (i == 0)
             {
                 std::cout << "Turning Line-Search off" << std::endl;
@@ -476,16 +474,15 @@ TEST(ILQRTestC, PolicyComparison)
             ilqr.setInitialGuess(initController);
             ilqr_mp.setInitialGuess(initController);
 
-            bool foundBetter = true;
-            bool foundBetter_mp = true;
             size_t numIterations = 0;
 
+            bool foundBetter = true;
 
             while (foundBetter)
             {
                 // solve
                 foundBetter = ilqr.runIteration();
-                foundBetter_mp = ilqr_mp.runIteration();
+                ilqr_mp.runIteration();
                 return;
 
                 numIterations++;

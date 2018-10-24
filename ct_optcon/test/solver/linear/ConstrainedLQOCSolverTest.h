@@ -37,9 +37,9 @@ void assertControlBounds(const ct::core::ControlVectorArray<control_dim>& u,
     const Eigen::VectorXd u_lb,
     const Eigen::VectorXd u_ub)
 {
-    for (size_t j = 0; j < u.size(); j++)
+    for (int j = 0; j < (static_cast<int>(u.size())); j++)
     {
-        for (size_t n = 0; n < sparsity.rows(); n++)
+        for (int n = 0; n < sparsity.rows(); n++)
         {
             ASSERT_GE(u[j](sparsity(n)), u_lb(n));
             ASSERT_LE(u[j](sparsity(n)), u_ub(n));
@@ -56,7 +56,7 @@ void assertStateBounds(const ct::core::StateVectorArray<state_dim>& x,
 {
     for (size_t j = 0; j < x.size(); j++)
     {
-        for (size_t n = 0; n < sparsity.rows(); n++)
+        for (int n = 0; n < sparsity.rows(); n++)
         {
             ASSERT_GE(x[j](sparsity(n) - control_dim), x_lb(n));
             ASSERT_LE(x[j](sparsity(n) - control_dim), x_ub(n));

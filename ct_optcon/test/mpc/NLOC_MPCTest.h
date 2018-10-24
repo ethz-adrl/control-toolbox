@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
@@ -76,7 +76,7 @@ TEST(MPCTestA, ForwardIntegratorTest)
         NLOptConSolver<state_dim, control_dim> initSolver(optConProblem, nloc_settings);
         initSolver.configure(nloc_settings);
         initSolver.setInitialGuess(initController);
-        bool boolInitSuccess = initSolver.solve();
+        initSolver.solve();
 
         // obtain the 'perfect' init controller from first iLQR solver
         ct::core::StateFeedbackController<state_dim, control_dim> perfectInitController = initSolver.getSolution();
@@ -107,7 +107,7 @@ TEST(MPCTestA, ForwardIntegratorTest)
        	 * after one mpc cycle the solution must still be the same (time horizon unchanged, state unchanged)
          */
         mpcSolver.prepareIteration(t);
-        bool success = mpcSolver.finishIteration(x0, t, newPolicy, ts_newPolicy);
+        mpcSolver.finishIteration(x0, t, newPolicy, ts_newPolicy);
         auto mpcStateTrajectory = newPolicy.getReferenceStateTrajectory();
 
         ASSERT_EQ(newPolicy.uff().size(), perfectInitController.uff().size());
@@ -134,7 +134,7 @@ TEST(MPCTestA, ForwardIntegratorTest)
         std::shared_ptr<ct::core::StateFeedbackController<state_dim, control_dim>> prevController(
             new ct::core::StateFeedbackController<state_dim, control_dim>(newPolicy));
         double time_window = 0.2;
-        for (int i = 0; i < mpcStateTrajectory.size() - nloc_settings.computeK(time_window); i++)
+        for (size_t i = 0; i < mpcStateTrajectory.size() - static_cast<size_t>(nloc_settings.computeK(time_window)); i++)
         {
             double t_forward_start = i * nloc_settings.dt;
             double t_forward_stop = t_forward_start + time_window;
@@ -209,7 +209,7 @@ TEST(MPCTestB, NLOC_MPC_DoublePrecision)
                 nloc_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
 
 
-            size_t K = nloc_settings.computeK(timeHorizon);  // number of steps
+            int K = nloc_settings.computeK(timeHorizon);  // number of steps
 
 
             // provide initial controller
@@ -261,8 +261,8 @@ TEST(MPCTestB, NLOC_MPC_DoublePrecision)
             std::vector<double> timeStamps;                            // collection of all policy-start timestamps
             std::vector<ct::core::StateVector<state_dim>> initStates;  // collection of all initial tests
 
-            size_t maxNumRuns = 2000;
-            size_t numRuns = 0;
+            int maxNumRuns = 2000;
+            int numRuns = 0;
 
 
             // timestamp of the new optimal policy

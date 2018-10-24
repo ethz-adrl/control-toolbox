@@ -63,10 +63,9 @@ public:
     static const size_t P_DIM = OPTCON_SOLVER::POS_DIM;
     static const size_t V_DIM = OPTCON_SOLVER::VEL_DIM;
 
-    typedef typename OPTCON_SOLVER::Scalar_t Scalar_t;
-    typedef typename OPTCON_SOLVER::Policy_t Policy_t;
-
-    typedef ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, Scalar_t> OptConProblem_t;
+    using Scalar_t = typename OPTCON_SOLVER::Scalar_t;
+    using Policy_t = typename OPTCON_SOLVER::Policy_t;
+    using OptConProblem_t = ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, Scalar_t>;
 
 
     //! MPC solver constructor
@@ -222,23 +221,8 @@ private:
     //! optimal control solver employed for mpc
     OPTCON_SOLVER solver_;
 
-    //! currently optimal policy, initial guess respectively
-    Policy_t currentPolicy_;
-
-    //! policy handler, which takes care of warm-starting
-    std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> policyHandler_;
-
-    //! time horizon strategy, e.g. receding horizon optimal control
-    std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> timeHorizonStrategy_;
-
-    //! time keeper
-    tpl::MpcTimeKeeper<Scalar_t> timeKeeper_;
-
     //! mpc settings
     mpc_settings mpc_settings_;
-
-    //! true for first run
-    bool firstRun_;
 
     //! dynamics instance for forward integration
     typename OPTCON_SOLVER::OptConProblem_t::DynamicsPtr_t dynamics_;
@@ -246,8 +230,27 @@ private:
     //! integrator for forward integration
     ct::core::Integrator<STATE_DIM, Scalar_t> forwardIntegrator_;
 
+    //! true for first run
+    bool firstRun_;
+
     //! counter which gets incremented at every call of the run() method
     size_t runCallCounter_;
+
+    //! policy handler, which takes care of warm-starting
+    std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>> policyHandler_;
+
+    //! currently optimal policy, initial guess respectively
+    Policy_t currentPolicy_;
+
+    //! time horizon strategy, e.g. receding horizon optimal control
+    std::shared_ptr<tpl::MpcTimeHorizon<Scalar_t>> timeHorizonStrategy_;
+
+    //! time keeper
+    tpl::MpcTimeKeeper<Scalar_t> timeKeeper_;
+
+
+
+
 };
 
 

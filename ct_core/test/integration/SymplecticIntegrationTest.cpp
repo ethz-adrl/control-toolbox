@@ -1,9 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
-
-#pragma once
 
 #include <gtest/gtest.h>
 #include <ct/core/core.h>
@@ -53,7 +51,6 @@ TEST(SymplecticIntegrationTest, simpleSymplecticTest)
 
             // define integration times
             Time startTime = 0.0;
-            Time finalTime = startTime + 1.0;
             size_t nsteps = 1.0 / dt;
 
             // create an initial state
@@ -76,7 +73,7 @@ TEST(SymplecticIntegrationTest, simpleSymplecticTest)
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

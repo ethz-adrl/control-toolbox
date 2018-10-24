@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 #include <iostream>
@@ -28,7 +28,7 @@ TEST(LinspaceTest, LinspaceTest)
 	 * [1 2 3 4 5]
 	 * [5 4 3 2 1]
 	 * */
-    for (int i = 0; i < nPoints; i++)
+    for (size_t i = 0; i < nPoints; i++)
     {
         ASSERT_EQ(traj[i](0), i + 1);
         ASSERT_EQ(traj[i](1), 5 - i);

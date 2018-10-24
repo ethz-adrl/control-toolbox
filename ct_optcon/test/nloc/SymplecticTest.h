@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -169,7 +169,8 @@ void symplecticTest()
     NLOptConSolver::Policy_t initController(x0, u0, u0_fb, gnms_settings.dt);
 
     // construct single-core single subsystem OptCon Problem
-    ContinuousOptConProblem<state_dim, control_dim> optConProblem(tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
+    ContinuousOptConProblem<state_dim, control_dim> optConProblem(
+        tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
 
 
     //	std::cout << "initializing gnms solver" << std::endl;
@@ -185,13 +186,12 @@ void symplecticTest()
 
     //	std::cout << "running gnms solver" << std::endl;
 
-    bool foundBetter = true;
     size_t numIterations = 0;
 
     while (numIterations < 50)
     {
-        foundBetter = gnms.runIteration();
-        foundBetter = ilqr.runIteration();
+        gnms.runIteration();
+        ilqr.runIteration();
 
         // test trajectories
         StateTrajectory<state_dim> xRollout = gnms.getStateTrajectory();

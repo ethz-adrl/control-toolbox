@@ -268,7 +268,7 @@ TEST(DmsTest, OscDmsTest)
  * This unit test applies Direct Multiple Shooting to an oscillator system, uses different solvers and compares the outputs.
  * \example oscDMSTest.cpp
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     // using namespace ct::optcon::example;
     testing::InitGoogleTest(&argc, argv);

@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -126,7 +126,7 @@ TEST(SystemInterfaceTest, ContinuousSystemInterface)
                 ASSERT_TRUE(subStepsU->at(0)->size() == subStepsU_discretizer->at(0)->size());
                 ASSERT_TRUE(subStepsX->at(0)->size() == subStepsU_discretizer->at(0)->size());
 
-                for(size_t i=0; i<subStepsX->at(0)->size(); ++i)
+                for (size_t i = 0; i < subStepsX->at(0)->size(); ++i)
                 {
                     ASSERT_TRUE(subStepsX->at(0)->at(i).isApprox(subStepsX_discretizer->at(0)->at(i), 1e-8));
                     ASSERT_TRUE(subStepsU->at(0)->at(i).isApprox(subStepsU_discretizer->at(0)->at(i), 1e-8));

@@ -13,10 +13,12 @@ CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunction() : t_(0.0), t_shift_
 {
     x_.setZero();
     u_.setZero();
-};
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>::~CostFunction(){};
+CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>::~CostFunction()
+{
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunction<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunction(const CostFunction& arg)
