@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -51,7 +51,7 @@ public:
         hya_ik::ComputeIk(eeBasePose.position().toImplementation().data(), eeBaseRotationRowMajor.data(),
             freeJoints_ikf.size() > 0 ? freeJoints_ikf.data() : nullptr, solutions);
 
-        int num_solutions = solutions.GetNumSolutions();
+        size_t num_solutions = solutions.GetNumSolutions();
 
         if (num_solutions == 0)
             return false;  // no solution found

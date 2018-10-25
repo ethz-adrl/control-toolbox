@@ -97,7 +97,7 @@ public:
         ikSolution = solutions[0];
         double minNorm = (ikSolution - queryJointPositions).norm();
 
-        for (int i = 1; i < solutions.size(); ++i)
+        for (size_t i = 1; i < solutions.size(); ++i)
         {
             if ((solutions[i] - queryJointPositions).norm() < minNorm)
             {

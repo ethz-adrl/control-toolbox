@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -250,7 +250,7 @@ void ProjectedDynamics<RBD, NEE>::ProjectedForwardDynamicsCommon(const RBDState_
     // Set Kinematics
     Jc_.updateState(x);
     int rowCount = 0;
-    for (int eeinc_i = 0; eeinc_i < NEE; eeinc_i++)
+    for (size_t eeinc_i = 0; eeinc_i < NEE; eeinc_i++)
     {
         if (ee_in_contact_[eeinc_i])
         {
@@ -282,7 +282,7 @@ void ProjectedDynamics<RBD, NEE>::ResetJacobianStructure()
     Jc_.c_size_ = 0;
     neec_ = 0;
 
-    for (auto eeinc = 0; eeinc < NEE; eeinc++)
+    for (size_t eeinc = 0; eeinc < NEE; eeinc++)
     {
         if (ee_in_contact_[eeinc])
         {

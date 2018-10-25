@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
@@ -9,10 +9,14 @@ namespace ct {
 namespace rbd {
 
 template <size_t NJOINTS, typename SCALAR>
-EndEffector<NJOINTS, SCALAR>::EndEffector() : linkId_(999){};
+EndEffector<NJOINTS, SCALAR>::EndEffector() : linkId_(999)
+{
+}
 
 template <size_t NJOINTS, typename SCALAR>
-EndEffector<NJOINTS, SCALAR>::~EndEffector(){};
+EndEffector<NJOINTS, SCALAR>::~EndEffector()
+{
+}
 
 template <size_t NJOINTS, typename SCALAR>
 EndEffector<NJOINTS, SCALAR>::EndEffector(const EndEffector& other) : linkId_(other.linkId_)

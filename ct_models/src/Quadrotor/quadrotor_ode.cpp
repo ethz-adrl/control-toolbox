@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -21,9 +21,9 @@ quadrotor::state_vector_t quadrotor_ode(const quadrotor::state_vector_t& x, cons
     assert(u == u);
 
     // positions
-    double qxQ = x(0);  // x
-    double qyQ = x(1);  // y
-    double qzQ = x(2);  // z
+    //    double qxQ = x(0);  // x
+    //    double qyQ = x(1);  // y
+    //    double qzQ = x(2);  // z
 
     // euler angles xyz
     double qph = x(3);

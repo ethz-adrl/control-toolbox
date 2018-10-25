@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -12,7 +12,7 @@ template <size_t NJOINTS>
 JointPositionPIDController<NJOINTS>* JointPositionPIDController<NJOINTS>::clone() const
 {
     throw std::runtime_error("RBD: JointPositionPIDController.h, clone() not implemented");
-};
+}
 
 template <size_t NJOINTS>
 JointPositionPIDController<NJOINTS>::~JointPositionPIDController()
@@ -20,7 +20,8 @@ JointPositionPIDController<NJOINTS>::~JointPositionPIDController()
 }
 
 template <size_t NJOINTS>
-JointPositionPIDController<NJOINTS>::JointPositionPIDController(const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition,
+JointPositionPIDController<NJOINTS>::JointPositionPIDController(
+    const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition,
     const Eigen::Matrix<double, NJOINTS, 1>& desiredVelocity,
     const std::vector<PIDController::parameters_t>& parameters)
 {
@@ -28,13 +29,14 @@ JointPositionPIDController<NJOINTS>::JointPositionPIDController(const Eigen::Mat
 
     for (size_t i = 0; i < NJOINTS; i++)
     {
-        jointControllers_.push_back(PIDController(
-            parameters[i], PIDController::setpoint_t(desiredPosition(i), desiredVelocity(i))));
+        jointControllers_.push_back(
+            PIDController(parameters[i], PIDController::setpoint_t(desiredPosition(i), desiredVelocity(i))));
     }
 }
 
 template <size_t NJOINTS>
-JointPositionPIDController<NJOINTS>::JointPositionPIDController(const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition,
+JointPositionPIDController<NJOINTS>::JointPositionPIDController(
+    const Eigen::Matrix<double, NJOINTS, 1>& desiredPosition,
     const Eigen::Matrix<double, NJOINTS, 1>& desiredVelocity,
     const PIDController::parameters_t& parameters)
 {
@@ -64,7 +66,7 @@ void JointPositionPIDController<NJOINTS>::setDesiredPosition(const Eigen::Matrix
     for (size_t i = 0; i < NJOINTS; i++)
     {
         jointControllers_[i].setDesiredState(desiredPosition(i));
-    };
+    }
 }
 
 template <size_t NJOINTS>

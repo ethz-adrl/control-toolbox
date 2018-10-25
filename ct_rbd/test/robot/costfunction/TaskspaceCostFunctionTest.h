@@ -153,9 +153,6 @@ TEST(TaskspaceCostFunctionTests, TestTaskSpacePoseTermCG)
     Eigen::Quaternion<double> w_q_ee;
     w_q_ee.setIdentity();
 
-    // get euler angles corresponding to the quaternion, to be used in second constructor
-    Eigen::Matrix<double, 3, 1> w_euler_ee = w_q_ee.toRotationMatrix().eulerAngles(0, 1, 2);
-
     // test constructor taking the quaternion
     std::shared_ptr<TermTaskspacePoseCG<KinTpl_t, true, hyqStateDim, hyqControlDim>> term1(
         new TermTaskspacePoseCG<KinTpl_t, true, hyqStateDim, hyqControlDim>(eeId, Qpos, Qrot, w_pos_ee, w_q_ee));
