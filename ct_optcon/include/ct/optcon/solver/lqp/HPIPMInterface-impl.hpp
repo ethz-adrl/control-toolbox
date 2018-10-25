@@ -58,7 +58,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
     if (settings_.lqoc_solver_settings.lqoc_debug_print)
     {
         std::cout << "HPIPM allocating memory for QP with time horizon: " << N_ << std::endl;
-        for (size_t i = 0; i < N_ + 1; i++)
+        for (int i = 0; i < N_ + 1; i++)
         {
             std::cout << "HPIPM stage " << i << ": (nx, nu, nb, ng) : (" << nx_[i] << ", " << nu_[i] << ", " << nb_[i]
                       << ", " << ng_[i] << ")" << std::endl;
@@ -88,7 +88,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
 {
 // optional printout
 #ifdef HPIPM_PRINT_MATRICES
-    for (size_t i = 0; i < N_ + 1; i++)
+    for (int i = 0; i < N_ + 1; i++)
     {
         std::cout << "HPIPM matrix printout for stage " << i << std::endl;
         if (i < N_)
@@ -329,7 +329,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureBoxConstraints(
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
 {
     // stages 1 to N
-    for (size_t i = 0; i < N_ + 1; i++)
+    for (int i = 0; i < N_ + 1; i++)
     {
         nb_[i] = lqocProblem->nb_[i];
 
@@ -369,7 +369,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
     hd_lg_0_Eigen_ = lqocProblem->d_lb_[0] - lqocProblem->C_[0] * lqocProblem->x_[0];
     hd_ug_0_Eigen_ = lqocProblem->d_ub_[0] - lqocProblem->C_[0] * lqocProblem->x_[0];
 
-    for (size_t i = 0; i < N_ + 1; i++) // (includes the terminal stage)
+    for (int i = 0; i < N_ + 1; i++)  // (includes the terminal stage)
     {
         // check dimensions
         assert(lqocProblem->d_lb_[i].rows() == lqocProblem->d_ub_[i].rows());

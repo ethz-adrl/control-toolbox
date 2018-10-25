@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -14,7 +14,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 using namespace ct::core;
 
 
-void dmcopy(int row, int col, double *A, int lda, double *B, int ldb)
+void dmcopy(int row, int col, double* A, int lda, double* B, int ldb)
 {
     int i, j;
     for (j = 0; j < col; j++)
@@ -44,7 +44,7 @@ public:
         Eigen::Matrix<double, pp, pp> TEigen;
         TEigen.setZero();
 
-        double *T = TEigen.data();
+        double* T = TEigen.data();
         int ii;
         for (ii = 0; ii < pp; ii++)
             T[ii * (pp + 1)] = -2;
@@ -55,13 +55,13 @@ public:
 
         Eigen::Matrix<double, pp, pp> ZEigen;
         ZEigen.setZero();
-        double *Z = ZEigen.data();
+        double* Z = ZEigen.data();
 
         Eigen::Matrix<double, pp, pp> IEigen;
         IEigen.setIdentity();
-        double *I = IEigen.data();
+        double* I = IEigen.data();
 
-        double *Ac = A_.data();
+        double* Ac = A_.data();
         dmcopy(pp, pp, Z, pp, Ac, state_dim);
         dmcopy(pp, pp, T, pp, Ac + pp, state_dim);
         dmcopy(pp, pp, I, pp, Ac + pp * state_dim, state_dim);
@@ -69,28 +69,28 @@ public:
 
         Eigen::Matrix<double, control_dim, control_dim> InuEigen;
         InuEigen.setIdentity();
-        double *Inu = InuEigen.data();
+        double* Inu = InuEigen.data();
 
-        double *Bc = B_.data();
+        double* Bc = B_.data();
         dmcopy(control_dim, control_dim, Inu, control_dim, Bc + pp, state_dim);
     }
 
 
-    const state_matrix_t &getDerivativeState(const StateVector<state_dim> &x,
-        const ControlVector<control_dim> &u,
+    const state_matrix_t& getDerivativeState(const StateVector<state_dim>& x,
+        const ControlVector<control_dim>& u,
         const double t = 0.0) override
     {
         return A_;
     }
 
-    const state_control_matrix_t &getDerivativeControl(const StateVector<state_dim> &x,
-        const ControlVector<control_dim> &u,
+    const state_control_matrix_t& getDerivativeControl(const StateVector<state_dim>& x,
+        const ControlVector<control_dim>& u,
         const double t = 0.0) override
     {
         return B_;
     }
 
-    LinkedMasses *clone() const override { return new LinkedMasses(); };
+    LinkedMasses* clone() const override { return new LinkedMasses(); };
 private:
     state_matrix_t A_;
     state_control_matrix_t B_;
@@ -118,7 +118,7 @@ public:
         Eigen::Matrix<double, pp, pp> TEigen;
         TEigen.setZero();
 
-        double *T = TEigen.data();
+        double* T = TEigen.data();
         int ii;
         for (ii = 0; ii < pp; ii++)
             T[ii * (pp + 1)] = -2;
@@ -129,13 +129,13 @@ public:
 
         Eigen::Matrix<double, pp, pp> ZEigen;
         ZEigen.setZero();
-        double *Z = ZEigen.data();
+        double* Z = ZEigen.data();
 
         Eigen::Matrix<double, pp, pp> IEigen;
         IEigen.setIdentity();
-        double *I = IEigen.data();
+        double* I = IEigen.data();
 
-        double *Ac = A_.data();
+        double* Ac = A_.data();
         dmcopy(pp, pp, Z, pp, Ac, state_dim);
         dmcopy(pp, pp, T, pp, Ac + pp, state_dim);
         dmcopy(pp, pp, I, pp, Ac + pp * state_dim, state_dim);
@@ -143,17 +143,17 @@ public:
 
         Eigen::Matrix<double, control_dim, control_dim> InuEigen;
         InuEigen.setIdentity();
-        double *Inu = InuEigen.data();
+        double* Inu = InuEigen.data();
 
-        double *Bc = B_.data();
+        double* Bc = B_.data();
         dmcopy(control_dim, control_dim, Inu, control_dim, Bc + pp, state_dim);
     }
 
-    LinkedMasses2 *clone() const override { return new LinkedMasses2(); };
-    void computeControlledDynamics(const ct::core::StateVector<state_dim> &state,
-        const double &t,
-        const ct::core::ControlVector<control_dim> &control,
-        ct::core::StateVector<state_dim> &derivative) override
+    LinkedMasses2* clone() const override { return new LinkedMasses2(); };
+    void computeControlledDynamics(const ct::core::StateVector<state_dim>& state,
+        const double& t,
+        const ct::core::ControlVector<control_dim>& control,
+        ct::core::StateVector<state_dim>& derivative) override
     {
         derivative = A_ * state + B_ * control + b_;
     }

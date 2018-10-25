@@ -1,18 +1,21 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-//#include <ct/core/core.h>
 #include <ct/core/internal/autodiff/SparsityPattern.h>
 
 namespace ct {
 namespace core {
 namespace internal {
 
-SparsityPattern::SparsityPattern(){};
+SparsityPattern::SparsityPattern()
+{
+}
 
-SparsityPattern::~SparsityPattern(){};
+SparsityPattern::~SparsityPattern()
+{
+}
 
 const CppAD::vector<bool>& SparsityPattern::sparsity() const
 {

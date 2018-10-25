@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -33,6 +33,7 @@ class Nlp
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     using VectorXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>;
     using VectorXi = Eigen::Matrix<int, Eigen::Dynamic, 1>;
     using MapVecXs = Eigen::Map<VectorXs>;
@@ -127,37 +128,64 @@ public:
      *
      * @param[in]  nele_hes  The number of non zeros in the hessian
      * @param      hes       The values of the non-zeros of the hessian
-     * @param[in]  obj_fac   The costfunction multiplier
+     * @param[in]  obj_fac   The costfunction multiplier (zero or one, NLP solver uses this to query for parts of the hessian only)
      * @param      lambda    The constraint multipliers
+     *
+     * @note it is important to note that our NLP-solvers expect the Hessian reduced to triangular form (symmetry).
      */
     void evaluateHessian(const int nele_hes, MapVecXs& hes, const SCALAR obj_fac, MapConstVecXs& lambda)
     {
 #if EIGEN_VERSION_AT_LEAST(3, 3, 0)
-        if (!constraintsCodegen_ || !costCodegen_)
-            throw std::runtime_error(
-                "Error in evaluateHessian. Hessian Evaluation only implemented for codegeneration");
 
-        hes.setZero();
+        // store objective-factor in matrix to ensure compatibility with other derivative-classes
         Eigen::Matrix<double, 1, 1> omega;
         omega << obj_fac;
 
-        Eigen::VectorXd hessianCostValues =
-            costCodegen_->sparseHessianValues(optVariables_->getOptimizationVars(), omega);
-        Eigen::VectorXd hessianConstraintsValues =
-            constraintsCodegen_->sparseHessianValues(optVariables_->getOptimizationVars(), lambda);
+        // evaluate Hessian values
+        Eigen::VectorXd hessianCostValues, hessianConstraintsValues;
 
-        for (size_t i = 0; i < hessianCostValues.rows(); ++i)
-            hessianCost_.coeffRef(iRowHessianCost_(i), jColHessianCost_(i)) = hessianCostValues(i);
+        if (costCodegen_)
+            hessianCostValues = costCodegen_->sparseHessianValues(optVariables_->getOptimizationVars(), omega);
+        else
+            costEvaluator_->sparseHessianValues(optVariables_->getOptimizationVars(), omega, hessianCostValues);
 
-        for (size_t i = 0; i < hessianConstraintsValues.rows(); ++i)
-            hessianConstraints_.coeffRef(iRowHessianConstraints_(i), jColHessianConstraints_(i)) =
-                hessianConstraintsValues(i);
 
-        hessianTotal_ = (hessianCost_ + hessianConstraints_).template triangularView<Eigen::Lower>();
+        if (constraintsCodegen_)
+            hessianConstraintsValues =
+                constraintsCodegen_->sparseHessianValues(optVariables_->getOptimizationVars(), lambda);
+        else
+            hessianConstraintsValues = constraints_->sparseHessianValues(optVariables_->getOptimizationVars(), lambda);
 
-        hes = Eigen::Map<Eigen::VectorXd>(hessianTotal_.valuePtr(), nele_hes, 1);
+
+        // collect all Hessian values (from both constraints and cost) in one vector of triplets
+        // here, we re-use the the sparsity information collected in getNonZeroHessianCount()
+        std::vector<Eigen::Triplet<SCALAR>, Eigen::aligned_allocator<Eigen::Triplet<SCALAR>>> triplets;
+        triplets.reserve(iRowHessianCost_.rows() + iRowHessianConstraints_.rows());
+
+        for (int i = 0; i < iRowHessianCost_.rows(); i++)
+        {
+            triplets.push_back(Eigen::Triplet<SCALAR>(iRowHessianCost_(i), jColHessianCost_(i), hessianCostValues(i)));
+        }
+        for (int i = 0; i < iRowHessianConstraints_.rows(); i++)
+        {
+            triplets.push_back(Eigen::Triplet<SCALAR>(
+                iRowHessianConstraints_(i), jColHessianConstraints_(i), hessianConstraintsValues(i)));
+        }
+
+        // setting the sparse Hessian from Eigen-triplets automatically resolves (e.g. adds) entries at same indices
+        Hessian_eval_.setFromTriplets(triplets.begin(), triplets.end());
+
+        // IPOPT and SNOPT only expect a triangular Hessian matrix (symmetry)
+        // enforce triangular view
+        // todo: is there a nicer in-place conversion to triangularView?
+        Hessian_eval_ = Hessian_eval_.template triangularView<Eigen::Lower>();
+
+        hes = Eigen::Map<Eigen::VectorXd>(Hessian_eval_.valuePtr(), nele_hes, 1);
+
 #else
-        throw std::runtime_error("evaluateHessian only available for Eigen 3.3 and newer. Please change solver settings to NOT use hessians");
+        throw std::runtime_error(
+            "Nlp::evaluateHessian() only available for Eigen 3.3 and newer. Please change solver settings to NOT use "
+            "exact Hessians");
 #endif
     }
 
@@ -193,7 +221,7 @@ public:
     }
 
     /**
-     * @brief      Gets the sparsity pattern hessian of the lagrangian
+     * @brief      Gets the sparsity pattern of the Hessian of the Lagrangian
      *
      * @param[in]  nele_hes  The number of non zero elements in the hessian
      * @param      iRow      The row indices
@@ -201,13 +229,7 @@ public:
      */
     void getSparsityPatternHessian(const int nele_hes, MapVecXi& iRow, MapVecXi& jCol) const
     {
-        if (!constraintsCodegen_ || !costCodegen_)
-            throw std::runtime_error(
-                "Error in getSparsityPatternHessian. Hessian Evaluation only implemented for codegeneration");
-
-        iRow.setZero();
-        jCol.setZero();
-
+        // todo this implicitly assumes that getNonZeroHessianCount() got called before. Assert this!
         iRow = iRowHessian_;
         jCol = jColHessian_;
     }
@@ -244,56 +266,81 @@ public:
     }
 
     /**
-     * @brief      Returns the number of non zeros in the hessian
+     * @brief      Returns the number of non zeros in the Hessian.
      *
-     * @return     The number of non zeros in the hessian
+     * This method intelligently combines sparsity of cost and constraint Hessians using sparse Eigen operations.
+     *
+     * @return     The number of non zeros in the Hessian
      */
     size_t getNonZeroHessianCount()
     {
 #if EIGEN_VERSION_AT_LEAST(3, 3, 0)
-        if (!constraintsCodegen_ || !costCodegen_)
-        {
-            std::cerr << "Error: Exact hessians only work with AD hessian codegeneration" << std::endl;
-            throw std::runtime_error("Error in getNonZeroHessianCount. Codegeneration not initialized");
-        }
 
-        costCodegen_->getSparsityPatternHessian(iRowHessianCost_, jColHessianCost_);
-        constraintsCodegen_->getSparsityPatternHessian(iRowHessianConstraints_, jColHessianConstraints_);
+        // the sparse Eigen-matrices need to be resized properly, which happens in this step.
+        // todo: need to assert that getNonZeroHessianCount() gets called before the first call to a Hessian evaluation.
+        Hessian_eval_.resize(optVariables_->size(), optVariables_->size());
+        Hessian_sparsity_.resize(optVariables_->size(), optVariables_->size());
 
-        std::vector<Eigen::Triplet<SCALAR>> tripletsCost;
-        std::vector<Eigen::Triplet<SCALAR>> tripletsConstraints;
+        iRowHessianCost_.setZero();
+        jColHessianCost_.setZero();
+        iRowHessianConstraints_.setZero();
+        jColHessianConstraints_.setZero();
 
-        for (size_t i = 0; i < iRowHessianCost_.rows(); ++i)
-            tripletsCost.push_back(Eigen::Triplet<SCALAR>(iRowHessianCost_(i), jColHessianCost_(i), SCALAR(0.1)));
 
-        for (size_t i = 0; i < iRowHessianConstraints_.rows(); ++i)
-            tripletsConstraints.push_back(
-                Eigen::Triplet<SCALAR>(iRowHessianConstraints_(i), jColHessianConstraints_(i), SCALAR(0.1)));
+        // evaluate sparsity patterns
+        if (constraintsCodegen_)
+            constraintsCodegen_->getSparsityPatternHessian(iRowHessianConstraints_, jColHessianConstraints_);
+        else
+            constraints_->getSparsityPatternHessian(
+                iRowHessianConstraints_, jColHessianConstraints_, optVariables_->size());
 
-        hessianCost_.resize(optVariables_->size(), optVariables_->size());
-        hessianCost_.setFromTriplets(tripletsCost.begin(), tripletsCost.end());
-        hessianConstraints_.resize(optVariables_->size(), optVariables_->size());
-        hessianConstraints_.setFromTriplets(tripletsConstraints.begin(), tripletsConstraints.end());
+        if (costCodegen_)
+            costCodegen_->getSparsityPatternHessian(iRowHessianCost_, jColHessianCost_);
+        else
+            costEvaluator_->getSparsityPatternHessian(iRowHessianCost_, jColHessianCost_);
 
-        hessianTotal_.resize(optVariables_->size(), optVariables_->size());
-        hessianTotal_ = (hessianCost_ + hessianConstraints_).template triangularView<Eigen::Lower>();
 
+        // collect all Hessian sparsity values (from both constraints and cost) in one vector of triplets
+        std::vector<Eigen::Triplet<SCALAR>, Eigen::aligned_allocator<Eigen::Triplet<SCALAR>>> triplets;
+        triplets.reserve(iRowHessianCost_.rows() + iRowHessianConstraints_.rows());
+
+        for (int i = 0; i < iRowHessianCost_.rows(); ++i)
+            triplets.push_back(Eigen::Triplet<SCALAR>(iRowHessianCost_(i), jColHessianCost_(i), SCALAR(1.0)));
+
+        for (int i = 0; i < iRowHessianConstraints_.rows(); ++i)
+            triplets.push_back(
+                Eigen::Triplet<SCALAR>(iRowHessianConstraints_(i), jColHessianConstraints_(i), SCALAR(1.0)));
+
+        // setting the sparse Hessian from Eigen-triplets automatically resolves (e.g. adds) entries at same indices
+        Hessian_sparsity_.setFromTriplets(triplets.begin(), triplets.end());
+
+        // IPOPT and SNOPT only expect a triangular Hessian matrix (symmetry)
+        // enforce triangular view
+        // todo: is there a nicer in-place conversion to triangularView?
+        Hessian_sparsity_ = Hessian_sparsity_.template triangularView<Eigen::Lower>();
+
+        // lastly, collect and combine the sparsity as filled into the helper-matrix and store in Eigen::Vectors.
         std::vector<int> iRowHessianStdVec;
         std::vector<int> jColHessianStdVec;
-        for (size_t k = 0; k < hessianTotal_.outerSize(); ++k)
-            for (typename Eigen::SparseMatrix<SCALAR>::InnerIterator it(hessianTotal_, k); it; ++it)
+        for (int k = 0; k < Hessian_sparsity_.outerSize(); ++k)
+        {
+            for (typename Eigen::SparseMatrix<SCALAR>::InnerIterator it(Hessian_sparsity_, k); it; ++it)
             {
                 iRowHessianStdVec.push_back(it.row());
                 jColHessianStdVec.push_back(it.col());
             }
-
+        }
         iRowHessian_ = Eigen::Map<Eigen::VectorXi>(iRowHessianStdVec.data(), iRowHessianStdVec.size(), 1);
         jColHessian_ = Eigen::Map<Eigen::VectorXi>(jColHessianStdVec.data(), jColHessianStdVec.size(), 1);
 
+        // the number of non-zero elements is equal to the number rows
         size_t nonZerosHessian = iRowHessian_.rows();
         return nonZerosHessian;
 #else
-        throw std::runtime_error("getNonZeroHessianCount only available for Eigen 3.3 and newer. Please change solver settings to NOT use hessians");
+        throw std::runtime_error(
+            "Nlp::getNonZeroHessianCount() only available for Eigen 3.3 and newer. Please change solver settings to "
+            "NOT use "
+            "exact Hessians or upgrade Eigen version.");
         return 0;
 #endif
     }
@@ -479,22 +526,31 @@ public:
 
 
 protected:
-    std::shared_ptr<DiscreteCostEvaluatorBase<SCALAR>>
-        costEvaluator_;  //! abstract base class, approximates the cost evaluation for the discrete problem
-    std::shared_ptr<OptVector<SCALAR>>
-        optVariables_;  //! base class, containts the optimization variables used in the NLP solvers
-    std::shared_ptr<DiscreteConstraintContainerBase<SCALAR>>
-        constraints_;  //! abstract base class, contains the discretized constraints for the problem
+    //! Ptr to cost evaluator, which approximates the cost evaluation for the discrete problem
+    std::shared_ptr<DiscreteCostEvaluatorBase<SCALAR>> costEvaluator_;
+
+    //! Ptr to optimization variable container, which holds the optimization variables used in the NLP solvers
+    std::shared_ptr<OptVector<SCALAR>> optVariables_;
+
+    //! Ptr to constraint container, which contains the discretized constraints for the problem
+    std::shared_ptr<DiscreteConstraintContainerBase<SCALAR>> constraints_;
+
+    //! Ptr to code-generated cost (optional)
     std::shared_ptr<ct::core::DerivativesCppadJIT<-1, 1>> costCodegen_;
+
+    //! Ptr to code-generated constraints (optional)
     std::shared_ptr<ct::core::DerivativesCppadJIT<-1, -1>> constraintsCodegen_;
 
 #if EIGEN_VERSION_AT_LEAST(3, 3, 0)
-    Eigen::SparseMatrix<SCALAR> hessianCost_, hessianConstraints_, hessianTotal_;
+    Eigen::SparseMatrix<SCALAR> Hessian_eval_;
+    Eigen::SparseMatrix<SCALAR> Hessian_sparsity_;  // this is just a helper data structure
 #endif
 
+    //! helper containers for calculating the sparsity patterns
     Eigen::VectorXi iRowHessianCost_, iRowHessianConstraints_, jColHessianCost_, jColHessianConstraints_;
-    Eigen::VectorXi iRowHessian_;
-    Eigen::VectorXi jColHessian_;
+
+    //! combined Hessian sparsity pattern gets stored here
+    Eigen::VectorXi iRowHessian_, jColHessian_;
 };
 }
 

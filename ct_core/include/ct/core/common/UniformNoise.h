@@ -23,12 +23,11 @@ public:
     //! Standard constructor
     /*!
 	 * @param mean the mean of the uniform distribution
-	 * @param the half-width of the distribution
+	 * @param r the half-width of the distribution
 	 */
-	UniformNoise(double mean = 0.0, double r = 1.0)
-        : rd_(), eng_(rd_()), distr_(mean-r, mean+r)
-    {
-    }
+	UniformNoise(const double mean = 0.0, const double r = 1.0)
+        : mean_(mean), r_(r), rd_(), eng_(rd_()), distr_(mean-r, mean+r)
+    {}
 
     //! Scalar generator
     /*!
@@ -36,6 +35,8 @@ public:
 	 * @return random variable
 	 */
     double operator()() { return distr_(eng_); }
+
+
     //! Vector generator
     /*!
 	 * All entries in the vector are separately generated random variables
@@ -69,6 +70,9 @@ public:
 
 
 private:
+    double mean_;
+    double r_;
+
     std::random_device rd_;
     std::mt19937 eng_;
     std::uniform_real_distribution<> distr_;

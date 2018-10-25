@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -127,7 +127,7 @@ TEST(DmsTest, OscillatorDmsTestAllVariants)
 
 #ifdef BUILD_WITH_SNOPT_SUPPORT
             NlpSolverSettings nlpsettings;
-            nlpsettings.solverType_ = static_cast<NlpSolverSettings::SolverType>(0);  // IPOPT, SNOPT
+            nlpsettings.solverType_ = ct::optcon::NlpSolverType::SNOPT;
             settings.solverSettings_ = nlpsettings;
             OscillatorDms oscDms;
             oscDms.initialize(settings);
@@ -136,7 +136,7 @@ TEST(DmsTest, OscillatorDmsTestAllVariants)
 
 #ifdef BUILD_WITH_IPOPT_SUPPORT
             NlpSolverSettings nlpsettings_ipopt;
-            nlpsettings_ipopt.solverType_ = static_cast<NlpSolverSettings::SolverType>(1);  // IPOPT, SNOPT
+            nlpsettings_ipopt.solverType_ = ct::optcon::NlpSolverType::IPOPT;
             settings.solverSettings_ = nlpsettings_ipopt;
             OscillatorDms oscDms_ipopt;
             oscDms_ipopt.initialize(settings);
@@ -152,7 +152,7 @@ TEST(DmsTest, OscillatorDmsTestAllVariants)
 }  // namespace ct
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     using namespace ct::optcon::example;
     testing::InitGoogleTest(&argc, argv);

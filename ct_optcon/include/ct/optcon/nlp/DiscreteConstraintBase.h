@@ -73,6 +73,37 @@ public:
      */
     virtual void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) = 0;
 
+
+    /**
+     * @brief      Returns the sparsity structure of the constraint hessian
+     *
+     * @param[out]      iRow_vec  A vector containing the row indices of the non zero
+     *                       elements of the constraint hessian
+     * @param[out]      jCol_vec  A vector containing the column indices of the non
+     *                       zero elements of the constraint hessian
+     */
+    virtual void genSparsityPatternHessian(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec)
+    {
+        throw std::runtime_error(
+            "genSparsityPatternHessian() for DiscreteConstraintBase not implemented. Use Hessian approximation.");
+    }
+
+    /**
+     * @brief      Returns the non zero elements (values) of the Hessian matrix of this constraint
+     *
+     * @param[in] optVec 	A vector holding the current optimization variable vector
+     *
+     * @param[in] lambda 	A vector holding the current constraint multipliers (one scalar for each row of constraints)
+     *
+     * @param[out] sparseHes	The sparse hessian values
+     */
+    virtual void sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda, Eigen::VectorXd& sparseHes)
+    {
+        throw std::runtime_error(
+            "sparseHessianValues() for DiscreteConstraintBase not implemented. Use Hessian approximation.");
+    }
+
+
     /**
      * @brief      Returns the lower bound of the constraint
      *
@@ -87,6 +118,8 @@ public:
      */
     virtual VectorXs getUpperBound() = 0;
 
+    Eigen::VectorXi& iRowHessian() { return iRowHessian_; }
+    Eigen::VectorXi& jColHessian() { return jColHessian_; }
 protected:
     /**
      * @brief      This method generates Row and Column vectors which indicate
@@ -128,6 +161,9 @@ protected:
         Eigen::VectorXi& iRow_vec,
         Eigen::VectorXi& jCol_vec,
         const size_t indexNumber);
+
+    Eigen::VectorXi iRowHessian_;
+    Eigen::VectorXi jColHessian_;
 };
 
 template <typename SCALAR>

@@ -128,13 +128,13 @@ if(BUILD_EXAMPLES)
 
     add_executable(ex_ConstraintOutput examples/ConstraintExampleOutput.cpp)
     target_link_libraries(ex_ConstraintOutput ${catkin_LIBRARIES})
-
+    
     add_executable(ex_LQR examples/LQR.cpp)
     target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS})
-
+    
     add_executable(ex_NLOC examples/NLOC.cpp)
     target_link_libraries(ex_NLOC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-
+    
     add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
     target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
 
@@ -143,12 +143,15 @@ if(BUILD_EXAMPLES)
 
     add_executable(ex_KalmanFiltering examples/KalmanFiltering.cpp)
     target_link_libraries(ex_KalmanFiltering ${catkin_LIBRARIES})
-
+    
     add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
     target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
 
-    add_executable(ex_Nlp examples/SimpleNlp.cpp)
-    target_link_libraries(ex_Nlp ${catkin_LIBRARIES} ${NLP_LIBS})
+    add_executable(ex_Nlp_2D examples/nlp/Nlp2D.cpp)
+    target_link_libraries(ex_Nlp_2D ${catkin_LIBRARIES} ${NLP_LIBS})
+    
+    add_executable(ex_Nlp_3D examples/nlp/Nlp3D.cpp)
+    target_link_libraries(ex_Nlp_3D ${catkin_LIBRARIES} ${NLP_LIBS})
 endif()
 
 get_filename_component(DMS_OSC_TEST_MAT_DIR "test/dms/oscillator/matfiles" ABSOLUTE)

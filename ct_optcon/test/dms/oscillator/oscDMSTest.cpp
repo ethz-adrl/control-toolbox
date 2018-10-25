@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -268,7 +268,7 @@ TEST(DmsTest, OscDmsTest)
  * This unit test applies Direct Multiple Shooting to an oscillator system, uses different solvers and compares the outputs.
  * \example oscDMSTest.cpp
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     // using namespace ct::optcon::example;
     testing::InitGoogleTest(&argc, argv);

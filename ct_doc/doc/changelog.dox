@@ -5,6 +5,11 @@
 
 For a complete list of changes, we encourage you to check out our git repository at https://bitbucket.org/adrlab/ct
 
+\section cl_v23 Version 2.3
+- added a nonlinear-programming based inverse kinematics solver (for fix-base systems and single end-effectors)
+- changed representation of Riccati solvers from differential to global coordinates
+- NLOC-type algorithms (iLQR, GNMS) now fully compatible with discrete-time systems.
+
 \section cl_v22 Version 2.2
 - added switched systems, allowing for switches between dynamic models according to a pre-defined schedule.
 - projected system dynamics are now compatible with the Auto-Diff tools.

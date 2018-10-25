@@ -5,6 +5,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
 project (ct_rbd)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../ct_optcon/cmake/externalSolvers.cmake)
 
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -130,8 +131,14 @@ target_link_libraries(kindrJITtest ${catkin_LIBRARIES})
 catkin_add_gtest(jacobianTests test/robot/jacobian/JacobianTests.cpp)
 target_link_libraries(jacobianTests ${catkin_LIBRARIES})
 
+if(BUILD_WITH_IPOPT_SUPPORT)
+    catkin_add_gtest(FixBaseIKTest test/robot/kinematics/FixBaseIKTest.cpp)
+    target_link_libraries(FixBaseIKTest ${catkin_LIBRARIES}${SNOPT_LIBS} ${IPOPT_LIBS} dl)
+endif()
+
 add_executable(simpleArmTrajectoryTest src/SimpleArmTrajectoryGeneratorTest.cpp)
 target_link_libraries(simpleArmTrajectoryTest ${catkin_LIBRARIES})
+
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)

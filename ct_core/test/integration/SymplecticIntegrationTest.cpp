@@ -1,9 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
-
-#pragma once
 
 #include <gtest/gtest.h>
 #include <ct/core/core.h>
@@ -18,7 +16,7 @@ const size_t p_dim = 1;
 const size_t v_dim = 1;
 const size_t control_dim = 1;
 
-double randomNumber(double min, double max)
+double uniformRandomNumber(double min, double max)
 {
     std::random_device rd;                             // obtain a random number from hardware
     std::mt19937 eng(rd());                            // seed the generator
@@ -36,13 +34,13 @@ TEST(SymplecticIntegrationTest, simpleSymplecticTest)
 
         for (size_t i = 0; i < nTests; i++)
         {
-            double wn = randomNumber(0.1, 1.0);
+            double wn = uniformRandomNumber(0.1, 1.0);
             shared_ptr<ConstantController<state_dim, control_dim>> constController(
                 new ConstantController<state_dim, control_dim>());
             shared_ptr<TestSymplecticSystem> oscillator(new TestSymplecticSystem(wn, constController));
 
             ct::core::ControlVector<control_dim> testControl;
-            testControl(0) = randomNumber(-1, 1);
+            testControl(0) = uniformRandomNumber(-1, 1);
             constController->setControl(testControl);
 
             // create symplectic integrators
@@ -53,7 +51,6 @@ TEST(SymplecticIntegrationTest, simpleSymplecticTest)
 
             // define integration times
             Time startTime = 0.0;
-            Time finalTime = startTime + 1.0;
             size_t nsteps = 1.0 / dt;
 
             // create an initial state
@@ -76,7 +73,7 @@ TEST(SymplecticIntegrationTest, simpleSymplecticTest)
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

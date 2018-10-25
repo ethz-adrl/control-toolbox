@@ -57,7 +57,9 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAD(const std::string
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::~CostFunctionAD(){};
+CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::~CostFunctionAD()
+{
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>* CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::clone() const

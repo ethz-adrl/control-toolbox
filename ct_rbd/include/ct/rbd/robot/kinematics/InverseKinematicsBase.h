@@ -11,6 +11,21 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace rbd {
 
+
+struct InverseKinematicsSettings
+{
+	InverseKinematicsSettings():
+		maxNumTrials_(1),
+		randomizeInitialGuess_(true),
+		validationTol_(1e-4)
+	{}
+
+	size_t maxNumTrials_;
+	bool randomizeInitialGuess_;
+	double validationTol_;
+};
+
+
 template <size_t NJOINTS, typename SCALAR = double>
 class InverseKinematicsBase
 {
@@ -24,6 +39,11 @@ public:
     //! default constructor
     InverseKinematicsBase() = default;
 
+    //! constructor with additional settings
+    InverseKinematicsBase(const InverseKinematicsSettings& settings):
+    	settings_(settings)
+    {}
+
     //! default destructor
     virtual ~InverseKinematicsBase() = default;
 
@@ -36,7 +56,7 @@ public:
      */
     virtual bool computeInverseKinematics(JointPositionsVector_t& ikSolutions,
         const RigidBodyPoseTpl& eeBasePose,
-        const std::vector<size_t>& freeJoints) const = 0;
+        const std::vector<size_t>& freeJoints) = 0;
 
     /*!
      * @brief compute inverse kinematics for an end-effector
@@ -49,7 +69,7 @@ public:
     virtual bool computeInverseKinematics(JointPositionsVector_t& ikSolutions,
         const RigidBodyPoseTpl& eeWorldPose,
         const RigidBodyPoseTpl& baseWorldPose,
-        const std::vector<size_t>& freeJoints) const = 0;
+        const std::vector<size_t>& freeJoints) = 0;
 
 
     /*!
@@ -64,7 +84,7 @@ public:
         const RigidBodyPoseTpl& eeWorldPose,
         const RigidBodyPoseTpl& baseWorldPose,
         const JointPosition_t& queryJointPositions,
-        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const
+        const std::vector<size_t>& freeJoints = std::vector<size_t>())
     {
         // compute all inverse kinematics solutions
         JointPositionsVector_t solutions;
@@ -98,7 +118,7 @@ public:
     virtual bool computeInverseKinematicsCloseTo(JointPosition_t& ikSolution,
         const RigidBodyPoseTpl& eeBasePose,
         const JointPosition_t& queryJointPositions,
-        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const
+        const std::vector<size_t>& freeJoints = std::vector<size_t>())
     {
         // set base world pose as identity, herewith eeBasePose = eeWorldPose
         RigidBodyPoseTpl identityWorldPose;
@@ -106,6 +126,17 @@ public:
         return computeInverseKinematicsCloseTo(
             ikSolution, eeBasePose, identityWorldPose, queryJointPositions, freeJoints);
     }
+
+    const InverseKinematicsSettings& getSettings() const {return settings_;}
+
+    void updateSettings(const InverseKinematicsSettings& settings)
+    {
+		settings_ = settings;
+	}
+
+protected:
+
+    InverseKinematicsSettings settings_;
 };
 
 } /* namespace rbd */

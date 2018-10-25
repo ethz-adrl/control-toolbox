@@ -116,8 +116,23 @@ public:
     {
     }
 
+    //! constructor which sets the target pose to dummy values
+    TermTaskspacePoseCG(size_t eeInd,
+        const Eigen::Matrix3d& Qpos,
+        const double& Qrot,
+        const std::string& name = "TermTaskSpace",
+        bool evalControlDerivatives = false)
+        : BASE(name), eeInd_(eeInd), Q_pos_(Qpos), Q_rot_(Qrot), evalControlDerivatives_(evalControlDerivatives)
+    {
+    	// arbitrary dummy values
+        Eigen::Quaterniond w_q_des (0.0, 0.0, 0.0, 1.0);
+        setReferenceOrientation(w_q_des);
+        setReferencePosition(core::StateVector<3>::Zero());
+        setup();
+    }
+
     //! construct this term with info loaded from a configuration file
-    TermTaskspacePoseCG(std::string& configFile, const std::string& termName, bool verbose = false)
+    TermTaskspacePoseCG(const std::string& configFile, const std::string& termName, bool verbose = false)
     {
         loadConfigFile(configFile, termName, verbose);
     }
@@ -425,8 +440,10 @@ private:
             kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions()).toImplementation();
         Eigen::Matrix<SC, 3, 1> xDiff = xCurr - w_p_ref;
 
+
         // compute the cost from the position error
         SC pos_cost = (xDiff.transpose() * Q_pos_.template cast<SC>() * xDiff)(0, 0);
+
 
         // get current end-effector rotation in world frame
         Eigen::Matrix<SC, 3, 3> ee_rot =
@@ -442,7 +459,7 @@ private:
         SC rot_cost = (SC)Q_rot_ * (ee_R_diff - Eigen::Matrix<SC, 3, 3>::Identity()).squaredNorm();
 
         Eigen::Matrix<SC, 1, 1> result;
-        result(0,0) = pos_cost + rot_cost;
+        result(0,0) = (pos_cost + rot_cost);
         return result;
     }
 

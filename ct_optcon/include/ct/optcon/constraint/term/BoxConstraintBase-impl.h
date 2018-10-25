@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
@@ -96,7 +96,7 @@ void BoxConstraintBase<DERIVED_DIM, STATE_DIM, CONTROL_DIM, SCALAR>::sanityCheck
     const VectorXs& ub) const
 {
     // assert that the size of constraint vectors is equal to the computed/given number of constraints
-    if (lb.rows() != nCon | ub.rows() != nCon)
+    if ((lb.rows() != static_cast<int>(nCon)) | (ub.rows() != static_cast<int>(nCon)))
     {
         std::cout << "no. Constraints: " << nCon << std::endl;
         std::cout << "BoxConstraintBase: lb " << lb.transpose() << std::endl;

@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
@@ -9,7 +9,9 @@ namespace ct {
 namespace optcon {
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAnalytical(){};
+CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAnalytical()
+{
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAnalytical(const CostFunctionAnalytical& arg)
@@ -32,7 +34,9 @@ CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* CostFunctionAnalytical<S
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::~CostFunctionAnalytical(){};
+CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::~CostFunctionAnalytical()
+{
+}
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>

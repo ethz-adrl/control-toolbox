@@ -5,6 +5,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
 project(ct_models)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../ct_optcon/cmake/externalSolvers.cmake)
 
 find_package(catkin REQUIRED ct_rbd)
 
@@ -180,6 +181,7 @@ target_link_libraries(HyaTest
                       HyALinearizedForward)
 
 ################ Inverse Kinematics #################
+
 add_library(hya_ik
   src/HyA/transform6d.cpp
 )

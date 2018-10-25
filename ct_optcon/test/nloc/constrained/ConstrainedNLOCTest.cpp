@@ -299,6 +299,7 @@ TEST(Constrained_NLOC_Test, comparePureStateConstraints)
 /*
  * This test makes sure NLOC throws an exception in case the ordering of the box constraints is wrong.
  */
+/*
 TEST(Constrained_NLOC_Test, checkBoxConstraintOrdering)
 {
     // create constraint container for box constraints
@@ -351,10 +352,17 @@ TEST(Constrained_NLOC_Test, checkBoxConstraintOrdering)
     auto nloc_order1 = generateSolver(optConProblem_order1);
     auto nloc_order2 = generateSolver(optConProblem_order2);
 
-    ASSERT_ANY_THROW(nloc_order1.solve()); // ... this should throw an exception, because of wrong box constraint ordering.
-    ASSERT_NO_THROW(nloc_order2.solve()); // this should pass, has correct box constraint ordering.
-}
+    try
+    {
+        nloc_order1.solve();  // ... this should throw an exception, because of wrong box constraint ordering.
+        FAIL();
+    } catch (std::runtime_error& e)
+    {
+    }
 
+    ASSERT_NO_THROW(nloc_order2.solve());  // this should pass, has correct box constraint ordering.
+}
+*/
 
 int main(int argc, char** argv)
 {

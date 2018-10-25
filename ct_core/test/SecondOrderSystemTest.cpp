@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -14,7 +14,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 using namespace ct::core;
 using std::shared_ptr;
 
-double randomNumber(double min, double max)
+double uniformRandomNumber(double min, double max)
 {
     std::random_device rd;                             // obtain a random number from hardware
     std::mt19937 eng(rd());                            // seed the generator
@@ -40,7 +40,7 @@ TEST(SecondOrderSystemTest, dynamicsTest)
             double w_n;
             double zeta;
 
-            w_n = randomNumber(0, 1000);
+            w_n = uniformRandomNumber(0, 1000);
             zeta = 0.0;
 
             oscillator = shared_ptr<SecondOrderSystem>(new SecondOrderSystem(w_n, zeta));
@@ -64,7 +64,7 @@ TEST(SecondOrderSystemTest, dynamicsTest)
             for (size_t j = 0; j < nSamples; j++)
             {
                 StateVector<2> derivative;
-                double t = randomNumber(0, 1000);
+                double t = uniformRandomNumber(0, 1000);
 
                 state(0) = solution(t);
                 state(1) = der(t);

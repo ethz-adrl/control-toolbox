@@ -49,6 +49,27 @@ public:
     * @param[out] grad         The values of the gradient
     */
     virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>& grad) = 0;
+
+    virtual void getSparsityPatternHessian(Eigen::VectorXi& iRow, Eigen::VectorXi& jCol)
+    {
+        throw std::runtime_error(
+            "Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");
+    }
+
+    /**
+    * @brief      Evaluates the cost hessian
+    *
+    * @param[in]  optVec       The optimization variables
+    * @param[in]  lambda       multipliers for hessian matrix
+    * @param[out] hes          The cost hessian matrix coeff
+    */
+    virtual void sparseHessianValues(const Eigen::VectorXd& optVec,
+        const Eigen::VectorXd& lambda,
+        Eigen::VectorXd& hes)
+    {
+        throw std::runtime_error(
+            "Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");
+    }
 };
 }
 

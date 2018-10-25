@@ -32,11 +32,11 @@ public:
 
     HyAInverseKinematics() = default;
 
-    virtual ~HyAInverseKinematics() = default;
+    ~HyAInverseKinematics() = default;
 
-    virtual bool computeInverseKinematics(JointPositionsVector_t& res,
+    bool computeInverseKinematics(JointPositionsVector_t& res,
         const RigidBodyPoseTpl& eeBasePose,
-        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const
+        const std::vector<size_t>& freeJoints = std::vector<size_t>()) override
     {
         res.clear();
         IkSolutionList<double> solutions;
@@ -74,10 +74,10 @@ public:
         return true;
     }
 
-    virtual bool computeInverseKinematics(JointPositionsVector_t& res,
+    bool computeInverseKinematics(JointPositionsVector_t& res,
         const RigidBodyPoseTpl& eeWorldPose,
         const RigidBodyPoseTpl& baseWorldPose,
-        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const
+        const std::vector<size_t>& freeJoints = std::vector<size_t>()) override
     {
         return computeInverseKinematics(res, eeWorldPose.inReferenceFrame(baseWorldPose), freeJoints);
     }

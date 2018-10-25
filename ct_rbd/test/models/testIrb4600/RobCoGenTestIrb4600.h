@@ -6,24 +6,23 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <Eigen/Core>
-
-#include <ct/rbd/rbd.h>
+#include <Eigen/StdVector>
 
 #include "generated/declarations.h"
+#include "generated/jsim.h"
+#include "generated/jacobians.h"
+#include "generated/traits.h"
 #include "generated/forward_dynamics.h"
 #include "generated/inertia_properties.h"
 #include "generated/inverse_dynamics.h"
-#include "generated/jacobians.h"
-#include "generated/jsim.h"
 #include "generated/transforms.h"
 #include "generated/link_data_map.h"
-#include "generated/traits.h"
 
 
-#define ROBCOGEN_NS testirb4600  // defines the NS of the robot in robcogen, e.g. iit::<ROBCOGEN_NS>
-#define TARGET_NS \
-    TestIrb4600  // defines the NS where all robot definitions go. Here ct::rbd::TestIrb4600. This defines ct::rbd::TestIrb4600::Dynamics etc.
-
+// define the NS of the robot in robcogen, e.g. iit::<ROBCOGEN_NS>
+#define ROBCOGEN_NS testirb4600
+// define the NS where all robot definitions go. Here ct::rbd::TestIrb4600. This defines ct::rbd::TestIrb4600::Dynamics etc.
+#define TARGET_NS TestIrb4600
 
 // define the links
 #define CT_BASE fr_link0
@@ -35,10 +34,11 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #define CT_L5 fr_link6
 
 // define single end effector (could also be multiple)
-#define CT_N_EE 1;
+#define CT_N_EE 1
 #define CT_EE0 fr_ee
 #define CT_EE0_IS_ON_LINK 5
 #define CT_EE0_FIRST_JOINT 0
 #define CT_EE0_LAST_JOINT 5
 
 #include <ct/rbd/robot/robcogen/robcogenHelpers.h>
+#include "Irb4600JointLimits.h"
