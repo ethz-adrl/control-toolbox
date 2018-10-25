@@ -30,11 +30,11 @@ public:
 
     Irb4600InverseKinematics() = default;
 
-    virtual ~Irb4600InverseKinematics() = default;
+    ~Irb4600InverseKinematics() = default;
 
-    virtual bool computeInverseKinematics(JointPositionsVector_t& res,
+    bool computeInverseKinematics(JointPositionsVector_t& res,
         const RigidBodyPoseTpl& eeBasePose,
-        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const
+        const std::vector<size_t>& freeJoints = std::vector<size_t>()) override
     {
         res.clear();
         IkSolutionList<double> solutions;
@@ -63,16 +63,16 @@ public:
             res.push_back(sol.getPositions());
         }
 
-        if(res.size() == 0)
-        	return false; // no viable solution after filtering for joint limits
+        if (res.size() == 0)
+            return false;  // no viable solution after filtering for joint limits
 
         return true;
     }
 
-    virtual bool computeInverseKinematics(JointPositionsVector_t& res,
+    bool computeInverseKinematics(JointPositionsVector_t& res,
         const RigidBodyPoseTpl& eeWorldPose,
         const RigidBodyPoseTpl& baseWorldPose,
-        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const
+        const std::vector<size_t>& freeJoints = std::vector<size_t>()) override
     {
         return computeInverseKinematics(res, eeWorldPose.inReferenceFrame(baseWorldPose), freeJoints);
     }
