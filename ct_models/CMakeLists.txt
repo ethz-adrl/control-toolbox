@@ -120,8 +120,8 @@ if (BUILD_HYQ_LINEARIZATION_TIMINGS)
                         HyQJacForwardKinReverse
                         ${catkin_LIBRARIES})
 
-    add_executable(HyQcompareForwardZero src/HyQ/codegen/compareForwardZero.cpp)
-    target_link_libraries(HyQcompareForwardZero
+  add_executable(HyQcompareForwardZero src/HyQ/codegen/compareForwardZero.cpp)
+  target_link_libraries(HyQcompareForwardZero
                           HyQForwardZero
                           ${catkin_LIBRARIES})
 endif(BUILD_HYQ_LINEARIZATION_TIMINGS)
@@ -170,8 +170,7 @@ add_library(quadrotorDynamics
             src/Quadrotor/C_quadrotor.cpp)
 
 catkin_add_gtest(QuadrotorWithLoadTest test/QuadrotorWithLoad/QuadrotorWithLoadTest.cpp)
-target_link_libraries(QuadrotorWithLoadTest
-                      ${catkin_LIBRARIES})
+target_link_libraries(QuadrotorWithLoadTest ${catkin_LIBRARIES})
 
 
 ## Unit tests

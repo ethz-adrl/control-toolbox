@@ -265,15 +265,18 @@ Please note the licence and notice files in the source directory.
 \section cite_ct How to cite the CT
 
 \code
-@misc{adrlCT,
+@INPROCEEDINGS{adrlCT, 
   author = "Giftthaler, Markus and Neunert, Michael and {St\"auble}, Markus and Buchli, Jonas",
+  booktitle={2018 IEEE International Conference on Simulation, Modeling, and Programming for Autonomous Robots (SIMPAR)}, 
   title = "The {Control Toolbox} - An Open-Source {C++} Library for Robotics, Optimal and Model Predictive Control",
-  howpublished = "\url{https://adrlab.bitbucket.io/ct}",
-  year = "2018", 
-  note = "arXiv:1801.04290 [cs.RO]"
+  year={2018}, 
+  pages={123-129}, 
+  doi={10.1109/SIMPAR.2018.8376281}, 
+  month={May},
+  number={}, 
+  volume={}, 
 }
 \endcode
-
 
 \section publications Related Publications
 
