@@ -41,7 +41,7 @@ The following dependencies and bindings are optional but can help to enhance the
  - <a href="https://projects.coin-or.org/Ipopt">IPOPT</a> or <a href="http://www.sbsi-sol-optimize.com/asp/sol_product_snopt.htm">SNOPT</a>
   (for ct::optcon::SnoptSolver and ct::optcon::IpoptSolver as used by ct::optcon::DMS)
 
- - <a href="https://github.com/giaf/blasfeo/releases/tag/ct-v2">blasfeo</a> linear algebra and <a href="https://github.com/giaf/hpipm/releases/tag/ct-v2">HPIPM solver</a> as
+ - <a href="https://github.com/giaf/blasfeo/tree/ct-v2">blasfeo</a> linear algebra and <a href=https://github.com/giaf/hpipm/tree/ct-v2">HPIPM solver</a> as
  alternative high-performance (constrained) linear-quadratic optimal control solver. Check out the *ct-v2* tags. Detailed reference
  about blasefeo can be found <a href="https://arxiv.org/abs/1704.02457">here</a>.
  Both packages were developed by <a href="https://www.syscop.de/people/dr-gianluca-frison">Gianluca Frison</a>, <a href="https://www.syscop.de/">University of Freiburg</a>.
