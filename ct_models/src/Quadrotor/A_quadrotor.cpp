@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -11,17 +11,11 @@ namespace models {
 
 using namespace quadrotor;
 
-quadrotor::state_matrix_t A_quadrotor(const quadrotor::state_vector_t &x, const quadrotor::control_vector_t &u)
+quadrotor::state_matrix_t A_quadrotor(const quadrotor::state_vector_t& x, const quadrotor::control_vector_t& u)
 {
-    double qxQ = x(0);
-    double qyQ = x(1);
-    double qzQ = x(2);
     double qph = x(3);
     double qth = x(4);
     double qps = x(5);
-    double dqxQ = x(6);
-    double dqyQ = x(7);
-    double dqzQ = x(8);
     double dqph = x(9);
     double dqth = x(10);
     double dqps = x(11);
@@ -29,10 +23,9 @@ quadrotor::state_matrix_t A_quadrotor(const quadrotor::state_vector_t &x, const 
     double Fz = u(0);
     double Mx = u(1);
     double My = u(2);
-    //double Mz = u(3);
 
-    double t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20, t26, t21, t22, t27,
-        t23, t24, t25;
+    double t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20, t21, t22, t23, t24,
+        t25;
 
     t2 = 1.0 / mQ;
     t3 = cos(qth);

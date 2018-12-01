@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -40,7 +40,7 @@ public:
     {
     }
 
-    virtual ~Kinematics(){};
+    virtual ~Kinematics() = default;
 
     Kinematics<RBD, N_EE>* clone() const { return new Kinematics<RBD, N_EE>(*this); }
     static const size_t NUM_EE = N_EE;

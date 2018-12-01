@@ -17,7 +17,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace models {
 
-class Quadrotor : public ct::core::ControlledSystem<quadrotor::nStates, quadrotor::nControls>
+class Quadrotor final : public ct::core::ControlledSystem<quadrotor::nStates, quadrotor::nControls>
 {
 public:
     Quadrotor(std::shared_ptr<ct::core::Controller<quadrotor::nStates, quadrotor::nControls>> controller = nullptr)
@@ -26,8 +26,8 @@ public:
     }
 
     Quadrotor(const Quadrotor& arg) : ct::core::ControlledSystem<quadrotor::nStates, quadrotor::nControls>(arg) {}
-    virtual Quadrotor* clone() const override { return new Quadrotor(*this); }
-    virtual void computeControlledDynamics(const ct::core::StateVector<quadrotor::nStates>& state,
+    Quadrotor* clone() const override { return new Quadrotor(*this); }
+    void computeControlledDynamics(const ct::core::StateVector<quadrotor::nStates>& state,
         const ct::core::Time& t,
         const ct::core::ControlVector<quadrotor::nControls>& control,
         ct::core::StateVector<quadrotor::nStates>& derivative) override

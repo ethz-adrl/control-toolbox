@@ -11,7 +11,7 @@ find_package(catkin REQUIRED ct_rbd)
 
 find_package(Boost REQUIRED system filesystem)
 
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall -pthread")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall -Wno-unknown-pragmas -pthread")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 set(ct_model_libs
@@ -120,8 +120,8 @@ if (BUILD_HYQ_LINEARIZATION_TIMINGS)
                         HyQJacForwardKinReverse
                         ${catkin_LIBRARIES})
 
-    add_executable(HyQcompareForwardZero src/HyQ/codegen/compareForwardZero.cpp)
-    target_link_libraries(HyQcompareForwardZero
+  add_executable(HyQcompareForwardZero src/HyQ/codegen/compareForwardZero.cpp)
+  target_link_libraries(HyQcompareForwardZero
                           HyQForwardZero
                           ${catkin_LIBRARIES})
 endif(BUILD_HYQ_LINEARIZATION_TIMINGS)
@@ -170,8 +170,7 @@ add_library(quadrotorDynamics
             src/Quadrotor/C_quadrotor.cpp)
 
 catkin_add_gtest(QuadrotorWithLoadTest test/QuadrotorWithLoad/QuadrotorWithLoadTest.cpp)
-target_link_libraries(QuadrotorWithLoadTest
-                      ${catkin_LIBRARIES})
+target_link_libraries(QuadrotorWithLoadTest ${catkin_LIBRARIES})
 
 
 ## Unit tests
@@ -204,12 +203,11 @@ if(BUILD_EXAMPLES)
 endif()
 
 # Tests.
-catkin_add_gtest(ikfast_test test/IKFast/IKFastTest.cpp)
-target_link_libraries(ikfast_test
-                      hya_ik
-                      irb4600_ik
-                      ${catkin_LIBRARIES})
+catkin_add_gtest(ikfast_test_irb test/IKFast/IKFastTestIrb4600.cpp)
+target_link_libraries(ikfast_test_irb irb4600_ik ${catkin_LIBRARIES})
 
+catkin_add_gtest(ikfast_test_hya test/IKFast/IKFastTestHyA.cpp)
+target_link_libraries(ikfast_test_hya hya_ik ${catkin_LIBRARIES})
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)

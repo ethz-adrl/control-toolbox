@@ -36,7 +36,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 // define single end effector (could also be multiple)
 #define CT_N_EE 1
 #define CT_EE0 fr_ee
-#define CT_EE0_IS_ON_LINK 5
+#define CT_EE0_IS_ON_LINK 6
 #define CT_EE0_FIRST_JOINT 0
 #define CT_EE0_LAST_JOINT 5
 

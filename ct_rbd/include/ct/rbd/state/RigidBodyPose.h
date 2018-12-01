@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -104,8 +104,7 @@ public:
     //RigidBodyPose(const Eigen::Quaterniond& orientationQuat, const Eigen::Vector3d& position, STORAGE_TYPE storage = QUAT);
 
     //! destructor for a rigid body pose
-    ~RigidBodyPose(){};
-
+    ~RigidBodyPose() {}
     inline bool isNear(const RigidBodyPose& rhs, const double& tol = 1e-10) const
     {
         return getRotationQuaternion().isNear(rhs.getRotationQuaternion(), tol) &&
@@ -243,12 +242,12 @@ public:
      * \brief This method returns the position of the Base frame in the inertia frame.
      */
 
-    const Position3Tpl& position() const { return position_; };
+    const Position3Tpl& position() const { return position_; }
     /**
      * \brief This method returns the position of the Base frame in the inertia frame.
      */
 
-    Position3Tpl& position() { return position_; };
+    Position3Tpl& position() { return position_; }
     /**
      * \brief This method returns the Base frame in a custom Frame specified in the Inertia Frame.
      */
@@ -274,7 +273,7 @@ public:
             return RigidBodyPose<SCALAR>(ref_frame.getRotationQuaternion().inverted() * quat_,
                 ref_frame.getRotationQuaternion().inverseRotate(position() - ref_frame.position()));
         }
-    };
+    }
 
     /**
      * \brief This methods rotates a 3D vector expressed in Base frame to Inertia Frame.
@@ -303,7 +302,7 @@ public:
         }
 
         return out;
-    };
+    }
 
 
     /**
@@ -349,7 +348,7 @@ public:
         {
             return quat_.inverseRotate(vector);
         }
-    };
+    }
 
     /**
      * \brief This methods returns the Homogeneous transform from the Base frame to the inertia frame.
@@ -358,7 +357,7 @@ public:
     {
         throw std::runtime_error("get homogeneous transform not implemented");
         return HomogeneousTransform();
-    };
+    }
 
     /**
      * Returns gravity vector in world (0.0, 0.0, -9.81)

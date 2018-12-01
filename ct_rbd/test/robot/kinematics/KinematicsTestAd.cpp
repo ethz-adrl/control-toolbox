@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
 Licensed under Apache2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
@@ -20,7 +20,7 @@ using namespace ct;
 using namespace rbd;
 
 
-TEST(TestHyQKinematicsAd, transformTest)
+TEST(TestHyQKinematics, transformTest)
 {
     typedef float size_type;
     typedef TestHyQ::tpl::Kinematics<size_type> KinTpl_t;
