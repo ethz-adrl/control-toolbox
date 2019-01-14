@@ -65,7 +65,7 @@ public:
 
     using Scalar_t = typename OPTCON_SOLVER::Scalar_t;
     using Policy_t = typename OPTCON_SOLVER::Policy_t;
-    using OptConProblem_t = ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, Scalar_t>;
+    using OptConProblem_t = typename OPTCON_SOLVER::OptConProblem_t;
 
 
     //! MPC solver constructor
@@ -140,7 +140,7 @@ public:
     void doForwardIntegration(const Scalar_t& t_forward_start,
         const Scalar_t& t_forward_stop,
         core::StateVector<STATE_DIM, Scalar_t>& x_start,
-        const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController =
+        const std::shared_ptr<Policy_t> forwardIntegrationController =
             nullptr);
 
 
@@ -172,7 +172,7 @@ public:
         const Scalar_t x_ts,
         Policy_t& newPolicy,
         Scalar_t& newPolicy_ts,
-        const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController =
+        const std::shared_ptr<Policy_t> forwardIntegrationController =
             nullptr);
 
 
@@ -210,7 +210,7 @@ private:
     void integrateForward(const Scalar_t startTime,
         const Scalar_t stopTime,
         core::StateVector<STATE_DIM, Scalar_t>& state,
-        const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>>& controller);
+        const std::shared_ptr<Policy_t>& controller);
 
     void checkSettings(const mpc_settings& settings);
 
@@ -225,10 +225,7 @@ private:
     mpc_settings mpc_settings_;
 
     //! dynamics instance for forward integration
-    typename OPTCON_SOLVER::OptConProblem_t::DynamicsPtr_t dynamics_;
-
-    //! integrator for forward integration
-    ct::core::Integrator<STATE_DIM, Scalar_t> forwardIntegrator_;
+    std::shared_ptr<core::DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, Scalar_t>> dynamics_;
 
     //! true for first run
     bool firstRun_;

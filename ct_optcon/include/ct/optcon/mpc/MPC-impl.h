@@ -19,7 +19,6 @@ MPC<OPTCON_SOLVER>::MPC(const OptConProblem_t& problem,
       solver_(problem, solverSettings),
       mpc_settings_(mpcsettings),
       dynamics_(problem.getNonlinearSystem()->clone()),
-      forwardIntegrator_(dynamics_, mpcsettings.stateForwardIntegratorType_),
       firstRun_(true),
       runCallCounter_(0),
       policyHandler_(new PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>())
@@ -38,7 +37,8 @@ MPC<OPTCON_SOLVER>::MPC(const OptConProblem_t& problem,
         }
         else
         {
-            if (std::is_base_of<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, Scalar_t>, OPTCON_SOLVER>::value)
+            if (std::is_base_of<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, Scalar_t, true>, OPTCON_SOLVER>::value or
+                std::is_base_of<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, Scalar_t, false>, OPTCON_SOLVER>::value)
             {
                 // default policy handler for standard discrete-time iLQG implementation
                 policyHandler_ = std::shared_ptr<PolicyHandler<Policy_t, STATE_DIM, CONTROL_DIM, Scalar_t>>(
@@ -115,7 +115,7 @@ template <typename OPTCON_SOLVER>
 void MPC<OPTCON_SOLVER>::doForwardIntegration(const Scalar_t& t_forward_start,
     const Scalar_t& t_forward_stop,
     core::StateVector<STATE_DIM, Scalar_t>& x_start,
-    const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController)
+    const std::shared_ptr<Policy_t> forwardIntegrationController)
 {
     if (mpc_settings_.stateForwardIntegration_ == true)
     {
@@ -178,7 +178,7 @@ bool MPC<OPTCON_SOLVER>::finishIteration(const core::StateVector<STATE_DIM, Scal
     const Scalar_t x_ts,
     Policy_t& newPolicy,
     Scalar_t& newPolicy_ts,
-    const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>> forwardIntegrationController)
+    const std::shared_ptr<Policy_t> forwardIntegrationController)
 {
 #ifdef DEBUG_PRINT_MPC
     std::cout << "DEBUG_PRINT_MPC: started mpc finish Iteration() with state-timestamp " << x_ts << std::endl;
@@ -287,9 +287,6 @@ void MPC<OPTCON_SOLVER>::updateSettings(const mpc_settings& settings)
 {
     checkSettings(settings);
 
-    if (settings.stateForwardIntegratorType_ != mpc_settings_.stateForwardIntegratorType_)
-        forwardIntegrator_ = ct::core::Integrator<STATE_DIM, Scalar_t>(dynamics_, settings.stateForwardIntegratorType_);
-
     mpc_settings_ = settings;
     timeKeeper_.updateSettings(settings);
     timeHorizonStrategy_->updateSettings(settings);
@@ -325,14 +322,20 @@ template <typename OPTCON_SOLVER>
 void MPC<OPTCON_SOLVER>::integrateForward(const Scalar_t startTime,
     const Scalar_t stopTime,
     core::StateVector<STATE_DIM, Scalar_t>& state,
-    const std::shared_ptr<core::Controller<STATE_DIM, CONTROL_DIM, Scalar_t>>& controller)
+    const std::shared_ptr<Policy_t>& controller)
 {
     dynamics_->setController(controller);
 
     int nSteps = std::max(0, (int)std::lround((stopTime - startTime) / mpc_settings_.stateForwardIntegration_dt_));
+    int nStart = static_cast<int>(std::lround(startTime / mpc_settings_.stateForwardIntegration_dt_)); // TODO this is unclean
 
     // adaptive pre-integration
-    forwardIntegrator_.integrate_n_steps(state, startTime, nSteps, mpc_settings_.stateForwardIntegration_dt_);
+    core::StateVector<STATE_DIM, Scalar_t> state_next;
+    for(int i=0; i<nSteps; i++) {
+      dynamics_->propagateDynamics(state, nStart+i, state_next);
+      state = state_next;
+    }
+
 }
 
 
