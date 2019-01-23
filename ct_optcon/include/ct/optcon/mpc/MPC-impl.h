@@ -127,7 +127,7 @@ void MPC<OPTCON_SOLVER>::doForwardIntegration(const Scalar_t& t_forward_start,
         else
         {
             // ... or with the controller obtained from the solver (solution of last mpc-run).
-            std::shared_ptr<Policy_t> prevController(new Policy_t(currentPolicy_));
+            std::shared_ptr<Policy_t> prevController(currentPolicy_.clone());
             integrateForward(t_forward_start, t_forward_stop, x_start, prevController);
         }
     }
