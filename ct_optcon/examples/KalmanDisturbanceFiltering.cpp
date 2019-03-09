@@ -136,14 +136,25 @@ int main(int argc, char** argv)
     ct::core::Integrator<STATE_DIM> integrator(oscillator, ct::core::IntegrationType::RK4);
 
     ct::core::StateVectorArray<STATE_DIM> states;
+    ct::core::ControlVectorArray<CONTROL_DIM> controls;
     ct::core::tpl::TimeArray<double> times;
 
     // simulate 1000 steps
     double dt = 0.001;
     ct::core::Time t0 = 0.0;
     size_t nSteps = 1000;
-    integrator.integrate_n_steps(x, t0, nSteps, dt, states, times);
+    states.push_back(x);
+    for (size_t i = 0; i < nSteps; i++)
+    {
+        // compute control (needed for filter later)
+        ct::core::ControlVector<CONTROL_DIM> u_temp;
+        disturbed_controller->computeControl(x, i * dt, u_temp);
+        controls.push_back(u_temp);
 
+        integrator.integrate_n_steps(x, i * dt, 1, dt);
+        states.push_back(x);
+        times.push_back(i * dt);
+    }
     std::shared_ptr<CustomController> controller(new CustomController(uff, kp, kd));
 
     // assign the controller that we "assume" we are using
@@ -194,7 +205,7 @@ int main(int argc, char** argv)
         ct::core::OutputVector<OUTPUT_DIM> y = C * xt + Cd * d;
 
         // Kalman filter prediction step
-        disturbanceObserver.predict();
+        disturbanceObserver.predict(controls[i], dt * i);
 
         // Kalman filter estimation step (state + disturbance)
         ct::core::StateVector<STATE_DIM + DIST_DIM> x_est = disturbanceObserver.update(y);

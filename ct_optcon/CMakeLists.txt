@@ -144,8 +144,8 @@ if(BUILD_EXAMPLES)
     add_executable(ex_KalmanFiltering examples/KalmanFiltering.cpp)
     target_link_libraries(ex_KalmanFiltering ${catkin_LIBRARIES})
     
-    #add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
-    #target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
+    add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
+    target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
 
     add_executable(ex_Nlp_2D examples/nlp/Nlp2D.cpp)
     target_link_libraries(ex_Nlp_2D ${catkin_LIBRARIES} ${NLP_LIBS})
