@@ -11,7 +11,7 @@ find_package(catkin REQUIRED ct_rbd)
 
 find_package(Boost REQUIRED system filesystem)
 
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++11 -Wall -Wno-unknown-pragmas -pthread")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++14 -Wall -Wfatal-errors -Wno-unknown-pragmas -pthread")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 set(ct_model_libs

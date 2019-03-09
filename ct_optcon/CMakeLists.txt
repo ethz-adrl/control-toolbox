@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
@@ -13,8 +13,8 @@ find_package(catkin REQUIRED
 )
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++11 -Wall -Wno-unknown-pragmas")
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++11 -Wall")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++14 -Wall -Wno-unknown-pragmas -Wfatal-errors")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++14 -Wall -Wfatal-errors")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 option(MATLAB "Compile with matlab support" OFF)
@@ -144,8 +144,8 @@ if(BUILD_EXAMPLES)
     add_executable(ex_KalmanFiltering examples/KalmanFiltering.cpp)
     target_link_libraries(ex_KalmanFiltering ${catkin_LIBRARIES})
     
-    add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
-    target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
+    #add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
+    #target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
 
     add_executable(ex_Nlp_2D examples/nlp/Nlp2D.cpp)
     target_link_libraries(ex_Nlp_2D ${catkin_LIBRARIES} ${NLP_LIBS})
