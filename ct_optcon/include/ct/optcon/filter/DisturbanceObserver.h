@@ -66,10 +66,10 @@ public:
     virtual ~DisturbanceObserver() = default;
 
     //! Prediction step of the estimation.
-    estimate_vector_t predict(const Time_t& t = 0) override;
+    estimate_vector_t predict(const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u, const Time_t& t = 0.0) override;
 
     //! Update step of the estimation.
-    estimate_vector_t update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y, const Time_t& = 0) override;
+    estimate_vector_t update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y, const Time_t& = 0.0) override;
 
     //! State estimate getter.
     ct::core::StateVector<STATE_DIM, SCALAR> getStateEstimate();
@@ -78,5 +78,5 @@ public:
     Eigen::Matrix<SCALAR, DIST_DIM, 1> getDisturbanceEstimate();
 };
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

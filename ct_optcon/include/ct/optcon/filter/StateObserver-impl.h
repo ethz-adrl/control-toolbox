@@ -36,36 +36,27 @@ StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::StateObser
 }
 
 template <size_t OUTPUT_DIM, size_t STATE_DIM, size_t CONTROL_DIM, class ESTIMATOR, typename SCALAR>
-StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::~StateObserver()
+auto StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::filter(const control_vector_t& u,
+    const output_vector_t& y,
+    const Time_t& t) -> state_vector_t
 {
-}
-
-template <size_t OUTPUT_DIM, size_t STATE_DIM, size_t CONTROL_DIM, class ESTIMATOR, typename SCALAR>
-typename StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::state_vector_t
-StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::filter(
-    const typename StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::output_vector_t& y,
-    const typename StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::Time_t& t)
-{
-    predict(t);
+    predict(u, t);
     return update(y, t);
 }
 
 template <size_t OUTPUT_DIM, size_t STATE_DIM, size_t CONTROL_DIM, class ESTIMATOR, typename SCALAR>
-typename StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::state_vector_t
-StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::predict(
-    const typename StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::Time_t& t)
+auto StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::predict(const control_vector_t& u,
+    const Time_t& t) -> state_vector_t
 {
-    return estimator_.template predict<CONTROL_DIM>(f_, ct::core::ControlVector<CONTROL_DIM, SCALAR>::Zero(), Q_, t);
+    return estimator_.template predict<CONTROL_DIM>(f_, u, Q_, t);
 }
 
 template <size_t OUTPUT_DIM, size_t STATE_DIM, size_t CONTROL_DIM, class ESTIMATOR, typename SCALAR>
-typename StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::state_vector_t
-StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::update(
-    const typename StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::output_vector_t& y,
-    const typename StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::Time_t& t)
+auto StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::update(const output_vector_t& y,
+    const Time_t& t) -> state_vector_t
 {
     return estimator_.template update<OUTPUT_DIM>(y, h_, R_, t);
 }
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

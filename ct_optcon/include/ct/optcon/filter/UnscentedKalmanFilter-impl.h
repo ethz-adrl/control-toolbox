@@ -78,11 +78,10 @@ UnscentedKalmanFilter<STATE_DIM, SCALAR>::UnscentedKalmanFilter(
 
 template <size_t STATE_DIM, typename SCALAR>
 template <size_t CONTROL_DIM>
-const typename UnscentedKalmanFilter<STATE_DIM, SCALAR>::state_vector_t&
-UnscentedKalmanFilter<STATE_DIM, SCALAR>::predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
+auto UnscentedKalmanFilter<STATE_DIM, SCALAR>::predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
     const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
     const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
-    const ct::core::Time& t)
+    const ct::core::Time& t) -> const state_vector_t&
 {
     if (!computeSigmaPoints())
         throw std::runtime_error("UnscentedKalmanFilter : Numerical error.");
@@ -96,11 +95,10 @@ UnscentedKalmanFilter<STATE_DIM, SCALAR>::predict(SystemModelBase<STATE_DIM, CON
 
 template <size_t STATE_DIM, typename SCALAR>
 template <size_t OUTPUT_DIM>
-const typename UnscentedKalmanFilter<STATE_DIM, SCALAR>::state_vector_t&
-UnscentedKalmanFilter<STATE_DIM, SCALAR>::update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& z,
+auto UnscentedKalmanFilter<STATE_DIM, SCALAR>::update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& z,
     LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
     const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R,
-    const ct::core::Time& t)
+    const ct::core::Time& t) -> const state_vector_t&
 {
     SigmaPoints<OUTPUT_DIM> sigmaMeasurementPoints;
 
@@ -188,10 +186,10 @@ bool UnscentedKalmanFilter<STATE_DIM, SCALAR>::updateStateCovariance(
 
 template <size_t STATE_DIM, typename SCALAR>
 template <size_t CONTROL_DIM>
-const typename UnscentedKalmanFilter<STATE_DIM, SCALAR>::state_vector_t&
-UnscentedKalmanFilter<STATE_DIM, SCALAR>::computeStatePrediction(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
+auto UnscentedKalmanFilter<STATE_DIM, SCALAR>::computeStatePrediction(
+    SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
     const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
-    const ct::core::Time& t)
+    const ct::core::Time& t) -> const state_vector_t&
 {
     // Pass each sigma point through non-linear state transition function
     computeSigmaPointTransition(f, u, t);
@@ -275,12 +273,12 @@ void UnscentedKalmanFilter<STATE_DIM, SCALAR>::computeSigmaPointMeasurements(
 
 template <size_t STATE_DIM, typename SCALAR>
 template <size_t OUTPUT_DIM>
-typename UnscentedKalmanFilter<STATE_DIM, SCALAR>::state_vector_t
-UnscentedKalmanFilter<STATE_DIM, SCALAR>::computePredictionFromSigmaPoints(const SigmaPoints<OUTPUT_DIM>& sigmaPoints)
+auto UnscentedKalmanFilter<STATE_DIM, SCALAR>::computePredictionFromSigmaPoints(
+    const SigmaPoints<OUTPUT_DIM>& sigmaPoints) -> state_vector_t
 {
     // Use efficient matrix x vector computation
     return sigmaPoints * sigmaWeights_m_;
 }
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

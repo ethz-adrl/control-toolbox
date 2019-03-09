@@ -12,23 +12,22 @@ namespace optcon {
  * \ingroup Filter
  *
  * \brief Filter base acts like an interface for any filter type.
- *
- * @tparam OUTPUT_DIM  dimensionality of the measured output
- * @tparam STATE_DIM
  */
-template <size_t OUTPUT_DIM, size_t STATE_DIM, typename SCALAR = double>
+template <size_t OUTPUT_DIM, size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 class FilterBase
 {
 public:
     using state_vector_t = ct::core::StateVector<STATE_DIM, SCALAR>;
+    using control_vector_t = ct::core::ControlVector<CONTROL_DIM, SCALAR>;
     using output_vector_t = ct::core::OutputVector<OUTPUT_DIM, SCALAR>;
     using Time_t = ct::core::Time;
 
     //! Virtual destructor.
-    virtual ~FilterBase() {}
+    virtual ~FilterBase() = default;
+
     //! Filter method. Updates the estimate based on the received measurement and it's time stamp.
-    virtual state_vector_t filter(const output_vector_t& y, const Time_t& t) = 0;
+    virtual state_vector_t filter(const control_vector_t& u, const output_vector_t& y, const Time_t& t) = 0;
 };
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

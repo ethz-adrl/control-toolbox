@@ -18,22 +18,19 @@ namespace optcon {
  *
  * \brief State Observer estimates the state by combining the state estimator as well as the system and measurement
  *        models.
- *
- * @tparam STATE_DIM    dimensionality of the output
- * @tparam STATE_DIM    dimensionality of the state
- * @tparam CONTROL_DIM
  */
 template <size_t OUTPUT_DIM, size_t STATE_DIM, size_t CONTROL_DIM, class ESTIMATOR, typename SCALAR = double>
-class StateObserver : public FilterBase<OUTPUT_DIM, STATE_DIM, SCALAR>
+class StateObserver : public FilterBase<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     static_assert(STATE_DIM == ESTIMATOR::STATE_D, "Observer and estimator dimensions have to be the same!");
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    using Base = FilterBase<OUTPUT_DIM, STATE_DIM, SCALAR>;
-    using typename Base::state_vector_t;
+    using Base = FilterBase<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, SCALAR>;
+    using typename Base::control_vector_t;
     using typename Base::output_vector_t;
+    using typename Base::state_vector_t;
     using typename Base::Time_t;
     using state_matrix_t = ct::core::StateMatrix<STATE_DIM, SCALAR>;
     using output_matrix_t = ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>;
@@ -57,12 +54,13 @@ public:
         const StateObserverSettings<OUTPUT_DIM, STATE_DIM, SCALAR>& so_settings);
 
     //! Virtual destructor.
-    virtual ~StateObserver();
+    virtual ~StateObserver() = default;
+
     //! Implementation of the filter method.
-    state_vector_t filter(const output_vector_t& y, const Time_t& t) override;
+    state_vector_t filter(const control_vector_t& u, const output_vector_t& y, const Time_t& t = Time_t(0.0)) override;
 
     //! Observer predict method.
-    virtual state_vector_t predict(const Time_t& t = 0);
+    virtual state_vector_t predict(const control_vector_t& u, const Time_t& t = 0);
 
     //! Observer update method.
     virtual state_vector_t update(const output_vector_t& y, const Time_t& t = 0);
@@ -75,5 +73,5 @@ protected:
     output_matrix_t R_;                                     //! Filter R matrix.
 };
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

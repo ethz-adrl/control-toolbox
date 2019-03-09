@@ -8,8 +8,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-template <size_t STATE_DIM, typename SCALAR>
-struct ExtendedKalmanFilterSettings;
 
 template <size_t STATE_DIM, typename SCALAR>
 ExtendedKalmanFilter<STATE_DIM, SCALAR>::ExtendedKalmanFilter(
@@ -28,14 +26,15 @@ ExtendedKalmanFilter<STATE_DIM, SCALAR>::ExtendedKalmanFilter(
 
 template <size_t STATE_DIM, typename SCALAR>
 template <size_t CONTROL_DIM>
-const typename ExtendedKalmanFilter<STATE_DIM, SCALAR>::state_vector_t&
-ExtendedKalmanFilter<STATE_DIM, SCALAR>::predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
+auto ExtendedKalmanFilter<STATE_DIM, SCALAR>::predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
     const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
     const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
-    const ct::core::Time& t)
+    const ct::core::Time& t) -> const state_vector_t&
 {
+    // todo verify the order here -- shouldn't the dynamics be computed first?
     ct::core::StateMatrix<STATE_DIM, SCALAR> dFdx = f.computeDerivativeState(this->x_est_, u, t);
     ct::core::StateMatrix<STATE_DIM, SCALAR> dFdv = f.computeDerivativeNoise(this->x_est_, u, t);
+
     this->x_est_ = f.computeDynamics(this->x_est_, u, t);
     P_ = (dFdx * P_ * dFdx.transpose()) + dFdv * Q * dFdv.transpose();
     return this->x_est_;
@@ -43,11 +42,10 @@ ExtendedKalmanFilter<STATE_DIM, SCALAR>::predict(SystemModelBase<STATE_DIM, CONT
 
 template <size_t STATE_DIM, typename SCALAR>
 template <size_t OUTPUT_DIM>
-const typename ExtendedKalmanFilter<STATE_DIM, SCALAR>::state_vector_t& ExtendedKalmanFilter<STATE_DIM, SCALAR>::update(
-    const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
+auto ExtendedKalmanFilter<STATE_DIM, SCALAR>::update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
     LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
     const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R,
-    const ct::core::Time& t)
+    const ct::core::Time& t) -> const state_vector_t&
 {
     ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR> dHdx = h.computeDerivativeState(this->x_est_, t);
     ct::core::OutputMatrix<OUTPUT_DIM, SCALAR> dHdw = h.computeDerivativeNoise(this->x_est_, t);
@@ -60,5 +58,5 @@ const typename ExtendedKalmanFilter<STATE_DIM, SCALAR>::state_vector_t& Extended
     return this->x_est_;
 }
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct
