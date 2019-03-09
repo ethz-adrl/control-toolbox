@@ -18,7 +18,7 @@ int main(int argc, char** argv)
     // a damped oscillator has two states, position and velocity
     const size_t STATE_DIM = ct::core::SecondOrderSystem::STATE_DIM;      // = 2
     const size_t CONTROL_DIM = ct::core::SecondOrderSystem::CONTROL_DIM;  // = 1
-    const size_t OUTPUT_DIM = 1;  // we assume we observe a one-dimensional output
+    const size_t OUTPUT_DIM = 2;  // we assume we observe the full state (however with noise)
 
     // create an initial state: we initialize it at a point with unit deflection and zero velocity
     ct::core::StateVector<STATE_DIM> x;
@@ -55,17 +55,17 @@ int main(int argc, char** argv)
     {
         // compute control (needed for filter later)
         ct::core::ControlVector<CONTROL_DIM> u_temp;
-        controller->computeControl(x, i*dt, u_temp);
+        controller->computeControl(x, i * dt, u_temp);
         controls.push_back(u_temp);
 
-        integrator.integrate_n_steps(x, t0, 1, dt);
+        integrator.integrate_n_steps(x, i * dt, 1, dt);
         states.push_back(x);
         times.push_back(i * dt);
     }
 
-    // create system observation matrix C: we measure a combination of position and velocity.
+    // create system observation matrix C: we measure both position and velocity
     ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM> C;
-    C << 0.5, 1;
+    C.setIdentity();
 
     // create Kalman Filter weighting matrices
     ct::core::StateMatrix<STATE_DIM, double> Q = ct::core::StateMatrix<STATE_DIM, double>::Identity();
@@ -81,7 +81,8 @@ int main(int argc, char** argv)
     ct::optcon::StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ct::optcon::ExtendedKalmanFilter<STATE_DIM>>
         stateObserver(oscillator, sensApprox, dt, C, ekf, Q, R);
 
-    ct::core::GaussianNoise noise(0, 0.1);
+    ct::core::GaussianNoise position_measurement_noise(0, 0.01);
+    ct::core::GaussianNoise velocity_measurement_noise(0, 0.1);
 
     ct::core::StateVectorArray<STATE_DIM> states_est;
     states_est.push_back(states[0]);
@@ -92,12 +93,12 @@ int main(int argc, char** argv)
     {
         // compute an observation
         xt = states[i];
-        noise.noisify(xt[0]);  // Position noise.
-        noise.noisify(xt[1]);  // Velocity noise.
+        position_measurement_noise.noisify(xt[0]);  // Position noise.
+        velocity_measurement_noise.noisify(xt[1]);  // Velocity noise.
         ct::core::OutputVector<OUTPUT_DIM> y = C * xt;
 
         // Kalman filter prediction step
-        stateObserver.predict(controls[i], dt*i);
+        stateObserver.predict(controls[i], dt * i);
 
         // Kalman filter estimation step
         ct::core::StateVector<STATE_DIM> x_est = stateObserver.update(y);
