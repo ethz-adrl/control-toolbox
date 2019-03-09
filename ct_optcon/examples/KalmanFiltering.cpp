@@ -78,8 +78,13 @@ int main(int argc, char** argv)
 
     // set up Extended Kalman Filter
     ct::optcon::ExtendedKalmanFilter<STATE_DIM> ekf(states[0]);
+
+    // the observer is supplied with a dynamic model identical to the one used above for data generation
+    std::shared_ptr<ct::core::SecondOrderSystem> oscillator_observer_model(new ct::core::SecondOrderSystem(w_n));
+    
+    // initialize the observer
     ct::optcon::StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ct::optcon::ExtendedKalmanFilter<STATE_DIM>>
-        stateObserver(oscillator, sensApprox, dt, C, ekf, Q, R);
+        stateObserver(oscillator_observer_model, sensApprox, dt, C, ekf, Q, R);
 
     ct::core::GaussianNoise position_measurement_noise(0, 0.01);
     ct::core::GaussianNoise velocity_measurement_noise(0, 0.1);
