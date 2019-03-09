@@ -27,7 +27,8 @@ public:
     using Time_t = ct::core::Time;
 
     //! Virtual destructor.
-    virtual ~SystemModelBase() {}
+    virtual ~SystemModelBase() = default;
+
     //! Propagates the system giving the next state as output.
     virtual state_vector_t computeDynamics(const state_vector_t& state, const control_vector_t& control, Time_t t) = 0;
 
@@ -41,5 +42,5 @@ public:
         Time_t t) = 0;
 };
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

@@ -27,11 +27,10 @@ SteadyStateKalmanFilter<STATE_DIM, SCALAR>::SteadyStateKalmanFilter(
 
 template <size_t STATE_DIM, typename SCALAR>
 template <size_t CONTROL_DIM>
-const typename SteadyStateKalmanFilter<STATE_DIM, SCALAR>::state_vector_t&
-SteadyStateKalmanFilter<STATE_DIM, SCALAR>::predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
+auto SteadyStateKalmanFilter<STATE_DIM, SCALAR>::predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
     const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
     const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
-    const ct::core::Time& t)
+    const ct::core::Time& t) -> const state_vector_t&
 {
     A_ = f.computeDerivativeState(this->x_est_, u, t);
     Q_ = Q;
@@ -41,11 +40,10 @@ SteadyStateKalmanFilter<STATE_DIM, SCALAR>::predict(SystemModelBase<STATE_DIM, C
 
 template <size_t STATE_DIM, typename SCALAR>
 template <size_t OUTPUT_DIM>
-const typename SteadyStateKalmanFilter<STATE_DIM, SCALAR>::state_vector_t&
-SteadyStateKalmanFilter<STATE_DIM, SCALAR>::update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
+auto SteadyStateKalmanFilter<STATE_DIM, SCALAR>::update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
     LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
     const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R,
-    const ct::core::Time& t)
+    const ct::core::Time& t) -> const state_vector_t&
 {
     ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR> dHdx = h.computeDerivativeState(this->x_est_, t);
     Eigen::Matrix<SCALAR, OUTPUT_DIM, STATE_DIM> K;
@@ -70,5 +68,5 @@ void SteadyStateKalmanFilter<STATE_DIM, SCALAR>::setMaxDAREIterations(size_t max
     maxDAREIterations_ = maxDAREIterations;
 }
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

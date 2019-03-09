@@ -52,11 +52,7 @@ Cholesky<_MatrixType, _UpLo>& Cholesky<_MatrixType, _UpLo>::setU(const Eigen::Ma
 }
 
 template <size_t STATE_DIM, typename SCALAR>
-struct UnscentedKalmanFilterSettings;
-
-template <size_t STATE_DIM, typename SCALAR>
-UnscentedKalmanFilter<STATE_DIM, SCALAR>::UnscentedKalmanFilter(
-    const typename UnscentedKalmanFilter<STATE_DIM, SCALAR>::state_vector_t& x0,
+UnscentedKalmanFilter<STATE_DIM, SCALAR>::UnscentedKalmanFilter(const state_vector_t& x0,
     SCALAR alpha,
     SCALAR beta,
     SCALAR kappa,
@@ -252,8 +248,6 @@ void UnscentedKalmanFilter<STATE_DIM, SCALAR>::computeSigmaPointTransition(
 {
     for (int i = 0; i < SigmaPointCount; ++i)
     {
-        // TODO: Update the controller with u. Currently u is just placeholder and the controller of the system is
-        // used. Or disable u in this method and set the controller to constant controller before calling it.
         sigmaStatePoints_.col(i) = f.computeDynamics(sigmaStatePoints_.col(i), u, t);
     }
 }
