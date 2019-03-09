@@ -31,7 +31,7 @@ public:
     CustomController(const ct::core::ControlVector<CONTROL_DIM>& uff,  // feedforward control
         const double& kp,                                              // P gain
         const double& kd,                                              // D gain
-        const double& disturbance = 0                                  // disturbance
+        const double& disturbance = 0.0                                // disturbance
         )
         : uff_(uff), kp_(kp), kd_(kd), d_(disturbance)
     {
@@ -136,7 +136,6 @@ int main(int argc, char** argv)
     ct::core::Integrator<STATE_DIM> integrator(oscillator, ct::core::IntegrationType::RK4);
 
     ct::core::StateVectorArray<STATE_DIM> states;
-    ct::core::ControlVectorArray<CONTROL_DIM> controls;
     ct::core::tpl::TimeArray<double> times;
 
     // simulate 1000 steps
@@ -146,21 +145,20 @@ int main(int argc, char** argv)
     states.push_back(x);
     for (size_t i = 0; i < nSteps; i++)
     {
-        // compute control (needed for filter later)
-        ct::core::ControlVector<CONTROL_DIM> u_temp;
-        disturbed_controller->computeControl(x, i * dt, u_temp);
-        controls.push_back(u_temp);
-
         integrator.integrate_n_steps(x, i * dt, 1, dt);
         states.push_back(x);
         times.push_back(i * dt);
     }
-    std::shared_ptr<CustomController> controller(new CustomController(uff, kp, kd));
 
-    // assign the controller that we "assume" we are using
-    oscillator->setController(controller);
+    // observation model of the system dynamics
+    std::shared_ptr<ct::core::SecondOrderSystem> oscillator_obs (new ct::core::SecondOrderSystem(w_n));
+
+    // create the controller that we "assumed" we were using (no disturbance)
+    std::shared_ptr<CustomController> controller_nominal (new CustomController(uff, kp, kd));
+
+    // oscillator->setController(controller);
     std::shared_ptr<CustomDisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM>> customdisturbedSystem(
-        new CustomDisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM>(oscillator));
+        new CustomDisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM>(oscillator_obs));
 
     // Observation matrix for the state
     ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM> C;
@@ -204,8 +202,12 @@ int main(int argc, char** argv)
         noise.noisify(xt[0]);  // Position noise.
         ct::core::OutputVector<OUTPUT_DIM> y = C * xt + Cd * d;
 
+        // this is the control input that we would have "measured"
+        ct::core::ControlVector<CONTROL_DIM> nominal_control;
+        controller_nominal->computeControl(states[i-1], dt*i, nominal_control);
+
         // Kalman filter prediction step
-        disturbanceObserver.predict(controls[i], dt * i);
+        disturbanceObserver.predict(nominal_control, dt * i);
 
         // Kalman filter estimation step (state + disturbance)
         ct::core::StateVector<STATE_DIM + DIST_DIM> x_est = disturbanceObserver.update(y);
