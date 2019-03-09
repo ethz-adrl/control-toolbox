@@ -9,6 +9,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include <iosfwd>
 #include <vector>
 #include <cstdlib>
+#include <functional>
 
 #include <cppad/cg.hpp>
 
