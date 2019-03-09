@@ -1,26 +1,19 @@
-<package>
+<package format="2">
   <name>ct_rbd</name>
-  <version>0.2.1</version>
+  <version>0.3.0</version>
   <description>
     Rigid Body Dynamics module of ADRL control toolbox
   </description>
   <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
-  <maintainer email="mgiftthaler@ethz.ch">Markus Giftthaler</maintainer>
+  <maintainer email="markusgft@gmail.com">Markus Giftthaler</maintainer>
   <license>Apache v2</license>
   
   <buildtool_depend>catkin</buildtool_depend>
   
-  <build_depend>roscpp</build_depend>
-  <build_depend>ct_core</build_depend>
-  <build_depend>ct_optcon</build_depend>
-  <build_depend>eigen</build_depend>
-  <build_depend>cmake_modules</build_depend>
-  <build_depend>kindr</build_depend>
-  
-  <run_depend>roscpp</run_depend>
-  <run_depend>ct_core</run_depend>
-  <run_depend>ct_optcon</run_depend>
-  <run_depend>cmake_modules</run_depend>
-  <run_depend>kindr</run_depend>
+  <depend>roscpp</depend>
+  <depend>ct_core</depend>
+  <depend>ct_optcon</depend>
+  <depend>cmake_modules</depend>
+  <depend>kindr</depend>
  
 </package>

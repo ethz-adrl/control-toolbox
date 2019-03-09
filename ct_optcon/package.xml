@@ -1,23 +1,19 @@
-<package>
+<package format="2">
   <name>ct_optcon</name>
-  <version>0.2.1</version>
+  <version>0.3.0</version>
   <description>Optimal Control package of the Control Toolbox</description>
-  <maintainer email="mgiftthaler@ethz.ch">Markus Giftthaler</maintainer>  
+  <maintainer email="markusgft@gmail.com">Markus Giftthaler</maintainer>  
   <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
   <license>Apache v2</license>
 
-  <url>http://ros.org/wiki/foo_core</url>
   <author>Markus Giftthaler</author>
   <author>Michael Neunert</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>roscpp</build_depend>
-  <build_depend>ct_core</build_depend>
-  <build_depend>cmake_modules</build_depend>
-  <build_depend>lapack</build_depend>
-  
-  <run_depend>ct_core</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>lapack</run_depend>
+  <depend>roscpp</depend>
+  <depend>ct_core</depend>
+  <depend>cmake_modules</depend>
+  <depend>lapack</depend>
+
 </package>
