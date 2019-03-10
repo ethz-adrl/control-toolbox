@@ -13,10 +13,10 @@ DisturbanceObserver<OUTPUT_DIM, STATE_DIM, DIST_DIM, CONTROL_DIM, ESTIMATOR, SCA
     std::shared_ptr<DisturbedSystem_t> system,
     const SensitivityApproximation_t& sensApprox,
     double dt,
-    const ct::core::OutputStateMatrix<OUTPUT_DIM, ESTIMATE_DIM, SCALAR>& Caug,
+    const output_estimate_matrix_t& Caug,
     const ESTIMATOR& estimator,
-    const ct::core::StateMatrix<ESTIMATE_DIM, SCALAR>& Qaug,
-    const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R)
+    const estimate_matrix_t& Qaug,
+    const output_matrix_t& R)
     : Base(system, sensApprox, dt, Caug, estimator, Qaug, R)
 {
 }
@@ -33,7 +33,7 @@ DisturbanceObserver<OUTPUT_DIM, STATE_DIM, DIST_DIM, CONTROL_DIM, ESTIMATOR, SCA
 
 template <size_t OUTPUT_DIM, size_t STATE_DIM, size_t DIST_DIM, size_t CONTROL_DIM, class ESTIMATOR, typename SCALAR>
 auto DisturbanceObserver<OUTPUT_DIM, STATE_DIM, DIST_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::predict(
-    const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
+    const control_vector_t& u,
     const Time_t& t) -> estimate_vector_t
 {
     return this->estimator_.template predict<CONTROL_DIM>(this->f_, u, this->Q_, t);
@@ -41,22 +41,22 @@ auto DisturbanceObserver<OUTPUT_DIM, STATE_DIM, DIST_DIM, CONTROL_DIM, ESTIMATOR
 
 template <size_t OUTPUT_DIM, size_t STATE_DIM, size_t DIST_DIM, size_t CONTROL_DIM, class ESTIMATOR, typename SCALAR>
 auto DisturbanceObserver<OUTPUT_DIM, STATE_DIM, DIST_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::update(
-    const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
+    const output_vector_t& y,
     const Time_t&) -> estimate_vector_t
 {
     return this->estimator_.template update<OUTPUT_DIM>(y, this->h_, this->R_);
 }
 
 template <size_t OUTPUT_DIM, size_t STATE_DIM, size_t DIST_DIM, size_t CONTROL_DIM, class ESTIMATOR, typename SCALAR>
-ct::core::StateVector<STATE_DIM, SCALAR>
-DisturbanceObserver<OUTPUT_DIM, STATE_DIM, DIST_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::getStateEstimate()
+auto DisturbanceObserver<OUTPUT_DIM, STATE_DIM, DIST_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::getStateEstimate()
+    -> state_vector_t
 {
     return this->estimator_.getEstimate().template head<STATE_DIM>();
 }
 
 template <size_t OUTPUT_DIM, size_t STATE_DIM, size_t DIST_DIM, size_t CONTROL_DIM, class ESTIMATOR, typename SCALAR>
-Eigen::Matrix<SCALAR, DIST_DIM, 1>
-DisturbanceObserver<OUTPUT_DIM, STATE_DIM, DIST_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::getDisturbanceEstimate()
+auto DisturbanceObserver<OUTPUT_DIM, STATE_DIM, DIST_DIM, CONTROL_DIM, ESTIMATOR, SCALAR>::getDisturbanceEstimate()
+    -> disturbance_vector_t
 {
     return this->estimator_.getEstimate().template tail<DIST_DIM>();
 }

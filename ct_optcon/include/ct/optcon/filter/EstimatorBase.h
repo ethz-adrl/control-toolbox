@@ -25,21 +25,23 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     using state_vector_t = ct::core::StateVector<STATE_DIM, SCALAR>;
+    using state_matrix_t = ct::core::StateMatrix<STATE_DIM, SCALAR>;
 
     //! Constructor.
-    EstimatorBase(const ct::core::StateVector<STATE_DIM, SCALAR>& x0 = ct::core::StateVector<STATE_DIM, SCALAR>::Zero())
-        : x_est_(x0)
-    {
-    }
+    EstimatorBase(const state_vector_t& x0 = state_vector_t::Zero()) : x_est_(x0) {}
+
     //! Copy constructor.
     EstimatorBase(const EstimatorBase& arg) : x_est_(arg.x_est_) {}
+
     //! Estimate getter.
-    const ct::core::StateVector<STATE_DIM, SCALAR>& getEstimate() const { return x_est_; }
+    const state_vector_t& getEstimate() const { return x_est_; }
+
     //! Estimate setter.
-    void setEstimate(const ct::core::StateVector<STATE_DIM, SCALAR>& x) { x_est_ = x; }
+    void setEstimate(const state_vector_t& x) { x_est_ = x; }
+
 protected:
-    ct::core::StateVector<STATE_DIM, SCALAR> x_est_;  //! State estimate.
+    state_vector_t x_est_;  //! State estimate.
 };
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

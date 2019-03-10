@@ -23,7 +23,7 @@ namespace optcon {
  * @tparam CONTROL_DIM
  */
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class CTSystemModel : public SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>
+class CTSystemModel final : public SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW

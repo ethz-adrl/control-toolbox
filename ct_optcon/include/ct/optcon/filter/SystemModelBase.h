@@ -36,6 +36,7 @@ public:
     virtual state_matrix_t computeDerivativeState(const state_vector_t& state,
         const control_vector_t& control,
         Time_t t) = 0;
+
     //! Computes the derivative w.r.t noise.
     virtual state_matrix_t computeDerivativeNoise(const state_vector_t& state,
         const control_vector_t& control,

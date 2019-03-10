@@ -118,13 +118,13 @@ int main(int argc, char** argv)
     x(1) = 0.0;
 
     // create an oscillator
-    double w_n = 50;
+    double w_n = 20;
     std::shared_ptr<ct::core::SecondOrderSystem> oscillator(new ct::core::SecondOrderSystem(w_n));
 
     // create our controller: a PD controller which also "simulates" a constant disturbance
-    double kp = 10;
-    double kd = 1;
-    double disturbance = 1;
+    double kp = 10.0;
+    double kd = 1.0;
+    double disturbance = 1.0;
     ct::core::ControlVector<CONTROL_DIM> uff;
     uff << 2.0;
     std::shared_ptr<CustomController> disturbed_controller(new CustomController(uff, kp, kd, disturbance));
@@ -151,10 +151,10 @@ int main(int argc, char** argv)
     }
 
     // observation model of the system dynamics
-    std::shared_ptr<ct::core::SecondOrderSystem> oscillator_obs (new ct::core::SecondOrderSystem(w_n));
+    std::shared_ptr<ct::core::SecondOrderSystem> oscillator_obs(new ct::core::SecondOrderSystem(w_n));
 
     // create the controller that we "assumed" we were using (no disturbance)
-    std::shared_ptr<CustomController> controller_nominal (new CustomController(uff, kp, kd));
+    std::shared_ptr<CustomController> controller_nominal(new CustomController(uff, kp, kd));
 
     // oscillator->setController(controller);
     std::shared_ptr<CustomDisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM>> customdisturbedSystem(
@@ -174,7 +174,7 @@ int main(int argc, char** argv)
 
     // filter weighting matrices Q and R
     ct::core::StateMatrix<STATE_DIM + DIST_DIM> Qaug = ct::core::StateMatrix<STATE_DIM + DIST_DIM>::Identity();
-    Qaug(2, 2) *= 100;
+    Qaug(2, 2) = 100.0;
     ct::core::OutputMatrix<OUTPUT_DIM> R = ct::core::OutputMatrix<OUTPUT_DIM>::Identity();
 
     // create a sensitivity approximator to obtain discrete-time A and B matrices
@@ -189,7 +189,8 @@ int main(int argc, char** argv)
         ct::optcon::ExtendedKalmanFilter<STATE_DIM + DIST_DIM>>
         disturbanceObserver(customdisturbedSystem, sensApprox, dt, Caug, ekf, Qaug, R);
 
-    ct::core::GaussianNoise noise(0, 0.0005);
+    ct::core::GaussianNoise noise(
+        0, 0.001);  // the quality of the disturbance estimate is heavily influenced by the amount of noise here
 
     ct::core::StateVectorArray<STATE_DIM + DIST_DIM> states_est;
     states_est.push_back(x0aug);
@@ -200,11 +201,12 @@ int main(int argc, char** argv)
         // compute an observation
         xt = states[i];
         noise.noisify(xt[0]);  // Position noise.
+        noise.noisify(xt[1]);  // velocity noise.
         ct::core::OutputVector<OUTPUT_DIM> y = C * xt + Cd * d;
 
         // this is the control input that we would have "measured"
         ct::core::ControlVector<CONTROL_DIM> nominal_control;
-        controller_nominal->computeControl(states[i-1], dt*i, nominal_control);
+        controller_nominal->computeControl(states[i - 1], dt * i, nominal_control);
 
         // Kalman filter prediction step
         disturbanceObserver.predict(nominal_control, dt * i);
