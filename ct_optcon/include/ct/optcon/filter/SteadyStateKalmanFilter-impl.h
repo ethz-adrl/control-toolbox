@@ -8,64 +8,65 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-template <size_t STATE_DIM, typename SCALAR>
-struct SteadyStateKalmanFilterSettings;
-
-template <size_t STATE_DIM, typename SCALAR>
-SteadyStateKalmanFilter<STATE_DIM, SCALAR>::SteadyStateKalmanFilter(const state_vector_t& x0, size_t maxDAREIterations)
-    : Base(x0), maxDAREIterations_(maxDAREIterations)
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t OUTPUT_DIM, typename SCALAR>
+SteadyStateKalmanFilter<STATE_DIM, CONTROL_DIM, OUTPUT_DIM, SCALAR>::SteadyStateKalmanFilter(
+    std::shared_ptr<SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>> f,
+    std::shared_ptr<LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>> h,
+    const state_matrix_t& Q,
+    const output_matrix_t& R,
+    const state_vector_t& x0,
+    size_t maxDAREIterations)
+    : Base(f, h, x0), Q_(Q), R_(R), maxDAREIterations_(maxDAREIterations)
 {
     P_.setZero();
 }
 
-template <size_t STATE_DIM, typename SCALAR>
-SteadyStateKalmanFilter<STATE_DIM, SCALAR>::SteadyStateKalmanFilter(
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t OUTPUT_DIM, typename SCALAR>
+SteadyStateKalmanFilter<STATE_DIM, CONTROL_DIM, OUTPUT_DIM, SCALAR>::SteadyStateKalmanFilter(
+    std::shared_ptr<SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>> f,
+    std::shared_ptr<LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>> h,
     const SteadyStateKalmanFilterSettings<STATE_DIM, SCALAR>& sskf_settings)
-    : Base(sskf_settings.x0), maxDAREIterations_(sskf_settings.maxDAREIterations)
+    : Base(f, h, sskf_settings.x0),
+      Q_(sskf_settings.Q),
+      R_(sskf_settings.R),
+      maxDAREIterations_(sskf_settings.maxDAREIterations)
 {
 }
 
-template <size_t STATE_DIM, typename SCALAR>
-template <size_t CONTROL_DIM>
-auto SteadyStateKalmanFilter<STATE_DIM, SCALAR>::predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
-    const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
-    const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t OUTPUT_DIM, typename SCALAR>
+auto SteadyStateKalmanFilter<STATE_DIM, CONTROL_DIM, OUTPUT_DIM, SCALAR>::predict(const control_vector_t& u,
     const ct::core::Time& dt,
     const ct::core::Time& t) -> const state_vector_t&
 {
-    A_ = f.computeDerivativeState(this->x_est_, u, t);
-    Q_ = Q;
-    this->x_est_ = f.computeDynamics(this->x_est_, u, t);
+    A_ = this->f_->computeDerivativeState(this->x_est_, u, t);
+    this->x_est_ = this->f_->computeDynamics(this->x_est_, u, t);
     return this->x_est_;
 }
 
-template <size_t STATE_DIM, typename SCALAR>
-template <size_t OUTPUT_DIM>
-auto SteadyStateKalmanFilter<STATE_DIM, SCALAR>::update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
-    LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
-    const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R,
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t OUTPUT_DIM, typename SCALAR>
+auto SteadyStateKalmanFilter<STATE_DIM, CONTROL_DIM, OUTPUT_DIM, SCALAR>::update(const output_vector_t& y,
     const ct::core::Time& dt,
     const ct::core::Time& t) -> const state_vector_t&
 {
-    ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR> dHdx = h.computeDerivativeState(this->x_est_, t);
+    ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR> dHdx = this->h_->computeDerivativeState(this->x_est_, t);
     Eigen::Matrix<SCALAR, OUTPUT_DIM, STATE_DIM> K;
 
     DARE<STATE_DIM, OUTPUT_DIM, SCALAR> dare;
     try
     {
         P_ = dare.computeSteadyStateRiccatiMatrix(
-            Q_, R, A_.transpose(), dHdx.transpose(), P_, K, false, 1e-6, maxDAREIterations_);
+            Q_, R_, A_.transpose(), dHdx.transpose(), P_, K, false, 1e-6, maxDAREIterations_);
     } catch (...)
     {
         throw;
     }
 
-    this->x_est_ -= K.transpose() * (y - h.computeMeasurement(this->x_est_, t));
+    this->x_est_ -= K.transpose() * (y - this->h_->computeMeasurement(this->x_est_, t));
     return this->x_est_;
 }
 
-template <size_t STATE_DIM, typename SCALAR>
-void SteadyStateKalmanFilter<STATE_DIM, SCALAR>::setMaxDAREIterations(size_t maxDAREIterations)
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t OUTPUT_DIM, typename SCALAR>
+void SteadyStateKalmanFilter<STATE_DIM, CONTROL_DIM, OUTPUT_DIM, SCALAR>::setMaxDAREIterations(size_t maxDAREIterations)
 {
     maxDAREIterations_ = maxDAREIterations;
 }

@@ -27,10 +27,10 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     using Base = LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>;
-    using typename Base::state_vector_t;
-    using typename Base::output_vector_t;
     using typename Base::output_matrix_t;
     using typename Base::output_state_matrix_t;
+    using typename Base::output_vector_t;
+    using typename Base::state_vector_t;
     using typename Base::Time_t;
 
     //! Default constructor.
@@ -53,5 +53,5 @@ protected:
     output_matrix_t dHdw_;        //! Derivative of output w.r.t. noise.
 };
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

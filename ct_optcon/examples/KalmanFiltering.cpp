@@ -17,15 +17,15 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 int main(int argc, char** argv)
 {
     // file with kalman weights
-    std::string pathToWeights = ct::optcon::exampleDir + "/kalmanFilterWeights.info";
+    std::string settingsFile = ct::optcon::exampleDir + "/kalmanFilterWeights.info";
 
     // a damped oscillator has two states, position and velocity
-    const size_t STATE_DIM = ct::core::SecondOrderSystem::STATE_DIM;      // = 2
-    const size_t CONTROL_DIM = ct::core::SecondOrderSystem::CONTROL_DIM;  // = 1
-    const size_t OUTPUT_DIM = 2;  // we assume we observe the full state (however with noise)
+    const size_t state_dim = ct::core::SecondOrderSystem::STATE_DIM;      // = 2
+    const size_t control_dim = ct::core::SecondOrderSystem::CONTROL_DIM;  // = 1
+    const size_t output_dim = 2;  // we assume we observe the full state (however with noise)
 
     // create an initial state: we initialize it at a point with unit deflection and zero velocity
-    ct::core::StateVector<STATE_DIM> x;
+    ct::core::StateVector<state_dim> x;
     x(0) = 1.0;
     x(1) = 0.0;
 
@@ -36,7 +36,7 @@ int main(int argc, char** argv)
     // create a simple PD controller
     double kp = 10;
     double kd = 1;
-    ct::core::ControlVector<CONTROL_DIM> uff;
+    ct::core::ControlVector<control_dim> uff;
     uff << 2.0;
     std::shared_ptr<CustomController> controller(new CustomController(uff, kp, kd));
 
@@ -44,14 +44,14 @@ int main(int argc, char** argv)
     oscillator->setController(controller);
 
     // create an integrator for "simulating" the measured data
-    ct::core::Integrator<STATE_DIM> integrator(oscillator, ct::core::IntegrationType::RK4);
+    ct::core::Integrator<state_dim> integrator(oscillator, ct::core::IntegrationType::RK4);
 
-    ct::core::StateVectorArray<STATE_DIM> states;
-    ct::core::ControlVectorArray<CONTROL_DIM> controls;
+    ct::core::StateVectorArray<state_dim> states;
+    ct::core::ControlVectorArray<control_dim> controls;
     ct::core::tpl::TimeArray<double> times;
 
-    ct::core::StateMatrix<STATE_DIM> process_var;
-    ct::core::loadMatrix(pathToWeights, "process_noise.process_var", process_var);
+    ct::core::StateMatrix<state_dim> process_var;
+    ct::core::loadMatrix(settingsFile, "process_noise.process_var", process_var);
 
     ct::core::GaussianNoise position_process_noise(0.0, process_var(0, 0));
     ct::core::GaussianNoise velocity_process_noise(0.0, process_var(1, 1));
@@ -63,7 +63,7 @@ int main(int argc, char** argv)
     for (size_t i = 0; i < nSteps; i++)
     {
         // compute control (needed for filter later)
-        ct::core::ControlVector<CONTROL_DIM> u_temp;
+        ct::core::ControlVector<control_dim> u_temp;
         controller->computeControl(x, i * dt, u_temp);
         controls.push_back(u_temp);
 
@@ -77,43 +77,49 @@ int main(int argc, char** argv)
     }
 
     // create system observation matrix C: we measure both position and velocity
-    ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM> C;
+    ct::core::OutputStateMatrix<output_dim, state_dim> C;
     C.setIdentity();
 
     // load Kalman Filter weighting matrices from file
-    ct::core::StateMatrix<STATE_DIM> Q, dFdv;
-    ct::core::OutputMatrix<OUTPUT_DIM> R;
-    ct::core::loadMatrix(pathToWeights, "kalman_weights.Q", Q);
-    ct::core::loadMatrix(pathToWeights, "kalman_weights.R", R);
+    ct::core::StateMatrix<state_dim> Q, dFdv;
+    ct::core::OutputMatrix<output_dim> R;
+    dFdv.setIdentity();  // todo tune me!
+    ct::core::loadMatrix(settingsFile, "kalman_weights.Q", Q);
+    ct::core::loadMatrix(settingsFile, "kalman_weights.R", R);
     std::cout << "Loaded Kalman R as " << std::endl << R << std::endl;
     std::cout << "Loaded Kalman Q as " << std::endl << Q << std::endl;
 
-    dFdv.setIdentity();  // todo tune me!
-
     // create a sensitivity approximator to compute A and B matrices
-    std::shared_ptr<ct::core::SystemLinearizer<STATE_DIM, CONTROL_DIM>> linearizer(
-        new ct::core::SystemLinearizer<STATE_DIM, CONTROL_DIM>(oscillator));
-    ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM> sensApprox(dt, linearizer);
+    std::shared_ptr<ct::core::SystemLinearizer<state_dim, control_dim>> linearizer(
+        new ct::core::SystemLinearizer<state_dim, control_dim>(oscillator));
+    ct::core::SensitivityApproximation<state_dim, control_dim> sensApprox(dt, linearizer);
 
-    // set up Extended Kalman Filter
-    ct::optcon::ExtendedKalmanFilter<STATE_DIM> ekf(states[0], R);
 
     // the observer is supplied with a dynamic model identical to the one used above for data generation
     std::shared_ptr<ct::core::SecondOrderSystem> oscillator_observer_model(new ct::core::SecondOrderSystem(w_n));
 
-    // initialize the observer
-    ct::optcon::StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ct::optcon::ExtendedKalmanFilter<STATE_DIM>>
-        stateObserver(oscillator_observer_model, sensApprox, C, R, ekf, Q, R, dFdv);
+    // set up the system model
+    std::shared_ptr<ct::optcon::CTSystemModel<state_dim, control_dim>> sysModel(
+        new ct::optcon::CTSystemModel<state_dim, control_dim>(oscillator_observer_model, sensApprox, dFdv));
+
+    // set up the measurement model
+    std::shared_ptr<ct::optcon::LinearMeasurementModel<output_dim, state_dim>> measModel(
+        new ct::optcon::LTIMeasurementModel<output_dim, state_dim>(C));
+
+    // set up Filter, e.g. extended Kalman or Unscented Kalman filter
+    ct::optcon::ExtendedKalmanFilter<state_dim, control_dim, output_dim> filter(
+        sysModel, measModel, Q, R, states[0], Q);
+    // ct::optcon::UnscentedKalmanFilter<state_dim, control_dim, output_dim> filter(sysModel, measModel, states[0]);
 
 
-    ct::core::StateMatrix<STATE_DIM> meas_var;
-    ct::core::loadMatrix(pathToWeights, "measurement_noise.measurement_var", meas_var);
+    ct::core::StateMatrix<state_dim> meas_var;
+    ct::core::loadMatrix(settingsFile, "measurement_noise.measurement_var", meas_var);
 
     ct::core::GaussianNoise position_measurement_noise(0.0, meas_var(0, 0));
     ct::core::GaussianNoise velocity_measurement_noise(0.0, meas_var(1, 1));
 
-    ct::core::StateVectorArray<STATE_DIM> states_est(states.size());
-    ct::core::StateVectorArray<STATE_DIM> states_meas(states.size());
+    ct::core::StateVectorArray<state_dim> states_est(states.size());
+    ct::core::StateVectorArray<state_dim> states_meas(states.size());
     states_est[0] = states[0];
     states_meas[0] = states[0];
 
@@ -126,13 +132,13 @@ int main(int argc, char** argv)
         // todo this is technically not correct, the noise enters not on the state but on the output!!!
         position_measurement_noise.noisify(states_meas[i](0));  // Position noise.
         velocity_measurement_noise.noisify(states_meas[i](1));  // Velocity noise.
-        ct::core::OutputVector<OUTPUT_DIM> y = C * states_meas[i];
+        ct::core::OutputVector<output_dim> y = C * states_meas[i];
 
         // Kalman filter prediction step
-        stateObserver.predict(controls[i], dt, dt * i);
+        filter.predict(controls[i], dt, dt * i);
 
         // Kalman filter estimation step
-        ct::core::StateVector<STATE_DIM> x_est = stateObserver.update(y, dt, dt * i);
+        ct::core::StateVector<state_dim> x_est = filter.update(y, dt, dt * i);
 
         // and log for printing
         states_est[i] = x_est;

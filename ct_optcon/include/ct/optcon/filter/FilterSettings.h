@@ -7,10 +7,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <boost/property_tree/info_parser.hpp>
 
-#include "SteadyStateKalmanFilter.h"
-#include "ExtendedKalmanFilter.h"
-#include "UnscentedKalmanFilter.h"
-
 namespace ct {
 namespace optcon {
 
@@ -28,7 +24,7 @@ struct StateObserverSettings
     //! default constructor for the state Observer settings
     StateObserverSettings() {}
     //! check if the currently set parameters are meaningful
-    bool parametersOk() const { return true;}
+    bool parametersOk() const { return true; }
     ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR> C; /*!< Observation matrix C time. */
     ct::core::StateMatrix<STATE_DIM, SCALAR> Q;                   /*!< Weighing matrix Q. */
     ct::core::OutputMatrix<OUTPUT_DIM, SCALAR> R;                 /*!< Weighing matrix R. */
@@ -91,7 +87,7 @@ using DisturbanceObserverSettings = StateObserverSettings<OUTPUT_DIM, STATE_DIM,
 template <size_t STATE_DIM, typename SCALAR = double>
 struct SteadyStateKalmanFilterSettings
 {
-    typename SteadyStateKalmanFilter<STATE_DIM, SCALAR>::state_vector_t x0; /*!< Initial state estimate. */
+    ct::core::StateVector<STATE_DIM> x0; /*!< Initial state estimate. */
     size_t maxDAREIterations; /*!< Max number of iteration for solving DARE. */
 
     //! default constructor
@@ -138,8 +134,8 @@ struct SteadyStateKalmanFilterSettings
 template <size_t STATE_DIM, typename SCALAR = double>
 struct ExtendedKalmanFilterSettings
 {
-    typename ExtendedKalmanFilter<STATE_DIM, SCALAR>::state_vector_t x0; /*!< Initial state estimate. */
-    ct::core::StateMatrix<STATE_DIM, SCALAR> P0;                         /*!< Initial covariance matrix. */
+    ct::core::StateVector<STATE_DIM> x0;         /*!< Initial state estimate. */
+    ct::core::StateMatrix<STATE_DIM, SCALAR> P0; /*!< Initial covariance matrix. */
 
     //! default constructor
     ExtendedKalmanFilterSettings() {}
@@ -185,7 +181,7 @@ struct ExtendedKalmanFilterSettings
 template <size_t STATE_DIM, typename SCALAR = double>
 struct UnscentedKalmanFilterSettings
 {
-    typename UnscentedKalmanFilter<STATE_DIM, SCALAR>::state_vector_t x0; /*!< Initial state estimate. */
+    ct::core::StateVector<STATE_DIM> x0; /*!< Initial state estimate. */
     SCALAR alpha;
     SCALAR beta;
     SCALAR kappa;
