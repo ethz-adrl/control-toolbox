@@ -8,6 +8,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "CTSystemModel.h"
 #include "DisturbedSystem.h"
 #include "DisturbedSystemController.h"
+#include "InputDisturbedSystem.h"
 #include "ExtendedKalmanFilter.h"
 #include "EstimatorBase.h"
 #include "FilterSettings.h"

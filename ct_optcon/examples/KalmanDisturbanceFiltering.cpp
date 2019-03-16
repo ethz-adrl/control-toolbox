@@ -85,59 +85,6 @@ private:
 };
 
 
-/*!
- * Implementation of the "DisturbedSystem" which is going to be used for handed over to the Kalman Filter
- * for dynamics prediction and computing derivatives.
- * @note this system is not used for simulation, but for filtering.
- */
-template <size_t state_dim, size_t dist_dim, size_t control_dim, typename SCALAR = double>
-class CustomDisturbedSystem : public ct::optcon::DisturbedSystem<state_dim, dist_dim, control_dim, SCALAR>
-{
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-    //! constructor
-    CustomDisturbedSystem(std::shared_ptr<ct::core::ControlledSystem<state_dim, control_dim, SCALAR>> sys)
-        : ct::optcon::DisturbedSystem<state_dim, dist_dim, control_dim, SCALAR>(sys->getController()), system_(sys)
-    {
-    }
-
-    //! copy constructor
-    CustomDisturbedSystem(const CustomDisturbedSystem& other)
-        : ct::optcon::DisturbedSystem<state_dim, dist_dim, control_dim, SCALAR>(*this), system_(other.system_->clone())
-    {
-    }
-
-    //! deep cloning
-    CustomDisturbedSystem* clone() const override { return new CustomDisturbedSystem(*this); }
-
-    /*!
-     * Override the computeControlledDynamics() with a custom update rule.
-     */
-    void computeControlledDynamics(const ct::core::StateVector<state_dim + dist_dim, SCALAR>& state,
-        const SCALAR& t,
-        const ct::core::ControlVector<control_dim, SCALAR>& control,
-        ct::core::StateVector<state_dim + dist_dim, SCALAR>& derivative) override
-    {
-        derivative.setZero();
-        ct::core::StateVector<state_dim, SCALAR> tempDerivative;
-
-        // the control consists of actual commanded control plus the estimated input disturbance,
-        // which is the augmented part of the state vector
-        ct::core::ControlVector<control_dim, SCALAR> disturbed_control = control + state.template tail<dist_dim>();
-
-        // the dynamics of the augmented system
-        system_->computeControlledDynamics(state.head(state_dim), t, disturbed_control, tempDerivative);
-        derivative.template head<state_dim>() = tempDerivative;
-    }
-
-
-private:
-    // the nominal system (the one we are trying to control)
-    std::shared_ptr<ct::core::ControlledSystem<state_dim, control_dim, SCALAR>> system_;
-};
-
-
 int main(int argc, char** argv)
 {
     // file with weights and settings
@@ -215,8 +162,8 @@ int main(int argc, char** argv)
     std::shared_ptr<CustomController> controller_nominal(
         new CustomController(uff_magnitude, uff_frequency, kp, kd, 0.0, 0.0));
 
-    std::shared_ptr<CustomDisturbedSystem<state_dim, dist_dim, control_dim>> customdisturbedSystem(
-        new CustomDisturbedSystem<state_dim, dist_dim, control_dim>(oscillator_obs));
+    std::shared_ptr<ct::optcon::InputDisturbedSystem<state_dim, control_dim>> inputDisturbedSystem(
+        new ct::optcon::InputDisturbedSystem<state_dim, control_dim>(oscillator_obs));
 
     // Observation matrix for the state
     ct::core::OutputStateMatrix<output_dim, state_dim> C;
@@ -240,12 +187,12 @@ int main(int argc, char** argv)
 
     // create a sensitivity approximator to obtain discrete-time dynamics matrices
     std::shared_ptr<ct::core::SystemLinearizer<state_dim + dist_dim, control_dim>> linearizer(
-        new ct::core::SystemLinearizer<state_dim + dist_dim, control_dim>(customdisturbedSystem));
+        new ct::core::SystemLinearizer<state_dim + dist_dim, control_dim>(inputDisturbedSystem));
     ct::core::SensitivityApproximation<state_dim + dist_dim, control_dim> sensApprox(dt, linearizer);
 
     // set up the system model
     std::shared_ptr<ct::optcon::CTSystemModel<state_dim + dist_dim, control_dim>> sysModel(
-        new ct::optcon::CTSystemModel<state_dim + dist_dim, control_dim>(customdisturbedSystem, sensApprox, dFdv));
+        new ct::optcon::CTSystemModel<state_dim + dist_dim, control_dim>(inputDisturbedSystem, sensApprox, dFdv));
 
     // set up the measurement model
     std::shared_ptr<ct::optcon::LinearMeasurementModel<output_dim, state_dim + dist_dim>> measModel(
@@ -273,7 +220,8 @@ int main(int argc, char** argv)
 
 
     // set up Extended Kalman Filter
-    ct::optcon::ExtendedKalmanFilter<state_dim + dist_dim, control_dim, output_dim> ekf(sysModel, measModel, Qaug, R, x0aug, Qaug);
+    ct::optcon::ExtendedKalmanFilter<state_dim + dist_dim, control_dim, output_dim> ekf(
+        sysModel, measModel, Qaug, R, x0aug, Qaug);
 
 
     // run the filter over the simulated data
