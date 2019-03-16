@@ -36,20 +36,22 @@ public:
     using output_matrix_t = ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>;
     using output_state_matrix_t = ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR>;
 
+    using SensitivityApproximation_t =
+        ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>;
+
     //! Constructor.
     StateObserver(std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> system,
-        const ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>&
-            sensApprox,
-        double dt,
+        const SensitivityApproximation_t& sensApprox,
         const output_state_matrix_t& C,
+        const output_matrix_t& D,
         const ESTIMATOR& estimator,
         const state_matrix_t& Q,
-        const output_matrix_t& R);
+        const output_matrix_t& R,
+        const state_matrix_t& dFdv);
 
     //! Constructor using the observer settings.
     StateObserver(std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> system,
-        const ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM, STATE_DIM / 2, STATE_DIM / 2, SCALAR>&
-            sensApprox,
+        const SensitivityApproximation_t& sensApprox,
         const ESTIMATOR& estimator,
         const StateObserverSettings<OUTPUT_DIM, STATE_DIM, SCALAR>& so_settings);
 
@@ -57,13 +59,16 @@ public:
     virtual ~StateObserver() = default;
 
     //! Implementation of the filter method.
-    state_vector_t filter(const control_vector_t& u, const output_vector_t& y, const Time_t& t = Time_t(0.0)) override;
+    state_vector_t filter(const control_vector_t& u,
+        const output_vector_t& y,
+        const ct::core::Time& dt,
+        const Time_t& t) override;
 
     //! Observer predict method.
-    virtual state_vector_t predict(const control_vector_t& u, const Time_t& t = 0);
+    virtual state_vector_t predict(const control_vector_t& u, const ct::core::Time& dt, const Time_t& t);
 
     //! Observer update method.
-    virtual state_vector_t update(const output_vector_t& y, const Time_t& t = 0);
+    virtual state_vector_t update(const output_vector_t& y, const ct::core::Time& dt, const Time_t& t);
 
 protected:
     ESTIMATOR estimator_;                                   //! Estimator used to filter the state.

@@ -24,22 +24,27 @@ public:
     using state_vector_t = ct::core::StateVector<STATE_DIM, SCALAR>;
     using state_matrix_t = ct::core::StateMatrix<STATE_DIM, SCALAR>;
     using control_vector_t = ct::core::ControlVector<CONTROL_DIM, SCALAR>;
-    using Time_t = ct::core::Time;
+    using Time_t = SCALAR;
 
     //! Virtual destructor.
     virtual ~SystemModelBase() = default;
 
     //! Propagates the system giving the next state as output.
-    virtual state_vector_t computeDynamics(const state_vector_t& state, const control_vector_t& control, Time_t t) = 0;
+    virtual state_vector_t computeDynamics(const state_vector_t& state,
+        const control_vector_t& control,
+        const Time_t dt,
+        Time_t t) = 0;
 
     //! Computes the derivative w.r.t state.
     virtual state_matrix_t computeDerivativeState(const state_vector_t& state,
         const control_vector_t& control,
+        const Time_t dt,
         Time_t t) = 0;
 
     //! Computes the derivative w.r.t noise.
     virtual state_matrix_t computeDerivativeNoise(const state_vector_t& state,
         const control_vector_t& control,
+        const Time_t dt,
         Time_t t) = 0;
 };
 

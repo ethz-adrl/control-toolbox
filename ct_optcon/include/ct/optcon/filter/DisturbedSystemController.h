@@ -32,8 +32,10 @@ public:
 
     //! Copy constructor.
     DisturbedSystemController(const DisturbedSystemController& other);
+
     //! Clone method.
     DisturbedSystemController* clone() const override;
+
     //! Implementation of the base computeControl method.
     void computeControl(const ct::core::StateVector<AUGMENTED_DIM, SCALAR>& state,
         const SCALAR& t,
@@ -56,5 +58,5 @@ private:
     std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller_;  //! Nominal controller.
 };
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

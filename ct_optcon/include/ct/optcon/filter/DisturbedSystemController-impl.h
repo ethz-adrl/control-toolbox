@@ -36,8 +36,11 @@ void DisturbedSystemController<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>::comput
     ct::core::ControlVector<CONTROL_DIM, SCALAR>& controlAction)
 {
     if (!controller_)
-        throw std::runtime_error("Controller not set!");
-    controller_->computeControl(state.head(STATE_DIM), t, controlAction);
+        throw std::runtime_error("DisturbedSystemController: nominal controller not set!");
+
+    controller_->computeControl(state.template head<STATE_DIM>(), t, controlAction);
+
+    std::cout << "DisturbedSystemController computed control: " << controlAction.transpose() << std::endl;
 }
 
 template <size_t STATE_DIM, size_t DIST_DIM, size_t CONTROL_DIM, typename SCALAR>
@@ -69,5 +72,5 @@ void DisturbedSystemController<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>::setCon
     controller_ = controller;
 }
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

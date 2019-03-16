@@ -57,11 +57,11 @@ public:
     //! Constructor. We assume a linear model, i.e. C matrix is constant.
     DisturbanceObserver(std::shared_ptr<DisturbedSystem_t> system,
         const SensitivityApproximation_t& sensApprox,
-        double dt,
         const output_estimate_matrix_t& Caug,
         const ESTIMATOR& estimator,
         const estimate_matrix_t& Qaug,
-        const output_matrix_t& R);
+        const output_matrix_t& R,
+        const estimate_matrix_t& dFdv);
 
     //! Constructor from observer settings.
     DisturbanceObserver(std::shared_ptr<DisturbedSystem_t> system,
@@ -73,16 +73,19 @@ public:
     virtual ~DisturbanceObserver() = default;
 
     //! Prediction step of the estimation.
-    estimate_vector_t predict(const control_vector_t& u, const Time_t& t = 0.0) override;
+    estimate_vector_t predict(const control_vector_t& u, const ct::core::Time& dt, const Time_t& t) override;
 
     //! Update step of the estimation.
-    estimate_vector_t update(const output_vector_t& y, const Time_t& = 0.0) override;
+    estimate_vector_t update(const output_vector_t& y, const ct::core::Time& dt, const Time_t& t) override;
 
     //! State estimate getter.
     state_vector_t getStateEstimate();
 
     //! Disturbance estimate getter.
     disturbance_vector_t getDisturbanceEstimate();
+
+    //! get covariance matrix
+    const estimate_matrix_t& getCovarianceMatrix();
 };
 
 }  // namespace optcon

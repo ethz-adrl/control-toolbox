@@ -27,11 +27,11 @@ DisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>::DisturbedSystem(
 
 template <size_t STATE_DIM, size_t DIST_DIM, size_t CONTROL_DIM, typename SCALAR>
 void DisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>::setController(
-    const std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>>& controller)
+    const std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller)
 {
     std::dynamic_pointer_cast<DisturbedSystemController<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>>(this->controller_)
         ->setController(controller);
 }
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

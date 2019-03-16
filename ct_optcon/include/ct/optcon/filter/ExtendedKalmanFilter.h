@@ -42,14 +42,19 @@ public:
     const state_vector_t& predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
         const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
         const state_matrix_t& Q,
-        const ct::core::Time& t = 0);
+        const ct::core::Time& dt,
+        const ct::core::Time& t);
 
     //! Estimator update method.
     template <size_t OUTPUT_DIM>
     const state_vector_t& update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
         LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
         const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R,
-        const ct::core::Time& t = 0);
+        const ct::core::Time& dt,
+        const ct::core::Time& t);
+
+    // return current covariance matrix
+    const state_matrix_t& getCovarianceMatrix();
 
 private:
     //! Covariance estimate

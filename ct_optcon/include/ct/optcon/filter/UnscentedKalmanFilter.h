@@ -94,14 +94,16 @@ public:
     const state_vector_t& predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
         const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
         const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
-        const ct::core::Time& t = 0);
+        const ct::core::Time& dt,
+        const ct::core::Time& t);
 
     //! Estimator update method.
     template <size_t OUTPUT_DIM>
     const state_vector_t& update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& z,
         LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
         const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R,
-        const ct::core::Time& t = 0);
+        const ct::core::Time& dt,
+        const ct::core::Time& t);
 
     //! Compute sigma points from current state and covariance estimates.
     bool computeSigmaPoints();
@@ -171,5 +173,5 @@ private:
     SCALAR lambda_;  //! \f$ \lambda = \alpha^2 ( L + \kappa ) - L\f$ with \f$ L \f$ being the state dimensionality
 };
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

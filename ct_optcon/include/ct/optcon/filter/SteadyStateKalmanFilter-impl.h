@@ -30,6 +30,7 @@ template <size_t CONTROL_DIM>
 auto SteadyStateKalmanFilter<STATE_DIM, SCALAR>::predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
     const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
     const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
+    const ct::core::Time& dt,
     const ct::core::Time& t) -> const state_vector_t&
 {
     A_ = f.computeDerivativeState(this->x_est_, u, t);
@@ -43,6 +44,7 @@ template <size_t OUTPUT_DIM>
 auto SteadyStateKalmanFilter<STATE_DIM, SCALAR>::update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
     LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
     const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R,
+    const ct::core::Time& dt,
     const ct::core::Time& t) -> const state_vector_t&
 {
     ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR> dHdx = h.computeDerivativeState(this->x_est_, t);

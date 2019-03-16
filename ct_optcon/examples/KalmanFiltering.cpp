@@ -12,9 +12,13 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <ct/optcon/optcon.h>
 #include <CustomController.h>  // Using the custom controller from ct_core examples.
+#include "exampleDir.h"
 
 int main(int argc, char** argv)
 {
+    // file with kalman weights
+    std::string pathToWeights = ct::optcon::exampleDir + "/kalmanFilterWeights.info";
+
     // a damped oscillator has two states, position and velocity
     const size_t STATE_DIM = ct::core::SecondOrderSystem::STATE_DIM;      // = 2
     const size_t CONTROL_DIM = ct::core::SecondOrderSystem::CONTROL_DIM;  // = 1
@@ -46,9 +50,14 @@ int main(int argc, char** argv)
     ct::core::ControlVectorArray<CONTROL_DIM> controls;
     ct::core::tpl::TimeArray<double> times;
 
+    ct::core::StateMatrix<STATE_DIM> process_var;
+    ct::core::loadMatrix(pathToWeights, "process_noise.process_var", process_var);
+
+    ct::core::GaussianNoise position_process_noise(0.0, process_var(0, 0));
+    ct::core::GaussianNoise velocity_process_noise(0.0, process_var(1, 1));
+
     // simulate 100 steps
     double dt = 0.001;
-    double t0 = 0.0;
     size_t nSteps = 100;
     states.push_back(x);
     for (size_t i = 0; i < nSteps; i++)
@@ -59,6 +68,10 @@ int main(int argc, char** argv)
         controls.push_back(u_temp);
 
         integrator.integrate_n_steps(x, i * dt, 1, dt);
+
+        position_process_noise.noisify(x(0));  // Position noise.
+        velocity_process_noise.noisify(x(1));  // Velocity noise.
+
         states.push_back(x);
         times.push_back(i * dt);
     }
@@ -67,9 +80,15 @@ int main(int argc, char** argv)
     ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM> C;
     C.setIdentity();
 
-    // create Kalman Filter weighting matrices
-    ct::core::StateMatrix<STATE_DIM, double> Q = ct::core::StateMatrix<STATE_DIM, double>::Identity();
-    ct::core::OutputMatrix<OUTPUT_DIM, double> R = 10 * ct::core::OutputMatrix<OUTPUT_DIM, double>::Identity();
+    // load Kalman Filter weighting matrices from file
+    ct::core::StateMatrix<STATE_DIM> Q, dFdv;
+    ct::core::OutputMatrix<OUTPUT_DIM> R;
+    ct::core::loadMatrix(pathToWeights, "kalman_weights.Q", Q);
+    ct::core::loadMatrix(pathToWeights, "kalman_weights.R", R);
+    std::cout << "Loaded Kalman R as " << std::endl << R << std::endl;
+    std::cout << "Loaded Kalman Q as " << std::endl << Q << std::endl;
+
+    dFdv.setIdentity();  // todo tune me!
 
     // create a sensitivity approximator to compute A and B matrices
     std::shared_ptr<ct::core::SystemLinearizer<STATE_DIM, CONTROL_DIM>> linearizer(
@@ -77,47 +96,89 @@ int main(int argc, char** argv)
     ct::core::SensitivityApproximation<STATE_DIM, CONTROL_DIM> sensApprox(dt, linearizer);
 
     // set up Extended Kalman Filter
-    ct::optcon::ExtendedKalmanFilter<STATE_DIM> ekf(states[0]);
+    ct::optcon::ExtendedKalmanFilter<STATE_DIM> ekf(states[0], R);
 
     // the observer is supplied with a dynamic model identical to the one used above for data generation
     std::shared_ptr<ct::core::SecondOrderSystem> oscillator_observer_model(new ct::core::SecondOrderSystem(w_n));
-    
+
     // initialize the observer
     ct::optcon::StateObserver<OUTPUT_DIM, STATE_DIM, CONTROL_DIM, ct::optcon::ExtendedKalmanFilter<STATE_DIM>>
-        stateObserver(oscillator_observer_model, sensApprox, dt, C, ekf, Q, R);
+        stateObserver(oscillator_observer_model, sensApprox, C, R, ekf, Q, R, dFdv);
 
-    ct::core::GaussianNoise position_measurement_noise(0, 0.01);
-    ct::core::GaussianNoise velocity_measurement_noise(0, 0.1);
 
-    ct::core::StateVectorArray<STATE_DIM> states_est;
-    states_est.push_back(states[0]);
-    ct::core::StateVector<STATE_DIM> xt;
+    ct::core::StateMatrix<STATE_DIM> meas_var;
+    ct::core::loadMatrix(pathToWeights, "measurement_noise.measurement_var", meas_var);
+
+    ct::core::GaussianNoise position_measurement_noise(0.0, meas_var(0, 0));
+    ct::core::GaussianNoise velocity_measurement_noise(0.0, meas_var(1, 1));
+
+    ct::core::StateVectorArray<STATE_DIM> states_est(states.size());
+    ct::core::StateVectorArray<STATE_DIM> states_meas(states.size());
+    states_est[0] = states[0];
+    states_meas[0] = states[0];
 
     // run the filter over the simulated data
     for (size_t i = 1; i < states.size(); ++i)
     {
         // compute an observation
-        xt = states[i];
-        position_measurement_noise.noisify(xt[0]);  // Position noise.
-        velocity_measurement_noise.noisify(xt[1]);  // Velocity noise.
-        ct::core::OutputVector<OUTPUT_DIM> y = C * xt;
+        states_meas[i] = states[i];
+
+        // todo this is technically not correct, the noise enters not on the state but on the output!!!
+        position_measurement_noise.noisify(states_meas[i](0));  // Position noise.
+        velocity_measurement_noise.noisify(states_meas[i](1));  // Velocity noise.
+        ct::core::OutputVector<OUTPUT_DIM> y = C * states_meas[i];
 
         // Kalman filter prediction step
-        stateObserver.predict(controls[i], dt * i);
+        stateObserver.predict(controls[i], dt, dt * i);
 
         // Kalman filter estimation step
-        ct::core::StateVector<STATE_DIM> x_est = stateObserver.update(y);
+        ct::core::StateVector<STATE_DIM> x_est = stateObserver.update(y, dt, dt * i);
 
         // and log for printing
-        states_est.push_back(x_est);
+        states_est[i] = x_est;
     }
 
-    // print results
+
+// plot if plotting library built.
+#ifdef PLOTTING_ENABLED
+
+    std::vector<double> time_plot, pos_est_plot, vel_est_plot, pos_plot, vel_plot, pos_meas_plot, vel_meas_plot;
+    for (size_t i = 0; i < times.size(); i++)
+    {
+        time_plot.push_back(times[i]);
+        pos_est_plot.push_back(states_est[i](0));
+        vel_est_plot.push_back(states_est[i](1));
+        pos_plot.push_back(states[i](0));
+        vel_plot.push_back(states[i](1));
+        pos_meas_plot.push_back(states_meas[i](0));
+        vel_meas_plot.push_back(states_meas[i](1));
+    }
+
+    // plot position
+    ct::core::plot::subplot(2, 1, 1);
+    ct::core::plot::labelPlot("pos est", time_plot, pos_est_plot);
+    ct::core::plot::labelPlot("ground truth", time_plot, pos_plot, "r--");
+    ct::core::plot::labelPlot("pos meas", time_plot, pos_meas_plot, "k--");
+    ct::core::plot::legend();
+    ct::core::plot::ylabel("pos [m]");
+
+    // plot velocity
+    ct::core::plot::subplot(2, 1, 2);
+    ct::core::plot::labelPlot("vel est", time_plot, vel_est_plot);
+    ct::core::plot::labelPlot("ground truth", time_plot, vel_plot, "r--");
+    ct::core::plot::labelPlot("vel meas", time_plot, vel_meas_plot, "k--");
+    ct::core::plot::ylabel("vel [m/sec]");
+    ct::core::plot::xlabel("time [sec]");
+    ct::core::plot::legend();
+
+    ct::core::plot::show();
+#else  // print results to command line
     for (size_t i = 0; i < states_est.size(); ++i)
         std::cout << "State\t\tState_est\n"
                   << std::fixed << std::setprecision(6) << states[i][0] << "\t" << states_est[i][0] << std::endl
                   << states[i][1] << "\t" << states_est[i][1] << std::endl
                   << std::endl;
+#endif
 
     return 0;
 }

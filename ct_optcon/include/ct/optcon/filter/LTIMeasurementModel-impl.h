@@ -11,17 +11,18 @@ namespace optcon {
 template <size_t OUTPUT_DIM, size_t STATE_DIM, typename SCALAR>
 LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>::LTIMeasurementModel()
 {
-    dHdx_.setZero();
-    dHdw_.setIdentity();
+    dHdx_.setIdentity();
+    dHdw_.setZero();
 }
 
 template <size_t OUTPUT_DIM, size_t STATE_DIM, typename SCALAR>
 LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>::LTIMeasurementModel(
     const typename LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>::output_state_matrix_t& C,
     const typename LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>::output_matrix_t& dHdw)
-    : dHdx_(C)
+    : dHdx_(C), dHdw_(dHdw)
 {
 }
+
 template <size_t OUTPUT_DIM, size_t STATE_DIM, typename SCALAR>
 typename LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>::output_vector_t
 LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>::computeMeasurement(
@@ -30,6 +31,7 @@ LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>::computeMeasurement(
 {
     return dHdx_ * state;
 }
+
 template <size_t OUTPUT_DIM, size_t STATE_DIM, typename SCALAR>
 typename LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>::output_state_matrix_t
 LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>::computeDerivativeState(
@@ -38,6 +40,7 @@ LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>::computeDerivativeState(
 {
     return dHdx_;
 }
+
 template <size_t OUTPUT_DIM, size_t STATE_DIM, typename SCALAR>
 typename LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>::output_matrix_t
 LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>::computeDerivativeNoise(
@@ -47,5 +50,5 @@ LTIMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>::computeDerivativeNoise(
     return dHdw_;
 }
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

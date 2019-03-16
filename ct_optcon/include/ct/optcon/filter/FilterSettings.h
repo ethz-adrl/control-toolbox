@@ -28,21 +28,21 @@ struct StateObserverSettings
     //! default constructor for the state Observer settings
     StateObserverSettings() {}
     //! check if the currently set parameters are meaningful
-    bool parametersOk() const { return (dt > 0.0); }
-    double dt;                                                    /*!< Sampling time. */
+    bool parametersOk() const { return true;}
     ct::core::OutputStateMatrix<OUTPUT_DIM, STATE_DIM, SCALAR> C; /*!< Observation matrix C time. */
     ct::core::StateMatrix<STATE_DIM, SCALAR> Q;                   /*!< Weighing matrix Q. */
     ct::core::OutputMatrix<OUTPUT_DIM, SCALAR> R;                 /*!< Weighing matrix R. */
+    ct::core::StateMatrix<STATE_DIM, SCALAR> dFdv;
 
     //! print the current settings
     void print() const
     {
         std::cout << "State Observer Settings: " << std::endl;
         std::cout << "=====================" << std::endl;
-        std::cout << "dt:\t" << dt << std::endl;
         std::cout << "C:\n" << C << std::endl;
         std::cout << "Q:\n" << Q << std::endl;
         std::cout << "R:\n" << R << std::endl;
+        std::cout << "dFdv:\n" << dFdv << std::endl;
         std::cout << "              =======" << std::endl;
         std::cout << std::endl;
     }
@@ -56,10 +56,10 @@ struct StateObserverSettings
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);
 
-        dt = pt.get<bool>(ns + ".dt");
         ct::core::loadMatrix(filename, "C", C, ns);
-        ct::core::loadMatrix(filename, "Q", C, ns);
-        ct::core::loadMatrix(filename, "R", C, ns);
+        ct::core::loadMatrix(filename, "Q", Q, ns);
+        ct::core::loadMatrix(filename, "R", R, ns);
+        ct::core::loadMatrix(filename, "dFdv", dFdv, ns);
 
         if (verbose)
         {
@@ -230,5 +230,5 @@ struct UnscentedKalmanFilterSettings
     }
 };
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

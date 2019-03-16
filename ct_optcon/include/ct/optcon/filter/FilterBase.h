@@ -25,8 +25,11 @@ public:
     //! Virtual destructor.
     virtual ~FilterBase() = default;
 
-    //! Filter method. Updates the estimate based on the received measurement and it's time stamp.
-    virtual state_vector_t filter(const control_vector_t& u, const output_vector_t& y, const Time_t& t) = 0;
+    //! Filter method. Updates the estimate based on the received measurement
+    virtual state_vector_t filter(const control_vector_t& u,
+        const output_vector_t& y,
+        const ct::core::Time& dt,
+        const Time_t& t) = 0;
 };
 
 }  // namespace optcon
