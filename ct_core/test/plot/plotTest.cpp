@@ -49,7 +49,7 @@ int main()
     ct::core::plot::show();
 
     // enable interactive mode as of now (only tests if it doesn't crash)
-    ct::core::plot::ion();
+    // ct::core::plot::ion();
 
     // subplots
     ct::core::plot::subplot(3, 1, 1);
@@ -60,7 +60,6 @@ int main()
     ct::core::plot::plot(v);
     ct::core::plot::show(false);
 
-    ct::core::plot::figure();
 
     // plot multiple curves in a single graph
     std::vector<double> w({4, 3, 2, 1});

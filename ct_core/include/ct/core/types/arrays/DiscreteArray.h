@@ -65,17 +65,17 @@ public:
     virtual ~DiscreteArray(){};
 
     using Base::operator[];
-    using Base::size;
-    using Base::resize;
-    using Base::reserve;
     using Base::at;
-    using Base::pop_back;
-    using Base::push_back;
-    using Base::clear;
-    using Base::front;
     using Base::back;
     using Base::begin;
+    using Base::clear;
     using Base::end;
+    using Base::front;
+    using Base::pop_back;
+    using Base::push_back;
+    using Base::reserve;
+    using Base::resize;
+    using Base::size;
 
     //! swaps the content of two arrays
     /*!
@@ -169,8 +169,6 @@ public:
     {
         std::for_each(this->begin(), this->end(), [&](T& val) { val += offset; });
     }
-
-private:
 };
 
 } /* namespace core */

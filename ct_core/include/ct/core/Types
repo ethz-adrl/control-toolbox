@@ -21,6 +21,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "types/arrays/ScalarArray.h"
 #include "types/arrays/TimeArray.h"
 #include "types/arrays/MatrixArrays.h"
+#include "types/arrays/ArrayHelpers.h"
 
 #include "types/trajectories/DiscreteTrajectoryBase.h"
 #include "types/trajectories/ScalarTrajectory.h"

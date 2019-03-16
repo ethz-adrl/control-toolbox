@@ -11,6 +11,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "../StateMatrix.h"
 #include "../StateVector.h"
 #include "../ControlVector.h"
+#include "../OutputVector.h"
+#include "../OutputMatrix.h"
 
 #include "DiscreteArray.h"
 
@@ -34,5 +36,12 @@ using StateVectorArray = DiscreteArray<StateVector<STATE_DIM, SCALAR>>;
 
 template <size_t CONTROL_DIM, typename SCALAR = double>
 using ControlVectorArray = DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>;
-}
-}
+
+template <size_t OUTPUT_DIM, typename SCALAR = double>
+using OutputVectorArray = DiscreteArray<OutputVector<OUTPUT_DIM, SCALAR>>;
+
+template <size_t OUTPUT_DIM, typename SCALAR = double>
+using OutputMatrixArray = DiscreteArray<OutputMatrix<OUTPUT_DIM, SCALAR>>;
+
+}  // namespace core
+}  // namespace ct
