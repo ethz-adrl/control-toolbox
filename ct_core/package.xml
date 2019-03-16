@@ -4,7 +4,7 @@
   <description>
   ADRL control toolbox - core module
   </description>
-  <maintainer email="mgiftthaler@ethz.ch">Markus Giftthaler</maintainer>  
+  <maintainer email="markusgft@gmail.com">Markus Giftthaler</maintainer>
   <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
   <license>Apache v2</license>
   <buildtool_depend>catkin</buildtool_depend>

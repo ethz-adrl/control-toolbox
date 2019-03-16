@@ -1,7 +1,7 @@
 <package format="2">
   <name>ct_optcon</name>
   <version>0.3.0</version>
-  <description>Optimal Control package of the Control Toolbox</description>
+  <description>Optimal Control package of the ADRL Control Toolbox</description>
   <maintainer email="markusgft@gmail.com">Markus Giftthaler</maintainer>  
   <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
   <license>Apache v2</license>
