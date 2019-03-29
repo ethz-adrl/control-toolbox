@@ -91,6 +91,31 @@ public:
     virtual const state_control_matrix_t& getDerivativeControl(const state_vector_t& x,
         const control_vector_t& u,
         const time_t t = time_t(0.0)) = 0;
+
+
+    /**
+     * @brief Get both linear system matrices A and B in one call.
+     * 
+     * Motvation: For certain derived instances, it may be more efficient to compute A and B simulatenously. 
+     * In that case, this method can be overloaded for maximum efficiency. As default case, it simply calls above
+     * methods independently.
+     * 
+     * @param A matrix A of linear system
+     * @param B matrix B of linear system
+     * @param x the current state
+     * @param u the current input
+     * @param t the current time
+     */
+    virtual void getDerivatives(state_matrix_t& A,
+        state_control_matrix_t& B,
+        const state_vector_t& x,
+        const control_vector_t& u,
+        const time_t t = time_t(0.0))
+    {
+        A = getDerivativeState(x, u, t);
+        B = getDerivativeControl(x, u, t);
+    }
 };
-}
-}
+
+}  // namespace core
+}  // namespace ct

@@ -140,17 +140,21 @@ public:
             case SensitivityApproximationSettings::APPROXIMATION::TUSTIN:
             {
                 /*!
-			 * the Tustin (also known as 'Heun') approximation uses the state and control at the *start* and at the *end*
-			 * of the ZOH interval to generate linear approximations A and B in a trapezoidal fashion.
-			 */
+                 * the Tustin (also known as 'Heun') approximation uses the state and control at the *start* and at the *end*
+                 * of the ZOH interval to generate linear approximations A and B in a trapezoidal fashion.
+                 */
 
-                //! continuous-time A matrices
-                state_matrix_t Ac_front = settings_.dt_ * linearSystem_->getDerivativeState(x, u, n * settings_.dt_);
+                //! continuous-time A and B matrices
+                state_matrix_t Ac_front;
+                state_control_matrix_t Bc_front;
+
+                // front derivatives
+                linearSystem_->getDerivatives(Ac_front, Bc_front, x, u, n * settings_.dt_);
+                Ac_front *= settings_.dt_;
+
                 state_matrix_t Ac_back =
                     settings_.dt_ * linearSystem_->getDerivativeState(x_next, u, (n + 1) * settings_.dt_);
 
-                //! the continuous-time B matrices
-                state_control_matrix_t Bc_front = linearSystem_->getDerivativeControl(x, u, n * settings_.dt_);
 
                 //! tustin approximation
                 state_matrix_t aNewInv;
@@ -175,50 +179,59 @@ private:
     void forwardEuler(const StateVector<STATE_DIM, SCALAR>& x_n,
         const ControlVector<CONTROL_DIM, SCALAR>& u_n,
         const int& n,
-        state_matrix_t& A,
-        state_control_matrix_t& B)
+        state_matrix_t& A_discr,
+        state_control_matrix_t& B_discr)
     {
         /*!
 		 * the Forward Euler approximation uses the state and control at the *start* of the ZOH interval to
 		 * generate linear approximations A and B.
 		 */
-        A = state_matrix_t::Identity();
-        A += settings_.dt_ * linearSystem_->getDerivativeState(x_n, u_n, n * settings_.dt_);
+        state_matrix_t A_cont;
+        state_control_matrix_t B_cont;
+        linearSystem_->getDerivatives(A_cont, B_cont, x_n, u_n, n * settings_.dt_);
 
-        B = settings_.dt_ * linearSystem_->getDerivativeControl(x_n, u_n, n * settings_.dt_);
+        A_discr = state_matrix_t::Identity() + settings_.dt_ * A_cont;
+        B_discr = settings_.dt_ * B_cont;
     }
 
     void backwardEuler(const StateVector<STATE_DIM, SCALAR>& x_n,
         const ControlVector<CONTROL_DIM, SCALAR>& u_n,
         const int& n,
-        state_matrix_t& A,
-        state_control_matrix_t& B)
+        state_matrix_t& A_discr,
+        state_control_matrix_t& B_discr)
     {
         /*!
 		 * the Backward Euler approximation uses the state and control at the *end* of the ZOH interval to
 		 * generate linear approximations A and B.
 		 */
-        state_matrix_t aNew = settings_.dt_ * linearSystem_->getDerivativeState(x_n, u_n, n * settings_.dt_);
-        A.template topLeftCorner<STATE_DIM, STATE_DIM>() =
+        state_matrix_t A_cont;
+        state_control_matrix_t B_cont;
+        linearSystem_->getDerivatives(A_cont, B_cont, x_n, u_n, n * settings_.dt_);
+
+        state_matrix_t aNew = settings_.dt_ * A_cont;
+        A_discr.setZero();
+        A_discr.template topLeftCorner<STATE_DIM, STATE_DIM>() =
             (state_matrix_t::Identity() - aNew).colPivHouseholderQr().inverse();
 
-        B = A * settings_.dt_ * linearSystem_->getDerivativeControl(x_n, u_n, n * settings_.dt_);
+        B_discr = A_discr * settings_.dt_ * B_cont;
     }
 
 
     void matrixExponential(const StateVector<STATE_DIM, SCALAR>& x_n,
         const ControlVector<CONTROL_DIM, SCALAR>& u_n,
         const int& n,
-        state_matrix_t& A,
-        state_control_matrix_t& B)
+        state_matrix_t& A_discr,
+        state_control_matrix_t& B_discr)
     {
-        state_matrix_t Ac = linearSystem_->getDerivativeState(x_n, u_n, settings_.dt_ * n);
+        state_matrix_t Ac;
+        state_control_matrix_t Bc;
+        linearSystem_->getDerivatives(Ac, Bc, x_n, u_n, n * settings_.dt_);
+
         state_matrix_t Adt = settings_.dt_ * Ac;
 
-        A.template topLeftCorner<STATE_DIM, STATE_DIM>() = Adt.exp();
-        B.template topLeftCorner<STATE_DIM, CONTROL_DIM>() =
-            Ac.inverse() * (A - state_matrix_t::Identity()) *
-            linearSystem_->getDerivativeControl(x_n, u_n, settings_.dt_ * n);
+        A_discr.template topLeftCorner<STATE_DIM, STATE_DIM>() = Adt.exp();
+        B_discr.template topLeftCorner<STATE_DIM, CONTROL_DIM>() =
+            Ac.inverse() * (A_discr - state_matrix_t::Identity()) * Bc;
     }
 
 
@@ -245,14 +258,13 @@ private:
         StateVector<STATE_DIM, SCALAR> x_interm = x;
         x_interm.topRows(P_DIM) = x_next.topRows(P_DIM);
 
-        state_matrix_t Ac1 =
-            linearSystem_->getDerivativeState(x, u, n * dt);  // continuous time A matrix for start state and control
-        state_control_matrix_t Bc1 =
-            linearSystem_->getDerivativeControl(x, u, n * dt);  // continuous time B matrix for start state and control
-        state_matrix_t Ac2 = linearSystem_->getDerivativeState(
-            x_interm, u, n * dt);  // continuous time A matrix for intermediate state and control
-        state_control_matrix_t Bc2 = linearSystem_->getDerivativeControl(
-            x_interm, u, n * dt);  // continuous time B matrix for intermediate state and control
+        state_matrix_t Ac1;          // continuous time A matrix for start state and control
+        state_control_matrix_t Bc1;  // continuous time B matrix for start state and control
+        linearSystem_->getDerivatives(Ac1, Bc1, x, u, n * dt);
+
+        state_matrix_t Ac2;          // continuous time A matrix for intermediate state and control
+        state_control_matrix_t Bc2;  // continuous time B matrix for intermediate state and control
+        linearSystem_->getDerivatives(Ac2, Bc2, x_interm, u, n * dt);
 
         getSymplecticEulerApproximation<V_DIM, P_DIM>(Ac1, Ac2, Bc1, Bc2, A_sym, B_sym);
     }
@@ -277,10 +289,9 @@ private:
     {
         const SCALAR& dt = settings_.dt_;
 
-        state_matrix_t Ac1 =
-            linearSystem_->getDerivativeState(x, u, n * dt);  // continuous time A matrix for start state and control
-        state_control_matrix_t Bc1 =
-            linearSystem_->getDerivativeControl(x, u, n * dt);  // continuous time B matrix for start state and control
+        state_matrix_t Ac1;          // continuous time A matrix for start state and control
+        state_control_matrix_t Bc1;  // continuous time B matrix for start state and control
+        linearSystem_->getDerivatives(Ac1, Bc1, x, u, n * dt);
 
         getSymplecticEulerApproximation<V_DIM, P_DIM>(Ac1, Ac1, Bc1, Bc1, A_sym, B_sym);
     }
