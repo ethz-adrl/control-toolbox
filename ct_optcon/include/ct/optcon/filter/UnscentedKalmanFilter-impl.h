@@ -101,8 +101,7 @@ auto UnscentedKalmanFilter<STATE_DIM, CONTROL_DIM, OUTPUT_DIM, SCALAR>::update(c
     SigmaPoints<OUTPUT_DIM> sigmaMeasurementPoints;
 
     // Predict measurement (and corresponding sigma points)
-    ct::core::OutputVector<OUTPUT_DIM, SCALAR> y =
-        this->template computeMeasurementPrediction(sigmaMeasurementPoints, t);
+    ct::core::OutputVector<OUTPUT_DIM, SCALAR> y = this->computeMeasurementPrediction(sigmaMeasurementPoints, t);
 
     // Compute innovation covariance
     Covariance<OUTPUT_DIM> P;
