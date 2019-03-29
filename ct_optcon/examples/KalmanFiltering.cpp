@@ -83,7 +83,7 @@ int main(int argc, char** argv)
     // load Kalman Filter weighting matrices from file
     ct::core::StateMatrix<state_dim> Q, dFdv;
     ct::core::OutputMatrix<output_dim> R;
-    dFdv.setIdentity();  // todo tune me!
+    dFdv.setIdentity();
     ct::core::loadMatrix(settingsFile, "kalman_weights.Q", Q);
     ct::core::loadMatrix(settingsFile, "kalman_weights.R", R);
     std::cout << "Loaded Kalman R as " << std::endl << R << std::endl;
@@ -92,7 +92,9 @@ int main(int argc, char** argv)
     // create a sensitivity approximator to compute A and B matrices
     std::shared_ptr<ct::core::SystemLinearizer<state_dim, control_dim>> linearizer(
         new ct::core::SystemLinearizer<state_dim, control_dim>(oscillator));
-    ct::core::SensitivityApproximation<state_dim, control_dim> sensApprox(dt, linearizer);
+
+    std::shared_ptr<ct::core::SensitivityApproximation<state_dim, control_dim>> sensApprox(
+        new ct::core::SensitivityApproximation<state_dim, control_dim>(dt, linearizer));
 
 
     // the observer is supplied with a dynamic model identical to the one used above for data generation
@@ -103,8 +105,10 @@ int main(int argc, char** argv)
         new ct::optcon::CTSystemModel<state_dim, control_dim>(oscillator_observer_model, sensApprox, dFdv));
 
     // set up the measurement model
+    ct::core::OutputStateMatrix<output_dim, state_dim> dHdw;
+    dHdw.setIdentity();
     std::shared_ptr<ct::optcon::LinearMeasurementModel<output_dim, state_dim>> measModel(
-        new ct::optcon::LTIMeasurementModel<output_dim, state_dim>(C));
+        new ct::optcon::LTIMeasurementModel<output_dim, state_dim>(C, dHdw));
 
     // set up Filter, e.g. extended Kalman or Unscented Kalman filter
     ct::optcon::ExtendedKalmanFilter<state_dim, control_dim, output_dim> filter(
@@ -129,7 +133,7 @@ int main(int argc, char** argv)
         // compute an observation
         states_meas[i] = states[i];
 
-        // todo this is technically not correct, the noise enters not on the state but on the output!!!
+        // note that this is technically not correct, the noise enters not on the state but on the output!!!
         position_measurement_noise.noisify(states_meas[i](0));  // Position noise.
         velocity_measurement_noise.noisify(states_meas[i](1));  // Velocity noise.
         ct::core::OutputVector<output_dim> y = C * states_meas[i];

@@ -183,12 +183,13 @@ int main(int argc, char** argv)
     ct::core::loadMatrix(configFile, "kalman_weights.Qaug", Qaug);
     ct::core::loadMatrix(configFile, "kalman_weights.R", R);
 
-    dFdv.setIdentity();  // todo tune me
+    dFdv.setIdentity();
 
     // create a sensitivity approximator to obtain discrete-time dynamics matrices
     std::shared_ptr<ct::core::SystemLinearizer<state_dim + dist_dim, control_dim>> linearizer(
         new ct::core::SystemLinearizer<state_dim + dist_dim, control_dim>(inputDisturbedSystem));
-    ct::core::SensitivityApproximation<state_dim + dist_dim, control_dim> sensApprox(dt, linearizer);
+    std::shared_ptr<ct::core::SensitivityApproximation<state_dim + dist_dim, control_dim>> sensApprox(
+        new ct::core::SensitivityApproximation<state_dim + dist_dim, control_dim>(dt, linearizer));
 
     // set up the system model
     std::shared_ptr<ct::optcon::CTSystemModel<state_dim + dist_dim, control_dim>> sysModel(

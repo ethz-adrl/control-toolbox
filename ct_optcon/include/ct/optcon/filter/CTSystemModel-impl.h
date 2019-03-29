@@ -11,10 +11,10 @@ namespace optcon {
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 CTSystemModel<STATE_DIM, CONTROL_DIM, SCALAR>::CTSystemModel(
     std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> system,
-    const SensitivityApprox_t& sensApprox,
+    std::shared_ptr<SensitivityApprox_t> sensApprox,
     const state_matrix_t& dFdv,
     const ct::core::IntegrationType& intType)
-    : system_(system->clone()),
+    : system_(system),
       constantController_(new ct::core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>()),
       sensApprox_(sensApprox),
       dFdv_(dFdv),
@@ -49,9 +49,9 @@ auto CTSystemModel<STATE_DIM, CONTROL_DIM, SCALAR>::computeDerivativeState(const
     state_matrix_t A;
     ct::core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> Btemp;
 
-    sensApprox_.setTimeDiscretization(dt);
+    sensApprox_->setTimeDiscretization(dt);
 
-    sensApprox_.getAandB(state, u, state, int(t / dt), 1, A, Btemp);
+    sensApprox_->getAandB(state, u, state, int(t / dt), 1, A, Btemp);
     return A;
 }
 

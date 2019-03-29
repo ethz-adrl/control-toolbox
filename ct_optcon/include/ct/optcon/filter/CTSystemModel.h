@@ -39,7 +39,7 @@ public:
 
     //! Constructor. Takes in the system with defined controller, and sens approximator for computing the derivatives
     CTSystemModel(std::shared_ptr<ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> system,
-        const SensitivityApprox_t& sensApprox,
+        std::shared_ptr<SensitivityApprox_t> sensApprox,
         const state_matrix_t& dFdv,
         const ct::core::IntegrationType& intType = ct::core::IntegrationType::EULERCT);
 
@@ -69,7 +69,7 @@ protected:
     std::shared_ptr<ct::core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>> constantController_;
 
     //! The sensitivity approximator
-    SensitivityApprox_t sensApprox_;
+    std::shared_ptr<SensitivityApprox_t> sensApprox_;
 
     //! Derivative w.r.t. noise.
     state_matrix_t dFdv_;
