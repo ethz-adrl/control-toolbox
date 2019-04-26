@@ -6,7 +6,7 @@ services:
   - docker
 language: c++
 compiler:
-  - clang
+  - gcc
 cache:
   directories:
   - $HOME/.ccache
