@@ -47,7 +47,6 @@ install:
   - mkdir -p ~/catkin_ws/src
   - cd ~/catkin_ws
   - catkin init
-  - catkin build
   - source devel/setup.bash
   # Add the package under integration to the workspace using a symlink.
   - cd ~/catkin_ws/src
@@ -67,7 +66,8 @@ install:
 script:
   - source /opt/ros/$ROS_DISTRO/setup.bash
   - cd ~/catkin_ws
-  - catkin_make $( [ -f $CATKIN_OPTIONS ] && cat $CATKIN_OPTIONS )
+  - catkin clean --all
+  - catkin build $( [ -f $CATKIN_OPTIONS ] && cat $CATKIN_OPTIONS )
   # Run the tests, ensuring the path is set correctly.
   - source devel/setup.bash
-  - catkin_make run_tests && catkin_test_results
+  - catkin run_tests && catkin_test_results
