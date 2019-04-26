@@ -19,7 +19,7 @@ env:
     - CCACHE_DIR=$HOME/.ccache # enables C/C++ caching
   matrix:
     - ROS_DISTRO="kinetic"
-    - ROS_DISTRO="melodic"
+    #- ROS_DISTRO="melodic"  
 matrix:
   allow_failures:
     - env: ROS_DISTRO="kinetic"  PRERELEASE=true
