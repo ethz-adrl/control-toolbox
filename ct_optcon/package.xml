@@ -4,7 +4,7 @@
   <description>Optimal Control package of the ADRL Control Toolbox</description>
   <maintainer email="markusgft@gmail.com">Markus Giftthaler</maintainer>  
   <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
-  <license>Apache v2</license>
+  <license>BSD-2</license>
 
   <author>Markus Giftthaler</author>
   <author>Michael Neunert</author>

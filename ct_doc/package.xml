@@ -1,6 +1,6 @@
 <package>
   <name>ct_doc</name>
-  <version>0.2.1</version>
+  <version>0.3.0</version>
   <description>
   ADRL control toolbox - Documentation
   </description>
@@ -8,7 +8,7 @@
   <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
   <maintainer email="mgiftthaler@ethz.ch">Markus Giftthaler</maintainer>
   
-  <license>Apache v2</license>
+  <license>BSD-2</license>
   
   <buildtool_depend>catkin</buildtool_depend>
   

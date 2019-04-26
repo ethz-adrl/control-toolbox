@@ -1,12 +1,11 @@
 <package>
   <name>ct</name>
-  <version>0.2.1</version>
+  <version>0.3.0</version>
   <description>
-    ADRL Control Toolbox v2.1
+    ADRL Control Toolbox v3.0
   </description>
-  <maintainer email="mgiftthaler@ethz.ch">Markus Giftthaler</maintainer>  
-  <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
-  <license>Apache v2</license>
+  <maintainer email="markusgft@gmail.com">Markus Giftthaler</maintainer>  
+  <license>BSD-2</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   

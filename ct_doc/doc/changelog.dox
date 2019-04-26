@@ -5,6 +5,10 @@
 
 For a complete list of changes, we encourage you to check out our git repository at https://bitbucket.org/adrlab/ct
 
+\section cl_v30 Version 3.0
+- cleaned up the state-estimation headers and fixed bugs in disturbance estimator
+- migrated to github
+
 \section cl_v23 Version 2.3
 - added a nonlinear-programming based inverse kinematics solver (for fix-base systems and single end-effectors)
 - changed representation of Riccati solvers from differential to global coordinates

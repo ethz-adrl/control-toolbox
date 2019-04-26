@@ -6,7 +6,7 @@
   </description>
   <maintainer email="markusgft@gmail.com">Markus Giftthaler</maintainer>
   <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
-  <license>Apache v2</license>
+  <license>BSD-2</license>
   <buildtool_depend>catkin</buildtool_depend>
   
 </package>
