@@ -1,0 +1,26 @@
+# This config file for Travis CI utilizes ros-industrial/industrial_ci package.
+# For more info for the package, see https://github.com/ros-industrial/industrial_ci/blob/master/README.rst
+sudo: required 
+dist: xenial
+services:
+  - docker
+language: generic
+compiler:
+  - clang
+notifications:
+  email:
+    recipients:
+      - markusgft@gmail.com
+env:
+  matrix:
+    - ROS_DISTRO="kinetic"  ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu NOT_TEST_INSTALL=true
+    - ROS_DISTRO="kinetic"  ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu NOT_TEST_INSTALL=true
+    - ROS_DISTRO="kinetic"  PRERELEASE=true
+matrix:
+  allow_failures:
+    - env: ROS_DISTRO="kinetic"  PRERELEASE=true
+install:
+  - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
+script:
+  - source .ci_config/travis.sh
+#  - source ./travis.sh  # Enable this when you have a package-local script 
