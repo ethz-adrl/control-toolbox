@@ -26,8 +26,6 @@ before_install:
    #install lapack
   - sudo apt-get update
   - sudo apt-get install liblapack-dev
-   #install kindr
-  - git clone https://github.com/ANYbotics/kindr.git
    #install ros kinetic
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
@@ -47,10 +45,11 @@ install:
   - mkdir -p ~/catkin_ws/src
   - cd ~/catkin_ws
   - catkin init
-  - source devel/setup.bash
   # Add the package under integration to the workspace using a symlink.
   - cd ~/catkin_ws/src
   - ln -s $CI_SOURCE_PATH .
+  #install kindr
+  - git clone https://github.com/ANYbotics/kindr.git
 
 # Install all dependencies, using wstool first and rosdep second.
 # wstool looks for a ROSINSTALL_FILE defined in the environment variables.
