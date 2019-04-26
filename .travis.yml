@@ -1,0 +1,33 @@
+# This config file for Travis CI utilizes ros-industrial/industrial_ci package.
+# For more info for the package, see https://github.com/ros-industrial/industrial_ci/blob/master/README.rst
+sudo: required 
+dist: xenial
+services:
+  - docker
+language: c++
+compiler:
+  - clang
+cache:
+  directories:
+  - $HOME/.ccache
+notifications:
+  email:
+    recipients:
+      - markusgft@gmail.com
+env:
+  global:
+    - CCACHE_DIR=$HOME/.ccache # enables C/C++ caching
+  matrix:
+    - ROS_DISTRO="kinetic"
+    #- ROS_DISTRO="melodic"  
+matrix:
+  allow_failures:
+    - env: ROS_DISTRO="kinetic"  PRERELEASE=true
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install liblapack-dev
+install:
+  - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
+script:
+  - source .ci_config/travis.sh
+#  - source ./travis.sh  # Enable this when you have a package-local script 
