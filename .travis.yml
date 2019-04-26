@@ -23,6 +23,9 @@ env:
 matrix:
   allow_failures:
     - env: ROS_DISTRO="kinetic"  PRERELEASE=true
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install liblapack-dev
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
