@@ -26,6 +26,7 @@ matrix:
 before_install:
   - sudo apt-get update
   - sudo apt-get install liblapack-dev
+  - git clone https://github.com/ANYbotics/kindr.git
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
