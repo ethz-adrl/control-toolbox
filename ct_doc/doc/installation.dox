@@ -29,14 +29,13 @@ library versions as provided in the package sources.
 The following dependencies and bindings are optional but can help to enhance the functionality or performance of the CT
 
  - <a href="http://www.netlib.org/lapack/">lapack</a> (enables Schur method as an alternative to iterative method in ct::optcon::LQR)
+ \code{.sh} $ sudo apt-get install liblapack-dev \endcode
 
  - <a href="https://clang.llvm.org/">clang</a> compiler (faster compilation for large linear models), install from command-line via
  \code{.sh} $ sudo apt-get install clang \endcode
  and possibly replace `clang` with a more specific version, e.g. `clang-3.8`.
  Please make sure that the `clang` and `clang++` commands are in your path.
  You may need to create a symbolic link in `/usr/bin` or use a bash alias.
-
- - <a href="http://wiki.ros.org/indigo">ROS Indigo</a> or <a href="http://wiki.ros.org/kinetic">Kinetic</a> (for ROS bindings, visualization and extended examples), see <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_nodes</a>, <a href="../../../../ct_ros/ct_ros_nodes/doc/html/index.html">ct_ros_msgs</a>
 
  - <a href="https://projects.coin-or.org/Ipopt">IPOPT</a> or <a href="http://www.sbsi-sol-optimize.com/asp/sol_product_snopt.htm">SNOPT</a>
   (for ct::optcon::SnoptSolver and ct::optcon::IpoptSolver as used by ct::optcon::DMS)

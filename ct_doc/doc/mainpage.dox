@@ -6,7 +6,7 @@
 
 \section ct1 Control Toolbox
 
-This is the ADRL Control Toolbox ('CT'), an open-source C++ library for efficient modelling, control, 
+The Control Toolbox ('CT'), an open-source C++ library for efficient modelling, control, 
 estimation, trajectory optimization and model predictive control.
 The CT is applicable to a broad class of dynamic systems, but features additional modelling tools specially designed for robotics.
 This page outlines its general concept, its major building blocks and highlights selected application examples.
@@ -47,7 +47,7 @@ The CT was designed with the following features in mind:
     - all algorithm flavors and solver backends are available through simple configuration files.
 
 
-The CT is hosted on bitbucket: <a href="https://bitbucket.org/adrlab/ct" target="_blank">https://bitbucket.org/adrlab/ct</a>
+The CT is hosted on github: <a href="https://github.com/ethz-adrl/control-toolbox" target="_blank">https://github.com/ethz-adrl/control-toolbox</a>
 
 
 
@@ -212,11 +212,6 @@ The four different main modules are detailed in the following.
  - <a href="../../../ct_models/doc/html/index.html">quick link to ct_models</a>
  
 
-\section source_code Source Code
-
-The source code is available at <a href="https://bitbucket.org/adrlab/ct" target="_blank">https://bitbucket.org/adrlab/ct</a>
-
-Examples for interfacing with ROS and advanced application examples are available at <a href="https://bitbucket.org/adrlab/ct_ros/src/master/" target="_blank">ct_ros</a>.
 
 \section gs How to use the Control Toolbox
 
@@ -226,15 +221,15 @@ To get started with the control toolbox, please see \ref getting_started "Gettin
 \section contact Support
 
 For any questions, issues or other troubleshooting please either
-- create an issue: https://bitbucket.org/adrlab/ct/issues
+- create an issue: https://github.com/ethz-adrl/control-toolbox/issues
 - contact the devs: control-toolbox-dev@googlegroups.com
 
 
 \section ct_doc_acknowledgement Acknowledgements
 
 \subsection contribs Contributors
- - Michael Neunert
  - Markus Giftthaler
+ - Michael Neunert
  - Markus Stäuble
  - Farbod Farshidian
  - Diego Pardo
@@ -243,12 +238,11 @@ For any questions, issues or other troubleshooting please either
  - Ruben Grandia
  - Hamza Merzic
  
-\subsection lead_overview Project Lead and Maintenance 
- - Michael Neunert, neunertm (at) gmail (dot) com
+\subsection lead_overview Maintenance 
  - Markus Giftthaler, markusgft (at) gmail (dot) com
 
-\subsection funding Funding
-This software has been developed at the <a href="http://www.adrl.ethz.ch" target="_blank">Agile & Dexterous Robotics Lab</a> 
+\subsection funding Funding 2014-2018
+The core of this software has been developed at the <a href="http://www.adrl.ethz.ch" target="_blank">Agile & Dexterous Robotics Lab</a> 
 at <a href="http://www.ethz.ch/en" target="_blank">ETH Zurich</a>, Switzerland between 2014 and 2018.
 During that time, development has been made possible through financial support from the <a href="http://www.snf.ch/en/" target="_blank">Swiss National Science Foundation (SNF)</a> 
 through a SNF Professorship award to Jonas Buchli and the National Competence Centers in Research (NCCR) 
