@@ -1,17 +1,17 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.3)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
-project (ct_core)
+project(ct_core VERSION 3.0.0 LANGUAGES CXX)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -std=c++14 -Wall -Wfatal-errors")
 SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++14 -Wall -Wfatal-errors")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-find_package(catkin REQUIRED)
+#find_package(catkin REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS REQUIRED)
 
@@ -42,11 +42,11 @@ else()
 endif()
 
 include_directories(
-  ${BOOST_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIR}
-  include
-  include/external
+    ${BOOST_INCLUDE_DIRS}
+#    ${catkin_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIR}
+    include
+    include/external
 )
 
 ## dummy prespec libs
@@ -61,20 +61,20 @@ endif(USE_PRESPEC)
 #used later for clang-tidy
 set(INC_DIRS ${BOOST_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/include/external" ${EIGEN3_INCLUDE_DIR})
 
-catkin_package(
-   INCLUDE_DIRS
-        ${BOOST_INCLUDE_DIRS}
-        include
-        include/external
-        examples
-        ${EIGEN3_INCLUDE_DIR}
-   LIBRARIES
-        ct_core
-        dl #required for gcc-compatibility
-        ${PRESPEC_LIB_NAMES}
-   DEPENDS
-        EIGEN3
-)
+#catkin_package(
+#   INCLUDE_DIRS
+#        ${BOOST_INCLUDE_DIRS}
+#        include
+#        include/external
+#        examples
+#        ${EIGEN3_INCLUDE_DIR}
+#   LIBRARIES
+#        ct_core
+#        dl #required for gcc-compatibility
+#        ${PRESPEC_LIB_NAMES}
+#   DEPENDS
+#        EIGEN3
+#)
 
 set(CODEGEN_TEMPLATE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/templates")
 set(CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/generated")
@@ -97,58 +97,58 @@ if(BUILD_EXAMPLES)
     add_executable(ex_MasspointIntegration examples/MasspointIntegration.cpp)
 endif()
 
-catkin_add_gtest(NoiseTest test/NoiseTest.cpp)
-target_link_libraries(NoiseTest ${catkin_LIBRARIES})
 
-catkin_add_gtest(SecondOrderSystemTest test/SecondOrderSystemTest.cpp)
-target_link_libraries(SecondOrderSystemTest ${catkin_LIBRARIES})
+###########
+# TESTING #
+###########
+option( "Build the tests" ON)
+if(PACKAGE_TESTS)
+    find_package(GTest QUIET)
+    enable_testing()
+    #add_subdirectory(test)
+endif()
 
-# This test is not required to link against ${PRESPEC_LIB_NAMES} as it is not using prespec. Here we ensure that linking against it does not fail.
-catkin_add_gtest(IntegrationTest test/integration/IntegrationTest.cpp)
-target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
+#macro for conveniently adding tests
+macro(package_add_test TESTNAME)
+    add_executable(${TESTNAME} ${ARGN})
+    target_link_libraries(${TESTNAME} gtest gtest_main ct_core)
+    add_test(NAME ${TESTNAME} COMMAND ${TESTNAME})
+    set_target_properties(${TESTNAME} PROPERTIES FOLDER test)
+endmacro()
 
-catkin_add_gtest(IntegratorComparison test/integration/IntegratorComparison.cpp)
-target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
+package_add_test(NoiseTest test/NoiseTest.cpp)
+#package_add_test(SecondOrderSystemTest test/SecondOrderSystemTest.cpp)
+#package_add_test(IntegrationTest test/integration/IntegrationTest.cpp)
+#package_add_test(IntegratorComparison test/integration/IntegratorComparison.cpp)
+#package_add_test(SymplecticIntegrationTest test/integration/SymplecticIntegrationTest.cpp)
+#package_add_test(SystemDiscretizerTest test/integration/SystemDiscretizerTest.cpp)
+#package_add_test(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
+#package_add_test(InterpolationTest test/InterpolationTest.cpp)
+#package_add_test(DiscreteArrayTest test/DiscreteArrayTest.cpp)
+#package_add_test(DiscreteTrajectoryTest test/DiscreteTrajectoryTest.cpp)
 
-catkin_add_gtest(SymplecticIntegrationTest test/integration/SymplecticIntegrationTest.cpp)
-target_link_libraries(SymplecticIntegrationTest ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(SystemDiscretizerTest test/integration/SystemDiscretizerTest.cpp)
-target_link_libraries(SystemDiscretizerTest ${catkin_LIBRARIES} ct_core)
-
-add_executable(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
-target_link_libraries(SensitivityTest ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(InterpolationTest test/InterpolationTest.cpp)
-target_link_libraries(InterpolationTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(DiscreteArrayTest test/DiscreteArrayTest.cpp)
-target_link_libraries(DiscreteArrayTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(DiscreteTrajectoryTest test/DiscreteTrajectoryTest.cpp)
-target_link_libraries(DiscreteTrajectoryTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(LinspaceTest test/LinspaceTest.cpp)
-target_link_libraries(LinspaceTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(AutoDiffLinearizerTest test/AutoDiffLinearizerTest.cpp)
-target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} ct_core pthread)
-
-catkin_add_gtest(SwitchingTest test/switching/SwitchingTest.cpp)
-target_link_libraries(SwitchingTest ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(SwitchedControlledSystemTest test/switching/SwitchedControlledSystemTest.cpp)
-target_link_libraries(SwitchedControlledSystemTest ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(SwitchedDiscreteControlledSystemTest test/switching/SwitchedDiscreteControlledSystemTest.cpp)
-target_link_libraries(SwitchedDiscreteControlledSystemTest ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(MatrixInversionTest test/math/MatrixInversionTest.cpp)
-target_link_libraries(MatrixInversionTest ${catkin_LIBRARIES})
+# todo add the remaining tests
+#catkin_add_gtest(LinspaceTest test/LinspaceTest.cpp)
+#target_link_libraries(LinspaceTest ${catkin_LIBRARIES})
+#
+#catkin_add_gtest(AutoDiffLinearizerTest test/AutoDiffLinearizerTest.cpp)
+#target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} ct_core pthread)
+#
+#catkin_add_gtest(SwitchingTest test/switching/SwitchingTest.cpp)
+#target_link_libraries(SwitchingTest ${catkin_LIBRARIES} ct_core)
+#
+#catkin_add_gtest(SwitchedControlledSystemTest test/switching/SwitchedControlledSystemTest.cpp)
+#target_link_libraries(SwitchedControlledSystemTest ${catkin_LIBRARIES} ct_core)
+#
+#catkin_add_gtest(SwitchedDiscreteControlledSystemTest test/switching/SwitchedDiscreteControlledSystemTest.cpp)
+#target_link_libraries(SwitchedDiscreteControlledSystemTest ${catkin_LIBRARIES} ct_core)
+#
+#catkin_add_gtest(MatrixInversionTest test/math/MatrixInversionTest.cpp)
+#target_link_libraries(MatrixInversionTest ${catkin_LIBRARIES})
 
 # Codegen tests cannot run in parallel. Thus we build and run all codegen tests in one
-catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
-target_link_libraries(CodegenTests ${catkin_LIBRARIES} ct_core dl pthread)
+#catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
+#target_link_libraries(CodegenTests ${catkin_LIBRARIES} ct_core dl pthread)
 
 ## example for using the build-in plotting tool
 add_executable(plotTest test/plot/plotTest.cpp)
@@ -168,6 +168,37 @@ if(USE_PRESPEC)
     catkin_add_gtest(IntegratorComparisonPrespec test/integration/IntegratorComparisonPrespec.cpp)
     target_link_libraries(IntegratorComparisonPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
 endif(USE_PRESPEC)
+
+
+install(DIRECTORY include/ct/core DESTINATION include/ct)
+
+
+# 1- local build #
+
+# Register the local build in case one doesn't use "make install"
+export(PACKAGE ct_core)
+
+# Create variable for the local build tree
+get_property(ct_core_include_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+
+# Configure config file for local build tree
+configure_file(ct_coreConfig.cmake.in
+  "${PROJECT_BINARY_DIR}/ct_coreConfig.cmake" @ONLY)
+
+# 2- installation build #
+
+# Change the include location for the case of an install location
+set(ct_core_include_dirs ${CMAKE_INSTALL_PREFIX}/include ${EIGEN_INCLUDE_DIR})
+
+
+# We put the generated file for installation in a different repository (i.e., ./CMakeFiles/)
+configure_file(ct_coreConfig.cmake.in
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/ct_coreConfig.cmake" @ONLY)
+
+install(FILES
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/ct_coreConfig.cmake"
+  DESTINATION share/ct_core/cmake COMPONENT dev)
+
 
 
 ## build doxygen documentation

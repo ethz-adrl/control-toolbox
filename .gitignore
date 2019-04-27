@@ -26,3 +26,4 @@ solution.mat
 .settings/
 *.aux
 *.doc*
+*.vscode
