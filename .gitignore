@@ -24,3 +24,5 @@ solution.mat
 *.tmp
 *.mat
 .settings/
+*.aux
+*.doc*
