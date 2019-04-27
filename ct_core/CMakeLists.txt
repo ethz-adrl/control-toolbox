@@ -44,12 +44,9 @@ endif()
 include_directories(
   ${BOOST_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
-)
-
-include_directories (
-    include
-    include/external
-    ${EIGEN3_INCLUDE_DIR}
+  ${EIGEN3_INCLUDE_DIR}
+  include
+  include/external
 )
 
 ## dummy prespec libs
@@ -72,13 +69,12 @@ catkin_package(
         examples
         ${EIGEN3_INCLUDE_DIR}
    LIBRARIES
-       dl
-       ct_core
-       ${PRESPEC_LIB_NAMES}
+        ct_core
+        dl #required for gcc-compatibility
+        ${PRESPEC_LIB_NAMES}
    DEPENDS
-       EIGEN3
+        EIGEN3
 )
-
 
 set(CODEGEN_TEMPLATE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/templates")
 set(CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/generated")

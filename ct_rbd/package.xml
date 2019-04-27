@@ -10,8 +10,6 @@
   
   <buildtool_depend>catkin</buildtool_depend>
   
-  <depend>roscpp</depend>
-  <depend>ct_core</depend>
   <depend>ct_optcon</depend>
   <depend>cmake_modules</depend>
   <depend>kindr</depend>

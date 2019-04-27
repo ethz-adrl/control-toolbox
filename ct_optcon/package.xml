@@ -1,17 +1,20 @@
 <package format="2">
   <name>ct_optcon</name>
+  
   <version>0.3.0</version>
+  
   <description>Optimal Control package of the ADRL Control Toolbox</description>
+  
+  <license>BSD-2</license>
+  
   <maintainer email="markusgft@gmail.com">Markus Giftthaler</maintainer>  
   <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
-  <license>BSD-2</license>
 
   <author>Markus Giftthaler</author>
   <author>Michael Neunert</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>roscpp</depend>
   <depend>ct_core</depend>
   <depend>cmake_modules</depend>
 
