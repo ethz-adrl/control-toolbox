@@ -197,7 +197,7 @@ configure_file(ct_coreConfig.cmake.in
 
 install(FILES
   "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/ct_coreConfig.cmake"
-  DESTINATION share/ct_core/cmake COMPONENT dev)
+  DESTINATION share/ct/core/cmake COMPONENT dev)
 
 
 
