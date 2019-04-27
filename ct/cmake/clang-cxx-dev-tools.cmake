@@ -53,14 +53,14 @@ find_program(CLANG_FORMAT_BIN "clang-format")
 if(NOT CLANG_FORMAT_BIN)
   find_program(CLANG_FORMAT_BIN "clang-format-3.9")
 endif()
-message(WARNING "CLANG FORMAT IS: " ${CLANG_FORMAT_BIN})
+message(STATUS "CLANG FORMAT IS: " ${CLANG_FORMAT_BIN})
 if(NOT CLANG_FORMAT_BIN)
-    message (WARNING "CLANG-FORMAT not found. You can ignore this message if you are not a CT developer.")
+    message (STATUS "CLANG-FORMAT not found. You can ignore this message if you are not a CT developer.")
     add_custom_target(clang-format
         COMMAND ${CMAKE_COMMAND} -E echo_append "clang-format executable not found"
         VERBATIM)
 else()
-  message (WARNING "FOUND CLANG-FORMAT")
+  message (STATUS "FOUND CLANG-FORMAT")
   add_custom_target(
     clang-format
     COMMAND ${CLANG_FORMAT_BIN}
@@ -94,13 +94,13 @@ function(ct_configure_clang_tidy TIDY_INC_DIRS)
     if(NOT CLANG_TIDY_BIN)
       find_program(CLANG_TIDY_BIN "clang_tidy")
     endif()
-        message(${CLANG_TIDY_BIN})
+        message(STATUS ${CLANG_TIDY_BIN})
     if(NOT CLANG_TIDY_BIN)
         add_custom_target(clang-tidy
             COMMAND ${CMAKE_COMMAND} -E echo_append "clang-tidy executable not found"
             VERBATIM)
     else()
-        message (WARNING "FOUND CLANG-TIDY")
+        message (STATUS "FOUND CLANG-TIDY")
         set(CLANG_TIDY_COMMAND COMMAND ${CLANG_TIDY_BIN} ${ALL_CXX_SOURCE_FILES} -config='' -header-filter=\".*\\/ct\\/.*\" -- -std=c++11 -fopenmp ${CURRENT_INC_DIRS})
             
         add_custom_target(

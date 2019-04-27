@@ -10,7 +10,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../ct_optcon/cmake/externalSolvers.cmake)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++14 -Wall -Wno-unknown-pragmas")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-find_package(catkin REQUIRED ct_core ct_optcon)
+find_package(catkin REQUIRED ct_optcon)
 find_package(kindr)
 
 
@@ -34,7 +34,6 @@ catkin_package(
   LIBRARIES
     ${PRESPEC_LIB_NAMES}
   CATKIN_DEPENDS
-    ct_core
     ct_optcon
     kindr
 )

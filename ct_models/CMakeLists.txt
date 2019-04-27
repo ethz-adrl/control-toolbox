@@ -60,7 +60,7 @@ endif(USE_PRESPEC)
 
 ################ HyQ #################
 add_executable(HyQLinearizationCodgen src/HyQ/codegen/HyQLinearizationCodgen.cpp)
-target_link_libraries(HyQLinearizationCodgen ${catkin_LIBRARIES} )
+target_link_libraries(HyQLinearizationCodgen ${catkin_LIBRARIES})
 
 if (BUILD_HYQ_FULL)
   if (NOT USE_CLANG)

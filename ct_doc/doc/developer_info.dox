@@ -10,13 +10,6 @@ to align the development with ongoing activities.
 \section Code Formatting
 We support clang-format and provide a style template to automatically format the source code. 
 Please refer to the clang-format style sheet in the package root directory for our conventions. 
-Or simply rely on clang-format to do the formatting for you.
-
-Note for developers using the *Eclipse IDE*: you can conveniently integrate clang-format (and our .clang-format 
-configuration file) in your project using the "CppStyle" plugin (see http://www.cppstyle.com/ for 
-detailed information). To automatically format the code according to ct-style, just mark the source-code 
-and press *Ctrl+Shift+f*.
-
 
 Example command for running clang-tidy:
 \code
