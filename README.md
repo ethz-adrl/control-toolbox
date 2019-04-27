@@ -6,7 +6,7 @@
 This is the Control Toolbox, an efficient C++ library for control, estimation, optimization and motion planning in robotics.
 
 Link to the wiki, [quickstart!](https://github.com/ethz-adrl/control-toolbox/wiki/Quickstart) \
-Find the detailed documentation [here](https://adrlab.bitbucket.io/ct).
+Find the detailed documentation [here](https://ethz-adrl.github.io/ct/).
 
 ## Earlier Versions
 
