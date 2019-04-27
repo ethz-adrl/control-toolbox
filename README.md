@@ -1,5 +1,5 @@
 # Control Toolbox
-![Travis (.org)](https://img.shields.io/travis/ethz-adrl/control-toolbox.svg?style=popout-square)
+![Travis (.org) branch](https://img.shields.io/travis/ethz-adrl/control-toolbox/v3.0-devel.svg?style=popout-square)
 ![GitHub top language](https://img.shields.io/github/languages/top/ethz-adrl/control-toolbox.svg?style=social)
 ![GitHub](https://img.shields.io/github/license/ethz-adrl/control-toolbox.svg?style=social)
 
