@@ -68,7 +68,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h.in ${CM
 ## compile default library elements
 add_library(ct_core
    src/core/plot/plot.cpp
-   src/core/internal/autodiff/SparsityPattern.cpp
 )
 target_link_libraries(ct_core dl ${PYTHON_LIBRARY})
 
