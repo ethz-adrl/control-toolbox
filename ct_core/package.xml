@@ -4,8 +4,17 @@
   <description>
     Control toolbox - core module.
   </description>
+  <author>Markus Giftthaler</author>
+  <author>Michael Neunert</author>
+  <author>Markus Stäuble</author>
   <maintainer email="markusgft@gmail.com">Markus Giftthaler</maintainer>
-  <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
   <license>BSD-2</license>
-  <buildtool_depend>catkin</buildtool_depend>
+
+  <buildtool_depend>cmake</buildtool_depend>
+  <depend>eigen</depend>
+  <exec_depend>catkin</exec_depend>  <!-- ROS compatibility-->
+
+  <export>    <!-- Specify that this is not a ROS package-->
+    <build_type>cmake</build_type>
+  </export>
 </package>

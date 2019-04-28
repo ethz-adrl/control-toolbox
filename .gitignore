@@ -27,3 +27,5 @@ solution.mat
 *.aux
 *.doc*
 *.vscode
+
+*/build/*

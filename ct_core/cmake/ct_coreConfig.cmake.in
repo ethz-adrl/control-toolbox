@@ -1,11 +1,10 @@
-# - Config file for the kindr package
+# cmake-onfig file for the ct_core package
 # It defines the following variables
-#  kindr_INCLUDE_DIRS - include directories for kindr
+# ct_core_INCLUDE_DIRS - include directories for ct_core
  
-# Compute paths
 get_filename_component(ct_core_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 set(ct_core_INCLUDE_DIRS "@ct_core_include_dirs@")
 
-# This causes catkin_simple to link against these libraries
+# Required for catkin_simple to link against these libraries
 set(ct_core_FOUND_CATKIN_PROJECT true)
 
