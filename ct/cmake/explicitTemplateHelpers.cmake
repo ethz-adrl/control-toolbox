@@ -92,7 +92,7 @@ function(ct_configureFiles ConfigDir STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCA
         set(outputFile "${outputFile}-${STATE_DIM_PRESPEC}-${CONTROL_DIM_PRESPEC}-${SCALAR_PRESPEC_CLEAN}-${POS_DIM_PRESPEC}-${VEL_DIM_PRESPEC}.cpp")
         #message(WARNING "configuring file \n ${file} to \n ${outputFile} ")
         set(DOUBLE_OR_FLOAT false)
-        if(SCALAR_PRESPEC STREQUAL "double" OR SCALAR_PRESPEC STREQUAL "float")
+        if((SCALAR_PRESPEC MATCHES "double") OR (SCALAR_PRESPEC MATCHES "float")) #STREQUAL did not work
             set(DOUBLE_OR_FLOAT true)
         endif()
         configure_file(${file} ${outputFile})
@@ -112,7 +112,7 @@ function(ct_add_explicit_template_libs)
       add_library(${lib_name}
            ${${lib_name}_SRCS}
       )
-      target_link_libraries(${lib_name} ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
+      target_link_libraries(${lib_name} ${PYTHON_LIBRARY})
     endforeach()
 endfunction()
 

@@ -6,7 +6,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <limits>
-#include <ct/core/core.h>
 
 namespace ct {
 namespace core {

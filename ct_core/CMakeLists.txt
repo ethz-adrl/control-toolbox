@@ -91,10 +91,10 @@ if(BUILD_EXAMPLES)
     add_executable(ex_DampedOscillatorCustomController examples/DampedOscillatorCustomController.cpp)
     add_executable(ex_DampedOscillator examples/DampedOscillator.cpp)
     add_executable(ex_MasspointIntegration examples/MasspointIntegration.cpp)
+    
+    add_executable(plotTest test/plot/plotTest.cpp)
+    target_link_libraries(plotTest ct_core)
 endif()
-
-add_executable(plotTest test/plot/plotTest.cpp)
-target_link_libraries(plotTest ct_core)
 
 if(QWT_ENABLED)
     add_executable(plotQwtTest test/plot/plotQwtTest.cpp)

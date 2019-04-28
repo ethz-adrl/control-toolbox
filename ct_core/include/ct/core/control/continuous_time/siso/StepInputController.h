@@ -5,8 +5,6 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/core/core.h>
-
 namespace ct {
 namespace core {
 
@@ -66,5 +64,5 @@ public:
 private:
     Parameters parameters_;  //! parameters of the step function
 };
-}
-}
+}  // namespace core
+}  // namespace ct

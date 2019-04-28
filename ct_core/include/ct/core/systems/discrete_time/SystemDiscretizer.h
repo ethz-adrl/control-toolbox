@@ -7,6 +7,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include "DiscreteControlledSystem.h"
 #include "../continuous_time/ControlledSystem.h"
+#include <ct/core/control/continuous_time/ConstantController.h>
 
 #include <ct/core/integration/Integrator.h>
 #include <ct/core/integration/IntegratorSymplectic.h>
