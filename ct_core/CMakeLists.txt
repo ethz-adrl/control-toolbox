@@ -23,6 +23,7 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
     include
     include/external
+    examples
 )
 
 
@@ -46,6 +47,7 @@ find_package(PythonLibs QUIET)
 if (PYTHONLIBS_FOUND)
    message(STATUS "Python found")
    include_directories(${PYTHON_INCLUDE_DIRS})
+   set(PLOTTING_ENABLED true)
    add_definitions(-DPLOTTING_ENABLED)
 else()
    message(STATUS "Python not found")
@@ -116,6 +118,10 @@ endif()
 # INSTALLATION  #
 #################
 
+# for correct libraries locations across platforms
+include(GNUInstallDirs) 
+
+#copy the header files
 install(DIRECTORY include/ct/core DESTINATION include/ct)
 
 ### 1- local build ###
@@ -127,7 +133,6 @@ export(PACKAGE ct_core)
 get_property(ct_core_include_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 
 # Configure config file for local build tree
-message(WARNING ${PROJECT_BINARY_DIR})
 configure_file(cmake/ct_coreConfig.cmake.in "${PROJECT_BINARY_DIR}/ct_coreConfig.cmake" @ONLY)
 
 ### 2- installation build ###
@@ -140,6 +145,15 @@ configure_file(cmake/ct_coreConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_
 
 install(FILES "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/ct_coreConfig.cmake"
     DESTINATION share/ct/core/cmake COMPONENT dev)
+
+install(
+    TARGETS ${PROJECT_NAME}
+    EXPORT ${PROJECT_NAME}-targets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+
 
 
 #################

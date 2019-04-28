@@ -100,7 +100,7 @@ TEST(LQRTest, quadTest)
     ASSERT_LT((K - Kiterative).array().abs().maxCoeff(), 1e-4);
 #endif
 
-    int nTests = 1000;
+    int nTests = 100;
 #ifdef CT_USE_LAPACK
     auto start1 = std::chrono::system_clock::now();
     for (int i = 0; i < nTests; i++)

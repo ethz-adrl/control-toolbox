@@ -1,0 +1,91 @@
+
+#macro for conveniently adding tests and linking against correct libs
+macro(package_add_test TESTNAME)
+    add_executable(${TESTNAME} ${ARGN})
+    target_link_libraries(${TESTNAME} 
+        gtest 
+        gtest_main  
+        ${PRESPEC_LIB_NAMES}
+        ${MATLAB_LIBS} 
+        ${HPIPM_LIBS}
+        ${LAPACK_LIBS}
+        ${NLP_LIBS}
+        )
+    add_test(NAME ${TESTNAME} COMMAND ${TESTNAME})
+    set_target_properties(${TESTNAME} PROPERTIES FOLDER test)
+endmacro()
+
+
+if(BUILD_TESTS)
+
+    ## create directory includes
+    get_filename_component(NLOC_TEST_DIR "nloc" ABSOLUTE)
+    configure_file(nloc/nloc_test_dir.h.in test/nloc/nloc_test_dir.h)
+    include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/nloc)
+
+    get_filename_component(COSTFUNCTION_TEST_DIR "costfunction" ABSOLUTE)
+    configure_file(costfunction/costfunction_test_dir.h.in test/costfunction/costfunction_test_dir.h)
+    include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/costfunction)
+
+    get_filename_component(MPC_TEST_MAT_DIR "mpc/matfiles" ABSOLUTE)
+    configure_file(mpc/mpcTestSettings.h.in test/mpc/mpcTestSettings.h)
+    include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/mpc)
+
+    get_filename_component(DMS_OSC_TEST_MAT_DIR "dms/oscillator/matfiles" ABSOLUTE)
+    configure_file(dms/oscillator/oscDMSTest_settings.h.in test/dms/oscillator/oscDMSTest_settings.h)
+    include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/dms/oscillator)
+
+    
+    ## some legacy executables (TODO: make example or make test)
+    #add_executable(SymplecticTest nloc/SymplecticTest.cpp)
+    #target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+    
+    add_executable(matFilesGenerator dms/oscillator/matfiles/matFilesGenerator.cpp) # todo convert to proper test
+    target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
+    
+    
+    ## tests
+    package_add_test(LqrTest lqr/LqrTest.cpp)
+    package_add_test(iLQRTest nloc/nonlinear/iLQRTest.cpp)
+    package_add_test(LinearSystemTest nloc/LinearSystemTest.cpp)
+    package_add_test(NonlinearSystemTest nloc/nonlinear/NonlinearSystemTest.cpp)
+    package_add_test(NLOC_MPCTest mpc/NLOC_MPCTest.cpp)
+    #package_add_test(SymplecticTest nloc/SymplecticTest.cpp) # make proper test
+
+    package_add_test(constraint_comparison constraint/ConstraintComparison.cpp)
+    package_add_test(constraint_test constraint/ConstraintTest.cpp)
+    package_add_test(SparseBoxConstraintTest constraint/SparseBoxConstraintTest.cpp)
+    
+    package_add_test(CostFunctionTests costfunction/CostFunctionTests.cpp)
+    package_add_test(LoadFromFileTest costfunction/LoadFromFileTest.cpp)
+    
+    package_add_test(dms_test dms/oscillator/oscDMSTest.cpp)
+    package_add_test(dms_test_all_var dms/oscillator/oscDMSTestAllVariants.cpp)
+    package_add_test(system_interface_test system_interface/SystemInterfaceTest.cpp)
+    
+    if(HPIPM)
+        ## some legacy executables (TODO: make example or make test)
+        add_executable(LQOCSolverTiming solver/linear/LQOCSolverTiming.cpp)
+        target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+        
+        package_add_test(LQOCSolverTest solver/linear/LQOCSolverTest.cpp)
+        package_add_test(ConstrainedLQOCSolverTest solver/linear/ConstrainedLQOCSolverTest.cpp)
+        package_add_test(ConstrainedNLOCTest nloc/constrained/ConstrainedNLOCTest.cpp)
+        package_add_test(LinearSystemSolverComparison nloc/LinearSystemSolverComparison.cpp)
+    endif()
+    
+    
+    ## additional prespec tests
+    if(USE_PRESPEC)    
+        package_add_test(LqrTestPrespec lqr/LqrTestPrespec.cpp)
+        package_add_test(LinearSystemTestPrespec nloc/LinearSystemTestPrespec.cpp)    
+        package_add_test(constraint_test_prespec constraint/ConstraintTestPrespec.cpp)
+        package_add_test(NLOC_MPCTest_prespec mpc/NLOC_MPCTest_prespec.cpp)
+        package_add_test(system_interface_test_prespec system_interface/SystemInterfaceTest-Prespec.cpp)
+        #add_executable(SymplecticTestPrespec nloc/SymplecticTestPrespec.cpp)
+        if(HPIPM)
+            package_add_test(LQOCSolverTestPrespec solver/linear/LQOCSolverTestPrespec.cpp)
+        endif(HPIPM)
+    endif(USE_PRESPEC)
+    
+endif() # build tests

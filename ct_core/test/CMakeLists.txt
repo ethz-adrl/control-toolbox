@@ -2,7 +2,7 @@
 #macro for conveniently adding tests and linking against correct libs
 macro(package_add_test TESTNAME)
     add_executable(${TESTNAME} ${ARGN})
-    target_link_libraries(${TESTNAME} gtest gtest_main ct_core ${PRESPEC_LIB_NAMES}) # todo this is ugly, can we make it an argument?
+    target_link_libraries(${TESTNAME} gtest gtest_main ct_core ${PRESPEC_LIB_NAMES})
     add_test(NAME ${TESTNAME} COMMAND ${TESTNAME})
     set_target_properties(${TESTNAME} PROPERTIES FOLDER test)
 endmacro()

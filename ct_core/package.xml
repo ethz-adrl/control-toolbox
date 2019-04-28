@@ -1,6 +1,6 @@
 <package format="2">
   <name>ct_core</name>
-  <version>0.3.0</version>
+  <version>3.0.0</version>
   <description>
     Control toolbox - core module.
   </description>
