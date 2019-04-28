@@ -30,8 +30,8 @@ if(BUILD_TESTS)
 
     ## unit tests for prespec libraries
     if(USE_PRESPEC)
-        package_add_test(IntegrationTestPrespec test/integration/IntegrationTestPrespec.cpp)
-        package_add_test(IntegratorComparisonPrespec test/integration/IntegratorComparisonPrespec.cpp)
+        package_add_test(IntegrationTestPrespec integration/IntegrationTestPrespec.cpp)
+        package_add_test(IntegratorComparisonPrespec integration/IntegratorComparisonPrespec.cpp)
     endif(USE_PRESPEC)
 
 endif() # build tests
