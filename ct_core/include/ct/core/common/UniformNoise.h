@@ -25,9 +25,7 @@ public:
 	 * @param mean the mean of the uniform distribution
 	 * @param r the half-width of the distribution
 	 */
-	UniformNoise(const double mean = 0.0, const double r = 1.0)
-        : mean_(mean), r_(r), rd_(), eng_(rd_()), distr_(mean-r, mean+r)
-    {}
+	UniformNoise(const double mean = 0.0, const double r = 1.0) : rd_(), eng_(rd_()), distr_(mean - r, mean + r) {}
 
     //! Scalar generator
     /*!
@@ -70,8 +68,6 @@ public:
 
 
 private:
-    double mean_;
-    double r_;
 
     std::random_device rd_;
     std::mt19937 eng_;
