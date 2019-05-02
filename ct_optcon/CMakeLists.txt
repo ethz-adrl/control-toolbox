@@ -174,7 +174,10 @@ endif()
 # INSTALLATION  #
 #################
 
-install(DIRECTORY include/ct/optcon DESTINATION include/optcon)
+# for correct libraries locations across platforms
+include(GNUInstallDirs) 
+
+install(DIRECTORY include/ct/optcon DESTINATION include/ct)
 
 ### 1- local build ###
 
@@ -185,13 +188,15 @@ export(PACKAGE ct_optcon)
 get_property(ct_optcon_include_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 
 # Configure config file for local build tree
-message(WARNING ${PROJECT_BINARY_DIR})
 configure_file(cmake/ct_optconConfig.cmake.in "${PROJECT_BINARY_DIR}/ct_optconConfig.cmake" @ONLY)
 
 ### 2- installation build ###
 
 # Change the include location for the case of an install location
-set(ct_core_include_dirs ${CMAKE_INSTALL_PREFIX}/include ${EIGEN_INCLUDE_DIR})
+set(ct_optcon_include_dirs 
+    ${CMAKE_INSTALL_PREFIX}/include 
+    ${ct_core_INCLUDE_DIRS}
+    )
 
 # We put the generated file for installation in a different repository (i.e., ./CMakeFiles/)
 configure_file(cmake/ct_optconConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/ct_optconConfig.cmake" @ONLY)
@@ -199,22 +204,8 @@ configure_file(cmake/ct_optconConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILE
 install(FILES "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/ct_optconConfig.cmake"
     DESTINATION share/ct/optcon/cmake COMPONENT dev)
 
-
+ 
 #################
 # DOCUMENTATION #
 #################
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-
-    set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_optcon.doxyfile)
-    set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
-
-    configure_file(${doxyfile_in} ${doxyfile} @ONLY)
-
-    add_custom_target(doc
-        COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
-        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc
-        COMMAND ${CMAKE_COMMAND} -E echo_append "API Documentation built in ${CMAKE_CURRENT_SOURCE_DIR}/doc"
-        VERBATIM)
-endif()
+add_subdirectory(doc)

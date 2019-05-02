@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.3)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
@@ -10,7 +10,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../ct_optcon/cmake/externalSolvers.cmake)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++14 -Wall -Wno-unknown-pragmas")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-find_package(catkin REQUIRED ct_optcon)
+find_package(catkin)
+find_package(ct_optcon)
 find_package(kindr)
 
 
@@ -39,7 +40,7 @@ catkin_package(
 )
 
 include_directories(
-  ${catkin_INCLUDE_DIRS}
+  ${ct_optcon_INCLUDE_DIRS}
   ${kindr_INCLUDE_DIRS}
   include/ct/rbd
   include/ct/rbd/robot/kinematics/ikfast
@@ -136,7 +137,7 @@ if(BUILD_WITH_IPOPT_SUPPORT)
 endif()
 
 add_executable(simpleArmTrajectoryTest src/SimpleArmTrajectoryGeneratorTest.cpp)
-target_link_libraries(simpleArmTrajectoryTest ${catkin_LIBRARIES})
+target_link_libraries(simpleArmTrajectoryTest ${catkin_LIBRARIES} ct_core ${PYTHON_LIBRARY}) #this is so bad. need to fix
 
 
 find_package(Doxygen)

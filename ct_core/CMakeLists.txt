@@ -15,7 +15,7 @@ SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 
 ## find and include required dependencies
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3)
 find_package(Boost COMPONENTS REQUIRED)
 
 include_directories(
@@ -137,7 +137,10 @@ configure_file(cmake/ct_coreConfig.cmake.in "${PROJECT_BINARY_DIR}/ct_coreConfig
 ### 2- installation build ###
 
 # Change the include location for the case of an install location
-set(ct_core_include_dirs ${CMAKE_INSTALL_PREFIX}/include ${EIGEN_INCLUDE_DIR})
+set(ct_core_include_dirs 
+    ${CMAKE_INSTALL_PREFIX}/include
+    ${EIGEN_INCLUDE_DIR}
+    )
 
 # We put the generated file for installation in a different repository (i.e., ./CMakeFiles/)
 configure_file(cmake/ct_coreConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/ct_coreConfig.cmake" @ONLY)
@@ -153,23 +156,19 @@ install(
     RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 
+#todo need to install prespec libs as well, as follows
+#install(
+ #   TARGETS ${PRESPEC_LIB_NAMES}
+  #  EXPORT ${PRESPEC_LIB_NAMES}-targets
+   # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   # LIBRARY 
+   #     DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   #     COMPONENT  ${PRESPEC_LIB_NAMES}
+   # RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   # )
 
 
 #################
 # DOCUMENTATION #
 #################
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-
-    set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_core.doxyfile)
-    set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
-
-    configure_file(${doxyfile_in} ${doxyfile} @ONLY)
-
-    add_custom_target(doc
-        COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
-        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc
-        COMMAND ${CMAKE_COMMAND} -E echo_append "API Documentation built in ${CMAKE_CURRENT_SOURCE_DIR}/doc"
-        VERBATIM)
-endif()
+add_subdirectory(doc)
