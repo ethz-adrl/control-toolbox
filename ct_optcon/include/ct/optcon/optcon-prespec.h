@@ -8,8 +8,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <ct/core/core-prespec.h>
 
-#include "costfunction/costfunction.hpp"
-#include "costfunction/costfunction-impl.hpp"  //temporary solution (todo)
+#include "costfunction/costfun.hpp"
+#include "costfunction/costfun-impl.hpp"  //temporary solution (todo)
 
 #include "filter/filter.h"
 #include "filter/filter-impl.h"  //temporary solution (todo)
