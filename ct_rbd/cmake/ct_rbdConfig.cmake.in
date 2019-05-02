@@ -1,0 +1,10 @@
+# cmake-onfig file for the ct_rbd package
+# It defines the following variables
+# ct_rbd_INCLUDE_DIRS - include directories for ct_rbd
+ 
+get_filename_component(ct_rbd_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(ct_rbd_INCLUDE_DIRS "@ct_rbd_include_dirs@")
+
+# Required for catkin_simple to link against these libraries
+set(ct_rbd_FOUND_CATKIN_PROJECT true)
+
