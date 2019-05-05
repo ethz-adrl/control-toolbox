@@ -64,7 +64,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h.in ${CM
 
 
 ## compile default library elements
-add_library(ct_core
+add_library(ct_core SHARED
    src/core/plot/plot.cpp
 )
 target_link_libraries(ct_core
@@ -126,6 +126,12 @@ include(GNUInstallDirs)
 #copy the header files
 install(DIRECTORY include/ct/core DESTINATION include/ct)
 
+## get all compile definitions registered so far and create variable
+get_directory_property( CompileDefs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS )
+foreach( d ${CompileDefs} )
+    set(ct_core_compile_definitions  ${ct_core_compile_definitions} -D${d} ) # recursively add compile definitions
+endforeach()
+
 ### 1- local build ###
 
 # Register the local build in case one doesn't use "make install"
@@ -134,11 +140,6 @@ export(PACKAGE ct_core)
 # Create variable for include dirs for the local build tree
 get_property(ct_core_include_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 
-## get all compile definitions registered so far and create variable
-get_directory_property( CompileDefs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS )
-foreach( d ${CompileDefs} )
-    set(ct_core_compile_definitions  ${ct_core_compile_definitions} -D${d} ) # recursively add compile definitions
-endforeach()
 
 # Configure config file for local build tree
 configure_file(cmake/ct_coreConfig.cmake.in "${PROJECT_BINARY_DIR}/ct_coreConfig.cmake" @ONLY)
@@ -165,6 +166,10 @@ install(
     )
 
 install (EXPORT ct_core DESTINATION ${CMAKE_INSTALL_PREFIX}/share/ct/core/cmake)
+
+
+# Install a Catkin 'package.xml' file.
+install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 
 #todo need to install prespec libs as well, as follows
 #install(

@@ -110,32 +110,32 @@ if(BUILD_EXAMPLES)
     set(CT_OPTCON_EXAMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/examples")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
 
-    #add_executable(ex_ConstraintOutput examples/ConstraintExampleOutput.cpp)
-    #target_link_libraries(ex_ConstraintOutput )
-    #
-    #add_executable(ex_LQR examples/LQR.cpp)
-    #target_link_libraries(ex_LQR ct_core dl ${LAPACK_LIBS})
-    #
-    #add_executable(ex_NLOC examples/NLOC.cpp)
-    #target_link_libraries(ex_NLOC ct_core  ${HPIPM_LIBS} ${MATLAB_LIBS})
-    #
-    #add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
-    #target_link_libraries(ex_NLOC_MPC  ${HPIPM_LIBS} ${MATLAB_LIBS})
-    #
-    #add_executable(ex_DMS examples/DMS.cpp)
-    #target_link_libraries(ex_DMS ct_core  ${NLP_LIBS})
+    add_executable(ex_ConstraintOutput examples/ConstraintExampleOutput.cpp)
+    target_link_libraries(ex_ConstraintOutput )
+    
+    add_executable(ex_LQR examples/LQR.cpp)
+    target_link_libraries(ex_LQR ct_core dl ${LAPACK_LIBS})
+    
+    add_executable(ex_NLOC examples/NLOC.cpp)
+    target_link_libraries(ex_NLOC ct_core  ${HPIPM_LIBS} ${MATLAB_LIBS})
+    
+    add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
+    target_link_libraries(ex_NLOC_MPC  ${HPIPM_LIBS} ${MATLAB_LIBS})
+    
+    add_executable(ex_DMS examples/DMS.cpp)
+    target_link_libraries(ex_DMS ct_core  ${NLP_LIBS})
 
     add_executable(ex_KalmanFiltering examples/KalmanFiltering.cpp)
     target_link_libraries(ex_KalmanFiltering ct_core)
 
-    #add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
-    #target_link_libraries(ex_KalmanDisturbanceFiltering ct_core )
-
-    #add_executable(ex_Nlp_2D examples/nlp/Nlp2D.cpp)
-    #target_link_libraries(ex_Nlp_2D  ${NLP_LIBS})
-    #
-    #add_executable(ex_Nlp_3D examples/nlp/Nlp3D.cpp)
-    #target_link_libraries(ex_Nlp_3D  ${NLP_LIBS})
+    add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
+    target_link_libraries(ex_KalmanDisturbanceFiltering ct_core )
+    
+    add_executable(ex_Nlp_2D examples/nlp/Nlp2D.cpp)
+    target_link_libraries(ex_Nlp_2D  ${NLP_LIBS})
+    
+    add_executable(ex_Nlp_3D examples/nlp/Nlp3D.cpp)
+    target_link_libraries(ex_Nlp_3D  ${NLP_LIBS})
 
     if(HPIPM)
         add_executable(ex_NLOC_boxConstrained examples/NLOC_boxConstrained.cpp)
@@ -194,6 +194,10 @@ configure_file(cmake/ct_optconConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILE
 
 install(FILES "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/ct_optconConfig.cmake"
     DESTINATION share/ct/optcon/cmake COMPONENT dev)
+
+
+# Install a Catkin 'package.xml' file.
+install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 
  
 #################
