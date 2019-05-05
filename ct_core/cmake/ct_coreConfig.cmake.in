@@ -2,8 +2,10 @@
 # It defines the following variables
 # ct_core_INCLUDE_DIRS - include directories for ct_core
  
-get_filename_component(ct_core_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 set(ct_core_INCLUDE_DIRS "@ct_core_include_dirs@")
+set(ct_core_COMPILE_DEFINITIONS "@ct_core_compile_definitions@")
+
+include(${CMAKE_INSTALL_PREFIX}/share/ct/core/cmake/ct_core.cmake)
 
 # Required for catkin_simple to link against these libraries
 set(ct_core_FOUND_CATKIN_PROJECT true)

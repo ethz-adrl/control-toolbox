@@ -22,6 +22,8 @@ include_directories(
     include
     ${ct_core_INCLUDE_DIRS}
 )
+# add compiler definitions exported by ct_core
+add_definitions(${ct_core_COMPILE_DEFINITIONS}) #todo can we properly export those with an install command?
 
 
 option(MATLAB "Compile with matlab support" OFF)
@@ -51,17 +53,6 @@ if(MATLAB)
 endif(MATLAB)
 set(MATLAB_LIBS ${MATLAB_LIB_DIR})
 
-#todo export this properly from ct_core
-find_package(PythonLibs QUIET)
-if (PYTHONLIBS_FOUND)
-   message(STATUS "Python found")
-   include_directories(${PYTHON_INCLUDE_DIRS})
-   set(PLOTTING_ENABLED true)
-   add_definitions(-DPLOTTING_ENABLED)
-else()
-   message(STATUS "Python not found")
-   set(PYTHON_LIBRARY "")
-endif()
 
 
 ## lapack libs
@@ -119,32 +110,32 @@ if(BUILD_EXAMPLES)
     set(CT_OPTCON_EXAMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/examples")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
 
-    add_executable(ex_ConstraintOutput examples/ConstraintExampleOutput.cpp)
-    target_link_libraries(ex_ConstraintOutput )
-    
-    add_executable(ex_LQR examples/LQR.cpp)
-    target_link_libraries(ex_LQR ct_core dl ${LAPACK_LIBS})
-    
-    add_executable(ex_NLOC examples/NLOC.cpp)
-    target_link_libraries(ex_NLOC ct_core ${PYTHON_LIBRARY} ${HPIPM_LIBS} ${MATLAB_LIBS})
-    
-    add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
-    target_link_libraries(ex_NLOC_MPC  ${HPIPM_LIBS} ${MATLAB_LIBS})
-    
-    add_executable(ex_DMS examples/DMS.cpp)
-    target_link_libraries(ex_DMS ct_core ${PYTHON_LIBRARY} ${NLP_LIBS})
+    #add_executable(ex_ConstraintOutput examples/ConstraintExampleOutput.cpp)
+    #target_link_libraries(ex_ConstraintOutput )
+    #
+    #add_executable(ex_LQR examples/LQR.cpp)
+    #target_link_libraries(ex_LQR ct_core dl ${LAPACK_LIBS})
+    #
+    #add_executable(ex_NLOC examples/NLOC.cpp)
+    #target_link_libraries(ex_NLOC ct_core  ${HPIPM_LIBS} ${MATLAB_LIBS})
+    #
+    #add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
+    #target_link_libraries(ex_NLOC_MPC  ${HPIPM_LIBS} ${MATLAB_LIBS})
+    #
+    #add_executable(ex_DMS examples/DMS.cpp)
+    #target_link_libraries(ex_DMS ct_core  ${NLP_LIBS})
 
     add_executable(ex_KalmanFiltering examples/KalmanFiltering.cpp)
-    target_link_libraries(ex_KalmanFiltering ct_core ${PYTHON_LIBRARY})
+    target_link_libraries(ex_KalmanFiltering ct_core)
 
-    add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
-    target_link_libraries(ex_KalmanDisturbanceFiltering ct_core ${PYTHON_LIBRARY})
+    #add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
+    #target_link_libraries(ex_KalmanDisturbanceFiltering ct_core )
 
-    add_executable(ex_Nlp_2D examples/nlp/Nlp2D.cpp)
-    target_link_libraries(ex_Nlp_2D  ${NLP_LIBS})
-    
-    add_executable(ex_Nlp_3D examples/nlp/Nlp3D.cpp)
-    target_link_libraries(ex_Nlp_3D  ${NLP_LIBS})
+    #add_executable(ex_Nlp_2D examples/nlp/Nlp2D.cpp)
+    #target_link_libraries(ex_Nlp_2D  ${NLP_LIBS})
+    #
+    #add_executable(ex_Nlp_3D examples/nlp/Nlp3D.cpp)
+    #target_link_libraries(ex_Nlp_3D  ${NLP_LIBS})
 
     if(HPIPM)
         add_executable(ex_NLOC_boxConstrained examples/NLOC_boxConstrained.cpp)
