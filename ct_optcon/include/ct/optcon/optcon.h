@@ -8,7 +8,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <ct/core/core.h>
 
-#include "costfunction/costfunction.hpp"
+#include "costfunction/costfun.hpp"
 
 #include "constraint/constraint.h"
 
@@ -49,7 +49,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 #include "filter/filter.h"
 
 // implementations
-#include "costfunction/costfunction-impl.hpp"
+#include "costfunction/costfun-impl.hpp"
 
 #include "constraint/constraint-impl.h"
 
