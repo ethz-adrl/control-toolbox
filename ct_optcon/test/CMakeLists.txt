@@ -2,15 +2,7 @@
 #macro for conveniently adding tests and linking against correct libs
 macro(package_add_test TESTNAME)
     add_executable(${TESTNAME} ${ARGN})
-    target_link_libraries(${TESTNAME} 
-        gtest 
-        gtest_main  
-        ${PRESPEC_LIB_NAMES}
-        ${MATLAB_LIBS} 
-        ${HPIPM_LIBS}
-        ${LAPACK_LIBS}
-        ${NLP_LIBS}
-        )
+    target_link_libraries(${TESTNAME} gtest gtest_main ct_optcon)
     add_test(NAME ${TESTNAME} COMMAND ${TESTNAME})
     set_target_properties(${TESTNAME} PROPERTIES FOLDER test)
 endmacro()
@@ -38,10 +30,10 @@ if(BUILD_TESTS)
     
     ## some legacy executables (TODO: make example or make test)
     #add_executable(SymplecticTest nloc/SymplecticTest.cpp)
-    #target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
+    #target_link_libraries(SymplecticTest ct_optcon)
     
     add_executable(matFilesGenerator dms/oscillator/matfiles/matFilesGenerator.cpp) # todo convert to proper test
-    target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
+    target_link_libraries(matFilesGenerator ct_optcon)
     
     
     ## tests
@@ -66,7 +58,7 @@ if(BUILD_TESTS)
     if(HPIPM)
         ## some legacy executables (TODO: make example or make test)
         add_executable(LQOCSolverTiming solver/linear/LQOCSolverTiming.cpp)
-        target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
+        target_link_libraries(LQOCSolverTiming ct_optcon)
         
         package_add_test(LQOCSolverTest solver/linear/LQOCSolverTest.cpp)
         package_add_test(ConstrainedLQOCSolverTest solver/linear/ConstrainedLQOCSolverTest.cpp)

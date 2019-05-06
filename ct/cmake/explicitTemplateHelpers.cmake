@@ -109,10 +109,9 @@ function(ct_add_explicit_template_libs)
     foreach(lib_name ${PRESPEC_LIB_NAMES})
       #get_filename_component(raw_filename ${file} NAME_WE)
       #message(WARNING "sources for lib ${lib_name}: \n ${${lib_name}_SRCS}")
-      add_library(${lib_name}
+      add_library(${lib_name} SHARED
            ${${lib_name}_SRCS}
       )
-      target_link_libraries(${lib_name} ${PYTHON_LIBRARY})
     endforeach()
 endfunction()
 

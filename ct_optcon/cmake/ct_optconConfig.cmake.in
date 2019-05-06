@@ -1,9 +1,9 @@
 # cmake-onfig file for the ct_optcon package
-# It defines the following variables
-# ct_optcon_INCLUDE_DIRS - include directories for ct_optcon
  
-get_filename_component(ct_optcon_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 set(ct_optcon_INCLUDE_DIRS "@ct_optcon_include_dirs@")
+set(ct_optcon_COMPILE_DEFINITIONS "@ct_optcon_compile_definitions@")
+
+include(${CMAKE_INSTALL_PREFIX}/share/ct/optcon/cmake/ct_optcon.cmake)
 
 # Required for catkin_simple to link against these libraries
 set(ct_optcon_FOUND_CATKIN_PROJECT true)

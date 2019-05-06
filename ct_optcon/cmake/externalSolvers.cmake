@@ -20,18 +20,18 @@ if(HPIPM)
             link_directories(${BLASFEO_DIR}/lib)
             link_directories(${HPIPM_DIR}/lib)
 
-            find_library(BLASFEO_LIBRARY blasfeo  ${BLASFEO_DIR}/lib REQUIRED)
-            find_library(HPIPM_LIBRARY hpipm  ${HPIPM_DIR}/lib REQUIRED)
+            find_library(BLASFEO_LIBRARY blasfeo ${BLASFEO_DIR}/lib REQUIRED)
+            find_library(HPIPM_LIBRARY hpipm ${HPIPM_DIR}/lib REQUIRED)
 
             set(HPIPM_LIBS hpipm blasfeo)
 
             add_definitions (-DHPIPM)
 
         else(DEFINED ENV{HPIPM_DIR})
-            message(WARNING "WARNING: Trying to build with HPIPM, but no ENV variable for HPIPM found.")
+            message(WARNING "Trying to build with HPIPM, but no ENV variable for HPIPM found.")
         endif(DEFINED ENV{HPIPM_DIR})
     else(DEFINED ENV{BLASFEO_DIR})
-        message(WARNING "WARNING: Trying to build with HPIPM, but no ENV variable for Blasfeo found.")
+        message(WARNING "Trying to build with HPIPM, but no ENV variable for Blasfeo found.")
     endif(DEFINED ENV{BLASFEO_DIR})
 endif(HPIPM)
 
@@ -77,8 +77,3 @@ if(DEFINED ENV{SNOPT_SOURCE_DIR})
 endif(DEFINED ENV{SNOPT_SOURCE_DIR})
 
 set(NLP_LIBS ${IPOPT_LIBS} ${CT_SNOPT_LIBS})
-
-include_directories(
-    include
-    ${catkin_INCLUDE_DIRS}
-)
