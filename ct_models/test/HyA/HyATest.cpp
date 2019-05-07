@@ -48,7 +48,7 @@ TEST(HyaLinearizerTest, NumDiffComparison)
     ASSERT_LT((A_rbd - A_system).array().abs().maxCoeff(), 1e-5);
     ASSERT_LT((B_rbd - B_system).array().abs().maxCoeff(), 1e-4);
 
-    size_t nTests = 100;
+    size_t nTests = 1000;
     for (size_t i = 0; i < nTests; i++)
     {
         x.setRandom();
@@ -82,7 +82,7 @@ TEST(CodegenLinearizerTest, NumDiffComparison)
     core::StateVector<STATE_DIM> x;
     core::ControlVector<CONTROL_DIM> u;
 
-    size_t nTests = 100;
+    size_t nTests = 1000;
     for (size_t i = 0; i < nTests; i++)
     {
         x.setRandom();
@@ -117,7 +117,7 @@ TEST(IntegratorTest, IntegratorTestHya)
     double startTime = 0.0;
     size_t numSteps = 10;
 
-    size_t nTests = 100;
+    size_t nTests = 10000;
     std::vector<core::StateVector<STATE_DIM>, Eigen::aligned_allocator<core::StateVector<STATE_DIM>>> xEulerOdeint(
         nTests),
         xEulerCt(nTests), xRk4Odeint(nTests), xRk4CT(nTests);

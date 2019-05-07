@@ -11,7 +11,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 
 #include <ct/core/core.h>
-#include <ct/core/examples/CustomController.h>
+#include "CustomController.h"
 
 int main(int argc, char** argv)
 {

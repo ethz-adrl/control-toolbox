@@ -4,7 +4,7 @@
  */
 
 #include <ct/core/core.h>
-#include <ct/core/examples/Masspoint.h>
+#include "Masspoint.h"
 
 int main(int argc, char** argv)
 {

@@ -144,7 +144,7 @@ public:
           point_perturbation_radius_(10),
           checkDerivativesForNaninf_("no"),
           derivativeTestPrintAll_("no"),
-          linearSystemScaling_("ma27"),
+          linearSystemScaling_("mc19"),
           linear_solver_("mumps"),
           jacobianApproximation_("finite-difference-values")
     {

@@ -104,7 +104,19 @@ function(ct_configureFiles ConfigDir STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCA
 endfunction()
 
 
-# link external library (for example to link optcon against lapack) # todo this should go away
+# creates a target for each explicit template lib and adds its sources to it
+function(ct_add_explicit_template_libs)
+    foreach(lib_name ${PRESPEC_LIB_NAMES})
+      #get_filename_component(raw_filename ${file} NAME_WE)
+      #message(WARNING "sources for lib ${lib_name}: \n ${${lib_name}_SRCS}")
+      add_library(${lib_name} SHARED
+           ${${lib_name}_SRCS}
+      )
+    endforeach()
+endfunction()
+
+
+# link external library (for example to link optcon against lapack)
 function(ct_link_external_library extLibs)
 foreach(lib_name ${PRESPEC_LIB_NAMES})
       target_link_libraries(${lib_name} "${extLibs}")
