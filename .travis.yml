@@ -36,7 +36,7 @@ before_install:
   - sudo cmake .. -DBUILD_SHARED_LIBS=ON
   - sudo make
   - sudo cp *.so /usr/lib
-  - cd ~/catkin_ws
+  - cd ~/
 
    #install IPOPT
   - sudo apt-get install coinor-libipopt-dev 
