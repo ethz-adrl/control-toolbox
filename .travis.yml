@@ -31,6 +31,7 @@ before_install:
    #install gtest
   - sudo apt install libgtest-dev
   - cd /usr/src/gtest/
+  - sudo mkdir build && cd build
   - sudo cmake .. -DBUILD_SHARED_LIBS=ON
   - sudo make
   - sudo cp *.so /usr/lib
