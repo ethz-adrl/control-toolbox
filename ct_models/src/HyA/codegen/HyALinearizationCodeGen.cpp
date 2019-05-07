@@ -35,9 +35,9 @@ template <typename SCALAR>
 Eigen::Matrix<SCALAR, control_dim, 1> hyaInverseDynamics(const Eigen::Matrix<SCALAR, state_dim, 1>& x)
 {
     ct::rbd::HyA::tpl::Dynamics<SCALAR> hyaDynamics;
-    ct::rbd::tpl::JointState<njoints, SCALAR> hyaState(x);
+    ct::rbd::JointState<njoints, SCALAR> hyaState(x);
     Eigen::Matrix<SCALAR, njoints, 1> qddTmp = Eigen::Matrix<SCALAR, njoints, 1>::Zero();
-    ct::rbd::tpl::JointAcceleration<njoints, SCALAR> qdd(qddTmp);             //zero
+    ct::rbd::JointAcceleration<njoints, SCALAR> qdd(qddTmp);             //zero
     ExtLinkForces_t<SCALAR> fext(Eigen::Matrix<SCALAR, njoints, 1>::Zero());  //zero
     control_vector_t<SCALAR> y;
     hyaDynamics.FixBaseID(hyaState, qdd, fext, y);

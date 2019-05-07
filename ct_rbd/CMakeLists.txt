@@ -6,57 +6,40 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
 project(ct_rbd VERSION 3.0.0 LANGUAGES CXX)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/../ct_optcon/cmake/externalSolvers.cmake)
-
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++14 -Wall -Wno-unknown-pragmas")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-find_package(kindr)
-find_package(ct_optcon)
+find_package(kindr REQUIRED)
+find_package(ct_optcon REQUIRED)
 
-include_directories(
-  ${kindr_INCLUDE_DIRS}
-  ${ct_optcon_INCLUDE_DIRS}
-  include
-  include/ct/rbd
-  include/ct/rbd/robot/kinematics/ikfast
-  test/models/testhyq/generated
-  test
+## add compiler definitions exported by ct_optcon
+add_definitions(${ct_optcon_COMPILE_DEFINITIONS})
+
+
+###################
+# BUILD LIBRARIES #
+###################
+
+## define the directories to be included in all ct_rbd targets
+set(ct_rbd_target_include_dirs
+    ${kindr_INCLUDE_DIRS}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct/rbd>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct/rbd/robot/kinematics/ikfast>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/ct>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/ct/rbd>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/ct/rbd/robot/kinematics/ikfast>
 )
 
 
-#todo export this properly from ct_core
-find_package(PythonLibs QUIET)
-if (PYTHONLIBS_FOUND)
-   message(STATUS "Python found")
-   include_directories(${PYTHON_INCLUDE_DIRS})
-   set(PLOTTING_ENABLED true)
-   add_definitions(-DPLOTTING_ENABLED)
-else()
-   message(STATUS "Python not found")
-   set(PYTHON_LIBRARY "")
-endif()
-
-
-## assemble list of libraries that contain prespecified templates
-if(USE_PRESPEC)
-    ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_rbd")
-    message(WARNING "CT RBD: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
-endif(USE_PRESPEC)
-
-## used later for clang-tidy
-set(INC_DIRS ${catkin_INCLUDE_DIRS} ${kindr_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/include/ct/rbd")
-ct_configure_clang_tidy(INC_DIRS)
-
-
-
-## add libraries for explicit template
-if(USE_PRESPEC)
-    ct_add_explicit_template_libs()
-endif(USE_PRESPEC)
-
+## create ct_rbd library
+add_library(ct_rbd SHARED src/ct_rbd.cpp)
+target_include_directories(ct_rbd PUBLIC ${ct_rbd_target_include_dirs})
+target_link_libraries(ct_rbd PUBLIC ct_optcon)
 
 
 ###########
@@ -70,7 +53,6 @@ if(BUILD_TESTS)
 endif()
 
 
-
 #################
 # INSTALLATION  #
 #################
@@ -78,47 +60,36 @@ endif()
 # for correct libraries locations across platforms
 include(GNUInstallDirs) 
 
-install(DIRECTORY include/ct/rbd DESTINATION include/ct)
+## get all compile definitions registered so far and create variable
+get_directory_property( CompileDefs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS )
+foreach( d ${CompileDefs} )
+    set(ct_rbd_compile_definitions  ${ct_rbd_compile_definitions} -D${d} ) # recursively add compile definitions
+endforeach()
 
-### 1- local build ###
-
-# Register the local build in case one doesn't use "make install"
-export(PACKAGE ct_rbd)
-
-# Create variable for the local build tree
-get_property(ct_rbd_include_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-
-# Configure config file for local build tree
+## generate files required for installation
 configure_file(cmake/ct_rbdConfig.cmake.in "${PROJECT_BINARY_DIR}/ct_rbdConfig.cmake" @ONLY)
 
-### 2- installation build ###
+## copy the header files
+install(DIRECTORY include/ct/rbd DESTINATION include/ct)
+install(DIRECTORY include/ct/iit DESTINATION include/ct)
 
-# Change the include location for the case of an install location
-set(ct_rbd_include_dirs 
-    ${CMAKE_INSTALL_PREFIX}/include 
-    ${ct_optcon_INCLUDE_DIRS}
-    ${kindr_INCLUDE_DIRS}
+## copy the cmake files required for find_package()
+install(FILES "${PROJECT_BINARY_DIR}/ct_rbdConfig.cmake" DESTINATION "share/ct_rbd/cmake")
+
+## install library and targets
+install(
+    TARGETS ct_rbd
+    EXPORT ct_rbd_export
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 
-# We put the generated file for installation in a different repository (i.e., ./CMakeFiles/)
-configure_file(cmake/ct_rbdConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/ct_rbdConfig.cmake" @ONLY)
-
-install(FILES "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/ct_rbdConfig.cmake"
-    DESTINATION share/ct/rbd/cmake COMPONENT dev)
+## create the ct_rbd.cmake file which holds target includes and dependencies
+install (EXPORT ct_rbd_export DESTINATION ${CMAKE_INSTALL_PREFIX}/share/ct_rbd/cmake)
 
 
-
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-  set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_rbd.doxyfile)
-  set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
-
-  configure_file(${doxyfile_in} ${doxyfile} @ONLY)
-
-  add_custom_target(doc
-    COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
-    COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc
-    COMMAND ${CMAKE_COMMAND} -E echo_append "API Documentation built in ${CMAKE_CURRENT_SOURCE_DIR}/doc"
-    VERBATIM)
-endif()
+#################
+# DOCUMENTATION #
+#################
+add_subdirectory(doc)

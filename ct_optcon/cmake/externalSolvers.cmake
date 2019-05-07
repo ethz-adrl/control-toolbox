@@ -1,3 +1,5 @@
+## todo this file is deprecated and should go away.
+
 option(HPIPM "Compile with HPIPM support" OFF)
 
 ## dummy HPIPM libs

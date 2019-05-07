@@ -11,7 +11,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
  */
 
 #include <ct/optcon/optcon.h>
-#include <CustomController.h>  // Using the custom controller from ct_core examples.
+#include <ct/core/examples/CustomController.h>  // Using the custom controller from ct_core examples.
 #include "exampleDir.h"
 
 int main(int argc, char** argv)
