@@ -143,6 +143,8 @@ if(USE_PRESPEC)
         target_include_directories(${lib_name} PUBLIC ${ct_optcon_target_include_dirs})
         target_link_libraries(${lib_name} 
             ct_core
+            ${matlab_cpp_interface_LIBRARIES}
+            ${LAPACK_LIBS}
             ${HPIPM_LIBS}
             ${IPOPT_LIBS}
         )
