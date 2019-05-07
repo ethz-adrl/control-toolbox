@@ -27,6 +27,18 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install liblapack-dev
   - sudo apt-get install libeigen3-dev
+   
+   #install gtest
+  - sudo apt install libgtest-dev
+  - cd /usr/src/gtest/
+  - sudo cmake -DBUILD_SHARED_LIBS=ON
+  - sudo make
+  - sudo cp *.so /usr/lib
+  - cd ~/catkin_ws
+
+   #install IPOPT
+  - sudo apt-get install coinor-libipopt-dev 
+
    #install ros kinetic
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
