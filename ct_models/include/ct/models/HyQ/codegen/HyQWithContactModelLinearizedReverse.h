@@ -15,8 +15,8 @@ namespace HyQ {
 class HyQWithContactModelLinearizedReverse : public ct::core::LinearSystem<36, 12>
 {
 public:
-    typedef typename Eigen::Matrix<double, 36, 36> state_matrix_t;
-    typedef typename Eigen::Matrix<double, 36, 12> state_control_matrix_t;
+    typedef ct::core::StateMatrix<36, double> state_matrix_t;
+    typedef ct::core::StateControlMatrix<36, 12, double> state_control_matrix_t;
 
     HyQWithContactModelLinearizedReverse(const ct::core::SYSTEM_TYPE& type = ct::core::SYSTEM_TYPE::GENERAL)
         : ct::core::LinearSystem<36, 12>(type)
@@ -54,6 +54,6 @@ private:
     std::array<double, 9379> vX_;
     std::array<double, 383> vU_;
 };
-}
-}
-}
+}  // namespace HyQ
+}  // namespace models
+}  // namespace ct

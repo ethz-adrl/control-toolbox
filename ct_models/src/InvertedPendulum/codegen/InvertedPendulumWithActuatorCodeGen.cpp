@@ -27,7 +27,7 @@ const size_t actuator_state_dim = 1;
 const size_t state_dim_full = 2 * njoints + actuator_state_dim;
 
 using Scalar = ct::core::ADCodegenLinearizer<state_dim_full, njoints>::ADCGScalar;
-using SEADynamicsFirstOrderAD = ct::rbd::tpl::SEADynamicsFirstOrder<njoints, Scalar>;
+using SEADynamicsFirstOrderAD = ct::rbd::SEADynamicsFirstOrder<njoints, Scalar>;
 using InvertedPendulumDynamicsAD =  ct::rbd::InvertedPendulum::tpl::Dynamics<Scalar>;
 using InvertedPendulumSystemAD = ct::rbd::FixBaseFDSystem<InvertedPendulumDynamicsAD, actuator_state_dim, false>;
 

@@ -1,7 +1,6 @@
 <package format="2">
   <name>ct_optcon</name>
   <version>3.0.0</version>
-
   <description>
     Control toolbox - optcon module.
   </description>
@@ -11,7 +10,6 @@
   <author>Michael Neunert</author>
   <author>Markus Stäuble</author>
   <maintainer email="markusgft@gmail.com">Markus Giftthaler</maintainer>
-  <license>BSD-2</license>
 
   <buildtool_depend>cmake</buildtool_depend>
   <depend>ct_core</depend>

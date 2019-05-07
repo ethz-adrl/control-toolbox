@@ -15,7 +15,7 @@ using namespace ct::rbd;
 TEST(ProjectedFDSystemTest, projected_forward_dynamics_test)
 {
     constexpr bool VERBOSE = false;
-    constexpr size_t nTests = 100;
+    constexpr size_t nTests = 10;
     constexpr size_t nIntegrationSteps = 50;
     constexpr double dt = 0.001;
 
@@ -114,7 +114,7 @@ TEST(ProjectedFDSystemTest, projected_forward_dynamics_test)
 TEST(ProjectedFDSystemTest, projected_forward_dynamics_autodiff_test)
 {
     constexpr bool VERBOSE = false;
-    constexpr int NTESTS = 100;
+    constexpr int NTESTS = 10;
 
     constexpr size_t state_dim = ProjectedFDSystem<TestHyQ::Dynamics, false>::STATE_DIM;
     constexpr size_t control_dim = ProjectedFDSystem<TestHyQ::Dynamics, false>::CONTROL_DIM;
