@@ -2,6 +2,7 @@ macro(package_add_test TESTNAME)
     add_executable(${TESTNAME} ${ARGN})
     add_test(NAME ${TESTNAME} COMMAND ${TESTNAME})
     set_target_properties(${TESTNAME} PROPERTIES FOLDER test)
+    list(APPEND UNIT_TEST_TARGETS ${TESTNAME})
 endmacro()
 
 
@@ -20,3 +21,12 @@ target_link_libraries(ikfast_test_irb gtest gtest_main irb4600_ik ct_rbd)
 package_add_test(ikfast_test_hya IKFast/IKFastTestHyA.cpp)
 target_include_directories(ikfast_test_hya PUBLIC ${ct_models_target_include_dirs})
 target_link_libraries(ikfast_test_hya gtest gtest_main hya_ik ct_rbd)
+
+
+# Run all unit tests post-build.
+add_custom_target(run_tests ALL DEPENDS ${UNIT_TEST_TARGETS})
+add_custom_command(TARGET run_tests 
+    COMMENT "Running tests"
+    POST_BUILD COMMAND ${PROJECT_SOURCE_DIR}/test/run_tests.py ${CMAKE_CURRENT_BINARY_DIR} ${UNIT_TEST_TARGETS}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )

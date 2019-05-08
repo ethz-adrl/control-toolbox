@@ -1,12 +1,15 @@
-cmake_minimum_required (VERSION 2.6) 
+cmake_minimum_required (VERSION 3.3)
 
-project (ct_doc) 
+project (ct_doc VERSION 3.0.0 ) 
 
-find_package(catkin REQUIRED)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
-catkin_package(
-    CATKIN_DEPENDS ct_core ct_optcon ct_rbd ct_models
-)
+
+## find and include required dependencies
+find_package(ct_core REQUIRED)
+find_package(ct_optcon REQUIRED)
+find_package(ct_rbd REQUIRED)
+find_package(ct_models REQUIRED)
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
@@ -23,16 +26,11 @@ if(DOXYGEN_FOUND)
         COMMAND ${CMAKE_COMMAND} -E echo_append "API Documentation built in ${CMAKE_CURRENT_SOURCE_DIR}/doc"
 #       COMMAND sensible-browser ${CMAKE_CURRENT_SOURCE_DIR}/doc/html/index.html
         VERBATIM)
+
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc/html DESTINATION share/ct_doc/doc)
 endif()
 
         
 add_custom_target(clang-format
         COMMAND ${CMAKE_COMMAND} -E echo_append ""
         VERBATIM)
-
-add_custom_target(clang-tidy
-        COMMAND ${CMAKE_COMMAND} -E echo_append ""
-        VERBATIM)    
-
-
-    

@@ -5,6 +5,7 @@ macro(package_add_test TESTNAME)
     target_link_libraries(${TESTNAME} gtest gtest_main ct_rbd)
     add_test(NAME ${TESTNAME} COMMAND ${TESTNAME})
     set_target_properties(${TESTNAME} PROPERTIES FOLDER test)
+    list(APPEND UNIT_TEST_TARGETS ${TESTNAME})
 endmacro()
 
 
@@ -54,3 +55,12 @@ endif()
 
 # todo transform this into a proper test
 #add_executable(simpleArmTrajectoryTest src/SimpleArmTrajectoryGeneratorTest.cpp)
+
+
+# Run all unit tests post-build.
+add_custom_target(run_tests ALL DEPENDS ${UNIT_TEST_TARGETS})
+add_custom_command(TARGET run_tests 
+    COMMENT "Running tests"
+    POST_BUILD COMMAND ${PROJECT_SOURCE_DIR}/test/run_tests.py ${CMAKE_CURRENT_BINARY_DIR} ${UNIT_TEST_TARGETS}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
