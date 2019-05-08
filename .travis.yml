@@ -30,30 +30,30 @@ before_install:
   - sudo apt-get install cmake           >/dev/null # suppress output
    
    #install gtest
-  - sudo apt install libgtest-dev           # suppress output
-  - cd /usr/src/gtest/                      # suppress output
-  - sudo mkdir build && cd build            # suppress output
-  - sudo cmake .. -DBUILD_SHARED_LIBS=ON    # suppress output
-  - sudo make                               # suppress output
-  - sudo cp *.so /usr/lib                   # suppress output
-  - cd ~/                                   # suppress output
+  - sudo apt install libgtest-dev           >/dev/null # suppress output
+  - cd /usr/src/gtest/                      >/dev/null # suppress output
+  - sudo mkdir build && cd build            >/dev/null # suppress output
+  - sudo cmake .. -DBUILD_SHARED_LIBS=ON    >/dev/null # suppress output
+  - sudo make                               >/dev/null # suppress output
+  - sudo cp *.so /usr/lib                   >/dev/null # suppress output
+  - cd ~/                                   >/dev/null # suppress output
 
    #install IPOPT
-  - sudo apt-get install coinor-libipopt-dev  # suppress output
+  - sudo apt-get install coinor-libipopt-dev  >/dev/null # suppress output
 
    #install ros kinetic
-  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
-  - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
-  - sudo apt-get update
-  - sudo apt-get install python-catkin-tools
-  - sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"
-  - sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
-  - sudo apt-get update -qq
-  - sudo apt-get install -y python-catkin-pkg python-rosdep ros-$ROS_DISTRO-ros-base
-  - source /opt/ros/$ROS_DISTRO/setup.bash
+  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'  >/dev/null # suppress output
+  - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -   >/dev/null # suppress output
+  - sudo apt-get update   >/dev/null # suppress output
+  - sudo apt-get install python-catkin-tools  >/dev/null # suppress output
+  - sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"  >/dev/null # suppress output
+  - sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116  >/dev/null # suppress output
+  - sudo apt-get update   >/dev/null # suppress output
+  - sudo apt-get install -y python-catkin-pkg python-rosdep ros-$ROS_DISTRO-ros-base  >/dev/null # suppress output
+  - source /opt/ros/$ROS_DISTRO/setup.bash  >/dev/null # suppress output
   # Prepare rosdep to install dependencies.
-  - sudo rosdep init
-  - rosdep update
+  - sudo rosdep init  >/dev/null # suppress output
+  - rosdep update  >/dev/null # suppress output
 
 # Create a catkin workspace with the package under integration.
 install:
