@@ -88,5 +88,12 @@ script:
   - catkin config --blacklist kindr
   # run unit tests
   - source devel/setup.bash
-  - catkin run_tests    >/dev/null # suppress output
+  - cd ~/catkin_ws/src/control-toolbox/ct_core
+  - catkin run_tests --this --no-deps >/dev/null # suppress output
+  - cd ~/catkin_ws/src/control-toolbox/ct_optcon
+  - catkin run_tests --this --no-deps >/dev/null # suppress output
+  - cd ~/catkin_ws/src/control-toolbox/ct_rbd
+  - catkin run_tests --this --no-deps >/dev/null # suppress output
+  - cd ~/catkin_ws/src/control-toolbox/ct_models
+  - catkin run_tests --this --no-deps >/dev/null # suppress output
   - catkin_test_results
