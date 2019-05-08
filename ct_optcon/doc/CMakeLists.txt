@@ -2,7 +2,7 @@ find_package(Doxygen)
 if(DOXYGEN_FOUND)
 
     set(doxyfile_in ct_optcon.doxyfile)
-    set(doxyfile Doxyfile)
+    set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/../Doxyfile)
 
     configure_file(${doxyfile_in} ${doxyfile} @ONLY)
 

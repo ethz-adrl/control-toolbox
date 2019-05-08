@@ -19,8 +19,9 @@ add_definitions(${ct_rbd_COMPILE_DEFINITIONS})
 
 ## define the directories to be included in all ct_rbd targets
 set(ct_models_target_include_dirs
+    ${ct_rbd_INCLUDE_DIRS}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
 
@@ -241,7 +242,7 @@ install(
     )
 
 ## create the ct_rbd.cmake file which holds target includes and dependencies
-install (EXPORT ct_models_export DESTINATION ${CMAKE_INSTALL_PREFIX}/share/ct_models/cmake)
+install (EXPORT ct_models_export DESTINATION share/ct_models/cmake)
 
 
 #################

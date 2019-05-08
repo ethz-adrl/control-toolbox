@@ -62,8 +62,8 @@ set(ct_core_target_include_dirs
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct/external>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/examples/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/ct/external>
+    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:include/ct/external>
 )
 
 ## declare prespec libraries
@@ -155,7 +155,7 @@ install(
     )
 
 ## create the ct_core.cmake file which holds target includes and dependencies
-install (EXPORT ct_core_export DESTINATION ${CMAKE_INSTALL_PREFIX}/share/ct_core/cmake)
+install (EXPORT ct_core_export DESTINATION share/ct_core/cmake)
 
 
 #################

@@ -25,14 +25,15 @@ add_definitions(${ct_optcon_COMPILE_DEFINITIONS})
 ## define the directories to be included in all ct_rbd targets
 set(ct_rbd_target_include_dirs
     ${kindr_INCLUDE_DIRS}
+    ${ct_optcon_INCLUDE_DIRS}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct/rbd>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct/rbd/robot/kinematics/ikfast>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/ct>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/ct/rbd>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/ct/rbd/robot/kinematics/ikfast>
+    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:include/ct>
+    $<INSTALL_INTERFACE:include/ct/rbd>
+    $<INSTALL_INTERFACE:include/ct/rbd/robot/kinematics/ikfast>
 )
 
 
@@ -86,7 +87,7 @@ install(
     )
 
 ## create the ct_rbd.cmake file which holds target includes and dependencies
-install (EXPORT ct_rbd_export DESTINATION ${CMAKE_INSTALL_PREFIX}/share/ct_rbd/cmake)
+install (EXPORT ct_rbd_export DESTINATION share/ct_rbd/cmake)
 
 
 #################

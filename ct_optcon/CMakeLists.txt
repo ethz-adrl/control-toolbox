@@ -9,8 +9,8 @@ project(ct_optcon VERSION 3.0.0 LANGUAGES CXX)
 
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++14 -Wall -Wno-unknown-pragmas -Wfatal-errors")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++14 -Wall -Wfatal-errors")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++14 -Wno-unknown-pragmas -Wall -Wfatal-errors")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++14 -Wfatal-errors")
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 
@@ -120,11 +120,11 @@ endif(IPOPT_FOUND)
 
 ## define the directories to be included in all ct_optcon targets
 set(ct_optcon_target_include_dirs
-    ${ct_core_INCLUDE_DIRECTORIES}
+    ${ct_core_INCLUDE_DIRS}
     ${matlab_cpp_interface_INCLUDE_DIRS}
     ${HPIPM_INCLUDE_DIRS}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
 ## declare prespec libraries
@@ -157,7 +157,7 @@ add_library(ct_optcon SHARED
     src/ct_optcon.cpp
     )
 target_include_directories(ct_optcon PUBLIC ${ct_optcon_target_include_dirs})
-target_link_libraries(ct_optcon
+    target_link_libraries(ct_optcon
     ct_core
     ${matlab_cpp_interface_LIBRARIES}
     ${LAPACK_LIBS}
@@ -221,7 +221,7 @@ install(
     )
 
 ## create the ct_core.cmake file which holds target includes and dependencies
-install (EXPORT ct_optcon_export DESTINATION ${CMAKE_INSTALL_PREFIX}/share/ct_optcon/cmake)
+install (EXPORT ct_optcon_export DESTINATION share/ct_optcon/cmake)
 
     
 #################

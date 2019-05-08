@@ -24,22 +24,22 @@ env:
 # Install system dependencies, namely a very barebones ROS setup.
 before_install:
    #install lapack
-  - sudo apt-get update
-  - sudo apt-get install liblapack-dev
-  - sudo apt-get install libeigen3-dev
-  - sudo apt-get install cmake
+  - sudo apt-get update                  >/dev/null # suppress output
+  - sudo apt-get install liblapack-dev   >/dev/null # suppress output
+  - sudo apt-get install libeigen3-dev   >/dev/null # suppress output
+  - sudo apt-get install cmake           >/dev/null # suppress output
    
    #install gtest
-  - sudo apt install libgtest-dev
-  - cd /usr/src/gtest/
-  - sudo mkdir build && cd build
-  - sudo cmake .. -DBUILD_SHARED_LIBS=ON
-  - sudo make
-  - sudo cp *.so /usr/lib
-  - cd ~/
+  - sudo apt install libgtest-dev           # suppress output
+  - cd /usr/src/gtest/                      # suppress output
+  - sudo mkdir build && cd build            # suppress output
+  - sudo cmake .. -DBUILD_SHARED_LIBS=ON    # suppress output
+  - sudo make                               # suppress output
+  - sudo cp *.so /usr/lib                   # suppress output
+  - cd ~/                                   # suppress output
 
    #install IPOPT
-  - sudo apt-get install coinor-libipopt-dev 
+  - sudo apt-get install coinor-libipopt-dev  # suppress output
 
    #install ros kinetic
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -81,7 +81,10 @@ script:
   - source /opt/ros/$ROS_DISTRO/setup.bash
   - cd ~/catkin_ws
   - catkin clean --all
-  - catkin build -DBUILD_TESTS=true -DCMAKE_BUILD_TYPE=Release
+  - catkin build -DBUILD_TESTS=true -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
   # Run the tests, ensuring the path is set correctly.
+  # we do not want to run the kindr tests
+  - catkin config --blacklist kindr
+  # run unit tests
   - source devel/setup.bash
   - catkin run_tests && catkin_test_results
