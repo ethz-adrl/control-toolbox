@@ -5,7 +5,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
 
-project(ct_optcon VERSION 3.0.0 LANGUAGES CXX)
+project(ct_optcon VERSION 3.0.1 LANGUAGES CXX)
 
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
@@ -93,7 +93,7 @@ if(IPOPT_FOUND)
 endif(IPOPT_FOUND)
 
 
-## include SNOPT -- todo SNOPT not tested in version 3.0.0, temporarily deactivated
+## include SNOPT -- todo SNOPT not tested in version 3.0.1, temporarily deactivated
 #set(SNOPT_TARGET "")
 #if(DEFINED ENV{SNOPT_SOURCE_DIR})
 #    set(BUILD_WITH_SNOPT_SUPPORT ON)

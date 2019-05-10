@@ -5,7 +5,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
 
-project(ct_core VERSION 3.0.0 LANGUAGES CXX)
+project(ct_core VERSION 3.0.1 LANGUAGES CXX)
 
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)

@@ -1,6 +1,6 @@
 <package format="2">
   <name>ct_optcon</name>
-  <version>3.0.0</version>
+  <version>3.0.1</version>
   <description>
     Control toolbox - optcon module.
   </description>
