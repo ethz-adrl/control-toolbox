@@ -3,14 +3,14 @@ find_package(Doxygen)
 
 if(DOXYGEN_FOUND)
 
-    set(doxyfile_in ct_core.doxyfile)
-    set(doxyfile Doxyfile)
+    set(DOXYFILE_IN ct_core.doxyfile)
+    set(DOXYFILE_OUT Doxyfile)
 
-    configure_file(${doxyfile_in} ${doxyfile} @ONLY)
+    configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
 
     add_custom_target(doc
         COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
-        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
+        COMMAND ${DOXYGEN_EXECUTABLE} ct_core.doxyfile #${DOXYFILE_OUT}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMAND ${CMAKE_COMMAND} -E echo_append "API Documentation built in ${CMAKE_CURRENT_SOURCE_DIR}"
         VERBATIM)

@@ -11,10 +11,7 @@ catkin_package(
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
     
-    set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_doc.doxyfile)
-    set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
-
-    configure_file(${doxyfile_in} ${doxyfile} @ONLY)
+    set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_doc.doxyfile)
 
     add_custom_target(doc
         COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
