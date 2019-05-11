@@ -29,7 +29,7 @@ public:
         const JointPosition& upperBound)
         : optVector_(optVector)
     {
-    	// set up joint limit constraints
+        // set up joint limit constraints
         auto jointLimits = std::shared_ptr<JointLimitConstraints<KINEMATICS, SCALAR>>(
             new JointLimitConstraints<KINEMATICS, SCALAR>(optVector_, lowerBound, upperBound));
         this->constraints_.push_back(jointLimits);
@@ -47,7 +47,7 @@ public:
      */
     const std::shared_ptr<JointLimitConstraints<KINEMATICS, SCALAR>> getJointLimitConstraints() const
     {
-    	return std::static_pointer_cast<JointLimitConstraints<KINEMATICS, SCALAR>>(this->constraints_.front());
+        return std::static_pointer_cast<JointLimitConstraints<KINEMATICS, SCALAR>>(this->constraints_.front());
     }
 
 private:

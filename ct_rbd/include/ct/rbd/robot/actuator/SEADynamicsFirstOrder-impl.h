@@ -26,8 +26,7 @@ SEADynamicsFirstOrder<NJOINTS, SCALAR>* SEADynamicsFirstOrder<NJOINTS, SCALAR>::
 }
 
 template <size_t NJOINTS, typename SCALAR>
-void SEADynamicsFirstOrder<NJOINTS, SCALAR>::computeActuatorDynamics(
-    const JointState<NJOINTS, SCALAR>& robotJointState,
+void SEADynamicsFirstOrder<NJOINTS, SCALAR>::computeActuatorDynamics(const JointState<NJOINTS, SCALAR>& robotJointState,
     const ct::core::StateVector<NJOINTS, SCALAR>& state,
     const SCALAR& t,
     const ct::core::ControlVector<NJOINTS, SCALAR>& control,

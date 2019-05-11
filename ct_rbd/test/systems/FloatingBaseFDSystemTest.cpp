@@ -46,7 +46,7 @@ TEST(FloatingBaseFDSystemTest, forward_dynamics_test)
     ASSERT_TRUE(finalQuat.isApprox(finalEuler, 1e-6));
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

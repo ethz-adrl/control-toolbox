@@ -8,11 +8,10 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 class IKRegularizerBase
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	IKRegularizerBase() = default;
-	virtual ~IKRegularizerBase() = default;
+    IKRegularizerBase() = default;
+    virtual ~IKRegularizerBase() = default;
 
-	virtual Eigen::MatrixXd computeRegularizer(const Eigen::VectorXd jointVal) = 0;
+    virtual Eigen::MatrixXd computeRegularizer(const Eigen::VectorXd jointVal) = 0;
 };
-

@@ -44,7 +44,7 @@ TEST(DynamicsTestIrb4600, forward_dynamics_test)
     testdynamics.FixBaseID(irb_state, qdd, ext_forces, torque_u);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

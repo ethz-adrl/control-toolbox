@@ -60,7 +60,7 @@ TEST(DynamicsTestHyQ, forward_dynamics_test)
     testdynamics.ProjectedInverseDynamics(ee_contact, hyq_state, hyq_xd, torque_u);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -27,20 +27,19 @@ namespace rbd {
  * \warning when modelled with RobCoGen, the base pose must be rotated "against gravity" (RobCoGen modeling assumption)
  */
 template <class RBDDynamics, size_t ACT_STATE_DIM = 0, bool EE_ARE_CONTROL_INPUTS = false>
-class FixBaseFDSystem
-    : public FixBaseSystemBase<RBDDynamics,
-	  RBDDynamics::NSTATE + ACT_STATE_DIM, 	// state dim
-	  RBDDynamics::NJOINTS + EE_ARE_CONTROL_INPUTS * RBDDynamics::N_EE * 3> // control dim
+class FixBaseFDSystem : public FixBaseSystemBase<RBDDynamics,
+                            RBDDynamics::NSTATE + ACT_STATE_DIM,                                   // state dim
+                            RBDDynamics::NJOINTS + EE_ARE_CONTROL_INPUTS * RBDDynamics::N_EE * 3>  // control dim
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static const size_t N_EE = RBDDynamics::N_EE; //! number of end-effectors
-	static const size_t STATE_DIM = RBDDynamics::NSTATE + ACT_STATE_DIM; // combined state dim
-    static const size_t CONTROL_DIM = RBDDynamics::NJOINTS + EE_ARE_CONTROL_INPUTS * N_EE * 3; // combined control dim
+    static const size_t N_EE = RBDDynamics::N_EE;                         //! number of end-effectors
+    static const size_t STATE_DIM = RBDDynamics::NSTATE + ACT_STATE_DIM;  // combined state dim
+    static const size_t CONTROL_DIM = RBDDynamics::NJOINTS + EE_ARE_CONTROL_INPUTS * N_EE * 3;  // combined control dim
     static const size_t ACTUATOR_STATE_DIM = ACT_STATE_DIM;
 
-	using BASE = FixBaseSystemBase<RBDDynamics, STATE_DIM, CONTROL_DIM>;
+    using BASE = FixBaseSystemBase<RBDDynamics, STATE_DIM, CONTROL_DIM>;
     using SCALAR = typename BASE::SCALAR;
     using state_vector_t = typename BASE::state_vector_t;
     using control_vector_t = typename BASE::control_vector_t;
@@ -56,11 +55,7 @@ public:
      * @brief constructor
      * \warning when using actuator dynamics, the system looses its second order characteristics
      */
-    FixBaseFDSystem(const RigidBodyPose_t& basePose = RigidBodyPose_t())
-        : BASE(basePose), actuatorDynamics_(nullptr)
-    {
-    }
-
+    FixBaseFDSystem(const RigidBodyPose_t& basePose = RigidBodyPose_t()) : BASE(basePose), actuatorDynamics_(nullptr) {}
     /*!
      * @brief constructor including actuator dynamics
      * \warning when using actuator dynamics, the system looses its second order characteristics
@@ -140,7 +135,8 @@ public:
         control_vector_t& controlOut)
     {
         // get references to the current actuator position, velocity and input
-        const Eigen::Ref<const typename control_vector_t::Base> actControlIn = controlIn.template topRows<BASE::NJOINTS>();
+        const Eigen::Ref<const typename control_vector_t::Base> actControlIn =
+            controlIn.template topRows<BASE::NJOINTS>();
 
         actuator_state_vector_t actStateDerivative;  // todo use vector block for this?
         actuatorDynamics_->computeActuatorDynamics(
@@ -171,7 +167,6 @@ public:
 
     //! get pointer to actuator dynamics
     std::shared_ptr<ActuatorDynamics_t> getActuatorDynamics() { return actuatorDynamics_; }
-
     //! if actuator dynamics enabled, this method allows to design a consistent actuator state
     template <typename T = typename FixBaseRobotState_t::actuator_state_vector_t>
     typename std::enable_if<(ACT_STATE_DIM > 0), T>::type computeConsistentActuatorState(
@@ -183,7 +178,7 @@ public:
 
     //! if actuator dynamics enabled, this method allows to design a consistent actuator state
     template <typename T = typename FixBaseRobotState_t::actuator_state_vector_t>
-    typename std::enable_if<(ACT_STATE_DIM>0), T>::type computeConsistentActuatorState(
+    typename std::enable_if<(ACT_STATE_DIM > 0), T>::type computeConsistentActuatorState(
         const JointState<BASE::NJOINTS, SCALAR>& jStateRef)
     {
         const ct::core::ControlVector<BASE::NJOINTS> torqueRef = computeIDTorques(jStateRef);
