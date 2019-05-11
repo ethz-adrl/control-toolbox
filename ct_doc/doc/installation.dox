@@ -85,14 +85,9 @@ The following dependencies and bindings are optional but can help to enhance the
 
  - MATLAB (for Matlab logging)
 
- - <a href="http://clang.llvm.org/extra/clang-tidy/">clang-tidy</a>, install via
- \code{.sh}
- $ sudo apt-get install clang-tidy-3.9
- \endcode
-
  - <a href="https://clang.llvm.org/docs/ClangFormat.html">clang-format</a>, install via
   \code{.sh}
- $ sudo apt-get install clang-format-3.9
+ $ sudo apt-get install clang-format
  \endcode
 
 

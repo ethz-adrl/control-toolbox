@@ -11,7 +11,3 @@ add_custom_target(doc
 add_custom_target(clang-format
         COMMAND ${CMAKE_COMMAND} -E echo_append "Running clang-format on CT..."
         VERBATIM)
-
-add_custom_target(clang-tidy
-        COMMAND ${CMAKE_COMMAND} -E echo_append "Running clang-tidy on CT..."
-        VERBATIM)    

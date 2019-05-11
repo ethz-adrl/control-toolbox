@@ -1,8 +1,8 @@
-# CLANG-TIDY AND CLANG-FORMAT
-##############################
+##############
+# CLANG-FORMAT
+##############
 
-# Additional targets to perform clang-format/clang-tidy
-
+# Additional targets to perform clang-format
 
 # function to exclude user-defined folders from the clang format- and tidy process     
 function(filter_ct_directories allItems excludeDir)
@@ -70,46 +70,3 @@ else()
     VERBATIM
     )
 endif()
-
-# Adding clang-tidy target if clang-tidy executable is found
-function(ct_configure_clang_tidy TIDY_INC_DIRS)
-
-    ct_get_all_srcs(FALSE)
-
-    set(CURRENT_INC_DIRS "")
-    
-    #message(FATAL_ERROR "Inc dirs: ${${TIDY_INC_DIRS}}")
-    
-    foreach (THIS_INC_DIR ${${TIDY_INC_DIRS}})
-        #message(WARNING "this inc dir: ${THIS_INC_DIR}")
-        list(APPEND CURRENT_INC_DIRS "-I${THIS_INC_DIR}")
-    endforeach()
-    
-    #message(FATAL_ERROR "Current inc dirs: ${CURRENT_INC_DIRS}")
-
-    find_program(CLANG_TIDY_BIN "clang-tidy")
-    if(NOT CLANG_TIDY_BIN)
-      find_program(CLANG_TIDY_BIN "clang-tidy-3.9")
-    endif()
-    if(NOT CLANG_TIDY_BIN)
-      find_program(CLANG_TIDY_BIN "clang_tidy")
-    endif()
-        message(STATUS ${CLANG_TIDY_BIN})
-    if(NOT CLANG_TIDY_BIN)
-        add_custom_target(clang-tidy
-            COMMAND ${CMAKE_COMMAND} -E echo_append "clang-tidy executable not found"
-            VERBATIM)
-    else()
-        message (STATUS "FOUND CLANG-TIDY")
-        set(CLANG_TIDY_COMMAND COMMAND ${CLANG_TIDY_BIN} ${ALL_CXX_SOURCE_FILES} -config='' -header-filter=\".*\\/ct\\/.*\" -- -std=c++11 -fopenmp ${CURRENT_INC_DIRS})
-            
-        add_custom_target(
-            clang-tidy
-            COMMAND ${CLANG_TIDY_COMMAND}
-            COMMENT "Launching clang-tidy"
-            WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
-            
-        )
-    endif() #CLANG_TIDY_BIN
-    
-endfunction()
