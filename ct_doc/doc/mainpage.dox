@@ -202,7 +202,7 @@ The four different main modules are detailed in the following.
 
 \subsection ct_models_overview CT Models:
 
- - Various standard models for testing and evaluation including UAVs (ct::models::Quadrotor), ground robots, 
+ - standard models for testing and evaluation including UAVs (ct::models::Quadrotor), ground robots, 
  legged robots (ct::models::HyQ), robot arms (ct::models::HyA), inverted pendulums etc.
  - Means of creating linear approximation of these models
  
@@ -210,7 +210,7 @@ The four different main modules are detailed in the following.
 
 \section gs How to use the Control Toolbox
 
-To get started with the control toolbox, please see \ref getting_started "Getting Started".
+To get an overview of the control toolbox, please see \ref getting_started "Getting Started".
 
 
 \section contact Support
@@ -232,9 +232,11 @@ For any questions, issues or other troubleshooting please either
  - Jan Carius
  - Ruben Grandia
  - Hamza Merzic
+ - Jonas Buchli
  
 \subsection lead_overview Maintenance 
  - Markus Giftthaler, markusgft (at) gmail (dot) com
+
 
 \subsection funding Funding 2014-2018
 The core of this software has been developed at the <a href="http://www.adrl.ethz.ch" target="_blank">Agile & Dexterous Robotics Lab</a> 
