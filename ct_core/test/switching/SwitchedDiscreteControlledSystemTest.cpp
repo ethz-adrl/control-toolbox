@@ -92,7 +92,7 @@ TEST(SwitchedDiscreteControlledSystemTest, SwitchedDiscreteControlledSystem)
  *
  *  Test basic functionality of switching discrete controlled systems
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

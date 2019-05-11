@@ -7,7 +7,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "IntegrationTest.h"
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     if (argc > 2)
         plotResult = true;

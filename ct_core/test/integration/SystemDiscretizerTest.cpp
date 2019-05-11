@@ -7,7 +7,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "SystemDiscretizerTest.h"
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

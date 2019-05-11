@@ -67,7 +67,6 @@ public:
 	 * @return sparsity pattern vector
 	 */
     const CppAD::vector<bool>& sparsity() const { return sparsity_; }
-
     //! returns the row indices of a row-column sparsity representation
     /*!
 	 * In a row-column representation, only the non-zero entries get saved.
@@ -77,7 +76,6 @@ public:
 	 * @return row indeces of row-column representation
 	 */
     const CppAD::vector<size_t>& row() const { return row_; }
-
     //! returns the column indices of a row-column sparsity representation
     /*!
 	 * In a row-column representation, only the non-zero entries get saved.
@@ -87,7 +85,6 @@ public:
 	 * @return column indeces of row-column representation
 	 */
     const CppAD::vector<size_t>& col() const { return col_; }
-
     //! work area for CppAD
     /*!
 	 * CppAD can make use of previous results from a sparsity analysis.
@@ -95,9 +92,7 @@ public:
 	 * @return CppAD sparsity work
 	 */
     CppAD::sparse_jacobian_work& workJacobian() { return workJacobian_; }
-
     CppAD::sparse_hessian_work& workHessian() { return workHessian_; }
-
     /**
 	 * @brief      Clears the cppad internal work done on the sparsity pattern
 	 */

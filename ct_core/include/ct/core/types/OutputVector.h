@@ -19,7 +19,6 @@ public:
 
     OutputVector() {}
     virtual ~OutputVector() {}
-
     //! This constructor allows you to construct MyVectorType from Eigen expressions
     template <typename OtherDerived>
     OutputVector(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)

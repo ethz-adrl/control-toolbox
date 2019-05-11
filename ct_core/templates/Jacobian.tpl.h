@@ -14,7 +14,6 @@ namespace NS2 {
 class DERIVATIVE_NAME : public core::Derivatives<IN_DIM, OUT_DIM, double>
 {
 public:
-
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE;
@@ -42,6 +41,6 @@ private:
     std::array<double, MAX_COUNT> v_;
 };
 
-} // namespace NS2
-} // namespace NS1
-} // namespace ct
+}  // namespace NS2
+}  // namespace NS1
+}  // namespace ct

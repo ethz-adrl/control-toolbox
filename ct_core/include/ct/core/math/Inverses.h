@@ -11,8 +11,8 @@ namespace inverseHelperfunctions {
 // Custom LU factorization
 template <typename SCALAR>
 //only square matrices
-void lu(const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &A,
-    Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &LU)
+void lu(const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>& A,
+    Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>& LU)
 {
     const int n = A.rows();
     for (int k = 0; k < n; ++k)
@@ -40,9 +40,9 @@ void lu(const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &A,
 
 // Custom LU solver
 template <typename SCALAR>
-void solveLU(const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &LU,
-    const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &b,
-    Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &x)
+void solveLU(const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>& LU,
+    const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>& b,
+    Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>& x)
 {
     const int n = LU.rows();
     const int m = b.cols();
@@ -74,9 +74,9 @@ void solveLU(const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &LU,
 // Custom LDLT factorization (Algorithm from https://en.wikipedia.org/wiki/Cholesky_decomposition)
 template <typename SCALAR>
 //only square matrices
-void ldlt(const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &A,
-    Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &L,
-    Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> &d)
+void ldlt(const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>& A,
+    Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>& L,
+    Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>& d)
 {
     const int n = A.rows();
     L.setIdentity();
@@ -104,10 +104,10 @@ void ldlt(const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &A,
 // Custom LDLT solver
 template <typename SCALAR>
 // solves X = A^(-1) * B, with A nxn and b nxm
-void solveLDLT(const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &L,
-    const Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> &d,
-    const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &b,
-    Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &x)
+void solveLDLT(const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>& L,
+    const Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>& d,
+    const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>& b,
+    Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>& x)
 {
     const int n = L.rows();
     const int m = b.cols();
@@ -149,8 +149,8 @@ void solveLDLT(const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &L,
 template <typename SCALAR>
 // solves X = A^(-1) * B, with A nxn and b nxm
 Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> LUsolve(
-    const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &A,
-    const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &B)
+    const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>& A,
+    const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>& B)
 {
     const int n = A.rows();
     const int m = B.cols();
@@ -171,8 +171,8 @@ Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> LUsolve(
 template <typename SCALAR>
 // solves X = A^(-1) * B, with A nxn and b nxm
 Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> LDLTsolve(
-    const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &A,
-    const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> &B)
+    const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>& A,
+    const Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic>& B)
 {
     // Compute the decomposition
     const int n = A.rows();

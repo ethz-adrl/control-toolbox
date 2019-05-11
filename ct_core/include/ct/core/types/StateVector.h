@@ -19,7 +19,6 @@ public:
 
     StateVector() {}
     virtual ~StateVector() {}
-
     //! This constructor allows you to construct MyVectorType from Eigen expressions
     template <typename OtherDerived>
     StateVector(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)

@@ -78,7 +78,6 @@ public:
 
     //! destructor
     virtual ~DynamicsLinearizerADBase() {}
-
 protected:
     const size_t A_entries = STATE_DIM * STATE_DIM;    //!< number of entries in the state Jacobian
     const size_t B_entries = STATE_DIM * CONTROL_DIM;  //!< number of entries in the input Jacobian

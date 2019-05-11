@@ -157,11 +157,7 @@ public:
 	 * \note If this function takes a long time, consider generating the source code using
 	 * generateCode() and compile it before runtime.
 	 */
-    void compileJIT(const std::string& libName = "ADCodegenLinearizer")
-    {
-        linearizer_.compileJIT(libName);
-    }
-
+    void compileJIT(const std::string& libName = "ADCodegenLinearizer") { linearizer_.compileJIT(libName); }
     //! generates source code and saves it to file
     /*!
      * This generates source code for computing the system linearization and saves it to file. This
