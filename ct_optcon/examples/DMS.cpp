@@ -13,7 +13,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
  *
  * \example DMS.cpp
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     using namespace ct::optcon;
     using namespace ct::core;

@@ -9,7 +9,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 /*!
  * This runs the Linear system unit test.
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -28,10 +28,10 @@ public:
     //! constructor with constraint boundaries.
     StateSumConstraint(double lb, double ub) : lb_(lb), ub_(ub)
     {
-      Base::lb_.resize(1);
-      Base::ub_.resize(1);
-      Base::lb_.setConstant(lb);
-      Base::ub_.setConstant(ub);
+        Base::lb_.resize(1);
+        Base::ub_.resize(1);
+        Base::lb_.setConstant(lb);
+        Base::ub_.setConstant(ub);
     }
 
     virtual ~StateSumConstraint() {}
@@ -39,9 +39,9 @@ public:
     virtual size_t getConstraintSize() const override { return 1; }
     virtual Eigen::VectorXd evaluate(const state_vector_t& x, const control_vector_t& u, const double t) override
     {
-      Eigen::Matrix<double, 1, 1> val;
-      val.template segment<1>(0) << x(0) + x(1);
-      return val;
+        Eigen::Matrix<double, 1, 1> val;
+        val.template segment<1>(0) << x(0) + x(1);
+        return val;
     }
 
     virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
@@ -49,9 +49,9 @@ public:
         const ct::core::ControlVector<1, ct::core::ADCGScalar>& u,
         ct::core::ADCGScalar t) override
     {
-      Eigen::Matrix<ct::core::ADCGScalar, 1, 1> val;
-      val.template segment<1>(0) << x(0) + x(1);
-      return val;
+        Eigen::Matrix<ct::core::ADCGScalar, 1, 1> val;
+        val.template segment<1>(0) << x(0) + x(1);
+        return val;
     }
 
 private:

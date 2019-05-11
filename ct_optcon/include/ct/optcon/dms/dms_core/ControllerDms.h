@@ -59,14 +59,12 @@ public:
         assert(controlAction == controlAction);
     }
 
-    core::ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const state_vector_t& state,
-        const SCALAR time) override
+    core::ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const state_vector_t& state, const SCALAR time) override
     {
         return controlSpliner_->splineDerivative_q_i(time, shotIdx_);
     }
 
-    core::ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeUf(const state_vector_t& state,
-        const SCALAR time) override
+    core::ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeUf(const state_vector_t& state, const SCALAR time) override
     {
         return controlSpliner_->splineDerivative_q_iplus1(time, shotIdx_);
     }

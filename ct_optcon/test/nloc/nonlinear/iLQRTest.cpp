@@ -57,7 +57,7 @@ TEST(ILQRTestA, InstancesComparison)
         shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new Dynamics());
         shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearizedSystem());
         std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction(
-             new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
+            new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
 
         // times
         ct::core::Time tf = 3.0;
@@ -210,7 +210,7 @@ TEST(ILQRTestB, MultiThreadingTest)
         shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new Dynamics());
         shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearizedSystem());
         std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction(
-             new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
+            new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
 
         // times
         ct::core::Time tf = 3.0;
@@ -346,7 +346,7 @@ TEST(ILQRTestB, MultiThreadingTest)
                             ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
                         // Note: for compatibility with older Eigen versions, need scalar formulation for (state_matrix_t::Identity() - aNew).inverse();
                         state_matrix_t aNewInv;
-                        aNewInv(0,0) = 1.0 / (1.0 - aNew(0,0));
+                        aNewInv(0, 0) = 1.0 / (1.0 - aNew(0, 0));
                         A_analytic = aNewInv;
                         B_analytic = aNewInv * ilqr_settings.dt *
                                      analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
@@ -357,7 +357,7 @@ TEST(ILQRTestB, MultiThreadingTest)
                                               analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
                         // Note: for compatibility with older Eigen versions, need scalar formulation for (state_matrix_t::Identity() - aNew).inverse();
                         state_matrix_t aNewInv;
-                        aNewInv(0,0) = 1.0 / (1.0 - aNew(0,0));
+                        aNewInv(0, 0) = 1.0 / (1.0 - aNew(0, 0));
                         A_analytic = aNewInv * (state_matrix_t::Identity() + aNew);
                         B_analytic = aNewInv * ilqr_settings.dt *
                                      analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
@@ -420,7 +420,7 @@ TEST(ILQRTestC, PolicyComparison)
         shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new Dynamics());
         shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearizedSystem());
         std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction(
-             new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
+            new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
 
         // times
         ct::core::Time tf = 3.0;

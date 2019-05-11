@@ -247,10 +247,6 @@ private:
 
     //! time keeper
     tpl::MpcTimeKeeper<Scalar_t> timeKeeper_;
-
-
-
-
 };
 
 

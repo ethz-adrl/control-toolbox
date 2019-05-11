@@ -58,10 +58,8 @@ public:
 
     //! update Q matrix
     void setQ(const state_matrix_t& Q) { Q_ = Q; }
-
     //! update R matrix
     void setR(const output_matrix_t& R) { R_ = R; }
-
 protected:
     //! Filter Q matrix.
     state_matrix_t Q_;

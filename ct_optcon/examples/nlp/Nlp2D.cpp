@@ -33,7 +33,7 @@ template <typename SCALAR>
 class ExampleConstraints final : public tpl::DiscreteConstraintBase<SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     using VectorXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>;
 
     ExampleConstraints(std::shared_ptr<tpl::OptVector<SCALAR>> optVector) : optVector_(optVector)
@@ -98,7 +98,9 @@ public:
      *
      * \note this function implementation is only required for the exact-hessian solver case
      */
-    void sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda, Eigen::VectorXd& sparseHes) override
+    void sparseHessianValues(const Eigen::VectorXd& optVec,
+        const Eigen::VectorXd& lambda,
+        Eigen::VectorXd& sparseHes) override
     {
         sparseHes.resize(2);
         sparseHes.setConstant(lambda(2) * 2.0);
@@ -137,7 +139,7 @@ template <typename SCALAR>
 class ExampleCostEvaluator final : public tpl::DiscreteCostEvaluatorBase<SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     ExampleCostEvaluator(std::shared_ptr<tpl::OptVector<SCALAR>> optVector) : optVector_(optVector) {}
     ~ExampleCostEvaluator() override = default;
 
@@ -183,7 +185,7 @@ template <typename SCALAR>
 class ExampleConstraintsContainer final : public tpl::DiscreteConstraintContainerBase<SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     ExampleConstraintsContainer(std::shared_ptr<tpl::OptVector<SCALAR>> optVector) : optVector_(optVector)
     {
         auto exampleConstraints =
@@ -208,7 +210,7 @@ template <typename SCALAR>
 class ExampleProblem final : public tpl::Nlp<SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     ExampleProblem()
     {
         this->optVariables_ = std::shared_ptr<tpl::OptVector<SCALAR>>(new tpl::OptVector<SCALAR>(2));

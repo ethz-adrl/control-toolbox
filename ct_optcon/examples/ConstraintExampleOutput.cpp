@@ -143,7 +143,7 @@ void sparseBoxConstraintsExample()
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     controlInputBoxConstraintExample();
     terminalConstraintExample();

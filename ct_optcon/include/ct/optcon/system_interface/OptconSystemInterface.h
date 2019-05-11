@@ -61,7 +61,6 @@ public:
     //! perform any required setup work
     virtual void initialize() {}
     virtual void configure(const settings_t& settings) {}
-
     //! retrieve discrete-time linear system matrices A and B.
     /*!
      * @param x	the state setpoint
@@ -99,18 +98,14 @@ public:
 
     //! set the number of stages/time steps
     virtual void changeNumStages(const int numStages) {}
-
     const optConProblem_t& getOptConProblem() { return optConProblem_; };
-
     std::vector<typename optConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() { return systems_; }
     std::vector<typename optConProblem_t::LinearPtr_t>& getLinearSystemsInstances() { return linearSystems_; }
-
     virtual void changeNonlinearSystem(const typename optConProblem_t::DynamicsPtr_t& dyn) = 0;
     virtual void changeLinearSystem(const typename optConProblem_t::LinearPtr_t& lin) = 0;
 
     virtual void getSubstates(StateVectorArrayPtr& subStepsX, const size_t threadId) {}
     virtual void getSubcontrols(ControlVectorArrayPtr& subStepsU, const size_t threadId) {}
-
     virtual void setSubstepTrajectoryReference(const StateSubstepsPtr& xSubsteps,
         const ControlSubstepsPtr& uSubsteps,
         const size_t threadId){};

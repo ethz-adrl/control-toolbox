@@ -11,7 +11,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
  * \note for a more straight-forward implementation example, visit the tutorial.
  * \example GNMSCTest.cpp
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -96,13 +96,15 @@ SC TermSmoothAbs<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evalLocal(const E
     const Eigen::Matrix<SC, CONTROL_DIM, 1>& u,
     const SC& t)
 {
-  const Eigen::Matrix<SC, STATE_DIM, 1> xerr2 = (x - x_ref_.template cast<SC>()).array().square();
-  const Eigen::Matrix<SC, CONTROL_DIM, 1> uerr2 = (u - u_ref_.template cast<SC>()).array().square();
+    const Eigen::Matrix<SC, STATE_DIM, 1> xerr2 = (x - x_ref_.template cast<SC>()).array().square();
+    const Eigen::Matrix<SC, CONTROL_DIM, 1> uerr2 = (u - u_ref_.template cast<SC>()).array().square();
 
-  const Eigen::Matrix<SC, STATE_DIM, 1> xerrAbs = (xerr2 + core::StateVector<STATE_DIM, SC>::Ones() * static_cast<SC>(alphaSquared_)).cwiseSqrt();
-  const Eigen::Matrix<SC, CONTROL_DIM, 1> uerrAbs = (uerr2 + core::ControlVector<CONTROL_DIM, SC>::Ones() * static_cast<SC>(alphaSquared_)).cwiseSqrt();
+    const Eigen::Matrix<SC, STATE_DIM, 1> xerrAbs =
+        (xerr2 + core::StateVector<STATE_DIM, SC>::Ones() * static_cast<SC>(alphaSquared_)).cwiseSqrt();
+    const Eigen::Matrix<SC, CONTROL_DIM, 1> uerrAbs =
+        (uerr2 + core::ControlVector<CONTROL_DIM, SC>::Ones() * static_cast<SC>(alphaSquared_)).cwiseSqrt();
 
-  return a_.template cast<SC>().dot(xerrAbs) + b_.template cast<SC>().dot(uerrAbs);
+    return a_.template cast<SC>().dot(xerrAbs) + b_.template cast<SC>().dot(uerrAbs);
 }
 
 

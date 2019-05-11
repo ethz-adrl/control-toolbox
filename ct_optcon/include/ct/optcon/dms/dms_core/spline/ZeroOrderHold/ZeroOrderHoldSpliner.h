@@ -46,16 +46,8 @@ public:
         return zOholds_[shotIdx];
     }
 
-    vector_t splineDerivative_t(const SCALAR time, const size_t shotIdx) const override
-    {
-        return vector_t::Zero();
-    }
-
-    vector_t splineDerivative_h_i(const SCALAR time, const size_t shotIdx) const override
-    {
-        return vector_t::Zero();
-    }
-
+    vector_t splineDerivative_t(const SCALAR time, const size_t shotIdx) const override { return vector_t::Zero(); }
+    vector_t splineDerivative_h_i(const SCALAR time, const size_t shotIdx) const override { return vector_t::Zero(); }
     matrix_t splineDerivative_q_i(const SCALAR time, const size_t shotIdx) const override
     {
         return matrix_t::Identity();

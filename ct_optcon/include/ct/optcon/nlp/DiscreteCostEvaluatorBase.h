@@ -63,9 +63,7 @@ public:
     * @param[in]  lambda       multipliers for hessian matrix
     * @param[out] hes          The cost hessian matrix coeff
     */
-    virtual void sparseHessianValues(const Eigen::VectorXd& optVec,
-        const Eigen::VectorXd& lambda,
-        Eigen::VectorXd& hes)
+    virtual void sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda, Eigen::VectorXd& hes)
     {
         throw std::runtime_error(
             "Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");

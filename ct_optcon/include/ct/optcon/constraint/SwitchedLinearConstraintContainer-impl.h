@@ -38,7 +38,9 @@ SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::SwitchedLinea
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::~SwitchedLinearConstraintContainer(){}
+SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::~SwitchedLinearConstraintContainer()
+{
+}
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>::SwitchedLinearConstraintContainer_Raw_Ptr_t

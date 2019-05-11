@@ -298,9 +298,9 @@ protected:
 #endif
 };
 
-} // namespace tpl
+}  // namespace tpl
 
 using DiscreteConstraintContainerBase = tpl::DiscreteConstraintContainerBase<double>;
 
-} // namespace optcon
-} // namespact ct
+}  // namespace optcon
+}  // namespact ct

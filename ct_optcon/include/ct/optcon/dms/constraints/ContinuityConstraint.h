@@ -92,11 +92,7 @@ public:
     }
 
 
-    VectorXs eval() override
-    {
-        return w_->getOptimizedState(shotIndex_ + 1) - shotContainer_->getStateIntegrated();
-    }
-
+    VectorXs eval() override { return w_->getOptimizedState(shotIndex_ + 1) - shotContainer_->getStateIntegrated(); }
     VectorXs evalSparseJacobian() override
     {
         count_local_ = 0;

@@ -59,8 +59,6 @@ public:
 
     LinearizedSystem* clone() const override { return new LinearizedSystem(); }
 };
-
-
 }
 }
 }

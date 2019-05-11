@@ -134,7 +134,8 @@ TEST(MPCTestA, ForwardIntegratorTest)
         std::shared_ptr<ct::core::StateFeedbackController<state_dim, control_dim>> prevController(
             new ct::core::StateFeedbackController<state_dim, control_dim>(newPolicy));
         double time_window = 0.2;
-        for (size_t i = 0; i < mpcStateTrajectory.size() - static_cast<size_t>(nloc_settings.computeK(time_window)); i++)
+        for (size_t i = 0; i < mpcStateTrajectory.size() - static_cast<size_t>(nloc_settings.computeK(time_window));
+             i++)
         {
             double t_forward_start = i * nloc_settings.dt;
             double t_forward_stop = t_forward_start + time_window;

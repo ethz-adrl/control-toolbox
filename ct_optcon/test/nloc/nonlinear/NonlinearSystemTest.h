@@ -29,7 +29,6 @@ using namespace ct::optcon;
 using std::shared_ptr;
 
 
-
 TEST(NLOCTest, NonlinearSystemAlgorithmComparison)
 {
     typedef NLOptConSolver<state_dim, control_dim, 1, 0> NLOptConSolver;
@@ -97,27 +96,26 @@ TEST(NLOCTest, NonlinearSystemAlgorithmComparison)
     gnms.solve();
 
     // print trajectories
-	StateTrajectory < state_dim > xRollout_gnms = gnms.getStateTrajectory();
-	ControlTrajectory < control_dim > uRollout_gnms = gnms.getControlTrajectory();
+    StateTrajectory<state_dim> xRollout_gnms = gnms.getStateTrajectory();
+    ControlTrajectory<control_dim> uRollout_gnms = gnms.getControlTrajectory();
 
     ilqr.solve();
 
-	// print trajectories
-	StateTrajectory < state_dim > xRollout_ilqr = ilqr.getStateTrajectory();
-	ControlTrajectory < control_dim > uRollout_ilqr = ilqr.getControlTrajectory();
+    // print trajectories
+    StateTrajectory<state_dim> xRollout_ilqr = ilqr.getStateTrajectory();
+    ControlTrajectory<control_dim> uRollout_ilqr = ilqr.getControlTrajectory();
 
-	// Assert that the solutions are equal
-	for (size_t i = 0; i < xRollout_gnms.size(); i++) {
-		ASSERT_NEAR(xRollout_gnms[i](0), xRollout_ilqr[i](0), 1e-4);
-	}
+    // Assert that the solutions are equal
+    for (size_t i = 0; i < xRollout_gnms.size(); i++)
+    {
+        ASSERT_NEAR(xRollout_gnms[i](0), xRollout_ilqr[i](0), 1e-4);
+    }
 
-	for (size_t i = 0; i < uRollout_ilqr.size(); i++) {
-		ASSERT_NEAR(uRollout_gnms[i](0), uRollout_ilqr[i](0), 1e-4);
-	}
-
+    for (size_t i = 0; i < uRollout_ilqr.size(); i++)
+    {
+        ASSERT_NEAR(uRollout_gnms[i](0), uRollout_ilqr[i](0), 1e-4);
+    }
 }
-
-
 }
 }
 }

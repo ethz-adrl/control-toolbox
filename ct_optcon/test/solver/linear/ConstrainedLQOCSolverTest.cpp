@@ -8,7 +8,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #include "ConstrainedLQOCSolverTest.h"
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     using namespace ct::optcon;
     testing::InitGoogleTest(&argc, argv);

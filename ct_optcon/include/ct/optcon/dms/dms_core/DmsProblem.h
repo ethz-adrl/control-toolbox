@@ -348,31 +348,19 @@ public:
 	 *
 	 * @return     The dense state solution trajectory
 	 */
-    const state_vector_array_t& getStateTrajectory()
-    {
-        return optVariablesDms_->getOptimizedStates();
-    }
-
+    const state_vector_array_t& getStateTrajectory() { return optVariablesDms_->getOptimizedStates(); }
     /**
 	 * @brief      Retrieves a dense input solution trajectory
 	 *
 	 * @return     The dense control solution trajectory
 	 */
-    const control_vector_array_t& getInputTrajectory()
-    {
-        return optVariablesDms_->getOptimizedInputs();
-    }
-
+    const control_vector_array_t& getInputTrajectory() { return optVariablesDms_->getOptimizedInputs(); }
     /**
 	 * @brief      Retrieves a dense time solution trajectory
 	 *
 	 * @return     The dense time solution trajectory
 	 */
-    const time_array_t& getTimeArray()
-    {
-        return timeGrid_->toImplementation();
-    }
-
+    const time_array_t& getTimeArray() { return timeGrid_->toImplementation(); }
     /**
 	 * @brief      Sets the initial guess of the optimization
 	 *
@@ -414,7 +402,6 @@ public:
 	 * @brief      Prints the solution trajectories
 	 */
     void printSolution() { optVariablesDms_->printoutSolution(); }
-    
 private:
     DmsSettings settings_;
 

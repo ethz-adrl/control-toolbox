@@ -7,7 +7,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "LqrTest.h"
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     using namespace ct::optcon::example;
     testing::InitGoogleTest(&argc, argv);

@@ -88,7 +88,7 @@ template <size_t STATE_DIM, typename SCALAR = double>
 struct SteadyStateKalmanFilterSettings
 {
     ct::core::StateVector<STATE_DIM> x0; /*!< Initial state estimate. */
-    size_t maxDAREIterations; /*!< Max number of iteration for solving DARE. */
+    size_t maxDAREIterations;            /*!< Max number of iteration for solving DARE. */
 
     //! default constructor
     SteadyStateKalmanFilterSettings() : maxDAREIterations(1000u) {}

@@ -97,7 +97,9 @@ public:
      *
      * @param[out] sparseHes	The sparse hessian values
      */
-    virtual void sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda, Eigen::VectorXd& sparseHes)
+    virtual void sparseHessianValues(const Eigen::VectorXd& optVec,
+        const Eigen::VectorXd& lambda,
+        Eigen::VectorXd& sparseHes)
     {
         throw std::runtime_error(
             "sparseHessianValues() for DiscreteConstraintBase not implemented. Use Hessian approximation.");

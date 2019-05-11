@@ -111,8 +111,8 @@ public:
 
     void setInitialGuess(const VectorXs& xinit)
     {
-    	x_ = xinit;
-    	xInit_ = xinit;
+        x_ = xinit;
+        xInit_ = xinit;
     }
 
     /**
@@ -232,7 +232,6 @@ public:
     }
 
     const VectorXs& getOptimizationVars() const { return x_; }
-
     void getInitialGuess(size_t n, MapVecXs& x) const
     {
         assert(n == static_cast<size_t>(xInit_.size()));
