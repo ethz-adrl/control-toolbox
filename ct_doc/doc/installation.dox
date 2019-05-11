@@ -10,43 +10,37 @@
 
 
 \section dep Dependencies and building the library
- - install ROS, please follow the steps in <a href="http://wiki.ros.org/Installation/Ubuntu"> this tutorial</a> for your Linux distribution.
  - install <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen 3</a> via
   \code{.sh} 
   sudo apt-get update 
   sudo apt-get install libeigen3-dev 
   \endcode
- - install the <a href="http://catkin-tools.readthedocs.io/en/latest/verbs/catkin_build.html">catkin_tools</a> build system
- \code{.sh}
- sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
- wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
- sudo apt-get update
- sudo apt-get install python-catkin-tools
- \endcode
  - install boost
  \code{.sh}
  sudo apt-get install libboost-all-dev
  \endcode
- - create a catkin workspace and initialize it
- \code{.sh}
- mkdir -p ~/catkin_ws/src
- cd ~/catkin_ws
- catkin init
- \endcode
-
  - install the <a href="https://github.com/ethz-asl/kindr">kindr</a> library
   \code{.sh}
   cd ~/catkin_ws/src
   git clone https://github.com/ANYbotics/kindr.git
   \endcode
-
  - finally, clone the control toolbox and build your workspace
   \code{.sh}
   cd ~/catkin_ws/src
   git clone https://github.com/ethz-adrl/control-toolbox.git
   catkin build -DCMAKE_BUILD_TYPE=Release
   \endcode
-
+ - VARIANT A, if you are a ROS-user: create a catkin workspace and build the CT using catkin tools
+  \code{.sh}
+  mkdir -p ~/catkin_ws/src
+  cd ~/catkin_ws
+  catkin init
+  catkin build -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=true
+  \endcode
+ - VARIANT B, if you prefer plain cmake.
+  \code{.sh}
+  todo ...
+  \endcode
  - if you would like to run an example, build the library with 
   \code{.sh}
   cd ~/catkin_ws/src
@@ -62,7 +56,7 @@
 
 
 \section opt_dep Optional Dependencies and Bindings
-The following dependencies and bindings are optional but can help to enhance the functionality or performance of the CT
+The following dependencies and bindings are optional but can help to enhance the user-experience or performance of the CT
 
  - <a href="http://www.netlib.org/lapack/">lapack</a> (enables Schur method as an alternative to iterative method in ct::optcon::LQR)
  \code{.sh} $ sudo apt-get install liblapack-dev \endcode
@@ -80,6 +74,14 @@ The following dependencies and bindings are optional but can help to enhance the
  alternative high-performance (constrained) linear-quadratic optimal control solver. Check out the *ct-v2* tags. Detailed reference
  about blasefeo can be found <a href="https://arxiv.org/abs/1704.02457">here</a>.
  Both packages were developed by <a href="https://www.syscop.de/people/dr-gianluca-frison">Gianluca Frison</a>, <a href="https://www.syscop.de/">University of Freiburg</a>.
+
+ - install the <a href="http://catkin-tools.readthedocs.io/en/latest/verbs/catkin_build.html">catkin_tools</a> build system
+ \code{.sh}
+ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
+ wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+ sudo apt-get update
+ sudo apt-get install python-catkin-tools
+ \endcode
 
  - <a href="http://qwt.sourceforge.net/">Qwt</a> (for basic plotting)
 
