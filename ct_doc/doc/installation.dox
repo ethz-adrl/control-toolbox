@@ -9,7 +9,7 @@
 - a compiler with C++14 support, e.g. gcc or clang
 
 
-\section dep Dependencies and building the library
+\section dep Get Required Dependencies
  - install <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen 3</a> via
   \code{.sh} 
   sudo apt-get update 
@@ -19,40 +19,40 @@
  \code{.sh}
  sudo apt-get install libboost-all-dev
  \endcode
- - install the <a href="https://github.com/ethz-asl/kindr">kindr</a> library
+ - clone the <a href="https://github.com/ethz-asl/kindr">kindr</a> library into your workspace
   \code{.sh}
-  cd ~/catkin_ws/src
+  cd ~/your_workspace/src
   git clone https://github.com/ANYbotics/kindr.git
   \endcode
- - finally, clone the control toolbox and build your workspace
+ - finally, clone the control toolbox into your workspace
   \code{.sh}
-  cd ~/catkin_ws/src
+  cd ~/your_workspace/src
   git clone https://github.com/ethz-adrl/control-toolbox.git
-  catkin build -DCMAKE_BUILD_TYPE=Release
   \endcode
- - VARIANT A, if you are a ROS-user: create a catkin workspace and build the CT using catkin tools
+
+\section build Building the CT
+ - VARIANT A, if you are a ROS-user: build the CT using catkin tools
   \code{.sh}
-  mkdir -p ~/catkin_ws/src
-  cd ~/catkin_ws
-  catkin init
+  cd ~/your_workspace
   catkin build -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=true
   \endcode
- - VARIANT B, if you prefer plain cmake.
+  - Now, try to run the examples, e.g. the optimal control and optimal filtering examples:
   \code{.sh}
-  todo ...
-  \endcode
- - if you would like to run an example, build the library with 
-  \code{.sh}
-  cd ~/catkin_ws/src
-  catkin build -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=true
-  \endcode
-  Now, try to run the examples, e.g. the optimal control and optimal filtering examples:
-   \code{.sh}
   cd ~/catkin_ws/src
   catkin build -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=true
   rosrun ct_optcon ex_NLOC
   rosrun ct_optcon ex_KalmanFiltering
   \endcode
+ - VARIANT B, if you prefer plain cmake.
+  First, make sure you build and install the kindr-library, see <a href="https://github.com/ANYbotics/kindr#building">kindr</a> here.  
+  Then go to the CT and run the build script:
+  \code{.sh}
+  cd ../control-toolbox/ct
+  chmod 775 build_ct.sh
+  ./build_ct.sh -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=true
+  \endcode
+  - This creates a /build subdirectory in every single CT-project, where the examples will be located.
+
 
 
 \section opt_dep Optional Dependencies and Bindings

@@ -26,10 +26,17 @@ if [ -d "../$1" ]; then
   cd ..
   echo " === completed " $1 " === "
 else
-    echo "ERROR: you need to start the installer from the control-toolbox/ct directory."
+    echo "ERROR: an error occurred during building or installing. Try building manually."
     exit 1
 fi
 }
+
+## get current folder and make sure it is *ct*
+curr_folder=${PWD##*/}
+if [ $curr_folder != "ct" ]; then
+    echo "ERROR: you need to start the installer from the control-toolbox/ct directory."
+    exit 1
+fi
 
 # check number of user input args
 # no args
