@@ -10,5 +10,4 @@ if(DOXYGEN_FOUND)
         COMMAND ${CMAKE_COMMAND} -E echo_append "API Documentation built in ${CMAKE_CURRENT_SOURCE_DIR}"
         VERBATIM)
     
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/html DESTINATION share/ct_optcon/doc)
 endif()

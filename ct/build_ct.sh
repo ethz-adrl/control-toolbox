@@ -19,7 +19,6 @@ if [ -d "../$1" ]; then
   echo "Building with the following flags ... "
   printf '%s\n' "${build_flags[@]}"
   
-  make clean
   cmake .. ${build_flags[*]}
   make -j4
   sudo make install  >/dev/null
