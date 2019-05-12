@@ -90,7 +90,7 @@ if(IPOPT_FOUND)
     add_definitions(${IPOPT_DEFINITIONS})
     message(STATUS "Found IPOPT - building with IPOPT support") 
     set(IPOPT_LIBS ipopt) # dl mumps coinhsl lapack blas gfortran m quadmath coinmetis)
-endif(IPOPT_FOUND)
+endif()
 
 
 ## include SNOPT -- todo SNOPT not tested in version 3.0.1, temporarily deactivated
