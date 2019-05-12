@@ -25,7 +25,7 @@ find_package(Qwt QUIET)
 find_package(Qt4 QUIET)
 if(QWT_FOUND AND Qt4_FOUND)
     message(STATUS "Qwt and QT found.")
-    add_definitions(-DQWT_ENABLED)
+    set(QWT_ENABLED ON)
     include(${QT_USE_FILE})
     list(APPEND ct_core_LIBS ${QWT_LIBRARY} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
 else()
@@ -83,7 +83,7 @@ if(USE_PRESPEC)
         add_library(${lib_name} SHARED ${${lib_name}_SRCS})
         target_include_directories(${lib_name} PUBLIC ${ct_core_target_include_dirs})
     endforeach()
-endif(USE_PRESPEC)
+endif()
 
 
 ## create ct_core libraries
