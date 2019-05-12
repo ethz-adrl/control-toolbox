@@ -59,7 +59,8 @@ install:
 
   #install deb-packaged dependencies
   - cd ~/catkin_ws/src/control-toolbox/ct
-  - ./install_deps   >/dev/null # suppress output
+  - chmod 775 install_deps.sh
+  - ./install_deps.sh   >/dev/null # suppress output
 
   #install kindr
   - cd ~/catkin_ws/src/
