@@ -4,6 +4,8 @@ CMakeCache.txt
 !clang-cxx-dev-tools.cmake
 !compilerSettings.cmake
 !FindIPOPT.cmake
+!Findblasfeo.cmake
+!Findhpipm.cmake
 *.a
 *.o
 *.so

@@ -57,29 +57,15 @@ else(LAPACK_FOUND)
 endif(LAPACK_FOUND)
 
 
-## include BLASFEO AND HPIPM
-set(HPIPM_INCLUDE_DIRS "")
-set(HPIPM_LIBS "")
-if(HPIPM)
-    if(DEFINED ENV{BLASFEO_DIR})
-        if(DEFINED ENV{HPIPM_DIR})
-            message(WARNING "...Found HPIPM and BLASFEO environment variables")
-            add_definitions (-DHPIPM)
-
-            list(APPEND HPIPM_INCLUDE_DIRS $ENV{BLASFEO_DIR}/include)
-            list(APPEND HPIPM_INCLUDE_DIRS $ENV{HPIPM_DIR}/include)
-    
-            link_directories($ENV{BLASFEO_DIR}/lib)
-            link_directories($ENV{HPIPM_DIR}/lib)
-            list(APPEND HPIPM_LIBS hpipm blasfeo)
-
-        else(DEFINED ENV{HPIPM_DIR})
-            message(WARNING "Trying to build with HPIPM, but no ENV variable for HPIPM found.")
-        endif(DEFINED ENV{HPIPM_DIR})
-    else(DEFINED ENV{BLASFEO_DIR})
-        message(WARNING "Trying to build with HPIPM, but no ENV variable for Blasfeo found.")
-    endif(DEFINED ENV{BLASFEO_DIR})
-endif(HPIPM)
+## include HPIPM (required: environment variables for blasfeo and hpipm set)
+find_package(blasfeo QUIET)
+find_package(hpipm QUIET)
+if(blasfeo_FOUND AND hpipm_FOUND)
+    message(STATUS "Found HPIPM and BLASFEO")
+    set(HPIPM ON)
+    add_definitions(-DHPIPM)
+    list(APPEND HPIPM_LIBS ${hpipm_LIBRARIES} ${blasfeo_LIBRARIES})
+endif()
 
 
 ## include IPOPT (after installation via sudo apt-get install coinor-libipopt-dev)
@@ -122,7 +108,8 @@ endif()
 set(ct_optcon_target_include_dirs
     ${ct_core_INCLUDE_DIRS}
     ${matlab_cpp_interface_INCLUDE_DIRS}
-    ${HPIPM_INCLUDE_DIRS}
+    ${blasfeo_INCLUDE_DIRS}
+    ${hpipm_INCLUDE_DIRS}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
@@ -153,11 +140,9 @@ endif(USE_PRESPEC)
 
 
 ## create ct_optcon library
-add_library(ct_optcon SHARED
-    src/ct_optcon.cpp
-    )
-target_include_directories(ct_optcon PUBLIC ${ct_optcon_target_include_dirs})
-    target_link_libraries(ct_optcon
+add_library(ct_optcon INTERFACE)
+target_include_directories(ct_optcon INTERFACE ${ct_optcon_target_include_dirs})
+target_link_libraries(ct_optcon INTERFACE
     ct_core
     ${matlab_cpp_interface_LIBRARIES}
     ${LAPACK_LIBS}
@@ -220,7 +205,7 @@ install(
     RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 
-## create the ct_core.cmake file which holds target includes and dependencies
+## create the ct_optcon.cmake file which holds target includes and dependencies
 install (EXPORT ct_optcon_export DESTINATION share/ct_optcon/cmake)
 
     

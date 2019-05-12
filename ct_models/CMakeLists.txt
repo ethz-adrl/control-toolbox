@@ -118,7 +118,6 @@ endif(BUILD_HYQ_LINEARIZATION_TIMINGS)
 add_executable(InvertedPendulumWithActuatorCodeGen src/InvertedPendulum/codegen/InvertedPendulumWithActuatorCodeGen.cpp)
 target_include_directories(InvertedPendulumWithActuatorCodeGen PUBLIC ${ct_models_target_include_dirs})
 target_link_libraries(InvertedPendulumWithActuatorCodeGen ct_rbd)
-list(APPEND CT_MODEL_LIBS InvertedPendulumWithActuatorCodeGen)
 
 add_library(InvertedPendulumActDynLinearizedForward include/ct/models/InvertedPendulum/codegen/InvertedPendulumActDynLinearizedForward.cpp)
 target_include_directories(InvertedPendulumWithActuatorCodeGen PUBLIC ${ct_models_target_include_dirs})
@@ -191,6 +190,16 @@ target_link_libraries(irb4600_ik ct_rbd)
 list(APPEND CT_MODEL_LIBS irb4600_ik)
 
 
+## convenience library for passing on includes
+add_library(ct_models INTERFACE)
+target_include_directories(ct_models INTERFACE ${ct_models_target_include_dirs})
+target_link_libraries(ct_models INTERFACE 
+  ct_rbd
+  ${CT_MODEL_LIBS}
+  )
+list(APPEND CT_MODEL_LIBS ct_models)
+
+
 ############
 # EXAMPLES #
 ############
@@ -241,7 +250,7 @@ install(
     RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 
-## create the ct_rbd.cmake file which holds target includes and dependencies
+## create the ct_models.cmake file which holds target includes and dependencies
 install (EXPORT ct_models_export DESTINATION share/ct_models/cmake)
 
 

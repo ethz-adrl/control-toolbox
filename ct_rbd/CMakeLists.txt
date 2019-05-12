@@ -38,9 +38,9 @@ set(ct_rbd_target_include_dirs
 
 
 ## create ct_rbd library
-add_library(ct_rbd SHARED src/ct_rbd.cpp)
-target_include_directories(ct_rbd PUBLIC ${ct_rbd_target_include_dirs})
-target_link_libraries(ct_rbd PUBLIC ct_optcon)
+add_library(ct_rbd INTERFACE)
+target_include_directories(ct_rbd INTERFACE ${ct_rbd_target_include_dirs})
+target_link_libraries(ct_rbd INTERFACE ct_optcon)
 
 
 ###########

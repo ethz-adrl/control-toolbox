@@ -86,12 +86,17 @@ if(USE_PRESPEC)
 endif(USE_PRESPEC)
 
 
-## create ct_core library
-add_library(ct_core SHARED src/core/plot/plot.cpp)
-target_include_directories(ct_core PUBLIC ${ct_core_target_include_dirs})
-target_link_libraries(ct_core
+## create ct_core libraries
+add_library(ct_plot SHARED src/core/plot/plot.cpp)
+target_include_directories(ct_plot PUBLIC ${ct_core_target_include_dirs})
+target_link_libraries(ct_plot ${ct_core_LIBS})
+
+add_library(ct_core INTERFACE)
+target_include_directories(ct_core INTERFACE ${ct_core_target_include_dirs})
+target_link_libraries(ct_core INTERFACE
     ${ct_core_LIBS}
     ${PRESPEC_LIB_NAMES}
+    ct_plot
     pthread
     dl # required for gcc compatibility
     )
@@ -147,7 +152,7 @@ install(FILES "${PROJECT_BINARY_DIR}/ct_coreConfig.cmake" DESTINATION "share/ct_
 
 ## install library and targets
 install(
-    TARGETS ct_core ${PRESPEC_LIB_NAMES}
+    TARGETS ct_core ct_plot ${PRESPEC_LIB_NAMES}
     EXPORT ct_core_export
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
