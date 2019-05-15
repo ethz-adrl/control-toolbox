@@ -4,10 +4,6 @@
   <!-- >test <-->
   <navindex>
     <tab type="mainpage" visible="yes" title="Home"/>
-    <tab type="user" url="../../../ct_core/doc/html/index.html" title="Core module"/>
-    <tab type="user" url="../../../ct_optcon/doc/html/index.html" title="Optimal Control"/>
-    <tab type="user" url="../../../ct_rbd/doc/html/index.html" title="Robot Module"/>
-    <tab type="user" url="../../../ct_models/doc/html/index.html" title="Models"/>
     <tab type="pages" visible="yes" title="" intro=""/>
     <tab type="modules" visible="no" title="Modules" intro=""/>
     <tab type="namespaces" visible="yes" title="">
@@ -24,7 +20,11 @@
       <tab type="filelist" visible="yes" title="" intro=""/>
       <tab type="globals" visible="yes" title="" intro=""/>
     </tab>
-    <tab type="examples" visible="yes" title="" intro=""/>  
+    <tab type="examples" visible="yes" title="" intro=""/>
+    <!--tab type="user" url="../../../ct_core/doc/html/index.html" title="Core module"/-->
+    <!--tab type="user" url="../../../ct_optcon/doc/html/index.html" title="Optimal Control"/-->
+    <!--tab type="user" url="../../../ct_rbd/doc/html/index.html" title="Robot Module"/-->
+    <!--tab type="user" url="../../../ct_models/doc/html/index.html" title="Models"/-->
   </navindex>
 
   <!-- Layout definition for a class page -->
