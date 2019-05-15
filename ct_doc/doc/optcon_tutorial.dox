@@ -9,6 +9,10 @@ a Nonlinear Optimal Controller (NLOC), a Nonlinear Model Predictive Controller (
 - \subpage optcon_tut_nloc_gen_constrained
 - \subpage optcon_tut_mpc
 - \subpage optcon_tut_dms
+- \subpage optcon_tut_nlp
+- \subpage optcon_tut_ekf
+- \subpage optcon_tut_disturbance_ekf
+
 
 \page optcon_tut_lqr LQR Control of a Damped Oscillator
 In this example, we will take an existing damped oscillator model, linearize the (already linear) dynamics around the steady state
@@ -25,7 +29,7 @@ rosrun ct_optcon ex_LQR
 \note Make sure you have built the examples before trying to run it.
 
 
-\page optcon_tut_nloc NLOC of a Damped Oscillator
+\page optcon_tut_nloc Optimal control of a Damped Oscillator
 
 This example shows how to use the nonlinear optimal control solvers iLQR, unconstrained Gauss-Newton-Multiple-Shooting (GNMS),
 as well as the hybrid methods iLQR-GNMS(M), where M denotes the number of multiple-shooting intervals.
@@ -66,7 +70,7 @@ rosrun ct_optcon ex_NLOC_generalConstrained
 \endcode
 
 
-\page optcon_tut_mpc NLOC-MPC of a Damped Oscillator
+\page optcon_tut_mpc Model Predictive Control for a Damped Oscillator
 
 In this example we show how to use a Nonlinear Optimal Control solver (here iLQG) in combination with the MPC-class for out-of-the box Model Predictive Control.
 
@@ -96,5 +100,54 @@ You can run this example with the following command
 rosrun ct_optcon ex_DMS
 \endcode
 
+
+\page optcon_tut_nlp Simple Examples for Nonlinear Programming
+
+\note these examples show how to set up a very simple nonlinear program and solve it using IPOPT.
+
+\include nlp/Nlp2D.cpp
+
+You can run this example with the following command
+\code{.sh}
+rosrun ct_optcon ex_Nlp_2D
+\endcode
+
+
+\include nlp/Nlp3D.cpp
+
+You can run this example with the following command
+\code{.sh}
+rosrun ct_optcon ex_Nlp_3D
+\endcode
+
+
+
+\page optcon_tut_ekf Extended Kalman Filtering 
+
+This example demonstrates how to set up an Extended Kalman Filter. We simulate a system, add noise to the observations and then 
+compute state estimates using the EKF class.
+
+\include KalmanFiltering.cpp
+
+You can run this example with the following command
+
+\code{.sh}
+rosrun ct_optcon ex_KalmanFiltering
+\endcode
+
+
+\page optcon_tut_disturbance_ekf Extended Kalman Filter as Disturbance Observer
+
+Here, we use an Extended Kalman Filter to observer an input-disturbance to a simple example system. 
+We simulate a system, subjet to noise and a time-varying disturbance, add noise to the observations and then 
+compute state and disturbance estimates using an EKF.
+
+\include KalmanDisturbanceFiltering.cpp
+
+You can run this example with the following command
+
+\code{.sh}
+rosrun ct_optcon ex_KalmanDisturbanceFiltering
+\endcode
 
  */
