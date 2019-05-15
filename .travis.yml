@@ -22,18 +22,6 @@ env:
 ################################################################################
 
 before_install:
-
-   #install gtest
-  - sudo apt-get update                     >/dev/null # suppress output
-  - sudo apt-get install cmake              >/dev/null # suppress output
-  - sudo apt install libgtest-dev           >/dev/null # suppress output
-  - cd /usr/src/gtest/                      >/dev/null # suppress output
-  - sudo mkdir build && cd build            >/dev/null # suppress output
-  - sudo cmake .. -DBUILD_SHARED_LIBS=ON    >/dev/null # suppress output
-  - sudo make                               >/dev/null # suppress output
-  - sudo cp *.so /usr/lib                   >/dev/null # suppress output
-  - cd ~/                                   >/dev/null # suppress output
-
    #install ros kinetic
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'  >/dev/null # suppress output
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -   >/dev/null # suppress output

@@ -113,14 +113,7 @@ endif()
 ###########
 # TESTING #
 ###########
-## requires gtest to be installed, e.g. via 
-## sudo apt install libgtest-dev
-## cd /usr/src/gtest/
-## sudo cmake -DBUILD_SHARED_LIBS=ON
-## sudo make
-## sudo cp *.so /usr/lib
 if(BUILD_TESTS)
-    find_package(GTest REQUIRED)
     enable_testing()
     add_subdirectory(test)
 endif()
