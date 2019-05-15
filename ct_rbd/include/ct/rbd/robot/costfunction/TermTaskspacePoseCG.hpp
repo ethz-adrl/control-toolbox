@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
 Authors:  Michael Neunert, Markus Giftthaler, Markus Stäuble, Diego Pardo, Farbod Farshidian
-Licensed under Apache2 license (see LICENSE file in main directory)
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -124,8 +124,8 @@ public:
         bool evalControlDerivatives = false)
         : BASE(name), eeInd_(eeInd), Q_pos_(Qpos), Q_rot_(Qrot), evalControlDerivatives_(evalControlDerivatives)
     {
-    	// arbitrary dummy values
-        Eigen::Quaterniond w_q_des (0.0, 0.0, 0.0, 1.0);
+        // arbitrary dummy values
+        Eigen::Quaterniond w_q_des(0.0, 0.0, 0.0, 1.0);
         setReferenceOrientation(w_q_des);
         setReferencePosition(core::StateVector<3>::Zero());
         setup();
@@ -148,8 +148,7 @@ public:
           adParameterVector_(arg.adParameterVector_),
           evalControlDerivatives_(arg.evalControlDerivatives_)
     {
-        derivativesCppadJIT_ =
-            std::shared_ptr<DerivativesCppadJIT>(arg.derivativesCppadJIT_->clone());
+        derivativesCppadJIT_ = std::shared_ptr<DerivativesCppadJIT>(arg.derivativesCppadJIT_->clone());
     }
 
     //! destructor
@@ -459,7 +458,7 @@ private:
         SC rot_cost = (SC)Q_rot_ * (ee_R_diff - Eigen::Matrix<SC, 3, 3>::Identity()).squaredNorm();
 
         Eigen::Matrix<SC, 1, 1> result;
-        result(0,0) = (pos_cost + rot_cost);
+        result(0, 0) = (pos_cost + rot_cost);
         return result;
     }
 

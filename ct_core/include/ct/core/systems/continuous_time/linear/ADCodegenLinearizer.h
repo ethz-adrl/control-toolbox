@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 #pragma once
 
@@ -157,11 +157,7 @@ public:
 	 * \note If this function takes a long time, consider generating the source code using
 	 * generateCode() and compile it before runtime.
 	 */
-    void compileJIT(const std::string& libName = "ADCodegenLinearizer")
-    {
-        linearizer_.compileJIT(libName);
-    }
-
+    void compileJIT(const std::string& libName = "ADCodegenLinearizer") { linearizer_.compileJIT(libName); }
     //! generates source code and saves it to file
     /*!
      * This generates source code for computing the system linearization and saves it to file. This

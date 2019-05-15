@@ -1,68 +1,123 @@
 /*!
 
 \page install_guide Installation
+
 @tableofcontents
 
 \section req Requirements:
 
+\subsection req-system System Requirements
 - Ubuntu 16.04 or 18.04
 - a compiler with C++14 support, e.g. gcc or clang
 
 
-\section dep Dependencies and building the library
- - install ROS, please follow the steps in <a href="http://wiki.ros.org/Installation/Ubuntu"> this tutorial</a> for your Linux distribution.
+\subsection req-dependencies Required Dependencies
  - install <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen 3</a> via
   \code{.sh} 
   sudo apt-get update 
   sudo apt-get install libeigen3-dev 
   \endcode
- - install the <a href="http://catkin-tools.readthedocs.io/en/latest/verbs/catkin_build.html">catkin_tools</a> build system
- \code{.sh}
- sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
- wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
- sudo apt-get update
- sudo apt-get install python-catkin-tools
- \endcode
  - install boost
  \code{.sh}
  sudo apt-get install libboost-all-dev
  \endcode
- - create a catkin workspace and initialize it
- \code{.sh}
- mkdir -p ~/catkin_ws/src
- cd ~/catkin_ws
- catkin init
- \endcode
-
- - install the <a href="https://github.com/ethz-asl/kindr">kindr</a> library
+ - clone the <a href="https://github.com/ethz-asl/kindr">kindr</a> library into your workspace
   \code{.sh}
-  cd ~/catkin_ws/src
+  cd ~/your_workspace/src
   git clone https://github.com/ANYbotics/kindr.git
   \endcode
-
- - finally, clone the control toolbox and build your workspace
+ - finally, clone the control toolbox into your workspace
   \code{.sh}
-  cd ~/catkin_ws/src
+  cd ~/your_workspace/src
   git clone https://github.com/ethz-adrl/control-toolbox.git
-  catkin build -DCMAKE_BUILD_TYPE=Release
   \endcode
 
- - if you would like to run an example, build the library with 
-  \code{.sh}
-  cd ~/catkin_ws/src
-  catkin build -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=true
-  \endcode
-  Now, try to run the examples, e.g. the optimal control and optimal filtering examples:
-   \code{.sh}
-  cd ~/catkin_ws/src
-  catkin build -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=true
-  rosrun ct_optcon ex_NLOC
-  rosrun ct_optcon ex_KalmanFiltering
-  \endcode
+\section build Building the CT
+\subsection build-ros For ROS or catkin users
+\subsubsection build-ros-main Compiling the Library
+It is assumed that you have a valid catkin-workspace set up, e.g. using <a href="https://catkin-tools.readthedocs.io/en/latest/">catkin tools</a>.
+Then, execute the following steps.
+\code{.sh}
+cd ~/your_workspace
+catkin build -DCMAKE_BUILD_TYPE=Release
+\endcode
+
+\subsubsection build-ros-examples Building and running examples
+To build an run the examples, e.g. the optimal control and optimal filtering examples:
+\code{.sh}
+cd ~/your_workspace
+catkin build -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=true
+source devel/setup.bash
+rosrun ct_optcon ex_NLOC
+rosrun ct_optcon ex_KalmanFiltering
+\endcode
+
+\subsubsection build-ros-tests Building and running the unit tests
+To build an run the unit tests:
+\code{.sh}
+cd ~/your_workspace
+catkin build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=true
+catkin run_tests
+\endcode
+
+\subsubsection build-ros-doc Building the documentation
+To build the documentation execute
+\code{.sh}
+catkin build ct_doc -v --make-args doc
+\endcode
+This will build the documentation. The index.html can be found in ct_doc/doc/html
+
+
+
+\subsection build-cmake Using plain cmake.
+\subsubsection build-cmake-main Compiling the Library
+First, make sure you build and install the kindr-library, see <a href="https://github.com/ANYbotics/kindr#building">here</a>.  
+Then go to your local clone of the control toolbox and run the build script:
+\code{.sh}
+cd your_workspace/control-toolbox/ct
+chmod 775 build_ct.sh
+./build_ct.sh -DCMAKE_BUILD_TYPE=Release
+\endcode
+
+\subsubsection build-cmake-examples Building and running examples
+Then go to your local clone of the control toolbox and run the build script with the following flags.
+\code{.sh}
+cd your_workspace/control-toolbox/ct
+./build_ct.sh -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=true
+\endcode
+This creates a /build subdirectory in every single CT-project, where the examples will be located.
+For running the nonlinear optimal control or filtering examples, for instance, go to your workspace an run
+\code{.sh}
+./src/control-toolbox/ct_optcon/build/examples/ex_NLOC
+./src/control-toolbox/ct_optcon/build/examples/ex_KalmanFiltering
+\endcode
+
+\subsubsection build-cmake-tests Building and running the unit tests
+To build an run the unit tests:
+\code{.sh}
+cd your_workspace/control-toolbox/ct
+./build_ct.sh -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=true
+\endcode
+
+\subsubsection build-cmake-doc Building the documentation
+\code{.sh}
+cd your_workspace/control-toolbox/ct
+chmod 775 build_doc.sh
+./build_doc.sh
+\endcode
+The index.html can be found in ct_doc/doc/html
+
+\subsubsection build-cmake-cleanup Clean up
+In order to clean up the build workspaces, run the clean script
+\code{.sh}
+cd your_workspace/control-toolbox/ct
+chmod 775 clean_ct.sh
+./clean_ct.sh
+\endcode
 
 
 \section opt_dep Optional Dependencies and Bindings
-The following dependencies and bindings are optional but can help to enhance the functionality or performance of the CT
+The following dependencies and bindings are optional but can help to enhance the user-experience or performance of the CT
 
  - <a href="http://www.netlib.org/lapack/">lapack</a> (enables Schur method as an alternative to iterative method in ct::optcon::LQR)
  \code{.sh} $ sudo apt-get install liblapack-dev \endcode
@@ -81,18 +136,21 @@ The following dependencies and bindings are optional but can help to enhance the
  about blasefeo can be found <a href="https://arxiv.org/abs/1704.02457">here</a>.
  Both packages were developed by <a href="https://www.syscop.de/people/dr-gianluca-frison">Gianluca Frison</a>, <a href="https://www.syscop.de/">University of Freiburg</a>.
 
+ - install the <a href="http://catkin-tools.readthedocs.io/en/latest/verbs/catkin_build.html">catkin_tools</a> build system
+ \code{.sh}
+ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
+ wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+ sudo apt-get update
+ sudo apt-get install python-catkin-tools
+ \endcode
+
  - <a href="http://qwt.sourceforge.net/">Qwt</a> (for basic plotting)
 
  - MATLAB (for Matlab logging)
 
- - <a href="http://clang.llvm.org/extra/clang-tidy/">clang-tidy</a>, install via
- \code{.sh}
- $ sudo apt-get install clang-tidy-3.9
- \endcode
-
  - <a href="https://clang.llvm.org/docs/ClangFormat.html">clang-format</a>, install via
   \code{.sh}
- $ sudo apt-get install clang-format-3.9
+ $ sudo apt-get install clang-format
  \endcode
 
 
@@ -112,21 +170,5 @@ Build Flag  | Default value | Description
 -DINTEL_C_COMPILER=\<clang-bin> | "/opt/intel/bin/icpc" | Set Intel C compiler binary
 -DHPIPM=\<BOOL> | FALSE | Compile with HPIPM support (set $BLASFEO_DIR and $HPIPM_DIR environment variables)
 
-
-
-\section build_doc Build this Documentation
-To build the documentation do
-\code{.sh}
-catkin build ct_doc -v --make-args doc # build the doc
-\endcode
-This will build the documentation. The index.html can be found in ct_doc.
-
-
-\section run_tests Run Unit Tests
-The unit tests are writte as <a href="http://code.google.com/p/googletest/">Google Tests</a>.
-To run unit tests and verify operation execute
-\code{.sh}
-catkin run_tests
-\endcode
 
 */

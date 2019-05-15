@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -14,15 +14,10 @@ namespace rbd {
 
 struct InverseKinematicsSettings
 {
-	InverseKinematicsSettings():
-		maxNumTrials_(1),
-		randomizeInitialGuess_(true),
-		validationTol_(1e-4)
-	{}
-
-	size_t maxNumTrials_;
-	bool randomizeInitialGuess_;
-	double validationTol_;
+    InverseKinematicsSettings() : maxNumTrials_(1), randomizeInitialGuess_(true), validationTol_(1e-4) {}
+    size_t maxNumTrials_;
+    bool randomizeInitialGuess_;
+    double validationTol_;
 };
 
 
@@ -40,10 +35,7 @@ public:
     InverseKinematicsBase() = default;
 
     //! constructor with additional settings
-    InverseKinematicsBase(const InverseKinematicsSettings& settings):
-    	settings_(settings)
-    {}
-
+    InverseKinematicsBase(const InverseKinematicsSettings& settings) : settings_(settings) {}
     //! default destructor
     virtual ~InverseKinematicsBase() = default;
 
@@ -127,15 +119,9 @@ public:
             ikSolution, eeBasePose, identityWorldPose, queryJointPositions, freeJoints);
     }
 
-    const InverseKinematicsSettings& getSettings() const {return settings_;}
-
-    void updateSettings(const InverseKinematicsSettings& settings)
-    {
-		settings_ = settings;
-	}
-
+    const InverseKinematicsSettings& getSettings() const { return settings_; }
+    void updateSettings(const InverseKinematicsSettings& settings) { settings_ = settings; }
 protected:
-
     InverseKinematicsSettings settings_;
 };
 

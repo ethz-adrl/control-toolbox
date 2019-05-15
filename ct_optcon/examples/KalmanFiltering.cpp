@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 /*!
@@ -11,7 +11,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
  */
 
 #include <ct/optcon/optcon.h>
-#include <CustomController.h>  // Using the custom controller from ct_core examples.
+#include <ct/core/examples/CustomController.h>  // Using the custom controller from ct_core examples.
 #include "exampleDir.h"
 
 int main(int argc, char** argv)

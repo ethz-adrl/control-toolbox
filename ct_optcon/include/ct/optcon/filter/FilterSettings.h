@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -88,7 +88,7 @@ template <size_t STATE_DIM, typename SCALAR = double>
 struct SteadyStateKalmanFilterSettings
 {
     ct::core::StateVector<STATE_DIM> x0; /*!< Initial state estimate. */
-    size_t maxDAREIterations; /*!< Max number of iteration for solving DARE. */
+    size_t maxDAREIterations;            /*!< Max number of iteration for solving DARE. */
 
     //! default constructor
     SteadyStateKalmanFilterSettings() : maxDAREIterations(1000u) {}

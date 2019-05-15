@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -29,7 +29,7 @@ public:
         const JointPosition& upperBound)
         : optVector_(optVector)
     {
-    	// set up joint limit constraints
+        // set up joint limit constraints
         auto jointLimits = std::shared_ptr<JointLimitConstraints<KINEMATICS, SCALAR>>(
             new JointLimitConstraints<KINEMATICS, SCALAR>(optVector_, lowerBound, upperBound));
         this->constraints_.push_back(jointLimits);
@@ -47,7 +47,7 @@ public:
      */
     const std::shared_ptr<JointLimitConstraints<KINEMATICS, SCALAR>> getJointLimitConstraints() const
     {
-    	return std::static_pointer_cast<JointLimitConstraints<KINEMATICS, SCALAR>>(this->constraints_.front());
+        return std::static_pointer_cast<JointLimitConstraints<KINEMATICS, SCALAR>>(this->constraints_.front());
     }
 
 private:

@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -97,7 +97,9 @@ public:
      *
      * @param[out] sparseHes	The sparse hessian values
      */
-    virtual void sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda, Eigen::VectorXd& sparseHes)
+    virtual void sparseHessianValues(const Eigen::VectorXd& optVec,
+        const Eigen::VectorXd& lambda,
+        Eigen::VectorXd& sparseHes)
     {
         throw std::runtime_error(
             "sparseHessianValues() for DiscreteConstraintBase not implemented. Use Hessian approximation.");

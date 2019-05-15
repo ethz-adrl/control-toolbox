@@ -58,31 +58,31 @@ class SnoptSolver;
 struct SnoptMemory
 {
     typedef double Number;
-    const SnoptSolver &self; /*!<A reference the the Snoptsolver the memory points to*/
+    const SnoptSolver& self; /*!<A reference the the Snoptsolver the memory points to*/
 
 
-    Number *x_ = nullptr;    /*!<Optimization variables*/
-    Number *xlow_ = nullptr; /*!<Lower bound of the optimization variables*/
-    Number *xupp_ = nullptr; /*!<Upper bound of the optimization variables*/
-    Number *xmul_ = nullptr; /*!<The optimization variables multiplier*/
-    int *xstate_ = nullptr;  //*!<The state of the optimization variables*/
+    Number* x_ = nullptr;    /*!<Optimization variables*/
+    Number* xlow_ = nullptr; /*!<Lower bound of the optimization variables*/
+    Number* xupp_ = nullptr; /*!<Upper bound of the optimization variables*/
+    Number* xmul_ = nullptr; /*!<The optimization variables multiplier*/
+    int* xstate_ = nullptr;  //*!<The state of the optimization variables*/
 
-    Number *F_ = nullptr;    /*!<Nonlinear parts of the costfunction and the constraints*/
-    Number *Flow_ = nullptr; /*!<Lower bound on F*/
-    Number *Fupp_ = nullptr; /*!<Upper bound on F*/
-    Number *Fmul_ = nullptr; /*!<The F multiplier*/
-    int *Fstate_ = nullptr;  /*!<The F state*/
+    Number* F_ = nullptr;    /*!<Nonlinear parts of the costfunction and the constraints*/
+    Number* Flow_ = nullptr; /*!<Lower bound on F*/
+    Number* Fupp_ = nullptr; /*!<Upper bound on F*/
+    Number* Fmul_ = nullptr; /*!<The F multiplier*/
+    int* Fstate_ = nullptr;  /*!<The F state*/
 
-    Number *A_ = nullptr;  /*!<Contains the linear parts of costfunction and the constraints*/
-    int *iAfun_ = nullptr; /*!<Rows of the sparsity pattern of A*/
-    int *jAvar_ = nullptr; /*!<Columns of the sparsity pattern of A*/
+    Number* A_ = nullptr;  /*!<Contains the linear parts of costfunction and the constraints*/
+    int* iAfun_ = nullptr; /*!<Rows of the sparsity pattern of A*/
+    int* jAvar_ = nullptr; /*!<Columns of the sparsity pattern of A*/
 
     /*!<The sparsity pattern of the costgradient and constraint jacobian*/
-    int *iGfun_ = nullptr; /*!<Sparsity rows*/
-    int *jGvar_ = nullptr; /*!<Sparsity columns*/
+    int* iGfun_ = nullptr; /*!<Sparsity rows*/
+    int* jGvar_ = nullptr; /*!<Sparsity columns*/
 
-    static std::vector<SnoptMemory *> mempool; /*!<Containts all the instances of the snopt memory blocks*/
-    int memind;                                /*!<The index inside the mempool this instance points to*/
+    static std::vector<SnoptMemory*> mempool; /*!<Containts all the instances of the snopt memory blocks*/
+    int memind;                               /*!<The index inside the mempool this instance points to*/
 
     /**
      * @brief      Custom constructor
@@ -90,7 +90,7 @@ struct SnoptMemory
      * @param[in]  self  A reference to the Snoptsolver the memory is pointing
      *                   to
      */
-    SnoptMemory(const SnoptSolver &self);
+    SnoptMemory(const SnoptSolver& self);
 
     /// Destructor
     ~SnoptMemory();
@@ -134,7 +134,7 @@ public:
 	 * @param[in]  nlp       The nlp
 	 * @param[in]  settings  The settings
 	 */
-    SnoptSolver(std::shared_ptr<Nlp> nlp, const NlpSolverSettings &settings);
+    SnoptSolver(std::shared_ptr<Nlp> nlp, const NlpSolverSettings& settings);
 
 
     /**
@@ -160,22 +160,22 @@ public:
 	 * @param      ru      The real array for external user inputs
 	 * @param      lenru   The length of ru
 	 */
-    void NLP_Function(SnoptMemory *m,
-        int *Status,
-        int *n,
+    void NLP_Function(SnoptMemory* m,
+        int* Status,
+        int* n,
         double x[],
-        int *needF,
-        int *neF,
+        int* needF,
+        int* neF,
         double F[],
-        int *needG,
-        int *neG,
+        int* needG,
+        int* neG,
         double G[],
-        char *cu,
-        int *lencu,
+        char* cu,
+        int* lencu,
         int iu[],
-        int *leniu,
+        int* leniu,
         double ru[],
-        int *lenru) const;
+        int* lenru) const;
 
     /**
 	 * @brief      The static NLP function passed to SNOPT
@@ -198,23 +198,23 @@ public:
 	 * @param      ru      The real array for external user inputs
 	 * @param      lenru   The length of ru
 	 */
-    static void NLP_Function(int *Status,
-        int *n,
+    static void NLP_Function(int* Status,
+        int* n,
         double x[],
-        int *needF,
-        int *neF,
+        int* needF,
+        int* neF,
         double F[],
-        int *needG,
-        int *neG,
+        int* needG,
+        int* neG,
         double G[],
-        char *cu,
-        int *lencu,
+        char* cu,
+        int* lencu,
         int iu[],
-        int *leniu,
+        int* leniu,
         double ru[],
-        int *lenru);
+        int* lenru);
 
-    virtual void configureDerived(const NlpSolverSettings &settings) override;
+    virtual void configureDerived(const NlpSolverSettings& settings) override;
 
     virtual bool solve() override;
 
@@ -227,19 +227,19 @@ private:
      *
      * @return     Pointer to the memory location
      */
-    SnoptMemory *alloc_memory() const { return new SnoptMemory(*this); }
+    SnoptMemory* alloc_memory() const { return new SnoptMemory(*this); }
     /**
      * @brief      Frees the allocated memory
      *
      * @param[in]  mem   The memory to be freed
      */
-    inline void free_memory(SnoptMemory *mem) const { delete mem; }
+    inline void free_memory(SnoptMemory* mem) const { delete mem; }
     /**
      * @brief      Initializes the memory
      *
      * @param      mem   The memory
      */
-    void init_memory(SnoptMemory *mem) const;
+    void init_memory(SnoptMemory* mem) const;
 
     /**
      * @brief      Fills the memory with values from NLP, gets called before
@@ -247,7 +247,7 @@ private:
      *
      * @param      mem   The memory
      */
-    void fill_memory(SnoptMemory *mem) const;
+    void fill_memory(SnoptMemory* mem) const;
 
     /**
 	 * @brief      Provides SNOPT the information from SNOPT memory, gets called
@@ -260,7 +260,7 @@ private:
 	 *
 	 * @param[in]  status  The SNOPT solver status
 	 */
-    void validateSNOPTStatus(const int &status) const;
+    void validateSNOPTStatus(const int& status) const;
 
     /**
 	 * @brief      Sets the solver options.
@@ -268,7 +268,7 @@ private:
     void setSolverOptions();
 
     SnoptSettings settings_;
-    SnoptMemory *memoryPtr_;
+    SnoptMemory* memoryPtr_;
 
     snoptProblemA snoptApp_;
 

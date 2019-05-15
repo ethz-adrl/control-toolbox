@@ -3,6 +3,9 @@ CMakeCache.txt
 *.cmake
 !clang-cxx-dev-tools.cmake
 !compilerSettings.cmake
+!FindIPOPT.cmake
+!Findblasfeo.cmake
+!Findhpipm.cmake
 *.a
 *.o
 *.so
@@ -26,3 +29,6 @@ solution.mat
 .settings/
 *.aux
 *.doc*
+*.vscode
+
+*/build/*

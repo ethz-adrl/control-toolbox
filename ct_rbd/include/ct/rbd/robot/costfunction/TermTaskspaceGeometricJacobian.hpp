@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -147,12 +147,12 @@ public:
         // for the intuition behind, consider the following posts:
         // https://math.stackexchange.com/a/87698
         // https://math.stackexchange.com/a/773635
-//        Eigen::Matrix<double, 3, 3> ee_R_diff = w_R_ref.transpose() * ee_rot;
+        //        Eigen::Matrix<double, 3, 3> ee_R_diff = w_R_ref.transpose() * ee_rot;
 
         // compute rotation penalty using the squared Frobenius norm of (R_diff-I)
-//        double rot_cost = Q_rot_ * (ee_R_diff - Eigen::Matrix<double, 3, 3>::Identity()).squaredNorm();
+        //        double rot_cost = Q_rot_ * (ee_R_diff - Eigen::Matrix<double, 3, 3>::Identity()).squaredNorm();
 
-        return pos_cost; // + rot_cost;
+        return pos_cost;  // + rot_cost;
     }
 
 
@@ -333,7 +333,7 @@ private:
     double Q_rot_;
 
     Eigen::Matrix<double, 3, 1> x_ref_;  // ref position
-    Eigen::Matrix<double, 3, 3> R_ref_;   // ref rotation
+    Eigen::Matrix<double, 3, 3> R_ref_;  // ref rotation
 };
 
 

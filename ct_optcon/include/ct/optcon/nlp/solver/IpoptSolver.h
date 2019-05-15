@@ -30,9 +30,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef BUILD_WITH_IPOPT_SUPPORT  // build IPOPT interface
 
-#include "IpTNLP.hpp"
-#include "IpIpoptApplication.hpp"
-#include "IpSolveStatistics.hpp"
+#include <cstddef>
+#include <stddef.h>
+#include <coin/IpTNLP.hpp>
+#include <coin/IpIpoptApplication.hpp>
+#include <coin/IpSolveStatistics.hpp>
 
 #endif  // BUILD_WITH_IPOPT_SUPPORT
 

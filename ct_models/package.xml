@@ -1,15 +1,20 @@
 <package format="2">
 	<name>ct_models</name>
-	<version>0.3.0</version>
-	<description>dynamics models for adrl ct</description>
+	<version>3.0.1</version>
+	<description>
+        Control toolbox - models module.
+	</description>
 
-	<maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
 	<maintainer email="markusgft@gmail.com">Markus Giftthaler</maintainer>
 
 	<license>BSD-2</license>
 
-	<buildtool_depend>catkin</buildtool_depend>
+	<buildtool_depend>cmake</buildtool_depend>
 
 	<depend>ct_rbd</depend>
+	<exec_depend>catkin</exec_depend>	<!-- ROS compatibility-->
 
+	<export>		<!-- Specify that this is not a ROS package-->
+		<build_type>cmake</build_type>
+	</export>
 </package>

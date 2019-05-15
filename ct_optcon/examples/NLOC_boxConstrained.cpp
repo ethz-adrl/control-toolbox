@@ -14,7 +14,7 @@ using namespace ct::core;
 using namespace ct::optcon;
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     /*get the state and control input dimension of the oscillator. Since we're dealing with a simple oscillator,
 	 the state and control dimensions will be state_dim = 2, and control_dim = 1. */

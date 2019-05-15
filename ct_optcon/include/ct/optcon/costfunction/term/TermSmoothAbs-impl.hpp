@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -68,7 +68,9 @@ core::StateVector<STATE_DIM, SCALAR_EVAL> TermSmoothAbs<STATE_DIM, CONTROL_DIM, 
     const SCALAR_EVAL& t)
 {
     return (a_.array() * (x - x_ref_).array() *
-            ((x - x_ref_).array().square() + Eigen::Array<SCALAR_EVAL, STATE_DIM, 1>::Ones() * alphaSquared_).sqrt().inverse())
+            ((x - x_ref_).array().square() + Eigen::Array<SCALAR_EVAL, STATE_DIM, 1>::Ones() * alphaSquared_)
+                .sqrt()
+                .inverse())
         .matrix();
 }
 
@@ -95,7 +97,9 @@ TermSmoothAbs<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlDerivative(
     const SCALAR_EVAL& t)
 {
     return (b_.array() * (u - u_ref_).array() *
-            ((u - u_ref_).array().square() + Eigen::Array<SCALAR_EVAL, CONTROL_DIM, 1>::Ones() * alphaSquared_).sqrt().inverse())
+            ((u - u_ref_).array().square() + Eigen::Array<SCALAR_EVAL, CONTROL_DIM, 1>::Ones() * alphaSquared_)
+                .sqrt()
+                .inverse())
         .matrix();
 }
 

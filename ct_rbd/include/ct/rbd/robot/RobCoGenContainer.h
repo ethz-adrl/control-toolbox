@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -139,8 +139,7 @@ public:
 	 * @param jointPosition current joint position
 	 * @return Jacobian of the endeffector expressed in the base frame
 	 */
-    Jacobian getJacobianBaseEEbyId(size_t eeId,
-        const typename JointState<NJOINTS, SCALAR>::Position& jointPosition)
+    Jacobian getJacobianBaseEEbyId(size_t eeId, const typename JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
         return UTILS::getJacobianBaseEEbyId(jacobians(), eeId, jointPosition);
     }
@@ -165,8 +164,7 @@ public:
 	 * @param jointPosition current joint position
 	 * @return position of the endeffector expressed in the base frame
 	 */
-    Position3Tpl getEEPositionInBase(size_t eeId,
-        const typename JointState<NJOINTS, SCALAR>::Position& jointPosition)
+    Position3Tpl getEEPositionInBase(size_t eeId, const typename JointState<NJOINTS, SCALAR>::Position& jointPosition)
     {
         return Position3Tpl(getHomogeneousTransformBaseEEById(eeId, jointPosition).template topRightCorner<3, 1>());
     }

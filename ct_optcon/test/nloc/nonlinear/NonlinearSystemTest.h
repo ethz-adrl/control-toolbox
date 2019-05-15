@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #include <chrono>
@@ -27,7 +27,6 @@ namespace example {
 using namespace ct::core;
 using namespace ct::optcon;
 using std::shared_ptr;
-
 
 
 TEST(NLOCTest, NonlinearSystemAlgorithmComparison)
@@ -97,27 +96,26 @@ TEST(NLOCTest, NonlinearSystemAlgorithmComparison)
     gnms.solve();
 
     // print trajectories
-	StateTrajectory < state_dim > xRollout_gnms = gnms.getStateTrajectory();
-	ControlTrajectory < control_dim > uRollout_gnms = gnms.getControlTrajectory();
+    StateTrajectory<state_dim> xRollout_gnms = gnms.getStateTrajectory();
+    ControlTrajectory<control_dim> uRollout_gnms = gnms.getControlTrajectory();
 
     ilqr.solve();
 
-	// print trajectories
-	StateTrajectory < state_dim > xRollout_ilqr = ilqr.getStateTrajectory();
-	ControlTrajectory < control_dim > uRollout_ilqr = ilqr.getControlTrajectory();
+    // print trajectories
+    StateTrajectory<state_dim> xRollout_ilqr = ilqr.getStateTrajectory();
+    ControlTrajectory<control_dim> uRollout_ilqr = ilqr.getControlTrajectory();
 
-	// Assert that the solutions are equal
-	for (size_t i = 0; i < xRollout_gnms.size(); i++) {
-		ASSERT_NEAR(xRollout_gnms[i](0), xRollout_ilqr[i](0), 1e-4);
-	}
+    // Assert that the solutions are equal
+    for (size_t i = 0; i < xRollout_gnms.size(); i++)
+    {
+        ASSERT_NEAR(xRollout_gnms[i](0), xRollout_ilqr[i](0), 1e-4);
+    }
 
-	for (size_t i = 0; i < uRollout_ilqr.size(); i++) {
-		ASSERT_NEAR(uRollout_gnms[i](0), uRollout_ilqr[i](0), 1e-4);
-	}
-
+    for (size_t i = 0; i < uRollout_ilqr.size(); i++)
+    {
+        ASSERT_NEAR(uRollout_gnms[i](0), uRollout_ilqr[i](0), 1e-4);
+    }
 }
-
-
 }
 }
 }

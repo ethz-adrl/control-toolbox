@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -18,11 +18,9 @@ class SparsityPattern
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    //! default constructor
-    SparsityPattern();
+    SparsityPattern() = default;
 
-    //! destructor
-    virtual ~SparsityPattern();
+    virtual ~SparsityPattern() = default;
 
     //! initialize the pattern
     /*!
@@ -68,8 +66,7 @@ public:
     /*!
 	 * @return sparsity pattern vector
 	 */
-    const CppAD::vector<bool>& sparsity() const;
-
+    const CppAD::vector<bool>& sparsity() const { return sparsity_; }
     //! returns the row indices of a row-column sparsity representation
     /*!
 	 * In a row-column representation, only the non-zero entries get saved.
@@ -78,8 +75,7 @@ public:
 	 * can appear repeatedly in this vector.
 	 * @return row indeces of row-column representation
 	 */
-    const CppAD::vector<size_t>& row() const;
-
+    const CppAD::vector<size_t>& row() const { return row_; }
     //! returns the column indices of a row-column sparsity representation
     /*!
 	 * In a row-column representation, only the non-zero entries get saved.
@@ -88,22 +84,23 @@ public:
 	 * can appear repeatedly in this vector.
 	 * @return column indeces of row-column representation
 	 */
-    const CppAD::vector<size_t>& col() const;
-
+    const CppAD::vector<size_t>& col() const { return col_; }
     //! work area for CppAD
     /*!
 	 * CppAD can make use of previous results from a sparsity analysis.
 	 * This method returns the "work" area of CppAD sparsity
 	 * @return CppAD sparsity work
 	 */
-    CppAD::sparse_jacobian_work& workJacobian();
-
-    CppAD::sparse_hessian_work& workHessian();
-
+    CppAD::sparse_jacobian_work& workJacobian() { return workJacobian_; }
+    CppAD::sparse_hessian_work& workHessian() { return workHessian_; }
     /**
 	 * @brief      Clears the cppad internal work done on the sparsity pattern
 	 */
-    void clearWork();
+    void clearWork()
+    {
+        workJacobian_.clear();
+        workHessian_.clear();
+    }
 
 private:
     CppAD::vector<bool> sparsity_;              //! sparsity in vector representation
@@ -112,6 +109,7 @@ private:
     CppAD::sparse_jacobian_work workJacobian_;  //! CppAD internal "work"
     CppAD::sparse_hessian_work workHessian_;
 };
+
 
 } /* namespace internal */
 } /* namespace core */

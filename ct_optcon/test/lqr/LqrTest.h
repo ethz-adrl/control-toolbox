@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 /*!
@@ -46,7 +46,6 @@ TEST(LQRTest, DARETest)
     Eigen::Matrix<double, stateDim, stateDim> P_test;
     P_test << 6.932484752255643, 4.332273119899151, 4.332273119899151, 4.55195134961773;
     ASSERT_LT((P - P_test).array().abs().maxCoeff(), 1e-12);
-
 }
 
 
@@ -100,7 +99,7 @@ TEST(LQRTest, quadTest)
     ASSERT_LT((K - Kiterative).array().abs().maxCoeff(), 1e-4);
 #endif
 
-    int nTests = 1000;
+    int nTests = 100;
 #ifdef CT_USE_LAPACK
     auto start1 = std::chrono::system_clock::now();
     for (int i = 0; i < nTests; i++)

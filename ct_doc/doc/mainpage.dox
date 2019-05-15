@@ -6,12 +6,11 @@
 
 \section ct1 Control Toolbox
 
-The Control Toolbox ('CT'), an open-source C++ library for efficient modelling, control, 
-estimation, trajectory optimization and model predictive control.
-The CT is applicable to a broad class of dynamic systems, but features additional modelling tools specially designed for robotics.
+The Control Toolbox ('CT'), is a C++ library for  modelling, control, estimation, trajectory optimization and model predictive control.
+The CT is applicable to a broad class of dynamic systems, but features additional tools specially designed for robotics.
 This page outlines its general concept, its major building blocks and highlights selected application examples.
 
-The library contains several tools to design and evaluate controllers, model dynamical systems and solve optimal control problems.
+The library contains several tools to design and evaluate controllers, model dynamical systems and numerically solve optimal control problems.
 The CT was designed with the following features in mind:
 
  - **Systems and dynamics**: 
@@ -35,7 +34,7 @@ The CT was designed with the following features in mind:
  	- solve large scale optimal control problems in MPC fashion. 
   
  - **Robot Modelling, Rigid Body Kinematics and Dynamics**: 
-    - straight-forward interface to a state-of the art rigid body dynamics modelling tool.
+  - straight-forward interface to a state-of the art rigid body dynamics modelling tool.
 	- implementation of a basic nonlinear-programming-based inverse kinematics solver.
  
  - **Automatic Differentiation**:
@@ -171,7 +170,6 @@ The four different main modules are detailed in the following.
  - Derivatives/Jacobians of general functions using **Numerical Differentiation** (ct::core::DerivativesNumDiff) 
  or **Automatic-Differentiation** with code-generation (ct::core::DerivativesCppadCG) and just-in-time (JIT) 
  compilation (ct::core::DerivativesCppadJIT)
- - <a href="../../../ct_core/doc/html/index.html">quick link to ct_core</a> 
  
 
 \subsection ct_optcon_overview CT Optimal Control
@@ -187,10 +185,9 @@ The four different main modules are detailed in the following.
  - Non-Linear **Model Predictive Control** (ct::optcon::MPC)
  - Definitions for Nonlinear Programming Problems (**NLPs**, ct::optcon::Nlp) and interfaces to third-party **NLP Solvers** 
  (ct::optcon::SnoptSolver and ct::optcon::IpoptSolver)
- - <a href="../../../ct_optcon/doc/html/index.html">quick link to ct_optcon</a>
   
   
-\subsection ct_rbd_overview CT Rigid Body Dynamics
+\subsection ct_rbd_overview CT Rigid Body Dynamics (Robot)
 
  - Standard models for Rigid Body Dynamics
  - Definitions for the state of a Rigid Body System expressed as general coordinates (ct::rbd::RBDState)
@@ -201,21 +198,19 @@ The four different main modules are detailed in the following.
  - **Actuator dynamics** (ct::rbd::ActuatorDynamics)
  - Backend uses <a href="https://bitbucket.org/mfrigerio17/roboticscodegenerator/" target="_blank">RobCoGen</a> \cite frigerioCodeGen, 
  a highly efficient Rigid Body Dynamics library
- - <a href="../../../ct_rbd/doc/html/index.html">quick link to ct_rbd</a>
 
 
 \subsection ct_models_overview CT Models:
 
- - Various standard models for testing and evaluation including UAVs (ct::models::Quadrotor), ground robots, 
+ - standard models for testing and evaluation including UAVs (ct::models::Quadrotor), ground robots, 
  legged robots (ct::models::HyQ), robot arms (ct::models::HyA), inverted pendulums etc.
  - Means of creating linear approximation of these models
- - <a href="../../../ct_models/doc/html/index.html">quick link to ct_models</a>
  
 
 
 \section gs How to use the Control Toolbox
 
-To get started with the control toolbox, please see \ref getting_started "Getting Started".
+To get an overview of the control toolbox, please see \ref getting_started "Getting Started".
 
 
 \section contact Support
@@ -237,9 +232,11 @@ For any questions, issues or other troubleshooting please either
  - Jan Carius
  - Ruben Grandia
  - Hamza Merzic
+ - Jonas Buchli
  
 \subsection lead_overview Maintenance 
  - Markus Giftthaler, markusgft (at) gmail (dot) com
+
 
 \subsection funding Funding 2014-2018
 The core of this software has been developed at the <a href="http://www.adrl.ethz.ch" target="_blank">Agile & Dexterous Robotics Lab</a> 

@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -16,10 +16,11 @@ namespace optcon {
 /**
  * @brief      The available types of NLP solvers
  */
-enum class NlpSolverType : uint8_t {
-  IPOPT = 0,
-  SNOPT = 1,
-  num_types_solver
+enum class NlpSolverType : uint8_t
+{
+    IPOPT = 0,
+    SNOPT = 1,
+    num_types_solver
 };
 
 /**
@@ -144,7 +145,7 @@ public:
           point_perturbation_radius_(10),
           checkDerivativesForNaninf_("no"),
           derivativeTestPrintAll_("no"),
-          linearSystemScaling_("mc19"),
+          linearSystemScaling_("ma27"),
           linear_solver_("mumps"),
           jacobianApproximation_("finite-difference-values")
     {
@@ -263,7 +264,8 @@ public:
     /**
 	 * @brief      Default constructor, set default settings
 	 */
-    NlpSolverSettings() : solverType_(NlpSolverType::IPOPT), useGeneratedCostGradient_(false), useGeneratedConstraintJacobian_(false)
+    NlpSolverSettings()
+        : solverType_(NlpSolverType::IPOPT), useGeneratedCostGradient_(false), useGeneratedConstraintJacobian_(false)
     {
     }
 
@@ -342,7 +344,8 @@ public:
     }
 
 private:
-    std::map<NlpSolverType, std::string> solverToString = {{NlpSolverType::IPOPT, "IPOPT"}, {NlpSolverType::SNOPT, "SNOPT"}};
+    std::map<NlpSolverType, std::string> solverToString = {
+        {NlpSolverType::IPOPT, "IPOPT"}, {NlpSolverType::SNOPT, "SNOPT"}};
 };
 
 

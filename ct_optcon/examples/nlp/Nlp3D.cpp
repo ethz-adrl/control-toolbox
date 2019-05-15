@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 /*!
@@ -32,12 +32,12 @@ template <typename SCALAR>
 class ExampleConstraints final : public tpl::DiscreteConstraintBase<SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     using VectorXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>;
 
     static const size_t dimConstraints = 2;
     static const size_t nnzJac = 6;
-    static const size_t nnzHes = 3; // (triangular view)
+    static const size_t nnzHes = 3;  // (triangular view)
 
     ExampleConstraints(std::shared_ptr<tpl::OptVector<SCALAR>> optVector) : optVector_(optVector)
     {
@@ -126,7 +126,9 @@ public:
     /*!
      * \note this function implementation is only required for the exact-Hessian solver case
      */
-   void sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda, Eigen::VectorXd& sparseHes) override
+    void sparseHessianValues(const Eigen::VectorXd& optVec,
+        const Eigen::VectorXd& lambda,
+        Eigen::VectorXd& sparseHes) override
     {
         Eigen::VectorXd h1, h2;
         h1.resize(nnzHes);
@@ -156,8 +158,8 @@ template <typename SCALAR>
 class ExampleCostEvaluator final : public tpl::DiscreteCostEvaluatorBase<SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    static const size_t nnz_hessian = 2; //! number non-zero elements in the hessian (triangular view)
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    static const size_t nnz_hessian = 2;  //! number non-zero elements in the hessian (triangular view)
 
     ExampleCostEvaluator(std::shared_ptr<tpl::OptVector<SCALAR>> optVector) : optVector_(optVector) {}
     ~ExampleCostEvaluator() override = default;
@@ -203,7 +205,9 @@ public:
     /*!
     * \note this function implementation is only required for the exact-Hessian solver case
     */
-    void sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda, Eigen::VectorXd& hes) override
+    void sparseHessianValues(const Eigen::VectorXd& optVec,
+        const Eigen::VectorXd& lambda,
+        Eigen::VectorXd& hes) override
     {
         hes.resize(nnz_hessian);
         hes.setConstant(-1.0 * lambda(0));
@@ -223,7 +227,7 @@ template <typename SCALAR>
 class ExampleConstraintsContainer final : public tpl::DiscreteConstraintContainerBase<SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     ExampleConstraintsContainer(std::shared_ptr<tpl::OptVector<SCALAR>> optVector) : optVector_(optVector)
     {
         this->constraints_.push_back(
@@ -247,7 +251,7 @@ template <typename SCALAR>
 class ExampleProblem final : public tpl::Nlp<SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     ExampleProblem()
     {
         this->optVariables_ = std::shared_ptr<tpl::OptVector<SCALAR>>(new tpl::OptVector<SCALAR>(3));

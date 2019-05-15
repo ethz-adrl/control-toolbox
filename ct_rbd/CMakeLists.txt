@@ -1,157 +1,96 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.3)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
-project (ct_rbd)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../ct_optcon/cmake/externalSolvers.cmake)
+project(ct_rbd VERSION 3.0.1 LANGUAGES CXX)
 
+
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++14 -Wall -Wno-unknown-pragmas")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-find_package(catkin REQUIRED ct_optcon)
-find_package(kindr)
+find_package(kindr REQUIRED)
+find_package(ct_optcon REQUIRED)
+
+## add compiler definitions exported by ct_optcon
+add_definitions(${ct_optcon_COMPILE_DEFINITIONS})
 
 
-## assemble list of libraries that contain prespecified templates
-if(USE_PRESPEC)
-ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_rbd")
-message(WARNING "CT RBD: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
-endif(USE_PRESPEC)
+###################
+# BUILD LIBRARIES #
+###################
 
-#used later for clang-tidy
-set(INC_DIRS ${catkin_INCLUDE_DIRS} ${kindr_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/include/ct/rbd")
-
-
-catkin_package(
-  INCLUDE_DIRS
+## define the directories to be included in all ct_rbd targets
+set(ct_rbd_target_include_dirs
     ${kindr_INCLUDE_DIRS}
-    include
-    include/ct/rbd
-    include/ct/rbd/robot/kinematics/ikfast
-    test
-  LIBRARIES
-    ${PRESPEC_LIB_NAMES}
-  CATKIN_DEPENDS
-    ct_optcon
-    kindr
-)
-
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-  ${kindr_INCLUDE_DIRS}
-  include/ct/rbd
-  include/ct/rbd/robot/kinematics/ikfast
-  test/models/testhyq/generated
-  include
-  test
+    ${ct_optcon_INCLUDE_DIRS}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct/rbd>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct/rbd/robot/kinematics/ikfast>
+    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:include/ct>
+    $<INSTALL_INTERFACE:include/ct/rbd>
+    $<INSTALL_INTERFACE:include/ct/rbd/robot/kinematics/ikfast>
 )
 
 
-# add libraries for explicit template
-if(USE_PRESPEC)
-    ct_add_explicit_template_libs()
-endif(USE_PRESPEC)
+## create ct_rbd library
+add_library(ct_rbd INTERFACE)
+target_include_directories(ct_rbd INTERFACE ${ct_rbd_target_include_dirs})
+target_link_libraries(ct_rbd INTERFACE ct_optcon)
 
 
-#todo export this properly from ct_core
-find_package(PythonLibs QUIET)
-if (PYTHONLIBS_FOUND)
-   message(STATUS "Python found")
-   include_directories(${PYTHON_INCLUDE_DIRS})
-   set(PLOTTING_ENABLED true)
-   add_definitions(-DPLOTTING_ENABLED)
-else()
-   message(STATUS "Python not found")
-   set(PYTHON_LIBRARY "")
+###########
+# TESTING #
+###########
+
+if(BUILD_TESTS)
+    #find_package(GTest QUIET)
+    enable_testing()
+    add_subdirectory(test)
 endif()
 
 
-## TESTING
+#################
+# INSTALLATION  #
+#################
 
-catkin_add_gtest(RigidBodyPoseTest test/state/RigidBodyPoseTest.cpp)
-target_link_libraries(RigidBodyPoseTest ${catkin_LIBRARIES})
+# for correct libraries locations across platforms
+include(GNUInstallDirs) 
 
-catkin_add_gtest(JointStateTest test/state/JointStateTest.cpp)
-target_link_libraries(JointStateTest ${catkin_LIBRARIES})
+## get all compile definitions registered so far and create variable
+get_directory_property( CompileDefs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS )
+foreach( d ${CompileDefs} )
+    set(ct_rbd_compile_definitions  ${ct_rbd_compile_definitions} -D${d} ) # recursively add compile definitions
+endforeach()
 
-catkin_add_gtest(RobotStateTest test/state/RobotStateTest.cpp)
-target_link_libraries(RobotStateTest ${catkin_LIBRARIES})
+## generate files required for installation
+configure_file(cmake/ct_rbdConfig.cmake.in "${PROJECT_BINARY_DIR}/ct_rbdConfig.cmake" @ONLY)
 
-catkin_add_gtest(RobCoGenContainerTest test/robot/robcogen/RobCoGenContainerTest.cpp)
-target_link_libraries(RobCoGenContainerTest ${catkin_LIBRARIES})
+## copy the header files
+install(DIRECTORY include/ct/rbd DESTINATION include/ct)
+install(DIRECTORY include/ct/iit DESTINATION include/ct)
 
-catkin_add_gtest(KinematicsTest test/robot/kinematics/KinematicsTest.cpp)
-target_link_libraries(KinematicsTest ${catkin_LIBRARIES})
+## copy the cmake files required for find_package()
+install(FILES "${PROJECT_BINARY_DIR}/ct_rbdConfig.cmake" DESTINATION "share/ct_rbd/cmake")
 
-catkin_add_gtest(KinematicsTestAd test/robot/kinematics/KinematicsTestAd.cpp)
-target_link_libraries(KinematicsTestAd ${catkin_LIBRARIES})
+## install library and targets
+install(
+    TARGETS ct_rbd
+    EXPORT ct_rbd_export
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
 
-catkin_add_gtest(OperationalSpaceTest test/operationalSpace/OperationalSpaceTest.cpp)
-target_link_libraries(OperationalSpaceTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(DataMapTests test/robot/dynamics/DataMapTests.cpp)
-target_link_libraries(DataMapTests ${catkin_LIBRARIES})
-
-catkin_add_gtest(DynamicsTest test/robot/dynamics/DynamicsTests.cpp)
-target_link_libraries(DynamicsTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(DynamicsTestFixBase test/robot/dynamics/DynamicsTestsFixBase.cpp)
-target_link_libraries(DynamicsTestFixBase ${catkin_LIBRARIES})
-
-catkin_add_gtest(FloatingBaseFDSystemTest test/systems/FloatingBaseFDSystemTest.cpp)
-target_link_libraries(FloatingBaseFDSystemTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(FixBaseFDSystemTest test/systems/FixBaseFDSystemTest.cpp)
-target_link_libraries(FixBaseFDSystemTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(ProjectedFDSystemTest test/systems/ProjectedFDSystemTest.cpp)
-target_link_libraries(ProjectedFDSystemTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(RBDLinearizerTest test/systems/linear/RBDLinearizerTest.cpp)
-target_link_libraries(RBDLinearizerTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(EEKinematicsTest test/robot/kinematics/EEKinematicsTest.cpp)
-target_link_libraries(EEKinematicsTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(EEContactModelTest test/physics/EEContactModelTest.cpp)
-target_link_libraries(EEContactModelTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(TaskSpaceCfTest test/robot/costfunction/TaskspaceCostFunctionTest.cpp)
-target_link_libraries(TaskSpaceCfTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(rbdJITtests test/robot/costfunction/rbdJITtests.cpp)
-target_link_libraries(rbdJITtests ${catkin_LIBRARIES})
-
-catkin_add_gtest(kindrJITtest test/robot/costfunction/kindrJITtest.cpp)
-target_link_libraries(kindrJITtest ${catkin_LIBRARIES})
-
-catkin_add_gtest(jacobianTests test/robot/jacobian/JacobianTests.cpp)
-target_link_libraries(jacobianTests ${catkin_LIBRARIES})
-
-if(BUILD_WITH_IPOPT_SUPPORT)
-    catkin_add_gtest(FixBaseIKTest test/robot/kinematics/FixBaseIKTest.cpp)
-    target_link_libraries(FixBaseIKTest ${catkin_LIBRARIES}${SNOPT_LIBS} ${IPOPT_LIBS} dl)
-endif()
-
-add_executable(simpleArmTrajectoryTest src/SimpleArmTrajectoryGeneratorTest.cpp)
-target_link_libraries(simpleArmTrajectoryTest ${catkin_LIBRARIES})
+## create the ct_rbd.cmake file which holds target includes and dependencies
+install (EXPORT ct_rbd_export DESTINATION share/ct_rbd/cmake)
 
 
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-  set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_rbd.doxyfile)
-  set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
-
-  configure_file(${doxyfile_in} ${doxyfile} @ONLY)
-
-  add_custom_target(doc
-    COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
-    COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc
-    COMMAND ${CMAKE_COMMAND} -E echo_append "API Documentation built in ${CMAKE_CURRENT_SOURCE_DIR}/doc"
-    VERBATIM)
-endif()
-
-ct_configure_clang_tidy(INC_DIRS)
+#################
+# DOCUMENTATION #
+#################
+add_subdirectory(doc)

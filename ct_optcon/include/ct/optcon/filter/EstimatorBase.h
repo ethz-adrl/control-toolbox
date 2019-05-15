@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -39,7 +39,6 @@ public:
 
     //! Copy constructor.
     EstimatorBase(const EstimatorBase& arg) : f_(arg.f_->clone()), h_(arg.h_->clone()), x_est_(arg.x_est_) {}
-
     virtual ~EstimatorBase() = default;
 
     //! Estimator predict method.
@@ -54,16 +53,12 @@ public:
 
     //! update the system model
     void setSystemModel(std::shared_ptr<SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>> f) { f_ = f; }
-
     //! update the measurement model
     void setMeasurementModel(std::shared_ptr<LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>> h) { h_ = h; }
-
     //! Estimate getter.
     const state_vector_t& getEstimate() const { return x_est_; }
-
     //! Estimate setter.
     void setEstimate(const state_vector_t& x) { x_est_ = x; }
-
 protected:
     //! System model for propagating the system.
     std::shared_ptr<SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>> f_;

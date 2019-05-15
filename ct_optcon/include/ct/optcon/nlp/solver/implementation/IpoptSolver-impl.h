@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #include <ct/optcon/nlp/solver/IpoptSolver.h>
@@ -74,8 +74,8 @@ bool IpoptSolver<SCALAR>::solve()
     if (status_ == Ipopt::Solve_Succeeded || status_ == Ipopt::Solved_To_Acceptable_Level)
     {
         // Retrieve some statistics about the solve
-    	if(settings_.printLevel_ > 1)
-    	{
+        if (settings_.printLevel_ > 1)
+        {
             Ipopt::Index iter_count = ipoptApp_->Statistics()->IterationCount();
             std::cout << std::endl
                       << std::endl
@@ -85,12 +85,12 @@ bool IpoptSolver<SCALAR>::solve()
             std::cout << std::endl
                       << std::endl
                       << "*** The final value of the objective function is " << final_obj << '.' << std::endl;
-    	}
+        }
         return true;
     }
     else
     {
-    	if(settings_.printLevel_ > 1)
+        if (settings_.printLevel_ > 1)
             std::cout << " ipopt return value: " << status_ << std::endl;
         return false;
     }

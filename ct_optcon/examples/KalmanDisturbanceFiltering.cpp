@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 /*!
@@ -56,7 +56,6 @@ public:
 
     //! clone method, needs to be implemented, overrides ct::core::Controller::clone()
     CustomController* clone() const override { return new CustomController(*this); }
-
     //! override the compute control method with a custom control law which includes a disturbance
     void computeControl(const ct::core::StateVector<state_dim>& state,
         const double& t,
@@ -248,7 +247,7 @@ int main(int argc, char** argv)
     }
 
 
-    // plot if plotting library built.
+// plot if plotting library built.
 #ifdef PLOTTING_ENABLED
     // some temporary containers for plotting
     std::vector<double> time_plot;

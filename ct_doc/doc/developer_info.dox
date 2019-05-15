@@ -11,15 +11,11 @@ to align the development with ongoing activities.
 We support clang-format and provide a style template to automatically format the source code. 
 Please refer to the clang-format style sheet in the package root directory for our conventions. 
 
-Example command for running clang-tidy:
-\code
-$ catkin build --no-deps <package_name> -v --make-args clang-tidy 
-\endcode
-
-For clang-format it's just the same: 
+Example command for running clang-format:
 \code
 $ catkin build --no-deps <package_name> -v --make-args clang-format 
 \endcode
+
 
 \section Explicit Template Instantiation
 
