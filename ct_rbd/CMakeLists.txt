@@ -14,9 +14,6 @@ SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 find_package(kindr REQUIRED)
 find_package(ct_optcon REQUIRED)
 
-## add compiler definitions exported by ct_optcon
-add_definitions(${ct_optcon_COMPILE_DEFINITIONS})
-
 
 ###################
 # BUILD LIBRARIES #
@@ -61,21 +58,12 @@ endif()
 # for correct libraries locations across platforms
 include(GNUInstallDirs) 
 
-## get all compile definitions registered so far and create variable
-get_directory_property( CompileDefs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS )
-foreach( d ${CompileDefs} )
-    set(ct_rbd_compile_definitions  ${ct_rbd_compile_definitions} -D${d} ) # recursively add compile definitions
-endforeach()
-
-## generate files required for installation
-configure_file(cmake/ct_rbdConfig.cmake.in "${PROJECT_BINARY_DIR}/ct_rbdConfig.cmake" @ONLY)
-
 ## copy the header files
 install(DIRECTORY include/ct/rbd DESTINATION include/ct)
 install(DIRECTORY include/ct/iit DESTINATION include/ct)
 
 ## copy the cmake files required for find_package()
-install(FILES "${PROJECT_BINARY_DIR}/ct_rbdConfig.cmake" DESTINATION "share/ct_rbd/cmake")
+install(FILES "cmake/ct_rbdConfig.cmake" DESTINATION "share/ct_rbd/cmake")
 
 ## install library and targets
 install(

@@ -2,8 +2,6 @@
 
 find_package(ct_rbd REQUIRED)
 
-set(ct_models_COMPILE_DEFINITIONS "@ct_models_compile_definitions@")
-
 include(${CMAKE_CURRENT_LIST_DIR}/ct_models_export.cmake)
 
 #define includes in legacy mode

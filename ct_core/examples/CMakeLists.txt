@@ -11,7 +11,7 @@ target_link_libraries(ex_MasspointIntegration ct_core)
 list(APPEND core_ex_TARGETS ex_MasspointIntegration)
 
 add_executable(plotTest src/plot/plotTest.cpp)
-target_link_libraries(plotTest ct_core
+target_link_libraries(plotTest ct_core)
 list(APPEND core_ex_TARGETS plotTest)
 
 if(QWT_ENABLED)
@@ -26,4 +26,3 @@ install(
     TARGETS ${core_ex_TARGETS}
     RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}/ct_core
     )
-

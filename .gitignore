@@ -6,6 +6,10 @@ CMakeCache.txt
 !FindIPOPT.cmake
 !Findblasfeo.cmake
 !Findhpipm.cmake
+!ct_core/cmake/ct_coreConfig.cmake
+!ct_optcon/cmake/ct_optconConfig.cmake
+!ct_rbd/cmake/ct_rbdConfig.cmake
+!ct_models/cmake/ct_modelsConfig.cmake
 *.a
 *.o
 *.so

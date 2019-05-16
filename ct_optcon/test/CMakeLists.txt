@@ -82,3 +82,10 @@ add_custom_command(TARGET run_tests
     POST_BUILD COMMAND ${PROJECT_SOURCE_DIR}/test/run_tests.py ${CMAKE_CURRENT_BINARY_DIR} ${UNIT_TEST_TARGETS}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
+
+    ## install tests
+include(GNUInstallDirs)
+install(
+    TARGETS ${UNIT_TEST_TARGETS}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}/ct_optcon
+    )

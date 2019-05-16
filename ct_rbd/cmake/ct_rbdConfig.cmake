@@ -2,8 +2,6 @@
 
 find_package(ct_optcon REQUIRED)
 
-set(ct_rbd_COMPILE_DEFINITIONS "@ct_rbd_compile_definitions@")
-
 include(${CMAKE_CURRENT_LIST_DIR}/ct_rbd_export.cmake)
 
 #define includes in legacy mode

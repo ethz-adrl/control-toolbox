@@ -1,6 +1,4 @@
 ## cmake-config file for the ct_core package
- 
-set(ct_core_COMPILE_DEFINITIONS "@ct_core_compile_definitions@")
 
 include(${CMAKE_CURRENT_LIST_DIR}/ct_core_export.cmake)
 

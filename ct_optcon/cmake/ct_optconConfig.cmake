@@ -1,8 +1,6 @@
-# cmake-onfig file for the ct_optcon package
+# cmake-config file for the ct_optcon package
 
 find_package(ct_core REQUIRED)
-
-set(ct_optcon_COMPILE_DEFINITIONS "@ct_optcon_compile_definitions@")
 
 include(${CMAKE_CURRENT_LIST_DIR}/ct_optcon_export.cmake)
 
