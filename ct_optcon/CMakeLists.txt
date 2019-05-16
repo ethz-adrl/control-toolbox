@@ -17,9 +17,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 ## find and include required dependencies
 find_package(ct_core REQUIRED)
 
-## add compiler definitions exported by ct_core
-add_definitions(${ct_core_COMPILE_DEFINITIONS}) #todo this should ultimately go away
-
 
 ## find and include optional dependencies
 option(MATLAB "Compile with matlab support" OFF)
