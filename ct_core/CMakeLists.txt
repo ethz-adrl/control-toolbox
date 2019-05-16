@@ -36,7 +36,7 @@ endif()
 find_package(PythonLibs 2.7 QUIET)
 if (PYTHONLIBS_FOUND)
    message(STATUS "Python found")
-   add_definitions(-DPLOTTING_ENABLED)
+   list(APPEND ct_plot_COMPILE_DEFINITIONS PLOTTING_ENABLED)
    message(STATUS "Python library path ... " ${PYTHON_LIBRARY})
    list(APPEND ct_core_LIBS ${PYTHON_LIBRARY})
 else() 
@@ -71,7 +71,6 @@ set(PRESPEC_LIB_NAMES "")
 
 ## define list of libraries that contain prespecified templates
 if(USE_PRESPEC)
-    add_definitions(-DUSE_PRESPEC)
     # extract the prespec parameters from user-input
     ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" 
         "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" 
@@ -89,6 +88,7 @@ endif()
 ## create ct_core libraries
 add_library(ct_plot SHARED src/core/plot/plot.cpp)
 target_include_directories(ct_plot PUBLIC ${ct_core_target_include_dirs})
+target_compile_definitions(ct_plot PUBLIC ${ct_plot_COMPILE_DEFINITIONS})
 target_link_libraries(ct_plot ${ct_core_LIBS})
 
 add_library(ct_core INTERFACE)
@@ -131,16 +131,7 @@ endif()
 #################
 
 # for correct libraries locations across platforms
-include(GNUInstallDirs) 
-
-## get all compile definitions registered so far and create variable
-get_directory_property( CompileDefs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS )
-foreach( d ${CompileDefs} )
-    set(ct_core_compile_definitions  ${ct_core_compile_definitions} -D${d} ) # recursively add compile definitions
-endforeach()
-
-## generate files required for installation
-configure_file(cmake/ct_coreConfig.cmake.in "${PROJECT_BINARY_DIR}/ct_coreConfig.cmake" @ONLY)
+include(GNUInstallDirs)
 
 ## copy the header files
 install(DIRECTORY include/ct/core DESTINATION include/ct)
@@ -148,7 +139,7 @@ install(DIRECTORY include/ct/external DESTINATION include/ct)
 install(DIRECTORY examples/include/ct/core DESTINATION include/ct)
 
 ## copy the cmake files required for find_package()
-install(FILES "${PROJECT_BINARY_DIR}/ct_coreConfig.cmake" DESTINATION "share/ct_core/cmake")
+install(FILES "cmake/ct_coreConfig.cmake" DESTINATION "share/ct_core/cmake")
 
 ## install library and targets
 install(

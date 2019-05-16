@@ -18,7 +18,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 find_package(ct_core REQUIRED)
 
 ## add compiler definitions exported by ct_core
-add_definitions(${ct_core_COMPILE_DEFINITIONS})
+add_definitions(${ct_core_COMPILE_DEFINITIONS}) #todo this should ultimately go away
 
 
 ## find and include optional dependencies
@@ -29,19 +29,19 @@ option(DEBUG_PRINT "Print debug messages" OFF)
 
 if(DEBUG_PRINT)
     message(STATUS "Debug Print ON")
-    add_definitions (-DDEBUG_PRINT)
+    list(APPEND ct_optcon_COMPILE_DEFINITIONS DEBUG_PRINT)
 endif(DEBUG_PRINT)
 
 if(MATLAB_FULL_LOG)
     message(WARNING "Compiling with full log to matlab. Execution will be very slow.")
     set(MATLAB ON)
-    add_definitions (-DMATLAB_FULL_LOG)
+    list(APPEND ct_optcon_COMPILE_DEFINITIONS MATLAB_FULL_LOG)
 endif(MATLAB_FULL_LOG)
 
 if(MATLAB)
     message(STATUS "MATLAB support ON")
     find_package(matlab_cpp_interface REQUIRED)
-    add_definitions( -DMATLAB )
+    list(APPEND ct_optcon_COMPILE_DEFINITIONS MATLAB)
 endif(MATLAB)
 
 
@@ -50,8 +50,8 @@ find_package(LAPACK QUIET)
 set(LAPACK_LIBS "")
 if(LAPACK_FOUND)
     message(STATUS "Found LAPACK library")
-    add_definitions (-DCT_USE_LAPACK)
     list(APPEND LAPACK_LIBS lapack)
+    list(APPEND ct_optcon_COMPILE_DEFINITIONS CT_USE_LAPACK)
 else(LAPACK_FOUND)
     message(STATUS "Could not find LAPACK library")
 endif(LAPACK_FOUND)
@@ -63,8 +63,8 @@ find_package(hpipm QUIET)
 if(blasfeo_FOUND AND hpipm_FOUND)
     message(STATUS "Found HPIPM and BLASFEO")
     set(HPIPM ON)
-    add_definitions(-DHPIPM)
     list(APPEND HPIPM_LIBS ${hpipm_LIBRARIES} ${blasfeo_LIBRARIES})
+    list(APPEND ct_optcon_COMPILE_DEFINITIONS HPIPM)
 endif()
 
 
@@ -72,10 +72,10 @@ endif()
 find_package(IPOPT QUIET)
 if(IPOPT_FOUND)
     set(BUILD_WITH_IPOPT_SUPPORT ON)
-    add_definitions(-DBUILD_WITH_IPOPT_SUPPORT)
-    add_definitions(${IPOPT_DEFINITIONS})
     message(STATUS "Found IPOPT - building with IPOPT support") 
     set(IPOPT_LIBS ipopt) # dl mumps coinhsl lapack blas gfortran m quadmath coinmetis)
+    list(APPEND ct_optcon_COMPILE_DEFINITIONS BUILD_WITH_IPOPT_SUPPORT)
+    list(APPEND ct_optcon_COMPILE_DEFINITIONS ${IPOPT_DEFINITIONS})
 endif()
 
 
@@ -86,7 +86,7 @@ endif()
 #    message(STATUS "Found SNOPT - building with SNOPT support")
 #    include_directories( "$ENV{SNOPT_SOURCE_DIR}/include")
 #
-#    add_definitions( -DBUILD_WITH_SNOPT_SUPPORT )
+#    list(APPEND ct_optcon_COMPILE_DEFINITIONS BUILD_WITH_SNOPT_SUPPORT)
 #    find_library(SNOPT_LIBRARY1 snopt7_cpp   $ENV{SNOPT_SOURCE_DIR}/lib REQUIRED)
 #    find_library(SNOPT_LIBRARY2 snopt7       $ENV{SNOPT_SOURCE_DIR}/lib REQUIRED)
 #    set(SNOPT_LIBS ${SNOPT_LIBRARY1} ${SNOPT_LIBRARY2})
@@ -105,7 +105,7 @@ endif()
 ###################
 
 ## define the directories to be included in all ct_optcon targets
-set(ct_optcon_target_include_dirs
+set(ct_optcon_TARGET_INCLUDE_DIRS
     ${ct_core_INCLUDE_DIRS}
     ${matlab_cpp_interface_INCLUDE_DIRS}
     ${blasfeo_INCLUDE_DIRS}
@@ -127,7 +127,8 @@ if(USE_PRESPEC)
     # create libraries
     foreach(lib_name ${PRESPEC_LIB_NAMES})
         add_library(${lib_name} SHARED ${${lib_name}_SRCS})
-        target_include_directories(${lib_name} PUBLIC ${ct_optcon_target_include_dirs})
+        target_include_directories(${lib_name} PUBLIC ${ct_optcon_TARGET_INCLUDE_DIRS})
+        target_compile_definitions(${lib_name} PUBLIC ${ct_optcon_COMPILE_DEFINITIONS})
         target_link_libraries(${lib_name} 
             ct_core
             ${matlab_cpp_interface_LIBRARIES}
@@ -141,7 +142,8 @@ endif(USE_PRESPEC)
 
 ## create ct_optcon library
 add_library(ct_optcon INTERFACE)
-target_include_directories(ct_optcon INTERFACE ${ct_optcon_target_include_dirs})
+target_include_directories(ct_optcon INTERFACE ${ct_optcon_TARGET_INCLUDE_DIRS})
+target_compile_definitions(ct_optcon INTERFACE ${ct_optcon_COMPILE_DEFINITIONS})
 target_link_libraries(ct_optcon INTERFACE
     ct_core
     ${matlab_cpp_interface_LIBRARIES}
@@ -181,20 +183,11 @@ include(GNUInstallDirs)
 
 install(DIRECTORY include/ct/optcon DESTINATION include/ct)
 
-## get all compile definitions registered so far and create variable
-get_directory_property( CompileDefs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS )
-foreach( d ${CompileDefs} )
-    set(ct_optcon_compile_definitions  ${ct_optcon_compile_definitions} -D${d} ) # recursively add compile definitions
-endforeach()
-
-## generate files required for installation
-configure_file(cmake/ct_optconConfig.cmake.in "${PROJECT_BINARY_DIR}/ct_optconConfig.cmake" @ONLY)
-
 ## copy the header files
 install(DIRECTORY include/ct/optcon DESTINATION include/ct)
 
 ## copy the cmake files required for find_package()
-install(FILES "${PROJECT_BINARY_DIR}/ct_optconConfig.cmake" DESTINATION "share/ct_optcon/cmake")
+install(FILES "cmake/ct_optconConfig.cmake" DESTINATION "share/ct_optcon/cmake")
 
 ## install library and targets
 install(

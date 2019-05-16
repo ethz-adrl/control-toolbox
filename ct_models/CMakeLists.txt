@@ -13,9 +13,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 find_package(ct_rbd REQUIRED)
 find_package(Boost REQUIRED system filesystem)
 
-## add compiler definitions exported by ct_optcon
-add_definitions(${ct_rbd_COMPILE_DEFINITIONS})
-
 
 ## define the directories to be included in all ct_rbd targets
 set(ct_models_target_include_dirs
@@ -226,20 +223,11 @@ endif()
 # for correct libraries locations across platforms
 include(GNUInstallDirs) 
 
-## get all compile definitions registered so far and create variable
-get_directory_property( CompileDefs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS )
-foreach( d ${CompileDefs} )
-    set(ct_models_compile_definitions  ${ct_models_compile_definitions} -D${d} ) # recursively add compile definitions
-endforeach()
-
-## generate files required for installation
-configure_file(cmake/ct_modelsConfig.cmake.in "${PROJECT_BINARY_DIR}/ct_modelsConfig.cmake" @ONLY)
-
 ## copy the header files
 install(DIRECTORY include/ct/models DESTINATION include/ct)
 
 ## copy the cmake files required for find_package()
-install(FILES "${PROJECT_BINARY_DIR}/ct_modelsConfig.cmake" DESTINATION "share/ct_models/cmake")
+install(FILES "cmake/ct_modelsConfig.cmake" DESTINATION "share/ct_models/cmake")
 
 ## install library and targets
 install(
