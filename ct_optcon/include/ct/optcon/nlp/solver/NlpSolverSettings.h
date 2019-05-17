@@ -1,26 +1,6 @@
 /**********************************************************************************************************************
-Copyright (c) 2016, Agile & Dexterous Robotics Lab, ETH ZURICH. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
-      this list of conditions and the following disclaimer in the documentation
-      and/or other materials provided with the distribution.
-    * Neither the name of ETH ZURICH nor the names of its contributors may be used
-      to endorse or promote products derived from this software without specific
-      prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-SHALL ETH ZURICH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -31,6 +11,17 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ct {
 namespace optcon {
+
+
+/**
+ * @brief      The available types of NLP solvers
+ */
+enum class NlpSolverType : uint8_t
+{
+    IPOPT = 0,
+    SNOPT = 1,
+    num_types_solver
+};
 
 /**
  * @ingroup    NLP
@@ -154,8 +145,8 @@ public:
           point_perturbation_radius_(10),
           checkDerivativesForNaninf_("no"),
           derivativeTestPrintAll_("no"),
-          linearSystemScaling_("mc19"),
-          linear_solver_("ma57"),
+          linearSystemScaling_("ma27"),
+          linear_solver_("mumps"),
           jacobianApproximation_("finite-difference-values")
     {
     }
@@ -270,16 +261,15 @@ public:
 class NlpSolverSettings
 {
 public:
-    typedef enum SolverType { IPOPT = 0, SNOPT = 1, num_types_solver } SolverType_t;
-
     /**
 	 * @brief      Default constructor, set default settings
 	 */
-    NlpSolverSettings() : solverType_(IPOPT), useGeneratedCostGradient_(false), useGeneratedConstraintJacobian_(false)
+    NlpSolverSettings()
+        : solverType_(NlpSolverType::IPOPT), useGeneratedCostGradient_(false), useGeneratedConstraintJacobian_(false)
     {
     }
 
-    SolverType_t solverType_;
+    NlpSolverType solverType_;
     bool useGeneratedCostGradient_;
     bool useGeneratedConstraintJacobian_;
     SnoptSettings snoptSettings_;
@@ -304,9 +294,9 @@ public:
         else
             std::cout << "Using anlyitical Constraints Jacobian" << std::endl;
 
-        if (solverType_ == IPOPT)
+        if (solverType_ == NlpSolverType::IPOPT)
             ipoptSettings_.print();
-        else if (solverType_ == SNOPT)
+        else if (solverType_ == NlpSolverType::SNOPT)
             snoptSettings_.print();
     }
 
@@ -317,9 +307,9 @@ public:
      */
     bool parametersOk() const
     {
-        if (solverType_ == IPOPT)
+        if (solverType_ == NlpSolverType::IPOPT)
             return ipoptSettings_.parametersOk();
-        else if (solverType_ == SNOPT)
+        else if (solverType_ == NlpSolverType::SNOPT)
             return snoptSettings_.parametersOk();
         else
             return false;
@@ -337,13 +327,13 @@ public:
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);
 
-        solverType_ = (SolverType)pt.get<unsigned int>(ns + ".SolverType");
+        solverType_ = static_cast<NlpSolverType>(pt.get<unsigned int>(ns + ".SolverType"));
         useGeneratedCostGradient_ = pt.get<bool>(ns + ".UseGeneratedCostGradient");
         useGeneratedConstraintJacobian_ = pt.get<bool>(ns + ".UseGeneratedConstraintJacobian");
 
-        if (solverType_ == IPOPT)
+        if (solverType_ == NlpSolverType::IPOPT)
             ipoptSettings_.load(filename, verbose, ns + ".ipopt");
-        else if (solverType_ == SNOPT)
+        else if (solverType_ == NlpSolverType::SNOPT)
             snoptSettings_.load(filename, verbose, ns + ".snopt");
 
         if (verbose)
@@ -354,7 +344,8 @@ public:
     }
 
 private:
-    std::map<SolverType, std::string> solverToString = {{IPOPT, "IPOPT"}, {SNOPT, "SNOPT"}};
+    std::map<NlpSolverType, std::string> solverToString = {
+        {NlpSolverType::IPOPT, "IPOPT"}, {NlpSolverType::SNOPT, "SNOPT"}};
 };
 
 

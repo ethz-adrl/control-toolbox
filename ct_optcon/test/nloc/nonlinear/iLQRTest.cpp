@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #include <chrono>
@@ -57,7 +57,7 @@ TEST(ILQRTestA, InstancesComparison)
         shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new Dynamics());
         shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearizedSystem());
         std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction(
-             new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
+            new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
 
         // times
         ct::core::Time tf = 3.0;
@@ -104,8 +104,6 @@ TEST(ILQRTestA, InstancesComparison)
         size_t nTests = 2;
         for (size_t i = 0; i < nTests; i++)
         {
-            bool foundBetter;
-
             if (i == 0)
             {
                 std::cout << "Turning Line-Search off" << std::endl;
@@ -212,7 +210,7 @@ TEST(ILQRTestB, MultiThreadingTest)
         shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new Dynamics());
         shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearizedSystem());
         std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction(
-             new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
+            new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
 
         // times
         ct::core::Time tf = 3.0;
@@ -348,7 +346,7 @@ TEST(ILQRTestB, MultiThreadingTest)
                             ilqr_settings.dt * analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
                         // Note: for compatibility with older Eigen versions, need scalar formulation for (state_matrix_t::Identity() - aNew).inverse();
                         state_matrix_t aNewInv;
-                        aNewInv(0,0) = 1.0 / (1.0 - aNew(0,0));
+                        aNewInv(0, 0) = 1.0 / (1.0 - aNew(0, 0));
                         A_analytic = aNewInv;
                         B_analytic = aNewInv * ilqr_settings.dt *
                                      analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
@@ -359,7 +357,7 @@ TEST(ILQRTestB, MultiThreadingTest)
                                               analyticLinearSystem->getDerivativeState(xRollout[j], uRollout[j], 0);
                         // Note: for compatibility with older Eigen versions, need scalar formulation for (state_matrix_t::Identity() - aNew).inverse();
                         state_matrix_t aNewInv;
-                        aNewInv(0,0) = 1.0 / (1.0 - aNew(0,0));
+                        aNewInv(0, 0) = 1.0 / (1.0 - aNew(0, 0));
                         A_analytic = aNewInv * (state_matrix_t::Identity() + aNew);
                         B_analytic = aNewInv * ilqr_settings.dt *
                                      analyticLinearSystem->getDerivativeControl(xRollout[j], uRollout[j], 0);
@@ -422,7 +420,7 @@ TEST(ILQRTestC, PolicyComparison)
         shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(new Dynamics());
         shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(new LinearizedSystem());
         std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction(
-             new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
+            new CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile));
 
         // times
         ct::core::Time tf = 3.0;
@@ -476,16 +474,15 @@ TEST(ILQRTestC, PolicyComparison)
             ilqr.setInitialGuess(initController);
             ilqr_mp.setInitialGuess(initController);
 
-            bool foundBetter = true;
-            bool foundBetter_mp = true;
             size_t numIterations = 0;
 
+            bool foundBetter = true;
 
             while (foundBetter)
             {
                 // solve
                 foundBetter = ilqr.runIteration();
-                foundBetter_mp = ilqr_mp.runIteration();
+                ilqr_mp.runIteration();
                 return;
 
                 numIterations++;

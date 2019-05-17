@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #include <memory>
@@ -25,12 +25,9 @@ TEST(DynamicsTestIrb4600, forward_dynamics_test)
 
     using control_vector_t = typename TestIrb4600::Dynamics::control_vector_t;
     using ForceVector_t = typename TestIrb4600::Dynamics::ForceVector_t;
-    using RBDState_t = typename TestIrb4600::Dynamics::RBDState_t;
-    using RBDAcceleration_t = typename TestIrb4600::Dynamics::RBDAcceleration_t;
     using JointState_t = typename TestIrb4600::Dynamics::JointState_t;
     using JointAcceleration_t = typename TestIrb4600::Dynamics::JointAcceleration_t;
     using ExtLinkForces_t = typename TestIrb4600::Dynamics::ExtLinkForces_t;
-    using EE_in_contact_t = typename TestIrb4600::Dynamics::EE_in_contact_t;
 
     JointState_t irb_state;
     irb_state.setZero();
@@ -45,16 +42,9 @@ TEST(DynamicsTestIrb4600, forward_dynamics_test)
 
     JointAcceleration_t qdd;
     testdynamics.FixBaseID(irb_state, qdd, ext_forces, torque_u);
-
-
-    // EE_in_contact_t ee_contact=true;
-
-    // testdynamics.ProjectedForwardDynamics(ee_contact , irb_state ,torque_u, irb_xd );
-
-    // testdynamics.ProjectedInverseDynamics(ee_contact , irb_state , irb_xd , torque_u);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

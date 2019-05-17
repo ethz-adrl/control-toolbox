@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 
@@ -298,7 +298,8 @@ public:
 	 * @param[in]  problemCG  The optcon problem templated on the AD CG Scalar
 	 * @param[in]  settings   The settings indicating what to generate
 	 */
-    virtual void generateAndCompileCode(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
+    virtual void generateAndCompileCode(
+        const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
         const ct::core::DerivativesCppadSettings& settings)
     {
         throw std::runtime_error("Generate and compile code not implemented for this solver");

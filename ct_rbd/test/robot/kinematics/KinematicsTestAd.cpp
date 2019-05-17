@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #include <ct/rbd/rbd.h>
@@ -20,7 +20,7 @@ using namespace ct;
 using namespace rbd;
 
 
-TEST(TestHyQKinematicsAd, transformTest)
+TEST(TestHyQKinematics, transformTest)
 {
     typedef float size_type;
     typedef TestHyQ::tpl::Kinematics<size_type> KinTpl_t;
@@ -42,7 +42,7 @@ TEST(TestHyQKinematicsAd, transformTest)
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -13,7 +13,7 @@ using namespace ct::optcon;
  *
  * \example NLOC_MPC.cpp
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     /* PRELIMINIARIES, see example NLOC.cpp */
 

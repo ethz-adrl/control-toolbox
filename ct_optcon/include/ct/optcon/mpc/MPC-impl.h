@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich
+Licensed under the BSD-2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #pragma once
@@ -78,7 +78,7 @@ template <typename OPTCON_SOLVER>
 OPTCON_SOLVER& MPC<OPTCON_SOLVER>::getSolver()
 {
     return solver_;
-};
+}
 
 
 template <typename OPTCON_SOLVER>

@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -35,7 +35,7 @@ public:
     DisturbedSystem(std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller);
 
     // Not overloaded. This is a completely new method.
-    void setController(const std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>>& controller);
+    void setController(const std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller);
 
     //! Implementation of the base computeControlledDynamics method.
     virtual void computeControlledDynamics(const ct::core::StateVector<AUGMENTED_DIM, SCALAR>& state,
@@ -44,5 +44,5 @@ public:
         ct::core::StateVector<AUGMENTED_DIM, SCALAR>& derivative) = 0;
 };
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

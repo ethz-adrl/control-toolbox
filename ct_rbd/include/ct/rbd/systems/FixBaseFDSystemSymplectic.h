@@ -1,14 +1,12 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
 
-#include <ct/rbd/state/RigidBodyPose.h>
+#include "FixBaseSystemBase.h"
 #include <ct/rbd/robot/actuator/ActuatorDynamicsSymplectic.h>
-
-#include "RBDSystem.h"
 
 
 #define ACTUATOR_DYNAMICS_ENABLED    \

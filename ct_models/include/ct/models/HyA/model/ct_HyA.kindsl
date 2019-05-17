@@ -1,6 +1,5 @@
 Robot ct_HyA {
 
-
 RobotBase HyABase {
 	inertia_params {
 		mass = 1.0
@@ -157,7 +156,7 @@ link Wrist_FE {
 	children {}
 	frames {
 	   fr_ee {
-	       translation = (0.03, 0.0, 0.0) ; offset to end-effector
+	       translation = (0.03, 0.0, 0.0) // offset to end-effector
 	       rotation    = (0.0, 0.0, 0.0)
 	   }
 	   fr_Wrist_FE_COM {

@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -43,12 +43,13 @@ public:
     static const size_t VEL_DIM = V_DIM;
 
     typedef OptConSolver<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>,
-                               typename NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Policy_t,
-                               NLOptConSettings,
-                               STATE_DIM,
-                               CONTROL_DIM,
-                               SCALAR,
-                               CONTINUOUS> Base;
+        typename NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Policy_t,
+        NLOptConSettings,
+        STATE_DIM,
+        CONTROL_DIM,
+        SCALAR,
+        CONTINUOUS>
+        Base;
 
 
     typedef NLOptConSettings Settings_t;

@@ -6,12 +6,11 @@
 
 \section ct1 Control Toolbox
 
-This is the ADRL Control Toolbox ('CT'), an open-source C++ library for efficient modelling, control, 
-estimation, trajectory optimization and model predictive control.
-The CT is applicable to a broad class of dynamic systems, but features additional modelling tools specially designed for robotics.
+The Control Toolbox ('CT'), is a C++ library for  modelling, control, estimation, trajectory optimization and model predictive control.
+The CT is applicable to a broad class of dynamic systems, but features additional tools specially designed for robotics.
 This page outlines its general concept, its major building blocks and highlights selected application examples.
 
-The library contains several tools to design and evaluate controllers, model dynamical systems and solve optimal control problems.
+The library contains several tools to design and evaluate controllers, model dynamical systems and numerically solve optimal control problems.
 The CT was designed with the following features in mind:
 
  - **Systems and dynamics**: 
@@ -34,8 +33,9 @@ The CT was designed with the following features in mind:
  - **Performance**: 
  	- solve large scale optimal control problems in MPC fashion. 
   
- - **Robot Modelling and rigid body dynamics**: 
-    - straight-forward interface to a state-of the art rigid body dynamics modelling tool.
+ - **Robot Modelling, Rigid Body Kinematics and Dynamics**: 
+  - straight-forward interface to a state-of the art rigid body dynamics modelling tool.
+	- implementation of a basic nonlinear-programming-based inverse kinematics solver.
  
  - **Automatic Differentiation**:
     - first- and second order automatic differentiation of arbitrary vector-valued functions including cost functions and constraints
@@ -46,7 +46,7 @@ The CT was designed with the following features in mind:
     - all algorithm flavors and solver backends are available through simple configuration files.
 
 
-The CT is hosted on bitbucket: <a href="https://bitbucket.org/adrlab/ct" target="_blank">https://bitbucket.org/adrlab/ct</a>
+The CT is hosted on github: <a href="https://github.com/ethz-adrl/control-toolbox" target="_blank">https://github.com/ethz-adrl/control-toolbox</a>
 
 
 
@@ -170,7 +170,6 @@ The four different main modules are detailed in the following.
  - Derivatives/Jacobians of general functions using **Numerical Differentiation** (ct::core::DerivativesNumDiff) 
  or **Automatic-Differentiation** with code-generation (ct::core::DerivativesCppadCG) and just-in-time (JIT) 
  compilation (ct::core::DerivativesCppadJIT)
- - <a href="../../../ct_core/doc/html/index.html">quick link to ct_core</a> 
  
 
 \subsection ct_optcon_overview CT Optimal Control
@@ -186,54 +185,46 @@ The four different main modules are detailed in the following.
  - Non-Linear **Model Predictive Control** (ct::optcon::MPC)
  - Definitions for Nonlinear Programming Problems (**NLPs**, ct::optcon::Nlp) and interfaces to third-party **NLP Solvers** 
  (ct::optcon::SnoptSolver and ct::optcon::IpoptSolver)
- - <a href="../../../ct_optcon/doc/html/index.html">quick link to ct_optcon</a>
   
   
-\subsection ct_rbd_overview CT Rigid Body Dynamics
+\subsection ct_rbd_overview CT Rigid Body Dynamics (Robot)
 
  - Standard models for Rigid Body Dynamics
  - Definitions for the state of a Rigid Body System expressed as general coordinates (ct::rbd::RBDState)
  - Routines for different flavors of **Forward** and **Inverse Dynamics** (ct::rbd::Dynamics)
- - Rigid body and end-effector **kinematics** (ct::rbd::Kinematics, note that we do currently not provide inverse kinematics)
+ - Rigid body and end-effector **kinematics** (ct::rbd::Kinematics)
  - Operational Space Controllers
  - Basic soft **auto-differentiable contact model** for arbitrary frames (ct::rbd::EEContactModel)
  - **Actuator dynamics** (ct::rbd::ActuatorDynamics)
  - Backend uses <a href="https://bitbucket.org/mfrigerio17/roboticscodegenerator/" target="_blank">RobCoGen</a> \cite frigerioCodeGen, 
  a highly efficient Rigid Body Dynamics library
- - <a href="../../../ct_rbd/doc/html/index.html">quick link to ct_rbd</a>
 
 
 \subsection ct_models_overview CT Models:
 
- - Various standard models for testing and evaluation including UAVs (ct::models::Quadrotor), ground robots, 
+ - standard models for testing and evaluation including UAVs (ct::models::Quadrotor), ground robots, 
  legged robots (ct::models::HyQ), robot arms (ct::models::HyA), inverted pendulums etc.
  - Means of creating linear approximation of these models
- - <a href="../../../ct_models/doc/html/index.html">quick link to ct_models</a>
  
 
-\section source_code Source Code
-
-The source code is available at <a href="https://bitbucket.org/adrlab/ct" target="_blank">https://bitbucket.org/adrlab/ct</a>
-
-Examples for interfacing with ROS and advanced application examples are available at <a href="https://bitbucket.org/adrlab/ct_ros/src/master/" target="_blank">ct_ros</a>.
 
 \section gs How to use the Control Toolbox
 
-To get started with the control toolbox, please see \ref getting_started "Getting Started".
+To get an overview of the control toolbox, please see \ref getting_started "Getting Started".
 
 
 \section contact Support
 
 For any questions, issues or other troubleshooting please either
-- create an issue: https://bitbucket.org/adrlab/ct/issues
+- create an issue: https://github.com/ethz-adrl/control-toolbox/issues
 - contact the devs: control-toolbox-dev@googlegroups.com
 
 
 \section ct_doc_acknowledgement Acknowledgements
 
 \subsection contribs Contributors
- - Michael Neunert
  - Markus Giftthaler
+ - Michael Neunert
  - Markus Stäuble
  - Farbod Farshidian
  - Diego Pardo
@@ -241,15 +232,16 @@ For any questions, issues or other troubleshooting please either
  - Jan Carius
  - Ruben Grandia
  - Hamza Merzic
+ - Jonas Buchli
  
-\subsection lead_overview Project Lead and Maintenance 
- - Michael Neunert, neunertm (at) gmail (dot) com
- - Markus Giftthaler, mgiftthaler (at) ethz (dot) ch
+\subsection lead_overview Maintenance 
+ - Markus Giftthaler, markusgft (at) gmail (dot) com
 
-\subsection funding Funding
-This software has been developed at the <a href="http://www.adrl.ethz.ch" target="_blank">Agile & Dexterous Robotics Lab</a> 
-at <a href="http://www.ethz.ch/en" target="_blank">ETH Zurich</a>, Switzerland.
-The development has been made possible through financial support from the <a href="http://www.snf.ch/en/" target="_blank">Swiss National Science Foundation (SNF)</a> 
+
+\subsection funding Funding 2014-2018
+The core of this software has been developed at the <a href="http://www.adrl.ethz.ch" target="_blank">Agile & Dexterous Robotics Lab</a> 
+at <a href="http://www.ethz.ch/en" target="_blank">ETH Zurich</a>, Switzerland between 2014 and 2018.
+During that time, development has been made possible through financial support from the <a href="http://www.snf.ch/en/" target="_blank">Swiss National Science Foundation (SNF)</a> 
 through a SNF Professorship award to Jonas Buchli and the National Competence Centers in Research (NCCR) 
 <a href="https://www.nccr-robotics.ch/" target="_blank">Robotics</a> and <a href="http://www.dfab.ch/en/" target="_blank">Digital Fabrication</a>.
 
@@ -257,39 +249,48 @@ through a SNF Professorship award to Jonas Buchli and the National Competence Ce
 \section licence Licence Information
 
 The Control Toolbox is released under the 
-<a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache Licence, Version 2.0</a>.
+<a href="https://choosealicense.com/licenses/bsd-2-clause/" target="_blank">BSD-2 clause license</a>.
 Please note the licence and notice files in the source directory.
  
 
 \section cite_ct How to cite the CT
 
 \code
-@misc{adrlCT,
+@INPROCEEDINGS{adrlCT, 
   author = "Giftthaler, Markus and Neunert, Michael and {St\"auble}, Markus and Buchli, Jonas",
+  booktitle={2018 IEEE International Conference on Simulation, Modeling, and Programming for Autonomous Robots (SIMPAR)}, 
   title = "The {Control Toolbox} - An Open-Source {C++} Library for Robotics, Optimal and Model Predictive Control",
-  howpublished = "\url{https://adrlab.bitbucket.io/ct}",
-  year = "2018", 
-  note = "arXiv:1801.04290 [cs.RO]"
+  year={2018}, 
+  pages={123-129}, 
+  doi={10.1109/SIMPAR.2018.8376281}, 
+  month={May},
+  number={}, 
+  volume={}, 
 }
 \endcode
-
 
 \section publications Related Publications
 
 This toolbox has been used in, or has helped to realize the following academic publications:
 
 - Markus Giftthaler, Michael Neunert, Markus Stäuble and Jonas Buchli.
-“The Control Toolbox - An Open-Source C++ Library for Robotics, Optimal and Model Predictive Control”.
+“The Control Toolbox - An Open-Source C++ Library for Robotics, Optimal and Model Predictive Control”. 
+IEEE Simpar 2018 (Best Student Paper Award).
 <a href="https://arxiv.org/abs/1801.04290" target="_blank">arXiv preprint</a>
 
 - Markus Giftthaler, Michael Neunert, Markus Stäuble, Jonas Buchli and Moritz Diehl.
 “A Family of iterative Gauss-Newton Shooting Methods for Nonlinear Optimal Control”.
+IROS 2018. 
 <a href="https://arxiv.org/abs/1711.11006" target="_blank">arXiv preprint</a>
+
+- Jan Carius, René Ranftl, Vladlen Koltun and Marco Hutter. 
+"Trajectory Optimization with Implicit Hard Contacts." 
+IEEE Robotics and Automation Letters 3, no. 4 (2018): 3316-3323.
 
 - Michael Neunert, Markus Stäuble, Markus Giftthaler, Dario Bellicoso, Jan Carius, Christian Gehring, 
 Marco Hutter and Jonas Buchli. 
 “Whole Body Model Predictive Control Through Contacts For Quadrupeds”.
-To appear in IEEE Robotics and Automation Letters.
+IEEE Robotics and Automation Letters, 2017.
 <a href="https://arxiv.org/abs/1712.02889" target="_blank">arXiv preprint</a>
 
 - Markus Giftthaler and Jonas Buchli.

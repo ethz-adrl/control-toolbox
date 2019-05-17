@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 namespace ct {
@@ -73,13 +73,15 @@ StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::clone() const
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-const DiscreteArray<typename StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t>& StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::x_ref() const
+const DiscreteArray<typename StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t>&
+StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::x_ref() const
 {
     return x_ref_.getDataArray();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-const DiscreteArray<typename StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t>& StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::uff() const
+const DiscreteArray<typename StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t>&
+StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>::uff() const
 {
     return uff_.getDataArray();
 }

@@ -116,7 +116,8 @@ int main(int argc, char** argv)
     generalConstraints_2->addIntermediateConstraint(phase2Constraint, verbose);
 
     // Switched constraints
-    SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM>::SwitchedLinearConstraintContainers switchedConstraintContainers;
+    SwitchedLinearConstraintContainer<STATE_DIM, CONTROL_DIM>::SwitchedLinearConstraintContainers
+        switchedConstraintContainers;
     switchedConstraintContainers.push_back(generalConstraints_1);
     switchedConstraintContainers.push_back(generalConstraints_2);
 

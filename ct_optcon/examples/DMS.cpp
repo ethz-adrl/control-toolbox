@@ -1,3 +1,7 @@
+/**********************************************************************************************************************
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
+**********************************************************************************************************************/
 
 #include <ct/optcon/optcon.h>
 #include "exampleDir.h"
@@ -9,7 +13,7 @@
  *
  * \example DMS.cpp
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     using namespace ct::optcon;
     using namespace ct::core;
@@ -76,7 +80,7 @@ int main(int argc, char **argv)
     settings.h_min_ = 0.1;                         // minimum admissible distance between two nodes in [sec]
     settings.integrationType_ = DmsSettings::RK4;  // type of the shot integrator
     settings.dt_sim_ = 0.01;                       // forward simulation dt
-    settings.solverSettings_.solverType_ = NlpSolverSettings::SolverType::IPOPT;  // use IPOPT
+    settings.solverSettings_.solverType_ = NlpSolverType::IPOPT;  // use IPOPT
     settings.absErrTol_ = 1e-8;
     settings.relErrTol_ = 1e-8;
 

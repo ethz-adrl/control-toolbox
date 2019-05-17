@@ -28,7 +28,7 @@ namespace Eigen {
 
 template <typename D>
 inline const CwiseUnaryOp<internal::scalar_abs_op<typename internal::traits<D>::Scalar>, const D> abs(
-    const MatrixBase<D> &x)
+    const MatrixBase<D>& x)
 {
     return x.cwiseAbs();
 }
@@ -36,8 +36,8 @@ inline const CwiseUnaryOp<internal::scalar_abs_op<typename internal::traits<D>::
 
 template <typename D>
 inline Matrix<typename internal::traits<D>::Scalar, internal::traits<D>::RowsAtCompileTime, 1> operator+(
-    const typename internal::traits<D>::Scalar &s,
-    const MatrixBase<D> &m)
+    const typename internal::traits<D>::Scalar& s,
+    const MatrixBase<D>& m)
 {
     Matrix<typename internal::traits<D>::Scalar, internal::traits<D>::RowsAtCompileTime, 1> result = m;
     result *= s;
@@ -46,8 +46,8 @@ inline Matrix<typename internal::traits<D>::Scalar, internal::traits<D>::RowsAtC
 
 template <typename D, typename D2>
 inline Matrix<typename internal::traits<D>::Scalar, internal::traits<D>::RowsAtCompileTime, 1> operator/(
-    const MatrixBase<D> &lhs,
-    const MatrixBase<D2> &rhs)
+    const MatrixBase<D>& lhs,
+    const MatrixBase<D2>& rhs)
 {
     Matrix<typename internal::traits<D>::Scalar, internal::traits<D>::RowsAtCompileTime, 1> res;
     res = (lhs.array() / rhs.array());
@@ -61,7 +61,7 @@ inline Matrix<typename internal::traits<D>::Scalar, internal::traits<D>::RowsAtC
 template <typename D>
 inline const typename Eigen::
     CwiseUnaryOp<typename Eigen::internal::scalar_add_op<typename Eigen::internal::traits<D>::Scalar>, const D>
-    operator+(const typename Eigen::MatrixBase<D> &m, const typename Eigen::internal::traits<D>::Scalar &s)
+    operator+(const typename Eigen::MatrixBase<D>& m, const typename Eigen::internal::traits<D>::Scalar& s)
 {
     return Eigen::CwiseUnaryOp<typename Eigen::internal::scalar_add_op<typename Eigen::internal::traits<D>::Scalar>,
         const D>(m.derived(), Eigen::internal::scalar_add_op<typename Eigen::internal::traits<D>::Scalar>(s));
@@ -70,7 +70,7 @@ inline const typename Eigen::
 template <typename D>
 inline const typename Eigen::
     CwiseUnaryOp<typename Eigen::internal::scalar_add_op<typename Eigen::internal::traits<D>::Scalar>, const D>
-    operator+(const typename Eigen::internal::traits<D>::Scalar &s, const typename Eigen::MatrixBase<D> &m)
+    operator+(const typename Eigen::internal::traits<D>::Scalar& s, const typename Eigen::MatrixBase<D>& m)
 {
     return Eigen::CwiseUnaryOp<typename Eigen::internal::scalar_add_op<typename Eigen::internal::traits<D>::Scalar>,
         const D>(m.derived(), Eigen::internal::scalar_add_op<typename Eigen::internal::traits<D>::Scalar>(s));
@@ -82,7 +82,7 @@ inline const typename Eigen::CwiseBinaryOp<
     typename Eigen::internal::scalar_quotient_op<typename Eigen::internal::traits<D1>::Scalar>,
     const D1,
     const D2>
-operator/(const Eigen::MatrixBase<D1> &x1, const Eigen::MatrixBase<D2> &x2)
+operator/(const Eigen::MatrixBase<D1>& x1, const Eigen::MatrixBase<D2>& x2)
 {
     return x1.cwiseQuotient(x2);
 }
@@ -91,7 +91,7 @@ operator/(const Eigen::MatrixBase<D1> &x1, const Eigen::MatrixBase<D2> &x2)
 template <typename D>
 inline const typename Eigen::
     CwiseUnaryOp<typename Eigen::internal::scalar_abs_op<typename Eigen::internal::traits<D>::Scalar>, const D>
-    abs(const Eigen::MatrixBase<D> &m)
+    abs(const Eigen::MatrixBase<D>& m)
 {
     return m.cwiseAbs();
 }
@@ -114,7 +114,7 @@ struct vector_space_norm_inf<Eigen::Matrix<B, S1, S2, O, M1, M2>>
 {
     typedef B result_type;
 
-    result_type operator()(const Eigen::Matrix<B, S1, S2, O, M1, M2> &m) const
+    result_type operator()(const Eigen::Matrix<B, S1, S2, O, M1, M2>& m) const
     {
         return m.template lpNorm<Eigen::Infinity>();
     }
@@ -127,7 +127,7 @@ template <int STATE_DIM, typename SCALAR>
 struct vector_space_reduce<Eigen::Matrix<SCALAR, STATE_DIM, 1>>
 {
     template <class Op>
-    SCALAR operator()(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x, Op op, SCALAR init) const
+    SCALAR operator()(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x, Op op, SCALAR init) const
     {
         for (int i = 0; i < STATE_DIM; i++)
         {

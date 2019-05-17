@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 
@@ -92,14 +92,7 @@ public:
     }
 
 
-    VectorXs eval() override
-    {
-        stateNext_ = shotContainer_->getStateIntegrated();
-        assert(stateNext_ == stateNext_);
-        assert(w_->getOptimizedState(shotIndex_ + 1) == w_->getOptimizedState(shotIndex_ + 1));
-        return w_->getOptimizedState(shotIndex_ + 1) - stateNext_;
-    }
-
+    VectorXs eval() override { return w_->getOptimizedState(shotIndex_ + 1) - shotContainer_->getStateIntegrated(); }
     VectorXs evalSparseJacobian() override
     {
         count_local_ = 0;
@@ -257,7 +250,6 @@ private:
 
     VectorXs jacLocal_;
     size_t count_local_;
-    state_vector_t stateNext_;
 
     state_vector_t lb_;
     state_vector_t ub_;

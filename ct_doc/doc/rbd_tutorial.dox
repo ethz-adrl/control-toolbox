@@ -18,6 +18,9 @@ The Rigid Body Dynamics module of the Control Toolbox relies on <a href="https:/
 a separate code generation step for creating the dynamics and kinematics equations prior to using your model in the Control Toolbox. However, as of writing this documentation, RobCoGen is the only Rigid
 Body Dynamics framework that supports Auto-Differentiation, a major ingredient for fast Optimal Control. We plan to support more modelling frameworks in the future.
 
+RobCoGen requires a special robot description format (kindsl).
+If you already have a URDF description of your robot, you can use the <a href="https://github.com/leggedrobotics/urdf2robcogen">urdf2robcogen</a> converter.
+
 \subsection rbd_tut_robcogen Step 1: Create your model using RobCoGen
 As a first step, download RobCoGen version 0.4ad.0 from the <a href="https://robcogenteam.bitbucket.io/binary.html">official website</a>. Follow the instruction on the website for creating your kindsl and
 dtdsl files. Generate all C++ outputs.
@@ -92,7 +95,7 @@ Next, create a header file for your robot in include/my_robot/MyRobot.h with the
 
 \endcode
 
-You need to adjust a few variables. First, set the namespace (ROBCOGEN_NS) which the RobCoGen files have been created in. Also, you can define a target namespace (MyRobot). Next, you need to define your base link (CT_BASE, which is either floating or fixed, depending on your kindsl). Afterwards, define all links (CT_L0, CT_L1, CT_L2, ...) by using the frames you defined in RobCoGen. Last but not least, you can but do not have to specify endeffectors. Endeffectors can be useful for contacts or optimal control. If in doubt, skip these for now. 
+You need to adjust a few variables. First, set the namespace (ROBCOGEN_NS) which the RobCoGen files have been created in. Also, you can define a target namespace (MyRobot). Next, you need to define your base link (CT_BASE, which is either floating or fixed, depending on your kindsl). Afterwards, define all links (CT_L0, CT_L1, CT_L2, ...) by using the frames you defined in RobCoGen. Last but not least, you can but do not have to specify endeffectors. Endeffectors can be useful for contacts or optimal control. If in doubt, skip these for now.
 
 Once you need end-effectors, specify their number (CT_N_EE). Then, for each end-effector, specify its name in RobCoGen (CT_EEx) and which link it is rigidly attached to (CT_EEx_IS_ON_LINK). Then specify the first joint in the kinematic chain leading up to the end-effector (CT_EEx_FIRST_JOINT, often but not necessarily 0) as well as the last joint (CT_EEx_LAST_JOINT). The Control Toolbox assumes that all joint numbers in between those two also influence the end-effector.
 

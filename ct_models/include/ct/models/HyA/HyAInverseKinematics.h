@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -32,11 +32,11 @@ public:
 
     HyAInverseKinematics() = default;
 
-    virtual ~HyAInverseKinematics() = default;
+    ~HyAInverseKinematics() = default;
 
-    virtual bool computeInverseKinematics(JointPositionsVector_t& res,
+    bool computeInverseKinematics(JointPositionsVector_t& res,
         const RigidBodyPoseTpl& eeBasePose,
-        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const
+        const std::vector<size_t>& freeJoints = std::vector<size_t>()) override
     {
         res.clear();
         IkSolutionList<double> solutions;
@@ -51,7 +51,7 @@ public:
         hya_ik::ComputeIk(eeBasePose.position().toImplementation().data(), eeBaseRotationRowMajor.data(),
             freeJoints_ikf.size() > 0 ? freeJoints_ikf.data() : nullptr, solutions);
 
-        int num_solutions = solutions.GetNumSolutions();
+        size_t num_solutions = solutions.GetNumSolutions();
 
         if (num_solutions == 0)
             return false;  // no solution found
@@ -74,10 +74,10 @@ public:
         return true;
     }
 
-    virtual bool computeInverseKinematics(JointPositionsVector_t& res,
+    bool computeInverseKinematics(JointPositionsVector_t& res,
         const RigidBodyPoseTpl& eeWorldPose,
         const RigidBodyPoseTpl& baseWorldPose,
-        const std::vector<size_t>& freeJoints = std::vector<size_t>()) const
+        const std::vector<size_t>& freeJoints = std::vector<size_t>()) override
     {
         return computeInverseKinematics(res, eeWorldPose.inReferenceFrame(baseWorldPose), freeJoints);
     }

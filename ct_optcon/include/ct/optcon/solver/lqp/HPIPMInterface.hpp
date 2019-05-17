@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -186,7 +186,7 @@ private:
     std::vector<double*> hB_;
     //! system offset term
     std::vector<double*> hb_;
-    //! intermediate container for intuitive transcription of first stage from local to global coordinates
+    //! intermediate container for intuitive transcription of first stage
     Eigen::Matrix<double, state_dim, 1> hb0_;
 
 
@@ -200,7 +200,7 @@ private:
     std::vector<double*> hq_;
     //! pure control penalty jacobian
     std::vector<double*> hr_;
-    //! intermediate container for intuitive transcription of first stage from local to global coordinates
+    //! intermediate container for intuitive transcription of first stage
     Eigen::Matrix<double, control_dim, 1> hr0_;
 
 
@@ -219,7 +219,7 @@ private:
     std::vector<double*> hC_;
     //! general constraint jacobians w.r.t. controls (presumably)
     std::vector<double*> hD_;
-    //! local vars for constraint bounds for statge k=0, which need to be different by HPIPM convention
+    //  local vars for constraint bounds for statge k=0, which need to be different by HPIPM convention
     Eigen::VectorXd hd_lg_0_Eigen_;
     Eigen::VectorXd hd_ug_0_Eigen_;
 

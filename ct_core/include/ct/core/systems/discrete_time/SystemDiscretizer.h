@@ -1,23 +1,24 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
 
 #include "DiscreteControlledSystem.h"
 #include "../continuous_time/ControlledSystem.h"
+#include <ct/core/control/continuous_time/ConstantController.h>
 
 #include <ct/core/integration/Integrator.h>
 #include <ct/core/integration/IntegratorSymplectic.h>
 #include <ct/core/integration/EventHandlers/SubstepRecorder.h>
 
-#define SYMPLECTIC_ENABLED        \
+#define SYMPLECTIC_ENABLED                   \
     template <size_t V, size_t P, size_t ST> \
-    typename std::enable_if<(V > 0 && P > 0 && (V+P==ST)), void>::type
-#define SYMPLECTIC_DISABLED       \
+    typename std::enable_if<(V > 0 && P > 0 && (V + P == ST)), void>::type
+#define SYMPLECTIC_DISABLED                  \
     template <size_t V, size_t P, size_t ST> \
-    typename std::enable_if<(V <= 0 || P <= 0 || (V+P!=ST)), void>::type
+    typename std::enable_if<(V <= 0 || P <= 0 || (V + P != ST)), void>::type
 
 
 namespace ct {

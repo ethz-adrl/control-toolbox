@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -132,12 +132,12 @@ public:
         N_ = pt.get<unsigned int>(ns + ".N");
         T_ = pt.get<double>(ns + ".T");
         nThreads_ = pt.get<unsigned int>(ns + ".nThreads");
-        splineType_ = (SplineType_t)pt.get<unsigned int>(ns + ".InterpolationType");
-        costEvaluationType_ = (CostEvaluationType_t)pt.get<unsigned int>(ns + ".CostEvaluationType");
-        objectiveType_ = (ObjectiveType_t)pt.get<unsigned int>(ns + ".ObjectiveType");
+        splineType_ = static_cast<SplineType_t>(pt.get<unsigned int>(ns + ".InterpolationType"));
+        costEvaluationType_ = static_cast<CostEvaluationType_t>(pt.get<unsigned int>(ns + ".CostEvaluationType"));
+        objectiveType_ = static_cast<ObjectiveType_t>(pt.get<unsigned int>(ns + ".ObjectiveType"));
         h_min_ = pt.get<double>(ns + ".h_min");
 
-        integrationType_ = (IntegrationType_t)pt.get<unsigned int>(ns + ".IntegrationType");
+        integrationType_ = static_cast<IntegrationType_t>(pt.get<unsigned int>(ns + ".IntegrationType"));
         dt_sim_ = pt.get<double>(ns + ".dt_sim");
         absErrTol_ = pt.get<double>(ns + ".AbsErrTol");
         relErrTol_ = pt.get<double>(ns + ".RelErrTol");

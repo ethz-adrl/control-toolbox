@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -126,6 +126,7 @@ public:
         // SCALAR t_shot_end = timeGrid_->getShotEndTime(shotNr_);
 
         // +0.5 needed to avoid rounding errors from double to size_t
+        nSteps_ = nIntegrationSteps;
         // std::cout << "shotNr_: " << shotNr_ << "\t nSteps: " << nSteps_ << std::endl;
 
         integratorCT_->setLinearSystem(linearSystem_);
@@ -251,6 +252,9 @@ public:
             integrateShot();
             discreteA_.setIdentity();
             discreteB_.setZero();
+            integratorCT_->linearize();
+            integratorCT_->integrateSensitivityDX0(discreteA_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
+            integratorCT_->integrateSensitivityDU0(discreteB_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
 
             if (integratorCT_)
             {
@@ -298,6 +302,8 @@ public:
             integrateSensitivities();
             discreteQ_.setZero();
             discreteR_.setZero();
+            integratorCT_->integrateCostSensitivityDX0(discreteQ_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
+            integratorCT_->integrateCostSensitivityDU0(discreteR_, tStart_, nSteps_, SCALAR(settings_.dt_sim_));
 
             if (integratorCT_)
             {

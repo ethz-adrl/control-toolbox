@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -58,11 +58,6 @@ public:
     {
         controlAction = controlSpliner_->evalSpline(t, shotIdx_);
         assert(controlAction == controlAction);
-    }
-
-    void computeControl(const state_vector_t& state, const int n, control_vector_t& controlAction) override
-    {
-        controlAction = controlSpliner_->evalSpline(controlSpliner_->timeGrid_->getShotStartTime(shotIdx_), shotIdx_);
     }
 
     core::ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const state_vector_t& state,

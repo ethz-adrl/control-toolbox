@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -13,7 +13,7 @@ namespace core {
 
 //! Gaussian noise generator
 /*!
- * This class generates random Gaussian noise given a mean and a distribtion. It can
+ * This class generates random Gaussian noise given a mean and a distribution. It can
  * either create a single (pseudo) random variable or an entire vector.
  *
  * Unit test \ref NoiseTest.cpp illustrates the use of GaussianNoise

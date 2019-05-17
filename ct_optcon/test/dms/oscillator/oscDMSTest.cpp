@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 /*!
@@ -96,7 +96,7 @@ public:
 
     void getIpoptSolution()
     {
-        settings_.solverSettings_.solverType_ = NlpSolverSettings::IPOPT;
+        settings_.solverSettings_.solverType_ = NlpSolverType::IPOPT;
 
         generalConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
             new ct::optcon::ConstraintContainerAnalytical<2, 1>());
@@ -127,7 +127,7 @@ public:
 
     void getSnoptSolution()
     {
-        settings_.solverSettings_.solverType_ = NlpSolverSettings::SNOPT;
+        settings_.solverSettings_.solverType_ = NlpSolverType::SNOPT;
 
         generalConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
             new ct::optcon::ConstraintContainerAnalytical<2, 1>());
@@ -268,7 +268,7 @@ TEST(DmsTest, OscDmsTest)
  * This unit test applies Direct Multiple Shooting to an oscillator system, uses different solvers and compares the outputs.
  * \example oscDMSTest.cpp
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     // using namespace ct::optcon::example;
     testing::InitGoogleTest(&argc, argv);

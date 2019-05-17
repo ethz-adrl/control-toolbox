@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -23,13 +23,9 @@ public:
     //! Standard constructor
     /*!
 	 * @param mean the mean of the uniform distribution
-	 * @param the half-width of the distribution
+	 * @param r the half-width of the distribution
 	 */
-	UniformNoise(double mean = 0.0, double r = 1.0)
-        : rd_(), eng_(rd_()), distr_(mean-r, mean+r)
-    {
-    }
-
+    UniformNoise(const double mean = 0.0, const double r = 1.0) : rd_(), eng_(rd_()), distr_(mean - r, mean + r) {}
     //! Scalar generator
     /*!
 	 *  generates a single scalar random variable

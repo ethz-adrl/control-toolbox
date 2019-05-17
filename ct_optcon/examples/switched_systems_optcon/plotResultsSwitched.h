@@ -1,16 +1,16 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
 
 void plotResults(const ct::core::StateVectorArray<2>& stateArray,
-                 const ct::core::ControlVectorArray<1>& controlArray,
-                 const ct::core::TimeArray& timeArray)
+    const ct::core::ControlVectorArray<1>& controlArray,
+    const ct::core::TimeArray& timeArray)
 {
 #ifdef PLOTTING_ENABLED
-  using namespace ct::core;
+    using namespace ct::core;
 
     try
     {
@@ -72,6 +72,6 @@ void plotResults(const ct::core::StateVectorArray<2>& stateArray,
         std::cout << e.what() << std::endl;
     }
 #else
-  std::cout << "Plotting is disabled." << std::endl;
+    std::cout << "Plotting is disabled." << std::endl;
 #endif
 }

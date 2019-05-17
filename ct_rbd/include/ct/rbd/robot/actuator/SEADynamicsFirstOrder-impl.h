@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #pragma once
@@ -26,8 +26,7 @@ SEADynamicsFirstOrder<NJOINTS, SCALAR>* SEADynamicsFirstOrder<NJOINTS, SCALAR>::
 }
 
 template <size_t NJOINTS, typename SCALAR>
-void SEADynamicsFirstOrder<NJOINTS, SCALAR>::computeActuatorDynamics(
-    const JointState<NJOINTS, SCALAR>& robotJointState,
+void SEADynamicsFirstOrder<NJOINTS, SCALAR>::computeActuatorDynamics(const JointState<NJOINTS, SCALAR>& robotJointState,
     const ct::core::StateVector<NJOINTS, SCALAR>& state,
     const SCALAR& t,
     const ct::core::ControlVector<NJOINTS, SCALAR>& control,

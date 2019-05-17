@@ -1,11 +1,14 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
 
-#include "DerivativesCppadSettings.h"
+#include <ct/core/types/AutoDiff.h>
+#include <ct/core/internal/autodiff/CGHelpers.h>
+#include <ct/core/math/Derivatives.h>
+#include <ct/core/math/DerivativesCppadSettings.h>
 
 namespace ct {
 namespace core {
@@ -30,24 +33,22 @@ class DerivativesCppadJIT : public Derivatives<IN_DIM, OUT_DIM, double>  // doub
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef ADCGScalar CG_SCALAR;         //!< CG_SCALAR  type
-    typedef ADCGValueType CG_VALUE_TYPE;  //!< autodiff scalar type
+    using CG_SCALAR = ADCGScalar;         //!< CG_SCALAR  type
+    using CG_VALUE_TYPE = ADCGValueType;  //!< autodiff scalar type
 
-    typedef Eigen::Matrix<CG_SCALAR, IN_DIM, 1> IN_TYPE_CG;    //!< function input vector type
-    typedef Eigen::Matrix<CG_SCALAR, OUT_DIM, 1> OUT_TYPE_CG;  //!< function  output vector type
+    using IN_TYPE_CG = Eigen::Matrix<CG_SCALAR, IN_DIM, 1>;    //!< function input vector type
+    using OUT_TYPE_CG = Eigen::Matrix<CG_SCALAR, OUT_DIM, 1>;  //!< function  output vector type
 
-    typedef Eigen::Matrix<double, IN_DIM, 1> IN_TYPE_D;         //!< function input vector type double
-    typedef Eigen::Matrix<double, OUT_DIM, 1> OUT_TYPE_D;       //!< function output vector type
-    typedef Eigen::Matrix<double, OUT_DIM, IN_DIM> JAC_TYPE_D;  //!< Jacobian type
-    typedef Eigen::Matrix<double, OUT_DIM, IN_DIM, Eigen::RowMajor>
-        JAC_TYPE_ROW_MAJOR;  //!< Jacobian type in row-major format
-    typedef Eigen::Matrix<double, IN_DIM, IN_DIM> HES_TYPE_D;
-    typedef Eigen::Matrix<double, IN_DIM, IN_DIM, Eigen::RowMajor> HES_TYPE_ROW_MAJOR;
+    using IN_TYPE_D = Eigen::Matrix<double, IN_DIM, 1>;         //!< function input vector type double
+    using OUT_TYPE_D = Eigen::Matrix<double, OUT_DIM, 1>;       //!< function output vector type
+    using JAC_TYPE_D = Eigen::Matrix<double, OUT_DIM, IN_DIM>;  //!< Jacobian type
+    using JAC_TYPE_ROW_MAJOR = Eigen::Matrix<double, OUT_DIM, IN_DIM, Eigen::RowMajor>;  //!< Jac. type in row-major
+    using HES_TYPE_D = Eigen::Matrix<double, IN_DIM, IN_DIM>;
+    using HES_TYPE_ROW_MAJOR = Eigen::Matrix<double, IN_DIM, IN_DIM, Eigen::RowMajor>;
 
 
-    typedef std::function<OUT_TYPE_CG(const IN_TYPE_CG&)> FUN_TYPE_CG;  //!< function type
-
-    typedef Derivatives<IN_DIM, OUT_DIM> DerivativesBase;
+    using FUN_TYPE_CG = std::function<OUT_TYPE_CG(const IN_TYPE_CG&)>;  //!< function type
+    using DerivativesBase = Derivatives<IN_DIM, OUT_DIM>;
 
     /**
      * @brief      Contructs the derivatives for codegeneration using a
@@ -265,8 +266,8 @@ public:
         Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(outputDim_, inputDim_);
 
         assert((int)(sparsityVec.size()) == outputDim_ * inputDim_);
-        for (size_t row = 0; row < outputDim_; ++row)
-            for (size_t col = 0; col < inputDim_; ++col)
+        for (int row = 0; row < outputDim_; ++row)
+            for (int col = 0; col < inputDim_; ++col)
                 sparsityMat(row, col) = sparsityVec[col + row * inputDim_];
 
         return sparsityMat;
@@ -285,10 +286,9 @@ public:
         Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> sparsityMat(inputDim_, inputDim_);
 
         assert(sparsityVec.size() == inputDim_ * inputDim_);
-        for (size_t row = 0; row < inputDim_; ++row)
-            for (size_t col = 0; col < inputDim_; ++col)
+        for (int row = 0; row < inputDim_; ++row)
+            for (int col = 0; col < inputDim_; ++col)
             {
-                // std::cout << "sparsityVec: " << sparsityRowsHessian_[col + row * this->inputDim_] << std::endl;
                 sparsityMat(row, col) = sparsityVec[col + row * inputDim_];
             }
 
@@ -389,8 +389,8 @@ public:
         std::string tempDir = "cppad_temp" + uniqueID;
         if (verbose)
         {
-            std::cout << "Starting to compile " << libName_ << " library ..." << std::endl;
-            std::cout << "In temporary directory " << tempDir << std::endl;
+            std::cout << "DerivativesCppadJIT: starting to compile " << libName_ << " library ..." << std::endl;
+            std::cout << "DerivativesCppadJIT: in temporary directory " << tempDir << std::endl;
         }
 
         // compile source code
@@ -419,7 +419,7 @@ public:
         compiled_ = true;
 
         if (verbose)
-            std::cout << "Successfully compiled " << libName_ << std::endl;
+            std::cout << "DerivativesCppadJIT: successfully compiled " << libName_ << std::endl;
 
         if (model_->isJacobianSparsityAvailable())
         {

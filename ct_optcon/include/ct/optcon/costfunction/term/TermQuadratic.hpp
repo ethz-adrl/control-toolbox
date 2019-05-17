@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -40,7 +40,7 @@ public:
         const core::StateVector<STATE_DIM, SCALAR_EVAL>& x_ref,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref);
 
-    TermQuadratic(std::string& configFile, const std::string& termName, bool verbose = false);
+    TermQuadratic(const std::string& configFile, const std::string& termName, bool verbose = false);
 
     TermQuadratic(const TermQuadratic& arg);
 

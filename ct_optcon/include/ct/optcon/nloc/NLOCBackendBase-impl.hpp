@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -301,7 +301,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
 
     // we need to allocate memory in HPIPM for the new constraints
-    for (size_t i = 0; i < K_; i++)
+    for (int i = 0; i < K_; i++)
     {
         generalConstraints_[settings_.nThreads]->setCurrentStateAndControl(
             lqocProblem_->x_[i], lqocProblem_->u_[i], i * settings_.dt);
@@ -686,7 +686,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     if (boxConstraints_[settings_.nThreads] != nullptr)
     {
         // temp vars
-        Eigen::VectorXi foo, u_sparsity_intermediate, x_sparsity_intermediate, x_sparsity_terminal;
+        Eigen::VectorXi u_sparsity_row, x_sparsity_row, u_sparsity_col_intermediate, x_sparsity_col_intermediate,
+            x_sparsity_col_terminal;
 
         // intermediate box constraints
         const int nb_ux_intermediate = boxConstraints_[settings_.nThreads]->getJacobianStateNonZeroCountIntermediate() +
@@ -694,12 +695,26 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
         if (nb_ux_intermediate > 0)
         {
-            boxConstraints_[settings_.nThreads]->sparsityPatternInputIntermediate(foo, u_sparsity_intermediate);
-            boxConstraints_[settings_.nThreads]->sparsityPatternStateIntermediate(foo, x_sparsity_intermediate);
+            boxConstraints_[settings_.nThreads]->sparsityPatternInputIntermediate(
+                u_sparsity_row, u_sparsity_col_intermediate);
+            boxConstraints_[settings_.nThreads]->sparsityPatternStateIntermediate(
+                x_sparsity_row, x_sparsity_col_intermediate);
+
+            // WARNING (TODO): currently, we require input box constraints to be added before state box constraints.
+            // We can check for correct ordering: if two types of box constraints are present ...
+            if (u_sparsity_row.size() > 0 && x_sparsity_row.size() > 0)
+            {
+                // ... we can check for correct ordering by comparing row indices. In case of wrong ordering, throw exception (TODO improve).
+                if (u_sparsity_row.array().minCoeff() > x_sparsity_row.array().maxCoeff())
+                    throw std::runtime_error(
+                        "ERROR: Box constraint ordering problem detected. Need to add input box constraints before "
+                        "state box constraints.");
+            }
 
             Eigen::VectorXi ux_sparsity_intermediate(nb_ux_intermediate);
-            x_sparsity_intermediate.array() += CONTROL_DIM;  // shift indices to match combined decision vector [u, x]
-            ux_sparsity_intermediate << u_sparsity_intermediate, x_sparsity_intermediate;
+            // shift indices to match combined decision vector [u, x]
+            x_sparsity_col_intermediate.array() += CONTROL_DIM;
+            ux_sparsity_intermediate << u_sparsity_col_intermediate, x_sparsity_col_intermediate;
 
             lqocProblem_->setIntermediateBoxConstraints(nb_ux_intermediate,
                 boxConstraints_[settings_.nThreads]->getLowerBoundsIntermediate(),
@@ -711,11 +726,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
         if (nb_x_terminal > 0)
         {
-            boxConstraints_[settings_.nThreads]->sparsityPatternStateTerminal(foo, x_sparsity_terminal);
+            boxConstraints_[settings_.nThreads]->sparsityPatternStateTerminal(x_sparsity_row, x_sparsity_col_terminal);
 
             lqocProblem_->setTerminalBoxConstraints(nb_x_terminal,
                 boxConstraints_[settings_.nThreads]->getLowerBoundsTerminal(),
-                boxConstraints_[settings_.nThreads]->getUpperBoundsTerminal(), x_sparsity_terminal);
+                boxConstraints_[settings_.nThreads]->getUpperBoundsTerminal(), x_sparsity_col_terminal);
         }
     }
 }
@@ -1143,7 +1158,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         lqocSolver_->setProblem(lqocProblem_);
 
         //iterate backward up to first stage
-        for (int i = this->lqocProblem_->getNumberOfStages() - 1; i >= startIndex; i--)
+        for (int i = this->lqocProblem_->getNumberOfStages() - 1; i >= static_cast<int>(startIndex); i--)
             lqocSolver_->solveSingleStage(i);
     }
     else

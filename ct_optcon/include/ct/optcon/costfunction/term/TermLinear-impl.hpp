@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -17,14 +17,14 @@ TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermLinear(const core::
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermLinear(const TermLinear &arg)
+TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermLinear(const TermLinear& arg)
     : TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>(arg), a_(arg.a_), b_(arg.b_), c_(arg.c_)
 {
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>
-    *TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::clone() const
+TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>*
+TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::clone() const
 {
     return new TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>(*this);
 }
@@ -41,17 +41,17 @@ TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::~TermLinear()
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-SCALAR TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1> &x,
-    const Eigen::Matrix<SCALAR, CONTROL_DIM, 1> &u,
-    const SCALAR &t)
+SCALAR TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
+    const Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& u,
+    const SCALAR& t)
 {
     return evalLocal<SCALAR>(x, u, t);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 ct::core::ADCGScalar TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluateCppadCg(
-    const core::StateVector<STATE_DIM, ct::core::ADCGScalar> &x,
-    const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar> &u,
+    const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
+    const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
     ct::core::ADCGScalar t)
 {
     return evalLocal<ct::core::ADCGScalar>(x, u, t);
@@ -59,9 +59,9 @@ ct::core::ADCGScalar TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::ev
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 core::StateVector<STATE_DIM, SCALAR_EVAL> TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateDerivative(
-    const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
-    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u,
-    const SCALAR_EVAL &t)
+    const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+    const SCALAR_EVAL& t)
 {
     return a_;
 }
@@ -69,9 +69,9 @@ core::StateVector<STATE_DIM, SCALAR_EVAL> TermLinear<STATE_DIM, CONTROL_DIM, SCA
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 typename TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::state_matrix_t
 TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateSecondDerivative(
-    const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
-    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u,
-    const SCALAR_EVAL &t)
+    const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+    const SCALAR_EVAL& t)
 {
     return state_matrix_t::Zero();
 }
@@ -79,9 +79,9 @@ TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateSecondDerivative(
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 core::ControlVector<CONTROL_DIM, SCALAR_EVAL>
 TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlDerivative(
-    const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
-    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u,
-    const SCALAR_EVAL &t)
+    const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+    const SCALAR_EVAL& t)
 {
     return b_;
 }
@@ -89,9 +89,9 @@ TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlDerivative(
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 typename TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_matrix_t
 TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlSecondDerivative(
-    const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
-    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u,
-    const SCALAR_EVAL &t)
+    const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+    const SCALAR_EVAL& t)
 {
     return control_matrix_t::Zero();
 }
@@ -99,16 +99,16 @@ TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlSecondDerivative
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 typename TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_state_matrix_t
 TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateControlDerivative(
-    const core::StateVector<STATE_DIM, SCALAR_EVAL> &x,
-    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL> &u,
-    const SCALAR_EVAL &t)
+    const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+    const SCALAR_EVAL& t)
 {
     return control_state_matrix_t::Zero();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-void TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(const std::string &filename,
-    const std::string &termName,
+void TermLinear<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(const std::string& filename,
+    const std::string& termName,
     bool verbose)
 {
     // read in the file and put the valus in a_ and b_

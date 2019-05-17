@@ -1,9 +1,9 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#include <ct/optcon/optcon.h>
+#include <ct/optcon/nlp/solver/IpoptSolver.h>
 
 // #define DEBUG_PRINT
 
@@ -16,6 +16,7 @@ IpoptSolver<SCALAR>::IpoptSolver(std::shared_ptr<tpl::Nlp<SCALAR>> nlp, const Nl
     //Argument 1: create console output
     //Argument 2: create empty
     ipoptApp_ = std::shared_ptr<Ipopt::IpoptApplication>(new Ipopt::IpoptApplication(true, false));
+    configureDerived(settings);
 }
 
 template <typename SCALAR>
@@ -73,20 +74,24 @@ bool IpoptSolver<SCALAR>::solve()
     if (status_ == Ipopt::Solve_Succeeded || status_ == Ipopt::Solved_To_Acceptable_Level)
     {
         // Retrieve some statistics about the solve
-        Ipopt::Index iter_count = ipoptApp_->Statistics()->IterationCount();
-        std::cout << std::endl
-                  << std::endl
-                  << "*** The problem solved in " << iter_count << " iterations!" << std::endl;
+        if (settings_.printLevel_ > 1)
+        {
+            Ipopt::Index iter_count = ipoptApp_->Statistics()->IterationCount();
+            std::cout << std::endl
+                      << std::endl
+                      << "*** The problem solved in " << iter_count << " iterations!" << std::endl;
 
-        SCALAR final_obj = ipoptApp_->Statistics()->FinalObjective();
-        std::cout << std::endl
-                  << std::endl
-                  << "*** The final value of the objective function is " << final_obj << '.' << std::endl;
+            SCALAR final_obj = ipoptApp_->Statistics()->FinalObjective();
+            std::cout << std::endl
+                      << std::endl
+                      << "*** The final value of the objective function is " << final_obj << '.' << std::endl;
+        }
         return true;
     }
     else
     {
-        std::cout << " ipopt return value: " << status_ << std::endl;
+        if (settings_.printLevel_ > 1)
+            std::cout << " ipopt return value: " << status_ << std::endl;
         return false;
     }
 }
@@ -117,16 +122,14 @@ bool IpoptSolver<SCALAR>::get_nlp_info(Ipopt::Index& n,
     n = this->nlp_->getVarCount();
     assert(n == n);
 
-    // std::cout << 1 << std::endl;
-
     m = this->nlp_->getConstraintsCount();
     assert(m == m);
 
-    nnz_jac_g = this->nlp_->getNonZeroJacobianCount();
+    nnz_jac_g = static_cast<Ipopt::Index>(this->nlp_->getNonZeroJacobianCount());
     assert(nnz_jac_g == nnz_jac_g);
 
     if (settings_.hessian_approximation_ == "exact")
-        nnz_h_lag = this->nlp_->getNonZeroHessianCount();
+        nnz_h_lag = static_cast<Ipopt::Index>(this->nlp_->getNonZeroHessianCount());
 
     index_style = Ipopt::TNLP::C_STYLE;
 
@@ -255,7 +258,7 @@ bool IpoptSolver<SCALAR>::eval_g(Ipopt::Index n, const SCALAR* x, bool new_x, Ip
 #ifdef DEBUG_PRINT
     std::cout << "... entering eval_g()" << std::endl;
 #endif  //DEBUG_PRINT
-    assert(m == this->nlp_->getConstraintsCount());
+    assert(m == static_cast<int>(this->nlp_->getConstraintsCount()));
     MapConstVecXs xVec(x, n);
     this->nlp_->extractOptimizationVars(xVec, new_x);
     MapVecXs gVec(g, m);
@@ -349,9 +352,7 @@ bool IpoptSolver<SCALAR>::eval_h(Ipopt::Index n,
         this->nlp_->evaluateHessian(nele_hess, valVec, obj_factor, lambdaVec);
     }
 
-// only needed if quasi-newton approximation is not used, hence set to -1 (not used)!
-// ATTENTION: for hard coding of the hessian, one only needs the lower left corner (since it is symmetric) - IPOPT knows that
-//nnz_h_lag = -1;
+// ATTENTION: for hard coding of the Hessian, one only needs the lower left corner (since it is symmetric) - IPOPT knows that
 
 #ifdef DEBUG_PRINT
     std::cout << "... leaving eval_h()" << std::endl;

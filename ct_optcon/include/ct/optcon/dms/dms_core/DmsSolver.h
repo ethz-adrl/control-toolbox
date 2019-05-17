@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -106,9 +106,9 @@ public:
                 this->costFunctions_, this->boxConstraints_, this->generalConstraints_, x0_));
 
         // SNOPT only works for the double type
-        if (settingsDms.solverSettings_.solverType_ == NlpSolverSettings::SNOPT)
+        if (settingsDms.solverSettings_.solverType_ == NlpSolverType::SNOPT)
             nlpSolver_ = std::shared_ptr<SnoptSolver>(new SnoptSolver(dmsProblem_, settingsDms.solverSettings_));
-        else if (settingsDms.solverSettings_.solverType_ == NlpSolverSettings::IPOPT)
+        else if (settingsDms.solverSettings_.solverType_ == NlpSolverType::IPOPT)
             nlpSolver_ = std::shared_ptr<IpoptSolver>(new IpoptSolver(dmsProblem_, settingsDms.solverSettings_));
         else
             std::cout << "Unknown solver type... Exiting" << std::endl;
@@ -154,6 +154,7 @@ public:
 	 * @brief      Destructor
 	 */
     ~DmsSolver() override = default;
+
     void configure(const DmsSettings& settings) override
     {
         dmsProblem_->configure(settings);
@@ -249,20 +250,13 @@ public:
 	 * @brief      Prints out the solution trajectories of the DMS problem
 	 */
     void printSolution() { dmsProblem_->printSolution(); }
-
-    std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override
-    {
-        return systems_;
-    }
+    std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() override { return systems_; }
     const std::vector<typename OptConProblem_t::DynamicsPtr_t>& getNonlinearSystemsInstances() const override
     {
         return systems_;
     }
 
-    std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() override
-    {
-        return linearSystems_;
-    }
+    std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() override { return linearSystems_; }
     const std::vector<typename OptConProblem_t::LinearPtr_t>& getLinearSystemsInstances() const override
     {
         return linearSystems_;
@@ -290,8 +284,7 @@ public:
     {
         return generalConstraints_;
     }
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances()
-        const override
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() const override
     {
         return generalConstraints_;
     }

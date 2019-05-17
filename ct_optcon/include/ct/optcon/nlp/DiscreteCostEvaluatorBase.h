@@ -1,10 +1,12 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 
 #pragma once
+
+#include <Eigen/Core>
 
 namespace ct {
 namespace optcon {
@@ -25,12 +27,12 @@ public:
     /**
     * @brief      Default constructor
     */
-    DiscreteCostEvaluatorBase(){};
+    DiscreteCostEvaluatorBase() = default;
 
     /**
    * @brief     Destructor.
    */
-    virtual ~DiscreteCostEvaluatorBase(){};
+    virtual ~DiscreteCostEvaluatorBase() = default;
 
 
     /**
@@ -47,10 +49,29 @@ public:
     * @param[out] grad         The values of the gradient
     */
     virtual void evalGradient(size_t grad_length, Eigen::Map<Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>>& grad) = 0;
+
+    virtual void getSparsityPatternHessian(Eigen::VectorXi& iRow, Eigen::VectorXi& jCol)
+    {
+        throw std::runtime_error(
+            "Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");
+    }
+
+    /**
+    * @brief      Evaluates the cost hessian
+    *
+    * @param[in]  optVec       The optimization variables
+    * @param[in]  lambda       multipliers for hessian matrix
+    * @param[out] hes          The cost hessian matrix coeff
+    */
+    virtual void sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda, Eigen::VectorXd& hes)
+    {
+        throw std::runtime_error(
+            "Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");
+    }
 };
 }
 
-typedef tpl::DiscreteCostEvaluatorBase<double> DiscreteCostEvaluatorBase;
+using DiscreteCostEvaluatorBase = tpl::DiscreteCostEvaluatorBase<double>;
 
 }  // namespace optcon
 }  // namespace ct

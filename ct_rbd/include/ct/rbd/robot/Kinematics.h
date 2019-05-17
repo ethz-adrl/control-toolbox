@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -40,7 +40,7 @@ public:
     {
     }
 
-    virtual ~Kinematics(){};
+    virtual ~Kinematics() = default;
 
     Kinematics<RBD, N_EE>* clone() const { return new Kinematics<RBD, N_EE>(*this); }
     static const size_t NUM_EE = N_EE;
@@ -80,7 +80,7 @@ public:
      * @param id end-effector id
      * @return
      */
-    EndEffector<NJOINTS, SCALAR>& getEndEffector(size_t id) { return endEffectors_[id]; };
+    EndEffector<NJOINTS, SCALAR>& getEndEffector(size_t id) { return endEffectors_[id]; }
     /**
      * \brief Set an end-effector
      * @param id end-effector id
@@ -88,22 +88,22 @@ public:
      */
     void setEndEffector(size_t id, const EndEffector<NJOINTS, SCALAR>& ee){};
 
-    Jacobian getJacobianById(size_t linkId)
+    Jacobian getJacobianBaseEEbyId(size_t eeId, const RBDState<NJOINTS, SCALAR>& rbdState)
     {
-        throw std::runtime_error("getJacobian not implemented");
-        return RigidBodyPoseTpl();
-    };
+        return robcogen().getJacobianBaseEEbyId(eeId, rbdState.jointPositions());
+    }
 
     FloatingBaseTransforms<RBD>& floatingBaseTransforms()
     {
         throw std::runtime_error("floating base transforms not implemented");
         return floatingBaseTransforms_;
-    };
+    }
+
     FloatingBaseTransforms<RBD>& floatingBaseTransforms() const
     {
         throw std::runtime_error("floating base transforms not implemented");
         return floatingBaseTransforms_;
-    };
+    }
 
     const HomogeneousTransforms& transforms() const { return robcogen().homogeneousTransforms(); }
     HomogeneousTransforms& transforms() { return robcogen().homogeneousTransforms(); }

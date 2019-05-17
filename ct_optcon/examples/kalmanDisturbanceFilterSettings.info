@@ -1,0 +1,61 @@
+
+experiment_settings
+{
+  dt          0.001
+  nSteps      6000
+  w_n         20      ; oscillator resonance frequency
+  
+  ; parameterize the disturbance (frequency increasing over time)
+  disturbance_frequency 1.0;
+  disturbance_max       10.0;
+
+  ; we send a feedforward signal with following frequency and magnitude
+  uff_frequency   1.0
+  uff_magnitude
+  {
+    (0,0) 500.0
+  }
+}
+
+x0
+{
+  (0,0) 1.0
+  (1,0) 0.0
+}
+
+kalman_weights
+{
+  Qaug
+  {
+    scaling 1.0
+    (0,0) 0.001
+    (1,1) 0.01
+    (2,2) 10.0 ; directly reflects the expected disturbance variance
+  }
+  R
+  {
+    scaling 0.001
+    (0,0) 0.1
+    (1,1) 1
+  }
+}
+
+process_noise
+{
+  process_var
+  {
+    scaling 0.01
+    (0,0) 0.01
+    (1,1) 0.1
+  }
+}
+
+measurement_noise
+{
+  measurement_var
+  {
+    scaling 1
+    (0,0) 0.001
+    (1,1) 0.01
+  }
+}

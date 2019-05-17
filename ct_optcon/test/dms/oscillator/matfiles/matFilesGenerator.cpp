@@ -80,7 +80,7 @@ public:
 
     void generateMatFilesIPOPT()
     {
-        settings_.solverSettings_.solverType_ = NlpSolverSettings::IPOPT;
+        settings_.solverSettings_.solverType_ = NlpSolverType::IPOPT;
 
         generalConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
             new ct::optcon::ConstraintContainerAnalytical<2, 1>());
@@ -124,7 +124,7 @@ public:
 
     void generateMatFilesSNOPT()
     {
-        settings_.solverSettings_.solverType_ = NlpSolverSettings::SNOPT;
+        settings_.solverSettings_.solverType_ = NlpSolverType::SNOPT;
 
         generalConstraints_ = std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<2, 1>>(
             new ct::optcon::ConstraintContainerAnalytical<2, 1>());

@@ -1,194 +1,160 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.3)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
-project (ct_core)
+
+project(ct_core VERSION 3.0.1 LANGUAGES CXX)
+
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -std=c++11 -Wall")
-SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++11 -Wall")
-SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -std=c++14 -Wall -Wfatal-errors")
+set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++14 -Wall -Wfatal-errors")
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-find_package(catkin REQUIRED)
+
+## find and include required dependencies
 find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS REQUIRED)
 
-find_package(PythonLibs QUIET)
+set(ct_core_LIBS "")
+
+## find and include optional dependencies
 find_package(Qwt QUIET)
 find_package(Qt4 QUIET)
-
 if(QWT_FOUND AND Qt4_FOUND)
-    set(QWT_ENABLED true)
-    add_definitions( -DQWT_ENABLED )
+    message(STATUS "Qwt and QT found.")
+    set(QWT_ENABLED ON)
     include(${QT_USE_FILE})
-    include_directories(${QWT_INCLUDE_DIR}})
-    message(STATUS "COMPILING WITH QWT")
-    set(ct_core_extra_libs ${QWT_LIBRARY} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
+    list(APPEND ct_core_LIBS ${QWT_LIBRARY} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
 else()
     message(STATUS "COMPILING WITHOUT QWT")
-    set(ct_core_extra_libs "")
 endif()
 
-
+## find and include optional dependencies
+find_package(PythonLibs 2.7 QUIET)
 if (PYTHONLIBS_FOUND)
    message(STATUS "Python found")
-   include_directories(${PYTHON_INCLUDE_DIRS})
-   add_definitions(-DPLOTTING_ENABLED)
-else()
-   message(STATUS "Python not found")
-   set(PYTHON_LIBRARY "")
+   list(APPEND ct_plot_COMPILE_DEFINITIONS PLOTTING_ENABLED)
+   message(STATUS "Python library path ... " ${PYTHON_LIBRARY})
+   list(APPEND ct_core_LIBS ${PYTHON_LIBRARY})
+else() 
+   message(STATUS "Python not found") 
 endif()
 
-include_directories(
-  ${BOOST_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-)
 
-include_directories (
-    include
-    include/external
-    ${EIGEN3_INCLUDE_DIR}
-)
-
-## dummy prespec libs
-set(PRESPEC_LIB_NAMES "")
-
-## assemble list of libraries that contain prespecified templates
-if(USE_PRESPEC)
-    ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_core")
-    message(WARNING "CT Core: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
-endif(USE_PRESPEC)
-
-#used later for clang-tidy
-set(INC_DIRS ${BOOST_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/include/external" ${EIGEN3_INCLUDE_DIR})
-
-catkin_package(
-   INCLUDE_DIRS
-        ${BOOST_INCLUDE_DIRS}
-        include
-        include/external
-        examples
-        ${EIGEN3_INCLUDE_DIR}
-   LIBRARIES
-       dl
-       ct_core
-       ${PRESPEC_LIB_NAMES}
-   DEPENDS
-       EIGEN3
-)
-
-
+## configure files required for code-generation
 set(CODEGEN_TEMPLATE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/templates")
 set(CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/generated")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h)
 
-add_library(ct_core
-   src/core/plot/plot.cpp
-   src/core/internal/autodiff/SparsityPattern.cpp
+
+###################
+# BUILD LIBRARIES #
+###################
+
+## define the directories to be included in all ct_core targets
+set(ct_core_target_include_dirs
+    ${EIGEN3_INCLUDE_DIR} 
+    ${PYTHON_INCLUDE_DIRS}
+    ${QWT_INCLUDE_DIR}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct/external>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/examples/include>
+    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:include/ct/external>
 )
 
-# add libraries for explicit templates
-target_link_libraries(ct_core ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
-if(USE_PRESPEC)
-    ct_add_explicit_template_libs()
-endif(USE_PRESPEC)
+## declare prespec libraries
+set(PRESPEC_LIB_NAMES "")
 
+## define list of libraries that contain prespecified templates
+if(USE_PRESPEC)
+    # extract the prespec parameters from user-input
+    ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" 
+        "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" 
+        "ct_core"
+    )
+    message(STATUS "CT Core: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
+    # create libraries
+    foreach(lib_name ${PRESPEC_LIB_NAMES})
+        add_library(${lib_name} SHARED ${${lib_name}_SRCS})
+        target_include_directories(${lib_name} PUBLIC ${ct_core_target_include_dirs})
+    endforeach()
+endif()
+
+
+## create ct_core libraries
+add_library(ct_plot SHARED src/core/plot/plot.cpp)
+target_include_directories(ct_plot PUBLIC ${ct_core_target_include_dirs})
+target_compile_definitions(ct_plot PUBLIC ${ct_plot_COMPILE_DEFINITIONS})
+target_link_libraries(ct_plot ${ct_core_LIBS})
+
+add_library(ct_core INTERFACE)
+target_include_directories(ct_core INTERFACE ${ct_core_target_include_dirs})
+target_link_libraries(ct_core INTERFACE
+    ${ct_core_LIBS}
+    ${PRESPEC_LIB_NAMES}
+    ct_plot
+    pthread
+    dl # required for gcc compatibility
+    )
+
+
+##################
+# BUILD EXAMPLES #
+##################
 if(BUILD_EXAMPLES)
-    add_executable(ex_DampedOscillatorCustomController examples/DampedOscillatorCustomController.cpp)
-    add_executable(ex_DampedOscillator examples/DampedOscillator.cpp)
-    add_executable(ex_MasspointIntegration examples/MasspointIntegration.cpp)
-endif()
-
-catkin_add_gtest(NoiseTest test/NoiseTest.cpp)
-target_link_libraries(NoiseTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(SecondOrderSystemTest test/SecondOrderSystemTest.cpp)
-target_link_libraries(SecondOrderSystemTest ${catkin_LIBRARIES})
-
-# This test is not required to link against ${PRESPEC_LIB_NAMES} as it is not using prespec. Here we ensure that linking against it does not fail.
-catkin_add_gtest(IntegrationTest test/integration/IntegrationTest.cpp)
-target_link_libraries(IntegrationTest ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
-
-catkin_add_gtest(IntegratorComparison test/integration/IntegratorComparison.cpp)
-target_link_libraries(IntegratorComparison ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(SymplecticIntegrationTest test/integration/SymplecticIntegrationTest.cpp)
-target_link_libraries(SymplecticIntegrationTest ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(SystemDiscretizerTest test/integration/SystemDiscretizerTest.cpp)
-target_link_libraries(SystemDiscretizerTest ${catkin_LIBRARIES} ct_core)
-
-add_executable(SensitivityTest test/integration/sensitivity/SensitivityTest.cpp)
-target_link_libraries(SensitivityTest ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(InterpolationTest test/InterpolationTest.cpp)
-target_link_libraries(InterpolationTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(DiscreteArrayTest test/DiscreteArrayTest.cpp)
-target_link_libraries(DiscreteArrayTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(DiscreteTrajectoryTest test/DiscreteTrajectoryTest.cpp)
-target_link_libraries(DiscreteTrajectoryTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(LinspaceTest test/LinspaceTest.cpp)
-target_link_libraries(LinspaceTest ${catkin_LIBRARIES})
-
-catkin_add_gtest(AutoDiffLinearizerTest test/AutoDiffLinearizerTest.cpp)
-target_link_libraries(AutoDiffLinearizerTest ${catkin_LIBRARIES} ct_core pthread)
-
-catkin_add_gtest(SwitchingTest test/switching/SwitchingTest.cpp)
-target_link_libraries(SwitchingTest ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(SwitchedControlledSystemTest test/switching/SwitchedControlledSystemTest.cpp)
-target_link_libraries(SwitchedControlledSystemTest ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(SwitchedDiscreteControlledSystemTest test/switching/SwitchedDiscreteControlledSystemTest.cpp)
-target_link_libraries(SwitchedDiscreteControlledSystemTest ${catkin_LIBRARIES} ct_core)
-
-catkin_add_gtest(MatrixInversionTest test/math/MatrixInversionTest.cpp)
-target_link_libraries(MatrixInversionTest ${catkin_LIBRARIES})
-
-# Codegen tests cannot run in parallel. Thus we build and run all codegen tests in one
-catkin_add_gtest(CodegenTests test/CodegenTests.cpp)
-target_link_libraries(CodegenTests ${catkin_LIBRARIES} ct_core dl pthread)
-
-## example for using the build-in plotting tool
-add_executable(plotTest test/plot/plotTest.cpp)
-target_link_libraries(plotTest ${catkin_LIBRARIES} ct_core)
-
-if(QWT_ENABLED)
-    add_executable(plotQwtTest test/plot/plotQwtTest.cpp)
-    target_link_libraries(plotQwtTest ${catkin_LIBRARIES} ct_core ${ct_core_extra_libs} pthread)
+    add_subdirectory(examples)
 endif()
 
 
-## unit tests for prespec templates
-if(USE_PRESPEC)
-    catkin_add_gtest(IntegrationTestPrespec test/integration/IntegrationTestPrespec.cpp)
-    target_link_libraries(IntegrationTestPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
-
-    catkin_add_gtest(IntegratorComparisonPrespec test/integration/IntegratorComparisonPrespec.cpp)
-    target_link_libraries(IntegratorComparisonPrespec ${catkin_LIBRARIES} ct_core ${PRESPEC_LIB_NAMES})
-endif(USE_PRESPEC)
-
-
-## build doxygen documentation
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-
-    set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_core.doxyfile)
-    set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
-
-    configure_file(${doxyfile_in} ${doxyfile} @ONLY)
-
-    add_custom_target(doc
-        COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
-        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc
-        COMMAND ${CMAKE_COMMAND} -E echo_append "API Documentation built in ${CMAKE_CURRENT_SOURCE_DIR}/doc"
-        VERBATIM)
+###########
+# TESTING #
+###########
+## requires gtest to be installed, e.g. via 
+## sudo apt install libgtest-dev
+## cd /usr/src/gtest/
+## sudo cmake -DBUILD_SHARED_LIBS=ON
+## sudo make
+## sudo cp *.so /usr/lib
+if(BUILD_TESTS)
+    find_package(GTest REQUIRED)
+    enable_testing()
+    add_subdirectory(test)
 endif()
 
-ct_configure_clang_tidy(INC_DIRS)
+
+#################
+# INSTALLATION  #
+#################
+
+# for correct libraries locations across platforms
+include(GNUInstallDirs)
+
+## copy the header files
+install(DIRECTORY include/ct/core DESTINATION include/ct)
+install(DIRECTORY include/ct/external DESTINATION include/ct)
+install(DIRECTORY examples/include/ct/core DESTINATION include/ct)
+
+## copy the cmake files required for find_package()
+install(FILES "cmake/ct_coreConfig.cmake" DESTINATION "share/ct_core/cmake")
+
+## install library and targets
+install(
+    TARGETS ct_core ct_plot ${PRESPEC_LIB_NAMES}
+    EXPORT ct_core_export
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+
+## create the ct_core.cmake file which holds target includes and dependencies
+install (EXPORT ct_core_export DESTINATION share/ct_core/cmake)
+
+
+#################
+# DOCUMENTATION #
+#################
+add_subdirectory(doc)

@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -27,11 +27,11 @@ DisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>::DisturbedSystem(
 
 template <size_t STATE_DIM, size_t DIST_DIM, size_t CONTROL_DIM, typename SCALAR>
 void DisturbedSystem<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>::setController(
-    const std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>>& controller)
+    const std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller)
 {
     std::dynamic_pointer_cast<DisturbedSystemController<STATE_DIM, DIST_DIM, CONTROL_DIM, SCALAR>>(this->controller_)
         ->setController(controller);
 }
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

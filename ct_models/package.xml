@@ -1,28 +1,20 @@
-<?xml version="1.0"?>
-<package>
+<package format="2">
 	<name>ct_models</name>
-	<version>0.2.1</version>
-	<description>dynamics models for adrl ct</description>
+	<version>3.0.1</version>
+	<description>
+        Control toolbox - models module.
+	</description>
 
-  <maintainer email="neunertm@gmail.com">Michael Neunert</maintainer>
-  <maintainer email="mgiftthaler@ethz.ch">Markus Giftthaler</maintainer>
-    
-  <license>Apache v2</license>
+	<maintainer email="markusgft@gmail.com">Markus Giftthaler</maintainer>
 
-	<buildtool_depend>catkin</buildtool_depend>
+	<license>BSD-2</license>
 
-	<build_depend>roscpp</build_depend>
-	<!-- build_depend>roslib</build_depend-->
-	<build_depend>std_msgs</build_depend>
-	<build_depend>ct_core</build_depend>
-	<build_depend>ct_rbd</build_depend>
+	<buildtool_depend>cmake</buildtool_depend>
 
-	<run_depend>roscpp</run_depend>
-	<run_depend>std_msgs</run_depend>
-	<run_depend>ct_core</run_depend>
-	<run_depend>ct_rbd</run_depend>
+	<depend>ct_rbd</depend>
+	<exec_depend>catkin</exec_depend>	<!-- ROS compatibility-->
 
-	<export>
-
+	<export>		<!-- Specify that this is not a ROS package-->
+		<build_type>cmake</build_type>
 	</export>
 </package>

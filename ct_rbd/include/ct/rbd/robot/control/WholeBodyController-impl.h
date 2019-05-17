@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich
+Licensed under the BSD-2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #pragma once
@@ -9,16 +9,20 @@ namespace ct {
 namespace rbd {
 
 template <size_t NJOINTS>
-WholeBodyController<NJOINTS>::WholeBodyController(){};
+WholeBodyController<NJOINTS>::WholeBodyController()
+{
+}
 
 template <size_t NJOINTS>
-WholeBodyController<NJOINTS>::~WholeBodyController(){};
+WholeBodyController<NJOINTS>::~WholeBodyController()
+{
+}
 
 template <size_t NJOINTS>
 WholeBodyController<NJOINTS>* WholeBodyController<NJOINTS>::clone() const
 {
     throw std::runtime_error("Not implemented");
-};
+}
 
 template <size_t NJOINTS>
 void WholeBodyController<NJOINTS>::computeControl(const core::StateVector<STATE_DIM>& state,

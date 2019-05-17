@@ -34,8 +34,6 @@ class ConstraintTerm1D : public ct::optcon::ConstraintBase<state_dim, control_di
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    typedef typename ct::core::tpl::TraitSelector<double>::Trait Trait;
-    typedef typename ct::core::tpl::TraitSelector<ct::core::ADCGScalar>::Trait TraitCG;
     typedef ct::optcon::ConstraintBase<state_dim, control_dim> Base;
     typedef ct::core::StateVector<state_dim> state_vector_t;
     typedef ct::core::ControlVector<control_dim> control_vector_t;
@@ -45,8 +43,8 @@ public:
     {
         Base::lb_.resize(1);
         Base::ub_.resize(1);
-        Base::lb_.setConstant(-0.5);
-        Base::ub_.setConstant(0.5);
+        Base::lb_.setConstant(-1.0);
+        Base::ub_.setConstant(1.0);
     }
 
     virtual ~ConstraintTerm1D() {}
@@ -65,9 +63,7 @@ public:
         ct::core::ADCGScalar t) override
     {
         Eigen::Matrix<ct::core::ADCGScalar, 1, 1> val;
-
         val.template segment<1>(0) << u(0) * x(0) * x(0);
-
         return val;
     }
 };
@@ -124,13 +120,14 @@ int main(int argc, char** argv)
 
     // add and initialize constraint terms
     generalConstraints->addIntermediateConstraint(pathConstraintTerm, verbose);
+    generalConstraints->addTerminalConstraint(pathConstraintTerm, verbose);
     generalConstraints->initialize();
 
 
     /* STEP 1-E: initialization with initial state and desired time horizon */
 
     StateVector<state_dim> x0;
-    x0.setRandom();  // in this example, we choose a random initial state x0
+    x0.setZero();
 
     ct::core::Time timeHorizon = 3.0;  // and a final time horizon in [sec]
 
@@ -147,51 +144,49 @@ int main(int argc, char** argv)
 
     /* STEP 2-A: Create the settings.
 	 * the type of solver, and most parameters, like number of shooting intervals, etc.,
-	 * can be chosen using the following settings struct. Let's use, the iterative
-	 * linear quadratic regulator, iLQR, for this example. In the following, we
+	 * can be chosen using the following settings struct. Let's use Gauss-Newton
+	 * Multiple Shooting for this example. In the following, we
 	 * modify only a few settings, for more detail, check out the NLOptConSettings class. */
-    NLOptConSettings ilqr_settings;
-    ilqr_settings.dt = 0.01;  // the control discretization in [sec]
-    ilqr_settings.integrator = ct::core::IntegrationType::EULERCT;
-    ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
-    ilqr_settings.max_iterations = 10;
-    ilqr_settings.min_cost_improvement = 1e-6;
-    ilqr_settings.meritFunctionRhoConstraints = 10;
-    ilqr_settings.nThreads = 1;
-    ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
-    ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
-    ilqr_settings.lqoc_solver_settings.num_lqoc_iterations = 10;                // number of riccati sub-iterations
-    ilqr_settings.lineSearchSettings.active = true;
-    ilqr_settings.lineSearchSettings.debugPrint = true;
-    ilqr_settings.printSummary = true;
+    NLOptConSettings nloc_settings;
+    nloc_settings.dt = 0.001;  // the control discretization in [sec]
+    nloc_settings.integrator = ct::core::IntegrationType::EULERCT;
+    nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
+    nloc_settings.max_iterations = 10;
+    nloc_settings.min_cost_improvement = 1e-4;
+    nloc_settings.nThreads = 1;
+    nloc_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
+    nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
+    nloc_settings.lqoc_solver_settings.num_lqoc_iterations = 10;                // number of riccati sub-iterations
+    nloc_settings.lineSearchSettings.active = false;
+    nloc_settings.lineSearchSettings.debugPrint = false;
+    nloc_settings.printSummary = true;
 
 
     /* STEP 2-B: provide an initial guess */
     // calculate the number of time steps K
-    size_t K = ilqr_settings.computeK(timeHorizon);
+    size_t K = nloc_settings.computeK(timeHorizon);
 
-    /* design trivial initial controller for iLQR. Note that in this simple example,
+    /* design trivial initial controller for NLOC. Note that in this simple example,
 	 * we can simply use zero feedforward with zero feedback gains around the initial position.
 	 * In more complex examples, a more elaborate initial guess may be required.*/
     FeedbackArray<state_dim, control_dim> u0_fb(K, FeedbackMatrix<state_dim, control_dim>::Zero());
     ControlVectorArray<control_dim> u0_ff(K, ControlVector<control_dim>::Zero());
     StateVectorArray<state_dim> x_ref_init(K + 1, x0);
-    NLOptConSolver<state_dim, control_dim>::Policy_t initController(x_ref_init, u0_ff, u0_fb, ilqr_settings.dt);
+    NLOptConSolver<state_dim, control_dim>::Policy_t initController(x_ref_init, u0_ff, u0_fb, nloc_settings.dt);
 
 
     // STEP 2-C: create an NLOptConSolver instance
-    NLOptConSolver<state_dim, control_dim> iLQR(optConProblem, ilqr_settings);
+    NLOptConSolver<state_dim, control_dim> nloc(optConProblem, nloc_settings);
 
     // set the initial guess
-    iLQR.setInitialGuess(initController);
+    nloc.setInitialGuess(initController);
 
 
     // STEP 3: solve the optimal control problem
-    iLQR.solve();
-
+    nloc.solve();
 
     // STEP 4: retrieve the solution
-    ct::core::StateFeedbackController<state_dim, control_dim> solution = iLQR.getSolution();
+    ct::core::StateFeedbackController<state_dim, control_dim> solution = nloc.getSolution();
 
     // plot the output
     plotResultsOscillator<state_dim, control_dim>(solution.x_ref(), solution.uff(), solution.time());

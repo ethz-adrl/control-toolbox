@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #include <cmath>
@@ -14,7 +14,7 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 using namespace ct::core;
 
-double randomNumber(double min, double max)
+double uniformRandomNumber(double min, double max)
 {
     std::random_device rd;                             // obtain a random number from hardware
     std::mt19937 eng(rd());                            // seed the generator
@@ -30,8 +30,8 @@ TEST(NoiseTest, gaussianNoiseTest)
 
     for (size_t i = 0; i < nTests; i++)
     {
-        double mean = randomNumber(-999, 999);
-        double stdDev = randomNumber(0, 10);
+        double mean = uniformRandomNumber(-999, 999);
+        double stdDev = uniformRandomNumber(0, 10);
         GaussianNoise gNoise(mean, stdDev);
 
         double meanMeas = 0;
@@ -65,8 +65,8 @@ TEST(NoiseTest, quantizationNoiseTest)
 
     for (size_t i = 0; i < nTests; i++)
     {
-        double mean = randomNumber(-999, 999);
-        double quantizationInterval = randomNumber(0, 1);
+        double mean = uniformRandomNumber(-999, 999);
+        double quantizationInterval = uniformRandomNumber(0, 1);
         QuantizationNoise qNoise(mean, quantizationInterval);
 
         // gaussian noise as measurement
@@ -108,7 +108,7 @@ TEST(NoiseTest, quantizationNoiseTest)
  *
  *  This is a trivial test for the Gaussian Noise class but also serves as implementation example
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

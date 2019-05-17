@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich
+Licensed under the BSD-2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #pragma once
@@ -433,9 +433,9 @@ bool ConstraintContainerAD<STATE_DIM, CONTROL_DIM, SCALAR>::initializeIntermedia
         size_t stateIndex = 0;
         size_t inputIndex = 0;
 
-        for (size_t i = 0; i < sparsityRows.rows(); ++i)
+        for (int i = 0; i < sparsityRows.rows(); ++i)
         {
-            if (sparsityCols(i) < STATE_DIM)
+            if (sparsityCols(i) < static_cast<int>(STATE_DIM))
             {
                 sparsityStateIntermediateRows_(stateIndex) = sparsityRows(i);
                 sparsityStateIntermediateCols_(stateIndex) = sparsityCols(i);
@@ -498,9 +498,9 @@ bool ConstraintContainerAD<STATE_DIM, CONTROL_DIM, SCALAR>::initializeTerminal()
         size_t stateIndex = 0;
         size_t inputIndex = 0;
 
-        for (size_t i = 0; i < sparsityRows.rows(); ++i)
+        for (int i = 0; i < sparsityRows.rows(); ++i)
         {
-            if (sparsityCols(i) < STATE_DIM)
+            if (sparsityCols(i) < static_cast<int>(STATE_DIM))
             {
                 sparsityStateTerminalRows_(stateIndex) = sparsityRows(i);
                 sparsityStateTerminalCols_(stateIndex) = sparsityCols(i);
@@ -509,7 +509,7 @@ bool ConstraintContainerAD<STATE_DIM, CONTROL_DIM, SCALAR>::initializeTerminal()
             else
             {
                 sparsityInputTerminalRows_(inputIndex) = sparsityRows(i);
-                sparsityInputTerminalCols_(inputIndex) = sparsityCols(i) - STATE_DIM;
+                sparsityInputTerminalCols_(inputIndex) = sparsityCols(i) - static_cast<int>(STATE_DIM);
                 inputIndex++;
             }
         }

@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
  **********************************************************************************************************************/
 
 #pragma once
@@ -21,6 +21,33 @@ FixBaseNLOC<FIX_BASE_FD_SYSTEM>::FixBaseNLOC(
       optConProblem_(system_, costFunction_, linearizedSystem_),
       iteration_(0)
 {
+    optConProblem_.verify();
+    nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, nlocSettings));
+}
+
+template <class FIX_BASE_FD_SYSTEM>
+FixBaseNLOC<FIX_BASE_FD_SYSTEM>::FixBaseNLOC(
+    std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFun,
+    std::shared_ptr<ct::optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> boxConstraints,
+    std::shared_ptr<ct::optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> generalConstraints,
+    const typename NLOptConSolver::Settings_t& nlocSettings,
+    std::shared_ptr<FBSystem> system,
+    bool verbose,
+    std::shared_ptr<LinearizedSystem> linearizedSystem)
+    : system_(system),
+      linearizedSystem_(linearizedSystem),
+      boxConstraints_(boxConstraints),
+      generalConstraints_(generalConstraints),
+      costFunction_(costFun),
+      optConProblem_(system_, costFunction_, linearizedSystem_),
+      iteration_(0)
+{
+    if (boxConstraints_ != nullptr)
+        optConProblem_.setBoxConstraints(boxConstraints_);
+
+    if (generalConstraints_ != nullptr)
+        optConProblem_.setGeneralConstraints(generalConstraints_);
+
     optConProblem_.verify();
     nlocSolver_ = std::shared_ptr<NLOptConSolver>(new NLOptConSolver(optConProblem_, nlocSettings));
 }
@@ -180,8 +207,7 @@ FixBaseNLOC<FIX_BASE_FD_SYSTEM>::getControlVectorArray()
 }
 
 template <class FIX_BASE_FD_SYSTEM>
-const typename FixBaseNLOC<FIX_BASE_FD_SYSTEM>::StateVectorArray&
-FixBaseNLOC<FIX_BASE_FD_SYSTEM>::getStateVectorArray()
+const typename FixBaseNLOC<FIX_BASE_FD_SYSTEM>::StateVectorArray& FixBaseNLOC<FIX_BASE_FD_SYSTEM>::getStateVectorArray()
 {
     return nlocSolver_->getSolution().x_ref();
 }

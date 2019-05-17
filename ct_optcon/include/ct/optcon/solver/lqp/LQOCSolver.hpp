@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -65,7 +65,7 @@ public:
     //! solve the LQOC problem
     virtual void solve() = 0;
     //! extract the solution (can be overriden if additional extraction steps required in specific solver)
-    virtual void extractLQSolution() {};
+    virtual void extractLQSolution(){};
 
     virtual void solveSingleStage(int N)
     {
