@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #include <ct/rbd/rbd.h>
@@ -24,16 +24,17 @@ TEST(FixBaseInverseKinematicsTest, NLPIKTest)
     ct::rbd::JointState<njoints>::Position jointLowerLimit = ct::rbd::TestIrb4600::jointLowerLimit();
     ct::rbd::JointState<njoints>::Position jointUpperLimit = ct::rbd::TestIrb4600::jointUpperLimit();
 
-    std::shared_ptr<ct::rbd::IKCostEvaluator<KinematicsAD_t>> ikCostEvaluator(new ct::rbd::IKCostEvaluator<KinematicsAD_t>(eeInd));
+    std::shared_ptr<ct::rbd::IKCostEvaluator<KinematicsAD_t>> ikCostEvaluator(
+        new ct::rbd::IKCostEvaluator<KinematicsAD_t>(eeInd));
 
     std::shared_ptr<IKProblem> ik_problem(new IKProblem(ikCostEvaluator, jointLowerLimit, jointUpperLimit));
 
 
     ct::optcon::NlpSolverSettings nlpSolverSettings;
     nlpSolverSettings.solverType_ = ct::optcon::NlpSolverType::IPOPT;
-    nlpSolverSettings.ipoptSettings_.derivativeTest_ = "second-order"; // check derivatives
-    nlpSolverSettings.ipoptSettings_.hessian_approximation_ = "exact"; // option: "limited-memory"
-    nlpSolverSettings.ipoptSettings_.printLevel_ = 0;				   // avoid output
+    nlpSolverSettings.ipoptSettings_.derivativeTest_ = "second-order";  // check derivatives
+    nlpSolverSettings.ipoptSettings_.hessian_approximation_ = "exact";  // option: "limited-memory"
+    nlpSolverSettings.ipoptSettings_.printLevel_ = 0;                   // avoid output
 
     ct::rbd::InverseKinematicsSettings ikSettings;
     ikSettings.maxNumTrials_ = 100;
@@ -55,7 +56,7 @@ TEST(FixBaseInverseKinematicsTest, NLPIKTest)
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

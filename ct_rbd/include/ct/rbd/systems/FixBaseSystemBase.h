@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -16,10 +16,8 @@ namespace rbd {
  * \brief Base class for fix-base robot systems
  */
 template <class RBDDynamics, size_t STATE_D, size_t CONTROL_D>
-class FixBaseSystemBase
-    : public RBDSystem<RBDDynamics, false>,
-      public core::ControlledSystem<STATE_D, CONTROL_D,
-          typename RBDDynamics::SCALAR>
+class FixBaseSystemBase : public RBDSystem<RBDDynamics, false>,
+                          public core::ControlledSystem<STATE_D, CONTROL_D, typename RBDDynamics::SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -48,10 +46,7 @@ public:
     /*!
      * @brief copy constructor
 	 */
-    FixBaseSystemBase(const FixBaseSystemBase& arg) : Base(arg), basePose_(arg.basePose_), dynamics_(RBDDynamics())
-    {
-    }
-
+    FixBaseSystemBase(const FixBaseSystemBase& arg) : Base(arg), basePose_(arg.basePose_), dynamics_(RBDDynamics()) {}
     //! destructor
     virtual ~FixBaseSystemBase() = default;
 
@@ -59,7 +54,6 @@ public:
     virtual RBDDynamics& dynamics() override { return dynamics_; }
     //! get dynamics (const)
     virtual const RBDDynamics& dynamics() const override { return dynamics_; }
-
     //! compute the controlled dynamics of the fixed base robotic system
     virtual void computeControlledDynamics(const ct::core::StateVector<STATE_D, SCALAR>& state,
         const SCALAR& t,

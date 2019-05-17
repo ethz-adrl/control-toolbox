@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 
@@ -111,8 +111,8 @@ public:
 
     void setInitialGuess(const VectorXs& xinit)
     {
-    	x_ = xinit;
-    	xInit_ = xinit;
+        x_ = xinit;
+        xInit_ = xinit;
     }
 
     /**
@@ -232,7 +232,6 @@ public:
     }
 
     const VectorXs& getOptimizationVars() const { return x_; }
-
     void getInitialGuess(size_t n, MapVecXs& x) const
     {
         assert(n == static_cast<size_t>(xInit_.size()));

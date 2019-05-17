@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -18,7 +18,6 @@ public:
 
     OutputMatrix() {}
     virtual ~OutputMatrix() {}
-
     //! This constructor allows you to construct MyVectorType from Eigen expressions
     template <typename OtherDerived>
     OutputMatrix(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)

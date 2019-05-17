@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -16,13 +16,12 @@ namespace rbd {
  *  - the state vector are the joint positions
  */
 template <class RBDDynamics>
-class FixBaseVelSystem
-    : public FixBaseSystemBase<RBDDynamics, RBDDynamics::NJOINTS, RBDDynamics::NJOINTS>
+class FixBaseVelSystem : public FixBaseSystemBase<RBDDynamics, RBDDynamics::NJOINTS, RBDDynamics::NJOINTS>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	using BASE = FixBaseSystemBase<RBDDynamics, RBDDynamics::NJOINTS, RBDDynamics::NJOINTS>;
+    using BASE = FixBaseSystemBase<RBDDynamics, RBDDynamics::NJOINTS, RBDDynamics::NJOINTS>;
     using SCALAR = typename BASE::SCALAR;
     using state_vector_t = typename BASE::state_vector_t;
     using control_vector_t = typename BASE::control_vector_t;
@@ -30,16 +29,9 @@ public:
     using RigidBodyPose_t = typename BASE::RigidBodyPose_t;
 
     //! constructor
-    FixBaseVelSystem(const RigidBodyPose_t& basePose = RigidBodyPose_t())
-        : BASE(basePose)
-    {
-    }
-
+    FixBaseVelSystem(const RigidBodyPose_t& basePose = RigidBodyPose_t()) : BASE(basePose) {}
     //! copy constructor
-    FixBaseVelSystem(const FixBaseVelSystem& arg) : BASE(arg)
-    {
-    }
-
+    FixBaseVelSystem(const FixBaseVelSystem& arg) : BASE(arg) {}
     //! destructor
     virtual ~FixBaseVelSystem() = default;
 
@@ -49,14 +41,11 @@ public:
         const control_vector_t& controlIn,
         state_vector_t& derivative) override
     {
-        derivative.template head<BASE::NJOINTS> () = controlIn.template head<BASE::NJOINTS>();
+        derivative.template head<BASE::NJOINTS>() = controlIn.template head<BASE::NJOINTS>();
     }
 
     //! deep cloning
-    virtual FixBaseVelSystem<RBDDynamics>* clone() const override
-    {
-        return new FixBaseVelSystem<RBDDynamics>(*this);
-    }
+    virtual FixBaseVelSystem<RBDDynamics>* clone() const override { return new FixBaseVelSystem<RBDDynamics>(*this); }
 };
 
 }  // namespace rbd

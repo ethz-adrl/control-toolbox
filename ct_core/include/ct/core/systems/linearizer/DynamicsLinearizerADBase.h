@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -78,7 +78,6 @@ public:
 
     //! destructor
     virtual ~DynamicsLinearizerADBase() {}
-
 protected:
     const size_t A_entries = STATE_DIM * STATE_DIM;    //!< number of entries in the state Jacobian
     const size_t B_entries = STATE_DIM * CONTROL_DIM;  //!< number of entries in the input Jacobian

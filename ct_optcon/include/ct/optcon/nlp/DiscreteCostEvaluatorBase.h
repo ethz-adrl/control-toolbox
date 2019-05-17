@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 
@@ -63,9 +63,7 @@ public:
     * @param[in]  lambda       multipliers for hessian matrix
     * @param[out] hes          The cost hessian matrix coeff
     */
-    virtual void sparseHessianValues(const Eigen::VectorXd& optVec,
-        const Eigen::VectorXd& lambda,
-        Eigen::VectorXd& hes)
+    virtual void sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda, Eigen::VectorXd& hes)
     {
         throw std::runtime_error(
             "Hessian evaluation not implemented for this cost function. Use limited-memory Hessian approximation!");

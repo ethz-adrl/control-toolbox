@@ -92,7 +92,7 @@ function(ct_configureFiles ConfigDir STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCA
         set(outputFile "${outputFile}-${STATE_DIM_PRESPEC}-${CONTROL_DIM_PRESPEC}-${SCALAR_PRESPEC_CLEAN}-${POS_DIM_PRESPEC}-${VEL_DIM_PRESPEC}.cpp")
         #message(WARNING "configuring file \n ${file} to \n ${outputFile} ")
         set(DOUBLE_OR_FLOAT false)
-        if(SCALAR_PRESPEC STREQUAL "double" OR SCALAR_PRESPEC STREQUAL "float")
+        if((SCALAR_PRESPEC MATCHES "double") OR (SCALAR_PRESPEC MATCHES "float")) #STREQUAL did not work
             set(DOUBLE_OR_FLOAT true)
         endif()
         configure_file(${file} ${outputFile})
@@ -104,20 +104,7 @@ function(ct_configureFiles ConfigDir STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCA
 endfunction()
 
 
-# creates a target for each explicit template lib and adds its sources to it
-function(ct_add_explicit_template_libs)
-    foreach(lib_name ${PRESPEC_LIB_NAMES})
-      #get_filename_component(raw_filename ${file} NAME_WE)
-      #message(WARNING "sources for lib ${lib_name}: \n ${${lib_name}_SRCS}")
-      add_library(${lib_name}
-           ${${lib_name}_SRCS}
-      )
-      target_link_libraries(${lib_name} ${catkin_LIBRARIES} ${PYTHON_LIBRARY})
-    endforeach()
-endfunction()
-
-
-# link external library (for example to link optcon against lapack)
+# link external library (for example to link optcon against lapack) # todo this should go away
 function(ct_link_external_library extLibs)
 foreach(lib_name ${PRESPEC_LIB_NAMES})
       target_link_libraries(${lib_name} "${extLibs}")

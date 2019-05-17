@@ -32,26 +32,27 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = ct_rbd
+PROJECT_NAME           = ""
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         = v2.3
+PROJECT_NUMBER         = 3.0.1
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "Control Toolbox - Rigid Body Dynamics Module"
+PROJECT_BRIEF          = "  - 3.0.1 rigid body dynamics module."
+
 
 # With the PROJECT_LOGO tag one can specify an logo or icon that is included in
 # the documentation. The maximum height of the logo should not exceed 55 pixels
 # and the maximum width should not exceed 200 pixels. Doxygen will copy the logo
 # to the output directory.
 
-PROJECT_LOGO           =
+PROJECT_LOGO           = ../../ct_doc/doc/ct_logo_small.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -1103,7 +1104,7 @@ HTML_EXTRA_FILES       =
 # Minimum value: 0, maximum value: 359, default value: 220.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_COLORSTYLE_HUE    = 290
+HTML_COLORSTYLE_HUE    = 220
 
 # The HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of the colors
 # in the HTML output. For a value of 0 the output will use grayscales only. A
@@ -1982,9 +1983,10 @@ SKIP_FUNCTION_MACROS   = YES
 # Note: Each tag file must have a unique name (where the name does NOT include
 # the path). If a tag file is not located in the directory in which doxygen is
 # run, you must also specify the path to the tagfile here.
-
-TAGFILES               = ../../ct_doc/doc/tags/ct_core.tag=../../../ct_core/doc/html \
-						 ../../ct_doc/doc/tags/ct_optcon.tag=../../../ct_optcon/doc/html
+TAGFILES               = ../../ct_doc/doc/tags/ct_doc.tag=../../../ct_doc/doc/html \
+						../../ct_doc/doc/tags/ct_optcon.tag=../../../ct_optcon/doc/html \
+						../../ct_doc/doc/tags/ct_core.tag=../../../ct_core/doc/html \
+                        ../../ct_doc/doc/tags/ct_models.tag=../../../ct_models/doc/html 
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create a
 # tag file that is based on the input files it reads. See section "Linking to

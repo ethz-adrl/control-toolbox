@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -30,7 +30,6 @@ public:
     inline static Scalar exp(const Scalar& x) { return CppAD::exp(x); }
     inline static Scalar fabs(const Scalar& x) { return CppAD::fabs(x); }
     inline static Scalar sqrt(const Scalar& x) { return CppAD::sqrt(x); }
-
     //! Solves a linear system of equations using an LU factorization
     template <int Dims>
     inline static Eigen::Matrix<Scalar, Dims, 1> solve(const Eigen::Matrix<Scalar, Dims, Dims>& A,

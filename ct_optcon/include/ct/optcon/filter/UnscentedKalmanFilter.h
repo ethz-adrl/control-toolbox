@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -58,14 +58,17 @@ struct UnscentedKalmanFilterSettings;
  *
  * @tparam STATE_DIM
  */
-template <size_t STATE_DIM, typename SCALAR = double>
-class UnscentedKalmanFilter : public EstimatorBase<STATE_DIM, SCALAR>
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t OUTPUT_DIM, typename SCALAR = double>
+class UnscentedKalmanFilter final : public EstimatorBase<STATE_DIM, CONTROL_DIM, OUTPUT_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static const size_t STATE_D = STATE_DIM;
-    using Base = EstimatorBase<STATE_DIM, SCALAR>;
+    using Base = EstimatorBase<STATE_DIM, CONTROL_DIM, OUTPUT_DIM, SCALAR>;
+    using typename Base::control_vector_t;
+    using typename Base::output_matrix_t;
+    using typename Base::output_vector_t;
+    using typename Base::state_matrix_t;
     using typename Base::state_vector_t;
 
     static constexpr size_t SigmaPointCount = 2 * STATE_DIM + 1;
@@ -80,28 +83,26 @@ public:
     using CovarianceSquareRoot = Cholesky<Eigen::Matrix<SCALAR, SIZE, SIZE>>;
 
     //! Constructor.
-    UnscentedKalmanFilter(const state_vector_t& x0 = state_vector_t::Zero(),
-        SCALAR alpha = SCALAR(1),
-        SCALAR beta = SCALAR(2),
-        SCALAR kappa = SCALAR(0),
+    UnscentedKalmanFilter(std::shared_ptr<SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>> f,
+        std::shared_ptr<LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>> h,
+        const state_vector_t& x0 = state_vector_t::Zero(),
+        SCALAR alpha = SCALAR(1.0),
+        SCALAR beta = SCALAR(2.0),
+        SCALAR kappa = SCALAR(0.0),
         const ct::core::StateMatrix<STATE_DIM, SCALAR>& P0 = ct::core::StateMatrix<STATE_DIM, SCALAR>::Identity());
 
     //! Constructor from settings.
-    UnscentedKalmanFilter(const UnscentedKalmanFilterSettings<STATE_DIM, SCALAR>& ukf_settings);
+    UnscentedKalmanFilter(std::shared_ptr<SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>> f,
+        std::shared_ptr<LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>> h,
+        const UnscentedKalmanFilterSettings<STATE_DIM, SCALAR>& ukf_settings);
 
     //! Estimator predict method.
-    template <size_t CONTROL_DIM>
-    const state_vector_t& predict(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
-        const ct::core::StateMatrix<STATE_DIM, SCALAR>& Q,
-        const ct::core::Time& t = 0);
+    const state_vector_t& predict(const control_vector_t& u,
+        const ct::core::Time& dt,
+        const ct::core::Time& t) override;
 
     //! Estimator update method.
-    template <size_t OUTPUT_DIM>
-    const state_vector_t& update(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& z,
-        LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
-        const ct::core::OutputMatrix<OUTPUT_DIM, SCALAR>& R,
-        const ct::core::Time& t = 0);
+    const state_vector_t& update(const output_vector_t& y, const ct::core::Time& dt, const ct::core::Time& t) override;
 
     //! Compute sigma points from current state and covariance estimates.
     bool computeSigmaPoints();
@@ -114,26 +115,21 @@ public:
         Covariance<SIZE>& cov);
 
     //! Compute the Kalman Gain using sigma points..
-    template <size_t OUTPUT_DIM>
     bool computeKalmanGain(const ct::core::OutputVector<OUTPUT_DIM, SCALAR>& y,
         const SigmaPoints<OUTPUT_DIM>& sigmaMeasurementPoints,
         const Covariance<OUTPUT_DIM>& P_yy,
         Eigen::Matrix<SCALAR, STATE_DIM, OUTPUT_DIM>& K);
 
     //! Compute the Kalman Gain using sigma points..
-    template <size_t OUTPUT_DIM>
     bool updateStateCovariance(const Eigen::Matrix<SCALAR, STATE_DIM, OUTPUT_DIM>& K, const Covariance<OUTPUT_DIM>& P);
 
     //! Update state covariance from Kalman gain and sigma points.
-    template <size_t CONTROL_DIM>
-    const state_vector_t& computeStatePrediction(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
+    const state_vector_t computeStatePrediction(const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
+        const ct::core::Time& dt,
         const ct::core::Time& t = 0);
 
     //! Predict the next measurement.
-    template <size_t OUTPUT_DIM>
     ct::core::OutputVector<OUTPUT_DIM, SCALAR> computeMeasurementPrediction(
-        LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
         SigmaPoints<OUTPUT_DIM>& sigmaMeasurementPoints,
         const ct::core::Time& t = 0);
 
@@ -144,23 +140,19 @@ public:
      * \brief Propagate sigma points through the system dynamics. Using CTSystemModel here will not provide a desired
      *        effect since it disregards the control input u.
      */
-    template <size_t CONTROL_DIM>
-    void computeSigmaPointTransition(SystemModelBase<STATE_DIM, CONTROL_DIM, SCALAR>& f,
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
-        const ct::core::Time& t = 0);
+    void computeSigmaPointTransition(const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
+        const ct::core::Time& dt,
+        const ct::core::Time& t);
 
     //! Predict measurements of sigma points.
-    template <size_t OUTPUT_DIM>
-    void computeSigmaPointMeasurements(LinearMeasurementModel<OUTPUT_DIM, STATE_DIM, SCALAR>& h,
-        SigmaPoints<OUTPUT_DIM>& sigmaMeasurementPoints,
-        const ct::core::Time& t = 0);
+    void computeSigmaPointMeasurements(SigmaPoints<OUTPUT_DIM>& sigmaMeasurementPoints, const ct::core::Time& t = 0);
 
     //! Make a prediction based on sigma points.
-    template <size_t OUTPUT_DIM>
-    state_vector_t computePredictionFromSigmaPoints(const SigmaPoints<OUTPUT_DIM>& sigmaPoints);
+    template <size_t DIM>
+    state_vector_t computePredictionFromSigmaPoints(const SigmaPoints<DIM>& sigmaPoints);
 
 private:
-    ct::core::StateMatrix<STATE_DIM, SCALAR> P_;                //! Covariance matrix.
+    state_matrix_t P_;                                          //! Covariance matrix.
     Eigen::Matrix<SCALAR, SigmaPointCount, 1> sigmaWeights_m_;  //! Sigma measurement weights.
     Eigen::Matrix<SCALAR, SigmaPointCount, 1> sigmaWeights_c_;  //! Sigma covariance weights.
     SigmaPoints<STATE_DIM> sigmaStatePoints_;                   //! Sigma points.
@@ -171,5 +163,5 @@ private:
     SCALAR lambda_;  //! \f$ \lambda = \alpha^2 ( L + \kappa ) - L\f$ with \f$ L \f$ being the state dimensionality
 };
 
-}  // optcon
-}  // ct
+}  // namespace optcon
+}  // namespace ct

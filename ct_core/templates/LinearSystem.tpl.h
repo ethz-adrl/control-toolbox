@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -14,7 +14,6 @@ namespace NS2 {
 class LINEAR_SYSTEM_NAME : public ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
 {
 public:
-
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     typedef ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
@@ -57,6 +56,6 @@ private:
     std::array<SCALAR, MAX_COUNT_CONTROL> vU_;
 };
 
-} // namespace NS2
-} // namespace NS1
-} // namespace ct
+}  // namespace NS2
+}  // namespace NS1
+}  // namespace ct

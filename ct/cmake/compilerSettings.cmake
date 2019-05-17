@@ -4,8 +4,6 @@ option(BUILD_EXAMPLES "Compile all examples for ct" false)
 option(BUILD_HYQ_FULL "Compile all examples for HyQ (takes long, should use clang)" false)
 option(BUILD_HYQ_LINEARIZATION_TIMINGS "Build linearization timing tests for HyQ (takes long, should use clang)" false)
 option(BUILD_HYA_LINEARIZATION_TIMINGS "Build linearization timing tests for HyA (takes long, should use clang)" false)
-option(USE_LAPACKE "Use lapacke bindings for Eigen" false)
-option(USE_BLAS "Use blas bindings for Eigen" false)
 option(HPIPM "Build HPIPM Optimal Control solver" false)
 
 ## option to activate/deactivate explicit template prespecs
@@ -33,13 +31,3 @@ if(USE_INTEL)
     SET (CMAKE_CXX_COMPILER           ${INTEL_CXX_COMPILER})
     set(CMAKE_CXX_LINKER_FLAGS "${CMAKE_CXX_LINKER_FLAGS} -L${MKLROOT}/lib/intel64 -llibblas -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -lm -llapacke -lblas -llapack -lliblapack -liblapacke")
 endif(USE_INTEL)
-
-
-if(USE_LAPACKE)
-    add_definitions(-DEIGEN_USE_LAPACKE)
-    set(CMAKE_CXX_LINKER_FLAGS "${CMAKE_CXX_LINKER_FLAGS} -llapacke -lblas ")
-endif()
-
-if(USE_BLAS)
-    add_definitions(-DEIGEN_USE_BLAS)
-endif()

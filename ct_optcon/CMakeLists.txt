@@ -1,290 +1,205 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.3)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
-project (ct_optcon)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/externalSolvers.cmake)
+project(ct_optcon VERSION 3.0.1 LANGUAGES CXX)
 
-find_package(catkin REQUIRED
-    ct_core
-)
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++11 -Wall -Wno-unknown-pragmas")
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++11 -Wall")
-SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++14 -Wno-unknown-pragmas -Wall -Wfatal-errors")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++14 -Wfatal-errors")
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
+
+## find and include required dependencies
+find_package(ct_core REQUIRED)
+
+
+## find and include optional dependencies
 option(MATLAB "Compile with matlab support" OFF)
 option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" OFF)
 option(DEBUG_PRINT "Print debug messages" OFF)
 
 
 if(DEBUG_PRINT)
-    message(STATUS "WARNING: Debug Print ON")
-    add_definitions ( -DDEBUG_PRINT )
+    message(STATUS "Debug Print ON")
+    list(APPEND ct_optcon_COMPILE_DEFINITIONS DEBUG_PRINT)
 endif(DEBUG_PRINT)
 
 if(MATLAB_FULL_LOG)
-    message(WARNING "WARNING: Compiling with full log to matlab. Execution will be very slow.")
+    message(WARNING "Compiling with full log to matlab. Execution will be very slow.")
     set(MATLAB ON)
-    add_definitions ( -DMATLAB_FULL_LOG )
+    list(APPEND ct_optcon_COMPILE_DEFINITIONS MATLAB_FULL_LOG)
 endif(MATLAB_FULL_LOG)
 
 if(MATLAB)
     message(STATUS "MATLAB support ON")
     find_package(matlab_cpp_interface REQUIRED)
-    if(matlab_cpp_interface_FOUND)
-        include_directories(${matlab_cpp_interface_INCLUDE_DIRS})
-        set(MATLAB_LIB_DIR ${matlab_cpp_interface_LIBRARIES})
-        add_definitions( -DMATLAB )
-    endif()
+    list(APPEND ct_optcon_COMPILE_DEFINITIONS MATLAB)
 endif(MATLAB)
-set(MATLAB_LIBS ${MATLAB_LIB_DIR})
-
-#todo export this properly from ct_core
-find_package(PythonLibs QUIET)
-if (PYTHONLIBS_FOUND)
-   message(STATUS "Python found")
-   include_directories(${PYTHON_INCLUDE_DIRS})
-   set(PLOTTING_ENABLED true)
-   add_definitions(-DPLOTTING_ENABLED)
-else()
-   message(STATUS "Python not found")
-   set(PYTHON_LIBRARY "")
-endif()
 
 
 ## lapack libs
-set(LAPACK_LIBS "")
 find_package(LAPACK QUIET)
+set(LAPACK_LIBS "")
 if(LAPACK_FOUND)
     message(STATUS "Found LAPACK library")
-    set(LAPACK_LIBS lapack)
-    add_definitions (-DCT_USE_LAPACK)
-    set(USE_LAPACK ON)
+    list(APPEND LAPACK_LIBS lapack)
+    list(APPEND ct_optcon_COMPILE_DEFINITIONS CT_USE_LAPACK)
 else(LAPACK_FOUND)
-    message(WARNING "Could not find LAPACK library")
+    message(STATUS "Could not find LAPACK library")
 endif(LAPACK_FOUND)
 
-include_directories(
-    include
-    ${catkin_INCLUDE_DIRS}
+
+## include HPIPM (required: environment variables for blasfeo and hpipm set)
+find_package(blasfeo QUIET)
+find_package(hpipm QUIET)
+if(blasfeo_FOUND AND hpipm_FOUND)
+    message(STATUS "Found HPIPM and BLASFEO")
+    set(HPIPM ON)
+    list(APPEND HPIPM_LIBS ${hpipm_LIBRARIES} ${blasfeo_LIBRARIES})
+    list(APPEND ct_optcon_COMPILE_DEFINITIONS HPIPM)
+endif()
+
+
+## include IPOPT (after installation via sudo apt-get install coinor-libipopt-dev)
+find_package(IPOPT QUIET)
+if(IPOPT_FOUND)
+    set(BUILD_WITH_IPOPT_SUPPORT ON)
+    message(STATUS "Found IPOPT - building with IPOPT support") 
+    set(IPOPT_LIBS ipopt) # dl mumps coinhsl lapack blas gfortran m quadmath coinmetis)
+    list(APPEND ct_optcon_COMPILE_DEFINITIONS BUILD_WITH_IPOPT_SUPPORT)
+    list(APPEND ct_optcon_COMPILE_DEFINITIONS ${IPOPT_DEFINITIONS})
+endif()
+
+
+## include SNOPT -- todo SNOPT not tested in version 3.0.1, temporarily deactivated
+#set(SNOPT_TARGET "")
+#if(DEFINED ENV{SNOPT_SOURCE_DIR})
+#    set(BUILD_WITH_SNOPT_SUPPORT ON)
+#    message(STATUS "Found SNOPT - building with SNOPT support")
+#    include_directories( "$ENV{SNOPT_SOURCE_DIR}/include")
+#
+#    list(APPEND ct_optcon_COMPILE_DEFINITIONS BUILD_WITH_SNOPT_SUPPORT)
+#    find_library(SNOPT_LIBRARY1 snopt7_cpp   $ENV{SNOPT_SOURCE_DIR}/lib REQUIRED)
+#    find_library(SNOPT_LIBRARY2 snopt7       $ENV{SNOPT_SOURCE_DIR}/lib REQUIRED)
+#    set(SNOPT_LIBS ${SNOPT_LIBRARY1} ${SNOPT_LIBRARY2})
+#    
+#    add_library(ct_snopt_interface src/nlp/solver/SnoptSolver.cpp)
+#    target_link_libraries(ct_snopt_interface ${SNOPT_LIBRARY1} ${SNOPT_LIBRARY2})
+#    
+#    list(APPEND SNOPT_TARGET ct_snopt_interface)
+#    list(APPEND SNOPT_LIBS ct_snopt_interface ${SNOPT_LIBRARY1} ${SNOPT_LIBRARY2})
+#
+#endif(DEFINED ENV{SNOPT_SOURCE_DIR})
+
+
+###################
+# BUILD LIBRARIES #
+###################
+
+## define the directories to be included in all ct_optcon targets
+set(ct_optcon_TARGET_INCLUDE_DIRS
+    ${ct_core_INCLUDE_DIRS}
+    ${matlab_cpp_interface_INCLUDE_DIRS}
+    ${blasfeo_INCLUDE_DIRS}
+    ${hpipm_INCLUDE_DIRS}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
+
+## declare prespec libraries
+set(PRESPEC_LIB_NAMES "")
 
 ## assemble list of libraries that contain prespecified templates
 if(USE_PRESPEC)
-    ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" "ct_optcon")
-    message(WARNING "CT Optcon: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
+    ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg"
+        "${CMAKE_CURRENT_SOURCE_DIR}/prespec/"
+        "ct_optcon"
+    )
+    message(STATUS "CT Optcon: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
+    # create libraries
+    foreach(lib_name ${PRESPEC_LIB_NAMES})
+        add_library(${lib_name} SHARED ${${lib_name}_SRCS})
+        target_include_directories(${lib_name} PUBLIC ${ct_optcon_TARGET_INCLUDE_DIRS})
+        target_compile_definitions(${lib_name} PUBLIC ${ct_optcon_COMPILE_DEFINITIONS})
+        target_link_libraries(${lib_name} 
+            ct_core
+            ${matlab_cpp_interface_LIBRARIES}
+            ${LAPACK_LIBS}
+            ${HPIPM_LIBS}
+            ${IPOPT_LIBS}
+        )
+    endforeach()
 endif(USE_PRESPEC)
 
-#used later for clang-tidy
-set(INC_DIRS ${catkin_INCLUDE_DIRS}  "${CMAKE_CURRENT_SOURCE_DIR}/include" ${HPIPM_INCLUDE_DIR} ${BLASFEO_INCLUDE_DIR})
 
-catkin_package(
-   INCLUDE_DIRS
-        include
-        ${HPIPM_INCLUDE_DIR}
-        ${BLASFEO_INCLUDE_DIR}
-   LIBRARIES
-        ${LAPACK_LIBS}
-        ${CT_SNOPT_LIBS}
-        ${HPIPM_LIBRARY}
-        ${BLASFEO_LIBRARY}
-        ${PRESPEC_LIB_NAMES}
-   CATKIN_DEPENDS
-        ct_core
-)
-
-## build SNOPT library
-if(BUILD_WITH_SNOPT_SUPPORT)
-    add_library(ct_snopt_interface src/nlp/solver/SnoptSolver.cpp)
-    target_link_libraries(ct_snopt_interface ${catkin_LIBRARIES} ${SNOPT_LIBS})
-endif()
+## create ct_optcon library
+add_library(ct_optcon INTERFACE)
+target_include_directories(ct_optcon INTERFACE ${ct_optcon_TARGET_INCLUDE_DIRS})
+target_compile_definitions(ct_optcon INTERFACE ${ct_optcon_COMPILE_DEFINITIONS})
+target_link_libraries(ct_optcon INTERFACE
+    ct_core
+    ${matlab_cpp_interface_LIBRARIES}
+    ${LAPACK_LIBS}
+    ${HPIPM_LIBS}
+    ${IPOPT_LIBS}
+    #${SNOPT_LIBS}
+    ${PRESPEC_LIB_NAMES}
+    )
 
 
-# add libraries for explicit template
-if(USE_PRESPEC)
-    ct_add_explicit_template_libs()
-endif(USE_PRESPEC)
-
-# link against addigional external libraries, such as lapack, if applicable
-if(USE_LAPACK)
-    ct_link_external_library(${LAPACK_LIBS})
-endif(USE_LAPACK)
-if(HPIPM)
-   ct_link_external_library(${BLASFEO_LIBRARY})
-   ct_link_external_library(${HPIPM_LIBRARY})
-endif(HPIPM)
-
-
+##################
+# BUILD EXAMPLES #
+##################
 if(BUILD_EXAMPLES)
-    message(STATUS "Building with examples.")
-
-    set(CT_OPTCON_EXAMPLE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/examples")
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleDir.h)
-
-    add_executable(ex_ConstraintOutput examples/ConstraintExampleOutput.cpp)
-    target_link_libraries(ex_ConstraintOutput ${catkin_LIBRARIES})
-    
-    add_executable(ex_LQR examples/LQR.cpp)
-    target_link_libraries(ex_LQR ${catkin_LIBRARIES} ${LAPACK_LIBS})
-    
-    add_executable(ex_NLOC examples/NLOC.cpp)
-    target_link_libraries(ex_NLOC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-    
-    add_executable(ex_NLOC_MPC examples/NLOC_MPC.cpp)
-    target_link_libraries(ex_NLOC_MPC ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-
-    add_executable(ex_DMS examples/DMS.cpp)
-    target_link_libraries(ex_DMS ${catkin_LIBRARIES} ${NLP_LIBS})
-
-    add_executable(ex_KalmanFiltering examples/KalmanFiltering.cpp)
-    target_link_libraries(ex_KalmanFiltering ${catkin_LIBRARIES})
-    
-    add_executable(ex_KalmanDisturbanceFiltering examples/KalmanDisturbanceFiltering.cpp)
-    target_link_libraries(ex_KalmanDisturbanceFiltering ${catkin_LIBRARIES})
-
-    add_executable(ex_Nlp_2D examples/nlp/Nlp2D.cpp)
-    target_link_libraries(ex_Nlp_2D ${catkin_LIBRARIES} ${NLP_LIBS})
-    
-    add_executable(ex_Nlp_3D examples/nlp/Nlp3D.cpp)
-    target_link_libraries(ex_Nlp_3D ${catkin_LIBRARIES} ${NLP_LIBS})
-endif()
-
-get_filename_component(DMS_OSC_TEST_MAT_DIR "test/dms/oscillator/matfiles" ABSOLUTE)
-configure_file(test/dms/oscillator/oscDMSTest_settings.h.in test/dms/oscillator/oscDMSTest_settings.h)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/dms/oscillator)
-
-catkin_add_gtest(LqrTest test/lqr/LqrTest.cpp)
-target_link_libraries(LqrTest ${catkin_LIBRARIES} ${LAPACK_LIBS} ${MATLAB_LIBS})
-
-catkin_add_gtest(iLQRTest test/nloc/nonlinear/iLQRTest.cpp)
-target_link_libraries(iLQRTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-
-if(HPIPM)
-    catkin_add_gtest(LQOCSolverTest test/solver/linear/LQOCSolverTest.cpp)
-    target_link_libraries(LQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-
-    catkin_add_gtest(ConstrainedLQOCSolverTest test/solver/linear/ConstrainedLQOCSolverTest.cpp)
-    target_link_libraries(ConstrainedLQOCSolverTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-
-    catkin_add_gtest(ConstrainedNLOCTest test/nloc/constrained/ConstrainedNLOCTest.cpp)
-    target_link_libraries(ConstrainedNLOCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-
-    add_executable(LQOCSolverTiming test/solver/linear/LQOCSolverTiming.cpp)
-    target_link_libraries(LQOCSolverTiming ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-    
-    catkin_add_gtest(LinearSystemSolverComparison test/nloc/LinearSystemSolverComparison.cpp)
-    target_link_libraries(LinearSystemSolverComparison ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-
-    if(BUILD_EXAMPLES)
-        add_executable(ex_NLOC_boxConstrained examples/NLOC_boxConstrained.cpp)
-        target_link_libraries(ex_NLOC_boxConstrained ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-
-        add_executable(ex_NLOC_generalConstrained examples/NLOC_generalConstrained.cpp)
-        target_link_libraries(ex_NLOC_generalConstrained ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-
-        add_executable(switched_continuous_optcon_example examples/switched_systems_optcon/switched_continuous_optcon.cpp)
-        target_link_libraries(switched_continuous_optcon_example ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-    endif(BUILD_EXAMPLES)
-endif(HPIPM)
-
-
-get_filename_component(NLOC_TEST_DIR "test/nloc" ABSOLUTE)
-configure_file(test/nloc/nloc_test_dir.h.in test/nloc/nloc_test_dir.h)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/nloc)
-
-catkin_add_gtest(LinearSystemTest test/nloc/LinearSystemTest.cpp)
-target_link_libraries(LinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-
-catkin_add_gtest(NonlinearSystemTest test/nloc/nonlinear/NonlinearSystemTest.cpp)
-target_link_libraries(NonlinearSystemTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-
-add_executable(SymplecticTest test/nloc/SymplecticTest.cpp)
-target_link_libraries(SymplecticTest ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS})
-
-catkin_add_gtest(constraint_comparison test/constraint/ConstraintComparison.cpp)
-target_link_libraries(constraint_comparison ${catkin_LIBRARIES})
-
-catkin_add_gtest(constraint_test test/constraint/ConstraintTest.cpp)
-target_link_libraries(constraint_test ${catkin_LIBRARIES} )
-
-catkin_add_gtest(SparseBoxConstraintTest test/constraint/SparseBoxConstraintTest.cpp)
-target_link_libraries(SparseBoxConstraintTest ${catkin_LIBRARIES})
-
-get_filename_component(COSTFUNCTION_TEST_DIR "test/costfunction" ABSOLUTE)
-configure_file(test/costfunction/costfunction_test_dir.h.in test/costfunction/costfunction_test_dir.h)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/costfunction)
-catkin_add_gtest(CostFunctionTests test/costfunction/CostFunctionTests.cpp)
-target_link_libraries(CostFunctionTests ${catkin_LIBRARIES} ${MATLAB_LIBS})
-catkin_add_gtest(LoadFromFileTest test/costfunction/LoadFromFileTest.cpp)
-target_link_libraries(LoadFromFileTest ${catkin_LIBRARIES} ${MATLAB_LIBS})
-
-catkin_add_gtest(dms_test test/dms/oscillator/oscDMSTest.cpp)
-target_link_libraries(dms_test ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-
-catkin_add_gtest(dms_test_all_var test/dms/oscillator/oscDMSTestAllVariants.cpp)
-target_link_libraries(dms_test_all_var ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-
-add_executable(matFilesGenerator test/dms/oscillator/matfiles/matFilesGenerator.cpp)
-target_link_libraries(matFilesGenerator ${catkin_LIBRARIES} ${MATLAB_LIBS} ${NLP_LIBS})
-
-get_filename_component(MPC_TEST_MAT_DIR "test/mpc/matfiles" ABSOLUTE)
-configure_file(test/mpc/mpcTestSettings.h.in test/mpc/mpcTestSettings.h)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/test/mpc)
-
-catkin_add_gtest(NLOC_MPCTest test/mpc/NLOC_MPCTest.cpp)
-target_link_libraries(NLOC_MPCTest ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS})
-
-catkin_add_gtest(system_interface_test test/system_interface/SystemInterfaceTest.cpp)
-target_link_libraries(system_interface_test ${catkin_LIBRARIES})
-
-
-## additional prespec tests
-if(USE_PRESPEC)
-    catkin_add_gtest(LqrTestPrespec test/lqr/LqrTestPrespec.cpp)
-    target_link_libraries(LqrTestPrespec ${catkin_LIBRARIES} ${LAPACK_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
-
-    if(HPIPM)
-        catkin_add_gtest(LQOCSolverTestPrespec test/solver/linear/LQOCSolverTestPrespec.cpp)
-        target_link_libraries(LQOCSolverTestPrespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIB_NAMES})
-    endif(HPIPM)
-
-    catkin_add_gtest(LinearSystemTestPrespec test/nloc/LinearSystemTestPrespec.cpp)
-    target_link_libraries(LinearSystemTestPrespec ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
-
-    #add_executable(SymplecticTestPrespec test/nloc/SymplecticTestPrespec.cpp)
-    #target_link_libraries(SymplecticTestPrespec ${catkin_LIBRARIES} ${HPIPM_LIBS} ${MATLAB_LIBS} ${PRESPEC_LIB_NAMES})
-
-    catkin_add_gtest(constraint_test_prespec test/constraint/ConstraintTestPrespec.cpp)
-    target_link_libraries(constraint_test_prespec ${catkin_LIBRARIES} ${PRESPEC_LIB_NAMES})
-
-    catkin_add_gtest(NLOC_MPCTest_prespec test/mpc/NLOC_MPCTest_prespec.cpp)
-    target_link_libraries(NLOC_MPCTest_prespec ${catkin_LIBRARIES} ${MATLAB_LIBS} ${HPIPM_LIBS} ${PRESPEC_LIB_NAMES})
-
-    catkin_add_gtest(system_interface_test_prespec test/system_interface/SystemInterfaceTest-Prespec.cpp)
-    target_link_libraries(system_interface_test_prespec ${catkin_LIBRARIES} ${PRESPEC_LIB_NAMES})
-endif(USE_PRESPEC)
-
-## build doxygen documentation
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-
-    set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/ct_optcon.doxyfile)
-    set(doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
-
-    configure_file(${doxyfile_in} ${doxyfile} @ONLY)
-
-    add_custom_target(doc
-        COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
-        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc
-        COMMAND ${CMAKE_COMMAND} -E echo_append "API Documentation built in ${CMAKE_CURRENT_SOURCE_DIR}/doc"
-        VERBATIM)
+    add_subdirectory(examples)
 endif()
 
 
-ct_configure_clang_tidy(INC_DIRS)
+###########
+# TESTING #
+###########
+
+if(BUILD_TESTS)
+    #find_package(GTest QUIET)
+    enable_testing()
+    add_subdirectory(test)
+endif()
+
+
+#################
+# INSTALLATION  #
+#################
+
+# for correct libraries locations across platforms
+include(GNUInstallDirs)
+
+install(DIRECTORY include/ct/optcon DESTINATION include/ct)
+
+## copy the header files
+install(DIRECTORY include/ct/optcon DESTINATION include/ct)
+
+## copy the cmake files required for find_package()
+install(FILES "cmake/ct_optconConfig.cmake" DESTINATION "share/ct_optcon/cmake")
+
+## install library and targets
+install(
+    TARGETS ct_optcon ${PRESPEC_LIB_NAMES}
+    EXPORT ct_optcon_export
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+
+## create the ct_optcon.cmake file which holds target includes and dependencies
+install (EXPORT ct_optcon_export DESTINATION share/ct_optcon/cmake)
+
+    
+#################
+# DOCUMENTATION #
+#################
+add_subdirectory(doc)

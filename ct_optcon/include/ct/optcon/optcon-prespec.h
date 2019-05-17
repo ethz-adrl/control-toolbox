@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #ifndef INCLUDE_CT_OPTCON_OPTCON_H_
@@ -8,8 +8,8 @@ Licensed under Apache2 license (see LICENSE file in main directory)
 
 #include <ct/core/core-prespec.h>
 
-#include "costfunction/costfunction.hpp"
-#include "costfunction/costfunction-impl.hpp"  //temporary solution (todo)
+#include "costfunction/costfun.hpp"
+#include "costfunction/costfun-impl.hpp"  //temporary solution (todo)
 
 #include "filter/filter.h"
 #include "filter/filter-impl.h"  //temporary solution (todo)

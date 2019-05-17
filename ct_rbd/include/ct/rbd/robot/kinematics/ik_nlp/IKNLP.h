@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -17,10 +17,10 @@ template <typename KINEMATICS, typename SCALAR = double>
 class IKNLP final : public ct::optcon::tpl::Nlp<SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	using Scalar_t = SCALAR;
-	using Kinematics_t = KINEMATICS;
+    using Scalar_t = SCALAR;
+    using Kinematics_t = KINEMATICS;
 
     using InverseKinematicsBase = ct::rbd::InverseKinematicsBase<KINEMATICS::NJOINTS, SCALAR>;
     using JointPosition_t = typename InverseKinematicsBase::JointPosition_t;
@@ -51,11 +51,7 @@ public:
 
     void updateProblem() override { /* do nothing */}
 
-    JointPosition_t getSolution()
-    {
-    	return this->optVariables_->getOptimizationVars();
-    }
-
+    JointPosition_t getSolution() { return this->optVariables_->getOptimizationVars(); }
     //! print the solution to command line
     void printSolution() const
     {
@@ -63,19 +59,15 @@ public:
                   << this->optVariables_->getOptimizationVars().transpose() << std::endl;
     }
 
-    void setInitialGuess(const JointPosition_t& q_init)
-    {
-    	this->optVariables_->setInitialGuess(q_init);
-    }
-
+    void setInitialGuess(const JointPosition_t& q_init) { this->optVariables_->setInitialGuess(q_init); }
     std::shared_ptr<ct::rbd::IKCostEvaluator<KINEMATICS, SCALAR>> getIKCostEvaluator()
     {
-    	return std::static_pointer_cast<ct::rbd::IKCostEvaluator<KINEMATICS, SCALAR>>(this->costEvaluator_);
+        return std::static_pointer_cast<ct::rbd::IKCostEvaluator<KINEMATICS, SCALAR>>(this->costEvaluator_);
     }
 
     std::shared_ptr<ct::rbd::IKConstraintsContainer<KINEMATICS, SCALAR>> getIKConstraintContainer()
     {
-    	return std::static_pointer_cast<ct::rbd::IKConstraintsContainer<KINEMATICS, SCALAR>>(this->constraints_);
+        return std::static_pointer_cast<ct::rbd::IKConstraintsContainer<KINEMATICS, SCALAR>>(this->constraints_);
     }
 };
 

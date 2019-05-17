@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -15,7 +15,7 @@ template <typename KINEMATICS, typename SCALAR = double>
 class JointLimitConstraints final : public ct::optcon::tpl::DiscreteConstraintBase<SCALAR>
 {
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     using VectorXs = Eigen::Matrix<SCALAR, Eigen::Dynamic, 1>;
     using JointPosition = typename ct::rbd::JointState<KINEMATICS::NJOINTS, SCALAR>::Position;
@@ -46,39 +46,39 @@ public:
 
     size_t getConstraintSize() override { return KINEMATICS::NJOINTS; }
     size_t getNumNonZerosJacobian() override { return KINEMATICS::NJOINTS; }
-
     void genSparsityPattern(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
     {
-    	iRow_vec.resize(KINEMATICS::NJOINTS);
-    	jCol_vec.resize(KINEMATICS::NJOINTS);
+        iRow_vec.resize(KINEMATICS::NJOINTS);
+        jCol_vec.resize(KINEMATICS::NJOINTS);
 
-    	for(size_t i = 0; i<KINEMATICS::NJOINTS; i++)
-    	{
-    		iRow_vec(i) = i;
+        for (size_t i = 0; i < KINEMATICS::NJOINTS; i++)
+        {
+            iRow_vec(i) = i;
             jCol_vec(i) = i;
-    	}
+        }
     }
 
 
     void genSparsityPatternHessian(Eigen::VectorXi& iRow_vec, Eigen::VectorXi& jCol_vec) override
     {
-    	// do nothing
+        // do nothing
     }
 
-    void sparseHessianValues(const Eigen::VectorXd& optVec, const Eigen::VectorXd& lambda, Eigen::VectorXd& sparseHes) override
+    void sparseHessianValues(const Eigen::VectorXd& optVec,
+        const Eigen::VectorXd& lambda,
+        Eigen::VectorXd& sparseHes) override
     {
         // do nothing
     }
 
     VectorXs getLowerBound() override { return lowerBounds_; }
     VectorXs getUpperBound() override { return upperBounds_; }
-
     const VectorXs getLowerBound() const { return lowerBounds_; }
     const VectorXs getUpperBound() const { return upperBounds_; }
 private:
     std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> optVector_;
     Eigen::Matrix<SCALAR, KINEMATICS::NJOINTS, 1> contraints_;
-    Eigen::Matrix<SCALAR, KINEMATICS::NJOINTS, 1> jacobian_;	 // sparse jacobian
+    Eigen::Matrix<SCALAR, KINEMATICS::NJOINTS, 1> jacobian_;     // sparse jacobian
     Eigen::Matrix<SCALAR, KINEMATICS::NJOINTS, 1> lowerBounds_;  // lower bound
     Eigen::Matrix<SCALAR, KINEMATICS::NJOINTS, 1> upperBounds_;  // upper bound
 };

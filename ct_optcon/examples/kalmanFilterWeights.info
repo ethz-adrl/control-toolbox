@@ -1,0 +1,35 @@
+kalman_weights
+{
+  Q
+  {
+    scaling 0.01
+    (0,0) 0.1
+    (1,1) 1.0
+  }
+  R
+  {
+    scaling 1.0
+    (0,0) 0.1
+    (1,1) 1.0
+  }
+}
+
+process_noise
+{
+  process_var
+  {
+    scaling 0.1
+    (0,0) 0.05
+    (1,1) 1.0
+  }
+}
+
+measurement_noise
+{
+  measurement_var
+  {
+    scaling 1.0
+    (0,0) 0.05
+    (1,1) 1.0
+  }
+}

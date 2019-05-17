@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #include <ct/optcon/optcon.h>
@@ -9,7 +9,7 @@ namespace ct {
 namespace optcon {
 
 
-SnoptMemory::SnoptMemory(const SnoptSolver &self) : self(self)
+SnoptMemory::SnoptMemory(const SnoptSolver& self) : self(self)
 {
     // Put in memory pool
     auto mem_it = std::find(mempool.begin(), mempool.end(), nullptr);
@@ -63,7 +63,7 @@ SnoptMemory::~SnoptMemory()
 }
 
 
-SnoptSolver::SnoptSolver(std::shared_ptr<Nlp> nlp, const NlpSolverSettings &settings)
+SnoptSolver::SnoptSolver(std::shared_ptr<Nlp> nlp, const NlpSolverSettings& settings)
     : BASE(nlp, settings), settings_(BASE::settings_.snoptSettings_), memoryPtr_(nullptr)
 {
     memoryPtr_ = alloc_memory();
@@ -76,7 +76,7 @@ SnoptSolver::~SnoptSolver()
 }
 
 
-void SnoptSolver::init_memory(SnoptMemory *mem) const
+void SnoptSolver::init_memory(SnoptMemory* mem) const
 {
     mem->x_ = new Number[n_];
     mem->xlow_ = new Number[n_];
@@ -99,7 +99,7 @@ void SnoptSolver::init_memory(SnoptMemory *mem) const
 }
 
 
-void SnoptSolver::fill_memory(SnoptMemory *mem) const
+void SnoptSolver::fill_memory(SnoptMemory* mem) const
 {
     MapVecXd xVec(mem->x_, n_);
     MapVecXd x_lVec(mem->xlow_, n_);
@@ -146,7 +146,7 @@ void SnoptSolver::fill_memory(SnoptMemory *mem) const
 }
 
 
-void SnoptSolver::configureDerived(const NlpSolverSettings &settings)
+void SnoptSolver::configureDerived(const NlpSolverSettings& settings)
 {
     std::cout << "calling SNOPT configure derived" << std::endl;
     settings_ = settings.snoptSettings_;
@@ -240,7 +240,7 @@ void SnoptSolver::prepareWarmStart(size_t maxIterations)
 }
 
 
-void SnoptSolver::validateSNOPTStatus(const int &status) const
+void SnoptSolver::validateSNOPTStatus(const int& status) const
 {
     std::string message;
     switch (status)
@@ -288,43 +288,43 @@ void SnoptSolver::validateSNOPTStatus(const int &status) const
 }
 
 
-void SnoptSolver::NLP_Function(int *Status,
-    int *n,
+void SnoptSolver::NLP_Function(int* Status,
+    int* n,
     double x[],
-    int *needF,
-    int *neF,
+    int* needF,
+    int* neF,
     double F[],
-    int *needG,
-    int *neG,
+    int* needG,
+    int* neG,
     double G[],
-    char *cu,
-    int *lencu,
+    char* cu,
+    int* lencu,
     int iu[],
-    int *leniu,
+    int* leniu,
     double ru[],
-    int *lenru)
+    int* lenru)
 {
     auto m = SnoptMemory::mempool.at(iu[0]);
     m->self.NLP_Function(m, Status, n, x, needF, neF, F, needG, neG, G, cu, lencu, iu, leniu, ru, lenru);
 }
 
 
-void SnoptSolver::NLP_Function(SnoptMemory *m,
-    int *Status,
-    int *n,
+void SnoptSolver::NLP_Function(SnoptMemory* m,
+    int* Status,
+    int* n,
     double x[],
-    int *needF,
-    int *neF,
+    int* needF,
+    int* neF,
     double F[],
-    int *needG,
-    int *neG,
+    int* needG,
+    int* neG,
     double G[],
-    char *cu,
-    int *lencu,
+    char* cu,
+    int* lencu,
     int iu[],
-    int *leniu,
+    int* leniu,
     double ru[],
-    int *lenru) const
+    int* lenru) const
 {
     if (*Status > 1)
     {
@@ -354,7 +354,7 @@ void SnoptSolver::NLP_Function(SnoptMemory *m,
     }
 }
 
-std::vector<SnoptMemory *> SnoptMemory::mempool;
+std::vector<SnoptMemory*> SnoptMemory::mempool;
 
 }  // namespace optcon
 }  // namespace ct

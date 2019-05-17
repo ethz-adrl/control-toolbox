@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
-This file is part of the Control Toolbox (https://adrlab.bitbucket.io/ct), copyright by ETH Zurich, Google Inc.
-Licensed under Apache2 license (see LICENSE file in main directory)
+This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
+Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
 #pragma once
@@ -65,17 +65,17 @@ public:
     virtual ~DiscreteArray(){};
 
     using Base::operator[];
-    using Base::size;
-    using Base::resize;
-    using Base::reserve;
     using Base::at;
-    using Base::pop_back;
-    using Base::push_back;
-    using Base::clear;
-    using Base::front;
     using Base::back;
     using Base::begin;
+    using Base::clear;
     using Base::end;
+    using Base::front;
+    using Base::pop_back;
+    using Base::push_back;
+    using Base::reserve;
+    using Base::resize;
+    using Base::size;
 
     //! swaps the content of two arrays
     /*!
@@ -169,8 +169,6 @@ public:
     {
         std::for_each(this->begin(), this->end(), [&](T& val) { val += offset; });
     }
-
-private:
 };
 
 } /* namespace core */

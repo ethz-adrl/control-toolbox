@@ -9,7 +9,6 @@ follow the Tutorials below.
 - \subpage core_tutorials "ct core Tutorials"
 - \subpage optcon_tutorials "ct optcon Tutorials"
 - \subpage rbd_tutorials "ct rbd Tutorials"
-- \subpage ik_tutorials "Inverse kinematics Tutorials"
 
 If you need additional support, feel free to create an issue on Bitbucket or contact the developers.
 
