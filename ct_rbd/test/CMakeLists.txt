@@ -8,6 +8,7 @@ macro(package_add_test TESTNAME)
     list(APPEND UNIT_TEST_TARGETS ${TESTNAME})
 endmacro()
 
+package_add_test(EulerTest common/EulerTest.cpp)
 
 package_add_test(RigidBodyPoseTest state/RigidBodyPoseTest.cpp)
 
@@ -45,8 +46,8 @@ package_add_test(TaskSpaceCfTest robot/costfunction/TaskspaceCostFunctionTest.cp
 
 package_add_test(rbdJITtests robot/costfunction/rbdJITtests.cpp)
 
-# todo transform into EulerAngles JIT test
-#package_add_test(kindrJITtest robot/costfunction/kindrJITtest.cpp)
+## todo transform into EulerAngles JIT test
+##package_add_test(kindrJITtest robot/costfunction/kindrJITtest.cpp)
 
 package_add_test(jacobianTests robot/jacobian/JacobianTests.cpp)
 

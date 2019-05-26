@@ -5,7 +5,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <unsupported/Eigen/EulerAngles>  // todo move to core
+#include <ct/rbd/common/math/EulerAnglesXYZ.h>
 #include <ct/rbd/common/math/transformationHelpers.h>
 
 namespace ct {
@@ -43,10 +43,7 @@ public:
     using Vector3Tpl = Eigen::Matrix<SCALAR, 3, 1>;
     using Position3Tpl = Vector3Tpl;
     using RotationMatrix = Matrix3Tpl;
-
-    using XYZEulerSystem = Eigen::EulerSystem<Eigen::EULER_X, Eigen::EULER_Y, Eigen::EULER_Z>;
-    using EulerAnglesXYZTpl = Eigen::EulerAngles<SCALAR, XYZEulerSystem>;
-
+    using EulerAnglesXYZTpl = tpl::EulerAnglesXYZ<SCALAR>;
     using QuaternionTpl = Eigen::Quaternion<SCALAR>;
 
     //! default construct a RigidBodyPose
@@ -129,7 +126,7 @@ public:
     QuaternionTpl getRotationQuaternion() const
     {
         if (storedAsEuler())
-            return QuaternionTpl(euler_);
+            return euler_.toQuaternion();
         else
             return quat_;
     }
@@ -154,7 +151,7 @@ public:
         if (storedAsEuler())
             euler_ = eulerAngles;
         else
-            quat_ = eulerAngles;
+            quat_ = eulerAngles.toQuaternion();
     }
 
     /**
@@ -279,7 +276,7 @@ public:
     QuaternionTpl rotateBaseToInertiaQuaternion(const QuaternionTpl& q) const
     {
         if (storedAsEuler())
-            return QuaternionTpl(euler_) * q;
+            return euler_.toQuaternion() * q;
         else
             return quat_ * q;
     }
@@ -325,14 +322,14 @@ public:
     void setIdentity()
     {
         quat_.setIdentity();
-        euler_ = EulerAnglesXYZTpl(quat_);
+        euler_ = quat_;
         position().setZero();
     }
 
     void setRandom()
     {
-        euler_.angles().setRandom();
-        quat_ = QuaternionTpl(euler_);
+        euler_.setRandom();
+        quat_ = euler_.toQuaternion();
         position().setRandom();
     }
 

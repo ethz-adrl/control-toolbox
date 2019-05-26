@@ -11,17 +11,23 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #include <gtest/gtest.h>
 
-
 using namespace ct::rbd;
+
+bool quatEqual(const Eigen::Quaterniond q1, const Eigen::Quaterniond q2)
+{
+    Eigen::Quaterniond q2mirrored;
+    q2mirrored.coeffs() = -q2.coeffs();
+    return q1.isApprox(q2) || q1.isApprox(q2mirrored); 
+}
+
 
 void testEqual(const RigidBodyPose& pose1, const RigidBodyPose& pose2)
 {
     ASSERT_TRUE(pose1.isNear(pose2));
     ASSERT_TRUE(pose2.isNear(pose1));
 
-    // todo needs to be fixed
-    // ASSERT_TRUE(pose2.getEulerAnglesXyz() QuaternionType .isApprox(pose1.getEulerAnglesXyz() QuaternionType, 1e-10));
-    // ASSERT_TRUE(pose2.getRotationQuaternion().isApprox(pose1.getRotationQuaternion(), 1e-10));
+    ASSERT_TRUE(pose2.getEulerAnglesXyz().getUnique().isApprox(pose1.getEulerAnglesXyz().getUnique(), 1e-10));
+    ASSERT_TRUE(quatEqual(pose2.getRotationQuaternion(), pose1.getRotationQuaternion()));
 
     ASSERT_TRUE(pose2.getRotationMatrix().isApprox(pose1.getRotationMatrix(), 1e-10));
 
@@ -36,9 +42,8 @@ void testNotEqual(const RigidBodyPose& pose1, const RigidBodyPose& pose2)
     ASSERT_FALSE(pose1.isNear(pose2));
     ASSERT_FALSE(pose2.isNear(pose1));
 
-    // todo needs to be fixed
-    // ASSERT_FALSE(pose2.getEulerAnglesXyz().isApprox(pose1.getEulerAnglesXyz(), 1e-10));
-    // ASSERT_FALSE(pose2.getRotationQuaternion().isApprox(pose1.getRotationQuaternion(), 1e-10));
+    ASSERT_FALSE(pose2.getEulerAnglesXyz().getUnique().isApprox(pose1.getEulerAnglesXyz().getUnique(), 1e-10));
+    ASSERT_FALSE(quatEqual(pose2.getRotationQuaternion(), pose1.getRotationQuaternion()));
 
     ASSERT_FALSE(pose2.getRotationMatrix().isApprox(pose1.getRotationMatrix(), 1e-10));
 
@@ -170,7 +175,7 @@ TEST(RigidBodyPoseTest, gravityTest)
         poseEuler.setIdentity();
 
         // perturb one rotation to 180°
-        Eigen::EulerAnglesXYZd orientationXyz(0,0,0);
+        EulerAnglesXYZ orientationXyz(0,0,0);
         orientationXyz.angles()(i) = M_PI;
 
         poseQuat.setFromEulerAnglesXyz(orientationXyz);
@@ -201,7 +206,7 @@ TEST(RigidBodyPoseTest, gravityTest)
     poseEuler.setIdentity();
 
     // perturb one rotation to 180°
-    Eigen::EulerAnglesXYZd orientationXyz(0,0,0);
+    ct::rbd::EulerAnglesXYZ orientationXyz(0,0,0);
     orientationXyz.angles()(0) = 30.0 / 180.0 * M_PI;
 
     poseQuat.setFromEulerAnglesXyz(orientationXyz);

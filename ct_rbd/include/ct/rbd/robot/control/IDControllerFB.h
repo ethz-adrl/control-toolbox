@@ -33,14 +33,14 @@ public:
         // compute rotation error
         Eigen::Quaterniond Bcurr_q_Bdes(
             currBaseState.basePose().getRotationQuaternion().inverse() * desState_.basePose().getRotationQuaternion());
-        Eigen::EulerAnglesXYZd Bcurr_eul_Bdes(Bcurr_q_Bdes);
+        EulerAnglesXYZ Bcurr_eul_Bdes(Bcurr_q_Bdes);
 
         // desired base acceleration
         Eigen::Matrix<double, 6, 1> aDesEigen = Eigen::Matrix<double, 6, 1>::Zero();
 
         // base orientation error
         aDesEigen.segment(0, 3) =
-            Kp_.segment(0, 3).cwiseProduct(ct::rbd::getUnqiueEulerAnglesXYZ(Bcurr_eul_Bdes).angles());
+            Kp_.segment(0, 3).cwiseProduct(Bcurr_eul_Bdes.getUnique());
 
         // base position error
         Eigen::Vector3d W_positionError =

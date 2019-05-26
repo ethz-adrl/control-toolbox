@@ -115,7 +115,7 @@ Eigen::Matrix<SCALAR, 1, 1> testFunctionRBDPose(const Eigen::Matrix<SCALAR, 3 + 
 {
     // construct a RigidBodyPose from state vector
     Eigen::Matrix<SCALAR, 3, 1> pos(xu.template segment<3>(0));
-    Eigen::EulerAngles<SCALAR, Eigen::EulerSystemXYZ> euler;
+    ct::rbd::tpl::EulerAnglesXYZ<SCALAR> euler;
     euler.angles() = xu.template segment<3>(3);
 
     ct::rbd::tpl::RigidBodyPose<SCALAR> rbdPose;
@@ -166,7 +166,7 @@ Eigen::Matrix<SCALAR, 1, 1> testFunctionRigidBodyState(const Eigen::Matrix<SCALA
     rigidBodyState.velocities().getTranslationalVelocity() = state.template segment<3>(9);
 
     Eigen::Matrix<SCALAR, 3, 1> pos(state.template segment<3>(0));
-    Eigen::EulerAngles<SCALAR, Eigen::EulerSystemXYZ> euler;
+    ct::rbd::tpl::EulerAnglesXYZ<SCALAR> euler;
     euler.angles() = state.template segment<3>(3);
 
     rigidBodyState.pose().position() = pos;
@@ -222,7 +222,7 @@ Eigen::Matrix<SCALAR, 1, 1> testFunctionRBDState(const Eigen::Matrix<SCALAR, hyq
     baseState.velocities().getTranslationalVelocity() = x.template segment<3>(9);
 
     Eigen::Matrix<SCALAR, 3, 1> pos(x.template segment<3>(0));
-    Eigen::EulerAngles<SCALAR, Eigen::EulerSystemXYZ> euler;
+    ct::rbd::tpl::EulerAnglesXYZ<SCALAR> euler;
     euler.angles() = x.template segment<3>(3);
 
     baseState.pose().position() = pos;

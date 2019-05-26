@@ -74,14 +74,10 @@ public:
     {
         typename RBDState<NJOINTS, SCALAR>::state_vector_euler_t stateDerivative;
 
-        using XYZEulerSystem = Eigen::EulerSystem<Eigen::EULER_X, Eigen::EULER_Y, Eigen::EULER_Z>;
-        using EulerAnglesXYZ = Eigen::EulerAngles<SCALAR, XYZEulerSystem>;
-
         Eigen::Matrix<SCALAR, 3, 3> rotMatEulerDiff =
-            ct::rbd::getMappingFromLocalAngularVelocityToDiff(state.basePose().getEulerAnglesXyz());
+            state.basePose().getEulerAnglesXyz().getMappingFromLocalAngularVelocityToDiff();
 
-        EulerAnglesXYZ eulerAnglesXyzDiff;
-        eulerAnglesXyzDiff.angles() = rotMatEulerDiff * state.baseLocalAngularVelocity();
+        tpl::EulerAnglesXYZ<SCALAR> eulerAnglesXyzDiff = rotMatEulerDiff * state.baseLocalAngularVelocity();
 
         stateDerivative << eulerAnglesXyzDiff.angles(), state.base().computeTranslationalVelocityW(),
             state.joints().getVelocities(), base().getAngularAcceleration(), base().getTranslationalAcceleration(),

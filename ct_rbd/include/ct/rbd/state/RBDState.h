@@ -125,7 +125,7 @@ public:
     coordinate_vector_t toCoordinatePositionUnique() const
     {
         coordinate_vector_t q;
-        q << ct::rbd::getUnqiueEulerAnglesXYZ(base().pose().getEulerAnglesXyz()).angles(), base().pose().position(),
+        q << base().pose().getEulerAnglesXyz().getUnique(), base().pose().position(),
             joints().getPositions();
         return q;
     }
@@ -191,8 +191,7 @@ public:
     {
         try
         {
-            Eigen::EulerAngles<SCALAR, Eigen::EulerSystemXYZ> euler;
-            euler.angles() = state.template head<3>();
+            tpl::EulerAnglesXYZ<SCALAR> euler = state.template head<3>();
             base().pose().setFromEulerAnglesXyz(euler);
             base().pose().position() = state.template segment<3>(3);
             joints().getPositions() = state.template segment<NJOINTS>(6);

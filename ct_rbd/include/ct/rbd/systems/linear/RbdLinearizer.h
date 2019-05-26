@@ -55,6 +55,7 @@ public:
     typedef ct::core::StateMatrix<STATE_DIM, SCALAR> state_matrix_t;
     typedef ct::core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;
 
+    using EulerAnglesXYZ = tpl::EulerAnglesXYZ<SCALAR>;
 
     RbdLinearizer(std::shared_ptr<SYSTEM> RBDSystem, bool doubleSidedDerivative = false)
         : Base(RBDSystem, doubleSidedDerivative), RBDSystem_(RBDSystem)
@@ -90,9 +91,6 @@ public:
         }
         else
         {
-            using XYZEulerSystem = Eigen::EulerSystem<Eigen::EULER_X, Eigen::EULER_Y, Eigen::EULER_Z>;
-            using EulerAnglesXYZ = Eigen::EulerAngles<SCALAR, XYZEulerSystem>;
-
             Base::getDerivativeState(x, u, t);
 
             // since we express base pose in world but base twist in body coordinates, we have to modify the top part
