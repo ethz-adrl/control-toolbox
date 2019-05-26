@@ -70,8 +70,8 @@ public:
     // set the target pose as rbd pose directly
     void setTargetPose(const ct::rbd::RigidBodyPose& rbdPose)
     {
-        goalCostTerm_->setReferencePosition(rbdPose.position().toImplementation());
-        goalCostTerm_->setReferenceOrientation(rbdPose.getRotationQuaternion().toImplementation());
+        goalCostTerm_->setReferencePosition(rbdPose.position());
+        goalCostTerm_->setReferenceOrientation(rbdPose.getRotationQuaternion());
     }
 
     // set the target pose as separate position and quaternion

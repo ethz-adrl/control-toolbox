@@ -88,8 +88,8 @@ public:
         : TermTaskspacePoseCG(eeInd,
               Qpos,
               Qrot,
-              rbdPose.position().toImplementation(),
-              rbdPose.getRotationQuaternion().toImplementation(),
+              rbdPose.position(),
+              rbdPose.getRotationQuaternion(),
               name,
               evalControlDerivatives)
     {
@@ -436,7 +436,7 @@ private:
 
         // position difference in world frame
         Eigen::Matrix<SC, 3, 1> xCurr =
-            kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions()).toImplementation();
+            kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions());
         Eigen::Matrix<SC, 3, 1> xDiff = xCurr - w_p_ref;
 
 

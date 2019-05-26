@@ -39,6 +39,12 @@ public:
     typedef ct::core::StateVector<NSTATE, SCALAR> state_vector_euler_t;
     typedef ct::core::StateVector<NDOF, SCALAR> coordinate_vector_t;
 
+    typedef Eigen::Matrix<SCALAR, 3, 1> Vector3;
+    typedef Eigen::Matrix<SCALAR, 6, 1> Vector6;
+
+    typedef Eigen::VectorBlock<Vector6, 3> Vector3Block;
+    typedef Eigen::VectorBlock<const Vector6, 3> Vector3BlockConst;
+
     RBDState(typename RigidBodyPose_t::STORAGE_TYPE storage = RigidBodyPose_t::EULER) : baseState_(storage)
     {
         baseState_.setIdentity();
@@ -71,24 +77,16 @@ public:
     tpl::RigidBodyVelocities<SCALAR>& baseVelocities() { return base().velocities(); }
     /// @brief get constant base velocities
     const tpl::RigidBodyVelocities<SCALAR>& baseVelocities() const { return base().velocities(); }
+
     /// @brief get base local angular velocity
-    kindr::LocalAngularVelocity<SCALAR>& baseLocalAngularVelocity()
-    {
-        return base().velocities().getRotationalVelocity();
-    }
+    Vector3Block baseLocalAngularVelocity() { return base().velocities().getRotationalVelocity(); }
     /// @brief get constant base local angular velocity
-    const kindr::LocalAngularVelocity<SCALAR>& baseLocalAngularVelocity() const
-    {
-        return base().velocities().getRotationalVelocity();
-    }
+    const Vector3BlockConst baseLocalAngularVelocity() const { return base().velocities().getRotationalVelocity(); }
 
     /// @brief get base linear velocity
-    kindr::Velocity<SCALAR, 3>& baseLinearVelocity() { return base().velocities().getTranslationalVelocity(); }
+    Vector3Block baseLinearVelocity() { return base().velocities().getTranslationalVelocity(); }
     /// @brief get constant base local angular velocity
-    const kindr::Velocity<SCALAR, 3>& baseLinearVelocity() const
-    {
-        return base().velocities().getTranslationalVelocity();
-    }
+    const Vector3BlockConst baseLinearVelocity() const { return base().velocities().getTranslationalVelocity(); }
 
     /// @brief get joint states
     JointState<NJOINTS, SCALAR>& joints() { return jointState_; }
@@ -118,9 +116,8 @@ public:
 
         state << base().pose().getRotationQuaternion().w(), base().pose().getRotationQuaternion().x(),
             base().pose().getRotationQuaternion().y(), base().pose().getRotationQuaternion().z(),
-            base().pose().position().toImplementation(), joints().getPositions(),
-            base().velocities().getRotationalVelocity().toImplementation(),
-            base().velocities().getTranslationalVelocity().toImplementation(), joints().getVelocities();
+            base().pose().position(), joints().getPositions(), base().velocities().getRotationalVelocity(),
+            base().velocities().getTranslationalVelocity(), joints().getVelocities();
 
         return state;
     }
@@ -128,24 +125,23 @@ public:
     coordinate_vector_t toCoordinatePositionUnique() const
     {
         coordinate_vector_t q;
-        q << base().pose().getEulerAnglesXyz().getUnique().toImplementation(),
-            base().pose().position().toImplementation(), joints().getPositions();
+        q << ct::rbd::getUnqiueEulerAnglesXYZ(base().pose().getEulerAnglesXyz()).angles(), base().pose().position(),
+            joints().getPositions();
         return q;
     }
 
     coordinate_vector_t toCoordinatePosition() const
     {
         coordinate_vector_t q;
-        q << base().pose().getEulerAnglesXyz().toImplementation(), base().pose().position().toImplementation(),
-            joints().getPositions();
+        q << base().pose().getEulerAnglesXyz().angles(), base().pose().position(), joints().getPositions();
         return q;
     }
 
     coordinate_vector_t toCoordinateVelocity() const
     {
         coordinate_vector_t dq;
-        dq << base().velocities().getRotationalVelocity().toImplementation(),
-            base().velocities().getTranslationalVelocity().toImplementation(), joints().getVelocities();
+        dq << base().velocities().getRotationalVelocity(), base().velocities().getTranslationalVelocity(),
+            joints().getVelocities();
         return dq;
     }
 
@@ -171,18 +167,23 @@ public:
     {
         try
         {
-            base().pose().setFromRotationQuaternion(kindr::RotationQuaternion<SCALAR>(state.template head<4>()));
-            base().pose().position().toImplementation() = state.template segment<3>(4);
+            Eigen::Quaternion<SCALAR> q;
+            q.w() = state(0);
+            q.x() = state(1);
+            q.y() = state(2);
+            q.z() = state(3);
+            base().pose().setFromRotationQuaternion(q);
+            base().pose().position() = state.template segment<3>(4);
             joints().getPositions() = state.template segment<NJOINTS>(7);
-            base().velocities().getRotationalVelocity().toImplementation() = state.template segment<3>(7 + NJOINTS);
-            base().velocities().getTranslationalVelocity().toImplementation() = state.template segment<3>(10 + NJOINTS);
+            base().velocities().getRotationalVelocity() = state.template segment<3>(7 + NJOINTS);
+            base().velocities().getTranslationalVelocity() = state.template segment<3>(10 + NJOINTS);
             joints().getVelocities() = state.template tail<NJOINTS>();
         } catch (std::exception& e)
         {
-            std::cout << "Conversion from State Vector to KindrTypes failed." << std::endl;
+            std::cout << "Conversion from State Vector to Pose types failed." << std::endl;
             std::cout << "Error: " << e.what() << std::endl;
             std::cout << "State is: " << state.transpose() << std::endl;
-            throw std::runtime_error("Conversion from State Vector to KindrTypes failed.");
+            throw std::runtime_error("Conversion from State Vector to Pose types failed.");
         }
     }
 
@@ -190,18 +191,20 @@ public:
     {
         try
         {
-            base().pose().setFromEulerAnglesXyz(state.template head<3>());
-            base().pose().position().toImplementation() = state.template segment<3>(3);
+            Eigen::EulerAngles<SCALAR, Eigen::EulerSystemXYZ> euler;
+            euler.angles() = state.template head<3>();
+            base().pose().setFromEulerAnglesXyz(euler);
+            base().pose().position() = state.template segment<3>(3);
             joints().getPositions() = state.template segment<NJOINTS>(6);
-            base().velocities().getRotationalVelocity().toImplementation() = state.template segment<3>(6 + NJOINTS);
-            base().velocities().getTranslationalVelocity().toImplementation() = state.template segment<3>(9 + NJOINTS);
+            base().velocities().getRotationalVelocity() = state.template segment<3>(6 + NJOINTS);
+            base().velocities().getTranslationalVelocity() = state.template segment<3>(9 + NJOINTS);
             joints().getVelocities() = state.template tail<NJOINTS>();
         } catch (std::exception& e)
         {
-            std::cout << "Conversion from State Vector to KindrTypes failed." << std::endl;
+            std::cout << "Conversion from State Vector to Pose types failed." << std::endl;
             std::cout << "Error: " << e.what() << std::endl;
             std::cout << "State is: " << state.transpose() << std::endl;
-            throw std::runtime_error("Conversion from State Vector to KindrTypes failed.");
+            throw std::runtime_error("Conversion from State Vector to Pose types failed.");
         }
     }
 

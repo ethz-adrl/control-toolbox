@@ -83,7 +83,7 @@ add_custom_command(TARGET run_tests
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
 
-    ## install tests
+## install tests
 include(GNUInstallDirs)
 install(
     TARGETS ${UNIT_TEST_TARGETS}

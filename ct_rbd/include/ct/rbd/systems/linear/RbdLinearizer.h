@@ -17,8 +17,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #include <memory>
 
-#include <kindr/Core>
-
 template <int N>
 struct print_size_as_warning
 {
@@ -92,22 +90,24 @@ public:
         }
         else
         {
+            using XYZEulerSystem = Eigen::EulerSystem<Eigen::EULER_X, Eigen::EULER_Y, Eigen::EULER_Z>;
+            using EulerAnglesXYZ = Eigen::EulerAngles<SCALAR, XYZEulerSystem>;
+
             Base::getDerivativeState(x, u, t);
 
             // since we express base pose in world but base twist in body coordinates, we have to modify the top part
-            kindr::EulerAnglesXyz<SCALAR> eulerXyz(x.template topRows<3>());
-            kindr::RotationMatrix<SCALAR> R_WB_kindr(eulerXyz);
+            EulerAnglesXYZ eulerXyz;
+            eulerXyz.angles() = x.template topRows<3>();
+            Eigen::Matrix<SCALAR, 3, 3> R_WB(eulerXyz.toRotationMatrix());
 
-            Eigen::Matrix<SCALAR, 3, 6> jacAngVel = jacobianOfAngularVelocityMapping(x.template topRows<3>(),
-                x.template segment<3>(STATE_DIM / 2)).transpose();
+            Eigen::Matrix<SCALAR, 3, 6> jacAngVel =
+                jacobianOfAngularVelocityMapping(x.template topRows<3>(), x.template segment<3>(STATE_DIM / 2))
+                    .transpose();
 
-            //this->dFdx_.template block<3,3>(0,0) = -R_WB_kindr.toImplementation() * JacobianOfRotationMultiplyVector( x.template topRows<3>(), R_WB_kindr.toImplementation()*(x.template segment<3>(STATE_DIM/2) ));
             this->dFdx_.template block<3, 3>(0, 0) = jacAngVel.template block<3, 3>(0, 0);
 
-            this->dFdx_.template block<3, 3>(3, 0) =
-                -R_WB_kindr.toImplementation() *
-                JacobianOfRotationMultiplyVector(x.template topRows<3>(),
-                    R_WB_kindr.toImplementation() * (x.template segment<3>(STATE_DIM / 2 + 3)));
+            this->dFdx_.template block<3, 3>(3, 0) = -R_WB * JacobianOfRotationMultiplyVector(x.template topRows<3>(),
+                                                                 R_WB * (x.template segment<3>(STATE_DIM / 2 + 3)));
 
 
             // Derivative Top Row
@@ -117,7 +117,7 @@ public:
             //this->dFdx_.template block<3, 3>(0, STATE_DIM/2) = eulerXyz.getMappingFromLocalAngularVelocityToDiff();
 
             // This is the derivative of the position with respect to linear velocity. This is simply the rotation matrix
-            this->dFdx_.template block<3, 3>(3, STATE_DIM / 2 + 3) = R_WB_kindr.toImplementation();
+            this->dFdx_.template block<3, 3>(3, STATE_DIM / 2 + 3) = R_WB;
 
             return this->dFdx_;
         }
@@ -278,5 +278,5 @@ private:
     }
 };
 
-}  // rbd
-}  // ct
+}  // namespace rbd
+}  // namespace ct

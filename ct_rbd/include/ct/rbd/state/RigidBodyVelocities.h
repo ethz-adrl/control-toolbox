@@ -13,35 +13,33 @@ namespace tpl {
  * \brief Representation of Rigid Body Velocities, currently just a typedef
  * \ingroup State
  */
-// unfortunately kindr stores linear velocity first and not rotational velocity.
-// so we cannot use it directly. Instead we privately inherit and make the "safe"
-// methods public and "override" the others.
 template <typename SCALAR = double>
-class RigidBodyVelocities : private kindr::TwistLinearVelocityLocalAngularVelocity<SCALAR>
+class RigidBodyVelocities
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    typedef Eigen::Matrix<SCALAR, 3, 1> Vector3;
     typedef Eigen::Matrix<SCALAR, 6, 1> Vector6;
 
-    using kindr::TwistLinearVelocityLocalAngularVelocity<SCALAR>::getTranslationalVelocity;
-    using kindr::TwistLinearVelocityLocalAngularVelocity<SCALAR>::getRotationalVelocity;
-    using kindr::TwistLinearVelocityLocalAngularVelocity<SCALAR>::setZero;
+    typedef Eigen::VectorBlock<Vector6, 3> Vector3Block;
+    typedef Eigen::VectorBlock<const Vector6, 3> Vector3BlockConst;
 
-    Vector6 getVector() const
-    {
-        Vector6 vector6;
-        vector6 << getRotationalVelocity().toImplementation(), getTranslationalVelocity().toImplementation();
-        return vector6;
-    }
+    void setZero() { twist_.setZero(); }
 
-    void setVector(const Vector6& vector6)
-    {
-        getRotationalVelocity().toImplementation() = vector6.template head<3>();
-        getTranslationalVelocity().toImplementation() = vector6.template tail<3>();
-    }
+    Vector3Block getRotationalVelocity() { return twist_.template head<3>(); }
+    const Vector3BlockConst getRotationalVelocity() const { return twist_.template head<3>(); }
+
+    Vector3Block getTranslationalVelocity() { return twist_.template tail<3>(); }
+    const Vector3BlockConst getTranslationalVelocity() const { return twist_.template tail<3>(); }
+
+    Vector6& getVector() { return twist_; }
+    const Vector6& getVector() const { return twist_; }
+
+    void setVector(const Vector6& vector6) { twist_ = vector6; }
 
 private:
+    Vector6 twist_;
 };
 
 }  // namespace tpl

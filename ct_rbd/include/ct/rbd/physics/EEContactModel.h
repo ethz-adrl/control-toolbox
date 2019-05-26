@@ -5,8 +5,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <kindr/Core>
-
 #include <ct/rbd/state/RBDState.h>
 
 #include <iit/rbd/rbd.h>
@@ -71,8 +69,8 @@ public:
     typedef std::array<EEForceLinear, NUM_EE> EEForcesLinear;
 
     typedef Eigen::Matrix<SCALAR, 3, 1> Vector3s;
-    typedef kindr::Position<SCALAR, 3> Position3S;
-    typedef kindr::Velocity<SCALAR, 3> Velocity3S;
+    typedef Vector3s Position3S;
+    typedef Vector3s Velocity3S;
 
 
     /*!
@@ -173,6 +171,7 @@ public:
     SCALAR& d() { return d_; }
     SCALAR& zOffset() { return zOffset_; }
     VELOCITY_SMOOTHING& smoothing() { return smoothing_; }
+
 private:
     /**
 	 * \brief Checks if end-effector is in contact. Currently assumes this is the case for negative z
@@ -222,7 +221,7 @@ private:
 
         smoothEEForce(eeForce, eePenetration);
 
-        computeNormalSpring(eeForce, eePenetration(2) - zOffset_, eeVelocity.toImplementation()(2));
+        computeNormalSpring(eeForce, eePenetration(2) - zOffset_, eeVelocity(2));
 
         return eeForce;
     }
@@ -261,7 +260,7 @@ private:
 	 */
     void computeDamperForce(EEForceLinear& force, const Vector3s& eePenetration, const Velocity3S& eeVelocity)
     {
-        force = -d_ * eeVelocity.toImplementation();
+        force = -d_ * eeVelocity;
     }
 
     void computeNormalSpring(EEForceLinear& force, const SCALAR& p_N, const SCALAR& p_dot_N)
@@ -291,5 +290,5 @@ private:
 
     ActiveMap EEactive_;  //!< stores which endeffectors are active, i.e. can make contact
 };
-}
-}
+}  // namespace rbd
+}  // namespace ct

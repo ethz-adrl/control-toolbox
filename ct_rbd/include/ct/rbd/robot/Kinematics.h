@@ -59,9 +59,9 @@ public:
     using Jacobians = typename ROBCOGEN::Jacobians;
     using Vector3Tpl = Eigen::Matrix<SCALAR, 3, 1>;
     using Matrix3Tpl = Eigen::Matrix<SCALAR, 3, 3>;
-    using Position3Tpl = kindr::Position<SCALAR, 3>;
-    using Velocity3Tpl = kindr::Velocity<SCALAR, 3>;
-    using QuaterionTpl = kindr::RotationQuaternion<SCALAR>;
+    using Position3Tpl = Vector3Tpl;
+    using Velocity3Tpl = Vector3Tpl;
+    using QuaterionTpl = Eigen::Quaternion<SCALAR>;
     using RigidBodyPoseTpl = tpl::RigidBodyPose<SCALAR>;
     using EEForce = SpatialForceVector<SCALAR>;
     using EEForceLinear = Vector3Tpl;
@@ -111,8 +111,7 @@ public:
     Jacobians& jacobians() { return robcogen().jacobians(); }
     Velocity3Tpl getEEVelocityInBase(size_t eeId, const RBDState<NJOINTS, SCALAR>& rbdState)
     {
-        Velocity3Tpl eeVelocityBase;
-        eeVelocityBase.toImplementation() =
+        Velocity3Tpl eeVelocityBase =
             (robcogen().getJacobianBaseEEbyId(eeId, rbdState.jointPositions()) * rbdState.jointVelocities())
                 .template bottomRows<3>();
 
@@ -306,7 +305,7 @@ public:
         EEForce B_force;
 
         B_force.force() = basePose.template rotateInertiaToBase<Vector3Tpl>(W_force.force());
-        B_force.torque() = B_x_EE.toImplementation().cross(B_force.force()) +
+        B_force.torque() = B_x_EE.cross(B_force.force()) +
                            basePose.template rotateInertiaToBase<Vector3Tpl>(W_force.torque());
 
         // transform force to link on which endeffector sits on
@@ -344,7 +343,7 @@ public:
         EEForce B_force;
 
         // convenience accessors
-        Vector3Tpl B_x_EE = T_B_EE.position().toImplementation();
+        Vector3Tpl B_x_EE = T_B_EE.position();
 
         // rotate from the end-effector frame to the inertia frame
         B_force.force() = T_B_EE.template rotateBaseToInertia<Vector3Tpl>(EE_force.force());
@@ -358,6 +357,7 @@ public:
     };
 
     RBD& robcogen() { return *rbdContainer_; }
+
 private:
     std::shared_ptr<RBD> rbdContainer_;
     std::array<EndEffector<NJOINTS, SCALAR>, N_EE> endEffectors_;

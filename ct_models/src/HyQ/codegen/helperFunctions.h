@@ -67,8 +67,8 @@ Eigen::Matrix<SCALAR, nEE * 6, 1> hyqForwardKinematics(const Eigen::Matrix<SCALA
     for (size_t i = 0; i < nEE; i++)
     {
         y.template segment<3>(i * 6) =
-            hyqKinematics.getEEPositionInWorld(i, hyqState.basePose(), hyqState.jointPositions()).toImplementation();
-        y.template segment<3>(i * 6 + 3) = hyqKinematics.getEEVelocityInWorld(i, hyqState).toImplementation();
+            hyqKinematics.getEEPositionInWorld(i, hyqState.basePose(), hyqState.jointPositions());
+        y.template segment<3>(i * 6 + 3) = hyqKinematics.getEEVelocityInWorld(i, hyqState);
     }
 
     return y;

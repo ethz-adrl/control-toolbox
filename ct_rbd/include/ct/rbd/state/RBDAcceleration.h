@@ -57,13 +57,14 @@ public:
     {
         typename RBDState<NJOINTS, SCALAR>::state_vector_quat_t stateDerivative;
 
-        kindr::RotationQuaternionDiff<SCALAR> rotationQuaternionDiff(
-            state.basePose().getRotationQuaternion(), state.baseLocalAngularVelocity());
+        auto localDiffMat = ct::rbd::getLocalQuaternionDiffMatrix(state.basePose().getRotationQuaternion());
+
+        Eigen::Quaternion<SCALAR> rotationQuaternionDiff(
+            0.5 * (localDiffMat.transpose() * state.baseLocalAngularVelocity()));
 
         stateDerivative << rotationQuaternionDiff.w(), rotationQuaternionDiff.x(), rotationQuaternionDiff.y(),
-            rotationQuaternionDiff.z(), state.base().computeTranslationalVelocityW().toImplementation(),
-            state.joints().getVelocities(), base().getAngularAcceleration().toImplementation(),
-            base().getTranslationalAcceleration().toImplementation(), joints().getAcceleration();
+            rotationQuaternionDiff.z(), state.base().computeTranslationalVelocityW(), state.joints().getVelocities(),
+            base().getAngularAcceleration(), base().getTranslationalAcceleration(), joints().getAcceleration();
 
         return stateDerivative;
     }
@@ -73,13 +74,18 @@ public:
     {
         typename RBDState<NJOINTS, SCALAR>::state_vector_euler_t stateDerivative;
 
-        kindr::EulerAnglesXyzDiff<SCALAR> eulerAnglesXyzDiff(
-            state.basePose().getEulerAnglesXyz(), state.baseLocalAngularVelocity());
+        using XYZEulerSystem = Eigen::EulerSystem<Eigen::EULER_X, Eigen::EULER_Y, Eigen::EULER_Z>;
+        using EulerAnglesXYZ = Eigen::EulerAngles<SCALAR, XYZEulerSystem>;
 
-        stateDerivative << eulerAnglesXyzDiff.toImplementation(),
-            state.base().computeTranslationalVelocityW().toImplementation(), state.joints().getVelocities(),
-            base().getAngularAcceleration().toImplementation(),
-            base().getTranslationalAcceleration().toImplementation(), joints().getAcceleration();
+        Eigen::Matrix<SCALAR, 3, 3> rotMatEulerDiff =
+            ct::rbd::getMappingFromLocalAngularVelocityToDiff(state.basePose().getEulerAnglesXyz());
+
+        EulerAnglesXYZ eulerAnglesXyzDiff;
+        eulerAnglesXyzDiff.angles() = rotMatEulerDiff * state.baseLocalAngularVelocity();
+
+        stateDerivative << eulerAnglesXyzDiff.angles(), state.base().computeTranslationalVelocityW(),
+            state.joints().getVelocities(), base().getAngularAcceleration(), base().getTranslationalAcceleration(),
+            joints().getAcceleration();
 
         return stateDerivative;
     }
@@ -87,8 +93,7 @@ public:
     coordinate_vector_t toCoordinateAcceleration() const
     {
         coordinate_vector_t ddq;
-        ddq << base().getAngularAcceleration().toImplementation(),
-            base().getTranslationalAcceleration().toImplementation(), joints().getAcceleration();
+        ddq << base().getAngularAcceleration(), base().getTranslationalAcceleration(), joints().getAcceleration();
         return ddq;
     }
 

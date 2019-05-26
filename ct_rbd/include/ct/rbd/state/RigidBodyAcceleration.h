@@ -22,8 +22,8 @@ class RigidBodyAcceleration
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef kindr::Acceleration<SCALAR, 3> LinearAcceleration;
-    typedef kindr::AngularAcceleration<SCALAR, 3> AngularAcceleration;
+    typedef Eigen::Matrix<SCALAR, 3, 1> LinearAcceleration;
+    typedef Eigen::Matrix<SCALAR, 3, 1> AngularAcceleration;
 
     RigidBodyAcceleration() { setZero(); }
     RigidBodyAcceleration(LinearAcceleration& transAcceleration, AngularAcceleration& anglAcceleration)

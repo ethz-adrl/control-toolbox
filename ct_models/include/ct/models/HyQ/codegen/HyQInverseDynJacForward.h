@@ -14,6 +14,8 @@ namespace HyQ {
 class HyQInverseDynJacForward : public core::Derivatives<54, 18, double>
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     typedef Eigen::Matrix<double, 18, 54> JAC_TYPE;
     typedef Eigen::Matrix<double, 54, 1> X_TYPE;
 
@@ -39,6 +41,6 @@ private:
     std::array<double, 337> v_;
 };
 
-} /* namespace HyQ */
-} /* namespace models */
-} /* namespace ct */
+}  // namespace HyQ
+}  // namespace models
+}  // namespace ct

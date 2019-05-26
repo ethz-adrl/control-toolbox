@@ -22,23 +22,27 @@ using namespace rbd;
 
 TEST(TestHyQKinematics, transformTest)
 {
-    typedef float size_type;
-    typedef TestHyQ::tpl::Kinematics<size_type> KinTpl_t;
+    typedef float scalar_type;
+    typedef TestHyQ::tpl::Kinematics<scalar_type> KinTpl_t;
     KinTpl_t kynTpl;
 
-    JointState<TestHyQ::tpl::Kinematics<size_type>::NJOINTS, size_type> hyqJointState;
-    tpl::RigidBodyPose<size_type> hyqPose;
-    Eigen::Matrix<size_type, 3, 1> vec3Tpl;
+    JointState<TestHyQ::tpl::Kinematics<scalar_type>::NJOINTS, scalar_type> hyqJointState;
+    tpl::RigidBodyPose<scalar_type> hyqPose;
+    Eigen::Matrix<scalar_type, 3, 1> vec3Tpl;
 
     hyqPose.setRandom();
     vec3Tpl.setRandom();
 
     size_t ind = 1;
 
-    kindr::Position<size_type, 3> pos = kynTpl.getEEPositionInWorld(ind, hyqPose, hyqJointState.getPositions());
+    Eigen::Matrix<scalar_type, 3, 1> pos = kynTpl.getEEPositionInWorld(ind, hyqPose, hyqJointState.getPositions());
     auto force3d = kynTpl.mapForceFromWorldToLink3d(vec3Tpl, hyqPose, hyqJointState.getPositions(), ind);
     auto forceLink = kynTpl.mapForceFromWorldToLink(force3d, hyqPose, hyqJointState.getPositions(), ind);
     auto forceEELink = kynTpl.mapForceFromEEToLink(force3d, hyqPose, hyqJointState.getPositions(), ind);
+
+    // TODO: create test case for these float-quantities.
+
+    ASSERT_TRUE(true);
 }
 
 

@@ -48,12 +48,7 @@ public:
         const ct::rbd::RigidBodyPose& rbdPose,
         const std::string& name = "TermTaskSpace")
         // delegate constructor
-        : TermTaskspacePose(eeInd,
-              Qpos,
-              Qrot,
-              rbdPose.position().toImplementation(),
-              rbdPose.getRotationQuaternion().toImplementation(),
-              name)
+        : TermTaskspacePose(eeInd, Qpos, Qrot, rbdPose.position(), rbdPose.getRotationQuaternion(), name)
     {
     }
     //! constructor using a quaternion for orientation
@@ -235,8 +230,7 @@ private:
 
         // position difference in world frame
         Eigen::Matrix<SC, 3, 1> xDiff =
-            kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions())
-                .toImplementation() -
+            kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions()) -
             w_p_ref_.template cast<SC>();
 
         // compute the cost based on the position error

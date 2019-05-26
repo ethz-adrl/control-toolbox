@@ -31,6 +31,7 @@ TEST(TestHyQKinematics, transformTest)
     }
 
     JointState<TestHyQ::Kinematics::NJOINTS> hyqJointState;
+    Eigen::Matrix<double, 3, 1> vec3;
 
     RigidBodyPose hyqPose;
 
@@ -39,7 +40,14 @@ TEST(TestHyQKinematics, transformTest)
 
     size_t ind = 1;
 
-    kindr::Position3D pos = kyn.getEEPositionInWorld(ind, hyqPose, hyqJointState.getPositions());
+    Eigen::Vector3d pos = kyn.getEEPositionInWorld(ind, hyqPose, hyqJointState.getPositions());
+    auto force3d = kyn.mapForceFromWorldToLink3d(vec3, hyqPose, hyqJointState.getPositions(), ind);
+    auto forceLink = kyn.mapForceFromWorldToLink(force3d, hyqPose, hyqJointState.getPositions(), ind);
+    auto forceEELink = kyn.mapForceFromEEToLink(force3d, hyqPose, hyqJointState.getPositions(), ind);
+
+    // TODO: create test case for these float-quantities.
+
+    ASSERT_TRUE(true);
 }
 
 

@@ -14,6 +14,8 @@ namespace HyQ {
 class HyQForwardZero : public core::Derivatives<49, 36, double>
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     typedef Eigen::Matrix<double, 36, 1> OUT_TYPE;
     typedef Eigen::Matrix<double, 49, 1> X_TYPE;
 
@@ -36,9 +38,9 @@ public:
 
 private:
     OUT_TYPE eval_;
-    std::array<double, 402> v_;
+    std::array<double, 403> v_;
 };
 
-} /* namespace HyQ */
-} /* namespace models */
-} /* namespace ct */
+}  // namespace HyQ
+}  // namespace models
+}  // namespace ct

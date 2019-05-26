@@ -2,6 +2,9 @@
 This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-toolbox), copyright by ETH Zurich.
 Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
+
+// clang-format off
+
 #include "HyQInverseDynJacForward.h"
 
 namespace ct {
@@ -3601,6 +3604,9 @@ HyQInverseDynJacForward::JAC_TYPE HyQInverseDynJacForward::jacobian(const Eigen:
 
     return jac_;
 }
-}
-}
-}
+
+} // namespace HyQ
+} // namespace models
+} // namespace ct
+
+// clang-format on

@@ -11,7 +11,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++14 -Wall -Wno-unknown-pragmas")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-find_package(kindr REQUIRED)
 find_package(ct_optcon REQUIRED)
 
 
@@ -21,7 +20,6 @@ find_package(ct_optcon REQUIRED)
 
 ## define the directories to be included in all ct_rbd targets
 set(ct_rbd_target_include_dirs
-    ${kindr_INCLUDE_DIRS}
     ${ct_optcon_INCLUDE_DIRS}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct>

@@ -12,7 +12,6 @@
 
   <buildtool_depend>cmake</buildtool_depend>
   <depend>ct_optcon</depend>
-  <depend>kindr</depend>
 
   <exec_depend>catkin</exec_depend>  <!-- ROS compatibility-->
 

@@ -23,8 +23,8 @@ TEST(Irb4600IKTest, IKFastTest)
         irb4600_ik::ComputeFk(pos.data(), ee_pos.data(), ee_rot.data());
 
         ct::rbd::RigidBodyPose ee_pose;
-        ee_pose.position().toImplementation() = ee_pos;
-        ee_pose.setFromRotationMatrix(kindr::RotationMatrix<double>(ee_rot));
+        ee_pose.position() = ee_pos;
+        ee_pose.setFromRotationMatrix(Eigen::Matrix<double, 3, 3>(ee_rot));
 
         typename ct::rbd::Irb4600InverseKinematics<double>::JointPositionsVector_t solutions;
         irb4600_ik_solver.computeInverseKinematics(solutions, ee_pose);
@@ -32,8 +32,8 @@ TEST(Irb4600IKTest, IKFastTest)
         for (const auto& joints : solutions)
         {
             irb4600_ik::ComputeFk(joints.data(), ee_pos.data(), ee_rot.data());
-            ASSERT_LT((ee_pos - ee_pose.position().toImplementation()).norm(), 1e-3);
-            ASSERT_LT((ee_rot - ee_pose.getRotationMatrix().toImplementation()).norm(), 1e-3);
+            ASSERT_LT((ee_pos - ee_pose.position().norm(), 1e-3);
+            ASSERT_LT((ee_rot - ee_pose.getRotationMatrix().norm(), 1e-3);
         }
     }
 }

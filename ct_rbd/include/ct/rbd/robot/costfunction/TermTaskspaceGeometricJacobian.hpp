@@ -62,8 +62,8 @@ public:
         : TermTaskspaceGeometricJacobian(eeInd,
               Qpos,
               Qrot,
-              rbdPose.position().toImplementation(),
-              rbdPose.getRotationQuaternion().toImplementation(),
+              rbdPose.position(),
+              rbdPose.getRotationQuaternion(),
               name)
     {
     }

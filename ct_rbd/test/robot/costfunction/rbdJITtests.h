@@ -114,8 +114,9 @@ template <typename SCALAR>
 Eigen::Matrix<SCALAR, 1, 1> testFunctionRBDPose(const Eigen::Matrix<SCALAR, 3 + 3, 1>& xu)
 {
     // construct a RigidBodyPose from state vector
-    kindr::Position<SCALAR, 3> pos(xu.template segment<3>(0));
-    kindr::EulerAnglesXyz<SCALAR> euler(xu.template segment<3>(3));
+    Eigen::Matrix<SCALAR, 3, 1> pos(xu.template segment<3>(0));
+    Eigen::EulerAngles<SCALAR, Eigen::EulerSystemXYZ> euler;
+    euler.angles() = xu.template segment<3>(3);
 
     ct::rbd::tpl::RigidBodyPose<SCALAR> rbdPose;
     rbdPose.position() = pos;
@@ -125,7 +126,7 @@ Eigen::Matrix<SCALAR, 1, 1> testFunctionRBDPose(const Eigen::Matrix<SCALAR, 3 + 
     Eigen::Matrix<SCALAR, 1, 1> cost;
     SCALAR t(0.0);
 
-    cost(0, 0) = rbdPose.position().toImplementation().norm() + rbdPose.getEulerAnglesXyz().toImplementation().norm();
+    cost(0, 0) = rbdPose.position().norm() + rbdPose.getEulerAnglesXyz().angles().norm();
 
     return cost;
 }
@@ -161,11 +162,12 @@ Eigen::Matrix<SCALAR, 1, 1> testFunctionRigidBodyState(const Eigen::Matrix<SCALA
     ct::rbd::tpl::RigidBodyState<SCALAR> rigidBodyState(
         ct::rbd::tpl::RigidBodyPose<SCALAR>::EULER);  //<- storage type needs to go here in order to let test pass
 
-    rigidBodyState.velocities().getRotationalVelocity().toImplementation() = state.template segment<3>(6);
-    rigidBodyState.velocities().getTranslationalVelocity().toImplementation() = state.template segment<3>(9);
+    rigidBodyState.velocities().getRotationalVelocity() = state.template segment<3>(6);
+    rigidBodyState.velocities().getTranslationalVelocity() = state.template segment<3>(9);
 
-    kindr::Position<SCALAR, 3> pos(state.template segment<3>(0));
-    kindr::EulerAnglesXyz<SCALAR> euler(state.template segment<3>(3));
+    Eigen::Matrix<SCALAR, 3, 1> pos(state.template segment<3>(0));
+    Eigen::EulerAngles<SCALAR, Eigen::EulerSystemXYZ> euler;
+    euler.angles() = state.template segment<3>(3);
 
     rigidBodyState.pose().position() = pos;
     rigidBodyState.pose().setFromEulerAnglesXyz(euler);
@@ -177,12 +179,13 @@ Eigen::Matrix<SCALAR, 1, 1> testFunctionRigidBodyState(const Eigen::Matrix<SCALA
     Eigen::Matrix<SCALAR, 1, 1> cost;
     SCALAR t(0.0);
 
-    cost(0, 0) = rigidBodyStateCopy.pose().position().toImplementation().norm() +
-                 rigidBodyStateCopy.pose().getEulerAnglesXyz().toImplementation().norm() +
+    cost(0, 0) = rigidBodyStateCopy.pose().position().norm() +
+                 rigidBodyStateCopy.pose().getEulerAnglesXyz().angles().norm() +
                  rigidBodyStateCopy.velocities().getVector().norm();
 
     return cost;
 }
+
 TEST(RBD_JIT_Tests, RigidBodyStateTest)
 {
     using derivativesCppadJIT = DerivativesCppadJIT<12, 1>;
@@ -215,11 +218,13 @@ Eigen::Matrix<SCALAR, 1, 1> testFunctionRBDState(const Eigen::Matrix<SCALAR, hyq
     ct::rbd::tpl::RigidBodyState<SCALAR> baseState(
         ct::rbd::tpl::RigidBodyPose<SCALAR>::EULER);  //<- storage type needs to go here in order to let test pass
 
-    baseState.velocities().getRotationalVelocity().toImplementation() = x.template segment<3>(6);
-    baseState.velocities().getTranslationalVelocity().toImplementation() = x.template segment<3>(9);
+    baseState.velocities().getRotationalVelocity() = x.template segment<3>(6);
+    baseState.velocities().getTranslationalVelocity() = x.template segment<3>(9);
 
-    kindr::Position<SCALAR, 3> pos(x.template segment<3>(0));
-    kindr::EulerAnglesXyz<SCALAR> euler(x.template segment<3>(3));
+    Eigen::Matrix<SCALAR, 3, 1> pos(x.template segment<3>(0));
+    Eigen::EulerAngles<SCALAR, Eigen::EulerSystemXYZ> euler;
+    euler.angles() = x.template segment<3>(3);
+
     baseState.pose().position() = pos;
     baseState.pose().setFromEulerAnglesXyz(euler);
 

@@ -46,9 +46,9 @@ public:
 
         // Data needs to be in row-major form.
         Eigen::Matrix<SCALAR, 3, 3, Eigen::RowMajor> eeBaseRotationRowMajor =
-            eeBasePose.getRotationMatrix().toImplementation();
+            eeBasePose.getRotationMatrix();
         const std::vector<double> freeJoints_ikf(freeJoints.begin(), freeJoints.end());
-        hya_ik::ComputeIk(eeBasePose.position().toImplementation().data(), eeBaseRotationRowMajor.data(),
+        hya_ik::ComputeIk(eeBasePose.position().data(), eeBaseRotationRowMajor.data(),
             freeJoints_ikf.size() > 0 ? freeJoints_ikf.data() : nullptr, solutions);
 
         size_t num_solutions = solutions.GetNumSolutions();

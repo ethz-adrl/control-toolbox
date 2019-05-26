@@ -54,7 +54,7 @@ public:
         Base::state_ = state;
 
         // rotation matrix
-        Matrix3s o_R_b = state.basePose().getRotationMatrix().toImplementation();
+        Matrix3s o_R_b = state.basePose().getRotationMatrix();
 
         // Mass matrix
         Base::M_ = rbdContainerPtr_->jSim().update(state.jointPositions());
@@ -66,7 +66,7 @@ public:
 
         // centrifugal vector
         Eigen::Matrix<SCALAR, 6, 1> trunkVel;
-        trunkVel << state.baseLocalAngularVelocity().toImplementation(), state.baseLinearVelocity().toImplementation();
+        trunkVel << state.baseLocalAngularVelocity(), state.baseLinearVelocity();
         rbdContainerPtr_->inverseDynamics().C_terms_fully_actuated(
             baseWrench, jointForces, trunkVel, state.jointVelocities());
         Base::C_ << baseWrench, jointForces;
@@ -82,7 +82,7 @@ public:
         // contact jacobians
         for (size_t j = 0; j < NUM_CONTACTPOINTS; j++)
         {
-            Vector3s b_r_f = rbdContainerPtr_->getEEPositionInBase(j, state.jointPositions()).toImplementation();
+            Vector3s b_r_f = rbdContainerPtr_->getEEPositionInBase(j, state.jointPositions());
             Eigen::Matrix<SCALAR, 3, NUM_JOINTS> b_J_f =
                 rbdContainerPtr_->getJacobianBaseEEbyId(j, state.jointPositions()).template bottomRows<3>();
 

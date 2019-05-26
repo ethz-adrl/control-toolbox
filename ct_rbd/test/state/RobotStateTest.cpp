@@ -65,10 +65,8 @@ TEST(RobotStateTest, FloatingBaseStateComparison)
         // comparing basic accessor methods
         ASSERT_TRUE(areEqual(rbdState.jointPositions(), robotState.jointPositions()));
         ASSERT_TRUE(areEqual(rbdState.jointVelocities(), robotState.jointVelocities()));
-        ASSERT_TRUE(areEqual(
-            rbdState.baseLinearVelocity().toImplementation(), robotState.baseLinearVelocity().toImplementation()));
-        ASSERT_TRUE(areEqual(rbdState.baseLocalAngularVelocity().toImplementation(),
-            robotState.baseLocalAngularVelocity().toImplementation()));
+        ASSERT_TRUE(areEqual(rbdState.baseLinearVelocity(), robotState.baseLinearVelocity()));
+        ASSERT_TRUE(areEqual(rbdState.baseLocalAngularVelocity(), robotState.baseLocalAngularVelocity()));
         ASSERT_TRUE(areEqual(rbdState.baseVelocities().getVector(), robotState.baseVelocities().getVector()));
 
         // a series of state conversions and comparisons
@@ -136,6 +134,7 @@ TEST(RobotStateTest, FloatingBaseStateComparison)
             ct::rbd::FloatingBaseRobotState<njoints, act_state_dim> testRobotState(
                 ct::rbd::RigidBodyPose::STORAGE_TYPE::QUAT);  // selecting the correct storage type is imporant here
             testRobotState.fromStateVectorQuaternion(temp);
+
             ASSERT_TRUE(areEqual(testRobotState.toStateVectorQuaternion(), temp));
         }
     }  //end for

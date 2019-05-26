@@ -34,7 +34,7 @@ TEST(ProjectedFDSystemTest, projected_forward_dynamics_test)
     RBDState<12> state, finalQuat, finalEuler;
     TestHyQ::Dynamics::EE_in_contact_t contactFlags;
     Eigen::Matrix<bool, 4, 1> eeContactConfig;
-    std::vector<kindr::Velocity<double, 3>> feetVelocities;
+    std::vector<Eigen::Matrix<double, 3, 1>> feetVelocities;
 
     for (size_t i = 0; i < nTests; i++)
     {
@@ -87,23 +87,15 @@ TEST(ProjectedFDSystemTest, projected_forward_dynamics_test)
                         std::cout << "test " << i << ", integration: " << j << ", foothold "
                                   << eeContactConfig.transpose() << ", foot " << k << std::endl;
                         std::cout << "Quat diff ||v||"
-                                  << (feetVelocities[k] - kinematics.getEEVelocityInWorld(k, finalQuat))
-                                         .toImplementation()
-                                         .transpose()
+                                  << (feetVelocities[k] - kinematics.getEEVelocityInWorld(k, finalQuat)).transpose()
                                   << std::endl;
                         std::cout << "Euler diff ||v||"
-                                  << (feetVelocities[k] - kinematics.getEEVelocityInWorld(k, finalEuler))
-                                         .toImplementation()
-                                         .transpose()
+                                  << (feetVelocities[k] - kinematics.getEEVelocityInWorld(k, finalEuler)).transpose()
                                   << std::endl;
                     }
 
-                    ASSERT_TRUE(kinematics.getEEVelocityInWorld(k, finalQuat)
-                                    .toImplementation()
-                                    .isApprox(feetVelocities[k].toImplementation(), 1e-6));
-                    ASSERT_TRUE(kinematics.getEEVelocityInWorld(k, finalEuler)
-                                    .toImplementation()
-                                    .isApprox(feetVelocities[k].toImplementation(), 1e-6));
+                    ASSERT_TRUE(kinematics.getEEVelocityInWorld(k, finalQuat).isApprox(feetVelocities[k], 1e-6));
+                    ASSERT_TRUE(kinematics.getEEVelocityInWorld(k, finalEuler).isApprox(feetVelocities[k], 1e-6));
                 }
             }
         }

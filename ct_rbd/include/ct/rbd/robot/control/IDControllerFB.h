@@ -31,15 +31,16 @@ public:
     typename Dynamics::RBDAcceleration_t computeDesiredAcceleration(const RBDState& currBaseState)
     {
         // compute rotation error
-        kindr::RotationQuaternionD Bcurr_q_Bdes(
-            currBaseState.basePose().getRotationQuaternion().inverted() * desState_.basePose().getRotationQuaternion());
-        kindr::EulerAnglesXyzPD Bcurr_eul_Bdes(Bcurr_q_Bdes);
+        Eigen::Quaterniond Bcurr_q_Bdes(
+            currBaseState.basePose().getRotationQuaternion().inverse() * desState_.basePose().getRotationQuaternion());
+        Eigen::EulerAnglesXYZd Bcurr_eul_Bdes(Bcurr_q_Bdes);
 
         // desired base acceleration
         Eigen::Matrix<double, 6, 1> aDesEigen = Eigen::Matrix<double, 6, 1>::Zero();
 
         // base orientation error
-        aDesEigen.segment(0, 3) = Kp_.segment(0, 3).cwiseProduct(Bcurr_eul_Bdes.getUnique().toImplementation());
+        aDesEigen.segment(0, 3) =
+            Kp_.segment(0, 3).cwiseProduct(ct::rbd::getUnqiueEulerAnglesXYZ(Bcurr_eul_Bdes).angles());
 
         // base position error
         Eigen::Vector3d W_positionError =
@@ -88,5 +89,5 @@ private:
     Eigen::Matrix<double, 6, 1> Kp_;
     Eigen::Matrix<double, 6, 1> Kd_;
 };
-}
-}
+}  // namespace rbd
+}  // namespace ct

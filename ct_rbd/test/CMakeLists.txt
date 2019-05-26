@@ -45,15 +45,14 @@ package_add_test(TaskSpaceCfTest robot/costfunction/TaskspaceCostFunctionTest.cp
 
 package_add_test(rbdJITtests robot/costfunction/rbdJITtests.cpp)
 
-package_add_test(kindrJITtest robot/costfunction/kindrJITtest.cpp)
+# todo transform into EulerAngles JIT test
+#package_add_test(kindrJITtest robot/costfunction/kindrJITtest.cpp)
 
 package_add_test(jacobianTests robot/jacobian/JacobianTests.cpp)
 
-if(BUILD_WITH_IPOPT_SUPPORT)
-    package_add_test(FixBaseIKTest robot/kinematics/FixBaseIKTest.cpp)
-endif()
+package_add_test(FixBaseIKTest robot/kinematics/FixBaseIKTest.cpp)
 
-# todo transform this into a proper test
+## todo transform this into a proper test
 #add_executable(simpleArmTrajectoryTest src/SimpleArmTrajectoryGeneratorTest.cpp)
 
 

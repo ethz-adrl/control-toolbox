@@ -25,8 +25,8 @@ TEST(HyAIKTest, FKTest)
         // Data needs to be in row-major form.
         hya_ik::ComputeFk(pos.data(), ee_pos.data(), ee_rot.data());
 
-        ASSERT_LT((ee_pos - ee_pose.position().toImplementation()).norm(), 1e-6);
-        ASSERT_LT((ee_rot - ee_pose.getRotationMatrix().toImplementation()).norm(), 1e-6);
+        ASSERT_LT((ee_pos - ee_pose.position()).norm(), 1e-6);
+        ASSERT_LT((ee_rot - ee_pose.getRotationMatrix()).norm(), 1e-6);
     }
 }
 
@@ -57,9 +57,9 @@ TEST(HyAIKTest, IKFastTest)
             {
                 auto query_ee_pose = kin.getEEPoseInBase(0, joints);
                 ASSERT_LT(
-                    (query_ee_pose.position().toImplementation() - ee_pose.position().toImplementation()).norm(), 1e-6);
-                ASSERT_LT((query_ee_pose.getRotationMatrix().toImplementation() -
-                              ee_pose.getRotationMatrix().toImplementation())
+                    (query_ee_pose.position() - ee_pose.position().norm(), 1e-6);
+                ASSERT_LT((query_ee_pose.getRotationMatrix() -
+                              ee_pose.getRotationMatrix()
                               .norm(),
                     1e-6);
             }

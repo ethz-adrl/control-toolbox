@@ -14,6 +14,8 @@ namespace HyQ {
 class HyQWithContactModelLinearizedForward : public ct::core::LinearSystem<36, 12, double>
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     typedef ct::core::LinearSystem<36, 12, double> Base;
 
     typedef typename Base::state_vector_t state_vector_t;
@@ -30,11 +32,7 @@ public:
     HyQWithContactModelLinearizedForward(const HyQWithContactModelLinearizedForward& other) { initialize(); }
     virtual ~HyQWithContactModelLinearizedForward(){};
 
-    virtual HyQWithContactModelLinearizedForward* clone() const override
-    {
-        return new HyQWithContactModelLinearizedForward;
-    }
-
+    virtual HyQWithContactModelLinearizedForward* clone() const override { return new HyQWithContactModelLinearizedForward; }
     virtual const state_matrix_t& getDerivativeState(const state_vector_t& x,
         const control_vector_t& u,
         const double t = double(0.0)) override;
@@ -54,9 +52,10 @@ private:
 
     state_matrix_t dFdx_;
     state_control_matrix_t dFdu_;
-    std::array<double, 1697> vX_;
+    std::array<double, 1687> vX_;
     std::array<double, 240> vU_;
 };
-}
-}
-}
+
+}  // namespace HyQ
+}  // namespace models
+}  // namespace ct

@@ -140,14 +140,14 @@ public:
             if (eeInContact_[ee_indices_[ee]])
             {
                 Eigen::Matrix<SCALAR, 3, NJOINTS + 6> J_eeId;
-                kindr::Position<SCALAR, 3> eePosition =
+                Eigen::Matrix<SCALAR, 3, 1> eePosition =
                     kinematics_.getEEPositionInBase(ee_indices_[ee], state.joints().getPositions());
                 Eigen::Matrix<SCALAR, 3, NJOINTS> J_single =
                     kinematics_.robcogen()
                         .getJacobianBaseEEbyId(ee_indices_[ee], state.joints().getPositions())
                         .template bottomRows<3>();
                 FrameJacobian<NJOINTS, SCALAR>::FromBaseJacToInertiaJacTranslation(
-                    Matrix3s::Identity(), eePosition.toImplementation(), J_single, J_eeId);
+                    Matrix3s::Identity(), eePosition, J_single, J_eeId);
                 Jc.template block<3, NJOINTS + 6>(ee_indices_[ee] * 3, 0) = J_eeId;
             }
         }

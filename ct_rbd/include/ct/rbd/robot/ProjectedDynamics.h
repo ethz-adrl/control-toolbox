@@ -257,8 +257,7 @@ void ProjectedDynamics<RBD, NEE>::ProjectedForwardDynamicsCommon(const RBDState_
             Jc_reduced_.template block<3, NDOF>(rowCount, 0) = Jc_.J().template block<3, NDOF>(3 * eeinc_i, 0);
             dJcdt_reduced_.template block<3, NDOF>(rowCount, 0) = Jc_.dJdt().template block<3, NDOF>(3 * eeinc_i, 0);
             feet_crossproduct_.template segment<3>(rowCount) =
-                x.baseLocalAngularVelocity().toImplementation().template cross(
-                    kinematics_->getEEVelocityInBase(eeinc_i, x).toImplementation());
+                x.baseLocalAngularVelocity().template cross(kinematics_->getEEVelocityInBase(eeinc_i, x));
             rowCount += 3;
         }
     }

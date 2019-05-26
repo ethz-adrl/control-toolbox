@@ -116,8 +116,7 @@ private:
         RBDState<KINEMATICS::NJOINTS, SC> rbdState = setStateFromVector<FB>(x);
 
         Eigen::Matrix<SC, 3, 1> xDiff =
-            kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions())
-                .toImplementation() -
+            kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions()) -
             pos_ref_.template cast<SC>();
 
         SC cost = (xDiff.transpose() * QTaskSpace_.template cast<SC>() * xDiff)(0, 0);

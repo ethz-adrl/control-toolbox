@@ -24,6 +24,9 @@ class RigidBodyState
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    typedef Eigen::Matrix<SCALAR, 3, 1> Vector3;
+    typedef Eigen::Matrix<SCALAR, 6, 1> Vector6;
+
     RigidBodyState(typename RigidBodyPose<SCALAR>::STORAGE_TYPE storage = RigidBodyPose<SCALAR>::EULER)
         : pose_(storage), velocities_()
     {
@@ -49,11 +52,11 @@ public:
     }
 
     /// @brief get translational velocity
-    const kindr::Velocity<SCALAR, 3> computeTranslationalVelocityW() const
+    const Vector3 computeTranslationalVelocityW() const
     {
         return pose().rotateBaseToInertia(velocities().getTranslationalVelocity());
     }
-    kindr::Velocity<SCALAR, 3> computeTranslationalVelocityW()
+    Vector3 computeTranslationalVelocityW()
     {
         return pose().rotateBaseToInertia(velocities().getTranslationalVelocity());
     }
@@ -67,8 +70,8 @@ public:
     void setRandom()
     {
         pose().setRandom();
-        velocities().getTranslationalVelocity().toImplementation().setRandom();
-        velocities().getRotationalVelocity().toImplementation().setRandom();
+        velocities().getTranslationalVelocity().setRandom();
+        velocities().getRotationalVelocity().setRandom();
     }
 
 private:

@@ -5,7 +5,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <kindr/Core>
 #include <ct/rbd/state/JointState.h>
 
 namespace ct {
@@ -59,8 +58,8 @@ public:
     typedef Eigen::Matrix<SCALAR, 6, NJOINTS> Jacobian;
     typedef Eigen::Matrix<SCALAR, 3, 3> Matrix3Tpl;
 
-    typedef kindr::Position<SCALAR, 3> Position3Tpl;
     typedef Eigen::Matrix<SCALAR, 3, 1> Vector3Tpl;
+    typedef Vector3Tpl Position3Tpl;
 
     using RigidBodyPoseTpl = tpl::RigidBodyPose<SCALAR>;
 

@@ -32,14 +32,14 @@ TEST(EEKinematicsTest, testFootVelocityBaseAngularVelocity)
 
     for (size_t i = 0; i < nFeet; i++)
     {
-        kindr::Velocity3D eeVelW;
-        kindr::Velocity3D eeVelB;
+        Eigen::Matrix<double, 3, 1> eeVelW;
+        Eigen::Matrix<double, 3, 1> eeVelB;
 
         eeVelW = kinematics.getEEVelocityInWorld(i, state);
         eeVelB = kinematics.getEEVelocityInWorld(i, state);
 
         // Since world and base are aligned, both velocities should be the same
-        ASSERT_TRUE(eeVelW.toImplementation().isApprox(eeVelB.toImplementation()));
+        ASSERT_TRUE(eeVelW.isApprox(eeVelB));
 
         // x component should be zero
         ASSERT_NEAR(eeVelW(0), 0.0, 1e-6);
@@ -60,7 +60,7 @@ TEST(EEKinematicsTest, testFootVelocityBaseZRotation)
     state.setRandom();
 
     // straight orientation, no joint velocity
-    state.basePose().setFromEulerAnglesXyz(Eigen::Vector3d(0.0, 0.0, 0.0));
+    state.basePose().setFromEulerAnglesXyz(0.0, 0.0, 0.0);
     state.jointVelocities().setZero();
 
     // rotate around z only
@@ -71,13 +71,13 @@ TEST(EEKinematicsTest, testFootVelocityBaseZRotation)
     const size_t nFeet = 4;
     for (size_t i = 0; i < nFeet; i++)
     {
-        kindr::Velocity3D eeVelW;
-        kindr::Velocity3D eeVelB;
+        Eigen::Matrix<double, 3, 1> eeVelW;
+        Eigen::Matrix<double, 3, 1> eeVelB;
         eeVelW = kinematics.getEEVelocityInWorld(i, state);
         eeVelB = kinematics.getEEVelocityInWorld(i, state);
 
         // Since world and base are aligned, both velocities should be the same
-        ASSERT_TRUE(eeVelW.toImplementation().isApprox(eeVelB.toImplementation()));
+        ASSERT_TRUE(eeVelW.isApprox(eeVelB));
 
         // z component should be linear velocity in z
         ASSERT_NEAR(eeVelW(2), state.baseLinearVelocity()(2), 1e-6);
@@ -100,23 +100,23 @@ TEST(EEKinematicsTest, testFootVelocityBaseLinearVelocity)
         state.setRandom();
 
         // straight orientation, no rotational velocity
-        state.basePose().setFromEulerAnglesXyz(Eigen::Vector3d(0.0, 0.0, 0.0));
+        state.basePose().setFromEulerAnglesXyz(0.0, 0.0, 0.0);
         state.baseLocalAngularVelocity().setZero();
         state.jointVelocities().setZero();
 
         const size_t nFeet = 4;
         for (size_t i = 0; i < nFeet; i++)
         {
-            kindr::Velocity3D eeVelW;
-            kindr::Velocity3D eeVelB;
+            Eigen::Matrix<double, 3, 1> eeVelW;
+            Eigen::Matrix<double, 3, 1> eeVelB;
             eeVelW = kinematics.getEEVelocityInWorld(i, state);
             eeVelB = kinematics.getEEVelocityInWorld(i, state);
 
             // Since world and base are aligned, both velocities should be the same
-            ASSERT_TRUE(eeVelW.toImplementation().isApprox(eeVelB.toImplementation()));
+            ASSERT_TRUE(eeVelW.isApprox(eeVelB));
 
             // Velocity of feet should be equal to velocity of base
-            ASSERT_TRUE(eeVelW.toImplementation().isApprox(state.baseLinearVelocity().toImplementation()));
+            ASSERT_TRUE(eeVelW.isApprox(state.baseLinearVelocity()));
         }
     }
 }
@@ -139,7 +139,7 @@ TEST(EEKinematicsTest, testFootPositionVaryingBase)
         state.jointPositions().setZero();
 
         const size_t nFeet = 4;
-        std::array<kindr::Position3D, nFeet> B_eePos;
+        std::array<Eigen::Matrix<double, 3, 1>, nFeet> B_eePos;
         for (size_t i = 0; i < nFeet; i++)
         {
             B_eePos[i] = kinematics.getEEPositionInBase(i, state.jointPositions());
@@ -171,12 +171,12 @@ TEST(EEKinematicsTest, testFootPositionStraightBase)
         state.setRandom();
 
         // straight orientation, no rotational velocity
-        state.basePose().setFromEulerAnglesXyz(Eigen::Vector3d(0.0, 0.0, 0.0));
+        state.basePose().setFromEulerAnglesXyz(0.0, 0.0, 0.0);
 
         state.jointPositions().setZero();
 
         const size_t nFeet = 4;
-        std::array<kindr::Position3D, nFeet> W_eePos;
+        std::array<Eigen::Matrix<double, 3, 1>, nFeet> W_eePos;
         for (size_t i = 0; i < nFeet; i++)
         {
             W_eePos[i] = kinematics.getEEPositionInWorld(i, state.basePose(), state.jointPositions());
@@ -208,7 +208,7 @@ TEST(EEKinematicsTest, forceMappingTest)
         state.setRandom();
 
         // straight orientation, no rotational velocity
-        state.basePose().setFromEulerAnglesXyz(Eigen::Vector3d(0.0, 0.0, 0.0));
+        state.basePose().setFromEulerAnglesXyz(0.0, 0.0, 0.0);
 
         state.jointPositions().setZero();
 
@@ -286,7 +286,7 @@ TEST(EEKinematicsTest, torqueMappingTest)
         state.setRandom();
 
         // straight orientation, no rotational velocity
-        state.basePose().setFromEulerAnglesXyz(Eigen::Vector3d(0.0, 0.0, 0.0));
+        state.basePose().setFromEulerAnglesXyz(0.0, 0.0, 0.0);
 
         state.jointPositions().setZero();
 
