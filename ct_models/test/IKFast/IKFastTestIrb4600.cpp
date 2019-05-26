@@ -32,8 +32,8 @@ TEST(Irb4600IKTest, IKFastTest)
         for (const auto& joints : solutions)
         {
             irb4600_ik::ComputeFk(joints.data(), ee_pos.data(), ee_rot.data());
-            ASSERT_LT((ee_pos - ee_pose.position().norm(), 1e-3);
-            ASSERT_LT((ee_rot - ee_pose.getRotationMatrix().norm(), 1e-3);
+            ASSERT_LT((ee_pos - ee_pose.position()).norm(), 1e-3);
+            ASSERT_LT((ee_rot - ee_pose.getRotationMatrix()).norm(), 1e-3);
         }
     }
 }

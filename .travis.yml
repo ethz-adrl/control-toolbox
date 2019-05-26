@@ -62,9 +62,6 @@ install:
   - chmod 775 install_deps.sh
   - ./install_deps.sh   >/dev/null # suppress output
 
-  #install kindr
-  - cd ~/catkin_ws/src/
-  - git clone https://github.com/ANYbotics/kindr.git
 
 # Install all dependencies, using wstool first and rosdep second.
 # wstool looks for a ROSINSTALL_FILE defined in the environment variables.
@@ -83,9 +80,7 @@ script:
   - catkin clean --all
   - catkin config --blacklist ct_doc
   - catkin build -DBUILD_TESTS=true -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
-  # Run the tests, ensuring the path is set correctly.
-  # we do not want to run the kindr tests
-  - catkin config --blacklist kindr
+
   # run unit tests
   - source devel/setup.bash
   - cd ~/catkin_ws/src/control-toolbox/ct_core

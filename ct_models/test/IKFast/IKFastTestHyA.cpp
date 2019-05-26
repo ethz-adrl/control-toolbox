@@ -56,12 +56,8 @@ TEST(HyAIKTest, IKFastTest)
             for (const auto& joints : solutions_base)
             {
                 auto query_ee_pose = kin.getEEPoseInBase(0, joints);
-                ASSERT_LT(
-                    (query_ee_pose.position() - ee_pose.position().norm(), 1e-6);
-                ASSERT_LT((query_ee_pose.getRotationMatrix() -
-                              ee_pose.getRotationMatrix()
-                              .norm(),
-                    1e-6);
+                ASSERT_LT((query_ee_pose.position() - ee_pose.position()).norm(), 1e-6);
+                ASSERT_LT((query_ee_pose.getRotationMatrix() - ee_pose.getRotationMatrix()).norm(),1e-6);
             }
         }
     }
