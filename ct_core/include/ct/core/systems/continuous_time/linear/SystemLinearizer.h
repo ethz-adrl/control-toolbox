@@ -134,7 +134,7 @@ public:
 	 */
     virtual const state_matrix_t& getDerivativeState(const state_vector_t& x,
         const control_vector_t& u,
-        const double t = 0.0) override
+        const time_t t = 0.0) override
     {
         dFdx_ = linearizer_.getDerivativeState(x, u, t);
 
@@ -164,7 +164,7 @@ public:
 	 */
     virtual const state_control_matrix_t& getDerivativeControl(const state_vector_t& x,
         const control_vector_t& u,
-        const double t = 0.0) override
+        const time_t t = 0.0) override
     {
         dFdu_ = linearizer_.getDerivativeControl(x, u, t);
 
