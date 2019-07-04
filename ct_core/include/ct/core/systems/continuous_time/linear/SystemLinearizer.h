@@ -54,6 +54,8 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     typedef LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;  //!< Base class type
+    
+    typedef typename Base::time_t time_t; //!< Time type as defined in System
 
     typedef typename Base::state_vector_t state_vector_t;                  //!< state vector type
     typedef typename Base::control_vector_t control_vector_t;              //!< input vector type
