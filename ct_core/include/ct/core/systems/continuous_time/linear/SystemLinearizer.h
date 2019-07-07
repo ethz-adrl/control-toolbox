@@ -54,6 +54,8 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     typedef LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;  //!< Base class type
+    
+    typedef typename Base::time_t time_t; //!< Time type as defined in System
 
     typedef typename Base::state_vector_t state_vector_t;                  //!< state vector type
     typedef typename Base::control_vector_t control_vector_t;              //!< input vector type
@@ -134,7 +136,7 @@ public:
 	 */
     virtual const state_matrix_t& getDerivativeState(const state_vector_t& x,
         const control_vector_t& u,
-        const double t = 0.0) override
+        const time_t t = 0.0) override
     {
         dFdx_ = linearizer_.getDerivativeState(x, u, t);
 
@@ -164,7 +166,7 @@ public:
 	 */
     virtual const state_control_matrix_t& getDerivativeControl(const state_vector_t& x,
         const control_vector_t& u,
-        const double t = 0.0) override
+        const time_t t = 0.0) override
     {
         dFdu_ = linearizer_.getDerivativeControl(x, u, t);
 
