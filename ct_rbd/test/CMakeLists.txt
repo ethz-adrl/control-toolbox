@@ -46,8 +46,7 @@ package_add_test(TaskSpaceCfTest robot/costfunction/TaskspaceCostFunctionTest.cp
 
 package_add_test(rbdJITtests robot/costfunction/rbdJITtests.cpp)
 
-## todo transform into EulerAngles JIT test
-##package_add_test(kindrJITtest robot/costfunction/kindrJITtest.cpp)
+package_add_test(rotationsJITtest robot/costfunction/rotationsJITtest.cpp)
 
 package_add_test(jacobianTests robot/jacobian/JacobianTests.cpp)
 
