@@ -36,3 +36,4 @@ solution.mat
 *.vscode
 
 */build/*
+!ct_doc/doc/html/ct_doc_placeholder.txt
