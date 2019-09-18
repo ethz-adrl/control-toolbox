@@ -594,6 +594,31 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     nb_.resize(N_ + 1, nb_.back());   // initialize number of box constraints per stage
     ng_.resize(N_ + 1, ng_.back());   // initialize number of general constraints per stage
 
+    nbu_.resize(N + 1, 0);   // todo correct val
+    nbx_.resize(N + 1, 0);   // todo correct val
+    nsbx_.resize(N + 1, 0);  // todo correct val
+    nsbu_.resize(N + 1, 0);  // todo correct val
+    nsg_.resize(N + 1, 0);   // todo correct val
+
+    hd_lb_.resize(N + 1, 0);  // todo correct val
+    hd_ub_.resize(N + 1, 0);  // todo correct val
+    hlbx_.resize(N + 1, 0);   // todo correct val
+    hubx_.resize(N + 1, 0);   // todo correct val
+    hlbu_.resize(N + 1, 0);   // todo correct val
+    hubu_.resize(N + 1, 0);   // todo correct val
+
+    hlg_.resize(N + 1, 0);  // todo correct val
+    hug_.resize(N + 1, 0);  // todo correct val
+    hZl_.resize(N + 1, 0);  // todo correct val
+    hZu_.resize(N + 1, 0);  // todo correct val
+    hzl_.resize(N + 1, 0);  // todo correct val
+    hzu_.resize(N + 1, 0);  // todo correct val
+
+    hidxs_.resize(N + 1, 0);  // todo correct val
+
+    hlls_.resize(N + 1, 0);  // todo correct val
+    hlus_.resize(N + 1, 0);  // todo correct val
+
     // resize the containers for the affine system dynamics approximation
     hA_.resize(N_);
     hB_.resize(N_);
