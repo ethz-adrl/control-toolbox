@@ -54,7 +54,7 @@ else(LAPACK_FOUND)
 endif(LAPACK_FOUND)
 
 
-## include HPIPM (required: environment variables for blasfeo and hpipm set)
+## include HPIPM
 find_package(blasfeo QUIET)
 find_package(hpipm QUIET)
 if(blasfeo_FOUND AND hpipm_FOUND)
@@ -62,6 +62,8 @@ if(blasfeo_FOUND AND hpipm_FOUND)
     set(HPIPM ON)
     list(APPEND HPIPM_LIBS ${hpipm_LIBRARIES} ${blasfeo_LIBRARIES})
     list(APPEND ct_optcon_COMPILE_DEFINITIONS HPIPM)
+else()
+    message(WARNING "Could not find HPIPM or BLASFEO")
 endif()
 
 

@@ -9,18 +9,14 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #ifdef HPIPM
 
-#include <blasfeo_target.h>
-#include <blasfeo_common.h>
-#include <blasfeo_v_aux_ext_dep.h>
 #include <blasfeo_d_aux_ext_dep.h>
-#include <blasfeo_i_aux_ext_dep.h>
-#include <blasfeo_d_aux.h>
-#include <blasfeo_d_blas.h>
 
 extern "C" {
 #include <hpipm_d_ocp_qp.h>
 #include <hpipm_d_ocp_qp_sol.h>
-#include <hpipm_d_ocp_qp_ipm_hard.h>
+#include <hpipm_d_ocp_qp_ipm.h>
+#include <hpipm_d_ocp_qp_dim.h>
+#include <hpipm_timing.h>
 }
 
 #include <unsupported/Eigen/MatrixFunctions>
@@ -172,10 +168,17 @@ private:
     //! number of inputs per stage
     std::vector<int> nu_;
 
-    //! number of box constraints per stage
-    std::vector<int> nb_;
-    //! number of general constraints per stage
-    std::vector<int> ng_;
+    //! number of box constraints per stage //TODO: deprecate
+    std::vector<int> nb_;  //TODO: deprecate
+
+    std::vector<int> nbu_;  //! number of input box constraints per stage?
+    std::vector<int> nbx_;  //! number of state box constraints per stage?
+
+    std::vector<int> ng_;  //! number of general constraints per stage (todo: still correct?)
+
+    std::vector<int> nsbx_;  // todo what is this?
+    std::vector<int> nsbu_;  // todo what is this?
+    std::vector<int> nsg_;   // todo what is this?
 
     //! pointer to initial state
     double* x0_;
@@ -205,11 +208,20 @@ private:
 
 
     //! pointer to lower box constraint boundary
-    std::vector<double*> hd_lb_;
+    std::vector<double*> hd_lb_;  // todo deprecate
     //! pointer to upper box constraint boundary
-    std::vector<double*> hd_ub_;
-    //! pointer to sparsity pattern for box constraints
-    std::vector<int*> hidxb_;
+    std::vector<double*> hd_ub_;  // todo deprecate
+
+    std::vector<double*> hlbx_;  //! pointer to lower state box constraint boundary
+    std::vector<double*> hubx_;  //! pointer to upper state box constraint boundary
+    std::vector<double*> hlbu_;  //! pointer to lower input box constraint boundary
+    std::vector<double*> hubu_;  //! pointer to upper input box constraint boundary
+
+
+    //! pointer to sparsity pattern for box constraints in x
+    std::vector<int*> hidxbx_;
+    //! pointer to sparsity pattern for box constraints in u
+    std::vector<int*> hidxbu_;
 
     //! lower general constraint boundary
     std::vector<double*> hd_lg_;
@@ -222,6 +234,18 @@ private:
     //  local vars for constraint bounds for statge k=0, which need to be different by HPIPM convention
     Eigen::VectorXd hd_lg_0_Eigen_;
     Eigen::VectorXd hd_ug_0_Eigen_;
+
+    std::vector<double*> hlg_;  // todo what is this?
+    std::vector<double*> hug_;  // todo what is this?
+    std::vector<double*> hZl_;  // todo what is this?
+    std::vector<double*> hZu_;  // todo what is this?
+    std::vector<double*> hzl_;  // todo what is this?
+    std::vector<double*> hzu_;  // todo what is this?
+
+    std::vector<int*> hidxs_;  // todo what is this?
+
+    std::vector<double*> hlls_;  // todo what is this?
+    std::vector<double*> hlus_;  // todo what is this?
 
 
     /*
@@ -256,15 +280,39 @@ private:
     //! settings from NLOptConSolver
     NLOptConSettings settings_;
 
-    std::vector<char> qp_mem_;
+    //! ocp qp dimensions
+    int dim_size_;
+    void* dim_mem_;
+    struct d_ocp_qp_dim dim_;
+
+    void* qp_mem_;
     struct d_ocp_qp qp_;
 
-    std::vector<char> qp_sol_mem_;
+    void* qp_sol_mem_;
     struct d_ocp_qp_sol qp_sol_;
 
-    struct d_ipm_hard_ocp_qp_arg arg_;  //! IPM settings
-    std::vector<char> ipm_mem_;
-    struct d_ipm_hard_ocp_qp_workspace workspace_;
+    void* ipm_arg_mem_;
+    struct d_ocp_qp_ipm_arg arg_;
+
+    // workspace
+    void* ipm_mem_;
+    struct d_ocp_qp_ipm_ws workspace_;
+    int hpipm_status_; // status code after solving
+
+
+    // todo these are new settings that need to be incorporated:
+    ::hpipm_mode mode_;  // todo what is this?
+    int iter_max_;
+    double alpha_min_;
+    double mu0_;
+    double tol_stat_;
+    double tol_eq_;
+    double tol_ineq_;
+    double tol_comp_;
+    double reg_prim_;
+    int warm_start_;
+    int pred_corr_;
+    int ric_alg_;
 };
 
 
