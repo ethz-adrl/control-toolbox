@@ -9,6 +9,9 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #ifdef HPIPM
 
+#include <blasfeo_target.h>
+#include <blasfeo_common.h>
+#include <blasfeo_d_aux.h>
 #include <blasfeo_d_aux_ext_dep.h>
 
 extern "C" {
@@ -176,9 +179,9 @@ private:
 
     std::vector<int> ng_;  //! number of general constraints per stage (todo: still correct?)
 
-    std::vector<int> nsbx_;  // todo what is this?
-    std::vector<int> nsbu_;  // todo what is this?
-    std::vector<int> nsg_;   // todo what is this?
+    std::vector<int> nsbx_;  // number of softed constraints on state box constraints
+    std::vector<int> nsbu_;  // number of softed constraints on input box constraints
+    std::vector<int> nsg_;   // number of softed constraints on general constraints
 
     //! pointer to initial state
     double* x0_;
@@ -297,22 +300,22 @@ private:
     // workspace
     void* ipm_mem_;
     struct d_ocp_qp_ipm_ws workspace_;
-    int hpipm_status_; // status code after solving
+    int hpipm_status_;  // status code after solving
 
 
     // todo these are new settings that need to be incorporated:
-    ::hpipm_mode mode_;  // todo what is this?
-    int iter_max_;
-    double alpha_min_;
-    double mu0_;
-    double tol_stat_;
-    double tol_eq_;
-    double tol_ineq_;
-    double tol_comp_;
-    double reg_prim_;
-    int warm_start_;
-    int pred_corr_;
-    int ric_alg_;
+    ::hpipm_mode mode_ = static_cast<::hpipm_mode>(1);  // todo what is this?
+    int iter_max_ = 30;                                 // todo make param
+    double alpha_min_ = 1e-8;
+    double mu0_ = 1e4;
+    double tol_stat_ = 1e-4;
+    double tol_eq_ = 1e-5;
+    double tol_ineq_ = 1e-5;
+    double tol_comp_ = 1e-5;
+    double reg_prim_ = 1e-12;
+    int warm_start_ = 0;
+    int pred_corr_ = 1;
+    int ric_alg_ = 0;
 };
 
 

@@ -66,7 +66,7 @@ int main(int argc, char** argv)
     StateVector<state_dim> x0;
     x0.setRandom();  // in this example, we choose a random initial state x0
 
-    ct::core::Time timeHorizon = 3.0;  // and a final time horizon in [sec]
+    ct::core::Time timeHorizon = 1.0;  // and a final time horizon in [sec]
 
 
     // STEP 1-E: create and initialize an "optimal control problem"
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
 	 * we can simply use zero feedforward with zero feedback gains around the initial position.
 	 * In more complex examples, a more elaborate initial guess may be required.*/
     FeedbackArray<state_dim, control_dim> u0_fb(K, FeedbackMatrix<state_dim, control_dim>::Zero());
-    ControlVectorArray<control_dim> u0_ff(K, ControlVector<control_dim>::Zero());
+    ControlVectorArray<control_dim> u0_ff(K, ControlVector<control_dim>::Random());
     StateVectorArray<state_dim> x_ref_init(K + 1, x0);
     NLOptConSolver<state_dim, control_dim>::Policy_t initController(x_ref_init, u0_ff, u0_fb, ilqr_settings.dt);
 
