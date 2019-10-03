@@ -132,8 +132,8 @@ The following dependencies and bindings are optional but can help to enhance the
   (for ct::optcon::SnoptSolver and ct::optcon::IpoptSolver as used by ct::optcon::DMS)
 
  - <a href="https://github.com/giaf/blasfeo">blasfeo</a> linear algebra and <a href=https://github.com/giaf/hpipm">HPIPM solver</a> as
- alternative high-performance (constrained) linear-quadratic optimal control solver. Detailed reference
- about blasefeo can be found <a href="https://arxiv.org/abs/1704.02457">here</a>.
+ alternative high-performance (constrained) linear-quadratic optimal control solver. The CT currently supports hpipm version 0.1.1.
+ Detailed reference about blasefeo can be found <a href="https://arxiv.org/abs/1704.02457">here</a>.
  Both packages were developed by <a href="https://www.syscop.de/people/dr-gianluca-frison">Gianluca Frison</a>, <a href="https://www.syscop.de/">University of Freiburg</a>.
 
  - install the <a href="http://catkin-tools.readthedocs.io/en/latest/verbs/catkin_build.html">catkin_tools</a> build system
