@@ -18,7 +18,7 @@ ilqr
     nThreads 1
     nThreadsEigen 1
     locp_solver HPIPM_SOLVER
-    nlocp_algorithm ILQR
+    nlocp_algorithm GNMS
     closedLoopShooting true
     printSummary true
     debugPrint false 
@@ -36,6 +36,6 @@ ilqr
 
     lqoc_solver_settings
     {
-        lqoc_debug_print true
+        lqoc_debug_print false
     }
 }

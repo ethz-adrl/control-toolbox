@@ -64,7 +64,7 @@ public:
     using box_constr_sparsity_t = Eigen::Matrix<int, max_box_constr_dim, 1>;
 
     //! constructor
-    HPIPMInterface(const int N = -1, const int nb = 0, const int ng = 0);
+    HPIPMInterface(const int N = -1, const int nbu = 0, const int nbx = 0, const int ng = 0);
 
     //! destructor
     virtual ~HPIPMInterface();
@@ -78,7 +78,10 @@ public:
     void printSolution();
 
     //! brief setup and configure the box constraints
-    virtual void configureBoxConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
+    virtual void configureInputBoxConstraints(
+        std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
+    virtual void configureStateBoxConstraints(
+        std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
 
     //! brief setup and configure the general (in)equality constraints
     virtual void configureGeneralConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
@@ -98,7 +101,7 @@ public:
     virtual void initializeAndAllocate() override;
 
 private:
-    void setSolverDimensions(const int N, const int nb = 0, const int ng = 0);
+    void setSolverDimensions(const int N, const int nbu = 0, const int nbx = 0, const int ng = 0);
 
     /*!
      * @brief set problem implementation for HPIPM
@@ -171,9 +174,6 @@ private:
     //! number of inputs per stage
     std::vector<int> nu_;
 
-    //! number of box constraints per stage //TODO: deprecate
-    std::vector<int> nb_;  //TODO: deprecate
-
     std::vector<int> nbu_;  //! number of input box constraints per stage
     std::vector<int> nbx_;  //! number of state box constraints per stage
 
@@ -206,22 +206,13 @@ private:
     //! intermediate container for intuitive transcription of first stage
     Eigen::Matrix<double, control_dim, 1> hr0_;
 
-
-    //! pointer to lower box constraint boundary
-    std::vector<double*> hd_lb_;  // todo deprecate
-    //! pointer to upper box constraint boundary
-    std::vector<double*> hd_ub_;  // todo deprecate
-
     std::vector<double*> hlbx_;  //! pointer to lower state box constraint boundary
     std::vector<double*> hubx_;  //! pointer to upper state box constraint boundary
     std::vector<double*> hlbu_;  //! pointer to lower input box constraint boundary
     std::vector<double*> hubu_;  //! pointer to upper input box constraint boundary
 
-
-    //! pointer to sparsity pattern for box constraints in x
-    std::vector<int*> hidxbx_;
-    //! pointer to sparsity pattern for box constraints in u
-    std::vector<int*> hidxbu_;
+    std::vector<int*> hidxbx_;  //! pointer to sparsity pattern for box constraints in x
+    std::vector<int*> hidxbu_;  //! pointer to sparsity pattern for box constraints in u
 
     //! lower general constraint boundary
     std::vector<double*> hd_lg_;
@@ -257,19 +248,12 @@ private:
     std::vector<double*> x_;
     //! @todo what is this ?
     std::vector<double*> pi_;
-    //! ptr to lagrange multiplier box-constraint lower
-    std::vector<double*> lam_lb_;
-    //! ptr to lagrange multiplier box-constraint upper
-    std::vector<double*> lam_ub_;
+
     //! ptr to lagrange multiplier general-constraint lower
     std::vector<double*> lam_lg_;
     //! ptr to lagrange multiplier general-constraint upper
     std::vector<double*> lam_ug_;
 
-    //! container lagr. mult. box-constr. lower
-    ct::core::DiscreteArray<Eigen::Matrix<double, max_box_constr_dim, 1>> cont_lam_lb_;
-    //! container lagr. mult. box-constr. upper
-    ct::core::DiscreteArray<Eigen::Matrix<double, max_box_constr_dim, 1>> cont_lam_ub_;
     //! container for lagr. mult. general-constraint lower
     ct::core::DiscreteArray<Eigen::Matrix<double, -1, 1>> cont_lam_lg_;
     //! container for lagr. mult. general-constraint upper

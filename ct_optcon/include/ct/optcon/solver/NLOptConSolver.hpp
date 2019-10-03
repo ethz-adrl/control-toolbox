@@ -221,10 +221,16 @@ public:
     const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const override;
 
     //! get reference to the box constraints
-    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() override;
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances() override;
 
     //! get constant reference to the boxconstraints
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const override;
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances() const override;
+
+    //! get reference to the box constraints
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances() override;
+
+    //! get constant reference to the boxconstraints
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances() const override;
 
     //! get reference to the general constraints
     std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() override;

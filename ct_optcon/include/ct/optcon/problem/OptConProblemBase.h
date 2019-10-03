@@ -85,7 +85,8 @@ public:
      *
      * @param nonlinDynamics the nonlinear system dynamics
      * @param costFunction a quadratic cost function
-     * @param boxConstraints the box constraints
+     * @param inputBoxConstraints the input box constraints
+     * @param stateBoxConstraints the state box constraints
      * @param generalConstraints the general constraints
      * @param linearSystem (optional) the linear system holding the dynamics derivatives.
      *
@@ -94,7 +95,8 @@ public:
      */
     OptConProblemBase(DynamicsPtr_t nonlinDynamics,
         CostFunctionPtr_t costFunction,
-        ConstraintPtr_t boxConstraints,
+        ConstraintPtr_t inputBoxConstraints,
+        ConstraintPtr_t stateBoxConstraints,
         ConstraintPtr_t generalConstraints,
         LinearPtr_t linearSystem = nullptr);
 
@@ -105,7 +107,8 @@ public:
      * @param x0 The initial system state
      * @param nonlinDynamics the nonlinear system dynamics
      * @param costFunction a quadratic cost function
-     * @param boxConstraints the box constraints
+     * @param inputBoxConstraints the input box constraints
+     * @param stateBoxConstraints the state box constraints
      * @param generalConstraints the general constraints
      * @param linearSystem (optional) the linear system holding the dynamics derivatives.
      *
@@ -116,7 +119,8 @@ public:
         const state_vector_t& x0,
         DynamicsPtr_t nonlinDynamics,
         CostFunctionPtr_t costFunction,
-        ConstraintPtr_t boxConstraints,
+        ConstraintPtr_t inputBoxConstraints,
+        ConstraintPtr_t stateBoxConstraints,
         ConstraintPtr_t generalConstraints,
         LinearPtr_t linearSystem = nullptr);
 
@@ -154,10 +158,16 @@ public:
     void setCostFunction(const CostFunctionPtr_t cost);
 
     /*!
-     * set box constraints
+     * set input box constraints
      * @param constraint pointer to box constraint
      */
-    void setBoxConstraints(const ConstraintPtr_t constraint);
+    void setInputBoxConstraints(const ConstraintPtr_t constraint);
+
+    /*!
+     * set state box constraints
+     * @param constraint pointer to box constraint
+     */
+    void setStateBoxConstraints(const ConstraintPtr_t constraint);
 
     /*!
      * set general constraints
@@ -166,11 +176,18 @@ public:
     void setGeneralConstraints(const ConstraintPtr_t constraint);
 
     /**
-     * @brief      Retrieve the box constraints
+     * @brief      Retrieve the input box constraints
      *
-     * @return     The box constraints.
+     * @return     The input box constraints.
      */
-    const ConstraintPtr_t getBoxConstraints() const;
+    const ConstraintPtr_t getInputBoxConstraints() const;
+
+    /**
+     * @brief      Retrieve the state box constraints
+     *
+     * @return     The state box constraints.
+     */
+    const ConstraintPtr_t getStateBoxConstraints() const;
 
     /**
      * @brief      Retrieves the general constraints
@@ -212,11 +229,18 @@ private:
     LinearPtr_t linearizedSystem_;    //! the linear approximation of the nonlinear system
 
     /*!
-     * @brief container of all the state and input box constraints of the problem
+     * @brief container for input box constraints of the problem
      * Expected form:
-     * \f$ u_{lb} \leq u \leq u_{ub} \f$ and \f$ x_{lb} \leq x \leq x_{ub} \f$
+     * \f$ u_{lb} \leq u \leq u_{ub} \f$
      */
-    ConstraintPtr_t boxConstraints_;
+    ConstraintPtr_t inputBoxConstraints_;
+
+    /*!
+     * @brief container for state box constraints of the problem
+     * Expected form:
+     * \f$ x_{lb} \leq x \leq x_{ub} \f$
+     */
+    ConstraintPtr_t stateBoxConstraints_;
 
     /*!
      * @brief container of all the general constraints of the problem
