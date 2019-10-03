@@ -1,6 +1,15 @@
-## find blasfeo library based on user-defined environment variable
+## ----------------------------------------------
+## find blasfeo library
+## The Control Toolbox, Copyright M. Giftthaler
+## ----------------------------------------------
+
+# default init
+set(blasfeo_FOUND false) 
+
+## if the user installed blasfeo to /opt/blasfeo, use find_package MODULE mode
 IF(EXISTS "/opt/blasfeo")
-    message(STATUS "Found BLASFEO directory /opt/blasfeo ...")
+    message(STATUS "Found BLASFEO in /opt/blasfeo ...")
+    
     list(APPEND blasfeo_INCLUDE_DIRS /opt/blasfeo/include)
 
     find_library(blasfeo_libs_found blasfeo /opt/blasfeo/lib)
@@ -17,6 +26,17 @@ IF(EXISTS "/opt/blasfeo")
 
     set(blasfeo_FOUND true)
 else()
-    message(STATUS "BLASFEO not found.")
-    set(blasfeo_FOUND false)
+    ## if the user installed blasfeo using cmake, fall back to find_package CONFIG mode
+
+    find_package(blasfeo CONFIG)
+
+    set(blasfeo_LIBRARIES blasfeo)
+
+    if(blasfeo_FOUND)
+        message(STATUS "BLASFEO found in PACKAGE mode.")
+    endif()
+endif()
+
+if(NOT blasfeo_FOUND)
+    message(STATUS "BLASFEO NOT found.")
 endif()
