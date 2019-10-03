@@ -299,20 +299,7 @@ private:
     struct d_ocp_qp_ipm_ws workspace_;
     int hpipm_status_;  // status code after solving
 
-
-    // todo these are new settings that need to be incorporated:
-    ::hpipm_mode mode_ = static_cast<::hpipm_mode>(1);  // todo what is this?
-    int iter_max_ = 30;                                 // todo make param
-    double alpha_min_ = 1e-8;
-    double mu0_ = 1e4;
-    double tol_stat_ = 1e-4;
-    double tol_eq_ = 1e-5;
-    double tol_ineq_ = 1e-5;
-    double tol_comp_ = 1e-5;
-    double reg_prim_ = 1e-12;
-    int warm_start_ = 0;
-    int pred_corr_ = 1;
-    int ric_alg_ = 0;
+    ::hpipm_mode mode_ = ::hpipm_mode::SPEED;  // see also hpipm_common.h
 };
 
 

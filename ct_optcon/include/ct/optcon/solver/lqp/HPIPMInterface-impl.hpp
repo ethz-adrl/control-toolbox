@@ -14,7 +14,6 @@ template <int STATE_DIM, int CONTROL_DIM>
 HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(const int N, const int nb, const int ng)
     : N_(-1), nb_(1, nb), ng_(1, ng), settings_(NLOptConSettings())
 {
-    // some zero variables
     hb0_.setZero();
     hr0_.setZero();
 
@@ -71,18 +70,18 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
     ::d_ocp_qp_ipm_arg_create(&dim_, &arg_, ipm_arg_mem_);
 
     ::d_ocp_qp_ipm_arg_set_default(mode_, &arg_);
-    //  ::d_ocp_qp_ipm_arg_set_mu0(&mu0_, &arg_); // todo bring back those options
-    //  ::d_ocp_qp_ipm_arg_set_iter_max(&iter_max_, &arg_);
-    //  ::d_ocp_qp_ipm_arg_set_alpha_min(&alpha_min_, &arg_);
-    //  ::d_ocp_qp_ipm_arg_set_mu0(&mu0_, &arg_);
-    //  ::d_ocp_qp_ipm_arg_set_tol_stat(&tol_stat_, &arg_);
-    //  ::d_ocp_qp_ipm_arg_set_tol_eq(&tol_eq_, &arg_);
-    //  ::d_ocp_qp_ipm_arg_set_tol_ineq(&tol_ineq_, &arg_);
-    //  ::d_ocp_qp_ipm_arg_set_tol_comp(&tol_comp_, &arg_);
-    //  ::d_ocp_qp_ipm_arg_set_reg_prim(&reg_prim_, &arg_);
-    //  ::d_ocp_qp_ipm_arg_set_warm_start(&warm_start_, &arg_);
-    //  ::d_ocp_qp_ipm_arg_set_pred_corr(&pred_corr_, &arg_);
-    //  ::d_ocp_qp_ipm_arg_set_ric_alg(&ric_alg_, &arg_);
+    ::d_ocp_qp_ipm_arg_set_iter_max(&settings_.lqoc_solver_settings.num_lqoc_iterations, &arg_);
+    ::d_ocp_qp_ipm_arg_set_mu0(&settings_.lqoc_solver_settings.mu0, &arg_);
+    ::d_ocp_qp_ipm_arg_set_alpha_min(&settings_.lqoc_solver_settings.alpha_min, &arg_);
+    ::d_ocp_qp_ipm_arg_set_mu0(&settings_.lqoc_solver_settings.mu0, &arg_);
+    ::d_ocp_qp_ipm_arg_set_tol_stat(&settings_.lqoc_solver_settings.tol_stat, &arg_);
+    ::d_ocp_qp_ipm_arg_set_tol_eq(&settings_.lqoc_solver_settings.tol_eq, &arg_);
+    ::d_ocp_qp_ipm_arg_set_tol_ineq(&settings_.lqoc_solver_settings.tol_ineq, &arg_);
+    ::d_ocp_qp_ipm_arg_set_tol_comp(&settings_.lqoc_solver_settings.tol_comp, &arg_);
+    ::d_ocp_qp_ipm_arg_set_reg_prim(&settings_.lqoc_solver_settings.reg_prim, &arg_);
+    ::d_ocp_qp_ipm_arg_set_warm_start(&settings_.lqoc_solver_settings.warm_start, &arg_);
+    ::d_ocp_qp_ipm_arg_set_pred_corr(&settings_.lqoc_solver_settings.pred_corr, &arg_);
+    ::d_ocp_qp_ipm_arg_set_ric_alg(&settings_.lqoc_solver_settings.ric_alg, &arg_);
 
     // create workspace
     int ipm_size = ::d_ocp_qp_ipm_ws_memsize(&dim_, &arg_);
@@ -110,14 +109,18 @@ template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configure(const NLOptConSettings& settings)
 {
     settings_ = settings;
-
-    /*
-    arg_.iter_max = settings_.lqoc_solver_settings.num_lqoc_iterations;
-
-    arg_.alpha_min = 1e-8;  // todo review and make setting
-    arg_.mu0 = 2.0;         // todo review and make setting
-                            // arg_.mu_max = 1e-12;    // todo review and make setting
-*/
+    ::d_ocp_qp_ipm_arg_set_iter_max(&settings_.lqoc_solver_settings.num_lqoc_iterations, &arg_);
+    ::d_ocp_qp_ipm_arg_set_mu0(&settings_.lqoc_solver_settings.mu0, &arg_);
+    ::d_ocp_qp_ipm_arg_set_alpha_min(&settings_.lqoc_solver_settings.alpha_min, &arg_);
+    ::d_ocp_qp_ipm_arg_set_mu0(&settings_.lqoc_solver_settings.mu0, &arg_);
+    ::d_ocp_qp_ipm_arg_set_tol_stat(&settings_.lqoc_solver_settings.tol_stat, &arg_);
+    ::d_ocp_qp_ipm_arg_set_tol_eq(&settings_.lqoc_solver_settings.tol_eq, &arg_);
+    ::d_ocp_qp_ipm_arg_set_tol_ineq(&settings_.lqoc_solver_settings.tol_ineq, &arg_);
+    ::d_ocp_qp_ipm_arg_set_tol_comp(&settings_.lqoc_solver_settings.tol_comp, &arg_);
+    ::d_ocp_qp_ipm_arg_set_reg_prim(&settings_.lqoc_solver_settings.reg_prim, &arg_);
+    ::d_ocp_qp_ipm_arg_set_warm_start(&settings_.lqoc_solver_settings.warm_start, &arg_);
+    ::d_ocp_qp_ipm_arg_set_pred_corr(&settings_.lqoc_solver_settings.pred_corr, &arg_);
+    ::d_ocp_qp_ipm_arg_set_ric_alg(&settings_.lqoc_solver_settings.ric_alg, &arg_);
 }
 
 
@@ -330,6 +333,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
     // check if the number of stages N changed and adapt problem dimensions
     bool nStagesChanged = changeNumberOfStages(lqocProblem->getNumberOfStages());
 
+    std::cout << "n stages chnged " << nStagesChanged << " to " << lqocProblem->getNumberOfStages() << std::endl;
+
 
     // WARNING: the allocation should in practice not have to happen during the loop.
     // If possible, prefer receding horizon MPC problems.
@@ -348,9 +353,16 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
     setupCostAndDynamics(lqocProblem->x_, lqocProblem->u_, lqocProblem->A_, lqocProblem->B_, lqocProblem->b_,
         lqocProblem->P_, lqocProblem->qv_, lqocProblem->Q_, lqocProblem->rv_, lqocProblem->R_);
 
-
-    //if (nStagesChanged)
-        initializeAndAllocate();  // todo this allocation is currently required in every call .. why?
+    if (nStagesChanged)
+        initializeAndAllocate();
+    else
+    {
+        // TODO: it is not exactly clear why we need to do this here ... but otherwise the solver fails!
+        ::d_ocp_qp_set_all(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(),
+            hr_.data(), hidxbx_.data(), hlbx_.data(), hubx_.data(), hidxbu_.data(), hlbu_.data(), hubu_.data(),
+            hC_.data(), hD_.data(), hlg_.data(), hug_.data(), hZl_.data(), hZu_.data(), hzl_.data(), hzu_.data(),
+            hidxs_.data(), hlls_.data(), hlus_.data(), &qp_);
+    }
 }
 
 
@@ -464,6 +476,10 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
     // transcribe initial state into solution vector (won't be considered by HPIPM)
     this->x_sol_[0] = x[0];
 
+    // IMPORTANT: for hb_ and hr_, we need a HPIPM-specific correction for the first stage
+    hb0_ = b[0] + A[0] * x[0];
+    hr0_ = rv[0] + P[0] * x[0];
+
     // assign data for LQ problem
     for (int i = 0; i < N_; i++)
     {
@@ -471,7 +487,9 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
         u_[i] = u[i].data();
         hA_[i] = A[i].data();
         hB_[i] = B[i].data();
-        hb_[i] = b[i].data();
+
+        if (i > 0)
+            hb_[i] = b[i].data();  // do not mutate pointers for init stage
     }
 
     for (int i = 0; i < N_; i++)
@@ -480,22 +498,15 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
         hS_[i] = P[i].data();
         hR_[i] = R[i].data();
         hq_[i] = qv[i].data();
-        hr_[i] = rv[i].data();
+
+        if (i > 0)
+            hr_[i] = rv[i].data();  // do not mutate pointers for init stage
     }
 
     // terminal stage
     x_[N_] = x[N_].data();
     hQ_[N_] = Q[N_].data();
     hq_[N_] = qv[N_].data();
-
-    // IMPORTANT: for hb_ and hr_, we need a HPIPM-specific correction for the first stage
-    hb0_ = b[0] + A[0] * x[0];
-    hr0_ = rv[0] + P[0] * x[0];
-    hb_[0] = hb0_.data();
-    hr_[0] = hr0_.data();
-
-    // reset lqocProblem pointer, will get set in Base class if needed
-    this->lqocProblem_ = nullptr;
 }
 
 
@@ -507,10 +518,17 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
 
     N_ = N;
 
-    nx_.resize(N_ + 1, STATE_DIM);    // initialize number of states per stage
+    // resize control input variable counter
+    if (nu_.size() > 0)
+        nu_.back() = CONTROL_DIM;     // avoid error in case of increasing horizon
     nu_.resize(N_ + 1, CONTROL_DIM);  // initialize number of control inputs per stage
-    nb_.resize(N_ + 1, nb_.back());   // initialize number of box constraints per stage
-    ng_.resize(N_ + 1, ng_.back());   // initialize number of general constraints per stage
+    nu_[N_] = 0;                      // last input is not a decision variable
+
+    nx_.resize(N_ + 1, STATE_DIM);  // initialize number of states per stage
+    nx_[0] = 0;                     // initial state is not a decision variable but given
+
+    nb_.resize(N_ + 1, nb_.back());  // initialize number of box constraints per stage
+    ng_.resize(N_ + 1, ng_.back());  // initialize number of general constraints per stage
 
     nbu_.resize(N_ + 1, 0);   // todo correct val
     nbx_.resize(N_ + 1, 0);   // todo correct val
@@ -574,26 +592,18 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     cont_lam_lg_.resize(N_ + 1);
     cont_lam_ug_.resize(N_ + 1);
 
+    // assignments that stay constant despite varying problem impl data
     for (int i = 0; i < N_; i++)
     {
         pi_[i] = hpi_[i].data();
     }
 
+    hb_[0] = hb0_.data();
+    hr_[0] = hr0_.data();
+
     hS_[N_] = nullptr;
     hR_[N_] = nullptr;
     hr_[N_] = nullptr;
-
-    hb_[0] = nullptr;
-    hr_[0] = nullptr;
-
-    ct::core::StateVectorArray<STATE_DIM> hx;
-    ct::core::ControlVectorArray<CONTROL_DIM> hu;
-
-    // initial state is not a decision variable but given
-    nx_[0] = 0;
-
-    // last input is not a decision variable
-    nu_[N_] = 0;
 
     return true;
 }
