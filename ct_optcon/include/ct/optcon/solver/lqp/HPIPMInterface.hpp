@@ -174,17 +174,14 @@ private:
     //! number of box constraints per stage //TODO: deprecate
     std::vector<int> nb_;  //TODO: deprecate
 
-    std::vector<int> nbu_;  //! number of input box constraints per stage?
-    std::vector<int> nbx_;  //! number of state box constraints per stage?
+    std::vector<int> nbu_;  //! number of input box constraints per stage
+    std::vector<int> nbx_;  //! number of state box constraints per stage
 
-    std::vector<int> ng_;  //! number of general constraints per stage (todo: still correct?)
+    std::vector<int> ng_;  //! number of general constraints per stage
 
     std::vector<int> nsbx_;  // number of softed constraints on state box constraints
     std::vector<int> nsbu_;  // number of softed constraints on input box constraints
     std::vector<int> nsg_;   // number of softed constraints on general constraints
-
-    //! pointer to initial state
-    double* x0_;
 
     //! system state sensitivities
     std::vector<double*> hA_;

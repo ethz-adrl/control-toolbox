@@ -5,9 +5,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#define HPIPM  // todo remove
-//#define HPIPM_PRINT_MATRICES  // todo remove
-
 #ifdef HPIPM
 
 namespace ct {
@@ -15,9 +12,8 @@ namespace optcon {
 
 template <int STATE_DIM, int CONTROL_DIM>
 HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(const int N, const int nb, const int ng)
-    : N_(-1), nb_(1, nb), ng_(1, ng), x0_(nullptr), settings_(NLOptConSettings())
+    : N_(-1), nb_(1, nb), ng_(1, ng), settings_(NLOptConSettings())
 {
-    std::cout << "entering constructor " << std::endl;  // todo remove
     // some zero variables
     hb0_.setZero();
     hr0_.setZero();
@@ -27,7 +23,6 @@ HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(const int N, const int nb
         setSolverDimensions(N, nb, ng);
 
     configure(settings_);
-    std::cout << "leaving constructor " << std::endl;  // todo remove
 }
 
 
@@ -39,28 +34,16 @@ HPIPMInterface<STATE_DIM, CONTROL_DIM>::~HPIPMInterface()
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setSolverDimensions(const int N, const int nb, const int ng)
 {
-    std::cout << "entering set solver dim " << std::endl;  // todo remove
-
-    nb_.resize(N + 1, nb);  // todo deprecate
-    nbx_.resize(N + 1, 0);  // todo replace 0 by correct value
-    nbu_.resize(N + 1, 0);  // tdo replace 0 by correct value
+    nb_.resize(N + 1, nb);  // todo this is bad design, is there no other way to propagate the number of constraints?
     ng_.resize(N + 1, ng);
-
-    nsbx_.resize(N + 1, 0);  // todo correct val
-    nsbu_.resize(N + 1, 0);  // todo correct val
-    nsg_.resize(N + 1, 0);   // todo correct val
 
     changeNumberOfStages(N);
     initializeAndAllocate();
-
-    std::cout << "leaving set solver dim " << std::endl;  // todo remove
 }
 
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
 {
-    std::cout << "entering init and allocate " << std::endl;  // todo remove
-
     // allocate ocp dimensions
     dim_size_ = d_ocp_qp_dim_memsize(N_);
     dim_mem_ = malloc(dim_size_);
@@ -120,15 +103,12 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
         std::cout << "HPIPM ipm_arg_size: " << ipm_arg_size << std::endl;
         std::cout << "HPIPM ipm_size: " << ipm_size << std::endl;
     }
-
-    std::cout << "leaving init and allocate" << std::endl;  // todo remove
 }
 
 
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configure(const NLOptConSettings& settings)
 {
-    std::cout << "entering configure " << std::endl;  // todo remove
     settings_ = settings;
 
     /*
@@ -138,7 +118,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configure(const NLOptConSettings& s
     arg_.mu0 = 2.0;         // todo review and make setting
                             // arg_.mu_max = 1e-12;    // todo review and make setting
 */
-    std::cout << "leaving configure " << std::endl;  // todo remove
 }
 
 
@@ -237,22 +216,15 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         printf("\nipm iter = %d\n", workspace_.iter);
         printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha\t\tmu\n");
         d_print_e_tran_mat(5, workspace_.iter, workspace_.stat, 5);
-
-        printSolution();
     }
 
-    // convert optimal control problem solution to standard column-major representation
-    //    ::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u_.data(), x_.data(), pi_.data(), lam_lb_.data(), lam_ub_.data(),
-    //        lam_lg_.data(), lam_ug_.data());
-
     // extract solution for x and u
-    int ii;
-    for (ii = 0; ii < N_; ii++)
+    for (int ii = 0; ii < N_; ii++)
     {
         Eigen::Matrix<double, CONTROL_DIM, 1> u_sol;
         ::d_ocp_qp_sol_get_u(ii, &qp_sol_, this->u_sol_[ii].data());
     }
-    for (ii = 0; ii <= N_; ii++)
+    for (int ii = 0; ii <= N_; ii++)
     {
         Eigen::Matrix<double, STATE_DIM, 1> x_sol;
         ::d_ocp_qp_sol_get_x(ii, &qp_sol_, this->x_sol_[ii].data());
@@ -260,6 +232,12 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
 
     // and design the feedback matrices
     designFeedback();
+
+    // display iteration summary
+    if (settings_.lqoc_solver_settings.lqoc_debug_print)
+    {
+        printSolution();
+    }
 }
 
 template <int STATE_DIM, int CONTROL_DIM>
@@ -268,15 +246,12 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::designFeedback()
     LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
     this->L_.resize(p.getNumberOfStages(), Eigen::Matrix<double, control_dim, state_dim>::Zero());
 
-
     // for stage 0, HPIPM does not provide feedback, so we have to construct it
-
     // step 1: reconstruct H[0]
     Eigen::Matrix<double, control_dim, control_dim> Lr;
     ::blasfeo_unpack_dmat(Lr.rows(), Lr.cols(), &workspace_.L[0], 0, 0, Lr.data(), Lr.rows());
     Eigen::Matrix<double, control_dim, control_dim> H;
     H = Lr.template triangularView<Eigen::Lower>() * Lr.transpose();  // Lr is cholesky of H
-    std::cout << "H matrix " << std::endl << H << std::endl;
 
     // step2: reconstruct S[1]
     Eigen::Matrix<double, state_dim, state_dim> Lq;
@@ -311,22 +286,17 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::printSolution()
     int ii;
 
     std::cout << "Solution for u: " << std::endl;
-    for (ii = 0; ii <= N_; ii++)
+    for (ii = 0; ii < N_; ii++)
     {
-        Eigen::Matrix<double, CONTROL_DIM, 1> u_sol;
-        ::d_ocp_qp_sol_get_u(ii, &qp_sol_, u_sol.data());
-        std::cout << u_sol << std::endl;
+        std::cout << this->u_sol_[ii].transpose() << std::endl;
     }
 
     std::cout << "Solution for x: " << std::endl;
     for (ii = 0; ii <= N_; ii++)
     {
-        Eigen::Matrix<double, STATE_DIM, 1> x_sol;
-        ::d_ocp_qp_sol_get_x(ii, &qp_sol_, x_sol.data());
-        std::cout << x_sol.transpose() << std::endl;
+        std::cout << this->x_sol_[ii].transpose() << std::endl;
     }
 
-    // todo test all of the following
 #ifdef HPIPM_PRINT_MATRICES
     printf("\npi\n");
     for (ii = 0; ii < N_; ii++)
@@ -344,55 +314,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::printSolution()
     for (ii = 0; ii <= N_; ii++)
         d_print_mat(1, ng_[ii], lam_ug_[ii], 1);
 
-/*
-    printf("\nt_lb\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, nb_[ii], (qp_sol_.t_lb + ii)->pa, 1);
-    printf("\nt_ub\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, nb_[ii], (qp_sol_.t_ub + ii)->pa, 1);
-    printf("\nt_lg\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, ng_[ii], (qp_sol_.t_lg + ii)->pa, 1);
-    printf("\nt_ug\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, ng_[ii], (qp_sol_.t_ug + ii)->pa, 1);
-*/
-/*
-    printf("\nresiduals\n\n");
-    printf("\nres_g\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, nu_[ii] + nx_[ii], (workspace_.res_g + ii)->pa, 1);
-    printf("\nres_b\n");
-    for (ii = 0; ii < N_; ii++)
-        d_print_e_mat(1, nx_[ii + 1], (workspace_.res_b + ii)->pa, 1);
-    printf("\nres_m_lb\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, nb_[ii], (workspace_.res_m_lb + ii)->pa, 1);
-    printf("\nres_m_ub\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, nb_[ii], (workspace_.res_m_ub + ii)->pa, 1);
-    printf("\nres_m_lg\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, ng_[ii], (workspace_.res_m_lg + ii)->pa, 1);
-    printf("\nres_m_ug\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, ng_[ii], (workspace_.res_m_ug + ii)->pa, 1);
-    printf("\nres_d_lb\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, nb_[ii], (workspace_.res_d_lb + ii)->pa, 1);
-    printf("\nres_d_ub\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, nb_[ii], (workspace_.res_d_ub + ii)->pa, 1);
-    printf("\nres_d_lg\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, ng_[ii], (workspace_.res_d_lg + ii)->pa, 1);
-    printf("\nres_d_ug\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, ng_[ii], (workspace_.res_d_ug + ii)->pa, 1);
-    printf("\nres_mu\n");
-    printf("\n%e\n\n", workspace_.res_mu);
-    */
 #endif  // HPIPM_PRINT_MATRICES
 
     int iter;
@@ -406,8 +327,6 @@ template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
 {
-    std::cout << "entering set problem impl " << std::endl;
-
     // check if the number of stages N changed and adapt problem dimensions
     bool nStagesChanged = changeNumberOfStages(lqocProblem->getNumberOfStages());
 
@@ -430,12 +349,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
         lqocProblem->P_, lqocProblem->qv_, lqocProblem->Q_, lqocProblem->rv_, lqocProblem->R_);
 
 
-    //   if (nStagesChanged)
-    //  {
-    initializeAndAllocate();
-    //  }
-
-    std::cout << "leaving set problem impl " << std::endl;
+    //if (nStagesChanged)
+        initializeAndAllocate();  // todo this allocation is currently required in every call .. why?
 }
 
 
@@ -546,13 +461,10 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
     if (N_ == -1)
         throw std::runtime_error("Time horizon not set, please set it first");
 
-    // assign data for LQ problem
-
-    // set pointer to the initial state
+    // transcribe initial state into solution vector (won't be considered by HPIPM)
     this->x_sol_[0] = x[0];
-    //x_[0] = x[0].data();
-    x0_ = x[0].data();
 
+    // assign data for LQ problem
     for (int i = 0; i < N_; i++)
     {
         x_[i] = x[i].data();
@@ -600,30 +512,30 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     nb_.resize(N_ + 1, nb_.back());   // initialize number of box constraints per stage
     ng_.resize(N_ + 1, ng_.back());   // initialize number of general constraints per stage
 
-    nbu_.resize(N + 1, 0);   // todo correct val
-    nbx_.resize(N + 1, 0);   // todo correct val
-    nsbx_.resize(N + 1, 0);  // todo correct val
-    nsbu_.resize(N + 1, 0);  // todo correct val
-    nsg_.resize(N + 1, 0);   // todo correct val
+    nbu_.resize(N_ + 1, 0);   // todo correct val
+    nbx_.resize(N_ + 1, 0);   // todo correct val
+    nsbx_.resize(N_ + 1, 0);  // todo correct val
+    nsbu_.resize(N_ + 1, 0);  // todo correct val
+    nsg_.resize(N_ + 1, 0);   // todo correct val
 
-    hd_lb_.resize(N + 1, 0);  // todo correct val
-    hd_ub_.resize(N + 1, 0);  // todo correct val
-    hlbx_.resize(N + 1, 0);   // todo correct val
-    hubx_.resize(N + 1, 0);   // todo correct val
-    hlbu_.resize(N + 1, 0);   // todo correct val
-    hubu_.resize(N + 1, 0);   // todo correct val
+    hd_lb_.resize(N_ + 1, 0);  // todo correct val
+    hd_ub_.resize(N_ + 1, 0);  // todo correct val
+    hlbx_.resize(N_ + 1, 0);   // todo correct val
+    hubx_.resize(N_ + 1, 0);   // todo correct val
+    hlbu_.resize(N_ + 1, 0);   // todo correct val
+    hubu_.resize(N_ + 1, 0);   // todo correct val
 
-    hlg_.resize(N + 1, 0);  // todo correct val
-    hug_.resize(N + 1, 0);  // todo correct val
-    hZl_.resize(N + 1, 0);  // todo correct val
-    hZu_.resize(N + 1, 0);  // todo correct val
-    hzl_.resize(N + 1, 0);  // todo correct val
-    hzu_.resize(N + 1, 0);  // todo correct val
+    hlg_.resize(N_ + 1, 0);  // todo correct val
+    hug_.resize(N_ + 1, 0);  // todo correct val
+    hZl_.resize(N_ + 1, 0);  // todo correct val
+    hZu_.resize(N_ + 1, 0);  // todo correct val
+    hzl_.resize(N_ + 1, 0);  // todo correct val
+    hzu_.resize(N_ + 1, 0);  // todo correct val
 
-    hidxs_.resize(N + 1, 0);  // todo correct val
+    hidxs_.resize(N_ + 1, 0);  // todo correct val
 
-    hlls_.resize(N + 1, 0);  // todo correct val
-    hlus_.resize(N + 1, 0);  // todo correct val
+    hlls_.resize(N_ + 1, 0);  // todo correct val
+    hlus_.resize(N_ + 1, 0);  // todo correct val
 
     // resize the containers for the affine system dynamics approximation
     hA_.resize(N_);
@@ -664,12 +576,6 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
 
     for (int i = 0; i < N_; i++)
     {
-        // first state and last input are not optimized
-        x_[i + 1] = this->x_sol_[i + 1].data();
-        u_[i] = this->u_sol_[i].data();
-    }
-    for (int i = 0; i < N_; i++)
-    {
         pi_[i] = hpi_[i].data();
     }
 
@@ -687,7 +593,7 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     nx_[0] = 0;
 
     // last input is not a decision variable
-    nu_[N] = 0;
+    nu_[N_] = 0;
 
     return true;
 }
