@@ -277,13 +277,25 @@ public:
 	 *
 	 * @return     The state box constraint instances
 	 */
-    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances() = 0;
+    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances()
+    {
+        throw std::runtime_error("getInputBoxConstraintsInstances not supported.");
+    }
 
-    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances() const = 0;
+    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances() const
+    {
+        throw std::runtime_error("getInputBoxConstraintsInstances not supported.");
+    }
 
-    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances() = 0;
+    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances()
+    {
+        throw std::runtime_error("getStateBoxConstraintsInstances not supported.");
+    }
 
-    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances() const = 0;
+    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances() const
+    {
+        throw std::runtime_error("getStateBoxConstraintsInstances not supported.");
+    }
 
 
     /**

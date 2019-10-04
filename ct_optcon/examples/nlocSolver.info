@@ -36,6 +36,7 @@ ilqr
 
     lqoc_solver_settings
     {
-        lqoc_debug_print false
+        lqoc_debug_print        false
+        num_lqoc_iterations  	20
     }
 }

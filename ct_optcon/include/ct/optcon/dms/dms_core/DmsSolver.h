@@ -135,8 +135,10 @@ public:
             costFunctionsCG.push_back(CostPtrCG(problemCG.getCostFunction()->clone()));
         }
 
-        if (problemCG.getBoxConstraints())
-            boxConstraintsCG.push_back(ConstraintCG(problemCG.getBoxConstraints()->clone()));
+        if (problemCG.getInputBoxConstraints())
+            boxConstraintsCG.push_back(ConstraintCG(problemCG.getInputBoxConstraints()->clone()));
+        if (problemCG.getStateBoxConstraints())
+            boxConstraintsCG.push_back(ConstraintCG(problemCG.getStateBoxConstraints()->clone()));
 
         if (problemCG.getGeneralConstraints())
             generalConstraintsCG.push_back(ConstraintCG(problemCG.getGeneralConstraints()->clone()));
@@ -231,9 +233,14 @@ public:
                 this->getLinearSystemsInstances()[i] = typename Base::OptConProblem_t::LinearPtr_t(lin->clone());
     }
 
-    void changeBoxConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
+    void changeInputBoxConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
     {
-        this->getBoxConstraintsInstances().push_back(typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
+        this->getInputBoxConstraintsInstances().push_back(typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
+    }
+
+    void changeStateBoxConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con)
+    {
+        this->getStateBoxConstraintsInstances().push_back(typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
     }
 
     void changeGeneralConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
@@ -266,11 +273,8 @@ public:
         return costFunctions_;
     }
 
-    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() override
-    {
-        return boxConstraints_;
-    }
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const override
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() { return boxConstraints_; }
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const
     {
         return boxConstraints_;
     }

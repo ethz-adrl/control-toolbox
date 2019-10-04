@@ -100,15 +100,16 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero(const int& nGenConstr)
     q_.setConstant((SCALAR)0.0);
 
     // reset the number of box constraints
-    std::fill(nbx_.begin(), nbu_.end(), 0);
+    std::fill(nbx_.begin(), nbx_.end(), 0);
     std::fill(nbu_.begin(), nbu_.end(), 0);
 
     // reset general constraints
+    assert(ng_.size() == d_lb_.size());
     assert(d_lb_.size() == d_ub_.size());
     assert(d_lb_.size() == C_.size());
     assert(d_lb_.size() == D_.size());
     std::fill(ng_.begin(), ng_.end(), nGenConstr);
-    for (size_t i = 0; i < d_lb_.size(); i++)
+    for (size_t i = 0; i < ng_.size(); i++)
     {
         d_lb_[i].resize(nGenConstr, 1);
         d_lb_[i].setZero();

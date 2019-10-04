@@ -38,7 +38,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setSolverDimensions(const int N,
 {
     nbu_.resize(N + 1, nbu);  // todo this is bad design, is there no other way to propagate the number of constraints?
     nbx_.resize(N + 1, nbx);  // todo this is bad design, is there no other way to propagate the number of constraints?
-    ng_.resize(N + 1, ng);
+    ng_.resize(N + 1, ng);    // todo this is bad design, is there no other way to propagate the number of constraints?
 
     changeNumberOfStages(N);
     initializeAndAllocate();
@@ -59,9 +59,9 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
     qp_mem_ = malloc(qp_size);
     ::d_ocp_qp_create(&dim_, &qp_, qp_mem_);
     ::d_ocp_qp_set_all(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(), hr_.data(),
-        hidxbx_.data(), hlbx_.data(), hubx_.data(), hidxbu_.data(), hlbu_.data(), hubu_.data(), hC_.data(), hD_.data(),
-        hlg_.data(), hug_.data(), hZl_.data(), hZu_.data(), hzl_.data(), hzu_.data(), hidxs_.data(), hlls_.data(),
-        hlus_.data(), &qp_);
+        hidxbx_.data(), hlbx_.data(), hubx_.data(), hidxbu_.data(), hlbu_.data(), hubu_.data(),  // box constraints
+        hC_.data(), hD_.data(), hlg_.data(), hug_.data(),                                        // gen constraints
+        hZl_.data(), hZu_.data(), hzl_.data(), hzu_.data(), hidxs_.data(), hlls_.data(), hlus_.data(), &qp_);
 
     // allocation for solution
     int qp_sol_size = ::d_ocp_qp_sol_memsize(&dim_);
@@ -190,10 +190,10 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         d_print_mat(ng_[i], STATE_DIM, hC_[i], ng_[i]);
         printf("\nD\n");
         d_print_mat(ng_[i], CONTROL_DIM, hD_[i], ng_[i]);
-        printf("\nhd_lg_\n");
-        d_print_mat(1, ng_[i], hd_lg_[i], 1);
-        printf("\nhd_ug_\n");
-        d_print_mat(1, ng_[i], hd_ug_[i], 1);
+        printf("\nhlg_\n");
+        d_print_mat(1, ng_[i], hlg_[i], 1);
+        printf("\nhug_\n");
+        d_print_mat(1, ng_[i], hug_[i], 1);
 
     }   // end optional printout
 #endif  // HPIPM_PRINT_MATRICES
@@ -261,6 +261,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::designFeedback()
     this->L_.resize(p.getNumberOfStages(), Eigen::Matrix<double, control_dim, state_dim>::Zero());
 
     // for stage 0, HPIPM does not provide feedback, so we have to construct it
+    
     // step 1: reconstruct H[0]
     Eigen::Matrix<double, control_dim, control_dim> Lr;
     ::blasfeo_unpack_dmat(Lr.rows(), Lr.cols(), &workspace_.L[0], 0, 0, Lr.data(), Lr.rows());
@@ -285,11 +286,9 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::designFeedback()
     Eigen::Matrix<double, state_dim, control_dim> Ls;
     for (int i = 1; i < this->lqocProblem_->getNumberOfStages(); i++)
     {
-        Eigen::Map<Eigen::Matrix<double, control_dim, control_dim>> Lr_map(workspace_.L[i].pA);
-
         ::blasfeo_unpack_dmat(Lr.rows(), Lr.cols(), &workspace_.L[i], 0, 0, Lr.data(), Lr.rows());
         ::blasfeo_unpack_dmat(Ls.rows(), Ls.cols(), &workspace_.L[i], Lr.rows(), 0, Ls.data(), Ls.rows());
-        this->L_[i] = (-Ls * Lr_map.partialPivLu().inverse()).transpose();
+        this->L_[i] = (-Ls * Lr.partialPivLu().inverse()).transpose();
     }
 }
 
@@ -297,6 +296,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::designFeedback()
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::printSolution()
 {
+#ifdef HPIPM_PRINT_MATRICES
     int ii;
 
     std::cout << "Solution for u: " << std::endl;
@@ -310,19 +310,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::printSolution()
     {
         std::cout << this->x_sol_[ii].transpose() << std::endl;
     }
-
-#ifdef HPIPM_PRINT_MATRICES
-    printf("\npi\n");
-    for (ii = 0; ii < N_; ii++)
-        d_print_mat(1, nx_[ii + 1], pi_[ii], 1);
-    printf("\nlam_lb\n");
-    printf("\nlam_lg\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, ng_[ii], lam_lg_[ii], 1);
-    printf("\nlam_ug\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, ng_[ii], lam_ug_[ii], 1);
-
 #endif  // HPIPM_PRINT_MATRICES
 
     int iter;
@@ -363,7 +350,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
         initializeAndAllocate();
     else
     {
-        // TODO: it is not exactly clear why we need to do this here ... but otherwise the solver fails!
+        // we need to call the setters to transform our data into HPIPM interal structures
         ::d_ocp_qp_set_all(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(),
             hr_.data(), hidxbx_.data(), hlbx_.data(), hubx_.data(), hidxbu_.data(), hlbu_.data(), hubu_.data(),
             hC_.data(), hD_.data(), hlg_.data(), hug_.data(), hZl_.data(), hZu_.data(), hzl_.data(), hzu_.data(),
@@ -408,7 +395,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureStateBoxConstraints(
         {
             nbx_[i] = 0;
         }
-
     }
 }
 
@@ -421,40 +407,32 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
     hd_lg_0_Eigen_ = lqocProblem->d_lb_[0] - lqocProblem->C_[0] * lqocProblem->x_[0];
     hd_ug_0_Eigen_ = lqocProblem->d_ub_[0] - lqocProblem->C_[0] * lqocProblem->x_[0];
 
+    assert(ng_.size() == ((size_t)N_ + 1));
+
     for (int i = 0; i < N_ + 1; i++)  // (includes the terminal stage)
     {
-        // check dimensions
-        assert(lqocProblem->d_lb_[i].rows() == lqocProblem->d_ub_[i].rows());
-        assert(lqocProblem->d_lb_[i].rows() == lqocProblem->C_[i].rows());
-        assert(lqocProblem->d_lb_[i].rows() == lqocProblem->D_[i].rows());
-        assert(lqocProblem->C_[i].cols() == STATE_DIM);
-        assert(lqocProblem->D_[i].cols() == CONTROL_DIM);
-
         // get the number of constraints
         ng_[i] = lqocProblem->ng_[i];
+
+        lqocProblem->C_[i].resize(lqocProblem->ng_[i], STATE_DIM);
+        lqocProblem->D_[i].resize(lqocProblem->ng_[i], CONTROL_DIM);
+        lqocProblem->d_lb_[i].resize(lqocProblem->ng_[i], 1);
+        lqocProblem->d_ub_[i].resize(lqocProblem->ng_[i], 1);
 
         // set pointers to hpipm-style box constraint boundaries and sparsity pattern
         if (i == 0)
         {
-            hd_lg_[i] = hd_lg_0_Eigen_.data();
-            hd_ug_[i] = hd_ug_0_Eigen_.data();
+            hlg_[i] = hd_lg_0_Eigen_.data();
+            hug_[i] = hd_ug_0_Eigen_.data();
         }
         else
         {
-            hd_lg_[i] = lqocProblem->d_lb_[i].data();
-            hd_ug_[i] = lqocProblem->d_ub_[i].data();
+            hlg_[i] = lqocProblem->d_lb_[i].data();
+            hug_[i] = lqocProblem->d_ub_[i].data();
         }
+
         hC_[i] = lqocProblem->C_[i].data();
         hD_[i] = lqocProblem->D_[i].data();
-
-        // TODO clarify with Gianluca if we need to reset the lagrange multiplier
-        // before warmstarting (potentially wrong warmstart for the lambdas)
-
-        // direct pointers of lagrange mult to corresponding containers
-        cont_lam_lg_[i].resize(ng_[i]);  // todo avoid dynamic allocation (e.g. by defining a max. constraint dim)
-        cont_lam_ug_[i].resize(ng_[i]);  // todo avoid dynamic allocation (e.g. by defining a max. constraint dim)
-        lam_lg_[i] = cont_lam_lg_[i].data();
-        lam_ug_[i] = cont_lam_ug_[i].data();
     }
 }
 
@@ -528,37 +506,16 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     nx_.resize(N_ + 1, STATE_DIM);  // initialize number of states per stage
     nx_[0] = 0;                     // initial state is not a decision variable but given
 
-    nbu_.resize(N_ + 1, nbu_.back());  // initialize number of box constraints per stage
-    nbx_.resize(N_ + 1, nbx_.back());  // initialize number of box constraints per stage
-    ng_.resize(N_ + 1, ng_.back());    // initialize number of general constraints per stage
-
-    nbu_.resize(N_ + 1, 0);   // todo correct val
-    nbx_.resize(N_ + 1, 0);   // todo correct val
-    nsbx_.resize(N_ + 1, 0);  // todo correct val
-    nsbu_.resize(N_ + 1, 0);  // todo correct val
-    nsg_.resize(N_ + 1, 0);   // todo correct val
-
-    hlbx_.resize(N_ + 1, 0);   // todo correct val
-    hubx_.resize(N_ + 1, 0);   // todo correct val
-    hlbu_.resize(N_ + 1, 0);   // todo correct val
-    hubu_.resize(N_ + 1, 0);   // todo correct val
-
-    hlg_.resize(N_ + 1, 0);  // todo correct val
-    hug_.resize(N_ + 1, 0);  // todo correct val
-    hZl_.resize(N_ + 1, 0);  // todo correct val
-    hZu_.resize(N_ + 1, 0);  // todo correct val
-    hzl_.resize(N_ + 1, 0);  // todo correct val
-    hzu_.resize(N_ + 1, 0);  // todo correct val
-
-    hidxs_.resize(N_ + 1, 0);  // todo correct val
-
-    hlls_.resize(N_ + 1, 0);  // todo correct val
-    hlus_.resize(N_ + 1, 0);  // todo correct val
 
     // resize the containers for the affine system dynamics approximation
     hA_.resize(N_);
     hB_.resize(N_);
     hb_.resize(N_);
+
+    u_.resize(N_ + 1);
+    x_.resize(N_ + 1);
+    this->x_sol_.resize(N_ + 1);
+    this->u_sol_.resize(N_);
 
     // resize the containers for the LQ cost approximation
     hQ_.resize(N_ + 1);
@@ -567,31 +524,39 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     hq_.resize(N_ + 1);
     hr_.resize(N_ + 1);
 
+    // initialize number of box constraints per stage
+    nbu_.resize(N_ + 1, nbu_.back());
+    nbx_.resize(N_ + 1, nbx_.back());
     hidxbx_.resize(N_ + 1);
     hidxbu_.resize(N_ + 1);
-    hd_lg_.resize(N_ + 1);
-    hd_ug_.resize(N_ + 1);
+    hlbx_.resize(N_ + 1, 0);
+    hubx_.resize(N_ + 1, 0);
+    hlbu_.resize(N_ + 1, 0);
+    hubu_.resize(N_ + 1, 0);
+
+    // initialize number of gen constraints per stage
+    ng_.resize(N_ + 1, 0);
+    hlg_.resize(N_ + 1, 0);
+    hug_.resize(N_ + 1, 0);
     hC_.resize(N_ + 1);
     hD_.resize(N_ + 1);
 
-    u_.resize(N_ + 1);
-    x_.resize(N_ + 1);
-    pi_.resize(N_);
-    hpi_.resize(N_);
-    this->x_sol_.resize(N_ + 1);
-    this->u_sol_.resize(N_);
+    // currently ignored stuff (resized anyways)
+    nsbx_.resize(N_ + 1, 0);  // no softened state box constraints
+    nsbu_.resize(N_ + 1, 0);  // no softened input box constraints
+    nsg_.resize(N_ + 1, 0);   // no softened general constraints
 
-    lam_lg_.resize(N_ + 1);
-    lam_ug_.resize(N_ + 1);
-    cont_lam_lg_.resize(N_ + 1);
-    cont_lam_ug_.resize(N_ + 1);
+    hZl_.resize(N_ + 1, 0);
+    hZu_.resize(N_ + 1, 0);
+    hzl_.resize(N_ + 1, 0);
+    hzu_.resize(N_ + 1, 0);
+
+    hidxs_.resize(N_ + 1, 0);
+
+    hlls_.resize(N_ + 1, 0);
+    hlus_.resize(N_ + 1, 0);
 
     // assignments that stay constant despite varying problem impl data
-    for (int i = 0; i < N_; i++)
-    {
-        pi_[i] = hpi_[i].data();
-    }
-
     hb_[0] = hb0_.data();
     hr_[0] = hr0_.data();
 

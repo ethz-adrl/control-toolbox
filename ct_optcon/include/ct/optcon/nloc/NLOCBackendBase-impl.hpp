@@ -329,15 +329,27 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         generalConstraints_[i] = typename OptConProblem_t::ConstraintPtr_t(con->clone());
     }
 
-    // we need to allocate memory in HPIPM for the new constraints
+    // intermediate stages
     for (int i = 0; i < K_; i++)
     {
         generalConstraints_[settings_.nThreads]->setCurrentStateAndControl(
             lqocProblem_->x_[i], lqocProblem_->u_[i], i * settings_.dt);
+
         lqocProblem_->ng_[i] = generalConstraints_[settings_.nThreads]->getIntermediateConstraintsCount();
+
+        lqocProblem_->C_[i].resize(lqocProblem_->ng_[i], STATE_DIM);
+        lqocProblem_->D_[i].resize(lqocProblem_->ng_[i], CONTROL_DIM);
+        lqocProblem_->d_lb_[i].resize(lqocProblem_->ng_[i], 1);
+        lqocProblem_->d_ub_[i].resize(lqocProblem_->ng_[i], 1);
     }
 
+    // terminal stage
     lqocProblem_->ng_[K_] = generalConstraints_[settings_.nThreads]->getTerminalConstraintsCount();
+    lqocProblem_->C_[K_].resize(lqocProblem_->ng_[K_], STATE_DIM);
+    lqocProblem_->D_[K_].resize(lqocProblem_->ng_[K_], CONTROL_DIM);
+    lqocProblem_->d_lb_[K_].resize(lqocProblem_->ng_[K_], 1);
+    lqocProblem_->d_ub_[K_].resize(lqocProblem_->ng_[K_], 1);
+
     lqocSolver_->setProblem(lqocProblem_);
     lqocSolver_->configureGeneralConstraints(lqocProblem_);
     lqocSolver_->initializeAndAllocate();
@@ -1169,7 +1181,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             return;
 
         // compute constraint violations specific to this alpha
-        if (inputBoxConstraints_[threadId] != nullptr | stateBoxConstraints_[threadId] != nullptr)
+        if ((inputBoxConstraints_[threadId] != nullptr) | (stateBoxConstraints_[threadId] != nullptr))
             computeBoxConstraintErrorOfTrajectory(threadId, x_alpha, u_alpha, e_box_norm);
 
         if (terminationFlag && *terminationFlag)
