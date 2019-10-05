@@ -244,7 +244,8 @@ private:
     struct d_ocp_qp_ipm_ws workspace_;
     int hpipm_status_;  // status code after solving
 
-    ::hpipm_mode mode_ = ::hpipm_mode::SPEED;  // see also hpipm_common.h
+    // todo make this a setting
+    ::hpipm_mode mode_ = ::hpipm_mode::SPEED;  // ROBUST/BALANCED; see also hpipm_common.h
 };
 
 

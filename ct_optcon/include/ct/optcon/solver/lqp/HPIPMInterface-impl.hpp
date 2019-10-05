@@ -75,17 +75,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
 
     ::d_ocp_qp_ipm_arg_set_default(mode_, &arg_);
     ::d_ocp_qp_ipm_arg_set_iter_max(&settings_.lqoc_solver_settings.num_lqoc_iterations, &arg_);
-    ::d_ocp_qp_ipm_arg_set_mu0(&settings_.lqoc_solver_settings.mu0, &arg_);
-    ::d_ocp_qp_ipm_arg_set_alpha_min(&settings_.lqoc_solver_settings.alpha_min, &arg_);
-    ::d_ocp_qp_ipm_arg_set_mu0(&settings_.lqoc_solver_settings.mu0, &arg_);
-    ::d_ocp_qp_ipm_arg_set_tol_stat(&settings_.lqoc_solver_settings.tol_stat, &arg_);
-    ::d_ocp_qp_ipm_arg_set_tol_eq(&settings_.lqoc_solver_settings.tol_eq, &arg_);
-    ::d_ocp_qp_ipm_arg_set_tol_ineq(&settings_.lqoc_solver_settings.tol_ineq, &arg_);
-    ::d_ocp_qp_ipm_arg_set_tol_comp(&settings_.lqoc_solver_settings.tol_comp, &arg_);
-    ::d_ocp_qp_ipm_arg_set_reg_prim(&settings_.lqoc_solver_settings.reg_prim, &arg_);
-    ::d_ocp_qp_ipm_arg_set_warm_start(&settings_.lqoc_solver_settings.warm_start, &arg_);
-    ::d_ocp_qp_ipm_arg_set_pred_corr(&settings_.lqoc_solver_settings.pred_corr, &arg_);
-    ::d_ocp_qp_ipm_arg_set_ric_alg(&settings_.lqoc_solver_settings.ric_alg, &arg_);
 
     // create workspace
     int ipm_size = ::d_ocp_qp_ipm_ws_memsize(&dim_, &arg_);
@@ -114,17 +103,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configure(const NLOptConSettings& s
 {
     settings_ = settings;
     ::d_ocp_qp_ipm_arg_set_iter_max(&settings_.lqoc_solver_settings.num_lqoc_iterations, &arg_);
-    ::d_ocp_qp_ipm_arg_set_mu0(&settings_.lqoc_solver_settings.mu0, &arg_);
-    ::d_ocp_qp_ipm_arg_set_alpha_min(&settings_.lqoc_solver_settings.alpha_min, &arg_);
-    ::d_ocp_qp_ipm_arg_set_mu0(&settings_.lqoc_solver_settings.mu0, &arg_);
-    ::d_ocp_qp_ipm_arg_set_tol_stat(&settings_.lqoc_solver_settings.tol_stat, &arg_);
-    ::d_ocp_qp_ipm_arg_set_tol_eq(&settings_.lqoc_solver_settings.tol_eq, &arg_);
-    ::d_ocp_qp_ipm_arg_set_tol_ineq(&settings_.lqoc_solver_settings.tol_ineq, &arg_);
-    ::d_ocp_qp_ipm_arg_set_tol_comp(&settings_.lqoc_solver_settings.tol_comp, &arg_);
-    ::d_ocp_qp_ipm_arg_set_reg_prim(&settings_.lqoc_solver_settings.reg_prim, &arg_);
-    ::d_ocp_qp_ipm_arg_set_warm_start(&settings_.lqoc_solver_settings.warm_start, &arg_);
-    ::d_ocp_qp_ipm_arg_set_pred_corr(&settings_.lqoc_solver_settings.pred_corr, &arg_);
-    ::d_ocp_qp_ipm_arg_set_ric_alg(&settings_.lqoc_solver_settings.ric_alg, &arg_);
 }
 
 
@@ -260,10 +238,20 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::designFeedback()
     LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
     this->L_.resize(p.getNumberOfStages(), Eigen::Matrix<double, control_dim, state_dim>::Zero());
 
-    // for stage 0, HPIPM does not provide feedback, so we have to construct it
-    
-    // step 1: reconstruct H[0]
+    // for steps k=1,...,N we can just read Ls, Lr and construct L from it
+    Eigen::Matrix<double, state_dim, control_dim> Ls;
     Eigen::Matrix<double, control_dim, control_dim> Lr;
+
+    for (int i = 1; i < this->lqocProblem_->getNumberOfStages(); i++)
+    {
+        ::blasfeo_unpack_dmat(Lr.rows(), Lr.cols(), &workspace_.L[i], 0, 0, Lr.data(), Lr.rows());
+        ::blasfeo_unpack_dmat(Ls.rows(), Ls.cols(), &workspace_.L[i], Lr.rows(), 0, Ls.data(), Ls.rows());
+        this->L_[i] = (-Ls * Lr.partialPivLu().inverse()).transpose();
+    }
+
+    // for stage k=0, HPIPM does not have meaningful entries for Ls, so we have to manually design the feedback
+
+    // step 1: reconstruct H[0]
     ::blasfeo_unpack_dmat(Lr.rows(), Lr.cols(), &workspace_.L[0], 0, 0, Lr.data(), Lr.rows());
     Eigen::Matrix<double, control_dim, control_dim> H;
     H = Lr.template triangularView<Eigen::Lower>() * Lr.transpose();  // Lr is cholesky of H
@@ -271,25 +259,16 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::designFeedback()
     // step2: reconstruct S[1]
     Eigen::Matrix<double, state_dim, state_dim> Lq;
     ::blasfeo_unpack_dmat(Lq.rows(), Lq.cols(), &workspace_.L[1], control_dim, control_dim, Lq.data(), Lq.rows());
-    Eigen::Matrix<double, state_dim, state_dim> S;
-    S = Lq.template triangularView<Eigen::Lower>() * Lq.transpose();  // Lq is cholesky of S
+    Eigen::Matrix<double, state_dim, state_dim> S1;
+    S1 = Lq.template triangularView<Eigen::Lower>() * Lq.transpose();  // Lq is cholesky of S
 
     // step3: compute G[0]
     Eigen::Matrix<double, control_dim, state_dim> G;
     G = p.P_[0];
-    G.noalias() += p.B_[0].transpose() * S * p.A_[0];
+    G.noalias() += p.B_[0].transpose() * S1 * p.A_[0];
 
     // step4: compute K[0]
     this->L_[0] = (-H.inverse() * G);  // \todo use Lr here instead of H!
-
-    // for all other steps we can just read Ls
-    Eigen::Matrix<double, state_dim, control_dim> Ls;
-    for (int i = 1; i < this->lqocProblem_->getNumberOfStages(); i++)
-    {
-        ::blasfeo_unpack_dmat(Lr.rows(), Lr.cols(), &workspace_.L[i], 0, 0, Lr.data(), Lr.rows());
-        ::blasfeo_unpack_dmat(Ls.rows(), Ls.cols(), &workspace_.L[i], Lr.rows(), 0, Ls.data(), Ls.rows());
-        this->L_[i] = (-Ls * Lr.partialPivLu().inverse()).transpose();
-    }
 }
 
 

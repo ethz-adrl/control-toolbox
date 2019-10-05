@@ -102,50 +102,16 @@ struct LineSearchSettings
 struct LQOCSolverSettings
 {
 public:
-    LQOCSolverSettings()
-        : lqoc_debug_print(false),
-          num_lqoc_iterations(10),
-          alpha_min(1e-8),
-          mu0(1e4),
-          tol_stat(1e-4),
-          tol_eq(1e-5),
-          tol_ineq(1e-5),
-          tol_comp(1e-5),
-          reg_prim(1e-12),
-          warm_start(0),
-          pred_corr(1),
-          ric_alg(0)
-    {
-    }
+    LQOCSolverSettings() : lqoc_debug_print(false), num_lqoc_iterations(10) {}
 
     bool lqoc_debug_print;
     int num_lqoc_iterations;  //! number of allowed sub-iterations of LQOC solver per NLOC main iteration
-    double alpha_min;// exit cond on step length
-    double mu0;// initial value for complementarity slackness
-    double tol_stat;
-    double tol_eq;
-    double tol_ineq;
-    double tol_comp;
-    double reg_prim;
-    int warm_start; // 0 no warm start, 1 warm start primal sol, 2 warm start primal and dual sol
-    int pred_corr;
-    int ric_alg;
 
     void print() const
     {
         std::cout << "======================= LQOCSolverSettings =====================" << std::endl;
         std::cout << "num_lqoc_iterations: \t" << num_lqoc_iterations << std::endl;
         std::cout << "lqoc_debug_print: \t" << lqoc_debug_print << std::endl;
-        std::cout << "alpha_min: \t" << alpha_min << std::endl;
-        std::cout << "mu0: \t" << mu0 << std::endl;
-        std::cout << "tol_stat: \t" << tol_stat << std::endl;
-        std::cout << "tol_eq: \t" << tol_eq << std::endl;
-        std::cout << "tol_ineq: \t" << tol_ineq << std::endl;
-        std::cout << "tol_comp: \t" << tol_comp << std::endl;
-        std::cout << "reg_prim: \t" << reg_prim << std::endl;
-        std::cout << "warm_start: \t" << warm_start << std::endl;
-        std::cout << "pred_corr: \t" << pred_corr << std::endl;
-        std::cout << "ric_alg: \t" << ric_alg << std::endl;
     }
 
     void load(const std::string& filename, bool verbose = true, const std::string& ns = "lqoc_solver_settings")
@@ -165,67 +131,6 @@ public:
         try
         {
             lqoc_debug_print = pt.get<bool>(ns + ".lqoc_debug_print");
-        } catch (...)
-        {
-        }
-        try
-        {
-            alpha_min = pt.get<double>(ns + ".alpha_min");
-        } catch (...)
-        {
-        }
-        try
-        {
-            mu0 = pt.get<double>(ns + ".mu0");
-        } catch (...)
-        {
-        }
-
-        try
-        {
-            tol_stat = pt.get<double>(ns + ".tol_stat");
-        } catch (...)
-        {
-        }
-        try
-        {
-            tol_eq = pt.get<double>(ns + ".tol_eq");
-        } catch (...)
-        {
-        }
-        try
-        {
-            tol_ineq = pt.get<double>(ns + ".tol_ineq");
-        } catch (...)
-        {
-        }
-        try
-        {
-            tol_comp = pt.get<double>(ns + ".tol_comp");
-        } catch (...)
-        {
-        }
-        try
-        {
-            reg_prim = pt.get<double>(ns + ".reg_prim");
-        } catch (...)
-        {
-        }
-        try
-        {
-            warm_start = pt.get<int>(ns + ".warm_start");
-        } catch (...)
-        {
-        }
-        try
-        {
-            pred_corr = pt.get<int>(ns + ".pred_corr");
-        } catch (...)
-        {
-        }
-        try
-        {
-            ric_alg = pt.get<int>(ns + ".ric_alg");
         } catch (...)
         {
         }
