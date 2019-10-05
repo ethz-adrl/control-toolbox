@@ -538,48 +538,34 @@ protected:
     template <size_t ORDER = 1>
     SCALAR computeDefectsNorm(const StateVectorArray& d) const;
 
-    //! The policy. currently only for returning the result, should eventually replace L_ and u_ff_ (todo)
-    NLOCBackendBase::Policy_t policy_;
-
-    ct::core::tpl::TimeArray<SCALAR> t_;  //! the time trajectory
-
     bool initialized_;
     bool configured_;
 
     size_t iteration_; /*!< current iteration */
 
+    bool firstRollout_;
+
     Settings_t settings_;
 
-    int K_;  //! the number of stages in the overall OptConProblem
+    int K_;                               //! the number of stages in the overall OptConProblem
+    ct::core::tpl::TimeArray<SCALAR> t_;  //! the time trajectory
+    StateVectorArray x_;                  //! state array variables
+    StateVectorArray xShot_;              //! rolled-out state (at the end of a time step forward)
+    StateVectorArray d_;                  //! defects in between end of rollouts and subsequent state decision vars
+    StateVectorArray x_prev_;             //! state array from previous iteration
 
-    StateVectorArray x_;
-    StateVectorArray xShot_;
-    StateVectorArray x_prev_;
+    ControlVectorArray u_ff_;       //! feed forward controls
+    ControlVectorArray u_ff_prev_;  //! feed forward controls from previous iteration
+    FeedbackArray L_;               //! time-varying lqr feedback
 
-    ControlVectorArray u_ff_;
-    ControlVectorArray u_ff_prev_;
-
-    StateVectorArray d_; /*!< defects */
-
-    FeedbackArray L_;
+    StateSubstepsPtr substepsX_;    //! state substeps recorded by integrator during rollouts
+    ControlSubstepsPtr substepsU_;  //! control substeps recorded by integrator during rollouts
 
     SCALAR d_norm_;      //! sum of the norms of all defects (internal constraint)
     SCALAR e_box_norm_;  //! sum of the norms of all box constraint violations
     SCALAR e_gen_norm_;  //! sum of the norms of all general constraint violations
     SCALAR lx_norm_;     //! sum of the norms of state update
     SCALAR lu_norm_;     //! sum of the norms of control update
-
-    //! shared pointer to the linear-quadratic optimal control problem
-    std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>> lqocProblem_;
-
-    //! shared pointer to the linear-quadratic optimal control solver
-    std::shared_ptr<LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>> lqocSolver_;
-
-    StateSubstepsPtr substepsX_;
-    ControlSubstepsPtr substepsU_;
-
-    //! pointer to instance of the system interface
-    systemInterfacePtr_t systemInterface_;
 
     scalar_t intermediateCostBest_;
     scalar_t finalCostBest_;
@@ -589,12 +575,16 @@ protected:
     scalar_t intermediateCostPrevious_;
     scalar_t finalCostPrevious_;
 
+    scalar_t alphaBest_;
 
-//! if building with MATLAB support, include matfile
-#ifdef MATLAB
-    matlab::MatFile matFile_;
-#endif  //MATLAB
+    //! shared pointer to the linear-quadratic optimal control problem that is constructed by NLOC
+    std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>> lqocProblem_;
 
+    //! shared pointer to the linear-quadratic optimal control solver, that solves above LQOCP
+    std::shared_ptr<LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>> lqocSolver_;
+
+    //! pointer to instance of the system interface
+    systemInterfacePtr_t systemInterface_;
 
     /*!
      * of the following objects, we have nThreads+1 instantiations in form of a vector.
@@ -605,14 +595,18 @@ protected:
     std::vector<typename OptConProblem_t::ConstraintPtr_t> stateBoxConstraints_;
     std::vector<typename OptConProblem_t::ConstraintPtr_t> generalConstraints_;
 
-
-    bool firstRollout_;
-    scalar_t alphaBest_;
-
     //! a counter used to identify lqp problems in derived classes, i.e. for thread management in MP
     size_t lqpCounter_;
 
+    //! The policy. currently only for returning the result, should eventually replace L_ and u_ff_ (todo)
+    NLOCBackendBase::Policy_t policy_;
+
     SummaryAllIterations<SCALAR> summaryAllIterations_;
+
+    //! if building with MATLAB support, include matfile
+#ifdef MATLAB
+    matlab::MatFile matFile_;
+#endif  //MATLAB
 };
 
 
