@@ -34,7 +34,8 @@ OptConProblemBase<STATE_DIM, CONTROL_DIM, SYSTEM_T, LINEAR_SYSTEM_T, LINEARIZER_
       controlledSystem_(nonlinDynamics),
       costFunction_(costFunction),
       linearizedSystem_(linearSystem),
-      boxConstraints_(nullptr),
+      inputBoxConstraints_(nullptr),
+      stateBoxConstraints_(nullptr),
       generalConstraints_(nullptr)
 {
     if (linearSystem == nullptr)  // no linearization provided
@@ -72,12 +73,14 @@ template <size_t STATE_DIM,
 OptConProblemBase<STATE_DIM, CONTROL_DIM, SYSTEM_T, LINEAR_SYSTEM_T, LINEARIZER_T, SCALAR>::OptConProblemBase(
     DynamicsPtr_t nonlinDynamics,
     CostFunctionPtr_t costFunction,
-    ConstraintPtr_t boxConstraints,
+    ConstraintPtr_t inputBoxConstraints,
+    ConstraintPtr_t stateBoxConstraints,
     ConstraintPtr_t generalConstraints,
     LinearPtr_t linearSystem)
     : OptConProblemBase(nonlinDynamics, costFunction, linearSystem)  // delegating constructor
 {
-    boxConstraints_ = boxConstraints;
+    inputBoxConstraints_ = inputBoxConstraints;
+    stateBoxConstraints_ = stateBoxConstraints;
     generalConstraints_ = generalConstraints;
 }
 
@@ -93,12 +96,14 @@ OptConProblemBase<STATE_DIM, CONTROL_DIM, SYSTEM_T, LINEAR_SYSTEM_T, LINEARIZER_
     const state_vector_t& x0,
     DynamicsPtr_t nonlinDynamics,
     CostFunctionPtr_t costFunction,
-    ConstraintPtr_t boxConstraints,
+    ConstraintPtr_t inputBoxConstraints,
+    ConstraintPtr_t stateBoxConstraints,
     ConstraintPtr_t generalConstraints,
     LinearPtr_t linearSystem)
     : OptConProblemBase(nonlinDynamics,
           costFunction,
-          boxConstraints,
+          inputBoxConstraints,
+          stateBoxConstraints,
           generalConstraints,
           linearSystem)  // delegating constructor
 {
@@ -214,12 +219,26 @@ template <size_t STATE_DIM,
     typename LINEAR_SYSTEM_T,
     typename LINEARIZER_T,
     typename SCALAR>
-void OptConProblemBase<STATE_DIM, CONTROL_DIM, SYSTEM_T, LINEAR_SYSTEM_T, LINEARIZER_T, SCALAR>::setBoxConstraints(
+void OptConProblemBase<STATE_DIM, CONTROL_DIM, SYSTEM_T, LINEAR_SYSTEM_T, LINEARIZER_T, SCALAR>::setInputBoxConstraints(
     const ConstraintPtr_t constraint)
 {
-    boxConstraints_ = constraint;
-    if (!boxConstraints_->isInitialized())
-        boxConstraints_->initialize();
+    inputBoxConstraints_ = constraint;
+    if (!inputBoxConstraints_->isInitialized())
+        inputBoxConstraints_->initialize();
+}
+
+template <size_t STATE_DIM,
+    size_t CONTROL_DIM,
+    typename SYSTEM_T,
+    typename LINEAR_SYSTEM_T,
+    typename LINEARIZER_T,
+    typename SCALAR>
+void OptConProblemBase<STATE_DIM, CONTROL_DIM, SYSTEM_T, LINEAR_SYSTEM_T, LINEARIZER_T, SCALAR>::setStateBoxConstraints(
+    const ConstraintPtr_t constraint)
+{
+    stateBoxConstraints_ = constraint;
+    if (!stateBoxConstraints_->isInitialized())
+        stateBoxConstraints_->initialize();
 }
 
 template <size_t STATE_DIM,
@@ -244,10 +263,24 @@ template <size_t STATE_DIM,
     typename SCALAR>
 const typename OptConProblemBase<STATE_DIM, CONTROL_DIM, SYSTEM_T, LINEAR_SYSTEM_T, LINEARIZER_T, SCALAR>::
     ConstraintPtr_t
-    OptConProblemBase<STATE_DIM, CONTROL_DIM, SYSTEM_T, LINEAR_SYSTEM_T, LINEARIZER_T, SCALAR>::getBoxConstraints()
+    OptConProblemBase<STATE_DIM, CONTROL_DIM, SYSTEM_T, LINEAR_SYSTEM_T, LINEARIZER_T, SCALAR>::getInputBoxConstraints()
         const
 {
-    return boxConstraints_;
+    return inputBoxConstraints_;
+}
+
+template <size_t STATE_DIM,
+    size_t CONTROL_DIM,
+    typename SYSTEM_T,
+    typename LINEAR_SYSTEM_T,
+    typename LINEARIZER_T,
+    typename SCALAR>
+const typename OptConProblemBase<STATE_DIM, CONTROL_DIM, SYSTEM_T, LINEAR_SYSTEM_T, LINEARIZER_T, SCALAR>::
+    ConstraintPtr_t
+    OptConProblemBase<STATE_DIM, CONTROL_DIM, SYSTEM_T, LINEAR_SYSTEM_T, LINEARIZER_T, SCALAR>::getStateBoxConstraints()
+        const
+{
+    return stateBoxConstraints_;
 }
 
 template <size_t STATE_DIM,

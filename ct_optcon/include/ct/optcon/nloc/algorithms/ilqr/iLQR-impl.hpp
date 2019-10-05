@@ -80,7 +80,8 @@ bool iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishItera
     auto startEntire = start;
 
     // set box constraints and do LQ approximation
-    this->backend_->setBoxConstraintsForLQOCProblem();
+    this->backend_->setInputBoxConstraintsForLQOCProblem();
+    this->backend_->setStateBoxConstraintsForLQOCProblem();
     this->backend_->computeLQApproximation(0, K - 1);
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;

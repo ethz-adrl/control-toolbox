@@ -65,7 +65,8 @@ void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareIter
     }
 
     auto start = std::chrono::steady_clock::now();
-    this->backend_->setBoxConstraintsForLQOCProblem();
+    this->backend_->setInputBoxConstraintsForLQOCProblem();
+    this->backend_->setStateBoxConstraintsForLQOCProblem();
     this->backend_->computeLQApproximation(K_shot, K - 1);
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
@@ -186,7 +187,8 @@ void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareMPCI
     this->backend_->rolloutShots(K_shot, K - 1);
 
     auto start = std::chrono::steady_clock::now();
-    this->backend_->setBoxConstraintsForLQOCProblem();
+    this->backend_->setInputBoxConstraintsForLQOCProblem();
+    this->backend_->setStateBoxConstraintsForLQOCProblem();
     this->backend_->computeLQApproximation(K_shot, K - 1);
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;

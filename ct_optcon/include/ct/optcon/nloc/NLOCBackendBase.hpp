@@ -174,9 +174,14 @@ public:
     void changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin);
 
     /*!
-     * \brief Change the box constraints
+     * \brief Change the input box constraints
      */
-    void changeBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t& con);
+    void changeInputBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t& con);
+
+    /*!
+     * \brief Change the state box constraints
+     */
+    void changeStateBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t& con);
 
     /*!
      * \brief Change the general constraints
@@ -232,9 +237,11 @@ public:
      *
      * @return     The box constraint instances
      */
-    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances();
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances();
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances();
 
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const;
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances() const;
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances() const;
 
     /**
      * @brief      Direct accessor to the general constraints
@@ -335,7 +342,8 @@ public:
     virtual void computeLQApproximation(size_t firstIndex, size_t lastIndex) = 0;
 
     //! sets the box constraints for the entire time horizon including terminal stage
-    void setBoxConstraintsForLQOCProblem();
+    void setInputBoxConstraintsForLQOCProblem();
+    void setStateBoxConstraintsForLQOCProblem();
 
     //! obtain feedback update from lqoc solver, if provided
     void getFeedback();
@@ -593,7 +601,8 @@ protected:
      * Every instantiation is dedicated to a certain thread in the multi-thread implementation
      */
     std::vector<typename OptConProblem_t::CostFunctionPtr_t> costFunctions_;
-    std::vector<typename OptConProblem_t::ConstraintPtr_t> boxConstraints_;
+    std::vector<typename OptConProblem_t::ConstraintPtr_t> inputBoxConstraints_;
+    std::vector<typename OptConProblem_t::ConstraintPtr_t> stateBoxConstraints_;
     std::vector<typename OptConProblem_t::ConstraintPtr_t> generalConstraints_;
 
 

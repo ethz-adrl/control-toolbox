@@ -26,13 +26,14 @@ template <size_t STATE_DIM,
     size_t V_DIM = STATE_DIM / 2,
     typename SCALAR = double,
     bool CONTINUOUS = true>
-class NLOptConSolver : public OptConSolver<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>,
-                           typename NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Policy_t,
-                           NLOptConSettings,
-                           STATE_DIM,
-                           CONTROL_DIM,
-                           SCALAR,
-                           CONTINUOUS>
+class NLOptConSolver final
+    : public OptConSolver<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>,
+          typename NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Policy_t,
+          NLOptConSettings,
+          STATE_DIM,
+          CONTROL_DIM,
+          SCALAR,
+          CONTINUOUS>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -221,10 +222,16 @@ public:
     const std::vector<typename OptConProblem_t::CostFunctionPtr_t>& getCostFunctionInstances() const override;
 
     //! get reference to the box constraints
-    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() override;
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances() override;
 
     //! get constant reference to the boxconstraints
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const override;
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances() const override;
+
+    //! get reference to the box constraints
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances() override;
+
+    //! get constant reference to the boxconstraints
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances() const override;
 
     //! get reference to the general constraints
     std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() override;

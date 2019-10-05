@@ -69,12 +69,17 @@ public:
     using constr_state_jac_array_t = ct::core::DiscreteArray<constr_state_jac_t>;
     using constr_control_jac_array_t = ct::core::DiscreteArray<constr_control_jac_t>;
 
-    using box_constr_t = Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM, 1>;
-    using box_constr_array_t = ct::core::DiscreteArray<box_constr_t>;
+    using input_box_constr_vec_t = Eigen::Matrix<SCALAR, CONTROL_DIM, 1>;
+    using state_box_constr_vec_t = Eigen::Matrix<SCALAR, STATE_DIM, 1>;
+    using input_box_constr_array_t = ct::core::DiscreteArray<input_box_constr_vec_t>;
+    using state_box_constr_array_t = ct::core::DiscreteArray<state_box_constr_vec_t>;
 
     //! a vector indicating which box constraints are active and which not
-    using box_constr_sparsity_t = Eigen::Matrix<int, STATE_DIM + CONTROL_DIM, 1>;
-    using box_constr_sparsity_array_t = ct::core::DiscreteArray<box_constr_sparsity_t>;
+    using state_box_constr_sparsity_t = Eigen::Matrix<int, STATE_DIM, 1>;
+    using input_box_constr_sparsity_t = Eigen::Matrix<int, CONTROL_DIM, 1>;
+
+    using input_box_constr_sparsity_array_t = ct::core::DiscreteArray<input_box_constr_sparsity_t>;
+    using state_box_constr_sparsity_array_t = ct::core::DiscreteArray<state_box_constr_sparsity_t>;
 
     using VectorXi = Eigen::VectorXi;
 
@@ -94,41 +99,67 @@ public:
     void setZero(const int& nGenConstr = 0);
 
     /*!
-     * \brief set intermediate box constraints at a specific index
+     * \brief set input box constraints at a specific index
      * @param index the index
      * @param nConstr the number of constraints
-     * @param ux_lb control lower bound in absolute coordinates, active bounds ordered as [u x]
-     * @param ux_ub control upper bound in absolute coordinates, active bounds ordered as [u x]
+     * @param u_lb control lower bound in absolute coordinates
+     * @param u_ub control upper bound in absolute coordinates
      * @param sp the sparsity vector, with strictly increasing indices, e.g. [0 1 4 7]
      */
-    void setIntermediateBoxConstraint(const int index,
+    void setInputBoxConstraint(const int index,
         const int nConstr,
-        const constr_vec_t& ux_lb,
-        const constr_vec_t& ux_ub,
+        const constr_vec_t& u_lb,
+        const constr_vec_t& u_ub,
         const VectorXi& sp);
 
     /*!
-     * \brief set uniform box constraints, with the same constraint being applied at each intermediate stage
+     * \brief set uniform input box constraints, with the same constraint being applied at each intermediate stage
      * @param nConstr the number of constraints
-     * @param ux_lb control lower bound in absolute coordinates, active bounds ordered as [u x]
-     * @param ux_ub control upper bound in absolute coordinates, active bounds ordered as [u x]
+     * @param u_lb control lower bound in absolute coordinates
+     * @param u_ub control upper bound in absolute coordinates
      * @param sp the sparsity vector, with strictly increasing indices, e.g. [0 1 4 7]
      */
-    void setIntermediateBoxConstraints(const int nConstr,
-        const constr_vec_t& ux_lb,
-        const constr_vec_t& ux_ub,
+    void setInputBoxConstraints(const int nConstr,
+        const constr_vec_t& u_lb,
+        const constr_vec_t& u_ub,
+        const VectorXi& sp);
+
+    /*!
+     * \brief set state box constraints at a specific index
+     * @param index the index
+     * @param nConstr the number of constraints
+     * @param x_lb state lower bound in absolute coordinates
+     * @param x_ub state upper bound in absolute coordinates
+     * @param sp the sparsity vector, with strictly increasing indices, e.g. [0 1 4 7]
+     */
+    void setIntermediateStateBoxConstraint(const int index,
+        const int nConstr,
+        const constr_vec_t& x_lb,
+        const constr_vec_t& x_ub,
+        const VectorXi& sp);
+
+    /*!
+     * \brief set uniform state box constraints, with the same constraint being applied at each intermediate stage
+     * @param nConstr the number of constraints
+     * @param x_lb control lower bound in absolute coordinates
+     * @param x_ub control upper bound in absolute coordinates
+     * @param sp the sparsity vector, with strictly increasing indices, e.g. [0 1 4 7]
+     */
+    void setIntermediateStateBoxConstraints(const int nConstr,
+        const constr_vec_t& x_lb,
+        const constr_vec_t& x_ub,
         const VectorXi& sp);
 
     /*!
      * \brief set box constraints for terminal stage
      * @param nConstr the number of constraints
-     * @param ux_lb control lower bound in absolute coordinates, active bounds ordered as [u x]
-     * @param ux_ub control upper bound in absolute coordinates, active bounds ordered as [u x]
+     * @param x_lb state lower bound in absolute coordinates
+     * @param x_ub state upper bound in absolute coordinates
      * @param sp the sparsity vector, with strictly increasing indices, e.g. [0 1 4 7]
      */
     void setTerminalBoxConstraints(const int nConstr,
-        const constr_vec_t& ux_lb,
-        const constr_vec_t& ux_ub,
+        const constr_vec_t& x_lb,
+        const constr_vec_t& x_ub,
         const VectorXi& sp);
 
     /*!
@@ -163,7 +194,8 @@ public:
     //! return a flag indicating whether this LQOC Problem is constrained or not
     bool isConstrained() const;
 
-    bool isBoxConstrained() const;
+    bool isInputBoxConstrained() const;
+    bool isStateBoxConstrained() const;
     bool isGeneralConstrained() const;
 
     //! affine, time-varying system dynamics in discrete time
@@ -191,19 +223,25 @@ public:
     //! LQ approximation of the cross terms of the cost function
     ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> P_;
 
-    //! lower bound of box constraints in order [u_lb; x_lb]. Stacked for memory efficiency.
-    box_constr_array_t ux_lb_;
-    //! upper bound of box constraints in order [u_ub; x_ub]. Stacked for memory efficiency.
-    box_constr_array_t ux_ub_;
+    //! bounds of box constraints for input and state
+    input_box_constr_array_t u_lb_;
+    input_box_constr_array_t u_ub_;
+    state_box_constr_array_t x_lb_;
+    state_box_constr_array_t x_ub_;
+
     /*!
      * \brief container for the box constraint sparsity pattern
      * An example for how an element of this array might look like: [0 1 4 7]
-     * This would mean that box constraints act on elements 0, 1, 4 and 7 of the
-     * combined vector of decision variables [u; x]
+     * This would mean that box constraints act on elements 0, 1, 4 and 7 of the state or input vector
      */
-    box_constr_sparsity_array_t ux_I_;
-    //! the number of box constraints at every stage.
-    std::vector<int> nb_;
+    input_box_constr_sparsity_array_t u_I_;
+    state_box_constr_sparsity_array_t x_I_;
+
+    //! the number of input box constraints at every stage.
+    std::vector<int> nbu_;
+
+    //! the number of state box constraints at every stage.
+    std::vector<int> nbx_;
 
     //! general constraint lower bound
     constr_vec_array_t d_lb_;
@@ -216,7 +254,8 @@ public:
     std::vector<int> ng_;
 
     //! bool indicating if the optimization problem is box-constrained
-    bool hasBoxConstraints_;
+    bool hasInputBoxConstraints_;
+    bool hasStateBoxConstraints_;
 
     //! bool indicating if the optimization problem hs general inequality constraints
     bool hasGenConstraints_;

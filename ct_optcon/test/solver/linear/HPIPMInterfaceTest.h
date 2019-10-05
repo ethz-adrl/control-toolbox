@@ -76,6 +76,9 @@ TEST(HPIPMInterfaceTest, compareSolvers)
     ct::core::StateVectorArray<state_dim> x_sol_gnrccati = gnriccati.getSolutionState();
     ct::core::ControlVectorArray<control_dim> u_sol_hpipm = hpipm.getSolutionControl();
     ct::core::ControlVectorArray<control_dim> u_sol_gnrccati = gnriccati.getSolutionControl();
+    ct::core::FeedbackArray<state_dim, control_dim> K_sol_hpipm = hpipm.getSolutionFeedback();
+    ct::core::FeedbackArray<state_dim, control_dim> K_sol_gnriccati = gnriccati.getSolutionFeedback();
+
 
     // asser that the solution sizes the same
     ASSERT_EQ(x_sol_hpipm.size(), x_sol_gnrccati.size());
@@ -91,5 +94,11 @@ TEST(HPIPMInterfaceTest, compareSolvers)
     for (size_t i = 0; i < u_sol_hpipm.size(); i++)
     {
         ASSERT_LT((u_sol_hpipm[i] - u_sol_gnrccati[i]).array().abs().maxCoeff(), 1e-6);
+    }
+    
+    // assert that feedback matrices are the same
+    for (size_t i = 0; i < K_sol_hpipm.size(); i++)
+    {
+        ASSERT_LT((K_sol_hpipm[i] - K_sol_gnriccati[i]).array().abs().maxCoeff(), 1e-6);
     }
 }

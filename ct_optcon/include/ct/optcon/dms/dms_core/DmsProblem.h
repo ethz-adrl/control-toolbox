@@ -54,7 +54,8 @@ public:
 	 * @param[in]  systemPtrs               The non linear systems
 	 * @param[in]  linearPtrs               The linearized systems
 	 * @param[in]  costPtrs                 The cost function
-	 * @param[in]  boxConstraints           The box constraints
+	 * @param[in]  inputBoxConstraints      The input box constraints
+     * @param[in]  stateBoxConstraints      The state box constraints
 	 * @param[in]  generaConstraints        The general constraints
 	 * @param[in]  x0                       The initial state
 	 */
@@ -62,7 +63,8 @@ public:
         std::vector<typename OptConProblem_t::DynamicsPtr_t> systemPtrs,
         std::vector<typename OptConProblem_t::LinearPtr_t> linearPtrs,
         std::vector<typename OptConProblem_t::CostFunctionPtr_t> costPtrs,
-        std::vector<typename OptConProblem_t::ConstraintPtr_t> boxConstraints,
+        std::vector<typename OptConProblem_t::ConstraintPtr_t> inputBoxConstraints,
+        std::vector<typename OptConProblem_t::ConstraintPtr_t> stateBoxConstraints,
         std::vector<typename OptConProblem_t::ConstraintPtr_t> generalConstraints,
         const state_vector_t& x0)
         : settings_(settings)
@@ -104,13 +106,20 @@ public:
 
         optVariablesDms_ = std::static_pointer_cast<OptVectorDms<STATE_DIM, CONTROL_DIM, SCALAR>>(this->optVariables_);
 
-        if (boxConstraints.size() > 0 || generalConstraints.size() > 0)
+        if (inputBoxConstraints.size() > 0 || stateBoxConstraints.size() > 0 || generalConstraints.size() > 0)
             discretizedConstraints_ = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>>(
                 new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, SCALAR>(
                     optVariablesDms_, controlSpliner_, timeGrid_, settings_.N_));
 
-        if (boxConstraints.size() > 0)
-            discretizedConstraints_->setBoxConstraints(boxConstraints.front());
+        if (inputBoxConstraints.size() > 0)
+            discretizedConstraints_->setBoxConstraints(
+                inputBoxConstraints
+                    .front());  // at this point we do not distinguish between state and input box constraints
+
+        if (stateBoxConstraints.size() > 0)
+            discretizedConstraints_->setBoxConstraints(
+                stateBoxConstraints
+                    .front());  // at this point we do not distinguish between state and input box constraints
 
         if (generalConstraints.size() > 0)
             discretizedConstraints_->setGeneralConstraints(generalConstraints.front());
@@ -165,7 +174,9 @@ public:
         std::vector<std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>>
             costPtrs,
         std::vector<std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>>
-            boxConstraints,
+            inputBoxConstraints,
+        std::vector<std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>>
+            stateBoxConstraints,
         std::vector<std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>>
             generalConstraints,
         const ct::core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x0)
@@ -203,13 +214,16 @@ public:
 
 
         std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, ScalarCG>> discretizedConstraints;
-        if (boxConstraints.size() > 0 || generalConstraints.size() > 0)
+        if (inputBoxConstraints.size() > 0 || stateBoxConstraints.size() > 0 || generalConstraints.size() > 0)
             discretizedConstraints = std::shared_ptr<ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, ScalarCG>>(
                 new ConstraintDiscretizer<STATE_DIM, CONTROL_DIM, ScalarCG>(
                     optVariablesDms, controlSpliner, timeGrid, settings_.N_));
 
-        if (boxConstraints.size() > 0)
-            discretizedConstraints->setBoxConstraints(boxConstraints.front());
+        if (inputBoxConstraints.size() > 0)
+            discretizedConstraints->setBoxConstraints(inputBoxConstraints.front());
+
+        if (stateBoxConstraints.size() > 0)
+            discretizedConstraints->setBoxConstraints(stateBoxConstraints.front());
 
         if (generalConstraints.size() > 0)
             discretizedConstraints->setGeneralConstraints(generalConstraints.front());
@@ -261,18 +275,18 @@ public:
 
         if (settings_.solverSettings_.useGeneratedCostGradient_)
         {
-            std::function<Eigen::Matrix<ScalarCG, 1, 1>(const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>&)> fCost = [&](
-                const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>& xOpt) {
-                optVariablesDms->setOptimizationVars(xOpt);
+            std::function<Eigen::Matrix<ScalarCG, 1, 1>(const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>&)> fCost =
+                [&](const Eigen::Matrix<ScalarCG, Eigen::Dynamic, 1>& xOpt) {
+                    optVariablesDms->setOptimizationVars(xOpt);
 
-                controlSpliner->computeSpline(optVariablesDms->getOptimizedInputs().toImplementation());
-                for (auto shotContainer : shotContainers)
-                    shotContainer->reset();
+                    controlSpliner->computeSpline(optVariablesDms->getOptimizedInputs().toImplementation());
+                    for (auto shotContainer : shotContainers)
+                        shotContainer->reset();
 
-                Eigen::Matrix<ScalarCG, 1, 1> out;
-                out << costEvaluator->eval();
-                return out;
-            };
+                    Eigen::Matrix<ScalarCG, 1, 1> out;
+                    out << costEvaluator->eval();
+                    return out;
+                };
 
             settings_.cppadSettings_.createJacobian_ = true;
 
@@ -402,6 +416,7 @@ public:
 	 * @brief      Prints the solution trajectories
 	 */
     void printSolution() { optVariablesDms_->printoutSolution(); }
+
 private:
     DmsSettings settings_;
 

@@ -131,9 +131,9 @@ The following dependencies and bindings are optional but can help to enhance the
  - <a href="https://projects.coin-or.org/Ipopt">IPOPT</a> or <a href="http://www.sbsi-sol-optimize.com/asp/sol_product_snopt.htm">SNOPT</a>
   (for ct::optcon::SnoptSolver and ct::optcon::IpoptSolver as used by ct::optcon::DMS)
 
- - <a href="https://github.com/giaf/blasfeo/tree/ct-v2">blasfeo</a> linear algebra and <a href=https://github.com/giaf/hpipm/tree/ct-v2">HPIPM solver</a> as
- alternative high-performance (constrained) linear-quadratic optimal control solver. Check out the *ct-v2* tags. Detailed reference
- about blasefeo can be found <a href="https://arxiv.org/abs/1704.02457">here</a>.
+ - <a href="https://github.com/giaf/blasfeo">blasfeo</a> linear algebra and <a href=https://github.com/giaf/hpipm">HPIPM solver</a> as
+ alternative high-performance (constrained) linear-quadratic optimal control solver. The CT currently supports hpipm version 0.1.1.
+ Detailed reference about blasefeo can be found <a href="https://arxiv.org/abs/1704.02457">here</a>.
  Both packages were developed by <a href="https://www.syscop.de/people/dr-gianluca-frison">Gianluca Frison</a>, <a href="https://www.syscop.de/">University of Freiburg</a>.
 
  - install the <a href="http://catkin-tools.readthedocs.io/en/latest/verbs/catkin_build.html">catkin_tools</a> build system
@@ -168,7 +168,6 @@ Build Flag  | Default value | Description
 -DUSE_INTEL=\<BOOL> | FALSE  | Use Intel compiler instead of the default compiler
 -DINTEL_CXX_COMPILER=\<clang-bin> | "/opt/intel/bin/icc" | Set Intel C++ compiler binary
 -DINTEL_C_COMPILER=\<clang-bin> | "/opt/intel/bin/icpc" | Set Intel C compiler binary
--DHPIPM=\<BOOL> | FALSE | Compile with HPIPM support (set $BLASFEO_DIR and $HPIPM_DIR environment variables)
 
 
 */

@@ -6,7 +6,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include <gtest/gtest.h>
 #include <ct/optcon/optcon.h>
 
-// several tests which compare HPIPM and GNRiccati
+// several tests which compare HPIPM and GNRiccati 
 #include "LQOCSolverTest.h"
 #include "HPIPMInterfaceTest.h"
 

@@ -80,8 +80,10 @@ public:
         changeNonlinearSystem(optConProblem.getNonlinearSystem());
         changeLinearSystem(optConProblem.getLinearSystem());
 
-        if (optConProblem.getBoxConstraints())
-            changeBoxConstraints(optConProblem.getBoxConstraints());
+        if (optConProblem.getInputBoxConstraints())
+            changeInputBoxConstraints(optConProblem.getInputBoxConstraints());
+        if (optConProblem.getStateBoxConstraints())
+            changeStateBoxConstraints(optConProblem.getStateBoxConstraints());
         if (optConProblem.getGeneralConstraints())
             changeGeneralConstraints(optConProblem.getGeneralConstraints());
     }
@@ -201,9 +203,14 @@ public:
 	 *
 	 * @param[in]  con   The new box constraints
 	 */
-    virtual void changeBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
+    virtual void changeInputBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
     {
-        throw std::runtime_error("The current solver does not support  constraints!");
+        throw std::runtime_error("The current solver does not support input box constraints!");
+    }
+
+    virtual void changeStateBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
+    {
+        throw std::runtime_error("The current solver does not support state box constraints!");
     }
 
     /**
@@ -270,9 +277,26 @@ public:
 	 *
 	 * @return     The state box constraint instances
 	 */
-    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() = 0;
+    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances()
+    {
+        throw std::runtime_error("getInputBoxConstraintsInstances not supported.");
+    }
 
-    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const = 0;
+    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances() const
+    {
+        throw std::runtime_error("getInputBoxConstraintsInstances not supported.");
+    }
+
+    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances()
+    {
+        throw std::runtime_error("getStateBoxConstraintsInstances not supported.");
+    }
+
+    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances() const
+    {
+        throw std::runtime_error("getStateBoxConstraintsInstances not supported.");
+    }
+
 
     /**
 	 * @brief      Direct accessor to the general constraints
@@ -284,9 +308,15 @@ public:
 	 *
 	 * @return     The general constraints instances.
 	 */
-    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() = 0;
+    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances()
+    {
+        throw std::runtime_error("getGeneralConstraintsInstances not supported.");
+    }
 
-    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() const = 0;
+    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() const
+    {
+        throw std::runtime_error("getGeneralConstraintsInstances not supported.");
+    }
 
 
     /**
@@ -317,5 +347,5 @@ public:
         throw std::runtime_error("Generate Code not implemented for this solver");
     }
 };
-}
-}
+}  // namespace optcon
+}  // namespace ct
