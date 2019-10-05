@@ -26,13 +26,14 @@ template <size_t STATE_DIM,
     size_t V_DIM = STATE_DIM / 2,
     typename SCALAR = double,
     bool CONTINUOUS = true>
-class NLOptConSolver : public OptConSolver<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>,
-                           typename NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Policy_t,
-                           NLOptConSettings,
-                           STATE_DIM,
-                           CONTROL_DIM,
-                           SCALAR,
-                           CONTINUOUS>
+class NLOptConSolver final
+    : public OptConSolver<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>,
+          typename NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Policy_t,
+          NLOptConSettings,
+          STATE_DIM,
+          CONTROL_DIM,
+          SCALAR,
+          CONTINUOUS>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW

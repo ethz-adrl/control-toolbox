@@ -308,9 +308,15 @@ public:
 	 *
 	 * @return     The general constraints instances.
 	 */
-    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() = 0;
+    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances()
+    {
+        throw std::runtime_error("getGeneralConstraintsInstances not supported.");
+    }
 
-    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() const = 0;
+    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() const
+    {
+        throw std::runtime_error("getGeneralConstraintsInstances not supported.");
+    }
 
 
     /**

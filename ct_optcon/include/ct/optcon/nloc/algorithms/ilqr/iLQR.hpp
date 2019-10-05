@@ -18,7 +18,7 @@ template <size_t STATE_DIM,
     size_t V_DIM,
     typename SCALAR = double,
     bool CONTINUOUS = true>
-class iLQR : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>
+class iLQR final : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
