@@ -17,8 +17,8 @@ ilqr
     meritFunctionRhoConstraints 0.0
     nThreads 1
     nThreadsEigen 1
-    locp_solver HPIPM_SOLVER
-    nlocp_algorithm GNMS
+    locp_solver GNRICCATI_SOLVER
+    nlocp_algorithm ILQR
     closedLoopShooting true
     printSummary true
     debugPrint false 

@@ -149,6 +149,7 @@ int main(int argc, char** argv)
 	 * modify only a few settings, for more detail, check out the NLOptConSettings class. */
     NLOptConSettings nloc_settings;
     nloc_settings.load(ct::optcon::exampleDir + "/nlocSolver.info", true, "ilqr");
+    nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
 
     /* STEP 2-B: provide an initial guess */
     // calculate the number of time steps K
