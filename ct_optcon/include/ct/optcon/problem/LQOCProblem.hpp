@@ -184,15 +184,12 @@ public:
     /*!
      * \brief a convenience method which constructs an unconstrained LQOC Problem from an LTI system and continuous-time quadratic cost
      * The discretization of the cost functions happens within this function. It employs an Euler-Discretization
-     * @param x0 the initial state
-     * @param u0 the current (and desired control)
      * @param linearSystem the discrete-time LTI system
      * @param costFunction the continuous-time cost function
      * @param stateOffset the offset for the affine system dynamics demanded by the LQOC Solver
      * @param dt the sampling time, required for discretization
      */
-    void setFromTimeInvariantLinearQuadraticProblem(const ct::core::StateVector<STATE_DIM, SCALAR>& x0,
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u0,
+    void setFromTimeInvariantLinearQuadraticProblem(
         ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
         ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
         const ct::core::StateVector<STATE_DIM, SCALAR>& stateOffset,

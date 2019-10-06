@@ -56,9 +56,9 @@ void timeSingleSolve(size_t N, std::vector<std::vector<double>>& loggedSolveTime
         dt, exampleSystem, core::SensitivityApproximationSettings::APPROXIMATION::MATRIX_EXPONENTIAL);
 
     ct::core::ControlVector<control_dim> u0;
-    u0.setRandom();
+    u0.setZero();
     ct::core::StateVector<state_dim> x0;
-    x0.setRandom();
+    x0.setZero();
     ct::core::StateVector<state_dim> xf;
     xf.setRandom();
 
@@ -80,8 +80,7 @@ void timeSingleSolve(size_t N, std::vector<std::vector<double>>& loggedSolveTime
 
         for (size_t j = 0; j < nRuns; j++)
         {
-            problems[i]->setFromTimeInvariantLinearQuadraticProblem(
-                x0, u0, discreteExampleSystem, *costFunction, b, dt);
+            problems[i]->setFromTimeInvariantLinearQuadraticProblem(discreteExampleSystem, *costFunction, b, dt);
 
             auto start_all = std::chrono::steady_clock::now();
 

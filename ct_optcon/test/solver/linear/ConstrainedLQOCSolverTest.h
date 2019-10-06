@@ -129,8 +129,8 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
     }
 
     // initialize the optimal control problems for both solvers
-    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
-    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
+    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(discreteExampleSystem, *costFunction, x0, dt);
+    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(discreteExampleSystem, *costFunction, x0, dt);
 
     lqocProblem1->setInputBoxConstraints(nb_u, u_lb, u_ub, u_box_sparsity, u_nom);
     lqocProblem2->setInputBoxConstraints(nb_u, u_lb, u_ub, u_box_sparsity, u_nom);
@@ -181,8 +181,8 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
     // initialize the optimal control problems for both solvers
     lqocProblem1->setZero();
     lqocProblem2->setZero();
-    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
-    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
+    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(discreteExampleSystem, *costFunction, x0, dt);
+    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(discreteExampleSystem, *costFunction, x0, dt);
 
     lqocProblem1->setIntermediateStateBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, x_nom);
     lqocProblem2->setIntermediateStateBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, x_nom);
@@ -234,8 +234,8 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
     // initialize the optimal control problems for both solvers
     lqocProblem1->setZero();
     lqocProblem2->setZero();
-    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
-    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
+    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(discreteExampleSystem, *costFunction, x0, dt);
+    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(discreteExampleSystem, *costFunction, x0, dt);
 
     // relax box constraints a bit for this test, otherwise there might be no solution
     x_lb.array() -= 1.0;
@@ -343,8 +343,8 @@ void generalConstraintsTest(ct::core::ControlVector<control_dim> u0,
     }
 
     // initialize the optimal control problems for both solvers
-    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
-    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
+    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(discreteExampleSystem, *costFunction, x0, dt);
+    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(discreteExampleSystem, *costFunction, x0, dt);
     lqocProblem1->setGeneralConstraints(d_lb, d_ub, C, D);
     lqocProblem2->setGeneralConstraints(d_lb, d_ub, C, D);
 
@@ -633,7 +633,7 @@ TEST(ConstrainedLQOCSolverTest, BoxConstraintUsingConstraintToolbox)
 
     // initialize the optimal control problems for both solvers
     lqocProblem1->setZero();
-    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
+    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(discreteExampleSystem, *costFunction, x0, dt);
 
     // evaluate relevant quantities using the constraint toolbox
     int nb_u_intermediate = input_constraints->getJacobianStateNonZeroCountIntermediate() +
