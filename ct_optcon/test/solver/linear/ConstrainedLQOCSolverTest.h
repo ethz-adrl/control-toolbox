@@ -186,8 +186,8 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
 
     lqocProblem1->setIntermediateStateBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, x_nom);
     lqocProblem2->setIntermediateStateBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, x_nom);
-    lqocProblem1->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, xf);
-    lqocProblem2->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, xf);
+    lqocProblem1->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, x_nom.back());
+    lqocProblem2->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, x_nom.back());
 
     // check that constraint configuration is right
     ASSERT_TRUE(lqocProblem1->isConstrained());
@@ -247,8 +247,8 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
     lqocProblem2->setInputBoxConstraints(nb_u, u_lb, u_ub, u_box_sparsity, u_nom);
     lqocProblem1->setIntermediateStateBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, x_nom);
     lqocProblem2->setIntermediateStateBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, x_nom);
-    lqocProblem1->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, xf);
-    lqocProblem2->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, xf);
+    lqocProblem1->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, x_nom.back());
+    lqocProblem2->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, x_nom.back());
 
     // check that constraint configuration is right
     ASSERT_TRUE(lqocProblem1->isConstrained());
@@ -670,7 +670,7 @@ TEST(ConstrainedLQOCSolverTest, BoxConstraintUsingConstraintToolbox)
         nb_u_intermediate, u_lb_intermediate, u_ub_intermediate, u_sparsity_intermediate, u_nom);
     lqocProblem1->setIntermediateStateBoxConstraints(
         nb_x_intermediate, x_lb_intermediate, x_ub_intermediate, x_sparsity_intermediate, x_nom);
-    lqocProblem1->setTerminalBoxConstraints(nb_x_terminal, x_lb_terminal, x_ub_terminal, x_sparsity_terminal, xf);
+    lqocProblem1->setTerminalBoxConstraints(nb_x_terminal, x_lb_terminal, x_ub_terminal, x_sparsity_terminal, x_nom.back());
 
     // check that constraint configuration is right
     ASSERT_TRUE(lqocProblem1->isConstrained());
