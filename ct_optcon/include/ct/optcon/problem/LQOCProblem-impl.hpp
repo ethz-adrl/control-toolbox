@@ -55,9 +55,6 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumStages(int N)
     B_.resize(N);
     b_.resize(N + 1);
 
-    x_.resize(N + 1);
-    u_.resize(N);
-
     P_.resize(N);
     q_.resize(N + 1);
     qv_.resize(N + 1);
@@ -90,8 +87,6 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero(const int& nGenConstr)
     A_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Zero());
     B_.setConstant(core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
     b_.setConstant(core::StateVector<STATE_DIM, SCALAR>::Zero());
-    x_.setConstant(core::StateVector<STATE_DIM, SCALAR>::Zero());
-    u_.setConstant(core::ControlVector<CONTROL_DIM, SCALAR>::Zero());
     P_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
     qv_.setConstant(core::StateVector<STATE_DIM, SCALAR>::Zero());
     Q_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Zero());
@@ -275,9 +270,6 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
     double dt)
 {
     setZero();
-
-    x_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_ + 1, x0);
-    u_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, u0);
 
     core::StateMatrix<STATE_DIM, SCALAR> A;
     core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B;

@@ -209,12 +209,6 @@ public:
     ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> B_;
     ct::core::StateVectorArray<STATE_DIM, SCALAR> b_;
 
-    //! reference state trajectory
-    ct::core::StateVectorArray<STATE_DIM, SCALAR> x_;
-
-    //! reference control trajectory
-    ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> u_;
-
     //! constant term of in the LQ approximation of the cost function
     ct::core::ScalarArray<SCALAR> q_;
 

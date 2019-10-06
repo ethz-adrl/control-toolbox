@@ -66,7 +66,7 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::extractLQSolution()
 {
     LQOCProblem_t& p = *this->lqocProblem_;
 
-    this->x_sol_[0] = p.x_[0];  // should always be zero
+    this->x_sol_[0].setZero();  // should always be zero (fixed init state)
 
     for (int k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
     {

@@ -122,14 +122,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
             d_print_mat(STATE_DIM, CONTROL_DIM, hB_[i], STATE_DIM);
             printf("\nb\n");
             d_print_mat(1, STATE_DIM, hb_[i], 1);
-            printf("\nu\n");
-            d_print_mat(1, CONTROL_DIM, u_[i], 1);
-        }
-
-        if (i > 0)
-        {
-            printf("\nx\n");
-            d_print_mat(1, STATE_DIM, x_[i], 1);
         }
 
         printf("\nQ\n");
@@ -322,8 +314,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
     }
 
     // setup unconstrained part of problem
-    setupCostAndDynamics(lqocProblem->x_, lqocProblem->u_, lqocProblem->A_, lqocProblem->B_, lqocProblem->b_,
-        lqocProblem->P_, lqocProblem->qv_, lqocProblem->Q_, lqocProblem->rv_, lqocProblem->R_);
+    setupCostAndDynamics(lqocProblem->A_, lqocProblem->B_, lqocProblem->b_, lqocProblem->P_, lqocProblem->qv_,
+        lqocProblem->Q_, lqocProblem->rv_, lqocProblem->R_);
 
     if (nStagesChanged)
         initializeAndAllocate();
@@ -383,8 +375,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
 {
     // HPIPM-specific correction for first-stage general constraint bounds
-    hd_lg_0_Eigen_ = lqocProblem->d_lb_[0] - lqocProblem->C_[0] * lqocProblem->x_[0];
-    hd_ug_0_Eigen_ = lqocProblem->d_ub_[0] - lqocProblem->C_[0] * lqocProblem->x_[0];
+    hd_lg_0_Eigen_ = lqocProblem->d_lb_[0];  // - lqocProblem->C_[0] * x0; // uncommented since x0=0
+    hd_ug_0_Eigen_ = lqocProblem->d_ub_[0];  // - lqocProblem->C_[0] * x0; // uncommented since x0=0
 
     assert(ng_.size() == ((size_t)N_ + 1));
 
@@ -417,9 +409,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
 
 
 template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArray& x,
-    ControlVectorArray& u,
-    StateMatrixArray& A,
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateMatrixArray& A,
     StateControlMatrixArray& B,
     StateVectorArray& b,
     FeedbackArray& P,
@@ -431,18 +421,15 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
     if (N_ == -1)
         throw std::runtime_error("Time horizon not set, please set it first");
 
-    // transcribe initial state into solution vector (won't be considered by HPIPM)
-    this->x_sol_[0] = x[0];
+    this->x_sol_[0].setZero();  // fixed intitial value problem (increment is zero)
 
     // IMPORTANT: for hb_ and hr_, we need a HPIPM-specific correction for the first stage
-    hb0_ = b[0] + A[0] * x[0];
-    hr0_ = rv[0] + P[0] * x[0];
+    hb0_ = b[0];   // + A[0] * x0; // uncommented since x0 = 0 in diff formulation
+    hr0_ = rv[0];  // + P[0] * x0; // uncommented since x0 = 0 in diff formulation
 
     // assign data for LQ problem
     for (int i = 0; i < N_; i++)
     {
-        x_[i] = x[i].data();
-        u_[i] = u[i].data();
         hA_[i] = A[i].data();
         hB_[i] = B[i].data();
 
@@ -462,7 +449,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
     }
 
     // terminal stage
-    x_[N_] = x[N_].data();
     hQ_[N_] = Q[N_].data();
     hq_[N_] = qv[N_].data();
 }
@@ -491,8 +477,6 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     hB_.resize(N_);
     hb_.resize(N_);
 
-    u_.resize(N_ + 1);
-    x_.resize(N_ + 1);
     this->x_sol_.resize(N_ + 1);
     this->u_sol_.resize(N_);
 

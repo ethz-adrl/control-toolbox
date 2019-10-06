@@ -130,9 +130,7 @@ private:
      *
      * \warning To achieve compatibility with HPIPM, this method needs to perform a change of coordinates for certain problem variables in the first stage.
      */
-    void setupCostAndDynamics(StateVectorArray& x,
-        ControlVectorArray& u,
-        StateMatrixArray& A,
+    void setupCostAndDynamics(StateMatrixArray& A,
         StateControlMatrixArray& B,
         StateVectorArray& b,
         FeedbackArray& P,
@@ -167,10 +165,6 @@ private:
 
     //! horizon length
     int N_;
-
-
-    std::vector<double*> u_;  //! control trajectory (temporary container)
-    std::vector<double*> x_;  //! state trajectory (temporary container)
 
     std::vector<int> nx_;  //! number of states per stage
     std::vector<int> nu_;  //! number of inputs per stage

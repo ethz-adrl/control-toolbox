@@ -329,8 +329,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     // intermediate stages
     for (int i = 0; i < K_; i++)
     {
-        generalConstraints_[settings_.nThreads]->setCurrentStateAndControl(
-            lqocProblem_->x_[i], lqocProblem_->u_[i], i * settings_.dt);
+        generalConstraints_[settings_.nThreads]->setCurrentStateAndControl(x_[i], u_ff_[i], i * settings_.dt);
 
         lqocProblem_->ng_[i] = generalConstraints_[settings_.nThreads]->getIntermediateConstraintsCount();
 
@@ -721,10 +720,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     p.rv_[k] = costFunctions_[threadId]->controlDerivativeIntermediate() * dt;
 
     // p.q_[k] = ... // not evaluated since we don't need it in GNMS/iLQR -- WARNING, potentially implement when using a different QP solver
-
-    // set current reference trajectories x_n and u_n
-    p.x_[k].setZero();  // = x_[k]; // todo I believe those should be zero now? // todo why do I need it at all?
-    p.u_[k].setZero();  // = u_ff_[k];
 }
 
 
@@ -835,9 +830,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     p.Q_[K_] = costFunctions_[settings_.nThreads]->stateSecondDerivativeTerminal();
     p.qv_[K_] = costFunctions_[settings_.nThreads]->stateDerivativeTerminal();
     // p.q_[K_] = ... // omitted since not needed in GNMS/ILQR -- WARNING, potentially implement when using a different QP solver
-
-    // set terminal reference state
-    p.x_[K_].setZero();  // should be zero
 
     // init terminal general constraints, if any
     if (generalConstraints_[settings_.nThreads] != nullptr)
