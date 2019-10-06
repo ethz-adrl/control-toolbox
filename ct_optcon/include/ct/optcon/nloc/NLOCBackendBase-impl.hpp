@@ -810,10 +810,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> g_eval = generalConstraints_[threadId]->evaluateIntermediate();
 
             // rewrite constraint boundaries in relative coordinates as required by LQOC problem
-            p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() -
-                         g_eval;  // + p.C_[k] * x_[k] + p.D_[k] * u_ff_[k];
-            p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() -
-                         g_eval;  //  + p.C_[k] * x_[k] + p.D_[k] * u_ff_[k];
+            p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval;
+            p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval;
         }
     }
 }
