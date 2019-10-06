@@ -408,7 +408,7 @@ protected:
 
     //! Computes the linearized Dynamics and quadratic cost approximation at a specific point of the trajectory
     /*!
-      This function calculates the affine dynamics approximation, i.e. matrices A, B and b in \f$ x_{n+1} = A_n x_n + B_n u_n + b_n \f$
+      This function calculates the affine dynamics approximation, i.e. matrices A, B and b in \f$ \delta x_{n+1} = A_n \delta x_n + B_n \delta u_n + b_n \f$
       at a specific point of the trajectory. This function also calculates the quadratic costs as provided by the costFunction pointer.
       and maps it into the coordinates of the LQ problem.
 
@@ -420,7 +420,7 @@ protected:
 
     //! Computes the linearized general constraints at a specific point of the trajectory
     /*!
-      This function calculates the linearization, i.e. matrices d, C and D in \f$ d_{lb} \leq C x + D u \leq d_{ub}\f$
+      This function calculates the linearization, i.e. matrices d, C and D in \f$ d_{lb} \leq C \delta x + D \delta u \leq d_{ub}\f$
       at a specific point of the trajectory
 
       \param threadId the id of the worker thread
@@ -498,8 +498,8 @@ protected:
     //! Check if controller with particular alpha is better
     void executeLineSearch(const size_t threadId,
         const scalar_t alpha,
-        const ControlVectorArray& u_ff_new,
-        const StateVectorArray& x_new,
+        const ControlVectorArray& du_ff_update,
+        const StateVectorArray& dx_update,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_recorded,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_recorded,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& defects_recorded,

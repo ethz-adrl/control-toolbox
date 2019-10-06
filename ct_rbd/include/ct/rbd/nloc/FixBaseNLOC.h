@@ -60,7 +60,8 @@ public:
 
     //! constructor which directly takes a cost function and constraints, mind the order of the constraints
     FixBaseNLOC(std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFun,
-        std::shared_ptr<ct::optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> boxConstraints,
+        std::shared_ptr<ct::optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> inputBoxConstraints,
+        std::shared_ptr<ct::optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> stateBoxConstraints,
         std::shared_ptr<ct::optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> generalConstraints,
         const typename NLOptConSolver::Settings_t& nlocSettings,
         std::shared_ptr<FBSystem> system = std::shared_ptr<FBSystem>(new FBSystem),
@@ -120,7 +121,8 @@ private:
     std::shared_ptr<FBSystem> system_;
     std::shared_ptr<LinearizedSystem> linearizedSystem_;
     std::shared_ptr<CostFunction> costFunction_;
-    std::shared_ptr<ct::optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> boxConstraints_;
+    std::shared_ptr<ct::optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> inputBoxConstraints_;
+    std::shared_ptr<ct::optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> stateBoxConstraints_;
     std::shared_ptr<ct::optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> generalConstraints_;
 
     optcon::ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR> optConProblem_;

@@ -34,30 +34,27 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::NLOCB
     : initialized_(false),
       configured_(false),
       iteration_(0),
+      firstRollout_(true),
       settings_(settings),
       K_(0),
+      substepsX_(new StateSubsteps),
+      substepsU_(new ControlSubsteps),
       d_norm_(0.0),
       e_box_norm_(0.0),
       e_gen_norm_(0.0),
       lx_norm_(0.0),
       lu_norm_(0.0),
-      lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>()),
-
-      substepsX_(new StateSubsteps),
-      substepsU_(new ControlSubsteps),
-
-      systemInterface_(systemInterface),
-
       intermediateCostBest_(std::numeric_limits<SCALAR>::infinity()),
       finalCostBest_(std::numeric_limits<SCALAR>::infinity()),
       lowestCost_(std::numeric_limits<SCALAR>::infinity()),
       intermediateCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
       finalCostPrevious_(std::numeric_limits<SCALAR>::infinity()),
+      alphaBest_(-1),
+      lqocProblem_(new LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>()),
+      systemInterface_(systemInterface),
       inputBoxConstraints_(settings.nThreads + 1, nullptr),  // initialize constraints with null
       stateBoxConstraints_(settings.nThreads + 1, nullptr),  // initialize constraints with null
       generalConstraints_(settings.nThreads + 1, nullptr),   // initialize constraints with null
-      firstRollout_(true),
-      alphaBest_(-1),
       lqpCounter_(0)
 {
     Eigen::initParallel();
@@ -332,8 +329,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     // intermediate stages
     for (int i = 0; i < K_; i++)
     {
-        generalConstraints_[settings_.nThreads]->setCurrentStateAndControl(
-            lqocProblem_->x_[i], lqocProblem_->u_[i], i * settings_.dt);
+        generalConstraints_[settings_.nThreads]->setCurrentStateAndControl(x_[i], u_ff_[i], i * settings_.dt);
 
         lqocProblem_->ng_[i] = generalConstraints_[settings_.nThreads]->getIntermediateConstraintsCount();
 
@@ -705,7 +701,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     systemInterface_->getAandB(x_[k], u_ff_[k], xShot_[k], (int)k, settings_.K_sim, p.A_[k], p.B_[k], threadId);
 
     // compute dynamics offset term b_n
-    p.b_[k] = d_[k] + x_[k + 1] - p.A_[k] * x_[k] - p.B_[k] * u_ff_[k];
+    p.b_[k] = d_[k];
 
     // feed current state and control to cost function
     costFunctions_[threadId]->setCurrentStateAndControl(x_[k], u_ff_[k], dt * k);
@@ -719,16 +715,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     p.P_[k] = costFunctions_[threadId]->stateControlDerivativeIntermediate() * dt;
 
     // derivative of cost with respect to state
-    p.qv_[k] =
-        costFunctions_[threadId]->stateDerivativeIntermediate() * dt - p.Q_[k] * x_[k] - p.P_[k].transpose() * u_ff_[k];
+    p.qv_[k] = costFunctions_[threadId]->stateDerivativeIntermediate() * dt;
     // derivative of cost with respect to control
-    p.rv_[k] = costFunctions_[threadId]->controlDerivativeIntermediate() * dt - p.R_[k] * u_ff_[k] - p.P_[k] * x_[k];
+    p.rv_[k] = costFunctions_[threadId]->controlDerivativeIntermediate() * dt;
 
     // p.q_[k] = ... // not evaluated since we don't need it in GNMS/iLQR -- WARNING, potentially implement when using a different QP solver
-
-    // set current reference trajectories x_n and u_n
-    p.x_[k] = x_[k];
-    p.u_[k] = u_ff_[k];
 }
 
 
@@ -751,7 +742,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
             lqocProblem_->setInputBoxConstraints(nb_u_intermediate,
                 inputBoxConstraints_[settings_.nThreads]->getLowerBoundsIntermediate(),
-                inputBoxConstraints_[settings_.nThreads]->getUpperBoundsIntermediate(), u_sparsity_col_intermediate);
+                inputBoxConstraints_[settings_.nThreads]->getUpperBoundsIntermediate(), u_sparsity_col_intermediate,
+                u_ff_);
         }
     }
 }
@@ -773,7 +765,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
             lqocProblem_->setIntermediateStateBoxConstraints(nb_x_intermediate,
                 stateBoxConstraints_[settings_.nThreads]->getLowerBoundsIntermediate(),
-                stateBoxConstraints_[settings_.nThreads]->getUpperBoundsIntermediate(), x_sparsity_col_intermediate);
+                stateBoxConstraints_[settings_.nThreads]->getUpperBoundsIntermediate(), x_sparsity_col_intermediate,
+                x_);
         }
 
         // check number of terminal box constraints
@@ -788,7 +781,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
             lqocProblem_->setTerminalBoxConstraints(nb_x_terminal,
                 stateBoxConstraints_[settings_.nThreads]->getLowerBoundsTerminal(),
-                stateBoxConstraints_[settings_.nThreads]->getUpperBoundsTerminal(), x_sparsity_col_terminal);
+                stateBoxConstraints_[settings_.nThreads]->getUpperBoundsTerminal(), x_sparsity_col_terminal, x_.back());
         }
     }
 }
@@ -816,11 +809,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
             Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> g_eval = generalConstraints_[threadId]->evaluateIntermediate();
 
-            // rewrite constraint boundaries in absolute coordinates as required by LQOC problem
-            p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
-                         p.D_[k] * u_ff_[k];
-            p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval + p.C_[k] * x_[k] +
-                         p.D_[k] * u_ff_[k];
+            // rewrite constraint boundaries in relative coordinates as required by LQOC problem
+            p.d_lb_[k] = generalConstraints_[threadId]->getLowerBoundsIntermediate() - g_eval;
+            p.d_ub_[k] = generalConstraints_[threadId]->getUpperBoundsIntermediate() - g_eval;
         }
     }
 }
@@ -835,11 +826,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
     // derivative of terminal cost with respect to state
     p.Q_[K_] = costFunctions_[settings_.nThreads]->stateSecondDerivativeTerminal();
-    p.qv_[K_] = costFunctions_[settings_.nThreads]->stateDerivativeTerminal() - p.Q_[K_] * x_[K_];
+    p.qv_[K_] = costFunctions_[settings_.nThreads]->stateDerivativeTerminal();
     // p.q_[K_] = ... // omitted since not needed in GNMS/ILQR -- WARNING, potentially implement when using a different QP solver
-
-    // set terminal reference state
-    p.x_[K_] = x_[K_];
 
     // init terminal general constraints, if any
     if (generalConstraints_[settings_.nThreads] != nullptr)
@@ -854,10 +842,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> g_eval =
                 generalConstraints_[settings_.nThreads]->evaluateTerminal();
 
-            p.d_lb_[K_] =
-                generalConstraints_[settings_.nThreads]->getLowerBoundsTerminal() - g_eval + p.C_[K_] * x_[K_];
-            p.d_ub_[K_] =
-                generalConstraints_[settings_.nThreads]->getUpperBoundsTerminal() - g_eval + p.C_[K_] * x_[K_];
+            p.d_lb_[K_] = generalConstraints_[settings_.nThreads]->getLowerBoundsTerminal() - g_eval;
+            p.d_ub_[K_] = generalConstraints_[settings_.nThreads]->getUpperBoundsTerminal() - g_eval;
         }
     }
 }
@@ -1124,8 +1110,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::executeLineSearch(const size_t threadId,
     const scalar_t alpha,
-    const ControlVectorArray& u_ff_new,
-    const StateVectorArray& x_new,
+    const ControlVectorArray& u_ff_update,
+    const StateVectorArray& x_update,
     ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_alpha,
     ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_alpha,
     ct::core::StateVectorArray<STATE_DIM, SCALAR>& defects_recorded,
@@ -1149,10 +1135,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         return;
 
     // update feedforward with weighting alpha
-    u_alpha = u_ff_new * alpha + u_ff_prev_ * (1 - alpha);
+    u_alpha = u_ff_update * alpha + u_ff_prev_;
 
     // update state decision variables with weighting alpha
-    x_alpha = x_new * alpha + x_prev_ * (1 - alpha);
+    x_alpha = x_update * alpha + x_prev_;
 
 
     if (terminationFlag && *terminationFlag)
@@ -1324,8 +1310,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::doFullStepUpdate()
 {
-    u_ff_ = lqocSolver_->getSolutionControl();
-    x_ = lqocSolver_->getSolutionState();
+    u_ff_ += lqocSolver_->getSolutionControl();
+    x_ += lqocSolver_->getSolutionState();
 
     alphaBest_ = 1.0;
 }

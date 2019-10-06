@@ -28,7 +28,8 @@ FixBaseNLOC<FIX_BASE_FD_SYSTEM>::FixBaseNLOC(
 template <class FIX_BASE_FD_SYSTEM>
 FixBaseNLOC<FIX_BASE_FD_SYSTEM>::FixBaseNLOC(
     std::shared_ptr<ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> costFun,
-    std::shared_ptr<ct::optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> boxConstraints,
+    std::shared_ptr<ct::optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> inputBoxConstraints,
+    std::shared_ptr<ct::optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> stateBoxConstraints,
     std::shared_ptr<ct::optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> generalConstraints,
     const typename NLOptConSolver::Settings_t& nlocSettings,
     std::shared_ptr<FBSystem> system,
@@ -36,15 +37,17 @@ FixBaseNLOC<FIX_BASE_FD_SYSTEM>::FixBaseNLOC(
     std::shared_ptr<LinearizedSystem> linearizedSystem)
     : system_(system),
       linearizedSystem_(linearizedSystem),
-      boxConstraints_(boxConstraints),
+      inputBoxConstraints_(inputBoxConstraints),
+      stateBoxConstraints_(stateBoxConstraints),
       generalConstraints_(generalConstraints),
       costFunction_(costFun),
       optConProblem_(system_, costFunction_, linearizedSystem_),
       iteration_(0)
 {
-    if (boxConstraints_ != nullptr)
-        optConProblem_.setBoxConstraints(boxConstraints_);
-
+    if (inputBoxConstraints_ != nullptr)
+        optConProblem_.setInputBoxConstraints(inputBoxConstraints_);
+    if (stateBoxConstraints_ != nullptr)
+        optConProblem_.setStateBoxConstraints(stateBoxConstraints_);
     if (generalConstraints_ != nullptr)
         optConProblem_.setGeneralConstraints(generalConstraints_);
 

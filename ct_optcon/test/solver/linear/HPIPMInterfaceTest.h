@@ -27,7 +27,7 @@ TEST(HPIPMInterfaceTest, compareSolvers)
 
     // define an initial state
     StateVector<state_dim> x0;
-    x0 << 2.5, 2.5, 0, 0, 0, 0, 0, 0;
+    x0.setZero(); // by definition
 
     // define a desired terminal state
     StateVector<state_dim> stateOffset;
@@ -35,7 +35,7 @@ TEST(HPIPMInterfaceTest, compareSolvers)
 
     // define a nominal control
     ControlVector<control_dim> u0;
-    u0.setConstant(-0.1);
+    u0.setZero(); // by definition
 
     // define cost function matrices
     StateMatrix<state_dim> Q;
@@ -56,9 +56,9 @@ TEST(HPIPMInterfaceTest, compareSolvers)
 
     // initialize the linear quadratic optimal control problems
     lqocProblem_hpipm->setFromTimeInvariantLinearQuadraticProblem(
-        x0, u0, discretizedSystem, costFunction, stateOffset, dt);
+        discretizedSystem, costFunction, stateOffset, dt);
     lqocProblem_gnriccati->setFromTimeInvariantLinearQuadraticProblem(
-        x0, u0, discretizedSystem, costFunction, stateOffset, dt);
+        discretizedSystem, costFunction, stateOffset, dt);
 
 
     // create hpipm solver instance, set and solve problem
