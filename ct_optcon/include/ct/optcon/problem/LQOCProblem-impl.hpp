@@ -262,12 +262,12 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(const co
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuadraticProblem(
-    ct::core::StateVector<STATE_DIM, SCALAR>& x0,
-    ct::core::ControlVector<CONTROL_DIM, SCALAR>& u0,
+    const ct::core::StateVector<STATE_DIM, SCALAR>& x0,
+    const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u0,
     ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
     ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
-    ct::core::StateVector<STATE_DIM, SCALAR>& offset,
-    double dt)
+    const ct::core::StateVector<STATE_DIM, SCALAR>& offset,
+    const double dt)
 {
     setZero();
 

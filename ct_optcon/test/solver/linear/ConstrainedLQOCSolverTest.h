@@ -114,6 +114,9 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
         new CostFunctionQuadraticSimple<state_dim, control_dim>(Q, R, xf, u0, xf, Q));
 
     // solution variables needed later
+    ct::core::StateVectorArray<state_dim> x_nom(N, x0);
+    ct::core::ControlVectorArray<control_dim> u_nom(N - 1, u0);
+
     ct::core::StateVectorArray<state_dim> xSol_hpipm;
     ct::core::ControlVectorArray<control_dim> uSol_hpipm;
     ct::core::FeedbackArray<state_dim, control_dim> KSol_hpipm;
@@ -126,11 +129,11 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
     }
 
     // initialize the optimal control problems for both solvers
-    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
-    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
+    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
+    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
 
-    lqocProblem1->setInputBoxConstraints(nb_u, u_lb, u_ub, u_box_sparsity);
-    lqocProblem2->setInputBoxConstraints(nb_u, u_lb, u_ub, u_box_sparsity);
+    lqocProblem1->setInputBoxConstraints(nb_u, u_lb, u_ub, u_box_sparsity, u_nom);
+    lqocProblem2->setInputBoxConstraints(nb_u, u_lb, u_ub, u_box_sparsity, u_nom);
 
     // check that constraint configuration is right
     ASSERT_TRUE(lqocProblem1->isConstrained());
@@ -178,13 +181,13 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
     // initialize the optimal control problems for both solvers
     lqocProblem1->setZero();
     lqocProblem2->setZero();
-    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
-    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
+    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
+    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
 
-    lqocProblem1->setIntermediateStateBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity);
-    lqocProblem2->setIntermediateStateBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity);
-    lqocProblem1->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity);
-    lqocProblem2->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity);
+    lqocProblem1->setIntermediateStateBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, x_nom);
+    lqocProblem2->setIntermediateStateBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, x_nom);
+    lqocProblem1->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, xf);
+    lqocProblem2->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, xf);
 
     // check that constraint configuration is right
     ASSERT_TRUE(lqocProblem1->isConstrained());
@@ -231,8 +234,8 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
     // initialize the optimal control problems for both solvers
     lqocProblem1->setZero();
     lqocProblem2->setZero();
-    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
-    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
+    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
+    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
 
     // relax box constraints a bit for this test, otherwise there might be no solution
     x_lb.array() -= 1.0;
@@ -240,12 +243,12 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
 
 
     // set the combined box constraints
-    lqocProblem1->setInputBoxConstraints(nb_u, u_lb, u_ub, u_box_sparsity);
-    lqocProblem2->setInputBoxConstraints(nb_u, u_lb, u_ub, u_box_sparsity);
-    lqocProblem1->setIntermediateStateBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity);
-    lqocProblem2->setIntermediateStateBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity);
-    lqocProblem1->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity);
-    lqocProblem2->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity);
+    lqocProblem1->setInputBoxConstraints(nb_u, u_lb, u_ub, u_box_sparsity, u_nom);
+    lqocProblem2->setInputBoxConstraints(nb_u, u_lb, u_ub, u_box_sparsity, u_nom);
+    lqocProblem1->setIntermediateStateBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, x_nom);
+    lqocProblem2->setIntermediateStateBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, x_nom);
+    lqocProblem1->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, xf);
+    lqocProblem2->setTerminalBoxConstraints(nb_x, x_lb, x_ub, x_box_sparsity, xf);
 
     // check that constraint configuration is right
     ASSERT_TRUE(lqocProblem1->isConstrained());
@@ -340,8 +343,8 @@ void generalConstraintsTest(ct::core::ControlVector<control_dim> u0,
     }
 
     // initialize the optimal control problems for both solvers
-    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
-    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
+    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
+    lqocProblem2->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
     lqocProblem1->setGeneralConstraints(d_lb, d_ub, C, D);
     lqocProblem2->setGeneralConstraints(d_lb, d_ub, C, D);
 
@@ -388,11 +391,11 @@ TEST(ConstrainedLQOCSolverTest, BoxConstrTest_small)
 
     // initial state
     ct::core::StateVector<state_dim> x0;
-    x0 << 2.5, 0.0;
+    x0 << 0.0, 0.0;
 
     // desired final state
     ct::core::StateVector<state_dim> xf;
-    xf.setConstant(0.0);
+    xf.setConstant(2.5);
 
     // dense control box constraints
     int nb_u = control_dim;
@@ -407,8 +410,8 @@ TEST(ConstrainedLQOCSolverTest, BoxConstrTest_small)
     int nb_x = 1;
     Eigen::VectorXd x_lb(nb_x);
     Eigen::VectorXd x_ub(nb_x);
-    x_lb << 1.7;
-    x_ub.setConstant(std::numeric_limits<double>::max());
+    x_lb << -100, -100;
+    x_ub.setConstant(1.7);
     Eigen::VectorXi x_box_sparsity(nb_x);
     x_box_sparsity << 0;
 
@@ -423,15 +426,15 @@ TEST(ConstrainedLQOCSolverTest, BoxConstrTest_medium)
 
     // nominal control
     ct::core::ControlVector<control_dim> u0;
-    u0.setConstant(0.1);
+    u0.setConstant(0.0);
 
     // initial state
     ct::core::StateVector<state_dim> x0;
-    x0 << 2.5, 2.5, 0, 0, 0, 0, 0, 0;
+    x0 << 0.0, 0.0, 0, 0, 0, 0, 0, 0;  // must start at 0
 
     // desired final state
     ct::core::StateVector<state_dim> xf;
-    xf.setConstant(0.1);
+    xf << 2.5, 2.5, 0, 0, 0, 0, 0, 0;
 
     // dense control box constraints
     int nb_u = control_dim;
@@ -446,8 +449,8 @@ TEST(ConstrainedLQOCSolverTest, BoxConstrTest_medium)
     int nb_x = 2;
     Eigen::VectorXd x_lb(nb_x);
     Eigen::VectorXd x_ub(nb_x);
-    x_lb << 1.5, 1.5;
-    x_ub.setConstant(std::numeric_limits<double>::max());
+    x_lb << -100, -100;
+    x_ub.setConstant(1.5);
     Eigen::VectorXi x_box_sparsity(nb_x);
     x_box_sparsity << 0, 1;
 
@@ -466,11 +469,11 @@ TEST(ConstrainedLQOCSolverTest, GeneralConstrTest_small)
 
     // initial state
     ct::core::StateVector<state_dim> x0;
-    x0 << 2.5, 0.0;
+    x0 << 0.0, 0.0;
 
     // desired final state
     ct::core::StateVector<state_dim> xf;
-    xf.setConstant(0.0);
+    xf.setConstant(2.5);
 
     // general constraints
     // this general constraints is again nothing but an input inequality constraint:
@@ -500,11 +503,11 @@ TEST(ConstrainedLQOCSolverTest, GeneralConstrTest_medium)
 
     // initial state
     ct::core::StateVector<state_dim> x0;
-    x0 << 2.5, 2.5, 0, 0, 0, 0, 0, 0;
+    x0 << 0.0, 0.0, 0, 0, 0, 0, 0, 0;
 
     // desired final state
     ct::core::StateVector<state_dim> xf;
-    xf.setConstant(0.1);
+    xf.setConstant(1.0);
 
     // general constraints
     // this general constraints is again nothing but an input inequality constraint:
@@ -535,11 +538,11 @@ TEST(ConstrainedLQOCSolverTest, BoxConstraintUsingConstraintToolbox)
 
     // initial state
     ct::core::StateVector<state_dim> x0;
-    x0 << 2.5, 2.5, 0, 0, 0, 0, 0, 0;
+    x0 << 0.0, 0.0, 0, 0, 0, 0, 0, 0;
 
     // desired final state
     ct::core::StateVector<state_dim> xf;
-    xf.setConstant(0.1);
+    xf.setConstant(1.0);
 
     // input box constraint boundaries with sparsities in constraint toolbox format
     Eigen::VectorXi sp_control(control_dim);
@@ -553,7 +556,7 @@ TEST(ConstrainedLQOCSolverTest, BoxConstraintUsingConstraintToolbox)
     Eigen::VectorXi sp_state(state_dim);
     sp_state << 1, 1, 0, 0, 0, 0, 0, 0;  // note the different way of specifying sparsity
     Eigen::VectorXd x_lb(2);
-    x_lb << 0.5, 0.5;
+    x_lb << -0.5, -0.5;
     Eigen::VectorXd x_ub(2);
     x_ub.setConstant(std::numeric_limits<double>::max());
 
@@ -618,6 +621,9 @@ TEST(ConstrainedLQOCSolverTest, BoxConstraintUsingConstraintToolbox)
     ct::core::ControlVectorArray<control_dim> uSol_hpipm;
     ct::core::FeedbackArray<state_dim, control_dim> KSol_hpipm;
 
+    ct::core::StateVectorArray<state_dim> x_nom(N, x0);
+    ct::core::ControlVectorArray<control_dim> u_nom(N - 1, u0);
+
     if (verbose)
     {
         std::cout << " ================================================== " << std::endl;
@@ -627,7 +633,7 @@ TEST(ConstrainedLQOCSolverTest, BoxConstraintUsingConstraintToolbox)
 
     // initialize the optimal control problems for both solvers
     lqocProblem1->setZero();
-    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, xf, dt);
+    lqocProblem1->setFromTimeInvariantLinearQuadraticProblem(x0, u0, discreteExampleSystem, *costFunction, x0, dt);
 
     // evaluate relevant quantities using the constraint toolbox
     int nb_u_intermediate = input_constraints->getJacobianStateNonZeroCountIntermediate() +
@@ -661,10 +667,10 @@ TEST(ConstrainedLQOCSolverTest, BoxConstraintUsingConstraintToolbox)
 
     // set the combined box constraints to the LQOC problem
     lqocProblem1->setInputBoxConstraints(
-        nb_u_intermediate, u_lb_intermediate, u_ub_intermediate, u_sparsity_intermediate);
+        nb_u_intermediate, u_lb_intermediate, u_ub_intermediate, u_sparsity_intermediate, u_nom);
     lqocProblem1->setIntermediateStateBoxConstraints(
-        nb_x_intermediate, x_lb_intermediate, x_ub_intermediate, x_sparsity_intermediate);
-    lqocProblem1->setTerminalBoxConstraints(nb_x_terminal, x_lb_terminal, x_ub_terminal, x_sparsity_terminal);
+        nb_x_intermediate, x_lb_intermediate, x_ub_intermediate, x_sparsity_intermediate, x_nom);
+    lqocProblem1->setTerminalBoxConstraints(nb_x_terminal, x_lb_terminal, x_ub_terminal, x_sparsity_terminal, xf);
 
     // check that constraint configuration is right
     ASSERT_TRUE(lqocProblem1->isConstrained());

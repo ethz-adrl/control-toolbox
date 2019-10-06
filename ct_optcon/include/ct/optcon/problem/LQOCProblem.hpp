@@ -49,6 +49,7 @@ namespace optcon {
  * \f$ \delta \mathbf x_n = \mathbf x_n - \hat \mathbf x_n \f$ and \f$ \delta \mathbf u_n = \mathbf u_n - \hat \mathbf u_n \f$
  * where  \hat \mathbf x_n and  \hat \mathbf u_n are current nominal/reference trajectories, around which the LQP is formed.
  *
+ * \note this problem does not contain any state or control trajectory! The fundamental assumption is that \f$ \delta \mathbf x_0 = 0 \f$
  *
  * \todo Refactor the initializing methods such that const-references can be handed over.
  */
@@ -190,12 +191,12 @@ public:
      * @param stateOffset the offset for the affine system dynamics demanded by the LQOC Solver
      * @param dt the sampling time, required for discretization
      */
-    void setFromTimeInvariantLinearQuadraticProblem(ct::core::StateVector<STATE_DIM, SCALAR>& x0,
-        ct::core::ControlVector<CONTROL_DIM, SCALAR>& u0,
+    void setFromTimeInvariantLinearQuadraticProblem(const ct::core::StateVector<STATE_DIM, SCALAR>& x0,
+        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u0,
         ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
         ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
-        ct::core::StateVector<STATE_DIM, SCALAR>& stateOffset,
-        double dt);
+        const ct::core::StateVector<STATE_DIM, SCALAR>& stateOffset,
+        const double dt);
 
     //! return a flag indicating whether this LQOC Problem is constrained or not
     bool isConstrained() const;
