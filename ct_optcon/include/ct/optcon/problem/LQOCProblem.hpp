@@ -11,47 +11,44 @@ namespace optcon {
 /*!
  * \brief Defines a Linear-Quadratic Optimal Control Problem, which is optionally constrained.
  *
- * This class defines a Linear Quadratic Optimal Control (LQOC) Problem, consisting of
+ * This class defines a Linear Quadratic Optimal Control (LQOC) Problem in differential formulation, consisting of
  * - affine system dynamics
- * - reference trajectories (arrays!) for state and control
  * - LQ approximation of the cost function
  *
  * The unconstrained LQ problem has the following form:
  * \f[
- * \min_{\mathbf{u}_n, \mathbf{x}_n}
+ * \min_{\delta \mathbf{u}_n, \delta \mathbf{x}_n}
  * \bigg \{
- * q_N + \mathbf{x}_N^\top \mathbf{q}_N +\frac{1}{2} \mathbf{x}_N^\top \mathbf{Q}_N \mathbf{x}_N
- * +\sum_{n=0}^{N-1} q_n + \mathbf{x}_n^\top \mathbf{q}_n
- * + \mathbf{u}_n^\top \mathbf{r}_n
- * + \frac{1}{2} \mathbf{x}_n^\top\mathbf{Q}_n \mathbf{x}_n
- * +\frac{1}{2} \mathbf{u}_n^\top \mathbf{R}_n \mathbf{u}_n
- * + \mathbf{u}_n^\top \mathbf{P}_n \mathbf{x}_n
+ * q_N + \delta \mathbf{x}_N^\top \mathbf{q}_N +\frac{1}{2} \delta \mathbf{x}_N^\top \mathbf{Q}_N  \delta \mathbf{x}_N
+ * +\sum_{n=0}^{N-1} q_n + \delta \mathbf{x}_n^\top \mathbf{q}_n
+ * + \delta \mathbf{u}_n^\top \mathbf{r}_n
+ * + \frac{1}{2} \delta \mathbf{x}_n^\top\mathbf{Q}_n \delta \mathbf{x}_n
+ * +\frac{1}{2} \delta \mathbf{u}_n^\top \mathbf{R}_n \delta \mathbf{u}_n
+ * + \delta \mathbf{u}_n^\top \mathbf{P}_n \delta \mathbf{x}_n
  * \bigg \}
  * \f]
  * subject to
  * \f[
- * \mathbf x_{n+1} = \mathbf A_n \mathbf x_n + \mathbf B_n \mathbf u_n +\mathbf b_n
+ * \mathbf \delta x_{n+1} = \mathbf A_n \delta \mathbf x_n + \mathbf B_n \delta \mathbf u_n +\mathbf b_n
  * \f]
  *
  * The constrained LQ problem additionally implements the box constraints
- * \f$ \mathbf x_{lb} \leq \mathbf x_n \leq \mathbf x_{ub} \ \forall i=1,2,\ldots,N \f$
+ * \f$ \mathbf x_{lb} \leq \mathbf \delta x_n \leq \mathbf x_{ub} \ \forall i=1,2,\ldots,N \f$
  * and
- * \f$ \mathbf u_{lb} \leq \mathbf u_n \leq \mathbf u_{ub} \ \forall i=0,1,\ldots,N-1\f$
+ * \f$ \mathbf u_{lb} \leq \delta \mathbf u_n \leq \mathbf u_{ub} \ \forall i=0,1,\ldots,N-1\f$
  * and the general inequality constraints
  * \f[
- * \mathbf d_{lb}  \leq \mathbf C_n \mathbf x_n + \mathbf D_n \mathbf u_n \leq \mathbf d_{ub} \ \forall i=0,1,\ldots,N
+ * \mathbf d_{lb}  \leq \mathbf C_n \delta \mathbf x_n + \mathbf D_n \delta \mathbf u_n \leq \mathbf d_{ub} \ \forall i=0,1,\ldots,N
  * \f]
- * which are both always kept in absolute coordinates.
+ * which are both always kept in relative coordinates.
  *
  * \note The box constraint containers within this class are made fixed-size. Solvers can get the
- * actual number of box constraints from a a dedicated container nb_
+ * actual number of box constraints from a a dedicated container nbu_ and nbx_
  *
- * \note Note that until version v2.2 of the CT, we were using the differential notation
+ * \note In the differential notation we define
  * \f$ \delta \mathbf x_n = \mathbf x_n - \hat \mathbf x_n \f$ and \f$ \delta \mathbf u_n = \mathbf u_n - \hat \mathbf u_n \f$
+ * where  \hat \mathbf x_n and  \hat \mathbf u_n are current nominal/reference trajectories, around which the LQP is formed.
  *
- * with reference trajectories for state and control denoted as \f$ \hat \mathbf x_i, \
- *  \hat \mathbf u_i \quad \forall i = 0, 1, \ldots \f$
- * however for consistency reasons, as of v2.3, the LQOC problem is formulated in absolute coordinates.
  *
  * \todo Refactor the initializing methods such that const-references can be handed over.
  */
@@ -110,7 +107,8 @@ public:
         const int nConstr,
         const constr_vec_t& u_lb,
         const constr_vec_t& u_ub,
-        const VectorXi& sp);
+        const VectorXi& sp,
+        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_nom_abs);
 
     /*!
      * \brief set uniform input box constraints, with the same constraint being applied at each intermediate stage
@@ -118,11 +116,13 @@ public:
      * @param u_lb control lower bound in absolute coordinates
      * @param u_ub control upper bound in absolute coordinates
      * @param sp the sparsity vector, with strictly increasing indices, e.g. [0 1 4 7]
+     * @param u_nom_abs current nominal control trajectory in absolute coordinates, required for coordinate transform
      */
     void setInputBoxConstraints(const int nConstr,
         const constr_vec_t& u_lb,
         const constr_vec_t& u_ub,
-        const VectorXi& sp);
+        const VectorXi& sp,
+        const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_nom_abs);
 
     /*!
      * \brief set state box constraints at a specific index
@@ -131,12 +131,14 @@ public:
      * @param x_lb state lower bound in absolute coordinates
      * @param x_ub state upper bound in absolute coordinates
      * @param sp the sparsity vector, with strictly increasing indices, e.g. [0 1 4 7]
+     * @param x_nom_abs current nominal state vector in absolute coordinates, required for coordinate transform
      */
     void setIntermediateStateBoxConstraint(const int index,
         const int nConstr,
         const constr_vec_t& x_lb,
         const constr_vec_t& x_ub,
-        const VectorXi& sp);
+        const VectorXi& sp,
+        const ct::core::StateVector<STATE_DIM, SCALAR>& x_nom_abs);
 
     /*!
      * \brief set uniform state box constraints, with the same constraint being applied at each intermediate stage
@@ -144,11 +146,13 @@ public:
      * @param x_lb control lower bound in absolute coordinates
      * @param x_ub control upper bound in absolute coordinates
      * @param sp the sparsity vector, with strictly increasing indices, e.g. [0 1 4 7]
+     * @param x_nom_abs current nominal state trajectory in absolute coordinates, required for coordinate transform
      */
     void setIntermediateStateBoxConstraints(const int nConstr,
         const constr_vec_t& x_lb,
         const constr_vec_t& x_ub,
-        const VectorXi& sp);
+        const VectorXi& sp,
+        const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_nom_abs);
 
     /*!
      * \brief set box constraints for terminal stage
@@ -156,11 +160,13 @@ public:
      * @param x_lb state lower bound in absolute coordinates
      * @param x_ub state upper bound in absolute coordinates
      * @param sp the sparsity vector, with strictly increasing indices, e.g. [0 1 4 7]
+     * @param x_nom_abs current nominal terminal state vector in absolute coordinates, required for coordinate transform
      */
     void setTerminalBoxConstraints(const int nConstr,
         const constr_vec_t& x_lb,
         const constr_vec_t& x_ub,
-        const VectorXi& sp);
+        const VectorXi& sp,
+        const ct::core::StateVector<STATE_DIM, SCALAR>& x_nom_abs);
 
     /*!
      * \brief set general (in)equaltiy constraints, with the same constraint applied at each stage

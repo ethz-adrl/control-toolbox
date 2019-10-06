@@ -66,15 +66,15 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::extractLQSolution()
 {
     LQOCProblem_t& p = *this->lqocProblem_;
 
-    this->x_sol_[0] = p.x_[0];
+    this->x_sol_[0] = p.x_[0];  // should always be zero
 
     for (int k = 0; k < this->lqocProblem_->getNumberOfStages(); k++)
     {
-        //! control update rule
+        //! control update rule in diff coordinates
         this->u_sol_[k] = lv_[k] + this->L_[k] * this->x_sol_[k];
 
-        //! state update rule
-        this->x_sol_[k + 1] = p.A_[k] * this->x_sol_[k] + p.B_[k] * this->u_sol_[k] + p.b_[k];
+        //! state update rule in diff coordinates
+        this->x_sol_[k + 1] = p.A_[k] * this->x_sol_[k] + p.B_[k] * (this->u_sol_[k]) + p.b_[k];
     }
 }
 
