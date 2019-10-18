@@ -215,7 +215,7 @@ public:
     {
         if (storedAsEuler())
         {
-            euler_ = kindr::EulerAnglesXyz<SCALAR>(quat);
+            euler_ = kindr::EulerAnglesXyz<SCALAR>(kindr::RotationQuaternion<SCALAR>(quat));
         }
         else
         {
@@ -241,13 +241,13 @@ public:
     /**
      * \brief This method returns the position of the Base frame in the inertia frame.
      */
-
     const Position3Tpl& position() const { return position_; }
+
     /**
      * \brief This method returns the position of the Base frame in the inertia frame.
      */
-
     Position3Tpl& position() { return position_; }
+
     /**
      * \brief This method returns the Base frame in a custom Frame specified in the Inertia Frame.
      */
@@ -400,6 +400,7 @@ public:
     }
 
     STORAGE_TYPE getStorageType() const { return storage_; }
+
 private:
     bool storedAsEuler() const
     {

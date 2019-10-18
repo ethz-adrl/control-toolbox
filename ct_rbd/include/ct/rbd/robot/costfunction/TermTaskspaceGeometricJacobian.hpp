@@ -49,7 +49,6 @@ public:
     {
         setReferencePosition(w_pos_des);
         setReferenceOrientation(w_q_des);
-        setup();
     }
 
     //! constructor taking a full RigidBodyPose
@@ -98,7 +97,6 @@ public:
         Eigen::Quaterniond w_q_des(0.0, 0.0, 0.0, 1.0);
         setReferenceOrientation(w_q_des);
         setReferencePosition(core::StateVector<3>::Zero());
-        setup();
     }
 
     //! construct this term with info loaded from a configuration file
@@ -109,7 +107,13 @@ public:
 
     //! copy constructor
     TermTaskspaceGeometricJacobian(const TermTaskspaceGeometricJacobian& arg)
-        : BASE(arg), eeInd_(arg.eeInd_), kinematics_(KINEMATICS()), Q_pos_(arg.Q_pos_), Q_rot_(arg.Q_rot_)
+        : BASE(arg),
+          eeInd_(arg.eeInd_),
+          kinematics_(KINEMATICS()),
+          Q_pos_(arg.Q_pos_),
+          Q_rot_(arg.Q_rot_),
+          x_ref_(arg.x_ref_),
+          R_ref_(arg.R_ref_)
     {
     }
 
@@ -121,8 +125,7 @@ public:
         return new TermTaskspaceGeometricJacobian(*this);
     }
 
-    //! setup the AD Derivatives
-    void setup() {}
+
     //! evaluate
     virtual double evaluate(const Eigen::Matrix<double, STATE_DIM, 1>& x,
         const Eigen::Matrix<double, CONTROL_DIM, 1>& u,
@@ -138,21 +141,21 @@ public:
         Eigen::Matrix<double, 3, 1> xDiff = xCurr - x_ref_;
 
         // compute the cost from the position error
-        double pos_cost = (xDiff.transpose() * Q_pos_ * xDiff)(0, 0);
+        double pos_cost = 0.5 * (xDiff.transpose() * Q_pos_ * xDiff)(0, 0);
 
         // get current end-effector rotation in world frame
         Eigen::Matrix<double, 3, 3> ee_rot = kinematics_.getEERotInBase(eeInd_, rbdState.jointPositions());
+        Eigen::Quaterniond orientation(ee_rot);
+        Eigen::Quaterniond orientation_d_(R_ref_);
+        Eigen::Quaterniond error_quaternion(orientation * orientation_d_.inverse());
+        // convert to axis angle
+        Eigen::AngleAxis<double> error_quaternion_angle_axis(error_quaternion);
+        // compute "orientation position_error"
+        Eigen::Matrix<double, 3, 1> qDiff = error_quaternion_angle_axis.axis() * error_quaternion_angle_axis.angle();
 
-        // compute a measure for the difference between current rotation and desired rotation and compute cost based on the orientation error
-        // for the intuition behind, consider the following posts:
-        // https://math.stackexchange.com/a/87698
-        // https://math.stackexchange.com/a/773635
-        //        Eigen::Matrix<double, 3, 3> ee_R_diff = w_R_ref.transpose() * ee_rot;
+        double pos_q = 0.5 * (qDiff.transpose() * Q_rot_ * Eigen::Matrix3d::Identity() * qDiff)(0, 0);
 
-        // compute rotation penalty using the squared Frobenius norm of (R_diff-I)
-        //        double rot_cost = Q_rot_ * (ee_R_diff - Eigen::Matrix<double, 3, 3>::Identity()).squaredNorm();
-
-        return pos_cost;  // + rot_cost;
+        return pos_cost + pos_q;
     }
 
 
@@ -165,19 +168,31 @@ public:
         grad.setZero();
 
         RBDState rbdState;
-        rbdState.getJointPosition() = x.template head<KINEMATICS::NJOINTS>();
+        rbdState.jointPositions() = x.template head<KINEMATICS::NJOINTS>();
+
         Eigen::Matrix<double, 6, KINEMATICS::NJOINTS> J = kinematics_.getJacobianBaseEEbyId(eeInd_, rbdState);
+        Eigen::Matrix<double, 3, KINEMATICS::NJOINTS> J_pos = J.template bottomRows<3>();
+        Eigen::Matrix<double, 3, KINEMATICS::NJOINTS> J_q = J.template topRows<3>();
+
+        // position difference in world frame
+        Eigen::Matrix<double, 3, 1> xCurr =
+            kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions()).toImplementation();
+        Eigen::Matrix<double, 3, 1> xDiff = xCurr - x_ref_;
+
+        grad.template head<KINEMATICS::NJOINTS>() += J_pos.transpose() * Q_pos_ * xDiff;
 
 
-        grad.template head<KINEMATICS::NJOINTS>() =
-            2 * Q_pos_ *
-            (kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions())
-                    .toImplementation() -
-                x_ref_)
-                .transpose() *
-            J;
+        // get current end-effector rotation in world frame
+        Eigen::Matrix<double, 3, 3> ee_rot = kinematics_.getEERotInBase(eeInd_, rbdState.jointPositions());
+        Eigen::Quaterniond orientation(ee_rot);
+        Eigen::Quaterniond orientation_d_(R_ref_);
+        Eigen::Quaterniond error_quaternion(orientation * orientation_d_.inverse());
+        // convert to axis angle
+        Eigen::AngleAxis<double> error_quaternion_angle_axis(error_quaternion);
+        // compute "orientation position_error"
+        Eigen::Matrix<double, 3, 1> qDiff = error_quaternion_angle_axis.axis() * error_quaternion_angle_axis.angle();
 
-        // todo implement !!
+        grad.template head<KINEMATICS::NJOINTS>() += J_q.transpose() * Q_rot_ * Eigen::Matrix3d::Identity() * qDiff;
 
         return grad;
     }
@@ -195,7 +210,19 @@ public:
         const core::ControlVector<CONTROL_DIM>& u,
         const double& t) override
     {
-        throw std::runtime_error("stateSecondDerivative currently not defined for TermTaskspaceGeometricJacobian.");
+        RBDState rbdState;
+        rbdState.jointPositions() = x.template head<KINEMATICS::NJOINTS>();
+
+        Eigen::Matrix<double, 6, KINEMATICS::NJOINTS> J = kinematics_.getJacobianBaseEEbyId(eeInd_, rbdState);
+        Eigen::Matrix<double, 3, KINEMATICS::NJOINTS> J_pos = J.template bottomRows<3>();
+        Eigen::Matrix<double, 3, KINEMATICS::NJOINTS> J_q = J.template topRows<3>();
+
+        state_matrix_t Q = state_matrix_t::Zero();
+        Q.template topLeftCorner<KINEMATICS::NJOINTS, KINEMATICS::NJOINTS>() += J_pos.transpose() * Q_pos_ * J_pos;
+        Q.template topLeftCorner<KINEMATICS::NJOINTS, KINEMATICS::NJOINTS>() +=
+            J_q.transpose() * Q_rot_ * Eigen::Matrix3d::Identity() * J_q;
+
+        return Q;
     }
 
     //! compute second order derivative of this cost term w.r.t. the control input
@@ -257,9 +284,6 @@ public:
             std::cout << "Read Q_rot as Q_rot = \n" << Q_rot_ << std::endl;
             std::cout << "Read x_des as x_des = \n" << getReferencePosition().transpose() << std::endl;
         }
-
-        // new initialization required
-        setup();
     }
 
 
@@ -270,14 +294,7 @@ public:
     //! retrieve reference ee orientation in world frame
     const Eigen::Quaterniond getReferenceOrientation() const { return Eigen::Quaterniond(R_ref_); }
     //! set desired end-effector orientation in world frame
-    void setReferenceOrientation(const Eigen::Matrix<double, 3, 3>& w_R_ref)
-    {
-        R_ref_ = w_R_ref;
-        //        // transcribe the rotation matrix into the parameter vector
-        //        const Eigen::Matrix<double, 9, 1> matVectorized(
-        //            Eigen::Map<const Eigen::Matrix<double, 9, 1>>(w_R_ref.data(), 9));
-        //        adParameterVector_.template segment<9>(STATE_DIM + CONTROL_DIM + 3) = matVectorized;
-    }
+    void setReferenceOrientation(const Eigen::Matrix<double, 3, 3>& w_R_ref) { R_ref_ = w_R_ref; }
 
     //! set desired end-effector orientation in world frame
     void setReferenceOrientation(const Eigen::Quaterniond& w_q_des)
@@ -293,33 +310,6 @@ public:
 
 
 private:
-    //    //! transcribe the 9x1 "rotation" segment from the AD parameter vector into a 3x3 matrix
-    //    template <typename SC>
-    //    const Eigen::Matrix<SC, 3, 3> extractReferenceRotationMatrix(
-    //        const Eigen::Matrix<SC, AD_PARAMETER_DIM, 1>& parameterVector) const
-    //    {
-    //        Eigen::Matrix<SC, 9, 1> matVectorized = parameterVector.template segment<9>(STATE_DIM + CONTROL_DIM + 3);
-    //        Eigen::Matrix<SC, 3, 3> w_R_ee(Eigen::Map<Eigen::Matrix<SC, 3, 3>>(matVectorized.data(), 3, 3));
-    //        return w_R_ee;
-    //    }
-
-    //    //! extract the state segment from the AD parameter vector
-    //    template <typename SC>
-    //    const Eigen::Matrix<SC, STATE_DIM, 1> extractStateVector(
-    //        const Eigen::Matrix<SC, AD_PARAMETER_DIM, 1>& parameterVector) const
-    //    {
-    //        return parameterVector.template segment<STATE_DIM>(0);
-    //    }
-    //
-    //    //! extract the control segment from the AD parameter vector
-    //    template <typename SC>
-    //    const Eigen::Matrix<SC, 3, 1> extractReferencePosition(
-    //        const Eigen::Matrix<SC, AD_PARAMETER_DIM, 1>& parameterVector) const
-    //    {
-    //        return parameterVector.template segment<3>(STATE_DIM + CONTROL_DIM);
-    //    }
-
-
     //! index of the end-effector
     size_t eeInd_;
 
