@@ -58,7 +58,7 @@ void NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::ro
     for (size_t k = firstIndex; k <= lastIndex; k = k + this->getNumStepsPerShot())
     {
         // rollout the shot
-        this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_, this->xShot_,
+        this->rolloutSingleShot(this->settings_.nThreads, k, this->u_ff_, this->x_, this->x_ref_lqr_, this->xShot_,
             *this->substepsX_, *this->substepsU_);
 
         this->computeSingleDefect(k, this->x_, this->xShot_, this->d_);
@@ -105,8 +105,7 @@ SCALAR NLOCBackendST<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             typename Base::ControlSubstepsPtr(new typename Base::ControlSubsteps(this->K_ + 1));
 
 
-        this->executeLineSearch(this->settings_.nThreads, alpha, this->lqocSolver_->getSolutionControl(),
-            this->lqocSolver_->getSolutionState(), x_search, x_shot_search, defects_recorded, u_recorded,
+        this->executeLineSearch(this->settings_.nThreads, alpha, x_search, x_shot_search, defects_recorded, u_recorded,
             intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm, *substepsX, *substepsU);
 
 

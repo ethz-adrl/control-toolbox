@@ -44,8 +44,6 @@ public:
 
     GNRiccatiSolver(int N);
 
-    virtual ~GNRiccatiSolver();
-
     virtual void solve() override;
 
     virtual void initializeAndAllocate() override;
@@ -54,13 +52,11 @@ public:
 
     virtual void configure(const NLOptConSettings& settings) override;
 
-    //! compute the state and control updates.
-    /*!
-	 * The GNRiccati solver needs this method in order to compute the state and control solutions after the Riccati backward pass.
-	 *
-	 * \warning You need to call this method at the right place if you're using solveSingleStage() by yourself.
-	 */
-    virtual void extractLQSolution() override;
+    virtual void computeStatesAndControls() override;
+
+    virtual void computeFeedbackMatrices() override;
+
+    virtual void compute_lv() override;
 
     virtual SCALAR getSmallestEigenvalue() override;
 
@@ -90,8 +86,6 @@ protected:
     ControlMatrixArray Hi_;
     ControlMatrixArray Hi_inverse_;
     ControlMatrix H_corrFix_;
-
-    ControlVectorArray lv_;
 
     StateVectorArray sv_;
     StateMatrixArray S_;

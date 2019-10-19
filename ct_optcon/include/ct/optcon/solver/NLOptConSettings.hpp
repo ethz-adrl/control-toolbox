@@ -146,13 +146,16 @@ public:
 class NLOptConSettings
 {
 public:
-    typedef typename core::SensitivityApproximationSettings::APPROXIMATION APPROXIMATION;
-
-    //! the nonlinear optimal control problem solving algorithm
+    //! algorithm types for solving the NLOC problem
     enum NLOCP_ALGORITHM
     {
-        GNMS = 0,
-        ILQR,
+        GNMS = 0,   //! Gauss-Newton Multiple Shooting (shooting interval = control interval)
+        ILQR,       //! Classical iLQR (1 shooting interval equal to problem horizon)
+        MS_ILQR,    //! multiple-shooting iLQR
+        SS_OL,      //! Classical (open-loop) Single Shooting
+        SS_CL,      //! Closed-loop single shooting
+        GNMS_M_OL,  //! GNMS(M) with open-loop shooting
+        GNMS_M_CL,  //! GNMS(M) with closed-loop shooting
         NUM_TYPES
     };
 
@@ -163,6 +166,7 @@ public:
         HPIPM_SOLVER = 1
     };
 
+    using APPROXIMATION = typename core::SensitivityApproximationSettings::APPROXIMATION;
 
     //! NLOptCon Settings default constructor
     /*!
@@ -175,7 +179,6 @@ public:
           nlocp_algorithm(GNMS),
           lqocp_solver(GNRICCATI_SOLVER),
           loggingPrefix("alg"),
-          closedLoopShooting(false),  //! by default, we do open-loop shooting
           epsilon(1e-5),
           dt(0.001),
           K_sim(1),                    //! by default, there is only one sub-integration step
@@ -203,7 +206,6 @@ public:
     NLOCP_ALGORITHM nlocp_algorithm;  //! which nonlinear optimal control algorithm is to be used
     LQOCP_SOLVER lqocp_solver;        //! the solver for the linear-quadratic optimal control problem
     std::string loggingPrefix;        //! the prefix to be stored before the matfile name for logging
-    bool closedLoopShooting;          //! use feedback gains during forward integration (true) or not (false)
     double epsilon;                   //! Eigenvalue correction factor for Hessian regularization
     double dt;                        //! sampling time for the control input (seconds)
     int K_sim;                        //! number of sub-integration-steps
@@ -242,7 +244,15 @@ public:
         return std::max(1, (int)std::lround(timeHorizon / dt));
     }
 
+    //! compute the simulation timestep
     double getSimulationTimestep() const { return (dt / (double)K_sim); }
+
+    //! return if this is a closed-loop shooting algorithm (or not)
+    bool closedLoopShooting() const { return nlocAlgorithmToClosedLoopShooting.at(nlocp_algorithm); }
+
+    //! return if this is a single-shooting algorithm (or not)
+    bool isSingleShooting() const { return nlocAlgorithmToSingleShooting.at(nlocp_algorithm); }
+
     //! print the current NLOptCon settings to console
     void print() const
     {
@@ -251,9 +261,8 @@ public:
         std::cout << "integrator: " << integratorToString.at(integrator) << std::endl;
         std::cout << "discretization: " << discretizationToString.at(discretization) << std::endl;
         std::cout << "time varying discretization: " << timeVaryingDiscretization << std::endl;
-        std::cout << "nonlinear OCP algorithm: " << nlocp_algorithmToString.at(nlocp_algorithm) << std::endl;
-        std::cout << "linear-quadratic OCP solver: " << locp_solverToString.at(lqocp_solver) << std::endl;
-        std::cout << "closed loop shooting:\t" << closedLoopShooting << std::endl;
+        std::cout << "nonlinear OCP algorithm: " << nlocAlgorithmToString.at(nlocp_algorithm) << std::endl;
+        std::cout << "linear-quadratic OCP solver: " << lqocSolverToString.at(lqocp_solver) << std::endl;
         std::cout << "dt:\t" << dt << std::endl;
         std::cout << "K_sim:\t" << K_sim << std::endl;
         std::cout << "K_shot:\t" << K_shot << std::endl;
@@ -396,12 +405,6 @@ public:
         }
         try
         {
-            closedLoopShooting = pt.get<bool>(ns + ".closedLoopShooting");
-        } catch (...)
-        {
-        }
-        try
-        {
             debugPrint = pt.get<bool>(ns + ".debugPrint");
         } catch (...)
         {
@@ -512,16 +515,16 @@ public:
             }
 
             std::string nlocp_algorithmStr = pt.get<std::string>(ns + ".nlocp_algorithm");
-            if (stringTonlocp_algorithm.find(nlocp_algorithmStr) != stringTonlocp_algorithm.end())
+            if (stringToNlocAlgorithm.find(nlocp_algorithmStr) != stringToNlocAlgorithm.end())
             {
-                nlocp_algorithm = stringTonlocp_algorithm[nlocp_algorithmStr];
+                nlocp_algorithm = stringToNlocAlgorithm[nlocp_algorithmStr];
             }
             else
             {
                 std::cout << "Invalid nlocp_algorithm specified in config, should be one of the following:"
                           << std::endl;
 
-                for (auto it = stringTonlocp_algorithm.begin(); it != stringTonlocp_algorithm.end(); it++)
+                for (auto it = stringToNlocAlgorithm.begin(); it != stringToNlocAlgorithm.end(); it++)
                 {
                     std::cout << it->first << std::endl;
                 }
@@ -531,15 +534,15 @@ public:
 
 
             std::string locp_solverStr = pt.get<std::string>(ns + ".locp_solver");
-            if (stringTolocp_solver.find(locp_solverStr) != stringTolocp_solver.end())
+            if (stringToLqocSolver.find(locp_solverStr) != stringToLqocSolver.end())
             {
-                lqocp_solver = stringTolocp_solver[locp_solverStr];
+                lqocp_solver = stringToLqocSolver[locp_solverStr];
             }
             else
             {
                 std::cout << "Invalid locp_solver specified in config, should be one of the following:" << std::endl;
 
-                for (auto it = stringTolocp_solver.begin(); it != stringTolocp_solver.end(); it++)
+                for (auto it = stringToLqocSolver.begin(); it != stringToLqocSolver.end(); it++)
                 {
                     std::cout << it->first << std::endl;
                 }
@@ -606,16 +609,26 @@ private:
 
 
     //! mappings for algorithm types
-    std::map<NLOCP_ALGORITHM, std::string> nlocp_algorithmToString = {{GNMS, "GNMS"}, {ILQR, "ILQR"}};
+    std::map<NLOCP_ALGORITHM, std::string> nlocAlgorithmToString = {{GNMS, "GNMS (Gauss-Newton Multiple Shooting)"},
+        {ILQR, "ILQR (iterative linear-quadratic optimal control)"}, {MS_ILQR, "MS_ILQR (multiple-shooting iLQR)"},
+        {SS_OL, "SS_OL (open-loop Single Shooting)"}, {SS_CL, "SS_CL (closed-loop Single Shooting)"},
+        {GNMS_M_OL, "GNMS_M_OL (GNMS(M) with open-loop shooting)"},
+        {GNMS_M_CL, "GNMS_M_CL (GNMS(M) with closed-loop shooting)"}};
 
-    std::map<std::string, NLOCP_ALGORITHM> stringTonlocp_algorithm = {{"GNMS", GNMS}, {"ILQR", ILQR}};
+    std::map<std::string, NLOCP_ALGORITHM> stringToNlocAlgorithm = {{"GNMS", GNMS}, {"ILQR", ILQR},
+        {"MS_ILQR", MS_ILQR}, {"SS_OL", SS_OL}, {"SS_CL", SS_CL}, {"GNMS_M_OL", GNMS_M_OL}, {"GNMS_M_CL", GNMS_M_CL}};
 
+    std::map<NLOCP_ALGORITHM, bool> nlocAlgorithmToClosedLoopShooting = {{GNMS, false}, {ILQR, true}, {MS_ILQR, true},
+        {SS_OL, false}, {SS_CL, true}, {GNMS_M_OL, false}, {GNMS_M_CL, true}};
+
+    std::map<NLOCP_ALGORITHM, bool> nlocAlgorithmToSingleShooting = {{GNMS, false}, {ILQR, true}, {MS_ILQR, false},
+        {SS_OL, true}, {SS_CL, true}, {GNMS_M_OL, false}, {GNMS_M_CL, false}};
 
     //! mappings for linear-quadratic solver types
-    std::map<LQOCP_SOLVER, std::string> locp_solverToString = {
+    std::map<LQOCP_SOLVER, std::string> lqocSolverToString = {
         {GNRICCATI_SOLVER, "GNRICCATI_SOLVER"}, {HPIPM_SOLVER, "HPIPM_SOLVER"}};
 
-    std::map<std::string, LQOCP_SOLVER> stringTolocp_solver = {
+    std::map<std::string, LQOCP_SOLVER> stringToLqocSolver = {
         {"GNRICCATI_SOLVER", GNRICCATI_SOLVER}, {"HPIPM_SOLVER", HPIPM_SOLVER}};
 };
 }  // namespace optcon

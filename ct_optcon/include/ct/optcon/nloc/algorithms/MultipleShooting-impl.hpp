@@ -9,31 +9,26 @@ namespace ct {
 namespace optcon {
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::GNMS(std::shared_ptr<Backend_t>& backend_,
+MultipleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::MultipleShooting(std::shared_ptr<Backend_t>& backend_,
     const Settings_t& settings)
     : Base(backend_)
 {
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::~GNMS()
-{
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::configure(const Settings_t& settings)
+void MultipleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::configure(const Settings_t& settings)
 {
     this->backend_->configure(settings);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::setInitialGuess(const Policy_t& initialGuess)
+void MultipleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::setInitialGuess(const Policy_t& initialGuess)
 {
     this->backend_->setInitialGuess(initialGuess);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::runIteration()
+bool MultipleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::runIteration()
 {
     prepareIteration();
 
@@ -41,17 +36,17 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::runIteratio
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareIteration()
+void MultipleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareIteration()
 {
     bool debugPrint = this->backend_->getSettings().debugPrint;
 
     auto startPrepare = std::chrono::steady_clock::now();
 
     if (!this->backend_->isInitialized())
-        throw std::runtime_error("GNMS is not initialized!");
+        throw std::runtime_error("MultipleShooting is not initialized!");
 
     if (!this->backend_->isConfigured())
-        throw std::runtime_error("GNMS is not configured!");
+        throw std::runtime_error("MultipleShooting is not configured!");
 
     this->backend_->checkProblem();
 
@@ -71,30 +66,30 @@ void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareIter
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS]: computing LQ Approximation from index " << K_shot << " to N-1 took "
+        std::cout << "[MultipleShooting]: computing LQ Approximation from index " << K_shot << " to N-1 took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
     if (debugPrint)
-        std::cout << "[GNMS]: Solving prepare stage of LQOC Problem" << std::endl;
+        std::cout << "[MultipleShooting]: Solving prepare stage of LQOC Problem" << std::endl;
 
     start = std::chrono::steady_clock::now();
     this->backend_->prepareSolveLQProblem(K_shot);
     end = std::chrono::steady_clock::now();
     diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS]: Prepare phase of LQOC problem took "
+        std::cout << "[MultipleShooting]: Prepare phase of LQOC problem took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
     auto endPrepare = std::chrono::steady_clock::now();
     if (debugPrint)
-        std::cout << "[GNMS]: prepareIteration() took "
+        std::cout << "[MultipleShooting]: prepareIteration() took "
                   << std::chrono::duration<double, std::milli>(endPrepare - startPrepare).count() << " ms" << std::endl;
 
 }  //! prepareIteration()
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishIteration()
+bool MultipleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishIteration()
 {
     int K_shot = this->backend_->getNumStepsPerShot();
 
@@ -120,18 +115,19 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishItera
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS]: computing LQ approximation for first multiple-shooting interval took "
+        std::cout << "[MultipleShooting]: computing LQ approximation for first multiple-shooting interval took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
     if (debugPrint)
-        std::cout << "[GNMS]: Finish phase LQOC Problem" << std::endl;
+        std::cout << "[MultipleShooting]: Finish phase LQOC Problem" << std::endl;
 
     start = std::chrono::steady_clock::now();
     this->backend_->finishSolveLQProblem(K_shot - 1);
+    this->backend_->extractSolution();
     end = std::chrono::steady_clock::now();
     diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS]: Finish solving LQOC problem took "
+        std::cout << "[MultipleShooting]: Finish solving LQOC problem took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
     start = std::chrono::steady_clock::now();
@@ -139,14 +135,14 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishItera
     end = std::chrono::steady_clock::now();
     diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS]: Line search took " << std::chrono::duration<double, std::milli>(diff).count() << " ms"
+        std::cout << "[MultipleShooting]: Line search took " << std::chrono::duration<double, std::milli>(diff).count() << " ms"
                   << std::endl;
 
 
     if (debugPrint)
     {
         auto endFinish = std::chrono::steady_clock::now();
-        std::cout << "[GNMS]: finishIteration() took "
+        std::cout << "[MultipleShooting]: finishIteration() took "
                   << std::chrono::duration<double, std::milli>(endFinish - startFinish).count() << " ms" << std::endl;
     }
 
@@ -165,17 +161,17 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishItera
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareMPCIteration()
+void MultipleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareMPCIteration()
 {
     bool debugPrint = this->backend_->getSettings().debugPrint;
 
     auto startPrepare = std::chrono::steady_clock::now();
 
     if (!this->backend_->isInitialized())
-        throw std::runtime_error("GNMS is not initialized!");
+        throw std::runtime_error("MultipleShooting is not initialized!");
 
     if (!this->backend_->isConfigured())
-        throw std::runtime_error("GNMS is not configured!");
+        throw std::runtime_error("MultipleShooting is not configured!");
 
     this->backend_->checkProblem();
 
@@ -193,24 +189,24 @@ void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareMPCI
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS-MPC]: computing LQ approximation from index " << K_shot << " to N-1 took "
+        std::cout << "[MultipleShooting-MPC]: computing LQ approximation from index " << K_shot << " to N-1 took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
     if (debugPrint)
-        std::cout << "[GNMS-MPC]: Solving prepare stage of LQOC Problem" << std::endl;
+        std::cout << "[MultipleShooting-MPC]: Solving prepare stage of LQOC Problem" << std::endl;
 
     start = std::chrono::steady_clock::now();
     this->backend_->prepareSolveLQProblem(K_shot);
     end = std::chrono::steady_clock::now();
     diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS-MPC]: Prepare phase of LQOC problem took "
+        std::cout << "[MultipleShooting-MPC]: Prepare phase of LQOC problem took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
 
     auto endPrepare = std::chrono::steady_clock::now();
     if (debugPrint)
-        std::cout << "[GNMS-MPC]: prepareIteration() took "
+        std::cout << "[MultipleShooting-MPC]: prepareIteration() took "
                   << std::chrono::duration<double, std::milli>(endPrepare - startPrepare).count() << " ms" << std::endl;
 
 
@@ -218,7 +214,7 @@ void GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareMPCI
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishMPCIteration()
+bool MultipleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishMPCIteration()
 {
     int K_shot = this->backend_->getNumStepsPerShot();
 
@@ -242,18 +238,19 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishMPCIt
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS-MPC]: computing LQ approximation for first multiple-shooting interval took "
+        std::cout << "[MultipleShooting-MPC]: computing LQ approximation for first multiple-shooting interval took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
     if (debugPrint)
-        std::cout << "[GNMS-MPC]: Finish phase LQOC Problem" << std::endl;
+        std::cout << "[MultipleShooting-MPC]: Finish phase LQOC Problem" << std::endl;
 
     start = std::chrono::steady_clock::now();
     this->backend_->finishSolveLQProblem(K_shot - 1);
+    this->backend_->extractSolution();
     end = std::chrono::steady_clock::now();
     diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS-MPC]: Finish solving LQOC problem took "
+        std::cout << "[MultipleShooting-MPC]: Finish solving LQOC problem took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
 
@@ -264,14 +261,14 @@ bool GNMS<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishMPCIt
     end = std::chrono::steady_clock::now();
     diff = end - start;
     if (debugPrint)
-        std::cout << "[GNMS-MPC]: Solution update took " << std::chrono::duration<double, std::milli>(diff).count()
+        std::cout << "[MultipleShooting-MPC]: Solution update took " << std::chrono::duration<double, std::milli>(diff).count()
                   << " ms" << std::endl;
 
 
     if (debugPrint)
     {
         auto endFinish = std::chrono::steady_clock::now();
-        std::cout << "[GNMS-MPC]: finishIteration() took "
+        std::cout << "[MultipleShooting-MPC]: finishIteration() took "
                   << std::chrono::duration<double, std::milli>(endFinish - startFinish).count() << " ms" << std::endl;
     }
 

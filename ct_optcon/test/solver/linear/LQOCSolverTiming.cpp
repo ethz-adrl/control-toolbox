@@ -94,6 +94,9 @@ void timeSingleSolve(size_t N, std::vector<std::vector<double>>& loggedSolveTime
 
             auto start_solve = std::chrono::steady_clock::now();
             lqocSolvers[i]->solve();
+            lqocSolvers[i]->computeStatesAndControls();
+            lqocSolvers[i]->computeFeedbackMatrices();
+            lqocSolvers[i]->compute_lv();
             auto end_solve = std::chrono::steady_clock::now();
 
             auto start_get = std::chrono::steady_clock::now();

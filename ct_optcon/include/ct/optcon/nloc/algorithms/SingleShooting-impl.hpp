@@ -12,31 +12,28 @@ namespace ct {
 namespace optcon {
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::iLQR(std::shared_ptr<Backend_t>& backend_,
+SingleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::SingleShooting(
+    std::shared_ptr<Backend_t>& backend_,
     const Settings_t& settings)
     : Base(backend_)
 {
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::~iLQR()
-{
-}
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::configure(const Settings_t& settings)
+void SingleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::configure(const Settings_t& settings)
 {
     this->backend_->configure(settings);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::setInitialGuess(const Policy_t& initialGuess)
+void SingleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::setInitialGuess(
+    const Policy_t& initialGuess)
 {
     this->backend_->setInitialGuess(initialGuess);
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::runIteration()
+bool SingleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::runIteration()
 {
     prepareIteration();
 
@@ -44,19 +41,19 @@ bool iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::runIteratio
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareIteration()
+void SingleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareIteration()
 {
     if (!this->backend_->isInitialized())
-        throw std::runtime_error("iLQR is not initialized!");
+        throw std::runtime_error("SingleShooting is not initialized!");
 
     if (!this->backend_->isConfigured())
-        throw std::runtime_error("iLQR is not configured!");
+        throw std::runtime_error("SingleShooting is not configured!");
 
     this->backend_->checkProblem();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishIteration()
+bool SingleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishIteration()
 {
     int K = this->backend_->getNumSteps();
 
@@ -86,42 +83,43 @@ bool iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishItera
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
     if (debugPrint)
-        std::cout << "[iLQR]: Computing LQ approximation took "
+        std::cout << "[SingleShooting]: Computing LQ approximation took "
                   << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
     end = std::chrono::steady_clock::now();
     diff = end - startEntire;
     if (debugPrint)
-        std::cout << "[iLQR]: Forward pass took " << std::chrono::duration<double, std::milli>(diff).count() << " ms"
-                  << std::endl;
+        std::cout << "[SingleShooting]: Forward pass took " << std::chrono::duration<double, std::milli>(diff).count()
+                  << " ms" << std::endl;
 
     if (debugPrint)
-        std::cout << "[iLQR]: #2 Solve LQOC Problem" << std::endl;
+        std::cout << "[SingleShooting]: #2 Solve LQOC Problem" << std::endl;
 
     start = std::chrono::steady_clock::now();
     this->backend_->solveFullLQProblem();
+    this->backend_->extractSolution();
     end = std::chrono::steady_clock::now();
     diff = end - start;
     if (debugPrint)
-        std::cout << "[iLQR]: Solving LQOC problem took " << std::chrono::duration<double, std::milli>(diff).count()
-                  << " ms" << std::endl;
+        std::cout << "[SingleShooting]: Solving LQOC problem took "
+                  << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
     // update solutions and line-search
     if (debugPrint)
-        std::cout << "[iLQR]: #3 LineSearch" << std::endl;
+        std::cout << "[SingleShooting]: #3 LineSearch" << std::endl;
 
     start = std::chrono::steady_clock::now();
     bool foundBetter = this->backend_->lineSearch();
     end = std::chrono::steady_clock::now();
     diff = end - start;
     if (debugPrint)
-        std::cout << "[iLQR]: Line search took " << std::chrono::duration<double, std::milli>(diff).count() << " ms"
-                  << std::endl;
+        std::cout << "[SingleShooting]: Line search took " << std::chrono::duration<double, std::milli>(diff).count()
+                  << " ms" << std::endl;
 
     diff = end - startEntire;
     if (debugPrint)
-        std::cout << "[iLQR]: finishIteration took " << std::chrono::duration<double, std::milli>(diff).count() << " ms"
-                  << std::endl;
+        std::cout << "[SingleShooting]: finishIteration took "
+                  << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
 
     this->backend_->printSummary();
 
@@ -135,13 +133,13 @@ bool iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishItera
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareMPCIteration()
+void SingleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareMPCIteration()
 {
     prepareIteration();
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool iLQR<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishMPCIteration()
+bool SingleShooting<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishMPCIteration()
 {
     finishIteration();
     return true;  //! \todo : in MPC always returning true. Unclear how user wants to deal with varying costs, etc.

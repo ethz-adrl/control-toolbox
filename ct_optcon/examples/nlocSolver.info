@@ -1,5 +1,6 @@
 ilqr
 {
+    nlocp_algorithm GNMS
     integrator EulerCT
     useSensitivityIntegrator false
     discretization Forward_euler
@@ -18,8 +19,6 @@ ilqr
     nThreads 1
     nThreadsEigen 1
     locp_solver GNRICCATI_SOLVER
-    nlocp_algorithm ILQR
-    closedLoopShooting true
     printSummary true
     debugPrint false 
     logToMatlab 0   

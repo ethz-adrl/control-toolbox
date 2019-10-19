@@ -18,7 +18,7 @@ template <size_t STATE_DIM,
     size_t V_DIM,
     typename SCALAR = double,
     bool CONTINUOUS = true>
-class iLQR final : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>
+class MultipleShooting final : public NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -34,12 +34,11 @@ public:
 
     typedef SCALAR Scalar_t;
 
-
     //! constructor
-    iLQR(std::shared_ptr<Backend_t>& backend_, const Settings_t& settings);
+    MultipleShooting(std::shared_ptr<Backend_t>& backend_, const Settings_t& settings);
 
     //! destructor
-    virtual ~iLQR();
+    virtual ~MultipleShooting() = default;
 
     //! configure the solver
     virtual void configure(const Settings_t& settings) override;
@@ -47,38 +46,38 @@ public:
     //! set an initial guess
     virtual void setInitialGuess(const Policy_t& initialGuess) override;
 
-
     //! runIteration combines prepareIteration and finishIteration
     /*!
-     * For iLQR the separation between prepareIteration and finishIteration would actually not be necessary
-     * @return
+     * @return foundBetter (false if converged)
      */
     virtual bool runIteration() override;
 
 
     /*!
-     * for iLQR, as it is a purely sequential approach, we cannot prepare anything prior to solving,
+     * - linearize dynamics for the stages 1 to N-1
+     * - quadratize cost for stages 1 to N-1
      */
     virtual void prepareIteration() override;
 
 
+    //! finish iteration for unconstrained MultipleShooting
     /*!
-     * for iLQR, finishIteration contains the whole main iLQR iteration.
+     * - linearize dynamcs for the first stage
+     * - quadratize cost for the first stage
      * @return
      */
     virtual bool finishIteration() override;
 
 
+    //! prepare iteration, dedicated to MPC.
     /*!
-     * for iLQR, as it is a purely sequential approach, we cannot prepare anything prior to solving,
+     * requirements: no line-search, end with update-step of controls and state, no rollout after update steps.
+     * Therefore: rollout->linearize->solve
      */
     virtual void prepareMPCIteration() override;
 
 
-    /*!
-     * for iLQR, finishIteration contains the whole main iLQR iteration.
-     * @return
-     */
+    //! finish iteration, dedicated to MPC
     virtual bool finishMPCIteration() override;
 };
 

@@ -308,13 +308,18 @@ public:
      */
     virtual void prepareSolveLQProblem(size_t startIndex);
 
-
     virtual void finishSolveLQProblem(size_t endIndex);
 
     /*!
      * solve Full LQProblem, e.g. to be used with HPIPM or if we have a constrained problem
      */
     virtual void solveFullLQProblem();
+
+    /**
+     * @brief extract relevant quantities for the following rollout/solution update step from the LQ solver
+     * @note not all algorithms require all data updates, hence the separation.
+     */
+    void extractSolution();
 
     //! compute costs of solution candidate
     void updateCosts();
@@ -344,9 +349,6 @@ public:
     //! sets the box constraints for the entire time horizon including terminal stage
     void setInputBoxConstraintsForLQOCProblem();
     void setStateBoxConstraintsForLQOCProblem();
-
-    //! obtain feedback update from lqoc solver, if provided
-    void getFeedback();
 
     //! reset all defects to zero
     void resetDefects();
@@ -498,8 +500,6 @@ protected:
     //! Check if controller with particular alpha is better
     void executeLineSearch(const size_t threadId,
         const scalar_t alpha,
-        const ControlVectorArray& du_ff_update,
-        const StateVectorArray& dx_update,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_recorded,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_recorded,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& defects_recorded,
@@ -553,10 +553,15 @@ protected:
     StateVectorArray xShot_;              //! rolled-out state (at the end of a time step forward)
     StateVectorArray d_;                  //! defects in between end of rollouts and subsequent state decision vars
     StateVectorArray x_prev_;             //! state array from previous iteration
+    StateVectorArray x_ref_lqr_;          //! reference for lqr
 
     ControlVectorArray u_ff_;       //! feed forward controls
     ControlVectorArray u_ff_prev_;  //! feed forward controls from previous iteration
     FeedbackArray L_;               //! time-varying lqr feedback
+
+    ControlVectorArray delta_u_ff_;  //! pointer to control increment
+    StateVectorArray delta_x_;       //! pointer to state increment
+    StateVectorArray delta_x_ref_lqr_;          //! state array from previous iteration
 
     StateSubstepsPtr substepsX_;    //! state substeps recorded by integrator during rollouts
     ControlSubstepsPtr substepsU_;  //! control substeps recorded by integrator during rollouts

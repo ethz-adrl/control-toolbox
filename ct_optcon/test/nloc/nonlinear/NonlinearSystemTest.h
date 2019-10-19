@@ -116,6 +116,6 @@ TEST(NLOCTest, NonlinearSystemAlgorithmComparison)
         ASSERT_NEAR(uRollout_gnms[i](0), uRollout_ilqr[i](0), 1e-4);
     }
 }
-}
-}
-}
+}  // namespace example
+}  // namespace optcon
+}  // namespace ct

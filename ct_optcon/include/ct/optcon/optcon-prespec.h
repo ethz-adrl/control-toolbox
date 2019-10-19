@@ -28,8 +28,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "nloc/NLOCBackendBase.hpp"
 #include "nloc/NLOCBackendST.hpp"
 #include "nloc/NLOCBackendMP.hpp"
-#include "nloc/algorithms/gnms/GNMS.hpp"
-#include "nloc/algorithms/ilqr/iLQR.hpp"
+#include "nloc/algorithms/MultipleShooting.hpp"
+#include "nloc/algorithms/SingleShooting.hpp"
 
 #include "solver/OptConSolver.h"
 #include "solver/lqp/HPIPMInterface.hpp"

@@ -145,6 +145,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     L_ = initialGuess.K();
     x_ = initialGuess.x_ref();
     x_prev_ = x_;
+    x_ref_lqr_ = x_;
 
     if (x_.size() > (size_t)K_ + 1)
     {
@@ -195,9 +196,13 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     x_.resize(K_ + 1);
     x_prev_.resize(K_ + 1);
     xShot_.resize(K_ + 1);
+    delta_x_.resize(K_ + 1);
+    x_ref_lqr_.resize(K_ + 1);
+    delta_x_ref_lqr_.resize(K_ + 1);
 
     u_ff_.resize(K_);
     u_ff_prev_.resize(K_);
+    delta_u_ff_.resize(K_);
     d_.resize(K_ + 1);
     L_.resize(K_);
 
@@ -432,7 +437,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     const size_t k,  //! the starting index of the shot
     ControlVectorArray& u_local,
     StateVectorArray& x_local,
-    const StateVectorArray& x_ref_lqr,
+    const StateVectorArray& x_ref_lqr_local,
     StateVectorArray& xShot,  //! the value at the end of each integration interval
     StateSubsteps& substepsX,
     ControlSubsteps& substepsU,
@@ -465,9 +470,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             xShot[i] = xShot[i - 1];  //! initialize integration variable
         }
 
-        // Todo: the order here is not optimal. In some cases, we will overwrite x_ref_lqr immediately in the next step!
-        if (settings_.closedLoopShooting)  // overwrite control
-            u_local[i] += L_[i] * (xShot[i] - x_ref_lqr[i]);
+        if (settings_.closedLoopShooting())  // overwrite control
+            u_local[i] += L_[i] * (xShot[i] - x_ref_lqr_local[i]);
 
         //! @todo: here we override the state trajectory directly (as passed by reference). This is bad.
         if (i > (int)k)
@@ -1018,8 +1022,6 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     u_ff_prev_ = u_ff_;
     x_prev_ = x_;
 
-    // get feedback from lqoc solver which is always the same
-    getFeedback();
 
     if (!settings_.lineSearchSettings.active)  // do full step updates
     {
@@ -1110,8 +1112,6 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::executeLineSearch(const size_t threadId,
     const scalar_t alpha,
-    const ControlVectorArray& u_ff_update,
-    const StateVectorArray& x_update,
     ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_alpha,
     ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_alpha,
     ct::core::StateVectorArray<STATE_DIM, SCALAR>& defects_recorded,
@@ -1135,19 +1135,21 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         return;
 
     // update feedforward with weighting alpha
-    u_alpha = u_ff_update * alpha + u_ff_prev_;
+    u_alpha = delta_u_ff_ * alpha + u_ff_prev_;
 
     // update state decision variables with weighting alpha
-    x_alpha = x_update * alpha + x_prev_;
+    x_alpha = delta_x_ * alpha + x_prev_;
 
+    // update x_lqr reference
+    ct::core::StateVectorArray<STATE_DIM, SCALAR> x_ref_lqr = delta_x_ref_lqr_ * alpha + x_prev_;
 
     if (terminationFlag && *terminationFlag)
         return;
 
     bool dynamicsGood;
 
-    dynamicsGood = rolloutShotsSingleThreaded(threadId, 0, K_ - 1, u_alpha, x_alpha, x_alpha, x_shot_alpha,
-        defects_recorded, substepsX, substepsU, terminationFlag);
+    dynamicsGood = rolloutShotsSingleThreaded(threadId, 0 /*first index*/, K_ - 1 /*last index*/, u_alpha, x_alpha,
+        x_ref_lqr, x_shot_alpha, defects_recorded, substepsX, substepsU, terminationFlag);
 
     if (terminationFlag && *terminationFlag)
         return;
@@ -1225,7 +1227,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         for (int i = endIndex; i >= 0; i--)
             lqocSolver_->solveSingleStage(i);
 
-        lqocSolver_->extractLQSolution();
+        lqocSolver_->computeStatesAndControls();
     }
     else
         throw std::runtime_error("unknown solver type in finishSolveLQProblem()");
@@ -1308,12 +1310,79 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
+void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::extractSolution()
+{
+    L_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());  // TODO should eventually go away
+    x_ref_lqr_ = x_;
+
+    // extract the quantities required to update the solution candidate, depending on solver settings
+    /*
+    *  case: GNMS:                                  compute and retrieve dx, du
+    *  case: GNMS(M):                               compute and retrieve dx, du
+    *  case: Classical (open-loop) Single Shooting: compute and retrieve dx, du;  
+    *  case: iLQR:                                  compute and retrieve lv, L
+    *  case: Multiple-Shooting-iLQR:                compute and retrieve dx, lv, L
+    *  case: Closed-loop Single Shooting:           compute and retrieve dx, du, L
+    *  case: Closed-loop GNMS(M):                   compute and retrieve dx, du, L
+    */
+    switch (settings_.nlocp_algorithm)
+    {
+        case NLOptConSettings::NLOCP_ALGORITHM::GNMS:
+        case NLOptConSettings::NLOCP_ALGORITHM::GNMS_M_OL:
+        case NLOptConSettings::NLOCP_ALGORITHM::SS_OL:
+        {
+            lqocSolver_->computeStatesAndControls();
+            delta_u_ff_ = lqocSolver_->getSolutionControl();
+            delta_x_ = lqocSolver_->getSolutionState();
+            delta_x_ref_lqr_.setConstant(ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
+            break;
+        }
+        case NLOptConSettings::NLOCP_ALGORITHM::ILQR:
+        {
+            lqocSolver_->compute_lv();
+            delta_u_ff_ = lqocSolver_->get_lv();
+            lqocSolver_->computeFeedbackMatrices();
+            L_ = lqocSolver_->getSolutionFeedback();
+            delta_x_.setConstant(ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
+            delta_x_ref_lqr_.setConstant(ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
+            break;
+        }
+        case NLOptConSettings::NLOCP_ALGORITHM::MS_ILQR:
+        {
+            lqocSolver_->computeStatesAndControls();
+            delta_x_ = lqocSolver_->getSolutionState();
+            delta_x_ref_lqr_.setConstant(ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
+            lqocSolver_->compute_lv();
+            delta_u_ff_ = lqocSolver_->get_lv();
+            lqocSolver_->computeFeedbackMatrices();
+            L_ = lqocSolver_->getSolutionFeedback();
+            break;
+        }
+        case NLOptConSettings::NLOCP_ALGORITHM::SS_CL:
+        case NLOptConSettings::NLOCP_ALGORITHM::GNMS_M_CL:
+        {
+            lqocSolver_->computeStatesAndControls();
+            delta_u_ff_ = lqocSolver_->getSolutionControl();
+            delta_x_ = lqocSolver_->getSolutionState();
+            delta_x_ref_lqr_ = delta_x_;
+            lqocSolver_->computeFeedbackMatrices();
+            L_ = lqocSolver_->getSolutionFeedback();
+            break;
+        }
+        default:
+            throw std::runtime_error("Unknown NLOC Algorithm type given in settings.");
+    }
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::doFullStepUpdate()
 {
-    u_ff_ += lqocSolver_->getSolutionControl();
-    x_ += lqocSolver_->getSolutionState();
-
     alphaBest_ = 1.0;
+
+    x_ += delta_x_;
+    u_ff_ += delta_u_ff_;
+    x_ref_lqr_ += delta_x_ref_lqr_;
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
@@ -1330,16 +1399,6 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getSu
 {
     return summaryAllIterations_;
 }
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getFeedback()
-{
-    if (settings_.closedLoopShooting)
-        L_ = lqocSolver_->getSolutionFeedback();
-    else
-        L_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());  // TODO should eventually go away
-}
-
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::resetDefects()
@@ -1528,19 +1587,14 @@ int NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::g
     return K_;
 }
 
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 int NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getNumStepsPerShot() const
 {
-    // todo try to find clear solution here
-    if (settings_.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
+    if (settings_.isSingleShooting())
         return K_;
-    else if (settings_.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::GNMS)
-        return settings_.K_shot;
     else
-        throw std::runtime_error("Unknown algorithm type in NLOCBackendBase::getNumStepsPerShot()");
+        return settings_.K_shot;
 }
-
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
 const typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Settings_t&

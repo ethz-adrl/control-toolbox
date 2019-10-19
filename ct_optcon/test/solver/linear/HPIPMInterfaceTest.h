@@ -27,7 +27,7 @@ TEST(HPIPMInterfaceTest, compareSolvers)
 
     // define an initial state
     StateVector<state_dim> x0;
-    x0.setZero(); // by definition
+    x0.setZero();  // by definition
 
     // define a desired terminal state
     StateVector<state_dim> stateOffset;
@@ -35,7 +35,7 @@ TEST(HPIPMInterfaceTest, compareSolvers)
 
     // define a nominal control
     ControlVector<control_dim> u0;
-    u0.setZero(); // by definition
+    u0.setZero();  // by definition
 
     // define cost function matrices
     StateMatrix<state_dim> Q;
@@ -55,30 +55,35 @@ TEST(HPIPMInterfaceTest, compareSolvers)
         dt, system, ct::optcon::NLOptConSettings::APPROXIMATION::MATRIX_EXPONENTIAL);
 
     // initialize the linear quadratic optimal control problems
-    lqocProblem_hpipm->setFromTimeInvariantLinearQuadraticProblem(
-        discretizedSystem, costFunction, stateOffset, dt);
-    lqocProblem_gnriccati->setFromTimeInvariantLinearQuadraticProblem(
-        discretizedSystem, costFunction, stateOffset, dt);
+    lqocProblem_hpipm->setFromTimeInvariantLinearQuadraticProblem(discretizedSystem, costFunction, stateOffset, dt);
+    lqocProblem_gnriccati->setFromTimeInvariantLinearQuadraticProblem(discretizedSystem, costFunction, stateOffset, dt);
 
 
     // create hpipm solver instance, set and solve problem
     ct::optcon::HPIPMInterface<state_dim, control_dim> hpipm;
     hpipm.setProblem(lqocProblem_hpipm);
     hpipm.solve();
+    hpipm.computeStatesAndControls();
+    hpipm.computeFeedbackMatrices();
+    hpipm.compute_lv();
 
     // create GNRiccati solver instance, set and solve problem
     ct::optcon::GNRiccatiSolver<state_dim, control_dim> gnriccati;
     gnriccati.setProblem(lqocProblem_gnriccati);
     gnriccati.solve();
+    gnriccati.computeStatesAndControls();
+    gnriccati.computeFeedbackMatrices();
+    gnriccati.compute_lv();
 
-    // retrieve solutions
+    // compute and retrieve solutions
     ct::core::StateVectorArray<state_dim> x_sol_hpipm = hpipm.getSolutionState();
     ct::core::StateVectorArray<state_dim> x_sol_gnrccati = gnriccati.getSolutionState();
     ct::core::ControlVectorArray<control_dim> u_sol_hpipm = hpipm.getSolutionControl();
     ct::core::ControlVectorArray<control_dim> u_sol_gnrccati = gnriccati.getSolutionControl();
     ct::core::FeedbackArray<state_dim, control_dim> K_sol_hpipm = hpipm.getSolutionFeedback();
     ct::core::FeedbackArray<state_dim, control_dim> K_sol_gnriccati = gnriccati.getSolutionFeedback();
-
+    ct::core::ControlVectorArray<control_dim> lv_sol_hpipm = hpipm.get_lv();
+    ct::core::ControlVectorArray<control_dim> lv_sol_gnriccati = gnriccati.get_lv();
 
     // asser that the solution sizes the same
     ASSERT_EQ(x_sol_hpipm.size(), x_sol_gnrccati.size());
@@ -95,10 +100,16 @@ TEST(HPIPMInterfaceTest, compareSolvers)
     {
         ASSERT_LT((u_sol_hpipm[i] - u_sol_gnrccati[i]).array().abs().maxCoeff(), 1e-6);
     }
-    
+
     // assert that feedback matrices are the same
     for (size_t i = 0; i < K_sol_hpipm.size(); i++)
     {
         ASSERT_LT((K_sol_hpipm[i] - K_sol_gnriccati[i]).array().abs().maxCoeff(), 1e-6);
+    }
+
+    // assert that feedforward-increment is the same
+    for (size_t i = 0; i < lv_sol_hpipm.size(); i++)
+    {
+        ASSERT_LT((lv_sol_hpipm[i] - lv_sol_gnriccati[i]).array().abs().maxCoeff(), 1e-6);
     }
 }

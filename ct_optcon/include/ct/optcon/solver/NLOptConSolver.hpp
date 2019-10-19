@@ -10,8 +10,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include <ct/optcon/nloc/NLOCBackendST.hpp>
 #include <ct/optcon/nloc/NLOCBackendMP.hpp>
 
-#include <ct/optcon/nloc/algorithms/ilqr/iLQR.hpp>
-#include <ct/optcon/nloc/algorithms/gnms/GNMS.hpp>
+#include <ct/optcon/nloc/algorithms/SingleShooting.hpp>
+#include <ct/optcon/nloc/algorithms/MultipleShooting.hpp>
 
 namespace ct {
 namespace optcon {
@@ -73,7 +73,7 @@ public:
         const std::string& ns = "alg");
 
     //! destructor
-    virtual ~NLOptConSolver();
+    virtual ~NLOptConSolver() = default;
 
     /**
 	 * configures the solver

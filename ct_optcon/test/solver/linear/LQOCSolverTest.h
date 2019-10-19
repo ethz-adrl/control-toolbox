@@ -44,10 +44,10 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
 
     // nominal control
     ct::core::ControlVector<control_dim> u0;
-    u0.setZero(); // by definition
+    u0.setZero();  // by definition
     // initial state
     ct::core::StateVector<state_dim> x0;
-    x0.setZero() ; // by definition
+    x0.setZero();  // by definition
     // desired final state
     ct::core::StateVector<state_dim> xf;
     xf << -1, 0;
@@ -70,17 +70,28 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
     lqocSolvers[0]->initializeAndAllocate();
     lqocSolvers[1]->initializeAndAllocate();
 
-    // solve the problems
+    // solve the problems...
     lqocSolvers[0]->solve();
     lqocSolvers[1]->solve();
+
+    // postprocess data
+    lqocSolvers[0]->computeStatesAndControls();
+    lqocSolvers[0]->computeFeedbackMatrices();
+    lqocSolvers[0]->compute_lv();
+    lqocSolvers[1]->computeStatesAndControls();
+    lqocSolvers[1]->computeFeedbackMatrices();
+    lqocSolvers[1]->compute_lv();
 
     // retrieve solutions from both solvers
     auto xSol_riccati = lqocSolvers[0]->getSolutionState();
     auto uSol_riccati = lqocSolvers[0]->getSolutionControl();
     ct::core::FeedbackArray<state_dim, control_dim> KSol_riccati = lqocSolvers[0]->getSolutionFeedback();
+    ct::core::ControlVectorArray<control_dim> lv_sol_riccati = lqocSolvers[0]->get_lv();
     auto xSol_hpipm = lqocSolvers[1]->getSolutionState();
     auto uSol_hpipm = lqocSolvers[1]->getSolutionControl();
     ct::core::FeedbackArray<state_dim, control_dim> KSol_hpipm = lqocSolvers[1]->getSolutionFeedback();
+    ct::core::ControlVectorArray<control_dim> lv_sol_hpipm = lqocSolvers[1]->get_lv();
+
 
     for (size_t j = 0; j < xSol_riccati.size(); j++)
     {
@@ -119,5 +130,18 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
         }
         // assert that feedback trajectories are identical for both solvers
         ASSERT_NEAR((KSol_riccati[j] - KSol_hpipm[j]).array().abs().maxCoeff(), 0.0, 1e-6);
+    }
+
+    for (size_t j = 0; j < lv_sol_riccati.size(); j++)
+    {
+        if (verbose)
+        {
+            std::cout << "lv solution from riccati solver:" << std::endl;
+            std::cout << lv_sol_riccati[j] << std::endl << std::endl;
+            std::cout << "lv solution from hpipm solver:" << std::endl;
+            std::cout << lv_sol_hpipm[j] << std::endl << std::endl;
+        }
+        // assert that feedforward increments are identical for both solvers
+        ASSERT_NEAR((lv_sol_riccati[j] - lv_sol_hpipm[j]).array().abs().maxCoeff(), 0.0, 1e-6);
     }
 }

@@ -30,6 +30,8 @@ namespace optcon {
 
 /*!
  * This class implements an interface to the HPIPM solver
+ * 
+ * \note see also the official hpipm repo, i.e. the discussion in https://github.com/giaf/hpipm/issues/76
  *
  * \warning in order to allow for an efficient implementation of constrained MPC,
  * the configuration of the box and general constraints must be done independently
@@ -72,7 +74,9 @@ public:
 
     void solve() override;
 
-    void designFeedback();
+    virtual void computeStatesAndControls() override;
+    virtual void computeFeedbackMatrices() override;
+    virtual void compute_lv() override;
 
     void printSolution();
 
@@ -98,6 +102,9 @@ public:
      *  - the general constraint configuration changes
      */
     virtual void initializeAndAllocate() override;
+
+    //! override this method to catch corner case with lv being incompatible with constraints
+    virtual const ct::core::ControlVectorArray<CONTROL_DIM>& get_lv() override;
 
 private:
     void setSolverDimensions(const int N, const int nbu = 0, const int nbx = 0, const int ng = 0);
@@ -145,23 +152,18 @@ private:
      */
     bool changeNumberOfStages(int N);
 
-    //! creates a zero matrix
-    void d_zeros(double** pA, int row, int col);
+    /**
+     * @brief compute the array of inverses of the Lr-matrix from the cholesky factorization of the Hessian
+     * @note is put into separate function since triggered by request and flagged by bool
+     */
+    void computeLrInvArray();
+    bool isLrInvComputed_;
 
     //! prints a matrix in column-major format
     void d_print_mat(int m, int n, double* A, int lda);
 
-    //! prints a matrix in column-major format (exponential notation)
-    void d_print_e_mat(int m, int n, double* A, int lda);
-
-    //! prints the transposed of a matrix in column-major format (exponential notation)
+    //! prints the transposed of a matrix in column-major format, exp notation
     void d_print_e_tran_mat(int row, int col, double* A, int lda);
-
-    //! prints the transposed of a matrix in column-major format
-    void d_print_tran_mat(int row, int col, double* A, int lda);
-
-    //! prints a matrix in column-major format
-    void int_print_mat(int row, int col, int* A, int lda);
 
     //! horizon length
     int N_;
@@ -214,6 +216,9 @@ private:
     std::vector<int*> hidxs_;
     std::vector<double*> hlls_;
     std::vector<double*> hlus_;
+
+    // cached data for efficiency
+    ct::core::DiscreteArray<ct::core::ControlMatrix<control_dim>> Lr_inv_;  // inv of cholesky matrix of hessian H
 
 
     //! settings from NLOptConSolver

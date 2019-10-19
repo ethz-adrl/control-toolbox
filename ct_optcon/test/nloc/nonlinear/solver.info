@@ -1,11 +1,11 @@
 timeHorizon 3.0
 
-gnms
+ilqr
 {
+    nlocp_algorithm ILQR
 	integrator EulerCT
 	useSensitivityIntegrator true
 	discretization Forward_euler
-	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
     dt 0.01
     K_shot 1
     K_sim 10
@@ -19,7 +19,6 @@ gnms
     nThreads 1
     nThreadsEigen 1
     locp_solver GNRICCATI_SOLVER
-    nlocp_algorithm ILQR
     debugPrint false
     printSummary false
     loggingPrefix ILQR
@@ -36,12 +35,12 @@ gnms
 }
 
 
-ilqr
+gnms
 {
+    nlocp_algorithm GNMS
 	integrator EulerCT
 	useSensitivityIntegrator true
 	discretization Forward_euler
-	closedLoopShooting 1 					; (1 = closed loop shooting, 0 = open-loop shooting)
     dt 0.01
     K_shot 60
     K_sim 10
@@ -54,7 +53,6 @@ ilqr
     nThreads 1    
     nThreadsEigen 1
     locp_solver GNRICCATI_SOLVER
-    nlocp_algorithm GNMS
     debugPrint false
     printSummary false
     loggingPrefix ILQR_GNMS_5
