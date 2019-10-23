@@ -21,27 +21,40 @@ namespace optcon {
  */
 struct LineSearchSettings
 {
+    //! types of backtracking line-search
+    enum TYPE
+    {
+        NONE = 0,      //! take full-step updates
+        SIMPLE,        //! simple backtracking using cost or merit function
+        TASSA,         //! backtracking including riccati matrix measure
+        DEFECT_AWARE,  //! backtracking including riccati matrix measure and defects
+        NUM_TYPES
+    };
+
+    //! mappings for line-search types
+    std::map<TYPE, std::string> lineSearchTypeToString = {{NONE, "None (take full-step updates with alpha=1.0)"},
+        {SIMPLE, "Simple Backtracking with cost/merit"}, {TASSA, "Tassa-style Backtracking for single-shooting"},
+        {DEFECT_AWARE, "Defect-aware backtracking using Riccati matrices"}};
+
+    std::map<std::string, TYPE> stringToLineSearchType = {
+        {"NONE", NONE}, {"SIMPLE", SIMPLE}, {"TASSA", TASSA}, {"DEFECT_AWARE", DEFECT_AWARE}};
+
+
     //! default constructor for the NLOptCon line-search settings
     LineSearchSettings()
-        : active(true),
-          adaptive(false),
-          maxIterations(10),
-          alpha_0(1.0),
-          alpha_max(1.0),
-          n_alpha(0.5),
-          debugPrint(false)
+        : type(NONE), adaptive(false), maxIterations(10), alpha_0(1.0), alpha_max(1.0), n_alpha(0.5), debugPrint(false)
     {
     }
 
     //! check if the currently set line-search parameters are meaningful
     bool parametersOk() const { return (alpha_0 > 0.0) && (n_alpha > 0.0) && (n_alpha < 1.0) && (alpha_max > 0.0); }
-    bool active;          /*!< Flag whether or not to perform line search */
+    TYPE type;            /*!< type of line search */
     bool adaptive;        /*!< Flag whether alpha_0 gets updated based on previous iteration */
     size_t maxIterations; /*!< Maximum number of iterations during line search */
     double alpha_0;       /*!< Initial step size for line search. Use 1 for step size as suggested by NLOptCon */
     double alpha_max;     /*!< Maximum step size for line search. This is the limit when adapting alpha_0. */
     double
-        n_alpha; /*!< Factor by which the line search step size alpha gets multiplied with after each iteration. Usually 0.5 is a good value. */
+        n_alpha; /*!< Factor by which the step size alpha gets scaled after each iteration. Usually 0.5 is a good value. */
     bool debugPrint; /*!< Print out debug information during line-search*/
 
 
@@ -50,7 +63,7 @@ struct LineSearchSettings
     {
         std::cout << "Line Search Settings: " << std::endl;
         std::cout << "=====================" << std::endl;
-        std::cout << "active:\t" << active << std::endl;
+        std::cout << "type:\t" << lineSearchTypeToString.at(type) << std::endl;
         std::cout << "adaptive:\t" << adaptive << std::endl;
         std::cout << "maxIter:\t" << maxIterations << std::endl;
         std::cout << "alpha_0:\t" << alpha_0 << std::endl;
@@ -70,7 +83,24 @@ struct LineSearchSettings
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);
 
-        active = pt.get<bool>(ns + ".active");
+        std::string ls_type = pt.get<std::string>(ns + ".type");
+        if (stringToLineSearchType.find(ls_type) != stringToLineSearchType.end())
+        {
+            type = stringToLineSearchType[ls_type];
+        }
+        else
+        {
+            std::cout << "Invalid line search type specified in config, should be one of the following:" << std::endl;
+
+            for (auto it = stringToLineSearchType.begin(); it != stringToLineSearchType.end(); it++)
+            {
+                std::cout << it->first << std::endl;
+            }
+
+            exit(-1);
+        }
+
+
         maxIterations = pt.get<size_t>(ns + ".maxIterations");
         alpha_0 = pt.get<double>(ns + ".alpha_0");
         n_alpha = pt.get<double>(ns + ".n_alpha");

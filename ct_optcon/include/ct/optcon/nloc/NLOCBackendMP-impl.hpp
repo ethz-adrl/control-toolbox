@@ -501,12 +501,13 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::li
         this->executeLineSearch(threadId, alpha, x_search, x_shot_search, defects_recorded, u_recorded,
             intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm, *substepsX, *substepsU, &alphaBestFound_);
 
-        // compute merit
-        cost = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm +
-               this->settings_.meritFunctionRhoConstraints * (e_box_norm + e_gen_norm);
-
         lineSearchResultMutex_.lock();
-        if (cost < lowestCostPrevious_ && !std::isnan(cost))
+        
+        // check for step acceptance and get new merit/cost
+        bool stepAccepted =
+            this->acceptStep(alpha, intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm, lowestCostPrevious_, cost);
+
+        if (stepAccepted)
         {
             // make sure we do not alter an existing result
             if (alphaBestFound_)

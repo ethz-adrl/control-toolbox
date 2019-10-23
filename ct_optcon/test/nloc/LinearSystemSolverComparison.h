@@ -58,7 +58,7 @@ TEST(LinearSystemsSolverComparison, LinearSystemsSolverComparison)
         // switch line search on or off
         for (int toggleLS = 0; toggleLS <= 1; toggleLS++)
         {
-            nloc_settings.lineSearchSettings.active = (bool)toggleLS;
+            nloc_settings.lineSearchSettings.type = static_cast<LineSearchSettings::TYPE>(toggleLS);
 
             // toggle between single and multi-threading
             for (size_t nThreads = 1; nThreads < 5; nThreads = nThreads + 3)

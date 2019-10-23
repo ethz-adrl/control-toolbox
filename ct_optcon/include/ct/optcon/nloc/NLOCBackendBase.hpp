@@ -514,6 +514,17 @@ protected:
         std::atomic_bool* terminationFlag = nullptr) const;
 
 
+    //! in case of line-search compute new merit and check if to accept step. Returns true if accept step
+    bool acceptStep(
+        const SCALAR alpha,
+        const SCALAR intermediateCost,
+        const SCALAR finalCost,
+        const SCALAR defectNorm,
+        const SCALAR e_box_norm,
+        const SCALAR e_gen_norm,
+        const SCALAR lowestMeritPrevious,
+        SCALAR& new_merit);
+
     //! Update feedforward controller
     /*!
      * This function updates the feedforward Controller based on the previous calculation.
@@ -559,9 +570,9 @@ protected:
     ControlVectorArray u_ff_prev_;  //! feed forward controls from previous iteration
     FeedbackArray L_;               //! time-varying lqr feedback
 
-    ControlVectorArray delta_u_ff_;  //! pointer to control increment
-    StateVectorArray delta_x_;       //! pointer to state increment
-    StateVectorArray delta_x_ref_lqr_;          //! state array from previous iteration
+    ControlVectorArray delta_u_ff_;     //! pointer to control increment
+    StateVectorArray delta_x_;          //! pointer to state increment
+    StateVectorArray delta_x_ref_lqr_;  //! state array from previous iteration
 
     StateSubstepsPtr substepsX_;    //! state substeps recorded by integrator during rollouts
     ControlSubstepsPtr substepsU_;  //! control substeps recorded by integrator during rollouts

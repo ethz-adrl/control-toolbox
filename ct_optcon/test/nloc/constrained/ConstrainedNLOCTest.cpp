@@ -144,7 +144,7 @@ NLOptConSolver<state_dim, control_dim> generateSolver(ContinuousOptConProblem<st
     nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
     nloc_settings.lqoc_solver_settings.num_lqoc_iterations = 100;               // number of riccati sub-iterations
     nloc_settings.printSummary = false;
-    nloc_settings.lineSearchSettings.active = false;
+    nloc_settings.lineSearchSettings.type = LineSearchSettings::TYPE::NONE;
 
     // init controller
     size_t K = nloc_settings.computeK(timeHorizon);

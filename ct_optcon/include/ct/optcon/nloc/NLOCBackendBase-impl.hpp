@@ -256,7 +256,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
     // recompute cost if line search is active
     // TODO: this should be multi-threaded to save time
-    if (iteration_ > 0 && settings_.lineSearchSettings.active)
+    if (iteration_ > 0 && (settings_.lineSearchSettings.type != LineSearchSettings::TYPE::NONE))
         computeCostsOfTrajectory(settings_.nThreads, x_, u_ff_, intermediateCostBest_, finalCostBest_);
 }
 
@@ -283,7 +283,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
 
     // TODO can we do this multi-threaded?
-    if (iteration_ > 0 && settings_.lineSearchSettings.active)
+    if (iteration_ > 0 && (settings_.lineSearchSettings.type != LineSearchSettings::TYPE::NONE))
         computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
 
     setInputBoxConstraintsForLQOCProblem();
@@ -307,7 +307,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
 
     // TODO can we do this multi-threaded?
-    if (iteration_ > 0 && settings_.lineSearchSettings.active)
+    if (iteration_ > 0 && (settings_.lineSearchSettings.type != LineSearchSettings::TYPE::NONE))
         computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
 
     setStateBoxConstraintsForLQOCProblem();
@@ -356,7 +356,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     lqocSolver_->initializeAndAllocate();
 
     // TODO can we do this multi-threaded?
-    if (iteration_ > 0 && settings_.lineSearchSettings.active)
+    if (iteration_ > 0 && (settings_.lineSearchSettings.type != LineSearchSettings::TYPE::NONE))
         computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
 }
 
@@ -1023,7 +1023,7 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     x_prev_ = x_;
 
 
-    if (!settings_.lineSearchSettings.active)  // do full step updates
+    if (settings_.lineSearchSettings.type == LineSearchSettings::TYPE::NONE)  // do full step updates
     {
         // lowest cost is cost of last rollout
         lowestCostPrevious = intermediateCostBest_ + finalCostBest_;
@@ -1186,6 +1186,70 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             std::cout << msg << std::endl;
         }
     }
+}
+
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
+bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::acceptStep(
+    const SCALAR alpha,
+    const SCALAR intermediateCost,
+    const SCALAR finalCost,
+    const SCALAR defectNorm,
+    const SCALAR e_box_norm,
+    const SCALAR e_gen_norm,
+    const SCALAR lowestMeritPrevious,
+    SCALAR& new_merit)
+{
+    switch (settings_.lineSearchSettings.type)
+    {
+        case LineSearchSettings::TYPE::SIMPLE:
+        {
+            new_merit = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm +
+                        this->settings_.meritFunctionRhoConstraints * (e_box_norm + e_gen_norm);
+
+            if (new_merit < lowestMeritPrevious && !std::isnan(new_merit))
+                return true;
+
+            break;
+        }
+        case LineSearchSettings::TYPE::TASSA:
+        {
+            new_merit = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm +
+                        this->settings_.meritFunctionRhoConstraints * (e_box_norm + e_gen_norm);
+
+            if(std::isnan(new_merit))
+            return false;
+
+            ControlVectorArray& lv = lqocSolver_->get_lv();
+            SCALAR Delta1 = 0;
+            SCALAR Delta2 = 0;
+            SCALAR c1 = 0.1;
+            for (size_t i = 0; i < K_; i++)
+            {
+                // TODO: this can sometimes become negative and allow an overall increase of cost. Is this desirable?
+                Delta1 += lv[i].transpose() * this->lqocProblem_->rv_[i];
+                Delta2 += 0.5 * lv[i].transpose() * this->lqocProblem_->R_[i] * lv[i];
+            }
+
+            SCALAR expCostDecr = (alpha * Delta1 + alpha * alpha * Delta2);
+
+            cost >= (this->lowestCost_- c1 * expCostDecr)) 
+
+            if (std::abs(lowestMeritPrevious - new_merit) > std::abs(c1 * expCostDecr))
+                return true;
+
+            break;
+        }
+        case LineSearchSettings::TYPE::DEFECT_AWARE:
+        {
+            throw std::runtime_error("Defect aware line search not yet implemented in acceptStep()");
+            break;
+        }
+        default:
+            throw std::runtime_error("Invalid line search type in acceptStep()");
+    };
+
+    return false;
 }
 
 
