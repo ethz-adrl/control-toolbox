@@ -26,23 +26,30 @@ struct LineSearchSettings
     {
         NONE = 0,      //! take full-step updates
         SIMPLE,        //! simple backtracking using cost or merit function
-        TASSA,         //! backtracking including riccati matrix measure
-        DEFECT_AWARE,  //! backtracking including riccati matrix measure and defects
+        ARMIJO,        //! backtracking including riccati matrix measure
+        GOLDSTEIN,  //! backtracking including riccati matrix measure and defects
         NUM_TYPES
     };
 
     //! mappings for line-search types
-    std::map<TYPE, std::string> lineSearchTypeToString = {{NONE, "None (take full-step updates with alpha=1.0)"},
-        {SIMPLE, "Simple Backtracking with cost/merit"}, {TASSA, "Tassa-style Backtracking for single-shooting"},
-        {DEFECT_AWARE, "Defect-aware backtracking using Riccati matrices"}};
+    std::map<TYPE, std::string> lineSearchTypeToString = {{NONE, "NONE (take full-step updates with alpha=1.0)"},
+        {SIMPLE, "Simple Backtracking with cost/merit"}, {ARMIJO, "ARMIJO-style Backtracking for single-shooting"},
+        {GOLDSTEIN, "GOLDSTEIN backtracking using Riccati matrices"}};
 
     std::map<std::string, TYPE> stringToLineSearchType = {
-        {"NONE", NONE}, {"SIMPLE", SIMPLE}, {"TASSA", TASSA}, {"DEFECT_AWARE", DEFECT_AWARE}};
+        {"NONE", NONE}, {"SIMPLE", SIMPLE}, {"ARMIJO", ARMIJO}, {"GOLDSTEIN", GOLDSTEIN}};
 
 
     //! default constructor for the NLOptCon line-search settings
     LineSearchSettings()
-        : type(NONE), adaptive(false), maxIterations(10), alpha_0(1.0), alpha_max(1.0), n_alpha(0.5), debugPrint(false)
+        : type(NONE),
+          adaptive(false),
+          maxIterations(10),
+          alpha_0(1.0),
+          alpha_max(1.0),
+          n_alpha(0.5),
+          armijo_parameter(0.01),
+          debugPrint(false)
     {
     }
 
@@ -55,7 +62,8 @@ struct LineSearchSettings
     double alpha_max;     /*!< Maximum step size for line search. This is the limit when adapting alpha_0. */
     double
         n_alpha; /*!< Factor by which the step size alpha gets scaled after each iteration. Usually 0.5 is a good value. */
-    bool debugPrint; /*!< Print out debug information during line-search*/
+    double armijo_parameter; /*!< "Control Parameter" in Armijo line search condition. */
+    bool debugPrint;         /*!< Print out debug information during line-search*/
 
 
     //! print the current line search settings to console
@@ -69,6 +77,7 @@ struct LineSearchSettings
         std::cout << "alpha_0:\t" << alpha_0 << std::endl;
         std::cout << "alpha_max:\t" << alpha_max << std::endl;
         std::cout << "n_alpha:\t" << n_alpha << std::endl;
+        std::cout << "armijo_parameter:\t" << armijo_parameter << std::endl;
         std::cout << "debugPrint:\t" << debugPrint << std::endl;
         std::cout << "              =======" << std::endl;
         std::cout << std::endl;
@@ -110,7 +119,20 @@ struct LineSearchSettings
 
         try
         {
+            armijo_parameter = pt.get<double>(ns + ".armijo_parameter");
+        } catch (...)
+        {
+        }
+
+        try
+        {
             adaptive = pt.get<bool>(ns + ".adaptive");
+        } catch (...)
+        {
+        }
+
+        try
+        {
             alpha_max = pt.get<double>(ns + ".alpha_max");
         } catch (...)
         {

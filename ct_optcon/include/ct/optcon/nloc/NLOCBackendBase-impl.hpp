@@ -1190,8 +1190,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::acceptStep(
-    const SCALAR alpha,
+bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::acceptStep(const SCALAR alpha,
     const SCALAR intermediateCost,
     const SCALAR finalCost,
     const SCALAR defectNorm,
@@ -1204,45 +1203,75 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     {
         case LineSearchSettings::TYPE::SIMPLE:
         {
-            new_merit = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm +
-                        this->settings_.meritFunctionRhoConstraints * (e_box_norm + e_gen_norm);
+            new_merit = intermediateCost + finalCost + settings_.meritFunctionRho * defectNorm +
+                        settings_.meritFunctionRhoConstraints * (e_box_norm + e_gen_norm);
 
-            if (new_merit < lowestMeritPrevious && !std::isnan(new_merit))
-                return true;
-
-            break;
-        }
-        case LineSearchSettings::TYPE::TASSA:
-        {
-            new_merit = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm +
-                        this->settings_.meritFunctionRhoConstraints * (e_box_norm + e_gen_norm);
-
-            if(std::isnan(new_merit))
-            return false;
-
-            ControlVectorArray& lv = lqocSolver_->get_lv();
-            SCALAR Delta1 = 0;
-            SCALAR Delta2 = 0;
-            SCALAR c1 = 0.1;
-            for (size_t i = 0; i < K_; i++)
+            if ((lowestMeritPrevious - new_merit > 0.0) && !std::isnan(new_merit))
             {
-                // TODO: this can sometimes become negative and allow an overall increase of cost. Is this desirable?
-                Delta1 += lv[i].transpose() * this->lqocProblem_->rv_[i];
-                Delta2 += 0.5 * lv[i].transpose() * this->lqocProblem_->R_[i] * lv[i];
+                return true;
             }
 
-            SCALAR expCostDecr = (alpha * Delta1 + alpha * alpha * Delta2);
+            break;
+        }
+        case LineSearchSettings::TYPE::ARMIJO:
+        {
+            new_merit = intermediateCost + finalCost + settings_.meritFunctionRho * defectNorm +
+                        settings_.meritFunctionRhoConstraints * (e_box_norm + e_gen_norm);
 
-            cost >= (this->lowestCost_- c1 * expCostDecr)) 
+            if (std::isnan(new_merit))
+                return false;
 
-            if (std::abs(lowestMeritPrevious - new_merit) > std::abs(c1 * expCostDecr))
+            const ControlVectorArray& lv = lqocSolver_->get_lv();
+
+            SCALAR Delta1 = 0;
+            SCALAR Delta2 = 0;
+            for (size_t i = 0; i < K_; i++)
+            {
+                // the expected decrease can sometimes become negative and allow an overall increase of cost - account for that below
+                Delta1 += lv[i].transpose() * lqocProblem_->rv_[i];
+                Delta2 += lv[i].transpose() * lqocProblem_->R_[i] * lv[i];
+            }
+
+            SCALAR expCostDecr = alpha * (Delta1 + alpha * 0.5 * Delta2);
+
+            if ((lowestMeritPrevious - new_merit) >= (settings_.lineSearchSettings.armijo_parameter * expCostDecr) &&
+                ((lowestMeritPrevious - new_merit) >= 0.0))
+            {
                 return true;
+            }
 
             break;
         }
-        case LineSearchSettings::TYPE::DEFECT_AWARE:
+        case LineSearchSettings::TYPE::GOLDSTEIN:
         {
-            throw std::runtime_error("Defect aware line search not yet implemented in acceptStep()");
+            throw std::runtime_error("Goldstein conditions not completed yet, use Armijo for now.");
+
+            new_merit = intermediateCost + finalCost + settings_.meritFunctionRho * defectNorm +
+                        settings_.meritFunctionRhoConstraints * (e_box_norm + e_gen_norm);
+
+            if (std::isnan(new_merit))
+                return false;
+
+            const ControlVectorArray& lv = lqocSolver_->get_lv();
+
+            SCALAR Delta1 = 0;
+            SCALAR Delta2 = 0;
+            for (size_t i = 0; i < K_; i++)
+            {
+                // the expected decrease can sometimes become negative and allow an overall increase of cost - account for that below
+                Delta1 += lv[i].transpose() * lqocProblem_->rv_[i];
+                Delta2 += lv[i].transpose() * lqocProblem_->R_[i] * lv[i];
+            }
+
+            SCALAR expCostDecr = alpha * (Delta1 + alpha * 0.5 * Delta2);
+
+            if (((lowestMeritPrevious - new_merit) >= (settings_.lineSearchSettings.armijo_parameter * expCostDecr)) &&
+                ((lowestMeritPrevious - new_merit) <=
+                    ((1 - settings_.lineSearchSettings.armijo_parameter) * expCostDecr)))
+            {
+                return true;
+            }
+
             break;
         }
         default:

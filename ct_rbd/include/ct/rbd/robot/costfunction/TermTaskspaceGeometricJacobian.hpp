@@ -153,9 +153,9 @@ public:
         // compute "orientation position_error"
         Eigen::Matrix<double, 3, 1> qDiff = error_quaternion_angle_axis.axis() * error_quaternion_angle_axis.angle();
 
-        double pos_q = 0.5 * (qDiff.transpose() * Q_rot_ * Eigen::Matrix3d::Identity() * qDiff)(0, 0);
+        double rot_cost = 0.5 * (qDiff.transpose() * Q_rot_ * qDiff)(0, 0);
 
-        return pos_cost + pos_q;
+        return pos_cost + rot_cost;
     }
 
 
@@ -192,7 +192,7 @@ public:
         // compute "orientation position_error"
         Eigen::Matrix<double, 3, 1> qDiff = error_quaternion_angle_axis.axis() * error_quaternion_angle_axis.angle();
 
-        grad.template head<KINEMATICS::NJOINTS>() += J_q.transpose() * Q_rot_ * Eigen::Matrix3d::Identity() * qDiff;
+        grad.template head<KINEMATICS::NJOINTS>() += J_q.transpose() * Q_rot_ * qDiff;
 
         return grad;
     }
@@ -219,8 +219,7 @@ public:
 
         state_matrix_t Q = state_matrix_t::Zero();
         Q.template topLeftCorner<KINEMATICS::NJOINTS, KINEMATICS::NJOINTS>() += J_pos.transpose() * Q_pos_ * J_pos;
-        Q.template topLeftCorner<KINEMATICS::NJOINTS, KINEMATICS::NJOINTS>() +=
-            J_q.transpose() * Q_rot_ * Eigen::Matrix3d::Identity() * J_q;
+        Q.template topLeftCorner<KINEMATICS::NJOINTS, KINEMATICS::NJOINTS>() += J_q.transpose() * Q_rot_ * J_q;
 
         return Q;
     }
@@ -249,7 +248,7 @@ public:
             std::cout << "Loading TermTaskspaceGeometricJacobian from file " << filename << std::endl;
 
         ct::optcon::loadScalarCF(filename, "eeId", eeInd_, termName);
-        ct::optcon::loadScalarCF(filename, "Q_rot", Q_rot_, termName);
+        ct::optcon::loadMatrixCF(filename, "Q_rot", Q_rot_, termName);
         ct::optcon::loadMatrixCF(filename, "Q_pos", Q_pos_, termName);
 
         Eigen::Matrix<double, 3, 1> w_p_ref;
@@ -319,8 +318,8 @@ private:
     //! weighting matrix for the task-space position
     Eigen::Matrix3d Q_pos_;
 
-    //! weighting factor for orientation error
-    double Q_rot_;
+    //! weighting matrix for orientation error
+    Eigen::Matrix3d Q_rot_;
 
     Eigen::Matrix<double, 3, 1> x_ref_;  // ref position
     Eigen::Matrix<double, 3, 3> R_ref_;  // ref rotation
