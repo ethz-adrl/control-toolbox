@@ -14,7 +14,7 @@ echo "now installing hpipm 0.1.1 ..."
 cd /tmp
 git clone https://github.com/giaf/hpipm.git
 cd /tmp/hpipm
-git checkout 0.1.1
+git checkout 806c845
 make static_library
 make examples
 sudo make install_static
