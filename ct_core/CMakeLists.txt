@@ -18,6 +18,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS REQUIRED)
 
+find_package(CppADCG REQUIRED) #todo make soft dependency
+if(CPPADCG_FOUND)
+    message(STATUS "Found CppADCodeGen...")
+    list(APPEND ct_core_COMPILE_DEFINITIONS CPPADCG)
+endif()
+
 set(ct_core_LIBS "")
 
 ## find and include optional dependencies
@@ -36,7 +42,7 @@ endif()
 find_package(PythonLibs 2.7 QUIET)
 if (PYTHONLIBS_FOUND)
    message(STATUS "Python found")
-   list(APPEND ct_plot_COMPILE_DEFINITIONS PLOTTING_ENABLED)
+   list(APPEND ct_core_COMPILE_DEFINITIONS PLOTTING_ENABLED)
    message(STATUS "Python library path ... " ${PYTHON_LIBRARY})
    list(APPEND ct_core_LIBS ${PYTHON_LIBRARY})
 else() 
@@ -56,14 +62,13 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h.in ${CM
 
 ## define the directories to be included in all ct_core targets
 set(ct_core_target_include_dirs
-    ${EIGEN3_INCLUDE_DIR} 
+    ${EIGEN3_INCLUDE_DIR}
+    ${CPPADCG_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
     ${QWT_INCLUDE_DIR}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct/external>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/examples/include>
     $<INSTALL_INTERFACE:include>
-    $<INSTALL_INTERFACE:include/ct/external>
 )
 
 ## declare prespec libraries
@@ -88,7 +93,7 @@ endif()
 ## create ct_core libraries
 add_library(ct_plot SHARED src/core/plot/plot.cpp)
 target_include_directories(ct_plot PUBLIC ${ct_core_target_include_dirs})
-target_compile_definitions(ct_plot PUBLIC ${ct_plot_COMPILE_DEFINITIONS})
+target_compile_definitions(ct_plot PUBLIC ${ct_core_COMPILE_DEFINITIONS})
 target_link_libraries(ct_plot ${ct_core_LIBS})
 
 add_library(ct_core INTERFACE)
@@ -135,7 +140,6 @@ include(GNUInstallDirs)
 
 ## copy the header files
 install(DIRECTORY include/ct/core DESTINATION include/ct)
-install(DIRECTORY include/ct/external DESTINATION include/ct)
 install(DIRECTORY examples/include/ct/core DESTINATION include/ct)
 
 ## copy the cmake files required for find_package()

@@ -6,7 +6,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "SparsityPattern.h"
-#include <cppad/local/jacobian.hpp>
 
 namespace ct {
 namespace core {

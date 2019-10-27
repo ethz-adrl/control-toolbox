@@ -63,7 +63,13 @@ public:
      *                        template parameter IN_DIM is -1 (dynamic)
      */
     DerivativesCppadJIT(FUN_TYPE_CG& f, int inputDim = IN_DIM, int outputDim = OUT_DIM)
-        : DerivativesBase(), cgStdFun_(f), inputDim_(inputDim), outputDim_(outputDim), compiled_(false), libName_("")
+        : DerivativesBase(),
+          cgStdFun_(f),
+          inputDim_(inputDim),
+          outputDim_(outputDim),
+          compiled_(false),
+          libName_(""),
+          dynamicLib_(nullptr)
     {
         update(f, inputDim, outputDim);
     }
@@ -84,9 +90,20 @@ public:
         cgCppadFun_ = arg.cgCppadFun_;
         if (compiled_)
         {
-            dynamicLib_ = internal::CGHelpers::loadDynamicLibCppad<double>(libName_);
-            model_ =
-                std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad" + libName_));
+            // if the class to copy employs dynamic libraries, load the library and copy the model
+            if (arg.dynamicLib_ != nullptr)
+            {
+                dynamicLib_ = internal::CGHelpers::loadDynamicLibCppad<double>(libName_);
+                model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model(libName_));
+            }
+            else  // in case of regular JIT without dynamic lib
+            {
+                throw std::runtime_error("LLVM not yet supported by Derivatives CppADJIT");
+                /*
+                dynamicLib_ = nullptr;
+                model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(*arg.model_);  // todo does this work, probably not, and we need to clone the entire llvm library
+                */
+            }
         }
     }
 
@@ -115,10 +132,11 @@ public:
         }
     }
 
-    //! destructor
     virtual ~DerivativesCppadJIT() = default;
-    //! deep cloning of Jacobian
+
+    //! deep cloning
     DerivativesCppadJIT* clone() const { return new DerivativesCppadJIT<IN_DIM, OUT_DIM>(*this); }
+
     virtual OUT_TYPE_D forwardZero(const Eigen::VectorXd& x)
     {
         if (compiled_)
@@ -372,7 +390,7 @@ public:
 
         libName_ = libName + uniqueID;
 
-        CppAD::cg::ModelCSourceGen<double> cgen(cgCppadFun_, "DerivativesCppad" + libName_);
+        CppAD::cg::ModelCSourceGen<double> cgen(cgCppadFun_, libName_);
 
         cgen.setMultiThreading(settings.multiThreading_);
         cgen.setCreateForwardZero(settings.createForwardZero_);
@@ -393,28 +411,49 @@ public:
             std::cout << "DerivativesCppadJIT: in temporary directory " << tempDir << std::endl;
         }
 
-        // compile source code
-        CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, libName_);
-        if (settings.compiler_ == DerivativesCppadSettings::GCC)
+
+        if (settings.useDynamicLibrary_)
         {
-            CppAD::cg::GccCompiler<double> compiler;
-            compiler.setTemporaryFolder(tempDir);
-            dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler));
+            // compile a dynamic library
+            CppAD::cg::DynamicModelLibraryProcessor<double> p(libcgen, libName_);
+
+            if (settings.compiler_ == DerivativesCppadSettings::GCC)
+            {
+                CppAD::cg::GccCompiler<double> compiler;
+                compiler.setTemporaryFolder(tempDir);
+                dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler));
+            }
+            else if (settings.compiler_ == DerivativesCppadSettings::CLANG)
+            {
+                CppAD::cg::ClangCompiler<double> compiler;
+                compiler.setTemporaryFolder(tempDir);
+                dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler));
+            }
+            else
+                throw std::runtime_error("Unknown compiler type for dynamic library, support only gcc and clang.");
+
+            // extract model
+            model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model(libName_));
         }
-        else if (settings.compiler_ == DerivativesCppadSettings::CLANG)
+        else  // use regular JIT
         {
-            CppAD::cg::ClangCompiler<double> compiler;
-            compiler.setTemporaryFolder(tempDir);
-            dynamicLib_ = std::shared_ptr<CppAD::cg::DynamicLib<double>>(p.createDynamicLibrary(compiler));
+            throw std::runtime_error("LLVM not yet supported by Derivatives CppADJIT");
+            /*
+            // JIT compile source code
+            CppAD::cg::LlvmModelLibraryProcessor<double> p(libcgen);
+            std::shared_ptr<LlvmModelLibrary<double>> llvmModelLib = p.create();
+
+            //extract model
+            model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(llvmModelLib->model(libName_));
+            */
         }
+
 
         if (settings.generateSourceCode_)
         {
             CppAD::cg::SaveFilesModelLibraryProcessor<double> p2(libcgen);
             p2.saveSources();
         }
-
-        model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model("DerivativesCppad" + libName_));
 
         compiled_ = true;
 
@@ -464,6 +503,7 @@ public:
 
     //! retrieve the dynamic library, e.g. for testing purposes
     const std::shared_ptr<CppAD::cg::DynamicLib<double>> getDynamicLib() { return dynamicLib_; }
+
 protected:
     //! record the Auto-Diff terms for code generation
     void recordCg()
