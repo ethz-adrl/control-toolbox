@@ -1225,11 +1225,11 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
             SCALAR Delta1 = 0;
             SCALAR Delta2 = 0;
-            for (size_t i = 0; i < K_; i++)
+            for (int i = 0; i < K_; i++)
             {
                 // the expected decrease can sometimes become negative and allow an overall increase of cost - account for that below
-                Delta1 += lv[i].transpose() * lqocProblem_->rv_[i];
-                Delta2 += lv[i].transpose() * lqocProblem_->R_[i] * lv[i];
+                Delta1 += (lv[i].transpose() * lqocProblem_->rv_[i])(0);
+                Delta2 += (lv[i].transpose() * lqocProblem_->R_[i] * lv[i])(0);
             }
 
             SCALAR expCostDecr = alpha * (Delta1 + alpha * 0.5 * Delta2);
@@ -1256,11 +1256,11 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
             SCALAR Delta1 = 0;
             SCALAR Delta2 = 0;
-            for (size_t i = 0; i < K_; i++)
+            for (int i = 0; i < K_; i++)
             {
                 // the expected decrease can sometimes become negative and allow an overall increase of cost - account for that below
-                Delta1 += lv[i].transpose() * lqocProblem_->rv_[i];
-                Delta2 += lv[i].transpose() * lqocProblem_->R_[i] * lv[i];
+                Delta1 += (lv[i].transpose() * lqocProblem_->rv_[i])(0);
+                Delta2 += (lv[i].transpose() * lqocProblem_->R_[i] * lv[i])(0);
             }
 
             SCALAR expCostDecr = alpha * (Delta1 + alpha * 0.5 * Delta2);
