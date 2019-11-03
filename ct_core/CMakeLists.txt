@@ -30,13 +30,16 @@ if(LLVM_FOUND AND CLANG_FOUND)
     list(APPEND ct_core_COMPILE_DEFINITIONS LLVM_VERSION_MINOR=${LLVM_VERSION_MINOR})
     list(APPEND ct_core_LIBS ${CLANG_LIBS})
     list(APPEND ct_core_LIBS ${LLVM_MODULE_LIBS})
+    list(APPEND ct_core_target_include_dirs ${LLVM_INCLUDE_DIRS})
+    list(APPEND ct_core_target_include_dirs ${CLANG_INCLUDE_DIRS})
 else()
-    message(STATUS "Could not find LLVM/CLANG, JIT will not be available")
+    message(STATUS "Could not find LLVM/CLANG, LLVM-JIT will not be available")
 endif()
 find_package(CppAD QUIET)
 if(CPPAD_FOUND)
     set(CPPAD ON)
     list(APPEND ct_core_COMPILE_DEFINITIONS CPPAD)
+    list(APPEND ct_core_target_include_dirs ${CPPAD_INCLUDE_DIRS})
 else()
     message(STATUS "Could not find CppAD, auto-diff will not be available")
 endif()
@@ -44,6 +47,7 @@ find_package(CppADCG QUIET)
 if(CPPADCG_FOUND)
     set(CPPADCG ON)
     list(APPEND ct_core_COMPILE_DEFINITIONS CPPADCG)
+    list(APPEND ct_core_target_include_dirs ${CPPADCG_INCLUDE_DIRS})
 else()
     message(STATUS "Could not find CppADCodeGen, derivative code generation will not be available")
 endif()
@@ -81,18 +85,12 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h.in ${CM
 ###################
 
 ## define the directories to be included in all ct_core targets
-set(ct_core_target_include_dirs
-    ${EIGEN3_INCLUDE_DIR}
-    ${CPPAD_INCLUDE_DIRS}
-    ${CPPADCG_INCLUDE_DIRS}
-    ${LLVM_INCLUDE_DIRS}
-    ${CLANG_INCLUDE_DIRS}
-    ${PYTHON_INCLUDE_DIRS}
-    ${QWT_INCLUDE_DIR}
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/examples/include>
-    $<INSTALL_INTERFACE:include>
-)
+list(APPEND ct_core_target_include_dirs ${EIGEN3_INCLUDE_DIR})
+list(APPEND ct_core_target_include_dirs ${PYTHON_INCLUDE_DIRS})
+list(APPEND ct_core_target_include_dirs ${QWT_INCLUDE_DIR})
+list(APPEND ct_core_target_include_dirs $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+list(APPEND ct_core_target_include_dirs $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/examples/include>)
+list(APPEND ct_core_target_include_dirs $<INSTALL_INTERFACE:include>)
 
 ## declare prespec libraries
 set(PRESPEC_LIB_NAMES "")
