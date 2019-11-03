@@ -1,8 +1,8 @@
 <package>
   <name>ct</name>
-  <version>3.0.1</version>
+  <version>3.0.2</version>
   <description>
-    ADRL Control Toolbox 3.0.1
+    ADRL Control Toolbox 3.0.2
   </description>
   <maintainer email="markusgft@gmail.com">Markus Giftthaler</maintainer>  
   <license>BSD-2</license>

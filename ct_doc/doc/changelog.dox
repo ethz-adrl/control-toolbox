@@ -12,7 +12,7 @@ For a complete list of changes, we encourage you to check out our git repository
 - simplified user-interface to the 7 different iLQR-style solver variants
 - removed copied code from external repos (CppAD and CppADCodeGen) and provided install script instead
 
-\section cl_v301 Version 3.0.1
+\section cl_v301 Version 3.0.2
 - enabled compatibility with pure cmake (no catkin or ROS required anymore)
 - fixed bug in explicit template prespecification
 - fixed bug in exporting dependencies on external solvers

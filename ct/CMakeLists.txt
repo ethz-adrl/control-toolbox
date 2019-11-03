@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.3)
-project(ct VERSION 3.0.1 LANGUAGES CXX)
+project(ct VERSION 3.0.2 LANGUAGES CXX)
 
 #Make sure metapackage does not fail when building documentation
 add_custom_target(doc
