@@ -62,13 +62,10 @@ public:
      */
     SCALAR evaluateCostFun()
     {
-        if (!costCodegen_ && !costEvaluator_)
+        if (!costEvaluator_)
             throw std::runtime_error("Error in evaluateCostFun. Costevaluator not initialized");
 
-        if (costCodegen_)
-            return costCodegen_->forwardZero(optVariables_->getOptimizationVars())(0);
-        else
-            return costEvaluator_->eval();
+        return costEvaluator_->eval();
     }
 
 
@@ -80,13 +77,10 @@ public:
      */
     void evaluateCostGradient(const size_t n, MapVecXs& grad)
     {
-        if (!costCodegen_ && !costEvaluator_)
+        if (!costEvaluator_)
             throw std::runtime_error("Error in evaluateCostGradient. Costevaluator not initialized");
 
-        if (costCodegen_)
-            grad = costCodegen_->jacobian(optVariables_->getOptimizationVars());
-        else
-            costEvaluator_->evalGradient(n, grad);
+        costEvaluator_->evalGradient(n, grad);
     }
 
     /**
@@ -97,13 +91,10 @@ public:
      */
     void evaluateConstraints(MapVecXs& values)
     {
-        if (!constraintsCodegen_ && !constraints_)
+        if (!constraints_)
             throw std::runtime_error("Error in evaluateConstraints. Constraints not initialized");
 
-        if (constraintsCodegen_)
-            values = constraintsCodegen_->forwardZero(optVariables_->getOptimizationVars());
-        else
-            constraints_->evalConstraints(values);
+        constraints_->evalConstraints(values);
     }
 
     /**
@@ -114,13 +105,10 @@ public:
      */
     void evaluateConstraintJacobian(const int nele_jac, MapVecXs& jac)
     {
-        if (!constraintsCodegen_ && !constraints_)
+        if (!constraints_)
             throw std::runtime_error("Error in evaluateConstraintJacobian. Constraints not initialized");
 
-        if (constraintsCodegen_)
-            jac = constraintsCodegen_->sparseJacobianValues(optVariables_->getOptimizationVars());
-        else
-            constraints_->evalSparseJacobian(jac, nele_jac);
+        constraints_->evalSparseJacobian(jac, nele_jac);
     }
 
     /**
@@ -144,17 +132,9 @@ public:
         // evaluate Hessian values
         Eigen::VectorXd hessianCostValues, hessianConstraintsValues;
 
-        if (costCodegen_)
-            hessianCostValues = costCodegen_->sparseHessianValues(optVariables_->getOptimizationVars(), omega);
-        else
-            costEvaluator_->sparseHessianValues(optVariables_->getOptimizationVars(), omega, hessianCostValues);
+        costEvaluator_->sparseHessianValues(optVariables_->getOptimizationVars(), omega, hessianCostValues);
 
-
-        if (constraintsCodegen_)
-            hessianConstraintsValues =
-                constraintsCodegen_->sparseHessianValues(optVariables_->getOptimizationVars(), lambda);
-        else
-            hessianConstraintsValues = constraints_->sparseHessianValues(optVariables_->getOptimizationVars(), lambda);
+        hessianConstraintsValues = constraints_->sparseHessianValues(optVariables_->getOptimizationVars(), lambda);
 
 
         // collect all Hessian values (from both constraints and cost) in one vector of triplets
@@ -201,23 +181,13 @@ public:
      */
     void getSparsityPatternJacobian(const int nele_jac, MapVecXi& iRow, MapVecXi& jCol) const
     {
-        if (!constraintsCodegen_ && !constraints_)
+        if (!constraints_)
             throw std::runtime_error("Error in getSparsityPatternJacobian. Constraints not initialized");
 
         iRow.setZero();
         jCol.setZero();
 
-        if (constraintsCodegen_)
-        {
-            Eigen::VectorXi iRow1;
-            Eigen::VectorXi jCol1;
-            constraintsCodegen_->getSparsityPatternJacobian(iRow1, jCol1);
-
-            iRow = iRow1;
-            jCol = jCol1;
-        }
-        else
-            constraints_->getSparsityPattern(iRow, jCol, nele_jac);
+        constraints_->getSparsityPattern(iRow, jCol, nele_jac);
     }
 
     /**
@@ -256,13 +226,10 @@ public:
      */
     size_t getNonZeroJacobianCount() const
     {
-        if (!constraintsCodegen_ && !constraints_)
+        if (!constraints_)
             throw std::runtime_error("Error in getNonZeroJacobianCount. Constraints not initialized");
 
-        if (constraintsCodegen_)
-            return constraintsCodegen_->getNumNonZerosJacobian();
-        else
-            return constraints_->getNonZerosJacobianCount();
+        return constraints_->getNonZerosJacobianCount();
     }
 
     /**
@@ -288,16 +255,10 @@ public:
 
 
         // evaluate sparsity patterns
-        if (constraintsCodegen_)
-            constraintsCodegen_->getSparsityPatternHessian(iRowHessianConstraints_, jColHessianConstraints_);
-        else
-            constraints_->getSparsityPatternHessian(
-                iRowHessianConstraints_, jColHessianConstraints_, optVariables_->size());
+        constraints_->getSparsityPatternHessian(
+            iRowHessianConstraints_, jColHessianConstraints_, optVariables_->size());
 
-        if (costCodegen_)
-            costCodegen_->getSparsityPatternHessian(iRowHessianCost_, jColHessianCost_);
-        else
-            costEvaluator_->getSparsityPatternHessian(iRowHessianCost_, jColHessianCost_);
+        costEvaluator_->getSparsityPatternHessian(iRowHessianCost_, jColHessianCost_);
 
 
         // collect all Hessian sparsity values (from both constraints and cost) in one vector of triplets
@@ -535,12 +496,6 @@ protected:
     //! Ptr to constraint container, which contains the discretized constraints for the problem
     std::shared_ptr<DiscreteConstraintContainerBase<SCALAR>> constraints_;
 
-    //! Ptr to code-generated cost (optional)
-    std::shared_ptr<ct::core::DerivativesCppadJIT<-1, 1>> costCodegen_;
-
-    //! Ptr to code-generated constraints (optional)
-    std::shared_ptr<ct::core::DerivativesCppadJIT<-1, -1>> constraintsCodegen_;
-
 #if EIGEN_VERSION_AT_LEAST(3, 3, 0)
     Eigen::SparseMatrix<SCALAR> Hessian_eval_;
     Eigen::SparseMatrix<SCALAR> Hessian_sparsity_;  // this is just a helper data structure
@@ -552,7 +507,7 @@ protected:
     //! combined Hessian sparsity pattern gets stored here
     Eigen::VectorXi iRowHessian_, jColHessian_;
 };
-}
+}  // namespace tpl
 
 using Nlp = tpl::Nlp<double>;
 

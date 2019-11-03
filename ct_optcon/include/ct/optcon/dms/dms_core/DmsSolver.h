@@ -112,42 +112,6 @@ public:
         configure(settingsDms);
     }
 
-    void generateAndCompileCode(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
-        const ct::core::DerivativesCppadSettings& settings) override
-    {
-        // Create system, linearsystem and costfunction instances
-        typedef std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> SysPtrCG;
-        typedef std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> LinearSysPtrCG;
-        typedef std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> CostPtrCG;
-        typedef std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>
-            ConstraintCG;
-        ct::core::StateVector<STATE_DIM, ct::core::ADCGScalar> x0CG = problemCG.getInitialState();
-
-        std::vector<SysPtrCG> systemsCG;
-        std::vector<LinearSysPtrCG> linearSystemsCG;
-        std::vector<CostPtrCG> costFunctionsCG;
-        std::vector<ConstraintCG> inputBoxConstraintsCG;
-        std::vector<ConstraintCG> stateBoxConstraintsCG;
-        std::vector<ConstraintCG> generalConstraintsCG;
-
-        for (size_t i = 0; i < settings_.N_; i++)
-        {
-            systemsCG.push_back(SysPtrCG(problemCG.getNonlinearSystem()->clone()));
-            linearSystemsCG.push_back(LinearSysPtrCG(problemCG.getLinearSystem()->clone()));
-            costFunctionsCG.push_back(CostPtrCG(problemCG.getCostFunction()->clone()));
-        }
-
-        if (problemCG.getInputBoxConstraints())
-            inputBoxConstraintsCG.push_back(ConstraintCG(problemCG.getInputBoxConstraints()->clone()));
-        if (problemCG.getStateBoxConstraints())
-            stateBoxConstraintsCG.push_back(ConstraintCG(problemCG.getStateBoxConstraints()->clone()));
-
-        if (problemCG.getGeneralConstraints())
-            generalConstraintsCG.push_back(ConstraintCG(problemCG.getGeneralConstraints()->clone()));
-
-        dmsProblem_->generateAndCompileCode(
-            systemsCG, linearSystemsCG, costFunctionsCG, inputBoxConstraintsCG, stateBoxConstraintsCG, generalConstraintsCG, x0CG);
-    }
 
     /**
 	 * @brief      Destructor

@@ -10,6 +10,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
+#ifdef CPPAD
+
 /**
  * @brief      This class provides static methods to initialize a parallel
  *             section containing CppAD objects
@@ -27,6 +29,7 @@ public:
 
     static void initParallel(size_t numThreads) { CppadParallel::getInstance().initParallelImpl(numThreads); }
     static void resetParallel() { CppadParallel::getInstance().resetParallelImpl(); }
+
 private:
     /**
      * @brief      Call this function before entering a parallel section
@@ -99,5 +102,7 @@ public:
     CppadParallel(CppadParallel const&) = delete;
     void operator=(CppadParallel const&) = delete;
 };
-}
-}
+
+#endif
+}  // namespace core
+}  // namespace ct

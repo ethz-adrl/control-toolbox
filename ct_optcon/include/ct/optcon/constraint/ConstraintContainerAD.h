@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#ifdef CPPADCG
+
 #include "LinearConstraintContainer.h"
 #include "term/ConstraintBase.h"
 
@@ -185,3 +187,5 @@ private:
 
 }  // namespace optcon
 }  // namespace ct
+
+#endif

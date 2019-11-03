@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#ifdef CPPAD
+
 #include <ct/core/internal/autodiff/SparsityPattern.h>
 
 namespace ct {
@@ -76,8 +78,8 @@ public:
         return "float";
     }
 
-    //! destructor
-    virtual ~DynamicsLinearizerADBase() {}
+    virtual ~DynamicsLinearizerADBase() = default;
+
 protected:
     const size_t A_entries = STATE_DIM * STATE_DIM;    //!< number of entries in the state Jacobian
     const size_t B_entries = STATE_DIM * CONTROL_DIM;  //!< number of entries in the input Jacobian
@@ -162,3 +164,5 @@ protected:
 }  // namespace internal
 }  // namespace core
 }  // namespace ct
+
+#endif

@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#ifdef CPPADCG
+
 namespace ct {
 namespace optcon {
 
@@ -568,3 +570,5 @@ ConstraintContainerAD<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateTerminalCodegen(
 
 }  // namespace optcon
 }  // namespace ct
+
+#endif

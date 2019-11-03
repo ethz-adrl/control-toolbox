@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#ifdef CPPADCG
+
 #include <ct/optcon/costfunction/term/TermBase.hpp>
 #include <ct/optcon/costfunction/utility/utilities.hpp>
 
@@ -280,3 +282,5 @@ private:
 
 }  // namespace rbd
 }  // namespace ct
+
+#endif

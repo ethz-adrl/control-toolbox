@@ -17,8 +17,5 @@ yes Y | sudo apt-get install coinor-libipopt-dev
 ## get boost
 yes Y | sudo apt-get install libboost-all-dev
 
-## get llvm
-yes Y | sudo apt-get install llvm
-
 ## get CppAD and CppADCodeGen
 sudo ./install_cppadcg.sh

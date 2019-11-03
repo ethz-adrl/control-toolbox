@@ -14,6 +14,9 @@ SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 find_package(kindr REQUIRED)
 find_package(ct_optcon REQUIRED)
 
+#check if cppadcg was included earlier
+get_property(CPPADCG_DEFINED TARGET ct_core PROPERTY CPPADCG DEFINED)
+
 
 ###################
 # BUILD LIBRARIES #

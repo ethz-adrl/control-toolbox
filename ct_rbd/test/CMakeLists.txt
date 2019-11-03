@@ -33,7 +33,6 @@ package_add_test(FloatingBaseFDSystemTest systems/FloatingBaseFDSystemTest.cpp)
 
 package_add_test(FixBaseFDSystemTest systems/FixBaseFDSystemTest.cpp)
 
-package_add_test(ProjectedFDSystemTest systems/ProjectedFDSystemTest.cpp)
 
 package_add_test(RBDLinearizerTest systems/linear/RBDLinearizerTest.cpp)
 
@@ -41,11 +40,12 @@ package_add_test(EEKinematicsTest robot/kinematics/EEKinematicsTest.cpp)
 
 package_add_test(EEContactModelTest physics/EEContactModelTest.cpp)
 
-package_add_test(TaskSpaceCfTest robot/costfunction/TaskspaceCostFunctionTest.cpp)
-
-package_add_test(rbdJITtests robot/costfunction/rbdJITtests.cpp)
-
-package_add_test(kindrJITtest robot/costfunction/kindrJITtest.cpp)
+if(CPPADCG_DEFINED)
+    package_add_test(ProjectedFDSystemTest systems/ProjectedFDSystemTest.cpp)
+    package_add_test(TaskSpaceCfTest robot/costfunction/TaskspaceCostFunctionTest.cpp)
+    package_add_test(rbdJITtests robot/costfunction/rbdJITtests.cpp)
+    package_add_test(kindrJITtest robot/costfunction/kindrJITtest.cpp)
+endif()
 
 package_add_test(jacobianTests robot/jacobian/JacobianTests.cpp)
 

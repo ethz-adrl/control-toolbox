@@ -13,6 +13,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 find_package(ct_rbd REQUIRED)
 find_package(Boost REQUIRED system filesystem)
 
+#check if cppadcg was included earlier
+get_property(CPPADCG_DEFINED TARGET ct_core PROPERTY CPPADCG DEFINED)
+
 
 ## define the directories to be included in all ct_rbd targets
 set(ct_models_target_include_dirs
@@ -31,9 +34,11 @@ set(HYQ_CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/HyQ/co
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/CodegenOutputDirs.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/CodegenOutputDirs.h)
 
 ################ HyQ #################
-add_executable(HyQLinearizationCodegen src/HyQ/codegen/HyQLinearizationCodegen.cpp)
-target_include_directories(HyQLinearizationCodegen PUBLIC ${ct_models_target_include_dirs})
-target_link_libraries(HyQLinearizationCodegen ct_rbd)
+if(CPPADCG_DEFINED)
+  add_executable(HyQLinearizationCodegen src/HyQ/codegen/HyQLinearizationCodegen.cpp)
+  target_include_directories(HyQLinearizationCodegen PUBLIC ${ct_models_target_include_dirs})
+  target_link_libraries(HyQLinearizationCodegen ct_rbd)
+endif()
 
 if (BUILD_HYQ_FULL)
   if (NOT USE_CLANG)
@@ -112,20 +117,24 @@ if(BUILD_HYQ_LINEARIZATION_TIMINGS)
 endif(BUILD_HYQ_LINEARIZATION_TIMINGS)
 
 ########## Inverted Pendulum #########
-add_executable(InvertedPendulumWithActuatorCodeGen src/InvertedPendulum/codegen/InvertedPendulumWithActuatorCodeGen.cpp)
-target_include_directories(InvertedPendulumWithActuatorCodeGen PUBLIC ${ct_models_target_include_dirs})
-target_link_libraries(InvertedPendulumWithActuatorCodeGen ct_rbd)
+if(CPPADCG_DEFINED)
+  add_executable(InvertedPendulumWithActuatorCodeGen src/InvertedPendulum/codegen/InvertedPendulumWithActuatorCodeGen.cpp)
+  target_include_directories(InvertedPendulumWithActuatorCodeGen PUBLIC ${ct_models_target_include_dirs})
+  target_link_libraries(InvertedPendulumWithActuatorCodeGen ct_rbd)
+endif()
 
 add_library(InvertedPendulumActDynLinearizedForward include/ct/models/InvertedPendulum/codegen/InvertedPendulumActDynLinearizedForward.cpp)
-target_include_directories(InvertedPendulumWithActuatorCodeGen PUBLIC ${ct_models_target_include_dirs})
+target_include_directories(InvertedPendulumActDynLinearizedForward PUBLIC ${ct_models_target_include_dirs})
 target_link_libraries(InvertedPendulumActDynLinearizedForward ct_rbd)
 list(APPEND CT_MODEL_LIBS InvertedPendulumActDynLinearizedForward)
 
 
 ################ HyA #################
-add_executable(HyALinearizationCodegen src/HyA/codegen/HyALinearizationCodeGen.cpp)
-target_include_directories(HyALinearizationCodegen PUBLIC ${ct_models_target_include_dirs})
-target_link_libraries(HyALinearizationCodegen ct_rbd)
+if(CPPADCG_DEFINED)
+  add_executable(HyALinearizationCodegen src/HyA/codegen/HyALinearizationCodeGen.cpp)
+  target_include_directories(HyALinearizationCodegen PUBLIC ${ct_models_target_include_dirs})
+  target_link_libraries(HyALinearizationCodegen ct_rbd)
+endif()
 
 add_library(HyALinearizedForward include/ct/models/HyA/codegen/HyALinearizedForward.cpp)
 target_include_directories(HyALinearizedForward PUBLIC ${ct_models_target_include_dirs})

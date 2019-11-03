@@ -16,6 +16,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 ## find and include required dependencies
 find_package(ct_core REQUIRED)
+get_property(CPPADCG_DEFINED TARGET ct_core PROPERTY CPPADCG DEFINED)
 
 
 ## find and include optional dependencies

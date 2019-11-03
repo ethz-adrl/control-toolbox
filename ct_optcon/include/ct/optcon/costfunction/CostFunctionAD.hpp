@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#ifdef CPPADCG
+
 #include <ct/core/core.h>
 #include <memory>
 
@@ -166,3 +168,5 @@ private:
 
 }  // namespace optcon
 }  // namespace ct
+
+#endif

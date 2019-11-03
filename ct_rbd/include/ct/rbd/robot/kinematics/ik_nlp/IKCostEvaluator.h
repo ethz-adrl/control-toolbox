@@ -27,7 +27,7 @@ public:
 
     IKCostEvaluator(size_t eeInd, const Eigen::Matrix3d& Qpos = Eigen::Matrix3d::Identity(), const double& Qrot = 1.0)
         : w_(nullptr),
-          goalCostTerm_(new ct::rbd::TermTaskspacePoseCG<KINEMATICS_AD, false, NJOINTS, NJOINTS>(eeInd, Qpos, Qrot)),
+          goalCostTerm_(new ct::rbd::TermTaskspaceGeometricJacobian<KINEMATICS_AD, NJOINTS, NJOINTS>(eeInd, Qpos, Qrot)),
           jointRefTerm_(nullptr),
           ikRegularizer_(nullptr)
     {
@@ -37,7 +37,7 @@ public:
         const std::string& termTaskspaceName,
         const bool verbose = false)
         : w_(nullptr),
-          goalCostTerm_(new ct::rbd::TermTaskspacePoseCG<KINEMATICS_AD, false, NJOINTS, NJOINTS>(costFunctionPath,
+          goalCostTerm_(new ct::rbd::TermTaskspaceGeometricJacobian<KINEMATICS_AD, NJOINTS, NJOINTS>(costFunctionPath,
               termTaskspaceName,
               verbose)),
           jointRefTerm_(nullptr),
@@ -51,7 +51,7 @@ public:
         const std::string& termJointPosName,
         const bool verbose = false)
         : w_(nullptr),
-          goalCostTerm_(new ct::rbd::TermTaskspacePoseCG<KINEMATICS_AD, false, NJOINTS, NJOINTS>(costFunctionPath,
+          goalCostTerm_(new ct::rbd::TermTaskspaceGeometricJacobian<KINEMATICS_AD, NJOINTS, NJOINTS>(costFunctionPath,
               termTaskspaceName,
               verbose)),
           jointRefTerm_(
@@ -181,7 +181,7 @@ public:
 private:
     std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> w_;
 
-    std::shared_ptr<ct::rbd::TermTaskspacePoseCG<KINEMATICS_AD, false, NJOINTS, NJOINTS>> goalCostTerm_;
+    std::shared_ptr<ct::rbd::TermTaskspaceGeometricJacobian<KINEMATICS_AD, NJOINTS, NJOINTS>> goalCostTerm_;
 
     std::shared_ptr<ct::optcon::TermQuadratic<NJOINTS, NJOINTS, SCALAR>> jointRefTerm_;
 

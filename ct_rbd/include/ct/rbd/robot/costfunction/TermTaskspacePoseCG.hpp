@@ -6,6 +6,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#ifdef CPPADCG
+
 #include <ct/optcon/optcon.h>
 
 #include <ct/rbd/robot/Kinematics.h>
@@ -492,3 +494,5 @@ private:
 
 }  // namespace rbd
 }  // namespace ct
+
+#endif

@@ -146,7 +146,9 @@ TEST(EEKinematicsTest, testFootPositionVaryingBase)
 
             // all legs should have same height
             if (i > 0)
+            {
                 ASSERT_NEAR(B_eePos[0](2), B_eePos[i](2), 1e-6);
+            }
 
             // legs should be below belly
             ASSERT_LT(B_eePos[0](2), -0.5);
@@ -183,7 +185,9 @@ TEST(EEKinematicsTest, testFootPositionStraightBase)
 
             // all legs should have same height
             if (i > 0)
+            {
                 ASSERT_NEAR(W_eePos[0](2), W_eePos[i](2), 1e-6);
+            }
 
             // legs should be below belly
             ASSERT_LT(W_eePos[0](2), state.basePose().position()(2) - 0.5);
@@ -232,7 +236,9 @@ TEST(EEKinematicsTest, forceMappingTest)
             for (size_t j = 0; j < 6; j++)
             {
                 if (j != 3)
+                {
                     ASSERT_NEAR(eeForceLink(j), 0.0, 1e-6);
+                }
             }
 
             ASSERT_NEAR(eeForceLink(3), -eeForcesW[i](5), 1e-6);

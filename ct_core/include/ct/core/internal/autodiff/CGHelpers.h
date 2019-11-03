@@ -5,21 +5,22 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#ifdef CPPADCG
+
 #include "SparsityPattern.h"
 
 namespace ct {
 namespace core {
 namespace internal {
 
+
 //! Utility class for Auto-Diff code generation
 class CGHelpers
 {
 public:
-    //! default constructor
-    CGHelpers(){};
+    CGHelpers() = default;
 
-    //! destructor
-    virtual ~CGHelpers(){};
+    virtual ~CGHelpers() = default;
 
     //! generate source code for Jacobian
     /*!
@@ -328,6 +329,9 @@ public:
     }
 };
 
+
 } /* namespace internal */
 } /* namespace core */
 } /* namespace ct */
+
+#endif

@@ -11,6 +11,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
+#ifdef CPPADCG
+
 //! Jacobian using Auto-Diff Codegeneration
 /*!
  * Uses Auto-Diff code generation to compute the Jacobian \f$ J(x_s) = \frac{df}{dx} |_{x=x_s} \f$ of
@@ -271,6 +273,8 @@ private:
 
     size_t tmpVarCount_;  //! number of temporary variables in the source code
 };
+
+#endif
 
 } /* namespace core */
 } /* namespace ct */
