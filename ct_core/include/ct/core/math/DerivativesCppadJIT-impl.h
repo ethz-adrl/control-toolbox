@@ -50,16 +50,14 @@ DerivativesCppadJIT<IN_DIM, OUT_DIM>::DerivativesCppadJIT(const DerivativesCppad
             dynamicLib_ = internal::CGHelpers::loadDynamicLibCppad<double>(libName_);
             model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(dynamicLib_->model(libName_));
         }
+#ifdef LLVM_VERSION_MAJOR
         else if (arg.llvmModelLib_)  // in case of regular JIT without dynamic lib
         {
-#ifdef LLVM_VERSION_MAJOR
             throw std::runtime_error("DerivativesCppadJIT: cloning of LLVM-JIT libraries is currently not supported.");
             llvmModelLib_ = arg.llvmModelLib_;  // TODO: this is not clean, we need to properly clone the llvm model lib
             model_ = std::shared_ptr<CppAD::cg::GenericModel<double>>(llvmModelLib_->model(libName_));
-#else
-            throw std::runtime_error("DerivativesCppadJIT: LLVM not installed.");
-#endif
         }
+#endif
         else
             throw std::runtime_error("DerivativesCppadJIT: undefined behaviour in copy constructor.");
     }
