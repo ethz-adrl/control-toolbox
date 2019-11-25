@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 3.3)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/ct-cmake-helpers.cmake)
 
 
 project(ct_optcon VERSION 3.0.2 LANGUAGES CXX)
@@ -16,7 +17,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 ## find and include required dependencies
 find_package(ct_core REQUIRED)
-get_property(CPPADCG_DEFINED TARGET ct_core PROPERTY CPPADCG DEFINED)
+# extract interface compile definitions from ct_core as options
+importInterfaceCompileDefinitionsAsOptions(ct_core)
 
 
 ## find and include optional dependencies

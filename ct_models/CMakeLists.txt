@@ -3,6 +3,8 @@ cmake_minimum_required (VERSION 3.3)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/ct-cmake-helpers.cmake)
+
 
 project(ct_models VERSION 3.0.2 LANGUAGES CXX)
 
@@ -13,8 +15,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 find_package(ct_rbd REQUIRED)
 find_package(Boost REQUIRED system filesystem)
 
-#check if cppadcg was included earlier
-get_property(CPPADCG_DEFINED TARGET ct_core PROPERTY CPPADCG DEFINED)
+# extract interface compile definitions from previous ct packages as options
+importInterfaceCompileDefinitionsAsOptions(ct_core)
+importInterfaceCompileDefinitionsAsOptions(ct_optcon)
+importInterfaceCompileDefinitionsAsOptions(ct_rbd)
 
 
 ## define the directories to be included in all ct_rbd targets

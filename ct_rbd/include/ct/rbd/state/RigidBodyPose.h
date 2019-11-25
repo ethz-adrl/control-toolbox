@@ -100,11 +100,9 @@ public:
     {
     }
 
-    //RigidBodyPose(const Eigen::Vector3d& orientationEulerXyz, const Eigen::Vector3d& position, STORAGE_TYPE storage = QUAT);
-    //RigidBodyPose(const Eigen::Quaterniond& orientationQuat, const Eigen::Vector3d& position, STORAGE_TYPE storage = QUAT);
-
     //! destructor for a rigid body pose
-    ~RigidBodyPose() {}
+    ~RigidBodyPose() = default;
+
     inline bool isNear(const RigidBodyPose& rhs, const double& tol = 1e-10) const
     {
         return getRotationQuaternion().isNear(rhs.getRotationQuaternion(), tol) &&

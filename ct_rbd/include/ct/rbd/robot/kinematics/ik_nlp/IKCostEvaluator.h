@@ -17,17 +17,17 @@ namespace rbd {
  * @brief Inverse Kinematics cost evaluator for NLP
  * @warning currently this works only with fix-base systems
  */
-template <typename KINEMATICS_AD, typename SCALAR = double>
+template <typename KINEMATICS, typename SCALAR = double>
 class IKCostEvaluator final : public ct::optcon::tpl::DiscreteCostEvaluatorBase<SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static const size_t NJOINTS = KINEMATICS_AD::NJOINTS;
+    static const size_t NJOINTS = KINEMATICS::NJOINTS;
 
     IKCostEvaluator(size_t eeInd, const Eigen::Matrix3d& Qpos = Eigen::Matrix3d::Identity(), const double& Qrot = 1.0)
         : w_(nullptr),
-          goalCostTerm_(new ct::rbd::TermTaskspaceGeometricJacobian<KINEMATICS_AD, NJOINTS, NJOINTS>(eeInd, Qpos, Qrot)),
+          goalCostTerm_(new ct::rbd::TermTaskspaceGeometricJacobian<KINEMATICS, NJOINTS, NJOINTS>(eeInd, Qpos, Qrot)),
           jointRefTerm_(nullptr),
           ikRegularizer_(nullptr)
     {
@@ -37,7 +37,7 @@ public:
         const std::string& termTaskspaceName,
         const bool verbose = false)
         : w_(nullptr),
-          goalCostTerm_(new ct::rbd::TermTaskspaceGeometricJacobian<KINEMATICS_AD, NJOINTS, NJOINTS>(costFunctionPath,
+          goalCostTerm_(new ct::rbd::TermTaskspaceGeometricJacobian<KINEMATICS, NJOINTS, NJOINTS>(costFunctionPath,
               termTaskspaceName,
               verbose)),
           jointRefTerm_(nullptr),
@@ -51,7 +51,7 @@ public:
         const std::string& termJointPosName,
         const bool verbose = false)
         : w_(nullptr),
-          goalCostTerm_(new ct::rbd::TermTaskspaceGeometricJacobian<KINEMATICS_AD, NJOINTS, NJOINTS>(costFunctionPath,
+          goalCostTerm_(new ct::rbd::TermTaskspaceGeometricJacobian<KINEMATICS, NJOINTS, NJOINTS>(costFunctionPath,
               termTaskspaceName,
               verbose)),
           jointRefTerm_(
@@ -64,9 +64,12 @@ public:
 
     //! opt vector needs to be set by NLP solver
     void setOptVector(std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> optVector) { w_ = optVector; }
+
     // set an optional regularizer (if necessary)
     void setRegularizer(std::shared_ptr<IKRegularizerBase> reg) { ikRegularizer_ = reg; }
+
     ct::rbd::RigidBodyPose getTargetPose() { return goalCostTerm_->getReferencePose(); }
+
     // set the target pose as rbd pose directly
     void setTargetPose(const ct::rbd::RigidBodyPose& rbdPose)
     {
@@ -181,7 +184,7 @@ public:
 private:
     std::shared_ptr<ct::optcon::tpl::OptVector<SCALAR>> w_;
 
-    std::shared_ptr<ct::rbd::TermTaskspaceGeometricJacobian<KINEMATICS_AD, NJOINTS, NJOINTS>> goalCostTerm_;
+    std::shared_ptr<ct::rbd::TermTaskspaceGeometricJacobian<KINEMATICS, NJOINTS, NJOINTS>> goalCostTerm_;
 
     std::shared_ptr<ct::optcon::TermQuadratic<NJOINTS, NJOINTS, SCALAR>> jointRefTerm_;
 
