@@ -5,6 +5,10 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-value"
+
 namespace ct {
 namespace core {
 
@@ -182,5 +186,8 @@ private:
     Eigen::Matrix<double, STATE_DIM, STATE_DIM> C_;    //!< C matrix
     Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> D_;  //!< D matrix
 };
-}
-}
+
+}  // namespace core
+}  // namespace ct
+
+#pragma GCC diagnostic pop
