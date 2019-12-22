@@ -205,7 +205,7 @@ public:
             typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
     }
 
-    void changeStateBoxConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con)
+    void changeStateBoxConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
     {
         this->getStateBoxConstraintsInstances().push_back(
             typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
