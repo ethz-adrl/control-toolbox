@@ -17,5 +17,8 @@ yes Y | sudo apt-get install coinor-libipopt-dev
 ## get boost
 yes Y | sudo apt-get install libboost-all-dev
 
+## get open mp
+yes Y | sudo apt install libomp-dev
+
 ## get CppAD and CppADCodeGen
 sudo ./install_cppadcg.sh
