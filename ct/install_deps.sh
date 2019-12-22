@@ -20,5 +20,8 @@ yes Y | sudo apt-get install libboost-all-dev
 ## get open mp
 yes Y | sudo apt install libomp-dev
 
+## get clang
+yes Y | sudo apt install clang
+
 ## get CppAD and CppADCodeGen
 sudo ./install_cppadcg.sh
