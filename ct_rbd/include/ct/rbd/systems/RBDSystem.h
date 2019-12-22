@@ -3,8 +3,7 @@ This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-t
 Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#ifndef INCLUDE_CT_RBD_SYSTEMS_RBDSYSTEM_H_
-#define INCLUDE_CT_RBD_SYSTEMS_RBDSYSTEM_H_
+#pragma once
 
 namespace ct {
 namespace rbd {
@@ -16,15 +15,12 @@ template <class RBDDynamics, bool QUAT_INTEGRATION = false>
 class RBDSystem
 {
 public:
-    RBDSystem() {}
-    virtual ~RBDSystem() {}
+    RBDSystem() = default;
+    virtual ~RBDSystem() = default;
     virtual RBDDynamics& dynamics() = 0;
     virtual const RBDDynamics& dynamics() const = 0;
 
 private:
 };
-}
-}
-
-
-#endif /* INCLUDE_CT_RBD_SYSTEMS_RBDSYSTEM_H_ */
+}  // namespace rbd
+}  // namespace ct

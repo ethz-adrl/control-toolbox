@@ -5,13 +5,15 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <kindr/Core>
-
 #include <ct/rbd/state/RBDState.h>
 
+#pragma GCC diagnostic push  // include IIT headers and disable warnings
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-value"
 #include <iit/rbd/rbd.h>
 #include <iit/rbd/robcogen_commons.h>
 #include <iit/rbd/traits/TraitSelector.h>
+#pragma GCC diagnostic pop
 
 namespace ct {
 namespace rbd {
@@ -173,6 +175,7 @@ public:
     SCALAR& d() { return d_; }
     SCALAR& zOffset() { return zOffset_; }
     VELOCITY_SMOOTHING& smoothing() { return smoothing_; }
+
 private:
     /**
 	 * \brief Checks if end-effector is in contact. Currently assumes this is the case for negative z
@@ -291,5 +294,5 @@ private:
 
     ActiveMap EEactive_;  //!< stores which endeffectors are active, i.e. can make contact
 };
-}
-}
+}  // namespace rbd
+}  // namespace ct
