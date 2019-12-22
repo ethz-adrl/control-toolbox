@@ -81,7 +81,7 @@ public:
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t) override;
 
-    void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false);
+    void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false) override;
 
 
 protected:

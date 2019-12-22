@@ -458,7 +458,7 @@ TEST(ConstrainedLQOCSolverTest, BoxConstrTest_small)
     int nb_x = 1;
     Eigen::VectorXd x_lb(nb_x);
     Eigen::VectorXd x_ub(nb_x);
-    x_lb << -100, -100;
+    x_lb << -100;
     x_ub.setConstant(1.7);
     Eigen::VectorXi x_box_sparsity(nb_x);
     x_box_sparsity << 0;
@@ -478,7 +478,7 @@ TEST(ConstrainedLQOCSolverTest, BoxConstrTest_medium)
 
     // initial state
     ct::core::StateVector<state_dim> x0;
-    x0 << 0.0, 0.0, 0, 0, 0, 0, 0, 0;  // must start at 0
+    x0 << 0, 0, 0, 0, 0, 0, 0, 0;  // must start at 0
 
     // desired final state
     ct::core::StateVector<state_dim> xf;

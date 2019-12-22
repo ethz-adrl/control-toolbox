@@ -16,6 +16,10 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #include "ct/rbd/robot/kinematics/EndEffector.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-value"
+
 using namespace ct;
 using namespace rbd;
 
@@ -47,3 +51,5 @@ int main(int argc, char** argv)
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
+#pragma GCC diagnostic pop

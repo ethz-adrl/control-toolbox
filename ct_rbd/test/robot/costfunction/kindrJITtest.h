@@ -5,8 +5,11 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-value"
 #include <kindr/Core>
-
+#pragma GCC diagnostic pop
 
 /*!
  * A 3x3 function which constructs a a kindr EulerAngles object in between.

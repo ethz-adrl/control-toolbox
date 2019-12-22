@@ -5,7 +5,12 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-value"
 #include <kindr/Core>
+#pragma GCC diagnostic pop
+
 #include <ct/rbd/state/JointState.h>
 
 namespace ct {

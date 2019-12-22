@@ -5,15 +5,15 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include "jacobian/ConstraintJacobian.h"
-#include "kinematics/RBDDataMap.h"
-#include "Kinematics.h"
-#include "state/JointAcceleration.h"
-#include "state/RBDAcceleration.h"
-#include "state/RBDState.h"
-#include "state/RigidBodyAcceleration.h"
-#include "state/RigidBodyPose.h"
-#include "state/RigidBodyState.h"
+#include <ct/rbd/robot/jacobian/ConstraintJacobian.h>
+#include <ct/rbd/robot/kinematics/RBDDataMap.h>
+#include <ct/rbd/robot/Kinematics.h>
+#include <ct/rbd/state/JointAcceleration.h>
+#include <ct/rbd/state/RBDAcceleration.h>
+#include <ct/rbd/state/RBDState.h>
+#include <ct/rbd/state/RigidBodyAcceleration.h>
+#include <ct/rbd/state/RigidBodyPose.h>
+#include <ct/rbd/state/RigidBodyState.h>
 
 namespace ct {
 namespace rbd {

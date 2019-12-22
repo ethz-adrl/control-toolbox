@@ -97,7 +97,7 @@ public:
     virtual ~SwitchedDiscreteControlledSystem(){};
 
     //! deep copy
-    virtual SwitchedDiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const
+    virtual SwitchedDiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
     {
         return new SwitchedDiscreteControlledSystem(*this);
     };

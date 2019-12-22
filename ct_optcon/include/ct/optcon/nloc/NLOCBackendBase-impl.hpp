@@ -690,10 +690,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 
     assert(lqocProblem_ != nullptr);
 
-    assert(&lqocProblem_->A_[k] != nullptr);
-    assert(&lqocProblem_->B_[k] != nullptr);
-    assert(&lqocProblem_->b_[k] != nullptr);
-
     assert(lqocProblem_->A_.size() > k);
     assert(lqocProblem_->B_.size() > k);
     assert(lqocProblem_->b_.size() > k);

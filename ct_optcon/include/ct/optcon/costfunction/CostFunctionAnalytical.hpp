@@ -61,7 +61,7 @@ public:
 	 * Deep-cloning of cost function
 	 * @return base pointer to clone
 	 */
-    CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const;
+    CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
 
     /**
 	 * Destructor
