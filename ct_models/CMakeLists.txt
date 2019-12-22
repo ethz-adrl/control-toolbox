@@ -38,7 +38,7 @@ set(HYQ_CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/HyQ/co
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/CodegenOutputDirs.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/CodegenOutputDirs.h)
 
 ################ HyQ #################
-if(CPPADCG_DEFINED)
+if(CPPADCG)
   add_executable(HyQLinearizationCodegen src/HyQ/codegen/HyQLinearizationCodegen.cpp)
   target_include_directories(HyQLinearizationCodegen PUBLIC ${ct_models_target_include_dirs})
   target_link_libraries(HyQLinearizationCodegen ct_rbd)
