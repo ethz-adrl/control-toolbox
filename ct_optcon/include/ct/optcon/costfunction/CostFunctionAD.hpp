@@ -68,7 +68,7 @@ public:
 	 * Deep-cloning of cost function
 	 * @return base pointer to clone
 	 */
-    CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const;
+    CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
 
     /**
 	 * \brief Copy constructor
