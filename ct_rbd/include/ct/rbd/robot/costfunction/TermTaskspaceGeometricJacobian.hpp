@@ -41,7 +41,7 @@ public:
     //! constructor using a quaternion for orientation
     TermTaskspaceGeometricJacobian(size_t eeInd,
         const Eigen::Matrix3d& Qpos,
-        const double& Qrot,
+        const Eigen::Matrix3d& Qrot,
         const core::StateVector<3>& w_pos_des,
         const Eigen::Quaterniond& w_q_des,
         const std::string& name = "TermTaskSpace")
@@ -54,7 +54,7 @@ public:
     //! constructor taking a full RigidBodyPose
     TermTaskspaceGeometricJacobian(size_t eeInd,
         const Eigen::Matrix3d& Qpos,
-        const double& Qrot,
+        const Eigen::Matrix3d& Qrot,
         const ct::rbd::RigidBodyPose& rbdPose,
         const std::string& name = "TermTaskSpace")
         // delegate constructor
@@ -70,7 +70,7 @@ public:
     //! constructor using Euler angles for orientation
     TermTaskspaceGeometricJacobian(size_t eeInd,
         const Eigen::Matrix3d& Qpos,
-        const double& Qrot,
+        const Eigen::Matrix3d& Qrot,
         const core::StateVector<3>& w_pos_des,
         const Eigen::Matrix3d& eulerXyz,
         const std::string& name = "TermTaskSpace")
@@ -89,7 +89,7 @@ public:
     //! constructor which sets the target pose to dummy values
     TermTaskspaceGeometricJacobian(size_t eeInd,
         const Eigen::Matrix3d& Qpos,
-        const double& Qrot,
+        const Eigen::Matrix3d& Qrot,
         const std::string& name = "TermTaskSpace")
         : BASE(name), eeInd_(eeInd), Q_pos_(Qpos), Q_rot_(Qrot)
     {
@@ -118,13 +118,13 @@ public:
     }
 
     //! destructor
-    virtual ~TermTaskspaceGeometricJacobian() {}
+    virtual ~TermTaskspaceGeometricJacobian() = default;
+
     //! deep cloning
     virtual TermTaskspaceGeometricJacobian<KINEMATICS, STATE_DIM, CONTROL_DIM>* clone() const override
     {
         return new TermTaskspaceGeometricJacobian(*this);
     }
-
 
     //! evaluate
     virtual double evaluate(const Eigen::Matrix<double, STATE_DIM, 1>& x,
@@ -136,8 +136,7 @@ public:
         rbdState.jointPositions() = x.template head<KINEMATICS::NJOINTS>();
 
         // position difference in world frame
-        Eigen::Matrix<double, 3, 1> xCurr =
-            kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions()).toImplementation();
+        Eigen::Matrix<double, 3, 1> xCurr = kinematics_.getEEPositionInWorld(eeInd_, rbdState.basePose(), rbdState.jointPositions()).toImplementation();
         Eigen::Matrix<double, 3, 1> xDiff = xCurr - x_ref_;
 
         // compute the cost from the position error

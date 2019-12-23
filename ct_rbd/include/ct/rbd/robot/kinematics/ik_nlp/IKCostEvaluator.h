@@ -25,7 +25,9 @@ public:
 
     static const size_t NJOINTS = KINEMATICS::NJOINTS;
 
-    IKCostEvaluator(size_t eeInd, const Eigen::Matrix3d& Qpos = Eigen::Matrix3d::Identity(), const double& Qrot = 1.0)
+    IKCostEvaluator(size_t eeInd,
+        const Eigen::Matrix3d& Qpos = Eigen::Matrix3d::Identity(),
+        const Eigen::Matrix3d& Qrot = Eigen::Matrix3d::Identity())
         : w_(nullptr),
           goalCostTerm_(new ct::rbd::TermTaskspaceGeometricJacobian<KINEMATICS, NJOINTS, NJOINTS>(eeInd, Qpos, Qrot)),
           jointRefTerm_(nullptr),
