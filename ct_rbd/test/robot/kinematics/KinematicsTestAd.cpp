@@ -3,6 +3,11 @@ This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-t
 Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 #include <ct/rbd/rbd.h>
 
 #include <memory>
@@ -15,10 +20,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "../../../include/ct/rbd/robot/Kinematics.h"
 
 #include "ct/rbd/robot/kinematics/EndEffector.h"
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wunused-value"
 
 using namespace ct;
 using namespace rbd;

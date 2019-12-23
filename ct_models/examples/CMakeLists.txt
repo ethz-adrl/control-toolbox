@@ -4,6 +4,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/exampleDir.h.in ${CMAKE_CURRENT_SOURC
 
 if(CPPADCG)
   add_executable(ex_NLOC_MPC_invertedPendulum mpc/InvertedPendulum/NLOC_MPC.cpp)
+  target_include_directories(ex_NLOC_MPC_invertedPendulum PUBLIC ${ct_models_target_include_dirs})
   target_link_libraries(ex_NLOC_MPC_invertedPendulum ct_rbd)
   
   ## install examples
