@@ -323,8 +323,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::ro
                     ". Not waking up workers.");
 #endif  //DEBUG_PRINT_MP
 
-        this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_, this->xShot_,
-            *this->substepsX_, *this->substepsU_);
+        this->rolloutSingleShot(this->settings_.nThreads, firstIndex, this->u_ff_, this->x_, this->x_ref_lqr_,
+            this->xShot_, *this->substepsX_, *this->substepsU_);
 
         this->computeSingleDefect(firstIndex, this->x_, this->xShot_, this->d_);
         return;
@@ -394,8 +394,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::ro
                             std::to_string(KMax_ - k));
 #endif
 
-            this->rolloutSingleShot(
-                threadId, kShot, this->u_ff_, this->x_, this->x_, this->xShot_, *this->substepsX_, *this->substepsU_);
+            this->rolloutSingleShot(threadId, kShot, this->u_ff_, this->x_, this->x_ref_lqr_, this->xShot_,
+                *this->substepsX_, *this->substepsU_);
 
             this->computeSingleDefect(kShot, this->x_, this->xShot_, this->d_);
         }
@@ -498,16 +498,16 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::li
         typename Base::ControlSubstepsPtr substepsU =
             typename Base::ControlSubstepsPtr(new typename Base::ControlSubsteps(this->K_ + 1));
 
-        this->executeLineSearch(threadId, alpha, this->lqocSolver_->getSolutionControl(),
-            this->lqocSolver_->getSolutionState(), x_search, x_shot_search, defects_recorded, u_recorded,
+        this->executeLineSearch(threadId, alpha, x_search, x_shot_search, defects_recorded, u_recorded,
             intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm, *substepsX, *substepsU, &alphaBestFound_);
 
-        // compute merit
-        cost = intermediateCost + finalCost + this->settings_.meritFunctionRho * defectNorm +
-               this->settings_.meritFunctionRhoConstraints * (e_box_norm + e_gen_norm);
-
         lineSearchResultMutex_.lock();
-        if (cost < lowestCostPrevious_ && !std::isnan(cost))
+        
+        // check for step acceptance and get new merit/cost
+        bool stepAccepted =
+            this->acceptStep(alpha, intermediateCost, finalCost, defectNorm, e_box_norm, e_gen_norm, lowestCostPrevious_, cost);
+
+        if (stepAccepted)
         {
             // make sure we do not alter an existing result
             if (alphaBestFound_)
@@ -518,8 +518,8 @@ void NLOCBackendMP<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::li
 
             if (this->settings_.lineSearchSettings.debugPrint)
             {
-                printString("[LineSearch, Thread " + std::to_string(threadId) + "]: Lower cost/merit found at alpha:" +
-                            std::to_string(alpha));
+                printString("[LineSearch, Thread " + std::to_string(threadId) +
+                            "]: Lower cost/merit found at alpha:" + std::to_string(alpha));
                 printString("[LineSearch]: Cost:\t" + std::to_string(intermediateCost + finalCost));
                 printString("[LineSearch]: Defect:\t" + std::to_string(defectNorm));
                 printString("[LineSearch]: err box constr:\t" + std::to_string(e_box_norm));

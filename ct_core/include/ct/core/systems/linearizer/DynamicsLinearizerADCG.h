@@ -4,6 +4,9 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 #pragma once
 
+#ifdef CPPADCG
+#ifdef CPPAD
+
 #include "DynamicsLinearizerADBase.h"
 #include <ct/core/internal/autodiff/CGHelpers.h>
 
@@ -263,3 +266,6 @@ protected:
 
 }  // namespace core
 }  // namespace ct
+
+#endif
+#endif

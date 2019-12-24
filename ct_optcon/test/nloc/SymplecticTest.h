@@ -131,14 +131,12 @@ void symplecticTest()
     gnms_settings.useSensitivityIntegrator = true;
     gnms_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
     gnms_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-    gnms_settings.closedLoopShooting = false;
-    gnms_settings.lineSearchSettings.active = false;
+    gnms_settings.lineSearchSettings.type = LineSearchSettings::TYPE::NONE;
     gnms_settings.loggingPrefix = "GNMS";
     gnms_settings.printSummary = false;
 
 
     NLOptConSettings ilqr_settings = gnms_settings;
-    ilqr_settings.closedLoopShooting = true;
     ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
     ilqr_settings.loggingPrefix = "ILQR";
 

@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#ifdef CPPAD
+
 namespace ct {
 namespace core {
 
@@ -159,3 +161,5 @@ protected:
 
 }  // namespace core
 }  // namespace ct
+
+#endif

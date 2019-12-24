@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#ifdef CPPADCG
+
 #include <ct/core/core.h>
 #include <memory>
 
@@ -66,7 +68,7 @@ public:
 	 * Deep-cloning of cost function
 	 * @return base pointer to clone
 	 */
-    CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const;
+    CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
 
     /**
 	 * \brief Copy constructor
@@ -166,3 +168,5 @@ private:
 
 }  // namespace optcon
 }  // namespace ct
+
+#endif

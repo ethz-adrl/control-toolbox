@@ -96,9 +96,10 @@ public:
         // Create system, linearsystem and costfunction instances
         this->setProblem(problem);
 
-        dmsProblem_ = std::shared_ptr<DmsProblem<STATE_DIM, CONTROL_DIM, SCALAR>>(
-            new DmsProblem<STATE_DIM, CONTROL_DIM, SCALAR>(settingsDms, this->systems_, this->linearSystems_,
-                this->costFunctions_, this->boxConstraints_, this->generalConstraints_, x0_));
+        dmsProblem_ =
+            std::shared_ptr<DmsProblem<STATE_DIM, CONTROL_DIM, SCALAR>>(new DmsProblem<STATE_DIM, CONTROL_DIM, SCALAR>(
+                settingsDms, this->systems_, this->linearSystems_, this->costFunctions_, this->inputBoxConstraints_,
+                this->stateBoxConstraints_, this->generalConstraints_, x0_));
 
         // SNOPT only works for the double type
         if (settingsDms.solverSettings_.solverType_ == NlpSolverType::SNOPT)
@@ -111,39 +112,6 @@ public:
         configure(settingsDms);
     }
 
-    void generateAndCompileCode(const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
-        const ct::core::DerivativesCppadSettings& settings) override
-    {
-        // Create system, linearsystem and costfunction instances
-        typedef std::shared_ptr<core::ControlledSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> SysPtrCG;
-        typedef std::shared_ptr<core::LinearSystem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> LinearSysPtrCG;
-        typedef std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>> CostPtrCG;
-        typedef std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>>
-            ConstraintCG;
-        ct::core::StateVector<STATE_DIM, ct::core::ADCGScalar> x0CG = problemCG.getInitialState();
-
-        std::vector<SysPtrCG> systemsCG;
-        std::vector<LinearSysPtrCG> linearSystemsCG;
-        std::vector<CostPtrCG> costFunctionsCG;
-        std::vector<ConstraintCG> boxConstraintsCG;
-        std::vector<ConstraintCG> generalConstraintsCG;
-
-        for (size_t i = 0; i < settings_.N_; i++)
-        {
-            systemsCG.push_back(SysPtrCG(problemCG.getNonlinearSystem()->clone()));
-            linearSystemsCG.push_back(LinearSysPtrCG(problemCG.getLinearSystem()->clone()));
-            costFunctionsCG.push_back(CostPtrCG(problemCG.getCostFunction()->clone()));
-        }
-
-        if (problemCG.getBoxConstraints())
-            boxConstraintsCG.push_back(ConstraintCG(problemCG.getBoxConstraints()->clone()));
-
-        if (problemCG.getGeneralConstraints())
-            generalConstraintsCG.push_back(ConstraintCG(problemCG.getGeneralConstraints()->clone()));
-
-        dmsProblem_->generateAndCompileCode(
-            systemsCG, linearSystemsCG, costFunctionsCG, boxConstraintsCG, generalConstraintsCG, x0CG);
-    }
 
     /**
 	 * @brief      Destructor
@@ -231,9 +199,16 @@ public:
                 this->getLinearSystemsInstances()[i] = typename Base::OptConProblem_t::LinearPtr_t(lin->clone());
     }
 
-    void changeBoxConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
+    void changeInputBoxConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
     {
-        this->getBoxConstraintsInstances().push_back(typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
+        this->getInputBoxConstraintsInstances().push_back(
+            typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
+    }
+
+    void changeStateBoxConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
+    {
+        this->getStateBoxConstraintsInstances().push_back(
+            typename Base::OptConProblem_t::ConstraintPtr_t(con->clone()));
     }
 
     void changeGeneralConstraints(const typename Base::OptConProblem_t::ConstraintPtr_t con) override
@@ -266,13 +241,24 @@ public:
         return costFunctions_;
     }
 
-    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() override
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances() override
     {
-        return boxConstraints_;
+        return inputBoxConstraints_;
     }
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const override
+
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances() const override
     {
-        return boxConstraints_;
+        return inputBoxConstraints_;
+    }
+
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances() override
+    {
+        return stateBoxConstraints_;
+    }
+
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances() const override
+    {
+        return stateBoxConstraints_;
     }
 
     std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() override
@@ -298,7 +284,8 @@ private:
     std::vector<typename OptConProblem_t::DynamicsPtr_t> systems_;
     std::vector<typename OptConProblem_t::LinearPtr_t> linearSystems_;
     std::vector<typename OptConProblem_t::CostFunctionPtr_t> costFunctions_;
-    std::vector<typename OptConProblem_t::ConstraintPtr_t> boxConstraints_;
+    std::vector<typename OptConProblem_t::ConstraintPtr_t> inputBoxConstraints_;
+    std::vector<typename OptConProblem_t::ConstraintPtr_t> stateBoxConstraints_;
     std::vector<typename OptConProblem_t::ConstraintPtr_t> generalConstraints_;
 };
 

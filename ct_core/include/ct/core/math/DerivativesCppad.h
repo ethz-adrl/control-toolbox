@@ -10,6 +10,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
+#ifdef CPPAD
+
 //! Jacobian using Auto-Diff Codegeneration
 /*!
  * Uses Auto-Diff code generation to compute the Jacobian \f$ J(x_s) = \frac{df}{dx} |_{x=x_s} \f$ of
@@ -197,6 +199,8 @@ private:
 
     CppAD::ADFun<double> adCppadFun_;
 };
+
+#endif
 
 } /* namespace core */
 } /* namespace ct */

@@ -61,7 +61,6 @@ TEST(MPCTestA, ForwardIntegratorTest)
         nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
         nloc_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
         nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-        nloc_settings.closedLoopShooting = true;
         nloc_settings.printSummary = false;
 
         // number of steps
@@ -195,9 +194,8 @@ TEST(MPCTestB, NLOC_MPC_DoublePrecision)
             nloc_settings.min_cost_improvement = 1e-10;  // strict bounds to reach a solution very close to optimality
             nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
             nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-            nloc_settings.closedLoopShooting = true;
             nloc_settings.integrator = ct::core::IntegrationType::EULER;
-            nloc_settings.lineSearchSettings.active = false;
+            nloc_settings.lineSearchSettings.type = LineSearchSettings::TYPE::SIMPLE;
             nloc_settings.nThreads = 1;
             nloc_settings.nThreadsEigen = 1;
             nloc_settings.printSummary = false;

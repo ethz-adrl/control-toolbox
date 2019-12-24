@@ -13,6 +13,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
+
 /**
  * @ingroup    NLP
  *
@@ -23,7 +24,12 @@ class DerivativesCppadSettings
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef enum CompilerType { GCC = 0, CLANG = 1, num_types_compiler } Compiler_t;
+    typedef enum CompilerType
+    {
+        GCC = 0,
+        CLANG = 1,
+        num_types_compiler
+    } Compiler_t;
 
     /**
      * @brief      Default constructor, set default settings
@@ -40,7 +46,8 @@ public:
           createSparseHessian_(false),
           maxAssignements_(20000),
           compiler_(GCC),
-          generateSourceCode_(false)
+          generateSourceCode_(false),
+          useDynamicLibrary_(true)
     {
     }
 
@@ -56,6 +63,8 @@ public:
     size_t maxAssignements_;
     CompilerType compiler_;
     bool generateSourceCode_;
+    bool useDynamicLibrary_;
+
     /**
      * @brief      Prints out settings
      */
@@ -88,6 +97,9 @@ public:
 
         if (generateSourceCode_)
             std::cout << "Generating and saving Source Code" << std::endl;
+
+        if (useDynamicLibrary_)
+            std::cout << "Creating a dynamic library (*.so will be saved in execution directory)" << std::endl;
     }
 
     /**
@@ -96,6 +108,7 @@ public:
      * @return     Returns true of the parameters are ok
      */
     bool parametersOk() const { return true; }
+   
     /**
      * @brief      Loads the settings from a .info file
      *
@@ -119,6 +132,7 @@ public:
         createSparseHessian_ = pt.get<bool>(ns + ".CreateSparseHessian");
         maxAssignements_ = pt.get<unsigned int>(ns + ".MaxAssignements");
         generateSourceCode_ = pt.get<bool>(ns + ".GenerateSourceCode");
+        useDynamicLibrary_ = pt.get<bool>(ns + ".UseDynamicLibrary");
 
         std::string compilerStr = pt.get<std::string>(ns + ".Compiler");
 

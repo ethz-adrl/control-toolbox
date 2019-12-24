@@ -74,13 +74,16 @@ public:
 
     /// @brief get joint state
     JointPositionBlock getPositions() { return state_.template head<NJOINTS>(); }
+
     /// @brief get constant joint state
     const JointPositionBlockConst getPositions() const { return state_.template head<NJOINTS>(); }
+
     SCALAR& getPosition(size_t i)
     {
         assert(i < NJOINTS && "Invalid joint index");
         return state_(i);
     }
+
     const SCALAR& getPosition(size_t i) const
     {
         assert(i < NJOINTS && "Invalid joint index");
@@ -98,7 +101,7 @@ public:
             int k_lower = std::floor((getPosition(i) - (lowerLimitVec[i] - tolerance)) / (2 * M_PI));
             int k_upper = std::floor((getPosition(i) - (lowerLimitVec[i] + tolerance)) / (2 * M_PI));
 
-            if (abs(k_lower) <= abs(k_upper))
+            if (std::abs(k_lower) <= std::abs(k_upper))
             {
                 if (k_lower != 0)
                     getPosition(i) -= k_lower * 2 * M_PI;
@@ -114,43 +117,50 @@ public:
     {
         assert(lowerLimit.size() == NJOINTS && upperLimit.size() == NJOINTS && "Wrong limit dimensions");
         for (size_t i = 0; i < NJOINTS; ++i)
-            if ((abs(getPosition(i) - lowerLimit[i]) > tolerance && getPosition(i) < lowerLimit[i]) ||
-                (abs(getPosition(i) - upperLimit[i]) > tolerance && getPosition(i) > upperLimit[i]))
+            if ((std::abs(getPosition(i) - lowerLimit[i]) > tolerance && getPosition(i) < lowerLimit[i]) ||
+                (std::abs(getPosition(i) - upperLimit[i]) > tolerance && getPosition(i) > upperLimit[i]))
                 return false;
         return true;
     }
 
     /// @brief get joint velocity
     JointPositionBlock getVelocities() { return state_.template tail<NJOINTS>(); }
+
     /// @brief get constant joint velocity
     const JointPositionBlockConst getVelocities() const { return state_.template tail<NJOINTS>(); }
+
     SCALAR& getVelocity(size_t i)
     {
         assert(i < NJOINTS && "Invalid joint index");
         return state_(NJOINTS + i);
     }
+
     const SCALAR& getVelocity(size_t i) const
     {
         assert(i < NJOINTS && "Invalid joint index");
         return state_(NJOINTS + i);
     }
+
     /// @brief check joint velocity limits
     template <typename T>
     bool checkVelocityLimits(T limit)
     {
         assert(limit.size() == NJOINTS && "Wrong limit dimension");
         for (size_t i = 0; i < NJOINTS; ++i)
-            if (abs(getVelocity(i)) > limit[i])
+            if (std::abs(getVelocity(i)) > limit[i])
                 return false;
         return true;
     }
 
-
     joint_state_vector_t& toImplementation() { return state_; }
+
     const joint_state_vector_t& toImplementation() const { return state_; }
+
     /// @brief set states to zero
     void setZero() { state_.setZero(); }
+
     void setRandom() { state_.setRandom(); }
+
 protected:
     joint_state_vector_t state_;
 };

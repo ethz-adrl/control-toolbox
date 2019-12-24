@@ -5,9 +5,9 @@ cache:
 language: generic
 matrix:
   include:
-  - name: "Xenial kinetic"
-    dist: xenial
-    env: ROS_DISTRO=kinetic
+  - name: "Bionic melodic"
+    dist: bionic
+    env: ROS_DISTRO=melodic
 
 env:
   global:
@@ -82,7 +82,7 @@ script:
   - cd ~/catkin_ws
   - catkin clean --all
   - catkin config --blacklist ct_doc
-  - catkin build -DBUILD_TESTS=true -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
+  - catkin build -DUSE_CLANG=true -DBUILD_TESTS=true -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
   # Run the tests, ensuring the path is set correctly.
   # we do not want to run the kindr tests
   - catkin config --blacklist kindr

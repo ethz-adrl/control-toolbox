@@ -70,33 +70,57 @@ int main(int argc, char** argv)
     u_ub = -u_lb;
 
     // constraint terms
-    std::shared_ptr<ControlInputConstraint<state_dim, control_dim>> controlConstraint(
+    std::shared_ptr<ControlInputConstraint<state_dim, control_dim>> controlInputBound(
         new ControlInputConstraint<state_dim, control_dim>(u_lb, u_ub, sp_control));
-    controlConstraint->setName("ControlInputConstraint");
+    controlInputBound->setName("ControlInputBound");
 
-    // create constraint container
-    std::shared_ptr<ConstraintContainerAnalytical<state_dim, control_dim>> boxConstraints(
+    // input box constraint constraint container
+    std::shared_ptr<ConstraintContainerAnalytical<state_dim, control_dim>> inputBoxConstraints(
         new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
 
     // add and initialize constraint terms
-    boxConstraints->addIntermediateConstraint(controlConstraint, verbose);
-    boxConstraints->initialize();
+    inputBoxConstraints->addIntermediateConstraint(controlInputBound, verbose);
+    inputBoxConstraints->initialize();
 
 
-    /* STEP 1-E: initialization with initial state and desired time horizon */
+    /* STEP 1-E: set up the box constraints for the states */
+    // state box constraint boundaries with sparsities in constraint toolbox format
+    // we put a box constraint on the velocity, hence the overall constraint dimension is 1.
+    Eigen::VectorXi sp_state(state_dim);
+    sp_state << 0, 1;
+    Eigen::VectorXd x_lb(1);
+    Eigen::VectorXd x_ub(1);
+    x_lb.setConstant(-0.2);
+    x_ub = -x_lb;
+    // constraint terms
+    std::shared_ptr<StateConstraint<state_dim, control_dim>> stateBound(
+        new StateConstraint<state_dim, control_dim>(x_lb, x_ub, sp_state));
+    stateBound->setName("StateBound");
+
+    // input box constraint constraint container
+    std::shared_ptr<ConstraintContainerAnalytical<state_dim, control_dim>> stateBoxConstraints(
+        new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
+
+    // add and initialize constraint terms
+    stateBoxConstraints->addIntermediateConstraint(stateBound, verbose);
+    stateBoxConstraints->initialize();
+
+
+    /* STEP 1-F: initialization with initial state and desired time horizon */
 
     StateVector<state_dim> x0;
-    x0.setRandom();  // in this example, we choose a random initial state x0
+    x0.setZero();  // in this example, we choose a zero initial state
 
     ct::core::Time timeHorizon = 3.0;  // and a final time horizon in [sec]
 
 
-    // STEP 1-E: create and initialize an "optimal control problem"
+    // STEP 1-G: create and initialize an "optimal control problem"
     ContinuousOptConProblem<state_dim, control_dim> optConProblem(
         timeHorizon, x0, oscillatorDynamics, costFunction, adLinearizer);
 
     // add the box constraints to the optimal control problem
-    optConProblem.setBoxConstraints(boxConstraints);
+    optConProblem.setInputBoxConstraints(inputBoxConstraints);
+    optConProblem.setStateBoxConstraints(stateBoxConstraints);
 
     /* STEP 2: set up a nonlinear optimal control solver. */
 
@@ -110,8 +134,8 @@ int main(int argc, char** argv)
     ilqr_settings.integrator = ct::core::IntegrationType::EULERCT;
     ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
     ilqr_settings.max_iterations = 10;
-    ilqr_settings.nThreads = 4;
-    ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
+    ilqr_settings.nThreads = 1;
+    ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
     ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
     ilqr_settings.lqoc_solver_settings.num_lqoc_iterations = 10;                // number of riccati sub-iterations
     ilqr_settings.printSummary = true;

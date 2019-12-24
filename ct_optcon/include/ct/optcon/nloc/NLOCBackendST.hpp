@@ -22,7 +22,7 @@ template <size_t STATE_DIM,
     size_t V_DIM,
     typename SCALAR = double,
     bool CONTINUOUS = true>
-class NLOCBackendST : public NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>
+class NLOCBackendST final : public NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW

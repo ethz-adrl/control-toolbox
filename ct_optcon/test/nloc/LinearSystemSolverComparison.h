@@ -55,133 +55,125 @@ TEST(LinearSystemsSolverComparison, LinearSystemsSolverComparison)
     {
         nloc_settings.nlocp_algorithm = static_cast<NLOptConSettings::NLOCP_ALGORITHM>(algClass);
 
-        // change between closed-loop and open-loop
-        for (int toggleClosedLoop = 0; toggleClosedLoop <= 1; toggleClosedLoop++)
+        // switch line search on or off
+        for (int toggleLS = 0; toggleLS <= 1; toggleLS++)
         {
-            nloc_settings.closedLoopShooting = (bool)toggleClosedLoop;
+            nloc_settings.lineSearchSettings.type = static_cast<LineSearchSettings::TYPE>(toggleLS);
 
-            // switch line search on or off
-            for (int toggleLS = 0; toggleLS <= 1; toggleLS++)
+            // toggle between single and multi-threading
+            for (size_t nThreads = 1; nThreads < 5; nThreads = nThreads + 3)
             {
-                nloc_settings.lineSearchSettings.active = (bool)toggleLS;
+                nloc_settings.nThreads = nThreads;
 
-                // toggle between single and multi-threading
-                for (size_t nThreads = 1; nThreads < 5; nThreads = nThreads + 3)
+                // toggle between iLQR/GNMS and hybrid methods with K_shot !=1
+                for (size_t kshot = 1; kshot < 11; kshot = kshot + 9)
                 {
-                    nloc_settings.nThreads = nThreads;
+                    nloc_settings.K_shot = kshot;
 
-                    // toggle between iLQR/GNMS and hybrid methods with K_shot !=1
-                    for (size_t kshot = 1; kshot < 11; kshot = kshot + 9)
+                    if (kshot > 1 && nloc_settings.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
+                        continue;  // proceed to next test case
+
+                    // toggle sensitivity integrator
+                    for (size_t sensInt = 0; sensInt <= 1; sensInt++)
                     {
-                        nloc_settings.K_shot = kshot;
+                        nloc_settings.useSensitivityIntegrator = bool(sensInt);
 
-                        if (kshot > 1 && nloc_settings.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
-                            continue;  // proceed to next test case
-
-                        // toggle sensitivity integrator
-                        for (size_t sensInt = 0; sensInt <= 1; sensInt++)
+                        // toggle over simulation time-steps
+                        for (size_t ksim = 1; ksim <= 5; ksim = ksim + 4)
                         {
-                            nloc_settings.useSensitivityIntegrator = bool(sensInt);
+                            nloc_settings.K_sim = ksim;
 
-                            // toggle over simulation time-steps
-                            for (size_t ksim = 1; ksim <= 5; ksim = ksim + 4)
+                            // catch special case, simulation sub-time steps only make sense when sensitivity integrator active
+                            if ((nloc_settings.useSensitivityIntegrator == false) && (ksim > 1))
+                                continue;  // proceed to next test case
+
+                            // toggle integrator type
+                            for (size_t integratortype = 0; integratortype <= 1; integratortype++)
                             {
-                                nloc_settings.K_sim = ksim;
-
-                                // catch special case, simulation sub-time steps only make sense when sensitivity integrator active
-                                if ((nloc_settings.useSensitivityIntegrator == false) && (ksim > 1))
+                                if (integratortype == 0)
+                                    nloc_settings.integrator = ct::core::IntegrationType::EULERCT;
+                                else if (integratortype == 1 && nloc_settings.useSensitivityIntegrator == true)
+                                {
+                                    // use RK4 with exactly integrated sensitivities
+                                    nloc_settings.integrator = ct::core::IntegrationType::RK4CT;
+                                }
+                                else
                                     continue;  // proceed to next test case
 
-                                // toggle integrator type
-                                for (size_t integratortype = 0; integratortype <= 1; integratortype++)
-                                {
-                                    if (integratortype == 0)
-                                        nloc_settings.integrator = ct::core::IntegrationType::EULERCT;
-                                    else if (integratortype == 1 && nloc_settings.useSensitivityIntegrator == true)
-                                    {
-                                        // use RK4 with exactly integrated sensitivities
-                                        nloc_settings.integrator = ct::core::IntegrationType::RK4CT;
-                                    }
-                                    else
-                                        continue;  // proceed to next test case
+                                shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(
+                                    new LinearOscillator());
+                                shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(
+                                    new LinearOscillatorLinear());
+                                shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction =
+                                    tpl::createCostFunctionLinearOscillator<double>(x_final);
 
-                                    shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(
-                                        new LinearOscillator());
-                                    shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(
-                                        new LinearOscillatorLinear());
-                                    shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction =
-                                        tpl::createCostFunctionLinearOscillator<double>(x_final);
+                                // times
+                                ct::core::Time tf = 1.0;
+                                size_t nSteps = nloc_settings.computeK(tf);
 
-                                    // times
-                                    ct::core::Time tf = 1.0;
-                                    size_t nSteps = nloc_settings.computeK(tf);
+                                // initial controller
+                                StateVectorArray<state_dim> x0(nSteps + 1, initState);
+                                ControlVector<control_dim> uff;
+                                uff << kStiffness * initState(0);
+                                ControlVectorArray<control_dim> u0(nSteps, uff);
 
-                                    // initial controller
-                                    StateVectorArray<state_dim> x0(nSteps + 1, initState);
-                                    ControlVector<control_dim> uff;
-                                    uff << kStiffness * initState(0);
-                                    ControlVectorArray<control_dim> u0(nSteps, uff);
+                                FeedbackArray<state_dim, control_dim> u0_fb(
+                                    nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
+                                ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
 
-                                    FeedbackArray<state_dim, control_dim> u0_fb(
-                                        nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
-                                    ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
+                                NLOptConSolver::Policy_t initController(x0, u0, u0_fb, nloc_settings.dt);
 
-                                    NLOptConSolver::Policy_t initController(x0, u0, u0_fb, nloc_settings.dt);
+                                // construct OptCon Problem
+                                ContinuousOptConProblem<state_dim, control_dim> optConProblem(
+                                    tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
 
-                                    // construct OptCon Problem
-                                    ContinuousOptConProblem<state_dim, control_dim> optConProblem(
-                                        tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
-
-                                    // NLOC solver employing GNRiccati
-                                    nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-                                    NLOptConSolver solver_gnriccati(optConProblem, nloc_settings);
-                                    solver_gnriccati.configure(nloc_settings);
-                                    solver_gnriccati.setInitialGuess(initController);
-                                    //! run two iterations to solve LQ problem
-                                    solver_gnriccati.runIteration();
-                                    solver_gnriccati.runIteration();
+                                // NLOC solver employing GNRiccati
+                                nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
+                                NLOptConSolver solver_gnriccati(optConProblem, nloc_settings);
+                                solver_gnriccati.configure(nloc_settings);
+                                solver_gnriccati.setInitialGuess(initController);
+                                //! run two iterations to solve LQ problem
+                                solver_gnriccati.runIteration();
+                                solver_gnriccati.runIteration();
 
 
-                                    // NLOC solver employing HPIPM
-                                    nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;
-                                    NLOptConSolver solver_hpipm(optConProblem, nloc_settings);
-                                    solver_hpipm.configure(nloc_settings);
-                                    solver_hpipm.setInitialGuess(initController);
-                                    //! run two iterations to solve LQ problem
-                                    solver_hpipm.runIteration();
-                                    solver_hpipm.runIteration();
+                                // NLOC solver employing HPIPM
+                                nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;
+                                NLOptConSolver solver_hpipm(optConProblem, nloc_settings);
+                                solver_hpipm.configure(nloc_settings);
+                                solver_hpipm.setInitialGuess(initController);
+                                //! run two iterations to solve LQ problem
+                                solver_hpipm.runIteration();
+                                solver_hpipm.runIteration();
 
-                                    //! retrieve summaries
-                                    const SummaryAllIterations<double>& sumGn =
-                                        solver_gnriccati.getBackend()->getSummary();
-                                    const SummaryAllIterations<double>& sumHpipm =
-                                        solver_hpipm.getBackend()->getSummary();
+                                //! retrieve summaries
+                                const SummaryAllIterations<double>& sumGn = solver_gnriccati.getBackend()->getSummary();
+                                const SummaryAllIterations<double>& sumHpipm = solver_hpipm.getBackend()->getSummary();
 
-                                    //! check that all logs from both solvers are identical
-                                    // first iteration
-                                    ASSERT_NEAR(sumGn.lx_norms.back(), sumHpipm.lx_norms.back(), 1e-6);
-                                    ASSERT_NEAR(sumGn.lu_norms.back(), sumHpipm.lu_norms.back(), 1e-6);
-                                    ASSERT_NEAR(sumGn.defect_l1_norms.back(), sumHpipm.defect_l1_norms.back(), 1e-6);
-                                    ASSERT_NEAR(sumGn.defect_l2_norms.back(), sumHpipm.defect_l2_norms.back(), 1e-6);
-                                    ASSERT_NEAR(sumGn.merits.back(), sumHpipm.merits.back(), 1e-6);
+                                //! check that all logs from both solvers are identical
+                                // first iteration
+                                ASSERT_NEAR(sumGn.lx_norms.back(), sumHpipm.lx_norms.back(), 1e-6);
+                                ASSERT_NEAR(sumGn.lu_norms.back(), sumHpipm.lu_norms.back(), 1e-6);
+                                ASSERT_NEAR(sumGn.defect_l1_norms.back(), sumHpipm.defect_l1_norms.back(), 1e-6);
+                                ASSERT_NEAR(sumGn.defect_l2_norms.back(), sumHpipm.defect_l2_norms.back(), 1e-6);
+                                ASSERT_NEAR(sumGn.merits.back(), sumHpipm.merits.back(), 1e-6);
 
-                                    // second iteration
-                                    ASSERT_NEAR(sumGn.lx_norms.front(), sumHpipm.lx_norms.front(), 1e-6);
-                                    ASSERT_NEAR(sumGn.lu_norms.front(), sumHpipm.lu_norms.front(), 1e-6);
-                                    ASSERT_NEAR(sumGn.defect_l1_norms.front(), sumHpipm.defect_l1_norms.front(), 1e-6);
-                                    ASSERT_NEAR(sumGn.defect_l2_norms.front(), sumHpipm.defect_l2_norms.front(), 1e-6);
-                                    ASSERT_NEAR(sumGn.merits.front(), sumHpipm.merits.front(), 1e-6);
+                                // second iteration
+                                ASSERT_NEAR(sumGn.lx_norms.front(), sumHpipm.lx_norms.front(), 1e-6);
+                                ASSERT_NEAR(sumGn.lu_norms.front(), sumHpipm.lu_norms.front(), 1e-6);
+                                ASSERT_NEAR(sumGn.defect_l1_norms.front(), sumHpipm.defect_l1_norms.front(), 1e-6);
+                                ASSERT_NEAR(sumGn.defect_l2_norms.front(), sumHpipm.defect_l2_norms.front(), 1e-6);
+                                ASSERT_NEAR(sumGn.merits.front(), sumHpipm.merits.front(), 1e-6);
 
-                                    testCounter++;
+                                testCounter++;
 
-                                }  // toggle integrator type
-                            }      // toggle simulation time steps
-                        }          // toggle sensitivity integrator
-                    }              // toggle k_shot
-                }                  // toggle multi-threading / single-threading
-            }                      // toggle line-search
-        }                          // toggle closed-loop
-    }                              // toggle solver class
+                            }  // toggle integrator type
+                        }      // toggle simulation time steps
+                    }          // toggle sensitivity integrator
+                }              // toggle k_shot
+            }                  // toggle multi-threading / single-threading
+        }                      // toggle line-search
+    }                          // toggle solver class
 
     std::cout << "Performed " << testCounter << " successful NLOC tests with linear systems" << std::endl;
 

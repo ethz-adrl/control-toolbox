@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.3)
 
-project (ct_doc VERSION 3.0.1 ) 
+project (ct_doc VERSION 3.0.2 ) 
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 

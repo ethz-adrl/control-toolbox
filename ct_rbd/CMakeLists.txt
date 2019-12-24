@@ -3,8 +3,9 @@ cmake_minimum_required (VERSION 3.3)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/ct-cmake-helpers.cmake)
 
-project(ct_rbd VERSION 3.0.1 LANGUAGES CXX)
+project(ct_rbd VERSION 3.0.2 LANGUAGES CXX)
 
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
@@ -13,6 +14,10 @@ SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 find_package(kindr REQUIRED)
 find_package(ct_optcon REQUIRED)
+
+# extract interface compile definitions from ct_core and ct_optcon as options
+importInterfaceCompileDefinitionsAsOptions(ct_core)
+importInterfaceCompileDefinitionsAsOptions(ct_optcon)
 
 
 ###################

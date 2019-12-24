@@ -5,7 +5,14 @@
 
 For a complete list of changes, we encourage you to check out our git repository at https://github.com/ethz-adrl/control-toolbox
 
-\section cl_v301 Version 3.0.1
+\section cl_v302 Version 3.0.2
+- upgraded HPIPM to version 0.1.1, which simplified the interface for getting Riccati-matrices from the solver
+- resolved ordering-bug for box-constraints
+- switched back to differential formulation of LQ problems to maintain comparability with other solutions
+- simplified user-interface to the 7 different iLQR-style solver variants
+- removed copied code from external repos (CppAD and CppADCodeGen) and provided install script instead
+
+\section cl_v301 Version 3.0.2
 - enabled compatibility with pure cmake (no catkin or ROS required anymore)
 - fixed bug in explicit template prespecification
 - fixed bug in exporting dependencies on external solvers

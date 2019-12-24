@@ -191,5 +191,5 @@ public:
 #endif  // BUILD_WITH_IPOPT_SUPPORT
 
 
-}  // rbd
-}  // ct
+}  // namespace rbd
+}  // namespace ct

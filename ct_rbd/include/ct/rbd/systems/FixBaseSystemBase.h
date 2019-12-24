@@ -58,7 +58,7 @@ public:
     virtual void computeControlledDynamics(const ct::core::StateVector<STATE_D, SCALAR>& state,
         const SCALAR& t,
         const ct::core::ControlVector<CONTROL_D, SCALAR>& controlIn,
-        ct::core::StateVector<STATE_D, SCALAR>& derivative) = 0;
+        ct::core::StateVector<STATE_D, SCALAR>& derivative) override = 0;
 
     //! deep cloning
     virtual FixBaseSystemBase<RBDDynamics, STATE_D, CONTROL_D>* clone() const override = 0;

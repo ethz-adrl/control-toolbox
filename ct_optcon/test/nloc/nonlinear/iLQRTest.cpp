@@ -40,7 +40,6 @@ TEST(ILQRTestA, InstancesComparison)
         ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
         ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
         ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-        ilqr_settings.closedLoopShooting = true;
         ilqr_settings.integrator = ct::core::IntegrationType::EULER;
         ilqr_settings.printSummary = false;
         ilqr_settings.debugPrint = false;
@@ -107,14 +106,14 @@ TEST(ILQRTestA, InstancesComparison)
             if (i == 0)
             {
                 std::cout << "Turning Line-Search off" << std::endl;
-                ilqr_settings.lineSearchSettings.active = false;
-                ilqr_settings_mp.lineSearchSettings.active = false;
+                ilqr_settings.lineSearchSettings.type = LineSearchSettings::TYPE::NONE;
+                ilqr_settings_mp.lineSearchSettings.type = LineSearchSettings::TYPE::NONE;
             }
             else
             {
                 std::cout << "Turning Line-Search on" << std::endl;
-                ilqr_settings.lineSearchSettings.active = true;
-                ilqr_settings_mp.lineSearchSettings.active = true;
+                ilqr_settings.lineSearchSettings.type = LineSearchSettings::TYPE::SIMPLE;
+                ilqr_settings_mp.lineSearchSettings.type = LineSearchSettings::TYPE::SIMPLE;
             }
 
             ilqr.configure(ilqr_settings);
@@ -198,7 +197,6 @@ TEST(ILQRTestB, MultiThreadingTest)
         ilqr_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
         ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
         ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
-        ilqr_settings.closedLoopShooting = true;
         ilqr_settings.integrator = ct::core::IntegrationType::RK4;
         ilqr_settings.printSummary = false;
 
@@ -249,13 +247,13 @@ TEST(ILQRTestB, MultiThreadingTest)
         {
             if (i == 0)
             {
-                ilqr_settings.lineSearchSettings.active = false;
-                ilqr_settings_mp.lineSearchSettings.active = false;
+                ilqr_settings.lineSearchSettings.type = LineSearchSettings::TYPE::NONE;
+                ilqr_settings_mp.lineSearchSettings.type = LineSearchSettings::TYPE::NONE;
             }
             else
             {
-                ilqr_settings.lineSearchSettings.active = true;
-                ilqr_settings_mp.lineSearchSettings.active = true;
+                ilqr_settings.lineSearchSettings.type = LineSearchSettings::TYPE::SIMPLE;
+                ilqr_settings_mp.lineSearchSettings.type = LineSearchSettings::TYPE::SIMPLE;
             }
 
             if (i < 2)
@@ -408,7 +406,6 @@ TEST(ILQRTestC, PolicyComparison)
         ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
         ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::GNRICCATI_SOLVER;
         ilqr_settings.integrator = ct::core::IntegrationType::EULER;
-        ilqr_settings.closedLoopShooting = true;
         ilqr_settings.fixedHessianCorrection = false;
         ilqr_settings.printSummary = false;
 
@@ -459,13 +456,13 @@ TEST(ILQRTestC, PolicyComparison)
         {
             if (i == 0)
             {
-                ilqr_settings.lineSearchSettings.active = false;
-                ilqr_settings_mp.lineSearchSettings.active = false;
+                ilqr_settings.lineSearchSettings.type = LineSearchSettings::TYPE::NONE;
+                ilqr_settings_mp.lineSearchSettings.type = LineSearchSettings::TYPE::NONE;
             }
             else
             {
-                ilqr_settings.lineSearchSettings.active = true;
-                ilqr_settings_mp.lineSearchSettings.active = true;
+                ilqr_settings.lineSearchSettings.type = LineSearchSettings::TYPE::SIMPLE;
+                ilqr_settings_mp.lineSearchSettings.type = LineSearchSettings::TYPE::SIMPLE;
             }
 
             ilqr.configure(ilqr_settings);

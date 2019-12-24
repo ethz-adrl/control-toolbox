@@ -5,6 +5,9 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+
 namespace ct {
 namespace models {
 namespace HyQ {
@@ -17,6 +20,9 @@ static std::vector<std::string> urdfJointNames()
 
     return urdfJointNames;
 }
-}
-}
-}
+
+}  // namespace HyQ
+}  // namespace models
+}  // namespace ct
+
+#pragma GCC diagnostic pop

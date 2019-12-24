@@ -23,7 +23,6 @@ ilqr
     ;locp_solver HPIPM_SOLVER
     locp_solver GNRICCATI_SOLVER
     nlocp_algorithm GNMS
-    closedLoopShooting true
     printSummary true
     debugPrint false
 

@@ -11,9 +11,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 const size_t njoints = ct::rbd::TestIrb4600::Kinematics::NJOINTS;
 
-using KinematicsAD_t = ct::rbd::TestIrb4600::tpl::Kinematics<ct::core::ADCGScalar>;
 using Kinematics_t = ct::rbd::TestIrb4600::tpl::Kinematics<double>;
-using IKProblem = ct::rbd::IKNLP<KinematicsAD_t>;
+using IKProblem = ct::rbd::IKNLP<Kinematics_t>;
 using IKNLPSolver = ct::rbd::IKNLPSolverIpopt<IKProblem, Kinematics_t>;
 
 
@@ -24,8 +23,8 @@ TEST(FixBaseInverseKinematicsTest, NLPIKTest)
     ct::rbd::JointState<njoints>::Position jointLowerLimit = ct::rbd::TestIrb4600::jointLowerLimit();
     ct::rbd::JointState<njoints>::Position jointUpperLimit = ct::rbd::TestIrb4600::jointUpperLimit();
 
-    std::shared_ptr<ct::rbd::IKCostEvaluator<KinematicsAD_t>> ikCostEvaluator(
-        new ct::rbd::IKCostEvaluator<KinematicsAD_t>(eeInd));
+    std::shared_ptr<ct::rbd::IKCostEvaluator<Kinematics_t>> ikCostEvaluator(
+        new ct::rbd::IKCostEvaluator<Kinematics_t>(eeInd));
 
     std::shared_ptr<IKProblem> ik_problem(new IKProblem(ikCostEvaluator, jointLowerLimit, jointUpperLimit));
 
@@ -39,6 +38,7 @@ TEST(FixBaseInverseKinematicsTest, NLPIKTest)
     ct::rbd::InverseKinematicsSettings ikSettings;
     ikSettings.maxNumTrials_ = 100;
     ikSettings.randomizeInitialGuess_ = true;
+    ikSettings.validationTol_ = 1e-6;
 
     IKNLPSolver ikSolver(ik_problem, nlpSolverSettings, ikSettings, eeInd);
 

@@ -38,26 +38,32 @@ package_add_test(LinearSystemTest nloc/LinearSystemTest.cpp)
 package_add_test(NonlinearSystemTest nloc/nonlinear/NonlinearSystemTest.cpp)
 package_add_test(NLOC_MPCTest mpc/NLOC_MPCTest.cpp)
 #package_add_test(SymplecticTest nloc/SymplecticTest.cpp) # make proper test
-package_add_test(constraint_comparison constraint/ConstraintComparison.cpp)
-package_add_test(constraint_test constraint/ConstraintTest.cpp)
 package_add_test(SparseBoxConstraintTest constraint/SparseBoxConstraintTest.cpp)
-
-package_add_test(CostFunctionTests costfunction/CostFunctionTests.cpp)
-package_add_test(LoadFromFileTest costfunction/LoadFromFileTest.cpp)
+if(CPPADCG)
+    message(STATUS "ct_optcon: building unit tests requiring CPPADCG")
+    package_add_test(constraint_comparison constraint/ConstraintComparison.cpp)
+    package_add_test(constraint_test constraint/ConstraintTest.cpp)
+    package_add_test(CostFunctionTests costfunction/CostFunctionTests.cpp)
+    package_add_test(LoadFromFileTest costfunction/LoadFromFileTest.cpp)
+endif()
 
 package_add_test(dms_test dms/oscillator/oscDMSTest.cpp)
 package_add_test(dms_test_all_var dms/oscillator/oscDMSTestAllVariants.cpp)
 package_add_test(system_interface_test system_interface/SystemInterfaceTest.cpp)
 
 if(HPIPM)
+    message(STATUS "ct_optcon: building unit tests requiring HPIPM")
     ## some legacy executables (TODO: make example or make test)
     add_executable(LQOCSolverTiming solver/linear/LQOCSolverTiming.cpp)
     target_link_libraries(LQOCSolverTiming ct_optcon)
     
     package_add_test(LQOCSolverTest solver/linear/LQOCSolverTest.cpp)
     package_add_test(ConstrainedLQOCSolverTest solver/linear/ConstrainedLQOCSolverTest.cpp)
-    package_add_test(ConstrainedNLOCTest nloc/constrained/ConstrainedNLOCTest.cpp)
     package_add_test(LinearSystemSolverComparison nloc/LinearSystemSolverComparison.cpp)
+    if(CPPADCG)
+        message(STATUS "ct_optcon: building unit tests requiring CPPADCG and HPIPM")
+        package_add_test(ConstrainedNLOCTest nloc/constrained/ConstrainedNLOCTest.cpp)
+    endif()
 endif()
 
 

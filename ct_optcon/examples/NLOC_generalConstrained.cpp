@@ -148,19 +148,8 @@ int main(int argc, char** argv)
 	 * Multiple Shooting for this example. In the following, we
 	 * modify only a few settings, for more detail, check out the NLOptConSettings class. */
     NLOptConSettings nloc_settings;
-    nloc_settings.dt = 0.001;  // the control discretization in [sec]
-    nloc_settings.integrator = ct::core::IntegrationType::EULERCT;
-    nloc_settings.discretization = NLOptConSettings::APPROXIMATION::FORWARD_EULER;
-    nloc_settings.max_iterations = 10;
-    nloc_settings.min_cost_improvement = 1e-4;
-    nloc_settings.nThreads = 1;
-    nloc_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
+    nloc_settings.load(ct::optcon::exampleDir + "/nlocSolver.info", true, "ilqr");
     nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
-    nloc_settings.lqoc_solver_settings.num_lqoc_iterations = 10;                // number of riccati sub-iterations
-    nloc_settings.lineSearchSettings.active = false;
-    nloc_settings.lineSearchSettings.debugPrint = false;
-    nloc_settings.printSummary = true;
-
 
     /* STEP 2-B: provide an initial guess */
     // calculate the number of time steps K

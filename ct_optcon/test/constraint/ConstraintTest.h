@@ -69,6 +69,7 @@ public:
     }
 
     void setA(const Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>& A) { A_ = A; }
+
 private:
     Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> A_;
 };
@@ -110,7 +111,10 @@ public:
 
     virtual ~StateInputConstraint_Example() {}
     virtual size_t getConstraintSize() const override { return CONTROL_DIM; }
-    VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) { return A_ * x + B_ * u; }
+    VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override
+    {
+        return A_ * x + B_ * u;
+    }
     virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
         const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
         const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,

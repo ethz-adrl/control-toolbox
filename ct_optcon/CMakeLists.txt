@@ -3,9 +3,10 @@ cmake_minimum_required (VERSION 3.3)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/ct-cmake-helpers.cmake)
 
 
-project(ct_optcon VERSION 3.0.1 LANGUAGES CXX)
+project(ct_optcon VERSION 3.0.2 LANGUAGES CXX)
 
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
@@ -16,6 +17,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 ## find and include required dependencies
 find_package(ct_core REQUIRED)
+# extract interface compile definitions from ct_core as options
+importInterfaceCompileDefinitionsAsOptions(ct_core)
 
 
 ## find and include optional dependencies
@@ -54,7 +57,7 @@ else(LAPACK_FOUND)
 endif(LAPACK_FOUND)
 
 
-## include HPIPM (required: environment variables for blasfeo and hpipm set)
+## include HPIPM
 find_package(blasfeo QUIET)
 find_package(hpipm QUIET)
 if(blasfeo_FOUND AND hpipm_FOUND)
@@ -62,6 +65,8 @@ if(blasfeo_FOUND AND hpipm_FOUND)
     set(HPIPM ON)
     list(APPEND HPIPM_LIBS ${hpipm_LIBRARIES} ${blasfeo_LIBRARIES})
     list(APPEND ct_optcon_COMPILE_DEFINITIONS HPIPM)
+else()
+    message(WARNING "Could not find HPIPM or BLASFEO")
 endif()
 
 
@@ -76,7 +81,7 @@ if(IPOPT_FOUND)
 endif()
 
 
-## include SNOPT -- todo SNOPT not tested in version 3.0.1, temporarily deactivated
+## include SNOPT -- todo SNOPT not tested in version 3.0.2, temporarily deactivated
 #set(SNOPT_TARGET "")
 #if(DEFINED ENV{SNOPT_SOURCE_DIR})
 #    set(BUILD_WITH_SNOPT_SUPPORT ON)

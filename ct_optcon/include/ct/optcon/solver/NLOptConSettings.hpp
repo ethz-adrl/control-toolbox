@@ -21,28 +21,49 @@ namespace optcon {
  */
 struct LineSearchSettings
 {
+    //! types of backtracking line-search
+    enum TYPE
+    {
+        NONE = 0,      //! take full-step updates
+        SIMPLE,        //! simple backtracking using cost or merit function
+        ARMIJO,        //! backtracking including riccati matrix measure
+        GOLDSTEIN,  //! backtracking including riccati matrix measure and defects
+        NUM_TYPES
+    };
+
+    //! mappings for line-search types
+    std::map<TYPE, std::string> lineSearchTypeToString = {{NONE, "NONE (take full-step updates with alpha=1.0)"},
+        {SIMPLE, "Simple Backtracking with cost/merit"}, {ARMIJO, "ARMIJO-style Backtracking for single-shooting"},
+        {GOLDSTEIN, "GOLDSTEIN backtracking using Riccati matrices"}};
+
+    std::map<std::string, TYPE> stringToLineSearchType = {
+        {"NONE", NONE}, {"SIMPLE", SIMPLE}, {"ARMIJO", ARMIJO}, {"GOLDSTEIN", GOLDSTEIN}};
+
+
     //! default constructor for the NLOptCon line-search settings
     LineSearchSettings()
-        : active(true),
+        : type(NONE),
           adaptive(false),
           maxIterations(10),
           alpha_0(1.0),
           alpha_max(1.0),
           n_alpha(0.5),
+          armijo_parameter(0.01),
           debugPrint(false)
     {
     }
 
     //! check if the currently set line-search parameters are meaningful
     bool parametersOk() const { return (alpha_0 > 0.0) && (n_alpha > 0.0) && (n_alpha < 1.0) && (alpha_max > 0.0); }
-    bool active;          /*!< Flag whether or not to perform line search */
+    TYPE type;            /*!< type of line search */
     bool adaptive;        /*!< Flag whether alpha_0 gets updated based on previous iteration */
     size_t maxIterations; /*!< Maximum number of iterations during line search */
     double alpha_0;       /*!< Initial step size for line search. Use 1 for step size as suggested by NLOptCon */
     double alpha_max;     /*!< Maximum step size for line search. This is the limit when adapting alpha_0. */
     double
-        n_alpha;     /*!< Factor by which the line search step size alpha gets multiplied with after each iteration. Usually 0.5 is a good value. */
-    bool debugPrint; /*!< Print out debug information during line-search*/
+        n_alpha; /*!< Factor by which the step size alpha gets scaled after each iteration. Usually 0.5 is a good value. */
+    double armijo_parameter; /*!< "Control Parameter" in Armijo line search condition. */
+    bool debugPrint;         /*!< Print out debug information during line-search*/
 
 
     //! print the current line search settings to console
@@ -50,12 +71,13 @@ struct LineSearchSettings
     {
         std::cout << "Line Search Settings: " << std::endl;
         std::cout << "=====================" << std::endl;
-        std::cout << "active:\t" << active << std::endl;
+        std::cout << "type:\t" << lineSearchTypeToString.at(type) << std::endl;
         std::cout << "adaptive:\t" << adaptive << std::endl;
         std::cout << "maxIter:\t" << maxIterations << std::endl;
         std::cout << "alpha_0:\t" << alpha_0 << std::endl;
         std::cout << "alpha_max:\t" << alpha_max << std::endl;
         std::cout << "n_alpha:\t" << n_alpha << std::endl;
+        std::cout << "armijo_parameter:\t" << armijo_parameter << std::endl;
         std::cout << "debugPrint:\t" << debugPrint << std::endl;
         std::cout << "              =======" << std::endl;
         std::cout << std::endl;
@@ -70,7 +92,24 @@ struct LineSearchSettings
         boost::property_tree::ptree pt;
         boost::property_tree::read_info(filename, pt);
 
-        active = pt.get<bool>(ns + ".active");
+        std::string ls_type = pt.get<std::string>(ns + ".type");
+        if (stringToLineSearchType.find(ls_type) != stringToLineSearchType.end())
+        {
+            type = stringToLineSearchType[ls_type];
+        }
+        else
+        {
+            std::cout << "Invalid line search type specified in config, should be one of the following:" << std::endl;
+
+            for (auto it = stringToLineSearchType.begin(); it != stringToLineSearchType.end(); it++)
+            {
+                std::cout << it->first << std::endl;
+            }
+
+            exit(-1);
+        }
+
+
         maxIterations = pt.get<size_t>(ns + ".maxIterations");
         alpha_0 = pt.get<double>(ns + ".alpha_0");
         n_alpha = pt.get<double>(ns + ".n_alpha");
@@ -80,7 +119,20 @@ struct LineSearchSettings
 
         try
         {
+            armijo_parameter = pt.get<double>(ns + ".armijo_parameter");
+        } catch (...)
+        {
+        }
+
+        try
+        {
             adaptive = pt.get<bool>(ns + ".adaptive");
+        } catch (...)
+        {
+        }
+
+        try
+        {
             alpha_max = pt.get<double>(ns + ".alpha_max");
         } catch (...)
         {
@@ -102,9 +154,10 @@ struct LineSearchSettings
 struct LQOCSolverSettings
 {
 public:
-    LQOCSolverSettings() : num_lqoc_iterations(5), lqoc_debug_print(false) {}
-    int num_lqoc_iterations;  //! number of allowed sub-iterations of LQOC solver per NLOC main iteration
+    LQOCSolverSettings() : lqoc_debug_print(false), num_lqoc_iterations(10) {}
+
     bool lqoc_debug_print;
+    int num_lqoc_iterations;  //! number of allowed sub-iterations of LQOC solver per NLOC main iteration
 
     void print() const
     {
@@ -145,13 +198,16 @@ public:
 class NLOptConSettings
 {
 public:
-    typedef typename core::SensitivityApproximationSettings::APPROXIMATION APPROXIMATION;
-
-    //! the nonlinear optimal control problem solving algorithm
+    //! algorithm types for solving the NLOC problem
     enum NLOCP_ALGORITHM
     {
-        GNMS = 0,
-        ILQR,
+        GNMS = 0,   //! Gauss-Newton Multiple Shooting (shooting interval = control interval)
+        ILQR,       //! Classical iLQR (1 shooting interval equal to problem horizon)
+        MS_ILQR,    //! multiple-shooting iLQR
+        SS_OL,      //! Classical (open-loop) Single Shooting
+        SS_CL,      //! Closed-loop single shooting
+        GNMS_M_OL,  //! GNMS(M) with open-loop shooting
+        GNMS_M_CL,  //! GNMS(M) with closed-loop shooting
         NUM_TYPES
     };
 
@@ -162,6 +218,7 @@ public:
         HPIPM_SOLVER = 1
     };
 
+    using APPROXIMATION = typename core::SensitivityApproximationSettings::APPROXIMATION;
 
     //! NLOptCon Settings default constructor
     /*!
@@ -174,7 +231,6 @@ public:
           nlocp_algorithm(GNMS),
           lqocp_solver(GNRICCATI_SOLVER),
           loggingPrefix("alg"),
-          closedLoopShooting(false),  //! by default, we do open-loop shooting
           epsilon(1e-5),
           dt(0.001),
           K_sim(1),                    //! by default, there is only one sub-integration step
@@ -202,7 +258,6 @@ public:
     NLOCP_ALGORITHM nlocp_algorithm;  //! which nonlinear optimal control algorithm is to be used
     LQOCP_SOLVER lqocp_solver;        //! the solver for the linear-quadratic optimal control problem
     std::string loggingPrefix;        //! the prefix to be stored before the matfile name for logging
-    bool closedLoopShooting;          //! use feedback gains during forward integration (true) or not (false)
     double epsilon;                   //! Eigenvalue correction factor for Hessian regularization
     double dt;                        //! sampling time for the control input (seconds)
     int K_sim;                        //! number of sub-integration-steps
@@ -211,12 +266,12 @@ public:
     double maxDefectSum;              //! maximum sum of squared defects (assume covergence if lower than this number)
     double meritFunctionRho;          //! trade off between internal (defect)constraint violation and cost
     double meritFunctionRhoConstraints;  //! trade off between external (general and path) constraint violation and cost
-    int max_iterations;                  //! the maximum admissible number of NLOptCon main iterations \warning make sure to select this number high enough allow for convergence
-    bool fixedHessianCorrection;         //! perform Hessian regularization by incrementing the eigenvalues by epsilon.
-    bool recordSmallestEigenvalue;       //! save the smallest eigenvalue of the Hessian
-    int nThreads;                        //! number of threads, for MP version
+    int max_iterations;  //! the maximum admissible number of NLOptCon main iterations \warning make sure to select this number high enough allow for convergence
+    bool fixedHessianCorrection;    //! perform Hessian regularization by incrementing the eigenvalues by epsilon.
+    bool recordSmallestEigenvalue;  //! save the smallest eigenvalue of the Hessian
+    int nThreads;                   //! number of threads, for MP version
     size_t
-        nThreadsEigen;                      //! number of threads for eigen parallelization (applies both to MP and ST) Note. in order to activate Eigen parallelization, compile with '-fopenmp'
+        nThreadsEigen;  //! number of threads for eigen parallelization (applies both to MP and ST) Note. in order to activate Eigen parallelization, compile with '-fopenmp'
     LineSearchSettings lineSearchSettings;  //! the line search settings
     LQOCSolverSettings lqoc_solver_settings;
     bool debugPrint;
@@ -241,7 +296,15 @@ public:
         return std::max(1, (int)std::lround(timeHorizon / dt));
     }
 
+    //! compute the simulation timestep
     double getSimulationTimestep() const { return (dt / (double)K_sim); }
+
+    //! return if this is a closed-loop shooting algorithm (or not)
+    bool closedLoopShooting() const { return nlocAlgorithmToClosedLoopShooting.at(nlocp_algorithm); }
+
+    //! return if this is a single-shooting algorithm (or not)
+    bool isSingleShooting() const { return nlocAlgorithmToSingleShooting.at(nlocp_algorithm); }
+
     //! print the current NLOptCon settings to console
     void print() const
     {
@@ -250,9 +313,8 @@ public:
         std::cout << "integrator: " << integratorToString.at(integrator) << std::endl;
         std::cout << "discretization: " << discretizationToString.at(discretization) << std::endl;
         std::cout << "time varying discretization: " << timeVaryingDiscretization << std::endl;
-        std::cout << "nonlinear OCP algorithm: " << nlocp_algorithmToString.at(nlocp_algorithm) << std::endl;
-        std::cout << "linear-quadratic OCP solver: " << locp_solverToString.at(lqocp_solver) << std::endl;
-        std::cout << "closed loop shooting:\t" << closedLoopShooting << std::endl;
+        std::cout << "nonlinear OCP algorithm: " << nlocAlgorithmToString.at(nlocp_algorithm) << std::endl;
+        std::cout << "linear-quadratic OCP solver: " << lqocSolverToString.at(lqocp_solver) << std::endl;
         std::cout << "dt:\t" << dt << std::endl;
         std::cout << "K_sim:\t" << K_sim << std::endl;
         std::cout << "K_shot:\t" << K_shot << std::endl;
@@ -395,12 +457,6 @@ public:
         }
         try
         {
-            closedLoopShooting = pt.get<bool>(ns + ".closedLoopShooting");
-        } catch (...)
-        {
-        }
-        try
-        {
             debugPrint = pt.get<bool>(ns + ".debugPrint");
         } catch (...)
         {
@@ -511,16 +567,16 @@ public:
             }
 
             std::string nlocp_algorithmStr = pt.get<std::string>(ns + ".nlocp_algorithm");
-            if (stringTonlocp_algorithm.find(nlocp_algorithmStr) != stringTonlocp_algorithm.end())
+            if (stringToNlocAlgorithm.find(nlocp_algorithmStr) != stringToNlocAlgorithm.end())
             {
-                nlocp_algorithm = stringTonlocp_algorithm[nlocp_algorithmStr];
+                nlocp_algorithm = stringToNlocAlgorithm[nlocp_algorithmStr];
             }
             else
             {
                 std::cout << "Invalid nlocp_algorithm specified in config, should be one of the following:"
                           << std::endl;
 
-                for (auto it = stringTonlocp_algorithm.begin(); it != stringTonlocp_algorithm.end(); it++)
+                for (auto it = stringToNlocAlgorithm.begin(); it != stringToNlocAlgorithm.end(); it++)
                 {
                     std::cout << it->first << std::endl;
                 }
@@ -530,15 +586,15 @@ public:
 
 
             std::string locp_solverStr = pt.get<std::string>(ns + ".locp_solver");
-            if (stringTolocp_solver.find(locp_solverStr) != stringTolocp_solver.end())
+            if (stringToLqocSolver.find(locp_solverStr) != stringToLqocSolver.end())
             {
-                lqocp_solver = stringTolocp_solver[locp_solverStr];
+                lqocp_solver = stringToLqocSolver[locp_solverStr];
             }
             else
             {
                 std::cout << "Invalid locp_solver specified in config, should be one of the following:" << std::endl;
 
-                for (auto it = stringTolocp_solver.begin(); it != stringTolocp_solver.end(); it++)
+                for (auto it = stringToLqocSolver.begin(); it != stringToLqocSolver.end(); it++)
                 {
                     std::cout << it->first << std::endl;
                 }
@@ -605,16 +661,26 @@ private:
 
 
     //! mappings for algorithm types
-    std::map<NLOCP_ALGORITHM, std::string> nlocp_algorithmToString = {{GNMS, "GNMS"}, {ILQR, "ILQR"}};
+    std::map<NLOCP_ALGORITHM, std::string> nlocAlgorithmToString = {{GNMS, "GNMS (Gauss-Newton Multiple Shooting)"},
+        {ILQR, "ILQR (iterative linear-quadratic optimal control)"}, {MS_ILQR, "MS_ILQR (multiple-shooting iLQR)"},
+        {SS_OL, "SS_OL (open-loop Single Shooting)"}, {SS_CL, "SS_CL (closed-loop Single Shooting)"},
+        {GNMS_M_OL, "GNMS_M_OL (GNMS(M) with open-loop shooting)"},
+        {GNMS_M_CL, "GNMS_M_CL (GNMS(M) with closed-loop shooting)"}};
 
-    std::map<std::string, NLOCP_ALGORITHM> stringTonlocp_algorithm = {{"GNMS", GNMS}, {"ILQR", ILQR}};
+    std::map<std::string, NLOCP_ALGORITHM> stringToNlocAlgorithm = {{"GNMS", GNMS}, {"ILQR", ILQR},
+        {"MS_ILQR", MS_ILQR}, {"SS_OL", SS_OL}, {"SS_CL", SS_CL}, {"GNMS_M_OL", GNMS_M_OL}, {"GNMS_M_CL", GNMS_M_CL}};
 
+    std::map<NLOCP_ALGORITHM, bool> nlocAlgorithmToClosedLoopShooting = {{GNMS, false}, {ILQR, true}, {MS_ILQR, true},
+        {SS_OL, false}, {SS_CL, true}, {GNMS_M_OL, false}, {GNMS_M_CL, true}};
+
+    std::map<NLOCP_ALGORITHM, bool> nlocAlgorithmToSingleShooting = {{GNMS, false}, {ILQR, true}, {MS_ILQR, false},
+        {SS_OL, true}, {SS_CL, true}, {GNMS_M_OL, false}, {GNMS_M_CL, false}};
 
     //! mappings for linear-quadratic solver types
-    std::map<LQOCP_SOLVER, std::string> locp_solverToString = {
+    std::map<LQOCP_SOLVER, std::string> lqocSolverToString = {
         {GNRICCATI_SOLVER, "GNRICCATI_SOLVER"}, {HPIPM_SOLVER, "HPIPM_SOLVER"}};
 
-    std::map<std::string, LQOCP_SOLVER> stringTolocp_solver = {
+    std::map<std::string, LQOCP_SOLVER> stringToLqocSolver = {
         {"GNRICCATI_SOLVER", GNRICCATI_SOLVER}, {"HPIPM_SOLVER", HPIPM_SOLVER}};
 };
 }  // namespace optcon

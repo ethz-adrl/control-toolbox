@@ -3,6 +3,11 @@ This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-t
 Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 #include <ct/rbd/rbd.h>
 
 #include <memory>
@@ -112,3 +117,6 @@ int main(int argc, char** argv)
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
+
+#pragma GCC diagnostic pop

@@ -174,9 +174,14 @@ public:
     void changeLinearSystem(const typename OptConProblem_t::LinearPtr_t& lin);
 
     /*!
-     * \brief Change the box constraints
+     * \brief Change the input box constraints
      */
-    void changeBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t& con);
+    void changeInputBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t& con);
+
+    /*!
+     * \brief Change the state box constraints
+     */
+    void changeStateBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t& con);
 
     /*!
      * \brief Change the general constraints
@@ -232,9 +237,11 @@ public:
      *
      * @return     The box constraint instances
      */
-    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances();
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances();
+    std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances();
 
-    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getBoxConstraintsInstances() const;
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances() const;
+    const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances() const;
 
     /**
      * @brief      Direct accessor to the general constraints
@@ -301,13 +308,18 @@ public:
      */
     virtual void prepareSolveLQProblem(size_t startIndex);
 
-
     virtual void finishSolveLQProblem(size_t endIndex);
 
     /*!
      * solve Full LQProblem, e.g. to be used with HPIPM or if we have a constrained problem
      */
     virtual void solveFullLQProblem();
+
+    /**
+     * @brief extract relevant quantities for the following rollout/solution update step from the LQ solver
+     * @note not all algorithms require all data updates, hence the separation.
+     */
+    void extractSolution();
 
     //! compute costs of solution candidate
     void updateCosts();
@@ -335,10 +347,8 @@ public:
     virtual void computeLQApproximation(size_t firstIndex, size_t lastIndex) = 0;
 
     //! sets the box constraints for the entire time horizon including terminal stage
-    void setBoxConstraintsForLQOCProblem();
-
-    //! obtain feedback update from lqoc solver, if provided
-    void getFeedback();
+    void setInputBoxConstraintsForLQOCProblem();
+    void setStateBoxConstraintsForLQOCProblem();
 
     //! reset all defects to zero
     void resetDefects();
@@ -400,7 +410,7 @@ protected:
 
     //! Computes the linearized Dynamics and quadratic cost approximation at a specific point of the trajectory
     /*!
-      This function calculates the affine dynamics approximation, i.e. matrices A, B and b in \f$ x_{n+1} = A_n x_n + B_n u_n + b_n \f$
+      This function calculates the affine dynamics approximation, i.e. matrices A, B and b in \f$ \delta x_{n+1} = A_n \delta x_n + B_n \delta u_n + b_n \f$
       at a specific point of the trajectory. This function also calculates the quadratic costs as provided by the costFunction pointer.
       and maps it into the coordinates of the LQ problem.
 
@@ -412,7 +422,7 @@ protected:
 
     //! Computes the linearized general constraints at a specific point of the trajectory
     /*!
-      This function calculates the linearization, i.e. matrices d, C and D in \f$ d_{lb} \leq C x + D u \leq d_{ub}\f$
+      This function calculates the linearization, i.e. matrices d, C and D in \f$ d_{lb} \leq C \delta x + D \delta u \leq d_{ub}\f$
       at a specific point of the trajectory
 
       \param threadId the id of the worker thread
@@ -490,8 +500,6 @@ protected:
     //! Check if controller with particular alpha is better
     void executeLineSearch(const size_t threadId,
         const scalar_t alpha,
-        const ControlVectorArray& u_ff_new,
-        const StateVectorArray& x_new,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_recorded,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_recorded,
         ct::core::StateVectorArray<STATE_DIM, SCALAR>& defects_recorded,
@@ -505,6 +513,17 @@ protected:
         ControlSubsteps& substepsU,
         std::atomic_bool* terminationFlag = nullptr) const;
 
+
+    //! in case of line-search compute new merit and check if to accept step. Returns true if accept step
+    bool acceptStep(
+        const SCALAR alpha,
+        const SCALAR intermediateCost,
+        const SCALAR finalCost,
+        const SCALAR defectNorm,
+        const SCALAR e_box_norm,
+        const SCALAR e_gen_norm,
+        const SCALAR lowestMeritPrevious,
+        SCALAR& new_merit);
 
     //! Update feedforward controller
     /*!
@@ -530,48 +549,39 @@ protected:
     template <size_t ORDER = 1>
     SCALAR computeDefectsNorm(const StateVectorArray& d) const;
 
-    //! The policy. currently only for returning the result, should eventually replace L_ and u_ff_ (todo)
-    NLOCBackendBase::Policy_t policy_;
-
-    ct::core::tpl::TimeArray<SCALAR> t_;  //! the time trajectory
-
     bool initialized_;
     bool configured_;
 
     size_t iteration_; /*!< current iteration */
 
+    bool firstRollout_;
+
     Settings_t settings_;
 
-    int K_;  //! the number of stages in the overall OptConProblem
+    int K_;                               //! the number of stages in the overall OptConProblem
+    ct::core::tpl::TimeArray<SCALAR> t_;  //! the time trajectory
+    StateVectorArray x_;                  //! state array variables
+    StateVectorArray xShot_;              //! rolled-out state (at the end of a time step forward)
+    StateVectorArray d_;                  //! defects in between end of rollouts and subsequent state decision vars
+    StateVectorArray x_prev_;             //! state array from previous iteration
+    StateVectorArray x_ref_lqr_;          //! reference for lqr
 
-    StateVectorArray x_;
-    StateVectorArray xShot_;
-    StateVectorArray x_prev_;
+    ControlVectorArray u_ff_;       //! feed forward controls
+    ControlVectorArray u_ff_prev_;  //! feed forward controls from previous iteration
+    FeedbackArray L_;               //! time-varying lqr feedback
 
-    ControlVectorArray u_ff_;
-    ControlVectorArray u_ff_prev_;
+    ControlVectorArray delta_u_ff_;     //! pointer to control increment
+    StateVectorArray delta_x_;          //! pointer to state increment
+    StateVectorArray delta_x_ref_lqr_;  //! state array from previous iteration
 
-    StateVectorArray d_; /*!< defects */
-
-    FeedbackArray L_;
+    StateSubstepsPtr substepsX_;    //! state substeps recorded by integrator during rollouts
+    ControlSubstepsPtr substepsU_;  //! control substeps recorded by integrator during rollouts
 
     SCALAR d_norm_;      //! sum of the norms of all defects (internal constraint)
     SCALAR e_box_norm_;  //! sum of the norms of all box constraint violations
     SCALAR e_gen_norm_;  //! sum of the norms of all general constraint violations
     SCALAR lx_norm_;     //! sum of the norms of state update
     SCALAR lu_norm_;     //! sum of the norms of control update
-
-    //! shared pointer to the linear-quadratic optimal control problem
-    std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>> lqocProblem_;
-
-    //! shared pointer to the linear-quadratic optimal control solver
-    std::shared_ptr<LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>> lqocSolver_;
-
-    StateSubstepsPtr substepsX_;
-    ControlSubstepsPtr substepsU_;
-
-    //! pointer to instance of the system interface
-    systemInterfacePtr_t systemInterface_;
 
     scalar_t intermediateCostBest_;
     scalar_t finalCostBest_;
@@ -581,29 +591,38 @@ protected:
     scalar_t intermediateCostPrevious_;
     scalar_t finalCostPrevious_;
 
+    scalar_t alphaBest_;
 
-//! if building with MATLAB support, include matfile
-#ifdef MATLAB
-    matlab::MatFile matFile_;
-#endif  //MATLAB
+    //! shared pointer to the linear-quadratic optimal control problem that is constructed by NLOC
+    std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>> lqocProblem_;
 
+    //! shared pointer to the linear-quadratic optimal control solver, that solves above LQOCP
+    std::shared_ptr<LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>> lqocSolver_;
+
+    //! pointer to instance of the system interface
+    systemInterfacePtr_t systemInterface_;
 
     /*!
      * of the following objects, we have nThreads+1 instantiations in form of a vector.
      * Every instantiation is dedicated to a certain thread in the multi-thread implementation
      */
     std::vector<typename OptConProblem_t::CostFunctionPtr_t> costFunctions_;
-    std::vector<typename OptConProblem_t::ConstraintPtr_t> boxConstraints_;
+    std::vector<typename OptConProblem_t::ConstraintPtr_t> inputBoxConstraints_;
+    std::vector<typename OptConProblem_t::ConstraintPtr_t> stateBoxConstraints_;
     std::vector<typename OptConProblem_t::ConstraintPtr_t> generalConstraints_;
-
-
-    bool firstRollout_;
-    scalar_t alphaBest_;
 
     //! a counter used to identify lqp problems in derived classes, i.e. for thread management in MP
     size_t lqpCounter_;
 
+    //! The policy. currently only for returning the result, should eventually replace L_ and u_ff_ (todo)
+    NLOCBackendBase::Policy_t policy_;
+
     SummaryAllIterations<SCALAR> summaryAllIterations_;
+
+    //! if building with MATLAB support, include matfile
+#ifdef MATLAB
+    matlab::MatFile matFile_;
+#endif  //MATLAB
 };
 
 

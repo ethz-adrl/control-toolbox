@@ -62,115 +62,109 @@ TEST(LinearSystemsTest, NLOCSolverTest)
     {
         nloc_settings.nlocp_algorithm = static_cast<NLOptConSettings::NLOCP_ALGORITHM>(algClass);
 
-        // change between closed-loop and open-loop
-        for (int toggleClosedLoop = 0; toggleClosedLoop <= 1; toggleClosedLoop++)
+        // switch line search on or off
+        for (int toggleLS = 0; toggleLS <= 1; toggleLS++)
         {
-            nloc_settings.closedLoopShooting = (bool)toggleClosedLoop;
+            nloc_settings.lineSearchSettings.type = static_cast<LineSearchSettings::TYPE>(toggleLS);
 
-            // switch line search on or off
-            for (int toggleLS = 0; toggleLS <= 1; toggleLS++)
+            // toggle between single and multi-threading
+            for (size_t nThreads = 1; nThreads < 5; nThreads = nThreads + 3)
             {
-                nloc_settings.lineSearchSettings.active = (bool)toggleLS;
+                nloc_settings.nThreads = nThreads;
 
-                // toggle between single and multi-threading
-                for (size_t nThreads = 1; nThreads < 5; nThreads = nThreads + 3)
+                // toggle between iLQR/GNMS and hybrid methods with K_shot !=1
+                for (size_t kshot = 1; kshot < 11; kshot = kshot + 9)
                 {
-                    nloc_settings.nThreads = nThreads;
+                    nloc_settings.K_shot = kshot;
 
-                    // toggle between iLQR/GNMS and hybrid methods with K_shot !=1
-                    for (size_t kshot = 1; kshot < 11; kshot = kshot + 9)
+                    if (kshot > 1 && nloc_settings.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
+                        continue;  // proceed to next test case
+
+                    // toggle sensitivity integrator
+                    for (size_t sensInt = 0; sensInt <= 1; sensInt++)
                     {
-                        nloc_settings.K_shot = kshot;
+                        nloc_settings.useSensitivityIntegrator = bool(sensInt);
 
-                        if (kshot > 1 && nloc_settings.nlocp_algorithm == NLOptConSettings::NLOCP_ALGORITHM::ILQR)
-                            continue;  // proceed to next test case
-
-                        // toggle sensitivity integrator
-                        for (size_t sensInt = 0; sensInt <= 1; sensInt++)
+                        // toggle over simulation time-steps
+                        for (size_t ksim = 1; ksim <= 5; ksim = ksim + 4)
                         {
-                            nloc_settings.useSensitivityIntegrator = bool(sensInt);
+                            nloc_settings.K_sim = ksim;
 
-                            // toggle over simulation time-steps
-                            for (size_t ksim = 1; ksim <= 5; ksim = ksim + 4)
+                            // catch special case, simulation sub-time steps only make sense when sensitivity integrator active
+                            if ((nloc_settings.useSensitivityIntegrator == false) && (ksim > 1))
+                                continue;  // proceed to next test case
+
+                            // toggle integrator type
+                            for (size_t integratortype = 0; integratortype <= 1; integratortype++)
                             {
-                                nloc_settings.K_sim = ksim;
-
-                                // catch special case, simulation sub-time steps only make sense when sensitivity integrator active
-                                if ((nloc_settings.useSensitivityIntegrator == false) && (ksim > 1))
+                                if (integratortype == 0)
+                                    nloc_settings.integrator = ct::core::IntegrationType::EULERCT;
+                                else if (integratortype == 1 && nloc_settings.useSensitivityIntegrator == true)
+                                {
+                                    // use RK4 with exactly integrated sensitivities
+                                    nloc_settings.integrator = ct::core::IntegrationType::RK4CT;
+                                }
+                                else
                                     continue;  // proceed to next test case
 
-                                // toggle integrator type
-                                for (size_t integratortype = 0; integratortype <= 1; integratortype++)
-                                {
-                                    if (integratortype == 0)
-                                        nloc_settings.integrator = ct::core::IntegrationType::EULERCT;
-                                    else if (integratortype == 1 && nloc_settings.useSensitivityIntegrator == true)
-                                    {
-                                        // use RK4 with exactly integrated sensitivities
-                                        nloc_settings.integrator = ct::core::IntegrationType::RK4CT;
-                                    }
-                                    else
-                                        continue;  // proceed to next test case
+                                //                                  nloc_settings.print();
 
-                                    //                                  nloc_settings.print();
+                                shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(
+                                    new LinearOscillator());
+                                shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(
+                                    new LinearOscillatorLinear());
+                                shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction =
+                                    tpl::createCostFunctionLinearOscillator<double>(x_final);
 
-                                    shared_ptr<ControlledSystem<state_dim, control_dim>> nonlinearSystem(
-                                        new LinearOscillator());
-                                    shared_ptr<LinearSystem<state_dim, control_dim>> analyticLinearSystem(
-                                        new LinearOscillatorLinear());
-                                    shared_ptr<CostFunctionQuadratic<state_dim, control_dim>> costFunction =
-                                        tpl::createCostFunctionLinearOscillator<double>(x_final);
+                                // times
+                                ct::core::Time tf = 1.0;
+                                size_t nSteps = nloc_settings.computeK(tf);
 
-                                    // times
-                                    ct::core::Time tf = 1.0;
-                                    size_t nSteps = nloc_settings.computeK(tf);
+                                // initial controller
+                                StateVectorArray<state_dim> x0(nSteps + 1, initState);
+                                ControlVector<control_dim> uff;
+                                uff << kStiffness * initState(0);
+                                ControlVectorArray<control_dim> u0(nSteps, uff);
 
-                                    // initial controller
-                                    StateVectorArray<state_dim> x0(nSteps + 1, initState);
-                                    ControlVector<control_dim> uff;
-                                    uff << kStiffness * initState(0);
-                                    ControlVectorArray<control_dim> u0(nSteps, uff);
+                                FeedbackArray<state_dim, control_dim> u0_fb(
+                                    nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
+                                ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
 
-                                    FeedbackArray<state_dim, control_dim> u0_fb(
-                                        nSteps, FeedbackMatrix<state_dim, control_dim>::Zero());
-                                    ControlVectorArray<control_dim> u0_ff(nSteps, ControlVector<control_dim>::Zero());
+                                NLOptConSolver::Policy_t initController(x0, u0, u0_fb, nloc_settings.dt);
 
-                                    NLOptConSolver::Policy_t initController(x0, u0, u0_fb, nloc_settings.dt);
-
-                                    // construct single-core single subsystem OptCon Problem
-                                    ContinuousOptConProblem<state_dim, control_dim> optConProblem(
-                                        tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
+                                // construct single-core single subsystem OptCon Problem
+                                ContinuousOptConProblem<state_dim, control_dim> optConProblem(
+                                    tf, x0[0], nonlinearSystem, costFunction, analyticLinearSystem);
 
 
-                                    NLOptConSolver solver(optConProblem, nloc_settings);
-                                    solver.configure(nloc_settings);
-                                    solver.setInitialGuess(initController);
+                                NLOptConSolver solver(optConProblem, nloc_settings);
+                                solver.configure(nloc_settings);
+                                solver.setInitialGuess(initController);
 
-                                    //! run two iterations to solve LQ problem
-                                    solver.runIteration();  // only this one should be required to solve LQ problem
-                                    solver.runIteration();
-                                    //! retrieve summary of the optimization
-                                    const SummaryAllIterations<double>& summary = solver.getBackend()->getSummary();
-                                    //! check that the policy improved in the first iteration
-                                    ASSERT_GT(summary.lx_norms.front(), 1e-9);
-                                    ASSERT_GT(summary.lu_norms.front(), 1e-9);
+                                //! run two iterations to solve LQ problem
+                                solver.runIteration();  // only this one should be required to solve LQ problem
+                                solver.runIteration();
+                                //! retrieve summary of the optimization
+                                const SummaryAllIterations<double>& summary = solver.getBackend()->getSummary();
+                                //! check that the policy improved in the first iteration
+                                ASSERT_GT(summary.lx_norms.front(), 1e-9);
+                                ASSERT_GT(summary.lu_norms.front(), 1e-9);
 
-                                    //! check that we are converged after the first iteration
-                                    ASSERT_LT(summary.lx_norms.back(), 1e-10);
-                                    ASSERT_LT(summary.lu_norms.back(), 1e-10);
-                                    ASSERT_LT(summary.defect_l1_norms.back(), 1e-10);
-                                    ASSERT_LT(summary.defect_l2_norms.back(), 1e-10);
+                                //! check that we are converged after the first iteration
+                                ASSERT_LT(summary.lx_norms.back(), 1e-10);
+                                ASSERT_LT(summary.lu_norms.back(), 1e-10);
+                                ASSERT_LT(summary.defect_l1_norms.back(), 1e-10);
+                                ASSERT_LT(summary.defect_l2_norms.back(), 1e-10);
 
-                                    testCounter++;
+                                testCounter++;
 
-                                }  // toggle integrator type
-                            }      // toggle simulation time steps
-                        }          // toggle sensitivity integrator
-                    }              // toggle k_shot
-                }                  // toggle multi-threading / single-threading
-            }                      // toggle line-search
-        }                          // toggle closed-loop
-    }                              // toggle solver class
+                            }  // toggle integrator type
+                        }      // toggle simulation time steps
+                    }          // toggle sensitivity integrator
+                }              // toggle k_shot
+            }                  // toggle multi-threading / single-threading
+        }                      // toggle line-search
+    }                          // toggle solver class
 
     std::cout << "Performed " << testCounter << " successful NLOC tests with linear systems" << std::endl;
 

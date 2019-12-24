@@ -6,6 +6,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #include <ct/core/templateDir.h>
 
+#ifdef CPPADCG
+
 namespace ct {
 namespace core {
 
@@ -271,3 +273,5 @@ private:
 
 }  // namespace core
 }  // namespace ct
+
+#endif

@@ -15,16 +15,21 @@
 class Masspoint : public ct::core::System<2>
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
     static const size_t STATE_DIM = 2;
 
     // constructor
     Masspoint(double mass, double d) : mass_(mass), d_(d) {}
+
     // copy constructor
     Masspoint(const Masspoint& other) : mass_(other.mass_), d_(other.d_) {}
+
     // destructor
-    ~Masspoint() {}
-    // clone method
-    Masspoint* clone()
+    ~Masspoint() = default;
+
+    // clone method for deep copying
+    Masspoint* clone() const override
     {
         return new Masspoint(*this);  // calls copy constructor
     }

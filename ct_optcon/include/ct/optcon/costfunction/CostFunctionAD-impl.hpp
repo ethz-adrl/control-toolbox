@@ -5,6 +5,8 @@
 
 #pragma once
 
+#ifdef CPPADCG
+
 namespace ct {
 namespace optcon {
 
@@ -359,3 +361,5 @@ CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::getFinalADTermByName(const std::
 }
 }  // namespace optcon
 }  // namespace ct
+
+#endif

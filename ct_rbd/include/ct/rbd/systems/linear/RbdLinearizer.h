@@ -17,7 +17,11 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #include <memory>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-value"
 #include <kindr/Core>
+#pragma GCC diagnostic pop
 
 template <int N>
 struct print_size_as_warning
@@ -98,8 +102,9 @@ public:
             kindr::EulerAnglesXyz<SCALAR> eulerXyz(x.template topRows<3>());
             kindr::RotationMatrix<SCALAR> R_WB_kindr(eulerXyz);
 
-            Eigen::Matrix<SCALAR, 3, 6> jacAngVel = jacobianOfAngularVelocityMapping(x.template topRows<3>(),
-                x.template segment<3>(STATE_DIM / 2)).transpose();
+            Eigen::Matrix<SCALAR, 3, 6> jacAngVel =
+                jacobianOfAngularVelocityMapping(x.template topRows<3>(), x.template segment<3>(STATE_DIM / 2))
+                    .transpose();
 
             //this->dFdx_.template block<3,3>(0,0) = -R_WB_kindr.toImplementation() * JacobianOfRotationMultiplyVector( x.template topRows<3>(), R_WB_kindr.toImplementation()*(x.template segment<3>(STATE_DIM/2) ));
             this->dFdx_.template block<3, 3>(0, 0) = jacAngVel.template block<3, 3>(0, 0);
@@ -278,5 +283,5 @@ private:
     }
 };
 
-}  // rbd
-}  // ct
+}  // namespace rbd
+}  // namespace ct

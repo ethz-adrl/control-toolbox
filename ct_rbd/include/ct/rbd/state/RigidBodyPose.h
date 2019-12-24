@@ -5,7 +5,11 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-value"
 #include <kindr/Core>
+#pragma GCC diagnostic pop
 
 namespace ct {
 namespace rbd {
@@ -100,11 +104,9 @@ public:
     {
     }
 
-    //RigidBodyPose(const Eigen::Vector3d& orientationEulerXyz, const Eigen::Vector3d& position, STORAGE_TYPE storage = QUAT);
-    //RigidBodyPose(const Eigen::Quaterniond& orientationQuat, const Eigen::Vector3d& position, STORAGE_TYPE storage = QUAT);
-
     //! destructor for a rigid body pose
-    ~RigidBodyPose() {}
+    ~RigidBodyPose() = default;
+
     inline bool isNear(const RigidBodyPose& rhs, const double& tol = 1e-10) const
     {
         return getRotationQuaternion().isNear(rhs.getRotationQuaternion(), tol) &&
@@ -215,7 +217,7 @@ public:
     {
         if (storedAsEuler())
         {
-            euler_ = kindr::EulerAnglesXyz<SCALAR>(quat);
+            euler_ = kindr::EulerAnglesXyz<SCALAR>(kindr::RotationQuaternion<SCALAR>(quat));
         }
         else
         {
@@ -241,13 +243,13 @@ public:
     /**
      * \brief This method returns the position of the Base frame in the inertia frame.
      */
-
     const Position3Tpl& position() const { return position_; }
+
     /**
      * \brief This method returns the position of the Base frame in the inertia frame.
      */
-
     Position3Tpl& position() { return position_; }
+
     /**
      * \brief This method returns the Base frame in a custom Frame specified in the Inertia Frame.
      */
@@ -400,6 +402,7 @@ public:
     }
 
     STORAGE_TYPE getStorageType() const { return storage_; }
+
 private:
     bool storedAsEuler() const
     {

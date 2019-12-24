@@ -11,31 +11,35 @@ namespace ct {
 namespace optcon {
 
 template <int STATE_DIM, int CONTROL_DIM>
-HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(const int N, const int nb, const int ng)
-    : N_(-1), nb_(1, nb), ng_(1, ng), x0_(nullptr), settings_(NLOptConSettings())
+HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(const int N, const int nbu, const int nbx, const int ng)
+    : N_(-1), nbu_(1, nbu), nbx_(1, nbx), ng_(1, ng), settings_(NLOptConSettings())
 {
-    // some zero variables
     hb0_.setZero();
     hr0_.setZero();
 
     // by default, set number of box and general constraints to zero
     if (N > 0)
-        setSolverDimensions(N, nb, ng);
+        setSolverDimensions(N, nbu, nbx, ng);
 
     configure(settings_);
 }
 
-
 template <int STATE_DIM, int CONTROL_DIM>
 HPIPMInterface<STATE_DIM, CONTROL_DIM>::~HPIPMInterface()
 {
+    // todo is there memory that needs to be freed?
 }
 
 template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setSolverDimensions(const int N, const int nb, const int ng)
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setSolverDimensions(const int N,
+    const int nbu,
+    const int nbx,
+    const int ng)
 {
-    nb_.resize(N + 1, nb);
-    ng_.resize(N + 1, ng);
+    nbu_.resize(N + 1, nbu);  // todo this is bad design, is there no other way to propagate the number of constraints?
+    nbx_.resize(N + 1, nbx);  // todo this is bad design, is there no other way to propagate the number of constraints?
+    ng_.resize(N + 1, ng);    // todo this is bad design, is there no other way to propagate the number of constraints?
+
     changeNumberOfStages(N);
     initializeAndAllocate();
 }
@@ -43,28 +47,52 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setSolverDimensions(const int N, co
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
 {
-    int qp_size = ::d_memsize_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
-    qp_mem_.resize(qp_size);
-    ::d_create_ocp_qp(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_, qp_mem_.data());
+    // allocate ocp dimensions
+    dim_size_ = d_ocp_qp_dim_memsize(N_);
+    dim_mem_ = malloc(dim_size_);
+    d_ocp_qp_dim_create(N_, &dim_, dim_mem_);
+    d_ocp_qp_dim_set_all(
+        nx_.data(), nu_.data(), nbx_.data(), nbu_.data(), ng_.data(), nsbx_.data(), nsbu_.data(), nsg_.data(), &dim_);
 
-    int qp_sol_size = ::d_memsize_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data());
-    qp_sol_mem_.resize(qp_sol_size);
-    ::d_create_ocp_qp_sol(N_, nx_.data(), nu_.data(), nb_.data(), ng_.data(), &qp_sol_, qp_sol_mem_.data());
+    // allocate ocp qp
+    int qp_size = ::d_ocp_qp_memsize(&dim_);
+    qp_mem_ = malloc(qp_size);
+    ::d_ocp_qp_create(&dim_, &qp_, qp_mem_);
+    ::d_ocp_qp_set_all(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(), hr_.data(),
+        hidxbx_.data(), hlbx_.data(), hubx_.data(), hidxbu_.data(), hlbu_.data(), hubu_.data(),  // box constraints
+        hC_.data(), hD_.data(), hlg_.data(), hug_.data(),                                        // gen constraints
+        hZl_.data(), hZu_.data(), hzl_.data(), hzu_.data(), hidxs_.data(), hlls_.data(), hlus_.data(), &qp_);
 
-    int ipm_size = ::d_memsize_ipm_hard_ocp_qp(&qp_, &arg_);
-    ipm_mem_.resize(ipm_size);
-    ::d_create_ipm_hard_ocp_qp(&qp_, &arg_, &workspace_, ipm_mem_.data());
+    // allocation for solution
+    int qp_sol_size = ::d_ocp_qp_sol_memsize(&dim_);
+    qp_sol_mem_ = malloc(qp_sol_size);
+    ::d_ocp_qp_sol_create(&dim_, &qp_sol_, qp_sol_mem_);
+
+    // ipm arg
+    int ipm_arg_size = ::d_ocp_qp_ipm_arg_memsize(&dim_);
+    ipm_arg_mem_ = malloc(ipm_arg_size);
+    ::d_ocp_qp_ipm_arg_create(&dim_, &arg_, ipm_arg_mem_);
+
+    ::d_ocp_qp_ipm_arg_set_default(mode_, &arg_);
+    ::d_ocp_qp_ipm_arg_set_iter_max(&settings_.lqoc_solver_settings.num_lqoc_iterations, &arg_);
+
+    // create workspace
+    int ipm_size = ::d_ocp_qp_ipm_ws_memsize(&dim_, &arg_);
+    ipm_mem_ = malloc(ipm_size);
+    ::d_ocp_qp_ipm_ws_create(&dim_, &arg_, &workspace_, ipm_mem_);
+
 
     if (settings_.lqoc_solver_settings.lqoc_debug_print)
     {
         std::cout << "HPIPM allocating memory for QP with time horizon: " << N_ << std::endl;
         for (int i = 0; i < N_ + 1; i++)
         {
-            std::cout << "HPIPM stage " << i << ": (nx, nu, nb, ng) : (" << nx_[i] << ", " << nu_[i] << ", " << nb_[i]
-                      << ", " << ng_[i] << ")" << std::endl;
+            std::cout << "HPIPM stage " << i << ": (nx, nu, nbu, nbx, ng) : (" << nx_[i] << ", " << nu_[i] << ", "
+                      << nbu_[i] << ", " << nbx_[i] << ", " << ng_[i] << ")" << std::endl;
         }
         std::cout << "HPIPM qp_size: " << qp_size << std::endl;
         std::cout << "HPIPM qp_sol_size: " << qp_sol_size << std::endl;
+        std::cout << "HPIPM ipm_arg_size: " << ipm_arg_size << std::endl;
         std::cout << "HPIPM ipm_size: " << ipm_size << std::endl;
     }
 }
@@ -74,12 +102,7 @@ template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configure(const NLOptConSettings& settings)
 {
     settings_ = settings;
-
-    arg_.iter_max = settings_.lqoc_solver_settings.num_lqoc_iterations;
-
-    arg_.alpha_min = 1e-8;  // todo review and make setting
-    arg_.mu_max = 1e-12;    // todo review and make setting
-    arg_.mu0 = 2.0;         // todo review and make setting
+    ::d_ocp_qp_ipm_arg_set_iter_max(&settings_.lqoc_solver_settings.num_lqoc_iterations, &arg_);
 }
 
 
@@ -117,14 +140,19 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
             d_print_mat(1, CONTROL_DIM, hr_[i], 1);
         }
 
-        printf("\nnb\n");
-        std::cout << nb_[i] << std::endl;
-        printf("\nhidxb_\n");
-        int_print_mat(1, nb_[i], hidxb_[i], 1);
-        printf("\nhd_lb_\n");
-        d_print_mat(1, nb_[i], hd_lb_[i], 1);
-        printf("\nhd_ub_\n");
-        d_print_mat(1, nb_[i], hd_ub_[i], 1);
+        printf("\nnbu\n");
+        std::cout << nbu_[i] << std::endl;
+        printf("\nhlbu_\n");
+        d_print_mat(1, nbu_[i], hlbu_[i], 1);
+        printf("\nhubu_\n");
+        d_print_mat(1, nbu_[i], hubu_[i], 1);
+
+        printf("\nnbx\n");
+        std::cout << nbx_[i] << std::endl;
+        printf("\nhlbx_\n");
+        d_print_mat(1, nbx_[i], hlbx_[i], 1);
+        printf("\nhubx_\n");
+        d_print_mat(1, nbx_[i], hubx_[i], 1);
 
         printf("\nng\n");
         std::cout << ng_[i] << std::endl;
@@ -132,162 +160,161 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         d_print_mat(ng_[i], STATE_DIM, hC_[i], ng_[i]);
         printf("\nD\n");
         d_print_mat(ng_[i], CONTROL_DIM, hD_[i], ng_[i]);
-        printf("\nhd_lg_\n");
-        d_print_mat(1, ng_[i], hd_lg_[i], 1);
-        printf("\nhd_ug_\n");
-        d_print_mat(1, ng_[i], hd_ug_[i], 1);
+        printf("\nhlg_\n");
+        d_print_mat(1, ng_[i], hlg_[i], 1);
+        printf("\nhug_\n");
+        d_print_mat(1, ng_[i], hug_[i], 1);
 
     }   // end optional printout
 #endif  // HPIPM_PRINT_MATRICES
 
-    // set pointers to optimal control problem
-    ::d_cvt_colmaj_to_ocp_qp(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(),
-        hr_.data(), hidxb_.data(), hd_lb_.data(), hd_ub_.data(), hC_.data(), hD_.data(), hd_lg_.data(), hd_ug_.data(),
-        &qp_);
 
     // solve optimal control problem
-    ::d_solve_ipm2_hard_ocp_qp(&qp_, &qp_sol_, &workspace_);
+    ::d_ocp_qp_ipm_solve(&qp_, &qp_sol_, &arg_, &workspace_);
+    ::d_ocp_qp_ipm_get_status(&workspace_, &hpipm_status_);
+
+    isLrInvComputed_ = false;
 
     // display iteration summary
     if (settings_.lqoc_solver_settings.lqoc_debug_print)
     {
+        printf("\nHPIPM returned with flag %i.\n", hpipm_status_);
+        if (hpipm_status_ == 0)
+        {
+            printf("\n -> QP solved!\n");
+        }
+        else if (hpipm_status_ == 1)
+        {
+            printf("\n -> Solver failed! Maximum number of iterations reached\n");
+        }
+        else if (hpipm_status_ == 2)
+        {
+            printf("\n -> Solver failed! Minimum step length reached\n");
+        }
+        else if (hpipm_status_ == 2)
+        {
+            printf("\n -> Solver failed! NaN in computations\n");
+        }
+        else
+        {
+            printf("\n -> Solver failed! Unknown return flag\n");
+        }
         printf("\nipm iter = %d\n", workspace_.iter);
         printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha\t\tmu\n");
         d_print_e_tran_mat(5, workspace_.iter, workspace_.stat, 5);
-
-        printSolution();
     }
-
-    // convert optimal control problem solution to standard column-major representation
-    ::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u_.data(), x_.data(), pi_.data(), lam_lb_.data(), lam_ub_.data(),
-        lam_lg_.data(), lam_ug_.data());
-
-    designFeedback();
 }
 
 template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::designFeedback()
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeStatesAndControls()
 {
-    LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
-    this->L_.resize(p.getNumberOfStages());
-
-    // for stage 0, HPIPM does not provide feedback, so we have to construct it
-
-    // step 1: reconstruct H[0]
-    Eigen::Matrix<double, control_dim, control_dim> Lr;
-    ::d_cvt_strmat2mat(Lr.rows(), Lr.cols(), &workspace_.L[0], 0, 0, Lr.data(), Lr.rows());
-    Eigen::Matrix<double, control_dim, control_dim> H;
-    H = Lr.template triangularView<Eigen::Lower>() * Lr.transpose();  // Lr is cholesky of H
-
-    // step2: reconstruct S[1]
-    Eigen::Matrix<double, state_dim, state_dim> Lq;
-    ::d_cvt_strmat2mat(Lq.rows(), Lq.cols(), &workspace_.L[1], control_dim, control_dim, Lq.data(), Lq.rows());
-    Eigen::Matrix<double, state_dim, state_dim> S;
-    S = Lq.template triangularView<Eigen::Lower>() * Lq.transpose();  // Lq is cholesky of S
-
-    // step3: compute G[0]
-    Eigen::Matrix<double, control_dim, state_dim> G;
-    G = p.P_[0];
-    G.noalias() += p.B_[0].transpose() * S * p.A_[0];
-
-    // step4: compute K[0]
-    this->L_[0] = (-H.inverse() * G);  // \todo use Lr here instead of H!
-
-    // for all other steps we can just read Ls
-    Eigen::Matrix<double, state_dim, control_dim> Ls;
-    for (int i = 1; i < this->lqocProblem_->getNumberOfStages(); i++)
+    // extract solution for x and u
+    for (int ii = 0; ii < N_; ii++)
     {
-        ::d_cvt_strmat2mat(Lr.rows(), Lr.cols(), &workspace_.L[i], 0, 0, Lr.data(), Lr.rows());
-        ::d_cvt_strmat2mat(Ls.rows(), Ls.cols(), &workspace_.L[i], Lr.rows(), 0, Ls.data(), Ls.rows());
-        this->L_[i] = (-Ls * Lr.partialPivLu().inverse()).transpose();
+        Eigen::Matrix<double, CONTROL_DIM, 1> u_sol;
+        ::d_ocp_qp_sol_get_u(ii, &qp_sol_, this->u_sol_[ii].data());
+    }
+    for (int ii = 0; ii <= N_; ii++)
+    {
+        Eigen::Matrix<double, STATE_DIM, 1> x_sol;
+        ::d_ocp_qp_sol_get_x(ii, &qp_sol_, this->x_sol_[ii].data());
+    }
+
+    // display iteration summary
+    if (settings_.lqoc_solver_settings.lqoc_debug_print)
+    {
+        printSolution();
     }
 }
 
+template <int STATE_DIM, int CONTROL_DIM>
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeLrInvArray()
+{
+    // extract data which is mandatory for computing either feedback or iLQR feedforward
+    Eigen::Matrix<double, control_dim, control_dim> Lr;
+    for (int i = 0; i < N_; i++)
+    {
+        ::d_ocp_qp_ipm_get_ric_Lr(i, &workspace_, Lr.data());
+        Lr_inv_[i] = (Lr.template triangularView<Eigen::Lower>())
+                         .solve(Eigen::Matrix<double, control_dim, control_dim>::Identity());
+    }
+    isLrInvComputed_ = true;
+}
+
+template <int STATE_DIM, int CONTROL_DIM>
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeFeedbackMatrices()
+{
+    if (isLrInvComputed_ == false)
+        computeLrInvArray();  // update Lr_inv_ first
+
+    LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
+    this->L_.resize(p.getNumberOfStages());
+
+    // for steps k=1,...,N-1 we can just read Ls, Lr_inv already has been computed
+    Eigen::Matrix<double, state_dim, control_dim> Ls;
+
+    for (int i = 1; i < this->lqocProblem_->getNumberOfStages(); i++)
+    {
+        ::d_ocp_qp_ipm_get_ric_Ls(i, &workspace_, Ls.data());
+        this->L_[i] = -(Ls * Lr_inv_[i]).transpose();
+    }
+
+    // for stage k=0, HPIPM does not have meaningful entries for Ls, so we have to manually design the feedback
+    // retrieve Riccati matrix for stage 1 (we call it S, others call it P)
+    Eigen::Matrix<double, state_dim, state_dim> S1;
+    ::d_ocp_qp_ipm_get_ric_P(1, &workspace_, S1.data());
+
+    // step2: compute G[0]
+    Eigen::Matrix<double, control_dim, state_dim> G;
+    G = p.P_[0];
+    G.noalias() += p.B_[0].transpose() * S1 * p.A_[0];
+
+    // step3: compute K[0] = H.inverse() * G
+    this->L_[0] = (-Lr_inv_[0].transpose() * Lr_inv_[0] * G);
+}
+
+template <int STATE_DIM, int CONTROL_DIM>
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::compute_lv()
+{
+    if (this->lqocProblem_->isConstrained())
+        throw std::runtime_error(
+            "Retrieving lv is not compatible with constraints in HPIPM. Switch to different algorithm, e.g. GNMS, "
+            "which does not require lv");
+
+    if (isLrInvComputed_ == false)
+        computeLrInvArray();  // update Lr_inv_ first
+
+    Eigen::Matrix<double, control_dim, 1> lr;
+    for (int i = 0; i < this->lqocProblem_->getNumberOfStages(); i++)
+    {
+        ::d_ocp_qp_ipm_get_ric_lr(i, &workspace_, lr.data());
+        this->lv_[i] = -Lr_inv_[i].transpose() * lr;
+    }
+}
 
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::printSolution()
 {
+#ifdef HPIPM_PRINT_MATRICES
     int ii;
 
-    ::d_cvt_ocp_qp_sol_to_colmaj(&qp_, &qp_sol_, u_.data(), x_.data(), pi_.data(), lam_lb_.data(), lam_ub_.data(),
-        lam_lg_.data(), lam_ug_.data());
-
-    printf("\nsolution\n\n");
-    printf("\nu\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, nu_[ii], u_[ii], 1);
-    printf("\nx\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, nx_[ii], x_[ii], 1);
-
-#ifdef HPIPM_PRINT_MATRICES
-    printf("\npi\n");
+    std::cout << "Solution for u: " << std::endl;
     for (ii = 0; ii < N_; ii++)
-        d_print_mat(1, nx_[ii + 1], pi_[ii], 1);
-    printf("\nlam_lb\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, nb_[ii], lam_lb_[ii], 1);
-    printf("\nlam_ub\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, nb_[ii], lam_ub_[ii], 1);
-    printf("\nlam_lg\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, ng_[ii], lam_lg_[ii], 1);
-    printf("\nlam_ug\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, ng_[ii], lam_ug_[ii], 1);
+    {
+        std::cout << this->u_sol_[ii].transpose() << std::endl;
+    }
 
-    printf("\nt_lb\n");
+    std::cout << "Solution for x: " << std::endl;
     for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, nb_[ii], (qp_sol_.t_lb + ii)->pa, 1);
-    printf("\nt_ub\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, nb_[ii], (qp_sol_.t_ub + ii)->pa, 1);
-    printf("\nt_lg\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, ng_[ii], (qp_sol_.t_lg + ii)->pa, 1);
-    printf("\nt_ug\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_mat(1, ng_[ii], (qp_sol_.t_ug + ii)->pa, 1);
-
-    printf("\nresiduals\n\n");
-    printf("\nres_g\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, nu_[ii] + nx_[ii], (workspace_.res_g + ii)->pa, 1);
-    printf("\nres_b\n");
-    for (ii = 0; ii < N_; ii++)
-        d_print_e_mat(1, nx_[ii + 1], (workspace_.res_b + ii)->pa, 1);
-    printf("\nres_m_lb\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, nb_[ii], (workspace_.res_m_lb + ii)->pa, 1);
-    printf("\nres_m_ub\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, nb_[ii], (workspace_.res_m_ub + ii)->pa, 1);
-    printf("\nres_m_lg\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, ng_[ii], (workspace_.res_m_lg + ii)->pa, 1);
-    printf("\nres_m_ug\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, ng_[ii], (workspace_.res_m_ug + ii)->pa, 1);
-    printf("\nres_d_lb\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, nb_[ii], (workspace_.res_d_lb + ii)->pa, 1);
-    printf("\nres_d_ub\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, nb_[ii], (workspace_.res_d_ub + ii)->pa, 1);
-    printf("\nres_d_lg\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, ng_[ii], (workspace_.res_d_lg + ii)->pa, 1);
-    printf("\nres_d_ug\n");
-    for (ii = 0; ii <= N_; ii++)
-        d_print_e_mat(1, ng_[ii], (workspace_.res_d_ug + ii)->pa, 1);
-    printf("\nres_mu\n");
-    printf("\n%e\n\n", workspace_.res_mu);
+    {
+        std::cout << this->x_sol_[ii].transpose() << std::endl;
+    }
 #endif  // HPIPM_PRINT_MATRICES
 
-    printf("\nipm iter = %d\n", workspace_.iter);
+    int iter;
+    ::d_ocp_qp_ipm_get_iter(&workspace_, &iter);
     printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha\t\tmu\n");
-    ::d_print_e_tran_mat(5, workspace_.iter, workspace_.stat, 5);
+    ::d_print_mat(5, iter, workspace_.stat, 5);
 }
 
 
@@ -298,65 +325,75 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
     // check if the number of stages N changed and adapt problem dimensions
     bool nStagesChanged = changeNumberOfStages(lqocProblem->getNumberOfStages());
 
-
     // WARNING: the allocation should in practice not have to happen during the loop.
     // If possible, prefer receding horizon MPC problems.
     // If the number of stages has changed, however, the problem needs to be re-built:
     if (nStagesChanged)
     {
         // update constraint configuration in case the horizon length has changed.
-        if (lqocProblem->isBoxConstrained())
-            configureBoxConstraints(lqocProblem);
+        if (lqocProblem->isInputBoxConstrained())
+            configureInputBoxConstraints(lqocProblem);
+
+        if (lqocProblem->isStateBoxConstrained())
+            configureStateBoxConstraints(lqocProblem);
 
         if (lqocProblem->isGeneralConstrained())
             configureGeneralConstraints(lqocProblem);
     }
 
     // setup unconstrained part of problem
-    setupCostAndDynamics(lqocProblem->x_, lqocProblem->u_, lqocProblem->A_, lqocProblem->B_, lqocProblem->b_,
-        lqocProblem->P_, lqocProblem->qv_, lqocProblem->Q_, lqocProblem->rv_, lqocProblem->R_);
-
+    setupCostAndDynamics(lqocProblem->A_, lqocProblem->B_, lqocProblem->b_, lqocProblem->P_, lqocProblem->qv_,
+        lqocProblem->Q_, lqocProblem->rv_, lqocProblem->R_);
 
     if (nStagesChanged)
-    {
         initializeAndAllocate();
+    else
+    {
+        // we need to call the setters to transform our data into HPIPM interal structures
+        ::d_ocp_qp_set_all(hA_.data(), hB_.data(), hb_.data(), hQ_.data(), hS_.data(), hR_.data(), hq_.data(),
+            hr_.data(), hidxbx_.data(), hlbx_.data(), hubx_.data(), hidxbu_.data(), hlbu_.data(), hubu_.data(),
+            hC_.data(), hD_.data(), hlg_.data(), hug_.data(), hZl_.data(), hZu_.data(), hzl_.data(), hzu_.data(),
+            hidxs_.data(), hlls_.data(), hlus_.data(), &qp_);
     }
 }
 
 
 template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureBoxConstraints(
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureInputBoxConstraints(
+    std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+{
+    // stages 1 to N
+    for (int i = 0; i < N_; i++)
+    {
+        nbu_[i] = lqocProblem->nbu_[i];
+
+        // set pointers to box constraint boundaries and sparsity pattern
+        hlbu_[i] = lqocProblem->u_lb_[i].data();
+        hubu_[i] = lqocProblem->u_ub_[i].data();
+        hidxbu_[i] = lqocProblem->u_I_[i].data();
+    }
+}
+
+
+template <int STATE_DIM, int CONTROL_DIM>
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureStateBoxConstraints(
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
 {
     // stages 1 to N
     for (int i = 0; i < N_ + 1; i++)
     {
-        nb_[i] = lqocProblem->nb_[i];
+        nbx_[i] = lqocProblem->nbx_[i];
 
         // set pointers to box constraint boundaries and sparsity pattern
-        hd_lb_[i] = lqocProblem->ux_lb_[i].data();
-        hd_ub_[i] = lqocProblem->ux_ub_[i].data();
-        hidxb_[i] = lqocProblem->ux_I_[i].data();
+        hlbx_[i] = lqocProblem->x_lb_[i].data();
+        hubx_[i] = lqocProblem->x_ub_[i].data();
+        hidxbx_[i] = lqocProblem->x_I_[i].data();
 
         // first stage requires special treatment as state is not a decision variable
         if (i == 0)
         {
-            nb_[i] = 0;
-            for (int j = 0; j < lqocProblem->nb_[i]; j++)
-            {
-                if (lqocProblem->ux_I_[i](j) < CONTROL_DIM)
-                    nb_[i]++;  // adapt number of constraints such that only controls are listed as decision vars
-                else
-                    break;
-            }
+            nbx_[i] = 0;
         }
-
-        // TODO clarify with Gianluca if we need to reset the lagrange multiplier
-        // before warmstarting (potentially wrong warmstart for the lambdas)
-
-        // direct pointers of lagrange mult to corresponding containers
-        lam_lb_[i] = cont_lam_lb_[i].data();
-        lam_ub_[i] = cont_lam_ub_[i].data();
     }
 }
 
@@ -366,51 +403,41 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
 {
     // HPIPM-specific correction for first-stage general constraint bounds
-    hd_lg_0_Eigen_ = lqocProblem->d_lb_[0] - lqocProblem->C_[0] * lqocProblem->x_[0];
-    hd_ug_0_Eigen_ = lqocProblem->d_ub_[0] - lqocProblem->C_[0] * lqocProblem->x_[0];
+    hd_lg_0_Eigen_ = lqocProblem->d_lb_[0];  // - lqocProblem->C_[0] * x0; // uncommented since x0=0
+    hd_ug_0_Eigen_ = lqocProblem->d_ub_[0];  // - lqocProblem->C_[0] * x0; // uncommented since x0=0
+
+    assert(ng_.size() == ((size_t)N_ + 1));
 
     for (int i = 0; i < N_ + 1; i++)  // (includes the terminal stage)
     {
-        // check dimensions
-        assert(lqocProblem->d_lb_[i].rows() == lqocProblem->d_ub_[i].rows());
-        assert(lqocProblem->d_lb_[i].rows() == lqocProblem->C_[i].rows());
-        assert(lqocProblem->d_lb_[i].rows() == lqocProblem->D_[i].rows());
-        assert(lqocProblem->C_[i].cols() == STATE_DIM);
-        assert(lqocProblem->D_[i].cols() == CONTROL_DIM);
-
         // get the number of constraints
         ng_[i] = lqocProblem->ng_[i];
+
+        lqocProblem->C_[i].resize(lqocProblem->ng_[i], STATE_DIM);
+        lqocProblem->D_[i].resize(lqocProblem->ng_[i], CONTROL_DIM);
+        lqocProblem->d_lb_[i].resize(lqocProblem->ng_[i], 1);
+        lqocProblem->d_ub_[i].resize(lqocProblem->ng_[i], 1);
 
         // set pointers to hpipm-style box constraint boundaries and sparsity pattern
         if (i == 0)
         {
-            hd_lg_[i] = hd_lg_0_Eigen_.data();
-            hd_ug_[i] = hd_ug_0_Eigen_.data();
+            hlg_[i] = hd_lg_0_Eigen_.data();
+            hug_[i] = hd_ug_0_Eigen_.data();
         }
         else
         {
-            hd_lg_[i] = lqocProblem->d_lb_[i].data();
-            hd_ug_[i] = lqocProblem->d_ub_[i].data();
+            hlg_[i] = lqocProblem->d_lb_[i].data();
+            hug_[i] = lqocProblem->d_ub_[i].data();
         }
+
         hC_[i] = lqocProblem->C_[i].data();
         hD_[i] = lqocProblem->D_[i].data();
-
-        // TODO clarify with Gianluca if we need to reset the lagrange multiplier
-        // before warmstarting (potentially wrong warmstart for the lambdas)
-
-        // direct pointers of lagrange mult to corresponding containers
-        cont_lam_lg_[i].resize(ng_[i]);  // todo avoid dynamic allocation (e.g. by defining a max. constraint dim)
-        cont_lam_ug_[i].resize(ng_[i]);  // todo avoid dynamic allocation (e.g. by defining a max. constraint dim)
-        lam_lg_[i] = cont_lam_lg_[i].data();
-        lam_ug_[i] = cont_lam_ug_[i].data();
     }
 }
 
 
 template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArray& x,
-    ControlVectorArray& u,
-    StateMatrixArray& A,
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateMatrixArray& A,
     StateControlMatrixArray& B,
     StateVectorArray& b,
     FeedbackArray& P,
@@ -422,17 +449,20 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
     if (N_ == -1)
         throw std::runtime_error("Time horizon not set, please set it first");
 
+    this->x_sol_[0].setZero();  // fixed intitial value problem (increment is zero)
+
+    // IMPORTANT: for hb_ and hr_, we need a HPIPM-specific correction for the first stage
+    hb0_ = b[0];   // + A[0] * x0; // uncommented since x0 = 0 in diff formulation
+    hr0_ = rv[0];  // + P[0] * x0; // uncommented since x0 = 0 in diff formulation
+
     // assign data for LQ problem
-
-    // set pointer to the initial state
-    this->x_sol_[0] = x[0];
-    x0_ = x[0].data();
-
     for (int i = 0; i < N_; i++)
     {
         hA_[i] = A[i].data();
         hB_[i] = B[i].data();
-        hb_[i] = b[i].data();
+
+        if (i > 0)
+            hb_[i] = b[i].data();  // do not mutate pointers for init stage
     }
 
     for (int i = 0; i < N_; i++)
@@ -441,21 +471,14 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateVectorArr
         hS_[i] = P[i].data();
         hR_[i] = R[i].data();
         hq_[i] = qv[i].data();
-        hr_[i] = rv[i].data();
+
+        if (i > 0)
+            hr_[i] = rv[i].data();  // do not mutate pointers for init stage
     }
 
     // terminal stage
     hQ_[N_] = Q[N_].data();
     hq_[N_] = qv[N_].data();
-
-    // IMPORTANT: for hb_ and hr_, we need a HPIPM-specific correction for the first stage
-    hb0_ = b[0] + A[0] * x[0];
-    hr0_ = rv[0] + P[0] * x[0];
-    hb_[0] = hb0_.data();
-    hr_[0] = hr0_.data();
-
-    // reset lqocProblem pointer, will get set in Base class if needed
-    this->lqocProblem_ = nullptr;
 }
 
 
@@ -467,15 +490,25 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
 
     N_ = N;
 
-    nx_.resize(N_ + 1, STATE_DIM);    // initialize number of states per stage
+    // resize control input variable counter
+    if (nu_.size() > 0)
+        nu_.back() = CONTROL_DIM;     // avoid error in case of increasing horizon
     nu_.resize(N_ + 1, CONTROL_DIM);  // initialize number of control inputs per stage
-    nb_.resize(N_ + 1, nb_.back());   // initialize number of box constraints per stage
-    ng_.resize(N_ + 1, ng_.back());   // initialize number of general constraints per stage
+    nu_[N_] = 0;                      // last input is not a decision variable
+
+    nx_.resize(N_ + 1, STATE_DIM);  // initialize number of states per stage
+    nx_[0] = 0;                     // initial state is not a decision variable but given
+
 
     // resize the containers for the affine system dynamics approximation
     hA_.resize(N_);
     hB_.resize(N_);
     hb_.resize(N_);
+
+    this->x_sol_.resize(N_ + 1);
+    this->u_sol_.resize(N_);
+    this->lv_.resize(N_);
+    this->L_.resize(N_);
 
     // resize the containers for the LQ cost approximation
     hQ_.resize(N_ + 1);
@@ -484,71 +517,50 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     hq_.resize(N_ + 1);
     hr_.resize(N_ + 1);
 
-    hd_lb_.resize(N_ + 1);
-    hd_ub_.resize(N_ + 1);
-    hidxb_.resize(N_ + 1);
-    hd_lg_.resize(N_ + 1);
-    hd_ug_.resize(N_ + 1);
+    // initialize number of box constraints per stage
+    nbu_.resize(N_ + 1, nbu_.back());
+    nbx_.resize(N_ + 1, nbx_.back());
+    hidxbx_.resize(N_ + 1);
+    hidxbu_.resize(N_ + 1);
+    hlbx_.resize(N_ + 1, 0);
+    hubx_.resize(N_ + 1, 0);
+    hlbu_.resize(N_ + 1, 0);
+    hubu_.resize(N_ + 1, 0);
+
+    // initialize number of gen constraints per stage
+    ng_.resize(N_ + 1, 0);
+    hlg_.resize(N_ + 1, 0);
+    hug_.resize(N_ + 1, 0);
     hC_.resize(N_ + 1);
     hD_.resize(N_ + 1);
 
-    u_.resize(N_ + 1);
-    x_.resize(N_ + 1);
-    pi_.resize(N_);
-    hpi_.resize(N_);
-    this->x_sol_.resize(N_ + 1);
-    this->u_sol_.resize(N_);
+    // currently ignored stuff (resized anyways)
+    nsbx_.resize(N_ + 1, 0);  // no softened state box constraints
+    nsbu_.resize(N_ + 1, 0);  // no softened input box constraints
+    nsg_.resize(N_ + 1, 0);   // no softened general constraints
 
-    lam_lb_.resize(N_ + 1);
-    lam_ub_.resize(N_ + 1);
-    lam_lg_.resize(N_ + 1);
-    lam_ug_.resize(N_ + 1);
-    cont_lam_lb_.resize(N_ + 1);
-    cont_lam_ub_.resize(N_ + 1);
-    cont_lam_lg_.resize(N_ + 1);
-    cont_lam_ug_.resize(N_ + 1);
+    hZl_.resize(N_ + 1, 0);
+    hZu_.resize(N_ + 1, 0);
+    hzl_.resize(N_ + 1, 0);
+    hzu_.resize(N_ + 1, 0);
 
-    for (int i = 0; i < N_; i++)
-    {
-        // first state and last input are not optimized
-        x_[i + 1] = this->x_sol_[i + 1].data();
-        u_[i] = this->u_sol_[i].data();
-    }
-    for (int i = 0; i < N_; i++)
-    {
-        pi_[i] = hpi_[i].data();
-    }
+    hidxs_.resize(N_ + 1, 0);
+
+    hlls_.resize(N_ + 1, 0);
+    hlus_.resize(N_ + 1, 0);
+
+    Lr_inv_.resize(N_);
+
+    // assignments that stay constant despite varying problem impl data
+    hb_[0] = hb0_.data();
+    hr_[0] = hr0_.data();
 
     hS_[N_] = nullptr;
     hR_[N_] = nullptr;
     hr_[N_] = nullptr;
 
-    hb_[0] = nullptr;
-    hr_[0] = nullptr;
-
-    ct::core::StateVectorArray<STATE_DIM> hx;
-    ct::core::ControlVectorArray<CONTROL_DIM> hu;
-
-    // initial state is not a decision variable but given
-    nx_[0] = 0;
-
-    // last input is not a decision variable
-    nu_[N] = 0;
-
     return true;
 }
-
-
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::d_zeros(double** pA, int row, int col)
-{
-    *pA = (double*)malloc((row * col) * sizeof(double));
-    double* A = *pA;
-    int i;
-    for (i = 0; i < row * col; i++)
-        A[i] = 0.0;
-}
-
 
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::d_print_mat(int m, int n, double* A, int lda)
@@ -559,38 +571,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::d_print_mat(int m, int n, double* A
         for (j = 0; j < n; j++)
         {
             printf("%9.5f ", A[i + lda * j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
-
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::d_print_tran_mat(int row, int col, double* A, int lda)
-{
-    int i, j;
-    for (j = 0; j < col; j++)
-    {
-        for (i = 0; i < row; i++)
-        {
-            printf("%9.5f ", A[i + lda * j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
-
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::d_print_e_mat(int m, int n, double* A, int lda)
-{
-    int i, j;
-    for (i = 0; i < m; i++)
-    {
-        for (j = 0; j < n; j++)
-        {
-            printf("%e\t", A[i + lda * j]);
         }
         printf("\n");
     }
@@ -615,18 +595,14 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::d_print_e_tran_mat(int row, int col
 
 
 template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::int_print_mat(int row, int col, int* A, int lda)
+const ct::core::ControlVectorArray<CONTROL_DIM>& HPIPMInterface<STATE_DIM, CONTROL_DIM>::get_lv()
 {
-    int i, j;
-    for (i = 0; i < row; i++)
-    {
-        for (j = 0; j < col; j++)
-        {
-            printf("%d ", A[i + lda * j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
+    if (this->lqocProblem_->isConstrained())
+        throw std::runtime_error(
+            "Retrieving lv is not compatible with constraints in HPIPM. Switch to different algorithm, e.g. GNMS, "
+            "which does not require lv");
+
+    return this->lv_;
 }
 
 }  // namespace optcon

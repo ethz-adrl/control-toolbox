@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
         std::shared_ptr<ct::optcon::CostFunctionAnalytical<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>> newCost(
             new ct::optcon::CostFunctionAnalytical<IPSystem::STATE_DIM, IPSystem::CONTROL_DIM>);
         size_t intTermID = newCost->addIntermediateTerm(termQuadInterm);
-        size_t finalTermID = newCost->addFinalTerm(termQuadFinal);
+        /*size_t finalTermID = */ newCost->addFinalTerm(termQuadFinal);
 
         ct::core::Time timeHorizon;
         InvertedPendulumNLOC::FeedbackArray::value_type fbD;

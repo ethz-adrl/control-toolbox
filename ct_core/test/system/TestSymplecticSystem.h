@@ -20,6 +20,8 @@ template <typename SCALAR>
 class TestSymplecticSystem : public SymplecticSystem<1, 1, 1, SCALAR>
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     static const size_t STATE_DIM = 2;
     static const size_t CONTROL_DIM = 1;
     static const size_t POS_DIM = 1;
@@ -34,13 +36,16 @@ public:
     }
 
     TestSymplecticSystem(const TestSymplecticSystem& arg) : SymplecticSystem<1, 1, 1, SCALAR>(arg), w_n_(arg.w_n_) {}
-    virtual ~TestSymplecticSystem() {}
+
+    virtual ~TestSymplecticSystem() = default;
+
     TestSymplecticSystem* clone() const override { return new TestSymplecticSystem(*this); }
+
     //! need to override this method for a symplectic system
     virtual void computePdot(const StateVector<POS_DIM + VEL_DIM, SCALAR>& x,
         const StateVector<VEL_DIM, SCALAR>& v,
         const ControlVector<CONTROL_DIM, SCALAR>& control,
-        StateVector<POS_DIM, SCALAR>& pDot)
+        StateVector<POS_DIM, SCALAR>& pDot) override
     {
         pDot(0) = v(0);
     }
@@ -49,7 +54,7 @@ public:
     virtual void computeVdot(const StateVector<POS_DIM + VEL_DIM, SCALAR>& x,
         const StateVector<POS_DIM, SCALAR>& p,
         const ControlVector<CONTROL_DIM, SCALAR>& control,
-        StateVector<VEL_DIM, SCALAR>& vDot)
+        StateVector<VEL_DIM, SCALAR>& vDot) override
     {
         vDot(0) = control(0) - w_n_ * w_n_ * p(0);
     }

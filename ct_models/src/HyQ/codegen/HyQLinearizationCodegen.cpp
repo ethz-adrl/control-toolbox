@@ -21,9 +21,6 @@ typedef ct::rbd::FloatingBaseFDSystem<ct::rbd::HyQ::tpl::Dynamics<SCALAR>, false
 const size_t state_dim = HyQSystemAD::STATE_DIM;
 const size_t control_dim = HyQSystemAD::CONTROL_DIM;
 
-// shortcut for number of joints
-const size_t njoints = HyQSystemAD::Kinematics::NJOINTS;
-
 
 void generateInverseDynamics()
 {
@@ -102,7 +99,7 @@ void generateFDLinearization(int argc, char* argv[])
         std::shared_ptr<ContactModel>(new ContactModel(SCALAR(5000.0), SCALAR(1000.0), SCALAR(100.0), SCALAR(100.0),
             SCALAR(-0.02), ContactModel::VELOCITY_SMOOTHING::SIGMOID, adSystem->dynamics().kinematicsPtr()));
 
-    bool useContactModel = (argc <= 2 || !std::string(argv[2]).compare("nocontact") == 0);
+    bool useContactModel = (argc <= 2 || !(std::string(argv[2]).compare("nocontact") == 0));
     std::cout << std::boolalpha << "using contact model: " << useContactModel << std::endl;
 
     // asign the contact model

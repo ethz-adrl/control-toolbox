@@ -144,7 +144,7 @@ NLOptConSolver<state_dim, control_dim> generateSolver(ContinuousOptConProblem<st
     nloc_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
     nloc_settings.lqoc_solver_settings.num_lqoc_iterations = 100;               // number of riccati sub-iterations
     nloc_settings.printSummary = false;
-    nloc_settings.lineSearchSettings.active = false;
+    nloc_settings.lineSearchSettings.type = LineSearchSettings::TYPE::NONE;
 
     // init controller
     size_t K = nloc_settings.computeK(timeHorizon);
@@ -207,7 +207,7 @@ TEST(Constrained_NLOC_Test, comparePureControlConstraints)
     boxConstraints->initialize();
 
     auto optConProblem_box = generateUnconstrainedOCP();
-    optConProblem_box.setBoxConstraints(boxConstraints);
+    optConProblem_box.setInputBoxConstraints(boxConstraints);
 
 
     // OPTION 2 - create constraint container for "general" constraints, same constraint objective
@@ -262,7 +262,7 @@ TEST(Constrained_NLOC_Test, comparePureStateConstraints)
     boxConstraints->initialize();
 
     auto optConProblem_box = generateUnconstrainedOCP();
-    optConProblem_box.setBoxConstraints(boxConstraints);
+    optConProblem_box.setStateBoxConstraints(boxConstraints);
 
 
     // OPTION 2 - create constraint container for "general" constraints, same constraint objective
@@ -295,74 +295,6 @@ TEST(Constrained_NLOC_Test, comparePureStateConstraints)
     compareSolutions(solution_box, solution_gen);
 }
 
-
-/*
- * This test makes sure NLOC throws an exception in case the ordering of the box constraints is wrong.
- */
-/*
-TEST(Constrained_NLOC_Test, checkBoxConstraintOrdering)
-{
-    // create constraint container for box constraints
-    std::shared_ptr<ConstraintContainerAnalytical<state_dim, control_dim>> boxConstraints_order1(
-        new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
-    std::shared_ptr<ConstraintContainerAnalytical<state_dim, control_dim>> boxConstraints_order2(
-        new ct::optcon::ConstraintContainerAnalytical<state_dim, control_dim>());
-
-    // create a box constraint on the state vector
-    Eigen::VectorXi sp_state(state_dim);
-    sp_state << 0, 1;
-    Eigen::VectorXd x_lb(1);
-    Eigen::VectorXd x_ub(1);
-    x_lb.setConstant(-0.2);
-    x_ub = -x_lb;
-    std::shared_ptr<StateConstraint<state_dim, control_dim>> stateConstraint(
-        new StateConstraint<state_dim, control_dim>(x_lb, x_ub, sp_state));
-    stateConstraint->setName("StateConstraint");
-
-
-    // create a box constraint on the control input
-    Eigen::VectorXi sp_control(control_dim);
-    sp_control << 1;
-    Eigen::VectorXd u_lb(control_dim);
-    Eigen::VectorXd u_ub(control_dim);
-    u_lb.setConstant(-0.5);
-    u_ub = -u_lb;
-    std::shared_ptr<ControlInputConstraint<state_dim, control_dim>> controlConstraint(
-        new ControlInputConstraint<state_dim, control_dim>(u_lb, u_ub, sp_control));
-    controlConstraint->setName("ControlInputConstraint");
-
-    // put in state constraints before box constraints
-    boxConstraints_order1->addIntermediateConstraint(stateConstraint, verbose);
-    boxConstraints_order1->addIntermediateConstraint(controlConstraint, verbose);
-    boxConstraints_order1->initialize();
-
-    // put in control constraints before state constraints
-    boxConstraints_order2->addIntermediateConstraint(controlConstraint, verbose);
-    boxConstraints_order2->addIntermediateConstraint(stateConstraint, verbose);
-    boxConstraints_order2->initialize();
-
-    auto optConProblem_order1 = generateUnconstrainedOCP();
-    auto optConProblem_order2 = generateUnconstrainedOCP();
-
-    optConProblem_order1.setBoxConstraints(boxConstraints_order1);
-    optConProblem_order2.setBoxConstraints(boxConstraints_order2);
-
-
-    // create solvers and solve
-    auto nloc_order1 = generateSolver(optConProblem_order1);
-    auto nloc_order2 = generateSolver(optConProblem_order2);
-
-    try
-    {
-        nloc_order1.solve();  // ... this should throw an exception, because of wrong box constraint ordering.
-        FAIL();
-    } catch (std::runtime_error& e)
-    {
-    }
-
-    ASSERT_NO_THROW(nloc_order2.solve());  // this should pass, has correct box constraint ordering.
-}
-*/
 
 int main(int argc, char** argv)
 {

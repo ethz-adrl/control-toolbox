@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#ifdef CPPAD
+
 #include <cppad/cppad.hpp>
 #include <Eigen/Core>
 
@@ -114,3 +116,5 @@ private:
 } /* namespace internal */
 } /* namespace core */
 } /* namespace ct */
+
+#endif

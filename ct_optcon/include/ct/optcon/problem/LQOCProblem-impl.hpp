@@ -11,8 +11,7 @@ namespace optcon {
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::LQOCProblem(int N)
-    : hasBoxConstraints_(false),  // by default, we assume the problem ins unconstrained
-      hasGenConstraints_(false)
+    : hasInputBoxConstraints_(false), hasStateBoxConstraints_(false), hasGenConstraints_(false)
 {
     changeNumStages(N);
 }
@@ -20,13 +19,19 @@ LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::LQOCProblem(int N)
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isConstrained() const
 {
-    return (isBoxConstrained() | isGeneralConstrained());
+    return (isInputBoxConstrained() | isStateBoxConstrained() | isGeneralConstrained());
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isBoxConstrained() const
+bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isInputBoxConstrained() const
 {
-    return hasBoxConstraints_;
+    return hasInputBoxConstraints_;
+}
+
+template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
+bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isStateBoxConstrained() const
+{
+    return hasStateBoxConstraints_;
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
@@ -50,9 +55,6 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumStages(int N)
     B_.resize(N);
     b_.resize(N + 1);
 
-    x_.resize(N + 1);
-    u_.resize(N);
-
     P_.resize(N);
     q_.resize(N + 1);
     qv_.resize(N + 1);
@@ -61,10 +63,15 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumStages(int N)
     rv_.resize(N);
     R_.resize(N);
 
-    ux_lb_.resize(N + 1);
-    ux_ub_.resize(N + 1);
-    ux_I_.resize(N + 1);
-    nb_.resize(N + 1);
+    x_lb_.resize(N + 1);
+    x_ub_.resize(N + 1);
+    x_I_.resize(N + 1);
+    u_lb_.resize(N);
+    u_ub_.resize(N);
+    u_I_.resize(N);
+
+    nbx_.resize(N + 1);
+    nbu_.resize(N);
 
     ng_.resize(N + 1);
     d_lb_.resize(N + 1);
@@ -80,8 +87,6 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero(const int& nGenConstr)
     A_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Zero());
     B_.setConstant(core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
     b_.setConstant(core::StateVector<STATE_DIM, SCALAR>::Zero());
-    x_.setConstant(core::StateVector<STATE_DIM, SCALAR>::Zero());
-    u_.setConstant(core::ControlVector<CONTROL_DIM, SCALAR>::Zero());
     P_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
     qv_.setConstant(core::StateVector<STATE_DIM, SCALAR>::Zero());
     Q_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Zero());
@@ -90,14 +95,16 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero(const int& nGenConstr)
     q_.setConstant((SCALAR)0.0);
 
     // reset the number of box constraints
+    std::fill(nbx_.begin(), nbx_.end(), 0);
+    std::fill(nbu_.begin(), nbu_.end(), 0);
 
     // reset general constraints
-    std::fill(nb_.begin(), nb_.end(), 0);
+    assert(ng_.size() == d_lb_.size());
     assert(d_lb_.size() == d_ub_.size());
     assert(d_lb_.size() == C_.size());
     assert(d_lb_.size() == D_.size());
     std::fill(ng_.begin(), ng_.end(), nGenConstr);
-    for (size_t i = 0; i < d_lb_.size(); i++)
+    for (size_t i = 0; i < ng_.size(); i++)
     {
         d_lb_[i].resize(nGenConstr, 1);
         d_lb_[i].setZero();
@@ -109,74 +116,132 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero(const int& nGenConstr)
         D_[i].setZero();
     }
 
-    hasBoxConstraints_ = false;
+    hasInputBoxConstraints_ = false;
+    hasStateBoxConstraints_ = false;
     hasGenConstraints_ = false;
 }
 
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateBoxConstraint(const int index,
+void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setInputBoxConstraint(const int index,
     const int nConstr,
-    const constr_vec_t& ux_lb,
-    const constr_vec_t& ux_ub,
-    const VectorXi& sp)
+    const constr_vec_t& u_lb,
+    const constr_vec_t& u_ub,
+    const VectorXi& sp,
+    const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_nom_abs)
 {
-    if ((ux_lb.rows() != ux_ub.rows()) | (ux_lb.size() != nConstr) | (sp.rows() != nConstr) |
-        (sp(sp.rows() - 1) > (STATE_DIM + CONTROL_DIM - 1)))
+    if ((u_lb.rows() != u_ub.rows()) | (u_lb.size() != nConstr) | (sp.rows() != nConstr) |
+        (sp(sp.rows() - 1) > (CONTROL_DIM - 1)))
     {
         std::cout << "n.o. constraints : " << nConstr << std::endl;
-        std::cout << "ux_lb : " << ux_lb.transpose() << std::endl;
-        std::cout << "ux_ub : " << ux_ub.transpose() << std::endl;
+        std::cout << "u_lb : " << u_lb.transpose() << std::endl;
+        std::cout << "u_ub : " << u_ub.transpose() << std::endl;
         std::cout << "sparsity : " << sp.transpose() << std::endl;
-        throw(std::runtime_error("LQOCProblem setIntermediateBoxConstraint: error in constraint config"));
+        throw(std::runtime_error("LQOCProblem setInputBoxConstraint: error in constraint config"));
     }
 
     if (index >= K_)
-        throw(std::runtime_error("LQOCProblem cannot set an intermediate Box constraint at time >= K_"));
+        throw(std::runtime_error("LQOCProblem cannot set an intermediate input Box constraint at time >= K_"));
 
-    nb_[index] = nConstr;
-    ux_lb_[index].template topRows(nConstr) = ux_lb;
-    ux_ub_[index].template topRows(nConstr) = ux_ub;
-    ux_I_[index].template topRows(nConstr) = sp;
+    nbu_[index] = nConstr;
 
-    hasBoxConstraints_ = true;
+    // loop through box constraints and assign bounds in differential format
+    for (int i = 0; i < nConstr; i++)
+    {
+        u_I_[index](i) = sp(i);
+        u_lb_[index](i) = u_lb(i) - u_nom_abs(sp(i));  // substract the corresponding entry in nom-control
+        u_ub_[index](i) = u_ub(i) - u_nom_abs(sp(i));  // substract the corresponding entry in nom-control
+    }
+    hasInputBoxConstraints_ = true;
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateBoxConstraints(const int nConstr,
-    const constr_vec_t& ux_lb,
-    const constr_vec_t& ux_ub,
-    const VectorXi& sp)
+void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setInputBoxConstraints(const int nConstr,
+    const constr_vec_t& u_lb,
+    const constr_vec_t& u_ub,
+    const VectorXi& sp,
+    const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_nom_abs)
 {
     for (int i = 0; i < K_; i++)
-        setIntermediateBoxConstraint(i, nConstr, ux_lb, ux_ub, sp);
+        setInputBoxConstraint(i, nConstr, u_lb, u_ub, sp, u_nom_abs[i]);
+}
+
+
+template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
+void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateStateBoxConstraint(const int index,
+    const int nConstr,
+    const constr_vec_t& x_lb,
+    const constr_vec_t& x_ub,
+    const VectorXi& sp,
+    const ct::core::StateVector<STATE_DIM, SCALAR>& x_nom_abs)
+{
+    if ((x_lb.rows() != x_ub.rows()) | (x_lb.size() != nConstr) | (sp.rows() != nConstr) |
+        (sp(sp.rows() - 1) > (STATE_DIM - 1)))
+    {
+        std::cout << "n.o. constraints : " << nConstr << std::endl;
+        std::cout << "x_lb : " << x_lb.transpose() << std::endl;
+        std::cout << "x_ub : " << x_ub.transpose() << std::endl;
+        std::cout << "sparsity : " << sp.transpose() << std::endl;
+        throw(std::runtime_error("LQOCProblem setIntermediateStateBoxConstraint: error in constraint config"));
+    }
+
+    if (index >= K_)
+        throw(std::runtime_error("LQOCProblem cannot set an intermediate state Box constraint at time >= K_"));
+
+    nbx_[index] = nConstr;
+
+    // loop through box constraints and assign bounds in differential format
+    for (int i = 0; i < nConstr; i++)
+    {
+        x_I_[index](i) = sp(i);
+        x_lb_[index](i) = x_lb(i) - x_nom_abs(sp(i));  // substract the corresponding entry in nom-state
+        x_ub_[index](i) = x_ub(i) - x_nom_abs(sp(i));  // substract the corresponding entry in nom-state
+    }
+
+    hasStateBoxConstraints_ = true;
+}
+
+template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
+void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateStateBoxConstraints(const int nConstr,
+    const constr_vec_t& x_lb,
+    const constr_vec_t& x_ub,
+    const VectorXi& sp,
+    const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_nom_abs)
+{
+    for (int i = 0; i < K_; i++)
+        setIntermediateStateBoxConstraint(i, nConstr, x_lb, x_ub, sp, x_nom_abs[i]);
 }
 
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setTerminalBoxConstraints(const int nConstr,
-    const constr_vec_t& ux_lb,
-    const constr_vec_t& ux_ub,
-    const VectorXi& sp)
+    const constr_vec_t& x_lb,
+    const constr_vec_t& x_ub,
+    const VectorXi& sp,
+    const ct::core::StateVector<STATE_DIM, SCALAR>& x_nom_abs)
 {
     if (nConstr > 0)
     {
-        if ((ux_lb.rows() != ux_ub.rows()) | (ux_lb.size() != nConstr) | (sp.rows() != nConstr) |
+        if ((x_lb.rows() != x_ub.rows()) | (x_lb.size() != nConstr) | (sp.rows() != nConstr) |
             (sp(sp.rows() - 1) > (STATE_DIM - 1)))
         {
             std::cout << "n.o. constraints : " << nConstr << std::endl;
-            std::cout << "ux_lb : " << ux_lb.transpose() << std::endl;
-            std::cout << "ux_ub : " << ux_ub.transpose() << std::endl;
+            std::cout << "ux_lb : " << x_lb.transpose() << std::endl;
+            std::cout << "ux_ub : " << x_ub.transpose() << std::endl;
             std::cout << "sparsity : " << sp.transpose() << std::endl;
             throw(std::runtime_error("LQOCProblem setTerminalBoxConstraint: error in constraint config"));
         }
 
-        nb_[K_] = nConstr;
-        ux_lb_[K_].template topRows(nConstr) = ux_lb;
-        ux_ub_[K_].template topRows(nConstr) = ux_ub;
-        ux_I_[K_].template topRows(nConstr) = sp;
+        nbx_[K_] = nConstr;
 
-        hasBoxConstraints_ = true;
+        // loop through box constraints and assign bounds in differential format
+        for (int i = 0; i < nConstr; i++)
+        {
+            x_I_[K_](i) = sp(i);
+            x_lb_[K_](i) = x_lb(i) - x_nom_abs(sp(i));  // substract the corresponding entry in nom-state
+            x_ub_[K_](i) = x_ub(i) - x_nom_abs(sp(i));  // substract the corresponding entry in nom-state
+        }
+        hasStateBoxConstraints_ = true;
     }
 }
 
@@ -197,17 +262,15 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(const co
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuadraticProblem(
-    ct::core::StateVector<STATE_DIM, SCALAR>& x0,
-    ct::core::ControlVector<CONTROL_DIM, SCALAR>& u0,
     ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
     ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
-    ct::core::StateVector<STATE_DIM, SCALAR>& offset,
-    double dt)
+    const ct::core::StateVector<STATE_DIM, SCALAR>& offset,
+    const double dt)
 {
     setZero();
 
-    x_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_ + 1, x0);
-    u_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, u0);
+    core::StateVector<STATE_DIM, SCALAR> x0; x0.setZero(); // by definition
+    core::ControlVector<CONTROL_DIM, SCALAR> u0; u0.setZero(); // by definition
 
     core::StateMatrix<STATE_DIM, SCALAR> A;
     core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B;
@@ -215,7 +278,7 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
 
     A_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_, A);
     B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, B);
-    b_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_ + 1, offset + x0 - A * x0 - B * u0);
+    b_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_ + 1, offset);
 
     // feed current state and control to cost function
     costFunction.setCurrentStateAndControl(x0, u0, 0);
@@ -226,16 +289,15 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
         core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, costFunction.stateControlDerivativeIntermediate() * dt);
     R_ = core::ControlMatrixArray<CONTROL_DIM, SCALAR>(K_, costFunction.controlSecondDerivativeIntermediate() * dt);
 
-    qv_ = core::StateVectorArray<STATE_DIM, SCALAR>(
-        K_ + 1, costFunction.stateDerivativeIntermediate() * dt - Q_.front() * x0 - P_.front().transpose() * u0);
-    rv_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(
-        K_, costFunction.controlDerivativeIntermediate() * dt - R_.front() * u0 - P_.front() * x0);
+    qv_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_ + 1, costFunction.stateDerivativeIntermediate() * dt);
+    rv_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, costFunction.controlDerivativeIntermediate() * dt);
 
     // final stage
     Q_[K_] = costFunction.stateSecondDerivativeTerminal();
-    qv_[K_] = costFunction.stateDerivativeTerminal() - Q_[K_] * x0;
+    qv_[K_] = costFunction.stateDerivativeTerminal();
 
-    hasBoxConstraints_ = false;
+    hasInputBoxConstraints_ = false;
+    hasStateBoxConstraints_ = false;
     hasGenConstraints_ = false;
 }
 
