@@ -1,5 +1,5 @@
 # Control Toolbox
-![Travis (.org) branch](https://img.shields.io/travis/ethz-adrl/control-toolbox/3.0.2.svg?style=popout-square)
+![Travis (.org) branch](https://img.shields.io/travis/ethz-adrl/control-toolbox/v3.0.2.svg?style=popout-square)
 ![GitHub top language](https://img.shields.io/github/languages/top/ethz-adrl/control-toolbox.svg?style=social)
 ![GitHub](https://img.shields.io/github/license/ethz-adrl/control-toolbox.svg?style=social)
 
@@ -28,12 +28,13 @@ The CT was designed with the following features in mind:
     - intuitive modelling of cost functions and constraints
     - common interfaces for optimal control solvers and nonlinear model predictive control
     - currently supported algorithms:
-      - Single Shooting
-      - iLQR
- 	  - Gauss-Newton-Multiple-Shooting (GNMS)
- 	  - Classical Direct Multiple Shooting (DMS)
- 	- standardized interfaces for the solvers
- 	  - IPOPT (first and second order)
+      - Classical Single Shooting
+      - iLQR / iLQG (iterative Linear Quadratic Optimal Control)
+      - Multiple-shooting iLQR
+      - Gauss-Newton-Multiple-Shooting (GNMS)
+      - Classical Direct Multiple Shooting (DMS)
+    - standardized interfaces for the solvers
+      - IPOPT (first and second order)
       - SNOPT
       - HPIPM
       - custom Riccati-solver
@@ -42,17 +43,13 @@ The CT was designed with the following features in mind:
  	- solve large scale optimal control problems in MPC fashion. 
   
  - **Robot Modelling, Rigid Body Kinematics and Dynamics**: 
-    - straight-forward interface to a state-of the art rigid body dynamics modelling tool.
-	- implementation of a basic nonlinear-programming-based inverse kinematics solver.
+    - straight-forward interface to the state-of the art rigid body dynamics modelling tool RobCoGen.
+	- implementation of a basic nonlinear-programming inverse kinematics solver for fix-base robots.
  
  - **Automatic Differentiation**:
     - first- and second order automatic differentiation of arbitrary vector-valued functions including cost functions and constraints
-    - automatic differentiation of rigid body dynamics
+    - automatic differentiation and code generation of rigid body dynamics
     - derivative code generation for maximum efficiency
- 
- - **Simplicity**: 
-    - all algorithm flavors and solver backends are available through simple configuration files.
-
 
 
 ## Robot Application Examples
@@ -220,7 +217,7 @@ To get started with the control toolbox, please build the repository documentati
 ## Acknowledgements
 
 ### Contributors
- - Markus Giftthaler
+ - Markus Giftthaler, markusgft (at) gmail (dot) com
  - Michael Neunert
  - Markus Stäuble
  - Farbod Farshidian
@@ -230,9 +227,9 @@ To get started with the control toolbox, please build the repository documentati
  - Ruben Grandia
  - Hamza Merzic
  
-### Project Lead and Maintenance
+### Maintenance
  - Markus Giftthaler, markusgft (at) gmail (dot) com
- - Michael Neunert, neunertm (at) gmail (dot) com
+
 
 ### Funding
 This software has been developed at the <a href="http://www.adrl.ethz.ch" target="_blank">Agile & Dexterous Robotics Lab</a> 
