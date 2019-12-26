@@ -56,6 +56,10 @@ The CT was designed with the following features in mind:
 
 The Control Toolbox has been used for Hardware and Simulation control tasks on flying, walking and ground robots.
 
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=Y7-1CBqs4x4" target="_blank"><img src="http://img.youtube.com/vi/Y7-1CBqs4x4/0.jpg" 
+alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
+
+
 [![ct example](https://img.youtube.com/vi/Y7-1CBqs4x4/0.jpg)](https://www.youtube.com/embed/Y7-1CBqs4x4)
 [![ct_example](https://img.youtube.com/vi/vuCSKtP67E4/0.jpg)](https://www.youtube.com/embed/vuCSKtP67E4)
 [![ct_example](https://img.youtube.com/vi/rWmw-ERGyz4/0.jpg)](https://www.youtube.com/embed/rWmw-ERGyz4)
