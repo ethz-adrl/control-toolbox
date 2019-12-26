@@ -62,7 +62,7 @@ alt="Control Toolbox example video" width="360" height="270" border="10" /></a>
 alt="Control Toolbox example video" width="360" height="270" border="10" /></a>
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=rWmw-ERGyz4" target="_blank"><img src="http://img.youtube.com/vi/rWmw-ERGyz4/0.jpg" 
-alt="Control Toolbox example video width="360" height="270" border="10" /></a>
+alt="Control Toolbox example video" width="360" height="270" border="10" /></a>
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=rVu1L_tPCoM" target="_blank"><img src="http://img.youtube.com/vi/rVu1L_tPCoM/0.jpg" 
 alt="Control Toolbox example video" width="360" height="270" border="10" /></a>
 
