@@ -10,8 +10,7 @@ namespace optcon {
 
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::LQOCProblem(int N)
-    : hasInputBoxConstraints_(false), hasStateBoxConstraints_(false), hasGenConstraints_(false)
+LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::LQOCProblem(int N) : nbu_(N, 0), nbx_(N + 1, 0)
 {
     changeNumStages(N);
 }
@@ -21,23 +20,31 @@ bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isConstrained() const
 {
     return (isInputBoxConstrained() | isStateBoxConstrained() | isGeneralConstrained());
 }
-
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isInputBoxConstrained() const
 {
-    return hasInputBoxConstraints_;
+    if (std::accumulate(nbu_.begin(), nbu_.end(), 0) > 0)
+        return true;
+
+    return false;
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isStateBoxConstrained() const
 {
-    return hasStateBoxConstraints_;
+    if (std::accumulate(nbx_.begin(), nbx_.end(), 0) > 0)
+        return true;
+
+    return false;
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isGeneralConstrained() const
 {
-    return hasGenConstraints_;
+    if (std::accumulate(ng_.begin(), ng_.end(), 0) > 0)
+        return true;
+
+    return false;
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
@@ -115,10 +122,6 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero(const int& nGenConstr)
         D_[i].resize(nGenConstr, CONTROL_DIM);
         D_[i].setZero();
     }
-
-    hasInputBoxConstraints_ = false;
-    hasStateBoxConstraints_ = false;
-    hasGenConstraints_ = false;
 }
 
 
@@ -152,7 +155,6 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setInputBoxConstraint(const in
         u_lb_[index](i) = u_lb(i) - u_nom_abs(sp(i));  // substract the corresponding entry in nom-control
         u_ub_[index](i) = u_ub(i) - u_nom_abs(sp(i));  // substract the corresponding entry in nom-control
     }
-    hasInputBoxConstraints_ = true;
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
@@ -197,8 +199,6 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateStateBoxConstra
         x_lb_[index](i) = x_lb(i) - x_nom_abs(sp(i));  // substract the corresponding entry in nom-state
         x_ub_[index](i) = x_ub(i) - x_nom_abs(sp(i));  // substract the corresponding entry in nom-state
     }
-
-    hasStateBoxConstraints_ = true;
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
@@ -241,7 +241,6 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setTerminalBoxConstraints(cons
             x_lb_[K_](i) = x_lb(i) - x_nom_abs(sp(i));  // substract the corresponding entry in nom-state
             x_ub_[K_](i) = x_ub(i) - x_nom_abs(sp(i));  // substract the corresponding entry in nom-state
         }
-        hasStateBoxConstraints_ = true;
     }
 }
 
@@ -255,8 +254,6 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(const co
     d_ub_.setConstant(d_ub);
     C_.setConstant(C);
     D_.setConstant(D);
-
-    hasGenConstraints_ = true;
 }
 
 
@@ -269,8 +266,10 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
 {
     setZero();
 
-    core::StateVector<STATE_DIM, SCALAR> x0; x0.setZero(); // by definition
-    core::ControlVector<CONTROL_DIM, SCALAR> u0; u0.setZero(); // by definition
+    core::StateVector<STATE_DIM, SCALAR> x0;
+    x0.setZero();  // by definition
+    core::ControlVector<CONTROL_DIM, SCALAR> u0;
+    u0.setZero();  // by definition
 
     core::StateMatrix<STATE_DIM, SCALAR> A;
     core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B;
@@ -295,10 +294,6 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
     // final stage
     Q_[K_] = costFunction.stateSecondDerivativeTerminal();
     qv_[K_] = costFunction.stateDerivativeTerminal();
-
-    hasInputBoxConstraints_ = false;
-    hasStateBoxConstraints_ = false;
-    hasGenConstraints_ = false;
 }
 
 }  // namespace optcon

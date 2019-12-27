@@ -65,7 +65,7 @@ public:
     using box_constr_sparsity_t = Eigen::Matrix<int, max_box_constr_dim, 1>;
 
     //! constructor
-    HPIPMInterface(const int N = -1, const int nbu = 0, const int nbx = 0, const int ng = 0);
+    HPIPMInterface();
 
     //! destructor
     virtual ~HPIPMInterface();
@@ -81,13 +81,13 @@ public:
     void printSolution();
 
     //! brief setup and configure the box constraints
-    virtual void configureInputBoxConstraints(
+    virtual bool configureInputBoxConstraints(
         std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
-    virtual void configureStateBoxConstraints(
+    virtual bool configureStateBoxConstraints(
         std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
 
     //! brief setup and configure the general (in)equality constraints
-    virtual void configureGeneralConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
+    virtual bool configureGeneralConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
 
     /*!
      * @brief allocate memory for HPIPM
@@ -147,10 +147,10 @@ private:
         ControlMatrixArray& R);
 
     /*!
-     * @brief change number of states of the optimal control problem
-     * @return true if number of stages changed, false if number of stages is unchanged.
+     * @brief change the size of the optimal control problem
+     * @return true if the problem size changed, otherwise return false
      */
-    bool changeNumberOfStages(int N);
+    bool changeProblemSize(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem);
 
     /**
      * @brief compute the array of inverses of the Lr-matrix from the cholesky factorization of the Hessian
@@ -246,7 +246,6 @@ private:
     // todo make this a setting
     ::hpipm_mode mode_ = ::hpipm_mode::SPEED;  // ROBUST/BALANCED; see also hpipm_common.h
 };
-
 
 }  // namespace optcon
 }  // namespace ct

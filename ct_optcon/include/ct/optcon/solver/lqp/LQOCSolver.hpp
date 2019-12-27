@@ -48,18 +48,21 @@ public:
     virtual void configure(const NLOptConSettings& settings) = 0;
 
     //! setup and configure the box constraints
-    virtual void configureInputBoxConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+    // return true if configuration changed, otherwise false
+    virtual bool configureInputBoxConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
     {
         throw std::runtime_error("input box constraints are not available for this solver.");
     }
 
-    virtual void configureStateBoxConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+    // return true if configuration changed, otherwise false
+    virtual bool configureStateBoxConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
     {
         throw std::runtime_error("state box constraints are not available for this solver.");
     }
 
     //! setup and configure the general (in)equality constraints
-    virtual void configureGeneralConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+    // return true if configuration changed, otherwise false
+    virtual bool configureGeneralConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
     {
         throw std::runtime_error("general constraints are not available for this solver.");
     }

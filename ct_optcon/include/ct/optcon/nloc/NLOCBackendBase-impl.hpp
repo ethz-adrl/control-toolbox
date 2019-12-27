@@ -69,12 +69,18 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::NLOCB
 
     // if the optimal problem has constraints, change
     if (systemInterface_->getOptConProblem().getInputBoxConstraints())
+    {
         changeInputBoxConstraints(systemInterface_->getOptConProblem().getInputBoxConstraints());
+    }
     if (systemInterface_->getOptConProblem().getStateBoxConstraints())
+    {
         changeStateBoxConstraints(systemInterface_->getOptConProblem().getStateBoxConstraints());
+    }
 
     if (systemInterface_->getOptConProblem().getGeneralConstraints())
+    {
         changeGeneralConstraints(systemInterface_->getOptConProblem().getGeneralConstraints());
+    }
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
@@ -287,8 +293,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
 
     setInputBoxConstraintsForLQOCProblem();
-    lqocSolver_->configureInputBoxConstraints(lqocProblem_);
-    lqocSolver_->initializeAndAllocate();  // todo - this is not nice
 }
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
@@ -311,8 +315,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         computeBoxConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_box_norm_);
 
     setStateBoxConstraintsForLQOCProblem();
-    lqocSolver_->configureStateBoxConstraints(lqocProblem_);
-    lqocSolver_->initializeAndAllocate();  // todo - this is not nice
 }
 
 
@@ -352,8 +354,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     lqocProblem_->d_ub_[K_].resize(lqocProblem_->ng_[K_], 1);
 
     lqocSolver_->setProblem(lqocProblem_);
-    lqocSolver_->configureGeneralConstraints(lqocProblem_);
-    lqocSolver_->initializeAndAllocate();
 
     // TODO can we do this multi-threaded?
     if (iteration_ > 0 && (settings_.lineSearchSettings.type != LineSearchSettings::TYPE::NONE))
@@ -803,7 +803,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         p.ng_[k] = generalConstraints_[threadId]->getIntermediateConstraintsCount();
         if (p.ng_[k] > 0)
         {
-            p.hasGenConstraints_ = true;
             p.C_[k] = generalConstraints_[threadId]->jacobianStateIntermediate();
             p.D_[k] = generalConstraints_[threadId]->jacobianInputIntermediate();
 
@@ -835,7 +834,6 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         p.ng_[K_] = generalConstraints_[settings_.nThreads]->getTerminalConstraintsCount();
         if (p.ng_[K_] > 0)
         {
-            p.hasGenConstraints_ = true;
             p.C_[K_] = generalConstraints_[settings_.nThreads]->jacobianStateTerminal();
             p.D_[K_] = generalConstraints_[settings_.nThreads]->jacobianInputTerminal();
 
@@ -1284,7 +1282,10 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     lqpCounter_++;
 
     // if solver is HPIPM, there's nothing to prepare
-    if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER) {}
+    if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::HPIPM_SOLVER)
+    {
+        // do nothing
+    }
     // if solver is GNRiccati - we iterate backward up to the first stage
     else if (settings_.lqocp_solver == Settings_t::LQOCP_SOLVER::GNRICCATI_SOLVER)
     {
@@ -1327,28 +1328,6 @@ template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, type
 void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::solveFullLQProblem()
 {
     lqpCounter_++;
-
-    if (lqocProblem_->isInputBoxConstrained())
-    {
-        if (settings_.debugPrint)
-            std::cout << "LQ Problem has input box constraints. Configuring box constraints now. " << std::endl;
-
-        lqocSolver_->configureInputBoxConstraints(lqocProblem_);
-    }
-    if (lqocProblem_->isStateBoxConstrained())
-    {
-        if (settings_.debugPrint)
-            std::cout << "LQ Problem has state box constraints. Configuring box constraints now. " << std::endl;
-
-        lqocSolver_->configureStateBoxConstraints(lqocProblem_);
-    }
-    if (lqocProblem_->isGeneralConstrained())
-    {
-        if (settings_.debugPrint)
-            std::cout << "LQ Problem has general constraints. Configuring general constraints now. " << std::endl;
-
-        lqocSolver_->configureGeneralConstraints(lqocProblem_);
-    }
 
     lqocSolver_->setProblem(lqocProblem_);
 
@@ -1633,7 +1612,7 @@ std::vector<typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALA
         ConstraintPtr_t>&
 NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getStateBoxConstraintsInstances()
 {
-    return inputBoxConstraints_;
+    return stateBoxConstraints_;
 }
 
 
