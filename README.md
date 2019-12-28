@@ -8,10 +8,6 @@ This is the Control Toolbox, an efficient C++ library for control, estimation, o
 Link to the wiki, [quickstart!](https://github.com/ethz-adrl/control-toolbox/wiki/Quickstart) \
 Find the detailed documentation [here](https://ethz-adrl.github.io/ct/).
 
-## Earlier Versions
-
-Earlier versions up to v2.3 are hosted on bitbucket, they can be found at https://bitbucket.org/adrlab/ct/wiki/Home
-
 
 ## Overview
 
@@ -66,6 +62,7 @@ alt="Control Toolbox example video" width="360" height="270" border="10" /></a>
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=rVu1L_tPCoM" target="_blank"><img src="http://img.youtube.com/vi/rVu1L_tPCoM/0.jpg" 
 alt="Control Toolbox example video" width="360" height="270" border="10" /></a>
 
+Slightly more complex optimization examples, including gait optimization for a quadruped, are availabe in [ct_ros](https://github.com/ethz-adrl/ct_ros).
 
 
 ## What is the CT?
@@ -266,6 +263,10 @@ Please see LICENCE.txt and NOTICE.txt
       number    ={}, 
       volume    ={}, 
     }
+
+## Earlier Versions
+
+Earlier versions up to v2.3 are hosted on bitbucket, they can be found at https://bitbucket.org/adrlab/ct/wiki/Home
 
 
 ## Related Publications
