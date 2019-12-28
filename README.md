@@ -56,10 +56,16 @@ The CT was designed with the following features in mind:
 
 The Control Toolbox has been used for Hardware and Simulation control tasks on flying, walking and ground robots.
 
-[![ct example](https://img.youtube.com/vi/Y7-1CBqs4x4/0.jpg)](https://www.youtube.com/embed/Y7-1CBqs4x4)
-[![ct_example](https://img.youtube.com/vi/vuCSKtP67E4/0.jpg)](https://www.youtube.com/embed/vuCSKtP67E4)
-[![ct_example](https://img.youtube.com/vi/rWmw-ERGyz4/0.jpg)](https://www.youtube.com/embed/rWmw-ERGyz4)
-[![ct_example](https://img.youtube.com/vi/rVu1L_tPCoM/0.jpg)](https://www.youtube.com/embed/rVu1L_tPCoM)
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=Y7-1CBqs4x4" target="_blank"><img src="http://img.youtube.com/vi/Y7-1CBqs4x4/0.jpg" 
+alt="Control Toolbox example video" width="360" height="270" border="10" /></a>
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=vuCSKtP67E4" target="_blank"><img src="http://img.youtube.com/vi/vuCSKtP67E4/0.jpg" 
+alt="Control Toolbox example video" width="360" height="270" border="10" /></a>
+
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=rWmw-ERGyz4" target="_blank"><img src="http://img.youtube.com/vi/rWmw-ERGyz4/0.jpg" 
+alt="Control Toolbox example video" width="360" height="270" border="10" /></a>
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=rVu1L_tPCoM" target="_blank"><img src="http://img.youtube.com/vi/rVu1L_tPCoM/0.jpg" 
+alt="Control Toolbox example video" width="360" height="270" border="10" /></a>
+
 
 
 ## What is the CT?

@@ -11,15 +11,10 @@ namespace ct {
 namespace optcon {
 
 template <int STATE_DIM, int CONTROL_DIM>
-HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface(const int N, const int nbu, const int nbx, const int ng)
-    : N_(-1), nbu_(1, nbu), nbx_(1, nbx), ng_(1, ng), settings_(NLOptConSettings())
+HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface() : N_(-1), settings_(NLOptConSettings())
 {
     hb0_.setZero();
     hr0_.setZero();
-
-    // by default, set number of box and general constraints to zero
-    if (N > 0)
-        setSolverDimensions(N, nbu, nbx, ng);
 
     configure(settings_);
 }
@@ -31,22 +26,18 @@ HPIPMInterface<STATE_DIM, CONTROL_DIM>::~HPIPMInterface()
 }
 
 template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setSolverDimensions(const int N,
-    const int nbu,
-    const int nbx,
-    const int ng)
-{
-    nbu_.resize(N + 1, nbu);  // todo this is bad design, is there no other way to propagate the number of constraints?
-    nbx_.resize(N + 1, nbx);  // todo this is bad design, is there no other way to propagate the number of constraints?
-    ng_.resize(N + 1, ng);    // todo this is bad design, is there no other way to propagate the number of constraints?
-
-    changeNumberOfStages(N);
-    initializeAndAllocate();
-}
-
-template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
 {
+    if (settings_.lqoc_solver_settings.lqoc_debug_print)
+    {
+        std::cout << "HPIPM allocating memory for QP with time horizon: " << N_ << std::endl;
+        for (int i = 0; i < N_ + 1; i++)
+        {
+            std::cout << "HPIPM stage " << i << ": (nx, nu, nbu, nbx, ng) : (" << nx_[i] << ", " << nu_[i] << ", "
+                      << nbu_[i] << ", " << nbx_[i] << ", " << ng_[i] << ")" << std::endl;
+        }
+    }
+
     // allocate ocp dimensions
     dim_size_ = d_ocp_qp_dim_memsize(N_);
     dim_mem_ = malloc(dim_size_);
@@ -84,12 +75,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
 
     if (settings_.lqoc_solver_settings.lqoc_debug_print)
     {
-        std::cout << "HPIPM allocating memory for QP with time horizon: " << N_ << std::endl;
-        for (int i = 0; i < N_ + 1; i++)
-        {
-            std::cout << "HPIPM stage " << i << ": (nx, nu, nbu, nbx, ng) : (" << nx_[i] << ", " << nu_[i] << ", "
-                      << nbu_[i] << ", " << nbx_[i] << ", " << ng_[i] << ")" << std::endl;
-        }
         std::cout << "HPIPM qp_size: " << qp_size << std::endl;
         std::cout << "HPIPM qp_sol_size: " << qp_sol_size << std::endl;
         std::cout << "HPIPM ipm_arg_size: " << ipm_arg_size << std::endl;
@@ -323,30 +308,20 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
 {
     // check if the number of stages N changed and adapt problem dimensions
-    bool nStagesChanged = changeNumberOfStages(lqocProblem->getNumberOfStages());
+    bool dimsChanged = changeProblemSize(lqocProblem);
 
     // WARNING: the allocation should in practice not have to happen during the loop.
     // If possible, prefer receding horizon MPC problems.
     // If the number of stages has changed, however, the problem needs to be re-built:
-    if (nStagesChanged)
-    {
-        // update constraint configuration in case the horizon length has changed.
-        if (lqocProblem->isInputBoxConstrained())
-            configureInputBoxConstraints(lqocProblem);
-
-        if (lqocProblem->isStateBoxConstrained())
-            configureStateBoxConstraints(lqocProblem);
-
-        if (lqocProblem->isGeneralConstrained())
-            configureGeneralConstraints(lqocProblem);
-    }
 
     // setup unconstrained part of problem
     setupCostAndDynamics(lqocProblem->A_, lqocProblem->B_, lqocProblem->b_, lqocProblem->P_, lqocProblem->qv_,
         lqocProblem->Q_, lqocProblem->rv_, lqocProblem->R_);
 
-    if (nStagesChanged)
+    if (dimsChanged)
+    {
         initializeAndAllocate();
+    }
     else
     {
         // we need to call the setters to transform our data into HPIPM interal structures
@@ -359,59 +334,116 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
 
 
 template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureInputBoxConstraints(
+bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureInputBoxConstraints(
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
 {
-    // stages 1 to N
-    for (int i = 0; i < N_; i++)
-    {
-        nbu_[i] = lqocProblem->nbu_[i];
+    bool configChanged = false;
 
-        // set pointers to box constraint boundaries and sparsity pattern
-        hlbu_[i] = lqocProblem->u_lb_[i].data();
-        hubu_[i] = lqocProblem->u_ub_[i].data();
-        hidxbu_[i] = lqocProblem->u_I_[i].data();
+    const int N = lqocProblem->getNumberOfStages();
+
+    if ((int)nbu_.size() != N + 1)
+    {
+        nbu_.resize(N + 1, 0);
+        hidxbu_.resize(N + 1);
+        hlbu_.resize(N + 1);
+        hubu_.resize(N + 1);
+        configChanged = true;
     }
+
+    // stages 1 to N
+    for (int i = 0; i < N; i++)
+    {
+        if (nbu_[i] != lqocProblem->nbu_[i])
+        {
+            nbu_[i] = lqocProblem->nbu_[i];
+
+            // set pointers to box constraint boundaries and sparsity pattern
+            hlbu_[i] = lqocProblem->u_lb_[i].data();
+            hubu_[i] = lqocProblem->u_ub_[i].data();
+            hidxbu_[i] = lqocProblem->u_I_[i].data();
+
+            configChanged = true;
+        }
+    }
+
+    return configChanged;
 }
 
 
 template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureStateBoxConstraints(
+bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureStateBoxConstraints(
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
 {
-    // stages 1 to N
-    for (int i = 0; i < N_ + 1; i++)
+    bool configChanged = false;
+
+    const int N = lqocProblem->getNumberOfStages();
+
+    if ((int)nbx_.size() != N + 1)
     {
-        nbx_[i] = lqocProblem->nbx_[i];
+        nbx_.resize(N + 1, 0);
+        hidxbx_.resize(N + 1);
+        hlbx_.resize(N + 1);
+        hubx_.resize(N + 1);
+        configChanged = true;
+    }
 
-        // set pointers to box constraint boundaries and sparsity pattern
-        hlbx_[i] = lqocProblem->x_lb_[i].data();
-        hubx_[i] = lqocProblem->x_ub_[i].data();
-        hidxbx_[i] = lqocProblem->x_I_[i].data();
-
+    // stages 1 to N + 1
+    for (int i = 0; i < N + 1; i++)
+    {
         // first stage requires special treatment as state is not a decision variable
         if (i == 0)
         {
             nbx_[i] = 0;
+            continue;
+        }
+
+        if (nbx_[i] != lqocProblem->nbx_[i])
+        {
+            nbx_[i] = lqocProblem->nbx_[i];
+
+            // set pointers to box constraint boundaries and sparsity pattern
+            hlbx_[i] = lqocProblem->x_lb_[i].data();
+            hubx_[i] = lqocProblem->x_ub_[i].data();
+            hidxbx_[i] = lqocProblem->x_I_[i].data();
+
+            configChanged = true;
         }
     }
+
+    return configChanged;
 }
 
 
 template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
+bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
     std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
 {
+    bool configChanged = false;
+
+    const int N = lqocProblem->getNumberOfStages();
+    if ((int)ng_.size() != N + 1)
+    {
+        ng_.resize(N + 1, 0);
+        hlg_.resize(N + 1, 0);
+        hug_.resize(N + 1, 0);
+        hC_.resize(N + 1);
+        hD_.resize(N + 1);
+        configChanged = true;
+    }
+
+
     // HPIPM-specific correction for first-stage general constraint bounds
     hd_lg_0_Eigen_ = lqocProblem->d_lb_[0];  // - lqocProblem->C_[0] * x0; // uncommented since x0=0
     hd_ug_0_Eigen_ = lqocProblem->d_ub_[0];  // - lqocProblem->C_[0] * x0; // uncommented since x0=0
 
-    assert(ng_.size() == ((size_t)N_ + 1));
-
-    for (int i = 0; i < N_ + 1; i++)  // (includes the terminal stage)
+    for (int i = 0; i < N + 1; i++)  // (includes the terminal stage)
     {
         // get the number of constraints
-        ng_[i] = lqocProblem->ng_[i];
+        if (ng_[i] != lqocProblem->ng_[i])
+        {
+            ng_[i] = lqocProblem->ng_[i];
+            configChanged = true;
+        }
 
         lqocProblem->C_[i].resize(lqocProblem->ng_[i], STATE_DIM);
         lqocProblem->D_[i].resize(lqocProblem->ng_[i], CONTROL_DIM);
@@ -433,6 +465,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
         hC_[i] = lqocProblem->C_[i].data();
         hD_[i] = lqocProblem->D_[i].data();
     }
+
+    return configChanged;
 }
 
 
@@ -483,12 +517,37 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateMatrixArr
 
 
 template <int STATE_DIM, int CONTROL_DIM>
-bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
+bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeProblemSize(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> p)
 {
-    if (N_ == N)
-        return false;  // return since problem is already correctly sized
+    const int N = p->getNumberOfStages();
+
+    // check if the problem horizon changed
+    bool horizonChanged = false;
+    if (N_ != N)
+    {
+        horizonChanged = true;
+    }
 
     N_ = N;
+
+    // check if the constraint configuration changed
+    bool numConstraintsChanged = false;
+
+    if (configureInputBoxConstraints(p))
+        numConstraintsChanged = true;
+
+    if (configureStateBoxConstraints(p))
+        numConstraintsChanged = true;
+
+    if (configureGeneralConstraints(p))
+        numConstraintsChanged = true;
+
+
+    // if neither the problem horizon nor the number of constraints changed, return false
+    if (!horizonChanged && !numConstraintsChanged)
+    {
+        return false;
+    }
 
     // resize control input variable counter
     if (nu_.size() > 0)
@@ -516,23 +575,6 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeNumberOfStages(int N)
     hR_.resize(N_ + 1);
     hq_.resize(N_ + 1);
     hr_.resize(N_ + 1);
-
-    // initialize number of box constraints per stage
-    nbu_.resize(N_ + 1, nbu_.back());
-    nbx_.resize(N_ + 1, nbx_.back());
-    hidxbx_.resize(N_ + 1);
-    hidxbu_.resize(N_ + 1);
-    hlbx_.resize(N_ + 1, 0);
-    hubx_.resize(N_ + 1, 0);
-    hlbu_.resize(N_ + 1, 0);
-    hubu_.resize(N_ + 1, 0);
-
-    // initialize number of gen constraints per stage
-    ng_.resize(N_ + 1, 0);
-    hlg_.resize(N_ + 1, 0);
-    hug_.resize(N_ + 1, 0);
-    hC_.resize(N_ + 1);
-    hD_.resize(N_ + 1);
 
     // currently ignored stuff (resized anyways)
     nsbx_.resize(N_ + 1, 0);  // no softened state box constraints

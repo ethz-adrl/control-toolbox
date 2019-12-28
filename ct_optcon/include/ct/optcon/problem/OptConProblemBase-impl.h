@@ -8,17 +8,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-
-template <size_t STATE_DIM,
-    size_t CONTROL_DIM,
-    typename SYSTEM_T,
-    typename LINEAR_SYSTEM_T,
-    typename LINEARIZER_T,
-    typename SCALAR>
-OptConProblemBase<STATE_DIM, CONTROL_DIM, SYSTEM_T, LINEAR_SYSTEM_T, LINEARIZER_T, SCALAR>::OptConProblemBase()
-{
-}
-
 template <size_t STATE_DIM,
     size_t CONTROL_DIM,
     typename SYSTEM_T,

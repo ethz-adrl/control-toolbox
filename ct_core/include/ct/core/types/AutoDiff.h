@@ -5,15 +5,24 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#ifdef CPPADCG
 #include <cppad/cg.hpp>
+#endif
+
+#ifdef CPPAD
 #include <cppad/cppad.hpp>
+#endif
 
 namespace ct {
 namespace core {
 
+#ifdef CPPAD
 typedef CppAD::AD<double> ADScalar;
-typedef CppAD::cg::CG<double> ADCGValueType;
+#endif
 
+#ifdef CPPADCG
+typedef CppAD::cg::CG<double> ADCGValueType;
 typedef CppAD::AD<ADCGValueType> ADCGScalar;  //!< scalar  type
+#endif
 }
 }

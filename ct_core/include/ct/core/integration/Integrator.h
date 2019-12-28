@@ -285,22 +285,23 @@ private:
     {
     }
 
+#ifdef CPPADCG
     template <typename S = SCALAR>
     typename std::enable_if<std::is_same<S, ADCGScalar>::value, void>::type initializeODEIntSteppers(
         const IntegrationType& intType)
     {
     }
-
+#endif
 
     /**
-	 * @brief      Initializes the ODEint fixed size steppers. Does not work for
+	 * @brief      Initializes the ODEint fixed size steppers for double type. Does not work for
 	 *             ad types
 	 *
 	 * @param[in]  intType  The int type
 	 *
 	 */
     template <typename S = SCALAR>
-    typename std::enable_if<!std::is_same<S, ADCGScalar>::value, void>::type initializeODEIntSteppers(
+    typename std::enable_if<std::is_same<S, double>::value, void>::type initializeODEIntSteppers(
         const IntegrationType& intType)
     {
         switch (intType)
@@ -348,6 +349,7 @@ private:
                 break;
         }
     }
+
 
     //! resets the observer
     void reset();

@@ -67,10 +67,12 @@ public:
 
     virtual VectorXs evaluate(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override = 0;
 
+#ifdef CPPADCG
     virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
         const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
         const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
         ct::core::ADCGScalar t) override = 0;
+#endif
 
     virtual MatrixXs jacobianState(const state_vector_t& x, const control_vector_t& u, const SCALAR t) override = 0;
 

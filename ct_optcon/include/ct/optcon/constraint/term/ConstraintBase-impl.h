@@ -24,6 +24,7 @@ ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::~ConstraintBase()
 {
 }
 
+#ifdef CPPADCG
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateCppadCg(
     const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
@@ -32,6 +33,7 @@ Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> ConstraintBase<STATE_DIM,
 {
     throw std::runtime_error("Term " + name_ + " has no Implementation of evaluateCppaCg.");
 }
+#endif
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename ConstraintBase<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs

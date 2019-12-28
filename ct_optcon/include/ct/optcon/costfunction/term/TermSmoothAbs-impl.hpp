@@ -52,6 +52,7 @@ SCALAR TermSmoothAbs<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluate(
     return evalLocal<SCALAR>(x, u, t);
 }
 
+#ifdef CPPADCG
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 ct::core::ADCGScalar TermSmoothAbs<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluateCppadCg(
     const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
@@ -60,6 +61,7 @@ ct::core::ADCGScalar TermSmoothAbs<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>:
 {
     return evalLocal<ct::core::ADCGScalar>(x, u, t);
 }
+#endif
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 core::StateVector<STATE_DIM, SCALAR_EVAL> TermSmoothAbs<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateDerivative(

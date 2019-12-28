@@ -66,9 +66,11 @@ public:
         const Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& u,
         const SCALAR& t) override;
 
+#ifdef CPPADCG
     virtual ct::core::ADCGScalar evaluateCppadCg(const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
         const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
         ct::core::ADCGScalar t) override;
+#endif
 
     core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,

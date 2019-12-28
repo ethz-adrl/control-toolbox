@@ -51,6 +51,7 @@ Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> ControlInputConstraint<STATE_DIM, CONTR
     return this->sparsity_J_ * u;
 }
 
+#ifdef CPPADCG
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1>
 ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateCppadCg(
@@ -60,6 +61,7 @@ ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateCppadCg(
 {
     return this->sparsity_J_.template cast<ct::core::ADCGScalar>() * u;
 }
+#endif
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 typename ControlInputConstraint<STATE_DIM, CONTROL_DIM, SCALAR>::MatrixXs

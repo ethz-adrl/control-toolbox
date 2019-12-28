@@ -79,11 +79,12 @@ public:
 	 *
 	 * @return     The constraint violation
 	 */
+#ifdef CPPADCG
     virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1> evaluateCppadCg(
         const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
         const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
         ct::core::ADCGScalar t);
-
+#endif
 
     /**
 	 * @brief      Returns the number of constraints

@@ -12,12 +12,16 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include <algorithm>
 #include <cstdlib>
 
+#ifdef CPPADCG
 #include <cppad/cg.hpp>
+#endif
 
+#ifdef CPPAD
 #include <cppad/cppad.hpp>
 #include <cppad/example/cppad_eigen.hpp>
 #include <cppad/example/eigen_mat_inv.hpp>
 #include "internal/autodiff/CppadParallel.h"
+#endif
 
 // Include file for convenience
 #include <Eigen/Core>

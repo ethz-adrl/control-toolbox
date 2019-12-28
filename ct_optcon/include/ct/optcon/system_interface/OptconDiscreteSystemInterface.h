@@ -46,7 +46,7 @@ public:
     OptconDiscreteSystemInterface(const optConProblem_t& problem, const settings_t& settings);
 
     //! destructor
-    virtual ~OptconDiscreteSystemInterface() {}
+    virtual ~OptconDiscreteSystemInterface() = default;
     //! perform necessary setup work
     virtual void initialize() override;
     virtual void configure(const settings_t& settings) override;

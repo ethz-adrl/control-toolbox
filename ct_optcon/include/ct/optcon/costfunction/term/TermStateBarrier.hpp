@@ -50,9 +50,11 @@ public:
         const Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& u,
         const SCALAR& t) override;
 
+#ifdef CPPADCG
     virtual ct::core::ADCGScalar evaluateCppadCg(const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
         const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
         ct::core::ADCGScalar t) override;
+#endif
 
     //! load the term from config file, where the bounds are stored as matrices
     virtual void loadConfigFile(const std::string& filename,

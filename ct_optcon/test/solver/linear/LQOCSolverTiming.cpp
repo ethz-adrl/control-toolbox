@@ -25,8 +25,8 @@ void timeSingleSolve(size_t N, std::vector<std::vector<double>>& loggedSolveTime
 
     std::vector<std::shared_ptr<LQOCSolver<state_dim, control_dim>>> lqocSolvers;
 
-    std::shared_ptr<LQOCSolver<state_dim, control_dim>> hpipmSolver(new HPIPMInterface<state_dim, control_dim>(N));
-    std::shared_ptr<LQOCSolver<state_dim, control_dim>> gnRiccatiSolver(new GNRiccatiSolver<state_dim, control_dim>(N));
+    std::shared_ptr<LQOCSolver<state_dim, control_dim>> hpipmSolver(new HPIPMInterface<state_dim, control_dim>());
+    std::shared_ptr<LQOCSolver<state_dim, control_dim>> gnRiccatiSolver(new GNRiccatiSolver<state_dim, control_dim>());
     std::vector<std::string> solverNames = {"Riccati", "HPIPM"};
 
     NLOptConSettings solverSettings;

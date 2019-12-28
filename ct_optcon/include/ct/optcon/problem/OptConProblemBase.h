@@ -53,7 +53,7 @@ public:
     typedef std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> ConstraintPtr_t;
     typedef typename SYSTEM_T::time_t time_t;
 
-    OptConProblemBase();
+    OptConProblemBase() = default;
 
     /*!
      * @brief Construct a simple unconstrained Optimal Control Problem

@@ -30,7 +30,7 @@ set(ct_models_target_include_dirs
 
 
 ## define placeholder for ct model libraries
-set(CT_MODELS_TARGETS "")
+set(CT_MODELS_LIBRARIES "")
 
 set(IP_CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/InvertedPendulum/codegen")
 set(HYA_CODEGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/ct/models/HyA/codegen")
@@ -42,20 +42,18 @@ if(CPPADCG)
   add_executable(HyQLinearizationCodegen src/HyQ/codegen/HyQLinearizationCodegen.cpp)
   target_include_directories(HyQLinearizationCodegen PUBLIC ${ct_models_target_include_dirs})
   target_link_libraries(HyQLinearizationCodegen ct_rbd)
+  list(APPEND CT_MODELS_BINARIES HyQLinearizationCodegen)
 endif()
 
 if (BUILD_HYQ_FULL)
-  if (NOT USE_CLANG)
-    MESSAGE(WARNING "HyQ Linearization should be build with CLANG")
-  endif()
     add_library(HyQWithContactModelLinearizedForward include/ct/models/HyQ/codegen/HyQWithContactModelLinearizedForward.cpp)
     target_link_libraries(HyQWithContactModelLinearizedForward ct_rbd)
-    list(APPEND CT_MODELS_TARGETS HyQWithContactModelLinearizedForward)
+    list(APPEND CT_MODELS_LIBRARIES HyQWithContactModelLinearizedForward)
 
     ## Forward Dynamics Forward Zero
     add_library(HyQForwardZero include/ct/models/HyQ/codegen/HyQForwardZero.cpp)
     target_link_libraries(HyQForwardZero ct_rbd)
-    list(APPEND CT_MODELS_TARGETS HyQForwardZero)
+    list(APPEND CT_MODELS_LIBRARIES HyQForwardZero)
 endif(BUILD_HYQ_FULL)
 
 if(BUILD_HYQ_LINEARIZATION_TIMINGS)
@@ -66,33 +64,33 @@ if(BUILD_HYQ_LINEARIZATION_TIMINGS)
   ## Forward Dynamics
   add_library(HyQWithContactModelLinearizedReverse include/ct/models/HyQ/codegen/HyQWithContactModelLinearizedReverse.cpp)
   target_link_libraries(HyQWithContactModelLinearizedReverse ct_rbd)
-  list(APPEND CT_MODELS_TARGETS HyQWithContactModelLinearizedReverse)
+  list(APPEND CT_MODELS_LIBRARIES HyQWithContactModelLinearizedReverse)
 
   add_library(HyQBareModelLinearizedForward include/ct/models/HyQ/codegen/HyQBareModelLinearizedForward.cpp)
   target_link_libraries(HyQBareModelLinearizedForward ct_rbd )
-  list(APPEND CT_MODELS_TARGETS HyQBareModelLinearizedForward)
+  list(APPEND CT_MODELS_LIBRARIES HyQBareModelLinearizedForward)
 
   add_library(HyQBareModelLinearizedReverse include/ct/models/HyQ/codegen/HyQBareModelLinearizedReverse.cpp)
   target_link_libraries(HyQBareModelLinearizedReverse ct_rbd )
-  list(APPEND CT_MODELS_TARGETS HyQBareModelLinearizedReverse)
+  list(APPEND CT_MODELS_LIBRARIES HyQBareModelLinearizedReverse)
 
   ## Inverse Dynamics
   add_library(HyQJacInverseDynamicsForward include/ct/models/HyQ/codegen/HyQInverseDynJacForward.cpp)
   target_link_libraries(HyQJacInverseDynamicsForward ct_rbd )
-  list(APPEND CT_MODELS_TARGETS HyQJacInverseDynamicsForward)
+  list(APPEND CT_MODELS_LIBRARIES HyQJacInverseDynamicsForward)
 
   add_library(HyQJacInverseDynamicsReverse include/ct/models/HyQ/codegen/HyQInverseDynJacReverse.cpp)
   target_link_libraries(HyQJacInverseDynamicsReverse ct_rbd )
-  list(APPEND CT_MODELS_TARGETS HyQJacInverseDynamicsReverse)
+  list(APPEND CT_MODELS_LIBRARIES HyQJacInverseDynamicsReverse)
 
   ## ForwardKinematics
   add_library(HyQJacForwardKinForward include/ct/models/HyQ/codegen/HyQForwardKinJacForward.cpp)
   target_link_libraries(HyQJacForwardKinForward ct_rbd )
-  list(APPEND CT_MODELS_TARGETS HyQJacForwardKinForward)
+  list(APPEND CT_MODELS_LIBRARIES HyQJacForwardKinForward)
 
   add_library(HyQJacForwardKinReverse include/ct/models/HyQ/codegen/HyQForwardKinJacReverse.cpp)
   target_link_libraries(HyQJacForwardKinReverse ct_rbd )
-  list(APPEND CT_MODELS_TARGETS HyQJacForwardKinReverse)
+  list(APPEND CT_MODELS_LIBRARIES HyQJacForwardKinReverse)
 
   add_executable(HyQcompareForwardReverseFD src/HyQ/codegen/compareForwardReverseFD.cpp)
   target_link_libraries(HyQcompareForwardReverseFD
@@ -101,25 +99,25 @@ if(BUILD_HYQ_LINEARIZATION_TIMINGS)
                         HyQBareModelLinearizedForward
                         HyQBareModelLinearizedReverse
                         ct_rbd)
-  list(APPEND CT_MODELS_TARGETS HyQcompareForwardReverseFD)
+  list(APPEND CT_MODELS_BINARIES HyQcompareForwardReverseFD)
 
   add_executable(HyQcompareForwardReverseID src/HyQ/codegen/compareForwardReverseID.cpp)
   target_link_libraries(HyQcompareForwardReverseID
                         HyQJacInverseDynamicsForward
                         HyQJacInverseDynamicsReverse
                         ct_rbd)
-  list(APPEND CT_MODELS_TARGETS HyQcompareForwardReverseID)
+  list(APPEND CT_MODELS_BINARIES HyQcompareForwardReverseID)
 
   add_executable(HyQcompareForwardReverseKin src/HyQ/codegen/compareForwardReverseKin.cpp)
   target_link_libraries(HyQcompareForwardReverseKin
                         HyQJacForwardKinForward
                         HyQJacForwardKinReverse
                         ct_rbd)
-  list(APPEND CT_MODELS_TARGETS HyQcompareForwardReverseKin)
+  list(APPEND CT_MODELS_BINARIES HyQcompareForwardReverseKin)
 
   add_executable(HyQcompareForwardZero src/HyQ/codegen/compareForwardZero.cpp)
   target_link_libraries(HyQcompareForwardZero HyQForwardZero ct_rbd)
-  list(APPEND CT_MODELS_TARGETS HyQcompareForwardZero)
+  list(APPEND CT_MODELS_BINARIES HyQcompareForwardZero)
 endif(BUILD_HYQ_LINEARIZATION_TIMINGS)
 
 ########## Inverted Pendulum #########
@@ -127,13 +125,13 @@ if(CPPADCG)
   add_executable(InvertedPendulumWithActuatorCodeGen src/InvertedPendulum/codegen/InvertedPendulumWithActuatorCodeGen.cpp)
   target_include_directories(InvertedPendulumWithActuatorCodeGen PUBLIC ${ct_models_target_include_dirs})
   target_link_libraries(InvertedPendulumWithActuatorCodeGen ct_rbd)
-  list(APPEND CT_MODELS_TARGETS InvertedPendulumWithActuatorCodeGen)
+  list(APPEND CT_MODELS_BINARIES InvertedPendulumWithActuatorCodeGen)
 endif()
 
 add_library(InvertedPendulumActDynLinearizedForward include/ct/models/InvertedPendulum/codegen/InvertedPendulumActDynLinearizedForward.cpp)
 target_include_directories(InvertedPendulumActDynLinearizedForward PUBLIC ${ct_models_target_include_dirs})
 target_link_libraries(InvertedPendulumActDynLinearizedForward ct_rbd)
-list(APPEND CT_MODELS_TARGETS InvertedPendulumActDynLinearizedForward)
+list(APPEND CT_MODELS_LIBRARIES InvertedPendulumActDynLinearizedForward)
 
 
 ################ HyA #################
@@ -141,29 +139,29 @@ if(CPPADCG)
   add_executable(HyALinearizationCodegen src/HyA/codegen/HyALinearizationCodeGen.cpp)
   target_include_directories(HyALinearizationCodegen PUBLIC ${ct_models_target_include_dirs})
   target_link_libraries(HyALinearizationCodegen ct_rbd)
-  list(APPEND CT_MODELS_TARGETS HyALinearizationCodegen)
+  list(APPEND CT_MODELS_BINARIES HyALinearizationCodegen)
 endif()
 
 add_library(HyALinearizedForward include/ct/models/HyA/codegen/HyALinearizedForward.cpp)
 target_include_directories(HyALinearizedForward PUBLIC ${ct_models_target_include_dirs})
 target_link_libraries(HyALinearizedForward ct_rbd )
-list(APPEND CT_MODELS_TARGETS HyALinearizedForward)
+list(APPEND CT_MODELS_LIBRARIES HyALinearizedForward)
 
 add_library(HyAJacInverseDynamicsReverse include/ct/models/HyA/codegen/HyAInverseDynJacReverse.cpp)
 target_include_directories(HyAJacInverseDynamicsReverse PUBLIC ${ct_models_target_include_dirs})
 target_link_libraries(HyAJacInverseDynamicsReverse ct_rbd)
-list(APPEND CT_MODELS_TARGETS HyAJacInverseDynamicsReverse)
+list(APPEND CT_MODELS_LIBRARIES HyAJacInverseDynamicsReverse)
 
 if(BUILD_HYA_LINEARIZATION_TIMINGS)
     add_library(HyALinearizedReverse include/ct/models/HyA/codegen/HyALinearizedReverse.cpp)
     target_include_directories(HyALinearizedReverse PUBLIC ${ct_models_target_include_dirs})
     target_link_libraries(HyALinearizedReverse ct_rbd )
-    list(APPEND CT_MODELS_TARGETS HyALinearizedReverse)
+    list(APPEND CT_MODELS_LIBRARIES HyALinearizedReverse)
 
     add_library(HyAJacInverseDynamicsForward include/ct/models/HyA/codegen/HyAInverseDynJacForward.cpp)
     target_include_directories(HyAJacInverseDynamicsForward PUBLIC ${ct_models_target_include_dirs})
     target_link_libraries(HyAJacInverseDynamicsForward ct_rbd )
-    list(APPEND CT_MODELS_TARGETS HyAJacInverseDynamicsForward)
+    list(APPEND CT_MODELS_LIBRARIES HyAJacInverseDynamicsForward)
 
     add_executable(HyAcompareForwardReverse src/HyA/codegen/compareForwardReverse.cpp)
     target_include_directories(HyAcompareForwardReverse PUBLIC ${ct_models_target_include_dirs})
@@ -174,7 +172,7 @@ if(BUILD_HYA_LINEARIZATION_TIMINGS)
         HyAJacInverseDynamicsReverse
         ct_rbd
         )
-    list(APPEND CT_MODELS_TARGETS HyAcompareForwardReverse)
+    list(APPEND CT_MODELS_BINARIES HyAcompareForwardReverse)
 endif(BUILD_HYA_LINEARIZATION_TIMINGS)
 
 
@@ -187,7 +185,7 @@ add_library(quadrotorDynamics
     )
 target_include_directories(quadrotorDynamics PUBLIC ${ct_models_target_include_dirs})
 target_link_libraries(quadrotorDynamics ct_core)
-list(APPEND CT_MODELS_TARGETS quadrotorDynamics)
+list(APPEND CT_MODELS_LIBRARIES quadrotorDynamics)
 
 
 ## Inverse Kinematics
@@ -196,13 +194,13 @@ add_library(hya_ik src/HyA/transform6d.cpp)
 target_include_directories(hya_ik PUBLIC ${ct_models_target_include_dirs})
 set_target_properties(hya_ik PROPERTIES COMPILE_FLAGS "-std=c++98 -fPIC -DIKFAST_NAMESPACE=hya_ik -DIKFAST_NO_MAIN -Wno-unused-variable")
 target_link_libraries(hya_ik ct_rbd)
-list(APPEND CT_MODELS_TARGETS hya_ik)
+list(APPEND CT_MODELS_LIBRARIES hya_ik)
 
 add_library(irb4600_ik src/Irb4600/transform6d.cpp)
 target_include_directories(irb4600_ik PUBLIC ${ct_models_target_include_dirs})
 set_target_properties(irb4600_ik PROPERTIES COMPILE_FLAGS "-std=c++98 -fPIC -DIKFAST_NAMESPACE=irb4600_ik -DIKFAST_NO_MAIN -Wno-unused-variable")
 target_link_libraries(irb4600_ik ct_rbd)
-list(APPEND CT_MODELS_TARGETS irb4600_ik)
+list(APPEND CT_MODELS_LIBRARIES irb4600_ik)
 
 
 ## convenience library for passing on includes
@@ -210,9 +208,9 @@ add_library(ct_models INTERFACE)
 target_include_directories(ct_models INTERFACE ${ct_models_target_include_dirs})
 target_link_libraries(ct_models INTERFACE 
   ct_rbd
-  ${CT_MODELS_TARGETS}
+  ${CT_MODELS_LIBRARIES}
   )
-list(APPEND CT_MODELS_TARGETS ct_models)
+list(APPEND CT_MODELS_LIBRARIES ct_models)
 
 
 ############
@@ -249,7 +247,7 @@ install(FILES "cmake/ct_modelsConfig.cmake" DESTINATION "share/ct_models/cmake")
 
 ## install library and targets
 install(
-    TARGETS ${CT_MODELS_TARGETS}
+    TARGETS ${CT_MODELS_LIBRARIES} ${CT_MODELS_BINARIES}
     EXPORT ct_models_export
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
