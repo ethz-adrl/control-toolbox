@@ -5,7 +5,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <cppad/example/cppad_eigen.hpp>
+#include <ct/core/core.h>
 
 #include "LinearConstraintContainer.h"
 #include "term/ConstraintBase.h"

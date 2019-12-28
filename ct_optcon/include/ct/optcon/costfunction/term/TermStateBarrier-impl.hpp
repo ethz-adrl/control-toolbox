@@ -63,6 +63,7 @@ SCALAR TermStateBarrier<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluate(
     return c;
 }
 
+#ifdef CPPADCG
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 ct::core::ADCGScalar TermStateBarrier<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluateCppadCg(
     const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
@@ -74,6 +75,7 @@ ct::core::ADCGScalar TermStateBarrier<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALA
         c += barriers_[i].computeActivation(x(i));
     return c;
 }
+#endif
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 void TermStateBarrier<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(const std::string& filename,

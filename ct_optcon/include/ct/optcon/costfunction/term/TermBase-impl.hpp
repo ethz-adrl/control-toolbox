@@ -37,7 +37,7 @@ SCALAR_EVAL TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::eval(
     return computeActivation(t) * evaluate(x, u, t);
 }
 
-
+#ifdef CPPADCG
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 ct::core::ADCGScalar TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluateCppadCg(
     const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
@@ -46,6 +46,7 @@ ct::core::ADCGScalar TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::eval
 {
     throw std::runtime_error("The cost function term term " + name_ + " does not implement evaluate CppadCg.");
 }
+#endif
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
 bool TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::isActiveAtTime(SCALAR_EVAL t)

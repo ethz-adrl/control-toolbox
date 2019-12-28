@@ -41,6 +41,7 @@ CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::~CostFunctionQuadratic()
 {
 }
 
+#ifdef CPPADCG
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateADTerm(
     std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar>> term,
@@ -49,7 +50,6 @@ void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addIntermediateADTer
     throw std::runtime_error("not implemented");
 }
 
-
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalADTerm(
     std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, ct::core::ADCGScalar>> term,
@@ -57,6 +57,7 @@ void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::addFinalADTerm(
 {
     throw std::runtime_error("not implemented");
 }
+#endif
 
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
 void CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(const std::string& filename,

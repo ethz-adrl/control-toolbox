@@ -19,9 +19,9 @@ class ActivationBase
 {
 public:
     //! constructor
-    ActivationBase() {}
+    ActivationBase() = default;
     //! destructor
-    virtual ~ActivationBase() {}
+    virtual ~ActivationBase() = default;
     //! load activations from file
     virtual void loadConfigFile(const std::string& filename, const std::string& termName, bool verbose = false)
     {
