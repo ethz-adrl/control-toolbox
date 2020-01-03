@@ -7,8 +7,6 @@ matrix:
   include:
   - name: "Bionic melodic"
     dist: bionic
-    env: ROS_DISTRO=melodic
-
 env:
   global:
     - ROS_CI_DESKTOP="`lsb_release -cs`"  # e.g. [precise|trusty|...]
@@ -34,25 +32,11 @@ before_install:
   - sudo cp *.so /usr/lib                   >/dev/null # suppress output
   - cd ~/                                   >/dev/null # suppress output
 
-   #install ros kinetic
-  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'  >/dev/null # suppress output
-  - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -   >/dev/null # suppress output
-  - sudo apt-get update   >/dev/null # suppress output
-  - sudo apt-get install python-catkin-tools  >/dev/null # suppress output
-  - sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"  >/dev/null # suppress output
-  - sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116  >/dev/null # suppress output
-  - sudo apt-get update   >/dev/null # suppress output
-  - sudo apt-get install -y python-catkin-pkg python-rosdep ros-$ROS_DISTRO-ros-base  >/dev/null # suppress output
-  - source /opt/ros/$ROS_DISTRO/setup.bash  >/dev/null # suppress output
-  # Prepare rosdep to install dependencies.
-  - sudo rosdep init  >/dev/null # suppress output
-  - rosdep update  >/dev/null # suppress output
 
 # Create a catkin workspace with the package under integration.
 install:
   - mkdir -p ~/catkin_ws/src
   - cd ~/catkin_ws
-  - catkin init
   # Add the package under integration to the workspace using a symlink.
   - cd ~/catkin_ws/src
   - ln -s $CI_SOURCE_PATH .
@@ -65,35 +49,7 @@ install:
   #install kindr
   - cd ~/catkin_ws/src/
   - git clone https://github.com/ANYbotics/kindr.git
-
-# Install all dependencies, using wstool first and rosdep second.
-# wstool looks for a ROSINSTALL_FILE defined in the environment variables.
-
-# Compile and test (mark the build as failed if any step fails). If the
-# CATKIN_OPTIONS file exists, use it as an argument to catkin_make, for example
-# to blacklist certain packages.
-#
-# NOTE on testing: `catkin_make run_tests` will show the output of the tests
-# (gtest, nosetest, etc..) but always returns 0 (success) even if a test
-# fails. Running `catkin_test_results` aggregates all the results and returns
-# non-zero when a test fails (which notifies Travis the build failed).
+  
 script:
-  - source /opt/ros/$ROS_DISTRO/setup.bash
-  - cd ~/catkin_ws
-  - catkin clean --all
-  - catkin config --blacklist ct_doc
-  - catkin build -DUSE_CLANG=true -DBUILD_TESTS=true -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
-  # Run the tests, ensuring the path is set correctly.
-  # we do not want to run the kindr tests
-  - catkin config --blacklist kindr
-  # run unit tests
-  - source devel/setup.bash
-  - cd ~/catkin_ws/src/control-toolbox/ct_core
-  - catkin run_tests --this --no-deps >/dev/null # suppress output
-  - cd ~/catkin_ws/src/control-toolbox/ct_optcon
-  - catkin run_tests --this --no-deps >/dev/null # suppress output
-  - cd ~/catkin_ws/src/control-toolbox/ct_rbd
-  - catkin run_tests --this --no-deps >/dev/null # suppress output
-  - cd ~/catkin_ws/src/control-toolbox/ct_models
-  - catkin run_tests --this --no-deps >/dev/null # suppress output
-  - catkin_test_results
+  - cd ~/catkin_ws/src/control-toolbox/ct
+  - sudo ./build_ct -DUSE_CLANG=true -DBUILD_TESTS=true -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
