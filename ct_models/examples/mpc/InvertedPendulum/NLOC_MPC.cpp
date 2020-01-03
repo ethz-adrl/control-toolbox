@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
     const bool verbose = true;
     try
     {
-        std::string workingDirectory = ct::models::exampleDir + "/InvertedPendulum";
+        std::string workingDirectory = ct::models::exampleDir + "/mpc/InvertedPendulum";
 
         std::string configFile = workingDirectory + "/solver.info";
         std::string costFunctionFile = workingDirectory + "/cost.info";
