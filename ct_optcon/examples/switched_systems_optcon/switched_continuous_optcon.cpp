@@ -139,7 +139,7 @@ int main(int argc, char** argv)
     ilqr_settings.min_cost_improvement = 1e-6;
     ilqr_settings.meritFunctionRhoConstraints = 10;
     ilqr_settings.nThreads = 4;
-    ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::ILQR;
+    ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
     ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
     ilqr_settings.lqoc_solver_settings.num_lqoc_iterations = 1000;              // number of riccati sub-iterations
     ilqr_settings.lineSearchSettings.type = LineSearchSettings::TYPE::SIMPLE;
