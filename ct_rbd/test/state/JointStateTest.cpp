@@ -15,8 +15,10 @@ JointState<nJoints> js;
 const double tolerance = 1e-3;
 
 // define the test upper and lower limits
-std::vector<double> lowerLimitVector(nJoints, -1.0), upperLimitVector(nJoints, 1.0);
-Eigen::Matrix<double, nJoints, 1> lowerLimitEigen(lowerLimitVector.data()), upperLimitEigen(upperLimitVector.data());
+std::vector<double> lowerLimitVector(nJoints, -1.0);
+std::vector<double> upperLimitVector(nJoints, 1.0);
+Eigen::Matrix<double, nJoints, 1> lowerLimitEigen(lowerLimitVector.data());
+Eigen::Matrix<double, nJoints, 1> upperLimitEigen(upperLimitVector.data());
 
 TEST(JointStateTest, jointLimitTest)
 {
@@ -49,14 +51,15 @@ TEST(JointStateTest, jointLimitTest)
     ASSERT_FALSE(js.checkVelocityLimits(upperLimitEigen));
 
     // CASE 6: test joint state violates an upper position limit within a custom tolerance
+    js.setZero();
     js.getPosition(1) = upperLimitEigen(1) + 0.5 * tolerance;
-    ASSERT_TRUE(js.checkPositionLimits(lowerLimitVector, upperLimitVector));
-    ASSERT_TRUE(js.checkPositionLimits(lowerLimitEigen, upperLimitEigen));
+    ASSERT_TRUE(js.checkPositionLimits(lowerLimitVector, upperLimitVector, tolerance));
+    ASSERT_TRUE(js.checkPositionLimits(lowerLimitEigen, upperLimitEigen, tolerance));
 
     // CASE 7: test joint state violates a lower position limit within a custom tolerance
     js.getPosition(1) = lowerLimitEigen(1) - 0.5 * tolerance;
-    ASSERT_TRUE(js.checkPositionLimits(lowerLimitVector, upperLimitVector));
-    ASSERT_TRUE(js.checkPositionLimits(lowerLimitEigen, upperLimitEigen));
+    ASSERT_TRUE(js.checkPositionLimits(lowerLimitVector, upperLimitVector, tolerance));
+    ASSERT_TRUE(js.checkPositionLimits(lowerLimitEigen, upperLimitEigen, tolerance));
 }
 
 TEST(JointStateTest, toUniqueTest)

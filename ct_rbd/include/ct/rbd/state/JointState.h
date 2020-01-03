@@ -113,13 +113,17 @@ public:
 
     /// @brief check joint position limits assuming limits and joint position are in the same range e.g. [-pi, pi)
     template <typename T>
-    bool checkPositionLimits(T lowerLimit, T upperLimit, double tolerance = 0.0)
+    bool checkPositionLimits(const T lowerLimit, const T upperLimit, const double tolerance = 0.0)
     {
         assert(lowerLimit.size() == NJOINTS && upperLimit.size() == NJOINTS && "Wrong limit dimensions");
-        for (size_t i = 0; i < NJOINTS; ++i)
+        for (size_t i = 0; i < NJOINTS; i++)
+        {
             if ((std::abs(getPosition(i) - lowerLimit[i]) > tolerance && getPosition(i) < lowerLimit[i]) ||
                 (std::abs(getPosition(i) - upperLimit[i]) > tolerance && getPosition(i) > upperLimit[i]))
+            {
                 return false;
+            }
+        }
         return true;
     }
 
