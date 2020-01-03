@@ -49,6 +49,10 @@ install:
   #install kindr
   - cd ~/catkin_ws/src/
   - git clone https://github.com/ANYbotics/kindr.git
+  - cd kindr
+  - mkdir -p build && cd build
+  - cmake .. && make
+  - sudo make install
   
 script:
   - cd ~/catkin_ws/src/control-toolbox/ct
