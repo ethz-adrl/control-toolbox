@@ -385,10 +385,10 @@ void generalConstraintsTest(ct::core::ControlVector<control_dim> u0,
     lqocProblem2->setGeneralConstraints(d_lb, d_ub, C, D);
 
     // check that constraint configuration is right
-    ASSERT_TRUE(lqocProblem1->isConstrained());
-    ASSERT_TRUE(lqocProblem1->isGeneralConstrained());
     ASSERT_FALSE(lqocProblem1->isInputBoxConstrained());
     ASSERT_FALSE(lqocProblem1->isStateBoxConstrained());
+    ASSERT_TRUE(lqocProblem1->isGeneralConstrained());
+    ASSERT_TRUE(lqocProblem1->isConstrained());
 
     // set and try to solve the problem for both solvers
     hpipmSolver->setProblem(lqocProblem1);

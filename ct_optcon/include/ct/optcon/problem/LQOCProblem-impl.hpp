@@ -133,7 +133,7 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setInputBoxConstraint(const in
     const VectorXi& sp,
     const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_nom_abs)
 {
-    if ((u_lb.rows() != u_ub.rows()) | (u_lb.size() != nConstr) | (sp.rows() != nConstr) |
+    if ((u_lb.rows() != u_ub.rows()) || (u_lb.size() != nConstr) || (sp.rows() != nConstr) ||
         (sp(sp.rows() - 1) > (CONTROL_DIM - 1)))
     {
         std::cout << "n.o. constraints : " << nConstr << std::endl;
@@ -177,7 +177,7 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateStateBoxConstra
     const VectorXi& sp,
     const ct::core::StateVector<STATE_DIM, SCALAR>& x_nom_abs)
 {
-    if ((x_lb.rows() != x_ub.rows()) | (x_lb.size() != nConstr) | (sp.rows() != nConstr) |
+    if ((x_lb.rows() != x_ub.rows()) || (x_lb.size() != nConstr) || (sp.rows() != nConstr) ||
         (sp(sp.rows() - 1) > (STATE_DIM - 1)))
     {
         std::cout << "n.o. constraints : " << nConstr << std::endl;
@@ -222,7 +222,7 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setTerminalBoxConstraints(cons
 {
     if (nConstr > 0)
     {
-        if ((x_lb.rows() != x_ub.rows()) | (x_lb.size() != nConstr) | (sp.rows() != nConstr) |
+        if ((x_lb.rows() != x_ub.rows()) || (x_lb.size() != nConstr) || (sp.rows() != nConstr) ||
             (sp(sp.rows() - 1) > (STATE_DIM - 1)))
         {
             std::cout << "n.o. constraints : " << nConstr << std::endl;
@@ -250,6 +250,16 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(const co
     const constr_state_jac_t& C,
     const constr_control_jac_t& D)
 {
+    if (d_lb.size() != d_ub.size() || C.rows() != D.rows() || d_lb.size() != C.rows())
+    {
+        std::cout << "d_lb : " << std::endl << d_lb << std::endl;
+        std::cout << "d_ub : " << std::endl << d_ub << std::endl;
+        std::cout << "C : " << std::endl << C << std::endl;
+        std::cout << "D : " << std::endl << D << std::endl;
+        throw(std::runtime_error("LQOCProblem setGeneralConstraints: error in constraint config"));
+    }
+
+    std::fill(ng_.begin(), ng_.end(), d_lb.rows());
     d_lb_.setConstant(d_lb);
     d_ub_.setConstant(d_ub);
     C_.setConstant(C);
