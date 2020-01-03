@@ -6,6 +6,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <mutex>
+#include <map>
+#include <thread>
 
 namespace ct {
 namespace core {

@@ -5,7 +5,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#ifdef CPPAD
+#ifdef CPPADCG
 
 #include <ct/core/internal/autodiff/SparsityPattern.h>
 
