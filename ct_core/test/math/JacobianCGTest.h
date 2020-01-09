@@ -190,11 +190,13 @@ void executeJITCloneTest(bool useDynamicLib)
         std::cout << "FATAL ERROR: dynamic library not cloned correctly in JIT." << std::endl;
         ASSERT_TRUE(false);
     }
+#ifdef LLVM
     if (!useDynamicLib && (jacCG_cloned->getLlvmLib() == jacCG->getLlvmLib()))
     {
         std::cout << "FATAL ERROR: Llvm library not cloned correctly in JIT." << std::endl;
         ASSERT_TRUE(false);
     }
+#endif
 
     for (size_t i = 0; i < 100; i++)
     {
@@ -214,8 +216,10 @@ TEST(JacobianCGTest, ForwardZeroTest)
 {
     try
     {
+        executeForwardZeroTest(true);  // using dynamic library
+#ifdef LLVM
         executeForwardZeroTest(false);  //using llvm jit
-        executeForwardZeroTest(true);   // using dynamic library
+#endif
 
     } catch (std::exception& e)
     {
@@ -231,8 +235,10 @@ TEST(JacobianCGTest, JITCompilationTest)
 {
     try
     {
-        executeJITCompilationTest(true);
-        executeJITCompilationTest(false);
+        executeJITCompilationTest(true);  // using dynamic library
+#ifdef LLVM
+        executeJITCompilationTest(false);  //using llvm jit
+#endif
 
     } catch (std::exception& e)
     {
@@ -245,8 +251,10 @@ TEST(HessianCGTest, JITHessianTest)
 {
     try
     {
-        executeJitHessianTest(true);
-        executeJitHessianTest(false);
+        executeJitHessianTest(true);  // using dynamic library
+#ifdef LLVM
+        executeJitHessianTest(false);  //using llvm jit
+#endif
     } catch (std::exception& e)
     {
         std::cout << "Exception thrown: " << e.what() << std::endl;

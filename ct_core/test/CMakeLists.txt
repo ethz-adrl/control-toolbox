@@ -27,7 +27,7 @@ package_add_test(MatrixInversionTest math/MatrixInversionTest.cpp)
 if(CPPADCG)
     package_add_test(AutoDiffLinearizerTest AutoDiffLinearizerTest.cpp)
 endif()
-if(CPPADCG AND LLVM)
+if(CPPADCG)
     package_add_test(CodegenTests CodegenTests.cpp)
 endif()
 
