@@ -251,7 +251,7 @@ install(
     EXPORT ct_models_export
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}/ct_models
     )
 
 ## create the ct_models.cmake file which holds target includes and dependencies

@@ -8,7 +8,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include <cppad/cg.hpp>
 #include <cppad/cppad.hpp>
 #include <cppad/example/cppad_eigen.hpp>
-#include <cppad/example/eigen_mat_inv.hpp>
 
 
 #include <ct/core/core.h>
