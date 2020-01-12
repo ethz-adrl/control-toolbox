@@ -5,6 +5,8 @@ cache:
 language: generic
 matrix:
   include:
+  - name: "Trusty kinetic"
+    dist: trusty
   - name: "Bionic melodic"
     dist: bionic
 env:
