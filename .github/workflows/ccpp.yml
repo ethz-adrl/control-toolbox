@@ -19,7 +19,8 @@ jobs:
     - ubuntu-18.04
     
     steps:
-    - uses: actions/checkout@v1
+    - name: checkout
+      uses: actions/checkout@v1
     - name: Install Gtest
       run: |
         sudo apt-get update                     >/dev/null # suppress output
