@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: ControlToolbox CI
 
 on:
   pull_request:
