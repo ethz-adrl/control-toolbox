@@ -38,7 +38,6 @@ jobs:
         mkdir -p ~/catkin_ws/src
         cd ~/catkin_ws/src
         ln -s $GITHUB_WORKSPACE .
-        ls
     - name: Install deb-packaged dependencies
       run: | 
         cd ~/catkin_ws/src/control-toolbox/ct
