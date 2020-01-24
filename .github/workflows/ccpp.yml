@@ -20,6 +20,8 @@ jobs:
         os: [ubuntu-16.04, ubuntu-18.04]
     
     steps:
+    - name: checkout code
+      uses: actions/checkout@v2
     - name: Install Gtest
       run: |
         sudo apt-get update                     >/dev/null # suppress output
@@ -35,8 +37,8 @@ jobs:
       run: |
         mkdir -p ~/catkin_ws/src
         cd ~/catkin_ws/src
-    - name: checkout code
-      uses: actions/checkout@v2
+        ln -s $GITHUB_WORKSPACE .
+        ls
     - name: Install deb-packaged dependencies
       run: | 
         cd ~/catkin_ws/src/control-toolbox/ct
