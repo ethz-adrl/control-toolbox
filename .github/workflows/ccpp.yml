@@ -21,36 +21,4 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v1
-    - name: Install Gtest
-      run: |
-        sudo apt-get update                     >/dev/null # suppress output
-        sudo apt-get install cmake              >/dev/null # suppress output
-        sudo apt install libgtest-dev           >/dev/null # suppress output
-        cd /usr/src/gtest/                      >/dev/null # suppress output
-        sudo mkdir build && cd build            >/dev/null # suppress output
-        sudo cmake .. -DBUILD_SHARED_LIBS=ON    >/dev/null # suppress output
-        sudo make                               >/dev/null # suppress output
-        sudo cp *.so /usr/lib                   >/dev/null # suppress output
-        cd ~/                                   >/dev/null # suppress output
-    - name: Create workspace
-      run: |
-        mkdir -p ~/catkin_ws/src
-        cd ~/catkin_ws/src
-        ln -s $CI_SOURCE_PATH .
-    - name: Install deb-packaged dependencies
-      run: | 
-        cd ~/catkin_ws/src/control-toolbox/ct
-        chmod 775 install_deps.sh
-        sudo ./install_deps.sh
-    - name: install kindr
-    - run: |
-        cd ~/catkin_ws/src/
-        git clone https://github.com/ANYbotics/kindr.git
-        cd kindr
-        mkdir -p build && cd build
-        cmake .. && make
-        sudo make install
-    - name: build and run unit tests
-    - run: |
-        cd ~/catkin_ws/src/control-toolbox/ct
-        sudo ./build_ct.sh -DUSE_CLANG=true -DBUILD_TESTS=true -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
+
