@@ -37,4 +37,9 @@ jobs:
       run: |
         mkdir -p ~/catkin_ws/src
         cd ~/catkin_ws/src
+    - name: Install deb-packaged dependencies
+      run: | 
+        cd ~/catkin_ws/src/control-toolbox/ct
+        chmod 775 install_deps.sh
+        sudo ./install_deps.sh
 
