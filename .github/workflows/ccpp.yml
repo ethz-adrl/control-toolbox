@@ -22,4 +22,15 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v1
+    - name: Install Gtest
+      run: |
+        sudo apt-get update                     >/dev/null # suppress output
+        sudo apt-get install cmake              >/dev/null # suppress output
+        sudo apt install libgtest-dev           >/dev/null # suppress output
+        cd /usr/src/gtest/                      >/dev/null # suppress output
+        sudo mkdir build && cd build            >/dev/null # suppress output
+        sudo cmake .. -DBUILD_SHARED_LIBS=ON    >/dev/null # suppress output
+        sudo make                               >/dev/null # suppress output
+        sudo cp *.so /usr/lib                   >/dev/null # suppress output
+        cd ~/                                   >/dev/null # suppress output
 
