@@ -44,4 +44,15 @@ jobs:
         cd ~/catkin_ws/src/control-toolbox/ct
         chmod 775 install_deps.sh
         sudo ./install_deps.sh
-
+    - name: install kindr
+    - run: |
+        cd ~/catkin_ws/src/
+        git clone https://github.com/ANYbotics/kindr.git
+        cd kindr
+        mkdir -p build && cd build
+        cmake .. && make
+        sudo make install
+    - name: build and run unit tests
+    - run: |
+        cd ~/catkin_ws/src/control-toolbox/ct
+        sudo ./build_ct.sh -DUSE_CLANG=true -DBUILD_TESTS=true -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
