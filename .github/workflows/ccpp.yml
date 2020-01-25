@@ -18,6 +18,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-16.04, ubuntu-18.04]
+        compiler: [gcc, clang]
     
     steps:
     - name: checkout code
@@ -44,6 +45,8 @@ jobs:
         chmod 775 install_deps.sh
         sudo ./install_deps.sh
     - name: Install kindr
+      env:
+        CC: ${{ matrix.compiler }}
       run: |
         cd ~/catkin_ws/src/
         git clone https://github.com/ANYbotics/kindr.git
@@ -52,6 +55,8 @@ jobs:
         cmake .. && make
         sudo make install
     - name: build and run unit tests
+      env:
+        CC: ${{ matrix.compiler }}
       run: |
         cd ~/catkin_ws/src/control-toolbox/ct
         sudo ./build_ct.sh -DUSE_CLANG=true -DBUILD_TESTS=true -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
