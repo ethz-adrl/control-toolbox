@@ -51,13 +51,13 @@ public:
     {
     }
 
-    virtual ~RBDState() {}
+    virtual ~RBDState() = default;
+
     bool operator!=(const RBDState& other) const { return (base() != other.base() || joints() != other.joints()); }
-    bool isApprox(const RBDState& rhs, const double& tol = 1e-10)
+    bool isApprox(const RBDState& rhs, const SCALAR& tol = 1e-10)
     {
         return base().isApprox(rhs.base(), tol) && joints().isApprox(rhs.joints(), tol);
     }
-
 
     /// @brief get base states
     RigidBodyState_t& base() { return baseState_; }
@@ -169,34 +169,22 @@ public:
 
     void fromStateVectorQuaternion(const state_vector_quat_t& state)
     {
-        try
-        {
-            base().pose().setFromRotationQuaternion(kindr::RotationQuaternion<SCALAR>(state.template head<4>()));
-            base().pose().position().toImplementation() = state.template segment<3>(4);
-            joints().getPositions() = state.template segment<NJOINTS>(7);
-            base().velocities().getRotationalVelocity().toImplementation() = state.template segment<3>(7 + NJOINTS);
-            base().velocities().getTranslationalVelocity().toImplementation() = state.template segment<3>(10 + NJOINTS);
-            joints().getVelocities() = state.template tail<NJOINTS>();
-        } catch (std::exception& e)
-        {
-            throw std::runtime_error("Conversion from State Vector to KindrTypes failed.");
-        }
+        base().pose().setFromRotationQuaternion(kindr::RotationQuaternion<SCALAR>(state.template head<4>()));
+        base().pose().position().toImplementation() = state.template segment<3>(4);
+        joints().getPositions() = state.template segment<NJOINTS>(7);
+        base().velocities().getRotationalVelocity().toImplementation() = state.template segment<3>(7 + NJOINTS);
+        base().velocities().getTranslationalVelocity().toImplementation() = state.template segment<3>(10 + NJOINTS);
+        joints().getVelocities() = state.template tail<NJOINTS>();
     }
 
     void fromStateVectorEulerXyz(const state_vector_euler_t& state)
     {
-        try
-        {
-            base().pose().setFromEulerAnglesXyz(state.template head<3>());
-            base().pose().position().toImplementation() = state.template segment<3>(3);
-            joints().getPositions() = state.template segment<NJOINTS>(6);
-            base().velocities().getRotationalVelocity().toImplementation() = state.template segment<3>(6 + NJOINTS);
-            base().velocities().getTranslationalVelocity().toImplementation() = state.template segment<3>(9 + NJOINTS);
-            joints().getVelocities() = state.template tail<NJOINTS>();
-        } catch (std::exception& e)
-        {
-            throw std::runtime_error("Conversion from State Vector to KindrTypes failed.");
-        }
+        base().pose().setFromEulerAnglesXyz(state.template head<3>());
+        base().pose().position().toImplementation() = state.template segment<3>(3);
+        joints().getPositions() = state.template segment<NJOINTS>(6);
+        base().velocities().getRotationalVelocity().toImplementation() = state.template segment<3>(6 + NJOINTS);
+        base().velocities().getTranslationalVelocity().toImplementation() = state.template segment<3>(9 + NJOINTS);
+        joints().getVelocities() = state.template tail<NJOINTS>();
     }
 
     void fromStateVectorRaw(const state_vector_quat_t& state) { fromStateVectorQuaternion(state); }
