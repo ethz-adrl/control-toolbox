@@ -59,4 +59,4 @@ jobs:
         CC: ${{ matrix.compiler }}
       run: |
         cd ~/catkin_ws/src/control-toolbox/ct
-        sudo ./build_ct.sh -DUSE_CLANG=true -DBUILD_TESTS=true -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
+        sudo ./build_ct.sh -DBUILD_TESTS=true -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
