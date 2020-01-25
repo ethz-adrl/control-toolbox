@@ -179,9 +179,6 @@ public:
             joints().getVelocities() = state.template tail<NJOINTS>();
         } catch (std::exception& e)
         {
-            std::cout << "Conversion from State Vector to KindrTypes failed." << std::endl;
-            std::cout << "Error: " << e.what() << std::endl;
-            std::cout << "State is: " << state.transpose() << std::endl;
             throw std::runtime_error("Conversion from State Vector to KindrTypes failed.");
         }
     }
@@ -198,9 +195,6 @@ public:
             joints().getVelocities() = state.template tail<NJOINTS>();
         } catch (std::exception& e)
         {
-            std::cout << "Conversion from State Vector to KindrTypes failed." << std::endl;
-            std::cout << "Error: " << e.what() << std::endl;
-            std::cout << "State is: " << state.transpose() << std::endl;
             throw std::runtime_error("Conversion from State Vector to KindrTypes failed.");
         }
     }
