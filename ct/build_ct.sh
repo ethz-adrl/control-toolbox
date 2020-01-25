@@ -19,11 +19,10 @@ if [ -d "../$1" ]; then
   echo "Building with the following flags ... "
   printf '%s\n' "${build_flags[@]}"
   
-  cmake .. ${build_flags[*]}
-  make -j4
+  cmake .. ${build_flags[*]}    || { echo "cmake failed"; exit 1; } 
+  make -j4                      || { echo "make failed"; exit 1; } 
   sudo make install  >/dev/null
   cd ..
-  echo " === completed " $1 " === "
 else
     echo "ERROR: an error occurred during building or installing. Try building manually."
     exit 1
@@ -48,7 +47,7 @@ else
   BUILD_FLAGS="$@"
 fi
 
-build_module ct_core $BUILD_FLAGS 
+build_module ct_core $BUILD_FLAGS
 build_module ct_optcon $BUILD_FLAGS
 build_module ct_rbd $BUILD_FLAGS 
 build_module ct_models $BUILD_FLAGS

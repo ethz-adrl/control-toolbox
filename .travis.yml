@@ -4,6 +4,7 @@ cache:
 
 language: generic
 matrix:
+  fast_finish: true
   include:
   - name: "xenial"
     dist: xenial
