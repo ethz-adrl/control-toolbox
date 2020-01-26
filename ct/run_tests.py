@@ -30,7 +30,9 @@ def main(argv=sys.argv[1:]):
         test_cmd = "./" + cmd + " --gtest_output=xml:" + working_dir + "/test_results/"
         print("Running: ", test_cmd)
         rc = subprocess.call(test_cmd, cwd=working_dir, shell=True)
-        
+        if rc == True : #in case of test failure
+          sys.exit(1)
+
         commands.insert(0, test_cmd)
             
     print("Ran the following commands: ")

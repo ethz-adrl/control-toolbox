@@ -64,7 +64,7 @@ endif()
 add_custom_target(run_tests ALL DEPENDS ${UNIT_TEST_TARGETS})
 add_custom_command(TARGET run_tests 
     COMMENT "Running tests"
-    POST_BUILD COMMAND ${PROJECT_SOURCE_DIR}/test/run_tests.py ${CMAKE_CURRENT_BINARY_DIR} ${UNIT_TEST_TARGETS}
+    POST_BUILD COMMAND ${PROJECT_SOURCE_DIR}/../ct/run_tests.py ${CMAKE_CURRENT_BINARY_DIR} ${UNIT_TEST_TARGETS}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
 
