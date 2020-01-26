@@ -274,7 +274,7 @@ TEST(KindrJitTest, DISABLED_EigenRotationMatrixToEigenEulerAnglesTest)
     }
 }
 
-
+/* //TODO: bring back this test
 #if EIGEN_VERSION_AT_LEAST(3, 2, 7)  // prior versions have a bug
 //! test the behaviour of transcribing an Eigen rotation matrix into Eigen AngleAxis representation
 template <typename SCALAR>
@@ -318,7 +318,7 @@ TEST(KindrJitTest, DISABLED_EigenRotationMatrixToAngleAxisTest)
     }
 }
 #endif
-
+*/
 
 //! test the Frobenius norm on an EigenMatrix
 template <typename SCALAR>

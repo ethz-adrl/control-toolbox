@@ -19,6 +19,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #ifdef CPPAD
 #include <cppad/cppad.hpp>
 #include <cppad/example/cppad_eigen.hpp>
+#include <cppad/example/eigen_mat_inv.hpp>
 #include "internal/autodiff/CppadParallel.h"
 #endif
 

@@ -21,6 +21,7 @@ sudo make install
 ## install CppADCodeGen
 git clone https://github.com/joaoleal/CppADCodeGen.git /tmp/CppADCodeGen
 cd /tmp/CppADCodeGen
+git checkout 247e4bd74628fd4c20a6c0a7619413fa15e8b63c  ## commit matching Cppad 2019 version
 mkdir -p build
 cd build
 cmake .. #-DLLVM_VERSION=6.0

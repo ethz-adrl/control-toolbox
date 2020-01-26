@@ -7,8 +7,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
  * In this file, derivative code including the actuator dynamics is generated.
  */
 
-#include <ct/core/core.h>
-#include <ct/optcon/optcon.h>
 #include <ct/rbd/rbd.h>
 
 #include <cmath>
