@@ -16,7 +16,7 @@ using IKProblem = ct::rbd::IKNLP<Kinematics_t>;
 using IKNLPSolver = ct::rbd::IKNLPSolverIpopt<IKProblem, Kinematics_t>;
 
 
-TEST(FixBaseInverseKinematicsTest, NLPIKTest)
+TEST(FixBaseInverseKinematicsTest, DISABLED_NLPIKTest)
 {
     size_t eeInd = 0;
 
