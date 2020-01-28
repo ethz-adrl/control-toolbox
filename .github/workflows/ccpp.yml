@@ -10,7 +10,7 @@ on:
       - v2*
       - master
   schedule:
-   - cron: "0 2 * * 1-5"
+   - cron: "0 2 * * 0"
 
 jobs:
   ct_ci:
