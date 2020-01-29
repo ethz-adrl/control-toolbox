@@ -1,5 +1,4 @@
 # Control Toolbox
-![](https://github.com/ethz-adrl/control-toolbox/workflows/ControlToolbox%20CI/badge.svg)
 ![GitHub top language](https://img.shields.io/github/languages/top/ethz-adrl/control-toolbox.svg?style=social)
 ![GitHub](https://img.shields.io/github/license/ethz-adrl/control-toolbox.svg?style=social)
 
