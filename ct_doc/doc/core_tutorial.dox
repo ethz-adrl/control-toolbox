@@ -207,7 +207,7 @@ In order to make sure your class works with Auto-Differentiation, your code need
 you might not want to start out with it. Branching that depends only on paramters of which you do not want to take the derivative of is fine.
  * Using mathematical functions or linear algebra: Functions such as std::sin, std::exp or inverses of Eigen matrices either do not support scalar types or have internal branching.
 Thus, they cannot be used. Thus, we provide traits that help you in this situation. These traits will select appropriate functions to call, depending on which SCALAR type is used.
-In case you called std::sin before, you should now call ct::core::internal::TraitSelector<SCALAR>::Trait::sin. In case e.g. SCALAR is a double type, this will call std::sin but for
+In case you called std::sin before, you should now call ct::core::tpl::TraitSelector<SCALAR>::Trait::sin. In case e.g. SCALAR is a double type, this will call std::sin but for
 instances of the Auto-Diff scalar it will call the Auto-Diff compatible versions of sin.
 
 Once the conversion is completed, you can follow the instructions above to compute Jacobians.
