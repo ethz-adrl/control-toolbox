@@ -312,11 +312,13 @@ int main(int argc, char** argv)
     ct::core::plot::show();
 
 #else  // print results to command line
-    std::cout << "State\t\tState_est\tdisturbance_est\n"
-              << std::fixed << std::setprecision(6) << states[i][0] << "\t" << states_est[i][0] << "\t"
-              << states_est[i][2] << std::endl
-              << states[i][1] << "\t" << states_est[i][1] << std::endl
-              << std::endl;
+    for (size_t i = 0; i < times.size(); i++)
+    {
+        std::cout << std::fixed << std::setprecision(6) << "pos:\t" << states[i][0] << "\t pos est:\t"
+                  << states_est[i][0] << "\t dist:\t" << states_est[i][2] << std::endl
+                  << "vel: \t" << states[i][1] << "\t vel est:\t" << states_est[i][1] << std::endl
+                  << std::endl;
+    }
 #endif
 
     return 0;
