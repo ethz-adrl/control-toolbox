@@ -57,7 +57,6 @@ To build an run the unit tests:
 \code{.sh}
 cd ~/your_workspace
 catkin build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=true
-catkin run_tests
 \endcode
 
 \subsubsection build-ros-doc Building the documentation
