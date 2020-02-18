@@ -250,17 +250,12 @@ Please see LICENCE.txt and NOTICE.txt
 
 ##  How to cite the CT
 
-    @misc{adrlCT,
-      author    = {Giftthaler, Markus and Neunert, Michael and {St\"auble}, Markus and Buchli, Jonas},
-      booktitle = {2018 IEEE International Conference on Simulation, Modeling, and Programming for Autonomous Robots (SIMPAR)},
-      author    = {Giftthaler, Markus and Neunert, Michael and {St\"auble}, Markus and Buchli, Jonas},
-      title     = "The {Control Toolbox} - An Open-Source {C++} Library for Robotics, Optimal and Model Predictive Control",
-      year      = 2018,
-      pages     ={123-129}, 
-      doi       ={10.1109/SIMPAR.2018.8376281}, 
-      month     ={May},
-      number    ={}, 
-      volume    ={}, 
+    @article{adrlCT,
+      title={The control toolbox — An open-source C++ library for robotics, optimal and model predictive control},
+      author={Markus Giftthaler and Michael Neunert and Markus St{\"a}uble and Jonas Buchli},
+      journal={2018 IEEE International Conference on Simulation, Modeling, and Programming for Autonomous Robots (SIMPAR)},
+      year={2018},
+      pages={123-129}
     }
 
 ## Earlier Versions
