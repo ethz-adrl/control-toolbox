@@ -57,6 +57,11 @@ To build an run the unit tests:
 \code{.sh}
 cd ~/your_workspace
 catkin build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=true
+source /devel/setup.bash
+roscd ct_core && catkin build -v --this --no-deps --make-args run_tests
+roscd ct_optcon && catkin build -v --this --no-deps --make-args run_tests
+roscd ct_rbd && catkin build -v --this --no-deps --make-args run_tests
+roscd ct_models && catkin build -v --this --no-deps --make-args run_tests
 \endcode
 
 \subsubsection build-ros-doc Building the documentation
@@ -92,10 +97,10 @@ For running the nonlinear optimal control or filtering examples, for instance, g
 \endcode
 
 \subsubsection build-cmake-tests Building and running the unit tests
-To build an run the unit tests:
+To build an run the unit tests, you can either call the target 'run_tests' manually via "make run_tests", or use the convenience script
 \code{.sh}
 cd your_workspace/control-toolbox/ct
-./build_ct.sh -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=true
+./run_unit_tests.sh
 \endcode
 
 \subsubsection build-cmake-doc Building the documentation

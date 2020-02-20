@@ -20,7 +20,8 @@ if [ -d "../$1" ]; then
   printf '%s\n' "${build_flags[@]}"
   
   cmake .. ${build_flags[*]}    || { echo "cmake failed"; exit 1; } 
-  make -j8                      || { echo "make failed"; exit 1; } 
+  make -j8                      || { echo "make failed"; exit 1; }
+  make run_tests
   sudo make install  >/dev/null
   cd ..
 else
@@ -41,10 +42,10 @@ fi
 if [ -z "$1" ] 
   then
     echo "No build flags supplied, using -DCMAKE_BUILD_TYPE=Release"
-    BUILD_FLAGS="-DCMAKE_BUILD_TYPE=Release"
+    BUILD_FLAGS="-DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=true"
 else 
   # entire user input is interpreted as build flags
-  BUILD_FLAGS="$@"
+  BUILD_FLAGS="-DBUILD_TESTS=true $@"
 fi
 
 build_module ct_core $BUILD_FLAGS

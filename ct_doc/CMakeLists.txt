@@ -11,7 +11,7 @@ find_package(ct_optcon REQUIRED)
 find_package(ct_rbd REQUIRED)
 find_package(ct_models REQUIRED)
 
-find_package(Doxygen)
+find_package(Doxygen REQUIRED)
 
 if(DOXYGEN_FOUND)
     
