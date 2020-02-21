@@ -19,9 +19,9 @@ if [ -d "../$1" ]; then
   echo "Building with the following flags ... "
   printf '%s\n' "${build_flags[@]}"
   
-  cmake .. ${build_flags[*]}    || { echo "cmake failed"; exit 1; } 
-  make -j8                      || { echo "make failed"; exit 1; }
-  make run_tests
+  cmake .. ${build_flags[*]}    || { echo "CT cmake failed"; exit 1; } 
+  make -j4                      || { echo "CT make failed"; exit 1; }
+  make run_tests                || { echo "CT make run_tests failed"; exit 1; }
   sudo make install  >/dev/null
   cd ..
 else
