@@ -6,10 +6,43 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include <cstdlib>
 
 #include <ct/core/core.h>
+#include <ct/core/types/arrays/ManifArrays.h>
 
 #include <gtest/gtest.h>
 
 using namespace ct::core;
+
+TEST(DiscreteArrayTest, ManifTypeTest)
+{
+    const size_t nEl = 10;
+
+    // test constructors
+    {
+        SE3Array arr(nEl);
+    }
+    {
+        SE3Array arr(nEl, manif::SE3d::Identity());
+    }
+    {
+        SE3Array arr(nEl, manif::SE3d::Random());
+        SE3Array other(arr);
+        ASSERT_TRUE(arr == other);
+    }
+
+    // test operators
+    {
+        SE3Array arr(nEl, manif::SE3d::Random());
+        SE3Array other = arr;
+        ASSERT_TRUE(arr == other);
+        ASSERT_FALSE(arr != other);
+    }
+    {
+        SE3Array arr1(nEl, manif::SE3d::Random());
+        SE3Array arr2(nEl, manif::SE3d::Random());
+        ASSERT_FALSE(arr1 == arr2);
+        ASSERT_TRUE(arr1 != arr2);
+    }
+}
 
 
 TEST(DiscreteArrayTest, UnaryPlusMinusTest)
@@ -26,6 +59,8 @@ TEST(DiscreteArrayTest, UnaryPlusMinusTest)
         array1[i].setRandom();
         array2[i].setRandom();
     }
+
+    ASSERT_FALSE(array1 == array2);
 
     //! create backups for for later comparison
     StateVectorArray<state_dim> array1_backup = array1;

@@ -8,7 +8,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include <memory>
 
 #include <ct/core/types/Time.h>
-#include <ct/core/types/StateVector.h>
 #include <ct/core/types/ControlVector.h>
 #include <ct/core/types/ControlMatrix.h>
 
@@ -22,19 +21,17 @@ namespace core {
  * ControlledSystem. Any custom controller should derive from this class
  * to ensure it is compatible with ControlledSystem and the Integrator.
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+template <typename MANIFOLD, size_t CONTROL_DIM, typename SCALAR = typename MANIFOLD::Scalar>
 class Controller
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    //! Default constructor
-    Controller(){};
+
+    Controller() = default;
+    virtual ~Controller() = default;
 
     //! Copy constructor
     Controller(const Controller& other){};
-
-    //! Destructor
-    virtual ~Controller(){};
 
     //! Deep cloning
     /*!
@@ -53,7 +50,7 @@ public:
 	 * @param t current time of the system
 	 * @param controlAction the corresponding control action
 	 */
-    virtual void computeControl(const StateVector<STATE_DIM, SCALAR>& state,
+    virtual void computeControl(const MANIFOLD& state,
         const SCALAR& t,
         ControlVector<CONTROL_DIM, SCALAR>& controlAction) = 0;
 
@@ -66,8 +63,7 @@ public:
      *
      * @return     The derivatives with respect to u0.
      */
-    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state,
-        const SCALAR time)
+    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const MANIFOLD& state, const SCALAR time)
     {
         throw std::runtime_error("getDerivativeU0() not implemented for the current controller");
     }
@@ -81,8 +77,7 @@ public:
      *
      * @return     The derivatives with respect to uF.
      */
-    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeUf(const StateVector<STATE_DIM, SCALAR>& state,
-        const SCALAR time)
+    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeUf(const MANIFOLD& state, const SCALAR time)
     {
         throw std::runtime_error("getDerivativeUf() not implemented for the current controller");
     }

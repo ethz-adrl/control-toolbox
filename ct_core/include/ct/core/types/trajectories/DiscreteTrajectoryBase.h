@@ -5,7 +5,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include "TrajectoryBase.h"
 #include "../arrays/TimeArray.h"
 #include "../arrays/DiscreteArray.h"
 
@@ -27,11 +26,16 @@ namespace core {
  * \tparam Alloc allocator for trajectory points
  *
  * */
-template <class T, class Alloc = Eigen::aligned_allocator<T>, typename SCALAR = double>
-class DiscreteTrajectoryBase : public TrajectoryBase<T, SCALAR>
+template <class DERIVED, class T, class Alloc = Eigen::aligned_allocator<T>, typename SCALAR = double>
+class DiscreteTrajectoryBase
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    using Scalar_t = SCALAR;
+    using alloc_type = Alloc;
+    using DiscreteArray_t = DiscreteArray<T, alloc_type>;
+    using DiscreteTrajectoryBase_t = DiscreteTrajectoryBase<DERIVED, T, Alloc, SCALAR>;
 
     //! default constructor
     DiscreteTrajectoryBase(const InterpolationType& type = ZOH) : time_(), data_(), interp_(type) {}
@@ -69,7 +73,7 @@ public:
     }
 
     //! copy constructor
-    DiscreteTrajectoryBase(const DiscreteTrajectoryBase<T, Alloc>& other)
+    DiscreteTrajectoryBase(const DiscreteTrajectoryBase<DERIVED, T, Alloc>& other)
         : time_(other.time_), data_(other.data_), interp_(other.interp_.getInterpolationType())
     {
     }
@@ -81,7 +85,7 @@ public:
 	 * @param startIndex index where the trajectory to be extracted starts
 	 * @param endIndex index where the trajectory to be extracted ends
 	 */
-    DiscreteTrajectoryBase(DiscreteTrajectoryBase<T, Alloc, SCALAR>& other,
+    DiscreteTrajectoryBase(DiscreteTrajectoryBase<DERIVED, T, Alloc, SCALAR>& other,
         const size_t startIndex,
         const size_t endIndex)
         : time_(), data_(), interp_(other.interp_.getInterpolationType())
@@ -100,7 +104,7 @@ public:
     }
 
     //! Destructor
-    virtual ~DiscreteTrajectoryBase(){};
+    virtual ~DiscreteTrajectoryBase() = default;
 
 
     //! set the data array
@@ -132,12 +136,7 @@ public:
 	 * @param time stamp at which to evaluate the trajectory
 	 * @return trajectory value
 	 */
-    virtual T eval(const SCALAR& evalTime) override
-    {
-        T result;
-        interp_.interpolate(time_, data_, evalTime, result);
-        return result;
-    }
+    virtual T eval(const SCALAR& evalTime) { return static_cast<DERIVED*>(this)->eval_specialized(evalTime); }
 
     //! returns the size of the trajectory
     /*!

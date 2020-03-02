@@ -5,5 +5,5 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-// put implementations here
+#include "types/ManifoldState-impl.h"
 

@@ -9,6 +9,9 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunused-value"
 
+#include <ct/core/systems/continuous_time/linear/LinearSystem.h>
+
+
 namespace ct {
 namespace core {
 
@@ -28,11 +31,28 @@ namespace core {
  * \tparam STATE_DIM size of state vector
  * \tparam CONTROL_DIM size of control vector
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM>
-class LTISystem : public LinearSystem<STATE_DIM, CONTROL_DIM>
+template <typename MANIFOLD, size_t CONTROL_DIM, typename SCALAR = typename MANIFOLD::Scalar>
+class LTISystem : public LinearSystem<MANIFOLD, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    static const size_t STATE_DIM = MANIFOLD::TangentDim;
+    using Tangent = typename MANIFOLD::Tangent;
+
+    using BASE = LinearSystem<MANIFOLD, CONTROL_DIM, SCALAR>;
+    using Time_t = typename BASE::Time_t;
+    using control_vector_t = typename BASE::control_vector_t;
+    using state_matrix_t = typename BASE::state_matrix_t;
+    using state_control_matrix_t = typename BASE::state_control_matrix_t;
+
+    LTISystem()
+    {
+        A_.setZero();
+        B_.setZero();
+        C_.setZero();
+        D_.setZero();
+    }
 
     //! Constructs a linear time invariant system
     /*!
@@ -42,10 +62,10 @@ public:
 	 * @param D D matrix
 	 * @return instance of the LTI system
 	 */
-    LTISystem(const Eigen::Matrix<double, STATE_DIM, STATE_DIM>& A,
-        const Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>& B,
-        const Eigen::Matrix<double, STATE_DIM, STATE_DIM>& C = Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Identity(),
-        const Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> D = Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>::Zero())
+    LTISystem(const state_matrix_t& A,
+        const state_control_matrix_t& B,
+        const state_matrix_t& C = state_matrix_t::Identity(),
+        const state_control_matrix_t D = state_control_matrix_t::Zero())
         : A_(A), B_(B), C_(C), D_(D)
     {
     }
@@ -53,48 +73,36 @@ public:
     //! copy constructor
     LTISystem(const LTISystem& arg) : A_(arg.A_), B_(arg.B_), C_(arg.C_), D_(arg.D_) {}
     //! deep clone
-    LTISystem<STATE_DIM, CONTROL_DIM>* clone() const override { return new LTISystem<STATE_DIM, CONTROL_DIM>(*this); }
+    LTISystem* clone() const override { return new LTISystem(*this); }
     virtual ~LTISystem() {}
     //! get A matrix
-    virtual const Eigen::Matrix<double, STATE_DIM, STATE_DIM>& getDerivativeState(const StateVector<STATE_DIM>& x,
+    virtual const state_matrix_t& getDerivativeState(const MANIFOLD& m,
         const ControlVector<CONTROL_DIM>& u,
-        const double t = 0.0) override
+        const SCALAR t = 0.0) override
     {
         return A_;
     }
 
     //! get B matrix
-    virtual const Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>& getDerivativeControl(const StateVector<STATE_DIM>& x,
+    virtual const state_control_matrix_t& getDerivativeControl(const MANIFOLD& m,
         const ControlVector<CONTROL_DIM>& u,
-        const double t = 0.0) override
+        const SCALAR t = 0.0) override
     {
         return B_;
     }
 
     //! get A matrix
-    Eigen::Matrix<double, STATE_DIM, STATE_DIM>& A() { return A_; }
+    state_matrix_t& A() { return A_; }
+    const state_matrix_t& A() const { return A_; }
     //! get B matrix
-    Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>& B() { return B_; }
+    state_control_matrix_t& B() { return B_; }
+    const state_control_matrix_t& B() const { return B_; }
     //! get C matrix
-    Eigen::Matrix<double, STATE_DIM, STATE_DIM>& C() { return C_; }
+    state_matrix_t& C() { return C_; }
+    const state_matrix_t& C() const { return C_; }
     //! get D matrix
-    Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>& D() { return D_; }
-    //! computes the system dynamics
-    /*!
-	 * Computes \f$ \dot{x} = Ax + Bu \f$
-	 * @param state current state x
-	 * @param t time (gets ignored)
-	 * @param control control input
-	 * @param derivative state derivative
-	 */
-    void computeControlledDynamics(const Eigen::Matrix<double, STATE_DIM, 1>& state,
-        const Time& t,
-        const Eigen::Matrix<double, CONTROL_DIM, 1>& control,
-        Eigen::Matrix<double, STATE_DIM, 1>& derivative)
-    {
-        derivative = A_ * state + B_ * control;
-    }
-
+    state_control_matrix_t& D() { return D_; }
+    const state_control_matrix_t& D() const { return D_; }
     //! computes the system output (measurement)
     /*!
 	 * Computes \f$ y = Cx + Du \f$
@@ -103,12 +111,13 @@ public:
 	 * @param control control input
 	 * @param output system output (measurement)
 	 */
-    void computeOutput(const Eigen::Matrix<double, STATE_DIM, 1>& state,
+    void computeOutput(const MANIFOLD& state,
         const Time& t,
-        const Eigen::Matrix<double, CONTROL_DIM, 1>& control,
-        Eigen::Matrix<double, STATE_DIM, 1>& output)
+        const Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& control,
+        Eigen::Matrix<SCALAR, STATE_DIM, 1>& output)
     {
-        output = C_ * state + D_ * control;
+        throw std::runtime_error("LTISystem: computeOutput() not ported to manifolds yet.");
+        //output = C_ * state + D_ * control;
     }
 
     //! computes the controllability matrix
@@ -119,7 +128,7 @@ public:
 	 *
 	 * @param CO controllability matrix
 	 */
-    void computeControllabilityMatrix(Eigen::Matrix<double, STATE_DIM, STATE_DIM * CONTROL_DIM>& CO)
+    void computeControllabilityMatrix(Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM * CONTROL_DIM>& CO)
     {
         CO.block<STATE_DIM, CONTROL_DIM>(0, 0) = B_;
 
@@ -138,10 +147,10 @@ public:
 	 */
     bool isControllable()
     {
-        Eigen::Matrix<double, STATE_DIM, STATE_DIM * CONTROL_DIM> CO;
+        Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM * CONTROL_DIM> CO;
         computeControllabilityMatrix(CO);
 
-        Eigen::FullPivLU<Eigen::Matrix<double, STATE_DIM, STATE_DIM * CONTROL_DIM>> LUdecomposition(CO);
+        Eigen::FullPivLU<Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM * CONTROL_DIM>> LUdecomposition(CO);
         return LUdecomposition.rank() == STATE_DIM;
     }
 
@@ -152,7 +161,7 @@ public:
 	 * Computes the observability matrix to assess observability. See isObservable() for the full test.
 	 * @param O observability matrix
 	 */
-    void computeObservabilityMatrix(Eigen::Matrix<double, STATE_DIM, STATE_DIM * STATE_DIM>& O)
+    void computeObservabilityMatrix(Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM * STATE_DIM>& O)
     {
         O.block<STATE_DIM, STATE_DIM>(0, 0) = C_;
 
@@ -171,20 +180,18 @@ public:
 	 */
     bool isObservable()
     {
-        Eigen::Matrix<double, STATE_DIM, STATE_DIM * STATE_DIM> O;
+        Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM * STATE_DIM> O;
         computeObservabilityMatrix(O);
 
-        Eigen::FullPivLU<Eigen::Matrix<double, STATE_DIM, STATE_DIM * STATE_DIM>> LUdecomposition(O);
+        Eigen::FullPivLU<Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM * STATE_DIM>> LUdecomposition(O);
         return LUdecomposition.rank() == STATE_DIM;
     }
 
-
 private:
-    Eigen::Matrix<double, STATE_DIM, STATE_DIM> A_;    //!< A matrix
-    Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> B_;  //!< B matrix
-
-    Eigen::Matrix<double, STATE_DIM, STATE_DIM> C_;    //!< C matrix
-    Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> D_;  //!< D matrix
+    state_matrix_t A_;          //!< A matrix
+    state_control_matrix_t B_;  //!< B matrix
+    state_matrix_t C_;          //!< C matrix
+    state_control_matrix_t D_;  //!< D matrix
 };
 
 }  // namespace core

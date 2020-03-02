@@ -44,18 +44,15 @@ public:
     //! Copy Constructor
     Interpolation(const Interpolation& arg) : index_(arg.index_), type_(arg.type_) {}
     //! This method performs the interpolation
-    /*!
-	 * @param timeArray timing information of the data points
-	 * @param dataArray	the data points in form of a DiscreteArray
-	 * @param enquiryTime the time where to evaluate the interpolation
-	 * @param enquiryData the result of the interpolation
-	 * @param greatestLessTimeStampIndex the smallest index corresponding to a time smaller than the inquired Time
-	 */
+
+
+    template <typename LAMBDA>
     void interpolate(const tpl::TimeArray<SCALAR>& timeArray,
         const DiscreteArray_t& dataArray,
         const SCALAR& enquiryTime,
         Data_T& enquiryData,
-        int greatestLessTimeStampIndex = -1)
+        LAMBDA&& interp_functional,
+        const int greatestLessTimeStampIndex = -1)
     {
         if (timeArray.size() == 0)
             throw std::runtime_error("Interpolation.h : TimeArray is size 0.");
@@ -64,9 +61,9 @@ public:
             throw std::runtime_error("Interpolation.h : DataArray is size 0.");
 
         if (timeArray.size() != dataArray.size())
-            throw std::runtime_error("Interpolation.h : The size of timeStamp vector (=" +
-                                     std::to_string(timeArray.size()) + ") is not equal to the size of data vector (=" +
-                                     std::to_string(dataArray.size()) + ").");
+            throw std::runtime_error(
+                "Interpolation.h : The size of timeStamp vector (=" + std::to_string(timeArray.size()) +
+                ") is not equal to the size of data vector (=" + std::to_string(dataArray.size()) + ").");
 
 
         // treat special case of trajectory length equal 1
@@ -78,11 +75,13 @@ public:
 
         int ind;
         if (greatestLessTimeStampIndex == -1)
-            ind = findIndex(timeArray, enquiryTime);
+        {
+            ind = this->findIndex(timeArray, enquiryTime);
+        }
         else
         {
-            ind = greatestLessTimeStampIndex;
-            index_ = greatestLessTimeStampIndex;
+            this->index_ = greatestLessTimeStampIndex;
+            ind = this->findIndex(timeArray, enquiryTime);
         }
 
         if (enquiryTime < timeArray.front())
@@ -99,11 +98,29 @@ public:
 
         SCALAR alpha = (enquiryTime - timeArray.at(ind + 1)) / (timeArray.at(ind) - timeArray.at(ind + 1));
 
+        // perform the actual evaluation of the interpolation
+        enquiryData = std::forward<LAMBDA>(interp_functional)(dataArray.at(ind), dataArray.at(ind + 1), alpha);
+    }
 
-        if (type_ == InterpolationType::LIN)
-            enquiryData = alpha * dataArray.at(ind) + (1 - alpha) * dataArray.at(ind + 1);
-        else if (type_ == InterpolationType::ZOH)
-            enquiryData = dataArray.at(ind);
+
+    void interpolate(const tpl::TimeArray<SCALAR>& timeArray,
+        const DiscreteArray_t& dataArray,
+        const SCALAR& enquiryTime,
+        Data_T& enquiryData,
+        const int greatestLessTimeStampIndex = -1)
+    {
+        // define elementary lambda routines for interpolation between two data points
+        // ZOH-interpolation
+        auto interpolate_ZOH = [](const auto& p0, const auto& p1, const auto& alpha) { return p0; };
+        // LIN-interpolation
+        auto interpolate_LIN = [](const auto& p0, const auto& p1, const auto& alpha) {
+            return alpha * p0 + (1 - alpha) * p1;
+        };
+
+        if (this->type_ == InterpolationType::LIN)
+            interpolate(timeArray, dataArray, enquiryTime, enquiryData, interpolate_LIN, greatestLessTimeStampIndex);
+        else if (this->type_ == InterpolationType::ZOH)
+            interpolate(timeArray, dataArray, enquiryTime, enquiryData, interpolate_ZOH, greatestLessTimeStampIndex);
         else
             throw std::runtime_error("Unknown Interpolation type!");
     }
@@ -163,5 +180,5 @@ protected:
 };
 
 
-}  // namespace ct
 }  // namespace core
+}  // namespace ct

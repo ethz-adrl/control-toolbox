@@ -5,6 +5,9 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include <ct/core/systems/continuous_time/linear/LinearSystem.h>
+#include <ct/core/systems/linearizer/DynamicsLinearizerNumDiff.h>
+
 namespace ct {
 namespace core {
 
@@ -47,22 +50,20 @@ namespace core {
  * @tparam CONTROL_DIM dimension of control vector
  * @tparam SCALAR underlying scalar type of the system
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class SystemLinearizer : public LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM, typename SCALAR = typename MANIFOLD::Scalar>
+class SystemLinearizer : public LinearSystem<MANIFOLD, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;  //!< Base class type
-    
-    typedef typename Base::time_t time_t; //!< Time type as defined in System
-
-    typedef typename Base::state_vector_t state_vector_t;                  //!< state vector type
-    typedef typename Base::control_vector_t control_vector_t;              //!< input vector type
-    typedef typename Base::state_matrix_t state_matrix_t;                  //!< state Jacobian type
-    typedef typename Base::state_control_matrix_t state_control_matrix_t;  //!< input Jacobian type
-
-    typedef ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR> system_t;  //!< type of system to be linearized
+    static const size_t STATE_DIM = MANIFOLD::TangentDim;
+    using Tangent = typename MANIFOLD::Tangent;
+    using NonlinearSystem_t = ControlledSystem<MANIFOLD, CONTROL_DIM, SCALAR>;  //!< type of system to be linearized
+    using Base = LinearSystem<MANIFOLD, CONTROL_DIM, SCALAR>;                   //!< Base class type
+    using Time_t = typename Base::Time_t;                                       //!< Time type as defined in System
+    using control_vector_t = typename Base::control_vector_t;                   //!< input vector type
+    using state_matrix_t = typename Base::state_matrix_t;                       //!< state Jacobian type
+    using state_control_matrix_t = typename Base::state_control_matrix_t;       //!< input Jacobian type
 
 
     //! default constructor
@@ -72,10 +73,10 @@ public:
 	 * @param nonlinearSystem non-linear system to linearize
 	 * @param doubleSidedDerivative if true, double sided numerical differentiation is used
 	 */
-    SystemLinearizer(std::shared_ptr<system_t> nonlinearSystem, bool doubleSidedDerivative = true)
+    SystemLinearizer(std::shared_ptr<NonlinearSystem_t> nonlinearSystem, bool doubleSidedDerivative = true)
         : Base(nonlinearSystem->getType()),
           nonlinearSystem_(nonlinearSystem),
-          linearizer_(std::bind(&system_t::computeControlledDynamics,
+          linearizer_(std::bind(&NonlinearSystem_t::computeControlledDynamics,
                           nonlinearSystem_.get(),
                           std::placeholders::_1,
                           std::placeholders::_2,
@@ -99,7 +100,7 @@ public:
     SystemLinearizer(const SystemLinearizer& arg)
         : Base(arg),
           nonlinearSystem_(arg.nonlinearSystem_->clone()),
-          linearizer_(std::bind(&system_t::computeControlledDynamics,
+          linearizer_(std::bind(&NonlinearSystem_t::computeControlledDynamics,
                           nonlinearSystem_.get(),
                           std::placeholders::_1,
                           std::placeholders::_2,
@@ -115,9 +116,9 @@ public:
     //! destructor
     virtual ~SystemLinearizer() {}
     //! deep cloning
-    SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
+    SystemLinearizer<MANIFOLD, CONTROL_DIM, SCALAR>* clone() const override
     {
-        return new SystemLinearizer<STATE_DIM, CONTROL_DIM, SCALAR>(*this);
+        return new SystemLinearizer<MANIFOLD, CONTROL_DIM, SCALAR>(*this);
     }
 
     //! get the Jacobian with respect to the state
@@ -134,11 +135,11 @@ public:
 	 * @param t time
 	 * @return Jacobian wrt state
 	 */
-    virtual const state_matrix_t& getDerivativeState(const state_vector_t& x,
+    virtual const state_matrix_t& getDerivativeState(const MANIFOLD& m,
         const control_vector_t& u,
-        const time_t t = 0.0) override
+        const Time_t t = 0.0) override
     {
-        dFdx_ = linearizer_.getDerivativeState(x, u, t);
+        dFdx_ = linearizer_.getDerivativeState(m, u, t);
 
         if (isSecondOrderSystem_)
         {
@@ -148,7 +149,6 @@ public:
 
         return dFdx_;
     }
-
 
     //! get the Jacobian with respect to the input
     /*!
@@ -164,11 +164,11 @@ public:
 	 * @param t time
 	 * @return Jacobian wrt input
 	 */
-    virtual const state_control_matrix_t& getDerivativeControl(const state_vector_t& x,
+    virtual const state_control_matrix_t& getDerivativeControl(const MANIFOLD& m,
         const control_vector_t& u,
-        const time_t t = 0.0) override
+        const Time_t t = 0.0) override
     {
-        dFdu_ = linearizer_.getDerivativeControl(x, u, t);
+        dFdu_ = linearizer_.getDerivativeControl(m, u, t);
 
         if (isSecondOrderSystem_)
         {
@@ -178,19 +178,22 @@ public:
         return dFdu_;
     }
 
-
 protected:
-    std::shared_ptr<system_t> nonlinearSystem_;  //!< instance of non-linear system
+    //!< instance of non-linear system, living on MANIFOLD
+    std::shared_ptr<NonlinearSystem_t> nonlinearSystem_;
 
-    DynamicsLinearizerNumDiff<STATE_DIM, CONTROL_DIM, SCALAR, SCALAR>
-        linearizer_;  //!< instance of numerical-linearizer
+    //!< instance of numerical-linearizer
+    DynamicsLinearizerNumDiff<MANIFOLD, CONTROL_DIM, SCALAR, SCALAR> linearizer_;
 
-    state_matrix_t dFdx_;          //!< Jacobian wrt state
-    state_control_matrix_t dFdu_;  //!< Jacobian wrt input
+    //!< Jacobian wrt state
+    state_matrix_t dFdx_;
 
-    bool isSecondOrderSystem_;  //!< flag if system is a second order system
+    //!< Jacobian wrt input
+    state_control_matrix_t dFdu_;
+
+    //!< flag if system is a second order system
+    bool isSecondOrderSystem_;
 };
-
 
 }  // namespace core
 }  // namespace ct

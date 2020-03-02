@@ -36,26 +36,24 @@ namespace core {
  * @tparam CONTROL_DIM dimension of input vector
  * @tparam SCALAR scalar type
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class DiscreteControlledSystem : public DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM, typename SCALAR = typename MANIFOLD::Scalar>
+class DiscreteControlledSystem : public DiscreteSystem<MANIFOLD, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef typename std::shared_ptr<DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> Ptr;
-
-    typedef DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR> Base;
-
-    typedef typename Base::state_vector_t state_vector_t;
-    typedef typename Base::control_vector_t control_vector_t;
-    typedef typename Base::time_t time_t;
+    using Ptr = typename std::shared_ptr<DiscreteControlledSystem<MANIFOLD, CONTROL_DIM, SCALAR>>;
+    using Base = DiscreteSystem<MANIFOLD, SCALAR>;
+    using time_t = typename Base::time_t;
+    using state_vector_t = typename Base::state_vector_t;
+    using control_vector_t = ct::core::ControlVector<CONTROL_DIM>;
+    using DiscreteController_t = DiscreteController<MANIFOLD, CONTROL_DIM, SCALAR>;
 
     //! default constructor
     /*!
 	 * @param type system type
 	 */
-    DiscreteControlledSystem(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
-        : DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type), controller_(nullptr){};
+    DiscreteControlledSystem(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL) : Base(type), controller_(nullptr) {}
 
     //! constructor
     /*!
@@ -63,48 +61,44 @@ public:
 	 * @param controller controller
 	 * @param type system type
 	 */
-    DiscreteControlledSystem(std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>> controller,
+    DiscreteControlledSystem(std::shared_ptr<DiscreteController_t> controller,
         const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
-        : DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(type), controller_(controller){};
+        : Base(type), controller_(controller)
+    {
+    }
 
     //! copy constructor
-    DiscreteControlledSystem(const ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>& arg)
-        : DiscreteSystem<STATE_DIM, CONTROL_DIM, SCALAR>(arg)
+    DiscreteControlledSystem(const DiscreteControlledSystem<MANIFOLD, CONTROL_DIM, SCALAR>& arg) : Base(arg)
     {
         if (arg.controller_)
-            controller_ = std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>>(arg.controller_->clone());
+            controller_ = std::shared_ptr<DiscreteController_t>(arg.controller_->clone());
     }
 
     //! destructor
     virtual ~DiscreteControlledSystem() = default;
 
     //! deep copy
-    virtual DiscreteControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override = 0;
+    virtual DiscreteControlledSystem<MANIFOLD, CONTROL_DIM, SCALAR>* clone() const override = 0;
 
     //! set a new controller
     /*!
 	 * @param controller new controller
 	 */
-    void setController(const std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>>& controller)
-    {
-        controller_ = controller;
-    }
+    void setController(const std::shared_ptr<DiscreteController_t>& controller) { controller_ = controller; }
 
     //! get the controller instance
     /*!
 	 * \todo remove this function (duplicate of getController() below)
 	 * @param controller controller instance
 	 */
-    void getController(std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>>& controller) const
-    {
-        controller = controller_;
-    }
+    void getController(std::shared_ptr<DiscreteController_t>& controller) const { controller = controller_; }
 
     //! get the controller instace
     /*!
 	 * @return controller instance
 	 */
-    std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>> getController() { return controller_; }
+    std::shared_ptr<DiscreteController_t> getController() { return controller_; }
+
     //! propagates the system dynamics forward by one step
     /*!
 	 * evaluates \f$ x_{n+1} = f(x_n, n) \f$ at a given state and index
@@ -123,7 +117,6 @@ public:
         propagateControlledDynamics(state, n, controlAction, stateNext);
     }
 
-
     //! propagates the controlled system dynamics forward by one step
     /*!
 	 * evaluates \f$ x_{n+1} = f(x_n, u_n, n) \f$ at a given state, control and index
@@ -139,7 +132,8 @@ public:
 
 
 protected:
-    std::shared_ptr<DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>> controller_;  //!< the controller instance
+    std::shared_ptr<DiscreteController_t> controller_;  //!< the controller instance
 };
+
 }  // namespace core
 }  // namespace ct

@@ -5,7 +5,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/core/types/StateVector.h>
 #include <ct/core/types/ControlVector.h>
 
 
@@ -18,23 +17,19 @@ namespace core {
  * ControlledSystem. Any custom controller should derive from this class
  * to ensure it is compatible with ControlledSystem and the Integrator.
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+template <typename MANIFOLD, size_t CONTROL_DIM, typename SCALAR = typename MANIFOLD::Scalar>
 class DiscreteController
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef StateVector<STATE_DIM, SCALAR> state_vector_t;
     typedef ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 
-    //! Default constructor
-    DiscreteController(){};
+    DiscreteController() = default;
+    virtual ~DiscreteController() = default;
 
     //! Copy constructor
     DiscreteController(const DiscreteController& other){};
-
-    //! Destructor
-    virtual ~DiscreteController(){};
 
     //! Deep cloning
     /*!
@@ -53,7 +48,7 @@ public:
      * @param n current time index of the system
      * @param controlAction the corresponding control action
      */
-    virtual void computeControl(const state_vector_t& state, const int n, control_vector_t& controlAction) = 0;
+    virtual void computeControl(const MANIFOLD& state, const int n, control_vector_t& controlAction) = 0;
 };
 
 }  // namespace core

@@ -21,23 +21,21 @@ namespace core {
  * B &= \frac{df}{du} |_{x=x_s, u=u_s}
  * \end{aligned}
  * \f]
- *
  */
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename TIME>
+template <typename MANIFOLD, size_t CONTROL_DIM, typename SCALAR = typename MANIFOLD::Scalar, typename TIME = SCALAR>
 class DynamicsLinearizerNumDiff
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef StateVector<STATE_DIM, SCALAR> state_vector_t;        //!< state vector type
-    typedef ControlVector<CONTROL_DIM, SCALAR> control_vector_t;  //!< control vector type
+    static const size_t STATE_DIM = MANIFOLD::TangentDim;
+    using Tangent = typename MANIFOLD::Tangent;
+    using control_vector_t = ControlVector<CONTROL_DIM, SCALAR>;                        //!< control vector type
+    using state_matrix_t = StateMatrix<STATE_DIM, SCALAR>;                              //!< state Jacobian type (A)
+    using state_control_matrix_t = StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR>;  //!< control Jacobian type (B)
 
-    typedef StateMatrix<STATE_DIM, SCALAR> state_matrix_t;                              //!< state Jacobian type (A)
-    typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;  //!< control Jacobian type (B)
-
-    typedef std::function<void(const state_vector_t&, const TIME&, const control_vector_t&, state_vector_t&)>
-        dynamics_fct_t;  //!< dynamics function signature
+    //!< dynamics function signature
+    using dynamics_fct_t = std::function<void(const MANIFOLD&, const TIME&, const control_vector_t&, Tangent&)>;
 
     //! default constructor
     /*!
@@ -64,22 +62,23 @@ public:
     {
     }
 
-
-    //! get the Jacobian with respect to the state
     /*!
-   * This computes the linearization of the dynamics with respect to the state
-   * at a given point \f$ x=x_s \f$, \f$ u=u_s \f$, i.e. it computes
-   *
-   * \f[
-   * B = \frac{df}{dx} |_{x=x_s, u=u_s}
-   * \f]
-   *
-   * @param x state to linearize at
-   * @param u control to linearize at
-   * @param t time
-   * @return Jacobian wrt state
-   */
-    const state_matrix_t& getDerivativeState(const state_vector_t& x, const control_vector_t& u, const TIME t = TIME(0))
+     * @brief get the Jacobian with respect to the state
+     * This computes the linearization of the dynamics with respect to the state
+     * at a given point \f$ x=x_s \f$, \f$ u=u_s \f$, i.e. it computes
+     *
+     * \f[
+     * B = \frac{df}{dx} |_{x=x_s, u=u_s}
+     * \f]
+     *
+     * @param x state to linearize at
+     * @param u control to linearize at
+     * @param t time
+     * @return Jacobian wrt state
+     */
+    //! implementation for the euclidean manifold case
+    template <typename M = MANIFOLD, typename std::enable_if<ct::core::is_euclidean<M>::value, bool>::type = true>
+    const state_matrix_t& getDerivativeState(const MANIFOLD& x, const control_vector_t& u, const TIME t = TIME(0))
     {
         if (!doubleSidedDerivative_)
             dynamics_fct_(x, t, u, res_ref_);
@@ -91,11 +90,11 @@ public:
             SCALAR x_ph = x(i) + h;
             SCALAR dxp = x_ph - x(i);
 
-            state_vector_t x_perturbed = x;
+            MANIFOLD x_perturbed = x;
             x_perturbed(i) = x_ph;
 
             // evaluate dynamics at perturbed state
-            state_vector_t res_plus;
+            Tangent res_plus;
             dynamics_fct_(x_perturbed, t, u, res_plus);
 
             if (doubleSidedDerivative_)
@@ -106,7 +105,7 @@ public:
                 x_perturbed = x;
                 x_perturbed(i) = x_mh;
 
-                state_vector_t res_minus;
+                Tangent res_minus;
                 dynamics_fct_(x_perturbed, t, u, res_minus);
 
                 dFdx_.col(i) = (res_plus - res_minus) / (dxp + dxm);
@@ -120,21 +119,67 @@ public:
         return dFdx_;
     }
 
+    // implementation for the non-euclidean case
+    template <typename M = MANIFOLD, typename std::enable_if<!(ct::core::is_euclidean<M>::value), bool>::type = true>
+    const state_matrix_t& getDerivativeState(const MANIFOLD& m, const control_vector_t& u, const TIME t = TIME(0))
+    {
+        if (!doubleSidedDerivative_)
+            dynamics_fct_(m, t, u, res_ref_);
+
+        Tangent h_vec;
+        Tangent t_perturbed;
+        Tangent res_plus;
+
+        for (size_t i = 0; i < STATE_DIM; i++)
+        {
+            // inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
+            SCALAR h = eps_ * std::max(std::abs<SCALAR>(m.log().coeffs()(i)), SCALAR(1.0));
+
+            h_vec.setZero();
+            h_vec.coeffs()(i) = h;
+
+            t_perturbed = m.log() + h_vec;
+            SCALAR dxp = (t_perturbed - m.log()).coeffs()(i);
+
+            // evaluate dynamics at perturbed state
+            dynamics_fct_(t_perturbed.exp(), t, u, res_plus);
+
+            if (doubleSidedDerivative_)
+            {
+                t_perturbed = m.log() - h_vec;
+                SCALAR dxm = (m.log() - t_perturbed).coeffs()(i);
+
+                Tangent res_minus;
+                dynamics_fct_(t_perturbed.exp(), t, u, res_minus);
+
+                dFdx_.col(i) = (res_plus - res_minus).coeffs() / (dxp + dxm);
+            }
+            else
+            {
+                dFdx_.col(i) = ((res_plus - res_ref_).coeffs()) / dxp;
+            }
+        }
+
+        return dFdx_;
+    }
+
     //! get the Jacobian with respect to the input
     /*!
-   * This computes the linearization of the dynamics with respect to the input
-   * at a given point \f$ x=x_s \f$, \f$ u=u_s \f$, i.e. it computes
-   *
-   * \f[
-   * B = \frac{df}{du} |_{x=x_s, u=u_s}
-   * \f]
-   *
-   * @param x state to linearize at
-   * @param u control to linearize at
-   * @param t time
-   * @return Jacobian wrt input
-   */
-    const state_control_matrix_t& getDerivativeControl(const state_vector_t& x,
+     * This computes the linearization of the dynamics with respect to the input
+     * at a given point \f$ x=x_s \f$, \f$ u=u_s \f$, i.e. it computes
+     *
+     * \f[
+     * B = \frac{df}{du} |_{x=x_s, u=u_s}
+     * \f]
+     *
+     * @param x state to linearize at
+     * @param u control to linearize at
+     * @param t time
+     * @return Jacobian wrt input
+     */
+    // implementation for euclidean case
+    template <typename M = MANIFOLD, typename std::enable_if<ct::core::is_euclidean<M>::value, bool>::type = true>
+    const state_control_matrix_t& getDerivativeControl(const MANIFOLD& x,
         const control_vector_t& u,
         const TIME t = TIME(0))
     {
@@ -152,7 +197,7 @@ public:
             u_perturbed(i) = u_ph;
 
             // evaluate dynamics at perturbed state
-            state_vector_t res_plus;
+            Tangent res_plus;
             dynamics_fct_(x, t, u_perturbed, res_plus);
 
             if (doubleSidedDerivative_)
@@ -163,7 +208,7 @@ public:
                 u_perturbed = u;
                 u_perturbed(i) = u_mh;
 
-                state_vector_t res_minus;
+                Tangent res_minus;
                 dynamics_fct_(x, t, u_perturbed, res_minus);
 
                 dFdu_.col(i) = (res_plus - res_minus) / (dup + dum);
@@ -177,6 +222,54 @@ public:
         return dFdu_;
     }
 
+    // implementation for non-euclidean case
+    template <typename M = MANIFOLD, typename std::enable_if<!(ct::core::is_euclidean<M>::value), bool>::type = true>
+    const state_control_matrix_t& getDerivativeControl(const MANIFOLD& x,
+        const control_vector_t& u,
+        const TIME t = TIME(0))
+    {
+        if (!doubleSidedDerivative_)
+            dynamics_fct_(x, t, u, res_ref_);
+
+        for (size_t i = 0; i < CONTROL_DIM; i++)
+        {
+            // inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
+            SCALAR h = eps_ * std::max(std::abs<SCALAR>(u(i)), SCALAR(1.0));
+            SCALAR u_ph = u(i) + h;
+            SCALAR dup = u_ph - u(i);
+
+            control_vector_t u_perturbed = u;
+            u_perturbed(i) = u_ph;
+
+            // evaluate dynamics at perturbed state
+            Tangent res_plus;
+            dynamics_fct_(x, t, u_perturbed, res_plus);
+
+            if (doubleSidedDerivative_)
+            {
+                SCALAR u_mh = u(i) - h;
+                SCALAR dum = u(i) - u_mh;
+
+                u_perturbed = u;
+                u_perturbed(i) = u_mh;
+
+                Tangent res_minus;
+                dynamics_fct_(x, t, u_perturbed, res_minus);
+
+                dFdu_.col(i) = (res_plus - res_minus).coeffs() / (dup + dum);
+            }
+            else
+            {
+                dFdu_.col(i) = (res_plus - res_ref_).coeffs() / dup;
+            }
+        }
+
+        return dFdu_;
+    }
+
+    /**
+     * @brief Get the Double Sided Derivative Flag
+     */
     bool getDoubleSidedDerivativeFlag() const { return doubleSidedDerivative_; }
 protected:
     dynamics_fct_t dynamics_fct_;  //!< function handle to system dynamics
@@ -190,7 +283,7 @@ protected:
     state_matrix_t dFdx_;          //!< Jacobian wrt state
     state_control_matrix_t dFdu_;  //!< Jacobian wrt input
 
-    state_vector_t res_ref_;  //!< reference result for numerical differentiation
+    Tangent res_ref_;  //!< reference result for numerical differentiation
 };
 
 }  // namespace core

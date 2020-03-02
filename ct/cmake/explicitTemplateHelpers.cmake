@@ -1,21 +1,30 @@
 # reads the templates from file
 function(ct_getDimensionsFromLine LineContent)
-    string(REGEX REPLACE "," ";" LineContent ${LineContent})
+    #message(WARNING "received line content: \n " ${LineContent})
 
-    foreach(NameAndValue ${LineContent})    
+    STRING(REGEX REPLACE ";" "\\\\;" contents "${contents}")
+    STRING(REGEX REPLACE "\n" ";" LineContent "${LineContent}")
+
+    foreach(NameAndValue ${LineContent})
+
       # Strip leading spaces
       string(REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue})
       # Find variable name
       string(REGEX MATCH "^[^=]+" Name ${NameAndValue})
       # Find the value
       string(REPLACE "${Name}=" "" Value ${NameAndValue})
-      
-      # Set the variable
+      # strip unnecessaray white space from Value
+      string(REGEX REPLACE " " "" Value ${Value})
+
+      # Set the variables
+      if(Name STREQUAL "MANIFOLD")
+          set(MANIFOLD_PRESPEC "${Value}" PARENT_SCOPE)
+      endif()
+
       if(Name STREQUAL "STATE_DIM")
           set(STATE_DIM_PRESPEC "${Value}" PARENT_SCOPE)
       endif()
       
-        # Set the variable
       if(Name STREQUAL "CONTROL_DIM")
           set(CONTROL_DIM_PRESPEC "${Value}" PARENT_SCOPE)
       endif()
@@ -32,7 +41,6 @@ function(ct_getDimensionsFromLine LineContent)
           set(VEL_DIM_PRESPEC "${Value}" PARENT_SCOPE)
       endif()
     endforeach()
-
 endfunction()
 
 
@@ -42,12 +50,22 @@ function(ct_configure_explicit_templates ConfigFile ConfigDir LibPrefix)
   FILE(READ "${ConfigFile}" contents)
 
   STRING(REGEX REPLACE ";" "\\\\;" contents "${contents}")
-  STRING(REGEX REPLACE "\n" ";" contents "${contents}")
+  STRING(REGEX REPLACE "\n\n" ";" contents "${contents}")
   
-  #message(WARNING "file content: ${contents}")
+  #message(WARNING "loaded file content: \n ${contents}")
   
   foreach(line ${contents})
-      #message(WARNING "extracting variables from line: ${line}")
+
+      # check if line contains comments (starting with #)
+      string(FIND ${line} "#" _idx_comment_start)
+      # if comment found, skip that line
+      if(${_idx_comment_start} GREATER -1)
+        message(ERROR " Found a comment '#' in explicit template spec -- please remove it, comments are not (yet) supported in prespec configs.")
+        continue()
+      endif()
+
+      #message(WARNING "extracting variables from line:\n ${line}")
+      set(MANIFOLD_PRESPEC "")
       set(STATE_DIM_PRESPEC "")
       set(CONTROL_DIM_PRESPEC "")
       set(SCALAR_PRESPEC "")
@@ -57,19 +75,23 @@ function(ct_configure_explicit_templates ConfigFile ConfigDir LibPrefix)
   
       ct_getDimensionsFromLine(${line})
       
-      #message(WARNING "extracted: STATE_DIM=${STATE_DIM_PRESPEC}, CONTROL_DIM=${STATE_DIM_PRESPEC}, SCALAR=${SCALAR_PRESPEC}")
+      #message(WARNING "extracted: MANIFOLD=${MANIFOLD_PRESPEC} STATE_DIM=${STATE_DIM_PRESPEC}, CONTROL_DIM=${CONTROL_DIM_PRESPEC}, SCALAR=${SCALAR_PRESPEC}")
       
       string(REGEX REPLACE "[^0-9a-zA-Z]+" "" SCALAR_PRESPEC_CLEAN ${SCALAR_PRESPEC})
-      set(CURRENT_LIB_NAME "${LibPrefix}-${STATE_DIM_PRESPEC}-${CONTROL_DIM_PRESPEC}-${SCALAR_PRESPEC_CLEAN}-${POS_DIM_PRESPEC}-${VEL_DIM_PRESPEC}")
-      
-      if(STATE_DIM_PRESPEC AND CONTROL_DIM_PRESPEC AND SCALAR_PRESPEC)
-          #message(WARNING "Will configure now")
-          ct_configureFiles(${ConfigDir} ${STATE_DIM_PRESPEC}, ${CONTROL_DIM_PRESPEC}, ${SCALAR_PRESPEC} ${POS_DIM_PRESPEC} ${VEL_DIM_PRESPEC})
+      string(REGEX REPLACE "[^0-9a-zA-Z]+" "" MANIFOLD_PRESPEC_CLEAN ${MANIFOLD_PRESPEC})
+
+      set(CURRENT_LIB_NAME "${LibPrefix}-${MANIFOLD_PRESPEC_CLEAN}-${CONTROL_DIM_PRESPEC}-${SCALAR_PRESPEC_CLEAN}-${POS_DIM_PRESPEC}-${VEL_DIM_PRESPEC}")
+      #message(WARNING "Current lib name: \n ${CURRENT_LIB_NAME}")
+  
+      if(MANIFOLD_PRESPEC AND CONTROL_DIM_PRESPEC AND SCALAR_PRESPEC)
+          message(WARNING "Will configure now")
+          ct_configureFiles(${ConfigDir} ${MANIFOLD_PRESPEC}, ${CONTROL_DIM_PRESPEC}, ${SCALAR_PRESPEC} ${POS_DIM_PRESPEC} ${VEL_DIM_PRESPEC})
       elseif()
           #message(WARNING "Nothing to configure")
       endif()
       
       if(CURRENT_SRCS)
+          #message(WARNING "the current sources are \n ${CURRENT_SRCS}")
           set(${CURRENT_LIB_NAME}_SRCS ${CURRENT_SRCS} PARENT_SCOPE)
           list(APPEND LIB_NAMES "${CURRENT_LIB_NAME}")
       endif()
@@ -81,15 +103,16 @@ endfunction()
 
 
 # finds cpp.in files and configures them
-function(ct_configureFiles ConfigDir STATE_DIM_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC, POS_DIM_PREPSEC, VEL_DIM_PRESPEC)
+function(ct_configureFiles ConfigDir MANIFOLD_PRESPEC, CONTROL_DIM_PRESPEC, SCALAR_PRESPEC, POS_DIM_PREPSEC, VEL_DIM_PRESPEC)
     set(CURRENT_SRCS "")
     file(GLOB_RECURSE files "${ConfigDir}*.in")
     #message(WARNING "files to configure in directory ${ConfigDir}:\n ${files}")
     foreach(file ${files})
+        string(REGEX REPLACE "[^0-9a-zA-Z]+" "" MANIFOLD_PRESPEC_CLEAN ${MANIFOLD_PRESPEC})
         string(REGEX REPLACE "[^0-9a-zA-Z]+" "" SCALAR_PRESPEC_CLEAN ${SCALAR_PRESPEC})
         string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" outputFile ${file})
         string(REPLACE ".cpp.in" "" outputFile ${outputFile})
-        set(outputFile "${outputFile}-${STATE_DIM_PRESPEC}-${CONTROL_DIM_PRESPEC}-${SCALAR_PRESPEC_CLEAN}-${POS_DIM_PRESPEC}-${VEL_DIM_PRESPEC}.cpp")
+        set(outputFile "${outputFile}-${MANIFOLD_PRESPEC_CLEAN}-${CONTROL_DIM_PRESPEC}-${SCALAR_PRESPEC_CLEAN}-${POS_DIM_PRESPEC}-${VEL_DIM_PRESPEC}.cpp")
         #message(WARNING "configuring file \n ${file} to \n ${outputFile} ")
         set(DOUBLE_OR_FLOAT false)
         if((SCALAR_PRESPEC MATCHES "double") OR (SCALAR_PRESPEC MATCHES "float")) #STREQUAL did not work

@@ -18,40 +18,37 @@ namespace core {
  *
  * @tparam STATE_DIM size of the state vector
  */
-template <size_t STATE_DIM>
-class KillIntegrationEventHandler : public EventHandler<STATE_DIM>
+template <typename MANIFOLD>
+class KillIntegrationEventHandler : public EventHandler<MANIFOLD>
 {
 public:
-    typedef Eigen::Matrix<double, STATE_DIM, 1> State_T;
+    KillIntegrationEventHandler();
 
-    //! default constructor
-    /*!
-	 * sets kill event to false
-	 */
-    KillIntegrationEventHandler() : killIntegration_(false) {}
     //! default destructor
-    virtual ~KillIntegrationEventHandler() {}
-    virtual bool callOnSubsteps() override { return false; }
+    virtual ~KillIntegrationEventHandler();
+
+    virtual bool callOnSubsteps() override;
+
     //! checks the kill flag
-    bool checkEvent(const State_T& state, const double& t) override { return killIntegration_; }
+    bool checkEvent(const MANIFOLD& state, const double& t) override;
+
     //! interrupts integration
     /*!
 	 * interrupts the integration by throwing a std::runtime_error
 	 * @param state current state (ignored)
 	 * @param t current time (ignored)
 	 */
-    void handleEvent(const State_T& state, const double& t) override
-    {
-        /* throw an exception which stops the integration */
-        throw std::runtime_error("Integration terminated due to external event specified by user.");
-    }
+    void handleEvent(const MANIFOLD& state, const double& t) override;
 
     //! enables killing at next call
-    void setEvent() { killIntegration_ = true; }
+    void setEvent();
+
     //! disable killing at next call
-    void resetEvent() { killIntegration_ = false; }
+    void resetEvent();
+
     //! resets kill flag to false
-    virtual void reset() override { resetEvent(); };
+    virtual void reset() override;
+
 private:
     bool killIntegration_;  //! kill flag
 };

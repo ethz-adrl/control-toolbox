@@ -6,7 +6,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <ct/core/types/Time.h>
-#include <ct/core/types/StateVector.h>
 
 namespace ct {
 namespace core {
@@ -34,14 +33,15 @@ enum SYSTEM_TYPE
  * @tparam STATE_DIM dimensionality of the state
  * @tparam SCALAR scalar type
  */
-template <size_t STATE_DIM, typename SCALAR = double>
+template <typename MANIFOLD, typename SCALAR = typename MANIFOLD::Scalar>
 class System
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    using TANGENT = typename MANIFOLD::Tangent;
     typedef SCALAR S;       //!< the scalar type
-    typedef SCALAR time_t;  //!< the type of the time variable
+    typedef SCALAR Time_t;  //!< the type of the time variable
 
     //! default constructor
     /*!
@@ -50,13 +50,17 @@ public:
 	 *
 	 * @param type type of system
 	 */
-    System(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL) : type_(type) {}
+    System(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL);
+
     //! copy constructor
-    System(const System& other) : type_(other.type_) {}
+    System(const System& other);
+
     //! destructor
-    virtual ~System() {}
+    virtual ~System();
+
     //! deep copy
-    virtual System* clone() const { throw std::runtime_error("clone not implemented"); };
+    virtual System* clone() const;
+
     //! computes the system dynamics
     /*!
 	 * evaluates \f$ \dot{x} = f(x,t) \f$ at a given state and time
@@ -64,24 +68,23 @@ public:
 	 * @param t time to evaluate the dynamics at
 	 * @param derivative state derivative
 	 */
-    virtual void computeDynamics(const StateVector<STATE_DIM, SCALAR>& state,
-        const time_t& t,
-        StateVector<STATE_DIM, SCALAR>& derivative) = 0;
+    virtual void computeDynamics(const MANIFOLD& m, const Time_t& t, TANGENT& derivative) = 0;
 
     //! get the type of system
     /*!
 	 * @return system type
 	 */
-    SYSTEM_TYPE getType() const { return type_; }
+    SYSTEM_TYPE getType() const;
     /**
 	 * @brief      Determines if the system is in symplectic form.
 	 *
 	 * @return     True if symplectic, False otherwise.
 	 */
-    virtual bool isSymplectic() const { return false; }
+    virtual bool isSymplectic() const;
+
 protected:
     SYSTEM_TYPE type_;  //!< type of system
 };
 
-}  // core
-}  // ct
+}  // namespace core
+}  // namespace ct

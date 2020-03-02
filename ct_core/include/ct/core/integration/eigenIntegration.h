@@ -1,17 +1,11 @@
-/*
- * eigenIntegration.h
- *
- *  Created on: Jun 22, 2015
- *      Author: farbod
- */
-
 #pragma once
-
 
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
 #include <boost/numeric/odeint/algebra/vector_space_algebra.hpp>
 #include <boost/version.hpp>
+
+#include <ct/core/types/EuclideanState.h>
 
 
 // Necessary routines for Eigen matrices to work with vector_space_algebra
@@ -99,7 +93,7 @@ inline const typename Eigen::
 #endif
 
 
-}  // end Eigen namespace
+}  // namespace Eigen
 
 
 namespace boost {
@@ -120,6 +114,18 @@ struct vector_space_norm_inf<Eigen::Matrix<B, S1, S2, O, M1, M2>>
     }
 };
 
+
+template <size_t S1, typename B>
+struct vector_space_norm_inf<ct::core::EuclideanState<S1, B>>
+{
+    using result_type = typename ct::core::EuclideanState<S1, B>::Scalar;
+
+    result_type operator()(const ct::core::EuclideanState<S1, B>& m) const
+    {
+        return m.template lpNorm<Eigen::Infinity>();  // TODO: can we call above method instead?
+    }
+};
+
 #else
 
 // old boost
@@ -137,7 +143,21 @@ struct vector_space_reduce<Eigen::Matrix<SCALAR, STATE_DIM, 1>>
     }
 };
 
+template <int STATE_DIM, typename SCALAR>
+struct vector_space_reduce<ct::core::EuclideanState<STATE_DIM, SCALAR>>
+{
+    template <class Op>
+    SCALAR operator()(const ct::core::EuclideanState<STATE_DIM, SCALAR>& x, Op op, SCALAR init) const
+    {
+        for (int i = 0; i < STATE_DIM; i++)
+        {
+            init = op(init, x(i));
+        }
+        return init;
+    }
+};
+
 #endif
-}
-}
-}  // end boost::numeric::odeint namespace
+}  // namespace odeint
+}  // namespace numeric
+}  // namespace boost

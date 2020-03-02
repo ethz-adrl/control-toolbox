@@ -6,6 +6,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "Controller.h"
+#include <ct/core/control/discrete_time/DiscreteController.h>
 
 namespace ct {
 namespace core {
@@ -16,9 +17,9 @@ namespace core {
  * This class is useful to integrate a ControlledSystem forward subject to a
  * constant control input.
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class ConstantController : public Controller<STATE_DIM, CONTROL_DIM, SCALAR>,
-                           public DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM, typename SCALAR = typename MANIFOLD::Scalar>
+class ConstantController final : public Controller<MANIFOLD, CONTROL_DIM, SCALAR>,
+                                 public DiscreteController<MANIFOLD, CONTROL_DIM, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -37,17 +38,17 @@ public:
     ConstantController(ControlVector<CONTROL_DIM, SCALAR>& u);
 
     //! Copy constructor
-    ConstantController(const ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>& other);
+    ConstantController(const ConstantController<MANIFOLD, CONTROL_DIM, SCALAR>& other);
 
     //! Destructor
-    virtual ~ConstantController();
+    virtual ~ConstantController() = default;
 
     //! Clone operator
     /*!
      * Clones the controller. Used for cloning ControlledSystem's
      * @return pointer to cloned controller
      */
-    ConstantController<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
+    ConstantController<MANIFOLD, CONTROL_DIM, SCALAR>* clone() const override;
 
     //! Computes current control
     /*!
@@ -57,14 +58,12 @@ public:
      * @param t The time of the system (ignored)
      * @param controlAction The (fixed) control action
      */
-    void computeControl(const StateVector<STATE_DIM, SCALAR>& state,
+    void computeControl(const MANIFOLD& state,
         const SCALAR& t,
         ControlVector<CONTROL_DIM, SCALAR>& controlAction) override;
 
     //! Equivalent method for discrete version
-    void computeControl(const StateVector<STATE_DIM, SCALAR>& state,
-        const int n,
-        ControlVector<CONTROL_DIM, SCALAR>& controlAction) override;
+    void computeControl(const MANIFOLD& state, const int n, ControlVector<CONTROL_DIM, SCALAR>& controlAction) override;
 
     //! Sets the control signal
     /*!
@@ -80,8 +79,7 @@ public:
      */
     const ControlVector<CONTROL_DIM, SCALAR>& getControl() const;
 
-    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const StateVector<STATE_DIM, SCALAR>& state,
-        const SCALAR time) override;
+    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const MANIFOLD& state, const SCALAR time) override;
 
 private:
     ControlVector<CONTROL_DIM, SCALAR> u_;

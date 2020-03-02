@@ -6,11 +6,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <ct/core/control/continuous_time/Controller.h>
-#include "System.h"
-
-#include <ct/core/types/arrays/MatrixArrays.h>
+#include <ct/core/systems/continuous_time/System.h>
 #include <ct/core/types/arrays/TimeArray.h>
-#include <ct/core/types/trajectories/MatrixTrajectories.h>
 
 
 namespace ct {
@@ -42,24 +39,22 @@ namespace core {
  * @tparam CONTROL_DIM dimension of input vector
  * @tparam SCALAR scalar type
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class ControlledSystem : public System<STATE_DIM, SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM, typename SCALAR = typename MANIFOLD::Scalar>
+class ControlledSystem : public System<MANIFOLD, SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef System<STATE_DIM, SCALAR> Base;
-    typedef typename std::shared_ptr<ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>> Ptr;
-    typedef typename Base::time_t time_t;
+    typedef System<MANIFOLD, SCALAR> Base;
+    typedef typename std::shared_ptr<ControlledSystem<MANIFOLD, CONTROL_DIM, SCALAR>> Ptr;
+    typedef typename Base::Time_t Time_t;
+    using Tangent = typename MANIFOLD::Tangent;
 
     //! default constructor
     /*!
 	 * @param type system type
 	 */
-    ControlledSystem(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
-        : System<STATE_DIM, SCALAR>(type), controller_(nullptr)
-    {
-    }
+    ControlledSystem(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL);
 
     //! constructor
     /*!
@@ -67,51 +62,39 @@ public:
 	 * @param controller controller
 	 * @param type system type
 	 */
-    ControlledSystem(std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller,
-        const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL)
-        : System<STATE_DIM, SCALAR>(type), controller_(controller)
-    {
-        controlAction_.setZero();
-    }
+    ControlledSystem(std::shared_ptr<ct::core::Controller<MANIFOLD, CONTROL_DIM, SCALAR>> controller,
+        const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL);
 
-    //! copy constructor
-    ControlledSystem(const ControlledSystem& arg) : System<STATE_DIM, SCALAR>(arg), controlAction_(arg.controlAction_)
-    {
-        if (arg.controller_)
-            controller_ = std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR>>(arg.controller_->clone());
-    }
+    ControlledSystem(const ControlledSystem& arg);
 
-    //! destructor
-    virtual ~ControlledSystem() {}
+    virtual ~ControlledSystem();
+
     //! deep copy
-    virtual ControlledSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override = 0;
+    virtual ControlledSystem<MANIFOLD, CONTROL_DIM, SCALAR>* clone() const override = 0;
 
     //! set a new controller
     /*!
 	 * @param controller new controller
 	 */
-    void setController(const std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR>>& controller)
-    {
-        controller_ = controller;
-    }
+    void setController(const std::shared_ptr<Controller<MANIFOLD, CONTROL_DIM, SCALAR>>& controller);
 
     //! get the controller instance
     /*!
 	 * \todo remove this function (duplicate of getController() below)
 	 * @param controller controller instance
 	 */
-    void getController(std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR>>& controller) const
-    {
-        controller = controller_;
-    }
+    void getController(std::shared_ptr<Controller<MANIFOLD, CONTROL_DIM, SCALAR>>& controller) const;
 
     //! get the controller instace
     /*!
 	 * @return controller instance
 	 */
-    std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR>> getController() { return controller_; }
-    //! compute the dynamics of the system
+    std::shared_ptr<Controller<MANIFOLD, CONTROL_DIM, SCALAR>> getController();
+
+    virtual void computeDynamics(const MANIFOLD& state, const Time_t& t, Tangent& derivative) override;
+
     /*!
+     * @brief compute the dynamics of the system
 	 * Compute the state derivative by evaluating the system dynamics for a given state. This
 	 * calls the controller first and then calls computeControlledDynamics() with the current state
 	 * and the resulting control signal.
@@ -122,29 +105,18 @@ public:
 	 * @param t current time
 	 * @param derivative state derivative
 	 */
-    virtual void computeDynamics(const StateVector<STATE_DIM, SCALAR>& state,
-        const time_t& t,
-        StateVector<STATE_DIM, SCALAR>& derivative) override
-    {
-        if (controller_)
-            controller_->computeControl(state, t, controlAction_);
-        else
-            controlAction_.setZero();
-
-        computeControlledDynamics(state, t, controlAction_, derivative);
-    }
-
-
-    virtual void computeControlledDynamics(const StateVector<STATE_DIM, SCALAR>& state,
-        const time_t& t,
+    virtual void computeControlledDynamics(const MANIFOLD& state,
+        const Time_t& t,
         const ControlVector<CONTROL_DIM, SCALAR>& control,
-        StateVector<STATE_DIM, SCALAR>& derivative) = 0;
+        Tangent& derivative) = 0;
 
-    ControlVector<CONTROL_DIM, SCALAR> getLastControlAction() { return controlAction_; }
+
+    ControlVector<CONTROL_DIM, SCALAR> getLastControlAction();
+
 protected:
-    std::shared_ptr<Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller_;  //!< the controller instance
+    std::shared_ptr<Controller<MANIFOLD, CONTROL_DIM, SCALAR>> controller_;  //!< the controller instance
 
     ControlVector<CONTROL_DIM, SCALAR> controlAction_;
 };
-}
-}
+}  // namespace core
+}  // namespace ct

@@ -5,29 +5,34 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include <Eigen/Dense>
+
 namespace ct {
 namespace core {
 
-template <size_t STATE_DIM, class SCALAR = double>
-class StateVector : public Eigen::Matrix<SCALAR, STATE_DIM, 1>
+template <size_t DIM, class SCALAR = double>
+class EuclideanState : public Eigen::Matrix<SCALAR, DIM, 1>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, 1> Base;
-    static const size_t DIM = STATE_DIM;
+    static const size_t TangentDim = DIM;
+    using Scalar = SCALAR;
+    using Tangent = Eigen::Matrix<SCALAR, DIM, 1>;
+    using Base = Eigen::Matrix<SCALAR, DIM, 1>;
 
-    StateVector() {}
-    virtual ~StateVector() {}
-    //! This constructor allows you to construct MyVectorType from Eigen expressions
+    EuclideanState() = default;
+    virtual ~EuclideanState() = default;
+
+    //!This constructor allows you to construct MyVectorType from Eigen expressions
     template <typename OtherDerived>
-    StateVector(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)
+    EuclideanState(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)
     {
     }
 
     //! This method allows you to assign Eigen expressions to MyVectorType
     template <typename OtherDerived>
-    StateVector& operator=(const Eigen::MatrixBase<OtherDerived>& other)
+    EuclideanState& operator=(const Eigen::MatrixBase<OtherDerived>& other)
     {
         this->Base::operator=(other);
         return *this;
@@ -37,7 +42,14 @@ public:
     Base& toImplementation() { return *this; }
     //! get const underlying Eigen type
     const Base& toImplementation() const { return *this; }
+
+    // provide manifold log operator // TODO: attention - this overloads an eigen function 
+    const EuclideanState& log() const { return *this; }
 };
+
+template <size_t DIM, class SCALAR = double>
+using StateVector = EuclideanState<DIM, SCALAR>;  // for legacy
+
 
 } /* namespace core */
 } /* namespace ct */
