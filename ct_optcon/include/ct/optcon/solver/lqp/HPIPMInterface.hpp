@@ -226,20 +226,20 @@ private:
 
     //! ocp qp dimensions
     int dim_size_;
-    void* dim_mem_;
+    void* dim_mem_{nullptr};
     struct d_ocp_qp_dim dim_;
 
-    void* qp_mem_;
+    void* qp_mem_{nullptr};
     struct d_ocp_qp qp_;
 
-    void* qp_sol_mem_;
+    void* qp_sol_mem_{nullptr};
     struct d_ocp_qp_sol qp_sol_;
 
-    void* ipm_arg_mem_;
+    void* ipm_arg_mem_{nullptr};
     struct d_ocp_qp_ipm_arg arg_;
 
     // workspace
-    void* ipm_mem_;
+    void* ipm_mem_{nullptr};
     struct d_ocp_qp_ipm_ws workspace_;
     int hpipm_status_;  // status code after solving
 
