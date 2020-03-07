@@ -22,12 +22,26 @@ HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface() : N_(-1), settings_(NLO
 template <int STATE_DIM, int CONTROL_DIM>
 HPIPMInterface<STATE_DIM, CONTROL_DIM>::~HPIPMInterface()
 {
-    // todo is there memory that needs to be freed?
+    if (dim_mem_) {
+        free(dim_mem_);
+        free(qp_mem_);
+        free(qp_sol_mem_);
+        free(ipm_arg_mem_);
+        free(ipm_mem_);
+    }
 }
 
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
 {
+    if (dim_mem_) {
+        free(dim_mem_);
+        free(qp_mem_);
+        free(qp_sol_mem_);
+        free(ipm_arg_mem_);
+        free(ipm_mem_);
+    }
+    
     if (settings_.lqoc_solver_settings.lqoc_debug_print)
     {
         std::cout << "HPIPM allocating memory for QP with time horizon: " << N_ << std::endl;
