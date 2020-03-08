@@ -17,7 +17,7 @@ The library contains several tools to design and evaluate controllers, model dyn
 The CT was designed with the following features in mind:
 
  - **Systems and dynamics**: 
-	- intuitive modelling of systems governed by ordinary differential- or difference equations.
+	- intuitive modelling of systems governed by ordinary differential or difference equations.
 
  - **Trajectory optimization, optimal control and (nonlinear) model predictive control**:
     - intuitive modelling of cost functions and constraints
@@ -42,7 +42,7 @@ The CT was designed with the following features in mind:
 	- implementation of a basic nonlinear-programming inverse kinematics solver for fix-base robots.
  
  - **Automatic Differentiation**:
-    - first- and second order automatic differentiation of arbitrary vector-valued functions including cost functions and constraints
+    - first and second order automatic differentiation of arbitrary vector-valued functions including cost functions and constraints
     - automatic differentiation and code generation of rigid body dynamics
     - derivative code generation for maximum efficiency
 
@@ -136,7 +136,7 @@ for different rotation representations such as Quaternions, Euler angles or rota
 ## Structure and Modules of the CT
 
 The Control Toolbox consists of three main modules. The Core (`ct_core`) module, the Optimal 
-Control (`ct_optcon`) module and the rigid body dynamics (`ct_rbd`) module. 
+Control (`ct_optcon`) module and the Rigid Body Dynamics (`ct_rbd`) module. 
 There is a clear hierarchy between the modules. 
 That means, the modules depend on each other in this order, e.g. you can use the core module 
 without the optcon or rbd module.
@@ -146,7 +146,7 @@ as well as basic functionality such as numerical integrators for differential eq
  - The Optimal Control (`ct_optcon`) module builds on top of the Core module and adds 
 infrastructure for defining and solving Optimal Control Problems. It contains the functionality
 for defining cost functions, constraints, solver backends and a general MPC wrapper.
- - The rigid body dynamics (`ct_rbd`) module provides tools for modelling Rigid Body Dynamics 
+ - The Rigid Body Dynamics (`ct_rbd`) module provides tools for modelling Rigid Body Dynamics 
 systems and interfaces with `ct_core` and `ct_optcon` data types. 
 
 For testing as well as examples, we also provide the models module (`ct_models`) which contains 
@@ -156,7 +156,7 @@ with slung load.
 The four different main modules are detailed in the following.
 
 
-### ct_core
+### ct_core (Core)
 
  - Definitions of fundamental types for **control** and simulation, such as dynamic systems 
  (ct::core::System), states (ct::core::StateVector), controls (ct::core::Controller), or trajectories 
@@ -172,7 +172,7 @@ The four different main modules are detailed in the following.
  compilation (ct::core::DerivativesCppadJIT)
  
 
-### ct_optcon (optimal control)
+### ct_optcon (Optimal Control)
 
  - Definitions for **Optimal Control Problems** (ct::optcon::OptConProblem) and **Optimal Control Solvers** (ct::optcon::OptConSolver)
  - **CostFunction toolbox** allowing to construct cost functions from file and providing first-order and **second-order approximations**, see ct::optcon::CostFunction.
