@@ -25,5 +25,5 @@ int main(int argc, char** argv)
 
     //	ct::optcon::example::multiCore();
 
-    return 1;
+    return 0;
 }
