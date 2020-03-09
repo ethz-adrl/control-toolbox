@@ -15,14 +15,18 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "systems/continuous_time/linear/LTISystem.h"
 
 #include "systems/linearizer/DynamicsLinearizerNumDiff.h"
-#ifdef CPPADCG
+#ifdef CPPAD
 #include "systems/linearizer/DynamicsLinearizerAD.h"
+#endif
+#ifdef CPPADCG
 #include "systems/linearizer/DynamicsLinearizerADCG.h"
 #endif
 
 #include "systems/continuous_time/linear/SystemLinearizer.h"
-#ifdef CPPADCG
+#ifdef CPPAD
 #include "systems/continuous_time/linear/AutoDiffLinearizer.h"
+#endif
+#ifdef CPPADCG
 #include "systems/continuous_time/linear/ADCodegenLinearizer.h"
 #endif
 
@@ -34,7 +38,9 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "systems/discrete_time/linear/SwitchedDiscreteLinearSystem.h"
 #include "systems/discrete_time/linear/DiscreteSystemLinearizer.h"
 
-#ifdef CPPADCG
+#ifdef CPPAD
 #include "systems/discrete_time/linear/DiscreteSystemLinearizerAD.h"
+#endif
+#ifdef CPPADAG
 #include "systems/discrete_time/linear/DiscreteSystemLinearizerADCG.h"
 #endif

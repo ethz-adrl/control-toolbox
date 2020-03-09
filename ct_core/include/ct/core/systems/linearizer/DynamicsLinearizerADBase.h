@@ -5,7 +5,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#ifdef CPPADCG
+#ifdef CPPAD
 
 #include <ct/core/internal/autodiff/SparsityPattern.h>
 
@@ -28,6 +28,7 @@ class DynamicsLinearizerADBase
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+#ifdef CPPADCG
     //TODO this exclusive list, the following typedef, and getOutScalarType() should be generalized
     static_assert((std::is_same<SCALAR, CppAD::AD<double>>::value) ||
                       (std::is_same<SCALAR, CppAD::AD<CppAD::cg::CG<double>>>::value) ||
@@ -40,6 +41,18 @@ public:
                                           (std::is_same<SCALAR, CppAD::AD<CppAD::cg::CG<double>>>::value),
         double,
         float>::type OUT_SCALAR;  //!< scalar type of resulting linear system
+#else
+    // CPPAD only
+    //TODO this exclusive list, the following typedef, and getOutScalarType() should be generalized
+    static_assert((std::is_same<SCALAR, CppAD::AD<double>>::value) ||
+                      (std::is_same<SCALAR, CppAD::AD<float>>::value),
+        "SCALAR template parameter in ADLinearizerBase should either be of CppAD::AD<XX> or "
+        "CppAD::AD<CppAD::cg::XX> type with XX being float or double");
+
+    typedef typename std::conditional<(std::is_same<SCALAR, CppAD::AD<double>>::value),
+        double,
+        float>::type OUT_SCALAR;  //!< scalar type of resulting linear system
+#endif
 
     typedef StateVector<STATE_DIM, OUT_SCALAR> state_vector_t;
     typedef ControlVector<CONTROL_DIM, OUT_SCALAR> control_vector_t;
