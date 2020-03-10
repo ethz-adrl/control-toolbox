@@ -204,7 +204,6 @@ TEST(ProjectedFDSystemTest, projected_forward_dynamics_codegen_test)
     }
 #else
     std::cout << "Compile with -DNDEBUG to enable codegen" << std::endl;
-    ASSERT_TRUE(false);
 #endif
 }
 
