@@ -165,6 +165,9 @@ private:
     //! prints the transposed of a matrix in column-major format, exp notation
     void d_print_e_tran_mat(int row, int col, double* A, int lda);
 
+    //! frees memory allocated for the HPIPM data structures
+    void freeHpipmMemory();
+
     //! horizon length
     int N_;
 
@@ -226,20 +229,20 @@ private:
 
     //! ocp qp dimensions
     int dim_size_;
-    void* dim_mem_{nullptr};
+    void* dim_mem_;
     struct d_ocp_qp_dim dim_;
 
-    void* qp_mem_{nullptr};
+    void* qp_mem_;
     struct d_ocp_qp qp_;
 
-    void* qp_sol_mem_{nullptr};
+    void* qp_sol_mem_;
     struct d_ocp_qp_sol qp_sol_;
 
-    void* ipm_arg_mem_{nullptr};
+    void* ipm_arg_mem_;
     struct d_ocp_qp_ipm_arg arg_;
 
     // workspace
-    void* ipm_mem_{nullptr};
+    void* ipm_mem_;
     struct d_ocp_qp_ipm_ws workspace_;
     int hpipm_status_;  // status code after solving
 
