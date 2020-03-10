@@ -146,7 +146,7 @@ public:
 	 */
     const SCALAR getOptimizedTimeHorizon() const { return t_.back(); }
 private:
-    const size_t numberOfShots_;
+    size_t numberOfShots_;
     SCALAR timeHorizon_;
 
     // the individual times of each pair from i=0,..., N
