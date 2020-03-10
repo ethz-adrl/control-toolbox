@@ -11,7 +11,8 @@ namespace ct {
 namespace optcon {
 
 template <int STATE_DIM, int CONTROL_DIM>
-HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface() : N_(-1), settings_(NLOptConSettings())
+HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface() : N_(-1), settings_(NLOptConSettings()), 
+    dim_mem_(nullptr), qp_mem_(nullptr), qp_sol_mem_(nullptr), ipm_arg_mem_(nullptr), ipm_mem_(nullptr)
 {
     hb0_.setZero();
     hr0_.setZero();
@@ -22,12 +23,14 @@ HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface() : N_(-1), settings_(NLO
 template <int STATE_DIM, int CONTROL_DIM>
 HPIPMInterface<STATE_DIM, CONTROL_DIM>::~HPIPMInterface()
 {
-    // todo is there memory that needs to be freed?
+    freeHpipmMemory();
 }
 
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
 {
+    freeHpipmMemory();
+
     if (settings_.lqoc_solver_settings.lqoc_debug_print)
     {
         std::cout << "HPIPM allocating memory for QP with time horizon: " << N_ << std::endl;
@@ -80,6 +83,21 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
         std::cout << "HPIPM ipm_arg_size: " << ipm_arg_size << std::endl;
         std::cout << "HPIPM ipm_size: " << ipm_size << std::endl;
     }
+}
+
+template <int STATE_DIM, int CONTROL_DIM>
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::freeHpipmMemory()
+{
+    free(dim_mem_);
+    free(qp_mem_);
+    free(qp_sol_mem_);
+    free(ipm_arg_mem_);
+    free(ipm_mem_);
+    dim_mem_ = nullptr;
+    qp_mem_ = nullptr;
+    qp_sol_mem_ = nullptr;
+    ipm_arg_mem_ = nullptr;
+    ipm_mem_ = nullptr;
 }
 
 

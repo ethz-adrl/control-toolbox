@@ -165,6 +165,9 @@ private:
     //! prints the transposed of a matrix in column-major format, exp notation
     void d_print_e_tran_mat(int row, int col, double* A, int lda);
 
+    //! frees memory allocated for the HPIPM data structures
+    void freeHpipmMemory();
+
     //! horizon length
     int N_;
 
