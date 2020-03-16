@@ -13,19 +13,17 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++14 -Wall -Wno-unk
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 find_package(kindr REQUIRED)
-find_package(ct_optcon REQUIRED)
-
-# extract interface compile definitions from ct_core and ct_optcon as options
-importInterfaceCompileDefinitionsAsOptions(ct_core)
-importInterfaceCompileDefinitionsAsOptions(ct_optcon)
-
 
 ###################
 # BUILD LIBRARIES #
 ###################
 
-## define the directories to be included in all ct_rbd targets
-set(ct_rbd_target_include_dirs
+
+## create ct_rbd library
+add_library(ct_rbd INTERFACE)
+add_dependencies(ct_rbd ct_optcon)
+target_include_directories(ct_rbd 
+INTERFACE
     ${kindr_INCLUDE_DIRS}
     ${ct_optcon_INCLUDE_DIRS}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -38,10 +36,6 @@ set(ct_rbd_target_include_dirs
     $<INSTALL_INTERFACE:include/ct/rbd/robot/kinematics/ikfast>
 )
 
-
-## create ct_rbd library
-add_library(ct_rbd INTERFACE)
-target_include_directories(ct_rbd INTERFACE ${ct_rbd_target_include_dirs})
 target_link_libraries(ct_rbd INTERFACE ct_optcon)
 
 
@@ -86,4 +80,6 @@ install (EXPORT ct_rbd_export DESTINATION share/ct_rbd/cmake)
 #################
 # DOCUMENTATION #
 #################
-add_subdirectory(doc)
+if(${BUILD_DOCS})
+    add_subdirectory(doc)
+endif()

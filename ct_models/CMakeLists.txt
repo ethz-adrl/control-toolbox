@@ -12,14 +12,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++14 -Wall -Wno-unknown-pragmas")
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-find_package(ct_rbd REQUIRED)
 find_package(Boost REQUIRED system filesystem)
-
-# extract interface compile definitions from previous ct packages as options
-importInterfaceCompileDefinitionsAsOptions(ct_core)
-importInterfaceCompileDefinitionsAsOptions(ct_optcon)
-importInterfaceCompileDefinitionsAsOptions(ct_rbd)
-
 
 ## define the directories to be included in all ct_rbd targets
 set(ct_models_target_include_dirs
@@ -124,13 +117,13 @@ endif(BUILD_HYQ_LINEARIZATION_TIMINGS)
 if(CPPADCG)
   add_executable(InvertedPendulumWithActuatorCodeGen src/InvertedPendulum/codegen/InvertedPendulumWithActuatorCodeGen.cpp)
   target_include_directories(InvertedPendulumWithActuatorCodeGen PUBLIC ${ct_models_target_include_dirs})
-  target_link_libraries(InvertedPendulumWithActuatorCodeGen ct_rbd)
+  target_link_libraries(InvertedPendulumWithActuatorCodeGen ControlToolbox ct_rbd)
   list(APPEND CT_MODELS_BINARIES InvertedPendulumWithActuatorCodeGen)
 endif()
 
 add_library(InvertedPendulumActDynLinearizedForward include/ct/models/InvertedPendulum/codegen/InvertedPendulumActDynLinearizedForward.cpp)
 target_include_directories(InvertedPendulumActDynLinearizedForward PUBLIC ${ct_models_target_include_dirs})
-target_link_libraries(InvertedPendulumActDynLinearizedForward ct_rbd)
+target_link_libraries(InvertedPendulumActDynLinearizedForward ControlToolbox ct_rbd)
 list(APPEND CT_MODELS_LIBRARIES InvertedPendulumActDynLinearizedForward)
 
 
@@ -138,18 +131,18 @@ list(APPEND CT_MODELS_LIBRARIES InvertedPendulumActDynLinearizedForward)
 if(CPPADCG)
   add_executable(HyALinearizationCodegen src/HyA/codegen/HyALinearizationCodeGen.cpp)
   target_include_directories(HyALinearizationCodegen PUBLIC ${ct_models_target_include_dirs})
-  target_link_libraries(HyALinearizationCodegen ct_rbd)
+  target_link_libraries(HyALinearizationCodegen ControlToolbox ct_rbd)
   list(APPEND CT_MODELS_BINARIES HyALinearizationCodegen)
 endif()
 
 add_library(HyALinearizedForward include/ct/models/HyA/codegen/HyALinearizedForward.cpp)
 target_include_directories(HyALinearizedForward PUBLIC ${ct_models_target_include_dirs})
-target_link_libraries(HyALinearizedForward ct_rbd )
+target_link_libraries(HyALinearizedForward ControlToolbox ct_rbd )
 list(APPEND CT_MODELS_LIBRARIES HyALinearizedForward)
 
 add_library(HyAJacInverseDynamicsReverse include/ct/models/HyA/codegen/HyAInverseDynJacReverse.cpp)
 target_include_directories(HyAJacInverseDynamicsReverse PUBLIC ${ct_models_target_include_dirs})
-target_link_libraries(HyAJacInverseDynamicsReverse ct_rbd)
+target_link_libraries(HyAJacInverseDynamicsReverse ControlToolbox ct_rbd)
 list(APPEND CT_MODELS_LIBRARIES HyAJacInverseDynamicsReverse)
 
 if(BUILD_HYA_LINEARIZATION_TIMINGS)
@@ -160,7 +153,7 @@ if(BUILD_HYA_LINEARIZATION_TIMINGS)
 
     add_library(HyAJacInverseDynamicsForward include/ct/models/HyA/codegen/HyAInverseDynJacForward.cpp)
     target_include_directories(HyAJacInverseDynamicsForward PUBLIC ${ct_models_target_include_dirs})
-    target_link_libraries(HyAJacInverseDynamicsForward ct_rbd )
+    target_link_libraries(HyAJacInverseDynamicsForward ControlToolbox ct_rbd )
     list(APPEND CT_MODELS_LIBRARIES HyAJacInverseDynamicsForward)
 
     add_executable(HyAcompareForwardReverse src/HyA/codegen/compareForwardReverse.cpp)
@@ -184,7 +177,7 @@ add_library(quadrotorDynamics
     src/Quadrotor/C_quadrotor.cpp
     )
 target_include_directories(quadrotorDynamics PUBLIC ${ct_models_target_include_dirs})
-target_link_libraries(quadrotorDynamics ct_core)
+target_link_libraries(quadrotorDynamics ControlToolbox)
 list(APPEND CT_MODELS_LIBRARIES quadrotorDynamics)
 
 
@@ -193,13 +186,13 @@ list(APPEND CT_MODELS_LIBRARIES quadrotorDynamics)
 add_library(hya_ik src/HyA/transform6d.cpp)
 target_include_directories(hya_ik PUBLIC ${ct_models_target_include_dirs})
 set_target_properties(hya_ik PROPERTIES COMPILE_FLAGS "-std=c++98 -fPIC -DIKFAST_NAMESPACE=hya_ik -DIKFAST_NO_MAIN -Wno-unused-variable")
-target_link_libraries(hya_ik ct_rbd)
+target_link_libraries(hya_ik ControlToolbox ct_rbd)
 list(APPEND CT_MODELS_LIBRARIES hya_ik)
 
 add_library(irb4600_ik src/Irb4600/transform6d.cpp)
 target_include_directories(irb4600_ik PUBLIC ${ct_models_target_include_dirs})
 set_target_properties(irb4600_ik PROPERTIES COMPILE_FLAGS "-std=c++98 -fPIC -DIKFAST_NAMESPACE=irb4600_ik -DIKFAST_NO_MAIN -Wno-unused-variable")
-target_link_libraries(irb4600_ik ct_rbd)
+target_link_libraries(irb4600_ik ControlToolbox ct_rbd)
 list(APPEND CT_MODELS_LIBRARIES irb4600_ik)
 
 
@@ -261,4 +254,6 @@ install (EXPORT ct_models_export DESTINATION share/ct_models/cmake)
 #################
 # DOCUMENTATION #
 #################
-add_subdirectory(doc)
+if(${BUILD_DOCS})
+    add_subdirectory(doc)
+endif()

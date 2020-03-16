@@ -1,18 +1,30 @@
 cmake_minimum_required (VERSION 3.3)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/ct/cmake/compilerSettings.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/ct/cmake/explicitTemplateHelpers.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/ct/cmake/clang-cxx-dev-tools.cmake)
 
+project(ControlToolbox VERSION 3.0.2 LANGUAGES CXX)
+set (CMAKE_CXX_STANDARD 14)
+set(MASTER_PROJECT_NAME ${PROJECT_NAME})
 
-project(ct_core VERSION 3.0.2 LANGUAGES CXX)
+option(CMAKE_BUILD_TYPE "Build mode." Release) # original author requires this to default to Release
+option(BUILD_EXAMPLES "Whether to build examples." false)
+option(BUILD_DOCS "Generate Documentary." false)
 
+#Make sure metapackage does not fail when building documentation
+add_custom_target(doc
+        COMMAND ${CMAKE_COMMAND} -E echo_append "Building CT Documentation..."
+        VERBATIM)
+
+add_subdirectory("ct_optcon/")
+add_subdirectory("ct_rbd/")
+add_subdirectory("ct_models/")
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -std=c++14 -Wall -Wfatal-errors")
-set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++14 -Wall -Wfatal-errors")
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -Wall -Wfatal-errors")
+set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -Wall -Wfatal-errors")
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
-
 
 set(ct_core_LIBS "")
 
@@ -112,18 +124,19 @@ endif()
 
 
 ## create ct_core libraries
-add_library(ct_plot SHARED src/core/plot/plot.cpp)
-target_include_directories(ct_plot PUBLIC ${ct_core_target_include_dirs})
-target_compile_definitions(ct_plot PUBLIC ${ct_core_COMPILE_DEFINITIONS})
-target_link_libraries(ct_plot ${ct_core_LIBS})
+add_library(ControlToolbox_plot SHARED src/core/plot/plot.cpp)
+target_include_directories(ControlToolbox_plot PUBLIC ${ct_core_target_include_dirs})
+target_compile_definitions(ControlToolbox_plot PUBLIC ${ct_core_COMPILE_DEFINITIONS})
+target_link_libraries(ControlToolbox_plot ${ct_core_LIBS})
+add_library(ControlToolbox::plot ALIAS ControlToolbox_plot)
 
-add_library(ct_core INTERFACE)
-target_include_directories(ct_core INTERFACE ${ct_core_target_include_dirs})
-target_compile_definitions(ct_core INTERFACE ${ct_core_COMPILE_DEFINITIONS})
-target_link_libraries(ct_core INTERFACE
+add_library(ControlToolbox INTERFACE)
+target_include_directories(ControlToolbox INTERFACE ${ct_core_target_include_dirs})
+target_compile_definitions(ControlToolbox INTERFACE ${ct_core_COMPILE_DEFINITIONS})
+target_link_libraries(ControlToolbox INTERFACE
     ${ct_core_LIBS}
     ${PRESPEC_LIB_NAMES}
-    ct_plot
+    ControlToolbox::plot
     pthread
     dl # required for gcc compatibility
     )
@@ -169,12 +182,12 @@ install(FILES "cmake/ct_coreConfig.cmake" DESTINATION "share/ct_core/cmake")
 
 ## install library and targets
 install(
-    TARGETS ct_core ct_plot ${PRESPEC_LIB_NAMES}
+    TARGETS ControlToolbox ControlToolbox_plot ${PRESPEC_LIB_NAMES}
     EXPORT ct_core_export
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    )
+)
 
 ## create the ct_core.cmake file which holds target includes and dependencies
 install (EXPORT ct_core_export DESTINATION share/ct_core/cmake)
@@ -183,4 +196,6 @@ install (EXPORT ct_core_export DESTINATION share/ct_core/cmake)
 #################
 # DOCUMENTATION #
 #################
-add_subdirectory(doc)
+if(${BUILD_DOCS})
+    add_subdirectory(doc)
+endif()

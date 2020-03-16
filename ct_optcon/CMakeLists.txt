@@ -14,13 +14,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++14 -Wno-unknow
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++14 -Wfatal-errors")
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-
-## find and include required dependencies
-find_package(ct_core REQUIRED)
-# extract interface compile definitions from ct_core as options
-importInterfaceCompileDefinitionsAsOptions(ct_core)
-
-
 ## find and include optional dependencies
 option(MATLAB "Compile with matlab support" OFF)
 option(MATLAB_FULL_LOG "Expose all variables to Matlab (very slow)" OFF)
@@ -132,7 +125,7 @@ if(USE_PRESPEC)
         target_include_directories(${lib_name} PUBLIC ${ct_optcon_TARGET_INCLUDE_DIRS})
         target_compile_definitions(${lib_name} PUBLIC ${ct_optcon_COMPILE_DEFINITIONS})
         target_link_libraries(${lib_name} 
-            ct_core
+            ControlToolbox
             ${matlab_cpp_interface_LIBRARIES}
             ${LAPACK_LIBS}
             ${HPIPM_LIBS}
@@ -143,19 +136,18 @@ endif(USE_PRESPEC)
 
 
 ## create ct_optcon library
-add_library(ct_optcon INTERFACE)
-target_include_directories(ct_optcon INTERFACE ${ct_optcon_TARGET_INCLUDE_DIRS})
-target_compile_definitions(ct_optcon INTERFACE ${ct_optcon_COMPILE_DEFINITIONS})
-target_link_libraries(ct_optcon INTERFACE
-    ct_core
+add_library(ControlToolbox_OptimalControl INTERFACE)
+target_include_directories(ControlToolbox_OptimalControl INTERFACE ${ct_optcon_TARGET_INCLUDE_DIRS})
+target_compile_definitions(ControlToolbox_OptimalControl INTERFACE ${ct_optcon_COMPILE_DEFINITIONS})
+target_link_libraries(ControlToolbox_OptimalControl INTERFACE
+    ControlToolbox
     ${matlab_cpp_interface_LIBRARIES}
     ${LAPACK_LIBS}
     ${HPIPM_LIBS}
     ${IPOPT_LIBS}
-    #${SNOPT_LIBS}
     ${PRESPEC_LIB_NAMES}
-    )
-
+)
+add_library(ControlToolbox::OptimalControl ALIAS ControlToolbox_OptimalControl)
 
 ##################
 # BUILD EXAMPLES #
@@ -193,7 +185,7 @@ install(FILES "cmake/ct_optconConfig.cmake" DESTINATION "share/ct_optcon/cmake")
 
 ## install library and targets
 install(
-    TARGETS ct_optcon ${PRESPEC_LIB_NAMES}
+    TARGETS ControlToolbox_OptimalControl ${PRESPEC_LIB_NAMES}
     EXPORT ct_optcon_export
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -207,4 +199,6 @@ install (EXPORT ct_optcon_export DESTINATION share/ct_optcon/cmake)
 #################
 # DOCUMENTATION #
 #################
-add_subdirectory(doc)
+if(${BUILD_DOCS})
+    add_subdirectory(doc)
+endif()

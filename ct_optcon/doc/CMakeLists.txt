@@ -3,7 +3,7 @@ if(DOXYGEN_FOUND)
 
     set(doxyfile_in ct_optcon.doxyfile)
 
-    add_custom_target(doc
+    add_custom_target(${PROJECT_NAME}_doc
         COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
         COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile_in}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
