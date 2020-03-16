@@ -49,6 +49,44 @@ public:
     //! deep cloning
     virtual DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override = 0;
 
+    //! computes the controllability gramian by discretization
+    /*!
+     * Computes the controllability gramian
+     *
+     * @return Returns the controllability Gramian
+     */
+    Eigen::Matrix<double, STATE_DIM, STATE_DIM> computeControllabilityGramian(const size_t max_iters=100,
+        const double tolerance=1e-9)
+    {
+        state_matrix_t A;
+        state_control_matrix_t B;
+
+        // TODO: Need to get the matrices A and B
+        //       Not neccessary to specifiy x and u?
+        // this->getAandB(x, u, n, A, B);
+
+        Eigen::Matrix<double, STATE_DIM, STATE_DIM> CG_prev = Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Zero();
+        Eigen::Matrix<double, STATE_DIM, STATE_DIM> CG      = Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Zero();
+        Eigen::Matrix<double, STATE_DIM, STATE_DIM> A_prev  = Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Identity();
+        size_t n_iters = 0;
+        while (n_iters < max_iters)
+        {
+            CG = CG_prev + A_prev * B * B.transpose() * A_prev.transpose();
+
+            // check for convergence using matrix 1-norm
+            double norm1 = (CG_prev - CG).lpNorm<1>();
+            if (norm1 < tolerance) {
+                break;
+            }
+
+            // update
+            A_prev = A_prev * A;
+            CG_prev = CG;
+            ++n_iters;
+        }
+        return CG;
+    }
+
     //! compute the system dynamics
     /*!
 	 * This computes the system dynamics
