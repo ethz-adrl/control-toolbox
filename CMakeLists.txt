@@ -31,7 +31,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 set(ct_core_LIBS "")
 
 ## find and include required dependencies
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(Boost COMPONENTS REQUIRED)
 
 ## find and include optional dependencies
@@ -99,7 +99,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h.in ${CM
 ###################
 
 ## define the directories to be included in all ct_core targets
-list(APPEND ct_core_target_include_dirs ${EIGEN3_INCLUDE_DIR})
 list(APPEND ct_core_target_include_dirs ${PYTHON_INCLUDE_DIRS})
 list(APPEND ct_core_target_include_dirs ${QWT_INCLUDE_DIR})
 list(APPEND ct_core_target_include_dirs $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
@@ -132,7 +131,7 @@ endif()
 add_library(ControlToolbox_plot SHARED src/core/plot/plot.cpp)
 target_include_directories(ControlToolbox_plot PUBLIC ${ct_core_target_include_dirs})
 target_compile_definitions(ControlToolbox_plot PUBLIC ${ct_core_COMPILE_DEFINITIONS})
-target_link_libraries(ControlToolbox_plot ${ct_core_LIBS})
+target_link_libraries(ControlToolbox_plot ${ct_core_LIBS} Eigen3::Eigen)
 add_library(ControlToolbox::plot ALIAS ControlToolbox_plot)
 
 add_library(ControlToolbox INTERFACE)
@@ -142,6 +141,7 @@ target_link_libraries(ControlToolbox INTERFACE
     ${ct_core_LIBS}
     ${PRESPEC_LIB_NAMES}
     ControlToolbox::plot
+    Eigen3::Eigen
     pthread
     dl # required for gcc compatibility
     )
