@@ -40,5 +40,8 @@ solution.mat
 *.doc*
 *.vscode
 
-*/build/*
+*/build
 !ct_doc/doc/html/ct_doc_placeholder.txt
+build/
+*.kdev4*
+generated/
