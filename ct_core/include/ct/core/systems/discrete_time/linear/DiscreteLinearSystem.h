@@ -7,6 +7,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #include <ct/core/types/StateVector.h>
 #include <ct/core/types/ControlVector.h>
+#include <Eigen/Dense>
 
 
 namespace ct {
@@ -74,7 +75,7 @@ public:
             CG = CG_prev + A_prev * B * B.transpose() * A_prev.transpose();
 
             // check for convergence using matrix 1-norm
-            double norm1 = (CG_prev - CG).lpNorm<1>();
+            double norm1 = (CG_prev - CG).template lpNorm<1>();
             if (norm1 < tolerance) {
                 break;
             }
