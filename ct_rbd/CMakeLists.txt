@@ -1,9 +1,9 @@
 cmake_minimum_required (VERSION 3.3)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/ct-cmake-helpers.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/compilerSettings.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/explicitTemplateHelpers.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/clang-cxx-dev-tools.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ct-cmake-helpers.cmake)
 
 project(ct_rbd VERSION 3.0.2 LANGUAGES CXX)
 
