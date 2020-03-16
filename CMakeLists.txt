@@ -13,9 +13,11 @@ option(BUILD_EXAMPLES "Whether to build examples." false)
 option(BUILD_DOCS "Generate Documentary." false)
 
 #Make sure metapackage does not fail when building documentation
-add_custom_target(doc
-        COMMAND ${CMAKE_COMMAND} -E echo_append "Building CT Documentation..."
-        VERBATIM)
+if(${BUILD_DOCS})
+    add_custom_target(doc
+            COMMAND ${CMAKE_COMMAND} -E echo_append "Building CT Documentation..."
+            VERBATIM)
+endif()
 
 add_subdirectory("ct_optcon/")
 add_subdirectory("ct_rbd/")
@@ -101,8 +103,11 @@ list(APPEND ct_core_target_include_dirs ${EIGEN3_INCLUDE_DIR})
 list(APPEND ct_core_target_include_dirs ${PYTHON_INCLUDE_DIRS})
 list(APPEND ct_core_target_include_dirs ${QWT_INCLUDE_DIR})
 list(APPEND ct_core_target_include_dirs $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-list(APPEND ct_core_target_include_dirs $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/examples/include>)
 list(APPEND ct_core_target_include_dirs $<INSTALL_INTERFACE:include>)
+
+if(${BUILD_EXAMPLES})
+    list(APPEND ct_core_target_include_dirs $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/examples/include>)
+endif()
 
 ## declare prespec libraries
 set(PRESPEC_LIB_NAMES "")
@@ -175,7 +180,9 @@ include(GNUInstallDirs)
 
 ## copy the header files
 install(DIRECTORY include/ct/core DESTINATION include/ct)
-install(DIRECTORY examples/include/ct/core DESTINATION include/ct)
+if(${BUILD_EXAMPLES})
+    install(DIRECTORY examples/include/ct/core DESTINATION include/ct)
+endif()
 
 ## copy the cmake files required for find_package()
 install(FILES "cmake/ct_coreConfig.cmake" DESTINATION "share/ct_core/cmake")
