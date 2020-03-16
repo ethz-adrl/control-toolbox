@@ -1,6 +1,5 @@
 CMakeFiles/
 CMakeCache.txt
-*.cmake
 !clang-cxx-dev-tools.cmake
 !compilerSettings.cmake
 !ct-cmake-helpers.cmake
