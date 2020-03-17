@@ -130,34 +130,6 @@ public:
         }
     }
 
-    //! computes the controllability gramian by discretization
-    /*!
-     * Computes the controllability gramian
-     *
-     * @return Returns the controllability Gramian
-     */
-    Eigen::Matrix<double, STATE_DIM, STATE_DIM>& computeControllabilityGramian(double tolerance=1e-9)
-    {
-        Eigen::Matrix<double, STATE_DIM, STATE_DIM> CG_prev = Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Zero();
-        Eigen::Matrix<double, STATE_DIM, STATE_DIM> CG      = Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Zero();
-        Eigen::Matrix<double, STATE_DIM, STATE_DIM> A_prev = Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Identity();
-        while (true)
-        {
-            CG = CG_prev + A_prev * B_ * B_.transpose() * A_prev.transpose();
-
-            // check for convergence using matrix 1-norm
-            double norm1 = (CG_prev - CG).cwiseAbs().colwise().sum().maxCoeff();
-            if (norm1 < tolerance) {
-                break;
-            }
-
-            // update
-            A_prev = A_prev * A_;
-            CG_prev = CG;
-        }
-        return CG;
-    }
-
     //! checks if system is fully controllable
     /*!
 	 * \todo Move to LinearSystem
@@ -189,34 +161,6 @@ public:
             O.block<STATE_DIM, STATE_DIM>(i * STATE_DIM, 0) =
                 O.block<STATE_DIM, STATE_DIM>(0, (i - 1) * STATE_DIM) * A_;
         }
-    }
-
-    //! computes the observability gramian by discretization
-    /*!
-     * Computes the observability gramian
-     *
-     * @return Returns the observability Gramian
-     */
-    Eigen::Matrix<double, STATE_DIM, STATE_DIM>& computeObservabilityGramian(double tolerance=1e-9)
-    {
-        Eigen::Matrix<double, STATE_DIM, STATE_DIM> OG_prev = Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Zero();
-        Eigen::Matrix<double, STATE_DIM, STATE_DIM> OG      = Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Zero();
-        Eigen::Matrix<double, STATE_DIM, STATE_DIM> A_prev  = Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Identity();
-        while (true)
-        {
-            OG = OG_prev + A_prev.transpose() * C_.transpose() * C_ * A_prev;
-
-            // check for convergence using matrix 1-norm
-            double norm1 = (OG_prev - OG).cwiseAbs().colwise().sum().maxCoeff();
-            if (norm1 < tolerance) {
-                break;
-            }
-
-            // update
-            A_prev = A_prev * A_;
-            OG_prev = OG;
-        }
-        return OG;
     }
 
     //! checks if system is fully observable
