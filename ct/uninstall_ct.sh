@@ -25,10 +25,10 @@ if [ $curr_folder != "ct" ]; then
     exit 1
 fi
 
-uninstall_module ct_core
-uninstall_module ct_optcon
-uninstall_module ct_rbd
-uninstall_module ct_models
 uninstall_module ct_doc
+uninstall_module ct_models
+uninstall_module ct_rbd
+uninstall_module ct_optcon
+uninstall_module ct_core
 
 exit 0
