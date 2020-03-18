@@ -19,7 +19,7 @@ jobs:
       matrix:
         os: [ubuntu-16.04, ubuntu-18.04]
         compiler: [gcc, clang]
-    
+
     steps:
     - name: checkout code
       uses: actions/checkout@v2
@@ -40,7 +40,7 @@ jobs:
         cd ~/catkin_ws/src
         ln -s $GITHUB_WORKSPACE .
     - name: Install deb-packaged dependencies
-      run: | 
+      run: |
         cd ~/catkin_ws/src/control-toolbox/ct
         chmod 775 install_deps.sh
         sudo ./install_deps.sh
@@ -61,3 +61,4 @@ jobs:
       run: |
         cd ~/catkin_ws/src/control-toolbox/ct
         sudo ./run_unit_tests.sh -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
+        sudo ./uninstall_ct.sh
