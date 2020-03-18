@@ -69,8 +69,8 @@ if (PYTHONLIBS_FOUND)
    list(APPEND ct_core_COMPILE_DEFINITIONS PLOTTING_ENABLED)
    message(STATUS "Python library path ... " ${PYTHON_LIBRARY})
    list(APPEND ct_core_LIBS ${PYTHON_LIBRARY})
-else() 
-   message(STATUS "Python not found, plotting will not be available") 
+else()
+   message(STATUS "Python not found, plotting will not be available")
 endif()
 
 
@@ -98,8 +98,8 @@ set(PRESPEC_LIB_NAMES "")
 ## define list of libraries that contain prespecified templates
 if(USE_PRESPEC)
     # extract the prespec parameters from user-input
-    ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" 
-        "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" 
+    ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg"
+        "${CMAKE_CURRENT_SOURCE_DIR}/prespec/"
         "ct_core"
     )
     message(STATUS "CT Core: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
@@ -140,7 +140,7 @@ endif()
 ###########
 # TESTING #
 ###########
-## requires gtest to be installed, e.g. via 
+## requires gtest to be installed, e.g. via
 ## sudo apt install libgtest-dev
 ## cd /usr/src/gtest/
 ## sudo cmake -DBUILD_SHARED_LIBS=ON
@@ -179,8 +179,21 @@ install(
 ## create the ct_core.cmake file which holds target includes and dependencies
 install (EXPORT ct_core_export DESTINATION share/ct_core/cmake)
 
+## add uninstall target
+if(NOT TARGET uninstall)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/cmake_uninstall.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/../ct/cmake/cmake_uninstall.cmake"
+        IMMEDIATE @ONLY)
+
+    add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/../ct/cmake/cmake_uninstall.cmake)
+endif()
+
 
 #################
 # DOCUMENTATION #
 #################
 add_subdirectory(doc)
+
+
