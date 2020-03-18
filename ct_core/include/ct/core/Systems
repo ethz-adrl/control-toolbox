@@ -31,6 +31,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "systems/discrete_time/SystemDiscretizer.h"
 
 #include "systems/discrete_time/linear/DiscreteLinearSystem.h"
+#include "systems/discrete_time/linear/DiscreteLTISystem.h"
 #include "systems/discrete_time/linear/SwitchedDiscreteLinearSystem.h"
 #include "systems/discrete_time/linear/DiscreteSystemLinearizer.h"
 
