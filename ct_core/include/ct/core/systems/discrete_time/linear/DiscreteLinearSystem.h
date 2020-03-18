@@ -7,7 +7,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #include <ct/core/types/StateVector.h>
 #include <ct/core/types/ControlVector.h>
-#include <Eigen/Dense>
 
 
 namespace ct {
