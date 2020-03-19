@@ -61,10 +61,6 @@ jobs:
       run: |
         cd ~/catkin_ws/src/control-toolbox/ct
         sudo ./run_unit_tests.sh -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
-    - name: uninstall
-      run: |
-        cd ~/catkin_ws/src/control-toolbox/ct
-        sudo ./uninstall_ct.sh
     - name: Setup Python  
       uses: actions/setup-python@master
       with:
@@ -82,3 +78,7 @@ jobs:
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: true
+    - name: uninstall the control toolbox
+      run: |
+        cd ~/catkin_ws/src/control-toolbox/ct
+        sudo ./uninstall_ct.sh
