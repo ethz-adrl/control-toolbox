@@ -15,17 +15,17 @@ def main(argv=sys.argv[1:]):
     test_dir = working_dir + "/test_results"
     if not os.path.exists(test_dir):
       os.makedirs(test_dir)
-    
+
     for the_file in os.listdir(test_dir):
       file_path = os.path.join(test_dir, the_file)
       try:
           if os.path.isfile(file_path):
               os.unlink(file_path)
-      except Exception, e:
+      except Exception as e:
           print(e)
-    
+
     commands = []
-    
+
     for cmd in tests:
         test_cmd = "./" + cmd + " --gtest_output=xml:" + working_dir + "/test_results/"
         print("Running: ", test_cmd)
@@ -34,7 +34,7 @@ def main(argv=sys.argv[1:]):
           sys.exit(1)
 
         commands.insert(0, test_cmd)
-            
+
     print("Ran the following commands: ")
     for cmd in commands:
       print("-- ", cmd)
