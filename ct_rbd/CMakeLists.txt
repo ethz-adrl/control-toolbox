@@ -36,7 +36,7 @@ INTERFACE
     $<INSTALL_INTERFACE:include/ct/rbd/robot/kinematics/ikfast>
 )
 
-target_link_libraries(ct_rbd INTERFACE ct_optcon)
+target_link_libraries(ct_rbd INTERFACE ControlToolbox::OptimalControl)
 
 
 ###########
