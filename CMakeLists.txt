@@ -36,7 +36,7 @@ set(ct_core_LIBS "")
 
 ## find and include required dependencies
 find_package(Eigen3 REQUIRED NO_MODULE)
-find_package(Boost COMPONENTS REQUIRED)
+find_package(Boost REQUIRED)
 
 ## find and include optional dependencies
 find_package(llvm QUIET)
@@ -146,6 +146,7 @@ target_link_libraries(ControlToolbox INTERFACE
     ${PRESPEC_LIB_NAMES}
     ControlToolbox::plot
     Eigen3::Eigen
+    Boost::Boost
     pthread
     dl # required for gcc compatibility
     )
