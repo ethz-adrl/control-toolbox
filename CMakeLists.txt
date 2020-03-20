@@ -11,6 +11,7 @@ set(MASTER_PROJECT_NAME ${PROJECT_NAME})
 option(CMAKE_BUILD_TYPE "Build mode." Release) # original author requires this to default to Release
 option(BUILD_EXAMPLES "Whether to build examples." OFF)
 option(BUILD_DOCS "Generate Documentary." OFF)
+option(BUILD_MODELS "Build predefined dynamic models, e.g. quadrotor etc." OFF)
 
 #Make sure metapackage does not fail when building documentation
 if(${BUILD_DOCS})
@@ -21,7 +22,10 @@ endif()
 
 add_subdirectory("ct_optcon/")
 add_subdirectory("ct_rbd/")
-add_subdirectory("ct_models/")
+
+if(${BUILD_MODELS})
+  add_subdirectory("ct_models/")
+endif()
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -Wall -Wfatal-errors")
