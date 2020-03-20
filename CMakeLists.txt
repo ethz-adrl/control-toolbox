@@ -9,8 +9,8 @@ set (CMAKE_CXX_STANDARD 14)
 set(MASTER_PROJECT_NAME ${PROJECT_NAME})
 
 option(CMAKE_BUILD_TYPE "Build mode." Release) # original author requires this to default to Release
-option(BUILD_EXAMPLES "Whether to build examples." false)
-option(BUILD_DOCS "Generate Documentary." false)
+option(BUILD_EXAMPLES "Whether to build examples." OFF)
+option(BUILD_DOCS "Generate Documentary." OFF)
 
 #Make sure metapackage does not fail when building documentation
 if(${BUILD_DOCS})
