@@ -232,8 +232,10 @@ TEST(IntegrationTest, derivativeTest)
             if (plotResult)
                 plotResults(stateTrajectories, timeTrajectories);
         }
+#ifdef PLOTTING_ENABLED
         if (plotResult)
             plot::show(true);
+#endif
     } catch (...)
     {
         std::cout << "Caught exception." << std::endl;

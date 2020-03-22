@@ -1,5 +1,4 @@
 # Control Toolbox
-![](https://github.com/ethz-adrl/control-toolbox/workflows/ControlToolbox%20CI/badge.svg)
 ![GitHub top language](https://img.shields.io/github/languages/top/ethz-adrl/control-toolbox.svg?style=social)
 ![GitHub](https://img.shields.io/github/license/ethz-adrl/control-toolbox.svg?style=social)
 
@@ -18,7 +17,7 @@ The library contains several tools to design and evaluate controllers, model dyn
 The CT was designed with the following features in mind:
 
  - **Systems and dynamics**: 
-	- intuitive modelling of systems governed by ordinary differential- or difference equations.
+	- intuitive modelling of systems governed by ordinary differential or difference equations.
 
  - **Trajectory optimization, optimal control and (nonlinear) model predictive control**:
     - intuitive modelling of cost functions and constraints
@@ -43,7 +42,7 @@ The CT was designed with the following features in mind:
 	- implementation of a basic nonlinear-programming inverse kinematics solver for fix-base robots.
  
  - **Automatic Differentiation**:
-    - first- and second order automatic differentiation of arbitrary vector-valued functions including cost functions and constraints
+    - first and second order automatic differentiation of arbitrary vector-valued functions including cost functions and constraints
     - automatic differentiation and code generation of rigid body dynamics
     - derivative code generation for maximum efficiency
 
@@ -76,7 +75,7 @@ control fashion.
 
 The Control Toolbox is specifically designed for these tasks. It is written entirely in C++ and has 
 a strong focus on highly efficient code that can be run online (in the loop) on robots or other 
-actuated hardware. A major contribution of the CT is are its implementations of optimal control 
+actuated hardware. A major contribution of the CT is its implementations of optimal control 
 algorithms, spanning a range from simple LQR reference implementations to constrained model predictive 
 control. The CT supports Automatic Differentiation (Auto-Diff) and allows to generate derivative code 
 for arbitrary scalar and vector-valued functions. 
@@ -136,28 +135,28 @@ for different rotation representations such as Quaternions, Euler angles or rota
 
 ## Structure and Modules of the CT
 
-The Control Toolbox consists of three main modules. The Core module (ct_core), the Optimal 
-Control (ct_optcon) module and the rigid body dynamics (ct_rbd) module. 
+The Control Toolbox consists of three main modules. The Core (`ct_core`) module, the Optimal 
+Control (`ct_optcon`) module and the Rigid Body Dynamics (`ct_rbd`) module. 
 There is a clear hierarchy between the modules. 
 That means, the modules depend on each other in this order, e.g. you can use the core module 
 without the optcon or rbd module.
- - The `core' module (ct_core) module provides general type definitions and mathematical tools.
+ - The Core (`ct_core`) module provides general type definitions and mathematical tools.
 For example, it contains most data type definitions, definitions for systems and controllers, 
 as well as basic functionality such as numerical integrators for differential equations. 
- - The `optimal Control' module (ct_optcon) builds on top of the `core' module and adds 
+ - The Optimal Control (`ct_optcon`) module builds on top of the Core module and adds 
 infrastructure for defining and solving Optimal Control Problems. It contains the functionality
 for defining cost functions, constraints, solver backends and a general MPC wrapper.
- - The `rigid body dynamics' module (ct_rbd) provides tools for modelling Rigid Body Dynamics 
-systems and interfaces with ct_core and ct_optcon data types. 
+ - The Rigid Body Dynamics (`ct_rbd`) module provides tools for modelling Rigid Body Dynamics 
+systems and interfaces with `ct_core` and `ct_optcon` data types. 
 
-For testing as well as examples, we also provide the 'models' module (ct_models) which contains 
+For testing as well as examples, we also provide the models module (`ct_models`) which contains 
 various robot models including a quadruped, a robotic arm, a normal quadrotor and a quadrotor 
 with slung load. 
 
 The four different main modules are detailed in the following.
 
 
-### ct_core
+### ct_core (Core)
 
  - Definitions of fundamental types for **control** and simulation, such as dynamic systems 
  (ct::core::System), states (ct::core::StateVector), controls (ct::core::Controller), or trajectories 
@@ -173,7 +172,7 @@ The four different main modules are detailed in the following.
  compilation (ct::core::DerivativesCppadJIT)
  
 
-### ct_optcon (optimal control)
+### ct_optcon (Optimal Control)
 
  - Definitions for **Optimal Control Problems** (ct::optcon::OptConProblem) and **Optimal Control Solvers** (ct::optcon::OptConSolver)
  - **CostFunction toolbox** allowing to construct cost functions from file and providing first-order and **second-order approximations**, see ct::optcon::CostFunction.
@@ -251,17 +250,12 @@ Please see LICENCE.txt and NOTICE.txt
 
 ##  How to cite the CT
 
-    @misc{adrlCT,
-      author    = {Giftthaler, Markus and Neunert, Michael and {St\"auble}, Markus and Buchli, Jonas},
-      booktitle = {2018 IEEE International Conference on Simulation, Modeling, and Programming for Autonomous Robots (SIMPAR)},
-      author    = {Giftthaler, Markus and Neunert, Michael and {St\"auble}, Markus and Buchli, Jonas},
-      title     = "The {Control Toolbox} - An Open-Source {C++} Library for Robotics, Optimal and Model Predictive Control",
-      year      = 2018,
-      pages     ={123-129}, 
-      doi       ={10.1109/SIMPAR.2018.8376281}, 
-      month     ={May},
-      number    ={}, 
-      volume    ={}, 
+    @article{adrlCT,
+      title={The control toolbox — An open-source C++ library for robotics, optimal and model predictive control},
+      author={Markus Giftthaler and Michael Neunert and Markus St{\"a}uble and Jonas Buchli},
+      journal={2018 IEEE International Conference on Simulation, Modeling, and Programming for Autonomous Robots (SIMPAR)},
+      year={2018},
+      pages={123-129}
     }
 
 ## Earlier Versions

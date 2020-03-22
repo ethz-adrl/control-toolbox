@@ -73,5 +73,5 @@ int main(int argc, char* argv[])
     testSensitivities(IntegrationType::EULERCT);
     testSensitivities(IntegrationType::RK4CT);
 
-    return 1;
+    return 0;
 }

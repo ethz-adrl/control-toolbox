@@ -8,6 +8,7 @@ macro(package_add_test TESTNAME)
     list(APPEND UNIT_TEST_TARGETS ${TESTNAME})
 endmacro()
 
+if(BUILD_TESTS)
 
 #package_add_test(StateManifoldTest StateManifoldTest.cpp)
 #package_add_test(LTISystemTest system/LTISystemTest.cpp)
@@ -55,3 +56,5 @@ install(
     TARGETS ${UNIT_TEST_TARGETS}
     RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}/ct_core
     )
+
+endif(BUILD_TESTS)
