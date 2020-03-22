@@ -13,9 +13,9 @@
 
 \subsection req-dependencies Required Dependencies
  - install <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen 3</a> via
-  \code{.sh} 
-  sudo apt-get update 
-  sudo apt-get install libeigen3-dev 
+  \code{.sh}
+  sudo apt-get update
+  sudo apt-get install libeigen3-dev
   \endcode
  - install boost
  \code{.sh}
@@ -75,7 +75,7 @@ This will build the documentation. The index.html can be found in ct_doc/doc/htm
 
 \subsection build-cmake Using plain cmake.
 \subsubsection build-cmake-main Compiling the Library
-First, make sure you build and install the kindr-library, see <a href="https://github.com/ANYbotics/kindr#building">here</a>.  
+First, make sure you build and install the kindr-library, see <a href="https://github.com/ANYbotics/kindr#building">here</a>.
 Then go to your local clone of the control toolbox and run the build script:
 \code{.sh}
 cd your_workspace/control-toolbox/ct
@@ -156,6 +156,34 @@ The following dependencies and bindings are optional but can help to enhance the
   \code{.sh}
  $ sudo apt-get install clang-format
  \endcode
+
+\section linux_packages Linux Packages
+
+\subsection arch_linux Arch Linux
+Note: Installing Control Toolbox on Arch Linux is not tested by the developers.
+
+Control Toolbox is available in the Arch User Repository
+(<a href="https://wiki.archlinux.org/index.php/Arch_User_Repository">AUR</a>) as
+<a href="https://aur.archlinux.org/packages/control-toolbox/">control-toolbox</a>.
+Note you can manually install the package by following the instructions on the
+<a href="https://wiki.archlinux.org/index.php/Arch_User_Repository#Installing_packages">Arch Wiki</a>
+or use an <a href="https://wiki.archlinux.org/index.php/AUR_helpers">AUR helper</a>
+like <a href="https://aur.archlinux.org/packages/yay/">yay</a> (recommended for
+ease of install).
+
+\subsubsection install_opt_dep Install Optional Dependencies
+ \code{.sh}
+ yay -S lapack clang cppad cppadcodegen coin-or-ipopt hpipm qwt matlab clang-format
+ \endcode
+
+\subsubsection install_ct Install Control Toolbox
+ \code{.sh}
+ yay -S control-toolbox
+ \endcode
+
+To discuss any issues related to this package refer to the comments section on
+the AUR page of control-toolbox
+<a href="https://aur.archlinux.org/packages/control-toolbox">here</a>.
 
 
 
