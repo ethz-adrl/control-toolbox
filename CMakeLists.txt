@@ -38,7 +38,6 @@ set(ct_core_LIBS "")
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(OpenMP REQUIRED)
 find_package(Boost REQUIRED COMPONENTS)
-find_package(Threads REQUIRED)
 
 ## find and include optional dependencies
 find_package(llvm QUIET)
