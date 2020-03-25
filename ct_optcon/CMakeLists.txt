@@ -10,8 +10,8 @@ project(ct_optcon VERSION 3.0.2 LANGUAGES CXX)
 
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++14 -Wno-unknown-pragmas -Wall -Wfatal-errors")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++14 -Wfatal-errors")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas -Wall -Wfatal-errors")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wfatal-errors")
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 ## find and include optional dependencies
@@ -142,6 +142,8 @@ target_compile_definitions(ControlToolbox_OptimalControl INTERFACE ${ct_optcon_C
 target_link_libraries(ControlToolbox_OptimalControl INTERFACE
     ControlToolbox
     ${matlab_cpp_interface_LIBRARIES}
+    OpenMP::OpenMP_CXX
+    Threads::Threads
     ${LAPACK_LIBS}
     ${HPIPM_LIBS}
     ${IPOPT_LIBS}
