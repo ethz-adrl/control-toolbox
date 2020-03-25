@@ -146,7 +146,6 @@ target_link_libraries(ControlToolbox_OptimalControl INTERFACE
     ${HPIPM_LIBS}
     ${IPOPT_LIBS}
     ${PRESPEC_LIB_NAMES}
-    OpenMP::OpenMP_CXX
 )
 add_library(ControlToolbox::OptimalControl ALIAS ControlToolbox_OptimalControl)
 
