@@ -142,12 +142,14 @@ target_compile_definitions(ControlToolbox_OptimalControl INTERFACE ${ct_optcon_C
 target_link_libraries(ControlToolbox_OptimalControl INTERFACE
     ControlToolbox
     ${matlab_cpp_interface_LIBRARIES}
-    OpenMP::OpenMP_CXX
-    Threads::Threads
     ${LAPACK_LIBS}
     ${HPIPM_LIBS}
     ${IPOPT_LIBS}
-    ${PRESPEC_LIB_NAMES}
+    ${PRESPEC_LIB_NAMES
+PRIVATE
+    OpenMP::OpenMP_CXX
+    Threads::Threads
+}
 )
 add_library(ControlToolbox::OptimalControl ALIAS ControlToolbox_OptimalControl)
 
