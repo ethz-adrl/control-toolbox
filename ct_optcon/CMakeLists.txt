@@ -40,12 +40,12 @@ endif(MATLAB)
 
 ## lapack libs
 find_package(LAPACK QUIET)
-set(LAPACK_LIBS "")
 if(LAPACK_FOUND)
     message(STATUS "Found LAPACK library")
-    list(APPEND LAPACK_LIBS lapack)
+    set(LAPACK_LIBS ${LAPACK_LIBRARIES})
     list(APPEND ct_optcon_COMPILE_DEFINITIONS CT_USE_LAPACK)
 else(LAPACK_FOUND)
+    set(LAPACK_LIBS "")
     message(STATUS "Could not find LAPACK library")
 endif(LAPACK_FOUND)
 
