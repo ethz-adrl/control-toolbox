@@ -13,8 +13,11 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-template <size_t STATE_DIM, typename SCALAR>
+
+// forward declaration of the integrator class
+template <typename MANIFOLD>
 class Integrator;
+
 
 //! Observer for Integrator
 /*!
@@ -23,17 +26,18 @@ class Integrator;
  *
  * @tparam STATE_DIM The size of the state vector
  */
-template <size_t STATE_DIM, typename SCALAR = double>
+template <typename MANIFOLD>
 class Observer
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    friend class Integrator<STATE_DIM, SCALAR>;
+    friend class Integrator<MANIFOLD>;
 
-    typedef std::vector<std::shared_ptr<EventHandler<STATE_DIM, SCALAR>>,
-        Eigen::aligned_allocator<std::shared_ptr<EventHandler<STATE_DIM, SCALAR>>>>
-        EventHandlerPtrVector;
+    using SCALAR = typename MANIFOLD::Scalar;
+
+    using EventHandlerPtrVector = std::vector<std::shared_ptr<EventHandler<MANIFOLD>>,
+        Eigen::aligned_allocator<std::shared_ptr<EventHandler<MANIFOLD>>>>;
 
     //! default constructor
     /*!
@@ -44,22 +48,22 @@ public:
     //! reset the observer
     void reset();
 
-    void observe(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t);
+    void observe(const MANIFOLD& x, const SCALAR& t);
 
-    void log(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t);
+    void log(const MANIFOLD& x, const SCALAR& t);
 
-    void observeInternal(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t);
+    void observeInternal(const MANIFOLD& x, const SCALAR& t);
 
 private:
     //! Lambda to pass to odeint (odeint takes copies of the observer so we can't pass the class
-    std::function<void(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)> observeWrap;
-    std::function<void(const StateVector<STATE_DIM, SCALAR>& x, const SCALAR& t)> observeWrapWithLogging;
+    std::function<void(const MANIFOLD& x, const SCALAR& t)> observeWrap;
+    std::function<void(const MANIFOLD& x, const SCALAR& t)> observeWrapWithLogging;
 
-    ct::core::StateVectorArray<STATE_DIM, SCALAR> states_;  //!< container for logging the state
-    ct::core::tpl::TimeArray<SCALAR> times_;                //!< container for logging the time
-
+    ct::core::DiscreteArray<MANIFOLD> states_;  //!< container for logging the state
+    ct::core::tpl::TimeArray<SCALAR> times_;    //!< container for logging the time
 
     EventHandlerPtrVector eventHandlers_;  //! list of event handlers
 };
-}
-}
+
+}  // namespace core
+}  // namespace ct

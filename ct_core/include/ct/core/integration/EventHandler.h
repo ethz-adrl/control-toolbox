@@ -5,7 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/core/types/StateVector.h>
+#include <ct/core/types/arrays/DiscreteArray.h>
+#include <ct/core/types/arrays/TimeArray.h>
 
 namespace ct {
 namespace core {
@@ -20,14 +21,18 @@ namespace core {
  *
  * @tparam STATE_DIM dimensionality of the state vector
  */
-template <size_t STATE_DIM, typename SCALAR = double>
+template <typename MANIFOLD>
 class EventHandler
 {
 public:
+    using SCALAR = typename MANIFOLD::Scalar;
+
     //! Default constructor
-    EventHandler() {}
+    EventHandler() = default;
+
     //! destructor
-    virtual ~EventHandler() {}
+    virtual ~EventHandler() = default;
+
     virtual bool callOnSubsteps() = 0;
 
     //! reset event handler
@@ -40,7 +45,7 @@ public:
 	 * @param t current time
 	 * @return true if an event has happened
 	 */
-    virtual bool checkEvent(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR& t) = 0;
+    virtual bool checkEvent(const MANIFOLD& state, const SCALAR& t) = 0;
 
     //! handle the event
     /*!
@@ -48,11 +53,11 @@ public:
 	 * @param state current state of the system
 	 * @param t current time
 	 */
-    virtual void handleEvent(const StateVector<STATE_DIM, SCALAR>& state, const SCALAR& t) = 0;
+    virtual void handleEvent(const MANIFOLD& state, const SCALAR& t) = 0;
 
 private:
-    StateVectorArray<STATE_DIM, SCALAR> stateTrajectory_;  //! state trajectory for recording
-    tpl::TimeArray<SCALAR> timeTrajectory_;                //! time trajectory for recording
+    ct::core::DiscreteArray<MANIFOLD> stateTrajectory_;  //! state trajectory for recording
+    tpl::TimeArray<SCALAR> timeTrajectory_;              //! time trajectory for recording
 };
-}
-}
+}  // namespace core
+}  // namespace ct

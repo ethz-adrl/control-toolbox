@@ -8,17 +8,24 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include <type_traits>
 #include <functional>
 #include <cmath>
+#include <memory>
 
 #include "EventHandler.h"
 #include "Observer.h"
 #include "eigenIntegration.h"
+#include "manifIntegration.h"
 
-#include "internal/StepperBase.h"
-
-#include "internal/SteppersODEInt.h"
-#include "internal/SteppersCT.h"
+#include "internal/StepperODEInt.h"
+#include "internal/StepperODEIntDenseOutput.h"
+#include "internal/StepperODEIntControlled.h"
+#include "internal/StepperEulerCT.h"
+#include "internal/StepperRK4CT.h"
 
 #include <ct/core/types/AutoDiff.h>
+#include <ct/core/types/arrays/DiscreteArray.h>
+#include <ct/core/types/TypeTraits.h>
+
+#include <ct/core/systems/System.h>
 
 namespace ct {
 namespace core {
@@ -51,20 +58,24 @@ enum IntegrationType
  * \dot{x} = f(x,t)
  * \f]
  *
- *
  * Unit test \ref IntegrationTest.cpp illustrates the use of Integrator.h
- *
  *
  * @tparam STATE_DIM the size of the state vector
  * @tparam SCALAR The scalar type
  */
-template <size_t STATE_DIM, typename SCALAR = double>
+template <typename MANIFOLD>
 class Integrator
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    typedef std::shared_ptr<EventHandler<STATE_DIM, SCALAR>> EventHandlerPtr;
-    typedef std::vector<EventHandlerPtr, Eigen::aligned_allocator<EventHandlerPtr>> EventHandlerPtrVector;
+
+    using SCALAR = typename MANIFOLD::Scalar;
+    using TANGENT = typename MANIFOLD::Tangent;
+    using System_t = System<MANIFOLD, CONTINUOUS_TIME>;
+    using SystemPtr_t = std::shared_ptr<System_t>;
+
+    using EventHandlerPtr = std::shared_ptr<EventHandler<MANIFOLD>>;
+    using EventHandlerPtrVector = std::vector<EventHandlerPtr, Eigen::aligned_allocator<EventHandlerPtr>>;
 
     //! constructor
     /*!
@@ -75,13 +86,16 @@ public:
 	 * @param absErrTol optional absolute error tolerance (for variable step solvers)
 	 * @param relErrTol optional relative error tolerance (for variable step solvers)
 	 */
-    Integrator(const std::shared_ptr<System<STATE_DIM, SCALAR>>& system,
+    Integrator(const SystemPtr_t& system,
         const IntegrationType& intType = IntegrationType::EULERCT,
         const EventHandlerPtrVector& eventHandlers = EventHandlerPtrVector(0));
 
-    Integrator(const std::shared_ptr<System<STATE_DIM, SCALAR>>& system,
-        const IntegrationType& intType,
-        const EventHandlerPtr& eventHandler);
+    Integrator(const SystemPtr_t& system, const IntegrationType& intType, const EventHandlerPtr& eventHandler);
+
+    /**
+     * @brief Construct a new Integrator object
+     */
+    Integrator(const Integrator& other) = delete;
 
     /**
 	 * @brief      Changes the integration type
@@ -89,7 +103,6 @@ public:
 	 * @param[in]  intType  The new integration type
 	 */
     void changeIntegrationType(const IntegrationType& intType);
-
 
     /**
 	 * @brief      Sets the adaptive error tolerances
@@ -113,11 +126,11 @@ public:
 	 * @param stateTrajectory state evolution over time
 	 * @param timeTrajectory time trajectory corresponding to state trajectory
 	 */
-    void integrate_n_steps(StateVector<STATE_DIM, SCALAR>& state,
+    void integrate_n_steps(MANIFOLD& state,
         const SCALAR& startTime,
         size_t numSteps,
         SCALAR dt,
-        StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
+        DiscreteArray<MANIFOLD>& stateTrajectory,
         tpl::TimeArray<SCALAR>& timeTrajectory);
 
     //! Equidistant integration based on number of time steps and step length
@@ -130,7 +143,7 @@ public:
 	 * @param numSteps number of steps to integrate forward
 	 * @param dt step size (fixed also for variable step solvers)
 	 */
-    void integrate_n_steps(StateVector<STATE_DIM, SCALAR>& state, const SCALAR& startTime, size_t numSteps, SCALAR dt);
+    void integrate_n_steps(MANIFOLD& state, const SCALAR& startTime, size_t numSteps, SCALAR dt);
 
     //! Equidistant integration based on initial and final time as well as step length
     /*!
@@ -146,11 +159,11 @@ public:
 	 * @param stateTrajectory state evolution over time
 	 * @param timeTrajectory time trajectory corresponding to state trajectory
 	 */
-    void integrate_const(StateVector<STATE_DIM, SCALAR>& state,
+    void integrate_const(MANIFOLD& state,
         const SCALAR& startTime,
         const SCALAR& finalTime,
         SCALAR dt,
-        StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
+        DiscreteArray<MANIFOLD>& stateTrajectory,
         tpl::TimeArray<SCALAR>& timeTrajectory);
 
     //! Equidistant integration based on initial and final time as well as step length
@@ -163,10 +176,7 @@ public:
 	 * @param finalTime the final time of the integration
 	 * @param dt step size (fixed also for variable step solvers)
 	 */
-    void integrate_const(StateVector<STATE_DIM, SCALAR>& state,
-        const SCALAR& startTime,
-        const SCALAR& finalTime,
-        SCALAR dt);
+    void integrate_const(MANIFOLD& state, const SCALAR& startTime, const SCALAR& finalTime, SCALAR dt);
 
     //! integrate forward from an initial to a final time using an adaptive scheme
     /*!
@@ -185,10 +195,10 @@ public:
 	 * @param timeTrajectory time trajectory corresponding to state trajectory
 	 * @param dtInitial step size (initial guess, for fixed step integrators it is fixed)
 	 */
-    void integrate_adaptive(StateVector<STATE_DIM, SCALAR>& state,
+    void integrate_adaptive(MANIFOLD& state,
         const SCALAR& startTime,
         const SCALAR& finalTime,
-        StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
+        DiscreteArray<MANIFOLD>& stateTrajectory,
         tpl::TimeArray<SCALAR>& timeTrajectory,
         const SCALAR dtInitial = SCALAR(0.01));
 
@@ -205,7 +215,7 @@ public:
 	 * @param finalTime the final time of the integration
 	 * @param dtInitial step size (initial guess, for fixed step integrators it is fixed)
 	 */
-    void integrate_adaptive(StateVector<STATE_DIM, SCALAR>& state,
+    void integrate_adaptive(MANIFOLD& state,
         const SCALAR& startTime,
         const SCALAR& finalTime,
         SCALAR dtInitial = SCALAR(0.01));
@@ -221,9 +231,9 @@ public:
 	 * @param stateTrajectory the resulting state trajectory corresponding to the times provided
 	 * @param dtInitial an initial guess for a time step (fixed for fixed step integrators)
 	 */
-    void integrate_times(StateVector<STATE_DIM, SCALAR>& state,
+    void integrate_times(MANIFOLD& state,
         const tpl::TimeArray<SCALAR>& timeTrajectory,
-        StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
+        DiscreteArray<MANIFOLD>& stateTrajectory,
         SCALAR dtInitial = SCALAR(0.01));
 
 private:
@@ -240,57 +250,18 @@ private:
 	 * @param[in]  intType  The integration type
 	 *
 	 */
-    template <typename S = SCALAR>
-    typename std::enable_if<std::is_same<S, double>::value, void>::type initializeAdaptiveSteppers(
-        const IntegrationType& intType)
-    {
-        switch (intType)
-        {
-            case ODE45:
-            {
-                integratorStepper_ =
-                    std::shared_ptr<internal::StepperODEIntControlled<internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>,
-                        Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
-                        new internal::StepperODEIntControlled<internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>,
-                            Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
-                break;
-            }
 
-            case RK5VARIABLE:
-            {
-                integratorStepper_ = std::shared_ptr<internal::StepperODEIntDenseOutput<
-                    internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>, Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
-                    new internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<STATE_DIM, SCALAR>,
-                        Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
-                break;
-            }
+    template <typename M = MANIFOLD, typename std::enable_if<ct::core::is_real_euclidean<M>::value, bool>::type = true>
+    void initializeAdaptiveSteppers(const IntegrationType& intType);
 
-            case BULIRSCHSTOER:
-            {
-                integratorStepper_ =
-                    std::shared_ptr<internal::StepperODEInt<internal::bulirsch_stoer_t<STATE_DIM, SCALAR>,
-                        Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
-                        new internal::StepperODEInt<internal::bulirsch_stoer_t<STATE_DIM, SCALAR>,
-                            Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
-                break;
-            }
-            default:
-                break;
-        }
-    }
-
-    template <typename S = SCALAR>
-    typename std::enable_if<!std::is_same<S, double>::value, void>::type initializeAdaptiveSteppers(
-        const IntegrationType& intType)
-    {
-    }
+    template <typename M = MANIFOLD,
+        typename std::enable_if<!(ct::core::is_real_euclidean<M>::value), bool>::type = true>
+    void initializeAdaptiveSteppers(const IntegrationType& intType);
 
 #ifdef CPPADCG
     template <typename S = SCALAR>
     typename std::enable_if<std::is_same<S, ADCGScalar>::value, void>::type initializeODEIntSteppers(
-        const IntegrationType& intType)
-    {
-    }
+        const IntegrationType& intType);
 #endif
 
     /**
@@ -302,54 +273,7 @@ private:
 	 */
     template <typename S = SCALAR>
     typename std::enable_if<std::is_same<S, double>::value, void>::type initializeODEIntSteppers(
-        const IntegrationType& intType)
-    {
-        switch (intType)
-        {
-            case EULER:
-            {
-                integratorStepper_ = std::shared_ptr<internal::StepperODEInt<internal::euler_t<STATE_DIM, SCALAR>,
-                    Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
-                    new internal::StepperODEInt<internal::euler_t<STATE_DIM, SCALAR>,
-                        Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
-                break;
-            }
-
-            case RK4:
-            {
-                integratorStepper_ =
-                    std::shared_ptr<internal::StepperODEInt<internal::runge_kutta_4_t<STATE_DIM, SCALAR>,
-                        Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
-                        new internal::StepperODEInt<internal::runge_kutta_4_t<STATE_DIM, SCALAR>,
-                            Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
-                break;
-            }
-
-            case MODIFIED_MIDPOINT:
-            {
-                integratorStepper_ =
-                    std::shared_ptr<internal::StepperODEInt<internal::modified_midpoint_t<STATE_DIM, SCALAR>,
-                        Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
-                        new internal::StepperODEInt<internal::modified_midpoint_t<STATE_DIM, SCALAR>,
-                            Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
-                break;
-            }
-
-            case RK78:
-            {
-                integratorStepper_ =
-                    std::shared_ptr<internal::StepperODEInt<internal::runge_kutta_fehlberg78_t<STATE_DIM, SCALAR>,
-                        Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>>(
-                        new internal::StepperODEInt<internal::runge_kutta_fehlberg78_t<STATE_DIM, SCALAR>,
-                            Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>());
-
-                break;
-            }
-            default:
-                break;
-        }
-    }
-
+        const IntegrationType& intType);
 
     //! resets the observer
     void reset();
@@ -360,23 +284,127 @@ private:
 	 * @param      stateTrajectory  The state trajectory
 	 * @param      timeTrajectory   The time trajectory
 	 */
-    void retrieveTrajectoriesFromObserver(StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory,
+    void retrieveTrajectoriesFromObserver(DiscreteArray<MANIFOLD>& stateTrajectory,
         tpl::TimeArray<SCALAR>& timeTrajectory);
+
     /**
 	 * @brief      Retrieves the state trajectory from the observer
 	 *
 	 * @param      stateTrajectory  The state trajectory
 	 */
-    void retrieveStateVectorArrayFromObserver(StateVectorArray<STATE_DIM, SCALAR>& stateTrajectory);
+    void retrieveStateVectorArrayFromObserver(DiscreteArray<MANIFOLD>& stateTrajectory);
 
     //! sets up the lambda function
     void setupSystem();
 
-    std::shared_ptr<System<STATE_DIM, SCALAR>> system_;  //! pointer to the system
-    std::function<void(const Eigen::Matrix<SCALAR, STATE_DIM, 1>&, Eigen::Matrix<SCALAR, STATE_DIM, 1>&, SCALAR)>
-        systemFunction_;  //! the system function to integrate
-    std::shared_ptr<internal::StepperBase<Eigen::Matrix<SCALAR, STATE_DIM, 1>, SCALAR>> integratorStepper_;
-    Observer<STATE_DIM, SCALAR> observer_;  //! observer
+    SystemPtr_t system_;  //! pointer to the system
+
+    //! the system function to integrate
+    typename internal::StepperBase<MANIFOLD>::SystemFunction_t systemFunction_;
+
+    std::shared_ptr<internal::StepperBase<MANIFOLD>> integratorStepper_;
+
+    Observer<MANIFOLD> observer_;  //! observer
 };
+
+
+#ifdef CPPADCG
+template <typename MANIFOLD>
+template <typename S>
+typename std::enable_if<std::is_same<S, ADCGScalar>::value, void>::type Integrator<MANIFOLD>::initializeODEIntSteppers(
+    const IntegrationType& intType)
+{
+    // do nothing
 }
+#endif
+
+
+template <typename MANIFOLD>
+template <typename S>
+typename std::enable_if<std::is_same<S, double>::value, void>::type Integrator<MANIFOLD>::initializeODEIntSteppers(
+    const IntegrationType& intType)
+{
+    switch (intType)
+    {
+        case EULER:
+        {
+            integratorStepper_ = std::shared_ptr<internal::StepperODEInt<internal::euler_t<MANIFOLD>, MANIFOLD>>(
+                new internal::StepperODEInt<internal::euler_t<MANIFOLD>, MANIFOLD>());
+            break;
+        }
+        case RK4:
+        {
+            integratorStepper_ =
+                std::shared_ptr<internal::StepperODEInt<internal::runge_kutta_4_t<MANIFOLD>, MANIFOLD>>(
+                    new internal::StepperODEInt<internal::runge_kutta_4_t<MANIFOLD>, MANIFOLD>());
+            break;
+        }
+
+        case MODIFIED_MIDPOINT:
+        {
+            integratorStepper_ =
+                std::shared_ptr<internal::StepperODEInt<internal::modified_midpoint_t<MANIFOLD>, MANIFOLD>>(
+                    new internal::StepperODEInt<internal::modified_midpoint_t<MANIFOLD>, MANIFOLD>());
+            break;
+        }
+
+        case RK78:
+        {
+            integratorStepper_ =
+                std::shared_ptr<internal::StepperODEInt<internal::runge_kutta_fehlberg78_t<MANIFOLD>, MANIFOLD>>(
+                    new internal::StepperODEInt<internal::runge_kutta_fehlberg78_t<MANIFOLD>, MANIFOLD>());
+
+            break;
+        }
+        default:
+            break;
+    }
 }
+
+
+template <typename MANIFOLD>
+template <typename M, typename std::enable_if<!(ct::core::is_real_euclidean<M>::value), bool>::type>
+void Integrator<MANIFOLD>::initializeAdaptiveSteppers(const IntegrationType& intType)
+{
+    // do nothing
+}
+
+template <typename MANIFOLD>
+template <typename M, typename std::enable_if<ct::core::is_real_euclidean<M>::value, bool>::type>
+void Integrator<MANIFOLD>::initializeAdaptiveSteppers(const IntegrationType& intType)
+{
+    switch (intType)
+    {
+        case ODE45:
+        {
+            integratorStepper_ =
+                std::shared_ptr<internal::StepperODEIntControlled<internal::runge_kutta_dopri5_t<MANIFOLD>, MANIFOLD>>(
+                    new internal::StepperODEIntControlled<internal::runge_kutta_dopri5_t<MANIFOLD>, MANIFOLD>());
+            break;
+        }
+
+        case RK5VARIABLE:
+        {
+            integratorStepper_ =
+                std::shared_ptr<internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<MANIFOLD>, MANIFOLD>>(
+                    new internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<MANIFOLD>, MANIFOLD>());
+            break;
+        }
+
+        case BULIRSCHSTOER:
+        {
+            integratorStepper_ =
+                std::shared_ptr<internal::StepperODEInt<internal::bulirsch_stoer_t<MANIFOLD>, MANIFOLD>>(
+                    new internal::StepperODEInt<internal::bulirsch_stoer_t<MANIFOLD>, MANIFOLD>());
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+template <size_t DIM, typename SCALAR = double>
+using EuclideanIntegrator = Integrator<EuclideanState<DIM, SCALAR>>;
+
+}  // namespace core
+}  // namespace ct

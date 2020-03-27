@@ -12,8 +12,9 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include <boost/numeric/odeint.hpp>
 
 #include "eigenIntegration.h"
+#include "manifIntegration.h"
 
-#include <ct/core/systems/continuous_time/SymplecticSystem.h>
+#include <ct/core/systems/SymplecticSystem.h>
 
 #include "internal/SteppersODEIntDefinitions.h"
 
@@ -30,15 +31,27 @@ namespace core {
  * @tparam     CONTROL_DIM  The control dimension
  * @tparam     Stepper      The stepper type
  */
-template <size_t POS_DIM, size_t VEL_DIM, size_t CONTROL_DIM, class Stepper, typename SCALAR = double>
+template <typename SYM_MFD, size_t CONTROL_DIM, class Stepper>
 class IntegratorSymplectic
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    typedef typename std::pair<Eigen::Matrix<SCALAR, POS_DIM, 1>, Eigen::Matrix<SCALAR, VEL_DIM, 1>> pair_t;
 
-    typedef std::shared_ptr<EventHandler<POS_DIM + VEL_DIM, SCALAR>> EventHandlerPtr;
-    typedef std::vector<EventHandlerPtr, Eigen::aligned_allocator<EventHandlerPtr>> EventHandlerPtrVector;
+    static constexpr size_t STATE_DIM = SYM_MFD::TangentDim;
+    static constexpr size_t POS_DIM = SYM_MFD::PosDim;
+    static constexpr size_t VEL_DIM = SYM_MFD::VelDim;
+
+    static_assert(is_symplectic<SYM_MFD>::value, "Symplectic system: manifold must be defined as symplectic.");
+
+    static_assert(STATE_DIM == (POS_DIM + VEL_DIM),
+        "Symplectic system: state_dim must be the sum of position and velocity dim.");
+
+    using SCALAR = typename SYM_MFD::Scalar;
+    using pair_t = typename std::pair<Eigen::Matrix<SCALAR, POS_DIM, 1>, Eigen::Matrix<SCALAR, VEL_DIM, 1>>;
+
+    using SymplecticSystem_t = SymplecticSystem<SYM_MFD, CONTROL_DIM>;
+    using EventHandlerPtr = std::shared_ptr<EventHandler<SYM_MFD>>;
+    using EventHandlerPtrVector = std::vector<EventHandlerPtr, Eigen::aligned_allocator<EventHandlerPtr>>;
 
 
     /**
@@ -47,7 +60,7 @@ public:
 	 *
 	 * @param[in]  system  A core::system
 	 */
-    IntegratorSymplectic(const std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR>> system,
+    IntegratorSymplectic(const std::shared_ptr<SymplecticSystem_t> system,
         const EventHandlerPtrVector& eventHandlers = EventHandlerPtrVector(0));
 
     /**
@@ -56,8 +69,7 @@ public:
 	 *
 	 * @param[in]  system  A core::system
 	 */
-    IntegratorSymplectic(const std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR>> system,
-        const EventHandlerPtr& eventHandler);
+    IntegratorSymplectic(const std::shared_ptr<SymplecticSystem_t> system, const EventHandlerPtr& eventHandler);
 
 
     /**
@@ -72,11 +84,11 @@ public:
 	 * @param[out]   stateTrajectory  The resulting state trajectory
 	 * @param[out]   timeTrajectory   The resulting time trajectory
 	 */
-    void integrate_n_steps(StateVector<POS_DIM + VEL_DIM, SCALAR>& state,
+    void integrate_n_steps(SYM_MFD& state,
         const SCALAR& startTime,
         size_t numSteps,
         SCALAR dt,
-        StateVectorArray<POS_DIM + VEL_DIM, SCALAR>& stateTrajectory,
+        DiscreteArray<SYM_MFD>& stateTrajectory,
         tpl::TimeArray<SCALAR>& timeTrajectory);
 
     /**
@@ -89,10 +101,7 @@ public:
 	 * @param[in]    numSteps   The number of integration steps
 	 * @param[in]    dt         The integration time step
 	 */
-    void integrate_n_steps(StateVector<POS_DIM + VEL_DIM, SCALAR>& state,
-        const SCALAR& startTime,
-        size_t numSteps,
-        SCALAR dt);
+    void integrate_n_steps(SYM_MFD& state, const SCALAR& startTime, size_t numSteps, SCALAR dt);
 
     void reset();
 
@@ -102,18 +111,21 @@ private:
 	 *             position and velocity update
 	 */
     void setupSystem();
-    StateVector<POS_DIM + VEL_DIM, SCALAR> xCached_;  //! The cached state. This will be used for the system function
+    SYM_MFD xCached_;  //! The cached state. This will be used for the system function
 
+    //! the position system function
     std::function<void(const Eigen::Matrix<SCALAR, POS_DIM, 1>&, Eigen::Matrix<SCALAR, POS_DIM, 1>&)>
-        systemFunctionPosition_;  //! the position system function
-    std::function<void(const Eigen::Matrix<SCALAR, VEL_DIM, 1>&, Eigen::Matrix<SCALAR, VEL_DIM, 1>&)>
-        systemFunctionVelocity_;  //! the velocity system function
+        systemFunctionPosition_;
 
-    std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR>> systemSymplectic_;
+    //! the velocity system function
+    std::function<void(const Eigen::Matrix<SCALAR, VEL_DIM, 1>&, Eigen::Matrix<SCALAR, VEL_DIM, 1>&)>
+        systemFunctionVelocity_;
+
+    std::shared_ptr<SymplecticSystem_t> systemSymplectic_;
 
     Stepper stepper_;
 
-    Observer<POS_DIM + VEL_DIM, SCALAR> observer_;  //! observer
+    Observer<SYM_MFD> observer_;
 };
 
 
@@ -121,12 +133,14 @@ private:
  * Defining the integrators
  *******************************************************************/
 
-template <size_t POS_DIM, size_t VEL_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-using IntegratorSymplecticEuler =
-    IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, internal::symplectic_euler_t<POS_DIM, VEL_DIM, SCALAR>, SCALAR>;
+template <typename SYM_MFD, size_t CONTROL_DIM>
+using IntegratorSymplecticEuler = IntegratorSymplectic<SYM_MFD,
+    CONTROL_DIM,
+    internal::symplectic_euler_t<SYM_MFD::PosDim, SYM_MFD::VelDim, typename SYM_MFD::Scalar>>;
 
-template <size_t POS_DIM, size_t VEL_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-using IntegratorSymplecticRk =
-    IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, internal::symplectic_rk_t<POS_DIM, VEL_DIM, SCALAR>, SCALAR>;
+template <typename SYM_MFD, size_t CONTROL_DIM>
+using IntegratorSymplecticRk = IntegratorSymplectic<SYM_MFD,
+    CONTROL_DIM,
+    internal::symplectic_rk_t<SYM_MFD::PosDim, SYM_MFD::VelDim, typename SYM_MFD::Scalar>>;
 }
 }

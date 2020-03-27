@@ -14,4 +14,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "common/Interpolation.h"
 #include "common/linspace.h"
 #include "common/activations/Activations.h"
+#include "common/EigenIsNan.h"
+
 

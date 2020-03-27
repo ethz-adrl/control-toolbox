@@ -12,6 +12,7 @@
 
   <buildtool_depend>cmake</buildtool_depend>
   <depend>eigen</depend>
+  <depend>manif</depend>
   <exec_depend>catkin</exec_depend>  <!-- ROS compatibility-->
 
   <export>    <!-- Specify that this is not a ROS package-->

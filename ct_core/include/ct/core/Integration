@@ -5,13 +5,25 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include "integration/internal/StepperBase.h"
+#include "integration/internal/StepperCTBase.h"
+#include "integration/internal/StepperEulerCT.h"
+#include "integration/internal/StepperRK4CT.h"
+#include "integration/internal/StepperODEInt.h"
+#include "integration/internal/StepperODEIntDenseOutput.h"
+#include "integration/internal/StepperODEIntControlled.h"
+
 #include "integration/Observer.h"
-#include "integration/Integrator.h"
-#include "integration/IntegratorSymplectic.h"
+
+#include "integration/EventHandler.h"
 #include "integration/EventHandlers/KillIntegrationEventHandler.h"
 #include "integration/EventHandlers/MaxStepsEventHandler.h"
 #include "integration/EventHandlers/SubstepRecorder.h"
-#include "integration/sensitivity/Sensitivity.h"
-#include "integration/sensitivity/SensitivityApproximation.h"
-#include "integration/sensitivity/SensitivityIntegrator.h"
+
+#include "integration/Integrator.h"
+#include "integration/IntegratorSymplectic.h"
+
+//#include "integration/sensitivity/Sensitivity.h"
+//#include "integration/sensitivity/SensitivityApproximation.h"
+//#include "integration/sensitivity/SensitivityIntegrator.h"
 

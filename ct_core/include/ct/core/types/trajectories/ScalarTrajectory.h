@@ -16,13 +16,21 @@ namespace core {
  * \tparam SCALAR scalar data type
  */
 template <class SCALAR = double, class TIME_SCALAR = double>
-class ScalarTrajectory : public DiscreteTrajectoryBase<SCALAR, Eigen::aligned_allocator<SCALAR>, TIME_SCALAR>
+class ScalarTrajectory : public DiscreteTrajectoryBase<ScalarTrajectory<SCALAR, TIME_SCALAR>,
+                             SCALAR,
+                             Eigen::aligned_allocator<SCALAR>,
+                             TIME_SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    using BASE = DiscreteTrajectoryBase<ScalarTrajectory<SCALAR, TIME_SCALAR>,
+        SCALAR,
+        Eigen::aligned_allocator<SCALAR>,
+        TIME_SCALAR>;
+
     //! default constructor
-    ScalarTrajectory(){};
+    ScalarTrajectory() = default;
 
     //! resize constructor
     /*!
@@ -30,20 +38,20 @@ public:
 	 * @param n length of array
 	 * @param value default value
 	 */
-    ScalarTrajectory(size_t n, const SCALAR& value = SCALAR()) : DiscreteTrajectoryBase<SCALAR>(n, value){};
+    ScalarTrajectory(size_t n, const SCALAR& value = SCALAR()) : BASE(n, value){};
 
     //! copy constructor
-    ScalarTrajectory(const ScalarTrajectory& other) : DiscreteTrajectoryBase<SCALAR>(other){};
+    ScalarTrajectory(const ScalarTrajectory& other) : BASE(other){};
 
     //! constructor from std::vector
-    ScalarTrajectory(const std::vector<SCALAR>& arg) : DiscreteTrajectoryBase<SCALAR>()
+    ScalarTrajectory(const std::vector<SCALAR>& arg) : BASE()
     {
         for (size_t i = 0; i < arg.size(); i++)
             this->push_back(arg[i]);
     }
 
     //! destructor
-    virtual ~ScalarTrajectory() {}
+    virtual ~ScalarTrajectory() = default;
     //! convert to an Eigen trajectory
     std::vector<Eigen::Matrix<SCALAR, 1, 1>, Eigen::aligned_allocator<Eigen::Matrix<SCALAR, 1, 1>>> toEigenTrajectory()
     {
@@ -59,5 +67,5 @@ public:
 
 private:
 };
-}
-}
+}  // namespace core
+}  // namespace ct

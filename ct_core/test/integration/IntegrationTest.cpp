@@ -3,14 +3,13 @@ This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-t
 Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-#include <ct/core/core.h>
-#include "IntegrationTest.h"
-
+//#include "IntegrationTest.h"
+#ifdef CT_USE_MANIF
+#include "ManifoldIntegrationTest.h"
+#endif
 
 int main(int argc, char** argv)
 {
-    if (argc > 2)
-        plotResult = true;
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

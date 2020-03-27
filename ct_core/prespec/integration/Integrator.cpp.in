@@ -2,5 +2,5 @@
 #include <ct/core/integration/Integrator-impl.h>
 
 #if @DOUBLE_OR_FLOAT@
-	template class ct::core::Integrator<@STATE_DIM_PRESPEC@, @SCALAR_PRESPEC@>;
+	template class ct::core::Integrator<@MANIFOLD_PRESPEC@>;
 #endif

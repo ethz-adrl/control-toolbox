@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include <ct/core/systems/discrete_time/linear/DiscreteLinearSystem.h>
+
 namespace ct {
 namespace core {
 
@@ -87,5 +89,5 @@ protected:
     std::vector<StateVectorArrayPtr, Eigen::aligned_allocator<StateVectorArrayPtr>>* xSubstep_;
     std::vector<ControlVectorArrayPtr, Eigen::aligned_allocator<ControlVectorArrayPtr>>* uSubstep_;
 };
-}
-}
+}  // namespace core
+}  // namespace ct

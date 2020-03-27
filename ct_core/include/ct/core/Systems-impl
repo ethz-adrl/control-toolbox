@@ -5,5 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-// put impl files here
-#include "systems/discrete_time/SystemDiscretizer-impl.h"
+#include "systems/System-impl.h"
+#include "systems/ControlledSystem-impl.h"
+#include "systems/SecondOrderSystem-impl.h"
+
+#include "systems/discretizer/SystemDiscretizer-impl.h"

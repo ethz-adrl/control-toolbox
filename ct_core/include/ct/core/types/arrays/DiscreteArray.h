@@ -62,7 +62,7 @@ public:
     DiscreteArray(const_iterator first, const_iterator last) : Base(first, last){};
 
     //! destructor
-    virtual ~DiscreteArray(){};
+    virtual ~DiscreteArray() = default;
 
     using Base::operator[];
     using Base::at;
@@ -155,6 +155,17 @@ public:
         std::transform(this->begin(), this->end(), result.begin(), [scalar](T arg) { return arg / scalar; });
         return result;
     }
+
+    //! a custom == operator
+    inline bool operator==(const DiscreteArray& rhs)
+    {
+        if (this->size() != rhs.size())
+            return false;
+
+        return std::equal(this->begin(), this->end(), rhs.begin());
+    }
+
+    inline bool operator!=(const DiscreteArray& rhs) { return !(*this == rhs); }
 
     //! returns the underlying std::vector
     Base& toImplementation() { return *this; }

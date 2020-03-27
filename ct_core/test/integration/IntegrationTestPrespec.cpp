@@ -5,6 +5,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #include <ct/core/core-prespec.h>
 #include "IntegrationTest.h"
+//#include "ManifoldIntegrationTest.h"
 
 
 int main(int argc, char** argv)

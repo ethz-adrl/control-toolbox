@@ -25,23 +25,26 @@ namespace core {
  * \tparam SCALAR scalar type
  * \tparam TIME type of time variable of dynamics
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename TIME>
-class DynamicsLinearizerADCG : public internal::DynamicsLinearizerADBase<STATE_DIM, CONTROL_DIM, SCALAR, TIME>
+template <typename MANIFOLD, typename MANIFOLD_AD, size_t CONTROL_DIM, bool CONT_T>
+class DynamicsLinearizerADCG : public internal::DynamicsLinearizerADBase<MANIFOLD_AD, CONTROL_DIM, CONT_T>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef internal::DynamicsLinearizerADBase<STATE_DIM, CONTROL_DIM, SCALAR, TIME> Base;
+    typedef internal::DynamicsLinearizerADBase<MANIFOLD_AD, CONTROL_DIM, CONT_T> Base;
+    static constexpr size_t STATE_DIM = Base::STATE_DIM;
+    using SCALAR = typename MANIFOLD_AD::Scalar;
 
     typedef typename Base::OUT_SCALAR OUT_SCALAR;  //!< scalar type of resulting linear system
+    using Time_t = typename ControlledSystem<MANIFOLD, CONTROL_DIM, CONT_T>::Time_t;
 
-    typedef typename Base::state_vector_t state_vector_t;      //!< state vector type
-    typedef typename Base::control_vector_t control_vector_t;  //!< control vector type
-
+    typedef typename Base::control_vector_t control_vector_t;              //!< control vector type
     typedef typename Base::state_matrix_t state_matrix_t;                  //!< state Jacobian type (A)
     typedef typename Base::state_control_matrix_t state_control_matrix_t;  //!< control Jacobian type (B)
 
     typedef typename Base::dynamics_fct_t dynamics_fct_t;  //!< dynamics function signature
+    typedef typename Base::lift_fct_t lift_fct_t;
+    typedef typename Base::retract_fct_t retract_fct_t;
 
     //! default constructor
     /*!
@@ -49,12 +52,9 @@ public:
      * @param dyn function handle to system dynamics
      * @param cacheJac if true, caches the Jacobians to prevent recomputation for same state/control
      */
-    DynamicsLinearizerADCG(dynamics_fct_t dyn, bool cacheJac = true)
-        : Base(dyn),
-          dynamics_fct_(dyn),
-          dFdx_(state_matrix_t::Zero()),
-          dFdu_(state_control_matrix_t::Zero()),
-          x_at_cache_(state_vector_t::Random()),
+    DynamicsLinearizerADCG(dynamics_fct_t dyn, lift_fct_t lift, retract_fct_t retract, bool cacheJac = true)
+        : Base(dyn, lift, retract),
+          x_at_cache_(MANIFOLD::Tangent::Random()),
           u_at_cache_(control_vector_t::Random()),
           jitLibName_(""),
           compiled_(false),
@@ -66,10 +66,7 @@ public:
 
     //! copy constructor
     DynamicsLinearizerADCG(const DynamicsLinearizerADCG& rhs)
-        : Base(rhs.dynamics_fct_),
-          dynamics_fct_(rhs.dynamics_fct_),
-          dFdx_(rhs.dFdx_),
-          dFdu_(rhs.dFdu_),
+        : Base(rhs),
           x_at_cache_(rhs.x_at_cache_),
           u_at_cache_(rhs.u_at_cache_),
           jitLibName_(rhs.jitLibName_),
@@ -95,9 +92,7 @@ public:
      * @param t time
      * @return Jacobian w.r.t. state
      */
-    const state_matrix_t& getDerivativeState(const state_vector_t& x,
-        const control_vector_t& u,
-        const OUT_SCALAR t = 0.0)
+    const state_matrix_t& getDerivativeState(const MANIFOLD& x, const control_vector_t& u, const Time_t t = Time_t(0))
     {
         if (!compiled_)
             throw std::runtime_error(
@@ -107,7 +102,7 @@ public:
         if (!cacheJac_ || (x != x_at_cache_ || u != u_at_cache_))
             computeJacobian(x, u);
 
-        return dFdx_;
+        return this->dFdx_;
     }
 
     //! compute and return derivative w.r.t. control
@@ -119,9 +114,9 @@ public:
      * @param t time
      * @return Jacobian w.r.t. control
      */
-    const state_control_matrix_t& getDerivativeControl(const state_vector_t& x,
+    const state_control_matrix_t& getDerivativeControl(const MANIFOLD& x,
         const control_vector_t& u,
-        const OUT_SCALAR t = 0.0)
+        const Time_t t = Time_t(0))
     {
         if (!compiled_)
             throw std::runtime_error(
@@ -131,7 +126,7 @@ public:
         if (!cacheJac_ || (x != x_at_cache_ || u != u_at_cache_))
             computeJacobian(x, u);
 
-        return dFdu_;
+        return this->dFdu_;
     }
 
     //! compile just-in-time
@@ -224,7 +219,7 @@ protected:
      * @param x state to linearize around
      * @param u input to linearize around
      */
-    void computeJacobian(const state_vector_t& x, const control_vector_t& u)
+    void computeJacobian(const MANIFOLD& x, const control_vector_t& u)
     {
         // copy to dynamic type due to requirements by cppad
         Eigen::Matrix<OUT_SCALAR, Eigen::Dynamic, 1> input(STATE_DIM + CONTROL_DIM);
@@ -236,21 +231,15 @@ protected:
 
         Eigen::Map<Eigen::Matrix<OUT_SCALAR, STATE_DIM + CONTROL_DIM, STATE_DIM>> out(jac.data());
 
-        dFdx_ = out.template topRows<STATE_DIM>().transpose();
-        dFdu_ = out.template bottomRows<CONTROL_DIM>().transpose();
+        this->dFdx_ = out.template topRows<STATE_DIM>().transpose();
+        this->dFdu_ = out.template bottomRows<CONTROL_DIM>().transpose();
 
         x_at_cache_ = x;
         u_at_cache_ = u;
     }
 
-
-    dynamics_fct_t dynamics_fct_;  //!< function handle to system dynamics
-
-    state_matrix_t dFdx_;          //!< Jacobian wrt state
-    state_control_matrix_t dFdu_;  //!< Jacobian wrt input
-
-    state_vector_t x_at_cache_;    //!< state at which Jacobian has been cached
-    control_vector_t u_at_cache_;  //!< input at which Jacobian has been cached
+    typename MANIFOLD::Tangent x_at_cache_;  //!< state at which Jacobian has been cached
+    control_vector_t u_at_cache_;            //!< input at which Jacobian has been cached
 
     std::string jitLibName_;                       //!< name of the library compiled with JIT
     bool compiled_;                                //!< flag if library from generated code is compiled

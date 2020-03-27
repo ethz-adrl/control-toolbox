@@ -107,11 +107,28 @@ public:
     //! destructor for a rigid body pose
     ~RigidBodyPose() = default;
 
+    static RigidBodyPose Identity()
+    {
+        RigidBodyPose res;
+        res.setIdentity();
+        return res;
+    }
+
     inline bool isNear(const RigidBodyPose& rhs, const double& tol = 1e-10) const
     {
         return getRotationQuaternion().isNear(rhs.getRotationQuaternion(), tol) &&
                position().toImplementation().isApprox(rhs.position().toImplementation(), tol);
     }
+
+    inline bool isApprox(const RigidBodyPose& rhs, const SCALAR& tol = SCALAR(1e-10)) const
+    {
+        bool pos_equal = position_.isApprox(rhs.p(), tol);
+
+        bool rot_equal = orientation_.isApprox(rhs.R(), tol);
+
+        return pos_equal && rot_equal;
+    }
+
 
     /**
      * \brief This method returns the Euler angles rotation (X,Y,Z / roll,pitch,yaw).
@@ -277,6 +294,26 @@ public:
         }
     }
 
+    RigidBodyPose<SCALAR> inverted() const
+    {
+        RigidBodyPose<SCALAR> identityPose = RigidBodyPose<SCALAR>::Identity();
+        return identityPose.inReferenceFrame(*this);
+    }
+
+    const RigidBodyPose slerp(const SCALAR alpha, const RigidBodyPose& targetPose) const
+    {
+        Pose result;
+
+        Eigen::Quaternion<SCALAR> q_curr = getRotationQuaternion().toImplementation();
+        result.setFromRotationQuaternion(q_curr.slerp(alpha, targetPose.getQuaternion().toImplementation()));
+
+        result.position().toImplementation() =
+            alpha * targetPose.getPositionVector() + (1.0 - alpha) * getPositionVector();
+
+        return result;
+    }
+
+
     /**
      * \brief This methods rotates a 3D vector expressed in Base frame to Inertia Frame.
      */
@@ -357,6 +394,13 @@ public:
      */
     HomogeneousTransform getHomogeneousTransform() const
     {
+        /*
+        Matrix4Tpl hom = Matrix4Tpl::Zero();
+        hom(3, 3) = 1.0;
+        hom.template topLeftCorner<3, 3>() = orientation_;
+        hom.template topRightCorner<3, 1>() = position_;
+        */
+
         throw std::runtime_error("get homogeneous transform not implemented");
         return HomogeneousTransform();
     }
@@ -402,6 +446,28 @@ public:
     }
 
     STORAGE_TYPE getStorageType() const { return storage_; }
+
+    /**
+     * @brief Get the 6D motion transform which rotates quantities into 
+     * the root frame.
+     * Examples: 
+     *  * transform of wrench 
+     *  * transform of twist 
+     * 
+     * @return 6-d transformation matrix 
+     */
+    Eigen::Matrix<SCALAR, 6, 6> get6DMotionTransform()
+    {
+        // transform the position vector to a skew-symmetric matrix
+        Eigen::Matrix<SCALAR, 3, 3> p_hat;
+        p_hat << 0, -position_(2), position_(1), position_(2), 0, -position_(0), -position_(1), position_(0), 0;
+
+        Eigen::Matrix<SCALAR, 6, 6> T;
+
+        T << R(), amira_control::Matrix<3, 3, SCALAR>::Zero(), p_hat * R(), R();
+
+        return T;
+    }
 
 private:
     bool storedAsEuler() const

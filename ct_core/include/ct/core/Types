@@ -8,8 +8,12 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "types/Time.h"
 
 #include "types/AutoDiff.h"
+
+#include "types/ManifoldState.h"
+#include "types/EuclideanState.h"
+#include "types/EuclideanStateSymplectic.h"
+
 #include "types/ControlVector.h"
-#include "types/StateVector.h"
 #include "types/OutputVector.h"
 #include "types/FeedbackMatrix.h"
 #include "types/StateMatrix.h"
@@ -21,10 +25,14 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "types/arrays/ScalarArray.h"
 #include "types/arrays/TimeArray.h"
 #include "types/arrays/MatrixArrays.h"
+#include "types/arrays/ManifArrays.h"
 #include "types/arrays/ArrayHelpers.h"
 
 #include "types/trajectories/DiscreteTrajectoryBase.h"
 #include "types/trajectories/ScalarTrajectory.h"
+#include "types/trajectories/EuclideanTrajectory.h"
 #include "types/trajectories/MatrixTrajectories.h"
+
+#include "types/TypeTraits.h"
 
 

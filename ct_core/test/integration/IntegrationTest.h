@@ -8,6 +8,12 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include <gtest/gtest.h>
 #include <cmath>
 #include <memory>
+#include <random>
+#include <Eigen/Dense>
+
+#include <ct/core/core.h>
+
+#include <ct/core/plot/plot.h>
 
 
 using namespace ct::core;
@@ -15,6 +21,8 @@ using std::shared_ptr;
 
 const size_t stateSize = 2;
 bool plotResult = false;
+
+using StateVector_t = EuclideanState<stateSize>;
 
 std::vector<std::string> integratorNames = {"euler", "rk4", "rk78", "rk5 variable", "ode45", "modified midpoint"};
 std::vector<std::string> integratorCalls = {"const", "nSteps", "adaptive", "times"};
@@ -75,7 +83,8 @@ TEST(IntegrationTest, derivativeTest)
         shared_ptr<SecondOrderSystem> oscillator;
 
         // create a 2 state integrator
-        std::vector<std::shared_ptr<Integrator<stateSize>>> integrators;
+        using Integrator_t = Integrator<StateVector_t>;
+        std::vector<std::shared_ptr<Integrator_t>> integrators;
 
         double dt = 0.0001;
         size_t nTests = 5;
@@ -106,14 +115,12 @@ TEST(IntegrationTest, derivativeTest)
             //oscillator->printSystemInfo();
 
             integrators.clear();
-            integrators.push_back(std::shared_ptr<Integrator<stateSize>>(new Integrator<stateSize>(oscillator, EULER)));
-            integrators.push_back(std::shared_ptr<Integrator<stateSize>>(new Integrator<stateSize>(oscillator, RK4)));
-            integrators.push_back(std::shared_ptr<Integrator<stateSize>>(new Integrator<stateSize>(oscillator, RK78)));
-            integrators.push_back(
-                std::shared_ptr<Integrator<stateSize>>(new Integrator<stateSize>(oscillator, RK5VARIABLE)));
-            integrators.push_back(std::shared_ptr<Integrator<stateSize>>(new Integrator<stateSize>(oscillator, ODE45)));
-            integrators.push_back(
-                std::shared_ptr<Integrator<stateSize>>(new Integrator<stateSize>(oscillator, MODIFIED_MIDPOINT)));
+            integrators.push_back(std::shared_ptr<Integrator_t>(new Integrator_t(oscillator, EULER)));
+            integrators.push_back(std::shared_ptr<Integrator_t>(new Integrator_t(oscillator, RK4)));
+            integrators.push_back(std::shared_ptr<Integrator_t>(new Integrator_t(oscillator, RK78)));
+            integrators.push_back(std::shared_ptr<Integrator_t>(new Integrator_t(oscillator, RK5VARIABLE)));
+            integrators.push_back(std::shared_ptr<Integrator_t>(new Integrator_t(oscillator, ODE45)));
+            integrators.push_back(std::shared_ptr<Integrator_t>(new Integrator_t(oscillator, MODIFIED_MIDPOINT)));
 
 
             // define analytical solution
@@ -122,7 +129,7 @@ TEST(IntegrationTest, derivativeTest)
             double phase = std::atan(w_d / zeta);
             double A = 1.0 / std::sin(phase);
             auto solution = [w_d, zeta, phase, A](
-                Time t) { return A * std::exp(-zeta * t) * std::sin(w_d * t + phase); };
+                                Time t) { return A * std::exp(-zeta * t) * std::sin(w_d * t + phase); };
 
 
             // create trajectory containers

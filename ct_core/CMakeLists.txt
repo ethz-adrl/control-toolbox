@@ -21,6 +21,13 @@ find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS REQUIRED)
 
 ## find and include optional dependencies
+find_package(manif QUIET)
+if(manif_FOUND)
+    message(STATUS "Found manif")
+    list(APPEND ct_core_COMPILE_DEFINITIONS CT_USE_MANIF)
+    list(APPEND ct_core_target_include_dirs ${manif_INCLUDE_DIRS})
+endif(manif_FOUND)
+
 find_package(llvm QUIET)
 find_package(clang QUIET)
 if(LLVM_FOUND AND CLANG_FOUND)
@@ -92,6 +99,7 @@ list(APPEND ct_core_target_include_dirs $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE
 list(APPEND ct_core_target_include_dirs $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/examples/include>)
 list(APPEND ct_core_target_include_dirs $<INSTALL_INTERFACE:include>)
 
+
 ## declare prespec libraries
 set(PRESPEC_LIB_NAMES "")
 
@@ -112,6 +120,13 @@ endif()
 
 
 ## create ct_core libraries
+# handle explicit types
+#add_library(ct_core_explicit SHARED src/core/types/ExplicitTypes.cpp)
+#target_include_directories(ct_core_explicit PUBLIC ${ct_core_target_include_dirs})
+#target_compile_definitions(ct_core_explicit PUBLIC ${ct_core_COMPILE_DEFINITIONS})
+#target_link_libraries(ct_core_explicit ${ct_core_LIBS})
+
+# plotting
 add_library(ct_plot SHARED src/core/plot/plot.cpp)
 target_include_directories(ct_plot PUBLIC ${ct_core_target_include_dirs})
 target_compile_definitions(ct_plot PUBLIC ${ct_core_COMPILE_DEFINITIONS})
@@ -123,6 +138,7 @@ target_compile_definitions(ct_core INTERFACE ${ct_core_COMPILE_DEFINITIONS})
 target_link_libraries(ct_core INTERFACE
     ${ct_core_LIBS}
     ${PRESPEC_LIB_NAMES}
+    #ct_core_explicit
     ct_plot
     pthread
     dl # required for gcc compatibility
