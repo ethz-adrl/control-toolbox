@@ -9,19 +9,18 @@ namespace ct {
 namespace core {
 namespace internal {
 
-template <typename MANIFOLD, typename SCALAR>
-StepperCTBase<MANIFOLD, SCALAR>::StepperCTBase()
+template <typename MANIFOLD>
+StepperCTBase<MANIFOLD>::StepperCTBase()
 {
 }
 
-template <typename MANIFOLD, typename SCALAR>
-StepperCTBase<MANIFOLD, SCALAR>::~StepperCTBase()
+template <typename MANIFOLD>
+StepperCTBase<MANIFOLD>::~StepperCTBase()
 {
 }
 
-template <typename MANIFOLD, typename SCALAR>
-void StepperCTBase<MANIFOLD, SCALAR>::integrate_n_steps(
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <typename MANIFOLD>
+void StepperCTBase<MANIFOLD>::integrate_n_steps(const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     size_t numSteps,
@@ -35,9 +34,9 @@ void StepperCTBase<MANIFOLD, SCALAR>::integrate_n_steps(
     }
 }
 
-template <typename MANIFOLD, typename SCALAR>
-void StepperCTBase<MANIFOLD, SCALAR>::integrate_n_steps(std::function<void(const MANIFOLD& x, const SCALAR& t)> observe,
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <typename MANIFOLD>
+void StepperCTBase<MANIFOLD>::integrate_n_steps(ObserverFunction_t observe,
+    const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     size_t numSteps,

@@ -21,10 +21,12 @@ namespace core {
  *
  * @tparam STATE_DIM dimensionality of the state vector
  */
-template <typename MANIFOLD, typename SCALAR = double>
+template <typename MANIFOLD>
 class EventHandler
 {
 public:
+    using SCALAR = typename MANIFOLD::Scalar;
+
     //! Default constructor
     EventHandler() = default;
 

@@ -9,19 +9,18 @@ namespace ct {
 namespace core {
 namespace internal {
 
-template <class STEPPER, typename MANIFOLD, typename SCALAR>
-StepperODEInt<STEPPER, MANIFOLD, SCALAR>::StepperODEInt()
+template <class STEPPER, typename MANIFOLD>
+StepperODEInt<STEPPER, MANIFOLD>::StepperODEInt()
 {
 }
 
-template <class STEPPER, typename MANIFOLD, typename SCALAR>
-StepperODEInt<STEPPER, MANIFOLD, SCALAR>::~StepperODEInt()
+template <class STEPPER, typename MANIFOLD>
+StepperODEInt<STEPPER, MANIFOLD>::~StepperODEInt()
 {
 }
 
-template <class STEPPER, typename MANIFOLD, typename SCALAR>
-void StepperODEInt<STEPPER, MANIFOLD, SCALAR>::integrate_n_steps(
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <class STEPPER, typename MANIFOLD>
+void StepperODEInt<STEPPER, MANIFOLD>::integrate_n_steps(const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     size_t numSteps,
@@ -30,10 +29,9 @@ void StepperODEInt<STEPPER, MANIFOLD, SCALAR>::integrate_n_steps(
     boost::numeric::odeint::integrate_n_steps(stepper_, rhs, state, startTime, dt, numSteps);
 }
 
-template <class STEPPER, typename MANIFOLD, typename SCALAR>
-void StepperODEInt<STEPPER, MANIFOLD, SCALAR>::integrate_n_steps(
-    std::function<void(const MANIFOLD& x, const SCALAR& t)> observer,
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <class STEPPER, typename MANIFOLD>
+void StepperODEInt<STEPPER, MANIFOLD>::integrate_n_steps(ObserverFunction_t observer,
+    const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     size_t numSteps,
@@ -43,9 +41,8 @@ void StepperODEInt<STEPPER, MANIFOLD, SCALAR>::integrate_n_steps(
     boost::numeric::odeint::integrate_n_steps(stepper_, rhs, state, startTime, dt, numSteps, observer);
 }
 
-template <class STEPPER, typename MANIFOLD, typename SCALAR>
-void StepperODEInt<STEPPER, MANIFOLD, SCALAR>::integrate_const(
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <class STEPPER, typename MANIFOLD>
+void StepperODEInt<STEPPER, MANIFOLD>::integrate_const(const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     const SCALAR& finalTime,
@@ -54,10 +51,9 @@ void StepperODEInt<STEPPER, MANIFOLD, SCALAR>::integrate_const(
     boost::numeric::odeint::integrate_const(stepper_, rhs, state, startTime, finalTime, dt);
 }
 
-template <class STEPPER, typename MANIFOLD, typename SCALAR>
-void StepperODEInt<STEPPER, MANIFOLD, SCALAR>::integrate_const(
-    std::function<void(const MANIFOLD& x, const SCALAR& t)> observer,
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <class STEPPER, typename MANIFOLD>
+void StepperODEInt<STEPPER, MANIFOLD>::integrate_const(ObserverFunction_t observer,
+    const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     const SCALAR& finalTime,
@@ -66,9 +62,8 @@ void StepperODEInt<STEPPER, MANIFOLD, SCALAR>::integrate_const(
     boost::numeric::odeint::integrate_const(stepper_, rhs, state, startTime, finalTime, dt, observer);
 }
 
-template <class STEPPER, typename MANIFOLD, typename SCALAR>
-void StepperODEInt<STEPPER, MANIFOLD, SCALAR>::integrate_adaptive(
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <class STEPPER, typename MANIFOLD>
+void StepperODEInt<STEPPER, MANIFOLD>::integrate_adaptive(const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     const SCALAR& finalTime,
@@ -77,10 +72,9 @@ void StepperODEInt<STEPPER, MANIFOLD, SCALAR>::integrate_adaptive(
     boost::numeric::odeint::integrate_adaptive(stepper_, rhs, state, startTime, finalTime, dtInitial);
 }
 
-template <class STEPPER, typename MANIFOLD, typename SCALAR>
-void StepperODEInt<STEPPER, MANIFOLD, SCALAR>::integrate_adaptive(
-    std::function<void(const MANIFOLD& x, const SCALAR& t)> observer,
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <class STEPPER, typename MANIFOLD>
+void StepperODEInt<STEPPER, MANIFOLD>::integrate_adaptive(ObserverFunction_t observer,
+    const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     const SCALAR& finalTime,
@@ -89,10 +83,9 @@ void StepperODEInt<STEPPER, MANIFOLD, SCALAR>::integrate_adaptive(
     boost::numeric::odeint::integrate_adaptive(stepper_, rhs, state, startTime, finalTime, dtInitial, observer);
 }
 
-template <class STEPPER, typename MANIFOLD, typename SCALAR>
-void StepperODEInt<STEPPER, MANIFOLD, SCALAR>::integrate_times(
-    std::function<void(const MANIFOLD& x, const SCALAR& t)> observer,
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <class STEPPER, typename MANIFOLD>
+void StepperODEInt<STEPPER, MANIFOLD>::integrate_times(ObserverFunction_t observer,
+    const SystemFunction_t& rhs,
     MANIFOLD& state,
     const tpl::TimeArray<SCALAR>& timeTrajectory,
     SCALAR dtInitial)

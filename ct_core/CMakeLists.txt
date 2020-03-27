@@ -19,9 +19,15 @@ set(ct_core_LIBS "")
 ## find and include required dependencies
 find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS REQUIRED)
-find_package(manif REQUIRED)
 
 ## find and include optional dependencies
+find_package(manif QUIET)
+if(manif_FOUND)
+    message(STATUS "Found manif")
+    list(APPEND ct_core_COMPILE_DEFINITIONS CT_USE_MANIF)
+    list(APPEND ct_core_target_include_dirs ${manif_INCLUDE_DIRS})
+endif(manif_FOUND)
+
 find_package(llvm QUIET)
 find_package(clang QUIET)
 if(LLVM_FOUND AND CLANG_FOUND)
@@ -87,7 +93,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h.in ${CM
 
 ## define the directories to be included in all ct_core targets
 list(APPEND ct_core_target_include_dirs ${EIGEN3_INCLUDE_DIR})
-list(APPEND ct_core_target_include_dirs ${manif_INCLUDE_DIRS})
 list(APPEND ct_core_target_include_dirs ${PYTHON_INCLUDE_DIRS})
 list(APPEND ct_core_target_include_dirs ${QWT_INCLUDE_DIR})
 list(APPEND ct_core_target_include_dirs $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)

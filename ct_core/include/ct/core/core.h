@@ -38,7 +38,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "Geometry"
 #include "Internal"
 #include "Math"
-#include "Simulation"
 #include "Switching"
 
 #include "templateDir.h"
@@ -57,7 +56,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "Internal-impl"
 #include "Math-impl"
 #include "Geometry-impl"
-#include "Simulation-impl"
 
 // keep standard header guard (easy debugging)
 // header guard is identical to the one in core-prespec.h

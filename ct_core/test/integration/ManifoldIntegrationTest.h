@@ -6,31 +6,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <gtest/gtest.h>
-#include <cmath>
-#include <memory>
-
-//#include <manif/manif.h>
-//
-//#include <ct/core/types/ManifoldState.h>
-//#include <ct/core/types/ManifoldState-impl.h>
-//#include <ct/core/types/EuclideanState.h>
-//
-//#include <ct/core/integration/Observer.h>
-//#include <ct/core/integration/Observer-impl.h>
-//#include <ct/core/integration/Integrator.h>
-//#include <ct/core/integration/Integrator-impl.h>
-//
-//#include <ct/core/systems/continuous_time/ControlledSystem.h>
-//#include <ct/core/systems/continuous_time/ControlledSystem-impl.h>
-//
-//#include <ct/core/control/continuous_time/ConstantController.h>
-//#include <ct/core/control/continuous_time/ConstantController-impl.h>
-//
-//#include <ct/core/systems/continuous_time/System-impl.h>
-//#include <ct/core/types/TypeTraits.h>
-
 #include <ct/core/core.h>
-
 
 const bool verbose = false;
 
@@ -40,7 +16,7 @@ using namespace manif;
 using Manifold = ManifoldState<SE3d, SE3Tangentd>;
 const size_t control_dim = 6;
 
-class TestSystem : public ControlledSystem<Manifold, control_dim>
+class TestSystem : public ControlledSystem<Manifold, control_dim, CONTINUOUS_TIME>
 {
 public:
     virtual TestSystem* clone() const override { return new TestSystem(); }
@@ -49,7 +25,7 @@ public:
         const ControlVector<control_dim>& control,
         typename Manifold::Tangent& derivative) override
     {
-        derivative = control;  // todo
+        derivative = control;
     }
 };
 
@@ -84,7 +60,8 @@ TEST(ManifoldIntegrationTest, integrate_n_steps_comparison)
     Time startTime = 0.0;
     size_t nsteps = 1.0 / dt;
 
-    std::shared_ptr<ConstantController<Manifold, control_dim>> ctrl(new ConstantController<Manifold, control_dim>());
+    std::shared_ptr<ConstantController<Manifold, control_dim, CONTINUOUS_TIME>> ctrl(
+        new ConstantController<Manifold, control_dim, CONTINUOUS_TIME>());
     const auto randomControl = ControlVector<control_dim>::Random();
     ctrl->setControl(randomControl);
 
@@ -167,8 +144,8 @@ TEST(ManifoldIntegrationTest, stepperTests)
 
     try
     {
-        std::shared_ptr<ConstantController<Manifold, control_dim>> ctrl(
-            new ConstantController<Manifold, control_dim>());
+        std::shared_ptr<ConstantController<Manifold, control_dim, CONTINUOUS_TIME>> ctrl(
+            new ConstantController<Manifold, control_dim, CONTINUOUS_TIME>());
         const auto randomControl = ControlVector<control_dim>::Random();
         ctrl->setControl(randomControl);
 

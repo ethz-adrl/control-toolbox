@@ -26,7 +26,7 @@ class Integrator;
  *
  * @tparam STATE_DIM The size of the state vector
  */
-template <typename MANIFOLD, typename SCALAR = double>
+template <typename MANIFOLD>
 class Observer
 {
 public:
@@ -34,8 +34,10 @@ public:
 
     friend class Integrator<MANIFOLD>;
 
-    using EventHandlerPtrVector = std::vector<std::shared_ptr<EventHandler<MANIFOLD, SCALAR>>,
-        Eigen::aligned_allocator<std::shared_ptr<EventHandler<MANIFOLD, SCALAR>>>>;
+    using SCALAR = typename MANIFOLD::Scalar;
+
+    using EventHandlerPtrVector = std::vector<std::shared_ptr<EventHandler<MANIFOLD>>,
+        Eigen::aligned_allocator<std::shared_ptr<EventHandler<MANIFOLD>>>>;
 
     //! default constructor
     /*!

@@ -14,51 +14,60 @@ namespace internal {
  * Defining the (explicit) steppers
  *****************************************************************************/
 //! Simple Euler stepper
-template <typename MANIFOLD, typename SCALAR>
-using euler_t = boost::numeric::odeint::
-    euler<MANIFOLD, SCALAR, typename MANIFOLD::Tangent, SCALAR, boost::numeric::odeint::vector_space_algebra>;
+template <typename MANIFOLD>
+using euler_t = boost::numeric::odeint::euler<MANIFOLD,
+    typename MANIFOLD::Scalar,
+    typename MANIFOLD::Tangent,
+    typename MANIFOLD::Scalar,
+    boost::numeric::odeint::vector_space_algebra>;
 
 //! Modified Midpoint stepper
-template <typename MANIFOLD, typename SCALAR>
+template <typename MANIFOLD>
 using modified_midpoint_t = boost::numeric::odeint::modified_midpoint<MANIFOLD,
-    SCALAR,
+    typename MANIFOLD::Scalar,
     typename MANIFOLD::Tangent,
-    SCALAR,
+    typename MANIFOLD::Scalar,
     boost::numeric::odeint::vector_space_algebra>;
 
 //! Runge-Kutta4 stepper
-template <typename MANIFOLD, typename SCALAR>
-using runge_kutta_4_t = boost::numeric::odeint::
-    runge_kutta4<MANIFOLD, SCALAR, typename MANIFOLD::Tangent, SCALAR, boost::numeric::odeint::vector_space_algebra>;
+template <typename MANIFOLD>
+using runge_kutta_4_t = boost::numeric::odeint::runge_kutta4<MANIFOLD,
+    typename MANIFOLD::Scalar,
+    typename MANIFOLD::Tangent,
+    typename MANIFOLD::Scalar,
+    boost::numeric::odeint::vector_space_algebra>;
 
 //! Runge-Kutta Dormand Price 5 stepper
-template <typename MANIFOLD, typename SCALAR>
+template <typename MANIFOLD>
 using runge_kutta_dopri5_t = boost::numeric::odeint::runge_kutta_dopri5<MANIFOLD,
-    SCALAR,
+    typename MANIFOLD::Scalar,
     typename MANIFOLD::Tangent,
-    SCALAR,
+    typename MANIFOLD::Scalar,
     boost::numeric::odeint::vector_space_algebra>;
 
 //! Runge Kutta Fehlberg 78 stepper
-template <typename MANIFOLD, typename SCALAR>
+template <typename MANIFOLD>
 using runge_kutta_fehlberg78_t = boost::numeric::odeint::runge_kutta_fehlberg78<MANIFOLD,
-    SCALAR,
+    typename MANIFOLD::Scalar,
     typename MANIFOLD::Tangent,
     Time,
     boost::numeric::odeint::vector_space_algebra>;
 
 //! Bulirsch Stoer stepper
-template <typename MANIFOLD, typename SCALAR>
-using bulirsch_stoer_t = boost::numeric::odeint::
-    bulirsch_stoer<MANIFOLD, SCALAR, typename MANIFOLD::Tangent, SCALAR, boost::numeric::odeint::vector_space_algebra>;
+template <typename MANIFOLD>
+using bulirsch_stoer_t = boost::numeric::odeint::bulirsch_stoer<MANIFOLD,
+    typename MANIFOLD::Scalar,
+    typename MANIFOLD::Tangent,
+    typename MANIFOLD::Scalar,
+    boost::numeric::odeint::vector_space_algebra>;
 
 //! Adams Bashforth stepper
-template <typename MANIFOLD, size_t STEPS, typename SCALAR>
+template <typename MANIFOLD, size_t STEPS>
 using adams_bashforth_uncontrolled_t = boost::numeric::odeint::adams_bashforth<STEPS,
     MANIFOLD,
-    SCALAR,
+    typename MANIFOLD::Scalar,
     typename MANIFOLD::Tangent,
-    SCALAR,
+    typename MANIFOLD::Scalar,
     boost::numeric::odeint::vector_space_algebra>;
 
 /*****************************************************************************

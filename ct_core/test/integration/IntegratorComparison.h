@@ -6,7 +6,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <gtest/gtest.h>
-#include "../system/TestNonlinearSystem.h"
+#include <ct/core/core.h>
 
 
 using namespace ct::core;
@@ -25,7 +25,7 @@ double uniformRandomNumber(double min, double max)
 
 TEST(IntegrationTest, derivativeTest)
 {
-    const size_t state_dim = TestNonlinearSystem::STATE_DIM;
+    const size_t state_dim = 2;
 
     // create two nonlinear systems, one regular one and one auto-differentiable
     //
@@ -46,13 +46,11 @@ TEST(IntegrationTest, derivativeTest)
         oscillator = shared_ptr<SecondOrderSystem>(new SecondOrderSystem(w_n, zeta));
         oscillator->checkParameters();
 
-        // std::shared_ptr<IntegratorBase<state_dim> > integratorEulerOdeint;
-        Integrator<state_dim> integratorEulerOdeint(oscillator, EULER);
-        // std::shared_ptr<IntegratorBase<state_dim> > integratorRk4Odeint;
-        Integrator<state_dim> integratorRk4Odeint(oscillator, RK4);
+        EuclideanIntegrator<state_dim> integratorEulerOdeint(oscillator, EULER);
+        EuclideanIntegrator<state_dim> integratorRk4Odeint(oscillator, RK4);
 
-        Integrator<state_dim> integratorEulerCT(oscillator, EULERCT);
-        Integrator<state_dim> integratorRK4CT(oscillator, RK4CT);
+        EuclideanIntegrator<state_dim> integratorEulerCT(oscillator, EULERCT);
+        EuclideanIntegrator<state_dim> integratorRK4CT(oscillator, RK4CT);
 
         StateVector<state_dim> stateEulerCT;
         stateEulerCT << 1.0, 0.0;

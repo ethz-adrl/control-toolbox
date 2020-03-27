@@ -5,10 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include "control/continuous_time/Controller.h"
-#include "control/discrete_time/DiscreteController.h"
-
-#include "control/continuous_time/ConstantController.h"
+#include "control/Controller.h"
+#include "control/ConstantController.h"
 
 //#include "control/StateFeedbackController.h"
 //#include "control/continuous_time/ConstantStateFeedbackController.h"

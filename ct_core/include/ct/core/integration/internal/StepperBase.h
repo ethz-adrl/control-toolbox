@@ -16,13 +16,16 @@ namespace internal {
  * @tparam     MATRIX  The matrix type to be integrated
  * @tparam     SCALAR      The scalar type
  */
-template <typename MANIFOLD, typename SCALAR>
+template <typename MANIFOLD>
 class StepperBase
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    using SCALAR = typename MANIFOLD::Scalar;
     using Tangent = typename MANIFOLD::Tangent;
+    using SystemFunction_t = std::function<void(const MANIFOLD&, Tangent&, SCALAR)>;
+    using ObserverFunction_t = std::function<void(const MANIFOLD& x, const SCALAR& t)>;
 
     StepperBase();
 
@@ -37,7 +40,7 @@ public:
      * @param[in]     numSteps   The number of integration steps
      * @param[in]     dt         The integration timestep
      */
-    virtual void integrate_n_steps(const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+    virtual void integrate_n_steps(const SystemFunction_t& rhs,
         MANIFOLD& state,
         const SCALAR& startTime,
         size_t numSteps,
@@ -53,8 +56,8 @@ public:
      * @param[in]     numSteps   The number steps
      * @param[in]     dt         The integration timestep
      */
-    virtual void integrate_n_steps(std::function<void(const MANIFOLD& x, const SCALAR& t)> observer,
-        const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+    virtual void integrate_n_steps(ObserverFunction_t observer,
+        const SystemFunction_t& rhs,
         MANIFOLD& state,
         const SCALAR& startTime,
         size_t numSteps,
@@ -69,7 +72,7 @@ public:
      * @param[in]     finalTime  The final time
      * @param[in]     dt         The integration timestep
      */
-    virtual void integrate_const(const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+    virtual void integrate_const(const SystemFunction_t& rhs,
         MANIFOLD& state,
         const SCALAR& startTime,
         const SCALAR& finalTime,
@@ -85,8 +88,8 @@ public:
      * @param[in]     finalTime  The final time
      * @param[in]     dt         The integration timestep
      */
-    virtual void integrate_const(std::function<void(const MANIFOLD& x, const SCALAR& t)> observer,
-        const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+    virtual void integrate_const(ObserverFunction_t observer,
+        const SystemFunction_t& rhs,
         MANIFOLD& state,
         const SCALAR& startTime,
         const SCALAR& finalTime,
@@ -105,7 +108,7 @@ public:
      * @param[in]     finalTime  The final time
      * @param[in]     dtInitial  The initial integration timestep
      */
-    virtual void integrate_adaptive(const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+    virtual void integrate_adaptive(const SystemFunction_t& rhs,
         MANIFOLD& state,
         const SCALAR& startTime,
         const SCALAR& finalTime,
@@ -125,8 +128,8 @@ public:
      * @param[in]     finalTime  The final time
      * @param[in]     dtInitial  The initial integration timestep
      */
-    virtual void integrate_adaptive(std::function<void(const MANIFOLD& x, const SCALAR& t)> observer,
-        const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+    virtual void integrate_adaptive(ObserverFunction_t observer,
+        const SystemFunction_t& rhs,
         MANIFOLD& state,
         const SCALAR& startTime,
         const SCALAR& finalTime,
@@ -141,8 +144,8 @@ public:
      * @param[in]     timeTrajectory  The time trajectory
      * @param[in]     dtInitial       The initial integration timestep
      */
-    virtual void integrate_times(std::function<void(const MANIFOLD& x, const SCALAR& t)> observer,
-        const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+    virtual void integrate_times(ObserverFunction_t observer,
+        const SystemFunction_t& rhs,
         MANIFOLD& state,
         const tpl::TimeArray<SCALAR>& timeTrajectory,
         SCALAR dtInitial = SCALAR(0.01));

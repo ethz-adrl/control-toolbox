@@ -4,20 +4,19 @@ namespace ct {
 namespace core {
 namespace internal {
 
-template <class STEPPER, typename MANIFOLD, typename SCALAR>
-StepperODEIntDenseOutput<STEPPER, MANIFOLD, SCALAR>::StepperODEIntDenseOutput()
+template <class STEPPER, typename MANIFOLD>
+StepperODEIntDenseOutput<STEPPER, MANIFOLD>::StepperODEIntDenseOutput()
 {
     stepperDense_ = boost::numeric::odeint::make_dense_output(this->absErrTol_, this->relErrTol_, stepper_);
 }
 
-template <class STEPPER, typename MANIFOLD, typename SCALAR>
-StepperODEIntDenseOutput<STEPPER, MANIFOLD, SCALAR>::~StepperODEIntDenseOutput()
+template <class STEPPER, typename MANIFOLD>
+StepperODEIntDenseOutput<STEPPER, MANIFOLD>::~StepperODEIntDenseOutput()
 {
 }
 
-template <class STEPPER, typename MANIFOLD, typename SCALAR>
-void StepperODEIntDenseOutput<STEPPER, MANIFOLD, SCALAR>::integrate_adaptive(
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <class STEPPER, typename MANIFOLD>
+void StepperODEIntDenseOutput<STEPPER, MANIFOLD>::integrate_adaptive(const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     const SCALAR& finalTime,
@@ -27,10 +26,9 @@ void StepperODEIntDenseOutput<STEPPER, MANIFOLD, SCALAR>::integrate_adaptive(
     boost::numeric::odeint::integrate_adaptive(stepperDense_, rhs, state, startTime, finalTime, dtInitial);
 }
 
-template <class STEPPER, typename MANIFOLD, typename SCALAR>
-void StepperODEIntDenseOutput<STEPPER, MANIFOLD, SCALAR>::integrate_adaptive(
-    std::function<void(const MANIFOLD& x, const SCALAR& t)> observer,
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <class STEPPER, typename MANIFOLD>
+void StepperODEIntDenseOutput<STEPPER, MANIFOLD>::integrate_adaptive(ObserverFunction_t observer,
+    const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     const SCALAR& finalTime,
@@ -40,10 +38,9 @@ void StepperODEIntDenseOutput<STEPPER, MANIFOLD, SCALAR>::integrate_adaptive(
     boost::numeric::odeint::integrate_adaptive(stepperDense_, rhs, state, startTime, finalTime, dtInitial, observer);
 }
 
-template <class STEPPER, typename MANIFOLD, typename SCALAR>
-void StepperODEIntDenseOutput<STEPPER, MANIFOLD, SCALAR>::integrate_times(
-    std::function<void(const MANIFOLD& x, const SCALAR& t)> observer,
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <class STEPPER, typename MANIFOLD>
+void StepperODEIntDenseOutput<STEPPER, MANIFOLD>::integrate_times(ObserverFunction_t observer,
+    const SystemFunction_t& rhs,
     MANIFOLD& state,
     const tpl::TimeArray<SCALAR>& timeTrajectory,
     SCALAR dtInitial)

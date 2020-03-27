@@ -5,21 +5,29 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include <ct/core/core.h>
 #include "TestNonlinearSystem.h"
 
 /*!
  * Just-in-time compilation test : compile cloned instance
  */
-TEST(ADCodegenLinearizerTest, JITCompilationTest)
+template <ct::core::TIME_TYPE TIME_T>
+void runJitCompilationTests()
 {
-    // define the dimensions of the system
-    const size_t state_dim = TestNonlinearSystem::STATE_DIM;
-    const size_t control_dim = TestNonlinearSystem::CONTROL_DIM;
+    // typedefs for the auto-differentiable system
+    using ADCGScalar = CppAD::AD<CppAD::cg::CG<double>>;  //!< Autodiff codegen type
+    typedef typename ADCGScalar::value_type ADCG_ValueType;
+    typedef tpl::TestNonlinearSystem<double, TIME_T> TestNonlinearSystemD;
+    typedef tpl::TestNonlinearSystem<ADCGScalar, TIME_T> TestNonlinearSystemAD;
 
-    // typedefs for the auto-differentiable codegen system
-    typedef ADCodegenLinearizer<state_dim, control_dim>::ADCGScalar Scalar;
-    typedef typename Scalar::value_type AD_ValueType;
-    typedef tpl::TestNonlinearSystem<Scalar> TestNonlinearSystemAD;
+    // define the dimensions of the system
+    const size_t state_dim = TestNonlinearSystemD::STATE_DIM;
+    const size_t control_dim = TestNonlinearSystemD::CONTROL_DIM;
+    using State = EuclideanState<state_dim, double>;
+    using ADCG_State = EuclideanState<state_dim, ADCGScalar>;
+
+    using ADCodegenLinearizer_t = ADCodegenLinearizer<State, ADCG_State, control_dim, TIME_T>;
+    using SystemLinearizer_t = SystemLinearizer<State, control_dim, TIME_T>;
 
     // handy typedefs for the Jacobian
     typedef ct::core::StateMatrix<state_dim, double> A_type;
@@ -27,101 +35,33 @@ TEST(ADCodegenLinearizerTest, JITCompilationTest)
 
     // create two nonlinear systems, one regular one and one auto-differentiable
     const double w_n = 100.0;
-    shared_ptr<TestNonlinearSystem> oscillator(new TestNonlinearSystem(w_n));
-    shared_ptr<TestNonlinearSystemAD> oscillatorAD(new tpl::TestNonlinearSystem<Scalar>(AD_ValueType(w_n)));
+    shared_ptr<TestNonlinearSystemD> oscillator(new TestNonlinearSystemD(w_n));
+    shared_ptr<TestNonlinearSystemAD> oscillatorAD(new TestNonlinearSystemAD(ADCG_ValueType(w_n)));
 
     // create two nonlinear systems, one regular one and one auto-diff codegen
-    SystemLinearizer<state_dim, control_dim> systemLinearizer(oscillator);
-    ADCodegenLinearizer<state_dim, control_dim> adLinearizer(oscillatorAD);
+    SystemLinearizer_t systemLinearizer(oscillator);
+    ADCodegenLinearizer_t adLinearizer(oscillatorAD);
 
     // do just in time compilation of the Jacobians
-    std::cout << "compiling..." << std::endl;
     adLinearizer.compileJIT("ADCGCodegenLib");
-    std::cout << "... done!" << std::endl;
 
-    std::shared_ptr<ADCodegenLinearizer<state_dim, control_dim>> adLinearizerClone(adLinearizer.clone());
-    std::cout << "compiling the clone..." << std::endl;
-    adLinearizerClone->compileJIT("ADCGCodegenLibCone");
-    std::cout << "... done!" << std::endl;
+    // -- Test independent compilation for the cloned linearizer
+    std::shared_ptr<ADCodegenLinearizer_t> adLinearizerClone_with_comp(adLinearizer.clone());
+    adLinearizerClone_with_comp->compileJIT("ADCGCodegenLibClone");
 
-    // create state, control and time variables
-    StateVector<TestNonlinearSystem::STATE_DIM> x;
-    ControlVector<TestNonlinearSystem::CONTROL_DIM> u;
-    double t = 0;
+    // -- Test cloning of existing lib without compilation
+    std::shared_ptr<ADCodegenLinearizer_t> adLinearizerClone_no_comp(adLinearizer.clone());
 
-    for (size_t i = 0; i < 1000; i++)
-    {
-        // set a random state
-        x.setRandom();
-        u.setRandom();
-
-        // use the numerical differentiation linearizer
-        A_type A_system = systemLinearizer.getDerivativeState(x, u, t);
-        B_type B_system = systemLinearizer.getDerivativeControl(x, u, t);
-
-        // use the auto diff codegen linearzier
-        A_type A_ad = adLinearizer.getDerivativeState(x, u, t);
-        B_type B_ad = adLinearizer.getDerivativeControl(x, u, t);
-
-        A_type A_adCloned = adLinearizerClone->getDerivativeState(x, u, t);
-        B_type B_adCloned = adLinearizerClone->getDerivativeControl(x, u, t);
-
-        // verify the result
-        ASSERT_LT((A_system - A_ad).array().abs().maxCoeff(), 1e-5);
-        ASSERT_LT((B_system - B_ad).array().abs().maxCoeff(), 1e-5);
-
-        ASSERT_LT((A_system - A_adCloned).array().abs().maxCoeff(), 1e-5);
-        ASSERT_LT((B_system - B_adCloned).array().abs().maxCoeff(), 1e-5);
-    }
-}
-
-
-/*!
- * Just-in-time compilation test : without compilation of cloned instance
- */
-TEST(ADCodegenLinearizerTest, JITCloneTest)
-{
-    // define the dimensions of the system
-    const size_t state_dim = TestNonlinearSystem::STATE_DIM;
-    const size_t control_dim = TestNonlinearSystem::CONTROL_DIM;
-
-    // typedefs for the auto-differentiable codegen system
-    typedef ADCodegenLinearizer<state_dim, control_dim>::ADCGScalar Scalar;
-    typedef typename Scalar::value_type AD_ValueType;
-    typedef tpl::TestNonlinearSystem<Scalar> TestNonlinearSystemAD;
-
-    // handy typedefs for the Jacobian
-    typedef ct::core::StateMatrix<state_dim, double> A_type;
-    typedef ct::core::StateControlMatrix<state_dim, control_dim, double> B_type;
-
-    // create two nonlinear systems, one regular one and one auto-differentiable
-    const double w_n = 100.0;
-    shared_ptr<TestNonlinearSystem> oscillator(new TestNonlinearSystem(w_n));
-    shared_ptr<TestNonlinearSystemAD> oscillatorAD(new tpl::TestNonlinearSystem<Scalar>(AD_ValueType(w_n)));
-
-    // create two nonlinear systems, one regular one and one auto-diff codegen
-    SystemLinearizer<state_dim, control_dim> systemLinearizer(oscillator);
-    ADCodegenLinearizer<state_dim, control_dim> adLinearizer(oscillatorAD);
-
-    // do just in time compilation of the Jacobians
-    std::cout << "compiling..." << std::endl;
-    adLinearizer.compileJIT("ADCGCodegenLib");
-    std::cout << "... done!" << std::endl;
-
-    // compilation should not even be required
-    std::cout << "cloning without compilation..." << std::endl;
-    std::shared_ptr<ADCodegenLinearizer<state_dim, control_dim>> adLinearizerClone(adLinearizer.clone());
-
-    // make sure the underlying dynamic libraries are not identical (dynamic library cloned correctly)
-    if (adLinearizerClone->getLinearizer().getDynamicLib() == adLinearizer.getLinearizer().getDynamicLib())
+    // -- make sure the underlying dynamic libraries are not identical (dynamic library cloned correctly)
+    if (adLinearizerClone_no_comp->getLinearizer().getDynamicLib() == adLinearizer.getLinearizer().getDynamicLib())
     {
         std::cout << "FATAL ERROR: dynamic library not cloned correctly in JIT." << std::endl;
         ASSERT_TRUE(false);
     }
 
     // create state, control and time variables
-    StateVector<TestNonlinearSystem::STATE_DIM> x;
-    ControlVector<TestNonlinearSystem::CONTROL_DIM> u;
+    State x;
+    ControlVector<TestNonlinearSystemD::CONTROL_DIM> u;
     double t = 0;
 
     for (size_t i = 0; i < 1000; i++)
@@ -138,8 +78,11 @@ TEST(ADCodegenLinearizerTest, JITCloneTest)
         A_type A_ad = adLinearizer.getDerivativeState(x, u, t);
         B_type B_ad = adLinearizer.getDerivativeControl(x, u, t);
 
-        A_type A_adCloned = adLinearizerClone->getDerivativeState(x, u, t);
-        B_type B_adCloned = adLinearizerClone->getDerivativeControl(x, u, t);
+        A_type A_adCloned = adLinearizerClone_with_comp->getDerivativeState(x, u, t);
+        B_type B_adCloned = adLinearizerClone_with_comp->getDerivativeControl(x, u, t);
+
+        A_type A_adCloned2 = adLinearizerClone_no_comp->getDerivativeState(x, u, t);
+        B_type B_adCloned2 = adLinearizerClone_no_comp->getDerivativeControl(x, u, t);
 
         // verify the result
         ASSERT_LT((A_system - A_ad).array().abs().maxCoeff(), 1e-5);
@@ -147,83 +90,109 @@ TEST(ADCodegenLinearizerTest, JITCloneTest)
 
         ASSERT_LT((A_system - A_adCloned).array().abs().maxCoeff(), 1e-5);
         ASSERT_LT((B_system - B_adCloned).array().abs().maxCoeff(), 1e-5);
+
+        ASSERT_LT((A_system - A_adCloned2).array().abs().maxCoeff(), 1e-5);
+        ASSERT_LT((B_system - B_adCloned2).array().abs().maxCoeff(), 1e-5);
     }
+}
+TEST(ADCodegenLinearizerTest, JITCompilationTest_continous_time)
+{
+    runJitCompilationTests<ct::core::CONTINUOUS_TIME>();
+}
+TEST(ADCodegenLinearizerTest, JITCompilationTest_discrete_time)
+{
+    runJitCompilationTests<ct::core::DISCRETE_TIME>();
 }
 
 
 /*!
  * Code generation test for writing code to file
  */
-TEST(ADCodegenLinearizerTest, CodegenTest)
+template <ct::core::TIME_TYPE TIME_T>
+void runCodeGenerationTests()
 {
+    // typedefs for the auto-differentiable system
+    using ADCGScalar = CppAD::AD<CppAD::cg::CG<double>>;  //!< Autodiff codegen type
+    typedef typename ADCGScalar::value_type ADCG_ValueType;
+    typedef tpl::TestNonlinearSystem<ADCGScalar, TIME_T> TestNonlinearSystemAD;
+
     // define the dimensions of the system
-    const size_t state_dim = TestNonlinearSystem::STATE_DIM;
-    const size_t control_dim = TestNonlinearSystem::CONTROL_DIM;
+    const size_t state_dim = TestNonlinearSystemAD::STATE_DIM;
+    const size_t control_dim = TestNonlinearSystemAD::CONTROL_DIM;
+    using State = EuclideanState<state_dim, double>;
+    using ADCG_State = EuclideanState<state_dim, ADCGScalar>;
 
-    // typedefs for the auto-differentiable codegen system
-    typedef ADCodegenLinearizer<state_dim, control_dim>::ADCGScalar Scalar;
-    typedef typename Scalar::value_type AD_ValueType;
-    typedef tpl::TestNonlinearSystem<Scalar> TestNonlinearSystemAD;
-
-    // create an auto-differentiable codegen system
     const double w_n = 100.0;
-    shared_ptr<TestNonlinearSystemAD> oscillatorAD(new tpl::TestNonlinearSystem<Scalar>(AD_ValueType(w_n)));
+    shared_ptr<TestNonlinearSystemAD> oscillatorAD(new TestNonlinearSystemAD(ADCG_ValueType(w_n)));
 
-    // create a linearizer that uses codegeneration
-    ADCodegenLinearizer<state_dim, control_dim> adLinearizer(oscillatorAD);
+    using ADCodegenLinearizer_t = ADCodegenLinearizer<State, ADCG_State, control_dim, TIME_T>;
+    ADCodegenLinearizer_t adLinearizer(oscillatorAD);
 
     try
     {
-        std::cout << "generating code..." << std::endl;
         // generate code for the Jacobians
         adLinearizer.generateCode("TestNonlinearSystemLinearized");
-        std::cout << "... done!" << std::endl;
     } catch (const std::runtime_error& e)
     {
         std::cout << "code generation failed: " << e.what() << std::endl;
         ASSERT_TRUE(false);
     }
 }
-
-TEST(ADCodegenLinearizerTestMP, JITCompilationTestMP)
+TEST(ADCodegenLinearizerTest, CodegenTest_continuous_time)
 {
-    const size_t state_dim = TestNonlinearSystem::STATE_DIM;
-    const size_t control_dim = TestNonlinearSystem::CONTROL_DIM;
+    runCodeGenerationTests<ct::core::CONTINUOUS_TIME>();
+}
+TEST(ADCodegenLinearizerTest, CodegenTest_discrete_time)
+{
+    runCodeGenerationTests<ct::core::DISCRETE_TIME>();
+}
 
-    // typedefs for the auto-differentiable codegen system
-    typedef ADCodegenLinearizer<state_dim, control_dim>::ADCGScalar Scalar;
-    typedef typename Scalar::value_type AD_ValueType;
-    typedef tpl::TestNonlinearSystem<Scalar> TestNonlinearSystemAD;
+
+template <ct::core::TIME_TYPE TIME_T>
+void runJitCompilationTestsMultithread()
+{
+    // typedefs for the auto-differentiable system
+    using ADCGScalar = CppAD::AD<CppAD::cg::CG<double>>;  //!< Autodiff codegen type
+    typedef typename ADCGScalar::value_type ADCG_ValueType;
+    typedef tpl::TestNonlinearSystem<double, TIME_T> TestNonlinearSystemD;
+    typedef tpl::TestNonlinearSystem<ADCGScalar, TIME_T> TestNonlinearSystemAD;
+
+    // define the dimensions of the system
+    const size_t state_dim = TestNonlinearSystemD::STATE_DIM;
+    const size_t control_dim = TestNonlinearSystemD::CONTROL_DIM;
+    using State = EuclideanState<state_dim, double>;
+    using ADCG_State = EuclideanState<state_dim, ADCGScalar>;
+
+    using ADCodegenLinearizer_t = ADCodegenLinearizer<State, ADCG_State, control_dim, TIME_T>;
+    using SystemLinearizer_t = SystemLinearizer<State, control_dim, TIME_T>;
 
     // handy typedefs for the Jacobian
-    typedef Eigen::Matrix<double, state_dim, state_dim> A_type;
-    typedef Eigen::Matrix<double, state_dim, control_dim> B_type;
+    typedef ct::core::StateMatrix<state_dim, double> A_type;
+    typedef ct::core::StateControlMatrix<state_dim, control_dim, double> B_type;
 
-    // // create two nonlinear systems, one regular one and one auto-differentiable
+    // create two nonlinear systems, one regular one and one auto-differentiable
     const double w_n = 100.0;
-    shared_ptr<TestNonlinearSystem> oscillator(new TestNonlinearSystem(w_n));
-    shared_ptr<TestNonlinearSystemAD> oscillatorAD(new tpl::TestNonlinearSystem<Scalar>(AD_ValueType(w_n)));
+    shared_ptr<TestNonlinearSystemD> oscillator(new TestNonlinearSystemD(w_n));
+    shared_ptr<TestNonlinearSystemAD> oscillatorAD(new TestNonlinearSystemAD(ADCG_ValueType(w_n)));
 
-    // // create two nonlinear systems, one regular one and one auto-diff codegen
-    SystemLinearizer<state_dim, control_dim> systemLinearizer(oscillator);
-
-    ADCodegenLinearizer<state_dim, control_dim> adLinearizer(oscillatorAD);
+    // create two nonlinear systems, one regular one and one auto-diff codegen
+    SystemLinearizer_t systemLinearizer(oscillator);
+    ADCodegenLinearizer_t adLinearizer(oscillatorAD);
     adLinearizer.compileJIT("ADMPTestLib");
 
     size_t nThreads = 4;
-    std::vector<std::shared_ptr<ADCodegenLinearizer<state_dim, control_dim>>> adLinearizers;
-    std::vector<std::shared_ptr<SystemLinearizer<state_dim, control_dim>>> systemLinearizers;
+    std::vector<std::shared_ptr<ADCodegenLinearizer_t>> adLinearizers;
+    std::vector<std::shared_ptr<SystemLinearizer_t>> systemLinearizers;
 
     for (size_t i = 0; i < nThreads; ++i)
     {
-        adLinearizers.push_back(std::shared_ptr<ADCodegenLinearizer<state_dim, control_dim>>(adLinearizer.clone()));
+        adLinearizers.push_back(std::shared_ptr<ADCodegenLinearizer_t>(adLinearizer.clone()));
         adLinearizers.back()->compileJIT();
-        systemLinearizers.push_back(
-            std::shared_ptr<SystemLinearizer<state_dim, control_dim>>(systemLinearizer.clone()));
+        systemLinearizers.push_back(std::shared_ptr<SystemLinearizer_t>(systemLinearizer.clone()));
     }
 
 
-    size_t runs = 100000;
+    size_t runs = 10000;
 
     for (size_t n = 0; n < runs; ++n)
     {
@@ -232,8 +201,8 @@ TEST(ADCodegenLinearizerTestMP, JITCompilationTestMP)
         for (size_t i = 0; i < nThreads; ++i)
         {
             threads.push_back(std::thread([i, &adLinearizers, &systemLinearizers]() {
-                StateVector<TestNonlinearSystem::STATE_DIM> x;
-                ControlVector<TestNonlinearSystem::CONTROL_DIM> u;
+                State x;
+                ControlVector<TestNonlinearSystemD::CONTROL_DIM> u;
                 double t = 0;
 
                 x.setRandom();
@@ -253,8 +222,15 @@ TEST(ADCodegenLinearizerTestMP, JITCompilationTestMP)
             }));
         }
 
-
         for (auto& thr : threads)
             thr.join();
     }
+}
+TEST(ADCodegenLinearizerTestMP, JITCompilationTestMP_discrete_time)
+{
+    runJitCompilationTestsMultithread<ct::core::CONTINUOUS_TIME>();
+}
+TEST(ADCodegenLinearizerTestMP, JITCompilationTestMP_continuous_time)
+{
+    runJitCompilationTestsMultithread<ct::core::DISCRETE_TIME>();
 }

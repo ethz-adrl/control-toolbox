@@ -9,18 +9,18 @@ namespace ct {
 namespace core {
 namespace internal {
 
-template <typename MANIFOLD, typename SCALAR>
-StepperBase<MANIFOLD, SCALAR>::StepperBase() : absErrTol_(SCALAR(1e-8)), relErrTol_(SCALAR(1e-8))
+template <typename MANIFOLD>
+StepperBase<MANIFOLD>::StepperBase() : absErrTol_(SCALAR(1e-8)), relErrTol_(SCALAR(1e-8))
 {
 }
 
-template <typename MANIFOLD, typename SCALAR>
-StepperBase<MANIFOLD, SCALAR>::~StepperBase()
+template <typename MANIFOLD>
+StepperBase<MANIFOLD>::~StepperBase()
 {
 }
 
-template <typename MANIFOLD, typename SCALAR>
-void StepperBase<MANIFOLD, SCALAR>::integrate_n_steps(const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <typename MANIFOLD>
+void StepperBase<MANIFOLD>::integrate_n_steps(const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     size_t numSteps,
@@ -29,9 +29,9 @@ void StepperBase<MANIFOLD, SCALAR>::integrate_n_steps(const std::function<void(c
     throw std::runtime_error("Integrate_n_steps not implemented for the stepper type");
 }
 
-template <typename MANIFOLD, typename SCALAR>
-void StepperBase<MANIFOLD, SCALAR>::integrate_n_steps(std::function<void(const MANIFOLD& x, const SCALAR& t)> observer,
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <typename MANIFOLD>
+void StepperBase<MANIFOLD>::integrate_n_steps(ObserverFunction_t observer,
+    const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     size_t numSteps,
@@ -40,8 +40,8 @@ void StepperBase<MANIFOLD, SCALAR>::integrate_n_steps(std::function<void(const M
     throw std::runtime_error("Integrate_n_steps not implemented for the stepper type");
 }
 
-template <typename MANIFOLD, typename SCALAR>
-void StepperBase<MANIFOLD, SCALAR>::integrate_const(const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <typename MANIFOLD>
+void StepperBase<MANIFOLD>::integrate_const(const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     const SCALAR& finalTime,
@@ -50,9 +50,9 @@ void StepperBase<MANIFOLD, SCALAR>::integrate_const(const std::function<void(con
     throw std::runtime_error("integrate_const not implemented for the stepper type");
 }
 
-template <typename MANIFOLD, typename SCALAR>
-void StepperBase<MANIFOLD, SCALAR>::integrate_const(std::function<void(const MANIFOLD& x, const SCALAR& t)> observer,
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <typename MANIFOLD>
+void StepperBase<MANIFOLD>::integrate_const(ObserverFunction_t observer,
+    const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     const SCALAR& finalTime,
@@ -61,9 +61,8 @@ void StepperBase<MANIFOLD, SCALAR>::integrate_const(std::function<void(const MAN
     throw std::runtime_error("integrate_const not implemented for the stepper type");
 }
 
-template <typename MANIFOLD, typename SCALAR>
-void StepperBase<MANIFOLD, SCALAR>::integrate_adaptive(
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <typename MANIFOLD>
+void StepperBase<MANIFOLD>::integrate_adaptive(const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     const SCALAR& finalTime,
@@ -72,9 +71,9 @@ void StepperBase<MANIFOLD, SCALAR>::integrate_adaptive(
     throw std::runtime_error("integrate_adaptive not implemented for the stepper type");
 }
 
-template <typename MANIFOLD, typename SCALAR>
-void StepperBase<MANIFOLD, SCALAR>::integrate_adaptive(std::function<void(const MANIFOLD& x, const SCALAR& t)> observer,
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <typename MANIFOLD>
+void StepperBase<MANIFOLD>::integrate_adaptive(ObserverFunction_t observer,
+    const SystemFunction_t& rhs,
     MANIFOLD& state,
     const SCALAR& startTime,
     const SCALAR& finalTime,
@@ -83,9 +82,9 @@ void StepperBase<MANIFOLD, SCALAR>::integrate_adaptive(std::function<void(const 
     throw std::runtime_error("integrate_adaptive not implemented for the stepper type");
 }
 
-template <typename MANIFOLD, typename SCALAR>
-void StepperBase<MANIFOLD, SCALAR>::integrate_times(std::function<void(const MANIFOLD& x, const SCALAR& t)> observer,
-    const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <typename MANIFOLD>
+void StepperBase<MANIFOLD>::integrate_times(ObserverFunction_t observer,
+    const SystemFunction_t& rhs,
     MANIFOLD& state,
     const tpl::TimeArray<SCALAR>& timeTrajectory,
     SCALAR dtInitial)
@@ -93,8 +92,8 @@ void StepperBase<MANIFOLD, SCALAR>::integrate_times(std::function<void(const MAN
     throw std::runtime_error("integrate_times not implemented for the stepper type");
 }
 
-template <typename MANIFOLD, typename SCALAR>
-void StepperBase<MANIFOLD, SCALAR>::setAdaptiveErrorTolerances(const SCALAR absErrTol, const SCALAR& relErrTol)
+template <typename MANIFOLD>
+void StepperBase<MANIFOLD>::setAdaptiveErrorTolerances(const SCALAR absErrTol, const SCALAR& relErrTol)
 {
     absErrTol_ = absErrTol;
     relErrTol_ = relErrTol;

@@ -4,18 +4,18 @@ namespace ct {
 namespace core {
 namespace internal {
 
-template <typename MANIFOLD, typename SCALAR>
-StepperEulerCT<MANIFOLD, SCALAR>::StepperEulerCT()
+template <typename MANIFOLD>
+StepperEulerCT<MANIFOLD>::StepperEulerCT()
 {
 }
 
-template <typename MANIFOLD, typename SCALAR>
-StepperEulerCT<MANIFOLD, SCALAR>::~StepperEulerCT()
+template <typename MANIFOLD>
+StepperEulerCT<MANIFOLD>::~StepperEulerCT()
 {
 }
 
-template <typename MANIFOLD, typename SCALAR>
-void StepperEulerCT<MANIFOLD, SCALAR>::do_step(const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <typename MANIFOLD>
+void StepperEulerCT<MANIFOLD>::do_step(const SystemFunction_t& rhs,
     MANIFOLD& stateInOut,
     const SCALAR time,
     const SCALAR dt)

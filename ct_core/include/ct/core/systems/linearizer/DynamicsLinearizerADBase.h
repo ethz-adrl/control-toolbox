@@ -13,7 +13,7 @@ namespace ct {
 namespace core {
 namespace internal {
 
-//! Base class for Auto-Diff and Auto-Diff Codegen linearization for system dynamics
+//! Base class for Auto-Diff and Auto-Diff Codegen linearization for system dynamics, CppAD-specific
 /*!
  * This class contains shared code between Auto-Diff and Auto-Diff Codegen linearization.
  *
@@ -22,11 +22,15 @@ namespace internal {
  * \tparam SCALAR scalar type
  * \tparam TIME type of time variable of dynamics
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR, typename TIME>
+template <typename MANIFOLD_AD, size_t CONTROL_DIM, bool CONT_T>
 class DynamicsLinearizerADBase
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    static constexpr size_t STATE_DIM = MANIFOLD_AD::TangentDim;
+
+    using SCALAR = typename MANIFOLD_AD::Scalar;
 
     //TODO this exclusive list, the following typedef, and getOutScalarType() should be generalized
     static_assert((std::is_same<SCALAR, CppAD::AD<double>>::value) ||
@@ -36,30 +40,44 @@ public:
         "SCALAR template parameter in ADLinearizerBase should either be of CppAD::AD<XX> or "
         "CppAD::AD<CppAD::cg::XX> type with XX being float or double");
 
-    typedef typename std::conditional<(std::is_same<SCALAR, CppAD::AD<double>>::value) ||
-                                          (std::is_same<SCALAR, CppAD::AD<CppAD::cg::CG<double>>>::value),
+    //!< define scalar type of resulting linear system
+    using OUT_SCALAR = typename std::conditional<(std::is_same<SCALAR, CppAD::AD<double>>::value) ||
+                                                     (std::is_same<SCALAR, CppAD::AD<CppAD::cg::CG<double>>>::value),
         double,
-        float>::type OUT_SCALAR;  //!< scalar type of resulting linear system
+        float>::type;
 
-    typedef StateVector<STATE_DIM, OUT_SCALAR> state_vector_t;
     typedef ControlVector<CONTROL_DIM, OUT_SCALAR> control_vector_t;
-
-    typedef StateVector<STATE_DIM, SCALAR> state_vector_ad_t;
     typedef ControlVector<CONTROL_DIM, SCALAR> control_vector_ad_t;
+    using Time_ad_t = typename ControlledSystem<MANIFOLD_AD, CONTROL_DIM, CONT_T>::Time_t;
 
     typedef StateMatrix<STATE_DIM, OUT_SCALAR> state_matrix_t;
     typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, OUT_SCALAR> state_control_matrix_t;
 
-    typedef std::function<void(const state_vector_ad_t&, const TIME&, const control_vector_ad_t&, state_vector_ad_t&)>
-        dynamics_fct_t;  //!< dynamics function signature
+    using dynamics_fct_t = std::function<
+        void(const MANIFOLD_AD&, const Time_ad_t&, const control_vector_ad_t&, typename MANIFOLD_AD::Tangent&)>;
+    using lift_fct_t = std::function<typename MANIFOLD_AD::Tangent(const MANIFOLD_AD&)>;
+    using retract_fct_t = std::function<MANIFOLD_AD(const typename MANIFOLD_AD::Tangent&)>;
 
     //! default constructor
     /*!
 	 * @param dyn non-linear system to linearize
 	 */
-    DynamicsLinearizerADBase(dynamics_fct_t dyn) : dynamics_fct_(dyn) { initialize(); }
+    DynamicsLinearizerADBase(dynamics_fct_t dyn, lift_fct_t lift, retract_fct_t retract)
+        : dFdx_(state_matrix_t::Zero()),
+          dFdu_(state_control_matrix_t::Zero()),
+          dynamics_fct_(dyn),
+          lift_fct_(lift),
+          retract_fct_(retract)
+    {
+        initialize();
+    }
     //! copy constructor
-    DynamicsLinearizerADBase(const DynamicsLinearizerADBase& arg) : dynamics_fct_(arg.dynamics_fct_)
+    DynamicsLinearizerADBase(const DynamicsLinearizerADBase& arg)
+        : dFdx_(arg.dFdx_),
+          dFdu_(arg.dFdu_),
+          dynamics_fct_(arg.dynamics_fct_),
+          lift_fct_(arg.lift_fct_),
+          retract_fct_(arg.retract_fct_)
     {
         setupSparsityA();
         setupSparsityB();
@@ -78,8 +96,7 @@ public:
         return "float";
     }
 
-    virtual ~DynamicsLinearizerADBase() = default;
-
+    virtual ~DynamicsLinearizerADBase() {}
 protected:
     const size_t A_entries = STATE_DIM * STATE_DIM;    //!< number of entries in the state Jacobian
     const size_t B_entries = STATE_DIM * CONTROL_DIM;  //!< number of entries in the input Jacobian
@@ -100,28 +117,30 @@ protected:
     //! record the model
     void recordTerms()
     {
-        // input vector, needs to be dynamic size
-        Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> x(STATE_DIM + CONTROL_DIM);
-        // init to rand to avoid floating point problems in user's code
-        x.setRandom();
+        const size_t tangent_dim = MANIFOLD_AD::TangentDim;
 
-        // declare x as independent
-        CppAD::Independent(x);
+        // input vector, needs to be dynamic size
+        Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> var(tangent_dim + CONTROL_DIM);
+        // init to rand to avoid floating point problems in user's code
+        var.setRandom();
+
+        // declare var as independent
+        CppAD::Independent(var);
 
         // create fixed size types since CT uses fixed size types
-        state_vector_ad_t xFixed = x.template head<STATE_DIM>();
-        control_vector_ad_t uFixed = x.template tail<CONTROL_DIM>();
+        typename MANIFOLD_AD::Tangent xFixed = var.template head<tangent_dim>();
+        control_vector_ad_t uFixed = var.template tail<CONTROL_DIM>();
 
-        state_vector_ad_t dxFixed;
+        typename MANIFOLD_AD::Tangent dxFixed;
 
-        dynamics_fct_(xFixed, TIME(0.0), uFixed, dxFixed);
+        dynamics_fct_(retract_fct_(xFixed), Time_ad_t(0), uFixed, dxFixed);
 
         // output vector, needs to be dynamic size
-        Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> dx(STATE_DIM);
+        Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> dx(tangent_dim);
         dx = dxFixed;
 
-        // store operation sequence in f: x -> dx and stop recording
-        CppAD::ADFun<typename SCALAR::value_type> f(x, dx);
+        // store operation sequence in f: var -> dx and stop recording
+        CppAD::ADFun<typename SCALAR::value_type> f(var, dx);
 
         f.optimize();
 
@@ -154,7 +173,13 @@ protected:
         sparsityB_.clearWork();
     }
 
-    dynamics_fct_t dynamics_fct_;                  //!< function handle to system dynamics
+    state_matrix_t dFdx_;          //!< Jacobian wrt state
+    state_control_matrix_t dFdu_;  //!< Jacobian wrt input
+
+    dynamics_fct_t dynamics_fct_;  //!< function handle to system dynamics
+    lift_fct_t lift_fct_;
+    retract_fct_t retract_fct_;
+
     CppAD::ADFun<typename SCALAR::value_type> f_;  //!< Auto-Diff function
 
     SparsityPattern sparsityA_;  //!< sparsity pattern of the state Jacobian

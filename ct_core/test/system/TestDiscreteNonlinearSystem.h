@@ -5,31 +5,30 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <cmath>
-#include <memory>
-#include <iostream>
+#include <ct/core/core.h>
 
 namespace ct {
 namespace core {
-
 namespace tpl {
 
 template <typename SCALAR>
-class TestDiscreteNonlinearSystem : public DiscreteControlledSystem<2, 1, SCALAR>
+class TestDiscreteNonlinearSystem final : public ControlledSystem<EuclideanState<2, SCALAR>, 1, DISCRETE_TIME>
 {
 public:
-    typedef DiscreteControlledSystem<2, 1, SCALAR> Base;
     static const size_t STATE_DIM = 2;
     static const size_t CONTROL_DIM = 1;
 
-    typedef typename Base::state_vector_t state_vector_t;
+    using state_vector_t = EuclideanState<STATE_DIM, SCALAR>;
+
+    using Base = ControlledSystem<state_vector_t, CONTROL_DIM, DISCRETE_TIME>;
     typedef typename Base::control_vector_t control_vector_t;
-    typedef typename Base::time_t time_t;
+    typedef typename Base::Time_t Time_t;
 
     TestDiscreteNonlinearSystem() = delete;
 
     // constructor directly using frequency and damping coefficients
-    TestDiscreteNonlinearSystem(SCALAR rate, std::shared_ptr<DiscreteController<2, 1, SCALAR>> controller = nullptr)
+    TestDiscreteNonlinearSystem(SCALAR rate,
+        std::shared_ptr<Controller<state_vector_t, CONTROL_DIM, DISCRETE_TIME>> controller = nullptr)
         : Base(controller, SYSTEM_TYPE::GENERAL), rate_(rate)
     {
     }
@@ -38,14 +37,29 @@ public:
     TestDiscreteNonlinearSystem(const TestDiscreteNonlinearSystem& arg) : Base(arg), rate_(arg.rate_) {}
     virtual ~TestDiscreteNonlinearSystem() {}
     TestDiscreteNonlinearSystem* clone() const override { return new TestDiscreteNonlinearSystem(*this); }
-    virtual void propagateControlledDynamics(const state_vector_t& state,
-        const time_t n,
+    void computeControlledDynamics(const state_vector_t& state,
+        const Time_t& n,
         const control_vector_t& control,
-        state_vector_t& stateNext) override
+        typename state_vector_t::Tangent& dx) override
     {
         // this is pretty much random
-        stateNext(0) = state(0) + rate_ * state(0) * control(0);
-        stateNext(1) = state(0) * state(1) * state(1);
+        dx(0) = rate_ * state(0) * control(0);
+        dx(1) = state(0) * state(1) * state(1);
+    }
+
+    // analytic matrices which fulfil x_{n+1} = A*x_n + B*u_n
+    // note that computeControlledDynamics only computes the resdidual dx
+    StateMatrix<STATE_DIM> get_A_analytic(state_vector_t& x, const control_vector_t& u) const
+    {
+        StateMatrix<STATE_DIM> A_analytic;
+        A_analytic << 1 + rate_ * u(0), 0.0, x(1) * x(1), 1 + 2.0 * x(0) * x(1);
+        return A_analytic;
+    }
+    StateControlMatrix<STATE_DIM, CONTROL_DIM> get_B_analytic(state_vector_t& x, const control_vector_t& u) const
+    {
+        StateControlMatrix<STATE_DIM, CONTROL_DIM> B_analytic;
+        B_analytic << rate_ * x(0), 0.0;
+        return B_analytic;
     }
 
 private:

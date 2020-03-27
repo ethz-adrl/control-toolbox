@@ -5,7 +5,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-
 namespace ct {
 namespace core {
 
@@ -134,15 +133,15 @@ void Integrator<MANIFOLD>::initializeCTSteppers(const IntegrationType& intType)
     {
         case EULERCT:
         {
-            integratorStepper_ = std::shared_ptr<internal::StepperEulerCT<MANIFOLD, SCALAR>>(
-                new internal::StepperEulerCT<MANIFOLD, SCALAR>());
+            integratorStepper_ = std::shared_ptr<internal::StepperEulerCT<MANIFOLD>>(
+                new internal::StepperEulerCT<MANIFOLD>());
             break;
         }
 
         case RK4CT:
         {
-            integratorStepper_ = std::shared_ptr<internal::StepperRK4CT<MANIFOLD, SCALAR>>(
-                new internal::StepperRK4CT<MANIFOLD, SCALAR>());
+            integratorStepper_ = std::shared_ptr<internal::StepperRK4CT<MANIFOLD>>(
+                new internal::StepperRK4CT<MANIFOLD>());
             break;
         }
 

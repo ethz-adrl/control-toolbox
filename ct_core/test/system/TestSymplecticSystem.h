@@ -17,44 +17,45 @@ namespace tpl {
  * This is a simple second-order oscillator without damping, which can easily be formulated as symplectic system.
  */
 template <typename SCALAR>
-class TestSymplecticSystem : public SymplecticSystem<1, 1, 1, SCALAR>
+class TestSymplecticSystem : public SymplecticSystem<EuclideanStateSymplectic<1, 1, SCALAR>, 1>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static const size_t STATE_DIM = 2;
-    static const size_t CONTROL_DIM = 1;
-    static const size_t POS_DIM = 1;
-    static const size_t VEL_DIM = 1;
+    using State = EuclideanStateSymplectic<1, 1, SCALAR>;
+    using Base = SymplecticSystem<State, 1>;
+
+    static constexpr size_t STATE_DIM = 2;
+    static constexpr size_t CONTROL_DIM = 1;
+    static constexpr size_t POS_DIM = 1;
+    static constexpr size_t VEL_DIM = 1;
 
     TestSymplecticSystem() = delete;
 
     // constructor directly using frequency and damping coefficients
-    TestSymplecticSystem(SCALAR w_n, std::shared_ptr<Controller<2, 1, SCALAR>> controller = nullptr)
-        : SymplecticSystem<1, 1, 1, SCALAR>(controller), w_n_(w_n)
+    TestSymplecticSystem(SCALAR w_n,
+        std::shared_ptr<Controller<State, CONTROL_DIM, CONTINUOUS_TIME>> controller = nullptr)
+        : Base(controller), w_n_(w_n)
     {
     }
 
-    TestSymplecticSystem(const TestSymplecticSystem& arg) : SymplecticSystem<1, 1, 1, SCALAR>(arg), w_n_(arg.w_n_) {}
-
+    TestSymplecticSystem(const TestSymplecticSystem& arg) : Base(arg), w_n_(arg.w_n_) {}
     virtual ~TestSymplecticSystem() = default;
 
     TestSymplecticSystem* clone() const override { return new TestSymplecticSystem(*this); }
 
-    //! need to override this method for a symplectic system
-    virtual void computePdot(const StateVector<POS_DIM + VEL_DIM, SCALAR>& x,
-        const StateVector<VEL_DIM, SCALAR>& v,
+    virtual void computePdot(const State& x,
+        const typename State::VelTangent& v,
         const ControlVector<CONTROL_DIM, SCALAR>& control,
-        StateVector<POS_DIM, SCALAR>& pDot) override
+        typename State::PosTangent& pDot) override
     {
         pDot(0) = v(0);
     }
 
-    //! need to override this method for a symplectic system
-    virtual void computeVdot(const StateVector<POS_DIM + VEL_DIM, SCALAR>& x,
-        const StateVector<POS_DIM, SCALAR>& p,
+    virtual void computeVdot(const State& x,
+        const typename State::PosTangent& p,
         const ControlVector<CONTROL_DIM, SCALAR>& control,
-        StateVector<VEL_DIM, SCALAR>& vDot) override
+        typename State::VelTangent& vDot) override
     {
         vDot(0) = control(0) - w_n_ * w_n_ * p(0);
     }

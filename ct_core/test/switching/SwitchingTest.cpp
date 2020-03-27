@@ -105,7 +105,8 @@ TEST(SwitchingTest, SwitchedSystem)
     cm_seq.addPhase(1, 0.25);  // phase 2, t in [0.75, 1.00)
 
     // Test the switched system
-    StateVector<2> state, derivative;
+    EuclideanState<2> state;
+    typename EuclideanState<2>::Tangent derivative;
     state(0) = 1.0;
     state(1) = 1.0;
     ControlVector<1> control;

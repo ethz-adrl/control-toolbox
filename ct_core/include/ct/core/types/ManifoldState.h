@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#ifdef CT_USE_MANIF
+
 #include <Eigen/Dense>
 #include <manif/manif.h>
 
@@ -17,8 +19,7 @@ class ManifoldState : public MANIF_T
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static const size_t TangentDim = TAN::DoF;
-
+    static constexpr size_t TangentDim = TAN::DoF;
     using Scalar = typename MANIF_T::Scalar;
     using Tangent = TAN;
     using Base = MANIF_T;
@@ -28,6 +29,12 @@ public:
 
     template <typename OTHER>
     ManifoldState(const OTHER& other);
+
+    static ManifoldState NeutralElement() { return MANIF_T::Identity(); }
+    //! get underlying manif type
+    Base& toImplementation() { return *this; }
+    //! get const underlying manif type
+    const Base& toImplementation() const { return *this; }
 };
 
 // todo do not move to implementation file
@@ -39,3 +46,6 @@ ManifoldState<M, T>::ManifoldState(const OTHER& other) : Base(other)
 
 } /* namespace core */
 } /* namespace ct */
+
+
+#endif  //CT_USE_MANIF

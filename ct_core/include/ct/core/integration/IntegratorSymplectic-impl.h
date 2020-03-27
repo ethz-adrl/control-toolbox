@@ -9,18 +9,18 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-template <size_t POS_DIM, size_t VEL_DIM, size_t CONTROL_DIM, class Stepper, typename SCALAR>
-IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, Stepper, SCALAR>::IntegratorSymplectic(
-    const std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR>> system,
+template <typename SYM_MFD, size_t CONTROL_DIM, class Stepper>
+IntegratorSymplectic<SYM_MFD, CONTROL_DIM, Stepper>::IntegratorSymplectic(
+    const std::shared_ptr<SymplecticSystem_t> system,
     const EventHandlerPtrVector& eventHandlers)
     : systemSymplectic_(system), observer_(eventHandlers)
 {
     setupSystem();
 }
 
-template <size_t POS_DIM, size_t VEL_DIM, size_t CONTROL_DIM, class Stepper, typename SCALAR>
-IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, Stepper, SCALAR>::IntegratorSymplectic(
-    const std::shared_ptr<SymplecticSystem<POS_DIM, VEL_DIM, CONTROL_DIM, SCALAR>> system,
+template <typename SYM_MFD, size_t CONTROL_DIM, class Stepper>
+IntegratorSymplectic<SYM_MFD, CONTROL_DIM, Stepper>::IntegratorSymplectic(
+    const std::shared_ptr<SymplecticSystem_t> system,
     const EventHandlerPtr& eventHandler)
     : systemSymplectic_(system), observer_(EventHandlerPtrVector(1, eventHandler))
 {
@@ -28,13 +28,12 @@ IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, Stepper, SCALAR>::Integrator
 }
 
 
-template <size_t POS_DIM, size_t VEL_DIM, size_t CONTROL_DIM, class Stepper, typename SCALAR>
-void IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, Stepper, SCALAR>::integrate_n_steps(
-    StateVector<POS_DIM + VEL_DIM, SCALAR>& state,
+template <typename SYM_MFD, size_t CONTROL_DIM, class Stepper>
+void IntegratorSymplectic<SYM_MFD, CONTROL_DIM, Stepper>::integrate_n_steps(SYM_MFD& state,
     const SCALAR& startTime,
     size_t numSteps,
     SCALAR dt,
-    StateVectorArray<POS_DIM + VEL_DIM, SCALAR>& stateTrajectory,
+    DiscreteArray<SYM_MFD>& stateTrajectory,
     tpl::TimeArray<SCALAR>& timeTrajectory)
 {
     pair_t xPair;
@@ -57,9 +56,8 @@ void IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, Stepper, SCALAR>::integ
     }
 }
 
-template <size_t POS_DIM, size_t VEL_DIM, size_t CONTROL_DIM, class Stepper, typename SCALAR>
-void IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, Stepper, SCALAR>::integrate_n_steps(
-    StateVector<POS_DIM + VEL_DIM, SCALAR>& state,
+template <typename SYM_MFD, size_t CONTROL_DIM, class Stepper>
+void IntegratorSymplectic<SYM_MFD, CONTROL_DIM, Stepper>::integrate_n_steps(SYM_MFD& state,
     const SCALAR& startTime,
     size_t numSteps,
     SCALAR dt)
@@ -79,14 +77,14 @@ void IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, Stepper, SCALAR>::integ
     }
 }
 
-template <size_t POS_DIM, size_t VEL_DIM, size_t CONTROL_DIM, class Stepper, typename SCALAR>
-void IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, Stepper, SCALAR>::reset()
+template <typename SYM_MFD, size_t CONTROL_DIM, class Stepper>
+void IntegratorSymplectic<SYM_MFD, CONTROL_DIM, Stepper>::reset()
 {
     observer_.reset();
 }
 
-template <size_t POS_DIM, size_t VEL_DIM, size_t CONTROL_DIM, class Stepper, typename SCALAR>
-void IntegratorSymplectic<POS_DIM, VEL_DIM, CONTROL_DIM, Stepper, SCALAR>::setupSystem()
+template <typename SYM_MFD, size_t CONTROL_DIM, class Stepper>
+void IntegratorSymplectic<SYM_MFD, CONTROL_DIM, Stepper>::setupSystem()
 {
     systemFunctionPosition_ = [this](
         const Eigen::Matrix<SCALAR, VEL_DIM, 1>& v, Eigen::Matrix<SCALAR, POS_DIM, 1>& dxdt) {

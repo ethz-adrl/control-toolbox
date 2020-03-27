@@ -4,18 +4,18 @@ namespace ct {
 namespace core {
 namespace internal {
 
-template <typename MANIFOLD, typename SCALAR>
-StepperRK4CT<MANIFOLD, SCALAR>::StepperRK4CT() : oneSixth_(SCALAR(1.0 / 6.0))
+template <typename MANIFOLD>
+StepperRK4CT<MANIFOLD>::StepperRK4CT() : oneSixth_(SCALAR(1.0 / 6.0))
 {
 }
 
-template <typename MANIFOLD, typename SCALAR>
-StepperRK4CT<MANIFOLD, SCALAR>::~StepperRK4CT()
+template <typename MANIFOLD>
+StepperRK4CT<MANIFOLD>::~StepperRK4CT()
 {
 }
 
-template <typename MANIFOLD, typename SCALAR>
-void StepperRK4CT<MANIFOLD, SCALAR>::do_step(const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+template <typename MANIFOLD>
+void StepperRK4CT<MANIFOLD>::do_step(const SystemFunction_t& rhs,
     MANIFOLD& stateInOut,
     const SCALAR time,
     const SCALAR dt)

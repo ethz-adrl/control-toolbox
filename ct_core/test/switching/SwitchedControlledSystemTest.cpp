@@ -12,20 +12,21 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 using namespace ct::core;
 using std::shared_ptr;
 
-TEST(SwitchedControlledSystemTest, SwitchedControlledSystem)
+TEST(SwitchedControlledSystemTest, SwitchedControlledSystem_continuous_time)
 {
     const bool VERBOSE = false;
 
     // Convenience aliases
-    using System = TestNonlinearSystem;
-    using SwitchedSystem = SwitchedControlledSystem<System::STATE_DIM, System::CONTROL_DIM>;
+    using System = TestNonlinearSystem<CONTINUOUS_TIME>;
+    using State_t = EuclideanState<System::STATE_DIM>;
+    using SwitchedSystem = SwitchedControlledSystem<State_t, System::CONTROL_DIM, CONTINUOUS_TIME>;
     using SystemPtr = SwitchedSystem::SystemPtr;
     using SwitchedSystems = SwitchedSystem::SwitchedSystems;
-    using ConstantController = ConstantController<System::STATE_DIM, System::CONTROL_DIM>;
-    using Controller = std::shared_ptr<Controller<System::STATE_DIM, System::CONTROL_DIM>>;
+    using ConstantController = ConstantController<State_t, System::CONTROL_DIM, CONTINUOUS_TIME>;
+    using Controller = std::shared_ptr<Controller<State_t, System::CONTROL_DIM, CONTINUOUS_TIME>>;
 
-    using SwitchedLinearSystem = SwitchedLinearSystem<System::STATE_DIM, System::CONTROL_DIM>;
-    using SystemLinearizer = SystemLinearizer<System::STATE_DIM, System::CONTROL_DIM>;
+    using SwitchedLinearSystem = SwitchedLinearSystem<State_t, System::CONTROL_DIM, CONTINUOUS_TIME>;
+    using SystemLinearizer = SystemLinearizer<State_t, System::CONTROL_DIM, CONTINUOUS_TIME>;
     using LinearizerSystemPtr = SwitchedLinearSystem::LinearSystemPtr;
     using SwitchedLinearSystems = SwitchedLinearSystem::SwitchedLinearSystems;
 
@@ -49,10 +50,10 @@ TEST(SwitchedControlledSystemTest, SwitchedControlledSystem)
 
     // Construct Switched System
     std::shared_ptr<SwitchedSystem> mySwitchedSys(new SwitchedSystem(switchedSystems, cm_seq, controller));
-    Integrator<System::STATE_DIM> integrator(mySwitchedSys, EULER);
+    Integrator<State_t> integrator(mySwitchedSys, EULER);
 
     // Forward Integrate
-    System::state_vector_t x, x_next;
+    State_t x, x_next;
     x.setZero();
     x[0] = 1.0;
     double dt = 0.10;
@@ -119,6 +120,50 @@ TEST(SwitchedControlledSystemTest, SwitchedControlledSystem)
         }
 
         t += dt;
+    }
+}
+
+
+TEST(SwitchedControlledSystemTest, SwitchedControlledSystem_discrete_time)
+{
+    // Convenience aliases
+    using System = TestNonlinearSystem<DISCRETE_TIME>;
+    using State_t = EuclideanState<System::STATE_DIM>;
+    using SwitchedSystem = SwitchedControlledSystem<State_t, System::CONTROL_DIM, DISCRETE_TIME>;
+    using SystemPtr = SwitchedSystem::SystemPtr;
+    using SwitchedSystems = SwitchedSystem::SwitchedSystems;
+    using ConstantController = ConstantController<State_t, System::CONTROL_DIM, DISCRETE_TIME>;
+    using Controller = std::shared_ptr<Controller<State_t, System::CONTROL_DIM, DISCRETE_TIME>>;
+
+    // Setup systems
+    SystemPtr sysPtr1(new System(0.0));
+    SystemPtr sysPtr2(new System(1.0));
+    SwitchedSystems switchedSystems;
+    switchedSystems.push_back(sysPtr1);
+    switchedSystems.push_back(sysPtr2);
+
+    // Setup mode sequence
+    DiscreteModeSequence dm_seq;
+    dm_seq.addPhase(0, 2);  // phase 0, t in [0, 2)
+    dm_seq.addPhase(1, 3);  // phase 1, t in [2, 5)
+    dm_seq.addPhase(0, 1);  // phase 2, t in [5, 6)
+
+    // Setup Constant Controller
+    System::control_vector_t u;
+    u[0] = 1.0;
+    Controller controller(new ConstantController(u));
+
+    // Construct Switched System
+    std::shared_ptr<SwitchedSystem> mySwitchedSys(new SwitchedSystem(switchedSystems, dm_seq, controller));
+
+    // Forward Integrate
+    System::state_vector_t x, x_incr;
+    x.setZero();
+    x[0] = 1.0;
+    for (int t = dm_seq.getStartTimeFromIdx(0); t < dm_seq.getTotalDuration(); t++)
+    {
+        mySwitchedSys->computeDynamics(x, t, x_incr);
+        x += x_incr;
     }
 }
 

@@ -13,12 +13,11 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "integration/internal/StepperODEIntControlled-impl.h"
 #include "integration/internal/StepperODEIntDenseOutput-impl.h"
 
-
 #include "integration/EventHandlers/KillIntegrationEventHandler-impl.h"
 #include "integration/EventHandlers/MaxStepsEventHandler-impl.h"
 #include "integration/EventHandlers/SubstepRecorder-impl.h"
 
 #include "integration/Observer-impl.h"
 #include "integration/Integrator-impl.h"
-//#include "integration/IntegratorSymplectic-impl.h"
+#include "integration/IntegratorSymplectic-impl.h"
 

@@ -6,7 +6,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <ct/core/integration/EventHandler.h>
-#include <ct/core/systems/continuous_time/ControlledSystem.h>
+#include <ct/core/systems/ControlledSystem.h>
 
 namespace ct {
 namespace core {
@@ -17,17 +17,20 @@ namespace core {
  *
  * @tparam STATE_DIM size of the state vector
  */
-template <typename MANIFOLD, size_t CONTROL_DIM, typename SCALAR = double>
-class SubstepRecorder : public EventHandler<MANIFOLD, SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM>
+class SubstepRecorder : public EventHandler<MANIFOLD>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    using ManifoldArray_t = ct::core::DiscreteArray<MANIFOLD, SCALAR>;
-    using ControlVectorArray_t = ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>;
-    using TimeArray_t = ct::core::tpl::TimeArray<SCALAR>;
+    using SCALAR = typename MANIFOLD::Scalar;
 
-    SubstepRecorder(std::shared_ptr<ControlledSystem<MANIFOLD, CONTROL_DIM, SCALAR>> system = nullptr,
+    using ManifoldArray_t = DiscreteArray<MANIFOLD>;
+    using ControlVectorArray_t = ControlVectorArray<CONTROL_DIM, SCALAR>;
+    using TimeArray_t = tpl::TimeArray<SCALAR>;
+    using ControlledSystem_t = ControlledSystem<MANIFOLD, CONTROL_DIM, CONTINUOUS_TIME>;
+
+    SubstepRecorder(std::shared_ptr<ControlledSystem_t> system = nullptr,
         bool activated = true,
         std::shared_ptr<ManifoldArray_t> states = std::shared_ptr<ManifoldArray_t>(new ManifoldArray_t()),
         std::shared_ptr<ControlVectorArray_t> controls = std::shared_ptr<ControlVectorArray_t>(
@@ -38,7 +41,7 @@ public:
 
     virtual bool callOnSubsteps() override;
 
-    void setControlledSystem(const std::shared_ptr<ControlledSystem<MANIFOLD, CONTROL_DIM, SCALAR>>& system);
+    void setControlledSystem(const std::shared_ptr<ControlledSystem_t>& system);
 
     //! checks the kill flag
     virtual bool checkEvent(const MANIFOLD& state, const SCALAR& t) override;
@@ -53,12 +56,12 @@ public:
 
     const std::shared_ptr<ManifoldArray_t>& getSubstates() const;
 
-    const std::shared_ptr<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>>& getSubcontrols() const;
+    const std::shared_ptr<ControlVectorArray<CONTROL_DIM, SCALAR>>& getSubcontrols() const;
 
 private:
     bool activated_;
 
-    std::shared_ptr<ct::core::ControlledSystem<MANIFOLD, CONTROL_DIM, SCALAR>> system_;
+    std::shared_ptr<ControlledSystem_t> system_;
 
     //!< container for logging the state
     std::shared_ptr<ManifoldArray_t> states_;

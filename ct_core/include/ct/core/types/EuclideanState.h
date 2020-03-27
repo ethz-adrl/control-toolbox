@@ -16,7 +16,7 @@ class EuclideanState : public Eigen::Matrix<SCALAR, DIM, 1>
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static const size_t TangentDim = DIM;
+    static constexpr size_t TangentDim = DIM;
     using Scalar = SCALAR;
     using Tangent = Eigen::Matrix<SCALAR, DIM, 1>;
     using Base = Eigen::Matrix<SCALAR, DIM, 1>;
@@ -38,13 +38,18 @@ public:
         return *this;
     }
 
+    static EuclideanState NeutralElement() { return Eigen::Matrix<SCALAR, DIM, 1>::Zero(); }
     //! get underlying Eigen type
     Base& toImplementation() { return *this; }
     //! get const underlying Eigen type
     const Base& toImplementation() const { return *this; }
+    
+    // provide manifold log operator // TODO: attention - this overloads an eigen function
+    const EuclideanState& log() const = delete;
+    EuclideanState& log() = delete;
 
-    // provide manifold log operator // TODO: attention - this overloads an eigen function 
-    const EuclideanState& log() const { return *this; }
+    Tangent rminus(const EuclideanState& x) const { return *this - x; }
+    EuclideanState rplus(const Tangent& x) const { return *this + x; }
 };
 
 template <size_t DIM, class SCALAR = double>

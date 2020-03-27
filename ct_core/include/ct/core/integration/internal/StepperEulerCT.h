@@ -12,19 +12,21 @@ namespace internal {
  * @tparam     MATRIX  The matrix type
  * @tparam     SCALAR  The scalar type
  */
-template <typename MANIFOLD, typename SCALAR>
-class StepperEulerCT : public StepperCTBase<MANIFOLD, SCALAR>
+template <typename MANIFOLD>
+class StepperEulerCT : public StepperCTBase<MANIFOLD>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    using SCALAR = typename MANIFOLD::Scalar;
     using Tangent = typename MANIFOLD::Tangent;
+    using SystemFunction_t = typename StepperCTBase<MANIFOLD>::SystemFunction_t;
 
     StepperEulerCT();
     virtual ~StepperEulerCT();
 
 private:
-    virtual void do_step(const std::function<void(const MANIFOLD&, Tangent&, SCALAR)>& rhs,
+    virtual void do_step(const SystemFunction_t& rhs,
         MANIFOLD& stateInOut,
         const SCALAR time,
         const SCALAR dt) override;

@@ -1,6 +1,9 @@
 #pragma once
 
 #include "DiscreteArray.h"
+
+#ifdef CT_USE_MANIF
+
 #include <manif/manif.h>
 
 namespace ct {
@@ -29,3 +32,5 @@ using SE3TangentArray = tpl::SE3TangentArray<double>;
 
 }  // namespace core
 }  // namespace ct
+
+#endif  // CT_USE_MANIF

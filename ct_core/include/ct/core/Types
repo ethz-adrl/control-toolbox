@@ -9,8 +9,9 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #include "types/AutoDiff.h"
 
-#include "types/EuclideanState.h"
 #include "types/ManifoldState.h"
+#include "types/EuclideanState.h"
+#include "types/EuclideanStateSymplectic.h"
 
 #include "types/ControlVector.h"
 #include "types/OutputVector.h"

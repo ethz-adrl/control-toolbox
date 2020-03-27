@@ -23,8 +23,9 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #include <ct/core/types/AutoDiff.h>
 #include <ct/core/types/arrays/DiscreteArray.h>
-
 #include <ct/core/types/TypeTraits.h>
+
+#include <ct/core/systems/System.h>
 
 namespace ct {
 namespace core {
@@ -70,10 +71,10 @@ public:
 
     using SCALAR = typename MANIFOLD::Scalar;
     using TANGENT = typename MANIFOLD::Tangent;
-    using System_t = System<MANIFOLD, SCALAR>;
+    using System_t = System<MANIFOLD, CONTINUOUS_TIME>;
     using SystemPtr_t = std::shared_ptr<System_t>;
 
-    using EventHandlerPtr = std::shared_ptr<EventHandler<MANIFOLD, SCALAR>>;
+    using EventHandlerPtr = std::shared_ptr<EventHandler<MANIFOLD>>;
     using EventHandlerPtrVector = std::vector<EventHandlerPtr, Eigen::aligned_allocator<EventHandlerPtr>>;
 
     //! constructor
@@ -299,11 +300,11 @@ private:
     SystemPtr_t system_;  //! pointer to the system
 
     //! the system function to integrate
-    std::function<void(const MANIFOLD&, TANGENT&, SCALAR)> systemFunction_;
+    typename internal::StepperBase<MANIFOLD>::SystemFunction_t systemFunction_;
 
-    std::shared_ptr<internal::StepperBase<MANIFOLD, SCALAR>> integratorStepper_;
+    std::shared_ptr<internal::StepperBase<MANIFOLD>> integratorStepper_;
 
-    Observer<MANIFOLD, SCALAR> observer_;  //! observer
+    Observer<MANIFOLD> observer_;  //! observer
 };
 
 
@@ -327,32 +328,31 @@ typename std::enable_if<std::is_same<S, double>::value, void>::type Integrator<M
     {
         case EULER:
         {
-            integratorStepper_ =
-                std::shared_ptr<internal::StepperODEInt<internal::euler_t<MANIFOLD, SCALAR>, MANIFOLD, SCALAR>>(
-                    new internal::StepperODEInt<internal::euler_t<MANIFOLD, SCALAR>, MANIFOLD, SCALAR>());
+            integratorStepper_ = std::shared_ptr<internal::StepperODEInt<internal::euler_t<MANIFOLD>, MANIFOLD>>(
+                new internal::StepperODEInt<internal::euler_t<MANIFOLD>, MANIFOLD>());
             break;
         }
         case RK4:
         {
             integratorStepper_ =
-                std::shared_ptr<internal::StepperODEInt<internal::runge_kutta_4_t<MANIFOLD, SCALAR>, MANIFOLD, SCALAR>>(
-                    new internal::StepperODEInt<internal::runge_kutta_4_t<MANIFOLD, SCALAR>, MANIFOLD, SCALAR>());
+                std::shared_ptr<internal::StepperODEInt<internal::runge_kutta_4_t<MANIFOLD>, MANIFOLD>>(
+                    new internal::StepperODEInt<internal::runge_kutta_4_t<MANIFOLD>, MANIFOLD>());
             break;
         }
 
         case MODIFIED_MIDPOINT:
         {
-            integratorStepper_ = std::shared_ptr<
-                internal::StepperODEInt<internal::modified_midpoint_t<MANIFOLD, SCALAR>, MANIFOLD, SCALAR>>(
-                new internal::StepperODEInt<internal::modified_midpoint_t<MANIFOLD, SCALAR>, MANIFOLD, SCALAR>());
+            integratorStepper_ =
+                std::shared_ptr<internal::StepperODEInt<internal::modified_midpoint_t<MANIFOLD>, MANIFOLD>>(
+                    new internal::StepperODEInt<internal::modified_midpoint_t<MANIFOLD>, MANIFOLD>());
             break;
         }
 
         case RK78:
         {
-            integratorStepper_ = std::shared_ptr<
-                internal::StepperODEInt<internal::runge_kutta_fehlberg78_t<MANIFOLD, SCALAR>, MANIFOLD, SCALAR>>(
-                new internal::StepperODEInt<internal::runge_kutta_fehlberg78_t<MANIFOLD, SCALAR>, MANIFOLD, SCALAR>());
+            integratorStepper_ =
+                std::shared_ptr<internal::StepperODEInt<internal::runge_kutta_fehlberg78_t<MANIFOLD>, MANIFOLD>>(
+                    new internal::StepperODEInt<internal::runge_kutta_fehlberg78_t<MANIFOLD>, MANIFOLD>());
 
             break;
         }
@@ -377,27 +377,25 @@ void Integrator<MANIFOLD>::initializeAdaptiveSteppers(const IntegrationType& int
     {
         case ODE45:
         {
-            integratorStepper_ = std::shared_ptr<
-                internal::StepperODEIntControlled<internal::runge_kutta_dopri5_t<MANIFOLD, SCALAR>, MANIFOLD, SCALAR>>(
-                new internal::StepperODEIntControlled<internal::runge_kutta_dopri5_t<MANIFOLD, SCALAR>, MANIFOLD,
-                    SCALAR>());
+            integratorStepper_ =
+                std::shared_ptr<internal::StepperODEIntControlled<internal::runge_kutta_dopri5_t<MANIFOLD>, MANIFOLD>>(
+                    new internal::StepperODEIntControlled<internal::runge_kutta_dopri5_t<MANIFOLD>, MANIFOLD>());
             break;
         }
 
         case RK5VARIABLE:
         {
-            integratorStepper_ = std::shared_ptr<
-                internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<MANIFOLD, SCALAR>, MANIFOLD, SCALAR>>(
-                new internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<MANIFOLD, SCALAR>, MANIFOLD,
-                    SCALAR>());
+            integratorStepper_ =
+                std::shared_ptr<internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<MANIFOLD>, MANIFOLD>>(
+                    new internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<MANIFOLD>, MANIFOLD>());
             break;
         }
 
         case BULIRSCHSTOER:
         {
-            integratorStepper_ = std::shared_ptr<
-                internal::StepperODEInt<internal::bulirsch_stoer_t<MANIFOLD, SCALAR>, MANIFOLD, SCALAR>>(
-                new internal::StepperODEInt<internal::bulirsch_stoer_t<MANIFOLD, SCALAR>, MANIFOLD, SCALAR>());
+            integratorStepper_ =
+                std::shared_ptr<internal::StepperODEInt<internal::bulirsch_stoer_t<MANIFOLD>, MANIFOLD>>(
+                    new internal::StepperODEInt<internal::bulirsch_stoer_t<MANIFOLD>, MANIFOLD>());
             break;
         }
         default:
@@ -405,6 +403,8 @@ void Integrator<MANIFOLD>::initializeAdaptiveSteppers(const IntegrationType& int
     }
 }
 
+template <size_t DIM, typename SCALAR = double>
+using EuclideanIntegrator = Integrator<EuclideanState<DIM, SCALAR>>;
 
 }  // namespace core
 }  // namespace ct

@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#ifdef CT_USE_MANIF
+
 namespace ct {
 namespace core {
 
@@ -21,4 +23,4 @@ ManifoldState<M, T>::~ManifoldState()
 } /* namespace core */
 } /* namespace ct */
 
-#include "ManifoldState-impl.h"
+#endif  // CT_USE_MANIF
