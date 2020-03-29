@@ -90,8 +90,6 @@ public:
 	 * @return system type
 	 */
     SYSTEM_TYPE getType() const;
-    // return current time type, e.g. for testing
-    static const TIME_TYPE getTimeType() const { return CONT_T; }
     // default lift specialization for euclidean case
     template <typename T = TANGENT>
     typename std::enable_if<is_euclidean<MANIFOLD>::value, T>::type lift_specialized(const MANIFOLD& m);

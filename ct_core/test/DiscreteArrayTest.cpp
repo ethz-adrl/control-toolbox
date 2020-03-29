@@ -85,6 +85,33 @@ TEST(DiscreteArrayTest, UnaryPlusMinusTest)
     }
 }
 
+TEST(DiscreteArrayTest, AssignmentTest)
+{
+    const size_t nEl = 10;
+    const size_t state_dim = 2;
+
+    //! create state vector array and fill with random elements
+    StateVectorArray<state_dim> array1(nEl);
+
+    for (size_t i = 0; i < nEl; i++)
+        array1[i].setRandom();
+
+    //! test the overloaded operator in two ways
+    StateVectorArray<state_dim> array2;
+    array2 = array1;
+
+    StateVectorArray<state_dim> array3 = array1;
+
+    for (size_t i = 0; i < nEl; i++)
+    {
+        //! check that the elements are equal
+        ASSERT_EQ(array1[i], array2[i]);
+        ASSERT_EQ(array1[i], array3[i]);
+    }
+
+    ASSERT_TRUE(array1 == array2);
+    ASSERT_TRUE(array1 == array3);
+}
 
 TEST(DiscreteArrayTest, AddAssignTest)
 {

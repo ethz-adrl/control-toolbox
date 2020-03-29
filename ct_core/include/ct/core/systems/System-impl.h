@@ -47,11 +47,5 @@ auto System<MANIFOLD, CONT_T>::getType() const -> SYSTEM_TYPE
     return type_;
 }
 
-template <typename MANIFOLD, bool CONT_T>
-auto System<MANIFOLD, CONT_T>::getTimeType() const -> const TIME_TYPE
-{
-    return CONT_T;
-}
-
 }  // namespace core
 }  // namespace ct
