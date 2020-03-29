@@ -85,22 +85,24 @@ TEST(DiscreteArrayTest, UnaryPlusMinusTest)
     }
 }
 
-TEST(DiscreteArrayTest, AssignmentTest)
+template <typename T>
+void runAssignmentTest()
 {
     const size_t nEl = 10;
     const size_t state_dim = 2;
 
+    using StateVector_t = StateVectorArray<state_dim, T>;
     //! create state vector array and fill with random elements
-    StateVectorArray<state_dim> array1(nEl);
+    StateVector_t array1(nEl);
 
     for (size_t i = 0; i < nEl; i++)
         array1[i].setRandom();
 
     //! test the overloaded operator in two ways
-    StateVectorArray<state_dim> array2;
+    StateVector_t array2;
     array2 = array1;
 
-    StateVectorArray<state_dim> array3 = array1;
+    StateVector_t array3 = array1;
 
     for (size_t i = 0; i < nEl; i++)
     {
@@ -111,6 +113,12 @@ TEST(DiscreteArrayTest, AssignmentTest)
 
     ASSERT_TRUE(array1 == array2);
     ASSERT_TRUE(array1 == array3);
+}
+
+TEST(DiscreteArrayTest, AssignmentTest)
+{
+    runAssignmentTest<double>();
+    runAssignmentTest<float>();
 }
 
 TEST(DiscreteArrayTest, AddAssignTest)
