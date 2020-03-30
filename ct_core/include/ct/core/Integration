@@ -23,7 +23,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "integration/Integrator.h"
 #include "integration/IntegratorSymplectic.h"
 
-//#include "integration/sensitivity/Sensitivity.h"
-//#include "integration/sensitivity/SensitivityApproximation.h"
-//#include "integration/sensitivity/SensitivityIntegrator.h"
+#include "integration/sensitivity/Sensitivity.h"
+#include "integration/sensitivity/SensitivityApproximation.h"
+#include "integration/sensitivity/SensitivityIntegrator.h"
 

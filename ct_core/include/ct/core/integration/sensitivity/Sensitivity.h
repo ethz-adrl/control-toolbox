@@ -5,7 +5,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/core/systems/discrete_time/linear/DiscreteLinearSystem.h>
+#include <ct/core/systems/LinearSystem.h>
 
 namespace ct {
 namespace core {
@@ -31,24 +31,33 @@ struct SensitivityApproximationSettings
     APPROXIMATION approximation_;
 };
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class Sensitivity : public DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>
+
+template <typename MANIFOLD, size_t CONTROL_DIM>
+class Sensitivity : public LinearSystem<MANIFOLD, CONTROL_DIM, DISCRETE_TIME>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef std::shared_ptr<StateVectorArray<STATE_DIM, SCALAR>> StateVectorArrayPtr;
+    using SCALAR = typename MANIFOLD::Scalar;
+    using Base = LinearSystem<MANIFOLD, CONTROL_DIM, DISCRETE_TIME>;
+    using Time_t = typename Base::Time_t;
+    using control_vector_t = typename Base::control_vector_t;
+    using state_matrix_t = typename Base::state_matrix_t;
+    using state_control_matrix_t = typename Base::state_control_matrix_t;
+
+    typedef std::shared_ptr<DiscreteArray<MANIFOLD>> StateVectorArrayPtr;
     typedef std::shared_ptr<ControlVectorArray<CONTROL_DIM, SCALAR>> ControlVectorArrayPtr;
 
 
     Sensitivity() : xSubstep_(nullptr), uSubstep_(nullptr) {}
     virtual ~Sensitivity() {}
-    virtual Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override
+    virtual Sensitivity<MANIFOLD, CONTROL_DIM>* clone() const override
     {
         throw std::runtime_error("clone not implemented for Sensitivity");
     }
 
-    virtual void setLinearSystem(const std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem) = 0;
+    virtual void setLinearSystem(
+        const std::shared_ptr<LinearSystem<MANIFOLD, CONTROL_DIM, CONTINUOUS_TIME>>& linearSystem) = 0;
 
     //! update the time discretization
     virtual void setTimeDiscretization(const SCALAR& dt) = 0;
@@ -68,26 +77,32 @@ public:
         uSubstep_ = uSubstep;
     }
 
-    /*!
-	 * retrieve discrete-time linear system matrices A and B.
-	 * @param x	the state setpoint
-	 * @param u the control setpoint
-	 * @param n the time setpoint
-	 * @param numSteps number of timesteps of trajectory for which to get the sensitivity for
-	 * @param A the resulting linear system matrix A
-	 * @param B the resulting linear system matrix B
-	 */
-    virtual void getAandB(const StateVector<STATE_DIM, SCALAR>& x,
-        const ControlVector<CONTROL_DIM, SCALAR>& u,
-        const StateVector<STATE_DIM, SCALAR>& x_next,
-        const int n,
-        size_t numSteps,
-        StateMatrix<STATE_DIM, SCALAR>& A,
-        StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR>& B) override = 0;
+    virtual const state_matrix_t& getDerivativeState(const MANIFOLD& m,
+        const control_vector_t& u,
+        const Time_t t = Time_t(0.0)) override = 0;
+
+    virtual const state_control_matrix_t& getDerivativeControl(const MANIFOLD& m,
+        const control_vector_t& u,
+        const Time_t t = Time_t(0.0)) override = 0;
+
+    virtual void getDerivatives(state_matrix_t& A,
+        state_control_matrix_t& B,
+        const MANIFOLD& x,
+        const MANIFOLD& x_next,
+        const control_vector_t& u,
+        const size_t nSubsteps,
+        const Time_t n = Time_t(0)) override = 0;
+
+    virtual void getDerivatives(state_matrix_t& A,
+        state_control_matrix_t& B,
+        const MANIFOLD& x,
+        const control_vector_t& u,
+        const Time_t n = Time_t(0)) override = 0;
 
 protected:
     std::vector<StateVectorArrayPtr, Eigen::aligned_allocator<StateVectorArrayPtr>>* xSubstep_;
     std::vector<ControlVectorArrayPtr, Eigen::aligned_allocator<ControlVectorArrayPtr>>* uSubstep_;
 };
+
 }  // namespace core
 }  // namespace ct

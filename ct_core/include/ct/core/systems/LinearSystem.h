@@ -146,6 +146,29 @@ public:
         A = getDerivativeState(m, u, t);
         B = getDerivativeControl(m, u, t);
     }
+
+    /**
+     * @brief Get both linear system matrices A and B in one call, more verbose interface
+     * 
+     * @param A 
+     * @param B 
+     * @param m 
+     * @param m_next 
+     * @param u 
+     * @param nSubsteps optional: number of substeps performed in the discretizer, e.g. for sensitivity integration
+     * @param t 
+     */
+    virtual void getDerivatives(state_matrix_t& A,
+        state_control_matrix_t& B,
+        const MANIFOLD& m,
+        const MANIFOLD& m_next,
+        const control_vector_t& u,
+        const size_t nSubsteps,
+        const Time_t t = Time_t(0.0))
+    {
+        // we drop m_next in the default impl
+        getDerivatives(A, B, m, u, t);
+    }
 };
 
 }  // namespace core

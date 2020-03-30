@@ -5,20 +5,14 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/core/systems/continuous_time/ControlledSystem.h>
-#include <ct/core/systems/continuous_time/linear/LinearSystem.h>
-#include <ct/core/integration/internal/SteppersCT.h>
-
-#define SYMPLECTIC_ENABLED        \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V > 0 && P > 0), void>::type
-#define SYMPLECTIC_DISABLED       \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V <= 0 || P <= 0), void>::type
+#include <ct/core/integration/internal/StepperEulerCT.h>
+#include <ct/core/integration/internal/StepperRK4CT.h>
+#include <ct/core/systems/ControlledSystem.h>
+#include <ct/core/types/TypeMacros.h>
+#include "Sensitivity.h"
 
 namespace ct {
 namespace core {
-
 
 /**
  * @brief      This class can integrate a controlled system
@@ -29,24 +23,54 @@ namespace core {
  * @tparam     CONTROL_DIM  The control dimension
  * @tparam     SCALAR       The scalar type
  */
-template <size_t STATE_DIM,
-    size_t CONTROL_DIM,
-    size_t P_DIM = STATE_DIM / 2,
-    size_t V_DIM = STATE_DIM / 2,
-    typename SCALAR = double>
-class SensitivityIntegrator : public Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM>
+class SensitivityIntegrator : public Sensitivity<MANIFOLD, CONTROL_DIM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef ct::core::StateVector<STATE_DIM, SCALAR> state_vector_t;
-    typedef ct::core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
-    typedef StateMatrix<STATE_DIM, SCALAR> state_matrix_t;                              //!< state Jacobian type
-    typedef ControlMatrix<CONTROL_DIM, SCALAR> control_matrix_t;                        //!< state Jacobian type
-    typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;  //!< input Jacobian type
+    static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM + CONTROL_DIM> sensitivities_matrix_t;
+    using Base = Sensitivity<MANIFOLD, CONTROL_DIM>;
 
+    using SCALAR = typename Base::SCALAR;
+    using Time_t = typename Base::Time_t;
+    using control_vector_t = typename Base::control_vector_t;
+    using state_matrix_t = typename Base::state_matrix_t;
+    using state_control_matrix_t = typename Base::state_control_matrix_t;
+    using control_matrix_t = ControlMatrix<CONTROL_DIM, SCALAR>;
+
+    /**
+     * @brief custom (internal) manifold for integrating sensitivities
+     */
+    class SensitivityMatrixManifold : public Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM + CONTROL_DIM>
+    {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+        //static constexpr size_t TangentDim = DIM;
+        using Scalar = SCALAR;
+        using Base = Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM + CONTROL_DIM>;
+        using Tangent = Base;
+
+        SensitivityMatrixManifold() = default;
+        virtual ~SensitivityMatrixManifold() = default;
+
+        //!This constructor allows you to construct MyVectorType from Eigen expressions
+        template <typename OtherDerived>
+        SensitivityMatrixManifold(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)
+        {
+        }
+
+        //! This method allows you to assign Eigen expressions to MyVectorType
+        template <typename OtherDerived>
+        SensitivityMatrixManifold& operator=(const Eigen::MatrixBase<OtherDerived>& other)
+        {
+            this->Base::operator=(other);
+            return *this;
+        }
+    };
+    using sensitivities_matrix_t = SensitivityMatrixManifold;
 
     /**
      * @brief      Constructor
@@ -55,9 +79,9 @@ public:
      * @param[in]  stepperType  The integration stepper type
      */
     SensitivityIntegrator(const SCALAR dt,
-        const std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem,
-        const std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>>& controller,
-        const ct::core::IntegrationType stepperType = ct::core::IntegrationType::EULERCT,
+        const std::shared_ptr<LinearSystem<MANIFOLD, CONTROL_DIM, CONTINUOUS_TIME>>& linearSystem,
+        const std::shared_ptr<Controller<MANIFOLD, CONTROL_DIM, CONTINUOUS_TIME>>& controller,
+        const IntegrationType stepperType = IntegrationType::EULERCT,
         bool timeVarying = true)
         : timeVarying_(timeVarying), symplectic_(false), dt_(dt), substep_(0), k_(0), controller_(controller)
     {
@@ -76,26 +100,26 @@ public:
      *
      * @param[in]  stepperType  The desired integration stepper type
      */
-    void setStepper(const ct::core::IntegrationType stepperType)
+    void setStepper(const IntegrationType stepperType)
     {
         symplectic_ = false;
 
         switch (stepperType)
         {
-            case ct::core::IntegrationType::EULERCT:
-            case ct::core::IntegrationType::EULER_SYM:
-            case ct::core::IntegrationType::EULER:
+            case IntegrationType::EULERCT:
+            case IntegrationType::EULER_SYM:
+            case IntegrationType::EULER:
             {
-                stepper_ = std::shared_ptr<ct::core::internal::StepperCTBase<sensitivities_matrix_t, SCALAR>>(
-                    new ct::core::internal::StepperEulerCT<sensitivities_matrix_t, SCALAR>());
+                stepper_ = std::shared_ptr<internal::StepperCTBase<SensitivityMatrixManifold>>(
+                    new internal::StepperEulerCT<SensitivityMatrixManifold>());
                 break;
             }
 
-            case ct::core::IntegrationType::RK4:
-            case ct::core::IntegrationType::RK4CT:
+            case IntegrationType::RK4:
+            case IntegrationType::RK4CT:
             {
-                stepper_ = std::shared_ptr<ct::core::internal::StepperCTBase<sensitivities_matrix_t, SCALAR>>(
-                    new ct::core::internal::StepperRK4CT<sensitivities_matrix_t, SCALAR>());
+                stepper_ = std::shared_ptr<internal::StepperCTBase<SensitivityMatrixManifold>>(
+                    new internal::StepperRK4CT<SensitivityMatrixManifold>());
                 break;
             }
 
@@ -103,7 +127,7 @@ public:
                 throw std::runtime_error("Integration type not supported by sensitivity integrator");
         }
 
-        if (stepperType == ct::core::IntegrationType::EULER_SYM)
+        if (stepperType == IntegrationType::EULER_SYM)
             symplectic_ = true;
     }
 
@@ -115,7 +139,7 @@ public:
      * @param[in]  linearSystem  The linearized system
      */
     virtual void setLinearSystem(
-        const std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem) override
+        const std::shared_ptr<LinearSystem<MANIFOLD, CONTROL_DIM, CONTINUOUS_TIME>>& linearSystem) override
     {
         linearSystem_ = linearSystem;
     }
@@ -136,7 +160,7 @@ public:
         A.setIdentity();
         B.setZero();
 
-        sensitivities_matrix_t AB;
+        SensitivityMatrixManifold AB;
         AB << A, B;
 
         k_ = k;
@@ -151,22 +175,40 @@ public:
         B = AB.template rightCols<CONTROL_DIM>();
     }
 
-    /*!
-	 * retrieve discrete-time linear system matrices A and B.
-	 * @param x	the state setpoint
-	 * @param u the control setpoint
-	 * @param n the time setpoint
-	 * @param numSteps number of timesteps of trajectory for which to get the sensitivity for
-	 * @param A the resulting linear system matrix A
-	 * @param B the resulting linear system matrix B
-	 */
-    virtual void getAandB(const StateVector<STATE_DIM, SCALAR>& x,
-        const ControlVector<CONTROL_DIM, SCALAR>& u,
-        const StateVector<STATE_DIM, SCALAR>& x_next,
-        const int n,
+    const state_matrix_t& getDerivativeState(const MANIFOLD& m,
+        const control_vector_t& u,
+        const Time_t n = Time_t(0)) override
+    {
+        throw std::runtime_error(
+            "getDerivativeState not implemented for SensitivityIntegrator. You need to use getDerivatives() for "
+            "efficiency reasons.");
+    }
+
+    const state_control_matrix_t& getDerivativeControl(const MANIFOLD& m,
+        const control_vector_t& u,
+        const Time_t n = Time_t(0)) override
+    {
+        throw std::runtime_error(
+            "getDerivativeState not implemented for SensitivityIntegrator. You need to use getDerivatives() for "
+            "efficiency reasons.");
+    }
+
+    virtual void getDerivatives(state_matrix_t& A,
+        state_control_matrix_t& B,
+        const MANIFOLD& x,
+        const control_vector_t& u,
+        const Time_t n = Time_t(0)) override
+    {
+        getDerivatives(A, B, x, x, u, 1, n);
+    }
+
+    void getDerivatives(state_matrix_t& A,
+        state_control_matrix_t& B,
+        const MANIFOLD& x,
+        const MANIFOLD& x_next,
+        const control_vector_t& u,
         const size_t numSteps,
-        state_matrix_t& A,
-        state_control_matrix_t& B) override
+        const Time_t n = Time_t(0)) override
     {
 #ifdef DEBUG
         if (!(this->xSubstep_) || !(this->uSubstep_))
@@ -211,25 +253,26 @@ private:
     size_t substep_;
     size_t k_;
 
-    state_vector_t x_next_;
+    MANIFOLD x_next_;
 
     state_matrix_t Aconst_;
     state_control_matrix_t Bconst_;
 
-    std::shared_ptr<ct::core::LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem_;
-    std::shared_ptr<ct::core::Controller<STATE_DIM, CONTROL_DIM, SCALAR>> controller_;
+    std::shared_ptr<LinearSystem<MANIFOLD, CONTROL_DIM, CONTINUOUS_TIME>> linearSystem_;
+    std::shared_ptr<Controller<MANIFOLD, CONTROL_DIM, CONTINUOUS_TIME>> controller_;
 
     // Sensitivities
-    std::function<void(const sensitivities_matrix_t&, sensitivities_matrix_t&, const SCALAR)> dFdxDot_;
+    std::function<void(const sensitivities_matrix_t&, typename sensitivities_matrix_t::Tangent&, const SCALAR)>
+        dFdxDot_;
 
-    std::shared_ptr<ct::core::internal::StepperCTBase<sensitivities_matrix_t, SCALAR>> stepper_;
+    std::shared_ptr<internal::StepperCTBase<sensitivities_matrix_t>> stepper_;
 
 
     inline void integrateSensitivities(const state_matrix_t& A,
         const state_control_matrix_t& B,
-        const state_vector_t& x,
+        const MANIFOLD& x,
         const sensitivities_matrix_t& dX0In,
-        sensitivities_matrix_t& dX0dt,
+        typename sensitivities_matrix_t::Tangent& dX0dt,
         const SCALAR t)
     {
         dX0dt.template leftCols<STATE_DIM>() = A * dX0In.template leftCols<STATE_DIM>();
@@ -239,15 +282,16 @@ private:
 
     void initStepper()
     {
-        dFdxDot_ = [this](const sensitivities_matrix_t& dX0In, sensitivities_matrix_t& dX0dt, const SCALAR t) {
+        dFdxDot_ = [this](
+            const sensitivities_matrix_t& dX0In, typename sensitivities_matrix_t::Tangent& dX0dt, const SCALAR t) {
 #ifdef DEBUG
             if (!this->xSubstep_ || this->xSubstep_->size() <= this->k_)
                 throw std::runtime_error("substeps not correctly initialized");
 #endif
 
-            const typename Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR>::StateVectorArrayPtr& xSubstep =
+            const typename Sensitivity<MANIFOLD, CONTROL_DIM>::StateVectorArrayPtr& xSubstep =
                 this->xSubstep_->operator[](this->k_);
-            const typename Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR>::ControlVectorArrayPtr& uSubstep =
+            const typename Sensitivity<MANIFOLD, CONTROL_DIM>::ControlVectorArrayPtr& uSubstep =
                 this->uSubstep_->operator[](this->k_);
 
 #ifdef DEBUG
@@ -257,21 +301,21 @@ private:
                 throw std::runtime_error("substeps not correctly initialized");
             }
 #endif
-            const state_vector_t& x = xSubstep->operator[](this->substep_);
+            const MANIFOLD& x = xSubstep->operator[](this->substep_);
             const control_vector_t& u = uSubstep->operator[](this->substep_);
 
             if (symplectic_)
             {
                 state_matrix_t A_sym;
                 state_control_matrix_t B_sym;
-                const state_vector_t* x_next;
+                const MANIFOLD* x_next;
 
                 if (this->substep_ + 1 < xSubstep->size())
                     x_next = &xSubstep->operator[](this->substep_ + 1);
                 else
                     x_next = &x_next_;
 
-                getSymplecticAandB<V_DIM, P_DIM>(t, x, *x_next, u, A_sym, B_sym);
+                getSymplecticAandB<MANIFOLD>(t, x, *x_next, u, A_sym, B_sym);
 
                 integrateSensitivities(A_sym, B_sym, x, dX0In, dX0dt, t);
             }
@@ -294,15 +338,19 @@ private:
         };
     }
 
-    SYMPLECTIC_ENABLED getSymplecticAandB(const SCALAR& t,
-        const state_vector_t& x,
-        const state_vector_t& x_next,
+    CT_SYMPLECTIC_ENABLED(MANIFOLD)
+    getSymplecticAandB(const SCALAR& t,
+        const MANIFOLD& x,
+        const MANIFOLD& x_next,
         const control_vector_t& u,
         state_matrix_t& A_sym,
         state_control_matrix_t& B_sym)
     {
+        const size_t P_DIM = MANIFOLD::PosDim;
+        const size_t V_DIM = MANIFOLD::VelDim;
+
         // our implementation of symplectic integrators first updates the positions, we need to reconstruct an intermediate state accordingly
-        state_vector_t x_interm = x;
+        MANIFOLD x_interm = x;
         x_interm.template topRows<P_DIM>() = x_next.template topRows<P_DIM>();
 
         state_matrix_t Ac1 =
@@ -344,9 +392,10 @@ private:
         B_sym.template bottomRows<V_DIM>() = (B2 + dt_ * A21 * B1);
     }
 
-    SYMPLECTIC_DISABLED getSymplecticAandB(const SCALAR& t,
-        const state_vector_t& x,
-        const state_vector_t& x_next,
+    CT_SYMPLECTIC_DISABLED(MANIFOLD)
+    getSymplecticAandB(const SCALAR& t,
+        const MANIFOLD& x,
+        const MANIFOLD& x_next,
         const control_vector_t& u,
         state_matrix_t& A_sym,
         state_control_matrix_t& B_sym)
@@ -356,7 +405,3 @@ private:
 };
 }
 }
-
-
-#undef SYMPLECTIC_ENABLED
-#undef SYMPLECTIC_DISABLED

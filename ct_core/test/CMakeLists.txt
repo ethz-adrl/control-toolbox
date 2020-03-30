@@ -19,7 +19,7 @@ if(BUILD_TESTS)
     package_add_test(IntegratorComparison integration/IntegratorComparison.cpp)
     package_add_test(SymplecticIntegrationTest integration/SymplecticIntegrationTest.cpp)
     package_add_test(SystemDiscretizerTest integration/SystemDiscretizerTest.cpp)
-    #package_add_test(SensitivityTest integration/sensitivity/SensitivityTest.cpp) #TODO: make this a proper test
+    package_add_test(SensitivityTest integration/SensitivityTest.cpp)
     package_add_test(InterpolationTest InterpolationTest.cpp)
     package_add_test(DiscreteArrayTest DiscreteArrayTest.cpp)
     package_add_test(DiscreteTrajectoryTest DiscreteTrajectoryTest.cpp)

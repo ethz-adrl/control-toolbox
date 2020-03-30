@@ -6,13 +6,10 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <unsupported/Eigen/MatrixFunctions>
+#include <ct/core/systems/ControlledSystem.h>
+#include <ct/core/types/TypeMacros.h>
+#include "Sensitivity.h"
 
-#define SYMPLECTIC_ENABLED        \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V > 0 && P > 0), void>::type
-#define SYMPLECTIC_DISABLED       \
-    template <size_t V, size_t P> \
-    typename std::enable_if<(V <= 0 || P <= 0), void>::type
 
 namespace ct {
 namespace core {
@@ -24,56 +21,50 @@ namespace core {
  * \tparam STATE_DIM size of state vector
  * \tparam CONTROL_DIM size of input vector
  */
-template <size_t STATE_DIM,
-    size_t CONTROL_DIM,
-    size_t P_DIM = STATE_DIM / 2,
-    size_t V_DIM = STATE_DIM / 2,
-    typename SCALAR = double>
-class SensitivityApproximation : public Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM>
+class SensitivityApproximation : public Sensitivity<MANIFOLD, CONTROL_DIM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef StateMatrix<STATE_DIM, SCALAR> state_matrix_t;                              //!< state Jacobian type
-    typedef StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;  //!< input Jacobian type
+    static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
 
+    using Base = Sensitivity<MANIFOLD, CONTROL_DIM>;
 
-    //! constructor
+    using SCALAR = typename Base::SCALAR;
+    using Time_t = typename Base::Time_t;
+    using control_vector_t = typename Base::control_vector_t;
+    using state_matrix_t = typename Base::state_matrix_t;
+    using state_control_matrix_t = typename Base::state_control_matrix_t;
+
     SensitivityApproximation(const SCALAR& dt,
-        const std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem = nullptr,
+        const std::shared_ptr<LinearSystem<MANIFOLD, CONTROL_DIM, CONTINUOUS_TIME>>& linearSystem = nullptr,
         const SensitivityApproximationSettings::APPROXIMATION& approx =
             SensitivityApproximationSettings::APPROXIMATION::FORWARD_EULER)
         : linearSystem_(linearSystem), settings_(dt, approx)
     {
     }
 
-
-    //! constructor
     SensitivityApproximation(const SensitivityApproximationSettings& settings,
-        const std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem = nullptr)
+        const std::shared_ptr<LinearSystem<MANIFOLD, CONTROL_DIM, CONTINUOUS_TIME>>& linearSystem = nullptr)
         : linearSystem_(linearSystem), settings_(settings)
     {
     }
 
-
-    //! copy constructor
     SensitivityApproximation(const SensitivityApproximation& other) : settings_(other.settings_)
     {
         if (other.linearSystem_ != nullptr)
-            linearSystem_ = std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>(other.linearSystem_->clone());
+            linearSystem_ =
+                std::shared_ptr<LinearSystem<MANIFOLD, CONTROL_DIM, CONTINUOUS_TIME>>(other.linearSystem_->clone());
     }
 
-
-    //! destructor
     virtual ~SensitivityApproximation(){};
 
-
     //! deep cloning
-    virtual SensitivityApproximation<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>* clone() const override
+    virtual SensitivityApproximation<MANIFOLD, CONTROL_DIM>* clone() const override
     {
-        return new SensitivityApproximation<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(*this);
+        return new SensitivityApproximation<MANIFOLD, CONTROL_DIM>(*this);
     }
-
 
     //! update the approximation type for the discrete-time system
     virtual void setApproximation(const SensitivityApproximationSettings::APPROXIMATION& approx) override
@@ -81,16 +72,14 @@ public:
         settings_.approximation_ = approx;
     }
 
-
     //! retrieve the approximation type for the discrete-time system
     SensitivityApproximationSettings::APPROXIMATION getApproximation() const { return settings_.approximation_; }
     //! update the linear system
     virtual void setLinearSystem(
-        const std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>>& linearSystem) override
+        const std::shared_ptr<LinearSystem<MANIFOLD, CONTROL_DIM, CONTINUOUS_TIME>>& linearSystem) override
     {
         linearSystem_ = linearSystem;
     }
-
 
     //! update the time discretization
     virtual void setTimeDiscretization(const SCALAR& dt) override { settings_.dt_ = dt; }
@@ -106,13 +95,15 @@ public:
 	 * @param A the resulting linear system matrix A
 	 * @param B the resulting linear system matrix B
 	 */
-    virtual void getAandB(const StateVector<STATE_DIM, SCALAR>& x,
-        const ControlVector<CONTROL_DIM, SCALAR>& u,
-        const StateVector<STATE_DIM, SCALAR>& x_next,
-        const int n,
-        const size_t numSteps,
-        state_matrix_t& A,
-        state_control_matrix_t& B) override
+
+
+    void getDerivatives(state_matrix_t& A,
+        state_control_matrix_t& B,
+        const MANIFOLD& x,
+        const MANIFOLD& x_next,
+        const control_vector_t& u,
+        const size_t nSubsteps,
+        const Time_t n = Time_t(0)) override
     {
         if (linearSystem_ == nullptr)
             throw std::runtime_error("Error in SensitivityApproximation: linearSystem not properly set.");
@@ -134,7 +125,7 @@ public:
             }
             case SensitivityApproximationSettings::APPROXIMATION::SYMPLECTIC_EULER:
             {
-                symplecticEuler<V_DIM, P_DIM>(x, u, x_next, n, A, B);
+                symplecticEuler<MANIFOLD>(x, u, x_next, n, A, B);
                 break;
             }
             case SensitivityApproximationSettings::APPROXIMATION::TUSTIN:
@@ -174,10 +165,37 @@ public:
         }  // end switch
     }
 
+    void getDerivatives(state_matrix_t& A,
+        state_control_matrix_t& B,
+        const MANIFOLD& x,
+        const control_vector_t& u,
+        const Time_t n = Time_t(0)) override
+    {
+        getDerivatives(A, B, x, x, u, 1, n);
+    }
+
+    const state_matrix_t& getDerivativeState(const MANIFOLD& m,
+        const control_vector_t& u,
+        const Time_t n = Time_t(0)) override
+    {
+        throw std::runtime_error(
+            "getDerivativeState not implemented for SenstivityApproximation. You need to use getDerivatives() for "
+            "efficiency reasons.");
+    }
+
+    const state_control_matrix_t& getDerivativeControl(const MANIFOLD& m,
+        const control_vector_t& u,
+        const Time_t n = Time_t(0)) override
+    {
+        throw std::runtime_error(
+            "getDerivativeState not implemented for SenstivityApproximation. You need to use getDerivatives() for "
+            "efficiency reasons.");
+    }
+
 
 private:
-    void forwardEuler(const StateVector<STATE_DIM, SCALAR>& x_n,
-        const ControlVector<CONTROL_DIM, SCALAR>& u_n,
+    void forwardEuler(const MANIFOLD& x_n,
+        const control_vector_t& u_n,
         const int& n,
         state_matrix_t& A_discr,
         state_control_matrix_t& B_discr)
@@ -194,8 +212,8 @@ private:
         B_discr = settings_.dt_ * B_cont;
     }
 
-    void backwardEuler(const StateVector<STATE_DIM, SCALAR>& x_n,
-        const ControlVector<CONTROL_DIM, SCALAR>& u_n,
+    void backwardEuler(const MANIFOLD& x_n,
+        const control_vector_t& u_n,
         const int& n,
         state_matrix_t& A_discr,
         state_control_matrix_t& B_discr)
@@ -217,9 +235,9 @@ private:
     }
 
 
-    void matrixExponential(const StateVector<STATE_DIM, SCALAR>& x_n,
-        const ControlVector<CONTROL_DIM, SCALAR>& u_n,
-        const int& n,
+    void matrixExponential(const MANIFOLD& x_n,
+        const control_vector_t& u_n,
+        const Time_t& n,
         state_matrix_t& A_discr,
         state_control_matrix_t& B_discr)
     {
@@ -245,9 +263,10 @@ private:
 	 * @param A_sym resulting symplectic discrete-time A matrix
 	 * @param B_sym A_sym resulting symplectic discrete-time B matrix
 	 */
-    SYMPLECTIC_ENABLED symplecticEuler(const StateVector<STATE_DIM, SCALAR>& x,
-        const ControlVector<CONTROL_DIM, SCALAR>& u,
-        const StateVector<STATE_DIM, SCALAR>& x_next,
+    CT_SYMPLECTIC_ENABLED(MANIFOLD)
+    symplecticEuler(const MANIFOLD& x,
+        const control_vector_t& u,
+        const MANIFOLD& x_next,
         const int& n,
         state_matrix_t& A_sym,
         state_control_matrix_t& B_sym)
@@ -255,8 +274,8 @@ private:
         const SCALAR& dt = settings_.dt_;
 
         // our implementation of symplectic integrators first updates the positions, we need to reconstruct an intermediate state accordingly
-        StateVector<STATE_DIM, SCALAR> x_interm = x;
-        x_interm.topRows(P_DIM) = x_next.topRows(P_DIM);
+        MANIFOLD x_interm = x;
+        x_interm.topRows(MANIFOLD::PosDim) = x_next.topRows(MANIFOLD::PosDim);
 
         state_matrix_t Ac1;          // continuous time A matrix for start state and control
         state_control_matrix_t Bc1;  // continuous time B matrix for start state and control
@@ -266,7 +285,7 @@ private:
         state_control_matrix_t Bc2;  // continuous time B matrix for intermediate state and control
         linearSystem_->getDerivatives(Ac2, Bc2, x_interm, u, n * dt);
 
-        getSymplecticEulerApproximation<V_DIM, P_DIM>(Ac1, Ac2, Bc1, Bc2, A_sym, B_sym);
+        getSymplecticEulerApproximation<MANIFOLD>(Ac1, Ac2, Bc1, Bc2, A_sym, B_sym);
     }
 
 
@@ -281,8 +300,9 @@ private:
 	 * @param A_sym resulting symplectic discrete-time A matrix
 	 * @param B_sym A_sym resulting symplectic discrete-time B matrix
 	 */
-    SYMPLECTIC_ENABLED symplecticEuler(const StateVector<STATE_DIM, SCALAR>& x,
-        const ControlVector<CONTROL_DIM, SCALAR>& u,
+    CT_SYMPLECTIC_ENABLED(MANIFOLD)
+    symplecticEuler(const MANIFOLD& x,
+        const control_vector_t& u,
         const int& n,
         state_matrix_t& A_sym,
         state_control_matrix_t& B_sym)
@@ -293,7 +313,7 @@ private:
         state_control_matrix_t Bc1;  // continuous time B matrix for start state and control
         linearSystem_->getDerivatives(Ac1, Bc1, x, u, n * dt);
 
-        getSymplecticEulerApproximation<V_DIM, P_DIM>(Ac1, Ac1, Bc1, Bc1, A_sym, B_sym);
+        getSymplecticEulerApproximation<MANIFOLD>(Ac1, Ac1, Bc1, Bc1, A_sym, B_sym);
     }
 
 
@@ -306,7 +326,8 @@ private:
 	 * @param A_sym	resulting discrete-time symplectic A matrix
 	 * @param B_sym resulting discrete-time symplectic B matrix
 	 */
-    SYMPLECTIC_ENABLED getSymplecticEulerApproximation(const state_matrix_t& Ac1,
+    CT_SYMPLECTIC_ENABLED(MANIFOLD)
+    getSymplecticEulerApproximation(const state_matrix_t& Ac1,
         const state_matrix_t& Ac2,
         const state_control_matrix_t& Bc1,
         const state_control_matrix_t& Bc2,
@@ -314,6 +335,9 @@ private:
         state_control_matrix_t& B_sym)
     {
         const SCALAR& dt = settings_.dt_;
+
+        const size_t P_DIM = MANIFOLD::PosDim;
+        const size_t V_DIM = MANIFOLD::VelDim;
 
         typedef Eigen::Matrix<SCALAR, P_DIM, P_DIM> p_matrix_t;
         typedef Eigen::Matrix<SCALAR, V_DIM, V_DIM> v_matrix_t;
@@ -346,9 +370,10 @@ private:
 
 
     //! gets instantiated in case the system is not symplectic
-    SYMPLECTIC_DISABLED symplecticEuler(const StateVector<STATE_DIM, SCALAR>& x_n,
-        const ControlVector<CONTROL_DIM, SCALAR>& u_n,
-        const StateVector<STATE_DIM, SCALAR>& x_next,
+    CT_SYMPLECTIC_DISABLED(MANIFOLD)
+    symplecticEuler(const MANIFOLD& x_n,
+        const control_vector_t& u_n,
+        const MANIFOLD& x_next,
         const int& n,
         state_matrix_t& A,
         state_control_matrix_t& B)
@@ -357,8 +382,9 @@ private:
     }
 
     //! gets instantiated in case the system is not symplectic
-    SYMPLECTIC_DISABLED symplecticEuler(const StateVector<STATE_DIM, SCALAR>& x,
-        const ControlVector<CONTROL_DIM, SCALAR>& u,
+    CT_SYMPLECTIC_DISABLED(MANIFOLD)
+    symplecticEuler(const MANIFOLD& x,
+        const control_vector_t& u,
         const int& n,
         state_matrix_t& A_sym,
         state_control_matrix_t& B_sym)
@@ -366,7 +392,8 @@ private:
         throw std::runtime_error("SensitivityApproximation : selected symplecticEuler but System is not symplectic.");
     }
 
-    SYMPLECTIC_DISABLED getSymplecticEulerApproximation(const state_matrix_t& Ac1,
+    CT_SYMPLECTIC_DISABLED(MANIFOLD)
+    getSymplecticEulerApproximation(const state_matrix_t& Ac1,
         const state_matrix_t& Ac2,
         const state_control_matrix_t& Bc1,
         const state_control_matrix_t& Bc2,
@@ -377,7 +404,7 @@ private:
     }
 
     //! shared_ptr to a continuous time linear system (system to be discretized)
-    std::shared_ptr<LinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>> linearSystem_;
+    std::shared_ptr<LinearSystem<MANIFOLD, CONTROL_DIM, CONTINUOUS_TIME>> linearSystem_;
 
     //! discretization settings
     SensitivityApproximationSettings settings_;
@@ -386,7 +413,3 @@ private:
 
 }  // namespace core
 }  // namespace ct
-
-
-#undef SYMPLECTIC_ENABLED
-#undef SYMPLECTIC_DISABLED
