@@ -20,7 +20,8 @@ int main(int argc, char** argv)
     const size_t control_dim = ct::core::SecondOrderSystem::CONTROL_DIM;  // = 1
 
     // create a state
-    ct::core::StateVector<state_dim> x;
+    using State = ct::core::EuclideanState<state_dim>;
+    State x;
 
     // we initialize it at a point with unit deflection and zero velocity
     x(0) = 1.0;
@@ -41,7 +42,7 @@ int main(int argc, char** argv)
     oscillator->setController(controller);
 
     // create an integrator
-    ct::core::Integrator<state_dim> integrator(oscillator, ct::core::IntegrationType::RK4);
+    ct::core::Integrator<State> integrator(oscillator, ct::core::IntegrationType::RK4);
 
     // simulate 1000 steps
     double dt = 0.001;

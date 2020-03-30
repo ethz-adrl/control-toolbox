@@ -13,7 +13,8 @@ int main(int argc, char** argv)
     const size_t state_dim = ct::core::SecondOrderSystem::STATE_DIM;  // = 2
 
     // create a state
-    ct::core::StateVector<state_dim> x;
+    using State = ct::core::EuclideanState<state_dim>; 
+    State x;
 
     // we initialize it at a point with unit deflection and zero velocity
     x(0) = 1.0;
@@ -24,7 +25,7 @@ int main(int argc, char** argv)
     std::shared_ptr<ct::core::SecondOrderSystem> oscillator(new ct::core::SecondOrderSystem(w_n));
 
     // create an integrator
-    ct::core::Integrator<state_dim> integrator(oscillator);
+    ct::core::Integrator<State> integrator(oscillator);
 
     // simulate 1000 steps
     double dt = 0.001;

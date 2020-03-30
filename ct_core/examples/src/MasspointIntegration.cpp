@@ -9,13 +9,14 @@
 int main(int argc, char** argv)
 {
     // a damped oscillator has two states, position and velocity
-    const size_t state_dim = Masspoint::STATE_DIM;  // = 2
+    const size_t state_dim = Masspoint::state_dim;  // = 2
 
     // create a state
-    ct::core::StateVector<state_dim> x;
+    using State = Masspoint::State;
+    State x;
 
-    // we initialize it at 0
-    x.setZero();
+    // we initialize it at 1
+    x << 1, 0;
 
     // create our mass point instance
     double mass = 1.0;
@@ -23,7 +24,7 @@ int main(int argc, char** argv)
     std::shared_ptr<Masspoint> masspoint(new Masspoint(mass, d));
 
     // create an integrator
-    ct::core::Integrator<state_dim> integrator(masspoint);
+    ct::core::Integrator<State> integrator(masspoint);
 
     // simulate 1000 steps
     double dt = 0.001;
