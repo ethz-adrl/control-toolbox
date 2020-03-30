@@ -339,12 +339,17 @@ typename std::enable_if<std::is_same<S, double>::value, void>::type Integrator<M
                     new internal::StepperODEInt<internal::runge_kutta_4_t<MANIFOLD>, MANIFOLD>());
             break;
         }
-
         case MODIFIED_MIDPOINT:
         {
-            integratorStepper_ =
-                std::shared_ptr<internal::StepperODEInt<internal::modified_midpoint_t<MANIFOLD>, MANIFOLD>>(
-                    new internal::StepperODEInt<internal::modified_midpoint_t<MANIFOLD>, MANIFOLD>());
+            if (is_euclidean<MANIFOLD>::value)
+            {
+                integratorStepper_ =
+                    std::shared_ptr<internal::StepperODEInt<internal::modified_midpoint_t<MANIFOLD>, MANIFOLD>>(
+                        new internal::StepperODEInt<internal::modified_midpoint_t<MANIFOLD>, MANIFOLD>());
+            }
+            else
+                throw std::runtime_error(
+                    "MODIFIED_MIDPOINT stepping not supported on manifolds. Use a different stepper.");
             break;
         }
 
@@ -366,7 +371,32 @@ template <typename MANIFOLD>
 template <typename M, typename std::enable_if<!(ct::core::is_real_euclidean<M>::value), bool>::type>
 void Integrator<MANIFOLD>::initializeAdaptiveSteppers(const IntegrationType& intType)
 {
-    // do nothing
+    switch (intType)
+    {
+        case ODE45:
+        {
+            throw std::runtime_error(
+                "Integrator ODE45 on manifolds currently not supported yet. Implementation of error measures in "
+                "manifIntegration.h required.");
+            break;
+        }
+        case RK5VARIABLE:
+        {
+            throw std::runtime_error(
+                "Integrator RK5VARIABLE on manifolds currently not supported yet. Implementation of error measures in "
+                "manifIntegration.h required.");
+            break;
+        }
+        case BULIRSCHSTOER:
+        {
+            throw std::runtime_error(
+                "Integrator BULIRSCHSTOER on manifolds currently not supported yet. Implementation of error measures "
+                "in manifIntegration.h required.");
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 template <typename MANIFOLD>

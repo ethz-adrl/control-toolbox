@@ -3,7 +3,7 @@ This file is part of the Control Toolbox (https://github.com/ethz-adrl/control-t
 Licensed under the BSD-2 license (see LICENSE file in main directory)
 **********************************************************************************************************************/
 
-//#include "IntegrationTest.h"
+#include "IntegrationTest.h"
 #ifdef CT_USE_MANIF
 #include "ManifoldIntegrationTest.h"
 #endif

@@ -19,53 +19,42 @@ const size_t control_dim = 6;
 class TestSystem : public ControlledSystem<Manifold, control_dim, CONTINUOUS_TIME>
 {
 public:
+    TestSystem(const Manifold m = Manifold::Identity()) : m_ref_(m) {}
     virtual TestSystem* clone() const override { return new TestSystem(); }
-    void computeControlledDynamics(const Manifold& state,
+    void computeControlledDynamics(const Manifold& m,
         const double& t,
-        const ControlVector<control_dim>& control,
+        const ControlVector<control_dim>& u,
         typename Manifold::Tangent& derivative) override
     {
-        derivative = control;
+        derivative = -1.0 * lift(m) + u;
     }
+
+    Manifold::Tangent lift(const Manifold& m) override { return m.rminus(m_ref_); }
+    Manifold retract(const Manifold::Tangent& t) override { return m_ref_.rplus(t); }
+private:
+    Manifold m_ref_;
 };
 
-TEST(ManifoldTest, EuclideanTraitsTest)
-{
-    using namespace ct::core;
-
-    static_assert(is_euclidean<Manifold>::value == false, "");
-    static_assert(is_euclidean<double>::value == false, "");
-    static_assert(is_euclidean<std::string>::value == false, "");
-
-    static_assert(is_euclidean<EuclideanState<2>>::value == true, "");
-    static_assert(is_euclidean<EuclideanState<control_dim, double>>::value == true, "");
-
-    static_assert(is_real_euclidean<EuclideanState<2>>::value, "");
-    static_assert(is_real_euclidean<EuclideanState<control_dim, double>>::value == true, "");
-
-    static_assert(is_real_euclidean<EuclideanState<2>>::value, "");
-    static_assert(is_real_euclidean<EuclideanState<control_dim, float>>::value == true, "");
-
-    static_assert(is_real_euclidean<EuclideanState<control_dim, int>>::value == false, "");
-    static_assert(is_real_euclidean<Manifold>::value == false, "");
-
-    ASSERT_TRUE(true);
-}
 
 
 TEST(ManifoldIntegrationTest, integrate_n_steps_comparison)
 {
-    const double dt = 0.001;
+    const double dt = 0.0001;
     // define integration times
     Time startTime = 0.0;
     size_t nsteps = 1.0 / dt;
 
     std::shared_ptr<ConstantController<Manifold, control_dim, CONTINUOUS_TIME>> ctrl(
         new ConstantController<Manifold, control_dim, CONTINUOUS_TIME>());
-    const auto randomControl = ControlVector<control_dim>::Random();
-    ctrl->setControl(randomControl);
+    const auto u = 0.5 * ControlVector<control_dim>::Ones();
+    ctrl->setControl(u);
 
-    std::shared_ptr<TestSystem> testSystem(new TestSystem());
+    // create a test reference point which is centered at 1 in the tangent space w.r.t. epsilon
+    Manifold::Tangent t_ref;
+    t_ref.coeffs() << 1.0, 1.0, 1.0, 1.0, 1.0, 1.0;
+    Manifold m_ref = t_ref.exp();
+
+    std::shared_ptr<TestSystem> testSystem(new TestSystem(m_ref));
     testSystem->setController(ctrl);
 
     using Integrator_t = Integrator<Manifold>;
@@ -79,6 +68,7 @@ TEST(ManifoldIntegrationTest, integrate_n_steps_comparison)
         // create an initial state
         Manifold initialState_euler_ct, initialState_rk4_ct, initialState_euler, initialState_rk4;
 
+        // INTEGRATION WITHOUT TRAJECTORY LOGGING
         {
             initialState_euler_ct.setIdentity();
             initialState_rk4_ct.setIdentity();
@@ -92,10 +82,11 @@ TEST(ManifoldIntegrationTest, integrate_n_steps_comparison)
 
             // compare different stepper results with 'integrate_n_steps'
             ASSERT_TRUE(initialState_euler_ct.isApprox(initialState_euler));
-            ASSERT_TRUE(initialState_euler_ct.isApprox(initialState_rk4));
-            ASSERT_TRUE(initialState_euler_ct.isApprox(initialState_rk4_ct));
+            ASSERT_TRUE(initialState_rk4.isApprox(initialState_rk4_ct));
+            ASSERT_TRUE(initialState_euler_ct.isApprox(initialState_rk4, 1e-4));
         }
 
+        // INTEGRATION WITH TRAJECTORY LOGGING
         {
             initialState_euler_ct.setIdentity();
             initialState_rk4_ct.setIdentity();
@@ -124,8 +115,8 @@ TEST(ManifoldIntegrationTest, integrate_n_steps_comparison)
             }
 
             ASSERT_TRUE(stateTrajectory_euler.back().isApprox(stateTrajectory_euler_ct.back()));
-            ASSERT_TRUE(stateTrajectory_euler.back().isApprox(stateTrajectory_rk4.back()));
-            ASSERT_TRUE(stateTrajectory_euler.back().isApprox(stateTrajectory_rk4_ct.back()));
+            ASSERT_TRUE(stateTrajectory_rk4.back().isApprox(stateTrajectory_rk4_ct.back()));
+            ASSERT_TRUE(stateTrajectory_euler.back().isApprox(stateTrajectory_rk4.back(), 1e-4));
         }
 
     } catch (std::exception& e)
@@ -146,10 +137,15 @@ TEST(ManifoldIntegrationTest, stepperTests)
     {
         std::shared_ptr<ConstantController<Manifold, control_dim, CONTINUOUS_TIME>> ctrl(
             new ConstantController<Manifold, control_dim, CONTINUOUS_TIME>());
-        const auto randomControl = ControlVector<control_dim>::Random();
-        ctrl->setControl(randomControl);
+        const auto u = 0.1 * ControlVector<control_dim>::Random();
+        ctrl->setControl(u);
 
-        std::shared_ptr<TestSystem> testSystem(new TestSystem());
+        // create a test reference point which is centered at 1 in the tangent space w.r.t. epsilon
+        Manifold::Tangent t_ref;
+        t_ref.coeffs() << 1.0, 1.0, 1.0, 1.0, 1.0, 1.0;
+        Manifold m_ref = t_ref.exp();
+
+        std::shared_ptr<TestSystem> testSystem(new TestSystem(m_ref));
         testSystem->setController(ctrl);
 
         std::vector<IntegratorPtr_t> integrators;
@@ -158,8 +154,9 @@ TEST(ManifoldIntegrationTest, stepperTests)
 
         // define integration times
         Time startTime = 0.0;
-        Time finalTime = startTime + 1.0;
-        size_t nsteps = 10000;
+        Time horizon = 1.0;
+        Time finalTime = startTime + horizon;
+        size_t nsteps = (size_t) horizon/ dt;
 
         // create an initial state
         Manifold initialState;
@@ -170,7 +167,6 @@ TEST(ManifoldIntegrationTest, stepperTests)
         integrators.push_back(IntegratorPtr_t(new Integrator_t(testSystem, EULER)));
         integrators.push_back(IntegratorPtr_t(new Integrator_t(testSystem, RK4)));
         integrators.push_back(IntegratorPtr_t(new Integrator_t(testSystem, RK78)));
-        integrators.push_back(IntegratorPtr_t(new Integrator_t(testSystem, MODIFIED_MIDPOINT)));
 
         // create trajectory containers
         size_t integratorFunctions = 4;  // integrate_const, integrate_n_steps, ...
@@ -228,13 +224,13 @@ TEST(ManifoldIntegrationTest, stepperTests)
                 if (j % 4 == 0 || j % 4 == 1)
                 {
                     // check equidistance
-                    ASSERT_NEAR(timeTrajectories[j][k] - timeTrajectories[j][k - 1], dt, 1e-6);
+                    ASSERT_NEAR(timeTrajectories[j][k] - timeTrajectories[j][k - 1], dt, 1e-5);
                 }
             }
 
             if (j > 1)
             {
-                ASSERT_TRUE(stateTrajectories[j].back().isApprox(stateTrajectories[j - 1].back()));
+                ASSERT_TRUE(stateTrajectories[j].back().isApprox(stateTrajectories[j - 1].back(), 1e-4));
             }
         }
 

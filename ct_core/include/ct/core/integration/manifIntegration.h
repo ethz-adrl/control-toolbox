@@ -7,11 +7,15 @@
 #include <boost/version.hpp>
 #include <ct/core/types/ManifoldState.h>
 
-// Necessary routines for manif matrices to work with vector_space_algebra from odeint
-// (that is, it lets odeint treat the manif correctly, knowing
-// how to add, multiply, compute the norm, etc)
+/**
+ * @brief  Necessary routines for manif matrices to work with vector_space_algebra from boost ODEINT
+ * 
+ * Lets boost ODEINT steppers treat the manif operations correctly, knowing how to add, multiply, etc.
+ * These operations will be used in the CT steppers, as well as in the manif_operations.h header
+ */
 namespace manif {
 
+// operator overload for adding manifolds
 template <typename MANIFOLD, typename TAN>
 ct::core::ManifoldState<MANIFOLD, TAN> operator+(const ct::core::ManifoldState<MANIFOLD, TAN>& a,
     const ct::core::ManifoldState<MANIFOLD, TAN>& b)
@@ -22,13 +26,17 @@ ct::core::ManifoldState<MANIFOLD, TAN> operator+(const ct::core::ManifoldState<M
 template <typename MANIFOLD, typename TAN>
 ct::core::ManifoldState<MANIFOLD, TAN> operator*(const double& s, const ct::core::ManifoldState<MANIFOLD, TAN>& m)
 {
-    return (m.log() * s).exp();
+#ifndef CT_DISABLE_NUMERIC_MANIFOLD_CHECKS  // set this definition for disabling checks
+    if (s != typename MANIFOLD::Scalar(1.0))
+        throw std::runtime_error("manifold operator* is not defined for scaling. Use different integrator.");
+#endif
+    return m;
 }
 
 template <typename TAN>
-TAN operator*(const typename internal::traits<TAN>::Scalar& s, const TAN& m)
+TAN operator*(const typename internal::traits<TAN>::Scalar& s, const TAN& t)
 {
-    return m * s;
+    return t * s;
 }
 
 }  // namespace manif

@@ -4,15 +4,17 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
 
-
 project(ct_core VERSION 3.0.2 LANGUAGES CXX)
-
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pthread -std=c++14 -Wall -Wfatal-errors")
 set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++14 -Wall -Wfatal-errors")
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
+option(CT_DISABLE_NUMERIC_MANIFOLD_CHECKS off)
+if(CT_DISABLE_NUMERIC_MANIFOLD_CHECKS)
+    list(APPEND ct_core_COMPILE_DEFINITIONS CT_DISABLE_NUMERIC_MANIFOLD_CHECKS)
+endif()
 
 set(ct_core_LIBS "")
 
@@ -118,13 +120,6 @@ if(USE_PRESPEC)
     endforeach()
 endif()
 
-
-## create ct_core libraries
-# handle explicit types
-#add_library(ct_core_explicit SHARED src/core/types/ExplicitTypes.cpp)
-#target_include_directories(ct_core_explicit PUBLIC ${ct_core_target_include_dirs})
-#target_compile_definitions(ct_core_explicit PUBLIC ${ct_core_COMPILE_DEFINITIONS})
-#target_link_libraries(ct_core_explicit ${ct_core_LIBS})
 
 # plotting
 add_library(ct_plot SHARED src/core/plot/plot.cpp)

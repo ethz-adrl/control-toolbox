@@ -134,13 +134,9 @@ private:
  *******************************************************************/
 
 template <typename SYM_MFD, size_t CONTROL_DIM>
-using IntegratorSymplecticEuler = IntegratorSymplectic<SYM_MFD,
-    CONTROL_DIM,
-    internal::symplectic_euler_t<SYM_MFD::PosDim, SYM_MFD::VelDim, typename SYM_MFD::Scalar>>;
+using IntegratorSymplecticEuler = IntegratorSymplectic<SYM_MFD, CONTROL_DIM, internal::symplectic_euler_t<SYM_MFD>>;
 
 template <typename SYM_MFD, size_t CONTROL_DIM>
-using IntegratorSymplecticRk = IntegratorSymplectic<SYM_MFD,
-    CONTROL_DIM,
-    internal::symplectic_rk_t<SYM_MFD::PosDim, SYM_MFD::VelDim, typename SYM_MFD::Scalar>>;
+using IntegratorSymplecticRk = IntegratorSymplectic<SYM_MFD, CONTROL_DIM, internal::symplectic_rk_t<SYM_MFD>>;
 }
 }
