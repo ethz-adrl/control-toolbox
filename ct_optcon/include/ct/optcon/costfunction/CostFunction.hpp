@@ -28,8 +28,7 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     using SCALAR = typename MANIFOLD::Scalar;
-
-    typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+    using control_vector_t = core::ControlVector<CONTROL_DIM, SCALAR>;
 
     /**
 	 * \brief Default constructor
@@ -93,7 +92,7 @@ public:
 	 */
     virtual SCALAR evaluateTerminal() = 0;
 
-    virtual void shiftTime(const SCALAR t);
+    virtual void shiftTime(const SCALAR t); // TODO: codesmell here
 
 
 protected:

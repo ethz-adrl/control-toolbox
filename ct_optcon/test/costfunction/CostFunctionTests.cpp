@@ -6,7 +6,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include <gtest/gtest.h>
 #include <ct/optcon/optcon.h>
 
-#include "ADTest_timeDependent.h"
+// #include "ADTest_timeDependent.h" // TODO: bring this back
 #include "CostFunctionTest.h"
 
 

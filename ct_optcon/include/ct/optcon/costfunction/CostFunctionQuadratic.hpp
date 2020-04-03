@@ -25,22 +25,22 @@ namespace optcon {
  * \f$ J(x,u,t) = \sum_{n=0}^{N_i} T_{i,n}(x,u,t) + \sum_{n=0}^{N_f} T_{i,f}(x,u,t) \f$
  * These terms can have arbitrary form.
  */
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD = MANIFOLD>
+template <typename MANIFOLD, size_t CONTROL_DIM>
 class CostFunctionQuadratic : public CostFunction<MANIFOLD, CONTROL_DIM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    using SCALAR_EVAL = typename MANIFOLD::Scalar;
     static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
+    using SCALAR_EVAL = typename MANIFOLD::Scalar;  // TODO: is there a better name than scalar_eval?
+    using Tangent_t = typename MANIFOLD::Tangent;
 
     using Base = CostFunction<MANIFOLD, CONTROL_DIM>;
-    using Tangent_t = typename MANIFOLD::Tangent;
+    using control_vector_t = typename Base::control_vector_t;
     typedef ct::core::StateMatrix<STATE_DIM, SCALAR_EVAL> state_matrix_t;
     typedef ct::core::ControlMatrix<CONTROL_DIM, SCALAR_EVAL> control_matrix_t;
     typedef ct::core::ControlStateMatrix<STATE_DIM, CONTROL_DIM, SCALAR_EVAL> control_state_matrix_t;
 
-    typedef typename Base::control_vector_t control_vector_t;
 
     /**
 	 * Constructor
@@ -57,7 +57,7 @@ public:
 	 * Clones the cost function.
 	 * @return
 	 */
-    virtual CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>* clone() const = 0;
+    virtual CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>* clone() const = 0;
 
     /**
 	 * Destructor
@@ -79,13 +79,6 @@ public:
 	 * @return
 	 */
     virtual size_t addFinalTerm(std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM>> term, bool verbose = false);
-
-
-    virtual void addIntermediateADTerm(std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> term,
-        bool verbose = false);
-
-    virtual void addFinalADTerm(std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> term,
-        bool verbose = false);
 
     /**
 	 * \brief Loads cost function from config file
@@ -172,13 +165,13 @@ public:
     //! compare the control derivative against numerical differentiation
     bool controlDerivativeIntermediateTest(bool verbose = false);
 
-    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> getIntermediateTermById(const size_t id);
+    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM>> getIntermediateTermById(const size_t id);
 
-    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> getFinalTermById(const size_t id);
+    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM>> getFinalTermById(const size_t id);
 
-    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> getIntermediateTermByName(const std::string& name);
+    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM>> getIntermediateTermByName(const std::string& name);
 
-    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> getFinalTermByName(const std::string& name);
+    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM>> getFinalTermByName(const std::string& name);
 
     //! initialize the cost function (e.g. to be used in CostFunctionAD)
     virtual void initialize();
@@ -220,6 +213,7 @@ protected:
     //! evaluate terminal analytical control mixed state control derivatives
     control_state_matrix_t stateControlDerivativeTerminalBase();
 
+    // TODO: this is codesmell .... somewhat not nice that this is here
     //! compute the state derivative by numerical differentiation (can be used for testing)
     // euclidean case
     template <typename M = MANIFOLD, typename std::enable_if<ct::core::is_euclidean<M>::value, bool>::type>
@@ -251,9 +245,9 @@ protected:
 
 
 // impl for euclidean case (do not move to *-impl.h file)
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+template <typename MANIFOLD, size_t CONTROL_DIM>
 template <typename M, typename std::enable_if<ct::core::is_euclidean<M>::value, bool>::type>
-auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateDerivativeIntermediateNumDiff() -> Tangent_t
+auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediateNumDiff() -> Tangent_t
 {
     using state_vector_t = ct::core::StateVector<STATE_DIM, SCALAR_EVAL>;
 
@@ -301,18 +295,17 @@ auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateDerivativeI
     return dFdx;
 }
 // impl for manifold case (do not move to *-impl.h file)
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+template <typename MANIFOLD, size_t CONTROL_DIM>
 template <typename M, typename std::enable_if<!(ct::core::is_euclidean<M>::value), bool>::type>
-auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateDerivativeIntermediateNumDiff() -> Tangent_t
+auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediateNumDiff() -> Tangent_t
 {
     throw std::runtime_error("stateDerivativeIntermediateNumDiff not implemented for manifold case.");
 }
 
 // impl for euclidean case (do not move to *-impl.h file)
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+template <typename MANIFOLD, size_t CONTROL_DIM>
 template <typename M, typename std::enable_if<ct::core::is_euclidean<M>::value, bool>::type>
-auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlDerivativeIntermediateNumDiff()
-    -> control_vector_t
+auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::controlDerivativeIntermediateNumDiff() -> control_vector_t
 {
     using state_vector_t = ct::core::StateVector<STATE_DIM, SCALAR_EVAL>;
 
@@ -360,10 +353,9 @@ auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlDerivativ
     return dFdu;
 }
 // impl for manifold case (do not move to *-impl.h file)
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+template <typename MANIFOLD, size_t CONTROL_DIM>
 template <typename M, typename std::enable_if<!(ct::core::is_euclidean<M>::value), bool>::type>
-auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlDerivativeIntermediateNumDiff()
-    -> control_vector_t
+auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::controlDerivativeIntermediateNumDiff() -> control_vector_t
 {
     throw std::runtime_error("controlDerivativeIntermediateNumDiff not implemented for manifold case.");
 }

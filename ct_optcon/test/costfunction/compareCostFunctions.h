@@ -11,17 +11,9 @@ namespace example {
 
 /*!
  * @brief This method is called from different unit tests in order to compare the cost, first and second order gradients of two cost functions
- * @param costFunction the first cost function to be compared
- * @param costFunction2 the second cost function to be compared
  */
-template <typename manifold1,
-    size_t control_dim1,
-    typename ad_manifold1,
-    typename manifold2,
-    size_t control_dim2,
-    typename ad_manifold2>
-void compareCostFunctionOutput(CostFunctionQuadratic<manifold1, control_dim1, ad_manifold1>& costFunction,
-    CostFunctionQuadratic<manifold2, control_dim2, ad_manifold2>& costFunction2)
+template <typename T1, typename T2>
+void compareCostFunctionOutput(T1& costFunction, T2& costFunction2)
 {
     ASSERT_NEAR(costFunction.evaluateIntermediate(), costFunction2.evaluateIntermediate(), 1e-9);
     ASSERT_NEAR(costFunction.evaluateTerminal(), costFunction2.evaluateTerminal(), 1e-9);

@@ -8,14 +8,14 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::CostFunctionQuadratic()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::CostFunctionQuadratic()
 {
     eps_ = sqrt(Eigen::NumTraits<SCALAR_EVAL>::epsilon());
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::CostFunctionQuadratic(const CostFunctionQuadratic& arg)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::CostFunctionQuadratic(const CostFunctionQuadratic& arg)
     : CostFunction<MANIFOLD, CONTROL_DIM>(arg), eps_(arg.eps_), doubleSidedDerivative_(arg.doubleSidedDerivative_)
 {
     intermediateCostAnalytical_.resize(arg.intermediateCostAnalytical_.size());
@@ -34,78 +34,61 @@ CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::CostFunctionQuadratic
     }
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::~CostFunctionQuadratic()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::~CostFunctionQuadratic()
 {
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-void CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::addIntermediateADTerm(
-    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> term,
-    bool verbose)
-{
-    throw std::runtime_error("CostFunctionQuadratic: addIntermediateADTerm() not implemented");
-}
-
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-void CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::addFinalADTerm(
-    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> term,
-    bool verbose)
-{
-    throw std::runtime_error("CostFunctionQuadratic: addFinalADTerm() not implemented");
-}
-
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-void CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::loadFromConfigFile(const std::string& filename,
-    bool verbose)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::loadFromConfigFile(const std::string& filename, bool verbose)
 {
     throw std::runtime_error("not implemented");
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::control_vector_t
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlDerivativeTerminal()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::control_vector_t
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::controlDerivativeTerminal()
 {
     throw std::runtime_error("controlDerivativeTerminal() not implemented in CostFunctionQuadratic");
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::control_matrix_t
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlSecondDerivativeTerminal()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::control_matrix_t
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::controlSecondDerivativeTerminal()
 {
     throw std::runtime_error("CostFunctionQuadratic: controlSecondDerivativeTerminal() not implemented");
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::control_state_matrix_t
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateControlDerivativeTerminal()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::control_state_matrix_t
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateControlDerivativeTerminal()
 {
     throw std::runtime_error("stateControlDerivativeTerminal() not implemented");
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-void CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::updateReferenceState(const MANIFOLD& x_ref)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::updateReferenceState(const MANIFOLD& x_ref)
 {
     for (auto costIntermediate : intermediateCostAnalytical_)
         costIntermediate->updateReferenceState(x_ref);
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-void CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::updateFinalState(const MANIFOLD& x_final)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::updateFinalState(const MANIFOLD& x_final)
 {
     for (auto costFinal : finalCostAnalytical_)
         costFinal->updateReferenceState(x_final);
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-void CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::updateReferenceControl(const control_vector_t& u_ref)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::updateReferenceControl(const control_vector_t& u_ref)
 {
     for (auto costIntermediate : intermediateCostAnalytical_)
         costIntermediate->updateReferenceControl(u_ref);
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-bool CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateDerivativeIntermediateTest(bool verbose)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+bool CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediateTest(bool verbose)
 {
     auto derivative = stateDerivativeIntermediate();
     auto derivativeNd = stateDerivativeIntermediateNumDiff();
@@ -117,8 +100,8 @@ bool CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateDerivativeI
     return (derivative.isApprox(derivativeNd, 1e-6));
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-bool CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlDerivativeIntermediateTest(bool verbose)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+bool CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::controlDerivativeIntermediateTest(bool verbose)
 {
     control_vector_t derivative = controlDerivativeIntermediate();
     control_vector_t derivativeNd = controlDerivativeIntermediateNumDiff();
@@ -130,23 +113,23 @@ bool CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlDerivativ
     return (derivative.isApprox(derivativeNd, 1e-6));
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>>
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::getIntermediateTermById(const size_t id)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM>> CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::getIntermediateTermById(
+    const size_t id)
 {
     return intermediateCostAnalytical_[id];
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>>
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::getFinalTermById(const size_t id)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM>> CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::getFinalTermById(
+    const size_t id)
 {
     return finalCostAnalytical_[id];
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>>
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::getIntermediateTermByName(const std::string& name)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM>>
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::getIntermediateTermByName(const std::string& name)
 {
     for (auto term : intermediateCostAnalytical_)
         if (term->getName() == name)
@@ -155,9 +138,9 @@ CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::getIntermediateTermBy
     throw std::runtime_error("Term " + name + " not found in the CostFunctionQuadratic");
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>>
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::getFinalTermByName(const std::string& name)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM>> CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::getFinalTermByName(
+    const std::string& name)
 {
     for (auto term : finalCostAnalytical_)
         if (term->getName() == name)
@@ -167,8 +150,8 @@ CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::getFinalTermByName(co
 }
 
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-void CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::initialize()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::initialize()
 {
     /*!
 	 * do nothing at all
@@ -177,8 +160,8 @@ void CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::initialize()
 
 
 // add terms
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-size_t CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::addIntermediateTerm(
+template <typename MANIFOLD, size_t CONTROL_DIM>
+size_t CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::addIntermediateTerm(
     std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM>> term,
     bool verbose)
 {
@@ -192,9 +175,8 @@ size_t CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::addIntermediat
     return intermediateCostAnalytical_.size() - 1;
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-size_t CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::addFinalTerm(
-    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM>> term,
+template <typename MANIFOLD, size_t CONTROL_DIM>
+size_t CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::addFinalTerm(std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM>> term,
     bool verbose)
 {
     finalCostAnalytical_.push_back(term);
@@ -208,8 +190,8 @@ size_t CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::addFinalTerm(
 }
 
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::evaluateIntermediateBase() -> SCALAR_EVAL
+template <typename MANIFOLD, size_t CONTROL_DIM>
+auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::evaluateIntermediateBase() -> SCALAR_EVAL
 {
     SCALAR_EVAL y = SCALAR_EVAL(0.0);
 
@@ -226,8 +208,8 @@ auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::evaluateIntermed
 }
 
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::evaluateTerminalBase() -> SCALAR_EVAL
+template <typename MANIFOLD, size_t CONTROL_DIM>
+auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::evaluateTerminalBase() -> SCALAR_EVAL
 {
     SCALAR_EVAL y = SCALAR_EVAL(0.0);
 
@@ -238,8 +220,8 @@ auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::evaluateTerminal
 }
 
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateDerivativeIntermediateBase() -> Tangent_t
+template <typename MANIFOLD, size_t CONTROL_DIM>
+auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediateBase() -> Tangent_t
 {
     Tangent_t derivative;
     derivative.setZero();
@@ -257,8 +239,8 @@ auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateDerivativeI
 }
 
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateDerivativeTerminalBase() -> Tangent_t
+template <typename MANIFOLD, size_t CONTROL_DIM>
+auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeTerminalBase() -> Tangent_t
 {
     Tangent_t derivative;
     derivative.setZero();
@@ -269,9 +251,9 @@ auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateDerivativeT
     return derivative;
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::state_matrix_t
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateSecondDerivativeIntermediateBase()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::state_matrix_t
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateSecondDerivativeIntermediateBase()
 {
     state_matrix_t derivative;
     derivative.setZero();
@@ -288,9 +270,9 @@ CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateSecondDerivative
     return derivative;
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::state_matrix_t
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateSecondDerivativeTerminalBase()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::state_matrix_t
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateSecondDerivativeTerminalBase()
 {
     state_matrix_t derivative;
     derivative.setZero();
@@ -302,9 +284,9 @@ CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateSecondDerivative
 }
 
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::control_vector_t
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlDerivativeIntermediateBase()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::control_vector_t
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::controlDerivativeIntermediateBase()
 {
     control_vector_t derivative;
     derivative.setZero();
@@ -321,9 +303,9 @@ CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlDerivativeInte
     return derivative;
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::control_vector_t
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlDerivativeTerminalBase()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::control_vector_t
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::controlDerivativeTerminalBase()
 {
     control_vector_t derivative;
     derivative.setZero();
@@ -335,9 +317,9 @@ CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlDerivativeTerm
 }
 
 // get control second derivatives
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::control_matrix_t
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlSecondDerivativeIntermediateBase()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::control_matrix_t
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::controlSecondDerivativeIntermediateBase()
 {
     control_matrix_t derivative;
     derivative.setZero();
@@ -354,9 +336,9 @@ CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlSecondDerivati
     return derivative;
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::control_matrix_t
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlSecondDerivativeTerminalBase()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::control_matrix_t
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::controlSecondDerivativeTerminalBase()
 {
     control_matrix_t derivative;
     derivative.setZero();
@@ -368,9 +350,9 @@ CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlSecondDerivati
 }
 
 // get state-control derivatives
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::control_state_matrix_t
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateControlDerivativeIntermediateBase()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::control_state_matrix_t
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateControlDerivativeIntermediateBase()
 {
     control_state_matrix_t derivative;
     derivative.setZero();
@@ -387,9 +369,9 @@ CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateControlDerivativ
     return derivative;
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::control_state_matrix_t
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateControlDerivativeTerminalBase()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::control_state_matrix_t
+CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateControlDerivativeTerminalBase()
 {
     control_state_matrix_t derivative;
     derivative.setZero();

@@ -12,7 +12,7 @@ namespace optcon {
 
 template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
 CostFunctionAD<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::CostFunctionAD()
-    : CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>(),
+    : CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>(),
       stateControlTime_(Eigen::Matrix<SCALAR_EVAL, STATE_DIM + CONTROL_DIM + 1, 1>::Zero())
 {
     intermediateFun_ = [&](const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM + 1, 1>& stateInputTime) {
@@ -31,7 +31,7 @@ CostFunctionAD<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::CostFunctionAD()
 
 template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
 CostFunctionAD<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::CostFunctionAD(const CostFunctionAD& arg)
-    : CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>(arg),
+    : CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>(arg),
       stateControlTime_(arg.stateControlTime_),
       intermediateFun_(arg.intermediateFun_),
       finalFun_(arg.finalFun_)
@@ -256,8 +256,7 @@ auto CostFunctionAD<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlDerivativeTermin
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-auto
-CostFunctionAD<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateSecondDerivativeIntermediate() -> state_matrix_t
+auto CostFunctionAD<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateSecondDerivativeIntermediate() -> state_matrix_t
 {
     Eigen::Matrix<SCALAR_EVAL, 1, 1> w;
     w << SCALAR_EVAL(1.0);

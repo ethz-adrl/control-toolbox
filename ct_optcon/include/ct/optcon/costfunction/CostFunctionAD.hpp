@@ -34,19 +34,20 @@ namespace optcon {
  * Unit test \ref ADTest.cpp illustrates the use of a CostFunctionAD.
  */
 template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-class CostFunctionAD : public CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>
+class CostFunctionAD : public CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
 
-    using Base = CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>;
+    using Base = CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>;
 
     typedef core::DerivativesCppadJIT<STATE_DIM + CONTROL_DIM + 1, 1> JacCG;
 
     typedef typename JacCG::CG_SCALAR CGScalar;
-    static_assert(std::is_same<typename AD_MANIFOLD::Scalar, CGScalar>::value, "scalar types do not match");
+    static_assert(std::is_same<typename AD_MANIFOLD::Scalar, CGScalar>::value,
+        "scalar types do not match- costfunction AD works only with ADCGScalar.");
     typedef Eigen::Matrix<CGScalar, 1, 1> MatrixCg;
 
     using state_matrix_t = typename Base::state_matrix_t;
@@ -106,7 +107,7 @@ public:
 	 * @return
 	 */
     void addIntermediateADTerm(std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> term,
-        bool verbose = false) override;
+        bool verbose = false);
 
     /**
 	 * \brief Add a final, auto-differentiable term
@@ -117,8 +118,7 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-    void addFinalADTerm(std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> term,
-        bool verbose = false) override;
+    void addFinalADTerm(std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> term, bool verbose = false);
 
     void setCurrentStateAndControl(const MANIFOLD& x, const control_vector_t& u, const SCALAR_EVAL& t = 0.0) override;
 
