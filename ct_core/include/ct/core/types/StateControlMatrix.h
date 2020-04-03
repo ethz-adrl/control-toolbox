@@ -36,5 +36,8 @@ public:
     const Base& toImplementation() const { return *this; }
 };
 
+template <size_t STATE_DIM, size_t CONTROL_DIM, class SCALAR = double>
+using ControlStateMatrix = StateControlMatrix<CONTROL_DIM, STATE_DIM, SCALAR>;
+
 } /* namespace core */
 } /* namespace ct */

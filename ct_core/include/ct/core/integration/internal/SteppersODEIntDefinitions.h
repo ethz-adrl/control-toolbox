@@ -21,9 +21,9 @@ namespace internal {
  * Based on the MANIFOLD in use, it either selects the default_operations by boost for the 
  * Euclidean case, or the custom CT implementation for manif operations.
  */
-#define SELECT_OPERATIONS(MANIFOLD)                                                                      \
-    typename std::conditional<is_euclidean<MANIFOLD>::value, boost::numeric::odeint::default_operations, \
-        boost::numeric::odeint::manif_operations>::type
+#define SELECT_OPERATIONS(MANIFOLD)                                                               \
+    typename std::conditional_t<is_euclidean<MANIFOLD>::value, boost::numeric::odeint::default_operations, \
+        boost::numeric::odeint::manif_operations>
 
 //! Simple Euler stepper, uses specialized operations set based on the manifold in use.
 template <typename MANIFOLD>

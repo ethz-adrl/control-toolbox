@@ -26,22 +26,22 @@ namespace optcon {
  *
  * An example for an implementation of a custom term is given in \ref TermQuadratic.hpp
  **/
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, typename SCALAR = SCALAR_EVAL>
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD = MANIFOLD>
 class TermBase
 {
-protected:
-    //! a name identifier for this term
-    std::string name_;
-    //! time activations for this term
-    std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>> c_i_;
-
 public:
-    typedef Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM> state_matrix_t;
-    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
-    typedef Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM> state_matrix_double_t;
-    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM> control_matrix_double_t;
-    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, STATE_DIM> control_state_matrix_double_t;
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    using SCALAR = typename AD_MANIFOLD::Scalar;
+    //!< define output scalar type of resulting evaluations
+    using SCALAR_EVAL = typename MANIFOLD::Scalar;
+
+    static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
+
+    using state_matrix_t = ct::core::StateMatrix<STATE_DIM, SCALAR_EVAL>;
+    using control_matrix_t = ct::core::ControlMatrix<CONTROL_DIM, SCALAR_EVAL>;
+    using control_state_matrix_t = ct::core::ControlStateMatrix<STATE_DIM, CONTROL_DIM, SCALAR_EVAL>;
+
 
     /**
 	 * \brief Default constructor
@@ -59,7 +59,7 @@ public:
 	 * \brief Deep-copy term
 	 * @return
 	 */
-    virtual TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone() const = 0;
+    virtual TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>* clone() const = 0;
 
     /**
 	 * \brief Destructor
@@ -75,24 +75,9 @@ public:
 	 *
 	 * @return     The evaluatated cost term
 	 */
-    virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
-        const Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& u,
+    virtual SCALAR evaluate(const AD_MANIFOLD& x,
+        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
         const SCALAR& t) = 0;
-
-#ifdef CPPADCG
-    /**
-	 * @brief      The evaluate method used for jit compilation in CostfunctionAD
-	 *
-	 * @param[in]  x     The state vector
-	 * @param[in]  u     The control vector
-	 * @param[in]  t     The time
-	 *
-	 * @return     The evaluated cost
-	 */
-    virtual ct::core::ADCGScalar evaluateCppadCg(const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
-        const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
-        ct::core::ADCGScalar t);
-#endif
 
     /**
 	 * @brief      Gets called by the analytical costfunction. Adds time
@@ -104,9 +89,10 @@ public:
 	 *
 	 * @return     The evaluatated cost term
 	 */
-    SCALAR_EVAL eval(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& x,
-        const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, 1>& u,
-        const SCALAR_EVAL& t);
+    //SCALAR_EVAL eval(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& x,
+    //    const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, 1>& u,
+    //    const SCALAR_EVAL& t);
+    // REPLACE by: computeActivation(t) * evaluate(x, u, t);
 
     /**
 	 * \brief Returns if term is non-zero at a specific time
@@ -118,32 +104,30 @@ public:
     virtual bool isActiveAtTime(SCALAR_EVAL t);
 
     //! compute time activation
-    SCALAR_EVAL computeActivation(SCALAR_EVAL t);
+    SCALAR_EVAL computeActivation(const SCALAR_EVAL t);
 
     //! compute derivative of this cost term w.r.t. the state
-    virtual core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(
-        const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    virtual core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
     //! compute second order derivative of this cost term w.r.t. the state
-    virtual state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    virtual state_matrix_t stateSecondDerivative(const MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
     //! compute derivative of this cost term w.r.t. the control input
-    virtual core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(
-        const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    virtual core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
     //! compute second order derivative of this cost term w.r.t. the control input
-    virtual control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    virtual control_matrix_t controlSecondDerivative(const MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
     //! compute the cross-term derivative (state-control) of this cost function term
-    virtual control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    virtual control_state_matrix_t stateControlDerivative(const MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
@@ -169,13 +153,19 @@ public:
     void setName(const std::string& termName);
 
     //! updates the reference state for this term
-    virtual void updateReferenceState(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState);
+    virtual void updateReferenceState(const MANIFOLD& newRefState);
 
     //! updates the reference control for this term
-    virtual void updateReferenceControl(const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, 1>& newRefControl);
+    virtual void updateReferenceControl(const ct::core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& newRefControl);
 
     //! retrieve this term's current reference state
-    virtual Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> getReferenceState() const;
+    virtual MANIFOLD getReferenceState() const;
+
+protected:
+    //! a name identifier for this term
+    std::string name_;
+    //! time activations for this term
+    std::shared_ptr<ct::core::tpl::ActivationBase<SCALAR_EVAL>> c_i_;
 };
 
 }  // namespace optcon

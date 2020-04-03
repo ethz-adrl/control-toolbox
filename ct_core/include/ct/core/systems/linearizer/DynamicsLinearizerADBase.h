@@ -8,6 +8,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #ifdef CPPADCG
 
 #include <ct/core/internal/autodiff/SparsityPattern.h>
+#include <ct/core/internal/traits/EvaluatorOutTypeTraits.h>
 
 namespace ct {
 namespace core {
@@ -40,11 +41,7 @@ public:
         "SCALAR template parameter in ADLinearizerBase should either be of CppAD::AD<XX> or "
         "CppAD::AD<CppAD::cg::XX> type with XX being float or double");
 
-    //!< define scalar type of resulting linear system
-    using OUT_SCALAR = typename std::conditional<(std::is_same<SCALAR, CppAD::AD<double>>::value) ||
-                                                     (std::is_same<SCALAR, CppAD::AD<CppAD::cg::CG<double>>>::value),
-        double,
-        float>::type;
+    using OUT_SCALAR = typename ct::core::get_out_type<SCALAR>::type;
 
     typedef ControlVector<CONTROL_DIM, OUT_SCALAR> control_vector_t;
     typedef ControlVector<CONTROL_DIM, SCALAR> control_vector_ad_t;

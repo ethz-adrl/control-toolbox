@@ -85,8 +85,10 @@ public:
      * @return Jacobian wrt state
      */
     //! implementation for the euclidean case
-    template <typename M = MANIFOLD, typename std::enable_if<ct::core::is_euclidean<M>::value, bool>::type = true>
-    const state_matrix_t& getDerivativeState(const MANIFOLD& x, const control_vector_t& u, const TIME t = TIME(0))
+    template <typename M = MANIFOLD>
+    const std::enable_if_t<is_euclidean<M>::value, state_matrix_t>& getDerivativeState(const MANIFOLD& x,
+        const control_vector_t& u,
+        const TIME t = TIME(0))
     {
         if (!doubleSidedDerivative_)
             dynamics_fct_(x, t, u, res_ref_);
@@ -128,8 +130,10 @@ public:
     }
 
     // implementation for the non-euclidean, general manifold case case
-    template <typename M = MANIFOLD, typename std::enable_if<!(ct::core::is_euclidean<M>::value), bool>::type = true>
-    const state_matrix_t& getDerivativeState(const MANIFOLD& m, const control_vector_t& u, const TIME t = TIME(0))
+    template <typename M = MANIFOLD>
+    const std::enable_if_t<!(is_euclidean<M>::value), state_matrix_t>& getDerivativeState(const MANIFOLD& m,
+        const control_vector_t& u,
+        const TIME t = TIME(0))
     {
         if (!doubleSidedDerivative_)
             dynamics_fct_(m, t, u, res_ref_);
@@ -189,8 +193,8 @@ public:
      * @return Jacobian wrt input
      */
     // implementation for euclidean case
-    template <typename M = MANIFOLD, typename std::enable_if<ct::core::is_euclidean<M>::value, bool>::type = true>
-    const state_control_matrix_t& getDerivativeControl(const MANIFOLD& x,
+    template <typename M = MANIFOLD>
+    const std::enable_if_t<is_euclidean<M>::value, state_control_matrix_t>& getDerivativeControl(const MANIFOLD& x,
         const control_vector_t& u,
         const TIME t = TIME(0))
     {
@@ -235,8 +239,8 @@ public:
 
     // implementation for non-euclidean case
     // TODO: isn't that the same function as for the euclidean case?
-    template <typename M = MANIFOLD, typename std::enable_if<!(ct::core::is_euclidean<M>::value), bool>::type = true>
-    const state_control_matrix_t& getDerivativeControl(const MANIFOLD& x,
+    template <typename M = MANIFOLD>
+    const std::enable_if_t<!(is_euclidean<M>::value), state_control_matrix_t>& getDerivativeControl(const MANIFOLD& x,
         const control_vector_t& u,
         const TIME t = TIME(0))
     {

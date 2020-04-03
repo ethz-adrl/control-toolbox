@@ -13,4 +13,5 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "internal/traits/TraitSelector.h"
 #include "internal/traits/TraitSelectorSpecs.h"
 #include "internal/traits/DoubleTrait.h"
+#include "internal/traits/EvaluatorOutTypeTraits.h"
 

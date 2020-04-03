@@ -30,7 +30,7 @@ public:
     using control_matrix_t = ControlMatrix<CONTROL_DIM, SCALAR>;
 
     // determin Time_t to be either scalar or int
-    using Time_t = typename std::conditional<CONT_T, SCALAR, int>::type;
+    using Time_t = typename std::conditional_t<CONT_T, SCALAR, int>;
 
     Controller() = default;
     virtual ~Controller() = default;

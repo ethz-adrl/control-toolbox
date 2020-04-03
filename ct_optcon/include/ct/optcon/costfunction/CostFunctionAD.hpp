@@ -33,24 +33,31 @@ namespace optcon {
  *
  * Unit test \ref ADTest.cpp illustrates the use of a CostFunctionAD.
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class CostFunctionAD : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+class CostFunctionAD : public CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
+
+    using Base = CostFunctionQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>;
+
     typedef core::DerivativesCppadJIT<STATE_DIM + CONTROL_DIM + 1, 1> JacCG;
+
     typedef typename JacCG::CG_SCALAR CGScalar;
+    static_assert(std::is_same<typename AD_MANIFOLD::Scalar, CGScalar>::value, "scalar types do not match");
     typedef Eigen::Matrix<CGScalar, 1, 1> MatrixCg;
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
+    using state_matrix_t = typename Base::state_matrix_t;
+    using control_matrix_t = typename Base::control_matrix_t;
+    using control_state_matrix_t = typename Base::control_state_matrix_t;
+    typedef typename Base::control_vector_t control_vector_t;
 
-    typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
-    typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
-    typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> VectorXs;
-    typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
+    using SCALAR = typename AD_MANIFOLD::Scalar;  // todo is this the right scalar?
+    using SCALAR_EVAL = typename Base::SCALAR_EVAL;
+    typedef Eigen::Matrix<SCALAR_EVAL, Eigen::Dynamic, 1> VectorXs;
+    typedef Eigen::Matrix<SCALAR_EVAL, Eigen::Dynamic, Eigen::Dynamic> MatrixXs;
 
     /**
 	 * \brief Basic constructor
@@ -68,7 +75,7 @@ public:
 	 * Deep-cloning of cost function
 	 * @return base pointer to clone
 	 */
-    CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
+    CostFunctionAD<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>* clone() const override;
 
     /**
 	 * \brief Copy constructor
@@ -98,7 +105,7 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-    void addIntermediateADTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term,
+    void addIntermediateADTerm(std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> term,
         bool verbose = false) override;
 
     /**
@@ -110,18 +117,18 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-    void addFinalADTerm(std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> term,
+    void addFinalADTerm(std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> term,
         bool verbose = false) override;
 
-    void setCurrentStateAndControl(const state_vector_t& x, const control_vector_t& u, const SCALAR& t = 0.0) override;
+    void setCurrentStateAndControl(const MANIFOLD& x, const control_vector_t& u, const SCALAR_EVAL& t = 0.0) override;
 
     void loadFromConfigFile(const std::string& filename, bool verbose = false) override;
 
-    SCALAR evaluateIntermediate() override;
-    SCALAR evaluateTerminal() override;
+    SCALAR_EVAL evaluateIntermediate() override;
+    SCALAR_EVAL evaluateTerminal() override;
 
-    state_vector_t stateDerivativeIntermediate() override;
-    state_vector_t stateDerivativeTerminal() override;
+    ct::core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivativeIntermediate() override;
+    ct::core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivativeTerminal() override;
 
     control_vector_t controlDerivativeIntermediate() override;
     control_vector_t controlDerivativeTerminal() override;
@@ -135,14 +142,13 @@ public:
     control_state_matrix_t stateControlDerivativeIntermediate() override;
     control_state_matrix_t stateControlDerivativeTerminal() override;
 
-    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> getIntermediateADTermById(const size_t id);
+    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> getIntermediateADTermById(const size_t id);
 
-    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> getFinalADTermById(const size_t id);
+    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> getFinalADTermById(const size_t id);
 
-    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> getIntermediateADTermByName(
-        const std::string& name);
+    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> getIntermediateADTermByName(const std::string& name);
 
-    std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>> getFinalADTermByName(const std::string& name);
+    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> getFinalADTermByName(const std::string& name);
 
 
 private:
@@ -150,12 +156,12 @@ private:
     MatrixCg evaluateTerminalCg(const Eigen::Matrix<CGScalar, STATE_DIM + CONTROL_DIM + 1, 1>& stateInputTime);
 
     //! combined state, control and time vector
-    Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM + 1, 1> stateControlTime_;
+    Eigen::Matrix<SCALAR_EVAL, STATE_DIM + CONTROL_DIM + 1, 1> stateControlTime_;
 
     //! intermediate AD terms
-    std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>>> intermediateTerms_;
+    std::vector<std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>>> intermediateTerms_;
     //! final AD terms
-    std::vector<std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR, CGScalar>>> finalTerms_;
+    std::vector<std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>>> finalTerms_;
 
     //! generated jacobians
     std::shared_ptr<JacCG> intermediateCostCodegen_;

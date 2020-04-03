@@ -8,40 +8,37 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAnalytical()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::CostFunctionAnalytical()
 {
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAnalytical(const CostFunctionAnalytical& arg)
-    : CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>(arg)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::CostFunctionAnalytical(const CostFunctionAnalytical& arg)
+    : CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>(arg)
 {
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::CostFunctionAnalytical(const std::string& filename,
-    bool verbose)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::CostFunctionAnalytical(const std::string& filename, bool verbose)
 {
     loadFromConfigFile(filename, verbose);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::clone()
-    const
+template <typename MANIFOLD, size_t CONTROL_DIM>
+CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>* CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::clone() const
 {
     return new CostFunctionAnalytical(*this);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::~CostFunctionAnalytical()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::~CostFunctionAnalytical()
 {
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(const std::string& filename,
-    bool verbose)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::loadFromConfigFile(const std::string& filename, bool verbose)
 {
     if (verbose)
         std::cout << "Starting to load analytical cost function from file " << filename << std::endl;
@@ -75,9 +72,9 @@ void CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(
             }
         }
 
-        std::shared_ptr<TermBase<STATE_DIM, CONTROL_DIM, SCALAR>> term;
+        std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM>> term;
 
-        CT_LOADABLE_TERMS(SCALAR, SCALAR);
+        CT_LOADABLE_TERMS(MANIFOLD, CONTROL_DIM, MANIFOLD);
 
         if (!term)
         {
@@ -91,84 +88,84 @@ void CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(
     } while (pt.find(currentTerm) != pt.not_found());
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-SCALAR CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateIntermediate()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+auto CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::evaluateIntermediate() -> SCALAR_EVAL
 {
     return this->evaluateIntermediateBase();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-SCALAR CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::evaluateTerminal()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+auto CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::evaluateTerminal() -> SCALAR_EVAL
 {
     return this->evaluateTerminalBase();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeIntermediate()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+auto CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediate()
+    -> ct::core::StateVector<STATE_DIM, SCALAR_EVAL>
 {
     return this->stateDerivativeIntermediateBase();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::state_vector_t
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::stateDerivativeTerminal()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+auto CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::stateDerivativeTerminal()
+    -> ct::core::StateVector<STATE_DIM, SCALAR_EVAL>
 {
     return this->stateDerivativeTerminalBase();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::state_matrix_t
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::stateSecondDerivativeIntermediate()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::state_matrix_t
+CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::stateSecondDerivativeIntermediate()
 {
     return this->stateSecondDerivativeIntermediateBase();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::state_matrix_t
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::stateSecondDerivativeTerminal()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::state_matrix_t
+CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::stateSecondDerivativeTerminal()
 {
     return this->stateSecondDerivativeTerminalBase();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeIntermediate()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::control_vector_t
+CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::controlDerivativeIntermediate()
 {
     return this->controlDerivativeIntermediateBase();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_vector_t
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::controlDerivativeTerminal()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::control_vector_t
+CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::controlDerivativeTerminal()
 {
     return this->controlDerivativeTerminalBase();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_t
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivativeIntermediate()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::control_matrix_t
+CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::controlSecondDerivativeIntermediate()
 {
     return this->controlSecondDerivativeIntermediateBase();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_matrix_t
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::controlSecondDerivativeTerminal()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::control_matrix_t
+CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::controlSecondDerivativeTerminal()
 {
     return this->controlSecondDerivativeTerminalBase();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_matrix_t
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeIntermediate()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::control_state_matrix_t
+CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::stateControlDerivativeIntermediate()
 {
     return this->stateControlDerivativeIntermediateBase();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-typename CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::control_state_matrix_t
-CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::stateControlDerivativeTerminal()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+typename CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::control_state_matrix_t
+CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::stateControlDerivativeTerminal()
 {
     return this->stateControlDerivativeTerminalBase();
 }

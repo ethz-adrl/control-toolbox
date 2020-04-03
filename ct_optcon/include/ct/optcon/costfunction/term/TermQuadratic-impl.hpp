@@ -8,17 +8,16 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadratic(const state_matrix_t& Q,
-    const control_matrix_t& R)
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::TermQuadratic(const state_matrix_t& Q, const control_matrix_t& R)
     : Q_(Q), R_(R)
 {
     x_ref_.setZero();  // default values
     u_ref_.setZero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadratic()
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::TermQuadratic()
 {
     Q_.setConstant(9999);  // default values
     R_.setConstant(9999);
@@ -26,90 +25,82 @@ TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadratic()
     u_ref_.setZero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadratic(const state_matrix_t& Q,
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::TermQuadratic(const state_matrix_t& Q,
     const control_matrix_t& R,
-    const core::StateVector<STATE_DIM, SCALAR_EVAL>& x_ref,
+    const MANIFOLD& x_ref,
     const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref)
     : Q_(Q), R_(R), x_ref_(x_ref), u_ref_(u_ref)
 {
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadratic(const std::string& configFile,
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::TermQuadratic(const std::string& configFile,
     const std::string& termName,
     bool verbose)
 {
     loadConfigFile(configFile, termName, verbose);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::TermQuadratic(
-    const TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>& arg)
-    : TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>(arg),
-      Q_(arg.Q_),
-      R_(arg.R_),
-      x_ref_(arg.x_ref_),
-      u_ref_(arg.u_ref_)
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::TermQuadratic(
+    const TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>& arg)
+    : TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>(arg), Q_(arg.Q_), R_(arg.R_), x_ref_(arg.x_ref_), u_ref_(arg.u_ref_)
 {
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::~TermQuadratic()
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::~TermQuadratic()
 {
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>*
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::clone() const
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>* TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::clone() const
 {
     return new TermQuadratic(*this);
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::setWeights(
-    const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM>& Q,
-    const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM>& R)
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+void TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::setWeights(const state_matrix_t& Q, const control_matrix_t& R)
 {
     Q_ = Q;
     R_ = R;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-const typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::state_matrix_t&
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::getStateWeight() const
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+const typename TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::state_matrix_t&
+TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::getStateWeight() const
 {
     return Q_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::state_matrix_t&
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::getStateWeight()
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+typename TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::state_matrix_t&
+TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::getStateWeight()
 {
     return Q_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-const typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_matrix_t&
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::getControlWeight() const
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+const typename TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::control_matrix_t&
+TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::getControlWeight() const
 {
     return R_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_matrix_t&
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::getControlWeight()
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+typename TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::control_matrix_t&
+TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::getControlWeight()
 {
     return R_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::setStateAndControlReference(
-    const core::StateVector<STATE_DIM, SCALAR_EVAL>& x_ref,
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+void TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::setStateAndControlReference(const MANIFOLD& x_ref,
     const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref)
 {
     x_ref_ = x_ref;
@@ -117,82 +108,64 @@ void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::setStateAndCont
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-SCALAR TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluate(
-    const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
-    const Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& u,
-    const SCALAR& t)
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+auto TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::evaluate(const AD_MANIFOLD& x,
+    const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
+    const SCALAR& t) -> SCALAR
 {
-    return evalLocal<SCALAR>(x, u, t);
+    Eigen::Matrix<SCALAR, STATE_DIM, 1> xDiff = (x - x_ref_.template cast<SCALAR>());
+    Eigen::Matrix<SCALAR, CONTROL_DIM, 1> uDiff = (u - u_ref_.template cast<SCALAR>());
+
+    return (xDiff.transpose() * Q_.template cast<SCALAR>() * xDiff +
+            uDiff.transpose() * R_.template cast<SCALAR>() * uDiff)(0, 0);
 }
 
-#ifdef CPPADCG
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-ct::core::ADCGScalar TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evaluateCppadCg(
-    const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
-    const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
-    ct::core::ADCGScalar t)
-{
-    return evalLocal<ct::core::ADCGScalar>(x, u, t);
-}
-#endif
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-ct::core::StateVector<STATE_DIM, SCALAR_EVAL>
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateDerivative(
-    const ct::core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+auto TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateDerivative(const MANIFOLD& x,
     const ct::core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
-    const SCALAR_EVAL& t)
+    const SCALAR_EVAL& t) -> ct::core::StateVector<STATE_DIM, SCALAR_EVAL>
 {
-    ct::core::StateVector<STATE_DIM, SCALAR_EVAL> xDiff = (x - x_ref_);
+    typename MANIFOLD::Tangent xDiff = (x - x_ref_);
 
     return xDiff.transpose() * Q_.transpose() + xDiff.transpose() * Q_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::state_matrix_t
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateSecondDerivative(
-    const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+auto TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateSecondDerivative(const MANIFOLD& x,
     const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
-    const SCALAR_EVAL& t)
+    const SCALAR_EVAL& t) -> state_matrix_t
 {
     return Q_ + Q_.transpose();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-core::ControlVector<CONTROL_DIM, SCALAR_EVAL>
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlDerivative(
-    const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+auto TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlDerivative(const MANIFOLD& x,
     const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
-    const SCALAR_EVAL& t)
+    const SCALAR_EVAL& t) -> core::ControlVector<CONTROL_DIM, SCALAR_EVAL>
 {
     core::ControlVector<CONTROL_DIM, SCALAR_EVAL> uDiff = (u - u_ref_);
 
     return uDiff.transpose() * R_.transpose() + uDiff.transpose() * R_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_matrix_t
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::controlSecondDerivative(
-    const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+auto TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::controlSecondDerivative(const MANIFOLD& x,
     const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
-    const SCALAR_EVAL& t)
+    const SCALAR_EVAL& t) -> control_matrix_t
 {
     return R_ + R_.transpose();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-typename TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::control_state_matrix_t
-TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::stateControlDerivative(
-    const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+auto TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::stateControlDerivative(const MANIFOLD& x,
     const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
-    const SCALAR_EVAL& t)
+    const SCALAR_EVAL& t) -> control_state_matrix_t
 {
     return control_state_matrix_t::Zero();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(const std::string& filename,
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+void TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::loadConfigFile(const std::string& filename,
     const std::string& termName,
     bool verbose)
 {
@@ -219,23 +192,21 @@ void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::loadConfigFile(
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::updateReferenceState(
-    const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState)
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+void TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::updateReferenceState(const MANIFOLD& x)
 {
-    x_ref_ = newRefState;
+    x_ref_ = x;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-void TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::updateReferenceControl(
-    const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, 1>& newRefControl)
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+void TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::updateReferenceControl(
+    const ct::core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u)
 {
-    u_ref_ = newRefControl;
+    u_ref_ = u;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::getReferenceState()
-    const
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
+MANIFOLD TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>::getReferenceState() const
 {
     return x_ref_;
 }

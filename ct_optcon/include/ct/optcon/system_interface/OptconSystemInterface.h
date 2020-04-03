@@ -21,7 +21,7 @@ namespace optcon {
  * \tparam OPTCONPROBLEM type of the optConProblem (continuous or discrete)
  * \tparam SCALAR the underlying scalar type
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename OPTCONPROBLEM, typename SCALAR = double>
+template <typename MANIFOLD, size_t CONTROL_DIM, typename OPTCONPROBLEM, typename SCALAR = double>
 class OptconSystemInterface
 {
 public:
@@ -118,9 +118,8 @@ protected:
     std::vector<typename optConProblem_t::DynamicsPtr_t> systems_;
     std::vector<typename optConProblem_t::LinearPtr_t> linearSystems_;
 
-
-    std::vector<ConstantControllerPtr, Eigen::aligned_allocator<ConstantControllerPtr>>
-        controller_;  //! the constant controller for forward-integration during one time-step
+    //! the constant controller for forward-integration during one time-step
+    std::vector<ConstantControllerPtr, Eigen::aligned_allocator<ConstantControllerPtr>> controller_;
 
     optConProblem_t optConProblem_;  //! instance of the optconProblem
 

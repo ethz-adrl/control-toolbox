@@ -18,18 +18,22 @@ namespace optcon {
  *  An example for using this term is given in \ref CostFunctionTest.cpp
  *
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL = double, typename SCALAR = SCALAR_EVAL>
-class TermQuadratic : public TermBase<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD = MANIFOLD>
+class TermQuadratic : public TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM> state_matrix_t;
-    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
-    typedef Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM> state_matrix_double_t;
-    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM> control_matrix_double_t;
-    typedef Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, STATE_DIM> control_state_matrix_double_t;
+    static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
+
+    using Base = TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>;
+
+    using SCALAR = typename Base::SCALAR;
+    using SCALAR_EVAL = typename Base::SCALAR_EVAL;
+
+    using state_matrix_t = typename Base::state_matrix_t;
+    using control_matrix_t = typename Base::control_matrix_t;
+    using control_state_matrix_t = typename Base::control_state_matrix_t;
 
     TermQuadratic();
 
@@ -37,7 +41,7 @@ public:
 
     TermQuadratic(const state_matrix_t& Q,
         const control_matrix_t& R,
-        const core::StateVector<STATE_DIM, SCALAR_EVAL>& x_ref,
+        const MANIFOLD& x_ref,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref);
 
     TermQuadratic(const std::string& configFile, const std::string& termName, bool verbose = false);
@@ -46,10 +50,9 @@ public:
 
     virtual ~TermQuadratic();
 
-    virtual TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>* clone() const override;
+    virtual TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>* clone() const override;
 
-    void setWeights(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, STATE_DIM>& Q,
-        const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, CONTROL_DIM>& R);
+    void setWeights(const state_matrix_t& Q, const control_matrix_t& R);
 
     const state_matrix_t& getStateWeight() const;
 
@@ -59,36 +62,29 @@ public:
 
     control_matrix_t& getControlWeight();
 
-    void setStateAndControlReference(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x_ref,
-        const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref);
+    void setStateAndControlReference(const MANIFOLD& x_ref, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref);
 
-    virtual SCALAR evaluate(const Eigen::Matrix<SCALAR, STATE_DIM, 1>& x,
-        const Eigen::Matrix<SCALAR, CONTROL_DIM, 1>& u,
+    virtual SCALAR evaluate(const AD_MANIFOLD& x,
+        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
         const SCALAR& t) override;
 
-#ifdef CPPADCG
-    virtual ct::core::ADCGScalar evaluateCppadCg(const core::StateVector<STATE_DIM, ct::core::ADCGScalar>& x,
-        const core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar>& u,
-        ct::core::ADCGScalar t) override;
-#endif
-
-    core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t) override;
 
-    state_matrix_t stateSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    state_matrix_t stateSecondDerivative(const MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t) override;
 
-    core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t) override;
 
-    control_matrix_t controlSecondDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    control_matrix_t controlSecondDerivative(const MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t) override;
 
-    control_state_matrix_t stateControlDerivative(const core::StateVector<STATE_DIM, SCALAR_EVAL>& x,
+    control_state_matrix_t stateControlDerivative(const MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t) override;
 
@@ -96,16 +92,14 @@ public:
         const std::string& termName,
         bool verbose = false) override;
 
-    virtual void updateReferenceState(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& newRefState) override;
+    virtual void updateReferenceState(const MANIFOLD& newRefState) override;
 
-    virtual void updateReferenceControl(const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, 1>& newRefControl) override;
+    virtual void updateReferenceControl(
+        const ct::core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u) override;
 
-    virtual Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1> getReferenceState() const override;
+    virtual MANIFOLD getReferenceState() const override;
 
 protected:
-    template <typename SC>
-    SC evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1>& x, const Eigen::Matrix<SC, CONTROL_DIM, 1>& u, const SC& t);
-
     state_matrix_t Q_;
     control_matrix_t R_;
 
@@ -113,19 +107,6 @@ protected:
     core::ControlVector<CONTROL_DIM, SCALAR_EVAL> u_ref_;
 };
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR_EVAL, typename SCALAR>
-template <typename SC>
-SC TermQuadratic<STATE_DIM, CONTROL_DIM, SCALAR_EVAL, SCALAR>::evalLocal(const Eigen::Matrix<SC, STATE_DIM, 1>& x,
-    const Eigen::Matrix<SC, CONTROL_DIM, 1>& u,
-    const SC& t)
-{
-    Eigen::Matrix<SC, STATE_DIM, 1> xDiff = (x - x_ref_.template cast<SC>());
-    Eigen::Matrix<SC, CONTROL_DIM, 1> uDiff = (u - u_ref_.template cast<SC>());
-
-    return (xDiff.transpose() * Q_.template cast<SC>() * xDiff + uDiff.transpose() * R_.template cast<SC>() * uDiff)(
-        0, 0);
-}
 
 }  // namespace optcon
 }  // namespace ct

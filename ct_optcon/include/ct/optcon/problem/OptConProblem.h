@@ -13,7 +13,7 @@ namespace optcon {
 
 
 /*!
- * \defgroup OptConProblemBase OptConProblemBase
+ * \defgroup OptConProblem OptConProblem
  *
  * \brief Class that defines how to set up an Optimal Control Problem
  *
@@ -31,29 +31,28 @@ namespace optcon {
  * 	\warning Using numerical differentiation is inefficient and typically slow.
  *
  */
-template <size_t STATE_DIM,
-    size_t CONTROL_DIM,
-    typename SYSTEM_T,
-    typename LINEAR_SYSTEM_T,
-    typename LINEARIZER_T,
-    typename SCALAR = double>
-class OptConProblemBase
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+class OptConProblem
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static const size_t STATE_D = STATE_DIM;
-    static const size_t CONTROL_D = CONTROL_DIM;
+    using SCALAR = typename MANIFOLD::Scalar;
 
-    // typedefs
-    typedef ct::core::StateVector<STATE_DIM, SCALAR> state_vector_t;
-    typedef std::shared_ptr<SYSTEM_T> DynamicsPtr_t;
-    typedef std::shared_ptr<LINEAR_SYSTEM_T> LinearPtr_t;
-    typedef std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>> CostFunctionPtr_t;
-    typedef std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>> ConstraintPtr_t;
-    typedef typename SYSTEM_T::time_t time_t;
+    static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
 
-    OptConProblemBase() = default;
+    using ControlledSystem_t = ct::core::ControlledSystem<MANIFOLD, CONTROL_DIM, TIME_T>;
+    using DynamicsPtr_t = std::shared_ptr<ct::core::ControlledSystem<MANIFOLD, CONTROL_DIM, TIME_T>>;
+
+    using LinearSystem_t = ct::core::LinearSystem<MANIFOLD, CONTROL_DIM, TIME_T>;
+    using LinearPtr_t = std::shared_ptr<LinearSystem_t>;
+
+    using CostFunctionPtr_t = std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>>;
+    using ConstraintPtr_t = std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>>;
+
+    using Time_t typename ControlledSystem_t::Time_t;
+
+    OptConProblem() = default;  // todo
 
     /*!
      * @brief Construct a simple unconstrained Optimal Control Problem
@@ -64,7 +63,7 @@ public:
      * @param linearSystem (optional) the linear system holding the dynamics derivatives. If the
      * user does not specify the derivatives, they are generated automatically using numerical differentiation. Warning: this is slow
      */
-    OptConProblemBase(DynamicsPtr_t nonlinDynamics, CostFunctionPtr_t costFunction, LinearPtr_t linearSystem = nullptr);
+    OptConProblem(DynamicsPtr_t nonlinDynamics, CostFunctionPtr_t costFunction, LinearPtr_t linearSystem = nullptr);
 
     /*!
      * @brief Construct a simple unconstrained optimal control problem, with initial state and final time as constructor arguments
@@ -74,8 +73,8 @@ public:
      * @param costFunction A quadratic cost function
      * @param linearSystem (optional) Linearized System Dynamics.
      */
-    OptConProblemBase(const time_t tf,
-        const state_vector_t& x0,
+    OptConProblem(const Time_t tf,
+        const MANIFOLD& x0,
         DynamicsPtr_t nonlinDynamics,
         CostFunctionPtr_t costFunction,
         LinearPtr_t linearSystem = nullptr);
@@ -93,7 +92,7 @@ public:
      * \warning time and initial state to be specified later
      * \warning If the user does not specify the derivatives, they are generated automatically using numerical differentiation. This is slow
      */
-    OptConProblemBase(DynamicsPtr_t nonlinDynamics,
+    OptConProblem(DynamicsPtr_t nonlinDynamics,
         CostFunctionPtr_t costFunction,
         ConstraintPtr_t inputBoxConstraints,
         ConstraintPtr_t stateBoxConstraints,
@@ -115,8 +114,8 @@ public:
      * \warning time and initial state to be specified later
      * \warning If the user does not specify the derivatives, they are generated automatically using numerical differentiation. This is slow
      */
-    OptConProblemBase(const time_t tf,
-        const state_vector_t& x0,
+    OptConProblem(const Time_t tf,
+        const MANIFOLD& x0,
         DynamicsPtr_t nonlinDynamics,
         CostFunctionPtr_t costFunction,
         ConstraintPtr_t inputBoxConstraints,
@@ -199,30 +198,30 @@ public:
     /*!
      * get initial state (called by solvers)
      */
-    const state_vector_t getInitialState() const;
+    const MANIFOLD getInitialState() const;
 
     /*!
      * set initial state for first subsystem
      */
-    void setInitialState(const state_vector_t& x0);
+    void setInitialState(const MANIFOLD& x0);
 
     /*!
      * get the current time horizon
      * @return	Time Horizon
      */
-    time_t getTimeHorizon() const;
+    Time_t getTimeHorizon() const;
 
     /*!
      * Update the current time horizon in the Opt.Control Problem (required for example for replanning)
      * @param tf new time horizon
      */
-    void setTimeHorizon(const time_t tf);
+    void setTimeHorizon(const Time_t tf);
 
 
 private:
-    time_t tf_;  //! end time
+    Time_t tf_;  //! end time
 
-    state_vector_t x0_;  //! initial state
+    MANIFOLD x0_;  //! initial state
 
     DynamicsPtr_t controlledSystem_;  //! the nonlinear system
     CostFunctionPtr_t costFunction_;  //! a quadratic cost function

@@ -27,18 +27,22 @@ namespace optcon {
  * and second order derivatives. This cost function assumes that analytical derivatives
  * for all terms are available.
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class CostFunctionAnalytical : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM>
+class CostFunctionAnalytical : public CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
+    static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
 
-    typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
-    typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+    using Base = CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>;
+    using SCALAR_EVAL = typename Base::SCALAR_EVAL;
+
+    using state_matrix_t = typename Base::state_matrix_t;
+    using control_matrix_t = typename Base::control_matrix_t;
+    using control_state_matrix_t = typename Base::control_state_matrix_t;
+    typedef typename Base::control_vector_t control_vector_t;
+
 
     /**
 	 * \brief Basic constructor
@@ -61,18 +65,18 @@ public:
 	 * Deep-cloning of cost function
 	 * @return base pointer to clone
 	 */
-    CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
+    CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>* clone() const override;
 
     /**
 	 * Destructor
 	 */
     ~CostFunctionAnalytical();
 
-    SCALAR evaluateIntermediate() override;
-    SCALAR evaluateTerminal() override;
+    SCALAR_EVAL evaluateIntermediate() override;
+    SCALAR_EVAL evaluateTerminal() override;
 
-    state_vector_t stateDerivativeIntermediate() override;
-    state_vector_t stateDerivativeTerminal() override;
+    ct::core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivativeIntermediate() override;
+    ct::core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivativeTerminal() override;
 
     state_matrix_t stateSecondDerivativeIntermediate() override;
     state_matrix_t stateSecondDerivativeTerminal() override;

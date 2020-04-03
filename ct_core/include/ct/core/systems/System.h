@@ -50,7 +50,7 @@ public:
     using TANGENT = typename MANIFOLD::Tangent;
 
     // determine Time_t to be either scalar or int
-    using Time_t = typename std::conditional<CONT_T, SCALAR, int>::type;
+    using Time_t = typename std::conditional_t<CONT_T, SCALAR, int>;
 
     //! default constructor
     /*!
