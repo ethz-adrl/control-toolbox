@@ -13,16 +13,16 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-template <typename MANIF_T, typename TAN>
-class ManifoldState : public MANIF_T
+template <template <class> class MANIF_T, template <class> class TAN, typename SCALAR = double>
+class ManifoldState : public MANIF_T<SCALAR>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static constexpr size_t TangentDim = TAN::DoF;
-    using Scalar = typename MANIF_T::Scalar;
-    using Tangent = TAN;
-    using Base = MANIF_T;
+    using Scalar = SCALAR;
+    using Tangent = TAN<SCALAR>;
+    static constexpr size_t TangentDim = Tangent::DoF;
+    using Base = MANIF_T<SCALAR>;
 
     ManifoldState();
     virtual ~ManifoldState();
@@ -30,7 +30,11 @@ public:
     template <typename OTHER>
     ManifoldState(const OTHER& other);
 
-    static ManifoldState NeutralElement() { return MANIF_T::Identity(); }
+    // get ManifoldState templated on a different scalar from this expression
+    template <typename OtherScalar>
+    using RedefineScalar = ManifoldState<MANIF_T, TAN, OtherScalar>;
+
+    static ManifoldState NeutralElement() { return MANIF_T<SCALAR>::Identity(); }
     //! get underlying manif type
     Base& toImplementation() { return *this; }
     //! get const underlying manif type
@@ -38,9 +42,9 @@ public:
 };
 
 // todo do not move to implementation file
-template <typename M, typename T>
+template <template <class> class MANIF_T, template <class> class TAN, typename SCALAR>
 template <typename OTHER>
-ManifoldState<M, T>::ManifoldState(const OTHER& other) : Base(other)
+ManifoldState<MANIF_T, TAN, SCALAR>::ManifoldState(const OTHER& other) : Base(other)
 {
 }
 

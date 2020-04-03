@@ -24,13 +24,13 @@ public:
     EuclideanState() = default;
     virtual ~EuclideanState() = default;
 
-    //!This constructor allows you to construct MyVectorType from Eigen expressions
+    //!This constructor allows you to construct EuclideanState from Eigen expressions
     template <typename OtherDerived>
     EuclideanState(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)
     {
     }
 
-    //! This method allows you to assign Eigen expressions to MyVectorType
+    //! This method allows you to assign Eigen expressions to EuclideanState
     template <typename OtherDerived>
     EuclideanState& operator=(const Eigen::MatrixBase<OtherDerived>& other)
     {
@@ -38,12 +38,15 @@ public:
         return *this;
     }
 
+    // get EuclideanState templated on a different scalar from this expression
+    template <typename OtherScalar>
+    using RedefineScalar = EuclideanState<DIM, OtherScalar>;
+
     static EuclideanState NeutralElement() { return Eigen::Matrix<SCALAR, DIM, 1>::Zero(); }
     //! get underlying Eigen type
     Base& toImplementation() { return *this; }
     //! get const underlying Eigen type
     const Base& toImplementation() const { return *this; }
-    
     // provide manifold log operator // TODO: attention - this overloads an eigen function
     const EuclideanState& log() const = delete;
     EuclideanState& log() = delete;
@@ -53,7 +56,7 @@ public:
 };
 
 template <size_t DIM, class SCALAR = double>
-using StateVector = EuclideanState<DIM, SCALAR>;  // for legacy
+using StateVector = EuclideanState<DIM, SCALAR>;  // for legacy, TODO: remove at some point
 
 
 } /* namespace core */

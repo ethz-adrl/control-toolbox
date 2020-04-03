@@ -16,18 +16,19 @@
 namespace manif {
 
 // operator overload for adding manifolds
-template <typename MANIFOLD, typename TAN>
-ct::core::ManifoldState<MANIFOLD, TAN> operator+(const ct::core::ManifoldState<MANIFOLD, TAN>& a,
-    const ct::core::ManifoldState<MANIFOLD, TAN>& b)
+template <template <class> class MANIF_T, template <class> class TAN, typename SCALAR>
+ct::core::ManifoldState<MANIF_T, TAN, SCALAR> operator+(const ct::core::ManifoldState<MANIF_T, TAN, SCALAR>& a,
+    const ct::core::ManifoldState<MANIF_T, TAN, SCALAR>& b)
 {
     return a.compose(b);
 }
 
-template <typename MANIFOLD, typename TAN>
-ct::core::ManifoldState<MANIFOLD, TAN> operator*(const double& s, const ct::core::ManifoldState<MANIFOLD, TAN>& m)
+template <template <class> class MANIF_T, template <class> class TAN, typename SCALAR>
+ct::core::ManifoldState<MANIF_T, TAN, SCALAR> operator*(const double& s,
+    const ct::core::ManifoldState<MANIF_T, TAN, SCALAR>& m)
 {
 #ifndef CT_DISABLE_NUMERIC_MANIFOLD_CHECKS  // set this definition for disabling checks
-    if (s != typename MANIFOLD::Scalar(1.0))
+    if (s != SCALAR(1.0))
         throw std::runtime_error("manifold operator* is not defined for scaling. Use different integrator.");
 #endif
     return m;
@@ -49,22 +50,25 @@ namespace odeint {
 #if (BOOST_VERSION / 100000 == 1 && BOOST_VERSION / 100 % 1000 > 55)
 
 // new boost
-template <typename MANIFOLD, typename TAN>
-struct vector_space_norm_inf<ct::core::ManifoldState<MANIFOLD, TAN>>
+template <template <class> class MANIF_T, template <class> class TAN, typename SCALAR>
+struct vector_space_norm_inf<ct::core::ManifoldState<MANIF_T, TAN, SCALAR>>
 {
-    typedef typename MANIFOLD::Scalar result_type;
+    typedef SCALAR result_type;
 
-    result_type operator()(const ct::core::ManifoldState<MANIFOLD, TAN>& m) const { return m.log().weightedNorm(); }
+    result_type operator()(const ct::core::ManifoldState<MANIF_T, TAN, SCALAR>& m) const
+    {
+        return m.log().weightedNorm();
+    }
 };
 
 #else
 
 // old boost
-template <typename MANIFOLD, typename TAN>
-struct vector_space_reduce<ct::core::ManifoldState<MANIFOLD, TAN>>
+template <template <class> class MANIF_T, template <class> class TAN, typename SCALAR>
+struct vector_space_reduce<ct::core::ManifoldState<MANIF_T, TAN, SCALAR>>
 {
     template <class Op>
-    SCALAR operator()(const MANIFOLD& x, Op op, SCALAR init) const
+    SCALAR operator()(const MANIF_T<SCALAR>& x, Op op, SCALAR init) const
     {
         auto tan = x.log();
 

@@ -74,7 +74,7 @@ void CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::loadFromConfigFile(const std
 
         std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM>> term;
 
-        CT_LOADABLE_TERMS(MANIFOLD, CONTROL_DIM, MANIFOLD);
+        CT_LOADABLE_TERMS(MANIFOLD, CONTROL_DIM);
 
         if (!term)
         {

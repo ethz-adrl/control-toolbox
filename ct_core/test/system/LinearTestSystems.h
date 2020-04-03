@@ -54,7 +54,7 @@ protected:
 
 #ifdef CT_USE_MANIF
 
-using ManifoldState_t = ManifoldState<manif::SE2d, manif::SE2Tangentd>;
+using ManifoldState_t = ManifoldState<manif::SE2, manif::SE2Tangent>;
 
 class ContSE2LTITestSystem final : public LTISystem<ManifoldState_t, control_dim, CONTINUOUS_TIME>
 {

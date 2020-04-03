@@ -13,7 +13,7 @@ const bool verbose = false;
 using namespace ct::core;
 using namespace manif;
 
-using Manifold = ManifoldState<SE3d, SE3Tangentd>;
+using Manifold = ManifoldState<SE3, SE3Tangent>;
 const size_t control_dim = 6;
 
 class TestSystem : public ControlledSystem<Manifold, control_dim, CONTINUOUS_TIME>

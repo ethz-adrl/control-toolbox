@@ -26,22 +26,22 @@ namespace optcon {
  *
  * An example for an implementation of a custom term is given in \ref TermQuadratic.hpp
  **/
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD = MANIFOLD>
+template <typename MANIFOLD, size_t CONTROL_DIM>
 class TermBase
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    using SCALAR = typename AD_MANIFOLD::Scalar;
-    //!< define output scalar type of resulting evaluations
-    using SCALAR_EVAL = typename MANIFOLD::Scalar;
-
     static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
+    using SCALAR = typename MANIFOLD::Scalar;
+
+    //!< define input/output scalar type of resulting evaluations
+    using SCALAR_EVAL = typename ct::core::get_out_type<MANIFOLD>::type;
+    using EVAL_MANIFOLD = typename MANIFOLD::template RedefineScalar<SCALAR_EVAL>;
 
     using state_matrix_t = ct::core::StateMatrix<STATE_DIM, SCALAR_EVAL>;
     using control_matrix_t = ct::core::ControlMatrix<CONTROL_DIM, SCALAR_EVAL>;
     using control_state_matrix_t = ct::core::ControlStateMatrix<STATE_DIM, CONTROL_DIM, SCALAR_EVAL>;
-
 
     /**
 	 * \brief Default constructor
@@ -59,7 +59,7 @@ public:
 	 * \brief Deep-copy term
 	 * @return
 	 */
-    virtual TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>* clone() const = 0;
+    virtual TermBase<MANIFOLD, CONTROL_DIM>* clone() const = 0;
 
     /**
 	 * \brief Destructor
@@ -73,9 +73,9 @@ public:
 	 * @param[in]  u     The current control
 	 * @param[in]  t     The current time
 	 *
-	 * @return     The evaluatated cost term
+	 * @return     The evaluatated cost term, use SCALAR for compatibility with both autodiff and analytic evaluation
 	 */
-    virtual SCALAR evaluate(const AD_MANIFOLD& x,
+    virtual SCALAR evaluate(const MANIFOLD& x,
         const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
         const SCALAR& t) = 0;
 
@@ -107,27 +107,27 @@ public:
     SCALAR_EVAL computeActivation(const SCALAR_EVAL t);
 
     //! compute derivative of this cost term w.r.t. the state
-    virtual core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const MANIFOLD& x,
+    virtual core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const EVAL_MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
     //! compute second order derivative of this cost term w.r.t. the state
-    virtual state_matrix_t stateSecondDerivative(const MANIFOLD& x,
+    virtual state_matrix_t stateSecondDerivative(const EVAL_MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
     //! compute derivative of this cost term w.r.t. the control input
-    virtual core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const MANIFOLD& x,
+    virtual core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const EVAL_MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
     //! compute second order derivative of this cost term w.r.t. the control input
-    virtual control_matrix_t controlSecondDerivative(const MANIFOLD& x,
+    virtual control_matrix_t controlSecondDerivative(const EVAL_MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
     //! compute the cross-term derivative (state-control) of this cost function term
-    virtual control_state_matrix_t stateControlDerivative(const MANIFOLD& x,
+    virtual control_state_matrix_t stateControlDerivative(const EVAL_MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
@@ -153,13 +153,13 @@ public:
     void setName(const std::string& termName);
 
     //! updates the reference state for this term
-    virtual void updateReferenceState(const MANIFOLD& newRefState);
+    virtual void updateReferenceState(const EVAL_MANIFOLD& newRefState);
 
     //! updates the reference control for this term
     virtual void updateReferenceControl(const ct::core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& newRefControl);
 
     //! retrieve this term's current reference state
-    virtual MANIFOLD getReferenceState() const;
+    virtual EVAL_MANIFOLD getReferenceState() const;
 
 protected:
     //! a name identifier for this term

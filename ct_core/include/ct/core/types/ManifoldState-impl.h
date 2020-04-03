@@ -10,13 +10,13 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-template <typename M, typename T>
-ManifoldState<M, T>::ManifoldState()
+template <template <class> class MANIF_T, template <class> class TAN, typename SCALAR>
+ManifoldState<MANIF_T, TAN, SCALAR>::ManifoldState()
 {
 }
 
-template <typename M, typename T>
-ManifoldState<M, T>::~ManifoldState()
+template <template <class> class MANIF_T, template <class> class TAN, typename SCALAR>
+ManifoldState<MANIF_T, TAN, SCALAR>::~ManifoldState()
 {
 }
 

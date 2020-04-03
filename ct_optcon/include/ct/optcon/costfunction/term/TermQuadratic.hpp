@@ -18,18 +18,21 @@ namespace optcon {
  *  An example for using this term is given in \ref CostFunctionTest.cpp
  *
  */
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD = MANIFOLD>
-class TermQuadratic : public TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>
+template <typename MANIFOLD, size_t CONTROL_DIM>
+class TermQuadratic : public TermBase<MANIFOLD, CONTROL_DIM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
 
-    using Base = TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>;
+    using Base = TermBase<MANIFOLD, CONTROL_DIM>;
 
     using SCALAR = typename Base::SCALAR;
-    using SCALAR_EVAL = typename Base::SCALAR_EVAL;
+
+    //!< define input/output scalar type of resulting evaluations
+    using SCALAR_EVAL = typename ct::core::get_out_type<MANIFOLD>::type;
+    using EVAL_MANIFOLD = typename MANIFOLD::template RedefineScalar<SCALAR_EVAL>;
 
     using state_matrix_t = typename Base::state_matrix_t;
     using control_matrix_t = typename Base::control_matrix_t;
@@ -50,7 +53,7 @@ public:
 
     virtual ~TermQuadratic();
 
-    virtual TermQuadratic<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>* clone() const override;
+    virtual TermQuadratic<MANIFOLD, CONTROL_DIM>* clone() const override;
 
     void setWeights(const state_matrix_t& Q, const control_matrix_t& R);
 
@@ -62,29 +65,29 @@ public:
 
     control_matrix_t& getControlWeight();
 
-    void setStateAndControlReference(const MANIFOLD& x_ref, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref);
+    void setStateAndControlReference(const EVAL_MANIFOLD& x_ref, const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u_ref);
 
-    virtual SCALAR evaluate(const AD_MANIFOLD& x,
+    virtual SCALAR evaluate(const MANIFOLD& x,
         const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
         const SCALAR& t) override;
 
-    core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const MANIFOLD& x,
+    core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const EVAL_MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t) override;
 
-    state_matrix_t stateSecondDerivative(const MANIFOLD& x,
+    state_matrix_t stateSecondDerivative(const EVAL_MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t) override;
 
-    core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const MANIFOLD& x,
+    core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const EVAL_MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t) override;
 
-    control_matrix_t controlSecondDerivative(const MANIFOLD& x,
+    control_matrix_t controlSecondDerivative(const EVAL_MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t) override;
 
-    control_state_matrix_t stateControlDerivative(const MANIFOLD& x,
+    control_state_matrix_t stateControlDerivative(const EVAL_MANIFOLD& x,
         const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
         const SCALAR_EVAL& t) override;
 
@@ -92,12 +95,11 @@ public:
         const std::string& termName,
         bool verbose = false) override;
 
-    virtual void updateReferenceState(const MANIFOLD& newRefState) override;
+    virtual void updateReferenceState(const EVAL_MANIFOLD& newRefState) override;
 
-    virtual void updateReferenceControl(
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u) override;
+    virtual void updateReferenceControl(const ct::core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u) override;
 
-    virtual MANIFOLD getReferenceState() const override;
+    virtual EVAL_MANIFOLD getReferenceState() const override;
 
 protected:
     state_matrix_t Q_;

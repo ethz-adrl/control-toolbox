@@ -33,15 +33,20 @@ namespace optcon {
  *
  * Unit test \ref ADTest.cpp illustrates the use of a CostFunctionAD.
  */
-template <typename MANIFOLD, size_t CONTROL_DIM, typename AD_MANIFOLD>
-class CostFunctionAD : public CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>
+template <typename AD_MANIFOLD, size_t CONTROL_DIM>
+class CostFunctionAD
+    : public CostFunctionQuadratic<
+          typename AD_MANIFOLD::template RedefineScalar<typename ct::core::get_out_type<AD_MANIFOLD>::type>,
+          CONTROL_DIM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
+    static constexpr size_t STATE_DIM = AD_MANIFOLD::TangentDim;
 
-    using Base = CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>;
+    using EVAL_MANIFOLD =
+        typename AD_MANIFOLD::template RedefineScalar<typename ct::core::get_out_type<AD_MANIFOLD>::type>;
+    using Base = CostFunctionQuadratic<EVAL_MANIFOLD, CONTROL_DIM>;
 
     typedef core::DerivativesCppadJIT<STATE_DIM + CONTROL_DIM + 1, 1> JacCG;
 
@@ -76,7 +81,7 @@ public:
 	 * Deep-cloning of cost function
 	 * @return base pointer to clone
 	 */
-    CostFunctionAD<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>* clone() const override;
+    CostFunctionAD<AD_MANIFOLD, CONTROL_DIM>* clone() const override;
 
     /**
 	 * \brief Copy constructor
@@ -106,8 +111,7 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-    void addIntermediateADTerm(std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> term,
-        bool verbose = false);
+    void addIntermediateADTerm(std::shared_ptr<TermBase<AD_MANIFOLD, CONTROL_DIM>> term, bool verbose = false);
 
     /**
 	 * \brief Add a final, auto-differentiable term
@@ -118,9 +122,11 @@ public:
 	 * @param verbose Flag enabling printouts
 	 * @return
 	 */
-    void addFinalADTerm(std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> term, bool verbose = false);
+    void addFinalADTerm(std::shared_ptr<TermBase<AD_MANIFOLD, CONTROL_DIM>> term, bool verbose = false);
 
-    void setCurrentStateAndControl(const MANIFOLD& x, const control_vector_t& u, const SCALAR_EVAL& t = 0.0) override;
+    void setCurrentStateAndControl(const EVAL_MANIFOLD& x,
+        const control_vector_t& u,
+        const SCALAR_EVAL& t = 0.0) override;
 
     void loadFromConfigFile(const std::string& filename, bool verbose = false) override;
 
@@ -142,13 +148,13 @@ public:
     control_state_matrix_t stateControlDerivativeIntermediate() override;
     control_state_matrix_t stateControlDerivativeTerminal() override;
 
-    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> getIntermediateADTermById(const size_t id);
+    std::shared_ptr<TermBase<AD_MANIFOLD, CONTROL_DIM>> getIntermediateADTermById(const size_t id);
 
-    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> getFinalADTermById(const size_t id);
+    std::shared_ptr<TermBase<AD_MANIFOLD, CONTROL_DIM>> getFinalADTermById(const size_t id);
 
-    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> getIntermediateADTermByName(const std::string& name);
+    std::shared_ptr<TermBase<AD_MANIFOLD, CONTROL_DIM>> getIntermediateADTermByName(const std::string& name);
 
-    std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>> getFinalADTermByName(const std::string& name);
+    std::shared_ptr<TermBase<AD_MANIFOLD, CONTROL_DIM>> getFinalADTermByName(const std::string& name);
 
 
 private:
@@ -159,9 +165,9 @@ private:
     Eigen::Matrix<SCALAR_EVAL, STATE_DIM + CONTROL_DIM + 1, 1> stateControlTime_;
 
     //! intermediate AD terms
-    std::vector<std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>>> intermediateTerms_;
+    std::vector<std::shared_ptr<TermBase<AD_MANIFOLD, CONTROL_DIM>>> intermediateTerms_;
     //! final AD terms
-    std::vector<std::shared_ptr<TermBase<MANIFOLD, CONTROL_DIM, AD_MANIFOLD>>> finalTerms_;
+    std::vector<std::shared_ptr<TermBase<AD_MANIFOLD, CONTROL_DIM>>> finalTerms_;
 
     //! generated jacobians
     std::shared_ptr<JacCG> intermediateCostCodegen_;
