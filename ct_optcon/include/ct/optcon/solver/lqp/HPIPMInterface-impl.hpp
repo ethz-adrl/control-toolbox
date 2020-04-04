@@ -11,8 +11,14 @@ namespace ct {
 namespace optcon {
 
 template <int STATE_DIM, int CONTROL_DIM>
-HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface() : N_(-1), settings_(NLOptConSettings()), 
-    dim_mem_(nullptr), qp_mem_(nullptr), qp_sol_mem_(nullptr), ipm_arg_mem_(nullptr), ipm_mem_(nullptr)
+HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface()
+    : N_(-1),
+      settings_(NLOptConSettings()),
+      dim_mem_(nullptr),
+      qp_mem_(nullptr),
+      qp_sol_mem_(nullptr),
+      ipm_arg_mem_(nullptr),
+      ipm_mem_(nullptr)
 {
     hb0_.setZero();
     hr0_.setZero();
@@ -176,8 +182,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
     ::d_ocp_qp_ipm_solve(&qp_, &qp_sol_, &arg_, &workspace_);
     ::d_ocp_qp_ipm_get_status(&workspace_, &hpipm_status_);
 
-    isLrInvComputed_ = false;
-
     // display iteration summary
     if (settings_.lqoc_solver_settings.lqoc_debug_print)
     {
@@ -230,42 +234,28 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeStatesAndControls()
     }
 }
 
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeLrInvArray()
-{
-    // extract data which is mandatory for computing either feedback or iLQR feedforward
-    Eigen::Matrix<double, control_dim, control_dim> Lr;
-    for (int i = 0; i < N_; i++)
-    {
-        ::d_ocp_qp_ipm_get_ric_Lr(i, &workspace_, Lr.data());
-        Lr_inv_[i] = (Lr.template triangularView<Eigen::Lower>())
-                         .solve(Eigen::Matrix<double, control_dim, control_dim>::Identity());
-    }
-    isLrInvComputed_ = true;
-}
 
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeFeedbackMatrices()
 {
-    if (isLrInvComputed_ == false)
-        computeLrInvArray();  // update Lr_inv_ first
+    // extract data which is mandatory for computing either feedback or iLQR feedforward
+    Eigen::Matrix<double, control_dim, control_dim> Lr;
+    ::d_ocp_qp_ipm_get_ric_Lr(&qp_, &arg_, &workspace_, 0, Lr.data());
+    ct::core::ControlMatrix<control_dim> Lr0_inv =
+        (Lr.template triangularView<Eigen::Lower>()).solve(Eigen::Matrix<double, control_dim, control_dim>::Identity());
 
     LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
     this->L_.resize(p.getNumberOfStages());
 
-    // for steps k=1,...,N-1 we can just read Ls, Lr_inv already has been computed
-    Eigen::Matrix<double, state_dim, control_dim> Ls;
-
     for (int i = 1; i < this->lqocProblem_->getNumberOfStages(); i++)
     {
-        ::d_ocp_qp_ipm_get_ric_Ls(i, &workspace_, Ls.data());
-        this->L_[i] = -(Ls * Lr_inv_[i]).transpose();
+        ::d_ocp_qp_ipm_get_ric_K(&qp_, &arg_, &workspace_, i, this->L_[i].data());
     }
 
-    // for stage k=0, HPIPM does not have meaningful entries for Ls, so we have to manually design the feedback
+    // for stage k=0, HPIPM does not have meaningful entries for K, so we have to manually design the feedback
     // retrieve Riccati matrix for stage 1 (we call it S, others call it P)
     Eigen::Matrix<double, state_dim, state_dim> S1;
-    ::d_ocp_qp_ipm_get_ric_P(1, &workspace_, S1.data());
+    ::d_ocp_qp_ipm_get_ric_P(&qp_, &arg_, &workspace_, 1, S1.data());
 
     // step2: compute G[0]
     Eigen::Matrix<double, control_dim, state_dim> G;
@@ -273,26 +263,14 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeFeedbackMatrices()
     G.noalias() += p.B_[0].transpose() * S1 * p.A_[0];
 
     // step3: compute K[0] = H.inverse() * G
-    this->L_[0] = (-Lr_inv_[0].transpose() * Lr_inv_[0] * G);
+    this->L_[0] = (-Lr0_inv.transpose() * Lr0_inv * G);
 }
 
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::compute_lv()
 {
-    if (this->lqocProblem_->isConstrained())
-        throw std::runtime_error(
-            "Retrieving lv is not compatible with constraints in HPIPM. Switch to different algorithm, e.g. GNMS, "
-            "which does not require lv");
-
-    if (isLrInvComputed_ == false)
-        computeLrInvArray();  // update Lr_inv_ first
-
-    Eigen::Matrix<double, control_dim, 1> lr;
     for (int i = 0; i < this->lqocProblem_->getNumberOfStages(); i++)
-    {
-        ::d_ocp_qp_ipm_get_ric_lr(i, &workspace_, lr.data());
-        this->lv_[i] = -Lr_inv_[i].transpose() * lr;
-    }
+        ::d_ocp_qp_ipm_get_ric_k(&qp_, &arg_, &workspace_, i, this->lv_[i].data());
 }
 
 template <int STATE_DIM, int CONTROL_DIM>
@@ -609,8 +587,6 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeProblemSize(std::shared_ptr<L
     hlls_.resize(N_ + 1, 0);
     hlus_.resize(N_ + 1, 0);
 
-    Lr_inv_.resize(N_);
-
     // assignments that stay constant despite varying problem impl data
     hb_[0] = hb0_.data();
     hr_[0] = hr0_.data();
@@ -657,11 +633,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::d_print_e_tran_mat(int row, int col
 template <int STATE_DIM, int CONTROL_DIM>
 const ct::core::ControlVectorArray<CONTROL_DIM>& HPIPMInterface<STATE_DIM, CONTROL_DIM>::get_lv()
 {
-    if (this->lqocProblem_->isConstrained())
-        throw std::runtime_error(
-            "Retrieving lv is not compatible with constraints in HPIPM. Switch to different algorithm, e.g. GNMS, "
-            "which does not require lv");
-
     return this->lv_;
 }
 

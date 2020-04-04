@@ -1,20 +1,20 @@
 #!/bin/bash
 
-## get blasfeo 0.1.1
-echo "now installing blasfeo 0.1.1 ..."
+## get blasfeo
+echo "Now installing blasfeo, using a specific commit (!)"
 cd /tmp
 git clone https://github.com/giaf/blasfeo.git
 cd /tmp/blasfeo
-git checkout 0.1.1 # we currently are on this release
+git checkout 50dc49e # we currently are on this release
 make static_library
 sudo make install_static
 
-## get hpipm 0.1.1
-echo "now installing hpipm 0.1.1 ..."
+## get hpipm
+echo "Now installing hpipm, using a specific commit (!)"
 cd /tmp
 git clone https://github.com/giaf/hpipm.git
 cd /tmp/hpipm
-git checkout 806c845
+git checkout 75897ca
 make static_library
 make examples
 sudo make install_static

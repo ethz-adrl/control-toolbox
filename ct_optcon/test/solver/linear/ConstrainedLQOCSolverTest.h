@@ -148,16 +148,7 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
     hpipmSolver->solve();
     hpipmSolver->computeStatesAndControls();
     hpipmSolver->computeFeedbackMatrices();
-
-    try
-    {
-        hpipmSolver->compute_lv();
-        ASSERT_TRUE(false);  // should never reach to this point
-    } catch (std::exception& e)
-    {
-        std::cout << "HPIPMSolver failed with exception " << e.what() << std::endl;
-        ASSERT_TRUE(true);
-    }
+    hpipmSolver->compute_lv();
 
     try
     {
@@ -214,16 +205,7 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
     hpipmSolver->solve();
     hpipmSolver->computeStatesAndControls();
     hpipmSolver->computeFeedbackMatrices();
-
-    try
-    {
-        hpipmSolver->compute_lv();
-        ASSERT_TRUE(false);  // should never reach to this point
-    } catch (std::exception& e)
-    {
-        std::cout << "HPIPMSolver failed with exception " << e.what() << std::endl;
-        ASSERT_TRUE(true);
-    }
+    hpipmSolver->compute_lv();
 
     try
     {
@@ -288,16 +270,7 @@ void boxConstraintsTest(ct::core::ControlVector<control_dim> u0,
     hpipmSolver->solve();
     hpipmSolver->computeStatesAndControls();
     hpipmSolver->computeFeedbackMatrices();
-
-    try
-    {
-        hpipmSolver->compute_lv();
-        ASSERT_TRUE(false);  // should never reach to this point
-    } catch (std::exception& e)
-    {
-        std::cout << "HPIPMSolver failed with exception " << e.what() << std::endl;
-        ASSERT_TRUE(true);
-    }
+    hpipmSolver->compute_lv();
 
     try
     {
@@ -396,16 +369,7 @@ void generalConstraintsTest(ct::core::ControlVector<control_dim> u0,
     hpipmSolver->solve();
     hpipmSolver->computeStatesAndControls();
     hpipmSolver->computeFeedbackMatrices();
-
-    try
-    {
-        hpipmSolver->compute_lv();
-        ASSERT_TRUE(false);  // should never reach to this point
-    } catch (std::exception& e)
-    {
-        std::cout << "HPIPMSolver failed with exception " << e.what() << std::endl;
-        ASSERT_TRUE(true);
-    }
+    hpipmSolver->compute_lv();
 
     try
     {
@@ -735,15 +699,8 @@ TEST(ConstrainedLQOCSolverTest, BoxConstraintUsingConstraintToolbox)
     hpipmSolver->solve();
     hpipmSolver->computeStatesAndControls();
     hpipmSolver->computeFeedbackMatrices();
-    try
-    {
-        hpipmSolver->compute_lv();
-        ASSERT_TRUE(false);  // should never reach to this point
-    } catch (std::exception& e)
-    {
-        std::cout << "HPIPMSolver failed with exception " << e.what() << std::endl;
-        ASSERT_TRUE(true);
-    }
+    hpipmSolver->compute_lv();
+
 
     // retrieve solutions from hpipm
     xSol_hpipm = hpipmSolver->getSolutionState();
