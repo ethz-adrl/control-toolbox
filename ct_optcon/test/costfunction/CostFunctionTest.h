@@ -89,17 +89,17 @@ TEST(CostFunctionTest, ADQuadraticTest)
     using AD_State = ct::core::EuclideanState<state_dim, ct::core::ADCGScalar>;
 
     CostFunctionAnalytical<State, control_dim> costFunction;
-    CostFunctionAD<State, control_dim, AD_State> costFunctionAD;
+    CostFunctionAD<AD_State, control_dim> costFunctionAD;
 
     // intermediate cost terms
     std::shared_ptr<TermQuadratic<State, control_dim>> termQuadratic_interm(new TermQuadratic<State, control_dim>);
-    std::shared_ptr<TermQuadratic<State, control_dim, AD_State>> termQuadraticAD_interm(
-        new TermQuadratic<State, control_dim, AD_State>);
+    std::shared_ptr<TermQuadratic<AD_State, control_dim>> termQuadraticAD_interm(
+        new TermQuadratic<AD_State, control_dim>);
 
     // final cost terms
     std::shared_ptr<TermQuadratic<State, control_dim>> termQuadratic_final(new TermQuadratic<State, control_dim>);
-    std::shared_ptr<TermQuadratic<State, control_dim, AD_State>> termQuadraticAD_final(
-        new TermQuadratic<State, control_dim, AD_State>);
+    std::shared_ptr<TermQuadratic<AD_State, control_dim>> termQuadraticAD_final(
+        new TermQuadratic<AD_State, control_dim>);
 
     costFunction.addIntermediateTerm(termQuadratic_interm, true);
     costFunctionAD.addIntermediateADTerm(termQuadraticAD_interm, true);
@@ -149,7 +149,7 @@ TEST(CostFunctionTest, ADQuadraticTest)
             costFunctionAD.initialize();
 
             // create cloned cost function
-            std::shared_ptr<CostFunctionAD<State, control_dim, AD_State>> costFunctionAD_clone(costFunctionAD.clone());
+            std::shared_ptr<CostFunctionAD<AD_State, control_dim>> costFunctionAD_clone(costFunctionAD.clone());
 
             for (size_t j = 0; j < nTests; j++)
             {
