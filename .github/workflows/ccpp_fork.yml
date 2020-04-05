@@ -1,0 +1,64 @@
+name: ControlToolbox CI
+
+on:
+  pull_request:
+    branches:
+      - v3*
+      - 3*
+      - 4*
+      - 2*
+      - v2*
+      - master
+  schedule:
+   - cron: "0 2 * * 0"
+
+jobs:
+  ct_ci:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-16.04, ubuntu-18.04]
+        compiler: [gcc, clang]
+
+    steps:
+    - name: checkout code
+      uses: actions/checkout@v2
+    - name: Install Gtest
+      run: |
+        sudo apt-get update                     >/dev/null # suppress output
+        sudo apt-get install cmake              >/dev/null # suppress output
+        sudo apt install libgtest-dev           >/dev/null # suppress output
+        cd /usr/src/gtest/                      >/dev/null # suppress output
+        sudo mkdir build && cd build            >/dev/null # suppress output
+        sudo cmake .. -DBUILD_SHARED_LIBS=ON    >/dev/null # suppress output
+        sudo make                               >/dev/null # suppress output
+        sudo cp *.so /usr/lib                   >/dev/null # suppress output
+        cd ~/                                   >/dev/null # suppress output
+    - name: Create workspace
+      run: |
+        mkdir -p ~/catkin_ws/src
+        cd ~/catkin_ws/src
+        ln -s $GITHUB_WORKSPACE .
+    - name: Install deb-packaged dependencies
+      run: |
+        cd ~/catkin_ws/src/control-toolbox/ct
+        chmod 775 install_deps.sh
+        sudo ./install_deps.sh
+    - name: Install kindr
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        cd ~/catkin_ws/src/
+        git clone https://github.com/ANYbotics/kindr.git
+        cd kindr
+        mkdir -p build && cd build
+        cmake .. && make
+        sudo make install
+    - name: build and run unit tests
+      continue-on-error: false
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        cd ~/catkin_ws/src/control-toolbox/ct
+        sudo ./run_unit_tests.sh -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
+        sudo ./uninstall_ct.sh
