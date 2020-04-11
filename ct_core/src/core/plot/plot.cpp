@@ -60,6 +60,10 @@
 
 #ifdef PLOTTING_ENABLED
 #include <Python.h>
+
+#define PyString_FromString PyUnicode_FromString
+#define PyInt_FromLong PyLong_FromLong
+#define PyString_ FromString PyUnicode_FromString
 #endif
 
 namespace ct {
@@ -106,7 +110,7 @@ struct _interpreter
 private:
     _interpreter()
     {
-        char name[] = "plotting";  // silence compiler warning about const strings
+        wchar_t name[] = L"plotting";  // silence compiler warning about const strings
         Py_SetProgramName(name);   // optional but recommended
         Py_Initialize();
 
