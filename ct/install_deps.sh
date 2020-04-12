@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo apt-get update                 
+sudo apt-get update
 
 ## get lapack
 yes Y | sudo apt-get install liblapack-dev
@@ -22,6 +22,9 @@ yes Y | sudo apt install libomp-dev
 
 ## get clang
 yes Y | sudo apt install clang
+
+## get python 3 and related python packages
+yes Y | sudo apt install python3 python3-dev python3-numpy python3-matplotlib
 
 ## get CppAD and CppADCodeGen
 sudo ./install_cppadcg.sh
