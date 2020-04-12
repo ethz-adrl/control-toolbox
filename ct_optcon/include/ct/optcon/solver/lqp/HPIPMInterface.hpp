@@ -152,13 +152,6 @@ private:
      */
     bool changeProblemSize(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem);
 
-    /**
-     * @brief compute the array of inverses of the Lr-matrix from the cholesky factorization of the Hessian
-     * @note is put into separate function since triggered by request and flagged by bool
-     */
-    void computeLrInvArray();
-    bool isLrInvComputed_;
-
     //! prints a matrix in column-major format
     void d_print_mat(int m, int n, double* A, int lda);
 
@@ -219,10 +212,6 @@ private:
     std::vector<int*> hidxs_;
     std::vector<double*> hlls_;
     std::vector<double*> hlus_;
-
-    // cached data for efficiency
-    ct::core::DiscreteArray<ct::core::ControlMatrix<control_dim>> Lr_inv_;  // inv of cholesky matrix of hessian H
-
 
     //! settings from NLOptConSolver
     NLOptConSettings settings_;
