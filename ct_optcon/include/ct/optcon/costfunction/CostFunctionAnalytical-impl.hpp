@@ -66,7 +66,7 @@ void CostFunctionAnalytical<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(
             termName = pt.get<std::string>(currentTerm + ".name");
             if (verbose)
                 std::cout << "Trying to add " + termName + " as term" << std::endl;
-        } catch (boost::property_tree::ptree_bad_path err)
+        } catch (boost::property_tree::ptree_bad_path& err)
         {
             termName = "Unnamed";
             if (verbose)
