@@ -46,7 +46,7 @@ if(BUILD_TESTS)
     #    package_add_test(constraint_comparison constraint/ConstraintComparison.cpp)
     #    package_add_test(constraint_test constraint/ConstraintTest.cpp)
         package_add_test(CostFunctionTests costfunction/CostFunctionTests.cpp)
-    #    package_add_test(LoadFromFileTest costfunction/LoadFromFileTest.cpp)
+        package_add_test(LoadFromFileTest costfunction/LoadFromFileTest.cpp)
     endif()
     
     #package_add_test(dms_test dms/oscillator/oscDMSTest.cpp)

@@ -16,14 +16,16 @@ OptConProblem<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem(DynamicsPtr_t nonlin
       x0_(MANIFOLD::NeutralElement()),
       controlledSystem_(nonlinDynamics),
       costFunction_(costFunction),
-      linearizedSystem_(linearSystem),
-      inputBoxConstraints_(nullptr),
+      linearizedSystem_(linearSystem)
+/*,
+      inputBoxConstraints_(nullptr), // TODO: bring back this member
       stateBoxConstraints_(nullptr),
-      generalConstraints_(nullptr)
+      generalConstraints_(nullptr) */
 {
     if (linearSystem == nullptr)  // no linearization provided
     {
-        linearizedSystem_ = std::shared_ptr<LINEARIZER_T>(new LINEARIZER_T(controlledSystem_));
+        linearizedSystem_ = std::shared_ptr<ct::core::SystemLinearizer<MANIFOLD, CONTROL_DIM, TIME_T>>(
+            new ct::core::SystemLinearizer<MANIFOLD, CONTROL_DIM, TIME_T>(controlledSystem_));
     }
 }
 
@@ -40,7 +42,7 @@ OptConProblem<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem(const Time_t tf,
     x0_ = x0;
 }
 
-
+/*
 template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
 OptConProblem<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem(DynamicsPtr_t nonlinDynamics,
     CostFunctionPtr_t costFunction,
@@ -75,6 +77,7 @@ OptConProblem<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem(const Time_t tf,
     tf_ = tf;
     x0_ = x0;
 }
+*/
 
 
 template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
@@ -139,6 +142,7 @@ void OptConProblem<MANIFOLD, CONTROL_DIM, TIME_T>::setCostFunction(const CostFun
     costFunction_ = cost;
 }
 
+/*
 template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
 void OptConProblem<MANIFOLD, CONTROL_DIM, TIME_T>::setInputBoxConstraints(const ConstraintPtr_t constraint)
 {
@@ -183,6 +187,7 @@ OptConProblem<MANIFOLD, CONTROL_DIM, TIME_T>::getGeneralConstraints() const
 {
     return generalConstraints_;
 }
+*/
 
 template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
 const MANIFOLD OptConProblem<MANIFOLD, CONTROL_DIM, TIME_T>::getInitialState() const

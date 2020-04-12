@@ -16,8 +16,11 @@ const bool verbose = false;
 const size_t state_dim = 12;
 const size_t control_dim = 6;
 
+using State = ct::core::EuclideanState<state_dim, double>;
+using StateAD = ct::core::EuclideanState<state_dim, ct::core::ADCGScalar>;
+
 // test state and control
-ct::core::StateVector<state_dim> x = ct::core::StateVector<state_dim>::Random();
+State x = State::Random();
 ct::core::ControlVector<control_dim> u = ct::core::ControlVector<control_dim>::Random();
 double t = 0.0;
 
@@ -31,16 +34,16 @@ TEST(LoadCostFromFileTest, LoadAnalyticalDirect)
 {
     try
     {
-        std::shared_ptr<ct::optcon::CostFunctionAnalytical<state_dim, control_dim>> costFun(
-            new ct::optcon::CostFunctionAnalytical<state_dim, control_dim>(costFunctionFile, verbose));
+        std::shared_ptr<ct::optcon::CostFunctionAnalytical<State, control_dim>> costFun(
+            new ct::optcon::CostFunctionAnalytical<State, control_dim>(costFunctionFile, verbose));
 
         // check cloning
-        std::shared_ptr<ct::optcon::CostFunctionAnalytical<state_dim, control_dim>> costFun_cloned(costFun->clone());
+        std::shared_ptr<ct::optcon::CostFunctionAnalytical<State, control_dim>> costFun_cloned(costFun->clone());
 
         // set states and compare costs and gradients
         costFun->setCurrentStateAndControl(x, u, t);
         costFun_cloned->setCurrentStateAndControl(x, u, t);
-        compareCostFunctionOutput<state_dim, control_dim>(*costFun, *costFun_cloned);
+        compareCostFunctionOutput(*costFun, *costFun_cloned);
 
     } catch (std::runtime_error& e)
     {
@@ -55,14 +58,14 @@ TEST(LoadCostFromFileTest, LoadAnalyticalViaTerms)
 {
     try
     {
-        std::shared_ptr<ct::optcon::CostFunctionAnalytical<state_dim, control_dim>> costFun(
-            new ct::optcon::CostFunctionAnalytical<state_dim, control_dim>());
+        std::shared_ptr<ct::optcon::CostFunctionAnalytical<State, control_dim>> costFun(
+            new ct::optcon::CostFunctionAnalytical<State, control_dim>());
 
         // here, we take the detour via loading the terms separately.
-        std::shared_ptr<ct::optcon::TermQuadratic<state_dim, control_dim>> termQuadratic_intermediate(
-            new ct::optcon::TermQuadratic<state_dim, control_dim>);
-        std::shared_ptr<ct::optcon::TermQuadratic<state_dim, control_dim>> termQuadratic_final(
-            new ct::optcon::TermQuadratic<state_dim, control_dim>);
+        std::shared_ptr<ct::optcon::TermQuadratic<State, control_dim>> termQuadratic_intermediate(
+            new ct::optcon::TermQuadratic<State, control_dim>);
+        std::shared_ptr<ct::optcon::TermQuadratic<State, control_dim>> termQuadratic_final(
+            new ct::optcon::TermQuadratic<State, control_dim>);
 
         termQuadratic_intermediate->loadConfigFile(costFunctionFile, "term0", verbose);
         termQuadratic_final->loadConfigFile(costFunctionFile, "term1", verbose);
@@ -70,13 +73,13 @@ TEST(LoadCostFromFileTest, LoadAnalyticalViaTerms)
         costFun->addIntermediateTerm(termQuadratic_intermediate);
         costFun->addFinalTerm(termQuadratic_final);
 
-        std::shared_ptr<ct::optcon::CostFunctionAnalytical<state_dim, control_dim>> costFun_cloned(costFun->clone());
+        std::shared_ptr<ct::optcon::CostFunctionAnalytical<State, control_dim>> costFun_cloned(costFun->clone());
 
 
         // set states and compare costs and gradients
         costFun->setCurrentStateAndControl(x, u, t);
         costFun_cloned->setCurrentStateAndControl(x, u, t);
-        compareCostFunctionOutput<state_dim, control_dim>(*costFun, *costFun_cloned);
+        compareCostFunctionOutput(*costFun, *costFun_cloned);
 
     } catch (std::runtime_error& e)
     {
@@ -91,15 +94,14 @@ TEST(LoadCostFromFileTest, LoadADViaTerms)
 {
     try
     {
-        std::shared_ptr<ct::optcon::CostFunctionAD<state_dim, control_dim>> costFun(
-            new ct::optcon::CostFunctionAD<state_dim, control_dim>());
+        std::shared_ptr<ct::optcon::CostFunctionAD<StateAD, control_dim>> costFun(
+            new ct::optcon::CostFunctionAD<StateAD, control_dim>());
 
         // here, we take the detour via loading the terms separately.
-        std::shared_ptr<ct::optcon::TermQuadratic<state_dim, control_dim, double, ct::core::ADCGScalar>>
-        termQuadraticAD_intermediate(
-            new ct::optcon::TermQuadratic<state_dim, control_dim, double, ct::core::ADCGScalar>);
-        std::shared_ptr<ct::optcon::TermQuadratic<state_dim, control_dim, double, ct::core::ADCGScalar>>
-        termQuadraticAD_final(new ct::optcon::TermQuadratic<state_dim, control_dim, double, ct::core::ADCGScalar>);
+        std::shared_ptr<ct::optcon::TermQuadratic<StateAD, control_dim>> termQuadraticAD_intermediate(
+            new ct::optcon::TermQuadratic<StateAD, control_dim>);
+        std::shared_ptr<ct::optcon::TermQuadratic<StateAD, control_dim>> termQuadraticAD_final(
+            new ct::optcon::TermQuadratic<StateAD, control_dim>);
 
         termQuadraticAD_intermediate->loadConfigFile(costFunctionFile, "term0", verbose);
         termQuadraticAD_final->loadConfigFile(costFunctionFile, "term1", verbose);
@@ -108,12 +110,12 @@ TEST(LoadCostFromFileTest, LoadADViaTerms)
         costFun->addFinalADTerm(termQuadraticAD_final);
         costFun->initialize();  // todo we need to get rid of this initialize call()
 
-        std::shared_ptr<ct::optcon::CostFunctionAD<state_dim, control_dim>> costFun_cloned(costFun->clone());
+        std::shared_ptr<ct::optcon::CostFunctionAD<StateAD, control_dim>> costFun_cloned(costFun->clone());
 
         // set states and compare costs and gradients
         costFun->setCurrentStateAndControl(x, u, t);
         costFun_cloned->setCurrentStateAndControl(x, u, t);
-        compareCostFunctionOutput<state_dim, control_dim>(*costFun, *costFun_cloned);
+        compareCostFunctionOutput(*costFun, *costFun_cloned);
 
     } catch (std::runtime_error& e)
     {
@@ -128,18 +130,18 @@ TEST(LoadCostFromFileTest, LoadADDirect1)
     try
     {
         // first create object
-        std::shared_ptr<ct::optcon::CostFunctionAD<state_dim, control_dim>> costFun(
-            new ct::optcon::CostFunctionAD<state_dim, control_dim>());
+        std::shared_ptr<ct::optcon::CostFunctionAD<StateAD, control_dim>> costFun(
+            new ct::optcon::CostFunctionAD<StateAD, control_dim>());
         // then load and initialize
         costFun->loadFromConfigFile(costFunctionFile, verbose);
         costFun->initialize();  // todo need to get rid of this init call
 
-        std::shared_ptr<ct::optcon::CostFunctionAD<state_dim, control_dim>> costFun_cloned(costFun->clone());
+        std::shared_ptr<ct::optcon::CostFunctionAD<StateAD, control_dim>> costFun_cloned(costFun->clone());
 
         // set states and compare costs and gradients
         costFun->setCurrentStateAndControl(x, u, t);
         costFun_cloned->setCurrentStateAndControl(x, u, t);
-        compareCostFunctionOutput<state_dim, control_dim>(*costFun, *costFun_cloned);
+        compareCostFunctionOutput(*costFun, *costFun_cloned);
 
     } catch (std::runtime_error& e)
     {
@@ -155,16 +157,16 @@ TEST(LoadCostFromFileTest, LoadADDirect2)
     try
     {
         // test constructor taking the cost function file directly
-        std::shared_ptr<ct::optcon::CostFunctionAD<state_dim, control_dim>> costFun(
-            new ct::optcon::CostFunctionAD<state_dim, control_dim>(costFunctionFile, verbose));
+        std::shared_ptr<ct::optcon::CostFunctionAD<StateAD, control_dim>> costFun(
+            new ct::optcon::CostFunctionAD<StateAD, control_dim>(costFunctionFile, verbose));
         costFun->initialize();  // todo need to get rid of this init call
 
-        std::shared_ptr<ct::optcon::CostFunctionAD<state_dim, control_dim>> costFun_cloned(costFun->clone());
+        std::shared_ptr<ct::optcon::CostFunctionAD<StateAD, control_dim>> costFun_cloned(costFun->clone());
 
         // set states and compare costs and gradients
         costFun->setCurrentStateAndControl(x, u, t);
         costFun_cloned->setCurrentStateAndControl(x, u, t);
-        compareCostFunctionOutput<state_dim, control_dim>(*costFun, *costFun_cloned);
+        compareCostFunctionOutput(*costFun, *costFun_cloned);
 
     } catch (std::runtime_error& e)
     {

@@ -47,12 +47,12 @@ public:
     using LinearSystem_t = ct::core::LinearSystem<MANIFOLD, CONTROL_DIM, TIME_T>;
     using LinearPtr_t = std::shared_ptr<LinearSystem_t>;
 
-    using CostFunctionPtr_t = std::shared_ptr<optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>>;
-    using ConstraintPtr_t = std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>>;
+    using CostFunctionPtr_t = std::shared_ptr<optcon::CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>>;
+    // using ConstraintPtr_t = std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>>; // TODO
 
     using Time_t typename ControlledSystem_t::Time_t;
 
-    OptConProblem() = default;  // todo
+    OptConProblem() = default;  // TODO
 
     /*!
      * @brief Construct a simple unconstrained Optimal Control Problem
@@ -92,12 +92,12 @@ public:
      * \warning time and initial state to be specified later
      * \warning If the user does not specify the derivatives, they are generated automatically using numerical differentiation. This is slow
      */
-    OptConProblem(DynamicsPtr_t nonlinDynamics,
-        CostFunctionPtr_t costFunction,
-        ConstraintPtr_t inputBoxConstraints,
-        ConstraintPtr_t stateBoxConstraints,
-        ConstraintPtr_t generalConstraints,
-        LinearPtr_t linearSystem = nullptr);
+    //OptConProblem(DynamicsPtr_t nonlinDynamics, // TODO: bring back this constructor
+    //    CostFunctionPtr_t costFunction,
+    //    ConstraintPtr_t inputBoxConstraints,
+    //    ConstraintPtr_t stateBoxConstraints,
+    //    ConstraintPtr_t generalConstraints,
+    //    LinearPtr_t linearSystem = nullptr);
 
     /*!
      * @brief Construct a constrained Optimal Control Problem
@@ -114,14 +114,14 @@ public:
      * \warning time and initial state to be specified later
      * \warning If the user does not specify the derivatives, they are generated automatically using numerical differentiation. This is slow
      */
-    OptConProblem(const Time_t tf,
-        const MANIFOLD& x0,
-        DynamicsPtr_t nonlinDynamics,
-        CostFunctionPtr_t costFunction,
-        ConstraintPtr_t inputBoxConstraints,
-        ConstraintPtr_t stateBoxConstraints,
-        ConstraintPtr_t generalConstraints,
-        LinearPtr_t linearSystem = nullptr);
+    //OptConProblem(const Time_t tf, // TODO: bring back this constructor
+    //    const MANIFOLD& x0,
+    //    DynamicsPtr_t nonlinDynamics,
+    //    CostFunctionPtr_t costFunction,
+    //    ConstraintPtr_t inputBoxConstraints,
+    //    ConstraintPtr_t stateBoxConstraints,
+    //    ConstraintPtr_t generalConstraints,
+    //    LinearPtr_t linearSystem = nullptr);
 
     //! check if all the ingredients for an unconstrained optimal control problem are there
     void verify() const;
@@ -160,40 +160,40 @@ public:
      * set input box constraints
      * @param constraint pointer to box constraint
      */
-    void setInputBoxConstraints(const ConstraintPtr_t constraint);
+    //void setInputBoxConstraints(const ConstraintPtr_t constraint); // TODO: bring back this method
 
     /*!
      * set state box constraints
      * @param constraint pointer to box constraint
      */
-    void setStateBoxConstraints(const ConstraintPtr_t constraint);
+    //void setStateBoxConstraints(const ConstraintPtr_t constraint);  // TODO: bring back this method
 
     /*!
      * set general constraints
      * @param constraint pointer to a general constraint
      */
-    void setGeneralConstraints(const ConstraintPtr_t constraint);
+    // void setGeneralConstraints(const ConstraintPtr_t constraint);  // TODO: bring back this method
 
     /**
      * @brief      Retrieve the input box constraints
      *
      * @return     The input box constraints.
      */
-    const ConstraintPtr_t getInputBoxConstraints() const;
+    // const ConstraintPtr_t getInputBoxConstraints() const;  // TODO: bring back this method
 
     /**
      * @brief      Retrieve the state box constraints
      *
      * @return     The state box constraints.
      */
-    const ConstraintPtr_t getStateBoxConstraints() const;
+    // const ConstraintPtr_t getStateBoxConstraints() const;  // TODO: bring back this method
 
     /**
      * @brief      Retrieves the general constraints
      *
      * @return     The the general constraints
      */
-    const ConstraintPtr_t getGeneralConstraints() const;
+    // const ConstraintPtr_t getGeneralConstraints() const;  // TODO: bring back this method
 
     /*!
      * get initial state (called by solvers)
@@ -232,21 +232,21 @@ private:
      * Expected form:
      * \f$ u_{lb} \leq u \leq u_{ub} \f$
      */
-    ConstraintPtr_t inputBoxConstraints_;
+    // ConstraintPtr_t inputBoxConstraints_;  // TODO: bring back this member
 
     /*!
      * @brief container for state box constraints of the problem
      * Expected form:
      * \f$ x_{lb} \leq x \leq x_{ub} \f$
      */
-    ConstraintPtr_t stateBoxConstraints_;
+    // ConstraintPtr_t stateBoxConstraints_; // TODO: bring back this member
 
     /*!
      * @brief container of all the general constraints of the problem
      * Expected form:
      * \f$ d_{lb} \leq g(x,u) \leq d_{ub} \f$
      */
-    ConstraintPtr_t generalConstraints_;
+    // ConstraintPtr_t generalConstraints_; // TODO: bring back this member
 };
 
 }  // namespace optcon

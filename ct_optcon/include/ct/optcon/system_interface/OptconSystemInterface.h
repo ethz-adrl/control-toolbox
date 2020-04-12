@@ -21,18 +21,20 @@ namespace optcon {
  * \tparam OPTCONPROBLEM type of the optConProblem (continuous or discrete)
  * \tparam SCALAR the underlying scalar type
  */
-template <typename MANIFOLD, size_t CONTROL_DIM, typename OPTCONPROBLEM, typename SCALAR = double>
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
 class OptconSystemInterface
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
+    using SCALAR = typename MANIFOLD::Scalar;
+
     typedef ct::core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
-    typedef ct::core::StateVector<STATE_DIM, SCALAR> state_vector_t;
     typedef ct::core::StateMatrix<STATE_DIM, SCALAR> state_matrix_t;
     typedef ct::core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> state_control_matrix_t;
 
-    typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
+    typedef ct::core::DiscreteArray<MANIFOLD> StateVectorArray;
     typedef std::shared_ptr<StateVectorArray> StateVectorArrayPtr;
     typedef std::vector<StateVectorArrayPtr, Eigen::aligned_allocator<StateVectorArrayPtr>> StateSubsteps;
     typedef std::shared_ptr<StateSubsteps> StateSubstepsPtr;
@@ -42,10 +44,10 @@ public:
     typedef std::vector<ControlVectorArrayPtr, Eigen::aligned_allocator<ControlVectorArrayPtr>> ControlSubsteps;
     typedef std::shared_ptr<ControlSubsteps> ControlSubstepsPtr;
 
-    typedef ct::core::ConstantController<STATE_DIM, CONTROL_DIM, SCALAR> constant_controller_t;
+    typedef ct::core::ConstantController<MANIFOLD, CONTROL_DIM, TIME_T> constant_controller_t;
     typedef std::shared_ptr<constant_controller_t> ConstantControllerPtr;
 
-    typedef OPTCONPROBLEM optConProblem_t;
+    using optConProblem_t = OptConProblem<MANIFOLD, CONTROL_DIM, TIME_T>;
     typedef NLOptConSettings settings_t;
 
     //! constructor
@@ -90,10 +92,10 @@ public:
      * @param stateNext the resulting propagated state
      * @param threadId which thread specific instantiations to use
      */
-    virtual void propagateControlledDynamics(const state_vector_t& state,
-        const time_t n,
+    virtual void computeControlledDynamics(const MANIFOLD& m,
+        const int n,
         const control_vector_t& control,
-        state_vector_t& stateNext,
+        typename MANIFOLD::Tangent& t,
         const size_t threadId) = 0;
 
     //! set the number of stages/time steps

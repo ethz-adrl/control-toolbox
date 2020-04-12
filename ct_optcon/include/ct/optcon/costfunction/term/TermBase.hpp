@@ -80,21 +80,6 @@ public:
         const SCALAR& t) = 0;
 
     /**
-	 * @brief      Gets called by the analytical costfunction. Adds time
-	 *             dependent activations on top of the term
-	 *
-	 * @param[in]  x     The current state
-	 * @param[in]  u     The current control
-	 * @param[in]  t     The current time
-	 *
-	 * @return     The evaluatated cost term
-	 */
-    //SCALAR_EVAL eval(const Eigen::Matrix<SCALAR_EVAL, STATE_DIM, 1>& x,
-    //    const Eigen::Matrix<SCALAR_EVAL, CONTROL_DIM, 1>& u,
-    //    const SCALAR_EVAL& t);
-    // REPLACE by: computeActivation(t) * evaluate(x, u, t);
-
-    /**
 	 * \brief Returns if term is non-zero at a specific time
 	 * By default, all terms are evaluated at all times. However, if a term is not active at a certain time, you can overload this
 	 * function to spare evaluations of the term and its derivatives

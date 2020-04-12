@@ -86,20 +86,19 @@ TEST(CostFunctionTest, ADQuadraticTest)
     const size_t nTests = 10;
 
     using State = ct::core::EuclideanState<state_dim, double>;
-    using AD_State = ct::core::EuclideanState<state_dim, ct::core::ADCGScalar>;
+    using StateAD = ct::core::EuclideanState<state_dim, ct::core::ADCGScalar>;
 
     CostFunctionAnalytical<State, control_dim> costFunction;
-    CostFunctionAD<AD_State, control_dim> costFunctionAD;
+    CostFunctionAD<StateAD, control_dim> costFunctionAD;
 
     // intermediate cost terms
     std::shared_ptr<TermQuadratic<State, control_dim>> termQuadratic_interm(new TermQuadratic<State, control_dim>);
-    std::shared_ptr<TermQuadratic<AD_State, control_dim>> termQuadraticAD_interm(
-        new TermQuadratic<AD_State, control_dim>);
+    std::shared_ptr<TermQuadratic<StateAD, control_dim>> termQuadraticAD_interm(
+        new TermQuadratic<StateAD, control_dim>);
 
     // final cost terms
     std::shared_ptr<TermQuadratic<State, control_dim>> termQuadratic_final(new TermQuadratic<State, control_dim>);
-    std::shared_ptr<TermQuadratic<AD_State, control_dim>> termQuadraticAD_final(
-        new TermQuadratic<AD_State, control_dim>);
+    std::shared_ptr<TermQuadratic<StateAD, control_dim>> termQuadraticAD_final(new TermQuadratic<StateAD, control_dim>);
 
     costFunction.addIntermediateTerm(termQuadratic_interm, true);
     costFunctionAD.addIntermediateADTerm(termQuadraticAD_interm, true);
@@ -110,7 +109,7 @@ TEST(CostFunctionTest, ADQuadraticTest)
     Eigen::Matrix<double, state_dim, state_dim> Q_final;
     Eigen::Matrix<double, control_dim, control_dim> R;
 
-    core::StateVector<state_dim> x_ref;
+    State x_ref;
     core::ControlVector<control_dim> u_ref;
 
     for (size_t i = 0; i < nWeights; i++)
@@ -149,7 +148,7 @@ TEST(CostFunctionTest, ADQuadraticTest)
             costFunctionAD.initialize();
 
             // create cloned cost function
-            std::shared_ptr<CostFunctionAD<AD_State, control_dim>> costFunctionAD_clone(costFunctionAD.clone());
+            std::shared_ptr<CostFunctionAD<StateAD, control_dim>> costFunctionAD_clone(costFunctionAD.clone());
 
             for (size_t j = 0; j < nTests; j++)
             {
@@ -185,6 +184,7 @@ TEST(CostFunctionTest, ADQuadraticTest)
             }
         } catch (std::exception& e)
         {
+            std::cout << e.what() << std::endl;
             FAIL();
         }
     }

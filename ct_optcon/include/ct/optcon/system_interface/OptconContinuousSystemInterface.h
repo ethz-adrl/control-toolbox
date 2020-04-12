@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include "OptconSystemInterface.h"
+
 namespace ct {
 namespace optcon {
 
@@ -20,34 +22,23 @@ namespace optcon {
  * \tparam V_DIM size for symplectic integrator
  * \tparam SCALAR the underlying scalar type
  */
-template <size_t STATE_DIM,
-    size_t CONTROL_DIM,
-    size_t P_DIM = STATE_DIM / 2,
-    size_t V_DIM = STATE_DIM / 2,
-    typename SCALAR = double>
-class OptconContinuousSystemInterface : public OptconSystemInterface<STATE_DIM,
-                                            CONTROL_DIM,
-                                            ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>,
-                                            SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM>
+class OptconContinuousSystemInterface
+    : public OptconSystemInterface<MANIFOLD, CONTROL_DIM, ct::core::TIME_TYPE::CONTINUOUS_TIME>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef OptconSystemInterface<STATE_DIM,
-        CONTROL_DIM,
-        ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>,
-        SCALAR>
-        Base;
+    typedef OptconSystemInterface<MANIFOLD, CONTROL_DIM, ct::core::TIME_TYPE::CONTINUOUS_TIME> Base;
 
     typedef typename Base::control_vector_t control_vector_t;
-    typedef typename Base::state_vector_t state_vector_t;
     typedef typename Base::state_matrix_t state_matrix_t;
     typedef typename Base::state_control_matrix_t state_control_matrix_t;
 
-    typedef ct::core::SystemDiscretizer<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR> discretizer_t;
+    typedef ct::core::SystemDiscretizer<MANIFOLD, CONTROL_DIM> discretizer_t;
     typedef std::shared_ptr<discretizer_t> system_discretizer_ptr_t;
 
-    typedef ct::core::Sensitivity<STATE_DIM, CONTROL_DIM, SCALAR> Sensitivity_t;
+    typedef ct::core::Sensitivity<MANIFOLD, CONTROL_DIM> Sensitivity_t;
     typedef std::shared_ptr<Sensitivity_t> SensitivityPtr;
 
     typedef typename Base::StateVectorArrayPtr StateVectorArrayPtr;
@@ -95,10 +86,10 @@ public:
      * @param stateNext the resulting propagated state
      * @param threadId which thread specific instantiations to use
      */
-    virtual void propagateControlledDynamics(const state_vector_t& state,
-        const time_t n,
+    virtual void computeControlledDynamics(const MANIFOLD& m,
+        const int n,
         const control_vector_t& control,
-        state_vector_t& stateNext,
+        typename MANIFOLD::Tangent& t,
         const size_t threadId) override;
 
     virtual void changeNonlinearSystem(const typename optConProblem_t::DynamicsPtr_t& dyn) override;
