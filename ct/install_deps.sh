@@ -9,7 +9,7 @@ yes Y | sudo apt-get install liblapack-dev
 yes Y | sudo apt-get install libeigen3-dev
 
 ## get cmake
-yes Y | sudo apt-get install cmake
+sudo ./install_cmake.sh
 
 ## get IPOPT
 yes Y | sudo apt-get install coinor-libipopt-dev

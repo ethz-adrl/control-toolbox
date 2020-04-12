@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.3)
+cmake_minimum_required (VERSION 3.14.7)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
@@ -64,13 +64,13 @@ else()
 endif()
 
 find_package(Python COMPONENTS Development NumPy QUIET)
-if (Python_FOUND)
+if (Python_FOUND AND ${Python_VERSION_MAJOR} EQUAL 3)
    message(STATUS "Found python " ${Python_VERSION})
    list(APPEND ct_core_COMPILE_DEFINITIONS PLOTTING_ENABLED)
    message(STATUS "Python library path ... " ${Python_LIBRARIES})
    list(APPEND ct_core_LIBS ${Python_LIBRARIES})
 else()
-   message(STATUS "Python not found, plotting will not be available")
+   message(STATUS "Python 3 not found, plotting will not be available")
 endif()
 
 
