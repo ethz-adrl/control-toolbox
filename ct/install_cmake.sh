@@ -1,13 +1,12 @@
 #!/bin/bash
 
-## get cmake 3.14.7
-echo "removing system cmake ..."
+## get latest cmake
+echo "removing current cmake ..."
 yes Y | apt remove cmake
-echo "now installing cmake 3.14.7 ..."
-cd /tmp
-wget https://cmake.org/files/v3.14/cmake-3.14.7.tar.gz
-tar -xzvf cmake-3.14.7.tar.gz
-cd /tmp/cmake-3.14.7
-./bootstrap
-make
-sudo make install
+echo "now installing latest cmake ..."
+yes Y | apt install apt-transport-https ca-certificates gnupg software-properties-common wget
+wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
+DISTRO="$(lsb_release -cs)"
+apt-add-repository "deb https://apt.kitware.com/ubuntu/ ${DISTRO} main"
+apt update
+yes Y | apt install cmake
