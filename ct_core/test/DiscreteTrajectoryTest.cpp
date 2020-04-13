@@ -15,7 +15,7 @@ using namespace ct::core;
 /**
  * this implements a trivial test for the trajectory class
  */
-TEST(TrajectoryTest, TrajectoryTest)
+TEST(TrajectoryTest, EuclideanTest)
 {
     // a trajectory with 10 points, starting at t = 0 with dt = 1.0
     ct::core::Time dt = 1.0;
@@ -24,26 +24,27 @@ TEST(TrajectoryTest, TrajectoryTest)
     TimeArray timeArray(dt, nPoints);
 
     // choose the state array to match the evolution of time
-    StateVector<2> start;
+    using State = EuclideanState<2>;
+    State start, end;
     start.setZero();
-    StateVector<2> end;
     end << 9, 9;
-    StateVectorArray<2> stateArray(linspace<StateVectorArray<2>>(start, end, nPoints));
+    DiscreteArray<State> stateArray(linspace<DiscreteArray<State>>(start, end, nPoints));
 
     // trajectory containers with zoh and linear interpolation
-    StateTrajectory<2> stateTrajectory_zoh(timeArray, stateArray, InterpolationType::ZOH);
-    StateTrajectory<2> stateTrajectory_lin(timeArray, stateArray, InterpolationType::LIN);
+    DiscreteTrajectory<State> stateTrajectory_zoh(timeArray, stateArray, InterpolationType::ZOH);
+    DiscreteTrajectory<State> stateTrajectory_lin(timeArray, stateArray, InterpolationType::LIN);
 
 
     for (size_t i = 0; i < timeArray.size(); i++)
     {
+        ASSERT_EQ(stateArray[i], stateTrajectory_zoh.eval(i));
         ASSERT_EQ(stateArray[i], stateTrajectory_lin.eval(i));
         //		std::cout << "t: " << timeArray[i] << " x: " << stateArray[i].transpose() << " traj: " << stateTrajectory_lin.eval(i).transpose() << std::endl;
     }
 
 
     // check if copy-constructor works
-    StateTrajectory<2> stateTrajectory_copied(stateTrajectory_lin);
+    DiscreteTrajectory<State> stateTrajectory_copied(stateTrajectory_lin);
     for (double i = 0; i <= nPoints - 1; i = i + 0.2)
     {
         ASSERT_EQ(stateTrajectory_lin.eval(i), stateTrajectory_copied.eval(i));
@@ -51,7 +52,7 @@ TEST(TrajectoryTest, TrajectoryTest)
 
 
     // check if swapping works
-    StateTrajectory<2> stateTrajectory_swapped(InterpolationType::LIN);
+    DiscreteTrajectory<State> stateTrajectory_swapped(InterpolationType::LIN);
     stateTrajectory_swapped.swapData(stateTrajectory_copied);
     for (double i = 0; i <= nPoints - 1; i = i + 0.2)
     {
@@ -82,6 +83,60 @@ TEST(TrajectoryTest, TrajectoryTest)
     {
         ASSERT_EQ(stateTrajectory_lin.eval(i), stateTrajectory_assigned.eval(i));
     }
+}
+
+
+TEST(TrajectoryTest, ManifoldTest)
+{
+    // a trajectory with 10 points, starting at t = 0 with dt = 1.0
+    ct::core::Time dt = 1.0;
+    size_t nPoints = 10;
+
+    TimeArray timeArray(dt, nPoints);
+
+    using State = ManifoldState<manif::SE3, manif::SE3Tangent>;
+    State start, end;
+    start.setIdentity();
+    end.setRandom();
+    DiscreteArray<State> stateArray(linspace<DiscreteArray<State>>(start, end, nPoints));
+
+    // trajectory containers with zoh and linear interpolation
+    DiscreteTrajectory<State> stateTrajectory_zoh(timeArray, stateArray, InterpolationType::ZOH);
+    DiscreteTrajectory<State> stateTrajectory_lin(timeArray, stateArray, InterpolationType::LIN);
+
+
+    for (size_t i = 0; i < timeArray.size(); i++)
+    {
+        ASSERT_TRUE(stateArray[i].isApprox(stateTrajectory_zoh.eval(i)));
+        ASSERT_TRUE(stateArray[i].isApprox(stateTrajectory_lin.eval(i)));
+        //		std::cout << "t: " << timeArray[i] << " x: " << stateArray[i].transpose() << " traj: " << stateTrajectory_lin.eval(i).transpose() << std::endl;
+    }
+
+
+    // check if copy-constructor works
+    DiscreteTrajectory<State> stateTrajectory_copied(stateTrajectory_lin);
+    for (double i = 0; i <= nPoints - 1; i = i + 0.2)
+    {
+        ASSERT_TRUE(stateTrajectory_lin.eval(i).isApprox(stateTrajectory_copied.eval(i)));
+    }
+
+
+    // check if swapping works
+    DiscreteTrajectory<State> stateTrajectory_swapped(InterpolationType::LIN);
+    stateTrajectory_swapped.swapData(stateTrajectory_copied);
+    for (double i = 0; i <= nPoints - 1; i = i + 0.2)
+    {
+        ASSERT_TRUE(stateTrajectory_lin.eval(i).isApprox(stateTrajectory_swapped.eval(i)));
+    }
+
+    // check if accessors work
+    ASSERT_TRUE(start.isApprox(stateTrajectory_lin.front()));
+    ASSERT_TRUE(end.isApprox(stateTrajectory_lin.back()));
+    ASSERT_TRUE(end.isApprox(stateTrajectory_lin[nPoints - 1]));
+
+
+    // check get Time from index
+    ASSERT_EQ(timeArray.back(), stateTrajectory_lin.getTimeFromIndex(nPoints - 1));
 }
 
 

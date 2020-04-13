@@ -29,31 +29,29 @@ class OptconContinuousSystemInterface
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef OptconSystemInterface<MANIFOLD, CONTROL_DIM, ct::core::TIME_TYPE::CONTINUOUS_TIME> Base;
+    using Base = OptconSystemInterface<MANIFOLD, CONTROL_DIM, ct::core::TIME_TYPE::CONTINUOUS_TIME>;
 
-    typedef typename Base::control_vector_t control_vector_t;
-    typedef typename Base::state_matrix_t state_matrix_t;
-    typedef typename Base::state_control_matrix_t state_control_matrix_t;
+    using control_vector_t = typename Base::control_vector_t;
+    using state_matrix_t = typename Base::state_matrix_t;
+    using state_control_matrix_t = typename Base::state_control_matrix_t;
 
-    typedef ct::core::SystemDiscretizer<MANIFOLD, CONTROL_DIM> discretizer_t;
-    typedef std::shared_ptr<discretizer_t> system_discretizer_ptr_t;
+    using discretizer_t = ct::core::SystemDiscretizer<MANIFOLD, CONTROL_DIM>;
+    using system_discretizer_ptr_t = std::shared_ptr<discretizer_t>;
 
-    typedef ct::core::Sensitivity<MANIFOLD, CONTROL_DIM> Sensitivity_t;
-    typedef std::shared_ptr<Sensitivity_t> SensitivityPtr;
+    using Sensitivity_t = ct::core::Sensitivity<MANIFOLD, CONTROL_DIM>;
+    using SensitivityPtr = std::shared_ptr<Sensitivity_t>;
 
-    typedef typename Base::StateVectorArrayPtr StateVectorArrayPtr;
-    typedef typename Base::StateSubstepsPtr StateSubstepsPtr;
-    typedef typename Base::ControlVectorArrayPtr ControlVectorArrayPtr;
-    typedef typename Base::ControlSubstepsPtr ControlSubstepsPtr;
+    using StateVectorArrayPtr = typename Base::StateVectorArrayPtr;
+    using StateSubstepsPtr = typename Base::StateSubstepsPtr;
+    using ControlVectorArrayPtr = typename Base::ControlVectorArrayPtr;
+    using ControlSubstepsPtr = typename Base::ControlSubstepsPtr;
 
-    typedef typename Base::optConProblem_t optConProblem_t;
-    typedef typename Base::settings_t settings_t;
+    using optConProblem_t = typename Base::optConProblem_t;
+    using settings_t = typename Base::settings_t;
 
-    //! constructor
     OptconContinuousSystemInterface(const optConProblem_t& problem, const settings_t& settings);
+    virtual ~OptconContinuousSystemInterface();
 
-    //! destructor
-    virtual ~OptconContinuousSystemInterface() {}
     //! perform necessary setup work
     virtual void initialize() override;
     virtual void configure(const settings_t& settings) override;
@@ -69,9 +67,9 @@ public:
      * @param B the resulting linear system matrix B
      * @param threadId which thread specific instantiations to use
      */
-    virtual void getAandB(const state_vector_t& x,
+    virtual void getAandB(const MANIFOLD& x,
         const control_vector_t& u,
-        const state_vector_t& x_next,
+        const MANIFOLD& x_next,
         const int n,
         size_t subSteps,
         state_matrix_t& A,
@@ -106,11 +104,11 @@ public:
         const size_t threadId) override;
 
 private:
-    std::vector<system_discretizer_ptr_t, Eigen::aligned_allocator<system_discretizer_ptr_t>>
-        discretizers_;  //! system discretizers
+    //! system discretizers
+    std::vector<system_discretizer_ptr_t, Eigen::aligned_allocator<system_discretizer_ptr_t>> discretizers_;
 
-    std::vector<SensitivityPtr, Eigen::aligned_allocator<SensitivityPtr>>
-        sensitivity_;  //! the ct sensitivity integrators
+    //! the ct sensitivity integrators
+    std::vector<SensitivityPtr, Eigen::aligned_allocator<SensitivityPtr>> sensitivity_;
 };
 
 }  // namespace optcon

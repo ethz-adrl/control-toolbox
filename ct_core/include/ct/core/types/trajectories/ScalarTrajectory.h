@@ -5,7 +5,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include "DiscreteTrajectoryBase.h"
+#include "DiscreteTrajectory.h"
 
 namespace ct {
 namespace core {
@@ -16,18 +16,12 @@ namespace core {
  * \tparam SCALAR scalar data type
  */
 template <class SCALAR = double, class TIME_SCALAR = double>
-class ScalarTrajectory : public DiscreteTrajectoryBase<ScalarTrajectory<SCALAR, TIME_SCALAR>,
-                             SCALAR,
-                             Eigen::aligned_allocator<SCALAR>,
-                             TIME_SCALAR>
+class ScalarTrajectory : public DiscreteTrajectory<SCALAR, Eigen::aligned_allocator<SCALAR>>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    using BASE = DiscreteTrajectoryBase<ScalarTrajectory<SCALAR, TIME_SCALAR>,
-        SCALAR,
-        Eigen::aligned_allocator<SCALAR>,
-        TIME_SCALAR>;
+    using BASE = DiscreteTrajectory<SCALAR, Eigen::aligned_allocator<SCALAR>>;
 
     //! default constructor
     ScalarTrajectory() = default;

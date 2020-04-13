@@ -5,7 +5,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/optcon/problem/ContinuousOptConProblem.h>
+#include <ct/optcon/problem/OptConProblem.h>
 
 #include <ct/optcon/nloc/NLOCBackendST.hpp>
 #include <ct/optcon/nloc/NLOCBackendMP.hpp>
@@ -27,8 +27,7 @@ template <size_t STATE_DIM,
     typename SCALAR = double,
     bool CONTINUOUS = true>
 class NLOptConSolver final
-    : public OptConSolver<NLOptConSolver<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>,
-          typename NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Policy_t,
+    : public OptConSolver<typename NLOCAlgorithm<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Policy_t,
           NLOptConSettings,
           STATE_DIM,
           CONTROL_DIM,

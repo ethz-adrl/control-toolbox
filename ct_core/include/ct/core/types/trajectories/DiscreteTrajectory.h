@@ -22,23 +22,23 @@ namespace core {
  *
  * An example how to use different features of the discrete trajectory can be found in unit test \ref DiscreteTrajectoryTest.cpp
  *
- * \tparam T type of each point of the trajectory
+ * \tparam MANIFOLD type of each point of the trajectory
  * \tparam Alloc allocator for trajectory points
  *
  * */
-template <class DERIVED, class T, class Alloc = Eigen::aligned_allocator<T>, typename SCALAR = double>
-class DiscreteTrajectoryBase
+template <typename MANIFOLD, class Alloc = Eigen::aligned_allocator<MANIFOLD>>
+class DiscreteTrajectory
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    using Scalar_t = SCALAR;
+    using Scalar_t = typename MANIFOLD::Scalar;
     using alloc_type = Alloc;
-    using DiscreteArray_t = DiscreteArray<T, alloc_type>;
-    using DiscreteTrajectoryBase_t = DiscreteTrajectoryBase<DERIVED, T, Alloc, SCALAR>;
+    using DiscreteArray_t = DiscreteArray<MANIFOLD, alloc_type>;
+    using DiscreteTrajectory_t = DiscreteTrajectory<MANIFOLD, Alloc>;
 
     //! default constructor
-    DiscreteTrajectoryBase(const InterpolationType& type = ZOH) : time_(), data_(), interp_(type) {}
+    DiscreteTrajectory(const InterpolationType& type = ZOH) : time_(), data_(), interp_(type) {}
     //! constructor
     /*!
 	 * Initializes a trajectory from time stamps and corresponding data points. Both arrays need to be of
@@ -48,8 +48,8 @@ public:
 	 * @param data data points
 	 * @param type interpolation strategy
 	 */
-    DiscreteTrajectoryBase(const tpl::TimeArray<SCALAR>& time,
-        const DiscreteArray<T, Alloc>& data,
+    DiscreteTrajectory(const tpl::TimeArray<Scalar_t>& time,
+        const DiscreteArray<MANIFOLD, Alloc>& data,
         const InterpolationType& type = ZOH)
         : time_(time), data_(data), interp_(type)
     {
@@ -63,17 +63,17 @@ public:
 	 * @param t0 time of first data point
 	 * @param type interpolation time
 	 */
-    DiscreteTrajectoryBase(const DiscreteArray<T, Alloc>& data,
-        const SCALAR& deltaT,
-        const SCALAR& t0,
+    DiscreteTrajectory(const DiscreteArray<MANIFOLD, Alloc>& data,
+        const Scalar_t& deltaT,
+        const Scalar_t& t0,
         const InterpolationType& type = ZOH)
         : time_(), data_(data), interp_(type)
     {
-        time_ = tpl::TimeArray<SCALAR>(deltaT, data.size(), t0);
+        time_ = tpl::TimeArray<Scalar_t>(deltaT, data.size(), t0);
     }
 
     //! copy constructor
-    DiscreteTrajectoryBase(const DiscreteTrajectoryBase<DERIVED, T, Alloc>& other)
+    DiscreteTrajectory(const DiscreteTrajectory<MANIFOLD, Alloc>& other)
         : time_(other.time_), data_(other.data_), interp_(other.interp_.getInterpolationType())
     {
     }
@@ -85,13 +85,11 @@ public:
 	 * @param startIndex index where the trajectory to be extracted starts
 	 * @param endIndex index where the trajectory to be extracted ends
 	 */
-    DiscreteTrajectoryBase(DiscreteTrajectoryBase<DERIVED, T, Alloc, SCALAR>& other,
-        const size_t startIndex,
-        const size_t endIndex)
+    DiscreteTrajectory(DiscreteTrajectory<MANIFOLD, Alloc>& other, const size_t startIndex, const size_t endIndex)
         : time_(), data_(), interp_(other.interp_.getInterpolationType())
     {
-        tpl::TimeArray<SCALAR> time_temp;
-        DiscreteArray<T, Alloc> data_temp;
+        tpl::TimeArray<Scalar_t> time_temp;
+        DiscreteArray<MANIFOLD, Alloc> data_temp;
 
         for (size_t i = startIndex; i <= endIndex; i++)
         {
@@ -104,14 +102,14 @@ public:
     }
 
     //! Destructor
-    virtual ~DiscreteTrajectoryBase() = default;
+    virtual ~DiscreteTrajectory() = default;
 
 
     //! set the data array
     /*!
 	 * @param data new data array
 	 */
-    void setData(const DiscreteArray<T, Alloc>& data) { data_ = data; }
+    void setData(const DiscreteArray<MANIFOLD, Alloc>& data) { data_ = data; }
     //! set the interpolation strategy
     /*!
 	 * @param type new interpolation strategy
@@ -121,14 +119,14 @@ public:
     /*!
 	 * @param time new time stamps
 	 */
-    void setTime(const tpl::TimeArray<SCALAR>& time) { time_ = time; }
+    void setTime(const tpl::TimeArray<Scalar_t>& time) { time_ = time; }
     //! shift the trajectory forward in time
     /*!
 	 * This method shifts the trajectory \b forward in time by applying a \b negative
 	 * offset to all time stamps.
 	 * @param dt offset (negative offset will be applied to timestamps)
 	 */
-    void shiftTime(const SCALAR& dt) { time_.addOffset(-dt); }
+    void shiftTime(const Scalar_t& dt) { time_.addOffset(-dt); }
     //! evaluate the trajectory at a certain time
     /*!
 	 * This evaluates the trajectory at a certain time. If the exact time is not
@@ -136,8 +134,12 @@ public:
 	 * @param time stamp at which to evaluate the trajectory
 	 * @return trajectory value
 	 */
-    virtual T eval(const SCALAR& evalTime) { return static_cast<DERIVED*>(this)->eval_specialized(evalTime); }
-
+    virtual MANIFOLD eval(const Scalar_t& t)
+    {
+        MANIFOLD result;
+        this->interp_.interpolate(time_, data_, t, result);
+        return result;
+    }
     //! returns the size of the trajectory
     /*!
 	 * @return size of trajectory
@@ -145,29 +147,29 @@ public:
     size_t size() const
     {
         if (data_.size() != time_.size())
-            throw std::runtime_error("DiscreteTrajectoryBase: size inconsistent.");
+            throw std::runtime_error("DiscreteTrajectory: size inconsistent.");
 
         return this->data_.size();
     }
 
     //! get the first element
-    T& front() { return data_.front(); }
+    MANIFOLD& front() { return data_.front(); }
     //! get the first element
-    const T& front() const { return data_.front(); }
+    const MANIFOLD& front() const { return data_.front(); }
     //! get the last element
-    T& back() { return data_.back(); }
+    MANIFOLD& back() { return data_.back(); }
     //! get the last element
-    const T& back() const { return data_.back(); }
+    const MANIFOLD& back() const { return data_.back(); }
     //! access a certain index of the trajectory (does not interpolate)
-    T& operator[](const size_t i) { return data_[i]; }
+    MANIFOLD& operator[](const size_t i) { return data_[i]; }
     //! access a certain index of the trajectory (does not interpolate)
-    const T& operator[](const size_t i) const { return data_[i]; }
+    const MANIFOLD& operator[](const size_t i) const { return data_[i]; }
     //! get the time stamp of the first element
-    const SCALAR startTime() const { return time_.front(); }
+    const Scalar_t startTime() const { return time_.front(); }
     //! get the time stamp of the last element
-    const SCALAR finalTime() const { return time_.back(); }
+    const Scalar_t finalTime() const { return time_.back(); }
     //! time duration of the trajectory
-    const SCALAR duration() const { return time_.back() - time_.front(); }
+    const Scalar_t duration() const { return time_.back() - time_.front(); }
     //! Add a data and time point at the end
     /*!
 	 * Add a data-point and a time-point to the end of the trajectory.
@@ -177,7 +179,7 @@ public:
 	 * 		true: time value is absolute, a simple push_back is sufficient
 	 * 		false: time value is relative to current end of time trajectory
 	 */
-    void push_back(const T& data, const SCALAR& time, const bool timeIsAbsolute)
+    void push_back(const MANIFOLD& data, const Scalar_t& time, const bool timeIsAbsolute)
     {
         if (timeIsAbsolute)
             time_.push_back(time);
@@ -199,7 +201,7 @@ public:
 	 * @param N		number of elements to erase from the front
 	 * @param dt	(optional) shift the time trajectory about dt.
 	 */
-    void eraseFront(const size_t& N, const SCALAR& dt = 0.0)
+    void eraseFront(const size_t& N, const Scalar_t& dt = 0.0)
     {
         time_.eraseFront(N);
         data_.eraseFront(N);
@@ -219,14 +221,14 @@ public:
 	 *
 	 * @param other trajectory to swap with
 	 */
-    void swapData(DiscreteTrajectoryBase& other)
+    void swapData(DiscreteTrajectory& other)
     {
         time_.swap(other.time_);
         data_.swap(other.data_);
     }
 
     //! assignment operator
-    DiscreteTrajectoryBase& operator=(const DiscreteTrajectoryBase& other)
+    DiscreteTrajectory& operator=(const DiscreteTrajectory& other)
     {
         if (this == &other)
             return *this;
@@ -239,22 +241,22 @@ public:
     }
 
     //! get the time stamp at a certain index
-    const SCALAR& getTimeFromIndex(const size_t& ind) const { return time_[ind]; }
+    const Scalar_t& getTimeFromIndex(const size_t& ind) const { return time_[ind]; }
     //! get the index associated with a certain time
     /*!
 	 * If the exact time is not stored, the interpolation will find the corresponding index.
 	 * @param t time to search for
 	 * @return according index
 	 */
-    size_t getIndexFromTime(const SCALAR& t) { return interp_.findIndex(time_, t); }
+    size_t getIndexFromTime(const Scalar_t& t) { return interp_.findIndex(time_, t); }
     //! get the data array
-    DiscreteArray<T, Alloc>& getDataArray() { return data_; }
+    DiscreteArray<MANIFOLD, Alloc>& getDataArray() { return data_; }
     //! get the data array
-    const DiscreteArray<T, Alloc>& getDataArray() const { return data_; }
+    const DiscreteArray<MANIFOLD, Alloc>& getDataArray() const { return data_; }
     //! get the time array
-    tpl::TimeArray<SCALAR>& getTimeArray() { return time_; }
+    tpl::TimeArray<Scalar_t>& getTimeArray() { return time_; }
     //! get the time array
-    const tpl::TimeArray<SCALAR>& getTimeArray() const { return time_; }
+    const tpl::TimeArray<Scalar_t>& getTimeArray() const { return time_; }
     //! print out the trajectory
     /*!
 	 * This is a convenience method allowing to quickly print out a trajectory, e.g. for debugging or for tutorial purposes.
@@ -269,11 +271,9 @@ public:
     }
 
 protected:
-    tpl::TimeArray<SCALAR> time_;  //!< time array
-
-    DiscreteArray<T, Alloc> data_;  //!< data array
-
-    Interpolation<T, Alloc, SCALAR> interp_;  //!< interpolation strategy
+    tpl::TimeArray<Scalar_t> time_;                    //!< time array
+    DiscreteArray<MANIFOLD, Alloc> data_;              //!< data array
+    Interpolation<MANIFOLD, Alloc, Scalar_t> interp_;  //!< interpolation strategy
 };
 
 } /* namespace core */

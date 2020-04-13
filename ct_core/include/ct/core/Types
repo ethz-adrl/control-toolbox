@@ -28,9 +28,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "types/arrays/ManifArrays.h"
 #include "types/arrays/ArrayHelpers.h"
 
-#include "types/trajectories/DiscreteTrajectoryBase.h"
+#include "types/trajectories/DiscreteTrajectory.h"
 #include "types/trajectories/ScalarTrajectory.h"
-#include "types/trajectories/EuclideanTrajectory.h"
 #include "types/trajectories/MatrixTrajectories.h"
 
 #include "types/TypeTraits.h"

@@ -51,7 +51,7 @@ if(BUILD_TESTS)
     
     #package_add_test(dms_test dms/oscillator/oscDMSTest.cpp)
     #package_add_test(dms_test_all_var dms/oscillator/oscDMSTestAllVariants.cpp)
-    #package_add_test(system_interface_test system_interface/SystemInterfaceTest.cpp)
+    package_add_test(system_interface_test system_interface/SystemInterfaceTest.cpp)
     
     if(HPIPM)
         message(STATUS "ct_optcon: building unit tests requiring HPIPM")

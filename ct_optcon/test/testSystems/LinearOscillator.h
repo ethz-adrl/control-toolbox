@@ -24,14 +24,17 @@ const double kStiffness = 0.1;
 namespace tpl {
 
 template <typename SCALAR = double>
-class LinearOscillator : public ControlledSystem<state_dim, control_dim, SCALAR>
+class LinearOscillator : public ControlledSystem<EuclideanState<state_dim, SCALAR>, control_dim, CONTINUOUS_TIME>
 {
 public:
-    LinearOscillator() : ControlledSystem<state_dim, control_dim, SCALAR>(SYSTEM_TYPE::GENERAL) {}
-    void computeControlledDynamics(const StateVector<state_dim, SCALAR>& state,
+    LinearOscillator()
+        : ControlledSystem<EuclideanState<state_dim, SCALAR>, control_dim, CONTINUOUS_TIME>(SYSTEM_TYPE::GENERAL)
+    {
+    }
+    void computeControlledDynamics(const EuclideanState<state_dim, SCALAR>& state,
         const SCALAR& t,
         const ControlVector<control_dim, SCALAR>& control,
-        StateVector<state_dim, SCALAR>& derivative) override
+        typename EuclideanState<state_dim, SCALAR>::Tangent& derivative) override
     {
         derivative(0) = state(1);
         derivative(1) = control(0) - kStiffness * state(0);  // mass is 1 kg
@@ -42,7 +45,7 @@ public:
 
 
 template <typename SCALAR = double>
-class LinearOscillatorLinear : public LinearSystem<state_dim, control_dim, SCALAR>
+class LinearOscillatorLinear : public LinearSystem<EuclideanState<state_dim, SCALAR>, control_dim, CONTINUOUS_TIME>
 {
 public:
     typedef core::StateMatrix<state_dim, SCALAR> state_matrix_t;
@@ -51,7 +54,7 @@ public:
     state_matrix_t A_;
     state_control_matrix_t B_;
 
-    const state_matrix_t& getDerivativeState(const StateVector<state_dim, SCALAR>& x,
+    const state_matrix_t& getDerivativeState(const EuclideanState<state_dim, SCALAR>& x,
         const ControlVector<control_dim, SCALAR>& u,
         const SCALAR t = 0.0) override
     {
@@ -59,7 +62,7 @@ public:
         return A_;
     }
 
-    const state_control_matrix_t& getDerivativeControl(const StateVector<state_dim, SCALAR>& x,
+    const state_control_matrix_t& getDerivativeControl(const EuclideanState<state_dim, SCALAR>& x,
         const ControlVector<control_dim, SCALAR>& u,
         const SCALAR t = 0.0) override
     {
@@ -72,8 +75,8 @@ public:
 
 
 template <typename SCALAR = double>
-std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim, SCALAR>> createCostFunctionLinearOscillator(
-    Eigen::Matrix<SCALAR, 2, 1>& x_final)
+std::shared_ptr<CostFunctionQuadratic<EuclideanState<state_dim, SCALAR>, control_dim>>
+    createCostFunctionLinearOscillator(Eigen::Matrix<SCALAR, 2, 1>& x_final)
 {
     Eigen::Matrix<SCALAR, 2, 2> Q;
     Q << 0, 0, 0, 1;
@@ -87,13 +90,13 @@ std::shared_ptr<CostFunctionQuadratic<state_dim, control_dim, SCALAR>> createCos
     Eigen::Matrix<SCALAR, 2, 2> Q_final;
     Q_final << 1000, 0, 0, 1000;
 
-    std::shared_ptr<TermQuadratic<state_dim, control_dim>> termIntermediate(
-        new TermQuadratic<state_dim, control_dim>(Q, R, x_nominal, u_nominal));
-    std::shared_ptr<TermQuadratic<state_dim, control_dim>> termFinal(
-        new TermQuadratic<state_dim, control_dim>(Q_final, R, x_final, u_nominal));
+    std::shared_ptr<TermQuadratic<EuclideanState<state_dim, SCALAR>, control_dim>> termIntermediate(
+        new TermQuadratic<EuclideanState<state_dim, SCALAR>, control_dim>(Q, R, x_nominal, u_nominal));
+    std::shared_ptr<TermQuadratic<EuclideanState<state_dim, SCALAR>, control_dim>> termFinal(
+        new TermQuadratic<EuclideanState<state_dim, SCALAR>, control_dim>(Q_final, R, x_final, u_nominal));
 
-    std::shared_ptr<CostFunctionAnalytical<state_dim, control_dim>> quadraticCostFunction(
-        new CostFunctionAnalytical<state_dim, control_dim>);
+    std::shared_ptr<CostFunctionAnalytical<EuclideanState<state_dim, SCALAR>, control_dim>> quadraticCostFunction(
+        new CostFunctionAnalytical<EuclideanState<state_dim, SCALAR>, control_dim>);
     quadraticCostFunction->addIntermediateTerm(termIntermediate);
     quadraticCostFunction->addFinalTerm(termFinal);
 

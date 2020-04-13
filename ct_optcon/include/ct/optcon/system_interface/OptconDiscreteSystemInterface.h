@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include "OptconSystemInterface.h"
+
 namespace ct {
 namespace optcon {
 
@@ -17,20 +19,15 @@ namespace optcon {
  * \tparam CONTROL_DIM size of input vector
  * \tparam SCALAR the underlying scalar type
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class OptconDiscreteSystemInterface : public OptconSystemInterface<STATE_DIM,
-                                          CONTROL_DIM,
-                                          DiscreteOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>,
-                                          SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM>
+class OptconDiscreteSystemInterface : public OptconSystemInterface<MANIFOLD, CONTROL_DIM, ct::core::DISCRETE_TIME>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef OptconSystemInterface<STATE_DIM, CONTROL_DIM, DiscreteOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>, SCALAR>
-        Base;
+    using Base = OptconSystemInterface<MANIFOLD, CONTROL_DIM, ct::core::DISCRETE_TIME>;
 
     typedef typename Base::control_vector_t control_vector_t;
-    typedef typename Base::state_vector_t state_vector_t;
     typedef typename Base::state_matrix_t state_matrix_t;
     typedef typename Base::state_control_matrix_t state_control_matrix_t;
 
@@ -46,7 +43,7 @@ public:
     OptconDiscreteSystemInterface(const optConProblem_t& problem, const settings_t& settings);
 
     //! destructor
-    virtual ~OptconDiscreteSystemInterface() = default;
+    virtual ~OptconDiscreteSystemInterface();
     //! perform necessary setup work
     virtual void initialize() override;
     virtual void configure(const settings_t& settings) override;
@@ -62,9 +59,9 @@ public:
      * @param B the resulting linear system matrix B
      * @param threadId which thread specific instantiations to use
      */
-    virtual void getAandB(const state_vector_t& x,
+    virtual void getAandB(const MANIFOLD& x,
         const control_vector_t& u,
-        const state_vector_t& x_next,
+        const MANIFOLD& x_next,
         const int n,
         size_t subSteps,
         state_matrix_t& A,
@@ -79,10 +76,10 @@ public:
      * @param stateNext the resulting propagated state
      * @param threadId which thread specific instantiations to use
      */
-    virtual void propagateControlledDynamics(const state_vector_t& state,
-        const time_t n,
-        const control_vector_t& control,
-        state_vector_t& stateNext,
+    virtual void computeControlledDynamics(const MANIFOLD& x,
+        const int n,
+        const control_vector_t& u,
+        typename MANIFOLD::Tangent& dx,
         const size_t threadId) override;
 
     virtual void changeNonlinearSystem(const typename optConProblem_t::DynamicsPtr_t& dyn) override;

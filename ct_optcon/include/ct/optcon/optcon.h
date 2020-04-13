@@ -11,15 +11,15 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "costfunction/costfun.hpp"
 
 //#include "constraint/constraint.h"
-//
-//#include "problem/OptConProblem.h"
+
+#include "problem/OptConProblem.h"
 //#include "problem/LQOCProblem.hpp"
-//#include "solver/NLOptConSettings.hpp"
-//
-//#include "system_interface/OptconSystemInterface.h"
-//#include "system_interface/OptconContinuousSystemInterface.h"
-//#include "system_interface/OptconDiscreteSystemInterface.h"
-//
+#include "solver/NLOptConSettings.hpp"
+
+#include "system_interface/OptconSystemInterface.h"
+#include "system_interface/OptconContinuousSystemInterface.h"
+#include "system_interface/OptconDiscreteSystemInterface.h"
+
 //#include "nloc/NLOCBackendBase.hpp"
 //#include "nloc/NLOCBackendST.hpp"
 //#include "nloc/NLOCBackendMP.hpp"
@@ -51,12 +51,12 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 //#include "constraint/constraint-impl.h"
 //
-//#include "system_interface/OptconContinuousSystemInterface-impl.h"
-//#include "system_interface/OptconDiscreteSystemInterface-impl.h"
-//
-//#include "problem/OptConProblemBase-impl.h"
+#include "problem/OptConProblem-impl.h"
 //#include "problem/LQOCProblem-impl.hpp"
-//
+
+#include "system_interface/OptconContinuousSystemInterface-impl.h"
+#include "system_interface/OptconDiscreteSystemInterface-impl.h"
+
 //#include "solver/lqp/GNRiccatiSolver-impl.hpp"
 //#include "solver/lqp/HPIPMInterface-impl.hpp"
 //#include "solver/NLOptConSolver-impl.hpp"

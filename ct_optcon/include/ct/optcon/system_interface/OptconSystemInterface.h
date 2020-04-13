@@ -74,9 +74,9 @@ public:
      * @param B the resulting linear system matrix B
      * @param threadId which thread specific instantiations to use
      */
-    virtual void getAandB(const state_vector_t& x,
+    virtual void getAandB(const MANIFOLD& x,
         const control_vector_t& u,
-        const state_vector_t& x_next,
+        const MANIFOLD& x_next,
         const int n,
         size_t subSteps,
         state_matrix_t& A,

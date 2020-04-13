@@ -15,9 +15,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
-#include <ct/optcon/problem/ContinuousOptConProblem.h>
-
-
 namespace ct {
 namespace optcon {
 
@@ -29,28 +26,21 @@ namespace optcon {
  * - returns an optimal controller. These can be different controller types, feedforward only, feedforward-feedback, feedback only,
  * 		therefore it is templated on the controller type
  */
-template <typename DERIVED,
-    typename POLICY,
-    typename SETTINGS,
-    size_t STATE_DIM,
-    size_t CONTROL_DIM,
-    typename SCALAR = double,
-    bool CONTINUOUS = true>
+template <typename POLICY, typename SETTINGS, typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
 class OptConSolver
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef typename std::conditional<CONTINUOUS,
-        ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>,
-        DiscreteOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>::type OptConProblem_t;
-
+    static const size_t STATE_DIM = MANIFOLD::TangentDim;
     static const size_t STATE_D = STATE_DIM;
     static const size_t CONTROL_D = CONTROL_DIM;
 
+    using SCALAR = typename MANIFOLD::Scalar;
+    using OptConProblem_t = ct::optcon::OptConProblem<MANIFOLD, CONTROL_DIM, TIME_T>;
+
     typedef POLICY Policy_t;
     typedef SETTINGS Settings_t;
-    typedef DERIVED Derived;
     typedef SCALAR Scalar_t;
 
     OptConSolver() {}
@@ -96,9 +86,7 @@ public:
     /**
 	 * configures the solver from configFile
 	 * */
-    void configureFromFile(const std::string& filename,
-        bool verbose = true,
-        const std::string& ns = DERIVED::SolverName)
+    void configureFromFile(const std::string& filename, bool verbose = true, const std::string& ns)
     {
         Settings_t settings;
         settings.load(filename, verbose, ns);
@@ -126,7 +114,7 @@ public:
 	 * Get the optimized trajectory to the optimal control problem
 	 * @return
 	 */
-    virtual const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const = 0;
+    virtual const core::DiscreteTrajectory<MANIFOLD> getStateTrajectory() const = 0;
 
     /**
 	 * Get the optimal feedforward control input corresponding to the optimal trajectory
@@ -168,7 +156,7 @@ public:
 	 * This function does not need to be called if setProblem() has been called
 	 * with an OptConProblem that had the correct initial state set
 	 */
-    virtual void changeInitialState(const core::StateVector<STATE_DIM, SCALAR>& x0) = 0;
+    virtual void changeInitialState(const MANIFOLD& x0) = 0;
 
     /*!
 	 * \brief Change the cost function
@@ -203,15 +191,14 @@ public:
 	 *
 	 * @param[in]  con   The new box constraints
 	 */
-    virtual void changeInputBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
-    {
-        throw std::runtime_error("The current solver does not support input box constraints!");
-    }
-
-    virtual void changeStateBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
-    {
-        throw std::runtime_error("The current solver does not support state box constraints!");
-    }
+    //virtual void changeInputBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
+    //{
+    //    throw std::runtime_error("The current solver does not support input box constraints!");
+    //}
+    //virtual void changeStateBoxConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
+    //{
+    //    throw std::runtime_error("The current solver does not support state box constraints!");
+    //} // TODO: bring back
 
     /**
 	 * @brief      Change the general constraints.
@@ -222,10 +209,10 @@ public:
 	 *
 	 * @param[in]  con   The new general constraints
 	 */
-    virtual void changeGeneralConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
-    {
-        throw std::runtime_error("The current solver does not support general constraints!");
-    }
+    //virtual void changeGeneralConstraints(const typename OptConProblem_t::ConstraintPtr_t con)
+    //{
+    //    throw std::runtime_error("The current solver does not support general constraints!");
+    //} // TODO: bring back
 
     virtual SCALAR getCost() const { throw std::runtime_error("Get cost not implemented"); }
     /*!
@@ -277,6 +264,7 @@ public:
 	 *
 	 * @return     The state box constraint instances
 	 */
+	/*
     virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getInputBoxConstraintsInstances()
     {
         throw std::runtime_error("getInputBoxConstraintsInstances not supported.");
@@ -295,7 +283,7 @@ public:
     virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getStateBoxConstraintsInstances() const
     {
         throw std::runtime_error("getStateBoxConstraintsInstances not supported.");
-    }
+    }*/ // TODO: bring back
 
 
     /**
@@ -308,17 +296,16 @@ public:
 	 *
 	 * @return     The general constraints instances.
 	 */
-    virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances()
-    {
-        throw std::runtime_error("getGeneralConstraintsInstances not supported.");
-    }
+    //virtual std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances()
+    //{
+    //    throw std::runtime_error("getGeneralConstraintsInstances not supported.");
+    //}
+    //virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() const
+    //{
+    //    throw std::runtime_error("getGeneralConstraintsInstances not supported.");
+    //} // TODO: bring back
 
-    virtual const std::vector<typename OptConProblem_t::ConstraintPtr_t>& getGeneralConstraintsInstances() const
-    {
-        throw std::runtime_error("getGeneralConstraintsInstances not supported.");
-    }
-
-#ifdef CPPADCG
+    //#ifdef CPPADCG
     /**
 	 * @brief      Generates and compiles AD source code which can be used in
 	 *             the solver. This method can be called just before solving the
@@ -328,13 +315,13 @@ public:
 	 * @param[in]  problemCG  The optcon problem templated on the AD CG Scalar
 	 * @param[in]  settings   The settings indicating what to generate
 	 */
-    virtual void generateAndCompileCode(
-        const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
-        const ct::core::DerivativesCppadSettings& settings)
-    {
-        throw std::runtime_error("Generate and compile code not implemented for this solver");
-    }
-#endif
+    //virtual void generateAndCompileCode(
+    //    const ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, ct::core::ADCGScalar>& problemCG,
+    //    const ct::core::DerivativesCppadSettings& settings)
+    //{
+    //    throw std::runtime_error("Generate and compile code not implemented for this solver");
+    //} // TODO: bring back
+    //#endif
 
     /**
 	 * @brief      Generates source AD source code which can be used in the

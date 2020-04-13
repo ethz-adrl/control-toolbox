@@ -50,9 +50,9 @@ public:
     using CostFunctionPtr_t = std::shared_ptr<optcon::CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>>;
     // using ConstraintPtr_t = std::shared_ptr<optcon::LinearConstraintContainer<STATE_DIM, CONTROL_DIM, SCALAR>>; // TODO
 
-    using Time_t typename ControlledSystem_t::Time_t;
+    using Time_t = typename ControlledSystem_t::Time_t;
 
-    OptConProblem() = default;  // TODO
+    OptConProblem();
 
     /*!
      * @brief Construct a simple unconstrained Optimal Control Problem

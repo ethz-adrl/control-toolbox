@@ -16,6 +16,11 @@ OptconContinuousSystemInterface<MANIFOLD, CONTROL_DIM>::OptconContinuousSystemIn
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
+OptconContinuousSystemInterface<MANIFOLD, CONTROL_DIM>::~OptconContinuousSystemInterface()
+{
+}
+
+template <typename MANIFOLD, size_t CONTROL_DIM>
 void OptconContinuousSystemInterface<MANIFOLD, CONTROL_DIM>::changeNumStages(const int numStages)
 {
 }
@@ -126,14 +131,13 @@ void OptconContinuousSystemInterface<MANIFOLD, CONTROL_DIM>::configure(const set
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void OptconContinuousSystemInterface<MANIFOLD, CONTROL_DIM>::propagateControlledDynamics(const state_vector_t& state,
-    const time_t n,
+void OptconContinuousSystemInterface<MANIFOLD, CONTROL_DIM>::computeControlledDynamics(const MANIFOLD& state,
+    const int n,
     const control_vector_t& control,
-    state_vector_t& stateNext,
+    typename MANIFOLD::Tangent& dx,
     const size_t threadId)
 {
-    this->controller_[threadId]->setControl(control);
-    discretizers_[threadId]->propagateControlledDynamics(state, n, control, stateNext);
+    discretizers_[threadId]->computeControlledDynamics(state, n, control, dx);
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
@@ -160,9 +164,9 @@ void OptconContinuousSystemInterface<MANIFOLD, CONTROL_DIM>::setSubstepTrajector
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void OptconContinuousSystemInterface<MANIFOLD, CONTROL_DIM>::getAandB(const state_vector_t& x,
+void OptconContinuousSystemInterface<MANIFOLD, CONTROL_DIM>::getAandB(const MANIFOLD& x,
     const control_vector_t& u,
-    const state_vector_t& x_next,
+    const MANIFOLD& x_next,
     const int n,
     size_t subSteps,
     state_matrix_t& A,

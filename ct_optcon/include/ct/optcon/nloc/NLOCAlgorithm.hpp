@@ -5,23 +5,18 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include <ct/core/core.h>
 
 namespace ct {
 namespace optcon {
 
-
-template <size_t STATE_DIM,
-    size_t CONTROL_DIM,
-    size_t P_DIM,
-    size_t V_DIM,
-    typename SCALAR = double,
-    bool CONTINUOUS = true>
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
 class NLOCAlgorithm
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
+    typedef ct::core::StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T> Policy_t;
 
     typedef NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS> Backend_t;
     typedef NLOptConSettings Settings_t;

@@ -9,6 +9,11 @@ namespace ct {
 namespace optcon {
 
 template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+OptConProblem<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem()
+{
+}
+
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
 OptConProblem<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem(DynamicsPtr_t nonlinDynamics,
     CostFunctionPtr_t costFunction,
     LinearPtr_t linearSystem)

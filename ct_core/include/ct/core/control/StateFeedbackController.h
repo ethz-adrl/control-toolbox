@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include "Controller.h"
+
 namespace ct {
 namespace core {
 
@@ -35,27 +37,25 @@ namespace core {
  * @tparam CONTROL_DIM control vector size
  * @tparam SCALAR primitive type
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class StateFeedbackController : public Controller<STATE_DIM, CONTROL_DIM, SCALAR>,
-                                public DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
+class StateFeedbackController : public Controller<MANIFOLD, CONTROL_DIM, TIME_T>,
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef Controller<STATE_DIM, CONTROL_DIM, SCALAR> ContinuousBase;
-    typedef DiscreteController<STATE_DIM, CONTROL_DIM, SCALAR> DiscreteBase;
+    static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
+    using SCALAR = typename MANIFOLD::Scalar;
 
-    typedef typename DiscreteBase::state_vector_t state_vector_t;
-    typedef typename DiscreteBase::control_vector_t control_vector_t;
+    typedef Controller<MANIFOLD, CONTROL_DIM, TIME_T> Base;
+    typedef typename Base::control_vector_t control_vector_t;
+    using Time_t = typename Base::Time_t;
 
-    typedef StateVectorArray<STATE_DIM, SCALAR> state_vector_array_t;
     typedef ControlVectorArray<CONTROL_DIM, SCALAR> control_vector_array_t;
     typedef FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> feedback_array_t;
 
-    //! default constructor
-    StateFeedbackController() : ContinuousBase(), DiscreteBase() {}
+    StateFeedbackController();
     //! copy constructor
-    StateFeedbackController(const StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>& other);
+    StateFeedbackController(const StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>& other);
 
     //! constructor
     /*!
@@ -70,18 +70,22 @@ public:
      * @param t0 initial time.
      * @param intType interpolation type
      */
-    StateFeedbackController(const state_vector_array_t& x_ref,
+    StateFeedbackController(const DiscreteArray<MANIFOLD>& x_ref,
         const control_vector_array_t& uff,
         const feedback_array_t& K,
         const SCALAR deltaT,
         const SCALAR t0 = 0.0,
         const InterpolationType& intType = ZOH);
 
+    StateFeedbackController(const MANIFOLD& x_ref,
+        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& uff,
+        const ct::core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>& K);
+
     //! destructor
-    virtual ~StateFeedbackController(){};
+    virtual ~StateFeedbackController();
 
     //! deep cloning
-    StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
+    StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>* clone() const override;
 
     //! computes the control action in the continuous case
     /*!
@@ -90,18 +94,14 @@ public:
      * @param t current time
      * @param controlAction resulting control action
      */
-    virtual void computeControl(const state_vector_t& state, const SCALAR& t, control_vector_t& controlAction) override;
+    virtual void computeControl(const MANIFOLD& state, const Time_t& tn, control_vector_t& controlAction) override;
 
-    //! computes the control action in the discrete case
-    /*!
-     * Evaluate the given controller for a given state and time index
-     * returns the computed control action.
-     *
-     * @param state current state of the system
-     * @param n current time index of the system
-     * @param controlAction the corresponding control action
-     */
-    virtual void computeControl(const state_vector_t& state, const int n, control_vector_t& controlAction) override;
+    typename std::enable_if<TIME_T == ct::core::CONTINUOUS_TIME>::type computeControl_specialized(const MANIFOLD& state,
+        const Time_t& tn,
+        control_vector_t& controlAction);
+    typename std::enable_if<TIME_T == ct::core::DISCRETE_TIME>::type computeControl_specialized(const MANIFOLD& state,
+        const Time_t& tn,
+        control_vector_t& controlAction);
 
     //! updates the controller
     /*!
@@ -110,13 +110,13 @@ public:
      * @param K feedback controller
      * @param times discretization times
      */
-    void update(const DiscreteArray<state_vector_t>& x_ref,
+    void update(const DiscreteArray<MANIFOLD>& x_ref,
         const DiscreteArray<control_vector_t>& uff,
         const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>& K,
         const tpl::TimeArray<SCALAR>& t);
 
     //! get reference state vector array (without timings)
-    const DiscreteArray<state_vector_t>& x_ref() const;
+    const DiscreteArray<MANIFOLD>& x_ref() const;
 
     //! get feedforward array (without timings)
     const DiscreteArray<control_vector_t>& uff() const;
@@ -128,10 +128,10 @@ public:
     const tpl::TimeArray<SCALAR>& time() const;
 
     //! get a reference to the feedforward trajectory
-    StateTrajectory<STATE_DIM, SCALAR>& getReferenceStateTrajectory();
+    DiscreteTrajectory<MANIFOLD>& getReferenceStateTrajectory();
 
     //! get a reference to the feedforward trajectory
-    const StateTrajectory<STATE_DIM, SCALAR>& getReferenceStateTrajectory() const;
+    const DiscreteTrajectory<MANIFOLD>& getReferenceStateTrajectory() const;
 
     //! get a reference to the feedforward trajectory
     ControlTrajectory<CONTROL_DIM, SCALAR>& getFeedforwardTrajectory();
@@ -146,14 +146,33 @@ public:
     const FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR>& getFeedbackTrajectory() const;
 
     //!  extracts a physically meaningful control trajectory from the given state-feedback law and a reference state trajectory
-    void extractControlTrajectory(const StateTrajectory<STATE_DIM, SCALAR>& x_traj,
+    void extractControlTrajectory(const DiscreteTrajectory<MANIFOLD>& x_traj,
         ControlTrajectory<CONTROL_DIM, SCALAR>& u_traj);
 
 protected:
-    StateTrajectory<STATE_DIM, SCALAR> x_ref_;              //! state reference trajectory
+    DiscreteTrajectory<MANIFOLD> x_ref_;                    //! state reference trajectory
     ControlTrajectory<CONTROL_DIM, SCALAR> uff_;            //! feedforward control trajectory
     FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR> K_;  //! feedback control trajectory
 };
+
+
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
+typename std::enable_if<TIME_T == ct::core::CONTINUOUS_TIME>::type
+StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::computeControl_specialized(const state_vector_t& state,
+    const SCALAR& t,
+    control_vector_t& controlAction)
+{
+    controlAction = uff_.eval(t) + K_.eval(t) * (state - x_ref_.eval(t));
+}
+
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
+typename std::enable_if<TIME_T == ct::core::CONTINUOUS_TIME>::type
+StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::computeControl_specialized(const state_vector_t& state,
+    const int n,
+    control_vector_t& controlAction)
+{
+    controlAction = uff_[n] + K_[n] * (state - x_ref_[n]);
+}
 
 }  // namespace core
 }  // namespace ct

@@ -6,8 +6,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include <ct/optcon/optcon.h>
 #include "SystemInterfaceTest.h"
 
-#include <time.h>
-
 int main(int argc, char** argv)
 {
     using namespace ct::optcon::example;

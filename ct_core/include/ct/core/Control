@@ -7,10 +7,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #include "control/Controller.h"
 #include "control/ConstantController.h"
+#include "control/StateFeedbackController.h"
 
-//#include "control/StateFeedbackController.h"
-//#include "control/continuous_time/ConstantStateFeedbackController.h"
-//#include "control/continuous_time/ConstantTrajectoryController.h"
 //#include "control/continuous_time/siso/PIDController.h"
 //#include "control/continuous_time/siso/PIDController-impl.h"
 //#include "control/continuous_time/siso/StepInputController.h"

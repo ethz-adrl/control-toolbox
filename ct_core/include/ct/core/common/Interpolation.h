@@ -61,9 +61,9 @@ public:
             throw std::runtime_error("Interpolation.h : DataArray is size 0.");
 
         if (timeArray.size() != dataArray.size())
-            throw std::runtime_error(
-                "Interpolation.h : The size of timeStamp vector (=" + std::to_string(timeArray.size()) +
-                ") is not equal to the size of data vector (=" + std::to_string(dataArray.size()) + ").");
+            throw std::runtime_error("Interpolation.h : The size of timeStamp vector (=" +
+                                     std::to_string(timeArray.size()) + ") is not equal to the size of data vector (=" +
+                                     std::to_string(dataArray.size()) + ").");
 
 
         // treat special case of trajectory length equal 1
@@ -114,7 +114,7 @@ public:
         auto interpolate_ZOH = [](const auto& p0, const auto& p1, const auto& alpha) { return p0; };
         // LIN-interpolation
         auto interpolate_LIN = [](const auto& p0, const auto& p1, const auto& alpha) {
-            return alpha * p0 + (1 - alpha) * p1;
+            return p1 + alpha * (p0 - p1);  // manif-compatible notation
         };
 
         if (this->type_ == InterpolationType::LIN)
