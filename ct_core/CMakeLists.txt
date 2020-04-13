@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.3)
+cmake_minimum_required (VERSION 3.14.7)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
@@ -63,14 +63,14 @@ else()
     message(STATUS "COMPILING WITHOUT QWT")
 endif()
 
-find_package(PythonLibs 2.7 QUIET)
-if (PYTHONLIBS_FOUND)
-   message(STATUS "Found python 2.7")
+find_package(Python COMPONENTS Development NumPy QUIET)
+if (Python_FOUND AND ${Python_VERSION_MAJOR} EQUAL 3)
+   message(STATUS "Found python " ${Python_VERSION})
    list(APPEND ct_core_COMPILE_DEFINITIONS PLOTTING_ENABLED)
-   message(STATUS "Python library path ... " ${PYTHON_LIBRARY})
-   list(APPEND ct_core_LIBS ${PYTHON_LIBRARY})
+   message(STATUS "Python library path ... " ${Python_LIBRARIES})
+   list(APPEND ct_core_LIBS ${Python_LIBRARIES})
 else()
-   message(STATUS "Python not found, plotting will not be available")
+   message(STATUS "Python 3 not found, plotting will not be available")
 endif()
 
 
@@ -86,7 +86,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h.in ${CM
 
 ## define the directories to be included in all ct_core targets
 list(APPEND ct_core_target_include_dirs ${EIGEN3_INCLUDE_DIR})
-list(APPEND ct_core_target_include_dirs ${PYTHON_INCLUDE_DIRS})
+list(APPEND ct_core_target_include_dirs ${Python_INCLUDE_DIRS})
+list(APPEND ct_core_target_include_dirs ${Python_NumPy_INCLUDE_DIRS})
 list(APPEND ct_core_target_include_dirs ${QWT_INCLUDE_DIR})
 list(APPEND ct_core_target_include_dirs $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 list(APPEND ct_core_target_include_dirs $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/examples/include>)
