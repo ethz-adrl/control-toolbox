@@ -1,0 +1,239 @@
+<?xml version="1.0" ?>
+<robot name="ct_example_robot" 
+  xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <link name="world"/>
+  <joint name="fix_to_world" type="fixed">
+    <parent link="world"/>
+    <child link="robot_link_0"/>
+    <origin rpy="0.0 0.0 1.0" xyz="0.2 0.3 0.5"/>
+    <!-- the offset is included on purpose for kinematics testing-->
+  </joint>
+  <link name="robot_link_0">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0.5"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <mass value="2.0"/>
+    </inertial>
+  </link>
+  <gazebo reference="robot_link_0">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+  </gazebo>
+  <link name="robot_link_1">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <mass value="0.879"/>
+    </inertial>
+  </link>
+  <gazebo reference="robot_link_1">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+  </gazebo>
+  <link name="robot_link_2">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-3.065e-03 -1.762e-01 2.105e-03"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <mass value="1.867"/>
+    </inertial>
+  </link>
+  <gazebo reference="robot_link_2">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+  </gazebo>
+  <link name="robot_link_3">
+    <inertial>
+      <origin rpy="0 0 0" xyz="3.709e-02 2.932e-03 -1.07e-01"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <mass value="2.136"/>
+    </inertial>
+  </link>
+  <gazebo reference="robot_link_3">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+  </gazebo>
+  <link name="robot_link_4">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-1.812e-02 7.096e-02 -9.490e-03"/>
+      <inertia ixx="0.5" ixy="0.0" ixz="0.0" iyy="0.5" iyz="0.0" izz="0.5"/>
+      <mass value="1.842"/>
+    </inertial>
+  </link>
+  <gazebo reference="robot_link_4">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+  </gazebo>
+  <link name="robot_link_5">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-3.450e-03 1.796e-02 -1.832e-01"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+      <mass value="2.910"/>
+    </inertial>
+  </link>
+  <gazebo reference="robot_link_5">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+  </gazebo>
+  <link name="robot_link_6">
+    <inertial>
+      <origin rpy="0 0 0" xyz="4.673e-02 -2.451e-02 -1.592e-02"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+      <mass value="1.555"/>
+    </inertial>
+  </link>
+  <gazebo reference="robot_link_6">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+  </gazebo>
+  <link name="robot_link_7">
+    <inertial>
+      <origin rpy="0 0 0" xyz="5.911e-03 -4.412e-04 2.7965241449034475e-02"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+      <mass value="1.05"/>
+    </inertial>
+  </link>
+  <gazebo reference="robot_link_7">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+  </gazebo>
+  <joint name="robot_joint_1" type="continuous">
+    <parent link="robot_link_0"/>
+    <child link="robot_link_1"/>
+    <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.86" soft_upper_limit="2.86"/>
+    <origin rpy="0 0 0" xyz="0 0 0.333"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="5.0" friction="1.5"/>
+    <limit effort="120" lower="-2.8973" upper="2.8973" velocity="2.3925"/>
+  </joint>
+  <transmission name="robot_trans1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="robot_joint_1">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="robot_motor1">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <joint name="robot_joint_2" type="revolute">
+    <parent link="robot_link_1"/>
+    <child link="robot_link_2"/>
+    <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-1.72" soft_upper_limit="1.72"/>
+    <origin rpy="-1.57079632679 0 0" xyz="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="10.0" friction="1.5"/>
+    <limit effort="120" lower="-1.7628" upper="1.7628" velocity="2.3925"/>
+  </joint>
+  <transmission name="robot_trans2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="robot_joint_2">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="robot_motor2">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <joint name="robot_joint_3" type="revolute">
+    <parent link="robot_link_2"/>
+    <child link="robot_link_3"/>
+    <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.8973" soft_upper_limit="2.8973"/>
+    <origin xyz="0 -0.316 0" rpy="1.57079632679 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="5.0" friction="0.5"/>
+    <limit effort="120" lower="-2.86" upper="2.8973" velocity="2.3925"/>
+  </joint>
+  <transmission name="robot_trans3">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="robot_joint_3">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="robot_motor3">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <joint name="robot_joint_4" type="revolute">
+    <parent link="robot_link_3"/>
+    <child link="robot_link_4"/>
+    <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-3.0718" soft_upper_limit="0.0175"/>
+    <origin rpy="1.57079632679 0 0" xyz="0.0825 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="5.0" friction="0.5"/>
+    <limit effort="120" lower="-3.03" upper="-0.0698" velocity="2.3925"/>
+  </joint>
+  <transmission name="robot_trans4">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="robot_joint_4">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="robot_motor4">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <joint name="robot_joint_5" type="revolute">
+    <parent link="robot_link_4"/>
+    <child link="robot_link_5"/>
+    <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.8973" soft_upper_limit="2.8973"/>
+    <origin rpy="-1.57079632679 0 0" xyz="-0.0825 0.384 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="5.0" friction="1.5"/>
+    <limit effort="50" lower="-2.86" upper="2.86" velocity="2.8710"/>
+  </joint>
+  <transmission name="robot_trans5">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="robot_joint_5">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="robot_motor5">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <joint name="robot_joint_6" type="revolute">
+    <parent link="robot_link_5"/>
+    <child link="robot_link_6"/>
+    <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-0.0175" soft_upper_limit="3.7525"/>
+    <origin rpy="1.57079632679 0 0" xyz="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="5.0" friction="1.5"/>
+    <limit effort="50" lower="0.04" upper="3.71" velocity="2.8710"/>
+  </joint>
+  <transmission name="robot_trans6">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="robot_joint_6">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="robot_motor6">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <joint name="robot_joint_7" type="revolute">
+    <parent link="robot_link_6"/>
+    <child link="robot_link_7"/>
+    <safety_controller k_position="100.0" k_velocity="40.0" soft_lower_limit="-2.8973" soft_upper_limit="2.8973"/>
+    <origin rpy="1.57079632679 0 0" xyz="0.088 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="3.0" friction="0.5"/>
+    <limit effort="50" lower="-2.82" upper="2.82" velocity="2.8710"/>
+  </joint>
+  <transmission name="robot_trans7">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="robot_joint_7">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="robot_motor7">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <link name="robot_link_8"/>
+  <joint name="robot_joint8" type="fixed">
+    <origin rpy="0 0 -0.785398163397" xyz="0 0 0.107"/>
+    <parent link="robot_link_7"/>
+    <child link="robot_link_8"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+  <link name="robot_tool"/>
+  <joint name="robot_tcp_joint" type="fixed">
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.1"/>
+    <parent link="robot_link_8"/>
+    <child link="robot_tool"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+</robot>

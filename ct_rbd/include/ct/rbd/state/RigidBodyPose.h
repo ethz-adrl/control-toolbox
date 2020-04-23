@@ -98,6 +98,14 @@ public:
         setFromRotationMatrix(rotMat);
     }
 
+    //! create an identity pose (neutral element)
+    static RigidBodyPose Identity()
+    {
+        RigidBodyPose p;
+        p.setIdentity();
+        return p;
+    }
+
     //! copy-constructor for a RigidBodyPose
     RigidBodyPose(const RigidBodyPose<SCALAR>& arg)
         : storage_(arg.storage_), quat_(arg.quat_), euler_(arg.euler_), position_(arg.position_)
@@ -107,15 +115,23 @@ public:
     //! destructor for a rigid body pose
     ~RigidBodyPose() = default;
 
-    inline bool isNear(const RigidBodyPose& rhs, const double& tol = 1e-10) const
+
+    bool isApprox(const RigidBodyPose& rhs, const SCALAR& tol = 1e-10) const
     {
-        return getRotationQuaternion().isNear(rhs.getRotationQuaternion(), tol) &&
-               position().toImplementation().isApprox(rhs.position().toImplementation(), tol);
+        bool pos_equal = position().toImplementation().isApprox(rhs.position().toImplementation(), tol);
+        bool rot_equal = getRotationQuaternion().isNear(rhs.getRotationQuaternion(), tol);
+        return pos_equal && rot_equal;
     }
 
-    /**
-     * \brief This method returns the Euler angles rotation (X,Y,Z / roll,pitch,yaw).
-     */
+    bool isApprox(const RigidBodyPose& rhs, const SCALAR& pos_tol, const SCALAR& rot_tol) const
+    {
+        bool pos_equal = position().toImplementation().isApprox(rhs.position().toImplementation(), pos_tol);
+        bool rot_equal = getRotationQuaternion().isNear(rhs.getRotationQuaternion(), rot_tol);
+        return pos_equal && rot_equal;
+    }
+
+    bool isNear(const RigidBodyPose& rhs, const double& tol = 1e-10) const { return isApprox(rhs, tol); }
+
     kindr::EulerAnglesXyz<SCALAR> getEulerAnglesXyz() const
     {
         if (storedAsEuler())
@@ -128,9 +144,6 @@ public:
         }
     }
 
-    /**
-     * \brief This method returns the quaternion rotation.
-     */
     kindr::RotationQuaternion<SCALAR> getRotationQuaternion() const
     {
         if (storedAsEuler())
@@ -164,6 +177,8 @@ public:
             return kindr::RotationMatrix<SCALAR>(quat_);
         }
     }
+
+    kindr::RotationMatrix<SCALAR> R() const { return getRotationMatrix(); }
 
     /**
      * \brief This method sets the Euler angles rotation (X,Y,Z / roll,pitch,yaw) from a kindr type.
@@ -229,6 +244,18 @@ public:
      * \brief This method sets the quaternion angles rotation from a kindr rotation matrix
      */
     void setFromRotationMatrix(const kindr::RotationMatrix<SCALAR>& rotMat)
+    {
+        if (storedAsEuler())
+        {
+            euler_ = kindr::EulerAnglesXyz<SCALAR>(rotMat);
+        }
+        else
+        {
+            quat_ = kindr::RotationQuaternion<SCALAR>(rotMat);
+        }
+    }
+
+    void setFromRotationMatrix(const Matrix3Tpl& rotMat)
     {
         if (storedAsEuler())
         {
@@ -402,6 +429,40 @@ public:
     }
 
     STORAGE_TYPE getStorageType() const { return storage_; }
+
+    /**
+     * @brief returns the current reference frame in terms of the current pose ("inversion")
+     */
+    RigidBodyPose<SCALAR> inverted() const
+    {
+        RigidBodyPose<SCALAR> identityPose = RigidBodyPose<SCALAR>::Identity();
+        return identityPose.inReferenceFrame(*this);
+    }
+
+    // get 6 D motion transform with order position before orientation
+    Eigen::Matrix<SCALAR, 6, 6> get6DMotionTransform()
+    {
+        auto p = position().toImplementation();
+        auto Rm = R().toImplementation();
+
+        // transform the position vector to a skew-symmetric matrix
+        Eigen::Matrix<SCALAR, 3, 3> p_hat;
+        p_hat << 0, -p(2), p(1), p(2), 0, -p(0), -p(1), p(0), 0;
+
+        Eigen::Matrix<SCALAR, 6, 6> T;
+        T << Rm, Eigen::Matrix<SCALAR, 3, 3>::Zero(), p_hat * Rm, Rm;
+
+        return T;
+    }
+
+    void print() const
+    {
+        std::cout << "Position: " << position_.toImplementation().transpose() << std::endl;
+        if (storage_ == EULER)
+            std::cout << "Orientation:" << euler_ << std::endl;
+        else
+            std::cout << "Orientation:" << quat_ << std::endl;
+    }
 
 private:
     bool storedAsEuler() const

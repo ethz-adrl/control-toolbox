@@ -30,6 +30,7 @@ Doxyfile
 templateDir.h
 exampleDir.h
 CodegenOutputDirs.h
+ctRbdTestDir.h
 ct_core/generated/*
 solution.mat
 *.tag

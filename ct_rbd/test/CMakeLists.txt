@@ -11,6 +11,9 @@ endmacro()
 
 if(BUILD_TESTS)
 
+    set(CT_RBD_TEST_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ctRbdTestDir.h.in ${CMAKE_CURRENT_SOURCE_DIR}/ctRbdTestDir.h)
+
     package_add_test(RigidBodyPoseTest state/RigidBodyPoseTest.cpp)
     
     package_add_test(JointStateTest state/JointStateTest.cpp)
@@ -35,12 +38,13 @@ if(BUILD_TESTS)
     
     package_add_test(FixBaseFDSystemTest systems/FixBaseFDSystemTest.cpp)
     
-    
     package_add_test(RBDLinearizerTest systems/linear/RBDLinearizerTest.cpp)
     
     package_add_test(EEKinematicsTest robot/kinematics/EEKinematicsTest.cpp)
     
     package_add_test(EEContactModelTest physics/EEContactModelTest.cpp)
+    
+    package_add_test(rbdPinocchioTest physics/rbdPinocchioTest.cpp)
     
     package_add_test(jacobianTests robot/jacobian/JacobianTests.cpp)
     

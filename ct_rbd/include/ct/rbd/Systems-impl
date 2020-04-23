@@ -7,3 +7,6 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 // put implementation files here
+
+#include "systems/FixBaseRobotSystem-impl.h"
+#include "systems/FixBaseRobotSystemLinear-impl.h"

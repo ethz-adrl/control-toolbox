@@ -14,11 +14,15 @@ SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 find_package(kindr REQUIRED)
 find_package(ct_optcon REQUIRED)
+find_package(urdf REQUIRED)
+find_package(pinocchio REQUIRED)
+# or alternatively
+#find_package(PkgConfig REQUIRED)
+#pkg_check_modules(PINOCCHIO pinocchio REQUIRED)
 
 # extract interface compile definitions from ct_core and ct_optcon as options
 importInterfaceCompileDefinitionsAsOptions(ct_core)
 importInterfaceCompileDefinitionsAsOptions(ct_optcon)
-
 
 ###################
 # BUILD LIBRARIES #
@@ -28,6 +32,7 @@ importInterfaceCompileDefinitionsAsOptions(ct_optcon)
 set(ct_rbd_target_include_dirs
     ${kindr_INCLUDE_DIRS}
     ${ct_optcon_INCLUDE_DIRS}
+    ${PINOCCHIO_INCLUDE_DIRS}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ct/rbd>
@@ -38,11 +43,11 @@ set(ct_rbd_target_include_dirs
     $<INSTALL_INTERFACE:include/ct/rbd/robot/kinematics/ikfast>
 )
 
-
 ## create ct_rbd library
 add_library(ct_rbd INTERFACE)
+target_compile_definitions(ct_rbd INTERFACE ${PINOCCHIO_CFLAGS_OTHER})
 target_include_directories(ct_rbd INTERFACE ${ct_rbd_target_include_dirs})
-target_link_libraries(ct_rbd INTERFACE ct_optcon)
+target_link_libraries(ct_rbd INTERFACE ct_optcon ${urdf_LIBRARIES} ${PINOCCHIO_LIBRARIES})
 
 
 ###########
