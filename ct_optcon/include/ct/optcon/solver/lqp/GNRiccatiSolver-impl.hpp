@@ -63,7 +63,10 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeStatesAndControls()
         this->u_sol_[k] = this->lv_[k] + this->L_[k] * this->x_sol_[k];
 
         //! state update rule in diff coordinates
-        this->x_sol_[k + 1] = p.A_[k] * this->x_sol_[k] + p.B_[k] * (this->u_sol_[k]) + p.b_[k];
+        StateMatrix A_orig = p.Adj_x_[k + 1] * p.A_[k];                 // A "without trick for backwards pass"
+        StateControlMatrix B_orig = p.Adj_x_[k + 1] * p.B_[k];          // B "without trick for backwards pass"
+        typename MANIFOLD::Tangent b_orig = p.Adj_x_[k + 1] * p.b_[k];  // b "without trick for backwards pass"
+        this->x_sol_[k + 1] = A_orig * this->x_sol_[k] + B_orig * (this->u_sol_[k]) + b_orig;
     }
 }
 

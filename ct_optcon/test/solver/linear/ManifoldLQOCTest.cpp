@@ -86,27 +86,37 @@ int main(int argc, char** argv)
 {
     std::cout << std::fixed;
 
-    const size_t N = 20*3;
-    const double dt = 0.125 / 3.0;
+    const bool use_single_shooting = false;  // toggle between single and multiple shooting
+
+    const size_t N = 25;
+    const double dt = 0.05;
 
     const ManifoldState_t x0 = manif::SO3<double>(M_PI, 0, M_PI);
     ct::core::DiscreteArray<ManifoldState_t> x_traj(N + 1, x0);  // init state trajectory, will be overwritten
+    ct::core::DiscreteArray<ManifoldState_t::Tangent> b(
+        N + 1, ManifoldState_t::Tangent::Zero());                             // defect traj, will be overwritten
     ct::core::DiscreteArray<ct::core::ControlVector<control_dim>> u_traj(N);  // init control traj
     for (size_t i = 0; i < N; i++)
-        u_traj[i] = ct::core::ControlVector<control_dim>::Ones() * dt;
+        u_traj[i] = ct::core::ControlVector<control_dim>::Random() * dt;
 
+    // choose a random initial state
+    // TODO: numerical trouble for more aggressive distributions, since the approximation of the value function becomes really bad?
+    for (size_t i = 1; i < N + 1; i++)
+    {
+        x_traj[i] = (ManifoldState_t::Random().log() * 0.2).exp();
+    }
 
     // create instances of HPIPM and an unconstrained Gauss-Newton Riccati solver
-    std::shared_ptr<LQOCSolver<ManifoldState_t, control_dim>> hpipmSolver(
-        new HPIPMInterface<ManifoldState_t, control_dim>);
     std::shared_ptr<LQOCSolver<ManifoldState_t, control_dim>> gnRiccatiSolver(
+        new GNRiccatiSolver<ManifoldState_t, control_dim>);
+    std::shared_ptr<LQOCSolver<ManifoldState_t, control_dim>> augGnRiccatiSolver(
         new AugGNRiccatiSolver<ManifoldState_t, control_dim>);
 
     // store them, and identifying names, in a vectors
     std::vector<std::shared_ptr<LQOCSolver<ManifoldState_t, control_dim>>> lqocSolvers;
     lqocSolvers.push_back(gnRiccatiSolver);
-    lqocSolvers.push_back(hpipmSolver);
-    std::vector<std::string> solverNames = {"Riccati", "HPIPM"};
+    lqocSolvers.push_back(augGnRiccatiSolver);
+    std::vector<std::string> solverNames = {"Riccati", "AugRiccati"};
 
     // create linear-quadratic optimal control problem containers
     std::vector<std::shared_ptr<LQOCProblem<ManifoldState_t, control_dim>>> problems;
@@ -139,8 +149,6 @@ int main(int argc, char** argv)
     std::shared_ptr<CostFunctionQuadratic<ManifoldState_t, control_dim>> costFunction(
         new CostFunctionQuadraticSimple<ManifoldState_t, control_dim>(Q, R, x_nominal, u_nom, x_final, Q_final));
 
-    ManifoldState_t::Tangent b;
-    b.setZero();  // TODO why this?
 
     // integrate an initial state with the open-loop system to get initial trajectories
     ManifoldState_t x_curr;
@@ -151,13 +159,16 @@ int main(int argc, char** argv)
     std::cout << std::setprecision(4) << "m: " << x_curr << "\t tan: " << x_curr.log() << std::endl;
     for (size_t i = 0; i < N; i++)
     {
-        exampleSystem->computeControlledDynamics(x_curr, 0, u_traj[i], dx);
-        x_curr = x_curr + dx;
-        x_traj[i + 1] = x_curr;
+        exampleSystem->computeControlledDynamics(x_traj[i], 0, u_traj[i], dx);
+        x_curr = x_traj[i] + dx;
+        if (use_single_shooting)
+            x_traj[i + 1] = x_curr;
+        b[i] = dx - x_traj[i + 1].rminus(x_traj[i]);
+        std::cout << "b: " << b[i] << std::endl;
         std::cout << std::setprecision(4) << "m: " << x_curr << "\t tan: " << x_curr.log() << std::endl;
     }
 
-    size_t nIter = 6;
+    size_t nIter = 13;
     for (size_t iter = 0; iter < nIter; iter++)
     {
         // initialize the optimal control problems for both solvers
@@ -166,7 +177,7 @@ int main(int argc, char** argv)
 
 
         // HACKY corrections // TODO: move somewhere meaningful
-        for (size_t idx : {0})  // for riccati solver only
+        for (size_t idx : {0, 1})
         {
             // intermediate stages cost transportation
             for (size_t i = 0; i < N; i++)
@@ -174,7 +185,8 @@ int main(int argc, char** argv)
                 auto e = x_nominal.rminus(x_traj[i]);
                 // compute PT matrix w.r.t. current ref traj // TODO: clarifiy formulation of error in cost function
                 auto e_adj = (e.exp()).adj();
-                problems[idx]->Q_[i] = e_adj * problems[idx]->Q_[i] * e_adj.transpose();
+                problems[idx]->Q_[i] = e_adj * problems[idx]->Q_[i] *
+                                       e_adj.transpose();  // TODO: sort out that thing with the cost function
                 problems[idx]->qv_[i] = e_adj * problems[idx]->qv_[i];
             }
             // terminal stage transportation
@@ -182,23 +194,27 @@ int main(int argc, char** argv)
             auto e = x_final.rminus(x_traj[N]);  // compute PT matrix w.r.t. current ref traj
             auto e_adj = (e.exp()).adj();
             //std::cout << "cost adj" << std::endl << e_adj << std::endl;
-            problems[idx]->Q_.back()  = /*e_adj * */  problems[idx]->Q_.back(); // * e_adj.transpose();
-            problems[idx]->qv_.back() = /*e_adj * */  problems[idx]->qv_.back();
+            problems[idx]->Q_.back() = /*e_adj * */ problems[idx]->Q_.back();  // * e_adj.transpose();
+            problems[idx]->qv_.back() = /*e_adj * */ problems[idx]->qv_.back();
 
             // dynamics transportation
             for (size_t i = 0; i < N; i++)
             {
                 // std::cout << "dyn transport matrices" << std::endl;
                 Eigen::Matrix3d Jl, Jr;
-                auto l = x_traj[i + 1].rminus(x_traj[i], Jl, Jr);  // TODO: is it the right way round?
+                auto l = x_traj[i + 1].rminus(x_traj[i], Jl, Jr);
                 auto l_adj = (l.exp()).adj();
                 //std::cout << "l_adj" << std::endl << l_adj << std::endl;
                 //std::cout << std::endl;
-                // problems[idx]->A_[i] = l_adj.transpose() * problems[idx]->A_[i];  // todo: are those the right
-                // problems[idx]->B_[i] = l_adj.transpose() * problems[idx]->B_[i];  // TODO: are those the right
-                problems[idx]->Acal_[i + 1] = l_adj;
-            }
+                problems[idx]->Adj_x_[i + 1] = l_adj;  // parallel transport matrix / adjoint from stage k+1 to stage k
 
+                if (idx == 0)  // make the corrections for the standard riccati solver
+                {
+                    problems[idx]->A_[i] = l_adj.transpose() * problems[idx]->A_[i];
+                    problems[idx]->b_[i] = l_adj.transpose() * problems[idx]->b_[i];
+                    problems[idx]->B_[i] = l_adj.transpose() * problems[idx]->B_[i];
+                }
+            }
 
             // set the problem pointers
             lqocSolvers[idx]->setProblem(problems[idx]);
@@ -210,9 +226,9 @@ int main(int argc, char** argv)
             lqocSolvers[idx]->solve();
 
             // postprocess data
-            lqocSolvers[idx]->computeStatesAndControls();
-            lqocSolvers[idx]->computeFeedbackMatrices();
             lqocSolvers[idx]->compute_lv();
+            lqocSolvers[idx]->computeFeedbackMatrices();
+            lqocSolvers[idx]->computeStatesAndControls();
         }
 
         // retrieve solutions from both solvers
@@ -220,12 +236,48 @@ int main(int argc, char** argv)
         auto uSol_riccati = lqocSolvers[0]->getSolutionControl();
         ct::core::FeedbackArray<state_dim, control_dim> KSol_riccati = lqocSolvers[0]->getSolutionFeedback();
         ct::core::ControlVectorArray<control_dim> lv_sol_riccati = lqocSolvers[0]->get_lv();
-        auto xSol_hpipm = lqocSolvers[1]->getSolutionState();
-        auto uSol_hpipm = lqocSolvers[1]->getSolutionControl();
-        ct::core::FeedbackArray<state_dim, control_dim> KSol_hpipm = lqocSolvers[1]->getSolutionFeedback();
-        ct::core::ControlVectorArray<control_dim> lv_sol_hpipm = lqocSolvers[1]->get_lv();
 
-        std::cout << std::endl << std::endl;
+        auto xSol_aug_riccati = lqocSolvers[1]->getSolutionState();
+        auto uSol_aug_riccati = lqocSolvers[1]->getSolutionControl();
+        ct::core::FeedbackArray<state_dim, control_dim> KSol_aug_riccati = lqocSolvers[1]->getSolutionFeedback();
+        ct::core::ControlVectorArray<control_dim> lv_sol_aug_riccati = lqocSolvers[1]->get_lv();
+
+        // compare the quantities
+        for (size_t i = 0; i < lv_sol_riccati.size(); i++)
+        {
+            if (lv_sol_riccati[i].isApprox(lv_sol_aug_riccati[i], 1e-6) == false)
+            {
+                std::cout << lv_sol_riccati[i].transpose() << std::endl;
+                std::cout << lv_sol_aug_riccati[i].transpose() << std::endl;
+                throw std::runtime_error("lv solutions do not match");
+            }
+        }
+        for (size_t i = 0; i < KSol_riccati.size(); i++)
+        {
+            if (KSol_riccati[i].isApprox(KSol_aug_riccati[i], 1e-6) == false)
+                throw std::runtime_error("K solutions do not match");
+        }
+
+        for (size_t i = 0; i < uSol_riccati.size(); i++)
+        {
+            if (uSol_riccati[i].isApprox(uSol_aug_riccati[i], 1e-6) == false)
+            {
+                std::cout << "for index " << i << std::endl;
+                std::cout << std::setprecision(10) << uSol_riccati[i].transpose() << std::endl;
+                std::cout << std::setprecision(10) << uSol_aug_riccati[i].transpose() << std::endl;
+                throw std::runtime_error("u solutions do not match");
+            }
+        }
+        for (size_t i = 0; i < xSol_riccati.size(); i++)
+        {
+            if (xSol_riccati[i].isApprox(xSol_aug_riccati[i], 1e-6) == false)
+            {
+                std::cout << xSol_riccati[i].transpose() << std::endl;
+                std::cout << xSol_aug_riccati[i].transpose() << std::endl;
+                throw std::runtime_error("x solutions do not match");
+            }
+        }
+
         //std::cout << std::setprecision(4) << "dx solution from riccati solver and directly added state_traj, iter "
         //          << iter << std::endl;
         //ct::core::DiscreteArray<ManifoldState_t> x_solver_direct(N + 1);
@@ -251,20 +303,28 @@ int main(int argc, char** argv)
         ct::core::DiscreteArray<ManifoldState_t> x_traj_prev = x_traj;
         for (size_t i = 0; i < N; i++)
         {
-            ManifoldState_t::Tangent x_err = x_curr.rminus(x_traj_prev[i]);
+            ManifoldState_t::Tangent x_err = x_traj[i].rminus(x_traj_prev[i]);
             // TODO: some term is missing here;
-            const ct::core::ControlVector<control_dim> u =
-                u_traj[i] + lv_sol_riccati[i] + KSol_riccati[i] * (x_err /*- eucl. part here*/);
-            u_traj[i] = u;
+            if (use_single_shooting)
+                u_traj[i] += lv_sol_riccati[i] + KSol_riccati[i] * (x_err /*- eucl. part here*/);
+            else
+                u_traj[i] += uSol_riccati[i];
 
-            exampleSystem->computeControlledDynamics(x_curr, i * dt, u, dx);
-            Eigen::Quaterniond old_rot(x_curr.w(), x_curr.x(), x_curr.y(), x_curr.z());
-            x_curr = x_curr + dx;
-            Eigen::Quaterniond new_rot(x_curr.w(), x_curr.x(), x_curr.y(), x_curr.z());
-            std::cout << "m: " << x_curr << "\t tan: " << x_curr.log()
+            exampleSystem->computeControlledDynamics(x_traj[i], i * dt, u_traj[i], dx);
+            Eigen::Quaterniond old_rot(x_traj[i].w(), x_traj[i].x(), x_traj[i].y(), x_traj[i].z());
+
+            if (use_single_shooting)
+                x_traj[i + 1] = x_traj[i] + dx;
+            else
+                x_traj[i + 1] = x_traj_prev[i + 1] + xSol_riccati[i + 1];
+
+            Eigen::Quaterniond new_rot(x_traj[i + 1].w(), x_traj[i + 1].x(), x_traj[i + 1].y(), x_traj[i + 1].z());
+            std::cout << "m: " << x_traj[i + 1] << "\t tan: " << x_traj[i + 1].log()
                       << "\t -- rot diff norm(): " << old_rot.angularDistance(new_rot) << std::endl;
 
-            x_traj[i + 1] = x_curr;
+            b[i] = dx - x_traj[i + 1].rminus(x_traj[i]);
+
+            std::cout << "b: " << b[i] << std::endl;
         }
         std::cout << std::endl << std::endl;
     }  // end iter

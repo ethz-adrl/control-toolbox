@@ -204,7 +204,7 @@ public:
         const ct::core::DiscreteArray<core::ControlVector<CONTROL_DIM, SCALAR>>& u_traj,
         ct::core::LinearSystem<MANIFOLD, CONTROL_DIM, core::DISCRETE_TIME>& linearSystem,
         ct::optcon::CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>& costFunction,
-        const typename MANIFOLD::Tangent& stateOffset,
+        const ct::core::DiscreteArray<typename MANIFOLD::Tangent>& stateOffset,
         const double dt);
 
     //! return a flag indicating whether this LQOC Problem is constrained or not
@@ -225,7 +225,12 @@ public:
     //! LQ approximation of the pure state penalty, including terminal state penalty
     ct::core::DiscreteArray<typename MANIFOLD::Tangent> qv_;
     ct::core::StateMatrixArray<STATE_DIM, SCALAR> Q_;
-    ct::core::StateMatrixArray<STATE_DIM, SCALAR> Acal_; // TODO: temp
+    /**
+     * @brief The adjoint array for parallel transporting to the preceding tangent space
+     * Adj_x_[k] holds the adjoint used for parallel transporting vectors in the tangent space at k to the tangent
+     * space at [k-1]. 
+     */
+    ct::core::StateMatrixArray<STATE_DIM, SCALAR> Adj_x_;
 
     //! LQ approximation of the pure control penalty
     ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> rv_;

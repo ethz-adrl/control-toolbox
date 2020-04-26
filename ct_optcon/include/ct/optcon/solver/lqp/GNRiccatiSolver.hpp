@@ -33,6 +33,7 @@ public:
     typedef typename Base::LQOCProblem_t LQOCProblem_t;
 
     typedef ct::core::StateMatrix<STATE_DIM, SCALAR> StateMatrix;
+    typedef ct::core::StateControlMatrix<STATE_DIM, control_dim, SCALAR> StateControlMatrix;
     typedef ct::core::StateMatrixArray<STATE_DIM, SCALAR> StateMatrixArray;
     typedef ct::core::ControlVector<CONTROL_DIM, SCALAR> ControlVector;
     typedef ct::core::ControlMatrix<CONTROL_DIM, SCALAR> ControlMatrix;

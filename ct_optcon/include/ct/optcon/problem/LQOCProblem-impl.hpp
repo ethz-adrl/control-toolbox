@@ -70,7 +70,7 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::changeNumStages(int N)
     q_.resize(N + 1);
     qv_.resize(N + 1);
     Q_.resize(N + 1);
-    Acal_.resize(N+1);
+    Adj_x_.resize(N + 1);
 
     rv_.resize(N);
     R_.resize(N);
@@ -102,7 +102,7 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::setZero(const int& nGenConstr)
     P_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
     qv_.setConstant(core::StateVector<STATE_DIM, SCALAR>::Zero());
     Q_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Zero());
-    Acal_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Identity());
+    Adj_x_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Identity());
     rv_.setConstant(core::ControlVector<CONTROL_DIM, SCALAR>::Zero());
     R_.setConstant(core::ControlMatrix<CONTROL_DIM, SCALAR>::Zero());
     q_.setConstant((SCALAR)0.0);
@@ -277,7 +277,7 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::setFromTimeInvariantLinearQuadraticProb
     const core::ControlVector<CONTROL_DIM, SCALAR>& u0,
     ct::core::LinearSystem<MANIFOLD, CONTROL_DIM, core::DISCRETE_TIME>& linearSystem,
     ct::optcon::CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>& costFunction,
-    const typename MANIFOLD::Tangent& stateOffset,
+    const typename MANIFOLD::Tangent& b,
     const double dt)
 {
     setZero();
@@ -288,7 +288,7 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::setFromTimeInvariantLinearQuadraticProb
 
     A_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_, A);
     B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, B);
-    b_ = core::DiscreteArray<typename MANIFOLD::Tangent>(K_ + 1, stateOffset);
+    b_ = core::DiscreteArray<typename MANIFOLD::Tangent>(K_ + 1, b);
 
     // feed current state and control to cost function
     costFunction.setCurrentStateAndControl(x0, u0, 0);
@@ -314,10 +314,13 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::setFromTimeInvariantLinearQuadraticProb
     const ct::core::DiscreteArray<core::ControlVector<CONTROL_DIM, SCALAR>>& u_traj,
     ct::core::LinearSystem<MANIFOLD, CONTROL_DIM, core::DISCRETE_TIME>& linearSystem,
     ct::optcon::CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>& costFunction,
-    const typename MANIFOLD::Tangent& stateOffset,
+    const ct::core::DiscreteArray<typename MANIFOLD::Tangent>& b,
     const double dt)
 {
     setZero();
+
+    if (b.size() != K_ + 1)
+        throw std::runtime_error("b size not correct.");
 
     // get LTI dynamics
     core::StateMatrix<STATE_DIM, SCALAR> A;
@@ -325,7 +328,7 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::setFromTimeInvariantLinearQuadraticProb
     linearSystem.getDerivatives(A, B, x_traj.front(), u_traj.front(), 0);
     A_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_, A);
     B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, B);
-    b_ = core::DiscreteArray<typename MANIFOLD::Tangent>(K_ + 1, stateOffset);
+    b_ = b;
 
     // eval costs around the reference trajectory
     for (int i = 0; i < K_; i++)

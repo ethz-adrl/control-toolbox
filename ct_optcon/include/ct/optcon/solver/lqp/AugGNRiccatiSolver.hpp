@@ -88,10 +88,12 @@ protected:
     ControlMatrixArray Hi_inverse_;
     ControlMatrix H_corrFix_;
 
+    //! terms for quadratic value function
     ct::core::DiscreteArray<typename MANIFOLD::Tangent> sv_;
     StateMatrixArray S_;
-    ct::core::DiscreteArray<typename MANIFOLD::Tangent> sv_tilda_;
-    StateMatrixArray S_tilda_;
+    //! parallel-transported terms of value function
+    ct::core::DiscreteArray<typename MANIFOLD::Tangent> sv_t_;
+    StateMatrixArray S_t_;
 
     int N_;
 

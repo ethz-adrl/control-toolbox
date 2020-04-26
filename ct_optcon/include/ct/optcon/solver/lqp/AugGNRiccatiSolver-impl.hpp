@@ -32,15 +32,15 @@ void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::solve()
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::solveSingleStage(int N)
+void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::solveSingleStage(int n)
 {
-    if (N == this->lqocProblem_->getNumberOfStages() - 1)
+    if (n == this->lqocProblem_->getNumberOfStages() - 1)
         initializeCostToGo();
 
-    designController(N);
+    designController(n);
 
-    if (N > 0)
-        computeCostToGo(N);
+    if (n > 0)
+        computeCostToGo(n);
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
@@ -63,7 +63,7 @@ void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeStatesAndControls()
         this->u_sol_[k] = this->lv_[k] + this->L_[k] * this->x_sol_[k];
 
         //! state update rule in diff coordinates
-        this->x_sol_[k + 1] = p.A_[k] * this->x_sol_[k] + p.B_[k] * (this->u_sol_[k]) + p.b_[k];  // TODO: transport
+        this->x_sol_[k + 1] = p.A_[k] * this->x_sol_[k] + p.B_[k] * (this->u_sol_[k]) + p.b_[k];
     }
 }
 
@@ -120,8 +120,8 @@ void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::changeNumberOfStages(int N)
 
     sv_.resize(N + 1);
     S_.resize(N + 1);
-    sv_tilda_.resize(N + 1);
-    S_tilda_.resize(N + 1);
+    sv_t_.resize(N + 1);
+    S_t_.resize(N + 1);
 
     N_ = N;
 }
@@ -139,8 +139,16 @@ void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::initializeCostToGo()
     S_[N] = p.Q_[N];
     sv_[N] = p.qv_[N];
 
-    S_tilda_[N] = p.Acal_[N] * S_[N] * p.Acal_[N].transpose();
-    sv_tilda_[N] = p.Acal_[N] * sv_[N];
+    if (ct::core::is_euclidean<MANIFOLD>::value)  // euclidean case
+    {
+        S_t_[N] = S_[N];
+        sv_t_[N] = sv_[N];
+    }
+    else
+    {  // manifold case requires parallel transport of value function
+        S_t_[N] = p.Adj_x_[N] * S_[N] * p.Adj_x_[N].transpose();
+        sv_t_[N] = p.Adj_x_[N] * sv_[N];
+    }
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
@@ -149,20 +157,28 @@ void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeCostToGo(size_t k)
     LQOCProblem_t& p = *this->lqocProblem_;
 
     S_[k] = p.Q_[k];
-    S_[k].noalias() += p.A_[k].transpose() * S_tilda_[k + 1] * p.A_[k];
+    S_[k].noalias() += p.A_[k].transpose() * S_t_[k + 1] * p.A_[k];
     S_[k].noalias() -= this->L_[k].transpose() * Hi_[k] * this->L_[k];
 
     S_[k] = 0.5 * (S_[k] + S_[k].transpose()).eval();
 
     sv_[k] = p.qv_[k];
-    sv_[k].noalias() += p.A_[k].transpose() * sv_tilda_[k + 1];
-    sv_[k].noalias() += p.A_[k].transpose() * S_tilda_[k + 1] * p.b_[k];
+    sv_[k].noalias() += p.A_[k].transpose() * sv_t_[k + 1];
+    sv_[k].noalias() += p.A_[k].transpose() * S_t_[k + 1] * p.b_[k];
     sv_[k].noalias() += this->L_[k].transpose() * Hi_[k] * this->lv_[k];
     sv_[k].noalias() += this->L_[k].transpose() * gv_[k];
     sv_[k].noalias() += G_[k].transpose() * this->lv_[k];
 
-    S_tilda_[k] = p.Acal_[k] * S_[k] * p.Acal_[k].transpose();
-    sv_tilda_[k] = p.Acal_[k] * sv_[k];
+    if (ct::core::is_euclidean<MANIFOLD>::value)  // euclidean case
+    {
+        S_t_[k] = S_[k];
+        sv_t_[k] = sv_[k];
+    }
+    else
+    {  // manifold case requires parallel transport of value function to previous stage
+        S_t_[k] = p.Adj_x_[k] * S_[k] * p.Adj_x_[k].transpose();
+        sv_t_[k] = p.Adj_x_[k] * sv_[k];
+    }
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
@@ -171,16 +187,16 @@ void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::designController(size_t k)
     LQOCProblem_t& p = *this->lqocProblem_;
 
     gv_[k] = p.rv_[k];
-    gv_[k].noalias() += p.B_[k].transpose() * sv_tilda_[k + 1];
-    //gv_[k].noalias() += p.B_[k].transpose() * S_tilda_[k + 1].template selfadjointView<Eigen::Lower>() * p.b_[k];
+    gv_[k].noalias() += p.B_[k].transpose() * sv_t_[k + 1];
+    gv_[k].noalias() += p.B_[k].transpose() * S_t_[k + 1].template selfadjointView<Eigen::Lower>() * p.b_[k];
 
-    G_[k] = p.P_[k];
+    G_[k] = p.P_[k];  // TODO: G_ could be left away for the first stage (efficiency)
     //G_[k].noalias() += B_[k].transpose() * S_[k+1] * A_[k];
-    G_[k].noalias() += p.B_[k].transpose() * S_tilda_[k + 1].template selfadjointView<Eigen::Lower>() * p.A_[k];
+    G_[k].noalias() += p.B_[k].transpose() * S_t_[k + 1].template selfadjointView<Eigen::Lower>() * p.A_[k];
 
     H_[k] = p.R_[k];
     //H_[k].noalias() += B_[k].transpose() * S_[k+1] * B_[k];
-    H_[k].noalias() += p.B_[k].transpose() * S_tilda_[k + 1].template selfadjointView<Eigen::Lower>() * p.B_[k];
+    H_[k].noalias() += p.B_[k].transpose() * S_t_[k + 1].template selfadjointView<Eigen::Lower>() * p.B_[k];
 
     if (settings_.fixedHessianCorrection)
     {
@@ -223,7 +239,7 @@ void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::designController(size_t k)
 
         Hi_inverse_[k] = -Hi_[k].template selfadjointView<Eigen::Lower>().llt().solve(ControlMatrix::Identity());
 
-        // calculate FB gain update
+        // calculate FB gain update // TODO: this could be left away for the first stage (efficiency)
         this->L_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * G_[k];
 
         // calculate FF update
