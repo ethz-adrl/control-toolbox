@@ -6,17 +6,17 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
 StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::StateFeedbackController() : Base()
 {
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
 StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::~StateFeedbackController()
 {
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
 StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::StateFeedbackController(const MANIFOLD& x_ref,
     const ct::core::ControlVector<CONTROL_DIM, SCALAR>& uff,
     const ct::core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>& K)
@@ -29,16 +29,15 @@ StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::StateFeedbackController(
 {
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
 StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::StateFeedbackController(
     const StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>& other)
     : Base(), x_ref_(other.x_ref_), uff_(other.uff_), K_(other.K_)
 {
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
-StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::StateFeedbackController(
-    const StateVectorArray<STATE_DIM, SCALAR>& x_ref,
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
+StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::StateFeedbackController(const DiscreteArray<MANIFOLD>& x_ref,
     const ControlVectorArray<CONTROL_DIM, SCALAR>& uff,
     const FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& K,
     const SCALAR deltaT,
@@ -48,8 +47,8 @@ StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::StateFeedbackController(
 {
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
-void StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::update(const DiscreteArray<state_vector_t>& x_ref,
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
+void StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::update(const DiscreteArray<MANIFOLD>& x_ref,
     const DiscreteArray<control_vector_t>& uff,
     const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>& K,
     const tpl::TimeArray<SCALAR>& t)
@@ -70,7 +69,7 @@ void StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::update(const Discre
     K_.setTime(tshort);
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
 void StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::computeControl(const MANIFOLD& state,
     const Time_t& tn,
     control_vector_t& u)
@@ -78,87 +77,83 @@ void StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::computeControl(cons
     computeControl_specialized(state, tn, u);
 }
 
-
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
 StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>* StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::clone()
     const
 {
     return new StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>(*this);
 }
 
-
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
-const DiscreteArray<typename StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::state_vector_t>&
-StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::x_ref() const
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
+const DiscreteArray<MANIFOLD>& StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::x_ref() const
 {
     return x_ref_.getDataArray();
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
 const DiscreteArray<typename StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::control_vector_t>&
 StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::uff() const
 {
     return uff_.getDataArray();
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
-const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>&
-StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::K() const
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
+auto StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::K() const
+    -> const DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>&
 {
     return K_.getDataArray();
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
-const tpl::TimeArray<SCALAR>& StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::time() const
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
+auto StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::time() const -> const tpl::TimeArray<SCALAR>&
 {
     return x_ref_.getTimeArray();
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
-StateTrajectory<STATE_DIM, SCALAR>&
-StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::getReferenceStateTrajectory()
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
+DiscreteTrajectory<MANIFOLD>& StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::getReferenceStateTrajectory()
 {
     return x_ref_;
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
-const StateTrajectory<STATE_DIM, SCALAR>&
-StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::getReferenceStateTrajectory() const
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
+auto StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::getReferenceStateTrajectory() const
+    -> const DiscreteTrajectory<MANIFOLD>&
 {
     return x_ref_;
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
-ControlTrajectory<CONTROL_DIM, SCALAR>&
-StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::getFeedforwardTrajectory()
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
+auto StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::getFeedforwardTrajectory()
+    -> ControlTrajectory<CONTROL_DIM, SCALAR>&
 {
     return uff_;
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
-const ControlTrajectory<CONTROL_DIM, SCALAR>&
-StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::getFeedforwardTrajectory() const
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
+auto StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::getFeedforwardTrajectory() const
+    -> const ControlTrajectory<CONTROL_DIM, SCALAR>&
 {
     return uff_;
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
-FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR>&
-StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::getFeedbackTrajectory()
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
+auto StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::getFeedbackTrajectory()
+    -> FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR>&
 {
     return K_;
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
-const FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR>&
-StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::getFeedbackTrajectory() const
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
+auto StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::getFeedbackTrajectory() const
+    -> const FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR>&
 {
     return K_;
 }
 
-template <typename MANIFOLD, size_t CONTROL_DIM, typename TIME_T>
+template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
 void StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::extractControlTrajectory(
-    const StateTrajectory<STATE_DIM, SCALAR>& x_traj,
+    const DiscreteTrajectory<MANIFOLD>& x_traj,
     ControlTrajectory<CONTROL_DIM, SCALAR>& u_traj)
 {
     u_traj.clear();

@@ -19,17 +19,18 @@ namespace optcon {
  * \f$ J(x,u,t) = \bar{x}^T Q \bar{x} + \bar{u}^T R \bar{u} + \bar{x}^T_f Q_f \bar{x}^T_f \f$
  * where \f$ \bar{x}, \bar{u} \f$ indicate deviations from a nominal (desired) state and control
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class CostFunctionQuadraticSimple : public CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM>
+class CostFunctionQuadraticSimple : public CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM> state_matrix_t;
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> control_matrix_t;
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM> control_state_matrix_t;
+    using SCALAR = typename MANIFOLD::Scalar;
+    static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
 
-    typedef core::StateVector<STATE_DIM, SCALAR> state_vector_t;
+    typedef core::StateMatrix<STATE_DIM, SCALAR> state_matrix_t;
+    typedef core::ControlMatrix<CONTROL_DIM, SCALAR> control_matrix_t;
+    typedef core::ControlStateMatrix<STATE_DIM, CONTROL_DIM, SCALAR> control_state_matrix_t;
     typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
 
     /**
@@ -47,9 +48,9 @@ public:
      */
     CostFunctionQuadraticSimple(const state_matrix_t& Q,
         const control_matrix_t& R,
-        const state_vector_t& x_nominal,
+        const MANIFOLD& x_nominal,
         const control_vector_t& u_nominal,
-        const state_vector_t& x_final,
+        const MANIFOLD& x_final,
         const state_matrix_t& Q_final);
 
     virtual ~CostFunctionQuadraticSimple();
@@ -60,15 +61,13 @@ public:
      * Clones the cost function.
      * @return
      */
-    CostFunctionQuadraticSimple<STATE_DIM, CONTROL_DIM, SCALAR>* clone() const override;
+    CostFunctionQuadraticSimple<MANIFOLD, CONTROL_DIM>* clone() const override;
 
-    virtual void setCurrentStateAndControl(const state_vector_t& x,
-        const control_vector_t& u,
-        const SCALAR& t) override;
+    virtual void setCurrentStateAndControl(const MANIFOLD& x, const control_vector_t& u, const SCALAR& t) override;
 
     virtual SCALAR evaluateIntermediate() override;
 
-    virtual state_vector_t stateDerivativeIntermediate() override;
+    virtual typename MANIFOLD::Tangent stateDerivativeIntermediate() override;
 
     virtual state_matrix_t stateSecondDerivativeIntermediate() override;
 
@@ -80,24 +79,24 @@ public:
 
     virtual SCALAR evaluateTerminal() override;
 
-    virtual state_vector_t stateDerivativeTerminal() override;
+    virtual typename MANIFOLD::Tangent stateDerivativeTerminal() override;
 
     virtual state_matrix_t stateSecondDerivativeTerminal() override;
 
-    virtual void updateReferenceState(const state_vector_t& x_ref) override;
+    virtual void updateReferenceState(const MANIFOLD& x_ref) override;
 
-    virtual void updateFinalState(const state_vector_t& x_final) override;
+    virtual void updateFinalState(const MANIFOLD& x_final) override;
 
 protected:
-    state_vector_t x_deviation_;
-    state_vector_t x_nominal_;
+    typename MANIFOLD::Tangent x_deviation_;
+    MANIFOLD x_nominal_;
     state_matrix_t Q_;
 
     control_vector_t u_deviation_;
     control_vector_t u_nominal_;
     control_matrix_t R_;
 
-    state_vector_t x_final_;
+    MANIFOLD x_final_;
     state_matrix_t Q_final_;
 };
 

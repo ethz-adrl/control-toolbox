@@ -10,8 +10,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-template <int STATE_DIM, int CONTROL_DIM>
-HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface()
+template <typename MANIFOLD, int CONTROL_DIM>
+HPIPMInterface<MANIFOLD, CONTROL_DIM>::HPIPMInterface()
     : N_(-1),
       settings_(NLOptConSettings()),
       dim_mem_(nullptr),
@@ -26,14 +26,14 @@ HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface()
     configure(settings_);
 }
 
-template <int STATE_DIM, int CONTROL_DIM>
-HPIPMInterface<STATE_DIM, CONTROL_DIM>::~HPIPMInterface()
+template <typename MANIFOLD, int CONTROL_DIM>
+HPIPMInterface<MANIFOLD, CONTROL_DIM>::~HPIPMInterface()
 {
     freeHpipmMemory();
 }
 
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
+template <typename MANIFOLD, int CONTROL_DIM>
+void HPIPMInterface<MANIFOLD, CONTROL_DIM>::initializeAndAllocate()
 {
     freeHpipmMemory();
 
@@ -91,8 +91,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
     }
 }
 
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::freeHpipmMemory()
+template <typename MANIFOLD, int CONTROL_DIM>
+void HPIPMInterface<MANIFOLD, CONTROL_DIM>::freeHpipmMemory()
 {
     free(dim_mem_);
     free(qp_mem_);
@@ -107,16 +107,16 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::freeHpipmMemory()
 }
 
 
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::configure(const NLOptConSettings& settings)
+template <typename MANIFOLD, int CONTROL_DIM>
+void HPIPMInterface<MANIFOLD, CONTROL_DIM>::configure(const NLOptConSettings& settings)
 {
     settings_ = settings;
     ::d_ocp_qp_ipm_arg_set_iter_max(&settings_.lqoc_solver_settings.num_lqoc_iterations, &arg_);
 }
 
 
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
+template <typename MANIFOLD, int CONTROL_DIM>
+void HPIPMInterface<MANIFOLD, CONTROL_DIM>::solve()
 {
 // optional printout
 #ifdef HPIPM_PRINT_MATRICES
@@ -212,8 +212,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
     }
 }
 
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeStatesAndControls()
+template <typename MANIFOLD, int CONTROL_DIM>
+void HPIPMInterface<MANIFOLD, CONTROL_DIM>::computeStatesAndControls()
 {
     // extract solution for x and u
     for (int ii = 0; ii < N_; ii++)
@@ -234,9 +234,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeStatesAndControls()
     }
 }
 
-
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeFeedbackMatrices()
+template <typename MANIFOLD, int CONTROL_DIM>
+void HPIPMInterface<MANIFOLD, CONTROL_DIM>::computeFeedbackMatrices()
 {
     // extract data which is mandatory for computing either feedback or iLQR feedforward
     Eigen::Matrix<double, control_dim, control_dim> Lr;
@@ -244,7 +243,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeFeedbackMatrices()
     ct::core::ControlMatrix<control_dim> Lr0_inv =
         (Lr.template triangularView<Eigen::Lower>()).solve(Eigen::Matrix<double, control_dim, control_dim>::Identity());
 
-    LQOCProblem<STATE_DIM, CONTROL_DIM>& p = *this->lqocProblem_;
+    LQOCProblem_t& p = *this->lqocProblem_;
     this->L_.resize(p.getNumberOfStages());
 
     for (int i = 1; i < this->lqocProblem_->getNumberOfStages(); i++)
@@ -266,15 +265,15 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeFeedbackMatrices()
     this->L_[0] = (-Lr0_inv.transpose() * Lr0_inv * G);
 }
 
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::compute_lv()
+template <typename MANIFOLD, int CONTROL_DIM>
+void HPIPMInterface<MANIFOLD, CONTROL_DIM>::compute_lv()
 {
     for (int i = 0; i < this->lqocProblem_->getNumberOfStages(); i++)
         ::d_ocp_qp_ipm_get_ric_k(&qp_, &arg_, &workspace_, i, this->lv_[i].data());
 }
 
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::printSolution()
+template <typename MANIFOLD, int CONTROL_DIM>
+void HPIPMInterface<MANIFOLD, CONTROL_DIM>::printSolution()
 {
 #ifdef HPIPM_PRINT_MATRICES
     int ii;
@@ -299,9 +298,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::printSolution()
 }
 
 
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
-    std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+template <typename MANIFOLD, int CONTROL_DIM>
+void HPIPMInterface<MANIFOLD, CONTROL_DIM>::setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem)
 {
     // check if the number of stages N changed and adapt problem dimensions
     bool dimsChanged = changeProblemSize(lqocProblem);
@@ -329,9 +327,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
 }
 
 
-template <int STATE_DIM, int CONTROL_DIM>
-bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureInputBoxConstraints(
-    std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+template <typename MANIFOLD, int CONTROL_DIM>
+bool HPIPMInterface<MANIFOLD, CONTROL_DIM>::configureInputBoxConstraints(std::shared_ptr<LQOCProblem_t> lqocProblem)
 {
     bool configChanged = false;
 
@@ -366,9 +363,8 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureInputBoxConstraints(
 }
 
 
-template <int STATE_DIM, int CONTROL_DIM>
-bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureStateBoxConstraints(
-    std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+template <typename MANIFOLD, int CONTROL_DIM>
+bool HPIPMInterface<MANIFOLD, CONTROL_DIM>::configureStateBoxConstraints(std::shared_ptr<LQOCProblem_t> lqocProblem)
 {
     bool configChanged = false;
 
@@ -410,9 +406,8 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureStateBoxConstraints(
 }
 
 
-template <int STATE_DIM, int CONTROL_DIM>
-bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
-    std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+template <typename MANIFOLD, int CONTROL_DIM>
+bool HPIPMInterface<MANIFOLD, CONTROL_DIM>::configureGeneralConstraints(std::shared_ptr<LQOCProblem_t> lqocProblem)
 {
     bool configChanged = false;
 
@@ -466,12 +461,12 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
 }
 
 
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateMatrixArray& A,
+template <typename MANIFOLD, int CONTROL_DIM>
+void HPIPMInterface<MANIFOLD, CONTROL_DIM>::setupCostAndDynamics(StateMatrixArray& A,
     StateControlMatrixArray& B,
-    StateVectorArray& b,
+    core::DiscreteArray<typename MANIFOLD::Tangent>& b,
     FeedbackArray& P,
-    StateVectorArray& qv,
+    core::DiscreteArray<typename MANIFOLD::Tangent>& qv,
     StateMatrixArray& Q,
     ControlVectorArray& rv,
     ControlMatrixArray& R)
@@ -512,8 +507,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateMatrixArr
 }
 
 
-template <int STATE_DIM, int CONTROL_DIM>
-bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeProblemSize(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> p)
+template <typename MANIFOLD, int CONTROL_DIM>
+bool HPIPMInterface<MANIFOLD, CONTROL_DIM>::changeProblemSize(std::shared_ptr<LQOCProblem_t> p)
 {
     const int N = p->getNumberOfStages();
 
@@ -598,8 +593,8 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeProblemSize(std::shared_ptr<L
     return true;
 }
 
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::d_print_mat(int m, int n, double* A, int lda)
+template <typename MANIFOLD, int CONTROL_DIM>
+void HPIPMInterface<MANIFOLD, CONTROL_DIM>::d_print_mat(int m, int n, double* A, int lda)
 {
     int i, j;
     for (i = 0; i < m; i++)
@@ -614,8 +609,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::d_print_mat(int m, int n, double* A
 }
 
 
-template <int STATE_DIM, int CONTROL_DIM>
-void HPIPMInterface<STATE_DIM, CONTROL_DIM>::d_print_e_tran_mat(int row, int col, double* A, int lda)
+template <typename MANIFOLD, int CONTROL_DIM>
+void HPIPMInterface<MANIFOLD, CONTROL_DIM>::d_print_e_tran_mat(int row, int col, double* A, int lda)
 {
     int i, j;
     for (j = 0; j < col; j++)
@@ -630,8 +625,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::d_print_e_tran_mat(int row, int col
 }
 
 
-template <int STATE_DIM, int CONTROL_DIM>
-const ct::core::ControlVectorArray<CONTROL_DIM>& HPIPMInterface<STATE_DIM, CONTROL_DIM>::get_lv()
+template <typename MANIFOLD, int CONTROL_DIM>
+const ct::core::ControlVectorArray<CONTROL_DIM>& HPIPMInterface<MANIFOLD, CONTROL_DIM>::get_lv()
 {
     return this->lv_;
 }

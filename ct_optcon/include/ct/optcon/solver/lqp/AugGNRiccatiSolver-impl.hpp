@@ -10,7 +10,7 @@ namespace optcon {
 
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::GNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem)
+AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::AugGNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem)
     : LQOCSolver<MANIFOLD, CONTROL_DIM>(lqocProblem), N_(-1)
 {
     Eigen::initParallel();
@@ -19,20 +19,20 @@ GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::GNRiccatiSolver(const std::shared_ptr<LQ
 
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::GNRiccatiSolver(int N)
+AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::AugGNRiccatiSolver(int N)
 {
     changeNumberOfStages(N);
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::solve()
+void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::solve()
 {
     for (int i = this->lqocProblem_->getNumberOfStages() - 1; i >= 0; i--)
         solveSingleStage(i);
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::solveSingleStage(int N)
+void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::solveSingleStage(int N)
 {
     if (N == this->lqocProblem_->getNumberOfStages() - 1)
         initializeCostToGo();
@@ -44,14 +44,14 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::solveSingleStage(int N)
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::configure(const NLOptConSettings& settings)
+void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::configure(const NLOptConSettings& settings)
 {
     settings_ = settings;
     H_corrFix_ = settings_.epsilon * ControlMatrix::Identity();
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeStatesAndControls()
+void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeStatesAndControls()
 {
     LQOCProblem_t& p = *this->lqocProblem_;
 
@@ -63,33 +63,33 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeStatesAndControls()
         this->u_sol_[k] = this->lv_[k] + this->L_[k] * this->x_sol_[k];
 
         //! state update rule in diff coordinates
-        this->x_sol_[k + 1] = p.A_[k] * this->x_sol_[k] + p.B_[k] * (this->u_sol_[k]) + p.b_[k];
+        this->x_sol_[k + 1] = p.A_[k] * this->x_sol_[k] + p.B_[k] * (this->u_sol_[k]) + p.b_[k];  // TODO: transport
     }
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeFeedbackMatrices()
+void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeFeedbackMatrices()
 { /*no action required, already computed in backward pass */
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::compute_lv()
+void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::compute_lv()
 { /*no action required, already computed in backward pass*/
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-auto GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::getSmallestEigenvalue() -> SCALAR
+auto AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::getSmallestEigenvalue() -> SCALAR
 {
     return smallestEigenvalue_;
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem)
+void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem)
 {
     if (lqocProblem->isConstrained())
     {
         throw std::runtime_error(
-            "Selected wrong solver - GNRiccatiSolver cannot handle constrained problems. Use a different solver");
+            "Selected wrong solver - AugGNRiccatiSolver cannot handle constrained problems. Use a different solver");
     }
 
     const int& N = lqocProblem->getNumberOfStages();
@@ -97,7 +97,7 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::setProblemImpl(std::shared_ptr<LQOC
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::changeNumberOfStages(int N)
+void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::changeNumberOfStages(int N)
 {
     if (N <= 0)
         return;
@@ -120,12 +120,14 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::changeNumberOfStages(int N)
 
     sv_.resize(N + 1);
     S_.resize(N + 1);
+    sv_tilda_.resize(N + 1);
+    S_tilda_.resize(N + 1);
 
     N_ = N;
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::initializeCostToGo()
+void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::initializeCostToGo()
 {
     //! since intializeCostToGo is the first call, we initialize the smallestEigenvalue here.
     smallestEigenvalue_ = std::numeric_limits<SCALAR>::infinity();
@@ -136,43 +138,49 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::initializeCostToGo()
 
     S_[N] = p.Q_[N];
     sv_[N] = p.qv_[N];
+
+    S_tilda_[N] = p.Acal_[N] * S_[N] * p.Acal_[N].transpose();
+    sv_tilda_[N] = p.Acal_[N] * sv_[N];
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeCostToGo(size_t k)
+void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeCostToGo(size_t k)
 {
     LQOCProblem_t& p = *this->lqocProblem_;
 
     S_[k] = p.Q_[k];
-    S_[k].noalias() += p.A_[k].transpose() * S_[k + 1] * p.A_[k];
+    S_[k].noalias() += p.A_[k].transpose() * S_tilda_[k + 1] * p.A_[k];
     S_[k].noalias() -= this->L_[k].transpose() * Hi_[k] * this->L_[k];
 
     S_[k] = 0.5 * (S_[k] + S_[k].transpose()).eval();
 
     sv_[k] = p.qv_[k];
-    sv_[k].noalias() += p.A_[k].transpose() * sv_[k + 1];
-    sv_[k].noalias() += p.A_[k].transpose() * S_[k + 1] * p.b_[k];
+    sv_[k].noalias() += p.A_[k].transpose() * sv_tilda_[k + 1];
+    sv_[k].noalias() += p.A_[k].transpose() * S_tilda_[k + 1] * p.b_[k];
     sv_[k].noalias() += this->L_[k].transpose() * Hi_[k] * this->lv_[k];
     sv_[k].noalias() += this->L_[k].transpose() * gv_[k];
     sv_[k].noalias() += G_[k].transpose() * this->lv_[k];
+
+    S_tilda_[k] = p.Acal_[k] * S_[k] * p.Acal_[k].transpose();
+    sv_tilda_[k] = p.Acal_[k] * sv_[k];
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::designController(size_t k)
+void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::designController(size_t k)
 {
     LQOCProblem_t& p = *this->lqocProblem_;
 
     gv_[k] = p.rv_[k];
-    gv_[k].noalias() += p.B_[k].transpose() * sv_[k + 1];
-    gv_[k].noalias() += p.B_[k].transpose() * S_[k + 1].template selfadjointView<Eigen::Lower>() * p.b_[k];
+    gv_[k].noalias() += p.B_[k].transpose() * sv_tilda_[k + 1];
+    //gv_[k].noalias() += p.B_[k].transpose() * S_tilda_[k + 1].template selfadjointView<Eigen::Lower>() * p.b_[k];
 
     G_[k] = p.P_[k];
     //G_[k].noalias() += B_[k].transpose() * S_[k+1] * A_[k];
-    G_[k].noalias() += p.B_[k].transpose() * S_[k + 1].template selfadjointView<Eigen::Lower>() * p.A_[k];
+    G_[k].noalias() += p.B_[k].transpose() * S_tilda_[k + 1].template selfadjointView<Eigen::Lower>() * p.A_[k];
 
     H_[k] = p.R_[k];
     //H_[k].noalias() += B_[k].transpose() * S_[k+1] * B_[k];
-    H_[k].noalias() += p.B_[k].transpose() * S_[k + 1].template selfadjointView<Eigen::Lower>() * p.B_[k];
+    H_[k].noalias() += p.B_[k].transpose() * S_tilda_[k + 1].template selfadjointView<Eigen::Lower>() * p.B_[k];
 
     if (settings_.fixedHessianCorrection)
     {
@@ -256,11 +264,11 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::designController(size_t k)
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::logToMatlab()
+void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::logToMatlab()
 {
 #ifdef MATLAB_FULL_LOG
 
-    matFile_.open("GNRiccatiSolver.mat");
+    matFile_.open("AugGNRiccatiSolver.mat");
 
     matFile_.put("sv", sv_.toImplementation());
     matFile_.put("S", S_.toImplementation());
@@ -276,7 +284,7 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::logToMatlab()
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::initializeAndAllocate()
+void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::initializeAndAllocate()
 {
     // do nothing
 }

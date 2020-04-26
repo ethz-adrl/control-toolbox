@@ -18,20 +18,22 @@ namespace optcon {
  *
  * \todo uncouple from NLOptConSettings
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+template <typename MANIFOLD, size_t CONTROL_DIM>
 class LQOCSolver
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
+    static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
+    using SCALAR = typename MANIFOLD::Scalar;
+
+    typedef LQOCProblem<MANIFOLD, CONTROL_DIM> LQOCProblem_t;
 
     /*!
 	 * Constructor. Initialize by handing over an LQOCProblem, or otherwise by calling setProblem()
 	 * @param lqocProblem shared_ptr to the LQOCProblem to be solved.
 	 */
     LQOCSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem = nullptr) : lqocProblem_(lqocProblem) {}
-
     virtual ~LQOCSolver() = default;
 
     /*!
@@ -49,20 +51,20 @@ public:
 
     //! setup and configure the box constraints
     // return true if configuration changed, otherwise false
-    virtual bool configureInputBoxConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+    virtual bool configureInputBoxConstraints(std::shared_ptr<LQOCProblem_t> lqocProblem)
     {
         throw std::runtime_error("input box constraints are not available for this solver.");
     }
 
     // return true if configuration changed, otherwise false
-    virtual bool configureStateBoxConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+    virtual bool configureStateBoxConstraints(std::shared_ptr<LQOCProblem_t> lqocProblem)
     {
         throw std::runtime_error("state box constraints are not available for this solver.");
     }
 
     //! setup and configure the general (in)equality constraints
     // return true if configuration changed, otherwise false
-    virtual bool configureGeneralConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+    virtual bool configureGeneralConstraints(std::shared_ptr<LQOCProblem_t> lqocProblem)
     {
         throw std::runtime_error("general constraints are not available for this solver.");
     }
@@ -81,19 +83,16 @@ public:
     //! extract the solution (can be overriden if additional extraction steps required in specific solver)
     virtual void computeStatesAndControls() = 0;
     //! return solution for state
-    const ct::core::StateVectorArray<STATE_DIM, SCALAR>& getSolutionState() { return x_sol_; }
+    const core::DiscreteArray<typename MANIFOLD::Tangent>& getSolutionState() { return x_sol_; }
     //! return solution for control
     const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& getSolutionControl() { return u_sol_; }
-
     //! return TVLQR feedback matrices
     virtual void computeFeedbackMatrices() = 0;
     const ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& getSolutionFeedback() { return L_; }
-
     //! compute iLQR-style lv
     virtual void compute_lv() = 0;
     //! return iLQR-style feedforward lv
     virtual const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& get_lv() { return lv_; }
-
     //! return the smallest eigenvalue
     virtual SCALAR getSmallestEigenvalue()
     {
@@ -106,7 +105,7 @@ protected:
 
     std::shared_ptr<LQOCProblem_t> lqocProblem_;
 
-    core::StateVectorArray<STATE_DIM, SCALAR> x_sol_;            // solution in x
+    core::DiscreteArray<typename MANIFOLD::Tangent> x_sol_;            // solution in x
     core::ControlVectorArray<CONTROL_DIM, SCALAR> u_sol_;        // solution in u
     ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> L_;  // solution feedback
     ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> lv_;       // feedforward increment (iLQR-style)

@@ -26,7 +26,7 @@ void dmcopy(int row, int col, double* A, int lda, double* B, int ldb)
     }
 }
 
-class LinkedMasses : public LinearSystem<8, 3>
+class LinkedMasses : public LinearSystem<EuclideanState<8>, 3, CONTINUOUS_TIME>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -34,6 +34,8 @@ public:
     static const int state_dim = 8;
     static const int control_dim = 3;
     static const int pp = state_dim / 2;  // number of masses
+
+    using State = EuclideanState<state_dim>;
 
     LinkedMasses()
     {
@@ -76,14 +78,14 @@ public:
     }
 
 
-    const state_matrix_t& getDerivativeState(const StateVector<state_dim>& x,
+    const state_matrix_t& getDerivativeState(const State& x,
         const ControlVector<control_dim>& u,
         const double t = 0.0) override
     {
         return A_;
     }
 
-    const state_control_matrix_t& getDerivativeControl(const StateVector<state_dim>& x,
+    const state_control_matrix_t& getDerivativeControl(const State& x,
         const ControlVector<control_dim>& u,
         const double t = 0.0) override
     {
@@ -97,11 +99,12 @@ private:
 };
 
 
-class LinkedMasses2 : public ControlledSystem<8, 3>
+class LinkedMasses2 : public ControlledSystem<EuclideanState<8>, 3, CONTINUOUS_TIME>
 {
 public:
     static const int state_dim = 8;
     static const int control_dim = 3;
+    using State = EuclideanState<state_dim>;
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -150,10 +153,10 @@ public:
     }
 
     LinkedMasses2* clone() const override { return new LinkedMasses2(); };
-    void computeControlledDynamics(const ct::core::StateVector<state_dim>& state,
+    void computeControlledDynamics(const State& state,
         const double& t,
         const ct::core::ControlVector<control_dim>& control,
-        ct::core::StateVector<state_dim>& derivative) override
+        State::Tangent& derivative) override
     {
         derivative = A_ * state + B_ * control + b_;
     }

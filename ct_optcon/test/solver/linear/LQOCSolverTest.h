@@ -17,45 +17,46 @@ TEST(LQOCSolverTest, compareHPIPMandRiccati)
     const size_t N = 5;
     const double dt = 0.5;
 
+    using State = core::EuclideanState<state_dim>;
+
     bool verbose = false;  // optional verbose output
 
     // create instances of HPIPM and an unconstrained Gauss-Newton Riccati solver
-    std::shared_ptr<LQOCSolver<state_dim, control_dim>> hpipmSolver(new HPIPMInterface<state_dim, control_dim>);
-    std::shared_ptr<LQOCSolver<state_dim, control_dim>> gnRiccatiSolver(new GNRiccatiSolver<state_dim, control_dim>);
+    std::shared_ptr<LQOCSolver<State, control_dim>> hpipmSolver(new HPIPMInterface<State, control_dim>);
+    std::shared_ptr<LQOCSolver<State, control_dim>> gnRiccatiSolver(new GNRiccatiSolver<State, control_dim>);
 
     // store them, and identifying names, in a vectors
-    std::vector<std::shared_ptr<LQOCSolver<state_dim, control_dim>>> lqocSolvers;
+    std::vector<std::shared_ptr<LQOCSolver<State, control_dim>>> lqocSolvers;
     lqocSolvers.push_back(gnRiccatiSolver);
     lqocSolvers.push_back(hpipmSolver);
     std::vector<std::string> solverNames = {"Riccati", "HPIPM"};
 
     // create linear-quadratic optimal control problem containers
-    std::vector<std::shared_ptr<LQOCProblem<state_dim, control_dim>>> problems;
-    std::shared_ptr<LQOCProblem<state_dim, control_dim>> lqocProblem1(new LQOCProblem<state_dim, control_dim>(N));
-    std::shared_ptr<LQOCProblem<state_dim, control_dim>> lqocProblem2(new LQOCProblem<state_dim, control_dim>(N));
+    std::vector<std::shared_ptr<LQOCProblem<State, control_dim>>> problems;
+    std::shared_ptr<LQOCProblem<State, control_dim>> lqocProblem1(new LQOCProblem<State, control_dim>(N));
+    std::shared_ptr<LQOCProblem<State, control_dim>> lqocProblem2(new LQOCProblem<State, control_dim>(N));
 
     problems.push_back(lqocProblem1);
     problems.push_back(lqocProblem2);
 
     // create a continuous-time example system and discretize it
-    std::shared_ptr<core::LinearSystem<state_dim, control_dim>> exampleSystem(new example::SpringLoadedMassLinear());
-    core::SensitivityApproximation<state_dim, control_dim> discreteExampleSystem(
+    std::shared_ptr<core::LinearSystem<State, control_dim, core::CONTINUOUS_TIME>> exampleSystem(
+        new example::SpringLoadedMassLinear());
+    core::SensitivityApproximation<State, control_dim> discreteExampleSystem(
         dt, exampleSystem, core::SensitivityApproximationSettings::APPROXIMATION::MATRIX_EXPONENTIAL);
 
     // nominal control
     ct::core::ControlVector<control_dim> u0;
     u0.setZero();  // by definition
-    // initial state
-    ct::core::StateVector<state_dim> x0;
+    // initial state and desired final state
+    State x0, xf;
     x0.setZero();  // by definition
-    // desired final state
-    ct::core::StateVector<state_dim> xf;
     xf << -1, 0;
 
     // create pointer to a cost function
     auto costFunction = example::createSpringLoadedMassCostFunction(xf);
 
-    ct::core::StateVector<state_dim> b;
+    State b;
     b << 0.1, 0.1;
 
     // initialize the optimal control problems for both solvers

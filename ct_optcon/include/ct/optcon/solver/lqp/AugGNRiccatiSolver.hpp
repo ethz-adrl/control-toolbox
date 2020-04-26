@@ -19,7 +19,7 @@ namespace optcon {
  *  linear-quadratic Optimal Control problem
  */
 template <typename MANIFOLD, size_t CONTROL_DIM>
-class GNRiccatiSolver : public LQOCSolver<MANIFOLD, CONTROL_DIM>
+class AugGNRiccatiSolver : public LQOCSolver<MANIFOLD, CONTROL_DIM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -41,9 +41,9 @@ public:
     typedef ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> FeedbackArray;
     typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
 
-    GNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem = nullptr);
+    AugGNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem = nullptr);
 
-    GNRiccatiSolver(int N);
+    AugGNRiccatiSolver(int N);
 
     virtual void solve() override;
 
@@ -90,6 +90,8 @@ protected:
 
     ct::core::DiscreteArray<typename MANIFOLD::Tangent> sv_;
     StateMatrixArray S_;
+    ct::core::DiscreteArray<typename MANIFOLD::Tangent> sv_tilda_;
+    StateMatrixArray S_tilda_;
 
     int N_;
 

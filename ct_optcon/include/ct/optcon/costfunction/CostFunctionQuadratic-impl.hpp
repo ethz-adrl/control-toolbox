@@ -207,7 +207,6 @@ auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::evaluateIntermediateBase() ->
     return y;
 }
 
-
 template <typename MANIFOLD, size_t CONTROL_DIM>
 auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::evaluateTerminalBase() -> SCALAR_EVAL
 {
@@ -219,11 +218,10 @@ auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::evaluateTerminalBase() -> SCA
     return y;
 }
 
-
 template <typename MANIFOLD, size_t CONTROL_DIM>
-auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediateBase() -> Tangent_t
+auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediateBase() -> typename EVAL_MANIFOLD::Tangent
 {
-    Tangent_t derivative;
+    typename EVAL_MANIFOLD::Tangent derivative;
     derivative.setZero();
 
     for (auto it : this->intermediateCostAnalytical_)
@@ -238,11 +236,10 @@ auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediateBa
     return derivative;
 }
 
-
 template <typename MANIFOLD, size_t CONTROL_DIM>
-auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeTerminalBase() -> Tangent_t
+auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeTerminalBase() -> typename EVAL_MANIFOLD::Tangent
 {
-    Tangent_t derivative;
+    typename EVAL_MANIFOLD::Tangent derivative;
     derivative.setZero();
 
     for (auto it : this->finalCostAnalytical_)

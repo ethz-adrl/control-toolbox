@@ -39,32 +39,29 @@ namespace optcon {
  *
  */
 
-template <size_t STATE_DIM,
-    size_t CONTROL_DIM,
-    size_t P_DIM,
-    size_t V_DIM,
-    typename SCALAR = double,
-    bool CONTINUOUS = true>
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
 class NLOCBackendBase
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static const size_t state_dim = STATE_DIM;
+    static const size_t STATE_DIM = MANIFOLD::TangentDim;
+    static const size_t state_dim = MANIFOLD::TangentDim;
     static const size_t control_dim = CONTROL_DIM;
+    using SCALAR = typename MANIFOLD::Scalar;
+    using scalar_t = SCALAR;
+    using scalar_array_t = std::vector<SCALAR, Eigen::aligned_allocator<SCALAR>>;
 
     typedef NLOptConSettings Settings_t;
 
-    typedef typename ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM, SCALAR> Policy_t;
+    typedef typename ct::core::StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T> Policy_t;
 
-    typedef typename std::conditional<CONTINUOUS,
-        ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>,
-        DiscreteOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>::type OptConProblem_t;
+    typedef OptConProblem<MANIFOLD, CONTROL_DIM, TIME_T> OptConProblem_t;
 
     typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
     typedef LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR> LQOCSolver_t;
 
-    typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
+    typedef ct::core::DiscreteArray<MANIFOLD> StateVectorArray;
     typedef std::shared_ptr<StateVectorArray> StateVectorArrayPtr;
 
     typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
@@ -76,7 +73,7 @@ public:
     typedef std::vector<ControlVectorArrayPtr, Eigen::aligned_allocator<ControlVectorArrayPtr>> ControlSubsteps;
     typedef std::shared_ptr<ControlSubsteps> ControlSubstepsPtr;
 
-    typedef OptconSystemInterface<STATE_DIM, CONTROL_DIM, OptConProblem_t, SCALAR> systemInterface_t;
+    typedef OptconSystemInterface<MANIFOLD, CONTROL_DIM, TIME_T> systemInterface_t;
     typedef std::shared_ptr<systemInterface_t> systemInterfacePtr_t;
 
     using ControlMatrix = ct::core::ControlMatrix<CONTROL_DIM, SCALAR>;
@@ -86,17 +83,13 @@ public:
     using FeedbackArray = ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>;
     using TimeArray = ct::core::tpl::TimeArray<SCALAR>;
 
-    using state_matrix_t = Eigen::Matrix<SCALAR, STATE_DIM, STATE_DIM>;
-    using control_matrix_t = Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>;
-    using control_state_matrix_t = Eigen::Matrix<SCALAR, CONTROL_DIM, STATE_DIM>;
-    using state_control_matrix_t = Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM>;
-
-    using state_vector_t = core::StateVector<STATE_DIM, SCALAR>;
+    using state_matrix_t = ct::core::StateMatrix<STATE_DIM, SCALAR>;
+    using control_matrix_t = ct::core::ControlMatrix<CONTROL_DIM, SCALAR>;
+    using control_state_matrix_t = ct::core::ControlStateMatrix<STATE_DIM, CONTROL_DIM, SCALAR>;
+    using state_control_matrix_t = ct::core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR>;
     using control_vector_t = core::ControlVector<CONTROL_DIM, SCALAR>;
     using feedback_matrix_t = core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>;
 
-    using scalar_t = SCALAR;
-    using scalar_array_t = std::vector<SCALAR, Eigen::aligned_allocator<SCALAR>>;
 
     NLOCBackendBase(const OptConProblem_t& optConProblem, const Settings_t& settings);
     NLOCBackendBase(const OptConProblem_t& optConProblem,
@@ -112,21 +105,18 @@ public:
 
     virtual ~NLOCBackendBase();
 
-    template <typename T = OptConProblem_t>  // do not use this template argument
-    typename std::enable_if<std::is_same<T, ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>::value,
-        systemInterfacePtr_t>::type
+    typename std::enable_if<TIME_T == core::TIME_TYPE::CONTINUOUS_TIME, systemInterfacePtr_t>::type
     createSystemInterface(const OptConProblem_t& optConProblem, const Settings_t& settings);
 
-    template <typename T = OptConProblem_t>  // do not use this template argument
-    typename std::enable_if<std::is_same<T, DiscreteOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>::value,
-        systemInterfacePtr_t>::type
-    createSystemInterface(const OptConProblem_t& optConProblem, const Settings_t& settings);
+    typename std::enable_if<TIME_T == core::TIME_TYPE::DISCRETE_TIME, systemInterfacePtr_t>::type createSystemInterface(
+        const OptConProblem_t& optConProblem,
+        const Settings_t& settings);
 
     //! configure the solver
     /**
-     * Configure the solver
-     * @param settings solver settings
-     */
+     * @brief solver settings 
+     * 
+     */ 
     virtual void configure(const Settings_t& settings);
 
     //! get the current SLQsolver settings
@@ -283,7 +273,7 @@ public:
 
     void reset();
 
-    const core::StateTrajectory<STATE_DIM, SCALAR> getStateTrajectory() const;
+    const core::DiscreteTrajectory<MANIFOLD> getStateTrajectory() const;
 
     const core::ControlTrajectory<CONTROL_DIM, SCALAR> getControlTrajectory() const;
 
@@ -466,7 +456,7 @@ protected:
      * \param finalCost the accumulated final cost
      */
     void computeCostsOfTrajectory(size_t threadId,
-        const core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+        const core::DiscreteArray<MANIFOLD>& x_local,
         const core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
         scalar_t& intermediateCost,
         scalar_t& finalCost) const;
@@ -480,7 +470,7 @@ protected:
      * \param e_tot the total accumulated box constraint violation
      */
     void computeBoxConstraintErrorOfTrajectory(size_t threadId,
-        const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+        const ct::core::DiscreteArray<MANIFOLD>& x_local,
         const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
         scalar_t& e_tot) const;
 
@@ -493,16 +483,16 @@ protected:
      * \param e_tot the total accumulated general constraint violation
      */
     void computeGeneralConstraintErrorOfTrajectory(size_t threadId,
-        const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+        const ct::core::DiscreteArray<MANIFOLD>& x_local,
         const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
         scalar_t& e_tot) const;
 
     //! Check if controller with particular alpha is better
     void executeLineSearch(const size_t threadId,
         const scalar_t alpha,
-        ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_recorded,
-        ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_recorded,
-        ct::core::StateVectorArray<STATE_DIM, SCALAR>& defects_recorded,
+        ct::core::DiscreteArray<MANIFOLD>& x_recorded,
+        ct::core::DiscreteArray<MANIFOLD>& x_shot_recorded,
+        ct::core::DiscreteArray<MANIFOLD>& defects_recorded,
         ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_recorded,
         scalar_t& intermediateCost,
         scalar_t& finalCost,
@@ -515,8 +505,7 @@ protected:
 
 
     //! in case of line-search compute new merit and check if to accept step. Returns true if accept step
-    bool acceptStep(
-        const SCALAR alpha,
+    bool acceptStep(const SCALAR alpha,
         const SCALAR intermediateCost,
         const SCALAR finalCost,
         const SCALAR defectNorm,
@@ -619,17 +608,16 @@ protected:
 
     SummaryAllIterations<SCALAR> summaryAllIterations_;
 
-    //! if building with MATLAB support, include matfile
+//! if building with MATLAB support, include matfile
 #ifdef MATLAB
     matlab::MatFile matFile_;
 #endif  //MATLAB
 };
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
 template <typename ARRAY_TYPE, size_t ORDER>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::computeDiscreteArrayNorm(
-    const ARRAY_TYPE& d) const
+SCALAR NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::computeDiscreteArrayNorm(const ARRAY_TYPE& d) const
 {
     SCALAR norm = 0.0;
 
@@ -641,10 +629,9 @@ SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
 template <typename ARRAY_TYPE, size_t ORDER>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::computeDiscreteArrayNorm(
-    const ARRAY_TYPE& a,
+SCALAR NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::computeDiscreteArrayNorm(const ARRAY_TYPE& a,
     const ARRAY_TYPE& b) const
 {
     assert(a.size() == b.size());
@@ -658,10 +645,9 @@ SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>
     return norm;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
 template <size_t ORDER>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::computeDefectsNorm(
-    const StateVectorArray& d) const
+SCALAR NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::computeDefectsNorm(const StateVectorArray& d) const
 {
     return computeDiscreteArrayNorm<StateVectorArray, ORDER>(d);
 }

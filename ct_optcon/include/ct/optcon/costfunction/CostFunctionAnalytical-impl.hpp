@@ -101,15 +101,13 @@ auto CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::evaluateTerminal() -> SCALAR
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-auto CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediate()
-    -> ct::core::StateVector<STATE_DIM, SCALAR_EVAL>
+auto CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediate() -> typename MANIFOLD::Tangent
 {
     return this->stateDerivativeIntermediateBase();
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-auto CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::stateDerivativeTerminal()
-    -> ct::core::StateVector<STATE_DIM, SCALAR_EVAL>
+auto CostFunctionAnalytical<MANIFOLD, CONTROL_DIM>::stateDerivativeTerminal() -> typename MANIFOLD::Tangent
 {
     return this->stateDerivativeTerminalBase();
 }

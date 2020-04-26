@@ -219,8 +219,7 @@ auto CostFunctionAD<AD_MANIFOLD, CONTROL_DIM>::evaluateTerminal() -> SCALAR_EVAL
 }
 
 template <typename AD_MANIFOLD, size_t CONTROL_DIM>
-auto CostFunctionAD<AD_MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediate()
-    -> ct::core::StateVector<STATE_DIM, SCALAR_EVAL>
+auto CostFunctionAD<AD_MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediate() -> typename EVAL_MANIFOLD::Tangent
 {
     Eigen::Matrix<SCALAR_EVAL, 1, STATE_DIM + CONTROL_DIM + 1> jacTot =
         intermediateCostCodegen_->jacobian(stateControlTime_);
@@ -228,8 +227,7 @@ auto CostFunctionAD<AD_MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediate()
 }
 
 template <typename AD_MANIFOLD, size_t CONTROL_DIM>
-auto CostFunctionAD<AD_MANIFOLD, CONTROL_DIM>::stateDerivativeTerminal()
-    -> ct::core::StateVector<STATE_DIM, SCALAR_EVAL>
+auto CostFunctionAD<AD_MANIFOLD, CONTROL_DIM>::stateDerivativeTerminal() -> typename EVAL_MANIFOLD::Tangent
 {
     Eigen::Matrix<SCALAR_EVAL, 1, STATE_DIM + CONTROL_DIM + 1> jacTot = finalCostCodegen_->jacobian(stateControlTime_);
     return jacTot.template leftCols<STATE_DIM>().transpose() + this->stateDerivativeTerminalBase();

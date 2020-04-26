@@ -8,20 +8,24 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
-
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::LQOCProblem(int N) : nbu_(N, 0), nbx_(N + 1, 0)
+template <typename MANIFOLD, int CONTROL_DIM>
+LQOCProblem<MANIFOLD, CONTROL_DIM>::LQOCProblem(int N) : nbu_(N, 0), nbx_(N + 1, 0)
 {
     changeNumStages(N);
 }
 
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isConstrained() const
+template <typename MANIFOLD, int CONTROL_DIM>
+LQOCProblem<MANIFOLD, CONTROL_DIM>::~LQOCProblem()
+{
+}
+
+template <typename MANIFOLD, int CONTROL_DIM>
+bool LQOCProblem<MANIFOLD, CONTROL_DIM>::isConstrained() const
 {
     return (isInputBoxConstrained() | isStateBoxConstrained() | isGeneralConstrained());
 }
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isInputBoxConstrained() const
+template <typename MANIFOLD, int CONTROL_DIM>
+bool LQOCProblem<MANIFOLD, CONTROL_DIM>::isInputBoxConstrained() const
 {
     if (std::accumulate(nbu_.begin(), nbu_.end(), 0) > 0)
         return true;
@@ -29,8 +33,8 @@ bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isInputBoxConstrained() const
     return false;
 }
 
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isStateBoxConstrained() const
+template <typename MANIFOLD, int CONTROL_DIM>
+bool LQOCProblem<MANIFOLD, CONTROL_DIM>::isStateBoxConstrained() const
 {
     if (std::accumulate(nbx_.begin(), nbx_.end(), 0) > 0)
         return true;
@@ -38,8 +42,8 @@ bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isStateBoxConstrained() const
     return false;
 }
 
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isGeneralConstrained() const
+template <typename MANIFOLD, int CONTROL_DIM>
+bool LQOCProblem<MANIFOLD, CONTROL_DIM>::isGeneralConstrained() const
 {
     if (std::accumulate(ng_.begin(), ng_.end(), 0) > 0)
         return true;
@@ -47,14 +51,14 @@ bool LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::isGeneralConstrained() const
     return false;
 }
 
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-int LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::getNumberOfStages()
+template <typename MANIFOLD, int CONTROL_DIM>
+int LQOCProblem<MANIFOLD, CONTROL_DIM>::getNumberOfStages()
 {
     return K_;
 }
 
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumStages(int N)
+template <typename MANIFOLD, int CONTROL_DIM>
+void LQOCProblem<MANIFOLD, CONTROL_DIM>::changeNumStages(int N)
 {
     K_ = N;
 
@@ -66,6 +70,7 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumStages(int N)
     q_.resize(N + 1);
     qv_.resize(N + 1);
     Q_.resize(N + 1);
+    Acal_.resize(N+1);
 
     rv_.resize(N);
     R_.resize(N);
@@ -88,8 +93,8 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumStages(int N)
 }
 
 
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero(const int& nGenConstr)
+template <typename MANIFOLD, int CONTROL_DIM>
+void LQOCProblem<MANIFOLD, CONTROL_DIM>::setZero(const int& nGenConstr)
 {
     A_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Zero());
     B_.setConstant(core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
@@ -97,6 +102,7 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero(const int& nGenConstr)
     P_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
     qv_.setConstant(core::StateVector<STATE_DIM, SCALAR>::Zero());
     Q_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Zero());
+    Acal_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Identity());
     rv_.setConstant(core::ControlVector<CONTROL_DIM, SCALAR>::Zero());
     R_.setConstant(core::ControlMatrix<CONTROL_DIM, SCALAR>::Zero());
     q_.setConstant((SCALAR)0.0);
@@ -125,8 +131,8 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setZero(const int& nGenConstr)
 }
 
 
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setInputBoxConstraint(const int index,
+template <typename MANIFOLD, int CONTROL_DIM>
+void LQOCProblem<MANIFOLD, CONTROL_DIM>::setInputBoxConstraint(const int index,
     const int nConstr,
     const constr_vec_t& u_lb,
     const constr_vec_t& u_ub,
@@ -157,8 +163,8 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setInputBoxConstraint(const in
     }
 }
 
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setInputBoxConstraints(const int nConstr,
+template <typename MANIFOLD, int CONTROL_DIM>
+void LQOCProblem<MANIFOLD, CONTROL_DIM>::setInputBoxConstraints(const int nConstr,
     const constr_vec_t& u_lb,
     const constr_vec_t& u_ub,
     const VectorXi& sp,
@@ -169,8 +175,8 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setInputBoxConstraints(const i
 }
 
 
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateStateBoxConstraint(const int index,
+template <typename MANIFOLD, int CONTROL_DIM>
+void LQOCProblem<MANIFOLD, CONTROL_DIM>::setIntermediateStateBoxConstraint(const int index,
     const int nConstr,
     const constr_vec_t& x_lb,
     const constr_vec_t& x_ub,
@@ -201,8 +207,8 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateStateBoxConstra
     }
 }
 
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateStateBoxConstraints(const int nConstr,
+template <typename MANIFOLD, int CONTROL_DIM>
+void LQOCProblem<MANIFOLD, CONTROL_DIM>::setIntermediateStateBoxConstraints(const int nConstr,
     const constr_vec_t& x_lb,
     const constr_vec_t& x_ub,
     const VectorXi& sp,
@@ -213,8 +219,8 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateStateBoxConstra
 }
 
 
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setTerminalBoxConstraints(const int nConstr,
+template <typename MANIFOLD, int CONTROL_DIM>
+void LQOCProblem<MANIFOLD, CONTROL_DIM>::setTerminalBoxConstraints(const int nConstr,
     const constr_vec_t& x_lb,
     const constr_vec_t& x_ub,
     const VectorXi& sp,
@@ -244,8 +250,8 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setTerminalBoxConstraints(cons
     }
 }
 
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(const constr_vec_t& d_lb,
+template <typename MANIFOLD, int CONTROL_DIM>
+void LQOCProblem<MANIFOLD, CONTROL_DIM>::setGeneralConstraints(const constr_vec_t& d_lb,
     const constr_vec_t& d_ub,
     const constr_state_jac_t& C,
     const constr_control_jac_t& D)
@@ -266,28 +272,23 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(const co
     D_.setConstant(D);
 }
 
-
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
-void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuadraticProblem(
-    ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
-    ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
-    const ct::core::StateVector<STATE_DIM, SCALAR>& offset,
+template <typename MANIFOLD, int CONTROL_DIM>
+void LQOCProblem<MANIFOLD, CONTROL_DIM>::setFromTimeInvariantLinearQuadraticProblem(const MANIFOLD& x0,
+    const core::ControlVector<CONTROL_DIM, SCALAR>& u0,
+    ct::core::LinearSystem<MANIFOLD, CONTROL_DIM, core::DISCRETE_TIME>& linearSystem,
+    ct::optcon::CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>& costFunction,
+    const typename MANIFOLD::Tangent& stateOffset,
     const double dt)
 {
     setZero();
 
-    core::StateVector<STATE_DIM, SCALAR> x0;
-    x0.setZero();  // by definition
-    core::ControlVector<CONTROL_DIM, SCALAR> u0;
-    u0.setZero();  // by definition
-
     core::StateMatrix<STATE_DIM, SCALAR> A;
     core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B;
-    linearSystem.getAandB(x0, u0, 0, A, B);
+    linearSystem.getDerivatives(A, B, x0, u0, 0);
 
     A_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_, A);
     B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, B);
-    b_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_ + 1, offset);
+    b_ = core::DiscreteArray<typename MANIFOLD::Tangent>(K_ + 1, stateOffset);
 
     // feed current state and control to cost function
     costFunction.setCurrentStateAndControl(x0, u0, 0);
@@ -298,12 +299,52 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuad
         core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, costFunction.stateControlDerivativeIntermediate() * dt);
     R_ = core::ControlMatrixArray<CONTROL_DIM, SCALAR>(K_, costFunction.controlSecondDerivativeIntermediate() * dt);
 
-    qv_ = core::StateVectorArray<STATE_DIM, SCALAR>(K_ + 1, costFunction.stateDerivativeIntermediate() * dt);
+    qv_ = core::DiscreteArray<typename MANIFOLD::Tangent>(K_ + 1, costFunction.stateDerivativeIntermediate() * dt);
     rv_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, costFunction.controlDerivativeIntermediate() * dt);
 
     // final stage
-    Q_[K_] = costFunction.stateSecondDerivativeTerminal();
-    qv_[K_] = costFunction.stateDerivativeTerminal();
+    Q_[K_] = costFunction.stateSecondDerivativeTerminal() * dt;
+    qv_[K_] = costFunction.stateDerivativeTerminal() * dt;
+}
+
+
+template <typename MANIFOLD, int CONTROL_DIM>
+void LQOCProblem<MANIFOLD, CONTROL_DIM>::setFromTimeInvariantLinearQuadraticProblem(
+    const ct::core::DiscreteArray<MANIFOLD>& x_traj,
+    const ct::core::DiscreteArray<core::ControlVector<CONTROL_DIM, SCALAR>>& u_traj,
+    ct::core::LinearSystem<MANIFOLD, CONTROL_DIM, core::DISCRETE_TIME>& linearSystem,
+    ct::optcon::CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>& costFunction,
+    const typename MANIFOLD::Tangent& stateOffset,
+    const double dt)
+{
+    setZero();
+
+    // get LTI dynamics
+    core::StateMatrix<STATE_DIM, SCALAR> A;
+    core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B;
+    linearSystem.getDerivatives(A, B, x_traj.front(), u_traj.front(), 0);
+    A_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_, A);
+    B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, B);
+    b_ = core::DiscreteArray<typename MANIFOLD::Tangent>(K_ + 1, stateOffset);
+
+    // eval costs around the reference trajectory
+    for (int i = 0; i < K_; i++)
+    {
+        // feed current state and control to cost function
+        costFunction.setCurrentStateAndControl(x_traj[i], u_traj[i], i * dt);
+
+        // intermediate stage
+        Q_[i] = costFunction.stateSecondDerivativeIntermediate() * dt;
+        P_[i] = costFunction.stateControlDerivativeIntermediate() * dt;
+        R_[i] = costFunction.controlSecondDerivativeIntermediate() * dt;
+
+        qv_[i] = costFunction.stateDerivativeIntermediate() * dt;
+        rv_[i] = costFunction.controlDerivativeIntermediate() * dt;
+    }
+    // final stage
+    costFunction.setCurrentStateAndControl(x_traj.back(), u_traj.back(), K_ * dt);
+    Q_[K_] = costFunction.stateSecondDerivativeTerminal() * dt;
+    qv_[K_] = costFunction.stateDerivativeTerminal() * dt;
 }
 
 }  // namespace optcon

@@ -33,7 +33,7 @@ public:
 
     static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
     using SCALAR_EVAL = typename MANIFOLD::Scalar;  // TODO: is there a better name than scalar_eval?
-    using Tangent_t = typename MANIFOLD::Tangent;
+    using EVAL_MANIFOLD = typename MANIFOLD::template RedefineScalar<typename ct::core::get_out_type<MANIFOLD>::type>;
 
     using Base = CostFunction<MANIFOLD, CONTROL_DIM>;
     using control_vector_t = typename Base::control_vector_t;
@@ -91,13 +91,13 @@ public:
 	 * \brief Computes intermediate-cost first-order derivative with respect to state
 	 * @return derivative vector (Jacobian)
 	 */
-    virtual ct::core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivativeIntermediate() = 0;
+    virtual typename MANIFOLD::Tangent stateDerivativeIntermediate() = 0;
 
     /**
 	 * Computes terminal-cost first-order derivative with respect to state
 	 * @return derivative vector (Jacobian)
 	 */
-    virtual ct::core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivativeTerminal() = 0;
+    virtual typename MANIFOLD::Tangent stateDerivativeTerminal() = 0;
 
     /**
 	 * \brief Computes intermediate-cost second-order derivative with respect to state
@@ -184,10 +184,10 @@ protected:
     SCALAR_EVAL evaluateTerminalBase();
 
     //! evaluate intermediate analytical state derivatives
-    Tangent_t stateDerivativeIntermediateBase();
+    typename EVAL_MANIFOLD::Tangent stateDerivativeIntermediateBase();
 
     //! evaluate terminal analytical state derivatives
-    Tangent_t stateDerivativeTerminalBase();
+    typename EVAL_MANIFOLD::Tangent stateDerivativeTerminalBase();
 
     //! evaluate intermediate analytical state second derivatives
     state_matrix_t stateSecondDerivativeIntermediateBase();
@@ -217,10 +217,10 @@ protected:
     //! compute the state derivative by numerical differentiation (can be used for testing)
     // euclidean case
     template <typename M = MANIFOLD, typename std::enable_if<ct::core::is_euclidean<M>::value, bool>::type>
-    Tangent_t stateDerivativeIntermediateNumDiff();
+    typename EVAL_MANIFOLD::Tangent stateDerivativeIntermediateNumDiff();
     // non-euclidean case
     template <typename M = MANIFOLD, typename std::enable_if<!(ct::core::is_euclidean<M>::value), bool>::type>
-    Tangent_t stateDerivativeIntermediateNumDiff();
+    typename EVAL_MANIFOLD::Tangent stateDerivativeIntermediateNumDiff();
 
     //! compute the control derivative by numerical differentiation (can be used for testing)
     // euclidean case
@@ -247,7 +247,7 @@ protected:
 // impl for euclidean case (do not move to *-impl.h file)
 template <typename MANIFOLD, size_t CONTROL_DIM>
 template <typename M, typename std::enable_if<ct::core::is_euclidean<M>::value, bool>::type>
-auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediateNumDiff() -> Tangent_t
+auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediateNumDiff() -> typename EVAL_MANIFOLD::Tangent
 {
     using state_vector_t = ct::core::StateVector<STATE_DIM, SCALAR_EVAL>;
 
@@ -297,7 +297,7 @@ auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediateNu
 // impl for manifold case (do not move to *-impl.h file)
 template <typename MANIFOLD, size_t CONTROL_DIM>
 template <typename M, typename std::enable_if<!(ct::core::is_euclidean<M>::value), bool>::type>
-auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediateNumDiff() -> Tangent_t
+auto CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediateNumDiff() -> typename EVAL_MANIFOLD::Tangent
 {
     throw std::runtime_error("stateDerivativeIntermediateNumDiff not implemented for manifold case.");
 }

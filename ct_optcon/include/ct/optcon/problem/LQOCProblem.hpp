@@ -53,11 +53,14 @@ namespace optcon {
  *
  * \todo Refactor the initializing methods such that const-references can be handed over.
  */
-template <int STATE_DIM, int CONTROL_DIM, typename SCALAR = double>
+template <typename MANIFOLD, int CONTROL_DIM>
 class LQOCProblem
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    using SCALAR = typename MANIFOLD::Scalar;
+    static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
 
     using constr_vec_t = Eigen::Matrix<SCALAR, -1, -1>;
     using constr_state_jac_t = Eigen::Matrix<SCALAR, -1, -1>;
@@ -83,6 +86,8 @@ public:
 
     //! constructor
     LQOCProblem(int N = 0);
+
+    ~LQOCProblem();
 
     //! returns the number of discrete time steps in the LQOCP, including terminal stage
     int getNumberOfStages();
@@ -189,10 +194,17 @@ public:
      * @param stateOffset the offset for the affine system dynamics demanded by the LQOC Solver
      * @param dt the sampling time, required for discretization
      */
-    void setFromTimeInvariantLinearQuadraticProblem(
-        ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
-        ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
-        const ct::core::StateVector<STATE_DIM, SCALAR>& stateOffset,
+    void setFromTimeInvariantLinearQuadraticProblem(const MANIFOLD& x0,
+        const core::ControlVector<CONTROL_DIM, SCALAR>& u0,
+        ct::core::LinearSystem<MANIFOLD, CONTROL_DIM, core::DISCRETE_TIME>& linearSystem,
+        ct::optcon::CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>& costFunction,
+        const typename MANIFOLD::Tangent& stateOffset,
+        const double dt);
+    void setFromTimeInvariantLinearQuadraticProblem(const ct::core::DiscreteArray<MANIFOLD>& x_traj,
+        const ct::core::DiscreteArray<core::ControlVector<CONTROL_DIM, SCALAR>>& u_traj,
+        ct::core::LinearSystem<MANIFOLD, CONTROL_DIM, core::DISCRETE_TIME>& linearSystem,
+        ct::optcon::CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>& costFunction,
+        const typename MANIFOLD::Tangent& stateOffset,
         const double dt);
 
     //! return a flag indicating whether this LQOC Problem is constrained or not
@@ -205,14 +217,15 @@ public:
     //! affine, time-varying system dynamics in discrete time
     ct::core::StateMatrixArray<STATE_DIM, SCALAR> A_;
     ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> B_;
-    ct::core::StateVectorArray<STATE_DIM, SCALAR> b_;
+    ct::core::DiscreteArray<typename MANIFOLD::Tangent> b_;
 
     //! constant term of in the LQ approximation of the cost function
     ct::core::ScalarArray<SCALAR> q_;
 
     //! LQ approximation of the pure state penalty, including terminal state penalty
-    ct::core::StateVectorArray<STATE_DIM, SCALAR> qv_;
+    ct::core::DiscreteArray<typename MANIFOLD::Tangent> qv_;
     ct::core::StateMatrixArray<STATE_DIM, SCALAR> Q_;
+    ct::core::StateMatrixArray<STATE_DIM, SCALAR> Acal_; // TODO: temp
 
     //! LQ approximation of the pure control penalty
     ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> rv_;
