@@ -53,8 +53,13 @@ if(BUILD_TESTS)
     #package_add_test(dms_test_all_var dms/oscillator/oscDMSTestAllVariants.cpp)
     #package_add_test(system_interface_test system_interface/SystemInterfaceTest.cpp)
     
+    #add_executable(KinematicManifoldLQOCTest solver/linear/KinematicManifoldLQOCTest.cpp)
+    #target_link_libraries(KinematicManifoldLQOCTest ct_optcon)
+    #set_target_properties(KinematicManifoldLQOCTest PROPERTIES FOLDER test)
+    #list(APPEND UNIT_TEST_TARGETS KinematicManifoldLQOCTest)    
+    
     add_executable(ManifoldLQOCTest solver/linear/ManifoldLQOCTest.cpp)
-    target_link_libraries(ManifoldLQOCTest ct_optcon)
+    target_link_libraries(ManifoldLQOCTest ct_optcon ct_core)
     set_target_properties(ManifoldLQOCTest PROPERTIES FOLDER test)
     list(APPEND UNIT_TEST_TARGETS ManifoldLQOCTest)
 

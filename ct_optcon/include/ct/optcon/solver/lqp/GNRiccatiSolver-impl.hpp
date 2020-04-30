@@ -63,10 +63,12 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeStatesAndControls()
         this->u_sol_[k] = this->lv_[k] + this->L_[k] * this->x_sol_[k];
 
         //! state update rule in diff coordinates
-        StateMatrix A_orig = p.Adj_x_[k + 1] * p.A_[k];                 // A "without trick for backwards pass"
-        StateControlMatrix B_orig = p.Adj_x_[k + 1] * p.B_[k];          // B "without trick for backwards pass"
-        typename MANIFOLD::Tangent b_orig = p.Adj_x_[k + 1] * p.b_[k];  // b "without trick for backwards pass"
-        this->x_sol_[k + 1] = A_orig * this->x_sol_[k] + B_orig * (this->u_sol_[k]) + b_orig;
+        StateMatrix A_orig = p.Adj_x_[k + 1] * p.A_[k];                 // A "without trick for backward pass"
+        StateControlMatrix B_orig = p.Adj_x_[k + 1] * p.B_[k];          // B "without trick for backward pass"
+        typename MANIFOLD::Tangent b_orig = p.Adj_x_[k + 1] * p.b_[k];  // b "without trick for backward pass"
+        // Note that we need to transport the state update into the tagent space of k+1
+        this->x_sol_[k + 1] =
+            p.Adj_x_[k + 1].transpose() * (A_orig * this->x_sol_[k] + B_orig * (this->u_sol_[k]) + b_orig);
     }
 }
 
@@ -153,11 +155,11 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeCostToGo(size_t k)
     S_[k] = 0.5 * (S_[k] + S_[k].transpose()).eval();
 
     sv_[k] = p.qv_[k];
-    sv_[k].noalias() += p.A_[k].transpose() * sv_[k + 1];
-    sv_[k].noalias() += p.A_[k].transpose() * S_[k + 1] * p.b_[k];
-    sv_[k].noalias() += this->L_[k].transpose() * Hi_[k] * this->lv_[k];
-    sv_[k].noalias() += this->L_[k].transpose() * gv_[k];
-    sv_[k].noalias() += G_[k].transpose() * this->lv_[k];
+    sv_[k]/*.noalias()*/ += p.A_[k].transpose() * sv_[k + 1];
+    sv_[k]/*.noalias()*/ += p.A_[k].transpose() * S_[k + 1] * p.b_[k];
+    sv_[k]/*.noalias()*/ += this->L_[k].transpose() * Hi_[k] * this->lv_[k];
+    sv_[k]/*.noalias()*/ += this->L_[k].transpose() * gv_[k];
+    sv_[k]/*.noalias()*/ += G_[k].transpose() * this->lv_[k]; // TODO: bring back all the noalias()
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>

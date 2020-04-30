@@ -63,7 +63,9 @@ void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeStatesAndControls()
         this->u_sol_[k] = this->lv_[k] + this->L_[k] * this->x_sol_[k];
 
         //! state update rule in diff coordinates
-        this->x_sol_[k + 1] = p.A_[k] * this->x_sol_[k] + p.B_[k] * (this->u_sol_[k]) + p.b_[k];
+        // Note that we need to transport the state update into the tagent space of k+1
+        this->x_sol_[k + 1] =
+            p.Adj_x_[k + 1].transpose() * (p.A_[k] * this->x_sol_[k] + p.B_[k] * this->u_sol_[k] + p.b_[k]);
     }
 }
 
@@ -157,17 +159,17 @@ void AugGNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeCostToGo(size_t k)
     LQOCProblem_t& p = *this->lqocProblem_;
 
     S_[k] = p.Q_[k];
-    S_[k].noalias() += p.A_[k].transpose() * S_t_[k + 1] * p.A_[k];
-    S_[k].noalias() -= this->L_[k].transpose() * Hi_[k] * this->L_[k];
+    S_[k]/*.noalias()*/ += p.A_[k].transpose() * S_t_[k + 1] * p.A_[k]; // TODO: bring back all the noalias()
+    S_[k]/*.noalias()*/ -= this->L_[k].transpose() * Hi_[k] * this->L_[k];
 
     S_[k] = 0.5 * (S_[k] + S_[k].transpose()).eval();
 
     sv_[k] = p.qv_[k];
-    sv_[k].noalias() += p.A_[k].transpose() * sv_t_[k + 1];
-    sv_[k].noalias() += p.A_[k].transpose() * S_t_[k + 1] * p.b_[k];
-    sv_[k].noalias() += this->L_[k].transpose() * Hi_[k] * this->lv_[k];
-    sv_[k].noalias() += this->L_[k].transpose() * gv_[k];
-    sv_[k].noalias() += G_[k].transpose() * this->lv_[k];
+    sv_[k]/*.noalias()*/ += p.A_[k].transpose() * sv_t_[k + 1];
+    sv_[k]/*.noalias()*/ += p.A_[k].transpose() * S_t_[k + 1] * p.b_[k];
+    sv_[k]/*.noalias()*/ += this->L_[k].transpose() * Hi_[k] * this->lv_[k];
+    sv_[k]/*.noalias()*/ += this->L_[k].transpose() * gv_[k];
+    sv_[k]/*.noalias()*/ += G_[k].transpose() * this->lv_[k];
 
     if (ct::core::is_euclidean<MANIFOLD>::value)  // euclidean case
     {

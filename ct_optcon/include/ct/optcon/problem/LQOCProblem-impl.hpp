@@ -326,7 +326,8 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::setFromTimeInvariantLinearQuadraticProb
     core::StateMatrix<STATE_DIM, SCALAR> A;
     core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B;
     linearSystem.getDerivatives(A, B, x_traj.front(), u_traj.front(), 0);
-    A_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_, A);
+
+    A_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_, A); 
     B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, B);
     b_ = b;
 
