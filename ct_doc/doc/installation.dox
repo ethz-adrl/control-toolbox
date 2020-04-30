@@ -135,10 +135,12 @@ The following dependencies and bindings are optional but can help to enhance the
  - <a href="https://projects.coin-or.org/Ipopt">IPOPT</a> or <a href="http://www.sbsi-sol-optimize.com/asp/sol_product_snopt.htm">SNOPT</a>
   (for ct::optcon::SnoptSolver and ct::optcon::IpoptSolver as used by ct::optcon::DMS)
 
- - <a href="https://github.com/giaf/blasfeo">blasfeo</a> linear algebra and <a href=https://github.com/giaf/hpipm">HPIPM solver</a> as
- alternative high-performance (constrained) linear-quadratic optimal control solver. The CT currently supports hpipm version 0.1.1.
+ - <a href="https://github.com/giaf/blasfeo">blasfeo</a> linear algebra and <a href="https://github.com/giaf/hpipm">HPIPM solver</a> as
+ alternative high-performance (constrained) linear-quadratic optimal control solver. The CT currently supports hpipm version 0.1.2.
  Detailed reference about blasefeo can be found <a href="https://arxiv.org/abs/1704.02457">here</a>.
  Both packages were developed by <a href="https://www.syscop.de/people/dr-gianluca-frison">Gianluca Frison</a>, <a href="https://www.syscop.de/">University of Freiburg</a>.
+ Warning note : When installing blasfeo, a configuration step may be necessary. See https://blasfeo.syscop.de/docs/install/#configuration for how to set the build target to your architecture.
+ We advice to run the tests provided by blasfeo to check the correct installation. If not configured properly, blasfeo may be installed succesfully, the CT may be built succesfully with hpipm dependencies, but a "illegal operation (core dumped)" is raised when calling hpipm.
 
  - install the <a href="http://catkin-tools.readthedocs.io/en/latest/verbs/catkin_build.html">catkin_tools</a> build system
  \code{.sh}
@@ -187,7 +189,7 @@ the AUR page of control-toolbox
 
 
 
-\section Additional build arguments
+\section additional_arguments Additional build arguments
 The following additional build flags are available, which can be appended to the build command above
 
 Build Flag  | Default value | Description
@@ -201,5 +203,46 @@ Build Flag  | Default value | Description
 -DINTEL_CXX_COMPILER=\<clang-bin> | "/opt/intel/bin/icc" | Set Intel C++ compiler binary
 -DINTEL_C_COMPILER=\<clang-bin> | "/opt/intel/bin/icpc" | Set Intel C compiler binary
 
+
+\section min_ct_use Minimal use of the installed ct library 
+
+Once the CT has been built according to \ref build-ros-main or \ref build-cmake-main, the CT libraries are also installed in /usr/lib/ and /usr/include/. We give here an example of how to use the CT library for a new project using CMake. 
+The basic project only contains the two following files:
+
+CMakeLists.txt
+\code
+cmake_minimum_required(VERSION 3.17)
+
+project(my_project)
+
+find_package(ct_optcon REQUIRED)
+
+add_executable(my_project main.cpp)
+
+# Link to libraries
+target_link_libraries(my_project PUBLIC ct_optcon)
+\endcode
+
+main.cpp
+
+\code
+#include <ct/optcon/optcon.h>
+#include<iostream>
+
+int main()
+{
+    const size_t state_dim = ct::core::SecondOrderSystem::STATE_DIM;
+    std::cout << "State dim of second order system is " << state_dim << std::endl;
+    return 0;
+} 
+\endcode
+
+Then :
+\code{.sh}
+mkdir build && cd build
+cmake ..
+make
+./my_project
+\endcode
 
 */
