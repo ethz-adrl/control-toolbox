@@ -319,7 +319,7 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::setFromTimeInvariantLinearQuadraticProb
 {
     setZero();
 
-    if (b.size() != K_ + 1)
+    if ((int)b.size() != K_ + 1)
         throw std::runtime_error("b size not correct.");
 
     // get LTI dynamics

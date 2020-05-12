@@ -91,8 +91,8 @@ protected:
     typename MANIFOLD::Tangent x_deviation_;
     MANIFOLD x_nominal_;
     state_matrix_t Q_;
-    Eigen::Matrix<typename MANIFOLD::Scalar, STATE_DIM, STATE_DIM> J_curr_; // TODO: rename
-    Eigen::Matrix<typename MANIFOLD::Scalar, STATE_DIM, STATE_DIM> J_ref_; // TODO: rename
+    Eigen::Matrix<typename MANIFOLD::Scalar, STATE_DIM, STATE_DIM> Jl_; // TODO: get rid of Jl cleanly
+    Eigen::Matrix<typename MANIFOLD::Scalar, STATE_DIM, STATE_DIM> Jr_;
 
     control_vector_t u_deviation_;
     control_vector_t u_nominal_;
