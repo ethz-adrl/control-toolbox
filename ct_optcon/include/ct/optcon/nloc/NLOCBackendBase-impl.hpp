@@ -9,17 +9,15 @@ namespace ct {
 namespace optcon {
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::NLOCBackendBase(
-    const OptConProblem_t& optConProblem,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::NLOCBackendBase(const OptConProblem_t& optConProblem,
     const Settings_t& settings)
     : NLOCBackendBase(createSystemInterface(optConProblem, settings), settings)
 {
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::NLOCBackendBase(
-    const OptConProblem_t& optConProblem,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::NLOCBackendBase(const OptConProblem_t& optConProblem,
     const std::string& settingsFile,
     bool verbose,
     const std::string& ns)
@@ -27,9 +25,8 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::NLOCB
 {
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::NLOCBackendBase(
-    const systemInterfacePtr_t& systemInterface,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::NLOCBackendBase(const systemInterfacePtr_t& systemInterface,
     const Settings_t& settings)
     : initialized_(false),
       configured_(false),
@@ -83,9 +80,8 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::NLOCB
     }
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::NLOCBackendBase(
-    const systemInterfacePtr_t& systemInterface,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::NLOCBackendBase(const systemInterfacePtr_t& systemInterface,
     const std::string& settingsFile,
     bool verbose,
     const std::string& ns)
@@ -93,38 +89,31 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::NLOCB
 {
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::~NLOCBackendBase()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::~NLOCBackendBase()
 {
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-template <typename T>
-typename std::enable_if<std::is_same<T, ContinuousOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>::value,
-    typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::systemInterfacePtr_t>::type
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::createSystemInterface(
-    const OptConProblem_t& optConProblem,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+typename std::enable_if<TIME_T == core::TIME_TYPE::CONTINUOUS_TIME,
+    typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::systemInterfacePtr_t>::type
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::createSystemInterface(const OptConProblem_t& optConProblem,
     const Settings_t& settings)
 {
-    return systemInterfacePtr_t(
-        new OptconContinuousSystemInterface<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR>(optConProblem, settings));
+    return systemInterfacePtr_t(new OptconContinuousSystemInterface<MANIFOLD, CONTROL_DIM>(optConProblem, settings));
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-template <typename T>
-typename std::enable_if<std::is_same<T, DiscreteOptConProblem<STATE_DIM, CONTROL_DIM, SCALAR>>::value,
-    typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::systemInterfacePtr_t>::type
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::createSystemInterface(
-    const OptConProblem_t& optConProblem,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+typename std::enable_if<TIME_T == core::TIME_TYPE::DISCRETE_TIME,
+    typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::systemInterfacePtr_t>::type
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::createSystemInterface(const OptConProblem_t& optConProblem,
     const Settings_t& settings)
 {
-    return systemInterfacePtr_t(
-        new OptconDiscreteSystemInterface<STATE_DIM, CONTROL_DIM, SCALAR>(optConProblem, settings));
+    return systemInterfacePtr_t(new OptconDiscreteSystemInterface<MANIFOLD, CONTROL_DIM>(optConProblem, settings));
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::setInitialGuess(
-    const Policy_t& initialGuess)
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::setInitialGuess(const Policy_t& initialGuess)
 {
     if (initialGuess.x_ref().size() < (size_t)K_ + 1)
     {
@@ -186,8 +175,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     finalCostPrevious_ = finalCostBest_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::changeTimeHorizon(int numStages)
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::changeTimeHorizon(int numStages)
 {
     if (numStages == K_)
         return;
@@ -225,8 +214,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     lqocSolver_->setProblem(lqocProblem_);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::changeTimeHorizon(const SCALAR& tf)
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::changeTimeHorizon(const SCALAR& tf)
 {
     if (tf < 0)
         throw std::runtime_error("negative time horizon specified");
@@ -234,9 +223,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     changeTimeHorizon(settings_.computeK(tf));
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::changeInitialState(
-    const core::StateVector<STATE_DIM, SCALAR>& x0)
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::changeInitialState(const MANIFOLD& x0)
 {
     if (x_.size() == 0)
         x_.resize(1);
@@ -245,8 +233,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     reset();  // since initial state changed, we have to start fresh, i.e. with a rollout
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::changeCostFunction(
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::changeCostFunction(
     const typename OptConProblem_t::CostFunctionPtr_t& cf)
 {
     if (cf == nullptr)
@@ -266,15 +254,15 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         computeCostsOfTrajectory(settings_.nThreads, x_, u_ff_, intermediateCostBest_, finalCostBest_);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::changeNonlinearSystem(
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::changeNonlinearSystem(
     const typename OptConProblem_t::DynamicsPtr_t& dyn)
 {
     systemInterface_->changeNonlinearSystem(dyn);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::changeInputBoxConstraints(
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::changeInputBoxConstraints(
     const typename OptConProblem_t::ConstraintPtr_t& con)
 {
     if (con == nullptr)
@@ -295,8 +283,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     setInputBoxConstraintsForLQOCProblem();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::changeStateBoxConstraints(
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::changeStateBoxConstraints(
     const typename OptConProblem_t::ConstraintPtr_t& con)
 {
     if (con == nullptr)
@@ -318,8 +306,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::changeGeneralConstraints(
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::changeGeneralConstraints(
     const typename OptConProblem_t::ConstraintPtr_t& con)
 {
     if (con == nullptr)
@@ -360,15 +348,15 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
         computeGeneralConstraintErrorOfTrajectory(settings_.nThreads, x_, u_ff_, e_gen_norm_);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::changeLinearSystem(
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::changeLinearSystem(
     const typename OptConProblem_t::LinearPtr_t& lin)
 {
     systemInterface_->changeLinearSystem(lin);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::checkProblem()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::checkProblem()
 {
     if (K_ == 0)
         throw std::runtime_error("Time horizon too small resulting in 0 steps");
@@ -381,8 +369,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::configure(const Settings_t& settings)
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::configure(const Settings_t& settings)
 {
     if (!settings.parametersOk())
     {
@@ -432,8 +420,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     configured_ = true;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::rolloutSingleShot(const size_t threadId,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+bool NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::rolloutSingleShot(const size_t threadId,
     const size_t k,  //! the starting index of the shot
     ControlVectorArray& u_local,
     StateVectorArray& x_local,
@@ -520,9 +508,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     return true;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::rolloutShotsSingleThreaded(
-    size_t threadId,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+bool NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::rolloutShotsSingleThreaded(size_t threadId,
     size_t firstIndex,
     size_t lastIndex,
     ControlVectorArray& u_ff_local,
@@ -552,8 +539,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     return true;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::computeSingleDefect(size_t k,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::computeSingleDefect(size_t k,
     const StateVectorArray& x_local,
     const StateVectorArray& xShot,
     StateVectorArray& d) const
@@ -568,10 +555,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     //! else ... all other entries of d remain zero.
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::computeCostsOfTrajectory(
-    size_t threadId,
-    const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::computeCostsOfTrajectory(size_t threadId,
+    const ct::core::DiscreteArray<MANIFOLD>& x_local,
     const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
     scalar_t& intermediateCost,
     scalar_t& finalCost) const
@@ -592,10 +578,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     finalCost = costFunctions_[threadId]->evaluateTerminal();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::computeBoxConstraintErrorOfTrajectory(
-    size_t threadId,
-    const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::computeBoxConstraintErrorOfTrajectory(size_t threadId,
+    const ct::core::DiscreteArray<MANIFOLD>& x_local,
     const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
     scalar_t& e_tot) const
 {
@@ -642,12 +627,11 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
-    computeGeneralConstraintErrorOfTrajectory(size_t threadId,
-        const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_local,
-        const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
-        scalar_t& e_tot) const
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::computeGeneralConstraintErrorOfTrajectory(size_t threadId,
+    const ct::core::DiscreteArray<MANIFOLD>& x_local,
+    const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_local,
+    scalar_t& e_tot) const
 {
     e_tot = 0;
 
@@ -681,9 +665,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::executeLQApproximation(size_t threadId,
-    size_t k)
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::executeLQApproximation(size_t threadId, size_t k)
 {
     LQOCProblem_t& p = *lqocProblem_;
     const scalar_t& dt = settings_.dt;
@@ -723,8 +706,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::setInputBoxConstraintsForLQOCProblem()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::setInputBoxConstraintsForLQOCProblem()
 {
     // set box constraints if there are any
     if (inputBoxConstraints_[settings_.nThreads] != nullptr)
@@ -748,8 +731,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::setStateBoxConstraintsForLQOCProblem()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::setStateBoxConstraintsForLQOCProblem()
 {
     if (stateBoxConstraints_[settings_.nThreads] != nullptr)
     {
@@ -786,10 +769,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::computeLinearizedConstraints(
-    size_t threadId,
-    size_t k)
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::computeLinearizedConstraints(size_t threadId, size_t k)
 {
     // set general if there are any
     if (generalConstraints_[threadId] != nullptr)
@@ -815,8 +796,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::initializeCostToGo()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::initializeCostToGo()
 {
     LQOCProblem_t& p = *lqocProblem_;
 
@@ -846,8 +827,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::printSummary()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::printSummary()
 {
     SCALAR d_norm_l1 = computeDefectsNorm<1>(d_);
     SCALAR d_norm_l2 = computeDefectsNorm<2>(d_);
@@ -891,8 +872,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     }
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::logToMatlab(const size_t& iteration)
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::logToMatlab(const size_t& iteration)
 {
 #ifdef MATLAB_FULL_LOG
 
@@ -942,8 +923,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::logInitToMatlab()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::logInitToMatlab()
 {
 #ifdef MATLAB
     if (settings_.logToMatlab)
@@ -975,9 +956,9 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
 const core::ControlTrajectory<CONTROL_DIM, SCALAR>
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getControlTrajectory() const
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getControlTrajectory() const
 {
     //! \todo this method currently copies the time array (suboptimal)
 
@@ -988,26 +969,25 @@ NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getCo
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-const core::StateTrajectory<STATE_DIM, SCALAR>
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getStateTrajectory() const
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+const core::DiscreteTrajectory<MANIFOLD> NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getStateTrajectory() const
 {
     //! \todo this method currently copies the time array (suboptimal)
 
     core::tpl::TimeArray<SCALAR> t_control = t_;
 
-    return core::StateTrajectory<STATE_DIM, SCALAR>(t_control, x_);
+    return core::DiscreteTrajectory<MANIFOLD>(t_control, x_);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getCost() const
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+SCALAR NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getCost() const
 {
     return intermediateCostBest_ + finalCostBest_;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::lineSearch()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+bool NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::lineSearch()
 {
     // lowest cost
     scalar_t lowestCostPrevious;
@@ -1103,12 +1083,12 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::executeLineSearch(const size_t threadId,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::executeLineSearch(const size_t threadId,
     const scalar_t alpha,
-    ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_alpha,
-    ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_shot_alpha,
-    ct::core::StateVectorArray<STATE_DIM, SCALAR>& defects_recorded,
+    ct::core::DiscreteArray<MANIFOLD>& x_alpha,
+    ct::core::DiscreteArray<MANIFOLD>& x_shot_alpha,
+    ct::core::DiscreteArray<MANIFOLD>& defects_recorded,
     ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_alpha,
     scalar_t& intermediateCost,
     scalar_t& finalCost,
@@ -1135,7 +1115,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     x_alpha = delta_x_ * alpha + x_prev_;
 
     // update x_lqr reference
-    ct::core::StateVectorArray<STATE_DIM, SCALAR> x_ref_lqr = delta_x_ref_lqr_ * alpha + x_prev_;
+    ct::core::DiscreteArray<MANIFOLD> x_ref_lqr = delta_x_ref_lqr_ * alpha + x_prev_;
 
     if (terminationFlag && *terminationFlag)
         return;
@@ -1183,8 +1163,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::acceptStep(const SCALAR alpha,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+bool NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::acceptStep(const SCALAR alpha,
     const SCALAR intermediateCost,
     const SCALAR finalCost,
     const SCALAR defectNorm,
@@ -1276,8 +1256,8 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::prepareSolveLQProblem(size_t startIndex)
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::prepareSolveLQProblem(size_t startIndex)
 {
     lqpCounter_++;
 
@@ -1300,8 +1280,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::finishSolveLQProblem(size_t endIndex)
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::finishSolveLQProblem(size_t endIndex)
 {
     lqpCounter_++;
 
@@ -1324,8 +1304,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::solveFullLQProblem()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::solveFullLQProblem()
 {
     lqpCounter_++;
 
@@ -1334,17 +1314,16 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     lqocSolver_->solve();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::updateCosts()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::updateCosts()
 {
     intermediateCostPrevious_ = intermediateCostBest_;
     finalCostPrevious_ = finalCostBest_;
     computeCostsOfTrajectory(settings_.nThreads, x_, u_ff_, intermediateCostBest_, finalCostBest_);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::retrieveLastAffineModel(
-    StateMatrixArray& A,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::retrieveLastAffineModel(StateMatrixArray& A,
     StateControlMatrixArray& B,
     StateVectorArray& b)
 {
@@ -1353,16 +1332,16 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     b = lqocProblem_->b_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-const typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Policy_t&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getSolution()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+const typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::Policy_t&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getSolution()
 {
     policy_.update(x_, u_ff_, L_, t_);
     return policy_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::reset()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::reset()
 {
     firstRollout_ = true;
     iteration_ = 0;
@@ -1377,8 +1356,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::extractSolution()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::extractSolution()
 {
     L_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());  // TODO should eventually go away
     x_ref_lqr_ = x_;
@@ -1402,7 +1381,7 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             lqocSolver_->computeStatesAndControls();
             delta_u_ff_ = lqocSolver_->getSolutionControl();
             delta_x_ = lqocSolver_->getSolutionState();
-            delta_x_ref_lqr_.setConstant(ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
+            delta_x_ref_lqr_.setConstant(MANIFOLD::NeutralElement());
             break;
         }
         case NLOptConSettings::NLOCP_ALGORITHM::ILQR:
@@ -1411,15 +1390,15 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
             delta_u_ff_ = lqocSolver_->get_lv();
             lqocSolver_->computeFeedbackMatrices();
             L_ = lqocSolver_->getSolutionFeedback();
-            delta_x_.setConstant(ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
-            delta_x_ref_lqr_.setConstant(ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
+            delta_x_.setConstant(MANIFOLD::NeutralElement());
+            delta_x_ref_lqr_.setConstant(MANIFOLD::NeutralElement());
             break;
         }
         case NLOptConSettings::NLOCP_ALGORITHM::MS_ILQR:
         {
             lqocSolver_->computeStatesAndControls();
             delta_x_ = lqocSolver_->getSolutionState();
-            delta_x_ref_lqr_.setConstant(ct::core::StateVector<STATE_DIM, SCALAR>::Zero());
+            delta_x_ref_lqr_.setConstant(MANIFOLD::NeutralElement());
             lqocSolver_->compute_lv();
             delta_u_ff_ = lqocSolver_->get_lv();
             lqocSolver_->computeFeedbackMatrices();
@@ -1443,8 +1422,8 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::doFullStepUpdate()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::doFullStepUpdate()
 {
     alphaBest_ = 1.0;
 
@@ -1453,44 +1432,42 @@ void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     x_ref_lqr_ += delta_x_ref_lqr_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::logSummaryToMatlab(
-    const std::string& fileName)
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::logSummaryToMatlab(const std::string& fileName)
 {
     summaryAllIterations_.logToMatlab(fileName);
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-const SummaryAllIterations<SCALAR>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getSummary() const
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+const SummaryAllIterations<SCALAR>& NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getSummary() const
 {
     return summaryAllIterations_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::resetDefects()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::resetDefects()
 {
     d_.setConstant(state_vector_t::Zero());
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-void NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::computeDefectsNorm()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+void NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::computeDefectsNorm()
 {
     d_norm_ = computeDefectsNorm<1>(d_);
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-size_t& NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::iteration()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+size_t& NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::iteration()
 {
     return iteration_;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::nominalRollout()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+bool NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::nominalRollout()
 {
     bool success =
         rolloutSingleShot(settings_.nThreads, 0, u_ff_, x_, x_prev_, xShot_, *this->substepsX_, *this->substepsU_);
@@ -1500,163 +1477,151 @@ bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::
     return success;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-const typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::TimeArray&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getTimeArray()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+const typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::TimeArray&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getTimeArray()
 {
     return t_;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::isConfigured()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+bool NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::isConfigured()
 {
     return configured_;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::isInitialized()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+bool NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::isInitialized()
 {
     return initialized_;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getTotalDefect() const
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+SCALAR NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getTotalDefect() const
 {
     return d_norm_;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-bool NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::testConsistency()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+bool NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::testConsistency()
 {
     return true;  // TODO this is currently meaningless
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-std::vector<
-    typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::OptConProblem_t::DynamicsPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getNonlinearSystemsInstances()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+std::vector<typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem_t::DynamicsPtr_t>&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getNonlinearSystemsInstances()
 {
     return systemInterface_->getNonlinearSystemsInstances();
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-const std::vector<
-    typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::OptConProblem_t::DynamicsPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getNonlinearSystemsInstances() const
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+const std::vector<typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem_t::DynamicsPtr_t>&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getNonlinearSystemsInstances() const
 {
     return systemInterface_->getNonlinearSystemsInstances();
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-std::vector<
-    typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::OptConProblem_t::LinearPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getLinearSystemsInstances()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+std::vector<typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem_t::LinearPtr_t>&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getLinearSystemsInstances()
 {
     return systemInterface_->getLinearSystemsInstances();
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-const std::vector<
-    typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::OptConProblem_t::LinearPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getLinearSystemsInstances() const
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+const std::vector<typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem_t::LinearPtr_t>&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getLinearSystemsInstances() const
 {
     return systemInterface_->getLinearSystemsInstances();
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-std::vector<typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::OptConProblem_t::
-        CostFunctionPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getCostFunctionInstances()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+std::vector<typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem_t::CostFunctionPtr_t>&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getCostFunctionInstances()
 {
     return costFunctions_;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-const std::vector<typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::OptConProblem_t::
-        CostFunctionPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getCostFunctionInstances() const
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+const std::vector<typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem_t::CostFunctionPtr_t>&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getCostFunctionInstances() const
 {
     return costFunctions_;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-std::vector<typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::OptConProblem_t::
-        ConstraintPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getInputBoxConstraintsInstances()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+std::vector<typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem_t::ConstraintPtr_t>&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getInputBoxConstraintsInstances()
 {
     return inputBoxConstraints_;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-const std::vector<typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::OptConProblem_t::
-        ConstraintPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getInputBoxConstraintsInstances() const
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+const std::vector<typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem_t::ConstraintPtr_t>&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getInputBoxConstraintsInstances() const
 {
     return inputBoxConstraints_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-std::vector<typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::OptConProblem_t::
-        ConstraintPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getStateBoxConstraintsInstances()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+std::vector<typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem_t::ConstraintPtr_t>&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getStateBoxConstraintsInstances()
 {
     return stateBoxConstraints_;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-const std::vector<typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::OptConProblem_t::
-        ConstraintPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getStateBoxConstraintsInstances() const
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+const std::vector<typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem_t::ConstraintPtr_t>&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getStateBoxConstraintsInstances() const
 {
     return stateBoxConstraints_;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-std::vector<typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::OptConProblem_t::
-        ConstraintPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getGeneralConstraintsInstances()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+std::vector<typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem_t::ConstraintPtr_t>&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getGeneralConstraintsInstances()
 {
     return generalConstraints_;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-const std::vector<typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::OptConProblem_t::
-        ConstraintPtr_t>&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getGeneralConstraintsInstances() const
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+const std::vector<typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::OptConProblem_t::ConstraintPtr_t>&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getGeneralConstraintsInstances() const
 {
     return generalConstraints_;
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-SCALAR NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getTimeHorizon()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+SCALAR NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getTimeHorizon()
 {
     return K_ * settings_.dt;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-int NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getNumSteps()
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+int NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getNumSteps()
 {
     return K_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-int NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getNumStepsPerShot() const
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+int NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getNumStepsPerShot() const
 {
     if (settings_.isSingleShooting())
         return K_;
@@ -1664,9 +1629,9 @@ int NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::g
         return settings_.K_shot;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, size_t P_DIM, size_t V_DIM, typename SCALAR, bool CONTINUOUS>
-const typename NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::Settings_t&
-NLOCBackendBase<STATE_DIM, CONTROL_DIM, P_DIM, V_DIM, SCALAR, CONTINUOUS>::getSettings() const
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+const typename NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::Settings_t&
+NLOCBackendBase<MANIFOLD, CONTROL_DIM, TIME_T>::getSettings() const
 {
     return settings_;
 }

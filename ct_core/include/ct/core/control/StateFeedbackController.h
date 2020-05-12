@@ -6,6 +6,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "Controller.h"
+#include <ct/core/systems/System.h>
 
 namespace ct {
 namespace core {
@@ -37,8 +38,8 @@ namespace core {
  * @tparam CONTROL_DIM control vector size
  * @tparam SCALAR primitive type
  */
-template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
-class StateFeedbackController : public Controller<MANIFOLD, CONTROL_DIM, TIME_T>,
+template <typename MANIFOLD, size_t CONTROL_DIM, ct::core::TIME_TYPE TIME_T>
+class StateFeedbackController : public Controller<MANIFOLD, CONTROL_DIM, TIME_T>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -87,6 +88,22 @@ public:
     //! deep cloning
     StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>* clone() const override;
 
+    template <ct::core::TIME_TYPE T = TIME_T>
+    typename std::enable_if<T == ct::core::CONTINUOUS_TIME>::type computeControl_specialized(const MANIFOLD& state,
+        const Time_t& t,
+        control_vector_t& u)
+    {
+        u = uff_.eval(t) + K_.eval(t) * (state - x_ref_.eval(t));  // TODO: move to impl
+    }
+
+    template <ct::core::TIME_TYPE T = TIME_T>
+    typename std::enable_if<T == ct::core::DISCRETE_TIME>::type computeControl_specialized(const MANIFOLD& state,
+        const Time_t& n,
+        control_vector_t& u)
+    {
+        u = uff_[n] + K_[n] * (state - x_ref_[n]);  // TODO: move to impl
+    }
+
     //! computes the control action in the continuous case
     /*!
      * evaluates the controller using interpolation where required using interpolation
@@ -95,13 +112,6 @@ public:
      * @param controlAction resulting control action
      */
     virtual void computeControl(const MANIFOLD& state, const Time_t& tn, control_vector_t& controlAction) override;
-
-    typename std::enable_if<TIME_T == ct::core::CONTINUOUS_TIME>::type computeControl_specialized(const MANIFOLD& state,
-        const Time_t& tn,
-        control_vector_t& controlAction);
-    typename std::enable_if<TIME_T == ct::core::DISCRETE_TIME>::type computeControl_specialized(const MANIFOLD& state,
-        const Time_t& tn,
-        control_vector_t& controlAction);
 
     //! updates the controller
     /*!
@@ -155,24 +165,6 @@ protected:
     FeedbackTrajectory<STATE_DIM, CONTROL_DIM, SCALAR> K_;  //! feedback control trajectory
 };
 
-
-template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
-typename std::enable_if<TIME_T == ct::core::CONTINUOUS_TIME>::type
-StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::computeControl_specialized(const state_vector_t& state,
-    const SCALAR& t,
-    control_vector_t& controlAction)
-{
-    controlAction = uff_.eval(t) + K_.eval(t) * (state - x_ref_.eval(t));
-}
-
-template <typename MANIFOLD, size_t CONTROL_DIM, TIME_TYPE TIME_T>
-typename std::enable_if<TIME_T == ct::core::CONTINUOUS_TIME>::type
-StateFeedbackController<MANIFOLD, CONTROL_DIM, TIME_T>::computeControl_specialized(const state_vector_t& state,
-    const int n,
-    control_vector_t& controlAction)
-{
-    controlAction = uff_[n] + K_[n] * (state - x_ref_[n]);
-}
 
 }  // namespace core
 }  // namespace ct

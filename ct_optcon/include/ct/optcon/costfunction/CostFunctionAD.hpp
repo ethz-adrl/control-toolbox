@@ -89,12 +89,10 @@ public:
 	 */
     CostFunctionAD(const CostFunctionAD& arg);
 
-
     /**
 	 * \brief Destructor
 	 */
     virtual ~CostFunctionAD();
-
 
     /**
 	 * @brief      Initializes the AD costfunction, generates and compiles
@@ -133,8 +131,8 @@ public:
     SCALAR_EVAL evaluateIntermediate() override;
     SCALAR_EVAL evaluateTerminal() override;
 
-    ct::core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivativeIntermediate() override;
-    ct::core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivativeTerminal() override;
+    typename EVAL_MANIFOLD::Tangent stateDerivativeIntermediate() override;
+    typename EVAL_MANIFOLD::Tangent stateDerivativeTerminal() override;
 
     control_vector_t controlDerivativeIntermediate() override;
     control_vector_t controlDerivativeTerminal() override;

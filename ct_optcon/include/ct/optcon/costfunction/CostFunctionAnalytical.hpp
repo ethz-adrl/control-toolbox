@@ -75,8 +75,8 @@ public:
     SCALAR_EVAL evaluateIntermediate() override;
     SCALAR_EVAL evaluateTerminal() override;
 
-    ct::core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivativeIntermediate() override;
-    ct::core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivativeTerminal() override;
+    typename MANIFOLD::Tangent stateDerivativeIntermediate() override;
+    typename MANIFOLD::Tangent stateDerivativeTerminal() override;
 
     state_matrix_t stateSecondDerivativeIntermediate() override;
     state_matrix_t stateSecondDerivativeTerminal() override;

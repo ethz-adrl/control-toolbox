@@ -12,7 +12,7 @@ template <typename MANIFOLD, size_t CONTROL_DIM>
 CostFunction<MANIFOLD, CONTROL_DIM>::CostFunction() : t_(0.0), 
 t_shift_(0.0)
 {
-    x_.setZero();
+    x_ = MANIFOLD::NeutralElement();
     u_.setZero();
 }
 

@@ -11,17 +11,23 @@ namespace example {
 
 
 //! Dynamics class for the GNMS unit test
-class SpringLoadedMass : public core::ControlledSystem<2, 1>
+class SpringLoadedMass : public core::ControlledSystem<core::EuclideanState<2>, 1, core::CONTINUOUS_TIME>
 {
 public:
     static const size_t state_dim = 2;    // position, velocity
     static const size_t control_dim = 1;  // force
 
-    SpringLoadedMass() : core::ControlledSystem<state_dim, control_dim>(core::SYSTEM_TYPE::SECOND_ORDER) {}
-    void computeControlledDynamics(const core::StateVector<state_dim>& state,
-        const core::Time& t,
+    SpringLoadedMass()
+        : core::ControlledSystem<core::EuclideanState<state_dim>, control_dim, core::CONTINUOUS_TIME>(
+              core::SYSTEM_TYPE::SECOND_ORDER)
+    {
+    }
+
+    // compute dynamics
+    void computeControlledDynamics(const core::EuclideanState<state_dim>& state,
+        const double& t,
         const core::ControlVector<control_dim>& control,
-        core::StateVector<state_dim>& derivative) override
+        core::EuclideanState<state_dim>::Tangent& derivative) override
     {
         derivative(0) = state(1);
         derivative(1) = control(0) - kStiffness * state(0) + 0.1;  // mass is 1 kg
@@ -32,7 +38,7 @@ public:
 };
 
 //! Linear system class for the GNMS unit test
-class SpringLoadedMassLinear : public core::LinearSystem<2, 1>
+class SpringLoadedMassLinear : public core::LinearSystem<core::EuclideanState<2>, 1, core::CONTINUOUS_TIME>
 {
 public:
     static const size_t state_dim = 2;    // position, velocity
@@ -44,7 +50,7 @@ public:
     state_control_matrix_t B_;
 
 
-    const state_matrix_t& getDerivativeState(const core::StateVector<state_dim>& x,
+    const state_matrix_t& getDerivativeState(const core::EuclideanState<state_dim>& x,
         const core::ControlVector<control_dim>& u,
         const double t = 0.0) override
     {
@@ -52,7 +58,7 @@ public:
         return A_;
     }
 
-    const state_control_matrix_t& getDerivativeControl(const core::StateVector<state_dim>& x,
+    const state_control_matrix_t& getDerivativeControl(const core::EuclideanState<state_dim>& x,
         const core::ControlVector<control_dim>& u,
         const double t = 0.0) override
     {
@@ -64,7 +70,8 @@ public:
 };
 
 
-std::shared_ptr<CostFunctionQuadratic<2, 1>> createSpringLoadedMassCostFunction(const core::StateVector<2>& x_final)
+std::shared_ptr<CostFunctionQuadratic<core::EuclideanState<2>, 1>> createSpringLoadedMassCostFunction(
+    const core::EuclideanState<2>& x_final)
 {
     Eigen::Matrix<double, 2, 2> Q;
     Q << 1.0, 0, 0, 1.0;
@@ -79,11 +86,12 @@ std::shared_ptr<CostFunctionQuadratic<2, 1>> createSpringLoadedMassCostFunction(
     Eigen::Matrix<double, 2, 2> Q_final;
     Q_final << 10.0, 0, 0, 10.0;
 
-    std::shared_ptr<CostFunctionQuadratic<2, 1>> quadraticCostFunction(
-        new CostFunctionQuadraticSimple<2, 1>(Q, R, x_nominal, u_nominal, x_final, Q_final));
+    std::shared_ptr<CostFunctionQuadratic<core::EuclideanState<2>, 1>> quadraticCostFunction(
+        new CostFunctionQuadraticSimple<core::EuclideanState<2>, 1>(Q, R, x_nominal, u_nominal, x_final, Q_final));
 
     return quadraticCostFunction;
 }
-}
-}
-}
+
+}  // namespace example
+}  // namespace optcon
+}  // namespace ct

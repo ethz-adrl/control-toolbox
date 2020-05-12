@@ -37,14 +37,20 @@ namespace optcon {
  * the configuration of the box and general constraints must be done independently
  * from setProblem()
  */
-template <int STATE_DIM, int CONTROL_DIM>
-class HPIPMInterface : public LQOCSolver<STATE_DIM, CONTROL_DIM>
+template <typename MANIFOLD, int CONTROL_DIM>
+class HPIPMInterface : public LQOCSolver<MANIFOLD, CONTROL_DIM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static const int state_dim = STATE_DIM;
-    static const int control_dim = CONTROL_DIM;
+    static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
+    static constexpr int state_dim = STATE_DIM;
+    static constexpr int control_dim = CONTROL_DIM;
+
+    using Base = LQOCSolver<MANIFOLD, CONTROL_DIM>;
+    using SCALAR = typename Base::SCALAR;
+    typedef typename Base::LQOCProblem_t LQOCProblem_t;
+
     static const int max_box_constr_dim = STATE_DIM + CONTROL_DIM;
 
     using StateMatrix = ct::core::StateMatrix<STATE_DIM>;
@@ -81,13 +87,11 @@ public:
     void printSolution();
 
     //! brief setup and configure the box constraints
-    virtual bool configureInputBoxConstraints(
-        std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
-    virtual bool configureStateBoxConstraints(
-        std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
+    virtual bool configureInputBoxConstraints(std::shared_ptr<LQOCProblem_t> lqocProblem) override;
+    virtual bool configureStateBoxConstraints(std::shared_ptr<LQOCProblem_t> lqocProblem) override;
 
     //! brief setup and configure the general (in)equality constraints
-    virtual bool configureGeneralConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
+    virtual bool configureGeneralConstraints(std::shared_ptr<LQOCProblem_t> lqocProblem) override;
 
     /*!
      * @brief allocate memory for HPIPM
@@ -116,7 +120,7 @@ private:
      *
      * \warning If you wish to
      */
-    void setProblemImpl(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
+    void setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem) override;
 
     /*!
      * @brief transcribe the problem for HPIPM
@@ -139,9 +143,9 @@ private:
      */
     void setupCostAndDynamics(StateMatrixArray& A,
         StateControlMatrixArray& B,
-        StateVectorArray& b,
+        core::DiscreteArray<typename MANIFOLD::Tangent>& b,
         FeedbackArray& P,
-        StateVectorArray& qv,
+        core::DiscreteArray<typename MANIFOLD::Tangent>& qv,
         StateMatrixArray& Q,
         ControlVectorArray& rv,
         ControlMatrixArray& R);
@@ -150,7 +154,7 @@ private:
      * @brief change the size of the optimal control problem
      * @return true if the problem size changed, otherwise return false
      */
-    bool changeProblemSize(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem);
+    bool changeProblemSize(std::shared_ptr<LQOCProblem_t> lqocProblem);
 
     //! prints a matrix in column-major format
     void d_print_mat(int m, int n, double* A, int lda);
@@ -179,7 +183,7 @@ private:
     std::vector<double*> hA_;                  //! system state sensitivities
     std::vector<double*> hB_;                  //! system input sensitivities
     std::vector<double*> hb_;                  //! system offset term
-    Eigen::Matrix<double, state_dim, 1> hb0_;  //! intermediate container for intuitive transcription of first stage
+    typename MANIFOLD::Tangent hb0_;  //! intermediate container for intuitive transcription of first stage
 
     std::vector<double*> hQ_;                    //! pure state penalty hessian
     std::vector<double*> hS_;                    //! state-control cross-terms

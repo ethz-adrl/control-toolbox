@@ -17,11 +17,12 @@ TEST(HPIPMInterfaceTest, compareSolvers)
 {
     const size_t state_dim = 8;
     const size_t control_dim = 3;
+    using State = ct::core::EuclideanState<state_dim>;
 
     int N = 5;
     double dt = 0.5;
 
-    typedef ct::optcon::LQOCProblem<state_dim, control_dim> LQOCProblem_t;
+    typedef ct::optcon::LQOCProblem<State, control_dim> LQOCProblem_t;
     std::shared_ptr<LQOCProblem_t> lqocProblem_hpipm(new LQOCProblem_t(N));
     std::shared_ptr<LQOCProblem_t> lqocProblem_gnriccati(new LQOCProblem_t(N));
 
@@ -46,12 +47,11 @@ TEST(HPIPMInterfaceTest, compareSolvers)
     R *= 2 * 2.0;
 
     // create a cost function
-    ct::optcon::CostFunctionQuadraticSimple<state_dim, control_dim> costFunction(
-        Q, R, -stateOffset, u0, -stateOffset, Q);
+    ct::optcon::CostFunctionQuadraticSimple<State, control_dim> costFunction(Q, R, -stateOffset, u0, -stateOffset, Q);
 
     // create a continuous-time example system and discretize it
-    std::shared_ptr<ct::core::LinearSystem<state_dim, control_dim>> system(new LinkedMasses());
-    ct::core::SensitivityApproximation<state_dim, control_dim> discretizedSystem(
+    std::shared_ptr<ct::core::LinearSystem<State, control_dim, ct::core::CONTINUOUS_TIME>> system(new LinkedMasses());
+    ct::core::SensitivityApproximation<State, control_dim> discretizedSystem(
         dt, system, ct::optcon::NLOptConSettings::APPROXIMATION::MATRIX_EXPONENTIAL);
 
     // initialize the linear quadratic optimal control problems
@@ -60,7 +60,7 @@ TEST(HPIPMInterfaceTest, compareSolvers)
 
 
     // create hpipm solver instance, set and solve problem
-    ct::optcon::HPIPMInterface<state_dim, control_dim> hpipm;
+    ct::optcon::HPIPMInterface<State, control_dim> hpipm;
     hpipm.setProblem(lqocProblem_hpipm);
     hpipm.solve();
     hpipm.computeStatesAndControls();
@@ -68,7 +68,7 @@ TEST(HPIPMInterfaceTest, compareSolvers)
     hpipm.compute_lv();
 
     // create GNRiccati solver instance, set and solve problem
-    ct::optcon::GNRiccatiSolver<state_dim, control_dim> gnriccati;
+    ct::optcon::GNRiccatiSolver<State, control_dim> gnriccati;
     gnriccati.setProblem(lqocProblem_gnriccati);
     gnriccati.solve();
     gnriccati.computeStatesAndControls();
@@ -76,8 +76,8 @@ TEST(HPIPMInterfaceTest, compareSolvers)
     gnriccati.compute_lv();
 
     // compute and retrieve solutions
-    ct::core::StateVectorArray<state_dim> x_sol_hpipm = hpipm.getSolutionState();
-    ct::core::StateVectorArray<state_dim> x_sol_gnrccati = gnriccati.getSolutionState();
+    ct::core::DiscreteArray<State> x_sol_hpipm = hpipm.getSolutionState();
+    ct::core::DiscreteArray<State> x_sol_gnrccati = gnriccati.getSolutionState();
     ct::core::ControlVectorArray<control_dim> u_sol_hpipm = hpipm.getSolutionControl();
     ct::core::ControlVectorArray<control_dim> u_sol_gnrccati = gnriccati.getSolutionControl();
     ct::core::FeedbackArray<state_dim, control_dim> K_sol_hpipm = hpipm.getSolutionFeedback();

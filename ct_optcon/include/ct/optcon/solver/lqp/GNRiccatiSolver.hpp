@@ -18,26 +18,28 @@ namespace optcon {
  * This class implements an general Riccati backward pass for solving an unconstrained
  *  linear-quadratic Optimal Control problem
  */
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-class GNRiccatiSolver : public LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>
+template <typename MANIFOLD, size_t CONTROL_DIM>
+class GNRiccatiSolver : public LQOCSolver<MANIFOLD, CONTROL_DIM>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    static const int STATE_DIM = MANIFOLD::TangentDim;
     static const int state_dim = STATE_DIM;
     static const int control_dim = CONTROL_DIM;
 
-    typedef LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR> LQOCProblem_t;
+    using Base = LQOCSolver<MANIFOLD, CONTROL_DIM>;
+    using SCALAR = typename Base::SCALAR;
+    typedef typename Base::LQOCProblem_t LQOCProblem_t;
 
     typedef ct::core::StateMatrix<STATE_DIM, SCALAR> StateMatrix;
+    typedef ct::core::StateControlMatrix<STATE_DIM, control_dim, SCALAR> StateControlMatrix;
     typedef ct::core::StateMatrixArray<STATE_DIM, SCALAR> StateMatrixArray;
     typedef ct::core::ControlVector<CONTROL_DIM, SCALAR> ControlVector;
     typedef ct::core::ControlMatrix<CONTROL_DIM, SCALAR> ControlMatrix;
     typedef ct::core::ControlMatrixArray<CONTROL_DIM, SCALAR> ControlMatrixArray;
     typedef ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> StateControlMatrixArray;
     typedef ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> FeedbackArray;
-
-    typedef ct::core::StateVectorArray<STATE_DIM, SCALAR> StateVectorArray;
     typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
 
     GNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem = nullptr);
@@ -87,7 +89,7 @@ protected:
     ControlMatrixArray Hi_inverse_;
     ControlMatrix H_corrFix_;
 
-    StateVectorArray sv_;
+    ct::core::DiscreteArray<typename MANIFOLD::Tangent> sv_;
     StateMatrixArray S_;
 
     int N_;

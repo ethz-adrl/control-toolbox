@@ -19,4 +19,4 @@
 #include "CostFunctionQuadratic.hpp"
 #include "CostFunctionAD.hpp"
 #include "CostFunctionAnalytical.hpp"
-//#include "CostFunctionQuadraticSimple.hpp"
+#include "CostFunctionQuadraticSimple.hpp"
