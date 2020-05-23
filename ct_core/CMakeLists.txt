@@ -75,7 +75,7 @@ if(${CMAKE_VERSION} VERSION_LESS "3.12.0")
         message(STATUS "Python 3 not found, plotting will not be available")
     endif()
 else()
-    find_package(Python COMPONENTS Development Numpy QUIET)
+    find_package(Python COMPONENTS Development NumPy QUIET)
     if (Python_FOUND AND ${Python_VERSION_MAJOR} EQUAL 3)
         message(STATUS "Found python " ${Python_VERSION})
         list(APPEND ct_core_COMPILE_DEFINITIONS PLOTTING_ENABLED)
@@ -213,5 +213,4 @@ endif()
 # DOCUMENTATION #
 #################
 add_subdirectory(doc)
-
 
