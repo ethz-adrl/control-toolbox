@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.14.7)
+cmake_minimum_required (VERSION 3.5)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
