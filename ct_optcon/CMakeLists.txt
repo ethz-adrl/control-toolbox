@@ -183,8 +183,6 @@ endif()
 # for correct libraries locations across platforms
 include(GNUInstallDirs)
 
-install(DIRECTORY include/ct/optcon DESTINATION include/ct)
-
 ## copy the header files
 install(DIRECTORY include/ct/optcon DESTINATION include/ct)
 
