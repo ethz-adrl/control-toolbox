@@ -198,7 +198,7 @@ void HPIPMInterface<MANIFOLD, CONTROL_DIM>::solve()
         {
             printf("\n -> Solver failed! Minimum step length reached\n");
         }
-        else if (hpipm_status_ == 2)
+        else if (hpipm_status_ == 3)
         {
             printf("\n -> Solver failed! NaN in computations\n");
         }
