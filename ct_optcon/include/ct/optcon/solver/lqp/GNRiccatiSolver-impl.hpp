@@ -9,31 +9,30 @@ namespace ct {
 namespace optcon {
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::GNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem)
-    : LQOCSolver<STATE_DIM, CONTROL_DIM, SCALAR>(lqocProblem), N_(-1)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::GNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem)
+    : LQOCSolver<MANIFOLD, CONTROL_DIM>(lqocProblem), N_(-1)
 {
     Eigen::initParallel();
     Eigen::setNbThreads(settings_.nThreadsEigen);
 }
 
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::GNRiccatiSolver(int N)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::GNRiccatiSolver(int N)
 {
     changeNumberOfStages(N);
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::solve()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::solve()
 {
     for (int i = this->lqocProblem_->getNumberOfStages() - 1; i >= 0; i--)
         solveSingleStage(i);
 }
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::solveSingleStage(int N)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::solveSingleStage(int N)
 {
     if (N == this->lqocProblem_->getNumberOfStages() - 1)
         initializeCostToGo();
@@ -44,16 +43,15 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::solveSingleStage(int N)
         computeCostToGo(N);
 }
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::configure(const NLOptConSettings& settings)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::configure(const NLOptConSettings& settings)
 {
     settings_ = settings;
     H_corrFix_ = settings_.epsilon * ControlMatrix::Identity();
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::computeStatesAndControls()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeStatesAndControls()
 {
     LQOCProblem_t& p = *this->lqocProblem_;
 
@@ -65,28 +63,33 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::computeStatesAndControls()
         this->u_sol_[k] = this->lv_[k] + this->L_[k] * this->x_sol_[k];
 
         //! state update rule in diff coordinates
-        this->x_sol_[k + 1] = p.A_[k] * this->x_sol_[k] + p.B_[k] * (this->u_sol_[k]) + p.b_[k];
+        StateMatrix A_orig = p.Adj_x_[k + 1] * p.A_[k];                 // A "without trick for backward pass" //TODO: document this
+        StateControlMatrix B_orig = p.Adj_x_[k + 1] * p.B_[k];          // B "without trick for backward pass"
+        typename MANIFOLD::Tangent b_orig = p.Adj_x_[k + 1] * p.b_[k];  // b "without trick for backward pass"
+        // Note that we need to transport the state update into the tagent space of k+1
+        this->x_sol_[k + 1] =
+            p.Adj_x_[k + 1].transpose() * (A_orig * this->x_sol_[k] + B_orig * (this->u_sol_[k]) + b_orig);
     }
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::computeFeedbackMatrices()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeFeedbackMatrices()
 { /*no action required, already computed in backward pass */
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::compute_lv()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::compute_lv()
 { /*no action required, already computed in backward pass*/
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-SCALAR GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::getSmallestEigenvalue()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+auto GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::getSmallestEigenvalue() -> SCALAR
 {
     return smallestEigenvalue_;
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::setProblemImpl(std::shared_ptr<LQOCProblem_t> lqocProblem)
 {
     if (lqocProblem->isConstrained())
     {
@@ -98,9 +101,8 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::setProblemImpl(std::shared
     changeNumberOfStages(N);
 }
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumberOfStages(int N)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::changeNumberOfStages(int N)
 {
     if (N <= 0)
         return;
@@ -127,9 +129,8 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumberOfStages(int N
     N_ = N;
 }
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::initializeCostToGo()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::initializeCostToGo()
 {
     //! since intializeCostToGo is the first call, we initialize the smallestEigenvalue here.
     smallestEigenvalue_ = std::numeric_limits<SCALAR>::infinity();
@@ -142,9 +143,8 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::initializeCostToGo()
     sv_[N] = p.qv_[N];
 }
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostToGo(size_t k)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeCostToGo(size_t k)
 {
     LQOCProblem_t& p = *this->lqocProblem_;
 
@@ -160,9 +160,8 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::computeCostToGo(size_t k)
     sv_[k]/*.noalias()*/ += G_[k].transpose() * this->lv_[k]; // TODO: bring back all the noalias()
 }
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::designController(size_t k)
 {
     LQOCProblem_t& p = *this->lqocProblem_;
 
@@ -259,9 +258,8 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::designController(size_t k)
     }
 }
 
-
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::logToMatlab()
 {
 #ifdef MATLAB_FULL_LOG
 
@@ -280,8 +278,8 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::logToMatlab()
 #endif
 }
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR>
-void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::initializeAndAllocate()
+template <typename MANIFOLD, size_t CONTROL_DIM>
+void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::initializeAndAllocate()
 {
     // do nothing
 }
