@@ -38,7 +38,7 @@ The CT was designed with the following features in mind:
  	- solve large scale optimal control problems in MPC fashion. 
   
  - **Robot Modelling, Rigid Body Kinematics and Dynamics**: 
-    - straight-forward interface to the state-of the art rigid body dynamics modelling tool RobCoGen.
+    - straight-forward interface to the state-of the art rigid body dynamics modelling tool [RobCoGen][robcogen-url].
 	- implementation of a basic nonlinear-programming inverse kinematics solver for fix-base robots.
  
  - **Automatic Differentiation**:
@@ -196,9 +196,10 @@ The four different main modules are detailed in the following.
  - Operational Space Controllers
  - Basic soft **auto-differentiable contact model** for arbitrary frames (ct::rbd::EEContactModel)
  - **Actuator dynamics** (ct::rbd::ActuatorDynamics)
- - Backend uses <a href="https://bitbucket.org/mfrigerio17/roboticscodegenerator/" target="_blank">RobCoGen</a> \cite frigerioCodeGen, 
+ - Backend uses [RobCoGen][robcogen-url], 
  a highly efficient Rigid Body Dynamics library
 
+[robcogen-url]: https://robcogenteam.bitbucket.io/
 
 ### ct_models
 

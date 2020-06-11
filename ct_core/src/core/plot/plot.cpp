@@ -238,7 +238,7 @@ bool hist(const Eigen::Ref<const Eigen::VectorXd>& x, const double bins, const s
         PyList_SetItem(xlist, i, PyFloat_FromDouble(x(i)));
     }
 
-    PyObject* bins_py = PyFloat_FromDouble(bins);
+    PyObject* bins_py = PyLong_FromDouble(bins);
     PyObject* histtype_py = PyString_FromString(histtype.c_str());
 
     // construct positional args
