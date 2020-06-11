@@ -10,6 +10,54 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace optcon {
 
+namespace {
+
+/**
+ * @brief Create a Mask General Constraints object
+ * 
+ * @tparam B bound type (e.g. box constraint lower or upper bound)
+ * @tparam M mask type (e.g. box constraint mask)
+ * @param num_con number of constraints at this stage
+ * @param lb the lower constraint bound
+ * @param ub the upper constraint bound
+ * @param lb_mask the mask for the lower constraint bound
+ * @param ub_mask the mask for the upper constriant bound
+
+ * @note this method changes the lower bound and upper bound in case they get masked!
+ */
+template <typename B, typename M>
+void createConstraintsMasks(const int num_con, B& lb, B& ub, M& lb_mask, M& ub_mask)
+{
+    assert(num_con == lb_mask.size());
+    assert(num_con == ub_mask.size());
+
+    const double mask_limit = 1e9;  // TODO: consider making this configurable
+
+    for (int k = 0; k < num_con; k++)
+    {
+        if (lb(k) < -mask_limit)
+        {
+            lb_mask(k) = 0.0;  // exclude constraint by masking
+            lb(k) = 0.0;       // avoid numerical issues by setting zero
+        }
+        else
+        {
+            lb_mask(k) = 1.0;  // include constraint
+        }
+
+        if (ub(k) > mask_limit)
+        {
+            ub_mask(k) = 0.0;  // exclude constraint by masking
+            ub(k) = 0.0;       // avoid numerical issues by setting zero
+        }
+        else
+        {
+            ub_mask(k) = 1.0;  // include constraint
+        }
+    }
+}
+}  // anonymous namespace
+
 template <int STATE_DIM, int CONTROL_DIM>
 HPIPMInterface<STATE_DIM, CONTROL_DIM>::HPIPMInterface()
     : N_(-1),
@@ -62,6 +110,24 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
         hidxbx_.data(), hlbx_.data(), hubx_.data(), hidxbu_.data(), hlbu_.data(), hubu_.data(),  // box constraints
         hC_.data(), hD_.data(), hlg_.data(), hug_.data(),                                        // gen constraints
         hZl_.data(), hZu_.data(), hzl_.data(), hzu_.data(), hidxs_.data(), hlls_.data(), hlus_.data(), &qp_);
+
+    // set constraint maskings for unbounded dimensions
+    for (int ii = 0; ii <= N_; ii++)
+    {
+        // masks for general constraints
+        ::d_ocp_qp_set_lg_mask(ii, hlg_mask_[ii], &qp_);
+        ::d_ocp_qp_set_ug_mask(ii, hug_mask_[ii], &qp_);
+
+        // masks for state box constraints
+        ::d_ocp_qp_set_lbx_mask(ii, hlbx_mask_[ii], &qp_);
+        ::d_ocp_qp_set_ubx_mask(ii, hubx_mask_[ii], &qp_);
+    }
+    for (int ii = 0; ii < N_; ii++)
+    {
+        // masks for input box constraints
+        ::d_ocp_qp_set_lbu_mask(ii, hlbu_mask_[ii], &qp_);
+        ::d_ocp_qp_set_ubu_mask(ii, hubu_mask_[ii], &qp_);
+    }
 
     // allocation for solution
     int qp_sol_size = ::d_ocp_qp_sol_memsize(&dim_);
@@ -155,6 +221,10 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         d_print_mat(1, nbu_[i], hlbu_[i], 1);
         printf("\nhubu_\n");
         d_print_mat(1, nbu_[i], hubu_[i], 1);
+        printf("\nhlbu_mask_\n");
+        d_print_mat(1, nbu_[i], hlbu_mask_[i], 1);
+        printf("\nhubu_mask_\n");
+        d_print_mat(1, nbu_[i], hubu_mask_[i], 1);
 
         printf("\nnbx\n");
         std::cout << nbx_[i] << std::endl;
@@ -162,6 +232,10 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         d_print_mat(1, nbx_[i], hlbx_[i], 1);
         printf("\nhubx_\n");
         d_print_mat(1, nbx_[i], hubx_[i], 1);
+        printf("\nhlbx_mask_\n");
+        d_print_mat(1, nbx_[i], hlbx_mask_[i], 1);
+        printf("\nhubx_mask_\n");
+        d_print_mat(1, nbx_[i], hubx_mask_[i], 1);
 
         printf("\nng\n");
         std::cout << ng_[i] << std::endl;
@@ -173,6 +247,10 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         d_print_mat(1, ng_[i], hlg_[i], 1);
         printf("\nhug_\n");
         d_print_mat(1, ng_[i], hug_[i], 1);
+        printf("\nhlg_mask_\n");
+        d_print_mat(1, ng_[i], hlg_mask_[i], 1);
+        printf("\nhug_mask_\n");
+        d_print_mat(1, ng_[i], hug_mask_[i], 1);
 
     }   // end optional printout
 #endif  // HPIPM_PRINT_MATRICES
@@ -192,19 +270,19 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         }
         else if (hpipm_status_ == 1)
         {
-            printf("\n -> Solver failed! Maximum number of iterations reached\n");
+            printf("\n -> Solver failed! Maximum number of iterations reached.\n");
         }
         else if (hpipm_status_ == 2)
         {
-            printf("\n -> Solver failed! Minimum step length reached\n");
+            printf("\n -> Solver failed! Minimum step length reached.\n");
         }
         else if (hpipm_status_ == 3)
         {
-            printf("\n -> Solver failed! NaN in computations\n");
+            printf("\n -> Solver failed! NaN in computations.\n");
         }
         else
         {
-            printf("\n -> Solver failed! Unknown return flag\n");
+            printf("\n -> Solver failed! Unknown return flag.\n");
         }
         printf("\nipm iter = %d\n", workspace_.iter);
         printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha\t\tmu\n");
@@ -325,6 +403,25 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
             hr_.data(), hidxbx_.data(), hlbx_.data(), hubx_.data(), hidxbu_.data(), hlbu_.data(), hubu_.data(),
             hC_.data(), hD_.data(), hlg_.data(), hug_.data(), hZl_.data(), hZu_.data(), hzl_.data(), hzu_.data(),
             hidxs_.data(), hlls_.data(), hlus_.data(), &qp_);
+
+        // set constraint maskings for unbounded dimensions
+        for (int ii = 0; ii <= N_; ii++)
+        {
+            // masks for general constraints
+            ::d_ocp_qp_set_lg_mask(ii, hlg_mask_[ii], &qp_);
+            ::d_ocp_qp_set_ug_mask(ii, hug_mask_[ii], &qp_);
+
+            // masks for state box constraints
+            ::d_ocp_qp_set_lbx_mask(ii, hlbx_mask_[ii], &qp_);
+            ::d_ocp_qp_set_ubx_mask(ii, hubx_mask_[ii], &qp_);
+        }
+        for (int ii = 0; ii < N_; ii++)
+        {
+            // masks for input box constraints
+            ::d_ocp_qp_set_lbu_mask(ii, hlbu_mask_[ii], &qp_);
+            ::d_ocp_qp_set_ubu_mask(ii, hubu_mask_[ii], &qp_);
+        }
+        // TODO: combine all the above into one convenience method
     }
 }
 
@@ -343,6 +440,10 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureInputBoxConstraints(
         hidxbu_.resize(N + 1);
         hlbu_.resize(N + 1);
         hubu_.resize(N + 1);
+        hlbu_mask_.resize(N + 1);
+        hubu_mask_.resize(N + 1);
+        hlbu_mask_Eigen_.resize(N + 1);
+        hubu_mask_Eigen_.resize(N + 1);
         configChanged = true;
     }
 
@@ -357,6 +458,16 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureInputBoxConstraints(
             hlbu_[i] = lqocProblem->u_lb_[i].data();
             hubu_[i] = lqocProblem->u_ub_[i].data();
             hidxbu_[i] = lqocProblem->u_I_[i].data();
+
+            // create masks for box constraints
+            hlbu_mask_Eigen_[i] = Eigen::VectorXd(nbu_[i]);
+            hubu_mask_Eigen_[i] = Eigen::VectorXd(nbu_[i]);
+            createConstraintsMasks(
+                nbu_[i], lqocProblem->u_lb_[i], lqocProblem->u_ub_[i], hlbu_mask_Eigen_[i], hubu_mask_Eigen_[i]);
+
+            // set mask data
+            hlbu_mask_[i] = hlbu_mask_Eigen_[i].data();
+            hubu_mask_[i] = hubu_mask_Eigen_[i].data();
 
             configChanged = true;
         }
@@ -380,6 +491,10 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureStateBoxConstraints(
         hidxbx_.resize(N + 1);
         hlbx_.resize(N + 1);
         hubx_.resize(N + 1);
+        hlbx_mask_.resize(N + 1);
+        hubx_mask_.resize(N + 1);
+        hlbx_mask_Eigen_.resize(N + 1);
+        hubx_mask_Eigen_.resize(N + 1);
         configChanged = true;
     }
 
@@ -402,6 +517,16 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureStateBoxConstraints(
             hubx_[i] = lqocProblem->x_ub_[i].data();
             hidxbx_[i] = lqocProblem->x_I_[i].data();
 
+            // create masks for box constraints
+            hlbx_mask_Eigen_[i] = Eigen::VectorXd(nbx_[i]);
+            hubx_mask_Eigen_[i] = Eigen::VectorXd(nbx_[i]);
+            createConstraintsMasks(
+                nbx_[i], lqocProblem->x_lb_[i], lqocProblem->x_ub_[i], hlbx_mask_Eigen_[i], hubx_mask_Eigen_[i]);
+
+            // set mask data
+            hlbx_mask_[i] = hlbx_mask_Eigen_[i].data();
+            hubx_mask_[i] = hubx_mask_Eigen_[i].data();
+
             configChanged = true;
         }
     }
@@ -422,6 +547,10 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
         ng_.resize(N + 1, 0);
         hlg_.resize(N + 1, 0);
         hug_.resize(N + 1, 0);
+        hlg_mask_.resize(N + 1);
+        hug_mask_.resize(N + 1);
+        hlg_mask_Eigen_.resize(N + 1);
+        hug_mask_Eigen_.resize(N + 1);
         hC_.resize(N + 1);
         hD_.resize(N + 1);
         configChanged = true;
@@ -446,20 +575,32 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
         lqocProblem->d_lb_[i].resize(lqocProblem->ng_[i], 1);
         lqocProblem->d_ub_[i].resize(lqocProblem->ng_[i], 1);
 
+        // resize constraint mask data
+        hlg_mask_Eigen_[i] = Eigen::VectorXd(ng_[i]);
+        hug_mask_Eigen_[i] = Eigen::VectorXd(ng_[i]);
+
         // set pointers to hpipm-style box constraint boundaries and sparsity pattern
         if (i == 0)
         {
             hlg_[i] = hd_lg_0_Eigen_.data();
             hug_[i] = hd_ug_0_Eigen_.data();
+            createConstraintsMasks(ng_[i], hd_lg_0_Eigen_, hd_ug_0_Eigen_, hlg_mask_Eigen_[i], hug_mask_Eigen_[i]);
         }
         else
         {
             hlg_[i] = lqocProblem->d_lb_[i].data();
             hug_[i] = lqocProblem->d_ub_[i].data();
+            createConstraintsMasks(
+                ng_[i], lqocProblem->d_lb_[i], lqocProblem->d_ub_[i], hlg_mask_Eigen_[i], hug_mask_Eigen_[i]);
         }
 
+        // first-order constraint derivative data
         hC_[i] = lqocProblem->C_[i].data();
         hD_[i] = lqocProblem->D_[i].data();
+
+        // set mask data
+        hlg_mask_[i] = hlg_mask_Eigen_[i].data();
+        hug_mask_[i] = hug_mask_Eigen_[i].data();
     }
 
     return configChanged;
