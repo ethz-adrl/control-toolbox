@@ -34,6 +34,12 @@ class LTISystem : public LinearSystem<STATE_DIM, CONTROL_DIM>
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    using Base = LinearSystem<STATE_DIM, CONTROL_DIM>;
+    using state_vector_t = typename Base::state_vector_t;
+    using control_vector_t = typename Base::control_vector_t;
+    using state_matrix_t = typename Base::state_matrix_t;
+    using state_control_matrix_t = typename Base::state_control_matrix_t;
+
     //! Constructs a linear time invariant system
     /*!
 	 * @param A A matrix
@@ -42,10 +48,10 @@ public:
 	 * @param D D matrix
 	 * @return instance of the LTI system
 	 */
-    LTISystem(const Eigen::Matrix<double, STATE_DIM, STATE_DIM>& A,
-        const Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>& B,
-        const Eigen::Matrix<double, STATE_DIM, STATE_DIM>& C = Eigen::Matrix<double, STATE_DIM, STATE_DIM>::Identity(),
-        const Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> D = Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>::Zero())
+    LTISystem(const state_matrix_t& A,
+        const state_control_matrix_t& B,
+        const state_matrix_t& C = state_matrix_t::Identity(),
+        const state_control_matrix_t& D = state_control_matrix_t::Zero())
         : A_(A), B_(B), C_(C), D_(D)
     {
     }
@@ -56,29 +62,29 @@ public:
     LTISystem<STATE_DIM, CONTROL_DIM>* clone() const override { return new LTISystem<STATE_DIM, CONTROL_DIM>(*this); }
     virtual ~LTISystem() {}
     //! get A matrix
-    virtual const Eigen::Matrix<double, STATE_DIM, STATE_DIM>& getDerivativeState(const StateVector<STATE_DIM>& x,
-        const ControlVector<CONTROL_DIM>& u,
+    virtual const state_matrix_t& getDerivativeState(const state_vector_t& x,
+        const control_vector_t& u,
         const double t = 0.0) override
     {
         return A_;
     }
 
     //! get B matrix
-    virtual const Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>& getDerivativeControl(const StateVector<STATE_DIM>& x,
-        const ControlVector<CONTROL_DIM>& u,
+    virtual const state_control_matrix_t& getDerivativeControl(const state_vector_t& x,
+        const control_vector_t& u,
         const double t = 0.0) override
     {
         return B_;
     }
 
     //! get A matrix
-    Eigen::Matrix<double, STATE_DIM, STATE_DIM>& A() { return A_; }
+    state_matrix_t& A() { return A_; }
     //! get B matrix
-    Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>& B() { return B_; }
+    state_control_matrix_t& B() { return B_; }
     //! get C matrix
-    Eigen::Matrix<double, STATE_DIM, STATE_DIM>& C() { return C_; }
+    state_matrix_t& C() { return C_; }
     //! get D matrix
-    Eigen::Matrix<double, STATE_DIM, CONTROL_DIM>& D() { return D_; }
+    state_control_matrix_t& D() { return D_; }
     //! computes the system dynamics
     /*!
 	 * Computes \f$ \dot{x} = Ax + Bu \f$
@@ -87,10 +93,10 @@ public:
 	 * @param control control input
 	 * @param derivative state derivative
 	 */
-    void computeControlledDynamics(const Eigen::Matrix<double, STATE_DIM, 1>& state,
+    void computeControlledDynamics(const state_vector_t& state,
         const Time& t,
-        const Eigen::Matrix<double, CONTROL_DIM, 1>& control,
-        Eigen::Matrix<double, STATE_DIM, 1>& derivative)
+        const control_vector_t& control,
+        state_vector_t& derivative)
     {
         derivative = A_ * state + B_ * control;
     }
@@ -103,10 +109,10 @@ public:
 	 * @param control control input
 	 * @param output system output (measurement)
 	 */
-    void computeOutput(const Eigen::Matrix<double, STATE_DIM, 1>& state,
+    void computeOutput(const state_vector_t& state,
         const Time& t,
-        const Eigen::Matrix<double, CONTROL_DIM, 1>& control,
-        Eigen::Matrix<double, STATE_DIM, 1>& output)
+        const control_vector_t& control,
+        state_vector_t& output)
     {
         output = C_ * state + D_ * control;
     }
@@ -180,11 +186,10 @@ public:
 
 
 private:
-    Eigen::Matrix<double, STATE_DIM, STATE_DIM> A_;    //!< A matrix
-    Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> B_;  //!< B matrix
-
-    Eigen::Matrix<double, STATE_DIM, STATE_DIM> C_;    //!< C matrix
-    Eigen::Matrix<double, STATE_DIM, CONTROL_DIM> D_;  //!< D matrix
+    state_matrix_t A_;          //!< A matrix
+    state_control_matrix_t B_;  //!< B matrix
+    state_matrix_t C_;          //!< C matrix
+    state_control_matrix_t D_;  //!< D matrix
 };
 
 }  // namespace core
