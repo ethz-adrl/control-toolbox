@@ -152,7 +152,7 @@ void CostFunctionAD<STATE_DIM, CONTROL_DIM, SCALAR>::loadFromConfigFile(const st
         try
         {
             termName = pt.get<std::string>(currentTerm + ".name");
-        } catch (boost::property_tree::ptree_bad_path err)
+        } catch (boost::property_tree::ptree_bad_path& err)
         {
             termName = "Unnamed";
             if (verbose)

@@ -60,6 +60,10 @@
 
 #ifdef PLOTTING_ENABLED
 #include <Python.h>
+
+#define PyString_FromString PyUnicode_FromString
+#define PyInt_FromLong PyLong_FromLong
+#define PyString_ FromString PyUnicode_FromString
 #endif
 
 namespace ct {
@@ -106,7 +110,7 @@ struct _interpreter
 private:
     _interpreter()
     {
-        char name[] = "plotting";  // silence compiler warning about const strings
+        wchar_t name[] = L"plotting";  // silence compiler warning about const strings
         Py_SetProgramName(name);   // optional but recommended
         Py_Initialize();
 
@@ -180,6 +184,9 @@ private:
 // -----------------------------------------------------------------------------
 bool ion()
 {
+    // Make sure interpreter is initialized
+    detail::_interpreter::get();
+
     PyObject* args = PyTuple_New(0);
     PyObject* res = PyObject_CallObject(detail::_interpreter::get().s_python_function_ion, args);
 
@@ -195,6 +202,9 @@ bool ion()
 //! Create a new figure
 bool figure(std::string i)
 {
+    // Make sure interpreter is initialized
+    detail::_interpreter::get();
+
     PyObject* args;
     if (i != "")
     {
@@ -228,7 +238,7 @@ bool hist(const Eigen::Ref<const Eigen::VectorXd>& x, const double bins, const s
         PyList_SetItem(xlist, i, PyFloat_FromDouble(x(i)));
     }
 
-    PyObject* bins_py = PyFloat_FromDouble(bins);
+    PyObject* bins_py = PyLong_FromDouble(bins);
     PyObject* histtype_py = PyString_FromString(histtype.c_str());
 
     // construct positional args
@@ -319,6 +329,9 @@ bool boxplot(const Eigen::Ref<const Eigen::MatrixXd>& x)
 // -----------------------------------------------------------------------------
 bool subplot(const size_t nrows, const size_t ncols, const size_t plot_number)
 {
+    // Make sure interpreter is initialized
+    detail::_interpreter::get();
+
     PyObject* nrows_py = PyFloat_FromDouble(nrows);
     PyObject* ncols_py = PyFloat_FromDouble(ncols);
     PyObject* plot_number_py = PyFloat_FromDouble(plot_number);
@@ -345,13 +358,19 @@ bool plot(const Eigen::Ref<const Eigen::MatrixXd>& x_raw,
     const Eigen::Ref<const Eigen::MatrixXd>& y_raw,
     const std::map<std::string, std::string>& keywords)
 {
-    CHECK_EQ(true, (x_raw.cols() == 1) || (x_raw.rows()) == 1);
-    CHECK_EQ(true, (y_raw.cols() == 1) || (y_raw.rows()) == 1);
+    bool is_x_vec = (x_raw.cols() == 1) || (x_raw.rows() == 1);
+    bool is_y_vec = (y_raw.cols() == 1) || (y_raw.rows() == 1);
+
+    CHECK_EQ(true, is_x_vec);
+    CHECK_EQ(true, is_y_vec);
 
     Eigen::Map<const Eigen::VectorXd> x(x_raw.data(), x_raw.rows() == 1 ? x_raw.cols() : x_raw.rows());
     Eigen::Map<const Eigen::VectorXd> y(y_raw.data(), y_raw.rows() == 1 ? y_raw.cols() : y_raw.rows());
 
     CHECK_EQ(true, (x.size() == y.size()));
+
+    // Make sure interpreter is initialized
+    detail::_interpreter::get();
 
     // using python lists
     PyObject* xlist = PyList_New(x.size());
@@ -395,13 +414,19 @@ bool plot(const Eigen::Ref<const Eigen::MatrixXd>& x_raw,
     const Eigen::Ref<const Eigen::MatrixXd>& y_raw,
     const std::string& s)
 {
-    CHECK_EQ(true, (x_raw.cols() == 1) || (x_raw.rows() == 1));
-    CHECK_EQ(true, (y_raw.cols() == 1) || (y_raw.rows() == 1));
+    bool is_x_vec = (x_raw.cols() == 1) || (x_raw.rows() == 1);
+    bool is_y_vec = (y_raw.cols() == 1) || (y_raw.rows() == 1);
+
+    CHECK_EQ(true, is_x_vec);
+    CHECK_EQ(true, is_y_vec);
 
     Eigen::Map<const Eigen::VectorXd> x(x_raw.data(), x_raw.rows() == 1 ? x_raw.cols() : x_raw.rows());
     Eigen::Map<const Eigen::VectorXd> y(y_raw.data(), y_raw.rows() == 1 ? y_raw.cols() : y_raw.rows());
 
     CHECK_EQ(true, (x.size() == y.size()));
+
+    // Make sure interpreter is initialized
+    detail::_interpreter::get();
 
     PyObject* xlist = PyList_New(x.size());
     PyObject* ylist = PyList_New(y.size());

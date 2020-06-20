@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.3)
+cmake_minimum_required (VERSION 3.5)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/explicitTemplateHelpers.cmake)
@@ -81,16 +81,29 @@ else()
     message(STATUS "COMPILING WITHOUT QWT")
 endif()
 
-find_package(PythonLibs 2.7 QUIET)
-if (PYTHONLIBS_FOUND)
-   message(STATUS "Found python 2.7")
-   list(APPEND ct_core_COMPILE_DEFINITIONS PLOTTING_ENABLED)
-   message(STATUS "Python library path ... " ${PYTHON_LIBRARY})
-   list(APPEND ct_core_LIBS ${PYTHON_LIBRARY})
-else() 
-   message(STATUS "Python not found, plotting will not be available") 
+if(${CMAKE_VERSION} VERSION_LESS "3.12.0")
+    find_package(PythonLibs 3 QUIET)
+    if (PYTHONLIBS_FOUND)
+        message(STATUS "Found python 3")
+        list(APPEND ct_core_COMPILE_DEFINITIONS PLOTTING_ENABLED)
+        set(PLOTTING_ENABLED ON)
+        message(STATUS "Python library path ... " ${PYTHON_LIBRARY})
+        list(APPEND ct_core_LIBS ${PYTHON_LIBRARY})
+    else()
+        message(STATUS "Python 3 not found, plotting will not be available")
+    endif()
+else()
+    find_package(Python COMPONENTS Development NumPy QUIET)
+    if (Python_FOUND AND ${Python_VERSION_MAJOR} EQUAL 3)
+        message(STATUS "Found python " ${Python_VERSION})
+        list(APPEND ct_core_COMPILE_DEFINITIONS PLOTTING_ENABLED)
+        set(PLOTTING_ENABLED ON)
+        message(STATUS "Python library path ... " ${Python_LIBRARIES})
+        list(APPEND ct_core_LIBS ${Python_LIBRARIES})
+    else()
+        message(STATUS "Python 3 not found, plotting will not be available")
+    endif()
 endif()
-
 
 ## configure files required for code-generation
 set(CODEGEN_TEMPLATE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/templates")
@@ -103,7 +116,14 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h.in ${CM
 ###################
 
 ## define the directories to be included in all ct_core targets
-list(APPEND ct_core_target_include_dirs ${PYTHON_INCLUDE_DIRS})
+
+if(${CMAKE_VERSION} VERSION_LESS "3.12.0")
+    list(APPEND ct_core_target_include_dirs ${PYTHON_INCLUDE_DIRS})
+else()
+    list(APPEND ct_core_target_include_dirs ${Python_INCLUDE_DIRS})
+    list(APPEND ct_core_target_include_dirs ${Python_NumPy_INCLUDE_DIRS})
+endif()
+
 list(APPEND ct_core_target_include_dirs ${QWT_INCLUDE_DIR})
 list(APPEND ct_core_target_include_dirs $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 list(APPEND ct_core_target_include_dirs $<INSTALL_INTERFACE:include>)
@@ -118,8 +138,8 @@ set(PRESPEC_LIB_NAMES "")
 ## define list of libraries that contain prespecified templates
 if(USE_PRESPEC)
     # extract the prespec parameters from user-input
-    ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg" 
-        "${CMAKE_CURRENT_SOURCE_DIR}/prespec/" 
+    ct_configure_explicit_templates("${CMAKE_CURRENT_SOURCE_DIR}/../ct/config/explicit_templates.cfg"
+        "${CMAKE_CURRENT_SOURCE_DIR}/prespec/"
         "ct_core"
     )
     message(STATUS "CT Core: Compiling the following explict template libraries: ${PRESPEC_LIB_NAMES}")
@@ -162,7 +182,7 @@ endif()
 ###########
 # TESTING #
 ###########
-## requires gtest to be installed, e.g. via 
+## requires gtest to be installed, e.g. via
 ## sudo apt install libgtest-dev
 ## cd /usr/src/gtest/
 ## sudo cmake -DBUILD_SHARED_LIBS=ON
@@ -202,6 +222,17 @@ install(
 
 ## create the ct_core.cmake file which holds target includes and dependencies
 install (EXPORT ct_core_export DESTINATION share/ct_core/cmake)
+
+## add uninstall target
+if(NOT TARGET uninstall)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/cmake_uninstall.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/../ct/cmake/cmake_uninstall.cmake"
+        IMMEDIATE @ONLY)
+
+    add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/../ct/cmake/cmake_uninstall.cmake)
+endif()
 
 
 #################

@@ -152,13 +152,6 @@ private:
      */
     bool changeProblemSize(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem);
 
-    /**
-     * @brief compute the array of inverses of the Lr-matrix from the cholesky factorization of the Hessian
-     * @note is put into separate function since triggered by request and flagged by bool
-     */
-    void computeLrInvArray();
-    bool isLrInvComputed_;
-
     //! prints a matrix in column-major format
     void d_print_mat(int m, int n, double* A, int lda);
 
@@ -200,6 +193,18 @@ private:
     std::vector<double*> hlbu_;  //! pointer to lower input box constraint boundary
     std::vector<double*> hubu_;  //! pointer to upper input box constraint boundary
 
+    //! pointers to state box constraint mask
+    std::vector<double*> hlbx_mask_;
+    std::vector<double*> hubx_mask_;
+    std::vector<double*> hlbu_mask_;
+    std::vector<double*> hubu_mask_;
+
+    // containers for box constraints masks
+    std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd>> hlbx_mask_Eigen_;
+    std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd>> hubx_mask_Eigen_;
+    std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd>> hlbu_mask_Eigen_;
+    std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd>> hubu_mask_Eigen_;
+
     std::vector<int*> hidxbx_;  //! pointer to sparsity pattern for box constraints in x
     std::vector<int*> hidxbu_;  //! pointer to sparsity pattern for box constraints in u
 
@@ -207,6 +212,14 @@ private:
     std::vector<double*> hug_;  //! upper general constraint boundary
     std::vector<double*> hC_;   //! general constraint jacobians w.r.t. states
     std::vector<double*> hD_;   //! general constraint jacobians w.r.t. controls
+
+    // pointers to general constraint masks
+    std::vector<double*> hlg_mask_;
+    std::vector<double*> hug_mask_;
+
+    // containers for general constraints masks
+    std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd>> hlg_mask_Eigen_;
+    std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd>> hug_mask_Eigen_;
 
     //  local vars for constraint bounds for statge k=0, which need to be different by HPIPM convention
     Eigen::VectorXd hd_lg_0_Eigen_;
@@ -219,10 +232,6 @@ private:
     std::vector<int*> hidxs_;
     std::vector<double*> hlls_;
     std::vector<double*> hlus_;
-
-    // cached data for efficiency
-    ct::core::DiscreteArray<ct::core::ControlMatrix<control_dim>> Lr_inv_;  // inv of cholesky matrix of hessian H
-
 
     //! settings from NLOptConSolver
     NLOptConSettings settings_;

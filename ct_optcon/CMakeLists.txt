@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.3)
+cmake_minimum_required (VERSION 3.5)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/explicitTemplateHelpers.cmake)
@@ -67,7 +67,7 @@ endif()
 find_package(IPOPT QUIET)
 if(IPOPT_FOUND)
     set(BUILD_WITH_IPOPT_SUPPORT ON)
-    message(STATUS "Found IPOPT - building with IPOPT support") 
+    message(STATUS "Found IPOPT - building with IPOPT support")
     set(IPOPT_LIBS ${IPOPT_LIBRARIES})
     list(APPEND ct_optcon_COMPILE_DEFINITIONS BUILD_WITH_IPOPT_SUPPORT)
     list(APPEND ct_optcon_COMPILE_DEFINITIONS ${IPOPT_DEFINITIONS})
@@ -85,10 +85,10 @@ endif()
 #    find_library(SNOPT_LIBRARY1 snopt7_cpp   $ENV{SNOPT_SOURCE_DIR}/lib REQUIRED)
 #    find_library(SNOPT_LIBRARY2 snopt7       $ENV{SNOPT_SOURCE_DIR}/lib REQUIRED)
 #    set(SNOPT_LIBS ${SNOPT_LIBRARY1} ${SNOPT_LIBRARY2})
-#    
+#
 #    add_library(ct_snopt_interface src/nlp/solver/SnoptSolver.cpp)
 #    target_link_libraries(ct_snopt_interface ${SNOPT_LIBRARY1} ${SNOPT_LIBRARY2})
-#    
+#
 #    list(APPEND SNOPT_TARGET ct_snopt_interface)
 #    list(APPEND SNOPT_LIBS ct_snopt_interface ${SNOPT_LIBRARY1} ${SNOPT_LIBRARY2})
 #
@@ -126,6 +126,7 @@ if(USE_PRESPEC)
         target_compile_definitions(${lib_name} PUBLIC ${ct_optcon_COMPILE_DEFINITIONS})
         target_link_libraries(${lib_name} 
             ControlToolbox
+
             ${matlab_cpp_interface_LIBRARIES}
             ${LAPACK_LIBS}
             ${HPIPM_LIBS}
@@ -175,8 +176,6 @@ endif()
 # for correct libraries locations across platforms
 include(GNUInstallDirs)
 
-install(DIRECTORY include/ct/optcon DESTINATION include/ct)
-
 ## copy the header files
 install(DIRECTORY include/ct/optcon DESTINATION include/ct)
 
@@ -195,7 +194,18 @@ install(
 ## create the ct_optcon.cmake file which holds target includes and dependencies
 install (EXPORT ct_optcon_export DESTINATION share/ct_optcon/cmake)
 
-    
+## add uninstall target
+if(NOT TARGET uninstall)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/cmake_uninstall.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/../cmake/cmake_uninstall.cmake"
+        IMMEDIATE @ONLY)
+
+    add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/../ct/cmake/cmake_uninstall.cmake)
+endif()
+
+
 #################
 # DOCUMENTATION #
 #################

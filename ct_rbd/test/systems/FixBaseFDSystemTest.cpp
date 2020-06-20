@@ -52,8 +52,7 @@ TEST(FixBaseFDSystemTest, ActuatorDynamicsTest)
     // generate actuator dynamics
     const double w_n = 2;
     const double zeta = 1;  // critical damping
-    const double gc =
-        w_n * w_n;  // select oscillator input gain such that we follow the reference input with no amplification
+    const double gc = 1; // select oscillator input gain such that we follow the reference input with no amplification
     std::shared_ptr<ct::rbd::SecondOrderActuatorDynamics<njoints>> actDynamics(
         new ct::rbd::SecondOrderActuatorDynamics<njoints>(w_n, zeta, gc));
 

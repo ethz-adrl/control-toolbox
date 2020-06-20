@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.3)
+cmake_minimum_required (VERSION 3.5)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/explicitTemplateHelpers.cmake)
@@ -199,7 +199,7 @@ list(APPEND CT_MODELS_LIBRARIES irb4600_ik)
 ## convenience library for passing on includes
 add_library(ct_models INTERFACE)
 target_include_directories(ct_models INTERFACE ${ct_models_target_include_dirs})
-target_link_libraries(ct_models INTERFACE 
+target_link_libraries(ct_models INTERFACE
   ct_rbd
   ${CT_MODELS_LIBRARIES}
   )
@@ -230,7 +230,7 @@ endif()
 #################
 
 # for correct libraries locations across platforms
-include(GNUInstallDirs) 
+include(GNUInstallDirs)
 
 ## copy the header files
 install(DIRECTORY include/ct/models DESTINATION include/ct)
@@ -249,6 +249,17 @@ install(
 
 ## create the ct_models.cmake file which holds target includes and dependencies
 install (EXPORT ct_models_export DESTINATION share/ct_models/cmake)
+
+## add uninstall target
+if(NOT TARGET uninstall)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/cmake_uninstall.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/../ct/cmake/cmake_uninstall.cmake"
+        IMMEDIATE @ONLY)
+
+    add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/../ct/cmake/cmake_uninstall.cmake)
+endif()
 
 
 #################

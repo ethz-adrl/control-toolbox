@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.3)
+cmake_minimum_required (VERSION 3.5)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/compilerSettings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/explicitTemplateHelpers.cmake)
@@ -55,7 +55,7 @@ endif()
 #################
 
 # for correct libraries locations across platforms
-include(GNUInstallDirs) 
+include(GNUInstallDirs)
 
 ## copy the header files
 install(DIRECTORY include/ct/rbd DESTINATION include/ct)
@@ -75,6 +75,17 @@ install(
 
 ## create the ct_rbd.cmake file which holds target includes and dependencies
 install (EXPORT ct_rbd_export DESTINATION share/ct_rbd/cmake)
+
+## add uninstall target
+if(NOT TARGET uninstall)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/cmake_uninstall.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/../ct/cmake/cmake_uninstall.cmake"
+        IMMEDIATE @ONLY)
+
+    add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/../ct/cmake/cmake_uninstall.cmake)
+endif()
 
 
 #################
