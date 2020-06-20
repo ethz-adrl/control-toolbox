@@ -3,7 +3,7 @@
 
 // Include file for convenience
 
-#include "Constraints"
+#include "Constraints.h"
 #include "dms_core/DmsSettings.h"
 #include "dms_core/DmsSolver.h"
 
