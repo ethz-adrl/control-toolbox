@@ -60,7 +60,11 @@ public:
         t_vel_.setZero();
         coeffs_.setZero();
     }
+    
+    // TODO: Here is the problem...
     const Eigen::Matrix<Scalar, DoF, 1>& coeffs() const { return coeffs_; }
+
+
     void set_coeffs(const Eigen::Matrix<Scalar, DoF, 1>& c)
     {
         coeffs_ = c;

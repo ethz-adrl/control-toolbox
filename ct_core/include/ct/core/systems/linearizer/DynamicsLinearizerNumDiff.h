@@ -151,8 +151,8 @@ public:
             SCALAR dxp = mlog_ph - m_log.coeffs()(i);
 
             t_perturbed = m_log;
-            t_perturbed.set_coeff(i, mlog_ph); // TODO
-            //t_perturbed.coeffs()(i) = mlog_ph;
+            //t_perturbed.set_coeff(i, mlog_ph); // TODO remove
+            t_perturbed.coeffs()(i) = mlog_ph;
 
             // evaluate dynamics at perturbed state
             dynamics_fct_(retract_fct_(t_perturbed), t, u, res_plus);
@@ -163,8 +163,8 @@ public:
                 SCALAR dxm = m_log.coeffs()(i) - mlog_mh;
 
                 t_perturbed = m_log;
-                t_perturbed.set_coeff(i, mlog_ph);
-                //t_perturbed.coeffs()(i) = mlog_ph;
+                //t_perturbed.set_coeff(i, mlog_ph); // TODO: remove
+                t_perturbed.coeffs()(i) = mlog_ph;
 
                 Tangent res_minus;
                 dynamics_fct_(retract_fct_(t_perturbed), t, u, res_minus);
