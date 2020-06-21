@@ -21,21 +21,20 @@ public:
     using Jacobian = Eigen::Matrix<Scalar, DoF, DoF>;
     using OptJacobianRef = tl::optional<Eigen::Ref<Jacobian>>;
 
-    CompositeManifoldTangent() : t_pos_(POS_TANGENT::Zero()), t_vel_(VEL_TANGENT::Zero()) { coeffs_.setZero(); }
+    CompositeManifoldTangent() : t_pos_(POS_TANGENT::Zero()), t_vel_(VEL_TANGENT::Zero()) { }
     CompositeManifoldTangent(const POS_TANGENT& p, const VEL_TANGENT& v) : t_pos_(p), t_vel_(v)
     {
-        coeffs_ << t_pos_.coeffs(), t_vel_.coeffs();
     }
 
     template <typename _EigenDerived>
     CompositeManifoldTangent(const Eigen::MatrixBase<_EigenDerived>& v)
-        : t_pos_(v.template head<POS_TANGENT::DoF>()), t_vel_(v.template tail<VEL_TANGENT::DoF>()), coeffs_(v)
+        : t_pos_(v.template head<POS_TANGENT::DoF>()), t_vel_(v.template tail<VEL_TANGENT::DoF>())
     {
         // TODO a dimension assert would not hurt
     }
 
     CompositeManifoldTangent(const CompositeManifoldTangent& arg)
-        : t_pos_(arg.t_pos_), t_vel_(arg.t_vel_), coeffs_(arg.coeffs_)
+        : t_pos_(arg.t_pos_), t_vel_(arg.t_vel_)
     {
     }
 
@@ -52,31 +51,30 @@ public:
     {
         t_pos_.setRandom();
         t_vel_.setRandom();
-        coeffs_ << t_pos_.coeffs(), t_vel_.coeffs();
     }
     void setZero()
     {
         t_pos_.setZero();
         t_vel_.setZero();
-        coeffs_.setZero();
-    }
-    
-    // TODO: Here is the problem...
-    const Eigen::Matrix<Scalar, DoF, 1>& coeffs() const { return coeffs_; }
-
-
-    void set_coeffs(const Eigen::Matrix<Scalar, DoF, 1>& c)
-    {
-        coeffs_ = c;
-        t_pos_.coeffs() = c.template head<POS_TANGENT::DoF>();
-        t_vel_.coeffs() = c.template tail<VEL_TANGENT::DoF>();
     }
 
-    void set_coeff(const int i, const Scalar val)
+    // TODO: Here is the problem, trouble as soon as it gets passed by value.
+    const Eigen::Matrix<Scalar, DoF, 1>& coeffs() const
     {
-        coeffs_(i) = val;
-        t_pos_.coeffs() = coeffs_.template head<POS_TANGENT::DoF>();
-        t_vel_.coeffs() = coeffs_.template tail<VEL_TANGENT::DoF>();
+        Eigen::Matrix<Scalar, DoF, 1> coeffs_temp;
+        coeffs_temp.template head<3>() = t_pos_.coeffs();
+        coeffs_temp.template tail<3>() = t_vel_.coeffs();
+
+        const_cast<Eigen::Matrix<Scalar, DoF, 1>&>(coeffs_) = coeffs_temp;
+
+        return coeffs_;
+    }
+
+
+    Scalar& operator()(const int k) { return k < POS_TANGENT::DoF ? t_pos_.coeffs()(k) : t_vel_.coeffs()(k - 3); }
+    const Scalar& operator()(const int k) const
+    {
+        return k < POS_TANGENT::DoF ? t_pos_.coeffs()(k) : t_vel_.coeffs()(k - 3);
     }
 
     CompositeManifoldTangent operator-(const CompositeManifoldTangent& tb) const
@@ -118,21 +116,16 @@ public:
     void set_pos(const POS_TANGENT& p)
     {
         t_pos_ = p;
-        coeffs_.template head<POS_TANGENT::DoF>() = p.coeffs();
     }
     void set_vel(const VEL_TANGENT& v)
     {
         t_vel_ = v;
-        coeffs_.template tail<VEL_TANGENT::DoF>() = v.coeffs();
     }
     const VEL_TANGENT& vel() const { return t_vel_; }
-    //Scalar& operator()(int idx) { return coeffs()(idx); }
-    const Scalar& operator()(int idx) const { return coeffs()(idx); }
-    //auto noalias() { return CompositeManifoldTangent<POS_MAN, VEL_MAN, POS_TANGENT, VEL_TANGENT>(*this); /* coeffs().noalias();*/ }  // TODO: sort this out
 protected:
     POS_TANGENT t_pos_;
     VEL_TANGENT t_vel_;
-    Eigen::Matrix<Scalar, DoF, 1> coeffs_;
+    Eigen::Matrix<Scalar, DoF, 1> coeffs_;  // is now used only in one function to return a ref
 };
 
 template <typename _Stream, typename t1, typename t2, typename t3, typename t4>

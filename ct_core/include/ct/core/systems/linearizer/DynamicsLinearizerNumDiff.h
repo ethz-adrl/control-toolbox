@@ -146,25 +146,23 @@ public:
         for (size_t i = 0; i < STATE_DIM; i++)
         {
             // inspired from http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
-            SCALAR h = eps_ * std::max(std::abs<SCALAR>(m_log.coeffs()(i)), SCALAR(1.0));
-            SCALAR mlog_ph = m_log.coeffs()(i) + h;
-            SCALAR dxp = mlog_ph - m_log.coeffs()(i);
+            SCALAR h = eps_ * std::max(std::abs<SCALAR>(m_log(i)), SCALAR(1.0));
+            SCALAR mlog_ph = m_log(i) + h;
+            SCALAR dxp = mlog_ph - m_log(i);
 
             t_perturbed = m_log;
-            //t_perturbed.set_coeff(i, mlog_ph); // TODO remove
-            t_perturbed.coeffs()(i) = mlog_ph;
+            t_perturbed(i) = mlog_ph;
 
             // evaluate dynamics at perturbed state
             dynamics_fct_(retract_fct_(t_perturbed), t, u, res_plus);
 
             if (doubleSidedDerivative_)
             {
-                SCALAR mlog_mh = m_log.coeffs()(i) - h;
-                SCALAR dxm = m_log.coeffs()(i) - mlog_mh;
+                SCALAR mlog_mh = m_log(i) - h;
+                SCALAR dxm = m_log(i) - mlog_mh;
 
                 t_perturbed = m_log;
-                //t_perturbed.set_coeff(i, mlog_ph); // TODO: remove
-                t_perturbed.coeffs()(i) = mlog_ph;
+                t_perturbed(i) = mlog_ph;
 
                 Tangent res_minus;
                 dynamics_fct_(retract_fct_(t_perturbed), t, u, res_minus);
