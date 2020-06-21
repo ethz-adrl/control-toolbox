@@ -9,13 +9,13 @@ intermediateCost
       Q
       {
         scaling 1.0
-        (0,0) 0
-        (1,1) 0.1
+        (0,0) 1
+        (1,1) 1
       }
       R
       {
-        scaling 1
-        (0,0) 1
+        scaling 0.001
+        (0,0) 0.1
       }
       x_des
       {
@@ -36,7 +36,7 @@ finalCost
     {
       Q
       {
-        scaling 100.0
+        scaling 1000.0
         (0,0) 1.0
         (1,1) 1.0
       }
@@ -46,7 +46,7 @@ finalCost
         (0,0) 0
       }
       x_des
-      {
+      {  
         (0,0) 1.5
         (1,0) 0
       }

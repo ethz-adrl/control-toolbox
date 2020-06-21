@@ -157,8 +157,6 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeCostToGo(size_t k)
     sv_[k] = p.qv_[k];
     sv_[k]/*.noalias()*/ += p.A_[k].transpose() * sv_[k + 1];
     sv_[k]/*.noalias()*/ += p.A_[k].transpose() * S_[k + 1] * p.b_[k];
-    sv_[k]/*.noalias()*/ += this->L_[k].transpose() * Hi_[k] * this->lv_[k];
-    sv_[k]/*.noalias()*/ += this->L_[k].transpose() * gv_[k];
     sv_[k]/*.noalias()*/ += G_[k].transpose() * this->lv_[k]; // TODO: bring back all the noalias()
 }
 
