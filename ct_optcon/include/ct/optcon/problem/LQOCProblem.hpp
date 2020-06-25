@@ -89,6 +89,8 @@ public:
 
     ~LQOCProblem();
 
+    LQOCProblem* clone() {return new LQOCProblem(*this);}
+
     //! returns the number of discrete time steps in the LQOCP, including terminal stage
     int getNumberOfStages();
 

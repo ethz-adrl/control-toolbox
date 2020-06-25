@@ -21,10 +21,8 @@ public:
     using Jacobian = Eigen::Matrix<Scalar, DoF, DoF>;
     using OptJacobianRef = tl::optional<Eigen::Ref<Jacobian>>;
 
-    CompositeManifoldTangent() : t_pos_(POS_TANGENT::Zero()), t_vel_(VEL_TANGENT::Zero()) { }
-    CompositeManifoldTangent(const POS_TANGENT& p, const VEL_TANGENT& v) : t_pos_(p), t_vel_(v)
-    {
-    }
+    CompositeManifoldTangent() : t_pos_(POS_TANGENT::Zero()), t_vel_(VEL_TANGENT::Zero()) {}
+    CompositeManifoldTangent(const POS_TANGENT& p, const VEL_TANGENT& v) : t_pos_(p), t_vel_(v) {}
 
     template <typename _EigenDerived>
     CompositeManifoldTangent(const Eigen::MatrixBase<_EigenDerived>& v)
@@ -33,10 +31,7 @@ public:
         // TODO a dimension assert would not hurt
     }
 
-    CompositeManifoldTangent(const CompositeManifoldTangent& arg)
-        : t_pos_(arg.t_pos_), t_vel_(arg.t_vel_)
-    {
-    }
+    CompositeManifoldTangent(const CompositeManifoldTangent& arg) : t_pos_(arg.t_pos_), t_vel_(arg.t_vel_) {}
 
     static CompositeManifoldTangent Zero()
     {
@@ -113,15 +108,10 @@ public:
 
     auto transpose() const { return coeffs().transpose(); }
     const POS_TANGENT& pos() const { return t_pos_; }
-    void set_pos(const POS_TANGENT& p)
-    {
-        t_pos_ = p;
-    }
-    void set_vel(const VEL_TANGENT& v)
-    {
-        t_vel_ = v;
-    }
+    void set_pos(const POS_TANGENT& p) { t_pos_ = p; }
+    void set_vel(const VEL_TANGENT& v) { t_vel_ = v; }
     const VEL_TANGENT& vel() const { return t_vel_; }
+
 protected:
     POS_TANGENT t_pos_;
     VEL_TANGENT t_vel_;
@@ -295,6 +285,7 @@ public:
     const POS_MAN& pos() const { return m_pos_; }
     VEL_MAN& vel() { return m_vel_; }
     const VEL_MAN& vel() const { return m_vel_; }
+
 protected:
     POS_MAN m_pos_;
     VEL_MAN m_vel_;
@@ -373,8 +364,11 @@ int main(int argc, char** argv)
         x_traj[i] = ManifoldState_t::Random();
     }
 
-    // create instances of HPIPM and an unconstrained Gauss-Newton Riccati solver
-    std::shared_ptr<LQOCSolver<ManifoldState_t, control_dim>> solver(new GNRiccatiSolver<ManifoldState_t, control_dim>);
+    // create instances of HPIPM and an unconstrained Gauss-Newton Riccati gnSolver
+    std::shared_ptr<LQOCSolver<ManifoldState_t, control_dim>> gnSolver(
+        new GNRiccatiSolver<ManifoldState_t, control_dim>);
+    std::shared_ptr<LQOCSolver<ManifoldState_t, control_dim>> hpipmSolver(
+        new HPIPMInterface<ManifoldState_t, control_dim>);
 
     // create linear-quadratic optimal control problem containers
     std::shared_ptr<LQOCProblem<ManifoldState_t, control_dim>> problem(
@@ -439,31 +433,46 @@ int main(int argc, char** argv)
             auto l_adj = (l.exp()).adj();
             problem->Adj_x_[i + 1] = l_adj;  // parallel transport matrix / adjoint from stage k+1 to stage k
 
-            // make the necessary overloads, which allows the standard riccati solver to backpropagate on manifolds
+            // make the necessary overloads, which allows the standard riccati gnSolver to backpropagate on manifolds
             problem->A_[i] = l_adj.transpose() * problem->A_[i];
             problem->B_[i] = l_adj.transpose() * problem->B_[i];
             problem->b_[i] = l_adj.transpose() * problem->b_[i];
         }
 
         // set the problem pointers
-        solver->setProblem(problem);
+        gnSolver->setProblem(problem);
+
+        std::shared_ptr<LQOCProblem<ManifoldState_t, control_dim>> hpipmProblem (problem->clone());
+        hpipmSolver->setProblem(hpipmProblem);
 
         // allocate memory (if required)
-        solver->initializeAndAllocate();
+        gnSolver->initializeAndAllocate();
+        hpipmSolver->initializeAndAllocate();
 
         // solve the problem
-        solver->solve();
+        gnSolver->solve();
+        hpipmSolver->solve();
 
         // postprocess data
-        solver->compute_lv();
-        solver->computeFeedbackMatrices();
-        solver->computeStatesAndControls();
+        gnSolver->compute_lv();
+        gnSolver->computeFeedbackMatrices();
+        gnSolver->computeStatesAndControls();
+        hpipmSolver->compute_lv();
+        hpipmSolver->computeFeedbackMatrices();
+        hpipmSolver->computeStatesAndControls();
 
         // retrieve solutions from solver
-        auto xSol = solver->getSolutionState();
-        auto uSol = solver->getSolutionControl();
-        ct::core::FeedbackArray<state_dim, control_dim> KSol = solver->getSolutionFeedback();
-        ct::core::ControlVectorArray<control_dim> lv_sol = solver->get_lv();
+        auto xSol_gn = gnSolver->getSolutionState();
+        auto uSol_gn = gnSolver->getSolutionControl();
+        ct::core::FeedbackArray<state_dim, control_dim> KSol_gn = gnSolver->getSolutionFeedback();
+        ct::core::ControlVectorArray<control_dim> lv_sol_gn = gnSolver->get_lv();
+
+        auto xSol_hpipm = hpipmSolver->getSolutionState();
+        auto uSol_hpipm = hpipmSolver->getSolutionControl();
+        ct::core::FeedbackArray<state_dim, control_dim> KSol_hpipm = hpipmSolver->getSolutionFeedback();
+        ct::core::ControlVectorArray<control_dim> lv_sol_hpipm = hpipmSolver->get_lv();
+
+        // TODO: include a comparison here.
 
         x_curr = x0;
         ct::core::DiscreteArray<ManifoldState_t> x_traj_prev = x_traj;
@@ -477,14 +486,14 @@ int main(int argc, char** argv)
             if (use_single_shooting)
             {
                 ManifoldState_t::Tangent x_err = x_traj[i].rminus(x_traj_prev[i]);
-                u_traj[i] += lv_sol[i] + KSol[i] * x_err;
+                u_traj[i] += lv_sol_gn[i] + KSol_gn[i] * x_err;
                 exampleSystem->computeControlledDynamics(x_traj[i], i * dt, u_traj[i], dx);
                 x_traj[i + 1] = x_traj[i] + dx;
             }
             else  // multiple shooting
             {
-                u_traj[i] += uSol[i];
-                x_traj[i + 1] = x_traj[i + 1].rplus(xSol[i + 1]);
+                u_traj[i] += uSol_gn[i];
+                x_traj[i + 1] = x_traj[i + 1].rplus(xSol_gn[i + 1]);
                 exampleSystem->computeControlledDynamics(x_traj[i], i * dt, u_traj[i], dx);
             }
 
@@ -493,7 +502,7 @@ int main(int argc, char** argv)
 
             // compute update norms
             d_cum_sum += b[i].coeffs().norm();
-            dx_cum_sum += xSol[i + 1].coeffs().norm();
+            dx_cum_sum += xSol_gn[i + 1].coeffs().norm();
 
             // compute intermediate cost
             costFunction->setCurrentStateAndControl(x_traj[i], u_traj[i], i * dt);
