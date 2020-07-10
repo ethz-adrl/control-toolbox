@@ -46,19 +46,15 @@ void plotResultsPointMass(const ct::core::StateVectorArray<STATE_DIM>& stateArra
             time_control.push_back(timeArray[j]);
         }
 
-        plot::subplot(4, 1, 1);
+        plot::subplot(3, 1, 1);
         plot::plot(position_x, position_y);
         plot::title("phase plot");
 
-        plot::subplot(4, 1, 2);
-        plot::plot(time_state, position_y);
-        plot::title("position y");
-
-        plot::subplot(4, 1, 3);
+        plot::subplot(3, 1, 2);
         plot::plot(time_control, control_x);
         plot::title("control x");
 
-        plot::subplot(4, 1, 4);
+        plot::subplot(3, 1, 3);
         plot::plot(time_control, control_y);
         plot::title("control y");
 
