@@ -326,21 +326,18 @@ typename std::enable_if<std::is_same<S, double>::value, void>::type Integrator<M
 {
     switch (intType)
     {
-        case EULER:
-        {
+        case EULER: {
             integratorStepper_ = std::shared_ptr<internal::StepperODEInt<internal::euler_t<MANIFOLD>, MANIFOLD>>(
                 new internal::StepperODEInt<internal::euler_t<MANIFOLD>, MANIFOLD>());
             break;
         }
-        case RK4:
-        {
+        case RK4: {
             integratorStepper_ =
                 std::shared_ptr<internal::StepperODEInt<internal::runge_kutta_4_t<MANIFOLD>, MANIFOLD>>(
                     new internal::StepperODEInt<internal::runge_kutta_4_t<MANIFOLD>, MANIFOLD>());
             break;
         }
-        case MODIFIED_MIDPOINT:
-        {
+        case MODIFIED_MIDPOINT: {
             if (is_euclidean<MANIFOLD>::value)
             {
                 integratorStepper_ =
@@ -353,8 +350,7 @@ typename std::enable_if<std::is_same<S, double>::value, void>::type Integrator<M
             break;
         }
 
-        case RK78:
-        {
+        case RK78: {
             integratorStepper_ =
                 std::shared_ptr<internal::StepperODEInt<internal::runge_kutta_fehlberg78_t<MANIFOLD>, MANIFOLD>>(
                     new internal::StepperODEInt<internal::runge_kutta_fehlberg78_t<MANIFOLD>, MANIFOLD>());
@@ -373,22 +369,19 @@ void Integrator<MANIFOLD>::initializeAdaptiveSteppers(const IntegrationType& int
 {
     switch (intType)
     {
-        case ODE45:
-        {
+        case ODE45: {
             throw std::runtime_error(
                 "Integrator ODE45 on manifolds currently not supported yet. Implementation of error measures in "
                 "manifIntegration.h required.");
             break;
         }
-        case RK5VARIABLE:
-        {
+        case RK5VARIABLE: {
             throw std::runtime_error(
                 "Integrator RK5VARIABLE on manifolds currently not supported yet. Implementation of error measures in "
                 "manifIntegration.h required.");
             break;
         }
-        case BULIRSCHSTOER:
-        {
+        case BULIRSCHSTOER: {
             throw std::runtime_error(
                 "Integrator BULIRSCHSTOER on manifolds currently not supported yet. Implementation of error measures "
                 "in manifIntegration.h required.");
@@ -405,24 +398,21 @@ void Integrator<MANIFOLD>::initializeAdaptiveSteppers(const IntegrationType& int
 {
     switch (intType)
     {
-        case ODE45:
-        {
+        case ODE45: {
             integratorStepper_ =
                 std::shared_ptr<internal::StepperODEIntControlled<internal::runge_kutta_dopri5_t<MANIFOLD>, MANIFOLD>>(
                     new internal::StepperODEIntControlled<internal::runge_kutta_dopri5_t<MANIFOLD>, MANIFOLD>());
             break;
         }
 
-        case RK5VARIABLE:
-        {
+        case RK5VARIABLE: {
             integratorStepper_ =
                 std::shared_ptr<internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<MANIFOLD>, MANIFOLD>>(
                     new internal::StepperODEIntDenseOutput<internal::runge_kutta_dopri5_t<MANIFOLD>, MANIFOLD>());
             break;
         }
 
-        case BULIRSCHSTOER:
-        {
+        case BULIRSCHSTOER: {
             integratorStepper_ =
                 std::shared_ptr<internal::StepperODEInt<internal::bulirsch_stoer_t<MANIFOLD>, MANIFOLD>>(
                     new internal::StepperODEInt<internal::bulirsch_stoer_t<MANIFOLD>, MANIFOLD>());
@@ -433,8 +423,10 @@ void Integrator<MANIFOLD>::initializeAdaptiveSteppers(const IntegrationType& int
     }
 }
 
-template <size_t DIM, typename SCALAR = double>
+template <int DIM, typename SCALAR = double>
 using EuclideanIntegrator = Integrator<EuclideanState<DIM, SCALAR>>;
+
+using EuclideanIntegratorXd = EuclideanIntegrator<-1, double>;
 
 }  // namespace core
 }  // namespace ct

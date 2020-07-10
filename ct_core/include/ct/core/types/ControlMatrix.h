@@ -8,7 +8,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-template <size_t CONTROL_DIM, class SCALAR = double>
+template <int CONTROL_DIM, class SCALAR = double>
 class ControlMatrix : public Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>
 {
 public:

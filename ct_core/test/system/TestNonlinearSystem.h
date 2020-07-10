@@ -19,8 +19,8 @@ template <typename SCALAR, bool CONT_T>
 class TestNonlinearSystem : public ControlledSystem<EuclideanState<2, SCALAR>, 1, CONT_T>
 {
 public:
-    static const size_t STATE_DIM = 2;
-    static const size_t CONTROL_DIM = 1;
+    static const int STATE_DIM = 2;
+    static const int CONTROL_DIM = 1;
 
     using Base = ControlledSystem<EuclideanState<2, SCALAR>, 1, CONT_T>;
     using Time_t = typename Base::Time_t;

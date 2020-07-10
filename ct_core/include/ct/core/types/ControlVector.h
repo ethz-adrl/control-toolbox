@@ -14,7 +14,7 @@ class ControlVector : public Eigen::Matrix<SCALAR, CONTROL_DIM, 1>
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static const size_t DIM = CONTROL_DIM;
+    static const int DIM = CONTROL_DIM;
 
     ControlVector(){};
     virtual ~ControlVector(){};

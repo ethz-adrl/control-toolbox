@@ -19,7 +19,7 @@ namespace core {
  * ControlledSystem. Any custom controller should derive from this class
  * to ensure it is compatible with ControlledSystem and the Integrator.
  */
-template <typename MANIFOLD, size_t CONTROL_DIM, bool CONT_T>
+template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
 class Controller
 {
 public:

@@ -39,7 +39,7 @@ namespace core {
  * @tparam CONTROL_DIM dimension of input vector
  * @tparam SCALAR scalar type
  */
-template <typename MANIFOLD, size_t CONTROL_DIM, bool CONT_T>
+template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
 class ControlledSystem : public System<MANIFOLD, CONT_T>
 {
 public:
@@ -120,7 +120,9 @@ public:
 protected:
     std::shared_ptr<Controller_t> controller_;  //!< the controller instance
 
-    control_vector_t controlAction_;
+    control_vector_t
+        controlAction_;  // TODO: it would be nice to get rid of this, in order to avoid all the dynamic resizing and so on
 };
+
 }  // namespace core
 }  // namespace ct

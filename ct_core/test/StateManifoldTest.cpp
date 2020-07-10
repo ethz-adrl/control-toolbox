@@ -10,6 +10,26 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 using namespace ct::core;
 
+TEST(StateManifoldTest, EuclideanStateDynamicTest)
+{
+    {
+        EuclideanStateXd x;
+        ASSERT_EQ(x.rows(), 0);
+    }
+    {
+        EuclideanStateXd x, y;
+        x.resize(3);
+        ASSERT_EQ(x.rows(), 3);
+        x.resize(6);
+        ASSERT_EQ(x.rows(), 6);
+
+        y = x;
+        ASSERT_EQ(y.rows(), 6);
+    }
+
+    // TODO: bigger problem ... what to do with the TangentDim parameter???? :-O
+}
+
 TEST(StateManifoldTest, StateManifoldTest)
 {
     // test construction of a manifold state
@@ -49,7 +69,7 @@ TEST(ManifoldTest, ManifoldTraitsTest)
 {
     using namespace ct::core;
     using Manifold = ManifoldState<manif::SE3, manif::SE3Tangent, double>;
-    const size_t control_dim = 6;
+    const int control_dim = 6;
 
     static_assert(is_euclidean<Manifold>::value == false, "");
     static_assert(is_euclidean<double>::value == false, "");
@@ -80,7 +100,6 @@ TEST(ManifoldTest, ManifoldTraitsTest)
 
     ASSERT_TRUE(true);
 }
-
 
 int main(int argc, char** argv)
 {

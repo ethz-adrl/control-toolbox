@@ -10,13 +10,13 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-template <size_t DIM, class SCALAR = double>
+template <int DIM, class SCALAR = double>
 class EuclideanState : public Eigen::Matrix<SCALAR, DIM, 1>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static constexpr size_t TangentDim = DIM;
+    static constexpr int TangentDim = DIM;
     using Scalar = SCALAR;
     using Tangent = Eigen::Matrix<SCALAR, DIM, 1>;
     using Base = Eigen::Matrix<SCALAR, DIM, 1>;
@@ -55,9 +55,13 @@ public:
     EuclideanState rplus(const Tangent& x) const { return *this + x; }
 };
 
-template <size_t DIM, class SCALAR = double>
-using StateVector = EuclideanState<DIM, SCALAR>;  // for legacy, TODO: remove at some point
+template <class SCALAR = double>
+using EuclideanStateDynamic = EuclideanState<-1, SCALAR>;
 
+using EuclideanStateXd = EuclideanState<-1, double>;
+
+template <int DIM, class SCALAR = double>
+using StateVector = EuclideanState<DIM, SCALAR>;  // for legacy, TODO: remove at some point
 
 } /* namespace core */
 } /* namespace ct */

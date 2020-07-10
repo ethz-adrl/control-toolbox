@@ -10,15 +10,15 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-template <size_t POS_DIM, size_t VEL_DIM, class SCALAR = double>
+template <int POS_DIM, int VEL_DIM, class SCALAR = double>
 class EuclideanStateSymplectic : public Eigen::Matrix<SCALAR, POS_DIM + VEL_DIM, 1>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static constexpr size_t PosDim = POS_DIM;
-    static constexpr size_t VelDim = VEL_DIM;
-    static constexpr size_t TangentDim = POS_DIM + VEL_DIM;
+    static constexpr int PosDim = POS_DIM;
+    static constexpr int VelDim = VEL_DIM;
+    static constexpr int TangentDim = POS_DIM + VEL_DIM;
     using Scalar = SCALAR;
     using Tangent = Eigen::Matrix<SCALAR, TangentDim, 1>;
     using PosTangent = Eigen::Matrix<SCALAR, PosDim, 1>;
