@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     /* STEP 1-A: create a instance of the oscillator dynamics for the optimal control problem.
 	 * Please also compare the documentation of SecondOrderSystem.h */
     double w_n = 0.1;
-    double zeta = 5.0;
+    double zeta = 0.1;
     std::shared_ptr<ct::core::ControlledSystem<state_dim, control_dim>> oscillatorDynamics(
         new ct::core::SecondOrderSystem(w_n, zeta));
 
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
     sp_control << 1;
     Eigen::VectorXd u_lb(control_dim);
     Eigen::VectorXd u_ub(control_dim);
-    u_lb.setConstant(-0.5);
+    u_lb.setConstant(-35.0);
     u_ub = -u_lb;
 
     // constraint terms
@@ -137,7 +137,7 @@ int main(int argc, char** argv)
     ilqr_settings.nThreads = 1;
     ilqr_settings.nlocp_algorithm = NLOptConSettings::NLOCP_ALGORITHM::GNMS;
     ilqr_settings.lqocp_solver = NLOptConSettings::LQOCP_SOLVER::HPIPM_SOLVER;  // solve LQ-problems using HPIPM
-    ilqr_settings.lqoc_solver_settings.num_lqoc_iterations = 10;                // number of riccati sub-iterations
+    ilqr_settings.lqoc_solver_settings.num_lqoc_iterations = 200;                // number of riccati sub-iterations
     ilqr_settings.printSummary = true;
 
 
