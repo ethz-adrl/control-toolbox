@@ -3,7 +3,7 @@
  *
  * This example shows how to use general constraints alongside NLOC and requires HPIPM to be installed
  * The unconstrained Riccati backward-pass is replaced by a high-performance interior-point
- * constrained linear-quadratic Optimal Control solver.
+ * constrained linear-quadratic Optimal Control solver (HPIPM).
  *
  */
 
@@ -15,14 +15,17 @@ using namespace ct::core;
 using namespace ct::optcon;
 
 
-/*get the state and control input dimension of the oscillator. Since we're dealing with a simple oscillator,
- the state and control dimensions will be state_dim = 2, and control_dim = 1. */
+/* state and control input dimension of the point mass. States: x, y, v_x, v_y.
+ * Controls: linear velocity, angular velocity */
 static const size_t STATE_DIM = 4;
 static const size_t CONTROL_DIM = 2;
 
-// dynamics class for a second order system, represented by moving point mass
-// under force
-// actuation
+/*!
+ * @brief Dynamics class for a second order system, represented by a moving point mass
+ * under force actuation
+ */
+
+// class for a point mass (second order system) in two-dimensional space
 class PointMass : public ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM> {
 public:
     typedef ct::core::ControlledSystem<STATE_DIM, CONTROL_DIM> Base;
@@ -64,12 +67,14 @@ private:
  * @brief A simple 1d constraint term.
  *
  * This term implements the general inequality constraints
- * \f$ d_{lb} \leq u \cdot p^2 \leq d_{ub} \f$
- * where \f$ p \f$ denotes the position of the oscillator mass.
+ * \f$ (x - x0)^2 + (y - y0)^2 \geq r^2 \f$
+ * where \f$ r \f$ denotes the radius and \f$ (x0, y0) \f$ the position of an obstacle.
  *
- * This constraint can be thought of a position-varying bound on the control input.
- * At large oscillator deflections, the control bounds shrink
+ * This constraint encodes a behavior where a moving object avoids obstacles which
+ * are represented by a circle.
  */
+
+ // class representing a general constraint that ensures obstacle avoidance
 class ObstacleConstraintSimple
         : public ct::optcon::ConstraintBase<STATE_DIM, CONTROL_DIM> {
 public:
@@ -79,7 +84,7 @@ public:
     typedef ct::core::ControlVector<CONTROL_DIM> control_vector_t;
     typedef Eigen::Matrix<double, 2, 1> Vector2s;
 
-    ObstacleConstraintSimple(const Vector2s x0) : x0_(x0) {
+    ObstacleConstraintSimple(const Vector2s x0, const double r) : x0_(x0), r_(r) {
         Base::lb_.resize(1);
         Base::ub_.resize(1);
         Base::lb_.setConstant(0.0);
@@ -107,27 +112,28 @@ public:
                                      const double t) override {
         Eigen::Matrix<double, 1, 1> val;
         // returns a number > 0 if point x is outside of the ellipsoid
-        val.template segment<1>(0) << (x(0) - x0_(0)) * (x(0) - x0_(0)) +
-                                      (x(1) - x0_(1)) * (x(1) - x0_(1)) -
+        val.template segment<1>(0) << (1/pow(r_,2)) * (x(0) - x0_(0)) * (x(0) - x0_(0)) +
+                                      (1/pow(r_,2)) * (x(1) - x0_(1)) * (x(1) - x0_(1)) -
                                       double(1.0);
         return val;
     }
 
+    // provide the constraint equation for automatic differentiation with CppadCg
     virtual Eigen::Matrix<ct::core::ADCGScalar, Eigen::Dynamic, 1>
     evaluateCppadCg(
             const ct::core::StateVector<STATE_DIM, ct::core::ADCGScalar> &x,
             const ct::core::ControlVector<CONTROL_DIM, ct::core::ADCGScalar> &u,
             ct::core::ADCGScalar t) override {
         Eigen::Matrix<ct::core::ADCGScalar, 1, 1> val;
-        val.template segment<1>(0) << (x(0) - x0_(0)) * (x(0) - x0_(0)) +
-                                      (x(1) - x0_(1)) * (x(1) - x0_(1)) -
+        val.template segment<1>(0) << (1/pow(r_,2)) * (x(0) - x0_(0)) * (x(0) - x0_(0)) +
+                                      (1/pow(r_,2)) * (x(1) - x0_(1)) * (x(1) - x0_(1)) -
                                       double(1.0);
         return val;
     }
 
 private:
-    Vector2s x0_;
-    // TODO: make obstacle radius a member and constructor argument?
+    Vector2s x0_; // center of the circular obstacle
+    double r_; // radius of the circular obstacle
 };
 
 int main(int argc, char** argv)
@@ -169,15 +175,19 @@ int main(int argc, char** argv)
     Eigen::Matrix<double, 2, 1> x_c;
     x_c << 5.0, 5.0; // the center position of the obstacle
 
-    std::shared_ptr<ObstacleConstraintSimple> ObstacleConstraint(
-            new ObstacleConstraintSimple(x_c));
+    const double r = 1.5; // the radius of the obstacle
+    std::shared_ptr<ObstacleConstraintSimple> obstacleConstraint(
+            new ObstacleConstraintSimple(x_c, r));
+    obstacleConstraint->setName("ObstacleConstraint");
 
+    //constraint container for general constraints with automatic differentiation (AD)
     std::shared_ptr<ct::optcon::ConstraintContainerAD<STATE_DIM, CONTROL_DIM>>
             generalConstraints(
             new ct::optcon::ConstraintContainerAD<STATE_DIM, CONTROL_DIM>());
 
-    generalConstraints->addIntermediateConstraint(ObstacleConstraint, verbose);
-    generalConstraints->addTerminalConstraint(ObstacleConstraint, verbose);
+    // add and initialize general constraint terms
+    generalConstraints->addIntermediateConstraint(obstacleConstraint, verbose);
+    generalConstraints->addTerminalConstraint(obstacleConstraint, verbose);
     generalConstraints->initialize();
 
     // input box constraint boundaries with sparsities in constraint toolbox
@@ -192,7 +202,7 @@ int main(int argc, char** argv)
                                                                            u_ub));
     controlConstraint->setName("ControlInputConstraint");
 
-    // create constraint container
+    // constraint container for analytic constraint
     std::shared_ptr<
     ct::optcon::ConstraintContainerAnalytical<STATE_DIM, CONTROL_DIM>>
             inputBoxConstraints(
