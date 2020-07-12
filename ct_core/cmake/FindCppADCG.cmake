@@ -38,7 +38,7 @@ ELSE()
     INCLUDE(FindPackageHandleStandardArgs)
     # handle the QUIETLY and REQUIRED arguments and set CPPADCG_FOUND to TRUE
     # if all listed variables are TRUE
-    find_package_handle_standard_args(CppAD  DEFAULT_MSG
+    find_package_handle_standard_args(CppADCG  DEFAULT_MSG
                                       CPPADCG_INCLUDE_DIRS)
 
     MARK_AS_ADVANCED(CPPADCG_INCLUDE_DIRS CPPADCG_LIBRARIES)

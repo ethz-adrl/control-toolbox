@@ -21,8 +21,8 @@ find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS REQUIRED)
 
 ## find and include optional dependencies
-find_package(llvm QUIET)
-find_package(clang QUIET)
+find_package(LLVM QUIET)
+find_package(Clang QUIET)
 if(LLVM_FOUND AND CLANG_FOUND)
     message(STATUS "Found LLVM/CLANG version " ${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR})
     set (LLVM ON)
