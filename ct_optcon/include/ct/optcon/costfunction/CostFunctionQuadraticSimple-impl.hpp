@@ -122,7 +122,8 @@ auto CostFunctionQuadraticSimple<MANIFOLD, CONTROL_DIM>::evaluateTerminal() -> S
     // TODO: including Jr_ might not be required here (identical result)
     Eigen::Matrix<typename MANIFOLD::Scalar, STATE_DIM, STATE_DIM> Jl, Jr;  // TODO: ignore Jl cleanly
     typename MANIFOLD::Tangent x_deviation_final = x_final_.rminus(this->x_, Jl, Jr);
-    return SCALAR(0.5) * (x_deviation_final.transpose() * Jr * Q_final_ * Jr.transpose() * x_deviation_final)(0);
+    // return SCALAR(0.5) * (x_deviation_final.transpose() * Jr * Q_final_ * Jr.transpose() * x_deviation_final)(0);
+    return SCALAR(0.5) * (x_deviation_final.transpose() * Q_final_ * x_deviation_final)(0);
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
@@ -130,7 +131,8 @@ typename MANIFOLD::Tangent CostFunctionQuadraticSimple<MANIFOLD, CONTROL_DIM>::s
 {
     Eigen::Matrix<typename MANIFOLD::Scalar, STATE_DIM, STATE_DIM> Jl, Jr;  // TODO: ignore Jl cleanly
     typename MANIFOLD::Tangent x_deviation_final = x_final_.rminus(this->x_, Jl, Jr);
-    return Q_final_ * Jr.transpose() * x_deviation_final;
+    return Q_final_ * x_deviation_final;
+    // return Q_final_ * Jr.transpose() * x_deviation_final;
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
@@ -138,7 +140,9 @@ auto CostFunctionQuadraticSimple<MANIFOLD, CONTROL_DIM>::stateSecondDerivativeTe
 {
     Eigen::Matrix<typename MANIFOLD::Scalar, STATE_DIM, STATE_DIM> Jl, Jr;  // TODO: ignore Jl cleanly
     x_final_.rminus(this->x_, Jl, Jr);
-    return Jr * Q_final_ * Jr.transpose();
+
+    return Q_final_;
+    // return Jr * Q_final_ * Jr.transpose();
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>

@@ -5,16 +5,16 @@ using namespace ct::core;
 using namespace ct::optcon;
 const bool verbose = true;
 
-using ManifoldState_t = ManifoldState<manif::SO3, manif::SO3Tangent>;
+using ManifoldState_t = ManifoldState<manif::SE3, manif::SE3Tangent>;
 const size_t state_dim = ManifoldState_t::TangentDim;
-const size_t control_dim = 3;
+const size_t control_dim = 6;
 
-class DiscrSO3LTITestSystem final : public ct::core::ControlledSystem<ManifoldState_t, control_dim, DISCRETE_TIME>
+class DiscrSE3LTITestSystem final : public ct::core::ControlledSystem<ManifoldState_t, control_dim, DISCRETE_TIME>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    DiscrSO3LTITestSystem() {}
+    DiscrSE3LTITestSystem() {}
     virtual void computeControlledDynamics(const ManifoldState_t& m,
         const Time_t& n,
         const ct::core::ControlVector<control_dim>& u,
@@ -23,7 +23,7 @@ public:
         dx = u;
     }
 
-    virtual DiscrSO3LTITestSystem* clone() const override { return new DiscrSO3LTITestSystem(); }
+    virtual DiscrSE3LTITestSystem* clone() const override { return new DiscrSE3LTITestSystem(); }
     /**
      * @brief the log operator is defined as expressing the tangent vector w.r.t. m_ref_
      */
@@ -84,16 +84,16 @@ int main(int argc, char** argv)
 
     const bool use_single_shooting = true;  // toggle between single and multiple shooting
 
-    const size_t N = 17;
-    const double dt = 0.1;
+    const size_t N = 150;
+    const double dt = 0.01;
 
-    const ManifoldState_t x0 = manif::SO3<double>(M_PI / 2, 0, 0);
+    const ManifoldState_t x0 = manif::SE3<double>(0, 0, 0, 3.14, 0, 0);
     ct::core::DiscreteArray<ManifoldState_t> x_traj(N + 1, x0);  // init state trajectory, will be overwritten
     ct::core::DiscreteArray<ManifoldState_t::Tangent> b(
         N + 1, ManifoldState_t::Tangent::Zero());                             // defect traj, will be overwritten
     ct::core::DiscreteArray<ct::core::ControlVector<control_dim>> u_traj(N);  // init control traj
     for (size_t i = 0; i < N; i++)
-        u_traj[i] = ct::core::ControlVector<control_dim>::Random() * 0.01;
+        u_traj[i] = ct::core::ControlVector<control_dim>::Random() * 0.0;
 
     // choose a random initial state
     // TODO: numerical trouble for more aggressive distributions, since the approximation of the value function becomes really bad?
@@ -126,7 +126,7 @@ int main(int argc, char** argv)
 
     // create a discrete-time manifold system
     std::shared_ptr<ct::core::ControlledSystem<ManifoldState_t, control_dim, DISCRETE_TIME>> exampleSystem(
-        new DiscrSO3LTITestSystem());
+        new DiscrSE3LTITestSystem());
     std::shared_ptr<ct::core::SystemLinearizer<ManifoldState_t, control_dim, DISCRETE_TIME>> linearizer(
         new ct::core::SystemLinearizer<ManifoldState_t, control_dim, DISCRETE_TIME>(exampleSystem));
 
@@ -135,12 +135,12 @@ int main(int argc, char** argv)
     Eigen::Matrix<double, state_dim, state_dim> Q, Q_final;
     Eigen::Matrix<double, control_dim, control_dim> R;
     Q_final.setZero();
-    Q_final.diagonal() << 10000, 10000, 10000;
+    Q_final.diagonal() << 10000, 10000, 10000, 10000, 10000, 10000;
     Q.setZero();
-    Q.diagonal() << 1, 1, 1;
+    //Q.diagonal() << 1, 1, 1, 1, 1, 1;
     R.setZero();
-    R.diagonal() << 1, 1, 1;
-    ManifoldState_t x_final = manif::SO3<double>(0, 0, 0);
+    R.diagonal() << 300, 300, 300, 300, 300, 300;
+    ManifoldState_t x_final = manif::SE3<double>(1, 1, 1, 0, 0, 0);
     std::cout << "desired final state: " << x_final << std::endl;
     ManifoldState_t x_nominal = x_final;
     ct::core::ControlVector<control_dim> u_nom = ct::core::ControlVector<control_dim>::Zero();
@@ -153,8 +153,8 @@ int main(int argc, char** argv)
     ManifoldState_t::Tangent dx;
     x_curr = x0;
     x_traj.front() = x0;
-    std::cout << "integrate an random initial state with the unstable system" << std::endl;
-    std::cout << std::setprecision(4) << "m: " << x_curr << "\t tan: " << x_curr.log() << std::endl;
+    // std::cout << "integrate an random initial state with the unstable system" << std::endl;
+    // std::cout << std::setprecision(4) << "m: " << x_curr << "\t tan: " << x_curr.log() << std::endl;
     for (size_t i = 0; i < N; i++)
     {
         exampleSystem->computeControlledDynamics(x_traj[i], 0, u_traj[i], dx);
@@ -162,11 +162,11 @@ int main(int argc, char** argv)
         if (use_single_shooting)
             x_traj[i + 1] = x_curr;
         b[i] = dx - x_traj[i + 1].rminus(x_traj[i]);
-        std::cout << "b: " << b[i] << std::endl;
-        std::cout << std::setprecision(4) << "m: " << x_curr << "\t tan: " << x_curr.log() << std::endl;
+        // std::cout << "b: " << b[i] << std::endl;
+        // std::cout << std::setprecision(4) << "m: " << x_curr << "\t tan: " << x_curr.log() << std::endl;
     }
 
-    size_t nIter = 25;
+    size_t nIter = 5;
     for (size_t iter = 0; iter < nIter; iter++)
     {
         // initialize the optimal control problems for both solvers
@@ -192,6 +192,11 @@ int main(int argc, char** argv)
                     problems[idx]->b_[i] = l_adj.transpose() * problems[idx]->b_[i];
                 }
             }
+
+            auto l = x_final.rminus(x_traj.back());
+            auto l_adj = (l.exp()).adj();
+            problems[idx]->Q_.back() = l_adj.transpose() * problems[idx]->Q_.back() * l_adj;
+            problems[idx]->qv_.back().coeffs() = - l_adj.transpose() * problems[idx]->qv_.back().coeffs();
 
             // set the problem pointers
             lqocSolvers[idx]->setProblem(problems[idx]);
@@ -284,7 +289,8 @@ int main(int argc, char** argv)
         for (size_t i = 0; i < N; i++)
         {
             dx.setZero();
-            Eigen::Quaterniond old_rot(x_traj[i].w(), x_traj[i].x(), x_traj[i].y(), x_traj[i].z());
+            Eigen::Quaterniond old_rot(
+                x_traj[i].quat().w(), x_traj[i].quat().x(), x_traj[i].quat().y(), x_traj[i].quat().z());
 
             if (use_single_shooting)
             {
@@ -301,7 +307,8 @@ int main(int argc, char** argv)
                 exampleSystem->computeControlledDynamics(x_traj[i], i * dt, u_traj[i], dx);
             }
 
-            Eigen::Quaterniond new_rot(x_traj[i + 1].w(), x_traj[i + 1].x(), x_traj[i + 1].y(), x_traj[i + 1].z());
+            Eigen::Quaterniond new_rot(
+                x_traj[i + 1].quat().w(), x_traj[i + 1].quat().x(), x_traj[i + 1].quat().y(), x_traj[i + 1].quat().z());
             //std::cout << "m: " << x_traj[i + 1] << "\t dx: " << xSol_riccati[i + 1]
             //          << "\t -- rot diff norm(): " << old_rot.angularDistance(new_rot) << std::endl;
 
@@ -328,8 +335,13 @@ int main(int argc, char** argv)
 
     // save the x-trajectory to file
     std::vector<Eigen::Matrix3d> rot_traj;
-    for(size_t i = 0; i<x_traj.size(); i++)
+    std::vector<Eigen::Vector3d> trans_traj;
+    for (size_t i = 0; i < x_traj.size(); i++)
+    {
         rot_traj.push_back(x_traj[i].rotation());
+        trans_traj.push_back(x_traj[i].translation());
+    }
     EigenFileExport::mat_to_file(EigenFileExport::CSVFormat(), "/tmp/rot_traj.csv", rot_traj);
+    EigenFileExport::mat_to_file(EigenFileExport::CSVFormat(), "/tmp/trans_traj.csv", trans_traj);
     return 1;
 }
