@@ -99,11 +99,13 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ct/core/templateDir.h.in ${CM
 
 ## define the directories to be included in all ct_core targets
 list(APPEND ct_core_target_include_dirs ${EIGEN3_INCLUDE_DIR})
-if(${CMAKE_VERSION} VERSION_LESS "3.12.0")
-    list(APPEND ct_core_target_include_dirs ${PYTHON_INCLUDE_DIRS})
-else()
-    list(APPEND ct_core_target_include_dirs ${Python_INCLUDE_DIRS})
-    list(APPEND ct_core_target_include_dirs ${Python_NumPy_INCLUDE_DIRS})
+if(${Python_FOUND})
+	if(${CMAKE_VERSION} VERSION_LESS "3.12.0")
+	    list(APPEND ct_core_target_include_dirs ${PYTHON_INCLUDE_DIRS})
+	else()
+	    list(APPEND ct_core_target_include_dirs ${Python_INCLUDE_DIRS})
+	    list(APPEND ct_core_target_include_dirs ${Python_NumPy_INCLUDE_DIRS})
+	endif()
 endif()
 list(APPEND ct_core_target_include_dirs ${QWT_INCLUDE_DIR})
 list(APPEND ct_core_target_include_dirs $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
