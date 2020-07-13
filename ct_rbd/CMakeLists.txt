@@ -44,6 +44,7 @@ add_library(ct_rbd INTERFACE)
 target_include_directories(ct_rbd INTERFACE ${ct_rbd_target_include_dirs})
 target_link_libraries(ct_rbd INTERFACE ct_optcon)
 
+set(ct_rbd ct_rbd CACHE INTERNAL "ct_rbd library target.")
 
 ###########
 # TESTING #
