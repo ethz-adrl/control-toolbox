@@ -156,6 +156,7 @@ target_link_libraries(ct_optcon INTERFACE
     ${PRESPEC_LIB_NAMES}
     )
 
+set(ct_optcon ct_optcon CACHE INTERNAL "ct_optcon library target.")
 
 ##################
 # BUILD EXAMPLES #

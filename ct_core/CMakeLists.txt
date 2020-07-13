@@ -146,6 +146,7 @@ target_link_libraries(ct_core INTERFACE
     dl # required for gcc compatibility
     )
 
+set(ct_core ct_core CACHE INTERNAL "ct_core library target.")
 
 ##################
 # BUILD EXAMPLES #
