@@ -13,7 +13,9 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++14 -Wall -Wno-unk
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 find_package(kindr REQUIRED)
-find_package(ct_optcon REQUIRED)
+if(NOT TARGET ${ct_optcon})
+	find_package(ct_optcon REQUIRED)
+endif()
 
 # extract interface compile definitions from ct_core and ct_optcon as options
 importInterfaceCompileDefinitionsAsOptions(ct_core)

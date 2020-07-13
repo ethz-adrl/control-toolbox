@@ -12,7 +12,9 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++14 -Wall -Wno-unknown-pragmas")
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-find_package(ct_rbd REQUIRED)
+if(NOT TARGET ${ct_rbd})
+	find_package(ct_rbd REQUIRED)
+endif()
 find_package(Boost REQUIRED system filesystem)
 
 # extract interface compile definitions from previous ct packages as options
