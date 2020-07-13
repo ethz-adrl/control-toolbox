@@ -55,8 +55,10 @@ TEST(HPIPMInterfaceTest, compareSolvers)
         dt, system, ct::optcon::NLOptConSettings::APPROXIMATION::MATRIX_EXPONENTIAL);
 
     // initialize the linear quadratic optimal control problems
-    lqocProblem_hpipm->setFromTimeInvariantLinearQuadraticProblem(discretizedSystem, costFunction, stateOffset, dt);
-    lqocProblem_gnriccati->setFromTimeInvariantLinearQuadraticProblem(discretizedSystem, costFunction, stateOffset, dt);
+    lqocProblem_hpipm->setFromTimeInvariantLinearQuadraticProblem(
+        x0, u0, discretizedSystem, costFunction, stateOffset, dt);
+    lqocProblem_gnriccati->setFromTimeInvariantLinearQuadraticProblem(
+        x0, u0, discretizedSystem, costFunction, stateOffset, dt);
 
 
     // create hpipm solver instance, set and solve problem
@@ -76,8 +78,8 @@ TEST(HPIPMInterfaceTest, compareSolvers)
     gnriccati.compute_lv();
 
     // compute and retrieve solutions
-    ct::core::DiscreteArray<State> x_sol_hpipm = hpipm.getSolutionState();
-    ct::core::DiscreteArray<State> x_sol_gnrccati = gnriccati.getSolutionState();
+    ct::core::DiscreteArray<typename State::Tangent> x_sol_hpipm = hpipm.getSolutionState();
+    ct::core::DiscreteArray<typename State::Tangent> x_sol_gnrccati = gnriccati.getSolutionState();
     ct::core::ControlVectorArray<control_dim> u_sol_hpipm = hpipm.getSolutionControl();
     ct::core::ControlVectorArray<control_dim> u_sol_gnrccati = gnriccati.getSolutionControl();
     ct::core::FeedbackArray<state_dim, control_dim> K_sol_hpipm = hpipm.getSolutionFeedback();
