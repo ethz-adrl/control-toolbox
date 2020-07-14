@@ -8,7 +8,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 template <size_t STATE_DIM, size_t CONTROL_DIM>
 void plotResultsPointMass(const ct::core::StateVectorArray<STATE_DIM>& stateArray,
     const ct::core::ControlVectorArray<CONTROL_DIM>& controlArray,
-    const ct::core::TimeArray& timeArray)
+    const ct::core::TimeArray& timeArray, const double r, const double x_obst, const double y_obst)
 {
 #ifdef PLOTTING_ENABLED
 
@@ -46,8 +46,17 @@ void plotResultsPointMass(const ct::core::StateVectorArray<STATE_DIM>& stateArra
             time_control.push_back(timeArray[j]);
         }
 
+        Eigen::VectorXd theta = Eigen::VectorXd::LinSpaced(200, 0, 2*3.14159265359);
+        Eigen::VectorXd x, y;
+        x = r*theta.array().sin().matrix();
+        y = r*theta.array().cos().matrix();
+        x = x + x_obst;
+        y = y + y_obst;
+
         plot::subplot(3, 1, 1);
         plot::plot(position_x, position_y);
+        plot::plot(x,y);
+        plot::axis("equal");
         plot::title("phase plot");
 
         plot::subplot(3, 1, 2);
@@ -57,6 +66,7 @@ void plotResultsPointMass(const ct::core::StateVectorArray<STATE_DIM>& stateArra
         plot::subplot(3, 1, 3);
         plot::plot(time_control, control_y);
         plot::title("control y");
+
 
         plot::show();
     } catch (const std::exception& e)

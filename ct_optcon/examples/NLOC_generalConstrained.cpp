@@ -100,9 +100,9 @@ public:
     virtual Eigen::VectorXd evaluate(const state_vector_t& x, const control_vector_t& u, const double t) override
     {
         Eigen::Matrix<double, 1, 1> val;
-        // returns a number > 0 if point x is outside of the ellipsoid
-        val.template segment<1>(0) << (1 / pow(r_, 2)) * (x(0) - x0_(0)) * (x(0) - x0_(0)) +
-                                          (1 / pow(r_, 2)) * (x(1) - x0_(1)) * (x(1) - x0_(1)) - double(1.0);
+        // returns a number > 0 if point x is outside of the circle
+        val.template segment<1>(0) << pow((x(0)-x0_(0)),2)/pow(r_,2) +
+                                      pow((x(1)-x0_(1)),2)/pow(r_,2) - double(1.0);
         return val;
     }
 
@@ -113,8 +113,8 @@ public:
         ct::core::ADCGScalar t) override
     {
         Eigen::Matrix<ct::core::ADCGScalar, 1, 1> val;
-        val.template segment<1>(0) << (1 / pow(r_, 2)) * (x(0) - x0_(0)) * (x(0) - x0_(0)) +
-                                          (1 / pow(r_, 2)) * (x(1) - x0_(1)) * (x(1) - x0_(1)) - double(1.0);
+        val.template segment<1>(0) << pow((x(0)-x0_(0)),2)/pow(r_,2) +
+                                      pow((x(1)-x0_(1)),2)/pow(r_,2) - double(1.0);
         return val;
     }
 
@@ -154,9 +154,9 @@ int main(int argc, char** argv)
 
     /* STEP 1-D: set up the general constraints */
     Eigen::Matrix<double, 2, 1> x_c;
-    x_c << 5.0, 5.0;  // the center position of the obstacle
+    x_c << 7.0, 5.0;  // the center position of the obstacle
 
-    const double r = 1.5;  // the radius of the obstacle
+    const double r = 3.0;  // the radius of the obstacle
     std::shared_ptr<ObstacleConstraintSimple> obstacleConstraint(new ObstacleConstraintSimple(x_c, r));
     obstacleConstraint->setName("ObstacleConstraint");
 
@@ -192,7 +192,7 @@ int main(int argc, char** argv)
     ct::core::StateVector<STATE_DIM> x0;
     x0.setZero();
 
-    ct::core::Time timeHorizon = 10.0;  // and a final time horizon in [sec]
+    ct::core::Time timeHorizon = 8.0;  // and a final time horizon in [sec]
 
     // STEP 1-E: create and initialize an "optimal control problem"
     ct::optcon::ContinuousOptConProblem<STATE_DIM, CONTROL_DIM> optConProblem(
@@ -233,7 +233,7 @@ int main(int argc, char** argv)
     ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM> solution = nloc.getSolution();
 
     // plot the output
-    plotResultsPointMass<STATE_DIM, CONTROL_DIM>(solution.x_ref(), solution.uff(), solution.time());
+    plotResultsPointMass<STATE_DIM, CONTROL_DIM>(solution.x_ref(), solution.uff(), solution.time(), r, x_c(0,0), x_c(1,0));
 
     return 0;
 }
