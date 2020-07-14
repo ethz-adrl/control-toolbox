@@ -135,11 +135,11 @@ int main(int argc, char** argv)
     Eigen::Matrix<double, state_dim, state_dim> Q, Q_final;
     Eigen::Matrix<double, control_dim, control_dim> R;
     Q_final.setZero();
-    Q_final.diagonal() << 10000, 10000, 10000, 10000, 10000, 10000;
+    //Q_final.diagonal() << 10000, 10000, 10000, 10000, 10000, 10000;
     Q.setZero();
-    //Q.diagonal() << 1, 1, 1, 1, 1, 1;
+    Q.diagonal() << 1, 1, 1, 1, 1, 1;
     R.setZero();
-    R.diagonal() << 300, 300, 300, 300, 300, 300;
+    R.diagonal() << 1, 1, 1, 1, 1, 1;
     ManifoldState_t x_final = manif::SE3<double>(1, 1, 1, 0, 0, 0);
     std::cout << "desired final state: " << x_final << std::endl;
     ManifoldState_t x_nominal = x_final;
@@ -185,18 +185,10 @@ int main(int argc, char** argv)
 
                 problems[idx]->Adj_x_[i + 1] = l_adj;  // parallel transport matrix / adjoint from stage k+1 to stage k
 
-                if (idx == 0)  // make the corrections for the standard riccati solver
-                {
-                    problems[idx]->A_[i] = l_adj.transpose() * problems[idx]->A_[i];
-                    problems[idx]->B_[i] = l_adj.transpose() * problems[idx]->B_[i];
-                    problems[idx]->b_[i] = l_adj.transpose() * problems[idx]->b_[i];
-                }
+                problems[idx]->A_[i] = l_adj.transpose() * problems[idx]->A_[i];
+                problems[idx]->B_[i] = l_adj.transpose() * problems[idx]->B_[i];
+                problems[idx]->b_[i] = l_adj.transpose() * problems[idx]->b_[i];
             }
-
-            auto l = x_final.rminus(x_traj.back());
-            auto l_adj = (l.exp()).adj();
-            problems[idx]->Q_.back() = l_adj.transpose() * problems[idx]->Q_.back() * l_adj;
-            problems[idx]->qv_.back().coeffs() = - l_adj.transpose() * problems[idx]->qv_.back().coeffs();
 
             // set the problem pointers
             lqocSolvers[idx]->setProblem(problems[idx]);

@@ -262,6 +262,7 @@ public:
             (*Jr).template bottomRightCorner<VEL_MAN::DoF, VEL_MAN::DoF>() = vJr;
         }
 
+        // Das was ich hier als Jacobian verkaufe, was ist das eigentlich?
         return t;
     }
 
@@ -269,7 +270,7 @@ public:
     Tangent log(OptJacobianRef J_t_m = {}) const
     {
         if (J_t_m)
-            throw std::runtime_error("J_t_m compuation not defined.");
+            throw std::runtime_error("J_t_m computation not defined.");
 
         return rminus(CompositeManifold::Identity(), J_t_m);
     }
@@ -279,6 +280,8 @@ public:
         Jacobian J = Jacobian::Zero();
         J.template topLeftCorner<POS_MAN::DoF, POS_MAN::DoF>() = m_pos_.adj();
         J.template bottomRightCorner<VEL_MAN::DoF, VEL_MAN::DoF>() = m_pos_.adj();
+
+// die adjoint hier ist eine reine rotation
         return J;
     }
 
