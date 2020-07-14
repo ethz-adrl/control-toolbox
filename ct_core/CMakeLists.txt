@@ -149,6 +149,7 @@ target_link_libraries(ct_core INTERFACE
     )
 
 set(ct_core ct_core CACHE INTERNAL "ct_core library target.")
+set(ct_plot ct_plot CACHE INTERNAL "ct_plot library target.")
 
 ##################
 # BUILD EXAMPLES #
