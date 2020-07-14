@@ -1,7 +1,7 @@
 ilqr
 {
     nlocp_algorithm GNMS
-    integrator Euler
+    integrator RK4
     useSensitivityIntegrator false
     discretization Forward_euler
     timeVaryingDiscretization false
