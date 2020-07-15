@@ -50,8 +50,8 @@ void plotResultsPointMass(const ct::core::StateVectorArray<STATE_DIM>& stateArra
         Eigen::VectorXd x, y;
         x = r*theta.array().sin().matrix();
         y = r*theta.array().cos().matrix();
-        x = x + x_obst;
-        y = y + y_obst;
+        x.array() = x.array() + x_obst;
+        y.array() = y.array() + y_obst;
 
         plot::subplot(3, 1, 1);
         plot::plot(position_x, position_y);

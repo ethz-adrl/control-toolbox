@@ -101,8 +101,8 @@ public:
     {
         Eigen::Matrix<double, 1, 1> val;
         // returns a number > 0 if point x is outside of the circle
-        val.template segment<1>(0) << pow((x(0)-x0_(0)),2)/pow(r_,2) +
-                                      pow((x(1)-x0_(1)),2)/pow(r_,2) - double(1.0);
+        val.template segment<1>(0) << pow((x(0) - x0_(0)), 2) / pow(r_, 2) + pow((x(1) - x0_(1)), 2) / pow(r_, 2) -
+                                          double(1.0);
         return val;
     }
 
@@ -113,8 +113,8 @@ public:
         ct::core::ADCGScalar t) override
     {
         Eigen::Matrix<ct::core::ADCGScalar, 1, 1> val;
-        val.template segment<1>(0) << pow((x(0)-x0_(0)),2)/pow(r_,2) +
-                                      pow((x(1)-x0_(1)),2)/pow(r_,2) - double(1.0);
+        val.template segment<1>(0) << (x(0) - x0_(0)) * (x(0) - x0_(0)) + (x(1) - x0_(1)) * (x(1) - x0_(1)) -
+                                          ct::core::ADCGScalar(r_) * ct::core::ADCGScalar(r_);
         return val;
     }
 
@@ -169,38 +169,18 @@ int main(int argc, char** argv)
     generalConstraints->addTerminalConstraint(obstacleConstraint, verbose);
     generalConstraints->initialize();
 
-    // input box constraint boundaries with sparsities in constraint toolbox
-    // format
-    Eigen::VectorXd u_lb(CONTROL_DIM);
-    Eigen::VectorXd u_ub(CONTROL_DIM);
-    u_lb << -1.0, -1.0;
-    u_ub << 1.0, 1.0;
-    std::shared_ptr<ct::optcon::ControlInputConstraint<STATE_DIM, CONTROL_DIM>> controlConstraint(
-        new ct::optcon::ControlInputConstraint<STATE_DIM, CONTROL_DIM>(u_lb, u_ub));
-    controlConstraint->setName("ControlInputConstraint");
-
-    // constraint container for analytic constraint
-    std::shared_ptr<ct::optcon::ConstraintContainerAnalytical<STATE_DIM, CONTROL_DIM>> inputBoxConstraints(
-        new ct::optcon::ConstraintContainerAnalytical<STATE_DIM, CONTROL_DIM>());
-
-    // add and initialize input box constraint terms
-    inputBoxConstraints->addIntermediateConstraint(controlConstraint, verbose);
-    inputBoxConstraints->addTerminalConstraint(controlConstraint, verbose);
-    inputBoxConstraints->initialize();
-
     /* STEP 1-E: initialization with initial state and desired time horizon */
     ct::core::StateVector<STATE_DIM> x0;
     x0.setZero();
 
-    ct::core::Time timeHorizon = 8.0;  // and a final time horizon in [sec]
+    ct::core::Time timeHorizon = 5.0;  // and a final time horizon in [sec]
 
     // STEP 1-E: create and initialize an "optimal control problem"
     ct::optcon::ContinuousOptConProblem<STATE_DIM, CONTROL_DIM> optConProblem(
         timeHorizon, x0, pointMass, costFunction, adLinearizer);
 
-    // add the box constraints and general constraints to the optimal control
+    // add the general constraints to the optimal control
     // problem
-    optConProblem.setInputBoxConstraints(inputBoxConstraints);
     optConProblem.setGeneralConstraints(generalConstraints);
 
     /* STEP 2: set up a nonlinear optimal control solver. */
@@ -233,7 +213,8 @@ int main(int argc, char** argv)
     ct::core::StateFeedbackController<STATE_DIM, CONTROL_DIM> solution = nloc.getSolution();
 
     // plot the output
-    plotResultsPointMass<STATE_DIM, CONTROL_DIM>(solution.x_ref(), solution.uff(), solution.time(), r, x_c(0,0), x_c(1,0));
+    plotResultsPointMass<STATE_DIM, CONTROL_DIM>(
+        solution.x_ref(), solution.uff(), solution.time(), r, x_c(0, 0), x_c(1, 0));
 
     return 0;
 }
