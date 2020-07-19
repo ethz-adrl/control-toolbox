@@ -1,4 +1,4 @@
-name: ControlToolbox CI
+name: build examples (incl. hpipm)
 
 on:
   pull_request:

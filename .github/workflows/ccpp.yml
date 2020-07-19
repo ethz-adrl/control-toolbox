@@ -1,4 +1,4 @@
-name: ControlToolbox CI
+name: unit tests
 
 on:
   pull_request:
