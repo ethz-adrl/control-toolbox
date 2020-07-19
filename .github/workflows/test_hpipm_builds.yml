@@ -1,4 +1,4 @@
-name: unit tests
+name: build examples (incl. hpipm)
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ on:
    - cron: "0 2 * * 0"
 
 jobs:
-  ct_ci:
+  ct_build_ex:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -23,6 +23,15 @@ jobs:
     steps:
     - name: checkout code
       uses: actions/checkout@v2
+    - name: Install cmake
+      run: |
+        sudo apt-get update                     >/dev/null # suppress output
+        sudo apt-get install cmake              >/dev/null # suppress output
+    - name: Create workspace
+      run: |
+        mkdir -p ~/catkin_ws/src
+        cd ~/catkin_ws/src
+        ln -s $GITHUB_WORKSPACE .
     - name: Install Gtest
       run: |
         sudo apt-get update                     >/dev/null # suppress output
@@ -34,31 +43,33 @@ jobs:
         sudo make                               >/dev/null # suppress output
         sudo cp *.so /usr/lib                   >/dev/null # suppress output
         cd ~/                                   >/dev/null # suppress output
-    - name: Create workspace
-      run: |
-        mkdir -p ~/catkin_ws/src
-        cd ~/catkin_ws/src
-        ln -s $GITHUB_WORKSPACE .
     - name: Install deb-packaged dependencies
       run: |
         cd ~/catkin_ws/src/control-toolbox/ct
         chmod 775 install_deps.sh
         sudo ./install_deps.sh
-    - name: Install kindr
-      env:
-        CC: ${{ matrix.compiler }}
+    - name: Install blasfeo and hpipm
       run: |
-        cd ~/catkin_ws/src/
-        git clone https://github.com/ANYbotics/kindr.git
-        cd kindr
-        mkdir -p build && cd build
-        cmake .. && make
-        sudo make install
-    - name: build and run unit tests
+        cd ~/catkin_ws/src/control-toolbox/ct
+        chmod 775 install_hpipm.sh
+        sudo ./install_hpipm.sh
+    - name: build ct_core examples
       continue-on-error: false
       env:
         CC: ${{ matrix.compiler }}
       run: |
-        cd ~/catkin_ws/src/control-toolbox/ct
-        sudo ./run_unit_tests.sh -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w"
-        sudo ./uninstall_ct.sh
+        cd ~/catkin_ws/src/control-toolbox/ct_core
+        mkdir build && cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DBUILD_EXAMPLES=true -DCMAKE_CXX_FLAGS="-w"
+        make
+        sudo make install
+    - name: build ct_optcon examples, also those requiring hpipm.
+      continue-on-error: false
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        cd ~/catkin_ws/src/control-toolbox/ct_optcon
+        mkdir build && cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DBUILD_EXAMPLES=true -DCMAKE_CXX_FLAGS="-w"
+        make
+        sudo make install
