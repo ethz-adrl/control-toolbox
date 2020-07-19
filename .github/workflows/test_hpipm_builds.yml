@@ -1,0 +1,58 @@
+name: ControlToolbox CI
+
+on:
+  pull_request:
+    branches:
+      - v3*
+      - 3*
+      - 4*
+      - 2*
+      - v2*
+      - master
+  schedule:
+   - cron: "0 2 * * 0"
+
+jobs:
+  ct_ci:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-16.04, ubuntu-18.04]
+        compiler: [gcc, clang]
+
+    steps:
+    - name: checkout code
+      uses: actions/checkout@v2
+    - name: Install cmake
+      run: |
+        sudo apt-get update                     >/dev/null # suppress output
+        sudo apt-get install cmake              >/dev/null # suppress output
+    - name: Create workspace
+      run: |
+        mkdir -p ~/catkin_ws/src
+        cd ~/catkin_ws/src
+        ln -s $GITHUB_WORKSPACE .
+    - name: Install deb-packaged dependencies
+      run: |
+        cd ~/catkin_ws/src/control-toolbox/ct
+        chmod 775 install_deps.sh
+        sudo ./install_deps.sh
+    - name: Install blasfeo and hpipm
+      run: |
+        cd ~/catkin_ws/src/control-toolbox/ct
+        chmod 775 install_hpipm.sh
+        sudo ./install_hpipm.sh
+    - name: build ct_core examples
+      continue-on-error: false
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        cd ~/catkin_ws
+        catkin build ct_core -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DBUILD_EXAMPLES=true -DCMAKE_CXX_FLAGS="-w"
+    - name: build ct_optcon examples, also those requiring hpipm.
+      continue-on-error: false
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        cd ~/catkin_ws
+        catkin build ct_optcon -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DBUILD_EXAMPLES=true -DCMAKE_CXX_FLAGS="-w"
