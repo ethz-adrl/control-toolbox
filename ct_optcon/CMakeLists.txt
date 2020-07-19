@@ -61,7 +61,8 @@ else(LAPACK_FOUND)
 endif(LAPACK_FOUND)
 
 
-## include HPIPM
+## include blasfeo and hpipm, assumed to be installed in "/opt"
+list(APPEND CMAKE_PREFIX_PATH "/opt")
 find_package(blasfeo QUIET)
 find_package(hpipm QUIET)
 if(blasfeo_FOUND AND hpipm_FOUND)
