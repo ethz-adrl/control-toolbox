@@ -58,7 +58,7 @@ jobs:
       env:
         CC: ${{ matrix.compiler }}
       run: |
-        cd ~/catkin_ws/src/ct_core
+        cd ~/catkin_ws/src/control-toolbox/ct_core
         mkdir build && cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DBUILD_EXAMPLES=true -DCMAKE_CXX_FLAGS="-w"
         make
@@ -68,7 +68,7 @@ jobs:
       env:
         CC: ${{ matrix.compiler }}
       run: |
-        cd ~/catkin_ws/src/ct_optcon
+        cd ~/catkin_ws/src/control-toolbox/ct_optcon
         mkdir build && cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DBUILD_EXAMPLES=true -DCMAKE_CXX_FLAGS="-w"
         make
