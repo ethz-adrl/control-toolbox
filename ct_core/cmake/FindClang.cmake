@@ -44,7 +44,7 @@ FIND_PATH(CLANG_INCLUDE_DIRS clang/Basic/Version.h HINTS ${LLVM_INCLUDE_DIRS})
 INCLUDE(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set CLANG_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(CLANG  DEFAULT_MSG
+find_package_handle_standard_args(Clang  DEFAULT_MSG
                                   CLANG_INCLUDE_DIRS
                                   CLANG_LIBS)
 

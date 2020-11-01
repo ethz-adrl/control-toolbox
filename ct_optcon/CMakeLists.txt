@@ -1,8 +1,10 @@
 cmake_minimum_required (VERSION 3.5)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
+if(NOT TARGET clang-format)
+	include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
+	include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
+	include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/clang-cxx-dev-tools.cmake)
+endif()
 include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/ct-cmake-helpers.cmake)
 
 
@@ -16,7 +18,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 
 ## find and include required dependencies
-find_package(ct_core REQUIRED)
+if(NOT TARGET ${ct_core})
+	find_package(ct_core REQUIRED)
+endif()
 # extract interface compile definitions from ct_core as options
 importInterfaceCompileDefinitionsAsOptions(ct_core)
 
@@ -57,13 +61,14 @@ else(LAPACK_FOUND)
 endif(LAPACK_FOUND)
 
 
-## include HPIPM
+## include blasfeo and hpipm, assumed to be installed in "/opt"
+list(APPEND CMAKE_PREFIX_PATH "/opt")
 find_package(blasfeo QUIET)
 find_package(hpipm QUIET)
 if(blasfeo_FOUND AND hpipm_FOUND)
     message(STATUS "Found HPIPM and BLASFEO")
     set(HPIPM ON)
-    list(APPEND HPIPM_LIBS ${hpipm_LIBRARIES} ${blasfeo_LIBRARIES})
+    list(APPEND HPIPM_LIBS hpipm blasfeo)
     list(APPEND ct_optcon_COMPILE_DEFINITIONS HPIPM)
 else()
     message(WARNING "Could not find HPIPM or BLASFEO")
@@ -156,6 +161,7 @@ target_link_libraries(ct_optcon INTERFACE
     ${PRESPEC_LIB_NAMES}
     )
 
+set(ct_optcon ct_optcon CACHE INTERNAL "ct_optcon library target.")
 
 ##################
 # BUILD EXAMPLES #

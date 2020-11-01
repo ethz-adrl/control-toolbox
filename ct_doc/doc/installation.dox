@@ -136,8 +136,9 @@ The following dependencies and bindings are optional but can help to enhance the
   (for ct::optcon::SnoptSolver and ct::optcon::IpoptSolver as used by ct::optcon::DMS)
 
  - <a href="https://github.com/giaf/blasfeo">blasfeo</a> linear algebra and <a href="https://github.com/giaf/hpipm">HPIPM solver</a> as
- alternative high-performance (constrained) linear-quadratic optimal control solver. The CT currently supports hpipm version 0.1.2.
- Detailed reference about blasefeo can be found <a href="https://arxiv.org/abs/1704.02457">here</a>.
+ alternative high-performance (constrained) linear-quadratic optimal control solver. The CT currently supports a hpipm version close to master. 
+ Please use the script install_hpipm.sh in control-toolbox/ct in order to retrieve a version of hpipm which is guaranteed to be tested
+ in combination with CT. Detailed reference about blasefeo can be found <a href="https://arxiv.org/abs/1704.02457">here</a>.
  Both packages were developed by <a href="https://www.syscop.de/people/dr-gianluca-frison">Gianluca Frison</a>, <a href="https://www.syscop.de/">University of Freiburg</a>.
  Warning note : When installing blasfeo, a configuration step may be necessary. See https://blasfeo.syscop.de/docs/install/#configuration for how to set the build target to your architecture.
  We advice to run the tests provided by blasfeo to check the correct installation. If not configured properly, blasfeo may be installed succesfully, the CT may be built succesfully with hpipm dependencies, but a "illegal operation (core dumped)" is raised when calling hpipm.
