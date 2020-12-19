@@ -55,13 +55,14 @@ public:
     EuclideanState rplus(const Tangent& x) const { return *this + x; }
 };
 
-template <class SCALAR = double>
-using EuclideanStateDynamic = EuclideanState<-1, SCALAR>;
-
-using EuclideanStateXd = EuclideanState<-1, double>;
 
 template <int DIM, class SCALAR = double>
 using StateVector = EuclideanState<DIM, SCALAR>;  // for legacy, TODO: remove at some point
+
+template <class SCALAR = double>
+using EuclideanStateXs = EuclideanState<-1, SCALAR>;
+
+using EuclideanStateXd = EuclideanStateXs<double>;
 
 } /* namespace core */
 } /* namespace ct */

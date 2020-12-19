@@ -16,9 +16,6 @@ namespace core {
 class TestNonlinearSystemDynamic : public ControlledSystem<EuclideanStateXd, -1, true>
 {
 public:
-    // static const int STATE_DIM = 2;
-    // static const int CONTROL_DIM = 1;
-
     using Base = ControlledSystem<EuclideanStateXd, -1, true>;
     using Time_t = typename Base::Time_t;
     using Controller_t = typename Base::Controller_t;
@@ -28,12 +25,16 @@ public:
     TestNonlinearSystemDynamic() = delete;
 
     // constructor directly using frequency and damping coefficients
-    TestNonlinearSystemDynamic(double w_n, std::shared_ptr<Controller_t> controller = nullptr)
-        : Base(controller, SYSTEM_TYPE::GENERAL), w_n_(w_n)
-    {
+    TestNonlinearSystemDynamic(int state_dim, int control_dim, double w_n)
+        :  Base(SYSTEM_TYPE::GENERAL), state_dim_(state_dim), control_dim_(control_dim), w_n_(w_n)
+    {        
+        ControlVectorXd u (control_dim_);
+        u.setConstant(1.0);
+
+        this->setController(std::shared_ptr<ConstantController<EuclideanStateXd, -1, true>>(new ConstantController<EuclideanStateXd, -1, true>(u)));
     }
 
-    TestNonlinearSystemDynamic(const TestNonlinearSystemDynamic& arg) : Base(arg), w_n_(arg.w_n_) {}
+    TestNonlinearSystemDynamic(const TestNonlinearSystemDynamic& arg) : Base(arg), state_dim_(arg.state_dim_), control_dim_(arg.control_dim_), w_n_(arg.w_n_) /*,controller_(arg.controller_->clone()*/ {}
     virtual ~TestNonlinearSystemDynamic() {}
     TestNonlinearSystemDynamic* clone() const override { return new TestNonlinearSystemDynamic(*this); }
     void computeControlledDynamics(const state_vector_t& state,
@@ -42,6 +43,8 @@ public:
         typename state_vector_t::Tangent& dx) override;
 
 private:
+    int state_dim_;
+    int control_dim_; 
     double w_n_;
 };
 

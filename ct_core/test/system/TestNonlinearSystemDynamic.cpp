@@ -13,12 +13,12 @@ void TestNonlinearSystemDynamic::computeControlledDynamics(const state_vector_t&
     const control_vector_t& control,
     typename state_vector_t::Tangent& dx)
 {
-    if (state.rows() != 2)
+    if (state.rows() != state_dim_)
         throw std::runtime_error("Dimension mismatch for state.");
-    if (control.rows() != 1)
+    if (control.rows() != control_dim_)
         throw std::runtime_error("Dimension mismatch for control.");
 
-    dx.resize(2);  // todo make it so that this is not necessary
+    dx.resize(state_dim_);  // todo make it so that this is not necessary
 
     //this is pretty much random
     dx(0) = state(1) * state(0) + state(1) * control(0);

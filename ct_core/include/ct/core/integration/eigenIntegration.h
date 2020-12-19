@@ -115,7 +115,7 @@ struct vector_space_norm_inf<Eigen::Matrix<B, S1, S2, O, M1, M2>>
 };
 
 
-template <size_t S1, typename B>
+template <int S1, typename B>
 struct vector_space_norm_inf<ct::core::EuclideanState<S1, B>>
 {
     using result_type = typename ct::core::EuclideanState<S1, B>::Scalar;

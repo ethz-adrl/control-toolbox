@@ -6,6 +6,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 #include "Controller.h"
+#include <Eigen/Dense>
 
 namespace ct {
 namespace core {
@@ -16,8 +17,8 @@ namespace core {
  * This class is useful to integrate a ControlledSystem forward subject to a
  * constant control input.
  */
-template <typename MANIFOLD, size_t CONTROL_DIM, bool CONT_T>
-class ConstantController final : public Controller<MANIFOLD, CONTROL_DIM, CONT_T>
+template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
+class ConstantController : public Controller<MANIFOLD, CONTROL_DIM, CONT_T>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -82,5 +83,7 @@ public:
 private:
     control_vector_t u_;
 };
+
+
 }  // namespace core
 }  // namespace ct

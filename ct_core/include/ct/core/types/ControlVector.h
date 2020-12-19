@@ -5,6 +5,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include <Eigen/Dense>
+
 namespace ct {
 namespace core {
 
@@ -16,10 +18,11 @@ public:
 
     static const int DIM = CONTROL_DIM;
 
-    ControlVector(){};
-    virtual ~ControlVector(){};
-
     typedef Eigen::Matrix<SCALAR, CONTROL_DIM, 1> Base;
+
+    ControlVector(){};
+    ControlVector(const int d): Base(d){};
+    virtual ~ControlVector(){};
 
     //! This constructor allows you to construct MyVectorType from Eigen expressions
     template <typename OtherDerived>
@@ -40,6 +43,12 @@ public:
     //! get const underlying Eigen type
     const Base& toImplementation() const { return *this; }
 };
+
+
+template <class SCALAR = double>
+using ControlVectorXs = ControlVector<-1, SCALAR>;
+
+using ControlVectorXd = ControlVectorXs<double>;
 
 } /* namespace core */
 } /* namespace ct */

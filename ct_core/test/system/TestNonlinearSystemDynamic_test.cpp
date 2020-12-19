@@ -8,17 +8,17 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 using namespace ct::core;
 
-int main()
-{
-    std::shared_ptr<TestNonlinearSystemDynamic> sys(new TestNonlinearSystemDynamic(1.9));
+
+void RunRandomSystem(const int state_dim, const int control_dim){
+
+    std::shared_ptr<TestNonlinearSystemDynamic> sys(new TestNonlinearSystemDynamic(state_dim, control_dim, 1.9));
 
     EuclideanStateXd x;
-    x.resize(2);
-    x << 1.0, 1.0;
-
+    x.resize(state_dim);
+    x.setConstant(1.0);
     ControlVector<-1> u;
-    u.resize(1);
-    u << 1.0;
+    u.resize(control_dim);
+    u.setConstant(1.0);
 
     EuclideanStateXd dx;
 
@@ -28,7 +28,15 @@ int main()
 
     EuclideanIntegratorXd integrator(sys);
 
-    integrator.integrate_n_steps(x, 0.0, 1, 0.001);
+    for (size_t i = 0; i < 10; i++)
+    {
+        integrator.integrate_n_steps(x, 0.0, 1, 0.01);
+        std::cout << "x integr: " << x.transpose() << std::endl;
+    }
+}
 
-    std::cout << "x integr: " << x.transpose() << std::endl;
+int main()
+{
+    RunRandomSystem(2,1);
+    RunRandomSystem(3,2);
 }
