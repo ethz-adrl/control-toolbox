@@ -40,6 +40,49 @@ protected:
     //ManifoldState_t m_ref_;
 };
 
+void testCoordinateTransformCost()
+{
+    using namespace manif;
+    for (size_t i = 0; i < 3; i++)
+    {
+        SE3d X, Xf;
+        X.setRandom();
+        Xf.setRandom();
+        Eigen::Matrix<double, 6, 6> Jl_tau, Jr_tau, Jl_zet, Jr_zet;
+        auto tau = Xf.rminus(X, Jl_tau, Jr_tau);
+        auto zet = X.rminus(Xf, Jl_zet, Jr_zet);
+        auto Adj_tau = tau.exp().adj();
+        auto Adj_zet = zet.exp().adj();
+        // std::cout << Adj_tau.transpose() * Adj_tau << std::endl;
+        auto tau_recon = -Adj_tau * zet;
+        auto tau_recon_J = Jr_tau * zet;
+        std::cout << "tau:" << tau << std::endl;
+        std::cout << "-Adj_tau * zet:" << std::endl << tau_recon.transpose() << std::endl;
+        std::cout << "Jr_tau * zet:" << std::endl << tau_recon_J.transpose() << std::endl;
+        std::cout << "-Jl_zet * zet:" << std::endl << (-Jl_zet * zet).transpose() << std::endl;
+        std::cout << "zet:" << zet << std::endl;
+        auto zet_recon = -Adj_zet * tau;
+        auto zet_recon_J = Jr_zet * tau;
+        std::cout << "-Adj_zet * tau:" << std::endl << zet_recon.transpose() << std::endl;
+        std::cout << "Jr_zet * tau:" << std::endl << zet_recon_J.transpose() << std::endl;
+        std::cout << "-Jl_tau * tau:" << std::endl << (-Jl_tau * tau).transpose() << std::endl;
+        // construct a random symmetric matrix Q
+        Eigen::Matrix<double, 6, 6> Q, A;
+        A.setRandom();
+        Q = A + A.transpose();
+        // these costs all evaluate the same scalar value, so that means, for the second-order term cost eval we are fine!
+        // we note, however, that the hessian matrices themselves are not identical!!!!
+        std::cout << tau.transpose() * Q * tau << std::endl;
+        std::cout << zet.transpose() * Q * zet << std::endl;
+        std::cout << tau.transpose() * Adj_zet.transpose() * Q * Adj_zet * tau << std::endl;
+        std::cout << tau.transpose() * Jr_zet.transpose() * Q * Jr_zet * tau << std::endl;
+        std::cout << std::endl;
+        // .. but those matrices are not identical:
+        // std::cout << Adj_zet.transpose() * Q * Adj_zet << std::endl;
+        // std::cout << Jr_zet.transpose() * Q * Jr_zet << std::endl;
+        std::cout << std::endl;
+    }
+}
 
 // TODO: make this a unit test
 void testParallelTransport()
@@ -78,16 +121,17 @@ void testParallelTransport()
     // std::cout << m_mpi_2.adj() * b << std::endl << std::endl;
 }
 
-int main(int argc, char** argv)
+
+void ocqpTest()
 {
     std::cout << std::fixed;
 
     const bool use_single_shooting = true;  // toggle between single and multiple shooting
 
-    const size_t N = 150;
-    const double dt = 0.01;
+    const size_t N = 50;
+    const double dt = 0.1;
 
-    const ManifoldState_t x0 = manif::SE3<double>(0, 0, 0, 3.14, 0, 0);
+    const ManifoldState_t x0 = manif::SE3<double>(0, 0, 0, 3.0, 0, 0);
     ct::core::DiscreteArray<ManifoldState_t> x_traj(N + 1, x0);  // init state trajectory, will be overwritten
     ct::core::DiscreteArray<ManifoldState_t::Tangent> b(
         N + 1, ManifoldState_t::Tangent::Zero());                             // defect traj, will be overwritten
@@ -99,7 +143,7 @@ int main(int argc, char** argv)
     // TODO: numerical trouble for more aggressive distributions, since the approximation of the value function becomes really bad?
     for (size_t i = 1; i < N + 1; i++)
     {
-        x_traj[i] = ManifoldState_t::Random();
+        x_traj[i] = x0;  // ManifoldState_t::Random();
     }
 
     // create instances of HPIPM and an unconstrained Gauss-Newton Riccati solver
@@ -132,14 +176,19 @@ int main(int argc, char** argv)
 
 
     // create a cost function
-    Eigen::Matrix<double, state_dim, state_dim> Q, Q_final;
+    Eigen::Matrix<double, state_dim, state_dim> Q, Q_final, Q_temp;
     Eigen::Matrix<double, control_dim, control_dim> R;
+    Q_temp.setRandom();
     Q_final.setZero();
-    //Q_final.diagonal() << 10000, 10000, 10000, 10000, 10000, 10000;
     Q.setZero();
+    Q_final.diagonal() << 1000, 1000, 1000, 1000, 1000, 1000;
+    Q_final = Q_temp.transpose() * Q_final * Q_temp; 
+    // std::cout << Q_final.eigenvalues() << std::endl;
+    // std::cout << Q_final << std::endl;
     Q.diagonal() << 1, 1, 1, 1, 1, 1;
+    Q = Q_temp.transpose() * Q * Q_temp;
     R.setZero();
-    R.diagonal() << 1, 1, 1, 1, 1, 1;
+    R.diagonal() << 10, 10, 10, 10, 10, 10;
     ManifoldState_t x_final = manif::SE3<double>(1, 1, 1, 0, 0, 0);
     std::cout << "desired final state: " << x_final << std::endl;
     ManifoldState_t x_nominal = x_final;
@@ -166,7 +215,7 @@ int main(int argc, char** argv)
         // std::cout << std::setprecision(4) << "m: " << x_curr << "\t tan: " << x_curr.log() << std::endl;
     }
 
-    size_t nIter = 5;
+    size_t nIter = 20;
     for (size_t iter = 0; iter < nIter; iter++)
     {
         // initialize the optimal control problems for both solvers
@@ -180,14 +229,17 @@ int main(int argc, char** argv)
             // dynamics transportation
             for (size_t i = 0; i < N; i++)
             {
-                auto l = x_traj[i + 1].rminus(x_traj[i]);
+                Eigen::Matrix<double, state_dim, state_dim> Jl, Jr;
+                auto l = x_traj[i + 1].rminus(x_traj[i], Jl, Jr);
                 auto l_adj = (l.exp()).adj();
+
+                auto m = Jl;  // best guess: Jl
 
                 problems[idx]->Adj_x_[i + 1] = l_adj;  // parallel transport matrix / adjoint from stage k+1 to stage k
 
-                problems[idx]->A_[i] = l_adj.transpose() * problems[idx]->A_[i];
-                problems[idx]->B_[i] = l_adj.transpose() * problems[idx]->B_[i];
-                problems[idx]->b_[i] = l_adj.transpose() * problems[idx]->b_[i];
+                problems[idx]->A_[i] = m.transpose() * problems[idx]->A_[i];
+                problems[idx]->B_[i] = m.transpose() * problems[idx]->B_[i];
+                problems[idx]->b_[i] = m.transpose() * problems[idx]->b_[i];
             }
 
             // set the problem pointers
@@ -335,5 +387,12 @@ int main(int argc, char** argv)
     }
     EigenFileExport::mat_to_file(EigenFileExport::CSVFormat(), "/tmp/rot_traj.csv", rot_traj);
     EigenFileExport::mat_to_file(EigenFileExport::CSVFormat(), "/tmp/trans_traj.csv", trans_traj);
+}
+
+
+int main(int argc, char** argv)
+{
+    //testCoordinateTransformCost();
+    ocqpTest();
     return 1;
 }
